@@ -54,7 +54,8 @@ if {![exists_and_not_null cost_id]} {
     set context [ad_context_bar $page_title]
     set effective_date [db_string get_today "select sysdate from dual"]
     set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 60]
-    set company_id [im_company_internal]
+    set customer_id [im_company_internal]
+    set provider_id [im_company_internal]
     set cost_status_id [im_cost_status_created]
     set amount 0
     set vat 0
@@ -69,7 +70,7 @@ if {![exists_and_not_null cost_id]} {
 # ------------------------------------------------------------------
 
 set project_options [im_project_options]
-set company_options [im_company_options]
+set customer_options [im_customer_options]
 set provider_options [im_provider_options]
 set cost_type_options [im_cost_type_options]
 set cost_status_options [im_cost_status_options]
@@ -87,7 +88,7 @@ ad_form \
 	cost_id:key
 	{cost_name:text(text) {label Name} {html {size 40}}}
 	{project_id:text(select),optional {label Project} {options $project_options} }
-	{company_id:text(select) {label "Company<br><small>(Who pays?)</small>"} {options $company_options} }
+	{customer_id:text(select) {label "Customer<br><small>(Who pays?)</small>"} {options $customer_options} }
 	{provider_id:text(select) {label "Provider<br><small>(Who gets the money?)</small>"} {options $provider_options} }
 
 	{cost_type_id:text(select) {label Type} {options $cost_type_options} }
@@ -158,7 +159,7 @@ ad_form -extend -name cost -on_request {
 	update  im_costs set
                 cost_name       	= :cost_name,
 		project_id		= :project_id,
-                company_id     	= :company_id,
+                customer_id     	= :customer_id,
                 provider_id     	= :provider_id,
                 cost_status_id  	= :cost_status_id,
                 cost_type_id    	= :cost_type_id,

@@ -22,7 +22,7 @@
                 creation_ip     => '[ad_conn peeraddr]',
                 cost_name       => :cost_name,
 		project_id	=> :project_id,
-                company_id     => :company_id,
+                customer_id     => :customer_id,
                 provider_id     => :provider_id,
                 cost_status_id  => :cost_status_id,
                 cost_type_id    => :cost_type_id,

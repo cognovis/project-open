@@ -66,6 +66,7 @@ namespace eval im_cost {
 	{-cost_status_id 0}
 	{-customer_id 0}
 	{-provider_id 0}
+	{-object_type "im_cost"}
 	-cost_name
 	-cost_type_id
     } {
@@ -82,7 +83,6 @@ namespace eval im_cost {
 
 	set user_id [ad_get_user_id]
 	set creation_ip [ad_conn peeraddr]
-	set object_type "im_cost"
 	set today [db_string today "select sysdate from dual"]
 	if [catch {
 	    db_dml insert_costs "

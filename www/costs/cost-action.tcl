@@ -54,10 +54,12 @@ switch $submit {
 	    set otype $object_type($cost_id)
 	    # ToDo: Security
 
-	    db_exec_plsql delete_cost_item ""
-
-#	    db_0or1row delete_cost_item "select ${otype}.del(:cost_id) from dual"
-#	    im_exec_dml del_cost_item "${otype}_del(:cost_id)"
+	    if [catch {
+		im_exec_dml del_cost_item "${otype}_del(:cost_id)"
+	    } errmsg] {
+		ad_return_complaint 1 "<li>Error deleting cost item #$cost_id of type '$otype':<br><pre>$errmsg</pre>"
+		return
+	    }
 
 	    lappend in_clause_list $cost_id
 	}
