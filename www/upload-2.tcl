@@ -76,38 +76,14 @@ if {[regexp {\.\.} $client_filename]} {
 
 # ---------- Determine the location where to save the file -----------
 
-switch $folder_type {
-    "project" {
-	set project_path [im_filestorage_project_path $object_id]
-	set dest_path "$project_path/$bread_crum_path/$client_filename"
-    }
 
-    "project_sales" {
-	set path [im_filestorage_project_sales_path $object_id]
-	set dest_path "$path/$bread_crum_path/$client_filename"
-    }
-
-    "customer" {
-	set path [im_filestorage_customer_path $object_id]
-	set dest_path "$path/$bread_crum_path/$client_filename"
-    }
-
-    "user" {
-	set path [im_filestorage_user_path $object_id]
-	set dest_path "$path/$bread_crum_path/$client_filename"
-    }
-
-    "home" {
-	set path [im_filestorage_home_path]
-	set dest_path "$path/$bread_crum_path/$client_filename"
-    }
-
-    default {
-	ad_return_complaint 1 "<LI>Unknown folder type \"$folder_type\"."
-	return
-    }
-
+set base_path [im_filestorage_base_path $folder_type $object_id]
+if {"" == $base_path} {
+    ad_return_complaint 1 "<LI>Unknown folder type \"$folder_type\"."
+    return
 }
+set dest_path "$base_path/$bread_crum_path/$client_filename"
+
 
 # --------------- Let's copy the file into the FS --------------------
 

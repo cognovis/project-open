@@ -67,6 +67,47 @@ switch $actions {
 	ad_returnredirect $return_url
     }
 
+    "zip" {
+
+	# --------------------- Download a ZIP --------------------- 
+
+	# Find out where the current directory starts on the hard disk
+	set base_path [im_filestorage_base_path $folder_type $object_id]
+	if {"" == $base_path} {
+	    ad_return_complaint 1 "<LI>Unknown folder type \"$folder_type\"."
+	    return
+	}
+	set dest_path "$base_path/$bread_crum_path"
+
+	# Determine a random .tgz file
+	set r [ns_rand 10000000]
+	set file "zip.$user_id.$r.tgz"
+	ns_log Notice "file=$file"
+	set path "/tmp/$file"
+	ns_log Notice "/bin/tar czf $path $dest_path"
+	
+	if { [catch {
+	    exec /bin/tar czf $path $dest_path
+	} err_msg] } {
+	    # Nothing. We check if TAR was successfull if the file exists.
+	}
+
+	if { [catch {
+	    set file_readable [file readable $path]
+	} err_msg] } {
+	    ad_return_complaint 1 "<LI>Unable to compress the folder."
+	    return
+	}
+
+	if $file_readable {
+	    ad_returnredirect "/intranet/download/zip/0/$file"
+	    return
+	} else {
+	    doc_return 404 text/html "Did not find the specified file"
+	    return
+	}
+    }
+
     "new-folder" {
 
 	# --------------------- New Folder --------------------- 

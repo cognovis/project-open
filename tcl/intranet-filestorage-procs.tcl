@@ -26,12 +26,15 @@ ad_register_proc GET /intranet/download/project_sales/* intranet_project_sales_d
 ad_register_proc GET /intranet/download/customer/* intranet_customer_download
 ad_register_proc GET /intranet/download/user/* intranet_user_download
 ad_register_proc GET /intranet/download/home/* intranet_home_download
+ad_register_proc GET /intranet/download/zip/* intranet_zip_download
+
 
 ad_proc intranet_project_download {} { intranet_download "project" }
 ad_proc intranet_project_sales_download {} { intranet_download "project_sales" }
 ad_proc intranet_customer_download {} { intranet_download "customer" }
 ad_proc intranet_user_download {} { intranet_download "user" }
 ad_proc intranet_home_download {} { intranet_download "home" }
+ad_proc intranet_zip_download {} { intranet_download "zip" }
 
 # Serve the abstract URL 
 # /intranet/download/<group_id>/...
@@ -112,6 +115,7 @@ ad_proc -private im_filestorage_base_path { folder_type object_id } {
 	customer {return [im_filestorage_customer_path $object_id]}
 	user {return [im_filestorage_user_path $object_id]}
 	home {return [im_filestorage_home_path]}
+	zip {return [im_filestorage_zip_path]}
     }
     return ""
 }
@@ -348,6 +352,12 @@ ad_proc im_filestorage_user_component { user_id user_to_show_id user_name return
 # Determine pathes for project, customers and users
 # All pathes end WITHOUT a trailing "/"
 # ---------------------------------------------------------------------
+
+ad_proc im_filestorage_zip_path { } {
+    Determine the location where zips are located
+} {
+    return "/tmp"
+}
 
 ad_proc im_filestorage_home_path { } {
     Determine the location where global company files
