@@ -47,6 +47,9 @@ if {![exists_and_not_null cost_id]} {
     set context [ad_context_bar $page_title]
     set effective_date [db_string get_today "select sysdate from dual"]
     set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 60]
+    set customer_id [im_customer_internal]
+    set cost_status_id [im_cost_status_created]
+    set amount 0
     set vat 0
     set tax 0
 
@@ -58,14 +61,14 @@ if {![exists_and_not_null cost_id]} {
 # Build the form
 # ------------------------------------------------------------------
 
-set project_options [im_cost_project_options]
-set customer_options [im_cost_customer_options]
-set provider_options [im_cost_provider_options]
+set project_options [im_project_options]
+set customer_options [im_customer_options]
+set provider_options [im_provider_options]
 set cost_type_options [im_cost_type_options]
 set cost_status_options [im_cost_status_options]
-set investment_options [im_cost_investment_options]
+set investment_options [im_investment_options]
 set template_options [im_cost_template_options]
-set currency_options [im_cost_currency_options]
+set currency_options [im_currency_options]
 
 ad_form \
     -name cost \
@@ -76,13 +79,13 @@ ad_form \
     -form {
 	cost_id:key
 	{cost_name:text(text) {label Name} {html {size 40}}}
-	{project_id:text(select) {label Project} {options $project_options} }
+	{project_id:text(select),optional {label Project} {options $project_options} }
 	{customer_id:text(select) {label "Customer<br><small>(Who pays?)</small>"} {options $customer_options} }
 	{provider_id:text(select) {label "Provider<br><small>(Who gets the money?)</small>"} {options $provider_options} }
 
 	{cost_type_id:text(select) {label Type} {options $cost_type_options} }
 	{cost_status_id:text(select) {label Status} {options $cost_status_options} }
-	{template_id:text(select) {label "Print Template"} {options $template_options} }
+	{template_id:text(select),optional {label "Print Template"} {options $template_options} }
 	{investment_id:text(select),optional {label Investment} {options $investment_options} }
 
 	{effective_date:text(text) {label "Effective Date"} {html {size 20}} }
@@ -93,6 +96,8 @@ ad_form \
 
 	{vat:text(text) {label "VAT"} {html {size 20}} }
 	{tax:text(text) {label "TAX"} {html {size 20}} }
+
+        {cause_object_id:text(hidden),optional }
 
 	{description:text(textarea),nospell,optional {label "Description"} {html {rows 5 cols 40}}}
 	{note:text(textarea),nospell,optional {label "Note"} {html {rows 5 cols 40}}}
@@ -110,6 +115,13 @@ ad_form -extend -name cost -on_request {
 	where	ci.cost_id = :cost_id
 
 } -new_data {
+
+    # find start_block for effective_start-block
+    set effective_start_block [db_string temp_start_block_statement "
+	select	max(start_block) 
+	from	im_start_months
+	where	start_block <= :effective_date
+    "]
 
     db_dml cost_insert "
 declare
@@ -137,25 +149,72 @@ begin
         );
 end;"
 
+    db_dml cost_update_aux "
+        update  im_costs set
+                cause_object_id		= :cause_object_id,
+		effective_start_block	= :effective_start_block
+        where
+                cost_id = :cost_id
+    "
+
+
 } -edit_data {
+
+    # find start_block for effective_start-block
+    set effective_start_block [db_string temp_start_block_statement "
+	select	max(start_block) 
+	from	im_start_months
+	where	start_block <= :effective_date
+    "]
+
+    set exists [db_string exists_cost "select count(*) from im_costs where cost_id=:cost_id"]
+    if {!$exists} {
+	db_dml cost_insert "
+declare
+        v_cost_id       integer;
+begin
+        v_cost_id := im_cost.new (
+                cost_id         => :cost_id,
+                creation_user   => :user_id,
+                creation_ip     => '[ad_conn peeraddr]',
+                cost_name       => :cost_name,
+                project_id      => :project_id,
+                customer_id     => :customer_id,
+                provider_id     => :provider_id,
+                cost_status_id  => :cost_status_id,
+                cost_type_id    => :cost_type_id,
+                template_id     => :template_id,
+                effective_date  => :effective_date,
+                payment_days    => :payment_days,
+                amount          => :amount,
+                currency        => :currency,
+                vat             => :vat,
+                tax             => :tax,
+                description     => :description,
+                note            => :note
+        );
+end;"
+    }
 
     db_dml cost_update "
 	update  im_costs set
-                cost_name       = :cost_name,
-		project_id	= :project_id,
-                customer_id     = :customer_id,
-                provider_id     = :provider_id,
-                cost_status_id  = :cost_status_id,
-                cost_type_id    = :cost_type_id,
-                template_id     = :template_id,
-                effective_date  = :effective_date,
-                payment_days    = :payment_days,
-		amount		= :amount,
-                currency        = :currency,
-                vat             = :vat,
-                tax             = :tax,
-                description     = :description,
-                note            = :note
+                cost_name       	= :cost_name,
+		project_id		= :project_id,
+                customer_id     	= :customer_id,
+                provider_id     	= :provider_id,
+                cost_status_id  	= :cost_status_id,
+                cost_type_id    	= :cost_type_id,
+                template_id     	= :template_id,
+                effective_date  	= :effective_date,
+		effective_start_block	= :effective_start_block,
+                payment_days    	= :payment_days,
+		amount			= :amount,
+                currency        	= :currency,
+                vat             	= :vat,
+                tax             	= :tax,
+                cause_object_id		= :cause_object_id,
+                description     	= :description,
+                note            	= :note
 	where
 		cost_id = :cost_id
 "
