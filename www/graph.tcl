@@ -55,7 +55,7 @@ if {[info exists project_id] && ![empty_string_p $project_id] && $project_id > 0
 	set page_body [im_get_chart $x_axis $y_axis $data $settings]
     }
     set page_title "Risks for project \"$project_name\""
-    set context_bar [ad_context_bar $page_title]
+    set context_bar [im_context_bar $page_title]
 
     # add legend
     append page_body "
