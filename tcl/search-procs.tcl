@@ -2,26 +2,26 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.20 2005/03/07 20:47:07 jeffd Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.21 2005/03/10 01:42:14 jeffd Exp $
 }
 
 namespace eval search {}
 
 ad_proc -public search::queue {
     -object_id
-    -event 
+    -event
 } {
     Add an object to the search_observer_queue table with
     an event.
 
     You should excercise care that the entry is not being
-    created from a trigger (although search is robust for multiple 
+    created from a trigger (although search is robust for multiple
     entries so it will not insert or update the same object
     more than once per sweep).
 
     @param object_id acs_objects object_id
     @param event INSERT or UPDATE or DELETE
-    
+
     @author Jeff Davis (davis@xarg.net)
 } {
     package_exec_plsql \
