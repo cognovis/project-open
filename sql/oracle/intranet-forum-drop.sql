@@ -39,5 +39,6 @@ drop sequence im_forum_files_seq;
 drop table im_forum_files;
 drop table im_forum_topic_user_map;
 drop table im_forum_folders;
+drop trigger im_forum_topic_insert_tr;
 drop table im_forum_topics;
 
