@@ -112,6 +112,33 @@ add constraint im_employees_superv_ck
 check (supervisor_id != employee_id);
 
 
+# Select all information for active employees
+# (member of Employees group).
+#
+create or replace view im_employees_active as
+select
+	u.*,
+	e.*,
+	pa.*,
+	pe.*
+from
+	users u,
+	parties pa,
+	persons pe,
+	im_employees e,
+	groups g,
+	group_distinct_member_map gdmm
+where
+	u.user_id = pa.party_id
+	and u.user_id = pe.person_id
+	and u.user_id = e.employee_id(+)
+	and g.group_name = 'Employees'
+	and gdmm.group_id = g.group_id
+	and gdmm.member_id = u.user_id
+;
+
+
+
 -- stuff we need for the Org Chart
 -- Oracle will pop a cap in our bitch ass if do CONNECT BY queries 
 -- on im_users without these indices
@@ -334,9 +361,25 @@ end;
 prompt *** Creating OrgChart menu entry
 -- Add OrgChart to Users menu
 declare
-    v_user_orgchart_menu	integer;
-    v_user_menu		integer;
+	v_user_orgchart_menu	integer;
+	v_user_menu		integer;
+
+        -- Groups
+        v_employees     	integer;
+        v_accounting    	integer;
+        v_senman                integer;
+        v_customers     	integer;
+        v_freelancers   	integer;
+        v_proman                integer;
+        v_admins                integer;
 begin
+    select group_id into v_admins from groups where group_name = 'P/O Admins';
+    select group_id into v_senman from groups where group_name = 'Senior Managers';
+    select group_id into v_proman from groups where group_name = 'Project Managers';
+    select group_id into v_accounting from groups where group_name = 'Accounting';
+    select group_id into v_employees from groups where group_name = 'Employees';
+    select group_id into v_customers from groups where group_name = 'Customers';
+    select group_id into v_freelancers from groups where group_name = 'Freelancers';
 
     select menu_id
     into v_user_menu
@@ -344,18 +387,14 @@ begin
     where label='users';
 
     v_user_orgchart_menu := im_menu.new (
-	menu_id =>	null,
-	object_type =>	'im_menu',
-	creation_date => sysdate,
-	creation_user => 0,
-	creation_ip =>	null,
-	context_id =>	null,
 	package_name =>	'intranet-hr',
 	name =>		'Org Chart',
-	url =>		'/intranet-employees/org-chart?customer_id=0',
+	label =>	'users_org_chart',
+	url =>		'/intranet-hr/org-chart?customer_id=0',
 	sort_order =>	5,
 	parent_menu_id => v_user_menu
     );
+
     acs_permission.grant_permission(v_user_orgchart_menu, v_admins, 'read');
     acs_permission.grant_permission(v_user_orgchart_menu, v_senman, 'read');
     acs_permission.grant_permission(v_user_orgchart_menu, v_proman, 'read');
