@@ -323,7 +323,7 @@ select
 	p.customer_id,
 	p.project_id,
 	p.subject_area_id,
-        im_invoice_calculate_price(p.customer_id, p.project_id, t.task_type_id, t.task_uom_id) as price
+	im_trans_prices_calc_price(p.customer_id, p.project_id, t.task_type_id, t.task_uom_id) as price
 from 
 	im_trans_tasks t,
 	im_projects p
