@@ -667,6 +667,7 @@ ad_proc -public im_forum_component {
     # It has been replaced 2005-03-18 by forum_object_id.
     # Now doing backward compatibility operation 
     if {0 != $forum_object_id} { set object_id $forum_object_id }
+    if {"" == $start_idx} { set start_idx 0}
     set forum_object_id $object_id
 
     ns_log Notice "im_forum_component: forum_type=$forum_type"
@@ -756,18 +757,26 @@ ad_proc -public im_forum_component {
 
     # -------- Compile the list of parameters to pass-through-------
 
+    set form_vars [ns_conn form]
     set bind_vars [ns_set create]
     foreach var $export_var_list {
-	# Skip the "start_idx" variable, because we need to set it
-	if {[string equal "forum_start_idx" $var]} { continue }
         upvar 1 $var value
         if { [info exists value] } {
             ns_set put $bind_vars $var $value
             ns_log Notice "im_forum_component: $var <- $value"
+        } else {
+        
+            set value [ns_set get $form_vars $var]
+            if {![string equal "" $value]} {
+ 	        ns_set put $bind_vars $var $value
+ 	        ns_log Notice "im_forum_component: $var <- $value"
+            }
+            
         }
     }
 
     ns_set delkey $bind_vars "forum_order_by"
+    ns_set delkey $bind_vars "forum_start_idx"
     set params [list]
     set len [ns_set size $bind_vars]
     for {set i 0} {$i < $len} {incr i} {
@@ -1012,7 +1021,7 @@ ad_proc -public im_forum_component {
 		# Include a link to go to the next page
 		set next_start_idx [expr $end_idx + 1]
 		set forum_max_entries_per_page $max_entries_per_page
-		set next_page_url  "$current_page_url?[export_url_vars forum_object_id forum_max_entries_per_page forum_order_by]&forum_start_idx=$next_start_idx"
+		set next_page_url  "$current_page_url?[export_url_vars forum_object_id forum_max_entries_per_page forum_order_by]&forum_start_idx=$next_start_idx&$pass_through_vars_html"
 		set next_page_html "($remaining_items more) <A href=\"$next_page_url\">&gt;&gt;</a>"
         } else {
 		set next_page_html ""
