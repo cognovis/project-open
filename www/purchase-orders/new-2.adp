@@ -44,7 +44,7 @@
                 <tr>
                   <td class=roweven>Type</td>
                   <td class=roweven>
-		    <%= [im_cost_type_select cost_type_id $cost_type_id [im_cost_type_provider_doc]] %>
+		    <%= [im_cost_type_select cost_type_id $target_cost_type_id [im_cost_type_provider_doc]] %>
 		  </td>
                 </tr>
 	        </table>

@@ -22,8 +22,8 @@ ad_page_contract {
     other:array,optional
     provider_id:integer
     freelance_id:integer
-    cost_type_id:integer
-    { cost_status_id:integer }
+    target_cost_type_id:integer
+    { target_cost_status_id:integer 0 }
     { currency "EUR" }
     { return_url "/intranet-cost/index"}
 }
@@ -34,7 +34,9 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 
-if {"" == $cost_status_id} { set cost_status_id [im_cost_status_created] }
+if {0 == $target_cost_status_id} { set target_cost_status_id [im_cost_status_created] }
+set cost_status_id $target_cost_status_id
+
 set todays_date [db_string get_today "select to_char(sysdate,'YYYY-MM-DD') from dual"]
 set page_focus "im_header_form.keywords"
 set view_name "invoice_tasks"
