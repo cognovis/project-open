@@ -571,7 +571,7 @@ check(start_date < end_date);
 -- all im_costs with the specific investment_id
 --
 
-prompt *** intranet-costs: Creating im_investments
+-- prompt *** intranet-costs: Creating im_investments
 create table im_investments (
 	investment_id		integer
 				constraint im_investments_pk
@@ -1063,7 +1063,7 @@ declare
 	v_employees		integer;
 	v_accounting		integer;
 	v_senman		integer;
-	v_companies		integer;
+	v_customers		integer;
 	v_freelancers		integer;
 	v_proman		integer;
 	v_admins		integer;
@@ -1072,7 +1072,7 @@ begin
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
     select group_id into v_senman from groups where group_name = ''Senior Managers'';
     select group_id into v_accounting from groups where group_name = ''Accounting'';
-    select group_id into v_companies from groups where group_name = ''Companies'';
+    select group_id into v_customers from groups where group_name = ''Customers'';
     select group_id into v_freelancers from groups where group_name = ''Freelancers'';
 
     select menu_id
@@ -1099,7 +1099,7 @@ begin
     PERFORM acs_permission__grant_permission(v_finance_menu, v_admins, ''read'');
     PERFORM acs_permission__grant_permission(v_finance_menu, v_senman, ''read'');
     PERFORM acs_permission__grant_permission(v_finance_menu, v_accounting, ''read'');
-    PERFORM acs_permission__grant_permission(v_finance_menu, v_companies, ''read'');
+    PERFORM acs_permission__grant_permission(v_finance_menu, v_customers, ''read'');
     PERFORM acs_permission__grant_permission(v_finance_menu, v_freelancers, ''read'');
 
     -- -----------------------------------------------------
@@ -1154,6 +1154,8 @@ drop function inline_0 ();
 -- prompt *** intranet-costs: Create New Cost menus
 -- Setup the "New Cost" menu for /intranet-cost/index
 --
+create or replace function inline_0 ()
+returns integer as '
 declare
 	-- Menu IDs
 	v_menu			integer;
@@ -1164,37 +1166,47 @@ declare
 	v_employees		integer;
 	v_accounting		integer;
 	v_senman		integer;
-	v_companies		integer;
+	v_customers		integer;
 	v_freelancers		integer;
 	v_proman		integer;
 	v_admins		integer;
 begin
-    select group_id into v_admins from groups where group_name = 'P/O Admins';
-    select group_id into v_senman from groups where group_name = 'Senior Managers';
-    select group_id into v_accounting from groups where group_name = 'Accounting';
-    select group_id into v_companies from groups where group_name = 'Companies';
-    select group_id into v_freelancers from groups where group_name = 'Freelancers';
+    select group_id into v_admins from groups where group_name = ''P/O Admins'';
+    select group_id into v_senman from groups where group_name = ''Senior Managers'';
+    select group_id into v_accounting from groups where group_name = ''Accounting'';
+    select group_id into v_customers from groups where group_name = ''Customers'';
+    select group_id into v_freelancers from groups where group_name = ''Freelancers'';
 
     select menu_id
     into v_invoices_new_menu
     from im_menus
-    where label='costs';
+    where label=''costs'';
 
-    v_finance_menu := im_menu.new (
-	package_name =>	'intranet-cost',
-	label =>	'cost_new',
-	name =>		'New Cost',
-	url =>		'/intranet-cost/costs/new',
-	sort_order =>	10,
-	parent_menu_id => v_invoices_new_menu
+    v_finance_menu := im_menu__new (
+	null,                      -- menu_id
+        ''acs_object'',            -- object_type
+        now(),                     -- creation_date
+        null,                      -- creation_user
+        null,                      -- creation_ip
+        null,                      -- context_id
+	''intranet-cost'',	   -- package_name
+	''cost_new'',		   -- label
+	''New Cost'',		   -- name
+	''/intranet-cost/costs/new'', -- url
+	10,			      -- sort_order
+	v_invoices_new_menu,	      -- parent_menu_id
+	null			      -- visible_tcl
     );
 
-    acs_permission.grant_permission(v_finance_menu, v_admins, 'read');
-    acs_permission.grant_permission(v_finance_menu, v_senman, 'read');
-    acs_permission.grant_permission(v_finance_menu, v_accounting, 'read');
-end;
-/
-commit;
+    PERFORM acs_permission__grant_permission(v_finance_menu, v_admins, ''read'');
+    PERFORM acs_permission__grant_permission(v_finance_menu, v_senman, ''read'');
+    PERFORM acs_permission__grant_permission(v_finance_menu, v_accounting, ''read'');
+    return 0;
+end;' language 'plpgsql';
+
+select inline_0 ();
+
+drop function inline_0 ();
 
 
 -------------------------------------------------------------
@@ -1248,7 +1260,7 @@ insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22098,220,'Del',
 '"<input type=hidden name=object_type.$cost_id value=$object_type>
 <input type=checkbox name=del_cost value=$cost_id>"',99);
-commit;
+-- commit;
 
 
 
@@ -1256,42 +1268,69 @@ commit;
 -- Cost Components
 --
 
-BEGIN
-    im_component_plugin.del_module(module_name => 'intranet-cost');
-END;
-/
+-- BEGIN
+select im_component_plugin__del_module('intranet-cost');
+-- END;
+
 
 -- Show the cost component in project page
 --
+create or replace function inline_0 ()
+returns integer as '
 declare
     v_plugin	integer;
 begin
-    v_plugin := im_component_plugin.new (
-	plugin_name =>	'Project Cost Component',
-	package_name =>	'intranet-cost',
-	page_url =>     '/intranet/projects/view',
-	location =>     'left',
-	sort_order =>   90,
-	component_tcl => 
-	'im_costs_project_component $user_id $project_id'
+    v_plugin := im_component_plugin__new (
+	null,				 -- plugin_id
+	''acs_object'',			 -- object_type
+	now(),				 -- creation_date
+	null,				 -- creation_user
+	null,				 -- creation_ip
+	null,				 -- context_id
+
+	''Project Cost Component'',	 -- plugin_name
+	''intranet-cost'',		 -- package_name
+	''left'',			 -- location
+	''/intranet/projects/view'',	 -- page_url
+	null,				 -- view_name
+	90,				 -- sort_order
+
+	''im_costs_project_component $user_id $project_id''  -- component_tcl
     );
-end;
-/
+    return 0;
+end;' language 'plpgsql';
+
+select inline_0 ();
+
+drop function inline_0 ();
 
 -- Show the cost component in companies page
---
+-- 
+create or replace function inline_0 ()
+returns integer as '
 declare
     v_plugin	integer;
 begin
-    v_plugin := im_component_plugin.new (
-	plugin_name =>	'Company Cost Component',
-	package_name =>	'intranet-cost',
-	page_url =>     '/intranet/companies/view',
-	location =>     'left',
-	sort_order =>   90,
-	component_tcl => 
-	'im_costs_company_component $user_id $company_id'
+    v_plugin := im_component_plugin__new (
+	null,				 -- plugin_id
+	''acs_object'',			 -- object_type
+	now(),				 -- creation_date
+	null,				 -- creation_user
+	null,				 -- creation_ip
+	null,				 -- context_id
+
+	''Company Cost Component'',	-- plugin_name
+	''intranet-cost'',		-- package_name
+	''left'',			-- location
+	''/intranet/companies/view'',	-- page_url
+	null,				-- view_name
+	90,				-- sort_order
+
+	''im_costs_company_component $user_id $company_id''	-- component_tcl
     );
-end;
-/
-commit;
+    return 0;
+end;' language 'plpgsql';
+
+select inline_0 ();
+
+drop function inline_0 ();
