@@ -24,6 +24,7 @@
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="CustomerBasePathUnix"  default="/web/milengo/filestorage/customers" description="CustomerBasePathUnix"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="HomeBasePathUnix"  default="/web/milengo/filestorage/home" description="HomeBasePathUnix"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ProjectBasePathUnix"  default="/web/milengo/filestorage/projects" description="ProjectBasePathUnix"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ProjectSalesBasePathUnix"  default="/tmp/project_sales" description="ProjectSalesBasePathUnix"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="UserBasePathUnix"  default="/web/milengo/filestorage/users" description="UserBasePathUnix"/>
         </parameters>
 
