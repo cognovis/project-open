@@ -26,7 +26,7 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "<#_ Edit Repeating Cost#>"
-set context [ad_context_bar $page_title]
+set context [im_context_bar $page_title]
 set today [db_string birthday_today "select sysdate from dual"]
 set internal_id [im_company_internal]
 
@@ -46,7 +46,7 @@ if {![exists_and_not_null rep_cost_id]} {
     # New variable: setup some reasonable defaults
 
     set page_title "<#_ New Repeating Cost Item#>"
-    set context [ad_context_bar $page_title]
+    set context [im_context_bar $page_title]
     set effective_date [db_string get_today "select sysdate from dual"]
     set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 60]
     set customer_id [im_customer_internal]

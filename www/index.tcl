@@ -16,7 +16,7 @@ ad_page_contract {
 }
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "[_ intranet-cost.Finance_Home]"
-set context_bar [ad_context_bar $page_title]
+set context_bar [im_context_bar $page_title]
 
 if {![im_permission $user_id view_costs]} {
     ad_return_complaint 1 "<li>You have insufficiente privileges to view this page"

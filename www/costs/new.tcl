@@ -26,7 +26,7 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "[_ intranet-cost.Edit_Cost]"
-set context [ad_context_bar $page_title]
+set context [im_context_bar $page_title]
 
 #if {![im_permission $user_id view_costs]} {
 #    ad_return_complaint 1 "You have insufficient privileges to use this page"
@@ -51,7 +51,7 @@ if {![exists_and_not_null cost_id]} {
     # New variable: setup some reasonable defaults
 
     set page_title "[_ intranet-cost.New_Cost_Item]"
-    set context [ad_context_bar $page_title]
+    set context [im_context_bar $page_title]
     set effective_date [db_string get_today "select to_date(sysdate,'YYYY-MM-DD') from dual"]
     set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 60]
     set customer_id [im_company_internal]

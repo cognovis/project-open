@@ -66,7 +66,7 @@ ad_page_contract {
 # User id already verified by filters
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "[_ intranet-cost.Cost_Items]"
-set context_bar [ad_context_bar $page_title]
+set context_bar [im_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 set return_url [im_url_with_query]
 # Needed for im_view_columns, defined in intranet-views.tcl

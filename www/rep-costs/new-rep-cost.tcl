@@ -22,7 +22,7 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "<#_ Create Employee Cost Item#>"
-set context [ad_context_bar $page_title]
+set context [im_context_bar $page_title]
 set today [db_string birthday_today "select to_char(sysdate,'YYYY-MM-DD') from dual"]
 
 if {![im_permission $user_id view_costs]} {
@@ -37,8 +37,6 @@ set focus "cost.var_name"
 # Setup Cost Item Variables
 # ------------------------------------------------------------------
 
-set page_title "New Cost Item from Repeated Cost"
-set context [ad_context_bar $page_title]
 set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 60]
 set vat 0
 set tax 0

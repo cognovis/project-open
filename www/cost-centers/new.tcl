@@ -44,7 +44,7 @@ if {[info exists cost_center_id]} {
     }
 }
 
-set context [ad_context_bar $page_title]
+set context [im_context_bar $page_title]
 
 if {![info exists cost_center_id]} { set form_mode "edit" }
 
