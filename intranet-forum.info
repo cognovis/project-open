@@ -10,7 +10,7 @@
 
     <version name="3.0.0" url="http://openacs.org/repository/download/apm/intranet-forum-3.0.0.apm">
 
-        <owner url="mailto:fraber@fraber.de">Frank Bergmann</owner>
+        <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <vendor url="http://www.project-open.com/">Project/Open</vendor>
 
         <provides url="intranet-forum" version="3.0.0"/>
@@ -20,6 +20,9 @@
         </callbacks>
         <parameters>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="SubscribeAllMembersToNewItemsP"  default="1" description="SubscribeAllMembersToNewItemsP"/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="ForumItemsPerPage"  default="10" description="Number of forum items by default"/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="ForumItemsPerHomePage"  default="10" description="Number of forum items at the home page"/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="ForumItemsPerForumPage"  default="50" description="Number of forum items at the forum index page"/>
         </parameters>
 
     </version>

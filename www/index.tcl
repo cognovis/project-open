@@ -142,7 +142,7 @@ set restrict_to_new_topics 0
 set forum_content [im_forum_component \
 	-user_id		$user_id \
 	-forum_object_id	$forum_object_id \
-	-forum_type		home \
+	-forum_type		"forum" \
 	-current_page_url	$current_url \
 	-return_url		$return_url \
 	-start_idx		$forum_start_idx \
