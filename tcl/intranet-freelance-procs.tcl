@@ -486,14 +486,16 @@ $languages_butons_html
 # Freelance Member Select Component
 # ---------------------------------------------------------------
 
-ad_proc im_freelance_member_select_component { group_id role_options return_url } {
+ad_proc im_freelance_member_select_component { object_id return_url } {
     Component that returns a formatted HTML table that allows 
     to select freelancers according to the characteristics of
     the current project.
 } {
-
     # ToDo: "Virtualize" this procedure by adapting the SQL statement to the
     # number of "hard conditions" specified in "hard_conditions_list"
+
+    # Full Member as default:
+    set default_role_id 1300
     
     set count 0
     set hard_conditions_list [list "Source Language" "Target Language" "Subjects"]
@@ -548,7 +550,7 @@ from
 	         from	im_projects p,
 			im_target_languages
 		 where 
-			on_what_id=:group_id
+			on_what_id=:object_id
 			and p.project_id=on_what_id
 	        ) p
 	where
@@ -594,7 +596,7 @@ where
 <form method=POST action=/intranet/member-add-2>
 [export_entire_form]
 <input type=hidden name=target value=[im_url_stub]/member-add-2>
-<input type=hidden name=passthrough value='group_id role return_url also_add_to_group_id'>
+<input type=hidden name=passthrough value='object_id role return_url also_add_to_group_id'>
 <table cellpadding=0 cellspacing=2 border=0>
 <tr>
 <td class=rowtitle align=middle colspan=5>Freelance</td>
@@ -603,8 +605,9 @@ $freelance_header_html
 $freelance_body_html
   <tr> 
     <td colspan=5>add as 
-      <select name=role>$role_options</select> <input type=submit value=Add>
-<input type=checkbox name=notify_asignee value=1 checked>Notify<br>
+      [im_biz_object_roles_select role $object_id $default_role_id]
+      <input type=submit value=Add>
+      <input type=checkbox name=notify_asignee value=1 checked>Notify<br>
     </td>
   </tr>
 </table>

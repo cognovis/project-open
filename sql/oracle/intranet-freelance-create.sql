@@ -96,46 +96,46 @@ insert into im_views values (51, 'user_view_freelance', 'view_users', '');
 
 -- Freelance Skill Types
 delete from im_categories where category_id >= 2000 and category_id < 2100;
-INSERT INTO im_categories VALUES (2000,'Source Language','Intranet Translation Language','Intranet Skill Type','category','t');
-INSERT INTO im_categories VALUES (2002,'Target Language','Intranet Translation Language','Intranet Skill Type','category','t');
-INSERT INTO im_categories VALUES (2004,'Sworn Language','Intranet Translation Language','Intranet Skill Type','category','t');
-INSERT INTO im_categories VALUES (2006,'TM Tools','Intranet TM Tool','Intranet Skill Type','category','t');
-INSERT INTO im_categories VALUES (2008,'LOC Tools','Intranet LOC Tool','Intranet Skill Type','category','t');
-INSERT INTO im_categories VALUES (2010,'Operating System','Intranet Operating System','Intranet Skill Type','category','t');
-INSERT INTO im_categories VALUES (2014,'Subjects','Intranet Translation Subject Area','Intranet Skill Type','category','t');
+INSERT INTO im_categories VALUES (2000,'Source Language','Intranet Translation Language','Intranet Skill Type','category','t','f');
+INSERT INTO im_categories VALUES (2002,'Target Language','Intranet Translation Language','Intranet Skill Type','category','t','f');
+INSERT INTO im_categories VALUES (2004,'Sworn Language','Intranet Translation Language','Intranet Skill Type','category','t','f');
+INSERT INTO im_categories VALUES (2006,'TM Tools','Intranet TM Tool','Intranet Skill Type','category','t','f');
+INSERT INTO im_categories VALUES (2008,'LOC Tools','Intranet LOC Tool','Intranet Skill Type','category','t','f');
+INSERT INTO im_categories VALUES (2010,'Operating System','Intranet Operating System','Intranet Skill Type','category','t','f');
+INSERT INTO im_categories VALUES (2014,'Subjects','Intranet Translation Subject Area','Intranet Skill Type','category','t','f');
 
 
 -- Freelance TM Tools
 delete from im_categories where category_id >= 2100 and category_id < 2200;
-INSERT INTO im_categories VALUES (2100,'Trados 3.x','','Intranet TM Tool','category','t');
-INSERT INTO im_categories VALUES (2102,'Trados 5.x','','Intranet TM Tool','category','t');
-INSERT INTO im_categories VALUES (2104,'Trados 5.5','','Intranet TM Tool','category','t');
-INSERT INTO im_categories VALUES (2106,'Trados 6.x','','Intranet TM Tool','category','t');
-INSERT INTO im_categories VALUES (2108,'IBM Translation Workbench','','Intranet TM Tool','category','t');
+INSERT INTO im_categories VALUES (2100,'Trados 3.x','','Intranet TM Tool','category','t','f');
+INSERT INTO im_categories VALUES (2102,'Trados 5.x','','Intranet TM Tool','category','t','f');
+INSERT INTO im_categories VALUES (2104,'Trados 5.5','','Intranet TM Tool','category','t','f');
+INSERT INTO im_categories VALUES (2106,'Trados 6.x','','Intranet TM Tool','category','t','f');
+INSERT INTO im_categories VALUES (2108,'IBM Translation Workbench','','Intranet TM Tool','category','t','f');
 
 
 -- Languages experience
 delete from im_categories where category_id >= 2200 and category_id < 2300;
 INSERT INTO im_categories VALUES (2200, 'Unconfirmed','',
-'Intranet Experience Level','category','t');
+'Intranet Experience Level','category','t','f');
 INSERT INTO im_categories VALUES (2201, 'Low','',
-'Intranet Experience Level','category','t');
+'Intranet Experience Level','category','t','f');
 INSERT INTO im_categories VALUES (2202, 'Medium','',
-'Intranet Experience Level','category','t');
+'Intranet Experience Level','category','t','f');
 INSERT INTO im_categories VALUES (2203, 'High','',
-'Intranet Experience Level','category','t');
+'Intranet Experience Level','category','t','f');
 
 
 -- Freelance LOC Tools
 delete from im_categories where category_id >= 2300 and category_id < 2400;
-INSERT INTO im_categories VALUES (2300,'Pasolo ','','Intranet LOC Tool','category','t');
-INSERT INTO im_categories VALUES (2302,'Catalyst','','Intranet LOC Tool','category','t');
+INSERT INTO im_categories VALUES (2300,'Pasolo ','','Intranet LOC Tool','category','t','f');
+INSERT INTO im_categories VALUES (2302,'Catalyst','','Intranet LOC Tool','category','t','f');
 -- Operating Systems catgory_id (2350 -> 2399)
-INSERT INTO im_categories VALUES (2350,'Windows 98','','Intranet Operating System','category','t');
-INSERT INTO im_categories VALUES (2351,'Windows NT','','Intranet Operating System','category','t');
-INSERT INTO im_categories VALUES (2352,'Windows 2000','','Intranet Operating System','category','t');
-INSERT INTO im_categories VALUES (2353,'Windows XP','','Intranet Operating System','category','t');
-INSERT INTO im_categories VALUES (2354,'Linux','','Intranet Operating System','category','t');
+INSERT INTO im_categories VALUES (2350,'Windows 98','','Intranet Operating System','category','t','f');
+INSERT INTO im_categories VALUES (2351,'Windows NT','','Intranet Operating System','category','t','f');
+INSERT INTO im_categories VALUES (2352,'Windows 2000','','Intranet Operating System','category','t','f');
+INSERT INTO im_categories VALUES (2353,'Windows XP','','Intranet Operating System','category','t','f');
+INSERT INTO im_categories VALUES (2354,'Linux','','Intranet Operating System','category','t','f');
 
 
 
@@ -261,8 +261,7 @@ begin
         sort_order =>   10,
         component_tcl =>
         'im_freelance_member_select_component \
-		$project_id \
-                $role_options \
+		$object_id \
                 $return_url'
     );
 end;
