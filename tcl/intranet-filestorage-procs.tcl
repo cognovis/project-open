@@ -22,11 +22,13 @@ ad_library {
 }
 
 ad_register_proc GET /intranet/download/project/* intranet_project_download
+ad_register_proc GET /intranet/download/project_sales/* intranet_project_sales_download
 ad_register_proc GET /intranet/download/customer/* intranet_customer_download
 ad_register_proc GET /intranet/download/user/* intranet_user_download
 ad_register_proc GET /intranet/download/home/* intranet_home_download
 
 ad_proc intranet_project_download {} { intranet_download "project" }
+ad_proc intranet_project_sales_download {} { intranet_download "project_sales" }
 ad_proc intranet_customer_download {} { intranet_download "customer" }
 ad_proc intranet_user_download {} { intranet_download "user" }
 ad_proc intranet_home_download {} { intranet_download "home" }
