@@ -25,6 +25,7 @@ ad_page_contract {
     include_task:multiple
     company_id:integer
     invoice_currency
+    target_cost_type_id:integer
     { return_url ""}
 }
 
@@ -78,7 +79,9 @@ set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCompanyI
 set due_date [db_string get_due_date "select to_date(to_char(sysdate,'YYYY-MM-DD'),'YYYY-MM-DD') + $payment_days from dual"]
 set provider_id [im_company_internal]
 set customer_id $company_id
-set cost_type_id [im_cost_type_invoice]
+
+set cost_type_id $target_cost_type_id
+
 set cost_status_id [im_cost_status_created]
 set vat 0
 set tax 0
@@ -129,19 +132,25 @@ set invoice_data_html "
           </td>
         </tr>
         <tr> 
+          <td class=rowodd>[_ intranet-trans-invoices.Type]</td>
+          <td class=rowodd>[im_cost_type_select cost_type_id $cost_type_id [im_cost_type_company_doc]]</td>
+        </tr>\n"
+
+if {$cost_type_id == [im_cost_type_invoice]} {
+    append invoice_data_html "
+        <tr> 
           <td class=roweven>[_ intranet-trans-invoices.Payment_terms]</td>
           <td class=roweven> 
             <input type=text name=payment_days size=5 value='$payment_days'>
             days date of invoice</td>
         </tr>
         <tr> 
-          <td class=rowodd>[_ intranet-trans-invoices.Type]</td>
-          <td class=rowodd>[im_cost_type_select cost_type_id $cost_type_id [im_cost_type_company_doc]]</td>
-        </tr>
-        <tr> 
           <td class=rowodd>[_ intranet-trans-invoices.Payment_Method]</td>
           <td class=rowodd>[im_invoice_payment_method_select payment_method_id $payment_method_id]</td>
-        </tr>
+        </tr>\n"
+}
+
+append invoice_data_html "
         <tr> 
           <td class=roweven>[_ intranet-trans-invoices.Invoice_template]:</td>
           <td class=roweven>[im_cost_template_select template_id $template_id]</td>

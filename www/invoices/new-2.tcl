@@ -26,6 +26,7 @@ ad_page_contract {
 } {
     { select_project:multiple }
     invoice_currency
+    target_cost_type_id:integer
     { return_url ""}
 }
 
@@ -196,7 +197,7 @@ set page_body "
 [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
 
 <form action=new-3 method=POST>
-[export_form_vars company_id invoice_currency return_url]
+[export_form_vars company_id invoice_currency target_cost_type_id return_url]
 
   <!-- the list of tasks (invoicable items) -->
   <table cellpadding=2 cellspacing=2 border=0>

@@ -23,12 +23,18 @@ ad_page_contract {
     @param start_idx the starting index for query
     @param how_many how many rows to return
 
+    @param project_id Allows to skip this page if a single project
+           has been select for invoicing. This happens for example,
+           if this screen is called from within a project
+
     @author frank.bergmann@project-open.com
 } {
     { order_by "Client" }
     { include_subprojects_p "f" }
-    { status_id 78 } 
-    { type_id:integer "0" } 
+    { project_status_id "" } 
+    { project_type_id:integer "0" } 
+    { project_id "" }
+    { target_cost_type_id "" }
     { letter:trim "all" }
     { start_idx:integer "1" }
     { how_many "" }
@@ -84,9 +90,18 @@ if {![im_permission $user_id add_invoices]} {
 
 set letter [string toupper $letter]
 
+if {"" == $target_cost_type_id} { 
+    set target_cost_type_id [im_cost_type_invoice] 
+}
+
 # Determine the default status if not set
-if { [empty_string_p $status_id] } {
-    set status_id [im_project_status_delivered]
+if { [empty_string_p $project_status_id] } {
+
+    if {$target_cost_type_id == [im_cost_type_quote]} {
+	set project_status_id [im_project_status_potential]
+    } else {
+	set project_status_id [im_project_status_delivered]
+    }
 }
 
 if { [empty_string_p $how_many] || $how_many < 1 } {
@@ -152,18 +167,45 @@ set project_types [linsert $project_types 0 0 All]
 # ---------------------------------------------------------------
 
 set criteria [list]
-if { ![empty_string_p $status_id] && $status_id > 0 } {
-    lappend criteria "p.project_status_id=:status_id"
+if { ![empty_string_p $project_status_id] && $project_status_id > 0 } {
+    lappend criteria "p.project_status_id in (
+	select :project_status_id from dual
+	UNION
+	select child_id
+	from im_category_hierarchy
+	where parent_id = :project_status_id
+    )"
 }
-if { ![empty_string_p $type_id] && $type_id != 0 } {
-    lappend criteria "p.project_type_id=:type_id"
+if { ![empty_string_p $project_type_id] && $project_type_id != 0 } {
+    # Select the specified project type and its subtypes
+    lappend criteria "p.project_type_id in (
+	select :project_type_id from dual
+	UNION
+	select child_id 
+	from im_category_hierarchy
+	where parent_id = :project_type_id
+    )
+"
 }
+
+
 if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string compare $letter "SCROLL"] != 0 } {
     lappend criteria "im_first_letter_default_to_a(p.project_name)=:letter"
 }
 if { $include_subprojects_p == "f" } {
     lappend criteria "p.parent_id is null"
 }
+
+
+# Must be the last criterium, because it overrides (delete!)
+# all the other criteria.
+# That's ok, because the project_id is the most specific
+# criterium
+if { ![empty_string_p $project_id] && $project_id != 0 } {
+    set criteria [list]
+    lappend criteria "p.project_id = :project_id"
+}
+
 
 
 set order_by_clause "order by upper(project_name)"
@@ -267,8 +309,8 @@ set filter_html "
 
 <table><tr>
   <td>
-	<form method=POST action='/intranet/projects/index'>
-	[export_form_vars start_idx order_by how_many view_name include_subprojects_p letter]
+	<form method=POST action='/intranet-trans-invoices/invoices/new'>
+	[export_form_vars start_idx order_by how_many target_cost_type_id view_name include_subprojects_p letter]
 	<table border=0 cellpadding=0 cellspacing=0>
 	<tr> 
 	  <td colspan='2' class=rowtitle align=center>
@@ -277,12 +319,12 @@ set filter_html "
 	</tr>
 	<tr>
 	  <td valign=top>[_ intranet-trans-invoices.Project_Status]:</td>
-	  <td valign=top>[im_select status_id $status_types ""]</td>
+	  <td valign=top>[im_select project_status_id $status_types $project_status_id]</td>
 	</tr>
 	<tr>
 	  <td valign=top>[_ intranet-trans-invoices.Project_Type]:</td>
 	  <td valign=top>
-	    [im_select type_id $project_types ""]
+	    [im_select project_type_id $project_types $project_type_id]
 		  <input type=submit value=Go name=submit>
 	  </td>
 	</tr>
@@ -447,9 +489,10 @@ set submit_button "
 
 set page_body "
 $filter_html
-[im_costs_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list status_id type_id start_idx order_by how_many mine_p view_name letter include_subprojects_p] ""]
+[im_costs_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list project_status_id target_cost_type_id project_type_id start_idx order_by how_many mine_p view_name letter include_subprojects_p] ""]
 
 <form method=POST action='new-2'>
+[export_form_vars target_cost_type_id]
   <table width=100% cellpadding=2 cellspacing=2 border=0>
     $table_header_html
     $table_body_html

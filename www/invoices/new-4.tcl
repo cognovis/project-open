@@ -21,8 +21,8 @@ ad_page_contract {
     invoice_date
     cost_status_id:integer 
     cost_type_id:integer
-    payment_days:integer
-    payment_method_id:integer
+    { payment_days:integer 0 }
+    { payment_method_id:integer "" }
     template_id:integer
     vat:float
     tax:float
@@ -207,12 +207,18 @@ foreach project_id $select_project {
 # Update all invoiced im_trans_tasks
 # ---------------------------------------------------------------
 
-db_dml update_trans_tasks "
-update	im_trans_tasks
-set	invoice_id = :invoice_id
-where	task_id in ([join $im_trans_task ","])
-"
+# only if it's a "real" Invoice - Quotes don't do the job...
+# The reason is that we only want to invoice every trans-task
+# exactly once.
+#
+if {$cost_type_id == [im_cost_type_invoice]} {
 
+    db_dml update_trans_tasks "
+	update	im_trans_tasks
+	set	invoice_id = :invoice_id
+	where	task_id in ([join $im_trans_task ","])
+    "
+}
 
 db_release_unused_handles
 ad_returnredirect "/intranet-invoices/view?invoice_id=$invoice_id"
