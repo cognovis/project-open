@@ -852,7 +852,9 @@ ad_proc -public im_forum_component {
 	}
 	2 {
 	    # Unresolved topics
+	    # folder_id = 1 means deleted
 	    lappend restrictions "(t.topic_status_id != [im_topic_status_id_closed] and
+	    m.folder_id != '1' and
             t.topic_type_id in ([im_topic_type_id_task],[im_topic_type_id_incident]))"
 	}
 	default {
