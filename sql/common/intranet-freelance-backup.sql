@@ -42,8 +42,8 @@
 
 delete from im_view_columns where view_id = 120;
 delete from im_views where view_id = 120;
-insert into im_views (view_id, view_name, view_sql
-) values (120, 'im_freelancers', '
+insert into im_views (view_id, view_name, view_type_id, view_sql
+) values (120, 'im_freelancers', 1410, '
 select
 	f.*,
 	im_email_from_user_id(f.user_id) as user_email,
@@ -94,8 +94,8 @@ commit;
 
 delete from im_view_columns where view_id = 121;
 delete from im_views where view_id = 121;
-insert into im_views (view_id, view_name, view_sql
-) values (121, 'im_freelance_skills', '
+insert into im_views (view_id, view_name, view_type_id, view_sql
+) values (121, 'im_freelance_skills', 1410, '
 select
 	s.*,
 	im_email_from_user_id(s.user_id) as user_email,
