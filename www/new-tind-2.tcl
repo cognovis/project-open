@@ -198,7 +198,7 @@ if {$asignee_id != $old_asignee_id} {
 
     # Always send a mail to a new asignee
     #
-    set msg_url "[ad_parameter SystemUrl]"
+    set msg_url "[ad_parameter -package_id [ad_acs_kernel_id] SystemUrl "" ""]"
     append msg_url "/intranet-forum/view?topic_id=$topic_id"
     set topic_type [db_string topic_type "select category from im_categories where category_id=:topic_type_id"]
     set msg_subject "New $topic_type: $subject"
@@ -237,7 +237,7 @@ where	m.topic_id=:topic_id
 "
     db_foreach update_stakeholders $stakeholder_sql {
 
-        set msg_url "[ad_parameter SystemUrl]"
+        set msg_url "[ad_parameter -package_id [ad_acs_kernel_id] SystemUrl "" ""]"
         append msg_url "/intranet-forum/view?topic_id=$topic_id"
         set topic_type [db_string topic_type "select category from im_categories where category_id=:topic_type_id"]
         set msg_subject "Closed $topic_type: $subject"
@@ -274,7 +274,7 @@ where	m.topic_id=:topic_id
 "
     db_foreach update_stakeholders $stakeholder_sql {
 
-        set msg_url "[ad_parameter SystemUrl]"
+        set msg_url "[ad_parameter -package_id [ad_acs_kernel_id] SystemUrl "" ""]"
         append msg_url "/intranet-forum/view?topic_id=$topic_id"
         set topic_type [db_string topic_type "select category from im_categories where category_id=:topic_type_id"]
         set msg_subject "Accepted $topic_type: $subject"
