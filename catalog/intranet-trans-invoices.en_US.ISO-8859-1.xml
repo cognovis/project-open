@@ -6,6 +6,7 @@
   <msg key="Adress">Adress</msg>
   <msg key="Amount">Amount</msg>
   <msg key="Billable_Units">Billable Units</msg>
+  <msg key="Cell_Phone">Cell Phone</msg>
   <msg key="Client">Client</msg>
   <msg key="Clients">Clients</msg>
   <msg key="Company">Company</msg>
@@ -24,6 +25,7 @@
   <msg key="Filter_Projects">Filter Projects</msg>
   <msg key="Finance">Finance</msg>
   <msg key="Go">Go</msg>
+  <msg key="Home_Phone">Home Phone</msg>
   <msg key="Include_in_Invoice">Include in Invoice</msg>
   <msg key="Invoice_Currency">Invoice Currency</msg>
   <msg key="Invoice_Data">Invoice Data</msg>
@@ -61,6 +63,8 @@
   <msg key="lt_You_have_insufficient_1">You have insufficient privileges to use this page</msg>
   <msg key="lt_You_have_selected_mul">You have selected multiple clients</msg>
   <msg key="lt_You_have_selected_mul_1">You have selected multiple clients.</msg>
+  <msg key="MSM">MSM</msg>
+  <msg key="Name">Name</msg>
   <msg key="New_cost_type">New %cost_type%</msg>
   <msg key="New_Invoice">New Invoice</msg>
   <msg key="New_Price">New Price</msg>
@@ -86,6 +90,8 @@
   <msg key="Purchase_Orders">Purchase Orders</msg>
   <msg key="Rate">Rate</msg>
   <msg key="Recipient">Recipient</msg>
+  <msg key="Recr_Status">Recr Status</msg>
+  <msg key="Recr_Test">Recr Test</msg>
   <msg key="Reference_Prices">Reference Prices</msg>
   <msg key="Rep">Rep</msg>
   <msg key="Save">Save</msg>
@@ -114,6 +120,7 @@
   <msg key="Valid_From">Valid From</msg>
   <msg key="Valid_Through">Valid Through</msg>
   <msg key="VAT">VAT</msg>
+  <msg key="Work_Phone">Work Phone</msg>
   <msg key="XTr">XTr</msg>
   <msg key="Yes">Yes</msg>
   <msg key="Zip">Zip</msg>
