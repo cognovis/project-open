@@ -17,6 +17,10 @@ ad_proc im_trans_price_component { user_id customer_id return_url} {
     Returns a formatted HTML table representing the 
     prices for the current customer
 } {
+
+    set bgcolor(0) " class=roweven "
+    set bgcolor(1) " class=rowodd "
+
     set price_list_html "
 <table border=0>
 <tr><td colspan=6 class=rowtitle align=center>Price List</td></tr>
@@ -75,7 +79,7 @@ order by
     append price_list_html "
 </table>
 <ul><li>
-  <a href=upload-prices?[export_url_vars customer_id return_url]>Upload Prices</A>
+  <a href=/intranet-trans-invoices/upload-prices?[export_url_vars customer_id return_url]>Upload Prices</A>
 </ul>\n"
     return $price_list_html
 }
