@@ -1,4 +1,4 @@
--- /packages/intranet-cost/sql/postgresql/intranet-cost-drop.sql
+-- /packages/intranet-cost/sql/oracle/intranet-cost-drop.sql
 --
 -- Project/Open Cost Core
 -- 040207 fraber@fraber.de
@@ -8,14 +8,14 @@
 -- All rights including reserved. To inquire license terms please 
 -- refer to http://www.project-open.com/modules/<module-key>
 
--- BEGIN
-    select im_menu__del_module('intranet-cost');
-    select im_component_plugin__del_module('intranet-cost');
--- END;
+BEGIN
+    im_menu.del_module(module_name => 'intranet-cost');
+    im_component_plugin.del_module(module_name => 'intranet-cost');
+END;
+/
+show errors
 
--- show errors
-
--- commit;
+commit;
 
 
 delete from im_view_columns where view_id >= 220 and view_id <= 229;
@@ -39,36 +39,18 @@ delete from im_view_columns where view_id in (220, 221);
 delete from im_views where view_id in (220, 221);
 
 
--- before remove priviliges remove granted permissions
-create or replace function inline_revoke_permission (varchar)
-returns integer as '
-DECLARE
-        p_priv_name     alias for $1;
-BEGIN
-     lock table acs_permissions_lock;
-
-     delete from acs_permissions
-     where privilege = p_priv_name;
-
-     return 0;
-
-end;' language 'plpgsql';
-
-
--- begin
-   select inline_revoke_permission ('view_costs');
-   select acs_privilege__drop_privilege ('view_costs');
-   select inline_revoke_permission ('add_costs');
-   select acs_privilege__drop_privilege ('add_costs');
--- end;
+begin
+    acs_privilege.drop_privilege('view_costs');
+    acs_privilege.drop_privilege('add_costs');
+end;
+/
 
 delete from im_biz_object_urls where object_type='im_cost';
 
--- drop package im_cost;
+drop package im_cost;
 
 drop view im_cost_status;
 drop view im_cost_type;
--- copy in oracle
 delete from im_category_hierarchy where (parent_id >= 3700 and parent_id < 3799) or (child_id >= 3700 and child_id < 3799);
 delete from im_categories where category_id >= 3700 and category_id < 3799;
 delete from im_category_hierarchy where (parent_id >= 3800 and parent_id < 3899) or (child_id >= 3800 and child_id < 3899);
@@ -85,22 +67,22 @@ delete from im_category_hierarchy where (parent_id >= 3400 and parent_id < 3500)
 delete from im_categories where category_id >= 3400 and category_id < 3500;
 
 delete from im_biz_object_urls where object_type='im_investment';
-select acs_object_type__drop_type('im_investment', 'f');
-
+begin
+	acs_object_type.drop_type('im_investment', 'f');
+end;
 drop table im_investments;
 
--- begin
-delete from im_biz_object_urls where object_type = 'im_cost_center';
-select acs_object_type__drop_type('im_cost_center', 'f');
--- end;
-
+begin
+    acs_object_type.drop_type(object_type => 'im_cost_center');
+end;
+/
 
 -------------------------------------------------------------
 -- Repeating Costs
-delete from im_category_hierarchy where parent_id in 
-       (select category_id from im_categories where category_type = 'Intranet Investment Type') 
-or child_id in 
-	(select category_id from im_categories where category_type = 'Intranet Investment Type');
+delete from im_category_hierarchy where parent_id in
+       (select category_id from im_categories where category_type = 'Intranet Investment Type')
+or child_id in
+        (select category_id from im_categories where category_type = 'Intranet Investment Type');
 delete from im_categories where category_type = 'Intranet Investment Type';
 delete from im_category_hierarchy where parent_id in
        (select category_id from im_categories where category_type = 'Intranet Investment Status')
@@ -109,8 +91,9 @@ or child_id in
 delete from im_categories where category_type = 'Intranet Investment Status';
 
 delete from im_biz_object_urls where object_type='im_cost';
-select acs_object_type__drop_type('im_cost', 'f');
-
+begin
+	acs_object_type.drop_type('im_cost', 'f');
+end; 
 drop table im_prices;
 
 drop table im_repeating_costs;
@@ -130,7 +113,7 @@ delete from im_categories where category_id >= 3100 and category_id < 3200;
 delete from im_biz_object_urls where object_type='im_cost_center';
 
 drop table im_cost_centers;
--- drop package im_cost_center;
+drop package im_cost_center;
 delete from im_category_hierarchy where parent_id in
        (select category_id from im_categories where category_type = 'Intranet Cost Center Type')
 or child_id in
@@ -142,6 +125,7 @@ or child_id in
         (select category_id from im_categories where category_type = 'Intranet Cost Center Status');
 delete from im_categories where category_type = 'Intranet Cost Center Status';
 
--- begin
-select acs_object_type__drop_type('im_cost_center','f');
--- end;
+begin
+    acs_object_type.drop_type(object_type => 'im_cost_center');
+end;
+/

@@ -33,7 +33,9 @@ ad_proc -public im_cost_type_bill {} { return 3704 }
 ad_proc -public im_cost_type_po {} { return 3706 }
 ad_proc -public im_cost_type_company_doc {} { return 3708 }
 ad_proc -public im_cost_type_provider_doc {} { return 3710 }
-
+ad_proc -public im_cost_type_provider_travel {} { return 3712 }
+ad_proc -public im_cost_type_employee {} { return 3714 }
+ad_proc -public im_cost_type_repeating {} { return 3716 }
 
 # Payment Methods
 ad_proc -public im_payment_method_undefined {} { return 800 }
@@ -53,6 +55,75 @@ ad_proc -private im_package_cost_id_helper {} {
 }
 
 
+# ---------------------------------------------------------------
+# Cost Item Creation
+# ---------------------------------------------------------------
+
+namespace eval im_cost {
+
+    ad_proc -public new { 
+	{-cost_id 0}
+	{-cost_status_id 0}
+	{-customer_id 0}
+	{-provider_id 0}
+	-cost_name
+	-cost_type_id
+    } {
+	Create a new cost item and return its ID.
+	The cost item is created with the minimum number
+	of parameters necessary for creation (not null).
+	We asume that an UPDATE is executed afterwards
+	in order to fill in more details.
+    } {
+	if {0 == $customer_id} { set customer_id [im_customer_internal] }
+	if {0 == $provider_id} { set provider_id [im_customer_internal] }
+	if {0 == $cost_id} { set cost_id [db_nextval acs_object_id_seq]}
+	if {0 == $cost_status_id} { set cost_status_id [im_cost_status_created]}
+
+	set user_id [ad_get_user_id]
+	set creation_ip [ad_conn peeraddr]
+	set object_type "im_cost"
+	set today [db_string today "select sysdate from dual"]
+	if [catch {
+	    db_dml insert_costs "
+		insert into acs_objects	(
+			object_id, object_type, context_id,
+			creation_date, creation_user, creation_ip
+		) values (
+			:cost_id, :object_type, null,
+			:today, :user_id, :creation_ip
+	    )" 
+	} errmsg] {
+	    ad_return_complaint 1 "<li>Error saving employee cost information:<br>
+            <pre>$errmsg</pre>"
+	    return
+	}
+
+	if [catch {
+	    db_dml insert_costs "
+	insert into im_costs (
+		cost_id,
+		cost_name,
+		customer_id,
+		provider_id,
+		cost_type_id,
+		cost_status_id
+	) values (
+		:cost_id,
+		:cost_name,
+		:customer_id,
+		:provider_id,
+		:cost_type_id,
+		:cost_status_id
+	)" } errmsg] {
+	    ad_return_complaint 1 "<li>Error saving employee cost information:<br>
+            <pre>$errmsg</pre>"
+	    return
+	}
+	return $cost_id
+    }
+    
+}
 
 
 # ---------------------------------------------------------------
@@ -571,7 +642,26 @@ ad_proc -public im_cost_status_select { select_name { default "" } } {
     Returns an html select box named $select_name and defaulted to
     $default with a list of all the cost status_types in the system
 } {
-    return [im_category_select "Intranet Cost Status" $select_name $default]
+    set include_empty 0
+    set options [util_memoize "im_cost_status_options $include_empty"]
+
+    set result "\n<select name=\"$select_name\">\n"
+    if {[string equal $default ""]} {
+	append result "<option value=\"\"> -- Please select -- </option>"
+    }
+
+    foreach option $options {
+	set selected ""
+	if { [string equal $default [lindex $option 1]]} {
+	    set selected " selected"
+	}
+	append result "\t<option value=\"[util_quote_double_quotes [lindex $option 1]]\" $selected>"
+	append result "[lindex $option 0]</option>\n"
+
+    }
+
+    append result "\n</select>\n"
+    return $result
 }
 
 

@@ -224,7 +224,7 @@ set sql "
 select
         c.*,
 	c.amount as amount_formatted,
-	(c.effective_date + c.payment_days) as due_date_calculated,
+	(to_date(to_char(c.effective_date,'YYYY-MM-DD'),'YYYY-MM-DD') + c.payment_days) as due_date_calculated,
 	o.object_type,
 	url.url as cost_url,
 	ot.pretty_name as object_type_pretty_name,
@@ -247,11 +247,11 @@ from
 	(select * from im_biz_object_urls where url_type=:view_mode) url
 	$extra_from
 where
-        c.company_id=cust.company_id(+)
-        and c.provider_id=prov.company_id(+)
+        c.company_id=cust.company_id
+        and c.provider_id=prov.company_id
 	and c.project_id=proj.project_id(+)
 	and c.cost_id = o.object_id
-	and o.object_type = url.object_type(+)
+	and o.object_type = url.object_type
 	and o.object_type = ot.object_type
 	$company_where
         $where_clause
@@ -273,7 +273,10 @@ if {[string equal $letter "ALL"]} {
     set how_many -1
     set selection "$sql"
 } else {
-
+    ###########
+    # todo: PAGINATION
+    #       this part is not executed
+    ###########
     set limited_query [im_select_row_range $sql $start_idx $end_idx]
     # We can't get around counting in advance if we want to be able to 
     # sort inside the table on the page for only those users in the 
@@ -327,7 +330,7 @@ set filter_html "
 <tr valign=top>
   <td valign=top>
 
-	<form method=get action='/intranet-cost/costs/list'>
+	<form method=get action='/intranet-cost/costs/cost-action'>
 	[export_form_vars start_idx order_by how_many view_name include_subcosts_p letter]
 	<table border=0 cellpadding=1 cellspacing=1>
 	  <tr> 
@@ -418,7 +421,7 @@ set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
 set ctr 0
 set idx $start_idx
-db_foreach costs_info_query $selection {
+db_foreach costs_info_query {} {
     set url [im_maybe_prepend_http $url]
     if { [empty_string_p $url] } {
 	set url_string "&nbsp;"

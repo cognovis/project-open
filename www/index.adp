@@ -3,7 +3,7 @@
 <property name="main_navbar_label">finance</property>
 
 <br>
-<%= [im_costs_navbar "none" "/intranet/invoices/index" "" "" [list] "invoices_home"] %>
+<%= [im_costs_navbar "none" "/intranet/invoices/index" "" "" [list] "costs_home"] %>
 
 <table cellpadding=0 cellspacing=0 border=0 width=100%>
 <tr>

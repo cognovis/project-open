@@ -428,54 +428,6 @@ end;
 show errors
 
 
-
--------------------------------------------------------------
--- Repeating Costs
---
--- These items generate a new cost every month that they
--- are active.
--- This item is used for diverse types of repeating costs
--- such as employees salaries, rent and utilities costs and
--- investment amortization, so it is kind of "aggregated"
--- to those objects.
-
-prompt *** intranet-costs: Creating im_repeating_costs
-create table im_repeating_costs (
-	cost_id			integer
-				constraint im_rep_costs_id_pk
-				primary key
-				constraint im_rep_costs_id_fk
-				references acs_objects,
-	cost_name		varchar(400),
-				-- who pays?
-	company_id		integer
-				constraint im_rep_costs_company_fk
-				references acs_objects,
-				-- who gets paid?
-	provider_id		integer
-				constraint im_rep_costs_provider_fk
-				references acs_objects,
-	cost_center_id		integer not null
-				constraint im_rep_costs_centers_fk
-				references im_cost_centers,
-	start_date		date 
-				constraint im_rep_costs_start_date_nn
-				not null,
-	end_date		date default '2099-12-31'
-				constraint im_rep_costs_end_date_nn
-				not null,
-	amount			number(12,3),
-	currency		char(3)
-				constraint im_rep_costs_currency_fk
-				references currency_codes,
-	description		varchar(4000),
-	note			varchar(4000),
-		constraint im_rep_costs_start_end_date
-		check(start_date < end_date)
-);
-
-
-
 -------------------------------------------------------------
 -- Price List
 --
@@ -512,91 +464,6 @@ create table im_prices (
 alter table im_prices
 add constraint im_prices_start_end_ck
 check(start_date < end_date);
-
-
-
--------------------------------------------------------------
--- "Investments"
---
--- Investments are purchases of larger "investment items"
--- that are not treated as a cost item immediately.
--- Instead, investments are "amortized" over time
--- (monthly, quarterly or yearly) until their non-amortized
--- valeu is zero. A new cost item cost items is generated for 
--- every amortization interval.
---
--- The amortized amount of costs is calculated by summing up
--- all im_costs with the specific investment_id
---
-
-prompt *** intranet-costs: Creating im_investments
-create table im_investments (
-	investment_id		integer
-				constraint im_investments_pk
-				primary key
-				constraint im_investments_fk
-				references im_repeating_costs,
-	name			varchar(400),
-	investment_status_id	integer
-				constraint im_investments_status_fk
-				references im_categories,
-	investment_type_id	integer
-				constraint im_investments_type_fk
-				references im_categories
-);
-
-
-
-prompt *** intranet-costs: Creating im_cost packages
-begin
-    acs_object_type.create_type (
-        supertype =>            'acs_object',
-        object_type =>          'im_investment',
-        pretty_name =>          'Investment',
-        pretty_plural =>        'Investments',
-        table_name =>           'im_investments',
-        id_column =>            'investment_id',
-        package_name =>         'im_investment',
-        type_extension_table => null,
-        name_method =>          'im_investment.name'
-    );
-end;
-/
-show errors
-
-
-prompt *** intranet-costs: Creating URLs for viewing/editing investments
-delete from im_biz_object_urls where object_type='im_investment';
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_investment','view','/intranet-cost/investments/new?form_mode=display\&investment_id=');
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_investment','edit','/intranet-cost/investments/new?form_mode=edit\&investment_id=');
-
-
-prompt *** intranet-costs: Creating Investment categories
--- Intranet Investment Type
-delete from im_categories where category_id >= 3400 and category_id < 3500;
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3401,'Other','Intranet Investment Type');
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3403,'Computer Hardware','Intranet Investment Type');
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3405,'Computer Software','Intranet Investment Type');
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3407,'Office Furniture','Intranet Investment Type');
-commit;
--- reserved until 3499
-
--- Intranet Investment Status
-delete from im_categories where category_id >= 3500 and category_id < 3599;
-INSERT INTO im_categories (category_id, category, category_type, category_description) 
-VALUES (3501,'Active','Intranet Investment Status','Currently being amortized');
-INSERT INTO im_categories (category_id, category, category_type, category_description) 
-VALUES (3503,'Deleted','Intranet Investment Status','Deleted - was an error');
-INSERT INTO im_categories (category_id, category, category_type, category_description) 
-VALUES (3505,'Amortized','Intranet Investment Status','No remaining book value');
-commit;
--- reserved until 3599
 
 
 -------------------------------------------------------------
@@ -641,7 +508,9 @@ prompt *** intranet-costs: Creating im_costs
 create table im_costs (
 	cost_id			integer
 				constraint im_costs_pk
-				primary key,
+				primary key
+				constraint im_costs_cost_fk
+                                references acs_objects,
 	-- force a name because we may want to use object.name()
 	-- later to list cost
 	cost_name		varchar(400)
@@ -667,7 +536,7 @@ create table im_costs (
 				references acs_objects,
 	investment_id		integer
 				constraint im_costs_inv_fk
-				references im_investments,
+				references acs_objects,
 	cost_status_id		integer
 				constraint im_costs_status_nn
 				not null
@@ -735,6 +604,8 @@ create table im_costs (
 	description		varchar(4000),
 	note			varchar(4000)
 );
+create index im_costs_cause_object_idx on im_costs(cause_object_id);
+create index im_costs_start_block_idx on im_costs(start_block);
 
 
 -------------------------------------------------------------
@@ -899,6 +770,14 @@ end im_cost;
 show errors
 
 
+create or replace procedure im_cost_del (
+	p_cost_id integer
+) as
+begin
+    im_cost.del(p_cost_id);
+end;
+/
+show errors;
 
 -- Create URLs for viewing/editing costs
 delete from im_biz_object_urls where object_type='im_cost';
@@ -906,6 +785,153 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_cost','view','/intranet-cost/costs/new?form_mode=display\&cost_id=');
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_cost','edit','/intranet-cost/costs/new?form_mode=edit\&cost_id=');
+
+
+-------------------------------------------------------------
+-- Repeating Costs
+--
+-- These items generate a new cost every month that they
+-- are active.
+-- This item is used for diverse types of repeating costs
+-- such as employees salaries, rent and utilities costs and
+-- investment amortization, so it is kind of "aggregated"
+-- to those objects.
+--
+-- Repeating Costs are a subtype of im_costs. However, we 
+-- have to add the constraint later because im_costs 
+-- depend on im_investment and im_investment depends on 
+-- repeating_costs.
+--
+-- im_costs.cause_object_id contains the reference to the
+-- business object that causes the repetitive cost.
+
+prompt *** intranet-costs: Creating im_cost_center
+begin
+    acs_object_type.create_type (
+        supertype =>            'im_cost',
+        object_type =>          'im_repeating_cost',
+        pretty_name =>          'Repeating Cost',
+        pretty_plural =>        'Repeating Cost',
+        table_name =>           'im_repeating_costs',
+        id_column =>            'cost_id',
+        package_name =>         'im_repeating_cost',
+        type_extension_table => null,
+        name_method =>          'im_repeating_cost.name'
+    );
+end;
+/
+show errors
+
+prompt *** intranet-costs: Creating im_repeating_costs
+create table im_repeating_costs (
+	rep_cost_id		integer
+				constraint im_rep_costs_id_pk
+				primary key
+				constraint im_rep_costs_id_fk
+				references im_costs,
+	start_date		date 
+				constraint im_rep_costs_start_date_nn
+				not null,
+	end_date		date default '2099-12-31'
+				constraint im_rep_costs_end_date_nn
+				not null,
+		constraint im_rep_costs_start_end_date
+		check(start_date <= end_date)
+);
+
+-------------------------------------------------------------
+-- "Investments"
+--
+-- Investments are purchases of larger "investment items"
+-- that are not treated as a cost item immediately.
+-- Instead, investments are "amortized" over time
+-- (monthly, quarterly or yearly) until their non-amortized
+-- valeu is zero. A new cost item cost items is generated for 
+-- every amortization interval.
+--
+-- The amortized amount of costs is calculated by summing up
+-- all im_costs with the specific investment_id
+--
+
+prompt *** intranet-costs: Creating im_investments
+create table im_investments (
+	investment_id		integer
+				constraint im_investments_pk
+				primary key
+				constraint im_investments_fk
+				references im_repeating_costs,
+	name			varchar(400),
+	investment_status_id	integer
+				constraint im_investments_status_fk
+				references im_categories,
+	investment_type_id	integer
+				constraint im_investments_type_fk
+				references im_categories
+);
+
+
+
+prompt *** intranet-costs: Creating im_cost packages
+begin
+    acs_object_type.create_type (
+        supertype =>            'im_repeating_cost',
+        object_type =>          'im_investment',
+        pretty_name =>          'Investment',
+        pretty_plural =>        'Investments',
+        table_name =>           'im_investments',
+        id_column =>            'investment_id',
+        package_name =>         'im_investment',
+        type_extension_table => null,
+        name_method =>          'im_investment.name'
+    );
+end;
+/
+show errors
+
+
+prompt *** intranet-costs: Creating URLs for viewing/editing investments
+delete from im_biz_object_urls where object_type='im_investment';
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_investment','view','/intranet-cost/investments/new?form_mode=display\&investment_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_investment','edit','/intranet-cost/investments/new?form_mode=edit\&investment_id=');
+
+
+prompt *** intranet-costs: Creating Investment categories
+-- Intranet Investment Type
+delete from im_categories where category_id >= 3400 and category_id < 3500;
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3401,'Other','Intranet Investment Type');
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3403,'Computer Hardware','Intranet Investment Type');
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3405,'Computer Software','Intranet Investment Type');
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3407,'Office Furniture','Intranet Investment Type');
+commit;
+-- reserved until 3499
+
+-- Intranet Investment Status
+delete from im_categories where category_id >= 3500 and category_id < 3599;
+INSERT INTO im_categories (category_id, category, category_type, category_description) 
+VALUES (3501,'Active','Intranet Investment Status','Currently being amortized');
+INSERT INTO im_categories (category_id, category, category_type, category_description) 
+VALUES (3503,'Deleted','Intranet Investment Status','Deleted - was an error');
+INSERT INTO im_categories (category_id, category, category_type, category_description) 
+VALUES (3505,'Amortized','Intranet Investment Status','No remaining book value');
+commit;
+-- reserved until 3599
+
+
+
+
+
+
+
+
+
+
+
 
 
 -- Cost Templates
@@ -933,6 +959,11 @@ INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3710,'Provider Documents','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3712,'Travel Cost','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3714,'Employee Salary','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3716,'Repeating Cost','Intranet Cost Type');
+
 commit;
 -- reserved until 3799
 
@@ -1150,6 +1181,51 @@ end;
 commit;
 
 
+
+-- Repeating Costs Menu
+declare
+        -- Menu IDs
+        v_menu          	integer;
+        v_finance_menu          integer;
+
+        -- Groups
+        v_employees             integer;
+        v_accounting            integer;
+        v_senman                integer;
+        v_customers             integer;
+        v_freelancers           integer;
+        v_proman                integer;
+        v_admins                integer;
+begin
+    select group_id into v_admins from groups where group_name = 'P/O Admins';
+    select group_id into v_senman from groups where group_name = 'Senior Managers';
+    select group_id into v_accounting from groups where group_name = 'Accounting';
+    select group_id into v_customers from groups where group_name = 'Customers';
+    select group_id into v_freelancers from groups where group_name = 'Freelancers';
+
+    select menu_id 
+    into v_finance_menu
+    from im_menus
+    where label='finance';
+
+    v_menu := im_menu.new (
+        package_name => 'intranet-cost',
+        label =>        'costs_rep',
+        name =>         'Repeating Costs',
+        url =>          '/intranet-cost/rep-costs/',
+        sort_order =>   90,
+        parent_menu_id => v_finance_menu
+    );
+
+    acs_permission.grant_permission(v_menu, v_admins, 'read');
+    acs_permission.grant_permission(v_menu, v_senman, 'read');
+    acs_permission.grant_permission(v_menu, v_accounting, 'read');
+    acs_permission.grant_permission(v_menu, v_customers, 'read');
+    acs_permission.grant_permission(v_menu, v_freelancers, 'read');
+end;
+/
+
+
 -------------------------------------------------------------
 -- Cost Views
 --
@@ -1180,6 +1256,9 @@ insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22011,220,'Client',
 '"<A HREF=/intranet/companies/view?company_id=$company_id>$company_name</A>"',11);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (22013,220,'Start Block',
+'$start_block',13);
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22015,220,'Due Date',
 '[if {$overdue > 0} {
 	set t "<font color=red>$due_date_calculated</font>"
@@ -1191,7 +1270,7 @@ insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22021,220,'Amount','"$amount_formatted $currency"',21);
 
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22013,220,'Paid', '"$paid_amount $paid_currency"',23);
+sort_order) values (22023,220,'Paid', '"$paid_amount $paid_currency"',23);
 
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22025,220,'Status',
