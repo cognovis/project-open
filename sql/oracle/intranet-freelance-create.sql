@@ -215,7 +215,7 @@ begin
 
         package_name => 'intranet-freelance',
         page_url =>     '/intranet/users/view',
-        bay_name =>     'bottom',
+        location =>     'bottom',
         sort_order =>   10,
         component_tcl =>
 
