@@ -50,24 +50,32 @@ where
 	and p.customer_id=c.customer_id(+)
 order by
 	currency,
-	target_language_id,
-	source_language_id,
-	task_type_id,
-	uom_id"
+	uom_id,
+	target_language_id desc,
+	task_type_id desc,
+	source_language_id desc
+"
 
     set price_rows_html ""
     set ctr 1
+    set old_currency ""
     db_foreach prices $price_sql {
+
+	if {"" != $old_currency && ![string equal $old_currency $currency]} {
+	    append price_rows_html "<tr><td colspan=99>&nbsp;</td></tr>\n"
+	}
+
 	append price_rows_html "
         <tr $bgcolor([expr $ctr % 2]) nobreak>
 	  <td>$uom</td>
 	  <td>$task_type</td>
-          <td>$target_language</td>
 	  <td>$source_language</td>
+          <td>$target_language</td>
 	  <td>$subject_area</td>
           <td>$price $currency</td>
 	</tr>"
 	incr ctr
+	set old_currency $currency
     }
 
     if {$price_rows_html != ""} {
@@ -78,8 +86,16 @@ order by
 
     append price_list_html "
 </table>
-<ul><li>
-  <a href=/intranet-trans-invoices/upload-prices?[export_url_vars customer_id return_url]>Upload Prices</A>
+<ul>
+  <li>
+    <a href=/intranet-trans-invoices/upload-prices?[export_url_vars customer_id return_url]>
+      Upload prices</A>
+    for this customer via a CSV file.
+  <li>
+    Check this 
+    <a href=/intranet-trans-invoices/pricelist_sample.csv>
+      sample pricelist CSV file</A>.
+    It contains some comments inside.
 </ul>\n"
     return $price_list_html
 }
