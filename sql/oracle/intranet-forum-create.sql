@@ -36,7 +36,6 @@ create table im_forum_topics (
 			  references im_forum_topics,
 	tree_sortkey      raw(240),
 	max_child_sortkey raw(100),	
-
 	topic_type_id	integer not null
 			constraint im_forum_topics_type_fk
 			references im_categories,
@@ -59,7 +58,6 @@ create table im_forum_topics (
 	asignee_id	integer
 			constraint im_forum_topics_asignee_fk
 			references users,
-
 	constraint im_forums_topic_sk_forum_un
 	unique (tree_sortkey, topic_id)
 );
@@ -77,42 +75,68 @@ begin
 
     if :new.parent_id is null
     then
-
-        select '', max_child_sortkey
-        into v_parent_sortkey, v_max_child_sortkey
-        from im_forum_topics
-        where parent_id is null
-        for update of max_child_sortkey;
-
-        v_max_child_sortkey := tree.increment_key(v_max_child_sortkey);
-
-        update im_forum_topics
-        set max_child_sortkey = v_max_child_sortkey
-        where topic_id is null;
+        :new.tree_sortkey := lpad(tree.int_to_hex(:new.topic_id + 1000), 6, '0');
 
     else
 
-        select nvl(tree_sortkey, ''), max_child_sortkey
+        select tree_sortkey, tree.increment_key(max_child_sortkey)
         into v_parent_sortkey, v_max_child_sortkey
         from im_forum_topics
         where topic_id = :new.parent_id
         for update of max_child_sortkey;
 
-        v_max_child_sortkey := tree.increment_key(v_max_child_sortkey);
-
         update im_forum_topics
         set max_child_sortkey = v_max_child_sortkey
         where topic_id = :new.parent_id;
-
+	
+	:new.tree_sortkey := v_parent_sortkey || v_max_child_sortkey;
     end if;
 
-    :new.tree_sortkey := v_parent_sortkey || v_max_child_sortkey;
-
+    :new.max_child_sortkey := null;
 end im_forum_topic_insert_tr;
 /
 show errors
 
 
+create or replace trigger im_forum_topics_update_tr
+before update on im_forum_topics
+for each row
+declare
+        v_parent_sk             im_forum_topics.tree_sortkey%TYPE;
+        v_max_child_sortkey     im_forum_topics.max_child_sortkey%TYPE;
+        v_old_parent_length     integer;
+begin
+        if :new.topic_id != :old.topic_id
+           or ( (:new.parent_id != :old.parent_id)
+                and
+                (:new.parent_id is not null or :old.parent_id is not null) ) then
+           -- the tree sortkey is going to change so get the new one and update it and all its
+           -- children to have the new prefix...
+           v_old_parent_length := length(:new.tree_sortkey) + 1;
+
+           if :new.parent_id is null then
+                v_parent_sk := lpad(tree.int_to_hex(:new.topic_id + 1000), 6, '0');
+           else
+                SELECT tree_sortkey, tree.increment_key(max_child_sortkey)
+                INTO v_parent_sk, v_max_child_sortkey
+                FROM im_forum_topics
+                WHERE topic_id = :new.parent_id
+                FOR UPDATE;
+
+                UPDATE im_forum_topics
+                SET max_child_sortkey = v_max_child_sortkey
+                WHERE topic_id = :new.parent_id;
+
+                v_parent_sk := v_parent_sk || v_max_child_sortkey;
+           end if;
+
+           UPDATE im_forum_topics
+           SET tree_sortkey = v_parent_sk || substr(tree_sortkey, v_old_parent_length)
+           WHERE tree_sortkey between :new.tree_sortkey and tree.right(:new.tree_sortkey);
+        end if;
+end im_forum_topics_update_tr;
+/
+show errors
 
 -- A function that decides whether a specific user can see a
 -- forum item or not. Take into account permformance because
@@ -325,7 +349,7 @@ BEGIN
 END;
 /
 BEGIN
-    im_priv_create('add_topic_pm',        'Companies');
+    im_priv_create('add_topic_pm',        'Customers');
 END;
 /
 BEGIN
@@ -541,7 +565,7 @@ begin
     select group_id into v_proman from groups where group_name = 'Project Managers';
     select group_id into v_accounting from groups where group_name = 'Accounting';
     select group_id into v_employees from groups where group_name = 'Employees';
-    select group_id into v_companies from groups where group_name = 'Companies';
+    select group_id into v_companies from groups where group_name = 'Customers';
     select group_id into v_freelancers from groups where group_name = 'Freelancers';
 
     select menu_id
