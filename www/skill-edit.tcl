@@ -145,7 +145,7 @@ db_foreach column_list $sql {
 
     append skill_table "
 	  <td>
-<input type=checkbox name=skill_deleted.$skill_id value=$skill_id>
+<input type=checkbox name=\"skill_deleted.$skill_id\" value=\"$skill_id\">
 	  </td>
 	</tr>"
     incr ctr
