@@ -197,6 +197,31 @@ END;
 /
 commit;
 
+
+
+-- Show the translation specific fields in the ProjectViewPage
+--
+declare
+    v_plugin            integer;
+begin
+    v_plugin := im_component_plugin.new (
+        plugin_name =>  'Customer Translation Prices',
+        package_name => 'intranet-trans-invoices',
+        page_url =>     '/intranet/customers/view',
+        location =>     'left',
+        sort_order =>   100,
+        component_tcl =>
+        'im_trans_price_component \
+                $user_id \
+                $customer_id \
+                $return_url'
+    );
+end;
+/
+
+
+
+
 -- Add a "Translation Invoice" into the Invoice Menu
 --
 declare
