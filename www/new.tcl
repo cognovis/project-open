@@ -90,7 +90,7 @@ set rep_cost_id [db_string rep_costs_exist "
 
 if {!$rep_cost_id} {
     if [catch {
-	set rep_cost_id [im_cost::new -cost_name $employee_id -cost_type_id [im_cost_type_repeating]]
+	set rep_cost_id [im_cost::new -object_type "im_repeating_cost" -cost_name $employee_id -cost_type_id [im_cost_type_repeating]]
 	
 	db_dml update_costs "
 		update im_costs set
