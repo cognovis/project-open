@@ -15,13 +15,15 @@
         <description format="text/plain">Defines cost centers, cost items and investments</description>
 
         <provides url="intranet-cost" version="2.0.0"/>
-        <requires url="intranet-core" version="2.0"/>
         <requires url="acs-subsite" version="5.0"/>
+        <requires url="intranet-core" version="2.0"/>
 
         <callbacks>
         </callbacks>
         <parameters>
-        <!-- No version parameters -->
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultCurrency"  default="EUR" description="Default currency used in various forms"/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="DefaultCustomerInvoicePaymentDays"  default="30" description="Default value for payment days of Customer Invoices"/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="DefaultProviderBillPaymentDays"  default="60" description="Default value for payment to providers"/>
         </parameters>
 
     </version>

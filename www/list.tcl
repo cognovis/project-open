@@ -19,7 +19,7 @@ ad_page_contract {
     @cvs-id index.tcl,v 3.24.2.9 2000/09/22 01:38:44 kevin Exp
 } {
     { order_by "Date" }
-    { item_status_id:integer "[im_cost_item_status_created]" } 
+    { item_status_id:integer 0 } 
     { item_type_id:integer 0 } 
     { customer_id:integer 0 } 
     { provider_id:integer 0 } 
@@ -157,20 +157,20 @@ if {$provider_id} {
     lappend criteria "ci.provider_id=:provider_id"
 }
 if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string compare $letter "SCROLL"] != 0 } {
-    lappend criteria "im_first_letter_default_to_a(c.customer_name)=:letter"
+    lappend criteria "im_first_letter_default_to_a(cust.customer_name)=:letter"
 }
 
 
 # Get the list of user's companies for which he can see cost_items
 set company_ids [db_list users_companies "
 select
-	customer_id
+	cust.customer_id
 from
 	acs_rels r,
-	im_customers c
+	im_customers cust
 where
 	r.object_id_two = :user_id
-	and r.object_id_one = c.customer_id
+	and r.object_id_one = cust.customer_id
 "]
 
 lappend company_ids 0
@@ -235,22 +235,33 @@ select
         ci.*,
 	ci.amount as amount_formatted,
 	ci.effective_date + ci.payment_days as due_date_calculated,
-        c.customer_name,
-        c.customer_path as customer_short_name,
-	p.customer_name as provider_name,
-	p.customer_path as provider_short_name,
+	url.url as item_url,
+	ot.pretty_name as object_type_pretty_name,
+        cust.customer_name,
+        cust.customer_path as customer_short_name,
+	proj.project_nr,
+	prov.customer_name as provider_name,
+	prov.customer_path as provider_short_name,
         im_category_from_id(ci.item_status_id) as item_status,
         im_category_from_id(ci.item_type_id) as item_type,
 	sysdate - (ci.effective_date + ci.payment_days) as overdue
 	$extra_select
 from
         im_cost_items ci,
-        im_customers c,
-        im_customers p
+	acs_objects o,
+	acs_object_types ot,
+        im_customers cust,
+        im_customers prov,
+	im_projects proj,
+	(select * from im_biz_object_urls where url_type='view') url
 	$extra_from
 where
-        ci.customer_id=c.customer_id(+)
-        and ci.provider_id=p.customer_id(+)
+        ci.customer_id=cust.customer_id(+)
+        and ci.provider_id=prov.customer_id(+)
+	and ci.project_id=proj.project_id(+)
+	and ci.item_id = o.object_id
+	and o.object_type = url.object_type(+)
+	and o.object_type = ot.object_type
 	$company_where
         $where_clause
 	$extra_where
@@ -287,7 +298,7 @@ if {[string compare $letter "ALL"]} {
 # ---------------------------------------------------------------
 
 set new_document_menu ""
-set parent_menu_label ""
+set parent_menu_label "cost_items"
 
 if {"" != $parent_menu_label} {
     set parent_menu_sql "select menu_id from im_menus where label=:parent_menu_label"
@@ -354,7 +365,7 @@ set filter_html "
 	<table border=0 cellpadding=1 cellspacing=1>
 	  <tr> 
 	    <td colspan='2' class=rowtitle align=center>
-	      New Customer Documents
+	      Cost Item Administration
 	    </td>
 	  </tr>
 	  <tr>
@@ -421,6 +432,9 @@ db_foreach cost_items_info_query $selection {
     } else {
 	set url_string "<a href=\"$url\">$url</a>"
     }
+
+    # set currency to NULL if amount was null...
+    if {"" == $amount} { set currency "" }
 
     # Append together a line of data based on the "column_vars" parameter list
     append table_body_html "<tr$bgcolor([expr $ctr % 2])>\n"

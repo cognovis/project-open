@@ -13,7 +13,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     { item_id:integer,optional }
-    { return_url "/intranet-costs/index"}
+    { return_url "/intranet-cost/index"}
     edit_p:optional
     message:optional
     { form_mode "display" }
@@ -33,7 +33,7 @@ if {![im_permission $user_id view_cost_items]} {
     return
 }
 
-set action_url "/intranet-cost/new"
+set action_url "/intranet-cost/cost-items/new"
 set focus "cost.var_name"
 
 # ------------------------------------------------------------------
@@ -111,8 +111,8 @@ ad_form \
 	item_id:key
 	{item_name:text(text) {label Name} {html {size 40}}}
 	{project_id:text(select) {label Project} {options $project_options} }
-	{customer_id:text(select) {label Customer} {options $customer_options} }
-	{provider_id:text(select) {label Provider} {options $provider_options} }
+	{customer_id:text(select) {label "Customer<br><small>(Who pays?)</small>"} {options $customer_options} }
+	{provider_id:text(select) {label "Provider<br><small>(Who gets the money?)</small>"} {options $provider_options} }
 
 	{item_type_id:text(select) {label Type} {options $item_type_options} }
 	{item_status_id:text(select) {label Status} {options $item_status_options} }
@@ -128,8 +128,8 @@ ad_form \
 	{vat:text(text) {label "VAT"} {html {size 20}} }
 	{tax:text(text) {label "TAX"} {html {size 20}} }
 
-	{description:text(textarea),optional {label "Description"} {html {rows 5 cols 40}}}
-	{note:text(textarea),optional {label "Note"} {html {rows 5 cols 40}}}
+	{description:text(textarea),nospell,optional {label "Description"} {html {rows 5 cols 40}}}
+	{note:text(textarea),nospell,optional {label "Note"} {html {rows 5 cols 40}}}
     }
 
 
