@@ -275,7 +275,6 @@ ad_proc im_filestorage_home_component { user_id current_url_without_vars return_
 
     set base_path [im_filestorage_project_path 2346]
 
-
     return [im_filestorage_pol_component $user_id $object_id $object_name $base_path $folder_type $current_url_without_vars $bind_vars]
 }
 
@@ -989,7 +988,11 @@ ad_proc -public im_filestorage_pol_component { user_id object_id object_name bas
     # We define that none of our pathes should have a "/" at the end.
     # So we add a "/" here to the bread-crum_path ONLY if it contains
     # a path and needs a "/" to be appended to base_path.
-    if {"" != $bread_crum_path} { set bread_crum_path "/$bread_crum_path" }
+    if {"" != $bread_crum_path} {
+	set bread_crum_path "/$bread_crum_path"
+    } else {
+	set bread_crum_path "$base_path"
+    }
 
     # Save the path in a list, a deph path for a list position
     set org_paths [split $base_path "/"]
@@ -1006,9 +1009,9 @@ ad_proc -public im_filestorage_pol_component { user_id object_id object_name bas
 
     if { [catch {
 	# Executing the find command
-	set file_list [exec /usr/bin/find "$base_path$bread_crum_path"]	
+	set file_list [exec /usr/bin/find "$bread_crum_path"]	
     } err_msg] } { 
-	return "<ul><li>Unable to get file list from '$bread_crum_path'</ul>"
+	return "<ul><li>Unable to get file list from 'bread_crum_path'</ul>"
     }
 
     # Save each result of the find in a list
