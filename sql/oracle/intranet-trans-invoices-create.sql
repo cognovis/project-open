@@ -276,7 +276,8 @@ create unique index im_price_idx on im_trans_prices (
 
 
 ------------------------------------------------------
--- Views to Business Objects
+-- Parametric Matching - find the right price for
+-- a translation task
 --
 
 -- Calculate a match value between a price list item and an invoice_item
