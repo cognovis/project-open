@@ -608,7 +608,7 @@ begin
         component_tcl => 
 	'im_table_with_title \
 		[im_forum_create_bar \
-			"<B>#intranet-forum.Forum_Items#<B>" \
+			"<B>[_ intranet-forum.Forum_Items]<B>" \
 			$project_id \
 			$return_url \
 		] \
@@ -652,7 +652,7 @@ begin
         component_tcl => 
 	'im_table_with_title \
 		[im_forum_create_bar \
-			"<B>#intranet-forum.Forum_Items#<B>" \
+			"<B>[_ intranet-forum.Forum_Items]<B>" \
 			$company_id \
 			$return_url \
 		] \
@@ -694,7 +694,7 @@ begin
         component_tcl => 
 	'im_table_with_title \
 		[im_forum_create_bar \
-			"<B>#intranet-forum.Forum_Items#<B>" \
+			"<B>[_ intranet-forum.Forum_Items]<B>" \
 			$user_id \
 			$return_url \
 		] \
@@ -736,7 +736,7 @@ begin
         component_tcl => 
 	'im_table_with_title \
 		[im_forum_create_bar \
-			"<B>#intranet-forum.Forum_Items#<B>" \
+			"<B>[_ intranet-forum.Forum_Items]<B>" \
 			0 \
 			$return_url \
 		] \
