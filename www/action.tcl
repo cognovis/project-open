@@ -369,7 +369,7 @@ $dirs_html
 	<td align=right>[_ intranet-filestorage.Filename]: </td>
 	<td>
 	  <input type=file name=upload_file size=30>
-[im_gif help "[_ intranet-filestorage.lt_Use_the_Browse_button]"]
+[im_gif help "Use the 'Browse...' button to locate your file, then click 'Open'."]
 	</td>
       </tr>
       <tr>
