@@ -700,3 +700,6 @@ end;
 show errors
 
 commit;
+
+
+@../common/intranet-forum-common.sql
