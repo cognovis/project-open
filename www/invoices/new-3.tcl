@@ -79,6 +79,7 @@ set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCustomer
 set due_date [db_string get_due_date "select sysdate+:payment_days from dual"]
 set provider_id [im_customer_internal]
 set cost_type_id [im_cost_type_invoice]
+set cost_status_id [im_cost_status_created]
 set vat 0
 set tax 0
 set note ""
@@ -648,7 +649,7 @@ set page_body "
 [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
 
 <form action=/intranet-invoices/new-2 method=POST>
-[export_form_vars customer_id invoice_id cost_type_id return_url]
+[export_form_vars customer_id invoice_id cost_type_id cost_status_id return_url]
 
 "
 
