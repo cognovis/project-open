@@ -65,17 +65,17 @@ where
     # The status doesn't exist, but maybe the folder
     # has been inserted already...
 
-    set exists_folder_p [db_string exists_folder "
+    set folder_id [db_string exists_folder "
 select 
-	count(*) 
+	f.folder_id
 from 
 	im_fs_folders f
 where 
 	f.object_id = :object_id 
 	and f.path = :rel_path 
-"]
+" -default 0]
 
-    if {!$exists_folder_p} {
+    if {!$folder_id} {
 	set folder_id [db_nextval im_fs_folder_status_seq]
 	db_dml insert_folder "
 insert into im_fs_folders (

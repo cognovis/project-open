@@ -754,12 +754,12 @@ ad_proc -public im_filestorage_path_perms { path perm_hash_array roles profiles}
     ns_log Notice "im_filestorage_path_perms: perm_hash_array=$perm_hash_array"
     
     array set perm_hash $perm_hash_array
-
     foreach profile $profiles {
 	set profile_id [lindex $profile 0]
 
 	# Initialize the perms with the perms of the root directory
 	set cur_path ""
+	set hash_key "$cur_path-$profile_id"
 	set path_perms $perm_hash($cur_path)
 
 	# Loop for all paths and check if there are other perms defined
@@ -770,8 +770,9 @@ ad_proc -public im_filestorage_path_perms { path perm_hash_array roles profiles}
 	    append cur_path $cur_path_fragment
 	    
 	    # Add the perms of the current directory
-	    if {[info exists perm_hash($cur_path)]} {
-		set cur_path_perms $perm_hash($cur_path)
+	    set hash_key "$cur_path-$profile_id"
+	    if {[info exists perm_hash($hash_key)]} {
+		set cur_path_perms $perm_hash($hash_key)
 		set path_perms [im_filestorage_merge_perms $path_perms $cur_path_perms]
 	    }
 	}
@@ -779,12 +780,31 @@ ad_proc -public im_filestorage_path_perms { path perm_hash_array roles profiles}
 	ns_log Notice "im_filestorage_path_perms: perms=[array get perms]"
     }
 
-    array set perm_hash $perm_hash_array 
     foreach role $roles {
 	set role_id [lindex $role 0]
-	set role_name [lindex $role 2]
-	set perms($role_id) [list 1 0 1 1]
+
+	# Initialize the perms with the perms of the root directory
+	set cur_path ""
+	set hash_key "$cur_path-$role_id"
+	set path_perms $perm_hash($cur_path)
+
+	# Loop for all paths and check if there are other perms defined
+	set path_list [split $path "/"]
+	foreach cur_path_fragment $path_list {
+	    # Calculate the new cur_path
+	    if {"" != $cur_path} { append cur_path "/" }
+	    append cur_path $cur_path_fragment
+	    
+	    # Add the perms of the current directory
+	    set hash_key "$cur_path-$role_id"
+	    if {[info exists perm_hash($hash_key)]} {
+		set cur_path_perms $perm_hash($hash_key)
+		set path_perms [im_filestorage_merge_perms $path_perms $cur_path_perms]
+	    }
+	}
+	set perms($role_id) $path_perms
 	ns_log Notice "im_filestorage_path_perms: perms=[array get perms]"
+
     }
 
     # Return hash as a list
@@ -968,30 +988,40 @@ where
 "
 
     db_foreach perm_init $perm_sql {
+
+	set hash_key "$folder_path-$profile_id"
 	
-	if {$read_p} {
-	    set perms [list 0 1 0 0]
-	    if {[info exists perm_hash($folder_path)]} { 
-		set old_perms $perm_hash($folder_path)
+	if {$view_p} {
+	    set perms [list 1 0 0 0]
+	    if {[info exists perm_hash($hash_key)]} { 
+		set old_perms $perm_hash($hash_key)
 		set perms [im_filestorage_merge_perms $old_perms $perms]
 	    }
-	    set perm_hash($folder_path) $perms
+	    set perm_hash($hash_key) $perms
+	}
+	if {$read_p} {
+	    set perms [list 0 1 0 0]
+	    if {[info exists perm_hash($hash_key)]} { 
+		set old_perms $perm_hash($hash_key)
+		set perms [im_filestorage_merge_perms $old_perms $perms]
+	    }
+	    set perm_hash($hash_key) $perms
 	}
 	if {$write_p} {
 	    set perms [list 0 0 1 0]
-	    if {[info exists perm_hash($folder_path)]} { 
-		set old_perms $perm_hash($folder_path)
+	    if {[info exists perm_hash($hash_key)]} { 
+		set old_perms $perm_hash($hash_key)
 		set perms [im_filestorage_merge_perms $old_perms $perms]
 	    }
-	    set perm_hash($folder_path) $perms
+	    set perm_hash($hash_key) $perms
 	}
 	if {$admin_p} {
 	    set perms [list 0 0 0 1]
-	    if {[info exists perm_hash($folder_path)]} { 
-		set old_perms $perm_hash($folder_path)
+	    if {[info exists perm_hash($hash_key)]} { 
+		set old_perms $perm_hash($hash_key)
 		set perms [im_filestorage_merge_perms $old_perms $perms]
 	    }
-	    set perm_hash($folder_path) $perms
+	    set perm_hash($hash_key) $perms
 	}
     }
 

@@ -107,11 +107,11 @@ switch $actions {
   <td>View</td>\n"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
-	    append page_content "<td><input type=checkbox name=view_role.$role_id</td>\n"
+	    append page_content "<td><input type=checkbox name=view_role.$role_id></td>\n"
 	}
 	foreach profile $profiles {
 	    set profile_id [lindex $profile 0]
-	    append page_content "<td><input type=checkbox name=view_profile.$profile_id</td>\n"
+	    append page_content "<td><input type=checkbox name=view_profile.$profile_id></td>\n"
 	}
 	append page_content "
 </tr>
@@ -119,11 +119,11 @@ switch $actions {
   <td>Read</td>\n"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
-	    append page_content "<td><input type=checkbox name=read_role.$role_id</td>\n"
+	    append page_content "<td><input type=checkbox name=read_role.$role_id></td>\n"
 	}
 	foreach profile $profiles {
 	    set profile_id [lindex $profile 0]
-	    append page_content "<td><input type=checkbox name=read_profile.$profile_id</td>\n"
+	    append page_content "<td><input type=checkbox name=read_profile.$profile_id></td>\n"
 	}
 	append page_content "
 </tr>
@@ -131,11 +131,11 @@ switch $actions {
   <td>Write</td>\n"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
-	    append page_content "<td><input type=checkbox name=write_role.$role_id</td>\n"
+	    append page_content "<td><input type=checkbox name=write_role.$role_id></td>\n"
 	}
 	foreach profile $profiles {
 	    set profile_id [lindex $profile 0]
-	    append page_content "<td><input type=checkbox name=write_profile.$profile_id</td>\n"
+	    append page_content "<td><input type=checkbox name=write_profile.$profile_id></td>\n"
 	}
 	append page_content "
 </tr>
@@ -143,11 +143,11 @@ switch $actions {
   <td>Admin</td>\n"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
-	    append page_content "<td><input type=checkbox name=admin_role.$role_id</td>\n"
+	    append page_content "<td><input type=checkbox name=admin_role.$role_id></td>\n"
 	}
 	foreach profile $profiles {
 	    set profile_id [lindex $profile 0]
-	    append page_content "<td><input type=checkbox name=admin_profile.$profile_id</td>\n"
+	    append page_content "<td><input type=checkbox name=admin_profile.$profile_id></td>\n"
 	}
 	append page_content "
 </tr>
@@ -155,6 +155,115 @@ switch $actions {
 <P>
 <input type=submit name=submit value=\"Add Permissions\">
 Add the permissions above to the following directories:</p>
+
+<table border=0 cellspacing=0 cellpadding=1>
+<tr class=rowtitle><td colspan=2 class=rowtitle>Directories</td></tr>
+$dirs_html
+</table>
+</form>
+<p>\n"
+
+	if {"" == $dirs_html} {
+	    set page_content "
+<H1>No Directories Selected</H1>
+You have not selected a directory.<p>
+Please backup, select a directory and press again on the [im_gif plus_9] button.<p>
+"
+	}
+
+        doc_return  200 text/html [im_return_template]
+        return
+
+    }
+
+    "del-perms" {
+
+	# --------------------- Del permissions to folders --------------------- 
+
+	set profiles [im_filestorage_profiles $user_id $object_id]
+	set roles [im_filestorage_roles $user_id $object_id]
+	set tds [im_filestorage_profile_tds $user_id $object_id]
+	set num_profiles [expr [llength $roles] + [llength $profiles]]
+
+        set dirs_html ""
+	set ctr 0
+        foreach id [array names dir_id] {
+            set rel_path $id_path($id)
+            set abs_path "$base_path/$rel_path"
+            set checked "checked"
+            incr ctr
+            append dirs_html "
+<tr $bgcolor([expr $ctr % 2])>
+  <td>
+    <input type=checkbox name=dir_id.$id $checked>
+    <input type=hidden name=id_path.$id value=\"$id_path($id)\">
+  </td>
+  <td>$id_path($id)</td>
+</tr>\n"
+        }
+
+	set page_title "Delete Permissions"
+	set page_content "
+<H1>$page_title</H1>
+<form action=/intranet-filestorage/del-perms-2 method=POST>
+[export_form_vars object_id folder_type bread_crum_path return_url]
+<table border=0 cellspacing=0 cellpadding=2>
+<tr class=rowtitle>
+  <td></td>
+  $tds
+</tr>
+<tr class=roweven>
+  <td>View</td>\n"
+	foreach role $roles {
+	    set role_id [lindex $role 0]
+	    append page_content "<td><input type=checkbox name=view_role.$role_id></td>\n"
+	}
+	foreach profile $profiles {
+	    set profile_id [lindex $profile 0]
+	    append page_content "<td><input type=checkbox name=view_profile.$profile_id></td>\n"
+	}
+	append page_content "
+</tr>
+<tr class=rowodd>
+  <td>Read</td>\n"
+	foreach role $roles {
+	    set role_id [lindex $role 0]
+	    append page_content "<td><input type=checkbox name=read_role.$role_id></td>\n"
+	}
+	foreach profile $profiles {
+	    set profile_id [lindex $profile 0]
+	    append page_content "<td><input type=checkbox name=read_profile.$profile_id></td>\n"
+	}
+	append page_content "
+</tr>
+<tr class=roweven>
+  <td>Write</td>\n"
+	foreach role $roles {
+	    set role_id [lindex $role 0]
+	    append page_content "<td><input type=checkbox name=write_role.$role_id></td>\n"
+	}
+	foreach profile $profiles {
+	    set profile_id [lindex $profile 0]
+	    append page_content "<td><input type=checkbox name=write_profile.$profile_id></td>\n"
+	}
+	append page_content "
+</tr>
+<tr class=rowodd>
+  <td>Admin</td>\n"
+	foreach role $roles {
+	    set role_id [lindex $role 0]
+	    append page_content "<td><input type=checkbox name=admin_role.$role_id></td>\n"
+	}
+	foreach profile $profiles {
+	    set profile_id [lindex $profile 0]
+	    append page_content "<td><input type=checkbox name=admin_profile.$profile_id></td>\n"
+	}
+	append page_content "
+</tr>
+</table>
+<P>
+<input type=submit name=submit value=\"Del Permissions\">
+Delete the permissions above from the following directories:</p>
 
 <table border=0 cellspacing=0 cellpadding=1>
 <tr class=rowtitle><td colspan=2 class=rowtitle>Directories</td></tr>
