@@ -686,6 +686,10 @@ create table im_costs (
 	currency		char(3) 
 				constraint im_costs_currency_fk
 				references currency_codes(iso),
+	paid_amount		number(12,3),
+	paid_currency		char(3) 
+				constraint im_costs_paid_currency_fk
+				references currency_codes(iso),
 	-- % of total price is VAT
 	vat			number(12,5),
 	-- % of total price is TAX
@@ -1060,8 +1064,8 @@ begin
     v_menu := im_menu.new (
 	package_name =>	'intranet-cost',
 	label =>	'costs',
-	name =>		'Costs',
-	url =>		'/intranet-cost/index',
+	name =>		'All Costs',
+	url =>		'/intranet-cost/list',
 	sort_order =>	80,
 	parent_menu_id => v_finance_menu
     );

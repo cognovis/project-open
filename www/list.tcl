@@ -196,7 +196,7 @@ switch $order_by {
     "Client" { set order_by_clause "order by customer_name" }
     "Due Date" { set order_by_clause "order by due_date_calculated" }
     "Amount" { set order_by_clause "order by c.amount DESC" }
-    "Paid" { set order_by_clause "order by pa.payment_amount" }
+    "Paid" { set order_by_clause "order by paid_amount" }
     "Status" { set order_by_clause "order by cost_status_id" }
 }
 
@@ -209,25 +209,12 @@ if { ![empty_string_p $where_clause] } {
 # Define extra SQL for payments
 # -----------------------------------------------------------------
 
-#set payment_amount ""
-#set payment_currency ""
+set payment_amount ""
+set payment_currency ""
 
 set extra_select ""
 set extra_from ""
 set extra_where ""
-
-if { [db_table_exists im_payments] } {
-    append extra_select ", pa.payment_amount, pa.payment_currency\n"
-    append extra_from ", 
-	(select
-		sum(amount) as payment_amount, 
-		max(currency) as payment_currency,
-		cost_id 
-	 from im_payments
-	 group by cost_id
-	) pa\n"
-    append extra_where "and c.cost_id=pa.cost_id(+)\n"
-}
 
 # -----------------------------------------------------------------
 # Main SQL
@@ -279,12 +266,14 @@ $order_by_clause
 # Limit the search results to N data sets only
 # to be able to manage large sites
 #
-if {[string compare $letter "ALL"]} {
+
+if {[string equal $letter "ALL"]} {
     # Set these limits to negative values to deactivate them
     set total_in_limited -1
     set how_many -1
     set selection "$sql"
 } else {
+
     set limited_query [im_select_row_range $sql $start_idx $end_idx]
     # We can't get around counting in advance if we want to be able to 
     # sort inside the table on the page for only those users in the 
