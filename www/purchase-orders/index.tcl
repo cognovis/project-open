@@ -143,7 +143,11 @@ db_foreach task_tasks $task_sql {
 	incr freelance_ctr
     }
     if {"" == $freelance_company_html} {
-	set freelance_company_html "<i>No company found</i>"
+	set freelance_company_html "
+	<i>No company found</i><br>
+	<a href=new-company-from-freelance?freelance_id=$freelance_id>
+	  Create a new company for this freelancer
+	</a>"
     }
     set freelance_company_html "
 	<table border=0 cellspacing=0 cellpadding=0>
