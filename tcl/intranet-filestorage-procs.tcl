@@ -274,6 +274,7 @@ ad_proc im_filestorage_base_component { user_id id base_path name folder_type re
     - project
     - customer
     - user
+    - home
 } {
     set folder "/"
     set project_id $id
@@ -624,9 +625,9 @@ ad_proc im_filestorage_customer_path { customer_id } {
 	return "$base_path_unix/$path"
     }
 
-    set customer_short_name "internal"
+    set customer_short_name "undefined"
     if {[catch {
-	set customer_name [db_string get_customer_shortname "select short_name from user_groups where group_id=:customer_id"]
+	set customer_name [db_string get_customer_path "select customer_path from im_customers where customer_id=:customer_id"]
     } errmsg]} {
 	ad_return_complaint 1 "<LI>Internal Error: Unable to determine the file path for customer \#$customer_id"
 	return
