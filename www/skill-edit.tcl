@@ -48,7 +48,7 @@ set bgcolor(1) "class=rowodd"
 
 # Create an error if the current_user isn't allowed to see the user
 if {!$read} {
-    ad_return_complaint 1 "<li>You have insufficient privileges to view this user."
+    ad_return_complaint 1 "<li>[_ intranet-freelance.lt_You_have_insufficient]"
     return
 }
 
@@ -60,14 +60,14 @@ db_0or1row user_full_name "select first_names, last_name from persons where pers
 
 set page_title "$first_names $last_name"
 if {[im_permission $current_user_id view_users]} {
-    set context_bar [ad_context_bar [list /intranet/users/view?user_id=$user_id "$page_title"] "Confirmations"]
+    set context_bar [ad_context_bar [list /intranet/users/view?user_id=$user_id "$page_title"] "[_ intranet-freelance.Confirmations]"]
 } else {
     set context_bar [ad_context_bar $page_title]
 }
 
 # use [info exists ] here?
 if { [empty_string_p $first_names] && [empty_string_p $last_name] } {
-    ad_return_complaint 1 "<li>We couldn't find user \#$user_id; perhaps this person was nuke?"
+    ad_return_complaint 1 "<li>[_ intranet-freelance.lt_We_couldnt_find_user_]"
     return
 }
 
@@ -113,8 +113,8 @@ order by
 set skill_table_header "
 	<tr class=rowtitle>
 	  <td class=rowtitle>$skill_type</td>
-	  <td class=rowtitle>Claimed</td>
-	  <td class=rowtitle>Confirmed</td>
+	  <td class=rowtitle>[_ intranet-freelance.Claimed]</td>
+	  <td class=rowtitle>[_ intranet-freelance.Confirmed]</td>
 	  <td class=rowtitle align=center>[im_gif delete]</td>
 	</tr>
 "
@@ -158,10 +158,10 @@ if {"" != $skill_table} {
 	<tr>
 	  <td></td>
 	  <td colspan=2 align=center>
-	    <input type=submit value=Update name=submit>
+	    <input type=submit value=\"[_ intranet-freelance.Update]\" name=submit>
 	  </td>
 	  <td>
-	    <input type=submit value=Del name=submit>
+	    <input type=submit value=\"[_ intranet-freelance.Del]\" name=submit>
 	  </td>
 	</tr>"
 } else {
@@ -169,7 +169,7 @@ if {"" != $skill_table} {
     append skill_table "
 	<tr>
 	  <td colspan=4 align=center>
-            There are currently no $skill_type.
+            [_ intranet-freelance.lt_There_are_currently_n_1]
 	  </td>
 	</tr>"
 }
@@ -181,12 +181,12 @@ if {"" != $skill_table} {
 append skill_table "
 	<tr>
 	  <td class=rowtitle align=center colspan=4>
-	    Add new $skill_type\n"
+	    [_ intranet-freelance.Add_new_skill_type]"
 
 if {[im_permission $current_user_id admin_categories]} {
     append skill_table "
 <A HREF=\"/intranet/admin/categories/?select_category_type=[ns_urlencode $value_range_category_type]\">
-        [im_gif new "Add a new $value_range_category_type"]
+        [im_gif new "[_ intranet-freelance.lt_Add_a_new_value_range]"]
 	</A>"
 }
 append skill_table "
@@ -197,7 +197,7 @@ append skill_table "
 [im_category_select $value_range_category_type "add_skill_id" ""]
 	  </td>
 	  <td colspan=3>
-	    <input type=submit value=\"Add\" name=submit>
+	    <input type=submit value=\"[_ intranet-freelance.Add]\" name=submit>
 	  </td>
 	</tr>
 "
@@ -217,4 +217,5 @@ set page_body "
 "
 
 db_release_unused_handles
-doc_return  200 text/html [im_return_template]
+ad_return_template
+

@@ -39,8 +39,7 @@ set current_user_id [ad_maybe_redirect_for_registration]
 im_user_permissions $current_user_id $user_id view read write admin
 
 if {!$write} {
-    ad_return_complaint 1 "<li>You have insufficient privileges to modify user $user_id\
-."
+    ad_return_complaint 1 "<li>[_ intranet-freelance.lt_You_have_insufficient_1]"
     return
 }
 
@@ -80,7 +79,7 @@ SET
 WHERE
 	user_id = :user_id"
 } errmsg ] {
-     ad_return_complaint "Argument Error" "<ul>$errmsg</ul>"
+     ad_return_complaint "[_ intranet-freelance.Argument_Error]" "<ul>$errmsg</ul>"
     return
 }
 

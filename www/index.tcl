@@ -76,7 +76,7 @@ ad_page_contract {
 # ---------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-set page_title "Users"
+set page_title "[_ intranet-freelance.Users]"
 set context_bar [ad_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 set return_url [im_url_with_query]
@@ -107,7 +107,7 @@ if {$user_group_id > 0} {
     set sql "select im_object_permission_p(:user_group_id, :user_id, 'read') from dual"
     set read [db_string user_can_read_user_group_p $sql]
     if {![string equal "t" $read]} {
-	ad_return_complaint 1 "You don't have permissions to view this page"
+	ad_return_complaint 1 "[_ intranet-freelance.lt_You_dont_have_permiss]"
 	return
     }
 
@@ -120,7 +120,7 @@ if {$user_group_id > 0} {
     set sql "select im_object_permission_p(:company_group_id, :user_id, 'read') from dual"
     set read [db_string user_can_read_user_group_p $sql]
     if {![string equal "t" $read]} {
-	ad_return_complaint 1 "You don't have permissions to view this page"
+	ad_return_complaint 1 "[_ intranet-freelance.lt_You_dont_have_permiss]"
 	return
     }
 }
@@ -168,9 +168,9 @@ set column_vars [list]
 #
 set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name" -default 0]
 if {!$view_id} { 
-    ad_return_complaint 1 "<li>Internal error: unknown view '$view_name'<br>
-    You are trying to access a view that has not been defined in the database.<br>
-    Please notify your system administrator."
+    ad_return_complaint 1 "<li>[_ intranet-freelance.lt_Internal_error_unknow] '$view_name'<br>
+    [_ intranet-freelance.lt_You_are_trying_to_acc]<br>
+    [_ intranet-freelance.lt_Please_notify_your_sy]"
 }
 
 set column_sql "
@@ -373,17 +373,17 @@ set filter_html "
 <table border=0 cellpadding=1 cellspacing=1>
   <tr>
     <td colspan='2' class=rowtitle align=center>
-      Filter Freelancers
+      [_ intranet-freelance.Filter_Freelancers]
     </td>
   </tr>
   <tr>
-    <td valign=top>Recruiting Status:</td>
+    <td valign=top>[_ intranet-freelance.Recruiting_Status]:</td>
     <td valign=top>
       [im_select rec_status_id $rec_stati $rec_status_id]
     </td>
   </tr>
   <tr>
-    <td valign=top>Recruiting Test Result:</td>
+    <td valign=top>[_ intranet-freelance.lt_Recruiting_Test_Resul]:</td>
     <td valign=top>
       [im_select rec_test_result_id $rec_test_results $rec_test_result_id]
     </td>
@@ -391,7 +391,7 @@ set filter_html "
   <tr>
     <td></td>
     <td>
-      <input type=submit value=Go name=submit>
+      <input type=submit value=\"[_ intranet-freelance.Go]\" name=submit>
     </td>
   </tr>
 </table>
@@ -417,10 +417,11 @@ if { ![empty_string_p $query_string] } {
 
 append table_header_html "<tr>\n"
 foreach col $column_headers {
+    set col_txt [lang::util::suggest_key $col]
     if { [string compare $order_by $col] == 0 } {
-	append table_header_html "  <td class=rowtitle>$col</td>\n"
+	append table_header_html "  <td class=rowtitle>[_ intranet-trans-invoices.$col_txt]</td>\n"
     } else {
-	append table_header_html "  <td class=rowtitle><a href=\"${url}order_by=[ns_urlencode $col]\">$col</a></td>\n"
+	append table_header_html "  <td class=rowtitle><a href=\"${url}order_by=[ns_urlencode $col]\">[_ intranet-trans-invoices.$col_txt]</a></td>\n"
     }
 }
 append table_header_html "</tr>\n"
@@ -457,7 +458,7 @@ db_foreach projects_info_query $query {
 if { [empty_string_p $table_body_html] } {
     set table_body_html "
         <tr><td colspan=$colspan><ul><li><b> 
-        There are currently no entries matching the selected criteria
+        [_ intranet-freelance.lt_There_are_currently_n]
         </b></ul></td></tr>"
 }
 

@@ -46,7 +46,7 @@ if {$user_id == $current_user_id} {
 }
 
 if {!$write} {
-    ad_return_complaint 1 "<li>You have insufficient rights to pursue this operation"
+    ad_return_complaint 1 "<li>[_ intranet-freelance.lt_You_have_insufficient_3]"
     return
 }
 
@@ -88,8 +88,8 @@ switch $submit {
 		and skill_type_id=:skill_type_id"
 
 	    if [catch {db_dml update_experience $sqlclaimed} errmsg] {
-		ad_return_complaint "DB Error" "
-                <li>Error updating experience: $errmsg"
+		ad_return_complaint "[_ intranet-freelance.DB_Error]" "
+                <li>[_ intranet-freelance.lt_Error_updating_experi]: $errmsg"
 	    }
 	}
 
@@ -113,8 +113,8 @@ switch $submit {
                 and skill_type_id=:skill_type_id"
 
 		if [catch {db_dml update_experience $sqlconfirmed} errmsg] {
-		    ad_return_complaint "DB Error" "
-                <li>Error updating experience: $errmsg"
+		    ad_return_complaint "[_ intranet-freelance.DB_Error]" "
+                <li>[_ intranet-freelance.lt_Error_updating_experi]: $errmsg"
 		}
 	    }
 	}
@@ -134,8 +134,8 @@ switch $submit {
 			and skill_type_id=:skill_type_id
 "
 	    if [catch {db_dml delete_skill $sqldelete} errmsg] {
-		ad_return_complaint "DB Error" "
-               <li>Error updating experience: $errmsg"
+		ad_return_complaint "[_ intranet-freelance.DB_Error]" "
+               <li>[_ intranet-freelance.lt_Error_updating_experi]: $errmsg"
 	    }
 	}
     }
@@ -144,8 +144,8 @@ switch $submit {
 	# ------------------- Add a new skill to the list ------------
 
 	if {![info exists add_skill_id]} {
-	    ad_return_complaint "Error" "
-               <li>You need to specify add_skill_id."
+	    ad_return_complaint "[_ intranet-freelance.Error]" "
+               <li>[_ intranet-freelance.lt_You_need_to_specify_a]"
 	}
 
 	set unconfirmed_experience [db_string unconfirmed_experience "select category_id from im_categories where category_type='Intranet Experience Level' and category='Unconfirmed'"]
@@ -156,7 +156,7 @@ insert into im_freelance_skills
 (:user_id, :add_skill_id, :skill_type_id, :unconfirmed_experience)"
 
        if [catch { db_dml insert_freelance_skills $sql } errmsg] {
-    ad_return_complaint "DB-Error" "<li>The database choked on our insert:
+    ad_return_complaint "[_ intranet-freelance.DB-Error]" "<li>[_ intranet-freelance.lt_The_database_choked_o]:
     <blockquote>$errmsg</blockquote>"
         }
     }

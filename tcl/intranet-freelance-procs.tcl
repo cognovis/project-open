@@ -99,8 +99,8 @@ where
 
     # Create an error if the current_user isn't allowed to see the user
     if {!$edit_user} {
-	ad_return_complaint "Insufficient Privileges" "
-    <li>You have insufficient privileges to view this user."
+	ad_return_complaint "[_ intranet-freelance.lt_Insufficient_Privileg]" "
+    <li>[_ intranet-freelance.lt_You_have_insufficient]"
 	return
     }
 
@@ -166,9 +166,9 @@ where
     "
 
     if {![db_0or1row get_user_info $portrait_sql]} {
-        ad_return_error "Account Unavailable" "
-        <li>We cannot find you (user #$user_id) in the users table.  
-        Probably your account was deleted for some reason."
+        ad_return_error "[_ intranet-freelance.Account_Unavailable]" "
+        <li>[_ intranet-freelance.lt_We_cannot_find_you_us]
+        [_ intranet-freelance.lt_Probably_your_account]"
 	return ""
     }
 	
@@ -182,7 +182,7 @@ where
     set portrait_html "
 	<table cellpadding=0 cellspacing=2 border=0>
 	<tr $td_class(0)> 
-	  <td colspan=2 class=rowtitle align=center>Portrait</td>
+	  <td colspan=2 class=rowtitle align=center>[_ intranet-freelance.Portrait]</td>
 	</tr>\n"
 
     if  { [empty_string_p $portrait_id] } {
@@ -191,7 +191,7 @@ where
 	append portrait_html "
 	<tr $td_class(1)>
 	  <td colspan=2 align=center>
-	    <i>No portrait has been <br>uploaded for this user.</i>
+	    <i>No portrait has been <br>[_ intranet-freelance.lt_uploaded_for_this_use]</i>
 	  </td>
 	</tr>\n"
 
@@ -199,7 +199,7 @@ where
 	    append portrait_html "
 	<tr $td_class(1)>
 	  <td colspan=2>
-	      <li><a href=\"/intranet/users/portrait/upload?[export_url_vars user_id return_url]\">upload a portrait</a>
+	      <li><a href=\"/intranet/users/portrait/upload?[export_url_vars user_id return_url]\">[_ intranet-freelance.upload_a_portrait]</a>
 	  </td>
 	</tr>\n"
         }
@@ -212,9 +212,9 @@ where
 	set img_html_frag "<img $widthheight src=\"/shared/portrait-bits.tcl?[export_url_vars portrait_id return_url]\">"
 	set replacement_text "replacement"
 	if { [empty_string_p $portrait_comment] } {
-	    set comment_html_frag "<li><a href=/intranet/users/portrait/comment-modify.tcl?[export_url_vars user_id return_url]>add a comment</a>\n"
+	    set comment_html_frag "<li><a href=/intranet/users/portrait/comment-modify.tcl?[export_url_vars user_id return_url]>[_ intranet-freelance.add_a_comment]</a>\n"
 	} else {
-	    set comment_html_frag "<li><a href=/intranet/users/portrait/comment-modify.tcl?[export_url_vars user_id return_url]>modify the comment</a>\n"
+	    set comment_html_frag "<li><a href=/intranet/users/portrait/comment-modify.tcl?[export_url_vars user_id return_url]>[_ intranet-freelance.modify_the_comment]</a>\n"
 	}
 
         append portrait_html "
@@ -223,18 +223,18 @@ where
 	    $img_html_frag
 	  </td>
         </tr>
-        <tr $td_class(0)><td>Uploaded</td><td> [util_AnsiDatetoPrettyDate $portrait_upload_date]</td></tr>
-	<tr $td_class(1)><td>Original Name</td><td>$portrait_client_file_name</td></tr>
-	<tr $td_class(0)><td>Comment</td><td><blockquote>$portrait_comment </blockquote></td></tr>\n"
+        <tr $td_class(0)><td>[_ intranet-freelance.Uploaded]</td><td> [util_AnsiDatetoPrettyDate $portrait_upload_date]</td></tr>
+	<tr $td_class(1)><td>[_ intranet-freelance.Original_Name]</td><td>$portrait_client_file_name</td></tr>
+	<tr $td_class(0)><td>[_ intranet-freelance.Comment]</td><td><blockquote>$portrait_comment </blockquote></td></tr>\n"
 
         if {$user_admin_p} {
             append portrait_html "
 
 	<tr $td_class(1)>
 	  <td colspan=2>
-	      <li><a href=\"/intranet/users/portrait/upload?[export_url_vars user_id return_url]\">upload a $replacement_text</a>
+	      <li><a href=\"/intranet/users/portrait/upload?[export_url_vars user_id return_url]\">[_ intranet-freelance.lt_upload_a_replacement_]</a>
 		$comment_html_frag
-	      <li><a href=\"/intranet/users/portrait/erase?[export_url_vars user_id return_url]\">erase</a>
+	      <li><a href=\"/intranet/users/portrait/erase?[export_url_vars user_id return_url]\">[_ intranet-freelance.erase]</a>
 	  </td>
 	</tr>\n"
 	}
@@ -307,7 +307,7 @@ ad_proc im_freelance_info_component { current_user_id user_id return_url freelan
 	[export_form_vars user_id return_url]
 	<table cellpadding=0 cellspacing=2 border=0>
 	<tr> 
-	  <td colspan=2 class=rowtitle align=center>Freelance Information</td>
+	  <td colspan=2 class=rowtitle align=center>[_ intranet-freelance.lt_Freelance_Information]</td>
 	</tr>\n"
 
     set ctr 1
@@ -330,7 +330,7 @@ ad_proc im_freelance_info_component { current_user_id user_id return_url freelan
     if {$admin } {
         append freelance_html "
         <tr $td_class([expr $ctr % 2])>
-        <td></td><td><input type=submit value='Edit'></td></tr>\n"
+        <td></td><td><input type=submit value='[_ intranet-freelance.Edit]'></td></tr>\n"
     }
     append freelance_html "</table></form>\n"
 
@@ -408,7 +408,7 @@ set colspan $ctr
 set skill_header_html "
 	<table cellpadding=0 cellspacing=2 border=0>
 	<tr>
-	  <td class=rowtitle align=center colspan=$colspan>Skills</td>
+	  <td class=rowtitle align=center colspan=$colspan>[_ intranet-freelance.Skills]</td>
 	</tr>
 	<tr class=rowtitle>
 	  $skill_header_titles
@@ -426,7 +426,7 @@ set skill_body_html "
 	    <table cellpadding=0 cellspacing=1 border=1 width=100%>
 	    <tr class=roweven>
               <td>Skill</td>
-              <td align=center>Claim</td>
+              <td align=center>[_ intranet-freelance.Claim]</td>
             </tr>"
 
 set old_skill_type_id 0
@@ -449,8 +449,8 @@ db_foreach skill_body_html $sql {
 	<td>
 	  <table cellpadding=0 cellspacing=0 border=1 width=100%>
 	    <tr class=roweven>
-              <td>Skill</td>
-              <td align=center>Claim</td>
+              <td>[_ intranet-freelance.Skill]</td>
+              <td align=center>[_ intranet-freelance.Claim]</td>
             </tr>"
 	set old_skill_type_id $skill_type_id
 	set ctr 1
@@ -604,11 +604,11 @@ where
 
     set freelance_header_html "
 	<tr class=rowtitle>
-	  <td>Freelance</td>
-	  <td>Source Language</td>
-	  <td>Target Language</td>
-	  <td>Subject Area</td>
-	  <td>Select</td>
+	  <td>[_ intranet-freelance.Freelance]</td>
+	  <td>[_ intranet-freelance.Source_Language]</td>
+	  <td>[_ intranet-freelance.Target_Language]</td>
+	  <td>[_ intranet-freelance.Subject_Area]</td>
+	  <td>[_ intranet-freelance.Select]</td>
 	</tr>"
     
     set bgcolor(0) " class=roweven "
@@ -628,7 +628,7 @@ where
     }
 
     if { $freelance_body_html == "" } {
-	set freelance_body_html "<tr><td colspan=5 align=center><b> no freelancers </b></td>"
+	set freelance_body_html "<tr><td colspan=5 align=center><b>[_ intranet-freelance.no_freelancers]</b></td>"
     }
     
     set select_freelance "
@@ -645,8 +645,8 @@ $freelance_body_html
   <tr> 
     <td colspan=5>add as 
       [im_biz_object_roles_select role_id $object_id $default_role_id]
-      <input type=submit value=Add>
-      <input type=checkbox name=notify_asignee value=1 checked>Notify<br>
+      <input type=submit value=\"[_ intranet-freelance.Add]\">
+      <input type=checkbox name=notify_asignee value=1 checked>[_ intranet-freelance.Notify]<br>
     </td>
   </tr>
 </table>

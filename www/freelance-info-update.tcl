@@ -25,7 +25,7 @@ set current_user_id [ad_maybe_redirect_for_registration]
 
 im_user_permissions $current_user_id $user_id view read write admin
 if {!$admin} {
-    ad_return_complaint 1 "<li>You have insufficient permissions to pursue this operation"
+    ad_return_complaint 1 "<li>[_ intranet-freelance.lt_You_have_insufficient_2]"
     return
 }
 
@@ -52,12 +52,12 @@ set user_id $org_user_id
 # --------------- Set page design as a function of the freelance data-----
 
 if { [empty_string_p $user_name]} {
-    ad_return_complaint 1 "<li>We couldn't find user \#$user_id; perhaps this person was nuke?"
+    ad_return_complaint 1 "<li>[_ intranet-freelance.lt_We_couldnt_find_user_]"
     return
 }
 
 set page_title "$user_name"
-set context_bar [ad_context_bar [list /intranet/users/ "Users"] $page_title]
+set context_bar [ad_context_bar [list /intranet/users/ "[_ intranet-freelance.Users]"] $page_title]
 
 # ---------------------------------------------------------------
 # Making body table
@@ -67,25 +67,25 @@ set context_bar [ad_context_bar [list /intranet/users/ "Users"] $page_title]
 
 set recr_html "
 <table cellpadding=0 cellspacing=2 border=0>
-<tr><td colspan=2 class=rowtitle align=center>Recruiting Information</td></tr>
-<tr><td>Recruting Source</td><td><input type=text name=rec_source value=$rec_source></td></tr>
-<tr><td>Recruiting Status</td><td>[im_category_select "Intranet Recruiting Status" rec_status_id $rec_status_id]</td></tr>
-<tr><td>Recruiting Test Type</td><td><input type=text name=rec_test_type value=$rec_test_type></td></tr>
-<tr><td>Recruiting Test Result</td><td>[im_category_select "Intranet Recruiting Test Result" rec_test_result_id $rec_test_result_id]</td></tr>
+<tr><td colspan=2 class=rowtitle align=center>[_ intranet-freelance.lt_Recruiting_Informatio]</td></tr>
+<tr><td>[_ intranet-freelance.Recruting_Source]</td><td><input type=text name=rec_source value=$rec_source></td></tr>
+<tr><td>[_ intranet-freelance.Recruiting_Status]</td><td>[im_category_select "Intranet Recruiting Status" rec_status_id $rec_status_id]</td></tr>
+<tr><td>[_ intranet-freelance.Recruiting_Test_Type]</td><td><input type=text name=rec_test_type value=$rec_test_type></td></tr>
+<tr><td>[_ intranet-freelance.lt_Recruiting_Test_Resul]</td><td>[im_category_select "Intranet Recruiting Test Result" rec_test_result_id $rec_test_result_id]</td></tr>
 </table><br>
 "
 
 
 set rates_html "
 <table cellpadding=0 cellspacing=2 border=0>
-<tr><td colspan=2 class=rowtitle align=center>Rates Information</td></tr>
-<tr><td>Translation rate</td><td><input type=text name=translation_rate value=$translation_rate></td></tr>
-<tr><td>Editing rate</td><td><input type=text name=editing_rate value=$editing_rate></td></tr>
-<tr><td>Hourly rate</td><td><input type=text name=hourly_rate value=$hourly_rate></td></tr>
-<tr><td>Bank Account</td><td><input type=text name=bank_account value=$bank_account></td></tr>
-<tr><td>Bank</td><td><input type=text name=bank value=$bank></td></tr>
-<tr><td>Payment Method</td><td>[im_category_select "Intranet Payment Type" "payment_method" "$payment_method_id"]</td></tr>
-<tr><td>Note</td><td><textarea type=text cols=50 rows=5 name=note>$note</textarea></td></tr>
+<tr><td colspan=2 class=rowtitle align=center>[_ intranet-freelance.Rates_Information]</td></tr>
+<tr><td>[_ intranet-freelance.Translation_rate]</td><td><input type=text name=translation_rate value=$translation_rate></td></tr>
+<tr><td>[_ intranet-freelance.Editing_rate]</td><td><input type=text name=editing_rate value=$editing_rate></td></tr>
+<tr><td>[_ intranet-freelance.Hourly_rate]</td><td><input type=text name=hourly_rate value=$hourly_rate></td></tr>
+<tr><td>[_ intranet-freelance.Bank_Account]</td><td><input type=text name=bank_account value=$bank_account></td></tr>
+<tr><td>[_ intranet-freelance.Bank]</td><td><input type=text name=bank value=$bank></td></tr>
+<tr><td>[_ intranet-freelance.Payment_Method]</td><td>[im_category_select "Intranet Payment Type" "payment_method" "$payment_method_id"]</td></tr>
+<tr><td>[_ intranet-freelance.Note]</td><td><textarea type=text cols=50 rows=5 name=note>$note</textarea></td></tr>
 "
 
 # don't show the "private_note" field to the user himself.
@@ -93,7 +93,7 @@ set rates_html "
 # user anyway
 
 if { $admin } {
-    append rates_html "<tr><td>Private Notes</td><td><textarea type=text cols=50 rows=5 name=private_note>$private_note</textarea></td></tr>"
+    append rates_html "<tr><td>[_ intranet-freelance.Private_Notes]</td><td><textarea type=text cols=50 rows=5 name=private_note>$private_note</textarea></td></tr>"
 }
 
 append rates_html "
@@ -110,4 +110,4 @@ $rates_html
 </center>
 </form>
 "
-doc_return  200 text/html [im_return_template]
+ad_return_template
