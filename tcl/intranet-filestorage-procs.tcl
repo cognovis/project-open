@@ -102,8 +102,9 @@ ad_proc im_filestorage_folder_perms {folder_path top_folder folder_type user_id 
     Determines the access permissions of a user to a specific path
     Returns (1-1-1-1 = Read-Write-See-Admin) permission binary number
 
-    "folder_type" is one of {project|customer|user}
+    "folder_type" is one of {home|project|customer|user}
 } {
+    ns_log Notice "im_filestorage_folder_perms: Checking group memberships"
 
     # ---------------- Gather all necessary information -------------------
 
@@ -112,12 +113,13 @@ ad_proc im_filestorage_folder_perms {folder_path top_folder folder_type user_id 
     # Check the user administration permissions
     set user_is_admin_p [util_memoize "im_is_user_site_wide_or_intranet_admin $user_id"]
     set user_is_wheel_p [util_memoize "ad_user_group_member [im_wheel_group_id] $user_id"]
-    set user_is_group_admin_p [util_memoize "im_can_user_administer_group $group_id $user_id"]
-    set user_admin_p [expr $user_is_admin_p || $user_is_group_admin_p]
-    set user_admin_p [expr $user_admin_p || $user_is_wheel_p]
+    set user_admin_p [expr $user_is_admin_p || $user_is_wheel_p]
 
-    ns_log Notice "admin=$user_is_admin_p wheel=$user_is_wheel_p group_admin=$user_is_group_admin_p admin=$user_admin_p"
-
+    # Get the role of this user in the project/customer/...
+    set roles [im_biz_object_roles $user_id $group_id]
+    if {[lsearch -exact $roles "Key Acount"] >= 0} { set user_admin_p 1 }
+    if {[lsearch -exact $roles "Project Manager"] >= 0} { set user_admin_p 1 }
+    ns_log Notice "im_filestorage_folder_perms: roles of $user_id in object\# $group_id: '$roles'"
 
     # ---------------- Now start evaluating permissions -------------------
 
@@ -126,9 +128,23 @@ ad_proc im_filestorage_folder_perms {folder_path top_folder folder_type user_id 
 	ns_log Notice "Admin=15 for all folders"
 	return 15 
     }
+    ns_log Notice "im_filestorage_folder_perms: Not admin => Check the type of folder"
 
     switch $folder_type {
  
+	"home" {
+	    set read 1
+	    set write 0
+	    set see 1
+	    set admin 0
+	    
+	    # ToDo: Implement...
+	    # By default everybody gets read access...
+
+	    # Returns (1-1-1-1 = Read-Write-See-Admin) permission binary number
+	    return [expr $read + 2*$write + 4*$see +8*$admin]
+	}
+
 	"project" {
  
 	    # "sales" or "presales" folder - requires profile "sales"
@@ -301,7 +317,9 @@ ad_proc im_filestorage_base_component { user_id id base_path name folder_type re
     # "15" = 1-1-1-1 = Read-Write-See-Admin
     set file ""
     set top_folder ""
+    ns_log Notice "im_filestorage_base_component: before im_filestorage_folder_perms"
     set perm [im_filestorage_folder_perms $file $top_folder $folder_type $user_id $id]
+    ns_log Notice "im_filestorage_base_component: perm=$perm"
     set read_p [expr $perm & 1]
     set write_p [expr ($perm & 2) > 0]
     set see_p [expr ($perm & 4) > 0]
@@ -550,7 +568,7 @@ ad_proc im_filestorage_home_path { } {
     Determine the location where global company files
     are stored on the hard disk 
 } {
-    set base_path_unix [ad_parameter "ProjectBasePathUnix" intranet "/tmp/"]
+    set base_path_unix [ad_parameter "ProjectBasePathUnix" intranet "/tmp"]
     return "$base_path_unix/home"
 }
 
