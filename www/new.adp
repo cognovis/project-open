@@ -4,7 +4,7 @@
 @navbar;noquote@
 
 <form action=new-2 method=POST>
-<%= [export_form_vars payment_id provider_id return_url] %>
+@export_form_vars;noquote@
 
 <table border=0>
 <tr> 

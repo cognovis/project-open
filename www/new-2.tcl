@@ -54,7 +54,7 @@ if {"" == $cost_id } {
     return
 }
 
-set note [db_nullify_empty_string $note]
+# set note [db_nullify_empty_string $note]
 
 set customer_id [db_string get_customer_from_invoice "select customer_id from im_costs where cost_id=:cost_id" -default 0]
 set provider_id [db_string get_provider_from_invoice "select provider_id from im_costs where cost_id=:cost_id" -default 0]
@@ -118,7 +118,7 @@ insert into im_payments (
 
 db_dml update_cost_items "
 update im_costs
-set amount = (
+set paid_amount = (
 	select	sum(amount)
 	from	im_payments
 	where	cost_id = :cost_id
