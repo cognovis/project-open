@@ -142,10 +142,59 @@ ad_proc -public im_currency_options { {include_empty 1} } {
     set options [db_list_of_lists currency_options "
 	select iso, iso
 	from currency_codes
+	where supported_p = 't'
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
 }
+
+
+ad_proc -public im_department_options { {include_empty 0} } {
+    Returns a list of all Departments in the company.
+} {
+    set department_only_p 1
+    return [im_cost_center_options $include_empty $department_only_p]
+}
+
+
+ad_proc -public im_cost_center_options { {include_empty 0} { department_only_p 0} } {
+    Returns a list of all Cost Centers in the company.
+} {
+    set start_center_id [db_string start_center_id "select cost_center_id from im_cost_centers where cost_center_label='company'" -default 0]
+
+    set department_only_sql ""
+    if {$department_only_p} {
+	set department_only_sql "and cc.department_p = 't'"
+    }
+
+    set options_sql "
+        select
+                cc.cost_center_name,
+                cc.cost_center_id,
+                cc.cost_center_label,
+                (level-1) as indent_level
+        from
+                im_cost_centers cc
+	where
+		1=1
+		$department_only_sql
+        start with
+                cost_center_id = :start_center_id
+        connect by
+                parent_id = PRIOR cost_center_id"
+
+    set options [list]
+    db_foreach cost_center_options $options_sql {
+        set spaces ""
+        for {set i 0} {$i < $indent_level} { incr i } {
+            append spaces "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+        }
+        lappend options [list "$spaces$cost_center_name" $cost_center_id]
+    }
+    return $options
+}
+
+
 
 
 ad_proc -public im_costs_navbar { default_letter base_url next_page_url prev_page_url export_var_list {select_label ""} } {
@@ -345,7 +394,8 @@ ad_proc im_costs_base_component { user_id {customer_id ""} {project_id ""} } {
     # ----------------- Compose SQL Query --------------------------------
   
     set extra_where [list]
-#    set extra_from [list]
+    set extra_from [list]
+    set extra_select [list]
     set object_name ""
     set new_doc_args ""
     if {"" != $customer_id} { 
@@ -370,32 +420,41 @@ ad_proc im_costs_base_component { user_id {customer_id ""} {project_id ""} } {
 	set new_doc_args "?project_id=$project_id"
     }
 
-    set extra_where_clause [join $extra_where "\n	and "]
-    if {"" == $extra_where_clause} { set extra_where_clause "1=1" }
+    if {[db_table_exists im_payments]} {
+	lappend extra_select "pa.payment_amount"
+	lappend extra_select "pa.payment_currency"
+	lappend extra_from "
+		(select
+			sum(amount) as payment_amount, 
+			max(currency) as payment_currency,
+			cost_id 
+		 from im_payments
+		 group by cost_id
+		) pa
+	"
+	lappend extra_where "ci.cost_id=pa.cost_id(+)"
+    }
 
-#    set extra_from_clause [join $extra_from ",\n\t"]
-#    if {"" != $extra_from_clause} { set extra_from_clause ",\n\t$extra_from_clause" }
+    set extra_where_clause [join $extra_where "\n\tand "]
+    if {"" != $extra_where_clause} { set extra_where_clause "\n\tand$extra_where_clause" }
+    set extra_from_clause [join $extra_from ",\n\t"]
+    if {"" != $extra_from_clause} { set extra_from_clause ",\n\t$extra_from_clause" }
+    set extra_select_clause [join $extra_select ",\n\t"]
+    if {"" != $extra_select_clause} { set extra_select_clause ",\n\t$extra_select_clause" }
 
     set costs_sql "
 select
 	ci.*,
-	pa.payment_amount,
-	pa.payment_currency,
         im_category_from_id(ci.cost_status_id) as cost_status,
         im_category_from_id(ci.cost_type_id) as cost_type,
 	ci.effective_date + payment_days as calculated_due_date
+	$extra_select_clause
 from
-	im_costs ci,
-	(select
-		sum(amount) as payment_amount, 
-		max(currency) as payment_currency,
-		cost_id 
-	 from im_payments
-	 group by cost_id
-	) pa
+	im_costs ci
+	$extra_from_clause
 where
+	1=1
 	$extra_where_clause
-	and ci.cost_id=pa.cost_id(+)
 order by
 	ci.effective_date desc
 "
@@ -416,6 +475,8 @@ order by
   </tr>
 "
     set ctr 1
+    set payment_amount ""
+    set payment_currency ""
     db_foreach recent_costs $costs_sql {
 	append cost_html "
 <tr$bgcolor([expr $ctr % 2])>
