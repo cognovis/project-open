@@ -71,8 +71,8 @@ from
 	UNION (select [im_wheel_group_id] from dual)
 	) r
 where
-	r.profile_id = g.group_id
-	and r.profile_id = p.profile_id
+	r.profile_id = g.group_id (+)
+	and r.profile_id = p.profile_id (+)
 "
     db_foreach project_profiles $project_profile_sql {
 	if {"" == $profile_gif} { set profile_gif "profile" }
