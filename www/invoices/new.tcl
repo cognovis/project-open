@@ -80,7 +80,7 @@ set current_user_id $user_id
 set today [lindex [split [ns_localsqltimestamp] " "] 0]
 set subproject_types [list "t" "[_ intranet-trans-invoices.Yes]" "f" "[_ intranet-trans-invoices.No]"]
 set page_title "[_ intranet-trans-invoices.Invoices]"
-set context_bar [ad_context_bar $page_title]
+set context_bar [im_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 
 if {![im_permission $user_id add_invoices]} {

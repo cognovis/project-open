@@ -17,7 +17,7 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "[_ intranet-trans-invoices.lt_Upload_Client_Prices_]"
 
-set context_bar [ad_context_bar [list "/intranet/companies/" "[_ intranet-trans-invoices.Clients]"] "[_ intranet-trans-invoices.Upload_CSV]"]
+set context_bar [im_context_bar [list "/intranet/companies/" "[_ intranet-trans-invoices.Clients]"] "[_ intranet-trans-invoices.Upload_CSV]"]
 
 set page_content "
 <form enctype=multipart/form-data method=POST action=upload-prices-2.tcl>

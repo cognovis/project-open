@@ -168,9 +168,9 @@ BEGIN
 	);
 
 	-- Reset the status of all invoiced tasks to delivered.
-	update	im_trans_tasks t
+	update	im_trans_tasks
 	set	invoice_id = null
-	where	t.invoice_id = p_invoice_id;
+	where	invoice_id = p_invoice_id;
 
 	-- Erase the invoice itself
 	delete from 	im_trans_invoices

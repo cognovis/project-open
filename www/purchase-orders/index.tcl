@@ -24,7 +24,7 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "[_ intranet-trans-invoices.lt_Generate_Purchase_Ord]"
-set context_bar [ad_context_bar [list /intranet/projects/ "[_ intranet-trans-invoices.Projects]"] [list "/intranet/projects/view?project_id=$project_id" "[_ intranet-trans-invoices.One_project]"] $page_title]
+set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-trans-invoices.Projects]"] [list "/intranet/projects/view?project_id=$project_id" "[_ intranet-trans-invoices.One_project]"] $page_title]
 
 set current_url [im_url_with_query]
 if {"" == $return_url} { set return_url $current_url }

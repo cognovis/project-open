@@ -73,7 +73,7 @@ set tasks_where_clause "task_id in ([join $in_clause_list ","])"
 
 set button_text "[_ intranet-trans-invoices.Create_Invoice]"
 set page_title "[_ intranet-trans-invoices.New_Invoice]"
-set context_bar [ad_context_bar [list /intranet/invoices/ "[_ intranet-trans-invoices.Invoices]"] $page_title]
+set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-trans-invoices.Invoices]"] $page_title]
 set invoice_id [im_new_object_id]
 set invoice_nr [im_next_invoice_nr]
 set invoice_date $todays_date

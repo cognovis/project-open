@@ -28,7 +28,7 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "[_ intranet-invoices.Select_Project]"
-set context_bar [ad_context_bar $page_title]
+set context_bar [im_context_bar $page_title]
 
 # Needed for im_view_columns, defined in intranet-views.tcl
 set amp "&"

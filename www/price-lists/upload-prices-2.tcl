@@ -18,7 +18,7 @@ ad_page_contract {
 set current_user_id [ad_maybe_redirect_for_registration]
 set page_title "<#_ Upload New File/URL#>"
 set page_body "<PRE>\n<A HREF=$return_url><#_ Return to Company Page#></A>\n"
-set context_bar [ad_context_bar [list "/intranet/cusomers/" "<#_ Clients#>"] "<#_ Upload CSV#>"]
+set context_bar [im_context_bar [list "/intranet/cusomers/" "<#_ Clients#>"] "<#_ Upload CSV#>"]
 
 # Get the file from the user.
 # number_of_bytes is the upper-limit

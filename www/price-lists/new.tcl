@@ -34,7 +34,7 @@ if {!$user_is_admin_p} {
 set action_url "new"
 set focus "price.var_name"
 set page_title "[_ intranet-trans-invoices.New_Price]"
-set context [ad_context_bar $page_title]
+set context [im_context_bar $page_title]
 
 
 if {"" == $currency} {
