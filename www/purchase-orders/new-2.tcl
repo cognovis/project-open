@@ -42,7 +42,7 @@ set view_name "invoice_tasks"
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 
-set number_format "9990.09"
+set number_format "9999990.09"
 
 # ---------------------------------------------------------------
 # Compute the t.task_id in (...) lists for trans, edit, proof and other
