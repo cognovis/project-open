@@ -14,14 +14,6 @@ ad_page_contract {
     ordered by project, allowing the user to modify the "billable units".
     Provides a button to advance to "new-3.tcl".
 
-    @param order_by project display order 
-    @param include_subprojects_p whether to include sub projects
-    @param status_id criteria for project status
-    @param type_id criteria for project_type_id
-    @param letter criteria for im_first_letter_default_to_a(ug.group_name)
-    @param start_idx the starting index for query
-    @param how_many how many rows to return
-
     @author frank.bergmann@poject-open.com
 } {
     { select_project:multiple }
