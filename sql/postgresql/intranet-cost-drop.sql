@@ -48,7 +48,8 @@ BEGIN
 
      delete from acs_permissions
      where privilege = p_priv_name;
-
+     delete from acs_privilege_hierarchy
+     where child_privilege = p_priv_name;
      return 0;
 
 end;' language 'plpgsql';
@@ -108,7 +109,7 @@ or child_id in
 delete from im_categories where category_type = 'Intranet Investment Status';
 
 delete from im_biz_object_urls where object_type='im_cost';
-
+select acs_object_type__drop_type('im_repeating_cost', 'f'); 
 select acs_object_type__drop_type('im_cost', 'f'); 
 
 drop table im_prices;
