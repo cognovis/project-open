@@ -27,10 +27,17 @@ END;
 show errors;
 
 
+-- Delete the employees_list view so that /intranet/users/ is going
+-- to show the regular users_list view again.
+delete from im_view_columns where view_id >= 55 and view_id <= 59;
+delete from im_views where view_id >= 55 and view_id <= 59;
+
+
+
 drop table im_emp_checkpoint_checkoffs;
 drop table im_employee_checkpoints;
 drop sequence im_employee_checkpoint_id_seq;
-drop im_supervises_p;
 drop table im_employees;
+drop function im_supervises_p;
 
 commit;
