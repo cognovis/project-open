@@ -38,22 +38,19 @@ create table im_forum_topics (
 	topic_status_id	integer
 			constraint im_forum_topics_status_fk
 			references im_categories,
-	posting_date	date,
+	posting_date	date default sysdate,
 	owner_id	integer not null
 			constraint im_forum_topics_owner_fk
 			references users,
 	scope		varchar(20) default 'group'
 			constraint im_forum_topics_scope_ck
 			check (scope in ('pm', 'group','public','client','staff','not_client')),
-	-- allow to comment on non-group items if on_which_table not null
-	on_what_id	integer,
-	on_which_table	varchar(50),
 	-- message content
 	subject		varchar(200) not null,
 	message		clob,
 	-- task and incident specific fields
-	priority	number(1),
-	due_date	date,
+	priority	number(1) default 5,
+	due_date	date default sysdate,
 	asignee_id	integer
 			constraint im_forum_topics_asignee_fk
 			references users
@@ -508,7 +505,7 @@ insert into im_view_columns values (4000,40,NULL,'P',
 '$priority','','',2,'');
 
 insert into im_view_columns values (4002,40,NULL,'Type',
-'"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
+'"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
 [im_gif $topic_type]</a>"',
 '','',4,'');
 
@@ -517,7 +514,7 @@ insert into im_view_columns values (4003,40,NULL,'Object',
 '','',5,'');
 
 insert into im_view_columns values (4004,40,NULL,'Subject',
-'"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
+'"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
 $subject</a>"','','',6,'');
 
 insert into im_view_columns values (4006,40,NULL,'Due',
@@ -539,12 +536,12 @@ insert into im_view_columns values (4100,41,NULL,'P',
 '$priority','','',2,'');
 
 insert into im_view_columns values (4102,41,NULL,'Type',
-'"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
+'"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
 [im_gif $topic_type]</a>"',
 '','',4,'');
 
 insert into im_view_columns values (4104,41,NULL,'Subject',
-'"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
+'"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
 $subject</a>"','','',6,'');
 
 insert into im_view_columns values (4106,41,NULL,'Due',
@@ -577,12 +574,12 @@ insert into im_view_columns values (4201,42,NULL,'Object',
 '','',3,'');
 
 insert into im_view_columns values (4202,42,NULL,'Type',
-'"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
+'"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
 [im_gif $topic_type]</a>"',
 '','',4,'');
 
 insert into im_view_columns values (4204,42,NULL,'Subject',
-'"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
+'"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
 $subject</A>"','','',6,'');
 
 insert into im_view_columns values (4206,42,NULL,'Due',
@@ -596,13 +593,16 @@ insert into im_view_columns values (4208,42,NULL,'Ass',
 '"<a href=/intranet/users/view?user_id=$asignee_id>$asignee_initials</a>"',
 '','',10,'');
 
-insert into im_view_columns values (4209,42,NULL,'Read',
-'$read','','',11,'');
+insert into im_view_columns values (4209,42,NULL,'Status',
+'$topic_status','','',11,'');
+
+insert into im_view_columns values (42010,42,NULL,'Read',
+'$read','','',12,'');
 
 insert into im_view_columns values (4210,42,NULL,
 '"[im_gif help "Select topics here for processing"]"',
 '"<input type=checkbox name=topic_id.$topic_id>"',
-'','',12,'');
+'','',13,'');
 
 insert into im_view_columns values (4212,42,NULL,'Folder',
 '$folder_name','','',14,'');

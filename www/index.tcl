@@ -25,7 +25,7 @@ ad_page_contract {
 } {
     { forum_order_by "Project" }
     { forum_view_name "forum_list_forum" }
-    { forum_mine_p "t" }
+    { forum_mine_p "f" }
     { forum_topic_type_id:integer 0 }
     { forum_status_id 0 }
     { forum_group_id:integer 0 }
@@ -49,12 +49,6 @@ set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 
 set return_url [im_url_with_query]
 set current_url [ns_conn url]
-
-# Unprivileged users (clients & freelancers) can only see their
-# own projects and no subprojects.
-if {![im_permission $current_user_id "view_forum_topics_all"]} {
-    set forum_mine_p "t"
-}
 
 if { [empty_string_p $forum_how_many] || $forum_how_many < 1 } {
     set forum_how_many [ad_parameter NumberResultsPerPage intranet 100]
@@ -152,7 +146,8 @@ set forum_content [im_forum_component \
 	-export_var_list	[list forum_start_idx forum_order_by forum_how_many forum_view_name] \
 	-view_name 		[im_opt_val forum_view_name] \
 	-forum_order_by		[im_opt_val forum_order_by] \
-	-restrict_to_mine_p	t \
+	-restrict_to_mine_p	$forum_mine_p \
+	-restrict_to_folder	$forum_folder \
 	-restrict_to_new_topics 0 \
 ]
 
@@ -166,7 +161,7 @@ set page_body "
     $filter_html
   </form>
 
-[im_forum_navbar "/intranet-forum/index" [list forum_group_id forum_start_idx forum_order_byforum_how_many forum_mine_p forum_view_name]]
+[im_forum_navbar "/intranet-forum/index" [list forum_group_id forum_start_idx forum_order_byforum_how_many forum_mine_p forum_view_name] $forum_folder]
 
 $forum_content
 
