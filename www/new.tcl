@@ -351,6 +351,7 @@ if {$task_or_incident_p} {
     # calculate the list of potential asignees ( id-name pairs ) 
     # based on user permissions, the project members and the PM.
     set asignee_list [im_forum_potential_asignees $user_id $object_id]
+    ns_log Notice "intranet-forum/new: asignee_list=$asignee_list"
 
     if {2 == [llength $asignee_list]} {
 	# only the PM is available: pass the variable on

@@ -295,9 +295,17 @@ where	r.object_id_one = :object_id
 	lappend asignee_list $user_name
     }
 
+    # Worst case - the user has absolutely no rights
+    # and there are no global admins: Add the system 
+    # user
     if {0 == [llength $asignee_list]} {
-	lappend asignee_list 3
-	lappend asignee_list "System Administrator"
+
+	set system_owner_email [ad_parameter -package_id [ad_acs_kernel_id] SystemOwner]
+	set system_owner_id [db_string user_id "select party_id from parties where lower(email) = lower(:system_owner_email)" -default 0]
+	set system_owner_name [db_string sysowner_name "select im_name_from_user_id(:system_owner_id) from dual"]
+
+	lappend asignee_list $system_owner_id
+	lappend asignee_list $system_owner_name
     }
     return $asignee_list
 }
