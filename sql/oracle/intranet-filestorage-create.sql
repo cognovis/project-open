@@ -65,20 +65,6 @@ begin
     );
 
     v_plugin := im_component_plugin.new (
-	plugin_name =>	'Project Filestorage Component',
-	package_name =>	'intranet-filestorage',
-        page_url =>     '/intranet/projects/view',
-        location =>     'bottom',
-        sort_order =>   90,
-        component_tcl => 
-	'im_filestorage_project_component \
-		$user_id \
-		$project_id \
-		$project_name \
-		$return_url'
-    );
-
-    v_plugin := im_component_plugin.new (
 	plugin_name =>	'Customers Filestorage Component',
 	package_name =>	'intranet-filestorage',
         page_url =>     '/intranet/customers/view',
@@ -95,10 +81,28 @@ begin
 end;
 /
 show errors
-
 commit;
 
 
+
+declare
+    v_plugin            integer;
+begin
+    v_plugin := im_component_plugin.new (
+	plugin_name =>	'Project Filestorage Component',
+	package_name =>	'intranet-filestorage',
+        page_url =>     '/intranet/projects/view',
+        location =>     'files',
+        sort_order =>   90,
+        component_tcl => 
+	'im_filestorage_project_component \
+		$user_id \
+		$project_id \
+		$project_name \
+		$return_url'
+    );
+end;
+/
 
 
 ---------------------------------------------------------
