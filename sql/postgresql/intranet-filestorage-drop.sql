@@ -16,6 +16,8 @@ drop table im_fs_folder_status;
 drop sequence im_fs_folder_seq;
 drop table im_fs_folders;
 
-select im_component_plugin.del_module('intranet-filestorage');
+select acs_privilege__drop_privilege('view_filestorage_sales');
+
+select im_component_plugin__del_module('intranet-filestorage');
 
 
