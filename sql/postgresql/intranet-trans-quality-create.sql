@@ -126,3 +126,104 @@ select im_component_plugin__new (
 -- Views and categories common for Oracle and PostgreSQL
 \i ../common/intranet-transq-common.sql
 
+
+-----------------------------------------------------
+-- Sum up translation errors, counting NULL errors as 0:
+--
+create or replace function im_transq_weighted_error_sum (
+	integer,
+	integer,
+	integer,
+	integer,
+	integer
+) RETURNS integer as '
+DECLARE
+	p_task_id	alias $1;
+	p_project_id	alias $2;
+	p_minor_errors	alias $3;
+	p_major_errors	alias $4;
+	p_critical_errors alias $5;
+
+	v_result	integer;
+BEGIN
+	v_result := 0;
+
+	if p_minor_errors is not null then
+		v_result := v_result + p_minor_errors;
+	end if;
+	if p_major_errors is not null then
+		v_result := v_result + p_major_errors * 5;
+	end if;
+	if p_critical_errors is not null then
+		v_result := v_result + p_critical_errors * 10;
+	end if;
+
+	return v_result;
+END;' language 'plpgsql';
+
+
+
+-----------------------------------------------------
+-- Components
+--
+
+-- Project Quality Component
+--
+declare
+    v_plugin            integer;
+begin
+    v_plugin := im_component_plugin.new (
+        plugin_name =>  'Project Quality Component',
+        package_name => 'intranet-trans-quality',
+        page_url =>     '/intranet/projects/view',
+        location =>     'right',
+        sort_order =>   30,
+        component_tcl =>
+        'im_table_with_title "Quality" [im_quality_project_component \
+		-project_id $project_id \
+		-return_url $return_url \
+	]'
+    );
+end;
+/
+show errors
+
+
+
+-----------------------------------------------------
+-- Defined the view for the list page
+--
+
+
+-- Quality Views
+--
+insert into im_views (view_id, view_name, visible_for)
+values (250, 'quality_list', 'view_quality');
+
+
+-- Quality List Page
+--
+delete from im_view_columns where column_id > 25000 and column_id < 25099;
+--
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (25001,250,'Task Name',
+'"<a href=/intranet-trans-quality/new?task_id=$task_id>$task_name</a>"',1);
+
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (25003,250,'Source','$source_language',3);
+
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (25005,250,'Target', '$target_language',5);
+
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (25007,250,'Units','$task_units',7);
+
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (25011,250,'Quality', '$expected_quality',11);
+
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (25013,250,'Report', 
+'"<a href=/intranet-trans-quality/new?task_id=$task_id>$total_errors / $allowed_errors</a>"'
+,13);
+
+commit;
