@@ -177,7 +177,6 @@ db_foreach column_list_sql $column_sql {
 	}
     }
 }
-ns_log Notice "/users/index.tcl: column_vars=$column_vars"
 
 
 # ---------------------------------------------------------------
@@ -291,8 +290,6 @@ from
 	($sql) t
 "]
 
-    ns_log Notice "/users/index.tcl: sql=$sql"
-    ns_log Notice "/users/index.tcl: total_in_limited=$total_in_limited"
 }
 
 # ---------------------------------------------------------------
@@ -419,7 +416,7 @@ if { $start_idx > 0 } {
 # 9. Format Table Continuation
 # ---------------------------------------------------------------
 
-set navbar_html [im_user_navbar $letter "/intranet/users/index" $next_page_url $previous_page_url [list start_idx order_by how_many view_name user_group_name letter] $menu_select_label]
+set navbar_html [im_user_navbar $letter "/intranet-freelance/index" $next_page_url $previous_page_url [list start_idx order_by how_many view_name user_group_name letter] $menu_select_label]
 
 # nothing to do here ... (?)
 set table_continuation_html ""
