@@ -1,7 +1,7 @@
 ad_page_contract {
     @author Neophytos Demetriou <k2pts@cytanet.com.cy>
     @creation-date September 01, 2001
-    @cvs-id $Id: search.tcl,v 1.5 2001/09/17 05:16:40 danw Exp $
+    @cvs-id $Id: search.tcl,v 1.6 2001/09/20 01:10:56 danw Exp $
 } {
     q:notnull,trim
     {t:trim ""}
@@ -13,8 +13,6 @@ ad_page_contract {
     q:notnull {You must specify some keywords.}
 }
 
-ns_log Notice "args = [info args AcsSc.FtsEngineDriver.search.openfts-driver]"
-ns_log Notice "args = [info args openfts_driver__search]"
 ns_startcontent -type "text/html"
 set this_dir [file dirname [ad_conn file]]
 set template_top_file "$this_dir/search-results-top"
