@@ -50,12 +50,14 @@ create index im_risks_title_idx on im_risks(title);
 begin
     -- add_risks should only be allowed to project managers
     acs_privilege.create_privilege('add_risks','Add Risks','Add Risks');
+    acs_privilege.add_child('admin', 'add_risks');
 end;
 /
 
 begin
     -- view_risks depends on the company
     acs_privilege.create_privilege('view_risks','View Risks','View Risks');
+    acs_privilege.add_child('admin', 'view_risks');
 end;
 /
 
