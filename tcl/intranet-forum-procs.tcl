@@ -162,11 +162,18 @@ ad_proc -public im_forum_potential_asignees {user_id object_id} {
     set admins [db_list get_admins "select member_id from group_distinct_member_map where group_id = :admin_group_id"]
 
     set object_admins [im_biz_object_admin_ids $object_id]
+
+    # Avoid empty select list: Add the system admins to the
+    # list if the list was empty
     if {![llength $object_admins]} { set object_admins $admins }
-    set object_admins_commalist [join $object_admins ","]
 
     set object_members [im_biz_object_admin_ids $object_id]
+    # Avoid empty select list: Add the system admins to the
+    # list if the list was empty
     if {![llength $object_members]} { set object_members $admins }
+
+    # Convert into forma suitable for SQL select
+    set object_admins_commalist [join $object_admins ","]
     set object_members_commalist [join $object_members ","]
 
 
@@ -214,7 +221,7 @@ from
 	users u
 where
 	r.object_id_one = :object_id
-	and r.object_id_one = u.user_id
+	and r.object_id_two = u.user_id
 	and m.member_id = u.user_id
 	and m.group_id = :customer_group_id
 )"
@@ -231,7 +238,7 @@ from
 	users u
 where
 	r.object_id_one = :object_id
-	and r.object_id_one = u.user_id
+	and r.object_id_two = u.user_id
 	and m.member_id = u.user_id
 	and m.group_id = :customer_group_id
 )"
