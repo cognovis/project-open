@@ -12,6 +12,19 @@ ad_library {
 }
 
 # ----------------------------------------------------------------------
+# Constant Functions
+# ----------------------------------------------------------------------
+
+
+ad_proc -public im_employee_status_potential {} { return 450 }
+ad_proc -public im_employee_status_received_test {} { return 451 }
+ad_proc -public im_employee_status_failed_test {} { return 452 }
+ad_proc -public im_employee_status_approved_test {} { return 453 }
+ad_proc -public im_employee_status_active {} { return 454 }
+ad_proc -public im_employee_status_past {} { return 455 }
+
+
+# ----------------------------------------------------------------------
 # Employee Info Component
 # Some simple extension data for employeers
 # ----------------------------------------------------------------------
@@ -19,23 +32,35 @@ ad_library {
 ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
     Show some simple information about a employeer
 } {
-    set current_user_id [ad_get_user_id]
-    if {"" == $view_name} { set view_name "employees_view" }
     ns_log Notice "im_employee_info_component: employee_id=$employee_id, view_name=$view_name"
+    set current_user_id [ad_get_user_id]
+
+    if {"" == $view_name} { set view_name "employees_view" }
     set department_url "/intranet/intranet-cost/cost_centers/view?cost_center_id="
     set user_url "/intranet/users/view?user_id="
-
-    set view 0
-    set read 0
-    set write 0
-    set admin 0
-    im_user_permissions $current_user_id $employee_id view read write admin
 
     set td_class(0) "class=roweven"
     set td_class(1) "class=rowodd"
 
     # employee_id gets modified by the SQl ... :-(
     set org_employee_id $employee_id    
+
+    # --------------- Security --------------------------
+
+    set view 0
+    set read 0
+    set write 0
+    set admin 0
+    im_user_permissions $current_user_id $employee_id view read write admin
+    if {!$read} { return "" }
+
+    # Check if the current_user is a HR manager
+    if {![im_permission $current_user_id view_hr]} { return "" }
+
+    # Finally: Show this component only for employees
+    if {![im_user_is_employee_p $employee_id]} { return "" }
+
+    # --------------- Security --------------------------
 
     db_1row employee_info "
 	select	

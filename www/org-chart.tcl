@@ -25,9 +25,8 @@ set page_focus "im_header_form.keywords"
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 set return_url [im_url_with_query]
 
-if {![im_permission $user_id view_users]} {
-    set err_msg "You don't have permissions to view users"
-    ad_returnredirect "/error?error=$err_msg"
+if {![im_permission $user_id view_hr]} {
+    ad_return_complaint 1 "You don't have permissions to view users"
     return
 }
 
@@ -36,21 +35,27 @@ if {![im_permission $user_id view_users]} {
 # im_employees - basically, until you say This user is supervised by nobody
 # or by her, that user won't show up in the query
 
-set big_kahuna_list [db_list  kahuna_find \
-	"select info.user_id 
-           from im_employees_active info
-          where supervisor_id is null
-            and exists (select 1
-                          from im_employees_active info2
-                         where info2.supervisor_id = info.user_id)"]
+set big_kahuna_list [db_list kahuna_find "
+select 
+	info.employee_id 
+from
+	im_employees_active info
+where
+	supervisor_id is null
+	and exists (
+		select 1
+                from im_employees_active info2
+                where info2.supervisor_id = info.employee_id
+	)
+"]
 
 if { [llength $big_kahuna_list] == 0 || [llength $big_kahuna_list] > 1 } {
     ad_return_error "No Big Kahuna" "<blockquote>For the org chart page to work, you need to have set up the \"who supervises whom\" relationships so that there is only one person (the CEO) who has no supervisor and no subordinates.</blockquote>"
     return
 }
 
-if { ![exists_and_not_null starting_user_id] } {
-    set starting_user_id [lindex $big_kahuna_list 0]
+if { ![exists_and_not_null starting_employee_id] } {
+    set starting_employee_id [lindex $big_kahuna_list 0]
 }
 
 set page_body "<blockquote>\n"
@@ -70,39 +75,39 @@ set vacant_position ""
 
 set nodes_sql "
 select 
-    user_id,
-    im_name_from_user_id(user_id) as employee_name,
-    ad_group_member_p(user_id, [im_employee_group_id]) as currently_employed_p
+    employee_id,
+    im_name_from_user_id(employee_id) as employee_name,
+    ad_group_member_p(employee_id, [im_employee_group_id]) as currently_employed_p
 from 
     im_employees
 start with 
-    user_id = :starting_user_id
+    employee_id = :starting_employee_id
 connect by  
-    supervisor_id = PRIOR user_id"
+    supervisor_id = PRIOR employee_id"
 
 set bind_vars [ns_set create]
-ns_set put $bind_vars starting_user_id $starting_user_id
+ns_set put $bind_vars starting_employee_id $starting_employee_id
 
 # generate the org chart
 
 append page_body [tree_to_horizontal_table [im_prune_org_chart [db_tree nodes_display $nodes_sql -bind $bind_vars]] im_print_employee]
 
 # Now pull out the people who don't get included because they 
-# aren't starting_user_id and they don't have supervisors
+# aren't starting_employee_id and they don't have supervisors
 
 set employee_listing_sql "
-select u.user_id, u.first_names || ' ' || u.last_name as employee_name
+select u.employee_id, u.first_names || ' ' || u.last_name as employee_name
            from im_employees_active u
-          where u.user_id <> :starting_user_id
+          where u.employee_id <> :starting_employee_id
             and u.supervisor_id is null
           order by lower(employee_name)"
 
 set homeless_employees ""
 
 db_foreach employee_listing $employee_listing_sql {
-    append homeless_employees "  <li> <a href=../users/view?[export_url_vars user_id]>$employee_name</a>"
+    append homeless_employees "  <li> <a href=../users/view?[export_url_vars employee_id]>$employee_name</a>"
     if { $user_admin_p } {
-	append homeless_employees " (<a href=admin/update-supervisor?[export_url_vars user_id return_url]>add supervisor</a>)"
+	append homeless_employees " (<a href=admin/update-supervisor?[export_url_vars employee_id return_url]>add supervisor</a>)"
     }
     append homeless_employees "\n"
 }
@@ -119,7 +124,7 @@ append page_body "</blockquote>\n"
 
 set page_body "
 <BR>
-[im_user_navbar "none" "/intranet/users/index" "" "" [list starting_user_id]]
+[im_user_navbar "none" "/intranet/users/index" "" "" [list starting_employee_id]]
 
 $page_body
 "

@@ -25,8 +25,6 @@ ad_page_contract {
 # ------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-set page_title "Edit Employee Information"
-set context [ad_context_bar $page_title]
 set today [db_string birthday_today "select sysdate from dual"]
 
 if {![im_permission $user_id view_users]} {
@@ -38,6 +36,8 @@ set action_url "/intranet-hr/new"
 set focus "cost.var_name"
 set employee_name ""
 
+set form_mode "edit"
+
 if {[info exists employee_id]} {
     set employee_name [db_string employee_name "select im_name_from_user_id(:employee_id) from dual"]
     ns_log Notice "/intranet-hr/new/: employee_id=$employee_id"
@@ -45,26 +45,39 @@ if {[info exists employee_id]} {
     ns_log Notice "/intranet-hr/new/: employee_id doesn't exist"
 }
 
-# ------------------------------------------------------------------
-# Get everything about the employee
-# ------------------------------------------------------------------
+set page_title "Employee Information of $employee_name"
+set context [ad_context_bar $page_title]
 
-if {![exists_and_not_null item_id]} {
-    # New variable: setup some reasonable defaults
-
-    set form_mode "edit"
-}
 
 # ------------------------------------------------------------------
-# Build the form
+# Insert default information if the record doesn't exist
 # ------------------------------------------------------------------
 
 set availability "100"
 set birthdate $today
 set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 
+set exists_p [db_string exists_employee "select count(*) from im_employees where employee_id=:employee_id"]
+if {!$exists_p} {
+db_dml insert_employee_record "
+    insert into im_employees (
+	employee_id,
+	availability,
+	currency,
+	employee_status_id
+    ) values (
+	:employee_id,
+	100,
+	:currency,
+	[im_employee_status_active]
+    )"
+}
 
-set currency_options [im_cost_currency_options]
+# ------------------------------------------------------------------
+# Build the form
+# ------------------------------------------------------------------
+
+set currency_options [im_currency_options]
 set department_options [im_department_options]
 
 

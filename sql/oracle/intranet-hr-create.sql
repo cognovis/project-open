@@ -161,8 +161,6 @@ insert into im_categories (category_id, category, category_type) values
 (454, 'Active', 'Intranet Employee Pipeline State');
 insert into im_categories (category_id, category, category_type) values 
 (455, 'Past', 'Intranet Employee Pipeline State');
-insert into im_categories (category_id, category, category_type) values 
-(456, 'Potential Employee', 'Intranet Employee Pipeline State');
 
 
 ------------------------------------------------------
@@ -192,9 +190,6 @@ create or replace view im_employee_pipeline_states as
 select category_id as state_id, category as state
 from im_categories
 where category_type = 'Intranet Employee Pipeline State';
-
-
-
 
 
 
@@ -404,3 +399,31 @@ begin
 end;
 /
 show errors;
+
+
+------------------------------------------------------
+-- HR Permissions
+--
+
+prompt *** Creating HR Profiles
+begin
+   im_create_profile ('HR Managers','profile');
+end;
+/
+show errors;
+
+prompt *** Creating Privileges
+begin
+    acs_privilege.create_privilege('view_hr','View HR','View HR');
+end;
+/
+
+prompt Initializing HR Permissions
+BEGIN
+    im_priv_create('view_hr',	'HR Managers');
+    im_priv_create('view_hr',	'P/O Admins');
+    im_priv_create('view_hr',	'Senior Managers');
+END;
+/
+
+commit;
