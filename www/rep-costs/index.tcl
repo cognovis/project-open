@@ -20,7 +20,7 @@ ad_page_contract {
 } {
     { start_date "" }
     { report_months 12 }
-    { return_url "/intranet-cost/repeating-costs/" }
+    { return_url "/intranet-cost/rep-costs/" }
 }
 
 # ---------------------------------------------------------------
@@ -31,8 +31,8 @@ set user_id [ad_maybe_redirect_for_registration]
 set subsite_id [ad_conn subsite_id]
 set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
-set site_url "/intranet-cost/repeating-costs"
-set cost_create_url "/intranet-cost/repeating-costs/new-repeated-item"
+set site_url "/intranet-cost/rep-costs"
+set cost_create_url "/intranet-cost/rep-costs/new-rep-cost"
 
 # Start with January of this year if not otherwise specified:
 if {"" == $start_date} {
