@@ -32,7 +32,7 @@ set today [lindex [split [ns_localsqltimestamp] " "] 0]
 set current_user_id [ad_maybe_redirect_for_registration]
 
 set page_title "Quality"
-set context_bar [ad_context_bar_ws $page_title]
+set context_bar [im_context_bar $page_title]
 
 # ---------------------------------------------------------------
 # Save the main quality report

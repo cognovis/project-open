@@ -25,7 +25,7 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "[_ intranet-trans-quality.Quality_Reports]"
-set context_bar [ad_context_bar $page_title]
+set context_bar [im_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 
 set component [im_quality_list_component -project_id $project_id -trans_id $trans_id -edit_id $edit_id  -proof_id $proof_id  -other_id $other_id -person_id $person_id -company_id $company_id -order_by $order_by  -start_idx $start_idx -how_many $how_many -view_name $view_name]

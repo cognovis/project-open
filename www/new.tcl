@@ -23,7 +23,7 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set todays_date [lindex [split [ns_localsqltimestamp] " "] 0]
 set page_title "One Quality Report"
-set context_bar [ad_context_bar $page_title]
+set context_bar [im_context_bar $page_title]
 set view_user_url "/intranet/users/view"
 
 set bgcolor(0) " class=roweven"
