@@ -23,7 +23,7 @@ set object_id 0
 set return_url "/intranet-filestorage/"
 set current_url_without_vars [ns_conn url]
 
-set page_body [im_filestorage_pol_component $user_id $object_id $object_name $base_path $folder_type $current_url_without_vars]
+set page_body [im_filestorage_home_component $user_id]
 
 doc_return  200 text/html [im_return_template]
 db_release_unused_handles
