@@ -19,7 +19,7 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set project_path [im_filestorage_project_path $project_id]
-set today [db_string today "select to_chr(sysdate,'YYYY-MM-DD') from dual"]
+set today [db_string today "select to_char(sysdate,'YYYY-MM-DD') from dual"]
 
 set file "$project_path/$file_name"
 set guessed_file_type [ns_guesstype $file]
@@ -31,9 +31,9 @@ ns_log notice "file_type=$guessed_file_type"
 
 db_dml insert_action "
 insert into im_fs_actions (
-        action_type_id
-        user_id       
-        action_date   
+        action_type_id,
+        user_id,       
+        action_date,   
         file_name
 ) values (
 	[im_file_action_download],
