@@ -267,7 +267,7 @@ ad_proc im_filestorage_home_component { user_id } {
     set object_id 0
     set return_url "/intranet/"
     set home_path [im_filestorage_home_path]
-    return [im_filestorage_base_component $user_id $object_id $object_name $base_path $folder_type]
+    return [im_filestorage_base_component $user_id $object_id $object_name $base_path $folder_type "o"]
 }
 
 ad_proc im_filestorage_project_component { user_id project_id project_name return_url} {
@@ -731,6 +731,38 @@ ad_proc export_url_bind_vars { bind_vars } {
 }
 
 
+
+ad_proc -private im_filestorage_user_memberships { user_id object_id } {
+    Returns a list of all profiles and roles to whom the current
+    user belongs.
+} {
+    set sql "
+	-- Get the list of all profiles (=group) to which
+	-- the current user belongs
+	select distinct
+		profile_id
+	from
+		im_profiles p,
+		group_distinct_member_map m
+	where
+		m.member_id = :user_id
+		and m.group_id = p.profile_id
+UNION
+	-- get the list of roles that the current user
+	-- has in his relationship with the object_id
+	select distinct
+		m.object_role_id as profile_id
+	from
+		acs_rels r,
+		im_biz_object_members m
+	where
+		r.object_id_one = :object_id
+		and r.object_id_two = :user_id
+		and r.rel_id = m.rel_id"
+
+    return [db_list user_profiles $sql]
+}
+
 ad_proc -private im_filestorage_merge_perms { perms1 perms2 } {
     Merge (=add) the perms of a subdirectory to the perms of another
     directory. In the future, this may also include subtraction
@@ -829,7 +861,7 @@ ad_proc -private im_filestorage_render_perms { perm } {
     return $result
 }
 
-ad_proc -public im_filestorage_base_component { user_id object_id object_name base_path folder_type} {
+ad_proc -public im_filestorage_base_component { user_id object_id object_name base_path folder_type { default_open "c"} } {
     Main funcion to generate the filestorage page ( create folder, bread crum, ....)
     @param user_id: the user who is attempting to view the filestorage
     @param object_id: from wich group is pending this user?
@@ -968,12 +1000,18 @@ where
     set roles [im_filestorage_roles $user_id $object_id]
     set profiles [im_filestorage_profiles $user_id $object_id]
 
+    # Get the group membership of the current (viewing) user
+    set user_memberships [im_filestorage_user_memberships $user_id $object_id]
+
     set last_perm_parent ""
     set last_perm_parent_depth 0
-    # The root is alsways readable for everybody
+    # The root is always readable for everybody
     set root_path ""
     set perm_hash($root_path) [list 0 0 0 0]
 
+    # Extract all (path - profile_id) -> permission
+    # information from the DB and store them in a 
+    # hash array for fast access
     set perm_sql "
 select
         p.profile_id,
@@ -989,8 +1027,10 @@ where
 	p.folder_id = f.folder_id
 "
 
+    set ctr 0
     db_foreach perm_init $perm_sql {
 
+	incr ctr
 	set hash_key "$folder_path-$profile_id"
 	
 	if {$view_p} {
@@ -1026,6 +1066,15 @@ where
 	    set perm_hash($hash_key) $perms
 	}
     }
+
+    # Default value if no permissions have been set for
+    # a folder: make everything readable for everybody.
+    if {!$ctr} { set perm_hash($root_path) [list 1 1 1 1]}
+
+    # Extract into an array because needs to be passed to
+    # a subroutine frequently (for every line)
+    set perm_hash_array [array get perm_hash]
+
 
     # ------------------------------------------------------------------
     # Here we start rendering the file tree
@@ -1064,7 +1113,7 @@ where
 	# current directory, even if there was no information about
 	# the current folder in the DB.
 	if { ![info exists open_p_hash($rel_path)]} {
-	    set open_p_hash($rel_path) "c"
+	    set open_p_hash($rel_path) $default_open
 	    incr last_folder_id
 	    set folder_id_hash($rel_path) $last_folder_id
 	}
@@ -1095,9 +1144,50 @@ where
 	    set last_parent_path $rel_path
 	    set last_parent_path_depth $current_depth
 	}
+
+	# Now we know that we need to render this line.
 	if {![string equal "o" $visible_p]} { continue }
 
 
+	# ----------------------------------------------------
+	# Determine access permissions
+
+	# Loop for all profile memberships of the current user
+	# and "or-join" the permissions together
+
+	array set profile_perms [im_filestorage_path_perms $rel_path $perm_hash_array $roles $profiles]
+	set user_perms [list 0 0 0 0]
+	foreach profile_id $user_memberships {
+	    set hash_key "$profile_id"
+	    if {[info exists profile_perms($hash_key)]} {
+		set perms $profile_perms($hash_key)
+		set user_perms [im_filestorage_merge_perms $user_perms $perms]
+	    }
+	}
+
+	# Give base-object administrators (write permissions to the object)
+	# full access to all files
+	if {$object_id > 0} {
+	    
+	    # Permissions for all usual projects, customers etc.
+	    set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id"]
+	    set perm_cmd "${object_type}_permissions \$user_id \$object_id object_view object_read object_write object_admin"
+	    eval $perm_cmd
+	    if {$object_write} { set user_perms [list 1 1 1 1] }
+	} else {
+	    # The home-component has object_id==0
+	    set object_view 1
+	    set object_read 1
+	    set object_write 0
+	    set object_admin 0
+	}
+
+	# Don't even enter into the folder/file procs if the user shoudln't see it
+	set view_p [lindex $user_perms 0]
+	if {!$view_p} { continue }
+
+
+	# ----------------------------------------------------
 	# Count the lines starting with 1.
 	# We need this counter to mark rows as even/odd alternatingly
 	# and to provide a unique identifier for each line for the 
@@ -1130,7 +1220,8 @@ where
 			    -rowclass $rowclass \
 			    -roles $roles \
 			    -profiles $profiles \
-			    -perm_hash_array [array get perm_hash] \
+			    -perm_hash_array $perm_hash_array \
+			    -user_perms $user_perms \
 	    ]
 
 	} else {
@@ -1151,6 +1242,7 @@ where
 			      $file_size \
 			      $file_modified \
 			      $file_extension \
+			      $user_perms \
 		           ]
 	}
     }
@@ -1215,11 +1307,26 @@ ad_proc im_filestorage_dir_row {
     -roles
     -profiles
     -perm_hash_array
+    -user_perms
 } {
     Create a directory row with links for open/close and bread_crum enter
 } {
-
     array set perm_hash $perm_hash_array
+
+    # ----------------------------------------------------
+    # Determine access permissions
+
+    # Decode the permissions calculated at the main routine
+    set view_p [lindex $user_perms 0]
+    set read_p [lindex $user_perms 1]
+    set write_p [lindex $user_perms 2]
+    set admin_p [lindex $user_perms 3]
+
+    # Get the profile_id -> [1 1 1 1] hash
+    array set perms [im_filestorage_path_perms $rel_path $perm_hash_array $roles $profiles]
+
+    # ----------------------------------------------------
+    # Render the main line
     set line_html ""
     set i 1
     while {$i < $current_depth} {
@@ -1228,12 +1335,15 @@ ad_proc im_filestorage_dir_row {
     } 
     set status $open_p
     append line_html "<a href=/intranet-filestorage/folder_status_update?[export_url_vars status object_id rel_path return_url]>"
+
     if {$open_p == "o"} {
 	append line_html [im_gif foldin2]
     } else {
 	append line_html [im_gif foldout2]
     }
-    append line_html "</a>[im_gif folder_s]"
+
+    append line_html "</a>"
+    append line_html "[im_gif folder_s]"
 
     set bind_vars_bread_crum [ns_set copy $bind_vars]
     ns_set put $bind_vars_bread_crum bread_crum_path $bread_crum_path
@@ -1245,8 +1355,6 @@ ad_proc im_filestorage_dir_row {
     # ----------------------------------------------------
     # Format the permission columns
     
-    array set perms [im_filestorage_path_perms $rel_path $perm_hash_array $roles $profiles]
-
     set roles_tds ""
     foreach role $roles {
 	set role_id [lindex $role 0]
@@ -1293,9 +1401,22 @@ ad_proc im_filestorage_dir_row {
 }
 
 
-ad_proc im_filestorage_file_row { file_body base_path folder_type rel_path object_id base_path_depth current_depth file ctr rowclass file_type file_size file_modified file_extension} {
+ad_proc im_filestorage_file_row { file_body base_path folder_type rel_path object_id base_path_depth current_depth file ctr rowclass file_type file_size file_modified file_extension user_perms} {
 
 }   {
+    # ----------------------------------------------------
+    # Determine access permissions
+
+    # Decode the permissions calculated at the main routine
+    set view_p [lindex $user_perms 0]
+    set read_p [lindex $user_perms 1]
+    set write_p [lindex $user_perms 2]
+    set admin_p [lindex $user_perms 3]
+
+
+    # ----------------------------------------------------
+    # Render the file
+
     append component_html "
 <tr class=$rowclass>
   <td align=center valign=middle>
@@ -1325,9 +1446,14 @@ ad_proc im_filestorage_file_row { file_body base_path folder_type rel_path objec
 	default {
 	}
     }
-    append component_html "
 
-  <A href=/intranet/download/$folder_type/$object_id/$rel_path>$icon</A>
+    if {$read_p} {
+	append component_html "<A href=/intranet/download/$folder_type/$object_id/$rel_path>$icon</A>"
+    } else {
+	append component_html "$icon"
+    }
+
+    append component_html "
   $file_body
   
   </td>
