@@ -107,7 +107,7 @@ append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
 	  <td>[_ intranet-forum.Assign_to]:</td>
 	  <td>
-	    [im_select asignee_id $asignee_list $asignee_id]
+	    [im_select -translate_p 0 asignee_id $asignee_list $asignee_id]
 	  </td>
 	</tr>\n"
 incr ctr
@@ -144,7 +144,7 @@ $table_body
 
 "
 
-doc_return  200 text/html [im_return_template]
+ad_return_template
 
 
 
