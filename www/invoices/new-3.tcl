@@ -106,7 +106,7 @@ from
         im_offices o,
         country_codes cc
 where 
-        c.customer_id=:customer_id
+        c.customer_id = :customer_id
         and c.main_office_id=o.office_id(+)
         and o.address_country_code=cc.iso(+)
 "
@@ -652,7 +652,7 @@ set page_body "
 [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
 
 <form action=new-4 method=POST>
-[export_form_vars customer_id invoice_id cost_status_id return_url]
+[export_form_vars customer_id provider_id invoice_id cost_status_id return_url]
 
 "
 
