@@ -100,8 +100,10 @@ switch $folder_type {
 ns_log Notice "dest_path=$dest_path"
 
 if { [catch {
-    ns_log Notice "/bin/cp $tmp_filename $dest_path"
+    ns_log Notice "/bin/mv $tmp_filename $dest_path"
     exec /bin/cp $tmp_filename $dest_path
+    ns_log Notice "/bin/chmod ug+w $dest_path"
+    exec /bin/chmod ug+w $dest_path
 } err_msg] } {
     # Probably some permission errors
     ad_return_complaint  "Error writing upload file"  $err_msg
