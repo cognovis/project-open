@@ -376,25 +376,6 @@ begin
 			$customer_id \
 			$return_url \
 		] \
-
-
-			-user_id $user_id \
-			-object_id $project_id \
-			-current_page_url $current_url \
-			-return_url $return_url \
-			-export_var_list [list \
-				project_id \
-				forum_start_idx \
-				forum_order_by \
-				forum_how_many \
-				forum_view_name \
-			] \
-			-forum_type project \
-			-view_name [im_opt_val forum_view_name] \
-			-forum_order_by [im_opt_val forum_order_by] \
-			-restrict_to_mine_p "f" \
-			-restrict_to_new_topics 1 
-
 		[im_forum_component \
 			-user_id $user_id \
 			-object_id $customer_id \
@@ -411,9 +392,6 @@ begin
 			-view_name [im_opt_val forum_view_name] \
 			-forum_order_by [im_opt_val forum_order_by] \
 			-restrict_to_mine_p "f" \
-			-restrict_to_topic_type_id $restrict_to_topic_type_id \
-			-restrict_to_topic_status_id $restrict_to_topic_status_id \
-			-restrict_to_asignee_id $restrict_to_asignee_id \
 			-restrict_to_new_topics 1
 		]'
     );
