@@ -18,33 +18,35 @@ show errors
 commit;
 
 
-delete from im_cost_items;
-delete from acs_objects where object_type = 'im_cost_item';
-drop table im_cost_items;
+delete from im_view_columns where view_id >= 220 and view_id <= 229;
+delete from im_views where view_id >= 220 and view_id <= 229;
 
+
+delete from im_prices;
+delete from im_repeating_costs;
+delete from im_costs;
+delete from acs_objects where object_type = 'im_cost';
 delete from im_investments;
 delete from acs_objects where object_type = 'im_investment';
-drop table im_investments;
-
 delete from im_cost_centers;
 delete from acs_objects where object_type = 'im_cost_center';
+
+drop table im_repeating_costs;
+drop table im_prices;
+drop table im_costs;
+drop table im_investments;
 drop table im_cost_centers;
+
+drop package im_cost;
 drop package im_cost_center;
 
 delete from im_categories where category_type = 'Intranet Cost Center Type';
 delete from im_categories where category_type = 'Intranet Cost Center Status';
-
 delete from im_categories where category_type = 'Intranet Investment Type';
 delete from im_categories where category_type = 'Intranet Investment Status';
 
 
--- Delete the OpenACS object type
----
-delete from acs_objects where object_type='im_cost_center';
-show errors
-
 begin
-    acs_object_type.drop_type(object_type => 'im_center');
+    acs_object_type.drop_type(object_type => 'im_cost_center');
 end;
 /
-

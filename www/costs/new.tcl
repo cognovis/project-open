@@ -12,7 +12,7 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-    { item_id:integer,optional }
+    { cost_id:integer,optional }
     { return_url "/intranet-cost/index"}
     edit_p:optional
     message:optional
@@ -28,19 +28,19 @@ set user_id [ad_maybe_redirect_for_registration]
 set page_title "Edit Cost"
 set context [ad_context_bar $page_title]
 
-if {![im_permission $user_id view_cost_items]} {
+if {![im_permission $user_id view_costs]} {
     ad_return_complaint 1 "You have insufficient privileges to use this page"
     return
 }
 
-set action_url "/intranet-cost/cost-items/new"
+set action_url "/intranet-cost/costs/new"
 set focus "cost.var_name"
 
 # ------------------------------------------------------------------
 # Get everything about the cost
 # ------------------------------------------------------------------
 
-if {![exists_and_not_null item_id]} {
+if {![exists_and_not_null cost_id]} {
     # New variable: setup some reasonable defaults
 
     set page_title "New Cost Item"
@@ -73,13 +73,13 @@ select customer_name, customer_id
 from im_customers
 "]
 
-set item_type_options [db_list_of_lists item_type_options "
-select item_type, item_type_id 
-from im_cost_item_type
+set cost_type_options [db_list_of_lists cost_type_options "
+select cost_type, cost_type_id 
+from im_cost_type
 "]
 
-set item_status_options [db_list_of_lists item_status_options "
-select item_status, item_status_id from im_cost_item_status
+set cost_status_options [db_list_of_lists cost_status_options "
+select cost_status, cost_status_id from im_cost_status
 "]
 
 set template_options [db_list_of_lists template_options "
@@ -108,14 +108,14 @@ ad_form \
     -mode $form_mode \
     -export {next_url user_id return_url} \
     -form {
-	item_id:key
-	{item_name:text(text) {label Name} {html {size 40}}}
+	cost_id:key
+	{cost_name:text(text) {label Name} {html {size 40}}}
 	{project_id:text(select) {label Project} {options $project_options} }
 	{customer_id:text(select) {label "Customer<br><small>(Who pays?)</small>"} {options $customer_options} }
 	{provider_id:text(select) {label "Provider<br><small>(Who gets the money?)</small>"} {options $provider_options} }
 
-	{item_type_id:text(select) {label Type} {options $item_type_options} }
-	{item_status_id:text(select) {label Status} {options $item_status_options} }
+	{cost_type_id:text(select) {label Type} {options $cost_type_options} }
+	{cost_status_id:text(select) {label Status} {options $cost_status_options} }
 	{template_id:text(select) {label "Print Template"} {options $template_options} }
 	{investment_id:text(select),optional {label Investment} {options $investment_options} }
 
@@ -139,26 +139,26 @@ ad_form -extend -name cost -on_request {
 } -select_query {
 
 	select	ci.*,
-		im_category_from_id(ci.item_status_id) as item_status
-	from	im_cost_items ci
-	where	ci.item_id = :item_id
+		im_category_from_id(ci.cost_status_id) as cost_status
+	from	im_costs ci
+	where	ci.cost_id = :cost_id
 
 } -new_data {
 
     db_dml cost_insert "
 declare
-	v_item_id	integer;
+	v_cost_id	integer;
 begin
-        v_item_id := im_cost_item.new (
-                item_id         => :item_id,
+        v_cost_id := im_cost.new (
+                cost_id         => :cost_id,
                 creation_user   => :user_id,
                 creation_ip     => '[ad_conn peeraddr]',
-                item_name       => :item_name,
+                cost_name       => :cost_name,
 		project_id	=> :project_id,
                 customer_id     => :customer_id,
                 provider_id     => :provider_id,
-                item_status_id  => :item_status_id,
-                item_type_id    => :item_type_id,
+                cost_status_id  => :cost_status_id,
+                cost_type_id    => :cost_type_id,
                 template_id     => :template_id,
                 effective_date  => :effective_date,
                 payment_days    => :payment_days,
@@ -174,13 +174,13 @@ end;"
 } -edit_data {
 
     db_dml cost_update "
-	update  im_cost_items set
-                item_name       = :item_name,
+	update  im_costs set
+                cost_name       = :cost_name,
 		project_id	= :project_id,
                 customer_id     = :customer_id,
                 provider_id     = :provider_id,
-                item_status_id  = :item_status_id,
-                item_type_id    = :item_type_id,
+                cost_status_id  = :cost_status_id,
+                cost_type_id    = :cost_type_id,
                 template_id     = :template_id,
                 effective_date  = :effective_date,
                 payment_days    = :payment_days,
@@ -191,11 +191,11 @@ end;"
                 description     = :description,
                 note            = :note
 	where
-		item_id = :item_id
+		cost_id = :cost_id
 "
 } -on_submit {
 
-	ns_log Notice "new1: on_submit"
+	ns_log Notice "new: on_submit"
 
 
 } -after_submit {
