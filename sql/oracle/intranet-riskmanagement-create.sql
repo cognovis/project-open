@@ -59,6 +59,66 @@ begin
 end;
 /
 
+
+
+------------------------------------------------------
+-- Add Risks
+---
+BEGIN
+    im_priv_create('add_risks',        'Accounting');
+END;
+/
+BEGIN
+    im_priv_create('add_risks',        'Employees');
+END;
+/
+BEGIN
+    im_priv_create('add_risks',        'P/O Admins');
+END;
+/
+BEGIN
+    im_priv_create('add_risks',        'Project Managers');
+END;
+/
+BEGIN
+    im_priv_create('add_risks',        'Sales');
+END;
+/
+BEGIN
+    im_priv_create('add_risks',        'Senior Managers');
+END;
+/
+
+
+------------------------------------------------------
+-- View Risks
+---
+BEGIN
+    im_priv_create('view_risks',        'Accounting');
+END;
+/
+BEGIN
+    im_priv_create('view_risks',        'Employees');
+END;
+/
+BEGIN
+    im_priv_create('view_risks',        'P/O Admins');
+END;
+/
+BEGIN
+    im_priv_create('view_risks',        'Project Managers');
+END;
+/
+BEGIN
+    im_priv_create('view_risks',        'Sales');
+END;
+/
+BEGIN
+    im_priv_create('view_risks',        'Senior Managers');
+END;
+/
+
+
 --------------
 -- View in Project
 --------------
