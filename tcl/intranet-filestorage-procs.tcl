@@ -901,6 +901,15 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     set base_path_depth [llength [split $base_path "/"]]
     ns_set delkey $bind_vars bread_crum_path
 
+    set user_is_employee_p [im_user_is_employee_p $user_id]
+    set user_is_customer_p [im_user_is_customer_p $user_id]
+
+    # Customer shouldn't see their filestorage
+    if {[string equal "customer" $folder_type] || [string equal "user" $folder_type]} {
+	if {!$user_is_employee_p} { return "" }
+    }
+
+
     # ------------------------------------------------------------------
     # Start initializing the tree algrorithm
 

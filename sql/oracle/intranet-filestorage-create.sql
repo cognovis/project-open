@@ -259,3 +259,6 @@ end;
 /
 
 
+@../common/intranet-filestorage-create.sql
+
+

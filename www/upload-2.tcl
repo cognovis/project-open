@@ -33,7 +33,9 @@ set context_bar [ad_context_bar [list "/intranet/projects/" "Projects"]  [list "
 # Gets object permissions using commands like: "im_project_permissions" ...
 #
 set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id" -default ""]
+
 set perm_cmd "${object_type}_permissions \$user_id \$object_id object_view object_read object_write object_admin"
+
 eval $perm_cmd
 
 
@@ -41,7 +43,7 @@ eval $perm_cmd
 #
 set exception_text ""
 set exception_count 0
-if {!$object_write} {
+if {!$object_read} {
     append exception_text "<li>You have insufficient privileges to upload this file.\n"
     incr exception_count
 }
