@@ -126,6 +126,7 @@ set currency_options [im_currency_options]
 set department_options [im_department_options]
 set end_date $end_century
 set availability "100"
+set hourly_cost 0
 
 set supervisor_options [db_list_of_lists supervisor_options "
 	select 
@@ -157,6 +158,7 @@ set voluntary_termination_options [list [list [_ intranet-hr.Yes] t] [list [_ in
 set department_label "[_ intranet-hr.Department]"
 set supervisor_label "[_ intranet-hr.Supervisor]"
 set availability_label "[_ intranet-hr.Availability_]"
+set hourly_cost_label "[_ intranet-hr.Hourly_Cost]"
 set employee_status_label "[_ intranet-hr.Employee_Status]"
 set ss_number_label "[_ intranet-hr.Social_Security_]"
 set salary_label "[_ intranet-hr.Monthly_Salary]"
@@ -185,6 +187,7 @@ ad_form \
 	{department_id:text(select) {label $department_label} {options $department_options} }
 	{supervisor_id:text(select) {label $supervisor_label} {options $supervisor_options} }
 	{availability:text(text) {label $availability_label} {html {size 6}} }
+	{hourly_cost:text(text),optional {label $hourly_cost_label} {html {size 10}} }
 	{employee_status_id:text(select) {label $employee_status_label} {options $employee_status_options} }
 	{ss_number:text(text),optional {label $ss_number_label} {html {size 20}} }
 	{salary:text(text),optional {label $salary_label} {html {size 10}} }
@@ -318,6 +321,7 @@ ad_form -extend -name cost -on_request {
 		job_title = :job_title,
 		job_description = :job_description,
 		availability = :availability,
+		hourly_cost = :hourly_cost,
 		supervisor_id = :supervisor_id,
 		ss_number = :ss_number,
 		salary = :salary,

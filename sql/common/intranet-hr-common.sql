@@ -116,30 +116,36 @@ insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5602,56,'Job Title','$job_title',02);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5604,56,'Job Description','$job_description',04);
+
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5606,56,'Availability %','$availability',06);
+
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5607,56,'Hourly Cost','$hourly_cost_formatted',07);
+
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5608,56,'Supervisor',
 '"<a href=${user_url}$supervisor_id>$supervisor_name</a>"',08);
+
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5610,56,'Social Security nr','$ss_number',10);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5612,56,'Salary','$salary',12);
+sort_order) values (5612,56,'Salary','$salary_formatted',12);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5614,56,'Social Security','$social_security',14);
+sort_order) values (5614,56,'Social Security','$social_security_formatted',14);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5616,56,'Insurance','$insurance',16);
+sort_order) values (5616,56,'Insurance','$insurance_formatted',16);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5618,56,'Other Costs','$other_costs',18);
+sort_order) values (5618,56,'Other Costs','$other_costs_formatted',18);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5620,56,'Salary Period','$salary_period',20);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5622,56,'Salaries per Year','$salary_payments_per_year',22);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5624,56,'Birthdate','$birthdate',24);
+sort_order) values (5624,56,'Birthdate','$birthdate_formatted',24);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5626,56,'Start Date','$start_date',26);
+sort_order) values (5626,56,'Start Date','$start_date_formatted',26);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5628,56,'Termination_Date','$end_date',28);
+sort_order) values (5628,56,'Termination_Date','$end_date_formatted',28);
 -- commit;
 

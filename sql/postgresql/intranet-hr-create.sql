@@ -47,6 +47,7 @@ create table im_employees (
 	social_security		numeric(12,3),
 	insurance		numeric(12,3),
 	other_costs		numeric(12,3),
+	hourly_cost		numeric(12,3),
 	currency		char(3)
 				constraint im_employees_currency_fk
 				references currency_codes,

@@ -37,6 +37,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
     set current_user_id [ad_get_user_id]
 
     set date_format "YYYY-MM-DD"
+    set number_format "9999990D99"
 
     set department_url "/intranet/intranet-cost/cost_centers/view?cost_center_id="
     set user_url "/intranet/users/view?user_id="
@@ -63,7 +64,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
     # Finally: Show this component only for employees
     if {![im_user_is_employee_p $employee_id]} { return "" }
 
-    # --------------- Security --------------------------
+    # --------------- Select all values --------------------------
 
     set employee_info_exists [db_0or1row employee_info "
 	select	
@@ -74,6 +75,11 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 		to_char(rc.start_date,:date_format) as start_date_formatted,
 		to_char(rc.end_date,:date_format) as end_date_formatted,
 		to_char(e.birthdate,:date_format) as birthdate_formatted,
+		to_char(salary, :number_format) as salary_formatted,
+		to_char(hourly_cost, :number_format) as hourly_cost_formatted,
+		to_char(other_costs, :number_format) as other_costs_formatted,
+		to_char(insurance, :number_format) as insurance_formatted,
+		to_char(social_security, :number_format) as social_security_formatted,
 		u.user_id,
 		cc.cost_center_name as department_name,
 		im_name_from_user_id(e.supervisor_id) as supervisor_name
