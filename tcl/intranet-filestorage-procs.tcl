@@ -37,35 +37,17 @@ ad_proc intranet_home_download {} { intranet_download "home" }
 ad_proc intranet_zip_download {} { intranet_download "zip" }
 
 
-ad_proc -public im_filestorage_profile_bar { user_id object_id } {
-    Returns a rendered HTML component showing the icons of all
-    profiles and object roles for a specific business objects.
+ad_proc -public im_filestorage_profiles { user_id object_id } {
+    Returns a list of profile_id-profile_gif-profile_name tuples
+    for a given filestorage.
 } {
-    set profile_icons ""
-
-    set project_roles_sql "
-select distinct 
-	c.category,
-	c.category_gif,
-	c.category_description
-from 
-	im_biz_object_role_map m,
-	im_categories c,
-	acs_objects o
-where
-	o.object_id = :object_id
-	and m.acs_object_type = o.object_type
-	and m.object_role_id = c.category_id
-"
-    db_foreach project_roles $project_roles_sql {
-	append profile_icons "<td>[im_gif $category_gif $category]</td>\n"
-    }
-
+    set profiles [list]
 
     set project_profile_sql "
 select distinct 
+	p.profile_id,
 	p.profile_gif,
-	g.group_name
+	g.group_name as profile_name
 from 
 	im_profiles p,
 	groups g,
@@ -88,26 +70,62 @@ where
 	and r.profile_id = p.profile_id (+)
 "
     db_foreach project_profiles $project_profile_sql {
-	append profile_icons "<td>[im_gif $profile_gif $group_name]</td>\n"
+	lappend profiles [list $profile_id $profile_gif $profile_name ]
+    }
+    return $profiles
+}
+
+
+ad_proc -public im_filestorage_roles { user_id object_id } {
+    Returns a list of role_id-role_gif-role_name tuples
+    for a given filestorage.    
+} {
+    set roles [list]
+
+    set project_roles_sql "
+select distinct
+	c.category_id,
+	c.category,
+	c.category_gif,
+	c.category_description
+from 
+	im_biz_object_role_map m,
+	im_categories c,
+	acs_objects o
+where
+	o.object_id = :object_id
+	and m.acs_object_type = o.object_type
+	and m.object_role_id = c.category_id
+"
+    db_foreach project_roles $project_roles_sql {
+	lappend roles [list $category_id $category_gif $category]
     }
 
-
-    return "
-<table border=0>
-<tr>
-$profile_icons
-</tr>
-</table>
-"
+    return $roles
 }
 
 
 
+ad_proc -public im_filestorage_profile_tds { user_id object_id } {
+    Returns a rendered HTML component showing the icons of all
+    profiles and object roles for a specific business objects.
+} {
+    set profile_icons ""
 
+    set roles [im_filestorage_roles $user_id $object_id]
+    foreach role $roles {
+	ns_log Notice "im_filestorage_profile_tds: role: $role"
+	append profile_icons "<td>[im_gif [lindex $role 1] [lindex $role 2]]</td>\n"
+    }
 
+    set profiles [im_filestorage_profiles $user_id $object_id]
+    foreach profile $profiles {
+	ns_log Notice "im_filestorage_profile_tds: profile: $profile"
+	append profile_icons "<td>[im_gif [lindex $profile 1] [lindex $profile 2]]</td>\n"
+    }
 
-
-
+    return $profile_icons
+}
 
 
 # Serve the abstract URL 
@@ -236,139 +254,6 @@ where
     return [db_list user_role_list $sql]
 }
 
-
-ad_proc im_filestorage_folder_perms {folder_path top_folder folder_type user_id group_id} {
-    Determines the access permissions of a user to a specific path
-    Returns (1-1-1-1 = Read-Write-See-Admin) permission binary number
-
-    "folder_type" is one of {home|project|project_sales|customer|user}
-} {
-    ns_log Notice "im_filestorage_folder_perms: Checking group memberships"
-
-    # ---------------- Gather all necessary information -------------------
-
-    set role_list [util_memoize "im_filestorage_user_role_list $user_id $group_id"]
-
-    # Check the user administration permissions
-    set user_is_admin_p [util_memoize "im_is_user_site_wide_or_intranet_admin $user_id"]
-    set user_is_wheel_p [util_memoize "ad_user_group_member [im_wheel_group_id] $user_id"]
-    set user_admin_p [expr $user_is_admin_p || $user_is_wheel_p]
-
-    # Get the role of this user in the project/customer/...
-    set roles [im_biz_object_roles $user_id $group_id]
-    if {[lsearch -exact $roles "Key Acount"] >= 0} { set user_admin_p 1 }
-    if {[lsearch -exact $roles "Project Manager"] >= 0} { set user_admin_p 1 }
-    ns_log Notice "im_filestorage_folder_perms: roles of $user_id in object\# $group_id: '$roles'"
-
-    # ---------------- Now start evaluating permissions -------------------
-
-    # Administrators and "members" can write to the directory.
-    if {$user_admin_p} { 
-	ns_log Notice "Admin=15 for all folders"
-	return 15 
-    }
-    ns_log Notice "im_filestorage_folder_perms: Not admin => Check the type of folder"
-
-    switch $folder_type {
- 
-	"home" {
-	    set read 1
-	    set write 0
-	    set see 1
-	    set admin 0
-	    
-	    # ToDo: Implement...
-	    # By default everybody gets read access...
-
-	    # Returns (1-1-1-1 = Read-Write-See-Admin) permission binary number
-	    return [expr $read + 2*$write + 4*$see +8*$admin]
-	}
-
-	"project" {
- 
-	    # "sales" or "presales" folder - requires profile "sales"
-	    # for read/write/view access.
-	    if {[regexp sales $top_folder]} {
-		if {[lsearch -exact $role_list sales] >= 0} {
-		    ns_log Notice "Sales person=7 on sales folder"
-		    return 7
-		}
-		ns_log Notice "Non-sales person=0 on sales folder"
-		return 0
-	    }
-
-	    # "deliv" folder requires profile "member"
-	    # for read/write/view access.
-	    if {[regexp deliv $top_folder]} {
-		if {[lsearch -exact $role_list member] >= 0} {
-		    ns_log Notice "Member=7 on deliv folder"
-		    return 7
-		}
-		ns_log Notice "Non-member=0 on deliv folder"
-		return 0
-	    }
-
-	    # Now we deal with all folders that are not "sales" or "presales":
-
-	    # "Members" can write to all directory (!= sales)
-	    if {[lsearch -exact $role_list "member"] >= 0} {
-		ns_log Notice "member=7 on other folder"
-		return 7
-	    }
-	}
-
-	"customer" {
-	    set read 0
-	    set write 0
-	    set see 0
-	    set admin 0
-
-	    if {[im_permission $user_id view_customer_fs]} { 
-		set see 1 
-		set read 1 
-	    }
-	    if {[im_permission $user_id edit_customer_fs]} { 
-		set see 1 
-		set read 1 
-		set write 1
-	    }
-
-	    # Returns (1-1-1-1 = Read-Write-See-Admin) permission binary number
-	    return [expr $read + 2*$write + 4*$see +8*$admin]
-	}
-
-	"user" {
-	    set read 0
-	    set write 0
-	    set see 0
-	    set admin 0
-
-	    if {[im_permission $user_id view_user_fs]} { 
-		set see 1 
-		set read 1 
-	    }
-	    if {[im_permission $user_id edit_user_fs]} { 
-		set see 1
-		set read 1 
-		set write 1
-	    }
-
-	    # Returns (1-1-1-1 = Read-Write-See-Admin) permission binary number
-	    return [expr $read + 2*$write + 4*$see +8*$admin]
-	}
-
-	default {
-	    ns_log Error "im_filestorage_folder_perms: Unknown folder type \"$folder_type\". "
-	    return 0
-	}
-
-    }
-
-
-    # By default: allow read and see
-    ns_log Notice "Default=5 on other folder"
-    return 5
-}
 
 
 ad_proc im_filestorage_home_component { user_id } {
@@ -784,24 +669,36 @@ where
 }
 
 
-ad_proc im_filestorage_tool_bar { folder folder_type project_id return_url up_link } {
+ad_proc im_filestorage_tool_tds { folder folder_type project_id return_url up_link } {
     Returns a formatted HTML component with a number of GIFs.
 } {
     return "
-<table border=0 cellpadding=0 cellspacing=0>
-<tr> 
    <td align=center>
      <input type=hidden name=actions value=\"none\">
-
+   </td><td>
      <input type=image src=/intranet/images/up-folder.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='up-folder'; submit();\" alt='Folder up'>
+   </td><td>
      <input type=image src=/intranet/images/newfol.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-folder'; submit();\" alt='Create a new folder'>
+   </td><td>
      <input type=image src=/intranet/images/upload.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='upload'; submit();\" alt='Upload a file'>
+   </td><td>
 <!--     <input type=image src=/intranet/images/new-doc.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-doc'; submit();\" alt='Create a new document'> -->
+   </td><td>
      <input type=image src=/intranet/images/del.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='del'; submit();\" alt='Delete files and folders'>
+   </td><td>
      <input type=image src=/intranet/images/zip.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='zip'; submit();\" alt='Download all files as a Zip'>
-   </td>
-</tr>
-</table>"
+   </td><td>
+
+    <table border=0 cellspacing=0 cellpadding=0 width=20>
+    <tr><td align=center>
+     <input type=image src=/intranet/images/plus_9.gif width=9 height=9 onClick=\"window.document.$folder_type.actions.value='add-perms'; submit();\" alt='Add permissions to folders'>
+    </td></tr>
+    <tr><td align=center>
+     <input type=image src=/intranet/images/minus_9.gif width=9 height=9 onClick=\"window.document.$folder_type.actions.value='del-perms'; submit();\" alt='Remove permissions from folders'>
+    </td></tr>
+    </table>
+  </td>
+"
 }
 
 
@@ -832,6 +729,84 @@ ad_proc export_url_bind_vars { bind_vars } {
 }
 
 
+ad_proc -private im_filestorage_merge_perms { perms1 perms2 } {
+    Merge (=add) the perms of a subdirectory to the perms of another
+    directory. In the future, this may also include subtraction
+    of perms.
+} {
+    set perms [list]
+    for {set ctr 0} {$ctr <= 3} {incr ctr} {
+	set perm1 [lindex $perms1 $ctr]
+	set perm2 [lindex $perms2 $ctr]
+	lappend perms [expr $perm1 || $perm2]
+    }
+    return $perms
+}
+
+ad_proc -public im_filestorage_path_perms { path perm_hash_array roles profiles} {
+    Returns a hash profile_ids -> [1 1 1 1] for the path,
+    inheriting permissions from all super-directories
+    @param roles list of [role_id role_gif role_name] triples for each role
+    @param profiles list of [profile_id profile_gif profile_name] triples 
+} {
+    ns_log Notice "im_filestorage_path_perms: roles=$roles"
+    ns_log Notice "im_filestorage_path_perms: profiles=$profiles"
+    ns_log Notice "im_filestorage_path_perms: perm_hash_array=$perm_hash_array"
+    
+    array set perm_hash $perm_hash_array
+
+    foreach profile $profiles {
+	set profile_id [lindex $profile 0]
+
+	# Initialize the perms with the perms of the root directory
+	set cur_path ""
+	set path_perms $perm_hash($cur_path)
+
+	# Loop for all paths and check if there are other perms defined
+	set path_list [split $path "/"]
+	foreach cur_path_fragment $path_list {
+	    # Calculate the new cur_path
+	    if {"" != $cur_path} { append cur_path "/" }
+	    append cur_path $cur_path_fragment
+	    
+	    # Add the perms of the current directory
+	    if {[info exists perm_hash($cur_path)]} {
+		set cur_path_perms $perm_hash($cur_path)
+		set path_perms [im_filestorage_merge_perms $path_perms $cur_path_perms]
+	    }
+	}
+	set perms($profile_id) $path_perms
+	ns_log Notice "im_filestorage_path_perms: perms=[array get perms]"
+    }
+
+    array set perm_hash $perm_hash_array 
+    foreach role $roles {
+	set role_id [lindex $role 0]
+	set role_name [lindex $role 2]
+	set perms($role_id) [list 1 0 1 1]
+	ns_log Notice "im_filestorage_path_perms: perms=[array get perms]"
+    }
+
+    # Return hash as a list
+    return [array get perms]
+}
+
+
+
+ad_proc -private im_filestorage_render_perms { perm } {
+    Returns a formatted HTML like "RW", indicating that
+    a directory is readable and writeable, but not administraratable.
+} {
+    set result ""
+    if {[lindex $perm 0]} { append result "v" }
+    if {[lindex $perm 1]} { append result "r" }
+    if {[lindex $perm 2]} { append result "w" }
+    if {[lindex $perm 3]} { append result "a" }
+
+    if {"" == $result} { set result "-" }
+    return $result
+}
+
 ad_proc -public im_filestorage_base_component { user_id object_id object_name base_path folder_type} {
     Main funcion to generate the filestorage page ( create folder, bread crum, ....)
     @param user_id: the user who is attempting to view the filestorage
@@ -847,6 +822,7 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     set bgcolor(1) "rowodd"
 
     set current_url_without_vars [ns_conn url]
+    set user_id [ad_maybe_redirect_for_registration]
 
     # Extract the bread_crum variable and delete from URL variables
     set bind_vars [ns_conn form]
@@ -859,6 +835,9 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     set bread_crum_path [ns_set get $bind_vars bread_crum_path]
     set base_path_depth [llength [split $base_path "/"]]
     ns_set delkey $bind_vars bread_crum_path
+
+    # ------------------------------------------------------------------
+    # Start initializing the tree algrorithm
 
     # Get the list of files using "find"
     # Start at $base_bath/$bread_crum_path
@@ -884,7 +863,6 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
 
     # ------------------------------------------------------------------
     # Format the bread crum bar
-    # ------------------------------------------------------------------
     
     # The base path selected by the user
     set bread_crum_html "<table><tr><td>\n"
@@ -957,6 +935,65 @@ where
     # Always show the bread_crum "root" as open
     set open_p_hash($current_path) "o"
 
+
+    # ------------------------------------------------------------------
+    # Start initializing the permission system
+    # Permissions are stored in a list with elements
+    # [view - read - write - asmin]
+    # ------------------------------------------------------------------
+    
+    # Get the list of all relevant roles and profiles for permissions
+    set roles [im_filestorage_roles $user_id $object_id]
+    set profiles [im_filestorage_profiles $user_id $object_id]
+
+    set last_perm_parent ""
+    set last_perm_parent_depth 0
+    # The root is alsways readable for everybody
+    set root_path ""
+    set perm_hash($root_path) [list 0 0 0 0]
+
+    set perm_sql "
+select
+        p.profile_id,
+	f.path as folder_path,
+	p.view_p,
+	p.read_p,
+	p.write_p,
+	p.admin_p
+from
+	im_fs_folder_perms p,
+	im_fs_folders f
+where
+	p.folder_id = f.folder_id
+"
+
+    db_foreach perm_init $perm_sql {
+	
+	if {$read_p} {
+	    set perms [list 0 1 0 0]
+	    if {[info exists perm_hash($folder_path)]} { 
+		set old_perms $perm_hash($folder_path)
+		set perms [im_filestorage_merge_perms $old_perms $perms]
+	    }
+	    set perm_hash($folder_path) $perms
+	}
+	if {$write_p} {
+	    set perms [list 0 0 1 0]
+	    if {[info exists perm_hash($folder_path)]} { 
+		set old_perms $perm_hash($folder_path)
+		set perms [im_filestorage_merge_perms $old_perms $perms]
+	    }
+	    set perm_hash($folder_path) $perms
+	}
+	if {$admin_p} {
+	    set perms [list 0 0 0 1]
+	    if {[info exists perm_hash($folder_path)]} { 
+		set old_perms $perm_hash($folder_path)
+		set perms [im_filestorage_merge_perms $old_perms $perms]
+	    }
+	    set perm_hash($folder_path) $perms
+	}
+    }
 
     # ------------------------------------------------------------------
     # Here we start rendering the file tree
@@ -1044,6 +1081,7 @@ where
 
 	    # Printing one row with the directory information
 	    append files_html [im_filestorage_dir_row \
+			    -user_id $user_id \
 			    -file_body $file_body  \
 			    -base_path $base_path \
 			    -bind_vars $bind_vars  \
@@ -1058,6 +1096,9 @@ where
 			    -rel_path $rel_path  \
 			    -bread_crum_path $dir_bread_crum_path \
 			    -rowclass $rowclass \
+			    -roles $roles \
+			    -profiles $profiles \
+			    -perm_hash_array [array get perm_hash] \
 	    ]
 
 	} else {
@@ -1086,9 +1127,10 @@ where
 	append files_html "<tr><td colspan=99>No files found</td></tr>\n"
     }
 
-    set tool_bar_html [im_filestorage_tool_bar $bread_crum_path $folder_type $object_id $return_url $up_link]
+    set tool_tds [im_filestorage_tool_tds $bread_crum_path $folder_type $object_id $return_url $up_link]
 
-    set profile_bar_html [im_filestorage_profile_bar $user_id $object_id]
+    set profile_tds [im_filestorage_profile_tds $user_id $object_id]
+
 
     set component_html "
 <form name=\"$folder_type\" method=POST action=/intranet-filestorage/action>
@@ -1096,10 +1138,14 @@ where
 
 <TABLE border=0 cellpadding=0 cellspacing=0>
   <TR align=center valign=middle class=rowtitle> 
-    <TD colspan=5> 
-      $tool_bar_html
-      $profile_bar_html
+    <TD colspan=5>
+      <table border=0 cellspacing=0 cellpadding=1>
+      <tr>
+      $tool_tds
+      </tr>
+      </table>
     </TD>
+    $profile_tds
   </TR>
   <TR class=rowplain> 
     <TD colspan=5>
@@ -1119,6 +1165,7 @@ where
 
 
 ad_proc im_filestorage_dir_row { 
+    -user_id
     -file_body
     -base_path
     -bind_vars
@@ -1133,6 +1180,9 @@ ad_proc im_filestorage_dir_row {
     -ctr
     -bread_crum_path
     -rowclass
+    -roles
+    -profiles
+    -perm_hash_array
 } {
     Create a directory row with links for open/close and bread_crum enter
 } {
@@ -1158,6 +1208,26 @@ ad_proc im_filestorage_dir_row {
 
     append line_html "<a href=\"$current_url_without_vars?[export_url_bind_vars $bind_vars_bread_crum]\">$file_body</a>"
 
+
+    # ----------------------------------------------------
+    # Format the permission columns
+    
+    array set perms [im_filestorage_path_perms $rel_path $perm_hash_array $roles $profiles]
+
+    set roles_tds ""
+    foreach role $roles {
+	set role_id [lindex $role 0]
+	set p $perms($role_id)
+	append roles_tds "<td align=center>[im_filestorage_render_perms $p]&nbsp;</td>\n"
+    }
+
+    set profiles_tds ""
+    foreach profile $profiles {
+	set profile_id [lindex $profile 0]
+	set p $perms($profile_id)
+	append profiles_tds "<td align=center>[im_filestorage_render_perms $p]&nbsp;</td>\n"
+    }
+
     return "
 <tr class=$rowclass>
   <td align=center valign=middle>
@@ -1170,6 +1240,8 @@ ad_proc im_filestorage_dir_row {
   <td align=center></td>
   <td align=center></td>
   <td align=center></td>
+  $roles_tds
+  $profiles_tds
 </tr>\n"
 }
 
@@ -1214,7 +1286,7 @@ ad_proc im_filestorage_file_row { file_body base_path folder_type rel_path objec
   </td>
   <td>$file_size Kb</td>
   <td>$file_modified</td>
-  <td></td>
+  <td colspan=99></td>
 </tr>\n"
 
     return "$component_html"

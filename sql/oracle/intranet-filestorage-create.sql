@@ -43,7 +43,9 @@ create table im_fs_folders (
 	folder_type_id	integer
 			constraint im_fs_folder_type_fk
 			references im_categories,
-	description	varchar(500)
+	description	varchar(500),
+		constraint im_fs_folders_un
+		unique (object_id, path)
 );
 -- We need to select frequently all folders for a given business object.
 create index im_fs_folders_object_idx on im_fs_folders(object_id);
@@ -97,6 +99,9 @@ create table im_fs_folder_perms (
 	role_id			integer
 				constraint im_fs_folder_perms_role_id
 				references im_categories,
+	view_p			char(1) default('0')
+				constraint im_fs_folder_status_view_p 
+				check(view_p in ('0','1')),
 	read_p			char(1) default('0')
 				constraint im_fs_folder_status_read_p 
 				check(read_p in ('0','1')),
@@ -104,10 +109,19 @@ create table im_fs_folder_perms (
 				constraint im_fs_folder_status_write_p 
 				check(write_p in ('0','1')),
 	admin_p			char(1) default('0')
+				constraint im_fs_folder_status_admin_p 
+				check(admin_p in ('0','1')),
+	constraint im_fs_folder_perms_ch
+	check (
+		profile_id is null and role_id is not null 
+		or profile_id is not null and role_id is null
+	)
+=======
 				constraint im_fs_folder_status_view_p 
 				check(admin_p in ('0','1')),
 	constraint im_fs_folder_perms_ch
 	check (profile_id is null and role_id is not null or profile_id is not null and role_id is null)
+>>>>>>> 1.17
 );
 
 
