@@ -33,14 +33,14 @@
   <msg key="lt_Didnt_find_the_the_vi">Die Sicht '%$view_name%' wurde nicht gefunden.</msg>
   <msg key="lt_Distribute_costs_acco">Verteilung der Kosten auf Basis von Zeiterfassungsinformationen</msg>
   <msg key="lt_Finance_high-level_de">Finanzen Beschreibung</msg>
-  <msg key="lt_No_financial_document">Keine Finanzdokumente für diese Projekt gefunden</msg>
+  <msg key="lt_No_financial_document">Keine Finanzdokumente für dieses Projekt gefunden</msg>
   <msg key="lt_There_are_currently_n">Keine Kosten gefunden für die ausgewählten Filterkriterien</msg>
-  <msg key="lt_This_is_the_homepage_">Dies ist die Finanz-Homepage. Hier finden Sie alle Information über finazielle Vorgänge mit Kunden und Zulieferern.</msg>
+  <msg key="lt_This_is_the_homepage_">Dies ist die Finanz-Homepage. Hier finden Sie alle Information über finanzielle Vorgänge mit Kunden und Zulieferern.</msg>
   <msg key="more_costs">Weitere Dokumente...</msg>
   <msg key="Name">Name</msg>
   <msg key="New_Cost">Neue Kosten</msg>
   <msg key="New_Cost_Item">Neue Kosten</msg>
-  <msg key="New_Customer_Docs">Neuese Kundendokument</msg>
+  <msg key="New_Customer_Docs">Neues Kundendokument</msg>
   <msg key="New_Provider_Docs">Neues Providerdokument</msg>
   <msg key="New_Trans_Invoice">Neue Ubersetzungsrechnung</msg>
   <msg key="Next_Page">Nächste Seite</msg>
