@@ -10,9 +10,9 @@
 
 
 -------------------------------------------------------------
--- Responsability Centers
+-- "Cost Centers"
 --
--- Responsability Centers (cost-, revenue- and investment centers) 
+-- Cost Centers (actually: cost-, revenue- and investment centers) 
 -- are used to model the organizational hierarchy of a company. 
 -- Departments are just a special kind of cost centers.
 -- Please note that this hierarchy is completely independet of the
@@ -43,53 +43,53 @@
 begin
     acs_object_type.create_type (
 	supertype =>		'acs_object',
-	object_type =>		'im_center',
-	pretty_name =>		'Responsability Center',
-	pretty_plural =>	'Responsability Centers',
+	object_type =>		'im_cost_center',
+	pretty_name =>		'Cost Center',
+	pretty_plural =>	'Cost Centers',
 	table_name =>		'im_centers',
-	id_column =>		'center_id',
-	package_name =>		'im_center',
+	id_column =>		'cost_center_id',
+	package_name =>		'im_cost_center',
 	type_extension_table =>	null,
-	name_method =>		'im_center.name'
+	name_method =>		'im_cost_center.name'
     );
 end;
 /
 show errors
 
 
-create table im_centers (
-	center_id		integer
-				constraint im_centers_pk
+create table im_cost_centers (
+	cost_center_id		integer
+				constraint im_cost_centers_pk
 				primary key
-				constraint im_centers_id_fk
+				constraint im_cost_centers_id_fk
 				references acs_objects,
-	center_name		varchar(100) not null,
-	center_type_id		integer not null
-				constraint im_centers_type_fk
+	name			varchar(100) not null,
+	cost_center_type_id	integer not null
+				constraint im_cost_centers_type_fk
 				references categories,
-	center_status_id	integer not null
-				constraint im_centers_status_fk
+	cost_center_status_id	integer not null
+				constraint im_cost_centers_status_fk
 				references categories,
 				-- Where to report costs?
-				-- The "Corporate" center has parent_id=null.
+				-- The toplevel_center has parent_id=null.
 	parent_id		integer 
-				constraint im_centers_parent_fk
-				references im_centers,
-				-- Who is responsible for this center?
+				constraint im_cost_centers_parent_fk
+				references im_cost_centers,
+				-- Who is responsible for this cost_center?
 	manager_id		integer
-				constraint im_centers_manager_fk
+				constraint im_cost_centers_manager_fk
 				references users,
 	description		varchar(4000),
 	note			varchar(4000)
 );
-create index im_centers_parent_id_idx on im_centers(parent_id);
-create index im_centers_manager_id_idx on im_centers(manager_id);
+create index im_cost_centers_parent_id_idx on im_cost_centers(parent_id);
+create index im_cost_centers_manager_id_idx on im_cost_centers(manager_id);
 
 
-create or replace package im_center
+create or replace package im_cost_center
 is
     function new (
-	center_id	in integer,
+	cost_center_id	in integer,
 	object_type	in varchar,
 	creation_date	in date,
 	creation_user	in integer,
@@ -103,20 +103,20 @@ is
 	manager_id	in integer,
 	description	in varchar,
 	note		in varchar
-    ) return im_centers.center_id%TYPE;
+    ) return im_cost_centers.cost_center_id%TYPE;
 
-    procedure del (center_id in integer);
-    procedure name (center_id in integer);
-end im_center;
+    procedure del (cost_center_id in integer);
+    procedure name (cost_center_id in integer);
+end im_cost_center;
 /
 show errors
 
 
-create or replace package body im_center
+create or replace package body im_cost_center
 is
 
     function new (
-	center_id	in integer,
+	cost_center_id	in integer,
 	object_type	in varchar,
 	creation_date	in date,
 	creation_user	in integer,
@@ -130,12 +130,12 @@ is
 	manager_id	in integer,
 	description	in varchar,
 	note		in varchar
-    ) return im_centers.center_id%TYPE
+    ) return im_cost_centers.cost_center_id%TYPE
     is
-	v_center_id	im_centers.center_id%TYPE;
+	v_cost_center_id	im_cost_centers.cost_center_id%TYPE;
     begin
-	v_center_id := acs_object.new (
-		object_id =>		center_id,
+	v_cost_center_id := acs_object.new (
+		object_id =>		cost_center_id,
 		object_type =>		object_type,
 		creation_date =>	creation_date,
 		creation_user =>	creation_user,
@@ -143,48 +143,48 @@ is
 		context_id =>		context_id
 	);
 
-	insert into im_centers (
-		center_id, center_name, center_type_id, 
-		center_status_id, parent_id, manager_id, description, note
+	insert into im_cost_centers (
+		cost_center_id, name, cost_center_type_id, 
+		cost_center_status_id, parent_id, manager_id, description, note
 	) values (
-		v_center_id, name, type_id, 
+		v_cost_center_id, name, type_id, 
 		status_id, parent_id, manager_id, description, note
 	);
-	return v_center_id;
+	return v_cost_center_id;
     end new;
 
 
-    -- Delete a single center (if we know its ID...)
-    procedure del (center_id in integer)
+    -- Delete a single cost_center (if we know its ID...)
+    procedure del (cost_center_id in integer)
     is
-	v_center_id	integer;
+	v_cost_center_id	integer;
     begin
 	-- copy the variable to desambiguate the var name
-	v_center_id := center_id;
+	v_cost_center_id := cost_center_id;
 
-	-- Erase the im_centers item associated with the id
-	delete from 	im_centers
-	where		center_id = v_center_id;
+	-- Erase the im_cost_centers item associated with the id
+	delete from 	im_cost_centers
+	where		cost_center_id = v_cost_center_id;
 
 	-- Erase all the priviledges
 	delete from 	acs_permissions
-	where		object_id = v_center_id;
+	where		object_id = v_cost_center_id;
 
 	-- Finally delete the object iself
-	acs_object.del(v_center_id);
+	acs_object.del(v_cost_center_id);
     end del;
 
 
-    procedure name (center_id in integer)
+    procedure name (cost_center_id in integer)
     is
-	v_name	im_centers.center_name%TYPE;
+	v_name	im_cost_centers.name%TYPE;
     begin
-	select	center_name
+	select	name
 	into	v_name
-	from	im_centers
-	where	center_id = center_id;
+	from	im_cost_centers
+	where	cost_center_id = cost_center_id;
     end name;
-end im_center;
+end im_cost_center;
 /
 show errors
 
@@ -194,25 +194,25 @@ show errors
 
 -- 3000-3099    Intranet Cost Center Type
 -- 3100-3199    Intranet Cost Center Status
+-- 3200-3399	reserved for cost centers
+-- 3400-3499	Intranet Cost Investment Type
+-- 3500-3599	Intranet Cost Investment Status
+
 
 -- Intranet Cost Center Type
-delete from categories where category_id >= 3000 and category_id < 3100;
-
-INSERT INTO categories VALUES (3001,'Cost Center','','Intranet Cost Center Type',1,'f','');
-INSERT INTO categories VALUES (3002,'Profit Center','','Intranet Cost Center Type',1,'f','');
-INSERT INTO categories VALUES (3003,'Investment Center','','Intranet Cost Center Type',1,'f','');
-INSERT INTO categories VALUES (3004,'Subdepartment','Department without budget responsabilities','Intranet Cost Center Type',1,'f','');
-
+delete from im_categories where category_id >= 3000 and category_id < 3100;
+INSERT INTO im_categories VALUES (3001,'Cost Center','','Intranet Cost Center Type',1,'f','');
+INSERT INTO im_categories VALUES (3002,'Profit Center','','Intranet Cost Center Type',1,'f','');
+INSERT INTO im_categories VALUES (3003,'Investment Center','','Intranet Cost Center Type',1,'f','');
+INSERT INTO im_categories VALUES (3004,'Subdepartment','Department without budget responsabilities','Intranet Cost Center Type',1,'f','');
 commit;
 -- reserved until 3099
 
 
 -- Intranet Cost Center Type
-delete from categories where category_id >= 3100 and category_id < 3200;
-
-INSERT INTO categories VALUES (3101,'Active','','Intranet Cost Center Status',1,'f','');
-INSERT INTO categories VALUES (3102,'Inactive','','Intranet Cost Center Status',1,'f','');
-
+delete from im_categories where category_id >= 3100 and category_id < 3200;
+INSERT INTO im_categories VALUES (3101,'Active','','Intranet Cost Center Status',1,'f','');
+INSERT INTO im_categories VALUES (3102,'Inactive','','Intranet Cost Center Status',1,'f','');
 commit;
 -- reserved until 3099
 
@@ -221,7 +221,7 @@ commit;
 
 
 -------------------------------------------------------------
--- Setup the centers of a small consulting company that
+-- Setup the cost_centers of a small consulting company that
 -- offers strategic consulting projects and IT projects,
 -- both following a fixed methodology (number project phases).
 
@@ -240,13 +240,7 @@ begin
 
     -- The Company itself: Profit Center (3002) with status "Active" (3101)
     -- This should be the only center with parent=null...
-    v_the_company_center := im_center.new (
-	center_id =>	null,
-	object_type =>	'im_center',
-	creation_date => sysdate,
-	creation_user => 0,
-	creation_ip =>	null,
-	context_id =>	null,
+    v_the_company_center := im_cost_center.new (
 	name =>		'The Company',
 	type_id =>	3002,
 	status_id =>	3101,
@@ -262,13 +256,7 @@ begin
     -- taking budget control of Finance, Accounting, Legal and
     -- HR stuff.
     --
-    v_user_center := im_center.new (
-	center_id =>	null,
-	object_type =>	'im_center',
-	creation_date => sysdate,
-	creation_user => 0,
-	creation_ip =>	null,
-	context_id =>	null,
+    v_user_center := im_cost_center.new (
 	name =>		'Administration',
 	type_id =>	3001,
 	status_id =>	3101,
@@ -282,13 +270,7 @@ begin
     -- Project oriented companies normally doesn't have a lot 
     -- of marketing, so we don't overcomplicate here.
     --
-    v_user_center := im_center.new (
-	center_id =>	null,
-	object_type =>	'im_center',
-	creation_date => sysdate,
-	creation_user => 0,
-	creation_ip =>	null,
-	context_id =>	null,
+    v_user_center := im_cost_center.new (
 	name =>		'Sales & Marketing',
 	type_id =>	3001,
 	status_id =>	3101,
@@ -302,13 +284,7 @@ begin
     -- Project oriented companies normally doesn't have a lot 
     -- of marketing, so we don't overcomplicate here.
     --
-    v_user_center := im_center.new (
-	center_id =>	null,
-	object_type =>	'im_center',
-	creation_date => sysdate,
-	creation_user => 0,
-	creation_ip =>	null,
-	context_id =>	null,
+    v_user_center := im_cost_center.new (
 	name =>		'Sales & Marketing',
 	type_id =>	3001,
 	status_id =>	3101,
@@ -322,3 +298,137 @@ end;
 /
 show errors
 
+
+-------------------------------------------------------------
+-- "Investments"
+--
+-- Investments are purchases of larger "investment items"
+-- that are not treated as a cost item immediately.
+-- Instead, investments are "amortized" over time
+-- (monthly, quarterly or yearly) until their non-amortized
+-- valeu is zero. A new cost item cost items is generated for 
+-- every amortization interval.
+--
+-- The amortized amount of costs is calculated by summing up
+-- all im_cost_items with the specific investment_id
+--
+create table im_cost_investments (
+	investment_id		integer
+				constraint
+				primary key,
+	name			varchar(400),
+	investment_status_id	integer,
+				constraint im_cost_inv_status_fk
+				references im_categories,
+	investment_type_id	integer
+				constraint im_cost_inv_type_fk
+				references im_categories,
+	amount			number(12,3),
+	currency		char(3),
+				constraint im_cost_inv_currency_fk
+				references currencies
+	amort_start_date	date,
+	amort_interval_id	integer
+				constraint
+				references im_categories
+	amortization_period
+	description		varchar(4000),
+);
+
+
+
+-- Setup the status and type categories
+-- 3000-3099    Intranet Cost Center Type
+-- 3100-3199    Intranet Cost Center Status
+-- 3200-3399	reserved for cost centers
+-- 3400-3499	Intranet Cost Investment Type
+-- 3500-3599	Intranet Cost Investment Status
+-- 3600-3699	Intranet Cost Investment Amortization Interval
+
+-- Intranet Cost Investment Type
+delete from im_categories where category_id >= 3400 and category_id < 3500;
+INSERT INTO im_categories VALUES (3401,'Other','','Intranet Cost Investment Type',1,'f','');
+INSERT INTO im_categories VALUES (3402,'Computer Hardware','','Intranet Cost Investment Type',1,'f','');
+INSERT INTO im_categories VALUES (3403,'Computer Software','','Intranet Cost Investment Type',1,'f','');
+INSERT INTO im_categories VALUES (3404,'Office Furniture','','Intranet Cost Investment Type',1,'f','');
+commit;
+-- reserved until 3499
+
+-- Intranet Cost Investment Status
+delete from im_categories where category_id >= 3500 and category_id < 3600;
+INSERT INTO im_categories VALUES (3501,'Active','','Intranet Cost Investment Status',1,'f','Currently being amortized');
+INSERT INTO im_categories VALUES (3502,'Deleted','','Intranet Cost Investment Status',1,'f','Deleted - was an error');
+INSERT INTO im_categories VALUES (3503,'Amortized','','Intranet Cost Investment Status',1,'f','Finished amortization - no remaining book value');
+commit;
+-- reserved until 3599
+
+-- Intranet Cost Investment Amortization Internval
+delete from im_categories where category_id >= 3600 and category_id < 3700;
+INSERT INTO im_categories VALUES (3601,'Month','','Intranet Cost Investment Amortization Internval',1,'f','Currently being amortized');
+INSERT INTO im_categories VALUES (3602,'Quarter','','Intranet Cost Investment Amortization Internval',1,'f','Currently being amortized');
+INSERT INTO im_categories VALUES (3603,'Year','','Intranet Cost Investment Amortization Internval',1,'f','Currently being amortized');
+commit;
+-- reserved until 3699
+
+
+
+-------------------------------------------------------------
+-- Cost Items
+--
+-- Cost items are possibly assigned to project, customers and/or investments,
+-- whereever this is reasonable.
+-- The idea is to be able to come up with profit/loss on a per-project base
+-- as well as on a per-customer base.
+-- Amortization items are additionally related to an investment, so that we
+-- can track the amortized money
+--
+create table im_cost_items (
+	item_id			integer
+				constraint im_cost_items_pk
+				primary key,
+	name			varchar(400),
+	project_id		integer
+				constraint im_cost_items_project_fk
+				references im_projects,
+	customer_id		integer
+				constraint im_cost_items_customer_nn
+				not null
+				constraint im_cost_items_customer_fk
+				references im_customers,
+	investment_id		integer
+				constraint
+				references im_investments,
+	creation_date		date,
+	creator_id		integer
+				constraint im_cost_itmes_creator_fk
+				references parties,
+	input_date		date,
+	due_date		date,
+	payment_date		date,
+	payment_id		integer
+				constraint im_cost_items_payment_fk
+				references im_payments,
+	amount			number(12,3),
+	currency		char(3) references currencies,
+	-- Classification of variable against fixed costs
+	variable_cost_p		char(1)
+				constraint im_cost_items_var_ck
+				check variable_cost_p in ('t','f'),
+	needs_redistribution_p	char(1)
+				constraint im_cost_items_var_ck
+				check needs_redistribution_p in ('t','f'),
+	-- Points to its parent if the parent was distributed
+	parent_id		integer
+				constraint im_cost_items_parent_fk
+				references im_cost_items,
+	-- Indicates that this cost item has been redistributed to
+	-- potentially several other items, so we don't want to
+	-- include such items in sums.
+	redistributed_p		char(1)
+				constraint im_cost_items_var_ck
+				check redistributed_p in ('t','f'),
+	planning_p		char(1)
+				constraint im_cost_items_var_ck
+				check planning_p in ('t','f'),
+	description		varchar(4000),
+);
