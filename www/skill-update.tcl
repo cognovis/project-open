@@ -16,7 +16,7 @@ ad_page_contract {
     claimed:array,optional
     confirmed:array,optional
     skill_deleted:array,optional
-    add_skill_id:integer,optional
+    { add_skill_id:integer ""}
     { submit "" }
     { return_url "" }
 }
@@ -143,17 +143,25 @@ switch $submit {
     "Add" {
 	# ------------------- Add a new skill to the list ------------
 
-	if {![info exists add_skill_id]} {
+	if {"" == $add_skill_id} {
 	    ad_return_complaint "[_ intranet-freelance.Error]" "
-               <li>[_ intranet-freelance.lt_You_need_to_specify_a]"
+               <li>Please specify a skill to add to the list of skills."
 	}
 
 	set unconfirmed_experience [db_string unconfirmed_experience "select category_id from im_categories where category_type='Intranet Experience Level' and category='Unconfirmed'"]
 
 	set sql "
-insert into im_freelance_skills 
-(user_id, skill_id, skill_type_id, confirmed_experience_id) values
-(:user_id, :add_skill_id, :skill_type_id, :unconfirmed_experience)"
+insert into im_freelance_skills (
+	user_id, 
+	skill_id, 
+	skill_type_id, 
+	confirmed_experience_id
+) values (
+	:user_id, 
+	:add_skill_id, 
+	:skill_type_id,
+	:unconfirmed_experience
+)"
 
        if [catch { db_dml insert_freelance_skills $sql } errmsg] {
     ad_return_complaint "[_ intranet-freelance.DB-Error]" "<li>[_ intranet-freelance.lt_The_database_choked_o]:
