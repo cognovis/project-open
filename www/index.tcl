@@ -48,7 +48,7 @@ set current_url [ns_conn url]
 
 # Unprivileged users (clients & freelancers) can only see their
 # own projects and no subprojects.
-if {![im_permission $current_user_id "view_forum_topics_of_others"]} {
+if {![im_permission $current_user_id "view_forum_topics_all"]} {
     set forum_mine_p "t"
 }
 
@@ -97,14 +97,14 @@ set filter_html "
   <td colspan='2' class=rowtitle align=center>Filter Topics</td>
 </tr>\n"
 
-if {[im_permission $current_user_id "view_forum_topics_of_others"]} {
+if {[im_permission $current_user_id "view_forum_topics_all"]} {
     append filter_html "
 <tr>
   <td valign=top>View:</td>
   <td valign=top>[im_select forum_mine_p $view_types ""]</td>
 </tr>"
 }
-if {[im_permission $current_user_id "view_forum_topics_of_others"]} {
+if {[im_permission $current_user_id "view_forum_topics_all"]} {
     append filter_html "
 <!--
 <tr>

@@ -294,10 +294,20 @@ if {$topic_status_id != ""} {
 # Forum List Page Component
 # ---------------------------------------------------------------------
 
-ad_proc -public im_forum_component {user_id group_id current_page_url return_url export_var_list {view_name "forum_list_short"} {forum_order_by "priority"} {restrict_to_mine_p f} {restrict_to_topic_type_id 0} {restrict_to_topic_status_id 0} {restrict_to_asignee_id 0} {max_entries_per_page 0} {start_idx 1} {restrict_to_new_topics 0} {restrict_to_folder 0} } {
+ad_proc -public im_forum_component {user_id group_id current_page_url return_url export_var_list forum_type {view_name "forum_list_short"} {forum_order_by "priority"} {restrict_to_mine_p f} {restrict_to_topic_type_id 0} {restrict_to_topic_status_id 0} {restrict_to_asignee_id 0} {max_entries_per_page 0} {start_idx 1} {restrict_to_new_topics 0} {restrict_to_folder 0} } {
     Creates a HTML table showing a table of "Discussion Topics" of 
     various types. Parameters:
-    - restrict_to_topic_type_id: 0=All, 1=Tasks & Incidents, other=Specific
+    <ul>
+      <li>group_id : The object_id of the object where the discussion takes place
+          (historic name...)
+      <li>restrict_to_topic_type_id: 0=All, 1=Tasks & Incidents, other=Specific
+      <li>forum_type: ....!!!
+    </ul>
+
+    ToDo: Very ugly! Future packages won'te be able to use this component because
+    the object_type used here is limited to the object types known right now.
+    Future versions would need to call an object method to render adecuately the
+    object name etc.
 } {
     set bgcolor(0) " class=roweven"
     set bgcolor(1) " class=rowodd"
@@ -470,17 +480,22 @@ select
 	f.folder_name,
 	m.receive_updates,
 	im_initials_from_user_id(t.owner_id) as owner_initials,
-	im_initials_from_user_id(t.asignee_id) as asignee_initials
+	im_initials_from_user_id(t.asignee_id) as asignee_initials,
+	p.project_name!!!
 from
 	($inner_forum_sql) t,
 	(select * from im_forum_topic_user_map where user_id=:user_id) m,
-	im_forum_folders f
+	im_forum_folders f,
+	im_projects p,!!!
+	im_customers c,!!!
+	im_users u!!!
 where
         (t.permission_p = 1 or t.owner_p = 1 or t.asignee_id = 1)
         and t.group_id != 1
         and (t.parent_id is null or t.parent_id=0)
 	and t.topic_id=m.topic_id(+)
 	and m.folder_id=f.folder_id(+)
+	and t.group_id=p.project_id(+)!!!
 	$restriction_clause
 $order_by_clause"
 
@@ -536,8 +551,7 @@ $order_by_clause"
                 <tr><td colspan=$colspan>&nbsp;</td></tr>
                 <tr><td class=rowtitle colspan=$colspan>
                   <A href=/intranet/projects/view?group_id=$group_id>
-                    $short_name</A>: $group_name
-                  </A>
+                    $project_nr</A>: $group_name
                 </td></tr>\n"
                 set old_group_id $group_id
             }
