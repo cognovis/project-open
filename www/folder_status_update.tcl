@@ -1,9 +1,4 @@
-# /packages/intranet-filestorage/www/intranet/filestorage04/folder_state_update.tcl
-#
-# Copyright (C) 2003-2004 Project/Open
-#
-# All rights reserved. Please check
-# http://www.project-open.com/license/ for details.
+# /www/intranet/filestorage04/folder_state_update.tcl
 
 ad_page_contract {
     Index page of filestorage
@@ -13,8 +8,7 @@ ad_page_contract {
     @param how_many how many rows to return
 
     @author santitrenchs@santitrenchs.com
-    @author pvilarmau@hotmail.com
-    @author frank.bergmann@project-open.com
+
 } {
     folder_id:integer
     object_id:integer
@@ -32,32 +26,35 @@ if { $status == "o" } {
 } else {
     set status "o"
 }
-if { [catch {
-   db_dml my_update "
-update 
-	im_fs_folder_status 
-set 
-	open_p = '$status' 
-where 
-	folder_id=$folder_id"
 
 
-} err_msg] } {
+set exists_p [db_string exists_folder "select count(*) from im_fs_folder_status where folder_id=:folder_id"]
 
-    # Didn't exist before?
+if {$exists_p} {
+
+   db_dml update_folder_status "
+update
+        im_fs_folder_status
+set
+        open_p = :status
+where
+        folder_id = :folder_id"
+
+} else {
+
     db_dml my_insert "
     insert into im_fs_folder_status (
-	folder_id, 
-	object_id,
-	user_id, 
-	path, 
-	open_p
+        folder_id,
+        object_id,
+        user_id,
+        path,
+        open_p
     ) values (
-	im_fs_folder_status_seq.nextval,
-	:object_id,
-	:user_id,
-	'$file',
-	:status
+        im_fs_folder_status_seq.nextval,
+        :object_id,
+        :user_id,
+        '$file',
+        :status
     )"
 }
 append return_url bread_crum_path=$bread_crum_path
