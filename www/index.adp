@@ -1,6 +1,6 @@
 <master src="../../intranet-core/www/master">
 <property name="title">@page_title;noquote@</property>
-<property name="main_navbar_label">finance</property>
+<property name="main_navbar_label">#intranet-cost.finance#</property>
 
 <br>
 <%= [im_costs_navbar "none" "/intranet/invoices/index" "" "" [list] "costs_home"] %>
@@ -11,17 +11,15 @@
 
     <H2>@page_title;noquote@</H2>
 
-    This is the homepage of the "Financial Area". Here you can
-    find and enter all information about companies, projects
-    and users.
+    #intranet-cost.lt_This_is_the_homepage_#
 
-    <h5>Documentation:</h5>
+    <h5>#intranet-cost.Documentation#</h5>
     <ul>
-	<li><a href="http://www.project-open.com/">Finance high-level description</a>
+	<li><a href="http://www.project-open.com/">#intranet-cost.lt_Finance_high-level_de#</a>
     </ul>
 
 
-    <h5>Options:</h5>
+    <h5>#intranet-cost.Options#</h5>
     <ul>
 	@new_list_html;noquote@
     </ul>
@@ -39,4 +37,5 @@
   <%= [im_component_bay bottom] %>
 </td></tr>
 </table>
+
 

@@ -25,7 +25,7 @@ ad_page_contract {
 # ------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-set page_title "Edit Repeating Cost"
+set page_title "<#_ Edit Repeating Cost#>"
 set context [ad_context_bar $page_title]
 set today [db_string birthday_today "select sysdate from dual"]
 set internal_id [im_customer_internal]
@@ -45,7 +45,7 @@ set focus "cost.var_name"
 if {![exists_and_not_null rep_cost_id]} {
     # New variable: setup some reasonable defaults
 
-    set page_title "New Repeating Cost Item"
+    set page_title "<#_ New Repeating Cost Item#>"
     set context [ad_context_bar $page_title]
     set effective_date [db_string get_today "select sysdate from dual"]
     set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 60]
@@ -72,6 +72,21 @@ set investment_options [im_investment_options]
 set template_options [im_cost_template_options]
 set currency_options [im_currency_options]
 
+set cost_name_label "<#_ Name#>"
+set project_label "<#_ Project#>"
+set customer_label "<#_ Customer#>"
+set wp_label "<#_ Who pays?#>"
+set provider_label "<#_ Provider#>"
+set wg_label "<#_ Who gets the money?#>"
+set type_label "[_ intranet-cost.Type]"
+set status_label "<#_ Status#>"
+set investment_label "<#_ Investment#>"
+set amount_label "<#_ Amount#>"
+set currency_label "<#_ Currency#>"
+set vat_label "<#_ VAT#>"
+set tax_label "<#_ TAX#>"
+set desc_label "<#_ Description#>"
+set note_label "<#_ Note#>
 ad_form \
     -name cost \
     -cancel_url $return_url \
@@ -80,28 +95,28 @@ ad_form \
     -export {next_url user_id return_url} \
     -form {
 	rep_cost_id:key
-	{cost_name:text(text) {label Name} {html {size 40}}}
-	{project_id:text(select),optional {label Project} {options $project_options} }
-	{customer_id:text(select) {label "Customer<br><small>(Who pays?)</small>"} {options $customer_options} }
-	{provider_id:text(select) {label "Provider<br><small>(Who gets the money?)</small>"} {options $provider_options} }
+	{cost_name:text(text) {label $cost_name_label} {html {size 40}}}
+	{project_id:text(select),optional {label $project_label} {options $project_options} }
+	{customer_id:text(select) {label "$customer_label<br><small>($wp_label)</small>"} {options $customer_options} }
+	{provider_id:text(select) {label "$provider_label<br><small>($wg_label)</small>"} {options $provider_options} }
 
-	{cost_type_id:text(select) {label Type} {options $cost_type_options} }
-	{cost_status_id:text(select) {label Status} {options $cost_status_options} }
-	{investment_id:text(select),optional {label Investment} {options $investment_options} }
+	{cost_type_id:text(select) {label $type_label} {options $cost_type_options} }
+	{cost_status_id:text(select) {label $status_label} {options $cost_status_options} }
+	{investment_id:text(select),optional {label $investment_label} {options $investment_options} }
 
-	{amount:text(text) {label "Amount"} {html {size 20}} }
-	{currency:text(select) {label "Currency"} {options $currency_options} }
+	{amount:text(text) {label $amount_label} {html {size 20}} }
+	{currency:text(select) {label $currency_label} {options $currency_options} }
 
-	{vat:text(text) {label "VAT"} {html {size 20}} }
-	{tax:text(text) {label "TAX"} {html {size 20}} }
+	{vat:text(text) {label $vat_label} {html {size 20}} }
+	{tax:text(text) {label $tax_label} {html {size 20}} }
 
         {payment_days:text(hidden),optional }
         {template_id:text(hidden),optional }
         {effective_date:text(hidden),optional }
         {cause_object_id:text(hidden),optional }
 
-	{description:text(textarea),nospell,optional {label "Description"} {html {rows 5 cols 40}}}
-	{note:text(textarea),nospell,optional {label "Note"} {html {rows 5 cols 40}}}
+	{description:text(textarea),nospell,optional {label $desc_label} {html {rows 5 cols 40}}}
+	{note:text(textarea),nospell,optional {label $note_label} {html {rows 5 cols 40}}}
     }
 
 

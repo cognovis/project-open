@@ -84,10 +84,19 @@ set customer_label "[_ intranet-cost.Customer]"
 set wp_label "[_ intranet-cost.Who_pays]"
 set provider_label "[_ intranet-cost.Provider]"
 set wg_label "[_ intranet-cost.Who_gets_the_money]"
-set type_label "<#_Type#>"
+set type_label "[_ intranet-cost.Type]"
 set cost_status_label "[_ intranet-cost.Status]"
 set template_label "[_ intranet-cost.Print_Template]"
 set investment_label "[_ intranet-cost.Investment]"
+set effective_date_label "[_ intranet-cost.Effective_Date]"
+set payment_days_label "[_ intranet-cost.Payment_Days]"
+set amount_label "[_ intranet-cost.Amount]"
+set currency_label "[_ intranet-cost.Currency]"
+set vat_label "[_ intranet-cost.VAT]"
+set tax_label "[_ intranet-cost.TAX]"
+set desc_label "[_ intranet-cost.Description]"
+set note_label "[_ intranet-cost.Note]"
+
 ad_form \
     -name cost \
     -cancel_url $return_url \
@@ -106,19 +115,19 @@ ad_form \
 	{template_id:text(select),optional {label $template_label} {options $template_options} }
 	{investment_id:text(select),optional {label $investment_label} {options $investment_options} }
 
-	{effective_date:text(text) {label "Effective Date"} {html {size 20}} }
-	{payment_days:text(text) {label "Payment Days"} {html {size 10}} }
+	{effective_date:text(text) {label $effective_date_label} {html {size 20}} }
+	{payment_days:text(text) {label $payment_days_label} {html {size 10}} }
 	
-	{amount:text(text) {label "Amount"} {html {size 20}} }
-	{currency:text(select) {label "Currency"} {options $currency_options} }
+	{amount:text(text) {label $amount_label} {html {size 20}} }
+	{currency:text(select) {label $currency_label} {options $currency_options} }
 
-	{vat:text(text) {label "VAT"} {html {size 20}} }
-	{tax:text(text) {label "TAX"} {html {size 20}} }
+	{vat:text(text) {label $vat_label} {html {size 20}} }
+	{tax:text(text) {label $tax_label} {html {size 20}} }
 
         {cause_object_id:text(hidden),optional }
 
-	{description:text(textarea),nospell,optional {label "Description"} {html {rows 5 cols 40}}}
-	{note:text(textarea),nospell,optional {label "Note"} {html {rows 5 cols 40}}}
+	{description:text(textarea),nospell,optional {label $desc_label} {html {rows 5 cols 40}}}
+	{note:text(textarea),nospell,optional {label $note_label} {html {rows 5 cols 40}}}
     }
 
 

@@ -15,7 +15,7 @@ ad_page_contract {
     { company_id 0 }
 }
 set user_id [ad_maybe_redirect_for_registration]
-set page_title "Finance Home"
+set page_title "[_ intranet-cost.Finance_Home]"
 set context_bar [ad_context_bar $page_title]
 
 # select the "Finance" Menu
@@ -38,7 +38,8 @@ db_foreach menu_select $menu_select_sql {
     ns_log Notice "im_sub_navbar: menu_name='$name'"
     if {$company_id} { append url "&company_id=$company_id" }
     if {$project_id} { append url "&project_id=$project_id" }
-    append new_list_html "<li><a href=\"$url\">$name</a></li>\n"
+    regsub -all " " $name "_" name_key
+    append new_list_html "<li><a href=\"$url\">[_ intranet-cost.$name_key]</a></li>\n"
 }
 
 

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-cost" package_version="2.1.3" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Absences">Absences</msg>
+  <msg key="Administration">Administration</msg>
+  <msg key="All_Costs">All Costs</msg>
+  <msg key="Amount">Amount</msg>
+  <msg key="Client">Client</msg>
+  <msg key="Companies">Companies</msg>
+  <msg key="context">context</msg>
+  <msg key="Cost_Items">Cost Items</msg>
+  <msg key="Currency">Currency</msg>
+  <msg key="Customer">Customer</msg>
+  <msg key="Del">Del</msg>
+  <msg key="Description">Description</msg>
+  <msg key="Document_Status">Document Status</msg>
+  <msg key="Document_Type">Document Type</msg>
+  <msg key="Documentation">Documentation:</msg>
+  <msg key="Due_Date">Due Date</msg>
+  <msg key="Edit_Cost">Edit Cost</msg>
+  <msg key="Effective_Date">Effective Date</msg>
+  <msg key="Filter_Documents">Filter Documents</msg>
+  <msg key="finance">finance</msg>
+  <msg key="Finance_Home">Finance Home</msg>
+  <msg key="Go">Go</msg>
+  <msg key="Investment">Investment</msg>
+  <msg key="lt_Cost_Item_Administrat">Cost Item Administration</msg>
+  <msg key="lt_Didnt_find_the_the_vi">Didn't find the the view '%$view_name%'</msg>
+  <msg key="lt_Distribute_costs_acco">Distribute costs according to timesheet information</msg>
+  <msg key="lt_Finance_high-level_de">Finance high-level description</msg>
+  <msg key="lt_There_are_currently_n">There are currently no costs matching the selected criteria</msg>
+  <msg key="lt_This_is_the_homepage_">This is the homepage of the &quot;Financial Area&quot;. Here you can
+    find and enter all information about companies, projects
+    and users.</msg>
+  <msg key="Name">Name</msg>
+  <msg key="New_Cost">New Cost</msg>
+  <msg key="New_Cost_Item">New Cost Item</msg>
+  <msg key="New_Trans_Invoice">New Trans Invoice</msg>
+  <msg key="Next_Page">Next Page</msg>
+  <msg key="Note">Note</msg>
+  <msg key="Options">Options:</msg>
+  <msg key="Paid">Paid</msg>
+  <msg key="Payment_Days">Payment Days</msg>
+  <msg key="Payments">Payments</msg>
+  <msg key="Previous_Page">Previous Page</msg>
+  <msg key="Print_Template">Print Template</msg>
+  <msg key="Project">Project</msg>
+  <msg key="Provider">Provider</msg>
+  <msg key="Providers">Providers</msg>
+  <msg key="Save">Save</msg>
+  <msg key="Start_Block">Start Block</msg>
+  <msg key="Status">Status</msg>
+  <msg key="TAX">TAX</msg>
+  <msg key="Type">Type</msg>
+  <msg key="VAT">VAT</msg>
+  <msg key="Who_gets_the_money">Who gets the money?</msg>
+  <msg key="Who_pays">Who pays?</msg>
+</message_catalog>

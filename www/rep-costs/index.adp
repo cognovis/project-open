@@ -1,6 +1,6 @@
 <master src="../../../intranet-core/www/master">
-<property name="title">Absences</property>
-<property name="context">context</property>
+<property name="title">#intranet-cost.Absences#</property>
+<property name="context">#intranet-cost.context#</property>
 
 <br>
 <%= [im_costs_navbar "none" "/intranet/invoices/index" "" "" [list] "costs_rep"] %>
@@ -10,3 +10,4 @@
   <%= $table_body_html %>
   <%= $table_continuation_html %>
 </table>
+
