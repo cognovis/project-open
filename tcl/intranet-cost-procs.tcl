@@ -643,6 +643,9 @@ ad_proc im_costs_project_finance_component { user_id project_id } {
     # Where to link when clicking on an object link? "edit" or "view"?
     set view_mode "view"
 
+    # Default Currency
+    set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+
     # ----------------- Calculate Subtotals per cost_type_id -------------
     # ... and store in an array
     
@@ -650,30 +653,37 @@ ad_proc im_costs_project_finance_component { user_id project_id } {
 select
 	sum(ci.amount) as amount,
 	ci.currency,
-	ci.cost_type_id,
-	im_category_from_id(ci.cost_type_id) as cost_type,
+        cat.category_id as cost_type_id,
+        im_category_from_id(cat.category_id) as cost_type,
 	case 
-		when ci.cost_type_id = [im_cost_type_invoice] then 1
-		when ci.cost_type_id = [im_cost_type_quote] then 1
+		when cat.category_id = [im_cost_type_invoice] then 1
+		when cat.category_id = [im_cost_type_quote] then 1
 		else -1
 	end as sign	
 from
-        im_costs ci
+	im_categories cat left outer join 
+	(
+		select	*
+		from	im_costs ci
+		where
+			ci.cost_id in (
+		                select distinct cost_id
+		                from im_costs
+		                where project_id=:project_id
+		            UNION
+		                select distinct object_id_two as cost_id
+		                from acs_rels
+		                where object_id_one = :project_id
+			)
+	) ci on (cat.category_id = ci.cost_type_id)
 where
-        ci.cost_id in (
-                select distinct cost_id
-                from im_costs
-                where project_id=:project_id
-            UNION
-                select distinct object_id_two as cost_id
-                from acs_rels
-                where object_id_one = :project_id
-        )
+        cat.category_id in ([im_cost_type_invoice],[im_cost_type_quote],[im_cost_type_bill],[im_cost_type_po],[im_cost_type_timesheet])
 group by
 	ci.currency,
+        cat.category_id,
 	ci.cost_type_id
 order by
-	ci.cost_type_id
+        cat.category_id
 "
 
     # Start with the summary...
@@ -683,6 +693,8 @@ order by
 	</tr>\n"
 
     db_foreach subtotals $subtotals_sql {
+	if {"" == $amount} { set amount 0 }
+	if {"" == $currency} { set currency $default_currency }
 	set subtotals($cost_type_id$currency) $amount
 	set currencies($currency) $currency
 
