@@ -29,7 +29,7 @@ set current_user_id [ad_maybe_redirect_for_registration]
 set current_user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set current_user_is_wheel_p [ad_user_group_member [im_wheel_group_id] $current_user_id]
 set current_user_is_employee_p [im_user_is_employee_p $current_user_id]
-set current_user_admin_p [|| $current_user_is_admin_p $current_user_is_wheel_p]
+set current_user_admin_p [expr $current_user_is_admin_p || $current_user_is_wheel_p]
 
 set user_is_customer_p [ad_user_group_member [im_customer_group_id] $user_id]
 set user_is_freelance_p [ad_user_group_member [im_freelance_group_id] $user_id]
@@ -48,16 +48,14 @@ if {$user_is_admin_p} { set user_type "admin" }
 # Check if "user" belongs to a group that is administered by 
 # the current users
 set administrated_user_ids [db_list administated_user_ids "
-select distinct
-	m2.user_id
+select
+	member_id
 from
-	user_group_map m,
-	user_group_map m2
+	group_member_map
 where
-	m.user_id=:current_user_id
-	and m.role='administrator'
-	and m.group_id=m2.group_id
-"]
+	group_id in (	select group_id
+			from group_member_map
+			where member_id = :current_user_id and rel_type like 'admin_rel')"]
 
 set user_in_administered_project 0
 if {[lsearch -exact $administrated_user_ids $user_id] > -1} { 

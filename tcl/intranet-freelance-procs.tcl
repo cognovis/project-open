@@ -140,13 +140,17 @@ ad_proc im_freelance_info_component { current_user_id user_id user_admin_p retur
     ns_log Notice "intranet-freelance: view_id=$view_id"
 
     set freelance_rates_sql "
-	select	u.first_names||' '||u.last_name as user_name,
-		u.email,
+	select	pe.first_names||' '||pe.last_name as user_name,
+		p.email,
 		f.*,
 		im_category_from_id (f.payment_method_id) as payment_method
 	from	users u,
-		im_freelancers f
-	where	u.user_id = :user_id
+		im_freelancers f,
+		parties p,
+		persons pe
+	where	pe.person_id = u.user_id
+		and p.party_id = u.user_id
+		and u.user_id = :user_id
 		and u.user_id = f.user_id(+)
 	"
 
@@ -398,24 +402,29 @@ where
     # translators. "Basic" means the language without country
     # extension such as [es] instead of [es_MX]
     #
+
+set sl [lindex $project_cat_id 0]
+set tl [lindex $project_cat_id 1]
+set sa [lindex $project_cat_id 2]
+
     set freelance_sql_1 "
 select
-	u.first_names || u.last_name as name,
-	u.user_id,
-	im_freelance_skill_list(u.user_id, [lindex $project_cat_id 0]) as source_languages,
-	im_freelance_skill_list(u.user_id, [lindex $project_cat_id 1]) as target_languages,
-	im_freelance_skill_list(u.user_id, [lindex $project_cat_id 2]) as subject_area
+	pe.first_names || pe.last_name as name,
+	pe.person_id,
+	im_freelance_skill_list(pe.person_id, $sl) as source_languages,
+	im_freelance_skill_list(pe.person_id, $tl) as target_languages,
+	im_freelance_skill_list(pe.person_id, $sa) as subject_area
 from
-	users u,
+	persons pe,
 	(select distinct
 	        u.user_id
 	from
 	        users u,
 	        (select sk.*, substr(im_category_from_id(sk.skill_id),1,2) as lang
-	        from im_freelance_skills sk where sk.skill_type_id=[lindex $project_cat_id 0]
+	        from im_freelance_skills sk where sk.skill_type_id=$sl
 	        ) sks,
 	        (select sk.*, substr(im_category_from_id(sk.skill_id),1,2) as lang
-	         from im_freelance_skills sk where sk.skill_type_id=[lindex $project_cat_id 1]
+	         from im_freelance_skills sk where sk.skill_type_id=$tl
 	        ) skt,
 	        (select substr(im_category_from_id(p.source_language_id),1,2) as source_lang,
 			substr(im_category_from_id(language_id),1,2) as target_lang
@@ -423,7 +432,7 @@ from
 			im_target_languages
 		 where 
 			on_what_id=:group_id
-			and p.group_id=on_what_id
+			and p.project_id=on_what_id
 	        ) p
 	where
 	        sks.user_id = u.user_id
@@ -432,7 +441,7 @@ from
 	        and skt.lang = p.target_lang
 	) mu
 where
-	u.user_id=mu.user_id"
+	pe.person_id = mu.user_id"
 
     set freelance_body_html "
 	<tr class=rowtitle>
@@ -458,7 +467,11 @@ where
         incr ctr
     }
 
-    set select_freelance "
+if { $freelance_body_html == "" } {
+    set freelance_body_html "
+<tr
+
+set select_freelance "
 	<form method=POST action=/intranet/member-add-2>
 	[export_entire_form]
 	<input type=hidden name=target value=\"[im_url_stub]/member-add-2\">
