@@ -972,7 +972,7 @@ ad_proc export_url_bind_vars { bind_vars } {
 }
 
 
-ad_proc -public im_filestorage_pol_component { user_id object_id object_name base_path folder_type current_url_without_vars bind_vars } {
+ad_proc -public im_filestorage_pol_component { user_id object_id object_name base_path folder_type current_url_without_vars} {
     Main funcion to generate the filestorage page ( create folder, bread crum, ....)
     @param user_id: the user who is attempting to view the filestorage
     @param object_id: from wich group is pending this user?
@@ -983,6 +983,8 @@ ad_proc -public im_filestorage_pol_component { user_id object_id object_name bas
 } {
 
     # Extract the bread_crum variable and delete from URL variables
+    set bind_vars [ns_conn form]
+    if {"" == $bind_vars} { set bind_vars [ns_set create] }
     set bread_crum_path [ns_set get $bind_vars bread_crum_path]
     ns_set delkey $bind_vars bread_crum_path
 
@@ -1085,6 +1087,7 @@ where
 	and object_id = :object_id
 "
  
+    set last_folder_id 0
     db_foreach hash_query $query {
     	# create an hash array where the index is the path of the dir and the value 
 	# is the status (open/close) of the dir
