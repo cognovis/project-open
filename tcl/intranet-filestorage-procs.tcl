@@ -921,15 +921,16 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
 
     # Get the list of all files and split by end of line
     set find_path "$base_path$bread_crum_join$bread_crum_path"
+
     if { [catch {
 	# Executing the find command
         exec /bin/mkdir -p $find_path
         exec /bin/chmod ug+w $find_path
-	set file_list [fileutil::find $find_path]
+	set files [fileutil::find $find_path]
+		
     } err_msg] } { 
 	return "<ul><li>[_ intranet-filestorage.lt_Unable_to_get_file_li]:<br><pre>find_path=$find_path\n$err_msg</pre></ul>"
     }
-    set files [split $file_list "\n"]
 
     # remove the first (root path) from the list of files returned by "find".
     set files [lrange $files 1 [llength $files]]
@@ -1503,7 +1504,7 @@ ad_proc im_filestorage_is_directory_empty {folder} {
 } {
     set sub_files -1
     if { [catch {
-	set sub_files [exec /usr/bin/find $folder | wc -l]
+	set sub_files [llength [fileutil::find $folder]]
 	set sub_files [string trim $sub_files]
     } err_msg] } { }
     ns_log Notice "im_filestorage_is_directory_empty: sub_files='$sub_files'"
@@ -1511,7 +1512,7 @@ ad_proc im_filestorage_is_directory_empty {folder} {
     # sub_files>1: some files below
     # sub_files<0: error
     
-    if {$sub_files == 1} { return 1} else { return 0}
+    if {$sub_files <= 1} { return 1} else { return 0}
 }
 
 ad_proc im_filestorage_delete_folder {project_id folder} {
