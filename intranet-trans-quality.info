@@ -9,8 +9,11 @@
     <auto-mount>intranet-trans-quality</auto-mount>
 
     <version name="3.0.0" url="http://openacs.org/repository/download/apm/intranet-trans-quality-3.0.0.apm">
-        <owner url="mailto:fraber@fraber.de">Frank Bergmann</owner>
+        <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
+        <owner url="mailto:guillermo.belcic@project-open.com">Guillermo Belcic</owner>
+        <summary>Statistical Process Control for Translation Companies</summary>
         <vendor url="http://www.project-open.com/">Project/Open</vendor>
+        <description format="text/plain">Uses a variant of LISA quality templates to capture translation quality, measuring error points per sample size.</description>
 
         <provides url="intranet-trans-quality" version="2.0.0"/>
         <requires url="intranet-translation" version="3.0.0"/>
