@@ -1,7 +1,7 @@
 ad_page_contract {
     @author Neophytos Demetriou <k2pts@cytanet.com.cy>
     @creation-date September 01, 2001
-    @cvs-id $Id: search.tcl,v 1.13 2005/01/13 13:58:41 jeffd Exp $
+    @cvs-id $Id: search.tcl,v 1.14 2005/02/02 21:18:03 jeffd Exp $
 } {
     q:notnull,trim
     {t:trim ""}
@@ -20,7 +20,7 @@ set package_id [ad_conn package_id]
 set package_url [ad_conn package_url]
 set package_url_with_extras $package_url
 
-set context [list]
+set context results
 set context_base_url $package_url
 
 set user_id [ad_conn user_id]
@@ -142,7 +142,7 @@ set search_the_web [ad_parameter -package_id $package_id SearchTheWeb]
 if [llength $search_the_web] {
     set stw ""
     foreach {url site} $search_the_web {
-	append stw "<a href=[format $url $urlencoded_query]>$site</a> "
+	append stw "<a href=\"[format $url $urlencoded_query]\">$site</a> "
     }
 }
 
