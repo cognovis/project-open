@@ -86,7 +86,6 @@ select inline_0 ();
 drop function inline_0 ();
 
 
--- prompt *** intranet-costs: Creating im_cost_centers
 create table im_cost_centers (
 	cost_center_id		integer
 				constraint im_cost_centers_pk
@@ -107,9 +106,7 @@ create table im_cost_centers (
 				-- "OpAn"=Operations/Analysis, ...
 	cost_center_code	varchar(400)
 				constraint im_cost_centers_code_nn
-				not null
-				constraint im_cost_centers_code_ck
-				check(length(cost_center_code) % 2 = 0),
+				not null,
 	cost_center_type_id	integer not null
 				constraint im_cost_centers_type_fk
 				references im_categories,
@@ -276,7 +273,6 @@ INSERT INTO im_categories (category_id,category,category_type) VALUES (3001,'Cos
 INSERT INTO im_categories (category_id,category,category_type) VALUES (3002,'Profit Center','Intranet Cost Center Type');
 INSERT INTO im_categories (category_id,category,category_type) VALUES (3003,'Investment Center','Intranet Cost Center Type');
 INSERT INTO im_categories (category_id,category,category_type) VALUES (3004,'Subdepartment', 'Intranet Cost Center Type');
--- commit;
 -- reserved until 3099
 
 
@@ -284,7 +280,6 @@ INSERT INTO im_categories (category_id,category,category_type) VALUES (3004,'Sub
 delete from im_categories where category_id >= 3100 and category_id < 3200;
 INSERT INTO im_categories (category_id,category,category_type) VALUES (3101,'Active','Intranet Cost Center Status');
 INSERT INTO im_categories (category_id,category,category_type) VALUES (3102,'Inactive','Intranet Cost Center Status');
--- commit;
 -- reserved until 3099
 
 
@@ -337,7 +332,7 @@ begin
 	null,			-- context_id
 	''The Company'',	-- cost_center_name
 	''company'',		-- cost_center_label
-	'''',			-- cost_center_code
+	''Co'',			-- cost_center_code
 	3002,			-- type_id
 	3101,			-- status_id
 	null,			-- parent_id
@@ -365,7 +360,7 @@ begin
 	null,			-- context_id
 	''Administration'',	-- cost_center_name
 	''admin'',		-- cost_center_label
-	''Ad'',			-- cost_center_code
+	''CoAd'',		-- cost_center_code
 	3001,			-- type_id
 	3101,			-- status_id
 	v_the_company_center,   -- parent_id
@@ -386,7 +381,7 @@ begin
 	null,			-- context_id
 	''Rent and Utilities'',	-- cost_center_name
 	''utilities'',		-- cost_center_label
-	''Ut'',			-- cost_center_code
+	''CoUt'',		-- cost_center_code
 	3001,			-- type_id
 	3101,			-- status_id
 	v_the_company_center,	-- parent_id
@@ -407,7 +402,7 @@ begin
 	null,			-- context_id
 	''Sales'',		-- cost_center_name
 	''sales'',		-- cost_center_label
-	''Sa'',			-- cost_center_code
+	''CoSa'',		-- cost_center_code
 	3001,			-- type_id
 	3101,			-- status_id
 	v_the_company_center,	-- parent_id
@@ -428,7 +423,7 @@ begin
 	null,			-- context_id
 	''Marketing'',		-- cost_center_name
 	''marketing'',		-- cost_center_label
-	''Ma'',			-- cost_center_code
+	''CoMa'',		-- cost_center_code
 	3001,			-- type_id
 	3101,			-- status_id
 	v_the_company_center,	-- parent_id
@@ -449,7 +444,7 @@ begin
 	null,			-- context_id
 	''Operations'',		-- cost_center_name
 	''operations'',		-- cost_center_label
-	''Op'',			-- cost_center_code
+	''CoOp'',		-- cost_center_code
 	3001,			-- type_id
 	3101,			-- status_id
 	v_the_company_center,	-- parent_id
@@ -462,11 +457,10 @@ begin
 end;' language 'plpgsql';
 
 select inline_0 ();
-
 drop function inline_0 ();
--- show errors
 
-###### equal until here ####
+
+
 -------------------------------------------------------------
 -- Price List
 --
@@ -482,8 +476,7 @@ drop function inline_0 ();
 -- be deduced from the start_date of the next cost,
 -- but that way we would need a max(...) query to
 -- determine a current price which might be very slow.
----
--- prompt *** intranet-costs: Creating im_prices
+--
 create table im_prices (
 	object_id		integer
 				constraint im_prices_object_fk
@@ -521,7 +514,7 @@ check(start_date < end_date);
 -- into several smaller items in order to assign them more 
 -- accurately to project, companies or cost centers ("redistribution").
 --
--- Costs reference acs_objects for company and provider in order to
+-- Costs reference acs_objects for customer and provider in order to
 -- allow costs to be created for example between an employee and the
 -- company in the case of travel costs.
 --
@@ -548,8 +541,8 @@ begin
 end;' language 'plpgsql';
 
 select inline_0 ();
-
 drop function inline_0 ();
+
 
 -- prompt *** intranet-costs: Creating im_costs
 create table im_costs (
@@ -567,10 +560,10 @@ create table im_costs (
 				constraint im_costs_project_fk
 				references im_projects,
 				-- who pays?
-	company_id		integer
-				constraint im_costs_company_nn
+	customer_id		integer
+				constraint im_costs_customer_nn
 				not null
-				constraint im_costs_company_fk
+				constraint im_costs_customer_fk
 				references acs_objects,
 				-- who gets paid?
 	cost_center_id		integer
@@ -703,7 +696,7 @@ declare
 	p_cost_name		alias for $7;		-- cost_name default null
 	p_parent_id		alias for $8;		-- parent_id default null
 	p_project_id		alias for $9;		-- project_id default null
-	p_company_id		alias for $10;		-- company_id
+	p_customer_id		alias for $10;		-- customer_id
 	p_provider_id		alias for $11;		-- provider_id
 	p_investment_id		alias for $12;		-- investment_id default null
 
@@ -740,7 +733,7 @@ declare
 
 	insert into im_costs (
 		cost_id, cost_name, project_id, 
-		company_id, provider_id, 
+		customer_id, provider_id, 
 		cost_status_id, cost_type_id,
 		template_id, investment_id,
 		effective_date, payment_days,
@@ -751,7 +744,7 @@ declare
 		description, note
 	) values (
 		v_cost_cost_id, p_cost_name, p_project_id, 
-		p_company_id, p_provider_id, 
+		p_customer_id, p_provider_id, 
 		p_cost_status_id, p_cost_type_id,
 		p_template_id, p_investment_id,
 		p_effective_date, p_payment_days,
@@ -909,26 +902,32 @@ create table im_investments (
 );
 
 
--- continue here
-prompt *** intranet-costs: Creating im_cost packages
+-- prompt *** intranet-costs: Creating im_cost packages
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_object_type	integer;
 begin
-    acs_object_type.create_type (
-        supertype =>            'im_repeating_cost',
-        object_type =>          'im_investment',
-        pretty_name =>          'Investment',
-        pretty_plural =>        'Investments',
-        table_name =>           'im_investments',
-        id_column =>            'investment_id',
-        package_name =>         'im_investment',
-        type_extension_table => null,
-        name_method =>          'im_investment.name'
+    v_object_type := acs_object_type__create_type (
+        ''im_investment'',	-- object_type
+        ''Investment'',		-- pretty_name
+        ''Investments'',	-- pretty_plural
+	''im_repeating_cost'',		-- supertype  
+        ''im_investments'',	-- table_name
+        ''investment_id'',	-- id_column
+        ''im_investment'',	-- package_name
+	''f'',			-- abstract_p
+        null,			-- type_extension_table
+        ''im_investment__name'' -- name_method
     );
-end;
-/
-show errors
+    return 0;
+end;' language 'plpgsql';
 
+select inline_0 ();
 
-prompt *** intranet-costs: Creating URLs for viewing/editing investments
+drop function inline_0 ();
+
+-- prompt *** intranet-costs: Creating URLs for viewing/editing investments
 delete from im_biz_object_urls where object_type='im_investment';
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_investment','view','/intranet-cost/investments/new?form_mode=display\&investment_id=');
@@ -936,7 +935,7 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_investment','edit','/intranet-cost/investments/new?form_mode=edit\&investment_id=');
 
 
-prompt *** intranet-costs: Creating Investment categories
+-- prompt *** intranet-costs: Creating Investment categories
 -- Intranet Investment Type
 delete from im_categories where category_id >= 3400 and category_id < 3500;
 INSERT INTO im_categories (category_id, category, category_type) 
@@ -947,7 +946,6 @@ INSERT INTO im_categories (category_id, category, category_type)
 VALUES (3405,'Computer Software','Intranet Investment Type');
 INSERT INTO im_categories (category_id, category, category_type) 
 VALUES (3407,'Office Furniture','Intranet Investment Type');
--- commit;
 -- reserved until 3499
 
 -- Intranet Investment Status
@@ -958,18 +956,7 @@ INSERT INTO im_categories (category_id, category, category_type, category_descri
 VALUES (3503,'Deleted','Intranet Investment Status','Deleted - was an error');
 INSERT INTO im_categories (category_id, category, category_type, category_description) 
 VALUES (3505,'Amortized','Intranet Investment Status','No remaining book value');
--- commit;
 -- reserved until 3599
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -981,11 +968,11 @@ INSERT INTO im_categories VALUES (902,'invoice-spanish.adp','','Intranet Cost Te
 
 
 
-prompt *** intranet-costs: Creating category Cost Type
+-- prompt *** intranet-costs: Creating category Cost Type
 -- Cost Type
 delete from im_categories where category_id >= 3700 and category_id < 3799;
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3700,'Company Invoice','Intranet Cost Type');
+VALUES (3700,'Customer Invoice','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3702,'Quote','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
@@ -993,7 +980,7 @@ VALUES (3704,'Provider Bill','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3706,'Purchase Order','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3708,'Company Documents','Intranet Cost Type');
+VALUES (3708,'Customer Documents','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3710,'Provider Documents','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
@@ -1002,18 +989,16 @@ INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3714,'Employee Salary','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3716,'Repeating Cost','Intranet Cost Type');
-
--- commit;
 -- reserved until 3799
 
--- Establish the super-categories "Provider Documents" and "Company Documents"
+-- Establish the super-categories "Provider Documents" and "Customer Documents"
 insert into im_category_hierarchy values (3710,3704);
 insert into im_category_hierarchy values (3710,3706);
 insert into im_category_hierarchy values (3708,3700);
 insert into im_category_hierarchy values (3708,3702);
 
 
-prompt *** intranet-costs: Creating category Cost Status
+-- prompt *** intranet-costs: Creating category Cost Status
 -- Intranet Cost Status
 delete from im_categories where category_id >= 3800 and category_id < 3899;
 INSERT INTO im_categories (category_id, category, category_type)
@@ -1030,11 +1015,10 @@ INSERT INTO im_categories (category_id, category, category_type)
 VALUES (3812,'Deleted','Intranet Cost Status');
 INSERT INTO im_categories (category_id, category, category_type)
 VALUES (3814,'Filed','Intranet Cost Status');
--- commit;
 -- reserved until 3899
 
 
-prompt *** intranet-costs: Creating status and type views
+-- prompt *** intranet-costs: Creating status and type views
 create or replace view im_cost_status as
 select
 	category_id as cost_status_id,
@@ -1055,50 +1039,40 @@ where 	category_type = 'Intranet Cost Type';
 -------------------------------------------------------------
 -- Permissions and Privileges
 --
-begin
-    acs_privilege.create_privilege('view_costs','View Costs','View Costs');
-    acs_privilege.create_privilege('add_costs','View Costs','View Costs');
-end;
-/
-show errors;
+select acs_privilege.create_privilege('view_costs','View Costs','View Costs');
+select acs_privilege__add_child('admin', 'view_costs');
+
+select acs_privilege.create_privilege('add_costs','Add Costs','Add Costs');
+select acs_privilege__add_child('admin', 'add_costs');
 
 
 
-BEGIN
-    im_priv_create('view_costs','Accounting');
-    im_priv_create('view_costs','P/O Admins');
-    im_priv_create('view_costs','Senior Managers');
-END;
-/
-show errors;
+select im_priv_create('view_costs','Accounting');
+select im_priv_create('view_costs','P/O Admins');
+select im_priv_create('view_costs','Senior Managers');
 
-BEGIN
-    im_priv_create('add_costs','Accounting');
-    im_priv_create('add_costs','P/O Admins');
-    im_priv_create('add_costs','Senior Managers');
-END;
-/
-show errors;
+
+select im_priv_create('add_costs','Accounting');
+select im_priv_create('add_costs','P/O Admins');
+select im_priv_create('add_costs','Senior Managers');
 
 
 -------------------------------------------------------------
 -- Finance Menu System
 --
 
-prompt *** intranet-costs: Deleting existing menus
-BEGIN
-    im_menu.del_module(module_name => 'intranet-trans-invoices');
-    im_menu.del_module(module_name => 'intranet-payments');
-    im_menu.del_module(module_name => 'intranet-invoices');
-    im_menu.del_module(module_name => 'intranet-cost');
-END;
-/
-show errors
+select im_menu__del_module('intranet-trans-invoices');
+select im_menu__del_module('intranet-payments');
+select im_menu__del_module('intranet-invoices');
+select im_menu__del_module('intranet-cost');
 
 
-prompt *** intranet-costs: Create Finance Menu
+
+-- prompt *** intranet-costs: Create Finance Menu
 -- Setup the "Finance" main menu entry
 --
+create or replace function inline_0 ()
+returns integer as '
 declare
 	-- Menu IDs
 	v_menu			integer;
@@ -1109,74 +1083,99 @@ declare
 	v_employees		integer;
 	v_accounting		integer;
 	v_senman		integer;
-	v_companies		integer;
+	v_customers		integer;
 	v_freelancers		integer;
 	v_proman		integer;
 	v_admins		integer;
 begin
 
-    select group_id into v_admins from groups where group_name = 'P/O Admins';
-    select group_id into v_senman from groups where group_name = 'Senior Managers';
-    select group_id into v_accounting from groups where group_name = 'Accounting';
-    select group_id into v_companies from groups where group_name = 'Customers';
-    select group_id into v_freelancers from groups where group_name = 'Freelancers';
+    select group_id into v_admins from groups where group_name = ''P/O Admins'';
+    select group_id into v_senman from groups where group_name = ''Senior Managers'';
+    select group_id into v_accounting from groups where group_name = ''Accounting'';
+    select group_id into v_customers from groups where group_name = ''Customers'';
+    select group_id into v_freelancers from groups where group_name = ''Freelancers'';
 
     select menu_id
     into v_main_menu
     from im_menus
-    where label='main';
+    where label=''main'';
 
-    v_finance_menu := im_menu.new (
-	package_name =>	'intranet-cost',
-	label =>	'finance',
-	name =>		'Finance',
-	url =>		'/intranet-cost/',
-	sort_order =>	80,
-	parent_menu_id => v_main_menu
+    v_finance_menu := im_menu__new (
+	null,			   -- menu_id
+	''acs_object'',		   -- object_type
+	now(),			   -- creation_date
+	null,			   -- creation_user
+	null,			   -- creation_ip
+	null,			   -- context_id
+	''intranet-cost'',	   -- package_name
+	''finance'',		   -- label
+	''Finance'',		   -- name
+	''/intranet-cost/'',	   -- url
+	80,			   -- sort_order
+	v_main_menu,		   -- parent_menu_id
+	null			   -- visible_tcl
     );
 
-    acs_permission.grant_permission(v_finance_menu, v_admins, 'read');
-    acs_permission.grant_permission(v_finance_menu, v_senman, 'read');
-    acs_permission.grant_permission(v_finance_menu, v_accounting, 'read');
-    acs_permission.grant_permission(v_finance_menu, v_companies, 'read');
-    acs_permission.grant_permission(v_finance_menu, v_freelancers, 'read');
+    PERFORM acs_permission__grant_permission(v_finance_menu, v_admins, ''read'');
+    PERFORM acs_permission__grant_permission(v_finance_menu, v_senman, ''read'');
+    PERFORM acs_permission__grant_permission(v_finance_menu, v_accounting, ''read'');
+    PERFORM acs_permission__grant_permission(v_finance_menu, v_customers, ''read'');
+    PERFORM acs_permission__grant_permission(v_finance_menu, v_freelancers, ''read'');
 
     -- -----------------------------------------------------
     -- General Costs
     -- -----------------------------------------------------
 
-    v_menu := im_menu.new (
-	package_name =>	'intranet-cost',
-	label =>	'costs_home',
-	name =>		'Finance Home',
-	url =>		'/intranet-cost/index',
-	sort_order =>	10,
-	parent_menu_id => v_finance_menu
+    v_menu := im_menu__new (
+	null,                      -- menu_id
+        ''acs_object'',            -- object_type
+        now(),                     -- creation_date
+        null,                      -- creation_user
+        null,                      -- creation_ip
+        null,                      -- context_id
+	''intranet-cost'',	   -- package_name
+	''costs_home'',		   -- label
+	''Finance Home'',	   -- name
+	''/intranet-cost/index'',  -- url
+	10,			   -- sort_order
+	v_finance_menu,		   -- parent_menu_id
+	null			   -- visible_tcl
     );
-    acs_permission.grant_permission(v_menu, v_admins, 'read');
-    acs_permission.grant_permission(v_menu, v_senman, 'read');
-    acs_permission.grant_permission(v_menu, v_accounting, 'read');
+    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
 
     -- needs to be the first submenu in order to get selected
-    v_menu := im_menu.new (
-	package_name =>	'intranet-cost',
-	label =>	'costs',
-	name =>		'All Costs',
-	url =>		'/intranet-cost/list',
-	sort_order =>	80,
-	parent_menu_id => v_finance_menu
+    v_menu := im_menu__new (
+	null,                      -- menu_id
+        ''acs_object'',            -- object_type
+        now(),                     -- creation_date
+        null,                      -- creation_user
+        null,                      -- creation_ip
+        null,                      -- context_id
+	''intranet-cost'',	   -- package_name
+	''costs'',		   -- label
+	''All Costs'',		   -- name
+	''/intranet-cost/list'',   -- url
+	80,			   -- sort_order
+	v_finance_menu,		   -- parent_menu_id
+	null			   -- visible_tcl
     );
-    acs_permission.grant_permission(v_menu, v_admins, 'read');
-    acs_permission.grant_permission(v_menu, v_senman, 'read');
-    acs_permission.grant_permission(v_menu, v_accounting, 'read');
-end;
-/
--- commit;
+    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+    return 0;
+end;' language 'plpgsql';
 
+select inline_0 ();
 
-prompt *** intranet-costs: Create New Cost menus
+drop function inline_0 ();
+
+-- prompt *** intranet-costs: Create New Cost menus
 -- Setup the "New Cost" menu for /intranet-cost/index
 --
+create or replace function inline_0 ()
+returns integer as '
 declare
 	-- Menu IDs
 	v_menu			integer;
@@ -1187,41 +1186,51 @@ declare
 	v_employees		integer;
 	v_accounting		integer;
 	v_senman		integer;
-	v_companies		integer;
+	v_customers		integer;
 	v_freelancers		integer;
 	v_proman		integer;
 	v_admins		integer;
 begin
-    select group_id into v_admins from groups where group_name = 'P/O Admins';
-    select group_id into v_senman from groups where group_name = 'Senior Managers';
-    select group_id into v_accounting from groups where group_name = 'Accounting';
-    select group_id into v_companies from groups where group_name = 'Customers';
-    select group_id into v_freelancers from groups where group_name = 'Freelancers';
+    select group_id into v_admins from groups where group_name = ''P/O Admins'';
+    select group_id into v_senman from groups where group_name = ''Senior Managers'';
+    select group_id into v_accounting from groups where group_name = ''Accounting'';
+    select group_id into v_customers from groups where group_name = ''Customers'';
+    select group_id into v_freelancers from groups where group_name = ''Freelancers'';
 
     select menu_id
     into v_invoices_new_menu
     from im_menus
-    where label='costs';
+    where label=''costs'';
 
-    v_finance_menu := im_menu.new (
-	package_name =>	'intranet-cost',
-	label =>	'cost_new',
-	name =>		'New Cost',
-	url =>		'/intranet-cost/costs/new',
-	sort_order =>	10,
-	parent_menu_id => v_invoices_new_menu
+    v_finance_menu := im_menu__new (
+	null,                      -- menu_id
+        ''acs_object'',            -- object_type
+        now(),                     -- creation_date
+        null,                      -- creation_user
+        null,                      -- creation_ip
+        null,                      -- context_id
+	''intranet-cost'',	   -- package_name
+	''cost_new'',		   -- label
+	''New Cost'',		   -- name
+	''/intranet-cost/costs/new'', -- url
+	10,			      -- sort_order
+	v_invoices_new_menu,	      -- parent_menu_id
+	null			      -- visible_tcl
     );
 
-    acs_permission.grant_permission(v_finance_menu, v_admins, 'read');
-    acs_permission.grant_permission(v_finance_menu, v_senman, 'read');
-    acs_permission.grant_permission(v_finance_menu, v_accounting, 'read');
-end;
-/
--- commit;
+    PERFORM acs_permission__grant_permission(v_finance_menu, v_admins, ''read'');
+    PERFORM acs_permission__grant_permission(v_finance_menu, v_senman, ''read'');
+    PERFORM acs_permission__grant_permission(v_finance_menu, v_accounting, ''read'');
+    return 0;
+end;' language 'plpgsql';
 
+select inline_0 ();
 
+drop function inline_0 ();
 
 -- Repeating Costs Menu
+create or replace function inline_0 ()
+returns integer as'
 declare
         -- Menu IDs
         v_menu          	integer;
@@ -1236,34 +1245,40 @@ declare
         v_proman                integer;
         v_admins                integer;
 begin
-    select group_id into v_admins from groups where group_name = 'P/O Admins';
-    select group_id into v_senman from groups where group_name = 'Senior Managers';
-    select group_id into v_accounting from groups where group_name = 'Accounting';
-    select group_id into v_customers from groups where group_name = 'Customers';
-    select group_id into v_freelancers from groups where group_name = 'Freelancers';
+    select group_id into v_admins from groups where group_name = ''P/O Admins'';
+    select group_id into v_senman from groups where group_name = ''Senior Managers'';
+    select group_id into v_accounting from groups where group_name = ''Accounting'';
+    select group_id into v_customers from groups where group_name = ''Customers'';
+    select group_id into v_freelancers from groups where group_name = ''Freelancers'';
 
     select menu_id 
     into v_finance_menu
     from im_menus
-    where label='finance';
+    where label=''finance'';
 
-    v_menu := im_menu.new (
-        package_name => 'intranet-cost',
-        label =>        'costs_rep',
-        name =>         'Repeating Costs',
-        url =>          '/intranet-cost/rep-costs/',
-        sort_order =>   90,
-        parent_menu_id => v_finance_menu
+    v_menu := im_menu__new (
+	null,                      -- menu_id
+        ''acs_object'',            -- object_type
+        now(),                     -- creation_date
+        null,                      -- creation_user
+        null,                      -- creation_ip
+        null,                      -- context_id
+        ''intranet-cost'',	-- package_name
+        ''costs_rep'',		-- label
+        ''Repeating Costs'',	-- name
+        ''/intranet-cost/rep-costs/'',  -- url
+        90,				-- sort_order
+        v_finance_menu,			-- parent_menu_id
+	null				-- visible_tcl
     );
 
-    acs_permission.grant_permission(v_menu, v_admins, 'read');
-    acs_permission.grant_permission(v_menu, v_senman, 'read');
-    acs_permission.grant_permission(v_menu, v_accounting, 'read');
-    acs_permission.grant_permission(v_menu, v_customers, 'read');
-    acs_permission.grant_permission(v_menu, v_freelancers, 'read');
-end;
-/
-
+    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_customers, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_freelancers, ''read'');
+    return 0;
+end;' language 'plpsql';
 
 -------------------------------------------------------------
 -- Cost Views
@@ -1293,7 +1308,7 @@ sort_order) values (22007,220,'Provider',
 '"<A HREF=/intranet/companies/view?company_id=$provider_id>$provider_name</A>"',7);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22011,220,'Client',
-'"<A HREF=/intranet/companies/view?company_id=$company_id>$company_name</A>"',11);
+'"<A HREF=/intranet/companies/view?company_id=$customer_id>$customer_name</A>"',11);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22013,220,'Start Block',
 '$start_block',13);
@@ -1319,7 +1334,6 @@ insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22098,220,'Del',
 '"<input type=hidden name=object_type.$cost_id value=$object_type>
 <input type=checkbox name=del_cost value=$cost_id>"',99);
--- commit;
 
 
 
@@ -1327,42 +1341,44 @@ sort_order) values (22098,220,'Del',
 -- Cost Components
 --
 
-BEGIN
-    im_component_plugin.del_module(module_name => 'intranet-cost');
-END;
-/
+select im_component_plugin__del_module('intranet-cost');
 
 -- Show the cost component in project page
 --
-declare
-    v_plugin	integer;
-begin
-    v_plugin := im_component_plugin.new (
-	plugin_name =>	'Project Cost Component',
-	package_name =>	'intranet-cost',
-	page_url =>     '/intranet/projects/view',
-	location =>     'left',
-	sort_order =>   90,
-	component_tcl => 
-	'im_costs_project_component $user_id $project_id'
+select  im_component_plugin__new (
+	null,				 -- plugin_id
+	'acs_object',			 -- object_type
+	now(),				 -- creation_date
+	null,				 -- creation_user
+	null,				 -- creation_ip
+	null,				 -- context_id
+
+	'Project Cost Component',	 -- plugin_name
+	'intranet-cost',		 -- package_name
+	'left',				 -- location
+	'/intranet/projects/view',	 -- page_url
+	null,				 -- view_name
+	90,				 -- sort_order
+
+	'im_costs_project_component $user_id $project_id'  -- component_tcl
     );
-end;
-/
 
 -- Show the cost component in companies page
 --
-declare
-    v_plugin	integer;
-begin
-    v_plugin := im_component_plugin.new (
-	plugin_name =>	'Company Cost Component',
-	package_name =>	'intranet-cost',
-	page_url =>     '/intranet/companies/view',
-	location =>     'left',
-	sort_order =>   90,
-	component_tcl => 
-	'im_costs_company_component $user_id $company_id'
+select im_component_plugin__new (
+	null,				 -- plugin_id
+	'acs_object',			 -- object_type
+	now(),				 -- creation_date
+	null,				 -- creation_user
+	null,				 -- creation_ip
+	null,				 -- context_id
+
+	'Company Cost Component',	-- plugin_name
+	'intranet-cost',		-- package_name
+	'left',				-- location
+	'/intranet/companies/view',	-- page_url
+	null,				-- view_name
+	90,				-- sort_order
+
+	'im_costs_company_component $user_id $company_id'	-- component_tcl
     );
-end;
-/
--- commit;

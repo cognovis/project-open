@@ -75,8 +75,8 @@ namespace eval im_cost {
 	We asume that an UPDATE is executed afterwards
 	in order to fill in more details.
     } {
-	if {0 == $customer_id} { set customer_id [im_customer_internal] }
-	if {0 == $provider_id} { set provider_id [im_customer_internal] }
+	if {0 == $customer_id} { set customer_id [im_company_internal] }
+	if {0 == $provider_id} { set provider_id [im_company_internal] }
 	if {0 == $cost_id} { set cost_id [db_nextval acs_object_id_seq]}
 	if {0 == $cost_status_id} { set cost_status_id [im_cost_status_created]}
 
@@ -94,7 +94,13 @@ namespace eval im_cost {
 			:today, :user_id, :creation_ip
 	    )" 
 	} errmsg] {
-	    ad_return_complaint 1 "<li>Error saving employee cost information:<br>
+	    ad_return_complaint 1 "<li>Error creating acs_object in im_cost::new<br>
+		cost_id=$cost_id<br>
+		cost_status_id=$cost_status_id<br>
+		customer_id=$customer_id<br>
+		provider_id=$provider_id<br>
+		cost_name=$cost_name<br>
+		cost_type_id=$cost_type_id<br>
             <pre>$errmsg</pre>"
 	    return
 	}
@@ -116,7 +122,13 @@ namespace eval im_cost {
 		:cost_type_id,
 		:cost_status_id
 	)" } errmsg] {
-	    ad_return_complaint 1 "<li>Error saving employee cost information:<br>
+	    ad_return_complaint 1 "<li>Error inserting into im_costs as part of im_cost::new<br>
+               cost_id=$cost_id<br>
+                cost_status_id=$cost_status_id<br>
+                customer_id=$customer_id<br>
+                provider_id=$provider_id<br>
+                cost_name=$cost_name<br>
+                cost_type_id=$cost_type_id<br>
             <pre>$errmsg</pre>"
 	    return
 	}
@@ -243,16 +255,13 @@ ad_proc -public im_cost_center_options { {include_empty 0} { department_only_p 0
                 cc.cost_center_name,
                 cc.cost_center_id,
                 cc.cost_center_label,
-                (level-1) as indent_level
+    		length(cc.cost_center_code) / 2 as indent_level
         from
                 im_cost_centers cc
 	where
 		1=1
 		$department_only_sql
-        start with
-                cost_center_id = :start_center_id
-        connect by
-                parent_id = PRIOR cost_center_id"
+    "
 
     set options [list]
     db_foreach cost_center_options $options_sql {
