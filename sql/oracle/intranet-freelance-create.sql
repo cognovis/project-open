@@ -136,25 +136,25 @@ INSERT INTO categories VALUES (2302,'Catalyst','','Intranet LOC Tool',1,'f','');
 delete from im_view_columns where column_id >= 5000 and column_id < 5099;
 
 insert into im_view_columns values (5000,50,NULL,'Name',
-'"<a href=/intranet/users/view?user_id=$user_id>$name</a>"','',2,
+'"<a href=/intranet/users/view?user_id=$user_id>$name</a>"','','',2,
 'im_permission $user_id view_freelancers');
 insert into im_view_columns values (5001,50,NULL,'Email',
-'"<a href=mailto:$email>$email</a>"','',3,
+'"<a href=mailto:$email>$email</a>"','','',3,
 'im_permission $user_id view_freelancers');
 insert into im_view_columns values (5002,50,NULL,'Status',
-'$status','',4,'im_permission $user_id view_freelancers');
+'$status','','',4,'im_permission $user_id view_freelancers');
 insert into im_view_columns values (5003,50,NULL,'Src Lang',
-'$source_languages','',5,'im_permission $user_id view_freelancers');
+'$source_languages','','',5,'im_permission $user_id view_freelancers');
 insert into im_view_columns values (5004,50,NULL,'Tgt Lang',
-'$target_languages','',6,'im_permission $user_id view_freelancers');
+'$target_languages','','',6,'im_permission $user_id view_freelancers');
 insert into im_view_columns values (5005,50,NULL,'Subj Area',
-'$subjects','',7,'im_permission $user_id view_freelancers');
+'$subjects','','',7,'im_permission $user_id view_freelancers');
 insert into im_view_columns values (5006,50,NULL,'Work Phone',
-'$work_phone','',8,'im_permission $user_id view_freelancers');
+'$work_phone','','',8,'im_permission $user_id view_freelancers');
 insert into im_view_columns values (5007,50,NULL,'Cell Phone',
-'$cell_phone','',9,'im_permission $user_id view_freelancers');
+'$cell_phone','','',9,'im_permission $user_id view_freelancers');
 insert into im_view_columns values (5008,50,NULL,'Home Phone',
-'$home_phone','',10,'im_permission $user_id view_freelancers');
+'$home_phone','','',10,'im_permission $user_id view_freelancers');
 commit;
 
 
@@ -162,39 +162,39 @@ commit;
 delete from im_view_columns where column_id >= 5100 and column_id < 5199;
 
 insert into im_view_columns values (5100,51,NULL,'Web Site',
-'"<A href=$web_site>$web_site</A>"','',0,
+'"<A href=$web_site>$web_site</A>"','','',0,
 'im_permission $user_id view_freelancers');
 
 insert into im_view_columns values (5102,51,NULL,'Trans Rate',
-'$translation_rate','',2,
+'$translation_rate','','',2,
 'im_permission $user_id view_freelancers');
 
 insert into im_view_columns values (5104,51,NULL,'Editing Rate',
-'$editing_rate','',4,
+'$editing_rate','','',4,
 'im_permission $user_id view_freelancers');
 
 insert into im_view_columns values (5106,51,NULL,'Hourly Rate',
-'$hourly_rate','',6,
+'$hourly_rate','','',6,
 'im_permission $user_id view_freelancers');
 
 insert into im_view_columns values (5108,51,NULL,'Bank Account',
-'$bank_account','',8,
+'$bank_account','','',8,
 'im_permission $user_id view_freelancers');
 
 insert into im_view_columns values (5110,51,NULL,'Bank',
-'$bank','',10,
+'$bank','','',10,
 'im_permission $user_id view_freelancers');
 
 insert into im_view_columns values (5112,51,NULL,'Payment Method',
-'$payment_method','',12,
+'$payment_method','','',12,
 'im_permission $user_id view_freelancers');
 
 insert into im_view_columns values (5114,51,NULL,'Note',
-'<blockqote>$note</blockquote>','',14,
+'<blockqote>$note</blockquote>','','',14,
 'im_permission $user_id view_freelancers');
 
 insert into im_view_columns values (5116,51,NULL,'Private Note',
-'<blockqote>$private_note</blockquote>','',16,
+'<blockqote>$private_note</blockquote>','','',16,
 'im_permission $user_id view_freelancers');
 
 commit;
