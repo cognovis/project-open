@@ -55,10 +55,12 @@ from
 		p.profile_id
 	from
 		im_fs_folder_perms p,
-		im_fs_folders f
+		im_fs_folders f,
+		im_profiles prof
 	where
 		f.folder_id = p.folder_id
 		and f.object_id = :object_id
+		and p.profile_id = prof.profile_id
 	)
 	UNION (select [im_customer_group_id] from dual)
 	UNION (select [im_employee_group_id] from dual)
