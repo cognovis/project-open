@@ -19,7 +19,7 @@ ad_page_contract {
 }
 
 set user_id [ad_maybe_redirect_for_registration]
-set context_bar [ad_context_bar [list /intranet/users/ "Users"] "Org Chart"]
+set context_bar [im_context_bar [list /intranet/users/ "Users"] "Org Chart"]
 set page_title "[_ intranet-hr.Users]"
 set page_focus "im_header_form.keywords"
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]

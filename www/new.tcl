@@ -50,7 +50,7 @@ if {[info exists employee_id]} {
 }
 
 set page_title "[_ intranet-hr.lt_Employee_Information_]"
-set context [ad_context_bar $page_title]
+set context [im_context_bar $page_title]
 
 
 # ------------------------------------------------------------------
