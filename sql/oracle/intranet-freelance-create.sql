@@ -154,7 +154,7 @@ extra_select, extra_from, extra_where, sort_order, visible_for) values (5200,52,
 '"<a href=/intranet/users/view?user_id=$user_id>$name</a>"',
 'f.bank_account, f.bank, f.payment_method_id, f.rec_source, 
 f.rec_status_id, f.rec_test_type, f.rec_test_result_id',
-'im_freelancers f','u.user_id = f.user_id',0,'');
+'im_freelancers f','u.user_id = f.user_id(+)',0,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (5201,52,NULL,'Email',
