@@ -228,6 +228,191 @@ from im_categories
 where category_type = 'Intranet Topic Type';
 
 
+
+
+
+
+-------------------------------------------------------------
+-- Privileges
+--
+-- Privileges are permission tokens relative to the "subsite"
+-- (package) object "Project/Open Core".
+--
+prompt *** Creating Privileges
+begin
+    acs_privilege.create_privilege('add_topic_public','Add global messages','');
+    acs_privilege.create_privilege('add_topic_group','Add essages for the entire (project) group','');
+    acs_privilege.create_privilege('add_topic_staff','Messages to staff members of the group','');
+    acs_privilege.create_privilege('add_topic_client','Messages to the clients of the group','');
+    acs_privilege.create_privilege('add_topic_noncli','Message to non-clients of the group','');
+    acs_privilege.create_privilege('add_topic_pm','Message to the project manager only','');
+end;
+/
+
+
+------------------------------------------------------
+-- Add Topic PM
+---
+BEGIN
+    im_priv_create('add_topic_pm',        'Accounting');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_pm',        'Customers');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_pm',        'Employees');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_pm',        'Freelancers');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_pm',        'P/O Admins');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_pm',        'Project Managers');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_pm',        'Sales');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_pm',        'Senior Managers');
+END;
+/
+
+
+
+------------------------------------------------------
+-- Add Topic Client
+---
+BEGIN
+    im_priv_create('add_topic_client',        'Accounting');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_client',        'P/O Admins');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_client',        'Sales');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_client',        'Senior Managers');
+END;
+/
+
+
+------------------------------------------------------
+-- Add Topic Non-Clients
+---
+BEGIN
+    im_priv_create('add_topic_noncli',        'Accounting');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_noncli',        'Employees');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_noncli',        'Freelancers');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_noncli',        'P/O Admins');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_noncli',        'Project Managers');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_noncli',        'Sales');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_noncli',        'Senior Managers');
+END;
+/
+
+
+------------------------------------------------------
+-- Add Topic Groups
+---
+BEGIN
+    im_priv_create('add_topic_group',        'Accounting');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_group',        'P/O Admins');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_group',        'Sales');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_group',        'Senior Managers');
+END;
+/
+
+
+
+------------------------------------------------------
+-- Add Topic Public
+---
+BEGIN
+    im_priv_create('add_topic_client',        'P/O Admins');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_client',        'Senior Managers');
+END;
+/
+
+
+
+------------------------------------------------------
+-- Add Topic Staff
+---
+BEGIN
+    im_priv_create('add_topic_staff',        'Accounting');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_staff',        'Employees');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_staff',        'Freelancers');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_staff',        'P/O Admins');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_staff',        'Project Managers');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_staff',        'Sales');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_staff',        'Senior Managers');
+END;
+/
+
+
+
+
 ---------------------------------------------------------
 -- Register the component in the core TCL pages
 --
@@ -251,12 +436,7 @@ BEGIN
 END;
 /
 show errors
-
 commit;
-
-
-
-
 
 -- Setup the "Forum" main menu entry
 --
