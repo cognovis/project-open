@@ -134,13 +134,21 @@ set subject $error_url
 set message "
 Error URL: $error_url
 System URL: $system_url
+User Name: $error_first_names $error_last_name
+User Email: $error_user_email
 Publisher Name: $publisher_name
+Core Version: $core_version
 Error Info: 
-$error_info
-"
+$error_info"
+
 set priority 3
-set asignee_id ""
 set due [db_string tomorrow "select sysdate+1 from dual"]
+
+
+set system_owner_email [ad_parameter -package_id [ad_acs_kernel_id] SystemOwner]
+set system_owner_id [db_string user_id "select party_id from parties where lower(email) = lower(:system_owner_email)" -default 0]
+
+set asignee_id $system_owner_id
 
 # 1102 is "Incident"
 set topic_type_id 1102
