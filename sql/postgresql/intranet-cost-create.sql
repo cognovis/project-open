@@ -41,7 +41,7 @@
 --	- propose_budget
 --	- confirm_budget
 
-set escape \
+-- set escape \
 
 -------------------------------------------------------------
 -- Setup the status and type im_categories
@@ -60,25 +60,33 @@ set escape \
 
 
 
-prompt *** intranet-costs: Creating im_cost_center
+-- prompt *** intranet-costs: Creating im_cost_center
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_object_type		integer; 
 begin
-    acs_object_type.create_type (
-	supertype =>		'acs_object',
-	object_type =>		'im_cost_center',
-	pretty_name =>		'Cost Center',
-	pretty_plural =>	'Cost Centers',
-	table_name =>		'im_cost_centers',
-	id_column =>		'cost_center_id',
-	package_name =>		'im_cost_center',
-	type_extension_table =>	null,
-	name_method =>		'im_cost_center.name'
+    v_object_type := acs_object_type__create_type (
+	''im_cost_center'',	 -- object_type
+	''Cost Center'',	 -- pretty_name
+	''Cost Centers'',	 -- pretty_plural	
+	''acs_object'',		 -- supertype
+	''im_cost_centers'',	 -- table_name
+	''cost_center_id'',	 -- id_column
+	''im_cost_center'',	 -- package_name
+	''f'',			 -- abstract_p
+	null,			 -- type_extension_table
+	''im_cost_center__name'' -- name_method
     );
-end;
-/
-show errors
+    return 0;
+end;' language 'plpgsql';
+
+select inline_0 ();
+
+drop function inline_0 ();
 
 
-prompt *** intranet-costs: Creating im_cost_centers
+-- prompt *** intranet-costs: Creating im_cost_centers
 create table im_cost_centers (
 	cost_center_id		integer
 				constraint im_cost_centers_pk
@@ -132,27 +140,78 @@ create index im_cost_centers_manager_id_idx on im_cost_centers(manager_id);
 
 
 
-prompt *** intranet-costs: Creating im_cost_center
-create or replace package im_cost_center
-is
-    function new (
-	cost_center_id	in integer default null,
-	object_type	in varchar default 'im_cost_center',
-	creation_date	in date default sysdate,
-	creation_user	in integer default null,
-	creation_ip	in varchar default null,
-	context_id	in integer default null,
-	cost_center_name in varchar,
-	cost_center_label in varchar,
-	cost_center_code in varchar,
-	type_id		in integer,
-	status_id	in integer,
-	parent_id	in integer,
-	manager_id	in integer default null,
-	department_p	in char default 't',
-	description	in varchar default null,
-	note		in varchar default null
-    ) return im_cost_centers.cost_center_id%TYPE;
+-- prompt *** intranet-costs: Creating im_cost_center
+-- create or replace package im_cost_center
+-- is
+create or replace function im_cost_center__new (
+       integer,
+       varchar,
+       date,
+       integer
+       varchar,
+       integer,
+       
+       varchar,
+       varchar,
+       varchar,
+       
+       integer,
+       integer,
+       integer,
+       integer,
+       char,
+       varchar,
+       varchar)
+returns intger as '
+DECLARE
+	p_cost_center_id alias for $1;		-- cost_center_id  default null
+	p_object_type	alias for $2;		-- object_type default ''im_cost_center''
+	p_creation_date	alias for $3;		-- creation_date default now()
+	p_creation_user alias for $4;		-- creation_date default null
+	p_creation_ip	alias for $5;		-- creation_ip default null
+	p_context_id	alias for $6;		-- context_id default null
+	p_cost_center_name alias for $7;	-- cost_center_name
+	p_cost_center_label alias for $8;	-- cost_center_label
+	p_cost_center_code  alias for $9;	-- cost_center_code
+	p_type_id	    alias for $10;	-- cost_center_code
+	p_status_id	    alias for $11;	-- status_id
+	p_parent_id	    alias for $12;	-- parent_id
+	p_manager_id	    alias for $13;	-- manager_id default
+	p_department_p	    alias for $14;	-- department_p default ''t''
+	p_description	    alias for $15;	-- description default null
+	p_note		    alias for $16;	-- note default null
+	v_cost_center_id    integer;
+ BEGIN
+	v_cost_center_id := acs_object__new (
+		p_cost_center_id,	    -- object_id
+		p_object_type,		    -- object_type
+		p_creation_date,	    -- creation_date
+		p_creation_user,	    -- creation_user
+		p_creation_ip,		    -- creation_ip
+		p_context_id,		    -- context_id
+		''t''			    -- security_inherit_p
+	);
+
+	insert into im_cost_centers (
+		cost_center_id, 
+		cost_center_name, cost_center_label,
+		cost_center_code,
+		cost_center_type_id, cost_center_status_id, 
+		parent_id, manager_id,
+		department_p,
+		description, note
+	) values (
+		v_cost_center_id, 
+		p_cost_center_name, p_cost_center_label,
+		p_cost_center_code,
+		p_type_id, p_status_id, 
+		p_parent_id, p_manager_id, 
+		p_department_p,
+		p_description, p_note
+	);
+	return v_cost_center_id;
+end;' language 'plpgsql';
+
 
     procedure del (cost_center_id in integer);
     procedure name (cost_center_id in integer);
