@@ -33,6 +33,8 @@ ad_page_contract {
 # ---------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
+set org_customer_id $customer_id
+
 if {"" == $return_url} {set return_url [im_url_with_query] }
 set todays_date [db_string get_today "select sysdate from dual"]
 set page_focus "im_header_form.keywords"
@@ -402,7 +404,7 @@ select
 from
 	(
 		(select 
-			im_calculate_price_relevancy(
+			im_trans_prices_calc_relevancy (
 				p.customer_id,:customer_id,
 				p.task_type_id, :task_type_id,
 				p.subject_area_id, :subject_area_id,
@@ -426,7 +428,7 @@ from
 	) p,
 	im_customers c
 where
-	p.customer_id=c.customer_id
+	p.customer_id=c.customer_id(+)
 	and relevancy >= 0
 order by
 	p.relevancy desc,
@@ -465,12 +467,13 @@ order by
 	set best_match_price 0
 	db_foreach references_prices $reference_price_sql {
 
+	    ns_log Notice "new-3: customer_id=$customer_id, uom_id=$uom_id => price=$price, relevancy=$price_relevancy"
 	    # Take the first line of the result list (=best score) as a price proposal:
 	    if {$price_list_ctr == 1} {set best_match_price $price}
 
 	    append reference_price_html "
         <tr>
-          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_customer_name</td>
+          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_relevancy $price_customer_name</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_uom</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_task_type</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_target_language</td>

@@ -92,42 +92,53 @@ create or replace function im_trans_prices_calc_relevancy (
 )
 RETURN number IS
 	match_value		number;
+	v_internal_customer_id	integer;
 BEGIN
 	match_value := 0;
 
+	select customer_id
+	into v_internal_customer_id
+	from im_customers
+	where customer_path='internal';
+
 	if v_price_task_type_id = v_item_task_type_id then
-	match_value := match_value + 4;
+	    match_value := match_value + 4;
 	end if;
 	if not(v_price_task_type_id is null) and v_price_task_type_id != v_item_task_type_id then
-	match_value := match_value - 4;
+	    match_value := match_value - 4;
 	end if;
 	if v_price_source_language_id = v_item_source_language_id then
-	match_value := match_value + 3;
+	    match_value := match_value + 3;
 	end if;
 	if not(v_price_source_language_id is null) and v_price_source_language_id != v_item_source_language_id then
-	match_value := match_value - 10;
+	    match_value := match_value - 10;
 	end if;
 	if v_price_target_language_id = v_item_target_language_id then
-	match_value := match_value + 2;
+	    match_value := match_value + 2;
 	end if;
 	if not(v_price_target_language_id is null) and v_price_target_language_id != v_item_target_language_id then
-	match_value := match_value - 10;
+	    match_value := match_value - 10;
 	end if;
 	if v_price_subject_area_id = v_item_subject_area_id then
-	match_value := match_value + 1;
+	    match_value := match_value + 1;
 	end if;
 	if not(v_price_subject_area_id is null) and v_price_subject_area_id != v_item_subject_area_id then
-	match_value := match_value - 10;
+	    match_value := match_value - 10;
 	end if;
+
+	-- Customer logic - "Internal" doesn't give a penalty 
+	-- but doesn't count as high as an exact match
+	--
 	if v_price_customer_id = v_item_customer_id then
-	match_value := (match_value + 6)*2;
+	    match_value := (match_value + 6)*2;
 	end if;
-	if v_price_customer_id = 17 then
-	match_value := match_value + 1;
+	if v_price_customer_id = v_internal_customer_id then
+	    match_value := match_value + 1;
 	end if;
-	if v_price_customer_id != 17 and v_price_customer_id != v_item_customer_id then
-	match_value := match_value -10;
+	if v_price_customer_id != v_internal_customer_id and v_price_customer_id != v_item_customer_id then
+	    match_value := match_value -10;
 	end if;
+
 	return match_value;
 END;
 /
