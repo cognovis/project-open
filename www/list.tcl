@@ -74,6 +74,11 @@ set amp "&"
 set cur_format "99,999.99"
 set local_url "list"
 
+if {![im_permission $user_id view_costs]} {
+    ad_return_complaint 1 "<li>You have insufficiente privileges to view this page"
+    return
+}
+
 if { [empty_string_p $how_many] || $how_many < 1 } {
     set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50]
 }

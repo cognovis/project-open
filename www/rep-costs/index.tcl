@@ -35,6 +35,11 @@ set site_url "/intranet-cost/rep-costs"
 set cost_url "/intranet-cost/costs/new"
 set cost_create_url "/intranet-cost/rep-costs/new-rep-cost"
 
+if {![im_permission $user_id view_costs]} {
+    ad_return_complaint 1 "<li>You have insufficiente privileges to view this page"
+    return
+}
+
 # Start with January of this year if not otherwise specified:
 if {"" == $start_date} {
     set start_date [db_string get_current_year "select to_char(sysdate, 'YYYY') from dual"]

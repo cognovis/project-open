@@ -113,8 +113,8 @@ ad_form \
     -mode $form_mode \
     -export {next_url user_id return_url} \
     -form {
-	{cost_name:text(text) {label $name_label} {html {size 40}}}
 
+	{cost_name:text(text) {label $name_label} {html {size 40}}}
 	{project_id:text(select),optional {label $project_label} {options $project_options} }
 	{customer_id:text(select),optional {label "$customer_label<br><small>($wp_label)</small>"} {options $customer_options} }
 	{provider_id:text(select),optional {label "$provider_label<br><small>($wg_label)</small>"} {options $provider_options} }
@@ -151,7 +151,6 @@ ad_form -extend -name cost -on_request {
 	where	ci.cost_id = :cost_id
 
 } -after_submit {
-
 
     set cost_id [im_cost::new \
 	-cost_name $cost_name \

@@ -42,22 +42,6 @@
 
 set escape \
 
--------------------------------------------------------------
--- Setup the status and type im_categories
-
--- 3000-3099    Intranet Cost Center Type
--- 3100-3199    Intranet Cost Center Status
--- 3200-3299    Intranet CRM Tracking
--- 3300-3399    reserved for cost centers
--- 3400-3499    Intranet Investment Type
--- 3500-3599    Intranet Investment Status
--- 3600-3699	Intranet Investment Amortization Interval (reserved)
--- 3700-3799    Intranet Cost Type
--- 3800-3899    Intranet Cost Status
--- 3900-3999    Intranet Cost Planning Type
--- 4000-4599    (reserved)
-
-
 
 prompt *** intranet-costs: Creating im_cost_center
 begin
@@ -247,48 +231,6 @@ is
 end im_cost_center;
 /
 show errors
-
-
-prompt *** intranet-costs: Creating URLs for viewing/editing cost centers
-delete from im_biz_object_urls where object_type='im_cost_center';
-insert into im_biz_object_urls (
-	object_type, 
-	url_type, 
-	url
-) values (
-	'im_cost_center',
-	'view',
-	'/intranet-cost/cost-centers/new?form_mode=display\&cost_center_id='
-);
-insert into im_biz_object_urls (
-	object_type, 
-	url_type, 
-	url
-) values (
-	'im_cost_center',
-	'edit',
-	'/intranet-cost/cost-centers/new?form_mode=edit\&cost_center_id='
-);
-
-
-prompt *** intranet-costs: Creating Cost Center categories
--- Intranet Cost Center Type
-delete from im_categories where category_id >= 3000 and category_id < 3100;
-INSERT INTO im_categories VALUES (3001,'Cost Center','','Intranet Cost Center Type',1,'f','');
-INSERT INTO im_categories VALUES (3002,'Profit Center','','Intranet Cost Center Type',1,'f','');
-INSERT INTO im_categories VALUES (3003,'Investment Center','','Intranet Cost Center Type',1,'f','');
-INSERT INTO im_categories VALUES (3004,'Subdepartment','Department without budget responsabilities',
-'Intranet Cost Center Type',1,'f','');
-commit;
--- reserved until 3099
-
-
--- Intranet Cost Center Type
-delete from im_categories where category_id >= 3100 and category_id < 3200;
-INSERT INTO im_categories VALUES (3101,'Active','','Intranet Cost Center Status',1,'f','');
-INSERT INTO im_categories VALUES (3102,'Inactive','','Intranet Cost Center Status',1,'f','');
-commit;
--- reserved until 3099
 
 
 -------------------------------------------------------------
@@ -516,6 +458,11 @@ create table im_costs (
 	cost_name		varchar(400)
 				constraint im_costs_name_nn
 				not null,
+	-- Nr is a current number to provide a unique 
+	-- identifier of a cost item for backup/restore.
+	cost_nr			varchar(400)
+				constraint im_costs_nr_nn
+				not null,
 	project_id		integer
 				constraint im_costs_project_fk
 				references im_projects,
@@ -604,8 +551,12 @@ create table im_costs (
 	description		varchar(4000),
 	note			varchar(4000)
 );
+
 create index im_costs_cause_object_idx on im_costs(cause_object_id);
 create index im_costs_start_block_idx on im_costs(start_block);
+
+-- Make sure that cost_nr is unique
+alter table im_costs add constraint im_costs_nr_un unique(cost_nr);
 
 
 -------------------------------------------------------------
@@ -709,8 +660,8 @@ is
 	);
 
 	insert into im_costs (
-		cost_id, cost_name, project_id, 
-		customer_id, provider_id, 
+		cost_id, cost_name, cost_nr, 
+		project_id, customer_id, provider_id, 
 		cost_status_id, cost_type_id,
 		template_id, investment_id,
 		effective_date, payment_days,
@@ -720,8 +671,8 @@ is
 		planning_p, planning_type_id, 
 		description, note
 	) values (
-		v_cost_cost_id, new.cost_name, new.project_id, 
-		new.customer_id, new.provider_id, 
+		v_cost_cost_id, new.cost_name, v_cost_cost_id, 
+		new.project_id, new.customer_id, new.provider_id, 
 		new.cost_status_id, new.cost_type_id,
 		new.template_id, new.investment_id,
 		new.effective_date, new.payment_days,
@@ -778,13 +729,6 @@ begin
 end;
 /
 show errors;
-
--- Create URLs for viewing/editing costs
-delete from im_biz_object_urls where object_type='im_cost';
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_cost','view','/intranet-cost/costs/new?form_mode=display\&cost_id=');
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_cost','edit','/intranet-cost/costs/new?form_mode=edit\&cost_id=');
 
 
 -------------------------------------------------------------
@@ -887,130 +831,6 @@ begin
 end;
 /
 show errors
-
-
-prompt *** intranet-costs: Creating URLs for viewing/editing investments
-delete from im_biz_object_urls where object_type='im_investment';
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_investment','view','/intranet-cost/investments/new?form_mode=display\&investment_id=');
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_investment','edit','/intranet-cost/investments/new?form_mode=edit\&investment_id=');
-
-
-prompt *** intranet-costs: Creating Investment categories
--- Intranet Investment Type
-delete from im_categories where category_id >= 3400 and category_id < 3500;
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3401,'Other','Intranet Investment Type');
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3403,'Computer Hardware','Intranet Investment Type');
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3405,'Computer Software','Intranet Investment Type');
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3407,'Office Furniture','Intranet Investment Type');
-commit;
--- reserved until 3499
-
--- Intranet Investment Status
-delete from im_categories where category_id >= 3500 and category_id < 3599;
-INSERT INTO im_categories (category_id, category, category_type, category_description) 
-VALUES (3501,'Active','Intranet Investment Status','Currently being amortized');
-INSERT INTO im_categories (category_id, category, category_type, category_description) 
-VALUES (3503,'Deleted','Intranet Investment Status','Deleted - was an error');
-INSERT INTO im_categories (category_id, category, category_type, category_description) 
-VALUES (3505,'Amortized','Intranet Investment Status','No remaining book value');
-commit;
--- reserved until 3599
-
-
-
-
-
-
-
-
-
-
-
-
-
--- Cost Templates
-delete from im_categories where category_id >= 900 and category_id < 1000;
-INSERT INTO im_categories VALUES (900,'invoice-english.adp','','Intranet Cost Template','category','t','f');
-INSERT INTO im_categories VALUES (902,'invoice-spanish.adp','','Intranet Cost Template','category','t','f');
--- reserved until 999
-
-
-
-prompt *** intranet-costs: Creating category Cost Type
--- Cost Type
-delete from im_categories where category_id >= 3700 and category_id < 3799;
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3700,'Customer Invoice','Intranet Cost Type');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3702,'Quote','Intranet Cost Type');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3704,'Provider Bill','Intranet Cost Type');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3706,'Purchase Order','Intranet Cost Type');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3708,'Customer Documents','Intranet Cost Type');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3710,'Provider Documents','Intranet Cost Type');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3712,'Travel Cost','Intranet Cost Type');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3714,'Employee Salary','Intranet Cost Type');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3716,'Repeating Cost','Intranet Cost Type');
-
-commit;
--- reserved until 3799
-
--- Establish the super-categories "Provider Documents" and "Customer Documents"
-insert into im_category_hierarchy values (3710,3704);
-insert into im_category_hierarchy values (3710,3706);
-insert into im_category_hierarchy values (3708,3700);
-insert into im_category_hierarchy values (3708,3702);
-
-
-prompt *** intranet-costs: Creating category Cost Status
--- Intranet Cost Status
-delete from im_categories where category_id >= 3800 and category_id < 3899;
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3802,'Created','Intranet Cost Status');
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3804,'Outstanding','Intranet Cost Status');
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3806,'Past Due','Intranet Cost Status');
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3808,'Partially Paid','Intranet Cost Status');
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3810,'Paid','Intranet Cost Status');
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3812,'Deleted','Intranet Cost Status');
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3814,'Filed','Intranet Cost Status');
-commit;
--- reserved until 3899
-
-
-prompt *** intranet-costs: Creating status and type views
-create or replace view im_cost_status as
-select
-	category_id as cost_status_id,
-	category as cost_status
-from 	im_categories
-where	category_type = 'Intranet Cost Status' and
-	category_id not in (3812);
-
-create or replace view im_cost_type as
-select	category_id as cost_type_id, 
-	category as cost_type
-from 	im_categories
-where 	category_type = 'Intranet Cost Type';
-
-
 
 
 -------------------------------------------------------------
@@ -1230,64 +1050,6 @@ end;
 
 
 -------------------------------------------------------------
--- Cost Views
---
-
--- Cost Views
---
-insert into im_views (view_id, view_name, visible_for)
-values (220, 'cost_list', 'view_finance');
-insert into im_views (view_id, view_name, visible_for)
-values (221, 'cost_new', 'view_finance');
-
--- Cost List Page
---
-delete from im_view_columns where column_id > 22000 and column_id < 22099;
---
-insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22001,220,'Name',
-'"<A HREF=${cost_url}$cost_id>[string range $cost_name 0 30]</A>"',1);
-insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22003,220,'Type','$cost_type',3);
-insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22005,220,'Project',
-'"<A HREF=/intranet/projects/view?project_id=$project_id>$project_nr</A>"',5);
-insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22007,220,'Provider',
-'"<A HREF=/intranet/companies/view?company_id=$provider_id>$provider_name</A>"',7);
-insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22011,220,'Client',
-'"<A HREF=/intranet/companies/view?company_id=$customer_id>$customer_name</A>"',11);
-insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22013,220,'Start Block',
-'$start_block',13);
-insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22015,220,'Due Date',
-'[if {$overdue > 0} {
-	set t "<font color=red>$due_date_calculated</font>"
-} else {
-	set t "$due_date_calculated"
-}]',15);
-
-insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22021,220,'Amount','"$amount_formatted $currency"',21);
-
-insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22023,220,'Paid', '"$paid_amount $paid_currency"',23);
-
-insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22025,220,'Status',
-'[im_cost_status_select "cost_status.$cost_id" $cost_status_id]',25);
-
-insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22098,220,'Del',
-'"<input type=hidden name=object_type.$cost_id value=$object_type>
-<input type=checkbox name=del_cost value=$cost_id>"',99);
-commit;
-
-
-
--------------------------------------------------------------
 -- Cost Components
 --
 
@@ -1330,3 +1092,12 @@ begin
 end;
 /
 commit;
+
+
+-------------------------------------------------------------
+-- Import common functionality
+
+@../common/intranet-cost-create.sql
+@../common/intranet-cost-backup.sql
+
+

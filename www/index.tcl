@@ -18,6 +18,11 @@ set user_id [ad_maybe_redirect_for_registration]
 set page_title "[_ intranet-cost.Finance_Home]"
 set context_bar [ad_context_bar $page_title]
 
+if {![im_permission $user_id view_costs]} {
+    ad_return_complaint 1 "<li>You have insufficiente privileges to view this page"
+    return
+}
+
 # select the "Finance" Menu
 set parent_menu_sql "select menu_id from im_menus where label='finance'"
 set parent_menu_id [db_string parent_admin_menu $parent_menu_sql -default 0]
