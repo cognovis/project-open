@@ -991,8 +991,6 @@ ad_proc -public im_filestorage_pol_component { user_id object_id object_name bas
     # a path and needs a "/" to be appended to base_path.
     if {"" != $bread_crum_path} { set bread_crum_path "/$bread_crum_path" }
 
-    ns_log Notice "im_filestorage_pol_component: user_id=$user_id object_id=$object_id object_name=$object_name base_path=$base_path folder_type=$folder_type current_url_without_vars=$current_url_without_vars"
-
     # Save the path in a list, a deph path for a list position
     set org_paths [split $base_path "/"]
 
@@ -1005,7 +1003,6 @@ ad_proc -public im_filestorage_pol_component { user_id object_id object_name bas
     # Once we've got the root... next step is to execute the find command to 
     # know the content of the project
     set file_list ""
-    ns_log Notice "////////////////////////////////////////////////"
 
     if { [catch {
 	# Executing the find command
@@ -1016,14 +1013,6 @@ ad_proc -public im_filestorage_pol_component { user_id object_id object_name bas
 
     # Save each result of the find in a list
     set files [split $file_list "\n"]
-    ns_log Notice "[split $file_list \"\n\"]"
-    ns_log Notice "[lsort [split $file_list \"\n\"]]"
-    ns_log Notice ""
-    ns_log Notice "////////////////////////////////////////////////"
-    ns_log Notice ""
-    ns_log Notice ""
-    ns_log Notice ""
-
     # ------------------------------------------------------------------
     # Setup the variables for the "Root Path" 
     # (=the first line returned by "find")
@@ -1043,7 +1032,7 @@ ad_proc -public im_filestorage_pol_component { user_id object_id object_name bas
     # This normally corresponds to the last _closed_ directory
     # on top of us.
     set last_parent_path $root_path
-    set last_parent_path_depth $root_dir_depth
+    set last_parent_path_depth [expr $root_dir_depth - 1]
 
     # ------------------------------------------------------------------
     # Start the Bread Crum with the name of the object
@@ -1068,7 +1057,6 @@ ad_proc -public im_filestorage_pol_component { user_id object_id object_name bas
 	    set uplink $current_path
 	}
     }
-    ns_log Notice "/////////// current_path: $current_path //////////////////"
     append texte "</td></tr></table>\n"
 
     append texte [im_filestorage_tools_bar $bread_crum_path $folder_type $object_id $return_url $up_link]
@@ -1089,7 +1077,7 @@ where
 	user_id = :user_id
 	and object_id = :object_id
 "
-
+ 
     db_foreach hash_query $query {
     	# create an hash array where the index is the path of the dir and the value 
 	# is the status (open/close) of the dir
@@ -1098,15 +1086,16 @@ where
 	# save another hash array using the same index, the value now is the folder_id 
 	# of the directory stored in the sql table
 	set folder_id_hash($path) $folder_id
-
+	set last_folder_id [expr $folder_id * 10] 
+	ns_log Notice "path: $path"
     }
 
     # Always show the root of the filestorage as "open"
     set open_p_hash($root_path) "o"
-
     # Always show the bread_crum "root" as "open"
     set open_p_hash($current_path) "o"
 
+    set stack_level_hash($last_parent_path_depth) $last_parent_path
     # ------------------------------------------------------------------
     # Here we start rendering the file tree
     # ------------------------------------------------------------------
@@ -1122,8 +1111,6 @@ where
 	set current_depth [expr [llength $file_paths] - 1]
 	# store the name of the file ("file.dat")
 	set file_body [lindex $file_paths $current_depth]
-	ns_log Notice "--- current_depth: $current_depth"
-	ns_log Notice "--- last_parent_path_depth: $last_parent_path_depth"
 	#Getting the real type and size of the file
 	set file_type ""
 	set file_size ""
@@ -1135,40 +1122,21 @@ where
 	# This is the core of the algorithm:
 	# Check if we're below last_parent_depth.
 	# In this case we depend on our parents open_p status
-        ns_log Notice "--- last_parent_path: $last_parent_path"
-
 	set current_path $file
-	if {$current_depth > $last_parent_path_depth} {
-	    if { ![info exists open_p_hash($file)] && [string compare $file_type "directory"] == 0 } {
-		# Treat a missing element in the hash (from the DB!) as closed...
-		ns_log Notice "--- file A: $file"
-		ns_log Notice "--- visible_p = c"
-		set open_p_hash($file) "c"
-		#set visible_p "c"
-		set visible_p $open_p_hash($last_parent_path)
-	    } else {
-		 ns_log Notice "--- file B: $file"
-		 ns_log Notice "visible_p = $open_p_hash($last_parent_path)"
-		 set visible_p $open_p_hash($last_parent_path)
-	    }
-
-	} else {
-	    # We are on the same level as last_parent
-	    # => This line becomes the last_parent!!!
-	    # => This line is visible, even though its status may be closed
-	    #    but that's only for its _childs_.
-            set last_parent_path $current_path
-            set last_parent_path_depth $current_depth
- 	    ns_log Notice "file C: $file"
-	    ns_log Notice "visible_p = o"
-	    set visible_p "o"
+	if { ![info exists open_p_hash($file)] && [string compare $file_type "directory"] == 0} {
+	    set open_p_hash($file) "c"
+	    incr last_folder_id
+	    set folder_id_hash($file) $last_folder_id
+	}
+	set visible_p $open_p_hash($stack_level_hash([expr $current_depth -1]))
+	if { [string compare $file_type "directory"] == 0 } {
+	     set stack_level_hash($current_depth) $current_path
 	}
 
 	if {![string equal "o" $visible_p]} { continue }
 
 	# Actions executed if the file type is "directory"
 	if { [string compare $file_type "directory"] == 0 } {
-
 	    ns_log Notice "--- directory"
 	    # Printing one row with the directory information
 	    append texte [im_filestorage_dir_row \
