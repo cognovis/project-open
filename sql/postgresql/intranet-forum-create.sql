@@ -62,6 +62,7 @@ create table im_forum_topics (
 );
 create index im_forum_topics_object_idx on im_forum_topics (object_id);
 
+
 -- This is the sortkey code
 --
 create function im_forum_topic_insert_tr ()
@@ -73,30 +74,25 @@ begin
 
     if new.parent_id is null
     then
-        select '''', coalesce(max_child_sortkey, '''')
-        into v_parent_sortkey, v_max_child_sortkey
-        from im_forum_topics
-        where parent_id = new.object_id
-        for update;
-
-        v_max_child_sortkey := tree_increment_key(v_max_child_sortkey);
+        new.tree_sortkey := int_to_tree_key(new.topic_id+1000);
 
     else
 
-        select coalesce(tree_sortkey, ''''), max_child_sortkey
+        select tree_sortkey, tree_increment_key(max_child_sortkey)
         into v_parent_sortkey, v_max_child_sortkey
         from im_forum_topics
         where topic_id = new.parent_id
         for update;
 
-        v_max_child_sortkey := tree_increment_key(v_max_child_sortkey);
-
         update im_forum_topics
         set max_child_sortkey = v_max_child_sortkey
         where topic_id = new.parent_id;
 
+        new.tree_sortkey := v_parent_sortkey || v_max_child_sortkey;
+
     end if;
-    new.tree_sortkey := v_parent_sortkey || v_max_child_sortkey;
+
+    new.max_child_sortkey := null;
 
     return new;
 end;' language 'plpgsql';
@@ -105,6 +101,55 @@ create trigger im_forum_topic_insert_tr
 before insert on im_forum_topics
 for each row
 execute procedure im_forum_topic_insert_tr();
+
+
+
+create function im_forum_topics_update_tr () returns opaque as '
+declare
+        v_parent_sk     varbit default null;
+        v_max_child_sortkey     varbit;
+        v_old_parent_length     integer;
+begin
+        if new.topic_id = old.topic_id
+           and ((new.parent_id = old.parent_id)
+                or (new.parent_id is null
+                    and old.parent_id is null)) then
+
+           return new;
+
+        end if;
+
+        -- the tree sortkey is going to change so get the new one and update it and all its
+        -- children to have the new prefix...
+        v_old_parent_length := length(new.tree_sortkey) + 1;
+
+        if new.parent_id is null then
+            v_parent_sk := int_to_tree_key(new.topic_id+1000);
+        else
+            SELECT tree_sortkey, tree_increment_key(max_child_sortkey)
+            INTO v_parent_sk, v_max_child_sortkey
+            FROM im_forum_topics
+            WHERE topic_id = new.parent_id
+            FOR UPDATE;
+
+            UPDATE im_forum_topics
+            SET max_child_sortkey = v_max_child_sortkey
+            WHERE topic_id = new.parent_id;
+
+            v_parent_sk := v_parent_sk || v_max_child_sortkey;
+        end if;
+
+        UPDATE im_forum_topics
+        SET tree_sortkey = v_parent_sk || substring(tree_sortkey, v_old_parent_length)
+        WHERE tree_sortkey between new.tree_sortkey and tree_right(new.tree_sortkey);
+
+        return new;
+end;' language 'plpgsql';
+
+create trigger im_forum_topics_update_tr after update
+on im_forum_topics
+for each row
+execute procedure im_forum_topics_update_tr ();
 
 
 -- A function that decides whether a specific user can see a

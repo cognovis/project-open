@@ -64,6 +64,9 @@ drop table im_forum_files;
 drop table im_forum_topic_user_map;
 drop table im_forum_folders;
 
+drop trigger im_forum_topics_update_tr on im_forum_topics;
+drop function im_forum_topics_update_tr ();
+
 drop trigger im_forum_topic_insert_tr on im_forum_topics;
 drop function im_forum_topic_insert_tr ();
 

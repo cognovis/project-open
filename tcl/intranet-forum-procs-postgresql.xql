@@ -100,6 +100,7 @@ select
 from
 	(select
 		children.topic_id,
+		children.tree_sortkey,
 		tree_level(children.tree_sortkey) -
         tree_level(parent.tree_sortkey) as indent_level
 	from
@@ -107,7 +108,6 @@ from
 		im_forum_topics children
 	where
 		children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
-		and parent.tree_sortkey <> children.tree_sortkey
 		and parent.topic_id = :topic_id
 	) tr,
 	users ou,
@@ -123,6 +123,7 @@ where
 	tr.topic_id = t.topic_id
 	and t.owner_id=ou.user_id
 	and ug.project_id=t.object_id
+order by tr.tree_sortkey
 
     </querytext>
   </fullquery>
