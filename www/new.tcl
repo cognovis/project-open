@@ -11,6 +11,7 @@ ad_page_contract {
 } {
     { return_url "" }
     { payment_id "" }
+    { invoice_id "" }
 }
 
 # ---------------------------------------------------------------
@@ -45,7 +46,7 @@ if {[empty_string_p $payment_id]} {
     set page_title "New payment" 
     set context_bar [ad_context_bar $page_title]
     set button_name "Add payment"
-    set invoice_html [im_invoice_select invoice_id "" "" [list "Deleted" "In Process"]]
+    set invoice_html [im_invoices_select invoice_id $invoice_id "" [list "Deleted" "In Process"]]
 
     # Set the provider to the "Internal" customer - this organization
     set provider_id [im_customer_internal]
