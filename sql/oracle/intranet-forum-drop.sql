@@ -32,7 +32,6 @@ delete from im_views where view_id >= 40 and view_id < 50;
 delete from im_component_plugins where package_name = 'intranet-forum';
 
 drop sequence im_forum_topics_seq;
-drop index im_forum_topics_group_idx;
 drop sequence im_forum_files_seq;
 
 drop table im_forum_files;
