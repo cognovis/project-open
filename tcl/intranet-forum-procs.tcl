@@ -111,12 +111,12 @@ ad_proc -public im_forum_scope_select {select_name user_id {default ""} } {
     }
 
     set option_list [list]
-    if {[im_permission $user_id add_topic_public]} { lappend option_list "<option value=public $public_selected>Public (everybody in the system)</option>\n" }
-    if {[im_permission $user_id add_topic_group]} { lappend option_list "<option value=group $group_selected>Project (all project members)</option>" }
-    if {[im_permission $user_id add_topic_staff]} { lappend option_list "<option value=staff $staff_selected>Staff (employees only)</option>" }
+    if {[im_permission $user_id add_topic_public]} { lappend option_list "<option value=public $public_selected>[_ intranet-forum.lt_Public_everybody_in_t]</option>\n" }
+    if {[im_permission $user_id add_topic_group]} { lappend option_list "<option value=group $group_selected>[_ intranet-forum.lt_Project_all_project_m]</option>" }
+    if {[im_permission $user_id add_topic_staff]} { lappend option_list "<option value=staff $staff_selected>[_ intranet-forum.Staff_employees_only]</option>" }
     if {[im_permission $user_id add_topic_client]} { lappend option_list "<option value=client $client_selected>Clients and PM only</option>" }
-    if {[im_permission $user_id add_topic_noncli]} { lappend option_list "<option value=not_client $not_client_selected>Provider (project members without clients)</option>" }
-    if {[im_permission $user_id add_topic_pm]} { lappend option_list "<option value=pm $pm_selected>Project Manager</option>" }
+    if {[im_permission $user_id add_topic_noncli]} { lappend option_list "<option value=not_client $not_client_selected>[_ intranet-forum.lt_Provider_project_memb]</option>" }
+    if {[im_permission $user_id add_topic_pm]} { lappend option_list "<option value=pm $pm_selected>[_ intranet-forum.Project_Manager]</option>" }
 
     if {1 == [llength $option_list]} {
 	return "ProjectManager<input type=hidden name=scope value=\"pm\">"
@@ -130,13 +130,13 @@ ad_proc -public im_forum_scope_html {scope } {
 } {
     set html ""
     switch $scope {
-	public { set html "Public (everybody in the system)"}
-	group {set html "All group members"}
-	staff { set html "Staff group members only"}
-	client { set html "Client group members and the PM only"}
-	not_client { set html "Staff and Freelance group members"}
-	pm { set html "Project Manager only"}
-	default { set html "undefined"}
+	public { set html "[_ intranet-forum.lt_Public_everybody_in_t"}
+	group {set html "[_ intranet-forum.All_group_members]"}
+	staff { set html "[_ intranet-forum.lt_Staff_group_members_o]"}
+	client { set html "[_ intranet-forum.lt_Client_group_members_]"}
+	not_client { set html "[_ intranet-forum.lt_Staff_and_Freelance_g]"}
+	pm { set html "[_ intranet-forum.Project_Manager_only]"}
+	default { set html "[_ intranet-forum.undefined]"}
     }
     return $html
 }
@@ -375,14 +375,14 @@ ad_proc -public im_forum_render_tind {
     set ctr 1
     set tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
-		  <td>Subject:</td>
+		  <td>[_ intranet-forum.Subject]:</td>
 		  <td>
 		    [im_gif $topic_type_id "$topic_type"] 
 		    $subject"
-    append tind_html " (<A href=new?parent_id=$topic_id&[export_url_vars return_url]>Reply</A>)"
+    append tind_html " (<A href=new?parent_id=$topic_id&[export_url_vars return_url]>[_ intranet-forum.Reply]</A>)"
 
     if {$object_admin || $user_id==$owner_id} {
-	append tind_html " (<A href=new?[export_url_vars topic_id return_url]>Edit</A>)"
+	append tind_html " (<A href=new?[export_url_vars topic_id return_url]>[_ intranet-forum.Edit]</A>)"
     }
 
     append tind_html "
@@ -394,7 +394,7 @@ ad_proc -public im_forum_render_tind {
     if {$topic_type_id != [im_topic_type_id_reply]} {
 	append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
-		  <td>Posted in:</td>
+		  <td>[_ intranet-forum.Posted_in]</td>
 		  <td><A href=[im_biz_object_url $object_id]>$object_name</A></td>
 		</tr>\n"
 	incr ctr
@@ -404,7 +404,7 @@ ad_proc -public im_forum_render_tind {
 	set parent_subject [db_string parent_subject "select subject from im_forum_topics where topic_id=:parent_id" -default ""]
 	append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
-		  <td>Parent posting:</td>
+		  <td>[_ intranet-forum.Parent_posting]:</td>
 		  <td><A href=/intranet-forum/view?topic_id=$parent_id>$parent_subject</A></td>
 		</tr>\n"
 	incr ctr
@@ -413,7 +413,7 @@ ad_proc -public im_forum_render_tind {
 
     append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
-		  <td>Posted by:</td><td>
+		  <td>[_ intranet-forum.Posted_by]:</td><td>
 		    <A HREF=/intranet/users/view?user_id=$owner_id>
 		      $owner_name
 		   </A>
@@ -429,11 +429,11 @@ ad_proc -public im_forum_render_tind {
 	if {$user_id == $asignee_id && $topic_status_id == [im_topic_status_id_assigned]} {
 	    # We are assigned to this task/incident,
 	    # but we haven't confirmed yet
-	    append topic_status_msg " : <font color=red>Please Accept or Reject the $topic_type</font>"
+	    append topic_status_msg " : <font color=red>[_ intranet-forum.lt_Please_Accept_or_Reje]</font>"
 	}
 	append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
-		  <td>Status:</td>
+		  <td>[_ intranet-forum.Status]:</td>
                   <td>$topic_status_msg</td>
 		</tr>\n"
 	incr ctr
@@ -442,7 +442,7 @@ ad_proc -public im_forum_render_tind {
 
     append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
-		  <td>Posting Date:</td>
+		  <td>[_ intranet-forum.Posting_Date]:</td>
 		  <td>$posting_date</td>
 		</tr>\n"
     incr ctr
@@ -451,7 +451,7 @@ ad_proc -public im_forum_render_tind {
     if {$task_or_incident_p} {
 	append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
-		  <td>Priority:</td>
+		  <td>[_ intranet-forum.Priority]:</td>
 		  <td>$priority</td>
 		</tr>\n"
 	incr ctr
@@ -463,7 +463,7 @@ ad_proc -public im_forum_render_tind {
 
 	    append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
-		  <td>Assigned to:</td>
+		  <td>[_ intranet-forum.Assigned_to]:</td>
 		  <td>\n"
 	    if {"" == $asignee_name} { 
 		append tind_html "unassigned"
@@ -477,7 +477,7 @@ ad_proc -public im_forum_render_tind {
 
 	
 	if {$object_admin} {
-	    append tind_html " (<A href=assign?[export_url_vars topic_id return_url]>Assign</A>)"
+	    append tind_html " (<A href=assign?[export_url_vars topic_id return_url]>[_ intranet-forum.Assign]</A>)"
 	}
 	append tind_html "
 		  </td>
@@ -488,7 +488,7 @@ ad_proc -public im_forum_render_tind {
 	if {$due_date != ""} {
 	    append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
-		  <td>Due Date:</td>
+		  <td>[_ intranet-forum.Due_Date]:</td>
 		  <td>$due_date</td>
 		</tr>\n"
 	    incr ctr
@@ -500,7 +500,7 @@ ad_proc -public im_forum_render_tind {
     if {$topic_type_id != [im_topic_type_id_reply]} {
 	append tind_html "
                 <tr $bgcolor([expr $ctr % 2])>
-                  <td>Visible for</td>
+                  <td>[_ intranet-forum.Visible_for]</td>
                   <td>[im_forum_scope_html $scope]
                   </td>
                 </tr>"
@@ -509,7 +509,7 @@ ad_proc -public im_forum_render_tind {
 	# Show whether the user has subscribed to updates
 	append tind_html "
                 <tr $bgcolor([expr $ctr % 2])>
-                  <td>Receive updates</td>
+                  <td>[_ intranet-forum.Receive_updates]</td>
                   <td>$receive_updates
                   </td>
                 </tr>"
@@ -702,7 +702,7 @@ ad_proc -public im_forum_component {
     }
     ns_log Notice "im_forum_component: view_id=$view_id"
     if {!$view_id} {
-	return "<b>Unable to find view '$view_name'</b>\n"
+	return "<b>[_ intranet-forum.lt_Unable_to_find_view_v]</b>\n"
     }
 
     # ---------------------- Get Columns ----------------------------------
@@ -773,11 +773,13 @@ ad_proc -public im_forum_component {
 	set cmd "set cmd_eval $col"
         eval $cmd
 
+	set col_txt [lang::util::suggest_key $col]
+	set cmd_eval_txt [lang::util::suggest_key $cmd_eval]
 	if { [string compare $forum_order_by $cmd_eval] == 0 } {
-	    append table_header_html "  <td class=rowtitle>$col</td>\n"
+	    append table_header_html "  <td class=rowtitle>[_ intranet-forum.$col_txt]</td>\n"
 	} else {
 	    append table_header_html "  <td class=rowtitle>
-            <a href=$current_page_url?$pass_through_vars_html&forum_order_by=[ns_urlencode $cmd_eval]>$cmd_eval</a>
+            <a href=$current_page_url?$pass_through_vars_html&forum_order_by=[ns_urlencode $cmd_eval]>[_ intranet-forum.$cmd_eval_txt]</a>
             </td>\n"
 	}
     }
@@ -995,7 +997,7 @@ $order_by_clause"
     if { [empty_string_p $table_body_html] } {
 	set table_body_html "
 	<tr><td colspan=$colspan align=center><b>
-	There are no active items.
+	[_ intranet-forum.lt_There_are_no_active_i]
 	</b></td></tr>"
     }
 
@@ -1030,12 +1032,12 @@ $order_by_clause"
     $previous_page_html
     $next_page_html
     <select name=action>
-	<option value=mark_as_read>Mark as read</option>
-	<option value=mark_as_unread>Mark as unread</option>
-	<option value=move_to_deleted>Move to Deleted</option>
-	<option value=move_to_inbox>Move to Active</option>
+	<option value=mark_as_read>[_ intranet-forum.Mark_as_read]</option>
+	<option value=mark_as_unread>[_ intranet-forum.Mark_as_unread]</option>
+	<option value=move_to_deleted>[_ intranet-forum.Move_to_Deleted]</option>
+	<option value=move_to_inbox>[_ intranet-forum.Move_to_Active]</option>
     </select>
-    <input type=submit name=submit value='Apply'>
+    <input type=submit name=submit value='[_ intranet-forum.Apply]'>
   </td>
 </tr>"
 
@@ -1076,27 +1078,27 @@ ad_proc -public im_forum_create_bar { title_text object_id {return_url ""} } {
 </td>
 <td>
   <A href='/intranet-forum/new?topic_type_id=1102&[export_url_vars object_id return_url]'>
-    [im_gif "incident" "Create new Incident"]
+    [im_gif "incident" "[_ intranet-forum.Create_new_Incident]"]
   </A>
 </td>
 <td>
   <A href='/intranet-forum/new?topic_type_id=1104&[export_url_vars object_id return_url]'>
-    [im_gif "task" "Create new Task"]
+    [im_gif "task" "[_ intranet-forum.Create_new_Task]"]
   </A>
 </td>
 <td>
   <A href='/intranet-forum/new?topic_type_id=1106&[export_url_vars object_id return_url]'>
-    [im_gif "discussion" "Create a new Discussion"]
+    [im_gif "discussion" "[_ intranet-forum.lt_Create_a_new_Discussi]"]
   </A>
 </td>
 <td>
   <A href='/intranet-forum/new?topic_type_id=1100&[export_url_vars object_id return_url]'>
-    [im_gif "news" "Create new News Item"]
+    [im_gif "news" "[_ intranet-forum.Create_new_News_Item]"]
   </A>
 </td>
 <td>
   <A href='/intranet-forum/new?topic_type_id=1108&[export_url_vars object_id return_url]'>
-    [im_gif "note" "Create new Note"]
+    [im_gif "note" "[_ intranet-forum.Create_new_Note]"]
   </A>
 </td>
 </tr>
@@ -1137,18 +1139,18 @@ ad_proc -public im_forum_navbar { base_url export_var_list {forum_folder 0} } {
     set a_white "<a class=whitelink"
     set tdsp "<td>&nbsp;</td>"
 
-    set active_topics "$tdsp$nosel<a href='index'>Inbox</a></td>"
-    set deleted_topics "$tdsp$nosel<a href='index?forum_folder=1'>Deleted</a></td>"
-    set unresolved_topics "$tdsp$nosel<a href='index?forum_folder=2'>Unresolved</a></td>"
-    set discussion_view "$tdsp$nosel<a href='index?forum_view_name=forum_list_discussion'>Discussion View</a></td>"
-    set history "$tdsp$nosel<a href='index?forum_view_name=forum_list_history'>History</a></td>"
+    set active_topics "$tdsp$nosel<a href='index'>[_ intranet-forum.Inbox]</a></td>"
+    set deleted_topics "$tdsp$nosel<a href='index?forum_folder=1'>[_ intranet-forum.Deleted]</a></td>"
+    set unresolved_topics "$tdsp$nosel<a href='index?forum_folder=2'>[_ intranet-forum.Unresolved]</a></td>"
+    set discussion_view "$tdsp$nosel<a href='index?forum_view_name=forum_list_discussion'>[_ intranet-forum.Discussion_View]</a></td>"
+    set history "$tdsp$nosel<a href='index?forum_view_name=forum_list_history'>[_ intranet-forum.History]</a></td>"
 
     switch $section {
-"Inbox" {set active_topics "$tdsp$sel Inbox</td>"}
-"Deleted" {set deleted_topics "$tdsp$sel Deleted</td>"}
-"Unresolved" {set unresolved_topics "$tdsp$sel Unresolved</td>"}
-"Discussion View" {set discussion_view "$tdsp$sel Discussion View</td>"}
-"History" {set history "$tdsp$sel History</td>"}
+"Inbox" {set active_topics "$tdsp$sel [_ intranet-forum.Inbox]</td>"}
+"Deleted" {set deleted_topics "$tdsp$sel [_ intranet-forum.Deleted]</td>"}
+"Unresolved" {set unresolved_topics "$tdsp$sel [_ intranet-forum.Unresolved]</td>"}
+"Discussion View" {set discussion_view "$tdsp$sel [_ intranet-forum.Discussion_View]</td>"}
+"History" {set history "$tdsp$sel [_ intranet-forum.History]</td>"}
 default {
     # Nothing - just let all sections deselected
 }

@@ -1,12 +1,12 @@
 <master src="../../intranet-core/www/master">
-<property name="title">Home</property>
+<property name="title"><#Home Home#></property>
 
-<H1>Incident Received</H1>
+<H1><#Incident_Received Incident Received#></H1>
 
 <p>
-Thank you for submitting your incident.
+<#lt_Thank_you_for_submitt Thank you for submitting your incident.#>
 </p><p>
-We will notify you as soon as possible.
+<#lt_We_will_notify_you_as We will notify you as soon as possible.#>
 </p>
 
 
@@ -18,27 +18,27 @@ We will notify you as soon as possible.
 <table border=0 cellspacing=1 cellpadding=1>
 <tr class=rowtitle>
   <td class=rowtitle align=center colspan=2>
-    Incident Information
+    <#Incident_Information Incident Information#>
   </td>
 </tr>
 <tr>
-  <td>Your Name</td>
+  <td><#Your_Name Your Name#></td>
   <td>@error_first_names@ @error_last_name@</td>
 </tr>
 <tr>
-  <td>Your Email</td>
+  <td><#Your_Email Your Email#></td>
   <td>@error_user_email@</td>
 </tr>
 <tr>
-  <td>System URL</td>
+  <td><#System_URL System URL#></td>
   <td>@system_url@</td>
 </tr>
 <tr>
-  <td>Publisher Name</td>
+  <td><#Publisher_Name Publisher Name#></td>
   <td>@publisher_name@</td>
 </tr>
 <tr>
-  <td>Error URL</td>
+  <td><#Error_URL Error URL#></td>
   <td>@error_url@</td>
 </tr>
 </table>
@@ -50,7 +50,7 @@ We will notify you as soon as possible.
 <table border=0 cellspacing=1 cellpadding=1>
 <tr class=rowtitle>
   <td class=rowtitle align=center colspan=2>
-    Do you have a support contract?
+    <#lt_Do_you_have_a_support Do you have a support contract?#>
   </td>
 </tr>
 <tr>
@@ -63,6 +63,7 @@ We will notify you as soon as possible.
   </td>
 </tr>
 </table>
+
 
 
 

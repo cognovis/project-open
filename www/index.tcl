@@ -44,7 +44,7 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
 set view_types [list "t" "Mine" "f" "All"]
-set page_title "Forum"
+set page_title "[_ intranet-forum.Forum]"
 set context_bar [ad_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
@@ -73,8 +73,8 @@ if {[string equal $forum_view_name "forum_list_tasks"]} {
 #
 set forum_topic_types [im_memoize_list select_forum_topic_types \
 			   "select * from im_forum_topic_types order by topic_type_id"]
-set forum_topic_types [linsert $forum_topic_types 0 1 "Tasks & Incidents"]
-set forum_topic_types [linsert $forum_topic_types 0 0 All]
+set forum_topic_types [linsert $forum_topic_types 0 1 "[_ intranet-forum.Tasks__Incidents]"]
+set forum_topic_types [linsert $forum_topic_types 0 0 "[_ intranet-forum.All]"]
 ns_log Notice "/intranet-forum/index: forum_topic_types=$forum_topic_types"
 
 # project_types will be a list of pairs of (project_type_id, project_type)
@@ -94,7 +94,7 @@ set project_types [linsert $project_types 0 0 All]
 set filter_html "
 <table border=0 cellpadding=0 cellspacing=0>
 <tr>
-  <td colspan='2' class=rowtitle align=center>Filter Topics</td>
+  <td colspan='2' class=rowtitle align=center>[_ intranet-forum.Filter_Topics]</td>
 </tr>\n"
 
 if {[im_permission $current_user_id "view_forum_topics_all"]} {
@@ -108,7 +108,7 @@ if {[im_permission $current_user_id "view_forum_topics_all"]} {
     append filter_html "
 <!--
 <tr>
-  <td valign=top>Project Status:</td>
+  <td valign=top>[_ intranet-forum.Project_Status]:</td>
   <td valign=top>[im_select status_id $forum_topic_types ""]</td>
 </tr>
 -->
@@ -117,7 +117,7 @@ if {[im_permission $current_user_id "view_forum_topics_all"]} {
 
 append filter_html "
 <tr>
-  <td valign=top>Topic Type:</td>
+  <td valign=top>[_ intranet-forum.Topic_Type]:</td>
   <td valign=top>
     [im_select forum_topic_type_id $forum_topic_types $forum_topic_type_id]
           <input type=submit value=Go name=submit>

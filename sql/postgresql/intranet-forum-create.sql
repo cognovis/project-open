@@ -560,7 +560,7 @@ SELECT im_component_plugin__new (
         '/intranet/projects/view',      -- page_url
         null,                           -- view_name
         10,                             -- sort_order
-	'im_table_with_title [im_forum_create_bar "<B>Forum Items<B>" $project_id $return_url] 	[im_forum_component -user_id $user_id -object_id $project_id -current_page_url $current_url -return_url $return_url -export_var_list [list project_id forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type project -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -restrict_to_mine_p "f" -restrict_to_new_topics 1	]'
+	'im_table_with_title [im_forum_create_bar "<B>#intranet-forum.Forum_Items#<B>" $project_id $return_url] 	[im_forum_component -user_id $user_id -object_id $project_id -current_page_url $current_url -return_url $return_url -export_var_list [list project_id forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type project -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -restrict_to_mine_p "f" -restrict_to_new_topics 1	]'
     );
 
 
@@ -579,7 +579,7 @@ SELECT im_component_plugin__new (
         '/intranet/companies/view',     -- page_url
         null,                           -- view_name
         10,                             -- sort_order
-	'im_table_with_title [im_forum_create_bar "<B>Forum Items<B>" $company_id $return_url ] [im_forum_component -user_id $user_id -object_id $company_id -current_page_url $current_url -return_url $return_url -export_var_list [list 	company_id forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type company -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -restrict_to_mine_p "f" -restrict_to_new_topics 1 ]'
+	'im_table_with_title [im_forum_create_bar "<B>#intranet-forum.Forum_Items#<B>" $company_id $return_url ] [im_forum_component -user_id $user_id -object_id $company_id -current_page_url $current_url -return_url $return_url -export_var_list [list 	company_id forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type company -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -restrict_to_mine_p "f" -restrict_to_new_topics 1 ]'
     );
 
 
@@ -598,7 +598,7 @@ SELECT im_component_plugin__new (
         '/intranet/users/view',         -- page_url
         null,                           -- view_name
         20,                             -- sort_order
-	'im_table_with_title [im_forum_create_bar "<B>Forum Items<B>" $user_id $return_url ] [im_forum_component -user_id $current_user_id -object_id $user_id 	-current_page_url $current_url 	-return_url $return_url -export_var_list [list user_id forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type user -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -restrict_to_mine_p "f" -restrict_to_new_topics 0]'
+	'im_table_with_title [im_forum_create_bar "<B>#intranet-forum.Forum_Items#<B>" $user_id $return_url ] [im_forum_component -user_id $current_user_id -object_id $user_id 	-current_page_url $current_url 	-return_url $return_url -export_var_list [list user_id forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type user -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -restrict_to_mine_p "f" -restrict_to_new_topics 0]'
     );
 
 
@@ -617,7 +617,7 @@ SELECT im_component_plugin__new (
         '/intranet/index',              -- page_url
         null,                           -- view_name
         10,                             -- sort_order
-	'im_table_with_title [im_forum_create_bar "<B>Forum Items<B>" 0 $return_url ] [im_forum_component -user_id $user_id -object_id 0 -current_page_url $current_url -return_url $return_url -export_var_list [list forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type home -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -restrict_to_mine_p t -restrict_to_new_topics 1]'
+	'im_table_with_title [im_forum_create_bar "<B>#intranet-forum.Forum_Items#<B>" 0 $return_url ] [im_forum_component -user_id $user_id -object_id 0 -current_page_url $current_url -return_url $return_url -export_var_list [list forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type home -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -restrict_to_mine_p t -restrict_to_new_topics 1]'
     );
 
 

@@ -97,13 +97,13 @@ switch $submit {
 	    }
 
 	    default {
-		ad_return_complaint 1 "<li>Unknown value for action: '$action'"
+		ad_return_complaint 1 "<li>[_ intranet-forum.lt_Unknown_value_for_act]: '$action'"
 	    }
 	}
 	ad_returnredirect $return_url
     }
     default {
-	ad_return_complaint 1 "<li>Unknown value for submit: '$submit'"
+	ad_return_complaint 1 "<li>[_ intranet-forum.lt_Unknown_value_for_sub]: '$submit'"
     }
 }
 

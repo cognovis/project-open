@@ -1,11 +1,11 @@
 <!-- This page goes into /packages/apm-tcl/lib/page-error.adp -->
 <master>
-  <property name="title">Server Error</property>
+  <property name="title"><#Server_Error Server Error#></property>
 
 
 <p>
-  There was a server error processing your request. We apologize.<br>
-  Please contribute to remove this error by pressing the button below:
+  <#lt_There_was_a_server_er There was a server error processing your request. We apologize.#><br>
+  <#lt_Please_contribute_to_ Please contribute to remove this error by pressing the button below:#>
 </p>
 
 
@@ -41,13 +41,14 @@
 
 <if @stacktrace@ not nil>
   <p>
-    Here is a detailed dump of what took place at the time of the error, which may assist a programmer in tracking down the problem:
+    <#lt_Here_is_a_detailed_du Here is a detailed dump of what took place at the time of the error, which may assist a programmer in tracking down the problem:#>
   </p>
   <blockquote><pre>@stacktrace@</pre></blockquote>
 </if>
 <else>
   <p>
-    The error has been logged and will be investigated by our system
-    programmers.
+    <#lt_The_error_has_been_lo The error has been logged and will be investigated by our system
+    programmers.#>
   </p>
 </else>
+
