@@ -49,8 +49,8 @@
 
 delete from im_view_columns where view_id = 194;
 delete from im_views where view_id = 194;
-insert into im_views (view_id, view_name, view_sql
-) values (194, 'im_payments', '
+insert into im_views (view_id, view_name, view_type_id, view_sql
+) values (194, 'im_payments', 1410, '
 SELECT
 	p.*,
 	i.invoice_nr,
