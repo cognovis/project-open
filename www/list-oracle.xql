@@ -19,6 +19,7 @@
       select
         c.*,
 	c.amount as amount_formatted,
+	to_date(c.start_block, :date_format) as start_block_formatted,
 	(to_date(to_char(c.effective_date,'YYYY-MM-DD'),'YYYY-MM-DD') + c.payment_days) as due_date_calculated,
 	o.object_type,
 	url.url as cost_url,

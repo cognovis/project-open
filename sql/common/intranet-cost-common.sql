@@ -223,7 +223,7 @@ sort_order) values (22011,220,'Client',
 '"<A HREF=/intranet/companies/view?company_id=$customer_id>$customer_name</A>"',11);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22013,220,'Start Block',
-'$start_block',13);
+'$start_block_formatted',13);
 -- insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 -- sort_order) values (22013,220,'Start Block',
 -- '$start_block',13);
