@@ -1,6 +1,6 @@
--- /packages/intranet/sql/intranet.sql
+-- /packages/intranet-hr/sql/oracle/intranet-hr-create.sql
 --
--- Project/Open Core Module, fraber@fraber.de, 030828
+-- Project/Open HR Module, fraber@fraber.de, 030828
 -- A complete revision of June 1999 by dvr@arsdigita.com
 --
 -- Copyright (C) 1999-2004 ArsDigita, Frank Bergmann and others
@@ -36,16 +36,8 @@ create table im_employees (
 				references im_cost_centers,
 	job_title		varchar(200),
 	job_description		varchar(4000),
-				-- is this person an official team leader?
-	team_leader_p		char(1) 
-				constraint im_employees_team_lead_ck
-				check (team_leader_p in ('t','f')),
-				-- can this person lead projects?
-	project_lead_p		char(1)
-				constraint im_employees_project_lead_ck check 
-				(project_lead_p in ('t','f')),
-				-- percent of a full time person this person works
-	percentage		integer,
+				-- part_time = 50% availability
+	availability		integer,
 	supervisor_id		integer 
 				constraint im_employees_supervisor_fk
 				references parties,
@@ -54,7 +46,7 @@ create table im_employees (
 	salary_period		varchar(12) default 'month' 
 				constraint im_employees_salary_period_ck
 				check (salary_period in ('hour','day','week','month','year')),
-	salary_payments		integer default 12,
+	salary_payments_per_year integer default 12,
 				--- W2 information
 	dependant_p		char(1) 
 				constraint im_employees_dependant_p_con 
@@ -76,7 +68,7 @@ create table im_employees (
 	educational_history	varchar(4000),
 	last_degree_completed	varchar(100),
 				-- employee lifecycle management
-	employee_state		integer
+	employee_status_id	integer
 				constraint im_employees_rec_state_fk
 				references im_categories,
 	start_date		date,
@@ -184,26 +176,38 @@ insert into im_views (view_id, view_name, visible_for) values (56, 'employees_vi
 -- Add 'employees_list'
 delete from im_view_columns where column_id >= 5500 and column_id < 5599;
 
-insert into im_view_columns values (5500,55,NULL,'NNNName',
-'"<a href=/intranet/users/view?user_id=$user_id>$name</a>"','','',2,'');
+insert into im_view_columns (column_id, view_id, group_id, column_name, 
+column_render_tcl, extra_select, extra_from, extra_where, sort_order, visible_for
+) values (5500,55,NULL,'Name',
+	'"<a href=/intranet/users/view?user_id=$user_id>$name</a>"',
+	'e.supervisor_id, im_name_from_user_id(e.supervisor_id) as supervisor_name',
+	'im_employees e',
+	'u.user_id = e.employee_id(+)',
+	0,
+	''
+);
 
-insert into im_view_columns values (5501,55,NULL,'Email',
-'"<a href=mailto:$email>$email</a>"','','',3,'');
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5501,55,'Email','"<a href=mailto:$email>$email</a>"',3);
 
-insert into im_view_columns values (5502,55,NULL,'Supervisor',
-'"<a href=/intranet/users/view?user_id=$supervisor_id>$supervisor_name</a>"','','',3,'');
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5502,55,'Supervisor',
+'"<a href=/intranet/users/view?user_id=$supervisor_id>$supervisor_name</a>"',3);
 
--- insert into im_view_columns values (5502,55,NULL,'Status',
--- '$status','','',4,'');
+-- insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+-- sort_order)values (5502,55,'Status','$status','','',4,'');
 
-insert into im_view_columns values (5504,55,NULL,'Work Phone',
-'$work_phone','','',6,'');
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5504,55,'Work Phone',
+'$work_phone',6);
 
-insert into im_view_columns values (5505,55,NULL,'Cell Phone',
-'$cell_phone','','',7,'');
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5505,55,'Cell Phone',
+'$cell_phone',7);
 
-insert into im_view_columns values (5506,55,NULL,'Home Phone',
-'$home_phone','','',8,'');
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5506,55,'Home Phone',
+'$home_phone',8);
 --
 commit;
 
@@ -258,7 +262,7 @@ declare
 begin
     v_plugin := im_component_plugin.new (
         plugin_name =>  'Users Freelance Component',
-        package_name => 'intranet-freelance',
+        package_name => 'intranet-hr',
         page_url =>     '/intranet/users/view',
         location =>     'bottom',
         sort_order =>   10,
