@@ -143,10 +143,22 @@ set export_var_list [list forum_group_id forum_start_idx forum_order_by forum_ho
 set restrict_to_asignee_id 0
 set restrict_to_new_topics 0
 
-set forum_content [im_forum_component $current_user_id $forum_group_id $current_url $return_url $export_var_list $forum_view_name $forum_order_by $forum_mine_p $forum_topic_type_id $forum_status_id $restrict_to_asignee_id $forum_how_many $forum_start_idx $restrict_to_new_topics $forum_folder]
+# set forum_content [im_forum_component $current_user_id $forum_group_id $current_url $return_url $export_var_list $forum_view_name $forum_order_by $forum_mine_p $forum_topic_type_id $forum_status_id $restrict_to_asignee_id $forum_how_many $forum_start_idx $restrict_to_new_topics $forum_folder]
 
 #ad_proc im_forum_component {user_id group_id current_page_url return_url export_var_list {view_name "forum_list_short"} {forum_order_by "priority"} {restrict_to_mine_p f} {restrict_to_topic_type_id 0} {restrict_to_topic_status_id 0} {restrict_to_asignee_id 0} {max_entries_per_page 0} {start_idx 1} {restrict_to_new_topics 0} {restrict_to_folder 0} }
 
+set forum_content [im_forum_component \
+	-user_id		$user_id \
+	-object_id		0 \
+	-current_page_url	$current_url \
+	-return_url		$return_url \
+	-export_var_list	[list forum_start_idx forum_order_by forum_how_many forum_view_name] \
+	-forum_type		home \
+	-view_name 		[im_opt_val forum_view_name] \
+	-forum_order_by		[im_opt_val forum_order_by] \
+	-restrict_to_mine_p	t \
+	-restrict_to_new_topics 1 \
+]
 
 # ---------------------------------------------------------------
 # Join all parts together
