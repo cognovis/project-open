@@ -16,7 +16,6 @@
         <description format="text/plain">Allows access to filesystem documents and folders for various types of business objects.</description>
 
         <provides url="intranet-filestorage" version="1.0"/>
-        <requires url="intranet-core" version="1.0"/>
 
         <callbacks>
         </callbacks>
