@@ -580,6 +580,7 @@ order by
 </tr>\n"
     }
 
+    # Add a reasonable message if there are no documents
     if {$ctr == 1} {
 	append cost_html "
 <tr$bgcolor([expr $ctr % 2])>
@@ -588,6 +589,39 @@ order by
   </td>
 </tr>\n"
 	incr ctr
+    }
+
+
+    # Add some links to create new financial documents
+    # if the intranet-invoices module is installed
+    if {[db_table_exists im_invoices]} {
+
+	# Project Documents:
+	if {"" != $project_id} {
+
+	    append cost_html "
+	<tr class=rowplain>
+	  <td colspan=$colspan>\n"
+
+
+	    # Customer invoices: customer = Project Customer, provider = Internal
+	    set customer_id [db_string project_customer "select company_id from im_projects where project_id=:project_id" -default ""]
+	    set provider_id [im_company_internal]
+	    set bind_vars [ad_tcl_vars_to_ns_set customer_id provider_id project_id]
+      	    append cost_html [im_menu_ul_list "invoices_customers" $bind_vars]
+
+	    # Provider invoices: customer = Internal, no provider yet defined
+	    set customer_id [im_company_internal]
+	    set bind_vars [ad_tcl_vars_to_ns_set customer_id project_id]
+	    append cost_html [im_menu_ul_list "invoices_providers" $bind_vars]
+
+	    append cost_html "	
+	  </td>
+	</tr>
+	"
+	    incr ctr
+
+	} 
     }
 
     append cost_html "</table>\n"
