@@ -167,7 +167,7 @@ begin
 		plugin_name =>	'Home Filestorage Component',
 		package_name =>	'intranet-filestorage',
 		page_url =>	'/intranet/index',
-		location =>	'bottom',
+		location =>	'right',
 		sort_order =>	90,
 		component_tcl => 
 		'im_filestorage_home_component $user_id'
