@@ -535,9 +535,9 @@ where	m.topic_id=:topic_id
 
 db_foreach update_stakeholders $stakeholder_sql {
 
-#    if {$importance == 0} { continue }
-#    if {[string compare $receive_updates "none"]} { continue }
-#    if {$importance < 2 && [string compare $receive_updates "major"]} { continue }
+    if {$importance == 0} { continue }
+    if {[string compare $receive_updates "none"]} { continue }
+    if {$importance < 2 && [string compare $receive_updates "major"]} { continue }
 
     im_send_alert $stakeholder_id "hourly" $subject "$msg_url\n\n$message"
 }
