@@ -9,7 +9,7 @@
 </p>
 
 
-<% set error_url [ad_conn url] %>
+<% set error_url [im_url_with_query] %>
 <% set report_url [ad_parameter -package_id [im_package_core_id] "ErrorReportURL" "" ""] %>
 <% set system_url [ad_parameter -package_id [ad_acs_kernel_id] SystemURL "" ""] %>
 <% db_1row user_info "select * from cc_users where user_id=[ad_get_user_id]" %>
