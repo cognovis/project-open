@@ -30,7 +30,7 @@ if {[empty_string_p $payment_id]} {
     set add_delete_text 0
     set payment_id [db_nextval "im_project_payment_id_seq"]
     set page_title "Add payment for $project_name" 
-    set context_bar [ad_context_bar [list [im_url_stub]/projects/ "Projects"] [list [im_url_stub]/projects/view?[export_url_vars project_id] "One project"] [list index?[export_url_vars project_id] Payments] "Add payment"]
+    set context_bar [im_context_bar [list [im_url_stub]/projects/ "Projects"] [list [im_url_stub]/projects/view?[export_url_vars project_id] "One project"] [list index?[export_url_vars project_id] Payments] "Add payment"]
     set button_name "Add payment"
     
     # Let's default start_block to something close to today
@@ -61,7 +61,7 @@ where
  
     set add_delete_text 1
     set page_title "Edit payment for $project_name"
-    set context_bar [ad_context_bar [list [im_url_stub]/projects/ "Projects"] [list [im_url_stub]/projects/view?[export_url_vars project_id] "One project"] [list index?[export_url_vars project_id] Payments] "Edit payment"]
+    set context_bar [im_context_bar [list [im_url_stub]/projects/ "Projects"] [list [im_url_stub]/projects/view?[export_url_vars project_id] "One project"] [list index?[export_url_vars project_id] Payments] "Edit payment"]
     set button_name "Update"
 }
 

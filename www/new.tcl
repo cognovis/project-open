@@ -23,7 +23,7 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
 set page_title "[_ intranet-payments.Payments]"
-set context_bar [ad_context_bar $page_title]
+set context_bar [im_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 set amp "&"
 
@@ -51,7 +51,7 @@ if {"" == $payment_id} {
     set add_delete_text 0
     set payment_id [db_nextval "im_payments_id_seq"]
     set page_title "[_ intranet-payments.New_payment]" 
-    set context_bar [ad_context_bar $page_title]
+    set context_bar [im_context_bar $page_title]
     set button_name "[_ intranet-payments.Add_payment]"
     set invoice_html [im_costs_select cost_id $cost_id "" [list "Deleted" "In Process"]]
 
@@ -100,7 +100,7 @@ where
 
     set add_delete_text 1
     set page_title "[_ intranet-payments.Edit_payment]"
-    set context_bar [ad_context_bar [list /intranet-payments/ "[_ intranet-payments.Payments]"] $page_title]
+    set context_bar [im_context_bar [list /intranet-payments/ "[_ intranet-payments.Payments]"] $page_title]
     set button_name "[_ intranet-payments.Update]"
 }
 
