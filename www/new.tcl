@@ -9,9 +9,10 @@ ad_page_contract {
     @author fraber@fraber.de
     @creation-date August 2003
 } {
+    { cost_id "" }
+    { invoice_id "" }
     { return_url "" }
     { payment_id "" }
-    { invoice_id "" }
 }
 
 # ---------------------------------------------------------------
@@ -24,8 +25,6 @@ set current_user_id $user_id
 set page_title "Payments"
 set context_bar [ad_context_bar $page_title]
 set page_focus "im_header_form.keywords"
-
-# Needed for im_view_columns, defined in intranet-views.tcl
 set amp "&"
 
 if {![im_permission $user_id add_payments]} {
@@ -33,11 +32,17 @@ if {![im_permission $user_id add_payments]} {
     <li>You don't have sufficient privileges to see this page."    
 }
 
+# default for old-style payments
+if {"" == $cost_id} { set cost_id $invoice_id }
+if {"" == $cost_id} {
+    ad_return_complaint 1 "<li>No cost/invoice item specified"
+}
+
 # ---------------------------------------------------------------
 # Extract Payment Values (New vs. Edit)
 # ---------------------------------------------------------------
 
-if {[empty_string_p $payment_id]} {
+if {"" == $payment_id} {
 
     # We are creating a new Payment
 
@@ -46,12 +51,14 @@ if {[empty_string_p $payment_id]} {
     set page_title "New payment" 
     set context_bar [ad_context_bar $page_title]
     set button_name "Add payment"
-    set invoice_html [im_invoices_select invoice_id $invoice_id "" [list "Deleted" "In Process"]]
+    set invoice_html [im_costs_select cost_id $cost_id "" [list "Deleted" "In Process"]]
+
+    set cost_name [db_string cost_name "select cost_name from im_costs where cost_id=:cost_id"]
 
     # Set the provider to the "Internal" customer - this organization
     set provider_id [im_customer_internal]
     set amount ""
-    set currency "EUR"
+    set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
     set payment_type_id 0
     set received_date [db_string today "select to_char(sysdate, 'YYYY-MM-DD') from dual"]
     set note ""
@@ -71,32 +78,29 @@ if {[empty_string_p $payment_id]} {
         db_0or1row get_payment_info "
 select
         p.*,
-	i.invoice_nr,
-	c.customer_name,
+	ci.cost_name,
+	cus.customer_name,
+	pro.customer_name as provider_name,
 	to_char(p.start_block,'Month DD, YYYY') as start_block
 from
-	im_customers c,
+	im_customers cus,
+	im_customers pro,
 	im_payments p,
-	im_invoices i
+	im_costs ci
 where
-	p.invoice_id=i.invoice_id(+)
-	and i.customer_id = c.customer_id(+)
+	p.cost_id = ci.cost_id(+)
+	and ci.customer_id = cus.customer_id(+)
+	and ci.provider_id = pro.customer_id(+)
 	and p.payment_id = :payment_id
 "
 
     set add_delete_text 1
     set page_title "Edit payment"
-    set context_bar [ad_context_bar [list /intranet-invoices/ "Invoices"] $page_title]
+    set context_bar [ad_context_bar [list /intranet-payments/ "Payments"] $page_title]
     set button_name "Update"
-
-    set invoice_html "
-<input type=hidden name=invoice_id value=$invoice_id>
-<A HREF=/intranet-invoices/view?invoice_id=$invoice_id>$invoice_nr</A>
-"
-
 }
 
 set letter "none"
 set next_page_url ""
 set previous_page_url ""
-set navbar [im_invoices_navbar $letter "/intranet-payments/index" $next_page_url $previous_page_url [list letter]]
+set navbar [im_costs_navbar $letter "/intranet-payments/index" $next_page_url $previous_page_url [list letter] "payments_list"]

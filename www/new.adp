@@ -11,8 +11,11 @@
   <td colspan=2 class=rowtitle>Payment Details</td>
 </tr>
 <tr> 
-  <td>Invoice Nr</td>
-  <td>@invoice_html;noquote@</td>
+  <td>Cost Name</td>
+  <td>
+    <input type=hidden name=cost_id value=@cost_id@>
+    <A HREF=/intranet-costs/view?cost_id=@cost_id@>@cost_name@</A>
+  </td>
 </tr>
 <tr> 
   <td>Amount</td>

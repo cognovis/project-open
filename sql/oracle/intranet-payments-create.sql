@@ -60,6 +60,7 @@ create table im_payments (
 create index im_proj_payments_cost_id_idx on im_payments(cost_id);
 
 
+
 ------------------------------------------------------
 -- Permissions and Privileges
 --
