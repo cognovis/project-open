@@ -139,7 +139,7 @@ System URL: $system_url
 User Name: $error_first_names $error_last_name
 User Email: $error_user_email
 Publisher Name: $publisher_name
-Core Version: $core_version
+Package Version(s): $core_version
 Package Versions: $package_versions
 Error Info: 
 $error_info"

@@ -38,10 +38,6 @@ We will notify you as soon as possible.
   <td>@publisher_name@</td>
 </tr>
 <tr>
-  <td>P/O Core Version</td>
-  <td>@core_version@</td>
-</tr>
-<tr>
   <td>Error URL</td>
   <td>@error_url@</td>
 </tr>
