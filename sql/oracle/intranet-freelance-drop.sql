@@ -35,16 +35,16 @@ delete from im_view_columns where column_id >= 5100 and column_id < 5199;
 delete from im_view_columns where column_id >= 5000 and column_id < 5099;
 
 -- Freelance LOC Tools & Operating Systems
-delete from categories where category_id >= 2300 and category_id < 2400;
+delete from im_categories where category_id >= 2300 and category_id < 2400;
 
 -- Languages experience
-delete from categories where category_id >= 2200 and category_id < 2300;
+delete from im_categories where category_id >= 2200 and category_id < 2300;
 
 -- Freelance TM Tools
-delete from categories where category_id >= 2100 and category_id < 2200;
+delete from im_categories where category_id >= 2100 and category_id < 2200;
 
 -- Freelance Skill Types
-delete from categories where category_id >= 2000 and category_id < 2100;
+delete from im_categories where category_id >= 2000 and category_id < 2100;
 
 delete from im_views where view_id >= 50 and view_id < 60;
 

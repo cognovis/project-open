@@ -52,11 +52,7 @@ if { [empty_string_p $user_name]} {
 }
 
 set page_title "$user_name"
-if {$user_is_employee_p} {
-    set context_bar [ad_context_bar_ws [list /intranet/users/ "Users"] $page_title]
-} else {
-    set context_bar [ad_context_bar_ws $page_title]
-}
+set context_bar [ad_context_bar_ws [list /intranet/users/ "Users"] $page_title]
 
 # ---------------------------------------------------------------
 # Making body table
@@ -80,7 +76,8 @@ set rates_html "
 # don't show the "private_note" field to the user himself.
 # Freelancers and other unprivileged users won't be able to see the 
 # user anyway
-if { !$myself_p } {
+
+if { $admin } {
     append rates_html "<tr><td>Private Notes</td><td><textarea type=text cols=50 rows=5 name=private_note>$private_note</textarea></td></tr>"
 }
 
