@@ -152,6 +152,7 @@ set forum_content [im_forum_component \
 	-restrict_to_folder	$forum_folder \
 	-restrict_to_new_topics 0 \
 	-max_entries_per_page	$forum_max_entries_per_page \
+	-restrict_to_topic_type_id $forum_topic_type_id \
 ]
 
 # ---------------------------------------------------------------
