@@ -17,13 +17,13 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set base_path [im_filestorage_home_path]
-set object_name "Home"
-set folder_type "home"
-set object_id 0
+set object_name "Project"
+set folder_type "project"
+set object_id 12843
 set return_url "/intranet-filestorage/"
 set current_url_without_vars [ns_conn url]
 
-set page_body [im_filestorage_home_component $user_id]
+set page_body [im_filestorage_project_component $user_id $object_id $object_name $return_url]
 
 doc_return  200 text/html [im_return_template]
 db_release_unused_handles
