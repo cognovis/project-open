@@ -29,6 +29,21 @@ ad_proc -public im_topic_type_id_incident { } { return 1104 }
 ad_proc -public im_topic_type_id_reply { } { return 1190 }
 
 
+
+ad_proc -public im_package_forum_id {} {
+    Returns the package id of the intranet-forum module
+} {
+    return [util_memoize "im_package_forum_id_helper"]
+}
+
+ad_proc -private im_package_forum_id_helper {} {
+    return [db_string im_package_core_id {
+        select package_id from apm_packages
+        where package_key = 'intranet-forum'
+    } -default 0]
+}
+
+
 ad_proc -public im_forum_is_task_or_incident { topic_type_id } {
     Returns 1 if it's a "Task" or "Incident"
 } {
@@ -346,6 +361,7 @@ ad_proc -public im_forum_render_tind {
 	subject message
 	posting_date due_date
 	priority scope
+        receive_updates
         return_url
 } {
     Render the rows of a single TIND
@@ -489,6 +505,15 @@ ad_proc -public im_forum_render_tind {
                   </td>
                 </tr>"
 	incr ctr
+
+	# Show whether the user has subscribed to updates
+	append tind_html "
+                <tr $bgcolor([expr $ctr % 2])>
+                  <td>Receive updates</td>
+                  <td>$receive_updates
+                  </td>
+                </tr>"
+	incr ctr
     }
 
     # Only allow plain text messages
@@ -584,7 +609,11 @@ where
 	    append thread_html "
 		  <td colspan=$colspan_level>
 		     <table border=0 cellpadding=0 bgcolor=#E0E0E0>"
-	    append thread_html " [im_forum_render_tind $topic_id 0 $topic_type_id $topic_type $topic_status_id $topic_status $owner_id $asignee_id $owner_name $asignee_name $user_id $object_id $object_name $object_admin $subject $message $posting_date $due_date $priority $scope $return_url]
+
+	    # don't show received updates for everything but the main message
+	    set receive_updates ""
+
+	    append thread_html " [im_forum_render_tind $topic_id 0 $topic_type_id $topic_type $topic_status_id $topic_status $owner_id $asignee_id $owner_name $asignee_name $user_id $object_id $object_name $object_admin $subject $message $posting_date $due_date $priority $scope $receive_updates $return_url]
 
 		    </table>
 		  </td>
@@ -940,7 +969,7 @@ $order_by_clause"
                 append table_body_html "
                 <tr><td colspan=$colspan>&nbsp;</td></tr>
                 <tr><td class=rowtitle colspan=$colspan>
-                  <A href=/intranet/projects/view?group_id=$object_id>
+                  <A href=/intranet/projects/view?project_id=$object_id>
                     $object_name
                   </A>
                 </td></tr>\n"
@@ -974,7 +1003,8 @@ $order_by_clause"
 	# This means that there are rows that we decided not to return
 	# Include a link to go to the next page
 	set next_start_idx [expr $end_idx + 1]
-	set next_page_html "($remaining_items more) <A href=$current_page_url?$pass_through_vars_html&start_idx=$next_start_idx>&gt;&gt;</a>"
+	set forum_max_entries_per_page [expr 10*$max_entries_per_page]
+	set next_page_html "($remaining_items more) <A href=\"/intranet-forum/index?forum_object_id=$object_id&forum_max_entries_per_page=$forum_max_entries_per_page\">&gt;&gt;</a>"
     } else {
 	set next_page_html ""
     }
