@@ -39,38 +39,24 @@ begin
     -- Set the filestorage to the very end.
     --
     v_plugin := im_component_plugin.new (
-        plugin_id =>    null,
-        object_type =>  'im_component_plugin',
-        creation_date => sysdate,
-        creation_user => 0,
-        creation_ip =>  null,
-        context_id =>   null,
-
+	plugin_name =>	'Home Filestorage Component',
 	package_name =>	'intranet-filestorage',
         page_url =>     '/intranet/index',
         location =>     'bottom',
         sort_order =>   90,
         component_tcl => 
-
 	'im_filestorage_home_component \
 		$user_id \
 		$return_url'
     );
 
     v_plugin := im_component_plugin.new (
-        plugin_id =>    null,
-        object_type =>  'im_component_plugin',
-        creation_date => sysdate,
-        creation_user => 0,
-        creation_ip =>  null,
-        context_id =>   null,
-
+	plugin_name =>	'Users Filestorage Component',
 	package_name =>	'intranet-filestorage',
         page_url =>     '/intranet/users/view',
         location =>     'bottom',
         sort_order =>   90,
         component_tcl => 
-
 	'im_filestorage_user_component \
 		$user_id \
 		$project_id \
@@ -79,19 +65,12 @@ begin
     );
 
     v_plugin := im_component_plugin.new (
-        plugin_id =>    null,
-        object_type =>  'im_component_plugin',
-        creation_date => sysdate,
-        creation_user => 0,
-        creation_ip =>  null,
-        context_id =>   null,
-
+	plugin_name =>	'Project Filestorage Component',
 	package_name =>	'intranet-filestorage',
         page_url =>     '/intranet/projects/view',
         location =>     'bottom',
         sort_order =>   90,
         component_tcl => 
-
 	'im_filestorage_project_component \
 		$user_id \
 		$project_id \
@@ -100,19 +79,12 @@ begin
     );
 
     v_plugin := im_component_plugin.new (
-        plugin_id =>    null,
-        object_type =>  'im_component_plugin',
-        creation_date => sysdate,
-        creation_user => 0,
-        creation_ip =>  null,
-        context_id =>   null,
-
+	plugin_name =>	'Customers Filestorage Component',
 	package_name =>	'intranet-filestorage',
         page_url =>     '/intranet/customers/view',
         location =>     'right',
         sort_order =>   50,
         component_tcl => 
-
 	'im_filestorage_customer_component \
 		$user_id \
 		$customer_id \
