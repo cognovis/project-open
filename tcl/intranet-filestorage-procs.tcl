@@ -1064,6 +1064,7 @@ where
 	#ex (/home - /cluster - /Data - /Internal- /INT-ADM-KNOWMG - /file.dat)
 	set file_paths [split $file "/"]
 	set file_paths_len [llength $file_paths] 
+	set file_paths_len [expr $file_paths_len -1]
 	set body_index [expr $file_paths_len -1] 
 
 	# store the name of the file ("file.dat")
