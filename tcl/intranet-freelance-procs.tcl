@@ -569,9 +569,9 @@ where
 select
 	pe.first_names || pe.last_name as name,
 	pe.person_id as user_id,
-	im_freelance_skill_list(pe.person_id, $sl) as source_languages,
-	im_freelance_skill_list(pe.person_id, $tl) as target_languages,
-	im_freelance_skill_list(pe.person_id, $sa) as subject_area
+	im_freelance_skill_list(pe.person_id, :sl) as source_languages,
+	im_freelance_skill_list(pe.person_id, :tl) as target_languages,
+	im_freelance_skill_list(pe.person_id, :sa) as subject_area
 from
 	persons pe,
 	(select distinct
