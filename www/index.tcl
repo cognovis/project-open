@@ -39,7 +39,7 @@ ad_page_contract {
 #    3. Define Table Columns:
 #	Define the table columns that the user can see.
 #	Again, restrictions may apply for unprivileged users,
-#	for example hiding customer names to freelancers.
+#	for example hiding company names to freelancers.
 #    4. Define Filter Categories:
 #	Extract from the database the filter categories that
 #	are available for a specific user.
@@ -145,7 +145,7 @@ if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string
 
 set order_by_clause ""
 switch $order_by {
-    "Client" { set order_by_clause "order by customer_name" }
+    "Client" { set order_by_clause "order by company_name" }
     "Invoice" { set order_by_clause "order by ci.cost_name DESC" }
     "Payment #" { set order_by_clause "order by payment_id DESC" }
     "Received" { set order_by_clause "order by received_date DESC" }
@@ -163,11 +163,11 @@ select
         p.*,
 	p.amount as payment_amount,
 	p.currency as payment_currency,
-	ci.customer_id,
+	ci.company_id,
 	ci.amount as cost_amount,
 	ci.currency as cost_currency,
 	ci.cost_name,
-	acs_object.name(ci.customer_id) as customer_name,
+	acs_object.name(ci.company_id) as company_name,
         im_category_from_id(p.payment_type_id) as payment_type,
         im_category_from_id(p.payment_status_id) as payment_status
 from
@@ -384,7 +384,7 @@ set page_body "
 [im_costs_navbar $letter "/intranet-payments/index" $next_page_url $previous_page_url [list status_id type_id start_idx order_by how_many view_name letter] "payments_list"]
 
 <form action=payment-action method=POST>
-[export_form_vars customer_id payment_id return_url]
+[export_form_vars company_id payment_id return_url]
   <table width=100% cellpadding=2 cellspacing=2 border=0>
     $table_header_html
     $table_body_html

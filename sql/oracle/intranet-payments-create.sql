@@ -23,13 +23,13 @@ create table im_payments (
 				constraint im_payments_cost
 				references im_costs,
 				-- who pays?
-	customer_id		integer not null
-				constraint im_payments_customer
-				references im_customers,
+	company_id		integer not null
+				constraint im_payments_company
+				references im_companies,
 				-- who gets paid?
 	provider_id		integer not null
 				constraint im_payments_provider
-				references im_customers,
+				references im_companies,
 	received_date		date,
 	start_block		date 
 				constraint im_payments_start_block
@@ -53,7 +53,7 @@ create table im_payments (
 		-- Make sure we don't get duplicated entries for 
 		-- whatever reason
 		constraint im_payments_un
-		unique (customer_id, cost_id, provider_id, received_date, 
+		unique (company_id, cost_id, provider_id, received_date, 
 			start_block, payment_type_id, currency)
 );
 
@@ -98,7 +98,7 @@ show errors;
 create table im_payments_audit (
 	payment_id		integer,
 	cost_id			integer,
-	customer_id		integer,
+	company_id		integer,
 	provider_id		integer,
 	received_date		date,
 	start_block		date,
@@ -120,7 +120,7 @@ create or replace trigger im_payments_audit_tr
 		insert into im_payments_audit (
 			payment_id,
 			cost_id,
-			customer_id,
+			company_id,
 			provider_id,
 			received_date,
 			start_block,
@@ -135,7 +135,7 @@ create or replace trigger im_payments_audit_tr
 		) values (
 			:old.payment_id,
 			:old.cost_id,
-			:old.customer_id,
+			:old.company_id,
 			:old.provider_id,
 			:old.received_date,
 			:old.start_block,
@@ -187,7 +187,7 @@ declare
         v_employees             integer;
         v_accounting            integer;
         v_senman                integer;
-        v_customers             integer;
+        v_companies             integer;
         v_freelancers           integer;
         v_proman                integer;
         v_admins                integer;
@@ -195,7 +195,7 @@ begin
     select group_id into v_admins from groups where group_name = 'P/O Admins';
     select group_id into v_senman from groups where group_name = 'Senior Managers';
     select group_id into v_accounting from groups where group_name = 'Accounting';
-    select group_id into v_customers from groups where group_name = 'Customers';
+    select group_id into v_companies from groups where group_name = 'Companies';
     select group_id into v_freelancers from groups where group_name = 'Freelancers';
 
     select menu_id
@@ -217,7 +217,7 @@ begin
     acs_permission.grant_permission(v_menu, v_admins, 'read');
     acs_permission.grant_permission(v_menu, v_senman, 'read');
     acs_permission.grant_permission(v_menu, v_accounting, 'read');
-    acs_permission.grant_permission(v_menu, v_customers, 'read');
+    acs_permission.grant_permission(v_menu, v_companies, 'read');
     acs_permission.grant_permission(v_menu, v_freelancers, 'read');
 
 
@@ -239,7 +239,7 @@ begin
     acs_permission.grant_permission(v_menu, v_admins, 'read');
     acs_permission.grant_permission(v_menu, v_senman, 'read');
     acs_permission.grant_permission(v_menu, v_accounting, 'read');
-    acs_permission.grant_permission(v_menu, v_customers, 'read');
+    acs_permission.grant_permission(v_menu, v_companies, 'read');
     acs_permission.grant_permission(v_menu, v_freelancers, 'read');
 end;
 /
@@ -268,7 +268,7 @@ extra_select, extra_where, sort_order, visible_for) values (3203,32,NULL,'Invoic
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (3205,32,NULL,'Client',
-'"<A HREF=/intranet/customers/view?customer_id=$customer_id>$customer_name</A>"','','',5,'');
+'"<A HREF=/intranet/companies/view?company_id=$company_id>$company_name</A>"','','',5,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (3207,32,NULL,'Received',

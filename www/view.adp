@@ -19,15 +19,15 @@
 	  <tr> 
 	    <td>Client</td>
 	    <td>
-	      <A href=/intranet/customers/view?customer_id=@customer_id@>
-		@customer_name@
+	      <A href=/intranet/companies/view?company_id=@company_id@>
+		@company_name@
 	    </A>
 	    </td>
 	  </tr>
 	  <tr> 
 	    <td>Provider</td>
 	    <td>
-	      <A href=/intranet/customers/view?customer_id=@provider_id@>
+	      <A href=/intranet/companies/view?company_id=@provider_id@>
 		@provider_name@
 	    </A>
 	    </td>

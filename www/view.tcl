@@ -3,7 +3,7 @@
 ad_page_contract {
     Purpose: form to enter payments for a project
 
-    @param customer_id Must have this if we're adding a payment
+    @param company_id Must have this if we're adding a payment
     @param payment_id Must have this if we're editing a payment
 
     @author fraber@fraber.de
@@ -42,19 +42,19 @@ db_0or1row get_payment_info "
 select
         p.*,
 	ci.cost_name,
-	ci.customer_id,
-	c.customer_name,
-	pro.customer_name as provider_name,
+	ci.company_id,
+	c.company_name,
+	pro.company_name as provider_name,
 	to_char(p.start_block,'Month DD, YYYY') as start_block,
         im_category_from_id(p.payment_type_id) as payment_type
 from
-	im_customers c,
-	im_customers pro,
+	im_companies c,
+	im_companies pro,
 	im_payments p,
 	im_costs ci
 where
 	p.cost_id = ci.cost_id(+)
-	and ci.customer_id = c.customer_id(+)
-	and ci.provider_id = pro.customer_id(+)
+	and ci.company_id = c.company_id(+)
+	and ci.provider_id = pro.company_id(+)
 	and p.payment_id = :payment_id
 "
