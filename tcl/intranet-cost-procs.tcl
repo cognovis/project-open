@@ -504,21 +504,6 @@ ad_proc im_costs_base_component { user_id {company_id ""} {project_id ""} } {
 	set new_doc_args "?project_id=$project_id"
     }
 
-    if {[db_table_exists im_payments]} {
-	lappend extra_select "pa.payment_amount"
-	lappend extra_select "pa.payment_currency"
-	lappend extra_from "
-		(select
-			sum(amount) as payment_amount, 
-			max(currency) as payment_currency,
-			cost_id 
-		 from im_payments
-		 group by cost_id
-		) pa
-	"
-	lappend extra_where "ci.cost_id=pa.cost_id"
-    }
-
     set extra_where_clause [join $extra_where "\n\tand "]
     if {"" != $extra_where_clause} { set extra_where_clause "\n\tand $extra_where_clause" }
     set extra_from_clause [join $extra_from ",\n\t"]
@@ -529,6 +514,8 @@ ad_proc im_costs_base_component { user_id {company_id ""} {project_id ""} } {
     set costs_sql "
 select
 	ci.*,
+	ci.paid_amount as payment_amount,
+	ci.paid_currency as payment_currency,
 	url.url,
         im_category_from_id(ci.cost_status_id) as cost_status,
         im_category_from_id(ci.cost_type_id) as cost_type,
@@ -603,17 +590,6 @@ order by
 	incr ctr
     }
 
-    if {"" != $project_id} {
-	append cost_html "
-<tr>
-  <td colspan=$colspan align=right>
-    <A href=\"/intranet-translation/purchase-order/new$new_doc_args\">
-      <li>[_ intranet-cost.lt_Create_a_new_purchase]
-    </A>
-  </td>
-</tr>\n"
-    }
-
     append cost_html "</table>\n"
     return $cost_html
 }
@@ -686,7 +662,7 @@ ad_proc im_cost_template_select { select_name { default "" } } {
     Returns an html select box named $select_name and defaulted to $default 
     with a list of all the partner statuses in the system
 } {
-    return [im_category_select "Intranet Cost Template" $select_name $default]
+    return [im_category_select -translate_p 0 "Intranet Cost Template" $select_name $default]
 }
 
 
