@@ -79,7 +79,6 @@ set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCustomer
 set due_date [db_string get_due_date "select sysdate+:payment_days from dual"]
 set provider_id [im_customer_internal]
 set invoice_status_created_id [db_string invoice_status "select category_id from im_categories where category_type='Intranet Invoice Status' and upper(category)='CREATED'"]
-set invoice_status_in_process_id [db_string invoice_status "select category_id from im_categories where category_type='Intranet Invoice Status' and upper(category)='IN PROCESS'"]
 set invoice_type_id [db_string invoice_type "select invoice_type_id from im_invoice_type where upper(invoice_type)='NORMAL'"]
 set vat 0
 set tax 0
