@@ -89,7 +89,7 @@ ad_proc im_quality_project_component {
 	set result "[im_quality_histogram -project_id $project_id]<ul>"
     }
     
-    append result "<li><a href=/intranet-trans-quality/add_report?[export_url_vars project_id]>Add a Quality Report for this Project</a></ul>"
+    append result "<li><a href=/intranet-trans-quality/new?[export_url_vars project_id]>Add a Quality Report for this Project</a></ul>"
     return $result
 }
 
