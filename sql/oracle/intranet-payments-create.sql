@@ -14,7 +14,7 @@
 -- Tracks the money coming into an invoice over time
 --
 
-create sequence im_payment_id_seq start with 10000;
+create sequence im_payments_id_seq start with 10000;
 create table im_payments (
 	payment_id		integer not null 
 				constraint im_payments_pk
@@ -49,7 +49,12 @@ create table im_payments (
  	last_modifying_user	not null 
 				constraint im_payments_mod_user
 				references users,
-	modified_ip_address	varchar(20) not null
+	modified_ip_address	varchar(20) not null,
+		-- Make sure we don't get duplicated entries for 
+		-- whatever reason
+		constraint im_payments_un
+		unique (customer_id, invoice_id, provider_id, received_date, 
+			start_block, payment_type_id, currency)
 );
 
 create table im_payments_audit (
