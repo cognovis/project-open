@@ -107,16 +107,16 @@ select
         o.*,
 	im_email_from_user_id(c.accounting_contact_id) as company_contact_email,
 	im_name_from_user_id(c.accounting_contact_id) as  company_contact_name,
-	c.customer_name as company_name,
-	c.customer_path as company_path,
-	c.customer_path as company_short_name,
+	c.company_name as company_name,
+	c.company_path as company_path,
+	c.company_path as company_short_name,
         cc.country_name
 from
-	im_customers c, 
+	im_companies c, 
         im_offices o,
         country_codes cc
 where 
-        c.customer_id = :provider_id
+        c.company_id = :provider_id
         and c.main_office_id=o.office_id(+)
         and o.address_country_code=cc.iso(+)
 "
@@ -427,7 +427,7 @@ where
 group by
 	t.po_task_type_id,
 	t.po_task_uom_id,
-	p.customer_id,
+	p.company_id,
 	p.project_id,
 	t.source_language_id,
 	t.target_language_id,
@@ -452,7 +452,7 @@ select
 	p.project_name,
 	p.project_path,
 	p.project_path as project_short_name,
-	p.customer_project_nr as company_project_nr
+	p.company_project_nr as company_project_nr
 from
 	im_categories c_uom,
 	im_categories c_type,
@@ -487,7 +487,7 @@ select
 	pr.subject_area_id as subject_area_id,
 	pr.valid_from,
 	pr.valid_through,
-	c.customer_path as price_company_name,
+	c.company_path as price_company_name,
         im_category_from_id(pr.uom_id) as price_uom,
         im_category_from_id(pr.task_type_id) as price_task_type,
         im_category_from_id(pr.target_language_id) as price_target_language,
@@ -497,14 +497,14 @@ from
 	(
 		(select 
 			im_trans_prices_calc_relevancy (
-				p.customer_id, :provider_id,
+				p.company_id, :provider_id,
 				p.task_type_id, :task_type_id,
 				p.subject_area_id, :subject_area_id,
 				p.target_language_id, :target_language_id,
 				p.source_language_id, :source_language_id
 			) as relevancy,
 			p.price,
-			p.customer_id as company_id,
+			p.company_id as company_id,
 			p.uom_id,
 			p.task_type_id,
 			p.target_language_id,
@@ -518,9 +518,9 @@ from
 			and currency=:currency
 		)
 	) pr,
-	im_customers c
+	im_companies c
 where
-	pr.company_id = c.customer_id(+)
+	pr.company_id = c.company_id(+)
 	and relevancy >= 0
 order by
 	pr.relevancy desc,

@@ -23,7 +23,7 @@ ad_page_contract {
 # -----------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-if {![im_permission $user_id add_customers]} {
+if {![im_permission $user_id add_companies]} {
     ad_return_complaint 1 "<li>You have insufficient permissions to view this page"
     return
 }
@@ -64,13 +64,13 @@ set manager_id ""
 # -----------------------------------------------------------------
 
 set company_path "${freelance_id}_freelance"
-set company_id [db_string company_id "select customer_id from im_customers where customer_path=:company_path" -default 0]
+set company_id [db_string company_id "select company_id from im_companies where company_path=:company_path" -default 0]
 
 if {!$company_id} {
 
     set company_name "$first_names $last_name Company"
-    set company_type_id [im_customer_type_freelance]
-    set company_status_id [im_customer_status_active]
+    set company_type_id [im_company_type_freelance]
+    set company_status_id [im_company_status_active]
 
     set office_name "$first_names $last_name Office"
     set office_path "${freelance_id}_freelance"
@@ -83,13 +83,13 @@ if {!$company_id} {
 		-office_path	$office_path]
     }
 
-    # Now create the customer with the new main_office:
-    set company_id [customer::new \
-	-customer_name	$company_name \
-        -customer_path	$company_path \
+    # Now create the company with the new main_office:
+    set company_id [company::new \
+	-company_name	$company_name \
+        -company_path	$company_path \
         -main_office_id	$office_id \
-        -customer_type_id $company_type_id \
-        -customer_status_id $company_status_id]
+        -company_type_id $company_type_id \
+        -company_status_id $company_status_id]
 }
 
 # -----------------------------------------------------------------
@@ -113,17 +113,17 @@ where
 
 
 # -----------------------------------------------------------------
-# Update the Customer
+# Update the Company
 # -----------------------------------------------------------------
 
 set update_sql "
-update im_customers set
-	customer_name		= :customer_name,
-	customer_path		= :customer_path,
+update im_companies set
+	company_name		= :company_name,
+	company_path		= :company_path,
 	vat_number		= :vat_number,
-	customer_status_id	= :customer_status_id,
-	old_customer_status_id	= :old_customer_status_id,
-	customer_type_id	= :customer_type_id,
+	company_status_id	= :company_status_id,
+	old_company_status_id	= :old_company_status_id,
+	company_type_id	= :company_type_id,
 	referral_source		= :referral_source,
 	start_date		= :start_date,
 	annual_revenue_id	= :annual_revenue_id,
@@ -133,9 +133,9 @@ update im_customers set
 	billable_p		= :billable_p,
 	note			= :note
 where
-	customer_id = :customer_id
+	company_id = :company_id
 "
-    db_dml update_customer $update_sql
+    db_dml update_company $update_sql
 
 # -----------------------------------------------------------------
 # Make sure the creator and the manager become Key Accounts
@@ -151,12 +151,12 @@ where
 #	$freelance_id
 #}
 
-set role_id [im_customer_role_key_account]
+set role_id [im_company_role_key_account]
 
 im_biz_object_add_role $user_id $company_id $role_id
 
 #if {"" != $manager_id } {
-#    im_biz_object_add_role $manager_id $customer_id $role_id
+#    im_biz_object_add_role $manager_id $company_id $role_id
 #}
 
 

@@ -11,17 +11,17 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     return_url:notnull
-    customer_id:integer
+    company_id:integer
 }
 
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "Upload Client Prices CSV"
 
-set context_bar [ad_context_bar [list "/intranet/customers/" "Clients"] "Upload CSV"]
+set context_bar [ad_context_bar [list "/intranet/companies/" "Clients"] "Upload CSV"]
 
 set page_content "
 <form enctype=multipart/form-data method=POST action=upload-prices-2.tcl>
-[export_form_vars customer_id return_url]
+[export_form_vars company_id return_url]
                     <table border=0>
                       <tr> 
                         <td align=right>Filename: </td>

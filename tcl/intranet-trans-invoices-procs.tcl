@@ -13,9 +13,9 @@ ad_library {
 # Price List
 # ------------------------------------------------------
 
-ad_proc im_trans_price_component { user_id customer_id return_url} {
+ad_proc im_trans_price_component { user_id company_id return_url} {
     Returns a formatted HTML table representing the 
-    prices for the current customer
+    prices for the current company
 } {
 
     set bgcolor(0) " class=roweven "
@@ -25,7 +25,7 @@ ad_proc im_trans_price_component { user_id customer_id return_url} {
     set colspan 7
     set price_list_html "
 <form action=/intranet-trans-invoices/price-lists/price-action method=POST>
-[export_form_vars customer_id return_url]
+[export_form_vars company_id return_url]
 <table border=0>
 <tr><td colspan=$colspan class=rowtitle align=center>Price List</td></tr>
 <tr class=rowtitle> 
@@ -41,7 +41,7 @@ ad_proc im_trans_price_component { user_id customer_id return_url} {
     set price_sql "
 select
 	p.*,
-	c.customer_path as customer_short_name,
+	c.company_path as company_short_name,
 	im_category_from_id(uom_id) as uom,
 	im_category_from_id(task_type_id) as task_type,
 	im_category_from_id(target_language_id) as target_language,
@@ -49,10 +49,10 @@ select
 	im_category_from_id(subject_area_id) as subject_area
 from
 	im_trans_prices p,
-	im_customers c
+	im_companies c
 where 
-	p.customer_id=:customer_id
-	and p.customer_id=c.customer_id(+)
+	p.company_id=:company_id
+	and p.company_id=c.company_id(+)
 order by
 	currency,
 	uom_id,
@@ -101,9 +101,9 @@ order by
 </form>
 <ul>
   <li>
-    <a href=/intranet-trans-invoices/upload-prices?[export_url_vars customer_id return_url]>
+    <a href=/intranet-trans-invoices/upload-prices?[export_url_vars company_id return_url]>
       Upload prices</A>
-    for this customer via a CSV file.
+    for this company via a CSV file.
   <li>
     Check this 
     <a href=/intranet-trans-invoices/price-lists/pricelist_sample.csv>

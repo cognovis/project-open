@@ -47,7 +47,7 @@ ad_page_contract {
 #    3. Define Table Columns:
 #	Define the table columns that the user can see.
 #	Again, restrictions may apply for unprivileged users,
-#	for example hiding customer names to freelancers.
+#	for example hiding company names to freelancers.
 #    4. Define Filter Categories:
 #	Extract from the database the filter categories that
 #	are available for a specific user.
@@ -180,9 +180,9 @@ switch $order_by {
     "Type" { set order_by_clause "order by project_type" }
     "Status" { set order_by_clause "order by project_status_id" }
     "Delivery Date" { set order_by_clause "order by end_date" }
-    "Client" { set order_by_clause "order by customer_name" }
+    "Client" { set order_by_clause "order by company_name" }
     "Words" { set order_by_clause "order by task_words" }
-    "Final User" { set order_by_clause "order by final_customer" }
+    "Final User" { set order_by_clause "order by final_company" }
     "Project #" { set order_by_clause "order by short_name" }
     "Project Manager" { set order_by_clause "order by upper(lead_name)" }
     "URL" { set order_by_clause "order by upper(url)" }
@@ -200,10 +200,10 @@ select
 	p.project_name,
         p.project_nr,
         p.project_path,
-	p.final_customer,
+	p.final_company,
         p.project_lead_id,
-        p.customer_id,
-        c.customer_name,
+        p.company_id,
+        c.company_name,
         p.project_status_id,
 	im_name_from_user_id(p.project_lead_id) as lead_name,
         im_category_from_id(p.subject_area_id) as subject_area, 
@@ -215,7 +215,7 @@ select
 	to_char(end_date, 'HH24:MI') as end_date_time
 from 
 	im_projects p, 
-        im_customers c,
+        im_companies c,
 	(select project_id, 
 		count(*) as task_count 
 	from	im_trans_tasks 
@@ -225,7 +225,7 @@ from
 where 
 	p.project_id = t.project_id
 	and t.task_count > 0
-        and c.customer_id=p.customer_id
+        and c.company_id=p.company_id
 	$where_clause
 	$order_by_clause
 "
@@ -427,13 +427,13 @@ set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
 set ctr 0
 set idx $start_idx
-set old_customer_name ""
+set old_company_name ""
 db_foreach projects_info_query $selection {
 
-    # insert intermediate headers for every customer if the list is sorted by customer.
-    if {[string equal $order_by "Client"] && ![string equal $customer_name $old_customer_name] } {
+    # insert intermediate headers for every company if the list is sorted by company.
+    if {[string equal $order_by "Client"] && ![string equal $company_name $old_company_name] } {
 	append table_body_html "<tr><td colspan=$colspan>&nbsp;</td></tr>\n"
-	set old_customer_name $customer_name
+	set old_company_name $company_name
     }
 
     # Append together a line of data based on the "column_vars" parameter list

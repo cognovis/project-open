@@ -16,7 +16,7 @@ ad_page_contract {
 } {
     { add_new "" }
     { del "" }
-    customer_id:integer
+    company_id:integer
     price_id:array,optional
     {return_url ""}
 }
@@ -32,7 +32,7 @@ if {$return_url == ""} {
 # "Add New" button pressed?
 # => Redirect to new.tcl page
 if {"" != $add_new} {
-    ad_returnredirect "new?[export_url_vars customer_id return_url]"
+    ad_returnredirect "new?[export_url_vars company_id return_url]"
     return
 }
 

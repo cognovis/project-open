@@ -6,18 +6,18 @@
 # http://www.project-open.com/license/ for details.
 
 ad_page_contract {
-    /intranet/customers/upload-prices-2.tcl
+    /intranet/companies/upload-prices-2.tcl
     Read a .csv-file with header titles exactly matching
     the data model and insert the data into im_trans_prices
 } {
     return_url
-    customer_id:integer
+    company_id:integer
     upload_file
 } 
 
 set current_user_id [ad_maybe_redirect_for_registration]
 set page_title "Upload New File/URL"
-set page_body "<PRE>\n<A HREF=$return_url>Return to Customer Page</A>\n"
+set page_body "<PRE>\n<A HREF=$return_url>Return to Company Page</A>\n"
 set context_bar [ad_context_bar [list "/intranet/cusomers/" "Clients"] "Upload CSV"]
 
 # Get the file from the user.
@@ -30,12 +30,12 @@ if { $max_n_bytes && ([file size $tmp_filename] > $max_n_bytes) } {
 }
 
 # strip off the C:\directories... crud and just get the file name
-if ![regexp {([^//\\]+)$} $upload_file match customer_filename] {
+if ![regexp {([^//\\]+)$} $upload_file match company_filename] {
     # couldn't find a match
-    set customer_filename $upload_file
+    set company_filename $upload_file
 }
 
-if {[regexp {\.\.} $customer_filename]} {
+if {[regexp {\.\.} $company_filename]} {
     set error "Filename contains forbidden characters"
     ad_returnredirect "/error.tcl?[export_url_vars error]"
 }
@@ -62,7 +62,7 @@ set header_len [llength $header_csv_fields]
 append page_body "Title-Length=$header_len\n"
 append page_body "\n\n"
 
-db_dml delete_old_prices "delete from im_trans_prices where customer_id=:customer_id"
+db_dml delete_old_prices "delete from im_trans_prices where company_id=:company_id"
 
 for {set i 1} {$i < $csv_files_len} {incr i} {
     set csv_line [string trim [lindex $csv_files $i]]
@@ -77,7 +77,7 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
 
     # Preset values, defined by CSV sheet:
     set uom ""
-    set customer ""
+    set company ""
     set task_type ""
     set target_language ""
     set source_language ""
@@ -116,10 +116,10 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
         if {$uom_id == 0} { append errmsg "<li>Didn't find UoM '$uom'\n" }
     }
 
-    if {![string equal "" $customer]} {
-         set price_customer_id [db_string get_customer_id "select customer_id from im_customers where customer_path = :customer" -default 0]
-         if {$price_customer_id == 0} { append errmsg "<li>Didn't find Customer '$customer'\n" }
-         if {$price_customer_id != $customer_id} { append errmsg "<li>Uploading prices for the wrong customer ('$price_customer_id' instead of '$customer_id')" }
+    if {![string equal "" $company]} {
+         set price_company_id [db_string get_company_id "select company_id from im_companies where company_path = :company" -default 0]
+         if {$price_company_id == 0} { append errmsg "<li>Didn't find Company '$company'\n" }
+         if {$price_company_id != $company_id} { append errmsg "<li>Uploading prices for the wrong company ('$price_company_id' instead of '$company_id')" }
     }
 
     if {![string equal "" $task_type]} {
@@ -138,7 +138,7 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
 
 #    append page_body "\n"
 #    append page_body "uom_id=$uom_id\n"
-#    append page_body "customer_id=$customer_id\n"
+#    append page_body "company_id=$company_id\n"
 #    append page_body "task_type_id=$task_type_id\n"
 #    append page_body "source_language_id=$source_language_id\n"
 #    append page_body "target_language_id=$target_language_id\n"
@@ -149,11 +149,11 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
 #    append page_body "currency=$currency\n"
 
     set insert_price_sql "INSERT INTO im_trans_prices (
-       price_id, uom_id, customer_id, task_type_id,
+       price_id, uom_id, company_id, task_type_id,
        target_language_id, source_language_id, subject_area_id,
        valid_from, valid_through, currency, price
     ) VALUES (
-       im_trans_prices_seq.nextval, :uom_id, :customer_id, :task_type_id,
+       im_trans_prices_seq.nextval, :uom_id, :company_id, :task_type_id,
        :target_language_id, :source_language_id, :subject_area_id,
        :valid_from, :valid_through, :currency, :price
     )"

@@ -68,7 +68,7 @@ set num_clients [db_string select_num_clients "
 select
         count(*)
 from
-        (select distinct customer_id
+        (select distinct company_id
         from im_projects
         where project_id in ([join $in_clause_list ","])
         )
@@ -81,8 +81,8 @@ if {$num_clients > 1} {
 }
 
 
-# now we know that all projects are from a single customer:
-set customer_id [db_string select_num_clients "select distinct customer_id from im_projects where project_id in ([join $in_clause_list ","])"]
+# now we know that all projects are from a single company:
+set company_id [db_string select_num_clients "select distinct company_id from im_projects where project_id in ([join $in_clause_list ","])"]
 
 
 # ---------------------------------------------------------------
@@ -196,7 +196,7 @@ set page_body "
 [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
 
 <form action=new-3 method=POST>
-[export_form_vars customer_id invoice_currency return_url]
+[export_form_vars company_id invoice_currency return_url]
 
   <!-- the list of tasks (invoicable items) -->
   <table cellpadding=2 cellspacing=2 border=0>

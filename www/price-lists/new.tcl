@@ -11,8 +11,8 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     price_id:integer,optional
-    customer_id:integer
-    {return_url "/intranet/customers/"}
+    company_id:integer
+    {return_url "/intranet/companies/"}
     { currency "" }
     edit_p:optional
     message:optional
@@ -83,7 +83,7 @@ ad_form \
     -export {next_url user_id return_url} \
     -form {
 	price_id:key(im_trans_prices_seq)
-	{customer_id:text(hidden)}
+	{company_id:text(hidden)}
 	{uom_id:text(select) {label "Unit of Measure"} {options $uom_options} }
 	{task_type_id:text(select),optional {label "Task Type"} {options $task_type_options} }
 	{source_language_id:text(select),optional {label "Source Language"} {options $language_options} }
@@ -109,7 +109,7 @@ ad_form -extend -name price -on_request {
 insert into im_trans_prices (
 	price_id,
 	uom_id,
-	customer_id,
+	company_id,
 	task_type_id,
 	target_language_id,
 	source_language_id,
@@ -119,7 +119,7 @@ insert into im_trans_prices (
 ) values (
 	:price_id,
 	:uom_id,
-	:customer_id,
+	:company_id,
 	:task_type_id,
 	:target_language_id,
 	:source_language_id,

@@ -120,8 +120,8 @@ db_foreach task_tasks $task_sql {
     set provider_sql "
 	select	c.*
 	from	acs_rels r,
-		im_customers c
-	where	r.object_id_one = c.customer_id
+		im_companies c
+	where	r.object_id_one = c.company_id
 		and r.object_id_two = :freelance_id"
 
     set freelance_company_html ""
@@ -132,11 +132,11 @@ db_foreach task_tasks $task_sql {
 	append freelance_company_html "
 	<tr>
 	  <td>
-	    <input type=radio name=provider_id value=$customer_id $checked>
+	    <input type=radio name=provider_id value=$company_id $checked>
 	  </td>
 	  <td>
-	    <A href=/intranet/customers/view?customer_id=$customer_id>
-		$customer_name
+	    <A href=/intranet/companies/view?company_id=$company_id>
+		$company_name
 	    </A>
 	  </td>
 	</tr>\n"

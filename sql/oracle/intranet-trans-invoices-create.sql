@@ -61,9 +61,9 @@ is
 	creation_ip		in varchar default null,
 	context_id		in integer default null,
 	invoice_nr		in varchar,
-	customer_id		in integer,
+	company_id		in integer,
 	provider_id		in integer,
-	customer_contact_id	in integer default null,
+	company_contact_id	in integer default null,
 	invoice_date		in date default sysdate,
 	invoice_currency	in char default 'EUR',
 	invoice_template_id	in integer default null,
@@ -94,9 +94,9 @@ is
 	creation_ip		in varchar default null,
 	context_id		in integer default null,
 	invoice_nr		in varchar,
-	customer_id		in integer,
+	company_id		in integer,
 	provider_id		in integer,
-	customer_contact_id	in integer default null,
+	company_contact_id	in integer default null,
 	invoice_date		in date default sysdate,
 	invoice_currency	in char default 'EUR',
 	invoice_template_id	in integer default null,
@@ -120,9 +120,9 @@ is
 	creation_ip	  => creation_ip,
 	context_id		=> context_id,
 	invoice_nr		=> invoice_nr,
-	customer_id	  => customer_id,
+	company_id	  => company_id,
 	provider_id	  => provider_id,
-	customer_contact_id     => customer_contact_id,
+	company_contact_id     => company_contact_id,
 	invoice_date	 => invoice_date,
 	invoice_currency	=> invoice_currency,
 	invoice_template_id     => invoice_template_id,
@@ -224,7 +224,7 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 -- The price model is very specific to every translation business,
 -- so we need to allow maximum customization.
 -- On the TCL API-Level we asume that we are able to determine
--- a price for every im_task, given the im_customer and the
+-- a price for every im_task, given the im_company and the
 -- im_project.
 -- What is missing here are promotions and other types of 
 -- exceptions. However, discounts are handled on the level
@@ -233,7 +233,7 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 -- The price model for the Translation Industry is based on
 -- the variables:
 --	- UOM: Unit of Measure: Hours, source words, lines,...
---	- Customer: There may be different rates for each customer
+--	- Company: There may be different rates for each company
 --	- Task Type
 --	- Target language
 --	- Source language
@@ -249,9 +249,9 @@ create table im_trans_prices (
 	uom_id			integer not null 
 				constraint im_trans_prices_uom_id
 				references im_categories,
-	customer_id		integer not null 
-				constraint im_trans_prices_customer_id
-				references im_customers,
+	company_id		integer not null 
+				constraint im_trans_prices_company_id
+				references im_companies,
 	task_type_id		integer
 				constraint im_trans_prices_task_type_id
 				references im_categories,
@@ -277,7 +277,7 @@ create table im_trans_prices (
 
 -- make sure the same price doesn't get defined twice 
 create unique index im_price_idx on im_trans_prices (
-	uom_id, customer_id, task_type_id, target_language_id, 
+	uom_id, company_id, task_type_id, target_language_id, 
 	source_language_id, subject_area_id, currency
 );
 
@@ -290,7 +290,7 @@ create unique index im_price_idx on im_trans_prices (
 -- The higher the match value the better the fit.
 prompt *** Creating im_trans_prices_calc_relevancy
 create or replace function im_trans_prices_calc_relevancy ( 
-	v_price_customer_id IN integer,		v_item_customer_id IN integer,
+	v_price_company_id IN integer,		v_item_company_id IN integer,
 	v_price_task_type_id IN integer,	v_item_task_type_id IN integer,
 	v_price_subject_area_id IN integer,	v_item_subject_area_id IN integer,
 	v_price_target_language_id IN integer,	v_item_target_language_id IN integer,
@@ -298,7 +298,7 @@ create or replace function im_trans_prices_calc_relevancy (
 )
 RETURN number IS
 	match_value			number;
-	v_internal_customer_id		integer;
+	v_internal_company_id		integer;
 	v_price_target_language		varchar(100);
 	v_item_target_language		varchar(100);
 	v_price_source_language		varchar(100);
@@ -306,10 +306,10 @@ RETURN number IS
 BEGIN
 	match_value := 0;
 
-	select customer_id
-	into v_internal_customer_id
-	from im_customers
-	where customer_path='internal';
+	select company_id
+	into v_internal_company_id
+	from im_companies
+	where company_path='internal';
 
 	-- Hard matches for task type
 	if v_price_task_type_id = v_item_task_type_id then
@@ -381,16 +381,16 @@ BEGIN
 		match_value := match_value - 10;
 	end if;
 
-	-- Customer logic - "Internal" doesn't give a penalty 
+	-- Company logic - "Internal" doesn't give a penalty 
 	-- but doesn't count as high as an exact match
 	--
-	if v_price_customer_id = v_item_customer_id then
+	if v_price_company_id = v_item_company_id then
 		match_value := (match_value + 6)*2;
 	end if;
-	if v_price_customer_id = v_internal_customer_id then
+	if v_price_company_id = v_internal_company_id then
 		match_value := match_value + 1;
 	end if;
-	if v_price_customer_id != v_internal_customer_id and v_price_customer_id != v_item_customer_id then
+	if v_price_company_id != v_internal_company_id and v_price_company_id != v_item_company_id then
 		match_value := match_value -10;
 	end if;
 
@@ -404,7 +404,7 @@ show errors;
 --
 -- These DB-entries allow the pages of Project/Open Core
 -- to render the forum components in the Home, Users, Projects
--- and Customer pages.
+-- and Company pages.
 --
 -- The TCL code in the "component_tcl" field is executed
 -- via "im_component_bay" in an "uplevel" statemente, exactly
@@ -430,15 +430,15 @@ declare
     v_plugin	 integer;
 begin
     v_plugin := im_component_plugin.new (
-	plugin_name =>  'Customer Translation Prices',
+	plugin_name =>  'Company Translation Prices',
 	package_name => 'intranet-trans-invoices',
-	page_url =>     '/intranet/customers/view',
+	page_url =>     '/intranet/companies/view',
 	location =>     'left',
 	sort_order =>   100,
 	component_tcl =>
 	'im_trans_price_component \
 		$user_id \
-		$customer_id \
+		$company_id \
 		$return_url'
     );
 end;
@@ -458,7 +458,7 @@ declare
 	-- Groups
 	v_accounting		 integer;
 	v_senman		integer;
-	v_customers		integer;
+	v_companies		integer;
 	v_freelancers		integer;
 	v_admins		integer;
 begin
@@ -466,7 +466,7 @@ begin
     select group_id into v_admins from groups where group_name = 'P/O Admins';
     select group_id into v_senman from groups where group_name = 'Senior Managers';
     select group_id into v_accounting from groups where group_name = 'Accounting';
-    select group_id into v_customers from groups where group_name = 'Customers';
+    select group_id into v_companies from groups where group_name = 'Companies';
     select group_id into v_freelancers from groups where group_name = 'Freelancers';
 
     select menu_id
@@ -486,7 +486,7 @@ begin
     acs_permission.grant_permission(v_menu, v_admins, 'read');
     acs_permission.grant_permission(v_menu, v_senman, 'read');
     acs_permission.grant_permission(v_menu, v_accounting, 'read');
-    acs_permission.grant_permission(v_menu, v_customers, 'read');
+    acs_permission.grant_permission(v_menu, v_companies, 'read');
     acs_permission.grant_permission(v_menu, v_freelancers, 'read');
 
     select menu_id
@@ -506,7 +506,7 @@ begin
     acs_permission.grant_permission(v_menu, v_admins, 'read');
     acs_permission.grant_permission(v_menu, v_senman, 'read');
     acs_permission.grant_permission(v_menu, v_accounting, 'read');
-    acs_permission.grant_permission(v_menu, v_customers, 'read');
+    acs_permission.grant_permission(v_menu, v_companies, 'read');
     acs_permission.grant_permission(v_menu, v_freelancers, 'read');
 end;
 /

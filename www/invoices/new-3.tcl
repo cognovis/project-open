@@ -16,14 +16,14 @@ ad_page_contract {
     invoice.<br>
     @param include_task A list of im_trans_task IDs to include in the
            new invoice
-    @param customer_id All include_tasks need to be from the same
-           customer.
+    @param company_id All include_tasks need to be from the same
+           company.
     @param invoice_currency: EUR or USD
 
     @author frank.bergmann@project-open.com
 } {
     include_task:multiple
-    customer_id:integer
+    company_id:integer
     invoice_currency
     { return_url ""}
 }
@@ -33,7 +33,7 @@ ad_page_contract {
 # ---------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-set org_customer_id $customer_id
+set org_company_id $company_id
 
 if {"" == $return_url} {set return_url [im_url_with_query] }
 set todays_date [db_string get_today "select sysdate from dual"]
@@ -61,8 +61,8 @@ foreach selected_task $include_task {
 }
 set tasks_where_clause "task_id in ([join $in_clause_list ","])"
 
-# We already know that all tasks are from the same customer,
-# and we asume that the customer_id is set from new-2.tcl.
+# We already know that all tasks are from the same company,
+# and we asume that the company_id is set from new-2.tcl.
 
 # Create the default values for a new invoice.
 #
@@ -75,9 +75,9 @@ set context_bar [ad_context_bar [list /intranet/invoices/ "Invoices"] $page_titl
 set invoice_id [im_new_object_id]
 set invoice_nr [im_next_invoice_nr]
 set invoice_date $todays_date
-set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCustomerInvoicePaymentDays" "" 30] 
+set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCompanyInvoicePaymentDays" "" 30] 
 set due_date [db_string get_due_date "select sysdate+:payment_days from dual"]
-set provider_id [im_customer_internal]
+set provider_id [im_company_internal]
 set cost_type_id [im_cost_type_invoice]
 set cost_status_id [im_cost_status_created]
 set vat 0
@@ -88,25 +88,25 @@ set template_id ""
 
 
 # ---------------------------------------------------------------
-# Gather customer data from customer_id
+# Gather company data from company_id
 # ---------------------------------------------------------------
 
 db_1row invoices_info_query "
 select 
 	c.*,
         o.*,
-	im_email_from_user_id(c.accounting_contact_id) as customer_contact_email,
-	im_name_from_user_id(c.accounting_contact_id) as  customer_contact_name,
-	c.customer_name,
-	c.customer_path,
-	c.customer_path as customer_short_name,
+	im_email_from_user_id(c.accounting_contact_id) as company_contact_email,
+	im_name_from_user_id(c.accounting_contact_id) as  company_contact_name,
+	c.company_name,
+	c.company_path,
+	c.company_path as company_short_name,
         cc.country_name
 from
-	im_customers c, 
+	im_companies c, 
         im_offices o,
         country_codes cc
 where 
-        c.customer_id = :customer_id
+        c.company_id = :company_id
         and c.main_office_id=o.office_id(+)
         and o.address_country_code=cc.iso(+)
 "
@@ -136,7 +136,7 @@ set invoice_data_html "
         </tr>
         <tr> 
           <td class=rowodd>Type</td>
-          <td class=rowodd>[im_cost_type_select cost_type_id $cost_type_id [im_cost_type_customer_doc]]</td>
+          <td class=rowodd>[im_cost_type_select cost_type_id $cost_type_id [im_cost_type_company_doc]]</td>
         </tr>
         <tr> 
           <td class=rowodd>Payment Method</td>
@@ -153,7 +153,7 @@ set receipient_html "
         <tr> 
           <td  class=rowodd>Company name</td>
           <td  class=rowodd>
-            <A href=/intranet/customers/view?customer_id=$customer_id>$customer_name</A>
+            <A href=/intranet/companies/view?company_id=$company_id>$company_name</A>
           </td>
         </tr>
         <tr> 
@@ -163,7 +163,7 @@ set receipient_html "
         <tr> 
           <td  class=rowodd> Accounting Contact</td>
           <td  class=rowodd>
-            <A href=/intranet/users/view?user_id=$accounting_contact_id>$customer_contact_name</A>
+            <A href=/intranet/users/view?user_id=$accounting_contact_id>$company_contact_name</A>
           </td>
         </tr>
         <tr> 
@@ -189,7 +189,7 @@ set receipient_html "
         </tr>
         <tr> 
           <td  class=rowodd>Email</td>
-          <td  class=rowodd>$customer_contact_email</td>
+          <td  class=rowodd>$company_contact_email</td>
         </tr>
 "
 
@@ -303,7 +303,7 @@ if {[string equal $invoice_mode "new"]} {
     set reference_price_html "
         <tr><td align=middle class=rowtitle colspan=$price_colspan>Reference Prices</td></tr>
         <tr>
-          <td class=rowtitle>Customer</td>
+          <td class=rowtitle>Company</td>
           <td class=rowtitle>UoM</td>
           <td class=rowtitle>Task Type</td>
           <td class=rowtitle>Target</td>
@@ -325,7 +325,7 @@ select
 	t.task_uom_id,
 	t.source_language_id,
 	t.target_language_id,
-	p.customer_id,
+	p.company_id,
 	p.project_id,
 	p.subject_area_id
 from 
@@ -337,7 +337,7 @@ where
 group by
 	t.task_type_id,
 	t.task_uom_id,
-	p.customer_id,
+	p.company_id,
 	p.project_id,
 	t.source_language_id,
 	t.target_language_id,
@@ -357,12 +357,12 @@ select
 	c_type.category as task_type,
 	c_uom.category as task_uom,
 	c_target.category as target_language,
-	s.customer_id,
+	s.company_id,
 	s.project_id,
 	p.project_name,
 	p.project_path,
 	p.project_path as project_short_name,
-	p.customer_project_nr
+	p.company_project_nr
 from
 	im_categories c_uom,
 	im_categories c_type,
@@ -389,7 +389,7 @@ order by
 select 
 	p.relevancy as price_relevancy,
 	p.price,
-	p.customer_id as price_customer_id,
+	p.company_id as price_company_id,
 	p.uom_id as uom_id,
 	p.task_type_id as task_type_id,
 	p.target_language_id as target_language_id,
@@ -397,7 +397,7 @@ select
 	p.subject_area_id as subject_area_id,
 	p.valid_from,
 	p.valid_through,
-	c.customer_path as price_customer_name,
+	c.company_path as price_company_name,
         im_category_from_id(p.uom_id) as price_uom,
         im_category_from_id(p.task_type_id) as price_task_type,
         im_category_from_id(p.target_language_id) as price_target_language,
@@ -407,14 +407,14 @@ from
 	(
 		(select 
 			im_trans_prices_calc_relevancy (
-				p.customer_id,:customer_id,
+				p.company_id,:company_id,
 				p.task_type_id, :task_type_id,
 				p.subject_area_id, :subject_area_id,
 				p.target_language_id, :target_language_id,
 				p.source_language_id, :source_language_id
 			) as relevancy,
 			p.price,
-			p.customer_id,
+			p.company_id,
 			p.uom_id,
 			p.task_type_id,
 			p.target_language_id,
@@ -428,13 +428,13 @@ from
 			and currency=:invoice_currency
 		)
 	) p,
-	im_customers c
+	im_companies c
 where
-	p.customer_id=c.customer_id(+)
+	p.company_id=c.company_id(+)
 	and relevancy >= 0
 order by
 	p.relevancy desc,
-	p.customer_id,
+	p.company_id,
 	p.uom_id
     "
 
@@ -450,14 +450,14 @@ order by
 	    append task_sum_html "
 		<tr><td class=rowtitle colspan=$price_colspan>
 	          <A href=/intranet/projects/view?project_id=$project_id>$project_short_name</A>:
-	          $customer_project_nr
+	          $company_project_nr
 	        </td></tr>\n"
 
 	    # Also add an intermediate header to the price list
 	    append reference_price_html "
 		<tr><td class=rowtitle colspan=$price_colspan>
 	          <A href=/intranet/projects/view?project_id=$project_id>$project_short_name</A>:
-	          $customer_project_nr
+	          $company_project_nr
 	        </td></tr>\n"
 	
 	    set old_project_id $project_id
@@ -469,13 +469,13 @@ order by
 	set best_match_price 0
 	db_foreach references_prices $reference_price_sql {
 
-	    ns_log Notice "new-3: customer_id=$customer_id, uom_id=$uom_id => price=$price, relevancy=$price_relevancy"
+	    ns_log Notice "new-3: company_id=$company_id, uom_id=$uom_id => price=$price, relevancy=$price_relevancy"
 	    # Take the first line of the result list (=best score) as a price proposal:
 	    if {$price_list_ctr == 1} {set best_match_price $price}
 
 	    append reference_price_html "
         <tr>
-          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_relevancy $price_customer_name</td>
+          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_relevancy $price_company_name</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_uom</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_task_type</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_target_language</td>
@@ -565,7 +565,7 @@ order by
 	    append task_sum_html "
 		<tr><td class=rowtitle colspan=$colspan>
 	          <A href=/intranet/projects/view?project_id=$project_id>$project_short_name</A>:
-	          $customer_project_nr
+	          $company_project_nr
 	        </td></tr>\n"
 	
 	    set old_project_id $project_id
@@ -652,7 +652,7 @@ set page_body "
 [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
 
 <form action=new-4 method=POST>
-[export_form_vars customer_id provider_id invoice_id cost_status_id return_url]
+[export_form_vars company_id provider_id invoice_id cost_status_id return_url]
 
 "
 

@@ -59,7 +59,7 @@
 	        <tr> 
 	          <td  class=rowodd>Company name</td>
 	          <td  class=rowodd>
-	            <A href="/intranet/customers/view?customer_id=@provider_id@">
+	            <A href="/intranet/companies/view?company_id=@provider_id@">
 			@company_name@
 		    </A>
 	          </td>

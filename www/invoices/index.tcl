@@ -26,7 +26,7 @@ ad_page_contract {
     { order_by "Invoice #" }
     { status_id:integer 0 } 
     { type_id:integer 0 } 
-    { customer_id:integer 0 } 
+    { company_id:integer 0 } 
     { letter:trim "" }
     { start_idx:integer "1" }
     { how_many "" }
@@ -45,7 +45,7 @@ ad_page_contract {
 #    3. Define Table Columns:
 #	Define the table columns that the user can see.
 #	Again, restrictions may apply for unprivileged users,
-#	for example hiding customer names to freelancers.
+#	for example hiding company names to freelancers.
 #    4. Define Filter Categories:
 #	Extract from the database the filter categories that
 #	are available for a specific user.
@@ -151,8 +151,8 @@ if { ![empty_string_p $status_id] && $status_id > 0 } {
 if { ![empty_string_p $type_id] && $type_id != 0 } {
     lappend criteria "i.cost_type_id=:type_id"
 }
-if { ![empty_string_p $customer_id] && $customer_id != 0 } {
-    lappend criteria "i.customer_id=:customer_id"
+if { ![empty_string_p $company_id] && $company_id != 0 } {
+    lappend criteria "i.company_id=:company_id"
 }
 if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string compare $letter "SCROLL"] != 0 } {
     lappend criteria "im_first_letter_default_to_a(ug.group_name)=:letter"
@@ -162,7 +162,7 @@ set order_by_clause ""
 switch $order_by {
     "Invoice #" { set order_by_clause "order by invoice_nr" }
     "Preview" { set order_by_clause "order by invoice_nr" }
-    "Client" { set order_by_clause "order by customer_name" }
+    "Client" { set order_by_clause "order by company_name" }
     "Due Date" { set order_by_clause "order by (i.invoice_date+i.payment_days)" }
     "Amount" { set order_by_clause "order by ii.invoice_amount" }
     "Paid" { set order_by_clause "order by pa.payment_amount" }
@@ -184,10 +184,10 @@ select
 	ii.invoice_currency,
 	pa.payment_amount,
 	pa.payment_currency,
-        u.email as customer_contact_email,
-        u.first_names||' '||u.last_name as customer_contact_name,
-        c.group_name as customer_name,
-        c.short_name as customer_short_name,
+        u.email as company_contact_email,
+        u.first_names||' '||u.last_name as company_contact_name,
+        c.group_name as company_name,
+        c.short_name as company_short_name,
         im_category_from_id(i.cost_status_id) as cost_status,
 	sysdate - (i.invoice_date + i.payment_days) as overdue
 from
@@ -209,10 +209,10 @@ from
 	 group by invoice_id
 	) pa
 where
-        i.customer_contact_id=u.user_id(+)
+        i.company_contact_id=u.user_id(+)
         and i.invoice_id=ii.invoice_id(+)
 	and i.invoice_id=pa.invoice_id(+)
-        and i.customer_id=c.group_id(+)
+        and i.company_id=c.group_id(+)
         $where_clause
 $order_by_clause
 "
@@ -434,10 +434,10 @@ set button_html "
 
 set page_body "
 $filter_html
-[im_invoice_navbar $letter "/intranet/invoicing/index" $next_page_url $previous_page_url [list status_id type_id customer_id start_idx order_by how_many view_name letter]]
+[im_invoice_navbar $letter "/intranet/invoicing/index" $next_page_url $previous_page_url [list status_id type_id company_id start_idx order_by how_many view_name letter]]
 
 <form action=invoice-action method=POST>
-[export_form_vars customer_id invoice_id return_url]
+[export_form_vars company_id invoice_id return_url]
   <table width=100% cellpadding=2 cellspacing=2 border=0>
     $table_header_html
     $table_body_html
