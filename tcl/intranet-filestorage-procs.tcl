@@ -1143,11 +1143,13 @@ where
 		# Treat a missing element in the hash (from the DB!) as closed...
 		ns_log Notice "--- file A: $file"
 		ns_log Notice "--- visible_p = c"
-		set visible_p "c"
+		set open_p_hash($file) "c"
+		#set visible_p "c"
+		set visible_p $open_p_hash($last_parent_path)
 	    } else {
 		 ns_log Notice "--- file B: $file"
 		 ns_log Notice "visible_p = $open_p_hash($last_parent_path)"
-		set visible_p $open_p_hash($last_parent_path)
+		 set visible_p $open_p_hash($last_parent_path)
 	    }
 
 	} else {
@@ -1155,12 +1157,13 @@ where
 	    # => This line becomes the last_parent!!!
 	    # => This line is visible, even though its status may be closed
 	    #    but that's only for its _childs_.
-	    set last_parent_path $current_path
-	    set last_parent_path_depth $current_depth
-	    ns_log Notice "file C: $file"
+            set last_parent_path $current_path
+            set last_parent_path_depth $current_depth
+ 	    ns_log Notice "file C: $file"
 	    ns_log Notice "visible_p = o"
 	    set visible_p "o"
 	}
+
 	if {![string equal "o" $visible_p]} { continue }
 
 	# Actions executed if the file type is "directory"
