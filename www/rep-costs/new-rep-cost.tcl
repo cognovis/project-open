@@ -143,7 +143,7 @@ ad_form -extend -name cost -on_request {
 
 	select	ci.*,
 		im_category_from_id(ci.cost_status_id) as cost_status
-	from	im_cost_items ci
+	from	im_costs ci
 	where	ci.cost_id = :cost_id
 
 } -new_data {
@@ -152,7 +152,7 @@ ad_form -extend -name cost -on_request {
 declare
 	v_cost_id	integer;
 begin
-        v_cost_id := im_cost_item.new (
+        v_cost_id := im_cost.new (
                 cost_id         => :cost_id,
                 creation_user   => :user_id,
                 creation_ip     => '[ad_conn peeraddr]',
@@ -177,7 +177,7 @@ end;"
 } -edit_data {
 
     db_dml cost_update "
-	update  im_cost_items set
+	update  im_costs set
                 cost_name       = :cost_name,
 		project_id	= :project_id,
                 customer_id     = :customer_id,
