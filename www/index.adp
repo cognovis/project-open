@@ -13,13 +13,15 @@
 
     This is the homepage of the "Financial Area". Here you can
     find and enter all information about customers, projects
-    and users.<br>
-    For more details please see:
+    and users.
+
+    <h5>Documentation:</h5>
     <ul>
 	<li><a href="http://www.project-open.com/">Finance high-level description</a>
     </ul>
 
 
+    <h5>Options:</h5>
     <ul>
 	@new_list_html;noquote@
     </ul>
