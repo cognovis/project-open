@@ -16,6 +16,7 @@ ad_page_contract {
     { return_url "/intranet-hr/index"}
     edit_p:optional
     message:optional
+    { availability "100" }
     { form_mode "display" }
 }
 
@@ -64,15 +65,15 @@ set exists_p [db_string exists_employee "select count(*) from im_employees where
 if {!$exists_p} {
     db_dml insert_employee_record "
 	insert into im_employees (
-	employee_id,
-	availability,
-	currency,
-	employee_status_id
+		employee_id,
+		availability,
+		currency,
+		employee_status_id
     ) values (
-	:employee_id,
-	100,
-	:currency,
-	[im_employee_status_active]
+		:employee_id,
+		100,
+		:currency,
+		[im_employee_status_active]
     )"
 }
 
@@ -123,8 +124,8 @@ if {!$rep_cost_id} {
 
 set currency_options [im_currency_options]
 set department_options [im_department_options]
-
-
+set end_date $end_century
+set availability "100"
 
 set supervisor_options [db_list_of_lists supervisor_options "
 	select 

@@ -215,10 +215,7 @@ select im_component_plugin__new (
         '/intranet/users/view',			-- page_url
 	null,					-- view_name
         60,					-- sort_order
-        'im_employee_info_component \\
-                $user_id \\
-                $return_url \\
-                [im_opt_val employee_view_name]' -- component_tcl
+        'im_employee_info_component $user_id $return_url [im_opt_val employee_view_name]'
     );
 
 -- prompt *** Creating OrgChart menu entry

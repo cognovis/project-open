@@ -54,6 +54,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
     set write 0
     set admin 0
     im_user_permissions $current_user_id $employee_id view read write admin
+    ns_log Notice "im_employee_info_component: view=$view, read=$read, write=$write, admin=$admin"
     if {!$read} { return "" }
 
     # Check if the current_user is a HR manager
