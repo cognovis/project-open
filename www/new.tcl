@@ -41,7 +41,7 @@ if {[empty_string_p $payment_id]} {
     # We are creating a new Payment
 
     set add_delete_text 0
-    set payment_id [db_nextval "im_payment_id_seq"]
+    set payment_id [db_nextval "im_payments_id_seq"]
     set page_title "New payment" 
     set context_bar [ad_context_bar $page_title]
     set button_name "Add payment"

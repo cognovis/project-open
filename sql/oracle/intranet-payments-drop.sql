@@ -21,7 +21,7 @@ commit;
 delete from im_view_columns where column_id > 3200 and column_id < 3299;
 delete from im_views where view_id=32;
 
-drop sequence im_payment_id_seq;
+drop sequence im_payments_id_seq;
 drop trigger im_payments_audit_tr;
 drop view im_payment_type;
 drop view im_invoice_payment_method;
