@@ -75,7 +75,7 @@ set context_bar [ad_context_bar [list /intranet/invoices/ "Invoices"] $page_titl
 set invoice_id [im_new_object_id]
 set invoice_nr [im_next_invoice_nr]
 set invoice_date $todays_date
-set payment_days [ad_parameter "DefaultPaymentDays" intranet 30] 
+set payment_days [ad_parameter -package_id [im_package_invoices_id] "DefaultPaymentDays" "" 30] 
 set due_date [db_string get_due_date "select sysdate+:payment_days from dual"]
 set provider_id [im_customer_internal]
 set invoice_status_created_id [db_string invoice_status "select category_id from im_categories where category_type='Intranet Invoice Status' and upper(category)='CREATED'"]

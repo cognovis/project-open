@@ -86,11 +86,11 @@ set letter [string toupper $letter]
 
 # Determine the default status if not set
 if { [empty_string_p $status_id] } {
-    set status_id [ad_parameter ProjectStatusDelivered intranet 0]
+    set status_id [im_project_status_delivered]
 }
 
 if { [empty_string_p $how_many] || $how_many < 1 } {
-    set how_many [ad_parameter NumberResultsPerPage intranet 50]
+    set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50]
 }
 set end_idx [expr $start_idx + $how_many - 1]
 
