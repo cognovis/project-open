@@ -23,12 +23,12 @@
         </callbacks>
         <parameters>
 
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="CompanyBasePathUnix"  default="/web/projop/filestorage/companies" description="CompanyBasePathUnix"/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="HomeBasePathUnix"  default="/web/projop/filestorage/home" description="HomeBasePathUnix"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="CompanyBasePathUnix"  default="C:/ProjectOpen/filestorage/companies" description="CompanyBasePathUnix"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="HomeBasePathUnix"  default="C:/ProjectOpen/filestorage/home" description="HomeBasePathUnix"/>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="MaxNumberOfBytes"  default="0" description="MaxNumberOfBytes"/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ProjectBasePathUnix"  default="/web/projop/filestorage/projects" description="ProjectBasePathUnix"/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ProjectSalesBasePathUnix"  default="/web/projop/filestorage/project_sales" description="ProjectSalesBasePathUnix"/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="UserBasePathUnix"  default="/web/projop/filestorage/users" description="UserBasePathUnix"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ProjectBasePathUnix"  default="C:/ProjectOpen/filestorage/projects" description="ProjectBasePathUnix"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ProjectSalesBasePathUnix"  default="C:/ProjectOpen/filestorage/project_sales" description="ProjectSalesBasePathUnix"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="UserBasePathUnix"  default="C:/ProjectOpen/filestorage/users" description="UserBasePathUnix"/>
         </parameters>
 
     </version>
