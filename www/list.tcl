@@ -27,6 +27,7 @@ ad_page_contract {
     { start_idx:integer "1" }
     { how_many "" }
     { view_name "cost_list" }
+    { view_mode "view" }
 }
 
 # ---------------------------------------------------------------
@@ -234,6 +235,7 @@ select
         c.*,
 	c.amount as amount_formatted,
 	c.effective_date + c.payment_days as due_date_calculated,
+	o.object_type,
 	url.url as cost_url,
 	ot.pretty_name as object_type_pretty_name,
         cust.customer_name,
@@ -252,7 +254,7 @@ from
         im_customers cust,
         im_customers prov,
 	im_projects proj,
-	(select * from im_biz_object_urls where url_type='edit') url
+	(select * from im_biz_object_urls where url_type=:view_mode) url
 	$extra_from
 where
         c.customer_id=cust.customer_id(+)
@@ -535,7 +537,7 @@ set page_body "
 $filter_html
 [im_costs_navbar $letter "/intranet-cost/list" $next_page_url $previous_page_url [list cost_status_id cost_type_id customer_id start_idx order_by how_many view_name letter] "costs"]
 
-<form action=/intranet-costs/costs/cost-action method=POST>
+<form action=/intranet-cost/costs/cost-action method=POST>
 [export_form_vars customer_id cost_id return_url]
   <table width=100% cellpadding=2 cellspacing=2 border=0>
     $table_header_html

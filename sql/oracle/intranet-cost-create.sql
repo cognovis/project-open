@@ -59,14 +59,14 @@ set escape \
 
 
 
-prompt *** intranet-costs: Creating acs_object_type
+prompt *** intranet-costs: Creating im_cost_center
 begin
     acs_object_type.create_type (
 	supertype =>		'acs_object',
 	object_type =>		'im_cost_center',
 	pretty_name =>		'Cost Center',
 	pretty_plural =>	'Cost Centers',
-	table_name =>		'im_centers',
+	table_name =>		'im_cost_centers',
 	id_column =>		'cost_center_id',
 	package_name =>		'im_cost_center',
 	type_extension_table =>	null,
@@ -584,8 +584,6 @@ commit;
 -- reserved until 3599
 
 
-
-
 -------------------------------------------------------------
 -- Costs
 --
@@ -606,6 +604,24 @@ commit;
 -- allow costs to be created for example between an employee and the
 -- company in the case of travel costs.
 --
+
+prompt *** intranet-costs: Creating im_costs
+begin
+    acs_object_type.create_type (
+	supertype =>		'acs_object',
+	object_type =>		'im_cost',
+	pretty_name =>		'Cost',
+	pretty_plural =>	'Costs',
+	table_name =>		'im_costs',
+	id_column =>		'cost_id',
+	package_name =>		'im_costs',
+	type_extension_table =>	null,
+	name_method =>		'im_costs.name'
+    );
+end;
+/
+show errors
+
 prompt *** intranet-costs: Creating im_costs
 create table im_costs (
 	cost_id			integer
@@ -701,99 +717,10 @@ create table im_costs (
 	note			varchar(4000)
 );
 
--- Cost Templates
-delete from im_categories where category_id >= 900 and category_id < 1000;
-INSERT INTO im_categories VALUES (900,'invoice-english.adp','','Intranet Cost Template','category','t','f');
-INSERT INTO im_categories VALUES (902,'invoice-spanish.adp','','Intranet Cost Template','category','t','f');
--- reserved until 999
-
-
-
-prompt *** intranet-costs: Creating category Cost Type
--- Cost Type
-delete from im_categories where category_id >= 3700 and category_id < 3799;
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3700,'Customer Invoice','Intranet Cost Type');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3702,'Quote','Intranet Cost Type');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3704,'Provider Bill','Intranet Cost Type');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3706,'Purchase Order','Intranet Cost Type');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3708,'Customer Documents','Intranet Cost Type');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3710,'Provider Documents','Intranet Cost Type');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3712,'Travel Cost','Intranet Cost Type');
-commit;
--- reserved until 3799
-
--- Establish the super-categories "Provider Documents" and "Customer Documents"
-insert into im_category_hierarchy values (3710,3704);
-insert into im_category_hierarchy values (3710,3706);
-insert into im_category_hierarchy values (3708,3700);
-insert into im_category_hierarchy values (3708,3702);
-
-
-prompt *** intranet-costs: Creating category Cost Status
--- Intranet Cost Status
-delete from im_categories where category_id >= 3800 and category_id < 3899;
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3802,'Created','Intranet Cost Status');
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3804,'Outstanding','Intranet Cost Status');
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3806,'Past Due','Intranet Cost Status');
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3808,'Partially Paid','Intranet Cost Status');
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3810,'Paid','Intranet Cost Status');
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3812,'Deleted','Intranet Cost Status');
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3814,'Filed','Intranet Cost Status');
-commit;
--- reserved until 3899
-
-
-prompt *** intranet-costs: Creating status and type views
-create or replace view im_cost_status as
-select
-	category_id as cost_status_id,
-	category as cost_status
-from 	im_categories
-where	category_type = 'Intranet Cost Status' and
-	category_id not in (3812);
-
-create or replace view im_cost_type as
-select	category_id as cost_type_id, 
-	category as cost_type
-from 	im_categories
-where 	category_type = 'Intranet Cost Type';
-
 
 -------------------------------------------------------------
 -- Cost Object Packages
 --
-
-prompt *** intranet-costs: Creating im_cost packages
-begin
-    acs_object_type.create_type (
-	supertype =>		'acs_object',
-	object_type =>		'im_cost',
-	pretty_name =>		'Cost',
-	pretty_plural =>	'Costs',
-	table_name =>		'im_costs',
-	id_column =>		'cost_id',
-	package_name =>		'im_cost',
-	type_extension_table =>	null,
-	name_method =>		'im_cost.name'
-    );
-end;
-/
-show errors
-
 
 create or replace package im_cost
 is
@@ -960,6 +887,78 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_cost','view','/intranet-cost/costs/new?form_mode=display\&cost_id=');
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_cost','edit','/intranet-cost/costs/new?form_mode=edit\&cost_id=');
+
+
+-- Cost Templates
+delete from im_categories where category_id >= 900 and category_id < 1000;
+INSERT INTO im_categories VALUES (900,'invoice-english.adp','','Intranet Cost Template','category','t','f');
+INSERT INTO im_categories VALUES (902,'invoice-spanish.adp','','Intranet Cost Template','category','t','f');
+-- reserved until 999
+
+
+
+prompt *** intranet-costs: Creating category Cost Type
+-- Cost Type
+delete from im_categories where category_id >= 3700 and category_id < 3799;
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3700,'Customer Invoice','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3702,'Quote','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3704,'Provider Bill','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3706,'Purchase Order','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3708,'Customer Documents','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3710,'Provider Documents','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3712,'Travel Cost','Intranet Cost Type');
+commit;
+-- reserved until 3799
+
+-- Establish the super-categories "Provider Documents" and "Customer Documents"
+insert into im_category_hierarchy values (3710,3704);
+insert into im_category_hierarchy values (3710,3706);
+insert into im_category_hierarchy values (3708,3700);
+insert into im_category_hierarchy values (3708,3702);
+
+
+prompt *** intranet-costs: Creating category Cost Status
+-- Intranet Cost Status
+delete from im_categories where category_id >= 3800 and category_id < 3899;
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3802,'Created','Intranet Cost Status');
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3804,'Outstanding','Intranet Cost Status');
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3806,'Past Due','Intranet Cost Status');
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3808,'Partially Paid','Intranet Cost Status');
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3810,'Paid','Intranet Cost Status');
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3812,'Deleted','Intranet Cost Status');
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3814,'Filed','Intranet Cost Status');
+commit;
+-- reserved until 3899
+
+
+prompt *** intranet-costs: Creating status and type views
+create or replace view im_cost_status as
+select
+	category_id as cost_status_id,
+	category as cost_status
+from 	im_categories
+where	category_type = 'Intranet Cost Status' and
+	category_id not in (3812);
+
+create or replace view im_cost_type as
+select	category_id as cost_type_id, 
+	category as cost_type
+from 	im_categories
+where 	category_type = 'Intranet Cost Type';
 
 
 
@@ -1172,14 +1171,9 @@ insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22025,220,'Status',
 '[im_cost_status_select "cost_status.$cost_id" $cost_status_id]',25);
 
--- insert into im_view_columns values (22098,220,'Del',
--- '[if {[string equal "" $payment_amount]} {
---	 set ttt "<input type=checkbox name=del_cost value=$cost_id>"
--- }]',99);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22098,220,'Del',
-'"<input type=checkbox name=del_cost value=$cost_id>"',99);
+'"<input type=hidden name=object_type.$cost_id value=$object_type><input type=checkbox name=del_cost value=$cost_id>"',99);
 commit;
 
 
