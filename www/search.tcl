@@ -1,7 +1,7 @@
 ad_page_contract {
     @author Neophytos Demetriou <k2pts@cytanet.com.cy>
     @creation-date September 01, 2001
-    @cvs-id $Id: search.tcl,v 1.8 2002/07/06 13:38:02 jeffd Exp $
+    @cvs-id $Id: search.tcl,v 1.9 2002/09/18 12:04:29 jeffd Exp $
 } {
     q:notnull,trim
     {t:trim ""}
@@ -64,7 +64,7 @@ if { $t == "Feeling Lucky" && $result(count) > 0} {
     set object_type [acs_object_type $object_id]
     set url [acs_sc_call FtsContentProvider url [list $object_id] $object_type]
     ad_returnredirect $url
-    return
+    ad_script_abort
 }
 
 set elapsed [format "%.02f" [expr double(abs($tend - $t0)) / 1000.0]]
