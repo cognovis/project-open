@@ -1095,6 +1095,8 @@ where
     set open_p_hash($current_path) "o"
 
     set stack_level_hash($last_parent_path_depth) $last_parent_path
+
+    set visible_p "o"
     # ------------------------------------------------------------------
     # Here we start rendering the file tree
     # ------------------------------------------------------------------
@@ -1126,11 +1128,13 @@ where
 	    incr last_folder_id
 	    set folder_id_hash($file) $last_folder_id
 	}
-	set visible_p $open_p_hash($stack_level_hash([expr $current_depth -1]))
-	if { [string compare $file_type "directory"] == 0 } {
-	     set stack_level_hash($current_depth) $current_path
+	if { [string equal "o" $visible_p] || $current_depth <= $last_parent_path_depth } {	    
+	    set visible_p $open_p_hash($stack_level_hash([expr $current_depth -1]))
+	    set last_parent_path_depth $current_depth
+	    if { [string compare $file_type "directory"] == 0 } {
+		set stack_level_hash($current_depth) $current_path
+	    }
 	}
-
 	if {![string equal "o" $visible_p]} { continue }
 
 	# Actions executed if the file type is "directory"
