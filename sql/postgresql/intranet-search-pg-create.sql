@@ -16,9 +16,9 @@
 --
 
 select acs_sc_impl__new(
-	   'FtsContentProvider',		-- impl_contract_name
-           'im_project',			-- impl_name
-	   'intranet-projects'			-- impl_owner_name
+	   'FtsContentProvider',		-- impl_contract_name 
+           'im_project',			-- impl_name (object in which we are going to search)
+	   'projects'				-- impl_owner_name(just a silly parameter?)
 );
 
 select acs_sc_impl_alias__new(

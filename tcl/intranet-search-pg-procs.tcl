@@ -16,12 +16,13 @@ ad_library {
 
 
 
-ad_proc -public projects__datasource{
+ad_proc projects__datasource {
     object_id
 } {
+    This proc returns the searchable data to be indexed
     @author pepels@gmail.com
 } {
-    db_0or1row projects_datasource{
+    db_0or1row projects_datasource {
 	select p.project_id as object_id, 
 	       p.project_name as title, 
 	       p.description as content,
@@ -36,9 +37,10 @@ ad_proc -public projects__datasource{
 }
 
 
-ad_proc -public projects__url {
+ad_proc projects__url {
     object_id
 } {
+    This proc returns the url to the project which has project_id=object_id
     @author pepels@gmail.com
 } {
 

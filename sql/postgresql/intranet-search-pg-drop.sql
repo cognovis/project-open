@@ -17,7 +17,7 @@
 
 select acs_sc_impl__delete(
            'FtsContentProvider',                -- impl_contract_name
-           'intranet-projects' 	                -- impl_name
+           'im_project'
       );
 
 drop trigger projects__utrg on im_projects;
