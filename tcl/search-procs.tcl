@@ -3,7 +3,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.10 2003/09/17 10:06:10 lars Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.11 2003/09/26 05:44:51 lars Exp $
 
 }
 
@@ -98,11 +98,11 @@ ad_proc search_content_filter {
     upvar $_txt txt
     upvar $_data data
 
-    switch $mime {
-        {text/plain} {
+    switch -glob -- $mime {
+        {text/plain*} {
             set txt $data
         }
-        {text/html} {
+        {text/html*} {
             set txt $data
         }
     }
