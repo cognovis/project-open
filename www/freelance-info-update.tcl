@@ -14,8 +14,6 @@ ad_page_contract {
 # Default & Security
 # ---------------------------------------------------------------
 
-# Also accept "user_id_from_search" instead of user_id (the one to edit...)
-if [info exists user_id_from_search] { set user_id $user_id_from_search}
 set todays_date [lindex [split [ns_localsqltimestamp] " "] 0]
 set bgcolor(0) "class=roweven"
 set bgcolor(1) "class=rowodd"
@@ -32,6 +30,8 @@ if {!$admin} {
 # Get everything about the freelance
 # ---------------------------------------------------------------
 
+# save user_id to be able to select f.*...
+set org_user_id $user_id
 db_0or1row freelancers_info {
 select
     pe.first_names||' '||pe.last_name as user_name,
@@ -43,6 +43,8 @@ where
     pe.person_id = :user_id
     and pe.person_id = f.user_id(+)
 }
+
+set user_id $org_user_id
 
 # --------------- Set page design as a function of the freelance data-----
 
@@ -63,7 +65,6 @@ set rates_html "
 [export_form_vars user_id]
 <table cellpadding=0 cellspacing=2 border=0>
 <tr><td colspan=2 class=rowtitle align=center>Rates Information</td></tr>
-<tr><td>Web Site</td><td><input type=text name=web_site value=$web_site></td></tr>
 <tr><td>Translation rate</td><td><input type=text name=translation_rate value=$translation_rate></td></tr>
 <tr><td>Editing rate</td><td><input type=text name=editing_rate value=$editing_rate></td></tr>
 <tr><td>Hourly rate</td><td><input type=text name=hourly_rate value=$hourly_rate></td></tr>
@@ -82,7 +83,6 @@ if { $admin } {
 }
 
 append rates_html "
-<tr><td>CV</td><td><input type=text name=cv value=$cv></td></tr>
 </table>
 <center>
 <input type=submit name=submit value=Submit>

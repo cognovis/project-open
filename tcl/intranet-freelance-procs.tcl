@@ -251,6 +251,7 @@ ad_proc im_freelance_info_component { current_user_id user_id return_url freelan
 	select	pe.first_names||' '||pe.last_name as user_name,
 		p.email,
 		f.*,
+		u.user_id,
 		im_category_from_id (f.payment_method_id) as payment_method
 	from	users u,
 		im_freelancers f,
@@ -263,7 +264,6 @@ ad_proc im_freelance_info_component { current_user_id user_id return_url freelan
 	"
 
     db_1row freelance_info_query $freelance_rates_sql
-    if {[regexp {www\.} $web_site]} { set web_site "http://$web_site" }
 
     set column_sql "
 	select	column_name,
@@ -486,6 +486,8 @@ $languages_butons_html
 # Freelance Member Select Component
 # ---------------------------------------------------------------
 
+# this proc is only used without quality module
+
 ad_proc im_freelance_member_select_component { object_id return_url } {
     Component that returns a formatted HTML table that allows 
     to select freelancers according to the characteristics of
@@ -529,7 +531,7 @@ where
     set freelance_sql_1 "
 select
 	pe.first_names || pe.last_name as name,
-	pe.person_id,
+	pe.person_id as user_id,
 	im_freelance_skill_list(pe.person_id, $sl) as source_languages,
 	im_freelance_skill_list(pe.person_id, $tl) as target_languages,
 	im_freelance_skill_list(pe.person_id, $sa) as subject_area
@@ -548,10 +550,10 @@ from
 	        (select substr(im_category_from_id(p.source_language_id),1,2) as source_lang,
 			substr(im_category_from_id(language_id),1,2) as target_lang
 	         from	im_projects p,
-			im_target_languages
+			im_target_languages itl
 		 where 
-			on_what_id=:object_id
-			and p.project_id=on_what_id
+			itl.project_id = :object_id
+			and p.project_id = itl.project_id
 	        ) p
 	where
 	        sks.user_id = u.user_id
@@ -577,7 +579,7 @@ where
     set ctr 0
     set freelance_body_html ""
     db_foreach freelance $freelance_sql_1 {
-	apend freelance_body_html "
+	append freelance_body_html "
 	<tr$bgcolor([expr $ctr % 2])>
 	  <td><a href=users/view?[export_url_vars user_id]>$name</a></td>
 	  <td>$source_languages</td>

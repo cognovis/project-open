@@ -8,7 +8,6 @@ ad_page_contract {
     @cvs-id freelance-info-update-2.tcl,v 3.2.2.4.2.6 2000/09/12 20:11:22 cnk Exp
 } {
     user_id:integer,notnull
-    { web_site "" }
     { translation_rate "" }
     { editing_rate "" }
     { hourly_rate "" }
@@ -17,7 +16,6 @@ ad_page_contract {
     { payment_method "" }
     { note "" }
     { private_note "" }
-    { cv "" }
     { return_url "" }
 }
 
@@ -26,7 +24,10 @@ ad_page_contract {
 #--------------------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
-im_freelance_permissions $current_user_id $user_id view read write admin
+
+# here we had 'im_freelance_permissions' i change it to 'im_users_permissions' (2004/03/09)
+
+im_user_permissions $current_user_id $user_id view read write admin
 
 if {!$write} {
     ad_return_complaint 1 "<li>You have insufficient privileges to modify user $user_id\
@@ -42,12 +43,19 @@ if {[string equal "" $return_url]} {
 # Update the base data
 #--------------------------------------------------------------------
 
+
+db_0or1row freelance "select user_id as exist_freelance from im_freelancers where user_id = :user_id"
+
+if { ![info exist exist_freelance] } {
+    db_dml insert_freelance "insert into im_freelancers (user_id) values ($user_id)"
+}
+
+
 if [catch {
 db_dml sql "
 UPDATE
 	im_freelancers
 SET
-	web_site = :web_site,
     	translation_rate = :translation_rate,
     	editing_rate = :editing_rate,
     	hourly_rate = :hourly_rate,
@@ -55,8 +63,7 @@ SET
     	bank = :bank,
 	payment_method_id = :payment_method,
     	note = :note,
-	private_note = :private_note,
-    	cv = :cv
+	private_note = :private_note
 WHERE
 	user_id = :user_id"
 } errmsg ] {

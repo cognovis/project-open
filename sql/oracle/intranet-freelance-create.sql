@@ -9,17 +9,21 @@
 --
 -- 
 create table im_freelancers (
-	user_id			primary key references users,
-	web_site		varchar(1000),
+	user_id			integer
+				constraint im_freelancers_pk
+				primary key 
+				constraint im_freelancers_user_fk
+				references users,
 	translation_rate	number(6,2),
 	editing_rate		number(6,2),
 	hourly_rate		number(6,2),
 	bank_account		varchar(200),
 	bank			varchar(100),
-	payment_method_id	references im_categories,
+	payment_method_id	integer
+				constraint im_freelancers_payment_fk
+				references im_categories,
 	note			varchar(4000),
-	private_note		varchar(4000),
-	cv			clob
+	private_note		varchar(4000)
 );
 
 -----------------------------------------------------------
@@ -36,13 +40,27 @@ create table im_freelancers (
 --
 
 create table im_freelance_skills (
-	user_id			not null references users,
-	skill_id		not null references im_categories,
-	skill_type_id		not null references im_categories,
-	claimed_experience_id	references im_categories,
-	confirmed_experience_id	references im_categories,
-	confirmation_user_id	references users,
+	user_id			integer not null 
+				constraint im_fl_skills_user_fk
+				references users,
+	skill_id		not null 
+				constraint im_fl_skills_skill_fk
+				references im_categories,
+	skill_type_id		not null 
+				constraint im_fl_skills_skill_type_fk
+				references im_categories,
+	claimed_experience_id	integer
+				constraint im_fl_skills_claimed_fk
+				references im_categories,
+	confirmed_experience_id	integer
+				constraint im_fl_skills_conf_fk
+				references im_categories,
+	confirmation_user_id	integer
+				constraint im_fl_skills_conf_user_fk
+				references users,
 	confirmation_date	date,
+	-- "map" type of table
+	constraint im_fl_skills_pk
 	primary key (user_id, skill_id, skill_type_id)
 );
 
@@ -90,8 +108,8 @@ END;
 show errors;
 
 
-insert into im_views values (50, 'user_list_freelance', 'view_users', '');
-insert into im_views values (51, 'user_view_freelance', 'view_users', '');
+insert into im_views (view_id, view_name, visible_for) values (50, 'user_list_freelance', 'view_users');
+insert into im_views (view_id, view_name, visible_for) values (51, 'user_view_freelance', 'view_users');
 
 
 -- Freelance Skill Types
@@ -167,10 +185,6 @@ commit;
 
 -- Add 'user_view_freelance'
 delete from im_view_columns where column_id >= 5100 and column_id < 5199;
-
-insert into im_view_columns values (5100,51,NULL,'Web Site',
-'"<A href=$web_site>$web_site</A>"','','',0,
-'im_permission $user_id view_freelancers');
 
 insert into im_view_columns values (5102,51,NULL,'Trans Rate',
 '$translation_rate','','',2,

@@ -125,7 +125,7 @@ switch $submit {
                <li>You need to specify add_skill_id."
 	}
 
-	set unconfirmed_experience [db_string unconfirmed_experience "select category_id from categories where category_type='Intranet Experience Level' and category='Unconfirmed'"]
+	set unconfirmed_experience [db_string unconfirmed_experience "select category_id from im_categories where category_type='Intranet Experience Level' and category='Unconfirmed'"]
 
 	set sql "
 insert into im_freelance_skills 
