@@ -392,8 +392,48 @@ begin
     );
 end;
 /
-show errors
+commit;
 
+
+-- Show the forum component in users page
+--
+declare
+    v_plugin            integer;
+begin
+    v_plugin := im_component_plugin.new (
+	plugin_name =>	'User Forum Component',
+	package_name =>	'intranet-forum',
+        page_url =>     '/intranet/users/view',
+        location =>     'right',
+        sort_order =>   20,
+        component_tcl => 
+	'im_table_with_title \
+		[im_forum_create_bar \
+			"<B>Forum Items<B>" \
+			$user_id \
+			$return_url \
+		] \
+		[im_forum_component \
+			-user_id $current_user_id \
+			-object_id $user_id \
+			-current_page_url $current_url \
+			-return_url $return_url \
+			-export_var_list [list \
+				user_id \
+				forum_start_idx \
+				forum_order_by \
+				forum_how_many \
+				forum_view_name \
+			] \
+			-forum_type user \
+			-view_name [im_opt_val forum_view_name] \
+			-forum_order_by [im_opt_val forum_order_by] \
+			-restrict_to_mine_p "f" \
+			-restrict_to_new_topics 0
+		]'
+    );
+end;
+/
 commit;
 
 
