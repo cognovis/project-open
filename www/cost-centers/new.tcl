@@ -13,7 +13,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     cost_center_id:integer,optional
-    return_url
+    {return_url "/intranet-cost/cost-centers/index"}
     edit_p:optional
     message:optional
     { form_mode "display" }
@@ -34,6 +34,16 @@ if {!$user_is_admin_p} {
 set action_url "/intranet-cost/cost-centers/new"
 set focus "cost_center.var_name"
 set page_title "New Cost Center"
+if {[info exists cost_center_id]} {
+    set cc_name [db_string cc_name "select cost_center_name from im_cost_centers where cost_center_id = :cost_center_id" -default ""]
+    set page_title "Cost Center '$cc_name'"
+
+    if {"" == $cc_name} {
+	ad_return_complaint 1 "We didn't find cost center \#$cost_center_id."
+	return
+    }
+}
+
 set context [ad_context_bar $page_title]
 
 if {![info exists cost_center_id]} { set form_mode "edit" }
@@ -86,13 +96,15 @@ ad_form -extend -name cost_center -on_request {
 
     db_dml cost_center_update "
 	update im_cost_centers set
-	        package_name    = :package_name,
-	        label           = :label,
-	        name            = :name,
-	        url             = :url,
-	        sort_order      = :sort_order,
-	        parent_cost_center_id  = :parent_cost_center_id,
-	        visible_tcl	= :visible_tcl
+		cost_center_name	= :cost_center_name,
+		cost_center_label	= :cost_center_label,
+		cost_center_code 	= :cost_center_code,
+		cost_center_type_id	= :cost_center_type_id,
+		cost_center_status_id	= :cost_center_status_id,
+		department_p		= :department_p,
+		parent_id		= :parent_id,
+		manager_id		= :manager_id,
+		description		= :description
 	where
 		cost_center_id = :cost_center_id
 "
