@@ -517,6 +517,6 @@ drop function inline_01 ();
 	
 
 
-@../common/intranet-trans-invoices-create.sql
+@../common/intranet-trans-invoices-common.sql
 @../common/intranet-trans-invoices-backup.sql
 
