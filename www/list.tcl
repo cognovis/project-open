@@ -1,15 +1,15 @@
-# /packages/intranet-cost_items/www/list.tcl
+# /packages/intranet-cost/www/list.tcl
 
 # ---------------------------------------------------------------
 # 1. Page Contract
 # ---------------------------------------------------------------
 
 ad_page_contract { 
-    List all cost_items together with their payments
+    List all costs together with their payments
 
-    @param order_by cost_item display order 
-    @param include_subcost_items_p whether to include sub cost_items
-    @param cost_item_status_id criteria for cost_item status
+    @param order_by cost display order 
+    @param include_subcosts_p whether to include sub costs
+    @param cost_status_id criteria for cost status
     @param item_type_id criteria for item_type_id
     @param letter criteria for im_first_letter_default_to_a(ug.group_name)
     @param start_idx the starting index for query
@@ -19,18 +19,18 @@ ad_page_contract {
     @cvs-id index.tcl,v 3.24.2.9 2000/09/22 01:38:44 kevin Exp
 } {
     { order_by "Date" }
-    { item_status_id:integer 0 } 
-    { item_type_id:integer 0 } 
+    { cost_status_id:integer 0 } 
+    { cost_type_id:integer 0 } 
     { customer_id:integer 0 } 
     { provider_id:integer 0 } 
     { letter:trim "" }
     { start_idx:integer "1" }
     { how_many "" }
-    { view_name "cost_item_list" }
+    { view_name "cost_list" }
 }
 
 # ---------------------------------------------------------------
-# Cost_Item List Page
+# Cost List Page
 #
 # This is List-Page with some special functions. It consists of the sections:
 #    1. Page Contract: 
@@ -45,8 +45,8 @@ ad_page_contract {
 #    4. Define Filter Categories:
 #	Extract from the database the filter categories that
 #	are available for a specific user.
-#	For example "potential", "cost_itemd" and "partially paid" 
-#	cost_items are not available for unprivileged users.
+#	For example "potential" and "partially paid" 
+#	costs are not available for unprivileged users.
 #    5. Generate SQL Query
 #	Compose the SQL query based on filter criteria.
 #	All possible columns are selected from the DB, leaving
@@ -86,7 +86,8 @@ set end_idx [expr $start_idx + $how_many - 1]
 # Define the column headers and column contents that 
 # we want to show:
 #
-set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name"]
+set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name" -default 0]
+if {!$view_id} { ad_return_complaint 1 "<li>Didn't find the the view '$view_name'"}
 set column_headers [list]
 set column_vars [list]
 
@@ -114,25 +115,25 @@ db_foreach column_list_sql $column_sql {
 # 4. Define Filter Categories
 # ---------------------------------------------------------------
 
-# status_types will be a list of pairs of (item_status_id, item_status)
-set status_types [im_memoize_list select_item_status_types "
-	select	0 as item_status_id,
-	'All' as item_status
+# status_types will be a list of pairs of (cost_status_id, cost_status)
+set status_types [im_memoize_list select_cost_status_types "
+	select	0 as cost_status_id,
+	'All' as cost_status
 	from dual
 UNION
-	select item_status_id, item_status
-	from im_cost_item_status
+	select cost_status_id, cost_status
+	from im_cost_status
 "]
 
 
-# type_types will be a list of pairs of (item_type_id, item_type)
-set type_types [im_memoize_list select_item_type_types "
-        select  0 as item_type_id,
-        'All' as item_type
+# type_types will be a list of pairs of (cost_type_id, cost_type)
+set type_types [im_memoize_list select_cost_type_types "
+        select  0 as cost_type_id,
+        'All' as cost_type
         from dual
 UNION
-	select item_type_id, item_type
-	from im_cost_item_type"]
+	select cost_type_id, cost_type
+	from im_cost_type"]
 
 
 # ---------------------------------------------------------------
@@ -140,28 +141,28 @@ UNION
 # ---------------------------------------------------------------
 
 set criteria [list]
-if { ![empty_string_p $item_status_id] && $item_status_id > 0 } {
-    lappend criteria "ci.item_status_id=:item_status_id"
+if { ![empty_string_p $cost_status_id] && $cost_status_id > 0 } {
+    lappend criteria "c.cost_status_id=:cost_status_id"
 }
-if { ![empty_string_p $item_type_id] && $item_type_id != 0 } {
-    lappend criteria "ci.item_type_id in (
+if { ![empty_string_p $cost_type_id] && $cost_type_id != 0 } {
+    lappend criteria "c.cost_type_id in (
 		select distinct	h.child_id
 		from	im_category_hierarchy h
-		where	(child_id=:item_type_id or parent_id=:item_type_id)
+		where	(child_id=:cost_type_id or parent_id=:cost_type_id)
 	)"
 }
 if {$customer_id} {
-    lappend criteria "ci.customer_id=:customer_id"
+    lappend criteria "c.customer_id=:customer_id"
 }
 if {$provider_id} {
-    lappend criteria "ci.provider_id=:provider_id"
+    lappend criteria "c.provider_id=:provider_id"
 }
 if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string compare $letter "SCROLL"] != 0 } {
     lappend criteria "im_first_letter_default_to_a(cust.customer_name)=:letter"
 }
 
 
-# Get the list of user's companies for which he can see cost_items
+# Get the list of user's companies for which he can see costs
 set company_ids [db_list users_companies "
 select
 	cust.customer_id
@@ -175,26 +176,24 @@ where
 
 lappend company_ids 0
 
-# Determine which cost_items the user can see.
+# Determine which costs the user can see.
 # Normally only those of his/her company...
-# Special users ("view_cost_items") don't need permissions.
+# Special users ("view_costs") don't need permissions.
 set company_where ""
-if {![im_permission $user_id view_cost_items]} { 
-    set company_where "and (ci.customer_id in ([join $company_ids ","]) or ci.provider_id in ([join $company_ids ","]))"
+if {![im_permission $user_id view_costs]} { 
+    set company_where "and (c.customer_id in ([join $company_ids ","]) or c.provider_id in ([join $company_ids ","]))"
 }
-ns_log Notice "/intranet-cost_items/index: company_where=$company_where"
+ns_log Notice "/intranet-cost/index: company_where=$company_where"
 
 
 set order_by_clause ""
 switch $order_by {
-    "Document #" { set order_by_clause "order by cost_item_nr" }
-    "Preview" { set order_by_clause "order by cost_item_nr" }
     "Provider" { set order_by_clause "order by provider_name" }
     "Client" { set order_by_clause "order by customer_name" }
-    "Due Date" { set order_by_clause "order by (ci.effective_date+ci.payment_days)" }
+    "Due Date" { set order_by_clause "order by (c.effective_date+c.payment_days)" }
     "Paid" { set order_by_clause "order by pa.payment_amount" }
-    "Status" { set order_by_clause "order by item_status_id" }
-    "Type" { set order_by_clause "order by item_type" }
+    "Status" { set order_by_clause "order by cost_status_id" }
+    "Type" { set order_by_clause "order by cost_type" }
 }
 
 set where_clause [join $criteria " and\n            "]
@@ -219,11 +218,11 @@ if { [db_table_exists im_payments] } {
 	(select
 		sum(amount) as payment_amount, 
 		max(currency) as payment_currency,
-		item_id 
+		cost_id 
 	 from im_payments
-	 group by item_id
+	 group by cost_id
 	) pa\n"
-    append extra_where "and ci.item_id=pa.item_id(+)\n"
+    append extra_where "and c.cost_id=pa.cost_id(+)\n"
 }
 
 # -----------------------------------------------------------------
@@ -232,22 +231,22 @@ if { [db_table_exists im_payments] } {
 
 set sql "
 select
-        ci.*,
-	ci.amount as amount_formatted,
-	ci.effective_date + ci.payment_days as due_date_calculated,
-	url.url as item_url,
+        c.*,
+	c.amount as amount_formatted,
+	c.effective_date + c.payment_days as due_date_calculated,
+	url.url as cost_url,
 	ot.pretty_name as object_type_pretty_name,
         cust.customer_name,
         cust.customer_path as customer_short_name,
 	proj.project_nr,
 	prov.customer_name as provider_name,
 	prov.customer_path as provider_short_name,
-        im_category_from_id(ci.item_status_id) as item_status,
-        im_category_from_id(ci.item_type_id) as item_type,
-	sysdate - (ci.effective_date + ci.payment_days) as overdue
+        im_category_from_id(c.cost_status_id) as cost_status,
+        im_category_from_id(c.cost_type_id) as cost_type,
+	sysdate - (c.effective_date + c.payment_days) as overdue
 	$extra_select
 from
-        im_cost_items ci,
+        im_costs c,
 	acs_objects o,
 	acs_object_types ot,
         im_customers cust,
@@ -256,10 +255,10 @@ from
 	(select * from im_biz_object_urls where url_type='view') url
 	$extra_from
 where
-        ci.customer_id=cust.customer_id(+)
-        and ci.provider_id=prov.customer_id(+)
-	and ci.project_id=proj.project_id(+)
-	and ci.item_id = o.object_id
+        c.customer_id=cust.customer_id(+)
+        and c.provider_id=prov.customer_id(+)
+	and c.project_id=proj.project_id(+)
+	and c.cost_id = o.object_id
 	and o.object_type = url.object_type(+)
 	and o.object_type = ot.object_type
 	$company_where
@@ -285,9 +284,9 @@ if {[string compare $letter "ALL"]} {
     # We can't get around counting in advance if we want to be able to 
     # sort inside the table on the page for only those users in the 
     # query results
-    set total_in_limited [db_string cost_items_total_in_limited "
+    set total_in_limited [db_string costs_total_in_limited "
 	select count(*) 
-        from im_cost_items p
+        from im_costs p
         where 1=1 $where_clause"]
 
     set selection "select z.* from ($limited_query) z $order_by_clause"
@@ -298,7 +297,7 @@ if {[string compare $letter "ALL"]} {
 # ---------------------------------------------------------------
 
 set new_document_menu ""
-set parent_menu_label "cost_items"
+set parent_menu_label "costs"
 
 if {"" != $parent_menu_label} {
     set parent_menu_sql "select menu_id from im_menus where label=:parent_menu_label"
@@ -334,8 +333,8 @@ set filter_html "
 <tr valign=top>
   <td valign=top>
 
-	<form method=get action='/intranet-cost_items/list'>
-	[export_form_vars start_idx order_by how_many view_name include_subcost_items_p letter]
+	<form method=get action='/intranet-cost/costs/list'>
+	[export_form_vars start_idx order_by how_many view_name include_subcosts_p letter]
 	<table border=0 cellpadding=1 cellspacing=1>
 	  <tr> 
 	    <td colspan='2' class=rowtitle align=center>
@@ -345,13 +344,13 @@ set filter_html "
 	  <tr>
 	    <td>Document Status:</td>
 	    <td>
-              [im_select item_status_id $status_types ""]
+              [im_select cost_status_id $status_types ""]
             </td>
 	  </tr>
 	  <tr>
 	    <td>Document Type:</td>
 	    <td>
-              [im_select item_type_id $type_types ""]
+              [im_select cost_type_id $type_types ""]
               <input type=submit value=Go name=submit>
             </td>
 	  </tr>
@@ -392,7 +391,7 @@ set colspan [expr [llength $column_headers] + 1]
 set table_header_html ""
 #<tr>
 #  <td align=center valign=top colspan=$colspan><font size=-1>
-#    [im_groups_alpha_bar [im_cost_item_group_id] $letter "start_idx"]</font>
+#    [im_groups_alpha_bar [im_cost_group_id] $letter "start_idx"]</font>
 #  </td>
 #</tr>"
 
@@ -425,7 +424,7 @@ set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
 set ctr 0
 set idx $start_idx
-db_foreach cost_items_info_query $selection {
+db_foreach costs_info_query $selection {
     set url [im_maybe_prepend_http $url]
     if { [empty_string_p $url] } {
 	set url_string "&nbsp;"
@@ -457,7 +456,7 @@ db_foreach cost_items_info_query $selection {
 if { [empty_string_p $table_body_html] } {
     set table_body_html "
         <tr><td colspan=$colspan><ul><li><b> 
-        There are currently no cost_items matching the selected criteria
+        There are currently no costs matching the selected criteria
         </b></ul></td></tr>"
 }
 
@@ -534,10 +533,10 @@ set button_html "
 
 set page_body "
 $filter_html
-[im_cost_items_navbar $letter "/intranet-cost/list" $next_page_url $previous_page_url [list item_status_id item_type_id customer_id start_idx order_by how_many view_name letter]]
+[im_costs_navbar $letter "/intranet-cost/list" $next_page_url $previous_page_url [list cost_status_id cost_type_id customer_id start_idx order_by how_many view_name letter]]
 
-<form action=cost_item-action method=POST>
-[export_form_vars customer_id item_id return_url]
+<form action=cost-action method=POST>
+[export_form_vars customer_id cost_id return_url]
   <table width=100% cellpadding=2 cellspacing=2 border=0>
     $table_header_html
     $table_body_html

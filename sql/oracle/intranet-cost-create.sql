@@ -52,9 +52,9 @@ set escape \
 -- 3400-3499    Intranet Investment Type
 -- 3500-3599    Intranet Investment Status
 -- 3600-3699	Intranet Investment Amortization Interval (reserved)
--- 3700-3799    Intranet Cost Item Type
--- 3800-3899    Intranet Cost Item Status
--- 3900-3999    Intranet Cost Item Planning Type
+-- 3700-3799    Intranet Cost Type
+-- 3800-3899    Intranet Cost Status
+-- 3900-3999    Intranet Cost Planning Type
 -- 4000-4599    (reserved)
 
 
@@ -224,11 +224,24 @@ show errors
 
 prompt *** intranet-costs: Creating URLs for viewing/editing cost centers
 delete from im_biz_object_urls where object_type='im_cost_center';
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_cost_center','view','/intranet-cost/cost-centers/new?form_mode=display&cost_center_id=');
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_cost_center','edit','/intranet-cost/cost-centers/new?form_mode=edit&cost_center_id=');
-
+insert into im_biz_object_urls (
+	object_type, 
+	url_type, 
+	url
+) values (
+	'im_cost_center',
+	'view',
+	'/intranet-cost/cost-centers/new?form_mode=display\&cost_center_id='
+);
+insert into im_biz_object_urls (
+	object_type, 
+	url_type, 
+	url
+) values (
+	'im_cost_center',
+	'edit',
+	'/intranet-cost/cost-centers/new?form_mode=edit\&cost_center_id='
+);
 
 
 prompt *** intranet-costs: Creating Cost Center categories
@@ -237,7 +250,8 @@ delete from im_categories where category_id >= 3000 and category_id < 3100;
 INSERT INTO im_categories VALUES (3001,'Cost Center','','Intranet Cost Center Type',1,'f','');
 INSERT INTO im_categories VALUES (3002,'Profit Center','','Intranet Cost Center Type',1,'f','');
 INSERT INTO im_categories VALUES (3003,'Investment Center','','Intranet Cost Center Type',1,'f','');
-INSERT INTO im_categories VALUES (3004,'Subdepartment','Department without budget responsabilities','Intranet Cost Center Type',1,'f','');
+INSERT INTO im_categories VALUES (3004,'Subdepartment','Department without budget responsabilities',
+'Intranet Cost Center Type',1,'f','');
 commit;
 -- reserved until 3099
 
@@ -250,6 +264,17 @@ commit;
 -- reserved until 3099
 
 
+-------------------------------------------------------------
+-- Department View
+-- (for compatibility reasons)
+create or replace view im_departments as
+select 
+	cost_center_id as department_id,
+	cost_center_name as department
+from
+	im_cost_centers
+where
+	department_p = 't';
 
 
 
@@ -402,12 +427,12 @@ create table im_investments (
 );
 
 
--- Create URLs for viewing/editing investments
+prompt *** intranet-costs: Creating URLs for viewing/editing investments
 delete from im_biz_object_urls where object_type='im_investment';
 insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_investment','view','/intranet-cost/investments/new?form_mode=display&investment_id=');
+'im_investment','view','/intranet-cost/investments/new?form_mode=display\&investment_id=');
 insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_investment','edit','/intranet-cost/investments/new?form_mode=edit&investment_id=');
+'im_investment','edit','/intranet-cost/investments/new?form_mode=edit\&investment_id=');
 
 
 
@@ -439,68 +464,78 @@ commit;
 
 
 
-
 -------------------------------------------------------------
--- Cost Items
+-- Costs
 --
--- Cost items are possibly assigned to project, customers and/or investments,
+-- Costs are possibly assigned to project, customers and/or investments,
 -- whereever this is reasonable.
 -- The idea is to be able to come up with profit/loss on a per-project base
 -- as well as on a per-customer base.
--- Amortization items are additionally related to an investment, so that we
--- can track the amortized money
+-- Amortization costs are additionally related to an investment, so that we
+-- can track the amortized money.
+-- Costs reference acs_objects for customer and provider in order to
+-- allow costs to be created for example between an employee and the
+-- company in the case of travel costs.
 --
-prompt *** intranet-costs: Creating im_cost_items
-create table im_cost_items (
-	item_id			integer
-				constraint im_cost_items_pk
+prompt *** intranet-costs: Creating im_costs
+create table im_costs (
+	cost_id			integer
+				constraint im_costs_pk
 				primary key,
 	-- force a name because we may want to use object.name()
-	-- later to list cost items
-	item_name		varchar(400)
-				constraint im_cost_items_name_nn
+	-- later to list cost
+	cost_name		varchar(400)
+				constraint im_costs_name_nn
 				not null,
 	project_id		integer
-				constraint im_cost_items_project_fk
+				constraint im_costs_project_fk
 				references im_projects,
 				-- who pays?
 	customer_id		integer
-				constraint im_cost_items_customer_nn
+				constraint im_costs_customer_nn
 				not null
-				constraint im_cost_items_customer_fk
-				references im_customers,
+				constraint im_costs_customer_fk
+				references acs_objects,
 				-- who gets paid?
 	provider_id		integer
-				constraint im_cost_items_provider_nn
+				constraint im_costs_provider_nn
 				not null
-				constraint im_cost_items_provider_fk
-				references im_customers,
-	item_status_id		integer
-				constraint im_cost_items_status_nn
-				not null
-				constraint im_cost_items_status_fk
-				references im_categories,
-	item_type_id		integer
-				constraint im_cost_item_type_nn
-				not null
-				constraint im_cost_item_type_fk
-				references im_categories,
-	template_id		integer
-				constraint im_cost_item_template_fk
-				references im_categories,
+				constraint im_costs_provider_fk
+				references acs_objects,
 	investment_id		integer
-				constraint im_cost_items_inv_fk
+				constraint im_costs_inv_fk
 				references im_investments,
+	cost_status_id		integer
+				constraint im_costs_status_nn
+				not null
+				constraint im_costs_status_fk
+				references im_categories,
+	cost_type_id		integer
+				constraint im_costs_type_nn
+				not null
+				constraint im_costs_type_fk
+				references im_categories,
+	-- reference to an object that has caused this cost
+	cause_object_id		integer
+				constraint im_costs_cause_fk
+				references acs_objects,
+	template_id		integer
+				constraint im_cost_template_fk
+				references im_categories,
 	-- when does the invoice start to be valid?
-	-- due_date is input_date + payment_days.
+	-- due_date is effective_date + payment_days.
 	effective_date		date,
+	-- start_blocks are the first days every month. This allows
+	-- for fast monthly grouping
+	effective_start_block	date
+				constraint im_costs_startblck_fk
+				references im_start_months,
 	payment_days		integer,
-	payment_date		date,
 	-- amount=null means calculated amount, for example
 	-- with an invoice
 	amount			number(12,3),
 	currency		char(3) 
-				constraint im_cost_items_currency_fk
+				constraint im_costs_currency_fk
 				references currency_codes(iso),
 	-- % of total price is VAT
 	vat			number(12,5),
@@ -508,138 +543,133 @@ create table im_cost_items (
 	tax			number(12,5),
 	-- Classification of variable against fixed costs
 	variable_cost_p		char(1)
-				constraint im_cost_items_var_ck
+				constraint im_costs_var_ck
 				check (variable_cost_p in ('t','f')),
 	needs_redistribution_p	char(1)
-				constraint im_cost_items_needs_redist_ck
+				constraint im_costs_needs_redist_ck
 				check (needs_redistribution_p in ('t','f')),
 	-- Points to its parent if the parent was distributed
 	parent_id		integer
-				constraint im_cost_items_parent_fk
-				references im_cost_items,
-	-- Indicates that this cost item has been redistributed to
-	-- potentially several other items, so we don't want to
-	-- include such items in sums.
+				constraint im_costs_parent_fk
+				references im_costs,
+	-- Indicates that this cost has been redistributed to
+	-- potentially several other costs, so we don't want to
+	-- include this item in sums.
 	redistributed_p		char(1)
-				constraint im_cost_items_redist_ck
+				constraint im_costs_redist_ck
 				check (redistributed_p in ('t','f')),
 	planning_p		char(1)
-				constraint im_cost_items_planning_ck
+				constraint im_costs_planning_ck
 				check (planning_p in ('t','f')),
 	planning_type_id	integer
-				constraint im_cost_items_planning_type_fk
+				constraint im_costs_planning_type_fk
 				references im_categories,
 	description		varchar(4000),
 	note			varchar(4000)
 );
 
 
--- Create URLs for viewing/editing cost items
-delete from im_biz_object_urls where object_type='im_cost_item';
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_cost_item','view','/intranet-cost/cost-items/new?form_mode=display\&item_id=');
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_cost_item','edit','/intranet-cost/cost-items/new?form_mode=edit\&item_id=');
-
-
-
-
-prompt *** intranet-costs: Creating category Cost Item Type
--- Cost Item Type
+prompt *** intranet-costs: Creating category Cost Type
+-- Cost Type
 delete from im_categories where category_id >= 3700 and category_id < 3799;
-INSERT INTO im_categories VALUES (3700,'Customer Invoice','','Intranet Cost Item Type','category','t','f');
-INSERT INTO im_categories VALUES (3702,'Quote','','Intranet Cost Item Type','category','t','f');
-INSERT INTO im_categories VALUES (3704,'Provider Bill','','Intranet Cost Item Type','category','t','f');
-INSERT INTO im_categories VALUES (3706,'Purchase Order','','Intranet Cost Item Type','category','t','f');
+INSERT INTO im_categories VALUES (3700,
+'Customer Invoice','','Intranet Cost Type','category','t','f');
+INSERT INTO im_categories VALUES (3702,
+'Quote','','Intranet Cost Type','category','t','f');
+INSERT INTO im_categories VALUES (3704,
+'Provider Bill','','Intranet Cost Type','category','t','f');
+INSERT INTO im_categories VALUES (3706,
+'Purchase Order','','Intranet Cost Type','category','t','f');
 
-INSERT INTO im_categories VALUES (3708,'Customer Documents','','Intranet Cost Item Type','category','t','f');
-INSERT INTO im_categories VALUES (3710,'Provider Documents','','Intranet Cost Item Type','category','t','f');
+INSERT INTO im_categories VALUES (3708,
+'Customer Documents','','Intranet Cost Type','category','t','f');
+INSERT INTO im_categories VALUES (3710,
+'Provider Documents','','Intranet Cost Type','category','t','f');
 -- reserved until 3799
 
 
-prompt *** intranet-costs: Creating category Cost Item Status
--- Intranet Cost Item Status
-delete from im_categories where category_id >= 3700 and category_id < 3799;
+prompt *** intranet-costs: Creating category Cost Status
+-- Intranet Cost Status
+delete from im_categories where category_id >= 3800 and category_id < 3899;
 INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3802,'Created','Intranet Cost Item Status');
+VALUES (3802,'Created','Intranet Cost Status');
 INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3804,'Outstanding','Intranet Cost Item Status');
+VALUES (3804,'Outstanding','Intranet Cost Status');
 INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3806,'Past Due','Intranet Cost Item Status');
+VALUES (3806,'Past Due','Intranet Cost Status');
 INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3808,'Partially Paid','Intranet Cost Item Status');
+VALUES (3808,'Partially Paid','Intranet Cost Status');
 INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3810,'Paid','Intranet Cost Item Status');
+VALUES (3810,'Paid','Intranet Cost Status');
 INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3812,'Deleted','Intranet Cost Item Status');
+VALUES (3812,'Deleted','Intranet Cost Status');
 INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3814,'Filed','Intranet Cost Item Status');
+VALUES (3814,'Filed','Intranet Cost Status');
 commit;
 -- reserved until 3899
 
 
 prompt *** intranet-costs: Creating status and type views
-create or replace view im_cost_item_status as
+create or replace view im_cost_status as
 select
-        category_id as item_status_id,
-        category as item_status
+	category_id as cost_status_id,
+	category as cost_status
 from 	im_categories
-where	category_type = 'Intranet Cost Item Status' and
-        category_id not in (3812);
+where	category_type = 'Intranet Cost Status' and
+	category_id not in (3812);
 
-create or replace view im_cost_item_type as
-select	category_id as item_type_id, 
-	category as item_type
+create or replace view im_cost_type as
+select	category_id as cost_type_id, 
+	category as cost_type
 from 	im_categories
-where 	category_type = 'Intranet Cost Item Type';
+where 	category_type = 'Intranet Cost Type';
 
 
 -------------------------------------------------------------
--- Cost Item Object Packages
+-- Cost Object Packages
 --
 
-prompt *** intranet-costs: Creating im_cost_item packages
+prompt *** intranet-costs: Creating im_cost packages
 begin
     acs_object_type.create_type (
 	supertype =>		'acs_object',
-	object_type =>		'im_cost_item',
-	pretty_name =>		'Cost Item',
-	pretty_plural =>	'Cost Items',
-	table_name =>		'im_cost_items',
-	id_column =>		'item_id',
-	package_name =>		'im_cost_item',
+	object_type =>		'im_cost',
+	pretty_name =>		'Cost',
+	pretty_plural =>	'Costs',
+	table_name =>		'im_costs',
+	id_column =>		'cost_id',
+	package_name =>		'im_cost',
 	type_extension_table =>	null,
-	name_method =>		'im_cost_item.name'
+	name_method =>		'im_cost.name'
     );
 end;
 /
 show errors
 
 
-create or replace package im_cost_item
+create or replace package im_cost
 is
     function new (
-	item_id			in integer default null,
-	object_type		in varchar default 'im_cost_item',
+	cost_id			in integer default null,
+	object_type		in varchar default 'im_cost',
 	creation_date		in date default sysdate,
 	creation_user		in integer default null,
 	creation_ip		in varchar default null,
 	context_id		in integer default null,
 
-	item_name		in varchar default null,
+	cost_name		in varchar default null,
 	parent_id		in integer default null,
 	project_id		in integer default null,
 	customer_id		in integer,
 	provider_id		in integer,
 	investment_id		in integer default null,
 
-	item_status_id		in integer,
-	item_type_id		in integer,
+	cost_status_id		in integer,
+	cost_type_id		in integer,
 	template_id		in integer default null,
 
 	effective_date		in date default sysdate,
 	payment_days		in integer default 30,
-	payment_date		in date default sysdate+30,
 	amount			number default null,
 	currency		in char default 'EUR',
 	vat			in number default 0,
@@ -653,60 +683,59 @@ is
 
 	note			in varchar default null,
 	description		in varchar default null
-    ) return im_cost_items.item_id%TYPE;
+    ) return im_costs.cost_id%TYPE;
 
-    procedure del (item_id in integer);
-    function name (item_id in integer) return varchar;
-end im_cost_item;
+    procedure del (cost_id in integer);
+    function name (cost_id in integer) return varchar;
+end im_cost;
 /
 show errors
 
 
 
 
-create or replace package body im_cost_item
+create or replace package body im_cost
 is
     function new (
-        item_id                 in integer default null,
-        object_type             in varchar default 'im_cost_item',
-        creation_date           in date default sysdate,
-        creation_user           in integer default null,
-        creation_ip             in varchar default null,
-        context_id              in integer default null,
+	cost_id		 in integer default null,
+	object_type	     in varchar default 'im_cost',
+	creation_date	   in date default sysdate,
+	creation_user	   in integer default null,
+	creation_ip	     in varchar default null,
+	context_id	      in integer default null,
 
-        item_name               in varchar default null,
-        parent_id               in integer default null,
-        project_id              in integer default null,
-        customer_id             in integer,
-        provider_id             in integer,
-        investment_id           in integer default null,
+	cost_name	       in varchar default null,
+	parent_id	       in integer default null,
+	project_id	      in integer default null,
+	customer_id	     in integer,
+	provider_id	     in integer,
+	investment_id	   in integer default null,
 
-        item_status_id          in integer,
-        item_type_id            in integer,
-        template_id             in integer default null,
+	cost_status_id	  in integer,
+	cost_type_id	    in integer,
+	template_id	     in integer default null,
 
-        effective_date          in date default sysdate,
-        payment_days            in integer default 30,
-        payment_date            in date default sysdate+30,
-        amount                  number default null,
-        currency                in char default 'EUR',
-        vat                     in number default 0,
-        tax                     in number default 0,
+	effective_date	  in date default sysdate,
+	payment_days	    in integer default 30,
+	amount		  number default null,
+	currency		in char default 'EUR',
+	vat		     in number default 0,
+	tax		     in number default 0,
 
-        variable_cost_p         in char default 'f',
-        needs_redistribution_p  in char default 'f',
-        redistributed_p         in char default 'f',
-        planning_p              in char default 'f',
-        planning_type_id        in integer default null,
+	variable_cost_p	 in char default 'f',
+	needs_redistribution_p  in char default 'f',
+	redistributed_p	 in char default 'f',
+	planning_p	      in char default 'f',
+	planning_type_id	in integer default null,
 
-        note                    in varchar default null,
-        description             in varchar default null
-    ) return im_cost_items.item_id%TYPE
+	note		    in varchar default null,
+	description	     in varchar default null
+    ) return im_costs.cost_id%TYPE
     is
-	v_cost_item_id    im_cost_items.item_id%TYPE;
+	v_cost_cost_id    im_costs.cost_id%TYPE;
     begin
-	v_cost_item_id := acs_object.new (
-		object_id =>		item_id,
+	v_cost_cost_id := acs_object.new (
+		object_id =>		cost_id,
 		object_type =>		object_type,
 		creation_date =>	creation_date,
 		creation_user =>	creation_user,
@@ -714,23 +743,23 @@ is
 		context_id =>		context_id
 	);
 
-	insert into im_cost_items (
-		item_id, item_name, project_id, 
+	insert into im_costs (
+		cost_id, cost_name, project_id, 
 		customer_id, provider_id, 
-		item_status_id, item_type_id,
+		cost_status_id, cost_type_id,
 		template_id, investment_id,
-		effective_date, payment_days, payment_date,
+		effective_date, payment_days,
 		amount, currency, vat, tax,
 		variable_cost_p, needs_redistribution_p,
 		parent_id, redistributed_p, 
 		planning_p, planning_type_id, 
 		description, note
 	) values (
-		v_cost_item_id, new.item_name, new.project_id, 
+		v_cost_cost_id, new.cost_name, new.project_id, 
 		new.customer_id, new.provider_id, 
-		new.item_status_id, new.item_type_id,
+		new.cost_status_id, new.cost_type_id,
 		new.template_id, new.investment_id,
-		new.effective_date, new.payment_days, new.payment_date,
+		new.effective_date, new.payment_days,
 		new.amount, new.currency, new.vat, new.tax,
 		new.variable_cost_p, new.needs_redistribution_p,
 		new.parent_id, new.redistributed_p, 
@@ -738,43 +767,55 @@ is
 		new.description, new.note
 	);
 
-	return v_cost_item_id;
+	return v_cost_cost_id;
     end new;
 
-    -- Delete a single cost_item (if we know its ID...)
-    procedure del (item_id in integer)
+    -- Delete a single cost (if we know its ID...)
+    procedure del (cost_id in integer)
     is
     begin
-	-- Erase the im_cost_item
-	delete from     im_cost_items
-	where		item_id = del.item_id;
+	-- Erase the im_cost
+	delete from     im_costs
+	where		cost_id = del.cost_id;
 
 	-- Erase the object
-	acs_object.del(del.item_id);
+	acs_object.del(del.cost_id);
     end del;
 
-    function name (item_id in integer) return varchar
+    function name (cost_id in integer) return varchar
     is
 	v_name  varchar(40);
     begin
-	select  item_name
+	select  cost_name
 	into    v_name
-	from    im_cost_items
-	where   item_id = name.item_id;
+	from    im_costs
+	where   cost_id = name.cost_id;
 
 	return v_name;
     end name;
 
-end im_cost_item;
+end im_cost;
 /
 show errors
+
+
+
+-- Create URLs for viewing/editing costs
+delete from im_biz_object_urls where object_type='im_cost';
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_cost','view','/intranet-cost/costs/new?form_mode=display\&cost_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_cost','edit','/intranet-cost/costs/new?form_mode=edit\&cost_id=');
+
+
+
 
 -------------------------------------------------------------
 -- Permissions and Privileges
 --
 begin
-    acs_privilege.create_privilege('view_cost_items','View Cost Items','View Costs');
-    acs_privilege.create_privilege('add_cost_items','View Cost Items','View Costs');
+    acs_privilege.create_privilege('view_costs','View Costs','View Costs');
+    acs_privilege.create_privilege('add_costs','View Costs','View Costs');
 end;
 /
 show errors;
@@ -782,17 +823,17 @@ show errors;
 
 
 BEGIN
-    im_priv_create('view_cost_items','Accounting');
-    im_priv_create('view_cost_items','P/O Admins');
-    im_priv_create('view_cost_items','Senior Managers');
+    im_priv_create('view_costs','Accounting');
+    im_priv_create('view_costs','P/O Admins');
+    im_priv_create('view_costs','Senior Managers');
 END;
 /
 show errors;
 
 BEGIN
-    im_priv_create('add_cost_items','Accounting');
-    im_priv_create('add_cost_items','P/O Admins');
-    im_priv_create('add_cost_items','Senior Managers');
+    im_priv_create('add_costs','Accounting');
+    im_priv_create('add_costs','P/O Admins');
+    im_priv_create('add_costs','Senior Managers');
 END;
 /
 show errors;
@@ -864,8 +905,8 @@ begin
     -- needs to be the first submenu in order to get selected
     v_menu := im_menu.new (
 	package_name =>	'intranet-cost',
-	label =>	'cost_items',
-	name =>		'Cost Items',
+	label =>	'costs',
+	name =>		'Costs',
 	url =>		'/intranet-cost/index',
 	sort_order =>	80,
 	parent_menu_id => v_finance_menu
@@ -878,8 +919,8 @@ end;
 commit;
 
 
-prompt *** intranet-costs: Create New Cost Item menus
--- Setup the "New Cost Item" menu for /intranet-cost/index
+prompt *** intranet-costs: Create New Cost menus
+-- Setup the "New Cost" menu for /intranet-cost/index
 --
 declare
 	-- Menu IDs
@@ -905,13 +946,13 @@ begin
     select menu_id
     into v_invoices_new_menu
     from im_menus
-    where label='cost_items';
+    where label='costs';
 
     v_finance_menu := im_menu.new (
 	package_name =>	'intranet-cost',
-	label =>	'cost_new_item',
-	name =>		'New Cost Item',
-	url =>		'/intranet-cost/cost-items/new',
+	label =>	'cost_new',
+	name =>		'New Cost',
+	url =>		'/intranet-cost/costs/new',
 	sort_order =>	10,
 	parent_menu_id => v_invoices_new_menu
     );
@@ -931,54 +972,142 @@ commit;
 -- Cost Views
 --
 insert into im_views (view_id, view_name, visible_for)
-values (220, 'cost_item_list', 'view_finance');
+values (220, 'cost_list', 'view_finance');
 insert into im_views (view_id, view_name, visible_for)
-values (221, 'cost_item_new', 'view_finance');
+values (221, 'cost_new', 'view_finance');
 
--- Cost Item List Page
+-- Cost List Page
 --
 delete from im_view_columns where column_id > 22000 and column_id < 22099;
 --
-insert into im_view_columns values (22001,220,NULL,'Name',
-'"<A HREF=${item_url}$item_id>[string range $item_name 0 30]</A>"',
-'','',1,'');
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (22001,220,'Name',
+'"<A HREF=${cost_url}$cost_id>[string range $cost_name 0 30]</A>"',1);
 
-insert into im_view_columns values (22003,220,NULL,'Type',
-'$object_type_pretty_name','','',3,'');
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (22003,220,'Type','$object_type_pretty_name',3);
 
-insert into im_view_columns values (22005,220,NULL,'Project',
-'"<A HREF=/intranet/projects/view?project_id=$project_id>$project_nr</A>"',
-'','',5,'');
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (22005,220,'Project',
+'"<A HREF=/intranet/projects/view?project_id=$project_id>$project_nr</A>"',5);
 
-insert into im_view_columns values (22007,220,NULL,'Provider',
-'"<A HREF=/intranet/customers/view?customer_id=$provider_id>$provider_name</A>"',
-'','',7,'');
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (22007,220,'Provider',
+'"<A HREF=/intranet/customers/view?customer_id=$provider_id>$provider_name</A>"',7);
 
-insert into im_view_columns values (22011,220,NULL,'Client',
-'"<A HREF=/intranet/customers/view?customer_id=$customer_id>$customer_name</A>"',
-'','',11,'');
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (22011,220,'Client',
+'"<A HREF=/intranet/customers/view?customer_id=$customer_id>$customer_name</A>"',11);
 
-insert into im_view_columns values (22015,220,NULL,'Due Date',
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (22015,220,'Due Date',
 '[if {$overdue > 0} {
-        set t "<font color=red>$due_date_calculated</font>"
+	set t "<font color=red>$due_date_calculated</font>"
 } else {
-        set t "$due_date_calculated"
-}]','','',15,'');
+	set t "$due_date_calculated"
+}]',15);
 
-insert into im_view_columns values (22021,220,NULL,'Amount',
-'$amount_formatted $currency','','',21,'');
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (22021,220,'Amount','$amount_formatted $currency',21);
 
--- insert into im_view_columns values (22013,220,NULL,'Paid',
--- '$payment_amount $payment_currency','','',13,'');
+-- insert into im_view_columns values (22013,220,'Paid',
+-- '$payment_amount $payment_currency',13);
 
-insert into im_view_columns values (22025,220,NULL,'Status',
-'[im_cost_item_status_select "item_status.$item_id" $item_status_id]','','',25,'');
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (22025,220,'Status',
+'[im_cost_status_select "cost_status.$cost_id" $cost_status_id]',25);
 
--- insert into im_view_columns values (22098,220,NULL,'Del',
+-- insert into im_view_columns values (22098,220,'Del',
 -- '[if {[string equal "" $payment_amount]} {
---         set ttt "<input type=checkbox name=del_cost_item value=$item_id>"
--- }]','','',99,'');
+--	 set ttt "<input type=checkbox name=del_cost value=$cost_id>"
+-- }]',99);
 
-insert into im_view_columns values (22098,220,NULL,'Del',
-'<input type=checkbox name=del_cost_item value=$item_id>','','',99,'');
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (22098,220,'Del',
+'<input type=checkbox name=del_cost value=$cost_id>',99);
 commit;
+
+
+-------------------------------------------------------------
+-- Repeating Costs
+--
+-- These items generate a new cost every month that they
+-- are active.
+-- This item is used for diverse types of repeating costs
+-- such as employees salaries, rent and utilities costs and
+-- investment amortization, so it is kind of "aggregated"
+-- to those objects.
+
+prompt *** intranet-costs: Creating im_repeating_costs
+create table im_repeating_costs (
+	cost_id			integer
+				constraint im_rep_costs_id_pk
+				primary key
+				constraint im_rep_costs_id_fk
+				references acs_objects,
+	cost_name		varchar(400),
+				-- who pays?
+	customer_id		integer
+				constraint im_rep_costs_customer_fk
+				references acs_objects,
+				-- who gets paid?
+	provider_id		integer
+				constraint im_rep_costs_provider_fk
+				references acs_objects,
+	cost_center_id		integer not null
+				constraint im_rep_costs_centers_fk
+				references im_cost_centers,
+	start_date		date 
+				constraint im_rep_costs_start_date_nn
+				not null,
+	end_date		date default '2099-12-31'
+				constraint im_rep_costs_end_date_nn
+				not null,
+	amount			number(12,3),
+	currency		char(3)
+				constraint im_rep_costs_currency_fk
+				references currency_codes,
+	description		varchar(4000),
+	note			varchar(4000),
+		constraint im_rep_costs_start_end_date
+		check(start_date < end_date)
+);
+
+
+
+-------------------------------------------------------------
+-- Price List
+--
+-- Several objects expose a changing price over time,
+-- such as employees (salary), rent, aDSL line etc.
+-- However, we don't want to modify the price for
+-- every month when generating monthly costs,
+-- so it may be better to record the changing price
+-- over time.
+-- This object determines the price for an object
+-- based on a start_date - end_date range.
+-- End_date is kind of redundant, because it could
+-- be deduced from the start_date of the next cost,
+-- but that way we would need a max(...) query to
+-- determine a current price which might be very slow.
+---
+prompt *** intranet-costs: Creating im_prices
+create table im_prices (
+	object_id		integer
+				constraint im_prices_object_fk
+				references acs_objects,
+	attribute		varchar(100)
+				constraint im_prices_attribute_nn
+				not null,
+	start_date		date,
+	end_date		date default '2099-12-31',
+	amount			number(12,3),
+	currency		char(3)
+				constraint im_prices_currency_fk
+				references currency_codes(iso),
+		primary key (object_id, attribute, currency)
+);
+
+alter table im_prices
+add constraint im_prices_start_end_ck
+check(start_date < end_date);
