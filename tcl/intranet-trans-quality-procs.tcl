@@ -334,19 +334,28 @@ where
 	# -4 to +4 on a logaritmic scale.
 	# 0 means it's meeting the allowed error points
 	set rel_quality [im_transq_rel_quality $allowed_error_percentage $sample_size $total_errors]
+
+	# avoid negative numbers, because they give an "unknown option -1" error: 
+	# => -4 -> "6"
+	#
+	if {$rel_quality < 0} {
+	    set rel_quality [expr 10+$rel_quality]
+	}
 	switch $rel_quality {
-	    -4 { incr n4 }
-	    -3 { incr n3 }
-	    -2 { incr n2 }
-	    -1 { incr n1 }
 	    0 { incr p0}
 	    1 { incr p1}
 	    2 { incr p2}
 	    3 { incr p3}
 	    4 { incr p4}
+
+	    6 { incr n4 }
+	    7 { incr n3 }
+	    8 { incr n2 }
+	    9 { incr n1 }
 	}
     }
     set sum [expr $n4 + $n3 + $n2 + $n1 + $p0 + $p1 + $p2 + $p3 + $p4]
+
     set height 94
     set width 28
 
