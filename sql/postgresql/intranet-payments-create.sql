@@ -65,30 +65,18 @@ create index im_proj_payments_cost_id_idx on im_payments(cost_id);
 -- Permissions and Privileges
 --
 
--- begin
-    select acs_privilege__create_privilege('view_payments','View Payments','View Payments');
-    select acs_privilege__create_privilege('add_payments','View Payments','View Payments');
--- end;
+select acs_privilege__create_privilege('view_payments','View Payments','View Payments');
+select acs_privilege__add_child('admin', 'view_payments');
+select im_priv_create('view_payments','Accounting');
+select im_priv_create('view_payments','P/O Admins');
+select im_priv_create('view_payments','Senior Managers');
 
--- show errors;
+select acs_privilege__create_privilege('add_payments','View Payments','View Payments');
+select acs_privilege__add_child('admin', 'add_payments');
+select im_priv_create('add_payments','Accounting');
+select im_priv_create('add_payments','P/O Admins');
+select im_priv_create('add_payments','Senior Managers');
 
-
-
--- BEGIN
-    select im_priv_create('view_payments','Accounting');
-    select im_priv_create('view_payments','P/O Admins');
-    select im_priv_create('view_payments','Senior Managers');
--- END;
-
--- show errors;
-
--- BEGIN
-    select im_priv_create('add_payments','Accounting');
-    select im_priv_create('add_payments','P/O Admins');
-    select im_priv_create('add_payments','Senior Managers');
--- END;
-
--- show errors;
 
 
 ------------------------------------------------------
@@ -171,10 +159,8 @@ where category_type = 'Intranet Invoice Payment Method';
 -- Add a "New Payments" item into the Costs submenu
 ------------------------------------------------------
 
--- BEGIN
-    select im_component_plugin__del_module('intranet-payments');
-    select im_menu__del_module('intranet-payments');
--- END;
+select im_component_plugin__del_module('intranet-payments');
+select im_menu__del_module('intranet-payments');
 
 create or replace function inline_0 ()
 returns integer as '
