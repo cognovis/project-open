@@ -58,9 +58,9 @@ begin
         sort_order =>   90,
         component_tcl => 
 	'im_filestorage_user_component \
+		$current_user_id \
 		$user_id \
-		$project_id \
-		$project_name \
+		$name \
 		$return_url'
     );
 
