@@ -40,6 +40,20 @@ ad_proc intranet_home_download {} { intranet_download "home" }
 ad_proc intranet_zip_download {} { intranet_download "zip" }
 
 
+ad_proc -public im_package_filestorage_id {} {
+    Returns the package id of the intranet-filestorage module
+} {
+    return [util_memoize "im_package_filestorage_id_helper"]
+}
+
+ad_proc -private im_package_filestorage_id_helper {} {
+    return [db_string im_package_core_id {
+        select package_id from apm_packages
+        where package_key = 'intranet-filestorage'
+    } -default 0]
+}
+
+
 ad_proc -public im_filestorage_find_cmd {} {
     Returns the Unix/Linux/CygWin find command as specified in the
     intranet-core.FindCmd command
@@ -335,21 +349,13 @@ ad_proc im_filestorage_zip_path { } {
     return "/tmp"
 }
 
-ad_proc im_filestorage_home_path { } {
-    Determine the location where global company files
-    are stored on the hard disk 
-} {
-    return [util_memoize "im_filestorage_home_path_helper"]
-}
 
-ad_proc im_filestorage_home_path_helper { } {
+ad_proc im_filestorage_home_path { } {
     Helper to determine the location where global company files
     are stored on the hard disk 
 } {
-    set package_key "intranet-filestorage"
-    set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
+    set package_id [im_package_filestorage_id]
     set base_path_unix [parameter::get -package_id $package_id -parameter "HomeBasePathUnix" -default "/tmp/home"]
-    ns_log Notice "im_filestorage_home_path: base_path_unix=$base_path_unix"
     return "$base_path_unix"
 }
 
