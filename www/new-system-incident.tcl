@@ -20,7 +20,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     { error_url:trim}
-    { error_info:trim ""}
+    { error_info:trim,html ""}
     { error_first_names:trim ""}
     { error_last_name:trim ""}
     { error_user_email:trim ""}
