@@ -40,6 +40,7 @@
 --	- propose_budget
 --	- confirm_budget
 
+set escape \
 
 -------------------------------------------------------------
 -- Setup the status and type im_categories
@@ -90,6 +91,10 @@ create table im_cost_centers (
 	cost_center_status_id	integer not null
 				constraint im_cost_centers_status_fk
 				references im_categories,
+				-- Is this a department?
+	department_p		char(1)
+				constraint im_cost_centers_dept_p_ck
+				check(department_p in ('t','f')),
 				-- Where to report costs?
 				-- The toplevel_center has parent_id=null.
 	parent_id		integer 
@@ -106,6 +111,7 @@ create table im_cost_centers (
 );
 create index im_cost_centers_parent_id_idx on im_cost_centers(parent_id);
 create index im_cost_centers_manager_id_idx on im_cost_centers(manager_id);
+
 
 
 prompt *** intranet-costs: Creating im_cost_center
@@ -211,8 +217,16 @@ end im_cost_center;
 show errors
 
 
-prompt *** intranet-costs: Creating Cost Center categories
+-- Create URLs for viewing/editing cost centers
+delete from im_biz_object_urls where object_type='im_cost_center';
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_cost_center','view','/intranet-cost/cost-centers/new?form_mode=display&cost_center_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_cost_center','edit','/intranet-cost/cost-centers/new?form_mode=edit&cost_center_id=');
 
+
+
+prompt *** intranet-costs: Creating Cost Center categories
 -- Intranet Cost Center Type
 delete from im_categories where category_id >= 3000 and category_id < 3100;
 INSERT INTO im_categories VALUES (3001,'Cost Center','','Intranet Cost Center Type',1,'f','');
@@ -376,8 +390,16 @@ create table im_investments (
 );
 
 
-prompt *** intranet-costs: Creating Investment categories
+-- Create URLs for viewing/editing investments
+delete from im_biz_object_urls where object_type='im_investment';
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_investment','view','/intranet-cost/investments/new?form_mode=display&investment_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_investment','edit','/intranet-cost/investments/new?form_mode=edit&investment_id=');
 
+
+
+prompt *** intranet-costs: Creating Investment categories
 -- Intranet Investment Type
 delete from im_categories where category_id >= 3400 and category_id < 3500;
 INSERT INTO im_categories (category_id, category, category_type) 
@@ -498,6 +520,17 @@ create table im_cost_items (
 	description		varchar(4000),
 	note			varchar(4000)
 );
+
+
+-- Create URLs for viewing/editing cost items
+delete from im_biz_object_urls where object_type='im_cost_item';
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_cost_item','view','/intranet-cost/cost-items/new?form_mode=display\&item_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_cost_item','edit','/intranet-cost/cost-items/new?form_mode=edit\&item_id=');
+
+
+
 
 prompt *** intranet-costs: Creating category Cost Item Type
 -- Cost Item Type
@@ -895,35 +928,39 @@ values (221, 'cost_item_new', 'view_finance');
 delete from im_view_columns where column_id > 22000 and column_id < 22099;
 --
 insert into im_view_columns values (22001,220,NULL,'Name',
-'"<A HREF=/intranet-cost/view?item_id=$item_id>[string range $item_name 0 30]</A>"',
+'"<A HREF=${item_url}$item_id>[string range $item_name 0 30]</A>"',
 '','',1,'');
 
 insert into im_view_columns values (22003,220,NULL,'Type',
-'$item_type','','',3,'');
+'$object_type_pretty_name','','',3,'');
 
-insert into im_view_columns values (22004,220,NULL,'Provider',
-'"<A HREF=/intranet/customers/view?customer_id=$provider_id>$provider_name</A>"',
-'','',4,'');
-
-insert into im_view_columns values (22005,220,NULL,'Client',
-'"<A HREF=/intranet/customers/view?customer_id=$customer_id>$customer_name</A>"',
+insert into im_view_columns values (22005,220,NULL,'Project',
+'"<A HREF=/intranet/projects/view?project_id=$project_id>$project_nr</A>"',
 '','',5,'');
 
-insert into im_view_columns values (22007,220,NULL,'Due Date',
+insert into im_view_columns values (22007,220,NULL,'Provider',
+'"<A HREF=/intranet/customers/view?customer_id=$provider_id>$provider_name</A>"',
+'','',7,'');
+
+insert into im_view_columns values (22011,220,NULL,'Client',
+'"<A HREF=/intranet/customers/view?customer_id=$customer_id>$customer_name</A>"',
+'','',11,'');
+
+insert into im_view_columns values (22015,220,NULL,'Due Date',
 '[if {$overdue > 0} {
         set t "<font color=red>$due_date_calculated</font>"
 } else {
         set t "$due_date_calculated"
-}]','','',7,'');
+}]','','',15,'');
 
-insert into im_view_columns values (22011,220,NULL,'Amount',
-'$amount_formatted $currency','','',11,'');
+insert into im_view_columns values (22021,220,NULL,'Amount',
+'$amount_formatted $currency','','',21,'');
 
 -- insert into im_view_columns values (22013,220,NULL,'Paid',
 -- '$payment_amount $payment_currency','','',13,'');
 
-insert into im_view_columns values (22017,220,NULL,'Status',
-'[im_cost_item_status_select "item_status.$item_id" $item_status_id]','','',17,'');
+insert into im_view_columns values (22025,220,NULL,'Status',
+'[im_cost_item_status_select "item_status.$item_id" $item_status_id]','','',25,'');
 
 -- insert into im_view_columns values (22098,220,NULL,'Del',
 -- '[if {[string equal "" $payment_amount]} {

@@ -37,15 +37,15 @@ ad_proc -public im_payment_method_undefined {} { return 800 }
 ad_proc -public im_payment_method_cash {} { return 802 }
 
 
-ad_proc -public im_package_cost_items_id { } {
+ad_proc -public im_package_cost_id { } {
 } {
-    return [util_memoize "im_package_cost_items_id_helper"]
+    return [util_memoize "im_package_cost_id_helper"]
 }
 
-ad_proc -private im_package_cost_items_id_helper {} {
+ad_proc -private im_package_cost_id_helper {} {
     return [db_string im_package_core_id {
         select package_id from apm_packages
-        where package_key = 'intranet-cost_items'
+        where package_key = 'intranet-cost'
     } -default 0]
 }
 
