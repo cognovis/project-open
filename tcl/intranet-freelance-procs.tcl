@@ -52,7 +52,7 @@ ad_proc -public im_freelance_permissions { current_user_id user_id view_var read
     set current_user_is_employee_p [im_user_is_employee_p $current_user_id]
     set current_user_admin_p [expr $current_user_is_admin_p || $current_user_is_wheel_p]
 
-    set user_is_customer_p [ad_user_group_member [im_customer_group_id] $user_id]
+    set user_is_company_p [ad_user_group_member [im_company_group_id] $user_id]
     set user_is_freelance_p [ad_user_group_member [im_freelance_group_id] $user_id]
     set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
     set user_is_wheel_p [ad_user_group_member [im_wheel_group_id] $user_id]
@@ -62,7 +62,7 @@ ad_proc -public im_freelance_permissions { current_user_id user_id view_var read
     set user_type "none"
     if {$user_is_freelance_p} { set user_type "freelance" }
     if {$user_is_employee_p} { set user_type "employee" }
-    if {$user_is_customer_p} { set user_type "customer" }
+    if {$user_is_company_p} { set user_type "company" }
     if {$user_is_wheel_p} { set user_type "wheel" }
     if {$user_is_admin_p} { set user_type "admin" }
 
