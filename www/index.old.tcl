@@ -68,7 +68,7 @@ $payment_text
 
 
 set page_title "Payments for $project_name"
-set context_bar [ad_context_bar [list "[im_url_stub]/projects/" "Projects"] [list "[im_url_stub]/projects/view?[export_url_vars group_id]" $project_name] "Payments"]
+set context_bar [im_context_bar [list "[im_url_stub]/projects/" "Projects"] [list "[im_url_stub]/projects/view?[export_url_vars group_id]" $project_name] "Payments"]
 
 doc_return  200 text/html "
 [im_header]
