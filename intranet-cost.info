@@ -22,7 +22,7 @@
         </callbacks>
         <parameters>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultCurrency"  default="EUR" description="Default currency used in various forms"/>
-            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="DefaultCustomerInvoicePaymentDays"  default="30" description="Default value for payment days of Customer Invoices"/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="DefaultCompanyInvoicePaymentDays"  default="30" description="Default value for payment days of Company Invoices"/>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="DefaultProviderBillPaymentDays"  default="60" description="Default value for payment to providers"/>
         </parameters>
 

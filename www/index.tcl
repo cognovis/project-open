@@ -12,7 +12,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     { project_id 0 }
-    { customer_id 0 }
+    { company_id 0 }
 }
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "Finance Home"
@@ -36,7 +36,7 @@ set ctr 0
 db_foreach menu_select $menu_select_sql {
 
     ns_log Notice "im_sub_navbar: menu_name='$name'"
-    if {$customer_id} { append url "&customer_id=$customer_id" }
+    if {$company_id} { append url "&company_id=$company_id" }
     if {$project_id} { append url "&project_id=$project_id" }
     append new_list_html "<li><a href=\"$url\">$name</a></li>\n"
 }

@@ -12,7 +12,7 @@
     <H2>@page_title;noquote@</H2>
 
     This is the homepage of the "Financial Area". Here you can
-    find and enter all information about customers, projects
+    find and enter all information about companies, projects
     and users.
 
     <h5>Documentation:</h5>
