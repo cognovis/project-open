@@ -91,7 +91,7 @@ from
 	im_costs ci
 where
 	p.cost_id = ci.cost_id(+)
-	and ci.company_id = cus.company_id(+)
+	and ci.customer_id = cus.company_id(+)
 	and ci.provider_id = pro.company_id(+)
 	and p.payment_id = :payment_id
 "
