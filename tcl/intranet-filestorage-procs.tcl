@@ -263,19 +263,20 @@ ad_proc im_filestorage_folder_perms {folder_path top_folder folder_type user_id 
 }
 
 
-ad_proc im_filestorage_home_component { user_id current_url_without_vars return_url bind_vars } {
+ad_proc im_filestorage_home_component { user_id } {
     Filestorage for projects
 } {
     set base_path [im_filestorage_home_path]
-    set object_id 2345
     set object_name "Home"
     set folder_type "home"
+    set object_id 0
+    set return_url "/intranet/"
 
-    #return [im_filestorage_base_component $user_id 0 $home_path "Home" $folder_type $return_url]
+    set home_path [im_filestorage_home_path]
 
-    set base_path [im_filestorage_project_path 2346]
+    return [im_filestorage_base_component $user_id $object_id $home_path $object_name $folder_type $return_url]
 
-    return [im_filestorage_pol_component $user_id $object_id $object_name $base_path $folder_type $current_url_without_vars $bind_vars]
+    # return [im_filestorage_pol_component $user_id $object_id $object_name $base_path $folder_type $current_url_without_vars $bind_vars]
 }
 
 

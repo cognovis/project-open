@@ -44,45 +44,42 @@ begin
 	-- Set the filestorage to the very end.
 	--
 	v_plugin := im_component_plugin.new (
-	plugin_name =>	'Home Filestorage Component',
-	package_name =>	'intranet-filestorage',
-	page_url =>	 '/intranet/index',
-	location =>	 'bottom',
-	sort_order =>   90,
-	component_tcl => 
-	'im_filestorage_home_component \
-		$user_id \
-		$return_url'
+		plugin_name =>	'Home Filestorage Component',
+		package_name =>	'intranet-filestorage',
+		page_url =>	 '/intranet/index',
+		location =>	 'bottom',
+		sort_order =>   90,
+		component_tcl => 
+		'im_filestorage_home_component $user_id'
 	);
 
 	v_plugin := im_component_plugin.new (
-	plugin_name =>	'Users Filestorage Component',
-	package_name =>	'intranet-filestorage',
-	page_url =>	 '/intranet/users/view',
-	location =>	 'bottom',
-	sort_order =>   90,
-	component_tcl => 
-	'im_filestorage_user_component \
-		$current_user_id \
-		$user_id \
-		$name \
-		$return_url'
+		plugin_name =>	'Users Filestorage Component',
+		package_name =>	'intranet-filestorage',
+		page_url =>	 '/intranet/users/view',
+		location =>	 'bottom',
+		sort_order =>   90,
+		component_tcl => 
+		'im_filestorage_user_component \
+			$current_user_id \
+			$user_id \
+			$name \
+			$return_url'
 	);
 
 	v_plugin := im_component_plugin.new (
-	plugin_name =>	'Customers Filestorage Component',
-	package_name =>	'intranet-filestorage',
-	page_url =>	 '/intranet/customers/view',
-	location =>	 'right',
-	sort_order =>   50,
-	component_tcl => 
-	'im_filestorage_customer_component \
-		$user_id \
-		$customer_id \
-		$customer_name \
-		$return_url'
+		plugin_name =>	'Customers Filestorage Component',
+		package_name =>	'intranet-filestorage',
+		page_url =>	 '/intranet/customers/view',
+		location =>	 'right',
+		sort_order =>   50,
+		component_tcl => 
+		'im_filestorage_customer_component \
+			$user_id \
+			$customer_id \
+			$customer_name \
+			$return_url'
 	);
-
 end;
 /
 show errors
