@@ -142,7 +142,7 @@ if {!$done && $topic_id == 0} {
     set owner_id $current_user_id
     set asignee_id ""
     set due_date $todays_date
-    set topic_type [db_string topic_sql "select category from categories where category_id=:topic_type_id" -default ""]
+    set topic_type [db_string topic_sql "select category from im_categories where category_id=:topic_type_id" -default ""]
 
     set submit_action "New $topic_type"
     set page_title "New $topic_type"
@@ -219,8 +219,8 @@ from
 	users ou,
 	users au,
 	im_projects ug,
-	categories ftc,
-	categories sc
+	im_categories ftc,
+	im_categories sc
 where
 	t.topic_id=:topic_id
 	and t.topic_id=m.topic_id(+)
@@ -643,8 +643,8 @@ from
 	users ou,
 	users au,
 	im_projects ug,
-	categories ftc,
-	categories fts
+	im_categories ftc,
+	im_categories fts
 where
 	tr.topic_id = t.topic_id
 	and t.owner_id=ou.user_id

@@ -213,7 +213,7 @@ if {$asignee_id != $old_asignee_id} {
     #
     set msg_url "[ad_parameter SystemUrl]"
     append msg_url "/intranet-forum/forum/view?topic_id=$topic_id"
-    set topic_type [db_string topic_type "select category from categories where category_id=:topic_type_id"]
+    set topic_type [db_string topic_type "select category from im_categories where category_id=:topic_type_id"]
     set msg_subject "New $topic_type: $subject"
     im_send_alert $asignee_id "hourly" $msg_url $msg_subject $message
 
@@ -251,7 +251,7 @@ where	m.topic_id=:topic_id
 
         set msg_url "[ad_parameter SystemUrl]"
         append msg_url "/intranet-forum/forum/view?topic_id=$topic_id"
-        set topic_type [db_string topic_type "select category from categories where category_id=:topic_type_id"]
+        set topic_type [db_string topic_type "select category from im_categories where category_id=:topic_type_id"]
         set msg_subject "Closed $topic_type: $subject"
         im_send_alert $asignee_id "hourly" $msg_url $msg_subject $message
     }
@@ -288,7 +288,7 @@ where	m.topic_id=:topic_id
 
         set msg_url "[ad_parameter SystemUrl]"
         append msg_url "/intranet-forum/forum/view?topic_id=$topic_id"
-        set topic_type [db_string topic_type "select category from categories where category_id=:topic_type_id"]
+        set topic_type [db_string topic_type "select category from im_categories where category_id=:topic_type_id"]
         set msg_subject "Accepted $topic_type: $subject"
         im_send_alert $asignee_id "hourly" $msg_url $msg_subject $message
     }

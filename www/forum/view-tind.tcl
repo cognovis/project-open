@@ -57,8 +57,8 @@ from
 	users ou,
 	users au,
 	user_groups ug,
-	categories ftc,
-	categories fts
+	im_categories ftc,
+	im_categories fts
 where
 	tr.topic_id = t.topic_id
 	and t.owner_id=ou.user_id
