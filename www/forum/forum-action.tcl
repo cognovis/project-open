@@ -1,4 +1,9 @@
-# /www/intranet/forum/forum-action.tcl
+# /packages/intranet-forum/www/intranet/forum/forum-action.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
 
 ad_page_contract {
     Purpose: Takes commands from the /intranet/projects/view
@@ -7,6 +12,8 @@ ad_page_contract {
 
     @param return_url the url to return to
     @param group_id group id
+
+    @author frank.bergmann@project-open.com
 } {
     submit
     action

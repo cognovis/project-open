@@ -1,11 +1,15 @@
-# /tcl/intranet-forum.tcl
+# /packages/intranet-forum/tcl/intranet-forum.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
 
 ad_library {
     The intranet forum provides a unified aprearance of 
     Tasks, Incidents, News & Discussions (TIND)
 
-    @author fraber@fraber.de
-    @creation-date 23 September 2003
+    @author frank.bergmann@project-open.com
 }
 
 # ----------------------------------------------------------------------
