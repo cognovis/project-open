@@ -60,9 +60,9 @@ db_0or1row user_full_name "select first_names, last_name from persons where pers
 
 set page_title "$first_names $last_name"
 if {[im_permission $current_user_id view_users]} {
-    set context_bar [ad_context_bar [list /intranet/users/view?user_id=$user_id "$page_title"] "[_ intranet-freelance.Confirmations]"]
+    set context_bar [im_context_bar [list /intranet/users/view?user_id=$user_id "$page_title"] "[_ intranet-freelance.Confirmations]"]
 } else {
-    set context_bar [ad_context_bar $page_title]
+    set context_bar [im_context_bar $page_title]
 }
 
 # use [info exists ] here?
