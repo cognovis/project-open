@@ -183,7 +183,7 @@ Note: <input type=text name=note_for_user.${y},${user_id} maxlength=300><br>"
 }
                                   
 set page_title "$pretty_start_block allocations for employees in $report_group_name"
-set context_bar "[ad_context_bar "Project allocations"]"
+set context_bar "[im_context_bar "Project allocations"]"
    
 set page_body "
 <table width=100% cellpadding=5><tr><td>

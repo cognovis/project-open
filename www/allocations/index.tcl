@@ -261,7 +261,7 @@ db_release_unused_handles
 
 
 set page_title "Allocations for [util_IllustraDatetoPrettyDate $start_block] to [util_IllustraDatetoPrettyDate  $end_block]"
-set context_bar "[ad_context_bar "Project allocations"]"
+set context_bar "[im_context_bar "Project allocations"]"
 
 
 set page_body "

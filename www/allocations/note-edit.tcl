@@ -21,7 +21,7 @@ set note [db_string allocation_note "select note from im_start_blocks
 where start_block = :allocation_note_start_block"]
 
 set page_title  "Edit note for $allocation_note_start_block"
-set context_bar "[ad_context_bar [list "index.tcl" "Project allocations"] "Edit note"]"
+set context_bar "[im_context_bar [list "index.tcl" "Project allocations"] "Edit note"]"
 
 set page_content " 
 <form action=note-edit-2 method=post>
