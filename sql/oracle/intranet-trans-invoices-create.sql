@@ -211,13 +211,6 @@ end im_trans_invoice;
 show errors
 
 
--- Add links to edit im_trans_invoices objects...
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_trans_invoice','view','/intranet-invoices/view?invoice_id=');
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_trans_invoice','edit','/intranet-invoices/new?invoice_id=');
-
-
 ---------------------------------------------------------
 -- Translation Prices
 --
@@ -513,3 +506,6 @@ end;
 commit;
 	
 
+
+@../common/intranet-trans-invoices-create.sql
+@../common/intranet-trans-invoices-backup.sql

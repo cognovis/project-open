@@ -18,6 +18,10 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
     prices for the current company
 } {
 
+    if {![im_permission $user_id view_costs]} {
+        return ""
+    }
+
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
     set price_format "000.000"

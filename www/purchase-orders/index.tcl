@@ -29,6 +29,13 @@ if {"" == $return_url} { set return_url "/intranet/projects/view?project_id=$pro
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 
+if {![im_permission $user_id add_costs]} {
+    ad_return_complaint 1 "<li>You don't have sufficient privileges to view this page"
+    return
+}
+
+
+
 # ---------------------------------------------------------------------
 # Select and format the list of tasks
 # ---------------------------------------------------------------------
