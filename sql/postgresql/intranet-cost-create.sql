@@ -146,15 +146,13 @@ create index im_cost_centers_manager_id_idx on im_cost_centers(manager_id);
 create or replace function im_cost_center__new (
        integer,
        varchar,
-       date,
-       integer
+       timestamptz,
+       integer,
        varchar,
        integer,
-       
        varchar,
        varchar,
        varchar,
-       
        integer,
        integer,
        integer,
@@ -162,21 +160,21 @@ create or replace function im_cost_center__new (
        char,
        varchar,
        varchar)
-returns intger as '
+returns integer as '
 DECLARE
 	p_cost_center_id alias for $1;		-- cost_center_id  default null
 	p_object_type	alias for $2;		-- object_type default ''im_cost_center''
 	p_creation_date	alias for $3;		-- creation_date default now()
-	p_creation_user alias for $4;		-- creation_date default null
+	p_creation_user alias for $4;		-- creation_user default null
 	p_creation_ip	alias for $5;		-- creation_ip default null
 	p_context_id	alias for $6;		-- context_id default null
 	p_cost_center_name alias for $7;	-- cost_center_name
 	p_cost_center_label alias for $8;	-- cost_center_label
 	p_cost_center_code  alias for $9;	-- cost_center_code
-	p_type_id	    alias for $10;	-- cost_center_code
+	p_type_id	    alias for $10;	-- type_id
 	p_status_id	    alias for $11;	-- status_id
 	p_parent_id	    alias for $12;	-- parent_id
-	p_manager_id	    alias for $13;	-- manager_id default
+	p_manager_id	    alias for $13;	-- manager_id default null
 	p_department_p	    alias for $14;	-- department_p default ''t''
 	p_description	    alias for $15;	-- description default null
 	p_note		    alias for $16;	-- note default null
@@ -213,74 +211,15 @@ DECLARE
 end;' language 'plpgsql';
 
 
-    procedure del (cost_center_id in integer);
-    procedure name (cost_center_id in integer);
-end im_cost_center;
-/
-show errors
-
-
-prompt *** intranet-costs: Creating im_cost_center body
-create or replace package body im_cost_center
-is
-    function new (
-	cost_center_id	in integer default null,
-	object_type	in varchar default 'im_cost_center',
-	creation_date	in date default sysdate,
-	creation_user	in integer default null,
-	creation_ip	in varchar default null,
-	context_id	in integer default null,
-	cost_center_name in varchar,
-	cost_center_label in varchar,
-	cost_center_code in varchar,
-	type_id		in integer,
-	status_id	in integer,
-	parent_id	in integer,
-	manager_id	in integer default null,
-	department_p	in char default 't',
-	description	in varchar default null,
-	note		in varchar default null
-    ) return im_cost_centers.cost_center_id%TYPE
-    is
-	v_cost_center_id	im_cost_centers.cost_center_id%TYPE;
-    begin
-	v_cost_center_id := acs_object.new (
-		object_id =>		cost_center_id,
-		object_type =>		object_type,
-		creation_date =>	creation_date,
-		creation_user =>	creation_user,
-		creation_ip =>		creation_ip,
-		context_id =>		context_id
-	);
-
-	insert into im_cost_centers (
-		cost_center_id, 
-		cost_center_name, cost_center_label,
-		cost_center_code,
-		cost_center_type_id, cost_center_status_id, 
-		parent_id, manager_id,
-		department_p,
-		description, note
-	) values (
-		new.v_cost_center_id, 
-		new.cost_center_name, new.cost_center_label,
-		new.cost_center_code,
-		new.type_id, new.status_id, 
-		new.parent_id, new.manager_id, 
-		new.department_p,
-		new.description, new.note
-	);
-	return v_cost_center_id;
-    end new;
-
-
-    -- Delete a single cost_center (if we know its ID...)
-    procedure del (cost_center_id in integer)
-    is
+-- Delete a single cost_center (if we know its ID...)
+create or replace function im_cost_center__delete (integer)
+returns integer as '
+DECLARE 
+	p_cost_center_id alias for $1;	-- cost_center_id
 	v_cost_center_id	integer;
-    begin
+begin
 	-- copy the variable to desambiguate the var name
-	v_cost_center_id := cost_center_id;
+	v_cost_center_id := p_cost_center_id;
 
 	-- Erase the im_cost_centers item associated with the id
 	delete from 	im_cost_centers
@@ -291,25 +230,24 @@ is
 	where		object_id = v_cost_center_id;
 
 	-- Finally delete the object iself
-	acs_object.del(v_cost_center_id);
-    end del;
+	acs_object__delete(v_cost_center_id);
+	return 0;
+end;' language 'plpgsql';
 
-
-    procedure name (cost_center_id in integer)
-    is
-	v_name	im_cost_centers.cost_center_name%TYPE;
-    begin
+create or replace function im_cost_center__name (integer)
+returns varchar as '
+DECLARE
+	p_cost_center_id alias for $1;		-- cost_center_id
+	v_name	varchar;
+BEGIN
 	select	cost_center_name
 	into	v_name
 	from	im_cost_centers
-	where	cost_center_id = cost_center_id;
-    end name;
-end im_cost_center;
-/
-show errors
+	where	cost_center_id = p_cost_center_id;
+	return v_name;
+end;' language 'plpgsql';
 
-
-prompt *** intranet-costs: Creating URLs for viewing/editing cost centers
+-- prompt *** intranet-costs: Creating URLs for viewing/editing cost centers
 delete from im_biz_object_urls where object_type='im_cost_center';
 insert into im_biz_object_urls (
 	object_type, 
@@ -331,23 +269,22 @@ insert into im_biz_object_urls (
 );
 
 
-prompt *** intranet-costs: Creating Cost Center categories
+-- prompt *** intranet-costs: Creating Cost Center categories
 -- Intranet Cost Center Type
 delete from im_categories where category_id >= 3000 and category_id < 3100;
-INSERT INTO im_categories VALUES (3001,'Cost Center','','Intranet Cost Center Type',1,'f','');
-INSERT INTO im_categories VALUES (3002,'Profit Center','','Intranet Cost Center Type',1,'f','');
-INSERT INTO im_categories VALUES (3003,'Investment Center','','Intranet Cost Center Type',1,'f','');
-INSERT INTO im_categories VALUES (3004,'Subdepartment','Department without budget responsabilities',
-'Intranet Cost Center Type',1,'f','');
-commit;
+INSERT INTO im_categories (category_id,category,category_type) VALUES (3001,'Cost Center','Intranet Cost Center Type');
+INSERT INTO im_categories (category_id,category,category_type) VALUES (3002,'Profit Center','Intranet Cost Center Type');
+INSERT INTO im_categories (category_id,category,category_type) VALUES (3003,'Investment Center','Intranet Cost Center Type');
+INSERT INTO im_categories (category_id,category,category_type) VALUES (3004,'Subdepartment', 'Intranet Cost Center Type');
+-- commit;
 -- reserved until 3099
 
 
 -- Intranet Cost Center Type
 delete from im_categories where category_id >= 3100 and category_id < 3200;
-INSERT INTO im_categories VALUES (3101,'Active','','Intranet Cost Center Status',1,'f','');
-INSERT INTO im_categories VALUES (3102,'Inactive','','Intranet Cost Center Status',1,'f','');
-commit;
+INSERT INTO im_categories (category_id,category,category_type) VALUES (3101,'Active','Intranet Cost Center Status');
+INSERT INTO im_categories (category_id,category,category_type) VALUES (3102,'Inactive','Intranet Cost Center Status');
+-- commit;
 -- reserved until 3099
 
 
@@ -371,8 +308,10 @@ where
 -- both following a fixed methodology (number project phases).
 
 
-prompt *** intranet-costs: Creating sample cost center configuration
+-- prompt *** intranet-costs: Creating sample cost center configuration
 delete from im_cost_centers;
+create or replace function inline_0 ()
+returns integer as '
 declare
     v_the_company_center	integer;
     v_administrative_center	integer;
@@ -389,17 +328,23 @@ begin
 
     -- The Company itself: Profit Center (3002) with status "Active" (3101)
     -- This should be the only center with parent=null...
-    v_the_company_center := im_cost_center.new (
-	cost_center_name =>	'The Company',
-	cost_center_label =>	'company',
-	cost_center_code =>	'',
-	type_id =>		3002,
-	status_id =>		3101,
-	parent_id => 		null,
-	manager_id =>		null,
-	department_p =>		'f',
-	description =>		'The top level center of the company',
-	note =>			''
+    v_the_company_center := im_cost_center__new (
+	null,			-- cost_centee_id
+	''im_cost_center'',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	''The Company'',	-- cost_center_name
+	''company'',		-- cost_center_label
+	'''',			-- cost_center_code
+	3002,			-- type_id
+	3101,			-- status_id
+	null,			-- parent_id
+	null,			-- manager_id
+	''f'',			-- department_p
+	''The top level center of the company'',  -- description
+	''''			-- note
     );
 
     -- -----------------------------------------------------
@@ -409,84 +354,117 @@ begin
     -- The Administrative Dept.: A typical cost center (3001)
     -- We asume a small company, so there is only one manager 
     -- taking budget control of Finance, Accounting, Legal and 
-    -- HR stuff.'
+    -- HR stuff.
     --
-    v_administrative_center := im_cost_center.new (
-	cost_center_name =>	'Administration',
-	cost_center_label =>	'admin',
-	cost_center_code =>	'Ad',
-	type_id =>	3001,
-	status_id =>	3101,
-	parent_id => 	v_the_company_center,
-	manager_id =>	null,
-	department_p =>		't',
-	description =>	'Administration Cervice Center',
-	note =>		''
+    v_administrative_center := im_cost_center__new (
+	null,			-- cost_centee_id
+	''im_cost_center'',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	''Administration'',	-- cost_center_name
+	''admin'',		-- cost_center_label
+	''Ad'',			-- cost_center_code
+	3001,			-- type_id
+	3101,			-- status_id
+	v_the_company_center,   -- parent_id
+	null,			-- manager_id
+	''t'',			-- department_p
+	''Administration Cervice Center'', -- description
+	''''			-- note
     );
 
     -- Utilities Cost Center (3001)
     --
-    v_utilities_center := im_cost_center.new (
-	cost_center_name =>	'Rent and Utilities',
-	cost_center_label =>	'utilities',
-	cost_center_code =>	'Ut',
-	type_id =>		3001,
-	status_id =>		3101,
-	parent_id => 		v_the_company_center,
-	manager_id =>		null,
-	department_p =>		'f',
-	description =>		'Covers all repetitive costs such as rent, telephone, internet connectivity, ...',
-	note =>			''
+    v_utilities_center := im_cost_center__new (
+	null,			-- cost_centee_id
+	''im_cost_center'',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	''Rent and Utilities'',	-- cost_center_name
+	''utilities'',		-- cost_center_label
+	''Ut'',			-- cost_center_code
+	3001,			-- type_id
+	3101,			-- status_id
+	v_the_company_center,	-- parent_id
+	null,			-- manager_id
+	''f'',			-- department_p
+	''Covers all repetitive costs such as rent, telephone, internet connectivity, ...'', -- description
+	''''			-- note
     );
 
     -- Sales Cost Center (3001)
     --
-    v_sales_center := im_cost_center.new (
-	cost_center_name =>	'Sales',
-	cost_center_label =>	'sales',
-	cost_center_code =>	'Sa',
-	type_id =>		3001,
-	status_id =>		3101,
-	parent_id => 		v_the_company_center,
-	manager_id =>		null,
-	department_p =>		't',
-	description =>		'Records all sales related activities, as oposed to marketing.',
-	note =>			''
+    v_sales_center := im_cost_center__new (
+	null,			-- cost_centee_id
+	''im_cost_center'',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	''Sales'',		-- cost_center_name
+	''sales'',		-- cost_center_label
+	''Sa'',			-- cost_center_code
+	3001,			-- type_id
+	3101,			-- status_id
+	v_the_company_center,	-- parent_id
+	null,			-- manager_id
+	''t'',			-- department_p
+	''Records all sales related activities, as oposed to marketing.'', -- description
+	''''			-- note
     );
 
     -- Marketing Cost Center (3001)
     --
-    v_marketing_center := im_cost_center.new (
-	cost_center_name =>	'Marketing',
-	cost_center_label =>	'marketing',
-	cost_center_code =>	'Ma',
-	type_id =>		3001,
-	status_id =>		3101,
-	parent_id => 		v_the_company_center,
-	manager_id =>		null,
-	department_p =>		't',
-	description =>		'Marketing activities, such as website, promo material, ...',
-	note =>			''
+    v_marketing_center := im_cost_center__new (
+	null,			-- cost_centee_id
+	''im_cost_center'',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	''Marketing'',		-- cost_center_name
+	''marketing'',		-- cost_center_label
+	''Ma'',			-- cost_center_code
+	3001,			-- type_id
+	3101,			-- status_id
+	v_the_company_center,	-- parent_id
+	null,			-- manager_id
+	''t'',			-- department_p
+	''Marketing activities, such as website, promo material, ...'', -- description
+	''''			-- note
     );
 
     -- Project Operations Cost Center (3001)
     --
-    v_projects_center := im_cost_center.new (
-	cost_center_name =>	'Operations',
-	cost_center_label =>	'operations',
-	cost_center_code =>	'Op',
-	type_id =>		3001,
-	status_id =>		3101,
-	parent_id => 		v_the_company_center,
-	manager_id =>		null,
-	department_p =>		't',
-	description =>		'Covers all phases of project-oriented execution activities..',
-	note =>			''
+    v_projects_center := im_cost_center__new (
+	null,			-- cost_centee_id
+	''im_cost_center'',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	''Operations'',		-- cost_center_name
+	''operations'',		-- cost_center_label
+	''Op'',			-- cost_center_code
+	3001,			-- type_id
+	3101,			-- status_id
+	v_the_company_center,	-- parent_id
+	null,			-- manager_id
+	''t'',			-- department_p
+	''Covers all phases of project-oriented execution activities..'', -- description
+	''''		        -- note
     );
+    return 0;
+end;' language 'plpgsql';
 
-end;
-/
-show errors
+select inline_0 ();
+
+drop function inline_0 ();
+-- show errors
 
 
 
@@ -503,7 +481,7 @@ show errors
 -- investment amortization, so it is kind of "aggregated"
 -- to those objects.
 
-prompt *** intranet-costs: Creating im_repeating_costs
+-- prompt *** intranet-costs: Creating im_repeating_costs
 create table im_repeating_costs (
 	cost_id			integer
 				constraint im_rep_costs_id_pk
@@ -528,14 +506,14 @@ create table im_repeating_costs (
 	end_date		date default '2099-12-31'
 				constraint im_rep_costs_end_date_nn
 				not null,
-	amount			number(12,3),
+	amount			numeric(12,3),
 	currency		char(3)
 				constraint im_rep_costs_currency_fk
 				references currency_codes,
 	description		varchar(4000),
 	note			varchar(4000),
 		constraint im_rep_costs_start_end_date
-		check(start_date < end_date)
+		check (start_date < end_date)
 );
 
 
@@ -556,7 +534,7 @@ create table im_repeating_costs (
 -- but that way we would need a max(...) query to
 -- determine a current price which might be very slow.
 ---
-prompt *** intranet-costs: Creating im_prices
+-- prompt *** intranet-costs: Creating im_prices
 create table im_prices (
 	object_id		integer
 				constraint im_prices_object_fk
@@ -566,7 +544,7 @@ create table im_prices (
 				not null,
 	start_date		date,
 	end_date		date default '2099-12-31',
-	amount			number(12,3),
+	amount			numeric(12,3),
 	currency		char(3)
 				constraint im_prices_currency_fk
 				references currency_codes(iso),
@@ -611,25 +589,33 @@ create table im_investments (
 
 
 
-prompt *** intranet-costs: Creating im_cost packages
+-- prompt *** intranet-costs: Creating im_cost packages
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_object_type	integer;
 begin
-    acs_object_type.create_type (
-        supertype =>            'acs_object',
-        object_type =>          'im_investment',
-        pretty_name =>          'Investment',
-        pretty_plural =>        'Investments',
-        table_name =>           'im_investments',
-        id_column =>            'investment_id',
-        package_name =>         'im_investment',
-        type_extension_table => null,
-        name_method =>          'im_investment.name'
+    v_object_type := acs_object_type__create_type (
+        ''im_investment'',	-- object_type
+        ''Investment'',		-- pretty_name
+        ''Investments'',	-- pretty_plural
+	''acs_object'',		-- supertype  
+        ''im_investments'',	-- table_name
+        ''investment_id'',	-- id_column
+        ''im_investment'',	-- package_name
+	''f'',			-- abstract_p
+        null,			-- type_extension_table
+        ''im_investment__name'' -- name_method
     );
-end;
-/
-show errors
+    return 0;
+end;' language 'plpgsql';
+
+select inline_0 ();
+
+drop function inline_0 ();
 
 
-prompt *** intranet-costs: Creating URLs for viewing/editing investments
+-- prompt *** intranet-costs: Creating URLs for viewing/editing investments
 delete from im_biz_object_urls where object_type='im_investment';
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_investment','view','/intranet-cost/investments/new?form_mode=display\&investment_id=');
@@ -637,7 +623,7 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_investment','edit','/intranet-cost/investments/new?form_mode=edit\&investment_id=');
 
 
-prompt *** intranet-costs: Creating Investment categories
+-- prompt *** intranet-costs: Creating Investment categories
 -- Intranet Investment Type
 delete from im_categories where category_id >= 3400 and category_id < 3500;
 INSERT INTO im_categories (category_id, category, category_type) 
@@ -648,7 +634,7 @@ INSERT INTO im_categories (category_id, category, category_type)
 VALUES (3405,'Computer Software','Intranet Investment Type');
 INSERT INTO im_categories (category_id, category, category_type) 
 VALUES (3407,'Office Furniture','Intranet Investment Type');
-commit;
+-- commit;
 -- reserved until 3499
 
 -- Intranet Investment Status
@@ -659,7 +645,7 @@ INSERT INTO im_categories (category_id, category, category_type, category_descri
 VALUES (3503,'Deleted','Intranet Investment Status','Deleted - was an error');
 INSERT INTO im_categories (category_id, category, category_type, category_description) 
 VALUES (3505,'Amortized','Intranet Investment Status','No remaining book value');
-commit;
+-- commit;
 -- reserved until 3599
 
 
@@ -684,24 +670,32 @@ commit;
 -- company in the case of travel costs.
 --
 
-prompt *** intranet-costs: Creating im_costs
+-- prompt *** intranet-costs: Creating im_costs
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_object_type	integer;
 begin
-    acs_object_type.create_type (
-	supertype =>		'acs_object',
-	object_type =>		'im_cost',
-	pretty_name =>		'Cost',
-	pretty_plural =>	'Costs',
-	table_name =>		'im_costs',
-	id_column =>		'cost_id',
-	package_name =>		'im_costs',
-	type_extension_table =>	null,
-	name_method =>		'im_costs.name'
+    v_object_type := acs_object_type__create_type (
+	''im_cost'',		-- object_type
+	''Cost'',		-- pretty_name
+	''Costs'',		-- pretty_plural
+	''acs_object'',		-- supertype
+	''im_costs'',		-- table_name
+	''cost_id'',		-- id_column
+	''im_costs'',		-- package_name
+	''f'',			-- abstract_p
+	null,			-- type_extension_table
+	''im_costs.name''	-- name_method
     );
-end;
-/
-show errors
+    return 0;
+end;' language 'plpgsql';
 
-prompt *** intranet-costs: Creating im_costs
+select inline_0 ();
+
+drop function inline_0 ();
+
+-- prompt *** intranet-costs: Creating im_costs
 create table im_costs (
 	cost_id			integer
 				constraint im_costs_pk
@@ -752,27 +746,27 @@ create table im_costs (
 				references im_categories,
 	-- when does the invoice start to be valid?
 	-- due_date is effective_date + payment_days.
-	effective_date		date,
+	effective_date		timestamptz,
 	-- start_blocks are the first days every month. This allows
 	-- for fast monthly grouping
-	start_block		date
+	start_block		timestamptz
 				constraint im_costs_startblck_fk
 				references im_start_months,
 	payment_days		integer,
 	-- amount=null means calculated amount, for example
 	-- with an invoice
-	amount			number(12,3),
+	amount			numeric(12,3),
 	currency		char(3) 
 				constraint im_costs_currency_fk
 				references currency_codes(iso),
-	paid_amount		number(12,3),
+	paid_amount		numeric(12,3),
 	paid_currency		char(3) 
 				constraint im_costs_paid_currency_fk
 				references currency_codes(iso),
 	-- % of total price is VAT
-	vat			number(12,5),
+	vat			numeric(12,5),
 	-- % of total price is TAX
-	tax			number(12,5),
+	tax			numeric(12,5),
 	-- Classification of variable against fixed costs
 	variable_cost_p		char(1)
 				constraint im_costs_var_ck
@@ -800,7 +794,7 @@ create table im_costs (
 	note			varchar(4000)
 );
 
-
+-- continue here 
 -------------------------------------------------------------
 -- Cost Object Packages
 --
@@ -828,7 +822,7 @@ is
 
 	effective_date		in date default sysdate,
 	payment_days		in integer default 30,
-	amount			number default null,
+	amount			numeric default null,
 	currency		in char default 'EUR',
 	vat			in number default 0,
 	tax			in number default 0,
