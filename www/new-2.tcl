@@ -400,8 +400,7 @@ set stakeholder_sql "
 select	user_id as stakeholder_id
 from	im_forum_topic_user_map m
 where	m.topic_id=:topic_id
-	and receive_updates <> 'none'
-"
+	and receive_updates <> 'none'"
 
 db_foreach update_stakeholders $stakeholder_sql {
 
@@ -409,8 +408,7 @@ db_foreach update_stakeholders $stakeholder_sql {
 #    if {[string compare $receive_updates "none"]} { continue }
 #    if {$importance < 2 && [string compare $receive_updates "major"]} { continue }
 
-    im_send_alert $stakeholder_id "hourly" $msg_url $subject $message
-
+    im_send_alert $stakeholder_id "hourly" $subject "$msg_url\n\n$message"
 }
 
 db_release_unused_handles 

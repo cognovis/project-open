@@ -241,7 +241,7 @@ where	m.topic_id=:topic_id
         append msg_url "/intranet-forum/view?topic_id=$topic_id"
         set topic_type [db_string topic_type "select category from im_categories where category_id=:topic_type_id"]
         set msg_subject "Closed $topic_type: $subject"
-        im_send_alert $asignee_id "hourly" $msg_url $msg_subject $message
+        im_send_alert $asignee_id "hourly" $msg_subject "msg_url\n\n$message"
     }
 }
 
@@ -278,7 +278,7 @@ where	m.topic_id=:topic_id
         append msg_url "/intranet-forum/view?topic_id=$topic_id"
         set topic_type [db_string topic_type "select category from im_categories where category_id=:topic_type_id"]
         set msg_subject "Accepted $topic_type: $subject"
-        im_send_alert $asignee_id "hourly" $msg_url $msg_subject $message
+        im_send_alert $asignee_id "hourly" $msg_subject "$msg_url\n\n$message"
     }
 }
 
