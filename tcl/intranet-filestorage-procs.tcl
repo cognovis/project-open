@@ -294,6 +294,15 @@ ad_proc im_filestorage_project_component { user_id project_id project_name retur
     return [im_filestorage_base_component $user_id $project_id $object_name $project_path $folder_type]
 }
 
+ad_proc im_filestorage_project_sales_component { user_id project_id project_name return_url} {
+    Filestorage for projects
+} {
+    set project_path [im_filestorage_project_sales_path $project_id]
+    set folder_type "project"
+    set object_name "Project"
+    return [im_filestorage_base_component $user_id $project_id $object_name $project_path $folder_type]
+}
+
 ad_proc im_filestorage_customer_component { user_id customer_id customer_name return_url} {
     Filestorage for customers
 } {
@@ -351,6 +360,53 @@ ad_proc im_filestorage_project_path_helper { project_id } {
     set package_key "intranet-filestorage"
     set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
     set base_path_unix [parameter::get -package_id $package_id -parameter "ProjectBasePathUnix" -default "/tmp/projects"]
+
+    # Return a demo path for all project, clients etc.
+    if {[string equal "true" [ad_parameter "TestDemoDevServer" "" "false"]]} {
+	set path [ad_parameter "TestDemoDevPath" intranet "internal/demo"]
+	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
+	return "$base_path_unix/$path"
+    }
+
+    set query "
+select
+	p.project_nr,
+	p.project_path,
+	p.project_name,
+	c.customer_path
+from
+	im_projects p,
+	im_customers c
+where
+	p.project_id=:project_id
+	and p.customer_id=c.customer_id(+)
+"
+
+    if { ![db_0or1row projects_info_query $query] } {
+	ad_return_complaint 1 "Can't find the project with group 
+	id of $project_id"
+	return
+    }
+
+    return "$base_path_unix/$customer_path/$project_path"
+}
+
+
+ad_proc im_filestorage_project_sales_path { project_id } {
+    Determine the location where the project files
+    are stored on the hard disk for this project
+} {
+#    return [util_memoize "im_filestorage_project_sales_path_helper $project_id"]
+    return [im_filestorage_project_sales_path_helper $project_id]
+}
+
+ad_proc im_filestorage_project_sales_path_helper { project_id } {
+    Determine the location where the project files
+    are stored on the hard disk for this project
+} {
+    set package_key "intranet-filestorage"
+    set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
+    set base_path_unix [parameter::get -package_id $package_id -parameter "ProjectSalesBasePathUnix" -default "/tmp/project_sales"]
 
     # Return a demo path for all project, clients etc.
     if {[string equal "true" [ad_parameter "TestDemoDevServer" "" "false"]]} {
