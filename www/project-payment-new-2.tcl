@@ -108,13 +108,14 @@ To view online: [im_url]/payments/index?[export_url_vars group_id]
 
 "
 
+# ToDo: No BillingGroupShortName
+
 db_foreach people_to_notify \
 	"select email, first_names, last_name 
          from users, user_group_map
          where users.user_id = user_group_map.user_id 
          and group_id = (select group_id from user_groups 
-                         where short_name = '[ad_parameter BillingGroupShortName 
-                                                           "intranet"]')" {
+                         where short_name = '[ad_parameter BillingGroupShortName "" ""]')" {
     ns_log Notice "Sending email to $email"
     ns_sendmail $email "$editing_email" "Change to $project_name payment plan." "$message"
 }

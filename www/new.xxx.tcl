@@ -20,6 +20,7 @@ if { [empty_string_p $payment_id] && [empty_string_p $project_id] } {
     return
 }
 
+# ToDo: No parameter FeeTypes
 set user_id [ad_maybe_redirect_for_registration]
 set fee_type_list [ad_parameter FeeTypes intranet]
 

@@ -19,7 +19,8 @@
         <callbacks>
         </callbacks>
         <parameters>
-        <!-- No version parameters -->
+
         </parameters>
+
     </version>
 </package>
