@@ -47,7 +47,7 @@ if {![exists_and_not_null cost_id]} {
     set context [ad_context_bar $page_title]
     set effective_date [db_string get_today "select sysdate from dual"]
     set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 60]
-    set customer_id [im_customer_internal]
+    set company_id [im_company_internal]
     set cost_status_id [im_cost_status_created]
     set amount 0
     set vat 0
@@ -62,7 +62,7 @@ if {![exists_and_not_null cost_id]} {
 # ------------------------------------------------------------------
 
 set project_options [im_project_options]
-set customer_options [im_customer_options]
+set company_options [im_company_options]
 set provider_options [im_provider_options]
 set cost_type_options [im_cost_type_options]
 set cost_status_options [im_cost_status_options]
@@ -80,7 +80,7 @@ ad_form \
 	cost_id:key
 	{cost_name:text(text) {label Name} {html {size 40}}}
 	{project_id:text(select),optional {label Project} {options $project_options} }
-	{customer_id:text(select) {label "Customer<br><small>(Who pays?)</small>"} {options $customer_options} }
+	{company_id:text(select) {label "Company<br><small>(Who pays?)</small>"} {options $company_options} }
 	{provider_id:text(select) {label "Provider<br><small>(Who gets the money?)</small>"} {options $provider_options} }
 
 	{cost_type_id:text(select) {label Type} {options $cost_type_options} }
@@ -133,7 +133,7 @@ begin
                 creation_ip     => '[ad_conn peeraddr]',
                 cost_name       => :cost_name,
 		project_id	=> :project_id,
-                customer_id     => :customer_id,
+                company_id     => :company_id,
                 provider_id     => :provider_id,
                 cost_status_id  => :cost_status_id,
                 cost_type_id    => :cost_type_id,
@@ -179,7 +179,7 @@ begin
                 creation_ip     => '[ad_conn peeraddr]',
                 cost_name       => :cost_name,
                 project_id      => :project_id,
-                customer_id     => :customer_id,
+                company_id     => :company_id,
                 provider_id     => :provider_id,
                 cost_status_id  => :cost_status_id,
                 cost_type_id    => :cost_type_id,
@@ -200,7 +200,7 @@ end;"
 	update  im_costs set
                 cost_name       	= :cost_name,
 		project_id		= :project_id,
-                customer_id     	= :customer_id,
+                company_id     	= :company_id,
                 provider_id     	= :provider_id,
                 cost_status_id  	= :cost_status_id,
                 cost_type_id    	= :cost_type_id,

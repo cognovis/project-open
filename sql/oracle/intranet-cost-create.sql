@@ -433,8 +433,8 @@ create table im_repeating_costs (
 				references acs_objects,
 	cost_name		varchar(400),
 				-- who pays?
-	customer_id		integer
-				constraint im_rep_costs_customer_fk
+	company_id		integer
+				constraint im_rep_costs_company_fk
 				references acs_objects,
 				-- who gets paid?
 	provider_id		integer
@@ -594,13 +594,13 @@ commit;
 -- financial status of a company.
 --
 -- Costs are also used for controlling, namely by assigning costs
--- to projects, customers and cost centers in order to allow for 
+-- to projects, companies and cost centers in order to allow for 
 -- (more or less) accurate profit & loss calculation.
 -- This assignment sometimes requires to split a large cost item
 -- into several smaller items in order to assign them more 
--- accurately to project, customers or cost centers ("redistribution").
+-- accurately to project, companies or cost centers ("redistribution").
 --
--- Costs reference acs_objects for customer and provider in order to
+-- Costs reference acs_objects for company and provider in order to
 -- allow costs to be created for example between an employee and the
 -- company in the case of travel costs.
 --
@@ -636,10 +636,10 @@ create table im_costs (
 				constraint im_costs_project_fk
 				references im_projects,
 				-- who pays?
-	customer_id		integer
-				constraint im_costs_customer_nn
+	company_id		integer
+				constraint im_costs_company_nn
 				not null
-				constraint im_costs_customer_fk
+				constraint im_costs_company_fk
 				references acs_objects,
 				-- who gets paid?
 	cost_center_id		integer
@@ -739,7 +739,7 @@ is
 	cost_name		in varchar default null,
 	parent_id		in integer default null,
 	project_id		in integer default null,
-	customer_id		in integer,
+	company_id		in integer,
 	provider_id		in integer,
 	investment_id		in integer default null,
 
@@ -786,7 +786,7 @@ is
 	cost_name	       in varchar default null,
 	parent_id	       in integer default null,
 	project_id	      in integer default null,
-	customer_id	     in integer,
+	company_id	     in integer,
 	provider_id	     in integer,
 	investment_id	   in integer default null,
 
@@ -824,7 +824,7 @@ is
 
 	insert into im_costs (
 		cost_id, cost_name, project_id, 
-		customer_id, provider_id, 
+		company_id, provider_id, 
 		cost_status_id, cost_type_id,
 		template_id, investment_id,
 		effective_date, payment_days,
@@ -835,7 +835,7 @@ is
 		description, note
 	) values (
 		v_cost_cost_id, new.cost_name, new.project_id, 
-		new.customer_id, new.provider_id, 
+		new.company_id, new.provider_id, 
 		new.cost_status_id, new.cost_type_id,
 		new.template_id, new.investment_id,
 		new.effective_date, new.payment_days,
@@ -905,7 +905,7 @@ prompt *** intranet-costs: Creating category Cost Type
 -- Cost Type
 delete from im_categories where category_id >= 3700 and category_id < 3799;
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3700,'Customer Invoice','Intranet Cost Type');
+VALUES (3700,'Company Invoice','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3702,'Quote','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
@@ -913,7 +913,7 @@ VALUES (3704,'Provider Bill','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3706,'Purchase Order','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3708,'Customer Documents','Intranet Cost Type');
+VALUES (3708,'Company Documents','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3710,'Provider Documents','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
@@ -921,7 +921,7 @@ VALUES (3712,'Travel Cost','Intranet Cost Type');
 commit;
 -- reserved until 3799
 
--- Establish the super-categories "Provider Documents" and "Customer Documents"
+-- Establish the super-categories "Provider Documents" and "Company Documents"
 insert into im_category_hierarchy values (3710,3704);
 insert into im_category_hierarchy values (3710,3706);
 insert into im_category_hierarchy values (3708,3700);
@@ -1024,7 +1024,7 @@ declare
 	v_employees		integer;
 	v_accounting		integer;
 	v_senman		integer;
-	v_customers		integer;
+	v_companies		integer;
 	v_freelancers		integer;
 	v_proman		integer;
 	v_admins		integer;
@@ -1033,7 +1033,7 @@ begin
     select group_id into v_admins from groups where group_name = 'P/O Admins';
     select group_id into v_senman from groups where group_name = 'Senior Managers';
     select group_id into v_accounting from groups where group_name = 'Accounting';
-    select group_id into v_customers from groups where group_name = 'Customers';
+    select group_id into v_companies from groups where group_name = 'Companies';
     select group_id into v_freelancers from groups where group_name = 'Freelancers';
 
     select menu_id
@@ -1053,7 +1053,7 @@ begin
     acs_permission.grant_permission(v_finance_menu, v_admins, 'read');
     acs_permission.grant_permission(v_finance_menu, v_senman, 'read');
     acs_permission.grant_permission(v_finance_menu, v_accounting, 'read');
-    acs_permission.grant_permission(v_finance_menu, v_customers, 'read');
+    acs_permission.grant_permission(v_finance_menu, v_companies, 'read');
     acs_permission.grant_permission(v_finance_menu, v_freelancers, 'read');
 
     -- -----------------------------------------------------
@@ -1102,7 +1102,7 @@ declare
 	v_employees		integer;
 	v_accounting		integer;
 	v_senman		integer;
-	v_customers		integer;
+	v_companies		integer;
 	v_freelancers		integer;
 	v_proman		integer;
 	v_admins		integer;
@@ -1110,7 +1110,7 @@ begin
     select group_id into v_admins from groups where group_name = 'P/O Admins';
     select group_id into v_senman from groups where group_name = 'Senior Managers';
     select group_id into v_accounting from groups where group_name = 'Accounting';
-    select group_id into v_customers from groups where group_name = 'Customers';
+    select group_id into v_companies from groups where group_name = 'Companies';
     select group_id into v_freelancers from groups where group_name = 'Freelancers';
 
     select menu_id
@@ -1160,10 +1160,10 @@ sort_order) values (22005,220,'Project',
 '"<A HREF=/intranet/projects/view?project_id=$project_id>$project_nr</A>"',5);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22007,220,'Provider',
-'"<A HREF=/intranet/customers/view?customer_id=$provider_id>$provider_name</A>"',7);
+'"<A HREF=/intranet/companies/view?company_id=$provider_id>$provider_name</A>"',7);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22011,220,'Client',
-'"<A HREF=/intranet/customers/view?customer_id=$customer_id>$customer_name</A>"',11);
+'"<A HREF=/intranet/companies/view?company_id=$company_id>$company_name</A>"',11);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22015,220,'Due Date',
 '[if {$overdue > 0} {
@@ -1216,19 +1216,19 @@ begin
 end;
 /
 
--- Show the cost component in customers page
+-- Show the cost component in companies page
 --
 declare
     v_plugin	integer;
 begin
     v_plugin := im_component_plugin.new (
-	plugin_name =>	'Customer Cost Component',
+	plugin_name =>	'Company Cost Component',
 	package_name =>	'intranet-cost',
-	page_url =>     '/intranet/customers/view',
+	page_url =>     '/intranet/companies/view',
 	location =>     'left',
 	sort_order =>   90,
 	component_tcl => 
-	'im_costs_customer_component $user_id $customer_id'
+	'im_costs_company_component $user_id $company_id'
     );
 end;
 /

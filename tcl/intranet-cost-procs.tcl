@@ -31,7 +31,7 @@ ad_proc -public im_cost_type_invoice {} { return 3700 }
 ad_proc -public im_cost_type_quote {} { return 3702 }
 ad_proc -public im_cost_type_bill {} { return 3704 }
 ad_proc -public im_cost_type_po {} { return 3706 }
-ad_proc -public im_cost_type_customer_doc {} { return 3708 }
+ad_proc -public im_cost_type_company_doc {} { return 3708 }
 ad_proc -public im_cost_type_provider_doc {} { return 3710 }
 
 
@@ -70,12 +70,12 @@ ad_proc -public im_project_options { {include_empty 1} } {
     return $options
 }
 
-ad_proc -public im_customer_options { {include_empty 1} } { 
-    Cost customer options
+ad_proc -public im_company_options { {include_empty 1} } { 
+    Cost company options
 } {
-    set options [db_list_of_lists customer_options "
-	select customer_name, customer_id
-	from im_customers
+    set options [db_list_of_lists company_options "
+	select company_name, company_id
+	from im_companies
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
@@ -85,8 +85,8 @@ ad_proc -public im_provider_options { {include_empty 1} } {
     Cost provider options
 } {
     set options [db_list_of_lists provider_options "
-	select customer_name, customer_id
-	from im_customers
+	select company_name, company_id
+	from im_companies
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
@@ -361,11 +361,11 @@ ad_proc im_costs_object_list_component { user_id cost_id return_url } {
     "
 }
 
-ad_proc im_costs_customer_component { user_id customer_id } {
+ad_proc im_costs_company_component { user_id company_id } {
     Returns a HTML table containing a list of costs for a particular
-    customer.
+    company.
 } {
-    return [im_costs_base_component $user_id $customer_id ""]
+    return [im_costs_base_component $user_id $company_id ""]
 }
 
 ad_proc im_costs_project_component { user_id project_id } {
@@ -376,9 +376,9 @@ ad_proc im_costs_project_component { user_id project_id } {
 }
 
 
-ad_proc im_costs_base_component { user_id {customer_id ""} {project_id ""} } {
+ad_proc im_costs_base_component { user_id {company_id ""} {project_id ""} } {
     Returns a HTML table containing a list of costs for a particular
-    customer or a particular project.
+    company or a particular project.
 } {
     if {![im_permission $user_id view_costs]} {
 	return ""
@@ -389,7 +389,7 @@ ad_proc im_costs_base_component { user_id {customer_id ""} {project_id ""} } {
     set max_costs 5
     set colspan 5
     set org_project_id $project_id
-    set org_customer_id $customer_id
+    set org_company_id $company_id
 
     # Where to link when clicking on an object linke? "edit" or "view"?
     set view_mode "view"
@@ -401,10 +401,10 @@ ad_proc im_costs_base_component { user_id {customer_id ""} {project_id ""} } {
     set extra_select [list]
     set object_name ""
     set new_doc_args ""
-    if {"" != $customer_id} { 
-	lappend extra_where "ci.customer_id=:customer_id" 
-	set object_name [db_string object_name "select customer_name from im_customers where customer_id = :customer_id"]
-	set new_doc_args "?customer_id=$customer_id"
+    if {"" != $company_id} { 
+	lappend extra_where "ci.company_id=:company_id" 
+	set object_name [db_string object_name "select company_name from im_companies where company_id = :company_id"]
+	set new_doc_args "?company_id=$company_id"
     }
 
     if {"" != $project_id} { 
@@ -499,13 +499,13 @@ order by
 
     # Restore the original values after SQL selects
     set project_id $org_project_id
-    set customer_id $org_customer_id
+    set company_id $org_company_id
 
     if {$ctr > $max_costs} {
 	append cost_html "
 <tr$bgcolor([expr $ctr % 2])>
   <td colspan=$colspan>
-    <A HREF=/intranet-costs/index?status_id=0&[export_url_vars status_id customer_id project_id]>
+    <A HREF=/intranet-costs/index?status_id=0&[export_url_vars status_id company_id project_id]>
       more costs...
     </A>
   </td>

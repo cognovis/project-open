@@ -21,7 +21,7 @@ ad_page_contract {
     { order_by "Name" }
     { cost_status_id:integer 0 } 
     { cost_type_id:integer 0 } 
-    { customer_id:integer 0 } 
+    { company_id:integer 0 } 
     { provider_id:integer 0 } 
     { letter:trim "" }
     { start_idx:integer "1" }
@@ -42,7 +42,7 @@ ad_page_contract {
 #    3. Define Table Columns:
 #	Define the table columns that the user can see.
 #	Again, restrictions may apply for unprivileged users,
-#	for example hiding customer names to freelancers.
+#	for example hiding company names to freelancers.
 #    4. Define Filter Categories:
 #	Extract from the database the filter categories that
 #	are available for a specific user.
@@ -152,27 +152,27 @@ if { ![empty_string_p $cost_type_id] && $cost_type_id != 0 } {
 		where	(child_id=:cost_type_id or parent_id=:cost_type_id)
 	)"
 }
-if {$customer_id} {
-    lappend criteria "c.customer_id=:customer_id"
+if {$company_id} {
+    lappend criteria "c.company_id=:company_id"
 }
 if {$provider_id} {
     lappend criteria "c.provider_id=:provider_id"
 }
 if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string compare $letter "SCROLL"] != 0 } {
-    lappend criteria "im_first_letter_default_to_a(cust.customer_name)=:letter"
+    lappend criteria "im_first_letter_default_to_a(cust.company_name)=:letter"
 }
 
 
 # Get the list of user's companies for which he can see costs
 set company_ids [db_list users_companies "
 select
-	cust.customer_id
+	cust.company_id
 from
 	acs_rels r,
-	im_customers cust
+	im_companies cust
 where
 	r.object_id_two = :user_id
-	and r.object_id_one = cust.customer_id
+	and r.object_id_one = cust.company_id
 "]
 
 lappend company_ids 0
@@ -182,7 +182,7 @@ lappend company_ids 0
 # Special users ("view_costs") don't need permissions.
 set company_where ""
 if {![im_permission $user_id view_costs]} { 
-    set company_where "and (c.customer_id in ([join $company_ids ","]) or c.provider_id in ([join $company_ids ","]))"
+    set company_where "and (c.company_id in ([join $company_ids ","]) or c.provider_id in ([join $company_ids ","]))"
 }
 ns_log Notice "/intranet-cost/index: company_where=$company_where"
 
@@ -193,7 +193,7 @@ switch $order_by {
     "Type" { set order_by_clause "order by cost_type" }
     "Project" { set order_by_clause "order by project_nr" }
     "Provider" { set order_by_clause "order by provider_name" }
-    "Client" { set order_by_clause "order by customer_name" }
+    "Client" { set order_by_clause "order by company_name" }
     "Due Date" { set order_by_clause "order by due_date_calculated" }
     "Amount" { set order_by_clause "order by c.amount DESC" }
     "Paid" { set order_by_clause "order by paid_amount" }
@@ -228,11 +228,11 @@ select
 	o.object_type,
 	url.url as cost_url,
 	ot.pretty_name as object_type_pretty_name,
-        cust.customer_name,
-        cust.customer_path as customer_short_name,
+        cust.company_name,
+        cust.company_path as company_short_name,
 	proj.project_nr,
-	prov.customer_name as provider_name,
-	prov.customer_path as provider_short_name,
+	prov.company_name as provider_name,
+	prov.company_path as provider_short_name,
         im_category_from_id(c.cost_status_id) as cost_status,
         im_category_from_id(c.cost_type_id) as cost_type,
 	sysdate - (c.effective_date + c.payment_days) as overdue
@@ -241,14 +241,14 @@ from
         im_costs c,
 	acs_objects o,
 	acs_object_types ot,
-        im_customers cust,
-        im_customers prov,
+        im_companies cust,
+        im_companies prov,
 	im_projects proj,
 	(select * from im_biz_object_urls where url_type=:view_mode) url
 	$extra_from
 where
-        c.customer_id=cust.customer_id(+)
-        and c.provider_id=prov.customer_id(+)
+        c.company_id=cust.company_id(+)
+        and c.provider_id=prov.company_id(+)
 	and c.project_id=proj.project_id(+)
 	and c.cost_id = o.object_id
 	and o.object_type = url.object_type(+)
@@ -527,10 +527,10 @@ set button_html "
 
 set page_body "
 $filter_html
-[im_costs_navbar $letter "/intranet-cost/list" $next_page_url $previous_page_url [list cost_status_id cost_type_id customer_id start_idx order_by how_many view_name letter] "costs"]
+[im_costs_navbar $letter "/intranet-cost/list" $next_page_url $previous_page_url [list cost_status_id cost_type_id company_id start_idx order_by how_many view_name letter] "costs"]
 
 <form action=/intranet-cost/costs/cost-action method=POST>
-[export_form_vars customer_id cost_id return_url]
+[export_form_vars company_id cost_id return_url]
   <table width=100% cellpadding=2 cellspacing=2 border=0>
     $table_header_html
     $table_body_html

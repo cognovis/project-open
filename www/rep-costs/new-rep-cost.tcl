@@ -65,7 +65,7 @@ set cost_id [im_new_object_id]
 set cause_object_id $rep_cost_id
 
 set project_options [im_project_options]
-set customer_options [im_customer_options]
+set company_options [im_company_options]
 set provider_options [im_provider_options]
 set cost_type_options [im_cost_type_options]
 set cost_status_options [im_cost_status_options]
@@ -84,7 +84,7 @@ ad_form \
 	{cost_id:text(hidden) }
 	{cost_name:text(text) {label Name} {html {size 40}}}
 	{project_id:text(select) {label Project} {options $project_options} }
-	{customer_id:text(select) {label "Customer<br><small>(Who pays?)</small>"} {options $customer_options} }
+	{company_id:text(select) {label "Company<br><small>(Who pays?)</small>"} {options $company_options} }
 	{provider_id:text(select) {label "Provider<br><small>(Who gets the money?)</small>"} {options $provider_options} }
 
 	{cost_type_id:text(select) {label Type} {options $cost_type_options} }
@@ -130,7 +130,7 @@ begin
                 creation_ip     => '[ad_conn peeraddr]',
                 cost_name       => :cost_name,
 		project_id	=> :project_id,
-                customer_id     => :customer_id,
+                company_id     => :company_id,
                 provider_id     => :provider_id,
                 cost_status_id  => :cost_status_id,
                 cost_type_id    => :cost_type_id,
@@ -159,7 +159,7 @@ end;"
 	update  im_costs set
                 cost_name       = :cost_name,
 		project_id	= :project_id,
-                customer_id     = :customer_id,
+                company_id     = :company_id,
                 provider_id     = :provider_id,
                 cost_status_id  = :cost_status_id,
                 cost_type_id    = :cost_type_id,
