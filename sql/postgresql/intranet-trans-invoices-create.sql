@@ -289,8 +289,7 @@ DECLARE
 	v_price_target_language_id	alias for $7;	
 	v_item_target_language_id	alias for $8;
 	v_price_source_language_id	alias for $9;	
-	v_item_source_language_id	alias for $10
-
+	v_item_source_language_id	alias for $10;
 	match_value			numeric;
 	v_internal_company_id		integer;
 	v_price_target_language		varchar(100);
