@@ -46,6 +46,8 @@ set return_url "/intranet/"
 set authority_id ""
 set username ""
 
+set system_owner_email [ad_parameter -package_id [ad_acs_kernel_id] SystemOwner]
+set system_owner_id [db_string user_id "select party_id from parties where lower(email) = lower(:system_owner_email)" -default 0]
 
 # -----------------------------------------------------------------
 # Get more debug information
@@ -58,8 +60,6 @@ if {"" != $form_vars} {
 	ns_log Notice "new-system-incident: $var=$value"
     }
 }
-
-
 
 # -----------------------------------------------------------------
 # Lookup user_id or create entry
@@ -99,9 +99,7 @@ if {0 != $error_user_id} {
 
 if {!$error_user_id} {
     # create user didn't succeed...
-    # ToDo!!!
-    ad_return_complaint 1 "<li>Error accepted"
-    return
+    set error_user_id $system_owner_id
 }
 
 # -----------------------------------------------------------------
@@ -147,9 +145,6 @@ $error_info"
 set priority 3
 set due [db_string tomorrow "select sysdate+1 from dual"]
 
-
-set system_owner_email [ad_parameter -package_id [ad_acs_kernel_id] SystemOwner]
-set system_owner_id [db_string user_id "select party_id from parties where lower(email) = lower(:system_owner_email)" -default 0]
 
 set asignee_id $system_owner_id
 
