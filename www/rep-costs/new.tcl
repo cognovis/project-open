@@ -12,8 +12,8 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-    { cost_id:integer,optional }
-    { return_url "/intranet-cost/index"}
+    { rep_cost_id:integer,optional }
+    { return_url "/intranet-cost/rep-costs/index"}
     edit_p:optional
     message:optional
     { form_mode "display" }
@@ -25,36 +25,31 @@ ad_page_contract {
 # ------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-set page_title "Edit Cost"
+set page_title "Edit Repeating Cost"
 set context [ad_context_bar $page_title]
+set today [db_string birthday_today "select sysdate from dual"]
+set internal_id [im_customer_internal]
 
-#if {![im_permission $user_id view_costs]} {
-#    ad_return_complaint 1 "You have insufficient privileges to use this page"
-#    return
-#}
+if {![im_permission $user_id view_costs]} {
+    ad_return_complaint 1 "You have insufficient privileges to use this page"
+    return
+}
 
-set action_url "/intranet-cost/costs/new"
+set action_url "/intranet-cost/rep-costs/new"
 set focus "cost.var_name"
-
-set admin_html "
-<ul>
-  <li><A href=''>Distribute costs according to timesheet information</a>
-  <li><A href=''>!!!</a>
-</ul>
-"
 
 # ------------------------------------------------------------------
 # Get everything about the cost
 # ------------------------------------------------------------------
 
-if {![exists_and_not_null cost_id]} {
+if {![exists_and_not_null rep_cost_id]} {
     # New variable: setup some reasonable defaults
 
-    set page_title "New Cost Item"
+    set page_title "New Repeating Cost Item"
     set context [ad_context_bar $page_title]
     set effective_date [db_string get_today "select sysdate from dual"]
     set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 60]
-    set company_id [im_company_internal]
+    set customer_id [im_customer_internal]
     set cost_status_id [im_cost_status_created]
     set amount 0
     set vat 0
@@ -69,7 +64,7 @@ if {![exists_and_not_null cost_id]} {
 # ------------------------------------------------------------------
 
 set project_options [im_project_options]
-set company_options [im_company_options]
+set customer_options [im_customer_options]
 set provider_options [im_provider_options]
 set cost_type_options [im_cost_type_options]
 set cost_status_options [im_cost_status_options]
@@ -84,26 +79,25 @@ ad_form \
     -mode $form_mode \
     -export {next_url user_id return_url} \
     -form {
-	cost_id:key
+	rep_cost_id:key
 	{cost_name:text(text) {label Name} {html {size 40}}}
 	{project_id:text(select),optional {label Project} {options $project_options} }
-	{company_id:text(select) {label "Company<br><small>(Who pays?)</small>"} {options $company_options} }
+	{customer_id:text(select) {label "Customer<br><small>(Who pays?)</small>"} {options $customer_options} }
 	{provider_id:text(select) {label "Provider<br><small>(Who gets the money?)</small>"} {options $provider_options} }
 
 	{cost_type_id:text(select) {label Type} {options $cost_type_options} }
 	{cost_status_id:text(select) {label Status} {options $cost_status_options} }
-	{template_id:text(select),optional {label "Print Template"} {options $template_options} }
 	{investment_id:text(select),optional {label Investment} {options $investment_options} }
 
-	{effective_date:text(text) {label "Effective Date"} {html {size 20}} }
-	{payment_days:text(text) {label "Payment Days"} {html {size 10}} }
-	
 	{amount:text(text) {label "Amount"} {html {size 20}} }
 	{currency:text(select) {label "Currency"} {options $currency_options} }
 
 	{vat:text(text) {label "VAT"} {html {size 20}} }
 	{tax:text(text) {label "TAX"} {html {size 20}} }
 
+        {payment_days:text(hidden),optional }
+        {template_id:text(hidden),optional }
+        {effective_date:text(hidden),optional }
         {cause_object_id:text(hidden),optional }
 
 	{description:text(textarea),nospell,optional {label "Description"} {html {rows 5 cols 40}}}
@@ -116,10 +110,17 @@ ad_form -extend -name cost -on_request {
 
 } -select_query {
 
-	select	ci.*,
+	select
+		cr.start_date,
+		cr.end_date,
+		ci.*,
 		im_category_from_id(ci.cost_status_id) as cost_status
-	from	im_costs ci
-	where	ci.cost_id = :cost_id
+	from	
+		im_costs ci,
+		im_repeating_costs cr
+	where
+		cr.rep_cost_id = :rep_cost_id
+		and ci.cost_id = cr.rep_cost_id
 
 } -new_data {
 
@@ -129,14 +130,39 @@ ad_form -extend -name cost -on_request {
 	from	im_start_months
 	where	start_block <= :effective_date
     "]
-    set cost_id [db_exec_plsql cost_insert {}]
-    
+
+    db_dml cost_insert "
+declare
+	v_cost_id	integer;
+begin
+        v_cost_id := im_cost.new (
+                cost_id         => :rep_cost_id,
+                creation_user   => :user_id,
+                creation_ip     => '[ad_conn peeraddr]',
+                cost_name       => :cost_name,
+		project_id	=> :project_id,
+                customer_id     => :customer_id,
+                provider_id     => :provider_id,
+                cost_status_id  => :cost_status_id,
+                cost_type_id    => :cost_type_id,
+                template_id     => :template_id,
+                effective_date  => :effective_date,
+                payment_days    => :payment_days,
+		amount		=> :amount,
+                currency        => :currency,
+                vat             => :vat,
+                tax             => :tax,
+                description     => :description,
+                note            => :note
+        );
+end;"
+
     db_dml cost_update_aux "
         update  im_costs set
                 cause_object_id		= :cause_object_id,
 		start_block		= :start_block
         where
-                cost_id = :cost_id
+                cost_id = :rep_cost_id
     "
 
 
@@ -149,16 +175,40 @@ ad_form -extend -name cost -on_request {
 	where	start_block <= :effective_date
     "]
 
-    set exists [db_string exists_cost "select count(*) from im_costs where cost_id=:cost_id"]
+    set exists [db_string exists_cost "select count(*) from im_costs where cost_id=:rep_cost_id"]
     if {!$exists} {
-	set cost_id [db_exec_plsql cost_insert {}]
+	db_dml cost_insert "
+declare
+        v_cost_id       integer;
+begin
+        v_cost_id := im_cost.new (
+                cost_id         => :rep_cost_id,
+                creation_user   => :user_id,
+                creation_ip     => '[ad_conn peeraddr]',
+                cost_name       => :cost_name,
+                project_id      => :project_id,
+                customer_id     => :customer_id,
+                provider_id     => :provider_id,
+                cost_status_id  => :cost_status_id,
+                cost_type_id    => :cost_type_id,
+                template_id     => :template_id,
+                effective_date  => :effective_date,
+                payment_days    => :payment_days,
+                amount          => :amount,
+                currency        => :currency,
+                vat             => :vat,
+                tax             => :tax,
+                description     => :description,
+                note            => :note
+        );
+end;"
     }
 
     db_dml cost_update "
 	update  im_costs set
                 cost_name       	= :cost_name,
 		project_id		= :project_id,
-                company_id     	= :company_id,
+                customer_id     	= :customer_id,
                 provider_id     	= :provider_id,
                 cost_status_id  	= :cost_status_id,
                 cost_type_id    	= :cost_type_id,
@@ -174,7 +224,7 @@ ad_form -extend -name cost -on_request {
                 description     	= :description,
                 note            	= :note
 	where
-		cost_id = :cost_id
+		cost_id = :rep_cost_id
 "
 } -on_submit {
 

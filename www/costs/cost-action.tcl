@@ -1,4 +1,4 @@
-# /packages/intranet-costs/www/cost-action.tcl
+# /packages/intranet-costs/www/costs/cost-action.tcl
 #
 # Copyright (C) 2003-2004 Project/Open
 #
@@ -22,10 +22,10 @@ ad_page_contract {
 }
 
 set user_id [ad_maybe_redirect_for_registration]
-if {![im_permission $user_id add_costs]} {
-    ad_return_complaint 1 "<li>You have insufficient privileges to see this page"
-    return
-}
+#if {![im_permission $user_id add_costs]} {
+#    ad_return_complaint 1 "<li>You have insufficient privileges to see this page"
+#    return
+#}
 
 ns_log Notice "cost-action: submit=$submit"
 switch $submit {
@@ -53,10 +53,12 @@ switch $submit {
 	foreach cost_id $del_cost {
 	    set otype $object_type($cost_id)
 	    # ToDo: Security
-	    db_dml delete_cost_item "
-		begin
-			${otype}.del(:cost_id);
-		end;"
+
+	    db_exec_plsql delete_cost_item ""
+
+#	    db_0or1row delete_cost_item "select ${otype}.del(:cost_id) from dual"
+#	    im_exec_dml del_cost_item "${otype}_del(:cost_id)"
+
 	    lappend in_clause_list $cost_id
 	}
 	set cost_where_list "([join $in_clause_list ","])"
