@@ -355,9 +355,10 @@ ad_proc im_filestorage_base_component { user_id id base_path name folder_type re
 
 	exec /bin/mkdir -p $base_path
 	exec /bin/chmod ug+w $base_path
-
 	set file_list [exec /usr/bin/find $base_path]
+
     } err_msg] } {
+
 	# Probably some permission errors - return empty string
 	ns_log Notice "\nim_filestorage_component:
 	'exec /usr/bin/find $base_path' failed with error:
@@ -688,17 +689,59 @@ ad_proc im_filestorage_project_workflow_dirs { project_type_id } {
     # 93: Unknown
     # 94: Trans + Internal Edit
 } {
+    ns_log Notice "im_filestorage_project_workflow_dirs: project_type_id=$project_type_id"
     switch $project_type_id {
-	85 { return [list deliv trans]}
-	86 { return [list deliv trans edit]}
-	87 { return [list deliv edit]}
-	88 { return [list deliv trans edit proof]}
-	89 { return [list deliv trans edit]}
-	90 { return [list deliv]}
-	91 { return [list deliv]}
-	92 { return [list deliv]}
-	93 { return [list deliv]}
-	94 { return [list deliv trans inted]}
+	
+	87 { 
+	    # Trans + Edit
+	    return [list deliv trans edit]
+	}
+
+	88 {
+	    # Edit Only
+	    return [list deliv edit]
+	}
+
+	89 {
+	    # Trans + Edit + Proof
+	    return [list deliv trans edit proof]
+	}
+
+	90 {
+	    # Linguistic
+	    return [list deliv]
+	}
+
+	91 {
+	    # Localization
+	    return [list deliv]
+	}
+
+	92 {
+	    # Technology
+	    return [list deliv]
+	}
+
+	93 {
+	    # Trans Only
+	    return [list deliv trans]
+	}
+
+	94 {
+	    # Trans + Int. Spotcheck
+	    return [list deliv trans edit]
+	}
+
+	95 {
+	    # Proof Only
+	    return [list deliv proof]
+	}
+
+	96 {
+	    # Glossary Compilation
+	    return [list deliv]
+	}
+
 	default {
 	    return [list]
 	}
@@ -709,11 +752,9 @@ ad_proc im_filestorage_project_workflow_dirs { project_type_id } {
 # ---------------------------------------------------------------------
 
 ad_proc im_filestorage_create_directories { project_id } {
-
     Create directory structure for a new project
     Returns "" if successful 
     Returns a formatted errors string otherwise.
-
 } {
 
     if {[string equal "true" [ad_parameter "TestDemoDevServer" "" "false"]]} {
@@ -721,25 +762,20 @@ ad_proc im_filestorage_create_directories { project_id } {
 	return
     }
 
-    set base_path_unix [ad_parameter "ProjectBasePathUnix" intranet "/tmp/"]
-
     # Get some missing variables about the project and the customer
     set query "
 select
 	p.project_type_id,
-	cg.short_name as customer_short_name,
-        pg.short_name as project_short_name,
-	im_category_from_id(p.source_language_id) as source_language
+	p.project_path,
+	p.customer_id,
+	im_category_from_id(p.source_language_id) as source_language,
+	c.customer_path
 from
 	im_projects p,
-        im_customers c,
-	user_groups cg,
-        user_groups pg
+	im_customers c
 where 
-	p.group_id=:project_id
-	and p.customer_id=c.group_id
-	and c.group_id=cg.group_id
-        and p.group_id=pg.group_id
+	p.project_id = :project_id
+	and p.customer_id = c.customer_id
 "
     if { ![db_0or1row projects_info_query $query] } {
 	return "Can't find the project with group id of $project_id"
@@ -749,48 +785,69 @@ where
     #	- Client directy
     #	- Project directory
 
+
+    set package_key "intranet-filestorage"
+    set package_id [db_string parameter_package "select package_id from apm_packages where package_key=:package_key" -default 0]
+    set base_path_unix [parameter::get -package_id $package_id -parameter "ProjectBasePathUnix" -default "/tmp/projects"]
+
     # Create a customer directory if it doesn't already exist
-    set customer_dir "$base_path_unix/$customer_short_name"
+    set customer_dir "$base_path_unix/$customer_path"
+    ns_log Notice "im_filestorage_create_directories: customer_dir=$customer_dir"
     if { [catch {
 	if {![file exists $customer_dir]} { 
+	    ns_log Notice "exec /bin/mkdir -p $customer_dir"
 	    exec /bin/mkdir -p $customer_dir 
+	    ns_log Notice "exec /bin/chmod ug+w $customer_dir"
 	    exec /bin/chmod ug+w $customer_dir
 	}
     } err_msg] } { return $err_msg }
 
     # Create the project dir if it doesn't already exist
-    set project_dir "$base_path_unix/$customer_short_name/$project_short_name"
+    set project_dir "$customer_dir/$project_path"
+    ns_log Notice "im_filestorage_create_directories: project_dir=$project_dir"
     if { [catch { 
-	if {![file exists $project_dir]} { 
+	if {![file exists $project_dir]} {
+	    ns_log Notice "exec /bin/mkdir -p $project_dir"
 	    exec /bin/mkdir -p $project_dir 
+	    ns_log Notice "exec /bin/chmod ug+w $project_dir"
 	    exec /bin/chmod ug+w $project_dir 
 	}
     } err_msg]} { return $err_msg }
 
     # Create a source language directory
-    set source_dir "$project_dir/source_$source_language"
-    if {[catch {
-	if {![file exists $source_dir]} {
-	    exec /bin/mkdir -p $source_dir
-	    exec /bin/chmod ug+w $source_dir
-	} 
-    } err_msg]} { return $err_msg }
+    # if source_language is defined...
+    if {"" != $source_language} {
+	set source_dir "$project_dir/source_$source_language"
+	ns_log Notice "im_filestorage_create_directories: source_dir=$source_dir"
+	if {[catch {
+	    if {![file exists $source_dir]} {
+		ns_log Notice "exec /bin/mkdir -p $source_dir"
+		exec /bin/mkdir -p $source_dir
+		ns_log Notice "exec /bin/chmod ug+w $source_dir"
+		exec /bin/chmod ug+w $source_dir
+	    } 
+	} err_msg]} { return $err_msg }
+    }
     
     # Create a new target language director for every
     # target language and every stage of the translation
     # workflow
     #
-    set target_languages [im_target_languages $project_id im_projects]
+    set target_languages [im_target_languages $project_id]
+    ns_log Notice "im_filestorage_create_directories: target_languages=$target_languages"
     set workflow_dirs [im_filestorage_project_workflow_dirs $project_type_id]
+    ns_log Notice "im_filestorage_create_directories: workflow_dirs=$workflow_dirs"
 
     foreach workflow_dir $workflow_dirs {
 	foreach target_language $target_languages {
 	    if {[string equal $target_language "none"]} { continue }
 	    set dir "$project_dir/${workflow_dir}_$target_language"
-	    ns_log Notice "new dir=$dir"
+	    ns_log Notice "im_filestorage_create_directories: dir=$dir"
 	    if {![file exists $dir]} {
 		if {[catch {
+		    ns_log Notice "exec /bin/mkdir -p $dir"
 		    exec /bin/mkdir -p $dir
+		    ns_log Notice "exec /bin/chmod ug+w $dir"
 		    exec /bin/chmod ug+w $dir
 		} err_msg] 
 		} { return $err_msg }
@@ -798,16 +855,6 @@ where
 	}
     }
 
-    # Set the permissions go=u because the AOLServer runs as nsadmin/staff,
-    # and we want to allow the users with user/users to create new files.
-    #
-    if { [catch {
-	exec /bin/chmod go=u $customer_dir
-    } err_msg] } { return $err_msg }
-    if { [catch {
-	exec /bin/chmod -R go=u $project_dir
-    } err_msg] } { return $err_msg }
-    
     return ""
 }
 
