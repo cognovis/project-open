@@ -13,18 +13,8 @@
 <% set report_url [ad_parameter -package_id [im_package_core_id] "ErrorReportURL" "" ""] %>
 <% set system_url [ad_parameter -package_id [ad_acs_kernel_id] SystemURL "" ""] %>
 <% db_1row user_info "select * from cc_users where user_id=[ad_get_user_id]" %>
-<% set publisher_name [ad_parameter PublisherName] %>
+<% set publisher_name [ad_parameter -package_id [ad_acs_kernel_id] PublisherName "" ""] %>
 <% set package_versions [db_list package_versions "select package_key||':'||version_name from apm_package_versions"] %>
-
-<pre>
-error_url value=@error_url@
-system_url value=@system_url@
-error_first_names value=@first_names;noquote@
-error_last_name value=@last_name;noquote@
-error_user_email value=@email;noquote@
-package_versions value=@package_versions;noquote@
-</pre>
-
 
 <form action="@report_url;noquote@" method=POST>
 <input type=hidden name=error_url value=@error_url@>
