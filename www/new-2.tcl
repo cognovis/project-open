@@ -239,8 +239,8 @@ from
 	(select	m.member_id as user_id,
 		1 as p
 	 from group_distinct_member_map m
-	 where	m.group_id = [im_customer_group_id]
-	) customers,
+	 where	m.group_id = [im_company_group_id]
+	) companies,
 	(select	m.member_id as user_id,
 		1 as p
 	 from group_distinct_member_map m
@@ -263,7 +263,7 @@ from
 where
 	r.object_id_one = :object_id
 	and r.object_id_two = p.party_id
-	and p.party_id = customers.user_id(+)
+	and p.party_id = companies.user_id(+)
 	and p.party_id = employees.user_id(+)
 	and o_mem.user_id = p.party_id
 	and 1 = im_forum_permission(
@@ -275,7 +275,7 @@ where
 		o_mem.member_p,
 		o_mem.admin_p,
 		employees.p,
-		customers.p
+		companies.p
 	)"
 
 	db_foreach subscribe_object_members $object_member_sql {

@@ -11,7 +11,7 @@
 -- Tasks, Incidents, News and Discussions (TIND)
 --
 -- A simplified version of the ACS BBOARD module,
--- related to groups (project, customers, ...).
+-- related to groups (project, companies, ...).
 -- The idea is to provide project members with a
 -- unified communication medium.
 
@@ -72,7 +72,7 @@ create or replace function im_forum_permission (
 	p_user_is_object_member	integer,
 	p_user_is_object_admin	integer,
 	p_user_is_employee	integer,
-	p_user_is_customer	integer	
+	p_user_is_company	integer	
 ) RETURN integer 
 IS
 	v_permission_p		integer;
@@ -83,7 +83,7 @@ BEGIN
 	IF p_scope = 'group' THEN		RETURN p_user_is_object_member;	END IF;
 	IF p_scope = 'pm' THEN			RETURN p_user_is_object_admin;	END IF;
 
-	IF p_scope = 'client' AND p_user_is_customer = 1 THEN	
+	IF p_scope = 'client' AND p_user_is_company = 1 THEN	
 		RETURN p_user_is_object_member;
 	END IF;
 	IF p_scope = 'staff' AND p_user_is_employee = 1 THEN	
@@ -258,7 +258,7 @@ BEGIN
 END;
 /
 BEGIN
-    im_priv_create('add_topic_pm',        'Customers');
+    im_priv_create('add_topic_pm',        'Companies');
 END;
 /
 BEGIN
@@ -432,7 +432,7 @@ END;
 --
 -- These DB-entries allow the pages of Project/Open Core
 -- to render the forum components in the Home, Users, Projects 
--- and Customer pages.
+-- and Company pages.
 --
 -- The TCL code in the "component_tcl" field is executed
 -- via "im_component_bay" in an "uplevel" statemente, exactly
@@ -463,7 +463,7 @@ declare
         v_employees             integer;
         v_accounting            integer;
         v_senman                integer;
-        v_customers             integer;
+        v_companies             integer;
         v_freelancers           integer;
         v_proman                integer;
         v_admins                integer;
@@ -474,7 +474,7 @@ begin
     select group_id into v_proman from groups where group_name = 'Project Managers';
     select group_id into v_accounting from groups where group_name = 'Accounting';
     select group_id into v_employees from groups where group_name = 'Employees';
-    select group_id into v_customers from groups where group_name = 'Customers';
+    select group_id into v_companies from groups where group_name = 'Companies';
     select group_id into v_freelancers from groups where group_name = 'Freelancers';
 
     select menu_id
@@ -496,7 +496,7 @@ begin
     acs_permission.grant_permission(v_menu, v_proman, 'read');
     acs_permission.grant_permission(v_menu, v_accounting, 'read');
     acs_permission.grant_permission(v_menu, v_employees, 'read');
-    acs_permission.grant_permission(v_menu, v_customers, 'read');
+    acs_permission.grant_permission(v_menu, v_companies, 'read');
     acs_permission.grant_permission(v_menu, v_freelancers, 'read');
 end;
 /
@@ -547,37 +547,37 @@ show errors
 commit;
 
 
--- Show the forum component in customer page
+-- Show the forum component in company page
 --
 declare
     v_plugin            integer;
 begin
     v_plugin := im_component_plugin.new (
-	plugin_name =>	'Customers Forum Component',
+	plugin_name =>	'Companies Forum Component',
 	package_name =>	'intranet-forum',
-        page_url =>     '/intranet/customers/view',
+        page_url =>     '/intranet/companies/view',
         location =>     'right',
         sort_order =>   10,
         component_tcl => 
 	'im_table_with_title \
 		[im_forum_create_bar \
 			"<B>Forum Items<B>" \
-			$customer_id \
+			$company_id \
 			$return_url \
 		] \
 		[im_forum_component \
 			-user_id $user_id \
-			-object_id $customer_id \
+			-object_id $company_id \
 			-current_page_url $current_url \
 			-return_url $return_url \
 			-export_var_list [list \
-				customer_id \
+				company_id \
 				forum_start_idx \
 				forum_order_by \
 				forum_how_many \
 				forum_view_name \
 			] \
-			-forum_type customer \
+			-forum_type company \
 			-view_name [im_opt_val forum_view_name] \
 			-forum_order_by [im_opt_val forum_order_by] \
 			-restrict_to_mine_p "f" \
@@ -727,7 +727,7 @@ insert into im_views (view_id, view_name, visible_for) values (41, 'forum_list_p
 insert into im_views (view_id, view_name, visible_for) values (42, 'forum_list_forum', 'view_forums');
 insert into im_views (view_id, view_name, visible_for) values (43, 'forum_list_extended', 'view_forums');
 insert into im_views (view_id, view_name, visible_for) values (44, 'forum_list_short', 'view_forums');
-insert into im_views (view_id, view_name, visible_for) values (45, 'forum_list_customer', 'view_forums');
+insert into im_views (view_id, view_name, visible_for) values (45, 'forum_list_company', 'view_forums');
 
 
 -- ForumList for home page
@@ -767,7 +767,7 @@ commit;
 
 
 
--- ForumList for ProjectViewPage or CustomerViewPage
+-- ForumList for ProjectViewPage or CompanyViewPage
 --
 delete from im_view_columns where column_id >= 4100 and column_id < 4199;
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
