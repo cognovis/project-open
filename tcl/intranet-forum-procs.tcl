@@ -637,7 +637,7 @@ ad_proc -public im_forum_component {
     {-restrict_to_topic_status_id 0} 
     {-restrict_to_asignee_id 0} 
     {-max_entries_per_page 0} 
-    {-start_idx 1} 
+    {-start_idx 0} 
     {-restrict_to_new_topics 0} 
     {-restrict_to_folder 0}
     {-restrict_to_employees 0}
@@ -1033,13 +1033,11 @@ $order_by_clause"
 	set next_page_html ""
     }
 
-    if { $start_idx > 1 } {
+    if { $start_idx > 0 } {
 	# This means we didn't start with the first row - there is
 	# at least 1 previous row. add a previous page link
 	set previous_start_idx [expr $start_idx - $max_entries_per_page]
-	if { $previous_start_idx < 1 } {
-	set previous_start_idx 1
-	}
+	if { $previous_start_idx < 0 } { set previous_start_idx 0 }
 	set previous_page_html "<A href=$current_page_url?$pass_through_vars_html&start_idx=$previous_start_idx>&lt;&lt;</a>"
     } else {
 	set previous_page_html ""

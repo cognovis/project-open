@@ -30,7 +30,7 @@ ad_page_contract {
     { forum_topic_type_id:integer 0 }
     { forum_status_id 0 }
     { forum_group_id:integer 0 }
-    { forum_start_idx:integer "1" }
+    { forum_start_idx:integer 0 }
     { forum_how_many 0 }
     { forum_folder 0 }
     { forum_max_entries_per_page 0 }
