@@ -196,40 +196,24 @@ commit;
 
 -- Add 'user_view_freelance'
 delete from im_view_columns where column_id >= 5100 and column_id < 5199;
-
-insert into im_view_columns values (5102,51,NULL,'Trans Rate',
-'$translation_rate','','',2,
-'im_permission $user_id view_freelancers');
-
-insert into im_view_columns values (5104,51,NULL,'Editing Rate',
-'$editing_rate','','',4,
-'im_permission $user_id view_freelancers');
-
-insert into im_view_columns values (5106,51,NULL,'Hourly Rate',
-'$hourly_rate','','',6,
-'im_permission $user_id view_freelancers');
-
-insert into im_view_columns values (5108,51,NULL,'Bank Account',
-'$bank_account','','',8,
-'im_permission $user_id view_freelancers');
-
-insert into im_view_columns values (5110,51,NULL,'Bank',
-'$bank','','',10,
-'im_permission $user_id view_freelancers');
-
-insert into im_view_columns values (5112,51,NULL,'Payment Method',
-'$payment_method','','',12,
-'im_permission $user_id view_freelancers');
-
-insert into im_view_columns values (5114,51,NULL,'Note',
-'<blockqote>$note</blockquote>','','',14,
-'im_permission $user_id view_freelancers');
-
-insert into im_view_columns values (5116,51,NULL,'Private Note',
-'<blockqote>$private_note</blockquote>','','',16,
-'im_permission $user_id view_freelancers');
-
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5102,51,'Trans Rate','$translation_rate',2);
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5104,51,'Editing Rate','$editing_rate',4);
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5106,51,'Hourly Rate','$hourly_rate',6);
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5108,51,'Bank Account','$bank_account',8);
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5110,51,'Bank','$bank',10);
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5112,51,'Payment Method','$payment_method',12);
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5114,51,'Note','<blockqote>$note</blockquote>',14);
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5116,51,'Private Note','$private_note',16);
 commit;
+
 
 
 -- Show the freelance information in users view page
