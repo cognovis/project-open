@@ -92,7 +92,7 @@ $html_hidden_info
     <TD><a href=\"/intranet/projects/view?[export_url_vars project_id]\">$project_name</a></TD></TR>
   <TR class=rowodd>
     <TD>Title</TD>
-    <TD><input name=\"title\" type=\"text\" size=\"100\" value=$title></TD></TR>
+    <TD><input name=\"title\" type=\"text\" size=\"50\" value=$title></TD></TR>
   <TR class=rowodd>
     <TD>Probability</TD>
     <TD><input name=\"probability\" type=\"text\" size=\"30\" value=$probability>%</TD></TR>
