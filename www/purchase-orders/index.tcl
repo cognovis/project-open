@@ -25,7 +25,8 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "[_ intranet-trans-invoices.lt_Generate_Purchase_Ord]"
 set context_bar [ad_context_bar [list /intranet/projects/ "[_ intranet-trans-invoices.Projects]"] [list "/intranet/projects/view?project_id=$project_id" "[_ intranet-trans-invoices.One_project]"] $page_title]
-if {"" == $return_url} { set return_url "/intranet/projects/view?project_id=$project_id" }
+# if {"" == $return_url} { set return_url "/intranet/projects/view?project_id=$project_id" }
+if {"" == $return_url} { set return_url [im_url_with_query] }
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 
@@ -152,7 +153,7 @@ db_foreach task_tasks $task_sql {
     if {"" == $freelance_company_html} {
 	set freelance_company_html "
 	<i>[_ intranet-trans-invoices.No_company_found]</i><br>
-	<a href=/intranet-trans-invoices/companies/new-company-from-freelance?freelance_id=$freelance_id>
+	<a href=/intranet-trans-invoices/companies/new-company-from-freelance?[export_url_vars freelance_id]>
 	  [_ intranet-trans-invoices.lt_Create_a_new_company_]
 	</a>"
     }

@@ -36,15 +36,11 @@ db_1row freelancer_info "
 select
 	u.*,
 	f.*,
-	c.*,
-	pe.*,
-	pa.*
+	c.*
 from
-	users u,
+	cc_users u,
 	im_freelancers f,
 	users_contact c,
-	persons pe,
-	parties pa,
         country_codes ha_cc,
         country_codes wa_cc
 where
@@ -63,24 +59,33 @@ set manager_id ""
 # Setup Company Fields
 # -----------------------------------------------------------------
 
-set company_path "${freelance_id}_freelance"
+# Set the "Company Path" (=unique company identifier) to 
+# freelance_id + "_freelance".
+#
+set company_path "freelance_${freelance_id}"
+
+# Check if the freelancer already exists
+#
 set company_id [db_string company_id "select company_id from im_companies where company_path=:company_path" -default 0]
 
 if {!$company_id} {
 
-    set company_name "[_ intranet-trans-invoices.lt_first_names_last_name]"
+    set company_name "Freelance $first_names $last_name"
     set company_type_id [im_company_type_freelance]
     set company_status_id [im_company_status_active]
 
-    set office_name "[_ intranet-trans-invoices.lt_first_names_last_name_1]"
-    set office_path "${freelance_id}_freelance"
+    set office_name "Freelance Office $first_names $last_name"
+    set office_path "freelance_office_${freelance_id}"
 
     set office_id [db_string office_id "select office_id from im_offices where office_path=:office_path" -default 0]
     if {!$office_id} {
 	# Create a new main_office:
 	set office_id [office::new \
 		-office_name	$office_name \
-		-office_path	$office_path]
+		-office_path	$office_path \
+		-office_status_id [im_office_status_active] \
+		-office_type_id [im_office_type_main] \
+	]
     }
 
     # Now create the company with the new main_office:
@@ -90,11 +95,48 @@ if {!$company_id} {
         -main_office_id	$office_id \
         -company_type_id $company_type_id \
         -company_status_id $company_status_id]
+} else {
+	db_1row company_info "
+		select
+			c.*,
+			o.*
+		from
+			im_companies c,
+			im_offices o
+		where
+			c.company_id = :company_id
+			and o.company_id = c.company_id
+	"
 }
 
 # -----------------------------------------------------------------
 # Update the Office
 # -----------------------------------------------------------------
+
+# Phone Logic: Prefer work phone over private one.
+set phone ""
+if {"" != $priv_home_phone} { set phone $priv_home_phone }
+if {"" != $home_phone} { set phone $home_phone }
+if {"" != $cell_phone} { set phone $cell_phone }
+if {"" != $work_phone} { set phone $work_phone }
+
+# Address Logic: Prefer work address over home address
+set address_line1 ""
+set address_line2 ""
+set address_city ""
+set address_postal_code ""
+set address_country_code ""
+if {"" != $ha_line1} { set address_line1 $ha_line1 }
+if {"" != $wa_line1} { set address_line1 $wa_line1 }
+if {"" != $wa_line2} { set address_line2 $wa_line2 }
+if {"" != $ha_line2} { set address_line2 $ha_line2 }
+if {"" != $ha_city} { set address_city $ha_city }
+if {"" != $wa_city} { set address_city $wa_city }
+if {"" != $ha_postal_code} { set address_postal_code $ha_postal_code }
+if {"" != $wa_postal_code} { set address_postal_code $wa_postal_code }
+if {"" != $ha_country_code} { set address_country_code $ha_country_code }
+if {"" != $wa_country_code} { set address_country_code $wa_country_code }
+
 
 set update_sql "
 update im_offices set
@@ -107,7 +149,7 @@ update im_offices set
 	address_postal_code = :address_postal_code,
 	address_country_code = :address_country_code
 where
-	office_id = :main_office_id
+	office_id = :office_id
 "
     db_dml update_offices $update_sql
 
@@ -120,22 +162,27 @@ set update_sql "
 update im_companies set
 	company_name		= :company_name,
 	company_path		= :company_path,
-	vat_number		= :vat_number,
 	company_status_id	= :company_status_id,
-	old_company_status_id	= :old_company_status_id,
 	company_type_id	= :company_type_id,
-	referral_source		= :referral_source,
-	start_date		= :start_date,
-	annual_revenue_id	= :annual_revenue_id,
-	contract_value		= :contract_value,
-	site_concept		= :site_concept,
 	manager_id		= :manager_id,
-	billable_p		= :billable_p,
-	note			= :note
+	billable_p		= 'f',
+	note			= '',
+	accounting_contact_id	= :freelance_id,
+	primary_contact_id	= :freelance_id
 where
 	company_id = :company_id
 "
     db_dml update_company $update_sql
+
+
+#	vat_number		= :vat_number,
+#	old_company_status_id	= :old_company_status_id,
+#	referral_source		= :referral_source,
+#	start_date		= :start_date,
+#	annual_revenue_id	= :annual_revenue_id,
+#	contract_value		= :contract_value,
+#	site_concept		= :site_concept,
+
 
 # -----------------------------------------------------------------
 # Make sure the creator and the manager become Key Accounts
@@ -162,4 +209,5 @@ im_biz_object_add_role $user_id $company_id $role_id
 
 db_release_unused_handles
 
-ad_returnredirect $return_url
+ad_returnredirect "/intranet/companies/new?company_id=$company_id"
+
