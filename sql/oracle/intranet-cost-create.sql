@@ -724,6 +724,34 @@ end im_cost_item;
 /
 show errors
 
+-------------------------------------------------------------
+-- Permissions and Privileges
+--
+begin
+    acs_privilege.create_privilege('view_cost_items','View Cost Items','View Costs');
+    acs_privilege.create_privilege('add_cost_items','View Cost Items','View Costs');
+end;
+/
+show errors;
+
+
+
+BEGIN
+    im_priv_create('view_cost_items','Accounting');
+    im_priv_create('view_cost_items','P/O Admins');
+    im_priv_create('view_cost_items','Senior Managers');
+END;
+/
+show errors;
+
+BEGIN
+    im_priv_create('add_cost_items','Accounting');
+    im_priv_create('add_cost_items','P/O Admins');
+    im_priv_create('add_cost_items','Senior Managers');
+END;
+/
+show errors;
+
 
 -------------------------------------------------------------
 -- Finance Menu System
@@ -867,11 +895,11 @@ values (221, 'cost_item_new', 'view_finance');
 delete from im_view_columns where column_id > 22000 and column_id < 22099;
 --
 insert into im_view_columns values (22001,220,NULL,'Name',
-'"<A HREF=/intranet-cost/view?cost_item_id=$cost_item_id>[string range $name 0 30]</A>"',
+'"<A HREF=/intranet-cost/view?item_id=$item_id>[string range $item_name 0 30]</A>"',
 '','',1,'');
 
 insert into im_view_columns values (22003,220,NULL,'Type',
-'$cost_item_type','','',3,'');
+'$item_type','','',3,'');
 
 insert into im_view_columns values (22004,220,NULL,'Provider',
 '"<A HREF=/intranet/customers/view?customer_id=$provider_id>$provider_name</A>"',
@@ -889,16 +917,19 @@ insert into im_view_columns values (22007,220,NULL,'Due Date',
 }]','','',7,'');
 
 insert into im_view_columns values (22011,220,NULL,'Amount',
-'$cost_item_amount_formatted $cost_item_currency','','',11,'');
+'$amount_formatted $currency','','',11,'');
 
-insert into im_view_columns values (22013,220,NULL,'Paid',
-'$payment_amount $payment_currency','','',13,'');
+-- insert into im_view_columns values (22013,220,NULL,'Paid',
+-- '$payment_amount $payment_currency','','',13,'');
 
 insert into im_view_columns values (22017,220,NULL,'Status',
-'[im_cost_item_status_select "cost_item_status.$cost_item_id" $cost_item_status_id]','','',17,'');
+'[im_cost_item_status_select "item_status.$item_id" $item_status_id]','','',17,'');
+
+-- insert into im_view_columns values (22098,220,NULL,'Del',
+-- '[if {[string equal "" $payment_amount]} {
+--         set ttt "<input type=checkbox name=del_cost_item value=$item_id>"
+-- }]','','',99,'');
 
 insert into im_view_columns values (22098,220,NULL,'Del',
-'[if {[string equal "" $payment_amount]} {
-        set ttt "<input type=checkbox name=del_cost_item value=$cost_item_id>"
-}]','','',99,'');
-
+'<input type=checkbox name=del_cost_item value=$item_id>','','',99,'');
+commit;
