@@ -39,21 +39,54 @@ select
 	pe.person_id as freelance_id,
 	im_name_from_user_id (pe.person_id) as freelance_name,
 	im_category_from_id(m.object_role_id) as role,
+	im_category_from_id(tt.source_language_id) as source_language,
+	im_category_from_id(tt.target_language_id) as target_language,
+	im_category_from_id(tt.task_uom_id) as task_uom,
+	im_category_from_id(tt.task_status_id) as task_status,
 	tt.*
 from
 	acs_rels r,
 	im_biz_object_members m,
-	( select
-		tt.trans_id as freelance_id,
-		[im_project_type_trans] as po_type_id,
-		im_category_from_id([im_project_type_trans]) as po_type,
-		im_category_from_id(tt.source_language_id) as source_language,
-		im_category_from_id(tt.target_language_id) as target_language,
-		im_category_from_id(tt.task_uom_id) as task_uom,
-		tt.*
-	  from	im_trans_tasks tt
-	  where	tt.project_id = :project_id
-		and tt.trans_id is not null
+	(
+		select
+			tt.trans_id as freelance_id,
+			'trans' as action,
+			[im_project_type_trans] as po_task_type_id,
+			im_category_from_id([im_project_type_trans]) as po_task_type,
+			tt.*
+		  from	im_trans_tasks tt
+		  where	tt.project_id = :project_id
+			and tt.trans_id is not null
+	  UNION
+		select
+			tt.edit_id as freelance_id,
+			'edit' as action,
+			[im_project_type_edit] as po_task_type_id,
+			im_category_from_id([im_project_type_edit]) as po_task_type,
+			tt.*
+		  from	im_trans_tasks tt
+		  where	tt.project_id = :project_id
+			and tt.edit_id is not null
+	  UNION
+		select
+			tt.proof_id as freelance_id,
+			'proof' as action,
+			[im_project_type_proof] as po_task_type_id,
+			im_category_from_id([im_project_type_proof]) as po_task_type,
+			tt.*
+		  from	im_trans_tasks tt
+		  where	tt.project_id = :project_id
+			and tt.proof_id is not null
+	  UNION
+		select
+			tt.other_id as freelance_id,
+			'other' as action,
+			[im_project_type_other] as po_task_type_id,
+			im_category_from_id([im_project_type_other]) as po_task_type,
+			tt.*
+		  from	im_trans_tasks tt
+		  where	tt.project_id = :project_id
+			and tt.other_id is not null
 	) tt,
 	persons pe,
 	group_distinct_member_map fmem
@@ -68,13 +101,13 @@ order by
 	tt.freelance_id
 "
 
-set task_colspan 6
+set task_colspan 8
 set task_html ""
 
 set ctr 1
 set task_list [array names tasks_id]
 set old_freelance_id 0
-db_foreach po_tasks $task_sql {
+db_foreach task_tasks $task_sql {
     
     # introduce spaces after "/" (by "/ ") to allow for graceful rendering
     regsub {/} $task_name "/ " task_name
@@ -135,8 +168,10 @@ db_foreach po_tasks $task_sql {
 	<table border=0>
 	  <tr>
 	    <td class=rowtitle align=center>Task Name</td>
-	    <td class=rowtitle align=center>Target Lang</td>
-	    <td class=rowtitle align=center>Activity Type</td>
+	    <td class=rowtitle align=center>Source</td>
+	    <td class=rowtitle align=center>Target</td>
+	    <td class=rowtitle align=center>Status</td>
+	    <td class=rowtitle align=center>Type</td>
 	    <td class=rowtitle align=center>Units</td>
 	    <td class=rowtitle align=center>UoM</td>
 	    <td class=rowtitle align=center>Sel</td>
@@ -155,13 +190,18 @@ db_foreach po_tasks $task_sql {
     }
     append task_html "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <input type=hidden name=task_status_id.$task_id value=$task_status_id>
 	  <td>$task_name</td>
+	  <td>$source_language</td>
 	  <td>$target_language</td>
-	  <td>$po_type</td>
+	  <td>
+	    $task_status
+          </td>
+	  <td>
+	    $po_task_type
+          </td>
 	  <td>$task_units</td>
 	  <td>$task_uom</td>
-	  <td><input type=checkbox name=\"task.$task_id\" value=1 checked></td>
+	  <td><input type=checkbox name=\"$action.$task_id\" value=1 checked></td>
         </tr>\n"
     incr ctr    
 }

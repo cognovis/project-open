@@ -22,11 +22,16 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-    task:array
+    trans:array,optional
+    edit:array,optional
+    proof:array,optional
+    other:array,optional
+
     project_id:integer
     provider_company_id:integer
     freelance_id:integer
     cost_type_id:integer
+    { cost_status_id:integer }
     { currency "EUR" }
     { return_url ""}
 }
@@ -38,12 +43,42 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 
 if {"" == $return_url} {set return_url "/intranet/project/view?project_id=$project_id" }
+if {"" == $cost_status_id} { set cost_status_id [im_cost_status_created] }
 set todays_date [db_string get_today "select sysdate from dual"]
 set page_focus "im_header_form.keywords"
 set view_name "invoice_tasks"
 
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
+
+
+
+# ---------------------------------------------------------------
+# Compute the t.task_id in (...) lists for trans, edit, proof and other
+# ---------------------------------------------------------------
+
+set trans_list [list]
+lappend trans_list 0
+set edit_list [list]
+lappend edit_list 0
+set proof_list [list]
+lappend proof_list 0
+set other_list [list]
+lappend other_list 0
+
+foreach task [array names trans] { lappend trans_list $task }
+set trans_where_clause "and tt.task_id in ([join $trans_list ","])"
+
+foreach task [array names edit] { lappend edit_list $task }
+set edit_where_clause "and tt.task_id in ([join $edit_list ","])"
+
+foreach task [array names proof] { lappend proof_list $task }
+set proof_where_clause "and tt.task_id in ([join $proof_list ","])"
+
+foreach task [array names other] { lappend other_list $task }
+set other_where_clause "and tt.task_id in ([join $other_list ","])"
+
+
 
 # ---------------------------------------------------------------
 # Gather invoice data
@@ -53,11 +88,7 @@ set task_ids [array names task]
 
 # Build the list of selected tasks ready for invoicing
 set invoice_mode "new"
-set in_clause_list [list]
-foreach selected_task [array names task] {
-    lappend in_clause_list $selected_task
-}
-set tasks_where_clause "task_id in ([join $in_clause_list ","])"
+
 
 # Create the default values for a new purchase order
 #
@@ -101,126 +132,201 @@ where
         and o.address_country_code=cc.iso(+)
 "
 
+
 # ---------------------------------------------------------------
-# Render the "Purchase Order Data" and "Receipient" blocks
+# Select and process the trans, edit, proof and other services
+# for the selected files.
+# The result is "provider_tasks_sql", a SQL query fragment that
+# returns all the tasks that need to be purchased from the given
+# freelancer.
 # ---------------------------------------------------------------
-set invoice_data_html "
-        <tr><td align=middle class=rowtitle colspan=2>Purchase Order Data</td></tr>
-        <tr>
-          <td  class=rowodd>Purchase Order nr.:</td>
-          <td  class=rowodd> 
-            <input type=text name=invoice_nr size=15 value='$invoice_nr'>
-          </td>
-        </tr>
-        <tr> 
-          <td  class=roweven>Purchase Order date:</td>
-          <td  class=roweven> 
-            <input type=text name=invoice_date size=15 value='$invoice_date'>
-          </td>
-        </tr>
-        <tr> 
-          <td class=roweven>Payment terms</td>
-          <td class=roweven> 
-            <input type=text name=payment_days size=5 value='$payment_days'>
-            days date of invoice</td>
-        </tr>
-        <tr> 
-          <td class=rowodd>Payment Method</td>
-          <td class=rowodd>[im_invoice_payment_method_select payment_method_id $payment_method_id]</td>
-        </tr>
-        <tr> 
-          <td class=roweven> Purchase Order template:</td>
-          <td class=roweven>[im_cost_template_select template_id $template_id]</td>
-        </tr>
+
+# Get the freelancers Trados Matrix
+#
+array set provider_matrix [im_trans_trados_matrix $provider_company_id]
+
+# How many words does a translator edit per hour?
+set editing_words_per_hour 1000
+
+# Select out the sum of units from the provider translation
+# jobs.
+# Provider translation wordcount is determined by multiplying
+# the original Trados wordcount with the _providers_ trados
+# matrix.
+#
+set trans_tasks_inner_sql "
+	-- Select the wordcount 
+	select  tt.*,
+		'File translation: Trados wordcount multiplied with provider Trados matrix' as po_comment,
+		[im_project_type_trans] as po_task_type_id,
+		(	tt.match_x * $provider_matrix(x) +
+			tt.match_rep * $provider_matrix(rep) +
+			tt.match100 * $provider_matrix(100) +
+			tt.match95 * $provider_matrix(95) +
+			tt.match85 * $provider_matrix(85) +
+			tt.match75 * $provider_matrix(75) +
+			tt.match50 * $provider_matrix(50) +
+			tt.match0 * $provider_matrix(0) 
+		) as po_billable_units,
+		tt.task_uom_id as po_task_uom_id
+	from	im_trans_tasks tt
+	where	tt.trans_id = :freelance_id
+		and (
+			tt.task_uom_id = [im_uom_s_word]
+			and tt.match100 is not null
+		)
+		$trans_where_clause
+UNION
+	select  tt.*,
+		'Translation of a manually added task: Just taking the manually specified task units' as po_comment,
+		[im_project_type_trans] as po_task_type_id,
+		tt.task_units as po_billable_units,
+		tt.task_uom_id as po_task_uom_id
+	from	im_trans_tasks tt
+	where	tt.trans_id = :freelance_id
+		and (
+			tt.task_uom_id != [im_uom_s_word]
+			or tt.match100 is null
+		)
+		$trans_where_clause
 "
 
-set receipient_html "
-        <tr><td align=center valign=top class=rowtitle colspan=2> Recipient</td></tr>
-        <tr> 
-          <td  class=rowodd>Company name</td>
-          <td  class=rowodd>
-            <A href=/intranet/customers/view?customer_id=$provider_company_id>$company_name</A>
-          </td>
-        </tr>
-        <tr> 
-          <td  class=roweven>VAT</td>
-          <td  class=roweven>$vat_number</td>
-        </tr>
-        <tr> 
-          <td  class=rowodd> Accounting Contact</td>
-          <td  class=rowodd>
-            <A href=/intranet/users/view?user_id=$accounting_contact_id>$company_contact_name</A>
-          </td>
-        </tr>
-        <tr> 
-          <td  class=roweven>Adress</td>
-          <td  class=roweven>$address_line1 <br> $address_line2</td>
-        </tr>
-        <tr> 
-          <td  class=rowodd>Zip</td>
-          <td  class=rowodd>$address_postal_code</td>
-        </tr>
-        <tr> 
-          <td  class=roweven>Country</td>
-          <td  class=roweven>$country_name</td>
-
-        </tr>
-        <tr> 
-          <td  class=rowodd>Phone</td>
-          <td  class=rowodd>$phone</td>
-        </tr>
-        <tr> 
-          <td  class=roweven>Fax</td>
-          <td  class=roweven>$fax</td>
-        </tr>
-        <tr> 
-          <td  class=rowodd>Email</td>
-          <td  class=rowodd>$company_contact_email</td>
-        </tr>
+# Select out the tasks from editing the files.
+# Edit time is normally calculated as brut word count
+# (no trados matrix applied) diveded by 1000 words/hour.
+#
+# However, this only applies to "files" as translation
+# tasks. There may be already some editing tasks specified
+# by hour.
+set edit_tasks_inner_sql "
+	select  tt.*,
+		'File editing: Converting the total wordcount into editing hours using $editing_words_per_hour words per hour' as po_comment,
+		[im_project_type_edit] as po_task_type_id,
+		(	tt.match_x +
+			tt.match_rep +
+			tt.match100 +
+			tt.match95 +
+			tt.match85 +
+			tt.match75 +
+			tt.match50 +
+			tt.match0
+		) / $editing_words_per_hour as po_billable_units,
+		[im_uom_hour] as po_task_uom_id
+	from	im_trans_tasks tt
+	where	tt.edit_id = :freelance_id
+		and (
+			tt.task_uom_id = [im_uom_s_word]
+			and tt.match100 is not null
+		)
+		$edit_where_clause
+UNION
+	select  tt.*,
+		'Editing a manually added task: Just taking the manually specified task units' as po_comment,
+		[im_project_type_edit] as po_task_type_id,
+		tt.task_units as po_billable_units,
+		tt.task_uom_id as po_task_uom_id
+	from	im_trans_tasks tt
+	where	tt.edit_id = :freelance_id
+		and (
+			tt.task_uom_id != [im_uom_s_word]
+			or tt.match100 is null
+		)
+		$edit_where_clause
 "
 
+set provider_tasks_sql "
+		$trans_tasks_inner_sql
+        UNION
+		$edit_tasks_inner_sql
+        UNION
+                select  tt.*,
+			'' as po_comment,
+                        [im_project_type_proof] as po_task_type_id,
+                        tt.billable_units as po_billable_units,
+                        tt.task_uom_id as po_task_uom_id
+                from    im_trans_tasks tt
+                where   tt.proof_id = :freelance_id
+                        $proof_where_clause
+        UNION
+                select  tt.*,
+			'' as po_comment,
+                        [im_project_type_other] as po_task_type_id,
+                        tt.billable_units as po_billable_units,
+                        tt.task_uom_id as po_task_uom_id
+                from    im_trans_tasks tt
+                where   tt.other_id = :freelance_id
+                        $other_where_clause
+"
+
+# for testing purposes: replace complex query by simple query...
+set xxxprovider_tasks_sql "
+select	tt.*,
+	'' as po_comment,
+	tt.task_type_id as po_task_type_id,
+	tt.billable_units as po_billable_units,
+	tt.task_uom_id as po_task_uom_id
+from	im_trans_tasks tt
+where	tt.trans_id = :freelance_id
+"
+
+
 # ---------------------------------------------------------------
-# 6. Select and render invoicable items 
+# Select and render invoicable items 
 # ---------------------------------------------------------------
 
 set sql "
-select 
-	t.task_id,
-	t.task_units,
+select
 	t.task_name,
-	t.billable_units,
-	t.task_uom_id,
-	t.task_type_id,
+	t.po_comment,
+	t.task_units,
 	t.project_id,
-	im_category_from_id(t.task_uom_id) as uom_name,
-	im_category_from_id(t.task_type_id) as type_name,
+	t.po_billable_units as billable_units,
+	t.po_task_uom_id as task_uom_id,
+	t.po_task_type_id as task_type_id,
+	t.match_x,
+	t.match_rep,
+	t.match100,
+	t.match95,
+	t.match85,
+	t.match75,
+	t.match50,
+	t.match0,
+	im_category_from_id(t.po_task_type_id) as task_type,
+	im_category_from_id(t.po_task_uom_id) as uom_name,
 	im_category_from_id(t.task_status_id) as task_status,
 	im_category_from_id(t.target_language_id) as target_language,
+	im_category_from_id(t.source_language_id) as source_language,
 	p.project_name,
 	p.project_path,
 	p.project_path as project_short_name
 from 
-	im_trans_tasks t,
+	($provider_tasks_sql) t,
 	im_projects p
 where 
-	$tasks_where_clause
-	and t.project_id = p.project_id
+	t.project_id = p.project_id
 order by
 	project_id, task_id
 "
 
+
 set task_table "
 <tr> 
   <td class=rowtitle>Task Name</td>
+  <td class=rowtitle>Src</td>
+  <td class=rowtitle>Trg</td>
+  <td class=rowtitle>XTr</td>
+  <td class=rowtitle>Rep</td>
+  <td class=rowtitle>100 %</td>
+  <td class=rowtitle>95 %</td>
+  <td class=rowtitle>85 %</td>
+  <td class=rowtitle>75 %</td>
+  <td class=rowtitle>50 %</td>
+  <td class=rowtitle>0 %</td>
+<!--  <td class=rowtitle>Units</td> -->
   <td class=rowtitle>Units</td>
-  <td class=rowtitle>Billable Units</td>
-  <td class=rowtitle>Target</td>
-  <td class=rowtitle>  
-    UoM 
-    <img src=/images/help.gif width=16 height=16 alt='Unit of Measure'> 
-  </td>
+<!--  <td class=rowtitle>UoM</td> -->
   <td class=rowtitle>Type</td>
-  <td class=rowtitle>Status</td>
+<!--  <td class=rowtitle>Status</td> -->
 </tr>
 "
 
@@ -228,7 +334,7 @@ ns_log Notice "before rendering the task list $invoice_id"
 
 set task_table_rows ""
 set ctr 0
-set colspan 7
+set colspan 15
 set old_project_id 0
 db_foreach select_tasks $sql {
 
@@ -246,12 +352,23 @@ db_foreach select_tasks $sql {
     append task_table_rows "
 	<tr $bgcolor([expr $ctr % 2])> 
 	  <td align=left>$task_name</td>
-	  <td align=right>$task_units</td>
-	  <td align=right>$billable_units</td>
+	  <td align=right>$source_language</td>
 	  <td align=right>$target_language</td>
-	  <td align=right>$uom_name</td>
-	  <td>$type_name</td>
-	  <td>$task_status</td>
+	  <td align=right>$match_x</td>
+	  <td align=right>$match_rep</td>
+	  <td align=right>$match100</td>
+	  <td align=right>$match95</td>
+	  <td align=right>$match85</td>
+	  <td align=right>$match75</td>
+	  <td align=right>$match50</td>
+	  <td align=right>$match0</td>
+<!--	  <td align=right>$task_units</td> -->
+	  <td align=right><nobr>
+	    $billable_units $uom_name[im_gif help $po_comment]
+	  </nobr></td>
+<!--	  <td align=right>$uom_name</td>	-->
+	  <td>$task_type</td>
+<!--	  <td>$task_status</td> -->
 	</tr>"
     incr ctr
 }
@@ -299,33 +416,34 @@ if {[string equal $invoice_mode "new"]} {
         </tr>\n"
 
 
+
     # Calculate the sum of tasks (distinct by TaskType and UnitOfMeasure)
     # and determine the price of each line using a custom definable
     # function.
     set task_sum_inner_sql "
 select
-	sum(t.billable_units) as task_sum,
-	t.task_type_id,
-	t.task_uom_id,
+	sum(t.po_billable_units) as task_sum,
+	t.po_task_type_id as task_type_id,
+	t.po_task_uom_id as task_uom_id,
 	t.source_language_id,
 	t.target_language_id,
 	p.project_id,
 	p.subject_area_id
-from 
-	im_trans_tasks t,
+from
+	($provider_tasks_sql) t,
 	im_projects p
-where 
-	$tasks_where_clause
-	and t.project_id=p.project_id
+where
+	t.project_id=p.project_id
 group by
-	t.task_type_id,
-	t.task_uom_id,
+	t.po_task_type_id,
+	t.po_task_uom_id,
 	p.customer_id,
 	p.project_id,
 	t.source_language_id,
 	t.target_language_id,
 	p.subject_area_id
 "
+
 
     # Take the "Inner Query" with the data (above) and add some "long names" 
     # (categories, client names, ...) for pretty output
@@ -486,8 +604,8 @@ order by
 	    <input type=text name=item_units.$ctr size=4 value='$task_sum'>
 	  </td>
           <td align=right>
-	    <input type=hidden name=item_uom_id.$ctr value='$task_uom_id'>
-	    $task_uom
+<!--	    <input type=hidden name=item_uom_id.$ctr value='$task_uom_id'>$task_uom -->
+	    [im_category_select "Intranet UoM" "item_uom_id.$ctr" $task_uom_id]
 	  </td>
           <td align=right>
 	    <input type=text name=item_rate.$ctr size=3 value='$best_match_price'>
@@ -587,104 +705,4 @@ order by
 }
 
 
-# ---------------------------------------------------------------
-# 9. Render VAT and TAX
-# ---------------------------------------------------------------
-
-set grand_total_html "
-        <tr>
-          <td> 
-          </td>
-          <td colspan=4 align=right> 
-            <table border=0 cellspacing=1 cellpadding=0>
-              <tr> 
-                <td>VAT&nbsp;</td>
-                <td><input type=text name=vat value='$vat' size=4> % &nbsp;</td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <tr> 
-          <td> 
-          </td>
-          <td colspan=4 align=right> 
-            <table border=0 cellspacing=1 cellpadding=0>
-              <tr> 
-                <td>TAX&nbsp;</td>
-                <td><input type=text name=tax value='$tax' size=4> % &nbsp;</td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <tr> 
-          <td>&nbsp; </td>
-          <td colspan=6 align=right> 
-              <input type=submit name=submit value='$button_text'>
-          </td>
-        </tr>
-"
-
-# ---------------------------------------------------------------
-# 10. Join all parts together
-# ---------------------------------------------------------------
-
-ns_log Notice "new-3: before joining the parts together"
-
-set page_body "
-[im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
-
-<form action=/intranet-trans-invoices/new-4 method=POST>
-[export_form_vars company_id invoice_id freelance_id cost_type_id return_url]
-
-"
-
-foreach task_id $in_clause_list {
-    append page_body "<input type=hidden name=include_task value=$task_id>\n"
-}
-
-append page_body "
-  <!-- Purchase Order Data and Receipient Tables -->
-  <table cellpadding=0 cellspacing=0 bordercolor=#6699CC border=0 width=100%>
-    <tr valign=top> 
-      <td>
-
-        <table border=0 cellPadding=0 cellspacing=2>
-	  $invoice_data_html
-<!--	  <tr><td colspan=2 align=right><input type=submit value='Update'></td></tr> -->
-        </table>
-
-      </td>
-      <td></td>
-      <td align=right>
-        <table border=0 cellspacing=2 cellpadding=0 >
-          $receipient_html</td>
-        </table>
-    </tr>
-  </table>
-
-  <!-- the list of tasks (invoicable items) -->
-  <table cellpadding=2 cellspacing=2 border=0 width='100%'>
-    $task_table
-  </table>
-
-  <!-- the list of task sums, distinguised by type and UOM -->
-  <table width=100%>
-    <tr>
-      <td align=right><table border=0 cellspacing=2 cellpadding=1>
-        $task_sum_html
-        $grand_total_html
-      </td>
-    </tr>
-  </table>
-
-</form>
-
-<!-- the list of reference prices -->
-<table>
-  $reference_price_html
-</table>
-"
-
-ns_log Notice "new-3: before doc_return"
 db_release_unused_handles
-doc_return  200 text/html [im_return_template]
