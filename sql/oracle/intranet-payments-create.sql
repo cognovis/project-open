@@ -254,28 +254,36 @@ values (32, 'payment_list', 'view_finance');
 --
 delete from im_view_columns where column_id > 3200 and column_id < 3299;
 --
-insert into im_view_columns values (3201,32,NULL,'Payment #',
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (3201,32,NULL,'Payment #',
 '"<A HREF=/intranet-payments/view?payment_id=$payment_id>$payment_id</A>"','','',1,'');
 
-insert into im_view_columns values (3203,32,NULL,'Invoice',
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (3203,32,NULL,'Invoice',
 '"<A HREF=/intranet-invoices/view?invoice_id=$invoice_id>$invoice_nr</A>"','','',3,'');
 
-insert into im_view_columns values (3205,32,NULL,'Client',
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (3205,32,NULL,'Client',
 '"<A HREF=/intranet/customers/view?customer_id=$customer_id>$customer_name</A>"','','',5,'');
 
-insert into im_view_columns values (3207,32,NULL,'Received',
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (3207,32,NULL,'Received',
 '$received_date','','',7,'');
 
-insert into im_view_columns values (3209,32,NULL,'Invoice Amount',
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (3209,32,NULL,'Invoice Amount',
 '$invoice_amount','','',9,'');
 
-insert into im_view_columns values (3211,32,NULL,'Amount Paid',
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (3211,32,NULL,'Amount Paid',
 '$amount $currency','','',11,'');
 
-insert into im_view_columns values (3213,32,NULL,'Status',
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (3213,32,NULL,'Status',
 '$payment_status_id','','',13,'');
 
-insert into im_view_columns values (3290,32,NULL,'Del',
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (3290,32,NULL,'Del',
 '[if {1} {set ttt "<input type=checkbox name=del_payment value=$payment_id>"}]','','',99,'');
 
 --
