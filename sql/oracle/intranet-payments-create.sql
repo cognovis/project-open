@@ -20,7 +20,7 @@ create table im_payments (
 				constraint im_payments_pk
 				primary key,
 	cost_id			integer
-				constraint im_payments_invoice
+				constraint im_payments_cost
 				references im_costs,
 				-- who pays?
 	customer_id		integer not null
@@ -56,6 +56,9 @@ create table im_payments (
 		unique (customer_id, cost_id, provider_id, received_date, 
 			start_block, payment_type_id, currency)
 );
+
+create index im_proj_payments_cost_id_idx on im_payments(cost_id);
+
 
 ------------------------------------------------------
 -- Permissions and Privileges
@@ -260,7 +263,7 @@ extra_select, extra_where, sort_order, visible_for) values (3201,32,NULL,'Paymen
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (3203,32,NULL,'Invoice',
-'"<A HREF=/intranet-invoices/view?invoice_id=$invoice_id>$invoice_nr</A>"','','',3,'');
+'"<A HREF=/intranet-invoices/view?invoice_id=$cost_id>$cost_name</A>"','','',3,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (3205,32,NULL,'Client',
@@ -272,11 +275,11 @@ extra_select, extra_where, sort_order, visible_for) values (3207,32,NULL,'Receiv
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (3209,32,NULL,'Invoice Amount',
-'$invoice_amount','','',9,'');
+'$cost_amount','','',9,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (3211,32,NULL,'Amount Paid',
-'$amount $currency','','',11,'');
+'$payment_amount $currency','','',11,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (3213,32,NULL,'Status',
