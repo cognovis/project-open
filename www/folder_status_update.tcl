@@ -60,4 +60,5 @@ where
 	:status
     )"
 }
+append return_url bread_crum_path=$bread_crum_path
 ad_returnredirect $return_url
