@@ -18,7 +18,7 @@ ad_page_contract {
     @author mbryzek@arsdigita.com
     @cvs-id index.tcl,v 3.24.2.9 2000/09/22 01:38:44 kevin Exp
 } {
-    { order_by "Date" }
+    { order_by "Name" }
     { cost_status_id:integer 0 } 
     { cost_type_id:integer 0 } 
     { customer_id:integer 0 } 
@@ -189,12 +189,15 @@ ns_log Notice "/intranet-cost/index: company_where=$company_where"
 
 set order_by_clause ""
 switch $order_by {
+    "Name" { set order_by_clause "order by cost_name" }
+    "Type" { set order_by_clause "order by cost_type" }
+    "Project" { set order_by_clause "order by project_nr" }
     "Provider" { set order_by_clause "order by provider_name" }
     "Client" { set order_by_clause "order by customer_name" }
-    "Due Date" { set order_by_clause "order by (c.effective_date+c.payment_days)" }
+    "Due Date" { set order_by_clause "order by due_date_calculated" }
+    "Amount" { set order_by_clause "order by c.amount DESC" }
     "Paid" { set order_by_clause "order by pa.payment_amount" }
     "Status" { set order_by_clause "order by cost_status_id" }
-    "Type" { set order_by_clause "order by cost_type" }
 }
 
 set where_clause [join $criteria " and\n            "]
@@ -234,7 +237,7 @@ set sql "
 select
         c.*,
 	c.amount as amount_formatted,
-	c.effective_date + c.payment_days as due_date_calculated,
+	(c.effective_date + c.payment_days) as due_date_calculated,
 	o.object_type,
 	url.url as cost_url,
 	ot.pretty_name as object_type_pretty_name,
