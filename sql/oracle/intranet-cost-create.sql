@@ -681,6 +681,12 @@ create table im_costs (
 	note			varchar(4000)
 );
 
+-- Cost Templates
+delete from im_categories where category_id >= 900 and category_id < 1000;
+INSERT INTO im_categories VALUES (900,'invoice-english.adp','','Intranet Cost Template','category','t','f');
+INSERT INTO im_categories VALUES (902,'invoice-spanish.adp','','Intranet Cost Template','category','t','f');
+-- reserved until 999
+
 
 
 prompt *** intranet-costs: Creating category Cost Type
@@ -961,6 +967,7 @@ show errors;
 
 prompt *** intranet-costs: Deleting existing menus
 BEGIN
+    im_menu.del_module(module_name => 'intranet-trans-invoices');
     im_menu.del_module(module_name => 'intranet-payments');
     im_menu.del_module(module_name => 'intranet-invoices');
     im_menu.del_module(module_name => 'intranet-cost');
@@ -997,7 +1004,7 @@ begin
     select menu_id
     into v_main_menu
     from im_menus
-    where url='/';
+    where label='main';
 
     v_finance_menu := im_menu.new (
 	package_name =>	'intranet-cost',
