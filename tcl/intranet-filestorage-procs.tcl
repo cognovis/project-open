@@ -1066,7 +1066,6 @@ where
 	set file_paths_len [llength $file_paths] 
 	set body_index [expr $file_paths_len -1] 
 	ns_log Notice "------------------------------------------------------------"
-
 	ns_log Notice "file: $file - file_paths_len: $file_paths_len - body_index: $body_index"
         ns_log Notice "------------------------------------------------------------"
 
@@ -1075,6 +1074,9 @@ where
 	
 	# -- Evaluated only the first time that foreach is executed
 	if { $init == 1 } {
+
+	    #just a quicky solution for the integrity of file_paths_len
+	    set file_paths_len [expr $file_paths_len -1]
 
 	    # next_dir -> to know witch branch of the tree view we are evaluating
 	    set next_dir [expr $file_paths_len]
