@@ -840,7 +840,6 @@ ad_proc -public im_forum_component {
     append table_header_html "</tr>\n"
 
 
-
     # ---------------------- ------------------- ---------------------------
     # ---------------------- Build the SQL query ---------------------------
 
@@ -999,6 +998,10 @@ ad_proc -public im_forum_component {
     	db_foreach forum_query_limited $selection {
     	    if {$read_p == "t"} {set read "read"} else {set read "unread"}
     	    if {$folder_id == ""} {set folder_name "Inbox"}
+	    if {0 == $asignee_id} { 
+	    	set asignee_id "" 
+	    	set asignee_initials "" 
+	    }
 	
     	    # insert intermediate headers for every project
     	    if {[string equal "Project" $forum_order_by]} {
