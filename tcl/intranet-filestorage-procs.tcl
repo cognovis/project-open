@@ -269,7 +269,7 @@ ad_proc im_filestorage_home_component { user_id return_url} {
     set home_path [im_filestorage_home_path]
     set folder_type "home"
 
-    return [im_filestorage_base_component $user_id 0 $home_path "Home" $folder_type $return_url]
+    #return [im_filestorage_base_component $user_id 0 $home_path "Home" $folder_type $return_url]
 
     return [im_filestorage_pol_component $user_id 2346 "Home"]
 }
