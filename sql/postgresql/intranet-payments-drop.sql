@@ -45,8 +45,10 @@ delete from im_view_columns where column_id > 3200 and column_id < 3299;
 delete from im_views where view_id=32;
 
 drop sequence im_payments_id_seq;
-drop trigger im_payments_audit_tr on im_payments;
-drop function im_payments_audit_tr ();
+-- fraber 050225: Disabled because of problems with PostgreSQL
+-- to delete payments
+-- drop trigger im_payments_audit_tr on im_payments;
+-- drop function im_payments_audit_tr ();
 drop view im_payment_type;
 drop view im_invoice_payment_method;
 
