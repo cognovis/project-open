@@ -144,6 +144,7 @@ declare
         -- Menu IDs
         v_menu                  integer;
 	v_invoices_menu		integer;
+	v_invoices_new_menu	integer;
         -- Groups
         v_employees             integer;
         v_accounting            integer;
@@ -180,13 +181,21 @@ begin
     acs_permission.grant_permission(v_menu, v_accounting, 'read');
     acs_permission.grant_permission(v_menu, v_customers, 'read');
     acs_permission.grant_permission(v_menu, v_freelancers, 'read');
+
+
+    -- Add a line to the "Finance/New" page
+    select menu_id
+    into v_invoices_new_menu
+    from im_menus
+    where label='invoices_new';
+
     v_menu := im_menu.new (
 	package_name =>	'intranet-payments',
 	label =>	'payments_new',
 	name =>		'New Payment',
-	url =>		'/intranet-payments/new',
+	url =>		'/intranet-payments/new?',
 	sort_order =>	90,
-	parent_menu_id => v_invoices_menu
+	parent_menu_id => v_invoices_new_menu
     );
 
     acs_permission.grant_permission(v_menu, v_admins, 'read');
