@@ -154,14 +154,17 @@ if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
 }
 
-ns_log Notice "Slow query with the number of costs"
+# ToDo: Slow query with the number of costs
 
 set sql "
 select
         p.*,
+	p.amount as payment_amount,
+	p.currency as payment_currency,
 	ci.customer_id,
-	ci.amount,
-	ci.currency,
+	ci.amount as cost_amount,
+	ci.currency as cost_currency,
+	ci.cost_name,
 	acs_object.name(ci.customer_id) as customer_name,
         im_category_from_id(p.payment_type_id) as payment_type,
         im_category_from_id(p.payment_status_id) as payment_status
