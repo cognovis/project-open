@@ -20,13 +20,13 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set context_bar [ad_context_bar [list /intranet/users/ "Users"] "Org Chart"]
-set page_title "Users"
+set page_title "[_ intranet-hr.Users]"
 set page_focus "im_header_form.keywords"
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 set return_url [im_url_with_query]
 
 if {![im_permission $user_id view_hr]} {
-    ad_return_complaint 1 "You don't have permissions to view users"
+    ad_return_complaint 1 "[_ intranet-hr.lt_You_dont_have_permiss_1]"
     return
 }
 
@@ -50,7 +50,7 @@ where
 "]
 
 if { [llength $big_kahuna_list] == 0 || [llength $big_kahuna_list] > 1 } {
-    ad_return_error "No Big Kahuna" "<blockquote>For the org chart page to work, you need to have set up the \"who supervises whom\" relationships so that there is only one person (the CEO) who has no supervisor and no subordinates.</blockquote>"
+    ad_return_error "[_ intranet-hr.No_Big_Kahuna]" "<blockquote>[_ intranet-hr.lt_For_the_org_chart_pag]</blockquote>"
     return
 }
 
@@ -107,13 +107,13 @@ set homeless_employees ""
 db_foreach employee_listing $employee_listing_sql {
     append homeless_employees "  <li> <a href=../users/view?[export_url_vars employee_id]>$employee_name</a>"
     if { $user_admin_p } {
-	append homeless_employees " (<a href=admin/update-supervisor?[export_url_vars employee_id return_url]>add supervisor</a>)"
+	append homeless_employees " (<a href=admin/update-supervisor?[export_url_vars employee_id return_url]>[_ intranet-hr.add_supervisor]</a>)"
     }
     append homeless_employees "\n"
 }
 
 if { ![empty_string_p $homeless_employees] } {
-    append page_body "<p><h3>Employees without supervisors</h3>
+    append page_body "<p><h3>[_ intranet-hr.lt_Employees_without_sup]</h3>
 <ul>
 $homeless_employees
 </ul>

@@ -31,7 +31,7 @@ set end_century "2099-12-31"
 set internal_id [im_company_internal]
 
 if {![im_permission $user_id view_users]} {
-    ad_return_complaint 1 "You have insufficient privileges to use this page"
+    ad_return_complaint 1 "[_ intranet-hr.lt_You_have_insufficient]"
     return
 }
 
@@ -48,7 +48,7 @@ if {[info exists employee_id]} {
     ns_log Notice "/intranet-hr/new/: employee_id doesn't exist"
 }
 
-set page_title "Employee Information of $employee_name"
+set page_title "[_ intranet-hr.lt_Employee_Information_]"
 set context [ad_context_bar $page_title]
 
 
@@ -111,8 +111,7 @@ if {!$rep_cost_id} {
 		)
 	    "
     } err_msg] {
-	ad_return_complaint 1 "<li>Error creating a new repeating cost 
-	item for employee \#$employee_id:<br>
+	ad_return_complaint 1 "<li>[_ intranet-hr.lt_Error_creating_a_new_]<br>
 	<pre>$err_msg</pre>"
     }
 }
@@ -152,7 +151,27 @@ from im_employee_pipeline_states
 "]
 
 
-set voluntary_termination_options {{Yes t} {No f}}
+set voluntary_termination_options [list [list [_ intranet-hr.Yes] t] [list [_ intranet-hr.No] f]]
+
+set department_label "[_ intranet-hr.Department]"
+set supervisor_label "[_ intranet-hr.Supervisor]"
+set availability_label "[_ intranet-hr.Availability_]"
+set employee_status_label "[_ intranet-hr.Employee_Status]"
+set ss_number_label "[_ intranet-hr.Social_Security_]"
+set salary_label "[_ intranet-hr.Monthly_Salary]"
+set social_security_label "[_ intranet-hr.lt_Monthly_Social_Securi]"
+set insurance_label "[_ intranet-hr.Monthly_Insurance]"
+set other_cost_label "[_ intranet-hr.Monthly_Others]"
+set currency_label "[_ intranet-hr.Currency]"
+set salary_payments_per_year_label "[_ intranet-hr.lt_Salary_Payments_per_Y]
+set birthdate_label "[_ intranet-hr.Birthdate]"
+set job_title_label "[_ intranet-hr.Job_Title]"
+set job_description_label "[_ intranet-hr.Job_Description]"
+set start_date_label "[_ intranet-hr.Start_date]"
+set end_date_label "[_ intranet-hr.End_date]"
+set voluntary_termination_p_label "[_ intranet-hr.lt_Voluntary_Termination]"
+set termination_reason_label "[_ intranet-hr.Termination_Reason]"
+set signed_nda_p_label "[_ intranet-hr.NDA_Signed]"
 
 ad_form \
     -name cost \
@@ -162,28 +181,28 @@ ad_form \
     -export {next_url user_id return_url} \
     -form {
 	employee_id:key
-	{department_id:text(select) {label "Department"} {options $department_options} }
-	{supervisor_id:text(select) {label "Supervisor"} {options $supervisor_options} }
-	{availability:text(text) {label "Availability %"} {html {size 6}} }
-	{employee_status_id:text(select) {label "Employee Status"} {options $employee_status_options} }
-	{ss_number:text(text),optional {label "Social Security #"} {html {size 20}} }
-	{salary:text(text),optional {label "Monthly Salary"} {html {size 10}} }
-	{social_security:text(text),optional {label "Monthly Social Security"} {html {size 10}} }
-	{insurance:text(text),optional {label "Monthly Insurance"} {html {size 10}} }
-	{other_costs:text(text),optional {label "Monthly Others"} {html {size 10}} }
-	{currency:text(select),optional {label "Currency"} {options $currency_options} }
-	{salary_payments_per_year:text(text),optional {label "Salary Payments per Year"} {html {size 10}} }
+	{department_id:text(select) {label $department_label} {options $department_options} }
+	{supervisor_id:text(select) {label $supervisor_label} {options $supervisor_options} }
+	{availability:text(text) {label $availability_label} {html {size 6}} }
+	{employee_status_id:text(select) {label $employee_status_label} {options $employee_status_options} }
+	{ss_number:text(text),optional {label $ss_number_label} {html {size 20}} }
+	{salary:text(text),optional {label $salary_label} {html {size 10}} }
+	{social_security:text(text),optional {label $social_security_label} {html {size 10}} }
+	{insurance:text(text),optional {label $insurance_label} {html {size 10}} }
+	{other_costs:text(text),optional {label $other_cost_label} {html {size 10}} }
+	{currency:text(select),optional {label $currency_label} {options $currency_options} }
+	{salary_payments_per_year:text(text),optional {label $salary_payments_per_year_label} {html {size 10}} }
 
-	{birthdate:text(text),optional {label "Birthdate"} {html {size 10}} }
-	{job_title:text(text),optional {label "Job Title"} {html {size 30}} }
-	{job_description:text(textarea),nospell,optional {label "Job Description"} {html {rows 5 cols 40}}}
+	{birthdate:text(text),optional {label $birthdate_label} {html {size 10}} }
+	{job_title:text(text),optional {label $job_title_label} {html {size 30}} }
+	{job_description:text(textarea),nospell,optional {label $job_description_label} {html {rows 5 cols 40}}}
 
-	{start_date:text(text),optional {label "Start date"} {html {size 10}} }
-	{end_date:text(text),optional {label "End date"} {html {size 10}} }
+	{start_date:text(text),optional {label $start_date_label} {html {size 10}} }
+	{end_date:text(text),optional {label $end_date_label} {html {size 10}} }
 
-	{voluntary_termination_p:text(radio),optional {label "Voluntary Termination"} {options $voluntary_termination_options} }
-	{termination_reason:text(textarea),nospell,optional {label "Termination Reason"} {html {rows 5 cols 40}}}
-	{signed_nda_p:text(radio),optional {label "NDA Signed?"} {options $voluntary_termination_options} }
+	{voluntary_termination_p:text(radio),optional {label $voluntary_termination_p_label} {options $voluntary_termination_options} }
+	{termination_reason:text(textarea),nospell,optional {label $termination_reason_label} {html {rows 5 cols 40}}}
+	{signed_nda_p:text(radio),optional {label $signed_nda_p_label} {options $voluntary_termination_options} }
 
 	{dependant_p:text(hidden),optional }
 	{only_job_p:text(hidden),optional }
@@ -311,7 +330,7 @@ ad_form -extend -name cost -on_request {
 		rep_cost_id = :rep_cost_id
 	"
 	 } err_msg] {
-	    ad_return_complaint 1 "<li>Error inserting employee cost information:<BR>
+	    ad_return_complaint 1 "<li>[_ intranet-hr.lt_Error_inserting_emplo]<BR>
             <pre>$err_msg</pre>"
 	}
 
