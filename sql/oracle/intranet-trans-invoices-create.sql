@@ -288,6 +288,7 @@ create unique index im_price_idx on im_trans_prices (
 
 -- Calculate a match value between a price list item and an invoice_item
 -- The higher the match value the better the fit.
+prompt *** Creating im_trans_prices_calc_relevancy
 create or replace function im_trans_prices_calc_relevancy ( 
 	v_price_customer_id IN integer,		v_item_customer_id IN integer,
 	v_price_task_type_id IN integer,	v_item_task_type_id IN integer,
@@ -296,8 +297,12 @@ create or replace function im_trans_prices_calc_relevancy (
 	v_price_source_language_id IN integer,	v_item_source_language_id IN integer
 )
 RETURN number IS
-	match_value		number;
-	v_internal_customer_id	integer;
+	match_value			number;
+	v_internal_customer_id		integer;
+	v_price_target_language		varchar(100);
+	v_item_target_language		varchar(100);
+	v_price_source_language		varchar(100);
+	v_item_source_language		varchar(100);
 BEGIN
 	match_value := 0;
 
@@ -306,42 +311,87 @@ BEGIN
 	from im_customers
 	where customer_path='internal';
 
+	-- Hard matches for task type
 	if v_price_task_type_id = v_item_task_type_id then
-	 match_value := match_value + 4;
+		match_value := match_value + 4;
 	end if;
 	if not(v_price_task_type_id is null) and v_price_task_type_id != v_item_task_type_id then
-	 match_value := match_value - 4;
+		match_value := match_value - 4;
 	end if;
-	if v_price_source_language_id = v_item_source_language_id then
-	 match_value := match_value + 3;
+
+	-- Default matching for source language:
+	-- "de" <-> "de_DE" = + 1
+	-- "de_DE" <-> "de_DE" = +3
+	-- "es" <-> "de_DE" = -10
+	if (v_price_source_language_id is not null) and  (v_item_source_language_id is not null) then
+		-- only add or subtract match_values if both are defined...
+		select	category
+		into	v_price_source_language
+		from	im_categories
+		where	category_id = v_price_source_language_id;
+	
+		select	category
+		into	v_item_source_language
+		from	im_categories
+		where	category_id = v_item_source_language_id;
+
+		if substr(v_price_source_language,1,2) = substr(v_item_source_language,1,2) then
+			-- the main part of the language have matched
+			match_value := match_value + 2;
+			if v_price_source_language_id = v_item_source_language_id then
+				-- the main part have matched and the country variants are the same
+				match_value := match_value + 1;
+			end if;
+		else
+			match_value := match_value - 10;
+		end if;
 	end if;
-	if not(v_price_source_language_id is null) and v_price_source_language_id != v_item_source_language_id then
-	 match_value := match_value - 10;
+
+
+	-- Default matching for target language:
+	if (v_price_target_language_id is not null) and  (v_item_target_language_id is not null) then
+		-- only add or subtract match_values if both are defined...
+		select	category
+		into	v_price_target_language
+		from	im_categories
+		where	category_id = v_price_target_language_id;
+	
+		select	category
+		into	v_item_target_language
+		from	im_categories
+		where	category_id = v_item_target_language_id;
+
+		if substr(v_price_target_language,1,2) = substr(v_item_target_language,1,2) then
+			-- the main part of the language have matched
+			match_value := match_value + 1;		
+			if v_price_target_language_id = v_item_target_language_id then
+				-- the main part have matched and the country variants are the same
+				match_value := match_value + 1;
+			end if;
+		else
+			match_value := match_value - 10;
+		end if;
 	end if;
-	if v_price_target_language_id = v_item_target_language_id then
-	 match_value := match_value + 2;
-	end if;
-	if not(v_price_target_language_id is null) and v_price_target_language_id != v_item_target_language_id then
-	 match_value := match_value - 10;
-	end if;
+
+
 	if v_price_subject_area_id = v_item_subject_area_id then
-	 match_value := match_value + 1;
+		match_value := match_value + 1;
 	end if;
 	if not(v_price_subject_area_id is null) and v_price_subject_area_id != v_item_subject_area_id then
-	 match_value := match_value - 10;
+		match_value := match_value - 10;
 	end if;
 
 	-- Customer logic - "Internal" doesn't give a penalty 
 	-- but doesn't count as high as an exact match
 	--
 	if v_price_customer_id = v_item_customer_id then
-	 match_value := (match_value + 6)*2;
+		match_value := (match_value + 6)*2;
 	end if;
 	if v_price_customer_id = v_internal_customer_id then
-	 match_value := match_value + 1;
+		match_value := match_value + 1;
 	end if;
 	if v_price_customer_id != v_internal_customer_id and v_price_customer_id != v_item_customer_id then
-	 match_value := match_value -10;
+		match_value := match_value -10;
 	end if;
 
 	return match_value;
@@ -401,15 +451,15 @@ end;
 --
 declare
 	-- Menu IDs
-	v_menu		integer;
+	v_menu			integer;
 	v_invoices_menu		integer;
 	v_project_menu		integer;
 
 	-- Groups
-	v_accounting	 integer;
+	v_accounting		 integer;
 	v_senman		integer;
-	v_customers	  integer;
-	v_freelancers	integer;
+	v_customers		integer;
+	v_freelancers		integer;
 	v_admins		integer;
 begin
 
