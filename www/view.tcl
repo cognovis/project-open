@@ -42,7 +42,7 @@ db_0or1row get_payment_info "
 select
         p.*,
 	ci.cost_name,
-	ci.company_id,
+	ci.customer_id,
 	c.company_name,
 	pro.company_name as provider_name,
 	to_char(p.start_block,'Month DD, YYYY') as start_block,
@@ -54,7 +54,7 @@ from
 	im_costs ci
 where
 	p.cost_id = ci.cost_id(+)
-	and ci.company_id = c.company_id(+)
+	and ci.customer_id = c.company_id(+)
 	and ci.provider_id = pro.company_id(+)
 	and p.payment_id = :payment_id
 "
