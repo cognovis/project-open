@@ -96,7 +96,7 @@ db_foreach select_info $sql {
 
 
 set page_title "Allocations for $project_name"
-set context_bar "[ad_context_bar [list "index" "Project allocations"] "One project"]"
+set context_bar "[im_context_bar [list "index" "Project allocations"] "One project"]"
 
 
 set page_content "

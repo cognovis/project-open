@@ -81,7 +81,7 @@ db_release_unused_handles
 
 
 set page_title "Enter an allocation"
-set context_bar "[ad_context_bar [list "index" "Allocations"] "Enter allocation"]"
+set context_bar "[im_context_bar [list "index" "Allocations"] "Enter allocation"]"
 
 set page_content "
 <form method=post action=add-2> 

@@ -126,7 +126,7 @@ if { $counter == 0 } {
 db_release_unused_handles
 
 set page_title "Allocations for $allocated_name"
-set context_bar "[ad_context_bar [list "index" "Project allocations"] "One employee"]"
+set context_bar "[im_context_bar [list "index" "Project allocations"] "One employee"]"
 
 set allocated_user_id $allocation_user_id
 doc_return  200 text/html " 
