@@ -1219,7 +1219,7 @@ ad_proc im_filestorage_dir_row { file_body user_id folder_id status return_url o
     }
 
     append texte "<img src=/intranet-filestorage/images/folder_s.gif border=0 width=21 height=21 hspace=0 vspace=0></a>
-		    <a href=/intranet-filestorage/index?user_id=$user_id&bread_crum_path=$file&object_id=$object_id&return_url=$return_url>$file_body</a>
+		    <a href=//index?user_id=$user_id&bread_crum_path=$file&object_id=$object_id&return_url=$return_url>$file_body</a>
 		    </a>
 		    </div>
 		    </td>
