@@ -111,7 +111,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 	[export_form_vars employee_id return_url]
 	<table cellpadding=1 cellspacing=1 border=0>
 	<tr> 
-	  <td colspan=2 class=rowtitle align=center>Employee Information</td>
+	  <td colspan=2 class=rowtitle align=center>[_ intranet-hr.Employee_Information]</td>
 	</tr>\n"
 
     set ctr 1
@@ -122,7 +122,10 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 	    if {1 || [eval $visible_for]} {
 		append employee_html "
                 <tr $td_class([expr $ctr % 2])>
-		<td>$column_name &nbsp;</td><td>"
+		<td>"
+		set cmd0 "append employee_html $column_name"
+		eval "$cmd0"
+		append employee_html " &nbsp;</td><td>"
 		set cmd "append employee_html $column_render_tcl"
 		eval $cmd
 		append employee_html "</td></tr>\n"
@@ -130,15 +133,15 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 	    }
 	}
     } else {
-	append employee_html "<tr><td colspan=2><i>Nothing defined yet</i></tr></td>\n"
+	append employee_html "<tr><td colspan=2><i>[_ intranet-hr.Nothing_defined_yet]</i></tr></td>\n"
     }
 
     if {$admin } {
         append employee_html "
         <tr $td_class([expr $ctr % 2])>
-        <td></td><td><input type=submit value='Edit'></td></tr>\n"
+        <td></td><td><input type=submit value='[_ intranet-hr.Edit]'></td></tr>\n"
     }
     append employee_html "</table></form>\n"
 
-    return [im_table_with_title "Employee Information" $employee_html]
+    return [im_table_with_title "[_ intranet-hr.Employee_Information]" $employee_html]
 }

@@ -163,7 +163,7 @@ set social_security_label "[_ intranet-hr.lt_Monthly_Social_Securi]"
 set insurance_label "[_ intranet-hr.Monthly_Insurance]"
 set other_cost_label "[_ intranet-hr.Monthly_Others]"
 set currency_label "[_ intranet-hr.Currency]"
-set salary_payments_per_year_label "[_ intranet-hr.lt_Salary_Payments_per_Y]
+set salary_payments_per_year_label "[_ intranet-hr.lt_Salary_Payments_per_Y]"
 set birthdate_label "[_ intranet-hr.Birthdate]"
 set job_title_label "[_ intranet-hr.Job_Title]"
 set job_description_label "[_ intranet-hr.Job_Description]"
