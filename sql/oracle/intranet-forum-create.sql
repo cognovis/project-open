@@ -850,11 +850,11 @@ extra_select, extra_where, sort_order, visible_for) values (4209,42,NULL,'Status
 '$topic_status','','',11,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (42010,42,NULL,'Read',
+extra_select, extra_where, sort_order, visible_for) values (4210,42,NULL,'Read',
 '$read','','',12,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (4210,42,NULL,
+extra_select, extra_where, sort_order, visible_for) values (4211,42,NULL,
 '"[im_gif help "Select topics here for processing"]"',
 '"<input type=checkbox name=topic_id.$topic_id>"',
 '','',13,'');
