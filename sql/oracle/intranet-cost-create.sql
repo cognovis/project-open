@@ -1137,22 +1137,17 @@ delete from im_view_columns where column_id > 22000 and column_id < 22099;
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22001,220,'Name',
 '"<A HREF=${cost_url}$cost_id>[string range $cost_name 0 30]</A>"',1);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22003,220,'Type','$object_type_pretty_name',3);
-
+sort_order) values (22003,220,'Type','$cost_type',3);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22005,220,'Project',
 '"<A HREF=/intranet/projects/view?project_id=$project_id>$project_nr</A>"',5);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22007,220,'Provider',
 '"<A HREF=/intranet/customers/view?customer_id=$provider_id>$provider_name</A>"',7);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22011,220,'Client',
 '"<A HREF=/intranet/customers/view?customer_id=$customer_id>$customer_name</A>"',11);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22015,220,'Due Date',
 '[if {$overdue > 0} {
@@ -1160,20 +1155,17 @@ sort_order) values (22015,220,'Due Date',
 } else {
 	set t "$due_date_calculated"
 }]',15);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22021,220,'Amount','$amount_formatted $currency',21);
-
 -- insert into im_view_columns values (22013,220,'Paid',
 -- '$payment_amount $payment_currency',13);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22025,220,'Status',
 '[im_cost_status_select "cost_status.$cost_id" $cost_status_id]',25);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22098,220,'Del',
-'"<input type=hidden name=object_type.$cost_id value=$object_type><input type=checkbox name=del_cost value=$cost_id>"',99);
+'"<input type=hidden name=object_type.$cost_id value=$object_type>
+<input type=checkbox name=del_cost value=$cost_id>"',99);
 commit;
 
 

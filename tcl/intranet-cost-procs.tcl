@@ -538,12 +538,33 @@ order by
 }
 
 
-ad_proc -public im_cost_type_select { select_name { default "" } } {
+ad_proc -public im_cost_type_select { select_name { default "" } { super_type_id 0 } } {
     Returns an html select box named $select_name and defaulted to
-    $default with a list of all the cost_types in the system
+    $default with a list of all the cost_types in the system.
+    If super_type_id is specified then return only those types "below" super_type.
 } {
-    return [im_category_select "Intranet Cost Type" $select_name $default]
+    set category_type "Intranet Cost Type"
+    set bind_vars [ns_set create]
+    ns_set put $bind_vars category_type $category_type
+
+    set sql "
+	select	c.category_id,
+		c.category
+        from	im_categories c
+        where	c.category_type = :category_type"
+
+    if {$super_type_id} {
+        ns_set put $bind_vars super_type_id $super_type_id
+        append sql "\n	and c.category_id in (
+		select distinct
+			child_id
+		from	im_category_hierarchy
+		where	parent_id = :super_type_id
+        )"
+    }
+    return [im_selection_to_select_box $bind_vars category_select $sql $select_name $default]
 }
+
 
 
 ad_proc -public im_cost_status_select { select_name { default "" } } {
@@ -603,6 +624,7 @@ where
     append sql " order by lower(cost_nr)"
     return [im_selection_to_select_box $bind_vars "cost_status_select" $sql $select_name $default]
 }
+
 
 
 
