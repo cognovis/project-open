@@ -273,12 +273,17 @@ where	r.object_id_one = :object_id
 	lappend sql_list $object_admin_sql
     }
 
+    # Append an empty string to the SQL in case there
+    # are no permissions for a user to avoid an error
+    lappend sql_list "select 0 as user_id, '' as user_name from dual"
+
     set sql [join $sql_list " UNION "]
     ns_log Notice "im_forum_potential_asignees: sql=$sql"
 
 
     set asignee_list [list]
     db_foreach object_admins $sql {
+	if {!$user_id} { continue }
 	lappend asignee_list $user_id
 	lappend asignee_list $user_name
     }
