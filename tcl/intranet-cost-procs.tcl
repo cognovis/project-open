@@ -646,6 +646,9 @@ ad_proc im_costs_project_finance_component { user_id project_id } {
     # Default Currency
     set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 
+    # project_id may get overwritten by SQL query
+    set org_project_id $project_id
+
     # ----------------- Main SQL - select subtotals and their currencies -------------
     
     set subtotals_sql "
@@ -729,6 +732,7 @@ order by
     # ----------------- Compose SQL Query --------------------------------
     # Only get "real" costs (=invoices and bills) and ignore
     # quotes and purchase orders 
+ 
  
     set costs_sql "
 select
@@ -969,6 +973,9 @@ order by
 
     # ----------------- Admin Links --------------------------------
 
+    # Restore value overwritten by SQL query
+    set project_id $org_project_id
+    
     # Add some links to create new financial documents
     # if the intranet-invoices module is installed
     if {[db_table_exists im_invoices]} {
