@@ -67,7 +67,10 @@ create index im_proj_payments_cost_id_idx on im_payments(cost_id);
 
 begin
     acs_privilege.create_privilege('view_payments','View Payments','View Payments');
+    acs_privilege.add_child('admin', 'view_payments');
+
     acs_privilege.create_privilege('add_payments','View Payments','View Payments');
+    acs_privilege.add_child('admin', 'add_payments');
 end;
 /
 show errors;
