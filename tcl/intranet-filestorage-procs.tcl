@@ -228,7 +228,6 @@ ad_proc -public im_filestorage_find_files { project_id } {
 
     } err_msg] } {
 	# Probably some permission errors - return empty string
-	ns_log Notice "\nim_task_component:
 	'exec /usr/bin/find $project_path' failed with error:
 	err_msg=$err_msg\n"
 	set file_list ""
