@@ -1233,9 +1233,9 @@ ad_proc im_filestorage_dir_row {
 	append texte [im_gif empty21]
 	incr i 
     } 
-
+    set status $open_p
     append texte "
-   <a href=/intranet-filestorage/folder_status_update?[export_url_vars folder_id open_p object_id file bread_crum_path return_url]>"
+   <a href=/intranet-filestorage/folder_status_update?[export_url_vars folder_id status object_id file bread_crum_path return_url]>"
     if {$open_p == "o"} {
 	ns_log Notice "--- directory opended ---"
 	append texte [im_gif foldin2]
