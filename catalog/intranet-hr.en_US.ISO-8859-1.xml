@@ -10,6 +10,7 @@
   <msg key="Edit">Edit</msg>
   <msg key="Email">Email</msg>
   <msg key="Employee_Information">Employee Information</msg>
+  <msg key="Employee_Own_Supervisor">An Employee can't be his own supervisor.</msg>
   <msg key="Employee_Status">Employee Status</msg>
   <msg key="End_date">End date</msg>
   <msg key="Filter_Employees">Filter Employees</msg>
