@@ -13,7 +13,6 @@
         <vendor url="http://www.project-open.com/">Project/Open</vendor>
 
         <provides url="intranet-forum" version="1.0"/>
-        <requires url="intranet-core" version="1.0"/>
 
         <callbacks>
         </callbacks>
