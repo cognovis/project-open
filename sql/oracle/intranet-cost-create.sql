@@ -92,6 +92,15 @@ create table im_cost_centers (
 				not null
 				constraint im_cost_centers_label_un
 				unique,
+				-- Hierarchical upper case code for cost center 
+				-- with two characters for each level:
+				-- ""=Company, "Ad"=Administration, "Op"=Operations,
+				-- "OpAn"=Operations/Analysis, ...
+	cost_center_code	varchar(400)
+				constraint im_cost_centers_code_nn
+				not null
+				constraint im_cost_centers_code_ck
+				check(length(cost_center_code) % 2 = 0),
 	cost_center_type_id	integer not null
 				constraint im_cost_centers_type_fk
 				references im_categories,
@@ -134,6 +143,7 @@ is
 	context_id	in integer default null,
 	cost_center_name in varchar,
 	cost_center_label in varchar,
+	cost_center_code in varchar,
 	type_id		in integer,
 	status_id	in integer,
 	parent_id	in integer,
@@ -162,6 +172,7 @@ is
 	context_id	in integer default null,
 	cost_center_name in varchar,
 	cost_center_label in varchar,
+	cost_center_code in varchar,
 	type_id		in integer,
 	status_id	in integer,
 	parent_id	in integer,
@@ -185,6 +196,7 @@ is
 	insert into im_cost_centers (
 		cost_center_id, 
 		cost_center_name, cost_center_label,
+		cost_center_code,
 		cost_center_type_id, cost_center_status_id, 
 		parent_id, manager_id,
 		department_p,
@@ -192,6 +204,7 @@ is
 	) values (
 		new.v_cost_center_id, 
 		new.cost_center_name, new.cost_center_label,
+		new.cost_center_code,
 		new.type_id, new.status_id, 
 		new.parent_id, new.manager_id, 
 		new.department_p,
@@ -319,6 +332,7 @@ begin
     v_the_company_center := im_cost_center.new (
 	cost_center_name =>	'The Company',
 	cost_center_label =>	'company',
+	cost_center_code =>	'',
 	type_id =>		3002,
 	status_id =>		3101,
 	parent_id => 		null,
@@ -338,8 +352,9 @@ begin
     -- HR stuff.'
     --
     v_administrative_center := im_cost_center.new (
-	cost_center_name =>		'Administration',
+	cost_center_name =>	'Administration',
 	cost_center_label =>	'admin',
+	cost_center_code =>	'Ad',
 	type_id =>	3001,
 	status_id =>	3101,
 	parent_id => 	v_the_company_center,
@@ -354,6 +369,7 @@ begin
     v_utilities_center := im_cost_center.new (
 	cost_center_name =>	'Rent and Utilities',
 	cost_center_label =>	'utilities',
+	cost_center_code =>	'Ut',
 	type_id =>		3001,
 	status_id =>		3101,
 	parent_id => 		v_the_company_center,
@@ -368,6 +384,7 @@ begin
     v_sales_center := im_cost_center.new (
 	cost_center_name =>	'Sales',
 	cost_center_label =>	'sales',
+	cost_center_code =>	'Sa',
 	type_id =>		3001,
 	status_id =>		3101,
 	parent_id => 		v_the_company_center,
@@ -382,6 +399,7 @@ begin
     v_marketing_center := im_cost_center.new (
 	cost_center_name =>	'Marketing',
 	cost_center_label =>	'marketing',
+	cost_center_code =>	'Ma',
 	type_id =>		3001,
 	status_id =>		3101,
 	parent_id => 		v_the_company_center,
@@ -394,8 +412,9 @@ begin
     -- Project Operations Cost Center (3001)
     --
     v_projects_center := im_cost_center.new (
-	cost_center_name =>	'Project Operations',
+	cost_center_name =>	'Operations',
 	cost_center_label =>	'operations',
+	cost_center_code =>	'Op',
 	type_id =>		3001,
 	status_id =>		3101,
 	parent_id => 		v_the_company_center,
