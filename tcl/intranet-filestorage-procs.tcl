@@ -72,6 +72,7 @@ where
 	and r.profile_id = p.profile_id (+)
 "
     db_foreach project_profiles $project_profile_sql {
+	if {"" == $profile_gif} { set profile_gif "profile" }
 	lappend profiles [list $profile_id $profile_gif $profile_name ]
     }
     return $profiles
@@ -676,9 +677,16 @@ ad_proc im_filestorage_tool_tds { folder folder_type project_id return_url up_li
     return "
    <td align=center>
      <input type=hidden name=actions value=\"none\">
-   </td><td>
+   </td>
+<!-- 
+  Folder-up has some particular problems because it is actively
+  modifying the URL variables. Doesn't work yet 100%, so better
+  disable meanwhile...
+   <td>
      <input type=image src=/intranet/images/up-folder.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='up-folder'; submit();\" alt='Folder up'>
-   </td><td>
+   </td>
+-->
+   <td>
      <input type=image src=/intranet/images/newfol.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-folder'; submit();\" alt='Create a new folder'>
    </td><td>
      <input type=image src=/intranet/images/upload.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='upload'; submit();\" alt='Upload a file'>
@@ -1257,7 +1265,7 @@ where
 
 
     set component_html "
-<form name=\"$folder_type\" method=POST action=/intranet-filestorage/action>
+<form name=\"$folder_type\" method=POST action=\"/intranet-filestorage/action\">
 [export_form_vars object_id bread_crum_path folder_type return_url]
 
 <TABLE border=0 cellpadding=0 cellspacing=0>
