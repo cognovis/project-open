@@ -254,7 +254,7 @@ begin
 
 	package_name =>	'intranet-forum',
         page_url =>     '/intranet/projects/view',
-        bay_name =>     'right',
+        location =>     'right',
         sort_order =>   10,
         component_tcl => 
 
@@ -312,7 +312,7 @@ begin
 
 	package_name =>	'intranet-forum',
         page_url =>     '/intranet/customers/view',
-        bay_name =>     'right',
+        location =>     'right',
         sort_order =>   10,
         component_tcl => 
 
@@ -371,7 +371,7 @@ begin
 
 	package_name =>	'intranet-forum',
         page_url =>     '/intranet/index',
-        bay_name =>     'right',
+        location =>     'right',
         sort_order =>   10,
         component_tcl => 
 
