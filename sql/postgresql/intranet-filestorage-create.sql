@@ -125,18 +125,6 @@ create table im_fs_actions (
 
 
 ---------------------------------------------------------
--- Categories
---
-
--- insert into im_categories
-delete from im_categories where category_id >= 2420 and category_id < 2430;
-INSERT INTO im_categories VALUES (2420,'upload','This is the value of im_task_actions.action_type_id when a user uploads a task file.','Intranet File Action Type','category','t','f');
-INSERT INTO im_categories VALUES (2421,'download','','Intranet File Action Type','category','t','f');
-
-
-
-
----------------------------------------------------------
 -- Register the component in the core TCL pages
 --
 -- These DB-entries allow the pages of Project/Open Core
@@ -243,4 +231,8 @@ SELECT im_component_plugin__new (
         'im_filestorage_project_component $user_id $project_id $project_name $return_url' -- component_tcl
     );
 
+
+
+
+@../common/intranet-filestorage-create.sql
 
