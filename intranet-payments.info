@@ -8,13 +8,13 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-payments</auto-mount>
 
-    <version name="2.0.1" url="http://openacs.org/repository/download/apm/intranet-payments-2.0.1.apm">
+    <version name="3.0.0" url="http://openacs.org/repository/download/apm/intranet-payments-3.0.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <vendor url="http://www.project-open.com/">Project/Open</vendor>
 
-        <provides url="intranet-payments" version="2.0.1"/>
-        <requires url="intranet-core" version="2.0.1"/>
-        <requires url="intranet-invoices" version="2.0.1"/>
+        <provides url="intranet-payments" version="3.0.0"/>
+        <requires url="intranet-core" version="3.0.0"/>
+        <requires url="intranet-invoices" version="3.0.0"/>
 
         <callbacks>
         </callbacks>
