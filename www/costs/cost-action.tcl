@@ -55,7 +55,7 @@ switch $submit {
 	    # ToDo: Security
 
 	    if [catch {
-		im_exec_dml del_cost_item "${otype}_del(:cost_id)"
+		im_exec_dml del_cost_item "${otype}__delete(:cost_id)"
 	    } errmsg] {
 		ad_return_complaint 1 "<li>Error deleting cost item #$cost_id of type '$otype':<br><pre>$errmsg</pre>"
 		return

@@ -136,7 +136,7 @@ is
 	note		in varchar default null
     ) return im_cost_centers.cost_center_id%TYPE;
 
-    procedure del (cost_center_id in integer);
+    procedure delete (cost_center_id in integer);
     function name (cost_center_id in integer) return im_cost_centers.cost_center_name%TYPE;
 end im_cost_center;
 /
@@ -198,7 +198,7 @@ is
 
 
     -- Delete a single cost_center (if we know its ID...)
-    procedure del (cost_center_id in integer)
+    procedure delete (cost_center_id in integer)
     is
 	v_cost_center_id	integer;
     begin
@@ -602,7 +602,7 @@ is
 	description		in varchar default null
     ) return im_costs.cost_id%TYPE;
 
-    procedure del (cost_id in integer);
+    procedure delete (cost_id in integer);
     function name (cost_id in integer) return varchar;
 end im_cost;
 /
@@ -688,22 +688,22 @@ is
     end new;
 
     -- Delete a single cost (if we know its ID...)
-    procedure del (cost_id in integer)
+    procedure delete (cost_id in integer)
     is
     begin
 	-- Erase the im_cost
 	delete from     im_costs
-	where		cost_id = del.cost_id;
+	where		cost_id = delete.cost_id;
 
 	-- Erase the acs_rels entries pointing to this cost item
 	delete	from acs_rels r
-	where	r.object_id_two = del.cost_id;
+	where	r.object_id_two = delete.cost_id;
 	delete	from acs_rels r
-	where	r.object_id_one = del.cost_id;
+	where	r.object_id_one = delete.cost_id;
 
 	-- Erase the object
-	acs_object.del(del.cost_id);
-    end del;
+	acs_object.delete(delete.cost_id);
+    end delete;
 
     function name (cost_id in integer) return varchar
     is
@@ -726,7 +726,7 @@ create or replace procedure im_cost_del (
 	p_cost_id integer
 ) as
 begin
-    im_cost.del(p_cost_id);
+    im_cost.delete(p_cost_id);
 end;
 /
 show errors;
