@@ -27,7 +27,7 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "View Risk"
-set context_bar [ad_context_bar $page_title]
+set context_bar [im_context_bar $page_title]
 
 # ---------------------------------------------------------------
 # Permission
@@ -50,7 +50,7 @@ if {[info exists risk_id] && ![empty_string_p $risk_id] && $risk_id > 0} {
     
     db_1row pro_name "select project_name from im_projects where project_id = :project_id"
     set page_title "Edit Risk"
-    set context_bar [ad_context_bar $page_title]
+    set context_bar [im_context_bar $page_title]
 
 } elseif { [info exists curr_project_id] && ![empty_string_p $curr_project_id] && $curr_project_id > 0 } {
     # create a new risk
@@ -66,7 +66,7 @@ if {[info exists risk_id] && ![empty_string_p $risk_id] && $risk_id > 0} {
     set type 5100
 
     set page_title "New Risk"
-    set context_bar [ad_context_bar $page_title]
+    set context_bar [im_context_bar $page_title]
 } else {
      ad_return_complaint "Missing Parameters" "<li>To crate a new risk, at least the project ID must be specified (curr_project_id)!"
 }
