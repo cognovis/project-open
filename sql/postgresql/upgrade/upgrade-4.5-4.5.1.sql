@@ -2,14 +2,14 @@
 --
 -- @author jon@jongriffi.com
 -- @creation-date 2002-08-02
--- @cvs-id $Id: upgrade-4.5-4.5.1.sql,v 1.1 2002/08/03 18:00:47 vinodk Exp $
+-- @cvs-id $Id: upgrade-4.5-4.5.1.sql,v 1.2 2002/12/21 22:27:17 bartt Exp $
 --
 
 -- search-packages-create.sql
 
 drop function search_observer__dequeue(integer,timestamp,varchar);
 
-create function search_observer__dequeue(integer,timestamp,varchar)
+create function search_observer__dequeue(integer,timestamp with time zone,varchar)
 returns integer as '
 declare
     p_object_id                 alias for $1;
