@@ -168,15 +168,16 @@ if {!$done && $topic_id == 0} {
     set owner_id $user_id
     set asignee_id ""
     set due_date $todays_date
-    set topic_type [lang::util::suggest_key [db_string topic_sql "select category from im_categories where category_id=:topic_type_id" -default ""]
+    set topic_type [lang::util::suggest_key [db_string topic_sql "select category from im_categories where category_id=:topic_type_id" -default ""]]
     set topic_type [_ intranet-forum.$topic_type]
 
     set submit_action "[_ intranet-forum.Create_topic_type]"
     set page_title "[_ intranet-forum.New_topic_type]"
     set context_bar [ad_context_bar [list /intranet-forum/ "[_ intranet-forum.Forum]"] $page_title]
 
-    set subject ""[_ intranet-forum.Enter_subject]"
-    set message "[_ intranet-forum.Enter_message_body]"
+    set subject "[_ intranet-forum.Enter_subject]"
+    #set message "[_ intranet-forum.Enter_message_body]"
+    set  message ""
     set done 1
 }
 
@@ -370,7 +371,7 @@ if {$task_or_incident_p} {
 	<tr $bgcolor([expr $ctr % 2])>
 	  <td>[_ intranet-forum.Assign_to]</td>
 	  <td>
-	    [im_select asignee_id $asignee_list $asignee_id]
+	    [im_select -translate_p 0 asignee_id $asignee_list $asignee_id]
 	  </td>
 	</tr>\n"
 	incr ctr
