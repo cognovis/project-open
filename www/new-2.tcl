@@ -56,7 +56,7 @@ if {"" == $cost_id } {
 
 # set note [db_nullify_empty_string $note]
 
-set company_id [db_string get_company_from_invoice "select company_id from im_costs where cost_id=:cost_id" -default 0]
+set company_id [db_string get_company_from_invoice "select customer_id from im_costs where cost_id=:cost_id" -default 0]
 set provider_id [db_string get_provider_from_invoice "select provider_id from im_costs where cost_id=:cost_id" -default 0]
 
 # ---------------------------------------------------------------
