@@ -61,10 +61,12 @@ if {$invoice_or_quote_p} {
 # ---------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-if {![im_permission $user_id add_invoices]} {
-    ad_return_complaint 1 "<li>You don't have sufficient privileges to see this page."
-    return
-}
+
+#ToDo: restore permission check
+#if {![im_permission $user_id add_invoices]} {
+#    ad_return_complaint 1 "<li>You don't have sufficient privileges to see this page."
+#    return
+#}
 
 if {"" == $provider_id} { set provider_id [im_company_internal] }
 if {"" == $company_id} { set company_id [im_company_internal] }

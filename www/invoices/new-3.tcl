@@ -76,7 +76,7 @@ set invoice_id [im_new_object_id]
 set invoice_nr [im_next_invoice_nr]
 set invoice_date $todays_date
 set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCompanyInvoicePaymentDays" "" 30] 
-set due_date [db_string get_due_date "select (to_date(to_char(sysdate,'YYYY-MM-DD'),'YYYY-MM-DD') + :payment_days from dual"]
+set due_date [db_string get_due_date "select to_date(to_char(sysdate,'YYYY-MM-DD'),'YYYY-MM-DD') + $payment_days from dual"]
 set provider_id [im_company_internal]
 set cost_type_id [im_cost_type_invoice]
 set cost_status_id [im_cost_status_created]

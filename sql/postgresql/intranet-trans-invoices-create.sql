@@ -51,7 +51,7 @@ select acs_object_type__create_type (
 
 create or replace function im_trans_invoice__new (
 	integer, --  default null
-	varchar, -- default 'im_trans_invoice'
+	varchar, -- default im_trans_invoice
 	timestamptz, -- default now()
 	integer,
 	varchar, -- default null
@@ -61,7 +61,7 @@ create or replace function im_trans_invoice__new (
 	integer,
 	integer, -- default null
 	timestamptz, -- default now()
-	char, -- default 'EUR'
+	char, -- default EUR
 	integer, -- default null
 	integer, -- default 602
 	integer, -- default 700
@@ -73,52 +73,52 @@ create or replace function im_trans_invoice__new (
 	varchar -- default null
 ) returns integer as '
 DECLARE
-        p_invoice_id            alias for $1;
-        p_object_type             alias for $2;
-        p_creation_date           alias for $3;
-        p_creation_user           alias for $4;
-        p_creation_ip             alias for $5;
-        p_context_id              alias for $6;
-        p_invoice_nr              alias for $7;
-        p_company_id              alias for $8;
-        p_provider_id             alias for $9;
-        p_company_contact_id      alias for $10;
-        p_invoice_date            alias for $11;
-        p_invoice_currency        alias for $12;
-        p_invoice_template_id     alias for $13;
-        p_invoice_status_id       alias for $14;
-        p_invoice_type_id         alias for $15;
-        p_payment_method_id       alias for $16;
-        p_payment_days            alias for $17;
-        p_amount                  alias for $18;
-        p_vat                     alias for $19;
-        p_tax                     alias for $20;
-        p_note                    alias for $21;
+        p_invoice_id		  alias for $1;		-- invoice_id 
+        p_object_type		  alias for $2;		-- object_type
+        p_creation_date           alias for $3;		-- creation_date
+        p_creation_user           alias for $4;		-- creation_user
+        p_creation_ip             alias for $5;		-- creation_ip
+        p_context_id              alias for $6;		-- context_id
+        p_invoice_nr              alias for $7;		-- invoice_nr
+        p_company_id              alias for $8;		-- company_id
+        p_provider_id             alias for $9;		-- provider_id
+        p_company_contact_id      alias for $10;	-- company_contact_id
+        p_invoice_date            alias for $11;	-- invoice_date 
+        p_invoice_currency        alias for $12;	-- invoice_currency
+        p_invoice_template_id     alias for $13;	-- invoice_template_id
+        p_invoice_status_id       alias for $14;	-- invoice_status_id
+        p_invoice_type_id         alias for $15;	-- invoice_type_id
+        p_payment_method_id       alias for $16;	-- payment_method_id
+        p_payment_days            alias for $17;	-- payment_days
+        p_amount                  alias for $18;	-- amount
+        p_vat                     alias for $19;	-- vat
+        p_tax                     alias for $20;	-- tax 
+        p_note                    alias for $21;	-- note
 
-	v_invoice_id	integer;
+	v_invoice_id		  integer;
 BEGIN
-	v_invoice_id := im_invoice__new(
-	p_invoice_id   
-	p_object_type	
-	p_creation_date
-	p_creation_user
-	p_creation_ip	
-	p_context_id	
-	p_invoice_nr	
-	p_company_id	
-	p_provider_id	
-	p_company_contact_id
-	p_invoice_date
-	p_invoice_currency
-	p_invoice_template_id
-	p_invoice_status_id	
-	p_invoice_type_id
-	p_payment_method_id
-	p_payment_days
-	p_amount	
-	p_vat
-	p_tax
-	p_note
+	v_invoice_id := im_invoice__new (
+		p_invoice_id,
+		p_object_type,	
+		p_creation_date,
+		p_creation_user,
+		p_creation_ip,	
+		p_context_id,	
+		p_invoice_nr,	
+		p_company_id,	
+		p_provider_id,	
+		p_company_contact_id,
+		p_invoice_date,
+		p_invoice_currency,
+		p_invoice_template_id,
+		p_invoice_status_id,	
+		p_invoice_type_id,
+		p_payment_method_id,
+		p_payment_days,
+		p_amount,	
+		p_vat,
+		p_tax,
+		p_note
 	);
 
 	-- insert to create a referential integrity constraint
@@ -138,7 +138,7 @@ end;' language 'plpgsql';
     -- Delete a single invoice (if we know its ID...)
 create or replace function  im_trans_invoice__delete (integer)
 returns integer as '
-DECLAREdeclare
+DECLARE
 	p_invoice_id	alias for $1;
 BEGIN
      	-- Reset the status of all project to "delivered" that
