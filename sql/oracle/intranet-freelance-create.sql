@@ -220,7 +220,7 @@ begin
         component_tcl =>
 
         'im_freelance_info_component \
-		$current_user_id
+		$current_user_id \
                 $user_id \
                 $edit_user \
                 $return_url \
