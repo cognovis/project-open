@@ -49,7 +49,7 @@ proc intranet_download { folder_type } {
     set group_id [lindex $path_list 4]
     ns_log Notice "group_id=$group_id"
 
-    # Start retreiving the path starting at:
+     # Start retreiving the path starting at:
     set start_index 5
 
     set file_comps [lrange $path_list $start_index $len]
