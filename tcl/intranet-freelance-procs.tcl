@@ -374,6 +374,7 @@ ad_proc im_freelance_member_select_component { group_id role_options return_url 
     to select freelancers according to the characteristics of
     the current project.
 } {
+    return "asdfasdf"
 
     # ToDo: "Virtualize" this procedure by adapting the SQL statement to the
     # number of "hard conditions" specified in "hard_conditions_list"

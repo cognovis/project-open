@@ -1,4 +1,9 @@
-# /www/intranet/trans-tasks/task-list.tcl
+# /packages/intranet-freelance/www/index.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check 
+# http://www.project-open.com/ for licensing details.
 
 ad_page_contract {
     Show the list of current task and allow the project
@@ -25,16 +30,22 @@ set user_id "638"
 set freelance_view_name "user_view_freelance"
 
 
-set page_body "
-hola
-[im_freelance_info_component $current_user_id $user_id $user_is_admin_p "" $freelance_view_name]
+set page_body ""
 
-[im_freelance_skill_component $current_user_id $user_id $user_is_admin_p return_url]
+append page_body [im_freelance_info_component $current_user_id $user_id $user_is_admin_p "" $freelance_view_name]
+
+append page_body [im_freelance_skill_component $current_user_id $user_id $user_is_admin_p return_url]
+
+append page_body [im_freelance_member_select_component 644 "" ""]
+
+append page_body "
 <br>
 
-[im_freelance_member_select_component 644 "" ""]
+
 "
 
 db_release_unused_handles
 doc_return  200 text/html [im_return_template]
+
+
 
