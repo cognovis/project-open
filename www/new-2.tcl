@@ -143,6 +143,7 @@ Note: $note
 To view online: [im_url]/invoices/view-payment?[export_url_vars payment_id]
 "
 
+# ToDo: Fix BillingGroupShortName and user_group_map
 # Whom to send the email?
 set billing_group [ad_parameter BillingGroupShortName "intranet"]
 
