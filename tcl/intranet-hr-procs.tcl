@@ -126,7 +126,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 	# if the row makes references to "private Note" and the user isn't
 	# adminstrator, this row don't appear in the browser.
 	db_foreach column_list_sql $column_sql {
-	    if {1 || [eval $visible_for]} {
+	    if {"" == $visible_for || [eval $visible_for]} {
 		append employee_html "
                 <tr $td_class([expr $ctr % 2])>
 		<td>[_ "intranet-hr.[lang::util::suggest_key $column_name]"] &nbsp;</td><td>"
