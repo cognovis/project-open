@@ -17,7 +17,7 @@ ad_page_contract {
     {comments:trim ""}
     owner_id:integer
     old_asignee_id:integer
-    group_id:integer
+    object_id:integer
     topic_id:integer
     parent_id:integer
     {topic_type_id 0}
@@ -63,9 +63,6 @@ ad_proc -public im_forum_topic_alert_user {
 # ------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-set user_is_group_member_p [ad_user_group_member $group_id $user_id]
-set user_is_group_admin_p [im_can_user_administer_group $group_id $user_id]
-set user_is_employee_p [im_user_is_employee_p $user_id]
 
 set exception_text ""
 set exception_count 0
@@ -130,11 +127,11 @@ if {[string equal $action_type "new_message"] || [string equal $action_type "rep
     db_transaction {
 	db_dml topic_insert "
 insert into im_forum_topics (
-	topic_id, group_id, parent_id, topic_type_id, topic_status_id,
+	topic_id, object_id, parent_id, topic_type_id, topic_status_id,
 	posting_date, owner_id, scope, subject, message, priority, 
 	asignee_id, due_date
 ) values (
-	:topic_id, :group_id, :parent_id, :topic_type_id, :topic_status_id,
+	:topic_id, :object_id, :parent_id, :topic_type_id, :topic_status_id,
 	sysdate, :owner_id, :scope, :subject, :message, :priority, 
         :asignee_id, :due
 )"
@@ -150,7 +147,7 @@ insert into im_forum_topics (
     db_transaction {
 	db_dml topic_update "
 update im_forum_topics set 
-	group_id=:group_id, 
+	object_id=:object_id, 
 	parent_id=:parent_id,
 	topic_type_id=:topic_type_id,
 	topic_status_id=:topic_status_id,

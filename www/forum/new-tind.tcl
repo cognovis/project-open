@@ -3,7 +3,7 @@
 ad_page_contract {
     Create a new Task, Incident, News or Discussion (TIND)
     @author fraber@project-open.com
-    @param group_id: Project or Client to refer to
+    @param object_id: Project or Client to refer to
     @topic_type: "news", "disussion", "incident" or "task"
     @param display_style: 
 	topic		= full topic (subject+message), no subtopics
@@ -13,7 +13,7 @@ ad_page_contract {
     @creation-date 9/2003
 } {
     {topic_id:integer 0}
-    {group_id:integer 0}
+    {object_id:integer 0}
     {display_style "all"}
     {submit ""}
     {subject ""}
@@ -88,7 +88,7 @@ ad_proc -public im_forum_scope_html {scope } {
 # ------------------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
-set group_name ""
+set object_name ""
 
 set todays_date [lindex [split [ns_localsqltimestamp] " "] 0]
 set bgcolor(0) " class=roweven"
@@ -123,14 +123,13 @@ set done 0
 if {!$done && $topic_id == 0} {
     set action_type "new_message"
 
-    # We can create new messages either within a project (group_id != 0)
-    # or at the HomePage or the ForumPage (group_id == 0).
-    # Let's get the group_name if group_id != 0:
-    if {$group_id > 0} {
-	set group_name [db_string group_name "select project_name from im_projects where project_id=:group_id"]
-#set group_name [db_string group_name "select group_name from user_groups where group_id=:group_id"]
+    # We can create new messages either within a project (object_id != 0)
+    # or at the HomePage or the ForumPage (object_id == 0).
+    # Let's get the object_name if object_id != 0:
+    if {$object_id > 0} {
+        set object_name [db_exec_plsql get_object_name "begin :1 := acs_object.name(object_id => :object_id); end;"]
     }
-
+    
     # doubleclick protection: get the topic ID right now.
     set topic_id [db_nextval "im_forum_topics_seq"]
     set parent_id ""
@@ -164,7 +163,7 @@ if {!$done && $topic_id != 0 && [string equal $submit "Reply"]} {
     # Get some information about the parent topic:
     set topic_sql "
 select
-	t.group_id as group_id,
+	t.object_id as object_id,
 	ug.project_name,
 	t.scope
 from
@@ -172,7 +171,7 @@ from
 	im_projects ug
 where
 	topic_id=:parent_id
-	and ug.project_id=t.group_id"
+	and ug.project_id=t.object_id"
 
     db_1row get_topic $topic_sql
 
@@ -228,7 +227,7 @@ where
 	and t.owner_id=ou.user_id
 	and t.asignee_id=au.user_id(+)
 	and t.topic_status_id=sc.category_id(+)
-	and ug.project_id=t.group_id
+	and ug.project_id=t.object_id
 	and t.topic_type_id=ftc.category_id(+)
 "
 
@@ -238,36 +237,15 @@ where
      set page_title "Edit Topic"
      set context_bar [ad_context_bar [list /intranet/forum/ Forum] $page_title]
      set done 1
- }
+}
 
- #####     F I N S    A Q U I    #############     F I N S    A Q U I    #############     F I N S    A Q U I    ########
- #####     F I N S    A Q U I    #############     F I N S    A Q U I    #############     F I N S    A Q U I    ########
- #####     F I N S    A Q U I    #############     F I N S    A Q U I    #############     F I N S    A Q U I    ########
- #####     F I N S    A Q U I    #############     F I N S    A Q U I    #############     F I N S    A Q U I    ########
- #####     F I N S    A Q U I    #############     F I N S    A Q U I    #############     F I N S    A Q U I    ########
- #####     F I N S    A Q U I    #############     F I N S    A Q U I    #############     F I N S    A Q U I    ########
- #####     F I N S    A Q U I    #############     F I N S    A Q U I    #############     F I N S    A Q U I    ########
+# Save the old value for asingee_id and status_id to allow 
+# new-tind-2.tcl to alert owners and asignee about these changes.
+set old_asignee_id $asignee_id
+set old_topic_status_id $topic_status_id
 
-
- # Save the old value for asingee_id and status_id to allow 
- # new-tind-2.tcl to alert owners and asignee about these changes.
- set old_asignee_id $asignee_id
- set old_topic_status_id $topic_status_id
-
- ns_log Notice "new-tind: action_type=$action_type"
- ns_log Notice "new-tind: topic_status_id=$topic_status_id, old_topic_status_id=$old_topic_status_id"
-
-
- # ------------------------------------------------------------------
- # Security, Parameters & Default
- # ------------------------------------------------------------------
-
- set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
- set user_is_group_member_p [ad_user_group_member $group_id $current_user_id]
- set user_is_group_admin_p [im_can_user_administer_group $group_id $current_user_id]
- set user_is_employee_p [im_user_is_employee_p $current_user_id]
- set user_admin_p [expr $user_is_admin_p || $user_is_group_admin_p]
-
+ns_log Notice "new-tind: action_type=$action_type"
+ns_log Notice "new-tind: topic_status_id=$topic_status_id, old_topic_status_id=$old_topic_status_id"
 
  # ------------------------------------------------------------------
  # Format the page body
@@ -343,12 +321,12 @@ where
  # that here:
 
  set project_status_open "76"
- ns_log Notice "new-tind: group_id=$group_id"
- if {$group_id == 0 && [string equal $action_type "new_message"]} {
+ ns_log Notice "new-tind: object_id=$object_id"
+ if {$object_id == 0 && [string equal $action_type "new_message"]} {
     append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
 	  <td>In Group</td><td>
-[im_project_select group_id $project_status_open "" "" "" $current_user_id]
+[im_project_select object_id $project_status_open "" "" "" $current_user_id]
 	  </td>
 	</tr>\n"
     incr ctr
@@ -356,11 +334,11 @@ where
     append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
 	  <td>In Group</td>
-	  <td>$group_name</td>
+	  <td>$object_name</td>
 	</tr>\n"
     incr ctr
 
-    lappend export_var_list "group_id"
+    lappend export_var_list "object_id"
 }
 
 
@@ -397,7 +375,7 @@ if {$task_or_incident_p && [string equal $action_type "new_message"]} {
 
     # calculate the list of potential asignees ( id-name pairs ) 
     # based on user permissions, the project members and the PM.
-    set asignee_list [im_forum_potential_asignees $current_user_id $group_id]
+    set asignee_list [im_forum_potential_asignees $current_user_id $object_id]
 
     if {2 == [llength $asignee_list]} {
 	# only the PM is available: pass the variable on
@@ -670,7 +648,7 @@ from
 where
 	tr.topic_id = t.topic_id
 	and t.owner_id=ou.user_id
-	and ug.project_id=t.group_id
+	and ug.project_id=t.object_id
 	and t.asignee_id=au.user_id(+)
 	and t.topic_type_id=ftc.category_id(+)
 	and t.topic_status_id=fts.category_id(+)
@@ -712,7 +690,7 @@ db_foreach get_topic $topic_sql {
 	append thread_html "
 		  <td colspan=$colspan_level>
 		     <table border=0 cellpadding=0 bgcolor=#E0E0E0>"
-	append thread_html " [im_forum_render_tind $topic_id $topic_type_id $topic_type $topic_status_id $topic_status $owner_id $asignee_id $owner_name $asignee_name $current_user_id $group_id $group_name $subject $message $posting_date $due_date $priority $scope]
+	append thread_html " [im_forum_render_tind $topic_id $topic_type_id $topic_type $topic_status_id $topic_status $owner_id $asignee_id $owner_name $asignee_name $current_user_id $object_id $object_name $subject $message $posting_date $due_date $priority $scope]
 
 		    </table>
 		  </td>

@@ -38,7 +38,7 @@ ad_proc -public im_forum_topic_status_select { select_name { default "" } } {
 # Procedures
 # ------------------------------------------------------------------
 
-ad_proc -public im_forum_potential_asignees {user_id group_id} {
+ad_proc -public im_forum_potential_asignees {user_id object_id} {
     Return a key-value list of all persons to whom the current
     user may assign his task or issue.
     Project: 
@@ -53,7 +53,7 @@ select distinct
 	im_name_from_user_id(u.user_id) as user_name
 from	group_member_map m,
 	users u
-where	m.group_id=:group_id
+where	m.group_id=:object_id
 	and m.member_id=u.user_id
 	and m.rel_type='administrator'
 )"
@@ -64,7 +64,7 @@ select distinct
 	im_name_from_user_id(u.user_id) as user_name
 from	group_member_map m,
 	users u
-where	m.group_id=:group_id
+where	m.group_id=:object_id
 	and m.member_id=u.user_id
 )"
 
@@ -84,7 +84,7 @@ select distinct
 	im_name_from_user_id(u.user_id) as user_name
 from	group_member_map m,
 	users u
-where	m.group_id=:group_id
+where	m.group_id=:object_id
 	and m.member_id=u.user_id
 	and u.user_id in (
 		select user_id
@@ -99,7 +99,7 @@ select distinct
 	im_name_from_user_id(u.user_id) as user_name
 from	group_member_map m,
 	users u
-where	m.group_id=:group_id
+where	m.group_id=:object_id
 	and m.member_id=u.user_id
 	and u.user_id not in (
 		select user_id
@@ -114,7 +114,7 @@ select distinct
 	im_name_from_user_id(u.user_id) as user_name
 from	group_member_map m,
 	users u
-where	m.group_id=:group_id
+where	m.group_id=:object_id
 	and m.member_id=u.user_id
 	and u.user_id in (
 		select user_id
@@ -170,7 +170,7 @@ ad_proc -public im_forum_render_tind {
 	topic_type_id topic_type 
         topic_status_id topic_status
 	owner_id asignee_id owner_name asignee_name
-	user_id group_id group_name
+	user_id object_id group_name
 	subject message
 	posting_date due_date
 	priority scope
@@ -180,7 +180,7 @@ ad_proc -public im_forum_render_tind {
     set bgcolor(0) " class=roweven"
     set bgcolor(1) " class=rowodd"
 
-    set user_is_group_member_p [ad_user_group_member $group_id $user_id]
+    set user_is_group_member_p [ad_user_group_member $object_id $user_id]
     set ctr 1
     set tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
@@ -202,7 +202,7 @@ append tind_html " (<A href=new-tind?topic_id=$topic_id&submit=Reply>Reply</A>)"
     append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
 		  <td>Posted in:</td>
-		  <td><A href='/intranet/projects/view?group_id=$group_id'>$group_name</A></td>
+		  <td><A href='/intranet/projects/view?group_id=$object_id'>$group_name</A></td>
 		</tr>\n"
     incr ctr
 
@@ -294,11 +294,11 @@ if {$topic_status_id != ""} {
 # Forum List Page Component
 # ---------------------------------------------------------------------
 
-ad_proc -public im_forum_component {user_id group_id current_page_url return_url export_var_list forum_type {view_name "forum_list_short"} {forum_order_by "priority"} {restrict_to_mine_p f} {restrict_to_topic_type_id 0} {restrict_to_topic_status_id 0} {restrict_to_asignee_id 0} {max_entries_per_page 0} {start_idx 1} {restrict_to_new_topics 0} {restrict_to_folder 0} } {
+ad_proc -public im_forum_component {user_id object_id current_page_url return_url export_var_list forum_type {view_name ""} {forum_order_by "priority"} {restrict_to_mine_p f} {restrict_to_topic_type_id 0} {restrict_to_topic_status_id 0} {restrict_to_asignee_id 0} {max_entries_per_page 0} {start_idx 1} {restrict_to_new_topics 0} {restrict_to_folder 0} } {
     Creates a HTML table showing a table of "Discussion Topics" of 
     various types. Parameters:
     <ul>
-      <li>group_id : The object_id of the object where the discussion takes place
+      <li>object_id : The object_id of the object where the discussion takes place
           (historic name...)
       <li>restrict_to_topic_type_id: 0=All, 1=Tasks & Incidents, other=Specific
       <li>forum_type: ....!!!
@@ -309,23 +309,48 @@ ad_proc -public im_forum_component {user_id group_id current_page_url return_url
     Future versions would need to call an object method to render adecuately the
     object name etc.
 } {
+    ns_log Notice "im_forum_component: forum_type=$forum_type"
+    ns_log Notice "im_forum_component: view_name=$view_name"
+
     set bgcolor(0) " class=roweven"
     set bgcolor(1) " class=rowodd"
 
     if {!$max_entries_per_page} { set max_entries_per_page 10 }
-
     set end_idx [expr $start_idx + $max_entries_per_page - 1]
 
-    # ---------------------- Get Columns ----------------------------------
+    # ---------------------- Get the right view ---------------------------
+    # If empty, try with "forum_list_<type>".
+    # If that doesn't work try with the default "forum_list_short".
+    if {"" == $view_name} {
+	# No view_name defined (default for most pages).
+	# So we append the "type of the forum" (=customer, project, ...)
+	# to "forum_list_". This allows the writers of future modules
+	# to define customized views for their new business objects.
+	set view_name "forum_list_$forum_type"
+	set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name" -default 0]
 
+    } else {
+	# We have got an explicit view_name, probably through
+	# HTTP parameters.
+	set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name" -default 0]
+    }
+
+    if {0 == $view_id} {
+	# We haven't found the specified view, so let's emit an error message
+	# and proceed with a default view that should work everywhere.
+	ns_log Error "im_forum_component: we didn't find view_name=$view_name"
+	set view_name "forum_list_short"
+	set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name" -default 0]
+    }
+    ns_log Notice "im_forum_component: view_id=$view_id"
+    if {!$view_id} {
+	return "<b>Unable to find view '$view_name'</b>\n"
+    }
+
+    # ---------------------- Get Columns ----------------------------------
     # Define the column headers and column contents that
     # we want to show:
     #
-    set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name" -default 0]
-    if {!$view_id} {
-	return "<H1>Unable to find view '$view_name'</H1>\n"
-    }
-
     set column_headers [list]
     set column_vars [list]
 
@@ -349,6 +374,7 @@ ad_proc -public im_forum_component {user_id group_id current_page_url return_url
         lappend column_vars "$column_render_tcl"
 	}
     }
+    ns_log Notice "im_forum_component: column_headers=$column_headers"
 
     # -------- Compile the list of parameters to pass-through-------
 
@@ -385,6 +411,7 @@ ad_proc -public im_forum_component {user_id group_id current_page_url return_url
     foreach col $column_headers {
 
 	set cmd_eval ""
+	ns_log Notice "im_forum_component: eval=$cmd_eval"
 	set cmd "set cmd_eval $col"
         eval $cmd
 
@@ -410,7 +437,7 @@ ad_proc -public im_forum_component {user_id group_id current_page_url return_url
     }
 
     set restrictions []
-    if {$group_id} {lappend restrictions "t.group_id=:group_id" }
+#    if {0 != $object_id} {lappend restrictions "t.group_id=:object_id" }
     if {[string equal "t" $restrict_to_mine_p]} {lappend restrictions "(owner_id=:user_id or asignee_id=:user_id)" }
     if {$restrict_to_topic_status_id} {lappend restrictions "topic_status_id=:restrict_to_topic_status_id" }
     if {$restrict_to_asignee_id} {lappend restrictions "asignee_id=:restrict_to_asignee_id" }
@@ -467,40 +494,42 @@ from
 	(select 1 as p, group_id from group_member_map where
 	 member_id=:user_id) member_groups
 where
-	t.group_id=admin_groups.group_id(+)
-	and t.group_id=member_groups.group_id(+)
+	t.object_id=admin_groups.group_id(+)
+	and t.object_id=member_groups.group_id(+)
+"
+	ns_log Notice "im_forum_component: inner_forum_sql=$inner_forum_sql"
+
+
+set ttt "
+	($inner_forum_sql) t,
+        (t.permission_p = 1 or t.owner_p = 1 or t.asignee_id = 1)
+        and t.object_id != 1
+        and (t.parent_id is null or t.parent_id=0)
 "
 
 
     set forum_sql "
 select
+	acs_object.name(t.object_id),
 	t.*,
 	m.read_p,
 	m.folder_id,
 	f.folder_name,
 	m.receive_updates,
 	im_initials_from_user_id(t.owner_id) as owner_initials,
-	im_initials_from_user_id(t.asignee_id) as asignee_initials,
-	p.project_name!!!
+	im_initials_from_user_id(t.asignee_id) as asignee_initials
 from
-	($inner_forum_sql) t,
+	im_forum_topics t,
 	(select * from im_forum_topic_user_map where user_id=:user_id) m,
-	im_forum_folders f,
-	im_projects p,!!!
-	im_customers c,!!!
-	im_users u!!!
+	im_forum_folders f
 where
-        (t.permission_p = 1 or t.owner_p = 1 or t.asignee_id = 1)
-        and t.group_id != 1
-        and (t.parent_id is null or t.parent_id=0)
+        (t.parent_id is null or t.parent_id=0)
 	and t.topic_id=m.topic_id(+)
 	and m.folder_id=f.folder_id(+)
-	and t.group_id=p.project_id(+)!!!
 	$restriction_clause
 $order_by_clause"
 
-
-	ns_log Notice "forum_sql=$forum_sql"
+	ns_log Notice "im_forum_component: forum_sql=$forum_sql"
 
     # ---------------------- Limit query to MAX rows -------------------------
     
@@ -516,27 +545,27 @@ $order_by_clause"
 		im_forum_topic_user_map m,
 		im_forum_folders f
 	where 
-		group_id != 1
+		object_id != 1
 		and (t.parent_id is null or t.parent_id=0)
 		and t.topic_id=m.topic_id(+)
 		and m.folder_id=f.folder_id(+)
 		$restriction_clause
     "
 
-    ns_log Notice "total_in_limited_sql=$total_in_limited_sql"
     set total_in_limited [db_string projects_total_in_limited $total_in_limited_sql]
+    ns_log Notice "im_forum_component: total_in_limited=$total_in_limited"
     set selection "select z.* from ($limited_query) z $order_by_clause"
 
     # How many items remain unseen?
     set remaining_items [expr $total_in_limited - $start_idx - $max_entries_per_page + 1]
+
 
     # ---------------------- Format the body -------------------------------
 
     set table_body_html ""
     set ctr 0
     set idx $start_idx
-    set old_group_id 0
-
+    set old_object_id 0
 
     set limited_query $forum_sql
 
@@ -546,14 +575,14 @@ $order_by_clause"
 
         # insert intermediate headers for every project
         if {[string equal "Project" $forum_order_by]} {
-            if {$old_group_id != $group_id} {
+            if {$old_object_id != $object_id} {
                 append table_body_html "
                 <tr><td colspan=$colspan>&nbsp;</td></tr>
                 <tr><td class=rowtitle colspan=$colspan>
-                  <A href=/intranet/projects/view?group_id=$group_id>
+                  <A href=/intranet/projects/view?group_id=$object_id>
                     $project_nr</A>: $group_name
                 </td></tr>\n"
-                set old_group_id $group_id
+                set old_object_id $object_id
             }
         }
 
@@ -623,7 +652,7 @@ $order_by_clause"
     set component_html "
 
 <form action=/intranet-forum/forum/forum-action method=POST>
-[export_form_vars group_id return_url]
+[export_form_vars object_id return_url]
 <table bgcolor=white border=0 cellpadding=1 cellspacing=1>
   $table_header_html
   $table_body_html
@@ -639,9 +668,9 @@ $order_by_clause"
 # Forum Navigation Bar
 # ----------------------------------------------------------------------
 
-# <A HREF=/intranet/forum/index?[export_url_vars group_id return_url]>
+# <A HREF=/intranet/forum/index?[export_url_vars object_id return_url]>
 
-ad_proc -public im_forum_create_bar { title_text group_id {return_url ""} } {
+ad_proc -public im_forum_create_bar { title_text object_id {return_url ""} } {
     Returns rendered HTML table with icons for creating new 
     forum elements
 } {
@@ -649,32 +678,32 @@ ad_proc -public im_forum_create_bar { title_text group_id {return_url ""} } {
 <table cellpadding=0 cellspacing=0 border=0>
 <tr>
 <td>
-  <A HREF=/forum/index?[export_url_vars group_id return_url]>
+  <A HREF=/forum/index?[export_url_vars object_id return_url]>
     $title_text
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/forum/new-tind?topic_type_id=1102&[export_url_vars group_id return_url]'>
+  <A href='/intranet-forum/forum/new-tind?topic_type_id=1102&[export_url_vars object_id return_url]'>
     [im_gif "incident" "Create new Incident"]
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/forum/new-tind?topic_type_id=1104&[export_url_vars group_id return_url]'>
+  <A href='/intranet-forum/forum/new-tind?topic_type_id=1104&[export_url_vars object_id return_url]'>
     [im_gif "task" "Create new Task"]
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/forum/new-tind?topic_type_id=1106&[export_url_vars group_id return_url]'>
+  <A href='/intranet-forum/forum/new-tind?topic_type_id=1106&[export_url_vars object_id return_url]'>
     [im_gif "discussion" "Create a new Discussion"]
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/forum/new-tind?topic_type_id=1100&[export_url_vars group_id return_url]'>
+  <A href='/intranet-forum/forum/new-tind?topic_type_id=1100&[export_url_vars object_id return_url]'>
     [im_gif "news" "Create new News Item"]
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/forum/new-tind?topic_type_id=1108&[export_url_vars group_id return_url]'>
+  <A href='/intranet-forum/forum/new-tind?topic_type_id=1108&[export_url_vars object_id return_url]'>
     [im_gif "note" "Create new Note"]
   </A>
 </td>
