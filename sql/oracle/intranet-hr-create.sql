@@ -112,9 +112,9 @@ add constraint im_employees_superv_ck
 check (supervisor_id != employee_id);
 
 
-# Select all information for active employees
-# (member of Employees group).
-#
+-- Select all information for active employees
+-- (member of Employees group).
+--
 create or replace view im_employees_active as
 select
 	u.*,
