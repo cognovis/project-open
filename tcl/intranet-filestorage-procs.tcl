@@ -989,7 +989,7 @@ ad_proc -public im_filestorage_pol_component { user_id object_id object_name bas
     # So we add a "/" here to the bread-crum_path ONLY if it contains
     # a path and needs a "/" to be appended to base_path.
     if {"" != $bread_crum_path} {
-	set bread_crum_path "/$bread_crum_path"
+	set bread_crum_path "$bread_crum_path"
     } else {
 	set bread_crum_path "$base_path"
     }
@@ -1048,14 +1048,17 @@ ad_proc -public im_filestorage_pol_component { user_id object_id object_name bas
     set bread_paths_len [llength $bread_crum]
     set bread_index [expr $bread_paths_len -1]
 
+    set base_path_len [llength [split $base_path "/"]]
+    set bread_crum_tool [lrange $bread_crum $base_path_len $bread_paths_len]
+
     # First bread_crum is the project name - always visible
     append texte "<a href=$current_url_without_vars?[export_url_bind_vars $bind_vars]>$object_name</a> : "
-    set current_path ""
+    set current_path "$base_path"
     set up_link ""
-    foreach crum $bread_crum {
-	append current_path "/$crum"
-	append texte "<a href=$current_url_without_vars?[export_url_bind_vars $bind_vars]?bread_crum_path=$current_path>$crum</a> :"
 
+    foreach crum $bread_crum_tool {
+	append current_path "/$crum"
+	append texte "<a href=$current_url_without_vars[export_url_bind_vars $bind_vars]?bread_crum_path=$current_path>$crum</a> :"
 	if {![string equal $current_path $bread_crum_path]} {
 	    set uplink $current_path
 	}
