@@ -135,8 +135,7 @@ where
 	and m.object_role_id = c.category_id
 "
     db_foreach project_roles $project_roles_sql {
-	set category_txt [lang::util::suggest_key $category]
-	lappend roles [list $category_id $category_gif [_ intranet-filestorage.$category_txt]]
+	lappend roles [list $category_id $category_gif $category]
     }
 
     return $roles
@@ -193,7 +192,7 @@ proc intranet_download { folder_type } {
 
     set base_path [im_filestorage_base_path $folder_type $group_id]
     if {"" == $base_path} {
-	ad_return_complaint 1 "<LI>[_ intranet-filestorage.lt_Unknown_folder_type_f_1]"
+	ad_return_complaint 1 "<LI>[_ intranet-filestorage.Unknown_folder_type]"
 	return
     }
 
@@ -255,7 +254,6 @@ ad_proc -public im_filestorage_find_files { project_id } {
 } {
     set project_path [im_filestorage_project_path $project_id]
     set find_cmd [im_filestorage_find_cmd]
-
     if { [catch {
 	ns_log Notice "im_filestorage_find_files: Checking $project_path"
 
@@ -265,7 +263,7 @@ ad_proc -public im_filestorage_find_files { project_id } {
 
     } err_msg] } {
 	# Probably some permission errors - return empty string
-	'exec $find_cmd $project_path' failed with error:
+	set err "'exec $find_cmd $project_path' failed with error:
 	err_msg=$err_msg\n"
 	set file_list ""
     }
@@ -918,6 +916,7 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     set bgcolor(0) "roweven"
     set bgcolor(1) "rowodd"
 
+    set find_cmd [parameter::get -package_id [im_package_core_id] -parameter "FindCmd" -default "/bin/find"]
     set current_url_without_vars [ns_conn url]
     set user_id [ad_maybe_redirect_for_registration]
 
@@ -958,8 +957,9 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
 	# Executing the find command
         exec /bin/mkdir -p $find_path
         exec /bin/chmod ug+w $find_path
-	set files [fileutil::find $find_path]
-		
+	set file_list [exec $find_cmd $find_path]
+	set files [split $file_list "\n"]
+
     } err_msg] } { 
 	return "<ul><li>[_ intranet-filestorage.lt_Unable_to_get_file_li]:<br><pre>find_path=$find_path\n$err_msg</pre></ul>"
     }
