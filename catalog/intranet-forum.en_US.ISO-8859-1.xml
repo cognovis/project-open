@@ -88,6 +88,7 @@
   <msg key="New_topic_type">New %topic_type%</msg>
   <msg key="Normal">Normal</msg>
   <msg key="Not_that_urgent">Not that urgent</msg>
+  <msg key="Note">Note</msg>
   <msg key="Object">Object</msg>
   <msg key="Open">Open</msg>
   <msg key="Optional">Optional</msg>
