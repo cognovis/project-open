@@ -63,7 +63,7 @@ select
 	category as skill_type,
 	category_description as value_range_category_type
 from 
-	categories 
+	im_categories 
 where 
 	category_type = 'Intranet Skill Type' 
 	and category_id=:skill_type_id

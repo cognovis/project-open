@@ -336,7 +336,7 @@ select
 	sk.confirmed_experience_id
 from
         (select c.*
-         from categories c
+         from im_categories c
          where c.category_type = 'Intranet Skill Type'
          order by c.category_id
         ) c,
@@ -505,7 +505,7 @@ ad_proc im_freelance_member_select_component { group_id role_options return_url 
 select
 	category_id
 from
-	categories
+	im_categories
 where
 	category = '$cat'
 "
