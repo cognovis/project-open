@@ -77,7 +77,7 @@ db_1row get_topic $topic_sql
 if {$due_date == ""} { set due_date $todays_date }
 set old_asignee_id $asignee_id
 set page_title "[_ intranet-forum.View_Topic]"
-set context_bar [ad_context_bar [list /intranet-forum/ "[_ intranet-forum.Forum]"] $page_title]
+set context_bar [im_context_bar [list /intranet-forum/ "[_ intranet-forum.Forum]"] $page_title]
 
 
 

@@ -136,7 +136,7 @@ where
 
     set submit_action "[_ intranet-forum.Create_topic_type]"
     set page_title "[_ intranet-forum.New_topic_type]"
-    set context_bar [ad_context_bar [list /intranet-forum/ "[_ intranet-forum.Forum]"] $page_title]
+    set context_bar [im_context_bar [list /intranet-forum/ "[_ intranet-forum.Forum]"] $page_title]
     set subject "[_ intranet-forum.Re_subject]"
     set message "[_ intranet-forum.Enter_message_body]"
     set done 1
@@ -173,7 +173,7 @@ if {!$done && $topic_id == 0} {
 
     set submit_action "[_ intranet-forum.Create_topic_type]"
     set page_title "[_ intranet-forum.New_topic_type]"
-    set context_bar [ad_context_bar [list /intranet-forum/ "[_ intranet-forum.Forum]"] $page_title]
+    set context_bar [im_context_bar [list /intranet-forum/ "[_ intranet-forum.Forum]"] $page_title]
 
     set subject "[_ intranet-forum.Enter_subject]"
     #set message "[_ intranet-forum.Enter_message_body]"
@@ -213,7 +213,7 @@ where
      if {$due_date == ""} { set due_date $todays_date }
      set submit_action "[_ intranet-forum.Save_Changes]"
      set page_title "[_ intranet-forum.Edit_Topic]"
-     set context_bar [ad_context_bar [list /intranet-forum/ "[_ intranet-forum.Forum]"] $page_title]
+     set context_bar [im_context_bar [list /intranet-forum/ "[_ intranet-forum.Forum]"] $page_title]
      set done 1
 }
 
