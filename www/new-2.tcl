@@ -133,7 +133,7 @@ if {[string equal $actions "save"]} {
     }
 
     if {!$object_admin && $user_id != $owner_id } {
-	ad_return_complaint 1 "<li>You have insufficient privileges to modify this topic"
+	ad_return_complaint 1 "<li>[_ intranet-forum.lt_You_have_insufficient]"
 	return
     }
 
@@ -154,9 +154,9 @@ if {[string equal $actions "save"]} {
 	    }
 
 	} on_error {
-            ad_return_error "Error adding a new topic" "
-	The database rejected the addition of discussion topic 
-	\"$subject\". Here the error message: <pre>$errmsg\n</pre>\n"
+            ad_return_error "[_ intranet-forum.lt_Error_adding_a_new_to]" "
+	[_ intranet-forum.lt_The_database_rejected] 
+	[_ intranet-forum.lt_Here_the_error_messag]: <pre>$errmsg\n</pre>\n"
             return
 	}
     }
@@ -181,9 +181,9 @@ update im_forum_topics set
 	due_date=:due
 where topic_id=:topic_id"
     } on_error {
-        ad_return_error "Error modifying a topic" "
-	The database rejected the modification of a of discussion topic 
-	'$subject'. Here the error message: <pre>$errmsg\n</pre>\n"
+        ad_return_error "[_ intranet-forum.lt_Error_modifying_a_top]" "
+	[_ intranet-forum.lt_The_database_rejected_1] 
+	[_ intranet-forum.lt_Here_the_error_messag]: <pre>$errmsg\n</pre>\n"
         return
     }
 
@@ -210,9 +210,9 @@ where
 	topic_id=:topic_id
 	and user_id=:user_id"
     } on_error {
-        ad_return_error "Error modifying a im_forum_topic_user_map" "
-	The database rejected the modification of a of discussion topic 
-	\"$subject\". Here the error message: <pre>$errmsg\n</pre>\n"
+        ad_return_error "[_ intranet-forum.lt_Error_modifying_a_im_]" "
+	[_ intranet-forum.lt_The_database_rejected_2] 
+	[_ intranet-forum.lt_Here_the_error_messag]: <pre>$errmsg\n</pre>\n"
         return
     }
 }
@@ -317,9 +317,9 @@ update im_forum_topics set
         topic_status_id = :topic_status_id
 where topic_id=:topic_id"
     } on_error {
-	ad_return_error "Error modifying a topic" "
-        The database rejected the modification of a of discussion topic
-        \"$subject\". Here the error message: <pre>$errmsg\n</pre>\n"
+	ad_return_error "[_ intranet-forum.lt_Error_modifying_a_top]" "
+        [_ intranet-forum.lt_The_database_rejected_2] 
+	[_ intranet-forum.lt_Here_the_error_messag]: <pre>$errmsg\n</pre>\n"
         return
     }
 }
@@ -339,8 +339,8 @@ if {[string equal $actions "close"]} {
 update im_forum_topics set topic_status_id = :topic_status_id
 where topic_id=:topic_id"
     } on_error {
-        ad_return_error "Error modifying a topic" "
-	Error closing \"$subject\": <pre>$errmsg\n</pre>\n"
+        ad_return_error "[_ intranet-forum.lt_Error_modifying_a_top]" "
+	[_ intranet-forum.lt_Error_closing_subject]: <pre>$errmsg\n</pre>\n"
 	return
     }
 }
@@ -360,8 +360,8 @@ if {[string equal $actions "clarify"]} {
 update im_forum_topics set topic_status_id = :topic_status_id
 where topic_id=:topic_id"
     } on_error {
-        ad_return_error "Error modifying a topic" "
-	Error closing \"$subject\": <pre>$errmsg\n</pre>\n"
+        ad_return_error "[_ intranet-forum.lt_Error_modifying_a_top]" "
+	[_ intranet-forum.lt_Error_closing_subject]: <pre>$errmsg\n</pre>\n"
 	return
     }
 }
@@ -381,9 +381,9 @@ if {[string equal $actions "reject"]} {
 update im_forum_topics set topic_status_id = :topic_status_id
 where topic_id=:topic_id"
     } on_error {
-        ad_return_error "Error modifying a topic" "
-	Error closing \"$subject\": <pre>$errmsg\n</pre>\n"
-	return
+        ad_return_error "[_ intranet-forum.lt_Error_modifying_a_top]" "
+        [_ intranet-forum.lt_Error_closing_subject]: <pre>$errmsg\n</pre>\n"
+        return
     }
 
 }
@@ -403,9 +403,9 @@ if {[string equal $actions "accept"]} {
 update im_forum_topics set topic_status_id = :topic_status_id
 where topic_id=:topic_id"
     } on_error {
-        ad_return_error "Error modifying a topic" "
-	Error closing \"$subject\": <pre>$errmsg\n</pre>\n"
-	return
+        ad_return_error "[_ intranet-forum.lt_Error_modifying_a_top]" "
+        [_ intranet-forum.lt_Error_closing_subject]: <pre>$errmsg\n</pre>\n"
+        return
     }
 }
 
@@ -462,8 +462,7 @@ switch $action_type {
 	set importance 2
 	set subject "New $topic_type: $subject"
 	set message "
-A new $topic_type has been created.
-Please visit the link above for details.\n"
+[_ intranet-forum.lt_A_new_topic_type_has_]\n"
     }
 
     "edit_message" { 
@@ -471,8 +470,7 @@ Please visit the link above for details.\n"
 	set importance 1
 	set subject "Changed $topic_type: $subject"
 	set message "
-A $topic_type has been modified.
-Please visit the link above for details.\n"
+[_ intranet-forum.lt_A_new_topic_type_has__1]\n"
     }
 
     "reply_message" { 
@@ -480,8 +478,7 @@ Please visit the link above for details.\n"
 	set importance 1
 	set subject "Reply to $topic_type: $subject"
 	set message "
-A $topic_type reply has been created.
-Please visit the link above for details.\n"
+[_ intranet-forum.lt_A_new_topic_type_has_]\n"
     }
 }
 
@@ -491,51 +488,39 @@ if {!$action_type_found} {
     switch $actions {
 	"accept" { 
 	    set importance 1
-	    set subject "Accepted $topic_type: $subject"
+	    set subject "[_ intranet-forum.Accepted] $topic_type: $subject"
 	    set message "
-The $topic_type has been accepted by the asignee.
-Please visit the link above for details.
-"
+[_ intranet-forum.lt_A_new_topic_type_has__2]\n"
 	}
 	"reject" { 
 	    set importance 2
-	    set subject "Rejected $topic_type: $subject"
+	    set subject "[_ intranet-forum.Rejected] $topic_type: $subject"
 	    set message "
-The $topic_type has been rejected by the asignee.
-Please visit the link above for details.
-"
+[_ intranet-forum.lt_A_new_topic_type_has__3]\n"
 	}
 	"clarify" { 
 	    set importance 2
-	    set subject "$topic_type needs clarification: $subject"
+	    set subject "$topic_type [_ intranet-forum.needs_clarification]: $subject"
 	    set message "
-The asignee of the $topic_type needs clarification.
-Please visit the link above for details.
-"
+[_ intranet-forum.lt_The_asignee_of_the_to]\n"
 	}
 	"save" { 
 	    set importance 1
-	    set subject "Modified $topic_type: $subject"
+	    set subject "[_ intranet-forum.Modified] $topic_type: $subject"
 	    set message "
-The $topic_type has been modified or replied to.
-Please visit the link above for details.
-"
+[_ intranet-forum.lt_The_topic_type_has_be]"
 	}
 	"close" { 
 	    set importance 2
-	    set subject "Closed $topic_type: $subject"
+	    set subject "[_ intranet-forum.Closed] $topic_type: $subject"
 	    set message "
-The $topic_type has been closed.
-Please visit the link above for details.
-"
+[_ intranet-forum.lt_The_topic_type_has_be_1]"
 	}
 	"assign" { 
 	    set importance 1
-	    set subject "Assigned $topic_type: $subject"
+	    set subject "[_ intranet-forum.Assigned] $topic_type: $subject"
 	    set message "
-The $topic_type has been assigned to a new asignee.
-Please visit the link above for details.
-"
+[_ intranet-forum.lt_The_topic_type_has_be_2]"
 	}
     }
 }

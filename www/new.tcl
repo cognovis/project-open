@@ -130,15 +130,15 @@ where
 
     # This is a "Reply" message
     set topic_type_id [im_topic_type_id_reply]
-    set topic_type "Reply"
+    set topic_type "[_ intranet-forum.Reply]"
     set topic_status_id [im_topic_status_id_open]
-    set topic_status "Open"
+    set topic_status "[_ intranet-forum.Open]"
 
-    set submit_action "Create $topic_type"
-    set page_title "New $topic_type"
-    set context_bar [ad_context_bar [list /intranet-forum/ Forum] $page_title]
-    set subject "Re: $subject"
-    set message "Enter message body"
+    set submit_action "[_ intranet-forum.Create_topic_type]"
+    set page_title "[_ intranet-forum.New_topic_type]"
+    set context_bar [ad_context_bar [list /intranet-forum/ "[_ intranet-forum.Forum]"] $page_title]
+    set subject "[_ intranet-forum.Re_subject]"
+    set message "[_ intranet-forum.Enter_message_body]"
     set done 1
 }
 
@@ -164,18 +164,19 @@ if {!$done && $topic_id == 0} {
     set folder_id 0
     set receive_updates "major"
     set topic_status_id [im_topic_status_id_open]
-    set topic_status "Open"
+    set topic_status "[_ intranet-forum.Open]"
     set owner_id $user_id
     set asignee_id ""
     set due_date $todays_date
-    set topic_type [db_string topic_sql "select category from im_categories where category_id=:topic_type_id" -default ""]
+    set topic_type [lang::util::suggest_key [db_string topic_sql "select category from im_categories where category_id=:topic_type_id" -default ""]
+    set topic_type [_ intranet-forum.$topic_type]
 
-    set submit_action "Create $topic_type"
-    set page_title "New $topic_type"
-    set context_bar [ad_context_bar [list /intranet-forum/ Forum] $page_title]
+    set submit_action "[_ intranet-forum.Create_topic_type]"
+    set page_title "[_ intranet-forum.New_topic_type]"
+    set context_bar [ad_context_bar [list /intranet-forum/ "[_ intranet-forum.Forum]"] $page_title]
 
-    set subject "Enter subject"
-    set message "Enter message body"
+    set subject ""[_ intranet-forum.Enter_subject]"
+    set message "[_ intranet-forum.Enter_message_body]"
     set done 1
 }
 
@@ -209,9 +210,9 @@ where
 
      db_1row get_topic $topic_sql
      if {$due_date == ""} { set due_date $todays_date }
-     set submit_action "Save Changes"
-     set page_title "Edit Topic"
-     set context_bar [ad_context_bar [list /intranet-forum/ Forum] $page_title]
+     set submit_action "[_ intranet-forum.Save_Changes]"
+     set page_title "[_ intranet-forum.Edit_Topic]"
+     set context_bar [ad_context_bar [list /intranet-forum/ "[_ intranet-forum.Forum]"] $page_title]
      set done 1
 }
 
@@ -257,7 +258,7 @@ set export_var_list [list owner_id old_asignee_id parent_id topic_id return_url 
 if {!$topic_type_id} {
      append table_body "
 	 <tr $bgcolor([expr $ctr % 2])>
-	   <td>Topic Type</td>
+	   <td>[_ intranet-forum.Topic_Type]</td>
 	   <td>
 	     [im_forum_topic_type_select topic_type_id]
 	   </td>
@@ -266,7 +267,7 @@ if {!$topic_type_id} {
      lappend export_var_list "topic_type_id"
      append table_body "
 	 <tr $bgcolor([expr $ctr % 2])>
-	   <td>Topic Type</td>
+	   <td>[_ intranet-forum.Topic_Type]</td>
 	   <td valign=center>
 	     [im_gif $topic_type_id "$topic_type"] 
 	     $topic_type
@@ -283,7 +284,7 @@ incr ctr
 #
 append table_body "
 	 <tr $bgcolor([expr $ctr % 2])>
-	   <td>$topic_type Subject</td>
+	   <td>[_ intranet-forum.topic_type_Subject]</td>
 	   <td>
 	     <input type=text size=50 name=subject value=\"$subject\">
 	   </td>
@@ -300,7 +301,7 @@ incr ctr
 if {$object_id == 0} {
     append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td>In Project</td><td>
+	  <td>[_ intranet-forum.In_Project]</td><td>
 [im_project_select object_id $object_id "Open" "" "" $user_id]
 	  </td>
 	</tr>\n"
@@ -308,7 +309,7 @@ if {$object_id == 0} {
 } else {
     append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td>Posted in</td>
+	  <td>[_ intranet-forum.Posted_in]</td>
           <td><A href=[im_biz_object_url $object_id]>$object_name</td>
 	</tr>\n"
     incr ctr
@@ -323,18 +324,18 @@ if {$object_id == 0} {
 if {$task_or_incident_p} {
     append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td>Priority</td>
+	  <td>[_ intranet-forum.Priority]</td>
 	  <td>
 		<select name=priority>
-		<option value=1>1 - Emergency</option>
-		<option value=2>2 - Very Urgent</option>
-		<option value=3>3 - Urgent</option>
-		<option value=4>4 - High Normal</option>
-		<option value=5 selected>5 - Normal</option>
-		<option value=6>6 - Low Normal</option>
-		<option value=7>7 - Not that urgent</option>
-		<option value=8>8 - Needs to be done</option>
-		<option value=9>9 - Optional</option>
+		<option value=1>1 - [_ intranet-forum.Emergency]</option>
+		<option value=2>2 - Very Urgent#></option>
+		<option value=3>3 - [_ intranet-forum.Urgent]</option>
+		<option value=4>4 - [_ intranet-forum.High_Normal]</option>
+		<option value=5 selected>5 - [_ intranet-forum.Normal]</option>
+		<option value=6>6 - [_ intranet-forum.Low_Normal]</option>
+		<option value=7>7 - [_ intranet-forum.Not_that_urgent]</option>
+		<option value=8>8 - [_ intranet-forum.Needs_to_be_done]</option>
+		<option value=9>9 - [_ intranet-forum.Optional]</option>
 		</select>
 	  </td></tr>"
     incr ctr
@@ -358,7 +359,7 @@ if {$task_or_incident_p} {
 
 	append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td>Assign to</td>
+	  <td>[_ intranet-forum.Assign_to]</td>
 	  <td>[lindex $asignee_list 1]</td>
 	</tr>\n"
 	incr ctr
@@ -367,7 +368,7 @@ if {$task_or_incident_p} {
 	# Build a select box to let the user chose
 	append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td>Assign to</td>
+	  <td>[_ intranet-forum.Assign_to]</td>
 	  <td>
 	    [im_select asignee_id $asignee_list $asignee_id]
 	  </td>
@@ -384,7 +385,7 @@ if {$task_or_incident_p} {
 
     append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td>Due Date</td>
+	  <td>[_ intranet-forum.Due_Date]</td>
 	  <td>[philg_dateentrywidget due_date $due_date]</td>
 	</tr>\n"
     incr ctr
@@ -416,7 +417,7 @@ set html_p "f"
 
 append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td>$topic_type Body</td>
+	  <td>$topic_type [_ intranet-forum.Body]</td>
 	  <td>
 	    <textarea name=message rows=5 cols=50 wrap=soft>$message</textarea>
 	  </td>
@@ -432,7 +433,7 @@ if {$topic_type_id != [im_topic_type_id_reply]} {
     if {$object_admin || $user_id == $owner_id} {
 	append table_body "
 		<tr $bgcolor([expr $ctr % 2])>
-		  <td>Access permissions</td>
+		  <td>[_ intranet-forum.Access_permissions]</td>
 		  <td>
                     [im_forum_scope_select "scope" $user_id $scope]
 		  </td>
@@ -441,7 +442,7 @@ if {$topic_type_id != [im_topic_type_id_reply]} {
     } else {
 	append table_body "
 		<tr $bgcolor([expr $ctr % 2])>
-		  <td>Access permissions</td>
+		  <td>[_ intranet-forum.Access_permissions]</td>
 		  <td>[im_forum_scope_html $scope]
 		  </td>
 		</tr>"
@@ -455,7 +456,7 @@ if {$topic_type_id != [im_topic_type_id_reply]} {
 if {$topic_type_id != [im_topic_type_id_reply]} {
     append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td>Do you want to <br>receive updates?</td>
+	  <td>[_ intranet-forum.lt_Do_you_want_to_receiv]</td>
 	 <td>[im_forum_notification_select "receive_updates" $receive_updates]</td>
 	</tr>"
     incr ctr
@@ -481,7 +482,7 @@ append actions "<option value=save selected>$submit_action</option>\n"
 
 append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td>Actions</td>
+	  <td>[_ intranet-forum.Actions]</td>
 	  <td>
 	    <select name=actions>
 	    $actions
@@ -503,8 +504,6 @@ $table_body
 </table>
 </form>
 "
-
-doc_return  200 text/html [im_return_template]
 
 
 

@@ -73,7 +73,7 @@ if {!$object_read} {
 #
 set task_or_incident_p [im_forum_is_task_or_incident $topic_type_id]
 if {!$task_or_incident_p} {
-    ad_return_complaint 1 "This topic is not a task or incident - assignment does't make sense."
+    ad_return_complaint 1 "[_ intranet-forum.lt_This_topic_is_not_a_t]"
     return
 }
 
@@ -105,7 +105,7 @@ set asignee_list [im_forum_potential_asignees $user_id $object_id]
 # Build a select box to let the user chose
 append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td>Assign to:</td>
+	  <td>[_ intranet-forum.Assign_to]:</td>
 	  <td>
 	    [im_select asignee_id $asignee_list $asignee_id]
 	  </td>
@@ -116,7 +116,7 @@ append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
 	  <td></td>
 	  <td>
-	    <input type=submit value=\"Assign\">
+	    <input type=submit value=\"[_ intranet-forum.Assign]\">
 	  </td>
 	</tr>\n"
 incr ctr

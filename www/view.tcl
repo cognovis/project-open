@@ -74,8 +74,8 @@ where
 db_1row get_topic $topic_sql
 if {$due_date == ""} { set due_date $todays_date }
 set old_asignee_id $asignee_id
-set page_title "View Topic"
-set context_bar [ad_context_bar [list /intranet-forum/ Forum] $page_title]
+set page_title "[_ intranet-forum.View_Topic]"
+set context_bar [ad_context_bar [list /intranet-forum/ "[_ intranet-forum.Forum]"] $page_title]
 
 
 
@@ -112,7 +112,7 @@ ns_log Notice "view: object_admin=$object_admin"
 # However, the choice of receipients of the topics depend
 # on the relatioinship between the user and the object.
 if {!$object_read} {
-    ad_return_complaint 1 "You have no rights to add members to this object."
+    ad_return_complaint 1 "[_ intranet-forum.lt_You_have_no_rights_to]"
     return
 }
 
@@ -151,36 +151,36 @@ if {$task_or_incident_p && $user_id == $asignee_id} {
     # Add Accept/Reject for "assigned" tasks
     if {$topic_status_id == [im_topic_status_id_assigned]} {
 	# Asignee has not "accepted" yet
-	append actions "<option value=accept>Accept $topic_type</option>\n"
-	append actions "<option value=reject>Reject $topic_type</option>\n"
+	append actions "<option value=accept>[_ intranet-forum.Accept_topic_type]</option>\n"
+	append actions "<option value=reject>[_ intranet-forum.Reject_topic_type]</option>\n"
     }
 
     # Allow to mark task as "closed" 
     if {($object_admin || $user_id == $owner_id) && ![string equal $topic_status_id [im_topic_status_id_closed]]} {
-	append actions "<option value=close>Close $topic_type</option>\n"
+	append actions "<option value=close>[_ intranet-forum.Close_topic_type]</option>\n"
     }
 
     # Always allow to ask for clarification from owner
-    append actions "<option value=clarify>$topic_type needs clarify</option>\n"
+    append actions "<option value=clarify>[_ intranet-forum.lt_topic_type_needs_clar]</option>\n"
 }
 
-append actions "<option value=reply selected>Reply to this $topic_type</option>\n"
+append actions "<option value=reply selected>[_ intranet-forum.lt_Reply_to_this_topic_t]</option>\n"
 
 # Only admins can edit the message
 if {$object_admin || $user_id==$owner_id} {
-    append actions "<option value=edit>Edit $topic_type</option>\n"
+    append actions "<option value=edit>[_ intranet-forum.Edit_topic_type]</option>\n"
 }
 
 
 
 append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td>Actions</td>
+	  <td>[_ intranet-forum.Actions]</td>
 	  <td>
 	    <select name=actions>
 	    $actions
 	    </select>
-	    <input type=submit value=\"Apply\">
+	    <input type=submit value=\"[_ intranet-forum.Apply]\">
 	  </td>
 	</tr>\n"
 incr ctr
@@ -200,8 +200,6 @@ $table_body
 
 $thread_html
 "
-
-doc_return  200 text/html [im_return_template]
 
 
 
