@@ -645,10 +645,10 @@ set grand_total_html "
 ns_log Notice "new-3: before joining the parts together"
 
 set page_body "
-[im_invoices_navbar "none" "/intranet/invoicing/index" "" "" [list]]
+[im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
 
-<form action=/intranet-trans-invoices/new-4 method=POST>
-[export_form_vars customer_id invoice_id return_url]
+<form action=/intranet-invoices/new-2 method=POST>
+[export_form_vars customer_id invoice_id cost_type_id return_url]
 
 "
 

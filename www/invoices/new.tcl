@@ -533,7 +533,7 @@ set submit_button "
 
 set page_body "
 $filter_html
-[im_invoices_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list status_id type_id start_idx order_by how_many mine_p view_name letter include_subprojects_p]]
+[im_costs_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list status_id type_id start_idx order_by how_many mine_p view_name letter include_subprojects_p] ""]
 
 <form method=POST action='new-2'>
   <table width=100% cellpadding=2 cellspacing=2 border=0>

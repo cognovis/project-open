@@ -188,7 +188,7 @@ set deselect_button_html "
 # ---------------------------------------------------------------
 
 set page_body "
-[im_invoices_navbar "none" "/intranet/invoicing/index" "" "" [list]]
+[im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
 
 <form action=new-3 method=POST>
 [export_form_vars customer_id invoice_currency return_url]
