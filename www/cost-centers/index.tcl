@@ -26,7 +26,7 @@ if {!$user_is_admin_p} {
 }
 
 set page_title "Cost Centers"
-set context_bar [ad_context_bar $page_title]
+set context_bar [im_context_bar $page_title]
 set context ""
 
 set cost_center_url "/intranet-cost/cost-centers/new"
