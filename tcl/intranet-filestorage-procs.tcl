@@ -62,14 +62,14 @@ from
 		and f.object_id = :object_id
 		and p.profile_id = prof.profile_id
 	)
-	UNION (select [im_company_group_id] from dual)
+	UNION (select [im_customer_group_id] from dual)
 	UNION (select [im_employee_group_id] from dual)
 	UNION (select [im_freelance_group_id] from dual)
 	UNION (select [im_wheel_group_id] from dual)
 	) r
 where
-	r.profile_id = g.group_id (+)
-	and r.profile_id = p.profile_id (+)
+	r.profile_id = g.group_id
+	and r.profile_id = p.profile_id
 "
     db_foreach project_profiles $project_profile_sql {
 	if {"" == $profile_gif} { set profile_gif "profile" }
