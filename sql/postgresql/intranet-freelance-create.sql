@@ -102,9 +102,6 @@ set url='/intranet-freelance/index'
 where label='users_freelancers';
 
 
-
-
-
 ------------------------------------------------------
 -- Freelance Manager Permissions
 --
@@ -119,27 +116,26 @@ select im_create_profile ('Freelance Managers','profile');
 -- select im_freelance_skill_list(26,2000) from dual; -> 'es es_LA'
 --
 create or replace function im_freelance_skill_list (integer, integer)
-returns integer as '
+returns varchar as '
 declare
-	p_user_id			integer;
-	p_skill_type_id			integer; 
+	p_user_id			alias for $1;
+	p_skill_type_id			alias for $2; 
 
 	v_skills			varchar(4000);
 	c_user_skills			RECORD;
-
 BEGIN
 	v_skills := '''';
 
-	FOR c_user_skills IN	select  c.category
-				from    im_freelance_skills s,
-				        im_categories c
-				where   s.user_id=p_user_id
-				and s.skill_type_id=p_skill_type_id
-				and s.skill_id=c.category_id
-				order by c.category 
+	FOR c_user_skills IN	
+		select  c.category
+		from    im_freelance_skills s,
+		        im_categories c
+		where   s.user_id=p_user_id
+			and s.skill_type_id=p_skill_type_id
+			and s.skill_id=c.category_id
+		order by c.category 
         LOOP
-		v_skills := CONCAT(v_skills, '' '');
-		v_skills := CONCAT(v_skills, c_user_skills.category);
+		v_skills := v_skills || '' '' || c_user_skills.category;
 	END LOOP;
 	RETURN v_skills;
 end;' language 'plpgsql';
@@ -176,7 +172,7 @@ select im_component_plugin__new (
         null,                           -- context_id
         'Users Skills Component',       -- plugin_name
         'intranet-freelance',           -- package_name
-        'left',                       -- location
+        'bottom',                       -- location
         '/intranet/users/view',         -- page_url
         null,                           -- view_name
         80,                             -- sort_order
