@@ -12,7 +12,7 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-    { item_id:integer 0 }
+    { item_id:integer,optional }
     { return_url "/intranet-costs/index"}
     edit_p:optional
     message:optional
@@ -25,6 +25,8 @@ ad_page_contract {
 # ------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
+set page_title "Edit Cost"
+set context [ad_context_bar $page_title]
 
 if {![im_permission $user_id view_cost_items]} {
     ad_return_complaint 1 "You have insufficient privileges to use this page"
@@ -34,33 +36,22 @@ if {![im_permission $user_id view_cost_items]} {
 set action_url "/intranet-cost/new"
 set focus "cost.var_name"
 
-
 # ------------------------------------------------------------------
 # Get everything about the cost
 # ------------------------------------------------------------------
 
-if {0 == $item_id} {
+if {![exists_and_not_null item_id]} {
     # New variable: setup some reasonable defaults
 
     set page_title "New Cost Item"
     set context [ad_context_bar $page_title]
+    set effective_date [db_string get_today "select sysdate from dual"]
+    set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 60]
+    set vat 0
+    set tax 0
 
-
-} else {
-    # Existing Item: Get everything
-
-    set page_title "Edit Cost"
-    set context [ad_context_bar $page_title]
-
-    set sql "
-select
-	    ci.*
-from
-	    im_cost_items ci
-where
-	    ci.item_id = :item_id
-"
-    db_1row get_cost $sql
+    set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+    set form_mode "edit"
 }
 
 # ------------------------------------------------------------------
@@ -147,7 +138,8 @@ ad_form -extend -name cost -on_request {
 
 } -select_query {
 
-	select	ci.*
+	select	ci.*,
+		im_category_from_id(ci.item_status_id) as item_status
 	from	im_cost_items ci
 	where	ci.item_id = :item_id
 
@@ -159,7 +151,7 @@ declare
 begin
         v_item_id := im_cost_item.new (
                 item_id         => :item_id,
-                creation_user   => :usre_id,
+                creation_user   => :user_id,
                 creation_ip     => '[ad_conn peeraddr]',
                 item_name       => :item_name,
 		project_id	=> :project_id,
