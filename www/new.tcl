@@ -126,7 +126,7 @@ ad_form \
 	{item_type_id:text(select) {label Type} {options $item_type_options} }
 	{item_status_id:text(select) {label Status} {options $item_status_options} }
 	{template_id:text(select) {label "Print Template"} {options $template_options} }
-	{investment_id:text(select) {label Investment} {options $investment_options} }
+	{investment_id:text(select),optional {label Investment} {options $investment_options} }
 
 	{effective_date:text(text) {label "Effective Date"} {html {size 20}} }
 	{payment_days:text(text) {label "Payment Days"} {html {size 10}} }
@@ -154,47 +154,50 @@ ad_form -extend -name cost -on_request {
 } -new_data {
 
     db_dml cost_insert "
-	insert into im_cost_vars (
-		item_id,
-		var_object_type,
-		package_name,
-		var_name,
-		var_type,
-		var_type_category,
-		include_null_category_p,
-		var_type_sql,
-		category_id,
-		sort_order,
-		editable_p
-	) values (
-		:item_id,
-		:var_object_type,
-		:package_name,
-		:var_name,
-		:var_type,
-		:var_type_category,
-		:include_null_category_p,
-		:var_type_sql,
-		:category_id,
-		:sort_order,
-		:editable_p
-	)
-"
+declare
+	v_item_id	integer;
+begin
+        v_item_id := im_cost_item.new (
+                item_id         => :item_id,
+                creation_user   => :usre_id,
+                creation_ip     => '[ad_conn peeraddr]',
+                item_name       => :item_name,
+		project_id	=> :project_id,
+                customer_id     => :customer_id,
+                provider_id     => :provider_id,
+                item_status_id  => :item_status_id,
+                item_type_id    => :item_type_id,
+                template_id     => :template_id,
+                effective_date  => :effective_date,
+                payment_days    => :payment_days,
+		amount		=> :amount,
+                currency        => :currency,
+                vat             => :vat,
+                tax             => :tax,
+                description     => :description,
+                note            => :note
+        );
+end;"
 
 } -edit_data {
 
     db_dml cost_update "
-	update  im_cost_vars set
-		var_object_type		= :var_object_type,
-		package_name		= :package_name,
-		var_name		= :var_name,
-		var_type		= :var_type,
-		var_type_category	= :var_type_category,
-		include_null_category_p	= :include_null_category_p,
-		var_type_sql		= :var_type_sql,
-		category_id		= :category_id,
-		sort_order		= :sort_order,
-		editable_p		= :editable_p
+	update  im_cost_items set
+                item_name       = :item_name,
+		project_id	= :project_id,
+                customer_id     = :customer_id,
+                provider_id     = :provider_id,
+                item_status_id  = :item_status_id,
+                item_type_id    = :item_type_id,
+                template_id     = :template_id,
+                effective_date  = :effective_date,
+                payment_days    = :payment_days,
+		amount		= :amount,
+                currency        = :currency,
+                vat             = :vat,
+                tax             = :tax,
+                description     = :description,
+                note            = :note
 	where
 		item_id = :item_id
 "
