@@ -77,7 +77,7 @@ is
 	note			in varchar default null
     ) return im_trans_invoices.invoice_id%TYPE;
 
-    procedure del (invoice_id in integer);
+    procedure delete (invoice_id in integer);
     function name (invoice_id in integer) return varchar;
 end im_trans_invoice;
 /
@@ -150,7 +150,7 @@ is
     end new;
 
     -- Delete a single invoice (if we know its ID...)
-    procedure del (invoice_id in integer)
+    procedure delete (invoice_id in integer)
     is
     begin
 
@@ -164,7 +164,7 @@ is
 		from
 			acs_rels r
 		where
-			r.object_id_two = del.invoice_id
+			r.object_id_two = delete.invoice_id
 	);
 
 	-- Set all projects back to "delivered" that have tasks
@@ -177,21 +177,21 @@ is
 		from
 			im_trans_tasks t
 		where
-			t.invoice_id = del.invoice_id
+			t.invoice_id = delete.invoice_id
 	);
 
 	-- Reset the status of all invoiced tasks to delivered.
 	update	im_trans_tasks t
 	set	invoice_id = null
-	where	t.invoice_id = del.invoice_id;
+	where	t.invoice_id = delete.invoice_id;
 
 	-- Erase the invoice itself
 	delete from 	im_trans_invoices
-	where		invoice_id = del.invoice_id;
+	where		invoice_id = delete.invoice_id;
 
 	-- Erase the CostItem
-	im_invoice.del(del.invoice_id);
-    end del;
+	im_invoice.delete(delete.invoice_id);
+    end delete;
 
 
     function name (invoice_id in integer) return varchar
