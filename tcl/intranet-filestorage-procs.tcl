@@ -925,9 +925,9 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
 	# Executing the find command
         exec /bin/mkdir -p $find_path
         exec /bin/chmod ug+w $find_path
-	set file_list [exec /usr/bin/find $find_path]
+	set file_list [fileutil::find $find_path]
     } err_msg] } { 
-	return "<ul><li>[_ intranet-filestorage.lt_Unable_to_get_file_li]</ul>"
+	return "<ul><li>[_ intranet-filestorage.lt_Unable_to_get_file_li]:<br><pre>find_path=$find_path\n$err_msg</pre></ul>"
     }
     set files [split $file_list "\n"]
 
