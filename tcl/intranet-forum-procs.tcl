@@ -180,6 +180,7 @@ ad_proc -public im_forum_potential_asignees {user_id object_id} {
     # ----------------------- Start building the SQL Query ----------
     #
     set object_admin_sql "(
+-- object_admin_sql
 select distinct
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name
@@ -203,6 +204,7 @@ where
     # or SysAdmin), he can also assign the task to everybody.
     # ToDo: This may cause problems with large installations
     set public_sql "(
+-- public_sql
 select distinct
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name
@@ -212,6 +214,7 @@ from
 
     # Add the objects customers to the list
     set object_customer_sql "(
+-- object_customer_sql
 select distinct
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name
@@ -229,6 +232,7 @@ where
     # Add all object members to the list who are
     # not customers
     set object_non_customer_sql "(
+-- object_non_customer_sql
 select distinct
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name
@@ -240,10 +244,11 @@ where
 	r.object_id_one = :object_id
 	and r.object_id_two = u.user_id
 	and m.member_id = u.user_id
-	and m.group_id = :customer_group_id
+	and not(m.group_id = :customer_group_id)
 )"
 
     set object_staff_sql "(
+-- object_staff_sql
 select distinct
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name
