@@ -40,6 +40,10 @@ ns_log Notice "new-system-incident: core_version=$core_version"
 # Designed to avoid denial or service attacks
 set max_dayily_incidents 3
 
+set return_url "/intranet/"
+set authority_id ""
+set username ""
+
 # -----------------------------------------------------------------
 # Lookup user_id or create entry
 # -----------------------------------------------------------------
@@ -83,6 +87,26 @@ if {!$error_user_id} {
 }
 
 # -----------------------------------------------------------------
+# Find out the report_object
+# -----------------------------------------------------------------
+
+set report_object_id 0
+
+# Try with a customer first
+set report_object_id [db_string report_customer "
+select	min(customer_id)
+from	im_customers c,
+	acs_rels r
+where	c.customer_id = r.object_id_one
+	and r.object_id_two = :error_user_id
+" -default 0]
+
+# Set the report_object to the user itself
+if {"" == $report_object_id || !$report_object_id} {
+    set report_object_id $error_user_id
+}
+
+# -----------------------------------------------------------------
 # Create an incident (without mail alert)
 # -----------------------------------------------------------------
 
@@ -106,11 +130,11 @@ set topic_status_id 1202
 db_transaction {
         db_dml topic_insert "
 INSERT INTO im_forum_topics (
-        topic_id, group_id, parent_id, topic_type_id, topic_status_id,
+        topic_id, object_id, parent_id, topic_type_id, topic_status_id,
         posting_date, owner_id, scope, subject, message, priority,
         asignee_id, due_date
 ) VALUES (
-        :topic_id, :report_group_id, :parent_id, :topic_type_id, :topic_status_id,
+        :topic_id, :report_object_id, :parent_id, :topic_type_id, :topic_status_id,
         sysdate, :owner_id, :scope, :subject, :message, :priority,
         :asignee_id, :due
 )"
@@ -120,22 +144,5 @@ INSERT INTO im_forum_topics (
     Please send an email to <A href=\"mailto:[ad_parameter "SystemOwner" "" ""]\">
     our webmaster</a>, thanks."
 }
-
-
-set page_body "
-<H1>Incident Received</H1>
-
-Your incident hast been received.<br>
-You will be notified as soon as possible.
-"
-
-
-doc_return  200 text/html [im_return_template]
-
-
-
-
-
-
 
 
