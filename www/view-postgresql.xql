@@ -26,6 +26,8 @@ select
 	t.owner_id,
 	t.priority,
 	t.scope,
+	t.asignee_id,
+	t.object_id,
 	to_char(t.due_date, :date_format) as due_date,
 	to_char(t.posting_date, :date_format) as posting_date,
 	m.read_p,
