@@ -22,7 +22,7 @@ ad_page_contract {
 # User id already verified by filters
 set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
-set page_title "Payments"
+set page_title "<#_ Payments#>"
 set context_bar [ad_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 set amp "&"
@@ -30,14 +30,14 @@ set amp "&"
 ns_log Notice "intranet-payments/new: return_url=$return_url"
 
 if {![im_permission $user_id add_payments]} {
-    ad_return_complaint "Insufficient Privileges" "
-    <li>You don't have sufficient privileges to see this page."    
+    ad_return_complaint "<#_ Insufficient Privileges#>" "
+    <li><#_ You don't have sufficient privileges to see this page.#>"    
 }
 
 # default for old-style payments
 if {"" == $cost_id} { set cost_id $invoice_id }
 if {"" == $cost_id} {
-    ad_return_complaint 1 "<li>No cost/invoice item specified"
+    ad_return_complaint 1 "<li><#_ No cost/invoice item specified#>"
 }
 
 # ---------------------------------------------------------------
@@ -50,9 +50,9 @@ if {"" == $payment_id} {
 
     set add_delete_text 0
     set payment_id [db_nextval "im_payments_id_seq"]
-    set page_title "New payment" 
+    set page_title "<#_ New payment#>" 
     set context_bar [ad_context_bar $page_title]
-    set button_name "Add payment"
+    set button_name "<#_ Add payment#>"
     set invoice_html [im_costs_select cost_id $cost_id "" [list "Deleted" "In Process"]]
 
     set cost_name [db_string cost_name "select cost_name from im_costs where cost_id=:cost_id"]
@@ -70,7 +70,7 @@ if {"" == $payment_id} {
 	select to_char(min(sb.start_block),'Month DD, YYYY') as start_block
 	  from im_start_blocks sb
 	where sb.start_block >= trunc(sysdate)}] } {
-	    ad_return_error "Start block error" "The intranet start blocks are either undefined or we do not have a start block for this week or later into the future."
+	    ad_return_error "<#_ Start block error#>" "<#_ The intranet start blocks are either undefined or we do not have a start block for this week or later into the future.#>"
 	    return
     }
 	   
@@ -97,9 +97,9 @@ where
 "
 
     set add_delete_text 1
-    set page_title "Edit payment"
-    set context_bar [ad_context_bar [list /intranet-payments/ "Payments"] $page_title]
-    set button_name "Update"
+    set page_title "<#_ Edit payment#>"
+    set context_bar [ad_context_bar [list /intranet-payments/ "<#_ Payments#>"] $page_title]
+    set button_name "<#_ Update#>"
 }
 
 set letter "none"

@@ -64,7 +64,7 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
 set today [lindex [split [ns_localsqltimestamp] " "] 0]
-set page_title "Payments"
+set page_title "[_ intranet-payments.Payments]"
 set context_bar [ad_context_bar_ws $page_title]
 set page_focus "im_header_form.keywords"
 set return_url [im_url_with_query]
@@ -72,8 +72,8 @@ set return_url [im_url_with_query]
 set amp "&"
 
 if {![im_permission $user_id view_payments]} {
-    ad_return_complaint "Insufficient Privileges" "
-    <li>You don't have sufficient privileges to see this page."    
+    ad_return_complaint "[_ intranet-payments.lt_Insufficient_Privileg]" "
+    <li>[_ intranet-payments.lt_You_dont_have_suffici]"    
 }
 
 if { [empty_string_p $how_many] || $how_many < 1 } {
@@ -221,14 +221,14 @@ set filter_html "
 	<table border=0 cellpadding=0 cellspacing=0>
 	  <tr> 
 	    <td colspan='2' class=rowtitle align=center>
-	      Filter Payments
+	      [_ intranet-payments.Filter_Payments]
 	    </td>
 	  </tr>
 	  <tr>
-	    <td valign=top>Payment Status:</td>
+	    <td valign=top>[_ intranet-payments.Payment_Status]</td>
 	    <td valign=top>
               [im_select status_id $type_types ""]
-              <input type=submit value=Go name=submit>
+              <input type=submit value='[_ intranet-payments.Go]' name=submit>
             </td>
 	  </tr>
 	</table>
@@ -267,10 +267,11 @@ if { ![empty_string_p $query_string] } {
 
 append table_header_html "<tr>\n"
 foreach col $column_headers {
+    regsub -all " " $col "_" col_key
     if { [string compare $order_by $col] == 0 } {
-	append table_header_html "  <td class=rowtitle>$col</td>\n"
+	append table_header_html "  <td class=rowtitle>[_ intranet-payments.$col_key]</td>\n"
     } else {
-	append table_header_html "  <td class=rowtitle><a href=\"${url}order_by=[ns_urlencode $col]\">$col</a></td>\n"
+	append table_header_html "  <td class=rowtitle><a href=\"${url}order_by=[ns_urlencode $col]\">[_ intranet-payments.$col_key]</a></td>\n"
     }
 }
 append table_header_html "</tr>\n"
@@ -314,7 +315,7 @@ db_foreach payments_info_query $selection {
 if { [empty_string_p $table_body_html] } {
     set table_body_html "
         <tr><td colspan=$colspan><ul><li><b> 
-        There are currently no payments matching the selected criteria
+        [_ intranet-payments.lt_There_are_currently_n]
         </b></ul></td></tr>"
 }
 
@@ -348,7 +349,7 @@ if { $start_idx > 1 } {
 #
 if {$ctr==$how_many && $total_in_limited > 0 && $end_idx < $total_in_limited} {
     set next_start_idx [expr $end_idx + 1]
-    set next_page "<a href=index?start_idx=$next_start_idx&[export_ns_set_vars url [list start_idx]]>Next Page</a>"
+    set next_page "<a href=index?start_idx=$next_start_idx&[export_ns_set_vars url [list start_idx]]>[_ intranet-payments.Next_Page]</a>"
 } else {
     set next_page ""
 }
@@ -362,7 +363,7 @@ if { $start_idx > 1 } {
     if { $previous_start_idx < 1 } {
 	set previous_start_idx 1
     }
-    set previous_page "<a href=index?start_idx=$previous_start_idx&[export_ns_set_vars url [list start_idx]]>Previous Page</a>"
+    set previous_page "<a href=index?start_idx=$previous_start_idx&[export_ns_set_vars url [list start_idx]]>[_ intranet-payments._Previous]</a>"
 } else {
     set previous_page ""
 }
@@ -403,4 +404,4 @@ set page_body "
 
 db_release_unused_handles
 
-doc_return  200 text/html [im_return_template]
+#doc_return  200 text/html [im_return_template]
