@@ -224,9 +224,9 @@ sort_order) values (22011,220,'Client',
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22013,220,'Start Block',
 '$start_block',13);
-insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22013,220,'Start Block',
-'$start_block',13);
+-- insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+-- sort_order) values (22013,220,'Start Block',
+-- '$start_block',13);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22015,220,'Due Date',
 '[if {$overdue > 0} {

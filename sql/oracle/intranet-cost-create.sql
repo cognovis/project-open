@@ -1097,7 +1097,7 @@ commit;
 -------------------------------------------------------------
 -- Import common functionality
 
-@../common/intranet-cost-create.sql
+@../common/intranet-cost-common.sql
 @../common/intranet-cost-backup.sql
 
 
