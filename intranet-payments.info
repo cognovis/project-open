@@ -9,6 +9,7 @@
     <auto-mount>intranet-payments</auto-mount>
 
     <version name="3.0.0" url="http://openacs.org/repository/download/apm/intranet-payments-3.0.0.apm">
+
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <vendor url="http://www.project-open.com/">Project/Open</vendor>
 
