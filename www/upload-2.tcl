@@ -47,7 +47,7 @@ if { $exception_count > 0 } {
 
 # Get the file from the user.
 # number_of_bytes is the upper-limit
-set max_n_bytes [ad_parameter MaxNumberOfBytes fs]
+set max_n_bytes [ad_parameter -package_id [im_package_filestorage_id] MaxNumberOfBytes "" 0]
 set tmp_filename [ns_queryget upload_file.tmpfile]
 ns_log Notice "upload-2: tmp_filename=$tmp_filename"
 
@@ -80,6 +80,11 @@ switch $folder_type {
     "project" {
 	set project_path [im_filestorage_project_path $object_id]
 	set dest_path "$project_path/$bread_crum_path/$client_filename"
+    }
+
+    "project_sales" {
+	set path [im_filestorage_project_sales_path $object_id]
+	set dest_path "$path/$bread_crum_path/$client_filename"
     }
 
     "customer" {
