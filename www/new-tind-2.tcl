@@ -46,24 +46,6 @@ ad_page_contract {
 }
 
 # ------------------------------------------------------------------
-# Procedures
-# ------------------------------------------------------------------
-
-ad_proc -public im_forum_topic_alert_user {
-    $topic_id
-    $owner_id 
-    $asignee_id 
-    $topic_status_id 
-    $old_topic_status_id
-} {
-    Returns 1/0 to indicate whether the specific user wants to be
-    informed about a specific event
-} {
-    return 1
-}
-
-
-# ------------------------------------------------------------------
 # Security, Parameters & Default
 # ------------------------------------------------------------------
 
@@ -104,7 +86,7 @@ if {$topic_type_id == 1102 || $topic_type_id == 1104} {
 
 if {"" != $comments} {
 
-    set user_name [db_string get_user_name [im_name_from_user_id(user_id)]]
+    set user_name [db_string get_user_name "select im_name_from_user_id(:user_id) from dual"]
     set today_date [db_string get_today_date "select sysdate from dual"]
     append message "\n\n\[Comment from $user_name on $today_date\]:\n$comments"
 }
@@ -115,7 +97,7 @@ if {"" != $comments} {
 
 if {[string equal $actions "reply"]} {
 
-    ad_returnredirect "/intranet-forum/forum/new-tind"
+    ad_returnredirect "/intranet-forum/new-tind"
 
 }
 
@@ -217,10 +199,11 @@ if {$asignee_id != $old_asignee_id} {
     # Always send a mail to a new asignee
     #
     set msg_url "[ad_parameter SystemUrl]"
-    append msg_url "/intranet-forum/forum/view?topic_id=$topic_id"
+    append msg_url "/intranet-forum/view?topic_id=$topic_id"
     set topic_type [db_string topic_type "select category from im_categories where category_id=:topic_type_id"]
     set msg_subject "New $topic_type: $subject"
-    im_send_alert $asignee_id "hourly" $msg_url $msg_subject $message
+#    im_send_alert $asignee_id "hourly" $msg_url $msg_subject $message
+###!!! ToDo: enable alerts
 
     # Inform the owner about the change except if it iss a client
     # or if it is someone who 
@@ -255,7 +238,7 @@ where	m.topic_id=:topic_id
     db_foreach update_stakeholders $stakeholder_sql {
 
         set msg_url "[ad_parameter SystemUrl]"
-        append msg_url "/intranet-forum/forum/view?topic_id=$topic_id"
+        append msg_url "/intranet-forum/view?topic_id=$topic_id"
         set topic_type [db_string topic_type "select category from im_categories where category_id=:topic_type_id"]
         set msg_subject "Closed $topic_type: $subject"
         im_send_alert $asignee_id "hourly" $msg_url $msg_subject $message
@@ -292,7 +275,7 @@ where	m.topic_id=:topic_id
     db_foreach update_stakeholders $stakeholder_sql {
 
         set msg_url "[ad_parameter SystemUrl]"
-        append msg_url "/intranet-forum/forum/view?topic_id=$topic_id"
+        append msg_url "/intranet-forum/view?topic_id=$topic_id"
         set topic_type [db_string topic_type "select category from im_categories where category_id=:topic_type_id"]
         set msg_subject "Accepted $topic_type: $subject"
         im_send_alert $asignee_id "hourly" $msg_url $msg_subject $message

@@ -12,6 +12,7 @@ ad_library {
     @author frank.bergmann@project-open.com
 }
 
+
 # ----------------------------------------------------------------------
 # Select Boxes
 # ----------------------------------------------------------------------
@@ -38,6 +39,62 @@ ad_proc -public im_forum_topic_status_select { select_name { default "" } } {
 }
 
 
+
+ad_proc -public im_forum_scope_select {select_name user_id {default ""} } {
+    Returns a formatted HTML "scope" select, according to user
+    permissions.
+    If the scope is limited to a the PM, just display a HTML
+    text instead of a SelectBox.
+} {
+    set public_selected ""
+    set group_selected ""
+    set staff_selected ""
+    set client_selected ""
+    set non_client_selected ""
+    set pm_selected ""
+    switch $default {
+	public { set public_selected "selected" }
+	group { set group_selected "selected" }
+	staff { set staff_selected "selected" }
+	client { set client_selected "selected" }
+	non_client { set non_client_selected "selected" }
+	pm { set pm_selected "selected" }
+    }
+
+    set option_list [list]
+    if {[im_permission $user_id add_topic_public]} { lappend option_list "<option value=public $public_selected>Public (everybody in the system)</option>\n" }
+    if {[im_permission $user_id add_topic_group]} { lappend option_list "<option value=group $group_selected>Project (all project members)</option>" }
+    if {[im_permission $user_id add_topic_staff]} { lappend option_list "<option value=staff $staff_selected>Staff (employees only)</option>" }
+    if {[im_permission $user_id add_topic_client]} { lappend option_list "<option value=client $client_selected>Clients and PM only</option>" }
+    if {[im_permission $user_id add_topic_noncli]} { lappend option_list "<option value=not_client $non_client_selected>Provider (project members without clients)</option>" }
+    if {[im_permission $user_id add_topic_pm]} { lappend option_list "<option value=pm $pm_selected>Project Manager</option>" }
+
+    if {1 == [llength $option_list]} {
+	return "ProjectManager<input type=hidden name=scope value=\"pm\">"
+    } else {
+	return "<select name=scope>[join $option_list " "]</select>"
+    }
+}
+
+ad_proc -public im_forum_scope_html {scope } {
+    Returns a formatted HTML "scope"
+} {
+    set html ""
+    switch $scope {
+	public { set html "Public (everybody in the system)"}
+	group {set html "All group members"}
+	staff { set html "Staff group members only"}
+	client { set html "Client group members and the PM only"}
+	non_client { set html "Staff and Freelance group members"}
+	pm { set html "Project Manager only"}
+	default { set html "undefined"}
+    }
+    return $html
+}
+
+
+
+
 # ------------------------------------------------------------------
 # Procedures
 # ------------------------------------------------------------------
@@ -45,114 +102,149 @@ ad_proc -public im_forum_topic_status_select { select_name { default "" } } {
 ad_proc -public im_forum_potential_asignees {user_id object_id} {
     Return a key-value list of all persons to whom the current
     user may assign his task or issue.
-    Project: 
+    <ul>
+    <li>Project: <br>
 	This list is restricted to the PM for customers 
 	and freelancers.
-    Customer:
+    <li>Customer:<br>
 	May be restricted to the Key Account
+    </ul>
+    The code is written using a large SQL "union" that joins
+    several partial SQLs that select the user_id/user_name
+    pairs for each of the user permissions.
+    I have chosen this approach because otherwise I would 
+    have had to calculate the set union in tcl which could
+    be even more cumbersome and slow.
 } {
-    set project_admin_sql "(
+
+    # ----------------------- Get Parameters -----------------------
+    # Get the people related to the projects
+    # We use the list of system administrators as a fallback
+    # value in case the list of object members or object admins is emtpy.
+
+    set admin_group_id [im_admin_group_id]
+    set customer_group_id [im_customer_group_id]
+    set employee_group_id [im_employee_group_id]
+    set admins [db_list get_admins "select member_id from group_distinct_member_map where group_id = :admin_group_id"]
+
+    set object_admins [im_biz_object_admin_ids $object_id]
+    if {![llength $object_admins]} { set object_admins $admins }
+    set object_admins_commalist [join $object_admins ","]
+
+    set object_members [im_biz_object_admin_ids $object_id]
+    if {![llength $object_members]} { set object_members $admins }
+    set object_members_commalist [join $object_members ","]
+
+
+    # ----------------------- Start building the SQL Query ----------
+    #
+    set object_admin_sql "(
 select distinct
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name
-from	group_member_map m,
+from
 	users u
-where	m.group_id=:object_id
-	and m.member_id=u.user_id
-	and m.rel_type='administrator'
+where
+	user_id in ($object_admins_commalist)
 )"
 
-    set project_group_sql "(
+    set object_group_sql "(
 select distinct
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name
-from	group_member_map m,
+from
 	users u
-where	m.group_id=:object_id
-	and m.member_id=u.user_id
+where
+	user_id in ($object_members_commalist)
 )"
 
+    # If the user can talk to the public (probably a SenMan
+    # or SysAdmin), he can also assign the task to everybody.
+    # ToDo: This may cause problems with large installations
     set public_sql "(
 select distinct
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name
-from	group_member_map m,
+from
 	users u
-where	m.group_id in (14,15,16,18,19)
-	and m.member_id=u.user_id
 )"
 
-    set project_client_sql "(
+    # Add the objects customers to the list
+    set object_customer_sql "(
 select distinct
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name
-from	group_member_map m,
+from
+	acs_rels r,
+	group_member_map m,
 	users u
-where	m.group_id=:object_id
-	and m.member_id=u.user_id
-	and u.user_id in (
-		select user_id
-		from group_member_map
-		where group_id=6
-	)
+where
+	r.object_id_one = :object_id
+	and r.object_id_one = u.user_id
+	and m.member_id = u.user_id
+	and m.group_id = :customer_group_id
 )"
 
-    set project_non_client_sql "(
+    # Add all object members to the list who are
+    # not customers
+    set object_non_customer_sql "(
 select distinct
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name
-from	group_member_map m,
+from
+	acs_rels r,
+	group_member_map m,
 	users u
-where	m.group_id=:object_id
-	and m.member_id=u.user_id
-	and u.user_id not in (
-		select user_id
-		from group_member_map
-		where group_id=6
-	)
+where
+	r.object_id_one = :object_id
+	and r.object_id_one = u.user_id
+	and m.member_id = u.user_id
+	and m.group_id = :customer_group_id
 )"
 
-    set project_staff_sql "(
+    set object_staff_sql "(
 select distinct
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name
-from	group_member_map m,
+from
+	acs_rels r,
+	group_member_map m,
 	users u
-where	m.group_id=:object_id
-	and m.member_id=u.user_id
-	and u.user_id in (
-		select user_id
-		from group_member_map
-		where group_id=9
-	)
+where	r.object_id_one = :object_id
+	and r.object_id_two = u.user_id
+	and m.member_id = u.user_id
+	and m.group_id = :employee_group_id
 )"
 
     set sql_list [list]
-#    if {[im_permission $user_id create_topic_scope_public]} {
+
+    # Don't enable the list of the entire public - 
+    # too many users in large installations
+#    if {[im_permission $user_id add_topic_public]} {
 #	lappend sql_list $public_sql
 #    }
-    if {[im_permission $user_id create_topic_scope_group]} {
-	lappend sql_list $project_group_sql
+    if {[im_permission $user_id add_topic_group]} {
+	lappend sql_list $object_group_sql
     }
-    if {[im_permission $user_id create_topic_scope_staff]} {
-	lappend sql_list $project_staff_sql
+    if {[im_permission $user_id add_topic_staff]} {
+	lappend sql_list $object_staff_sql
     }
-    if {[im_permission $user_id create_topic_scope_client]} {
-	lappend sql_list $project_client_sql
+    if {[im_permission $user_id add_topic_client]} {
+	lappend sql_list $object_customer_sql
     }
-    if {[im_permission $user_id create_topic_scope_non_client]} {
-	lappend sql_list $project_non_client_sql
+    if {[im_permission $user_id add_topic_noncli]} {
+	lappend sql_list $object_non_customer_sql
     }
-    if {[im_permission $user_id create_topic_scope_pm]} {
-	lappend sql_list $project_admin_sql
+    if {[im_permission $user_id add_topic_pm]} {
+	lappend sql_list $object_admin_sql
     }
 
     set sql [join $sql_list " UNION "]
-    ns_log Notice "new-tind: $sql"
+    ns_log Notice "new-tind: sql=$sql"
 
 
     set asignee_list [list]
-    db_foreach project_admins $sql {
+    db_foreach object_admins $sql {
 	lappend asignee_list $user_id
 	lappend asignee_list $user_name
     }
@@ -163,6 +255,23 @@ where	m.group_id=:object_id
     }
     return $asignee_list
 }
+
+
+
+ad_proc -public im_forum_topic_alert_user {
+    $topic_id
+    $owner_id 
+    $asignee_id 
+    $topic_status_id 
+    $old_topic_status_id
+} {
+    Returns 1/0 to indicate whether the specific user wants to be
+    informed about a specific event
+} {
+    return 1
+}
+
+
 
 
 # ----------------------------------------------------------------------
@@ -298,7 +407,24 @@ if {$topic_status_id != ""} {
 # Forum List Page Component
 # ---------------------------------------------------------------------
 
-ad_proc -public im_forum_component {user_id object_id current_page_url return_url export_var_list forum_type {view_name ""} {forum_order_by "priority"} {restrict_to_mine_p f} {restrict_to_topic_type_id 0} {restrict_to_topic_status_id 0} {restrict_to_asignee_id 0} {max_entries_per_page 0} {start_idx 1} {restrict_to_new_topics 0} {restrict_to_folder 0} } {
+ad_proc -public im_forum_component {
+    {-view_name ""} 
+    {-forum_order_by "priority"} 
+    {-restrict_to_mine_p f} 
+    {-restrict_to_topic_type_id 0} 
+    {-restrict_to_topic_status_id 0} 
+    {-restrict_to_asignee_id 0} 
+    {-max_entries_per_page 0} 
+    {-start_idx 1} 
+    {-restrict_to_new_topics 0} 
+    {-restrict_to_folder 0}
+    -user_id 
+    -object_id 
+    -current_page_url 
+    -return_url 
+    -export_var_list 
+    -forum_type 
+} {
     Creates a HTML table showing a table of "Discussion Topics" of 
     various types. Parameters:
     <ul>
@@ -315,6 +441,12 @@ ad_proc -public im_forum_component {user_id object_id current_page_url return_ur
 } {
     ns_log Notice "im_forum_component: forum_type=$forum_type"
     ns_log Notice "im_forum_component: view_name=$view_name"
+    ns_log Notice "im_forum_component: restrict_to_asignee_id=$restrict_to_asignee_id"
+    ns_log Notice "im_forum_component: restrict_to_mine_p=$restrict_to_mine_p"
+    ns_log Notice "im_forum_component: restrict_to_topic_type_id=$restrict_to_topic_type_id"
+    ns_log Notice "im_forum_component: restrict_to_new_topics=$restrict_to_new_topics"
+    ns_log Notice "im_forum_component: restrict_to_folder=$restrict_to_folder"
+
 
     set bgcolor(0) " class=roweven"
     set bgcolor(1) " class=rowodd"
@@ -429,6 +561,9 @@ ad_proc -public im_forum_component {user_id object_id current_page_url return_ur
     }
     append table_header_html "</tr>\n"
 
+
+
+    # ---------------------- ------------------- ---------------------------
     # ---------------------- Build the SQL query ---------------------------
 
     set order_by_clause "order by priority"
@@ -440,18 +575,30 @@ ad_proc -public im_forum_component {user_id object_id current_page_url return_ur
 	"Who" { set order_by_clause "order by upper(owner_initials)" }
     }
 
+
     set restrictions []
-#    if {0 != $object_id} {lappend restrictions "t.group_id=:object_id" }
-    if {[string equal "t" $restrict_to_mine_p]} {lappend restrictions "(owner_id=:user_id or asignee_id=:user_id)" }
-    if {$restrict_to_topic_status_id} {lappend restrictions "topic_status_id=:restrict_to_topic_status_id" }
-    if {$restrict_to_asignee_id} {lappend restrictions "asignee_id=:restrict_to_asignee_id" }
-    if {$restrict_to_new_topics} {lappend restrictions "(m.read_p is null or m.read_p='f')" }
+    if {0 != $object_id} {
+	lappend restrictions "t.object_id=:object_id" 
+    }
+    if {[string equal "t" $restrict_to_mine_p]} {
+	lappend restrictions "(owner_id=:user_id or asignee_id=:user_id)" 
+    }
+    if {$restrict_to_topic_status_id} {
+	lappend restrictions "topic_status_id=:restrict_to_topic_status_id" 
+    }
+    if {$restrict_to_asignee_id} {
+	lappend restrictions "asignee_id=:restrict_to_asignee_id" 
+    }
+    if {$restrict_to_new_topics} {
+	lappend restrictions "(m.read_p is null or m.read_p='f')" 
+    }
     if {$restrict_to_folder} {
 	lappend restrictions "m.folder_id=:restrict_to_folder" 
     } else {
 	lappend restrictions "(m.folder_id is null or m.folder_id=0)" 
     }
-
+    # ToDo: Replace this by a hierarchy of topic types 
+    # such as in project types.
     if {$restrict_to_topic_type_id} {
 	# 0=All, 1=Tasks & Incidents, other=Specific Type
 	if {1 == $restrict_to_topic_type_id} {
@@ -469,71 +616,64 @@ ad_proc -public im_forum_component {user_id object_id current_page_url return_ur
     set user_is_employee_p [im_user_is_employee_p $user_id]
     set user_is_customer_p [im_user_is_customer_p $user_id]
 
-    # Get permission together with the forum_topics in an inner
-    # select to allow the outer SQL to use a WHERE clause to
-    # limit the number returned rows.
-    # This way we handle all permissions in SQL, allowing to
-    # count the number of returned rows for the << and >> buttons.
-    set inner_forum_sql "
-select
-	t.*,
-	im_category_from_id(t.topic_type_id) as topic_type,
-	CASE
-		WHEN scope='public' THEN 1
-		WHEN scope='group' THEN member_groups.p
-		WHEN scope='client' and 1=:user_is_customer_p THEN member_groups.p
-		WHEN scope='staff' and 1=:user_is_employee_p THEN member_groups.p
-		WHEN scope='not_client' and 0=:user_is_customer_p THEN member_groups.p
-		WHEN scope='pm' THEN admin_groups.p
-		ELSE 0
-	END as permission_p,
-	CASE WHEN t.owner_id=:user_id THEN 1 ELSE 0 END as owner_p,
-	CASE WHEN t.asignee_id=:user_id THEN 1 ELSE 0 END as asignee_p
-from
-	im_forum_topics t,
-	-- return 1 if the user is admin of a group
-	(select 1 as p, group_id from group_member_map where
-	 member_id=:user_id and rel_type='administrator') admin_groups,
-	-- return 1 if the user is member of a group
-	(select 1 as p, group_id from group_member_map where
-	 member_id=:user_id) member_groups
-where
-	t.object_id=admin_groups.group_id(+)
-	and t.object_id=member_groups.group_id(+)
-"
-	ns_log Notice "im_forum_component: inner_forum_sql=$inner_forum_sql"
-
-
-set ttt "
-	($inner_forum_sql) t,
-        (t.permission_p = 1 or t.owner_p = 1 or t.asignee_id = 1)
-        and t.object_id != 1
-        and (t.parent_id is null or t.parent_id=0)
-"
-
-
+    # Forum items have a complicated "scoped" permission 
+    # system where you can say who should be able to read
+    # the topic in function of the project/customer/...
+    # membership.
+    # Also, items can be attached to all kinds of objects,
+    # so that we need some object_type meta data
+    # (im_biz_object_urls) to build correct URLs to link
+    # to these items.
+    # Finally we can have "read" and "unread" items and
+    # Items that have been filed in a specific "folder".
+    # So we are getting close here to a kind of MS-Outlook...
     set forum_sql "
 select
-	acs_object.name(t.object_id),
 	t.*,
+	acs_object.name(t.object_id) as object_name,
 	m.read_p,
 	m.folder_id,
 	f.folder_name,
 	m.receive_updates,
+	u.url as object_view_url,
 	im_initials_from_user_id(t.owner_id) as owner_initials,
-	im_initials_from_user_id(t.asignee_id) as asignee_initials
+	im_initials_from_user_id(t.asignee_id) as asignee_initials,
+	im_category_from_id(t.topic_type_id) as topic_type
 from
 	im_forum_topics t,
-	(select * from im_forum_topic_user_map where user_id=:user_id) m,
-	im_forum_folders f
+	im_forum_topic_user_map m,
+	im_forum_folders f,
+	(select * from im_biz_object_urls where url_type='view') u,
+	acs_objects o,
+	(	select 1 as p, 
+			object_id_one as object_id 
+		from 	acs_rels
+		where	object_id_two = :user_id
+	) member_objects
 where
         (t.parent_id is null or t.parent_id=0)
+        and t.object_id != 1
 	and t.topic_id=m.topic_id(+)
+	and m.user_id = :user_id
 	and m.folder_id=f.folder_id(+)
+	and t.object_id = member_objects.object_id(+)
+	and t.object_id = o.object_id
+	and o.object_type = u.object_type(+)
+	and 1 =	im_forum_permission(
+		:user_id,
+		t.owner_id,
+		t.asignee_id,
+		t.object_id,
+		t.scope,
+		member_objects.p,
+		member_objects.p,
+		:user_is_employee_p,
+		:user_is_customer_p
+	)
 	$restriction_clause
 $order_by_clause"
 
-	ns_log Notice "im_forum_component: forum_sql=$forum_sql"
+
 
     # ---------------------- Limit query to MAX rows -------------------------
     
@@ -584,7 +724,8 @@ $order_by_clause"
                 <tr><td colspan=$colspan>&nbsp;</td></tr>
                 <tr><td class=rowtitle colspan=$colspan>
                   <A href=/intranet/projects/view?group_id=$object_id>
-                    $project_nr</A>: $group_name
+                    $object_name
+                  </A>
                 </td></tr>\n"
                 set old_object_id $object_id
             }
@@ -655,7 +796,7 @@ $order_by_clause"
 #<form action=/intranet/forum/forum-action method=POST>
     set component_html "
 
-<form action=/intranet-forum/forum/forum-action method=POST>
+<form action=/intranet-forum/forum-action method=POST>
 [export_form_vars object_id return_url]
 <table bgcolor=white border=0 cellpadding=1 cellspacing=1>
   $table_header_html
@@ -672,7 +813,7 @@ $order_by_clause"
 # Forum Navigation Bar
 # ----------------------------------------------------------------------
 
-# <A HREF=/intranet/forum/index?[export_url_vars object_id return_url]>
+# <A HREF=/intranet-forum/index?[export_url_vars object_id return_url]>
 
 ad_proc -public im_forum_create_bar { title_text object_id {return_url ""} } {
     Returns rendered HTML table with icons for creating new 
@@ -687,27 +828,27 @@ ad_proc -public im_forum_create_bar { title_text object_id {return_url ""} } {
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/forum/new-tind?topic_type_id=1102&[export_url_vars object_id return_url]'>
+  <A href='/intranet-forum/new-tind?topic_type_id=1102&[export_url_vars object_id return_url]'>
     [im_gif "incident" "Create new Incident"]
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/forum/new-tind?topic_type_id=1104&[export_url_vars object_id return_url]'>
+  <A href='/intranet-forum/new-tind?topic_type_id=1104&[export_url_vars object_id return_url]'>
     [im_gif "task" "Create new Task"]
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/forum/new-tind?topic_type_id=1106&[export_url_vars object_id return_url]'>
+  <A href='/intranet-forum/new-tind?topic_type_id=1106&[export_url_vars object_id return_url]'>
     [im_gif "discussion" "Create a new Discussion"]
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/forum/new-tind?topic_type_id=1100&[export_url_vars object_id return_url]'>
+  <A href='/intranet-forum/new-tind?topic_type_id=1100&[export_url_vars object_id return_url]'>
     [im_gif "news" "Create new News Item"]
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/forum/new-tind?topic_type_id=1108&[export_url_vars object_id return_url]'>
+  <A href='/intranet-forum/new-tind?topic_type_id=1108&[export_url_vars object_id return_url]'>
     [im_gif "note" "Create new Note"]
   </A>
 </td>

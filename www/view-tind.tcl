@@ -31,7 +31,7 @@ if {"" == $return_url} {
 }
 
 set page_title "View Topic"
-set context_bar [ad_context_bar [list /intranet/forum/ Forum] $page_title]
+set context_bar [ad_context_bar [list /intranet-forum/ Forum] $page_title]
 
 
 # -------------- Get the tree --------------------------
