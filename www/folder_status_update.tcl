@@ -10,17 +10,17 @@ ad_page_contract {
     @author santitrenchs@santitrenchs.com
 
 } {
-    folder_id:integer
     object_id:integer
-    file
+    rel_path
     { status "c" }
     return_url
-    { bread_crum_path "" }
 }
 
 set user_id [ad_maybe_redirect_for_registration]
+ns_log Notice "folder_status_update: return_url=$return_url"
 
-# change the folder status, if comes from close we set to open and vice versa
+
+# change the folder status from open to close and vice versa
 if { $status == "o" } {
     set status "c"
 } else {
@@ -28,34 +28,36 @@ if { $status == "o" } {
 }
 
 
-set exists_p [db_string exists_folder "select count(*) from im_fs_folder_status where folder_id=:folder_id"]
+set exists_p [db_string exists_folder "select count(*) from im_fs_folder_status where object_id = :object_id and path = :rel_path and user_id = :user_id"]
 
 if {$exists_p} {
 
    db_dml update_folder_status "
 update
-        im_fs_folder_status
+        im_fs_folder_status s
 set
         open_p = :status
 where
-        folder_id = :folder_id"
+	object_id = :object_id 
+	and path = :rel_path 
+	and user_id = :user_id
+"
 
 } else {
 
     db_dml my_insert "
     insert into im_fs_folder_status (
-        folder_id,
         object_id,
         user_id,
         path,
-        open_p
+        open_p,
+	folder_id
     ) values (
-        im_fs_folder_status_seq.nextval,
         :object_id,
         :user_id,
-        '$file',
-        :status
+        :rel_path,
+        :status,
+	im_fs_folder_status_seq.nextval
     )"
 }
-append return_url bread_crum_path=$bread_crum_path
 ad_returnredirect $return_url

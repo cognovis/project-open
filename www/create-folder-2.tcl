@@ -7,46 +7,29 @@
 
 
 ad_page_contract {
-    Show the content a specific subdirectory
-
-    @param folder
-    @param project_id
-    @param folder_type
-    @param return_url
-    @param folder_name
-    @param start_path
+    Create a new directory
 
     @author pvilarmau@hotmail.com
     @author santitrenchs@santitrenchs.com
     @author frank.bergmann@project-open.com
 } {
-
-    {folder ""}
-    {folder_type ""}
-    project_id:notnull
+    folder_type
+    folder_name
+    bread_crum_path
+    object_id:notnull
     return_url:notnull
-    folder_name:notnull
-    start_path:notnull
 }
 
-# User id already verified by filters
 set user_id [ad_maybe_redirect_for_registration]
-set page_title "File Tree Competitiveness"
-set context_bar [ad_context_bar_ws $page_title]
-set page_focus ""
+set base_path [im_filestorage_base_path $folder_type $object_id]
 
-set current_user_id [ad_maybe_redirect_for_registration]
-set return_url [im_url_with_query]
+if {"" != $bread_crum_path} { append base_path "/" }
+append base_path $bread_crum_path
 
-set erase [im_filestorage_create_folder $folder $folder_name ]
-
-set group_id $project_id
+set err_msg [im_filestorage_create_folder $base_path $folder_name]
 
 db_release_unused_handles
-
-ns_returnredirect ../..$start_path
-
-doc_return  200 text/html [im_return_template]
+ad_returnredirect $return_url
 
 
 
