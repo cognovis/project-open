@@ -50,8 +50,9 @@
 
 delete from im_view_columns where view_id = 107;
 delete from im_views where view_id = 107;
-insert into im_views (view_id, view_name, view_type_id, view_sql
-) values (107, 'im_employees', 1410, '
+insert into im_views (
+	view_id, view_name, view_type_id, sort_order, view_sql
+) values (107, 'im_employees', 1410, 120, '
 SELECT
 	e.*,
 	cc.cost_center_label as department_label,
