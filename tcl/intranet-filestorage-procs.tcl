@@ -273,25 +273,6 @@ ad_proc -public im_filestorage_find_files { project_id } {
 }
 
 
-ad_proc im_filestorage_user_role_list {user_id group_id} {
-    Return the list of all roles that a user has for the specified project,
-    company or other type of group
-} {
-    set sql "
-select distinct
-	rel_type
-from
-	group_member_map
-where
-	member_id=:user_id
-	and group_id=:group_id
-"
-    set bind_vars [ns_set create]
-    return [db_list user_role_list $sql]
-}
-
-
-
 ad_proc im_filestorage_home_component { user_id } {
     Filestorage for global corporate files
 } {
