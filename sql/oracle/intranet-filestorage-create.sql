@@ -87,15 +87,10 @@ create index im_fs_folder_status_user_idx on im_fs_folder_status(user_id);
 create table im_fs_folder_perms (
 	folder_id		integer
 				constraint im_fs_folder_perm_folder_fk
-				references im_fs_folders
-				constraint im_fs_folders_perm_pk
-				primary key,
-	profile_id		integer
-				constraint im_fs_folder_perms_profile_id
-				references im_profiles,
-	role_id			integer
-				constraint im_fs_folder_perms_role_id
-				references im_categories,
+				references im_fs_folders,
+				-- profile doesn't reference im_profiles because
+				-- we use it to store "roles" as well.
+	profile_id		integer,
 	view_p			char(1) default('0')
 				constraint im_fs_folder_status_view_p 
 				check(view_p in ('0','1')),
@@ -108,11 +103,8 @@ create table im_fs_folder_perms (
 	admin_p			char(1) default('0')
 				constraint im_fs_folder_status_admin_p 
 				check(admin_p in ('0','1')),
-	constraint im_fs_folder_perms_ch
-	check (
-		profile_id is null and role_id is not null 
-		or profile_id is not null and role_id is null
-	)
+	constraint im_fs_folders_perm_pk
+	primary key (folder_id, profile_id)
 );
 
 
