@@ -3,7 +3,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.9 2002/09/10 22:23:21 jeffd Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.10 2003/09/17 10:06:10 lars Exp $
 
 }
 
@@ -12,6 +12,10 @@ ad_proc search_indexer {} {
 } {
 
     set driver [ad_parameter -package_id [apm_package_id_from_key search] FtsEngineDriver]
+    if { [empty_string_p $driver] } {
+        # Nothing to do if no driver
+        return
+    }
 
     db_foreach search_observer_queue_entry {} {
 
