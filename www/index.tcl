@@ -189,7 +189,7 @@ db_foreach column_list_sql $column_sql {
 	if [exists_and_not_null extra_from] { lappend extra_froms $extra_from }
 	if [exists_and_not_null extra_select] { lappend extra_selects $extra_select }
 	if [exists_and_not_null extra_where] { lappend extra_wheres $extra_where }
-
+	ns_log notice "************ extra_where $extra_wheres **************"
 	if [exists_and_not_null order_by_clause] { 
 	    if {[string equal $order_by $column_name]} {
 		# We need to sort the list by this column
@@ -327,12 +327,12 @@ from
 	$extra_from
 where 
 	u.user_id=p.person_id
-	and u.user_id=c.user_id(+)
+	and u.user_id=c.user_id
 	and u.user_id = o.object_id
 	$extra_where
 $extra_order_by
 "
-
+ns_log notice "**************************** $sql ***********************"
 # ---------------------------------------------------------------
 # 5a. Limit the SQL query to MAX rows and provide << and >>
 # ---------------------------------------------------------------
