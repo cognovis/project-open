@@ -67,7 +67,7 @@ ad_page_contract {
 # ---------------------------------------------------------------
 
 # User id already verified by filters
-set user_id [ad_get_user_id]
+set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
 set today [lindex [split [ns_localsqltimestamp] " "] 0]
 set page_title "Invoices"

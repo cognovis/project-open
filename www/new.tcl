@@ -27,7 +27,7 @@ ad_page_contract {
 } {
     { order_by "Client" }
     { include_subprojects_p "f" }
-    { status_id "" } 
+    { status_id 78 } 
     { type_id:integer "0" } 
     { letter:trim "all" }
     { start_idx:integer "1" }
@@ -69,7 +69,7 @@ ad_page_contract {
 # ---------------------------------------------------------------
 
 # User id already verified by filters
-set user_id [ad_get_user_id]
+set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
 set today [lindex [split [ns_localsqltimestamp] " "] 0]
 set subproject_types [list "t" "Yes" "f" "No"]
