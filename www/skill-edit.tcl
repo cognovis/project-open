@@ -16,69 +16,18 @@ ad_page_contract {
 # Defaults & Security
 # ---------------------------------------------------------------
 
+# Also accept "user_id_from_search" instead of user_id (the one to edit...)
+if [info exists user_id_from_search] { set user_id $user_id_from_search}
+set current_user_id [ad_maybe_redirect_for_registration]
+im_user_permissions $current_user_id $user_id view read write admin
 set return_url [im_url_with_query]
 set bgcolor(0) "class=roweven"
 set bgcolor(1) "class=rowodd"
 
-# -------------- Group Memberships ----------------
-
-# Also accept "user_id_from_search" instead of user_id (the one to edit...)
-if [info exists user_id_from_search] { set user_id $user_id_from_search}
-set current_user_id [ad_maybe_redirect_for_registration]
-
-set current_user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
-set current_user_is_wheel_p [ad_user_group_member [im_wheel_group_id] $current_user_id]
-set current_user_is_employee_p [im_user_is_employee_p $current_user_id]
-set current_user_admin_p [expr $current_user_is_admin_p || $current_user_is_wheel_p]
-
-set user_is_customer_p [ad_user_group_member [im_customer_group_id] $user_id]
-set user_is_freelance_p [ad_user_group_member [im_freelance_group_id] $user_id]
-set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
-set user_is_wheel_p [ad_user_group_member [im_wheel_group_id] $user_id]
-set user_is_employee_p [im_user_is_employee_p $user_id]
-
-# Determine the type of the user to view:
-set user_type "none"
-if {$user_is_freelance_p} { set user_type "freelance" }
-if {$user_is_employee_p} { set user_type "employee" }
-if {$user_is_customer_p} { set user_type "customer" }
-if {$user_is_wheel_p} { set user_type "wheel" }
-if {$user_is_admin_p} { set user_type "admin" }
-
-
-if { 0 } {
-# Check if "user" belongs to a group that is administered by 
-# the current users
-set administrated_user_ids [db_list administated_user_ids "
-select
-	member_id
-from
-	group_member_map
-where
-	group_id in (	select group_id
-			from group_member_map
-			where member_id = :current_user_id and rel_type like 'admin_rel')"]
-
-set user_in_administered_project 0
-if {[lsearch -exact $administrated_user_ids $user_id] > -1} { 
-    set user_in_administered_project 1
-}
-
-# -------------- Permission Matrix ----------------
-
-# permission_matrix = [$view_user $edit_user]
-set permission_matrix [im_user_permission_matrix $current_user_id $user_id $user_type $current_user_admin_p $user_in_administered_project]
-set view_user [lindex $permission_matrix 0]
-set edit_user [lindex $permission_matrix 1]
-set show_admin_links $current_user_admin_p
-
-
 # Create an error if the current_user isn't allowed to see the user
-if {!$edit_user} {
-    ad_return_complaint "Insufficient Privileges" "
-    <li>You have insufficient privileges to view this user."
+if {!$write} {
+    ad_return_complaint 1 "<li>You have insufficient privileges to view this user."
     return
-}
 }
 
 # ---------------------------------------------------------------
@@ -88,7 +37,7 @@ if {!$edit_user} {
 db_0or1row user_full_name "select first_names, last_name from persons where person_id = :user_id"
 
 set page_title "$first_names $last_name"
-if {$user_is_employee_p} {
+if {[im_permission $current_user_id view_users]} {
     set context_bar [ad_context_bar_ws [list /intranet/users/view?user_id=$user_id "$page_title"] "Confirmations"]
 } else {
     set context_bar [ad_context_bar_ws $page_title]
@@ -144,7 +93,7 @@ set skill_table_header "
 	  <td class=rowtitle>$skill_type</td>
 	  <td class=rowtitle>Claimed</td>\n"
 
-if {$current_user_is_admin_p} {
+if {$write} {
     append skill_table_header "
 	  <td class=rowtitle>Confirmed</td>\n" 
 }
@@ -164,7 +113,7 @@ db_foreach column_list $sql {
 [im_category_select "Intranet Experience Level" "claimed.$skill_id" $claimed]
 	  </td>"
 
-    if {$current_user_is_admin_p } { 
+    if {$write } { 
         append skill_table "
 	  <td>
 [im_category_select "Intranet Experience Level" "confirmed.$skill_id" $confirmed]
@@ -211,7 +160,7 @@ append skill_table "
 	  <td class=rowtitle align=center colspan=4>
 	    Add new $skill_type\n"
 
-if {$current_user_admin_p} {
+if {[im_permission $current_user_id admin_categories]} {
     append skill_table "
 <A HREF=\"/admin/categories/?select_category_type=[ns_urlencode $value_range_category_type]\">
         [im_gif new "Add a new $value_range_category_type"]
