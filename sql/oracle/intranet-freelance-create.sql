@@ -102,6 +102,17 @@ set url='/intranet-freelance/index'
 where label='users_freelancers';
 
 
+------------------------------------------------------
+-- Freelance Manager Permissions
+--
+
+prompt *** Creating Freelance Manager Profile
+begin
+   im_create_profile ('Freelance Managers','profile');
+end;
+/
+show errors;
+
 
 -----------------------------------------------------------
 -- We need to define this function as a type of "join(..., ", ") to

@@ -103,6 +103,15 @@ where label='users_freelancers';
 
 
 
+
+
+------------------------------------------------------
+-- Freelance Manager Permissions
+--
+
+select im_create_profile ('Freelance Managers','profile');
+
+
 -----------------------------------------------------------
 -- We need to define this function as a type of "join(..., ", ") to
 -- get the list of skills for each user and skill type.
@@ -167,10 +176,10 @@ select im_component_plugin__new (
         null,                           -- context_id
         'Users Skills Component',       -- plugin_name
         'intranet-freelance',           -- package_name
-        'bottom',                       -- location
+        'left',                       -- location
         '/intranet/users/view',         -- page_url
         null,                           -- view_name
-        20,                             -- sort_order
+        80,                             -- sort_order
         'im_freelance_skill_component $current_user_id $user_id $return_url'
     );
 

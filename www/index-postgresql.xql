@@ -14,7 +14,7 @@
     <version>7.2</version>
   </rdbms>
   
-  <fullquery name="projects_info_query">
+  <fullquery name="users_select">
     <querytext>
       
 select
@@ -51,20 +51,23 @@ select
 	c.wa_postal_code,
 	c.wa_country_code,
 	c.note,
-	c.current_information
+	c.current_information,
+	f.bank_account, f.bank, f.payment_method_id, f.rec_source, 
+	f.rec_status_id, f.rec_test_type, f.rec_test_result_id,
+	im_category_from_id(f.rec_status_id) as rec_status,
+	im_category_from_id(f.rec_test_result_id) as rec_test_result
 	$extra_select
 from 
-	registered_users u
-      LEFT JOIN
-	users_contact c USING (user_id),
 	persons p,
-	acs_objects o
+	acs_objects o,
+	registered_users u
+	LEFT OUTER JOIN users_contact c USING (user_id)
+	LEFT OUTER JOIN im_freelancers f USING (user_id)
 	$extra_from
 where 
-	u.user_id=p.person_id
+	u.user_id = p.person_id
 	and u.user_id = o.object_id
 	$extra_where
-$extra_order_by
     
     </querytext>
   </fullquery>

@@ -33,7 +33,7 @@ ad_page_contract {
     { start_idx:integer "1" }
     { how_many:integer "" }
     { letter:trim "all" }
-    { view_name "" }
+    { view_name "freelancers_list" }
     { rec_status_id 0 }
     { rec_test_result_id 0 }
 }
@@ -125,27 +125,6 @@ if {$user_group_id > 0} {
     }
 }
 
-# If no view_name was explicitely specified
-# Then check if there is a specific view for 
-# the user_group.
-if {"" == $view_name} {
-
-    # Check if there is a specific view for this user group:
-    set specific_view_name "[string tolower $user_group_name]_list"
-    ns_log Notice "/users/index: Checking if view='$specific_view_name' exists:"
-    set expcific_view_exists [db_string specific_view_exists "select count(*) from im_views where view_name=:specific_view_name"]
-    if {$expcific_view_exists} {
-	set view_name $specific_view_name
-    }
-}
-
-# Check if there was no specific view_name:
-# In this case just show the default user_view
-if {"" == $view_name} {
-    set view_name "user_list"
-}
-
-
 if { [empty_string_p $how_many] || $how_many < 1 } {
     set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage intranet 50]
 }
@@ -189,7 +168,7 @@ db_foreach column_list_sql $column_sql {
 	if [exists_and_not_null extra_from] { lappend extra_froms $extra_from }
 	if [exists_and_not_null extra_select] { lappend extra_selects $extra_select }
 	if [exists_and_not_null extra_where] { lappend extra_wheres $extra_where }
-	ns_log notice "************ extra_where $extra_wheres **************"
+
 	if [exists_and_not_null order_by_clause] { 
 	    if {[string equal $order_by $column_name]} {
 		# We need to sort the list by this column
@@ -282,57 +261,11 @@ if {"" != $extra_select} { set extra_select ",$extra_select" }
 if {"" != $extra_where} { set extra_where "and $extra_where" }
 
 
-set sql "
-select
-	u.user_id,
-	u.username,
-	u.screen_name,
-	u.last_visit,
-	u.second_to_last_visit,
-	u.n_sessions,
-	o.creation_date,
-	im_email_from_user_id(u.user_id) as email,
-	im_name_from_user_id(u.user_id) as name,
-	p.first_names,
-	p.last_name,
-	c.msn_screen_name as msn_email, 
-	c.home_phone, 
-	c.work_phone, 
-	c.cell_phone,
-	c.pager,
-	c.fax,
-	c.aim_screen_name,
-	c.msn_screen_name,
-	c.icq_number,
-	c.ha_line1,
-	c.ha_line2,
-	c.ha_city,
-	c.ha_state,
-	c.ha_postal_code,
-	c.ha_country_code,
-	c.wa_line1,
-	c.wa_line2,
-	c.wa_city,
-	c.wa_state,
-	c.wa_postal_code,
-	c.wa_country_code,
-	c.note,
-	c.current_information
-	$extra_select
-from 
-	registered_users u, 
-	users_contact c,
-	persons p,
-	acs_objects o
-	$extra_from
-where 
-	u.user_id=p.person_id
-	and u.user_id=c.user_id
-	and u.user_id = o.object_id
-	$extra_where
-$extra_order_by
-"
-ns_log notice "**************************** $sql ***********************"
+# Get the SQL statement from the postgresql/oracle files
+set statement [db_qd_get_fullname "users_select" 0]
+set sql_uneval [db_qd_replace_sql $statement {}]
+set sql [expr "\"$sql_uneval\""]
+
 # ---------------------------------------------------------------
 # 5a. Limit the SQL query to MAX rows and provide << and >>
 # ---------------------------------------------------------------
@@ -435,7 +368,7 @@ set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
 set ctr 0
 set idx $start_idx
-db_foreach projects_info_query $query {
+db_foreach query $query {
 
     # Append together a line of data based on the "column_vars" parameter list
     append table_body_html "<tr$bgcolor([expr $ctr % 2])>\n"
