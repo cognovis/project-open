@@ -220,13 +220,8 @@ declare
     v_menu		integer;
 begin
     v_menu := im_menu.new (
-	menu_id =>	null,
-	object_type =>	'im_menu',
-	creation_date => sysdate,
-	creation_user => 0,
-	creation_ip =>	null,
-	context_id =>	null,
 	package_name =>	'intranet-forum',
+	label =>	'forum',
 	name =>		'Forum',
 	url =>		'/intranet-forum/',
 	sort_order =>	20,
