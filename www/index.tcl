@@ -246,7 +246,7 @@ if { 0 } {
 
     db_foreach dynvals $dynval_sql {
 	lappend extra_selects "dynval_$var_shortname.int_value as $var_shortname"
-	lappend extra_wheres "u.user_id = dynval_$var_shortname.object_id(+)"
+	lappend extra_wheres "u.user_id = dynval_$var_shortname.object_id"
 	lappend extra_froms "(
 		select *
 		from im_dynval_values
@@ -344,14 +344,14 @@ from
 	registered_users u, 
 	users_contact c,
 	persons p,
-	acs_objects o,
-	im_employees e
+	acs_objects o
+	-- im_employees e
 	$extra_from
 where 
 	u.user_id=p.person_id
-	and u.user_id=c.user_id(+)
+	and u.user_id=c.user_id
 	and u.user_id = o.object_id
-	and u.user_id = e.employee_id(+)
+	and u.user_id = e.employee_id
 	$extra_where
 $extra_order_by
 "
