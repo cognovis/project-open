@@ -29,7 +29,7 @@ if {![im_permission $user_id view_cost_items]} {
     return
 }
 
-set action_url "/intranet-hr/new-cost-item"
+set action_url "/intranet-cost/costs/new"
 set focus "cost.var_name"
 
 # ------------------------------------------------------------------
@@ -41,7 +41,7 @@ if {![exists_and_not_null cost_id]} {
 
     set page_title "New Cost Item from Repeated Cost"
     set context [ad_context_bar $page_title]
-    set effective_date [db_string get_today "select sysdate from dual"]
+    set effective_date $start_block
     set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 60]
     set vat 0
     set tax 0
@@ -61,6 +61,8 @@ where	cost_id=:rep_cost_id
 "
 
 append cost_name " - $start_block"
+set cost_id [im_new_object_id]
+set cause_object_id $rep_cost_id
 
 set project_options [im_cost_project_options]
 set customer_options [im_cost_customer_options]
@@ -98,6 +100,8 @@ ad_form \
 
 	{vat:text(text) {label "VAT"} {html {size 20}} }
 	{tax:text(text) {label "TAX"} {html {size 20}} }
+
+	{cause_object_id:text(hidden) }
 
 	{description:text(textarea),nospell,optional {label "Description"} {html {rows 5 cols 40}}}
 	{note:text(textarea),nospell,optional {label "Note"} {html {rows 5 cols 40}}}
@@ -142,6 +146,13 @@ begin
         );
 end;"
 
+    db_dml cost_update_aux "
+        update  im_costs set
+                cause_object_id	= :cause_object_id
+ 	where
+		cost_id = :cost_id
+    "
+
 } -edit_data {
 
     db_dml cost_update "
@@ -159,6 +170,7 @@ end;"
                 currency        = :currency,
                 vat             = :vat,
                 tax             = :tax,
+		cause_object_id = :cause_object_id,
                 description     = :description,
                 note            = :note
 	where

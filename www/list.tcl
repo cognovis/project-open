@@ -252,7 +252,7 @@ from
         im_customers cust,
         im_customers prov,
 	im_projects proj,
-	(select * from im_biz_object_urls where url_type='view') url
+	(select * from im_biz_object_urls where url_type='edit') url
 	$extra_from
 where
         c.customer_id=cust.customer_id(+)

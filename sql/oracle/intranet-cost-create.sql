@@ -391,80 +391,6 @@ show errors
 
 
 -------------------------------------------------------------
--- "Investments"
---
--- Investments are purchases of larger "investment items"
--- that are not treated as a cost item immediately.
--- Instead, investments are "amortized" over time
--- (monthly, quarterly or yearly) until their non-amortized
--- valeu is zero. A new cost item cost items is generated for 
--- every amortization interval.
---
--- The amortized amount of costs is calculated by summing up
--- all im_cost_items with the specific investment_id
---
-prompt *** intranet-costs: Creating im_investments
-create table im_investments (
-	investment_id		integer
-				constraint im_investments_pk
-				primary key
-				constraint im_investments_fk
-				references acs_objects,
-	name			varchar(400),
-	investment_status_id	integer
-				constraint im_investments_status_fk
-				references im_categories,
-	investment_type_id	integer
-				constraint im_investments_type_fk
-				references im_categories,
-	amount			number(12,3),
-	currency		char(3)
-				constraint im_investments_currency_fk
-				references currency_codes(iso),
-	amort_start_date	date,
-	amortization_months	integer,
-	description		varchar(4000)
-);
-
-
-prompt *** intranet-costs: Creating URLs for viewing/editing investments
-delete from im_biz_object_urls where object_type='im_investment';
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_investment','view','/intranet-cost/investments/new?form_mode=display\&investment_id=');
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_investment','edit','/intranet-cost/investments/new?form_mode=edit\&investment_id=');
-
-
-
-prompt *** intranet-costs: Creating Investment categories
--- Intranet Investment Type
-delete from im_categories where category_id >= 3400 and category_id < 3500;
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3401,'Other','Intranet Investment Type');
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3403,'Computer Hardware','Intranet Investment Type');
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3405,'Computer Software','Intranet Investment Type');
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3407,'Office Furniture','Intranet Investment Type');
-commit;
--- reserved until 3499
-
-
--- Intranet Investment Status
-delete from im_categories where category_id >= 3500 and category_id < 3599;
-INSERT INTO im_categories (category_id, category, category_type, category_description) 
-VALUES (3501,'Active','Intranet Investment Status','Currently being amortized');
-INSERT INTO im_categories (category_id, category, category_type, category_description) 
-VALUES (3503,'Deleted','Intranet Investment Status','Deleted - was an error');
-INSERT INTO im_categories (category_id, category, category_type, category_description) 
-VALUES (3505,'Amortized','Intranet Investment Status','No remaining book value');
-commit;
--- reserved until 3599
-
-
-
--------------------------------------------------------------
 -- Costs
 --
 -- Costs are possibly assigned to project, customers and/or investments,
@@ -497,6 +423,9 @@ create table im_costs (
 				constraint im_costs_customer_fk
 				references acs_objects,
 				-- who gets paid?
+	cost_center_id		integer
+				constraint im_costs_cost_center_fk
+				references im_cost_centers,
 	provider_id		integer
 				constraint im_costs_provider_nn
 				not null
@@ -515,7 +444,8 @@ create table im_costs (
 				not null
 				constraint im_costs_type_fk
 				references im_categories,
-	-- reference to an object that has caused this cost
+	-- reference to an object that has caused this cost,
+	-- in particular to im_repeating_costs
 	cause_object_id		integer
 				constraint im_costs_cause_fk
 				references acs_objects,
@@ -572,19 +502,21 @@ create table im_costs (
 prompt *** intranet-costs: Creating category Cost Type
 -- Cost Type
 delete from im_categories where category_id >= 3700 and category_id < 3799;
-INSERT INTO im_categories VALUES (3700,
-'Customer Invoice','','Intranet Cost Type','category','t','f');
-INSERT INTO im_categories VALUES (3702,
-'Quote','','Intranet Cost Type','category','t','f');
-INSERT INTO im_categories VALUES (3704,
-'Provider Bill','','Intranet Cost Type','category','t','f');
-INSERT INTO im_categories VALUES (3706,
-'Purchase Order','','Intranet Cost Type','category','t','f');
-
-INSERT INTO im_categories VALUES (3708,
-'Customer Documents','','Intranet Cost Type','category','t','f');
-INSERT INTO im_categories VALUES (3710,
-'Provider Documents','','Intranet Cost Type','category','t','f');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3700,'Customer Invoice','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3702,'Quote','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3704,'Provider Bill','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3706,'Purchase Order','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3708,'Customer Documents','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3710,'Provider Documents','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3712,'Travel Cost','Intranet Cost Type');
+commit;
 -- reserved until 3799
 
 
@@ -1111,3 +1043,76 @@ create table im_prices (
 alter table im_prices
 add constraint im_prices_start_end_ck
 check(start_date < end_date);
+
+
+
+-------------------------------------------------------------
+-- "Investments"
+--
+-- Investments are purchases of larger "investment items"
+-- that are not treated as a cost item immediately.
+-- Instead, investments are "amortized" over time
+-- (monthly, quarterly or yearly) until their non-amortized
+-- valeu is zero. A new cost item cost items is generated for 
+-- every amortization interval.
+--
+-- The amortized amount of costs is calculated by summing up
+-- all im_cost_items with the specific investment_id
+--
+prompt *** intranet-costs: Creating im_investments
+create table im_investments (
+	investment_id		integer
+				constraint im_investments_pk
+				primary key
+				constraint im_investments_fk
+				references im_repeating_costs,
+	name			varchar(400),
+	investment_status_id	integer
+				constraint im_investments_status_fk
+				references im_categories,
+	investment_type_id	integer
+				constraint im_investments_type_fk
+				references im_categories,
+	amount			number(12,3),
+	currency		char(3)
+				constraint im_investments_currency_fk
+				references currency_codes(iso),
+	description		varchar(4000)
+);
+
+
+prompt *** intranet-costs: Creating URLs for viewing/editing investments
+delete from im_biz_object_urls where object_type='im_investment';
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_investment','view','/intranet-cost/investments/new?form_mode=display\&investment_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_investment','edit','/intranet-cost/investments/new?form_mode=edit\&investment_id=');
+
+
+
+prompt *** intranet-costs: Creating Investment categories
+-- Intranet Investment Type
+delete from im_categories where category_id >= 3400 and category_id < 3500;
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3401,'Other','Intranet Investment Type');
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3403,'Computer Hardware','Intranet Investment Type');
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3405,'Computer Software','Intranet Investment Type');
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3407,'Office Furniture','Intranet Investment Type');
+commit;
+-- reserved until 3499
+
+
+-- Intranet Investment Status
+delete from im_categories where category_id >= 3500 and category_id < 3599;
+INSERT INTO im_categories (category_id, category, category_type, category_description) 
+VALUES (3501,'Active','Intranet Investment Status','Currently being amortized');
+INSERT INTO im_categories (category_id, category, category_type, category_description) 
+VALUES (3503,'Deleted','Intranet Investment Status','Deleted - was an error');
+INSERT INTO im_categories (category_id, category, category_type, category_description) 
+VALUES (3505,'Amortized','Intranet Investment Status','No remaining book value');
+commit;
+-- reserved until 3599
+

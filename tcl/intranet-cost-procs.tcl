@@ -17,14 +17,13 @@ ad_library {
 # ---------------------------------------------------------------
 
 # Frequently used Costs Stati
-ad_proc -public im_cost_status_in_process {} { return 600 }
-ad_proc -public im_cost_status_created {} { return 602 }
-ad_proc -public im_cost_status_outstanding {} { return 604 }
-ad_proc -public im_cost_status_past_due {} { return 606 }
-ad_proc -public im_cost_status_partially_paid {} { return 608 }
-ad_proc -public im_cost_status_paid {} { return 610 }
-ad_proc -public im_cost_status_deleted {} { return 612 }
-ad_proc -public im_cost_status_filed {} { return 614 }
+ad_proc -public im_cost_status_created {} { return 3802 }
+ad_proc -public im_cost_status_outstanding {} { return 3804 }
+ad_proc -public im_cost_status_past_due {} { return 3806 }
+ad_proc -public im_cost_status_partially_paid {} { return 3808 }
+ad_proc -public im_cost_status_paid {} { return 3810 }
+ad_proc -public im_cost_status_deleted {} { return 3812 }
+ad_proc -public im_cost_status_filed {} { return 3814 }
 
 
 # Frequently used Cost Types
@@ -60,60 +59,92 @@ ad_proc -private im_package_cost_id_helper {} {
 # Options for Form elements
 # ---------------------------------------------------------------
 
-ad_proc -public im_cost_project_options {} { Cost project options} {
-    return [db_list_of_lists project_options "
+ad_proc -public im_project_options { {include_empty 1} } { 
+    Cost project options
+} {
+    set options [db_list_of_lists project_options "
 	select project_name, project_id
 	from im_projects
     "]
+    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
+    return $options
 }
 
-ad_proc -public im_cost_customer_options {} { Cost customer options} {
-    set customer_options [db_list_of_lists customer_options "
+ad_proc -public im_customer_options { {include_empty 1} } { 
+    Cost customer options
+} {
+    set options [db_list_of_lists customer_options "
 	select customer_name, customer_id
 	from im_customers
     "]
+    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
+    return $options
 }
 
-ad_proc -public im_cost_provider_options {} { Cost provider options} {
-    set provider_options [db_list_of_lists provider_options "
+ad_proc -public im_provider_options { {include_empty 1} } { 
+    Cost provider options
+} {
+    set options [db_list_of_lists provider_options "
 	select customer_name, customer_id
 	from im_customers
     "]
+    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
+    return $options
 }
 
-ad_proc -public im_cost_type_options {} { Cost type options} {
-   set cost_type_options [db_list_of_lists cost_type_options "
+ad_proc -public im_cost_type_options { {include_empty 1} } { 
+    Cost type options
+} {
+   set options [db_list_of_lists cost_type_options "
 	select cost_type, cost_type_id
 	from im_cost_type
     "]
+    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
+    return $options
 }
 
-ad_proc -public im_cost_status_options {} { Cost status options} {
-    set cost_status_options [db_list_of_lists cost_status_options "
+ad_proc -public im_cost_status_options { {include_empty 1} } { 
+    Cost status options
+} {
+    set options [db_list_of_lists cost_status_options "
 	select cost_status, cost_status_id from im_cost_status
     "]
+    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
+    return $options
 }
 
-ad_proc -public im_cost_template_options {} { Cost Template options} {
-    set template_options [db_list_of_lists template_options "
+ad_proc -public im_cost_template_options { {include_empty 1} } { 
+    Cost Template options
+} {
+    set options [db_list_of_lists template_options "
 	select category, category_id
 	from im_categories
 	where category_type = 'Intranet Invoice Template'
     "]
+    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
+    return $options
 }
 
-ad_proc -public im_cost_investment_options {} { Cost investment options} {
-    set investment_options [db_list_of_lists investment_options "
+ad_proc -public im_investment_options { {include_empty 1} } { 
+    Cost investment options
+} {
+    set options [db_list_of_lists investment_options "
 	select name, investment_id
 	from im_investments
     "]
+    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
+    return $options
 }
 
-ad_proc -public im_cost_currency_options {} { Cost currency options} {
-    set currency_options [db_list_of_lists currency_options "
+ad_proc -public im_currency_options { {include_empty 1} } { 
+    Cost currency options
+} {
+    set options [db_list_of_lists currency_options "
 	select iso, iso
 	from currency_codes
     "]
+    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
+    return $options
 }
 
 
