@@ -154,7 +154,7 @@ is
     ) return im_cost_centers.cost_center_id%TYPE;
 
     procedure del (cost_center_id in integer);
-    procedure name (cost_center_id in integer);
+    function name (cost_center_id in integer) return im_cost_centers.cost_center_name%TYPE;
 end im_cost_center;
 /
 show errors
@@ -235,7 +235,8 @@ is
     end del;
 
 
-    procedure name (cost_center_id in integer)
+    function name (cost_center_id in integer) 
+	     return im_cost_centers.cost_center_name%TYPE
     is
 	v_name	im_cost_centers.cost_center_name%TYPE;
     begin
@@ -243,6 +244,7 @@ is
 	into	v_name
 	from	im_cost_centers
 	where	cost_center_id = cost_center_id;
+	return v_name;
     end name;
 end im_cost_center;
 /
