@@ -141,19 +141,24 @@ delete from im_views where view_id >= 210 and view_id < 220;
 insert into im_views (view_id, view_name, visible_for) values (210, 'risk_list_home', 'view_risks');
 
 -- view_columns to "risks" items: 20100 - 20199
-insert into im_view_columns values (20101,210,NULL,'Title',
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (20101,210,NULL,'Title',
 '"<a href=\"/intranet-riskmanagement/view?risk_id=$risk_id\">$risk_title</a>"','','',2,'');
 
-insert into im_view_columns values (20102,210,NULL,'Type',
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (20102,210,NULL,'Type',
 '"$risk_type_name"','','',3,'');
 
-insert into im_view_columns values (20103,210,NULL,'Probability',
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (20103,210,NULL,'Probability',
 '"$risk_probability"','','',4,'');
 
-insert into im_view_columns values (20104,210,NULL,'Impact',
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (20104,210,NULL,'Impact',
 '"$risk_impact"','','',5,'');
 
-insert into im_view_columns values (20105,210,NULL,'Delete?',
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (20105,210,NULL,'Delete?',
 '"<a href=\"/intranet-riskmanagement/delete?[export_url_vars risk_id project_id]\">Del</a>"','','',6,'');
 
 commit;
