@@ -1,11 +1,14 @@
-# /intranet/filestorage/upload.tcl
+# /packages/intranet-filestorage/www/upload.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
 
 ad_page_contract {
     Serve the user a form to upload a new file or URL
 
-    @author aure@arsdigita.com
-    @author fraber@fraber.de
-    @creation-date 030909
+    @author frank.bergmann@project-open.com
 } {
     folder:notnull
     {folder_type ""}

@@ -9,7 +9,7 @@ ad_page_contract {
     Show the list of current task and allow the project
     manager to create new tasks.
 
-    @author fraber@project-open.com
+    @author frank.bergmann@project-open.com
     @creation-date Nov 2003
 } {
 

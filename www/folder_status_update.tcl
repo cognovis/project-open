@@ -1,4 +1,9 @@
-# /www/intranet/filestorage04/folder_state_update.tcl
+# /packages/intranet-filestorage/www/intranet/filestorage04/folder_state_update.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
 
 ad_page_contract {
     Index page of filestorage
@@ -8,7 +13,7 @@ ad_page_contract {
     @param how_many how many rows to return
 
     @author santitrenchs@santitrenchs.com
-
+    @author frank.bergmann@project-open.com
 } {
     folder_id:integer
     { status "c" }

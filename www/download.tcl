@@ -1,16 +1,14 @@
-# /file-storage/download.tcl
+# /packages/intranet-filestorage/www/download/download.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
+
 
 ad_page_contract {
-    see if this person is authorized to read the file in question
-    guess the MIME type from the original client filename
-    have the Oracle driver grab the BLOB and write it to the connection
-
-    @author aure@arsdigita.com
-    @creation-date July 1999
-    @cvs-id download.tcl,v 3.4.2.3 2000/07/27 21:22:13 jwong Exp
-
-    modified by randyg@arsdigita.com, January 2000 to use the general
-    permissions module
+    Download a file
+    @author frank.bergmann@project-open.com
 } {
     file_name:notnull
     project_id:integer
