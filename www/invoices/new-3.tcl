@@ -135,6 +135,10 @@ set invoice_data_html "
             days date of invoice</td>
         </tr>
         <tr> 
+          <td class=rowodd>Type</td>
+          <td class=rowodd>[im_cost_type_select cost_type_id $cost_type_id [im_cost_type_customer_doc]]</td>
+        </tr>
+        <tr> 
           <td class=rowodd>Payment Method</td>
           <td class=rowodd>[im_invoice_payment_method_select payment_method_id $payment_method_id]</td>
         </tr>
@@ -648,7 +652,7 @@ set page_body "
 [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
 
 <form action=new-4 method=POST>
-[export_form_vars customer_id invoice_id cost_type_id cost_status_id return_url]
+[export_form_vars customer_id invoice_id cost_status_id return_url]
 
 "
 
