@@ -11,6 +11,7 @@
   <msg key="Cost_Items">Cost Items</msg>
   <msg key="Currency">Currency</msg>
   <msg key="Customer">Customer</msg>
+  <msg key="Customers">Customers</msg>
   <msg key="Del">Del</msg>
   <msg key="Description">Description</msg>
   <msg key="Document">Document</msg>
@@ -41,6 +42,8 @@
   <msg key="Name">Name</msg>
   <msg key="New_Cost">New Cost</msg>
   <msg key="New_Cost_Item">New Cost Item</msg>
+  <msg key="New_Customer_Docs">New Customer Docs</msg>
+  <msg key="New_Provider_Docs">New Provider Docs</msg>
   <msg key="New_Trans_Invoice">New Trans Invoice</msg>
   <msg key="Next_Page">Next Page</msg>
   <msg key="Note">Note</msg>
