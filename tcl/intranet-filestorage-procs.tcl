@@ -1178,7 +1178,6 @@ where
 			      $file \
 			      $root_dir_depth \
 			      $current_depth \
-			      $first_line_flag \
 			      $file \
 		           ]
 	}
@@ -1252,7 +1251,7 @@ $file_body
 
 }
 
-ad_proc im_filestorage_file_row { file_body file root_dir_depth current_depth first_line_flag file} {
+ad_proc im_filestorage_file_row { file_body file root_dir_depth current_depth file} {
 
 }   {
     set file_type ""
@@ -1273,10 +1272,10 @@ ad_proc im_filestorage_file_row { file_body file root_dir_depth current_depth fi
     append texte "
 <tr class=rowfilestorage>
   <td align=center valign=middle>
-    <input type=checkbox name=id_row.$first_line_flag value=$file_body>
-    <input type=hidden name=first_line_flag.$first_line_flag value=$file>    
+    <input type=checkbox name=id_row.first_line_flag value=$file_body>
+    <input type=hidden name=first_line_flag.first_line_flag value=$file>    
   </td>
-  <td id=idrow_$first_line_flag>" 
+  <td id=idrow_first_line_flag>" 
     set i $root_dir_depth 
     incr i
     while {$i < $current_depth} {
