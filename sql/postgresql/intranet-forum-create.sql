@@ -523,6 +523,9 @@ SELECT im_component_plugin__new (
 
 -- Show the forum component in home page
 --
+
+delete from im_component_plugins where plugin_name='Home Forum Component';
+
 SELECT im_component_plugin__new (
         null,                           -- plugin_id
         'acs_object',                   -- object_type
@@ -536,7 +539,7 @@ SELECT im_component_plugin__new (
         '/intranet/index',              -- page_url
         null,                           -- view_name
         10,                             -- sort_order
-	'im_table_with_title [im_forum_create_bar "<B>[_ intranet-forum.Forum_Items]<B>" 0 $return_url ] [im_forum_component -user_id $user_id -forum_object_id 0 -current_page_url $current_url -return_url $return_url -export_var_list [list forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type home -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -restrict_to_mine_p t -restrict_to_new_topics 1]'
+	'im_table_with_title [im_forum_create_bar "<B>[_ intranet-forum.Forum_Items]<B>" 0 $return_url ] [im_forum_component -user_id $user_id -forum_object_id 0 -current_page_url $current_url -return_url $return_url -export_var_list [list forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type home -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -start_idx [im_opt_val forum_start_idx] -restrict_to_mine_p t -restrict_to_new_topics 1]'
     );
 
 \i ../common/intranet-forum-common.sql

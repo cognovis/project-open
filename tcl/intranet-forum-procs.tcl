@@ -685,12 +685,20 @@ ad_proc -public im_forum_component {
 
     set date_format "YYYY-MM-DD"
 
-    if {0 == $max_entries_per_page} { 
-	set max_entries_per_page [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50]
-	set max_entries_per_page 5
+    if {0 == $max_entries_per_page && [string equal "home" $forum_type]} {
+	set max_entries_per_page [ad_parameter -package_id [im_package_forum_id] "ForumItemsPerHomePage" "" 10]
     }
-    set end_idx [expr $start_idx + $max_entries_per_page - 1]
 
+    if {0 == $max_entries_per_page && [string equal "forum" $forum_type]} {
+	set max_entries_per_page [ad_parameter -package_id [im_package_forum_id] "ForumItemsPerForumPage" "" 50]
+    }
+
+    # Get the default value
+    if {0 == $max_entries_per_page} { 
+	set max_entries_per_page [ad_parameter -package_id [im_package_forum_id] ForumItemsPerPage "" 10]
+    }
+
+    set end_idx [expr $start_idx + $max_entries_per_page - 1]
     set user_is_employee_p [im_user_is_employee_p $user_id]
     set user_is_customer_p [im_user_is_customer_p $user_id]
 
@@ -758,6 +766,8 @@ ad_proc -public im_forum_component {
     # -------- Compile the list of parameters to pass-through-------
 
     set form_vars [ns_conn form]
+    if {"" == $form_vars} { set form_vars [ns_set create] }
+
     set bind_vars [ns_set create]
     foreach var $export_var_list {
         upvar 1 $var value
