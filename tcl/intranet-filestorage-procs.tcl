@@ -1005,14 +1005,24 @@ ad_proc -public im_filestorage_pol_component { user_id object_id object_name bas
     # Once we've got the root... next step is to execute the find command to 
     # know the content of the project
     set file_list ""
+    ns_log Notice "////////////////////////////////////////////////"
+
     if { [catch {
 	# Executing the find command
 	set file_list [exec /usr/bin/find "$base_path$bread_crum_path"]	
     } err_msg] } { 
 	return "<ul><li>Unable to get file list from '$bread_crum_path'</ul>"
     }
+
     # Save each result of the find in a list
-    set files [lsort [split $file_list "\n"]]
+    set files [split $file_list "\n"]
+    ns_log Notice "[split $file_list \"\n\"]"
+    ns_log Notice "[lsort [split $file_list \"\n\"]]"
+    ns_log Notice ""
+    ns_log Notice "////////////////////////////////////////////////"
+    ns_log Notice ""
+    ns_log Notice ""
+    ns_log Notice ""
 
     # ------------------------------------------------------------------
     # Setup the variables for the "Root Path" 
@@ -1106,15 +1116,14 @@ where
 
 	# count the deph of the file (how many directories depends the file)
 	#ex (/home - /cluster - /Data - /Internal- /INT-ADM-KNOWMG - /file.dat)
-	
+	ns_log Notice "****************** New File ***********************"
 	set file_paths [split $file "/"]
 	set current_depth [expr [llength $file_paths] - 1] 
 
 	# store the name of the file ("file.dat")
 	set file_body [lindex $file_paths $current_depth]
-	ns_log Notice "____________current_depth: $current_depth ________"
-	ns_log Notice "____________file_paths: $file_paths ______________"
-	ns_log Notice "____________file_body: $file_body ________________"
+	ns_log Notice "--- current_depth: $current_depth"
+	ns_log Notice "--- last_parent_path_depth: $last_parent_path_depth"
 	#Getting the real type and size of the file
 	set file_type ""
 	set file_size ""
@@ -1127,12 +1136,14 @@ where
 	# Check if we're below last_parent_depth.
 	# In this case we depend on our parents open_p status
 	if {$current_depth > $last_parent_path_depth} {
-	    if { ![info exists open_p_hash($file)] } {
+	    if { ![info exists open_p_hash($file)] && [string compare $file_type "directory"] == 0 } {
 		# Treat a missing element in the hash (from the DB!) as closed...
-		ns_log Notice "file: $file / visible_p = c"
+		ns_log Notice "--- file: $file"
+		ns_log Notice "--- visible_p = c"
 		set visible_p "c"
 	    } else {
-		 ns_log Notice "file: $file / visible_p = $open_p_hash($last_parent_path)"
+		 ns_log Notice "--- file: $file"
+		 ns_log Notice "visible_p = $open_p_hash($last_parent_path)"
 		set visible_p $open_p_hash($last_parent_path)
 	    }
 	} else {
@@ -1142,16 +1153,16 @@ where
 	    #    but that's only for its _childs_.
 	    set last_parent_path $current_path
 	    set last_parent_path_depth $current_depth
-	    ns_log Notice "file: $file / visible_p = o"
+	    ns_log Notice "file: $file"
+	    ns_log Notice "visible_p = o"
 	    set visible_p "o"
 	}
 	if {![string equal "o" $visible_p]} { continue }
 
-
 	# Actions executed if the file type is "directory"
 	if { [string compare $file_type "directory"] == 0 } {
 
-	    ns_log Notice "--- directory: $file ---"
+	    ns_log Notice "--- directory"
 	    # Printing one row with the directory information
 	    append texte [im_filestorage_dir_row \
 			    -file_body $file_body  \
@@ -1169,10 +1180,9 @@ where
 	    ]
 
 	} else {
-	    ns_log Notice "--- file: $file ---"
 	    # Skip the line if it's not a file
 	    if {![string equal $file_type "file"]} { continue }
-	    ns_log Notice "--- file: $file ---"
+	    ns_log Notice "--- file"
 	    append texte [im_filestorage_file_row \
 			      $file_body \
 			      $file \
@@ -1181,9 +1191,12 @@ where
 			      $file \
 		           ]
 	}
+	ns_log Notice "****************** End New File ***********************"
+	ns_log Notice ""
     }
     append texte "</table></form>"
     return "$texte" 
+    
 }
 
 
@@ -1223,10 +1236,11 @@ ad_proc im_filestorage_dir_row {
 
     append texte "
    <a href=/intranet-filestorage/folder_status_update?[export_url_vars folder_id open_p object_id file bread_crum_path return_url]>"
-
     if {$open_p == "o"} {
+	ns_log Notice "--- directory opended ---"
 	append texte [im_gif foldin2]
     } else {
+	ns_log Notice "--- directory closed ---"
 	append texte [im_gif foldout2]
     }
     set bread_crum_path $file
@@ -1235,11 +1249,8 @@ ad_proc im_filestorage_dir_row {
     ns_set put $bind_vars_bread_crum bread_crum_path $bread_crum_path
     ns_set delkey $bind_vars_bread_crum return_url
 
-    append texte "
-    [im_gif folder_s]
-  </a>
-  <a href=\"$current_url_without_vars?[export_url_bind_vars $bind_vars_bread_crum]\">
-$file_body
+    append texte "[im_gif folder_s]</a>
+<a href=\"$current_url_without_vars?[export_url_bind_vars $bind_vars_bread_crum]\">$file_body
 </a>
 </td>
 <td align=center class=rowfilestorage></td>
