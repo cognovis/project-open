@@ -19,14 +19,15 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-    { error_url:trim "" }
-    { error_info:trim "" }
-    { error_first_names:trim "" }
-    { error_last_name:trim "" }
-    { error_user_email:trim "" }
-    { core_version:trim "" }
-    { system_url:trim "" }
-    { publisher_name "" }
+    { error_url:trim}
+    { error_info:trim ""}
+    { error_first_names:trim ""}
+    { error_last_name:trim ""}
+    { error_user_email:trim ""}
+    { core_version:trim ""}
+    { package_versions:trim ""}
+    { system_url:trim ""}
+    { publisher_name ""}
 }
 
 ns_log Notice "new-system-incident: error_url=$error_url"
@@ -35,6 +36,7 @@ ns_log Notice "new-system-incident: error_first_names=$error_first_names"
 ns_log Notice "new-system-incident: error_last_name=$error_last_name"
 ns_log Notice "new-system-incident: error_user_email=$error_user_email"
 ns_log Notice "new-system-incident: core_version=$core_version"
+ns_log Notice "new-system-incident: package_versions=$package_versions"
 
 # Maximum number of incidents per day per IP address
 # Designed to avoid denial or service attacks
@@ -138,6 +140,7 @@ User Name: $error_first_names $error_last_name
 User Email: $error_user_email
 Publisher Name: $publisher_name
 Core Version: $core_version
+Package Versions: $package_versions
 Error Info: 
 $error_info"
 
