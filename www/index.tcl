@@ -161,6 +161,7 @@ if { ![empty_string_p $where_clause] } {
 set sql "
 select
         p.*,
+        to_char(p.received_date,'YYYY-MM-DD') as received_date,
 	p.amount as payment_amount,
 	p.currency as payment_currency,
 	ci.customer_id,
@@ -268,6 +269,7 @@ if { ![empty_string_p $query_string] } {
 append table_header_html "<tr>\n"
 foreach col $column_headers {
     regsub -all " " $col "_" col_key
+    regsub -all "#" $col_key "hash_simbol" col_key
     if { [string compare $order_by $col] == 0 } {
 	append table_header_html "  <td class=rowtitle>[_ intranet-payments.$col_key]</td>\n"
     } else {

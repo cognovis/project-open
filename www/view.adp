@@ -8,16 +8,16 @@
 
 <table border=0>
 	  <tr> 
-	    <td colspan=2 class=rowtitle><#Payment_Details Payment Details#></td>
+	    <td colspan=2 class=rowtitle>#intranet-payments.Payment_Details#</td>
 	  </tr>
 	  <tr> 
-	    <td><#Cost_Nr Cost Nr#></td>
+	    <td>#intranet-payments.Cost_Nr#</td>
 	    <td>
 	      <A href=/intranet-costs/view?cost_id=@cost_id@>@cost_name@</A>
 	    </td>
 	  </tr>
 	  <tr> 
-	    <td><#Client Client#></td>
+	    <td>#intranet-payments.Client#</td>
 	    <td>
 	      <A href=/intranet/companies/view?company_id=@company_id@>
 		@company_name@
@@ -25,7 +25,7 @@
 	    </td>
 	  </tr>
 	  <tr> 
-	    <td><#Provider Provider#></td>
+	    <td>#intranet-payments.Provider#</td>
 	    <td>
 	      <A href=/intranet/companies/view?company_id=@provider_id@>
 		@provider_name@
@@ -33,19 +33,19 @@
 	    </td>
 	  </tr>
 	  <tr> 
-	    <td><#Amount Amount#></td>
+	    <td>#intranet-payments.Amount#</td>
 	    <td>@amount@ @currency@</td>
 	  </tr>
 	  <tr> 
-	    <td><#Received Received#></td>
+	    <td>#intranet-payments.Received#</td>
 	    <td>@received_date@</td>
 	  </tr>
           <tr>
-            <td><#Payment_Type Payment Type#></td>
+            <td>#intranet-payments.Payment_Type#</td>
             <td>@payment_type@</td>
           </tr>
           <tr>
-            <td><#Note Note#></td>
+            <td>#intranet-payments.Note#</td>
             <td>@note@</td>
           </tr>
 	  <tr> 

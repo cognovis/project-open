@@ -12,8 +12,7 @@
     @table_continuation_html;noquote@
 <tr>
   <td colspan=$colspan align=right>
-    <input type=submit name=submit value='#intranet-payments.Add_New#'>
-    <input type=submit name=submit value='#intranet-payments.Del#'>
+    <input type=submit name=del value='#intranet-payments.Del#'>
   </td>
 </tr>
 

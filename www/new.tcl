@@ -81,6 +81,7 @@ if {"" == $payment_id} {
         db_0or1row get_payment_info "
 select
         p.*,
+        to_char(p.received_date,'YYYY-MM-DD') as received_date,
 	ci.cost_name,
 	cus.company_name,
 	pro.company_name as provider_name,
@@ -91,9 +92,9 @@ from
 	im_payments p,
 	im_costs ci
 where
-	p.cost_id = ci.cost_id(+)
-	and ci.customer_id = cus.company_id(+)
-	and ci.provider_id = pro.company_id(+)
+	p.cost_id = ci.cost_id
+	and ci.customer_id = cus.company_id
+	and ci.provider_id = pro.company_id
 	and p.payment_id = :payment_id
 "
 

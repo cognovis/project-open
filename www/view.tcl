@@ -19,7 +19,7 @@ ad_page_contract {
 # User id already verified by filters
 set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
-set page_title "<#_ Payment#>"
+set page_title "[_ intranet-payments.Payment]"
 set context_bar [ad_context_bar_ws $page_title]
 set page_focus "im_header_form.keywords"
 set return_url [im_url_with_query]
