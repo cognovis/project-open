@@ -436,7 +436,7 @@ ad_proc im_costs_base_component { user_id {customer_id ""} {project_id ""} } {
     }
 
     set extra_where_clause [join $extra_where "\n\tand "]
-    if {"" != $extra_where_clause} { set extra_where_clause "\n\tand$extra_where_clause" }
+    if {"" != $extra_where_clause} { set extra_where_clause "\n\tand $extra_where_clause" }
     set extra_from_clause [join $extra_from ",\n\t"]
     if {"" != $extra_from_clause} { set extra_from_clause ",\n\t$extra_from_clause" }
     set extra_select_clause [join $extra_select ",\n\t"]
