@@ -234,5 +234,5 @@ SELECT im_component_plugin__new (
 
 
 
-@../common/intranet-filestorage-create.sql
+@../common/intranet-filestorage-common.sql
 
