@@ -206,8 +206,14 @@ show errors
 commit;
 
 
+# Create a special privilege to control the "Sales" Filestorage
+# which may actually be located on a different server for
+# security reasons
+#
+
 BEGIN
     acs_privilege.create_privilege('view_filestorage_sales','View Sales Filestorage','View Sales Filestorage');
+     acs_privilege.add_child('admin', 'view_filestorage_sales');
 END;
 /
 
