@@ -203,7 +203,6 @@ ad_form \
 	{voluntary_termination_p:text(radio),optional {label $voluntary_termination_p_label} {options $voluntary_termination_options} }
 	{termination_reason:text(textarea),nospell,optional {label $termination_reason_label} {html {rows 5 cols 40}}}
 	{signed_nda_p:text(radio),optional {label $signed_nda_p_label} {options $voluntary_termination_options} }
-
 	{dependant_p:text(hidden),optional }
 	{only_job_p:text(hidden),optional }
 	{married_p:text(hidden),optional }
@@ -246,16 +245,66 @@ ad_form -extend -name cost -on_request {
 		and p.party_id = e.employee_id
 		and p.party_id = ci.cause_object_id
 		and ci.cost_id = rc.rep_cost_id
-
 } -after_submit {
 
     set cost_name $employee_name
+
+    # im_repeating_costs (and it's im_costs superclass) superclass
+    # im_costs contains a "cause_object_id" field pointing to employee_id.
+    # The join between im_costs and im_repeating_costs is necessary
+    # in order to elimiate all the non-repeating cost items.
+    set rep_cost_id [db_string rep_costs_exist "
+	select	rc.rep_cost_id
+	from	im_repeating_costs rc,
+		im_costs ci
+	where 	rc.rep_cost_id = ci.cost_id
+		and ci.cause_object_id = :employee_id
+    " -default 0]
+
+    if {!$rep_cost_id} {
+	if [catch {
+	    set rep_cost_id [im_cost::new -cost_name $cost_name -cost_type_id [im_cost_type_repeating]]
+	    db_dml insert_repeating_costs "
+		insert into im_repeating_costs (
+			rep_cost_id,
+			start_date,
+			end_date
+		) values (
+			:rep_cost_id,
+			:start_date,
+			:end_date
+		)
+	    "
+	} err_msg] {
+	    ad_return_complaint 1 "<li>Error creating a new repeating cost 
+	    item for employee \#$employee_id:<br>
+	    <pre>$err_msg</pre>"
+	}
+    }
+
+    # Check if the im_employees entry already exists for the user
+    # and create it in case of necessity.
+    set emp_count [db_string emp_count "
+	select count(*) 
+	from im_employees 
+	where employee_id=:employee_id
+    "]
+    if {0 == $emp_count} {
+	db_dml insert_emp_record "
+		insert into im_employees (
+			employee_id
+		) values (
+			:employee_id
+		)
+	"
+    }
 
     if {"" == $salary} { set salary 0 }
     if {"" == $social_security} { set social_security 0 }
     if {"" == $other_costs} { set other_costs 0 }
     if {"" == $salary} { set salary 0 }
     if {"" == $insurance} { set insurance 0 }
+
     if {0 == $supervisor_id} { set supervisor_id "" }
     if {"" == $salary_payments_per_year} { set salary_payments_per_year 12 }
     if {![exists_and_not_null tax]} { set tax 0 }

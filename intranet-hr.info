@@ -9,6 +9,7 @@
     <auto-mount>intranet-hr</auto-mount>
 
     <version name="3.0.0" url="http://openacs.org/repository/download/apm/intranet-hr-3.0.0.apm">
+
         <owner url="mailto:fraber@fraber.de">Frank Bergmann</owner>
         <summary>Employees, Salaries, OrgChart</summary>
         <vendor url="http://www.project-open.com/">Project/Open</vendor>

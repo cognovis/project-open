@@ -122,10 +122,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 	    if {1 || [eval $visible_for]} {
 		append employee_html "
                 <tr $td_class([expr $ctr % 2])>
-		<td>"
-		set cmd0 "append employee_html $column_name"
-		eval "$cmd0"
-		append employee_html " &nbsp;</td><td>"
+		<td>$column_name &nbsp;</td><td>"
 		set cmd "append employee_html $column_render_tcl"
 		eval $cmd
 		append employee_html "</td></tr>\n"
