@@ -340,8 +340,8 @@ ad_proc im_filestorage_project_path { project_id } {
     Determine the location where the project files
     are stored on the hard disk for this project
 } {
-    return [im_filestorage_project_path_helper $project_id]
     return [util_memoize "im_filestorage_project_path_helper $project_id"]
+#    return [im_filestorage_project_path_helper $project_id]
 }
 
 ad_proc im_filestorage_project_path_helper { project_id } {
@@ -915,6 +915,10 @@ where
 			      $file_extension \
 		           ]
 	}
+    }
+
+    if {"" == $files_html} {
+	append files_html "<tr><td colspan=99>No files found</td></tr>\n"
     }
 
     set tool_bar_html [im_filestorage_tool_bar $bread_crum_path $folder_type $object_id $return_url $up_link]

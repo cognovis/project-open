@@ -18,6 +18,91 @@
 
 
 ---------------------------------------------------------
+-- Folders
+--
+-- A table to keep the list of folers.  Folders are not OpenACS objects 
+-- because applying OpenACS permission means a storage complexity of
+-- order (users * folders). Here we are using "sparce" permission, only 
+-- to store explicit user permission grants. The permission of subfolders 
+-- (without explicit permission records) are inherited from the super 
+-- folder while calculating the filestorage component (in TCL).
+-- During indexing with a search engine, documents are given a pointer 
+-- to the folder which carries the permissions.
+
+create sequence im_fs_folder_seq start with 1;
+create table im_fs_folders (
+	folder_id	integer 
+			constraint im_fs_folders_pk
+			primary key,
+	object_id	integer
+			constraint im_fs_folder_object_fk
+			references acs_objects,
+	folder_type_id	integer
+			constraint im_fs_folder_type_fk
+			references im_categories,
+	path		varchar(500)
+			constraint im_fs_folder_status_path_nn 
+			not null,
+	description	varchar(500)
+);
+# We need to select frequently all folders for a given business object.
+create index im_fs_folders_object_idx on im_fs_folders(object_id);
+
+
+---------------------------------------------------------
+-- Folder Status
+--
+-- Basicly, a folder can be opened ("+" - showing all files 
+-- and subfolders) or closed ("-" - reduced to a single line).
+-- This information depends on the users (this is why we
+-- need to put it into a separate table).
+
+create sequence im_fs_folder_status_seq start with 1;
+create table im_fs_folder_status (
+	folder_id	integer
+			constraint im_fs_folder_status_folder_fk
+			references im_fs_folders,
+	user_id		integer
+			constraint im_fs_folder_status_user_fk 
+			references users,
+	open_p		char(1)
+			constraint im_fs_folder_status_nn not null
+			constraint im_fs_folder_status_state_ck
+			check(open_p in ('o','c')),
+	last_modified	date default sysdate,
+	primary key (user_id, folder_id)
+);
+create index im_fs_folder_status_user_idx on im_fs_folder_status(user_id);
+
+
+---------------------------------------------------------
+-- Folder Permission Map
+--
+-- Maps folders to groups with read_p, write_p and view_p.
+-- Perhaps we should change this to separate entries for
+-- read, write and admin, to get closer to the HP data model.
+
+create table im_fs_folder_perms (
+	folder_id		integer
+				constraint im_fs_folder_perm_folder_fk
+				references im_fs_folders
+				constraint im_fs_folders_perm_pk
+				primary key,
+	group_id		references groups,
+	read_p			char(1) default('0')
+				constraint im_fs_folder_status_read_p 
+				check(read_p in ('0','1')),
+	write_p			char(1) default('0')
+				constraint im_fs_folder_status_write_p 
+				check(write_p in ('0','1')),
+	admin_p			char(1) default('0')
+				constraint im_fs_folder_status_view_p 
+				check(view_p in ('0','1'))
+);
+
+
+
+---------------------------------------------------------
 -- Register the component in the core TCL pages
 --
 -- These DB-entries allow the pages of Project/Open Core
@@ -46,9 +131,9 @@ begin
 	v_plugin := im_component_plugin.new (
 		plugin_name =>	'Home Filestorage Component',
 		package_name =>	'intranet-filestorage',
-		page_url =>	 '/intranet/index',
-		location =>	 'bottom',
-		sort_order =>   90,
+		page_url =>	'/intranet/index',
+		location =>	'bottom',
+		sort_order =>	90,
 		component_tcl => 
 		'im_filestorage_home_component $user_id'
 	);
@@ -56,8 +141,8 @@ begin
 	v_plugin := im_component_plugin.new (
 		plugin_name =>	'Users Filestorage Component',
 		package_name =>	'intranet-filestorage',
-		page_url =>	 '/intranet/users/view',
-		location =>	 'bottom',
+		page_url =>	'/intranet/users/view',
+		location =>	'bottom',
 		sort_order =>   90,
 		component_tcl => 
 		'im_filestorage_user_component \
@@ -70,8 +155,8 @@ begin
 	v_plugin := im_component_plugin.new (
 		plugin_name =>	'Customers Filestorage Component',
 		package_name =>	'intranet-filestorage',
-		page_url =>	 '/intranet/customers/view',
-		location =>	 'right',
+		page_url =>	'/intranet/customers/view',
+		location =>	'right',
 		sort_order =>   50,
 		component_tcl => 
 		'im_filestorage_customer_component \
@@ -91,8 +176,8 @@ begin
 	v_plugin := im_component_plugin.new (
 	plugin_name =>	'Project Filestorage Component',
 	package_name =>	'intranet-filestorage',
-	page_url =>	 '/intranet/projects/view',
-	location =>	 'files',
+	page_url =>	'/intranet/projects/view',
+	location =>	'files',
 	sort_order =>   90,
 	component_tcl => 
 	'im_filestorage_project_component \
@@ -104,69 +189,4 @@ begin
 end;
 /
 
-
----------------------------------------------------------
--- Folders
---
--- A table to keep the list of folers.
--- Should folders become OpenACS objects so that we are 
--- able to use permissions on them?
-
-create sequence im_fs_folder_seq start with 1;
-create table im_fs_folders (
-	folder_id		integer primary key,
-	project_id		references im_projects,
-	folder_name		varchar(400),
-	folder_type_id		references im_categories
-);
-
----------------------------------------------------------
--- Folder Status
---
--- Basicly, a folder can be opened ("+" - showing all files 
--- and subfolders) or closed ("-" - reduced to a single line).
--- This information depends on the users (this is why we
--- need to put it into a separate table from im_fs_folders).
-
-create sequence im_fs_folder_status_seq start with 1;
-create table im_fs_folder_status (
-	folder_id	integer
-			constraint im_fs_folder_status_pk
-			primary key,
-	object_id	integer
-			constraint im_fs_folder_status_object_fk
-			references acs_objects,
-	user_id		integer
-			constraint im_fs_folder_status_user_fk 
-			references users,
-	path		varchar(500)
-			constraint im_fs_folder_status_path_nn 
-			not null,
-	open_p		char(1)
-			constraint im_fs_folder_status_nn not null
-			constraint im_fs_folder_status_state_ck
-			check(open_p in ('o','c')),
-	last_modified	date default sysdate,
-	description	varchar(255)
-);
-create index im_fs_folder_status_user_idx on im_fs_folder_status(user_id);
-create index im_fs_folder_status_object_idx on im_fs_folder_status(object_id);
-
----------------------------------------------------------
--- Folder Permission Map
---
--- Maps folders to groups with read_p, write_p and view_p.
--- Perhaps we should change this to separate entries for
--- read, write and view, to get closer to the HP data model.
-
-create table im_fs_folder_permission_map (
-	folder_id		 references im_fs_folders,
-	group_id		references groups,
-	read_p		  char(1) default('t')
-	constraint im_fs_folder_status_read_p check(read_p in ('t','f')),
-	write_p		 char(1) default('t')
-	constraint im_fs_folder_status_write_p check(write_p in ('t','f')),
-	view_p		  char(1) default('t')
-	constraint im_fs_folder_status_view_p check(view_p in ('t','f'))
-);
 
