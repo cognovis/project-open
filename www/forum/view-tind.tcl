@@ -1,15 +1,19 @@
-# /www/intranet/forum/view-tind.tcl
+# /packages/intranet-forum/www/intranet/forum/view-tind.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
 
 ad_page_contract {
     Create a new Task, Incident, News or Discussion (TIND)
-    @author fraber@project-open.com
     @param topic_id: Message to refer to
     @param display_style: 
 	topic		= full topic (subject+message), no subtopics
 	thread		= complete tree of subjects
 	topic_thread	= full topic plus subtopics subjects
 	full		= topic+all subtopics
-    @creation-date 9/2003
+    @author frank.bergmann@project-open.com
 } {
     topic_id:integer
     {display_style "all"}

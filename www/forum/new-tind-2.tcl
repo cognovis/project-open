@@ -1,4 +1,10 @@
-# www/intranet-forum/forum/new-tind-2.tcl
+# /packages/intranet-forum/www/intranet-forum/forum/new-tind-2.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
+
 ad_page_contract {
     process a new topic form submission
     @param receive_updates: 
@@ -9,8 +15,7 @@ ad_page_contract {
     @action_type: 
         new_message, edit_message, undefined, reply_message
 
-    @author fraber@project-open.com
-    @creation-date 9/2003
+    @author frank.bergmann@project-open.com
 } {
     action_type
     {actions ""}

@@ -1,3 +1,12 @@
+-- /packages/intranet-forum/sql/oracle/intranet-forum-create.sql
+--
+-- Copyright (c) 2003-2004 Project/Open
+--
+-- All rights reserved. Please check
+-- http://www.project-open.com/license/ for details.
+--
+-- @author frank.bergmann@project-open.com
+
 -----------------------------------------------------------
 -- Tasks, Incidents, News and Discussions (TIND)
 --

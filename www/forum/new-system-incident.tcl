@@ -1,4 +1,9 @@
-# /www/intranet/forum/new-system-error.tcl
+# /packages/intranet-forum/www/intranet/forum/new-system-error.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
 
 ad_page_contract {
     Creates a new system error from a "Report this error" button.
@@ -11,6 +16,8 @@ ad_page_contract {
       denial of service attacks by flooding the system with
       incidents
     - We have to route the incidents to 
+
+    @author frank.bergmann@project-open.com
 } {
     error_url:trim
     error_info:trim

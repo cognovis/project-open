@@ -1,9 +1,11 @@
 -- /package/intranet-forum/sql/intranet-forum-drop.sql
 --
--- Removes the filestorage data model from the database
+-- Copyright (c) 2003-2004 Project/Open
 --
--- @author Frank Bergmann (fraber@fraber.de)
+-- All rights reserved. Please check
+-- http://www.project-open.com/license/ for details.
 --
+-- @author frank.bergmann@project-open.com
 
 
 -----------------------------------------------------

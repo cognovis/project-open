@@ -1,4 +1,9 @@
-# /www/intranet/forum/index.tcl
+# /packages/intranet-forum/www/intranet/forum/index.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
 
 # ---------------------------------------------------------------
 # Page Contract
@@ -16,8 +21,7 @@ ad_page_contract {
     @param start_idx the starting index for query
     @param how_many how many rows to return
 
-    @author mbryzek@arsdigita.com
-    @cvs-id index.tcl,v 3.24.2.9 2000/09/22 01:38:44 kevin Exp
+    @author frank.bergmann@project-open.com
 } {
     { forum_order_by "Project" }
     { forum_view_name "forum_list_forum" }
