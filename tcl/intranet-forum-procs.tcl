@@ -236,10 +236,13 @@ select distinct
 from
 	acs_rels r,
 	group_member_map m,
+	membership_rels mr,
 	users u
 where
 	r.object_id_one = :object_id
 	and r.object_id_two = u.user_id
+	and m.rel_id = mr.rel_id
+	and mr.member_state = 'approved'
 	and m.member_id = u.user_id
 	and m.group_id = :customer_group_id
 )"
@@ -254,10 +257,13 @@ select distinct
 from
 	acs_rels r,
 	group_member_map m,
+	membership_rels mr,
 	users u
 where
 	r.object_id_one = :object_id
 	and r.object_id_two = u.user_id
+	and m.rel_id = mr.rel_id
+	and mr.member_state = 'approved'
 	and m.member_id = u.user_id
 	and not(m.group_id = :customer_group_id)
 )"
@@ -270,9 +276,13 @@ select distinct
 from
 	acs_rels r,
 	group_member_map m,
+	membership_rels mr,
 	users u
-where	r.object_id_one = :object_id
+where
+	r.object_id_one = :object_id
 	and r.object_id_two = u.user_id
+	and m.rel_id = mr.rel_id
+	and mr.member_state = 'approved'
 	and m.member_id = u.user_id
 	and m.group_id = :employee_group_id
 )"
