@@ -1078,27 +1078,27 @@ ad_proc -public im_forum_create_bar { title_text object_id {return_url ""} } {
 </td>
 <td>
   <A href='/intranet-forum/new?topic_type_id=1102&[export_url_vars object_id return_url]'>
-    [im_gif "incident" "[_ intranet-forum.Create_new_Incident]"]
+    [im_gif "incident" "Create new Incident"]
   </A>
 </td>
 <td>
   <A href='/intranet-forum/new?topic_type_id=1104&[export_url_vars object_id return_url]'>
-    [im_gif "task" "[_ intranet-forum.Create_new_Task]"]
+    [im_gif "task" "Create new Task"]
   </A>
 </td>
 <td>
   <A href='/intranet-forum/new?topic_type_id=1106&[export_url_vars object_id return_url]'>
-    [im_gif "discussion" "[_ intranet-forum.lt_Create_a_new_Discussi]"]
+    [im_gif "discussion" "Create a new Discussion"]
   </A>
 </td>
 <td>
   <A href='/intranet-forum/new?topic_type_id=1100&[export_url_vars object_id return_url]'>
-    [im_gif "news" "[_ intranet-forum.Create_new_News_Item]"]
+    [im_gif "news" "Create new News Item"]
   </A>
 </td>
 <td>
   <A href='/intranet-forum/new?topic_type_id=1108&[export_url_vars object_id return_url]'>
-    [im_gif "note" "[_ intranet-forum.Create_new_Note]"]
+    [im_gif "note" "Create new Note"]
   </A>
 </td>
 </tr>
