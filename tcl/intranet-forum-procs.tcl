@@ -815,171 +815,195 @@ ad_proc -public im_forum_component {
     # ---------------------- ------------------- ---------------------------
     # ---------------------- Build the SQL query ---------------------------
 
-    set order_by_clause "order by priority"
-    switch $forum_order_by {
-	"P" { set order_by_clause "order by priority" }
-	"Subject" { set order_by_clause "order by upper(subject)" }
-	"Type" { set order_by_clause "order by topic_type_id" }
-	"Due" { set order_by_clause "order by due_date" }
-	"Who" { set order_by_clause "order by upper(owner_initials)" }
+    # only show messages to intranet users
+    set intranet_user_p 0
+    db_foreach get_profiles "select profile_id from im_profiles" {
+    	if { [group::member_p -user_id $user_id -group_id $profile_id -cascade] } {
+    		set intranet_user_p 1
+    		break
+    	}
     }
-
-
-    set restrictions []
-    if {0 != $forum_object_id} {
-	lappend restrictions "t.object_id=:forum_object_id" 
-    }
-    if {[string equal "t" $restrict_to_mine_p]} {
-	lappend restrictions "(owner_id=:user_id or asignee_id=:user_id)" 
-    }
-    if {$restrict_to_topic_status_id} {
-	lappend restrictions "topic_status_id=:restrict_to_topic_status_id" 
-    }
-    if {$restrict_to_asignee_id} {
-	lappend restrictions "asignee_id=:restrict_to_asignee_id" 
-    }
-    if {$restrict_to_new_topics} {
-	lappend restrictions "(m.read_p is null or m.read_p='f')" 
-    }
-    switch $restrict_to_folder {
-	0 {
-	    # "Active topics" = "Inbox"
-	    lappend restrictions "(m.folder_id is null or m.folder_id=0)" 
-	}
-	1 {
-	    # Deleted topics
-	    lappend restrictions "m.folder_id=:restrict_to_folder" 
-	}
-	2 {
-	    # Unresolved topics
-	    # folder_id = 1 means deleted
-	    lappend restrictions "(t.topic_status_id != [im_topic_status_id_closed] and
-	    m.folder_id != '1' and
-            t.topic_type_id in ([im_topic_type_id_task],[im_topic_type_id_incident]))"
-	}
-	default {
-	    lappend restrictions "m.folder_id=:restrict_to_folder" 
-	}
-    }
-
-
-    # ToDo: Replace this by a hierarchy of topic types 
-    # such as in project types.
-    if {$restrict_to_topic_type_id} {
-	# 0=All, 1=Tasks & Incidents, other=Specific Type
-	if {1 == $restrict_to_topic_type_id} {
-	    lappend restrictions "(topic_type_id=1102 or topic_type_id=1104)"
-	} else {
-	    lappend restrictions "topic_type_id=:restrict_to_topic_type_id"
-	}
-    }
-
-    set restriction_clause [join $restrictions "\n\tand "]
-    if {"" != $restriction_clause} { 
-	set restriction_clause "and $restriction_clause" 
-    }
-    ns_log Notice "im_forum_component: restriction_clause=$restriction_clause"
-
-
-    # Get the forum_sql statement
-    # Forum items have a complicated "scoped" permission 
-    # system where you can say who should be able to read
-    # the topic in function of the project/company/...
-    # membership.
-    # Also, items can be attached to all kinds of objects,
-    # so that we need some object_type meta data
-    # (im_biz_object_urls) to build correct URLs to link
-    # to these items.
-    # Finally we can have "read" and "unread" items and
-    # Items that have been filed in a specific "folder".
-    # So we are getting close here to a kind of MS-Outlook...
-
-    set forum_statement [db_qd_get_fullname "forum_query" 0]
-    set forum_sql_uneval [db_qd_replace_sql $forum_statement {}]
-    set forum_sql [expr "\"$forum_sql_uneval\""]
-
-    # ---------------------- Limit query to MAX rows -------------------------
     
-    # We can't get around counting in advance if we want to be able to
-    # sort inside the table on the page for only those rows in the query 
-    # results
-    
-    set limited_query [im_select_row_range $forum_sql $start_idx [expr $start_idx + $max_entries_per_page]]
-    set total_in_limited_sql "select count(*) from ($forum_sql) f"
-    set total_in_limited [db_string total_limited $total_in_limited_sql]
-    set selection "select z.* from ($limited_query) z $order_by_clause"
+    if { $intranet_user_p } {
 
-    # How many items remain unseen?
-    set remaining_items [expr $total_in_limited - $start_idx - $max_entries_per_page]
-    ns_log Notice "im_forum_component: total_in_limited=$total_in_limited, remaining_items=$remaining_items"
+    	set order_by_clause "order by priority"
+    	switch $forum_order_by {
+		"P" { set order_by_clause "order by priority" }
+		"Subject" { set order_by_clause "order by upper(subject)" }
+		"Type" { set order_by_clause "order by topic_type_id" }
+		"Due" { set order_by_clause "order by due_date" }
+		"Who" { set order_by_clause "order by upper(owner_initials)" }
+    	}
+	
+	
+    	set restrictions []
+    	if {0 != $forum_object_id} {
+		lappend restrictions "t.object_id=:forum_object_id" 
+    	}
+    	if {[string equal "t" $restrict_to_mine_p]} {
+		lappend restrictions "(owner_id=:user_id or asignee_id=:user_id)" 
+    	}
+    	if {$restrict_to_topic_status_id} {
+		lappend restrictions "topic_status_id=:restrict_to_topic_status_id" 
+    	}
+    	if {$restrict_to_asignee_id} {
+		lappend restrictions "asignee_id=:restrict_to_asignee_id" 
+    	}
+    	if {$restrict_to_new_topics} {
+		lappend restrictions "(m.read_p is null or m.read_p='f')" 
+    	}
+    	switch $restrict_to_folder {
+		0 {
+		    # "Active topics" = "Inbox"
+		    lappend restrictions "(m.folder_id is null or m.folder_id=0)" 
+		}
+		1 {
+		    # Deleted topics
+		    lappend restrictions "m.folder_id=:restrict_to_folder" 
+		}
+		2 {
+		    # Unresolved topics
+		    # folder_id = 1 means deleted
+		    lappend restrictions "(t.topic_status_id != [im_topic_status_id_closed] and
+		        m.folder_id != '1' and
+    		        t.topic_type_id in ([im_topic_type_id_task],[im_topic_type_id_incident]))"
+		}
+		default {
+		    lappend restrictions "m.folder_id=:restrict_to_folder" 
+		}
+    	}
+	
 
-    # ---------------------- Format the body -------------------------------
+    	# ToDo: Replace this by a hierarchy of topic types 
+    	# such as in project types.
+    	if {$restrict_to_topic_type_id} {
+		# 0=All, 1=Tasks & Incidents, other=Specific Type
+		if {1 == $restrict_to_topic_type_id} {
+		    lappend restrictions "(topic_type_id=1102 or topic_type_id=1104)"
+		} else {
+		    lappend restrictions "topic_type_id=:restrict_to_topic_type_id"
+		}
+    	}
+	
+    	set restriction_clause [join $restrictions "\n\tand "]
+    	if {"" != $restriction_clause} { 
+		set restriction_clause "and $restriction_clause" 
+    	}
+    	ns_log Notice "im_forum_component: restriction_clause=$restriction_clause"
+	
 
-    set table_body_html ""
-    set ctr 0
-    set idx $start_idx
-    set old_object_id 0
-
-    db_foreach forum_query_limited $selection {
-        if {$read_p == "t"} {set read "read"} else {set read "unread"}
-        if {$folder_id == ""} {set folder_name "Inbox"}
-
-        # insert intermediate headers for every project
-        if {[string equal "Project" $forum_order_by]} {
-            if {$old_object_id != $object_id} {
-                append table_body_html "
-                <tr><td colspan=$colspan>&nbsp;</td></tr>
-                <tr><td class=rowtitle colspan=$colspan>
-                  <A href=/intranet/projects/view?project_id=$object_id>
-                    $object_name
-                  </A>
-                </td></tr>\n"
-                set old_object_id $object_id
-            }
+    	# Get the forum_sql statement
+    	# Forum items have a complicated "scoped" permission 
+    	# system where you can say who should be able to read
+    	# the topic in function of the project/company/...
+    	# membership.
+    	# Also, items can be attached to all kinds of objects,
+    	# so that we need some object_type meta data
+    	# (im_biz_object_urls) to build correct URLs to link
+    	# to these items.
+    	# Finally we can have "read" and "unread" items and
+    	# Items that have been filed in a specific "folder".
+    	# So we are getting close here to a kind of MS-Outlook...
+	
+    	set forum_statement [db_qd_get_fullname "forum_query" 0]
+    	set forum_sql_uneval [db_qd_replace_sql $forum_statement {}]
+    	set forum_sql [expr "\"$forum_sql_uneval\""]
+	
+    	# ---------------------- Limit query to MAX rows -------------------------
+    	
+    	# We can't get around counting in advance if we want to be able to
+    	# sort inside the table on the page for only those rows in the query 
+    	# results
+    	
+    	set limited_query [im_select_row_range $forum_sql $start_idx [expr $start_idx + $max_entries_per_page]]
+    	set total_in_limited_sql "select count(*) from ($forum_sql) f"
+    	set total_in_limited [db_string total_limited $total_in_limited_sql]
+    	set selection "select z.* from ($limited_query) z $order_by_clause"
+	
+    	# How many items remain unseen?
+    	set remaining_items [expr $total_in_limited - $start_idx - $max_entries_per_page]
+    	ns_log Notice "im_forum_component: total_in_limited=$total_in_limited, remaining_items=$remaining_items"
+	
+    	# ---------------------- Format the body -------------------------------
+	
+    	set table_body_html ""
+    	set ctr 0
+    	set idx $start_idx
+    	set old_object_id 0
+	
+    	db_foreach forum_query_limited $selection {
+    	    if {$read_p == "t"} {set read "read"} else {set read "unread"}
+    	    if {$folder_id == ""} {set folder_name "Inbox"}
+	
+    	    # insert intermediate headers for every project
+    	    if {[string equal "Project" $forum_order_by]} {
+    	        if {$old_object_id != $object_id} {
+    	            append table_body_html "
+    	            <tr><td colspan=$colspan>&nbsp;</td></tr>
+    	            <tr><td class=rowtitle colspan=$colspan>
+    	              <A href=/intranet/projects/view?project_id=$object_id>
+    	                $object_name
+    	              </A>
+    	            </td></tr>\n"
+    	            set old_object_id $object_id
+    	        }
+    	    }
+	
+    	    append table_body_html "<tr$bgcolor([expr $ctr % 2])>\n"
+    	    foreach column_var $column_vars {
+    	        append table_body_html "\t<td valign=top>"
+    	        set cmd "append table_body_html $column_var"
+    	        eval $cmd
+    	        append table_body_html "</td>\n"
+    	    }
+    	    append table_body_html "</tr>\n"
+	
+    	    incr ctr
+    	    if { $max_entries_per_page > 0 && $ctr >= $max_entries_per_page } {
+    	        break
+	    }
+    	}
+    	# Show a reasonable message when there are no result rows:
+    	if { [empty_string_p $table_body_html] } {
+		set table_body_html "
+		<tr><td colspan=$colspan align=center><b>
+		[_ intranet-forum.lt_There_are_no_active_i]
+		</b></td></tr>"
+    	}
+    	
+    	
+        if { $ctr == $max_entries_per_page && $end_idx < $total_in_limited } {
+		# This means that there are rows that we decided not to return
+		# Include a link to go to the next page
+		set next_start_idx [expr $end_idx + 1]
+		set forum_max_entries_per_page $max_entries_per_page
+		set next_page_url  "$current_page_url?[export_url_vars forum_object_id forum_max_entries_per_page]&forum_start_idx=$next_start_idx"
+		set next_page_html "($remaining_items more) <A href=\"$next_page_url\">&gt;&gt;</a>"
+        } else {
+		set next_page_html ""
         }
 
-        append table_body_html "<tr$bgcolor([expr $ctr % 2])>\n"
-        foreach column_var $column_vars {
-            append table_body_html "\t<td valign=top>"
-            set cmd "append table_body_html $column_var"
-            eval $cmd
-            append table_body_html "</td>\n"
-        }
-        append table_body_html "</tr>\n"
+       if { $start_idx > 0 } {
+   		# This means we didn't start with the first row - there is
+		# at least 1 previous row. add a previous page link
+		set previous_start_idx [expr $start_idx - $max_entries_per_page]
+		if { $previous_start_idx < 0 } { set previous_start_idx 0 }
+		set previous_page_html "<A href=$current_page_url?$pass_through_vars_html&forum_start_idx=$previous_start_idx>&lt;&lt;</a>"
+       } else {
+ 		set previous_page_html ""
+       }
 
-        incr ctr
-        if { $max_entries_per_page > 0 && $ctr >= $max_entries_per_page } {
-            break
-	}
-    }
-    # Show a reasonable message when there are no result rows:
-    if { [empty_string_p $table_body_html] } {
-	set table_body_html "
-	<tr><td colspan=$colspan align=center><b>
-	[_ intranet-forum.lt_There_are_no_active_i]
-	</b></td></tr>"
-    }
-
-    if { $ctr == $max_entries_per_page && $end_idx < $total_in_limited } {
-	# This means that there are rows that we decided not to return
-	# Include a link to go to the next page
-	set next_start_idx [expr $end_idx + 1]
-	set forum_max_entries_per_page $max_entries_per_page
-	set next_page_url  "$current_page_url?[export_url_vars forum_object_id forum_max_entries_per_page]&forum_start_idx=$next_start_idx"
-	set next_page_html "($remaining_items more) <A href=\"$next_page_url\">&gt;&gt;</a>"
     } else {
+    	set table_body_html "
+			<tr><td colspan=$colspan align=center><b>
+			[_ intranet-forum.lt_There_are_no_active_i]
+		</b></td></tr>"
 	set next_page_html ""
-    }
-
-    if { $start_idx > 0 } {
-	# This means we didn't start with the first row - there is
-	# at least 1 previous row. add a previous page link
-	set previous_start_idx [expr $start_idx - $max_entries_per_page]
-	if { $previous_start_idx < 0 } { set previous_start_idx 0 }
-	set previous_page_html "<A href=$current_page_url?$pass_through_vars_html&forum_start_idx=$previous_start_idx>&lt;&lt;</a>"
-    } else {
 	set previous_page_html ""
+	set ctr 0
     }
+    # end else user_id != "0"	
+
 
 
     # ---------------------- Format the action bar at the bottom ------------
