@@ -82,6 +82,30 @@ proc intranet_download { folder_type } {
 }
 
 
+ad_proc -public im_filestorage_find_files { project_id } {
+    Returns a list of files in a project directory
+} {
+    set project_path [im_filestorage_project_path $project_id]
+    if { [catch {
+	ns_log Notice "im_filestorage_find_files: Checking $project_path"
+
+	exec /bin/mkdir -p $project_path
+        exec /bin/chmod ug+w $project_path
+	set file_list [exec /usr/bin/find $project_path -type f]
+
+    } err_msg] } {
+	# Probably some permission errors - return empty string
+	ns_log Notice "\nim_task_component:
+	'exec /usr/bin/find $project_path' failed with error:
+	err_msg=$err_msg\n"
+	set file_list ""
+    }
+
+    set files [split $file_list "\n"]
+    return $files
+}
+
+
 ad_proc im_filestorage_user_role_list {user_id group_id} {
     Return the list of all roles that a user has for the specified project,
     customer or other type of group
