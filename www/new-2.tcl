@@ -324,7 +324,7 @@ where topic_id=:topic_id"
 # Alert about changes
 # ---------------------------------------------------------------------
 
-set msg_url "[ad_parameter -package_id [ad_acs_kernel_id] SystemURL]/intranet-forum/view?topic_id=$topic_id"
+set msg_url "[ad_parameter -package_id [ad_acs_kernel_id] SystemURL "" ""]/intranet-forum/view?topic_id=$topic_id"
 set importance 0
 
 db_1row subject_message "
