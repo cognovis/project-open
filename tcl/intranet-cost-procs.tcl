@@ -148,7 +148,7 @@ ad_proc -public im_currency_options { {include_empty 1} } {
 }
 
 
-ad_proc -public im_costs_navbar { default_letter base_url next_page_url prev_page_url export_var_list } {
+ad_proc -public im_costs_navbar { default_letter base_url next_page_url prev_page_url export_var_list {select_label ""} } {
     Returns rendered HTML code for a horizontal sub-navigation
     bar for /intranet-cost/.
     The lower part of the navbar also includes an Alpha bar.<br>
@@ -186,8 +186,7 @@ ad_proc -public im_costs_navbar { default_letter base_url next_page_url prev_pag
     # Get the Subnavbar
     set parent_menu_sql "select menu_id from im_menus where label='finance'"
     set parent_menu_id [db_string parent_admin_menu $parent_menu_sql -default 0]
-    set navbar [im_sub_navbar $parent_menu_id "" $alpha_bar "tabnotsel"]
-
+    set navbar [im_sub_navbar $parent_menu_id "" $alpha_bar "tabnotsel" $select_label]
     return "<!-- navbar1 -->\n$navbar<!-- end navbar1 -->"
 }
 
