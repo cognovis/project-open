@@ -7,7 +7,7 @@
 
 ad_library {
     Bring together all "components" (=HTML + SQL code)
-    related to Cost Items
+    related to Costs
 
     @author frank.bergann@project-open.com
 }
@@ -27,12 +27,12 @@ ad_proc -public im_cost_status_filed {} { return 3814 }
 
 
 # Frequently used Cost Types
-ad_proc -public im_cost_type_cost {} { return 700 }
-ad_proc -public im_cost_type_quote {} { return 702 }
-ad_proc -public im_cost_type_bill {} { return 704 }
-ad_proc -public im_cost_type_po {} { return 706 }
-ad_proc -public im_cost_type_customer_doc {} { return 708 }
-ad_proc -public im_cost_type_provider_doc {} { return 710 }
+ad_proc -public im_cost_type_invoice {} { return 3700 }
+ad_proc -public im_cost_type_quote {} { return 3702 }
+ad_proc -public im_cost_type_bill {} { return 3704 }
+ad_proc -public im_cost_type_po {} { return 3706 }
+ad_proc -public im_cost_type_customer_doc {} { return 3708 }
+ad_proc -public im_cost_type_provider_doc {} { return 3710 }
 
 
 # Payment Methods
@@ -339,47 +339,53 @@ ad_proc im_costs_base_component { user_id {customer_id ""} {project_id ""} } {
     set bgcolor(1) " class=rowodd "
     set max_costs 5
     set colspan 5
+    set org_project_id $project_id
+    set org_customer_id $customer_id
 
     # ----------------- Compose SQL Query --------------------------------
   
-    set where_conds [list]
-    if {"" != $customer_id} { lappend where_conds "i.customer_id=:customer_id" }
+    set extra_where [list]
+#    set extra_from [list]
+    set object_name ""
+    set new_doc_args ""
+    if {"" != $customer_id} { 
+	lappend extra_where "ci.customer_id=:customer_id" 
+	set object_name [db_string object_name "select customer_name from im_customers where customer_id = :customer_id"]
+	set new_doc_args "?customer_id=$customer_id"
+    }
+
     if {"" != $project_id} { 
-	# Select the cost_id's of cost_items and
-	# costs explicitely associated with a project.
-	lappend where_conds "
-	i.cost_id in (
+	# Select the costs explicitely associated with a project.
+	lappend extra_where "
+	ci.cost_id in (
 		select distinct cost_id 
-		from im_cost_items 
+		from im_costs 
 		where project_id=:project_id
 	    UNION
 		select distinct object_id_two as cost_id
 		from acs_rels
 		where object_id_one = :project_id
 	)" 
+	set object_name [db_string object_name "select project_name from im_projects where project_id = :project_id"]
+	set new_doc_args "?project_id=$project_id"
     }
-    set where_clause [join $where_conds "\n	and "]
-    if {"" == $where_clause} { set where_clause "1=1" }
+
+    set extra_where_clause [join $extra_where "\n	and "]
+    if {"" == $extra_where_clause} { set extra_where_clause "1=1" }
+
+#    set extra_from_clause [join $extra_from ",\n\t"]
+#    if {"" != $extra_from_clause} { set extra_from_clause ",\n\t$extra_from_clause" }
 
     set costs_sql "
 select
-	i.*,
-	ii.cost_amount,
-	ii.cost_currency,
+	ci.*,
 	pa.payment_amount,
 	pa.payment_currency,
-        im_category_from_id(i.cost_status_id) as cost_status,
-        im_category_from_id(i.cost_type_id) as cost_type,
-	i.cost_date + payment_days as calculated_due_date
+        im_category_from_id(ci.cost_status_id) as cost_status,
+        im_category_from_id(ci.cost_type_id) as cost_type,
+	ci.effective_date + payment_days as calculated_due_date
 from
-	im_costs i,
-        (select
-                cost_id,
-                sum(item_units * price_per_unit) as cost_amount,
-		max(currency) as cost_currency
-         from im_cost_items
-         group by cost_id
-        ) ii,
+	im_costs ci,
 	(select
 		sum(amount) as payment_amount, 
 		max(currency) as payment_currency,
@@ -388,19 +394,17 @@ from
 	 group by cost_id
 	) pa
 where
-	$where_clause
-	and i.cost_status_id not in ([im_cost_status_in_process])
-        and i.cost_id=ii.cost_id(+)
-	and i.cost_id=pa.cost_id(+)
+	$extra_where_clause
+	and ci.cost_id=pa.cost_id(+)
 order by
-	cost_nr desc
+	ci.effective_date desc
 "
 
     set cost_html "
 <table border=0>
   <tr>
     <td colspan=$colspan class=rowtitle align=center>
-      Financial Documents
+      Financial Documents for '$object_name'
     </td>
   </tr>
   <tr class=rowtitle>
@@ -415,16 +419,19 @@ order by
     db_foreach recent_costs $costs_sql {
 	append cost_html "
 <tr$bgcolor([expr $ctr % 2])>
-  <td><A href=/intranet-costs/view?cost_id=$cost_id>$cost_nr</A></td>
+  <td><A href=/intranet-costs/view?cost_id=$cost_id>[string range $cost_name 0 20]</A></td>
   <td>$cost_type</td>
   <td>$calculated_due_date</td>
-  <td>$cost_amount $cost_currency</td>
+  <td>$amount $currency</td>
   <td>$payment_amount $payment_currency</td>
 </tr>\n"
 	incr ctr
 	if {$ctr > $max_costs} { break }
     }
 
+    # Restore the original values after SQL selects
+    set project_id $org_project_id
+    set customer_id $org_customer_id
 
     if {$ctr > $max_costs} {
 	append cost_html "
@@ -447,35 +454,12 @@ order by
 	incr ctr
     }
 
-    if {"" != $customer_id && "" == $project_id} {
-	append cost_html "
-<tr>
-  <td colspan=$colspan align=left>
-<!--    <A href=/intranet-costs/new?customer_id=$customer_id>
-      Create a new cost for this customer
-    </A>
--->
-  </td>
-</tr>\n"
-    }
-
     if {"" != $project_id} {
 	append cost_html "
 <tr>
-  <td colspan=$colspan align=left>
-    <A href=/intranet-costs/index?project_id=$project_id>
-      Create a new document for this project
-    </A>
-  </td>
-</tr>\n"
-    }
-
-    if {"" != $customer_id} {
-    append cost_html "
-<tr>
   <td colspan=$colspan align=right>
-    <A href=/intranet-costs/index?customer_id=$customer_id>
-      Create a new document for this customer
+    <A href=\"/intranet-translation/purchase-order/new$new_doc_args\">
+      <li>Create a new purchase order
     </A>
   </td>
 </tr>\n"

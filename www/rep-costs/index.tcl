@@ -92,7 +92,7 @@ where
 "
 
 db_foreach rep_costs $rep_costs_sql {
-    set key "$cause_object_id:$effective_start_block"
+    set key "$cause_object_id:$start_block"
     # Fill the field with a link to create a new cost item
     set cell ""
     if {[info exists costs($key)]} { set cell $costs($key) }

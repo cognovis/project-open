@@ -491,7 +491,7 @@ check(start_date < end_date);
 -- every amortization interval.
 --
 -- The amortized amount of costs is calculated by summing up
--- all im_cost_items with the specific investment_id
+-- all im_costs with the specific investment_id
 --
 
 prompt *** intranet-costs: Creating im_investments
@@ -640,7 +640,7 @@ create table im_costs (
 	effective_date		date,
 	-- start_blocks are the first days every month. This allows
 	-- for fast monthly grouping
-	effective_start_block	date
+	start_block		date
 				constraint im_costs_startblck_fk
 				references im_start_months,
 	payment_days		integer,
@@ -1144,3 +1144,47 @@ sort_order) values (22098,220,'Del',
 commit;
 
 
+
+-------------------------------------------------------------
+-- Cost Components
+--
+
+BEGIN
+    im_component_plugin.del_module(module_name => 'intranet-cost');
+END;
+/
+
+-- Show the cost component in project page
+--
+declare
+    v_plugin	integer;
+begin
+    v_plugin := im_component_plugin.new (
+	plugin_name =>	'Project Cost Component',
+	package_name =>	'intranet-cost',
+	page_url =>     '/intranet/projects/view',
+	location =>     'left',
+	sort_order =>   90,
+	component_tcl => 
+	'im_costs_project_component $user_id $project_id'
+    );
+end;
+/
+
+-- Show the cost component in customers page
+--
+declare
+    v_plugin	integer;
+begin
+    v_plugin := im_component_plugin.new (
+	plugin_name =>	'Customer Cost Component',
+	package_name =>	'intranet-cost',
+	page_url =>     '/intranet/customers/view',
+	location =>     'left',
+	sort_order =>   90,
+	component_tcl => 
+	'im_costs_customer_component $user_id $customer_id'
+    );
+end;
+/
+commit;
