@@ -1024,7 +1024,8 @@ from
 	im_fs_folder_perms p,
 	im_fs_folders f
 where
-	p.folder_id = f.folder_id
+	f.object_id = :object_id
+	and p.folder_id = f.folder_id
 "
 
     set ctr 0
