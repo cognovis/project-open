@@ -523,9 +523,9 @@ create table im_costs (
 				constraint im_costs_paid_currency_fk
 				references currency_codes(iso),
 	-- % of total price is VAT
-	vat			number(12,5),
+	vat			number(12,5) default 0,
 	-- % of total price is TAX
-	tax			number(12,5),
+	tax			number(12,5) default 0,
 	-- Classification of variable against fixed costs
 	variable_cost_p		char(1)
 				constraint im_costs_var_ck
