@@ -32,20 +32,32 @@ if {![im_permission $user_id add_companies]} {
 # Get everything about the freelancer
 # -----------------------------------------------------------------
 
+set freelance_select ""
+set freelance_from ""
+set freelance_where ""
+set freelance_pg_join ""
+
+if {[db_table_exists im_freelancers]} {
+    set freelance_select "f.*,"
+    set freelance_from "im_freelancers f,"
+    set freelance_where ""
+    set freelance_pg_join "LEFT JOIN im_freelancers f USING (user_id)"
+}
+
 db_1row freelancer_info "
 select
 	u.*,
-	f.*,
+	$freelance_select
 	c.*
 from
 	cc_users u,
-	im_freelancers f,
+	$freelance_from
 	users_contact c,
         country_codes ha_cc,
         country_codes wa_cc
 where
 	u.user_id = :freelance_id
-	and u.user_id = f.user_id(+)
+	$freelance_where
 	and u.user_id = c.user_id(+)
 	and u.user_id = pe.person_id(+)
 	and u.user_id = pa.party_id(+)

@@ -19,14 +19,13 @@
 
 select
 	u.*,
-	f.*,
+	$freelance_select
 	c.*,
 	pe.*,
 	pa.*
 from
 	users u
-      LEFT JOIN
-	im_freelancers f USING (user_id)
+	$freelance_pg_join
       LEFT JOIN
 	persons pe ON u.user_id = pe.person_id
       LEFT JOIN

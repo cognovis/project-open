@@ -39,7 +39,7 @@ where
   <fullquery name="task_sum">
     <querytext>
 select
-        s.task_sum,
+        trim(both ' ' from to_char(s.task_sum, :number_format)) as task_sum,
         s.task_type_id,
         s.subject_area_id,
         s.source_language_id,
@@ -73,7 +73,7 @@ order by
     <querytext>
 select 
 	pr.relevancy as price_relevancy,
-	pr.price,
+	to_char(pr.price, :number_format) as price,
 	pr.company_id as price_company_id,
 	pr.uom_id as uom_id,
 	pr.task_type_id as task_type_id,

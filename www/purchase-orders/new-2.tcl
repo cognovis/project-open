@@ -42,7 +42,7 @@ set view_name "invoice_tasks"
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 
-
+set number_format "9990.09"
 
 # ---------------------------------------------------------------
 # Compute the t.task_id in (...) lists for trans, edit, proof and other
@@ -269,7 +269,7 @@ select
 	t.po_comment,
 	t.task_units,
 	t.project_id,
-	t.po_billable_units as billable_units,
+	to_char(t.po_billable_units, :number_format) as billable_units,
 	t.po_task_uom_id as task_uom_id,
 	t.po_task_type_id as task_type_id,
 	t.match_x,
@@ -311,11 +311,8 @@ set task_table "
   <td class=rowtitle>75 %</td>
   <td class=rowtitle>50 %</td>
   <td class=rowtitle>0 %</td>
-<!--  <td class=rowtitle>[_ intranet-trans-invoices.Units]</td> -->
   <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
-<!--  <td class=rowtitle>[_ intranet-trans-invoices.UoM]</td> -->
   <td class=rowtitle>[_ intranet-trans-invoices.Type]</td>
-<!--  <td class=rowtitle>[_ intranet-trans-invoices.Status]</td> -->
 </tr>
 "
 
@@ -352,13 +349,10 @@ db_foreach select_tasks $sql {
 	  <td align=right>$match75</td>
 	  <td align=right>$match50</td>
 	  <td align=right>$match0</td>
-<!--	  <td align=right>$task_units</td> -->
 	  <td align=right><nobr>
 	    $billable_units $uom_name[im_gif help $po_comment]
 	  </nobr></td>
-<!--	  <td align=right>$uom_name</td>	-->
 	  <td>$task_type</td>
-<!--	  <td>$task_status</td> -->
 	</tr>"
     incr ctr
 }
@@ -400,8 +394,6 @@ if {[string equal $invoice_mode "new"]} {
           <td class=rowtitle>[_ intranet-trans-invoices.Target]</td>
           <td class=rowtitle>[_ intranet-trans-invoices.Source]</td>
           <td class=rowtitle>[_ intranet-trans-invoices.Subject_Area]</td>
-<!--          <td class=rowtitle>[_ intranet-trans-invoices.Valid_From]</td>	-->
-<!--          <td class=rowtitle>[_ intranet-trans-invoices.Valid_Through]</td>	-->
           <td class=rowtitle>[_ intranet-trans-invoices.Price]</td>
         </tr>\n"
 
@@ -439,7 +431,7 @@ group by
     # (categories, client names, ...) for pretty output
     set task_sum_sql "
 select
-	s.task_sum,
+	to_char(s.task_sum, :number_format) as task_sum,
 	s.task_type_id,
 	s.subject_area_id,
 	s.source_language_id,
@@ -478,7 +470,7 @@ order by
     set reference_price_sql "
 select 
 	pr.relevancy as price_relevancy,
-	pr.price,
+	to_char(pr.price, :number_format) as price,
 	pr.company_id as price_company_id,
 	pr.uom_id as uom_id,
 	pr.task_type_id as task_type_id,
@@ -571,8 +563,6 @@ order by
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_target_language</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_source_language</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_subject_area</td>
-<!--          <td class=$bgcolor([expr $price_list_ctr % 2])>$valid_from</td>		-->
-<!--          <td class=$bgcolor([expr $price_list_ctr % 2])>$valid_through</td> 	-->
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price $currency</td>
         </tr>\n"
 	
@@ -594,11 +584,10 @@ order by
 	    <input type=text name=item_units.$ctr size=4 value='$task_sum'>
 	  </td>
           <td align=right>
-<!--	    <input type=hidden name=item_uom_id.$ctr value='$task_uom_id'>$task_uom -->
 	    [im_category_select "Intranet UoM" "item_uom_id.$ctr" $task_uom_id]
 	  </td>
           <td align=right>
-	    <input type=text name=item_rate.$ctr size=3 value='$best_match_price'>
+	    <input type=text name=item_rate.$ctr size=3 value='[string trim $best_match_price]'>
 	    <input type=hidden name=item_currency.$ctr value='$currency'>
 	    $currency
 	  </td>
@@ -639,7 +628,7 @@ order by
           <td class=rowtitle>[_ intranet-trans-invoices.Order]</td>
           <td class=rowtitle>[_ intranet-trans-invoices.Description]</td>
           <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.lt_UOMtd__________td_cla]</td>
+          <td class=rowtitle>[_ intranet-trans-invoices.UoM]</td>
         </tr>
     "
 
@@ -680,7 +669,7 @@ order by
 	    $item_uom
 	  </td>
           <td align=right>
-	    <input type=text name=item_rate.$ctr size=3 value='$price_per_unit'>
+	    <input type=text name=item_rate.$ctr size=3 value='[string trim $price_per_unit]'>
 	    <input type=hidden name=item_currency.$ctr value='$currency'>
 	    $currency
 	  </td>

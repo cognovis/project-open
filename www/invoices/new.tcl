@@ -80,7 +80,7 @@ set current_user_id $user_id
 set today [lindex [split [ns_localsqltimestamp] " "] 0]
 set subproject_types [list "t" "[_ intranet-trans-invoices.Yes]" "f" "[_ intranet-trans-invoices.No]"]
 set page_title "[_ intranet-trans-invoices.Invoices]"
-set context_bar [ad_context_bar_ws $page_title]
+set context_bar [ad_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 
 if {![im_permission $user_id add_invoices]} {
@@ -93,6 +93,7 @@ set letter [string toupper $letter]
 if {"" == $target_cost_type_id} { 
     set target_cost_type_id [im_cost_type_invoice] 
 }
+
 
 # Determine the default status if not set
 if { [empty_string_p $project_status_id] } {
@@ -108,6 +109,17 @@ if { [empty_string_p $how_many] || $how_many < 1 } {
     set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50]
 }
 set end_idx [expr $start_idx + $how_many - 1]
+
+
+# We don't need to show the select screen if only a single project
+# has been selected...
+if { ![empty_string_p $project_id] && $project_id != 0 } {
+
+    set invoice_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+    ad_returnredirect "/intranet-trans-invoices/invoices/new-2?select_project=$project_id&[export_url_vars target_cost_type_id invoice_currency]"
+    set page_body ""
+    return
+}
 
 
 # ---------------------------------------------------------------
@@ -197,17 +209,6 @@ if { $include_subprojects_p == "f" } {
 }
 
 
-# Must be the last criterium, because it overrides (delete!)
-# all the other criteria.
-# That's ok, because the project_id is the most specific
-# criterium
-if { ![empty_string_p $project_id] && $project_id != 0 } {
-    set criteria [list]
-    lappend criteria "p.project_id = :project_id"
-}
-
-
-
 set order_by_clause "order by upper(project_name)"
 switch $order_by {
     "Spend Days" { set order_by_clause "order by spend_days" }
@@ -236,6 +237,17 @@ if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
 }
 
+
+# Invoices: We're only looking for projects with non-invoiced tasks.
+# Quotes: We're looking basicly for all projects that satisfy the 
+# filter conditions
+if {$target_cost_type_id == [im_cost_type_invoice]} {
+    set task_invoice_id_null "and invoice_id is null"
+} else {
+    set task_invoice_id_null ""
+}
+
+
 set sql "
 select 
 	p.project_id,
@@ -258,11 +270,11 @@ select
 from 
 	im_projects p, 
         im_companies c,
-	(select project_id, 
+	(select project_id,
 		count(*) as task_count 
-	from	im_trans_tasks 
-	where	invoice_id is null
-	group by project_id
+	 from	im_trans_tasks 
+	 where	1=1 $task_invoice_id_null
+	 group by project_id
 	) t
 where 
 	p.project_id = t.project_id

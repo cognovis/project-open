@@ -45,6 +45,8 @@ set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 set required_field "<font color=red size=+1><B>*</B></font>"
 
+set number_format "99990.099"
+
 if {![im_permission $user_id add_invoices]} {
     ad_return_complaint "[_ intranet-trans-invoices.lt_Insufficient_Privileg]" "
     <li>[_ intranet-trans-invoices.lt_You_dont_have_suffici]"    
@@ -395,7 +397,7 @@ order by
     set reference_price_sql "
 select 
 	p.relevancy as price_relevancy,
-	p.price,
+	trim(' ' from to_char(p.price,:number_format)) as price,
 	p.company_id as price_company_id,
 	p.uom_id as uom_id,
 	p.task_type_id as task_type_id,

@@ -42,7 +42,7 @@ where
     <querytext>
 
 select
-	s.task_sum,
+	trim(both ' ' from to_char(s.task_sum, :number_format)) as task_sum,
 	s.task_type_id,
 	s.subject_area_id,
 	s.source_language_id,
