@@ -25,7 +25,7 @@
                 '[ad_conn peeraddr]',
                 null,
                 :invoice_nr,
-                :company_id,
+                :customer_id,
                 :provider_id,
                 null,
                 :invoice_date,

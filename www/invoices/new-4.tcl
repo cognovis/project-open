@@ -14,8 +14,8 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     invoice_id:integer
-    { company_id:integer "" }
-    { provider_id:integer "" }
+    customer_id:integer
+    provider_id:integer
     { select_project:integer,multiple {} }
     invoice_nr
     invoice_date
@@ -39,37 +39,15 @@ ad_page_contract {
 }
 
 # ---------------------------------------------------------------
-# Determine whether it's an Invoice or a Bill
-# ---------------------------------------------------------------
-
-# Invoices and Quotes have a "Company" fields.
-set invoice_or_quote_p [expr $cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_quote]]
-ns_log Notice "intranet-invoices/new-2: invoice_or_quote_p=$invoice_or_quote_p"
-
-# Invoices and Bills have a "Payment Terms" field.
-set invoice_or_bill_p [expr $cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_bill]]
-ns_log Notice "intranet-invoices/new-2: invoice_or_bill_p=$invoice_or_bill_p"
-
-if {$invoice_or_quote_p} {
-    set company_id $company_id
-} else {
-    set company_id $provider_id
-}
-
-# ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
 
-#ToDo: restore permission check
-#if {![im_permission $user_id add_invoices]} {
-#    ad_return_complaint 1 "<li>You don't have sufficient privileges to see this page."
-#    return
-#}
-
-if {"" == $provider_id} { set provider_id [im_company_internal] }
-if {"" == $company_id} { set company_id [im_company_internal] }
+if {![im_permission $user_id add_invoices]} {
+    ad_return_complaint 1 "<li>[_ intranet-trans-invoices.lt_You_dont_have_suffici]"
+    return
+}
 
 
 set project_id ""
@@ -96,7 +74,7 @@ if {!$invoice_exists_p} {
 	        creation_user           => :user_id,
 	        creation_ip             => '[ad_conn peeraddr]',
 	        invoice_nr              => :invoice_nr,
-	        company_id             => :company_id,
+	        customer_id             => :customer_id,
 	        provider_id             => :provider_id,
 	        invoice_date            => :invoice_date,
 	        invoice_template_id     => :template_id,
@@ -126,7 +104,7 @@ update im_costs
 set
 	project_id	= :project_id,
 	cost_name	= :invoice_nr,
-	company_id	= :company_id,
+	customer_id	= :customer_id,
 	provider_id	= :provider_id,
 	cost_status_id	= :cost_status_id,
 	cost_type_id	= :cost_type_id,

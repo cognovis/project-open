@@ -80,7 +80,7 @@ DECLARE
         p_creation_ip             alias for $5;		-- creation_ip
         p_context_id              alias for $6;		-- context_id
         p_invoice_nr              alias for $7;		-- invoice_nr
-        p_company_id              alias for $8;		-- company_id
+        p_customer_id              alias for $8;		-- company_id
         p_provider_id             alias for $9;		-- provider_id
         p_company_contact_id      alias for $10;	-- company_contact_id
         p_invoice_date            alias for $11;	-- invoice_date 
@@ -105,7 +105,7 @@ BEGIN
 		p_creation_ip,	
 		p_context_id,	
 		p_invoice_nr,	
-		p_company_id,	
+		p_customer_id,	
 		p_provider_id,	
 		p_company_contact_id,
 		p_invoice_date,
