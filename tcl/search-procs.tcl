@@ -2,7 +2,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.25 2005/03/29 23:39:45 jeffd Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.26 2005/03/30 15:00:53 jeffd Exp $
 }
 
 namespace eval search {}
@@ -148,7 +148,7 @@ ad_proc -private search::indexer {} {
                         -action $event \
                         -object_id $object_id \
                         -datasource NONE \
-                        -object_type $object_type
+                        -object_type {}
 
                     search::dequeue -object_id $object_id -event_date $event_date -event $event
 
