@@ -113,7 +113,7 @@ create table im_fs_folders (
         folder_id               integer primary key,
         project_id              references im_projects,
         folder_name             varchar(400),
-        folder_type_id          references categories
+        folder_type_id          references im_categories
 );
 
 
@@ -132,7 +132,7 @@ create table im_fs_folder_status (
         open_p                  char(1) default('t')
         constraint im_fs_folder_status_open_p check(open_p in ('t','f')),
         -- not being used yet, but already here for extensions...
-        folder_status_id        references categories
+        folder_status_id        references im_categories
 );
 
 
