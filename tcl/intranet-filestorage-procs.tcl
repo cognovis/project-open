@@ -1410,7 +1410,7 @@ ad_proc im_filestorage_dir_row {
     <input type=checkbox name=dir_id.$ctr>
     <input type=hidden name=id_path.$ctr value=\"$rel_path\">    
   </td>
-  <td>
+  <td valign=middle>
     $line_html
   </td>
   <td align=center></td>
