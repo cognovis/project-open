@@ -646,8 +646,7 @@ ad_proc im_costs_project_finance_component { user_id project_id } {
     # Default Currency
     set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 
-    # ----------------- Calculate Subtotals per cost_type_id -------------
-    # ... and store in an array
+    # ----------------- Main SQL - select subtotals and their currencies -------------
     
     set subtotals_sql "
 select
@@ -677,7 +676,13 @@ from
 			)
 	) ci on (cat.category_id = ci.cost_type_id)
 where
-        cat.category_id in ([im_cost_type_invoice],[im_cost_type_quote],[im_cost_type_bill],[im_cost_type_po],[im_cost_type_timesheet])
+        cat.category_id in (
+		[im_cost_type_invoice],
+		[im_cost_type_quote],
+		[im_cost_type_bill],
+		[im_cost_type_po],
+		[im_cost_type_timesheet]
+	)
 group by
 	ci.currency,
         cat.category_id,
@@ -686,38 +691,29 @@ order by
         cat.category_id
 "
 
-    # Start with the summary...
-    append summary_html "
-	<tr class=rowtitle>
-	  <td class=rowtitle colspan=99>Summary</td>
-	</tr>\n"
+    # ----------------- Initialize variables -------------
+
+    # Get the list of all currencies
+    set currencies [list]
+    db_foreach all_currencies "select distinct currency from ($subtotals_sql) st" {
+	if {"" == $currency} { continue }
+	lappend currencies $currency
+    }
+
+    # Initialize the subtotal array
+    db_foreach subtotal_init "select category_id from im_categories where category_type='Intranet Cost Type'" {
+	foreach currency $currencies {
+	    set subtotals($category_id$currency) 0
+	}
+    }
+
+    # ----------------- Calculate Subtotals per cost_type_id -------------
 
     db_foreach subtotals $subtotals_sql {
 	if {"" == $amount} { set amount 0 }
 	if {"" == $currency} { set currency $default_currency }
 	set subtotals($cost_type_id$currency) $amount
-	set currencies($currency) $currency
-
-	append summary_html "
-	<tr class=rowplain>
-	  <td colspan=3 align=left>$cost_type</td>
-	  <td>[expr $sign * $amount] $currency</td>
-	</tr>\n"
-
-	set gt 0
-	if {[info exists grand_total($currency)]} { 
-	    set gt $grand_total($currency)
-	}
-	set gt [expr $gt + ($sign * $amount)]
-	set grand_total($currency) $gt
-    }
-
-    foreach curcur [array names grand_total] {
-	append summary_html "
-	<tr class=rowplain>
-	  <td colspan=3 align=left><b>Grand Total</b></td>
-	  <td><b>$grand_total($curcur) $curcur</b></td>
-	</tr>\n"
+	ns_log Notice "im_costs_project_finance_component: subtotals($cost_type_id$currency) = $amount"
     }
 
 
@@ -845,11 +841,65 @@ order by
 	incr ctr
     }
 
-    # insert the summary here
-    append cost_html $summary_html
-
-    # Close the first table
+    # Close the main table
     append cost_html "</table>\n"
+
+
+    # ----------------- Hard Costs HTML -------------
+    # Hard "real" costs such as invoices, bills and timesheet
+
+    set hard_cost_html "
+<table>
+  <tr class=rowtitle>
+    <td class=rowtitle colspan=99 align=center>Real Costs</td>
+  </tr>
+  <tr>
+    <td>[_ intranet-cost.Customer_Invoices]</td>\n"
+    foreach currency $currencies {
+	append hard_cost_html "<td>$subtotals([im_cost_type_invoice]$currency) $currency</td>\n"
+    }
+    append hard_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Provider_Bills]</td>\n"
+    foreach currency $currencies {
+	append hard_cost_html "<td>$subtotals([im_cost_type_bill]$currency) $currency</td>\n"
+    }
+    append hard_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Timesheet_Costs]</td>\n"
+    foreach currency $currencies {
+	append hard_cost_html "<td>$subtotals([im_cost_type_timesheet]$currency) $currency</td>\n"
+    }
+    append hard_cost_html "</tr>\n</table>\n"
+
+
+
+    # ----------------- Prelim Costs HTML -------------
+    # Preliminary (planned) Costs such as Quotes and Purchase Orders
+
+    set prelim_cost_html "
+<table>
+  <tr class=rowtitle>
+    <td class=rowtitle colspan=99 align=center>Preliminary Costs</td>
+  </tr>
+  <tr>
+    <td>[_ intranet-cost.Quotes]</td>\n"
+    foreach currency $currencies {
+	append prelim_cost_html "<td>$subtotals([im_cost_type_quote]$currency) $currency</td>\n"
+    }
+    append prelim_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Purchase_Orders]</td>\n"
+    foreach currency $currencies {
+	append prelim_cost_html "<td>$subtotals([im_cost_type_po]$currency) $currency</td>\n"
+    }
+
+# No planned timesheet yet - will be from resource planning
+#    append prelim_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Timesheet_Costs]</td>\n"
+#    foreach currency $currencies {
+#	append prelim_cost_html "<td>$subtotals([im_cost_type_timesheet]$currency) $currency</td>\n"
+#    }
+
+    append prelim_cost_html "</tr>\n</table>\n"
+    append summary_html "
+	<tr class=rowplain>
+	  <td colspan=3 align=left>$cost_type</td>
+	  <td>[expr $sign * $amount] $currency</td>
+	</tr>\n"
 
 
     # ----------------- Admin Links --------------------------------
@@ -859,7 +909,7 @@ order by
     if {[db_table_exists im_invoices]} {
 
 	set admin_html "
-	<table border=0>
+	<table>
 	<tr>
 	  <td colspan=$colspan class=rowtitle align=center>
 	    [_ intranet-core.Admin_Links]
@@ -882,6 +932,7 @@ order by
 	    append admin_html "	
 	  </td>
 	</tr>
+        </table>
 	"
 
 	set cost_html "
@@ -893,6 +944,19 @@ order by
   </td>
   <td>
     $admin_html
+  </td>
+</tr>
+</table>
+<br>
+
+<table cellspacing=0 cellpadding=0>
+<tr><td class=rowtitle colspan=2 align=center>Summary</td></tr>
+<tr valign=top>
+  <td>
+    $hard_cost_html
+  </td>
+  <td>
+    $prelim_cost_html
   </td>
 </tr>
 </table>
