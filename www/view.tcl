@@ -16,6 +16,7 @@ ad_page_contract {
 	full		= topic+all subtopics
 
     @author fraber@project-open.com
+    @author juanjoruizx@gmail.com
 } {
     {topic_id:integer 0}
     {object_id:integer 0}
@@ -144,9 +145,10 @@ append table_body [im_forum_render_tind $topic_id $parent_id $topic_type_id $top
 
 # Possible view actions include (view.tcl)
 # - Reply
-# - Accept or Reject ("pending" task or incident)
-# - Close the ticket (the owner and PM of an incident)
-
+# - Assign to (the owner and PM of an incident)
+# - Accept or Reject ("pending" task or incident, the assignee)
+# - Close the ticket (the owner and PM of an incident and the assignee)
+# - Needs Clarify (the assignee)
 
 set actions ""
 
@@ -158,20 +160,33 @@ if {$task_or_incident_p && $user_id == $asignee_id} {
 	append actions "<option value=reject>[_ intranet-forum.Reject_topic_type]</option>\n"
     }
 
-    # Allow to mark task as "closed" 
-    if {($object_admin || $user_id == $owner_id) && ![string equal $topic_status_id [im_topic_status_id_closed]]} {
+    # Allow to mark task as "closed" only after accepted
+    if {$topic_status_id == [im_topic_status_id_accepted]  && ![string equal $topic_status_id [im_topic_status_id_closed]]} {
 	append actions "<option value=close>[_ intranet-forum.Close_topic_type]</option>\n"
     }
 
-    # Always allow to ask for clarification from owner
-    append actions "<option value=clarify>[_ intranet-forum.lt_topic_type_needs_clar]</option>\n"
+    # Always allow to ask for clarification from owner if not already in clarify
+    if {![string equal $topic_status_id [im_topic_status_id_needs_clarify]] && ![string equal $topic_status_id [im_topic_status_id_closed]]} {
+    	append actions "<option value=clarify>[_ intranet-forum.lt_topic_type_needs_clar]</option>\n"
+    }
 }
+
 
 append actions "<option value=reply selected>[_ intranet-forum.lt_Reply_to_this_topic_t]</option>\n"
 
 # Only admins can edit the message
+set assign_hidden ""
 if {$object_admin || $user_id==$owner_id} {
     append actions "<option value=edit>[_ intranet-forum.Edit_topic_type]</option>\n"
+    if {$task_or_incident_p && $topic_status_id == [im_topic_status_id_needs_clarify]} {
+    	append actions "<option value=assign>[_ intranet-forum.Re_assign_topic]</option>\n"
+    	#assignee does not change
+    	set assign_hidden "<input type=hidden name=asignee_id value=$asignee_id>"
+    }
+    # owner can also close topic
+    if {$user_id != $asignee_id && ![string equal $topic_status_id [im_topic_status_id_closed]]} {
+    	append actions "<option value=close>[_ intranet-forum.Close_topic_type]</option>\n"
+    }
 }
 
 
@@ -185,7 +200,7 @@ append table_body "
 	    </select>
 	    <input type=submit value=\"[_ intranet-forum.Apply]\">
 	  </td>
-	</tr>\n"
+	</tr> $assign_hidden \n"
 incr ctr
 
 # -------------- Table and Form Start -----------------------------

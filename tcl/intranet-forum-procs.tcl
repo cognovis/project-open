@@ -476,7 +476,7 @@ ad_proc -public im_forum_render_tind {
 	}
 
 	
-	if {$object_admin} {
+	if {$object_admin || $user_id==$owner_id} {
 	    append tind_html " (<A href=assign?[export_url_vars topic_id return_url]>[_ intranet-forum.Assign]</A>)"
 	}
 	append tind_html "
