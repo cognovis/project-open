@@ -446,12 +446,12 @@ where	category_type = 'Intranet Topic Status'
 
 
 -- views to "forum" items: 40-49
-insert into im_views values (40, 'forum_list_home', 'view_forums', '');
-insert into im_views values (41, 'forum_list_project', 'view_forums', '');
-insert into im_views values (42, 'forum_list_forum', 'view_forums', '');
-insert into im_views values (43, 'forum_list_extended', 'view_forums', '');
-insert into im_views values (44, 'forum_list_short', 'view_forums', '');
-insert into im_views values (45, 'forum_list_customer', 'view_forums', '');
+insert into im_views (view_id, view_name, visible_for) values (40, 'forum_list_home', 'view_forums');
+insert into im_views (view_id, view_name, visible_for) values (41, 'forum_list_project', 'view_forums');
+insert into im_views (view_id, view_name, visible_for) values (42, 'forum_list_forum', 'view_forums');
+insert into im_views (view_id, view_name, visible_for) values (43, 'forum_list_extended', 'view_forums');
+insert into im_views (view_id, view_name, visible_for) values (44, 'forum_list_short', 'view_forums');
+insert into im_views (view_id, view_name, visible_for) values (45, 'forum_list_customer', 'view_forums');
 
 
 -- ForumList for home page
