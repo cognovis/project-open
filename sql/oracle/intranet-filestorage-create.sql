@@ -35,6 +35,9 @@ commit;
 declare
     v_plugin            integer;
 begin
+    -- Home Page
+    -- Set the filestorage to the very end.
+    --
     v_plugin := im_component_plugin.new (
         plugin_id =>    null,
         object_type =>  'im_component_plugin',
@@ -46,7 +49,7 @@ begin
 	package_name =>	'intranet-filestorage',
         page_url =>     '/intranet/index',
         bay_name =>     'bottom',
-        sort_order =>   10,
+        sort_order =>   90,
         component_tcl => 
 
 	'im_filestorage_home_component \
@@ -65,7 +68,7 @@ begin
 	package_name =>	'intranet-filestorage',
         page_url =>     '/intranet/users/view',
         bay_name =>     'bottom',
-        sort_order =>   10,
+        sort_order =>   90,
         component_tcl => 
 
 	'im_filestorage_user_component \
@@ -86,7 +89,7 @@ begin
 	package_name =>	'intranet-filestorage',
         page_url =>     '/intranet/projects/view',
         bay_name =>     'bottom',
-        sort_order =>   10,
+        sort_order =>   90,
         component_tcl => 
 
 	'im_filestorage_project_component \
@@ -107,7 +110,7 @@ begin
 	package_name =>	'intranet-filestorage',
         page_url =>     '/intranet/customers/view',
         bay_name =>     'right',
-        sort_order =>   20,
+        sort_order =>   50,
         component_tcl => 
 
 	'im_filestorage_customer_component \
