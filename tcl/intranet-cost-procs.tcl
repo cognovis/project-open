@@ -463,7 +463,7 @@ order by
 <table border=0>
   <tr>
     <td colspan=$colspan class=rowtitle align=center>
-      Financial Documents for '$object_name'
+      Financial Documents
     </td>
   </tr>
   <tr class=rowtitle>
