@@ -217,7 +217,7 @@ begin
                 $user_id \
                 $edit_user \
                 $return_url \
-		$freelance_view_name'
+		[im_opt_val freelance_view_name]'
     );
 end;
 /
