@@ -83,7 +83,6 @@ end im_trans_invoice;
 /
 show errors
 
-
 create or replace package body im_trans_invoice
 is
     function new (
@@ -112,28 +111,29 @@ is
     is
 	v_invoice_id	im_trans_invoices.invoice_id%TYPE;
     begin
+
 	v_invoice_id := im_invoice.new(
-	invoice_id		=> invoice_id,
-	object_type	  => object_type,
-	creation_date	=> creation_date,
-	creation_user	=> creation_user,
-	creation_ip	  => creation_ip,
-	context_id		=> context_id,
-	invoice_nr		=> invoice_nr,
-	customer_id	  => customer_id,
-	provider_id	  => provider_id,
-	company_contact_id     => company_contact_id,
-	invoice_date	 => invoice_date,
-	invoice_currency	=> invoice_currency,
-	invoice_template_id     => invoice_template_id,
-	invoice_status_id	=> invoice_status_id,
-	invoice_type_id	=> invoice_type_id,
-	payment_method_id	=> payment_method_id,
-	payment_days	 => payment_days,
-	amount		=> amount,
-	vat		  => vat,
-	tax		  => tax,
-	note			=> note
+		invoice_id		=> invoice_id,
+		object_type		=> object_type,
+		creation_date		=> creation_date,
+		creation_user		=> creation_user,
+		creation_ip		=> creation_ip,
+		context_id		=> context_id,
+		invoice_nr		=> invoice_nr,
+		customer_id		=> customer_id,
+		provider_id		=> provider_id,
+		company_contact_id	=> company_contact_id,
+		invoice_date		=> invoice_date,
+		invoice_currency	=> invoice_currency,
+		invoice_template_id     => invoice_template_id,
+		invoice_status_id	=> invoice_status_id,
+		invoice_type_id		=> invoice_type_id,
+		payment_method_id	=> payment_method_id,
+		payment_days		=> payment_days,
+		amount			=> amount,
+		vat			=> vat,
+		tax			=> tax,
+		note			=> note
 	);
 
 	-- insert to create a referential integrity constraint
