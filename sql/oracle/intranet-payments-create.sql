@@ -11,7 +11,7 @@
 ------------------------------------------------------
 -- Payments
 --
--- Tracks the money coming into an cost_item over time
+-- Tracks the money coming into a cost item over time
 --
 
 create sequence im_payments_id_seq start with 10000;
@@ -19,9 +19,9 @@ create table im_payments (
 	payment_id		integer not null 
 				constraint im_payments_pk
 				primary key,
-	cost_item_id		integer
+	cost_id			integer
 				constraint im_payments_invoice
-				references im_cost_items,
+				references im_costs,
 				-- who pays?
 	customer_id		integer not null
 				constraint im_payments_customer
@@ -33,7 +33,7 @@ create table im_payments (
 	received_date		date,
 	start_block		date 
 				constraint im_payments_start_block
-				references im_start_blocks,
+				references im_start_months,
 	payment_type_id		integer
 				constraint im_payments_type
 				references im_categories,
@@ -53,7 +53,7 @@ create table im_payments (
 		-- Make sure we don't get duplicated entries for 
 		-- whatever reason
 		constraint im_payments_un
-		unique (customer_id, cost_item_id, provider_id, received_date, 
+		unique (customer_id, cost_id, provider_id, received_date, 
 			start_block, payment_type_id, currency)
 );
 
@@ -93,7 +93,7 @@ show errors;
 
 create table im_payments_audit (
 	payment_id		integer,
-	cost_item_id		integer,
+	cost_id			integer,
 	customer_id		integer,
 	provider_id		integer,
 	received_date		date,
@@ -115,7 +115,7 @@ create or replace trigger im_payments_audit_tr
 	begin
 		insert into im_payments_audit (
 			payment_id,
-			cost_item_id,
+			cost_id,
 			customer_id,
 			provider_id,
 			received_date,
@@ -130,7 +130,7 @@ create or replace trigger im_payments_audit_tr
 			modified_ip_address
 		) values (
 			:old.payment_id,
-			:old.cost_item_id,
+			:old.cost_id,
 			:old.customer_id,
 			:old.provider_id,
 			:old.received_date,
@@ -164,7 +164,7 @@ where category_type = 'Intranet Invoice Payment Method';
 
 
 ------------------------------------------------------
--- Add a "New Payments" item into the Cost_Items submenu
+-- Add a "New Payments" item into the Costs submenu
 ------------------------------------------------------
 
 BEGIN
