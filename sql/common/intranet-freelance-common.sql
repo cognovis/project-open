@@ -80,8 +80,8 @@ column_render_tcl, extra_select, extra_where, sort_order, visible_for, order_by_
 values (5210,52,NULL,'Recr Test','$rec_test_result',
 'im_category_from_id(rec_test_result_id) as rec_test_result','',10,'',
 'order by rec_test_result_id');
---
-commit;
+
+
 
 
 
@@ -151,7 +151,6 @@ insert into im_categories
 ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 values ('', 'f', '6006', 'Test evaluated', 'Intranet Recruiting Status');
 
-commit;
 
 
 
@@ -167,8 +166,6 @@ values ('', 'f', '6102', 'B - No the best...', 'Intranet Recruiting Test Result'
 insert into im_categories
 ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 values ('', 'f', '6104', 'C - Test completely failed', 'Intranet Recruiting Test Result');
-
-commit;
 
 
 
@@ -205,7 +202,6 @@ extra_select, extra_where, sort_order, visible_for) values (5007,50,NULL,'Cell P
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (5008,50,NULL,'Home Phone',
 '$home_phone','','',10,'im_permission $user_id view_freelancers');
-commit;
 
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
