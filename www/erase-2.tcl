@@ -1,4 +1,10 @@
-# /www/intranet/filestorage/eraseFile.tcl
+# /packages/intranet-filestorage/www/erase-2.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
+
 
 ad_page_contract {
     Show the content a specific subdirectory
@@ -11,7 +17,7 @@ ad_page_contract {
 
     @author pvilarmau@hotmail.com
     @author santitrenchs@santitrenchs.com
-    @cvs-id eraseFile.tcl
+    @cvs-id frank.bergmann@project-open.com
 } {
     file_name:notnull
     {folder_type ""}

@@ -1,5 +1,12 @@
 -- /packages/intranet-filestorage/sql/oracle/intranet-filestorage-create.sql
 --
+-- Copyright (c) 2003-2004 Project/Open
+--
+-- All rights reserved. Please check
+-- http://www.project-open.com/license/ for details.
+--
+-- @author frank.bergmann@project-open.com
+
 -- Sets up the persisten memory about folders, their permissions
 -- and the state (opened or closed) in which the user they have
 -- left the last time he used the filestorage module.

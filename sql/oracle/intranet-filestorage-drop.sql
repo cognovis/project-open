@@ -1,5 +1,11 @@
 -- /packages/intranet-filestorage/sql/oracle/intranet-filestorage-drop.sql
 --
+-- Copyright (c) 2003-2004 Project/Open
+--
+-- All rights reserved. Please check
+-- http://www.project-open.com/license/ for details.
+--
+-- @author frank.bergmann@project-open.com
 
 drop table im_fs_folder_permission_map;
 

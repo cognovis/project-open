@@ -1,9 +1,12 @@
-# /tcl/intranet-trans-filestorage.tcl
+# /packages/intranet-filestorage/tcl/intranet-filestorage-procs.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
 
 ad_library {
-    Translation Industry File Storage Component Library
-    @author fraber@fraber.de
-    @creation-date  27 June 2003
+    File Storage Component Library
     
     This file storage type sets the access rights to project
     folders according to some regular expressions, that
@@ -14,6 +17,8 @@ ad_library {
     - Trans	r source trans edit proof, w trans
     - Editor	r source trans edit proof, w edit
     - Proof	r source trans edit proof, w proof
+
+    @author frank.bergmann@project-open.com
 }
 
 ad_register_proc GET /intranet/download/project/* intranet_project_download
