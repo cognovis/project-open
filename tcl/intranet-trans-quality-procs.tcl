@@ -100,6 +100,10 @@ ad_proc im_quality_project_component {
     Returns a formatted HTML component that shows a relative q-diagram
     and link a the quality controler page
 } {
+    if {![im_project_has_type $project_id "Translation Project"]} {
+        return ""
+    }
+
     db_0or1row sql_n_tasks "
 	select	count(qr.task_id) as n_reports
 	from	im_trans_tasks t,
@@ -119,7 +123,6 @@ ad_proc im_quality_project_component {
     append result "</ul>\n"
     return $result
 }
-
 
 
 
