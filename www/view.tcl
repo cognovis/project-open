@@ -112,6 +112,7 @@ ns_log Notice "view: object_admin=$object_admin"
 # However, the choice of receipients of the topics depend
 # on the relatioinship between the user and the object.
 if {!$object_read} {
+
     ad_return_complaint 1 "[_ intranet-forum.lt_You_have_no_rights_to]"
     return
 }
