@@ -51,7 +51,8 @@ BEGIN
 
      delete from acs_permissions
      where privilege = p_priv_name;
-
+     delete from acs_privilege_hierarchy
+     where child_privilege = p_priv_name;
      return 0;
 
 end;' language 'plpgsql';

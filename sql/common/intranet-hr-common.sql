@@ -17,6 +17,7 @@
 
 
 -- Employee Pipeline State
+delete from im_categories where category_id >= 450 and category_id <= 455;
 insert into im_categories (category_id, category, category_type) values 
 (450, 'Potential', 'Intranet Employee Pipeline State');
 insert into im_categories (category_id, category, category_type) values 
@@ -61,19 +62,19 @@ where category_type = 'Intranet Employee Pipeline State';
 
 
 
-prompt *** Creating im_views
+-- prompt *** Creating im_views
 insert into im_views (view_id, view_name, visible_for) values (55, 'employees_list', 'view_users');
 insert into im_views (view_id, view_name, visible_for) values (56, 'employees_view', 'view_users');
 
 
 
 
-prompt *** Creating im_view_columns for employees_list
+-- prompt *** Creating im_view_columns for employees_list
 delete from im_view_columns where column_id >= 5500 and column_id < 5599;
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, 
 column_render_tcl, extra_select, extra_from, extra_where, sort_order, visible_for
-) values (5500,55,NULL,'[_ intranet-hr.Name]',
+) values (5500,55,NULL,'Name',
 	'"<a href=/intranet/users/view?user_id=$user_id>$name</a>"',
 	'e.supervisor_id, im_name_from_user_id(e.supervisor_id) as supervisor_name',
 	'im_employees e',
@@ -83,62 +84,62 @@ column_render_tcl, extra_select, extra_from, extra_where, sort_order, visible_fo
 );
 
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5501,55,'[_ intranet-hr.Email]','"<a href=mailto:$email>$email</a>"',3);
+sort_order) values (5501,55,'Email','"<a href=mailto:$email>$email</a>"',3);
 
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5502,55,'[_ intranet-hr.Supervisor]',
+sort_order) values (5502,55,'Supervisor',
 '"<a href=/intranet/users/view?user_id=$supervisor_id>$supervisor_name</a>"',3);
 
 -- insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
--- sort_order)values (5502,55,'[_ intranet-hr.Status]','$status','','',4,'');
+-- sort_order)values (5502,55,'Status','$status','','',4,'');
 
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5504,55,'[_ intranet-hr.Work_Phone]','$work_phone',6);
+sort_order) values (5504,55,'Work Phone','$work_phone',6);
 
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5505,55,'[_ intranet-hr.Cell_Phone]','$cell_phone',7);
+sort_order) values (5505,55,'Cell Phone','$cell_phone',7);
 
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5506,55,'[_ intranet-hr.Home_Phone]','$home_phone',8);
+sort_order) values (5506,55,'Home Phone','$home_phone',8);
 --
-commit;
+-- commit;
 
 
 
 
-prompt *** Creating im_view_columns for employees_view
+-- prompt *** Creating im_view_columns for employees_view
 delete from im_view_columns where column_id >= 5600 and column_id < 5699;
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5600,56,'[_ intranet-hr.Department]',
+sort_order) values (5600,56,'Department',
 '"<a href=${department_url}$department_id>$department_name</a>"',0);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5602,56,'[_ intranet-hr.Job_Title]','$job_title',02);
+sort_order) values (5602,56,'Job Title','$job_title',02);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5604,56,'[_ intranet-hr.Job_Description]','$job_description',04);
+sort_order) values (5604,56,'Job Description','$job_description',04);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5606,56,'[_ intranet-hr.Availability_]','$availability',06);
+sort_order) values (5606,56,'Availability %','$availability',06);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5608,56,'[_ intranet-hr.Supervisor]',
+sort_order) values (5608,56,'Supervisor',
 '"<a href=${user_url}$supervisor_id>$supervisor_name</a>"',08);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5610,56,'[_ intranet-hr.Social_Security_nr]','$ss_number',10);
+sort_order) values (5610,56,'Social Security nr','$ss_number',10);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5612,56,'[_ intranet-hr.Salary]','$salary',12);
+sort_order) values (5612,56,'Salary','$salary',12);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5614,56,'[_ intranet-hr.Social_Security]','$social_security',14);
+sort_order) values (5614,56,'Social Security','$social_security',14);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5616,56,'[_ intranet-hr.Insurance]','$insurance',16);
+sort_order) values (5616,56,'Insurance','$insurance',16);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5618,56,'[_ intranet-hr.Other_Costs]','$other_costs',18);
+sort_order) values (5618,56,'Other Costs','$other_costs',18);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5620,56,'[_ intranet-hr.Salary_Period]','$salary_period',20);
+sort_order) values (5620,56,'Salary Period','$salary_period',20);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5622,56,'[_ intranet-hr.Salaries_per_Year]','$salary_payments_per_year',22);
+sort_order) values (5622,56,'Salaries per Year','$salary_payments_per_year',22);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5624,56,'[_ intranet-hr.Birthdate]','$birthdate',24);
+sort_order) values (5624,56,'Birthdate','$birthdate',24);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5626,56,'[_ intranet-hr.Start_Date]','$start_date',26);
+sort_order) values (5626,56,'Start Date','$start_date',26);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5628,56,'[_ intranet-hr.Termination_Date]','$end_date',28);
-commit;
+sort_order) values (5628,56,'Termination_Date','$end_date',28);
+-- commit;
 
