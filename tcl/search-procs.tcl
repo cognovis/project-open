@@ -2,7 +2,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.16 2005/02/02 21:18:03 jeffd Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.17 2005/02/05 11:53:57 jeffd Exp $
 }
 
 namespace eval search {}
@@ -106,7 +106,7 @@ ad_proc -private search::indexer {} {
                         array set datasource [acs_sc_call FtsContentProvider datasource [list $object_id] $object_type]
                         search::content_get txt $datasource(content) $datasource(mime) $datasource(storage_type)
                         if {$syndicate} { 
-                            search::syndicate -array datasource
+                            search::syndicate -datasource datasource
                         } 
                         acs_sc_call FtsEngineDriver update_index [list $datasource(object_id) $txt $datasource(title) $datasource(keywords)] $driver
                         array unset datasource
