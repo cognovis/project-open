@@ -14,27 +14,27 @@ create sequence im_forum_topics_seq start with 1;
 create table im_forum_topics (
 	-- administrative information
 	topic_id	integer
-			constraint im_f_t_pk primary key,
+			constraint im_forum_topics_pk primary key,
 	topic_name	varchar(200),
 	topic_path	varchar(200),
-	group_id	integer not null 
-			constraint im_f_t_group_id_fk
-			references groups,
+	object_id	integer not null 
+			constraint im_forum_topics_object_fk
+			references acs_objects,
 	parent_id	integer
-			constraint im_f_t_parent_id_fk
+			constraint im_forum_topics_parent_fk
 			references im_forum_topics,
 	topic_type_id	integer not null
-			constraint im_f_t_topic_type_id_fk
+			constraint im_forum_topics_type_fk
 			references categories,
 	topic_status_id	integer
-			constraint im_f_t_topic_status_id_fk
+			constraint im_forum_topics_status_fk
 			references categories,
 	posting_date	date,
 	owner_id	integer not null
-			constraint im_f_t_owner_id_fk
+			constraint im_forum_topics_owner_fk
 			references users,
 	scope		varchar(20) default 'group'
-			constraint im_f_t_scope_ck
+			constraint im_forum_topics_scope_ck
 			check (scope in ('pm', 'group','public','client','staff','not_client')),
 	-- allow to comment on non-group items if on_which_table not null
 	on_what_id	integer,
@@ -46,10 +46,10 @@ create table im_forum_topics (
 	priority	number(1),
 	due_date	date,
 	asignee_id	integer
-			constraint im_f_t_asignee_id_fk
+			constraint im_forum_topics_asignee_fk
 			references users
 );
-create index im_forum_topics_group_idx on im_forum_topics (group_id);
+create index im_forum_topics_object_idx on im_forum_topics (object_id);
 
 -----------------------------------------------------------
 -- Folders for Intranet users
@@ -61,13 +61,13 @@ create index im_forum_topics_group_idx on im_forum_topics (group_id);
 
 create table im_forum_folders (
 	folder_id	integer
-			constraint im_forum_folders_folder_id_pk
+			constraint im_forum_folders_pk
 			primary key,
 	user_id		integer
-			constraint im_forum_folders_user_id_fk
+			constraint im_forum_folders_user_fk
 			references users,
 	parent_id	integer
-			constraint im_forum_folders_parent_id_fk
+			constraint im_forum_folders_parent_fk
 			references im_forum_folders,
 	folder_name	varchar(200)
 );
@@ -84,26 +84,26 @@ create table im_forum_folders (
 
 create table im_forum_topic_user_map (
 	topic_id	integer
-			constraint im_f_t_u_map_topic_id_fk
+			constraint im_forum_topics_um_topic_fk
 			references im_forum_topics,
 	user_id		integer
-			constraint im_f_t_u_map_user_id_fk
+			constraint im_forum_topics_um_user_fk
 			references users,
 	-- read_p in ('f' or NULL) indicates "New" items
 	read_p		char(1) default 't'
-			constraint im_f_t_u_map_read_p_ck
+			constraint im_forum_topics_um_read_ck
 			check (read_p in ('t','f')),
 	-- folder_id in (0 or NULL) indicates "Inbox" items
 	-- folder_id = 1 indicates "Deleted" items
 	-- folder_id for users start with 10
 	folder_id	integer default 0
-			constraint im_f_t_u_map_folder_id_fk
+			constraint im_forum_topics_um_folder_fk
 			references im_forum_folders,
 	receive_updates	varchar(20) default 'major'
-			constraint im_f_t_u_map_receive_u_ck check (
+			constraint im_forum_topics_um_rec_ck check (
 			receive_updates in ('all','none','major')),
-			constraint im_f_t_u_map_receive_u_pk
-			primary key (topic_id, user_id)
+	constraint im_forum_topics_um_rec_pk
+	primary key (topic_id, user_id)
 );
 
 -----------------------------------------------------------
@@ -113,7 +113,7 @@ create table im_forum_topic_user_map (
 create sequence im_forum_files_seq start with 1;
 create table im_forum_files (
 	msg_id			integer 
-				constraint im_forum_files_msg_id_pk
+				constraint im_forum_files_pk
 				primary key,
 	n_bytes			integer,
 	client_filename		varchar(4000),
@@ -245,19 +245,12 @@ declare
     v_plugin            integer;
 begin
     v_plugin := im_component_plugin.new (
-        plugin_id =>    null,
-        object_type =>  'im_component_plugin',
-        creation_date => sysdate,
-        creation_user => 0,
-        creation_ip =>  null,
-        context_id =>   null,
-
+	plugin_name =>	'Project Forum Component',
 	package_name =>	'intranet-forum',
         page_url =>     '/intranet/projects/view',
         location =>     'right',
         sort_order =>   10,
         component_tcl => 
-
 	'im_table_with_title \
 		[im_forum_create_bar \
 			"<B>Forum Items<B>" \
@@ -270,13 +263,15 @@ begin
 			$current_url \
 			$return_url \
 			[list \
-			project_id \
-			forum_start_idx \
-			forum_order_by \
-			forum_how_many \
-			forum_view_name] \
-			$forum_view_name \
-			$forum_order_by \
+				project_id \
+				forum_start_idx \
+				forum_order_by \
+				forum_how_many \
+				forum_view_name \
+			] \
+			project \
+			[im_opt_val forum_view_name] \
+			[im_opt_val forum_order_by] \
 			"f" \
 			0 \
 			0 \
@@ -303,19 +298,12 @@ declare
     v_plugin            integer;
 begin
     v_plugin := im_component_plugin.new (
-        plugin_id =>    null,
-        object_type =>  'im_component_plugin',
-        creation_date => sysdate,
-        creation_user => 0,
-        creation_ip =>  null,
-        context_id =>   null,
-
+	plugin_name =>	'Customers Forum Component',
 	package_name =>	'intranet-forum',
         page_url =>     '/intranet/customers/view',
         location =>     'right',
         sort_order =>   10,
         component_tcl => 
-
 	'im_table_with_title \
 		[im_forum_create_bar \
 			"<B>Forum Items<B>" \
@@ -334,8 +322,9 @@ begin
 				forum_how_many \
 				forum_view_name \
 			] \
-			$forum_view_name \
-			$forum_order_by \
+			customer \
+			[im_opt_val forum_view_name] \
+			[im_opt_val forum_order_by] \
 			"f" \
 			0 \
 			0 \
@@ -362,19 +351,12 @@ declare
     v_plugin            integer;
 begin
     v_plugin := im_component_plugin.new (
-        plugin_id =>    null,
-        object_type =>  'im_component_plugin',
-        creation_date => sysdate,
-        creation_user => 0,
-        creation_ip =>  null,
-        context_id =>   null,
-
+	plugin_name =>	'Home Forum Component',
 	package_name =>	'intranet-forum',
         page_url =>     '/intranet/index',
         location =>     'right',
         sort_order =>   10,
         component_tcl => 
-
 	'im_table_with_title \
 		[im_forum_create_bar \
 			"<B>Forum Items<B>" \
@@ -392,8 +374,9 @@ begin
 				forum_how_many \
 				forum_view_name \
 			] \
-			$forum_view_name \
-			$forum_order_by \
+			home \
+			[im_opt_val forum_view_name] \
+			[im_opt_val forum_order_by] \
 			"t" \
 			0 \
 			0 \
@@ -467,7 +450,8 @@ insert into im_views values (40, 'forum_list_home', 'view_forums', '');
 insert into im_views values (41, 'forum_list_project', 'view_forums', '');
 insert into im_views values (42, 'forum_list_forum', 'view_forums', '');
 insert into im_views values (43, 'forum_list_extended', 'view_forums', '');
-
+insert into im_views values (44, 'forum_list_short', 'view_forums', '');
+insert into im_views values (45, 'forum_list_customer', 'view_forums', '');
 
 
 -- ForumList for home page
