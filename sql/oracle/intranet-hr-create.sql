@@ -306,42 +306,6 @@ sort_order) values (5628,56,'Termination Date','$end_date',28);
 commit;
 
 
-insert into im_view_columns values (5602,56,NULL,'Trans Rate',
-'$translation_rate','','',2,
-'im_permission $user_id view_freelancers');
-
-insert into im_view_columns values (5604,56,NULL,'Editing Rate',
-'$editing_rate','','',4,
-'im_permission $user_id view_freelancers');
-
-insert into im_view_columns values (5606,56,NULL,'Hourly Rate',
-'$hourly_rate','','',6,
-'im_permission $user_id view_freelancers');
-
-insert into im_view_columns values (5608,56,NULL,'Bank Account',
-'$bank_account','','',8,
-'im_permission $user_id view_freelancers');
-
-insert into im_view_columns values (5610,56,NULL,'Bank',
-'$bank','','',10,
-'im_permission $user_id view_freelancers');
-
-insert into im_view_columns values (5612,56,NULL,'Payment Method',
-'$payment_method','','',12,
-'im_permission $user_id view_freelancers');
-
-insert into im_view_columns values (5614,56,NULL,'Note',
-'<blockqote>$note</blockquote>','','',14,
-'im_permission $user_id view_freelancers');
-
-insert into im_view_columns values (5616,56,NULL,'Private Note',
-'<blockqote>$private_note</blockquote>','','',16,
-'im_permission $user_id view_freelancers');
-
-commit;
-
-
-
 
 
 prompt *** Creating User Freelance Component plugin
