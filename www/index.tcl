@@ -16,5 +16,4 @@ ad_page_contract {
 }
 
 db_release_unused_handles
-ad_returnredirect "/intranet/users/"
-
+ad_returnredirect "/intranet/users/index?user_group_name=Freelancers"

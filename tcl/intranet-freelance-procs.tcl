@@ -607,7 +607,7 @@ $freelance_header_html
 $freelance_body_html
   <tr> 
     <td colspan=5>add as 
-      [im_biz_object_roles_select role $object_id $default_role_id]
+      [im_biz_object_roles_select role_id $object_id $default_role_id]
       <input type=submit value=Add>
       <input type=checkbox name=notify_asignee value=1 checked>Notify<br>
     </td>

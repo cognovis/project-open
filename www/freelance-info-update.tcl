@@ -54,7 +54,7 @@ if { [empty_string_p $user_name]} {
 }
 
 set page_title "$user_name"
-set context_bar [ad_context_bar_ws [list /intranet/users/ "Users"] $page_title]
+set context_bar [ad_context_bar [list /intranet/users/ "Users"] $page_title]
 
 # ---------------------------------------------------------------
 # Making body table
