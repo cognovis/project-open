@@ -7,6 +7,7 @@
 --
 -- @author frank.bergmann@project-open.com
 
+drop table im_fs_actions;
 drop table im_fs_folder_perms;
 
 drop sequence im_fs_folder_status_seq;
