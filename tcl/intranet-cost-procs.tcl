@@ -391,6 +391,9 @@ ad_proc im_costs_base_component { user_id {customer_id ""} {project_id ""} } {
     set org_project_id $project_id
     set org_customer_id $customer_id
 
+    # Where to link when clicking on an object linke? "edit" or "view"?
+    set view_mode "view"
+
     # ----------------- Compose SQL Query --------------------------------
   
     set extra_where [list]
@@ -445,15 +448,19 @@ ad_proc im_costs_base_component { user_id {customer_id ""} {project_id ""} } {
     set costs_sql "
 select
 	ci.*,
+	url.url,
         im_category_from_id(ci.cost_status_id) as cost_status,
         im_category_from_id(ci.cost_type_id) as cost_type,
 	ci.effective_date + payment_days as calculated_due_date
 	$extra_select_clause
 from
-	im_costs ci
+	im_costs ci,
+	acs_objects o,
+        (select * from im_biz_object_urls where url_type=:view_mode) url
 	$extra_from_clause
 where
-	1=1
+	ci.cost_id = o.object_id
+	and o.object_type = url.object_type
 	$extra_where_clause
 order by
 	ci.effective_date desc
@@ -480,7 +487,7 @@ order by
     db_foreach recent_costs $costs_sql {
 	append cost_html "
 <tr$bgcolor([expr $ctr % 2])>
-  <td><A href=/intranet-costs/view?cost_id=$cost_id>[string range $cost_name 0 20]</A></td>
+  <td><A href=\"$url$cost_id\">[string range $cost_name 0 20]</A></td>
   <td>$cost_type</td>
   <td>$calculated_due_date</td>
   <td>$amount $currency</td>
