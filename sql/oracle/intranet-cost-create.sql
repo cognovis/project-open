@@ -729,6 +729,12 @@ VALUES (3712,'Travel Cost','Intranet Cost Type');
 commit;
 -- reserved until 3799
 
+-- Establish the super-categories "Provider Documents" and "Customer Documents"
+insert into im_category_hierarchy values (3710,3704);
+insert into im_category_hierarchy values (3710,3706);
+insert into im_category_hierarchy values (3708,3700);
+insert into im_category_hierarchy values (3708,3702);
+
 
 prompt *** intranet-costs: Creating category Cost Status
 -- Intranet Cost Status
