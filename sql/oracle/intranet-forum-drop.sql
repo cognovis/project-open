@@ -11,13 +11,6 @@
 
 BEGIN
     im_menu.del_module(module_name => 'intranet-forum');
-END;
-/
-show errors
-
-
-
-BEGIN
     im_component_plugin.del_module(module_name => 'intranet-forum');
 END;
 /
