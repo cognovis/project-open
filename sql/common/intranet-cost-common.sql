@@ -8,7 +8,7 @@
 -- All rights including reserved. To inquire license terms please 
 -- refer to http://www.project-open.com/modules/<module-key>
 
-set escape \
+-- set escape \
 
 -------------------------------------------------------------
 -- Setup the status and type im_categories
@@ -27,7 +27,7 @@ set escape \
 
 
 
-prompt *** intranet-costs: Creating URLs for viewing/editing cost centers
+-- prompt *** intranet-costs: Creating URLs for viewing/editing cost centers
 delete from im_biz_object_urls where object_type='im_cost_center';
 insert into im_biz_object_urls (
 	object_type, 
@@ -50,23 +50,23 @@ insert into im_biz_object_urls (
 );
 
 
-prompt *** intranet-costs: Creating Cost Center categories
+-- prompt *** intranet-costs: Creating Cost Center categories
 -- Intranet Cost Center Type
 delete from im_categories where category_id >= 3000 and category_id < 3100;
-INSERT INTO im_categories VALUES (3001,'Cost Center','','Intranet Cost Center Type',1,'f','');
-INSERT INTO im_categories VALUES (3002,'Profit Center','','Intranet Cost Center Type',1,'f','');
-INSERT INTO im_categories VALUES (3003,'Investment Center','','Intranet Cost Center Type',1,'f','');
+INSERT INTO im_categories VALUES (3001,'Cost Center','','Intranet Cost Center Type',1,'f','f');
+INSERT INTO im_categories VALUES (3002,'Profit Center','','Intranet Cost Center Type',1,'f','f');
+INSERT INTO im_categories VALUES (3003,'Investment Center','','Intranet Cost Center Type',1,'f','f');
 INSERT INTO im_categories VALUES (3004,'Subdepartment','Department without budget responsabilities',
-'Intranet Cost Center Type',1,'f','');
-commit;
+'Intranet Cost Center Type',1,'f','f');
+-- commit;
 -- reserved until 3099
 
 
 -- Intranet Cost Center Type
 delete from im_categories where category_id >= 3100 and category_id < 3200;
-INSERT INTO im_categories VALUES (3101,'Active','','Intranet Cost Center Status',1,'f','');
-INSERT INTO im_categories VALUES (3102,'Inactive','','Intranet Cost Center Status',1,'f','');
-commit;
+INSERT INTO im_categories VALUES (3101,'Active','','Intranet Cost Center Status',1,'f','f');
+INSERT INTO im_categories VALUES (3102,'Inactive','','Intranet Cost Center Status',1,'f','f');
+-- commit;
 -- reserved until 3099
 
 
@@ -80,7 +80,7 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_cost','edit','/intranet-cost/costs/new?form_mode=edit\&cost_id=');
 
 
-prompt *** intranet-costs: Creating URLs for viewing/editing investments
+-- prompt *** intranet-costs: Creating URLs for viewing/editing investments
 delete from im_biz_object_urls where object_type='im_investment';
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_investment','view','/intranet-cost/investments/new?form_mode=display\&investment_id=');
@@ -88,7 +88,7 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_investment','edit','/intranet-cost/investments/new?form_mode=edit\&investment_id=');
 
 
-prompt *** intranet-costs: Creating Investment categories
+-- prompt *** intranet-costs: Creating Investment categories
 -- Intranet Investment Type
 delete from im_categories where category_id >= 3400 and category_id < 3500;
 INSERT INTO im_categories (category_id, category, category_type) 
@@ -99,7 +99,7 @@ INSERT INTO im_categories (category_id, category, category_type)
 VALUES (3405,'Computer Software','Intranet Investment Type');
 INSERT INTO im_categories (category_id, category, category_type) 
 VALUES (3407,'Office Furniture','Intranet Investment Type');
-commit;
+-- commit;
 -- reserved until 3499
 
 -- Intranet Investment Status
@@ -110,7 +110,7 @@ INSERT INTO im_categories (category_id, category, category_type, category_descri
 VALUES (3503,'Deleted','Intranet Investment Status','Deleted - was an error');
 INSERT INTO im_categories (category_id, category, category_type, category_description) 
 VALUES (3505,'Amortized','Intranet Investment Status','No remaining book value');
-commit;
+-- commit;
 -- reserved until 3599
 
 
@@ -122,7 +122,7 @@ INSERT INTO im_categories VALUES (902,'invoice-spanish.adp','','Intranet Cost Te
 
 
 
-prompt *** intranet-costs: Creating category Cost Type
+-- prompt *** intranet-costs: Creating category Cost Type
 -- Cost Type
 delete from im_categories where category_id >= 3700 and category_id < 3799;
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
@@ -144,7 +144,7 @@ VALUES (3714,'Employee Salary','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3716,'Repeating Cost','Intranet Cost Type');
 
-commit;
+-- commit;
 -- reserved until 3799
 
 -- Establish the super-categories "Provider Documents" and "Customer Documents"
@@ -154,7 +154,7 @@ insert into im_category_hierarchy values (3708,3700);
 insert into im_category_hierarchy values (3708,3702);
 
 
-prompt *** intranet-costs: Creating category Cost Status
+-- prompt *** intranet-costs: Creating category Cost Status
 -- Intranet Cost Status
 delete from im_categories where category_id >= 3800 and category_id < 3899;
 INSERT INTO im_categories (category_id, category, category_type)
@@ -171,11 +171,11 @@ INSERT INTO im_categories (category_id, category, category_type)
 VALUES (3812,'Deleted','Intranet Cost Status');
 INSERT INTO im_categories (category_id, category, category_type)
 VALUES (3814,'Filed','Intranet Cost Status');
-commit;
+-- commit;
 -- reserved until 3899
 
 
-prompt *** intranet-costs: Creating status and type views
+-- prompt *** intranet-costs: Creating status and type views
 create or replace view im_cost_status as
 select
 	category_id as cost_status_id,
@@ -249,5 +249,5 @@ insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22098,220,'Del',
 '"<input type=hidden name=object_type.$cost_id value=$object_type>
 <input type=checkbox name=del_cost value=$cost_id>"',99);
-commit;
+-- commit;
 

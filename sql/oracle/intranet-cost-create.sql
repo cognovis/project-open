@@ -42,6 +42,7 @@
 
 set escape \
 
+@../common/intranet-cost-common.sql
 
 prompt *** intranet-costs: Creating im_cost_center
 begin
@@ -1097,7 +1098,7 @@ commit;
 -------------------------------------------------------------
 -- Import common functionality
 
-@../common/intranet-cost-common.sql
+
 @../common/intranet-cost-backup.sql
 
 

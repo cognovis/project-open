@@ -217,7 +217,7 @@ column_render_tcl, extra_select, extra_where, sort_order, visible_for)
 values (19055,190,NULL,'paid_currency','$paid_currency','','',55,'');
 
 --
-commit;
+-- commit;
 
 
 ---------------------------------------------------------
@@ -275,7 +275,7 @@ insert into im_view_columns (column_id, view_id, group_id, column_name,
 column_render_tcl, extra_select, extra_where, sort_order, visible_for)
 values (19114,191,NULL,'note','[ns_urlencode $note]','','',14,'');
 --
-commit;
+-- commit;
 
 
 
@@ -331,7 +331,7 @@ insert into im_view_columns (column_id, view_id, group_id, column_name,
 column_render_tcl, extra_select, extra_where, sort_order, visible_for)
 values (19634,196,NULL,'note','[ns_urlencode $note]','','',34,'');
 --
-commit;
+-- commit;
 
 
 
@@ -371,6 +371,6 @@ values (19709,197,NULL,'investment_status','$investment_status','','',9,'');
 -- column_render_tcl, extra_select, extra_where, sort_order, visible_for)
 -- values (19734,197,NULL,'note','[ns_urlencode $note]','','',34,'');
 --
-commit;
+-- commit;
 
 

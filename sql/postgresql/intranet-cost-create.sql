@@ -43,7 +43,7 @@
 
 -- set escape \
 
-
+\i ../common/intranet-cost-common.sql
 
 -- prompt *** intranet-costs: Creating im_cost_center
 create or replace function inline_0 ()
@@ -1115,7 +1115,7 @@ begin
     PERFORM acs_permission__grant_permission(v_menu, v_customers, ''read'');
     PERFORM acs_permission__grant_permission(v_menu, v_freelancers, ''read'');
     return 0;
-end;' language 'plpsql';
+end;' language 'plpgsql';
 
 
 -------------------------------------------------------------
@@ -1170,8 +1170,7 @@ select im_component_plugin__new (
 -------------------------------------------------------------
 -- Import common functionality
 
-@../common/intranet-cost-common.sql
-@../common/intranet-cost-backup.sql
+\i ../common/intranet-cost-backup.sql
 
 
 
