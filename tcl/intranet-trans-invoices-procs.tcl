@@ -27,15 +27,15 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
 <form action=/intranet-trans-invoices/price-lists/price-action method=POST>
 [export_form_vars company_id return_url]
 <table border=0>
-<tr><td colspan=$colspan class=rowtitle align=center>Price List</td></tr>
+<tr><td colspan=$colspan class=rowtitle align=center>[_ intranet-trans-invoices.Price_List]</td></tr>
 <tr class=rowtitle> 
-	  <td class=rowtitle>UoM</td>
-	  <td class=rowtitle>Task Type</td>
-	  <td class=rowtitle>Source</td>
-	  <td class=rowtitle>Target</td>
-	  <td class=rowtitle>Subject</td>
-	  <td class=rowtitle>Rate</td>
-	  <td class=rowtitle>[im_gif del "Delete"]</td>
+	  <td class=rowtitle>[_ intranet-trans-invoices.UoM]</td>
+	  <td class=rowtitle>[_ intranet-trans-invoices.Task_Type]</td>
+	  <td class=rowtitle>[_ intranet-trans-invoices.Source]</td>
+	  <td class=rowtitle>[_ intranet-trans-invoices.Target]</td>
+	  <td class=rowtitle>[_ intranet-trans-invoices.Subject]</td>
+	  <td class=rowtitle>[_ intranet-trans-invoices.Rate]</td>
+	  <td class=rowtitle>[im_gif del "[_ intranet-trans-invoices.Delete]"]</td>
 </tr>"
 
     set price_sql "
@@ -87,14 +87,16 @@ order by
     if {$price_rows_html != ""} {
 	append price_list_html $price_rows_html
     } else {
-	append price_list_html "<tr><td colspan=$colspan align=center><i>No prices found</i></td></tr>\n"
+	append price_list_html "<tr><td colspan=$colspan align=center><i>[_ intranet-trans-invoices.No_prices_found]</i></td></tr>\n"
     }
+
+    set sample_pracelist_link "<a href=/intranet-trans-invoices/price-lists/pricelist_sample.csv>[_ intranet-trans-invoices.lt_sample_pricelist_CSV_]</A>"
 
     append price_list_html "
 <tr>
   <td colspan=$colspan align=right>
-    <input type=submit name=add_new value=\"Add New\">
-    <input type=submit name=del value=\"Del\">
+    <input type=submit name=add_new value=\"[_ intranet-trans-invoices.Add_New]\">
+    <input type=submit name=del value=\"[_ intranet-trans-invoices.Del]\">
   </td>
 </tr>
 </table>
@@ -102,13 +104,11 @@ order by
 <ul>
   <li>
     <a href=/intranet-trans-invoices/upload-prices?[export_url_vars company_id return_url]>
-      Upload prices</A>
-    for this company via a CSV file.
+      [_ intranet-trans-invoices.Upload_prices]</A>
+    [_ intranet-trans-invoices.lt_for_this_company_via_]
   <li>
-    Check this 
-    <a href=/intranet-trans-invoices/price-lists/pricelist_sample.csv>
-      sample pricelist CSV file</A>.
-    It contains some comments inside.
+    [_ intranet-trans-invoices.lt_Check_this_sample_pra]
+    [_ intranet-trans-invoices.lt_It_contains_some_comm]
 </ul>\n"
     return $price_list_html
 }

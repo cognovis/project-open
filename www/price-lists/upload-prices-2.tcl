@@ -16,16 +16,16 @@ ad_page_contract {
 } 
 
 set current_user_id [ad_maybe_redirect_for_registration]
-set page_title "Upload New File/URL"
-set page_body "<PRE>\n<A HREF=$return_url>Return to Company Page</A>\n"
-set context_bar [ad_context_bar [list "/intranet/cusomers/" "Clients"] "Upload CSV"]
+set page_title "<#_ Upload New File/URL#>"
+set page_body "<PRE>\n<A HREF=$return_url><#_ Return to Company Page#></A>\n"
+set context_bar [ad_context_bar [list "/intranet/cusomers/" "<#_ Clients#>"] "<#_ Upload CSV#>"]
 
 # Get the file from the user.
 # number_of_bytes is the upper-limit
 set max_n_bytes [ad_parameter -package_id [im_package_filestorage_id] MaxNumberOfBytes "" 0]
 set tmp_filename [ns_queryget upload_file.tmpfile]
 if { $max_n_bytes && ([file size $tmp_filename] > $max_n_bytes) } {
-    ad_return_complaint 1 "Your file is larger than the maximum permissible upload size:  [util_commify_number $max_n_bytes] bytes"
+    ad_return_complaint 1 "<#_ Your file is larger than the maximum permissible upload size#>:  [util_commify_number $max_n_bytes] bytes"
     return
 }
 
@@ -36,15 +36,15 @@ if ![regexp {([^//\\]+)$} $upload_file match company_filename] {
 }
 
 if {[regexp {\.\.} $company_filename]} {
-    set error "Filename contains forbidden characters"
+    set error "<#_ Filename contains forbidden characters#>"
     ad_returnredirect "/error.tcl?[export_url_vars error]"
 }
 
 if {![file readable $tmp_filename]} {
-    set err_msg "Unable to read the file '$tmp_filename'. 
-Please check the file permissions or price your system administrator.\n"
+    set err_msg "<#_ Unable to read the file '%tmp_filename%'.#> 
+<#_ Please check the file permissions or price your system administrator.#>"
     append page_body "\n$err_msg\n"
-    doc_return  200 text/html [im_return_template]
+    ad_return_template
     return
 }
     
@@ -68,7 +68,7 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
     set csv_line [string trim [lindex $csv_files $i]]
     set csv_fields [split $csv_line ";"]
 
-    append page_body "Line #$i: $csv_line\n"
+    append page_body "<#_ Line #%i%#>: $csv_line\n"
 
     # Skip empty lines or line starting with "#"
     if {[string equal "" [string trim $csv_line]]} { continue }
@@ -169,5 +169,6 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
     }
 }
 
-append page_body "\n<A HREF=$return_url>Return to Project Page</A>\n"
-doc_return  200 text/html [im_return_template]
+append page_body "\n<A HREF=$return_url><#_ Return to Project Page#></A>\n"
+
+ad_return_template

@@ -24,7 +24,7 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 if {![im_permission $user_id add_companies]} {
-    ad_return_complaint 1 "<li>You have insufficient permissions to view this page"
+    ad_return_complaint 1 "<li>[_ intranet-trans-invoices.lt_You_have_insufficient]"
     return
 }
 
@@ -68,11 +68,11 @@ set company_id [db_string company_id "select company_id from im_companies where 
 
 if {!$company_id} {
 
-    set company_name "$first_names $last_name Company"
+    set company_name "[_ intranet-trans-invoices.lt_first_names_last_name]"
     set company_type_id [im_company_type_freelance]
     set company_status_id [im_company_status_active]
 
-    set office_name "$first_names $last_name Office"
+    set office_name "[_ intranet-trans-invoices.lt_first_names_last_name_1]"
     set office_path "${freelance_id}_freelance"
 
     set office_id [db_string office_id "select office_id from im_offices where office_path=:office_path" -default 0]

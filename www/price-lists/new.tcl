@@ -27,13 +27,13 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 if {!$user_is_admin_p} {
-    ad_return_complaint 1 "You have insufficient privileges to use this page"
+    ad_return_complaint 1 "[_ intranet-trans-invoices.lt_You_have_insufficient_1]"
     return
 }
 
 set action_url "new"
 set focus "price.var_name"
-set page_title "New Price"
+set page_title "[_ intranet-trans-invoices.New_Price]"
 set context [ad_context_bar $page_title]
 
 
@@ -84,13 +84,13 @@ ad_form \
     -form {
 	price_id:key(im_trans_prices_seq)
 	{company_id:text(hidden)}
-	{uom_id:text(select) {label "Unit of Measure"} {options $uom_options} }
-	{task_type_id:text(select),optional {label "Task Type"} {options $task_type_options} }
-	{source_language_id:text(select),optional {label "Source Language"} {options $language_options} }
-	{target_language_id:text(select),optional {label "Target Language"} {options $language_options} }
-	{subject_area_id:text(select),optional {label "Subject Area"} {options $subject_area_options} }
-	{amount:text(text) {label "Amount"} {html {size 10}}}
-	{currency:text(select) {label "Currency"} {options $currency_options} }
+	{uom_id:text(select) {label "[_ intranet-trans-invoices.Unit_of_Measure]"} {options $uom_options} }
+	{task_type_id:text(select),optional {label "[_ intranet-trans-invoices.Task_Type]"} {options $task_type_options} }
+	{source_language_id:text(select),optional {label "[_ intranet-trans-invoices.Source_Language]"} {options $language_options} }
+	{target_language_id:text(select),optional {label "[_ intranet-trans-invoices.Target_Language]"} {options $language_options} }
+	{subject_area_id:text(select),optional {label "[_ intranet-trans-invoices.Subject_Area]"} {options $subject_area_options} }
+	{amount:text(text) {label "[_ intranet-trans-invoices.Amount]"} {html {size 10}}}
+	{currency:text(select) {label "[_ intranet-trans-invoices.Currency]"} {options $currency_options} }
     }
 
 

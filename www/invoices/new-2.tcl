@@ -44,11 +44,10 @@ set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 set required_field "<font color=red size=+1><B>*</B></font>"
 
-#ToDo: restore permission check
-#if {![im_permission $user_id add_invoices]} {
- #   ad_return_complaint "Insufficient Privileges" "
-  #  <li>You don't have sufficient privileges to see this page."    
-#}
+if {![im_permission $user_id add_invoices]} {
+    ad_return_complaint "[_ intranet-trans-invoices.lt_Insufficient_Privileg]" "
+    <li>[_ intranet-trans-invoices.lt_You_dont_have_suffici]"    
+}
 
 # ---------------------------------------------------------------
 # 3. Check the consistency of the select project and get client_id
@@ -76,9 +75,9 @@ from
 "]
 
 if {$num_clients > 1} {
-        ad_return_complaint "You have selected multiple clients" "
-        <li>You have selected multiple clients.<BR>
-            Please backup and restrict the selection to the projects of a single client."
+        ad_return_complaint "[_ intranet-trans-invoices.lt_You_have_selected_mul]" "
+        <li>[_ intranet-trans-invoices.lt_You_have_selected_mul_1]<BR>
+            [_ intranet-trans-invoices.lt_Please_backup_and_res]"
 }
 
 
@@ -127,15 +126,15 @@ order by
 
 set task_table "
 <tr> 
-  <td class=rowtitle align=middle>[im_gif help "Include in Invoice"]</td>
-  <td class=rowtitle>Task Name</td>
-  <td class=rowtitle>Units</td>
-  <td class=rowtitle>Billable Units</td>
+  <td class=rowtitle align=middle>[im_gif help "[_ intranet-trans-invoices.Include_in_Invoice]"]</td>
+  <td class=rowtitle>[_ intranet-trans-invoices.Task_Name]</td>
+  <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
+  <td class=rowtitle>[_ intranet-trans-invoices.Billable_Units]</td>
   <td class=rowtitle>  
-    UoM [im_gif help "Unit of Measure"]
+    [_ intranet-trans-invoices.UoM] [im_gif help "[_ intranet-trans-invoices.Unit_of_Measure]"]
   </td>
-  <td class=rowtitle>Type</td>
-  <td class=rowtitle>Status</td>
+  <td class=rowtitle>[_ intranet-trans-invoices.Type]</td>
+  <td class=rowtitle>[_ intranet-trans-invoices.Status]</td>
 </tr>
 "
 
@@ -179,12 +178,12 @@ db_foreach select_tasks $sql {
 if {![string equal "" $task_table_rows]} {
     append task_table $task_table_rows
 } else {
-    append task_table "<tr><td colspan=$colspan align=center>No tasks found</td></tr>"
+    append task_table "<tr><td colspan=$colspan align=center>[_ intranet-trans-invoices.No_tasks_found]</td></tr>"
 }
 
 set deselect_button_html "
     <tr><td colspan=7 align=right>
-      <input type=submit name=submit value='Select Tasks for Invoicing'>
+      <input type=submit name=submit value='[_ intranet-trans-invoices.lt_Select_Tasks_for_Invo]'>
     </td></tr>
     <tr><td>&nbsp;</td></tr>
 "
@@ -209,4 +208,5 @@ set page_body "
 "
 
 db_release_unused_handles
-doc_return  200 text/html [im_return_template]
+
+ad_return_template

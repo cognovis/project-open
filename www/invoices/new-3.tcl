@@ -44,11 +44,10 @@ set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 set required_field "<font color=red size=+1><B>*</B></font>"
 
-#ToDo: restore permission check
-#if {![im_permission $user_id add_invoices]} {
-#    ad_return_complaint "Insufficient Privileges" "
-#    <li>You don't have sufficient privileges to see this page."    
-#}
+if {![im_permission $user_id add_invoices]} {
+    ad_return_complaint "[_ intranet-trans-invoices.lt_Insufficient_Privileg]" "
+    <li>[_ intranet-trans-invoices.lt_You_dont_have_suffici]"    
+}
 
 # ---------------------------------------------------------------
 # Gather invoice data
@@ -69,9 +68,9 @@ set tasks_where_clause "task_id in ([join $in_clause_list ","])"
 # Calculate the next invoice number by calculating the maximum of
 # the "reasonably build numbers" currently available
 
-set button_text "Create Invoice"
-set page_title "New Invoice"
-set context_bar [ad_context_bar [list /intranet/invoices/ "Invoices"] $page_title]
+set button_text "[_ intranet-trans-invoices.Create_Invoice]"
+set page_title "[_ intranet-trans-invoices.New_Invoice]"
+set context_bar [ad_context_bar [list /intranet/invoices/ "[_ intranet-trans-invoices.Invoices]"] $page_title]
 set invoice_id [im_new_object_id]
 set invoice_nr [im_next_invoice_nr]
 set invoice_date $todays_date
@@ -115,80 +114,80 @@ where
 # Render the "Invoice Data" and "Receipient" blocks
 # ---------------------------------------------------------------
 set invoice_data_html "
-        <tr><td align=middle class=rowtitle colspan=2>Invoice Data</td></tr>
+        <tr><td align=middle class=rowtitle colspan=2>[_ intranet-trans-invoices.Invoice_Data]</td></tr>
         <tr>
-          <td  class=rowodd>Invoice nr.:</td>
+          <td  class=rowodd>[_ intranet-trans-invoices.Invoice_nr]:</td>
           <td  class=rowodd> 
             <input type=text name=invoice_nr size=15 value='$invoice_nr'>
           </td>
         </tr>
         <tr> 
-          <td  class=roweven>Invoice date:</td>
+          <td  class=roweven>[_ intranet-trans-invoices.Invoice_date]:</td>
           <td  class=roweven> 
             <input type=text name=invoice_date size=15 value='$invoice_date'>
           </td>
         </tr>
         <tr> 
-          <td class=roweven>Payment terms</td>
+          <td class=roweven>[_ intranet-trans-invoices.Payment_terms]</td>
           <td class=roweven> 
             <input type=text name=payment_days size=5 value='$payment_days'>
             days date of invoice</td>
         </tr>
         <tr> 
-          <td class=rowodd>Type</td>
+          <td class=rowodd>[_ intranet-trans-invoices.Type]</td>
           <td class=rowodd>[im_cost_type_select cost_type_id $cost_type_id [im_cost_type_company_doc]]</td>
         </tr>
         <tr> 
-          <td class=rowodd>Payment Method</td>
+          <td class=rowodd>[_ intranet-trans-invoices.Payment_Method]</td>
           <td class=rowodd>[im_invoice_payment_method_select payment_method_id $payment_method_id]</td>
         </tr>
         <tr> 
-          <td class=roweven> Invoice template:</td>
+          <td class=roweven>[_ intranet-trans-invoices.Invoice_template]:</td>
           <td class=roweven>[im_cost_template_select template_id $template_id]</td>
         </tr>
 "
 
 set receipient_html "
-        <tr><td align=center valign=top class=rowtitle colspan=2> Recipient</td></tr>
+        <tr><td align=center valign=top class=rowtitle colspan=2>[_ intranet-trans-invoices.Recipient]</td></tr>
         <tr> 
-          <td  class=rowodd>Company name</td>
+          <td  class=rowodd>[_ intranet-trans-invoices.Company_name]</td>
           <td  class=rowodd>
             <A href=/intranet/companies/view?company_id=$company_id>$company_name</A>
           </td>
         </tr>
         <tr> 
-          <td  class=roweven>VAT</td>
+          <td  class=roweven>[_ intranet-trans-invoices.VAT]</td>
           <td  class=roweven>$vat_number</td>
         </tr>
         <tr> 
-          <td  class=rowodd> Accounting Contact</td>
+          <td  class=rowodd>[_ intranet-trans-invoices.Accounting_Contact]</td>
           <td  class=rowodd>
             <A href=/intranet/users/view?user_id=$accounting_contact_id>$company_contact_name</A>
           </td>
         </tr>
         <tr> 
-          <td  class=roweven>Adress</td>
+          <td  class=roweven>[_ intranet-trans-invoices.Adress]</td>
           <td  class=roweven>$address_line1 <br> $address_line2</td>
         </tr>
         <tr> 
-          <td  class=rowodd>Zip</td>
+          <td  class=rowodd>[_ intranet-trans-invoices.Zip]</td>
           <td  class=rowodd>$address_postal_code</td>
         </tr>
         <tr> 
-          <td  class=roweven>Country</td>
+          <td  class=roweven>[_ intranet-trans-invoices.Country]</td>
           <td  class=roweven>$country_name</td>
 
         </tr>
         <tr> 
-          <td  class=rowodd>Phone</td>
+          <td  class=rowodd>[_ intranet-trans-invoices.Phone]</td>
           <td  class=rowodd>$phone</td>
         </tr>
         <tr> 
-          <td  class=roweven>Fax</td>
+          <td  class=roweven>[_ intranet-trans-invoices.Fax]</td>
           <td  class=roweven>$fax</td>
         </tr>
         <tr> 
-          <td  class=rowodd>Email</td>
+          <td  class=rowodd>[_ intranet-trans-invoices.Email]</td>
           <td  class=rowodd>$company_contact_email</td>
         </tr>
 "
@@ -225,13 +224,13 @@ order by
 
 set task_table "
 <tr> 
-  <td class=rowtitle>Task Name</td>
-  <td class=rowtitle>Units</td>
-  <td class=rowtitle>Billable Units</td>
-  <td class=rowtitle>Target</td>
-  <td class=rowtitle>UoM [im_gif help "Unit of Measure"]</td>
-  <td class=rowtitle>Type</td>
-  <td class=rowtitle>Status</td>
+  <td class=rowtitle>[_ intranet-trans-invoices.Task_Name]</td>
+  <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
+  <td class=rowtitle>[_ intranet-trans-invoices.Billable_Units]</td>
+  <td class=rowtitle>[_ intranet-trans-invoices.Target]</td>
+  <td class=rowtitle>[_ intranet-trans-invoices.UoM] [im_gif help "[_ intranet-trans-invoices.Unit_of_Measure]"]</td>
+  <td class=rowtitle>[_ intranet-trans-invoices.Type]</td>
+  <td class=rowtitle>[_ intranet-trans-invoices.Status]</td>
 </tr>
 "
 
@@ -275,7 +274,7 @@ db_foreach select_tasks $sql {
 if {![string equal "" $task_table_rows]} {
     append task_table $task_table_rows
 } else {
-    append task_table "<tr><td colspan=$colspan align=center>No tasks found</td></tr>"
+    append task_table "<tr><td colspan=$colspan align=center>[_ intranet-trans-invoices.No_tasks_found]</td></tr>"
 }
 
 # ---------------------------------------------------------------
@@ -286,11 +285,11 @@ if {![string equal "" $task_table_rows]} {
     # start formatting the list of sums with the header...
     set task_sum_html "
         <tr align=center> 
-          <td class=rowtitle>Order</td>
-          <td class=rowtitle>Description</td>
-          <td class=rowtitle>Units</td>
-          <td class=rowtitle>UOM</td>
-          <td class=rowtitle>Rate </td>
+          <td class=rowtitle>[_ intranet-trans-invoices.Order]</td>
+          <td class=rowtitle>[_ intranet-trans-invoices.Description]</td>
+          <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
+          <td class=rowtitle>[_ intranet-trans-invoices.UOM]</td>
+          <td class=rowtitle>[_ intranet-trans-invoices.Rate]</td>
         </tr>
     "
 
@@ -299,17 +298,17 @@ if {![string equal "" $task_table_rows]} {
     #
     set price_colspan 11
     set reference_price_html "
-        <tr><td align=middle class=rowtitle colspan=$price_colspan>Reference Prices</td></tr>
+        <tr><td align=middle class=rowtitle colspan=$price_colspan>[_ intranet-trans-invoices.Reference_Prices]</td></tr>
         <tr>
-          <td class=rowtitle>Company</td>
-          <td class=rowtitle>UoM</td>
-          <td class=rowtitle>Task Type</td>
-          <td class=rowtitle>Target</td>
-          <td class=rowtitle>Source</td>
-          <td class=rowtitle>Subject Area</td>
-<!--          <td class=rowtitle>Valid From</td>	-->
-<!--          <td class=rowtitle>Valid Through</td>	-->
-          <td class=rowtitle>Price</td>
+          <td class=rowtitle>[_ intranet-trans-invoices.Company]</td>
+          <td class=rowtitle>[_ intranet-trans-invoices.UoM]</td>
+          <td class=rowtitle>[_ intranet-trans-invoices.Task_Type]</td>
+          <td class=rowtitle>[_ intranet-trans-invoices.Target]</td>
+          <td class=rowtitle>[_ intranet-trans-invoices.Source]</td>
+          <td class=rowtitle>[_ intranet-trans-invoices.Subject_Area]</td>
+<!--          <td class=rowtitle>[_ intranet-trans-invoices.Valid_From]</td>	-->
+<!--          <td class=rowtitle>[_ intranet-trans-invoices.Valid_Through]</td>	-->
+          <td class=rowtitle>[_ intranet-trans-invoices.Price]</td>
         </tr>\n"
 
 
@@ -528,7 +527,7 @@ set grand_total_html "
           <td colspan=4 align=right> 
             <table border=0 cellspacing=1 cellpadding=0>
               <tr> 
-                <td>VAT&nbsp;</td>
+                <td>[_ intranet-trans-invoices.VAT]</td>
                 <td><input type=text name=vat value='$vat' size=4> % &nbsp;</td>
               </tr>
             </table>
@@ -540,7 +539,7 @@ set grand_total_html "
           <td colspan=4 align=right> 
             <table border=0 cellspacing=1 cellpadding=0>
               <tr> 
-                <td>TAX&nbsp;</td>
+                <td>[_ intranet-trans-invoices.TAX]</td>
                 <td><input type=text name=tax value='$tax' size=4> % &nbsp;</td>
               </tr>
             </table>
@@ -615,6 +614,6 @@ append page_body "
 </table>
 "
 
-ns_log Notice "new-3: before doc_return"
 db_release_unused_handles
-doc_return  200 text/html [im_return_template]
+
+ad_return_template

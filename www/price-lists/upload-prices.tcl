@@ -15,9 +15,9 @@ ad_page_contract {
 }
 
 set user_id [ad_maybe_redirect_for_registration]
-set page_title "Upload Client Prices CSV"
+set page_title "[_ intranet-trans-invoices.lt_Upload_Client_Prices_]"
 
-set context_bar [ad_context_bar [list "/intranet/companies/" "Clients"] "Upload CSV"]
+set context_bar [ad_context_bar [list "/intranet/companies/" "[_ intranet-trans-invoices.Clients]"] "[_ intranet-trans-invoices.Upload_CSV]"]
 
 set page_content "
 <form enctype=multipart/form-data method=POST action=upload-prices-2.tcl>
@@ -27,13 +27,13 @@ set page_content "
                         <td align=right>Filename: </td>
                         <td> 
                           <input type=file name=upload_file size=30>
-[im_gif help "Use the &quot;Browse...&quot; button to locate your file, then click &quot;Open&quot;."]
+[im_gif help "[_ intranet-trans-invoices.lt_Use_the_quotBrowsequo]"]
                         </td>
                       </tr>
                       <tr> 
                         <td></td>
                         <td> 
-                          <input type=submit value=Submit and Upload>
+                          <input type=submit value=\"[_ intranet-trans-invoices.Submit_and_Upload]\">
                         </td>
                       </tr>
                     </table>
@@ -42,4 +42,4 @@ set page_content "
 
 db_release_unused_handles
 
-doc_return  200 text/html [im_return_template]
+ad_return_template

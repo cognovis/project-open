@@ -58,6 +58,6 @@ if {"" != $del} {
     return
 }
 
-ad_return_complaint 1 "<li>Unknown action for price-action."
+ad_return_complaint 1 "<li>[_ intranet-trans-invoices.lt_Unknown_action_for_pr]"
 return
 

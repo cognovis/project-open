@@ -23,8 +23,8 @@ ad_page_contract {
 # -------------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-set page_title "Generate Purchase Orders"
-set context_bar [ad_context_bar [list /intranet/projects/ "Projects"] [list "/intranet/projects/view?project_id=$project_id" "One project"] $page_title]
+set page_title "[_ intranet-trans-invoices.lt_Generate_Purchase_Ord]"
+set context_bar [ad_context_bar [list /intranet/projects/ "[_ intranet-trans-invoices.Projects]"] [list "/intranet/projects/view?project_id=$project_id" "[_ intranet-trans-invoices.One_project]"] $page_title]
 if {"" == $return_url} { set return_url "/intranet/projects/view?project_id=$project_id" }
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
@@ -144,9 +144,9 @@ db_foreach task_tasks $task_sql {
     }
     if {"" == $freelance_company_html} {
 	set freelance_company_html "
-	<i>No company found</i><br>
+	<i>[_ intranet-trans-invoices.No_company_found]</i><br>
 	<a href=/intranet-trans-invoices/companies/new-company-from-freelance?freelance_id=$freelance_id>
-	  Create a new company for this freelancer
+	  [_ intranet-trans-invoices.lt_Create_a_new_company_]
 	</a>"
     }
     set freelance_company_html "
@@ -172,14 +172,14 @@ db_foreach task_tasks $task_sql {
 	[export_form_vars freelance_id cost_type_id cost_status_id return_url]
 	<table border=0>
 	  <tr>
-	    <td class=rowtitle align=center>Task Name</td>
-	    <td class=rowtitle align=center>Source</td>
-	    <td class=rowtitle align=center>Target</td>
-	    <td class=rowtitle align=center>Status</td>
-	    <td class=rowtitle align=center>Type</td>
-	    <td class=rowtitle align=center>Units</td>
-	    <td class=rowtitle align=center>UoM</td>
-	    <td class=rowtitle align=center>Sel</td>
+	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Task_Name]</td>
+	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Source]</td>
+	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Target]</td>
+	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Status]</td>
+	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Type]</td>
+	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Units]</td>
+	    <td class=rowtitle align=center>[_ intranet-trans-invoices.UoM]</td>
+	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Sel]</td>
 	  </tr>
 	  <tr class=rowtitle>
 	    <td>
@@ -214,7 +214,7 @@ db_foreach task_tasks $task_sql {
 append task_html "
 <tr>
   <td colspan=$task_colspan align=right>
-    <input type=submit value=Submit>  
+    <input type=submit value=\"[_ intranet-trans-invoices.Submit]\">  
   </td>
 </tr>
 </table>
