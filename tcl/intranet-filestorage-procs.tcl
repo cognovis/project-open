@@ -1068,6 +1068,7 @@ ad_proc -public im_filestorage_pol_component { user_id object_id object_name bas
 	    set uplink $current_path
 	}
     }
+    ns_log Notice "/////////// current_path: $current_path //////////////////"
     append texte "</td></tr></table>\n"
 
     append texte [im_filestorage_tools_bar $bread_crum_path $folder_type $object_id $return_url $up_link]
@@ -1118,8 +1119,7 @@ where
 	#ex (/home - /cluster - /Data - /Internal- /INT-ADM-KNOWMG - /file.dat)
 	ns_log Notice "****************** New File ***********************"
 	set file_paths [split $file "/"]
-	set current_depth [expr [llength $file_paths] - 1] 
-
+	set current_depth [expr [llength $file_paths] - 1]
 	# store the name of the file ("file.dat")
 	set file_body [lindex $file_paths $current_depth]
 	ns_log Notice "--- current_depth: $current_depth"
@@ -1135,17 +1135,21 @@ where
 	# This is the core of the algorithm:
 	# Check if we're below last_parent_depth.
 	# In this case we depend on our parents open_p status
+        ns_log Notice "--- last_parent_path: $last_parent_path"
+
+	set current_path $file
 	if {$current_depth > $last_parent_path_depth} {
 	    if { ![info exists open_p_hash($file)] && [string compare $file_type "directory"] == 0 } {
 		# Treat a missing element in the hash (from the DB!) as closed...
-		ns_log Notice "--- file: $file"
+		ns_log Notice "--- file A: $file"
 		ns_log Notice "--- visible_p = c"
 		set visible_p "c"
 	    } else {
-		 ns_log Notice "--- file: $file"
+		 ns_log Notice "--- file B: $file"
 		 ns_log Notice "visible_p = $open_p_hash($last_parent_path)"
 		set visible_p $open_p_hash($last_parent_path)
 	    }
+
 	} else {
 	    # We are on the same level as last_parent
 	    # => This line becomes the last_parent!!!
@@ -1153,7 +1157,7 @@ where
 	    #    but that's only for its _childs_.
 	    set last_parent_path $current_path
 	    set last_parent_path_depth $current_depth
-	    ns_log Notice "file: $file"
+	    ns_log Notice "file C: $file"
 	    ns_log Notice "visible_p = o"
 	    set visible_p "o"
 	}
