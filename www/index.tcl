@@ -12,7 +12,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
     @creation-date Nov 2003
 } {
-    bread_crum_path: optional
+    bread_crum_path:optional
 }
 
 if { ![info_exists bread_crum_path] } {
