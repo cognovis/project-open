@@ -1,8 +1,8 @@
+-- Search Observer Package
 --
--- Search Observer
---
+-- @cvs-id $Id: search-packages-create.sql,v 1.6 2004/05/14 10:17:35 jeffd Exp $ 
 
-create function search_observer__enqueue(integer,varchar)
+create or replace function search_observer__enqueue(integer,varchar)
 returns integer as '
 declare
     p_object_id			alias for $1;
@@ -20,8 +20,9 @@ begin
 
 end;' language 'plpgsql';
 
+select define_function_args('search_observer__enqueue','object_id,event');
 
-create function search_observer__dequeue(integer,timestamptz,varchar)
+create or replace function search_observer__dequeue(integer,timestamptz,varchar)
 returns integer as '
 declare
     p_object_id                 alias for $1;
@@ -37,3 +38,6 @@ begin
     return 0;
 
 end;' language 'plpgsql';
+
+select define_function_args('search_observer__dequeue','object_id,event_date,event');
+
