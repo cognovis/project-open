@@ -8,7 +8,7 @@
 ad_page_contract {
     /intranet/customers/upload-prices-2.tcl
     Read a .csv-file with header titles exactly matching
-    the data model and insert the data into im_prices
+    the data model and insert the data into im_trans_prices
 } {
     return_url
     customer_id:integer
@@ -62,13 +62,18 @@ set header_len [llength $header_csv_fields]
 append page_body "Title-Length=$header_len\n"
 append page_body "\n\n"
 
-db_dml delete_old_prices "delete from im_prices where customer_id=:customer_id"
+db_dml delete_old_prices "delete from im_trans_prices where customer_id=:customer_id"
 
 for {set i 1} {$i < $csv_files_len} {incr i} {
     set csv_line [string trim [lindex $csv_files $i]]
     set csv_fields [split $csv_line ";"]
 
-    append page_body "$csv_line\n"
+    append page_body "Line #$i: $csv_line\n"
+
+    # Skip empty lines or line starting with "#"
+    if {[string equal "" [string trim $csv_line]]} { continue }
+    if {[string equal "#" [string range $csv_line 0 0]]} { continue }
+
 
     # Preset values, defined by CSV sheet:
     set uom ""
@@ -96,7 +101,7 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
 	} err_msg] } {
 	    append page_body \n<font color=red>$err_msg</font>\n";
         }
-	append page_body "set $var_name '$var_value' : $result\n"
+#	append page_body "set $var_name '$var_value' : $result\n"
     }
 
     set uom_id ""
@@ -112,7 +117,7 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
     }
 
     if {![string equal "" $customer]} {
-         set price_customer_id [db_string get_customer_id "select group_id from user_groups where short_name=:customer" -default 0]
+         set price_customer_id [db_string get_customer_id "select customer_id from im_customers where customer_path = :customer" -default 0]
          if {$price_customer_id == 0} { append errmsg "<li>Didn't find Customer '$customer'\n" }
          if {$price_customer_id != $customer_id} { append errmsg "<li>Uploading prices for the wrong customer ('$price_customer_id' instead of '$customer_id')" }
     }
@@ -122,33 +127,33 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
         if {$task_type_id == 0} { append errmsg "<li>Didn't find Task Type '$task_type'\n" }
     }
 
-#    set source_language_id [db_string get_uom_id "select category_id from im_categories where category_type='SLS Language' and category=:source_language"  -default 0]
-#    set target_language_id [db_string get_uom_id "select category_id from im_categories where category_type='SLS Language' and category=:target_language"  -default 0]
-#    set subject_area_id [db_string get_uom_id "select category_id from im_categories where category_type='SLS Subject Area' and category=:subject_area"  -default 0]
+    set source_language_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Translation Language' and category=:source_language"  -default ""]
 
-#    if {$target_language_id == 0} { append errmsg "<li>Didn't find Target Language '$target_language'\n" }
-#    if {$source_language_id == 0} { append errmsg "<li>Didn't find Source Language '$source_language'\n" }
+    set target_language_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Translation Language' and category=:target_language"  -default ""]
 
+    set subject_area_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Translation Subject Area' and category=:subject_area"  -default ""]
+
+    # It doesn't matter whether prices are given in European "," or American "." decimals
     regsub {,} $price {.} price
 
-    append page_body "\n"
-    append page_body "uom_id=$uom_id\n"
-    append page_body "customer_id=$customer_id\n"
-    append page_body "task_type_id=$task_type_id\n"
-    append page_body "source_language_id=$source_language_id\n"
-    append page_body "target_language_id=$target_language_id\n"
-    append page_body "subject_area_id=$subject_area_id\n"
-    append page_body "valid_from=$valid_from\n"
-    append page_body "valid_through=$valid_through\n"
-    append page_body "price=$price\n"
-    append page_body "currency=$currency\n"
+#    append page_body "\n"
+#    append page_body "uom_id=$uom_id\n"
+#    append page_body "customer_id=$customer_id\n"
+#    append page_body "task_type_id=$task_type_id\n"
+#    append page_body "source_language_id=$source_language_id\n"
+#    append page_body "target_language_id=$target_language_id\n"
+#    append page_body "subject_area_id=$subject_area_id\n"
+#    append page_body "valid_from=$valid_from\n"
+#    append page_body "valid_through=$valid_through\n"
+#    append page_body "price=$price\n"
+#    append page_body "currency=$currency\n"
 
-    set insert_price_sql "INSERT INTO im_prices (
+    set insert_price_sql "INSERT INTO im_trans_prices (
        price_id, uom_id, customer_id, task_type_id,
        target_language_id, source_language_id, subject_area_id,
        valid_from, valid_through, currency, price
     ) VALUES (
-       im_prices_seq.nextval, :uom_id, :customer_id, :task_type_id,
+       im_trans_prices_seq.nextval, :uom_id, :customer_id, :task_type_id,
        :target_language_id, :source_language_id, :subject_area_id,
        :valid_from, :valid_through, :currency, :price
     )"
@@ -160,7 +165,7 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
 	    append page_body \n<font color=red>$err_msg</font>\n";
         }
     } else {
-	append page_body $errmsg
+	append page_body "<font color=red>$errmsg</font>"
     }
 }
 
