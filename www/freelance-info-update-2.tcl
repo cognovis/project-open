@@ -12,6 +12,11 @@ ad_page_contract {
     @frank.bergann@project-open.com
 } {
     user_id:integer,notnull
+    { rec_source "" }
+    { rec_status_id "" }
+    { rec_test_type "" }
+    { rec_test_result_id "" }
+
     { translation_rate "" }
     { editing_rate "" }
     { hourly_rate "" }
@@ -60,6 +65,10 @@ db_dml sql "
 UPDATE
 	im_freelancers
 SET
+	rec_source = :rec_source,
+	rec_status_id = :rec_status_id,
+	rec_test_type = :rec_test_type,
+	rec_test_result_id = :rec_test_result_id,
     	translation_rate = :translation_rate,
     	editing_rate = :editing_rate,
     	hourly_rate = :hourly_rate,

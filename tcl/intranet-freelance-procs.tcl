@@ -15,6 +15,23 @@ ad_library {
     @author frank.bergmann@project-open.com
 }
 
+# ----------------------------------------------------------------------
+# Constant functions
+# ----------------------------------------------------------------------
+
+ad_proc -public im_freelance_recruiting_status_potential {} { return 6000 }
+ad_proc -public im_freelance_recruiting_status_test_sent {} { return 6002 }
+ad_proc -public im_freelance_recruiting_status_test_received {} { return 6004 }
+ad_proc -public im_freelance_recruiting_status_rest_evaluated {} { return 6006 }
+
+ad_proc -public im_freelance_recruiting_test_result_a {} { return 6100 }
+ad_proc -public im_freelance_recruiting_status_result_b {} { return 6102 }
+ad_proc -public im_freelance_recruiting_status_result_c {} { return 6104 }
+
+
+# ----------------------------------------------------------------------
+# Permissions
+# ----------------------------------------------------------------------
 
 ad_proc -public im_freelance_permissions { current_user_id user_id view_var read_var write_var admin_var } {
     Fill the "by-reference" variables read, write and admin
@@ -243,8 +260,13 @@ ad_proc im_freelance_info_component { current_user_id user_id return_url freelan
     set admin 0
     
     set user $user_id
-
     im_user_permissions $current_user_id $user_id view read write admin
+
+    set freelance_member_p [db_string freelance_member "select count(1) from group_distinct_member_map where member_id=:user_id and group_id = [im_freelance_group_id]"]
+    if {!$freelance_member_p} {
+	# This is not a freelancer - skip showing the component
+	return ""
+    }
 
     set td_class(0) "class=roweven"
     set td_class(1) "class=rowodd"
@@ -257,7 +279,9 @@ ad_proc im_freelance_info_component { current_user_id user_id return_url freelan
 		p.email,
 		f.*,
 		u.user_id,
-		im_category_from_id (f.payment_method_id) as payment_method
+		im_category_from_id (f.payment_method_id) as payment_method,
+		im_category_from_id (f.rec_status_id) as rec_status,
+		im_category_from_id (f.rec_test_result_id) as rec_test_result
 	from	users u,
 		im_freelancers f,
 		parties p,

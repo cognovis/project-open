@@ -63,9 +63,20 @@ set context_bar [ad_context_bar [list /intranet/users/ "Users"] $page_title]
 # Making body table
 # ---------------------------------------------------------------
 
+
+
+set recr_html "
+<table cellpadding=0 cellspacing=2 border=0>
+<tr><td colspan=2 class=rowtitle align=center>Recruiting Information</td></tr>
+<tr><td>Recruting Source</td><td><input type=text name=rec_source value=$rec_source></td></tr>
+<tr><td>Recruiting Status</td><td>[im_category_select "Intranet Recruiting Status" rec_status_id $rec_status_id]</td></tr>
+<tr><td>Recruiting Test Type</td><td><input type=text name=rec_test_type value=$rec_test_type></td></tr>
+<tr><td>Recruiting Test Result</td><td>[im_category_select "Intranet Recruiting Test Result" rec_test_result_id $rec_test_result_id]</td></tr>
+</table><br>
+"
+
+
 set rates_html "
-<form action=freelance-info-update-2 method=POST>
-[export_form_vars user_id]
 <table cellpadding=0 cellspacing=2 border=0>
 <tr><td colspan=2 class=rowtitle align=center>Rates Information</td></tr>
 <tr><td>Translation rate</td><td><input type=text name=translation_rate value=$translation_rate></td></tr>
@@ -87,12 +98,16 @@ if { $admin } {
 
 append rates_html "
 </table>
+"
+
+set page_body "
+<form action=freelance-info-update-2 method=POST>
+[export_form_vars user_id]
+$recr_html
+$rates_html
 <center>
 <input type=submit name=submit value=Submit>
 </center>
 </form>
-"
-set page_body "
-$rates_html
 "
 doc_return  200 text/html [im_return_template]

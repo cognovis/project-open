@@ -15,19 +15,26 @@ BEGIN
     im_menu.del_module(module_name => 'intranet-freelance');
 END;
 /
-show errors
-
-
 
 BEGIN
     im_component_plugin.del_module(module_name => 'intranet-freelance');
 END;
 /
-show errors
-
 commit;
 
 
+-----------------------------------------------------------
+-- Menu Modifications
+--
+-- Modify the menu back to the original "Users" / "Freelancers" 
+-- entry
+update im_menus
+set url='/intranet/users/index?user_group_name=Freelancers'
+where label='users_freelancers';
+
+
+-----------------------------------------------------------
+-- Delete Views
 
 -- 'user_view_freelance'
 delete from im_view_columns where column_id >= 5100 and column_id < 5199;
