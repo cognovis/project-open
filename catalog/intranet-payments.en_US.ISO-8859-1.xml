@@ -8,6 +8,7 @@
   <msg key="Amount_Paid">Amount Paid</msg>
   <msg key="Client">Client</msg>
   <msg key="Cost_Name">Cost Name</msg>
+  <msg key="Cost_Nr">Cost Nr</msg>
   <msg key="Del">Del</msg>
   <msg key="Delete_payment">Delete payment</msg>
   <msg key="Edit_payment">Edit payment</msg>
@@ -26,11 +27,13 @@
   <msg key="Next_Page">Next Page</msg>
   <msg key="Note">Note</msg>
   <msg key="One_project">One project</msg>
+  <msg key="Payment">Payment</msg>
   <msg key="Payment_Details">Payment Details</msg>
   <msg key="Payment_Status">Payment Status:</msg>
   <msg key="Payment_Type">Payment Type</msg>
   <msg key="Payments">Payments</msg>
   <msg key="Projects">Projects</msg>
+  <msg key="Provider">Provider</msg>
   <msg key="Received">Received</msg>
   <msg key="Start_block_error">Start block error</msg>
   <msg key="Status">Status</msg>

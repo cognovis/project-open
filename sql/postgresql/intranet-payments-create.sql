@@ -134,6 +134,7 @@ begin
 	       old.last_modifying_user,
 	       old.modified_ip_address
 	);
+	return new;
 end;' language 'plpgsql';
 
 create trigger im_payments_audit_tr

@@ -57,12 +57,14 @@ if {"" == $cost_id } {
 # set note [db_nullify_empty_string $note]
 
 set company_id [db_string get_company_from_invoice "select customer_id from im_costs where cost_id=:cost_id" -default 0]
-set provider_id [db_string get_provider_from_invoice "select provider_id from im_costs where cost_id=:cost_id" -default 0]
 
+set provider_id [db_string get_provider_from_invoice "select provider_id from im_costs where cost_id=:cost_id" -default 0]
+ns_log notice "****************** provider_id $provider_id ***********************"
 # ---------------------------------------------------------------
 # Insert data into the DB
 # ---------------------------------------------------------------
-
+set last_modified_date [db_string "get current date" "select sysdate from dual"]
+set modified_ip_address [ns_conn peeraddr]
 db_dml payment_update "
 update
 	im_payments 
@@ -73,14 +75,15 @@ set
 	received_date =		:received_date,
 	payment_type_id = 	:payment_type_id,
 	note =			:note,
-	last_modified		= sysdate,
+        last_modified =         :last_modified_date,
 	last_modifying_user = 	:user_id,
-	modified_ip_address = 	'[ns_conn peeraddr]'
+	modified_ip_address = 	:modified_ip_address
 where
 	payment_id = :payment_id" 
 
 
 if {[db_resultrows] == 0} {
+    
     db_dml new_payment_insert "
 insert into im_payments ( 
 	payment_id, 
@@ -105,7 +108,7 @@ insert into im_payments (
 	:received_date,
 	:payment_type_id,
         :note, 
-	sysdate, 
+	(select sysdate from dual), 
 	:user_id, 
 	'[ns_conn peeraddr]' 
 )" 
