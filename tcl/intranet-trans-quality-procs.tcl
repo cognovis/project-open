@@ -66,7 +66,28 @@ ad_proc -public im_transq_error_percentage { expected_quality_id } {
     return $allowed_error_percentage
 }
 
-
+ad_proc -public im_transq_rel_quality { allowed_error_percentage  sample_size  total_errors } {
+    Returns -4 to +4 on a logaritmic scale.
+    <li>0 means that the translation meets the allowed error points
+    <li>-1 means that the translation has twice as many errors as allowed
+    <li>+1 means that the translation has half the number of errors
+} {
+    # How many errors should have been in the translation?
+    set allowed_errors [expr $allowed_error_percentage * $sample_size / 100]
+    if {0 == $allowed_errors} { set allowed_errors "0.001" }
+    
+    set dif [expr log($allowed_errors / $total_errors) / log(2)]
+    
+    if { $dif <= -3.5 } { return -4 }
+    if { $dif <= -2.5 && $dif > -3.5 } { return -3 }
+    if { $dif <= -1.5 && $dif > -2.5 } { return -2 }
+    if { $dif <= -0.5 && $dif > -1.5 } { return -1 }
+    if { $dif < 0.5 && $dif > -0.5 } { return 0 }
+    if { $dif >= 0.5 && $dif < 1.5 } { return 1 }
+    if { $dif >= 1.5 && $dif < 2.5 } { return 2 }
+    if { $dif >= 2.5 && $dif < 3.5} { return 3 }
+    if { $dif >= 3.5} { return 4 }
+}
 
 # ----------------------------------------------------------------------
 # Components
@@ -88,12 +109,14 @@ ad_proc im_quality_project_component {
     "
 
     if {0 == $n_reports} {
-	set result "<ul><li>no quality reports has been in this project</li>"
+	set result "<ul><li>No quality reports for this project</li>"
     } else {
 	set result "[im_quality_histogram -project_id $project_id]<ul>"
     }
     
-    append result "<li><a href=/intranet-trans-quality/new?[export_url_vars project_id]>Add a Quality Report for this Project</a></ul>"
+    append result "<li><a href=/intranet-trans-quality/list?[export_url_vars project_id]>See all reports for this project</a>\n"
+    append result "<li><a href=/intranet-trans-quality/new?[export_url_vars project_id]>Add a Quality Report for this Project</a>\n"
+    append result "</ul>\n"
     return $result
 }
 
@@ -302,22 +325,20 @@ where
     set percentage [list]
 
     db_foreach tasks_query $sql_tasks_query {
-
-	# How many errors should have been in the translation?
-	set allowed_errors [expr $allowed_error_percentage * $sample_size / 100]
-	if {0 == $allowed_errors} { set allowed_errors "0.001" }
-
-	set dif [expr log($allowed_errors / $total_errors) / log(2)]
-
-	if { $dif <= -3.5 } { incr n4 }
-	if { $dif <= -2.5 && $dif > -3.5 } { incr n3 }
-	if { $dif <= -1.5 && $dif > -2.5 } { incr n2 }
-	if { $dif <= -0.5 && $dif > -1.5 } { incr n1 }
-	if { $dif < 0.5 && $dif > -0.5 } { incr p0 }
-	if { $dif >= 0.5 && $dif < 1.5 } { incr p1 }
-	if { $dif >= 1.5 && $dif < 2.5 } { incr p2 }
-	if { $dif >= 2.5 && $dif < 3.5} { incr p3 }
-	if { $dif >= 3.5} { incr p4 }
+	# -4 to +4 on a logaritmic scale.
+	# 0 means it's meeting the allowed error points
+	set rel_quality [im_transq_rel_quality $allowed_error_percentage $sample_size $total_errors]
+	switch $rel_quality {
+	    -4 { incr n4 }
+	    -3 { incr n3 }
+	    -2 { incr n2 }
+	    -1 { incr n1 }
+	    0 { incr p0}
+	    1 { incr p1}
+	    2 { incr p2}
+	    3 { incr p3}
+	    4 { incr p4}
+	}
     }
     set sum [expr $n4 + $n3 + $n2 + $n1 + $p0 + $p1 + $p2 + $p3 + $p4]
     set height 94
@@ -328,47 +349,47 @@ where
 <TABLE BORDER=0 CELLPADDING=0 CELLSPACING=0 BGCOLOR=#FFFFFF>
   <tr valign=bottom>
     <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=n4>
+      <a href=$quality_list_page_url?$url_append&quality_group=-4>
 	[im_transq_gif barra $width [expr [expr $n4 * $height] / $sum] "There are $n4 report(s) in this quality class"]
       </a>
     </td>
     <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=n3>
+      <a href=$quality_list_page_url?$url_append&quality_group=-3>
 	[im_transq_gif barra $width [expr [expr $n3 * $height] / $sum] "There are $n3 report(s) in this quality class"]
       </a>
     </td>
     <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=n2>
+      <a href=$quality_list_page_url?$url_append&quality_group=-2>
 	[im_transq_gif barra $width [expr [expr $n2 * $height] / $sum] "There are $n2 report(s) in this quality class"]
       </a>
     </td>
     <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=n1>
+      <a href=$quality_list_page_url?$url_append&quality_group=-1>
 	[im_transq_gif barra $width [expr [expr $n1 * $height] / $sum] "There are $n1 report(s) in this quality class"]
       </a>
     </td>
     <td background=/intranet-trans-quality/images/fondo-central.gif WIDTH=$width HEIGHT=$height>
-      <a href=$quality_list_page_url?$url_append&quality_group=p0>
+      <a href=$quality_list_page_url?$url_append&quality_group=0>
 	[im_transq_gif barra-central $width [expr [expr $p0 * $height] / $sum] "There are $p0 report(s) in this quality class"]      
       </a>
     </td>
     <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=p1>
+      <a href=$quality_list_page_url?$url_append&quality_group=1>
 	[im_transq_gif barra $width [expr [expr $p1 * $height] / $sum] "There are $p1 report(s) in this quality class"]
       </a>
     </td>
     <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=p2>
+      <a href=$quality_list_page_url?$url_append&quality_group=2>
 	[im_transq_gif barra $width [expr [expr $p2 * $height] / $sum] "There are $p2 report(s) in this quality class"]
       </a>
     </td>
     <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=p3>
+      <a href=$quality_list_page_url?$url_append&quality_group=3>
 	[im_transq_gif barra $width [expr [expr $p3 * $height] / $sum] "There are $p3 report(s) in this quality class"]
       </a>
     </td>
     <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=p4>
+      <a href=$quality_list_page_url?$url_append&quality_group=4>
 	[im_transq_gif barra $width [expr [expr $p4 * $height] / $sum] "There are $p4 report(s) in this quality class"]
       </a>
     </td>
@@ -406,6 +427,7 @@ ad_proc -public im_quality_list_component {
     {-how_many "" }
     {-start_idx 0 }
     {-view_name "transq_task_list" }
+    {-quality_group ""}
     {-return_url "" }
 } {
     Shows a list of quality reports according to the filters
@@ -609,6 +631,14 @@ ad_proc -public im_quality_list_component {
     set idx $start_idx
     db_foreach quality_list $sql {
 	
+	# -4 to +4 on a logaritmic scale.
+	# 0 means it's meeting the allowed error points
+	set rel_quality [im_transq_rel_quality $allowed_error_percentage $sample_size $total_errors]
+
+	if {"" != $quality_group} {
+	    if {$rel_quality != $quality_group} { continue }
+	}
+
 	# Append together a line of data based on the "column_vars" parameter list
 	append table_body_html "<tr$bgcolor([expr $ctr % 2])>\n"
 	foreach column_var $column_vars {
@@ -690,7 +720,7 @@ ad_proc -public im_quality_list_component {
     "
 
     return "
-	  <table width=100% cellpadding=2 cellspacing=2 border=0>
+	  <table cellpadding=2 cellspacing=2 border=0>
 	    $table_header_html
 	    $table_body_html
 	    $table_continuation_html
