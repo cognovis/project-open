@@ -363,7 +363,7 @@ declare
         v_employees     	integer;
         v_accounting    	integer;
         v_senman                integer;
-        v_customers     	integer;
+        v_companies     	integer;
         v_freelancers   	integer;
         v_proman                integer;
         v_admins                integer;
@@ -373,7 +373,7 @@ begin
     select group_id into v_proman from groups where group_name = 'Project Managers';
     select group_id into v_accounting from groups where group_name = 'Accounting';
     select group_id into v_employees from groups where group_name = 'Employees';
-    select group_id into v_customers from groups where group_name = 'Customers';
+    select group_id into v_companies from groups where group_name = 'Companies';
     select group_id into v_freelancers from groups where group_name = 'Freelancers';
 
     select menu_id
@@ -385,7 +385,7 @@ begin
 	package_name =>	'intranet-hr',
 	name =>		'Org Chart',
 	label =>	'users_org_chart',
-	url =>		'/intranet-hr/org-chart?customer_id=0',
+	url =>		'/intranet-hr/org-chart?company_id=0',
 	sort_order =>	5,
 	parent_menu_id => v_user_menu
     );
