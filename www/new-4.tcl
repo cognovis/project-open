@@ -82,6 +82,7 @@ set tasks_where_clause "task_id in ([join $in_clause_list ","])"
     # Creating a new new invoice we have to:
     # - Mark im_trans_task and im_invoicable_items with the new invoice_id
 
+
     # Let's create the new invoice first
     set create_invoice_sql "
 DECLARE
@@ -184,13 +185,37 @@ END;
     }
 
 
-    db_transaction {
-	db_dml create_invoice $create_invoice_sql
-	db_dml update_trans_tasks $update_trans_tasks_sql
-	db_dml associate_projects $associate_projects_sql
-	db_dml update_project_to_invoiced $update_project_to_invoiced_sql
+    set invoice_nrs [db_string invoice_nrs "select count(*) from im_invoices where invoice_nr=:invoice_nr"]
+    set invoice_ids [db_string invoice_nrs "select count(*) from im_invoices where invoice_id=:invoice_id"]
+    if {$invoice_nrs} {
+	ad_return_complaint 1 "<li>Duplicate Invoice Number:<br>
+	There already exists an invoice with the same invoice number. 
+	Maybe you have double-clicked the submit button on the last
+	page or somebody else is trying to invoice the same projects."
+	return
+    }
+    if {$invoice_ids} {
+	ad_return_complaint 1 "<li>Duplicate Invoice ID:<br>
+        There already exists an invoice with the same invoice ID. 
+	Maybe you have double-clicked the submit button on the last
+	page or somebody else is trying to invoice the same projects."
+	return
     }
 
+
+    if { [catch {
+        db_transaction {
+	    db_dml create_invoice $create_invoice_sql
+	    db_dml update_trans_tasks $update_trans_tasks_sql
+	    db_dml associate_projects $associate_projects_sql
+	    db_dml update_project_to_invoiced $update_project_to_invoiced_sql
+        }
+    } err_msg] } {
+	ad_return_complaint 1 "<li>Database error while inserting invoice:<br>
+        There has been a error in the database creating a new invoices:<br>
+        <pre>$errmsg</pre>"
+        return
+    }
 
 # ---------------------------------------------------------------
 # Update the im_invoice_items
