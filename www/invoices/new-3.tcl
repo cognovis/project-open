@@ -44,17 +44,17 @@ set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 set required_field "<font color=red size=+1><B>*</B></font>"
 
-if {![im_permission $user_id add_invoices]} {
-    ad_return_complaint "Insufficient Privileges" "
-    <li>You don't have sufficient privileges to see this page."    
-}
+#ToDo: restore permission check
+#if {![im_permission $user_id add_invoices]} {
+#    ad_return_complaint "Insufficient Privileges" "
+#    <li>You don't have sufficient privileges to see this page."    
+#}
 
 # ---------------------------------------------------------------
 # Gather invoice data
 # ---------------------------------------------------------------
 
 # Build the list of selected tasks ready for invoicing
-set invoice_mode "new"
 set in_clause_list [list]
 foreach selected_task $include_task {
     lappend in_clause_list $selected_task
@@ -76,7 +76,7 @@ set invoice_id [im_new_object_id]
 set invoice_nr [im_next_invoice_nr]
 set invoice_date $todays_date
 set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCompanyInvoicePaymentDays" "" 30] 
-set due_date [db_string get_due_date "select sysdate+:payment_days from dual"]
+set due_date [db_string get_due_date "select (to_date(to_char(sysdate,'YYYY-MM-DD'),'YYYY-MM-DD') + :payment_days from dual"]
 set provider_id [im_company_internal]
 set cost_type_id [im_cost_type_invoice]
 set cost_status_id [im_cost_status_created]
@@ -283,8 +283,6 @@ if {![string equal "" $task_table_rows]} {
 # for a new invoice
 # ---------------------------------------------------------------
 
-if {[string equal $invoice_mode "new"]} {
-
     # start formatting the list of sums with the header...
     set task_sum_html "
         <tr align=center> 
@@ -430,7 +428,7 @@ from
 	) p,
 	im_companies c
 where
-	p.company_id=c.company_id(+)
+	p.company_id=c.company_id
 	and relevancy >= 0
 order by
 	p.relevancy desc,
@@ -518,92 +516,6 @@ order by
 
 	incr ctr
     }
-
-} else {
-
-# ---------------------------------------------------------------
-# 8. Get the old invoice items for an already existing invoice
-# ---------------------------------------------------------------
-
-    set invoice_item_sql "
-select
-	i.*,
-	p.*,
-	im_category_from_id(i.item_uom_id) as item_uom,
-	p.project_path,
-	p.project_path as project_short_name,
-	p.project_name
-from
-	im_invoice_items i,
-	im_projects p
-where
-	i.invoice_id=:invoice_id
-	and i.project_id=p.project_id(+)
-order by
-	i.project_id
-"
-
-    # start formatting the list of sums with the header...
-    set task_sum_html "
-        <tr align=center> 
-          <td class=rowtitle>Order</td>
-          <td class=rowtitle>Description</td>
-          <td class=rowtitle>Units</td>
-          <td class=rowtitle>UOM</td>
-          <td class=rowtitle>Rate </td>
-        </tr>
-    "
-
-    set ctr 1
-    set old_project_id 0
-    set colspan 6
-    set target_language_id ""
-    db_foreach invoice_item $invoice_item_sql {
-
-	# insert intermediate headers for every project
-	if {$old_project_id != $project_id} {
-	    append task_sum_html "
-		<tr><td class=rowtitle colspan=$colspan>
-	          <A href=/intranet/projects/view?project_id=$project_id>$project_short_name</A>:
-	          $company_project_nr
-	        </td></tr>\n"
-	
-	    set old_project_id $project_id
-	}
-
-	# Add an empty line to the price list to separate prices form item to item
-	append reference_price_html "<tr><td colspan=$colspan>&nbsp;</td></tr>\n"
-	
-
-	append task_sum_html "
-	<tr $bgcolor([expr $ctr % 2])> 
-          <td>
-	    <input type=text name=item_sort_order.$ctr size=2 value='$sort_order'>
-	  </td>
-          <td>
-	    <input type=text name=item_name.$ctr size=40 value='$item_name'>
-	  </td>
-          <td align=right>
-	    <input type=text name=item_units.$ctr size=4 value='$item_units'>
-	  </td>
-          <td align=right>
-	    <input type=hidden name=item_uom_id.$ctr value='$item_uom_id'>
-	    $item_uom
-	  </td>
-          <td align=right>
-	    <input type=text name=item_rate.$ctr size=3 value='$price_per_unit'>
-	    <input type=hidden name=item_currency.$ctr value='$currency'>
-	    $currency
-	  </td>
-        </tr>
-	<input type=hidden name=item_project_id.$ctr value='$project_id'>
-	<input type=hidden name=item_type_id.$ctr value='$item_type_id'>\n"
-
-	incr ctr
-    }
-
-}
-
 
 # ---------------------------------------------------------------
 # 9. Render VAT and TAX

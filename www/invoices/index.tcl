@@ -178,7 +178,7 @@ if { ![empty_string_p $where_clause] } {
 set sql "
 select
         i.*,
-	i.invoice_date + i.payment_days as due_date_calculated,
+        (to_date(to_char(i.invoice_date,'YYYY-MM-DD'),'YYYY-MM-DD') + i.payment_days) as due_date_calculated,
 	ii.invoice_amount,
 	to_char(ii.invoice_amount,:cur_format) as invoice_amount_formatted,
 	ii.invoice_currency,
@@ -189,7 +189,7 @@ select
         c.group_name as company_name,
         c.short_name as company_short_name,
         im_category_from_id(i.cost_status_id) as cost_status,
-	sysdate - (i.invoice_date + i.payment_days) as overdue
+        sysdate - (to_date(to_char(i.invoice_date, 'YYYY-MM-DD'),'YYYY-MM-DD') + i.payment_days) as overdue
 from
         im_invoices_active i,
         users u,

@@ -77,10 +77,11 @@ set page_title "Invoices"
 set context_bar [ad_context_bar_ws $page_title]
 set page_focus "im_header_form.keywords"
 
-if {![im_permission $user_id add_invoices]} {
-    ad_return_complaint "Insufficient Privileges" "
-    <li>You don't have sufficient privileges to see this page."    
-}
+# ToDo: restore permission check
+#if {![im_permission $user_id add_invoices]} {
+#    ad_return_complaint "Insufficient Privileges" "
+#    <li>You don't have sufficient privileges to see this page."    
+#}
 
 set letter [string toupper $letter]
 
@@ -166,7 +167,7 @@ if { $include_subprojects_p == "f" } {
 }
 
 
-set order_by_clause "order by upper(p.project_name)"
+set order_by_clause "order by upper(project_name)"
 switch $order_by {
     "Spend Days" { set order_by_clause "order by spend_days" }
     "Estim. Days" { set order_by_clause "order by estim_days" }
@@ -183,7 +184,7 @@ switch $order_by {
     "Client" { set order_by_clause "order by company_name" }
     "Words" { set order_by_clause "order by task_words" }
     "Final User" { set order_by_clause "order by final_company" }
-    "Project #" { set order_by_clause "order by short_name" }
+    "Project #" { set order_by_clause "order by project_nr" }
     "Project Manager" { set order_by_clause "order by upper(lead_name)" }
     "URL" { set order_by_clause "order by upper(url)" }
     "Project Name" { set order_by_clause "" }

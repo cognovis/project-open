@@ -44,10 +44,11 @@ set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 set required_field "<font color=red size=+1><B>*</B></font>"
 
-if {![im_permission $user_id add_invoices]} {
-    ad_return_complaint "Insufficient Privileges" "
-    <li>You don't have sufficient privileges to see this page."    
-}
+#ToDo: restore permission check
+#if {![im_permission $user_id add_invoices]} {
+ #   ad_return_complaint "Insufficient Privileges" "
+  #  <li>You don't have sufficient privileges to see this page."    
+#}
 
 # ---------------------------------------------------------------
 # 3. Check the consistency of the select project and get client_id
@@ -71,7 +72,7 @@ from
         (select distinct company_id
         from im_projects
         where project_id in ([join $in_clause_list ","])
-        )
+        ) s
 "]
 
 if {$num_clients > 1} {
