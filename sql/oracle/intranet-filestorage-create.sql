@@ -48,7 +48,7 @@ begin
 
 	package_name =>	'intranet-filestorage',
         page_url =>     '/intranet/index',
-        bay_name =>     'bottom',
+        location =>     'bottom',
         sort_order =>   90,
         component_tcl => 
 
@@ -67,7 +67,7 @@ begin
 
 	package_name =>	'intranet-filestorage',
         page_url =>     '/intranet/users/view',
-        bay_name =>     'bottom',
+        location =>     'bottom',
         sort_order =>   90,
         component_tcl => 
 
@@ -88,7 +88,7 @@ begin
 
 	package_name =>	'intranet-filestorage',
         page_url =>     '/intranet/projects/view',
-        bay_name =>     'bottom',
+        location =>     'bottom',
         sort_order =>   90,
         component_tcl => 
 
@@ -109,7 +109,7 @@ begin
 
 	package_name =>	'intranet-filestorage',
         page_url =>     '/intranet/customers/view',
-        bay_name =>     'right',
+        location =>     'right',
         sort_order =>   50,
         component_tcl => 
 
