@@ -8,21 +8,43 @@
 -- All rights including reserved. To inquire license terms please 
 -- refer to http://www.project-open.com/modules/<module-key>
 
-delete from im_centers;
-drop table im_centers;
-drop package im_center;
+BEGIN
+    im_menu.del_module(module_name => 'intranet-cost');
+    im_component_plugin.del_module(module_name => 'intranet-cost');
+END;
+/
+show errors
 
--- we don't touch the categories here, because they
--- are taken care of in the *-create.sql script, because
--- they are changes so frequently.
--- delete from categories where category_id >= 3000 and category_id < 3200;
+commit;
 
 
+delete from im_cost_items;
+delete from acs_objects where object_type = 'im_cost_item';
+drop table im_cost_items;
+
+delete from im_investments;
+delete from acs_objects where object_type = 'im_investment';
+drop table im_investments;
+
+delete from im_cost_centers;
+delete from acs_objects where object_type = 'im_cost_center';
+drop table im_cost_centers;
+drop package im_cost_center;
+
+delete from im_categories where category_type = 'Intranet Cost Center Type';
+delete from im_categories where category_type = 'Intranet Cost Center Status';
+
+delete from im_categories where category_type = 'Intranet Investment Type';
+delete from im_categories where category_type = 'Intranet Investment Status';
+
+
+-- Delete the OpenACS object type
+---
+delete from acs_objects where object_type='im_cost_center';
+show errors
 
 begin
     acs_object_type.drop_type(object_type => 'im_center');
 end;
 /
-
-delete from acs_objects where object_type='im_center';
 

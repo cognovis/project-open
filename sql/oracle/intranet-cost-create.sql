@@ -40,6 +40,7 @@
 --	- propose_budget
 --	- confirm_budget
 
+prompt *** intranet-costs: Creating acs_object_type
 begin
     acs_object_type.create_type (
 	supertype =>		'acs_object',
@@ -57,6 +58,7 @@ end;
 show errors
 
 
+prompt *** intranet-costs: Creating im_cost_centers
 create table im_cost_centers (
 	cost_center_id		integer
 				constraint im_cost_centers_pk
@@ -88,23 +90,23 @@ create index im_cost_centers_parent_id_idx on im_cost_centers(parent_id);
 create index im_cost_centers_manager_id_idx on im_cost_centers(manager_id);
 
 
+prompt *** intranet-costs: Creating im_cost_center
 create or replace package im_cost_center
 is
     function new (
-	cost_center_id	in integer,
-	object_type	in varchar,
-	creation_date	in date,
-	creation_user	in integer,
-	creation_ip	in varchar,
-	context_id	in integer,
-
+	cost_center_id	in integer default null,
+	object_type	in varchar default 'im_cost_center',
+	creation_date	in date default sysdate,
+	creation_user	in integer default null,
+	creation_ip	in varchar default null,
+	context_id	in integer default null,
 	name		in varchar,
 	type_id		in integer,
 	status_id	in integer,
 	parent_id	in integer,
-	manager_id	in integer,
-	description	in varchar,
-	note		in varchar
+	manager_id	in integer default null,
+	description	in varchar default null,
+	note		in varchar default null
     ) return im_cost_centers.cost_center_id%TYPE;
 
     procedure del (cost_center_id in integer);
@@ -114,24 +116,24 @@ end im_cost_center;
 show errors
 
 
+prompt *** intranet-costs: Creating im_cost_center body
 create or replace package body im_cost_center
 is
 
     function new (
-	cost_center_id	in integer,
-	object_type	in varchar,
-	creation_date	in date,
-	creation_user	in integer,
-	creation_ip	in varchar,
-	context_id	in integer,
-
+	cost_center_id	in integer default null,
+	object_type	in varchar default 'im_cost_center',
+	creation_date	in date default sysdate,
+	creation_user	in integer default null,
+	creation_ip	in varchar default null,
+	context_id	in integer default null,
 	name		in varchar,
 	type_id		in integer,
 	status_id	in integer,
 	parent_id	in integer,
-	manager_id	in integer,
-	description	in varchar,
-	note		in varchar
+	manager_id	in integer default null,
+	description	in varchar default null,
+	note		in varchar default null
     ) return im_cost_centers.cost_center_id%TYPE
     is
 	v_cost_center_id	im_cost_centers.cost_center_id%TYPE;
@@ -197,9 +199,10 @@ show errors
 -- 3000-3099    Intranet Cost Center Type
 -- 3100-3199    Intranet Cost Center Status
 -- 3200-3399	reserved for cost centers
--- 3400-3499	Intranet Cost Investment Type
--- 3500-3599	Intranet Cost Investment Status
+-- 3400-3499	Intranet Investment Type
+-- 3500-3599	Intranet Investment Status
 
+prompt *** intranet-costs: Creating Cost Center categories
 
 -- Intranet Cost Center Type
 delete from im_categories where category_id >= 3000 and category_id < 3100;
@@ -228,9 +231,12 @@ commit;
 -- both following a fixed methodology (number project phases).
 
 
+prompt *** intranet-costs: Creating sample cost center configuration
 declare
     v_the_company_center	integer;
-    v_admin_center		integer;
+    v_administrative_center	integer;
+    v_utilities_center		integer;
+    v_marketing_center		integer;
     v_sales_center		integer;
     v_it_center			integer;
     v_projects_center		integer;
@@ -252,13 +258,16 @@ begin
 	note =>		''
     );
 
+    -- -----------------------------------------------------
+    -- Sub Centers
+    -- -----------------------------------------------------
 
     -- The Administrative Dept.: A typical cost center (3001)
-    -- We asume a small company, so there is only one manager
-    -- taking budget control of Finance, Accounting, Legal and
-    -- HR stuff.
+    -- We asume a small company, so there is only one manager 
+    -- taking budget control of Finance, Accounting, Legal and 
+    -- HR stuff.'
     --
-    v_user_center := im_cost_center.new (
+    v_administrative_center := im_cost_center.new (
 	name =>		'Administration',
 	type_id =>	3001,
 	status_id =>	3101,
@@ -268,31 +277,51 @@ begin
 	note =>		''
     );
 
-    -- Sales & Marketing Cost Center (3001)
-    -- Project oriented companies normally doesn't have a lot 
-    -- of marketing, so we don't overcomplicate here.
+    -- Utilities Cost Center (3001)
     --
-    v_user_center := im_cost_center.new (
-	name =>		'Sales & Marketing',
+    v_utilities_center := im_cost_center.new (
+	name =>		'Rent and Utilities',
 	type_id =>	3001,
 	status_id =>	3101,
 	parent_id => 	v_the_company_center,
 	manager_id =>	null,
-	description =>	'Takes all sales related activities, as oposed to project execution.',
+	description =>	'Covers all repetitive costs such as rent, telephone, internet connectivity, ...',
 	note =>		''
     );
 
-    -- Sales & Marketing Cost Center (3001)
-    -- Project oriented companies normally doesn't have a lot 
-    -- of marketing, so we don't overcomplicate here.
+    -- Sales Cost Center (3001)
     --
-    v_user_center := im_cost_center.new (
-	name =>		'Sales & Marketing',
+    v_sales_center := im_cost_center.new (
+	name =>		'Sales',
 	type_id =>	3001,
 	status_id =>	3101,
 	parent_id => 	v_the_company_center,
 	manager_id =>	null,
-	description =>	'Takes all sales related activities, as oposed to project execution.',
+	description =>	'Records all sales related activities, as oposed to marketing.',
+	note =>		''
+    );
+
+    -- Marketing Cost Center (3001)
+    --
+    v_marketing_center := im_cost_center.new (
+	name =>		'Marketing',
+	type_id =>	3001,
+	status_id =>	3101,
+	parent_id => 	v_the_company_center,
+	manager_id =>	null,
+	description =>	'Marketing activities, such as website, promo material, ...',
+	note =>		''
+    );
+
+    -- Project Operations Cost Center (3001)
+    --
+    v_projects_center := im_cost_center.new (
+	name =>		'Project Operations',
+	type_id =>	3001,
+	status_id =>	3101,
+	parent_id => 	v_the_company_center,
+	manager_id =>	null,
+	description =>	'Covers all phases of project-oriented execution activities..',
 	note =>		''
     );
 
@@ -314,6 +343,7 @@ show errors
 -- The amortized amount of costs is calculated by summing up
 -- all im_cost_items with the specific investment_id
 --
+prompt *** intranet-costs: Creating im_investments
 create table im_investments (
 	investment_id		integer
 				constraint im_investments_pk
@@ -341,34 +371,37 @@ create table im_investments (
 -- 3000-3099    Intranet Cost Center Type
 -- 3100-3199    Intranet Cost Center Status
 -- 3200-3399	reserved for cost centers
--- 3400-3499	Intranet Cost Investment Type
--- 3500-3599	Intranet Cost Investment Status
--- 3600-3699	Intranet Cost Investment Amortization Interval
+-- 3400-3499	Intranet Investment Type
+-- 3500-3599	Intranet Investment Status
+-- 3600-3699	Intranet Investment Amortization Interval
 
--- Intranet Cost Investment Type
+prompt *** intranet-costs: Creating Investment categories
+
+-- Intranet Investment Type
 delete from im_categories where category_id >= 3400 and category_id < 3500;
-INSERT INTO im_categories VALUES (3401,'Other','','Intranet Cost Investment Type',1,'f','');
-INSERT INTO im_categories VALUES (3402,'Computer Hardware','','Intranet Cost Investment Type',1,'f','');
-INSERT INTO im_categories VALUES (3403,'Computer Software','','Intranet Cost Investment Type',1,'f','');
-INSERT INTO im_categories VALUES (3404,'Office Furniture','','Intranet Cost Investment Type',1,'f','');
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3401,'Other','Intranet Investment Type');
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3403,'Computer Hardware','Intranet Investment Type');
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3405,'Computer Software','Intranet Investment Type');
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3407,'Office Furniture','Intranet Investment Type');
 commit;
 -- reserved until 3499
 
--- Intranet Cost Investment Status
+
+-- Intranet Investment Status
 delete from im_categories where category_id >= 3500 and category_id < 3600;
-INSERT INTO im_categories VALUES (3501,'Active','','Intranet Cost Investment Status',1,'f','Currently being amortized');
-INSERT INTO im_categories VALUES (3502,'Deleted','','Intranet Cost Investment Status',1,'f','Deleted - was an error');
-INSERT INTO im_categories VALUES (3503,'Amortized','','Intranet Cost Investment Status',1,'f','Finished amortization - no remaining book value');
+INSERT INTO im_categories (category_id, category, category_type, category_description) 
+VALUES (3501,'Active','Intranet Investment Status','Currently being amortized');
+INSERT INTO im_categories (category_id, category, category_type, category_description) 
+VALUES (3503,'Deleted','Intranet Investment Status','Deleted - was an error');
+INSERT INTO im_categories (category_id, category, category_type, category_description) 
+VALUES (3505,'Amortized','Intranet Investment Status','No remaining book value');
 commit;
 -- reserved until 3599
 
--- Intranet Cost Investment Amortization Internval
-delete from im_categories where category_id >= 3600 and category_id < 3700;
-INSERT INTO im_categories VALUES (3601,'Month','','Intranet Cost Investment Amortization Internval',1,'f','Currently being amortized');
-INSERT INTO im_categories VALUES (3602,'Quarter','','Intranet Cost Investment Amortization Internval',1,'f','Currently being amortized');
-INSERT INTO im_categories VALUES (3603,'Year','','Intranet Cost Investment Amortization Internval',1,'f','Currently being amortized');
-commit;
--- reserved until 3699
 
 
 
@@ -382,6 +415,7 @@ commit;
 -- Amortization items are additionally related to an investment, so that we
 -- can track the amortized money
 --
+prompt *** intranet-costs: Creating im_cost_items
 create table im_cost_items (
 	item_id			integer
 				constraint im_cost_items_pk
