@@ -48,3 +48,51 @@ db_foreach menu_select $menu_select_sql {
 }
 
 
+# ---------------------------------------------------------------
+# Format the admin menu
+# ---------------------------------------------------------------
+
+
+    set parent_menu_sql "select menu_id from im_menus where label= 'invoices_providers'"
+    set parent_menu_id [db_string parent_admin_menu $parent_menu_sql -default ""]
+
+    set menu_select_sql "
+        select  m.*
+        from    im_menus m
+        where   parent_menu_id = :parent_menu_id
+                and im_object_permission_p(m.menu_id, :user_id, 'read') = 't'
+        order by sort_order"
+
+    # Start formatting the menu bar
+    set provider_menu ""
+    set ctr 0
+    db_foreach menu_select $menu_select_sql {
+	
+	ns_log Notice "im_sub_navbar: menu_name='$name'"
+	regsub -all " " $name "_" name_key
+	append provider_menu "<li><a href=\"$url\">[_ intranet-invoices.$name_key]</a></li>\n"
+    }
+
+
+
+    set parent_menu_sql "select menu_id from im_menus where label= 'invoices_customers'"
+    set parent_menu_id [db_string parent_admin_menu $parent_menu_sql -default ""]
+
+    set menu_select_sql "
+        select  m.*
+        from    im_menus m
+        where   parent_menu_id = :parent_menu_id
+                and im_object_permission_p(m.menu_id, :user_id, 'read') = 't'
+        order by sort_order"
+
+    # Start formatting the menu bar
+    set customers_menu ""
+    set ctr 0
+    db_foreach menu_select $menu_select_sql {
+	
+	ns_log Notice "im_sub_navbar: menu_name='$name'"
+	regsub -all " " $name "_" name_key
+	append customers_menu "<li><a href=\"$url\">[_ intranet-invoices.$name_key]</a></li>\n"
+    }
+
+
