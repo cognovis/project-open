@@ -73,18 +73,13 @@ begin
 
     if new.parent_id is null
     then
-
         select '''', coalesce(max_child_sortkey, '''')
         into v_parent_sortkey, v_max_child_sortkey
         from im_forum_topics
-        where parent_id is null
+        where parent_id = new.object_id
         for update;
 
         v_max_child_sortkey := tree_increment_key(v_max_child_sortkey);
-
-        update im_forum_topics
-        set max_child_sortkey = v_max_child_sortkey
-        where topic_id is null;
 
     else
 
