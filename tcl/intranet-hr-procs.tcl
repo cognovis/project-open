@@ -39,7 +39,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
     set date_format "YYYY-MM-DD"
     set number_format "9999990D99"
 
-    set department_url "/intranet/intranet-cost/cost_centers/view?cost_center_id="
+    set department_url "/intranet-cost/cost-centers/new?cost_center_id="
     set user_url "/intranet/users/view?user_id="
 
     set td_class(0) "class=roweven"
@@ -129,7 +129,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 	    if {1 || [eval $visible_for]} {
 		append employee_html "
                 <tr $td_class([expr $ctr % 2])>
-		<td>$column_name &nbsp;</td><td>"
+		<td>[_ "intranet-hr.[lang::util::suggest_key $column_name]"] &nbsp;</td><td>"
 		set cmd "append employee_html $column_render_tcl"
 		eval $cmd
 		append employee_html "</td></tr>\n"

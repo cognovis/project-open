@@ -314,6 +314,11 @@ ad_form -extend -name cost -on_request {
     if {![exists_and_not_null tax]} { set tax 0 }
     if {![exists_and_not_null vat]} { set vat 0 }
 
+    if {[info exists supervisor_id] && $supervisor_id == $employee_id} {
+	ad_return_complaint 1 "[_ intranet-hr.Employee_Own_Supervisor]"
+	return
+    }
+
     db_dml employee_update "
 	update im_employees set
 		employee_id = :employee_id,
