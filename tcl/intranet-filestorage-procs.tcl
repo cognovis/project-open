@@ -1064,8 +1064,11 @@ where
 	#ex (/home - /cluster - /Data - /Internal- /INT-ADM-KNOWMG - /file.dat)
 	set file_paths [split $file "/"]
 	set file_paths_len [llength $file_paths] 
-	set file_paths_len [expr $file_paths_len -1]
 	set body_index [expr $file_paths_len -1] 
+	ns_log Notice "------------------------------------------------------------"
+
+	ns_log Notice "file: $file - file_paths_len: $file_paths_len - body_index: $body_index"
+        ns_log Notice "------------------------------------------------------------"
 
 	# store the name of the file ("file.dat")
 	set file_body [lindex $file_paths $body_index] 
