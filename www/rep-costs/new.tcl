@@ -28,7 +28,7 @@ set user_id [ad_maybe_redirect_for_registration]
 set page_title "<#_ Edit Repeating Cost#>"
 set context [ad_context_bar $page_title]
 set today [db_string birthday_today "select sysdate from dual"]
-set internal_id [im_customer_internal]
+set internal_id [im_company_internal]
 
 if {![im_permission $user_id view_costs]} {
     ad_return_complaint 1 "You have insufficient privileges to use this page"
@@ -64,7 +64,7 @@ if {![exists_and_not_null rep_cost_id]} {
 # ------------------------------------------------------------------
 
 set project_options [im_project_options]
-set customer_options [im_customer_options]
+set customer_options [im_company_options]
 set provider_options [im_provider_options]
 set cost_type_options [im_cost_type_options]
 set cost_status_options [im_cost_status_options]
@@ -86,7 +86,7 @@ set currency_label "<#_ Currency#>"
 set vat_label "<#_ VAT#>"
 set tax_label "<#_ TAX#>"
 set desc_label "<#_ Description#>"
-set note_label "<#_ Note#>
+set note_label "<#_ Note#>"
 ad_form \
     -name cost \
     -cancel_url $return_url \
