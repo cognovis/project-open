@@ -321,8 +321,7 @@ select
 	t.target_language_id,
 	p.customer_id,
 	p.project_id,
-	p.subject_area_id,
-	im_trans_prices_calc_price(p.customer_id, p.project_id, t.task_type_id, t.task_uom_id) as price
+	p.subject_area_id
 from 
 	im_trans_tasks t,
 	im_projects p
@@ -357,9 +356,7 @@ select
 	p.project_name,
 	p.project_path,
 	p.project_path as project_short_name,
-	p.customer_project_nr,
-	s.price,
-	s.price * s.task_sum as subtotal
+	p.customer_project_nr
 from
 	im_categories c_uom,
 	im_categories c_type,

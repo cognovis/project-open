@@ -12,6 +12,8 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     project_id:integer
+    { cost_type_id:integer "[im_cost_type_po]" }
+    { cost_status_id:integer "[im_cost_status_created]" }
     { return_url "" }
 }
 
@@ -82,7 +84,7 @@ db_foreach po_tasks $task_sql {
     # that allows to choose the provider company
     # related to the freelancer
     set provider_sql "
-	select		c.*
+	select	c.*
 	from	acs_rels r,
 		im_customers c
 	where	r.object_id_one = c.customer_id
@@ -96,7 +98,7 @@ db_foreach po_tasks $task_sql {
 	append freelance_company_html "
 	<tr>
 	  <td>
-	    <input type=radio name=company_id value=$customer_id $checked>
+	    <input type=radio name=provider_company_id value=$customer_id $checked>
 	  </td>
 	  <td>
 	    <A href=/intranet/customers/view?customer_id=$customer_id>
@@ -129,7 +131,7 @@ db_foreach po_tasks $task_sql {
 
 	append task_html "
 	<form method=POST action=new-2>
-	[export_form_vars project_id freelance_id return_url]
+	[export_form_vars project_id freelance_id cost_type_id cost_status_id return_url]
 	<table border=0>
 	  <tr>
 	    <td class=rowtitle align=center>Task Name</td>

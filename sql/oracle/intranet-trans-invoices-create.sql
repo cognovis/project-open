@@ -67,7 +67,7 @@ create table im_trans_prices (
 	--
 	-- "Output variables"
 	currency		char(3) references currency_codes(ISO),
-	price			number(12,2)
+	price			number(12,4)
 );
 
 -- make sure the same price doesn't get defined twice 
@@ -143,36 +143,6 @@ BEGIN
 END;
 /
 show errors;
-
--- Calculate the price for a task_type/customer
-create or replace function im_trans_prices_calc_price ( 
-	v_customer_id IN integer,
-	v_project_id IN integer,
-	v_task_type_id IN integer,
-	v_task_uom_id IN integer
-)
-RETURN number IS
-BEGIN
-	if v_task_uom_id = 320 then
-	return 30.00;
-	end if;
-	if v_task_uom_id = 324 then
-	return 0.085;
-	end if;
-	return 1.000;
-END;
-/
-show errors;
-
--- What currency to use?
-create or replace function im_trans_prices_calc_currency (v_customer_id IN integer)
-RETURN varchar IS
-BEGIN
-	return 'EUR';
-END;
-/
-show errors;
-
 
 ---------------------------------------------------------
 -- Register the component in the core TCL pages

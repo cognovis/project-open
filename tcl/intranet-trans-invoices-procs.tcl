@@ -20,10 +20,14 @@ ad_proc im_trans_price_component { user_id customer_id return_url} {
 
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
+    set price_format "000.000"
 
+    set colspan 7
     set price_list_html "
+<form action=/intranet-trans-invoices/price-lists/price-action method=POST>
+[export_form_vars customer_id return_url]
 <table border=0>
-<tr><td colspan=6 class=rowtitle align=center>Price List</td></tr>
+<tr><td colspan=$colspan class=rowtitle align=center>Price List</td></tr>
 <tr class=rowtitle> 
 	  <td class=rowtitle>UoM</td>
 	  <td class=rowtitle>Task Type</td>
@@ -31,6 +35,7 @@ ad_proc im_trans_price_component { user_id customer_id return_url} {
 	  <td class=rowtitle>Target</td>
 	  <td class=rowtitle>Subject</td>
 	  <td class=rowtitle>Rate</td>
+	  <td class=rowtitle>[im_gif del "Delete"]</td>
 </tr>"
 
     set price_sql "
@@ -62,7 +67,7 @@ order by
     db_foreach prices $price_sql {
 
 	if {"" != $old_currency && ![string equal $old_currency $currency]} {
-	    append price_rows_html "<tr><td colspan=99>&nbsp;</td></tr>\n"
+	    append price_rows_html "<tr><td colspan=$colspan>&nbsp;</td></tr>\n"
 	}
 
 	append price_rows_html "
@@ -73,6 +78,7 @@ order by
           <td>$target_language</td>
 	  <td>$subject_area</td>
           <td>$price $currency</td>
+          <td><input type=checkbox name=price_id.$price_id></td>
 	</tr>"
 	incr ctr
 	set old_currency $currency
@@ -81,11 +87,18 @@ order by
     if {$price_rows_html != ""} {
 	append price_list_html $price_rows_html
     } else {
-	append price_list_html "<tr><td colspan=4 align=center><i>No prices found</i></td></tr>\n"
+	append price_list_html "<tr><td colspan=$colspan align=center><i>No prices found</i></td></tr>\n"
     }
 
     append price_list_html "
+<tr>
+  <td colspan=$colspan align=right>
+    <input type=submit name=add_new value=\"Add New\">
+    <input type=submit name=del value=\"Del\">
+  </td>
+</tr>
 </table>
+</form>
 <ul>
   <li>
     <a href=/intranet-trans-invoices/upload-prices?[export_url_vars customer_id return_url]>
@@ -93,7 +106,7 @@ order by
     for this customer via a CSV file.
   <li>
     Check this 
-    <a href=/intranet-trans-invoices/pricelist_sample.csv>
+    <a href=/intranet-trans-invoices/price-lists/pricelist_sample.csv>
       sample pricelist CSV file</A>.
     It contains some comments inside.
 </ul>\n"
