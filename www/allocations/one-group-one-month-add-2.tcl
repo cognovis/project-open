@@ -68,7 +68,7 @@ foreach allocation_id [array names group_id_for_allocation] {
        db_dml update_statement "update im_allocations 
 				   set $update_text note = :note, 
 				       last_modified = sysdate, 
-				       last_modifying_user = [ad_get_user_id], 
+				       last_modifying_user = [ad_maybe_redirect_for_registration], 
 				       modified_ip_address = '[ns_conn peeraddr]' 
 				 where allocation_id = :allocation_id" 
    }
@@ -76,7 +76,7 @@ foreach allocation_id [array names group_id_for_allocation] {
 
 #this was a new allocation_id
 
-set current_user_id [ad_get_user_id]
+set current_user_id [ad_maybe_redirect_for_registration]
 set peeraddr [ns_conn peeraddr]
 
 foreach elementindex [array names group_id_for_user] {
