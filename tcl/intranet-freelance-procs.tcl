@@ -133,11 +133,14 @@ where
 ad_proc im_freelance_info_component { current_user_id user_id return_url freelance_view } {
     Show some simple information about a freelancer
 } {
+    set view 0
     set read 0
     set write 0
     set admin 0
+    
+    set user $user_id
 
-    im_user_permissions $current_user_id $user_id read write admin
+    im_user_permissions $current_user_id $user_id view read write admin
 
     set td_class(0) "class=roweven"
     set td_class(1) "class=rowodd"
@@ -171,7 +174,7 @@ ad_proc im_freelance_info_component { current_user_id user_id return_url freelan
 	where	view_id=:view_id
 	order by sort_order"
 
-   set freelance_html "user_id : $user_id
+   set freelance_html "
 	<form method=GET action=/intranet-freelance/freelance-info-update>
 	[export_form_vars user_id return_url]
 	<table cellpadding=0 cellspacing=2 border=0>
@@ -201,7 +204,7 @@ ad_proc im_freelance_info_component { current_user_id user_id return_url freelan
         <tr $td_class([expr $ctr % 2])>
         <td></td><td><input type=submit value='Edit'></td></tr>\n"
     }
-    append freelance_html "</table></form>\n<br>user: $user_id"
+    append freelance_html "</table></form>\n"
 
     return $freelance_html
 }
@@ -214,12 +217,12 @@ ad_proc im_freelance_info_component { current_user_id user_id return_url freelan
 ad_proc im_freelance_skill_component { current_user_id user_id  return_url} {
     Show some simple information about a freelancer
 } {
-
+    set view 0
     set read 0
     set write 0
     set admin 0
 
-    im_user_permissions $current_user_id $user_id read write admin
+    im_user_permissions $current_user_id $user_id view read write admin
 
 
 set sql "
