@@ -73,6 +73,7 @@ set return_url [im_url_with_query]
 set amp "&"
 set cur_format "99,999.99"
 set local_url "list"
+set date_format "YYYY-MM-DD"
 
 if {![im_permission $user_id view_costs]} {
     ad_return_complaint 1 "<li>You have insufficiente privileges to view this page"
