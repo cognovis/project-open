@@ -181,7 +181,7 @@ begin
 	plugin_name =>	'Project Sales Filestorage Component',
 	package_name =>	'intranet-filestorage',
 	page_url =>	'/intranet/projects/view',
-	location =>	'bottom',
+	location =>	'files',
 	sort_order =>   89,
 	component_tcl => 
 	'im_filestorage_project_sales_component \
@@ -201,7 +201,7 @@ begin
 	plugin_name =>	'Project Filestorage Component',
 	package_name =>	'intranet-filestorage',
 	page_url =>	'/intranet/projects/view',
-	location =>	'bottom',
+	location =>	'files',
 	sort_order =>   90,
 	component_tcl => 
 	'im_filestorage_project_component \
