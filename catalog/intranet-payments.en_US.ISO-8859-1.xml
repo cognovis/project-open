@@ -29,6 +29,7 @@
   <msg key="One_project">One project</msg>
   <msg key="Payment">Payment</msg>
   <msg key="Payment_Details">Payment Details</msg>
+  <msg key="Payment_hash_simbol">Payment #</msg>
   <msg key="Payment_Status">Payment Status:</msg>
   <msg key="Payment_Type">Payment Type</msg>
   <msg key="Payments">Payments</msg>
