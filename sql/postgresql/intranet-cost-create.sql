@@ -684,8 +684,8 @@ declare
 	);
 
 	insert into im_costs (
-		cost_id, cost_name, project_id, 
-		customer_id, provider_id, 
+		cost_id, cost_name, cost_nr,
+		project_id, customer_id, provider_id, 
 		cost_status_id, cost_type_id,
 		template_id, investment_id,
 		effective_date, payment_days,
@@ -695,8 +695,8 @@ declare
 		planning_p, planning_type_id, 
 		description, note
 	) values (
-		v_cost_cost_id, p_cost_name, p_project_id, 
-		p_customer_id, p_provider_id, 
+		v_cost_cost_id, p_cost_name, v_cost_cost_id,
+		p_project_id, p_customer_id, p_provider_id, 
 		p_cost_status_id, p_cost_type_id,
 		p_template_id, p_investment_id,
 		p_effective_date, p_payment_days,
