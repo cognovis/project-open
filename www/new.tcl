@@ -61,11 +61,12 @@ if {![exists_and_not_null item_id]} {
 
 set availability "100"
 set birthdate $today
-set department_options [db_list_of_lists department_options "
-	select cost_center_name, cost_center_id
-	from im_cost_centers
-	where department_p = 't'
-"]
+set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+
+
+set currency_options [im_cost_currency_options]
+set department_options [im_department_options]
+
 
 
 set supervisor_options [db_list_of_lists supervisor_options "
@@ -90,11 +91,6 @@ set salary_interval_options {{Month month} {Day day} {Week week} {Year year}}
 set employee_status_options [db_list_of_lists employee_status_options "
 select state, state_id
 from im_employee_pipeline_states
-"]
-
-set currency_options [db_list_of_lists currency_options "
-select iso, iso
-from currency_codes
 "]
 
 
