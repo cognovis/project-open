@@ -25,7 +25,7 @@ ad_page_contract {
 # ------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-set page_title "Edit Cost"
+set page_title "[_ intranet-cost.Edit_Cost]"
 set context [ad_context_bar $page_title]
 
 #if {![im_permission $user_id view_costs]} {
@@ -38,7 +38,7 @@ set focus "cost.var_name"
 
 set admin_html "
 <ul>
-  <li><A href=''>Distribute costs according to timesheet information</a>
+  <li><A href=''>[_ intranet-cost.lt_Distribute_costs_acco]</a>
   <li><A href=''>!!!</a>
 </ul>
 "
@@ -50,7 +50,7 @@ set admin_html "
 if {![exists_and_not_null cost_id]} {
     # New variable: setup some reasonable defaults
 
-    set page_title "New Cost Item"
+    set page_title "[_ intranet-cost.New_Cost_Item]"
     set context [ad_context_bar $page_title]
     set effective_date [db_string get_today "select sysdate from dual"]
     set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 60]
@@ -78,6 +78,16 @@ set investment_options [im_investment_options]
 set template_options [im_cost_template_options]
 set currency_options [im_currency_options]
 
+set cost_name_label "[_ intranet-cost.Name]"
+set project_label "[_ intranet-cost.Project]"
+set customer_label "[_ intranet-cost.Customer]"
+set wp_label "[_ intranet-cost.Who_pays]"
+set provider_label "[_ intranet-cost.Provider]"
+set wg_label "[_ intranet-cost.Who_gets_the_money]"
+set type_label "<#_Type#>"
+set cost_status_label "[_ intranet-cost.Status]"
+set template_label "[_ intranet-cost.Print_Template]"
+set investment_label "[_ intranet-cost.Investment]"
 ad_form \
     -name cost \
     -cancel_url $return_url \
@@ -86,15 +96,15 @@ ad_form \
     -export {next_url user_id return_url} \
     -form {
 	cost_id:key
-	{cost_name:text(text) {label Name} {html {size 40}}}
-	{project_id:text(select),optional {label Project} {options $project_options} }
-	{customer_id:text(select) {label "Customer<br><small>(Who pays?)</small>"} {options $customer_options} }
-	{provider_id:text(select) {label "Provider<br><small>(Who gets the money?)</small>"} {options $provider_options} }
+	{cost_name:text(text) {label $cost_name_label} {html {size 40}}}
+	{project_id:text(select),optional {label $project_label} {options $project_options} }
+	{customer_id:text(select) {label "$customer_label <br><small>($wp_label)</small>"} {options $customer_options} }
+	{provider_id:text(select) {label "$provider_label <br><small>($wg_label)</small>"} {options $provider_options} }
 
-	{cost_type_id:text(select) {label Type} {options $cost_type_options} }
-	{cost_status_id:text(select) {label Status} {options $cost_status_options} }
-	{template_id:text(select),optional {label "Print Template"} {options $template_options} }
-	{investment_id:text(select),optional {label Investment} {options $investment_options} }
+	{cost_type_id:text(select) {label $type_label} {options $cost_type_options} }
+	{cost_status_id:text(select) {label $cost_status_label} {options $cost_status_options} }
+	{template_id:text(select),optional {label $template_label} {options $template_options} }
+	{investment_id:text(select),optional {label $investment_label} {options $investment_options} }
 
 	{effective_date:text(text) {label "Effective Date"} {html {size 20}} }
 	{payment_days:text(text) {label "Payment Days"} {html {size 10}} }
