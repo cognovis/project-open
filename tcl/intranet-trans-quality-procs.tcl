@@ -116,9 +116,12 @@ ad_proc im_quality_project_component {
 	set result "<ul><li>No quality reports for this project</li>"
     } else {
 	set result "[im_quality_histogram -project_id $project_id]<ul>"
+
+	append result "<li><a href=/intranet-trans-quality/list?[export_url_vars project_id]>See all reports for this project</a>\n"
+
     }
     
-    append result "<li><a href=/intranet-trans-quality/list?[export_url_vars project_id]>See all reports for this project</a>\n"
+
     append result "<li><a href=/intranet-trans-quality/new?[export_url_vars project_id]>Add a Quality Report for this Project</a>\n"
     append result "</ul>\n"
     return $result
