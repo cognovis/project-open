@@ -166,7 +166,7 @@ ad_proc im_freelance_info_component { current_user_id user_id user_admin_p retur
 	order by sort_order"
 
    set freelance_html "
-	<form method=POST action=freelance-info-update>
+	<form method=GET action=/intranet-freelance/freelance-info-update>
 	[export_form_vars user_id return_url]
 	<table cellpadding=0 cellspacing=2 border=0>
 	<tr> 
@@ -347,7 +347,7 @@ db_foreach column_list $sql {
     if {$old_skill_type_id != $skill_type_id} {
         append languages_butons_html "
 	<td>
-<form method=POST action=skill-edit>
+<form method=GET action=/intranet-freelance/skill-edit>
 [export_form_vars user_id skill_type_id return_url]
 <input type=submit value=Edit></form></td>"
         set old_skill_type_id $skill_type_id
@@ -374,15 +374,14 @@ ad_proc im_freelance_member_select_component { group_id role_options return_url 
     to select freelancers according to the characteristics of
     the current project.
 } {
-    return "asdfasdf"
 
     # ToDo: "Virtualize" this procedure by adapting the SQL statement to the
     # number of "hard conditions" specified in "hard_conditions_list"
-
+    
     set count 0
     set hard_conditions_list [list "Source Language" "Target Language" "Subjects"]
     set project_cat_id [list ]
-
+    
     foreach project_ids $hard_conditions_list {
 	set cat [lindex $hard_conditions_list $count]
 	db_1row project_id "
@@ -395,8 +394,8 @@ where
 "
 	lappend project_cat_id $category_id
 	incr count
-    } 
-
+    }
+    
     # Determine the list of user_ids that match the "hard"
     # criterial to participate in a project: That the basic
     # source and target languages must be covered by the
@@ -404,10 +403,10 @@ where
     # extension such as [es] instead of [es_MX]
     #
 
-set sl [lindex $project_cat_id 0]
-set tl [lindex $project_cat_id 1]
-set sa [lindex $project_cat_id 2]
-
+    set sl [lindex $project_cat_id 0]
+    set tl [lindex $project_cat_id 1]
+    set sa [lindex $project_cat_id 2]
+    
     set freelance_sql_1 "
 select
 	pe.first_names || pe.last_name as name,
@@ -442,9 +441,10 @@ from
 	        and skt.lang = p.target_lang
 	) mu
 where
-	pe.person_id = mu.user_id"
+	pe.person_id = mu.user_id
+"
 
-    set freelance_body_html "
+    set freelance_header_html "
 	<tr class=rowtitle>
 	  <td>Freelance</td>
 	  <td>Source Language</td>
@@ -456,8 +456,9 @@ where
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
     set ctr 0
+    set freelance_body_html ""
     db_foreach freelance $freelance_sql_1 {
-	append freelance_body_html "
+	apend freelance_body_html "
 	<tr$bgcolor([expr $ctr % 2])>
 	  <td><a href=users/view?[export_url_vars user_id]>$name</a></td>
 	  <td>$source_languages</td>
@@ -468,28 +469,31 @@ where
         incr ctr
     }
 
-if { $freelance_body_html == "" } {
-    set freelance_body_html "
-<tr
-
-set select_freelance "
-	<form method=POST action=/intranet/member-add-2>
-	[export_entire_form]
-	<input type=hidden name=target value=\"[im_url_stub]/member-add-2\">
-	<input type=hidden name=passthrough value='group_id role return_url also_add_to_group_id'>
-	<table cellpadding=0 cellspacing=2 border=0>
-	  <tr>
-	    <td class=rowtitle align=middle colspan=5>Freelance</td>
-	  </tr>
-	  $freelance_body_html
-	  <tr> 
-	    <td colspan=5>add as 
-	      <select name=role>$role_options</select> <input type=submit value=Add>
-              <input type=checkbox name=notify_asignee value=1 checked>Notify<br>
-	    </td>
-	  </tr>
-	</table>
-	</form>\n"
+    if { $freelance_body_html == "" } {
+	set freelance_body_html "<tr><td colspan=5 align=center><b> no freelancers </b></td>"
+    }
+    
+    set select_freelance "
+<form method=POST action=/intranet/member-add-2>
+[export_entire_form]
+<input type=hidden name=target value=[im_url_stub]/member-add-2>
+<input type=hidden name=passthrough value='group_id role return_url also_add_to_group_id'>
+<table cellpadding=0 cellspacing=2 border=0>
+  <tr>
+    <td class=rowtitle align=middle colspan=5>Freelance</td>
+  </tr>
+  $freelance_header_html
+  $freelance_body_html
+  <tr> 
+    <td colspan=5>add as 
+      <select name=role>$role_options</select> <input type=submit value=Add>
+<input type=checkbox name=notify_asignee value=1 checked>Notify<br>
+    </td>
+  </tr>
+</table>
+</form>\n"
+  
 
     return $select_freelance
 }
+
