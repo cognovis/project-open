@@ -206,19 +206,12 @@ declare
     v_plugin            integer;
 begin
     v_plugin := im_component_plugin.new (
-        plugin_id =>    null,
-        object_type =>  'im_component_plugin',
-        creation_date => sysdate,
-        creation_user => 0,
-        creation_ip =>  null,
-        context_id =>   null,
-
+	plugin_name =>	'Users Freelance Component',
         package_name => 'intranet-freelance',
         page_url =>     '/intranet/users/view',
         location =>     'bottom',
         sort_order =>   10,
         component_tcl =>
-
         'im_freelance_info_component \
 		$current_user_id \
                 $user_id \
