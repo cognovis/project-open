@@ -148,29 +148,29 @@ delete from categories where category_type = 'Intranet Topic Type';
 
 INSERT INTO categories VALUES (1100,'News',
 'News item that may or may not be commented.',
-'Intranet Topic Type',1,'f','');
+'Intranet Topic Type','category','t');
 
 INSERT INTO categories VALUES (1102,'Incident',
 'Critical task that needs rapid resolution',
-'Intranet Topic Type',1,'f','');
+'Intranet Topic Type','category','t');
 
 INSERT INTO categories VALUES (1104,'Task',
 'Task that needs to be performed',
-'Intranet Topic Type',1,'f','');
+'Intranet Topic Type','category','t');
 
 INSERT INTO categories VALUES (1106,'Discussion',
 'Request for response/interaction',
-'Intranet Topic Type',1,'f','');
+'Intranet Topic Type','category','t');
 
 INSERT INTO categories VALUES (1108,'Note',
 'Calling attention about something',
-'Intranet Topic Type',1,'f','');
+'Intranet Topic Type','category','t');
 
 INSERT INTO categories VALUES (1110,'Help Request',
-'Help Request','Intranet Topic Type',1,'f','');
+'Help Request','Intranet Topic Type','category','t');
 
 INSERT INTO categories VALUES (1190,'Reply',
-'Reply','Intranet Topic Type',1,'f','');
+'Reply','Intranet Topic Type','category','t');
 
 commit;
 -- reserved until 1199
@@ -403,27 +403,27 @@ delete from categories where category_type = 'Intranet Topic Status';
 
 INSERT INTO categories VALUES (1200,'Open',
 'A topic has been generated, but is not assigned to anybody (discussion, ...)',
-'Intranet Topic Status',1,'f','');
+'Intranet Topic Status','category','t');
 
 INSERT INTO categories VALUES (1202,'Assigned',
 'A task has been assigned to someone, but this person has not confirmed yet.',
-'Intranet Topic Status',1,'f','');
+'Intranet Topic Status','category','t');
 
 INSERT INTO categories VALUES (1204,'Accepted',
 'The asignee has confirmed that he will be responsible for the task',
-'Intranet Topic Status',1,'f','');
+'Intranet Topic Status','category','t');
 
 INSERT INTO categories VALUES (1206,'Rejected',
 'The asignee has rejected to take responsability for the task',
-'Intranet Topic Status',1,'f','');
+'Intranet Topic Status','category','t');
 
 INSERT INTO categories VALUES (1208,'Needs Clarify',
 'The asignee passes the task back to the owner for clarification',
-'Intranet Topic Status',1,'f','');
+'Intranet Topic Status','category','t');
 
 INSERT INTO categories VALUES (1210,'Closed',
 'The owner has canceled the task or the asignee has finished the task',
-'Intranet Topic Status',1,'f','');
+'Intranet Topic Status','category','t');
 
 commit;
 -- reserved until 1299
