@@ -14,30 +14,6 @@
     <version>7.2</version>
   </rdbms>
   
-  <fullquery name="im_portrait_component.get_user_info">
-    <querytext>
-select
-      u.first_names,
-      u.last_name,
-      gp.portrait_id,
-      gp.portrait_upload_date,
-      gp.portrait_comment,
-      gp.portrait_original_width,
-      gp.portrait_original_height,
-      gp.portrait_client_file_name
-from
-        users u
-      LEFT JOIN
-        general_portraits gp ON u.user_id = gp.on_what_id
-where
-        u.user_id = :user_id
-        and 'USERS' = gp.on_which_table
-        and 't' = gp.portrait_primary_p
-      
-    </querytext>
-  </fullquery>
-
-
   <fullquery name="im_freelance_info_component.freelance_info_query">
     <querytext>
         select  pe.first_names||' '||pe.last_name as user_name,
