@@ -140,6 +140,10 @@ switch $actions {
 <form enctype=multipart/form-data method=POST action=upload-2.tcl>
 [export_form_vars bread_crum_path folder_type object_id return_url]
 
+          Upload a file into directory \"/$bread_crum_path\".
+          If you want to upload a file into a subdirectory, <br>
+          please backup up and select a subdirectory by clicking on its name.
+
     <table border=0>
       <tr>
 	<td align=right>Filename: </td>

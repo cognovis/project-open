@@ -36,6 +36,80 @@ ad_proc intranet_user_download {} { intranet_download "user" }
 ad_proc intranet_home_download {} { intranet_download "home" }
 ad_proc intranet_zip_download {} { intranet_download "zip" }
 
+
+ad_proc -public im_filestorage_profile_bar { user_id object_id } {
+    Returns a rendered HTML component showing the icons of all
+    profiles and object roles for a specific business objects.
+} {
+    set profile_icons ""
+
+    set project_roles_sql "
+select distinct 
+	c.category,
+	c.category_gif,
+	c.category_description
+from 
+	im_biz_object_role_map m,
+	im_categories c,
+	acs_objects o
+where
+	o.object_id = :object_id
+	and m.acs_object_type = o.object_type
+	and m.object_role_id = c.category_id
+"
+    db_foreach project_roles $project_roles_sql {
+	append profile_icons "<td>[im_gif $category_gif $category]</td>\n"
+    }
+
+
+    set project_profile_sql "
+select distinct 
+	p.profile_gif,
+	g.group_name
+from 
+	im_profiles p,
+	groups g,
+	((select
+		p.profile_id
+	from
+		im_fs_folder_perms p,
+		im_fs_folders f
+	where
+		f.folder_id = p.folder_id
+		and f.object_id = :object_id
+	)
+	UNION (select [im_customer_group_id] from dual)
+	UNION (select [im_employee_group_id] from dual)
+	UNION (select [im_freelance_group_id] from dual)
+	UNION (select [im_wheel_group_id] from dual)
+	) r
+where
+	r.profile_id = g.group_id (+)
+	and r.profile_id = p.profile_id (+)
+"
+    db_foreach project_profiles $project_profile_sql {
+	append profile_icons "<td>[im_gif $profile_gif $group_name]</td>\n"
+    }
+
+
+    return "
+<table border=0>
+<tr>
+$profile_icons
+</tr>
+</table>
+"
+}
+
+
+
+
+
+
+
+
+
+
 # Serve the abstract URL 
 # /intranet/download/<group_id>/...
 #
@@ -1014,6 +1088,8 @@ where
 
     set tool_bar_html [im_filestorage_tool_bar $bread_crum_path $folder_type $object_id $return_url $up_link]
 
+    set profile_bar_html [im_filestorage_profile_bar $user_id $object_id]
+
     set component_html "
 <form name=\"$folder_type\" method=POST action=/intranet-filestorage/action>
 [export_form_vars object_id bread_crum_path folder_type return_url]
@@ -1022,6 +1098,7 @@ where
   <TR align=center valign=middle class=rowtitle> 
     <TD colspan=5> 
       $tool_bar_html
+      $profile_bar_html
     </TD>
   </TR>
   <TR class=rowplain> 
