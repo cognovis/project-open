@@ -12,11 +12,22 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
     @creation-date Nov 2003
 } {
+    bread_crum_path: optional
+}
+
+if { ![info_exists bread_crum_path] } {
+
+    set url "/intranet/"
+} else {
+    
+    set url "/intranet/index.tcl?bread_crum_path=$bread_crum_path"
 
 }
 
+
 db_release_unused_handles
-ad_returnredirect "/intranet/"
+ad_returnredirect "$url"
+#ad_returnredirect "/intranet/"
 
 
 
