@@ -1059,6 +1059,7 @@ check(start_date < end_date);
 -- The amortized amount of costs is calculated by summing up
 -- all im_cost_items with the specific investment_id
 --
+
 prompt *** intranet-costs: Creating im_investments
 create table im_investments (
 	investment_id		integer
@@ -1072,12 +1073,7 @@ create table im_investments (
 				references im_categories,
 	investment_type_id	integer
 				constraint im_investments_type_fk
-				references im_categories,
-	amount			number(12,3),
-	currency		char(3)
-				constraint im_investments_currency_fk
-				references currency_codes(iso),
-	description		varchar(4000)
+				references im_categories
 );
 
 
@@ -1087,7 +1083,6 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_investment','view','/intranet-cost/investments/new?form_mode=display\&investment_id=');
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_investment','edit','/intranet-cost/investments/new?form_mode=edit\&investment_id=');
-
 
 
 prompt *** intranet-costs: Creating Investment categories
@@ -1104,7 +1099,6 @@ VALUES (3407,'Office Furniture','Intranet Investment Type');
 commit;
 -- reserved until 3499
 
-
 -- Intranet Investment Status
 delete from im_categories where category_id >= 3500 and category_id < 3599;
 INSERT INTO im_categories (category_id, category, category_type, category_description) 
@@ -1116,3 +1110,66 @@ VALUES (3505,'Amortized','Intranet Investment Status','No remaining book value')
 commit;
 -- reserved until 3599
 
+
+
+-------------------------------------------------------------
+-- Costs
+--
+-- Costs is the superclass for all financial items such as 
+-- Invoices, Quotes, Purchase Orders, Bills (from providers), 
+-- Travel Costs, Payroll Costs, Fixed Costs, Amortization Costs,
+-- etc. in order to allow for simple SQL queries revealing the
+-- financial status of a company.
+--
+-- Costs are also used for controlling, namely by assigning costs
+-- to projects, customers and cost centers in order to allow for 
+-- (more or less) accurate profit & loss calculation.
+-- This assignment sometimes requires to split a large cost item
+-- into several smaller items in order to assign them more 
+-- accurately to project, customers or cost centers ("redistribution").
+--
+create table im_costs (
+	cost_id			integer
+				constraint im_costs_pk
+				primary key,
+				constraint im_costs_item_fk
+				references acs_objects,
+	name			varchar(400),
+	cost_status_id		integer
+				constraint im_costs_status_fk
+				references im_categories,
+	cost_type_id		integer
+				constraint im_costs_type_fk
+				references im_categories,
+	project_id		integer
+				constraint im_costs_project_fk
+				references im_projects,
+	customer_id		integer
+				constraint im_costs_customer_fk
+				references im_customers,
+	asset_id		integer
+				constraint im_costs_asset_fk
+				references im_assets,
+	due_date		date,
+	payment_date		date,
+	amount			number(12,3),
+	currency		char(3) references currency_codes(iso),
+	-- variable or fixed costs?
+	variable_type_id	integer
+				constraint im_cost_variable_fk
+				references im_categories,
+	-- cost has been split into several small cost items?
+	redistributed_p		char(1)
+				constraint im_costs_var_ck
+				check redistributed_p in ('t','f'),
+	-- points to its parent if the parent was "distributed"
+	parent_cost_id		integer
+				constraint im_costs_parent_fk
+				references im_costs,
+	-- "real cost", "planning" of "quote or purchase order"
+	planning_type_id	integer
+				constraint im_costs_planning_type_fk
+				references im_categories,
+	description		varchar(4000),
+);
+>>>>>>> 1.2.2.1
