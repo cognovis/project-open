@@ -970,9 +970,8 @@ ad_proc -public im_forum_component {
 		[_ intranet-forum.lt_There_are_no_active_i]
 		</b></td></tr>"
     	}
-    	
-    	
-        if { $ctr == $max_entries_per_page && $end_idx < $total_in_limited } {
+    	    	
+        if { $ctr == $max_entries_per_page && $end_idx < [expr $total_in_limited - 1] } {
 		# This means that there are rows that we decided not to return
 		# Include a link to go to the next page
 		set next_start_idx [expr $end_idx + 1]
