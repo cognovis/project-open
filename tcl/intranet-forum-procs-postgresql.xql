@@ -30,7 +30,20 @@
   <fullquery name="im_forum_component.forum_query">
     <querytext>
 select
-	t.*,
+	t.topic_id,
+	t.owner_id,
+	t.object_id,
+	t.parent_id,
+	t.topic_type_id,
+	t.topic_status_id,
+	to_char(t.posting_date, :date_format) as posting_date,
+	t.owner_id,
+	t.scope,
+	t.subject,
+	t.message,
+	t.priority,
+	to_char(t.due_date, :date_format) as due_date,
+	t.asignee_id,
 	acs_object__name(t.object_id) as object_name,
 	m.read_p,
 	m.folder_id,

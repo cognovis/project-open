@@ -40,6 +40,8 @@ set todays_date [lindex [split [ns_localsqltimestamp] " "] 0]
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 
+set date_format "YYYY-MM-DD"
+
 # Return to this page for edit actions, if not being called
 # from another page.
 if {"" == $return_url} {
