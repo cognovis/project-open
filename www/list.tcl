@@ -16,7 +16,7 @@ ad_page_contract {
     { other_id 0 }
     { person_id 0 }
     { company_id 0 }
-    { start_idx:integer "1" }
+    { start_idx:integer 0 }
     { order_by "" }
     { how_many "" }
     { view_name "quality_list" }

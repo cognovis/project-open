@@ -398,7 +398,7 @@ ad_proc -public im_quality_list_component {
     {-company_id 0 }
     {-order_by "" }
     {-how_many "" }
-    {-start_idx 1 }
+    {-start_idx 0 }
     {-view_name "quality_list" }
     {-return_url "" }
 } {
@@ -637,13 +637,11 @@ ad_proc -public im_quality_list_component {
 	set next_page_url ""
     }
     
-    if { $start_idx > 1 } {
+    if { $start_idx > 0 } {
 	# This means we didn't start with the first row - there is
 	# at least 1 previous row. add a previous page link
 	set previous_start_idx [expr $start_idx - $how_many]
-	if { $previous_start_idx < 1 } {
-	    set previous_start_idx 1
-	}
+	if { $previous_start_idx < 0 } { set previous_start_idx 0 }
 	set previous_page_url "$local_url?start_idx=$previous_start_idx&[export_ns_set_vars url [list start_idx]]"
     } else {
 	set previous_page_url ""
@@ -669,11 +667,9 @@ ad_proc -public im_quality_list_component {
     # first row - there is at least 1 previous row.
     # => add a previous page link
     #
-    if { $start_idx > 1 } {
+    if { $start_idx > 0 } {
 	set previous_start_idx [expr $start_idx - $how_many]
-	if { $previous_start_idx < 1 } {
-	    set previous_start_idx 1
-	}
+	if { $previous_start_idx < 1 } { set previous_start_idx 0 }
 	set previous_page "<a href=$local_url?start_idx=$previous_start_idx&[export_ns_set_vars url [list start_idx]]>[_ intranet-trans-quality.Previous_Page]</a>"
     } else {
 	set previous_page ""
