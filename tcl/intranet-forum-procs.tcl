@@ -17,12 +17,28 @@ ad_library {
 # Select Boxes
 # ----------------------------------------------------------------------
 
-ad_proc -public im_topic_status_id_open { } {Returns Topic Status ID} { return [ad_parameter TopicStatusOpen intranet 1200] }
-ad_proc -public im_topic_status_id_assigned { } {Returns Topic Status ID} { return [ad_parameter TopicStatusAssigned intranet 1202] }
-ad_proc -public im_topic_status_id_accepted { } {Returns Topic Status ID} { return [ad_parameter TopicStatusAccepted intranet 1204] }
-ad_proc -public im_topic_status_id_rejected { } {Returns Topic Status ID} { return [ad_parameter TopicStatusRejected intranet 1206] }
-ad_proc -public im_topic_status_id_needs_clarify { } {Returns Topic Status ID} { return [ad_parameter TopicStatusNeedsClarify intranet 1208] }
-ad_proc -public im_topic_status_id_closed { } {Returns Topic Status ID} { return [ad_parameter TopicStatusClosed intranet 1210] }
+ad_proc -public im_topic_status_id_open { } { return 1200 }
+ad_proc -public im_topic_status_id_assigned { } { return 1202 }
+ad_proc -public im_topic_status_id_accepted { } { return 1204 }
+ad_proc -public im_topic_status_id_rejected { } { return 1206 }
+ad_proc -public im_topic_status_id_needs_clarify { } { return 1208 }
+ad_proc -public im_topic_status_id_closed { } { return 1210 }
+
+ad_proc -public im_topic_type_id_task { } { return 1102 }
+ad_proc -public im_topic_type_id_incident { } { return 1104 }
+ad_proc -public im_topic_type_id_reply { } { return 1190 }
+
+
+ad_proc -public im_forum_is_task_or_incident { topic_type_id } {
+    Returns 1 if it's a "Task" or "Incident"
+} {
+    if {$topic_type_id == [im_topic_type_id_task] || $topic_type_id == [im_topic_type_id_incident]} {
+	return 1
+    } else {
+	return 0
+    }
+}
+
 
 ad_proc -public im_forum_topic_type_select { select_name { default "" } } {
     Returns an html select box named $select_name and defaulted to
@@ -38,6 +54,24 @@ ad_proc -public im_forum_topic_status_select { select_name { default "" } } {
     return [im_category_select "Intranet Topic Status" $select_name $default]
 }
 
+
+ad_proc -public im_forum_notification_select {name {default ""}} {
+    Return a formatted HTML select box with the notification
+    options for a im_forum_topic.
+} {
+    set checked_major ""
+    set checked_all ""
+    set checked_none ""
+    if {[string equal $default "major"]} { set checked_major "checked" }
+    if {[string equal $default "all"]} { set checked_all "checked" }
+    if {[string equal $default "none"]} { set checked_none "checked" }
+
+    return "
+<input type=radio name=$name value=major $checked_major>Important Updates
+<input type=radio name=$name value=all $checked_all>All Updates
+<input type=radio name=$name value=none $checked_none>No Updates
+"
+}
 
 
 ad_proc -public im_forum_scope_select {select_name user_id {default ""} } {
@@ -240,7 +274,7 @@ where	r.object_id_one = :object_id
     }
 
     set sql [join $sql_list " UNION "]
-    ns_log Notice "new-tind: sql=$sql"
+    ns_log Notice "im_forum_potential_asignees: sql=$sql"
 
 
     set asignee_list [list]
@@ -279,14 +313,15 @@ ad_proc -public im_forum_topic_alert_user {
 # ----------------------------------------------------------------------
 
 ad_proc -public im_forum_render_tind {
-	topic_id 
+	topic_id parent_id
 	topic_type_id topic_type 
         topic_status_id topic_status
 	owner_id asignee_id owner_name asignee_name
-	user_id object_id group_name
+	user_id object_id object_name object_admin
 	subject message
 	posting_date due_date
 	priority scope
+        return_url
 } {
     Render the rows of a single TIND
 } {
@@ -294,34 +329,50 @@ ad_proc -public im_forum_render_tind {
     set bgcolor(1) " class=rowodd"
 
     set user_is_group_member_p [ad_user_group_member $object_id $user_id]
+    set task_or_incident_p [im_forum_is_task_or_incident $topic_type_id]
+
     set ctr 1
     set tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
 		  <td>Subject:</td>
 		  <td>
-		    [im_gif $topic_type_id "New $topic_type"] 
+		    [im_gif $topic_type_id "$topic_type"] 
 		    $subject"
-    if {$user_id == $owner_id} {
-append tind_html " &nbsp; (<A href=new-tind?topic_id=$topic_id&submit=Edit>Edit</A>)"
+    append tind_html " (<A href=new?parent_id=$topic_id&[export_url_vars return_url]>Reply</A>)"
+
+    if {$object_admin || $user_id==$owner_id} {
+	append tind_html " (<A href=new?[export_url_vars topic_id return_url]>Edit</A>)"
     }
-    if {$user_is_group_member_p} {
-append tind_html " (<A href=new-tind?topic_id=$topic_id&submit=Reply>Reply</A>)"
-    }
+
     append tind_html "
 		  </td>
 		</tr>"
     incr ctr
 
-    append tind_html "
+
+    if {$topic_type_id != [im_topic_type_id_reply]} {
+	append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
 		  <td>Posted in:</td>
-		  <td><A href='/intranet/projects/view?group_id=$object_id'>$group_name</A></td>
+		  <td><A href=[im_biz_object_url $object_id]>$object_name</A></td>
 		</tr>\n"
-    incr ctr
+	incr ctr
+    }
+
+    if {0 != $parent_id && "" != $parent_id} {
+	set parent_subject [db_string parent_subject "select subject from im_forum_topics where topic_id=:parent_id" -default ""]
+	append tind_html "
+		<tr $bgcolor([expr $ctr % 2])>
+		  <td>Parent posting:</td>
+		  <td><A href=/intranet-forum/view?topic_id=$parent_id>$parent_subject</A></td>
+		</tr>\n"
+	incr ctr
+    }
+
 
     append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
-		  <td>From:</td><td>
+		  <td>Posted by:</td><td>
 		    <A HREF=/intranet/users/view?user_id=$owner_id>
 		      $owner_name
 		   </A>
@@ -329,14 +380,24 @@ append tind_html " (<A href=new-tind?topic_id=$topic_id&submit=Reply>Reply</A>)"
 		</tr>\n"
     incr ctr
 
-if {$topic_status_id != ""} {
-    append tind_html "
+
+    # Show the status only for tasks and incidents
+    # For all other it really doesn't matter.
+    if {$task_or_incident_p} {
+	set topic_status_msg $topic_status
+	if {$user_id == $asignee_id && $topic_status_id == [im_topic_status_id_assigned]} {
+	    # We are assigned to this task/incident,
+	    # but we haven't confirmed yet
+	    append topic_status_msg " : <font color=red>Please Accept or Reject the $topic_type</font>"
+	}
+	append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
-		  <td>Status:</td><td>$topic_status</td>
-		  </td>
+		  <td>Status:</td>
+                  <td>$topic_status_msg</td>
 		</tr>\n"
-    incr ctr
-}
+	incr ctr
+    }
+
 
     append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
@@ -345,63 +406,170 @@ if {$topic_status_id != ""} {
 		</tr>\n"
     incr ctr
 
-    append tind_html "
+    # Only tasks and incidents have a priority, assignee and due date.
+    if {$task_or_incident_p} {
+	append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
 		  <td>Priority:</td>
 		  <td>$priority</td>
 		</tr>\n"
-    incr ctr
+	incr ctr
 
-    if {$asignee_id != ""} {
-	append tind_html "
+	# Hide the asignee from a customer or others if they don't have
+	# permissions to see the user.
+	set asignee_html [im_render_user_id $asignee_id $asignee_name $user_id $object_id]
+	if {"" != $asignee_html} {
+
+	    append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
 		  <td>Assigned to:</td>
-		  <td>
+		  <td>\n"
+	    if {"" == $asignee_name} { 
+		append tind_html "unassigned"
+	    } else {
+		append tind_html "
 		    <A href=/intranet/users/view?user_id=$asignee_id>
 		      $asignee_name
 		    </A>"
-    if {$user_id == $asignee_id || $user_id == $owner_id} {
-        append tind_html " &nbsp; (<A href=new-tind?topic_id=$topic_id&submit=Assign>Assign</A>)"
-    }
+	    }
+	}
+
+	
+	if {$object_admin} {
+	    append tind_html " (<A href=assign?[export_url_vars topic_id return_url]>Assign</A>)"
+	}
 	append tind_html "
 		  </td>
 		</tr>\n"
 	incr ctr
-    }
 
-#    append tind_html "
-#		<tr $bgcolor([expr $ctr % 2])>
-#		  <td>Visible for:</td>
-#		  <td>$scope</td>
-#		</tr>\n"
-#    incr ctr
 
-    if {$due_date != ""} {
-	append tind_html "
+	if {$due_date != ""} {
+	    append tind_html "
 		<tr $bgcolor([expr $ctr % 2])>
 		  <td>Due Date:</td>
 		  <td>$due_date</td>
 		</tr>\n"
+	    incr ctr
+	}
+    }
+
+    # Don't show the visibility information for reply messages
+    # (not necessary because it is governed by the thread parent)
+    if {$topic_type_id != [im_topic_type_id_reply]} {
+	append tind_html "
+                <tr $bgcolor([expr $ctr % 2])>
+                  <td>Visible for</td>
+                  <td>[im_forum_scope_html $scope]
+                  </td>
+                </tr>"
 	incr ctr
     }
-    
-#    append tind_html "
-#		<tr $bgcolor([expr $ctr % 2])><td colspan=2 align=center>
-#		<input type=submit name=submit value='Edit'>
-#		<input type=submit name=submit value='Reply'>
-#		</td></tr>
-#    "
-#    incr ctr
 
     # Only allow plain text messages
     set html_p "f"
     append tind_html "
-		<tr bgcolor=white><td colspan=2>
-		  <pre>[ad_convert_to_html -html_p $html_p -- $message]</pre>
+		<tr class=rowplain><td colspan=2>
+		  <table cellspacing=2 cellpadding=2 border=0><tr><td>
+		    [ad_convert_to_html -html_p $html_p -- $message]
+		  </td></tr></table>
 		</td></tr>
     "
     return $tind_html
 }
+
+
+# ----------------------------------------------------------------------
+# Render a Thread
+# ----------------------------------------------------------------------
+
+ad_proc -public im_forum_render_thread { topic_id user_id object_id object_name object_admin return_url} {
+    Returns a formatted HTML representing the child postings
+    of the specified topic.
+} {
+    set topic_sql "
+select
+	t.*,
+	ug.project_name,
+	tr.indent_level,
+	(10-tr.indent_level) as colspan_level,
+	ftc.category as topic_type,
+	fts.category as topic_status,
+	im_name_from_user_id(ou.user_id) as owner_name,
+	im_name_from_user_id(au.user_id) as asignee_name
+from
+	(select
+		topic_id,
+		(level-1) as indent_level
+	from
+		im_forum_topics t
+	start with
+		topic_id=:topic_id
+	connect by
+		parent_id = PRIOR topic_id
+	) tr,
+	im_forum_topics t,
+	users ou,
+	users au,
+	im_projects ug,
+	im_categories ftc,
+	im_categories fts
+where
+	tr.topic_id = t.topic_id
+	and t.owner_id=ou.user_id
+	and ug.project_id=t.object_id
+	and t.asignee_id=au.user_id(+)
+	and t.topic_type_id=ftc.category_id(+)
+	and t.topic_status_id=fts.category_id(+)
+"
+
+    # -------------- Setup the outer table with indents-----------------------
+
+    # outer table with 10 columns for indenting
+    set thread_html "
+<table cellspacing=0 border=0 cellpadding=3>
+<tr>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+</tr>
+"
+
+
+    # -------------- Render all TIND elements -----------------------
+
+    set msg_ctr 1
+    db_foreach get_topic $topic_sql {
+
+	# skip the first message, displayed above.
+	if {$msg_ctr != 1} {
+
+	    # position table within the outer indent-table
+	    append thread_html "<tr>"
+	    if {$indent_level > 0} {
+		append thread_html "<td colspan=$indent_level>&nbsp;</td>"
+	    }
+	    append thread_html "
+		  <td colspan=$colspan_level>
+		     <table border=0 cellpadding=0 bgcolor=#E0E0E0>"
+	    append thread_html " [im_forum_render_tind $topic_id 0 $topic_type_id $topic_type $topic_status_id $topic_status $owner_id $asignee_id $owner_name $asignee_name $user_id $object_id $object_name $object_admin $subject $message $posting_date $due_date $priority $scope $return_url]
+
+		    </table>
+		  </td>
+		</tr>\n"
+	}
+	incr msg_ctr
+    }
+    return $thread_html
+}
+
 
 # ----------------------------------------------------------------------
 # Forum List Page Component
@@ -430,8 +598,8 @@ ad_proc -public im_forum_component {
     <ul>
       <li>object_id : The object_id of the object where the discussion takes place
           (historic name...)
-      <li>restrict_to_topic_type_id: 0=All, 1=Tasks & Incidents, other=Specific
-      <li>forum_type: ....!!!
+      <li>restrict_to_topic_type_id: 0=All, 1=Tasks & Incidents, 2=Unresolved, other=Specific
+      <li>forum_type: ....
     </ul>
 
     ToDo: Very ugly! Future packages won'te be able to use this component because
@@ -592,11 +760,26 @@ ad_proc -public im_forum_component {
     if {$restrict_to_new_topics} {
 	lappend restrictions "(m.read_p is null or m.read_p='f')" 
     }
-    if {$restrict_to_folder} {
-	lappend restrictions "m.folder_id=:restrict_to_folder" 
-    } else {
-	lappend restrictions "(m.folder_id is null or m.folder_id=0)" 
+    switch $restrict_to_folder {
+	0 {
+	    # "Active topics" = "Inbox"
+	    lappend restrictions "(m.folder_id is null or m.folder_id=0)" 
+	}
+	1 {
+	    # Deleted topics
+	    lappend restrictions "m.folder_id=:restrict_to_folder" 
+	}
+	2 {
+	    # Unresolved topics
+	    lappend restrictions "(t.topic_status_id != [im_topic_status_id_closed] and
+            t.topic_type_id in ([im_topic_type_id_task],[im_topic_type_id_incident]))"
+	}
+	default {
+	    lappend restrictions "m.folder_id=:restrict_to_folder" 
+	}
     }
+
+
     # ToDo: Replace this by a hierarchy of topic types 
     # such as in project types.
     if {$restrict_to_topic_type_id} {
@@ -638,30 +821,34 @@ select
 	u.url as object_view_url,
 	im_initials_from_user_id(t.owner_id) as owner_initials,
 	im_initials_from_user_id(t.asignee_id) as asignee_initials,
-	im_category_from_id(t.topic_type_id) as topic_type
+	im_category_from_id(t.topic_type_id) as topic_type,
+	im_category_from_id(t.topic_status_id) as topic_status
 from
 	im_forum_topics t,
 	im_forum_folders f,
 	acs_objects o,
-        (select *
-         from	im_forum_topic_user_map
-         where user_id=:user_id
-        ) m,
-	(select * 
-	 from	im_biz_object_urls 
-	 where	url_type='view'
-	) u,
+        (select * from im_forum_topic_user_map where user_id=:user_id) m,
+	(select * from im_biz_object_urls where	url_type='view') u,
 	(	select 1 as p, 
 			object_id_one as object_id 
 		from 	acs_rels
 		where	object_id_two = :user_id
-	) member_objects
+	) member_objects,
+	(	select 1 as p, 
+			r.object_id_one as object_id 
+		from 	acs_rels r,
+			im_biz_object_members m
+		where	r.object_id_two = :user_id
+			and r.rel_id = m.rel_id
+			and m.object_role_id in (1301, 1302, 1303)
+	) admin_objects
 where
         (t.parent_id is null or t.parent_id=0)
         and t.object_id != 1
 	and t.topic_id=m.topic_id(+)
 	and m.folder_id=f.folder_id(+)
 	and t.object_id = member_objects.object_id(+)
+	and t.object_id = admin_objects.object_id(+)
 	and t.object_id = o.object_id
 	and o.object_type = u.object_type(+)
 	and 1 =	im_forum_permission(
@@ -671,7 +858,7 @@ where
 		t.object_id,
 		t.scope,
 		member_objects.p,
-		member_objects.p,
+		admin_objects.p,
 		:user_is_employee_p,
 		:user_is_customer_p
 	)
@@ -719,7 +906,7 @@ $order_by_clause"
     set limited_query $forum_sql
 
     db_foreach forum_query $limited_query {
-        if {$read_p == "t"} {set read 1} else {set read 0}
+        if {$read_p == "t"} {set read "read"} else {set read "unread"}
         if {$folder_id == ""} {set folder_name "Inbox"}
 
         # insert intermediate headers for every project
@@ -833,27 +1020,27 @@ ad_proc -public im_forum_create_bar { title_text object_id {return_url ""} } {
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/new-tind?topic_type_id=1102&[export_url_vars object_id return_url]'>
+  <A href='/intranet-forum/new?topic_type_id=1102&[export_url_vars object_id return_url]'>
     [im_gif "incident" "Create new Incident"]
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/new-tind?topic_type_id=1104&[export_url_vars object_id return_url]'>
+  <A href='/intranet-forum/new?topic_type_id=1104&[export_url_vars object_id return_url]'>
     [im_gif "task" "Create new Task"]
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/new-tind?topic_type_id=1106&[export_url_vars object_id return_url]'>
+  <A href='/intranet-forum/new?topic_type_id=1106&[export_url_vars object_id return_url]'>
     [im_gif "discussion" "Create a new Discussion"]
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/new-tind?topic_type_id=1100&[export_url_vars object_id return_url]'>
+  <A href='/intranet-forum/new?topic_type_id=1100&[export_url_vars object_id return_url]'>
     [im_gif "news" "Create new News Item"]
   </A>
 </td>
 <td>
-  <A href='/intranet-forum/new-tind?topic_type_id=1108&[export_url_vars object_id return_url]'>
+  <A href='/intranet-forum/new?topic_type_id=1108&[export_url_vars object_id return_url]'>
     [im_gif "note" "Create new Note"]
   </A>
 </td>
@@ -864,7 +1051,7 @@ ad_proc -public im_forum_create_bar { title_text object_id {return_url ""} } {
 
 
 
-ad_proc -public im_forum_navbar { base_url export_var_list } {
+ad_proc -public im_forum_navbar { base_url export_var_list {forum_folder 0} } {
     Returns rendered HTML code for a horizontal sub-navigation
     bar for /intranet-forum/.
 } {
@@ -880,18 +1067,13 @@ ad_proc -public im_forum_navbar { base_url export_var_list } {
     # --------------- Determine the calling page ------------------
     set user_id [ad_get_user_id]
     set section ""
-    set url_stub [im_url_with_query]
-    ns_log Notice "im_forum_navbar: url_stub=$url_stub"
     
-    switch -regexp $url_stub {
-	{index$} { set section "Active Topics" }
-	{forum_folder=1} { set section "Deleted Topics" }
-	{forum%5flist%5fdiscussion} { set section "Discussion View" }
-	{forum%5flist%5fhistory} { set section "History" }
-	{view-tind} { set section "One Topic" }
-	{new-tind} { set section "One Topic" }
+    switch $forum_folder {
+	0 { set section "Inbox" }
+	1 { set section "Deleted" }
+	2 { set section "Unresolved" }
 	default {
-	    set section "Active Topics"
+	    set section "Inbox"
 	}
     }
 
@@ -900,14 +1082,16 @@ ad_proc -public im_forum_navbar { base_url export_var_list } {
     set a_white "<a class=whitelink"
     set tdsp "<td>&nbsp;</td>"
 
-    set active_topics "$tdsp$nosel<a href='index'>Active Topics</a></td>"
-    set deleted_topics "$tdsp$nosel<a href='index?forum_folder=1'>Deleted Topics</a></td>"
+    set active_topics "$tdsp$nosel<a href='index'>Inbox</a></td>"
+    set deleted_topics "$tdsp$nosel<a href='index?forum_folder=1'>Deleted</a></td>"
+    set unresolved_topics "$tdsp$nosel<a href='index?forum_folder=2'>Unresolved</a></td>"
     set discussion_view "$tdsp$nosel<a href='index?forum_view_name=forum_list_discussion'>Discussion View</a></td>"
     set history "$tdsp$nosel<a href='index?forum_view_name=forum_list_history'>History</a></td>"
 
     switch $section {
-"Active Topics" {set active_topics "$tdsp$sel Active Topics</td>"}
-"Deleted Topics" {set deleted_topics "$tdsp$sel Deleted Topics</td>"}
+"Inbox" {set active_topics "$tdsp$sel Inbox</td>"}
+"Deleted" {set deleted_topics "$tdsp$sel Deleted</td>"}
+"Unresolved" {set unresolved_topics "$tdsp$sel Unresolved</td>"}
 "Discussion View" {set discussion_view "$tdsp$sel Discussion View</td>"}
 "History" {set history "$tdsp$sel History</td>"}
 default {
@@ -926,6 +1110,7 @@ default {
 	<tr>
 	  $active_topics
 	  $deleted_topics
+	  $unresolved_topics
 	</tr>
       </table>
     </td>
