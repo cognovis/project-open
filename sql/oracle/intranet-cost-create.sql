@@ -390,15 +390,198 @@ end;
 show errors
 
 
+
+
+
+
+-------------------------------------------------------------
+-- Repeating Costs
+--
+-- These items generate a new cost every month that they
+-- are active.
+-- This item is used for diverse types of repeating costs
+-- such as employees salaries, rent and utilities costs and
+-- investment amortization, so it is kind of "aggregated"
+-- to those objects.
+
+prompt *** intranet-costs: Creating im_repeating_costs
+create table im_repeating_costs (
+	cost_id			integer
+				constraint im_rep_costs_id_pk
+				primary key
+				constraint im_rep_costs_id_fk
+				references acs_objects,
+	cost_name		varchar(400),
+				-- who pays?
+	customer_id		integer
+				constraint im_rep_costs_customer_fk
+				references acs_objects,
+				-- who gets paid?
+	provider_id		integer
+				constraint im_rep_costs_provider_fk
+				references acs_objects,
+	cost_center_id		integer not null
+				constraint im_rep_costs_centers_fk
+				references im_cost_centers,
+	start_date		date 
+				constraint im_rep_costs_start_date_nn
+				not null,
+	end_date		date default '2099-12-31'
+				constraint im_rep_costs_end_date_nn
+				not null,
+	amount			number(12,3),
+	currency		char(3)
+				constraint im_rep_costs_currency_fk
+				references currency_codes,
+	description		varchar(4000),
+	note			varchar(4000),
+		constraint im_rep_costs_start_end_date
+		check(start_date < end_date)
+);
+
+
+
+-------------------------------------------------------------
+-- Price List
+--
+-- Several objects expose a changing price over time,
+-- such as employees (salary), rent, aDSL line etc.
+-- However, we don't want to modify the price for
+-- every month when generating monthly costs,
+-- so it may be better to record the changing price
+-- over time.
+-- This object determines the price for an object
+-- based on a start_date - end_date range.
+-- End_date is kind of redundant, because it could
+-- be deduced from the start_date of the next cost,
+-- but that way we would need a max(...) query to
+-- determine a current price which might be very slow.
+---
+prompt *** intranet-costs: Creating im_prices
+create table im_prices (
+	object_id		integer
+				constraint im_prices_object_fk
+				references acs_objects,
+	attribute		varchar(100)
+				constraint im_prices_attribute_nn
+				not null,
+	start_date		date,
+	end_date		date default '2099-12-31',
+	amount			number(12,3),
+	currency		char(3)
+				constraint im_prices_currency_fk
+				references currency_codes(iso),
+		primary key (object_id, attribute, currency)
+);
+
+alter table im_prices
+add constraint im_prices_start_end_ck
+check(start_date < end_date);
+
+
+
+-------------------------------------------------------------
+-- "Investments"
+--
+-- Investments are purchases of larger "investment items"
+-- that are not treated as a cost item immediately.
+-- Instead, investments are "amortized" over time
+-- (monthly, quarterly or yearly) until their non-amortized
+-- valeu is zero. A new cost item cost items is generated for 
+-- every amortization interval.
+--
+-- The amortized amount of costs is calculated by summing up
+-- all im_cost_items with the specific investment_id
+--
+
+prompt *** intranet-costs: Creating im_investments
+create table im_investments (
+	investment_id		integer
+				constraint im_investments_pk
+				primary key
+				constraint im_investments_fk
+				references im_repeating_costs,
+	name			varchar(400),
+	investment_status_id	integer
+				constraint im_investments_status_fk
+				references im_categories,
+	investment_type_id	integer
+				constraint im_investments_type_fk
+				references im_categories
+);
+
+
+
+prompt *** intranet-costs: Creating im_cost packages
+begin
+    acs_object_type.create_type (
+        supertype =>            'acs_object',
+        object_type =>          'im_investment',
+        pretty_name =>          'Investment',
+        pretty_plural =>        'Investments',
+        table_name =>           'im_investments',
+        id_column =>            'investment_id',
+        package_name =>         'im_investment',
+        type_extension_table => null,
+        name_method =>          'im_investment.name'
+    );
+end;
+/
+show errors
+
+
+prompt *** intranet-costs: Creating URLs for viewing/editing investments
+delete from im_biz_object_urls where object_type='im_investment';
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_investment','view','/intranet-cost/investments/new?form_mode=display\&investment_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_investment','edit','/intranet-cost/investments/new?form_mode=edit\&investment_id=');
+
+
+prompt *** intranet-costs: Creating Investment categories
+-- Intranet Investment Type
+delete from im_categories where category_id >= 3400 and category_id < 3500;
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3401,'Other','Intranet Investment Type');
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3403,'Computer Hardware','Intranet Investment Type');
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3405,'Computer Software','Intranet Investment Type');
+INSERT INTO im_categories (category_id, category, category_type) 
+VALUES (3407,'Office Furniture','Intranet Investment Type');
+commit;
+-- reserved until 3499
+
+-- Intranet Investment Status
+delete from im_categories where category_id >= 3500 and category_id < 3599;
+INSERT INTO im_categories (category_id, category, category_type, category_description) 
+VALUES (3501,'Active','Intranet Investment Status','Currently being amortized');
+INSERT INTO im_categories (category_id, category, category_type, category_description) 
+VALUES (3503,'Deleted','Intranet Investment Status','Deleted - was an error');
+INSERT INTO im_categories (category_id, category, category_type, category_description) 
+VALUES (3505,'Amortized','Intranet Investment Status','No remaining book value');
+commit;
+-- reserved until 3599
+
+
+
+
 -------------------------------------------------------------
 -- Costs
 --
--- Costs are possibly assigned to project, customers and/or investments,
--- whereever this is reasonable.
--- The idea is to be able to come up with profit/loss on a per-project base
--- as well as on a per-customer base.
--- Amortization costs are additionally related to an investment, so that we
--- can track the amortized money.
+-- Costs is the superclass for all financial items such as 
+-- Invoices, Quotes, Purchase Orders, Bills (from providers), 
+-- Travel Costs, Payroll Costs, Fixed Costs, Amortization Costs,
+-- etc. in order to allow for simple SQL queries revealing the
+-- financial status of a company.
+--
+-- Costs are also used for controlling, namely by assigning costs
+-- to projects, customers and cost centers in order to allow for 
+-- (more or less) accurate profit & loss calculation.
+-- This assignment sometimes requires to split a large cost item
+-- into several smaller items in order to assign them more 
+-- accurately to project, customers or cost centers ("redistribution").
+--
 -- Costs reference acs_objects for customer and provider in order to
 -- allow costs to be created for example between an employee and the
 -- company in the case of travel costs.
@@ -497,6 +680,7 @@ create table im_costs (
 	description		varchar(4000),
 	note			varchar(4000)
 );
+
 
 
 prompt *** intranet-costs: Creating category Cost Type
@@ -960,216 +1144,3 @@ sort_order) values (22098,220,'Del',
 commit;
 
 
--------------------------------------------------------------
--- Repeating Costs
---
--- These items generate a new cost every month that they
--- are active.
--- This item is used for diverse types of repeating costs
--- such as employees salaries, rent and utilities costs and
--- investment amortization, so it is kind of "aggregated"
--- to those objects.
-
-prompt *** intranet-costs: Creating im_repeating_costs
-create table im_repeating_costs (
-	cost_id			integer
-				constraint im_rep_costs_id_pk
-				primary key
-				constraint im_rep_costs_id_fk
-				references acs_objects,
-	cost_name		varchar(400),
-				-- who pays?
-	customer_id		integer
-				constraint im_rep_costs_customer_fk
-				references acs_objects,
-				-- who gets paid?
-	provider_id		integer
-				constraint im_rep_costs_provider_fk
-				references acs_objects,
-	cost_center_id		integer not null
-				constraint im_rep_costs_centers_fk
-				references im_cost_centers,
-	start_date		date 
-				constraint im_rep_costs_start_date_nn
-				not null,
-	end_date		date default '2099-12-31'
-				constraint im_rep_costs_end_date_nn
-				not null,
-	amount			number(12,3),
-	currency		char(3)
-				constraint im_rep_costs_currency_fk
-				references currency_codes,
-	description		varchar(4000),
-	note			varchar(4000),
-		constraint im_rep_costs_start_end_date
-		check(start_date < end_date)
-);
-
-
-
--------------------------------------------------------------
--- Price List
---
--- Several objects expose a changing price over time,
--- such as employees (salary), rent, aDSL line etc.
--- However, we don't want to modify the price for
--- every month when generating monthly costs,
--- so it may be better to record the changing price
--- over time.
--- This object determines the price for an object
--- based on a start_date - end_date range.
--- End_date is kind of redundant, because it could
--- be deduced from the start_date of the next cost,
--- but that way we would need a max(...) query to
--- determine a current price which might be very slow.
----
-prompt *** intranet-costs: Creating im_prices
-create table im_prices (
-	object_id		integer
-				constraint im_prices_object_fk
-				references acs_objects,
-	attribute		varchar(100)
-				constraint im_prices_attribute_nn
-				not null,
-	start_date		date,
-	end_date		date default '2099-12-31',
-	amount			number(12,3),
-	currency		char(3)
-				constraint im_prices_currency_fk
-				references currency_codes(iso),
-		primary key (object_id, attribute, currency)
-);
-
-alter table im_prices
-add constraint im_prices_start_end_ck
-check(start_date < end_date);
-
-
-
--------------------------------------------------------------
--- "Investments"
---
--- Investments are purchases of larger "investment items"
--- that are not treated as a cost item immediately.
--- Instead, investments are "amortized" over time
--- (monthly, quarterly or yearly) until their non-amortized
--- valeu is zero. A new cost item cost items is generated for 
--- every amortization interval.
---
--- The amortized amount of costs is calculated by summing up
--- all im_cost_items with the specific investment_id
---
-
-prompt *** intranet-costs: Creating im_investments
-create table im_investments (
-	investment_id		integer
-				constraint im_investments_pk
-				primary key
-				constraint im_investments_fk
-				references im_repeating_costs,
-	name			varchar(400),
-	investment_status_id	integer
-				constraint im_investments_status_fk
-				references im_categories,
-	investment_type_id	integer
-				constraint im_investments_type_fk
-				references im_categories
-);
-
-
-prompt *** intranet-costs: Creating URLs for viewing/editing investments
-delete from im_biz_object_urls where object_type='im_investment';
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_investment','view','/intranet-cost/investments/new?form_mode=display\&investment_id=');
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_investment','edit','/intranet-cost/investments/new?form_mode=edit\&investment_id=');
-
-
-prompt *** intranet-costs: Creating Investment categories
--- Intranet Investment Type
-delete from im_categories where category_id >= 3400 and category_id < 3500;
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3401,'Other','Intranet Investment Type');
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3403,'Computer Hardware','Intranet Investment Type');
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3405,'Computer Software','Intranet Investment Type');
-INSERT INTO im_categories (category_id, category, category_type) 
-VALUES (3407,'Office Furniture','Intranet Investment Type');
-commit;
--- reserved until 3499
-
--- Intranet Investment Status
-delete from im_categories where category_id >= 3500 and category_id < 3599;
-INSERT INTO im_categories (category_id, category, category_type, category_description) 
-VALUES (3501,'Active','Intranet Investment Status','Currently being amortized');
-INSERT INTO im_categories (category_id, category, category_type, category_description) 
-VALUES (3503,'Deleted','Intranet Investment Status','Deleted - was an error');
-INSERT INTO im_categories (category_id, category, category_type, category_description) 
-VALUES (3505,'Amortized','Intranet Investment Status','No remaining book value');
-commit;
--- reserved until 3599
-
-
-
--------------------------------------------------------------
--- Costs
---
--- Costs is the superclass for all financial items such as 
--- Invoices, Quotes, Purchase Orders, Bills (from providers), 
--- Travel Costs, Payroll Costs, Fixed Costs, Amortization Costs,
--- etc. in order to allow for simple SQL queries revealing the
--- financial status of a company.
---
--- Costs are also used for controlling, namely by assigning costs
--- to projects, customers and cost centers in order to allow for 
--- (more or less) accurate profit & loss calculation.
--- This assignment sometimes requires to split a large cost item
--- into several smaller items in order to assign them more 
--- accurately to project, customers or cost centers ("redistribution").
---
-create table im_costs (
-	cost_id			integer
-				constraint im_costs_pk
-				primary key,
-				constraint im_costs_item_fk
-				references acs_objects,
-	name			varchar(400),
-	cost_status_id		integer
-				constraint im_costs_status_fk
-				references im_categories,
-	cost_type_id		integer
-				constraint im_costs_type_fk
-				references im_categories,
-	project_id		integer
-				constraint im_costs_project_fk
-				references im_projects,
-	customer_id		integer
-				constraint im_costs_customer_fk
-				references im_customers,
-	asset_id		integer
-				constraint im_costs_asset_fk
-				references im_assets,
-	due_date		date,
-	payment_date		date,
-	amount			number(12,3),
-	currency		char(3) references currency_codes(iso),
-	-- variable or fixed costs?
-	variable_type_id	integer
-				constraint im_cost_variable_fk
-				references im_categories,
-	-- cost has been split into several small cost items?
-	redistributed_p		char(1)
-				constraint im_costs_var_ck
-				check redistributed_p in ('t','f'),
-	-- points to its parent if the parent was "distributed"
-	parent_cost_id		integer
-				constraint im_costs_parent_fk
-				references im_costs,
-	-- "real cost", "planning" of "quote or purchase order"
-	planning_type_id	integer
-				constraint im_costs_planning_type_fk
-				references im_categories,
-	description		varchar(4000),
-);
->>>>>>> 1.2.2.1
