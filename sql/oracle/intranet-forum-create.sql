@@ -505,28 +505,28 @@ insert into im_views (view_id, view_name, visible_for) values (45, 'forum_list_c
 --
 delete from im_view_columns where column_id >= 4000 and column_id < 4099;
 insert into im_view_columns values (4000,40,NULL,'P',
-'$priority','','',2,'im_permission $user_id view_forums');
+'$priority','','',2,'');
 
 insert into im_view_columns values (4002,40,NULL,'Type',
 '"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
 [im_gif $topic_type]</a>"',
-'','',4,'im_permission $user_id view_forums');
+'','',4,'');
 
 insert into im_view_columns values (4003,40,NULL,'Object',
 '"<a href=$object_view_url$object_id>$object_name</a>"',
-'','',5,'im_permission $user_id view_forums');
+'','',5,'');
 
 insert into im_view_columns values (4004,40,NULL,'Subject',
 '"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
-$subject</a>"','','',6,'im_permission $user_id view_forums');
+$subject</a>"','','',6,'');
 
 insert into im_view_columns values (4006,40,NULL,'Due',
-'$due_date','','',8,'im_permission $user_id view_forums');
+'$due_date','','',8,'');
 
 insert into im_view_columns values (4010,40,NULL,
 '"[im_gif help "Select topics here for processing"]"',
 '"<input type=checkbox name=topic_id.$topic_id>"',
-'','',12,'im_permission $user_id view_forums');
+'','',12,'');
 
 commit;
 
@@ -536,32 +536,32 @@ commit;
 --
 delete from im_view_columns where column_id >= 4100 and column_id < 4199;
 insert into im_view_columns values (4100,41,NULL,'P',
-'$priority','','',2,'im_permission $user_id view_forums');
+'$priority','','',2,'');
 
 insert into im_view_columns values (4102,41,NULL,'Type',
 '"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
 [im_gif $topic_type]</a>"',
-'','',4,'im_permission $user_id view_forums');
+'','',4,'');
 
 insert into im_view_columns values (4104,41,NULL,'Subject',
 '"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
-$subject</a>"','','',6,'im_permission $user_id view_forums');
+$subject</a>"','','',6,'');
 
 insert into im_view_columns values (4106,41,NULL,'Due',
-'$due_date','','',8,'im_permission $user_id view_forums');
+'$due_date','','',8,'');
 
 insert into im_view_columns values (4107,41,NULL,'Own',
 '"<a href=/intranet/users/view?user_id=$owner_id>$owner_initials</a>"',
-'','',9,'im_permission $user_id view_forums');
+'','',9,'');
 
 insert into im_view_columns values (4108,41,NULL,'Ass',
 '"<a href=/intranet/users/view?user_id=$asignee_id>$asignee_initials</a>"',
-'','',10,'im_permission $user_id view_forums');
+'','',10,'');
 
 insert into im_view_columns values (4110,41,NULL,
 '"[im_gif help "Select topics here for processing"]"',
 '"<input type=checkbox name=topic_id.$topic_id>"',
-'','',12,'im_permission $user_id view_forums');
+'','',12,'');
 
 commit;
 
@@ -570,42 +570,42 @@ commit;
 --
 delete from im_view_columns where column_id >= 4200 and column_id < 4299;
 insert into im_view_columns values (4200,42,NULL,'P',
-'$priority','','',2,'im_permission $user_id view_forums');
+'$priority','','',2,'');
 
 insert into im_view_columns values (4201,42,NULL,'Object',
 '"<a href=$object_view_url$object_id>$object_name</a>"',
-'','',3,'im_permission $user_id view_forums');
+'','',3,'');
 
 insert into im_view_columns values (4202,42,NULL,'Type',
 '"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
 [im_gif $topic_type]</a>"',
-'','',4,'im_permission $user_id view_forums');
+'','',4,'');
 
 insert into im_view_columns values (4204,42,NULL,'Subject',
 '"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
-$subject</A>"','','',6,'im_permission $user_id view_forums');
+$subject</A>"','','',6,'');
 
 insert into im_view_columns values (4206,42,NULL,'Due',
-'$due_date','','',8,'im_permission $user_id view_forums');
+'$due_date','','',8,'');
 
 insert into im_view_columns values (4207,42,NULL,'Own',
 '"<a href=/intranet/users/view?user_id=$owner_id>$owner_initials</a>"',
-'','',9,'im_permission $user_id view_forums');
+'','',9,'');
 
 insert into im_view_columns values (4208,42,NULL,'Ass',
 '"<a href=/intranet/users/view?user_id=$asignee_id>$asignee_initials</a>"',
-'','',10,'im_permission $user_id view_forums');
+'','',10,'');
 
 insert into im_view_columns values (4209,42,NULL,'Read',
-'$read','','',11,'im_permission $user_id view_forums');
+'$read','','',11,'');
 
 insert into im_view_columns values (4210,42,NULL,
 '"[im_gif help "Select topics here for processing"]"',
 '"<input type=checkbox name=topic_id.$topic_id>"',
-'','',12,'im_permission $user_id view_forums');
+'','',12,'');
 
 insert into im_view_columns values (4212,42,NULL,'Folder',
-'$folder_name','','',14,'im_permission $user_id view_forums');
+'$folder_name','','',14,'');
 
 commit;
 

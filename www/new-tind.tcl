@@ -26,6 +26,7 @@ ad_page_contract {
     {topic_type_id 0}
     {asignee_id 0}
     {return_url ""}
+    {edit_message_p 0}
 } 
 
 # ------------------------------------------------------------------
@@ -135,14 +136,13 @@ if {!$done && $topic_id != 0 && [string equal $submit "Reply"]} {
     set topic_sql "
 select
 	t.object_id as object_id,
-	ug.project_name,
+	acs_object.name(t.object_id) as object_name,
 	t.scope
 from
-	im_forum_topics t,
-	im_projects ug
+	im_forum_topics t
 where
 	topic_id=:parent_id
-	and ug.project_id=t.object_id"
+"
 
     db_1row get_topic $topic_sql
 
@@ -178,26 +178,20 @@ select
 	m.read_p,
 	m.folder_id,
 	m.receive_updates,
-	im_name_from_user_id(ou.user_id) as user_name,
-	im_name_from_user_id(au.user_id) as asignee_name,
-	ug.project_name,
+	im_name_from_user_id(t.owner_id) as user_name,
+	im_name_from_user_id(t.asignee_id) as asignee_name,
+	acs_object.name(t.object_id) as object_name,
 	ftc.category as topic_type,
 	sc.category as topic_status
 from
 	im_forum_topics t,
-      (select * from im_forum_topic_user_map where user_id=:user_id) m,
-	users ou,
-	users au,
-	im_projects ug,
+        (select * from im_forum_topic_user_map where user_id=:user_id) m,
 	im_categories ftc,
 	im_categories sc
 where
 	t.topic_id=:topic_id
 	and t.topic_id=m.topic_id(+)
-	and t.owner_id=ou.user_id
-	and t.asignee_id=au.user_id(+)
 	and t.topic_status_id=sc.category_id(+)
-	and ug.project_id=t.object_id
 	and t.topic_type_id=ftc.category_id(+)
 "
 
@@ -265,7 +259,7 @@ ns_log Notice "new-tind: topic_status_id=$topic_status_id, old_topic_status_id=$
  # Show editing widgets when we are editing a new page
  # and for the owner (to make changes to his text).
  #
- if {$user_id == $owner_id || [string equal $action_type "new_message"]} {
+ if {$edit_message_p || [string equal $action_type "new_message"]} {
      append table_body "
 	 <tr $bgcolor([expr $ctr % 2])>
 	   <td>$topic_type Subject</td>
@@ -278,7 +272,7 @@ ns_log Notice "new-tind: topic_status_id=$topic_status_id, old_topic_status_id=$
      append table_body "
 	 <tr $bgcolor([expr $ctr % 2])>
 	   <td>$topic_type Subject</td>
-	   <td>$subject</td>
+	   <td class=rowplain>$subject</td>
 	 </tr>\n"
      incr ctr
      lappend export_var_list "subject"
@@ -445,7 +439,7 @@ set html_p "f"
 #  <textarea name=message rows=5 cols=50 wrap=soft>[ad_convert_to_html -html_p $html_p -- $message]</textarea>
 
 
-if {$user_id == $owner_id || [string equal $action_type "new_message"]} {
+if {$edit_message_p || [string equal $action_type "new_message"]} {
     append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
 	  <td>$topic_type Body</td>
@@ -459,8 +453,11 @@ if {$user_id == $owner_id || [string equal $action_type "new_message"]} {
     append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
 	  <td>$topic_type Body</td>
-	  <td>[ad_convert_to_html -html_p $html_p -- $message]</td>
+	  <td class=rowplain> 
+              [ad_convert_to_html -html_p $html_p -- $message]
+          </td>
 	</tr>\n"
+
     incr ctr
     lappend export_var_list "message"
 }
@@ -542,7 +539,9 @@ if {![string equal $action_type "new_message"] && ![string equal $action_type "r
 set actions ""
 set added_closed 0
 
-append actions "<option value=reply selected>Reply</option>\n"
+if {[string equal $action_type "reply_message"]} {
+    append actions "<option value=reply selected>Reply</option>\n"
+}
 
 if {[string equal $action_type "new_message"]} {
     # The only action for new messages is "Save".

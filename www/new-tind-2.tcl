@@ -55,7 +55,7 @@ set exception_text ""
 set exception_count 0
 
 if { ![info exists subject] || $subject == "" } {
-    append exception_text "<li>You must enter a topic name"
+    append exception_text "<li>You must enter a subject line"
     incr exception_count
 }
 
