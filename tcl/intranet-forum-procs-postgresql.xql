@@ -13,19 +13,6 @@
     <type>postgresql</type>
     <version>7.2</version>
   </rdbms>
-  <fullquery name="im_forum_component.projects_total_in_limited">
-    <querytext>
-      select count(*)
-        from
-                im_forum_topics t
-                LEFT JOIN im_forum_topic_user_map m using (topic_id)
-                LEFT JOIN im_forum_folders f using (folder_id)
-        where
-                object_id != 1
-                and (t.parent_id is null or t.parent_id=0)
-                $restriction_clause
-    </querytext>
-  </fullquery>
 
   <fullquery name="im_forum_component.forum_query">
     <querytext>

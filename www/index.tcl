@@ -141,11 +141,12 @@ set restrict_to_new_topics 0
 
 set forum_content [im_forum_component \
 	-user_id		$user_id \
-	-object_id		$forum_object_id \
+	-forum_object_id	$forum_object_id \
 	-forum_type		home \
 	-current_page_url	$current_url \
 	-return_url		$return_url \
-	-export_var_list	[list forum_start_idx forum_order_by forum_how_many forum_view_name] \
+	-start_idx		$forum_start_idx \
+	-export_var_list	$export_var_list \
 	-view_name 		[im_opt_val forum_view_name] \
 	-forum_order_by		[im_opt_val forum_order_by] \
 	-restrict_to_mine_p	$forum_mine_p \
