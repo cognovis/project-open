@@ -234,4 +234,28 @@ END;
 show errors;
 
 
+-- Add OrgChart to Users menu
+declare
+begin
+    v_user_orgchart_menu := im_menu.new (
+	menu_id =>	null,
+	object_type =>	'im_menu',
+	creation_date => sysdate,
+	creation_user => 0,
+	creation_ip =>	null,
+	context_id =>	null,
+	package_name =>	'intranet-hr',
+	name =>		'Org Chart',
+	url =>		'/intranet/users/org-chart?customer_id=0',
+	sort_order =>	5,
+	parent_menu_id => v_user_menu
+    );
+    acs_permission.grant_permission(v_user_orgchart_menu, v_admins, 'read');
+    acs_permission.grant_permission(v_user_orgchart_menu, v_senman, 'read');
+    acs_permission.grant_permission(v_user_orgchart_menu, v_proman, 'read');
+    acs_permission.grant_permission(v_user_orgchart_menu, v_accounting, 'read');
+    acs_permission.grant_permission(v_user_orgchart_menu, v_employees, 'read');
+
+end;
+/
 
