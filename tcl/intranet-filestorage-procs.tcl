@@ -687,27 +687,27 @@ ad_proc im_filestorage_tool_tds { folder folder_type project_id return_url up_li
   modifying the URL variables. Doesn't work yet 100%, so better
   disable meanwhile...
    <td>
-     <input type=image src=/intranet/images/up-folder.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='up-folder'; submit();\" alt='[_ intranet-filestorage.Folder_up]'>
+     <input type=image src=/intranet/images/up-folder.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='up-folder'; submit();\" title='[_ intranet-filestorage.Folder_up]' alt='[_ intranet-filestorage.Folder_up]'>
    </td>
 -->
    <td>
-     <input type=image src=/intranet/images/newfol.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-folder'; submit();\" alt='[_ intranet-filestorage.Create_a_new_folder]'>
+     <input type=image src=/intranet/images/newfol.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-folder'; submit();\" title='[_ intranet-filestorage.Create_a_new_folder]' alt='[_ intranet-filestorage.Create_a_new_folder]'>
    </td><td>
-     <input type=image src=/intranet/images/upload.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='upload'; submit();\" alt='[_ intranet-filestorage.Upload_a_file]'>
+     <input type=image src=/intranet/images/upload.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='upload'; submit();\" title='[_ intranet-filestorage.Upload_a_file]' alt='[_ intranet-filestorage.Upload_a_file]'>
    </td><td>
-<!--     <input type=image src=/intranet/images/new-doc.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-doc'; submit();\" alt='[_ intranet-filestorage.lt_Create_a_new_document]'> -->
+<!--     <input type=image src=/intranet/images/new-doc.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-doc'; submit();\" title='[_ intranet-filestorage.lt_Create_a_new_document]' alt='[_ intranet-filestorage.lt_Create_a_new_document]'> -->
    </td><td>
-     <input type=image src=/intranet/images/del.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='del'; submit();\" alt='[_ intranet-filestorage.lt_Delete_files_and_fold]'>
+     <input type=image src=/intranet/images/del.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='del'; submit();\" title='[_ intranet-filestorage.lt_Delete_files_and_fold]' alt='[_ intranet-filestorage.lt_Delete_files_and_fold]'>
    </td><td>
-     <input type=image src=/intranet/images/zip.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='zip'; submit();\" alt='[_ intranet-filestorage.lt_Download_all_files_as]'>
+     <input type=image src=/intranet/images/zip.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='zip'; submit();\" title='[_ intranet-filestorage.lt_Download_all_files_as]' alt='[_ intranet-filestorage.lt_Download_all_files_as]'>
    </td><td>
 
     <table border=0 cellspacing=0 cellpadding=0 width=20>
     <tr><td align=center>
-     <input type=image src=/intranet/images/plus_9.gif width=9 height=9 onClick=\"window.document.$folder_type.actions.value='add-perms'; submit();\" alt='[_ intranet-filestorage.lt_Add_permissions_to_fo]'>
+     <input type=image src=/intranet/images/plus_9.gif width=9 height=9 onClick=\"window.document.$folder_type.actions.value='add-perms'; submit();\" title='[_ intranet-filestorage.lt_Add_permissions_to_fo]' alt='[_ intranet-filestorage.lt_Add_permissions_to_fo]'>
     </td></tr>
     <tr><td align=center>
-     <input type=image src=/intranet/images/minus_9.gif width=9 height=9 onClick=\"window.document.$folder_type.actions.value='del-perms'; submit();\" alt='[_ intranet-filestorage.lt_Remove_permissions_fr]'>
+     <input type=image src=/intranet/images/minus_9.gif width=9 height=9 onClick=\"window.document.$folder_type.actions.value='del-perms'; submit();\" title='[_ intranet-filestorage.lt_Remove_permissions_fr]' alt='[_ intranet-filestorage.lt_Remove_permissions_fr]'>
     </td></tr>
     </table>
   </td>

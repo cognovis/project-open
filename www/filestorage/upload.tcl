@@ -28,6 +28,8 @@ if {[string compare $folder "/"] == 0} {
     set folder ""
 }
 
+set alt_msg "Use the &quot;Browse...&quot; button to locate your file, then click &quot;Open&quot;."
+
 set page_content "
 <form enctype=multipart/form-data method=POST action=upload-2.tcl>
 [export_form_vars folder folder_type project_id return_url]
@@ -37,7 +39,7 @@ set page_content "
                         <td align=right>Filename: </td>
                         <td> 
                           <input type=file name=upload_file size=30>
-                          <img src=/images/help.gif width=16 height=16 alt='Use the &quot;Browse...&quot; button to locate your file, then click &quot;Open&quot;.'> 
+                          <img src=/images/help.gif width=16 height=16 title=\"$alt_msg\" alt=\"$alt_msg\"> 
                         </td>
                       </tr>
 <!--
