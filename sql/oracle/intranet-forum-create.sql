@@ -6,6 +6,7 @@
 -- http://www.project-open.com/license/ for details.
 --
 -- @author frank.bergmann@project-open.com
+-- @author juanjoruizx@yahoo.es
 
 -----------------------------------------------------------
 -- Tasks, Incidents, News and Discussions (TIND)
@@ -29,9 +30,13 @@ create table im_forum_topics (
 	object_id	integer not null 
 			constraint im_forum_topics_object_fk
 			references acs_objects,
-	parent_id	integer
-			constraint im_forum_topics_parent_fk
-			references im_forum_topics,
+	-- Hierarchy of messages
+	parent_id	  integer
+			  constraint im_forum_topics_parent_fk
+			  references im_forum_topics,
+	tree_sortkey      raw(240),
+	max_child_sortkey raw(100),	
+
 	topic_type_id	integer not null
 			constraint im_forum_topics_type_fk
 			references im_categories,
@@ -53,9 +58,60 @@ create table im_forum_topics (
 	due_date	date default sysdate,
 	asignee_id	integer
 			constraint im_forum_topics_asignee_fk
-			references users
+			references users,
+
+	constraint im_forums_topic_sk_forum_un
+	unique (tree_sortkey, topic_id)
 );
 create index im_forum_topics_object_idx on im_forum_topics (object_id);
+
+-- This is the sortkey code
+--
+create or replace trigger im_forum_topic_insert_tr
+before insert on im_forum_topics
+for each row
+declare
+    v_max_child_sortkey             im_forum_topics.max_child_sortkey%TYPE;
+    v_parent_sortkey                im_forum_topics.tree_sortkey%TYPE;
+begin
+
+    if :new.parent_id is null
+    then
+
+        select '', max_child_sortkey
+        into v_parent_sortkey, v_max_child_sortkey
+        from im_forum_topics
+        where parent_id is null
+        for update of max_child_sortkey;
+
+        v_max_child_sortkey := tree.increment_key(v_max_child_sortkey);
+
+        update im_forum_topics
+        set max_child_sortkey = v_max_child_sortkey
+        where topic_id is null;
+
+    else
+
+        select nvl(tree_sortkey, ''), max_child_sortkey
+        into v_parent_sortkey, v_max_child_sortkey
+        from im_forum_topics
+        where topic_id = :new.parent_id
+        for update of max_child_sortkey;
+
+        v_max_child_sortkey := tree.increment_key(v_max_child_sortkey);
+
+        update im_forum_topics
+        set max_child_sortkey = v_max_child_sortkey
+        where topic_id = :new.parent_id;
+
+    end if;
+
+    :new.tree_sortkey := v_parent_sortkey || v_max_child_sortkey;
+
+end im_forum_topic_insert_tr;
+/
+show errors
+
 
 
 -- A function that decides whether a specific user can see a

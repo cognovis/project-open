@@ -16,6 +16,7 @@ ad_page_contract {
         new_message, edit_message, undefined, reply_message
 
     @author frank.bergmann@project-open.com
+    @author juanjoruizx@yahoo.es
 } {
     topic_id:integer
     {actions ""}
@@ -25,7 +26,7 @@ ad_page_contract {
     {owner_id:integer 0}
     {old_asignee_id:integer 0}
     {object_id:integer 0}
-    {parent_id:integer 0}
+    {parent_id:integer "[db_null]"}
     {topic_type_id 0}
     {topic_status_id 0}
     {old_topic_status_id 0}
@@ -160,6 +161,8 @@ if {[string equal $actions "save"]} {
 	}
     }
 
+    set today [db_string get_sysdate "select sysdate from dual"]
+
     # update the information
     db_transaction {
 	db_dml topic_update "
@@ -168,7 +171,7 @@ update im_forum_topics set
 	parent_id=:parent_id,
 	topic_type_id=:topic_type_id,
 	topic_status_id=:topic_status_id,
-	posting_date=sysdate,
+	posting_date=:today,
 	owner_id=:owner_id,
 	scope=:scope, 
 	subject=:subject,
@@ -239,8 +242,8 @@ from
 	(select	m.member_id as user_id,
 		1 as p
 	 from group_distinct_member_map m
-	 where	m.group_id = [im_company_group_id]
-	) companies,
+	 where	m.group_id = [im_customer_group_id]
+	) customers,
 	(select	m.member_id as user_id,
 		1 as p
 	 from group_distinct_member_map m
@@ -263,7 +266,7 @@ from
 where
 	r.object_id_one = :object_id
 	and r.object_id_two = p.party_id
-	and p.party_id = companies.user_id(+)
+	and p.party_id = customers.user_id(+)
 	and p.party_id = employees.user_id(+)
 	and o_mem.user_id = p.party_id
 	and 1 = im_forum_permission(
@@ -275,7 +278,7 @@ where
 		o_mem.member_p,
 		o_mem.admin_p,
 		employees.p,
-		companies.p
+		customers.p
 	)"
 
 	db_foreach subscribe_object_members $object_member_sql {
