@@ -96,7 +96,7 @@ switch $actions {
 	set page_title "Add Permissions"
 	set page_content "
 <H1>$page_title</H1>
-<form action=/intranet-filestorage/add-perms-2 method=POST>
+<form name=add_perms action=/intranet-filestorage/add-perms-2 method=POST>
 [export_form_vars object_id folder_type bread_crum_path return_url]
 <table border=0 cellspacing=0 cellpadding=2>
 <tr class=rowtitle>

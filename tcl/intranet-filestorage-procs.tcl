@@ -740,13 +740,13 @@ ad_proc -private im_filestorage_merge_perms { perms1 perms2 } {
     for {set ctr 0} {$ctr <= 3} {incr ctr} {
 	set perm1 [lindex $perms1 $ctr]
 	set perm2 [lindex $perms2 $ctr]
-	lappend perms [expr $perm1 || $perm2]
+	lappend perms [expr $perm1+$perm2]
     }
     return $perms
 }
 
 ad_proc -public im_filestorage_path_perms { path perm_hash_array roles profiles} {
-    Returns a hash profile_ids -> [1 1 1 1] for the path,
+    Returns a hash of (profile_ids -> [1 1 1 1]) for the given path,
     inheriting permissions from all super-directories
     @param roles list of [role_id role_gif role_name] triples for each role
     @param profiles list of [profile_id profile_gif profile_name] triples 
@@ -1219,6 +1219,7 @@ ad_proc im_filestorage_dir_row {
     Create a directory row with links for open/close and bread_crum enter
 } {
 
+    array set perm_hash $perm_hash_array
     set line_html ""
     set i 1
     while {$i < $current_depth} {
@@ -1250,14 +1251,28 @@ ad_proc im_filestorage_dir_row {
     foreach role $roles {
 	set role_id [lindex $role 0]
 	set p $perms($role_id)
-	append roles_tds "<td align=center>[im_filestorage_render_perms $p]&nbsp;</td>\n"
+
+	# Draw the inherited permissions in grey
+	set hash_key "$rel_path-$role_id"
+	if {[info exists perm_hash($hash_key)]} {
+	    append roles_tds "<td align=center>[im_filestorage_render_perms $p]&nbsp;</td>\n"
+	} else {
+	    append roles_tds "<td align=center><font color=\#888888>[im_filestorage_render_perms $p]&nbsp;</font></td>\n"
+	}
     }
 
     set profiles_tds ""
     foreach profile $profiles {
 	set profile_id [lindex $profile 0]
 	set p $perms($profile_id)
-	append profiles_tds "<td align=center>[im_filestorage_render_perms $p]&nbsp;</td>\n"
+
+	# Draw the inherited permissions in grey
+	set hash_key "$rel_path-$profile_id"
+	if {[info exists perm_hash($hash_key)]} {
+	    append profiles_tds "<td align=center>[im_filestorage_render_perms $p]&nbsp;</td>\n"
+	} else {
+	    append profiles_tds "<td align=center><font color=\#888888>[im_filestorage_render_perms $p]&nbsp;</font></td>\n"
+	}
     }
 
     return "
