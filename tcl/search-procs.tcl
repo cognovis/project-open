@@ -2,7 +2,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.22 2005/03/17 08:35:13 jeffd Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.23 2005/03/23 02:26:53 daveb Exp $
 }
 
 namespace eval search {}
@@ -103,9 +103,17 @@ ad_proc -private search::indexer {} {
 
                             search::content_get txt $datasource(content) $datasource(mime) $datasource(storage_type)
 
+                            # send everything interesting in "txt"
+                            # parameter to the service contract
+                            # the sc implementation will need to
+                            # extract the extra elements, if any
+                            set content [list txt $txt]
+                            if {[info exists datasource(package_id)]} {
+                                lappend content package_id $datasource(package_id)
+                            }
                             acs_sc_call FtsEngineDriver \
                                 [ad_decode $event UPDATE update_index index] \
-                                [list $datasource(object_id) $txt $datasource(title) $datasource(keywords)] $driver
+                                [list $datasource(object_id) $content $datasource(title) $datasource(keywords)] $driver
                         } errMsg]} {
                             ns_log Error "search::indexer: error getting datasource for $object_id $object_type: $errMsg\n[ad_print_stack_trace]\n"
                         } else {
