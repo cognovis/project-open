@@ -84,14 +84,14 @@ ad_proc -public im_forum_scope_select {select_name user_id {default ""} } {
     set group_selected ""
     set staff_selected ""
     set client_selected ""
-    set non_client_selected ""
+    set not_client_selected ""
     set pm_selected ""
     switch $default {
 	public { set public_selected "selected" }
 	group { set group_selected "selected" }
 	staff { set staff_selected "selected" }
 	client { set client_selected "selected" }
-	non_client { set non_client_selected "selected" }
+	not_client { set not_client_selected "selected" }
 	pm { set pm_selected "selected" }
     }
 
@@ -100,7 +100,7 @@ ad_proc -public im_forum_scope_select {select_name user_id {default ""} } {
     if {[im_permission $user_id add_topic_group]} { lappend option_list "<option value=group $group_selected>Project (all project members)</option>" }
     if {[im_permission $user_id add_topic_staff]} { lappend option_list "<option value=staff $staff_selected>Staff (employees only)</option>" }
     if {[im_permission $user_id add_topic_client]} { lappend option_list "<option value=client $client_selected>Clients and PM only</option>" }
-    if {[im_permission $user_id add_topic_noncli]} { lappend option_list "<option value=not_client $non_client_selected>Provider (project members without clients)</option>" }
+    if {[im_permission $user_id add_topic_noncli]} { lappend option_list "<option value=not_client $not_client_selected>Provider (project members without clients)</option>" }
     if {[im_permission $user_id add_topic_pm]} { lappend option_list "<option value=pm $pm_selected>Project Manager</option>" }
 
     if {1 == [llength $option_list]} {
@@ -119,7 +119,7 @@ ad_proc -public im_forum_scope_html {scope } {
 	group {set html "All group members"}
 	staff { set html "Staff group members only"}
 	client { set html "Client group members and the PM only"}
-	non_client { set html "Staff and Freelance group members"}
+	not_client { set html "Staff and Freelance group members"}
 	pm { set html "Project Manager only"}
 	default { set html "undefined"}
     }
