@@ -2,5 +2,6 @@
 <property name="title">Purchase Orders</property>
 
 @project_menu;noquote@
+@pos_html;noquote@
 @task_html;noquote@
 

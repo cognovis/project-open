@@ -26,7 +26,6 @@ ad_page_contract {
     edit:array,optional
     proof:array,optional
     other:array,optional
-
     project_id:integer
     provider_id:integer
     freelance_id:integer

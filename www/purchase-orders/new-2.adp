@@ -2,7 +2,7 @@
 <property name="title">Purchase Orders</property>
 
 <form action="/intranet-invoices/new-2" method=POST>
-<%= [export_form_vars company_id invoice_id freelance_id provider_id cost_type_id cost_status_id return_url] %>
+<%= [export_form_vars company_id invoice_id freelance_id provider_id project_id cost_type_id cost_status_id return_url] %>
 
 <%= [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]] %>
 

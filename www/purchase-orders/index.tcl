@@ -97,6 +97,7 @@ where
 	and fmem.group_id = [im_freelance_group_id]
 	and pe.person_id = fmem.member_id
 	and pe.person_id = tt.freelance_id
+	and tt.po_id is null
 order by
 	tt.freelance_id
 "
@@ -215,6 +216,13 @@ append task_html "
 </table>
 </form>
 "
+
+
+# -------------------------------------------------------------------
+# Show the list of already existing POs
+# -------------------------------------------------------------------
+
+set pos_html [im_costs_project_component $user_id $project_id]
 
 # -------------------------------------------------------------------
 # Project Subnavbar

@@ -225,10 +225,7 @@ set task_table "
   <td class=rowtitle>Units</td>
   <td class=rowtitle>Billable Units</td>
   <td class=rowtitle>Target</td>
-  <td class=rowtitle>  
-    UoM 
-    <img src=/images/help.gif width=16 height=16 alt='Unit of Measure'> 
-  </td>
+  <td class=rowtitle>UoM [im_gif help "Unit of Measure"]</td>
   <td class=rowtitle>Type</td>
   <td class=rowtitle>Status</td>
 </tr>
@@ -246,14 +243,19 @@ db_foreach select_tasks $sql {
     if {$old_project_id != $project_id} {
 	append task_table_rows "
 		<tr><td colspan=$colspan>&nbsp;</td></tr>
-		<tr><td class=rowtitle colspan=$colspan>
-	          <A href=/intranet/projects/view?project_id=$project_id>$project_short_name</A>:
-	          $project_name
-	        </td></tr>\n"
+		<tr>
+		  <td class=rowtitle colspan=$colspan>
+	            <A href=/intranet/projects/view?project_id=$project_id>
+		      $project_short_name
+		    </A>: $project_name
+	          </td>
+		  <input type=hidden name=select_project value=$project_id>
+		</tr>\n"
 	set old_project_id $project_id
     }
 
     append task_table_rows "
+        <input type=hidden name=im_trans_task value=$task_id>
 	<tr $bgcolor([expr $ctr % 2])> 
 	  <td align=left>$task_name</td>
 	  <td align=right>$task_units</td>
@@ -645,7 +647,7 @@ ns_log Notice "new-3: before joining the parts together"
 set page_body "
 [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
 
-<form action=/intranet-invoices/new-2 method=POST>
+<form action=new-4 method=POST>
 [export_form_vars customer_id invoice_id cost_type_id cost_status_id return_url]
 
 "
