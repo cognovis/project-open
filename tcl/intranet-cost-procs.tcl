@@ -36,6 +36,7 @@ ad_proc -public im_cost_type_provider_doc {} { return 3710 }
 ad_proc -public im_cost_type_provider_travel {} { return 3712 }
 ad_proc -public im_cost_type_employee {} { return 3714 }
 ad_proc -public im_cost_type_repeating {} { return 3716 }
+ad_proc -public im_cost_type_timesheet {} { return 3718 }
 
 # Payment Methods
 ad_proc -public im_payment_method_undefined {} { return 800 }
@@ -568,7 +569,7 @@ order by
 	append cost_html "
 <tr$bgcolor([expr $ctr % 2])>
   <td colspan=$colspan>
-    <A HREF=/intranet-costs/index?status_id=0&[export_url_vars status_id company_id project_id]>
+    <A HREF=/intranet-cost/index?status_id=0&[export_url_vars status_id company_id project_id]>
       [_ intranet-cost.more_costs]
     </A>
   </td>
@@ -621,6 +622,273 @@ order by
 
     append cost_html "</table>\n"
     return $cost_html
+}
+
+
+# ---------------------------------------------------------------
+# Benefits & Loss Calculation per Project
+# ---------------------------------------------------------------
+
+ad_proc im_costs_project_finance_component { user_id project_id } {
+    Returns a HTML table containing a detailed summary of all
+    financial activities of the project. 
+} {
+    if {![im_permission $user_id view_costs]} {	return "" }
+
+    set bgcolor(0) " class=roweven "
+    set bgcolor(1) " class=rowodd "
+    set colspan 5
+    set date_format "YYYY-MM-DD"
+
+    # Where to link when clicking on an object link? "edit" or "view"?
+    set view_mode "view"
+
+    # ----------------- Calculate Subtotals per cost_type_id -------------
+    # ... and store in an array
+    
+    set subtotals_sql "
+select
+	sum(ci.amount) as amount,
+	ci.currency,
+	ci.cost_type_id,
+	im_category_from_id(ci.cost_type_id) as cost_type,
+	case 
+		when ci.cost_type_id = [im_cost_type_invoice] then 1
+		when ci.cost_type_id = [im_cost_type_quote] then 1
+		else -1
+	end as sign	
+from
+        im_costs ci
+where
+        ci.cost_id in (
+                select distinct cost_id
+                from im_costs
+                where project_id=:project_id
+            UNION
+                select distinct object_id_two as cost_id
+                from acs_rels
+                where object_id_one = :project_id
+        )
+group by
+	ci.currency,
+	ci.cost_type_id
+order by
+	ci.cost_type_id
+"
+
+    # Start with the summary...
+    append summary_html "
+	<tr class=rowtitle>
+	  <td class=rowtitle colspan=99>Summary</td>
+	</tr>\n"
+
+    db_foreach subtotals $subtotals_sql {
+	set subtotals($cost_type_id$currency) $amount
+	set currencies($currency) $currency
+
+	append summary_html "
+	<tr class=rowplain>
+	  <td colspan=3 align=left>$cost_type</td>
+	  <td>[expr $sign * $amount] $currency</td>
+	</tr>\n"
+
+	set gt 0
+	if {[info exists grand_total($currency)]} { 
+	    set gt $grand_total($currency)
+	}
+	set gt [expr $gt + ($sign * $amount)]
+	set grand_total($currency) $gt
+    }
+
+    foreach curcur [array names grand_total] {
+	append summary_html "
+	<tr class=rowplain>
+	  <td colspan=3 align=left><b>Grand Total</b></td>
+	  <td><b>$grand_total($curcur) $curcur</b></td>
+	</tr>\n"
+    }
+
+
+    # ----------------- Compose SQL Query --------------------------------
+    # Only get "real" costs (=invoices and bills) and ignore
+    # quotes and purchase orders 
+ 
+    set costs_sql "
+select
+	ci.*,
+	ci.paid_amount as payment_amount,
+	ci.paid_currency as payment_currency,
+	url.url,
+        im_category_from_id(ci.cost_status_id) as cost_status,
+        im_category_from_id(ci.cost_type_id) as cost_type,
+	to_date(to_char(ci.effective_date,:date_format),:date_format) + payment_days as calculated_due_date
+from
+	im_costs ci,
+	acs_objects o,
+        (select * from im_biz_object_urls where url_type=:view_mode) url
+where
+	ci.cost_id = o.object_id
+	and o.object_type = url.object_type
+	and ci.cost_id in (
+		select distinct cost_id 
+		from im_costs 
+		where project_id=:project_id
+	    UNION
+		select distinct object_id_two as cost_id
+		from acs_rels
+		where object_id_one = :project_id
+	)
+order by
+	ci.cost_type_id,
+	ci.effective_date desc
+"
+
+    set cost_html "
+<table border=0>
+  <tr>
+    <td colspan=$colspan class=rowtitle align=center>
+      [_ intranet-cost.Financial_Documents]
+    </td>
+  </tr>
+  <tr class=rowtitle>
+    <td align=center class=rowtitle>[_ intranet-cost.Document]</td>
+    <td align=center class=rowtitle>[_ intranet-cost.Type]</td>
+    <td align=center class=rowtitle>[_ intranet-cost.Due]</td>
+    <td align=center class=rowtitle>[_ intranet-cost.Amount]</td>
+    <td align=center class=rowtitle>[_ intranet-cost.Paid]</td>
+  </tr>
+  <tr><td colspan=99>&nbsp;</td></tr>
+"
+
+    set ctr 1
+    set payment_amount ""
+    set payment_currency ""
+
+
+    set old_cost_type_id 0
+    db_foreach recent_costs $costs_sql {
+
+	if {$cost_type_id != $old_cost_type_id} {
+
+	    # Write the subtotal line of the last cost_type_id section
+	    foreach curcur [array names currencies] {
+		if {0 != $old_cost_type_id} {
+		    append cost_html "
+		<tr class=rowplain>
+		  <td colspan=[expr $colspan-2]>&nbsp;</td>
+		  <td colspan=2>
+		    <b>$subtotals($old_cost_type_id$curcur) $curcur</b>
+		  </td>
+		</tr>
+		<tr>
+		  <td colspan=99 class=rowplain>&nbsp;</td>
+		</tr>\n"
+		}
+	    }
+
+	    append cost_html "
+		<tr class=rowtitle>
+		  <td class=rowtitle colspan=99>$cost_type</td>
+		</tr>\n"
+	}
+	
+	set old_cost_type_id $cost_type_id
+
+	append cost_html "
+	<tr $bgcolor([expr $ctr % 2])>
+	  <td><A href=\"$url$cost_id\">[string range $cost_name 0 20]</A></td>
+	  <td>$cost_type</td>
+	  <td>$calculated_due_date</td>
+	  <td>$amount $currency</td>
+	  <td>$payment_amount $payment_currency</td>
+	</tr>\n"
+	incr ctr
+    }
+
+
+    # Write the subtotal line of the last cost_type_id section
+    foreach curcur [array names currencies] {
+	if {0 != $old_cost_type_id} {
+	    append cost_html "
+		<tr class=rowplain>
+		  <td colspan=[expr $colspan-2]>&nbsp;</td>
+		  <td colspan=2>
+		    <b>$subtotals($old_cost_type_id$curcur) $curcur</b>
+		  </td>
+		</tr>
+		<tr>
+		  <td colspan=99 class=rowplain>&nbsp;</td>
+		</tr>\n"
+	}
+    }
+
+    # Add a reasonable message if there are no documents
+    if {$ctr == 1} {
+	append cost_html "
+<tr$bgcolor([expr $ctr % 2])>
+  <td colspan=$colspan align=center>
+    <I>[_ intranet-cost.lt_No_financial_document]</I>
+  </td>
+</tr>\n"
+	incr ctr
+    }
+
+    # insert the summary here
+    append cost_html $summary_html
+
+    # Close the first table
+    append cost_html "</table>\n"
+
+
+    # ----------------- Admin Links --------------------------------
+
+    # Add some links to create new financial documents
+    # if the intranet-invoices module is installed
+    if {[db_table_exists im_invoices]} {
+
+	set admin_html "
+	<table border=0>
+	<tr>
+	  <td colspan=$colspan class=rowtitle align=center>
+	    [_ intranet-core.Admin_Links]
+	  </td>
+	</tr>
+	<tr class=rowplain>
+	  <td colspan=$colspan>\n"
+
+	    # Customer invoices: customer = Project Customer, provider = Internal
+	    set customer_id [db_string project_customer "select company_id from im_projects where project_id=:project_id" -default ""]
+	    set provider_id [im_company_internal]
+	    set bind_vars [ad_tcl_vars_to_ns_set customer_id provider_id project_id]
+      	    append admin_html [im_menu_ul_list "invoices_customers" $bind_vars]
+
+	    # Provider invoices: customer = Internal, no provider yet defined
+	    set customer_id [im_company_internal]
+	    set bind_vars [ad_tcl_vars_to_ns_set customer_id project_id]
+	    append admin_html [im_menu_ul_list "invoices_providers" $bind_vars]
+
+	    append admin_html "	
+	  </td>
+	</tr>
+	"
+
+	set cost_html "
+
+<table>
+<tr valign=top>
+  <td>
+    $cost_html
+  </td>
+  <td>
+    $admin_html
+  </td>
+</tr>
+</table>
+"
+    }
+
+    return $cost_html
+
 }
 
 

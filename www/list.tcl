@@ -529,10 +529,10 @@ set button_html "
 <tr>
   <td colspan=[expr $colspan - 3]></td>
   <td align=center>
-    <input type=submit name=submit value='[_ intranet-cost.Save]'>
+    <input type=submit name=submit_save value='[_ intranet-cost.Save]'>
   </td>
   <td align=center>
-    <input type=submit name=submit value='[_ intranet-cost.Del]'>
+    <input type=submit name=submit_del value='[_ intranet-cost.Del]'>
   </td>
 </tr>"
 

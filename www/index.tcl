@@ -23,6 +23,9 @@ if {![im_permission $user_id view_costs]} {
     return
 }
 
+if {"" == $project_id} { set project_id 0}
+if {"" == $company_id} { set company_id 0}
+
 # select the "Finance" Menu
 set parent_menu_sql "select menu_id from im_menus where label='finance'"
 set parent_menu_id [db_string parent_admin_menu $parent_menu_sql -default 0]

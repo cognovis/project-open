@@ -18,7 +18,8 @@ ad_page_contract {
     del_cost:multiple,optional
     cost_status:array,optional
     object_type:array,optional
-    submit
+    {submit_del ""}
+    {submit_save ""}
 }
 
 set user_id [ad_maybe_redirect_for_registration]
@@ -27,10 +28,9 @@ set user_id [ad_maybe_redirect_for_registration]
 #    return
 #}
 
-ns_log Notice "cost-action: submit=$submit"
-switch $submit {
+ns_log Notice "cost-action: submit_del=$submit_del, submit_save=$submit_save"
 
-    "Save" {
+if {"" != $submit_save} {
 	# Save the stati for the costs on this list
 	foreach cost_id [array names cost_status] {
 	    set cost_status_id $cost_status($cost_id)
@@ -43,7 +43,7 @@ switch $submit {
 	return
     }
 
-    "Del" {
+if {"" != $submit_del} {
 	# Maybe the list of costs was empty...
 	if {![info exists del_cost]} { 
 	    ad_returnredirect $return_url
@@ -67,11 +67,6 @@ switch $submit {
 
 	ad_returnredirect $return_url
 	return
-    }
-
-    default {
-	set error "Unknown submit command: '$submit'"
-	ad_returnredirect "/error?error=$error"
     }
 }
 
