@@ -104,7 +104,7 @@ is
 	invoice_type_id		in integer default 700,
 	payment_method_id	in integer default null,
 	payment_days		in integer default 30,
-	amount			in number,
+	amount			in number default 0,
 	vat			in number default 0,
 	tax			in number default 0,
 	note			in varchar default null
