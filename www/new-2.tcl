@@ -17,7 +17,7 @@ ad_page_contract {
     major_errors:array
     critical_errors:array
     report_date
-    sample_size:integer
+    sample_size:integer,notnull
     { comments "" }
     return_url
 }
@@ -67,7 +67,8 @@ db_dml update_quality_report "
 		reviewer_id = :user_id,
 		sample_size = :sample_size,
 		allowed_error_percentage = :allowed_error_percentage,
-		comments = :comments
+		comments = :comments,
+		allowed_errors = :sample_size * :allowed_error_percentage / 100
 	where
 		report_id = :report_id
     "
@@ -116,6 +117,41 @@ foreach err_category_id $err_category_ids {
     "
 
 }
+
+
+
+# ---------------------------------------------------------------
+# Update the report error summary
+# ---------------------------------------------------------------
+
+db_dml update_quality_report_total "
+	update im_trans_quality_reports set
+		total_errors = (
+			select
+				SUM(im_transq_weighted_error_sum(
+					t.task_id, 
+					t.project_id, 
+					qe.minor_errors, 
+					qe.major_errors, 
+					qe.critical_errors
+				))
+			from	im_trans_tasks t,
+				im_trans_quality_reports qr,
+				im_trans_quality_entries qe
+			where
+				qr.report_id = :report_id
+				and qr.task_id = t.task_id
+				and qr.report_id = qe.report_id
+		)
+	where
+		report_id = :report_id
+    "
+
+
+
+# ---------------------------------------------------------------
+# Return to where we came from
+# ---------------------------------------------------------------
 
 if {"" == $return_url} {
     set return_url "/intranet/projects/view?project_id=$project_id"

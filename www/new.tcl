@@ -39,7 +39,7 @@ if {0 == $task_id && 0 == $report_id} {
 # ---------------------------------------------------------------
 
 # Get the task_id if the report was specified
-if {0 != $report_id} {
+if {0 == $task_id && 0 != $report_id} {
     set task_id [db_string get_task_from_report "select task_id from im_trans_quality_reports where report_id=:report_id" -default 0]
 }
 
@@ -79,7 +79,7 @@ if [catch {
 		and p.company_id = c.company_id
 	}
 } errmsg] {
-    ad_return_complaint 1 "<li>Error while getting information about translation task #$task_id:<br><pre>$errmsg</pre>"
+    ad_return_complaint 1 "<li>Error while getting information about translation task '$task_id':<br><pre>$errmsg</pre>"
     return
 }
 
@@ -95,7 +95,7 @@ set sample_size ""
 set reviewer_id ""
 set allowed_error_percentage [im_transq_error_percentage $expected_quality_id]
 set comments ""
-
+set new_report 0
 
 if {0 != $task_id} {
     # task_id specified - either a new or an existing report
@@ -109,11 +109,12 @@ if {0 != $task_id} {
 	where
 		r.task_id = :task_id
 	}
+
     } errmsg] {
 
 	# Error getting the report. So let's setup a new one:
 	set report_id [db_nextval quality_report_id]
-
+	set new_report 1
     }
 
 } else {
@@ -130,7 +131,6 @@ if {0 != $task_id} {
 	}
     } errmsg] {
     }
-
 }
 
 
@@ -170,7 +170,7 @@ from
 	) re
 where
 	category_type = 'Intranet Translation Quality Type'
-	and re.quality_category_id = cat.category_id(+)
+	and cat.category_id = re.quality_category_id(+)
 order by 
 	category_id
 "
@@ -214,7 +214,11 @@ db_foreach errors $errors_sql {
 
 if {[string equal "display" $form_mode]} {
 
-    set allowed_errors [expr $sample_size * $allowed_error_percentage / 100]
+    if {"" == $sample_size} {
+	set allowed_errors ""
+    } else {
+	set allowed_errors [expr $sample_size * $allowed_error_percentage / 100]
+    }
 
     append errors_html "
 	<tr $bgcolor([expr $ctr % 2])>
