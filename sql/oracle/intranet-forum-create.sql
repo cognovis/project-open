@@ -549,7 +549,7 @@ begin
 		] \
 		[im_forum_component \
 			-user_id $user_id \
-			-object_id $project_id \
+			-forum_object_id $project_id \
 			-current_page_url $current_url \
 			-return_url $return_url \
 			-export_var_list [list \
@@ -593,7 +593,7 @@ begin
 		] \
 		[im_forum_component \
 			-user_id $user_id \
-			-object_id $company_id \
+			-forum_object_id $company_id \
 			-current_page_url $current_url \
 			-return_url $return_url \
 			-export_var_list [list \
@@ -636,7 +636,7 @@ begin
 		] \
 		[im_forum_component \
 			-user_id $user_id \
-			-object_id 0 \
+			-forum_object_id 0 \
 			-current_page_url $current_url \
 			-return_url $return_url \
 			-export_var_list [list \

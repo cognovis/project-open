@@ -641,8 +641,9 @@ ad_proc -public im_forum_component {
     {-restrict_to_new_topics 0} 
     {-restrict_to_folder 0}
     {-restrict_to_employees 0}
+    {-forum_object_id 0}
     -user_id 
-    -object_id 
+    {-object_id 0}
     -current_page_url 
     -return_url 
     -export_var_list 
@@ -662,7 +663,14 @@ ad_proc -public im_forum_component {
     Future versions would need to call an object method to render adecuately the
     object name etc.
 } {
+    # ToDo: Remove -object_id from argument list.
+    # It has been replaced 2005-03-18 by forum_object_id.
+    # Now doing backward compatibility operation 
+    if {0 != $forum_object_id} { set object_id $forum_object_id }
+    set forum_object_id $object_id
+
     ns_log Notice "im_forum_component: forum_type=$forum_type"
+    ns_log Notice "im_forum_component: forum_object_id=$forum_object_id"
     ns_log Notice "im_forum_component: view_name=$view_name"
     ns_log Notice "im_forum_component: restrict_to_asignee_id=$restrict_to_asignee_id"
     ns_log Notice "im_forum_component: restrict_to_mine_p=$restrict_to_mine_p"
@@ -676,7 +684,10 @@ ad_proc -public im_forum_component {
 
     set date_format "YYYY-MM-DD"
 
-    if {!$max_entries_per_page} { set max_entries_per_page 10 }
+    if {0 == $max_entries_per_page} { 
+	set max_entries_per_page [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50]
+	set max_entries_per_page 5
+    }
     set end_idx [expr $start_idx + $max_entries_per_page - 1]
 
     set user_is_employee_p [im_user_is_employee_p $user_id]
@@ -747,6 +758,8 @@ ad_proc -public im_forum_component {
 
     set bind_vars [ns_set create]
     foreach var $export_var_list {
+	# Skip the "start_idx" variable, because we need to set it
+	if {[string equal "forum_start_idx" $var]} { continue }
         upvar 1 $var value
         if { [info exists value] } {
             ns_set put $bind_vars $var $value
@@ -778,7 +791,7 @@ ad_proc -public im_forum_component {
     foreach col $column_headers {
 
 	set cmd_eval ""
-	ns_log Notice "im_forum_component: eval=$cmd_eval"
+	ns_log Notice "im_forum_component: eval=$cmd_eval $col"
 	set cmd "set cmd_eval $col"
         eval $cmd
 	if { [regexp "im_gif" $col] } {
@@ -813,8 +826,8 @@ ad_proc -public im_forum_component {
 
 
     set restrictions []
-    if {0 != $object_id} {
-	lappend restrictions "t.object_id=:object_id" 
+    if {0 != $forum_object_id} {
+	lappend restrictions "t.object_id=:forum_object_id" 
     }
     if {[string equal "t" $restrict_to_mine_p]} {
 	lappend restrictions "(owner_id=:user_id or asignee_id=:user_id)" 
@@ -863,7 +876,10 @@ ad_proc -public im_forum_component {
     if {"" != $restriction_clause} { 
 	set restriction_clause "and $restriction_clause" 
     }
+    ns_log Notice "im_forum_component: restriction_clause=$restriction_clause"
 
+
+    # Get the forum_sql statement
     # Forum items have a complicated "scoped" permission 
     # system where you can say who should be able to read
     # the topic in function of the project/company/...
@@ -875,73 +891,10 @@ ad_proc -public im_forum_component {
     # Finally we can have "read" and "unread" items and
     # Items that have been filed in a specific "folder".
     # So we are getting close here to a kind of MS-Outlook...
-    set forum_sql "
-select
-	t.topic_id,
-	t.owner_id,
-	t.object_id,
-	t.parent_id,
-	t.topic_type_id,
-	t.topic_status_id,
-	to_char(t.posting_date, :date_format) as posting_date,
-	to_char(t.due_date, :date_format) as due_date,
-	t.owner_id,
-	t.scope,
-	t.subject,
-	t.message,
-	t.priority,
-	t.asignee_id,
-	acs_object.name(t.object_id) as object_name,
-	m.read_p,
-	m.folder_id,
-	f.folder_name,
-	m.receive_updates,
-	u.url as object_view_url,
-	im_initials_from_user_id(t.owner_id) as owner_initials,
-	im_initials_from_user_id(t.asignee_id) as asignee_initials,
-	im_category_from_id(t.topic_type_id) as topic_type,
-	im_category_from_id(t.topic_status_id) as topic_status
-from
-	im_forum_topics t,
-	im_forum_folders f,
-	acs_objects o,
-        (select * from im_forum_topic_user_map where user_id=:user_id) m,
-	(select * from im_biz_object_urls where	url_type='view') u,
-	(	select 1 as p, 
-			object_id_one as object_id 
-		from 	acs_rels
-		where	object_id_two = :user_id
-	) member_objects,
-	(	select 1 as p, 
-			r.object_id_one as object_id 
-		from 	acs_rels r,
-			im_biz_object_members m
-		where	r.object_id_two = :user_id
-			and r.rel_id = m.rel_id
-			and m.object_role_id in (1301, 1302, 1303)
-	) admin_objects
-where
-        (t.parent_id is null or t.parent_id=0)
-        and t.object_id != 1
-	and t.topic_id=m.topic_id(+)
-	and m.folder_id=f.folder_id(+)
-	and t.object_id = member_objects.object_id(+)
-	and t.object_id = admin_objects.object_id(+)
-	and t.object_id = o.object_id
-	and o.object_type = u.object_type(+)
-	and 1 =	im_forum_permission(
-		:user_id,
-		t.owner_id,
-		t.asignee_id,
-		t.object_id,
-		t.scope,
-		member_objects.p,
-		admin_objects.p,
-		:user_is_employee_p,
-		:user_is_customer_p
-	)
-	$restriction_clause
-$order_by_clause"
+
+    set forum_statement [db_qd_get_fullname "forum_query" 0]
+    set forum_sql_uneval [db_qd_replace_sql $forum_statement {}]
+    set forum_sql [expr "\"$forum_sql_uneval\""]
 
     # ---------------------- Limit query to MAX rows -------------------------
     
@@ -949,28 +902,14 @@ $order_by_clause"
     # sort inside the table on the page for only those rows in the query 
     # results
     
-    set limited_query [im_select_row_range $forum_sql $start_idx $end_idx]
-    set total_in_limited_sql "
-	select count(*)
-	from 
-		im_forum_topics t,
-		im_forum_topic_user_map m,
-		im_forum_folders f
-	where 
-		object_id != 1
-		and (t.parent_id is null or t.parent_id=0)
-		and t.topic_id=m.topic_id(+)
-		and m.folder_id=f.folder_id(+)
-		$restriction_clause
-    "
-
-    set total_in_limited [db_string projects_total_in_limited $total_in_limited_sql]
-    ns_log Notice "im_forum_component: total_in_limited=$total_in_limited"
+    set limited_query [im_select_row_range $forum_sql $start_idx [expr $start_idx + $max_entries_per_page]]
+    set total_in_limited_sql "select count(*) from ($forum_sql) f"
+    set total_in_limited [db_string total_limited $total_in_limited_sql]
     set selection "select z.* from ($limited_query) z $order_by_clause"
 
     # How many items remain unseen?
-    set remaining_items [expr $total_in_limited - $start_idx - $max_entries_per_page + 1]
-
+    set remaining_items [expr $total_in_limited - $start_idx - $max_entries_per_page]
+    ns_log Notice "im_forum_component: total_in_limited=$total_in_limited, remaining_items=$remaining_items"
 
     # ---------------------- Format the body -------------------------------
 
@@ -979,11 +918,7 @@ $order_by_clause"
     set idx $start_idx
     set old_object_id 0
 
-    set limited_query $forum_sql
-
-    ns_log Notice "limited_query = $limited_query"
-
-    db_foreach forum_query $limited_query {
+    db_foreach forum_query_limited $selection {
         if {$read_p == "t"} {set read "read"} else {set read "unread"}
         if {$folder_id == ""} {set folder_name "Inbox"}
 
@@ -1027,8 +962,9 @@ $order_by_clause"
 	# This means that there are rows that we decided not to return
 	# Include a link to go to the next page
 	set next_start_idx [expr $end_idx + 1]
-	set forum_max_entries_per_page [expr 10*$max_entries_per_page]
-	set next_page_html "($remaining_items more) <A href=\"/intranet-forum/index?forum_object_id=$object_id&forum_max_entries_per_page=$forum_max_entries_per_page\">&gt;&gt;</a>"
+	set forum_max_entries_per_page $max_entries_per_page
+	set next_page_url  "$current_page_url?[export_url_vars forum_object_id forum_max_entries_per_page]&forum_start_idx=$next_start_idx"
+	set next_page_html "($remaining_items more) <A href=\"$next_page_url\">&gt;&gt;</a>"
     } else {
 	set next_page_html ""
     }
@@ -1038,7 +974,7 @@ $order_by_clause"
 	# at least 1 previous row. add a previous page link
 	set previous_start_idx [expr $start_idx - $max_entries_per_page]
 	if { $previous_start_idx < 0 } { set previous_start_idx 0 }
-	set previous_page_html "<A href=$current_page_url?$pass_through_vars_html&start_idx=$previous_start_idx>&lt;&lt;</a>"
+	set previous_page_html "<A href=$current_page_url?$pass_through_vars_html&forum_start_idx=$previous_start_idx>&lt;&lt;</a>"
     } else {
 	set previous_page_html ""
     }
