@@ -30,12 +30,20 @@ We will notify you as soon as possible.
   <td>@error_user_email@</td>
 </tr>
 <tr>
+  <td>System URL</td>
+  <td>@system_url@</td>
+</tr>
+<tr>
+  <td>Publisher Name</td>
+  <td>@publisher_name@</td>
+</tr>
+<tr>
   <td>P/O Core Version</td>
   <td>@core_version@</td>
 </tr>
 <tr>
   <td>Error URL</td>
-  <td><pre>@error_url@</pre></td>
+  <td>@error_url@</td>
 </tr>
 </table>
 
@@ -46,7 +54,7 @@ We will notify you as soon as possible.
 <table border=0 cellspacing=1 cellpadding=1>
 <tr class=rowtitle>
   <td class=rowtitle align=center colspan=2>
-    Do you you have a support contract?
+    Do you have a support contract?
   </td>
 </tr>
 <tr>

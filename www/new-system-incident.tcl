@@ -19,14 +19,14 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-    error_url:trim
-    error_info:trim
-    error_first_names:trim
-    error_last_name:trim
-    error_user_email:trim
-    core_version:trim
-    system_url:trim
-    publisher_name
+    { error_url:trim "" }
+    { error_info:trim "" }
+    { error_first_names:trim "" }
+    { error_last_name:trim "" }
+    { error_user_email:trim "" }
+    { core_version:trim "" }
+    { system_url:trim "" }
+    { publisher_name "" }
 }
 
 ns_log Notice "new-system-incident: error_url=$error_url"
@@ -43,6 +43,21 @@ set max_dayily_incidents 3
 set return_url "/intranet/"
 set authority_id ""
 set username ""
+
+
+# -----------------------------------------------------------------
+# Get more debug information
+# -----------------------------------------------------------------
+
+set form_vars [ns_conn form]
+if {"" != $form_vars} {
+    foreach var [ad_ns_set_keys $form_vars] {
+	set value [ns_set get $form_vars $var]
+	ns_log Notice "new-system-incident: $var=$value"
+    }
+}
+
+
 
 # -----------------------------------------------------------------
 # Lookup user_id or create entry
@@ -64,7 +79,7 @@ if {0 != $error_user_id} {
     ns_log Notice "new-system-incident: creating new user '$error_user_email'"
     array set creation_info [auth::create_user \
 	-email $error_user_email \
-	-url $error_url \
+	-url $system_url \
 	-verify_password_confirm \
 	-first_names $error_first_names \
 	-last_name $error_last_name \
@@ -74,6 +89,7 @@ if {0 != $error_user_id} {
 	-password_confirm $error_first_names \
     ]
 
+    ns_log Notice "new-system-incident: creation info: [array get creation_info]"
     ns_log Notice "new-system-incident: checking for '$error_user_email' after creation"
     set error_user_id [db_string user_id "select party_id from parties where lower(email) = lower(:error_user_email)" -default 0]
 
@@ -115,7 +131,13 @@ set parent_id ""
 set owner_id $error_user_id
 set scope "group"
 set subject $error_url
-set message $error_info
+set message "
+Error URL: $error_url
+System URL: $system_url
+Publisher Name: $publisher_name
+Error Info: 
+$error_info
+"
 set priority 3
 set asignee_id ""
 set due [db_string tomorrow "select sysdate+1 from dual"]
