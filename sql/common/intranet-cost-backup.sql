@@ -52,8 +52,8 @@
 
 delete from im_view_columns where view_id = 190;
 delete from im_views where view_id = 190;
-insert into im_views (view_id, view_name, view_sql
-) values (190, 'im_costs', '
+insert into im_views (view_id, view_name, view_type_id, view_sql
+) values (190, 'im_costs', 1410, '
 SELECT
 	c.*,
 	o.*,
@@ -226,8 +226,8 @@ commit;
 
 delete from im_view_columns where view_id = 191;
 delete from im_views where view_id = 191;
-insert into im_views (view_id, view_name, view_sql
-) values (191, 'im_payments', '
+insert into im_views (view_id, view_name, view_type_id, view_sql
+) values (191, 'im_payments', 1410, '
 SELECT
 	p.*,
 	i.cost_nr,
@@ -287,8 +287,8 @@ commit;
 
 delete from im_view_columns where view_id = 196;
 delete from im_views where view_id = 196;
-insert into im_views (view_id, view_name, view_sql
-) values (196, 'im_cost_centers', '
+insert into im_views (view_id, view_name, view_type_id, view_sql
+) values (196, 'im_cost_centers', 1410, '
 SELECT
 	cc.*,
 	ccp.cost_center_label as parent_label,
@@ -343,8 +343,8 @@ commit;
 
 delete from im_view_columns where view_id = 197;
 delete from im_views where view_id = 197;
-insert into im_views (view_id, view_name, view_sql
-) values (197, 'im_investments', '
+insert into im_views (view_id, view_name, view_type_id, view_sql
+) values (197, 'im_investments', 1410, '
 SELECT
 	i.*,
 	im_category_from_id(i.investment_status_id) as investment_status,
