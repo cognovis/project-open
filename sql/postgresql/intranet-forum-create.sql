@@ -329,12 +329,24 @@ where category_type = 'Intranet Topic Type';
 -- (package) object "Project/Open Core".
 --
 
-select    acs_privilege__create_privilege('add_topic_public','Add global messages','');
-select    acs_privilege__create_privilege('add_topic_group','Add essages for the entire (project) group','');
-select    acs_privilege__create_privilege('add_topic_staff','Messages to staff members of the group','');
-select    acs_privilege__create_privilege('add_topic_client','Messages to the clients of the group','');
-select    acs_privilege__create_privilege('add_topic_noncli','Message to non-clients of the group','');
-select    acs_privilege__create_privilege('add_topic_pm','Message to the project manager only','');
+select acs_privilege__create_privilege('add_topic_public','Add global messages','');
+select acs_privilege__add_child('admin', 'add_topic_public');
+
+select acs_privilege__create_privilege('add_topic_group','Add essages for the entire (project) group','');
+select acs_privilege__add_child('admin', 'add_topic_group');
+
+select acs_privilege__create_privilege('add_topic_staff','Messages to staff members of the group','');
+select acs_privilege__add_child('admin', 'add_topic_staff');
+
+select acs_privilege__create_privilege('add_topic_client','Messages to the clients of the group','');
+select acs_privilege__add_child('admin', 'add_topic_client');
+
+select acs_privilege__create_privilege('add_topic_noncli','Message to non-clients of the group','');
+select acs_privilege__add_child('admin', 'add_topic_noncli');
+
+select acs_privilege__create_privilege('add_topic_pm','Message to the project manager only','');
+select acs_privilege__add_child('admin', 'add_topic_pm');
+
 
 
 ------------------------------------------------------

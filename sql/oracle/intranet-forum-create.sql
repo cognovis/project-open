@@ -297,11 +297,22 @@ where category_type = 'Intranet Topic Type';
 prompt *** Creating Privileges
 begin
     acs_privilege.create_privilege('add_topic_public','Add global messages','');
+    acs_privilege.add_child('admin', 'add_topic_public');
+
     acs_privilege.create_privilege('add_topic_group','Add essages for the entire (project) group','');
+    acs_privilege.add_child('admin', 'add_topic_group');
+
     acs_privilege.create_privilege('add_topic_staff','Messages to staff members of the group','');
+    acs_privilege.add_child('admin', 'add_topic_staff');
+
     acs_privilege.create_privilege('add_topic_client','Messages to the clients of the group','');
+    acs_privilege.add_child('admin', 'add_topic_client');
+
     acs_privilege.create_privilege('add_topic_noncli','Message to non-clients of the group','');
+    acs_privilege.add_child('admin', 'add_topic_noncli');
+
     acs_privilege.create_privilege('add_topic_pm','Message to the project manager only','');
+    acs_privilege.add_child('admin', 'add_topic_pm');
 end;
 /
 
