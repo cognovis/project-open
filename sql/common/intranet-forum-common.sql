@@ -57,7 +57,7 @@ INSERT INTO im_categories VALUES (1110,'Help Request',
 INSERT INTO im_categories VALUES (1190,'Reply',
 'Reply','Intranet Topic Type','category','t','f');
 
-commit;
+-- commit;
 -- reserved until 1199
 
 
@@ -97,7 +97,7 @@ INSERT INTO im_categories VALUES (1210,'Closed',
 'The owner has canceled the task or the asignee has finished the task',
 'Intranet Topic Status','category','t','f');
 
-commit;
+-- commit;
 -- reserved until 1299
 
 
@@ -159,7 +159,7 @@ extra_select, extra_where, sort_order, visible_for) values (4010,40,NULL,
 '"<input type=checkbox name=topic_id.$topic_id>"',
 '','',12,'');
 
-commit;
+-- commit;
 
 
 
@@ -201,7 +201,7 @@ extra_select, extra_where, sort_order, visible_for) values (4110,41,NULL,
 '"<input type=checkbox name=topic_id.$topic_id>"',
 '','',12,'');
 
-commit;
+-- commit;
 
 
 -- ForumList for the forum index page (all projects with a lot of space)
@@ -259,6 +259,6 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 extra_select, extra_where, sort_order, visible_for) values (4212,42,NULL,'Folder',
 '$folder_name','','',14,'');
 
-commit;
+-- commit;
 
 
