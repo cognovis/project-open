@@ -151,9 +151,10 @@ db_foreach task_tasks $task_sql {
 	incr freelance_ctr
     }
     if {"" == $freelance_company_html} {
+	set user_id $freelance_id
 	set freelance_company_html "
 	<i>[_ intranet-trans-invoices.No_company_found]</i><br>
-	<a href=/intranet-trans-invoices/companies/new-company-from-freelance?[export_url_vars freelance_id]>
+	<a href=/intranet/companies/new-company-from-user?[export_url_vars user_id]>
 	  [_ intranet-trans-invoices.lt_Create_a_new_company_]
 	</a>"
     }
