@@ -3,6 +3,5 @@
 <property name="main_navbar_label">finance</property>
 
 @project_menu;noquote@
-@pos_html;noquote@
 @task_html;noquote@
 

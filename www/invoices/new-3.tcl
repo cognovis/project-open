@@ -484,7 +484,7 @@ order by
 
 	    append reference_price_html "
         <tr>
-          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_relevancy $price_company_name</td>
+          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_company_name</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_uom</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_task_type</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_target_language</td>

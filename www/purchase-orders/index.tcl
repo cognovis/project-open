@@ -11,9 +11,9 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-    project_id:integer
-    { cost_type_id:integer "[im_cost_type_po]" }
-    { cost_status_id:integer "[im_cost_status_created]" }
+    { project_id:integer 0 }
+    { target_cost_type_id:integer "[im_cost_type_po]" }
+    { target_cost_status_id:integer "[im_cost_status_created]" }
     { return_url "" }
 }
 
@@ -25,8 +25,10 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "[_ intranet-trans-invoices.lt_Generate_Purchase_Ord]"
 set context_bar [ad_context_bar [list /intranet/projects/ "[_ intranet-trans-invoices.Projects]"] [list "/intranet/projects/view?project_id=$project_id" "[_ intranet-trans-invoices.One_project]"] $page_title]
-# if {"" == $return_url} { set return_url "/intranet/projects/view?project_id=$project_id" }
-if {"" == $return_url} { set return_url [im_url_with_query] }
+
+set current_url [im_url_with_query]
+if {"" == $return_url} { set return_url $current_url }
+
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 
@@ -36,6 +38,14 @@ if {![im_permission $user_id add_costs]} {
 }
 
 
+# No Project defined? Then we need to redirect to a
+# page to select a project.
+#
+if {0 == $project_id } {
+    # This page selects the project_id and appends it to the return_url
+    # before returning to _this_ page again.
+    ad_returnredirect project-select?[export_url_vars return_url]
+}
 
 # ---------------------------------------------------------------------
 # Select and format the list of tasks
@@ -115,12 +125,11 @@ set task_html ""
 set ctr 1
 set task_list [array names tasks_id]
 set old_freelance_id 0
-ns_log Notice "purchase-orders/index: task_sql=$task_sql"
 db_foreach task_tasks $task_sql {
     
     # introduce spaces after "/" (by "/ ") to allow for graceful rendering
     regsub {/} $task_name "/ " task_name
-
+    ns_log Notice "/purchase-orders/index: task_name=$task_name"
 
     # Calculate the provider_select_widget 
     # that allows to choose the provider company
@@ -178,7 +187,7 @@ db_foreach task_tasks $task_sql {
 
 	append task_html "
 	<form method=POST action=new-2>
-	[export_form_vars freelance_id cost_type_id cost_status_id return_url]
+	[export_form_vars freelance_id target_cost_type_id target_cost_status_id return_url]
 	<table border=0>
 	  <tr>
 	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Task_Name]</td>
@@ -220,22 +229,34 @@ db_foreach task_tasks $task_sql {
     incr ctr    
 }
 
+if {$ctr > 1} {
+
+    append task_html "
+	<tr>
+	  <td colspan=$task_colspan align=right>
+	    <input type=submit value=\"[_ intranet-trans-invoices.Submit]\">  
+	  </td>
+	</tr>\n"
+
+} else {
+
+    # Generate a reasonable message that there are no trans tasks
+    append task_html "
+	<tr>
+	  <td colspan=$task_colspan align=center>
+            &nbsp;<br>
+	    [_ intranet-trans-invoices.No_Trans_Tasks]
+            <br>&nbsp;
+	  </td>
+	</tr>\n"
+
+
+}
+
 append task_html "
-<tr>
-  <td colspan=$task_colspan align=right>
-    <input type=submit value=\"[_ intranet-trans-invoices.Submit]\">  
-  </td>
-</tr>
-</table>
-</form>
+	</table>
+	</form>
 "
-
-
-# -------------------------------------------------------------------
-# Show the list of already existing POs
-# -------------------------------------------------------------------
-
-set pos_html [im_costs_project_component $user_id $project_id]
 
 # -------------------------------------------------------------------
 # Project Subnavbar

@@ -402,11 +402,6 @@ end;' language 'plpgsql';
 -- delete potentially existing menus and plugins if this
 -- file is sourced multiple times during development...
 
-select im_component_plugin__del_module('intranet-trans-invoices');
-select im_menu__del_module('intranet-trans-invoices');
-
-
-
 
 -- Show the translation specific fields in the ProjectViewPage
 --
@@ -425,8 +420,6 @@ select im_component_plugin__new (
         100,                            -- sort_order
 	'im_trans_price_component $user_id $company_id $return_url'
     );
-
-
 
 
 -- Add a "Translation Invoice" into the Invoice Menu
@@ -480,33 +473,6 @@ begin
     PERFORM acs_permission__grant_permission(v_menu, v_companies, ''read'');
     PERFORM acs_permission__grant_permission(v_menu, v_freelancers, ''read'');
 
-    select menu_id
-    into v_project_menu
-    from im_menus
-    where label=''project'';
-
-    v_menu := im_menu__new (
-        null,                           -- menu_id
-        ''acs_object'',                 -- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-        ''intranet-trans-invoices'',    -- package_name
-        ''project_pos'',                -- label
-        ''POs'',                        -- name
-        ''/intranet-trans-invoices/purchase-orders/index?cost_type_id=3706'',  -- url
-        70,                             -- sort_order
-        v_project_menu,                 -- parent_menu_id
-        null                            -- visible_tcl
-    );
-
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_companies, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_freelancers, ''read'');
-
     return 0;
 end;' language 'plpgsql';
 
@@ -547,8 +513,8 @@ begin
         null,                           -- creation_user
         null,                           -- creation_ip
         null,                           -- context_id
-        ''intranet-invoices'',          -- package_name
-        ''invoices_trans_new_invoice'',     -- label
+        ''intranet-trans-invoices'',    -- package_name
+        ''invoices_trans_new_quote'',     -- label
         ''New Translation Quote'',    -- name
         ''/intranet-trans-invoices/invoices/new?target_cost_type_id=3702'',   -- url
         40,                                             -- sort_order
@@ -567,11 +533,83 @@ begin
         null,                           -- creation_user
         null,                           -- creation_ip
         null,                           -- context_id
-        ''intranet-invoices'',          -- package_name
-        ''invoices_trans_new_quote'',   -- label
-        ''New Translation Invoice'',    -- name
+        ''intranet-trans-invoices'',    -- package_name
+        ''invoices_trans_new_cust_invoice'',   -- label
+        ''New Translation Customer Invoice'',    -- name
         ''/intranet-trans-invoices/invoices/new?target_cost_type_id=3700'',     -- url
         50,                             -- sort_order
+        v_invoices_new_menu,            -- parent_menu_id
+        null                            -- visible_tcl
+    );
+
+    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+
+    return 0;
+end;' language 'plpgsql';
+
+select inline_0 ();
+drop function inline_0 ();
+	
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        -- Menu IDs
+        v_menu                  integer;
+	v_invoices_new_menu	integer;
+        v_new_trans_invoice_menu integer;
+        v_new_trans_quote_menu  integer;
+
+        -- Groups
+        v_accounting            integer;
+        v_senman                integer;
+        v_admins                integer;
+begin
+
+    select group_id into v_admins from groups where group_name = ''P/O Admins'';
+    select group_id into v_senman from groups where group_name = ''Senior Managers'';
+    select group_id into v_accounting from groups where group_name = ''Accounting'';
+
+    select menu_id
+    into v_invoices_new_menu
+    from im_menus
+    where label=''invoices_providers'';
+
+    v_menu := im_menu__new (
+        null,                           -- menu_id
+        ''acs_object'',                 -- object_type
+        now(),                          -- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+        ''intranet-trans-invoices'',    -- package_name
+        ''invoices_trans_new_po'',     -- label
+        ''New Translation Purchase Order'',    -- name
+        ''/intranet-trans-invoices/purchase-orders/index?target_cost_type_id=3706'',   -- url
+        70,                                             -- sort_order
+        v_invoices_new_menu,                            -- parent_menu_id
+        null                                            -- visible_tcl
+    );
+
+    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+
+    v_menu := im_menu__new (
+        null,                           -- menu_id
+        ''acs_object'',                 -- object_type
+        now(),                          -- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+        ''intranet-trans-invoices'',    -- package_name
+        ''invoices_trans_new_prov_quote'',   -- label
+        ''New Translation Provider Invoice'',    -- name
+        ''/intranet-trans-invoices/purchase-orders/index?target_cost_type_id=3704'',   -- url
+        80,                             -- sort_order
         v_invoices_new_menu,            -- parent_menu_id
         null                            -- visible_tcl
     );
