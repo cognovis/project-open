@@ -102,7 +102,7 @@ if {!$done && $parent_id != 0} {
 
     # Get some information about the parent topic:
     set org_parent_id $parent_id
-    db_1row get_topic "
+    db_1row get_topic_for_reply "
 select
 	t.*,
 	acs_object.name(t.object_id) as object_name

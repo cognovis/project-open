@@ -30,16 +30,20 @@ create table im_forum_topics (
 	object_id	integer not null 
 			constraint im_forum_topics_object_fk
 			references acs_objects,
-	parent_id	integer
-			constraint im_forum_topics_parent_fk
-			references im_forum_topics,
+	-- Hierarchy of messages
+	parent_id	  integer
+			  constraint im_forum_topics_parent_fk
+			  references im_forum_topics,
+	tree_sortkey      varbit,
+	max_child_sortkey varbit,
+
 	topic_type_id	integer not null
 			constraint im_forum_topics_type_fk
 			references im_categories,
 	topic_status_id	integer
 			constraint im_forum_topics_status_fk
 			references im_categories,
-	posting_date	date default sysdate,
+	posting_date	date default current_timestamp,
 	owner_id	integer not null
 			constraint im_forum_topics_owner_fk
 			references users,
@@ -48,15 +52,64 @@ create table im_forum_topics (
 			check (scope in ('pm', 'group','public','client','staff','not_client')),
 	-- message content
 	subject		varchar(200) not null,
-	message		clob,
+	message		varchar(4000),
 	-- task and incident specific fields
-	priority	number(1) default 5,
-	due_date	date default sysdate,
+	priority	numeric(1,0) default 5,
+	due_date	timestamptz default current_timestamp,
 	asignee_id	integer
 			constraint im_forum_topics_asignee_fk
 			references users
 );
 create index im_forum_topics_object_idx on im_forum_topics (object_id);
+
+-- This is the sortkey code
+--
+create function im_forum_topic_insert_tr ()
+returns opaque as '
+declare
+    v_max_child_sortkey             im_forum_topics.max_child_sortkey%TYPE;
+    v_parent_sortkey                im_forum_topics.tree_sortkey%TYPE;
+begin
+
+    if new.parent_id is null
+    then
+
+        select '''', coalesce(max_child_sortkey, '''')
+        into v_parent_sortkey, v_max_child_sortkey
+        from im_forum_topics
+        where parent_id is null
+        for update;
+
+        v_max_child_sortkey := tree_increment_key(v_max_child_sortkey);
+
+        update im_forum_topics
+        set max_child_sortkey = v_max_child_sortkey
+        where topic_id is null;
+
+    else
+
+        select coalesce(tree_sortkey, ''''), max_child_sortkey
+        into v_parent_sortkey, v_max_child_sortkey
+        from im_forum_topics
+        where topic_id = new.parent_id
+        for update;
+
+        v_max_child_sortkey := tree_increment_key(v_max_child_sortkey);
+
+        update im_forum_topics
+        set max_child_sortkey = v_max_child_sortkey
+        where topic_id = new.parent_id;
+
+    end if;
+    new.tree_sortkey := v_parent_sortkey || v_max_child_sortkey;
+
+    return new;
+end;' language 'plpgsql';
+
+create trigger im_forum_topic_insert_tr
+before insert on im_forum_topics
+for each row
+execute procedure im_forum_topic_insert_tr();
 
 
 -- A function that decides whether a specific user can see a
@@ -75,21 +128,21 @@ DECLARE
 	p_scope			alias for $5;	
 	p_user_is_object_member	alias for $6;
 	p_user_is_object_admin	alias for $7;
-	p_user_is_employee	alias for $8;
+		p_user_is_employee	alias for $8;
 	p_user_is_company	alias for $9;
 	
 	v_permission_p          integer;
 BEGIN
 	IF p_user_id = p_owner_id THEN		RETURN 1;	END IF;
 	IF p_asignee_id = p_user_id THEN	RETURN 1;	END IF;
-	IF p_scope = 'public' THEN		RETURN 1;	END IF;
-	IF p_scope = 'group' THEN		RETURN p_user_is_object_member;	END IF;
-	IF p_scope = 'pm' THEN			RETURN p_user_is_object_admin;	END IF;
+	IF p_scope = ''public'' THEN		RETURN 1;	END IF;
+	IF p_scope = ''group'' THEN		RETURN p_user_is_object_member;	END IF;
+	IF p_scope = ''pm'' THEN			RETURN p_user_is_object_admin;	END IF;
 
-	IF p_scope = 'client' AND p_user_is_company = 1 THEN	
+	IF p_scope = ''client'' AND p_user_is_company = 1 THEN	
 		RETURN p_user_is_object_member;
 	END IF;
-	IF p_scope = 'staff' AND p_user_is_employee = 1 THEN	
+	IF p_scope = ''staff'' AND p_user_is_employee = 1 THEN	
 		RETURN p_user_is_object_member;	
 	END IF;
 	RETURN 0;
@@ -164,7 +217,7 @@ create table im_forum_files (
 	client_filename		varchar(4000),
 	filename_stub		varchar(200),
 	caption			varchar(200),
-	content			clob
+	content			varchar(4000)
 );
 
 
@@ -249,7 +302,7 @@ select    acs_privilege__create_privilege('add_topic_pm','Message to the project
 ---
 select im_priv_create('add_topic_pm',        'Accounting');
 
-select im_priv_create('add_topic_pm',        'Companies');
+select im_priv_create('add_topic_pm',        'Customers');
 
 select im_priv_create('add_topic_pm',        'Employees');
 
@@ -370,12 +423,15 @@ select im_priv_create('add_topic_staff',        'Senior Managers');
 -- delete potentially existing menus and plugins if this 
 -- file is sourced multiple times during development...
 
-select im_component_plugin.del_module(module_name => 'intranet-forum');
-    im_menu.del_module(module_name => 'intranet-forum');
+select im_component_plugin__del_module('intranet-forum');
+select im_menu__del_module('intranet-forum');
 
 
 -- Setup the "Forum" main menu entry
 --
+
+create or replace function inline_0 ()
+returns integer as '
 declare
         -- Menu IDs
         v_menu                  integer;
@@ -389,20 +445,20 @@ declare
         v_freelancers           integer;
         v_proman                integer;
         v_admins                integer;
-begin
+BEGIN
 
-    select group_id into v_admins from groups where group_name = 'P/O Admins';
-    select group_id into v_senman from groups where group_name = 'Senior Managers';
-    select group_id into v_proman from groups where group_name = 'Project Managers';
-    select group_id into v_accounting from groups where group_name = 'Accounting';
-    select group_id into v_employees from groups where group_name = 'Employees';
-    select group_id into v_companies from groups where group_name = 'Companies';
-    select group_id into v_freelancers from groups where group_name = 'Freelancers';
+    select group_id into v_admins from groups where group_name = ''P/O Admins'';
+    select group_id into v_senman from groups where group_name = ''Senior Managers'';
+    select group_id into v_proman from groups where group_name = ''Project Managers'';
+    select group_id into v_accounting from groups where group_name = ''Accounting'';
+    select group_id into v_employees from groups where group_name = ''Employees'';
+    select group_id into v_companies from groups where group_name = ''Customers'';
+    select group_id into v_freelancers from groups where group_name = ''Freelancers'';
 
     select menu_id
     into v_main_menu
     from im_menus
-    where label='main';
+    where label=''main'';
 
     v_menu := im_menu__new (
         null,                   -- p_menu_id
@@ -420,16 +476,21 @@ begin
         null                    -- p_visible_tcl
     );
 
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, 'read');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, 'read');
-    PERFORM acs_permission__grant_permission(v_menu, v_proman, 'read');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, 'read');
-    PERFORM acs_permission__grant_permission(v_menu, v_employees, 'read');
-    PERFORM acs_permission__grant_permission(v_menu, v_companies, 'read');
-    PERFORM acs_permission__grant_permission(v_menu, v_freelancers, 'read');
-end;
-/
-commit;
+    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_companies, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_freelancers, ''read'');
+
+    return 0;
+end;' language 'plpgsql';
+
+select inline_0 ();
+
+drop function inline_0 ();
+
 	
 
 -- Show the forum component in project page
@@ -681,11 +742,11 @@ extra_select, extra_where, sort_order, visible_for) values (4209,42,NULL,'Status
 '$topic_status','','',11,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (42010,42,NULL,'Read',
+extra_select, extra_where, sort_order, visible_for) values (4210,42,NULL,'Read',
 '$read','','',12,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (4210,42,NULL,
+extra_select, extra_where, sort_order, visible_for) values (4211,42,NULL,
 '"[im_gif help "Select topics here for processing"]"',
 '"<input type=checkbox name=topic_id.$topic_id>"',
 '','',13,'');
