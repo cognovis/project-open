@@ -9,11 +9,13 @@
 #intranet-core.Send_Email_To#
 <a href="@spam_show_users_url;noquote@">@num_recipients@ #intranet-core.Member_s#</a> 
 #intranet-core.Of# <A href="@object_rel_url@">@object_name@</a>.
-
 </p>
+The following variables are available withing you message:<br>
+<tt>@query_field_html@</tt>.
+
 
 <form action="spam-confirm" method="post">
-<%= [export_form_vars object_id sql_query] %>
+<%= [export_form_vars object_id sql_query num_recipients] %>
 @export_vars;noquote@
 
 <include src="spam-form-body" 
@@ -23,7 +25,9 @@
 
 
 
-<center><input type="submit" value="Send Spam"></center>
+<center><input type="submit" value="Go To Validate"></center>
+
+
 
 </form>
 

@@ -20,7 +20,7 @@ The mail will be sent on @pretty_date@ at @send_time.time@ @send_time.ampm@
 <table cellspacing=1 border=0 cellpadding=1>
 	<tr class=rowodd>
 	  <td>Subject:</td>
-	  <td>@subject@</td>
+	  <td>@subject_subst@</td>
 	</tr>
 	<tr class=roweven>
 	  <td>Posted in</td>
@@ -34,12 +34,12 @@ The mail will be sent on @pretty_date@ at @send_time.time@ @send_time.ampm@
 	  <td>Posting Date:</td>
 	  <td>@pretty_date@</td>
 	</tr>
-<if @escaped_body_plain@ not nil>
+<if @body_plain@ not nil>
 	<tr class=rowplain>
 	<td>Plain Text</td>
 	<td>
 	  <table cellspacing=2 cellpadding=2 border=0><tr><td>
-	  <pre>@escaped_body_plain@</pre>
+	  <pre>@escaped_body_plain_subst;noquote@</pre>
 	  </td></tr></table>
 	</td></tr>
 </if>   
@@ -48,7 +48,7 @@ The mail will be sent on @pretty_date@ at @send_time.time@ @send_time.ampm@
 	<td>HTML Text</td>
 	<td>
 	  <table cellspacing=2 cellpadding=2 border=0><tr><td>
-	  <pre>@body_html;noquote@</pre>
+	  <pre>@body_html_subst;noquote@</pre>
 	  </td></tr></table>
 	</td></tr>
 </if>   

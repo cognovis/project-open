@@ -1,13 +1,6 @@
 <?xml version="1.0"?>
-<!DOCTYPE queryset PUBLIC "-//OpenACS//DTD XQL 1.0//EN" "/usr/share/emacs/DTDs/xql.dtd">
-<!-- packages/intranet-core/www/member-add-postgresql.xql -->
-<!-- @author  (nsadmin@barna.competitiveness.com) -->
-<!-- @creation-date 2004-09-09 -->
-<!-- @arch-tag d600813f-9963-43e7-a2e1-05aed35c7910 -->
-<!-- @cvs-id $Id$ -->
 
 <queryset>
-  
   
   <rdbms>
     <type>postgresql</type>
@@ -17,4 +10,22 @@
   <fullquery name="object_name_for_one_object_id">
     <querytext>select acs_object__name(:object_id) from dual</querytext>
   </fullquery>
+
+  <fullquery name="spam_full_sql">
+      <querytext>
+
+    select
+	p2.*,
+	parties.email as user_email,
+	persons.first_names as user_first_names, 
+	persons.last_name as user_last_name,
+	persons.first_names || ' ' || persons.last_name as user_name
+    from
+	parties
+      	left join persons on parties.party_id = person_id
+        join ($sql_query) p2 on p2.party_id = parties.party_id
+
+      </querytext>
+  </fullquery>
+
 </queryset>

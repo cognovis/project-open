@@ -4,7 +4,7 @@ ad_page_contract {
 } { 
     subject:notnull
     {body_plain:trim ""}
-    {{body_html:allhtml,trim} ""}
+    {body_html:allhtml,trim ""}
     send_date_ansi:notnull
     send_time_12hr:notnull
     spam_id:naturalnum
@@ -12,25 +12,21 @@ ad_page_contract {
     object_id
 }
 
-if {$object_id == ""} {
-    set object_id $spam_id
-}
+# ------------------------------------------------------
+# Defaults & Security
+# ------------------------------------------------------
 
-# ad_require_permission $object_id write
+set context [list "confirm"]
+
+set user_id [ad_get_user_id]
 
 #double-click protection
-set already_there [db_string spam_check_double_click "
-  select count(1) from spam_messages where spam_id=:spam_id"]
+set already_there [db_string spam_check_double_click " select count(1) from spam_messages where spam_id=:spam_id"]
+
 if {$already_there} {
     ad_return_complaint 1 "This message has already been queued for sending.
     You can <a href=\"spam-edit?spam_id=$spam_id\">edit it</a> if you wish."
     return
-}
-
-if {$sql_query == ""} { 
-    ad_return_complaint 1 "No user query supplied.  You can't invoke this \
-	    page directly."
-    return 
 }
 
 # make sure spam cannot be sent by regular user
@@ -45,30 +41,21 @@ if {$object_id != "" && [ad_permission_p $object_id "admin"]} {
     set approved_p "t"
 } 
 
-set date "$send_date_ansi $send_time_12hr"
 
-spam_new_message \
-	-context_id $object_id \
-	-send_date $date \
-	-spam_id $spam_id \
-	-subject $subject \
-	-plain $body_plain \
-	-html $body_html  \
-	-sql $sql_query \
-	-approved_p $approved_p
-
-# spam is now in database but is not queued.
-# there will be a "sweeper" that spam to the outgoing
-# acs-messaging queue when spam is confirmed.
-
-# inserted and in the queue; now display a message to the user 
-# telling them how to link, etc.
-
-set context {queued}
-
-ad_return_template
+# ------------------------------------------------------
+# Send message
+# ------------------------------------------------------
 
 
+db_foreach spam_full_sql "" {
+
+    set message [subst $body_plain]
+    set subject [subst $subject]
+    set party_from [ad_get_user_id]
+    set party_to $party_id
+
+    db_list acs_mail_post_request ""
+}
     
     
 

@@ -11,9 +11,6 @@ ad_page_contract {
     it will be held until it is approved by an administrator. 
     
     @author bschneid@arsdigita.com
-    @creation-date 2000-12-12
-    @cvs-id $Id$
-
 } {
     { sql_query ""}
     { object_id 0}
@@ -32,6 +29,8 @@ if {$sql_query == ""} {
     return 
 }
 
+# --------------------------------------------------
+
 ad_require_permission $object_id write
 
 # generate sequence value; double-click protection
@@ -43,9 +42,7 @@ set object_rel_url [db_string object_url "select url from im_biz_object_urls whe
 append object_rel_url $object_id
 
 
-set num_recipients [db_string get_num_recipients "
-    select count(*) from ($sql_query)
-"]
+# --------------------------------------------------
 
 set spam_show_users_url "spam-show-users?[export_url_vars object_id sql_query]"
 
@@ -56,15 +53,31 @@ set time_widget [spam_timeentrywidget send_time]
 
 set context [list "add message"]
 
-ad_return_template
+# db_multirow spam_list spam_get_party_list  {}
 
 
+# --------------------------------------------------
+# Get number and fields of sql query results
+# --------------------------------------------------
 
+set num_recipients [db_string get_num_recipients "
+    select count(*) from ($sql_query)
+"]
 
+db_with_handle -dbn "" db {
+    set selection [db_exec select $db full_statement_name $sql_query]
 
+    set query_fields [list]
+    set query_field_html ""
 
-    
-    
-    
-    
-    
+    # get only a single result
+    if { [db_getrow $db $selection] } {
+	for { set i 0 } { $i < [ns_set size $selection] } { incr i } {
+	    lappend query_fields [ns_set key $selection $i]
+	    if {"" != $query_field_html} { append query_field_html ", " }
+	    append query_field_html "[ns_set key $selection $i]"
+	}
+    }
+}
+
+set query_field_html "user_first_names, user_last_name, user_email, user_name, $query_field_html"
