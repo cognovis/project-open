@@ -45,11 +45,11 @@ if {$exists_status_p} {
 
    db_dml update_folder_status "
 update
-        im_fs_folder_status s
+        im_fs_folder_status
 set
         open_p = :status
 where
-	s.user_id = :user_id
+	user_id = :user_id
 	and folder_id in (
 	select
 		folder_id
