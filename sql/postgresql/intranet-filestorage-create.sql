@@ -1,4 +1,4 @@
--- /packages/intranet-filestorage/sql/oracle/intranet-filestorage-create.sql
+-- /packages/intranet-filestorage/sql/postgresql/intranet-filestorage-create.sql
 --
 -- Copyright (c) 2003-2004 Project/Open
 --
@@ -115,8 +115,8 @@ create table im_fs_folder_perms (
 -- to see in which documents a user was interested.
 
 create table im_fs_actions (
-        action_type_id          references im_categories,
-        user_id                 not null references persons,
+        action_type_id          integer references im_categories,
+        user_id                 integer not null references persons,
         action_date             date,
         file_name               varchar(1000),
                 primary key (user_id, action_date, file_name)
