@@ -333,7 +333,7 @@ $dirs_html
 	# --------------------- New Folder --------------------- 
 
         set page_title "[_ intranet-filestorage.New_Folder]"
-        set context_bar [ad_context_bar $page_title]
+        set context_bar [im_context_bar $page_title]
 	set page_content "
 <h1>New Folder</h1>
 <form method='post' action='create-folder-2'>
@@ -355,7 +355,7 @@ $dirs_html
 	# --------------------- New Folder --------------------- 
 
         set page_title "[_ intranet-filestorage.Upload_File]"
-        set context_bar [ad_context_bar $page_title]
+        set context_bar [im_context_bar $page_title]
         set page_content "
 <form enctype=multipart/form-data method=POST action=upload-2.tcl>
 [export_form_vars bread_crum_path folder_type object_id return_url]
@@ -400,7 +400,7 @@ $dirs_html
 	# --------------------- Delete --------------------- 
 
 	set page_title "Delete Files?"
-	set context_bar [ad_context_bar $page_title]
+	set context_bar [im_context_bar $page_title]
 	set ctr 0
 
 	set files_html ""

@@ -16,7 +16,7 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set page_title "Upload New File/URL"
 
-set context_bar [ad_context_bar [list "/intranet/projects/" "Projects"]  [list "/intranet/projects/view?group_id=$project_id" "One Project"]  "Upload File"]
+set context_bar [im_context_bar [list "/intranet/projects/" "Projects"]  [list "/intranet/projects/view?group_id=$project_id" "One Project"]  "Upload File"]
 
 if {"" == $folder_type} {
     ad_return_complaint 1 "<LI>Internal Error: folder_type not specified"
