@@ -1087,7 +1087,6 @@ where
 	# of the directory stored in the sql table
 	set folder_id_hash($path) $folder_id
 	set last_folder_id [expr $folder_id * 10] 
-	ns_log Notice "path: $path"
     }
 
     # Always show the root of the filestorage as "open"
@@ -1106,7 +1105,6 @@ where
 
 	# count the deph of the file (how many directories depends the file)
 	#ex (/home - /cluster - /Data - /Internal- /INT-ADM-KNOWMG - /file.dat)
-	ns_log Notice "****************** New File ***********************"
 	set file_paths [split $file "/"]
 	set current_depth [expr [llength $file_paths] - 1]
 	# store the name of the file ("file.dat")
@@ -1137,7 +1135,6 @@ where
 
 	# Actions executed if the file type is "directory"
 	if { [string compare $file_type "directory"] == 0 } {
-	    ns_log Notice "--- directory"
 	    # Printing one row with the directory information
 	    append texte [im_filestorage_dir_row \
 			    -file_body $file_body  \
@@ -1157,7 +1154,6 @@ where
 	} else {
 	    # Skip the line if it's not a file
 	    if {![string equal $file_type "file"]} { continue }
-	    ns_log Notice "--- file"
 	    append texte [im_filestorage_file_row \
 			      $file_body \
 			      $file \
@@ -1166,8 +1162,6 @@ where
 			      $file \
 		           ]
 	}
-	ns_log Notice "****************** End New File ***********************"
-	ns_log Notice ""
     }
     append texte "</table></form>"
     return "$texte" 
@@ -1201,7 +1195,6 @@ ad_proc im_filestorage_dir_row {
   </td>
   <td id=idrow_$first_line_flag>
 " 
-    ns_log Notice "------------------ file_body: $file_body /////////////////"
     set i $root_dir_depth
     incr i 
     while {$i < $current_depth} {
@@ -1212,10 +1205,8 @@ ad_proc im_filestorage_dir_row {
     append texte "
    <a href=/intranet-filestorage/folder_status_update?[export_url_vars folder_id status object_id file bread_crum_path return_url]>"
     if {$open_p == "o"} {
-	ns_log Notice "--- directory opended ---"
 	append texte [im_gif foldin2]
     } else {
-	ns_log Notice "--- directory closed ---"
 	append texte [im_gif foldout2]
     }
     set bread_crum_path $file
@@ -1282,7 +1273,6 @@ ad_proc im_filestorage_file_row { file_body file root_dir_depth current_depth fi
 	".rtf" { set icon [im_gif exp-word] }
 	".txt" { set icon [im_gif exp-text] }
 	default {
-	    ns_log Notice "im_file_component: unknown file_extension: '$file_extension'"
 	}
     }
 
