@@ -51,7 +51,7 @@
   <msg key="lt_There_are_currently_n">There are currently no invoices matching the selected criteria</msg>
   <msg key="lt_There_are_currently_n_1">There are currently no projects matching the selected criteria</msg>
   <msg key="lt_To_create_a_new_invoi">To create a new invoice please select one or more projects&lt;br&gt;
-		&lt;em&gt;of the same client&lt;/em&gt; and press the \&quot;New Invoice\&quot; button &lt;br&gt;
+		&lt;em&gt;of the same client&lt;/em&gt; and press the &quot;New Invoice&quot; button &lt;br&gt;
 		at the bottom of the page.</msg>
   <msg key="lt_Unknown_action_for_pr">Unknown action for price-action.</msg>
   <msg key="lt_UOMtd__________td_cla">UOM#&lt;/td&gt;
