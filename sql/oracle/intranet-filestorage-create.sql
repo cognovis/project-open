@@ -100,7 +100,7 @@ create table im_fs_folder_perms (
 				check(write_p in ('0','1')),
 	admin_p			char(1) default('0')
 				constraint im_fs_folder_status_view_p 
-				check(view_p in ('0','1'))
+				check(admin_p in ('0','1'))
 );
 
 
