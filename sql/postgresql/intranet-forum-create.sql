@@ -567,7 +567,7 @@ SELECT im_component_plugin__new (
         '/intranet/companies/view',     -- page_url
         null,                           -- view_name
         10,                             -- sort_order
-	'im_table_with_title [im_forum_create_bar "<B>Forum Items<B>" $company_id $return_url ] [im_forum_component -user_id $user_id -object_id $company_id -current_page_url $current_url -return_url $return_url -export_var_list [list 	company_id forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type company -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -restrict_to_mine_p "f" -restrict_to_new_topics ]'
+	'im_table_with_title [im_forum_create_bar "<B>Forum Items<B>" $company_id $return_url ] [im_forum_component -user_id $user_id -object_id $company_id -current_page_url $current_url -return_url $return_url -export_var_list [list 	company_id forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type company -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -restrict_to_mine_p "f" -restrict_to_new_topics 1 ]'
     );
 
 
