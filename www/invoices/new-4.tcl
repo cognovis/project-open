@@ -65,7 +65,7 @@ set invoice_exists_p [db_string invoice_count "select count(*) from im_invoices 
 if {!$invoice_exists_p} {
 
     # Let's create the new invoice
-    db_dml create_invoice "
+    db_exec_plsql create_invoice "
 	DECLARE
 	    v_invoice_id        integer;
 	BEGIN
@@ -190,7 +190,7 @@ db_dml update_invoice_amount $update_invoice_amount_sql
 # ---------------------------------------------------------------
 
 foreach project_id $select_project {
-    db_dml insert_acs_rels "
+    db_exec_plsql insert_acs_rels "
 	DECLARE
 		v_rel_id	integer;
 	BEGIN

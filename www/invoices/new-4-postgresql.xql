@@ -17,6 +17,7 @@
 
   <fullquery name="create_invoice">
     <querytext>
+
       select im_trans_invoice__new (
                 :invoice_id,
                 'im_trans_invoice',
@@ -39,13 +40,15 @@
                 :vat,
                 :tax,
                 null
-            )
+            );
+
     </querytext>
   </fullquery>
 
 
   <fullquery name="insert_acs_rels">
     <querytext>
+
       select acs_rel__new(
                null,
                'relationship',
@@ -54,7 +57,8 @@
                null,
                null,
                null
-      )
+      );
+
     </querytext>
   </fullquery>
 
