@@ -50,9 +50,6 @@ create table im_fs_folders (
 -- We need to select frequently all folders for a given business object.
 create index im_fs_folders_object_idx on im_fs_folders(object_id);
 
--- Avoid duplicate entries
-create unique index im_fs_folders_oid_path_idx on im_fs_folders(object_id, path);
-
 
 ---------------------------------------------------------
 -- Folder Status
