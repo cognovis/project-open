@@ -503,6 +503,11 @@ create table im_costs (
 	cost_name		varchar(400)
 				constraint im_costs_name_nn
 				not null,
+        -- Nr is a current number to provide a unique 
+	-- identifier of a cost item for backup/restore.
+	cost_nr			varchar(400)
+				constraint im_costs_nr_nn
+				not null,
 	project_id		integer
 				constraint im_costs_project_fk
 				references im_projects,
