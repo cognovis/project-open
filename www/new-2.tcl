@@ -14,7 +14,7 @@ ad_page_contract {
     @author fraber@fraber.de
     @creation-date Aug 2003
 } {
-    { invoice_id:integer "" }
+    { cost_id:integer "" }
     provider_id:integer
     payment_id:integer
     amount
@@ -48,7 +48,7 @@ if { $amount < 0 } {
     return
 }
 
-if {"" == $invoice_id } {
+if {"" == $cost_id } {
     ad_return_complaint 1 "
     <li>You have not specified an invoice for this payment."
     return
@@ -56,10 +56,8 @@ if {"" == $invoice_id } {
 
 set note [db_nullify_empty_string $note]
 
-
-set customer_id [db_string get_customer_from_invoice "select customer_id from im_invoices where invoice_id=:invoice_id" -default 0]
-ns_log Notice "/intranet-payments/new-2: invoice_id=$invoice_id"
-ns_log Notice "/intranet-payments/new-2: customer_id=$customer_id"
+set customer_id [db_string get_customer_from_invoice "select customer_id from im_costs where cost_id=:cost_id" -default 0]
+set provider_id [db_string get_provider_from_invoice "select provider_id from im_costs where cost_id=:cost_id" -default 0]
 
 # ---------------------------------------------------------------
 # Insert data into the DB
@@ -69,15 +67,15 @@ db_dml payment_update "
 update
 	im_payments 
 set
-	invoice_id = :invoice_id,
-	amount = :amount,
-	currency = :currency,
-	received_date = :received_date,
-	payment_type_id = :payment_type_id,
-	note = :note,
-	last_modified = sysdate,
-	last_modifying_user = :user_id,
-	modified_ip_address = '[ns_conn peeraddr]'
+	cost_id =		:cost_id,
+	amount =		:amount,
+	currency =		:currency,
+	received_date =		:received_date,
+	payment_type_id = 	:payment_type_id,
+	note =			:note,
+	last_modified		= sysdate,
+	last_modifying_user = 	:user_id,
+	modified_ip_address = 	'[ns_conn peeraddr]'
 where
 	payment_id = :payment_id" 
 
@@ -86,7 +84,7 @@ if {[db_resultrows] == 0} {
     db_dml new_payment_insert "
 insert into im_payments ( 
 	payment_id, 
-	invoice_id,
+	cost_id,
 	customer_id,
 	provider_id,
 	amount, 
@@ -99,7 +97,7 @@ insert into im_payments (
 	modified_ip_address
 ) values ( 
 	:payment_id, 
-	:invoice_id,
+	:cost_id,
 	:customer_id,
 	:provider_id,
         :amount, 
@@ -113,50 +111,21 @@ insert into im_payments (
 )" 
 }
 
+
+# ---------------------------------------------------------------
+# Update Cost Items
+# ---------------------------------------------------------------
+
+db_dml update_cost_items "
+update im_costs
+set amount = (
+	select	sum(amount)
+	from	im_payments
+	where	cost_id = :cost_id
+)
+where cost_id = :cost_id
+"
+
+
+
 ad_returnredirect $return_url
-ns_conn close
-
-
-# ---------------------------------------------------------------
-# # email the people in the billing group
-# ---------------------------------------------------------------
-
-db_1row get_user_info "
-select
-	im_name_from_user_id(:user_id) as editing_user,
-	im_email_from_user_id(:user_id) as editing_email
-from dual
-"
-
-
-set customer_name [db_string get_customer_name "select group_name from user_groups where group_id = :customer_id"]
-set invoice_nr [db_string get_invoice_nr "select invoice_nr from im_invoices where invoice_id = :invoice_id"]
-
-
-set message "
-A payment for invoice #$invoice_nr of $customer_name has been changed by $editing_user.
-
-Amount: $amount
-Note: $note
-
-To view online: [im_url]/invoices/view-payment?[export_url_vars payment_id]
-"
-
-# ToDo: Fix BillingGroupShortName and user_group_map
-# Whom to send the email?
-set billing_group [ad_parameter BillingGroupShortName "intranet"]
-
-set send_to_users_sql "
-	select email, first_names, last_name 
-	from users, user_group_map
-	where users.user_id = user_group_map.user_id 
-	      and group_id = (select group_id from user_groups 
-	                      where short_name = :billing_group"
-	                     )"
-
-db_foreach people_to_notify $send_to_users_sql {
-    ns_log Notice "Sending email to $email"
-    ns_sendmail $email "$editing_email" "Change to $customer_name payment plan." "$message"
-}
-
-db_release_unused_handles

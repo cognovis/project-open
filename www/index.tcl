@@ -145,8 +145,10 @@ if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string
 
 set order_by_clause ""
 switch $order_by {
-#    "Client" { set order_by_clause "order by customer_name" }
-#    "Payment #" { set order_by_clause "order by payment_nr" }
+    "Client" { set order_by_clause "order by customer_name" }
+    "Invoice" { set order_by_clause "order by ci.cost_name DESC" }
+    "Payment #" { set order_by_clause "order by payment_id DESC" }
+    "Received" { set order_by_clause "order by received_date DESC" }
 }
 
 set where_clause [join $criteria " and\n            "]
@@ -173,7 +175,9 @@ from
 	im_costs ci
 where
 	p.cost_id = ci.cost_id(+)
-        $where_clause"
+        $where_clause
+$order_by_clause
+"
 
 # ---------------------------------------------------------------
 # 5a. Limit the SQL query to MAX rows and provide << and >>

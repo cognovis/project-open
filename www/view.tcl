@@ -41,74 +41,20 @@ if {![im_permission $user_id view_payments]} {
 db_0or1row get_payment_info "
 select
         p.*,
-	i.invoice_nr,
-	i.customer_id,
+	ci.cost_name,
+	ci.customer_id,
 	c.customer_name,
+	pro.customer_name as provider_name,
 	to_char(p.start_block,'Month DD, YYYY') as start_block,
         im_category_from_id(p.payment_type_id) as payment_type
 from
 	im_customers c,
+	im_customers pro,
 	im_payments p,
-	im_invoices i
+	im_costs ci
 where
-	p.invoice_id=i.invoice_id(+)
-	and i.customer_id = c.customer_id(+)
+	p.cost_id = ci.cost_id(+)
+	and ci.customer_id = c.customer_id(+)
+	and ci.provider_id = pro.customer_id(+)
 	and p.payment_id = :payment_id
 "
-
-# ---------------------------------------------------------------
-# Format the page
-# ---------------------------------------------------------------
-
-set table_html "
-	  <tr> 
-	    <td colspan=2 class=rowtitle>Payment Details</td>
-	  </tr>
-	  <tr> 
-	    <td>Invoice Nr</td>
-	    <td><A href=/intranet-invoices/view?invoice_id=$invoice_id>$invoice_nr</A></td>
-	  </tr>
-	  <tr> 
-	    <td>Client</td>
-	    <td><A href=/intranet/customers/view?customer_id=$customer_id>$customer_name</A></td>
-	  </tr>
-	  <tr> 
-	    <td>Amount</td>
-	    <td>$amount $currency</td>
-	  </tr>
-	  <tr> 
-	    <td>Received</td>
-	    <td>$received_date</td>
-	  </tr>
-          <tr>
-            <td>Payment Type</td>
-            <td>$payment_type</td>
-          </tr>
-          <tr>
-            <td>Note</td>
-            <td>$note</td>
-          </tr>
-	  <tr> 
-	    <td valign=top> </td>
-	    <td><input type=submit value=Edit name=submit></td>
-	  </tr>
-"
-
-# ---------------------------------------------------------------
-# Join the parts together
-# ---------------------------------------------------------------
-
-set page_body "
-[im_invoices_navbar "none" "/intranet-invoices/index" "" "" [list]]
-
-<form action=new method=POST>
-[export_form_vars payment_id invoice_id return_url]
-
-<table border=0>
-$table_html
-</table>
-
-</form>
-"
-
-doc_return  200 text/html [im_return_template]
