@@ -108,12 +108,12 @@ if {!$error_user_id} {
 
 set report_object_id 0
 
-# Try with a customer first
-set report_object_id [db_string report_customer "
-select	min(customer_id)
-from	im_customers c,
+# Try with a company first
+set report_object_id [db_string report_company "
+select	min(company_id)
+from	im_companies c,
 	acs_rels r
-where	c.customer_id = r.object_id_one
+where	c.company_id = r.object_id_one
 	and r.object_id_two = :error_user_id
 " -default 0]
 

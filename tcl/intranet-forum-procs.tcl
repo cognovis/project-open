@@ -153,9 +153,9 @@ ad_proc -public im_forum_potential_asignees {user_id object_id} {
     user may assign his task or issue.
     <ul>
     <li>Project: <br>
-	This list is restricted to the PM for customers 
+	This list is restricted to the PM for companies 
 	and freelancers.
-    <li>Customer:<br>
+    <li>Company:<br>
 	May be restricted to the Key Account
     </ul>
     The code is written using a large SQL "union" that joins
@@ -172,7 +172,7 @@ ad_proc -public im_forum_potential_asignees {user_id object_id} {
     # value in case the list of object members or object admins is emtpy.
 
     set admin_group_id [im_admin_group_id]
-    set customer_group_id [im_customer_group_id]
+    set company_group_id [im_company_group_id]
     set employee_group_id [im_employee_group_id]
     set admins [db_list get_admins "select member_id from group_distinct_member_map where group_id = :admin_group_id"]
 
@@ -227,9 +227,9 @@ from
 	users u
 )"
 
-    # Add the objects customers to the list
-    set object_customer_sql "(
--- object_customer_sql
+    # Add the objects companies to the list
+    set object_company_sql "(
+-- object_company_sql
 select distinct
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name
@@ -241,13 +241,13 @@ where
 	r.object_id_one = :object_id
 	and r.object_id_two = u.user_id
 	and m.member_id = u.user_id
-	and m.group_id = :customer_group_id
+	and m.group_id = :company_group_id
 )"
 
     # Add all object members to the list who are
-    # not customers
-    set object_non_customer_sql "(
--- object_non_customer_sql
+    # not companies
+    set object_non_company_sql "(
+-- object_non_company_sql
 select distinct
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name
@@ -259,7 +259,7 @@ where
 	r.object_id_one = :object_id
 	and r.object_id_two = u.user_id
 	and m.member_id = u.user_id
-	and not(m.group_id = :customer_group_id)
+	and not(m.group_id = :company_group_id)
 )"
 
     set object_staff_sql "(
@@ -291,10 +291,10 @@ where	r.object_id_one = :object_id
 	lappend sql_list $object_staff_sql
     }
     if {[im_permission $user_id add_topic_client]} {
-	lappend sql_list $object_customer_sql
+	lappend sql_list $object_company_sql
     }
     if {[im_permission $user_id add_topic_noncli]} {
-	lappend sql_list $object_non_customer_sql
+	lappend sql_list $object_non_company_sql
     }
     if {[im_permission $user_id add_topic_pm]} {
 	lappend sql_list $object_admin_sql
@@ -456,7 +456,7 @@ ad_proc -public im_forum_render_tind {
 		</tr>\n"
 	incr ctr
 
-	# Hide the asignee from a customer or others if they don't have
+	# Hide the asignee from a company or others if they don't have
 	# permissions to see the user.
 	set asignee_html [im_render_user_id $asignee_id $asignee_name $user_id $object_id]
 	if {"" != $asignee_html} {
@@ -681,7 +681,7 @@ ad_proc -public im_forum_component {
     # If that doesn't work try with the default "forum_list_short".
     if {"" == $view_name} {
 	# No view_name defined (default for most pages).
-	# So we append the "type of the forum" (=customer, project, ...)
+	# So we append the "type of the forum" (=company, project, ...)
 	# to "forum_list_". This allows the writers of future modules
 	# to define customized views for their new business objects.
 	set view_name "forum_list_$forum_type"
@@ -851,11 +851,11 @@ ad_proc -public im_forum_component {
     }
 
     set user_is_employee_p [im_user_is_employee_p $user_id]
-    set user_is_customer_p [im_user_is_customer_p $user_id]
+    set user_is_company_p [im_user_is_company_p $user_id]
 
     # Forum items have a complicated "scoped" permission 
     # system where you can say who should be able to read
-    # the topic in function of the project/customer/...
+    # the topic in function of the project/company/...
     # membership.
     # Also, items can be attached to all kinds of objects,
     # so that we need some object_type meta data
@@ -914,7 +914,7 @@ where
 		member_objects.p,
 		admin_objects.p,
 		:user_is_employee_p,
-		:user_is_customer_p
+		:user_is_company_p
 	)
 	$restriction_clause
 $order_by_clause"
