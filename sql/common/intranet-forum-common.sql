@@ -124,6 +124,7 @@ insert into im_views (view_id, view_name, visible_for) values (42, 'forum_list_f
 insert into im_views (view_id, view_name, visible_for) values (43, 'forum_list_extended', 'view_forums');
 insert into im_views (view_id, view_name, visible_for) values (44, 'forum_list_short', 'view_forums');
 insert into im_views (view_id, view_name, visible_for) values (45, 'forum_list_company', 'view_forums');
+insert into im_views (view_id, view_name, visible_for) values (46, 'forum_list_user', 'view_forums');
 
 
 -- ForumList for home page
@@ -204,6 +205,7 @@ extra_select, extra_where, sort_order, visible_for) values (4110,41,NULL,
 -- commit;
 
 
+
 -- ForumList for the forum index page (all projects with a lot of space)
 --
 delete from im_view_columns where column_id >= 4200 and column_id < 4299;
@@ -261,4 +263,126 @@ extra_select, extra_where, sort_order, visible_for) values (4212,42,NULL,'Folder
 
 -- commit;
 
+
+-- ForumList Short as a default when no other LIST is found
+--
+delete from im_view_columns where column_id >= 4400 and column_id < 4499;
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4400,44,NULL,'P',
+'$priority','','',2,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4402,44,NULL,'Type',
+'"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
+[im_gif $topic_type]</a>"',
+'','',4,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4404,44,NULL,'Subject',
+'"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
+$subject</a>"','','',6,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4406,44,NULL,'Due',
+'$due_date','','',8,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4407,44,NULL,'Own',
+'"<a href=/intranet/users/view?user_id=$owner_id>$owner_initials</a>"',
+'','',9,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4408,44,NULL,'Ass',
+'"<a href=/intranet/users/view?user_id=$asignee_id>$asignee_initials</a>"',
+'','',10,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4410,44,NULL,
+'"[im_gif help "Select topics here for processing"]"',
+'"<input type=checkbox name=topic_id.$topic_id>"',
+'','',12,'');
+
+-- commit;
+
+
+-- ForumList Short as a default when no other LIST is found
+--
+delete from im_view_columns where column_id >= 4500 and column_id < 4599;
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4500,45,NULL,'P',
+'$priority','','',2,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4502,45,NULL,'Type',
+'"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
+[im_gif $topic_type]</a>"',
+'','',4,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4504,45,NULL,'Subject',
+'"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
+$subject</a>"','','',6,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4506,45,NULL,'Due',
+'$due_date','','',8,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4507,45,NULL,'Own',
+'"<a href=/intranet/users/view?user_id=$owner_id>$owner_initials</a>"',
+'','',9,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4508,45,NULL,'Ass',
+'"<a href=/intranet/users/view?user_id=$asignee_id>$asignee_initials</a>"',
+'','',10,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4510,45,NULL,
+'"[im_gif help "Select topics here for processing"]"',
+'"<input type=checkbox name=topic_id.$topic_id>"',
+'','',12,'');
+
+-- commit;
+
+
+-- ForumList Short as a default when no other LIST is found
+--
+delete from im_view_columns where column_id >= 4600 and column_id < 4699;
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4600,46,NULL,'P',
+'$priority','','',2,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4602,46,NULL,'Type',
+'"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
+[im_gif $topic_type]</a>"',
+'','',4,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4604,46,NULL,'Subject',
+'"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
+$subject</a>"','','',6,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4606,46,NULL,'Due',
+'$due_date','','',8,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4607,46,NULL,'Own',
+'"<a href=/intranet/users/view?user_id=$owner_id>$owner_initials</a>"',
+'','',9,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4608,46,NULL,'Ass',
+'"<a href=/intranet/users/view?user_id=$asignee_id>$asignee_initials</a>"',
+'','',10,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (4610,46,NULL,
+'"[im_gif help "Select topics here for processing"]"',
+'"<input type=checkbox name=topic_id.$topic_id>"',
+'','',12,'');
+
+-- commit;
 
