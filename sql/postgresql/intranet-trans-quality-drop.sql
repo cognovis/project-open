@@ -8,7 +8,7 @@
 -- @author frank.bergmann@project-open.com
 -- @author guillermo.belcic@project-open.com
 
-
+drop sequence quality_report_id;
 drop table im_trans_quality_entries;
 drop table im_trans_quality_reports;
 
