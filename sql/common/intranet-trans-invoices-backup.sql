@@ -46,8 +46,8 @@
 
 delete from im_view_columns where view_id = 195;
 delete from im_views where view_id = 195;
-insert into im_views (view_id, view_name, view_type_id, view_sql
-) values (195, 'im_trans_prices', 1410, '
+insert into im_views (view_id, view_name, view_type_id, sort_order, view_sql
+) values (195, 'im_trans_prices', 1410, 999, '
 SELECT
 	p.*,
 	im_category_from_id(p.uom_id) as uom,
