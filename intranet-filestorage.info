@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-filestorage</auto-mount>
 
-    <version name="0.2.0d" url="http://openacs.org/repository/download/apm/intranet-filestorage-0.2.0d.apm">
+    <version name="1.0" url="http://openacs.org/repository/download/apm/intranet-filestorage-1.0.apm">
         <owner url="mailto:fraber@project-open.com">Frank Bergmann</owner>
         <summary>Filesystem folders for business objects</summary>
         <release-date>2004-01-29</release-date>
@@ -16,6 +16,7 @@
         <description format="text/plain">Allows access to filesystem documents and folders for various types of business objects.</description>
 
         <provides url="intranet-filestorage" version="1.0"/>
+        <requires url="intranet-core" version="1.0"/>
 
         <callbacks>
         </callbacks>
