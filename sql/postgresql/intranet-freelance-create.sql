@@ -193,3 +193,4 @@ select im_component_plugin__new (
         'im_freelance_member_select_component $object_id $return_url'
     );
 
+@../common/intranet-freelance-common.sql

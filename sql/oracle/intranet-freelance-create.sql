@@ -204,6 +204,6 @@ end;
 -- Backup reports
 -- ------------------------------------------------------------
 
-@../common/intranet-freelance-create.sql
+@../common/intranet-freelance-common.sql
 @../common/intranet-freelance-backup.sql
 
