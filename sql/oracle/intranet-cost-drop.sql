@@ -31,20 +31,76 @@ delete from acs_objects where object_type = 'im_investment';
 delete from im_cost_centers;
 delete from acs_objects where object_type = 'im_cost_center';
 
-drop table im_repeating_costs;
-drop table im_prices;
-drop table im_costs;
-drop table im_investments;
-drop table im_cost_centers;
+
+-------------------------------------------------------------
+-- Costs
+
+delete from im_view_columns where view_id in (220, 221);
+delete from im_views where view_id in (220, 221);
+
+
+begin
+    acs_privilege.drop_privilege('view_costs');
+    acs_privilege.drop_privilege('add_costs');
+end;
+/
+
+delete from im_biz_object_urls where object_type='im_cost';
 
 drop package im_cost;
+
+drop view im_cost_status;
+drop view im_cost_type;
+
+delete from im_categories where category_id >= 3700 and category_id < 3799;
+delete from im_categories where category_id >= 3800 and category_id < 3899;
+
+drop table im_costs;
+
+-------------------------------------------------------------
+-- "Investments"
+
+
+delete from im_categories where category_id >= 3500 and category_id < 3599;
+delete from im_categories where category_id >= 3400 and category_id < 3500;
+delete from im_categories where category_id >= 3400 and category_id < 3500;
+delete from im_biz_object_urls where object_type='im_investment';
+
+drop table im_investments;
+
+begin
+    acs_object_type.drop_type(object_type => 'im_cost_center');
+end;
+/
+
+-------------------------------------------------------------
+-- Repeating Costs
+
+delete from im_categories where category_type = 'Intranet Investment Type';
+delete from im_categories where category_type = 'Intranet Investment Status';
+
+drop table im_prices;
+
+drop table im_repeating_costs;
+
+
+
+-------------------------------------------------------------
+-- Cost Centers
+
+drop view im_departments;
+
+delete from im_categories where category_id >= 3000 and category_id < 3100;
+delete from im_categories where category_id >= 3100 and category_id < 3200;
+
+
+delete from im_biz_object_urls where object_type='im_cost_center';
+
+drop table im_cost_centers;
 drop package im_cost_center;
 
 delete from im_categories where category_type = 'Intranet Cost Center Type';
 delete from im_categories where category_type = 'Intranet Cost Center Status';
-delete from im_categories where category_type = 'Intranet Investment Type';
-delete from im_categories where category_type = 'Intranet Investment Status';
-
 
 begin
     acs_object_type.drop_type(object_type => 'im_cost_center');
