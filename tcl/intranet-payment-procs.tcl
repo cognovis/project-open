@@ -7,3 +7,9 @@ ad_library {
     @author fraber@fraber.de
     @creation-date  27 June 2003
 }
+
+ad_proc im_payment_type_select { select_name { default "" } } {
+} {
+    return [im_category_select "Intranet Payment Type" $select_name $default]
+}
+
