@@ -18,14 +18,31 @@ ad_page_contract {
 
 # Also accept "user_id_from_search" instead of user_id (the one to edit...)
 if [info exists user_id_from_search] { set user_id $user_id_from_search}
+
 set current_user_id [ad_maybe_redirect_for_registration]
 im_user_permissions $current_user_id $user_id view read write admin
+
+# Permission Semantics
+# read: Can see the skills
+# write: Can "claim" skills
+# admin: Can "confirm" skills
+
+
+# Check whether we are editing ourself...
+# There are special conditions for this case...
+set self_p 0
+if {$user_id == $current_user_id} { 
+    set self_p 1 
+    set admin 0
+}
+
+
 set return_url [im_url_with_query]
 set bgcolor(0) "class=roweven"
 set bgcolor(1) "class=rowodd"
 
 # Create an error if the current_user isn't allowed to see the user
-if {!$write} {
+if {!$read} {
     ad_return_complaint 1 "<li>You have insufficient privileges to view this user."
     return
 }
@@ -77,8 +94,8 @@ set sql "
 select
 	s.*,
 	im_category_from_id(s.skill_id) as skill_name,
-	s.claimed_experience_id as claimed,
-	s.confirmed_experience_id as confirmed
+	im_category_from_id(s.claimed_experience_id) as claimed_experience,
+	im_category_from_id(s.confirmed_experience_id) as confirmed_experience
 from
 	im_freelance_skills s
 where
@@ -91,13 +108,8 @@ order by
 set skill_table_header "
 	<tr class=rowtitle>
 	  <td class=rowtitle>$skill_type</td>
-	  <td class=rowtitle>Claimed</td>\n"
-
-if {$write} {
-    append skill_table_header "
-	  <td class=rowtitle>Confirmed</td>\n" 
-}
-append skill_table_header "
+	  <td class=rowtitle>Claimed</td>
+	  <td class=rowtitle>Confirmed</td>
 	  <td class=rowtitle align=center>[im_gif delete]</td>
 	</tr>
 "
@@ -106,18 +118,24 @@ set skill_table ""
 set ctr 0
 db_foreach column_list $sql {
 
+    if {[string equal "Unconfirmed" $confirmed_experience]} {
+	set confirmed_experience "&nbsp;"
+    }
+
     append skill_table "
 	<tr$bgcolor([expr $ctr % 2])>
 	  <td>$skill_name</td>
 	  <td>
-[im_category_select "Intranet Experience Level" "claimed.$skill_id" $claimed]
+[im_category_select "Intranet Experience Level" "claimed.$skill_id" $claimed_experience_id]
 	  </td>"
 
-    if {$write } { 
+    if {$admin} { 
         append skill_table "
 	  <td>
-[im_category_select "Intranet Experience Level" "confirmed.$skill_id" $confirmed]
+[im_category_select "Intranet Experience Level" "confirmed.$skill_id" $confirmed_experience_id]
 	  </td>\n"
+    } else {
+        append skill_table "<td>$confirmed_experience</td>\n"
     }
 
     append skill_table "

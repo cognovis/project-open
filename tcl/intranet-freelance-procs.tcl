@@ -322,7 +322,15 @@ ad_proc im_freelance_skill_component { current_user_id user_id  return_url} {
     set admin 0
 
     im_user_permissions $current_user_id $user_id view read write admin
+    if {!$read} { 
+	ns_log Notice "im_freelance_skill_component: not allowed to read - exiting"
+	return "" 
+    }
 
+    # Skip this component if the user is not a freelancer
+    if {![ad_user_group_name_member "Freelancers" $user_id]} { 
+	return "" 
+    }
 
 set sql "
 select
@@ -422,7 +430,7 @@ db_foreach skill_body_html $sql {
     # Display a tick or a cross, depending whether the claimed
     # experience is confirmed or not.
     #
-    if {[string equal "Unconfirmed" $confirmed]} {
+    if {"" == $confirmed || [string equal "Unconfirmed" $confirmed]} {
 	set confirmation "&nbsp;"
     } else {
 	if {$claimed_experience_id <= $confirmed_experience_id } {

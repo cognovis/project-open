@@ -22,8 +22,24 @@ ad_page_contract {
 
 # Also accept "user_id_from_search" instead of user_id (the one to edit...)
 if [info exists user_id_from_search] { set user_id $user_id_from_search}
+
 set current_user_id [ad_maybe_redirect_for_registration]
-im_user_skill_permissions $current_user_id $user_id view read write admin
+im_user_permissions $current_user_id $user_id view read write admin
+
+# Permission Semantics
+# read: Can see the skills
+# write: Can "claim" skills
+# admin: Can "confirm" skills
+
+
+# Check whether we are editing ourself...
+# There are special conditions for this case...
+set self_p 0
+if {$user_id == $current_user_id} {
+    set self_p 1
+    set admin 0
+}
+
 if {!$write} {
     ad_return_complaint 1 "<li>You have insufficient rights to pursue this operation"
     return
@@ -73,12 +89,13 @@ switch $submit {
 	}
 
 	# ------------------- Update Confirmed Experience ------------
-	set confirmed_list [array names confirmed]
-	foreach confirmed_skill_id $confirmed_list {
-	    if {"" == $confirmed_skill_id} { continue }
-	    if {"" == $confirmed($confirmed_skill_id)} { continue }
+	if {$admin} {
+	    set confirmed_list [array names confirmed]
+	    foreach confirmed_skill_id $confirmed_list {
+		if {"" == $confirmed_skill_id} { continue }
+		if {"" == $confirmed($confirmed_skill_id)} { continue }
 
-	    set sqlconfirmed "
+		set sqlconfirmed "
         update
                 im_freelance_skills
         set
@@ -90,9 +107,10 @@ switch $submit {
                 and skill_id=:confirmed_skill_id
                 and skill_type_id=:skill_type_id"
 
-	    if [catch {db_dml update_experience $sqlconfirmed} errmsg] {
-		ad_return_complaint "DB Error" "
+		if [catch {db_dml update_experience $sqlconfirmed} errmsg] {
+		    ad_return_complaint "DB Error" "
                 <li>Error updating experience: $errmsg"
+		}
 	    }
 	}
     }
