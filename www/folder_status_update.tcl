@@ -28,9 +28,20 @@ if { $status == "o" } {
 }
 
 
-set exists_p [db_string exists_folder "select count(*) from im_fs_folder_status where object_id = :object_id and path = :rel_path and user_id = :user_id"]
+set exists_status_p [db_string exists_folder "
+select 
+	count(*) 
+from 
+	im_fs_folders f,
+	im_fs_folder_status s
+where 
+	f.object_id = :object_id 
+	and f.path = :rel_path 
+	and s.user_id = :user_id
+	and f.folder_id = s.folder_id
+"]
 
-if {$exists_p} {
+if {$exists_status_p} {
 
    db_dml update_folder_status "
 update
@@ -38,26 +49,56 @@ update
 set
         open_p = :status
 where
-	object_id = :object_id 
-	and path = :rel_path 
-	and user_id = :user_id
+	s.user_id = :user_id
+	and folder_id in (
+	select
+		folder_id
+	from
+		im_fs_folders
+	where
+		object_id = :object_id 
+		and path = :rel_path
+	)
 "
 
 } else {
+    # The status doesn't exist, but maybe the folder
+    # has been inserted already...
 
-    db_dml my_insert "
-    insert into im_fs_folder_status (
+    set exists_folder_p [db_string exists_folder "
+select 
+	count(*) 
+from 
+	im_fs_folders f
+where 
+	f.object_id = :object_id 
+	and f.path = :rel_path 
+"]
+
+    if {!$exists_folder_p} {
+	set folder_id [db_nextval im_fs_folder_status_seq]
+	db_dml insert_folder "
+insert into im_fs_folders (
+	folder_id,
         object_id,
-        user_id,
-        path,
-        open_p,
-	folder_id
-    ) values (
+        path
+) values (
+	:folder_id,
         :object_id,
+        :rel_path
+)"
+    }
+
+    # Now inser the folder status
+    db_dml insert_folder_status "
+insert into im_fs_folder_status (
+	folder_id,
+        user_id,
+        open_p
+    ) values (
+        :folder_id,
         :user_id,
-        :rel_path,
-        :status,
-	im_fs_folder_status_seq.nextval
+        :status
     )"
 }
 ad_returnredirect $return_url

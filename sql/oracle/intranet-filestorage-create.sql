@@ -37,16 +37,19 @@ create table im_fs_folders (
 	object_id	integer
 			constraint im_fs_folder_object_fk
 			references acs_objects,
-	folder_type_id	integer
-			constraint im_fs_folder_type_fk
-			references im_categories,
 	path		varchar(500)
 			constraint im_fs_folder_status_path_nn 
 			not null,
+	folder_type_id	integer
+			constraint im_fs_folder_type_fk
+			references im_categories,
 	description	varchar(500)
 );
-# We need to select frequently all folders for a given business object.
+-- We need to select frequently all folders for a given business object.
 create index im_fs_folders_object_idx on im_fs_folders(object_id);
+
+-- Avoid duplicate entries
+create unique index im_fs_folders_oid_path_idx on im_fs_folders(object_id, path);
 
 
 ---------------------------------------------------------

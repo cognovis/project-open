@@ -751,14 +751,16 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     # ------------------------------------------------------------------
     set query "
 select 
-	folder_id, 
-	path, 
-	open_p 
+	f.folder_id, 
+	f.path, 
+	s.open_p 
 from 
-	im_fs_folder_status 
+	im_fs_folders f,
+	im_fs_folder_status s
 where 
-	user_id = :user_id
-	and object_id = :object_id
+	s.user_id = :user_id
+	and f.object_id = :object_id
+	and f.folder_id = s.folder_id
 "
  
     set last_folder_id 0
