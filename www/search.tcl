@@ -1,7 +1,7 @@
 ad_page_contract {
     @author Neophytos Demetriou <k2pts@cytanet.com.cy>
     @creation-date September 01, 2001
-    @cvs-id $Id: search.tcl,v 1.7 2002/07/02 01:52:39 yon Exp $
+    @cvs-id $Id: search.tcl,v 1.8 2002/07/06 13:38:02 jeffd Exp $
 } {
     q:notnull,trim
     {t:trim ""}
@@ -14,6 +14,7 @@ ad_page_contract {
 }
 
 ns_startcontent -type "text/html"
+
 set this_dir [file dirname [ad_conn file]]
 set template_top_file "$this_dir/search-results-top"
 set template_one_file "$this_dir/search-results-one"
@@ -96,6 +97,7 @@ set template_top [template::adp_parse $template_top_file [list \
 	elapsed $elapsed \
 	url_advanced_search $url_advanced_search]]
 
+ReturnHeaders "text/html"
 ns_write $template_top
 
     for { set __i 0 } { $__i < [expr $high - $low +1] } { incr __i } {
