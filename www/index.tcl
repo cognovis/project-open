@@ -15,7 +15,7 @@ ad_page_contract {
     bread_crum_path:optional
 }
 
-if { ![info_exists bread_crum_path] } {
+if { ![info exists bread_crum_path] } {
 
     set url "/intranet/"
 } else {
