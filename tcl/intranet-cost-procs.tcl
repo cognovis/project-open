@@ -726,6 +726,8 @@ select
 	ci.*,
 	ci.paid_amount as payment_amount,
 	ci.paid_currency as payment_currency,
+	cust.company_name as customer_name,
+	prov.company_name as provider_name,
 	url.url,
         im_category_from_id(ci.cost_status_id) as cost_status,
         im_category_from_id(ci.cost_type_id) as cost_type,
@@ -733,10 +735,14 @@ select
 from
 	im_costs ci,
 	acs_objects o,
-        (select * from im_biz_object_urls where url_type=:view_mode) url
+        (select * from im_biz_object_urls where url_type=:view_mode) url,
+	im_companies cust,
+	im_companies prov
 where
 	ci.cost_id = o.object_id
 	and o.object_type = url.object_type
+	and ci.customer_id = cust.company_id
+	and ci.provider_id = prov.company_id
 	and ci.cost_id in (
 		select distinct cost_id 
 		from im_costs 
@@ -760,7 +766,7 @@ order by
   </tr>
   <tr class=rowtitle>
     <td align=center class=rowtitle>[_ intranet-cost.Document]</td>
-    <td align=center class=rowtitle>[_ intranet-cost.Type]</td>
+    <td align=center class=rowtitle>[_ intranet-cost.Company]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Due]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Amount]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Paid]</td>
@@ -798,14 +804,21 @@ order by
 		<tr class=rowtitle>
 		  <td class=rowtitle colspan=99>$cost_type</td>
 		</tr>\n"
+
+	    set old_cost_type_id $cost_type_id
 	}
-	
-	set old_cost_type_id $cost_type_id
+
+	set company_name ""
+	if {$cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_quote]} {
+	    set company_name $customer_name
+	} else {
+	    set company_name $provider_name
+	}
 
 	append cost_html "
 	<tr $bgcolor([expr $ctr % 2])>
 	  <td><A href=\"$url$cost_id\">[string range $cost_name 0 20]</A></td>
-	  <td>$cost_type</td>
+	  <td>$company_name</td>
 	  <td>$calculated_due_date</td>
 	  <td>$amount $currency</td>
 	  <td>$payment_amount $payment_currency</td>
@@ -851,23 +864,32 @@ order by
     set hard_cost_html "
 <table>
   <tr class=rowtitle>
-    <td class=rowtitle colspan=99 align=center>Real Costs</td>
+    <td class=rowtitle colspan=99 align=center>[_ intranet-cost.Real_Costs]</td>
   </tr>
   <tr>
     <td>[_ intranet-cost.Customer_Invoices]</td>\n"
     foreach currency $currencies {
-	append hard_cost_html "<td>$subtotals([im_cost_type_invoice]$currency) $currency</td>\n"
+	set subtotal $subtotals([im_cost_type_invoice]$currency)
+	append hard_cost_html "<td align=right>$subtotal $currency</td>\n"
+	set grand_total($currency) $subtotal
     }
     append hard_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Provider_Bills]</td>\n"
     foreach currency $currencies {
-	append hard_cost_html "<td>$subtotals([im_cost_type_bill]$currency) $currency</td>\n"
+	set subtotal $subtotals([im_cost_type_bill]$currency)
+	append hard_cost_html "<td align=right>- $subtotal $currency</td>\n"
+	set grand_total($currency) [expr $grand_total($currency) - $subtotal]
     }
     append hard_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Timesheet_Costs]</td>\n"
     foreach currency $currencies {
-	append hard_cost_html "<td>$subtotals([im_cost_type_timesheet]$currency) $currency</td>\n"
+	set subtotal $subtotals([im_cost_type_timesheet]$currency)
+	append hard_cost_html "<td align=right>- $subtotal $currency</td>\n"
+	set grand_total($currency) [expr $grand_total($currency) - $subtotal]
+    }
+    append hard_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-cost.Grand_Total]</b></td>\n"
+    foreach currency $currencies {
+	append hard_cost_html "<td align=right><b>$grand_total($currency) $currency</b></td>\n"
     }
     append hard_cost_html "</tr>\n</table>\n"
-
 
 
     # ----------------- Prelim Costs HTML -------------
@@ -876,30 +898,39 @@ order by
     set prelim_cost_html "
 <table>
   <tr class=rowtitle>
-    <td class=rowtitle colspan=99 align=center>Preliminary Costs</td>
+    <td class=rowtitle colspan=99 align=center>[_ intranet-cost.Preliminary_Costs]</td>
   </tr>
   <tr>
     <td>[_ intranet-cost.Quotes]</td>\n"
     foreach currency $currencies {
-	append prelim_cost_html "<td>$subtotals([im_cost_type_quote]$currency) $currency</td>\n"
+	set subtotal $subtotals([im_cost_type_quote]$currency)
+	append prelim_cost_html "<td align=right>$subtotal $currency</td>\n"
+	set grand_total($currency) $subtotal
     }
     append prelim_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Purchase_Orders]</td>\n"
     foreach currency $currencies {
-	append prelim_cost_html "<td>$subtotals([im_cost_type_po]$currency) $currency</td>\n"
+	set subtotal $subtotals([im_cost_type_po]$currency)
+	append prelim_cost_html "<td align=right>- $subtotal $currency</td>\n"
+	set grand_total($currency) [expr $grand_total($currency) - $subtotal]
     }
 
 # No planned timesheet yet - will be from resource planning
 #    append prelim_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Timesheet_Costs]</td>\n"
 #    foreach currency $currencies {
-#	append prelim_cost_html "<td>$subtotals([im_cost_type_timesheet]$currency) $currency</td>\n"
+#	append prelim_cost_html "<td align=right>
+#	  $subtotals([im_cost_type_timesheet]$currency) $currency
+#	</td>\n"
 #    }
+    append prelim_cost_html "</tr>\n<tr>\n<td></td>\n"
+    foreach currency $currencies {
+	append prelim_cost_html "<td align=right>&nbsp;</td>\n"
+    }
 
+    append prelim_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-cost.Grand_Total]</b></td>\n"
+    foreach currency $currencies {
+	append prelim_cost_html "<td align=right><b>$grand_total($currency) $currency</b></td>\n"
+    }
     append prelim_cost_html "</tr>\n</table>\n"
-    append summary_html "
-	<tr class=rowplain>
-	  <td colspan=3 align=left>$cost_type</td>
-	  <td>[expr $sign * $amount] $currency</td>
-	</tr>\n"
 
 
     # ----------------- Admin Links --------------------------------
@@ -950,11 +981,12 @@ order by
 <br>
 
 <table cellspacing=0 cellpadding=0>
-<tr><td class=rowtitle colspan=2 align=center>Summary</td></tr>
+<tr><td class=rowtitle colspan=99 align=center>Summary</td></tr>
 <tr valign=top>
   <td>
     $hard_cost_html
   </td>
+  <td>&nbsp &nbsp;</td>
   <td>
     $prelim_cost_html
   </td>
