@@ -217,20 +217,53 @@ commit;
 -- Setup the "Forum" main menu entry
 --
 declare
-    v_menu		integer;
+        -- Menu IDs
+        v_menu                  integer;
+	v_main_menu		integer;
+
+        -- Groups
+        v_employees             integer;
+        v_accounting            integer;
+        v_senman                integer;
+        v_customers             integer;
+        v_freelancers           integer;
+        v_proman                integer;
+        v_admins                integer;
 begin
+
+    select group_id into v_admins from groups where group_name = 'P/O Admins';
+    select group_id into v_senman from groups where group_name = 'Senior Managers';
+    select group_id into v_proman from groups where group_name = 'Project Managers';
+    select group_id into v_accounting from groups where group_name = 'Accounting';
+    select group_id into v_employees from groups where group_name = 'Employees';
+    select group_id into v_customers from groups where group_name = 'Customers';
+    select group_id into v_freelancers from groups where group_name = 'Freelancers';
+
+    select menu_id
+    into v_main_menu
+    from im_menus
+    where url='/';
+
+    delete from im_menus where package_name='intranet-forum';
+
     v_menu := im_menu.new (
 	package_name =>	'intranet-forum',
 	label =>	'forum',
 	name =>		'Forum',
 	url =>		'/intranet-forum/',
 	sort_order =>	20,
-	parent_menu_id => null
+	parent_menu_id => v_main_menu
     );
+
+    acs_permission.grant_permission(v_menu, v_admins, 'read');
+    acs_permission.grant_permission(v_menu, v_senman, 'read');
+    acs_permission.grant_permission(v_menu, v_proman, 'read');
+    acs_permission.grant_permission(v_menu, v_accounting, 'read');
+    acs_permission.grant_permission(v_menu, v_employees, 'read');
+    acs_permission.grant_permission(v_menu, v_customers, 'read');
+    acs_permission.grant_permission(v_menu, v_freelancers, 'read');
 end;
 /
-show errors
-
 commit;
 	
 
