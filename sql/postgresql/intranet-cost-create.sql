@@ -961,8 +961,9 @@ begin
     PERFORM acs_permission__grant_permission(v_finance_menu, v_admins, ''read'');
     PERFORM acs_permission__grant_permission(v_finance_menu, v_senman, ''read'');
     PERFORM acs_permission__grant_permission(v_finance_menu, v_accounting, ''read'');
-    PERFORM acs_permission__grant_permission(v_finance_menu, v_customers, ''read'');
-    PERFORM acs_permission__grant_permission(v_finance_menu, v_freelancers, ''read'');
+
+--    PERFORM acs_permission__grant_permission(v_finance_menu, v_customers, ''read'');
+--    PERFORM acs_permission__grant_permission(v_finance_menu, v_freelancers, ''read'');
 
     -- -----------------------------------------------------
     -- General Costs
@@ -1122,8 +1123,8 @@ begin
     return 0;
 end;' language 'plpgsql';
 
-select inline_0 ();
-
+-- 050324 fraber: Repeating costs disabled for V3.0.0
+-- select inline_0 ();
 drop function inline_0 ();
 
 
