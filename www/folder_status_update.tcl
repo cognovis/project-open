@@ -26,26 +26,14 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 
-ns_log Notice ""
-ns_log Notice ""
-ns_log Notice ""
-ns_log Notice ""
-ns_log Notice "////****************** Start Folder status update ****************////"
-
-ns_log Notice "////****************** End Folder status update ****************////"
-ns_log Notice ""
-ns_log Notice ""
-ns_log Notice ""
-
 # change the folder status, if comes from close we set to open and vice versa
 if { $status == "o" } {
     set status "c"
 } else {
     set status "o"
 }
-
 if { [catch {
-    db_dml my_update "
+   db_dml my_update "
 update 
 	im_fs_folder_status 
 set 
@@ -53,7 +41,9 @@ set
 where 
 	folder_id=$folder_id"
 
+
 } err_msg] } {
+
     # Didn't exist before?
     db_dml my_insert "
     insert into im_fs_folder_status (
@@ -66,9 +56,8 @@ where
 	im_fs_folder_status_seq.nextval,
 	:object_id,
 	:user_id,
-	:file,
+	'$file',
 	:status
     )"
 }
-
 ad_returnredirect $return_url
