@@ -91,7 +91,12 @@ create table im_fs_folder_perms (
 				references im_fs_folders
 				constraint im_fs_folders_perm_pk
 				primary key,
-	group_id		references groups,
+	profile_id		integer
+				constraint im_fs_folder_perms_profile_id
+				references im_profiles,
+	role_id			integer
+				constraint im_fs_folder_perms_role_id
+				references im_categories,
 	read_p			char(1) default('0')
 				constraint im_fs_folder_status_read_p 
 				check(read_p in ('0','1')),
@@ -100,7 +105,9 @@ create table im_fs_folder_perms (
 				check(write_p in ('0','1')),
 	admin_p			char(1) default('0')
 				constraint im_fs_folder_status_view_p 
-				check(admin_p in ('0','1'))
+				check(admin_p in ('0','1')),
+	constraint im_fs_folder_perms_ch
+	check (profile_id is null and role_id is not null or profile_id is not null and role_id is null)
 );
 
 
