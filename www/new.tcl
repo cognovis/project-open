@@ -7,10 +7,10 @@
 ad_page_contract { 
     @author Guillermo Belcic Bardaji
     @author Frank Bergmann (frank.bergmann@project-open.com)
-    @cvs-id 
 } {
     { task_id:integer 0 }
     { report_id:integer 0 }
+    { project_id:integer 0 }
     { form_mode "display" }
     { return_url "" }
 }
@@ -19,18 +19,27 @@ ad_page_contract {
 # Defaults & Security
 # ---------------------------------------------------------------
 
-# User id already verified by filters
 set user_id [ad_maybe_redirect_for_registration]
 set todays_date [lindex [split [ns_localsqltimestamp] " "] 0]
 set page_title "One Quality Report"
 set context_bar [im_context_bar $page_title]
 set view_user_url "/intranet/users/view"
+set current_url [im_url_with_query]
 
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 
+if {0 == $task_id && 0 == $report_id && 0 != $project_id} {
+    # A project has been specified, but no task
+    # => redirect to a page to select a translation task
+    # for this projects and return.
+    set return_url $current_url
+    set url "project-task-select?[export_url_vars project_id return_url]"
+    ad_returnredirect $url
+}
+
 if {0 == $task_id && 0 == $report_id} {
-    ad_return_complaint 1 "<li>You must specify either task_id or report_id"
+    ad_return_complaint 1 "<li>You must specify either task_id, report_id or project_id"
     return
 }
 
@@ -38,10 +47,24 @@ if {0 == $task_id && 0 == $report_id} {
 # Get everything about the task, its project etc.
 # ---------------------------------------------------------------
 
+# Check if there is already a q-report for the specified task 
+if {0 != $task_id} {
+    # There is max 1 report per task, enforced by
+    # a unique criterium on task_id in im_trans_quality_reports
+    #
+    set report_id [db_string get_report_i "select report_id from im_trans_quality_reports where task_id = :task_id" -default 0]
+}
+
 # Get the task_id if the report was specified
 if {0 == $task_id && 0 != $report_id} {
     set task_id [db_string get_task_from_report "select task_id from im_trans_quality_reports where report_id=:report_id" -default 0]
 }
+
+# Set the forum_mode to "edit" if the report doesn't exist yet
+if {0 == $report_id} {
+    set form_mode "edit"
+}
+
 
 # This information always needs to be present,
 # because we can't file a q-report without the
@@ -49,7 +72,7 @@ if {0 == $task_id && 0 != $report_id} {
 # project.
 #
 if [catch {
-	db_1row task_evaliation {
+	db_1row task_evaluation {
 	select
 		t.*,
 		t.task_units as words,
@@ -143,7 +166,6 @@ if {[string equal "display" $form_mode]} {
     set total_header "<td align=center class=rowtitle>Sum</td>"
 }
 
-
 set errors_html "
         <table border=0 cellspacing=1 cellpadding=1>
         <tr class=rowtitle>
@@ -154,31 +176,10 @@ set errors_html "
 	  $total_header
         </tr>\n"
 
-
-set errors_sql "
-select
-	cat.category_id,
-	cat.category as quality_category,
-	re.minor_errors,
-	re.major_errors,
-	re.critical_errors
-from
-	im_categories cat,
-	(select	re.*
-	 from	im_trans_quality_entries re
-	 where	re.report_id = :report_id
-	) re
-where
-	category_type = 'Intranet Translation Quality Type'
-	and cat.category_id = re.quality_category_id(+)
-order by 
-	category_id
-"
-
 set size 5
 set ctr 0
 set error_sum 0
-db_foreach errors $errors_sql {
+db_foreach error_list "" {
 
     set minor "<input type=text name=minor_errors.$category_id size=$size value=\"$minor_errors\">"
     set major "<input type=text name=major_errors.$category_id size=$size value=\"$major_errors\">"

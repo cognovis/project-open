@@ -41,7 +41,12 @@ create table im_trans_quality_reports (
 				references users,
 	sample_size		integer,
 	allowed_error_percentage numeric(6,3),
-	comments		varchar(2000)
+	comments		varchar(2000),
+				-- redundant fields storing the 
+				-- evaluation result so that we can
+				-- report on error report rapidly
+	allowed_errors		integer,
+	total_errors		integer
 );
 
 create unique index im_transq_reports_idx on im_trans_quality_reports(task_id);
@@ -64,20 +69,60 @@ create table im_trans_quality_entries (
 );
 
 
-delete from im_categories where category_id >= 7000 and category_id < 7100;
+-----------------------------------------------------
+-- Sum up translation errors, counting NULL errors as 0:
+--
+create or replace function im_transq_weighted_error_sum (integer,integer,integer,integer,integer) 
+RETURNS integer as '
+DECLARE
+	p_task_id	alias for $1;
+	p_project_id	alias for $2;
+	p_minor_errors	alias for $3;
+	p_major_errors	alias for $4;
+	p_critical_errors alias for $5;
 
-INSERT INTO im_categories (category_id,category,category_type) VALUES 
-(7002,'Mistranslation','Intranet Translation Quality Type');
-INSERT INTO im_categories (category_id,category,category_type) VALUES 
-(7004,'Accuracy','Intranet Translation Quality Type');
-INSERT INTO im_categories (category_id,category,category_type) VALUES 
-(7006,'Terminology','Intranet Translation Quality Type');
-INSERT INTO im_categories (category_id,category,category_type) VALUES 
-(7008,'Language','Intranet Translation Quality Type');
-INSERT INTO im_categories (category_id,category,category_type) VALUES 
-(7010,'Style','Intranet Translation Quality Type');
-INSERT INTO im_categories (category_id,category,category_type) VALUES 
-(7012,'Country','Intranet Translation Quality Type');
-INSERT INTO im_categories (category_id,category,category_type) VALUES 
-(7014,'Consistency','Intranet Translation Quality Type');
+	v_result	integer;
+BEGIN
+	v_result := 0;
+
+	if p_minor_errors is not null then
+		v_result := v_result + p_minor_errors;
+	end if;
+	if p_major_errors is not null then
+		v_result := v_result + p_major_errors * 5;
+	end if;
+	if p_critical_errors is not null then
+		v_result := v_result + p_critical_errors * 10;
+	end if;
+
+	return v_result;
+END;' language 'plpgsql';
+
+
+
+-----------------------------------------------------
+-- Components
+--
+
+-- Project Quality Component
+--
+select im_component_plugin__new (
+        null,                           -- plugin_id
+        'acs_object',                   -- object_type
+        now(),                          -- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+        'Project Quality Component',    -- plugin_name
+        'intranet-trans-quality',       -- package_name
+        'right',                        -- location
+        '/intranet/projects/view',      -- page_url
+        null,                           -- view_name
+        10,                             -- sort_order
+        'im_table_with_title "Quality" [im_quality_project_component -project_id $project_id -return_url $return_url]'
+);
+
+
+-- Views and categories common for Oracle and PostgreSQL
+\i ../common/intranet-transq-common.sql
 

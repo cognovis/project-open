@@ -30,6 +30,7 @@ ad_page_contract {
 set user_id [ad_get_user_id]
 set today [lindex [split [ns_localsqltimestamp] " "] 0]
 set current_user_id [ad_maybe_redirect_for_registration]
+set date_format "YYYY-MM-DD"
 
 set page_title "Quality"
 set context_bar [im_context_bar $page_title]
@@ -63,12 +64,12 @@ if {!$exists} {
 db_dml update_quality_report "
 	update im_trans_quality_reports set
 		task_id = :task_id,
-		report_date = :report_date,
+		report_date = to_date(:report_date, :date_format),
 		reviewer_id = :user_id,
 		sample_size = :sample_size,
 		allowed_error_percentage = :allowed_error_percentage,
 		comments = :comments,
-		allowed_errors = :sample_size * :allowed_error_percentage / 100
+		allowed_errors = $sample_size * $allowed_error_percentage / 100
 	where
 		report_id = :report_id
     "

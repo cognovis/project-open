@@ -19,7 +19,7 @@ ad_page_contract {
     { start_idx:integer 0 }
     { order_by "" }
     { how_many "" }
-    { view_name "quality_list" }
+    { view_name "transq_task_list" }
     { view_mode "view" }
 }
 

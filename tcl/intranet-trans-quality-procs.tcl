@@ -20,6 +20,7 @@ ad_proc -public im_transq_premium_quality {} { return 110 }
 ad_proc -public im_transq_high_quality {} { return 111 }
 ad_proc -public im_transq_average_quality {} { return 112 }
 ad_proc -public im_transq_draft_quality {} { return 113 }
+ad_proc -public im_transq_machine_quality {} { return 114 }
 
 
 
@@ -44,9 +45,9 @@ ad_proc -public im_transq_error_percentage { expected_quality_id } {
     Returns the percentage of error points allowed
     for a given quality level
 } {
-    set allowed_error_percentage 0
+    set allowed_error_percentage 5
     switch $expected_quality_id {
-	[im_transq_premium_quality] {
+	110 { # Premium Quality
 	    set allowed_error_percentage 1
 	}
 	111 { # High Quality
@@ -57,6 +58,9 @@ ad_proc -public im_transq_error_percentage { expected_quality_id } {
 	}
 	113 { # Draft Qaulity
 	    set allowed_error_percentage 10
+	}
+	114 { # Machine Qaulity
+	    set allowed_error_percentage 20
 	}
     }
     return $allowed_error_percentage
@@ -298,9 +302,12 @@ where
     set percentage [list]
 
     db_foreach tasks_query $sql_tasks_query {
-	set final_error_percentage [expr ($total_errors * 100) / $sample_size]
 
-	set dif [expr log($allowed_error_percentage / $final_error_percentage) / log(2)]
+	# How many errors should have been in the translation?
+	set allowed_errors [expr $allowed_error_percentage * $sample_size / 100]
+	if {0 == $allowed_errors} { set allowed_errors "0.001" }
+
+	set dif [expr log($allowed_errors / $total_errors) / log(2)]
 
 	if { $dif <= -3.5 } { incr n4 }
 	if { $dif <= -2.5 && $dif > -3.5 } { incr n3 }
@@ -308,10 +315,9 @@ where
 	if { $dif <= -0.5 && $dif > -1.5 } { incr n1 }
 	if { $dif < 0.5 && $dif > -0.5 } { incr p0 }
 	if { $dif >= 0.5 && $dif < 1.5 } { incr p1 }
-	if { $dif >=1.5 && $dif < 2.5 } { incr p2 }
+	if { $dif >= 1.5 && $dif < 2.5 } { incr p2 }
 	if { $dif >= 2.5 && $dif < 3.5} { incr p3 }
-	if { $dif >=3.5} { 	    incr p4 	}
-	lappend values "$task_id [expr log($final_error_percentage)/log(2)]"
+	if { $dif >= 3.5} { incr p4 }
     }
     set sum [expr $n4 + $n3 + $n2 + $n1 + $p0 + $p1 + $p2 + $p3 + $p4]
     set height 94
@@ -399,7 +405,7 @@ ad_proc -public im_quality_list_component {
     {-order_by "" }
     {-how_many "" }
     {-start_idx 0 }
-    {-view_name "quality_list" }
+    {-view_name "transq_task_list" }
     {-return_url "" }
 } {
     Shows a list of quality reports according to the filters
@@ -425,7 +431,7 @@ ad_proc -public im_quality_list_component {
     # we want to show:
     #
     set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name" -default 0]
-    if {!$view_id} { ad_return_complaint 1 "<li>[_ intranet-trans-quality.lt_Didnt_find_the_the_view]"}
+    if {!$view_id} { ad_return_complaint 1 "<li>[_ intranet-trans-quality.lt_Didnt_find_the_the_view] '$view_name'"}
     set column_headers [list]
     set column_vars [list]
 
