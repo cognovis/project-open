@@ -98,9 +98,7 @@ create table im_cost_centers (
 				-- "OpAn"=Operations/Analysis, ...
 	cost_center_code	varchar(400)
 				constraint im_cost_centers_code_nn
-				not null
-				constraint im_cost_centers_code_ck
-				check(length(cost_center_code) % 2 = 0),
+				not null,
 	cost_center_type_id	integer not null
 				constraint im_cost_centers_type_fk
 				references im_categories,
@@ -314,7 +312,6 @@ where
 
 
 prompt *** intranet-costs: Creating sample cost center configuration
-delete from im_cost_centers;
 declare
     v_the_company_center	integer;
     v_administrative_center	integer;
@@ -334,7 +331,7 @@ begin
     v_the_company_center := im_cost_center.new (
 	cost_center_name =>	'The Company',
 	cost_center_label =>	'company',
-	cost_center_code =>	'',
+	cost_center_code =>	'Co',
 	type_id =>		3002,
 	status_id =>		3101,
 	parent_id => 		null,
@@ -356,7 +353,7 @@ begin
     v_administrative_center := im_cost_center.new (
 	cost_center_name =>	'Administration',
 	cost_center_label =>	'admin',
-	cost_center_code =>	'Ad',
+	cost_center_code =>	'CoAd',
 	type_id =>	3001,
 	status_id =>	3101,
 	parent_id => 	v_the_company_center,
@@ -371,7 +368,7 @@ begin
     v_utilities_center := im_cost_center.new (
 	cost_center_name =>	'Rent and Utilities',
 	cost_center_label =>	'utilities',
-	cost_center_code =>	'Ut',
+	cost_center_code =>	'CoUt',
 	type_id =>		3001,
 	status_id =>		3101,
 	parent_id => 		v_the_company_center,
@@ -386,7 +383,7 @@ begin
     v_sales_center := im_cost_center.new (
 	cost_center_name =>	'Sales',
 	cost_center_label =>	'sales',
-	cost_center_code =>	'Sa',
+	cost_center_code =>	'CoSa',
 	type_id =>		3001,
 	status_id =>		3101,
 	parent_id => 		v_the_company_center,
@@ -401,7 +398,7 @@ begin
     v_marketing_center := im_cost_center.new (
 	cost_center_name =>	'Marketing',
 	cost_center_label =>	'marketing',
-	cost_center_code =>	'Ma',
+	cost_center_code =>	'CoMa',
 	type_id =>		3001,
 	status_id =>		3101,
 	parent_id => 		v_the_company_center,
@@ -416,7 +413,7 @@ begin
     v_projects_center := im_cost_center.new (
 	cost_center_name =>	'Operations',
 	cost_center_label =>	'operations',
-	cost_center_code =>	'Op',
+	cost_center_code =>	'CoOp',
 	type_id =>		3001,
 	status_id =>		3101,
 	parent_id => 		v_the_company_center,
@@ -429,9 +426,6 @@ begin
 end;
 /
 show errors
-
-
-
 
 
 
@@ -1054,7 +1048,7 @@ begin
     select group_id into v_admins from groups where group_name = 'P/O Admins';
     select group_id into v_senman from groups where group_name = 'Senior Managers';
     select group_id into v_accounting from groups where group_name = 'Accounting';
-    select group_id into v_companies from groups where group_name = 'Companies';
+    select group_id into v_companies from groups where group_name = 'Customers';
     select group_id into v_freelancers from groups where group_name = 'Freelancers';
 
     select menu_id
@@ -1131,7 +1125,7 @@ begin
     select group_id into v_admins from groups where group_name = 'P/O Admins';
     select group_id into v_senman from groups where group_name = 'Senior Managers';
     select group_id into v_accounting from groups where group_name = 'Accounting';
-    select group_id into v_companies from groups where group_name = 'Companies';
+    select group_id into v_companies from groups where group_name = 'Customers';
     select group_id into v_freelancers from groups where group_name = 'Freelancers';
 
     select menu_id
