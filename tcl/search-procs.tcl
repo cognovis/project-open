@@ -3,7 +3,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @version $Id: search-procs.tcl,v 1.8 2002/07/02 01:52:39 yon Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.9 2002/09/10 22:23:21 jeffd Exp $
 
 }
 
