@@ -66,10 +66,10 @@ create table im_cost_centers (
 	name			varchar(100) not null,
 	cost_center_type_id	integer not null
 				constraint im_cost_centers_type_fk
-				references categories,
+				references im_categories,
 	cost_center_status_id	integer not null
 				constraint im_cost_centers_status_fk
-				references categories,
+				references im_categories,
 				-- Where to report costs?
 				-- The toplevel_center has parent_id=null.
 	parent_id		integer 
@@ -80,7 +80,9 @@ create table im_cost_centers (
 				constraint im_cost_centers_manager_fk
 				references users,
 	description		varchar(4000),
-	note			varchar(4000)
+	note			varchar(4000),
+		-- don't allow two cost centers under the same parent
+		unique(name, parent_id)
 );
 create index im_cost_centers_parent_id_idx on im_cost_centers(parent_id);
 create index im_cost_centers_manager_id_idx on im_cost_centers(manager_id);
@@ -190,7 +192,7 @@ show errors
 
 
 -------------------------------------------------------------
--- Setup the status and type categories
+-- Setup the status and type im_categories
 
 -- 3000-3099    Intranet Cost Center Type
 -- 3100-3199    Intranet Cost Center Status
@@ -312,32 +314,30 @@ show errors
 -- The amortized amount of costs is calculated by summing up
 -- all im_cost_items with the specific investment_id
 --
-create table im_cost_investments (
+create table im_investments (
 	investment_id		integer
-				constraint
-				primary key,
+				constraint im_investments_pk
+				primary key
+				constraint im_investments_fk
+				references acs_objects,
 	name			varchar(400),
-	investment_status_id	integer,
-				constraint im_cost_inv_status_fk
+	investment_status_id	integer
+				constraint im_investments_status_fk
 				references im_categories,
 	investment_type_id	integer
-				constraint im_cost_inv_type_fk
+				constraint im_investments_type_fk
 				references im_categories,
 	amount			number(12,3),
-	currency		char(3),
-				constraint im_cost_inv_currency_fk
-				references currencies
+	currency		char(3)
+				constraint im_investments_currency_fk
+				references currency_codes(iso),
 	amort_start_date	date,
-	amort_interval_id	integer
-				constraint
-				references im_categories
-	amortization_period
-	description		varchar(4000),
+	amortization_months	integer,
+	description		varchar(4000)
 );
 
 
-
--- Setup the status and type categories
+-- Setup the status and type im_categories
 -- 3000-3099    Intranet Cost Center Type
 -- 3100-3199    Intranet Cost Center Status
 -- 3200-3399	reserved for cost centers
@@ -391,32 +391,29 @@ create table im_cost_items (
 				constraint im_cost_items_project_fk
 				references im_projects,
 	customer_id		integer
-				constraint im_cost_items_customer_nn
-				not null
 				constraint im_cost_items_customer_fk
 				references im_customers,
 	investment_id		integer
-				constraint
+				constraint im_cost_items_inv_fk
 				references im_investments,
 	creation_date		date,
 	creator_id		integer
-				constraint im_cost_itmes_creator_fk
+				constraint im_cost_items_creator_fk
 				references parties,
 	input_date		date,
 	due_date		date,
 	payment_date		date,
-	payment_id		integer
-				constraint im_cost_items_payment_fk
-				references im_payments,
 	amount			number(12,3),
-	currency		char(3) references currencies,
+	currency		char(3) 
+				constraint im_cost_items_currency_fk
+				references currency_codes(iso),
 	-- Classification of variable against fixed costs
 	variable_cost_p		char(1)
 				constraint im_cost_items_var_ck
-				check variable_cost_p in ('t','f'),
+				check (variable_cost_p in ('t','f')),
 	needs_redistribution_p	char(1)
-				constraint im_cost_items_var_ck
-				check needs_redistribution_p in ('t','f'),
+				constraint im_cost_items_needs_redist_ck
+				check (needs_redistribution_p in ('t','f')),
 	-- Points to its parent if the parent was distributed
 	parent_id		integer
 				constraint im_cost_items_parent_fk
@@ -425,10 +422,10 @@ create table im_cost_items (
 	-- potentially several other items, so we don't want to
 	-- include such items in sums.
 	redistributed_p		char(1)
-				constraint im_cost_items_var_ck
-				check redistributed_p in ('t','f'),
+				constraint im_cost_items_redist_ck
+				check (redistributed_p in ('t','f')),
 	planning_p		char(1)
-				constraint im_cost_items_var_ck
-				check planning_p in ('t','f'),
-	description		varchar(4000),
+				constraint im_cost_items_planning_ck
+				check (planning_p in ('t','f')),
+	description		varchar(4000)
 );
