@@ -113,12 +113,6 @@ create table im_fs_folder_perms (
 		profile_id is null and role_id is not null 
 		or profile_id is not null and role_id is null
 	)
-=======
-				constraint im_fs_folder_status_view_p 
-				check(admin_p in ('0','1')),
-	constraint im_fs_folder_perms_ch
-	check (profile_id is null and role_id is not null or profile_id is not null and role_id is null)
->>>>>>> 1.17
 );
 
 
