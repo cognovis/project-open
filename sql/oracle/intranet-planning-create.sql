@@ -1,22 +1,20 @@
-
-
--- We base our allocations, employee count, etc. around
--- a fundamental unit or block.
--- im_start_blocks record the dates these blocks
--- will start for this system.
-
-create table im_start_blocks (
-	start_block		date not null primary key,
-	-- We might want to tag a larger unit
-	-- For example, if start_block is the first
-	-- Sunday of a week, those tagged with
-	-- start_of_larger_unit_p might tag
-	-- the first Sunday of a month
-	start_of_larger_unit_p	char(1) default 'f'
-				check (start_of_larger_unit_p in ('t','f')),
-	note			varchar(4000)
-);
-
+-- /packages/intranet-planning/sql/oracle/intranet-planning-create.sql
+--
+-- Copyright (C) 1999-2004 various parties
+-- The code is based on ArsDigita ACS 3.4
+--
+-- This program is free software. You can redistribute it
+-- and/or modify it under the terms of the GNU General
+-- Public License as published by the Free Software Foundation;
+-- either version 2 of the License, or (at your option)
+-- any later version. This program is distributed in the
+-- hope that it will be useful, but WITHOUT ANY WARRANTY;
+-- without even the implied warranty of MERCHANTABILITY or
+-- FITNESS FOR A PARTICULAR PURPOSE.
+-- See the GNU General Public License for more details.
+--
+-- @author        unknown@arsdigita.com
+-- @author        frank.bergmann@project-open.com
 
 
 -- use im_emploee_percentage_time to find out when and how
@@ -101,43 +99,6 @@ create table im_allocations_audit (
 	last_modifying_user	not null references users,
 	modified_ip_address	varchar(20) not null
 );
-
-
-
--- Populate im_start_blocks. Start with Sunday, Jan 7th 1996
--- and end after inserting 550 weeks. Note that 550 is a 
--- completely arbitrary number. 
-DECLARE
-  v_max 			integer;
-  v_i				integer;
-  v_first_block_of_month	integer;
-  v_next_start_block		date;
-BEGIN
-  v_max := 550;
-
-  FOR v_i IN 0..v_max-1 LOOP
-    -- for convenience, select out the next start block to insert into a variable
-    select to_date('1996-01-07','YYYY-MM-DD') + v_i*7 into v_next_start_block from dual;
-
-    insert into im_start_blocks
-    (start_block) 
-    values
-    (to_date(v_next_start_block));
-
-    -- set the start_of_larger_unit_p flag if this is the first start block of the month
-    update im_start_blocks
-       set start_of_larger_unit_p='t'
-     where start_block=to_date(v_next_start_block)
-       and not exists (select 1 
-                         from im_start_blocks
-                        where to_char(start_block,'YYYY-MM') = to_char(v_next_start_block,'YYYY-MM')
-                          and start_of_larger_unit_p='t');
-
-  END LOOP;
-END;
-/
-show errors;
-
 
 
 
