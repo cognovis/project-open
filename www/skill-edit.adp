@@ -1,4 +1,4 @@
-<!-- packages/intranet-freelance/www/freelance-info-update.adp -->
+<!-- packages/intranet-freelance/www/skill-edit.adp -->
 <!-- @author Juanjo Ruiz (juanjoruizx@yahoo.es) -->
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
