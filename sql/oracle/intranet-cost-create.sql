@@ -40,6 +40,24 @@
 --	- propose_budget
 --	- confirm_budget
 
+
+-------------------------------------------------------------
+-- Setup the status and type im_categories
+
+-- 3000-3099    Intranet Cost Center Type
+-- 3100-3199    Intranet Cost Center Status
+-- 3200-3299    Intranet CRM Tracking
+-- 3300-3399    reserved for cost centers
+-- 3400-3499    Intranet Investment Type
+-- 3500-3599    Intranet Investment Status
+-- 3600-3699	Intranet Investment Amortization Interval (reserved)
+-- 3700-3799    Intranet Cost Item Type
+-- 3800-3899    Intranet Cost Item Status
+-- 3900-3999    Intranet Cost Item Planning Type
+-- 4000-4599    (reserved)
+
+
+
 prompt *** intranet-costs: Creating acs_object_type
 begin
     acs_object_type.create_type (
@@ -192,15 +210,6 @@ end im_cost_center;
 /
 show errors
 
-
--------------------------------------------------------------
--- Setup the status and type im_categories
-
--- 3000-3099    Intranet Cost Center Type
--- 3100-3199    Intranet Cost Center Status
--- 3200-3399	reserved for cost centers
--- 3400-3499	Intranet Investment Type
--- 3500-3599	Intranet Investment Status
 
 prompt *** intranet-costs: Creating Cost Center categories
 
@@ -367,14 +376,6 @@ create table im_investments (
 );
 
 
--- Setup the status and type im_categories
--- 3000-3099    Intranet Cost Center Type
--- 3100-3199    Intranet Cost Center Status
--- 3200-3399	reserved for cost centers
--- 3400-3499	Intranet Investment Type
--- 3500-3599	Intranet Investment Status
--- 3600-3699	Intranet Investment Amortization Interval
-
 prompt *** intranet-costs: Creating Investment categories
 
 -- Intranet Investment Type
@@ -392,7 +393,7 @@ commit;
 
 
 -- Intranet Investment Status
-delete from im_categories where category_id >= 3500 and category_id < 3600;
+delete from im_categories where category_id >= 3500 and category_id < 3599;
 INSERT INTO im_categories (category_id, category, category_type, category_description) 
 VALUES (3501,'Active','Intranet Investment Status','Currently being amortized');
 INSERT INTO im_categories (category_id, category, category_type, category_description) 
@@ -470,7 +471,7 @@ create table im_cost_items (
 	-- % of total price is VAT
 	vat			number(12,5),
 	-- % of total price is TAX
-	tax			number(12,5)
+	tax			number(12,5),
 	-- Classification of variable against fixed costs
 	variable_cost_p		char(1)
 				constraint im_cost_items_var_ck
@@ -498,8 +499,61 @@ create table im_cost_items (
 	note			varchar(4000)
 );
 
+prompt *** intranet-costs: Creating category Cost Item Type
+-- Cost Item Type
+delete from im_categories where category_id >= 3700 and category_id < 3799;
+INSERT INTO im_categories VALUES (3700,'Customer Invoice','','Intranet Cost Item Type','category','t','f');
+INSERT INTO im_categories VALUES (3702,'Quote','','Intranet Cost Item Type','category','t','f');
+INSERT INTO im_categories VALUES (3704,'Provider Bill','','Intranet Cost Item Type','category','t','f');
+INSERT INTO im_categories VALUES (3706,'Purchase Order','','Intranet Cost Item Type','category','t','f');
+
+INSERT INTO im_categories VALUES (3708,'Customer Documents','','Intranet Cost Item Type','category','t','f');
+INSERT INTO im_categories VALUES (3710,'Provider Documents','','Intranet Cost Item Type','category','t','f');
+-- reserved until 3799
 
 
+prompt *** intranet-costs: Creating category Cost Item Status
+-- Intranet Cost Item Status
+delete from im_categories where category_id >= 3700 and category_id < 3799;
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3802,'Created','Intranet Cost Item Status');
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3804,'Outstanding','Intranet Cost Item Status');
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3806,'Past Due','Intranet Cost Item Status');
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3808,'Partially Paid','Intranet Cost Item Status');
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3810,'Paid','Intranet Cost Item Status');
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3812,'Deleted','Intranet Cost Item Status');
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3814,'Filed','Intranet Cost Item Status');
+commit;
+-- reserved until 3899
+
+
+prompt *** intranet-costs: Creating status and type views
+create or replace view im_cost_item_status as
+select
+        category_id as item_status_id,
+        category as item_status
+from 	im_categories
+where	category_type = 'Intranet Cost Item Status' and
+        category_id not in (3812);
+
+create or replace view im_cost_item_type as
+select	category_id as item_type_id, 
+	category as item_type
+from 	im_categories
+where 	category_type = 'Intranet Cost Item Type';
+
+
+-------------------------------------------------------------
+-- Cost Item Object Packages
+--
+
+prompt *** intranet-costs: Creating im_cost_item packages
 begin
     acs_object_type.create_type (
 	supertype =>		'acs_object',
@@ -523,7 +577,7 @@ is
 	item_id			in integer default null,
 	object_type		in varchar default 'im_cost_item',
 	creation_date		in date default sysdate,
-	creation_user		in integer default null
+	creation_user		in integer default null,
 	creation_ip		in varchar default null,
 	context_id		in integer default null,
 
@@ -540,7 +594,7 @@ is
 
 	effective_date		in date default sysdate,
 	payment_days		in integer default 30,
-	paxment_date		in date default sysdate+30,
+	payment_date		in date default sysdate+30,
 	amount			number default null,
 	currency		in char default 'EUR',
 	vat			in number default 0,
@@ -571,7 +625,7 @@ is
         item_id                 in integer default null,
         object_type             in varchar default 'im_cost_item',
         creation_date           in date default sysdate,
-        creation_user           in integer default null
+        creation_user           in integer default null,
         creation_ip             in varchar default null,
         context_id              in integer default null,
 
@@ -588,7 +642,7 @@ is
 
         effective_date          in date default sysdate,
         payment_days            in integer default 30,
-        paxment_date            in date default sysdate+30,
+        payment_date            in date default sysdate+30,
         amount                  number default null,
         currency                in char default 'EUR',
         vat                     in number default 0,
@@ -602,12 +656,12 @@ is
 
         note                    in varchar default null,
         description             in varchar default null
-    ) return im_cost_items.item_id%TYPE;
+    ) return im_cost_items.item_id%TYPE
     is
-	v_cost_item_id    im_cost_items.cost_item_id%TYPE;
+	v_cost_item_id    im_cost_items.item_id%TYPE;
     begin
 	v_cost_item_id := acs_object.new (
-		object_id =>		cost_item_id,
+		object_id =>		item_id,
 		object_type =>		object_type,
 		creation_date =>	creation_date,
 		creation_user =>	creation_user,
@@ -627,7 +681,7 @@ is
 		planning_p, planning_type_id, 
 		description, note
 	) values (
-		v_csot_item_id, new.item_name, new.project_id, 
+		v_cost_item_id, new.item_name, new.project_id, 
 		new.customer_id, new.provider_id, 
 		new.item_status_id, new.item_type_id,
 		new.template_id, new.investment_id,
@@ -648,7 +702,7 @@ is
     begin
 	-- Erase the im_cost_item
 	delete from     im_cost_items
-	where		cost_item_id = del.cost_item_id;
+	where		item_id = del.item_id;
 
 	-- Erase the object
 	acs_object.del(del.item_id);
@@ -661,7 +715,7 @@ is
 	select  item_name
 	into    v_name
 	from    im_cost_items
-	where   cost_item_id = name.cost_item_id;
+	where   item_id = name.item_id;
 
 	return v_name;
     end name;
@@ -671,6 +725,180 @@ end im_cost_item;
 show errors
 
 
+-------------------------------------------------------------
+-- Finance Menu System
+--
+
+prompt *** intranet-costs: Deleting existing menus
+BEGIN
+    im_menu.del_module(module_name => 'intranet-payments');
+    im_menu.del_module(module_name => 'intranet-invoices');
+    im_menu.del_module(module_name => 'intranet-cost');
+END;
+/
+show errors
 
 
+prompt *** intranet-costs: Create Finance Menu
+-- Setup the "Finance" main menu entry
+--
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_main_menu 		integer;
+	v_finance_menu		integer;
+
+	-- Groups
+	v_employees		integer;
+	v_accounting		integer;
+	v_senman		integer;
+	v_customers		integer;
+	v_freelancers		integer;
+	v_proman		integer;
+	v_admins		integer;
+begin
+
+    select group_id into v_admins from groups where group_name = 'P/O Admins';
+    select group_id into v_senman from groups where group_name = 'Senior Managers';
+    select group_id into v_accounting from groups where group_name = 'Accounting';
+    select group_id into v_customers from groups where group_name = 'Customers';
+    select group_id into v_freelancers from groups where group_name = 'Freelancers';
+
+    select menu_id
+    into v_main_menu
+    from im_menus
+    where url='/';
+
+    v_finance_menu := im_menu.new (
+	package_name =>	'intranet-cost',
+	label =>	'finance',
+	name =>		'Finance',
+	url =>		'/intranet-cost/',
+	sort_order =>	80,
+	parent_menu_id => v_main_menu
+    );
+
+    acs_permission.grant_permission(v_finance_menu, v_admins, 'read');
+    acs_permission.grant_permission(v_finance_menu, v_senman, 'read');
+    acs_permission.grant_permission(v_finance_menu, v_accounting, 'read');
+    acs_permission.grant_permission(v_finance_menu, v_customers, 'read');
+    acs_permission.grant_permission(v_finance_menu, v_freelancers, 'read');
+
+    -- -----------------------------------------------------
+    -- General Costs
+    -- -----------------------------------------------------
+
+    -- needs to be the first submenu in order to get selected
+    v_menu := im_menu.new (
+	package_name =>	'intranet-cost',
+	label =>	'cost_items',
+	name =>		'Cost Items',
+	url =>		'/intranet-cost/index',
+	sort_order =>	80,
+	parent_menu_id => v_finance_menu
+    );
+    acs_permission.grant_permission(v_menu, v_admins, 'read');
+    acs_permission.grant_permission(v_menu, v_senman, 'read');
+    acs_permission.grant_permission(v_menu, v_accounting, 'read');
+end;
+/
+commit;
+
+
+prompt *** intranet-costs: Create New Cost Item menus
+-- Setup the "New Cost Item" menu for /intranet-cost/index
+--
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_invoices_new_menu	integer;
+	v_finance_menu		integer;
+
+	-- Groups
+	v_employees		integer;
+	v_accounting		integer;
+	v_senman		integer;
+	v_customers		integer;
+	v_freelancers		integer;
+	v_proman		integer;
+	v_admins		integer;
+begin
+    select group_id into v_admins from groups where group_name = 'P/O Admins';
+    select group_id into v_senman from groups where group_name = 'Senior Managers';
+    select group_id into v_accounting from groups where group_name = 'Accounting';
+    select group_id into v_customers from groups where group_name = 'Customers';
+    select group_id into v_freelancers from groups where group_name = 'Freelancers';
+
+    select menu_id
+    into v_invoices_new_menu
+    from im_menus
+    where label='cost_items';
+
+    v_finance_menu := im_menu.new (
+	package_name =>	'intranet-cost',
+	label =>	'cost_new_item',
+	name =>		'New Cost Item',
+	url =>		'/intranet-cost/new',
+	sort_order =>	10,
+	parent_menu_id => v_invoices_new_menu
+    );
+
+    acs_permission.grant_permission(v_finance_menu, v_admins, 'read');
+    acs_permission.grant_permission(v_finance_menu, v_senman, 'read');
+    acs_permission.grant_permission(v_finance_menu, v_accounting, 'read');
+end;
+/
+commit;
+
+
+-------------------------------------------------------------
+-- Cost Views
+--
+
+-- Cost Views
+--
+insert into im_views (view_id, view_name, visible_for)
+values (220, 'cost_item_list', 'view_finance');
+insert into im_views (view_id, view_name, visible_for)
+values (221, 'cost_item_new', 'view_finance');
+
+-- Cost Item List Page
+--
+delete from im_view_columns where column_id > 22000 and column_id < 22099;
+--
+insert into im_view_columns values (22001,220,NULL,'Name',
+'"<A HREF=/intranet-cost/view?cost_item_id=$cost_item_id>[string range $name 0 30]</A>"',
+'','',1,'');
+
+insert into im_view_columns values (22003,220,NULL,'Type',
+'$cost_item_type','','',3,'');
+
+insert into im_view_columns values (22004,220,NULL,'Provider',
+'"<A HREF=/intranet/customers/view?customer_id=$provider_id>$provider_name</A>"',
+'','',4,'');
+
+insert into im_view_columns values (22005,220,NULL,'Client',
+'"<A HREF=/intranet/customers/view?customer_id=$customer_id>$customer_name</A>"',
+'','',5,'');
+
+insert into im_view_columns values (22007,220,NULL,'Due Date',
+'[if {$overdue > 0} {
+        set t "<font color=red>$due_date_calculated</font>"
+} else {
+        set t "$due_date_calculated"
+}]','','',7,'');
+
+insert into im_view_columns values (22011,220,NULL,'Amount',
+'$cost_item_amount_formatted $cost_item_currency','','',11,'');
+
+insert into im_view_columns values (22013,220,NULL,'Paid',
+'$payment_amount $payment_currency','','',13,'');
+
+insert into im_view_columns values (22017,220,NULL,'Status',
+'[im_cost_item_status_select "cost_item_status.$cost_item_id" $cost_item_status_id]','','',17,'');
+
+insert into im_view_columns values (22098,220,NULL,'Del',
+'[if {[string equal "" $payment_amount]} {
+        set ttt "<input type=checkbox name=del_cost_item value=$cost_item_id>"
+}]','','',99,'');
 
