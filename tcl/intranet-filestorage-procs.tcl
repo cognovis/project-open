@@ -1463,6 +1463,7 @@ ad_proc im_filestorage_file_row { file_body base_path folder_type rel_path objec
 	".xls" { set icon [im_gif exp-excel] }
 	".doc" { set icon [im_gif exp-word] }
 	".rtf" { set icon [im_gif exp-word] }
+	".pdf" { set icon [im_gif exp-pdf] }
 	".txt" { set icon [im_gif exp-text] }
 	default {
 	}
