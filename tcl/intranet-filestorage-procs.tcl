@@ -40,6 +40,36 @@ ad_proc intranet_home_download {} { intranet_download "home" }
 ad_proc intranet_zip_download {} { intranet_download "zip" }
 
 
+ad_proc -public im_filestorage_find_cmd {} {
+    Returns the Unix/Linux/CygWin find command as specified in the
+    intranet-core.FindCmd command
+} {
+    # Check the parameter
+    set find_cmd [parameter::get -package_id [im_package_core_id] -parameter "FindCmd" -default "/bin/find"]
+
+    # Make sure it works
+    if { [catch {
+
+	# Just run find on itself - this should return exactly one file
+        set file_list [exec $find_cmd $find_cmd -maxdepth 0]
+
+    } err_msg]} { 
+	ad_return_complaint 1 "Configuration Error:<br>
+        Command '$find_cmd' does not exist on this system.<br>
+        This error is probably due to a bad configuration of the 
+        parameter 'intranet-core.FindCmd'.<br>
+        <ul>
+          <li>Please contact your application administrator in order to
+              change the value of the parameter.
+          <li>Please make sure that CygWin is installed correctly if you are 
+              running on a Windows platform.
+        </ul>"
+	return ""
+    }
+    return $find_cmd
+}
+
+
 ad_proc -public im_filestorage_profiles { user_id object_id } {
     Returns a list of profile_id-profile_gif-profile_name tuples
     for a given filestorage.
@@ -224,16 +254,18 @@ ad_proc -public im_filestorage_find_files { project_id } {
     Returns a list of files in a project directory
 } {
     set project_path [im_filestorage_project_path $project_id]
+    set find_cmd [im_filestorage_find_cmd]
+
     if { [catch {
 	ns_log Notice "im_filestorage_find_files: Checking $project_path"
 
 	exec /bin/mkdir -p $project_path
         exec /bin/chmod ug+w $project_path
-	set file_list [exec /usr/bin/find $project_path -type f]
+	set file_list [exec $find_cmd $project_path -type f]
 
     } err_msg] } {
 	# Probably some permission errors - return empty string
-	'exec /usr/bin/find $project_path' failed with error:
+	'exec $find_cmd $project_path' failed with error:
 	err_msg=$err_msg\n"
 	set file_list ""
     }
