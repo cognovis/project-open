@@ -36,7 +36,7 @@ ad_page_contract {
     { project_id "" }
     { target_cost_type_id "" }
     { letter:trim "all" }
-    { start_idx:integer "1" }
+    { start_idx:integer "0" }
     { how_many "" }
     { view_name "invoice_new" }
 }
