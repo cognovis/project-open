@@ -293,3 +293,11 @@ select im_priv_create('view_hr',	'P/O Admins');
 select im_priv_create('view_hr',	'Senior Managers');
 select im_priv_create('view_hr',	'Accounting');
 
+
+
+------------------------------------------------------
+-- Load common definitions and backup
+
+@../common/intranet-hr-create.sql
+@../common/intranet-hr-backup.sql
+

@@ -298,3 +298,10 @@ END;
 /
 
 commit;
+
+
+------------------------------------------------------
+-- Load common definitions and backup
+
+@../common/intranet-hr-create.sql
+@../common/intranet-hr-backup.sql
