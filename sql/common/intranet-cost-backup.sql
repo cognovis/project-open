@@ -52,8 +52,10 @@
 
 delete from im_view_columns where view_id = 190;
 delete from im_views where view_id = 190;
-insert into im_views (view_id, view_name, view_type_id, view_sql
-) values (190, 'im_costs', 1410, '
+insert into im_views (
+	view_id, view_name, view_type_id, sort_order, view_sql
+) values (
+	190, 'im_costs', 1410, 220, '
 SELECT
 	c.*,
 	o.*,
@@ -226,8 +228,10 @@ values (19055,190,NULL,'paid_currency','$paid_currency','','',55,'');
 
 delete from im_view_columns where view_id = 191;
 delete from im_views where view_id = 191;
-insert into im_views (view_id, view_name, view_type_id, view_sql
-) values (191, 'im_payments', 1410, '
+insert into im_views (
+	view_id, view_name, view_type_id, sort_order, view_sql
+) values (
+	191, 'im_payments', 1410, 260, '
 SELECT
 	p.*,
 	i.cost_nr,
@@ -287,8 +291,10 @@ values (19114,191,NULL,'note','[ns_urlencode $note]','','',14,'');
 
 delete from im_view_columns where view_id = 196;
 delete from im_views where view_id = 196;
-insert into im_views (view_id, view_name, view_type_id, view_sql
-) values (196, 'im_cost_centers', 1410, '
+insert into im_views (
+	view_id, view_name, view_type_id, sort_order, view_sql
+) values (
+	196, 'im_cost_centers', 1410, 200, '
 SELECT
 	cc.*,
 	ccp.cost_center_label as parent_label,
@@ -343,8 +349,10 @@ values (19634,196,NULL,'note','[ns_urlencode $note]','','',34,'');
 
 delete from im_view_columns where view_id = 197;
 delete from im_views where view_id = 197;
-insert into im_views (view_id, view_name, view_type_id, view_sql
-) values (197, 'im_investments', 1410, '
+insert into im_views (
+	view_id, view_name, view_type_id, sort_order, view_sql
+) values (
+	197, 'im_investments', 1410, 210, '
 SELECT
 	i.*,
 	im_category_from_id(i.investment_status_id) as investment_status,
