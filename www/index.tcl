@@ -23,16 +23,17 @@ set object_id 0
 set return_url "/intranet-filestorage/"
 set current_url_without_vars [ns_conn url]
 
-if {1} {
+set page_body [im_filestorage_pol_component $user_id $object_id $object_name $base_path $folder_type $current_url_without_vars]
 
-    set html [im_filestorage_pol_component $user_id $object_id $object_name $base_path $folder_type $current_url_without_vars]
+doc_return  200 text/html [im_return_template]
+db_release_unused_handles
 
-    doc_return  200 text/html $html
-    db_release_unused_handles
+return
 
-    return
 
-} else {
+
+
+if {0} {
 
     set html "<pre>\n"
 

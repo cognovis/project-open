@@ -10,9 +10,9 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-    folder
-    {folder_type ""}
-    project_id:integer
+    folder_type
+    bread_crum_path
+    object_id:integer
     return_url
     upload_file
     {file_title:trim ""}
@@ -22,16 +22,16 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
-set page_title "Upload into '$folder'"
+set page_title "Upload into '$bread_crum_path'"
 
-set context_bar [ad_context_bar [list "/intranet/projects/" "Projects"]  [list "/intranet/projects/view?group_id=$project_id" "One Project"]  "Upload File"]
+set context_bar [ad_context_bar [list "/intranet/projects/" "Projects"]  [list "/intranet/projects/view?group_id=$object_id" "One Project"]  "Upload File"]
 
 
 # check the user input first
 #
 set exception_text ""
 set exception_count 0
-if {!$user_is_admin_p && ![ad_user_group_member $project_id $user_id] } {
+if {!$user_is_admin_p && ![ad_user_group_member $object_id $user_id] } {
     append exception_text "<li>You are not a member of this project.\n"
     incr exception_count
 }
@@ -78,23 +78,23 @@ if {[regexp {\.\.} $client_filename]} {
 
 switch $folder_type {
     "project" {
-	set project_path [im_filestorage_project_path $project_id]
-	set dest_path "$project_path/$folder/$client_filename"
+	set project_path [im_filestorage_project_path $object_id]
+	set dest_path "$project_path/$bread_crum_path/$client_filename"
     }
 
     "customer" {
-	set path [im_filestorage_customer_path $project_id]
-	set dest_path "$path/$folder/$client_filename"
+	set path [im_filestorage_customer_path $object_id]
+	set dest_path "$path/$bread_crum_path/$client_filename"
     }
 
     "user" {
-	set path [im_filestorage_user_path $project_id]
-	set dest_path "$path/$folder/$client_filename"
+	set path [im_filestorage_user_path $object_id]
+	set dest_path "$path/$bread_crum_path/$client_filename"
     }
 
     "home" {
 	set path [im_filestorage_home_path]
-	set dest_path "$path/$folder/$client_filename"
+	set dest_path "$path/$bread_crum_path/$client_filename"
     }
 
     default {
