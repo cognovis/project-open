@@ -131,7 +131,7 @@ db_foreach task_tasks $task_sql {
 	append freelance_company_html "
 	<tr>
 	  <td>
-	    <input type=radio name=provider_company_id value=$customer_id $checked>
+	    <input type=radio name=provider_id value=$customer_id $checked>
 	  </td>
 	  <td>
 	    <A href=/intranet/customers/view?customer_id=$customer_id>

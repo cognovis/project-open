@@ -21,6 +21,18 @@ drop sequence im_trans_prices_seq;
 drop table im_trans_prices;
 
 
+-- delete all im_trans_invoices without
+-- deleting the rest of all invoices...
+begin
+     for row in (
+	select	invoice_id
+	from	im_trans_invoices
+     ) loop
 
+	im_trans_invoice.del(row.invoice_id);
 
+     end loop;
+end;
 
+drop package im_trans_invoices;
+drop table im_trans_invoices;

@@ -13,6 +13,205 @@
 --	im_trans_prices			List of prices with defaults
 --
 
+
+---------------------------------------------------------
+-- Translation Invoices
+--
+-- We have made a "Translation Invoice" a separate object
+-- mainly because it requires a different treatment when
+-- it gets deleted, because of its interaction with
+-- im_trans_tasks and im_projects, that are affected
+-- (set back to the status "delivered") when a trans-invoice
+-- is deleted.
+
+
+create table im_trans_invoices (
+	invoice_id		integer
+				constraint im_trans_invoices_pk
+				primary key
+				constraint im_trans_invoices_fk
+				references im_invoices
+);
+
+
+begin
+    acs_object_type.create_type (
+	supertype =>		'im_invoice',
+	object_type =>		'im_trans_invoice',
+	pretty_name =>		'Trans Invoice',
+	pretty_plural =>	'Trans Invoices',
+	table_name =>		'im_trans_invoices',
+	id_column =>		'invoice_id',
+	package_name =>		'im_trans_invoice',
+	type_extension_table => null,
+	name_method =>		'im_trans_invoice.name'
+    );
+end;
+/
+show errors
+
+
+create or replace package im_trans_invoice
+is
+    function new (
+	invoice_id		in integer default null,
+	object_type		in varchar default 'im_trans_invoice',
+	creation_date		in date default sysdate,
+	creation_user		in integer,
+	creation_ip		in varchar default null,
+	context_id		in integer default null,
+	invoice_nr		in varchar,
+	customer_id		in integer,
+	provider_id		in integer,
+	customer_contact_id	in integer default null,
+	invoice_date		in date default sysdate,
+	invoice_currency	in char default 'EUR',
+	invoice_template_id	in integer default null,
+	invoice_status_id	in integer default 602,
+	invoice_type_id		in integer default 700,
+	payment_method_id	in integer default null,
+	payment_days		in integer default 30,
+	amount			in number default 0,
+	vat			in number default 0,
+	tax			in number default 0,
+	note			in varchar default null
+    ) return im_trans_invoices.invoice_id%TYPE;
+
+    procedure del (invoice_id in integer);
+    function name (invoice_id in integer) return varchar;
+end im_trans_invoice;
+/
+show errors
+
+
+create or replace package body im_trans_invoice
+is
+    function new (
+	invoice_id		in integer default null,
+	object_type		in varchar default 'im_trans_invoice',
+	creation_date		in date default sysdate,
+	creation_user		in integer,
+	creation_ip		in varchar default null,
+	context_id		in integer default null,
+	invoice_nr		in varchar,
+	customer_id		in integer,
+	provider_id		in integer,
+	customer_contact_id	in integer default null,
+	invoice_date		in date default sysdate,
+	invoice_currency	in char default 'EUR',
+	invoice_template_id	in integer default null,
+	invoice_status_id	in integer default 602,
+	invoice_type_id		in integer default 700,
+	payment_method_id	in integer default null,
+	payment_days		in integer default 30,
+	amount			in number,
+	vat			in number default 0,
+	tax			in number default 0,
+	note			in varchar default null
+    ) return im_trans_invoices.invoice_id%TYPE
+    is
+	v_invoice_id	im_trans_invoices.invoice_id%TYPE;
+    begin
+	v_invoice_id := im_invoice.new(
+	invoice_id		=> invoice_id,
+	object_type	  => object_type,
+	creation_date	=> creation_date,
+	creation_user	=> creation_user,
+	creation_ip	  => creation_ip,
+	context_id		=> context_id,
+	invoice_nr		=> invoice_nr,
+	customer_id	  => customer_id,
+	provider_id	  => provider_id,
+	customer_contact_id     => customer_contact_id,
+	invoice_date	 => invoice_date,
+	invoice_currency	=> invoice_currency,
+	invoice_template_id     => invoice_template_id,
+	invoice_status_id	=> invoice_status_id,
+	invoice_type_id	=> invoice_type_id,
+	payment_method_id	=> payment_method_id,
+	payment_days	 => payment_days,
+	amount		=> amount,
+	vat		  => vat,
+	tax		  => tax,
+	note			=> note
+	);
+
+	-- insert to create a referential integrity constraint
+	-- to avoid that im_invoices is used to delete such an
+	-- invoice without resetting the im_trans_tasks and
+	-- im_projects dependencies.
+	insert into im_trans_invoices (
+		invoice_id
+	) values (
+		v_invoice_id
+	);
+
+	return v_invoice_id;
+    end new;
+
+    -- Delete a single invoice (if we know its ID...)
+    procedure del (invoice_id in integer)
+    is
+    begin
+
+     	-- Reset the status of all project to "delivered" that
+	-- were included in the invoice
+	update im_projects
+	set project_status_id = 78
+	where project_id in (
+		select distinct
+			r.object_id_one
+		from
+			acs_rels r
+		where
+			r.object_id_two = del.invoice_id
+	);
+
+	-- Set all projects back to "delivered" that have tasks
+	-- that were included in the invoices to delete.
+	update im_projects
+	set project_status_id = 78
+	where project_id in (
+		select distinct
+			t.project_id
+		from
+			im_trans_tasks t
+		where
+			t.invoice_id = del.invoice_id
+	);
+
+	-- Reset the status of all invoiced tasks to delivered.
+	update	im_trans_tasks t
+	set	invoice_id = null
+	where	t.invoice_id = del.invoice_id;
+
+	-- Erase the invoice itself
+	delete from 	im_trans_invoices
+	where		invoice_id = del.invoice_id;
+
+	-- Erase the CostItem
+	im_invoice.del(del.invoice_id);
+    end del;
+
+
+    function name (invoice_id in integer) return varchar
+    is
+	v_name	varchar(40);
+    begin
+	select	invoice_nr
+	into	v_name
+	from	im_invoices
+	where	invoice_id = name.invoice_id;
+
+	return v_name;
+    end name;
+
+end im_trans_invoice;
+/
+show errors
+
+
+
 ---------------------------------------------------------
 -- Translation Prices
 --
@@ -102,41 +301,41 @@ BEGIN
 	where customer_path='internal';
 
 	if v_price_task_type_id = v_item_task_type_id then
-	    match_value := match_value + 4;
+	 match_value := match_value + 4;
 	end if;
 	if not(v_price_task_type_id is null) and v_price_task_type_id != v_item_task_type_id then
-	    match_value := match_value - 4;
+	 match_value := match_value - 4;
 	end if;
 	if v_price_source_language_id = v_item_source_language_id then
-	    match_value := match_value + 3;
+	 match_value := match_value + 3;
 	end if;
 	if not(v_price_source_language_id is null) and v_price_source_language_id != v_item_source_language_id then
-	    match_value := match_value - 10;
+	 match_value := match_value - 10;
 	end if;
 	if v_price_target_language_id = v_item_target_language_id then
-	    match_value := match_value + 2;
+	 match_value := match_value + 2;
 	end if;
 	if not(v_price_target_language_id is null) and v_price_target_language_id != v_item_target_language_id then
-	    match_value := match_value - 10;
+	 match_value := match_value - 10;
 	end if;
 	if v_price_subject_area_id = v_item_subject_area_id then
-	    match_value := match_value + 1;
+	 match_value := match_value + 1;
 	end if;
 	if not(v_price_subject_area_id is null) and v_price_subject_area_id != v_item_subject_area_id then
-	    match_value := match_value - 10;
+	 match_value := match_value - 10;
 	end if;
 
 	-- Customer logic - "Internal" doesn't give a penalty 
 	-- but doesn't count as high as an exact match
 	--
 	if v_price_customer_id = v_item_customer_id then
-	    match_value := (match_value + 6)*2;
+	 match_value := (match_value + 6)*2;
 	end if;
 	if v_price_customer_id = v_internal_customer_id then
-	    match_value := match_value + 1;
+	 match_value := match_value + 1;
 	end if;
 	if v_price_customer_id != v_internal_customer_id and v_price_customer_id != v_item_customer_id then
-	    match_value := match_value -10;
+	 match_value := match_value -10;
 	end if;
 
 	return match_value;
@@ -172,19 +371,19 @@ commit;
 -- Show the translation specific fields in the ProjectViewPage
 --
 declare
-    v_plugin            integer;
+    v_plugin	 integer;
 begin
     v_plugin := im_component_plugin.new (
-        plugin_name =>  'Customer Translation Prices',
-        package_name => 'intranet-trans-invoices',
-        page_url =>     '/intranet/customers/view',
-        location =>     'left',
-        sort_order =>   100,
-        component_tcl =>
-        'im_trans_price_component \
-                $user_id \
-                $customer_id \
-                $return_url'
+	plugin_name =>  'Customer Translation Prices',
+	package_name => 'intranet-trans-invoices',
+	page_url =>     '/intranet/customers/view',
+	location =>     'left',
+	sort_order =>   100,
+	component_tcl =>
+	'im_trans_price_component \
+		$user_id \
+		$customer_id \
+		$return_url'
     );
 end;
 /
@@ -195,17 +394,17 @@ end;
 -- Add a "Translation Invoice" into the Invoice Menu
 --
 declare
-        -- Menu IDs
-        v_menu                  integer;
+	-- Menu IDs
+	v_menu		integer;
 	v_invoices_menu		integer;
 	v_project_menu		integer;
 
-        -- Groups
-        v_accounting            integer;
-        v_senman                integer;
-        v_customers             integer;
-        v_freelancers           integer;
-        v_admins                integer;
+	-- Groups
+	v_accounting	 integer;
+	v_senman		integer;
+	v_customers	  integer;
+	v_freelancers	integer;
+	v_admins		integer;
 begin
 
     select group_id into v_admins from groups where group_name = 'P/O Admins';
@@ -240,12 +439,12 @@ begin
     where label='project';
 
     v_menu := im_menu.new (
-        package_name => 'intranet-trans-invoices',
-        label =>        'project_pos',
-        name =>         'POs',
-        url =>          '/intranet-trans-invoices/purchase-orders/index',
-        sort_order =>   70,
-        parent_menu_id => v_project_menu
+	package_name => 'intranet-trans-invoices',
+	label =>	'project_pos',
+	name =>	'POs',
+	url =>	'/intranet-trans-invoices/purchase-orders/index?cost_type_id=3706',
+	sort_order =>   70,
+	parent_menu_id => v_project_menu
     );
 
     acs_permission.grant_permission(v_menu, v_admins, 'read');

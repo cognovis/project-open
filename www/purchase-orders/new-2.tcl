@@ -28,7 +28,7 @@ ad_page_contract {
     other:array,optional
 
     project_id:integer
-    provider_company_id:integer
+    provider_id:integer
     freelance_id:integer
     cost_type_id:integer
     { cost_status_id:integer }
@@ -99,8 +99,6 @@ set invoice_id [im_new_object_id]
 set invoice_nr [im_next_invoice_nr]
 set invoice_date $todays_date
 set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 30] 
-set provider_id [im_customer_internal]
-set cost_type_id [im_cost_type_bill]
 set vat 0
 set tax 0
 set note ""
@@ -127,7 +125,7 @@ from
         im_offices o,
         country_codes cc
 where 
-        c.customer_id = :provider_company_id
+        c.customer_id = :provider_id
         and c.main_office_id=o.office_id(+)
         and o.address_country_code=cc.iso(+)
 "
@@ -143,7 +141,7 @@ where
 
 # Get the freelancers Trados Matrix
 #
-array set provider_matrix [im_trans_trados_matrix $provider_company_id]
+array set provider_matrix [im_trans_trados_matrix $provider_id]
 
 # How many words does a translator edit per hour?
 set editing_words_per_hour 1000
@@ -507,7 +505,7 @@ from
 	(
 		(select 
 			im_trans_prices_calc_relevancy (
-				p.customer_id, :provider_company_id,
+				p.customer_id, :provider_id,
 				p.task_type_id, :task_type_id,
 				p.subject_area_id, :subject_area_id,
 				p.target_language_id, :target_language_id,
@@ -569,7 +567,7 @@ order by
 	set best_match_price 0
 	db_foreach references_prices $reference_price_sql {
 
-	    ns_log Notice "new-3: company_id=$provider_company_id, uom_id=$uom_id => price=$price, relevancy=$price_relevancy"
+	    ns_log Notice "new-3: company_id=$provider_id, uom_id=$uom_id => price=$price, relevancy=$price_relevancy"
 	    # Take the first line of the result list (=best score) as a price proposal:
 	    if {$price_list_ctr == 1} {set best_match_price $price}
 
