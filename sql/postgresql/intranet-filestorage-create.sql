@@ -7,6 +7,7 @@
 --
 -- @author frank.bergmann@project-open.com
 -- @author juanjoruizx@yahoo.es
+--
 
 -- Sets up the persisten memory about folders, their permissions
 -- and the state (opened or closed) in which the user they have
