@@ -1,4 +1,4 @@
-# /www/intranet/users/languages-recon.tcl
+# /www/intranet-freelance/skill-edit.tcl
 
 ad_page_contract {
     Display information about one user
@@ -45,6 +45,8 @@ if {$user_is_customer_p} { set user_type "customer" }
 if {$user_is_wheel_p} { set user_type "wheel" }
 if {$user_is_admin_p} { set user_type "admin" }
 
+
+if { 0 } {
 # Check if "user" belongs to a group that is administered by 
 # the current users
 set administrated_user_ids [db_list administated_user_ids "
@@ -77,13 +79,13 @@ if {!$edit_user} {
     <li>You have insufficient privileges to view this user."
     return
 }
-
+}
 
 # ---------------------------------------------------------------
 # User Information
 # ---------------------------------------------------------------
 
-db_0or1row user_full_name "select first_names, last_name from users where user_id = :user_id"
+db_0or1row user_full_name "select first_names, last_name from persons where person_id = :user_id"
 
 set page_title "$first_names $last_name"
 if {$user_is_employee_p} {

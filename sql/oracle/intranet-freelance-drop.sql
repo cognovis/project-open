@@ -28,13 +28,13 @@ commit;
 
 
 
--- Add 'user_view_freelance'
+-- 'user_view_freelance'
 delete from im_view_columns where column_id >= 5100 and column_id < 5199;
 
--- Add 'user_list_freelance'
+-- 'user_list_freelance'
 delete from im_view_columns where column_id >= 5000 and column_id < 5099;
 
--- Freelance LOC Tools
+-- Freelance LOC Tools & Operating Systems
 delete from categories where category_id >= 2300 and category_id < 2400;
 
 -- Languages experience
@@ -43,6 +43,7 @@ delete from categories where category_id >= 2200 and category_id < 2300;
 -- Freelance TM Tools
 delete from categories where category_id >= 2100 and category_id < 2200;
 
+-- Freelance Skill Types
 delete from categories where category_id >= 2000 and category_id < 2100;
 
 delete from im_views where view_id >= 50 and view_id < 60;

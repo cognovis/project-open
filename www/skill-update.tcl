@@ -27,7 +27,7 @@ set current_user_id [ad_maybe_redirect_for_registration]
 set current_user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set current_user_is_wheel_p [ad_user_group_member [im_wheel_group_id] $current_user_id]
 set current_user_is_employee_p [im_user_is_employee_p $current_user_id]
-set current_user_admin_p [|| $current_user_is_admin_p $current_user_is_wheel_p]
+set current_user_admin_p [expr $current_user_is_admin_p || $current_user_is_wheel_p]
 
 set user_is_customer_p [ad_user_group_member [im_customer_group_id] $user_id]
 set user_is_freelance_p [ad_user_group_member [im_freelance_group_id] $user_id]
@@ -42,6 +42,9 @@ if {$user_is_employee_p} { set user_type "employee" }
 if {$user_is_customer_p} { set user_type "customer" }
 if {$user_is_wheel_p} { set user_type "wheel" }
 if {$user_is_admin_p} { set user_type "admin" }
+
+
+if { 0} {
 
 # Check if "user" belongs to a group that is administered by 
 # the current users
@@ -78,6 +81,7 @@ if {!$edit_user} {
     return
 }
 
+}
 
 # ---------------------------------------------------------------
 # Defaults

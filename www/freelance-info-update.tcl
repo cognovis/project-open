@@ -24,7 +24,7 @@ if { $user_id == $current_user_id } { set myself_p 1}
 set current_user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set current_user_is_wheel_p [ad_user_group_member [im_wheel_group_id] $current_user_id]
 set current_user_is_employee_p [im_user_is_employee_p $current_user_id]
-set current_user_admin_p [|| $current_user_is_admin_p $current_user_is_wheel_p]
+set current_user_admin_p [expr $current_user_is_admin_p || $current_user_is_wheel_p]
 
 set user_is_customer_p [ad_user_group_member [im_customer_group_id] $user_id]
 set user_is_freelance_p [ad_user_group_member [im_freelance_group_id] $user_id]
@@ -42,6 +42,9 @@ if {$user_is_admin_p} { set user_type "admin" }
 
 # Check if "user" belongs to a group that is administered by 
 # the current users
+
+if { 0 } {
+
 set administrated_user_ids [db_list administated_user_ids "
 select distinct
 	m2.user_id
@@ -75,6 +78,9 @@ if {!$edit_user} {
     return
 }
 
+}
+
+
 
 # ---------------------------------------------------------------
 # Defaults
@@ -96,14 +102,14 @@ set return_url [im_url_with_query]
 
 db_0or1row freelancers_info {
 select
-    u.first_names||' '||u.last_name as user_name,
+    pe.first_names||' '||pe.last_name as user_name,
     f.*
 from 
-    users u,
+    persons pe,
     im_freelancers f
 where
-    u.user_id = :user_id
-    and u.user_id = f.user_id(+)
+    pe.person_id = :user_id
+    and pe.person_id = f.user_id(+)
 }
 
 # --------------- Set page design as a function of the freelance data-----
@@ -129,12 +135,12 @@ set rates_html "
 [export_form_vars user_id]
 <table cellpadding=0 cellspacing=2 border=0>
 <tr><td colspan=2 class=rowtitle align=center>Rates Information</td></tr>
-<tr><td>Web Site</td><td><input type=text name=web_site [export_form_value web_site]></td></tr>
-<tr><td>Translation rate</td><td><input type=text name=translation_rate [export_form_value translation_rate]></td></tr>
-<tr><td>Editing rate</td><td><input type=text name=editing_rate [export_form_value editing_rate]></td></tr>
-<tr><td>Hourly rate</td><td><input type=text name=hourly_rate [export_form_value hourly_rate]></td></tr>
-<tr><td>Bank Account</td><td><input type=text name=bank_account [export_form_value bank_account]></td></tr>
-<tr><td>Bank</td><td><input type=text name=bank [export_form_value bank]></td></tr>
+<tr><td>Web Site</td><td><input type=text name=web_site value=$web_site></td></tr>
+<tr><td>Translation rate</td><td><input type=text name=translation_rate value=$translation_rate></td></tr>
+<tr><td>Editing rate</td><td><input type=text name=editing_rate value=$editing_rate></td></tr>
+<tr><td>Hourly rate</td><td><input type=text name=hourly_rate value=$hourly_rate></td></tr>
+<tr><td>Bank Account</td><td><input type=text name=bank_account value=$bank_account></td></tr>
+<tr><td>Bank</td><td><input type=text name=bank value=$bank></td></tr>
 <tr><td>Payment Method</td><td>[im_category_select "Intranet Payment Type" "payment_method" "$payment_method_id"]</td></tr>
 <tr><td>Note</td><td><textarea type=text cols=50 rows=5 name=note>$note</textarea></td></tr>
 "
@@ -147,7 +153,7 @@ if { !$myself_p } {
 }
 
 append rates_html "
-<tr><td>CV</td><td><input type=text name=cv [export_form_value cv]></td></tr>
+<tr><td>CV</td><td><input type=text name=cv value=$cv></td></tr>
 </table>
 <center>
 <input type=submit name=submit value=Submit>

@@ -26,23 +26,18 @@ set return_url [im_url_with_query]
 set page_title "Project Tasks"
 set context_bar "hola"
 
-set user_id "638"
+set user_id "568"
 set freelance_view_name "user_view_freelance"
-
+set project_id 555
 
 set page_body ""
 
-append page_body [im_freelance_info_component $current_user_id $user_id $user_is_admin_p "" $freelance_view_name]
+append page_body [im_freelance_info_component $current_user_id $user_id "url" "user_view_freelance"]
 
-append page_body [im_freelance_skill_component $current_user_id $user_id $user_is_admin_p return_url]
+append page_body [im_freelance_skill_component $current_user_id $user_id return_url]
 
-append page_body [im_freelance_member_select_component 644 "" ""]
+append page_body [im_freelance_member_select_component $project_id "" "url"]
 
-append page_body "
-<br>
-
-
-"
 
 db_release_unused_handles
 doc_return  200 text/html [im_return_template]

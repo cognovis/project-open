@@ -130,12 +130,18 @@ where
 # Some simple extension data for freelancers
 # ----------------------------------------------------------------------
 
-ad_proc im_freelance_info_component { current_user_id user_id user_admin_p return_url freelance_view } {
+ad_proc im_freelance_info_component { current_user_id user_id return_url freelance_view } {
     Show some simple information about a freelancer
 } {
+    set read 0
+    set write 0
+    set admin 0
+
+    im_user_permissions $current_user_id $user_id read write admin
+
     set td_class(0) "class=roweven"
     set td_class(1) "class=rowodd"
-
+    
     set view_id [db_string get_view_id "select view_id from im_views where view_name=:freelance_view"]
     ns_log Notice "intranet-freelance: view_id=$view_id"
 
@@ -165,7 +171,7 @@ ad_proc im_freelance_info_component { current_user_id user_id user_admin_p retur
 	where	view_id=:view_id
 	order by sort_order"
 
-   set freelance_html "
+   set freelance_html "user_id : $user_id
 	<form method=GET action=/intranet-freelance/freelance-info-update>
 	[export_form_vars user_id return_url]
 	<table cellpadding=0 cellspacing=2 border=0>
@@ -178,7 +184,7 @@ ad_proc im_freelance_info_component { current_user_id user_id user_admin_p retur
     # adminstrator, this row don't appear in the browser.
     db_foreach column_list_sql $column_sql {
         if {1 || [eval $visible_for]} {
-	    if { ![string equal "Private Note" $column_name] || $user_admin_p} {
+	    if { ![string equal "Private Note" $column_name] || $admin} {
 	        append freelance_html "
                 <tr $td_class([expr $ctr % 2])>
 		<td>$column_name &nbsp;</td><td>"
@@ -190,12 +196,12 @@ ad_proc im_freelance_info_component { current_user_id user_id user_admin_p retur
         }
     }
 
-    if {$user_admin_p } {
+    if {$admin } {
         append freelance_html "
         <tr $td_class([expr $ctr % 2])>
         <td></td><td><input type=submit value='Edit'></td></tr>\n"
     }
-    append freelance_html "</table></form>\n"
+    append freelance_html "</table></form>\n<br>user: $user_id"
 
     return $freelance_html
 }
@@ -205,9 +211,16 @@ ad_proc im_freelance_info_component { current_user_id user_id user_admin_p retur
 # Freelance Skills Component
 # ---------------------------------------------------------------
 
-ad_proc im_freelance_skill_component { current_user_id user_id user_admin_p return_url} {
+ad_proc im_freelance_skill_component { current_user_id user_id  return_url} {
     Show some simple information about a freelancer
 } {
+
+    set read 0
+    set write 0
+    set admin 0
+
+    im_user_permissions $current_user_id $user_id read write admin
+
 
 set sql "
 select
@@ -321,7 +334,7 @@ db_foreach skill_body_html $sql {
     # the confirmation level
     #
     if {![string equal "" $skill]} {
-	if { $user_admin_p } {
+	if { $admin } {
 	    set experiences_html_eval "<td align=left>$claimed$confirmation</td></tr>\n\t"
 	} else {
 	    set experiences_html_eval "<td align=left>$claimed</td></tr>\n\t"
@@ -338,20 +351,22 @@ db_foreach skill_body_html $sql {
 }
 append skill_body_html "</table></td></tr>\n\t"
 
-
-# ------------  we put buttons for each skill for change its.
-
-set languages_butons_html "<tr align=center>"
-set old_skill_type_id 0
-db_foreach column_list $sql {
-    if {$old_skill_type_id != $skill_type_id} {
+if { $admin } {
+    # ------------  we put buttons for each skill for change its.
+    
+    set languages_butons_html "<tr align=center>"
+    set old_skill_type_id 0
+    db_foreach column_list $sql {
+	if {$old_skill_type_id != $skill_type_id} {
         append languages_butons_html "
-	<td>
-<form method=GET action=/intranet-freelance/skill-edit>
+<td><form method=GET action=/intranet-freelance/skill-edit>
 [export_form_vars user_id skill_type_id return_url]
 <input type=submit value=Edit></form></td>"
         set old_skill_type_id $skill_type_id
-    }
+        }
+   }
+} else {
+   set languages_butons_html ""
 }
 
 append languages_butons_html "</tr>\n\t"
@@ -479,11 +494,11 @@ where
 <input type=hidden name=target value=[im_url_stub]/member-add-2>
 <input type=hidden name=passthrough value='group_id role return_url also_add_to_group_id'>
 <table cellpadding=0 cellspacing=2 border=0>
-  <tr>
-    <td class=rowtitle align=middle colspan=5>Freelance</td>
-  </tr>
-  $freelance_header_html
-  $freelance_body_html
+<tr>
+<td class=rowtitle align=middle colspan=5>Freelance</td>
+</tr>
+$freelance_header_html
+$freelance_body_html
   <tr> 
     <td colspan=5>add as 
       <select name=role>$role_options</select> <input type=submit value=Add>
@@ -492,8 +507,8 @@ where
   </tr>
 </table>
 </form>\n"
-  
 
-    return $select_freelance
+
+return $select_freelance
 }
 

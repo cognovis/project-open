@@ -96,13 +96,14 @@ insert into im_views values (51, 'user_view_freelance', 'view_users', '');
 
 -- Freelance Skill Types
 delete from categories where category_id >= 2000 and category_id < 2100;
-INSERT INTO categories VALUES (2000,'Source Language','SLS Language','Intranet Skill Type',1,'f','');
-INSERT INTO categories VALUES (2002,'Target Language','SLS Language','Intranet Skill Type',1,'f','');
-INSERT INTO categories VALUES (2004,'Sworn Language','SLS Language','Intranet Skill Type',1,'f','');
+INSERT INTO categories VALUES (2000,'Source Language','Intranet Translation Language','Intranet Skill Type',1,'f','');
+INSERT INTO categories VALUES (2002,'Target Language','Intranet Translation Language','Intranet Skill Type',1,'f','');
+INSERT INTO categories VALUES (2004,'Sworn Language','Intranet Translation Language','Intranet Skill Type',1,'f','');
 INSERT INTO categories VALUES (2006,'TM Tools','Intranet TM Tool','Intranet Skill Type',1,'f','');
 INSERT INTO categories VALUES (2008,'LOC Tools','Intranet LOC Tool','Intranet Skill Type',1,'f','');
 INSERT INTO categories VALUES (2010,'Operating System','Intranet Operating System','Intranet Skill Type',1,'f','');
-INSERT INTO categories VALUES (2014,'Subjects','Intranet subjects','Intranet Skill Type',1,'f','');
+INSERT INTO categories VALUES (2014,'Subjects','Intranet Translation Subject Area','Intranet Skill Type',1,'f','');
+
 
 -- Freelance TM Tools
 delete from categories where category_id >= 2100 and category_id < 2200;
@@ -129,6 +130,12 @@ INSERT INTO categories VALUES (2203, 'High','',
 delete from categories where category_id >= 2300 and category_id < 2400;
 INSERT INTO categories VALUES (2300,'Pasolo ','','Intranet LOC Tool',1,'f','');
 INSERT INTO categories VALUES (2302,'Catalyst','','Intranet LOC Tool',1,'f','');
+-- Operating Systems catgory_id (2350 -> 2399)
+INSERT INTO categories VALUES (2350,'Windows 98','','Intranet Operating System',1,'f','');
+INSERT INTO categories VALUES (2351,'Windows NT','','Intranet Operating System',1,'f','');
+INSERT INTO categories VALUES (2352,'Windows 2000','','Intranet Operating System',1,'f','');
+INSERT INTO categories VALUES (2353,'Windows XP','','Intranet Operating System',1,'f','');
+INSERT INTO categories VALUES (2354,'Linux','','Intranet Operating System',1,'f','');
 
 
 
@@ -200,7 +207,7 @@ insert into im_view_columns values (5116,51,NULL,'Private Note',
 commit;
 
 
--- Show the task component in project page
+-- Show the freelance information in users view page
 --
 declare
     v_plugin            integer;
@@ -215,10 +222,48 @@ begin
         'im_freelance_info_component \
 		$current_user_id \
                 $user_id \
-                $edit_user \
                 $return_url \
 		[im_opt_val freelance_view_name]'
     );
 end;
 /
 
+-- Show the freelance skills in users view page
+--
+declare
+    v_plugin            integer;
+begin
+    v_plugin := im_component_plugin.new (
+	plugin_name =>	'Users Skills Component',
+        package_name => 'intranet-freelance',
+        page_url =>     '/intranet/users/view',
+        location =>     'bottom',
+        sort_order =>   20,
+        component_tcl =>
+        'im_freelance_skill_component \
+		$current_user_id \
+                $user_id \
+                $return_url'
+    );
+end;
+/
+
+-- Show the freelance list in member-add page
+--
+declare
+    v_plugin            integer;
+begin
+    v_plugin := im_component_plugin.new (
+	plugin_name =>	'freelance list Component',
+        package_name => 'intranet-freelance',
+        page_url =>     '/intranet/member-add',
+        location =>     'bottom',
+        sort_order =>   10,
+        component_tcl =>
+        'im_freelance_member_select_component \
+		$project_id \
+                $role_options \
+                $return_url'
+    );
+end;
+/
