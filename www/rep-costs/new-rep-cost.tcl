@@ -24,7 +24,7 @@ set user_id [ad_maybe_redirect_for_registration]
 set page_title "Create Employee Cost Item"
 set context [ad_context_bar $page_title]
 
-if {![im_permission $user_id view_cost_items]} {
+if {![im_permission $user_id view_costs]} {
     ad_return_complaint 1 "You have insufficient privileges to use this page"
     return
 }

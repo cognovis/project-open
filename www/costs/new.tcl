@@ -116,8 +116,8 @@ ad_form -extend -name cost -on_request {
 
 } -new_data {
 
-    # find start_block for effective_start-block
-    set effective_start_block [db_string temp_start_block_statement "
+    # find start_block for start-block
+    set start_block [db_string temp_start_block_statement "
 	select	max(start_block) 
 	from	im_start_months
 	where	start_block <= :effective_date
@@ -152,7 +152,7 @@ end;"
     db_dml cost_update_aux "
         update  im_costs set
                 cause_object_id		= :cause_object_id,
-		effective_start_block	= :effective_start_block
+		start_block		= :start_block
         where
                 cost_id = :cost_id
     "
@@ -160,8 +160,8 @@ end;"
 
 } -edit_data {
 
-    # find start_block for effective_start-block
-    set effective_start_block [db_string temp_start_block_statement "
+    # find start_block for start-block
+    set start_block [db_string temp_start_block_statement "
 	select	max(start_block) 
 	from	im_start_months
 	where	start_block <= :effective_date
@@ -206,7 +206,7 @@ end;"
                 cost_type_id    	= :cost_type_id,
                 template_id     	= :template_id,
                 effective_date  	= :effective_date,
-		effective_start_block	= :effective_start_block,
+		start_block		= :start_block,
                 payment_days    	= :payment_days,
 		amount			= :amount,
                 currency        	= :currency,
