@@ -62,7 +62,7 @@ insert into im_fs_folder_perms
 values (:folder_id, :profile_id)
 "
         } err_msg] } {  
-            ad_return_complaint 1 "<li>Internal Error<br><pre>$err_msg</pre>"
+            ad_return_complaint 1 "<li>[_ intranet-filestorage.Internal_Error]<br><pre>$err_msg</pre>"
         }
     }
 
@@ -95,7 +95,7 @@ insert into im_fs_folder_perms
 values (:folder_id, :role_id)
 "
         } err_msg] } {  
-            ad_return_complaint 1 "<li>Internal Error<br><pre>$err_msg</pre>"
+            ad_return_complaint 1 "<li>[_ intranet-filestorage.Internal_Error]<br><pre>$err_msg</pre>"
         }
     }
 
