@@ -17,7 +17,17 @@
   <fullquery name="get_topic">
     <querytext>
 select
-	t.*,
+	t.topic_id,
+	t.parent_id,
+	t.subject,
+	t.message,
+	t.topic_status_id,
+	t.topic_type_id,
+	t.owner_id,
+	t.priority,
+	t.scope,
+	to_char(t.due_date, :date_format) as due_date,
+	to_char(t.posting_date, :date_format) as posting_date,
 	m.read_p,
 	m.folder_id,
 	m.receive_updates,

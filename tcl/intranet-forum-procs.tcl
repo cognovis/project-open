@@ -674,6 +674,8 @@ ad_proc -public im_forum_component {
     set bgcolor(0) " class=roweven"
     set bgcolor(1) " class=rowodd"
 
+    set date_format "YYYY-MM-DD"
+
     if {!$max_entries_per_page} { set max_entries_per_page 10 }
     set end_idx [expr $start_idx + $max_entries_per_page - 1]
 
@@ -875,7 +877,20 @@ ad_proc -public im_forum_component {
     # So we are getting close here to a kind of MS-Outlook...
     set forum_sql "
 select
-	t.*,
+	t.topic_id,
+	t.owner_id,
+	t.object_id,
+	t.parent_id,
+	t.topic_type_id,
+	t.topic_status_id,
+	to_char(t.posting_date, :date_format) as posting_date,
+	to_char(t.due_date, :date_format) as due_date,
+	t.owner_id,
+	t.scope,
+	t.subject,
+	t.message,
+	t.priority,
+	t.asignee_id,
 	acs_object.name(t.object_id) as object_name,
 	m.read_p,
 	m.folder_id,
@@ -928,8 +943,6 @@ where
 	$restriction_clause
 $order_by_clause"
 
-
-
     # ---------------------- Limit query to MAX rows -------------------------
     
     # We can't get around counting in advance if we want to be able to
@@ -967,6 +980,8 @@ $order_by_clause"
     set old_object_id 0
 
     set limited_query $forum_sql
+
+    ns_log Notice "limited_query = $limited_query"
 
     db_foreach forum_query $limited_query {
         if {$read_p == "t"} {set read "read"} else {set read "unread"}
