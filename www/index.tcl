@@ -154,7 +154,7 @@ if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
 }
 
-ns_log Notice "Slow query with the number of cost_items"
+ns_log Notice "Slow query with the number of costs"
 
 set sql "
 select
@@ -167,9 +167,9 @@ select
         im_category_from_id(p.payment_status_id) as payment_status
 from
         im_payments p,
-	im_cost_items ci
+	im_costs ci
 where
-	p.cost_item_id = ci.item_id(+)
+	p.cost_id = ci.cost_id(+)
         $where_clause"
 
 # ---------------------------------------------------------------
@@ -209,7 +209,7 @@ set filter_html "
 <table>
 <tr>
   <td>
-	<form method=get action='/intranet-cost_items/index'>
+	<form method=get action='/intranet-cost/index'>
 	[export_form_vars start_idx order_by how_many view_name include_subpayments_p letter]
 	<table border=0 cellpadding=0 cellspacing=0>
 	  <tr> 
@@ -374,7 +374,7 @@ set table_continuation_html "
 #$filter_html
 
 set page_body "
-[im_cost_items_navbar $letter "/intranet-payments/index" $next_page_url $previous_page_url [list status_id type_id start_idx order_by how_many view_name letter]]
+[im_costs_navbar $letter "/intranet-payments/index" $next_page_url $previous_page_url [list status_id type_id start_idx order_by how_many view_name letter] "payments_list"]
 
 <form action=payment-action method=POST>
 [export_form_vars customer_id payment_id return_url]
