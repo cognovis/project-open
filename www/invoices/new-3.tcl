@@ -78,13 +78,12 @@ set invoice_date $todays_date
 set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCustomerInvoicePaymentDays" "" 30] 
 set due_date [db_string get_due_date "select sysdate+:payment_days from dual"]
 set provider_id [im_customer_internal]
-set invoice_status_created_id [db_string invoice_status "select category_id from im_categories where category_type='Intranet Invoice Status' and upper(category)='CREATED'"]
-set invoice_type_id [db_string invoice_type "select invoice_type_id from im_invoice_type where upper(invoice_type)='NORMAL'"]
+set cost_type_id [im_cost_type_invoice]
 set vat 0
 set tax 0
 set note ""
 set payment_method_id ""
-set invoice_template_id ""
+set template_id ""
 
 
 # ---------------------------------------------------------------
@@ -140,7 +139,7 @@ set invoice_data_html "
         </tr>
         <tr> 
           <td class=roweven> Invoice template:</td>
-          <td class=roweven>[im_invoice_template_select invoice_template_id $invoice_template_id]</td>
+          <td class=roweven>[im_cost_template_select template_id $template_id]</td>
         </tr>
 "
 

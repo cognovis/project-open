@@ -16,7 +16,7 @@ ad_page_contract {
     @param order_by invoice display order 
     @param include_subinvoices_p whether to include sub invoices
     @param status_id criteria for invoice status
-    @param type_id criteria for invoice_type_id
+    @param type_id criteria for cost_type_id
     @param letter criteria for im_first_letter_default_to_a(ug.group_name)
     @param start_idx the starting index for query
     @param how_many how many rows to return
@@ -83,12 +83,8 @@ if {![im_permission $user_id view_finance]} {
     <li>You don't have sufficient privileges to see this page."    
 }
 
-
-set invoice_status_created [db_string invoice_status "select invoice_status_id from im_invoice_status where upper(invoice_status)='CREATED'"]
-
-
 if {$status_id == 0} {
-    set status_id $invoice_status_created
+    set status_id [im_cost_status_created]
 }
 
 
@@ -133,11 +129,11 @@ db_foreach column_list_sql $column_sql {
 # 4. Define Filter Categories
 # ---------------------------------------------------------------
 
-# status_types will be a list of pairs of (invoice_status_id, invoice_status)
-set status_types [im_memoize_list select_invoice_status_types \
-        "select invoice_status_id, invoice_status
-         from im_invoice_status
-         order by lower(invoice_status)"]
+# status_types will be a list of pairs of (cost_status_id, cost_status)
+set status_types [im_memoize_list select_cost_status_types \
+        "select cost_status_id, cost_status
+         from im_cost_status
+         order by lower(cost_status)"]
 
 # No "All" status, because we _really_ don't want to show the
 # "In Process" invoices left over from the creation process.
@@ -150,10 +146,10 @@ set status_types [im_memoize_list select_invoice_status_types \
 
 set criteria [list]
 if { ![empty_string_p $status_id] && $status_id > 0 } {
-    lappend criteria "i.invoice_status_id=:status_id"
+    lappend criteria "i.cost_status_id=:status_id"
 }
 if { ![empty_string_p $type_id] && $type_id != 0 } {
-    lappend criteria "i.invoice_type_id=:type_id"
+    lappend criteria "i.cost_type_id=:type_id"
 }
 if { ![empty_string_p $customer_id] && $customer_id != 0 } {
     lappend criteria "i.customer_id=:customer_id"
@@ -170,7 +166,7 @@ switch $order_by {
     "Due Date" { set order_by_clause "order by (i.invoice_date+i.payment_days)" }
     "Amount" { set order_by_clause "order by ii.invoice_amount" }
     "Paid" { set order_by_clause "order by pa.payment_amount" }
-    "Status" { set order_by_clause "order by invoice_status_id" }
+    "Status" { set order_by_clause "order by cost_status_id" }
 }
 
 set where_clause [join $criteria " and\n            "]
@@ -192,7 +188,7 @@ select
         u.first_names||' '||u.last_name as customer_contact_name,
         c.group_name as customer_name,
         c.short_name as customer_short_name,
-        im_category_from_id(i.invoice_status_id) as invoice_status,
+        im_category_from_id(i.cost_status_id) as cost_status,
 	sysdate - (i.invoice_date + i.payment_days) as overdue
 from
         im_invoices_active i,

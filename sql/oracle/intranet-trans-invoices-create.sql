@@ -228,6 +228,7 @@ declare
         -- Menu IDs
         v_menu                  integer;
 	v_invoices_menu		integer;
+	v_project_menu		integer;
 
         -- Groups
         v_accounting            integer;
@@ -246,15 +247,35 @@ begin
     select menu_id
     into v_invoices_menu
     from im_menus
-    where package_name='intranet-invoices' and label='invoices';
+    where label='finance';
 
     v_menu := im_menu.new (
 	package_name =>	'intranet-trans-invoices',
 	label =>	'new_trans_invoice',
 	name =>		'New Trans Invoice',
-	url =>		'/intranet-trans-invoices/new',
+	url =>		'/intranet-trans-invoices/invoices/new',
 	sort_order =>	70,
 	parent_menu_id => v_invoices_menu
+    );
+
+    acs_permission.grant_permission(v_menu, v_admins, 'read');
+    acs_permission.grant_permission(v_menu, v_senman, 'read');
+    acs_permission.grant_permission(v_menu, v_accounting, 'read');
+    acs_permission.grant_permission(v_menu, v_customers, 'read');
+    acs_permission.grant_permission(v_menu, v_freelancers, 'read');
+
+    select menu_id
+    into v_project_menu
+    from im_menus
+    where label='project';
+
+    v_menu := im_menu.new (
+        package_name => 'intranet-trans-invoices',
+        label =>        'project_pos',
+        name =>         'POs',
+        url =>          '/intranet-trans-invoices/purchase-orders/index',
+        sort_order =>   70,
+        parent_menu_id => v_project_menu
     );
 
     acs_permission.grant_permission(v_menu, v_admins, 'read');

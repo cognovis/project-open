@@ -19,15 +19,13 @@ ad_page_contract {
     { provider_id:integer 0 }
     invoice_nr
     invoice_date
-    { invoice_type_id 700 }
+    { type_id 3700 }
     payment_days:integer
     payment_method_id:integer
-    invoice_template_id:integer
+    template_id:integer
     vat
     tax
-
     include_task:multiple
-
     item_sort_order:array
     item_name:array
     item_units:array
@@ -49,8 +47,6 @@ if {![im_permission $user_id add_invoices]} {
     <li>You don't have sufficient privileges to see this page."    
 }
 
-set invoice_status_created [db_string invoice_status "select invoice_status_id from im_invoice_status where upper(invoice_status)='CREATED'"]
-
 set project_status_invoiced [db_string project_status "select category_id from im_categories where category_type='Intranet Project Status' and upper(category)='INVOICED'"]
 
 set customer_internal [db_string customer_internal "select customer_id from im_customers where lower(customer_path) = 'internal'" -default 0]
@@ -59,7 +55,7 @@ if {!$customer_internal} {
     return
 }
 
-set invoice_status_id $invoice_status_created
+set cost_status_id [im_cost_status_created]
 
 if {!$provider_id} { set provider_id $customer_internal }
 if {!$customer_id} { set customer_id $customer_internal }
@@ -94,9 +90,9 @@ BEGIN
         customer_id             => :customer_id,
         provider_id             => :provider_id,
         invoice_date            => :invoice_date,
-        invoice_template_id     => :invoice_template_id,
-        invoice_status_id       => :invoice_status_created,
-        invoice_type_id         => :invoice_type_id,
+        invoice_template_id     => :template_id,
+        invoice_status_id       => [im_cost_status_created],
+        invoice_type_id         => :cost_type_id,
         payment_method_id       => :payment_method_id,
         payment_days            => :payment_days,
         vat                     => :vat,
