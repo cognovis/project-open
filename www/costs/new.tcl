@@ -58,48 +58,14 @@ if {![exists_and_not_null cost_id]} {
 # Build the form
 # ------------------------------------------------------------------
 
-set project_options [db_list_of_lists project_options "
-select project_name, project_id 
-from im_projects
-"]
-
-set customer_options [db_list_of_lists customer_options "
-select customer_name, customer_id 
-from im_customers
-"]
-
-set provider_options [db_list_of_lists provider_options "
-select customer_name, customer_id 
-from im_customers
-"]
-
-set cost_type_options [db_list_of_lists cost_type_options "
-select cost_type, cost_type_id 
-from im_cost_type
-"]
-
-set cost_status_options [db_list_of_lists cost_status_options "
-select cost_status, cost_status_id from im_cost_status
-"]
-
-set template_options [db_list_of_lists template_options "
-select category, category_id
-from im_categories
-where category_type = 'Intranet Invoice Template'
-"]
-
-set investment_options [db_list_of_lists investment_options "
-select name, investment_id
-from im_investments
-"]
-
-set currency_options [db_list_of_lists currency_options "
-select iso, iso
-from currency_codes
-"]
-
-
-
+set project_options [im_cost_project_options]
+set customer_options [im_cost_customer_options]
+set provider_options [im_cost_provider_options]
+set cost_type_options [im_cost_type_options]
+set cost_status_options [im_cost_status_options]
+set investment_options [im_cost_investment_options]
+set template_options [im_cost_template_options]
+set currency_options [im_cost_currency_options]
 
 ad_form \
     -name cost \

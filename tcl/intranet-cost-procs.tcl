@@ -12,6 +12,10 @@ ad_library {
     @author frank.bergann@project-open.com
 }
 
+# ---------------------------------------------------------------
+# Stati and Types
+# ---------------------------------------------------------------
+
 # Frequently used Costs Stati
 ad_proc -public im_cost_status_in_process {} { return 600 }
 ad_proc -public im_cost_status_created {} { return 602 }
@@ -48,6 +52,70 @@ ad_proc -private im_package_cost_id_helper {} {
         where package_key = 'intranet-cost'
     } -default 0]
 }
+
+
+
+
+# ---------------------------------------------------------------
+# Options for Form elements
+# ---------------------------------------------------------------
+
+ad_proc -public im_cost_project_options {} { Cost project options} {
+    return [db_list_of_lists project_options "
+	select project_name, project_id
+	from im_projects
+    "]
+}
+
+ad_proc -public im_cost_customer_options {} { Cost customer options} {
+    set customer_options [db_list_of_lists customer_options "
+	select customer_name, customer_id
+	from im_customers
+    "]
+}
+
+ad_proc -public im_cost_provider_options {} { Cost provider options} {
+    set provider_options [db_list_of_lists provider_options "
+	select customer_name, customer_id
+	from im_customers
+    "]
+}
+
+ad_proc -public im_cost_type_options {} { Cost type options} {
+   set cost_type_options [db_list_of_lists cost_type_options "
+	select cost_type, cost_type_id
+	from im_cost_type
+    "]
+}
+
+ad_proc -public im_cost_status_options {} { Cost status options} {
+    set cost_status_options [db_list_of_lists cost_status_options "
+	select cost_status, cost_status_id from im_cost_status
+    "]
+}
+
+ad_proc -public im_cost_template_options {} { Cost Template options} {
+    set template_options [db_list_of_lists template_options "
+	select category, category_id
+	from im_categories
+	where category_type = 'Intranet Invoice Template'
+    "]
+}
+
+ad_proc -public im_cost_investment_options {} { Cost investment options} {
+    set investment_options [db_list_of_lists investment_options "
+	select name, investment_id
+	from im_investments
+    "]
+}
+
+ad_proc -public im_cost_currency_options {} { Cost currency options} {
+    set currency_options [db_list_of_lists currency_options "
+	select iso, iso
+	from currency_codes
+    "]
+}
+
 
 ad_proc -public im_costs_navbar { default_letter base_url next_page_url prev_page_url export_var_list } {
     Returns rendered HTML code for a horizontal sub-navigation
