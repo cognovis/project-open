@@ -1060,6 +1060,18 @@ begin
     -- General Costs
     -- -----------------------------------------------------
 
+    v_menu := im_menu.new (
+	package_name =>	'intranet-cost',
+	label =>	'costs_home',
+	name =>		'Finance Home',
+	url =>		'/intranet-cost/index',
+	sort_order =>	10,
+	parent_menu_id => v_finance_menu
+    );
+    acs_permission.grant_permission(v_menu, v_admins, 'read');
+    acs_permission.grant_permission(v_menu, v_senman, 'read');
+    acs_permission.grant_permission(v_menu, v_accounting, 'read');
+
     -- needs to be the first submenu in order to get selected
     v_menu := im_menu.new (
 	package_name =>	'intranet-cost',
@@ -1159,13 +1171,17 @@ sort_order) values (22015,220,'Due Date',
 } else {
 	set t "$due_date_calculated"
 }]',15);
+
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22021,220,'Amount','"$amount_formatted $currency"',21);
+
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22013,220,'Paid', '"$payment_amount $payment_currency"',23);
+sort_order) values (22013,220,'Paid', '"$paid_amount $paid_currency"',23);
+
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22025,220,'Status',
 '[im_cost_status_select "cost_status.$cost_id" $cost_status_id]',25);
+
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22098,220,'Del',
 '"<input type=hidden name=object_type.$cost_id value=$object_type>
