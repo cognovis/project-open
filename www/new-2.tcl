@@ -56,7 +56,7 @@ if {"" == $cost_id } {
 
 # set note [db_nullify_empty_string $note]
 
-set customer_id [db_string get_customer_from_invoice "select customer_id from im_costs where cost_id=:cost_id" -default 0]
+set company_id [db_string get_company_from_invoice "select company_id from im_costs where cost_id=:cost_id" -default 0]
 set provider_id [db_string get_provider_from_invoice "select provider_id from im_costs where cost_id=:cost_id" -default 0]
 
 # ---------------------------------------------------------------
@@ -85,7 +85,7 @@ if {[db_resultrows] == 0} {
 insert into im_payments ( 
 	payment_id, 
 	cost_id,
-	customer_id,
+	company_id,
 	provider_id,
 	amount, 
 	currency,
@@ -98,7 +98,7 @@ insert into im_payments (
 ) values ( 
 	:payment_id, 
 	:cost_id,
-	:customer_id,
+	:company_id,
 	:provider_id,
         :amount, 
 	:currency,
