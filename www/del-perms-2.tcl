@@ -118,12 +118,18 @@ foreach id [array names dir_id] {
     #
     foreach profile_id [array names view_profile] {
 	im_filestorage_perm_del_profile $folder_id "view" $profile_id 1
+	im_filestorage_perm_del_profile $folder_id "read" $profile_id 1
+	im_filestorage_perm_del_profile $folder_id "write" $profile_id 1
+	im_filestorage_perm_del_profile $folder_id "admin" $profile_id 1
     }
     foreach profile_id [array names read_profile] {
 	im_filestorage_perm_del_profile $folder_id "read" $profile_id 1
+	im_filestorage_perm_del_profile $folder_id "write" $profile_id 1
+	im_filestorage_perm_del_profile $folder_id "admin" $profile_id 1
     }
     foreach profile_id [array names write_profile] {
 	im_filestorage_perm_del_profile $folder_id "write" $profile_id 1
+	im_filestorage_perm_del_profile $folder_id "admin" $profile_id 1
     }
     foreach profile_id [array names admin_profile] {
 	im_filestorage_perm_del_profile $folder_id "admin" $profile_id 1
@@ -135,12 +141,18 @@ foreach id [array names dir_id] {
     #
     foreach role_id [array names view_role] {
 	im_filestorage_perm_del_role $folder_id "view" $role_id 1
+	im_filestorage_perm_del_role $folder_id "read" $role_id 1
+	im_filestorage_perm_del_role $folder_id "write" $role_id 1
+	im_filestorage_perm_del_role $folder_id "admin" $role_id 1
     }
     foreach role_id [array names read_role] {
 	im_filestorage_perm_del_role $folder_id "read" $role_id 1
+	im_filestorage_perm_del_role $folder_id "write" $role_id 1
+	im_filestorage_perm_del_role $folder_id "admin" $role_id 1
     }
     foreach role_id [array names write_role] {
 	im_filestorage_perm_del_role $folder_id "write" $role_id 1
+	im_filestorage_perm_del_role $folder_id "admin" $role_id 1
     }
     foreach role_id [array names admin_role] {
 	im_filestorage_perm_del_role $folder_id "admin" $role_id 1
