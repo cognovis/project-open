@@ -27,12 +27,21 @@ set page_title "Upload into '$bread_crum_path'"
 set context_bar [ad_context_bar [list "/intranet/projects/" "Projects"]  [list "/intranet/projects/view?group_id=$object_id" "One Project"]  "Upload File"]
 
 
-# check the user input first
+# --------------- Get the users permissions on the underlying object ----
+
+# Gets object permissions using commands like: "im_project_permissions" ...
+#
+set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id" -default ""]
+set perm_cmd "${object_type}_permissions \$user_id \$object_id object_view object_read object_write object_admin"
+eval $perm_cmd
+
+
+# -------------------- Check the user input first ----------------------------
 #
 set exception_text ""
 set exception_count 0
-if {!$user_is_admin_p && ![ad_user_group_member $object_id $user_id] } {
-    append exception_text "<li>You are not a member of this project.\n"
+if {!$object_write} {
+    append exception_text "<li>You have insufficient privileges to upload this file.\n"
     incr exception_count
 }
 if {"" == $folder_type} {

@@ -849,7 +849,7 @@ ad_proc -public im_filestorage_path_perms { path perm_hash_array roles profiles}
 
 ad_proc -private im_filestorage_render_perms { perm } {
     Returns a formatted HTML like "RW", indicating that
-    a directory is readable and writeable, but not administraratable.
+    a directory is readable and writable, but not administrtable.
 } {
     set result ""
     if {[lindex $perm 0]} { append result "v" }
