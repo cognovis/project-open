@@ -27,7 +27,7 @@ set page_content "
                         <td align=right>Filename: </td>
                         <td> 
                           <input type=file name=upload_file size=30>
-[im_gif help "[_ intranet-trans-invoices.lt_Use_the_quotBrowsequo]"]
+[im_gif help "Use the &quot;Browse...&quot; button to locate your file, then click &quot;Open&quot;."]
                         </td>
                       </tr>
                       <tr> 

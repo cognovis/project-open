@@ -229,7 +229,7 @@ set task_table "
   <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
   <td class=rowtitle>[_ intranet-trans-invoices.Billable_Units]</td>
   <td class=rowtitle>[_ intranet-trans-invoices.Target]</td>
-  <td class=rowtitle>[_ intranet-trans-invoices.UoM] [im_gif help "[_ intranet-trans-invoices.Unit_of_Measure]"]</td>
+  <td class=rowtitle>[_ intranet-trans-invoices.UoM] [im_gif help "Unit of Measure"]</td>
   <td class=rowtitle>[_ intranet-trans-invoices.Type]</td>
   <td class=rowtitle>[_ intranet-trans-invoices.Status]</td>
 </tr>

@@ -35,7 +35,7 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 
 if {"" == $cost_status_id} { set cost_status_id [im_cost_status_created] }
-set todays_date [db_string get_today "select sysdate from dual"]
+set todays_date [db_string get_today "select to_char(sysdate,'YYYY-MM-DD') from dual"]
 set page_focus "im_header_form.keywords"
 set view_name "invoice_tasks"
 

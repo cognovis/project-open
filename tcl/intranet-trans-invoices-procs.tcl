@@ -35,7 +35,7 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
 	  <td class=rowtitle>[_ intranet-trans-invoices.Target]</td>
 	  <td class=rowtitle>[_ intranet-trans-invoices.Subject]</td>
 	  <td class=rowtitle>[_ intranet-trans-invoices.Rate]</td>
-	  <td class=rowtitle>[im_gif del "[_ intranet-trans-invoices.Delete]"]</td>
+	  <td class=rowtitle>[im_gif del "Delete"]</td>
 </tr>"
 
     set price_sql "
@@ -77,7 +77,7 @@ order by
 	  <td>$source_language</td>
           <td>$target_language</td>
 	  <td>$subject_area</td>
-          <td>$price $currency</td>
+          <td>[format "%0.3f" $price] $currency</td>
           <td><input type=checkbox name=price_id.$price_id></td>
 	</tr>"
 	incr ctr

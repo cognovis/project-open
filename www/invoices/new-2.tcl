@@ -126,12 +126,12 @@ order by
 
 set task_table "
 <tr> 
-  <td class=rowtitle align=middle>[im_gif help "[_ intranet-trans-invoices.Include_in_Invoice]"]</td>
+  <td class=rowtitle align=middle>[im_gif help "Include in Invoice"]</td>
   <td class=rowtitle>[_ intranet-trans-invoices.Task_Name]</td>
   <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
   <td class=rowtitle>[_ intranet-trans-invoices.Billable_Units]</td>
   <td class=rowtitle>  
-    [_ intranet-trans-invoices.UoM] [im_gif help "[_ intranet-trans-invoices.Unit_of_Measure]"]
+    [_ intranet-trans-invoices.UoM] [im_gif help "Unit of Measure"]
   </td>
   <td class=rowtitle>[_ intranet-trans-invoices.Type]</td>
   <td class=rowtitle>[_ intranet-trans-invoices.Status]</td>
