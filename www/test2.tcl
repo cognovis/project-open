@@ -1,4 +1,4 @@
-# /packages/intranet-core/www/intranet/customers/new.tcl
+# /packages/intranet-core/www/intranet/companies/new.tcl
 #                                                                                                   # Copyright (C) 2004 various parties
 # The code is based on ArsDigita ACS 3.4
 #
