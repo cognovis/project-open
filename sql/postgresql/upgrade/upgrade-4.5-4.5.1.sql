@@ -2,12 +2,12 @@
 --
 -- @author jon@jongriffi.com
 -- @creation-date 2002-08-02
--- @cvs-id $Id: upgrade-4.5-4.5.1.sql,v 1.3 2003/05/17 11:28:15 jeffd Exp $
+-- @cvs-id $Id: upgrade-4.5-4.5.1.sql,v 1.4 2003/10/12 22:20:28 tilmanns Exp $
 --
 
 -- search-packages-create.sql
 
-drop function search_observer__dequeue(integer,timestamp,varchar);
+drop function search_observer__dequeue(integer,timestamp with time zone,varchar);
 
 create function search_observer__dequeue(integer,timestamp with time zone,varchar)
 returns integer as '
