@@ -637,7 +637,7 @@ ad_proc im_costs_project_finance_component { user_id project_id } {
 
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
-    set colspan 5
+    set colspan 6
     set date_format "YYYY-MM-DD"
 
     # Where to link when clicking on an object link? "edit" or "view"?
@@ -669,10 +669,19 @@ from
 		                select distinct cost_id
 		                from im_costs
 		                where project_id=:project_id
+			    UNION
+				select distinct cost_id 
+				from im_costs 
+				where parent_id = :project_id
 		            UNION
 		                select distinct object_id_two as cost_id
 		                from acs_rels
 		                where object_id_one = :project_id
+			    UNION
+				select distinct object_id_two as cost_id
+				from acs_rels r, im_projects p
+				where object_id_one = p.project_id
+				      and p.parent_id = :project_id
 			)
 	) ci on (cat.category_id = ci.cost_type_id)
 where
@@ -726,6 +735,8 @@ select
 	ci.*,
 	ci.paid_amount as payment_amount,
 	ci.paid_currency as payment_currency,
+	p.project_nr,
+	p.project_name,
 	cust.company_name as customer_name,
 	prov.company_name as provider_name,
 	url.url,
@@ -733,7 +744,8 @@ select
         im_category_from_id(ci.cost_type_id) as cost_type,
 	to_date(to_char(ci.effective_date,:date_format),:date_format) + payment_days as calculated_due_date
 from
-	im_costs ci,
+	im_costs ci
+		LEFT OUTER JOIN im_projects p ON ci.project_id = p.project_id,
 	acs_objects o,
         (select * from im_biz_object_urls where url_type=:view_mode) url,
 	im_companies cust,
@@ -746,13 +758,23 @@ where
 	and ci.cost_id in (
 		select distinct cost_id 
 		from im_costs 
-		where project_id=:project_id
+		where project_id = :project_id
+	    UNION
+		select distinct cost_id 
+		from im_costs 
+		where parent_id = :project_id
 	    UNION
 		select distinct object_id_two as cost_id
 		from acs_rels
 		where object_id_one = :project_id
+	    UNION
+		select distinct object_id_two as cost_id
+		from acs_rels r, im_projects p
+		where object_id_one = p.project_id
+		      and p.parent_id = :project_id
 	)
 order by
+	p.project_nr,
 	ci.cost_type_id,
 	ci.effective_date desc
 "
@@ -765,6 +787,7 @@ order by
     </td>
   </tr>
   <tr class=rowtitle>
+    <td align=center class=rowtitle>[_ intranet-cost.Project]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Document]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Company]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Due]</td>
@@ -778,13 +801,23 @@ order by
     set payment_amount ""
     set payment_currency ""
 
-
+    set old_project_nr ""
     set old_cost_type_id 0
     db_foreach recent_costs $costs_sql {
 
-	if {$cost_type_id != $old_cost_type_id} {
+        # Write an intermediate header for each project
+	if {$project_nr != $old_project_nr} {
+	    append cost_html "
+		<tr class=rowplain><td colspan=99>&nbsp;</td></tr>
+		<tr>
+		  <td colspan=99 class=rowtitle>$project_name</td>
+		</tr>
+		<tr class=rowplain><td colspan=99>&nbsp;</td></tr>\n"
+	    set old_project_nr $project_nr
+        }
 
-	    # Write the subtotal line of the last cost_type_id section
+        # Write the subtotal line of the last cost_type_id section
+	if {$cost_type_id != $old_cost_type_id} {
 	    foreach curcur [array names currencies] {
 		if {0 != $old_cost_type_id} {
 		    append cost_html "
@@ -817,6 +850,7 @@ order by
 
 	append cost_html "
 	<tr $bgcolor([expr $ctr % 2])>
+	  <td>$project_nr</td>
 	  <td><A href=\"$url$cost_id\">[string range $cost_name 0 20]</A></td>
 	  <td>$company_name</td>
 	  <td>$calculated_due_date</td>
