@@ -83,6 +83,23 @@ proc intranet_download { folder_type } {
 }
 
 
+
+
+ad_proc -public im_package_filestorage_id { } {
+} {
+    return [util_memoize "im_package_filestorage_id_helper"]
+}
+
+ad_proc -private im_package_filestorage_id_helper {} {
+    return [db_string im_package_core_id {
+        select package_id from apm_packages
+        where package_key = 'intranet-filestorage'
+    } -default 0]
+}
+
+
+
+
 ad_proc -private im_filestorage_base_path { folder_type object_id } {
     Returns the base_path for the determined object or ""
     to indicate an error.
@@ -366,7 +383,7 @@ ad_proc im_filestorage_project_path_helper { project_id } {
     set base_path_unix [parameter::get -package_id $package_id -parameter "ProjectBasePathUnix" -default "/tmp/projects"]
 
     # Return a demo path for all project, clients etc.
-    if {[string equal "true" [ad_parameter "TestDemoDevServer" "" "false"]]} {
+    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
 	set path [ad_parameter "TestDemoDevPath" intranet "internal/demo"]
 	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
 	return "$base_path_unix/$path"
@@ -413,8 +430,8 @@ ad_proc im_filestorage_project_sales_path_helper { project_id } {
     set base_path_unix [parameter::get -package_id $package_id -parameter "ProjectSalesBasePathUnix" -default "/tmp/project_sales"]
 
     # Return a demo path for all project, clients etc.
-    if {[string equal "true" [ad_parameter "TestDemoDevServer" "" "false"]]} {
-	set path [ad_parameter "TestDemoDevPath" intranet "internal/demo"]
+    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
+	set path [ad_parameter "TestDemoDevPath" "" "internal/demo"]
 	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
 	return "$base_path_unix/$path"
     }
@@ -452,8 +469,8 @@ ad_proc im_filestorage_user_path { user_id } {
     set base_path_unix [parameter::get -package_id $package_id -parameter "UserBasePathUnix" -default "/tmp/users"]
 
     # Return a demo path for all project, clients etc.
-    if {[string equal "true" [ad_parameter "TestDemoDevServer" "" "false"]]} {
-	set path [ad_parameter "TestDemoDevUserPath" intranet "users"]
+    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
+	set path [ad_parameter "TestDemoDevUserPath" "" "users"]
 	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
 	return "$base_path_unix/$path"
     }
@@ -478,8 +495,8 @@ ad_proc im_filestorage_customer_path_helper { customer_id } {
     set base_path_unix [parameter::get -package_id $package_id -parameter "CustomerBasePathUnix" -default "/tmp/customers"]
 
     # Return a demo path for all project, clients etc.
-    if {[string equal "true" [ad_parameter "TestDemoDevServer" "" "false"]]} {
-	set path [ad_parameter "TestDemoDevPath" intranet "customers"]
+    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
+	set path [ad_parameter "TestDemoDevPath" "" "customers"]
 	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
 	return "$base_path_unix/$path"
     }
@@ -579,7 +596,7 @@ ad_proc im_filestorage_create_directories { project_id } {
     Returns a formatted errors string otherwise.
 } {
 
-    if {[string equal "true" [ad_parameter "TestDemoDevServer" "" "false"]]} {
+    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
 	# We're at a demo server, so don't create any directories!
 	return
     }
@@ -690,12 +707,12 @@ ad_proc im_filestorage_tool_bar { folder folder_type project_id return_url up_li
    <td align=center>
      <input type=hidden name=actions value=\"none\">
 
-     <input type=image src=/intranet/images/up-folder.gif width=21 height=21 onClick=\"window.document.fs.actions.value='up-folder'; submit();\" alt='Folder up'>
-     <input type=image src=/intranet/images/newfol.gif width=21 height=21 onClick=\"window.document.fs.actions.value='new-folder'; submit();\" alt='Create a new folder'>
-     <input type=image src=/intranet/images/upload.gif width=21 height=21 onClick=\"window.document.fs.actions.value='upload'; submit();\" alt='Upload a file'>
-<!--     <input type=image src=/intranet/images/new-doc.gif width=21 height=21 onClick=\"window.document.fs.actions.value='new-doc'; submit();\" alt='Create a new document'> -->
-     <input type=image src=/intranet/images/del.gif width=21 height=21 onClick=\"window.document.fs.actions.value='del'; submit();\" alt='Delete files and folders'>
-     <input type=image src=/intranet/images/zip.gif width=21 height=21 onClick=\"window.document.fs.actions.value='zip'; submit();\" alt='Download all files as a Zip'>
+     <input type=image src=/intranet/images/up-folder.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='up-folder'; submit();\" alt='Folder up'>
+     <input type=image src=/intranet/images/newfol.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-folder'; submit();\" alt='Create a new folder'>
+     <input type=image src=/intranet/images/upload.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='upload'; submit();\" alt='Upload a file'>
+<!--     <input type=image src=/intranet/images/new-doc.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-doc'; submit();\" alt='Create a new document'> -->
+     <input type=image src=/intranet/images/del.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='del'; submit();\" alt='Delete files and folders'>
+     <input type=image src=/intranet/images/zip.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='zip'; submit();\" alt='Download all files as a Zip'>
    </td>
 </tr>
 </table>"
@@ -986,7 +1003,7 @@ where
     set tool_bar_html [im_filestorage_tool_bar $bread_crum_path $folder_type $object_id $return_url $up_link]
 
     set component_html "
-<form name=fs method=POST action=/intranet-filestorage/action>
+<form name=\"$folder_type\" method=POST action=/intranet-filestorage/action>
 [export_form_vars object_id bread_crum_path folder_type return_url]
 
 <TABLE border=0 cellpadding=0 cellspacing=0>
