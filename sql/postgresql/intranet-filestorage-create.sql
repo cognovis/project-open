@@ -28,7 +28,7 @@
 -- During indexing with a search engine, documents are given a pointer 
 -- to the folder which carries the permissions.
 
-create sequence im_fs_folder_seq start with 1;
+create sequence im_fs_folder_seq start 1;
 create table im_fs_folders (
 	folder_id	integer 
 			constraint im_fs_folders_pk
@@ -58,7 +58,7 @@ create index im_fs_folders_object_idx on im_fs_folders(object_id);
 -- This information depends on the users (this is why we
 -- need to put it into a separate table).
 
-create sequence im_fs_folder_status_seq start with 1;
+create sequence im_fs_folder_status_seq start 1;
 create table im_fs_folder_status (
 	folder_id	integer
 			constraint im_fs_folder_status_folder_fk
