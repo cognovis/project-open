@@ -21,7 +21,7 @@ ad_page_contract {
     { order_by "Name" }
     { cost_status_id:integer 0 } 
     { cost_type_id:integer 0 } 
-    { company_id:integer 0 } 
+    { customer_id:integer 0 } 
     { provider_id:integer 0 } 
     { letter:trim "" }
     { start_idx:integer "1" }
@@ -152,8 +152,8 @@ if { ![empty_string_p $cost_type_id] && $cost_type_id != 0 } {
 		where	(child_id=:cost_type_id or parent_id=:cost_type_id)
 	)"
 }
-if {$company_id} {
-    lappend criteria "c.company_id=:company_id"
+if {$customer_id} {
+    lappend criteria "c.customer_id=:customer_id"
 }
 if {$provider_id} {
     lappend criteria "c.provider_id=:provider_id"
@@ -166,13 +166,13 @@ if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string
 # Get the list of user's companies for which he can see costs
 set company_ids [db_list users_companies "
 select
-	cust.company_id
+	c.company_id
 from
 	acs_rels r,
-	im_companies cust
+	im_companies c
 where
 	r.object_id_two = :user_id
-	and r.object_id_one = cust.company_id
+	and r.object_id_one = c.company_id
 "]
 
 lappend company_ids 0
@@ -182,7 +182,7 @@ lappend company_ids 0
 # Special users ("view_costs") don't need permissions.
 set company_where ""
 if {![im_permission $user_id view_costs]} { 
-    set company_where "and (c.company_id in ([join $company_ids ","]) or c.provider_id in ([join $company_ids ","]))"
+    set company_where "and (c.customer_id in ([join $company_ids ","]) or c.provider_id in ([join $company_ids ","]))"
 }
 ns_log Notice "/intranet-cost/index: company_where=$company_where"
 
@@ -228,8 +228,8 @@ select
 	o.object_type,
 	url.url as cost_url,
 	ot.pretty_name as object_type_pretty_name,
-        cust.company_name,
-        cust.company_path as company_short_name,
+        cust.company_name as customer_name,
+        cust.company_path as customer_short_name,
 	proj.project_nr,
 	prov.company_name as provider_name,
 	prov.company_path as provider_short_name,
@@ -247,7 +247,7 @@ from
 	(select * from im_biz_object_urls where url_type=:view_mode) url
 	$extra_from
 where
-        c.company_id=cust.company_id
+        c.customer_id=cust.company_id
         and c.provider_id=prov.company_id
 	and c.project_id=proj.project_id(+)
 	and c.cost_id = o.object_id

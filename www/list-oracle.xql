@@ -23,8 +23,8 @@
 	o.object_type,
 	url.url as cost_url,
 	ot.pretty_name as object_type_pretty_name,
-        cust.company_name,
-        cust.company_path as company_short_name,
+        cust.company_name as customer_name,
+        cust.company_path as customer_short_name,
 	proj.project_nr,
 	prov.company_name as provider_name,
 	prov.company_path as provider_short_name,
@@ -42,7 +42,7 @@
 	(select * from im_biz_object_urls where url_type=:view_mode) url
 	$extra_from
       where
-        c.company_id=cust.company_id
+        c.customer_id=cust.company_id
         and c.provider_id=prov.company_id
 	and c.project_id=proj.project_id(+)
 	and c.cost_id = o.object_id

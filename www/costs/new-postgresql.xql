@@ -27,7 +27,7 @@
                 :cost_name,     -- cost_name
                 null,           -- parent_id
 		:project_id,    -- project_id
-                :company_id,    -- company_id
+                :customer_id,    -- customer_id
                 :provider_id,   -- provider_id
                 null,           -- investment_id
 

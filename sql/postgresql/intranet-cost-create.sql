@@ -758,12 +758,12 @@ declare
 	return v_cost_cost_id;
 end' language 'plpgsql';
 
-    -- Delete a single cost (if we know its ID...)
+
+-- Delete a single cost (if we know its ID...)
 create or replace function im_cost__delete (integer)
 returns integer as '
 DECLARE
-	p_cost_id alias for $1; -- cost_id
-
+	p_cost_id alias for $1;
 begin
 	-- Erase the im_cost
 	delete from     im_costs
@@ -780,6 +780,7 @@ begin
 	return 0;
 end' language 'plpgsql';
 
+
 create or replace function im_cost__name (integer)
 returns varchar as '
 DECLARE
@@ -794,17 +795,24 @@ DECLARE
 	return v_name;
 end;' language 'plpgsql';
 
-create or replace function im_cost_del (
-	integer
-) returns integer as '
-DECLARE 
-	p_cost_id alias for $1;		-- cost_id
-begin
-    PERFORM im_cost__del(p_cost_id);
-    return 0;
-end;' language 'plpsql';
 
+-------------------------------------------------------------
+-- Wrapper Functions for DB-independed execution
+--
+
+create or replace function im_cost_del (integer) 
+returns integer as '
+declare
+    p_cost_id alias for $1;
+begin
+    PERFORM im_cost__delete(p_cost_id);
+    return 0;
+end;' language 'plpgsql';
+
+
+-------------------------------------------------------------
 -- Create URLs for viewing/editing costs
+--
 delete from im_biz_object_urls where object_type='im_cost';
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_cost','view','/intranet-cost/costs/new?form_mode=display\&cost_id=');
