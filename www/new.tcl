@@ -138,7 +138,7 @@ where
     set page_title "New $topic_type"
     set context_bar [ad_context_bar [list /intranet-forum/ Forum] $page_title]
     set subject "Re: $subject"
-    set message "&lt;Enter message body&gt;"
+    set message "Enter message body"
     set done 1
 }
 
@@ -174,8 +174,8 @@ if {!$done && $topic_id == 0} {
     set page_title "New $topic_type"
     set context_bar [ad_context_bar [list /intranet-forum/ Forum] $page_title]
 
-    set subject "&lt;Enter subject&gt;"
-    set message "&lt;Enter message body&gt;"
+    set subject "Enter subject"
+    set message "Enter message body"
     set done 1
 }
 
