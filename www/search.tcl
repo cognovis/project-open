@@ -1,7 +1,7 @@
 ad_page_contract {
     @author Neophytos Demetriou <k2pts@cytanet.com.cy>
     @creation-date September 01, 2001
-    @cvs-id $Id: search.tcl,v 1.10 2004/02/26 15:29:22 jeffd Exp $
+    @cvs-id $Id: search.tcl,v 1.11 2004/03/31 12:53:07 jeffd Exp $
 } {
     q:notnull,trim
     {t:trim ""}
@@ -12,7 +12,6 @@ ad_page_contract {
 } -errors {
     q:notnull {You must specify some keywords.}
 }
-
 
 set page_title "Search Results"
 
@@ -31,7 +30,7 @@ array set info [acs_sc_call FtsEngineDriver info [list] $driver]
 if { [array get info] == "" } {
     ReturnHeaders
     ns_write "FtsEngineDriver not available!"
-    return
+    ad_script_abort
 } 
 if { $num <= 0} {
     set limit [ad_parameter -package_id $package_id LimitDefault]
