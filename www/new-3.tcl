@@ -70,7 +70,7 @@ set tasks_where_clause "task_id in ([join $in_clause_list ","])"
 set button_text "Create Invoice"
 set page_title "New Invoice"
 set context_bar [ad_context_bar [list /intranet/invoices/ "Invoices"] $page_title]
-set invoice_id [db_nextval "im_invoices_seq"]
+set invoice_id [im_new_object_id]
 set invoice_nr [im_next_invoice_nr]
 set invoice_date $todays_date
 set payment_days [ad_parameter "DefaultPaymentDays" intranet 30] 

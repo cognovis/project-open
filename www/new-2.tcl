@@ -110,7 +110,7 @@ from
 	im_projects p
 where 
 	t.project_id = p.project_id
-	and t.invoice_id isnull
+	and t.invoice_id is null
         and t.task_status_id in (
                 select task_status_id
                 from im_task_status

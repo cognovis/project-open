@@ -81,40 +81,27 @@ set tasks_where_clause "task_id in ([join $in_clause_list ","])"
 
     # Let's create the new invoice first
     set create_invoice_sql "
-INSERT INTO im_invoices (
-	invoice_id, 
-	invoice_nr,
-	customer_id, 
-	provider_id, 
-	invoice_date,
-	payment_days,
-	payment_method_id,
-	invoice_template_id,
-	vat,
-	tax,
-	invoice_status_id, 
-	invoice_type_id, 
-	last_modified, 
-	last_modifying_user, 
-	modified_ip_address
-) VALUES (
-	:invoice_id, 
-	:invoice_nr,
-	:customer_id, 
-	:provider_id, 
-	:invoice_date,
-	:payment_days,
-	:payment_method_id,
-	:invoice_template_id,
-	:vat,
-	:tax,
-	:invoice_status_created, 
-	:invoice_type_id, 
-	sysdate,
-	:user_id,
-	'[ad_conn peeraddr]'
-)"
-
+DECLARE
+    v_invoice_id	integer;
+BEGIN
+    v_invoice_id := im_invoice.new (
+        invoice_id              => :invoice_id,
+        creation_user           => :user_id,
+        creation_ip             => '[ad_conn peeraddr]',
+        invoice_nr              => :invoice_nr,
+        customer_id             => :customer_id,
+        provider_id             => :provider_id,
+        invoice_date            => :invoice_date,
+        invoice_template_id     => :invoice_template_id,
+        invoice_status_id       => :invoice_status_created,
+        invoice_type_id         => :invoice_type_id,
+        payment_method_id       => :payment_method_id,
+        payment_days            => :payment_days,
+        vat                     => :vat,
+        tax                     => :tax
+    );
+END;
+"
 
     # Tag the im_trans_tasks to be invoices with "invoice_id", marking
     # them as invoiced.
@@ -155,6 +142,27 @@ INSERT INTO im_invoices (
         )
     "
 
+    # Associate the project of the invoiced im_trans_tasks with
+    # this invoice
+    set associate_projects_sql "
+    DECLARE
+	v_rel_id	integer;
+    BEGIN
+	for row in (
+		select distinct
+		        t.project_id,
+		        :invoice_id as invoice_id
+		from im_trans_tasks t
+		where $tasks_where_clause
+	) loop
+		v_rel_id := acs_rel.new(
+			object_id_one => row.project_id,
+			object_id_two => row.invoice_id
+		);
+	end loop;
+    END;
+    "
+
     # Check if one of the items is already invoiced    
     # This should never happend, but in this case we would loose
     # real money, so we double check here:
@@ -177,6 +185,7 @@ INSERT INTO im_invoices (
 	db_dml create_invoice $create_invoice_sql
 	db_dml update_trans_tasks $update_trans_tasks_sql
 	db_dml update_project_to_invoiced $update_project_to_invoiced_sql
+	db_dml associate_projects $associate_projects_sql
     }
 
 
