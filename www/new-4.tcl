@@ -7,8 +7,11 @@
 
 
 ad_page_contract {
-    Purpose: Save invoice changes and set the invoice status to "Created"
-    or higher.
+    Save the information of a new invoice and set the invoice status to 
+    "Created" or higher.<br>
+    Sets the status of the invoiced project to "invoiced" if all of
+    their invoicable items are invoiced.
+    <br>
     @author frank.bergmann@project-open.com
 } {
     invoice_id:integer
@@ -113,8 +116,8 @@ END;
     "
 
     # set all invoiced projects (=projects contained in this invoice)
-    # to "invoiced", except those that still contain atleast one im_trans_task
-    # that has not been invoiced yet (invoice_id is null)
+    # to "invoiced" if all of their im_trans_task are invoiced
+    # (invoice_id is null)
     #
     set update_project_to_invoiced_sql "
         UPDATE im_projects
@@ -184,8 +187,8 @@ END;
     db_transaction {
 	db_dml create_invoice $create_invoice_sql
 	db_dml update_trans_tasks $update_trans_tasks_sql
-	db_dml update_project_to_invoiced $update_project_to_invoiced_sql
 	db_dml associate_projects $associate_projects_sql
+	db_dml update_project_to_invoiced $update_project_to_invoiced_sql
     }
 
 
