@@ -115,17 +115,24 @@ db_foreach column_list_sql $column_sql {
 # ---------------------------------------------------------------
 
 # status_types will be a list of pairs of (item_status_id, item_status)
-set status_types [im_memoize_list select_item_status_types \
-        "select item_status_id, item_status
-         from im_cost_item_status
-         order by lower(item_status)"]
+set status_types [im_memoize_list select_item_status_types "
+	select	0 as item_status_id,
+	'All' as item_status
+	from dual
+UNION
+	select item_status_id, item_status
+	from im_cost_item_status
+"]
 
 
 # type_types will be a list of pairs of (item_type_id, item_type)
-set type_types [im_memoize_list select_item_type_types \
-        "select item_type_id, item_type
-         from im_cost_item_type
-         order by lower(item_type)"]
+set type_types [im_memoize_list select_item_type_types "
+        select  0 as item_type_id,
+        'All' as item_type
+        from dual
+UNION
+	select item_type_id, item_type
+	from im_cost_item_type"]
 
 
 # ---------------------------------------------------------------
@@ -143,10 +150,10 @@ if { ![empty_string_p $item_type_id] && $item_type_id != 0 } {
 		where	(child_id=:item_type_id or parent_id=:item_type_id)
 	)"
 }
-if { ![empty_string_p $customer_id] && $customer_id != 0 } {
+if {$customer_id} {
     lappend criteria "ci.customer_id=:customer_id"
 }
-if { ![empty_string_p $provider_id] && $provider_id != 0 } {
+if {$provider_id} {
     lappend criteria "ci.provider_id=:provider_id"
 }
 if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string compare $letter "SCROLL"] != 0 } {
@@ -226,6 +233,7 @@ if { [db_table_exists im_payments] } {
 set sql "
 select
         ci.*,
+	ci.amount as amount_formatted,
 	ci.effective_date + ci.payment_days as due_date_calculated,
         c.customer_name,
         c.customer_path as customer_short_name,
