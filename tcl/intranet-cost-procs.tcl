@@ -55,6 +55,34 @@ ad_proc -private im_package_cost_id_helper {} {
 }
 
 
+
+ad_proc -public im_cost_center_status_options { {include_empty 1} } { 
+    Cost Center status options
+} {
+    set options [db_list_of_lists cost_center_status_options "
+	select category, category_id 
+	from im_categories
+	where category_type = 'Intranet Cost Center Status'
+    "]
+    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
+    return $options
+}
+
+
+ad_proc -public im_cost_center_type_options { {include_empty 1} } { 
+    Cost Center type options
+} {
+    set options [db_list_of_lists cost_center_type_options "
+	select category, category_id 
+	from im_categories
+	where category_type = 'Intranet Cost Center Type'
+    "]
+    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
+    return $options
+}
+
+
+
 # ---------------------------------------------------------------
 # Cost Item Creation
 # ---------------------------------------------------------------
@@ -142,39 +170,6 @@ namespace eval im_cost {
 # ---------------------------------------------------------------
 # Options for Form elements
 # ---------------------------------------------------------------
-
-ad_proc -public im_project_options { {include_empty 1} } { 
-    Cost project options
-} {
-    set options [db_list_of_lists project_options "
-	select project_name, project_id
-	from im_projects
-    "]
-    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
-    return $options
-}
-
-ad_proc -public im_company_options { {include_empty 1} } { 
-    Cost company options
-} {
-    set options [db_list_of_lists company_options "
-	select company_name, company_id
-	from im_companies
-    "]
-    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
-    return $options
-}
-
-ad_proc -public im_provider_options { {include_empty 1} } { 
-    Cost provider options
-} {
-    set options [db_list_of_lists provider_options "
-	select company_name, company_id
-	from im_companies
-    "]
-    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
-    return $options
-}
 
 ad_proc -public im_cost_type_options { {include_empty 1} } { 
     Cost type options
