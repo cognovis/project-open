@@ -1101,7 +1101,7 @@ where
 		
 	    # Generate a new position in the hash array that control the dependency of this folder
 	    set path_dependency($file_paths_len) $file
-
+	    ns_log Notice "-------- im_filestorage_pol_component: dependency $file_paths_len: $path_dependency($file_paths_len)"
 	    # If the actual directory depth is greather than the last deph evaluated
 	    if { $next_dir < $body_index } {
 	    	#Set the actual directory deph as new deph 
