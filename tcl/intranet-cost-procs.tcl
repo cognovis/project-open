@@ -482,7 +482,7 @@ ad_proc im_costs_base_component { user_id {company_id ""} {project_id ""} } {
     set object_name ""
     set new_doc_args ""
     if {"" != $company_id} { 
-	lappend extra_where "ci.company_id=:company_id" 
+	lappend extra_where "ci.customer_id=:company_id" 
 	set object_name [db_string object_name "select company_name from im_companies where company_id = :company_id"]
 	set new_doc_args "?company_id=$company_id"
     }
