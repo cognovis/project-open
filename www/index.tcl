@@ -336,16 +336,14 @@ select
 	c.wa_postal_code,
 	c.wa_country_code,
 	c.note,
-	c.current_information,
-	e.*,
-	im_name_from_user_id(e.supervisor_id) as supervisor_name
+        e.*,
+	c.current_information
 	$extra_select
 from 
 	registered_users u, 
 	users_contact c,
 	persons p,
 	acs_objects o
-	-- im_employees e
 	$extra_from
 where 
 	u.user_id=p.person_id
