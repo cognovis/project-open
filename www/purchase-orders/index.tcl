@@ -97,7 +97,6 @@ where
 	and fmem.group_id = [im_freelance_group_id]
 	and pe.person_id = fmem.member_id
 	and pe.person_id = tt.freelance_id
-	and tt.po_id is null
 order by
 	tt.freelance_id
 "
@@ -108,6 +107,7 @@ set task_html ""
 set ctr 1
 set task_list [array names tasks_id]
 set old_freelance_id 0
+ns_log Notice "purchase-orders/index: task_sql=$task_sql"
 db_foreach task_tasks $task_sql {
     
     # introduce spaces after "/" (by "/ ") to allow for graceful rendering
@@ -165,7 +165,7 @@ db_foreach task_tasks $task_sql {
 
 	append task_html "
 	<form method=POST action=new-2>
-	[export_form_vars project_id freelance_id cost_type_id cost_status_id return_url]
+	[export_form_vars freelance_id cost_type_id cost_status_id return_url]
 	<table border=0>
 	  <tr>
 	    <td class=rowtitle align=center>Task Name</td>

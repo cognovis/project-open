@@ -14,25 +14,18 @@ ad_page_contract {
     Receives the list of tasks to invoice and creates an invoice form
     similar to /intranet-invoicing/www/new in order to create a new
     invoice.<br>
-    @param include_task A list of im_trans_task IDs to include in the
-           new invoice
-    @param company_id All include_tasks need to be from the same
-           company.
-    @param currency: EUR or USD
-
     @author frank.bergmann@project-open.com
 } {
     trans:array,optional
     edit:array,optional
     proof:array,optional
     other:array,optional
-    project_id:integer
     provider_id:integer
     freelance_id:integer
     cost_type_id:integer
     { cost_status_id:integer }
     { currency "EUR" }
-    { return_url ""}
+    { return_url "/intranet-cost/index"}
 }
 
 # ---------------------------------------------------------------
@@ -41,7 +34,6 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 
-if {"" == $return_url} {set return_url "/intranet/project/view?project_id=$project_id" }
 if {"" == $cost_status_id} { set cost_status_id [im_cost_status_created] }
 set todays_date [db_string get_today "select sysdate from dual"]
 set page_focus "im_header_form.keywords"
@@ -338,6 +330,7 @@ db_foreach select_tasks $sql {
     # insert intermediate headers for every project
     if {$old_project_id != $project_id} {
 	append task_table_rows "
+		<input type=hidden name=select_project value=$project_id>
 		<tr><td colspan=$colspan>&nbsp;</td></tr>
 		<tr><td class=rowtitle colspan=$colspan>
 	          <A href=/intranet/projects/view?project_id=$project_id>$project_short_name</A>:
