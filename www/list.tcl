@@ -189,7 +189,7 @@ ns_log Notice "/intranet-cost/index: company_where=$company_where"
 
 set order_by_clause ""
 switch $order_by {
-    "Name" { set order_by_clause "order by cost_name" }
+    "Name" { set order_by_clause "order by cost_name DESC" }
     "Type" { set order_by_clause "order by cost_type" }
     "Project" { set order_by_clause "order by project_nr" }
     "Provider" { set order_by_clause "order by provider_name" }
