@@ -5,7 +5,6 @@ ad_page_contract {
 
     @param group_id 
     @param payment_id 
-    @param start_block 
     @param fee 
     @param fee_type 
     @param due_date 

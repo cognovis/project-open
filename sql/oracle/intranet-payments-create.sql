@@ -11,7 +11,7 @@
 ------------------------------------------------------
 -- Payments
 --
--- Tracks the money coming into an invoice over time
+-- Tracks the money coming into an cost_item over time
 --
 
 create sequence im_payments_id_seq start with 10000;
@@ -19,9 +19,9 @@ create table im_payments (
 	payment_id		integer not null 
 				constraint im_payments_pk
 				primary key,
-	invoice_id		integer
+	cost_item_id		integer
 				constraint im_payments_invoice
-				references im_invoices,
+				references im_cost_items,
 				-- who pays?
 	customer_id		integer not null
 				constraint im_payments_customer
@@ -53,7 +53,7 @@ create table im_payments (
 		-- Make sure we don't get duplicated entries for 
 		-- whatever reason
 		constraint im_payments_un
-		unique (customer_id, invoice_id, provider_id, received_date, 
+		unique (customer_id, cost_item_id, provider_id, received_date, 
 			start_block, payment_type_id, currency)
 );
 
@@ -93,7 +93,7 @@ show errors;
 
 create table im_payments_audit (
 	payment_id		integer,
-	invoice_id		integer,
+	cost_item_id		integer,
 	customer_id		integer,
 	provider_id		integer,
 	received_date		date,
@@ -115,7 +115,7 @@ create or replace trigger im_payments_audit_tr
 	begin
 		insert into im_payments_audit (
 			payment_id,
-			invoice_id,
+			cost_item_id,
 			customer_id,
 			provider_id,
 			received_date,
@@ -130,7 +130,7 @@ create or replace trigger im_payments_audit_tr
 			modified_ip_address
 		) values (
 			:old.payment_id,
-			:old.invoice_id,
+			:old.cost_item_id,
 			:old.customer_id,
 			:old.provider_id,
 			:old.received_date,
@@ -164,7 +164,7 @@ where category_type = 'Intranet Invoice Payment Method';
 
 
 ------------------------------------------------------
--- Add a "New Payments" item into the Invoices submenu
+-- Add a "New Payments" item into the Cost_Items submenu
 ------------------------------------------------------
 
 BEGIN
@@ -177,7 +177,7 @@ commit;
 declare
         -- Menu IDs
         v_menu                  integer;
-	v_invoices_menu		integer;
+	v_finance_menu		integer;
 	v_invoices_new_menu	integer;
         -- Groups
         v_employees             integer;
@@ -195,9 +195,9 @@ begin
     select group_id into v_freelancers from groups where group_name = 'Freelancers';
 
     select menu_id
-    into v_invoices_menu
+    into v_finance_menu
     from im_menus
-    where label='invoices';
+    where label='finance';
 
     delete from im_menus where package_name='intranet-payments';
 
@@ -207,7 +207,7 @@ begin
 	name =>		'Payments',
 	url =>		'/intranet-payments/index',
 	sort_order =>	20,
-	parent_menu_id => v_invoices_menu
+	parent_menu_id => v_finance_menu
     );
 
     acs_permission.grant_permission(v_menu, v_admins, 'read');
@@ -218,10 +218,10 @@ begin
 
 
     -- Add a line to the "Finance/New" page
-    select menu_id
-    into v_invoices_new_menu
-    from im_menus
-    where label='invoices_new';
+--    select menu_id
+--    into v_invoices_new_menu
+--    from im_menus
+--    where label='finance_new';
 
     v_menu := im_menu.new (
 	package_name =>	'intranet-payments',
@@ -229,7 +229,7 @@ begin
 	name =>		'New Payment',
 	url =>		'/intranet-payments/new?',
 	sort_order =>	90,
-	parent_menu_id => v_invoices_new_menu
+	parent_menu_id => v_menu
     );
 
     acs_permission.grant_permission(v_menu, v_admins, 'read');
