@@ -89,6 +89,7 @@ ad_proc -private im_filestorage_base_path { folder_type object_id } {
 } {
     switch $folder_type {
 	project {return [im_filestorage_project_path $object_id]}
+	project_sales {return [im_filestorage_project_sales_path $object_id]}
 	customer {return [im_filestorage_customer_path $object_id]}
 	user {return [im_filestorage_user_path $object_id]}
 	home {return [im_filestorage_home_path]}
@@ -143,7 +144,7 @@ ad_proc im_filestorage_folder_perms {folder_path top_folder folder_type user_id 
     Determines the access permissions of a user to a specific path
     Returns (1-1-1-1 = Read-Write-See-Admin) permission binary number
 
-    "folder_type" is one of {home|project|customer|user}
+    "folder_type" is one of {home|project|project_sales|customer|user}
 } {
     ns_log Notice "im_filestorage_folder_perms: Checking group memberships"
 
@@ -274,7 +275,7 @@ ad_proc im_filestorage_folder_perms {folder_path top_folder folder_type user_id 
 
 
 ad_proc im_filestorage_home_component { user_id } {
-    Filestorage for projects
+    Filestorage for global corporate files
 } {
     set base_path [im_filestorage_home_path]
     set object_name "Home"
@@ -295,11 +296,14 @@ ad_proc im_filestorage_project_component { user_id project_id project_name retur
 }
 
 ad_proc im_filestorage_project_sales_component { user_id project_id project_name return_url} {
-    Filestorage for projects
+    Filestorage for project sales (protected)
 } {
+
+    if {![im_permission $user_id view_filestorage_sales]} { return ""}
+
     set project_path [im_filestorage_project_sales_path $project_id]
-    set folder_type "project"
-    set object_name "Project"
+    set folder_type "project_sales"
+    set object_name "Project Sales"
     return [im_filestorage_base_component $user_id $project_id $object_name $project_path $folder_type]
 }
 
