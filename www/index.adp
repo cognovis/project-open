@@ -1,5 +1,6 @@
 <master src="master">
 <property name="title">@page_title@</property>
+<property name="main_navbar_label">finance</property>
 
 <%= [im_costs_navbar $letter "/intranet-payments/index" $next_page_url $previous_page_url [list status_id type_id start_idx order_by how_many view_name letter] "payments_list"] %>
 

@@ -137,9 +137,15 @@ begin
 	return new;
 end;' language 'plpgsql';
 
-create trigger im_payments_audit_tr
-before update or delete on im_payments
-for each row execute procedure im_payments_audit_tr ();
+
+-- 050202 Frank Bergmann: Trigger currently doesn't work.
+-- it blocks the deletion of payment records. So let's
+-- disable it until a new version of PostgreSQL comes 
+-- out...
+--
+-- create trigger im_payments_audit_tr
+-- before update or delete on im_payments
+-- for each row execute procedure im_payments_audit_tr ();
 	
 
 create or replace view im_payment_type as 
