@@ -505,7 +505,7 @@ ad_proc -public im_forum_component {
     "
 
     db_foreach column_list_sql $column_sql {
-	if {[eval $visible_for]} {
+	if {"" == $visible_for || [eval $visible_for]} {
         lappend column_headers "$column_name"
         lappend column_vars "$column_render_tcl"
 	}
@@ -641,10 +641,16 @@ select
 	im_category_from_id(t.topic_type_id) as topic_type
 from
 	im_forum_topics t,
-	im_forum_topic_user_map m,
 	im_forum_folders f,
-	(select * from im_biz_object_urls where url_type='view') u,
 	acs_objects o,
+        (select *
+         from	im_forum_topic_user_map
+         where user_id=:user_id
+        ) m,
+	(select * 
+	 from	im_biz_object_urls 
+	 where	url_type='view'
+	) u,
 	(	select 1 as p, 
 			object_id_one as object_id 
 		from 	acs_rels
@@ -654,7 +660,6 @@ where
         (t.parent_id is null or t.parent_id=0)
         and t.object_id != 1
 	and t.topic_id=m.topic_id(+)
-	and m.user_id = :user_id
 	and m.folder_id=f.folder_id(+)
 	and t.object_id = member_objects.object_id(+)
 	and t.object_id = o.object_id
@@ -793,7 +798,7 @@ $order_by_clause"
 </tr>"
 
     # ---------------------- Join all parts together ------------------------
-#<form action=/intranet/forum/forum-action method=POST>
+#<form action=/intranet-forum/forum-action method=POST>
     set component_html "
 
 <form action=/intranet-forum/forum-action method=POST>
@@ -823,7 +828,7 @@ ad_proc -public im_forum_create_bar { title_text object_id {return_url ""} } {
 <table cellpadding=0 cellspacing=0 border=0>
 <tr>
 <td>
-  <A HREF=/forum/index?[export_url_vars object_id return_url]>
+  <A HREF=/intranet-forum/index?[export_url_vars object_id return_url]>
     $title_text
   </A>
 </td>
@@ -861,7 +866,7 @@ ad_proc -public im_forum_create_bar { title_text object_id {return_url ""} } {
 
 ad_proc -public im_forum_navbar { base_url export_var_list } {
     Returns rendered HTML code for a horizontal sub-navigation
-    bar for /forum/.
+    bar for /intranet-forum/.
 } {
     # -------- Compile the list of parameters to pass-through-------
     set bind_vars [ns_set create]
