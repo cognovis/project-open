@@ -826,13 +826,49 @@ ad_proc -public im_forum_component {
     
     if { $intranet_user_p } {
 
-    	set order_by_clause "order by priority"
+    	set order_by_clause "order by t.priority"
+    	set order_by_clause_ext "order by priority"
     	switch $forum_order_by {
-		"P" { set order_by_clause "order by priority" }
-		"Subject" { set order_by_clause "order by upper(subject)" }
-		"Type" { set order_by_clause "order by topic_type_id" }
-		"Due" { set order_by_clause "order by due_date" }
-		"Who" { set order_by_clause "order by upper(owner_initials)" }
+		"P" { 
+			set order_by_clause "order by t.priority" 
+			set order_by_clause_ext "order by priority"
+		}
+		"Subject" { 
+			set order_by_clause "order by upper(t.subject)" 
+			set order_by_clause_ext "order by upper(subject)" 
+		}
+		"Type" { 
+			set order_by_clause "order by im_category_from_id(t.topic_type_id)" 
+			set order_by_clause "order by topic_type" 
+		}
+		"Due" { 
+			set order_by_clause "order by t.due_date" 
+			set order_by_clause_ext "order by due_date" 
+		}
+		"Own" { 
+			set order_by_clause "order by upper(im_initials_from_user_id(t.owner_id))" 
+			set order_by_clause_ext "order by upper(owner_initials)" 
+		}
+		"Ass" { 
+			set order_by_clause "order by upper(im_initials_from_user_id(t.asignee_id))" 
+			set order_by_clause_ext "order by upper(asignee_initials)" 
+		}
+		"Object" { 
+			set order_by_clause "order by upper(acs_object__name(t.object_id))" 
+			set order_by_clause_ext "order by upper(object_name)" 
+		}
+		"Status" { 
+			set order_by_clause "order by upper(im_category_from_id(t.topic_status_id))" 
+			set order_by_clause_ext "order by upper(topic_status)" 
+		}
+		"Read" { 
+			set order_by_clause "order by upper(m.read_p)" 
+			set order_by_clause_ext "order by upper(read_p)" 
+		}
+		"Folder" { 
+			set order_by_clause "order by upper(f.folder_name)" 
+			set order_by_clause_ext "order by upper(folder_name)" 
+		}		
     	}
 	
 	
@@ -918,7 +954,7 @@ ad_proc -public im_forum_component {
     	set limited_query [im_select_row_range $forum_sql $start_idx [expr $start_idx + $max_entries_per_page]]
     	set total_in_limited_sql "select count(*) from ($forum_sql) f"
     	set total_in_limited [db_string total_limited $total_in_limited_sql]
-    	set selection "select z.* from ($limited_query) z $order_by_clause"
+    	set selection "select z.* from ($limited_query) z $order_by_clause_ext"
 	
     	# How many items remain unseen?
     	set remaining_items [expr $total_in_limited - $start_idx - $max_entries_per_page]
@@ -970,13 +1006,13 @@ ad_proc -public im_forum_component {
 		[_ intranet-forum.lt_There_are_no_active_i]
 		</b></td></tr>"
     	}
-    	    	
+   	
         if { $ctr == $max_entries_per_page && $end_idx < [expr $total_in_limited - 1] } {
 		# This means that there are rows that we decided not to return
 		# Include a link to go to the next page
 		set next_start_idx [expr $end_idx + 1]
 		set forum_max_entries_per_page $max_entries_per_page
-		set next_page_url  "$current_page_url?[export_url_vars forum_object_id forum_max_entries_per_page]&forum_start_idx=$next_start_idx"
+		set next_page_url  "$current_page_url?[export_url_vars forum_object_id forum_max_entries_per_page forum_order_by]&forum_start_idx=$next_start_idx"
 		set next_page_html "($remaining_items more) <A href=\"$next_page_url\">&gt;&gt;</a>"
         } else {
 		set next_page_html ""
@@ -987,7 +1023,7 @@ ad_proc -public im_forum_component {
 		# at least 1 previous row. add a previous page link
 		set previous_start_idx [expr $start_idx - $max_entries_per_page]
 		if { $previous_start_idx < 0 } { set previous_start_idx 0 }
-		set previous_page_html "<A href=$current_page_url?$pass_through_vars_html&forum_start_idx=$previous_start_idx>&lt;&lt;</a>"
+		set previous_page_html "<A href=$current_page_url?$pass_through_vars_html&forum_order_by=$forum_order_by&forum_start_idx=$previous_start_idx>&lt;&lt;</a>"
        } else {
  		set previous_page_html ""
        }
