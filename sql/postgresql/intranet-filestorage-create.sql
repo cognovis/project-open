@@ -168,7 +168,7 @@ SELECT im_component_plugin__new (
         null,                           -- context_id
         'Users Filestorage Component',  -- plugin_name
         'intranet-filestorage',         -- package_name
-        'bottom',                       -- location
+        'right',                        -- location
         '/intranet/users/view',         -- page_url
         null,                           -- view_name
         90,                             -- sort_order
