@@ -163,18 +163,18 @@ select
         p.*,
 	p.amount as payment_amount,
 	p.currency as payment_currency,
-	ci.company_id,
+	ci.customer_id,
 	ci.amount as cost_amount,
 	ci.currency as cost_currency,
 	ci.cost_name,
-	acs_object.name(ci.company_id) as company_name,
+	acs_object.name(ci.customer_id) as company_name,
         im_category_from_id(p.payment_type_id) as payment_type,
         im_category_from_id(p.payment_status_id) as payment_status
 from
         im_payments p,
 	im_costs ci
 where
-	p.cost_id = ci.cost_id(+)
+	p.cost_id = ci.cost_id
         $where_clause
 $order_by_clause
 "
