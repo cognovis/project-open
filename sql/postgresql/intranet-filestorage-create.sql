@@ -70,7 +70,7 @@ create table im_fs_folder_status (
 			constraint im_fs_folder_status_nn not null
 			constraint im_fs_folder_status_state_ck
 			check(open_p in ('o','c')),
-	last_modified	date default sysdate,
+	last_modified	date default now(),
 	primary key (user_id, folder_id)
 );
 create index im_fs_folder_status_user_idx on im_fs_folder_status(user_id);
@@ -119,8 +119,8 @@ create table im_fs_folder_perms (
 -- delete potentially existing menus and plugins if this 
 -- file is sourced multiple times during development...
 
-select	im_component_plugin__del_module(module_name => 'intranet-filestorage');
-select	im_menu.del_module(module_name => 'intranet-filestorage');
+select	im_component_plugin__del_module('intranet-filestorage');
+select	im_menu__del_module('intranet-filestorage');
 
 
 -- create components
