@@ -110,7 +110,7 @@ foreach id [array names dir_id] {
     # Make sure the folder exists...
     # and skip any actions if the folder doesn't exist.
     set folder_id [db_string folder_exists "select folder_id from im_fs_folders where object_id = :object_id and path = :path" -default 0]
-    if {!$folder_id} { return }
+    if {!$folder_id} { break }
 
 
     # -----------------------------------------------
