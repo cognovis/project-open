@@ -952,6 +952,9 @@ ad_proc -public im_filestorage_pol_component { user_id object_id project_name { 
     @param project_name: in wich project tree directory wants this user to view?
     @param bread_crum_path: the root of the tree directory view selected by the user
 } {
+
+    ns_log Notice "------------------ bread_crum_path: $bread_crum_path"
+
     #The filestorage start path for this object_id
     set base_path [im_filestorage_project_path $object_id]
 
@@ -1217,9 +1220,9 @@ ad_proc im_filestorage_dir_row { file_body user_id folder_id status return_url o
     } else {
 	append texte [im_gif foldout2]
     }
-
+    set bread_crum_path $file
     append texte "<img src=/intranet-filestorage/images/folder_s.gif border=0 width=21 height=21 hspace=0 vspace=0></a>
-		    <a href=/index?user_id=$user_id&bread_crum_path=$file&object_id=$object_id&return_url=$return_url>$file_body</a>
+		  <a href=/intranet-filestorage/index?[export_url_vars user_id bread_crum_path object_id return_url]>$file_body</a>
 		    </a>
 		    </div>
 		    </td>
