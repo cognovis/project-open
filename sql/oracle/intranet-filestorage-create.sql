@@ -110,6 +110,34 @@ create table im_fs_folder_perms (
 
 
 ---------------------------------------------------------
+-- File Actions
+--
+-- Protocol of .dDownload and upload actions of a file.
+-- This is used to keep track for knowledge management
+-- to see in which documents a user was interested.
+
+create table im_fs_actions (
+	action_type_id		references im_categories,
+	user_id			not null references persons,
+	action_date		date,
+	file_name		varchar(1000),
+		primary key (user_id, action_date, file_name)
+);
+
+
+---------------------------------------------------------
+-- Categories
+--
+
+-- insert into im_categories
+delete from im_categories where category_id >= 2420 and category_id < 2430;
+INSERT INTO im_categories VALUES (2420,'upload','This is the value of im_task_actions.action_type_id when a user uploads a task file.','Intranet File Action Type','category','t','f');
+INSERT INTO im_categories VALUES (2421,'download','','Intranet File Action Type','category','t','f');
+
+
+
+
+---------------------------------------------------------
 -- Register the component in the core TCL pages
 --
 -- These DB-entries allow the pages of Project/Open Core

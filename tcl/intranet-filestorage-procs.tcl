@@ -29,6 +29,9 @@ ad_register_proc GET /intranet/download/home/* intranet_home_download
 ad_register_proc GET /intranet/download/zip/* intranet_zip_download
 
 
+ad_proc im_file_action_upload {} { return 2420 }
+ad_proc im_file_action_download {} { return 2421 }
+
 ad_proc intranet_project_download {} { intranet_download "project" }
 ad_proc intranet_project_sales_download {} { intranet_download "project_sales" }
 ad_proc intranet_company_download {} { intranet_download "company" }
