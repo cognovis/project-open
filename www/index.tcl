@@ -23,7 +23,6 @@ if {1} {
 
     set page_body [im_filestorage_home_component $user_id]
 
-    doc_return  200 text/html [im_return_template]
     db_release_unused_handles
 
     return

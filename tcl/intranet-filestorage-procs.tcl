@@ -75,8 +75,9 @@ where
 	and r.profile_id = p.profile_id (+)
 "
     db_foreach project_profiles $project_profile_sql {
+	set profile_name_txt [lang::util::suggest_key $profile_name]
 	if {"" == $profile_gif} { set profile_gif "profile" }
-	lappend profiles [list $profile_id $profile_gif $profile_name ]
+	lappend profiles [list $profile_id $profile_gif [_ intranet-filestorage.$profile_name_txt] ]
     }
     return $profiles
 }
@@ -104,7 +105,8 @@ where
 	and m.object_role_id = c.category_id
 "
     db_foreach project_roles $project_roles_sql {
-	lappend roles [list $category_id $category_gif $category]
+	set category_txt [lang::util::suggest_key $category]
+	lappend roles [list $category_id $category_gif [_ intranet-filestorage.$category_txt]]
     }
 
     return $roles
@@ -161,7 +163,7 @@ proc intranet_download { folder_type } {
 
     set base_path [im_filestorage_base_path $folder_type $group_id]
     if {"" == $base_path} {
-	ad_return_complaint 1 "<LI>Unknown folder_type \"$folder_type\"."
+	ad_return_complaint 1 "<LI><#_ Unknown folder_type \"%folder_type%\".#>"
 	return
     }
 
@@ -173,15 +175,14 @@ proc intranet_download { folder_type } {
     } err_msg] } {
         # Probably some strange filename
         ad_return_complaint 1 "<LI>$err_msg<br>
-	This issue is most likely due to strange characters in the 
-	file. Please remove any accents etc. and try again."
+	<#_ This issue is most likely due to strange characters in the file. Please remove any accents etc. and try again.#>"
 	return
     }
 
     if $file_readable {
 	rp_serve_concrete_file $file
     } else {
-	doc_return 500 text/html "Did not find the specified file"
+	doc_return 500 text/html "<#_ Did not find the specified file#>"
     }
 }
 
@@ -481,7 +482,7 @@ ad_proc im_filestorage_company_path_helper { company_id } {
     if {[catch {
 	set company_path [db_string get_company_path "select company_path from im_companies where company_id=:company_id"]
     } errmsg]} {
-	ad_return_complaint 1 "<LI>Internal Error: Unable to determine the file path for company \#$company_id"
+	ad_return_complaint 1 "<LI><#_ Internal Error#_: <#_ Unable to determine the file path for company \#%company_id%#>"
 	return
     }
 
@@ -686,27 +687,27 @@ ad_proc im_filestorage_tool_tds { folder folder_type project_id return_url up_li
   modifying the URL variables. Doesn't work yet 100%, so better
   disable meanwhile...
    <td>
-     <input type=image src=/intranet/images/up-folder.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='up-folder'; submit();\" alt='Folder up'>
+     <input type=image src=/intranet/images/up-folder.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='up-folder'; submit();\" alt='<#_ Folder up#>'>
    </td>
 -->
    <td>
-     <input type=image src=/intranet/images/newfol.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-folder'; submit();\" alt='Create a new folder'>
+     <input type=image src=/intranet/images/newfol.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-folder'; submit();\" alt='<#_ Create a new folder#>'>
    </td><td>
-     <input type=image src=/intranet/images/upload.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='upload'; submit();\" alt='Upload a file'>
+     <input type=image src=/intranet/images/upload.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='upload'; submit();\" alt='<#_ Upload a file#>'>
    </td><td>
-<!--     <input type=image src=/intranet/images/new-doc.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-doc'; submit();\" alt='Create a new document'> -->
+<!--     <input type=image src=/intranet/images/new-doc.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-doc'; submit();\" alt='<#_ Create a new document#>'> -->
    </td><td>
-     <input type=image src=/intranet/images/del.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='del'; submit();\" alt='Delete files and folders'>
+     <input type=image src=/intranet/images/del.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='del'; submit();\" alt='<#_ Delete files and folders#>'>
    </td><td>
-     <input type=image src=/intranet/images/zip.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='zip'; submit();\" alt='Download all files as a Zip'>
+     <input type=image src=/intranet/images/zip.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='zip'; submit();\" alt='<#_ Download all files as a Zip#>'>
    </td><td>
 
     <table border=0 cellspacing=0 cellpadding=0 width=20>
     <tr><td align=center>
-     <input type=image src=/intranet/images/plus_9.gif width=9 height=9 onClick=\"window.document.$folder_type.actions.value='add-perms'; submit();\" alt='Add permissions to folders'>
+     <input type=image src=/intranet/images/plus_9.gif width=9 height=9 onClick=\"window.document.$folder_type.actions.value='add-perms'; submit();\" alt='<#_ Add permissions to folders#>'>
     </td></tr>
     <tr><td align=center>
-     <input type=image src=/intranet/images/minus_9.gif width=9 height=9 onClick=\"window.document.$folder_type.actions.value='del-perms'; submit();\" alt='Remove permissions from folders'>
+     <input type=image src=/intranet/images/minus_9.gif width=9 height=9 onClick=\"window.document.$folder_type.actions.value='del-perms'; submit();\" alt='<#_ Remove permissions from folders#>'>
     </td></tr>
     </table>
   </td>
@@ -917,7 +918,7 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
         exec /bin/chmod ug+w $find_path
 	set file_list [exec /usr/bin/find $find_path]
     } err_msg] } { 
-	return "<ul><li>Unable to get file list from '$find_path'</ul>"
+	return "<ul><li><#_ Unable to get file list from '%find_path%'#></ul>"
     }
     set files [split $file_list "\n"]
 

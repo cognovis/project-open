@@ -93,7 +93,7 @@ switch $actions {
 </tr>\n"
         }
 
-	set page_title "Add Permissions"
+	set page_title "[_ intranet-filestorage.Add_Permissions]"
 	set page_content "
 <H1>$page_title</H1>
 <form name=add_perms action=/intranet-filestorage/add-perms-2 method=POST>
@@ -104,7 +104,7 @@ switch $actions {
   $tds
 </tr>
 <tr class=roweven>
-  <td>View</td>\n"
+  <td>[_ intranet-filestorage.View]</td>\n"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
 	    append page_content "<td><input type=checkbox name=view_role.$role_id></td>\n"
@@ -116,7 +116,7 @@ switch $actions {
 	append page_content "
 </tr>
 <tr class=rowodd>
-  <td>Read</td>\n"
+  <td>[_ intranet-filestorage.Read]</td>\n"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
 	    append page_content "<td><input type=checkbox name=read_role.$role_id></td>\n"
@@ -128,7 +128,7 @@ switch $actions {
 	append page_content "
 </tr>
 <tr class=roweven>
-  <td>Write</td>\n"
+  <td>[_ intranet-filestorage.Write]</td>\n"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
 	    append page_content "<td><input type=checkbox name=write_role.$role_id></td>\n"
@@ -140,7 +140,7 @@ switch $actions {
 	append page_content "
 </tr>
 <tr class=rowodd>
-  <td>Admin</td>\n"
+  <td>[_ intranet-filestorage.Admin]</td>\n"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
 	    append page_content "<td><input type=checkbox name=admin_role.$role_id></td>\n"
@@ -153,8 +153,8 @@ switch $actions {
 </tr>
 </table>
 <P>
-<input type=submit name=submit value=\"Add Permissions\">
-Add the permissions above to the following directories:</p>
+<input type=submit name=submit value=\"[_ intranet-filestorage.Add_Permissions]\">
+[_ intranet-filestorage.lt_Add_the_permissions_a]</p>
 
 <table border=0 cellspacing=0 cellpadding=1>
 <tr class=rowtitle><td colspan=2 class=rowtitle>Directories</td></tr>
@@ -164,10 +164,11 @@ $dirs_html
 <p>\n"
 
 	if {"" == $dirs_html} {
+	    set im_gif_plus_9 [im_gif plus_9]
 	    set page_content "
-<H1>No Directories Selected</H1>
-You have not selected a directory.<p>
-Please backup, select a directory and press again on the [im_gif plus_9] button.<p>
+<H1>[_ intranet-filestorage.lt_No_Directories_Select]</H1>
+[_ intranet-filestorage.lt_You_have_not_selected]<p>
+[_ intranet-filestorage.lt_Please_backup_select_]<p>
 "
 	}
 
@@ -202,7 +203,7 @@ Please backup, select a directory and press again on the [im_gif plus_9] button.
 </tr>\n"
         }
 
-	set page_title "Delete Permissions"
+	set page_title "[_ intranet-filestorage.Delete_Permissions]"
 	set page_content "
 <H1>$page_title</H1>
 <form action=/intranet-filestorage/del-perms-2 method=POST>
@@ -213,7 +214,7 @@ Please backup, select a directory and press again on the [im_gif plus_9] button.
   $tds
 </tr>
 <tr class=roweven>
-  <td>View</td>\n"
+  <td>[_ intranet-filestorage.View]</td>\n"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
 	    append page_content "<td><input type=checkbox name=view_role.$role_id></td>\n"
@@ -225,7 +226,7 @@ Please backup, select a directory and press again on the [im_gif plus_9] button.
 	append page_content "
 </tr>
 <tr class=rowodd>
-  <td>Read</td>\n"
+  <td>[_ intranet-filestorage.Read]</td>\n"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
 	    append page_content "<td><input type=checkbox name=read_role.$role_id></td>\n"
@@ -237,7 +238,7 @@ Please backup, select a directory and press again on the [im_gif plus_9] button.
 	append page_content "
 </tr>
 <tr class=roweven>
-  <td>Write</td>\n"
+  <td>[_ intranet-filestorage.Write]</td>\n"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
 	    append page_content "<td><input type=checkbox name=write_role.$role_id></td>\n"
@@ -249,7 +250,7 @@ Please backup, select a directory and press again on the [im_gif plus_9] button.
 	append page_content "
 </tr>
 <tr class=rowodd>
-  <td>Admin</td>\n"
+  <td>[_ intranet-filestorage.Admin]</td>\n"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
 	    append page_content "<td><input type=checkbox name=admin_role.$role_id></td>\n"
@@ -262,25 +263,26 @@ Please backup, select a directory and press again on the [im_gif plus_9] button.
 </tr>
 </table>
 <P>
-<input type=submit name=submit value=\"Del Permissions\">
-Delete the permissions above from the following directories:</p>
+<input type=submit name=submit value=\"[_ intranet-filestorage.Del_Permissions]\">
+[_ intranet-filestorage.lt_Delete_the_permission]</p>
 
 <table border=0 cellspacing=0 cellpadding=1>
-<tr class=rowtitle><td colspan=2 class=rowtitle>Directories</td></tr>
+<tr class=rowtitle><td colspan=2 class=rowtitle>[_ intranet-filestorage.Directories]</td></tr>
 $dirs_html
 </table>
 </form>
 <p>\n"
 
 	if {"" == $dirs_html} {
+	    set im_gif_plus_9 [im_gif plus_9]
 	    set page_content "
-<H1>No Directories Selected</H1>
-You have not selected a directory.<p>
-Please backup, select a directory and press again on the [im_gif plus_9] button.<p>
+<H1>[_ intranet-filestorage.lt_No_Directories_Select]</H1>
+[_ intranet-filestorage.lt_You_have_not_selected]<p>
+[_ intranet-filestorage.lt_Please_backup_select_]<p>
 "
 	}
 
-        doc_return  200 text/html [im_return_template]
+        ad_return_template
         return
 
     }
@@ -292,7 +294,7 @@ Please backup, select a directory and press again on the [im_gif plus_9] button.
 	# Find out where the current directory starts on the hard disk
 	set base_path [im_filestorage_base_path $folder_type $object_id]
 	if {"" == $base_path} {
-	    ad_return_complaint 1 "<LI>Unknown folder type \"$folder_type\"."
+	    ad_return_complaint 1 "<LI>[_ intranet-filestorage.lt_Unknown_folder_type_f]"
 	    return
 	}
 	set dest_path "$base_path/$bread_crum_path"
@@ -313,7 +315,7 @@ Please backup, select a directory and press again on the [im_gif plus_9] button.
 	if { [catch {
 	    set file_readable [file readable $path]
 	} err_msg] } {
-	    ad_return_complaint 1 "<LI>Unable to compress the folder."
+	    ad_return_complaint 1 "<LI>[_ intranet-filestorage.lt_Unable_to_compress_th]"
 	    return
 	}
 
@@ -321,7 +323,7 @@ Please backup, select a directory and press again on the [im_gif plus_9] button.
 	    ad_returnredirect "/intranet/download/zip/0/$file"
 	    return
 	} else {
-	    doc_return 404 text/html "Did not find the specified file"
+	    doc_return 404 text/html "[_ intranet-filestorage.lt_Did_not_find_the_spec]"
 	    return
 	}
     }
@@ -330,21 +332,21 @@ Please backup, select a directory and press again on the [im_gif plus_9] button.
 
 	# --------------------- New Folder --------------------- 
 
-        set page_title "New Folder"
+        set page_title "[_ intranet-filestorage.New_Folder]"
         set context_bar [ad_context_bar $page_title]
 	set page_content "
 <h1>New Folder</h1>
 <form method='post' action='create-folder-2'>
 [export_form_vars folder_type bread_crum_path object_id return_url]
-<table><tr><td>Please enter the name of the new folder
+<table><tr><td>[_ intranet-filestorage.lt_Please_enter_the_name]
 </td></tr>
 <tr><td>
   <input type='text' name='folder_name' value='' style='width: 100%;'>
-  <input type='submit' value='create folder'>
+  <input type='submit' value='[_ intranet-filestorage.create_folder]'>
 </td></tr>
 </table>
 </form>\n"
-	doc_return  200 text/html [im_return_template]
+        ad_return_template
 	return
     }
 
@@ -352,33 +354,33 @@ Please backup, select a directory and press again on the [im_gif plus_9] button.
 
 	# --------------------- New Folder --------------------- 
 
-        set page_title "Upload File"
+        set page_title "[_ intranet-filestorage.Upload_File]"
         set context_bar [ad_context_bar $page_title]
         set page_content "
 <form enctype=multipart/form-data method=POST action=upload-2.tcl>
 [export_form_vars bread_crum_path folder_type object_id return_url]
 
           Upload a file into directory \"/$bread_crum_path\".
-          If you want to upload a file into a subdirectory, <br>
-          please backup up and select a subdirectory by clicking on its name.
+          [_ intranet-filestorage.lt_If_you_want_to_upload] <br>
+          [_ intranet-filestorage.lt_please_backup_up_and_]
 
     <table border=0>
       <tr>
-	<td align=right>Filename: </td>
+	<td align=right>[_ intranet-filestorage.Filename]: </td>
 	<td>
 	  <input type=file name=upload_file size=30>
-[im_gif help "Use the &quot;Browse...&quot; button to locate your file, then click &quot;Open&quot;."]
+[im_gif help "[_ intranet-filestorage.lt_Use_the_Browse_button]"]
 	</td>
       </tr>
       <tr>
 	<td></td>
 	<td>
-	  <input type=submit value=\"Submit and Upload\">
+	  <input type=submit value=\"[_ intranet-filestorage.Submit_and_Upload]\">
 	</td>
       </tr>
     </table>
 </form>\n"
-	doc_return  200 text/html [im_return_template]
+        ad_return_template
 	return
     }
 
@@ -418,7 +420,7 @@ Please backup, select a directory and press again on the [im_gif plus_9] button.
 	    set err_msg ""
             set checked "checked"
 	    if {![im_filestorage_is_directory_empty $abs_path]} {
-		set err_msg "<font color=red>Directory is not empty</font>\n"
+		set err_msg "<font color=red>[_ intranet-filestorage.lt_Directory_is_not_empt]</font>\n"
                 set checked ""
  	    }
 	    incr ctr
@@ -429,37 +431,37 @@ Please backup, select a directory and press again on the [im_gif plus_9] button.
 </td><td>$id_path($id)</td><td>$err_msg</td></tr>\n"
 	}
 
-	set page_body "
-<H1>Delete Files</H1>
+	set page_content "
+<H1>[_ intranet-filestorage.Delete_Files]</H1>
 Are you sure you really want to delete the following files?
 <form action=delete method=POST>
 [export_form_vars object_id bread_crum_path folder_type return_url]
-<input type=submit value='Delete'><p>
+<input type=submit value='[_ intranet-filestorage.Delete]'><p>
 <table border=0 cellpadding=1 cellspacing=1>\n"
 
 	if {"" != $dirs_html} {
-	    append page_body "<tr class=rowtitle>
-	    <td colspan=3 class=rowtitle align=center>Directories</td></tr>$dirs_html"
+	    append page_content "<tr class=rowtitle>
+	    <td colspan=3 class=rowtitle align=center>[_ intranet-filestorage.Directories]</td></tr>$dirs_html"
 	}
 
 	if {"" != $files_html} {
-	    append page_body "<tr class=rowtitle>
+	    append page_content "<tr class=rowtitle>
 	    <td colspan=3 class=rowtitle align=center>Files</td></tr>$files_html\n"
 	}
-	append page_body "</table>\n</form>\n"
+	append page_content "</table>\n</form>\n"
 
 
         if {"" == $dirs_html && "" == $files_html} {
             # Both are empty - show empty help string
-            set page_body "
-<h1>Nothing Selected</h1>
-Please back up and select some files and directories to delete<br>
-by marking the checkbox at the left hand side.
+            set page_content "
+<h1>[_ intranet-filestorage.Nothing_Selected]</h1>
+[_ intranet-filestorage.lt_Please_back_up_and_se]<br>
+[_ intranet-filestorage.lt_by_marking_the_checkb]
 "
         }
 
 
-	doc_return  200 text/html [im_return_template]
+	ad_return_template
 	return
     }
 
@@ -488,8 +490,7 @@ db_release_unused_handles
 ad_return_complaint 1 "<pre>$vars</pre>"
 return
 
-set page_title "Upload into '$my_folder'"
-doc_return  200 text/html [im_return_template]
+set page_title "[_ intranet-filestorage.lt_Upload_into_my_folder]"
 
 
 
