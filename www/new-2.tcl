@@ -33,7 +33,7 @@ ad_page_contract {
     {subject:trim ""}
     {message:trim,html ""}
     {priority "5"}
-    {asignee_id ""}
+    {asignee_id:integer 0}
     {due_date:array,date ""}
     {receive_updates "major"}
     {read_p "f"}
