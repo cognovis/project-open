@@ -1047,10 +1047,10 @@ where 	category_type = 'Intranet Cost Type';
 -------------------------------------------------------------
 -- Permissions and Privileges
 --
-select acs_privilege.create_privilege('view_costs','View Costs','View Costs');
+select acs_privilege__create_privilege('view_costs','View Costs','View Costs');
 select acs_privilege__add_child('admin', 'view_costs');
 
-select acs_privilege.create_privilege('add_costs','Add Costs','Add Costs');
+select acs_privilege__create_privilege('add_costs','Add Costs','Add Costs');
 select acs_privilege__add_child('admin', 'add_costs');
 
 

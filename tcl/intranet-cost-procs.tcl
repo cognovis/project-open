@@ -515,7 +515,7 @@ ad_proc im_costs_base_component { user_id {company_id ""} {project_id ""} } {
 		 group by cost_id
 		) pa
 	"
-	lappend extra_where "ci.cost_id=pa.cost_id(+)"
+	lappend extra_where "ci.cost_id=pa.cost_id"
     }
 
     set extra_where_clause [join $extra_where "\n\tand "]
@@ -531,7 +531,7 @@ select
 	url.url,
         im_category_from_id(ci.cost_status_id) as cost_status,
         im_category_from_id(ci.cost_type_id) as cost_type,
-	ci.effective_date + payment_days as calculated_due_date
+	to_date(to_char(ci.effective_date,'yyyymmdd'),'yyyymmdd') + payment_days as calculated_due_date
 	$extra_select_clause
 from
 	im_costs ci,
@@ -550,15 +550,15 @@ order by
 <table border=0>
   <tr>
     <td colspan=$colspan class=rowtitle align=center>
-      Financial Documents
+      [_ intranet-cost.Financial_Documents]
     </td>
   </tr>
   <tr class=rowtitle>
-    <td align=center class=rowtitle>Document</td>
-    <td align=center class=rowtitle>Type</td>
-    <td align=center class=rowtitle>Due</td>
-    <td align=center class=rowtitle>Amount</td>
-    <td align=center class=rowtitle>Paid</td>
+    <td align=center class=rowtitle>[_ intranet-cost.Document]</td>
+    <td align=center class=rowtitle>[_ intranet-cost.Type]</td>
+    <td align=center class=rowtitle>[_ intranet-cost.Due]</td>
+    <td align=center class=rowtitle>[_ intranet-cost.Amount]</td>
+    <td align=center class=rowtitle>[_ intranet-cost.Paid]</td>
   </tr>
 "
     set ctr 1
@@ -586,7 +586,7 @@ order by
 <tr$bgcolor([expr $ctr % 2])>
   <td colspan=$colspan>
     <A HREF=/intranet-costs/index?status_id=0&[export_url_vars status_id company_id project_id]>
-      more costs...
+      [_ intranet-cost.more_costs]
     </A>
   </td>
 </tr>\n"
@@ -596,7 +596,7 @@ order by
 	append cost_html "
 <tr$bgcolor([expr $ctr % 2])>
   <td colspan=$colspan align=center>
-    <I>No financial documents yet for this project</I>
+    <I>[_ intranet-cost.lt_No_financial_document]</I>
   </td>
 </tr>\n"
 	incr ctr
@@ -607,7 +607,7 @@ order by
 <tr>
   <td colspan=$colspan align=right>
     <A href=\"/intranet-translation/purchase-order/new$new_doc_args\">
-      <li>Create a new purchase order
+      <li>[_ intranet-cost.lt_Create_a_new_purchase]
     </A>
   </td>
 </tr>\n"
