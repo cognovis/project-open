@@ -926,6 +926,12 @@ is
 	delete from     im_costs
 	where		cost_id = del.cost_id;
 
+	-- Erase the acs_rels entries pointing to this cost item
+	delete	from acs_rels r
+	where	r.object_id_two = del.cost_id;
+	delete	from acs_rels r
+	where	r.object_id_one = del.cost_id;
+
 	-- Erase the object
 	acs_object.del(del.cost_id);
     end del;
@@ -1173,7 +1179,7 @@ sort_order) values (22025,220,'Status',
 
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22098,220,'Del',
-'<input type=checkbox name=del_cost value=$cost_id>',99);
+'"<input type=checkbox name=del_cost value=$cost_id>"',99);
 commit;
 
 
