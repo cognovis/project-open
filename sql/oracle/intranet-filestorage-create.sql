@@ -114,7 +114,7 @@ create table im_fs_folder_perms (
 --
 -- These DB-entries allow the pages of Project/Open Core
 -- to render the filestorage components in the Home, Users,
--- Projects and Customer pages.
+-- Projects and Company pages.
 
 
 -- delete potentially existing menus and plugins if this 
@@ -160,16 +160,16 @@ begin
 	);
 
 	v_plugin := im_component_plugin.new (
-		plugin_name =>	'Customers Filestorage Component',
+		plugin_name =>	'Companies Filestorage Component',
 		package_name =>	'intranet-filestorage',
-		page_url =>	'/intranet/customers/view',
+		page_url =>	'/intranet/companies/view',
 		location =>	'right',
 		sort_order =>   50,
 		component_tcl => 
-		'im_filestorage_customer_component \
+		'im_filestorage_company_component \
 			$user_id \
-			$customer_id \
-			$customer_name \
+			$company_id \
+			$company_name \
 			$return_url'
 	);
 end;

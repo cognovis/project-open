@@ -23,7 +23,7 @@ ad_library {
 
 ad_register_proc GET /intranet/download/project/* intranet_project_download
 ad_register_proc GET /intranet/download/project_sales/* intranet_project_sales_download
-ad_register_proc GET /intranet/download/customer/* intranet_customer_download
+ad_register_proc GET /intranet/download/company/* intranet_company_download
 ad_register_proc GET /intranet/download/user/* intranet_user_download
 ad_register_proc GET /intranet/download/home/* intranet_home_download
 ad_register_proc GET /intranet/download/zip/* intranet_zip_download
@@ -31,7 +31,7 @@ ad_register_proc GET /intranet/download/zip/* intranet_zip_download
 
 ad_proc intranet_project_download {} { intranet_download "project" }
 ad_proc intranet_project_sales_download {} { intranet_download "project_sales" }
-ad_proc intranet_customer_download {} { intranet_download "customer" }
+ad_proc intranet_company_download {} { intranet_download "company" }
 ad_proc intranet_user_download {} { intranet_download "user" }
 ad_proc intranet_home_download {} { intranet_download "home" }
 ad_proc intranet_zip_download {} { intranet_download "zip" }
@@ -62,7 +62,7 @@ from
 		and f.object_id = :object_id
 		and p.profile_id = prof.profile_id
 	)
-	UNION (select [im_customer_group_id] from dual)
+	UNION (select [im_company_group_id] from dual)
 	UNION (select [im_employee_group_id] from dual)
 	UNION (select [im_freelance_group_id] from dual)
 	UNION (select [im_wheel_group_id] from dual)
@@ -207,7 +207,7 @@ ad_proc -private im_filestorage_base_path { folder_type object_id } {
     switch $folder_type {
 	project {return [im_filestorage_project_path $object_id]}
 	project_sales {return [im_filestorage_project_sales_path $object_id]}
-	customer {return [im_filestorage_customer_path $object_id]}
+	company {return [im_filestorage_company_path $object_id]}
 	user {return [im_filestorage_user_path $object_id]}
 	home {return [im_filestorage_home_path]}
 	zip {return [im_filestorage_zip_path]}
@@ -241,7 +241,7 @@ ad_proc -public im_filestorage_find_files { project_id } {
 
 ad_proc im_filestorage_user_role_list {user_id group_id} {
     Return the list of all roles that a user has for the specified project,
-    customer or other type of group
+    company or other type of group
 } {
     set sql "
 select distinct
@@ -291,12 +291,12 @@ ad_proc im_filestorage_project_sales_component { user_id project_id project_name
     return [im_filestorage_base_component $user_id $project_id $object_name $project_path $folder_type]
 }
 
-ad_proc im_filestorage_customer_component { user_id customer_id customer_name return_url} {
-    Filestorage for customers
+ad_proc im_filestorage_company_component { user_id company_id company_name return_url} {
+    Filestorage for companies
 } {
-    set customer_path [im_filestorage_customer_path $customer_id]
-    set folder_type "customer"
-    return [im_filestorage_base_component $user_id $customer_id $customer_name $customer_path $folder_type]
+    set company_path [im_filestorage_company_path $company_id]
+    set folder_type "company"
+    return [im_filestorage_base_component $user_id $company_id $company_name $company_path $folder_type]
 }
 
 
@@ -310,7 +310,7 @@ ad_proc im_filestorage_user_component { user_id user_to_show_id user_name return
 
 
 # ---------------------------------------------------------------------
-# Determine pathes for project, customers and users
+# Determine pathes for project, companies and users
 # All pathes end WITHOUT a trailing "/"
 # ---------------------------------------------------------------------
 
@@ -367,13 +367,13 @@ select
 	p.project_nr,
 	p.project_path,
 	p.project_name,
-	c.customer_path
+	c.company_path
 from
 	im_projects p,
-	im_customers c
+	im_companies c
 where
 	p.project_id=:project_id
-	and p.customer_id=c.customer_id(+)
+	and p.company_id=c.company_id(+)
 "
 
     if { ![db_0or1row projects_info_query $query] } {
@@ -382,7 +382,7 @@ where
 	return
     }
 
-    return "$base_path_unix/$customer_path/$project_path"
+    return "$base_path_unix/$company_path/$project_path"
 }
 
 
@@ -414,13 +414,13 @@ select
 	p.project_nr,
 	p.project_path,
 	p.project_name,
-	c.customer_path
+	c.company_path
 from
 	im_projects p,
-	im_customers c
+	im_companies c
 where
 	p.project_id=:project_id
-	and p.customer_id=c.customer_id(+)
+	and p.company_id=c.company_id(+)
 "
 
     if { ![db_0or1row projects_info_query $query] } {
@@ -429,7 +429,7 @@ where
 	return
     }
 
-    return "$base_path_unix/$customer_path/$project_path"
+    return "$base_path_unix/$company_path/$project_path"
 }
 
 
@@ -452,37 +452,37 @@ ad_proc im_filestorage_user_path { user_id } {
 }
 
 
-ad_proc im_filestorage_customer_path { customer_id } {
+ad_proc im_filestorage_company_path { company_id } {
     Determine the location where the project files
     are stored on the hard disk
 } {
-    return [util_memoize "im_filestorage_customer_path_helper $customer_id"]
+    return [util_memoize "im_filestorage_company_path_helper $company_id"]
 }
 
-ad_proc im_filestorage_customer_path_helper { customer_id } {
+ad_proc im_filestorage_company_path_helper { company_id } {
     Determine the location where the project files
     are stored on the hard disk
 } {
     set package_key "intranet-filestorage"
     set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
-    set base_path_unix [parameter::get -package_id $package_id -parameter "CustomerBasePathUnix" -default "/tmp/customers"]
+    set base_path_unix [parameter::get -package_id $package_id -parameter "CompanyBasePathUnix" -default "/tmp/companies"]
 
     # Return a demo path for all project, clients etc.
     if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	set path [ad_parameter "TestDemoDevPath" "" "customers"]
+	set path [ad_parameter "TestDemoDevPath" "" "companies"]
 	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
 	return "$base_path_unix/$path"
     }
 
-    set customer_path "undefined"
+    set company_path "undefined"
     if {[catch {
-	set customer_path [db_string get_customer_path "select customer_path from im_customers where customer_id=:customer_id"]
+	set company_path [db_string get_company_path "select company_path from im_companies where company_id=:company_id"]
     } errmsg]} {
-	ad_return_complaint 1 "<LI>Internal Error: Unable to determine the file path for customer \#$customer_id"
+	ad_return_complaint 1 "<LI>Internal Error: Unable to determine the file path for company \#$company_id"
 	return
     }
 
-    return "$base_path_unix/$customer_path"
+    return "$base_path_unix/$company_path"
 }
 
 
@@ -574,20 +574,20 @@ ad_proc im_filestorage_create_directories { project_id } {
 	return
     }
 
-    # Get some missing variables about the project and the customer
+    # Get some missing variables about the project and the company
     set query "
 select
 	p.project_type_id,
 	p.project_path,
-	p.customer_id,
+	p.company_id,
 	im_category_from_id(p.source_language_id) as source_language,
-	c.customer_path
+	c.company_path
 from
 	im_projects p,
-	im_customers c
+	im_companies c
 where 
 	p.project_id = :project_id
-	and p.customer_id = c.customer_id
+	and p.company_id = c.company_id
 "
     if { ![db_0or1row projects_info_query $query] } {
 	return "Can't find the project with group id of $project_id"
@@ -602,20 +602,20 @@ where
     set package_id [db_string parameter_package "select package_id from apm_packages where package_key=:package_key" -default 0]
     set base_path_unix [parameter::get -package_id $package_id -parameter "ProjectBasePathUnix" -default "/tmp/projects"]
 
-    # Create a customer directory if it doesn't already exist
-    set customer_dir "$base_path_unix/$customer_path"
-    ns_log Notice "im_filestorage_create_directories: customer_dir=$customer_dir"
+    # Create a company directory if it doesn't already exist
+    set company_dir "$base_path_unix/$company_path"
+    ns_log Notice "im_filestorage_create_directories: company_dir=$company_dir"
     if { [catch {
-	if {![file exists $customer_dir]} { 
-	    ns_log Notice "exec /bin/mkdir -p $customer_dir"
-	    exec /bin/mkdir -p $customer_dir 
-	    ns_log Notice "exec /bin/chmod ug+w $customer_dir"
-	    exec /bin/chmod ug+w $customer_dir
+	if {![file exists $company_dir]} { 
+	    ns_log Notice "exec /bin/mkdir -p $company_dir"
+	    exec /bin/mkdir -p $company_dir 
+	    ns_log Notice "exec /bin/chmod ug+w $company_dir"
+	    exec /bin/chmod ug+w $company_dir
 	}
     } err_msg] } { return $err_msg }
 
     # Create the project dir if it doesn't already exist
-    set project_dir "$customer_dir/$project_path"
+    set project_dir "$company_dir/$project_path"
     ns_log Notice "im_filestorage_create_directories: project_dir=$project_dir"
     if { [catch { 
 	if {![file exists $project_dir]} {
@@ -1177,7 +1177,7 @@ where
 	# full access to all files
 	if {$object_id > 0} {
 	    
-	    # Permissions for all usual projects, customers etc.
+	    # Permissions for all usual projects, companies etc.
 	    set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id"]
 	    set perm_cmd "${object_type}_permissions \$user_id \$object_id object_view object_read object_write object_admin"
 	    eval $perm_cmd
