@@ -21,10 +21,10 @@
         <callbacks>
         </callbacks>
         <parameters>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="CustomerBasePathUnix"  default="/web/proknow/fs/customers" description="CustomerBasePathUnix"/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="HomeBasePathUnix"  default="/web/proknow/fs/home" description="HomeBasePathUnix"/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ProjectBasePathUnix"  default="/web/proknow/fs/projects" description="ProjectBasePathUnix"/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="UserBasePathUnix"  default="/web/proknow/fs/users" description="UserBasePathUnix"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="CustomerBasePathUnix"  default="/web/proknow/filestorage/customers" description="CustomerBasePathUnix"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="HomeBasePathUnix"  default="/web/proknow/filestorage/home" description="HomeBasePathUnix"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ProjectBasePathUnix"  default="/web/proknow/filestorage/projects" description="ProjectBasePathUnix"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="UserBasePathUnix"  default="/web/proknow/filestorage/users" description="UserBasePathUnix"/>
         </parameters>
 
     </version>
