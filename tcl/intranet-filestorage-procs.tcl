@@ -19,10 +19,12 @@ ad_library {
 ad_register_proc GET /intranet/download/project/* intranet_project_download
 ad_register_proc GET /intranet/download/customer/* intranet_customer_download
 ad_register_proc GET /intranet/download/user/* intranet_user_download
+ad_register_proc GET /intranet/download/home/* intranet_home_download
 
 ad_proc intranet_project_download {} { intranet_download "project" }
 ad_proc intranet_customer_download {} { intranet_download "customer" }
 ad_proc intranet_user_download {} { intranet_download "user" }
+ad_proc intranet_home_download {} { intranet_download "home" }
 
 # Serve the abstract URL 
 # /intranet/download/<group_id>/...
@@ -262,25 +264,9 @@ ad_proc im_filestorage_customer_component { user_id customer_id customer_name re
 ad_proc im_filestorage_user_component { user_id user_to_show_id user_name return_url} {
     Filestorage for users
 } {
-    set result ""    
-
-    set token ""
-    set user_is_employee_p [im_user_is_employee_p $user_to_show_id]
-    set user_is_freelance_p [im_user_is_freelance_p $user_to_show_id]
-    set user_is_customer_p [im_user_is_customer_p $user_to_show_id]
-
-    if {$user_is_customer_p} { set token "view_customer_fs" }
-    if {$user_is_freelance_p} { set token "view_freelance_fs" }
-    if {$user_is_employee_p} { set token "view_employee_fs" }
-
-    if {"" != $token} {
-	if {[im_permission $user_id $token]} {
-	    set user_path [im_filestorage_user_path $user_to_show_id]
-	    set folder_type "user"
-	    set result [im_filestorage_base_component $user_id $user_to_show_id $user_path $user_name $folder_type $return_url]
-	}
-    }
-    return $result
+    set user_path [im_filestorage_user_path $user_to_show_id]
+    set folder_type "user"
+    return [im_filestorage_base_component $user_id $user_to_show_id $user_path $user_name $folder_type $return_url]
 }
 
 
@@ -364,8 +350,12 @@ ad_proc im_filestorage_base_component { user_id id base_path name folder_type re
 "
 
     if { [catch {
-	ns_log Notice "im_filestorage_component: Checking $base_path"
+	ns_log Notice "im_filestorage_component: exec /bin/mkdir -p $base_path"
+	ns_log Notice "im_filestorage_component: exec /bin/chmod ug+w $base_path"
+
 	exec /bin/mkdir -p $base_path
+	exec /bin/chmod ug+w $base_path
+
 	set file_list [exec /usr/bin/find $base_path]
     } err_msg] } {
 	# Probably some permission errors - return empty string
@@ -562,15 +552,25 @@ ad_proc im_filestorage_base_component { user_id id base_path name folder_type re
 
 # ---------------------------------------------------------------------
 # Determine pathes for project, customers and users
+# All pathes end WITHOUT a trailing "/"
 # ---------------------------------------------------------------------
 
 ad_proc im_filestorage_home_path { } {
     Determine the location where global company files
     are stored on the hard disk 
 } {
-    set base_path_unix [ad_parameter "ProjectBasePathUnix" intranet "/tmp"]
+    return [util_memoize "im_filestorage_home_path_helper"]
+}
+
+ad_proc im_filestorage_home_path_helper { } {
+    Helper to determine the location where global company files
+    are stored on the hard disk 
+} {
+    set package_key "intranet-filestorage"
+    set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
+    set base_path_unix [parameter::get -package_id $package_id -parameter "HomeBasePathUnix" -default "/tmp/home"]
     ns_log Notice "im_filestorage_home_path: base_path_unix=$base_path_unix"
-    return "$base_path_unix/home"
+    return "$base_path_unix"
 }
 
 
@@ -578,7 +578,16 @@ ad_proc im_filestorage_project_path { project_id } {
     Determine the location where the project files
     are stored on the hard disk for this project
 } {
-    set base_path_unix [ad_parameter "ProjectBasePathUnix" intranet "/tmp/"]
+    return [util_memoize "im_filestorage_project_path_helper $project_id"]
+}
+
+ad_proc im_filestorage_project_path_helper { project_id } {
+    Determine the location where the project files
+    are stored on the hard disk for this project
+} {
+    set package_key "intranet-filestorage"
+    set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
+    set base_path_unix [parameter::get -package_id $package_id -parameter "ProjectBasePathUnix" -default "/tmp/projects"]
 
     # Return a demo path for all project, clients etc.
     if {[string equal "true" [ad_parameter "TestDemoDevServer" "" "false"]]} {
@@ -615,7 +624,9 @@ ad_proc im_filestorage_user_path { user_id } {
     Determine the location where the user files
     are stored on the hard disk
 } {
-    set base_path_unix [ad_parameter "UserBasePathUnix" intranet "/tmp/"]
+    set package_key "intranet-filestorage"
+    set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
+    set base_path_unix [parameter::get -package_id $package_id -parameter "UserBasePathUnix" -default "/tmp/users"]
 
     # Return a demo path for all project, clients etc.
     if {[string equal "true" [ad_parameter "TestDemoDevServer" "" "false"]]} {
@@ -624,18 +635,24 @@ ad_proc im_filestorage_user_path { user_id } {
 	return "$base_path_unix/$path"
     }
     
-    # get the user email and replace all non-alphanum characters by "_"
-    set email_raw [db_string get_email "select email from users where user_id=:user_id"]
-    regsub {[^A-Za-z0-9.]} $email_raw "_" email
-
-    return "$base_path_unix/$email"
+    return "$base_path_unix/$user_id"
 }
+
 
 ad_proc im_filestorage_customer_path { customer_id } {
     Determine the location where the project files
     are stored on the hard disk
 } {
-    set base_path_unix [ad_parameter "CustomerBasePathUnix" intranet "/tmp/"]
+    return [util_memoize "im_filestorage_customer_path_helper $customer_id"]
+}
+
+ad_proc im_filestorage_customer_path_helper { customer_id } {
+    Determine the location where the project files
+    are stored on the hard disk
+} {
+    set package_key "intranet-filestorage"
+    set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
+    set base_path_unix [parameter::get -package_id $package_id -parameter "CustomerBasePathUnix" -default "/tmp/customers"]
 
     # Return a demo path for all project, clients etc.
     if {[string equal "true" [ad_parameter "TestDemoDevServer" "" "false"]]} {
@@ -644,15 +661,15 @@ ad_proc im_filestorage_customer_path { customer_id } {
 	return "$base_path_unix/$path"
     }
 
-    set customer_short_name "undefined"
+    set customer_path "undefined"
     if {[catch {
-	set customer_name [db_string get_customer_path "select customer_path from im_customers where customer_id=:customer_id"]
+	set customer_path [db_string get_customer_path "select customer_path from im_customers where customer_id=:customer_id"]
     } errmsg]} {
 	ad_return_complaint 1 "<LI>Internal Error: Unable to determine the file path for customer \#$customer_id"
 	return
     }
 
-    return "$base_path_unix/$customer_short_name"
+    return "$base_path_unix/$customer_path"
 }
 
 
@@ -735,19 +752,28 @@ where
     # Create a customer directory if it doesn't already exist
     set customer_dir "$base_path_unix/$customer_short_name"
     if { [catch {
-	if {![file exists $customer_dir]} { exec /bin/mkdir -p $customer_dir }
+	if {![file exists $customer_dir]} { 
+	    exec /bin/mkdir -p $customer_dir 
+	    exec /bin/chmod ug+w $customer_dir
+	}
     } err_msg] } { return $err_msg }
 
     # Create the project dir if it doesn't already exist
     set project_dir "$base_path_unix/$customer_short_name/$project_short_name"
     if { [catch { 
-	if {![file exists $project_dir]} { exec /bin/mkdir -p $project_dir }
+	if {![file exists $project_dir]} { 
+	    exec /bin/mkdir -p $project_dir 
+	    exec /bin/chmod ug+w $project_dir 
+	}
     } err_msg]} { return $err_msg }
 
     # Create a source language directory
     set source_dir "$project_dir/source_$source_language"
     if {[catch {
-	if {![file exists $source_dir]} {exec /bin/mkdir -p $source_dir} 
+	if {![file exists $source_dir]} {
+	    exec /bin/mkdir -p $source_dir
+	    exec /bin/chmod ug+w $source_dir
+	} 
     } err_msg]} { return $err_msg }
     
     # Create a new target language director for every
@@ -764,7 +790,9 @@ where
 	    ns_log Notice "new dir=$dir"
 	    if {![file exists $dir]} {
 		if {[catch {
-		    exec /bin/mkdir -p $dir} err_msg] 
+		    exec /bin/mkdir -p $dir
+		    exec /bin/chmod ug+w $dir
+		} err_msg] 
 		} { return $err_msg }
 	    }
 	}
