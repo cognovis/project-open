@@ -54,24 +54,33 @@ from
 
 delete from im_view_columns where column_id > 12004 and column_id < 12099;
 --
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (12001,120,NULL,'user_email','$user_email','','',1,'');
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (12003,120,NULL,'translation_rate','$translation_rate','','',3,'');
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (12005,120,NULL,'editing_rate','$editing_rate','','',5,'');
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (12007,120,NULL,'hourly_rate','$hourly_rate','','',7,'');
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (12009,120,NULL,'bank_account','$bank_account','','',9,'');
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (12011,120,NULL,'bank','$bank','','',11,'');
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (12013,120,NULL,'payment_method','$payment_method','','',11,'');
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (12015,120,NULL,'note','$note','','',11,'');
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (12017,120,NULL,'private_note','$private_note','','',11,'');
+insert into im_view_columns (column_id, view_id, group_id, column_name, 
+column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (
+12001,120, NULL,'user_email','$user_email','','',1,'');
+insert into im_view_columns (column_id, view_id, group_id, column_name, 
+column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (
+12003,120,NULL,'translation_rate','$translation_rate','','',3,'');
+insert into im_view_columns (column_id, view_id, group_id, column_name, 
+column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (
+12005,120,NULL,'editing_rate','$editing_rate','','',5,'');
+insert into im_view_columns (column_id, view_id, group_id, column_name, 
+column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (
+12007,120,NULL,'hourly_rate','$hourly_rate','','',7,'');
+insert into im_view_columns (column_id, view_id, group_id, column_name, 
+column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (
+12009,120,NULL,'bank_account','$bank_account','','',9,'');
+insert into im_view_columns (column_id, view_id, group_id, column_name, 
+column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (
+12011,120,NULL,'bank','$bank','','',11,'');
+insert into im_view_columns (column_id, view_id, group_id, column_name, 
+column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (
+12013,120,NULL,'payment_method','$payment_method','','',11,'');
+insert into im_view_columns (column_id, view_id, group_id, column_name, 
+column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (
+12015,120,NULL,'note','[ns_urlencode $note]','','',11,'');
+insert into im_view_columns (column_id, view_id, group_id, column_name, 
+column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (
+12017,120,NULL,'private_note','[ns_urlencode $private_note]','','',11,'');
 
 --
 commit;

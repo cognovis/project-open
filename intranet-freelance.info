@@ -9,6 +9,7 @@
     <auto-mount>intranet-freelance</auto-mount>
 
     <version name="3.0.0" url="http://openacs.org/repository/download/apm/intranet-freelance-3.0.0.apm">
+
         <owner url="mailto:guillermo.belcic@project-open.com">Guillermo Belcic</owner>
         <summary>Freelance Skills, &quot;Marketplace&quot; workflow to ask freelancers by mail whether they want to participate in a project</summary>
         <vendor url="http://www.project-open.com/">Project/Open</vendor>
