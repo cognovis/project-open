@@ -30,6 +30,7 @@ ad_page_contract {
 # User id already verified by filters
 set user_id [ad_maybe_redirect_for_registration]
 set base_path [im_filestorage_base_path $folder_type $object_id]
+set context_bar ""
 
 
 set url_base_list [split $return_url "?"]
@@ -171,8 +172,7 @@ $dirs_html
 [_ intranet-filestorage.lt_Please_backup_select_]<p>
 "
 	}
-
-        doc_return  200 text/html [im_return_template]
+        ad_return_template
         return
 
     }
