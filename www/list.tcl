@@ -65,7 +65,7 @@ ad_page_contract {
 
 # User id already verified by filters
 set user_id [ad_maybe_redirect_for_registration]
-set page_title "Cost Items"
+set page_title "[_ intranet-cost.Cost_Items]"
 set context_bar [ad_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 set return_url [im_url_with_query]
@@ -88,7 +88,7 @@ set end_idx [expr $start_idx + $how_many - 1]
 # we want to show:
 #
 set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name" -default 0]
-if {!$view_id} { ad_return_complaint 1 "<li>Didn't find the the view '$view_name'"}
+if {!$view_id} { ad_return_complaint 1 "<li>[_ intranet-cost.lt_Didnt_find_the_the_vi]"}
 set column_headers [list]
 set column_vars [list]
 
@@ -107,7 +107,8 @@ order by
 
 db_foreach column_list_sql $column_sql {
     if {"" == $visible_for || [eval $visible_for]} {
-	lappend column_headers "$column_name"
+	regsub -all " " $column_name "_" column_key
+	lappend column_headers "[_ intranet-cost.$column_key]"
 	lappend column_vars "$column_render_tcl"
     }
 }
@@ -313,7 +314,8 @@ if {"" != $parent_menu_label} {
     db_foreach menu_select $menu_select_sql {
 	
 	ns_log Notice "im_sub_navbar: menu_name='$name'"
-	append new_document_menu "<li><a href=\"$url\">$name</a></li>\n"
+	regsub -all " " $name "_" name_key
+	append new_document_menu "<li><a href=\"$url\">[_ intranet-cost.$name_key]</a></li>\n"
     }
 }
 
@@ -335,20 +337,20 @@ set filter_html "
 	<table border=0 cellpadding=1 cellspacing=1>
 	  <tr> 
 	    <td colspan='2' class=rowtitle align=center>
-	      Filter Documents
+	      [_ intranet-cost.Filter_Documents]
 	    </td>
 	  </tr>
 	  <tr>
-	    <td>Document Status:</td>
+	    <td>[_ intranet-cost.Document_Status]:</td>
 	    <td>
               [im_select cost_status_id $status_types ""]
             </td>
 	  </tr>
 	  <tr>
-	    <td>Document Type:</td>
+	    <td>[_ intranet-cost.Document_Type]:</td>
 	    <td>
               [im_select cost_type_id $type_types ""]
-              <input type=submit value=Go name=submit>
+              <input type=submit value='[_ intranet-cost.Go]' name=submit>
             </td>
 	  </tr>
 	</table>
@@ -361,7 +363,7 @@ set filter_html "
 	<table border=0 cellpadding=1 cellspacing=1>
 	  <tr> 
 	    <td colspan='2' class=rowtitle align=center>
-	      Cost Item Administration
+	      [_ intranet-cost.lt_Cost_Item_Administrat]
 	    </td>
 	  </tr>
 	  <tr>
@@ -453,7 +455,7 @@ db_foreach costs_info_query {} {
 if { [empty_string_p $table_body_html] } {
     set table_body_html "
         <tr><td colspan=$colspan><ul><li><b> 
-        There are currently no costs matching the selected criteria
+        [_ intranet-cost.lt_There_are_currently_n]
         </b></ul></td></tr>"
 }
 
@@ -487,7 +489,7 @@ if { $start_idx > 1 } {
 #
 if {$ctr==$how_many && $total_in_limited > 0 && $end_idx < $total_in_limited} {
     set next_start_idx [expr $end_idx + 1]
-    set next_page "<a href=$local_url?start_idx=$next_start_idx&[export_ns_set_vars url [list start_idx]]>Next Page</a>"
+    set next_page "<a href=$local_url?start_idx=$next_start_idx&[export_ns_set_vars url [list start_idx]]>[_ intranet-cost.Next_Page]</a>"
 } else {
     set next_page ""
 }
@@ -501,7 +503,7 @@ if { $start_idx > 1 } {
     if { $previous_start_idx < 1 } {
 	set previous_start_idx 1
     }
-    set previous_page "<a href=$local_url?start_idx=$previous_start_idx&[export_ns_set_vars url [list start_idx]]>Previous Page</a>"
+    set previous_page "<a href=$local_url?start_idx=$previous_start_idx&[export_ns_set_vars url [list start_idx]]>[_ intranet-cost.Previous_Page]</a>"
 } else {
     set previous_page ""
 }
@@ -517,10 +519,10 @@ set button_html "
 <tr>
   <td colspan=[expr $colspan - 3]></td>
   <td align=center>
-    <input type=submit name=submit value='Save'>
+    <input type=submit name=submit value='[_ intranet-cost.Save]'>
   </td>
   <td align=center>
-    <input type=submit name=submit value='Del'>
+    <input type=submit name=submit value='[_ intranet-cost.Del]'>
   </td>
 </tr>"
 
@@ -530,7 +532,7 @@ set button_html "
 
 set page_body "
 $filter_html
-[im_costs_navbar $letter "/intranet-cost/list" $next_page_url $previous_page_url [list cost_status_id cost_type_id company_id start_idx order_by how_many view_name letter] "costs"]
+[im_costs_navbar $letter "/intranet-cost/list" $next_page_url $previous_page_url [list cost_status_id cost_type_id company_id start_idx order_by how_many view_name letter] "<#_ costs#>"]
 
 <form action=/intranet-cost/costs/cost-action method=POST>
 [export_form_vars company_id cost_id return_url]
@@ -546,4 +548,4 @@ $filter_html
 
 db_release_unused_handles
 
-doc_return  200 text/html [im_return_template]
+#doc_return  200 text/html [im_return_template]

@@ -27,7 +27,7 @@
 
 	    <table cellspacing=1 cellpadding=1 border=0>
 	    <tr>
-	      <td class=rowtitle align=center>Administration</td>
+	      <td class=rowtitle align=center>#intranet-cost.Administration#</td>
 	    </tr>
 	    <tr>
 	      <td>
@@ -38,5 +38,6 @@
   </td>
 </tr>
 </table>
+
 
 

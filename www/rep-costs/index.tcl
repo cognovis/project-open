@@ -45,7 +45,7 @@ if {"" == $start_date} {
 regexp {(....)-(..)-(..)} $start_date match start_year start_month start_day
 
 if {"" == $start_month || $start_month < 1 || $start_month > 12} {
-    ad_return_complaint 1 "<li>Wrong date '$start_date'"
+    ad_return_complaint 1 "<li><#_ Wrong date#> '$start_date'"
     return
 }
 
@@ -89,7 +89,7 @@ where	start_block >= rc.start_date
 db_foreach all_start_blocks $all_start_blocks_sql {
     set key "$rep_cost_id:$start_block"
     # Fill the field with a link to create a new cost item
-    set blocks($key) "<a href=$cost_create_url?[export_url_vars rep_cost_id start_block return_url]>(create)</a>"
+    set blocks($key) "<a href=$cost_create_url?[export_url_vars rep_cost_id start_block return_url]>(<#_ create#>)</a>"
     ns_log Notice "/intranet-cos/rep-costs/index: key=$key"
 }
 
