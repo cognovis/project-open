@@ -35,7 +35,7 @@
   <msg key="lt_Recruiting_Test_Resul">Recruiting Test Result</msg>
   <msg key="lt_The_database_choked_o">The database choked on our insert</msg>
   <msg key="lt_There_are_currently_n">There are currently no entries matching the selected criteria</msg>
-  <msg key="lt_There_are_currently_n_1">There are currently no $skill_type.</msg>
+  <msg key="lt_There_are_currently_n_1">There are currently no %skill_type%.</msg>
   <msg key="lt_upload_a_replacement_">upload a %replacement_text%</msg>
   <msg key="lt_uploaded_for_this_use">uploaded for this user.</msg>
   <msg key="lt_We_cannot_find_you_us">We cannot find you (user #%user_id%) in the users table.</msg>
