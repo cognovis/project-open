@@ -109,12 +109,14 @@ namespace eval im_cost {
 	    db_dml insert_costs "
 	insert into im_costs (
 		cost_id,
+		cost_nr,
 		cost_name,
 		customer_id,
 		provider_id,
 		cost_type_id,
 		cost_status_id
 	) values (
+		:cost_id,
 		:cost_id,
 		:cost_name,
 		:customer_id,
