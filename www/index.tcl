@@ -73,8 +73,8 @@ if {[string equal $forum_view_name "forum_list_tasks"]} {
 #
 set forum_topic_types [im_memoize_list select_forum_topic_types \
 			   "select * from im_forum_topic_types order by topic_type_id"]
-set forum_topic_types [linsert $forum_topic_types 0 1 "[_ intranet-forum.Tasks__Incidents]"]
-set forum_topic_types [linsert $forum_topic_types 0 0 "[_ intranet-forum.All]"]
+set forum_topic_types [linsert $forum_topic_types 0 1 "Tasks / Incidents]"]
+set forum_topic_types [linsert $forum_topic_types 0 0 "All"]
 ns_log Notice "/intranet-forum/index: forum_topic_types=$forum_topic_types"
 
 # project_types will be a list of pairs of (project_type_id, project_type)
@@ -173,5 +173,4 @@ $forum_content
 
 db_release_unused_handles
 
-
-doc_return  200 text/html [im_return_template]
+ad_return_template
