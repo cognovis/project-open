@@ -14,8 +14,8 @@ END;
 /
 
 drop function im_trans_prices_calc_relevancy;
-drop function im_trans_prices_calc_price;
-drop function im_trans_prices_calc_currency;
+-- drop function im_trans_prices_calc_price;
+-- drop function im_trans_prices_calc_currency;
 
 drop sequence im_trans_prices_seq;
 drop table im_trans_prices;
