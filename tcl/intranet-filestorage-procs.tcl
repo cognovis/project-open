@@ -340,6 +340,7 @@ ad_proc im_filestorage_project_path { project_id } {
     Determine the location where the project files
     are stored on the hard disk for this project
 } {
+    return [im_filestorage_project_path_helper $project_id]
     return [util_memoize "im_filestorage_project_path_helper $project_id"]
 }
 
@@ -677,6 +678,7 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     @param bread_crum_path: a relative path, starting from the base_path
            "" = root directory, "dir1" = next directory, "dir1/dir2" = second next, etc.
 } {
+    ns_log Notice "im_filestorage_base_component $user_id $object_id $object_name $base_path $folder_type"
 
     set bgcolor(0) "roweven"
     set bgcolor(1) "rowodd"
@@ -705,6 +707,8 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     set find_path "$base_path$bread_crum_join$bread_crum_path"
     if { [catch {
 	# Executing the find command
+        exec /bin/mkdir -p $find_path
+        exec /bin/chmod ug+w $find_path
 	set file_list [exec /usr/bin/find $find_path]
     } err_msg] } { 
 	return "<ul><li>Unable to get file list from '$find_path'</ul>"
