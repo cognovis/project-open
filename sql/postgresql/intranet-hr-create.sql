@@ -298,6 +298,6 @@ select im_priv_create('view_hr',	'Accounting');
 ------------------------------------------------------
 -- Load common definitions and backup
 
-@../common/intranet-hr-create.sql
+@../common/intranet-hr-common.sql
 @../common/intranet-hr-backup.sql
 
