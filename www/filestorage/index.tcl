@@ -14,7 +14,7 @@ ad_page_contract {
 }
 
 # User id already verified by filters
-set user_id [ad_get_user_id]
+set user_id [ad_maybe_redirect_for_registration]
 set page_title "File Tree"
 set context_bar [ad_context_bar $page_title]
 set page_focus ""
