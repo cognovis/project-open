@@ -64,14 +64,14 @@ append cost_name " - $start_block"
 set cost_id [im_new_object_id]
 set cause_object_id $rep_cost_id
 
-set project_options [im_cost_project_options]
-set customer_options [im_cost_customer_options]
-set provider_options [im_cost_provider_options]
+set project_options [im_project_options]
+set customer_options [im_customer_options]
+set provider_options [im_provider_options]
 set cost_type_options [im_cost_type_options]
 set cost_status_options [im_cost_status_options]
 set investment_options [im_cost_investment_options]
 set template_options [im_cost_template_options]
-set currency_options [im_cost_currency_options]
+set currency_options [im_currency_options]
 
 
 ad_form \

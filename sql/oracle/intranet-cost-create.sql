@@ -84,7 +84,14 @@ create table im_cost_centers (
 				primary key
 				constraint im_cost_centers_id_fk
 				references acs_objects,
-	cost_center_name	varchar(100) not null,
+	cost_center_name	varchar(100) 
+				constraint im_cost_centers_name_nn
+				not null,
+	cost_center_label	varchar(100)
+				constraint im_cost_centers_label_nn
+				not null
+				constraint im_cost_centers_label_un
+				unique,
 	cost_center_type_id	integer not null
 				constraint im_cost_centers_type_fk
 				references im_categories,
@@ -107,6 +114,7 @@ create table im_cost_centers (
 	description		varchar(4000),
 	note			varchar(4000),
 		-- don't allow two cost centers under the same parent
+		constraint im_cost_centers_un
 		unique(cost_center_name, parent_id)
 );
 create index im_cost_centers_parent_id_idx on im_cost_centers(parent_id);
@@ -124,7 +132,8 @@ is
 	creation_user	in integer default null,
 	creation_ip	in varchar default null,
 	context_id	in integer default null,
-	cost_center_name		in varchar,
+	cost_center_name in varchar,
+	cost_center_label in varchar,
 	type_id		in integer,
 	status_id	in integer,
 	parent_id	in integer,
@@ -151,7 +160,8 @@ is
 	creation_user	in integer default null,
 	creation_ip	in varchar default null,
 	context_id	in integer default null,
-	cost_center_name		in varchar,
+	cost_center_name in varchar,
+	cost_center_label in varchar,
 	type_id		in integer,
 	status_id	in integer,
 	parent_id	in integer,
@@ -173,13 +183,17 @@ is
 	);
 
 	insert into im_cost_centers (
-		cost_center_id, cost_center_name, cost_center_type_id, 
-		cost_center_status_id, parent_id, manager_id,
+		cost_center_id, 
+		cost_center_name, cost_center_label,
+		cost_center_type_id, cost_center_status_id, 
+		parent_id, manager_id,
 		department_p,
 		description, note
 	) values (
-		new.v_cost_center_id, new.cost_center_name, new.type_id, 
-		new.status_id, new.parent_id, new.manager_id, 
+		new.v_cost_center_id, 
+		new.cost_center_name, new.cost_center_label,
+		new.type_id, new.status_id, 
+		new.parent_id, new.manager_id, 
 		new.department_p,
 		new.description, new.note
 	);
@@ -304,6 +318,7 @@ begin
     -- This should be the only center with parent=null...
     v_the_company_center := im_cost_center.new (
 	cost_center_name =>	'The Company',
+	cost_center_label =>	'company',
 	type_id =>		3002,
 	status_id =>		3101,
 	parent_id => 		null,
@@ -324,6 +339,7 @@ begin
     --
     v_administrative_center := im_cost_center.new (
 	cost_center_name =>		'Administration',
+	cost_center_label =>	'admin',
 	type_id =>	3001,
 	status_id =>	3101,
 	parent_id => 	v_the_company_center,
@@ -337,6 +353,7 @@ begin
     --
     v_utilities_center := im_cost_center.new (
 	cost_center_name =>	'Rent and Utilities',
+	cost_center_label =>	'utilities',
 	type_id =>		3001,
 	status_id =>		3101,
 	parent_id => 		v_the_company_center,
@@ -350,6 +367,7 @@ begin
     --
     v_sales_center := im_cost_center.new (
 	cost_center_name =>	'Sales',
+	cost_center_label =>	'sales',
 	type_id =>		3001,
 	status_id =>		3101,
 	parent_id => 		v_the_company_center,
@@ -363,6 +381,7 @@ begin
     --
     v_marketing_center := im_cost_center.new (
 	cost_center_name =>	'Marketing',
+	cost_center_label =>	'marketing',
 	type_id =>		3001,
 	status_id =>		3101,
 	parent_id => 		v_the_company_center,
@@ -376,6 +395,7 @@ begin
     --
     v_projects_center := im_cost_center.new (
 	cost_center_name =>	'Project Operations',
+	cost_center_label =>	'operations',
 	type_id =>		3001,
 	status_id =>		3101,
 	parent_id => 		v_the_company_center,
