@@ -1,11 +1,12 @@
 -- /packages/intranet-freelance/sql/oracle/intranet-freelance-drop.sql
 --
--- Removes the freelance data model from the database
+-- Copyright (c) 2003-2004 Project/Open
 --
--- @author Frank Bergmann (fraber@fraber.de)
+-- All rights reserved. Please check
+-- http://www.project-open.com/license/ for details.
+--
 -- @author guillermo.belcic@project-open.com
---
-
+-- @author frank.bergmann@project-open.com
 
 -----------------------------------------------------
 -- Drop menus and components defined by the module

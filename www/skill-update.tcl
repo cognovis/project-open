@@ -1,9 +1,14 @@
-# /www/intranet/users/skill-update.tcl
+# /packages/intranet-freelance/www/intranet/users/skill-update.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
 
 ad_page_contract {
     Accepts "Update", "Del" and "Add" buttons from skill-edit.
     @author Guillermo Belcic
-    @creation-date October 07, 2003
+    @author frank.bergmann@project-open.com
 } {
     user_id:integer,optional,notnull
     user_id_from_search:integer,optional,notnull

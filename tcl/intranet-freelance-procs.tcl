@@ -1,4 +1,9 @@
 # /packages/intranet-freelance/tcl/intranet-freelance-procs.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
 
 ad_library {
     Common procedures to implement freelancer specific functions:
@@ -7,7 +12,7 @@ ad_library {
     - Freelance "Marketplace"
 
     @author guillermo.belcic@sls-international.com
-    @creation-date October 2003
+    @author frank.bergmann@project-open.com
 }
 
 

@@ -1,11 +1,16 @@
-# /www/intranet-freelance/skill-edit.tcl
+# /packages/intranet-freelance/www/intranet-freelance/skill-edit.tcl
+#
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
 
 ad_page_contract {
     Display information about one user
     (makes heavy use of procedures in /tcl/ad-user-contributions-summary.tcl)
     @cvs-id languages-recon.tcl
     @author Guillermo Belcic
-    @creation-date October 03, 2003
+    @author frank.bergmann@project-open.com
 } {
     user_id:integer,optional,notnull
     user_id_from_search:integer,optional,notnull

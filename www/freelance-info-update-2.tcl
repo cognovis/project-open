@@ -1,11 +1,15 @@
-# /www/admin/users/freelance-info-update-2.tcl
+# /packages/intranet-freelance/www/admin/users/freelance-info-update-2.tcl
 #
+# Copyright (C) 2003-2004 Project/Open
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
+
 
 ad_page_contract {
     @param user_id
     @author Guillermo Belcic
-    @creation-date 10-13-2003
-    @cvs-id freelance-info-update-2.tcl,v 3.2.2.4.2.6 2000/09/12 20:11:22 cnk Exp
+    @frank.bergann@project-open.com
 } {
     user_id:integer,notnull
     { translation_rate "" }

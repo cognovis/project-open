@@ -1,3 +1,14 @@
+-- /packages/intranet-freelance/sql/oracle/intranet-freelance-create.sql
+--
+-- Copyright (c) 2003-2004 Project/Open
+--
+-- All rights reserved. Please check
+-- http://www.project-open.com/license/ for details.
+--
+-- @author guillermo.belcic@project-open.com
+-- @author frank.bergmann@project-open.com
+
+
 -----------------------------------------------------------
 -- Freelance Management specific data model
 --
