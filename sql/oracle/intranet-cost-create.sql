@@ -420,27 +420,57 @@ create table im_cost_items (
 	item_id			integer
 				constraint im_cost_items_pk
 				primary key,
-	name			varchar(400),
+	-- force a name because we may want to use object.name()
+	-- later to list cost items
+	item_name		varchar(400)
+				constraint im_cost_items_name_nn
+				not null,
 	project_id		integer
 				constraint im_cost_items_project_fk
 				references im_projects,
+				-- who pays?
 	customer_id		integer
+				constraint im_cost_items_customer_nn
+				not null
 				constraint im_cost_items_customer_fk
 				references im_customers,
+				-- who gets paid?
+	provider_id		integer
+				constraint im_cost_items_provider_nn
+				not null
+				constraint im_cost_items_provider_fk
+				references im_customers,
+	item_status_id		integer
+				constraint im_cost_items_status_nn
+				not null
+				constraint im_cost_items_status_fk
+				references im_categories,
+	item_type_id		integer
+				constraint im_cost_item_type_nn
+				not null
+				constraint im_cost_item_type_fk
+				references im_categories,
+	template_id		integer
+				constraint im_cost_item_template_fk
+				references im_categories,
 	investment_id		integer
 				constraint im_cost_items_inv_fk
 				references im_investments,
-	creation_date		date,
-	creator_id		integer
-				constraint im_cost_items_creator_fk
-				references parties,
-	input_date		date,
-	due_date		date,
+	-- when does the invoice start to be valid?
+	-- due_date is input_date + payment_days.
+	effective_date		date,
+	payment_days		integer,
 	payment_date		date,
+	-- amount=null means calculated amount, for example
+	-- with an invoice
 	amount			number(12,3),
 	currency		char(3) 
 				constraint im_cost_items_currency_fk
 				references currency_codes(iso),
+	-- % of total price is VAT
+	vat			number(12,5),
+	-- % of total price is TAX
+	tax			number(12,5)
 	-- Classification of variable against fixed costs
 	variable_cost_p		char(1)
 				constraint im_cost_items_var_ck
@@ -461,5 +491,186 @@ create table im_cost_items (
 	planning_p		char(1)
 				constraint im_cost_items_planning_ck
 				check (planning_p in ('t','f')),
-	description		varchar(4000)
+	planning_type_id	integer
+				constraint im_cost_items_planning_type_fk
+				references im_categories,
+	description		varchar(4000),
+	note			varchar(4000)
 );
+
+
+
+begin
+    acs_object_type.create_type (
+	supertype =>		'acs_object',
+	object_type =>		'im_cost_item',
+	pretty_name =>		'Cost Item',
+	pretty_plural =>	'Cost Items',
+	table_name =>		'im_cost_items',
+	id_column =>		'item_id',
+	package_name =>		'im_cost_item',
+	type_extension_table =>	null,
+	name_method =>		'im_cost_item.name'
+    );
+end;
+/
+show errors
+
+
+create or replace package im_cost_item
+is
+    function new (
+	item_id			in integer default null,
+	object_type		in varchar default 'im_cost_item',
+	creation_date		in date default sysdate,
+	creation_user		in integer default null
+	creation_ip		in varchar default null,
+	context_id		in integer default null,
+
+	item_name		in varchar default null,
+	parent_id		in integer default null,
+	project_id		in integer default null,
+	customer_id		in integer,
+	provider_id		in integer,
+	investment_id		in integer default null,
+
+	item_status_id		in integer,
+	item_type_id		in integer,
+	template_id		in integer default null,
+
+	effective_date		in date default sysdate,
+	payment_days		in integer default 30,
+	paxment_date		in date default sysdate+30,
+	amount			number default null,
+	currency		in char default 'EUR',
+	vat			in number default 0,
+	tax			in number default 0,
+
+	variable_cost_p		in char default 'f',
+	needs_redistribution_p  in char default 'f',
+	redistributed_p		in char default 'f',
+	planning_p		in char default 'f',
+	planning_type_id	in integer default null,
+
+	note			in varchar default null,
+	description		in varchar default null
+    ) return im_cost_items.item_id%TYPE;
+
+    procedure del (item_id in integer);
+    function name (item_id in integer) return varchar;
+end im_cost_item;
+/
+show errors
+
+
+
+
+create or replace package body im_cost_item
+is
+    function new (
+        item_id                 in integer default null,
+        object_type             in varchar default 'im_cost_item',
+        creation_date           in date default sysdate,
+        creation_user           in integer default null
+        creation_ip             in varchar default null,
+        context_id              in integer default null,
+
+        item_name               in varchar default null,
+        parent_id               in integer default null,
+        project_id              in integer default null,
+        customer_id             in integer,
+        provider_id             in integer,
+        investment_id           in integer default null,
+
+        item_status_id          in integer,
+        item_type_id            in integer,
+        template_id             in integer default null,
+
+        effective_date          in date default sysdate,
+        payment_days            in integer default 30,
+        paxment_date            in date default sysdate+30,
+        amount                  number default null,
+        currency                in char default 'EUR',
+        vat                     in number default 0,
+        tax                     in number default 0,
+
+        variable_cost_p         in char default 'f',
+        needs_redistribution_p  in char default 'f',
+        redistributed_p         in char default 'f',
+        planning_p              in char default 'f',
+        planning_type_id        in integer default null,
+
+        note                    in varchar default null,
+        description             in varchar default null
+    ) return im_cost_items.item_id%TYPE;
+    is
+	v_cost_item_id    im_cost_items.cost_item_id%TYPE;
+    begin
+	v_cost_item_id := acs_object.new (
+		object_id =>		cost_item_id,
+		object_type =>		object_type,
+		creation_date =>	creation_date,
+		creation_user =>	creation_user,
+		creation_ip =>		creation_ip,
+		context_id =>		context_id
+	);
+
+	insert into im_cost_items (
+		item_id, item_name, project_id, 
+		customer_id, provider_id, 
+		item_status_id, item_type_id,
+		template_id, investment_id,
+		effective_date, payment_days, payment_date,
+		amount, currency, vat, tax,
+		variable_cost_p, needs_redistribution_p,
+		parent_id, redistributed_p, 
+		planning_p, planning_type_id, 
+		description, note
+	) values (
+		v_csot_item_id, new.item_name, new.project_id, 
+		new.customer_id, new.provider_id, 
+		new.item_status_id, new.item_type_id,
+		new.template_id, new.investment_id,
+		new.effective_date, new.payment_days, new.payment_date,
+		new.amount, new.currency, new.vat, new.tax,
+		new.variable_cost_p, new.needs_redistribution_p,
+		new.parent_id, new.redistributed_p, 
+		new.planning_p, new.planning_type_id, 
+		new.description, new.note
+	);
+
+	return v_cost_item_id;
+    end new;
+
+    -- Delete a single cost_item (if we know its ID...)
+    procedure del (item_id in integer)
+    is
+    begin
+	-- Erase the im_cost_item
+	delete from     im_cost_items
+	where		cost_item_id = del.cost_item_id;
+
+	-- Erase the object
+	acs_object.del(del.item_id);
+    end del;
+
+    function name (item_id in integer) return varchar
+    is
+	v_name  varchar(40);
+    begin
+	select  item_name
+	into    v_name
+	from    im_cost_items
+	where   cost_item_id = name.cost_item_id;
+
+	return v_name;
+    end name;
+
+end im_cost_item;
+/
+show errors
+
+
+
+
+
