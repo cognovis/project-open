@@ -274,7 +274,7 @@ ad_proc im_freelance_info_component { current_user_id user_id return_url freelan
 	order by sort_order"
 
    set freelance_html "
-	<form method=GET action=/intranet-freelance/freelance-info-update>
+	<form method=POST action=/intranet-freelance/freelance-info-update>
 	[export_form_vars user_id return_url]
 	<table cellpadding=0 cellspacing=2 border=0>
 	<tr> 
@@ -461,7 +461,7 @@ if { $admin } {
     db_foreach column_list $sql {
 	if {$old_skill_type_id != $skill_type_id} {
         append languages_butons_html "
-<td><form method=GET action=/intranet-freelance/skill-edit>
+<td><form method=POST action=/intranet-freelance/skill-edit>
 [export_form_vars user_id skill_type_id return_url]
 <input type=submit value=Edit></form></td>"
         set old_skill_type_id $skill_type_id
