@@ -317,7 +317,7 @@ ad_proc im_filestorage_base_component { user_id id base_path name folder_type re
     if {$write_p} {
 	append component_body "<A href='/intranet-filestorage/upload?[export_url_vars folder folder_type project_id return_url]'>[im_gif "exp-folder"]</A>"
     } else {
-	append component_body [im_giv "exp-folder"]
+	append component_body [im_gif "exp-folder"]
     }
 
     append component_body "
