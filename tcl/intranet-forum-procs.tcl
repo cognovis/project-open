@@ -130,7 +130,7 @@ ad_proc -public im_forum_scope_html {scope } {
 } {
     set html ""
     switch $scope {
-	public { set html "[_ intranet-forum.lt_Public_everybody_in_t"}
+	public { set html "[_ intranet-forum.lt_Public_everybody_in_t]"}
 	group {set html "[_ intranet-forum.All_group_members]"}
 	staff { set html "[_ intranet-forum.lt_Staff_group_members_o]"}
 	client { set html "[_ intranet-forum.lt_Client_group_members_]"}
@@ -772,14 +772,17 @@ ad_proc -public im_forum_component {
 	ns_log Notice "im_forum_component: eval=$cmd_eval"
 	set cmd "set cmd_eval $col"
         eval $cmd
+	if { [regexp "im_gif" $col] } {
+	    set col_tr $cmd_eval
+	} else {
+	    set col_tr [_ intranet-forum.[lang::util::suggest_key $cmd_eval]]
+	}
 
-	set col_txt [lang::util::suggest_key $col]
-	set cmd_eval_txt [lang::util::suggest_key $cmd_eval]
 	if { [string compare $forum_order_by $cmd_eval] == 0 } {
-	    append table_header_html "  <td class=rowtitle>[_ intranet-forum.$col_txt]</td>\n"
+	    append table_header_html "  <td class=rowtitle>$col_tr</td>\n"
 	} else {
 	    append table_header_html "  <td class=rowtitle>
-            <a href=$current_page_url?$pass_through_vars_html&forum_order_by=[ns_urlencode $cmd_eval]>[_ intranet-forum.$cmd_eval_txt]</a>
+            <a href=$current_page_url?$pass_through_vars_html&forum_order_by=[ns_urlencode $cmd_eval]>$col_tr</a>
             </td>\n"
 	}
     }
