@@ -154,41 +154,23 @@ if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
 }
 
-ns_log Notice "Slow query with the number of invoices"
+ns_log Notice "Slow query with the number of cost_items"
 
 set sql "
 select
         p.*,
-	i.invoice_nr,
-	i.customer_id,
-	ii.invoice_amount,
-        c.customer_name,
-        c.customer_path,
-        c.customer_path as customer_short_name,
+	ci.customer_id,
+	ci.amount,
+	ci.currency,
+	acs_object.name(ci.customer_id) as customer_name,
         im_category_from_id(p.payment_type_id) as payment_type,
         im_category_from_id(p.payment_status_id) as payment_status
 from
         im_payments p,
-	im_invoices i,
-        im_customers c,
-	(select
-		invoice_id,
-		sum(item_units * price_per_unit) as invoice_amount
-	 from im_invoice_items
-	 group by invoice_id
-	) ii
+	im_cost_items ci
 where
-	p.invoice_id=i.invoice_id(+)
-	and i.customer_id=c.customer_id(+)
-	and i.invoice_id=ii.invoice_id(+)
+	p.cost_item_id = ci.item_id(+)
         $where_clause"
-
-
-# From original code:
-#
-# [util_IllustraDatetoPrettyDate $start_block]</td>
-# [util_commify_number $fee]</td>
-
 
 # ---------------------------------------------------------------
 # 5a. Limit the SQL query to MAX rows and provide << and >>
@@ -227,7 +209,7 @@ set filter_html "
 <table>
 <tr>
   <td>
-	<form method=get action='/intranet-invoices/index'>
+	<form method=get action='/intranet-cost_items/index'>
 	[export_form_vars start_idx order_by how_many view_name include_subpayments_p letter]
 	<table border=0 cellpadding=0 cellspacing=0>
 	  <tr> 
@@ -392,7 +374,7 @@ set table_continuation_html "
 #$filter_html
 
 set page_body "
-[im_invoices_navbar $letter "/intranet-payments/index" $next_page_url $previous_page_url [list status_id type_id start_idx order_by how_many view_name letter]]
+[im_cost_items_navbar $letter "/intranet-payments/index" $next_page_url $previous_page_url [list status_id type_id start_idx order_by how_many view_name letter]]
 
 <form action=payment-action method=POST>
 [export_form_vars customer_id payment_id return_url]
