@@ -32,7 +32,7 @@ set subsite_id [ad_conn subsite_id]
 set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
 set site_url "/intranet-cost/repeating-costs"
-set cost_create_url "/intranet-cost/repeating-costs/new"
+set cost_create_url "/intranet-cost/repeating-costs/new-repeated-item"
 
 # Start with January of this year if not otherwise specified:
 if {"" == $start_date} {
@@ -64,7 +64,7 @@ db_foreach repeating_costs $repeating_costs_sql {
 # days of each month) during the lifetime of all
 # "repeating cost items".
 set all_start_blocks_sql "
-select	rc.cost_id,
+select	rc.cost_id as rep_cost_id,
         sm.start_block
 from	im_repeating_costs rc,
         im_start_months sm
@@ -75,7 +75,7 @@ where	start_block >= rc.start_date
 db_foreach all_start_blocks $all_start_blocks_sql {
     set key "$cost_id:$start_block"
     # Fill the field with a link to create a new cost item
-    set blocks($key) "<a href=$cost_create_url?[export_url_vars cost_id start_block]>(create)</a>"
+    set blocks($key) "<a href=$cost_create_url?[export_url_vars rep_cost_id start_block return_url]>(create)</a>"
 }
 
 # Get the cost for each start_block.
