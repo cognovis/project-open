@@ -29,71 +29,37 @@ ad_page_contract {
 } 
 
 # ------------------------------------------------------------------
-# Procedures
-# ------------------------------------------------------------------
-
-
-ad_proc -public im_forum_scope_select {select_name user_id {default ""} } {
-    Returns a formatted HTML "scope" select, according to user
-    permissions.
-    If the scope is limited to a the PM, just display a HTML
-    text instead of a SelectBox.
-} {
-    set public_selected ""
-    set group_selected ""
-    set staff_selected ""
-    set client_selected ""
-    set non_client_selected ""
-    set pm_selected ""
-    switch $default {
-	public { set public_selected "selected" }
-	group { set group_selected "selected" }
-	staff { set staff_selected "selected" }
-	client { set client_selected "selected" }
-	non_client { set non_client_selected "selected" }
-	pm { set pm_selected "selected" }
-    }
-
-    set option_list [list]
-    if {[im_permission $user_id add_topic_public]} { lappend option_list "<option value=public $public_selected>Public (everybody in the system)</option>\n" }
-    if {[im_permission $user_id add_topic_group]} { lappend option_list "<option value=group $group_selected>Project (all project members)</option>" }
-    if {[im_permission $user_id add_topic_staff]} { lappend option_list "<option value=staff $staff_selected>Staff (employees only)</option>" }
-    if {[im_permission $user_id add_topic_client]} { lappend option_list "<option value=client $client_selected>Clients and PM only</option>" }
-    if {[im_permission $user_id add_topic_noncli]} { lappend option_list "<option value=not_client $non_client_selected>Provider (project members without clients)</option>" }
-    if {[im_permission $user_id add_topic_pm]} { lappend option_list "<option value=pm $pm_selected>Project Manager</option>" }
-
-    if {1 == [llength $option_list]} {
-	return "ProjectManager<input type=hidden name=scope value=\"pm\">"
-    } else {
-	return "<select name=scope>[join $option_list " "]</select>"
-    }
-}
-
-ad_proc -public im_forum_scope_html {scope } {
-    Returns a formatted HTML "scope"
-} {
-    set html ""
-    switch $scope {
-	public { set html "Public (everybody in the system)"}
-	group {set html "All group members"}
-	staff { set html "Staff group members only"}
-	client { set html "Client group members and the PM only"}
-	non_client { set html "Staff and Freelance group members"}
-	pm { set html "Project Manager only"}
-	default { set html "undefined"}
-    }
-    return $html
-}
-
-
-
-
-# ------------------------------------------------------------------
 # Parameters & Default
 # ------------------------------------------------------------------
 
-set current_user_id [ad_maybe_redirect_for_registration]
+set user_id [ad_maybe_redirect_for_registration]
 set object_name ""
+
+# expect commands such as: "im_project_permissions" ...
+#
+if {$object_id != 0} {
+    # We are adding the topic to a "real" object
+    set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id"]
+    set perm_cmd "${object_type}_permissions \$user_id \$object_id object_view object_read object_write object_admin"
+    eval $perm_cmd
+} else {
+    # We've been called from /intranet/home without 
+    # an object => Yes, we are allowed to create topics.
+    set object_view 1
+    set object_read 1
+    set object_write 0
+    set object_admin 0
+}
+
+# Permission for forums:
+# A user can create messages for basically every object
+# he/she can read.
+# However, the choice of receipients of the topics depend
+# on the relatioinship between the user and the object.
+if {!$object_read} {
+    ad_return_complaint 1 "You have no rights to add members to this object."
+    return
+}
 
 set todays_date [lindex [split [ns_localsqltimestamp] " "] 0]
 set bgcolor(0) " class=roweven"
@@ -144,14 +110,14 @@ if {!$done && $topic_id == 0} {
     set receive_updates "major"
     set topic_status_id [im_topic_status_id_open]
     set topic_status "Open"
-    set owner_id $current_user_id
+    set owner_id $user_id
     set asignee_id ""
     set due_date $todays_date
     set topic_type [db_string topic_sql "select category from im_categories where category_id=:topic_type_id" -default ""]
 
     set submit_action "New $topic_type"
     set page_title "New $topic_type"
-    set context_bar [ad_context_bar [list /intranet/forum/ Forum] $page_title]
+    set context_bar [ad_context_bar [list /intranet-forum/ Forum] $page_title]
     set done 1
 }
 
@@ -181,7 +147,7 @@ where
     db_1row get_topic $topic_sql
 
     # doubleclick protection: get the topic ID right now.
-    set owner_id $current_user_id
+    set owner_id $user_id
     set asignee_id ""
     set read_p "f"
     set folder_id 0
@@ -198,8 +164,7 @@ where
     set submit_action "New $topic_type"
     set page_title "New $topic_type"
 
-# We change the previous /intranet/forum/ with /forum/
-    set context_bar [ad_context_bar [list /forum/ Forum] $page_title]
+    set context_bar [ad_context_bar [list /intranet-forum/ Forum] $page_title]
     set done 1
 }
 
@@ -220,7 +185,7 @@ select
 	sc.category as topic_status
 from
 	im_forum_topics t,
-      (select * from im_forum_topic_user_map where user_id=:current_user_id) m,
+      (select * from im_forum_topic_user_map where user_id=:user_id) m,
 	users ou,
 	users au,
 	im_projects ug,
@@ -240,7 +205,7 @@ where
      if {$due_date == ""} { set due_date $todays_date }
      set submit_action "Save Changes"
      set page_title "Edit Topic"
-     set context_bar [ad_context_bar [list /intranet/forum/ Forum] $page_title]
+     set context_bar [ad_context_bar [list /intranet-forum/ Forum] $page_title]
      set done 1
 }
 
@@ -300,7 +265,7 @@ ns_log Notice "new-tind: topic_status_id=$topic_status_id, old_topic_status_id=$
  # Show editing widgets when we are editing a new page
  # and for the owner (to make changes to his text).
  #
- if {$current_user_id == $owner_id || [string equal $action_type "new_message"]} {
+ if {$user_id == $owner_id || [string equal $action_type "new_message"]} {
      append table_body "
 	 <tr $bgcolor([expr $ctr % 2])>
 	   <td>$topic_type Subject</td>
@@ -331,7 +296,7 @@ ns_log Notice "new-tind: topic_status_id=$topic_status_id, old_topic_status_id=$
     append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
 	  <td>In Group</td><td>
-[im_project_select object_id $project_status_open "" "" "" $current_user_id]
+[im_project_select object_id $project_status_open "" "" "" $user_id]
 	  </td>
 	</tr>\n"
     incr ctr
@@ -380,7 +345,7 @@ if {$task_or_incident_p && [string equal $action_type "new_message"]} {
 
     # calculate the list of potential asignees ( id-name pairs ) 
     # based on user permissions, the project members and the PM.
-    set asignee_list [im_forum_potential_asignees $current_user_id $object_id]
+    set asignee_list [im_forum_potential_asignees $user_id $object_id]
 
     if {2 == [llength $asignee_list]} {
 	# only the PM is available: pass the variable on
@@ -457,7 +422,7 @@ if {[string equal $action_type "new_message"]} {
     # Some extra messages, depending on status etc:
     set topic_status_msg $topic_status
 
-    if {$current_user_id == $asignee_id && $topic_status_id == [im_topic_status_id_assigned]} {
+    if {$user_id == $asignee_id && $topic_status_id == [im_topic_status_id_assigned]} {
 	# We are assigned to this task/incident,
 	# but we haven't confirmed yet
 	append topic_status_msg " : <font color=red>Please Accept or Reject the $topic_type</font>"
@@ -477,12 +442,15 @@ if {[string equal $action_type "new_message"]} {
 
 set html_p "f"
 
-if {$current_user_id == $owner_id || [string equal $action_type "new_message"]} {
+#  <textarea name=message rows=5 cols=50 wrap=soft>[ad_convert_to_html -html_p $html_p -- $message]</textarea>
+
+
+if {$user_id == $owner_id || [string equal $action_type "new_message"]} {
     append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
 	  <td>$topic_type Body</td>
 	  <td>
-	    <textarea name=message rows=5 cols=50 wrap=soft>[ad_convert_to_html -html_p $html_p -- $message]</textarea>
+	    <textarea name=message rows=5 cols=50 wrap=soft>$message</textarea>
 	  </td>
 	</tr>\n"
 
@@ -502,12 +470,12 @@ if {$current_user_id == $owner_id || [string equal $action_type "new_message"]} 
 if {$topic_type_id != 1190} {
     # Topic Tzpe "Reply"
 
-    if {$current_user_id == $owner_id} {
+    if {$user_id == $owner_id} {
 	append table_body "
 		<tr $bgcolor([expr $ctr % 2])>
 		  <td>Access permissions</td>
 		  <td>
-                    [im_forum_scope_select "scope" $current_user_id $scope]
+                    [im_forum_scope_select "scope" $user_id $scope]
 		  </td>
 		</tr>"
 	incr ctr
@@ -555,7 +523,7 @@ incr ctr
 if {![string equal $action_type "new_message"] && ![string equal $action_type "reply_message"]} {
     append table_body "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td>Optional comment to add (Accept / Reject / Close)</td>
+	  <td>Optional comment to add <br>(Accept / Reject / Close)</td>
 	  <td>
 	    <textarea name=comments rows=4 cols=50 wrap=soft></textarea>
 	  </td>
@@ -582,17 +550,17 @@ if {[string equal $action_type "new_message"]} {
 
 } else {
 
-    if {$user_admin_p || $current_user_id == $owner_id} {
+    if {$object_admin || $user_id == $owner_id} {
 	append actions "<option value=save selected>$submit_action</option>\n"
     }
 
     # The only action of the ticket owner is to "Close" the ticket.
-    if {$current_user_id == $owner_id && ![string equal $topic_status_id [im_topic_status_id_closed]]} {
+    if {$user_id == $owner_id && ![string equal $topic_status_id [im_topic_status_id_closed]]} {
 	append actions "<option value=close>Close $topic_type</option>\n"
 	set added_closed 1
     }
 
-    if {$current_user_id == $asignee_id} {
+    if {$user_id == $asignee_id} {
 	# Allow to mark task as "closed" if it hasn't been added before
 	if {!$added_closed} {
 	    append actions "<option value=close>Close $topic_type</option>\n"
@@ -695,7 +663,7 @@ db_foreach get_topic $topic_sql {
 	append thread_html "
 		  <td colspan=$colspan_level>
 		     <table border=0 cellpadding=0 bgcolor=#E0E0E0>"
-	append thread_html " [im_forum_render_tind $topic_id $topic_type_id $topic_type $topic_status_id $topic_status $owner_id $asignee_id $owner_name $asignee_name $current_user_id $object_id $object_name $subject $message $posting_date $due_date $priority $scope]
+	append thread_html " [im_forum_render_tind $topic_id $topic_type_id $topic_type $topic_status_id $topic_status $owner_id $asignee_id $owner_name $asignee_name $user_id $object_id $object_name $subject $message $posting_date $due_date $priority $scope]
 
 		    </table>
 		  </td>

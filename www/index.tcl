@@ -79,7 +79,7 @@ set forum_topic_types [im_memoize_list select_forum_topic_types \
 			   "select * from im_forum_topic_types order by topic_type_id"]
 set forum_topic_types [linsert $forum_topic_types 0 1 "Tasks & Incidents"]
 set forum_topic_types [linsert $forum_topic_types 0 0 All]
-ns_log Notice "/intranet/forum/index: forum_topic_types=$forum_topic_types"
+ns_log Notice "/intranet-forum/index: forum_topic_types=$forum_topic_types"
 
 # project_types will be a list of pairs of (project_type_id, project_type)
 set project_types [im_memoize_list select_project_types \
@@ -170,7 +170,7 @@ set page_body "
     $filter_html
   </form>
 
-[im_forum_navbar "/intranet/projects/index" [list forum_group_id forum_start_idx forum_order_byforum_how_many forum_mine_p forum_view_name]]
+[im_forum_navbar "/intranet-forum/index" [list forum_group_id forum_start_idx forum_order_byforum_how_many forum_mine_p forum_view_name]]
 
 $forum_content
 

@@ -60,6 +60,44 @@ create table im_forum_topics (
 );
 create index im_forum_topics_object_idx on im_forum_topics (object_id);
 
+
+-- A function that decides whether a specific user can see a
+-- forum item or not. Take into account permformance because
+-- it's going to be a huge number of topics and take into
+-- account a flexible role-based permission scheme
+--
+create or replace function im_forum_permission (
+	p_user_id		integer,
+	p_owner_id		integer,
+	p_asignee_id		integer,
+	p_object_id		integer,
+	p_scope			varchar,
+	p_user_is_object_member	integer,
+	p_user_is_object_admin	integer,
+	p_user_is_employee	integer,
+	p_user_is_customer	integer	
+) RETURN integer 
+IS
+	v_permission_p		integer;
+BEGIN
+	IF p_user_id = p_owner_id THEN		RETURN 1;	END IF;
+	IF p_asignee_id = p_user_id THEN	RETURN 1;	END IF;
+	IF p_scope = 'public' THEN		RETURN 1;	END IF;
+	IF p_scope = 'group' THEN		RETURN p_user_is_object_member;	END IF;
+	IF p_scope = 'pm' THEN			RETURN p_user_is_object_admin;	END IF;
+
+	IF p_scope = 'client' AND p_user_is_customer = 1 THEN	
+		RETURN p_user_is_object_member;
+	END IF;
+	IF p_scope = 'staff' AND p_user_is_employee = 1 THEN	
+		RETURN p_user_is_object_member;	
+	END IF;
+	RETURN 0;
+END im_forum_permission;
+/
+show errors;
+
+
 -----------------------------------------------------------
 -- Folders for Intranet users
 --
@@ -295,38 +333,29 @@ begin
 			$return_url \
 		] \
 		[im_forum_component \
-			$user_id \
-			$project_id \
-			$current_url \
-			$return_url \
-			[list \
+			-user_id $user_id \
+			-object_id $project_id \
+			-current_page_url $current_url \
+			-return_url $return_url \
+			-export_var_list [list \
 				project_id \
 				forum_start_idx \
 				forum_order_by \
 				forum_how_many \
 				forum_view_name \
 			] \
-			project \
-			[im_opt_val forum_view_name] \
-			[im_opt_val forum_order_by] \
-			"f" \
-			0 \
-			0 \
-			0 \
-			0 \
-			1 \
-			1 \
-			0 \
+			-forum_type project \
+			-view_name [im_opt_val forum_view_name] \
+			-forum_order_by [im_opt_val forum_order_by] \
+			-restrict_to_mine_p "f" \
+			-restrict_to_new_topics 1 
 		]'
-
     );
 end;
 /
 show errors
 
 commit;
-
--- ad_proc im_forum_component {user_id group_id current_page_url return_url export_var_list {view_name "forum_list_short"} {forum_order_by "priority"} {restrict_to_mine_p f} {restrict_to_topic_type_id 0} {restrict_to_topic_status_id 0} {restrict_to_asignee_id 0} {max_entries_per_page 0} {start_idx 1} {restrict_to_new_topics 0} {restrict_to_folder 0} }
 
 
 -- Show the forum component in customer page
@@ -347,39 +376,52 @@ begin
 			$customer_id \
 			$return_url \
 		] \
+
+
+			-user_id $user_id \
+			-object_id $project_id \
+			-current_page_url $current_url \
+			-return_url $return_url \
+			-export_var_list [list \
+				project_id \
+				forum_start_idx \
+				forum_order_by \
+				forum_how_many \
+				forum_view_name \
+			] \
+			-forum_type project \
+			-view_name [im_opt_val forum_view_name] \
+			-forum_order_by [im_opt_val forum_order_by] \
+			-restrict_to_mine_p "f" \
+			-restrict_to_new_topics 1 
+
 		[im_forum_component \
-			$user_id \
-			$customer_id \
-			$current_url \
-			$return_url \
-			[list \
+			-user_id $user_id \
+			-object_id $customer_id \
+			-current_page_url $current_url \
+			-return_url $return_url \
+			-export_var_list [list \
 				customer_id \
 				forum_start_idx \
 				forum_order_by \
 				forum_how_many \
 				forum_view_name \
 			] \
-			customer \
-			[im_opt_val forum_view_name] \
-			[im_opt_val forum_order_by] \
-			"f" \
-			0 \
-			0 \
-			0 \
-			0 \
-			1 \
-			1 \
-			0 \
+			-forum_type customer \
+			-view_name [im_opt_val forum_view_name] \
+			-forum_order_by [im_opt_val forum_order_by] \
+			-restrict_to_mine_p "f" \
+			-restrict_to_topic_type_id $restrict_to_topic_type_id \
+			-restrict_to_topic_status_id $restrict_to_topic_status_id \
+			-restrict_to_asignee_id $restrict_to_asignee_id \
+			-restrict_to_new_topics 1
 		]'
-
     );
 end;
 /
 show errors
 
 commit;
-
--- ad_proc im_forum_component {user_id group_id current_page_url return_url export_var_list {view_name "forum_list_short"} {forum_order_by "priority"} {restrict_to_mine_p f} {restrict_to_topic_type_id 0} {restrict_to_topic_status_id 0} {restrict_to_asignee_id 0} {max_entries_per_page 0} {start_idx 1} {restrict_to_new_topics 0} {restrict_to_folder 0} }
 
 
 -- Show the forum component in home page
@@ -401,38 +443,28 @@ begin
 			$return_url \
 		] \
 		[im_forum_component \
-			$user_id \
-			0 \
-			$current_url \
-			$return_url \
-			[list \
+			-user_id $user_id \
+			-object_id 0 \
+			-current_page_url $current_url \
+			-return_url $return_url \
+			-export_var_list [list \
 				forum_start_idx \
 				forum_order_by \
 				forum_how_many \
 				forum_view_name \
 			] \
-			home \
-			[im_opt_val forum_view_name] \
-			[im_opt_val forum_order_by] \
-			"t" \
-			0 \
-			0 \
-			0 \
-			0 \
-			1 \
-			1 \
-			0 \
+			-forum_type home \
+			-view_name [im_opt_val forum_view_name] \
+			-forum_order_by [im_opt_val forum_order_by] \
+			-restrict_to_mine_p t \
+			-restrict_to_new_topics 1
 		]'
-
     );
 end;
 /
 show errors
 
 commit;
-
--- ad_proc im_forum_component {user_id group_id current_page_url return_url export_var_list {view_name "forum_list_short"} {forum_order_by "priority"} {restrict_to_mine_p f} {restrict_to_topic_type_id 0} {restrict_to_topic_status_id 0} {restrict_to_asignee_id 0} {max_entries_per_page 0} {start_idx 1} {restrict_to_new_topics 0} {restrict_to_folder 0} }
-
 
 
 -- Intranet Topic Status
@@ -496,22 +528,28 @@ insert into im_views (view_id, view_name, visible_for) values (45, 'forum_list_c
 delete from im_view_columns where column_id >= 4000 and column_id < 4099;
 insert into im_view_columns values (4000,40,NULL,'P',
 '$priority','','',2,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4002,40,NULL,'Type',
-'"<a href=/intranet/forum/new-tind?[export_url_vars topic_id return_url]>\
+'"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
 [im_gif $topic_type]</a>"',
 '','',4,'im_permission $user_id view_forums');
-insert into im_view_columns values (4003,40,NULL,'Project',
-'"<a href=/intranet/projects/view?project_id=$project_id>$project_nr</a>"',
+
+insert into im_view_columns values (4003,40,NULL,'Object',
+'"<a href=$object_view_url$object_id>$object_name</a>"',
 '','',5,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4004,40,NULL,'Subject',
-'"<a href=/intranet/forum/new-tind?[export_url_vars topic_id return_url]>\
+'"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
 $subject</a>"','','',6,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4006,40,NULL,'Due',
 '$due_date','','',8,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4010,40,NULL,
 '"[im_gif help "Select topics here for processing"]"',
 '"<input type=checkbox name=topic_id.$topic_id>"',
 '','',12,'im_permission $user_id view_forums');
+
 commit;
 
 
@@ -521,25 +559,32 @@ commit;
 delete from im_view_columns where column_id >= 4100 and column_id < 4199;
 insert into im_view_columns values (4100,41,NULL,'P',
 '$priority','','',2,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4102,41,NULL,'Type',
-'"<a href=/intranet/forum/new-tind?[export_url_vars topic_id return_url]>\
+'"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
 [im_gif $topic_type]</a>"',
 '','',4,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4104,41,NULL,'Subject',
-'"<a href=/intranet/forum/new-tind?[export_url_vars topic_id return_url]>\
+'"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
 $subject</a>"','','',6,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4106,41,NULL,'Due',
 '$due_date','','',8,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4107,41,NULL,'Own',
 '"<a href=/intranet/users/view?user_id=$owner_id>$owner_initials</a>"',
 '','',9,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4108,41,NULL,'Ass',
 '"<a href=/intranet/users/view?user_id=$asignee_id>$asignee_initials</a>"',
 '','',10,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4110,41,NULL,
 '"[im_gif help "Select topics here for processing"]"',
 '"<input type=checkbox name=topic_id.$topic_id>"',
 '','',12,'im_permission $user_id view_forums');
+
 commit;
 
 
@@ -548,32 +593,42 @@ commit;
 delete from im_view_columns where column_id >= 4200 and column_id < 4299;
 insert into im_view_columns values (4200,42,NULL,'P',
 '$priority','','',2,'im_permission $user_id view_forums');
-insert into im_view_columns values (4201,42,NULL,'Project',
-'"<a href=/intranet/projects/view?project_id=$project_id>$project_nr</a>"',
+
+insert into im_view_columns values (4201,42,NULL,'Object',
+'"<a href=$object_view_url$object_id>$object_name</a>"',
 '','',3,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4202,42,NULL,'Type',
-'"<a href=/intranet/forum/new-tind?[export_url_vars topic_id return_url]>\
+'"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
 [im_gif $topic_type]</a>"',
 '','',4,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4204,42,NULL,'Subject',
-'"<a href=/intranet/forum/new-tind?[export_url_vars topic_id return_url]>\
+'"<a href=/intranet-forum/new-tind?[export_url_vars topic_id return_url]>\
 $subject</A>"','','',6,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4206,42,NULL,'Due',
 '$due_date','','',8,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4207,42,NULL,'Own',
 '"<a href=/intranet/users/view?user_id=$owner_id>$owner_initials</a>"',
 '','',9,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4208,42,NULL,'Ass',
 '"<a href=/intranet/users/view?user_id=$asignee_id>$asignee_initials</a>"',
 '','',10,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4209,42,NULL,'Read',
 '$read','','',11,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4210,42,NULL,
 '"[im_gif help "Select topics here for processing"]"',
 '"<input type=checkbox name=topic_id.$topic_id>"',
 '','',12,'im_permission $user_id view_forums');
+
 insert into im_view_columns values (4212,42,NULL,'Folder',
 '$folder_name','','',14,'im_permission $user_id view_forums');
+
 commit;
 
 

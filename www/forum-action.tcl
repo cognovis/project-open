@@ -25,7 +25,7 @@ set user_id [ad_maybe_redirect_for_registration]
 set page_body "<PRE>\n"
 
 if {$return_url == ""} {
-    set return_url "/intranet/forum/"
+    set return_url "/intranet-forum/"
 }
 
 set topic_list [array names topic_id]
