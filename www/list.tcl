@@ -283,7 +283,7 @@ if {[string equal $letter "ALL"]} {
     # query results
     set total_in_limited [db_string costs_total_in_limited "
 	select count(*) 
-        from im_costs p
+        from im_costs p, im_companies cust
         where 1=1 $where_clause"]
 
     set selection "select z.* from ($limited_query) z $order_by_clause"

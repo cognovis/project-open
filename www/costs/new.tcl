@@ -70,7 +70,7 @@ if {![exists_and_not_null cost_id]} {
 # ------------------------------------------------------------------
 
 set project_options [im_project_options]
-set customer_options [im_customer_options]
+set customer_options [im_company_options]
 set provider_options [im_provider_options]
 set cost_type_options [im_cost_type_options]
 set cost_status_options [im_cost_status_options]
