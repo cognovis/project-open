@@ -589,8 +589,9 @@ ad_proc im_cost_template_select { select_name { default "" } } {
     return [im_category_select "Intranet Cost Template" $select_name $default]
 }
 
+
+
 ad_proc im_costs_select { select_name { default "" } { status "" } { exclude_status "" } } {
-    
     Returns an html select box named $select_name and defaulted to
     $default with a list of all the costs in the system. If status is
     specified, we limit the select box to costs that match that
@@ -603,7 +604,7 @@ ad_proc im_costs_select { select_name { default "" } { status "" } { exclude_sta
     set sql "
 select
 	i.cost_id,
-	i.cost_nr
+	i.cost_name
 from
 	im_costs i
 where
@@ -621,7 +622,7 @@ where
                                                   from im_cost_status 
                                                  where cost_status not in ($exclude_string)) "
     }
-    append sql " order by lower(cost_nr)"
+    append sql " order by lower(cost_name)"
     return [im_selection_to_select_box $bind_vars "cost_status_select" $sql $select_name $default]
 }
 
