@@ -1156,9 +1156,9 @@ sort_order) values (22015,220,'Due Date',
 	set t "$due_date_calculated"
 }]',15);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (22021,220,'Amount','$amount_formatted $currency',21);
--- insert into im_view_columns values (22013,220,'Paid',
--- '$payment_amount $payment_currency',13);
+sort_order) values (22021,220,'Amount','"$amount_formatted $currency"',21);
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (22013,220,'Paid', '"$payment_amount $payment_currency"',23);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22025,220,'Status',
 '[im_cost_status_select "cost_status.$cost_id" $cost_status_id]',25);
