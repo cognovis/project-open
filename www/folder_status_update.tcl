@@ -2,13 +2,7 @@
 
 ad_page_contract {
     Index page of filestorage
-
-    @param letter criteria for im_first_letter_default_to_a(ug.group_name)
-    @param start_idx the starting index for query
-    @param how_many how many rows to return
-
     @author santitrenchs@santitrenchs.com
-
 } {
     object_id:integer
     rel_path
