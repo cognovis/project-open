@@ -58,11 +58,7 @@
   <msg key="lt_Provider_project_memb">Provider (project members without clients)</msg>
   <msg key="lt_Public_everybody_in_t">Public (everybody in the system)</msg>
   <msg key="lt_Reply_to_this_topic_t">Reply to this %topic_type%</msg>
-  <msg key="lt_scope_____set_html___">scope&quot;
-} {
-    set html &quot;&quot;
-    switch $scope {
-	public { set html &quot;&lt;#_ Public (everybody in the system)</msg>
+  <msg key="lt_scope_____set_html___">scope</msg>
   <msg key="lt_Staff_and_Freelance_g">Staff and Freelance group members</msg>
   <msg key="lt_Staff_group_members_o">Staff group members only</msg>
   <msg key="lt_The_asignee_of_the_to">The asignee of the %topic_type% needs clarification. Please visit the link above for details.</msg>
@@ -113,6 +109,7 @@
   <msg key="Staff_employees_only">Staff (employees only)</msg>
   <msg key="Status">Status</msg>
   <msg key="Subject">Subject</msg>
+  <msg key="Task">Task</msg>
   <msg key="Tasks__Incidents">Tasks &amp; Incidents</msg>
   <msg key="Topic_Type">Topic Type</msg>
   <msg key="topic_type_Subject">%topic_type% Subject</msg>
