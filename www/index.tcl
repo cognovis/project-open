@@ -104,7 +104,7 @@ if {$user_group_id > 0} {
 
     # We have a group specified to show:
     # Check whether the user can "read" this group:
-    set sql "select acs_permission.permission_p(:user_group_id, :user_id, 'read') from dual"
+    set sql "select im_object_permission_p(:user_group_id, :user_id, 'read') from dual"
     set read [db_string user_can_read_user_group_p $sql]
     if {![string equal "t" $read]} {
 	ad_return_complaint 1 "You don't have permissions to view this page"
@@ -117,7 +117,7 @@ if {$user_group_id > 0} {
     # The most critical groups are company contacts...
     set company_group_id [db_string user_group_id "select group_id from groups where group_name like :user_group_name" -default 0]
 
-    set sql "select acs_permission.permission_p(:company_group_id, :user_id, 'read') from dual"
+    set sql "select im_object_permission_p(:company_group_id, :user_id, 'read') from dual"
     set read [db_string user_can_read_user_group_p $sql]
     if {![string equal "t" $read]} {
 	ad_return_complaint 1 "You don't have permissions to view this page"
