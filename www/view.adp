@@ -1,5 +1,6 @@
 <master src="master">
 <property name="title">@page_title@</property>
+<property name="main_navbar_label">finance</property>
 
 <%= [im_costs_navbar "none" "/intranet-costs/index" "" "" [list] "payments_list"] %>
 
