@@ -2,7 +2,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.14 2004/07/26 13:04:58 jeffd Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.15 2004/07/27 10:49:10 jeffd Exp $
 }
 
 namespace eval search {}
@@ -60,7 +60,7 @@ ad_proc -private search::indexer {} {
 } {
 
     set driver [ad_parameter -package_id [apm_package_id_from_key search] FtsEngineDriver]
-    set driver [ad_parameter -package_id [apm_package_id_from_key search] Syndicate -default 0]
+    set syndicate [ad_parameter -package_id [apm_package_id_from_key search] Syndicate -default 0]
 
     if {[empty_string_p $driver]
         || ! [acs_sc_binding_exists_p FtsEngineDriver $driver]} {
