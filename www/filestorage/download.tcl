@@ -29,6 +29,21 @@ ns_log notice "file_name=$file_name"
 ns_log notice "file=$file"
 ns_log notice "file_type=$guessed_file_type"
 
+
+db_dml insert_action "
+insert into im_fs_actions (
+        action_type_id
+        user_id
+        action_date
+        file_name
+) values (
+        [im_file_action_download],
+        :user_id,
+        :today,
+        :file_name
+)"
+
+
 if [file readable $file] {
     ad_returnfile 200 $guessed_file_type $file
 } else {

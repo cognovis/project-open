@@ -101,6 +101,21 @@ if { [catch {
     return
 }
 
+# --------------- Log the interaction --------------------
+
+db_dml insert_action "
+insert into im_fs_actions (
+        action_type_id
+        user_id
+        action_date
+        file_name
+) values (
+        [im_file_action_upload],
+        :user_id,
+        :today,
+        '$dest_path/$client_filename'
+)"
+
 
 set page_content "
 <H2>Upload Successful</H2>

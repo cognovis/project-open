@@ -23,6 +23,7 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 set page_title "Upload into '$bread_crum_path'"
+set today [db_string today "select to_chr(sysdate,'YYYY-MM-DD') from dual"]
 
 set context_bar [ad_context_bar [list "/intranet/projects/" "Projects"]  [list "/intranet/projects/view?group_id=$object_id" "One Project"]  "Upload File"]
 
@@ -108,6 +109,23 @@ if { [catch {
     ad_return_complaint  "Error writing upload file"  $err_msg
     return
 }
+
+
+# --------------- Log the interaction --------------------
+
+db_dml insert_action "
+insert into im_fs_actions (
+        action_type_id
+        user_id
+        action_date
+        file_name
+) values (
+        [im_file_action_upload],
+        :user_id,
+        :today,
+        '$dest_path/$client_filename'
+)"
+
 
 
 set page_content "
