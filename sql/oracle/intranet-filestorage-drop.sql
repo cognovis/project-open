@@ -9,4 +9,10 @@ drop table im_fs_folder_status;
 drop sequence im_fs_folder_seq;
 drop table im_fs_folders;
 
-delete from im_component_plugins where component_tcl like 'im_filestorage_%';
+
+
+begin
+    im_component_plugin.del_module('intranet-filestorage');
+end;
+/
+
