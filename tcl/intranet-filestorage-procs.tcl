@@ -45,7 +45,7 @@ proc intranet_download { folder_type } {
     set path_list [split $url {/}]
     set len [expr [llength $path_list] - 1]
 
-    # skip: +0:/ +1:intranet, +2:download, +3:folder_type, +4:<group_id>, +5:...
+    # skip: +0:/ +1:intranet, +2:download, +3:folder_type, +4:<object_id>, +5:...
     set group_id [lindex $path_list 4]
     ns_log Notice "group_id=$group_id"
 
@@ -281,30 +281,25 @@ ad_proc im_filestorage_home_component { user_id } {
     set folder_type "home"
     set object_id 0
     set return_url "/intranet/"
-
     set home_path [im_filestorage_home_path]
-
-    return [im_filestorage_base_component $user_id $object_id $home_path $object_name $folder_type $return_url]
-
-    # return [im_filestorage_pol_component $user_id $object_id $object_name $base_path $folder_type $current_url_without_vars $bind_vars]
+    return [im_filestorage_base_component $user_id $object_id $object_name $base_path $folder_type]
 }
-
 
 ad_proc im_filestorage_project_component { user_id project_id project_name return_url} {
     Filestorage for projects
 } {
     set project_path [im_filestorage_project_path $project_id]
     set folder_type "project"
-    return [im_filestorage_base_component $user_id $project_id $project_path $project_name $folder_type $return_url]
+    set object_name "Project"
+    return [im_filestorage_base_component $user_id $project_id $object_name $project_path $folder_type]
 }
-
 
 ad_proc im_filestorage_customer_component { user_id customer_id customer_name return_url} {
     Filestorage for customers
 } {
     set customer_path [im_filestorage_customer_path $customer_id]
     set folder_type "customer"
-    return [im_filestorage_base_component $user_id $customer_id $customer_path $customer_name $folder_type $return_url]
+    return [im_filestorage_base_component $user_id $customer_id $customer_name $customer_path $folder_type]
 }
 
 
@@ -313,288 +308,7 @@ ad_proc im_filestorage_user_component { user_id user_to_show_id user_name return
 } {
     set user_path [im_filestorage_user_path $user_to_show_id]
     set folder_type "user"
-    return [im_filestorage_base_component $user_id $user_to_show_id $user_path $user_name $folder_type $return_url]
-}
-
-
-ad_proc im_filestorage_base_component { user_id id base_path name folder_type return_url} {
-    Creates a table showing the content of the specified directory.
-    "id" changes as a function of "folder_type":
-    - project
-    - customer
-    - user
-    - home
-} {
-    set folder "/"
-    set project_id $id
-
-    set component_body "
-<table bgcolor=white cellspacing=0 border=0 cellpadding=0>
-<tr> 
-  <td class=rowtitle align=center>Name&nbsp;</td>
-  <td class=rowtitle align=center>[im_gif help "Upload and download file to and form a directiry"]</td>
-<!--  <td class=rowtitle align=center>Man<BR>age&nbsp;</td> -->
-<!--  <td class=rowtitle align=center>Refers<BR>to&nbsp;</td> -->
-<!--  <td class=rowtitle align=center>Words&nbsp;</td> -->
-<!--  <td class=rowtitle align=center>Status&nbsp;</td> -->
-  <td class=rowtitle align=center>Size&nbsp;</td>
-  <td class=rowtitle align=center>Modified&nbsp;</td>
-<!--  <td class=rowtitle align=center>Owner&nbsp;</td> -->
-</tr>
-"
-
-    # Create a first 'path' with the project name 
-
-    # Check the folder permissions: Set to default permissions
-    # and calculate conjunction of the folder pathes
-    # "15" = 1-1-1-1 = Read-Write-See-Admin
-    set file ""
-    set top_folder ""
-    ns_log Notice "im_filestorage_base_component: before im_filestorage_folder_perms"
-    set perm [im_filestorage_folder_perms $file $top_folder $folder_type $user_id $id]
-    ns_log Notice "im_filestorage_base_component: perm=$perm"
-    set read_p [expr $perm & 1]
-    set write_p [expr ($perm & 2) > 0]
-    set see_p [expr ($perm & 4) > 0]
-    set admin_p [expr ($perm & 8) > 0]
-    ns_log Notice "perm=$perm read=$read_p write=$write_p see=$see_p admin=$admin_p"
-    
-    append component_body "
-<tr> 
-  <td>
-    <table cellpadding=0 cellspacing=0 border=0>
-      <tr>
-        <td>\n"
-
-    if {$write_p} {
-	append component_body "<A href='/intranet-filestorage/upload?[export_url_vars folder folder_type project_id return_url]'>[im_gif "exp-folder"]</A>"
-    } else {
-	append component_body [im_gif "exp-folder"]
-    }
-
-    append component_body "
-        </td>
-        <td>&nbsp;$name</td>
-      </tr>
-    </table>
-  </td>
-  <td align=middle>\n"
-
-    if {$write_p} {
-	append component_body "<A href='/intranet-filestorage/upload?[export_url_vars folder folder_type project_id return_url]'>[im_gif open "Upload a new file"]</A>"
-    }
-
-    append component_body "
-  </td>
-<!--  <td>-</td> -->
-<!--  <td></td> -->
-  <td></td>
-<!--  <td>Source</td> -->
-<!--  <td></td> -->
-  <td></td>
-<!--  <td></td> -->
-</tr>
-"
-
-    if { [catch {
-	ns_log Notice "im_filestorage_component: exec /bin/mkdir -p $base_path"
-	ns_log Notice "im_filestorage_component: exec /bin/chmod ug+w $base_path"
-
-	exec /bin/mkdir -p $base_path
-	exec /bin/chmod ug+w $base_path
-	set file_list [exec /usr/bin/find $base_path]
-
-    } err_msg] } {
-
-	# Probably some permission errors - return empty string
-	ns_log Notice "\nim_filestorage_component:
-	'exec /usr/bin/find $base_path' failed with error:
-	err_msg=$err_msg\n"
-	return "
-		<table bgcolor=white cellspacing=2 border=1 cellpadding=2>
-		<tr><td class=rowtitle align=center>
-		  Error with project folders:
-		</td></tr>
-		<tr><td>
-		  Unable to show folders for \"$name\". 
-		  Did somebody rename or remove the folder?
-		</td></tr>
-		</table>"
-    }
-
-    set org_paths [split $base_path "/"]
-    set org_paths_len [llength $org_paths]
-    set start_index $org_paths_len
-
-    # Get the sorted list of files in the directory
-    set files [lsort [split $file_list "\n"]]
-    
-    foreach file $files {
-
-	# Get the basic information about a file
-	ns_log Notice "file=$file"
-	set file_paths [split $file "/"]
-	set current_depth [llength $file_paths]
-	set parent_depth [expr $current_depth - 1]
-	set file_body [lindex $file_paths $parent_depth]
-
-	set file_type ""
-	set file_size ""
-	set file_modified "(bad filename)"
-	set file_extension ""
-	set file_size ""
-	if { [catch {
-	    set file_type [file type $file]
-	    set file_size [file size $file]
-	    set file_modified [ns_fmttime [file mtime $file] "%d/%m/%Y"]
-	    set file_extension [file extension $file]
-	    set file_size [expr [file size $file] / 1024]
-	} err_msg] } {
-	    # Error due to accents in filename - ignore
-	}
-
-	# The first folder of the project - contains access perms
-	set top_folder [lindex $file_paths $start_index]
-	ns_log Notice "top_folder=$top_folder"
-
-	# Check if it is the toplevel directory
-	if {[string equal $file $base_path]} { 
-	    # Skip the path itself
-	    continue 
-	}
-
-	# check the folder permissions: Set to default permissions
-	# and calculate conjunction of the folder pathes
-	# "7" = 1-1-1-1 = Read-Write-See-Admin
-	set perm [im_filestorage_folder_perms $file $top_folder $folder_type $user_id $id]
-	set read_p [expr $perm & 1]
-	set write_p [expr ($perm & 2) > 0]
-	set see_p [expr ($perm & 4) > 0]
-	set admin_p [expr ($perm & 8) > 0]
-
-	ns_log Notice "perm=$perm read=$read_p write=$write_p see=$see_p admin=$admin_p"
-
-	# Determine how many "tabs" the file should be indented
-	set spacer ""
-	for {set i [expr $start_index + 1]} {$i < $current_depth} {incr i} {
-	    append spacer [im_gif "exp-line"]
-	}
-	
-	# determine the part of the filename _after_ the base path
-	set end_path ""
-	for {set i $start_index} {$i < $current_depth} {incr i} {
-	    append end_path [lindex $file_paths $i]
-	    if {$i < [expr $current_depth - 1]} { append end_path "/" }
-	}
-	
-	switch [string tolower $file_type] {
-	    file {
-
-		# must be readable and viewable:
-		if {!$see_p} { continue }
-		if {!$read_p} { continue }
-
-		# Choose a suitable icon
-		set alt "Click right and choose \"Save target as\" to download the file to a local directory"
-		set icon [im_gif "exp-unknown" $alt]
-		switch $file_extension {
-		    ".xls" { set icon [im_gif exp-excel $alt] }
-		    ".doc" { set icon [im_gif exp-word $alt] }
-		    ".rtf" { set icon [im_gif exp-word $alt] }
-		    ".txt" { set icon [im_gif exp-text $alt] }
-		    default {
-			ns_log Notice "im_file_component: unknown file_extension: '$file_extension'"
-		    }
-		}
-	    
-	    # Build a <tr>..</tr> line for the file
-	    set file_name $end_path
-	    set line "
-<tr> 
-  <td>
-    <table cellpadding=0 cellspacing=0 border=0><tr>
-<td>$spacer[im_gif "exp-line"]<A href='/intranet/download/$folder_type/$project_id/$file_name'>$icon</A></td>
-    <td>&nbsp;$file_body&nbsp;</td>
-    </tr></table>
-  </td>
-  <td align=middle><A href='/intranet/download/$folder_type/$project_id/$file_name'>[im_gif save "Click right and choose \"Save target as\" to download the file to a local directory"]</A></td>
-<!--  <td>-</td> -->
-<!--  <td></td> -->
-<!-- <td align=right>1234&nbsp;</td> -->
-<!--  <td>Source</td> -->
-  <td align=right>$file_size<b></b>k&nbsp;</td>
-  <td>$file_modified</td>
-<!--  <td>ijimenez</td> -->
-</tr>
-"	}
-
-
-	directory {
-
-	    # must be viewable:
-	    if {!$see_p} { continue }
-
-	    set folder $end_path
-
-	    set line "
-<tr>
-  <td valign=top>
-    <table cellpadding=0 cellspacing=0 border=0><tr>
-    <td>$spacer[im_gif "exp-minus"]"
-
-	    if {$write_p} {
-		append line "<A href='/intranet-filestorage/upload?[export_url_vars folder folder_type project_id return_url]'>[im_gif "exp-folder"]</A>"
-	    } else {
-		append line [im_gif "exp-folder"]
-	    }
-	    append line "</td>
-    <td>&nbsp;$file_body</td>
-    </tr></table>
-  </td>
-  <td align=middle>"
-	    if {$write_p} {
-		append line "<A href='/intranet-filestorage/upload?[export_url_vars folder folder_type project_id return_url]'>[im_gif open "Upload a new file"]</A>"
-	    }
-	    append line "</td>
-<!--  <td align=center>
-    [im_gif open "Mark the folder as &quot;Open&quot;"]
-  </td>
--->
-<!--  <td></td> -->
-  <td align=right><!-- Words--></td>
-<!--  <td>Closed</td> -->
-  <td></td>
-  <td></td>
-<!--  <td>ijimenez</td> -->
-</tr>
-"	}
-
-	default { set line "
-<tr>
-  <td valign=top>
-    <table cellpadding=0 cellspacing=0 border=0>
-    <tr>
-      <td>
-        $spacer[im_gif "exp-minus"]
-        [im_gif "exp-unknown"]
-      </td>
-      <td>&nbsp;$file_body</td>
-    </tr>
-    </table>
-  </td>
-  <td align=middle></td>
-  <td align=right><!-- Words--></td>
-  <td>(bad file)</td>
-</tr>"
-	}
-
-	}
-
-    append component_body "$line\n"
-    }
-
-    append component_body "\n</table>\n"
-    return $component_body
+    return [im_filestorage_base_component $user_id $user_to_show_id $user_name $user_path $folder_type]
 }
 
 
@@ -954,7 +668,7 @@ ad_proc export_url_bind_vars { bind_vars } {
 }
 
 
-ad_proc -public im_filestorage_pol_component { user_id object_id object_name base_path folder_type current_url_without_vars} {
+ad_proc -public im_filestorage_base_component { user_id object_id object_name base_path folder_type} {
     Main funcion to generate the filestorage page ( create folder, bread crum, ....)
     @param user_id: the user who is attempting to view the filestorage
     @param object_id: from wich group is pending this user?
@@ -966,6 +680,8 @@ ad_proc -public im_filestorage_pol_component { user_id object_id object_name bas
 
     set bgcolor(0) "roweven"
     set bgcolor(1) "rowodd"
+
+    set current_url_without_vars [ns_conn url]
 
     # Extract the bread_crum variable and delete from URL variables
     set bind_vars [ns_conn form]
@@ -1181,7 +897,9 @@ where
 	    append files_html [im_filestorage_file_row \
 			      $file_body \
 			      $base_path \
+			      $folder_type \
 			      $rel_path \
+			      $object_id \
 			      $base_path_depth \
 			      $current_depth \
 			      $rel_path \
@@ -1280,7 +998,7 @@ ad_proc im_filestorage_dir_row {
 }
 
 
-ad_proc im_filestorage_file_row { file_body base_path rel_path base_path_depth current_depth file ctr rowclass file_type file_size file_modified file_extension} {
+ad_proc im_filestorage_file_row { file_body base_path folder_type rel_path object_id base_path_depth current_depth file ctr rowclass file_type file_size file_modified file_extension} {
 
 }   {
     append component_html "
@@ -1302,6 +1020,7 @@ ad_proc im_filestorage_file_row { file_body base_path rel_path base_path_depth c
     } 
     
     # Choose a suitable icon
+     
     set icon [im_gif exp-unknown]
     switch $file_extension {
 	".xls" { set icon [im_gif exp-excel] }
@@ -1311,11 +1030,11 @@ ad_proc im_filestorage_file_row { file_body base_path rel_path base_path_depth c
 	default {
 	}
     }
-
     append component_html "
-  $icon
-  </a>
+
+  <A href=/intranet/download/$folder_type/$object_id/$rel_path>$icon</A>
   $file_body
+  
   </td>
   <td>$file_size Kb</td>
   <td>$file_modified</td>
