@@ -47,7 +47,7 @@ ns_log Notice "del-perms-2: dir_id=[array get dir_id]"
 # -------------------------------------------------------
 
 ad_proc im_filestorage_perm_del_profile { folder_id perm profile_id p} {
-    ns_log Notice "del-perms-2: profile_id=$profile_id, folder_id=$folder_id, perm=$perm, p=$p"
+    ns_log Notice "del-perms-2: im_filestorage_perm_del_profile: profile_id=$profile_id, folder_id=$folder_id, perm=$perm, p=$p"
 
     # Don't delete a set permissions...
     if {!$p} { return }
@@ -71,7 +71,7 @@ where
 
 
 ad_proc im_filestorage_perm_del_role { folder_id perm role_id p} {
-    ns_log Notice "del-perms-2: role_id=$role_id, folder_id=$folder_id, perm=$perm, p=$p"
+    ns_log Notice "del-perms-2: im_filestorage_perm_del_role: role_id=$role_id, folder_id=$folder_id, perm=$perm, p=$p"
 
     # Don't delete a set permissions...
     if {!$p} { return }
