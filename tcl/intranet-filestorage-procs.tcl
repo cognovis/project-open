@@ -1065,9 +1065,6 @@ where
 	set file_paths [split $file "/"]
 	set file_paths_len [llength $file_paths] 
 	set body_index [expr $file_paths_len -1] 
-	ns_log Notice "------------------------------------------------------------"
-	ns_log Notice "file: $file - file_paths_len: $file_paths_len - body_index: $body_index"
-        ns_log Notice "------------------------------------------------------------"
 
 	# store the name of the file ("file.dat")
 	set file_body [lindex $file_paths $body_index] 
@@ -1222,7 +1219,7 @@ ad_proc im_filestorage_dir_row { file_body user_id folder_id status return_url o
     }
 
     append texte "<img src=/intranet-filestorage/images/folder_s.gif border=0 width=21 height=21 hspace=0 vspace=0></a>
-		    <a href=/intranet-filestorage/bread_crum_update?user_id=$user_id&bread_crum_path=$file&object_id=$object_id&return_url=$return_url>$file_body</a>
+		    <a href=/intranet-filestorage/index?user_id=$user_id&bread_crum_path=$file&object_id=$object_id&return_url=$return_url>$file_body</a>
 		    </a>
 		    </div>
 		    </td>
