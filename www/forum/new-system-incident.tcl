@@ -38,8 +38,8 @@ set max_dayily_incidents 3
 # -----------------------------------------------------------------
 # Keep in mind that the email and other data might be completely fake.
 
-# Check if the user already has an account
-set error_user_id [db_string user_id "select user_id from users where email=:error_user_email" -default 0]
+ns_log Notice "Check if the user already has an account: $error_user_email"
+set error_user_id [db_string user_id "select party_id from parties where lower(email) = lower(:error_user_email)" -default 0]
 
 if {0 != $error_user_id} {
     # The user already exists:
@@ -50,35 +50,30 @@ if {0 != $error_user_id} {
 } else {
 
     # Doesn't exist yet - let's create it
-    set error_user_id [db_nextval user_id_sequence]
+    ns_log Notice "new-system-incident: creating new user '$error_user_email'"
+    array set creation_info [auth::create_user \
+	-email $error_user_email \
+	-url $error_url \
+	-verify_password_confirm \
+	-first_names $error_first_names \
+	-last_name $error_last_name \
+	-screen_name "$error_first_names $error_last_name" \
+	-username "$error_first_names $error_last_name" \
+	-password $error_first_names \
+	-password_confirm $error_first_names \
+    ]
 
-    # Create a new user and mark it with converted_p=t
-    db_dml insert_new_user "
-INSERT INTO users (
-	user_id, first_names, last_name, email, url, 
-	registration_date, registration_ip, user_state, 
-	converted_p
-) VALUES (
-	:error_user_id, :error_first_names, :error_last_name, :error_email, :error_url, 
-	sysdate, :error_ip, 'need_admin_approv', 
-	't'
-)"
-
-    # Add the new user as a potential customer
-    db_dml mark_new_user_as customer"
-INSERT INTO user_group_map 
-VALUES (:user_id, [im_customer_group_id], 'member',sysdate,1,'0,0,0.0')"
+    ns_log Notice "new-system-incident: checking for '$error_user_email' after creation"
+    set error_user_id [db_string user_id "select party_id from parties where lower(email) = lower(:error_user_email)" -default 0]
 
 }
 
-# -----------------------------------------------------------------
-# Determine the maintenance project for this incident
-# -----------------------------------------------------------------
-
-set default_report_group_id [ad_parameter "ErrorReportGroup" "rp" ""]
-
-set report_group_id $default_report_group_id
-
+if {!$error_user_id} {
+    # create user didn't succeed...
+    # ToDo!!!
+    ad_return_complaint 1 "<li>Error accepted"
+    return
+}
 
 # -----------------------------------------------------------------
 # Create an incident (without mail alert)
