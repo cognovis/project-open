@@ -286,9 +286,7 @@ begin
     select menu_id
     into v_main_menu
     from im_menus
-    where url='/';
-
-    delete from im_menus where package_name='intranet-forum';
+    where label='main';
 
     v_menu := im_menu.new (
 	package_name =>	'intranet-forum',

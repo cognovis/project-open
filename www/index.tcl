@@ -156,7 +156,7 @@ set forum_content [im_forum_component \
 # ---------------------------------------------------------------
 
 set page_body "
-  <form method=get action='/index'>
+  <form method=get action='index'>
   [export_form_vars forum_group_id forum_start_idx forum_order_by forum_how_many forum_view_name]
     $filter_html
   </form>
