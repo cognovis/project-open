@@ -284,7 +284,7 @@ set n4 0
 }
 
 
-ad_proc im_quality_project { group_id current_user_id { return_url "" } } {
+ad_proc im_quality_project_component { group_id current_user_id { return_url "" } } {
     this proc maka a component that containt a link a the quality controler
     page and if this project has some quality evaluations is show the 
     relative grafic
