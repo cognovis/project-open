@@ -84,7 +84,7 @@ create table im_cost_centers (
 				primary key
 				constraint im_cost_centers_id_fk
 				references acs_objects,
-	name			varchar(100) not null,
+	cost_center_name	varchar(100) not null,
 	cost_center_type_id	integer not null
 				constraint im_cost_centers_type_fk
 				references im_categories,
@@ -107,7 +107,7 @@ create table im_cost_centers (
 	description		varchar(4000),
 	note			varchar(4000),
 		-- don't allow two cost centers under the same parent
-		unique(name, parent_id)
+		unique(cost_center_name, parent_id)
 );
 create index im_cost_centers_parent_id_idx on im_cost_centers(parent_id);
 create index im_cost_centers_manager_id_idx on im_cost_centers(manager_id);
@@ -124,11 +124,12 @@ is
 	creation_user	in integer default null,
 	creation_ip	in varchar default null,
 	context_id	in integer default null,
-	name		in varchar,
+	cost_center_name		in varchar,
 	type_id		in integer,
 	status_id	in integer,
 	parent_id	in integer,
 	manager_id	in integer default null,
+	department_p	in char default 't',
 	description	in varchar default null,
 	note		in varchar default null
     ) return im_cost_centers.cost_center_id%TYPE;
@@ -143,7 +144,6 @@ show errors
 prompt *** intranet-costs: Creating im_cost_center body
 create or replace package body im_cost_center
 is
-
     function new (
 	cost_center_id	in integer default null,
 	object_type	in varchar default 'im_cost_center',
@@ -151,11 +151,12 @@ is
 	creation_user	in integer default null,
 	creation_ip	in varchar default null,
 	context_id	in integer default null,
-	name		in varchar,
+	cost_center_name		in varchar,
 	type_id		in integer,
 	status_id	in integer,
 	parent_id	in integer,
 	manager_id	in integer default null,
+	department_p	in char default 't',
 	description	in varchar default null,
 	note		in varchar default null
     ) return im_cost_centers.cost_center_id%TYPE
@@ -172,11 +173,15 @@ is
 	);
 
 	insert into im_cost_centers (
-		cost_center_id, name, cost_center_type_id, 
-		cost_center_status_id, parent_id, manager_id, description, note
+		cost_center_id, cost_center_name, cost_center_type_id, 
+		cost_center_status_id, parent_id, manager_id,
+		department_p,
+		description, note
 	) values (
-		v_cost_center_id, name, type_id, 
-		status_id, parent_id, manager_id, description, note
+		new.v_cost_center_id, new.cost_center_name, new.type_id, 
+		new.status_id, new.parent_id, new.manager_id, 
+		new.department_p,
+		new.description, new.note
 	);
 	return v_cost_center_id;
     end new;
@@ -205,9 +210,9 @@ is
 
     procedure name (cost_center_id in integer)
     is
-	v_name	im_cost_centers.name%TYPE;
+	v_name	im_cost_centers.cost_center_name%TYPE;
     begin
-	select	name
+	select	cost_center_name
 	into	v_name
 	from	im_cost_centers
 	where	cost_center_id = cost_center_id;
@@ -217,7 +222,7 @@ end im_cost_center;
 show errors
 
 
--- Create URLs for viewing/editing cost centers
+prompt *** intranet-costs: Creating URLs for viewing/editing cost centers
 delete from im_biz_object_urls where object_type='im_cost_center';
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_cost_center','view','/intranet-cost/cost-centers/new?form_mode=display&cost_center_id=');
@@ -255,6 +260,7 @@ commit;
 
 
 prompt *** intranet-costs: Creating sample cost center configuration
+delete from im_cost_centers;
 declare
     v_the_company_center	integer;
     v_administrative_center	integer;
@@ -272,13 +278,14 @@ begin
     -- The Company itself: Profit Center (3002) with status "Active" (3101)
     -- This should be the only center with parent=null...
     v_the_company_center := im_cost_center.new (
-	name =>		'The Company',
-	type_id =>	3002,
-	status_id =>	3101,
-	parent_id => 	null,
-	manager_id =>	null,
-	description =>	'The top level center of the company',
-	note =>		''
+	cost_center_name =>	'The Company',
+	type_id =>		3002,
+	status_id =>		3101,
+	parent_id => 		null,
+	manager_id =>		null,
+	department_p =>		'f',
+	description =>		'The top level center of the company',
+	note =>			''
     );
 
     -- -----------------------------------------------------
@@ -291,11 +298,12 @@ begin
     -- HR stuff.'
     --
     v_administrative_center := im_cost_center.new (
-	name =>		'Administration',
+	cost_center_name =>		'Administration',
 	type_id =>	3001,
 	status_id =>	3101,
 	parent_id => 	v_the_company_center,
 	manager_id =>	null,
+	department_p =>		't',
 	description =>	'Administration Cervice Center',
 	note =>		''
     );
@@ -303,49 +311,53 @@ begin
     -- Utilities Cost Center (3001)
     --
     v_utilities_center := im_cost_center.new (
-	name =>		'Rent and Utilities',
-	type_id =>	3001,
-	status_id =>	3101,
-	parent_id => 	v_the_company_center,
-	manager_id =>	null,
-	description =>	'Covers all repetitive costs such as rent, telephone, internet connectivity, ...',
-	note =>		''
+	cost_center_name =>	'Rent and Utilities',
+	type_id =>		3001,
+	status_id =>		3101,
+	parent_id => 		v_the_company_center,
+	manager_id =>		null,
+	department_p =>		'f',
+	description =>		'Covers all repetitive costs such as rent, telephone, internet connectivity, ...',
+	note =>			''
     );
 
     -- Sales Cost Center (3001)
     --
     v_sales_center := im_cost_center.new (
-	name =>		'Sales',
-	type_id =>	3001,
-	status_id =>	3101,
-	parent_id => 	v_the_company_center,
-	manager_id =>	null,
-	description =>	'Records all sales related activities, as oposed to marketing.',
-	note =>		''
+	cost_center_name =>	'Sales',
+	type_id =>		3001,
+	status_id =>		3101,
+	parent_id => 		v_the_company_center,
+	manager_id =>		null,
+	department_p =>		't',
+	description =>		'Records all sales related activities, as oposed to marketing.',
+	note =>			''
     );
 
     -- Marketing Cost Center (3001)
     --
     v_marketing_center := im_cost_center.new (
-	name =>		'Marketing',
-	type_id =>	3001,
-	status_id =>	3101,
-	parent_id => 	v_the_company_center,
-	manager_id =>	null,
-	description =>	'Marketing activities, such as website, promo material, ...',
-	note =>		''
+	cost_center_name =>	'Marketing',
+	type_id =>		3001,
+	status_id =>		3101,
+	parent_id => 		v_the_company_center,
+	manager_id =>		null,
+	department_p =>		't',
+	description =>		'Marketing activities, such as website, promo material, ...',
+	note =>			''
     );
 
     -- Project Operations Cost Center (3001)
     --
     v_projects_center := im_cost_center.new (
-	name =>		'Project Operations',
-	type_id =>	3001,
-	status_id =>	3101,
-	parent_id => 	v_the_company_center,
-	manager_id =>	null,
-	description =>	'Covers all phases of project-oriented execution activities..',
-	note =>		''
+	cost_center_name =>	'Project Operations',
+	type_id =>		3001,
+	status_id =>		3101,
+	parent_id => 		v_the_company_center,
+	manager_id =>		null,
+	department_p =>		't',
+	description =>		'Covers all phases of project-oriented execution activities..',
+	note =>			''
     );
 
 end;
@@ -899,7 +911,7 @@ begin
 	package_name =>	'intranet-cost',
 	label =>	'cost_new_item',
 	name =>		'New Cost Item',
-	url =>		'/intranet-cost/new',
+	url =>		'/intranet-cost/cost-items/new',
 	sort_order =>	10,
 	parent_menu_id => v_invoices_new_menu
     );
