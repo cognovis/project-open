@@ -174,6 +174,13 @@ show errors
 commit;
 
 
+BEGIN
+    acs_privilege.create_privilege('view_filestorage_sales','View Sales Filestorage','View Sales Filestorage');
+END;
+/
+
+
+
 declare
 	v_plugin		integer;
 begin
