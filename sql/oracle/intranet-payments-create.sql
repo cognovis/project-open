@@ -57,6 +57,40 @@ create table im_payments (
 			start_block, payment_type_id, currency)
 );
 
+------------------------------------------------------
+-- Permissions and Privileges
+--
+
+begin
+    acs_privilege.create_privilege('view_payments','View Payments','View Payments');
+    acs_privilege.create_privilege('add_payments','View Payments','View Payments');
+end;
+/
+show errors;
+
+
+
+BEGIN
+    im_priv_create('view_payments','Accounting');
+    im_priv_create('view_payments','P/O Admins');
+    im_priv_create('view_payments','Senior Managers');
+END;
+/
+show errors;
+
+BEGIN
+    im_priv_create('add_payments','Accounting');
+    im_priv_create('add_payments','P/O Admins');
+    im_priv_create('add_payments','Senior Managers');
+END;
+/
+show errors;
+
+
+------------------------------------------------------
+-- Audit all payment transactions
+--
+
 create table im_payments_audit (
 	payment_id		integer,
 	invoice_id		integer,
