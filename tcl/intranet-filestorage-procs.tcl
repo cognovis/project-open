@@ -424,8 +424,8 @@ ad_proc im_filestorage_base_component { user_id id base_path name folder_type re
 	# Get the basic information about a file
 	ns_log Notice "file=$file"
 	set file_paths [split $file "/"]
-	set file_paths_len [llength $file_paths]
-	set parent_depth [expr $file_paths_len - 1]
+	set current_depth [llength $file_paths]
+	set parent_depth [expr $current_depth - 1]
 	set file_body [lindex $file_paths $parent_depth]
 
 	set file_type ""
@@ -466,15 +466,15 @@ ad_proc im_filestorage_base_component { user_id id base_path name folder_type re
 
 	# Determine how many "tabs" the file should be indented
 	set spacer ""
-	for {set i [expr $start_index + 1]} {$i < $file_paths_len} {incr i} {
+	for {set i [expr $start_index + 1]} {$i < $current_depth} {incr i} {
 	    append spacer [im_gif "exp-line"]
 	}
 	
 	# determine the part of the filename _after_ the base path
 	set end_path ""
-	for {set i $start_index} {$i < $file_paths_len} {incr i} {
+	for {set i $start_index} {$i < $current_depth} {incr i} {
 	    append end_path [lindex $file_paths $i]
-	    if {$i < [expr $file_paths_len - 1]} { append end_path "/" }
+	    if {$i < [expr $current_depth - 1]} { append end_path "/" }
 	}
 	
 	switch [string tolower $file_type] {
@@ -1008,16 +1008,33 @@ ad_proc -public im_filestorage_pol_component { user_id object_id object_name bas
     set file_list ""
     if { [catch {
 	# Executing the find command
-	ns_log Notice "im_filestorage_component: exec /usr/bin/find $base_path$bread_crum_path"
 	set file_list [exec /usr/bin/find "$base_path$bread_crum_path"]
     } err_msg] } { 
 	return "<ul><li>Unable to get file list from '$bread_crum_path'</ul>"
     }
-    ns_log Notice "im_filestorage_component: file_list=$file_list"
-
     # Save each result of the find in a list
     set files [lsort [split $file_list "\n"]]
-    ns_log Notice "im_filestorage_component: files=$files"
+
+    # ------------------------------------------------------------------
+    # Setup the variables for the "Root Path" 
+    # (=the first line returned by "find")
+    # ------------------------------------------------------------------
+    
+    # root -> the complete path and name of the root directory for the 
+    # filestorage tree view
+    set root_path [lindex $files 0]
+
+    # root_dir_depth: The depth depth of the base_path
+    set root_dir_depth [llength [split $root_path "/"]]
+
+    # remove the root path from the list of files returned by "find".
+    set files [lrange $files 1 [llength $files]]
+
+    # Setup the "last parent" - the directory on which we depend.
+    # This normally corresponds to the last _closed_ directory
+    # on top of us.
+    set last_parent_path $root_path
+    set last_parent_path_depth $root_dir_depth
 
     # ------------------------------------------------------------------
     # Start the Bread Crum with the name of the object
@@ -1073,114 +1090,64 @@ where
 	set folder_id_hash($path) $folder_id
 
     }
-    
+
+    # Always show the root of the filestorage as "open"
+    set open_p_hash($root_path) "o"
+
+    # Always show the bread_crum "root" as "open"
+    set open_p_hash($current_path) "o"
+
     # ------------------------------------------------------------------
     # Here we start rendering the file tree
     # ------------------------------------------------------------------
     append texte "<table align=center>\n"
 	
-    #----------------------- Init the table contents
-    # The next loop evaluates each result of the find, we need to make some 
-    # initializations the first time this variable makes it possible
-    set init 1
-
-    # To control that the father folder don't be printed in the tree as its childs
-    set id_file 0
-
     #----------------------- For every result of FIND ( generate the tree table) 
     foreach file $files { 
-	
+
 	# count the deph of the file (how many directories depends the file)
 	#ex (/home - /cluster - /Data - /Internal- /INT-ADM-KNOWMG - /file.dat)
 	set file_paths [split $file "/"]
-	set file_paths_len [llength $file_paths] 
-	set parent_depth [expr $file_paths_len -1] 
+	set current_depth [llength $file_paths] 
 
 	# store the name of the file ("file.dat")
-	set file_body [lindex $file_paths $parent_depth] 
-	
-	# -- Evaluated only the first time that foreach is executed
-	if { $init == 1 } {
-
-	    #just a quicky solution for the integrity of file_paths_len
-	    #set file_paths_len [expr $file_paths_len -1]
-
-	    # The last directory that was closed.
-	    # If we are in a depth > last_closed_dir_depth then we
-	    # don't have to show the current file.
-	    set last_closed_dir_depth $file_paths_len
-
-	    # root_dir_depth: The depth depth of the base_path
-	    set root_dir_depth $file_paths_len
-
-	    # root -> the complete path and name of the root directory for the 
-	    # filestorage tree view
-	    set root_path $file
-	    
-	    set init 0
-	}
-
-	# initialize the file type(dir/file) and its size
-	set file_type ""
-	set file_size ""
+	set file_body [lindex $file_paths $current_depth] 
 	
 	#Getting the real type and size of the file
+	set file_type ""
+	set file_size ""
 	if { [catch {
 	    set file_type [file type $file]
 	    set file_size [expr [file size $file] / 1024]
-	} err_msg] } {
-	    
+	} err_msg] } { }
+
+	# This is the core of the algorithm:
+	# Check if we're below last_parent_depth.
+	# In this case we depend on our parents open_p status
+	if {$current_depth > $last_parent_path_depth} {
+	    if { ![info exists open_p_hash($file)] } {
+		# Treat a missing element in the hash (from the DB!) as closed...
+		set visible_p "c"
+	    } else {
+		set visible_p $open_p_hash($last_parent_path)
+	    }
+	} else {
+	    # We are on the same level as last_parent
+	    # => This line becomes the last_parent!!!
+	    # => This line is visible, even though its status may be closed
+	    #    but that's only for its _childs_.
+	    set last_parent_path $current_path
+	    set last_parent_path_depth $current_path_depth
+	    set visible_p "o"
 	}
+	if {![string equal "o" $visible_p]} { continue }
+
 
 	# Actions executed if the file type is "directory"
 	if { [string compare $file_type "directory"] == 0 } {
 
-	    # Generate a new position in the hash array that control the dependency of this folder
-	    set path_dependency($file_paths_len) $file
-	    ns_log Notice "-------- im_filestorage_pol_component: dependency $file_paths_len: $path_dependency($file_paths_len)"
-
-	    # If the actual directory depth is greather than the last deph evaluated
-	    if { $last_closed_dir_depth < $parent_depth } {
-	    	#Set the actual directory deph as new deph 
-	    	set parent_depth $last_closed_dir_depth 
-	    }	    
-
-	    # If the path status is not in the hash array
-	    if { ![info exists open_p_hash($file)] } {
-		# Force the entrance of this new directory in de hash array and in the 
-		# sql table with a close status
-		set open_p_hash($file) "c"
-		db_dml init_insert "
-insert into im_fs_folder_status (
-	folder_id, 
-	object_id,
-	user_id, 
-	path, 
-	open_p
-) values (
-	im_fs_folder_status_seq.nextval,
-	:object_id,
-	:user_id,
-	'$file',
-	'c'
-)"
-		db_0or1row max_id_query "select max(folder_id) max_id from im_fs_folder_status"
-		# Save the identifier of the folder generated in the sql table in the folder_id_hash hash array
-		set folder_id_hash($file) $max_id
-	    }
-
-	    #If the actual deph depends of an uplevel directory
-	    if { [info exists path_dependency($parent_depth)] } {
-
-		# If the father directory of our evaluated directory is openned
-		# or it depends of the directory selected by the user as root of the directory tree view
-		if { ($open_p_hash($path_dependency($parent_depth)) == "o") || ($path_dependency($parent_depth) == $root_path)} {				    
-		    
-		    #We don't want to print the root folder like a child folder, we control this with the id_file var
-		    if { $id_file != 0 } {
-		    	# Printing one row with the directory information
-
-                        append texte [im_filestorage_dir_row \
+	    # Printing one row with the directory information
+	    append texte [im_filestorage_dir_row \
 			    -file_body $file_body  \
 			    -bind_vars $bind_vars  \
 			    -current_url_without_vars $current_url_without_vars  \
@@ -1188,67 +1155,27 @@ insert into im_fs_folder_status (
 			    -folder_id $folder_id_hash($file)  \
 			    -object_id $object_id \
 			    -root_dir_depth $root_dir_depth  \
-			    -file_paths_len $file_paths_len  \
+			    -current_depth $current_depth  \
 			    -open_p $open_p_hash($file) \
-			    -id_file $id_file  \
+			    -first_line_flag $folder_id_hash($file)  \
 			    -file $file  \
 			    -bread_crum_path $bread_crum_path \
-			]
+	    ]
 
-
-		    }
-		    # Refresh the directory branch that we start to evaluate
-		    set last_closed_dir_depth $file_paths_len
-		} else {									
-		    #if the folder is close we don't parse any more files until last_closed_dir_depth == file_paths_len
-		}
-	    # If the actual deph is the root of the project, the base path
-	    } else {
-
-		if { $open_p_hash($file) == "c" } {
-		    set last_closed_dir_depth $file_paths_len
-		}	
-
-		    #We don't want to print the root folder like a child folder, we control this with the id_file var
-		    if { $id_file != 0 } {
-		    	# Printing one row with the directory information
-
-                        append texte [im_filestorage_dir_row \
-			    -file_body $file_body  \
-			    -bind_vars $bind_vars  \
-			    -current_url_without_vars $current_url_without_vars  \
-			    -return_url $return_url  \
-			    -folder_id $folder_id_hash($file)  \
-			    -object_id $object_id \
-			    -root_dir_depth $root_dir_depth  \
-			    -file_paths_len $file_paths_len  \
-			    -open_p $open_p_hash($file) \
-			    -id_file $id_file  \
-			    -file $file  \
-			    -bread_crum_path $bread_crum_path \
-			]
-
-		    }
-	    }
 	} else {
-	    # If the file type is file
-	    if { [string compare $file_type "file"] == 0 } {
-		
-	    if { $last_closed_dir_depth < $parent_depth } {set parent_depth $last_closed_dir_depth }
-	    	#Checking the dependency of the file
-		if { [info exists open_p_hash($path_dependency($parent_depth))]} {
-		    # If the father directory of our evaluated directory is openned
-		    # or it depends of the directory selected by the user as root of the directory tree view
-		    if { ($open_p_hash($path_dependency($parent_depth)) == "o") || ($path_dependency($parent_depth) == $root_path) } {
-		    	#checking if we are at the first time, no tine sentido! sin esto tendria que funcionar!!!!
-		    	if { $id_file != 0 } {
-				append texte [im_filestorage_file_row $file_body $file $root_dir_depth $file_paths_len $id_file $file]
-			}
-		    } 			
-		}
-	    }
+
+	    # Skip the line if it's not a file
+	    if {![string equal $file_type "file"]} { continue }
+
+	    append texte [im_filestorage_file_row \
+			      $file_body \
+			      $file \
+			      $root_dir_depth \
+			      $current_depth \
+			      $first_line_flag \
+			      $file \
+		           ]
 	}
-	incr id_file
     }
     append texte "</table></form>"
     return "$texte" 
@@ -1265,33 +1192,32 @@ ad_proc im_filestorage_dir_row {
     -folder_id
     -object_id
     -root_dir_depth
-    -file_paths_len
+    -current_depth
     -open_p
-    -id_file
+    -first_line_flag
     -file
     -bread_crum_path
 } {
     Create a row with for a directory
 } {
-    ns_log Notice "im_filestorage_dir_row: file_body=$file_body return_url=$return_url folder_id=$folder_id object_id=$object_id root_dir_depth=$root_dir_depth file_paths_len=$file_paths_len open_p=$open_p id_file=$id_file file=$file bread_crum_path=$bread_crum_path"
-
     append texte "
 <tr class=rowfilestorage>
   <td align=center valign=middle>
-    <input type=checkbox name=id_row.$id_file value=$file_body>
-    <input type=hidden name=id_file.$id_file value=$file>    
+    <input type=checkbox name=id_row.$first_line_flag value=$file_body>
+    <input type=hidden name=first_line_flag.$first_line_flag value=$file>    
   </td>
-  <td id=idrow_$id_file>
+  <td id=idrow_$first_line_flag>
 " 
  
     set i $root_dir_depth
     incr i 
-    while {$i < $file_paths_len} {
+    while {$i < $current_depth} {
 	append texte [im_gif empty21]
 	incr i 
     } 
+
     append texte "
-   <a href=/intranet-filestorage/folder_status_update?[export_url_vars folder_id open_p object_id bread_crum_path return_url]>"
+   <a href=/intranet-filestorage/folder_status_update?[export_url_vars folder_id open_p object_id file bread_crum_path return_url]>"
 
     if {$open_p == "o"} {
 	append texte [im_gif foldin2]
@@ -1320,7 +1246,7 @@ $file_body
 
 }
 
-ad_proc im_filestorage_file_row { file_body file root_dir_depth file_paths_len id_file file} {
+ad_proc im_filestorage_file_row { file_body file root_dir_depth current_depth first_line_flag file} {
 
 }   {
     set file_type ""
@@ -1341,19 +1267,19 @@ ad_proc im_filestorage_file_row { file_body file root_dir_depth file_paths_len i
     append texte "
 <tr class=rowfilestorage>
   <td align=center valign=middle>
-    <input type=checkbox name=id_row.$id_file value=$file_body>
-    <input type=hidden name=id_file.$id_file value=$file>    
+    <input type=checkbox name=id_row.$first_line_flag value=$file_body>
+    <input type=hidden name=first_line_flag.$first_line_flag value=$file>    
   </td>
-  <td id=idrow_$id_file>" 
+  <td id=idrow_$first_line_flag>" 
     set i $root_dir_depth 
     incr i
-    while {$i < $file_paths_len} {
+    while {$i < $current_depth} {
 	append texte [im_gif empty21]
 	incr i
     }
     
     set i $root_dir_depth 
-    if {$file_paths_len!=$i} {
+    if {$current_depth!=$i} {
 	#append texte "<img src=/intranet-filestorage/images/adots_T.gif width=21>"
     } 
     
