@@ -51,8 +51,9 @@ drop package im_cost;
 
 drop view im_cost_status;
 drop view im_cost_type;
-
+delete from im_category_hierarchy where (parent_id >= 3700 and parent_id < 3799) or (child_id >= 3700 and child_id < 3799);
 delete from im_categories where category_id >= 3700 and category_id < 3799;
+delete from im_category_hierarchy where (parent_id >= 3800 and parent_id < 3899) or (child_id >= 3800 and child_id < 3899);
 delete from im_categories where category_id >= 3800 and category_id < 3899;
 
 drop table im_costs;
@@ -60,12 +61,15 @@ drop table im_costs;
 -------------------------------------------------------------
 -- "Investments"
 
-
+delete from im_category_hierarchy where (parent_id >= 3500 and parent_id < 3599) or (child_id >= 3500 and child_id < 3599);
 delete from im_categories where category_id >= 3500 and category_id < 3599;
+delete from im_category_hierarchy where (parent_id >= 3400 and parent_id < 3500) or (child_id >= 3400 and child_id < 3500);
 delete from im_categories where category_id >= 3400 and category_id < 3500;
-delete from im_categories where category_id >= 3400 and category_id < 3500;
-delete from im_biz_object_urls where object_type='im_investment';
 
+delete from im_biz_object_urls where object_type='im_investment';
+begin
+	acs_object_type.drop_type('im_investment', 'f');
+end;
 drop table im_investments;
 
 begin
@@ -75,10 +79,21 @@ end;
 
 -------------------------------------------------------------
 -- Repeating Costs
-
+delete from im_category_hierarchy where parent_id in
+       (select category_id from im_categories where category_type = 'Intranet Investment Type')
+or child_id in
+        (select category_id from im_categories where category_type = 'Intranet Investment Type');
 delete from im_categories where category_type = 'Intranet Investment Type';
+delete from im_category_hierarchy where parent_id in
+       (select category_id from im_categories where category_type = 'Intranet Investment Status')
+or child_id in
+        (select category_id from im_categories where category_type = 'Intranet Investment Status');
 delete from im_categories where category_type = 'Intranet Investment Status';
 
+delete from im_biz_object_urls where object_type='im_cost';
+begin
+	acs_object_type.drop_type('im_cost', 'f');
+end; 
 drop table im_prices;
 
 drop table im_repeating_costs;
@@ -89,8 +104,9 @@ drop table im_repeating_costs;
 -- Cost Centers
 
 drop view im_departments;
-
+delete from im_category_hierarchy where (parent_id >= 3000 and parent_id < 3100) or (child_id >= 3000 and child_id < 3100);
 delete from im_categories where category_id >= 3000 and category_id < 3100;
+delete from im_category_hierarchy where (parent_id >= 3100 and parent_id < 3200) or (child_id >= 3100 and child_id < 3200);
 delete from im_categories where category_id >= 3100 and category_id < 3200;
 
 
@@ -98,8 +114,15 @@ delete from im_biz_object_urls where object_type='im_cost_center';
 
 drop table im_cost_centers;
 drop package im_cost_center;
-
+delete from im_category_hierarchy where parent_id in
+       (select category_id from im_categories where category_type = 'Intranet Cost Center Type')
+or child_id in
+        (select category_id from im_categories where category_type = 'Intranet Cost Center Type');
 delete from im_categories where category_type = 'Intranet Cost Center Type';
+delete from im_category_hierarchy where parent_id in
+       (select category_id from im_categories where category_type = 'Intranet Cost Center Status')
+or child_id in
+        (select category_id from im_categories where category_type = 'Intranet Cost Center Status');
 delete from im_categories where category_type = 'Intranet Cost Center Status';
 
 begin
