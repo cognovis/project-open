@@ -25,10 +25,10 @@ create table im_forum_topics (
 			references im_forum_topics,
 	topic_type_id	integer not null
 			constraint im_forum_topics_type_fk
-			references categories,
+			references im_categories,
 	topic_status_id	integer
 			constraint im_forum_topics_status_fk
-			references categories,
+			references im_categories,
 	posting_date	date,
 	owner_id	integer not null
 			constraint im_forum_topics_owner_fk
@@ -144,32 +144,32 @@ insert into im_forum_folders values (9, null, null, 'Sys9');
 
 
 -- Forum Topic Types
-delete from categories where category_type = 'Intranet Topic Type';
+delete from im_categories where category_type = 'Intranet Topic Type';
 
-INSERT INTO categories VALUES (1100,'News',
+INSERT INTO im_categories VALUES (1100,'News',
 'News item that may or may not be commented.',
 'Intranet Topic Type','category','t');
 
-INSERT INTO categories VALUES (1102,'Incident',
+INSERT INTO im_categories VALUES (1102,'Incident',
 'Critical task that needs rapid resolution',
 'Intranet Topic Type','category','t');
 
-INSERT INTO categories VALUES (1104,'Task',
+INSERT INTO im_categories VALUES (1104,'Task',
 'Task that needs to be performed',
 'Intranet Topic Type','category','t');
 
-INSERT INTO categories VALUES (1106,'Discussion',
+INSERT INTO im_categories VALUES (1106,'Discussion',
 'Request for response/interaction',
 'Intranet Topic Type','category','t');
 
-INSERT INTO categories VALUES (1108,'Note',
+INSERT INTO im_categories VALUES (1108,'Note',
 'Calling attention about something',
 'Intranet Topic Type','category','t');
 
-INSERT INTO categories VALUES (1110,'Help Request',
+INSERT INTO im_categories VALUES (1110,'Help Request',
 'Help Request','Intranet Topic Type','category','t');
 
-INSERT INTO categories VALUES (1190,'Reply',
+INSERT INTO im_categories VALUES (1190,'Reply',
 'Reply','Intranet Topic Type','category','t');
 
 commit;
@@ -180,7 +180,7 @@ create or replace view im_forum_topic_types as
 select 
 	category_id as topic_type_id, 
 	category as topic_type
-from categories 
+from im_categories 
 where category_type = 'Intranet Topic Type';
 
 
@@ -399,29 +399,29 @@ commit;
 
 
 -- Intranet Topic Status
-delete from categories where category_type = 'Intranet Topic Status';
+delete from im_categories where category_type = 'Intranet Topic Status';
 
-INSERT INTO categories VALUES (1200,'Open',
+INSERT INTO im_categories VALUES (1200,'Open',
 'A topic has been generated, but is not assigned to anybody (discussion, ...)',
 'Intranet Topic Status','category','t');
 
-INSERT INTO categories VALUES (1202,'Assigned',
+INSERT INTO im_categories VALUES (1202,'Assigned',
 'A task has been assigned to someone, but this person has not confirmed yet.',
 'Intranet Topic Status','category','t');
 
-INSERT INTO categories VALUES (1204,'Accepted',
+INSERT INTO im_categories VALUES (1204,'Accepted',
 'The asignee has confirmed that he will be responsible for the task',
 'Intranet Topic Status','category','t');
 
-INSERT INTO categories VALUES (1206,'Rejected',
+INSERT INTO im_categories VALUES (1206,'Rejected',
 'The asignee has rejected to take responsability for the task',
 'Intranet Topic Status','category','t');
 
-INSERT INTO categories VALUES (1208,'Needs Clarify',
+INSERT INTO im_categories VALUES (1208,'Needs Clarify',
 'The asignee passes the task back to the owner for clarification',
 'Intranet Topic Status','category','t');
 
-INSERT INTO categories VALUES (1210,'Closed',
+INSERT INTO im_categories VALUES (1210,'Closed',
 'The owner has canceled the task or the asignee has finished the task',
 'Intranet Topic Status','category','t');
 
@@ -432,14 +432,14 @@ commit;
 create or replace view im_forum_topic_status as 
 select 	category_id as topic_type_id, 
 	category as topic_type
-from categories 
+from im_categories 
 where category_type = 'Intranet Topic Status';
 	
 
 create or replace view im_forum_topic_status_active as 
 select 	category_id as topic_type_id, 
 	category as topic_type
-from categories 
+from im_categories 
 where	category_type = 'Intranet Topic Status'
 	and category_id not in (1202, 1204, 1206);
 
