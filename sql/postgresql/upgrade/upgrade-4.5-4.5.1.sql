@@ -2,7 +2,7 @@
 --
 -- @author jon@jongriffi.com
 -- @creation-date 2002-08-02
--- @cvs-id $Id: upgrade-4.5-4.5.1.sql,v 1.2 2002/12/21 22:27:17 bartt Exp $
+-- @cvs-id $Id: upgrade-4.5-4.5.1.sql,v 1.3 2003/05/17 11:28:15 jeffd Exp $
 --
 
 -- search-packages-create.sql
