@@ -29,6 +29,8 @@
 -- During indexing with a search engine, documents are given a pointer 
 -- to the folder which carries the permissions.
 
+\i ../common/intranet-filestorage-common.sql
+
 create sequence im_fs_folder_seq start 1;
 create table im_fs_folders (
 	folder_id	integer 
@@ -190,10 +192,10 @@ SELECT im_component_plugin__new (
     );
 
 
-# Create a special privilege to control the "Sales" Filestorage 
-# which may actually be located on a different server for
-# security reasons
-#
+--  Create a special privilege to control the "Sales" Filestorage 
+--  which may actually be located on a different server for
+--  security reasons
+
 select acs_privilege__create_privilege('view_filestorage_sales','View Sales Filestorage','View Sales Filestorage');
 select acs_privilege__add_child('admin', 'view_filestorage_sales');
 
@@ -233,6 +235,4 @@ SELECT im_component_plugin__new (
 
 
 
-
-@../common/intranet-filestorage-common.sql
 
