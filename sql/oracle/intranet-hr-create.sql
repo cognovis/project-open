@@ -26,46 +26,48 @@
 --
 
 create table im_employees (
-	user_id			integer 
+	employee_id		integer 
+				constraint im_employees_pk
 				primary key 
-				references users,
+				constraint im_employees_id_fk
+				references parties,
+	department_id		integer 
+				constraint im_employees_department_fk
+				references im_cost_centers,
 	job_title		varchar(200),
-	job_description	varchar(4000),
+	job_description		varchar(4000),
 				-- is this person an official team leader?
 	team_leader_p		char(1) 
-				constraint im_employee_team_lead_con 
+				constraint im_employees_team_lead_ck
 				check (team_leader_p in ('t','f')),
 				-- can this person lead projects?
-	project_lead_p	char(1) 
-				constraint im_employee_project_lead_con check 
+	project_lead_p		char(1)
+				constraint im_employees_project_lead_ck check 
 				(project_lead_p in ('t','f')),
-	-- percent of a full time person this person works
+				-- percent of a full time person this person works
 	percentage		integer,
 	supervisor_id		integer 
-				references users,
-	-- add a constraint to prevent a user from being her own supervisor
-	group_manages		varchar(100),
-	current_information	varchar(4000),
-	--- send email if their information is too old
-	last_modified		date default sysdate not null,
+				constraint im_employees_supervisor_fk
+				references parties,
 	ss_number		varchar(20),
 	salary			number(9,2),
 	salary_period		varchar(12) default 'month' 
-				constraint im_employee_salary_period_con 
-		check (salary_period in ('hour','day','week','month','year')),
-	--- W2 information
+				constraint im_employees_salary_period_ck
+				check (salary_period in ('hour','day','week','month','year')),
+	salary_payments		integer default 12,
+				--- W2 information
 	dependant_p		char(1) 
-				constraint im_employee_dependant_p_con 
+				constraint im_employees_dependant_p_con 
 				check (dependant_p in ('t','f')),
 	only_job_p		char(1) 
-				constraint im_employee_only_job_p_con 
+				constraint im_employees_only_job_p_con 
 				check (only_job_p in ('t','f')),
 	married_p		char(1) 
-				constraint im_employee_married_p_con 
+				constraint im_employees_married_p_con 
 				check (married_p in ('t','f')),
-	dependants		integer default 0,
-	head_of_household_p	char(1) 
-				constraint im_employee_head_of_house_con 
+	dependants		integer,
+	head_of_household_p	char(1)
+				constraint im_employees_head_of_house_con 
 				check (head_of_household_p in ('t','f')),
 	birthdate		date,
 	skills			varchar(2000),
@@ -73,74 +75,52 @@ create table im_employees (
 	years_experience	number(5,2),
 	educational_history	varchar(4000),
 	last_degree_completed	varchar(100),
-	resume			clob,
-	resume_html_p		char(1) 
-				constraint im_employee_resume_html_p_con 
-				check (resume_html_p in ('t','f')),
+				-- employee lifecycle management
+	employee_state		integer
+				constraint im_employees_rec_state_fk
+				references im_categories,
 	start_date		date,
-	-- when did the employee leave the company
 	termination_date	date,
-	received_offer_letter_p	char(1) 
-				constraint im_employee_recv_offer_con 
-				check(received_offer_letter_p in ('t','f')),
-	returned_offer_letter_p char(1) 
-				constraint im_employee_return_offer_con 
-				check(returned_offer_letter_p in ('t','f')),
-	-- did s/he sign the confidentiality agreement?
-	signed_confidentiality_p char(1) 
-				constraint im_employee_conf_p_con 
-				check(signed_confidentiality_p	in ('t','f')),
-	most_recent_review	date,
-	most_recent_review_in_folder_p char(1) 
-				constraint im_employee_recent_review_con 
-			check(most_recent_review_in_folder_p in ('t','f')),
-	featured_employee_approved_p char(1) 
-				constraint featured_employee_p_con 
-			check(featured_employee_approved_p in ('t','f')),
-	featured_employee_approved_by integer 
-				references users,
-	featured_employee_blurb clob,
-	featured_employee_blurb_html_p char(1) default 'f'
-				constraint featured_emp_blurb_html_p_con 
-				check (featured_employee_blurb_html_p in ('t','f')),
-	referred_by 		references users,
-	referred_by_recording_user integer 
-				references users,
-	experience_id		integer 
-				references categories,
-	source_id		integer 
-				references categories,
-	original_job_id		integer 
-				references categories,
-	current_job_id		integer 
-				references categories,
-	qualification_id	integer 
-				references categories,
-	department_id		integer 
-				references categories,
 	termination_reason	varchar(4000),
 	voluntary_termination_p	char(1) default 'f'
-				constraint iei_voluntary_termination_p_ck 
+				constraint im_employees_vol_term_ck
 				check (voluntary_termination_p in ('t','f')),
-	recruiting_blurb	clob,
-	recruiting_blurb_html_p	char(1) default 'f'
-				constraint recruiting_blurb_html_p_con 
-				check (recruiting_blurb_html_p in ('t','f'))
+				-- did s/he sign non disclosure agreement?
+	signed_nda_p		char(1)
+				constraint im_employees_conf_p_con 
+				check(signed_nda_p in ('t','f')),
+	referred_by 		integer
+				constraint im_employees_referred_fk 
+				references parties,
+	experience_id		integer 
+				constraint im_employees_experience_fk
+				references im_categories,
+	source_id		integer 
+				constraint im_employees_source_fk
+				references im_categories,
+	original_job_id		integer 
+				constraint im_employees_org_job_fk
+				references im_categories,
+	current_job_id		integer 
+				constraint im_employees_current_job_fk
+				references im_categories,
+	qualification_id	integer 
+				constraint im_employees_qualification_fk
+				references im_categories		
 );
 create index im_employees_referred_idx on im_employees(referred_by);
 
+alter table im_employees
+add constraint im_employees_superv_ck
+check (supervisor_id != employee_id);
 
 
 -- stuff we need for the Org Chart
 -- Oracle will pop a cap in our bitch ass if do CONNECT BY queries 
--- on im_us<ers without these indices
+-- on im_users without these indices
 
-create index im_employees_idx1 on im_employees(user_id, supervisor_id);
-create index im_employees_idx2 on im_employees(supervisor_id, user_id);
-
--- you can't do a JOIN with a CONNECT BY so we need a PL/SQL proc to
--- pull out user's name from user_id
-
+create index im_employees_idx1 on im_employees(employee_id, supervisor_id);
+create index im_employees_idx2 on im_employees(supervisor_id, employee_id);
 
 
 create or replace function im_supervises_p(
@@ -152,10 +132,10 @@ is
 BEGIN
 	select decode(count(1),0,'f','t') into v_exists_p
 	from im_employees
-	where user_id = v_user_id
+	where employee_id = v_user_id
 	and level > 1
-	start with user_id = v_supervisor_id
-	connect by supervisor_id = PRIOR user_id;
+	start with employee_id = v_supervisor_id
+	connect by supervisor_id = PRIOR employee_id;
 	return v_exists_p;
 END im_supervises_p;
 /
@@ -169,7 +149,8 @@ show errors
 create sequence im_employee_checkpoint_id_seq;
 
 create table im_employee_checkpoints (
-	checkpoint_id		integer 
+	checkpoint_id		integer
+				constraint im_emp_checkp_pk
 				primary key,
 	stage			varchar(100) not null,
 	checkpoint		varchar(500) not null
@@ -177,66 +158,133 @@ create table im_employee_checkpoints (
 
 create table im_emp_checkpoint_checkoffs (
 	checkpoint_id		integer 
+				constraint im_emp_checkpoff_checkp_fk
 				references im_employee_checkpoints,
 	checkee			integer not null 
-				references users,
+				constraint im_emp_checkpoff_checkee_fk
+				references parties,
 	checker			integer not null 
-				references users,
+				constraint im_emp_checkpoff_checker_fk
+				references parties,
 	check_date		date,
 	check_note		varchar(1000),
-	primary key (checkee, checkpoint_id)
-);
-
-
--- We need to keep track of in influx of employees.
--- For example, what employees have received offer letters?
-
-create table im_employee_pipeline (
-	user_id			integer 
-				primary key 
-				references users,
-	state_id		integer not null 
-				references categories,
-	office_id		integer 
-				references groups,
-	team_id			integer 
-				references groups,
-	prior_experience_id 	integer 
-				references categories,
-	experience_id		integer 
-				references categories,
-	source_id		integer 
-				references categories,		
-	job_id			integer 
-				references categories,
-	projected_start_date	date,
-	-- the person at the company in charge of reeling them in.
-	recruiter_user_id	integer 
-				references users,	
-	referred_by		integer 
-				references users,
-	note			varchar(4000),
-	probability_to_start	integer
+		constraint im_emp_checkpoff_pk
+		primary key (checkee, checkpoint_id)
 );
 
 
 
 
--- keep track of the last_modified on im_employees
-create or replace trigger im_employees_last_modif_tr
-before update on im_employees
-for each row
-DECLARE
-BEGIN
-	:new.last_modified := sysdate;
-END;
+insert into im_views (view_id, view_name, visible_for) values (55, 'employees_list', 'view_users');
+insert into im_views (view_id, view_name, visible_for) values (56, 'employees_view', 'view_users');
+
+
+
+
+-- Add 'employees_list'
+delete from im_view_columns where column_id >= 5500 and column_id < 5599;
+
+insert into im_view_columns values (5500,55,NULL,'NNNName',
+'"<a href=/intranet/users/view?user_id=$user_id>$name</a>"','','',2,'');
+
+insert into im_view_columns values (5501,55,NULL,'Email',
+'"<a href=mailto:$email>$email</a>"','','',3,'');
+
+insert into im_view_columns values (5502,55,NULL,'Supervisor',
+'"<a href=/intranet/users/view?user_id=$supervisor_id>$supervisor_name</a>"','','',3,'');
+
+-- insert into im_view_columns values (5502,55,NULL,'Status',
+-- '$status','','',4,'');
+
+insert into im_view_columns values (5504,55,NULL,'Work Phone',
+'$work_phone','','',6,'');
+
+insert into im_view_columns values (5505,55,NULL,'Cell Phone',
+'$cell_phone','','',7,'');
+
+insert into im_view_columns values (5506,55,NULL,'Home Phone',
+'$home_phone','','',8,'');
+--
+commit;
+
+
+
+
+-- Add 'user_view_freelance'
+delete from im_view_columns where column_id >= 5600 and column_id < 5699;
+
+insert into im_view_columns values (5602,56,NULL,'Trans Rate',
+'$translation_rate','','',2,
+'im_permission $user_id view_freelancers');
+
+insert into im_view_columns values (5604,56,NULL,'Editing Rate',
+'$editing_rate','','',4,
+'im_permission $user_id view_freelancers');
+
+insert into im_view_columns values (5606,56,NULL,'Hourly Rate',
+'$hourly_rate','','',6,
+'im_permission $user_id view_freelancers');
+
+insert into im_view_columns values (5608,56,NULL,'Bank Account',
+'$bank_account','','',8,
+'im_permission $user_id view_freelancers');
+
+insert into im_view_columns values (5610,56,NULL,'Bank',
+'$bank','','',10,
+'im_permission $user_id view_freelancers');
+
+insert into im_view_columns values (5612,56,NULL,'Payment Method',
+'$payment_method','','',12,
+'im_permission $user_id view_freelancers');
+
+insert into im_view_columns values (5614,56,NULL,'Note',
+'<blockqote>$note</blockquote>','','',14,
+'im_permission $user_id view_freelancers');
+
+insert into im_view_columns values (5616,56,NULL,'Private Note',
+'<blockqote>$private_note</blockquote>','','',16,
+'im_permission $user_id view_freelancers');
+
+commit;
+
+
+
+
+
+-- Show the freelance information in users view page
+--
+declare
+    v_plugin            integer;
+begin
+    v_plugin := im_component_plugin.new (
+        plugin_name =>  'Users Freelance Component',
+        package_name => 'intranet-freelance',
+        page_url =>     '/intranet/users/view',
+        location =>     'bottom',
+        sort_order =>   10,
+        component_tcl =>
+        'im_freelance_info_component \
+                $current_user_id \
+                $user_id \
+                $return_url \
+                [im_opt_val freelance_view_name]'
+    );
+end;
 /
-show errors;
+
 
 
 -- Add OrgChart to Users menu
 declare
+    v_user_orgchart_menu	integer;
+    v_user_menu		integer;
 begin
+
+    select menu_id
+    into v_user_menu
+    from im_menus
+    where label='users';
+
     v_user_orgchart_menu := im_menu.new (
 	menu_id =>	null,
 	object_type =>	'im_menu',
@@ -246,7 +294,7 @@ begin
 	context_id =>	null,
 	package_name =>	'intranet-hr',
 	name =>		'Org Chart',
-	url =>		'/intranet/users/org-chart?customer_id=0',
+	url =>		'/intranet-employees/org-chart?customer_id=0',
 	sort_order =>	5,
 	parent_menu_id => v_user_menu
     );
@@ -258,4 +306,4 @@ begin
 
 end;
 /
-
+show errors;
