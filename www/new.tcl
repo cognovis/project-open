@@ -25,7 +25,9 @@ ad_page_contract {
 # ------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-set today [db_string birthday_today "select sysdate from dual"]
+set today [db_string birthday_today "select to_char(sysdate,'YYYY-MM-DD') from dual"]
+set end_century "2099-12-31"
+set internal_id [im_customer_internal]
 
 if {![im_permission $user_id view_users]} {
     ad_return_complaint 1 "You have insufficient privileges to use this page"
@@ -134,7 +136,8 @@ ad_form \
 	{job_description:text(textarea),nospell,optional {label "Job Description"} {html {rows 5 cols 40}}}
 
 	{start_date:text(text),optional {label "Start date"} {html {size 10}} }
-	{end_date:text(text),optional {label "End date date"} {html {size 10}} }
+	{end_date:text(text),optional {label "End date"} {html {size 10}} }
+
 	{voluntary_termination_p:text(radio),optional {label "Voluntary Termination"} {options $voluntary_termination_options} }
 	{termination_reason:text(textarea),nospell,optional {label "Termination Reason"} {html {rows 5 cols 40}}}
 	{signed_nda_p:text(radio),optional {label "NDA Signed?"} {options $voluntary_termination_options} }
@@ -163,122 +166,68 @@ ad_form -extend -name cost -on_request {
 
 	select	
 		e.*,
-		rc.*
+                CASE	WHEN rc.start_date is null
+                        THEN to_date(:today,'YYYY-MM-DD')
+                        ELSE to_date(rc.start_date)
+                END as start_date,
+                CASE	WHEN rc.end_date is null
+                        THEN to_date(:end_century,'YYYY-MM-DD')
+                        ELSE to_date(rc.end_date)
+                END as end_date,
+		ci.*
 	from	parties p,
 		im_employees e,
-		im_repeating_costs rc
+		im_repeating_costs rc,
+		im_costs ci
 	where	
 		p.party_id = :employee_id
-		and p.party_id = rc.cost_id(+)
-		and p.party_id = e.employee_id(+)
+		and p.party_id = e.employee_id
+		and p.party_id = ci.cause_object_id(+)
+		and ci.cost_id = rc.rep_cost_id(+)
 
-} -new_data {
+} -after_submit {
 
-    if {0 == $supervisor_id} { set supervisor_id "" }
-    if {"" == $salary_payments_per_year} { set salary_payments_per_year 12 }
-    db_dml employee_insert "
-	insert into im_employees (
-		employee_id,
-		department_id,
-		job_title,
-		job_description,
-		availability,
-		supervisor_id,
-		ss_number,
-		salary,
-		social_security,
-		insurance,
-		other_costs,
-		currency,
-		salary_payments_per_year,
-		dependant_p,
-		only_job_p,
-		married_p,
-		dependants,
-		head_of_household_p,
-		birthdate,
-		skills,
-		first_experience,
-		years_experience,
-		employee_status_id,
-		termination_reason,
-		voluntary_termination_p,
-		signed_nda_p,
-		referred_by,
-		experience_id,
-		source_id,
-		original_job_id,
-		current_job_id,
-		qualification_id
-	) values (
-		:employee_id,
-		:department_id,
-		:job_title,
-		:job_description,
-		:availability,
-		:supervisor_id,
-		:ss_number,
-		:salary,
-		:social_security,
-		:insurance,
-		:other_costs,
-		:currency,
-		:salary_payments_per_year,
-		:dependant_p,
-		:only_job_p,
-		:married_p,
-		:dependants,
-		:head_of_household_p,
-		:birthdate,
-		:skills,
-		:first_experience,
-		:years_experience,
-		:employee_status_id,
-		:termination_reason,
-		:voluntary_termination_p,
-		:signed_nda_p,
-		:referred_by,
-		:experience_id,
-		:source_id,
-		:original_job_id,
-		:current_job_id,
-		:qualification_id
-	)"
+    set cost_name $employee_name
 
-    if {"" == $salary} { set salary 0 }
-    if {"" == $social_security} { set social_security 0 }
-    if {"" == $insurance} { set insurance 0 }
-    if {"" == $other_costs} { set other_costs 0 }
-    set rep_costs_exist [db_string rep_costs_exist "select count(*) from im_repeating_costs where cost_id=:employee_id"]
-    if {!$rep_costs_exist} {
+    # im_repeating_costs (and it's im_costs superclass) superclass
+    # im_costs contains a "cause_object_id" field pointing to employee_id.
+    # The join between im_costs and im_repeating_costs is necessary
+    # in order to elimiate all the non-repeating cost items.
+    set rep_cost_id [db_string rep_costs_exist "
+	select	rc.rep_cost_id
+	from	im_repeating_costs rc,
+		im_costs ci
+	where 	rc.rep_cost_id = ci.cost_id
+		and ci.cause_object_id = :employee_id
+    " -default 0]
+    if {!$rep_cost_id} {
 	if [catch {
+	    set rep_cost_id [im_cost::new -cost_name $cost_name -cost_type_id [im_cost_type_repeating]]
 	    db_dml insert_repeating_costs "
-	insert into im_repeating_costs (
-		cost_id,
-		cost_name,
-		cost_center_id,
-		start_date,
-		end_date,
-		amount,
-		currency
-	) values (
-		:employee_id,
-		:employee_name,
-		:department_id,
-		:start_date,
-		:end_date,
-		(:salary + :social_security + :insurance + :other_costs) * :salary_payments_per_year / 12,
-		:currency
-	)"
+		insert into im_repeating_costs (
+			rep_cost_id,
+			start_date,
+			end_date
+		) values (
+			:rep_cost_id,
+			:start_date,
+			:end_date
+		)
+	    "
 	} err_msg] {
-	    ad_return_complaint 1 "<li>Error inserting employee cost information:<BR>
-            <pre>$err_msg</pre>"
+	    ad_return_complaint 1 "<li>Error creating a new repeating cost 
+	    item for employee \#$employee_id:<br>
+	    <pre>$err_msg</pre>"
 	}
     }
 
-} -edit_data {
-
-    set emp_count [db_string emp_count "select count(*) from im_employees where employee_id=:employee_id"]
+    # Check if the im_employees entry already exists for the user
+    # and create it in case of necessity.
+    set emp_count [db_string emp_count "
+	select count(*) 
+	from im_employees 
+	where employee_id=:employee_id
+    "]
     if {0 == $emp_count} {
 	db_dml insert_emp_record "
 		insert into im_employees (
@@ -289,8 +238,16 @@ ad_form -extend -name cost -on_request {
 	"
     }
 
+    if {"" == $salary} { set salary 0 }
+    if {"" == $social_security} { set social_security 0 }
+    if {"" == $other_costs} { set other_costs 0 }
+    if {"" == $salary} { set salary 0 }
+    if {"" == $insurance} { set insurance 0 }
     if {0 == $supervisor_id} { set supervisor_id "" }
     if {"" == $salary_payments_per_year} { set salary_payments_per_year 12 }
+    if {![exists_and_not_null tax]} { set tax 0 }
+    if {![exists_and_not_null vat]} { set vat 0 }
+
     db_dml employee_update "
 	update im_employees set
 		employee_id = :employee_id,
@@ -304,6 +261,7 @@ ad_form -extend -name cost -on_request {
 		social_security = :social_security,
 		insurance = :insurance,
 		other_costs = :other_costs,
+		currency = :currency,
 		salary_payments_per_year = :salary_payments_per_year,
 		dependant_p = :dependant_p,
 		only_job_p = :only_job_p,
@@ -328,58 +286,35 @@ ad_form -extend -name cost -on_request {
 		employee_id = :employee_id
 "
 
-    if {"" == $end_date} { set end_date "2099-12-31" }
-    if {"" == $start_date} { set start_date $today }
-    if {"" == $salary} { set salary 0 }
-    if {"" == $social_security} { set social_security 0 }
-    if {"" == $insurance} { set insurance 0 }
-    if {"" == $other_costs} { set other_costs 0 }
-    set rep_costs_exist [db_string rep_costs_exist "select count(*) from im_repeating_costs where cost_id=:employee_id"]
-    if {!$rep_costs_exist} {
-	if [catch {
-	    db_dml insert_repeating_costs "
-	insert into im_repeating_costs (
-		cost_id,
-		cost_name,
-		cost_center_id,
-		start_date,
-		end_date,
-		amount,
-		currency
-	) values (
-		:employee_id,
-		:employee_name,
-		:department_id,
-		:start_date,
-		:end_date,
-		(:salary + :social_security + :insurance + :other_costs) * :salary_payments_per_year / 12,
+    if [catch { 
+	db_dml update_costs "
+	update im_costs set
+		cost_name = :employee_name,
+		cost_center_id = :department_id,
+		customer_id = :internal_id,
+		provider_id = :internal_id,
+		cost_type_id = [im_cost_type_employee],
+		cost_status_id = [im_cost_status_created],
+		cause_object_id = :employee_id,
+		amount = (:salary + :social_security + :insurance + :other_costs) * :salary_payments_per_year / 12,
+		currency = :currency,
+		tax = :tax,
+		vat = :vat
+	where
+		cost_id	= :rep_cost_id
+	"
 
-		:currency
-	)"
-	} err_msg] {
+	db_dml insert_repeating_costs "
+	update im_repeating_costs set
+		start_date = :start_date,
+		end_date = :end_date
+	where
+		rep_cost_id = :rep_cost_id
+	"
+	 } err_msg] {
 	    ad_return_complaint 1 "<li>Error inserting employee cost information:<BR>
             <pre>$err_msg</pre>"
 	}
-    }
-	
-    db_dml update_repeating_costs "
-        update im_repeating_costs set
-                cost_name = :employee_name,
-                cost_center_id = :department_id,
-                start_date = :start_date,
-                end_date = :end_date,
-                amount = (:salary + :social_security + :insurance + :other_costs) * :salary_payments_per_year / 12,
-
-                currency = :currency
-	where
-                cost_id = :employee_id"
-
-} -on_submit {
-
-	ns_log Notice "new: on_submit"
-
-
-} -after_submit {
 
 	ad_returnredirect $return_url
 	ad_script_abort

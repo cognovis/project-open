@@ -32,10 +32,12 @@ ad_proc -public im_employee_status_past {} { return 455 }
 ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
     Show some simple information about a employeer
 } {
+    if {"" == $view_name} { set view_name "employees_view" }
     ns_log Notice "im_employee_info_component: employee_id=$employee_id, view_name=$view_name"
     set current_user_id [ad_get_user_id]
 
-    if {"" == $view_name} { set view_name "employees_view" }
+#    ad_return_complaint 1 " im_employee_info-component"
+
     set department_url "/intranet/intranet-cost/cost_centers/view?cost_center_id="
     set user_url "/intranet/users/view?user_id="
 
@@ -62,7 +64,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 
     # --------------- Security --------------------------
 
-    db_1row employee_info "
+    set employee_info_exists [db_0or1row employee_info "
 	select	
 		pe.first_names||' '||pe.last_name as user_name,
 		p.email,
@@ -75,17 +77,19 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 		users u,
 		im_employees e,
 		im_repeating_costs rc,
+		im_costs ci,
 		parties p,
 		persons pe,
 		im_cost_centers cc
 	where	
 		pe.person_id = u.user_id
 		and p.party_id = u.user_id
-		and u.user_id = rc.cost_id(+)
+		and u.user_id = ci.cause_object_id(+)
+		and ci.cost_id = rc.rep_cost_id
 		and u.user_id = :employee_id
 		and u.user_id = e.employee_id(+)
 		and e.department_id = cc.cost_center_id(+)
-	"
+    "]
 
     set view_id [db_string get_view "select view_id from im_views where view_name=:view_name" -default 0]
     ns_log Notice "im_employee_info_component: view_id=$view_id"
@@ -108,18 +112,22 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 	</tr>\n"
 
     set ctr 1
-    # if the row makes references to "private Note" and the user isn't
-    # adminstrator, this row don't appear in the browser.
-    db_foreach column_list_sql $column_sql {
-        if {1 || [eval $visible_for]} {
-	    append employee_html "
+    if {$employee_info_exists} {
+	# if the row makes references to "private Note" and the user isn't
+	# adminstrator, this row don't appear in the browser.
+	db_foreach column_list_sql $column_sql {
+	    if {1 || [eval $visible_for]} {
+		append employee_html "
                 <tr $td_class([expr $ctr % 2])>
 		<td>$column_name &nbsp;</td><td>"
-	    set cmd "append employee_html $column_render_tcl"
-	    eval $cmd
-	    append employee_html "</td></tr>\n"
-	    incr ctr
-        }
+		set cmd "append employee_html $column_render_tcl"
+		eval $cmd
+		append employee_html "</td></tr>\n"
+		incr ctr
+	    }
+	}
+    } else {
+	append employee_html "<tr><td colspan=2><i>Nothing defined yet</i></tr></td>\n"
     }
 
     if {$admin } {
@@ -129,5 +137,5 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
     }
     append employee_html "</table></form>\n"
 
-    return $employee_html
+    return [im_table_with_title "Employee Information" $employee_html]
 }
