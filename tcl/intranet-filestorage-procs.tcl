@@ -885,3 +885,463 @@ where
     return ""
 }
 
+
+
+
+
+ad_proc im_filestorage_tools_bar { folder folder_type project_id return_url up_link } {
+    Returns a formatted HTML component with a number of GIFs.
+} {
+    return "
+<br>
+<table border=0 cellpadding=0 cellspacing=0>
+<tr> 
+   <td align=center>
+       $up_link
+       <input type=image src=/intranet-filestorage/images/up-folder.gif width=21 height=21 border=0>
+       </a> |
+       <a href=/intranet-filestorage/create-folder?[export_url_vars folder folder_type project_id return_url]>
+       <input type=image src=/intranet-filestorage/images/newfol.gif width=23 height=22 border=0>
+       </a>|
+       <input type=image src=/intranet-filestorage/images/upload.gif width=21 height=21>|
+       <a href=INT-ADM-Knowledge%20Management-createDocument.htm>
+       <input type=image src=/intranet-filestorage/images/new-doc.gif width=21 height=21 border=0>
+       </a>|
+       <a href=javascript:var agree = confirm ('Are you sure you want to move the selected object(s) to Deleted Items?'); if (agree) document.someonechecked.submit();>
+       <input type=image src=/intranet-filestorage/images/del.gif width=21 height=21 border=0>
+       </a>|
+       <input type=image src=/intranet-filestorage/images/zip.gif width=21 height=21>
+   </td>
+</tr>
+</table>"
+}
+
+ad_proc im_filestorage_bread_crum { } {
+    Returns a formatted HTML component indicating the relative
+    position in th current folder
+} {
+    set return_url [im_url_with_query]
+    set new_url [split $return_url "&"]
+    set return_url [lindex $new_url 0]
+    return "$return_url"
+}
+
+ad_proc im_filestorage_header { object_id return_url } {
+    return "
+<br>
+<form method='post' name='someonechecked' action='erase'>
+<input type=hidden name=object_id value=$object_id>
+<input type=hidden name=return_url value=$return_url>
+<table align='center'>
+  <tr>
+    <td align='center'></td>
+    <td align='center'>Type</td>
+    <td align='center'>Name</td>
+    <td align='center'>Size</td>
+    <td align='center'>Date</td>
+    <td align='center'>Description</td>
+  </tr>
+</table>
+<br>\n"
+}
+
+ad_proc -public im_filestorage_pol_component { user_id object_id project_name { bread_crum_path "" } } {
+    Main funcion to generate the filestorage page ( create folder, bread crum, ....)
+    @param user_id: the user who is attempting to view the filestorage
+    @param object_id: from wich group is pending this user?
+    @param project_name: in wich project tree directory wants this user to view?
+    @param bread_crum_path: the root of the tree directory view selected by the user
+} {
+    #The filestorage start path for this object_id
+    set base_path [im_filestorage_project_path $object_id]
+
+    # Save the path in a list, a deph path for a list position
+    set org_paths [split $base_path "/"]
+
+    # Set the name type folder (actually static name, always project type)
+    set folder_type "project"
+
+    # folder path separator
+    set folder "/"
+
+    # Get the actual url
+    set return_url [im_url_with_query]
+
+    # Once we've got the root... next step is to execute the find command to 
+    # know the content of the project
+    set file_list ""
+    if { [catch {
+    	# If the root selected does not exist we create the folder
+	ns_log Notice "im_filestorage_component: exec /bin/mkdir -p $base_path/$bread_crum_path"
+	exec /bin/mkdir -p "$base_path/$bread_crum_path"
+	# Executing the find command
+	ns_log Notice "im_filestorage_component: exec /usr/bin/find $base_path/$bread_crum_path"
+	set file_list [exec /usr/bin/find "$base_path/$bread_crum_path"]
+    } err_msg] } { 
+	return "<ul><li>Unable to get file list from '$bread_crum_path'</ul>"
+    }
+    ns_log Notice "im_filestorage_component: file_list=$file_list"
+
+    # Save each result of the find in a list
+    set files [lsort [split $file_list "\n"]]
+
+    # ------------------------------------------------------------------
+    #---- Start Bread crum code
+    # ------------------------------------------------------------------
+    
+    set texte "<table align=center><tr><td>"
+
+    # The base path selected by the user
+    set bread_crum [split $bread_crum_path "/"]
+    set bread_paths_len [llength $bread_crum]
+    set bread_index [expr $bread_paths_len -1]
+
+    # Extracting the original url and the extra variables
+    set lreturn_url [split $return_url "&"]
+
+    # First bread_crum is the project name - always visible
+    append texte "<a href=[lindex $lreturn_url 0]>$project_name</a> :"
+    set current_path ""
+    set up_link ""
+    foreach crum $bread_crum {
+	append current_path "/$crum"
+	append texte "<a href=[lindex $lreturn_url 0]?bread_crum_path=$current_path> $crum </a> :"
+	
+	if {![string equal $current_path $bread_crum_path]} {
+	    set uplink $current_path
+	}
+    }
+    append texte "</td></tr></table>\n"
+
+    append texte [im_filestorage_tools_bar $bread_crum_path $folder_type $object_id $return_url $up_link]
+    append texte [im_filestorage_header $object_id $return_url]
+
+    # ------------------------------------------------------------------
+    # Query: select the last status of the tree for the actual user_id
+    # ------------------------------------------------------------------
+    set query "
+select 
+	folder_id, 
+	path, 
+	open_p 
+from 
+	im_fs_folder_status 
+where 
+	user_id = :user_id
+	and object_id = :object_id
+"
+
+    #for each result of the query...
+    db_foreach hash_query $query {
+    	# create an hash array where the index is the path of the dir and the value 
+	# is the status (open/close) of the dir
+	set hash_table($path) $open_p
+
+	# save another hash array using the same index, the value now is the folder_id 
+	# of the directory stored in the sql table
+	set folder_id_table($path) $folder_id
+
+    } if_no_rows {
+	# Nothing - there were not rows for this project/user yet...
+    }
+    
+    #-----------------------Init the table contents
+
+    append texte "<table align=center>\n"
+	
+    #----------------------- Init the table contents
+    # The next loop evaluates each result of the find, we need to make some 
+    # initializations the first time this variable makes it possible
+    set init 1
+
+    # To control that the father folder don't be printed in the tree as its childs
+    set id_file 0 
+	
+    #----------------------- For every result of FIND ( generate the tree table) 
+    foreach file $files { 
+	
+	# count the deph of the file (how many directories depends the file)
+	#ex (/home - /cluster - /Data - /Internal- /INT-ADM-KNOWMG - /file.dat)
+	set file_paths [split $file "/"]
+	set file_paths_len [llength $file_paths] 
+	set body_index [expr $file_paths_len -1] 
+
+	# store the name of the file ("file.dat")
+	set file_body [lindex $file_paths $body_index] 
+	
+	# -- Evaluated only the first time that foreach is executed
+	if { $init == 1 } {
+
+	    # next_dir -> to know witch branch of the tree view we are evaluating
+	    set next_dir [expr $file_paths_len]
+
+	    # root_dir -> to know witch is the depth of the root folder for the filestorage tree view
+	    set root_dir $next_dir
+
+	    # root -> the complete path and name of the root directory for the filestorage tree view
+	    set root $file
+	    
+	    set init 0
+	}
+
+	# initialize the file type(dir/file) and its size
+	set file_type ""
+	set file_size ""
+	
+	#Getting the real type and size of the file
+	if { [catch {
+	    set file_type [file type $file]
+	    set file_size [expr [file size $file] / 1024]
+	} err_msg] } {
+	    
+	}
+
+	# Actions executed if the file type is "directory"
+	if { [string compare $file_type "directory"] == 0 } {
+		
+	    # Generate a new position in the hash array that control the dependency of this folder
+	    set path_dependency($file_paths_len) $file
+
+	    # If the actual directory depth is greather than the last deph evaluated
+	    if { $next_dir < $body_index } {
+	    	#Set the actual directory deph as new deph 
+	    	set body_index $next_dir 
+	    }	    
+
+	    # If the path status is not in the hash array
+	    if { ![info exists hash_table($file)] } {
+		# Force the entrance of this new directory in de hash array and in the 
+		# sql table with a close status
+		set hash_table($file) "c"
+		db_dml init_insert "
+insert into im_fs_folder_status (
+	folder_id, 
+	object_id,
+	user_id, 
+	path, 
+	open_p
+) values (
+	im_fs_folder_status_seq.nextval,
+	:object_id,
+	:user_id,
+	'$file',
+	'c'
+)"
+		db_0or1row max_id_query "select max(folder_id) max_id from im_fs_folder_status"
+		# Save the identifier of the folder generated in the sql table in the folder_id_table hash array
+		set folder_id_table($file) $max_id
+	    }
+
+	    #If the actual deph depends of an uplevel directory
+	    if { [info exists path_dependency($body_index)] } {
+				
+		# If the father directory of our evaluated directory is openned
+		# or it depends of the directory selected by the user as root of the directory tree view
+		if { ($hash_table($path_dependency($body_index)) == "o") || ($path_dependency($body_index) == $root)} {				    
+		    
+		    #We don't want to print the root folder like a child folder, we control this with the id_file var
+		    if { $id_file != 0 } {
+		    	# Printing one row with the directory information
+		    	append texte [im_filestorage_dir_row $file_body $user_id $folder_id_table($file) $hash_table($file) $return_url $object_id $root_dir $file_paths_len $hash_table($file) $id_file $file $bread_crum_path]
+		    }
+		    # Refresh the directory branch that we start to evaluate
+		    set next_dir $file_paths_len
+		} else {									
+		    #if the folder is close we don't parse any more files until next_dir == file_paths_len
+		}
+	    # If the actual deph is the root of the project, the base path
+	    } else {
+
+		if { $hash_table($file) == "c" } {
+		    set next_dir $file_paths_len
+		}	
+
+		    #We don't want to print the root folder like a child folder, we control this with the id_file var
+		    if { $id_file != 0 } {
+		    	# Printing one row with the directory information
+		    	append texte [im_filestorage_dir_row $file_body $user_id $folder_id_table($file) $hash_table($file) $return_url $object_id $root_dir $file_paths_len $hash_table($file) $id_file $file $bread_crum_path]
+		    }
+	    }
+	} else {
+	    # If the file type is file
+	    if { [string compare $file_type "file"] == 0 } {
+		
+	    if { $next_dir < $body_index } {set body_index $next_dir }
+	    	#Checking the dependency of the file
+		if { [info exists hash_table($path_dependency($body_index))]} {
+		    # If the father directory of our evaluated directory is openned
+		    # or it depends of the directory selected by the user as root of the directory tree view
+		    if { ($hash_table($path_dependency($body_index)) == "o") || ($path_dependency($body_index) == $root) } {
+		    	#checking if we are at the first time, no tine sentido! sin esto tendria que funcionar!!!!
+		    	if { $id_file != 0 } {
+				append texte [im_filestorage_file_row $file_body $file $root_dir $file_paths_len $id_file $file]
+			}
+		    } 			
+		}
+	    }
+	}
+	incr id_file
+    }
+    append texte "</table></form>"
+    return "$texte" 
+}
+
+
+ad_proc im_filestorage_dir_row { file_body user_id folder_id status return_url object_id root_dir file_paths_len open_p id_file file bread_crum_path} {
+
+} {
+    append texte "
+<tr class=rowfilestorage>
+  <td align=center valign=middle>
+    <input type=checkbox name=id_row.$id_file value=$file_body>
+    <input type=hidden name=id_file.$id_file value=$file>    
+  </td>
+  <td align=center id=idrow_$id_file>
+    <div align=left>
+" 
+ 
+    set i $root_dir
+    incr i 
+    while {$i < $file_paths_len} {
+	append texte [im_gif empty21]
+	incr i 
+    } 
+    append texte "
+   <a href=/intranet-filestorage/folder_status_update?[export_url_vars folder_id status object_id bread_crum_path return_url]>"
+
+    if {$open_p == "o"} {
+	append texte [im_gif foldin2]
+    } else {
+	append texte [im_gif foldout2]
+    }
+
+    append texte "<img src=/intranet-filestorage/images/folder_s.gif border=0 width=21 height=21 hspace=0 vspace=0></a>
+		    <a href=/intranet-filestorage/bread_crum_update?user_id=$user_id&bread_crum_path=$file&object_id=$object_id&return_url=$return_url>$file_body</a>
+		    </a>
+		    </div>
+		    </td>
+		    <td align=center class=rowfilestorage>
+		    <div align=center>
+		    </div>
+		    </td>
+		    <td align=center class=rowfilestorage>
+		    <div align=center>
+		    </div>
+		    </td>
+		    <td align=center class=rowfilestorage>
+		    <div align=center>
+		    
+		    </div>
+		    </td>
+		  </tr>
+		"
+return "$texte"
+
+}
+
+ad_proc im_filestorage_file_row { file_body file root_dir file_paths_len id_file file} {
+
+}   {
+    set file_type ""
+    set file_size ""
+    set file_modified "(bad filename)"
+    set file_extension ""
+    set file_size ""
+    if { [catch {
+	set file_type [file type $file]
+	set file_size [file size $file]
+	set file_modified [ns_fmttime [file mtime $file] "%d/%m/%Y"]
+	set file_extension [file extension $file]
+	set file_size [expr [file size $file] / 1024]
+    } err_msg] } {
+	# Error due to accents in filename - ignore
+    }
+
+    append texte "
+<tr class=rowfilestorage>
+  <td align=center valign=middle>
+    <input type=checkbox name=id_row.$id_file value=$file_body>
+    <input type=hidden name=id_file.$id_file value=$file>    
+  </td>
+  <td id=idrow_$id_file>" 
+    set i $root_dir 
+    incr i
+    while {$i < $file_paths_len} {
+	append texte [im_gif empty21]
+	incr i
+    }
+    
+    set i $root_dir 
+    if {$file_paths_len!=$i} {
+	#append texte "<img src=/intranet-filestorage/images/adots_T.gif width=21>"
+    } 
+    
+    # Choose a suitable icon
+    set icon [im_gif exp-unknown]
+    switch $file_extension {
+	".xls" { set icon [im_gif exp-excel] }
+	".doc" { set icon [im_gif exp-word] }
+	".rtf" { set icon [im_gif exp-word] }
+	".txt" { set icon [im_gif exp-text] }
+	default {
+	    ns_log Notice "im_file_component: unknown file_extension: '$file_extension'"
+	}
+    }
+
+    append texte "
+  $icon
+  </a>
+  $file_body
+  </td>
+  <td align=center class=rowfilestorage>
+    $file_size Kb
+  </td>
+  <td align=center class=rowfilestorage>
+    $file_modified
+  </td>
+  <td align=center class=rowfilestorage>
+  </td>
+</tr>\n"
+
+    return "$texte"
+}
+
+
+
+ad_proc im_filestorage_create_folder {folder folder_name} {
+
+} {
+     if { [catch {
+	 exec mkdir $folder/$folder_name
+     } err_msg] } { return $err_msg }   
+}
+
+
+ad_proc im_filestorage_is_directory_empty {folder} {
+
+} {
+    set num ""
+    if { [catch {
+	append num [exec /usr/bin/find $folder]
+    } err_msg] } {
+	
+    }
+    
+    return "$num"
+}
+
+ad_proc im_filestorage_delete_folder {project_id folder} {
+    
+} {
+    if { [catch {
+	ns_rmdir $folder
+    } err_msg] } { return $err_msg }
+}
+
+ad_proc im_filestorage_erase_files { project_id file_name } {
+
+} {
+    if { [catch {
+	exec rm $file_name 
+    } err_msg] } { return $err_msg }
+}
