@@ -27,6 +27,8 @@ set context_bar [ad_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 set amp "&"
 
+ns_log Notice "intranet-payments/new: return_url=$return_url"
+
 if {![im_permission $user_id add_payments]} {
     ad_return_complaint "Insufficient Privileges" "
     <li>You don't have sufficient privileges to see this page."    
@@ -104,3 +106,8 @@ set letter "none"
 set next_page_url ""
 set previous_page_url ""
 set navbar [im_costs_navbar $letter "/intranet-payments/index" $next_page_url $previous_page_url [list letter] "payments_list"]
+
+ns_log Notice "intranet-payments/new: return_url2=$return_url"
+
+set export_form_vars [export_form_vars payment_id provider_id return_url]
+
