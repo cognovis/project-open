@@ -145,7 +145,7 @@ db_foreach task_tasks $task_sql {
     if {"" == $freelance_company_html} {
 	set freelance_company_html "
 	<i>No company found</i><br>
-	<a href=new-company-from-freelance?freelance_id=$freelance_id>
+	<a href=/intranet-trans-invoices/companies/new-company-from-freelance?freelance_id=$freelance_id>
 	  Create a new company for this freelancer
 	</a>"
     }
