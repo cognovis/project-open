@@ -26,8 +26,9 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set today [db_string birthday_today "select to_char(sysdate,'YYYY-MM-DD') from dual"]
+set date_format "YYYY-MM-DD"
 set end_century "2099-12-31"
-set internal_id [im_customer_internal]
+set internal_id [im_company_internal]
 
 if {![im_permission $user_id view_users]} {
     ad_return_complaint 1 "You have insufficient privileges to use this page"
@@ -61,8 +62,8 @@ set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" ""
 
 set exists_p [db_string exists_employee "select count(*) from im_employees where employee_id=:employee_id"]
 if {!$exists_p} {
-db_dml insert_employee_record "
-    insert into im_employees (
+    db_dml insert_employee_record "
+	insert into im_employees (
 	employee_id,
 	availability,
 	currency,
@@ -74,6 +75,48 @@ db_dml insert_employee_record "
 	[im_employee_status_active]
     )"
 }
+
+# im_repeating_costs (and it's im_costs superclass) superclass
+# im_costs contains a "cause_object_id" field pointing to employee_id.
+# The join between im_costs and im_repeating_costs is necessary
+# in order to elimiate all the non-repeating cost items.
+set rep_cost_id [db_string rep_costs_exist "
+	select	rc.rep_cost_id
+	from	im_repeating_costs rc,
+		im_costs ci
+	where 	rc.rep_cost_id = ci.cost_id
+		and ci.cause_object_id = :employee_id
+" -default 0]
+
+if {!$rep_cost_id} {
+    if [catch {
+	set rep_cost_id [im_cost::new -cost_name $employee_id -cost_type_id [im_cost_type_repeating]]
+	
+	db_dml update_costs "
+		update im_costs set
+			cause_object_id = :employee_id
+		where
+			cost_id = :rep_cost_id
+	"
+
+	db_dml insert_repeating_costs "
+		insert into im_repeating_costs (
+			rep_cost_id,
+			start_date,
+			end_date
+		) values (
+			:rep_cost_id,
+			to_date(:today,:date_format),
+			to_date(:today,:date_format)
+		)
+	    "
+    } err_msg] {
+	ad_return_complaint 1 "<li>Error creating a new repeating cost 
+	item for employee \#$employee_id:<br>
+	<pre>$err_msg</pre>"
+    }
+}
+
 
 # ------------------------------------------------------------------
 # Build the form
@@ -167,12 +210,12 @@ ad_form -extend -name cost -on_request {
 	select	
 		e.*,
                 CASE	WHEN rc.start_date is null
-                        THEN to_date(:today,'YYYY-MM-DD')
-                        ELSE to_date(rc.start_date)
+                        THEN to_date(:today,:date_format)
+                        ELSE to_date(to_char(rc.start_date,:date_format),:date_format)
                 END as start_date,
                 CASE	WHEN rc.end_date is null
-                        THEN to_date(:end_century,'YYYY-MM-DD')
-                        ELSE to_date(rc.end_date)
+                        THEN to_date(:end_century,:date_format)
+                        ELSE to_date(to_char(rc.end_date,:date_format),:date_format)
                 END as end_date,
 		ci.*
 	from	parties p,
@@ -182,61 +225,12 @@ ad_form -extend -name cost -on_request {
 	where	
 		p.party_id = :employee_id
 		and p.party_id = e.employee_id
-		and p.party_id = ci.cause_object_id(+)
-		and ci.cost_id = rc.rep_cost_id(+)
+		and p.party_id = ci.cause_object_id
+		and ci.cost_id = rc.rep_cost_id
 
 } -after_submit {
 
     set cost_name $employee_name
-
-    # im_repeating_costs (and it's im_costs superclass) superclass
-    # im_costs contains a "cause_object_id" field pointing to employee_id.
-    # The join between im_costs and im_repeating_costs is necessary
-    # in order to elimiate all the non-repeating cost items.
-    set rep_cost_id [db_string rep_costs_exist "
-	select	rc.rep_cost_id
-	from	im_repeating_costs rc,
-		im_costs ci
-	where 	rc.rep_cost_id = ci.cost_id
-		and ci.cause_object_id = :employee_id
-    " -default 0]
-    if {!$rep_cost_id} {
-	if [catch {
-	    set rep_cost_id [im_cost::new -cost_name $cost_name -cost_type_id [im_cost_type_repeating]]
-	    db_dml insert_repeating_costs "
-		insert into im_repeating_costs (
-			rep_cost_id,
-			start_date,
-			end_date
-		) values (
-			:rep_cost_id,
-			:start_date,
-			:end_date
-		)
-	    "
-	} err_msg] {
-	    ad_return_complaint 1 "<li>Error creating a new repeating cost 
-	    item for employee \#$employee_id:<br>
-	    <pre>$err_msg</pre>"
-	}
-    }
-
-    # Check if the im_employees entry already exists for the user
-    # and create it in case of necessity.
-    set emp_count [db_string emp_count "
-	select count(*) 
-	from im_employees 
-	where employee_id=:employee_id
-    "]
-    if {0 == $emp_count} {
-	db_dml insert_emp_record "
-		insert into im_employees (
-			employee_id
-		) values (
-			:employee_id
-		)
-	"
-    }
 
     if {"" == $salary} { set salary 0 }
     if {"" == $social_security} { set social_security 0 }
@@ -296,7 +290,12 @@ ad_form -extend -name cost -on_request {
 		cost_type_id = [im_cost_type_employee],
 		cost_status_id = [im_cost_status_created],
 		cause_object_id = :employee_id,
-		amount = (:salary + :social_security + :insurance + :other_costs) * :salary_payments_per_year / 12,
+		amount = (
+			cast(:salary as float) + 
+			cast(:social_security as float) + 
+			cast(:insurance as float) + 
+			cast(:other_costs as float)
+			) * :salary_payments_per_year / 12,
 		currency = :currency,
 		tax = :tax,
 		vat = :vat

@@ -219,7 +219,6 @@ END;' language 'plpgsql';
 -- must be competed. For example, the employee should receive
 -- an offer letter and it should be put in the employee folder
 
--- prompt *** Creating im_employee_checkpoints
 create sequence im_employee_checkpoint_id_seq;
 create table im_employee_checkpoints (
 	checkpoint_id		integer
@@ -246,16 +245,10 @@ create table im_emp_checkpoint_checkoffs (
 );
 
 
-
-
--- prompt *** Creating im_views
 insert into im_views (view_id, view_name, visible_for) values (55, 'employees_list', 'view_users');
 insert into im_views (view_id, view_name, visible_for) values (56, 'employees_view', 'view_users');
 
 
-
-
--- prompt *** Creating im_view_columns for employees_list
 delete from im_view_columns where column_id >= 5500 and column_id < 5599;
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, 
@@ -264,7 +257,7 @@ column_render_tcl, extra_select, extra_from, extra_where, sort_order, visible_fo
 	'"<a href=/intranet/users/view?user_id=$user_id>$name</a>"',
 	'e.supervisor_id, im_name_from_user_id(e.supervisor_id) as supervisor_name',
 	'im_employees e',
-	'u.user_id = e.employee_id(+)',
+	'u.user_id = e.employee_id',
 	0,
 	''
 );
@@ -287,8 +280,6 @@ sort_order) values (5505,55,'Cell Phone','$cell_phone',7);
 
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5506,55,'Home Phone','$home_phone',8);
---
--- commit;
 
 
 
@@ -322,17 +313,14 @@ sort_order) values (5620,56,'Salary Period','$salary_period',20);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5622,56,'Salaries per Year','$salary_payments_per_year',22);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5624,56,'Birthdate','$birthdate',24);
+sort_order) values (5624,56,'Birthdate','$birthdate_formatted',24);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5626,56,'Start Date','$start_date',26);
+sort_order) values (5626,56,'Start Date','$start_date_formatted',26);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5628,56,'Termination Date','$end_date',28);
--- commit;
+sort_order) values (5628,56,'Termination Date','$end_date_formatted',28);
 
 
 
-
--- prompt *** Creating User Freelance Component plugin
 -- Show the freelance information in users view page
 --
 select im_component_plugin__new (
@@ -410,7 +398,6 @@ begin
 end;' language 'plpgsql';
 
 select inline_0 ();
-
 drop function inline_0 ();
 
 
@@ -418,25 +405,13 @@ drop function inline_0 ();
 -- HR Permissions
 --
 
--- prompt *** Creating HR Profiles
--- begin
-   select im_create_profile ('HR Managers','profile');
--- end;
+select im_create_profile ('HR Managers','profile');
 
--- show errors;
+select acs_privilege__create_privilege('view_hr','View HR','View HR');
+select acs_privilege__add_child('admin', 'view_hr');
 
--- prompt *** Creating Privileges
--- begin
-    select acs_privilege__create_privilege('view_hr','View HR','View HR');
---end;
+select im_priv_create('view_hr',	'HR Managers');
+select im_priv_create('view_hr',	'P/O Admins');
+select im_priv_create('view_hr',	'Senior Managers');
+select im_priv_create('view_hr',	'Accounting');
 
-
--- prompt Initializing HR Permissions
--- BEGIN
-    select im_priv_create('view_hr',	'HR Managers');
-    select im_priv_create('view_hr',	'P/O Admins');
-    select im_priv_create('view_hr',	'Senior Managers');
--- END;
-
-
--- commit;

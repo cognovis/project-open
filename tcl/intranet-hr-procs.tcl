@@ -36,7 +36,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
     ns_log Notice "im_employee_info_component: employee_id=$employee_id, view_name=$view_name"
     set current_user_id [ad_get_user_id]
 
-#    ad_return_complaint 1 " im_employee_info-component"
+    set date_format "YYYY-MM-DD"
 
     set department_url "/intranet/intranet-cost/cost_centers/view?cost_center_id="
     set user_url "/intranet/users/view?user_id="
@@ -70,6 +70,9 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 		p.email,
 		e.*,
 		rc.*,
+		to_char(rc.start_date,:date_format) as start_date_formatted,
+		to_char(rc.end_date,:date_format) as end_date_formatted,
+		to_char(e.birthdate,:date_format) as birthdate_formatted,
 		u.user_id,
 		cc.cost_center_name as department_name,
 		im_name_from_user_id(e.supervisor_id) as supervisor_name
@@ -84,11 +87,11 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 	where	
 		pe.person_id = u.user_id
 		and p.party_id = u.user_id
-		and u.user_id = ci.cause_object_id(+)
+		and u.user_id = ci.cause_object_id
 		and ci.cost_id = rc.rep_cost_id
 		and u.user_id = :employee_id
-		and u.user_id = e.employee_id(+)
-		and e.department_id = cc.cost_center_id(+)
+		and u.user_id = e.employee_id
+		and e.department_id = cc.cost_center_id
     "]
 
     set view_id [db_string get_view "select view_id from im_views where view_name=:view_name" -default 0]

@@ -415,6 +415,7 @@ show errors;
 prompt *** Creating Privileges
 begin
     acs_privilege.create_privilege('view_hr','View HR','View HR');
+    acs_privilege.add_child('admin', 'view_hr');
 end;
 /
 
@@ -423,6 +424,7 @@ BEGIN
     im_priv_create('view_hr',	'HR Managers');
     im_priv_create('view_hr',	'P/O Admins');
     im_priv_create('view_hr',	'Senior Managers');
+    im_priv_create('view_hr',	'Accounting');
 END;
 /
 
