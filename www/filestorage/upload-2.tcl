@@ -73,8 +73,8 @@ switch $folder_type {
 	set dest_path "$project_path/$folder/$client_filename"
     }
 
-    "customer" {
-	set path [im_filestorage_customer_path $project_id]
+    "company" {
+	set path [im_filestorage_company_path $project_id]
 	set dest_path "$path/$folder/$client_filename"
     }
 
