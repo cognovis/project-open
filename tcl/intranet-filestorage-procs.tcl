@@ -569,6 +569,7 @@ ad_proc im_filestorage_home_path { } {
     are stored on the hard disk 
 } {
     set base_path_unix [ad_parameter "ProjectBasePathUnix" intranet "/tmp"]
+    ns_log Notice "im_filestorage_home_path: base_path_unix=$base_path_unix"
     return "$base_path_unix/home"
 }
 
