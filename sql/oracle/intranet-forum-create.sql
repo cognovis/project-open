@@ -310,6 +310,20 @@ END;
 
 
 ------------------------------------------------------
+-- Add Topic Public
+---
+BEGIN
+    im_priv_create('add_topic_public',        'P/O Admins');
+END;
+/
+BEGIN
+    im_priv_create('add_topic_public',        'Senior Managers');
+END;
+/
+
+
+
+------------------------------------------------------
 -- Add Topic Non-Clients
 ---
 BEGIN
