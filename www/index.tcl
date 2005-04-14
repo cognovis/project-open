@@ -1,4 +1,4 @@
-# /packages/intranet-filestorage/www/index.tcl
+# /packages/intranet-wiki/www/index.tcl
 #
 # Copyright (C) 2003-2004 Project/Open
 #
@@ -16,10 +16,5 @@ ad_page_contract {
 }
 
 set wiki_html [im_wiki_home_component]
-
-
-#db_release_unused_handles
-#ad_returnredirect "/intranet/"
-
 
 
