@@ -95,7 +95,8 @@ ad_proc im_wiki_base_component { object_type object_id } {
 
 	if {$admin_p} {
 	    append wikis_html "<li><A href=\"/intranet/admin/permissions/one?object_id=$folder_id\">Admin Wiki Permissions</A>\n"
-	    append wikis_html "<li><A href=\"/intranet-wiki/admin/index?folder_id=$folder_id\">Admin Wiki Changes</A>\n"
+	    append wikis_html "<li><A href=\"/intranet-wiki/admin/index?folder_id=$folder_id&modified_only=1\">Admin Wiki Changes</A>\n"
+	    append wikis_html "<li><A href=\"/intranet-wiki/admin/index?folder_id=$folder_id\">Admin All Pages</A>\n"
 	}
 
 	append wikis_html "<p>\n"

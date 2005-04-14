@@ -5,13 +5,15 @@ ad_page_contract {
 
 
     @author Michael Steigman
-    @creation-date October 2004
+    @author Frank Bergmann (frank.bergmann@project-open.com)
+    @creation-date April 2005
 } {
     folder_id:integer
     { mount_point "sitemap" }
     { parent_id:integer ""}
-    { orderby "title,asc" }
+    { orderby "latest_publish_date,desc" }
     { page:optional }
+    { modified_only 0 }
 }
 
 set original_folder_id $folder_id
@@ -22,6 +24,14 @@ permission::require_permission -party_id $user_id \
 	    -object_id $folder_id -privilege admin
     
 set parent_var :folder_id
+
+
+# Show only the modified items?
+set modified_only_where ""
+if {$modified_only} {
+    set modified_only_where "\tand i.latest_revision != i.live_revision\n"
+}
+
     
 # Resolve the symlink, if any
 set resolved_id [db_string get_resolved_id ""]
@@ -48,7 +58,7 @@ if { $info(parent_id) == 0  } {
 # Get the index page ID
 set index_page_id [db_string get_index_page_id ""]
 
-set page_title "Content Folder - $info(label)"
+set page_title "$info(label)"
 
 # set actions "Attributes [export_vars -base attributes?mount_point=sitemap {folder_id}] \"Folder Attributes\""
 set actions [list]
@@ -68,24 +78,24 @@ template::list::create \
 	    link_url_col item_url
 	    orderby title
 	}
-	file_size {
-	    label "Size"
+	live_size {
+	    label "Live Size"
 	}
-	publish_date {
-	    label "Publish Date"
-	    display_eval {
-		[ad_decode $publish_status "live" \
-		     [lc_time_fmt $publish_date "%q %r"] \
-		     "-"]
-	    }
+	live_publish_date {
+	    label "Live Date"
+	    display_eval { [lc_time_fmt $live_publish_date "%y-%m-%d %H:%M"] }
+	    orderby u.publish_date
 	}
-	pretty_content_type {
-	    label "Type"
+	latest_size {
+	    label "Latest Size"
 	}
-	last_modified {
-	    label "Last Modified"
-	    orderby last_modified
-	    display_eval {[lc_time_fmt $last_modified "%q %r"]}
+	latest_publish_date {
+	    label "Latest Date"
+	    display_eval { [lc_time_fmt $latest_publish_date "%y-%m-%d %H:%M"] }
+	    orderby v.publish_date
+	}
+	latest_creation_user {
+	    label "Latest Creation User"
 	}
     } \
     -filters {
@@ -94,22 +104,33 @@ template::list::create \
 	mount_point {}
     }
 
+set wiki_mount "l10n-pm"
 
-db_multirow -extend { item_url copy file_size } folder_contents get_folder_contents "" {
+db_multirow -extend { item_url latest_size live_size } folder_contents get_folder_contents "" {
     switch $content_type {
 	content_folder {
 	    set folder_id $item_id
 	    set item_url [export_vars -base index?mount_point=sitemap { folder_id parent_id }]
 	}
 	default {
-	    set item_url [export_vars -base ../items/index?mount_point=sitemap { item_id revision_id parent_id }]
+	    set item_url [export_vars -base /$wiki_mount/[ns_urlencode $name]]
 	}
     }
+
     if { ![ template::util::is_nil content_length ] } {
-	set file_size [lc_numeric [expr $content_length / 1000.00] "%.2f"]
+	set live_size [lc_numeric [expr $live_length / 1000.00] "%.2f"]
     } else {
-	set file_size "-"
+	set live_size "-"
     }
-    set copy [clipboard::render_bookmark sitemap $item_id [ad_conn package_url]]
+
+    if { ![ template::util::is_nil content_length ] } {
+	set latest_size [lc_numeric [expr $latest_length / 1000.00] "%.2f"]
+    } else {
+	set latest_size "-"
+    }
+
 }
 
+
+
+#    set item_url [export_vars -base /cms/modules/items/index?mount_point=sitemap { item_id revision_id parent_id }]
