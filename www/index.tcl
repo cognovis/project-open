@@ -16,5 +16,7 @@ ad_page_contract {
 }
 
 set wiki_html [im_wiki_home_component]
+set page_title "Active Wikis"
+
 
 
