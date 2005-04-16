@@ -41,6 +41,7 @@ set wikis_sql "
                 and ci.parent_id = cf.folder_id
                 and cr.revision_id = ci.live_revision
                 and sn.object_id = ap.package_id
+	order by lower(ci.name)
 "
 
 set ctr 0
