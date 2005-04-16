@@ -2,11 +2,10 @@
 <property name="title">Wiki</property>
 <property name="main_navbar_label">wiki</property>
 
-<table>
-<tr>
-<td>
-@wiki_html;noquote@
-</td>
+<table width="100%">
+<tr valign=top>
+  <td>@page_list;noquote@</td>
+  <td>@wiki_component;noquote@</td>
 </tr>
 </table>
 
