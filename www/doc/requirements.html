@@ -1,0 +1,69 @@
+<pre>
+    Mail System Requirements
+    ------------------------
+
+    1.  The system will be able to store messages as rich as MIME
+        compliant email messages.  In order to do so:
+
+        a.  The system must be able to store messages with complex
+            sub-part structure, with mixed character sets.  This
+            includes attachments, digital signatures, and
+            multi-variety messages, as well as embedded MIME messages.
+
+        b.  The system must be capable of fully representing RFC822
+            and MIME email messages.  Semantics-preserving operations
+            (such as limited header reordering) may be allowable, but
+            in general, the system should be able to receive a message
+            and then later send out that same message bit-for-bit
+            identically.
+
+        c.  The system should be able to record extra envelope
+            information outside the message itself, for reference when
+            processing messages.
+
+    2.  The system will be able to send messages via SMTP, and
+        possibly other mechanisms.
+
+        a.  The initial version must be able to send mail via an SMTP
+            connection to the local host.  This solution is easy to
+            implement and provides the most portable (if not the most
+            efficient) mechanism available.
+
+        b.  In order to best support sysadmins, the system should be
+            able to call external programs to queue mail instead of
+            using an SMTP connection.
+
+        c.  While all messages may be stored in the message store at
+            some point, it must be possible to send a message in
+            "delete immediately mode" so that it is not stored
+            forever.  This is to support sending of passwords via
+            email.
+
+    3.  The system will be able to receive messages via various
+        mechanisms and queue the messages up for review by other
+        systems.
+
+        a.  Each incoming message should be stored in the message
+            store.
+
+        b.  When a message arrives, some set of rules should determine
+            what queues the message belongs to.  Most likely, pattern
+            matching on a small number of headers will suffice.
+
+        c.  A variety of mechanisms for message insertion may be
+            supported further in the future, but the initial version
+            must support at least a simple delivery program that
+            accepts the message on stdin, envelope information as
+            arguments, and places the message into the database.
+
+    4.  The system will be able to manipulate complex MIME messages.
+        The full set of operations is not yet clear, but it must
+        certainly be possible to access individual parts of messages,
+        get header information about a given message, and create a
+        message based on some set of parts to be included.  In
+        addition, mechanisms to do conversion between character sets,
+        content types, and encoding should eventually be supported.
+
+        Some of these mechanisms already exist, and their suitability
+        for the use of the system should be examined.
+</pre>

@@ -1,0 +1,482 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>OpenACS-mail</title>
+  </head>
+
+  <body bgcolor=white>
+    <h2>OpenACS-mail</h2>
+	by Vinod Kurup (<a href=mailto:vkurup@massmed.org>vkurup@massmed.org</a>)
+	<hr>
+	<h3>Purpose</h3>
+	<blockquote>
+	  <p>
+	  This document explains the structure and function of the acs-mail
+	  package in OpenACS 4.
+	  </p>
+
+	  <p>
+		acs-mail is a package that provides basic mail services to other
+		OpenACS packages.
+	  </p>
+	</blockquote>
+
+	<h3>A Little History</h3>
+	<blockquote>
+	  <p>
+		Within aD's version of ACS 4.x, there were three packages that
+		handled outgoing email messaging - acs-messaging, acs-mail and
+		acs-notifications. acs-messaging was built using the content
+		repository to allow the bboard package to send out email. acs-mail
+		came later with a little more mail functionality, including the
+		ability to send out multipart email messages. acs-notification was
+		a package that maintained a complex mail queue (the other two
+		packages implemented much simpler queues that place most of the
+		burden on the MTA). It also implemented a mail package inside
+		Oracle that sent the outgoing mail. Both acs-mail and acs-messaging
+		use ns_sendmail to send out mail, making them db-independent.
+	  </p>
+
+	  <p>
+		Our first goal was to simplify this by removing the notifications
+		package and replacing that functionality (basically one function)
+		inside acs-mail. Another goal was to have acs-mail use the content
+		repository so that it can take advantage of all the CR functions.
+	  </p>
+
+	  <p>
+		We haven't merged acs-messaging and acs-mail, although I think that
+		we should do this at some point. Currently, they provide very
+		similar functionality.
+	  </p>
+	</blockquote>
+
+	<h3>Package overview</h3>
+	<blockquote>
+	  <p>
+		There are a few basic tables that the user needs to know about. The
+		<b>acs_mail_bodies</b> table contains the attributes of the mail
+		message. The most important column in this table is the
+		content_item_id attribute. This is a space for a cr_item from the
+		Content Repository. Note that this column is a foreign key to
+		acs_objects, rather than to cr_items as one would expect. This is
+		because the API uses this column to decide whether or not the
+		message is a simple message or a multipart message. If the column
+		contains a value which is present in acs_mail_multiparts, then the
+		message is a multipart message. If not, then it is a simple
+		message. Thus the column can't be a foreign key to cr_items since
+		in the case of multipart messages, it won't contain a cr_item's
+		item_id. Also, note that you should not use header_from and
+		header_to columns in this table. Instead, you'll create the mail
+		body as a generic mail body and then give it a from: and to: value
+		when you queue it. So why are they there? Good question. It may be
+		that they are there for incoming messages. But since that is not
+		implemented, I'm not sure.
+	  </p>
+
+	  <p>
+		The table <b>acs_mail_body_headers</b> allows you to add arbitrary
+		headers to your message. The column body_id in this table is a
+		foreign key to acs_mail_bodies
+	  </p>
+
+	  <p>
+		The table <b>acs_mail_links</b> contains 2 columns - a mail_link_id
+		and a body_id. After you create a acs_mail_body, you'll create a
+		mail_link and then insert the mail_link into the queue. Why the
+		abstraction? This was initially meant to be a point where garbage
+		collection could occur. So, other applications are supposed to
+		subclass acs_mail_links to their own use. They create a message
+		body and a mail_link. Once they're done, they delete the
+		mail_link. A scheduled process then looks for any message_bodies
+		that are not linked to mail_links any more. It deletes these
+		messages. This is not implemented yet (but would be rather easy to
+		do).
+	  </p>
+
+	  <p>
+		Think of acs_mail_bodies as 'message bodies' and acs_mail_links as
+		'messages'. An application can send the same email to multiple
+		people by creating one message body but associating that message
+		body with multiple messages.
+	  </p>
+
+	  <p>
+		The table <b>acs_mail_queue_messages</b> is a table that contains
+		mail_links. The table <b>acs_mail_queue_outgoing</b> is the
+		outgoing queue and is a foreign key to acs_mail_queue_messages. It
+		also contains 2 other columns, envelope_from and envelope_to. This
+		is where you address the email. The table
+		<b>acs_mail_queue_incoming</b> looks just like the outgoing
+		queue. The plan is for the MTA to create mail bodies when incoming
+		messages arrive. It should then insert that mail_body into the
+		incoming queue. Other applications should then periodically scan
+		the incoming queue and grab messages that it wants (presumably
+		matching a pattern of some sort) and then deletes the message from
+		the incoming queue.
+	  </p>
+
+	  <p>
+		The table <b>acs_mail_multiparts</b> contains the information about
+		multipart messages. The column multipart_kind is either
+		'alternative' or 'mixed' (are there others?). The table
+		<b>acs_mail_multipart_parts</b> then contains the individual parts.
+	  </p>
+
+	  <p>
+		The tcl procedure <b>acs_mail_process_queue</b> runs every 15
+		minutes and sends out any messages in the outgoing queue.
+	  </p>
+
+	  <p>
+		The acs-notifications package is built on top of acs-mail and hides
+		the complexity from the user (if you're satisfied with creating
+		plain-text messages). It's described next.
+	  </p>
+
+	</blockquote>
+
+	<h3>How to send a notification</h3>
+	<blockquote>
+	  <p>
+		The simplest feature of the acs-mail package is the ability to send
+		a notification. A notification is a plain text email that is sent
+		from one party to another. With ACS 4.x, this was done using the
+		acs-notifications package as follows:
+	  </p>
+	  <pre>
+		nt.post_request (
+		  party_from   => :party_from,
+		  party_to     => :party_to,
+		  expand_group => 'f',
+		  subject      => 'my subject',
+		  message      => 'plain text message',
+		  max_retries  => 3
+		);
+	  </pre>
+	  <p>
+		party_from and party_to are party_id's from the parties table. If
+		expand_group is true and party_to is a group_id, then the procedure
+		will send the email to each of the group's members. If expand_group
+		is false, then the email will only be sent to the group email
+		address.
+	  </p>
+	  <p>
+		The openacs version is very similar. The max_retries parameter is
+		not used because, as mentioned above, acs-mail's queue is very
+		simple and relies on the MTA. So max_retries must be zero. Here's
+		the openacs version:
+	  </p>
+	  <pre>
+		select acs_mail_nt__post_request (
+		  :party_from,     -- p_party_from
+		  :party_to,       -- p_party_to
+		  'f',             -- p_expand_group
+		  :subject,        -- p_subject
+		  :message,        -- p_message
+		  0                -- p_max_retries
+		);
+	  </pre>
+	  <p>
+		We've also overloaded the function so that you can call the
+		function with only the 4 essential parameters: party_from,
+		party_to, subject, and message.
+	  </p>
+	  
+	  <p>
+		Note that acs-notifications is now completely gone. So event the
+		oracle queries have to be converted from nt.post_request to
+		acs_mail_nt.post_request. acs_mail_nt.cancel_requet is also
+		supported. All the other nt functions are deprecated and their
+		replacements (if any) are described in the file
+		packages/acs-mail/sql/oracle/acs-mail-nt-create.sql (or the
+		corresponding file in the postgresql directory)
+	  </p>
+	  
+	</blockquote>
+
+	<h3>Creating a HTML message</h3>
+	<blockquote>
+	  <p>
+		Creating a simple email message consists of the following steps:
+	  </p>
+	  <ol>
+		<li>Create a CR item with your message </li>
+		<li>Create a new acs_mail_body with content_item=(item_id of your CR item) </li>
+		<li>Queue the message </li>
+	  </ol>
+
+	  <h4>From PL/SQL</h4>
+	  <blockquote>
+		<pre>
+begin
+    -- usually the content_item will already be created by your app
+    -- for it''s own purposes
+    v_item_id := content_item__new ( ... );
+    v_revision_id := content_revision__new ( ... v_item_id ... );
+    perform content_revision__set_live_revision( v_revision_id );
+
+    v_subject := ''My subject'';
+    v_user_id := 2222;
+    v_ip_addr := ''10.0.0.1'';
+
+    -- create an acs_mail_body
+    v_body_id := acs_mail_body__new (
+        null,              -- p_body_id
+        null,              -- body_reply_to
+        null,              -- body_from
+        now(),             -- body_date
+        null,              -- header_message_id
+        null,              -- p_header_reply_to
+        v_subject,         -- p_header_subject
+        null,              -- p_header_from
+        null,              -- p_header_to
+        v_item_id,         -- p_content_item_id
+        ''acs_mail_body'', -- p_object_type
+        now(),             -- p_creation_date
+        v_user_id,         -- p_creation_user
+        v_ip_addr,         -- p_creation_ip
+        null               -- p_context_id
+    );
+
+    -- put the message on the queue 
+    v_mail_link_id := acs_mail_queue_message__new (
+        null,             -- p_mail_link_id
+	    v_body_id,        -- p_body_id
+        null,             -- p_context_id
+        now(),            -- p_creation_date
+        v_user_id,        -- p_creation_user
+        v_ip_addr,        -- p_creation_ip
+        ''acs_mail_link'' -- p_object_type
+    );
+
+    v_from_addr := ''sender@openacs.org'';
+    v_to_addr   := ''recipient@openacs.org'';
+
+    -- put the message on the outgoing queue
+    insert into acs_mail_queue_outgoing
+    ( message_id, envelope_from, envelope_to )
+    values
+    ( v_mail_link_id, v_from_addr, v_to_addr )"
+
+    return 0;
+end;
+		</pre>
+	  </blockquote>
+
+	  <h4>From tcl</h4>
+	  <blockquote>
+		<p>
+		  The tcl procedure <b>acs_mail_body_new</b> allows you to create
+		  messages from text content (-content), binary files
+		  (-content_file) or a CR item (-content_item_id).
+		</p>
+		<pre>
+set header_subject "My subject"
+set content "My message is here."
+set content_type "text/plain"
+		  
+# create a mail body
+set body_id [acs_mail_body_new -header_subject $header_subject \
+    -content $content -content_type $content_type]
+
+# queue it
+set sql_string "select acs_mail_queue_message.new (
+                  null,             -- p_mail_link_id
+                  :body_id,         -- p_body_id
+                  null,             -- p_context_id
+                  now(),            -- p_creation_date
+                  :user_id,         -- p_creation_user
+                  :ip_addr,         -- p_creation_ip
+                  'acs_mail_link'   -- p_object_type
+                );"
+
+set mail_link_id [db_string queue_message $sql_string]
+
+# put in in outgoing queue
+set sql_string "
+insert into acs_mail_queue_outgoing
+ ( message_id, envelope_from, envelope_to )
+values
+ ( :mail_link_id, :from_addr, :to_addr )"
+
+db_dml outgoing_queue $sql_string
+		  
+		</pre>
+	  </blockquote>
+	  
+	</blockquote>
+	
+	<h3>Creating a multipart/alternative message</h3>
+	<blockquote>
+	  <p>
+		The steps here are:
+	  </p>
+	  <ul>
+		<li>Create a new acs_mail_multipart as either 'alternative' or
+		  'mixed' </li> 
+
+		<li>Create a acs_mail_body using the multipart_id as the
+		  content_item_id </li>
+
+		<li>Create content_items and add them to the multipart message
+		</li>
+
+		<li>Queue the message </li>
+	  </ul>
+
+	  <h4>Example in tcl</h4>
+	  <blockquote>
+		<pre>
+
+# create the multipart message ('multipart/mixed')
+set multipart_id [acs_mail_multipart_new -multipart_kind "mixed"]
+
+# create an acs_mail_body (with content_item_id = multipart_id )
+set body_id [acs_mail_body_new -header_subject "My subject" \
+		-content_item_id $multipart_id ]
+
+# create a new text/plain item
+set content_item_id [db_string create_text_item "
+    select content_item__new (
+        'acs-mail message $body_id-1', -- name
+        ...
+        'text message',                -- title
+        ...
+        'text/plain',                  -- mime_type
+        ...
+        'plain message content'        -- text
+        ...
+    )
+"]
+
+acs_mail_multipart_add_content -multipart_id $multipart_id \
+		-content_item_id $content_item_id
+
+# create a new text/html item
+
+set content_item_id [db_string create_html_item "
+    select content_item__new (
+        'acs-mail message $body_id-2', -- name
+        ...
+        'html message',                -- title
+        ...
+        'text/html',                   -- mime_type
+        ...
+        'HTML &lt;b&gt;message&lt;/b&gt; content', -- text
+        ...
+
+    )
+"]
+
+acs_mail_multipart_add_content -multipart_id $multipart_id \
+		-content_item_id $content_item_id
+
+# create a new binary item
+# from file that was uploaded
+
+set mime_type "image/jpeg"
+
+set content_item_id [db_string create_jpeg_item "
+    select content_item__new (
+        'acs-mail message $body_id-3', -- name
+        ...
+        :mime_type,                    -- mime_type
+        ...
+    )
+"]
+
+set revision_id [db_string create_jpeg_revision "
+    select content_revision__new ( ... )
+"]
+
+db_transaction {
+	db_dml content_add "
+        update cr_revisions
+        set content = empty_blob()
+        where revision_id = :revision_id
+        returning content into :1
+" -blob_files [list ${content_file.tmpfile}]
+}
+
+
+db_1row make_live {
+	select content_item__set_live_revision(:revision_id);
+}
+
+# get the sequence number, so we can make this part an attachment
+set sequence_num [acs_mail_multipart_add_content -multipart_id $multipart_id \
+		-content_item_id $content_item_id]
+
+db_dml update_multiparts "
+    update acs_mail_multipart_parts 
+      set mime_disposition='attachment; filename=\"myfile.jpg\"' 
+      where sequence_number=:sequence_num and 
+            multipart_id=:multipart_id"
+
+set sql_string "select acs_mail_queue_message.new (
+                  null,             -- p_mail_link_id
+                  :body_id,         -- p_body_id
+                  null,             -- p_context_id
+                  now(),            -- p_creation_date
+                  :user_id,         -- p_creation_user
+                  :ip_addr,         -- p_creation_ip
+                  'acs_mail_link'   -- p_object_type
+                );"
+
+set mail_link_id [db_string queue_message $sql_string]
+
+set sql_string "
+    insert into acs_mail_queue_outgoing
+     ( message_id, envelope_from, envelope_to )
+    values
+     ( :mail_link_id, :from_addr, :to_addr )"
+
+db_dml outgoing_queue $sql_string
+
+		</pre>
+	  </blockquote>
+	</blockquote>
+
+	<h3>Some other notes</h3>
+	<blockquote>
+	  <ul>
+		<li>In order to schedule a message, you must call
+		acs_mail_queue_message__new <b>AND</b> then insert the message into
+		acs_mail_queue_outgoing table. You would think that the __new
+		function would do this, but it doesn't. In a way, it makes
+		sense. It allows you to queue one message and then to put that
+		message into the outgoing queue multiple times with different 'To:
+		addresses'. </li>
+
+		<li>The tcl procedure that sends out the mail
+		(<b>acs_mail_process_queue</b>) calls a procedure
+		<b>acs_mail_body_to_output_format</b> that sets up the parameters
+		to call ns_sendmail. This proc gets the from and to address from
+		acs_mail_bodies. <b>acs_mail_process_queue</b> then overwrites the
+		from and to address with the values from envelope_from and
+		envelope_to in the acs_mail_queue_outgoing table. So, if you supply
+		the from and to address in acs_mail_bodies, they get overwritten by
+		whatever is in acs_mail_queue_outgoing. (Actually it's a little
+		more complicated than that because <b>acs_mail_body_to_output_format</b>
+		also adds the addresses as Headers in the 5th param to ns_sendmail,
+		so you could get duplicate To: and From: headers. <b>Bottom line</b>:
+		Don't fill in the To: and From: fields in acs_mail_bodies. Instead,
+		create a unaddressed mail body and then provide the To: and From:
+		address in acs_mail_queue_outgoing.</li>
+
+		<li>Garbage collection is mentioned a lot, but not implemented. </li>
+
+		<li>There are some other procs available both in plsql and tcl, so
+		take a look at the source files. </li>
+
+	  </ul>
+	</blockquote>
+    <hr>
+    <address><a href="mailto:vkurup@massmed.org">Vinod Kurup</a></address>
+<!-- Created: Fri Aug 10 01:04:56 EDT 2001 -->
+<!-- hhmts start -->
+Last modified: Thu Sep  6 16:06:38 EDT 2001
+<!-- hhmts end -->
+  </body>
+</html>
