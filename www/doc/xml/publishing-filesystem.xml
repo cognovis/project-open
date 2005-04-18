@@ -1,0 +1,1027 @@
+<sect1 id="publishing-filesystem" xreflabel="Publishing to the file system">
+  <title>Publishing to the file system</title>
+
+  <para>Note: This document links to the automatically
+    generated TCL <ulink url="/ats/doc/api/tcl-procs.html">documentation</ulink>. You may need to
+    update ATS and regenerate the documentation in order to follow the
+    links.
+  </para>
+
+  <sect2 id="publishing-filesystem-overview" xreflabel="Overview">
+    <title>Overview</title><para>
+
+      A typical content item is usually a collection of child items and
+      related items, as shown in the <link linkend="page-relation">page relation</link>
+      document. Therefore,
+      the template registered to the item has to run multiple SQL queries
+      in order to retrieve and process all of the child / related items.
+      In addition to being cumbersome to write, these queries access the
+      datatbase each time an item is being served, thus slowing down the
+      site. The publishing API in CMS may be used to solve both of these
+      problems.
+    </para></sect2>
+  <sect2 id="publishing-filesystem-relation-child-and-content-tags" xreflabel="Relation, child and content tags">
+    <title>Relation, child and content tags</title><para>
+
+      CMS defines three new ATS tags: <computeroutput>child</computeroutput>, <computeroutput>relation</computeroutput>
+      and <computeroutput>content</computeroutput>. The purpose of these tags is to signify a
+      place in the ADP template for the item where a child item, a
+      related item or the current item's content will be inserted. 
+
+    </para><para>The <computeroutput>child</computeroutput> tag can be used to include a child item in
+      the template for the parent item, similarly to the ATS
+      <computeroutput>include</computeroutput> tag. The syntax for the <computeroutput>child</computeroutput> tag is as
+      follows: </para>
+
+    <sect3 id="publishing-filesystem-the-child-tag" xreflabel="The Child Tag">
+      <title>The Child Tag</title>
+
+      <programlisting>
+	<phrase>&lt;child tag=</phrase><emphasis>tag</emphasis> <phrase>index=</phrase><emphasis>n</emphasis> <phrase>embed</phrase> <emphasis>args</emphasis>&gt;
+      </programlisting>
+
+      <informaltable><tgroup cols="3">
+	  <thead>
+	    <row>
+	      <entry align="center">Parameter</entry>
+	      <entry align="center">Default value</entry>
+	      <entry align="center">Description</entry>
+	    </row>
+	  </thead>
+
+	  <tbody>
+	    <row>
+	      <entry><computeroutput>tag</computeroutput></entry>
+	      <entry>
+		<emphasis>This parameter is required</emphasis>
+	      </entry>
+	      <entry>Specifies the relation tag to be used when querying for the
+		child item. For more information, see the acs-content-repository
+		documentation, sepcifically the
+		<computeroutput>content_type.register_child_type</computeroutput> procedure.</entry>
+	    </row>
+
+	    <row>
+	      <entry><computeroutput>index</computeroutput></entry>
+	      <entry>1</entry>
+	      <entry>Specifies the index of the item, starting at 1. The index is
+		based on the <computeroutput>order_n</computeroutput> of the child relation; the child item
+		with the lowest <computeroutput>order_n</computeroutput> has index 1, the item with the
+		next lowest <computeroutput>order_n</computeroutput> has index 2, and so on.</entry>
+	    </row>
+
+	    <row>
+	      <entry><computeroutput>embed</computeroutput></entry>
+	      <entry><emphasis>no value</emphasis></entry>
+	      <entry>Signifies that the child item should be statically embedded in
+		the current item's template. If this parameter is not specified,
+		the child item will instead be referenced dynamically, most likely
+		using the <computeroutput>&lt;include&gt;</computeroutput> tag. If the <computeroutput>embed</computeroutput>
+		parameter is specified, the child item may be written to the file
+		system (this is done for images, for example). See the discussion
+		of publishing to the file system 
+		<link linkend="publishing-filesystem-publishing-to-the-filesystem">below</link>
+		for an explanation of how the <computeroutput>embed</computeroutput> parameter may be
+		used.</entry>
+	    </row>
+
+	    <row>
+	      <entry><computeroutput>args</computeroutput></entry>
+	      <entry><emphasis>no value</emphasis></entry>
+	      <entry>Specifies extra parameters to be passed to the template, in
+		form <computeroutput>name1="value1" name2="value2" ...</computeroutput>. The syntax for
+		passing these parameters is the same as the syntax for the
+		<computeroutput>include</computeroutput> tag.</entry>
+	    </row>
+	  </tbody></tgroup></informaltable>
+
+      <para>In order for the <computeroutput>child</computeroutput> tag to work, the child item must
+	be published. If the child item is not published, or if any other
+	error occurs, the child tag is ignored.</para>
+
+      <sect4 id="publishing-filesystem-child-tag-example" xreflabel="Child tag example">
+	<title>Child tag example</title>
+
+	<para>For example, consider the following template:</para>
+      </sect4>
+
+      <sect4 id="publishing-filesystem-kidtcl" xreflabel="kid.tcl">
+	<title><computeroutput>kid.tcl</computeroutput></title>
+
+	<programlisting>
+request create
+request set_param color -datatype text -value "#FFFFFF" -optional
+content::get_content
+template::util::array_to_vars content
+	</programlisting>
+      </sect4>
+
+      <sect4 id="publishing-filesystem-kidadp" xreflabel="kid.adp">
+	<title><computeroutput>kid.adp</computeroutput></title>
+
+	<programlisting>
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;@title@&lt;/title&gt;&lt;/head&gt;
+&lt;body bgcolor=@color@&gt;
+
+I am a child
+
+&lt;table&gt;
+  &lt;tr bgcolor=@color@&gt;&lt;td&gt;@text@&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+	</programlisting>
+
+	<para>
+	  This template can be used to render a basic item whose context is
+	  readable text. The template takes one parameter, <computeroutput>color</computeroutput>,
+	  which is used as the background color for the item. Assume that
+	  this template is registered to an item called called "Junior",
+	  whose content is "Hello World !". 
+	</para>
+
+	<para>Now, consider the following template:</para>
+      </sect4>
+
+      <sect4 id="publishing-filesystem-daddytcl" xreflabel="daddy.tcl">
+	<title><computeroutput>daddy.tcl</computeroutput></title>
+
+	<programlisting>
+content::get_content
+template::util::array_to_vars content
+	</programlisting>
+      </sect4>
+
+      <sect4 id="publishing-filesystem-daddyadp" xreflabel="daddy.adp">
+	<title><computeroutput>daddy.adp</computeroutput></title>
+
+	<programlisting>
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;@title@&lt;/title&gt;&lt;/head&gt;
+&lt;body bgcolor="#FFFFFF"&gt;
+
+&lt;h4&gt;The child:&lt;/h4&gt;
+
+&lt;child tag=family index=1 embed color="#00FF00"&gt;
+
+&lt;h4&gt;The parent:&lt;/h4&gt;
+
+@text@
+
+&lt;/body&gt;
+&lt;/html&gt;
+      </programlisting>
+
+	<para>
+	  This template can be also be used to render a basic item whose
+	  context is readable text. In addition, this template assumes that
+	  the current item ahs at least one child item, which is related to
+	  the current item using the <computeroutput>family</computeroutput> relation tag. Assume
+	  that this template is registered to an item called "Senior", whose
+	  content is "Who's your daddy ?". The diagram below shows all the
+	  aforementioned relationships: 
+	</para>
+
+	<mediaobject>
+	  <imageobject>
+	    <imagedata format="GIF" fileref="images/publish_1.gif"/>
+	  </imageobject>
+	</mediaobject>
+
+
+	<para>Assuming that the "Junior" and "Senior" items are both
+	  published, the user will see something like 
+	  <ulink url="child_example.html">this</ulink> when requesting
+	  "senior.acs".</para>
+
+	<para>Note that the child item need not be plain text for the
+	  <computeroutput>child</computeroutput> tag to work. In fact, the tag works with images and
+	  may be extended to handle any mime type, as is discussed 
+	  <link linkend="publishing-filesystem-defining-mime-type-handlers">below</link>.
+	  </para>
+      </sect4>
+    </sect3>
+
+    <sect3 id="publishing-filesystem-relation-tag" xreflabel="Relation tag">
+      <title>Relation tag</title><para>
+
+	The syntax for the <computeroutput>relation</computeroutput> tag is almost identical to the
+	syntax of the <computeroutput>child</computeroutput> tag: 
+      </para>
+
+      <programlisting>
+<phrase>&lt;relation tag=</phrase><emphasis>tag</emphasis> <phrase>index=</phrase><emphasis>n</emphasis> <phrase>embed</phrase> <emphasis>args</emphasis>&gt;
+      </programlisting>
+
+      <para>
+	All the parameters of the <computeroutput>relation</computeroutput> tag are identical to
+	the parameters of the <computeroutput>child</computeroutput> tag. The only difference
+	between the two tags is that the <computeroutput>child</computeroutput> tag handles child
+	items, while the <computeroutput>relation</computeroutput> tag handles related items. 
+      </para>
+    </sect3>
+
+    <sect3 id="publishing-filesystem-content-tag" xreflabel="Content tag">
+      <title>Content tag</title>
+
+      <para>
+	The <computeroutput>content</computeroutput> tag accepts no parameters:
+      </para>
+
+      <programlisting>
+<phrase>&lt;content&gt;</phrase>
+      </programlisting>
+
+      <para>
+	This tag can be used to render the content of the current item. For
+	example, the <computeroutput>kid</computeroutput> template 
+	<link linkend="publishing-filesystem-kidtcl">above</link>
+	can be modified as follows:
+      </para>
+
+      <sect4 id="publishing-filesystem-kidadp-modified" xreflabel="kid.adp">
+	<title><computeroutput>kid.adp</computeroutput></title>
+
+	<programlisting>
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;@title@&lt;/title&gt;&lt;/head&gt;
+&lt;body bgcolor=@color@&gt;
+
+I am a child
+
+&lt;table&gt;
+  &lt;tr bgcolor=@color@&gt;&lt;td&gt;<phrase>&lt;content&gt;</phrase>&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+	</programlisting>
+
+	<para>
+	  Unlike the <computeroutput>@text@</computeroutput> variable, however, the <computeroutput>content</computeroutput>
+	  tag may also be used to render images and other mime types. The
+	  <computeroutput>content</computeroutput> tag is treated similarly to the <computeroutput>child</computeroutput> and
+	  <computeroutput>relation</computeroutput> tags, with the <computeroutput>embed</computeroutput> parameter always
+	  present.
+	</para>
+      </sect4>
+    </sect3>
+
+    <sect3 id="publishing-filesystem-basic-tcl-api" xreflabel="Basic TCL API">
+      <title>Basic TCL API</title><para>
+
+	In order to process the <computeroutput>relation</computeroutput> and <computeroutput>child</computeroutput> tags,
+	the templating system must perform the following steps: 
+
+      </para><orderedlist>
+	<listitem><para>Retrieve the item_id of the child/related item</para></listitem>
+
+	<listitem><para>Render the child item in some way, based on the item's mime
+	    type, possibly performing one of the following tasks: 
+
+	    <itemizedlist>
+	      <listitem><para>Merge the item with its template</para></listitem>
+
+	      <listitem><para>Write the body of the item to the filesystem</para></listitem>
+
+	      <listitem><para>Pass extra parameters to the item</para></listitem>
+
+	      <listitem><para>etc...</para></listitem>
+	    </itemizedlist>
+	  </para></listitem>
+
+	<listitem><para>Insert the rendered child/related item into the parent
+	    item</para></listitem>
+      </orderedlist><para>
+
+	Since <computeroutput>content</computeroutput> tag renders the content of the current item,
+	it does not need to perform Step 1. 
+
+      </para><para>Steps 1 and 3 are performed by the private TCL proc
+	<computeroutput>publish::render_subitem</computeroutput>. In order to accomplish Step 2,
+	the templating system needs to know how to handle various mime
+	types. This is accomplished through the use of <emphasis>handlers</emphasis>.</para>
+
+      <sect4 id="publishing-filesystem-defining-mime-type-handlers" xreflabel="Defining-mime type handlers">
+	<title>Defining-mime type handlers</title>
+
+	<para>
+	  A mime-type handler for a mime type (such as "text/plain" or
+	  "image/jpeg") is a TCL proc, with the following signature: 
+	</para>
+
+	<programlisting>
+<phrase>proc publish::handle::</phrase><emphasis>mime_prefix</emphasis><phrase>::</phrase><emphasis>optional_mime_suffix</emphasis> <phrase>{ item_id args } {
+
+# Process any additional options passed to the handler
+  template::util::get_opts $args
+
+# Perform some calculation to get the HTML for the item
+  #...
+  
+  # Return the rendered HTML for the item
+  return $html
+}</phrase>
+	</programlisting>
+
+	<para>
+	  The handler proc takes in an <computeroutput>item_id</computeroutput>, and any of the
+	  following options: 
+	</para>
+
+	<informaltable><tgroup cols="2">
+	    <thead>
+	      <row>
+		<entry align="center">Option</entry>
+		<entry align="center">Description</entry>
+	      </row>
+	    </thead>
+
+	    <tbody>
+	      <row>
+		<entry>
+		  <computeroutput>-embed</computeroutput></entry>
+		<entry>Signifies that the <computeroutput>embed</computeroutput> parameter was specified in
+		  the <computeroutput>child</computeroutput>/<computeroutput>relation</computeroutput> tag (the <computeroutput>embed</computeroutput>
+		  parameter is implicit in the <computeroutput>content</computeroutput> tag). In this case,
+		  the handler should return the static HTML for the item. If the
+		  <computeroutput>-embed</computeroutput> option is not specified, the handler should insted
+		  return some HTML/ADP code which will dynamically include the item
+		  in the parent item (using the <computeroutput>include</computeroutput> tag, for
+		  example)</entry>
+	      </row>
+
+	      <row>
+		<entry>
+		  <computeroutput>-no_merge</computeroutput></entry>
+		<entry>Usually, the child/related item is merged with its template in
+		  order to produce static HTML. The <computeroutput>-no_merge</computeroutput> option
+		  signifies that the item should <phrase>not</phrase> be merged with its
+		  template. This option is passed by the <computeroutput>content</computeroutput> tag, in
+		  order to prevent infinite recursion.</entry>
+	      </row>
+
+	      <row>
+		<entry>
+		  <computeroutput>-revision_id <replaceable>id</replaceable></computeroutput></entry>
+		<entry>Specifies the id of the revision which should be used when
+		  rendering the item. If this option is ommitted, the handler is free
+		  to use any revision; the live revision is probably the logical
+		  choice.</entry>
+	      </row>
+	    </tbody></tgroup></informaltable>
+
+	<para>In order to determine which handler is to be used for rendering
+	  a particular item, the publishing API first tries to find a proc
+	  with the name
+	  <computeroutput>publish::handle::<replaceable>mime_prefix</replaceable>::<replaceable>mime_suffix</replaceable></computeroutput>.
+	  If no such proc exists, the publishing API looks for a proc named
+	  <computeroutput>publish::handle::<replaceable>mime_prefix</replaceable></computeroutput>. If this proc does not
+	  exist, either, the publishing API gives up and the item is not
+	  rendered.</para>
+
+	<para>By default, only the handlers <computeroutput>publish::handle::image</computeroutput>
+	  and <computeroutput>publish::handle::text</computeroutput> exist in CMS.</para>
+      </sect4>
+
+      <sect4 id="publishing-filesystem-other-api" xreflabel="Other API">
+	<title>Other API</title><para>
+
+	  There are several procs in the publishing API which make it easier
+	  to write handlers: 
+
+	</para>
+
+	<informaltable><tgroup cols="2">
+	    <thead>
+	      <row>
+		<entry align="center">Proc signature</entry>
+		<entry align="center">Purpose</entry>
+	      </row>
+	    </thead>
+
+	    <tbody>
+	      <row>
+		<entry>
+		  <computeroutput><ulink url="/ats/doc/api/publish.html#publish::merge_with_template">publish::merge_with_template</ulink></computeroutput>
+		</entry>
+		<entry>Merge the item with its template and return the resulting HTML
+		  block. The same HTML block is shown to the user when the item's URL
+		  is accessed on the CMS server.</entry>
+	      </row>
+
+	      <row>
+		<entry>
+		  <computeroutput><ulink url="/ats/doc/api/publish.html#publish::write_content">publish::write_content</ulink></computeroutput>
+		</entry>
+		<entry>Publish the content blob of the specified revision by writing
+		  it to a file under each of the root directories specified under the
+		  PublishRoots parameter in the server's INI file, as described 
+		  <link linkend="publish_roots">below</link>. If the parameter does not exist,
+		  the value of the PageRoot is used as the default. If the PageRoot
+		  parameter does not exist, either, the value of <computeroutput>[ns_info
+		    pageroot]</computeroutput> is used.</entry>
+	      </row>
+
+	      <row>
+		<entry>
+		  <computeroutput><ulink url="/ats/doc/api/publish.html#publish::item_include_tag">publish::item_include_tag</ulink></computeroutput>
+		</entry>
+		<entry>Create an <computeroutput>&lt;include&gt;</computeroutput> tag suitable for including
+		  the item dynamically. The <computeroutput>extra_args</computeroutput> parameter is a list
+		  of names and values to be passed to the included template, in the
+		  same format as the <computeroutput>-html</computeroutput> option.</entry>
+	      </row>
+
+	      <row>
+		<entry>
+		  <computeroutput><ulink url="/ats/doc/api/content.html#content::get_content_value">content::get_content_value</ulink></computeroutput>
+		</entry>
+		<entry>Returns the content of the revision as a TCL string. Do not
+		  call this function unless the revision has a textual mime type
+		  (such as <computeroutput>text/plain</computeroutput>, <computeroutput>text/html</computeroutput>, etc.)</entry>
+	      </row>
+
+	      <row>
+		<entry>
+		  <computeroutput><ulink url="/ats/doc/api/publish.html#publish::handle_binary_file">publish::handle_binary_file</ulink></computeroutput>
+		</entry>
+		<entry>A helper proc for creating mime handlers for binary mime types;
+		  see the example <link linkend="image_handler">below</link>. Writes the
+		  content blob of the item to the filesystem, and attempts to merge
+		  the item with its template. If the merge is not possible (or if the
+		  <computeroutput>no_merge</computeroutput> flag was specified), returns an empty string. The
+		  <computeroutput>-embed</computeroutput> flag must be specified for this proc.</entry>
+	      </row>
+
+	      <row>
+		<entry>
+		  <emphasis>Any proc in the</emphasis> <computeroutput><ulink url="/ats/doc/api/item.html">item</ulink></computeroutput> <emphasis>namespace</emphasis> </entry>
+		<entry>The procs in the <computeroutput>item</computeroutput> namespace simplify access to
+		  many properties of a content item, such as the live revision, the
+		  URL, etc. See the <computeroutput>item</computeroutput> documentation for more
+		  information.</entry>
+	      </row>
+	    </tbody></tgroup></informaltable>
+      </sect4>
+
+      <sect4 id="publishing-filesystem-handler-examples" xreflabel="Handler Examples">
+	<title>Handler Examples</title><para>
+
+	  For example, here is the annotated code for the default text
+	  handler (found in publish-procs.tcl) : 
+
+	</para>
+
+	<informaltable><tgroup cols="2">
+	    <thead>
+	      <row>
+		<entry align="center">Code</entry>
+		<entry align="center">Comments</entry>
+	      </row>
+	    </thead>
+
+	    <tbody>
+	      <row>
+		<entry>
+		  <programlisting>
+proc publish::handle::text { item_id args } {
+		  </programlisting>
+		</entry>
+		<entry>
+		  This is a mime-type handler which will be
+		  used for any textual mime-type, unless a more specific mime handler
+		  exists.</entry>
+	      </row>
+
+	      <row>
+		<entry>
+		  <programlisting>
+ <ulink url="/ats/doc/api/template__util.html#template::util::get_opts">template::util::get_opts</ulink> $args
+
+  if { [<ulink url="/ats/doc/api/template__util.html#template::util::is_nil">template::util::is_nil</ulink> opts(revision_id)] } {
+    set revision_id [<ulink url="/ats/doc/api/item.html#item::get_live_revision">item::get_live_revision</ulink> $item_id]
+  } else {
+    set revision_id $opts(revision_id)
+  }
+		  </programlisting>
+		</entry>
+		<entry>
+		  Process the options and determine the
+		  revision id to be used when rendering the item. If no revision id
+		  is specified, use the live revision.</entry>
+	      </row>
+
+	      <row>
+		<entry>
+		  <programlisting>
+ if { [info exists opts(embed)] } {
+		  </programlisting>
+		</entry>
+		<entry>
+		  If the <computeroutput>-embed</computeroutput> option was specified,
+		  render the item as HTML.</entry>
+	      </row>
+
+	      <row>
+		<entry>
+		  <programlisting>
+   if { ![info exists opts(no_merge)] } {
+      set code "<ulink url="/ats/doc/api/publish.html#publish::merge_with_template">publish::merge_with_template</ulink> $item_id $args"
+      set html [eval $code]
+		  </programlisting>
+		</entry>
+		<entry>
+		  Unless the <computeroutput>-no_merge</computeroutput> option is
+		  specified, merge the item with its template, using all the options
+		  which were passed to the mime handler.</entry>
+	      </row>
+
+	      <row>
+		<entry>
+		  <programlisting>
+   } else {
+      set html [<ulink url="/ats/doc/api/content.html#content::get_content_value">content::get_content_value</ulink> $revision_id]
+    } 
+		  </programlisting>
+		</entry>
+		<entry>
+		  If the <computeroutput>-no_merge</computeroutput> option <emphasis>was</emphasis>
+		  specified, simply return the content of the revision as a string of
+		  text.</entry>
+	      </row>
+
+	      <row>
+		<entry>
+		  <programlisting>
+ } else {
+    if { [info exists opts(html)] } {
+      set extra_args $opts(html)
+    } else {
+      set extra_args ""
+    }
+    set html [<ulink url="/ats/doc/api/publish.html#publish::item_include_tag">publish::item_include_tag</ulink> $item_id $extra_args]
+  } 
+		  </programlisting>
+		</entry>
+		<entry>
+		  If the <computeroutput>-embed</computeroutput> option was <emphasis>not</emphasis>
+		  specified, create an <computeroutput>&lt;include&gt;</computeroutput> tag to dynamically
+		  include the item's template.</entry>
+	      </row>
+	      
+	      <row>
+		<entry>
+		  <programlisting>
+ return $html 
+		</programlisting>
+	      </entry>
+		<entry>
+		All done - return the resulting HTML.</entry>
+	    </row>
+	    </tbody></tgroup></informaltable>
+	
+	<para>The handler for binary files is somewhat more complicated, since
+	  it needs to write the content blob to the filesystem in addition to
+	merging the item with its template. The <computeroutput><ulink url="/ats/doc/api/publish.html#publish::handle_binary_file">publish::handle_binary_file</ulink></computeroutput>
+	proc simplifies this process, and is used in the default image
+	handler:</para>
+
+      <anchor id="image_handler"></anchor>
+
+	<informaltable><tgroup cols="2">
+	    <thead>
+	      <row>
+		<entry align="center">Code</entry>
+		<entry align="center">Comments</entry>
+	      </row>
+	    </thead>
+
+	    <tbody>
+	    <row>
+	      <entry>
+		<programlisting>
+proc publish::handle::image { item_id args } {
+		</programlisting>
+	      </entry>
+		<entry>
+		This is a mime-type handler which will be
+		used for any image mime-type, unless a more specific mime handler
+		exists.</entry>
+	    </row>
+
+	    <row>
+	      <entry>
+		<programlisting>
+ <ulink url="/ats/doc/api/template__util.html#template::util::get_opts">template::util::get_opts</ulink> $args
+
+  set html [eval <ulink url="/ats/doc/api/publish.html#publish::handle_binary_file">publish::handle_binary_file</ulink> \
+   $item_id revision_id url error_msg $args]
+		</programlisting>
+	      </entry>
+		<entry>
+		Attempt to handle the image automatically.
+		After the <computeroutput>eval</computeroutput> returns, the following variables will exist
+		in the calling frame: 
+
+		<itemizedlist>
+		  <listitem><para><computeroutput>revision_id</computeroutput> - The revision which was used to render
+		      the item</para></listitem>
+
+		  <listitem><para><computeroutput>url</computeroutput> - The URL of the item, including the correct
+		      extension. The item's blob was written to the filesystem at this
+		      URL.</para></listitem>
+
+		  <listitem><para><computeroutput>error_msg</computeroutput> - An error message. If this variable
+		      contains the empty string, then no error has ocurred.</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	    <row>
+	      <entry>
+		<programlisting>
+ if { ![<ulink url="/ats/doc/api/template__util.html#template::util::is_nil">template::util::is_nil</ulink> error_msg] } {
+    ns_log notice "WARNING: $error_msg"
+    return ""
+  }
+		</programlisting>
+	      </entry>
+	      <entry>
+		If some kind of error has occurred, log the
+		error and fail silently. Currently, <computeroutput>handle_binary_file</computeroutput>
+		fails under any of the following conditions: 
+
+		<itemizedlist>
+		  <listitem><para>The item or its revision could not be found</para></listitem>
+
+		  <listitem><para>The <computeroutput>-embed</computeroutput> option was not specified</para></listitem>
+		</itemizedlist>
+	      </entry>
+	    </row>
+
+	      <row>
+	      <entry>
+		<programlisting>
+ if { ![<ulink url="/ats/doc/api/template__util.html#template::util::is_nil">template::util::is_nil</ulink> html] } {
+    return $html
+  }
+		</programlisting>
+	      </entry>
+	      <entry>
+		If the item was successfully merged with its
+		template, return the resulting HTML. It is possible, however, that
+		<computeroutput>-no_merge</computeroutput> flag was specified, or the item has no
+		associated template. This is not an error condition, since the item
+		can still be rendered in some way.</entry>
+	      </row>
+
+	    <row>
+	      <entry>
+		<programlisting>
+ template::query image_info onerow "
+    select 
+      im.width, im.height, r.title as image_alt
+    from 
+      images im, cr_revisions r
+    where 
+      im.image_id = :revision_id
+    and
+      r.revision_id = :revision_id
+  " -cache "image_info $revision_id"
+  
+  <ulink url="/ats/doc/api/template__util.html#template::util::array_to_vars">template::util::array_to_vars</ulink> image_info 
+		</programlisting>
+	      </entry>
+	      <entry>
+		The item could not be merged with its
+		template. Read the image width, height and title, and output a
+		custom &lt;img&gt; tag.</entry>
+	      </row>
+	      
+	    <row>
+	      <entry>
+		<programlisting>
+ if { [info exists opts(html)] } {
+    set extra_html [<ulink url="/ats/doc/api/publish.html#publish::html_args">publish::html_args</ulink> $opts(html)]
+    set have_alt [expr [lsearch \
+      [string tolower $opts(html)] "alt"] &gt;= 0]
+  } else {
+    set extra_html ""
+    set have_alt 0
+  }
+
+  set html "&lt;img src=$url"
+
+  if { ![<ulink url="/ats/doc/api/template__util.html#template::util::is_nil">template::util::is_nil</ulink> width] } {
+    append html " width=\"$width\""
+  }
+
+  if { ![<ulink url="/ats/doc/api/template__util.html#template::util::is_nil">template::util::is_nil</ulink> height] } {
+    append html " height=\"$height\""
+  }
+
+  append html " $extra_html"
+  
+  if { !$have_alt } {
+    append html " alt=\"$image_alt\""
+  }
+  
+  append html "&gt;"
+		</programlisting>
+	      </entry>
+	      <entry>
+		Create an &lt;img&gt; tag which references
+		the URL where the image was written to the filesystem. Use the
+		image attributes for the width and height; use the image title for
+		the <computeroutput>alt</computeroutput> text, unless an alternate <computeroutput>alt</computeroutput> text string
+		was passed in to the handler. Append any other HTML arguments at
+		the end of the &lt;img&gt; tag.</entry>
+	    </row>
+
+	    <row>
+	      <entry>
+		<programlisting>
+ return $html 
+		</programlisting>
+	      </entry>
+	      <entry>
+		All done - return the resulting HTML.</entry>
+	    </row>
+	  </tbody></tgroup></informaltable>
+
+      <para>While the default mime-type handlers are not very sophisticated,
+	they are flexible. Mime-type handlers for handling streaming video,
+	audio, Flash, etc., could be easily written by using the publishing
+	API, and by following the design patterns shown above.</para>
+
+      <para>Note that, as with any CMS extensions, custom mime-type handlers
+	should probably placed in a separate TCL file. This way, if and
+	when <computeroutput>publish-procs.tcl</computeroutput> is updated, the upgrade process
+	will be painless.</para>
+    </sect4>
+  </sect3>
+</sect2>
+
+<sect2 id="publishing-filesystem-publishing-to-the-filesystem" xreflabel="Publishing to the filesystem">
+  <title>Publishing to the filesystem</title>
+
+<para>
+    Since it is possible to generate static HTML for the entire item in
+    CMS, it is also possible to write the resulting HTML to the
+    filesystem, producing a static page which requires no special
+    parsing and no database hits. Such a page could be served much
+    faster than the dynamic ACS template for the item.
+  </para><sect3 id="publishing-filesystem-publishrevision" xreflabel="publish_revision">
+    <title><computeroutput>publish_revision</computeroutput></title><para>
+
+      The <ulink url="/ats/doc/api/publish.html#publish::publish_revision"><computeroutput>publish::publish_revision</computeroutput></ulink>
+      proc could be used to accomplish this. The proc takes an
+      <computeroutput>revision_id</computeroutput> as an argument, and writes the specified
+      revision to the filesystem. The filename of the resulting file
+      consists of three parts: 
+
+    </para>
+
+    <programlisting>
+<phrase>/</phrase><emphasis>root_path</emphasis><phrase>/</phrase><emphasis>item_url</emphasis><phrase>.</phrase><emphasis>file_extension</emphasis>
+    </programlisting>
+
+      <itemizedlist>
+	<listitem>
+	  <anchor id="publish_roots"></anchor>
+	  <para><emphasis>root_path</emphasis> - The file will be
+	    written to each path returned by <ulink url="/ats/doc/api/publish.html#publish::get_publish_roots"><computeroutput>publish::get_publish_roots</computeroutput></ulink>
+	    proc. The proc attempts to retrieve the list of publish roots as
+	    follows:
+
+	<orderedlist>
+	  <listitem><para>From the <computeroutput>PublishRoots</computeroutput> parameter in the server's INI
+	      file, under the section <computeroutput>[ns/server/your_server_name/cms]</computeroutput>.
+	      The value of this parameter should be a space-separated list of
+	      directories. For example: 
+
+	      <programlisting>
+[ns/server/my-cms-server/cms]
+PublishRoots=/web/my-cms-server/www /web/my-public-server/www /home/my-files
+	      </programlisting>
+
+	    </para></listitem>
+
+	  <listitem><para>If the <computeroutput>PublishRoots</computeroutput> parameter does not exist, the proc
+	      attempts to publish to the page root specified under the
+	      <computeroutput>PageRoot</computeroutput> parameter in the same config section.</para></listitem>
+
+	  <listitem><para>If the <computeroutput>PageRoot</computeroutput> parameter does not exist, the proc use
+	      the page root of the server as returned by <computeroutput>[ns_info
+		pageroot]</computeroutput>.
+
+	  </para></listitem>
+	</orderedlist>
+      </para></listitem>
+
+      <listitem><para><emphasis>item_url</emphasis><phrase>.</phrase><emphasis>file_extension</emphasis> - The value
+	  returned by <ulink url="/ats/doc/api/item.html#item::get_extended_url"><computeroutput>item::get_extended_url</computeroutput></ulink>.
+	  The value combines the relative URL of the item as returned by <ulink url="/ats/doc/api/item.html#item::get_url"><computeroutput>item::get_url</computeroutput></ulink>,
+	  and a file extension based on the template which is registered to
+	  the item. Note that, by default, <computeroutput>get_extended_url</computeroutput> uses the
+	  <phrase>item's</phrase> mime-type to determine the extension; however,
+	  <computeroutput>publish_revision</computeroutput> overrides this behavior by specifying the
+	  <computeroutput>-template_url</computeroutput> option. If there is no template registered
+	  to render the item, the file extension is assumed to be
+	  ".html"</para></listitem>
+    </itemizedlist><para>
+
+      For example, assume that the following template is registered as
+      the default template for the <computeroutput>image</computeroutput> content type: 
+
+    </para><sect4 id="publishing-filesystem-imagetemplatetcl" xreflabel="image_template.tcl">
+      <title><computeroutput>image_template.tcl</computeroutput></title>
+
+      <programlisting>
+content::get_content
+template::util::array_to_vars content
+      </programlisting>
+    </sect4>
+
+    <sect4 id="publishing-filesystem-imagetemplateadp" xreflabel="image_template.adp">
+      <title><computeroutput>image_template.adp</computeroutput></title>
+
+      <programlisting>
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;@title@&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+
+&lt;h2&gt;@title@&lt;/h2&gt;
+@publish_date@ : @mime_type@
+&lt;p&gt;
+@description@
+&lt;p&gt;
+&lt;content&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+      </programlisting>
+
+      <para>
+	In addition, assume that an <computeroutput>image</computeroutput> item exists in CMS under
+	"Sitemap/images/my_snail"; that the server is called "myserver";
+	and that the <emphasis>PublishRoots</emphasis> parameter is set to
+	"<computeroutput>/web/my-cms-server/www /web/my-public-server/www</computeroutput>". When
+	the item is published to the filesystem, the following four files
+	will be created: 
+
+      </para><itemizedlist>
+	<listitem><para><computeroutput>/web/my-cms-server/www/images/my_snail.jpg</computeroutput> - written
+	    by the image handler</para></listitem>
+
+	<listitem><para><computeroutput>/web/my-public-server/www/images/my_snail.jpg</computeroutput> -
+	    written by the image handler</para></listitem>
+
+	<listitem><para><computeroutput>/web/my-cms-server/www/images/my_snail.html</computeroutput> - written
+	    by <computeroutput>publish_revision</computeroutput></para></listitem>
+
+	<listitem><para><computeroutput>/web/my-public-server/www/images/my_snail.html</computeroutput> -
+	    written by <computeroutput>publish_revision</computeroutput></para></listitem>
+      </itemizedlist><para>
+
+	The <computeroutput>my_snail.jpg</computeroutput> file will contain the actual JPEG image
+	(presumably, an image of a snail), and the <computeroutput>my_snail.html</computeroutput>
+	image will contain HTML code similar to the following: 
+
+      </para></sect4>
+    <sect4 id="publishing-filesystem-mysnailhtml" xreflabel="my_snail.html">
+      <title><computeroutput>my_snail.html</computeroutput></title>
+
+      <programlisting>
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;My Snail&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+
+&lt;h2&gt;My Snail&lt;/h2&gt;
+12/15/2000 : image/jpeg
+&lt;p&gt;
+Watch my snail frolick happily !
+&lt;p&gt;
+&lt;img src=/images/my_snail.jpg width="640" height="480" alt="My Snail"&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+      </programlisting>
+      </sect4>
+    </sect3>
+    
+  <sect3 id="publishing-filesystem-cms-ui" xreflabel="CMS UI">
+    <title>CMS UI</title><para>
+
+      In CMS, the <computeroutput>publish_revision</computeroutput> proc is called each time the
+      item's publish status is changed to "Live". In order to be
+      published, the item must satisfy the following requirements: 
+
+    </para><itemizedlist>
+      <listitem><para>A live revision exists for the item</para></listitem>
+
+      <listitem><para>If a workflow exists on the item, the workflow must be in the
+	  Finished state.</para></listitem>
+
+      <listitem><para>If there are any child or item relationships registered to the
+	  item, the <computeroutput>min_n</computeroutput> and <computeroutput>max_n</computeroutput> constraints of these
+	  relationships must be satisified.</para></listitem>
+    </itemizedlist><para>
+
+      Assuming that these constraints are satisfied, the following panel
+      will appear under the Publishing tab for the item: 
+
+    </para>
+
+      <mediaobject>
+	<imageobject>
+	  <imagedata format="GIF" fileref="images/pub_filesystem1.gif"/>
+	</imageobject>
+      </mediaobject>
+
+    <para>The Edit link in the upper-right corner links to the Edit
+      Publishing Status dialog:</para>
+
+      <mediaobject>
+	<imageobject>
+	  <imagedata format="GIF" fileref="images/pub_filesystem2.gif"/>
+	</imageobject>
+      </mediaobject>
+
+
+
+    <para>If the user changes the status to "Live" and clicks Submit, the
+      item will be published to the filesystem. Note that any further
+      changes to the item will not be automatically reflected in the
+      filesystem; the user must set the status to "Live" each time he/she
+      wishes to re-publish the item.</para>
+
+    <para>If the status is already "Live", and the user changes it to
+      "Production", "Ready" or "Expired", the item will be unpublished
+      using the <ulink url="/ats/doc/api/publish.html#publish::unpublish_item"><computeroutput>publish::unpublish_item</computeroutput></ulink>
+      proc, which will remove any files that were written when the item
+      was published. Note that this proc is not recursive; the
+      child/related items of the unpublished item will remain live.</para>
+
+  </sect3>
+  <sect3 id="publishing-filesystem-scheduling-items-for-release" xreflabel="Scheduling items for release">
+    <title>Scheduling items for release</title><para>
+
+      The Edit Publishing Status dialog also contains two additional
+      fields, "Start Date" and "End Date". These fields may be used to
+      schedule the item for future publication and expiration (the
+      default expiration date is one year in the future). The <ulink url="/ats/doc/api/publish.html#publish::schedule_status_sweep"><computeroutput>publish::schedule_status_sweep</computeroutput></ulink>
+      proc can be used to schedule regular sweeps of the entire content
+      repository for items which must be published or expired. The proc
+      accepts an optional <computeroutput>interval</computeroutput> parameter, which sets the
+      time interval between sweeps in seconds. This interval can also be
+      controlled by the <computeroutput>StatusSweepInterval</computeroutput> in the server's INI
+      file; the default value is 3600 (one hour). The last line of
+      <computeroutput>publish-procs.tcl</computeroutput> is in fact 
+
+    </para>
+
+    <programlisting>
+publish::schedule_status_sweep
+    </programlisting>
+
+    <para>
+      Thus, the status sweep is always scheduled at server startup, using
+      the time interval specified in the INI file. Use caution when
+      specifying the time interval: the status sweep may potentially
+      examine <phrase>all</phrase> items in the content repository, thus consuming
+      most of your server's CPU time. While lower values of
+      <computeroutput>StatusSweepInterval</computeroutput> provide more precise control over the
+      publishing and expiration dates of the item, they run the risk of
+      slowing the server down to a crawl. 
+
+    </para><para>The <ulink url="/ats/doc/api/publish.html#publish::unschedule_status_sweep"><computeroutput>publish::unschedule_status_sweep</computeroutput></ulink>
+      proc (no parameters) may be used to unschedule the regular status
+      sweeps.</para>
+
+  </sect3>
+</sect2>
+<sect2 id="publishing-filesystem-conclusion" xreflabel="Conclusion">
+  <title>Conclusion</title><para>
+
+    The <computeroutput>child</computeroutput>, <computeroutput>relation</computeroutput> and <computeroutput>content</computeroutput> tags
+    (defined in <computeroutput>publish-procs.tcl</computeroutput> provide a mechanism for
+    embedding child/related items directly in the HTML body of the
+    parent item. While textual and image items are automatically
+    handled by CMS, custom handlers should be used to render other mime
+    types. Content items can be published to the filesystem in order to
+    maximize performance; in addition, items can be scheduled for
+    publication and expiration using the CMS UI.
+  </para>
+</sect2>
+</sect1>
+
+
+<!--
+ Local Variables:
+ sgml-parent-document: ("index.xml" "chapter" "sect1")
+ End:
+-->

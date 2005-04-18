@@ -1,0 +1,67 @@
+<sect1 id="cms-user-guide" xreflabel="User's Guide">
+  <title>User's Guide</title>
+  
+  <sect2 id="signing-in" xreflabel="Signing In">
+    <title>Signing In</title>
+    <para>
+      The Content Management System restricts access to registered users.
+      Attempting to access a CMS page without having properly logged in will 
+      automatically redirect the user to a sign-in page.
+    </para>
+  </sect2>
+  
+  <sect2 id="creating-content-items" xreflabel="Creating and Revising Content Items">
+    <title>Creating and Revising Content Items</title>
+    <para>
+      Content items are created either by entering text in a browser or 
+      uploading files. In addition, an authorized user can add/edit
+      extended attributes associated with the content item. Content items
+      may also be edited by entering new text via a browser or uploading 
+      new files.  Changes made to the content or extended attributes are 
+      stored as revisions of the content item.
+    </para>
+  </sect2>
+  
+  &managing-templates;
+  
+  <sect2 id="previewing-deploying-content" xreflabel="Previewing and Deploying Content">
+    <title>Previewing and Deploying Content</title>
+    <para>
+      Content may be previewed at any time (even before deployment) so long 
+      as one revision is designated the Live Revision, the revision that will
+      be previewed.
+    </para>
+
+    <para>
+      Content can either be deployed immediately or scheduled for future 
+      deployment (and expiration).  Before deployment, however, the 
+      content item must satisfy the following preconditions:
+
+    <orderedlist>
+      <listitem>
+        <simpara>One revision must be designated the Live Revision, the
+	revision that will eventually be deployed.</simpara>
+      </listitem>
+      <listitem>
+        <simpara>The content item must be in a publishable state.  The exact
+	conditions for a content item being publishable will vary from item
+	to item, depending on whether that item requires components to be 
+	finished and whether that item has to pass through the production
+	workflow.</simpara>
+      </listitem>
+
+    </orderedlist>
+
+    </para>
+  </sect2>
+  
+  &page;
+
+</sect1>
+
+
+<!--
+ Local Variables:
+ sgml-parent-document: ("index.xml" "chapter" "sect1")
+ End:
+-->

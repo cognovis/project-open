@@ -1,0 +1,12 @@
+code {font-family:monospace}
+tt {font-family:monospace}
+
+..shaded{background-color:#dddddd}
+...topshaded{background-color:#9999ff}
+...shadedquote{background-color:#ffffcc}
+
+..codeblock{background-color:#eeeedd;font-family:monospace}
+
+p.listitem { margin-top: 0; margin-bottom: 0; }
+ul { margin-bottom: 0; }
+dt.listitem { margin-top: 0.5em; }

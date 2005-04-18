@@ -1,0 +1,526 @@
+<sect1 id="setup-administration" xreflabel="Setup and Administration">
+  <title>Setup and Administration</title>
+
+  <sect2 id="defining-content-types" xreflabel="Defining Content Types">
+    <title>Defining Content Types</title>
+
+    <sect3 id="choosing-content-type" xreflabel="Choosing Your Content Types">
+    <title>Content Types</title>
+
+    <sect4 id="predefined-content_types" xreflabel="Predefined Content Types">
+    <title>Predefined Content Types</title>
+
+      <para>The ACS content repository package includes two pre-defined content types,
+      the basic item -- or <computeroutput>content_revision
+      </computeroutput> type -- and the <computeroutput>
+      image</computeroutput> type.  Other predefined content types 
+      include the <computeroutput>acs_message_revision</computeroutput>, 
+      which is used by the ACS messaging package.  All other content types should 
+      have <computeroutput>content_revision</computeroutput> as an ancestor type.
+      </para>
+
+    </sect4>
+  
+    <sect4 id="using-content-type-methods" xreflabel="Using Methods from the content_type Package">
+     <title>Using Methods from the <computeroutput>content_type</computeroutput> package</title>
+
+<para>
+You may also define content types to suit your own needs by using 
+the <computeroutput>create_type</computeroutput> procedure in the <computeroutput>
+content_type</computeroutput> package:
+</para>
+
+<programlisting>
+procedure create_type (
+  --/** Create a new content type. Automatically create the attribute table
+  --    for the type if the table does not already exist.
+  --    @author Karl Goldstein
+  --    @param content_type  The name of the new type
+  --    @param supertype     The supertype, defaults to content_revision
+  --    @param pretty_name   Pretty name for the type, singular
+  --    @param pretty_plural Pretty name for the type, plural
+  --    @param table_name    The name for the attribute table, defaults to
+  --                         the name of the supertype
+  --    @param id_column     The primary key for the table, defaults to 'XXX'
+  --    @param name_method   As in acs_object_type.create_type
+  --    @see {acs_object_type.create_type}
+  --*/
+  content_type          in acs_object_types.object_type%TYPE,
+  supertype             in acs_object_types.object_type%TYPE
+                           default 'content_revision',
+  pretty_name           in acs_object_types.pretty_name%TYPE,
+  pretty_plural         in acs_object_types.pretty_plural%TYPE,
+  table_name            in acs_object_types.table_name%TYPE,
+  id_column             in acs_object_types.id_column%TYPE default 'XXX',
+  name_method           in acs_object_types.name_method%TYPE default null
+);
+</programlisting>
+
+  <itemizedlist>
+    <listitem><para><phrase><computeroutput>content_type</computeroutput></phrase> denotes the name
+    of the new content type you wish to define.</para></listitem>
+    <listitem><para><phrase><computeroutput>supertype</computeroutput>
+    </phrase> defaults to <computeroutput>content_revision</computeroutput>, 
+    the root object type for content types.</para></listitem>
+  </itemizedlist>
+
+    <para>Content types can also be defined by sub-classing other 
+    content types -- i.e. sub-types of the
+    <computeroutput>content_revision</computeroutput> object 
+    type.  Sub-classing another content type
+    gives the designer the added benefit of any 
+    pre-existing attributes associated with the sub-typed
+    content type.
+
+    [include a compelling example of why that might be a good idea]
+
+    </para>
+    </sect4>
+
+    <sect4 id="content-type-definition-example" xreflabel="Example">
+    <title>Example</title>
+
+<para> Here's an example of a content type definition; we made <computeroutput>cr_demo_article_image</computeroutput> a sub-class of the <computeroutput>image</computeroutput> content type so that it would inherit the properties of a basic image, but also included the <computeroutput>caption</computeroutput> field for text information to be included with the image:
+</para>
+
+<programlisting>
+
+declare
+  attr_id integer;
+begin
+
+ content_type.create_type (
+   content_type  => 'cr_demo_article_image',
+   supertype     => 'image',
+   pretty_name   => 'Captioned image',
+   pretty_plural => 'Captioned images',
+   table_name    => 'cr_demo_article_images',
+   id_column     => 'article_image_id'
+ );
+
+  attr_id := content_type.create_attribute (
+   content_type   => 'cr_demo_article_image',
+   attribute_name => 'caption',
+   datatype       => 'text',
+   pretty_name    => 'Caption',
+   pretty_plural  => 'Captions'
+ );
+
+ cm_form_widget.register_attribute_widget(
+   content_type   => 'cr_demo_article_image',
+   attribute_name => 'caption',
+   widget         => 'text',
+   is_required    => 't'
+ );
+
+end;
+/
+show errors
+</programlisting>
+
+<para> The other procedural calls, <computeroutput>content_type.create_attribute</computeroutput> 
+and <computeroutput>cm_form_widget.register_attribute_widget</computeroutput> are used for creating 
+content type-specific <ulink url="setup-administration.html#attributes">attributes</ulink> and for 
+<ulink url="setup-administration.html#data-entry-methods-using-the-cmformwidget-package">
+registering</ulink> those attributes with the CMS form-builder.
+</para>
+    </sect4>
+
+    </sect3>
+
+    <sect3 id="attributes" xreflabel="Attributes">
+      <title>Attributes</title>
+      <para>Content types are largely distinguished by the attributes and methods associated with 
+the type.  CMS features convenient form-generating functions that build forms that request for
+values appropriate for each content type's attributes; in order to do this, CMS requires 
+that content type 
+attributes be registered in the database.</para>
+
+     <sect4 id ="register-attributes" xreflable="Registering Attributes for Your Content Type">
+     <title>Registering Attributes for Your Content Type</title>
+
+     <para>
+     Register content type attributes with the 
+     <computeroutput>create_attribute</computeroutput> function in the <computeroutput>content_type
+     </computeroutput> package:</para>
+
+     <programlisting>
+function create_attribute (
+  --/** Create a new attribute for the specified type. Automatically creates
+  --    the column for the attribute if the column does not already exist.
+  --    @author Karl Goldstein
+  --    @param content_type   The name of the type to alter
+  --    @param attribute_name The name of the attribute to create
+  --    @param pretty_name    Pretty name for the new attribute, singular
+  --    @param pretty_plural  Pretty name for the new attribute, plural
+  --    @param default_value  The default value for the attribute, defaults to null
+  --    @return The id of the newly created attribute
+  --*/
+  content_type          in acs_attributes.object_type%TYPE,
+  attribute_name        in acs_attributes.attribute_name%TYPE,
+  datatype              in acs_attributes.datatype%TYPE,
+  pretty_name           in acs_attributes.pretty_name%TYPE,
+  pretty_plural in acs_attributes.pretty_plural%TYPE default null,
+  sort_order            in acs_attributes.sort_order%TYPE default null,
+  default_value in acs_attributes.default_value%TYPE default null,
+  column_spec           in varchar2  default 'varchar2(4000)'
+) return acs_attributes.attribute_id%TYPE;
+
+    </programlisting>
+
+     <itemizedlist>
+     <listitem><para><phrase><computeroutput>content_type
+     </computeroutput></phrase> contains the name
+     of the content type with which the attribute is associated.</para></listitem>
+
+     <listitem><para><phrase><computeroutput>datatype</computeroutput></phrase> should contain the 
+     one of the keyword datatype values contained in the <computeroutput>
+     acs_datatypes</computeroutput> 
+     table, e.g. <emphasis>boolean</emphasis>, <emphasis>date</emphasis>, 
+     <emphasis>integer</emphasis>, 
+     <emphasis>money</emphasis>.  If you wish to designate a datatype not already recorded in 
+     the <computeroutput>acs_datatypes</computeroutput> table, be sure to 
+     first insert your datatype into the 
+     table before registering your attribute.</para></listitem>
+
+     </itemizedlist>
+
+<para>
+<computeroutput>content_type.create_attribute</computeroutput> returns the <computeroutput>
+attribute_id</computeroutput> associated with your newly created attribute.  See 
+<phrase>Defining Content Types</phrase> [put ref links here to ch 2.2.1 when you learn how 
+to do that] for an example of <computeroutput>content_type.attribute_create</computeroutput> in use.
+</para>
+
+    </sect4>
+
+    </sect3>
+
+    <sect3 id="file-types" xreflabel="File Types">
+      <title>File Types</title>
+
+    <sect4 id="predefined-mime-types" xreflabel="CMS Default Mime Types">      
+      <title>CMS Default Mime Types</title>
+
+      <para>
+      A listing of file types, or mime types, whose storage is supported by the ACS content 
+repository is stored in the <computeroutput>cr_mime_types</computeroutput> table.  The ACS
+Content Repository supports four pre-registered mime types: plain and html text, as well as
+image GIFs and jpegs.  The CMS News Demo also registers upon installation a few 
+mime types designating audio files and video files:
+</para>
+
+<programlisting>
+begin
+
+  /* Insert audio and video MIME types */
+  dbms_output.put_line('Inserting audio and video MIME types...');
+
+  insert into cr_mime_types (
+    label, mime_type, file_extension
+  ) values (
+    'Wave Audio File','audio/x-wav','wav'
+  );
+
+  insert into cr_mime_types (
+    label, mime_type, file_extension
+  ) values (
+    'Basic Audio File','audio/basic','au'
+  );
+
+
+  insert into cr_mime_types (
+    label, mime_type, file_extension
+  ) values (
+    'QuickTime Video','video/quicktime','qt'
+  );
+
+  insert into cr_mime_types (
+    label, mime_type, file_extension
+  ) values (
+    'Mpeg Video','video/mpeg','mpg'
+  );
+
+end;
+/
+show errors
+</programlisting>
+
+   </sect4>
+   
+   <sect4 id="register-mime-types-with-content-types" xreflabel="Registering Mime Types to Your Content Types">
+   <title>Registering Mime Types to Your Content Types</title>
+
+      <para>
+      Each content
+      object stored in CMS -- such as an image, text article or movie clip -- must 
+      be associated with a specific mime type.  Also, each content <emphasis>type</emphasis> 
+      must also be pre-registered
+      with all of the possible mime types with which that content 
+      type might be associated.  For example, 
+      the <computeroutput>image</computeroutput> content type is registered to 
+      hold jpeg and gif files, 
+      but each instance of the <computeroutput>image</computeroutput> 
+      type -- that is, each image revision
+      stored in the CMS --  will contain only one file of either the jpeg or gif file type.
+      </para>
+
+      <para>Use <computeroutput>content_type.register_mime_type</computeroutput> to register
+      pre-defined mime types with your newly created content type:</para>
+
+<programlisting>
+procedure register_mime_type (
+  content_type  in cr_content_mime_type_map.content_type%TYPE,
+  mime_type     in cr_content_mime_type_map.mime_type%TYPE
+);
+</programlisting>
+
+      <para>
+      If the mime type you wish 
+      to register is not yet defined in the ACS content repository, define it by inserting a row
+      in the <computeroutput>cr_mime_types</computeroutput> table as you saw done in 
+      <ulink url="setup-administration.html#predefined-mime-types">CMS Default Mime Types</ulink>.
+      </para>
+
+    </sect4>
+
+    </sect3>
+
+    <sect3 id="templates" xreflabel="Templates">
+    <title>Templates</title>
+
+    <sect4 id="template-overview" xreflabel="Overview">
+    <title>Overview</title>
+    <para>Each piece of content requires atleast one template on which to be displayed before
+    the content piece can be published by CMS.  Templates serve as the framework upon which 
+    a content item is mounted. Templates are associated to content types, and each 
+    individual content
+    item published by CMS will be displayed upon one of the templates associated to its content
+    type.  Multiple templates can be associated to multiple content types, allowing a single 
+    piece of content to be framed upon multiple templates, such as an image published with
+    borders of various colors, or a single template to display multiple content types, such 
+    as using a common background for all text, images and video feeds.
+    </para>
+
+    </sect4>
+    
+    <sect4 id="register-templates-to-content-type" xreflabel="Registering Templates to a Content Type"><title>Registering Templates to a Content Type</title>
+
+    <para>Register templates through the CMS clipboard system, first by marking or adding
+    items to the CMS clipboard, then by clicking on by going to the "Templates" tabbed page
+    of the appropriate content type.</para>
+
+
+    <sect5 id="adding-templates-to-clipboard" xreflabel="Adding Templates to the Clipboard">
+    <title>Adding Templates to the Clipboard</title>
+
+    <para>Templates can be marked for addition to the clipboard by opening the folder in which
+    the template is contained.  A listing of templates and folders will appear in the main 
+    right-side widow, a listing which includes a column of checkboxes for adding selected
+    templates to the clipboard.</para>
+
+    <screenshot>
+      <mediaobject>
+      <imageobject>
+        <imagedata format="GIF"  width="426" depth="199" fileref="images/mark-template.gif"/>
+      </imageobject>
+      </mediaobject>
+    </screenshot>
+
+    <para>The above screenshot displays the contents of my <computeroutput>/articles
+    </computeroutput> folder, which contains three templates already added to the 
+    clipboard. </para> 
+    
+    </sect5>
+
+    <sect5 id="registering-templates-from-clipboard" xreflabel="Registering Templates from the Clipboard">
+    <title>Registering Templates from the Clipboard</title>
+    
+    <para>
+    Find the "Templates" page of your content type
+    by first expanding the <phrase>Content Types</phrase> folder (and perhaps other sub-folders) 
+    on the CMS navigation tree, clicking on the folder or label for your content type, and then
+    clicking on the light blue "Templates" tab in the main frame.  With your mouse, point and
+    click on <phrase>Register marked templates to this content type</phrase>, and then choose
+    select from the clipboard the templates you wish to register.</para>
+    
+    <screenshot>
+      <mediaobject>
+        <imageobject>
+          <imagedata format="GIF" width="314" depth="136" fileref="images/register-templates.gif"/>
+        </imageobject>
+      </mediaobject>
+    </screenshot>
+
+    <para>The <phrase>Template</phrase> section of the <phrase>Basic Item</phrase> content type.    </para>
+
+    </sect5>
+
+    <sect5 id="demo-templates" xreflabel="CMS News Demo Templates">
+    <title>CMS News Demo Templates</title>
+    
+    <para>Though CMS does not come with any prepackaged templates, the CMS News Demo
+    package does contain a variety of news article templates that include image and
+    multimedia link tags.  These templates can be found under 
+    <computeroutput>/cms-news-demo/templates/demo_articles</computeroutput> in the 
+    News Demo package.</para>
+    </sect5>    
+
+    </sect4>
+
+
+    </sect3>
+
+    &data-entry-methods;
+
+    
+    <sect3 id="content-type-relationship" xreflabel="Relationships">
+      <title>Relationships</title>
+
+    <sect4 id="content-type-relationship-overview" xreflabel="Overview">
+      <title>Overview</title>
+      
+      <para>Many applications of the content repository require that content items 
+      be related to each other as well as to other classes of objects. Examples include:</para>
+
+      <itemizedlist>
+      <listitem><para><emphasis>Content to non-content object</emphasis>:
+      User portraits are linked to specific users. </para></listitem>
+      <listitem><para><emphasis>Content to content</emphasis>:
+      An article may be linked to any number of photos or 
+      charts that are embedded in the article.</para></listitem>
+      <listitem><para><emphasis>Content within content</emphasis>:
+      A long article is divided into multiple sections, each of 
+      which is intended for separate display.</para></listitem> 
+      <listitem><para><emphasis>Multiple content items to a category</emphasis>: 
+      News stories may be linked to other stories on the same topic.</para></listitem>
+      </itemizedlist>
+
+      <para>When relating content types, it is important to establish whether
+      your related items of content can exist separately of each other, such as an
+      article and piece of stock footage or photography, or whether the one of the 
+      content items should exist only within the context of another, as in the example 
+      from above of a sectioned article with individual portions meant for separate display.
+      We refer to these latter relationships as <phrase>parent-child relationships</phrase>.
+      The former can be generically grouped as <phrase>Item-Object Relationships</phrase>;
+      relationships between items of content to non-content objects (example 1) would
+      also fall under this category.</para>
+
+      <para>Of the above examples, the first three types of relationship are handled
+      by the <computeroutput>content_type</computeroutput> package API, and the 
+      last managed through CMS itself.</para>
+
+    </sect4>
+
+    <sect4 id="content-object-relationships" xreflabel="Item-Object Relationships">
+    <title>Item-Object Relationships</title>
+
+      <para>Define item-object relationships with the <computeroutput>
+      content_type.register_relation_type</computeroutput> API:</para>
+      
+      <programlisting>
+procedure register_relation_type (
+  content_type  in cr_type_relations.content_type%TYPE,
+  target_type   in cr_type_relations.target_type%TYPE,
+  relation_tag  in cr_type_relations.relation_tag%TYPE default 'generic',
+  min_n         in integer default 0,
+  max_n         in integer default null
+);
+</programlisting>
+
+      <itemizedlist>
+        <listitem><para><phrase><computeroutput>content_type</computeroutput></phrase>
+	refers to the name of the content type from 
+	which the relationship originates.</para></listitem>
+	<listitem><para><phrase><computeroutput>target_type</computeroutput></phrase>
+	takes the name of the object type to which the content is related.</para></listitem>
+	<listitem><para><phrase><computeroutput>relation_tag</computeroutput></phrase>
+	accepts a simple token identifier used in distinguishing relationships</para></listitem>
+	<listitem><para><phrase><computeroutput>min_n</computeroutput></phrase> and 
+	<phrase><computeroutput>max_n</computeroutput></phrase> refer to the 
+	minimum/maximum relationships of this type required before the item of
+	content goes live.</para></listitem>
+      </itemizedlist>
+
+      <para>After a relationship between one content type and another 
+      object type (content or not) has been registered, you may use
+      <computeroutput>content_item.is_valid_relation</computeroutput> to confirm
+      potential relationships.</para>
+
+    </sect4>
+
+    <sect4 id="parent-child-relationships" xreflabel="Parent-Child Relationships">
+      <title>Parent-Child Relationships</title>     
+      
+      <para>Parent-child relationships are also registered using the <computeroutput>
+      content_type</computeroutput> package API:</para>
+
+<programlisting>
+
+procedure register_child_type (
+  parent_type  in cr_type_children.parent_type%TYPE,
+  child_type    in cr_type_children.child_type%TYPE,
+  relation_tag  in cr_type_children.relation_tag%TYPE default 'generic',
+  min_n         in integer default 0,
+  max_n         in integer default null
+);
+</programlisting>
+
+      <para>The parameters for <computeroutput>content_type.register_child_type</computeroutput>
+      are largely analagous to those for <computeroutput>content_type.register_relation_type
+      </computeroutput>, except <computeroutput>parent_type</computeroutput> and 
+      <computeroutput>child_type</computeroutput> must both be content types (<computeroutput>
+      content_revision</computeroutput> or a sub-class of it).  <computeroutput>
+      content_item.is_valid_relation</computeroutput> can also be used to verify the validity
+      of a potential parent-child relationship.</para>
+
+      </sect4>
+
+    </sect3>
+  </sect2>
+
+  <sect2 id="register-staff-users" xreflabel="Register Staff Users">
+    <title>Register Staff Users</title>
+    <para>[This document is still under construction]</para>
+  </sect2>
+
+  <sect2 id="defining-workflows" xreflabel="Defining Workflows">
+    <title>Defining Workflows</title>
+
+    <sect3 id="workflow-departments" xreflabel="Departments">
+      <title>Departments</title>
+      <para></para>
+    </sect3>
+
+    <sect3 id="workflow-roles" xreflabel="Roles">
+      <title>Roles</title>
+      <para></para>
+    </sect3>
+  </sect2>
+  
+  <sect2 id="structuring-site-map" xreflabel="Structuring the Site Map">
+    <title>Structuring the Site Map</title>
+
+    <sect3 id="site-map-folders" xreflabel="Folders">
+      <title>Folders</title>
+      <para></para>
+    </sect3>
+
+    &user-permissions;
+
+    <sect3 id="site-map-content-types" xreflabel="Content Types">
+      <title>Content Types</title>
+      <para></para>
+    </sect3>
+  </sect2>
+
+  &cms-tasks;
+
+</sect1>
+
+
+<!--
+ Local Variables:
+ sgml-parent-document: ("index.xml" "chapter" "sect1")
+ End:
+-->

@@ -1,0 +1,34 @@
+<h3>Workspace</h3>
+
+<p>The default workspace displays a list of all current tasks.  Each
+task is associated with the following information:</p>
+
+<ul>
+  <li>The title of a content item, linked to the information page for that
+      item.
+  <li>A "hold status" link.  If the item is checked out by the current user,
+      the link is "Check In".  If the item is not checked out by the current
+      user, the link is "Check Out".  If the item is checked out by
+      another, the link is "Steal"
+  <li>One or two "finish" links.  One "finish" link is "Approve",
+      which moves the workflow to the next place.  (Ideally this will
+      say "Finish" for the authoring step).  This links to an
+      approval form, where the approver can make a comment.  The other
+      link is "Reject", where the approver can make a comment and
+      return the item back to a previous place (there may be more
+      than one place).
+  <li>If the user is assigned to it, she can finish the task even if 
+      she has not checked it out, provided that no one else has it checked
+      out.
+</ul>
+      
+<h3>Editing Interface</h3>
+
+<p>If the item is currently checked out by another user, there should
+be a notice instead of any "Edit" links on the item information page.
+The notice should link to a page that allows the user to "steal" the
+lock from the other user (and send a notification).  The incident is
+recorded as a journal entry for the event (use a comment action in the
+workflow API).</p>
+
+

@@ -1,0 +1,1 @@
+set clipboard_js "[ad_conn package_url]modules/clipboard/clipboard.js"

@@ -1,0 +1,335 @@
+COMMON TASKS:
+
+# publishing status of an item
+
+  select
+    NVL(initcap(publish_status), 'Production') publish_status, 
+    NVL(to_char(start_when, 'MM/DD/YY HH:MI AM'), 'Immediate') start_when,
+    NVL(to_char(end_when, 'MM/DD/YY HH:MI AM'), 'Indefinite') end_when,
+    content_item.is_publishable(:item_id) is_publishable,
+    live_revision
+  from
+    cr_items i, cr_release_periods r
+  where
+    i.item_id = :item_id
+  and
+    i.item_id = r.item_id (+)
+
+
+
+
+
+
+
+# show the attribute listing for the latest revision 
+
+  # get the table name and object type
+ select 
+    o.object_type, t.table_name 
+  from 
+    acs_objects o, acs_object_types t
+  where 
+    o.object_id = :revision_id
+  and
+    o.object_type = t.object_type
+
+
+  # fetch revision info
+  select
+    x.context_id item_id,
+    content_item.get_revision_count(x.context_id) revision_count, 
+    content_revision.get_number(:revision_id) revision_number, 
+    content_item.get_live_revision(x.context_id) live_revision, x.*
+  from
+    $type_info(table_name)x x
+  where
+    object_id = :revision_id
+
+  # fetch attribute values
+  select 
+    types.pretty_name object_label, types.table_name, 
+    types.id_column, attr.attribute_name, 
+    attr.pretty_name attribute_label
+  from 
+    acs_attributes attr,
+    ( select 
+        object_type, pretty_name, table_name, id_column, 
+        level as inherit_level
+      from 
+        acs_object_types
+      where 
+        object_type ^= 'acs_object'
+      connect by 
+        prior supertype = object_type
+      start with 
+        object_type = :content_type) types        
+  where 
+    attr.object_type = types.object_type
+  order by 
+    types.inherit_level desc
+
+
+
+
+
+
+
+
+
+
+
+# get a listing of all revisions for an item
+
+  # get info about an item (live_revision, is_publishable)
+  select 
+    item_id, name, locale, live_revision,
+    content_item.get_path(item_id) as path,
+    content_item.is_publishable(item_id) as is_publishable
+  from 
+    cr_items
+  where 
+    item_id = :item_id
+
+  ######
+  ######
+  # get revision list (un-paginated)  w/ pagination = 73ms
+  select 
+    revision_id, 
+    trim(title) as title, 
+    trim(description) as description,
+    content_revision.get_number(revision_id) as revision_number
+  from 
+    cr_revisions r, acs_objects o
+  where 
+    r.revision_id = o.object_id
+  and 
+    o.context_id = :item_id
+  order by
+    revision_number
+
+
+
+
+
+
+
+
+
+
+
+
+# show a listing of related items
+
+  select
+    r.rel_id,
+    r.related_object_id item_id,
+    t.pretty_name as type_name,
+    NVL(r.relation_tag, '&nbsp;') as tag,
+    NVL(content_item.get_title(r.related_object_id),
+      (select name from cr_items where item_id = r.related_object_id)) title,
+    (select pretty_name from acs_object_types ot
+     where ot.object_type = content_item.get_content_type(
+       r.related_object_id)) content_type,
+    NVL((select 'f' from dual where exists (
+           select 1 from cr_item_rels r2 where order_n < r.order_n)),
+        't') as topmost,
+    NVL((select 'f' from dual where exists (
+           select 1 from cr_item_rels r2 where order_n > r.order_n)),
+        't') as bottommost
+  from
+    cr_item_rels r, acs_objects o, acs_object_types t
+  where
+    r.item_id = :item_id
+  and
+    o.object_id = r.rel_id
+  and
+    t.object_type = o.object_type
+  order by 
+    order_n, title
+
+
+
+
+
+
+
+
+# show a listing of child items
+
+
+  # get the possible children types for this object
+  select
+    t.pretty_name, c.child_type
+  from
+    acs_object_types t, cr_type_children c
+  where
+    c.parent_type = content_item.get_content_type(:item_id)
+  and
+    c.child_type = t.object_type
+
+  # show a listing of child items
+  select
+    i.item_id, i.name, 
+    trim(content_item.get_title(i.item_id)) title, 
+    t.pretty_name, to_char(o.creation_date, 'MM/DD/YY HH24:MM') last_modified
+  from
+    cr_items i, acs_object_types t, acs_objects o
+  where
+    o.context_id = :item_id
+  and
+    o.object_id = i.item_id
+  and
+    i.content_type = t.object_type
+  order by
+    t.pretty_name, title
+
+
+
+
+
+
+# show a listing of templates, registered to the item and to the type
+
+  # content type, title
+  select 
+    object_type, pretty_name,
+    content_item.get_title(:item_id) name
+  from
+    acs_object_types
+  where 
+    object_type = content_item.get_content_type(:item_id)
+
+
+
+  # listing of templates registered to the item
+  select 
+    template_id, use_context, name
+  from 
+    cr_items i, cr_item_template_map t
+  where 
+    i.item_id = t.template_id
+  and 
+    t.item_id = :item_id
+  order by 
+    name, use_context
+
+  # listing of templates registered to the content type
+  select 
+    template_id, name, use_context, is_default,
+    (select 1 
+     from 
+       cr_item_template_map itmap 
+     where 
+       itmap.template_id = t.template_id
+     and 
+       itmap.use_context = t.use_context
+     and 
+       itmap.item_id = :item_id) already_registered_p
+   from 
+     cr_type_template_map t, cr_items i
+   where 
+     t.template_id = i.item_id
+   and 
+     t.content_type = :content_type
+   order by 
+     name, use_context
+
+
+# show workflow status for an item
+
+  # get the status of the workflow for this item
+  select 
+    case_id, initcap(state) state
+  from 
+    wf_cases
+  where 
+    object_id = :item_id
+
+  # look up enabled or started transitions
+  select 
+    k.transition_key, k.task_id, t.transition_name,
+    k.holding_user, 
+    content_workflow.get_holding_user_name(k.task_id) hold_name
+  from 
+    wf_tasks k, wf_transitions t
+  where 
+    k.case_id = :case_id 
+  and
+    k.state in ('enabled', 'started')
+  and
+    k.transition_key = t.transition_key
+
+  # is this user assigned this task
+  select 
+    decode(count(*), 0, 'no', 'yes')
+  from
+    wf_case_assignments
+  where
+    case_id = :case_id 
+  and
+    transition_key = :transition_key 
+  and 
+    party_id = :user_id
+
+  # get the task deadline
+  select 
+    to_char(deadline, 'DD MON') deadline 
+  from
+    wf_case_deadlines 
+  where 
+    case_id = :case_id 
+  and
+    transition_key = :transition_key
+
+
+
+
+
+
+
+
+
+
+
+
+# show a listing of comments associated with an item
+
+  select
+    journal_id, action_pretty, msg, 
+    decode(NVL(p.person_id, 0),
+        0, 'System',
+        substr(p.first_names, 1, 1) || '. ' || p.last_name) person,
+    to_char(o.creation_date, 'MM/DD/YY HH24:MI:SS') when
+  from
+    journal_entries j, acs_objects o, persons p
+  where
+  (   
+      j.object_id = :item_id
+    or
+      j.object_id in (select case_id from wf_cases c 
+                      where c.object_id = :item_id)
+  ) and
+    j.journal_id = o.object_id
+  and
+    o.creation_user = p.person_id (+)
+  and
+    msg is not null
+  order by
+    o.creation_date desc
+
+
+
+
+# show a listing of keywords associated with an item
+
+  select
+    keyword_id,
+    content_keyword.get_heading(keyword_id) heading,
+    NVL(content_keyword.get_description(keyword_id),
+      '&nbsp;') description
+  from
+    cr_item_keyword_map
+  where
+    item_id = :item_id
+  order by
+    heading

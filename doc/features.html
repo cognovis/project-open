@@ -1,0 +1,122 @@
+<html>
+<head>
+<tile>Content Management System Features</title>
+</head>
+<body>
+
+<p>The ArsDigita Content Management System (CMS) provides publishers with a complete interface for managing the content production process.  This document provides an overview of its features.</p>
+
+<h3>Background</h3>
+
+<p>The core data model and developer API for CMS are provided by the <a href="http://www.arsdigita.com/doc">ArsDigita Community System (ACS)</a>, a toolkit for building dynamic web applications.  In particular, CMS provides an interface to the <a href="http://acs40.arsdigita.com/doc/acs-content-repository">ACS Content Repository</a>, which supports a consistent storage and retrieval mechanism for all forms of content deployed on a web site.</p>
+
+<p>CMS includes a standard interface which is intended to satisfy most of the requirements for most publishers.  Depending on the complexity of both the content and the production process itself, the standard interface can be extended or customized for alternate presenations and page flows.</p>
+
+<h3>Content Type Definition</h3>
+
+<p>When first installed, CMS defines a basic content item, which includes a file name, title, description, file type and body.  The body of the content item may be text or binary data, and may represent text, graphic, audio or video media.</p>
+
+<p>CMS provides publishers with the opportunity to extend the basic content item definition to meet special publishing requirements.  This information is used to customize the information display and data entry interface for items of each content type.</p>
+
+<ul>
+<li><p>A content type definition may add any number of attributes to the basic information described above.  For example, a corporate site may define a 'Press Release' content type, which adds a 'Byline' attribute to the data available for each content item.  Each attribute is associated with an HTML form element, which CMS uses to automatically generate data entry and editing forms for each content type.</p>
+
+<li><p>The definition may specify a list of allowed file types.  For example, a 'Press Release' may require plain text or HTML format.  A 'Company Report' may allow PDF as well.  
+
+<li><p>The definition may specify a list of allowed publication templates (see Template Management below), from which the publisher may choose for each item of that type.
+</ul>
+
+<p>If required, CMS also provides developers with a framework for more extensive customization of the information display and data entry interface, beyond what is possible with standard metadata.</p>
+
+<h3>Site management</h3>
+
+<p>The CMS site management tool resembles the file managers found in common desktop environments.  Publishers may organize pages of the site into a hierarchy of folders, representing branches of the site map.  With appropriate permission, pages may be moved or copied from one folder to another.</p>
+
+<p>Some pages or folders may need to appear in more than one location in the site map.  CMS allows publishers to create links from a page or folder to any number of other locations in the site map.</p>
+
+<p>The public site map represents the organization of pages by URL within the site.  For example, a page named <tt>new-product</tt> within the folder <tt>press</tt> will be accessible by the URL <tt>/press/new-product</tt>.  In addition, users or user groups may wish to maintain their own logical organization of folders and items, on which they typically work.  The items represented in these private site maps may represent links to folders or pages in the public site map, or they may represent entirely private items.</p>
+
+<h3>Security</h3>
+
+<p>CMS provides a fine level of control over access and modification privileges.  Permissions to browse, view item information, create and modify items are granted on a per-folder basis.  Administrators may grant administrator privileges.</p>
+
+<h3>Content linking</h3>
+
+5.1. Relate any number of content items to each content item.
+5.2. Specify a numeric sort order for the all linked items of a particular content type.
+
+<h3>Template management</h3>
+
+6.1. Organize templates within folders.
+6.2. Create, move, copy and delete templates in the same manner as content items.
+6.3. Full version control with ability to revert to previous versions.
+6.4. Manage template dependencies (graphics, sounds, animation, video, etc.)
+6.5. Deploy template and associated resources to file system for access by public server infrastructure.
+6.6. Preview template revisions prior to deployment.
+6.7. Specify a list of template options for each content type.
+6.8. Specify a default template option for each content type.
+6.9. Specify a particular template for each content item.
+
+<h3>Customization</h3>
+
+7.1. Workspace
+7.2. Item information pages for each content type
+7.3. New item wizards
+7.4. New revision wizards
+
+<h3>Workflow</h3>
+
+8.1. Create departments.
+8.2. Assign users or groups to workflow roles within departments (see User and Group Administration).
+8.3. Specify one or more departments to handle workflow for each content type
+8.4. Specify one or more departments to handle workflow for each section of the site.
+8.5. Extend default workflow or implement alternative workflows.
+9. Versioning
+9.1. Track all changes to content and attributes.
+9.2. Revert to a previous revision without losing complete revision history.
+
+<h3>Search</h3>
+
+10.1. Search for words or parts of words across text and binary file types (most common word processor and presentation formats).
+10.2. Search for words or parts of words across all attributes.
+10.3. Search for words or parts of words in one or more attributes of a particular content type.
+
+<h3>Personalization</h3>
+
+11.1. Choose number and date format.
+11.2. Choose columns to display in folder listings.
+11.3. Choose display colors.
+11.4. Choose to display item information pages in a separate window (maintain folder listing in main browser window).
+11.5. For infrequent contributors, CMS provides a simple, task-oriented interface. 
+
+<h3>Deployment</h3>
+
+12.1. Choose a revision as live for immediate deployment.
+12.2. Decommission a revision immediately.
+12.3. Schedule a release date and time for automated deployment.
+12.4. Schedule an end date and time for automated decommissioning.
+12.5. Review complete publishing history for a content item (all deployment and decommissioning events, including the revision involved.
+12.6. Merge template with content data and attributes.
+12.7. Write output to any number of file systems. 
+
+<h3>Integration</h3>
+13.1. Open data model and fully documented stored procedure API allows direct access by any other application.
+13.2. ACS Core foundation layer allows tight integration with collaborative applications that rely on the same user and object framework.
+14. User and group administration
+14.1. Create staff users or add existing users to staff.
+14.2. Create and manage logical groups for bulk assignment of permissions and workflow roles.
+
+<h3>Clipboard</h3>
+
+15.1. Place any object in the system (content type, item, user, etc.) on the clipboard.
+15.2. Review contents of clipboard at any time. 
+15.3. Remove items from the clipboard selectively.
+
+<h3>External link management<h3>
+
+16.1. Organize external links (URLs) within folders.
+16.2. Create, copy, move and delete external links as for content items.
+16.3. Assign label, description and keywords to external links.
+16.4. Relate any number of external links to each content item.
+
+<hr>

@@ -1,0 +1,405 @@
+<sect3 id="data-entry-methods" xreflabel="Data Entry Methods">
+  <title>Data Entry Methods</title>
+  
+  <sect4 id="data-entry-methods-using-the-cmformwidget-package" xreflabel="Using the cm_form_widget Package">
+    <title>Using the cm_form_widget Package</title>
+
+    <para>      
+      The CMS <computeroutput>cm_form_widget</computeroutput> package can be used to generate
+      metadata forms for creating items or adding revisions to existing
+      items.</para>
+
+    <sect5 id="data-entry-methods-registering-content-type-attributes-to-a-form-widget" xreflabel="Registering Content Type Attributes to a Form Widget">
+      <title>Registering Content Type Attributes to a Form Widget</title>
+      
+      <para>
+	In order for CMS to be able to
+	generate the metadata forms, it is necessary for each attribute of
+	a content type to be registered to a form widget via the <ulink url="/cms/package-doc.acs?show=1&amp;package_name=cm_form_widget&amp;proc_name=register_attribute_widget">
+	  <computeroutput>register_attribute_widget</computeroutput></ulink> procedure.
+      </para>
+
+      <programlisting>
+cm_form_widget.register_attribute_widget(
+    content_type   =&gt; 'book_report',
+    attribute_name =&gt; 'summary',
+    widget         =&gt; 'textarea',
+    is_required    =&gt; 'f'
+);
+      </programlisting>
+
+      <itemizedlist>
+	<listitem><para><phrase><computeroutput>content_type</computeroutput></phrase> used to identify the appropriate
+	    form widget.</para></listitem>
+
+	<listitem><para><phrase><computeroutput>attribute_name</computeroutput></phrase> is the name of the attribute,
+	    used to identify the appropriate form widget.</para></listitem>
+
+	<listitem><para><phrase><computeroutput>widget</computeroutput></phrase> is the form widget used to input a value
+	    for a content type attribute. See documentation for <ulink url="/ats/doc/widgets">ATS form widgets</ulink> for more info.</para></listitem>
+
+	<listitem><para><phrase><computeroutput>is_required</computeroutput></phrase> is a flag indicating whether or not
+	    a value is required for the attribute form widget. By default,
+	    attribute form widgetes are not required.</para></listitem>
+      </itemizedlist>
+    </sect5>
+
+    <sect5 id="data-entry-methods-customizing-the-form-widget" xreflabel="Customizing the Form Widget">
+      <title>Customizing the Form Widget</title>
+
+      <para>
+	Using
+	<computeroutput>register_attribute_widget</computeroutput> will use the default values for
+	the form widget. Usually these default values will be sufficient,
+	but sometimes it may be necessary to customize the form widget with
+	the <ulink url="/cms/package-doc.acs?show=1&amp;package_name=cm_form_widget&amp;proc_name=set_attribute_param_value">
+	  <computeroutput>set_attribute_param_value</computeroutput></ulink> procedure.
+      </para>
+
+      <programlisting>
+cm_form_widget.set_attribute_param_value(
+    content_type   =&gt; 'book_report',
+    attribute_name =&gt; 'summary',
+    param          =&gt; 'rows',
+    param_type     =&gt; 'onevalue',
+    param_source   =&gt; 'literal',
+    value          =&gt; 10
+);
+</programlisting>
+      
+      <itemizedlist>
+	<listitem><para><phrase><computeroutput>content_type</computeroutput></phrase> used to identify the appropriate
+	    form widget.</para></listitem>
+
+	<listitem><para><phrase><computeroutput>attribute_name</computeroutput></phrase> is the name of the attribute,
+	    used to identify the appropriate form widget.</para></listitem>
+
+	<listitem><para><phrase><computeroutput>param</computeroutput></phrase> is one of the following: 
+
+	    <itemizedlist>
+	      <listitem><para>an HTML tag corresponding to a specific form widget (rows for
+		  textarea, size for select widgets, maxlength for text boxes,
+		  ...)</para></listitem>
+
+	      <listitem><para>an ATS form element tag (refer to the documentation for <ulink url="/ats/doc/api/element.html">template::element::create</ulink> for
+		  more info.</para></listitem>
+	    </itemizedlist>
+	  </para></listitem>
+
+	<listitem><para><phrase><computeroutput>param_type</computeroutput></phrase> is one of the following: 
+
+	    <itemizedlist>
+	      <listitem><para><computeroutput>'onevalue'</computeroutput> - The parameter has one value.</para></listitem>
+
+	      <listitem><para><computeroutput>'onelist'</computeroutput> - The parameter is a list of values.</para></listitem>
+
+	      <listitem><para><computeroutput>'multilist'</computeroutput> - The parameter is a list of lists of
+		  values.</para></listitem>
+	    </itemizedlist>
+	  </para></listitem>
+
+	<listitem><para><phrase><computeroutput>param_source</computeroutput></phrase> is one of the following: 
+
+	    <itemizedlist>
+	      <listitem><para><computeroutput>'literal'</computeroutput> - The <computeroutput>value</computeroutput> parameter is treated
+		  literally</para></listitem>
+
+	      <listitem><para><computeroutput>'eval'</computeroutput> - The <computeroutput>value</computeroutput> parameter is a block of
+		  Tcl code that will be evaluated to produce the actual value(s) for
+		  the form widget param.</para></listitem>
+
+	      <listitem><para><computeroutput>'query'</computeroutput> - The <computeroutput>value</computeroutput> parameter is a SQL query
+		  which returns a datasource corresponding to the actual value(s) for
+		  the form widget param.</para></listitem>
+	    </itemizedlist>
+	  </para></listitem>
+      </itemizedlist>
+    </sect5>
+
+    <sect5 id="data-entry-methods-example---creating-a-mime-type-pick-list-for-content-revisions" xreflabel="Example - Creating a MIME type pick list for content
+	   revisions">
+      <title>Example - Creating a MIME type pick list for content
+	revisions</title>
+
+      <para>
+	To create a pick list of MIME types for the
+	'mime_type' attribute of the 'content revision' content type:
+      </para>
+
+      <programlisting>
+begin
+  
+  -- register the attribute to a pick list
+  cm_form_widget.register_attribute_widget(
+      content_type   =&gt; 'content_revision', 
+      attribute_name =&gt; 'mime_type', 
+      widget         =&gt; 'select',
+      is_required    =&gt; 't'
+  );
+
+  -- set the 'options' list
+  cm_form_widget.set_attribute_param_value(
+      content_type   =&gt; 'content_revision', 
+      attribute_name =&gt; 'mime_type',
+      param          =&gt; 'options', 
+      param_type     =&gt; 'multilist', 
+      param_source   =&gt; 'query',
+      value          =&gt; 'select 
+                           label, map.mime_type
+                         from 
+                           cr_mime_types types, 
+                           cr_content_mime_type_map map 
+                         where 
+                           types.mime_type = map.mime_type 
+                         and 
+                           content_type = :content_type 
+                         order by 
+                           label'
+  );
+
+  -- set the 'size' param
+  cm_form_widget.set_attribute_param_value(
+      content_type   =&gt; 'content_revision', 
+      attribute_name =&gt; 'mime_type',
+      param          =&gt; 'size', 
+      param_type     =&gt; 'onevalue', 
+      param_source   =&gt; 'eval',
+      value          =&gt; 'a_tcl_proc_that_gets_the_pick_list_size' 
+  );
+
+end;
+/
+show errors
+</programlisting>
+    </sect5>
+  </sect4>
+
+  <sect4 id="data-entry-methods-using-metadata-forms" xreflabel="Using Metadata Forms">
+    <title>Using Metadata Forms</title>
+
+    <para>
+      The CMS is able to generate and process metadata forms based on the
+      form widgets registered to each attribute of a content type. If the
+      metadata forms are not sufficient, custom forms can be supplied
+      instead. 
+    </para>
+
+    <sect5 id="data-entry-methods-creating-auto-generated-metadata-forms" xreflabel="Creating Auto-generated Metadata Forms">
+      <title>Creating Auto-generated Metadata Forms</title>
+
+      <para>
+	Generating the metadata forms for creating content items and adding
+	revisions is done by calling the Tcl procedure: 
+      </para>
+
+      <para>
+	<phrase><computeroutput>content::get_revision_form db
+	    content_type item_id form_name</computeroutput></phrase>
+      </para>
+      
+      <para>The function generates a form based on form widgets associated
+	with the content type's attributes. If the <computeroutput>item_id</computeroutput> is
+	null, then an item_id will be generated automatically.</para>
+
+      <para>Example:</para>
+
+      <programlisting>
+# a metadata form for creating new "book report" content types.
+form create create_book_report
+element create create_book_report item_id -datatype integer
+
+set db [ns_db gethandle]
+content::get_revision_form $db book_report $item_id create_book_report
+ns_db releasehandle $db
+
+if { [form is_request create_book_report] } {
+  query item_id onevalue "select acs_object_id_seq.nextval from dual"
+  element set_properties create_book_report item_id -value $item_id
+}
+      </programlisting>
+    </sect5>
+
+    <sect5 id="data-entry-methods-processing-metadata-forms" xreflabel="Processing Metadata Forms">
+      <title>Processing Metadata Forms</title>
+
+      <para>Processing the metadata forms for creating content items and adding
+	revisions is done by calling the Tcl function:</para>
+
+      <para>
+	<phrase><computeroutput>set revision_id
+	    [content::process_revision_form form_name content_type item_id
+	    db]</computeroutput></phrase>
+      </para>
+
+
+      <para>The function creates an instance of a basic revision, and then
+	inserts rows into each extended attribute related to that content
+	type. The function returns the ID of the revision that was just
+	created.</para>
+
+      <para>Example:</para>
+
+      <programlisting>
+# process a metadata form for adding a revision to "book report" content types
+if { [form is_valid add_revision] } {
+  form get_values add_revision item_id
+  set db [ns_db gethandle]
+
+  set revision_id [content::process_revision_form add_revision book_report $item_id $db]
+
+  ns_db releasehandle $db
+  template::forward "view_book_report_revision.acs?revision_id=$revision_id"
+}
+      </programlisting>
+    </sect5>
+
+    <sect5 id="data-entry-methods-form-elements" xreflabel="Form Elements">
+      <title>Form Elements</title>
+
+      <para>The function <computeroutput>content::create_form_element</computeroutput> may be used
+	to automatically generate a form element based on the registered
+	form widget for the element.
+	This function is useful if you wish to create a custom form for
+	your content type, while still relying on the automatically
+	generated widgets (as discussed above) for some elements.</para>
+      
+      <para>The function signature is as follows:</para>
+      
+      <programlisting>
+proc content::create_form_element {
+  db form_name attribute_name args
+} {
+  ...
+}
+      </programlisting>
+
+      <para>
+	The parameters to the function are as follows:</para>
+
+      <informaltable><tgroup cols="2">
+	  <thead>
+	    <row>
+	      <entry align="center">Parameter</entry>
+	      <entry align="center">Purpose</entry>
+	    </row>
+	  </thead>
+	  
+	  <tbody>
+	    <row>
+	      <entry><computeroutput>db</computeroutput></entry>
+	      <entry>The database handle to be used for querying</entry>
+	    </row>
+
+	    <row>
+	      <entry><computeroutput>form_name</computeroutput></entry>
+	      <entry>The name of the form to which the element will be appended. The
+		form must have been previously created with the <computeroutput>form
+		  create</computeroutput> statement.</entry>
+	    </row>
+
+	    <row>
+	      <entry><computeroutput>attribute_name</computeroutput></entry>
+	      <entry>The name of the attribute for which the form element is to be
+		created. The form element will have the same name as the
+		attribute.</entry>
+	    </row>
+	  </tbody></tgroup></informaltable>
+
+      <para>The function also accepts the following switches:</para>
+
+      <informaltable><tgroup cols="3">
+	  <thead>
+	    <row>
+	      <entry align="center">Switch</entry>
+	      <entry align="center">Value</entry>
+	      <entry align="center">Purpose</entry>
+	    </row>
+	  </thead>
+
+	  <tbody>
+	    <row>
+	      <entry>-revision_id</entry>
+	      <entry>A revision id, integer</entry>
+	      <entry>The id of the revision which will be used to determine the
+		value for the attribute. This revision will also be used to
+		discover the content type for the item.</entry>
+	    </row>
+
+	    <row>
+	      <entry>-item_id</entry>
+	      <entry>An item id, integer</entry>
+	      <entry>The id of the item whose live revision will be used to
+		determine the value for the attribute.</entry>
+	    </row>
+
+	    <row>
+	      <entry>-content_type</entry>
+	      <entry>An object type</entry>
+	      <entry>The content type of the object to which the attribute
+		belongs</entry>
+	    </row>
+
+	    <row>
+	      <entry><emphasis>any other switch</emphasis></entry>
+	      <entry>A value appropriate for the switch</entry>
+	      <entry>Any other switches will be passed directly to the <computeroutput>element
+		  create</computeroutput> statement.</entry>
+	    </row>
+	  </tbody></tgroup></informaltable>
+
+      <para>All the switches above are optional; however, at least one of
+	the <computeroutput>-content_type</computeroutput>, <computeroutput>-revision_id</computeroutput> or
+	<computeroutput>-item_id</computeroutput> must be specified (in order for the function to
+	determine the content type of the object).</para>
+
+      <para>If <computeroutput>-revision_id</computeroutput> or <computeroutput>-item_id</computeroutput> are specified, the
+	value of the created form element will be selected from the
+	specified revision in the database.</para>
+      
+      <para>Note that <computeroutput>content::create_form_element</computeroutput> will not
+	automatically perform DML for you in order to update the database;
+	the DML must be performed manually in your custom form.</para>
+
+      <simplesect id="data-entry-methods-example-usage" xreflabel="Example Usage:">
+	<title>Example Usage:</title>
+
+	<programlisting>
+content::create_form_element $db my_form width -revision_id $revision_id
+	</programlisting>
+
+	<para>The above code will append a new element, called
+	  "<computeroutput>width</computeroutput>" to the form named "<computeroutput>my_form</computeroutput>". It will use
+	  the database handle contained in <computeroutput>$db</computeroutput> and the revision id
+	  specified in <computeroutput>$revision_id</computeroutput> in order to display the default
+	  value for the element.</para>
+      </simplesect>
+    </sect5>
+
+    <sect5 id="data-entry-methods-index-page" xreflabel="Index Page">
+      <title>Index Page</title>
+
+      <para>The generic index page, located at
+	<computeroutput>/cms/modules/items/index</computeroutput> is simply a skeleton layout that
+	includes all available information components (see next section).
+	(The released system will allow the administator to specify the
+	components shown to each user of the system).</para>
+
+      <para>In cases where the generic page is inadequate, you can define
+	your own custom information page at
+	<computeroutput>/cms/modules/items/custom/&lt;content_type&gt;/index</computeroutput>.
+	Whenever the generic index page is requested, the system checks for
+	the existence of a custom page and redirects to it if it is found.
+	Note that from there you may link to any number of additional
+	custom display pages, stored in the same directory or elsewhere.
+	The only required parameter to your custom page should be
+	<computeroutput>item_id</computeroutput>.</para>
+    </sect5>
+  </sect4>
+</sect3>
+
+
+<!--
+ Local Variables:
+ sgml-parent-document: ("setup-administration.xml" "sect2" "sect3")
+ End:
+-->

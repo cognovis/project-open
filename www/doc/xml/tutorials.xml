@@ -1,0 +1,46 @@
+<sect1 id="tutorials" xreflabel="Tutorials">
+  <title>Tutorials</title>
+
+  <para>The tutorials in this section are intended to illustrate a
+    variety of common scenarios in which CMS may be applied.</para>
+
+  <sect2 id="tutorials-getting-started" xreflabel="Getting Started">
+    <title>Getting Started</title>
+
+    <para>Support files for all demos are located in the <computeroutput>demo</computeroutput>
+      distribution of the CMS distribution. Before attempting any of the
+      tutorials, you must do the following:</para>
+
+    <orderedlist>
+      <listitem>
+	<para>Execute <computeroutput>demo/sql/demo.sql</computeroutput> in the appropriate database
+	  schema. This script creates a folder under the template root to
+	  store demo templates. It also creates an instance of a master
+	  template under this folder, and registers this template for use
+	  with all basic content items.</para>
+      </listitem>
+
+      <listitem>
+	<para>Link <computeroutput>demo/templates</computeroutput> to the <computeroutput>demo</computeroutput> directory
+	  under the template root in the file system:</para>
+
+	<programlisting>
+ln -s `pwd`/ats/resources templates/ats
+	</programlisting>
+
+	<para>This contains all the templates used in the demos.</para>
+      </listitem>
+    </orderedlist>
+  </sect2>
+
+  &press-tutorial;
+    
+</sect1>
+
+
+
+<!--
+ Local Variables:
+ sgml-parent-document: ("index.xml" "chapter" "sect1")
+ End:
+-->

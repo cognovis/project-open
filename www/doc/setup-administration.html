@@ -1,0 +1,3729 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>Setup and Administration</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="aD Hack of: Modular DocBook HTML Stylesheet Version 1.60"><LINK
+REL="HOME"
+TITLE="Content Management System"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="ACS Administrator's guide"
+HREF="acs-admin-guide.html"><LINK
+REL="PREVIOUS"
+TITLE="ACS Administrator's guide"
+HREF="acs-admin-guide.html"><LINK
+REL="NEXT"
+TITLE="Developer's guide"
+HREF="dev-guide.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="ad-doc.css"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Content Management System</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="acs-admin-guide.html"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 2. ACS Administrator's guide</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="dev-guide.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+SIZE="1"
+NOSHADE="NOSHADE"
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="setup-administration"
+>2.2. Setup and Administration</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>2.2.1. <A
+HREF="setup-administration.html#defining-content-types"
+>Defining Content Types</A
+></DT
+><DD
+><DL
+><DT
+>2.2.1.1. <A
+HREF="setup-administration.html#choosing-content-type"
+>Content Types</A
+></DT
+><DD
+><DL
+><DT
+>2.2.1.1.1. <A
+HREF="setup-administration.html#predefined-content_types"
+>Predefined Content Types</A
+></DT
+><DT
+>2.2.1.1.2. <A
+HREF="setup-administration.html#using-content-type-methods"
+>Using Methods from the <TT
+CLASS="computeroutput"
+>content_type</TT
+> package</A
+></DT
+><DT
+>2.2.1.1.3. <A
+HREF="setup-administration.html#content-type-definition-example"
+>Example</A
+></DT
+></DL
+></DD
+><DT
+>2.2.1.2. <A
+HREF="setup-administration.html#attributes"
+>Attributes</A
+></DT
+><DT
+>2.2.1.3. <A
+HREF="setup-administration.html#file-types"
+>File Types</A
+></DT
+><DD
+><DL
+><DT
+>2.2.1.3.1. <A
+HREF="setup-administration.html#predefined-mime-types"
+>CMS Default Mime Types</A
+></DT
+><DT
+>2.2.1.3.2. <A
+HREF="setup-administration.html#register-mime-types-with-content-types"
+>Registering Mime Types to Your Content Types</A
+></DT
+></DL
+></DD
+><DT
+>2.2.1.4. <A
+HREF="setup-administration.html#templates"
+>Templates</A
+></DT
+><DD
+><DL
+><DT
+>2.2.1.4.1. <A
+HREF="setup-administration.html#template-overview"
+>Overview</A
+></DT
+><DT
+>2.2.1.4.2. <A
+HREF="setup-administration.html#register-templates-to-content-type"
+>Registering Templates to a Content Type</A
+></DT
+></DL
+></DD
+><DT
+>2.2.1.5. <A
+HREF="setup-administration.html#data-entry-methods"
+>Data Entry Methods</A
+></DT
+><DD
+><DL
+><DT
+>2.2.1.5.1. <A
+HREF="setup-administration.html#data-entry-methods-using-the-cmformwidget-package"
+>Using the cm_form_widget Package</A
+></DT
+><DT
+>2.2.1.5.2. <A
+HREF="setup-administration.html#data-entry-methods-using-metadata-forms"
+>Using Metadata Forms</A
+></DT
+></DL
+></DD
+><DT
+>2.2.1.6. <A
+HREF="setup-administration.html#content-type-relationship"
+>Relationships</A
+></DT
+><DD
+><DL
+><DT
+>2.2.1.6.1. <A
+HREF="setup-administration.html#content-type-relationship-overview"
+>Overview</A
+></DT
+><DT
+>2.2.1.6.2. <A
+HREF="setup-administration.html#content-object-relationships"
+>Item-Object Relationships</A
+></DT
+><DT
+>2.2.1.6.3. <A
+HREF="setup-administration.html#parent-child-relationships"
+>Parent-Child Relationships</A
+></DT
+></DL
+></DD
+></DL
+></DD
+><DT
+>2.2.2. <A
+HREF="setup-administration.html#register-staff-users"
+>Register Staff Users</A
+></DT
+><DT
+>2.2.3. <A
+HREF="setup-administration.html#defining-workflows"
+>Defining Workflows</A
+></DT
+><DD
+><DL
+><DT
+>2.2.3.1. <A
+HREF="setup-administration.html#workflow-departments"
+>Departments</A
+></DT
+><DT
+>2.2.3.2. <A
+HREF="setup-administration.html#workflow-roles"
+>Roles</A
+></DT
+></DL
+></DD
+><DT
+>2.2.4. <A
+HREF="setup-administration.html#structuring-site-map"
+>Structuring the Site Map</A
+></DT
+><DD
+><DL
+><DT
+>2.2.4.1. <A
+HREF="setup-administration.html#site-map-folders"
+>Folders</A
+></DT
+><DT
+>2.2.4.2. <A
+HREF="setup-administration.html#user-permissions"
+>Using Permissions</A
+></DT
+><DD
+><DL
+><DT
+>2.2.4.2.1. <A
+HREF="setup-administration.html#permissions-overview"
+>Overview</A
+></DT
+><DT
+>2.2.4.2.2. <A
+HREF="setup-administration.html#permissions-viewing-permissions"
+>Viewing Permissions</A
+></DT
+><DT
+>2.2.4.2.3. <A
+HREF="setup-administration.html#permissions-granting-and-editing-permissions"
+>Granting and Editing permissions</A
+></DT
+></DL
+></DD
+><DT
+>2.2.4.3. <A
+HREF="setup-administration.html#site-map-content-types"
+>Content Types</A
+></DT
+></DL
+></DD
+><DT
+>2.2.5. <A
+HREF="setup-administration.html#cms-tasks-task-requirements"
+>Task Requirements</A
+></DT
+></DL
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="defining-content-types"
+>2.2.1. Defining Content Types</A
+></H2
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="choosing-content-type"
+>2.2.1.1. Content Types</A
+></H3
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="predefined-content_types"
+>2.2.1.1.1. Predefined Content Types</A
+></H4
+><P
+>The ACS content repository package includes two pre-defined content types,
+      the basic item -- or <TT
+CLASS="computeroutput"
+>content_revision
+      </TT
+> type -- and the <TT
+CLASS="computeroutput"
+>&#13;      image</TT
+> type.  Other predefined content types 
+      include the <TT
+CLASS="computeroutput"
+>acs_message_revision</TT
+>, 
+      which is used by the ACS messaging package.  All other content types should 
+      have <TT
+CLASS="computeroutput"
+>content_revision</TT
+> as an ancestor type.
+      </P
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="using-content-type-methods"
+>2.2.1.1.2. Using Methods from the <TT
+CLASS="computeroutput"
+>content_type</TT
+> package</A
+></H4
+><P
+>&#13;You may also define content types to suit your own needs by using 
+the <TT
+CLASS="computeroutput"
+>create_type</TT
+> procedure in the <TT
+CLASS="computeroutput"
+>&#13;content_type</TT
+> package:
+</P
+><PRE
+CLASS="programlisting"
+>    
+    procedure create_type (
+      --/** Create a new content type. Automatically create the attribute table
+      --    for the type if the table does not already exist.
+      --    @author Karl Goldstein
+      --    @param content_type  The name of the new type
+      --    @param supertype     The supertype, defaults to content_revision
+      --    @param pretty_name   Pretty name for the type, singular
+      --    @param pretty_plural Pretty name for the type, plural
+      --    @param table_name    The name for the attribute table, defaults to
+      --                         the name of the supertype
+      --    @param id_column     The primary key for the table, defaults to 'XXX'
+      --    @param name_method   As in acs_object_type.create_type
+      --    @see {acs_object_type.create_type}
+      --*/
+      content_type          in acs_object_types.object_type%TYPE,
+      supertype             in acs_object_types.object_type%TYPE
+                               default 'content_revision',
+      pretty_name           in acs_object_types.pretty_name%TYPE,
+      pretty_plural         in acs_object_types.pretty_plural%TYPE,
+      table_name            in acs_object_types.table_name%TYPE,
+      id_column             in acs_object_types.id_column%TYPE default 'XXX',
+      name_method           in acs_object_types.name_method%TYPE default null
+    );
+    </PRE
+><UL
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>content_type</TT
+></B
+> denotes the name
+    of the new content type you wish to define.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>supertype</TT
+>
+    </B
+> defaults to <TT
+CLASS="computeroutput"
+>content_revision</TT
+>, 
+    the root object type for content types.</P
+></LI
+></UL
+><P
+>Content types can also be defined by sub-classing other 
+    content types -- i.e. sub-types of the
+    <TT
+CLASS="computeroutput"
+>content_revision</TT
+> object 
+    type.  Sub-classing another content type
+    gives the designer the added benefit of any 
+    pre-existing attributes associated with the sub-typed
+    content type.
+
+    [include a compelling example of why that might be a good idea]
+
+    </P
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="content-type-definition-example"
+>2.2.1.1.3. Example</A
+></H4
+><P
+> Here's an example of a content type definition; we made <TT
+CLASS="computeroutput"
+>cr_demo_article_image</TT
+> a sub-class of the <TT
+CLASS="computeroutput"
+>image</TT
+> content type so that it would inherit the properties of a basic image, but also included the <TT
+CLASS="computeroutput"
+>caption</TT
+> field for text information to be included with the image:
+</P
+><PRE
+CLASS="programlisting"
+>    
+    
+    declare
+      attr_id integer;
+    begin
+    
+     content_type.create_type (
+       content_type  =&#62; 'cr_demo_article_image',
+       supertype     =&#62; 'image',
+       pretty_name   =&#62; 'Captioned image',
+       pretty_plural =&#62; 'Captioned images',
+       table_name    =&#62; 'cr_demo_article_images',
+       id_column     =&#62; 'article_image_id'
+     );
+    
+      attr_id := content_type.create_attribute (
+       content_type   =&#62; 'cr_demo_article_image',
+       attribute_name =&#62; 'caption',
+       datatype       =&#62; 'text',
+       pretty_name    =&#62; 'Caption',
+       pretty_plural  =&#62; 'Captions'
+     );
+    
+     cm_form_widget.register_attribute_widget(
+       content_type   =&#62; 'cr_demo_article_image',
+       attribute_name =&#62; 'caption',
+       widget         =&#62; 'text',
+       is_required    =&#62; 't'
+     );
+    
+    end;
+    /
+    show errors
+    </PRE
+><P
+> The other procedural calls, <TT
+CLASS="computeroutput"
+>content_type.create_attribute</TT
+> 
+and <TT
+CLASS="computeroutput"
+>cm_form_widget.register_attribute_widget</TT
+> are used for creating 
+content type-specific <A
+HREF="setup-administration.html#attributes"
+TARGET="_top"
+>attributes</A
+> and for 
+<A
+HREF="setup-administration.html#data-entry-methods-using-the-cmformwidget-package"
+TARGET="_top"
+>&#13;registering</A
+> those attributes with the CMS form-builder.
+</P
+></DIV
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="attributes"
+>2.2.1.2. Attributes</A
+></H3
+><P
+>Content types are largely distinguished by the attributes and methods associated with 
+the type.  CMS features convenient form-generating functions that build forms that request for
+values appropriate for each content type's attributes; in order to do this, CMS requires 
+that content type 
+attributes be registered in the database.</P
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="register-attributes"
+>2.2.1.2.1. Registering Attributes for Your Content Type</A
+></H4
+><P
+>&#13;     Register content type attributes with the 
+     <TT
+CLASS="computeroutput"
+>create_attribute</TT
+> function in the <TT
+CLASS="computeroutput"
+>content_type
+     </TT
+> package:</P
+><PRE
+CLASS="programlisting"
+>    
+    function create_attribute (
+      --/** Create a new attribute for the specified type. Automatically creates
+      --    the column for the attribute if the column does not already exist.
+      --    @author Karl Goldstein
+      --    @param content_type   The name of the type to alter
+      --    @param attribute_name The name of the attribute to create
+      --    @param pretty_name    Pretty name for the new attribute, singular
+      --    @param pretty_plural  Pretty name for the new attribute, plural
+      --    @param default_value  The default value for the attribute, defaults to null
+      --    @return The id of the newly created attribute
+      --*/
+      content_type          in acs_attributes.object_type%TYPE,
+      attribute_name        in acs_attributes.attribute_name%TYPE,
+      datatype              in acs_attributes.datatype%TYPE,
+      pretty_name           in acs_attributes.pretty_name%TYPE,
+      pretty_plural in acs_attributes.pretty_plural%TYPE default null,
+      sort_order            in acs_attributes.sort_order%TYPE default null,
+      default_value in acs_attributes.default_value%TYPE default null,
+      column_spec           in varchar2  default 'varchar2(4000)'
+    ) return acs_attributes.attribute_id%TYPE;
+    
+        </PRE
+><UL
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>content_type
+     </TT
+></B
+> contains the name
+     of the content type with which the attribute is associated.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>datatype</TT
+></B
+> should contain the 
+     one of the keyword datatype values contained in the <TT
+CLASS="computeroutput"
+>&#13;     acs_datatypes</TT
+> 
+     table, e.g. <I
+CLASS="emphasis"
+>boolean</I
+>, <I
+CLASS="emphasis"
+>date</I
+>, 
+     <I
+CLASS="emphasis"
+>integer</I
+>, 
+     <I
+CLASS="emphasis"
+>money</I
+>.  If you wish to designate a datatype not already recorded in 
+     the <TT
+CLASS="computeroutput"
+>acs_datatypes</TT
+> table, be sure to 
+     first insert your datatype into the 
+     table before registering your attribute.</P
+></LI
+></UL
+><P
+>&#13;<TT
+CLASS="computeroutput"
+>content_type.create_attribute</TT
+> returns the <TT
+CLASS="computeroutput"
+>&#13;attribute_id</TT
+> associated with your newly created attribute.  See 
+<B
+CLASS="phrase"
+>Defining Content Types</B
+> [put ref links here to ch 2.2.1 when you learn how 
+to do that] for an example of <TT
+CLASS="computeroutput"
+>content_type.attribute_create</TT
+> in use.
+</P
+></DIV
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="file-types"
+>2.2.1.3. File Types</A
+></H3
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="predefined-mime-types"
+>2.2.1.3.1. CMS Default Mime Types</A
+></H4
+><P
+>&#13;      A listing of file types, or mime types, whose storage is supported by the ACS content 
+repository is stored in the <TT
+CLASS="computeroutput"
+>cr_mime_types</TT
+> table.  The ACS
+Content Repository supports four pre-registered mime types: plain and html text, as well as
+image GIFs and jpegs.  The CMS News Demo also registers upon installation a few 
+mime types designating audio files and video files:
+</P
+><PRE
+CLASS="programlisting"
+>    
+    begin
+    
+      /* Insert audio and video MIME types */
+      dbms_output.put_line('Inserting audio and video MIME types...');
+    
+      insert into cr_mime_types (
+        label, mime_type, file_extension
+      ) values (
+        'Wave Audio File','audio/x-wav','wav'
+      );
+    
+      insert into cr_mime_types (
+        label, mime_type, file_extension
+      ) values (
+        'Basic Audio File','audio/basic','au'
+      );
+    
+    
+      insert into cr_mime_types (
+        label, mime_type, file_extension
+      ) values (
+        'QuickTime Video','video/quicktime','qt'
+      );
+    
+      insert into cr_mime_types (
+        label, mime_type, file_extension
+      ) values (
+        'Mpeg Video','video/mpeg','mpg'
+      );
+    
+    end;
+    /
+    show errors
+    </PRE
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="register-mime-types-with-content-types"
+>2.2.1.3.2. Registering Mime Types to Your Content Types</A
+></H4
+><P
+>&#13;      Each content
+      object stored in CMS -- such as an image, text article or movie clip -- must 
+      be associated with a specific mime type.  Also, each content <I
+CLASS="emphasis"
+>type</I
+> 
+      must also be pre-registered
+      with all of the possible mime types with which that content 
+      type might be associated.  For example, 
+      the <TT
+CLASS="computeroutput"
+>image</TT
+> content type is registered to 
+      hold jpeg and gif files, 
+      but each instance of the <TT
+CLASS="computeroutput"
+>image</TT
+> 
+      type -- that is, each image revision
+      stored in the CMS --  will contain only one file of either the jpeg or gif file type.
+      </P
+><P
+>Use <TT
+CLASS="computeroutput"
+>content_type.register_mime_type</TT
+> to register
+      pre-defined mime types with your newly created content type:</P
+><PRE
+CLASS="programlisting"
+>    
+    procedure register_mime_type (
+      content_type  in cr_content_mime_type_map.content_type%TYPE,
+      mime_type     in cr_content_mime_type_map.mime_type%TYPE
+    );
+    </PRE
+><P
+>&#13;      If the mime type you wish 
+      to register is not yet defined in the ACS content repository, define it by inserting a row
+      in the <TT
+CLASS="computeroutput"
+>cr_mime_types</TT
+> table as you saw done in 
+      <A
+HREF="setup-administration.html#predefined-mime-types"
+TARGET="_top"
+>CMS Default Mime Types</A
+>.
+      </P
+></DIV
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="templates"
+>2.2.1.4. Templates</A
+></H3
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="template-overview"
+>2.2.1.4.1. Overview</A
+></H4
+><P
+>Each piece of content requires atleast one template on which to be displayed before
+    the content piece can be published by CMS.  Templates serve as the framework upon which 
+    a content item is mounted. Templates are associated to content types, and each 
+    individual content
+    item published by CMS will be displayed upon one of the templates associated to its content
+    type.  Multiple templates can be associated to multiple content types, allowing a single 
+    piece of content to be framed upon multiple templates, such as an image published with
+    borders of various colors, or a single template to display multiple content types, such 
+    as using a common background for all text, images and video feeds.
+    </P
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="register-templates-to-content-type"
+>2.2.1.4.2. Registering Templates to a Content Type</A
+></H4
+><P
+>Register templates through the CMS clipboard system, first by marking or adding
+    items to the CMS clipboard, then by clicking on by going to the "Templates" tabbed page
+    of the appropriate content type.</P
+><DIV
+CLASS="sect5"
+><H5
+CLASS="sect5"
+><A
+NAME="adding-templates-to-clipboard"
+>2.2.1.4.2.1. Adding Templates to the Clipboard</A
+></H5
+><P
+>Templates can be marked for addition to the clipboard by opening the folder in which
+    the template is contained.  A listing of templates and folders will appear in the main 
+    right-side widow, a listing which includes a column of checkboxes for adding selected
+    templates to the clipboard.</P
+><DIV
+CLASS="mediaobject"
+><P
+><IMG
+SRC="images/mark-template.gif"
+></IMG
+></P
+></DIV
+><P
+>The above screenshot displays the contents of my <TT
+CLASS="computeroutput"
+>/articles
+    </TT
+> folder, which contains three templates already added to the 
+    clipboard. </P
+></DIV
+><DIV
+CLASS="sect5"
+><H5
+CLASS="sect5"
+><A
+NAME="registering-templates-from-clipboard"
+>2.2.1.4.2.2. Registering Templates from the Clipboard</A
+></H5
+><P
+>&#13;    Find the "Templates" page of your content type
+    by first expanding the <B
+CLASS="phrase"
+>Content Types</B
+> folder (and perhaps other sub-folders) 
+    on the CMS navigation tree, clicking on the folder or label for your content type, and then
+    clicking on the light blue "Templates" tab in the main frame.  With your mouse, point and
+    click on <B
+CLASS="phrase"
+>Register marked templates to this content type</B
+>, and then choose
+    select from the clipboard the templates you wish to register.</P
+><DIV
+CLASS="mediaobject"
+><P
+><IMG
+SRC="images/register-templates.gif"
+></IMG
+></P
+></DIV
+><P
+>The <B
+CLASS="phrase"
+>Template</B
+> section of the <B
+CLASS="phrase"
+>Basic Item</B
+> content type.    </P
+></DIV
+><DIV
+CLASS="sect5"
+><H5
+CLASS="sect5"
+><A
+NAME="demo-templates"
+>2.2.1.4.2.3. CMS News Demo Templates</A
+></H5
+><P
+>Though CMS does not come with any prepackaged templates, the CMS News Demo
+    package does contain a variety of news article templates that include image and
+    multimedia link tags.  These templates can be found under 
+    <TT
+CLASS="computeroutput"
+>/cms-news-demo/templates/demo_articles</TT
+> in the 
+    News Demo package.</P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="data-entry-methods"
+>2.2.1.5. Data Entry Methods</A
+></H3
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="data-entry-methods-using-the-cmformwidget-package"
+>2.2.1.5.1. Using the cm_form_widget Package</A
+></H4
+><P
+>      
+      The CMS <TT
+CLASS="computeroutput"
+>cm_form_widget</TT
+> package can be used to generate
+      metadata forms for creating items or adding revisions to existing
+      items.</P
+><DIV
+CLASS="sect5"
+><H5
+CLASS="sect5"
+><A
+NAME="data-entry-methods-registering-content-type-attributes-to-a-form-widget"
+>2.2.1.5.1.1. Registering Content Type Attributes to a Form Widget</A
+></H5
+><P
+>&#13;	In order for CMS to be able to
+	generate the metadata forms, it is necessary for each attribute of
+	a content type to be registered to a form widget via the <A
+HREF="/cms/package-doc.acs?show=1&package_name=cm_form_widget&proc_name=register_attribute_widget"
+TARGET="_top"
+>&#13;	  <TT
+CLASS="computeroutput"
+>register_attribute_widget</TT
+></A
+> procedure.
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    cm_form_widget.register_attribute_widget(
+        content_type   =&#62; 'book_report',
+        attribute_name =&#62; 'summary',
+        widget         =&#62; 'textarea',
+        is_required    =&#62; 'f'
+    );
+          </PRE
+><UL
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>content_type</TT
+></B
+> used to identify the appropriate
+	    form widget.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>attribute_name</TT
+></B
+> is the name of the attribute,
+	    used to identify the appropriate form widget.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>widget</TT
+></B
+> is the form widget used to input a value
+	    for a content type attribute. See documentation for <A
+HREF="/ats/doc/widgets"
+TARGET="_top"
+>ATS form widgets</A
+> for more info.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>is_required</TT
+></B
+> is a flag indicating whether or not
+	    a value is required for the attribute form widget. By default,
+	    attribute form widgetes are not required.</P
+></LI
+></UL
+></DIV
+><DIV
+CLASS="sect5"
+><H5
+CLASS="sect5"
+><A
+NAME="data-entry-methods-customizing-the-form-widget"
+>2.2.1.5.1.2. Customizing the Form Widget</A
+></H5
+><P
+>&#13;	Using
+	<TT
+CLASS="computeroutput"
+>register_attribute_widget</TT
+> will use the default values for
+	the form widget. Usually these default values will be sufficient,
+	but sometimes it may be necessary to customize the form widget with
+	the <A
+HREF="/cms/package-doc.acs?show=1&package_name=cm_form_widget&proc_name=set_attribute_param_value"
+TARGET="_top"
+>&#13;	  <TT
+CLASS="computeroutput"
+>set_attribute_param_value</TT
+></A
+> procedure.
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    cm_form_widget.set_attribute_param_value(
+        content_type   =&#62; 'book_report',
+        attribute_name =&#62; 'summary',
+        param          =&#62; 'rows',
+        param_type     =&#62; 'onevalue',
+        param_source   =&#62; 'literal',
+        value          =&#62; 10
+    );
+    </PRE
+><UL
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>content_type</TT
+></B
+> used to identify the appropriate
+	    form widget.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>attribute_name</TT
+></B
+> is the name of the attribute,
+	    used to identify the appropriate form widget.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>param</TT
+></B
+> is one of the following: 
+
+	    <UL
+><LI
+><P
+CLASS="listitem"
+>an HTML tag corresponding to a specific form widget (rows for
+		  textarea, size for select widgets, maxlength for text boxes,
+		  ...)</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>an ATS form element tag (refer to the documentation for <A
+HREF="/ats/doc/api/element.html"
+TARGET="_top"
+>template::element::create</A
+> for
+		  more info.</P
+></LI
+></UL
+>
+	  </P
+></LI
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>param_type</TT
+></B
+> is one of the following: 
+
+	    <UL
+><LI
+><P
+CLASS="listitem"
+><TT
+CLASS="computeroutput"
+>'onevalue'</TT
+> - The parameter has one value.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><TT
+CLASS="computeroutput"
+>'onelist'</TT
+> - The parameter is a list of values.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><TT
+CLASS="computeroutput"
+>'multilist'</TT
+> - The parameter is a list of lists of
+		  values.</P
+></LI
+></UL
+>
+	  </P
+></LI
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>param_source</TT
+></B
+> is one of the following: 
+
+	    <UL
+><LI
+><P
+CLASS="listitem"
+><TT
+CLASS="computeroutput"
+>'literal'</TT
+> - The <TT
+CLASS="computeroutput"
+>value</TT
+> parameter is treated
+		  literally</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><TT
+CLASS="computeroutput"
+>'eval'</TT
+> - The <TT
+CLASS="computeroutput"
+>value</TT
+> parameter is a block of
+		  Tcl code that will be evaluated to produce the actual value(s) for
+		  the form widget param.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><TT
+CLASS="computeroutput"
+>'query'</TT
+> - The <TT
+CLASS="computeroutput"
+>value</TT
+> parameter is a SQL query
+		  which returns a datasource corresponding to the actual value(s) for
+		  the form widget param.</P
+></LI
+></UL
+>
+	  </P
+></LI
+></UL
+></DIV
+><DIV
+CLASS="sect5"
+><H5
+CLASS="sect5"
+><A
+NAME="data-entry-methods-example---creating-a-mime-type-pick-list-for-content-revisions"
+>2.2.1.5.1.3. Example - Creating a MIME type pick list for content
+	revisions</A
+></H5
+><P
+>&#13;	To create a pick list of MIME types for the
+	'mime_type' attribute of the 'content revision' content type:
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    begin
+      
+      -- register the attribute to a pick list
+      cm_form_widget.register_attribute_widget(
+          content_type   =&#62; 'content_revision', 
+          attribute_name =&#62; 'mime_type', 
+          widget         =&#62; 'select',
+          is_required    =&#62; 't'
+      );
+    
+      -- set the 'options' list
+      cm_form_widget.set_attribute_param_value(
+          content_type   =&#62; 'content_revision', 
+          attribute_name =&#62; 'mime_type',
+          param          =&#62; 'options', 
+          param_type     =&#62; 'multilist', 
+          param_source   =&#62; 'query',
+          value          =&#62; 'select 
+                               label, map.mime_type
+                             from 
+                               cr_mime_types types, 
+                               cr_content_mime_type_map map 
+                             where 
+                               types.mime_type = map.mime_type 
+                             and 
+                               content_type = :content_type 
+                             order by 
+                               label'
+      );
+    
+      -- set the 'size' param
+      cm_form_widget.set_attribute_param_value(
+          content_type   =&#62; 'content_revision', 
+          attribute_name =&#62; 'mime_type',
+          param          =&#62; 'size', 
+          param_type     =&#62; 'onevalue', 
+          param_source   =&#62; 'eval',
+          value          =&#62; 'a_tcl_proc_that_gets_the_pick_list_size' 
+      );
+    
+    end;
+    /
+    show errors
+    </PRE
+></DIV
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="data-entry-methods-using-metadata-forms"
+>2.2.1.5.2. Using Metadata Forms</A
+></H4
+><P
+>&#13;      The CMS is able to generate and process metadata forms based on the
+      form widgets registered to each attribute of a content type. If the
+      metadata forms are not sufficient, custom forms can be supplied
+      instead. 
+    </P
+><DIV
+CLASS="sect5"
+><H5
+CLASS="sect5"
+><A
+NAME="data-entry-methods-creating-auto-generated-metadata-forms"
+>2.2.1.5.2.1. Creating Auto-generated Metadata Forms</A
+></H5
+><P
+>&#13;	Generating the metadata forms for creating content items and adding
+	revisions is done by calling the Tcl procedure: 
+      </P
+><P
+>&#13;	<B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>content::get_revision_form db
+	    content_type item_id form_name</TT
+></B
+>
+      </P
+><P
+>The function generates a form based on form widgets associated
+	with the content type's attributes. If the <TT
+CLASS="computeroutput"
+>item_id</TT
+> is
+	null, then an item_id will be generated automatically.</P
+><P
+>Example:</P
+><PRE
+CLASS="programlisting"
+>    
+    # a metadata form for creating new "book report" content types.
+    form create create_book_report
+    element create create_book_report item_id -datatype integer
+    
+    set db [ns_db gethandle]
+    content::get_revision_form $db book_report $item_id create_book_report
+    ns_db releasehandle $db
+    
+    if { [form is_request create_book_report] } {
+      query item_id onevalue "select acs_object_id_seq.nextval from dual"
+      element set_properties create_book_report item_id -value $item_id
+    }
+          </PRE
+></DIV
+><DIV
+CLASS="sect5"
+><H5
+CLASS="sect5"
+><A
+NAME="data-entry-methods-processing-metadata-forms"
+>2.2.1.5.2.2. Processing Metadata Forms</A
+></H5
+><P
+>Processing the metadata forms for creating content items and adding
+	revisions is done by calling the Tcl function:</P
+><P
+>&#13;	<B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>set revision_id
+	    [content::process_revision_form form_name content_type item_id
+	    db]</TT
+></B
+>
+      </P
+><P
+>The function creates an instance of a basic revision, and then
+	inserts rows into each extended attribute related to that content
+	type. The function returns the ID of the revision that was just
+	created.</P
+><P
+>Example:</P
+><PRE
+CLASS="programlisting"
+>    
+    # process a metadata form for adding a revision to "book report" content types
+    if { [form is_valid add_revision] } {
+      form get_values add_revision item_id
+      set db [ns_db gethandle]
+    
+      set revision_id [content::process_revision_form add_revision book_report $item_id $db]
+    
+      ns_db releasehandle $db
+      template::forward "view_book_report_revision.acs?revision_id=$revision_id"
+    }
+          </PRE
+></DIV
+><DIV
+CLASS="sect5"
+><H5
+CLASS="sect5"
+><A
+NAME="data-entry-methods-form-elements"
+>2.2.1.5.2.3. Form Elements</A
+></H5
+><P
+>The function <TT
+CLASS="computeroutput"
+>content::create_form_element</TT
+> may be used
+	to automatically generate a form element based on the registered
+	form widget for the element.
+	This function is useful if you wish to create a custom form for
+	your content type, while still relying on the automatically
+	generated widgets (as discussed above) for some elements.</P
+><P
+>The function signature is as follows:</P
+><PRE
+CLASS="programlisting"
+>    
+    proc content::create_form_element {
+      db form_name attribute_name args
+    } {
+      ...
+    }
+          </PRE
+><P
+>&#13;	The parameters to the function are as follows:</P
+><DIV
+CLASS="informaltable"
+><A
+NAME="AEN470"
+></A
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+CELLPADDING="10"
+><THEAD
+><TR
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Parameter</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Purpose</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>db</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>The database handle to be used for querying</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>form_name</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>The name of the form to which the element will be appended. The
+		form must have been previously created with the <TT
+CLASS="computeroutput"
+>form
+		  create</TT
+> statement.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>attribute_name</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>The name of the attribute for which the form element is to be
+		created. The form element will have the same name as the
+		attribute.</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>The function also accepts the following switches:</P
+><DIV
+CLASS="informaltable"
+><A
+NAME="AEN491"
+></A
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+CELLPADDING="10"
+><THEAD
+><TR
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Switch</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Value</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Purpose</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>-revision_id</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>A revision id, integer</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>The id of the revision which will be used to determine the
+		value for the attribute. This revision will also be used to
+		discover the content type for the item.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>-item_id</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>An item id, integer</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>The id of the item whose live revision will be used to
+		determine the value for the attribute.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>-content_type</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>An object type</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>The content type of the object to which the attribute
+		belongs</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><I
+CLASS="emphasis"
+>any other switch</I
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>A value appropriate for the switch</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Any other switches will be passed directly to the <TT
+CLASS="computeroutput"
+>element
+		  create</TT
+> statement.</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>All the switches above are optional; however, at least one of
+	the <TT
+CLASS="computeroutput"
+>-content_type</TT
+>, <TT
+CLASS="computeroutput"
+>-revision_id</TT
+> or
+	<TT
+CLASS="computeroutput"
+>-item_id</TT
+> must be specified (in order for the function to
+	determine the content type of the object).</P
+><P
+>If <TT
+CLASS="computeroutput"
+>-revision_id</TT
+> or <TT
+CLASS="computeroutput"
+>-item_id</TT
+> are specified, the
+	value of the created form element will be selected from the
+	specified revision in the database.</P
+><P
+>Note that <TT
+CLASS="computeroutput"
+>content::create_form_element</TT
+> will not
+	automatically perform DML for you in order to update the database;
+	the DML must be performed manually in your custom form.</P
+><DIV
+CLASS="simplesect"
+><H6
+CLASS="simplesect"
+><A
+NAME="data-entry-methods-example-usage"
+>2.2.1.5.2.3.1. Example Usage:</A
+></H6
+><PRE
+CLASS="programlisting"
+>    
+    content::create_form_element $db my_form width -revision_id $revision_id
+    	</PRE
+><P
+>The above code will append a new element, called
+	  "<TT
+CLASS="computeroutput"
+>width</TT
+>" to the form named "<TT
+CLASS="computeroutput"
+>my_form</TT
+>". It will use
+	  the database handle contained in <TT
+CLASS="computeroutput"
+>$db</TT
+> and the revision id
+	  specified in <TT
+CLASS="computeroutput"
+>$revision_id</TT
+> in order to display the default
+	  value for the element.</P
+></DIV
+></DIV
+><DIV
+CLASS="sect5"
+><H5
+CLASS="sect5"
+><A
+NAME="data-entry-methods-index-page"
+>2.2.1.5.2.4. Index Page</A
+></H5
+><P
+>The generic index page, located at
+	<TT
+CLASS="computeroutput"
+>/cms/modules/items/index</TT
+> is simply a skeleton layout that
+	includes all available information components (see next section).
+	(The released system will allow the administator to specify the
+	components shown to each user of the system).</P
+><P
+>In cases where the generic page is inadequate, you can define
+	your own custom information page at
+	<TT
+CLASS="computeroutput"
+>/cms/modules/items/custom/&#60;content_type&#62;/index</TT
+>.
+	Whenever the generic index page is requested, the system checks for
+	the existence of a custom page and redirects to it if it is found.
+	Note that from there you may link to any number of additional
+	custom display pages, stored in the same directory or elsewhere.
+	The only required parameter to your custom page should be
+	<TT
+CLASS="computeroutput"
+>item_id</TT
+>.</P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="content-type-relationship"
+>2.2.1.6. Relationships</A
+></H3
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="content-type-relationship-overview"
+>2.2.1.6.1. Overview</A
+></H4
+><P
+>Many applications of the content repository require that content items 
+      be related to each other as well as to other classes of objects. Examples include:</P
+><UL
+><LI
+><P
+CLASS="listitem"
+><I
+CLASS="emphasis"
+>Content to non-content object</I
+>:
+      User portraits are linked to specific users. </P
+></LI
+><LI
+><P
+CLASS="listitem"
+><I
+CLASS="emphasis"
+>Content to content</I
+>:
+      An article may be linked to any number of photos or 
+      charts that are embedded in the article.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><I
+CLASS="emphasis"
+>Content within content</I
+>:
+      A long article is divided into multiple sections, each of 
+      which is intended for separate display.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><I
+CLASS="emphasis"
+>Multiple content items to a category</I
+>: 
+      News stories may be linked to other stories on the same topic.</P
+></LI
+></UL
+><P
+>When relating content types, it is important to establish whether
+      your related items of content can exist separately of each other, such as an
+      article and piece of stock footage or photography, or whether the one of the 
+      content items should exist only within the context of another, as in the example 
+      from above of a sectioned article with individual portions meant for separate display.
+      We refer to these latter relationships as <B
+CLASS="phrase"
+>parent-child relationships</B
+>.
+      The former can be generically grouped as <B
+CLASS="phrase"
+>Item-Object Relationships</B
+>;
+      relationships between items of content to non-content objects (example 1) would
+      also fall under this category.</P
+><P
+>Of the above examples, the first three types of relationship are handled
+      by the <TT
+CLASS="computeroutput"
+>content_type</TT
+> package API, and the 
+      last managed through CMS itself.</P
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="content-object-relationships"
+>2.2.1.6.2. Item-Object Relationships</A
+></H4
+><P
+>Define item-object relationships with the <TT
+CLASS="computeroutput"
+>&#13;      content_type.register_relation_type</TT
+> API:</P
+><PRE
+CLASS="programlisting"
+>    
+    procedure register_relation_type (
+      content_type  in cr_type_relations.content_type%TYPE,
+      target_type   in cr_type_relations.target_type%TYPE,
+      relation_tag  in cr_type_relations.relation_tag%TYPE default 'generic',
+      min_n         in integer default 0,
+      max_n         in integer default null
+    );
+    </PRE
+><UL
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>content_type</TT
+></B
+>
+	refers to the name of the content type from 
+	which the relationship originates.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>target_type</TT
+></B
+>
+	takes the name of the object type to which the content is related.</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>relation_tag</TT
+></B
+>
+	accepts a simple token identifier used in distinguishing relationships</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>min_n</TT
+></B
+> and 
+	<B
+CLASS="phrase"
+><TT
+CLASS="computeroutput"
+>max_n</TT
+></B
+> refer to the 
+	minimum/maximum relationships of this type required before the item of
+	content goes live.</P
+></LI
+></UL
+><P
+>After a relationship between one content type and another 
+      object type (content or not) has been registered, you may use
+      <TT
+CLASS="computeroutput"
+>content_item.is_valid_relation</TT
+> to confirm
+      potential relationships.</P
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="parent-child-relationships"
+>2.2.1.6.3. Parent-Child Relationships</A
+></H4
+><P
+>Parent-child relationships are also registered using the <TT
+CLASS="computeroutput"
+>&#13;      content_type</TT
+> package API:</P
+><PRE
+CLASS="programlisting"
+>    
+    
+    procedure register_child_type (
+      parent_type  in cr_type_children.parent_type%TYPE,
+      child_type    in cr_type_children.child_type%TYPE,
+      relation_tag  in cr_type_children.relation_tag%TYPE default 'generic',
+      min_n         in integer default 0,
+      max_n         in integer default null
+    );
+    </PRE
+><P
+>The parameters for <TT
+CLASS="computeroutput"
+>content_type.register_child_type</TT
+>
+      are largely analagous to those for <TT
+CLASS="computeroutput"
+>content_type.register_relation_type
+      </TT
+>, except <TT
+CLASS="computeroutput"
+>parent_type</TT
+> and 
+      <TT
+CLASS="computeroutput"
+>child_type</TT
+> must both be content types (<TT
+CLASS="computeroutput"
+>&#13;      content_revision</TT
+> or a sub-class of it).  <TT
+CLASS="computeroutput"
+>&#13;      content_item.is_valid_relation</TT
+> can also be used to verify the validity
+      of a potential parent-child relationship.</P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="register-staff-users"
+>2.2.2. Register Staff Users</A
+></H2
+><P
+>[This document is still under construction]</P
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="defining-workflows"
+>2.2.3. Defining Workflows</A
+></H2
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="workflow-departments"
+>2.2.3.1. Departments</A
+></H3
+><P
+></P
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="workflow-roles"
+>2.2.3.2. Roles</A
+></H3
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="structuring-site-map"
+>2.2.4. Structuring the Site Map</A
+></H2
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="site-map-folders"
+>2.2.4.1. Folders</A
+></H3
+><P
+></P
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="user-permissions"
+>2.2.4.2. Using Permissions</A
+></H3
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="permissions-overview"
+>2.2.4.2.1. Overview</A
+></H4
+><P
+>&#13;
+      Permissions provide a way of answering the question, "may the user
+      X perform some action Y on an object Z" ? The CMS UI provides forms
+      for viewing and maintaining permissions, as well as a set of
+      standard permissions which should be useful for web publishing
+      applications. For a more complete description of the various
+      permissions, see the <A
+HREF="../permissions.html"
+TARGET="_top"
+>CMS developer guide</A
+>. 
+
+    </P
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="permissions-viewing-permissions"
+>2.2.4.2.2. Viewing Permissions</A
+></H4
+><P
+>&#13;
+      To view permissions on folders, select the folder on the tree and
+      click the "Folder Attributes" link. To view permissions on items,
+      simply select the item in the folder and scroll down to the bottom
+      of the page. In both cases, the permissions listing for the
+      item/folder appears on the screen: 
+    </P
+><DIV
+CLASS="mediaobject"
+><P
+><IMG
+SRC="images/permission-viewing.gif"
+></IMG
+></P
+></DIV
+><P
+>&#13;      To grant permissions to another user, mark the user on the
+      clipboard and click "[ Grant ] more permissions to a marked user".
+      You will only be allowed to grant permissions which you already
+      possess, unless you have the "Modify Any Permissions" privilege. 
+
+    </P
+><P
+>To edit permissions for a particular user, click the 
+      <SPAN
+CLASS="inlinemediaobject"
+><IMG
+SRC="images/Edit16.gif"
+></IMG
+></SPAN
+>
+      icon next to the user's name. The icon
+      will not be visible unless you are allowed to edit permissions for that
+      particular user.</P
+></DIV
+><DIV
+CLASS="sect4"
+><H4
+CLASS="sect4"
+><A
+NAME="permissions-granting-and-editing-permissions"
+>2.2.4.2.3. Granting and Editing permissions</A
+></H4
+><P
+>&#13;
+      In both cases, a permission editing form will appear on the screen:
+    </P
+><DIV
+CLASS="mediaobject"
+><P
+><IMG
+SRC="images/permission-editing.gif"
+></IMG
+></P
+></DIV
+><P
+>&#13;      The privileges are arranged on the form in a tree-like hierarchy;
+      possession of a parent permission entails the possession of all of
+      its child permissions, as well.  For example, a user with "Admin-level Read"
+      would also have <I
+CLASS="emphasis"
+>read</I
+> access to anything 
+      requiring "User-level Read."</P
+><P
+>Check any permissions that you wish to grant to the user and uncheck any
+      permissions that you wish to revoke. If you select "Yes" for the
+      "Apply changes to child items and subfolders" option, your changes
+      will affect the current item or folder, all the items in the
+      folder, all subfolders of the folder, all the items in the
+      subfolders, etc. If you select "No", only the current item or
+      folder will be affected.</P
+><P
+>Note that if you revoke a permission, all of its descendants
+      will remain granted to the user. For example, if you revoke the
+      "Admin-Level Read" permission from a user, the user will retain the
+      "User-level Read" permission.</P
+><P
+>Also note that you may not be able to modify some permissions on
+      certain items; for example, you may not revoke somebody's
+      "Administrator" permission if you yourself do not possess the
+      "Administrator" permission on the item.</P
+></DIV
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="site-map-content-types"
+>2.2.4.3. Content Types</A
+></H3
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="cms-tasks-task-requirements"
+>2.2.5. Task Requirements</A
+></H2
+><P
+>&#13;    This document contains a listing of Content Management tasks and
+    the required permissions to perform them. The tasks are organized
+    by modules and then main sections/pages within those modules. 
+  </P
+><P
+><I
+CLASS="emphasis"
+>&#13;    This document is currently under construction.
+  </I
+></P
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="cms-tasks-modules"
+>2.2.5.1. Modules</A
+></H3
+><UL
+><LI
+><P
+CLASS="listitem"
+><A
+HREF="setup-administration.html#cms-tasks-my_tasks"
+>My Tasks</A
+></P
+></LI
+><LI
+><P
+CLASS="listitem"
+><A
+HREF="setup-administration.html#cms-tasks-sitemap"
+>Site Map</A
+>
+
+	  <UL
+><LI
+><P
+CLASS="listitem"
+><A
+HREF="setup-administration.html#cms-tasks-folder_listing"
+>Folder Listing</A
+></P
+></LI
+><LI
+><P
+CLASS="listitem"
+><A
+HREF="setup-administration.html#cms-tasks-folder_attributes"
+>Folder Attributes</A
+></P
+></LI
+><LI
+><P
+CLASS="listitem"
+><A
+HREF="setup-administration.html#cms-tasks-item_listing"
+>Item Listing</A
+> 
+
+		<UL
+><LI
+><P
+CLASS="listitem"
+>Editing</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Sub-Items</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Publishing</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Permissions</P
+></LI
+></UL
+>
+	      </P
+></LI
+><LI
+><P
+CLASS="listitem"
+><A
+HREF="setup-administration.html#cms-tasks-revision_view"
+>View Revision</A
+></P
+></LI
+></UL
+>
+	</P
+></LI
+><LI
+><P
+CLASS="listitem"
+><A
+HREF="setup-administration.html#cms-tasks-templates"
+>Templates</A
+></P
+></LI
+><LI
+><P
+CLASS="listitem"
+><A
+HREF="setup-administration.html#cms-tasks-types"
+>Content Types</A
+></P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Search</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Subject Keywords</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Users</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Workflow</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Clipboard</P
+></LI
+></UL
+><P
+><A
+NAME="cms-tasks-my_tasks"
+></A
+>
+      <B
+CLASS="phrase"
+>My Tasks</B
+>
+      <DIV
+CLASS="informaltable"
+><A
+NAME="AEN706"
+></A
+><TABLE
+BORDER="1"
+WIDTH="100%"
+CLASS="CALSTABLE"
+CELLPADDING="10"
+><TBODY
+><TR
+><TD
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+><B
+CLASS="phrase"
+>Action</B
+></TD
+><TD
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+><B
+CLASS="phrase"
+>Required Permission(s)</B
+></TD
+><TD
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+><B
+CLASS="phrase"
+>Other Requirement(s)</B
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
+>
+    </P
+><P
+><A
+NAME="cms-tasks-sitemap"
+></A
+>
+      <B
+CLASS="phrase"
+>Site Map</B
+>
+      <DIV
+CLASS="informaltable"
+><A
+NAME="AEN719"
+></A
+><TABLE
+BORDER="1"
+WIDTH="100%"
+CLASS="CALSTABLE"
+CELLPADDING="10"
+><THEAD
+><TR
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Action</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Required Permission(s)</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Other Requirement(s)</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+><B
+CLASS="phrase"
+>&#13;		  <A
+NAME="cms-tasks-folder_listing"
+></A
+>
+		  Folder Listing</B
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Move marked items to this folder</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_new on the destination folder
+		    </P
+></LI
+><LI
+><P
+CLASS="listitem"
+>cm_write on the marked item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Content type of item is registered to destination folder</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Name of item must be unique within destination folder</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Copy marked items to this folder</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_new on the destination folder
+		    </P
+></LI
+><LI
+><P
+CLASS="listitem"
+>cm_examine on the marked item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Content type of item is registered to destination folder</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Name of item must be unique within destination folder</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Link marked items to this folder</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_new on the destination folder
+		    </P
+></LI
+><LI
+><P
+CLASS="listitem"
+>cm_examine on the marked item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Item is not a symlink</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Content type of item is registered to destination folder</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Symlinks are registered to destination folder</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Name of item must be unique within destination folder</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Rename this folder</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the folder</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Name must be unique within the parent folder</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Folder is not a root folder</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Delete marked items</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the marked item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Folders must be empty</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Folders are not root folder</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Create a new folder within this folder</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_new on the (parent) folder</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Subfolders must be registered to parent folder</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Name of folder must be unique within parent folder</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Delete this folder</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on folder</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Folder must be empty</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Folder is not a root folder</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Add a new item under this folder</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_new on the (parent) folder</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Content type of item must be registered to parent folder</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Name of item must be unique within parent folder</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+><B
+CLASS="phrase"
+>&#13;		  <A
+NAME="cms-tasks-folder_attributes"
+></A
+>
+		  Folder Attributes</B
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Register marked content types to this folder</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the folder</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Unregister this content type</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the folder</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Edit folder options</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the folder</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+><B
+CLASS="phrase"
+>&#13;		  <A
+NAME="cms-tasks-item_listing"
+></A
+>
+		  Item Listing</B
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Preview this content item</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_examine on the item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Item has a live revision</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Item has an associated template</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Rename this content item</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Name of item must be unique within parent folder</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Delete this content item</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		- Editing</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Edit attributes for this item</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Item must have a previously existing revision</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Add a revision to this item</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Assign marked keywords to this item</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_new on the item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		- Sub-Items</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Add a child item</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_relate on the item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>At least one child relation type must be registered to the
+		      content type of the item</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Relate another object to this item</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_relate on the item</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>At least one item relation type must be registered to the
+		      content type of the item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		- Publishing</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Edit the publishing status</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_item_workflow on the item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Register template to this item</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the item</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>cm_examine on the template</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>The template must be registered to the content type of the
+		      item</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Unregister template</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the item</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>cm_examine on the template</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Make this template the default</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the types module</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>cm_examine on the template</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Create a workflow for this item</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_item_workflow on the item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Item has no associated publishing workflows</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Finish / Approve a task</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Task must be assigned to user</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Task must be active</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Task must not be currently checked out by another assigned
+		      user</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Steal a task</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Task must be assigned to user</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Task must be active</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>Task must be checked out by another assigned user</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Add a comment to this item</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		- Permissions</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Grant more permissions to a marked user</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_perm or cm_perm_admin on item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Alter/Revoke permissions</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_perm or cm_perm_admin on item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+><B
+CLASS="phrase"
+>&#13;		  <A
+NAME="cms-tasks-revision_view"
+></A
+>
+		  View Revision</B
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Add content to this item</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the item</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>The current revision must have no content</P
+></LI
+></UL
+>
+	      </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+>
+    </P
+><P
+>&#13;      <B
+CLASS="phrase"
+>&#13;	<A
+NAME="cms-tasks-templates"
+></A
+>
+	Templates
+      </B
+>
+      <DIV
+CLASS="informaltable"
+><A
+NAME="AEN1055"
+></A
+><TABLE
+BORDER="1"
+WIDTH="100%"
+CLASS="CALSTABLE"
+CELLPADDING="10"
+><TBODY
+><TR
+><TD
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+><B
+CLASS="phrase"
+>Action</B
+></TD
+><TD
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+><B
+CLASS="phrase"
+>Required Permission(s)</B
+></TD
+><TD
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+><B
+CLASS="phrase"
+>Other Requirement(s)</B
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
+>
+    </P
+><P
+>&#13;      <B
+CLASS="phrase"
+>&#13;	<A
+NAME="cms-tasks-types"
+></A
+>
+	Content Types
+      </B
+>
+      <DIV
+CLASS="informaltable"
+><A
+NAME="AEN1068"
+></A
+><TABLE
+BORDER="1"
+WIDTH="100%"
+CLASS="CALSTABLE"
+CELLPADDING="10"
+><THEAD
+><TR
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Action</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Required Permission(s)</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Other Requirement(s)</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Add this content type to the clipboard</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the types module</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>[ Register Widget | Edit Widget | Unregister Widget ]</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the types module</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>Widget does not belong to a Basic Item attribute</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Register marked templates to this content type</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the types module</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Unregister template</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the types module</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Make this template the default</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the types module</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>The template is not the default template</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Register/Unregister a new item relation type</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the types module</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Register/Unregister a new child relation type</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the types module</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Register/Unregister MIME type</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_write on the types module</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>There is at least one unregistered MIME type</P
+></LI
+></UL
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Grant more permissions to a marked user</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_examine on the types module</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>cm_perm_admin or cm_perm on the types module</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Alter user permissions</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<UL
+><LI
+><P
+CLASS="listitem"
+>cm_examine on the types module</P
+></LI
+><LI
+><P
+CLASS="listitem"
+>cm_perm_admin or cm_perm on the types module</P
+></LI
+></UL
+>
+	      </TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+> </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+>
+    </P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+SIZE="1"
+NOSHADE="NOSHADE"
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="acs-admin-guide.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="dev-guide.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>ACS Administrator's guide</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="acs-admin-guide.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Developer's guide</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

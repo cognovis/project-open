@@ -1,0 +1,2095 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML
+><HEAD
+><TITLE
+>Developer's guide</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="aD Hack of: Modular DocBook HTML Stylesheet Version 1.60"><LINK
+REL="HOME"
+TITLE="Content Management System"
+HREF="index.html"><LINK
+REL="PREVIOUS"
+TITLE="Setup and Administration"
+HREF="setup-administration.html"><LINK
+REL="NEXT"
+TITLE="Customizing Item Information Pages and Data Entry Forms"
+HREF="custom-interface.html"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="ad-doc.css"></HEAD
+><BODY
+CLASS="chapter"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Content Management System</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="setup-administration.html"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="custom-interface.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+SIZE="1"
+NOSHADE="NOSHADE"
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="chapter"
+><H1
+><A
+NAME="dev-guide"
+>Chapter 3. Developer's guide</A
+></H1
+><P
+>&#13;      <I
+CLASS="emphasis"
+>Information for developers (including the requirements and design docs)
+	should go here.</I
+>
+    </P
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="uplevels-namespaces-uplevels-namespaces-arrays-and-pseudo-oop-in-tcl"
+>3.1. Uplevels, Namespaces, Arrays, and pseudo-OOP in Tcl</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>3.1.1. <A
+HREF="dev-guide.html#uplevels-namespaces-overview"
+>Overview</A
+></DT
+><DT
+>3.1.2. <A
+HREF="dev-guide.html#uplevels-namespaces-namespaces"
+>Namespaces</A
+></DT
+><DD
+><DL
+><DT
+>3.1.2.1. <A
+HREF="dev-guide.html#uplevels-namespaces-qualifying"
+>Qualifying</A
+></DT
+><DT
+>3.1.2.2. <A
+HREF="dev-guide.html#uplevels-namespaces-name-resolution"
+>Name Resolution</A
+></DT
+><DT
+>3.1.2.3. <A
+HREF="dev-guide.html#uplevels-namespaces-namespace-variables"
+>Namespace Variables</A
+></DT
+><DT
+>3.1.2.4. <A
+HREF="dev-guide.html#uplevels-namespaces-emulating-an-oop-like-approach-with-namespaces"
+>Emulating an OOP-like approach with namespaces</A
+></DT
+><DT
+>3.1.2.5. <A
+HREF="dev-guide.html#uplevels-namespaces-mimicking-method-overloading-with-dispatch-procs"
+>Mimicking method overloading with dispatch procs</A
+></DT
+></DL
+></DD
+><DT
+>3.1.3. <A
+HREF="dev-guide.html#uplevels-namespaces-arrays"
+>Arrays</A
+></DT
+><DD
+><DL
+><DT
+>3.1.3.1. <A
+HREF="dev-guide.html#uplevels-namespaces-advanced-array-operations"
+>Advanced array operations</A
+></DT
+><DT
+>3.1.3.2. <A
+HREF="dev-guide.html#uplevels-namespaces-arrays-are-not-first-class"
+>Arrays are not first-class</A
+></DT
+></DL
+></DD
+><DT
+>3.1.4. <A
+HREF="dev-guide.html#uplevels-namespaces-upvar-and-uplevel"
+>Upvar and Uplevel</A
+></DT
+><DD
+><DL
+><DT
+>3.1.4.1. <A
+HREF="dev-guide.html#uplevels-namespaces-using-upvar-and-arrays-to-store-objects"
+>Using upvar and arrays to store objects</A
+></DT
+><DT
+>3.1.4.2. <A
+HREF="dev-guide.html#uplevels-namespaces-advanced-upvar-features"
+>Advanced upvar features</A
+></DT
+><DT
+>3.1.4.3. <A
+HREF="dev-guide.html#uplevels-namespaces-uplevel"
+>Uplevel</A
+></DT
+><DT
+>3.1.4.4. <A
+HREF="dev-guide.html#uplevels-namespaces-excessive-usage-of-upvaruplevel-considered-harmful"
+>Excessive usage of upvar/uplevel considered harmful</A
+></DT
+></DL
+></DD
+><DT
+>3.1.5. <A
+HREF="dev-guide.html#uplevels-namespaces-conclusion"
+>Conclusion</A
+></DT
+></DL
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="uplevels-namespaces-overview"
+>3.1.1. Overview</A
+></H2
+><P
+>The Tcl language is fairly good at string manipulation, but it
+      fails to provide advanced data structures and object-oriented
+      features, which often make code a lot more manageable. Using the
+      <TT
+CLASS="computeroutput"
+>uplevel</TT
+> / <TT
+CLASS="computeroutput"
+>upvar</TT
+> 
+      and <TT
+CLASS="computeroutput"
+>namespace</TT
+> commands,
+      in conjunction with the Tcl "array" data structure, it is possible
+      to create code which mimics the most basic elements of OOP: methods
+      and attributes. A large portion of ATS is built using this
+      approach.</P
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="uplevels-namespaces-namespaces"
+>3.1.2. Namespaces</A
+></H2
+><P
+>The <A
+HREF="http://dev.scriptics.com/man/tcl8.3.2/TclCmd/namespace.htm"
+TARGET="_top"
+><TT
+CLASS="computeroutput"
+>namespace</TT
+></A
+>
+      command is very similar to the namespace command in C. The command
+      is used to create a new lexical scope; all variables and procs
+      within the namespace cannot interfere with any variables and procs
+      in any other namespace. The syntax to create a new namespace is as
+      follows:</P
+><PRE
+CLASS="programlisting"
+>    
+    <B
+CLASS="phrase"
+>namespace eval</B
+> <I
+CLASS="emphasis"
+>namespace_name</I
+> <B
+CLASS="phrase"
+>{</B
+>
+      <I
+CLASS="emphasis"
+>tcl_code</I
+>
+    <B
+CLASS="phrase"
+>}</B
+>
+        </PRE
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="uplevels-namespaces-qualifying"
+>3.1.2.1. Qualifying</A
+></H3
+><P
+>&#13;	
+	In order to access procedures defined inside a template, you must
+	prefix them with the template name, as follows: 
+
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    <I
+CLASS="emphasis"
+>namespace_name</I
+><B
+CLASS="phrase"
+>::</B
+><I
+CLASS="emphasis"
+>proc_name</I
+> <I
+CLASS="emphasis"
+>args</I
+>
+    
+          </PRE
+><P
+>&#13;	This is known as <I
+CLASS="emphasis"
+>"qualifying"</I
+> the procedure name. 
+      </P
+><P
+>For example, consider the following code:</P
+><PRE
+CLASS="programlisting"
+>    
+    namespace eval apple {
+      proc eat { name } {
+        return "$name just ate an apple"
+      }
+    }
+    
+    namespace eval orange {
+      proc eat { name } {
+        return "An orange just ate $name !"
+      } 
+    }
+          </PRE
+><P
+>&#13;	The above code defines two namespaces, <TT
+CLASS="computeroutput"
+>apple</TT
+> and
+	<TT
+CLASS="computeroutput"
+>orange</TT
+>. Each namespace contains a proc named <TT
+CLASS="computeroutput"
+>eat</TT
+>,
+	but the behavior of the procs is different. Here is the output
+	produced when calling <TT
+CLASS="computeroutput"
+>eat</TT
+> in tclsh: 
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    % apple::eat "Stas"
+    Stas just ate an apple
+    % orange::eat "Stas"
+    An orange just ate Stas !
+    % 
+          </PRE
+><P
+>Namespace procedures can also be defined outside the
+	<TT
+CLASS="computeroutput"
+>namespace eval</TT
+> block, as long as they are qualified. For
+	example, the above code can be rewtitten as:</P
+><PRE
+CLASS="programlisting"
+>    
+    namespace eval apple {}
+    
+    namespace eval orange {}
+    
+    proc apple::eat { name } {
+      return "$name just ate an apple"
+    }
+    
+    proc orange::eat { name } {
+      return "An orange just ate $name !"
+    } 
+          </PRE
+><P
+>Namespaces may also be nested, as shown in the example
+	below:</P
+><PRE
+CLASS="programlisting"
+>    
+    namespace eval apple {
+      namespace eval core {}
+      namespace eval meat {}
+    }
+    
+    proc apple::core::eat {} {
+      return "The core is pretty much inedible"
+    }
+    
+    proc apple::meat::eat {} {
+      return "Yummy"
+    }
+          </PRE
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="uplevels-namespaces-name-resolution"
+>3.1.2.2. Name Resolution</A
+></H3
+><P
+>&#13;
+	When a proc which is defined inside a namespace calls another proc,
+	the other proc is first assumed to be in the current namespace. If
+	the current namespace contains no such proc, the proc is then
+	assumed to reside in the global namespace. However, if the function
+	call is prepended with the <TT
+CLASS="computeroutput"
+>::</TT
+> resolution operator, the
+	global namespace will be searched directyl. For example, consider
+	the code below: 
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    namespace eval apple {}
+    
+    namespace eval orange {}
+    
+    proc eat { name } {
+      return "$name goes hungry today..."
+    }
+    
+    proc apple::eat { name } {
+      return "$name just ate an apple"
+    }
+    
+    proc orange::eat { name } {
+      return "An orange just ate $name !"
+    } 
+    
+    proc apple::test {} {
+      set result ""
+    # Line 20
+      append result "[eat Stas] \n"
+    # Line 22
+      append result "[::eat Stas] \n"
+    # Line 24
+      append result "[::orange::eat Stas] \n"
+      return $result
+    }
+          </PRE
+><P
+>&#13;	The output of <TT
+CLASS="computeroutput"
+>apple::test</TT
+> is as follows: 
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    % apple::test
+    Stas just ate an apple 
+    Stas goes hungry today... 
+    An orange just ate Stas ! 
+    
+    %
+          </PRE
+><P
+>&#13;	In line 20, the procedure <TT
+CLASS="computeroutput"
+>eat</TT
+> exists in the <TT
+CLASS="computeroutput"
+>apple</TT
+>
+	namespace, and since the current procedure (<TT
+CLASS="computeroutput"
+>test</TT
+>) is in
+	the same namespace, the <TT
+CLASS="computeroutput"
+>eat</TT
+> procedure in the
+	<TT
+CLASS="computeroutput"
+>apple</TT
+> namespace is called. In line 22, the <TT
+CLASS="computeroutput"
+>eat</TT
+>
+	procedure is called in the global namespace. In line 24, the fully
+	qualified <TT
+CLASS="computeroutput"
+>eat</TT
+> procedure in the <TT
+CLASS="computeroutput"
+>orange</TT
+> namespace
+	is called. 
+      </P
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="uplevels-namespaces-namespace-variables"
+>3.1.2.3. Namespace Variables</A
+></H3
+><P
+>In addition to functions, namespaces may contain variables.
+	Namespace variables act similarly to global variables. A namespace
+	variable is only visible inside its namespace; the variable is
+	persistent for the duration of the request and visible only to the
+	current Tcl interpreter. The syntax to declare a namespace variable
+	is as follows: 
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    <B
+CLASS="phrase"
+>namespace eval</B
+> <I
+CLASS="emphasis"
+>namespace_name</I
+> <B
+CLASS="phrase"
+>{</B
+>
+      <B
+CLASS="phrase"
+>variable</B
+> <I
+CLASS="emphasis"
+>variable_name</I
+> <I
+CLASS="emphasis"
+>optional_initial_value</I
+>
+      <I
+CLASS="emphasis"
+>tcl_code</I
+>
+    <B
+CLASS="phrase"
+>}</B
+>
+    
+          </PRE
+><P
+>&#13;	In order to access the variable, each proc within the namespace
+	must declare the variable at the beginning of the procedure body: 
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    <B
+CLASS="phrase"
+>proc</B
+> <I
+CLASS="emphasis"
+>namespace_name</I
+><B
+CLASS="phrase"
+>::</B
+><I
+CLASS="emphasis"
+>proc_name</I
+> <B
+CLASS="phrase"
+>{</B
+> <I
+CLASS="emphasis"
+>args</I
+> <B
+CLASS="phrase"
+>} {</B
+>
+      <B
+CLASS="phrase"
+>variable</B
+> <I
+CLASS="emphasis"
+>variable_name</I
+>
+      <I
+CLASS="emphasis"
+>proc_body</I
+>
+    <B
+CLASS="phrase"
+>}</B
+>
+    
+          </PRE
+><P
+>&#13;	The following code demonstrates the usage of namespace variables:
+      </P
+><A
+NAME="namespace_counter"
+></A
+><PRE
+CLASS="programlisting"
+>    
+    namespace eval apple {
+      variable apple_count 0
+    }
+    
+    proc apple::add_apple {} {
+      variable apple_count 
+      incr apple_count
+    }
+    
+    proc apple::eat { name } {
+      variable apple_count
+      if { $apple_count &#62; 0 } {
+        incr apple_count -1
+        return "$name just ate an apple"
+      } else {
+        return "Out of apples"
+      }
+    }
+          </PRE
+><P
+>&#13;	The Tcl evaluation below demonstrates that the variable
+	<TT
+CLASS="computeroutput"
+>apple_count</TT
+> is persistent: 
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    % apple::eat "Stas"
+    Out of apples
+    % apple::add_apple
+    1
+    % apple::eat "Stas"
+    Stas just ate an apple
+    % apple::eat "Stas"
+    Out of apples
+    % 
+    </PRE
+><P
+>&#13;	A note of caution about namespace variables: the variables are
+	persistent within the current Tcl interepreter, which may survive
+	across requests. Therefore, the variables should always be
+	initialized manually at the beginning of each request.
+      </P
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="uplevels-namespaces-emulating-an-oop-like-approach-with-namespaces"
+>3.1.2.4. Emulating an OOP-like approach with namespaces</A
+></H3
+><P
+>&#13;
+	With a small stretch of imagination, one can pretend that a
+	namespace is a <I
+CLASS="emphasis"
+>class</I
+>, the namespace procs are
+	<I
+CLASS="emphasis"
+>methods</I
+>, and namespace variables are <I
+CLASS="emphasis"
+>static
+	  attributes</I
+>. For example, the apple counting example 
+	<A
+HREF="dev-guide.html#namespace_counter"
+>above</A
+> implements a simple class, with two
+	methods and a "private" static attribute (since there is no
+	<TT
+CLASS="computeroutput"
+>apple::get_count</TT
+> method).
+      </P
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="uplevels-namespaces-mimicking-method-overloading-with-dispatch-procs"
+>3.1.2.5. Mimicking method overloading with dispatch procs</A
+></H3
+><P
+>&#13;
+	In real OOP, one class may extend (or <I
+CLASS="emphasis"
+>subclass</I
+>) another
+	(known as the <I
+CLASS="emphasis"
+>superclass</I
+>), inheriting all of its attributes
+	and methods. The subclass may then overload some of the
+	superclass's methods, changing their behavior. Something similar
+	may be accomplished in Tcl with the usage of a dispatch proc. The
+	proc takes a class name and some arguments, and passes them to the
+	appropriate method, as follows: 
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    <B
+CLASS="phrase"
+>proc</B
+> <I
+CLASS="emphasis"
+>namespace_name</I
+><B
+CLASS="phrase"
+>::</B
+><I
+CLASS="emphasis"
+>method_name</I
+> <B
+CLASS="phrase"
+>{</B
+> <I
+CLASS="emphasis"
+>type arg1 arg2 ...</I
+> <B
+CLASS="phrase"
+>} {
+  if { [catch</B
+> <I
+CLASS="emphasis"
+>type</I
+><B
+CLASS="phrase"
+>::</B
+><I
+CLASS="emphasis"
+>method_name</I
+> <B
+CLASS="phrase"
+>$</B
+><I
+CLASS="emphasis"
+>arg1</I
+> <B
+CLASS="phrase"
+>$</B
+><I
+CLASS="emphasis"
+>arg2</I
+> <I
+CLASS="emphasis"
+>...</I
+><B
+CLASS="phrase"
+>] } {</B
+>
+    # The specific method does not exist; perform some default action
+      <B
+CLASS="phrase"
+>}
+}</B
+>
+    
+          </PRE
+><P
+>&#13;	The dispatch proc first checks if an overloaded method exists,
+	using the <A
+HREF="http://dev.scriptics.com/man/tcl8.3.2/TclCmd//info.htm#M20"
+TARGET="_top"
+>info
+	  procs</A
+> command. If the method does exist, the dispatch proc
+	calls the method; otherwise, the dispatch proc may throw an error
+	or perform some default action. 
+
+      </P
+><P
+>Dispatch procs can also be used to abstract the methods within
+	one class, hiding its namespace-based implementation, as shown in
+	the example below:</P
+><PRE
+CLASS="programlisting"
+>    
+    namespace eval banana {}
+    
+    # Main dispatch procedure for the class
+    proc banana { method_name args } {
+      eval banana::$method_name $args
+    }
+    
+    proc banana::peel {} {
+      return "The banana is now peeled"
+    }
+    
+    proc banana::eat { inches } {
+      return "You bite off $inches inches from the banana"
+    }
+          </PRE
+><P
+>&#13;	This approach allows the code to mimic the behavior of many
+	multi-purpose operators in Tcl (such as <TT
+CLASS="computeroutput"
+>string</TT
+> or
+	<TT
+CLASS="computeroutput"
+>info</TT
+>), as shown below: 
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    % banana peel
+    The banana is now peeled
+    % banana eat 5
+    You bite off 5 inches from the banana
+    % banana foo
+    invalid command name "banana::foo"
+    % 
+    </PRE
+><P
+>&#13;	The facilities discussed above are sufficient for the
+	implementation of any simple "class", but they lack an important
+	feature: storing multiple non-static attributes (storing a distinct
+	set of attribute values for each instance of the "class").
+	<I
+CLASS="emphasis"
+>Arrays</I
+> can be used to remove this deficiency. 
+      </P
+></DIV
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="uplevels-namespaces-arrays"
+>3.1.3. Arrays</A
+></H2
+><P
+>&#13;
+      Tcl provides a data structure known as the <I
+CLASS="emphasis"
+>array</I
+>, though in
+      reality the data structure resembles a hash table more than a true
+      array. Tcl arrays are very similar to <TT
+CLASS="computeroutput"
+>ns_set</TT
+>s: just like
+      <TT
+CLASS="computeroutput"
+>ns_set</TT
+>s, arrays associate keys with values. Unlike the
+      <TT
+CLASS="computeroutput"
+>ns_set</TT
+>s, however, arrays are part of the Tcl interpreter
+      and not the AOLServer, which makes them a lot faster. The syntax to
+      manipulate arrays is as follows: 
+
+    </P
+><PRE
+CLASS="programlisting"
+>    
+    # Set some key to a value
+    <B
+CLASS="phrase"
+>set</B
+> <I
+CLASS="emphasis"
+>array_name</I
+><B
+CLASS="phrase"
+>(</B
+><I
+CLASS="emphasis"
+>key_name</I
+><B
+CLASS="phrase"
+>)</B
+> <I
+CLASS="emphasis"
+>value</I
+>
+    # Retrieve the value of some key
+    set result
+     <B
+CLASS="phrase"
+>$</B
+><I
+CLASS="emphasis"
+>array_name</I
+><B
+CLASS="phrase"
+>(</B
+><I
+CLASS="emphasis"
+>key_name</I
+><B
+CLASS="phrase"
+>)</B
+>
+        </PRE
+><P
+>&#13;      If the array whose key is to be set does not exist, it is
+      automatically created. However, if the array whose key is to be
+      retrieved does not exist The <A
+HREF="http://dev.scriptics.com/man/tcl8.3.2/TclCmd/info.htm#M11"
+TARGET="_top"
+><TT
+CLASS="computeroutput"
+>info
+	  exists</TT
+></A
+> command can be used to determine if an array key
+      exists before accessing it: 
+    </P
+><PRE
+CLASS="programlisting"
+>    
+    <B
+CLASS="phrase"
+>if { [info exists</B
+> <I
+CLASS="emphasis"
+>array_name</I
+><B
+CLASS="phrase"
+>(</B
+><I
+CLASS="emphasis"
+>key_name</I
+><B
+CLASS="phrase"
+>)] } {</B
+>
+    # The key exists, so access it
+    <B
+CLASS="phrase"
+>} else {</B
+>
+      # The key does not exist
+    <B
+CLASS="phrase"
+>}</B
+>
+    
+        </PRE
+><P
+>&#13;
+      For example, the code below demonstrates some of the basic actions
+      that can be performed on arrays: 
+
+    </P
+><PRE
+CLASS="programlisting"
+>    
+    % set basket(apples) 1
+    1
+    % info exists basket(apples)
+    1
+    % info exists basket(oranges)
+    0
+    % info exists basket
+    1
+    % set basket(apples)
+    1
+    % incr basket(apples)
+    2
+    % set basket(apples)
+    2
+    % 
+        </PRE
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="uplevels-namespaces-advanced-array-operations"
+>3.1.3.1. Advanced array operations</A
+></H3
+><P
+>&#13;
+	The <A
+HREF="http://dev.scriptics.com/man/tcl8.3.2/TclCmd/array.htm"
+TARGET="_top"
+>array</A
+>
+	command can be used to manipulate Tcl arrays. Particularly, the
+	<TT
+CLASS="computeroutput"
+>array get</TT
+> and <TT
+CLASS="computeroutput"
+>array set</TT
+> commands can be used to
+	convert between arrays and lists. The <TT
+CLASS="computeroutput"
+>array get</TT
+> command
+	converts an array to a list with an even number of elements. The
+	odd-numbered elements are the key names and the even-numbered
+	elements are the key values, as shown in the example below: 
+
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    % set basket(apples) 1
+    1
+    % set basket(oranges) 5
+    5
+    % array get basket
+    apples 1 oranges 5
+    % 
+          </PRE
+><P
+>&#13;
+	The <TT
+CLASS="computeroutput"
+>array set</TT
+> command takes a list in the same format, and
+	sets the keys of the specified array to their values in the list: 
+
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    % array set basket [list apples 3 oranges 4 ants 15]
+    % set basket(apples)
+    3
+    % set basket(oranges)
+    4
+    % set basket(ants)
+    15
+    % 
+          </PRE
+><P
+>&#13;
+	The <TT
+CLASS="computeroutput"
+>array</TT
+> command has other useful operands, detailed in
+	the <A
+HREF="http://dev.scriptics.com/man/tcl8.3.2/TclCmd/array.htm"
+TARGET="_top"
+>official
+	  man pages</A
+>. In addition, ATS defines the following proc for
+	dealing with arrays (all procs are in the <TT
+CLASS="computeroutput"
+>template::util</TT
+>
+	namespace): 
+
+      </P
+><DIV
+CLASS="informaltable"
+><A
+NAME="AEN1342"
+></A
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+CELLPADDING="10"
+><THEAD
+><TR
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Proc</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Effect</TH
+><TH
+ALIGN="CENTER"
+VALIGN="MIDDLE"
+>Example</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>array_to_vars { arrayname }</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Sets local variables in the calling frame; set one variable for
+		each key in the array. The value of the variable is the value
+		associated with the key in the array. See the discussion of the
+		<TT
+CLASS="computeroutput"
+>upvar</TT
+> command below to see how this is accomplished.</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>template::util::array_to_vars my_array</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>vars_to_array { arrayname args }</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>The opposite of <TT
+CLASS="computeroutput"
+>array_to_vars</TT
+>. Sets array keys to the
+		values contained in the local variables whose names are supplied to
+		the proc.</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>&#13;		<PRE
+CLASS="programlisting"
+>    
+    set var1 "foo"
+    set var2 "bar"
+    template::util::vars_to_array my_array var1 var2
+    		</PRE
+>
+	      </TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>proc list_to_array { values arrayname keys }</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Takes a list of values and a list of keys, and sets the array
+		keys to the values specified in the lists. The lists must have the
+		same length.</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>template::util::list_to_array {1 15} my_array {apples
+		  oranges}</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>list_of_lists_to_array { lists arrayname }</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Takes a list of key-value pairs, in form <TT
+CLASS="computeroutput"
+>{{key1 value1}
+		  {key2 value2} ...}</TT
+> and sets the array contents
+		accordingly.</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>template::util::list_of_lists_to_array {{apples 1} {oranges
+		  2} my_array</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>list_to_lookup { values arrayname }</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+>Converts a list of input values into an array which can be used
+		as a sparse lookup bitmap. Each key in the array has a numeric
+		value which signifies its position in the original list.</TD
+><TD
+ALIGN="LEFT"
+VALIGN="MIDDLE"
+><TT
+CLASS="computeroutput"
+>template::util::list_to_lookup {a b c} my_array</TT
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="uplevels-namespaces-arrays-are-not-first-class"
+>3.1.3.2. Arrays are not first-class</A
+></H3
+><P
+>&#13;
+	Unlike <TT
+CLASS="computeroutput"
+>ns_set</TT
+>s, however, arrays in Tcl are not
+	"first-class". This means that they cannot be passed to procs as
+	parameters, and cannot be returned from procs as return values. For
+	example, assuming that an array variable called <TT
+CLASS="computeroutput"
+>my_array</TT
+>
+	exists, all of the following calls are illegal: 
+
+      </P
+><UL
+><LI
+><P
+CLASS="listitem"
+>&#13;	    <TT
+CLASS="computeroutput"
+>set other_array
+	      $my_array</TT
+>	  </P
+></LI
+><LI
+><P
+CLASS="listitem"
+>&#13;	    <TT
+CLASS="computeroutput"
+>set x [some_proc
+	      $my_array]</TT
+>	  </P
+></LI
+><LI
+><P
+CLASS="listitem"
+>&#13;	    <TT
+CLASS="computeroutput"
+>set my_array [some_proc]</TT
+>	  </P
+></LI
+></UL
+><P
+>Note that the above restrictions apply only to the arrays
+	themselves; array keys are no different from ordinary variables in
+	Tcl, and all of the following calls are legal:</P
+><UL
+><LI
+><P
+CLASS="listitem"
+>&#13;	    <TT
+CLASS="computeroutput"
+>set var $my_array(foo)</TT
+>	  </P
+></LI
+><LI
+><P
+CLASS="listitem"
+>&#13;	    <TT
+CLASS="computeroutput"
+>set x [some_proc
+	      $my_array(foo)]</TT
+>	  </P
+></LI
+><LI
+><P
+CLASS="listitem"
+>&#13;	    <TT
+CLASS="computeroutput"
+>set my_array(foo)
+	      [some_proc]</TT
+>	  </P
+></LI
+></UL
+><P
+>&#13;
+	Of course, arrays can still be passed between procs using the
+	<TT
+CLASS="computeroutput"
+>array get</TT
+> and <TT
+CLASS="computeroutput"
+>array set</TT
+> commands, but this
+	approach is very inefficient. Instead, the <TT
+CLASS="computeroutput"
+>upvar</TT
+> command
+	can be used to pass the arrays by reference. 
+
+      </P
+></DIV
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="uplevels-namespaces-upvar-and-uplevel"
+>3.1.4. Upvar and Uplevel</A
+></H2
+><P
+>The <A
+HREF="http://dev.scriptics.com/man/tcl8.3.2/TclCmd/upvar.htm"
+TARGET="_top"
+><TT
+CLASS="computeroutput"
+>upvar</TT
+></A
+>
+      command can be used to pass variables by reference. The syntax for
+      upvar is: 
+    </P
+><PRE
+CLASS="programlisting"
+>    
+    <B
+CLASS="phrase"
+>upvar</B
+> <I
+CLASS="emphasis"
+>optional_level upper_variable1 local_variable1 upper_variable2 local_variable2 ...</I
+>
+        </PRE
+><P
+>&#13;      The upvar command makes a local variable point to the same location
+      as a variable in the calling frame (note that a namespace also
+      counts as a frame). For example, consider the following code: 
+    </P
+><PRE
+CLASS="programlisting"
+>    
+    proc double {} {
+      upvar the_var x
+      set x [expr $x * 2]
+    }
+    
+        </PRE
+><P
+>&#13;      The <TT
+CLASS="computeroutput"
+>double</TT
+> proc associates a local variable called
+      <TT
+CLASS="computeroutput"
+>x</TT
+> with the variable in the calling frame called
+      <TT
+CLASS="computeroutput"
+>the_var</TT
+>, and then modifies the value of that variable. The
+      results of calling the proc are shown below: 
+    </P
+><PRE
+CLASS="programlisting"
+>    
+    % set the_var 3
+    3
+    % double
+    6
+    % set the_var
+    6
+    %
+        </PRE
+><P
+>&#13;      As with any Tcl command, the parameters to <TT
+CLASS="computeroutput"
+>uplevel</TT
+> need
+      not be literals. For example, the classic "swap" procedure may be
+      implemented in Tcl as follows: 
+    </P
+><PRE
+CLASS="programlisting"
+>    
+    proc swap { reference1 reference2 } {
+      upvar $reference1 a $reference2 b
+      set temp $a
+      set a $b
+      set b $temp
+    }
+        </PRE
+><P
+>&#13;      The <TT
+CLASS="computeroutput"
+>swap</TT
+> procedure looks up two variables in the calling
+      frame and swaps their contents, as demonstrated below: 
+    </P
+><PRE
+CLASS="programlisting"
+>    
+    % set x 3
+    3
+    % set y 5
+    5
+    % swap x y
+    3
+    % set x
+    5
+    % set y
+    3
+    % 
+        </PRE
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="uplevels-namespaces-using-upvar-and-arrays-to-store-objects"
+>3.1.4.1. Using upvar and arrays to store objects</A
+></H3
+><P
+>Arrays may be passed to procs using the upvar statement. Since Tcl
+	arrays are essentially hash tables, they are ideal for storing
+	object attributes. Consider the following code: 
+      </P
+><A
+NAME="oop_example"
+></A
+><PRE
+CLASS="programlisting"
+>    
+    ######## A full-fledged Tcl "class" ##########
+    
+    namespace eval basket {}
+    
+    # Create a new fruit basket
+    proc basket::create { basket_ref } {
+      upvar $basket_ref basket
+      set basket(apples) 0
+      set basket(oranges) 0
+    }
+    
+    # Add apples to the basket
+    proc basket::add_apples { basket_ref count } {
+      upvar $basket_ref basket
+      incr basket(apples) $count
+      # An orange gets squished
+      if { $basket(oranges) &#62; 0 } {
+        incr basket(oranges) -1
+      }
+      return $basket(apples)
+    }
+    
+    # Add oranges to the basket
+    proc basket::add_oranges { basket_ref count } {
+      upvar $basket_ref basket
+      incr basket(oranges) $count
+      return $basket(oranges)
+    }
+    
+    # Eat the juiciest fruit
+    proc basket::eat_fruit { basket_ref } {
+      upvar $basket_ref basket
+      if { $basket(oranges) &#62; $basket(apples) } {
+        incr basket(oranges) -1
+        return "Orange"
+      } elseif { $basket(apples) &#62; 0 } {
+        incr basket(apples) -1
+        return "Apple"    
+      } else {
+        error "The basket is empty"
+      }
+    } 
+    
+    # Dispatch proc for the basket class
+    proc basket { method_name basket_ref args } {
+      upvar $basket_ref basket
+      eval basket::$method_name basket $args
+    }
+          </PRE
+><P
+>The above code creates a very simple "class" which represents a
+	fruit basket. The class has two "attributes", <TT
+CLASS="computeroutput"
+>apples</TT
+> and
+	<TT
+CLASS="computeroutput"
+>oranges</TT
+>. The class also has two "methods" which add apples
+	or oranges to the basket, a method which removes a fruit from the
+	basket, and a constructor method (<TT
+CLASS="computeroutput"
+>basket::create</TT
+>). The
+	attributes are maintained in an array, and the array reference is
+	passed to each method as the first argument (similarly to how the
+	"this" pointer is passed in C++ and Java).</P
+><P
+>&#13;	The Tcl session shown below instantiates two <TT
+CLASS="computeroutput"
+>basket</TT
+>
+	objects and performs some operations on them: 
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    % basket create gift
+    0
+    % basket create stas
+    0
+    % basket add_apples gift 1
+    1
+    % basket add_oranges stas 1
+    1
+    % basket add_apples gift 1
+    2
+    % basket eat_fruit stas
+    Orange
+    % basket eat_fruit stas
+    The basket is empty
+    % basket eat_fruit gift
+    Apple
+    % basket eat_fruit gift
+    Apple
+    % basket eat_fruit gift
+    The basket is empty
+    % 
+          </PRE
+><P
+>&#13;	A large portion of the ATS uses the approach demonstrated above; in
+	particular, the "form", "element" and "request" pseudo-classes are
+	implemented in this way. 
+      </P
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="uplevels-namespaces-advanced-upvar-features"
+>3.1.4.2. Advanced upvar features</A
+></H3
+><P
+>&#13;
+	Note that the <TT
+CLASS="computeroutput"
+>basket</TT
+> dispatch proc above uses upvar to
+	bind a local variable <TT
+CLASS="computeroutput"
+>basket</TT
+> to the array which holds the
+	basket attributes in the calling frame. It then gives
+	"<TT
+CLASS="computeroutput"
+>basket</TT
+>" as the reference to one of the basket class
+	methods: 
+      </P
+><DIV
+CLASS="mediaobject"
+><P
+><IMG
+SRC="images/uplevel01.gif"
+ALT="Upvar illustration 1"
+></IMG
+></P
+></DIV
+><P
+>However, the <TT
+CLASS="computeroutput"
+>basket</TT
+> reference 
+	in the <TT
+CLASS="computeroutput"
+>::basket</TT
+>
+	proc is not useful; it is merely used to pass the reference down to
+	the <TT
+CLASS="computeroutput"
+>basket::eat_fruit</TT
+> proc. 
+	By using the <I
+CLASS="emphasis"
+>level</I
+>
+	parameter to <TT
+CLASS="computeroutput"
+>upvar</TT
+>, this extra reference can be
+	eliminated: 
+      </P
+><DIV
+CLASS="mediaobject"
+><P
+><IMG
+SRC="images/uplevel02.gif"
+ALT="Upvar illustration 2"
+></IMG
+></P
+></DIV
+><P
+>The Tcl interpreter will bind the local variable to a variable in
+	the <I
+CLASS="emphasis"
+>level</I
+>th calling frame, relative to the current frame. By
+	default, the level is assumed to be 1 (one), and the local variable
+	is bound to a variable in the caller of the current proc. If the
+	level is 2, the local variable will be bound to the variable in the
+	caller's caller; and so on. Therefore, the <TT
+CLASS="computeroutput"
+>basket</TT
+> dispatch
+	methods may be rewritten as follows (changes from the <A
+HREF="dev-guide.html#oop_example"
+>previous</A
+> 
+	example are shown in <B
+CLASS="phrase"
+>bold</B
+>): 
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    namespace eval basket {}
+    
+    # Create a new fruit basket
+    proc basket::create { basket_ref } {
+      <B
+CLASS="phrase"
+>upvar 2 $basket_ref basket</B
+>
+      set basket(apples) 0
+      set basket(oranges) 0
+    }
+    
+    # Add apples to the basket
+    proc basket::add_apples { basket_ref count } {
+      <B
+CLASS="phrase"
+>upvar 2 $basket_ref basket</B
+>
+      incr basket(apples) $count
+      # An orange gets squished
+      if { $basket(oranges) &#62; 0 } {
+        incr basket(oranges) -1
+      }
+      return $basket(apples)
+    }
+    
+    # Add oranges to the basket
+    proc basket::add_oranges { basket_ref count } {
+      <B
+CLASS="phrase"
+>upvar 2 $basket_ref basket</B
+>
+      incr basket(oranges) $count
+      return $basket(oranges)
+    }
+    
+    # Eat the juiciest fruit
+    proc basket::eat_fruit { basket_ref } {
+      <B
+CLASS="phrase"
+>upvar 2 $basket_ref basket</B
+>
+      if { $basket(oranges) &#62; $basket(apples) } {
+        incr basket(oranges) -1
+        return "Orange"
+      } elseif { $basket(apples) &#62; 0 } {
+        incr basket(apples) -1
+        return "Apple"    
+      } else {
+        error "The basket is empty"
+      }
+    } 
+    
+    # Dispatch proc for the basket class
+    proc basket { method_name basket_ref args } {
+      <B
+CLASS="phrase"
+># Code removed ---&#62; upvar $basket_ref basket</B
+>
+      <B
+CLASS="phrase"
+>eval basket::$method_name $basket_ref $args</B
+>
+    }
+          </PRE
+><P
+>&#13;	The <I
+CLASS="emphasis"
+>level</I
+> parameter may also be 0 (zero). In this case, a
+	local variable may be "aliased" under a different name, as is shown
+	below: 
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    % set x 5
+    5
+    % upvar 0 x y
+    % set y
+    5
+    % set y 6
+    6
+    % set x
+    6
+    % 
+          </PRE
+><P
+>In addition to relative levels, <TT
+CLASS="computeroutput"
+>upvar</TT
+> may refer to an
+	absolute level. This can be accomplished by prepending the level
+	with a pound sign (<TT
+CLASS="computeroutput"
+>#</TT
+>), despite the fact that the pound
+	sign is normally reserved for comments:</P
+><PRE
+CLASS="programlisting"
+>    
+    <B
+CLASS="phrase"
+>upvar #</B
+><I
+CLASS="emphasis"
+>level upper_variable1 local_variable1 upper_variable2 local_variable2 ...</I
+>
+          </PRE
+><P
+>&#13;	The top level (the level which contains all the global variables)
+	is #0, the next level below that is #1, and so on. The absolute
+	level is useful when there are many (possibly recursive) procs that
+	wish to refer to the same object (as opposed to passing the object
+	between the procs by value). The ATS form API 
+	(<TT
+CLASS="computeroutput"
+>form create</TT
+>, 
+	<TT
+CLASS="computeroutput"
+>element create</TT
+> and so on) uses this
+	technique. 
+      </P
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="uplevels-namespaces-uplevel"
+>3.1.4.3. Uplevel</A
+></H3
+><P
+>&#13;
+	In addition to binding variables in the calling frame via the
+	<TT
+CLASS="computeroutput"
+>upvar</TT
+> command, Tcl provides the capability to execute code
+	in the calling frame via the <A
+HREF="http://dev.scriptics.com/man/tcl8.3.2/TclCmd/uplevel.htm"
+TARGET="_top"
+><TT
+CLASS="computeroutput"
+>uplevel</TT
+></A
+>
+	command. The syntax for <TT
+CLASS="computeroutput"
+>uplevel</TT
+> is as follows: 
+
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    <B
+CLASS="phrase"
+>uplevel</B
+> <I
+CLASS="emphasis"
+>optional_level code</I
+>
+          </PRE
+><P
+>&#13;
+	The level is handled identically to the level in the <TT
+CLASS="computeroutput"
+>upvar</TT
+>
+	command, and the <I
+CLASS="emphasis"
+>code</I
+> parameter will be executed as if it
+	was in the specified frame. For example, consider the following
+	code: 
+
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    proc create_gift_basket {} {
+      uplevel {
+        basket create gift_basket
+        basket add_apples gift_basket 2
+        basket add_oranges gift_basket 3
+      }
+    }
+          </PRE
+><P
+>&#13;
+	This proc creates a fruit basket and fills it with some apples and
+	oranges: 
+
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    % create_gift_basket
+    3
+    % basket eat_fruit gift_basket
+    Orange
+    % basket eat_fruit gift_basket
+    Apple
+    % basket eat_fruit gift_basket
+    Orange
+    % basket eat_fruit gift_basket
+    Apple
+    % basket eat_fruit gift_basket
+    Orange
+    % basket eat_fruit gift_basket
+    The basket is empty
+    % 
+          </PRE
+><P
+>&#13;
+	Note that, in Tcl, code is stored as text. Therefore, using
+	<TT
+CLASS="computeroutput"
+>uplevel</TT
+> it is possible to create procs that take a piece
+	of code as a parameter (similar to the lambda-functions in LISP),
+	as is shown below:
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    proc list_map { the_list code } {
+      foreach element $the_list {
+        upvar list_item item
+        set item $element
+        uplevel $code
+      }
+    }
+          </PRE
+><P
+>&#13;
+	The <TT
+CLASS="computeroutput"
+>list_map</TT
+> proc takes a list and some executable code as
+	parameters. It then traverses the list element-by-element. For each
+	element in the list, the proc uses <TT
+CLASS="computeroutput"
+>upvar</TT
+> to create a
+	variable in the calling frame called "<TT
+CLASS="computeroutput"
+>list_item</TT
+>". The
+	procedure then executes the arbitrary code; the code runs in the
+	calling frame and may refer to any variables there, including
+	<TT
+CLASS="computeroutput"
+>list_item</TT
+>, as in this example: 
+
+      </P
+><PRE
+CLASS="programlisting"
+>    
+    % set a [list 1 2 3 4]
+    1 2 3 4
+    % set factor 3
+    3
+    % set b [list]
+    % list_map $a {lappend b [expr $list_item * $factor]}
+    % set b
+    3 6 9 12
+    % 
+          </PRE
+></DIV
+><DIV
+CLASS="sect3"
+><H3
+CLASS="sect3"
+><A
+NAME="uplevels-namespaces-excessive-usage-of-upvaruplevel-considered-harmful"
+>3.1.4.4. Excessive usage of upvar/uplevel considered harmful</A
+></H3
+><P
+>&#13;
+	Despite their advantages, uplevel and upvar should be used with
+	caution. Excessive usage of upvar (especially upvar to absolute
+	levels) may render code unreadable, since it is difficult to trace
+	all the variable references back to their source through the
+	various function calls. In addition, <TT
+CLASS="computeroutput"
+>upvar</TT
+> paves the way
+	for dreaded "pointer aliasing" bugs. Using <TT
+CLASS="computeroutput"
+>upvar</TT
+>, it
+	becomes possible for two unrelated procedures to accidentally
+	reference the same variable in the calling frame, and thus corrupt
+	the data. Combined with namespace variables, <TT
+CLASS="computeroutput"
+>upvar</TT
+> can do
+	a lot of damage. 
+
+      </P
+><P
+>The <TT
+CLASS="computeroutput"
+>uplevel</TT
+> command has the potential to introduce even
+	more subtle bugs, since it can overwrite arbitrary variables in the
+	calling frame. For example, consider the following code:</P
+><P
+></P
+><PRE
+CLASS="programlisting"
+>    
+    proc clobber {} {
+      uplevel {
+        for { set i 1 } { $i &#60;= 3 } { incr i } {
+          # Do something
+        }
+      }
+    }
+          </PRE
+><P
+>&#13;	The <TT
+CLASS="computeroutput"
+>clobber</TT
+> proc will work fine as long as there is no
+	variable called "<TT
+CLASS="computeroutput"
+>i</TT
+>" in the calling frame. If that variable
+	exists, the proc will overwrite the variable's value. Since
+	variables such as "<TT
+CLASS="computeroutput"
+>i</TT
+>", "<TT
+CLASS="computeroutput"
+>j</TT
+>", etc. are often used
+	in loops, the behavior of <TT
+CLASS="computeroutput"
+>clobber</TT
+> may become completely
+	unpredictable. 
+
+      </P
+><P
+>In addition, <TT
+CLASS="computeroutput"
+>upvar</TT
+> and <TT
+CLASS="computeroutput"
+>uplevel</TT
+> may present a
+	security risk. The risk is even greater than the risk posed by
+	<TT
+CLASS="computeroutput"
+>eval</TT
+>, since <TT
+CLASS="computeroutput"
+>eval</TT
+> can only execute code in the
+	current frame, and <TT
+CLASS="computeroutput"
+>upvar</TT
+> / <TT
+CLASS="computeroutput"
+>uplevel</TT
+> may execute
+	code in <I
+CLASS="emphasis"
+>any</I
+> frame.</P
+></DIV
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="uplevels-namespaces-conclusion"
+>3.1.5. Conclusion</A
+></H2
+><P
+>&#13;
+      Namespaces, upvars and arrays may be used to simulate OOP behavior
+      in Tcl. This approach is widely used throughout ATS in order to
+      make the code more manageable and easily extensible. However, this
+      approach (and especially upvar/uplevel commands) should be used
+      with caution since it can decrease the readability of the code and
+      introduce hidden bugs.
+    </P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+SIZE="1"
+NOSHADE="NOSHADE"
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="setup-administration.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="custom-interface.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Setup and Administration</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Customizing Item Information Pages and Data Entry Forms</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

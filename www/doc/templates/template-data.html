@@ -1,0 +1,298 @@
+<html>
+<head><title>Writing Template Datasources</title></head>
+<body bgcolor=#ffffff>
+
+<h2>Writing Template Datasources</h2>
+
+<a href="template.html">Templates Tutorial</a> : Writing Template Datasources
+<hr>
+
+<h3>Overview</h3>
+
+A template consists of two parts: the ADP page and the TCL executable file. 
+The purpose of the TCL file is to generate the datasources used by the ADP
+page, and to run other setup code. In particular, the TCL file may perform
+any of the following tasks:
+
+<ol>
+  <li><a href="#attributes">Retrieve the attributes of the current item</a></li>
+  <li><a href="#query">Run and document database queries</a></li>
+  <li><a href="#forms">Create and process forms</a></li>
+</ol>
+
+<a name=attributes></a><h3>Retrieving attributes of the current item</h3>
+
+When an item is accessed (either by being viewed in the browser or by being
+published), the template assigned to the item receives an implicit refrence
+to the item's attributes. The TCL file may call 
+<blockquote><tt>content::get_content</tt></blockquote>
+in order to access the item's attributes. The attributes will be placed in
+a onerow datasource (i.e., a TCL array) called <tt>content</tt>; the live
+revision for the item is used to look up the attributes. For convenience,
+the TCL file may call
+<blockquote><tt>template::util::array_to_vars content</tt></blockquote>
+in order to convert the datasource to local variables, which may be used
+as <tt>onevalue</tt> datasources by the ADP file.
+<p>
+The <tt>content</tt> datasource is guaranteed to contain the following
+fields:
+
+<ul>
+  <li><b><tt>item_id</tt></b> - The id of the item</li>
+  <li><b><tt>revision_id</tt></b> - The id of the live revision 
+    for the item
+  </li>
+  <li><b><tt>content_type</tt></b> - The content type of the item</li>
+  <li><b><tt>name</tt></b> - The filename of the item, without 
+    any extension</li>
+  <li><b><tt>parent_id</tt></b> - The id of the container for this item</li>
+  <li><b><tt>title</tt></b> - The title of the item, which may be blank</li>
+  <li><b><tt>description</tt></b> - The description of the item, 
+    which may also be blank. The maximum size for the description is
+    4000 characters.
+  </li>
+  <li><b><tt>mime_type</tt></b> - The mime-type  of the item, 
+    such as "text/html" or "image/jpeg"
+  </li>
+  <li><b><tt>text</tt></b> - The content blob of the item, in text format. 
+    <font color=red>Be careful when using this attribute - if the content
+      blob of the item is in fact binary data, the TCL script may crash</font>
+  </li>
+  <li><b><tt>context_id</tt></b>, <b><tt>security_inherit_p</tt></b>, 
+    <b><tt>creation_user</tt></b>, <b><tt>creation_ip</tt></b>, 
+    <b><tt>last_modified</tt></b>, <b><tt>modifying_user</tt></b>, 
+    <b><tt>modifying_ip</tt></b> - The properties of the item's live
+    revision in <tt>acs_objects</tt> 
+  </li>
+</ul>
+
+In addition, any extra attributes defined by the item's content type will
+be present in the datasource. For example, if the current item has the 
+<tt>press_release</tt> content type, which defines a <tt>company_name</tt> 
+attribute, the <tt>content</tt> datasource will contain a <tt>company_name</tt>
+field. 
+
+<h3>Content API Pitfalls</h3>
+
+The content API may lead to some unexpected behavior if used incorrectly;
+some common errors are outlined below.
+
+<h4>Updating revisions</h4>
+
+The attributes of each revision are cached, in order to improve performance. 
+This may lead to unexpected behavior. Consider the following scenario:
+
+<ol>
+  <li>The <tt>my_press_release</tt> item (<tt>item_id</tt> = 1) has a live
+    revision, whose <tt>revision_id</tt> is 4</li>
+  <li>The item is served in the browser, and the attributes for the revision
+    #4 are used. The title of the revision is "My Press Release"; this
+    title is cached along with other attributes</li>
+  <li>Some TCL script executes an update statement on the <tt>cr_revisions</tt>
+    table, changing the title of revision #4 to 
+    "The Care and Feeding of Manatees"</li>
+  <li>The item's page is refreshed in the browser. Since the attributes for
+    the revision #4 are cached, the title shows up as "My Press Release",
+    even though the <tt>title</tt> column in the database is set to
+     "The Care and Feeding of Manatees"</li>
+</ol>
+
+To avoid this behavior, TCL and PL/SQL scripts should never update the 
+<tt>cr_revisions</tt> table. Instead, the scripts should create a new 
+revision for the item.
+
+<h4>Using connection-specific calls</h4>
+
+Sometimes, the item's template may need to retrieve the URL of the current
+item, the package key of the active package, etc. Standalone TCL scripts
+and templates may use <tt>ns_conn</tt> or <tt>ad_conn</tt> in order to
+retrieve this information. However, when the item is being published (i.e.,
+written to the filesystem), the current URL is the URL of the publishing
+script (typically, <tt>cms/modules/items/publish.tcl</tt>), not the URL
+of the item itself. Similarly, the data in the <tt>ad_conn</tt> fields
+will pertain to the CMS package. Thus, content items will render correctly
+when being previewed in CMS or served directly from the database, but
+will <b>not</b> render correctly when published to the filesystem.
+<p>
+To remedy this situation, the TCL file for the item's template should 
+avoid using <tt>[ns_conn url]</tt> and other connection-specific calls.
+Instead, the TCL file may call <tt>content::get_content</tt> in order
+to retrieve the <tt>item_id</tt> of the item, and then call
+<blockquote><tt>set current_url [<a href="/ats/doc/api/item.html#item::get_url">item::get_url</a> $content(item_id)]</tt></blockquote>
+Once the item's ID and URL are known, the TCL file may retrieve other
+information about the current page by using standard APIs. Note:
+<font color=red>This situation could be remedied, but the solution would
+involve some nontrivial coding. However, CMS-TCL is frozen, and so no
+solution exists at this time.</font>
+
+<h4>Manually querying the database</h4>
+
+In addition to the <tt>item::get_url</tt> call mentioned above, the 
+<tt>item</tt> namespace provides other procs which retrieve miscellaneous
+data about the item. For example, <tt>item::get_extended_url</tt> can be
+used to compute the full URL of the item (including the file extension).
+Most of the queries performed by the <tt>item</tt> procs are cached for
+efficiency. In addition, the <tt>item</tt> procs are more flexible than
+hardcoded SQL queries; when the CMS implementation changes (to support
+subsites, for example), the implementation of the procs will change, but
+the interface will remain the same. 
+<p>
+For more information, see the auto-generated 
+<a href="/ats/doc/api/item.html">documentation</a> on the <tt>item</tt>
+namespace.
+
+<a name="query"></a><h3>Querying the database</h3>
+
+The TCL file may query the database in order to create datasources which the 
+ADP page will use to render the page. In order to simplify the SQL queries, the
+Content Repository provides an "x" view along with each content type. The
+view joins together all the attributes of the content type, and contains
+all revisions for each content item with the given content type.
+For example, consider an index page whose purpose is to serve press releases for
+a company. Each press release has the content type <tt>press_release</tt>
+Thus, a SQL query such as
+<blockquote><tt><pre>select 
+  title, topic, content_item.get_path(item_id) as press_url
+from
+  <b>press_releasesx</b></pre></tt></blockquote>
+will select all revisions of all press releases in the system. In order to select
+only the live revisions, the TCL file may join with the <tt>cr_items</tt> table:
+<blockquote><tt><pre>select 
+  x.title, x.topic, content_item.get_path(x.item_id) as press_url
+from
+  press_releasesx x, <b>cr_items i</b>
+where
+  <b>i.live_revision = x.revision_id</b></pre></tt></blockquote>
+This query, when executed through the ACS DB API or <tt>template::query</tt>,
+will produce a <i>multirow</i> datasource which the ADP page may then use
+to render a list of all available press releases. For example, the template
+may use the following markup:
+<blockquote><tt><pre>&lt;ul&gt;
+  <b>&lt;multiple name=press_releases&gt;</b>
+    &lt;li&gt;
+      &lt;a href="@press_releases.press_url@"&gt;@press_releases.title@&lt;/a&gt;
+      (@press_releases.topic@) 
+    &lt;/li&gt;
+  <b>&lt;/multiple&gt;</b>
+&lt;/ul&gt;</pre></tt></blockquote>
+  
+resulting in a list of press releases:
+
+<ul>
+  <li>
+    <a href="">Company Founded</a> (First press release ! Yey !)
+  </li>
+  <li>
+    <a href="">Profits Rise</a> (Financial Report)
+  </li>
+  <li>
+    <a href="">Bankruptcy Declared</a> (Dot-com Winter)
+  </li>
+</ul>
+
+Multirow datasources may also be created manually, by using the 
+<tt>template::multirow</tt> command. In addition, the template may create
+<i>onerow</i> (TCL arrays) and <i>onevalue</i> (TCL variables) datasources;
+see the templating system documentation for more information.
+
+<a name="document"></a><h4>Documenting the Datasources</h4>
+
+In addition to creating the datasources, the TCL file should document them,
+so that the CMS Templates UI may describe them to the user in the
+<a href="template-datasources.html">Datasources</a> pane. The format for
+datasource documentation is similar to Javadoc:
+
+<blockquote><pre><tt><b># @datasource </b><i>datasource_name datasource_type datasource_comment</i><b>
+# @column </b><i>column_name column_comment</i><b>
+# @column </b><i>column_name column_comment</i><b>
+# </b><i>...</i></tt></pre></blockquote>
+
+
+The fields are explained in greater detail below:
+
+<ul>
+  <li><tt><i>datasource_name</i></tt> - The name of the datasource; 
+    must be a valid TCL variable name</li>
+  <li><tt><i>datasource_type</i></tt> - Must be <tt><i>multirow</i></tt>, 
+    <tt><i>onerow</i></tt>, <tt><i>onevalue</i></tt>, <tt><i>onelist</i></tt>,
+    <tt><i>multilist</i></tt> or any other valid datasource type as described in
+    the templating system documentation</li>
+  <li><tt><i>column_name</i></tt>, <tt><i>column_comment</i></tt> - if the 
+    datasource type is <tt><i>multirow</i></tt>, these fields may be used
+    to describe the individual columns of the datasource. Otherwise, these
+    fields are ignored.</li>
+  <li><tt><i>datasource_comment</i></tt> - The comment describing the
+    datasource</li>
+</ul>
+
+For example, consider a fragment of the <tt>master-2</tt> template, which
+is installed by the CMS Demo:
+
+<blockquote><tt><pre># <b>@datasource</b> articles <b>multirow</b>
+# <b>@column</b> location 
+# <b>@column</b> name
+# <b>@column</b> title 
+# This datasource enumerates all articles across all locations
+#
+# <b>@datasource</b> location <b>onevalue</b> the user clicked location
+#
+# <b>@datasource</b> current_url <b>onevalue</b></pre></tt></blockquote>
+
+This documentation fragment describes three datasources: <tt>articles</tt>,
+<tt>location</tt> and <tt>current_url</tt>. The <tt>articles</tt> datasource
+is a <i>multirow</i> datasource with three columns, <tt>location</tt>, <tt>name</tt>
+and <tt>title</tt>. The <tt>location</tt> and <tt>current_url</tt> are
+both <i>onevalue</i> datasources.
+<p>
+These pseudo-Javadoc tags merely describe the datasources - they do not have
+any impact on how the template is actually rendered. However, the tags help
+clarify the purpose of the template. The CMS Templating UI will attempt to parse 
+the template if it detects no pseudo-Javadoc datasource comments;
+however, the parsed results cannot compare in quality to human-generated
+documentation.
+
+<a name="forms"></a><h3>Creating and Processing Forms</h3>
+
+In addition to the forms API provided by the templating system, the CMS Forms API
+provides various procs designed to automate the content item creation process.
+The simplest way to create a new item is to perform the following TCL calls:
+
+<blockquote><tt><pre>content::new_item_form -form_name <i>form_name</i> -contnent_type <i>content_type</i>
+
+if { [template::form is_valid <i>form_name</i>] } {
+  content::new_item <i>form_name</i>
+  template::forward <i>next_page_url</i>
+}</pre></tt></blockquote>
+
+This snippet of code will execute the following steps:
+
+<ol>
+  <li>Construct a blank form for the creation of the new item. The form
+    is constructed based on form widgets registered to the content type in
+    the CMS Content Type UI
+  </li>
+  <li>Validate the form. If any required elements are missing, if any
+    user-entered values do not match the proper datatypes, or if any
+    other error occurs, the error will be reported to the user and the form
+    will not submit
+  </li>
+  <li>Process the form, creating a new content item and its first revision
+    based on the user-entered values
+  </li>
+  <li>Forward the user to the next page in page flow</li>
+</ol>
+
+The CMS Forms API also includes other, less powerful but more versatile
+procs. For example, <tt>content::add_revision_form</tt> may be used to
+generate a form for editing an existing content item. More help can be
+found in the auto-generated documentation of the 
+<tt><a href="/ats/doc/api/content.html">content</a></tt> namespace, or
+directly in the source code of <tt>form-procs.tcl</tt>.
+
+</body>
+</html>
+
+
+
+
+

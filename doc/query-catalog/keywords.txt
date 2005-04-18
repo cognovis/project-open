@@ -1,0 +1,77 @@
+-- Queries about keywords
+-- Currently, we cannot use the heading or description columns
+-- directly - instead, we have to cal get_heading and
+-- get_description. In the future, these functions will change
+-- to handle internationalization.
+
+-- Determine if a keyword is assigned to an item
+
+  -- Look for an exact match
+  if recurse = 'none' then
+    declare
+    begin
+      select 't' into v_ret from cr_item_keyword_map
+        where item_id = is_assigned.item_id
+        and   keyword_id = is_assigned.keyword_id;
+      return 't';
+    exception when no_data_found then
+      return 'f';    
+    end;
+  end if;
+
+  -- Look from specific to general
+  if recurse = 'up' then
+    begin
+      select 't' into v_ret from dual where exists (select 1 from
+	(select keyword_id from cr_keywords
+	   connect by parent_id = prior keyword_id
+	   start with keyword_id = is_assigned.keyword_id
+	 ) t, cr_item_keyword_map m
+      where
+	t.keyword_id = m.keyword_id
+      and
+	m.item_id = is_assigned.item_id);
+
+      return 't';
+
+    exception when no_data_found then
+      return 'f';    
+    end;
+
+  -- Look from general to specific
+  if recurse = 'down' then
+    begin
+      select 't' into v_ret from dual where exists ( select 1 from
+	(select keyword_id from cr_keywords
+	   connect by prior parent_id = keyword_id
+	   start with keyword_id = is_assigned.keyword_id
+	 ) t, cr_item_keyword_map m
+      where
+	t.keyword_id = m.keyword_id
+      and
+	m.item_id = is_assigned.item_id);
+
+      return 't';
+
+    exception when no_data_found then
+      return 'f';    
+    end;
+  end if; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

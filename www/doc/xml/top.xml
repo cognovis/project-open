@@ -1,0 +1,86 @@
+<?xml version='1.0' ?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+     "http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd"
+[
+    <!ENTITY overview SYSTEM "overview.xml">
+
+    <!ENTITY install SYSTEM "install.xml">
+    <!ENTITY setup-administration SYSTEM "setup-administration.xml">
+    <!ENTITY data-entry-methods SYSTEM "data-entry-methods.xml">
+    <!ENTITY user-permissions SYSTEM "user-permissions.xml">
+    <!ENTITY cms-tasks SYSTEM "cms-tasks.xml">
+
+    <!ENTITY user-guide SYSTEM "user-guide.xml">
+    <!ENTITY managing-templates SYSTEM "templates.xml">
+    <!ENTITY page SYSTEM "page.xml">
+
+    <!ENTITY uplevels-namespaces SYSTEM "uplevels-namespaces.xml">
+    <!ENTITY custom-interface SYSTEM "custom-interface.xml">
+    <!ENTITY dev-permissions SYSTEM "dev-permissions.xml">
+    <!ENTITY publishing-filesystem SYSTEM "publishing-filesystem.xml">
+    <!ENTITY tutorials SYSTEM "tutorials.xml">
+    <!ENTITY press-tutorial SYSTEM "press.xml">
+    <!ENTITY requirements SYSTEM "requirements.xml">
+
+]>
+
+<book>
+  <title>Content Management System</title>
+  <bookinfo>
+  </bookinfo>
+
+  <chapter id="cms-intro" xreflabel="CMS Introduction">
+    <title>Introduction</title>
+
+    <sect1>
+    <title>Overview</title>
+    <para><emphasis>Briefly answer two questions:</emphasis></para>
+    <itemizedlist>
+      <listitem><para>What does this package do?</para></listitem>
+      <listitem><para>How can my business benefit from using it?</para></listitem>
+    </itemizedlist>
+    <para><emphasis>You may want to cut and paste from your requirements doc.</emphasis></para>
+    </sect1>
+
+    &overview;
+    &user-guide;
+
+  </chapter>
+
+  <chapter id="acs-admin-guide" xreflabel="CMS ACS Admin Guide">
+    <title>ACS Administrator's guide</title>
+
+    <sect1>
+    <title>Overview</title>
+   
+    <para>
+      <emphasis>Documents of interest to site administrators (an installation guide, 
+	for example) should be included here.</emphasis>
+    </para>
+    </sect1>
+
+    &install;
+    &setup-administration;
+  </chapter>
+
+  <chapter id="dev-guide" xreflabel="Package Developer's Guide">
+    <title>Developer's guide</title>
+
+    <sect1>
+    <title>Overview</title>
+
+    <para>
+      <emphasis>Information for developers (including the requirements and design docs)
+	should go here.</emphasis>
+    </para>
+    </sect1>
+
+    &uplevels-namespaces;
+    &custom-interface;
+    &dev-permissions;
+    &publishing-filesystem;
+    &tutorials;
+    &requirements;
+  </chapter>
+
+</book>

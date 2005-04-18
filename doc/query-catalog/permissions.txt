@@ -1,0 +1,44 @@
+-- Permissions ------------------------------------------------
+
+-- List all privileges in a hierarchial tree
+select privilege, child_privilege from acs_privilege_hierarchy
+           connect by prior privilege = child_privilege
+
+-- 
+-- Permissions assignment:
+-- 
+
+-- Needs to be optimized. Need a way to unassign all but the highest
+-- permissions in the hierarchy from any object.
+
+-- Get a list of all permissions in an hierarchy, determine 
+-- if the juser has the permission on the object
+
+      select 
+	t.child_privilege as privilege, 
+	lpad(' ', t.tree_level * 24, '&nbsp;') || 
+          NVL(p.pretty_name, t.child_privilege) as label,
+	content_permission.permission_p(
+	 :object_id, :grantee_id, t.child_privilege
+	) as permission_p,
+        content_permission.permission_p (
+	 :object_id, :grantee_id, t.privilege
+	) as parent_permission_p
+      from (
+	select privilege, child_privilege, level as tree_level
+	  from acs_privilege_hierarchy
+	  connect by privilege = prior child_privilege
+	  start with privilege = 'cm_root'
+	) t, acs_privileges p
+      where
+	p.privilege = t.child_privilege
+      and (
+	content_permission.has_grant_authority (
+	  :object_id, :user_id, t.child_privilege
+	) = 't' 
+	or
+	content_permission.has_revoke_authority (
+	  :object_id, :user_id, t.child_privilege, :grantee_id
+	) = 't' 
+      )
+

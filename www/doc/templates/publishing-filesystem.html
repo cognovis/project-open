@@ -1,0 +1,1404 @@
+<html>
+  <head>
+    <title>Content Management Developer Guide: 
+           Publishing to the file system</title>
+  </head>
+
+<body bgcolor="#FFFFFF">
+
+<h2>Publishing to the file system</h2>
+<b><a href="../index.html">Content Management System</a> : Developer Guide</b>
+<hr>
+
+<font size=-1>Note: This document links to the automatically generated
+TCL <a href="/ats/doc/api/tcl-procs.html">documentation</a>. You may need 
+to update ATS and regenerate the documentation in order to follow the
+links.</font>
+
+<h2>Table Of Contents</h2>
+
+<ul>
+  <li><a href="#overview">Overview</a></li>
+  <li><a href="#tags">Relation, child and content tags</a>
+    <ul>
+      <li><a href="#child_tag">The child tag</a>
+        <ul>
+          <li><a href="#tag_example">Example</a></li>
+        </ul>
+      </li>
+      <li><a href="#relation_tag">The relation tag</a></li>
+      <li><a href="#content_tag">The content tag</a></li>
+      <li><a href="#tag_api">Basic TCL API</a>
+        <ul>
+          <li><a href="#handlers">Defining mime-type handlers</a>
+            <ul>
+              <li><a href="#handler_options">Handler options</a></li>
+            </ul>
+          </li>
+          <li><a href="#other_api">Other API</a></li>
+          <li><a href="#handler_examples">Handler Examples</a>
+            <ul>
+              <li><a href="#text_handler">The text handler</a></li>
+              <li><a href="#image_handler">The image handler</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#filesystem">Publishing to the filesystem</a>
+    <ul>
+      <li><a href="#publish_revision"><tt>publish_revision</tt>
+        <ul>
+          <li><a href="#image_example">Image example</a></li>
+        </ul>
+      </li>
+      <li><a href="#UI">CMS UI</a></li>
+      <li><a href="#scheduling">Scheduling items for release</a></li>
+    </ul>
+  </li>
+  <li><a href="#conclusion">Conclusion</a></li>
+</ul>
+  
+<a name=overview></a><h2>Overview</h2>
+
+A typical content item is usually a collection of child items and related items,
+as shown in the <a href="../user-guide/page.html">page relation</a> document.
+Therefore, the template registered to the item has to run multiple SQL queries
+in order to retrieve and process all of the child / related items. In addition
+to being cumbersome to write, these queries access the datatbase each time an
+item is being served, thus slowing down the site. The publishing API in CMS
+may be used to solve both of these problems.
+
+<a name=tags></a><h2>Relation, child and content tags</h2>
+
+CMS defines three new ATS tags: <tt>child</tt>, <tt>relation</tt> and
+<tt>content</tt>. The purpose of these tags is to signify a place in the ADP
+template for the item where a child item, a related item or the current 
+item's content will be inserted.
+<p>
+The <tt>child</tt> tag can be used to include a child item in the template
+for the parent item, similarly to the ATS <tt>include</tt> tag.
+The syntax for the <tt>child</tt> tag is as follows:
+
+<a name=child_tag></a><h3>The Child Tag</h3>
+
+<blockquote><pre><tt><b>&lt;child tag=</b><i>tag</i> <b>index=</b><i>n</i> <b>embed</b> <i>args</i>&gt;
+</tt></pre></blockquote>
+
+<table border=1 cellpadding=4 cellspacing=0> 
+<tr bgcolor=#dddddd>
+  <th>Parameter</th><th>Default value</th><th>Description</th>
+</tr>
+<tr>
+  <td><tt>tag</tt></td>
+  <td><font color=red><i>This parameter is required</i></font></td>
+  <td>Specifies the relation tag to be used when querying for the child
+    item. For more information, see the acs-content-repository documentation,
+    sepcifically the <tt>content_type.register_child_type</tt> procedure.
+  </td>
+</tr>
+<tr>
+  <td><tt>index</tt></td>
+  <td>1</td>
+  <td>Specifies the index of the item, starting at 1. The index is based on
+   the <tt>order_n</tt> of the child relation; the child item with the lowest
+   <tt>order_n</tt> has index 1, the item with the next lowest <tt>order_n</tt>
+   has index 2, and so on.
+  </td>
+</tr>
+<tr>
+  <td><tt>embed</tt></td>
+  <td><i>no value</i></td>
+  <td>Signifies that the child item should be statically embedded in
+    the current item's template. If this parameter is not specified,
+    the child item will instead be referenced dynamically, most likely
+    using the <tt>&lt;include&gt;</tt> tag. If the <tt>embed</tt>
+    parameter is specified, the child item may be written to the file
+    system (this is done for images, for example). See the discussion of
+    publishing to the file system <a href="#filesystem">below</a> for
+    an explanation of how the <tt>embed</tt> parameter may be used.
+  </td>
+</tr>
+<tr>
+  <td><tt>args</tt></td>
+  <td><i>no value</i></td>
+  <td>Specifies extra parameters to be passed to the template, in form
+    <tt>name1="value1" name2="value2" ...</tt>. The syntax for passing
+    these parameters is the same as the syntax for the <tt>include</tt>
+    tag.
+  </td>
+</tr>
+</table>
+
+<p>
+
+In order for the <tt>child</tt> tag to work, the child item must be published.
+If the child item is not published, or if any other occurs, the child tag
+is ignored.
+
+<a name=tag_example></a><h4>Child tag example</h4>
+
+For example, consider the following template:
+
+<a name="kid_template"></a><h4><tt>kid.tcl</tt></h4>
+
+<blockquote><pre><tt>request create
+request set_param color -datatype text -value "#FFFFFF" -optional
+content::get_content
+template::util::array_to_vars content
+</tt></pre></blockquote>
+
+<h4><tt>kid.adp</tt></h4>
+
+<blockquote><pre><tt>&lt;html&gt;
+&lt;head&gt;&lt;title&gt;@title@&lt;/title&gt;&lt;/head&gt;
+&lt;body bgcolor=@color@&gt;
+
+I am a child
+
+&lt;table&gt;
+  &lt;tr bgcolor=@color@&gt;&lt;td&gt;@text@&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</tt></pre></blockquote>
+
+This template can be used to render a basic item whose context is 
+readable text. The template takes one parameter, <tt>color</tt>, which
+is used as the background color for the item. Assume that this template is
+registered to an item called called "Junior", whose content is "Hello 
+World !".
+<p>
+Now, consider the following template:
+
+<h4><tt>daddy.tcl</tt></h4>
+
+<blockquote><pre><tt>content::get_content
+template::util::array_to_vars content
+</tt></pre></blockquote>
+
+<h4><tt>daddy.adp</tt></h4>
+
+<blockquote><pre><tt>&lt;html&gt;
+&lt;head&gt;&lt;title&gt;@title@&lt;/title&gt;&lt;/head&gt;
+&lt;body bgcolor="#FFFFFF"&gt;
+
+&lt;h4&gt;The child:&lt;/h4&gt;
+
+&lt;child tag=family index=1 embed color="#00FF00"&gt;
+
+&lt;h4&gt;The parent:&lt;/h4&gt;
+
+@text@
+
+&lt;/body&gt;
+&lt;/html&gt;
+</tt></pre></blockquote>
+
+This template can be also be used to render a basic item whose context
+is readable text. In addition, this template assumes that the current
+item ahs at least one child item, which is related to the current 
+item using the <tt>family</tt> relation tag. Assume that this template
+is registered to an item called "Senior", whose content is "Who's your
+daddy ?". The diagram below shows all the aforementioned relationships:
+
+<blockquote><img src=publish_1.gif align=center></blockquote>
+
+<p>
+
+Assuming that the "Junior" and "Senior" items are both published,
+the user will see something like 
+<a href="child_example.html" target=popup>this</a> when
+requesting "senior.acs".
+
+<p>
+
+Note that the child item need not be plain text for the <tt>child</tt>
+tag to work. In fact, the tag works with images and may be extended
+to handle any mime type, as is discussed <a href="#handlers">below</a>.
+
+<a name=relation_tag></a><h3>Relation tag</h3>
+
+The syntax for the <tt>relation</tt> tag is almost identical to the
+syntax of the <tt>child</tt> tag:
+
+<blockquote><pre><tt><b>&lt;relation tag=</b><i>tag</i> <b>index=</b><i>n</i> <b>embed</b> <i>args</i>&gt;
+</tt></pre></blockquote>
+
+All the parameters of the <tt>relation</tt> tag are identical to the
+parameters of the <tt>child</tt> tag. The only difference between the two 
+tags is that the <tt>child</tt> tag handles child items, while the 
+<tt>relation</tt> tag handles related items.
+
+<a name=content_tag></a><h3>Content tag</h3>
+
+The <tt>content</tt> tag accepts no parameters:
+
+<blockquote><pre><tt><b>&lt;content&gt;</b></tt></pre></blockquote>
+
+This tag can be used to render the content of the current item. 
+For example, the <tt>daddy</tt> template <a href="#kid_template">above</a>
+can be modified as follows:
+
+<h4><tt>kid.adp</tt></h4>
+
+<blockquote><pre><tt>&lt;html&gt;
+&lt;head&gt;&lt;title&gt;@title@&lt;/title&gt;&lt;/head&gt;
+&lt;body bgcolor=@color@&gt;
+
+I am a child
+
+&lt;table&gt;
+  &lt;tr bgcolor=@color@&gt;&lt;td&gt;<b>&lt;content&gt;</b>&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</tt></pre></blockquote>
+
+Unlike the <tt>@text@</tt> variable, however, the <tt>content</tt> tag may
+also be used to render images and other mime types. The <tt>content</tt> tag 
+is treated similarly to the <tt>child</tt> and <tt>relation</tt> tags, 
+with the <tt>embed</tt> parameter always present.
+
+<a name="tag_api"></a><h3>Basic TCL API</h3>
+
+In order to process the <tt>relation</tt> and <tt>child</tt> tags, the templating
+system must perform the following steps:
+
+<ol>
+<li>Retrieve the item_id of the child/related item</li>
+<li>Render the child item in some way, based on the item's mime type,
+  possibly performing one of the following tasks:
+  <ul>
+    <li>Merge the item with its template</li>
+    <li>Write the body of the item to the filesystem</li>
+    <li>Pass extra parameters to the item</li>
+    <li>etc...</li>
+  </ul>
+</li>
+<li>Insert the rendered child/related item into the parent item</li>
+</ol>
+
+Since <tt>content</tt> tag renders the content of the current item, it does
+not need to perform Step 1.
+<p>
+Steps 1 and 3 are performed by the private TCL proc 
+<tt>publish::render_subitem</tt>. In order to accomplish Step 2, the
+templating system needs to know how to handle various mime types. 
+This is accomplished through the use of <i>handlers</i>.
+
+<a name="handlers"></a><h4>Defining-mime type handlers</h4>
+
+A mime-type handler for a mime type (such as "text/plain" or "image/jpeg") 
+is a TCL proc, with the following signature:
+
+<blockquote><pre><tt>
+<b>proc publish::handle::</b><i>mime_prefix</i><b>::</b><i>optional_mime_suffix</i> <b>{ item_id args } {
+
+  <font color=gray># Process any additional options passed to the handler</font>
+  template::util::get_opts $args
+
+  <font color=gray># Perform some calculation to get the HTML for the item
+  #...
+  
+  # Return the rendered HTML for the item</font>
+  return $html
+}</b>
+</tt></pre></blockquote>
+
+The handler proc takes in an <tt>item_id</tt>, and any of the following options:
+<p>
+
+<a name="handler_options"></a>
+<table border=1 cellpadding=4 cellspacing=0> 
+<tr bgcolor=#dddddd>
+  <th>Option</th><th>Description</th>
+</tr>
+
+<tr>
+  <td nowrap><tt>-embed</tt></td>
+  <td>Signifies that the <tt>embed</tt> parameter was specified in the
+    <tt>child</tt>/<tt>relation</tt> tag (the <tt>embed</tt> parameter is
+    implicit in the <tt>content</tt> tag). In this case, the handler should
+    return the static HTML for the item. If the <tt>-embed</tt> option is not
+    specified, the handler should insted return some HTML/ADP code which
+    will dynamically include the item in the parent item (using the 
+    <tt>include</tt> tag, for example)
+  </td>
+</tr>
+<tr>
+  <td nowrap><tt>-no_merge</tt></td>
+  <td>Usually, the child/related item is merged with its template in order
+    to produce static HTML. The <tt>-no_merge</tt> option signifies that 
+    the item should <b>not</b> be merged with its template. This option is
+    passed by the <tt>content</tt> tag, in order to prevent infinite recursion.
+  </td>
+</tr>
+<tr>
+  <td nowrap><tt>-revision_id <i>id</i></tt></td>
+  <td>Specifies the id of the revision which should be used when rendering
+    the item. If this option is ommitted, the handler is free to use any
+    revision; the live revision is probably the logical choice.
+  </td>
+</tr>
+</table>
+
+<p>
+
+In order to determine which handler is to be used for rendering a particular
+item, the publishing API first tries to find a proc with the name 
+<tt>publish::handle::<i>mime_prefix</i>::<i>mime_suffix</i></tt>. If no such
+proc exists, the publishing API looks for a proc named 
+<tt>publish::handle::<i>mime_prefix</i></tt>. If this proc does not exist, 
+either, the publishing API gives up and the item is not rendered. 
+<p>By default, only the handlers <tt>publish::handle::image</tt> and 
+<tt>publish::handle::text</tt> exist in CMS.
+
+<a name="other_api"><h4>Other API</h4>
+
+There are several procs in the publishing API which make it easier to write
+handlers:
+
+<p>
+
+<table border=1 cellpadding=4 cellspacing=0>
+
+<tr bgcolor=#dddddd>
+  <th>Proc signature</th><th>Purpose</th>
+</tr>
+
+<tr>
+  <td nowrap>
+    <tt>
+      <a href="/ats/doc/api/publish.html#publish::merge_with_template">
+        publish::merge_with_template</a>
+    </tt>
+  </td>
+  
+  <td>
+    Merge the item with its template and return the resulting HTML block. The 
+    same  HTML block is shown to the user when the item's URL is accessed on 
+    the CMS server.
+  </td>
+</tr>
+
+<tr>
+  <td nowrap>
+    <tt>
+      <a href="/ats/doc/api/publish.html#publish::write_content">
+        publish::write_content</a>
+    </tt>
+  </td>    
+ 
+  <td>
+    Write the content (blob) of the specified revision to the file located 
+    at the item's URL under the page root. By default, the page root is
+    identical to the path returned by <tt>[ns_info pageroot]</tt>; the 
+    default page root can be overridden with the <tt>PageRoot</tt> parameter
+    under the <tt>[ns/server/<i>your_server_name</i>/cms]</tt> section
+    in your server's INI file. The file extension of the resulting file
+    is determined by the revision's mime type.<br>
+    For example, an item whose path is "Sitemap/foo/bar" under CMS, and whose
+    mime type is <tt>text/plain</tt>, may be saved as 
+    "/web/yourservername/www/foo/bar.txt"<br>
+    This proc returns the full filename of the resulting file.
+  </td>
+</tr>
+
+<tr>
+  <td nowrap>
+    <tt>
+      <a href="/ats/doc/api/publish.html#publish::item_include_tag">
+        publish::item_include_tag</a>
+    </tt>
+  </td>
+  
+  <td>
+    Create an <tt>&lt;include&gt;</tt> tag suitable for including the item
+    dynamically. The <tt>extra_args</tt> parameter is a list of names and values
+    to be passed to the included template, in the same format as the
+    <tt>-html</tt> option.
+  </td>
+
+</tr>
+
+<tr>
+  <td nowrap>
+    <tt>
+      <a href="/ats/doc/api/content.html#content::get_content_value">content::get_content_value</a>
+     </tt>
+  </td>
+
+  <td>
+    Returns the content of the revision as a TCL string. Do not call this
+    function unless the revision has a textual mime type (such as 
+    <tt>text/plain</tt>, <tt>text/html</tt>, etc.)
+  </td>
+</tr>
+
+<tr>
+  <td nowrap>
+    <tt>
+      <a href="/ats/doc/api/publish.html#publish::handle_binary_file">publish::handle_binary_file</a>
+     </tt>
+  </td>
+
+  <td>
+    A helper proc for creating mime handlers for binary mime types;
+    see the example <a href="#image_handler">below</a>. Writes the 
+    content blob  of the item to the filesystem, and attempts to
+    merge the item with its template. If the merge is not possible 
+    (or if the <tt>no_merge</tt> flag was specified), returns an empty
+    string. The <tt>-embed</tt> flag must be specified for this proc.
+  </td>
+</tr>
+
+<tr>
+  <td nowrap>
+    <i>Any proc in the </i><tt><a href="/ats/doc/api/item.html">item</a></tt>
+      <i>namespace</i>
+  </td>
+  
+  <td> 
+    The procs in the <tt>item</tt> namespace simplify access to many
+    properties of a content item, such as the live revision, the 
+    URL, etc. See the <tt>item</tt> documentation for more information.
+  </td>
+</tr>
+
+</table>
+     
+
+<a name="handler_examples"></a><h4>Handler Examples</h4>
+
+For example, here is the annotated code for the default text handler (found in
+publish-procs.tcl) :
+
+<p>
+<a name="text_handler"></a>
+<table border=0 cellpadding=5 cellspacing=2 width=95%>
+<tr>
+  <th bgcolor=#ccccff>Code</th>
+  <th bgcolor=#dddddd>Comments</th>
+</tr>
+<tr>
+  <td bgcolor=#eeeeff><pre><tt>
+proc publish::handle::text { item_id args } {
+  </tt></pre></td>
+  <td bgcolor=#eeeeee>This is a mime-type handler which will be used for
+    any textual mime-type, unless a more specific mime handler exists.
+  </td>
+</tr>
+
+<tr>
+  <td bgcolor=#eeeeff><pre><tt>
+  <a href="/ats/doc/api/template__util.html#template::util::get_opts">template::util::get_opts</a> $args
+
+  if { [<a href="/ats/doc/api/template__util.html#template::util::is_nil">template::util::is_nil</a> opts(revision_id)] } {
+    set revision_id [<a href="/ats/doc/api/item.html#item::get_live_revision">item::get_live_revision</a> $item_id]
+  } else {
+    set revision_id $opts(revision_id)
+  } 
+  </tt></pre></td>
+  <td bgcolor=#eeeeee>
+    Process the options and determine the revision id to be used when
+    rendering the item. If no revision id is specified, use the live revision.
+  </td>
+</tr>
+
+<tr>
+  <td bgcolor=#eeeeff><pre><tt>
+  if { [info exists opts(embed)] } {
+  </tt></pre></td>
+  <td bgcolor=#eeeeee>
+    If the <tt>-embed</tt> option was specified, render the item as HTML.
+  </td>
+</tr>
+
+<tr>
+  <td bgcolor=#eeeeff><pre><tt>
+    if { ![info exists opts(no_merge)] } {
+      set code &quot;<a href="/ats/doc/api/publish.html#publish::merge_with_template">publish::merge_with_template</a> $item_id $args&quot;
+      set html [eval $code]
+  </tt></pre></td>
+  <td bgcolor=#eeeeee>
+    Unless the <tt>-no_merge</tt> option is specified, merge the item with 
+    its template, using all the options which were passed to the mime handler.
+  </td>
+</tr>
+
+
+<tr>
+  <td bgcolor=#eeeeff><pre><tt>
+    } else {
+      set html [<a href="/ats/doc/api/content.html#content::get_content_value">content::get_content_value</a> $revision_id]
+    } 
+  </tt></pre></td>
+  <td bgcolor=#eeeeee>
+    If the <tt>-no_merge</tt> option <i>was</i> specified, simply return
+    the content of the revision as a string of text.
+  </td>
+</tr>
+
+<tr>
+  <td bgcolor=#eeeeff><pre><tt>
+  } else {
+    if { [info exists opts(html)] } {
+      set extra_args $opts(html)
+    } else {
+      set extra_args ""
+    }
+    set html [<a href="/ats/doc/api/publish.html#publish::item_include_tag">publish::item_include_tag</a> $item_id $extra_args]
+  } 
+  </tt></pre></td>
+  <td bgcolor=#eeeeee>
+    If the <tt>-embed</tt> option was <i>not</i> specified, create an
+    <tt>&lt;include&gt;</tt> tag to dynamically include the item's template.
+  </td>
+</tr>
+
+<tr>
+  <td bgcolor=#eeeeff><pre><tt>
+  return $html 
+  </tt></pre></td>
+  <td bgcolor=#eeeeee>
+    All done - return the resulting HTML.
+  </td>
+</tr>
+
+</table>
+
+<p>
+
+    The handler for binary files is somewhat more complicated, since it needs
+to write the content blob to the filesystem in addition to merging the item
+with its template. The 
+<tt><a href="/ats/doc/api/publish.html#publish::handle_binary_file">
+publish::handle_binary_file</a></tt> proc simplifies this process, and is used
+in the default image handler: 
+
+<p>
+
+<a name="image_handler"></a>
+<table border=0 cellpadding=5 cellspacing=2 width=95%>
+
+<tr>
+  <th bgcolor=#ccccff>Code</th>
+  <th bgcolor=#dddddd>Comments</th>
+</tr>
+
+<tr>
+  <td bgcolor=#eeeeff><pre><tt>
+proc publish::handle::image { item_id args } {
+  </tt></pre></td>
+  <td bgcolor=#eeeeee>This is a mime-type handler which will be used for
+    any image mime-type, unless a more specific mime handler exists.
+  </td>
+</tr>
+
+<tr>
+  <td bgcolor=#eeeeff><pre><tt>
+  <a href="/ats/doc/api/template__util.html#template::util::get_opts">template::util::get_opts</a> $args
+
+  set html [eval <a href="/ats/doc/api/publish.html#publish::handle_binary_file">publish::handle_binary_file</a> \
+   $item_id revision_id url error_msg $args]
+  </tt></pre></td>
+  <td bgcolor=#eeeeee>
+    Attempt to handle the image automatically. After the <tt>eval</tt> returns,
+    the following variables will exist in the calling frame:
+    <ul>
+      <li><tt>revision_id</tt> - The revision which was used to render the
+        item</li>
+      <li><tt>url</tt> - The URL of the item, including the correct extension.
+        The item's blob was written to the filesystem at this URL.</li>
+      <li><tt>error_msg</tt> - An error message. If this variable contains
+        the empty string, then no error has ocurred.</li>
+    </ul>
+  </td>
+</tr>
+
+<tr>
+  <td bgcolor=#eeeeff><pre><tt>
+  if { ![<a href="/ats/doc/api/template__util.html#template::util::is_nil">template::util::is_nil</a> error_msg] } {
+    ns_log notice "WARNING: $error_msg"
+    return ""
+  }
+  </tt></pre></td>
+  <td bgcolor=#eeeeee>
+    If some kind of error has occurred, log the error and fail silently.
+    Currently, <tt>handle_binary_file</tt> fails under any of the following
+    conditions:
+    <ul>
+      <li>The item or its revision could not be found</li>
+      <li>The <tt>-embed</tt> option was not specified</li>
+    </ul>
+  </td>
+</tr>
+
+
+<tr>
+  <td bgcolor=#eeeeff><pre><tt>
+  if { ![<a href="/ats/doc/api/template__util.html#template::util::is_nil">template::util::is_nil</a> html] } {
+    return $html
+  }
+  </tt></pre></td>
+  <td bgcolor=#eeeeee>
+    If the item was successfully merged with its template, return the 
+    resulting HTML. It is possible, however, that <tt>-no_merge</tt> flag
+    was specified, or the item has no associated template. This is not
+    an error condition, since the item can still be rendered in some way.
+  </td>
+</tr>
+
+<tr>
+  <td bgcolor=#eeeeff><pre><tt>
+  template::query image_info onerow "
+    select 
+      im.width, im.height, r.title as image_alt
+    from 
+      images im, cr_revisions r
+    where 
+      im.image_id = :revision_id
+    and
+      r.revision_id = :revision_id
+  " -cache "image_info $revision_id"
+  
+  <a href="/ats/doc/api/template__util.html#template::util::array_to_vars">template::util::array_to_vars</a> image_info 
+  </tt></pre></td>
+  <td bgcolor=#eeeeee>
+    The item could not be merged with its template. Read the image width,
+    height and title, and output a custom &lt;img&gt; tag.   
+  </td>
+</tr>
+
+<tr>
+  <td bgcolor=#eeeeff><pre><tt>
+  if { [info exists opts(html)] } {
+    set extra_html [<a href="/ats/doc/api/publish.html#publish::html_args">publish::html_args</a> $opts(html)]
+    set have_alt [expr [lsearch \
+      [string tolower $opts(html)] "alt"] &gt;= 0]
+  } else {
+    set extra_html ""
+    set have_alt 0
+  }
+
+  set html "&lt;img src=$url"
+
+  if { ![<a href="/ats/doc/api/template__util.html#template::util::is_nil">template::util::is_nil</a> width] } {
+    append html " width=\"$width\""
+  }
+
+  if { ![<a href="/ats/doc/api/template__util.html#template::util::is_nil">template::util::is_nil</a> height] } {
+    append html " height=\"$height\""
+  }
+
+  append html " $extra_html"
+  
+  if { !$have_alt } {
+    append html " alt=\"$image_alt\""
+  }
+  
+  append html "&gt;"
+  </tt></pre></td>
+  <td bgcolor=#eeeeee>
+    Create an &lt;img&gt; tag which references the URL where the image was
+    written to the filesystem. Use the image attributes for the width and
+    height; use the image title for the <tt>alt</tt> text, unless an alternate
+    <tt>alt</tt> text string was passed in to the handler. Append any 
+    other HTML arguments at the end of the &lt;img&gt; tag.
+  </td>
+</tr>
+
+<tr>
+  <td bgcolor=#eeeeff><pre><tt>
+  return $html 
+  </tt></pre></td>
+  <td bgcolor=#eeeeee>
+    All done - return the resulting HTML.
+  </td>
+</tr>
+
+</table>
+
+<p>
+While the default mime-type handlers are not very sophisticated, they are
+flexible. Mime-type handlers for handling streaming video, audio, Flash, 
+etc., could be easily written by using the publishing API, and by following
+the design patterns shown above.
+<p>
+Note that, as with any CMS extensions, custom mime-type handlers should
+probably placed in a separate TCL file. This way, if and when 
+<tt>publish-procs.tcl</tt> is updated, the upgrade process will be painless.
+
+<a name="filesystem"></a><h2>Publishing to the filesystem</h2>
+
+Since it is possible to generate static HTML for the entire item in CMS,
+it is also possible to write the resulting HTML to the filesystem, producing
+a static page which requires no special parsing and no database hits.
+Such a page could be served much faster than the dynamic ACS template for the
+item.
+
+<a name="publish_revision"></a><h3><tt>publish_revision</tt></h3>
+
+The <a href="/ats/doc/api/publish.html#publish::publish_revision">
+<tt>publish::publish_revision</tt></a> proc could be used to accomplish this.
+The proc takes an <tt>revision_id</tt> as an argument, and writes the 
+specified revision to the filesystem. The filename of the resulting file
+consists of three parts:
+
+<blockquote><pre><tt>
+<b>/</b><i>root_path</i><b>/</b><i>item_url</i><b>.</b><i>file_extension</i>
+</tt></pre></blockquote>
+
+<ul>
+
+<li><i>root_path</i> - 
+  This is the value returned by 
+  <a href="/ats/doc/api/publish.html#publish::get_page_root"><tt>
+  publish::get_page_root</tt></a>. The page root is controlled by the
+  <tt>PageRoot</tt></a> parameter in the server's INI file, and defaults to
+  <tt>[ns_info pageroot]</tt>.
+</li>
+
+<li><i>item_url</i><b>.</b><i>file_extension</i> - 
+  The value returned by 
+  <a href="/ats/doc/api/item.html#item::get_extended_url"><tt>
+  item::get_extended_url</tt></a>. The value combines the relative
+  URL of the item as returned by 
+  <a href="/ats/doc/api/item.html#item::get_url"><tt>item::get_url</tt></a>,
+  and a file extension based on the template which is registered to the item.
+  Note that, by default, <tt>get_extended_url</tt> uses the <b>item's</b>
+  mime-type to determine the extension; however, <tt>publish_revision</tt>
+  overrides this behavior by specifying the <tt>-template_url</tt> option.
+  If there is no template registered to render the item, the file
+  extension is assumed to be ".html"
+</li>
+
+</ul>
+
+For example, assume that the following template is registered as the
+default template for the <tt>image</tt> content type:
+
+<a name="image_example"></a>
+<h4><tt>image_template.tcl</tt></h4>
+
+<blockquote><pre><tt>content::get_content
+template::util::array_to_vars content
+</tt></pre></blockquote>
+
+<h4><tt>image_template.adp</tt></h4>
+
+<blockquote><pre><tt>&lt;html&gt;
+&lt;head&gt;&lt;title&gt;@title@&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+
+&lt;h2&gt;@title@&lt;/h2&gt;
+@publish_date@ : @mime_type@
+&lt;p&gt;
+@description@
+&lt;p&gt;
+&lt;content&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</tt></pre></blockquote>
+
+In addition, assume that an <tt>image</tt> item exists in CMS under 
+"Sitemap/images/my_snail"; that the server is called "myserver"; and that
+the <i>PageRoot</i> parameter is set to "<tt>/web/myserver/www</tt>".
+When the item is published to the filesystem, the following two files 
+will be created:
+
+<ul>
+  <li><tt>/web/myserver/www/images/my_snail.jpg</tt> - 
+    written by the image handler </li>
+  <li><tt>/web/myserver/www/images/my_snail.html</tt> - 
+    written by <tt>publish_revision</tt></li>
+</ul>
+
+The <tt>my_snail.jpg</tt> file will contain the actual JPEG image 
+(presumably, an image of a snail), and the <tt>my_snail.html</tt>
+image will contain HTML code similar to the following:
+
+<h4><tt>my_snail.html</tt></h4>
+
+<blockquote><pre><tt>&lt;html&gt;
+&lt;head&gt;&lt;title&gt;My Snail&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+
+&lt;h2&gt;My Snail&lt;/h2&gt;
+12/15/2000 : image/jpeg
+&lt;p&gt;
+Watch my snail frolick happily !
+&lt;p&gt;
+&lt;img src=/images/my_snail.jpg width="640" height="480" alt="My Snail"&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</tt></pre></blockquote>
+
+<a name="UI"></a><h3>CMS UI</h3>
+
+In CMS, the <tt>publish_revision</tt> proc is called each time the item's
+publish status is changed to "Live". In order to be published, the item
+must satisfy the following requirements:
+
+<ul>
+  <li>A live revision exists for the item</li>
+  <li>If a workflow exists on the item, the workflow must be in the 
+    Finished state.</li>
+  <li>If there are any child or item relationships registered to the item,
+    the <tt>min_n</tt> and <tt>max_n</tt> constraints of these relationships
+    must be satisified.</li>
+</ul>
+
+Assuming that these constraints are satisfied, the following panel will
+appear under the Publishing tab for the item:
+
+<p>
+
+
+<table cellpadding=1 cellspacing=0 border=0 width=80% align=center>
+<tr bgcolor=#000000 align=center><td>
+
+<table cellpadding=0 cellspacing=0 border=0 width=100%>
+<tr bgcolor=#eeeeee><td>
+
+
+<table cellpadding=0 cellspacing=0 border=0 bgcolor=#999999 width=100% height=0>
+  <tr bgcolor=#999999>
+    <td>
+      <table cellpadding=0 cellspacing=0 border=0 bgcolor=#DDDDDD width=100%>
+        <tr align=center>
+          
+              <td bgcolor=#99CCFF>
+              <table border=0 cellpadding=2 cellspacing=1 width=100% 
+                 bgcolor=#6699cc>
+              <tr align=center bgcolor=#99ccff><td>
+            
+              &nbsp;<font size=-1><a href="">Editing</a></font>
+              &nbsp;
+            </td>
+            </tr></table></td>
+              <td bgcolor=#99CCFF>
+              <table border=0 cellpadding=2 cellspacing=1 width=100% 
+                 bgcolor=#6699cc>
+              <tr align=center bgcolor=#99ccff><td>
+            
+              &nbsp;<font size=-1><a href="">Sub-Items</a></font>
+              &nbsp;
+            </td>
+            </tr></table></td><td bgcolor=#FFFFFF>
+              &nbsp;<font size=-1><b>Publishing</b></font>
+              &nbsp;
+            </td>
+            
+              <td bgcolor=#99CCFF>
+              <table border=0 cellpadding=2 cellspacing=1 width=100% 
+                 bgcolor=#6699cc>
+              <tr align=center bgcolor=#99ccff><td>
+            
+              &nbsp;<font size=-1><a href="">Permissions</a></font>
+              &nbsp;
+            </td>
+            </tr></table></td>
+        </tr>    
+       </table>
+    </td>
+  </tr>
+</table> 
+
+</td></tr>
+
+<tr bgcolor=#FFFFFF><td align=center>
+
+<br>
+<table cellspacing=0 cellpadding=0 border=0 width=95%>
+
+
+
+  <tr><td>
+
+  
+<table cellspacing=0 cellpadding=2 border=0 width=95% bgcolor="#BBBBBB">
+<tr bgcolor="#FFFFFF">
+  <th align=left>Publishing Status</th>
+  <td align=right>
+    
+      [<a href="">Edit</a>]
+    
+  </td>
+</tr>
+
+<tr bgcolor="#BBBBBB">
+<td colspan=2>
+  <table cellspacing=0 cellpadding=4 border=2 width=100%>
+  <tr bgcolor="#DDDDDD">
+    <th align=left>This item is ready for publishing. It has not been scheduled for release.</th>
+  </tr>
+
+
+  <tr bgcolor="#EEEEEE">
+    <td>
+      <b>This item is 
+       
+      in a publishable state.</b>
+  
+  </td></tr>
+</table>
+
+</td></tr></table>
+</td></tr></table>
+<br></td></tr></table>
+</td></tr></table>
+
+<p>
+
+The Edit link in the upper-right corner links to the Edit Publishing Status
+dialog:
+
+<p>
+
+<form name="publish_status" method=post 
+                    action=""><input type=hidden name="form:id" value="publish_status"><!-- Dark blue frame -->
+<table bgcolor=#6699CC cellspacing=0 cellpadding=4 border=0 align=center>
+<tr><td>
+
+<!-- Light blue pad -->
+<table bgcolor=#99CCFF cellspacing=0 cellpadding=6 border=0 width=100%>
+<tr><td>
+
+<table bgcolor=#99CCFF cellspacing=0 cellpadding=2 border=0 width=100%>
+
+  <input type=hidden name=item_id value="5217"><input type=hidden name=is_live value="t">
+      <tr>
+        
+<td><b>Status</b>&nbsp;&nbsp;
+          </td>
+        </td>
+        <td>
+            <table cellpadding=4 cellspacing=0 border=0>
+      
+<tr><td><input type=radio name=publish_status value="production" ></td>
+                    <td>Production</td></tr>
+      
+<tr><td><input type=radio name=publish_status value="ready" checked></td>
+                    <td>Ready</td></tr>
+      
+<tr><td><input type=radio name=publish_status value="live" ></td>
+                    <td>Live (publishes the item)</td></tr>
+      
+      </table>
+      
+    </td>
+            
+      </tr>
+      
+      <tr>
+        
+<td><b>Start Date</b>&nbsp;&nbsp;
+          </td>
+        </td>
+        <td nowrap><!-- date start_when begin -->
+<input type=hidden name=start_when.format value="MONTH DD, YYYY HH24:MI">
+<table border=0 cellpadding=0 cellspacing=2>
+<tr><td nowrap><select name=start_when.month >
+  <option value="" >--
+  <option value="1" >January
+  <option value="2" >February
+  <option value="3" >March
+  <option value="4" >April
+  <option value="5" >May
+  <option value="6" >June
+  <option value="7" >July
+  <option value="8" >August
+  <option value="9" >September
+  <option value="10" >October
+  <option value="11" >November
+  <option value="12" selected>December
+</select>&nbsp;</td>
+<td nowrap><select name=start_when.day >
+  <option value="" >--
+  <option value="1" >01
+  <option value="2" >02
+  <option value="3" >03
+  <option value="4" >04
+  <option value="5" >05
+  <option value="6" >06
+  <option value="7" >07
+  <option value="8" >08
+  <option value="9" >09
+  <option value="10" >10
+  <option value="11" >11
+  <option value="12" >12
+  <option value="13" >13
+  <option value="14" >14
+  <option value="15" selected>15
+  <option value="16" >16
+  <option value="17" >17
+  <option value="18" >18
+  <option value="19" >19
+  <option value="20" >20
+  <option value="21" >21
+  <option value="22" >22
+  <option value="23" >23
+  <option value="24" >24
+  <option value="25" >25
+  <option value="26" >26
+  <option value="27" >27
+  <option value="28" >28
+  <option value="29" >29
+  <option value="30" >30
+  <option value="31" >31
+</select>&nbsp;</td>
+<td nowrap><input type=text name=start_when.year size=4 
+     maxlength=4 value="2000">
+&nbsp;</td>
+<td nowrap><select name=start_when.hours >
+  <option value="" >--
+  <option value="0" >00
+  <option value="1" >01
+  <option value="2" >02
+  <option value="3" >03
+  <option value="4" >04
+  <option value="5" >05
+  <option value="6" >06
+  <option value="7" >07
+  <option value="8" >08
+  <option value="9" >09
+  <option value="10" >10
+  <option value="11" >11
+  <option value="12" >12
+  <option value="13" >13
+  <option value="14" >14
+  <option value="15" >15
+  <option value="16" >16
+  <option value="17" >17
+  <option value="18" >18
+  <option value="19" >19
+  <option value="20" >20
+  <option value="21" >21
+  <option value="22" >22
+  <option value="23" selected>23
+</select>:</td>
+<td nowrap><select name=start_when.minutes >
+  <option value="" >--
+  <option value="0" >00
+  <option value="1" >01
+  <option value="2" >02
+  <option value="3" >03
+  <option value="4" >04
+  <option value="5" >05
+  <option value="6" >06
+  <option value="7" >07
+  <option value="8" >08
+  <option value="9" >09
+  <option value="10" >10
+  <option value="11" >11
+  <option value="12" >12
+  <option value="13" >13
+  <option value="14" >14
+  <option value="15" >15
+  <option value="16" >16
+  <option value="17" >17
+  <option value="18" >18
+  <option value="19" >19
+  <option value="20" >20
+  <option value="21" >21
+  <option value="22" >22
+  <option value="23" >23
+  <option value="24" >24
+  <option value="25" >25
+  <option value="26" >26
+  <option value="27" >27
+  <option value="28" >28
+  <option value="29" >29
+  <option value="30" >30
+  <option value="31" >31
+  <option value="32" >32
+  <option value="33" >33
+  <option value="34" >34
+  <option value="35" >35
+  <option value="36" >36
+  <option value="37" >37
+  <option value="38" >38
+  <option value="39" selected>39
+  <option value="40" >40
+  <option value="41" >41
+  <option value="42" >42
+  <option value="43" >43
+  <option value="44" >44
+  <option value="45" >45
+  <option value="46" >46
+  <option value="47" >47
+  <option value="48" >48
+  <option value="49" >49
+  <option value="50" >50
+  <option value="51" >51
+  <option value="52" >52
+  <option value="53" >53
+  <option value="54" >54
+  <option value="55" >55
+  <option value="56" >56
+  <option value="57" >57
+  <option value="58" >58
+  <option value="59" >59
+</select></td>
+</tr>
+<tr><td nowrap align=center><font size="-2">Month</font></td><td nowrap align=center><font size="-2">Day</font></td><td nowrap align=center><font size="-2">Year</font></td><td nowrap align=center><font size="-2">24-Hour</font></td><td nowrap align=center><font size="-2">Minutes</font></td></tr>
+</table>
+<!-- date start_when end -->
+
+      </td>
+    
+      </tr>
+      
+      <tr>
+        
+<td><b>End Date</b>&nbsp;&nbsp;
+          </td>
+        </td>
+        <td nowrap><!-- date end_when begin -->
+<input type=hidden name=end_when.format value="MONTH DD, YYYY HH24:MI">
+<table border=0 cellpadding=0 cellspacing=2>
+<tr><td nowrap><select name=end_when.month >
+  <option value="" >--
+  <option value="1" >January
+  <option value="2" >February
+  <option value="3" >March
+  <option value="4" >April
+  <option value="5" >May
+  <option value="6" >June
+  <option value="7" >July
+  <option value="8" >August
+  <option value="9" >September
+  <option value="10" >October
+  <option value="11" >November
+  <option value="12" selected>December
+</select>&nbsp;</td>
+<td nowrap><select name=end_when.day >
+  <option value="" >--
+  <option value="1" >01
+  <option value="2" >02
+  <option value="3" >03
+  <option value="4" >04
+  <option value="5" >05
+  <option value="6" >06
+  <option value="7" >07
+  <option value="8" >08
+  <option value="9" >09
+  <option value="10" >10
+  <option value="11" >11
+  <option value="12" >12
+  <option value="13" >13
+  <option value="14" >14
+  <option value="15" selected>15
+  <option value="16" >16
+  <option value="17" >17
+  <option value="18" >18
+  <option value="19" >19
+  <option value="20" >20
+  <option value="21" >21
+  <option value="22" >22
+  <option value="23" >23
+  <option value="24" >24
+  <option value="25" >25
+  <option value="26" >26
+  <option value="27" >27
+  <option value="28" >28
+  <option value="29" >29
+  <option value="30" >30
+  <option value="31" >31
+</select>&nbsp;</td>
+<td nowrap><input type=text name=end_when.year size=4 
+     maxlength=4 value="2001">
+&nbsp;</td>
+<td nowrap><select name=end_when.hours >
+  <option value="" >--
+  <option value="0" >00
+  <option value="1" >01
+  <option value="2" >02
+  <option value="3" >03
+  <option value="4" >04
+  <option value="5" >05
+  <option value="6" >06
+  <option value="7" >07
+  <option value="8" >08
+  <option value="9" >09
+  <option value="10" >10
+  <option value="11" >11
+  <option value="12" >12
+  <option value="13" >13
+  <option value="14" >14
+  <option value="15" >15
+  <option value="16" >16
+  <option value="17" >17
+  <option value="18" >18
+  <option value="19" >19
+  <option value="20" >20
+  <option value="21" >21
+  <option value="22" >22
+  <option value="23" selected>23
+</select>:</td>
+<td nowrap><select name=end_when.minutes >
+  <option value="" >--
+  <option value="0" >00
+  <option value="1" >01
+  <option value="2" >02
+  <option value="3" >03
+  <option value="4" >04
+  <option value="5" >05
+  <option value="6" >06
+  <option value="7" >07
+  <option value="8" >08
+  <option value="9" >09
+  <option value="10" >10
+  <option value="11" >11
+  <option value="12" >12
+  <option value="13" >13
+  <option value="14" >14
+  <option value="15" >15
+  <option value="16" >16
+  <option value="17" >17
+  <option value="18" >18
+  <option value="19" >19
+  <option value="20" >20
+  <option value="21" >21
+  <option value="22" >22
+  <option value="23" >23
+  <option value="24" >24
+  <option value="25" >25
+  <option value="26" >26
+  <option value="27" >27
+  <option value="28" >28
+  <option value="29" >29
+  <option value="30" >30
+  <option value="31" >31
+  <option value="32" >32
+  <option value="33" >33
+  <option value="34" >34
+  <option value="35" >35
+  <option value="36" >36
+  <option value="37" >37
+  <option value="38" >38
+  <option value="39" selected>39
+  <option value="40" >40
+  <option value="41" >41
+  <option value="42" >42
+  <option value="43" >43
+  <option value="44" >44
+  <option value="45" >45
+  <option value="46" >46
+  <option value="47" >47
+  <option value="48" >48
+  <option value="49" >49
+  <option value="50" >50
+  <option value="51" >51
+  <option value="52" >52
+  <option value="53" >53
+  <option value="54" >54
+  <option value="55" >55
+  <option value="56" >56
+  <option value="57" >57
+  <option value="58" >58
+  <option value="59" >59
+</select></td>
+</tr>
+<tr><td nowrap align=center><font size="-2">Month</font></td><td nowrap align=center><font size="-2">Day</font></td><td nowrap align=center><font size="-2">Year</font></td><td nowrap align=center><font size="-2">24-Hour</font></td><td nowrap align=center><font size="-2">Minutes</font></td></tr>
+</table>
+<!-- date end_when end -->
+
+      </td>
+    
+      </tr>
+      
+
+  </table>
+
+</td></tr>
+
+
+  <tr>
+    <td align=center><br><input type=submit value=Submit></td>
+  </tr>
+
+
+</table>
+
+<!-- Light blue pad -->
+</td></tr>
+</table>
+
+<!-- Dark blue frame -->
+</td></tr>
+</table>
+
+
+</form>
+
+<p>
+
+If the user changes the status to "Live" and clicks Submit, the item will
+be published to the filesystem. Note that any further changes to the
+item will not be automatically reflected in the filesystem; the user must
+set the status to "Live" each time he/she wishes to re-publish the item.
+<p>
+If the status is already "Live", and the user changes it to "Production",
+"Ready" or "Expired", the item will be unpublished using the 
+<a href="/ats/doc/api/publish.html#publish::unpublish_item"><tt>
+publish::unpublish_item</tt></a> proc, which will remove any files
+that were written when the item was published. Note that this proc is
+not recursive; the child/related items of the unpublished item will 
+remain live.
+
+<a name="scheduling"></a><h3>Scheduling items for release</h3>
+
+The Edit Publishing Status dialog also contains two additional fields,
+"Start Date" and "End Date". These fields may be used to schedule the item
+for future publication and expiration (the default expiration date is one
+year in the future).
+The <a href="/ats/doc/api/publish.html#publish::schedule_status_sweep">
+<tt>publish::schedule_status_sweep</tt></a> proc can be used to schedule
+regular sweeps of the entire content repository for items which must
+be published or expired. The proc accepts an optional <tt>interval</tt>
+parameter, which sets the time interval between sweeps in seconds. This
+interval can also be controlled by the <tt>StatusSweepInterval</tt>
+in the server's INI file; the default value is 3600 (one hour). The
+last line of <tt>publish-procs.tcl</tt> is in fact
+
+<blockquote><pre><tt>publish::schedule_status_sweep
+</tt></pre></blockquote>
+
+Thus, the status sweep is always scheduled at server startup, using the
+time interval specified in the INI file. Use caution when specifying the
+time interval: the status sweep may potentially examine <b>all</b> items
+in the content repository, thus consuming most of your server's CPU
+time. While lower values of <tt>StatusSweepInterval</tt> provide more 
+precise control over the publishing and expiration dates of the item, they
+run the risk of slowing the server down to a crawl.
+<p>
+The <a href="/ats/doc/api/publish.html#publish::unschedule_status_sweep">
+<tt>publish::unschedule_status_sweep</tt></a> proc (no parameters) may be
+used to unschedule the regular status sweeps.
+
+<a name=conclusion></a><h2>Conclusion</h2>
+
+The <tt>child</tt>, <tt>relation</tt> and <tt>content</tt> tags
+(defined in <tt>publish-procs.tcl</tt> provide a mechanism for embedding 
+child/related items directly in the HTML body of the parent item. While
+textual and image items are automatically handled by CMS, custom handlers 
+should be used to render other mime types. Content items can be
+published to the filesystem in order to maximize performance; in
+addition, items can be scheduled for publication and expiration using 
+the CMS UI.
+
+</body>
+</html>
+
+
+
+
+

@@ -1,0 +1,1 @@
+# list objects on the clipboard by object type with controls to remove.
