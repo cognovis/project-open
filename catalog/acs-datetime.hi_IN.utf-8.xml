@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="acs-datetime" package_version="4.0" locale="hi_IN" charset="utf-8">
+
+  <msg key="Date">तिथि</msg>
+  <msg key="Date_as">तिथि का प्रकार</msg>
+  <msg key="Date_as_YYYYMMDD">तिथि का प्रकार YYYYMMDD</msg>
+  <msg key="Day">दिन</msg>
+  <msg key="Day_of_Week">सप्ताह का दिन</msg>
+  <msg key="is">है</msg>
+  <msg key="Items_from">विषय क्रम से</msg>
+  <msg key="List">सूची</msg>
+  <msg key="Month">महीना</msg>
+</message_catalog>

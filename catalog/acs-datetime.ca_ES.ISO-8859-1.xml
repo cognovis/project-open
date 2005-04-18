@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="acs-datetime" package_version="4.0" locale="ca_ES" charset="ISO-8859-1">
+
+  <msg key="All_day">Tot el dia</msg>
+  <msg key="back_one_day">Un dia endarrere</msg>
+  <msg key="Date">Data</msg>
+  <msg key="Date_as">Format de data</msg>
+  <msg key="Date_as_YYYYMMDD">Format de data: AAAAMMDD</msg>
+  <msg key="Day">Dia</msg>
+  <msg key="Day_of_Week">Dia de la setmana</msg>
+  <msg key="days_of_week">dilluns dimarts dimecres dijous divendres dissabte diumenge</msg>
+  <msg key="forward_one_day">Un dia endavant</msg>
+  <msg key="is">és</msg>
+  <msg key="Items_from">Cites des de</msg>
+  <msg key="Items_until">Cites fins @pretty_end_date@</msg>
+  <msg key="List">Llista</msg>
+  <msg key="lt_Width_must_be_">L'amplària ha d'estar entre 1 i 12</msg>
+  <msg key="Month">Mes</msg>
+  <msg key="short_days_of_week">dl. dt. dc. dj. dv. ds. dg.</msg>
+  <msg key="to">a</msg>
+  <msg key="Today">Avui</msg>
+  <msg key="Week">Setmana</msg>
+</message_catalog>

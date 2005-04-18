@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="acs-datetime" package_version="4.0" locale="gl_ES" charset="ISO-8859-1">
+
+  <msg key="Date">Data</msg>
+  <msg key="Date_as">Data en</msg>
+  <msg key="Date_as_YYYYMMDD">Data en AAAAMMDD</msg>
+  <msg key="Day">Día</msg>
+  <msg key="Day_of_Week">Día da Semana</msg>
+  <msg key="is">é</msg>
+  <msg key="Items_from">Ítems de</msg>
+  <msg key="List">Lista</msg>
+  <msg key="Month">Mes</msg>
+  <msg key="to">para</msg>
+  <msg key="Today">Hoxe</msg>
+  <msg key="Week">Semana</msg>
+</message_catalog>
