@@ -11,6 +11,7 @@
 @content;noquote@
 
 <if @related_items:rowcount@ gt 0>
+<hr />
 <p>
 Pages that link to his page:
 <ul>
