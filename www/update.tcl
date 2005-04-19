@@ -8,7 +8,6 @@ ad_page_contract {
     { persistent_p "t" }
 }
 
-set user_id [auth::require_login]
 set return_url "[ad_conn url]?[ad_conn query]"
 set page_title "Load Update Information"
 set context_bar [im_context_bar $page_title]
