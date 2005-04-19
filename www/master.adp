@@ -32,7 +32,7 @@ function MM_jumpMenu(targ,selObj,restore){ //v3.0
 	<td rowspan="2" colspan="2" bgcolor="#FFFFFF"><a href="http://www.project-open.com">
       <!--<img  border="0" src="../images/logo_translation.gif"></a>
 	<img src="../images/logo.project-open.horiz.whi.gif" width="230" height="52" border="0">-->
-      <a href="../index.html"><img src="http://www.project-open.com/images/topBanner.org.jpg" width="780" height="80" border="0" ></a> 
+      <a href="http://projop.dnsalias.com/l10n-pm/"><img src="http://www.project-open.com/images/topBanner.l10n-pm.jpg" width="780" height="80" border="0" alt="Localization Project Management Best Practices Wiki"></a> 
     </td>
 	<!--<td align="right" bgcolor="#FFFFFF" valign="middle"><br><OBJECT classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
  codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0"
@@ -55,7 +55,7 @@ function MM_jumpMenu(targ,selObj,restore){ //v3.0
           <td><img src="http://www.project-open.com/images/blank.gif" width="5" height="1"></td>
           <td onMouseOver="this.bgColor='B6C0D9'" onMouseOut="this.bgColor='336699'"><a href="/l10n-pm/" class="menu">Home</a></td>
           <td><img src="http://www.project-open.com/images/blank.gif" width="10" height="1"></td>
-          <td onMouseOver="this.bgColor='B6C0D9'" onMouseOut="this.bgColor='336699'"><a href="/l10n-pm/doc/wiki-help" class="menu">Help</a></td>
+          <td onMouseOver="this.bgColor='B6C0D9'" onMouseOut="this.bgColor='336699'"><a href="/l10n-pm/Editing" class="menu">Help</a></td>
           <td><img src="http://www.project-open.com/images/blank.gif" width="10" height="1"></td>
         </tr>
       </table></td>
@@ -89,11 +89,62 @@ function MM_jumpMenu(targ,selObj,restore){ //v3.0
   <tr> 
     <!-- FIRST COLUMN-->
     <td width="181" valign="top" rowspan="3" bgcolor="#FFFFFF"> 
+
       <table width="100%" border="0" cellspacing="0" cellpadding="0" height="3" background="../images/navigation/back_small.gif">
+        <tr><td></td></tr>
+      </table>
+
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" >
+        <!-- auf 100% belassen -->
+        <tr class=background_dark> 
+          <td class="capital" height="16"> &nbsp;&nbsp;Navigation</td>
+        </tr>
         <tr> 
-          <td></td>
-		 </tr>
-	   </table>
+          <td> <table border="0" cellspacing="0" cellpadding="5" width="100%" class="small">
+              <tr class="small"> 
+                <td valign="top" width="7"><img src="http://www.project-open.com/images/navigation/arr_btn.jpg" width="12" height="13"></td>
+                <td valign="top" class="small">
+		  <a href="index" class="right">Home</a>
+	 	</td>
+              </tr>
+              <tr class="small"> 
+                <td valign="top"><img src="http://www.project-open.com/images/navigation/arr_btn.jpg" width="12" height="13"></td>
+                <td valign="top" class="small">
+		  <a href="Welcome" class="right">Welcome (What's a Wiki?)</a>
+		</td>
+              </tr>
+              <tr> 
+                <td valign="top"><img src="http://www.project-open.com/images/navigation/arr_btn.jpg" width="12" height="13"></td>
+                <td valign="top" class="small">
+		  <a href="Editing" class="right">Editing Help</a>
+		</td>
+              </tr>
+            </table>
+            <table border="0" cellspacing="0" cellpadding="5" width="100%" class="small">
+              <tr class="small"> 
+                <td valign="top" width="7"><img src="http://www.project-open.com/images/navigation/arr_btn.jpg" width="12" height="13"></td>
+                <td valign="top" class="small">
+		  <a href="Submission%20Policy" class="right">Submission Policy</a>
+	        </td>
+              </tr>
+            </table>
+	  </td>
+        </tr>
+      </table>
+
+
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" height="3" background="../images/navigation/back_small.gif">
+        <tr><td>&nbsp;</td></tr>
+      </table>
+
+
+
+
+
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" height="3" background="../images/navigation/back_small.gif">
+        <tr><td></td></tr>
+      </table>
+
       <table width="100%" border="0" cellspacing="0" cellpadding="0" >
         <!-- auf 100% belassen -->
         <tr class=background_dark> 
@@ -142,9 +193,51 @@ function MM_jumpMenu(targ,selObj,restore){ //v3.0
 		</td>
               </tr>
             </table>
-		  </td>
+
+
+
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" height="3" background="../images/navigation/back_small.gif">
+        <tr><td>&nbsp;</td></tr>
+      </table>
+
+
+
+
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" >
+        <!-- auf 100% belassen -->
+        <tr class=background_dark> 
+          <td class="capital" height="16"> &nbsp;&nbsp;About</td>
+        </tr>
+        <tr> 
+          <td> 
+	    <table border="0" cellspacing="0" cellpadding="5" width="100%" class="small">
+              <tr class="small"> 
+                <td valign="top" width="7"><img src="http://www.project-open.com/images/navigation/arr_btn.jpg" width="12" height="13"></td>
+                <td valign="top" class="small">
+		  <a href="http://www.project-open.com/" class="right">
+		    Powered by <br>
+		    <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+		  </a>
+	 	</td>
+              </tr>
+            </table>
+
+	  </td>
         </tr>
       </table>
+
+
+
+
+
+	  </td>
+        </tr>
+      </table>
+
+
+
+
+
       <!-- TemplateBeginEditable name="siteRelatedLinks" --> <!-- TemplateEndEditable --> 
 
       <table width="100%" border="0" cellspacing="0" cellpadding="0" height="5" background="../images/navigation/back_small.gif">
