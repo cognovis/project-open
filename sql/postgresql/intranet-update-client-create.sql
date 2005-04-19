@@ -65,7 +65,7 @@ BEGIN
         ''software-update-client'', -- label
         ''Software Updates'',   -- name
         ''/intranet-update-client/'', -- url
-        5,                      -- sort_order
+        15,                     -- sort_order
         v_admin_menu,            -- parent_menu_id
         null                    -- p_visible_tcl
     );

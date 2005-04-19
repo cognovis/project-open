@@ -1,35 +1,21 @@
 ad_page_contract {
-    Loads a package from a URL into the package manager.
-    @author Bryan Quinn (bquinn@arsdigita.com)
-    @creation-date September 1 2000
-    @cvs-id $Id$
+    Loads an update info XML file from a URL into a temp directory
+    @author Frank Bergmann (frank.bergmann@project-open.com)
 } {
 }
 
-doc_body_append "[apm_header -form "action=package-load-2" "Load a New Package"]
-<p>
-You can retrieve a package archive to prepare for installation by using
-one of the options below.  
-Otherwise, please specify a filesystem location for the packages you want to install.
-You can also copy the extracted package files directly into the <code>[acs_root_dir]/packages/</code> directory if you prefer.
-<p>
-"
+set user_id [auth::require_login]
+set return_url "[ad_conn url]?[ad_conn query]"
+set page_title "Load Update Information"
+set context_bar [im_context_bar $page_title]
 
-doc_body_append "
-    Load a package from the <tt>.apm</tt> file at this URL:
+set update_url [ad_parameter -package_id [im_update_client_package_id] UpdateServerURL -default "&lt;UpdateServerURL&gt;"]
 
-    <blockquote>http:// <input name=url size=50></blockquote><p>
-    "
+set update_server "http://[lindex [split $update_url "/"] 2]"
 
-doc_body_append "
-Specify a local path including a filename for the APM file or a directory containing several APM files.<p>
-<blockquote>Path: <input name=file_path size=50></blockquote>
+#if {[string range $update_url 0 6] == "http://"} {
+#    set update_url [string range $update_url 7 end]
+#}
 
-<p>
-<input type=checkbox name=delete value=1>Check this box if you want to delete all of the packages
-currently in the installation directory.<p>
-<center><input type=submit value=Load></blockquote></center>
 
-[ad_footer]
-"
-
+set user_email [db_string user_email "select email from parties where party_id = :user_id" -default ""]

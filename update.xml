@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<update_info>
+
+  <version name="3.0.beta7">
+    <whats_new>Improved installer</whats_new>
+    <cvs_server>berlin.dnsalias.com</cvs_server>
+    <description format="text/plain">Optional Upgrade</description>
+  </version>
+
+  <version name="3.0.beta8">
+    <whats_new>
+      <whats_new_item package="WinInstaller">
+         The installer detects an existing web server, PostgreSQL database of CygWin installation
+	</whats_new_item>
+    </whats_new>
+    <cvs_server>berlin.dnsalias.com</cvs_server>
+    <description format="text/plain">Optional Upgrade</description>
+  </version>
+
+</update_info>

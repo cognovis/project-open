@@ -1,5 +1,5 @@
 <master src="../../intranet-core/www/master">
-<property name="title">Automatic Software Update Client</property>
+<property name="title">Automatic Software Updates: Update Information</property>
 <property name="main_navbar_label">admin</property>
 
 
@@ -7,7 +7,7 @@
 
 
 <ul>
-<li><a href=load-update-xml>Load Latest Update Information</a>
+<li>Login
 </ul>
 
 
