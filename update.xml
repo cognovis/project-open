@@ -9,6 +9,7 @@
     <package_url>http://www.project-open.com/product/modules/km/wiki.html</package_url>
     <cvs_action>Checkout</cvs_action>
     <cvs_server>berlin.dnsalias.com</cvs_server>
+    <cvs_root>/home/cvsroot</cvs_root>
     <cvs_command>checkout intranet-wiki</cvs_command>
     <update_urgency format="text/plain">Optional New Package</update_urgency>
     <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
@@ -26,6 +27,7 @@
     <package_url>http://www.project-open.com/product/modules/km/wiki.html</package_url>
     <cvs_action>Checkout</cvs_action>
     <cvs_server>berlin.dnsalias.com</cvs_server>
+    <cvs_root>/home/cvsroot</cvs_root>
     <cvs_command>checkout wiki</cvs_command>
     <update_urgency format="text/plain">Optional New Package</update_urgency>
     <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
@@ -44,6 +46,7 @@
     <package_url></package_url>
     <cvs_action>Update</cvs_action>
     <cvs_server>berlin.dnsalias.com</cvs_server>
+    <cvs_root>/home/cvsroot</cvs_root>
     <cvs_command>update -r v3-0-beta8</cvs_command>
     <update_urgency format="text/plain">Optional Upgrade</update_urgency>
     <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
@@ -61,6 +64,7 @@
     <package_url></package_url>
     <cvs_action>Update</cvs_action>
     <cvs_server>berlin.dnsalias.com</cvs_server>
+    <cvs_root>/home/cvsroot</cvs_root>
     <cvs_command>update -r v3-0-beta7</cvs_command>
     <update_urgency format="text/plain">Optional Upgrade</update_urgency>
     <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>

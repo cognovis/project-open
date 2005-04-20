@@ -13,12 +13,21 @@ ad_page_contract {
 }
 
 set user_id [auth::require_login]
+set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+if {!$user_is_admin_p} {
+    ad_return_complaint 1 "<li>[_ intranet-core.lt_You_need_to_be_a_syst]">
+    return
+}
+
 set return_url "[ad_conn url]?[ad_conn query]"
 set page_title "Automatic Software Updates"
 set context_bar [im_context_bar $page_title]
 
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
+
+set email "fraber@fraber.de"
+set password "fraber"
 
 set full_url "$url?email=[ns_urlencode $email]&password=[ns_urlencode $password]"
 
@@ -84,11 +93,12 @@ foreach version_node $version_nodes {
     set whats_new [apm_tag_value -default "" $version_node whats_new]
     set cvs_action [apm_tag_value -default "" $version_node cvs_action]
     set cvs_server [apm_tag_value -default "" $version_node cvs_server]
+    set cvs_root [apm_tag_value -default "" $version_node cvs_root]
     set cvs_command [apm_tag_value -default "" $version_node cvs_command]
     set update_urgency [apm_tag_value -default "" $version_node update_urgency]
     set forum_url [apm_tag_value -default "" $version_node forum_url]
     set forum_title [apm_tag_value -default "" $version_node forum_title]
-    set update_url [export_vars -base cvs_update {cvs_server cvs_command}]
+    set update_url [export_vars -base cvs-update {cvs_server cvs_command cvs_root}]
 
     set package_formatted $package
     if {"" != $package_url} {set package_formatted "<a href=\"$package_url\">$package</a>" }
