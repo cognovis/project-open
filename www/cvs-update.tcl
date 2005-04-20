@@ -42,10 +42,15 @@ if {!$user_is_admin_p} {
 set return_url "[ad_conn url]?[ad_conn query]"
 set page_title "Automatic Software Updates"
 set context_bar [im_context_bar $page_title]
+
+# Main directory of the OpenACS installatin
+# Example: /web/projop
 set acs_root_dir [acs_root_dir]
 
-set cvs_command "update"
-set package_dir "/web/projop/packages/"
+# Directory where all active packages reside
+# Example: /web/projop/packages/
+set package_dir "$acs_root_dir/packages"
+
 
 # ------------------------------------------------------------
 # Return the page header.

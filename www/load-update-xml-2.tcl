@@ -10,7 +10,16 @@ ad_page_contract {
     url
     email
     password
+
+    { orderby "package_key" }
+    { owned_by "everyone" }
+    { supertype "all" }
+    { reload_links_p 0 }
 }
+
+# ------------------------------------------------------------
+# Authentication & defaults
+#
 
 set user_id [auth::require_login]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
@@ -22,6 +31,7 @@ if {!$user_is_admin_p} {
 set return_url "[ad_conn url]?[ad_conn query]"
 set page_title "Automatic Software Updates"
 set context_bar [im_context_bar $page_title]
+set context [list [list "../developer" "Developer's Administration"] $page_title]
 
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
@@ -35,6 +45,11 @@ ns_log Notice "load-update-xml-2: full_url=$full_url"
 ns_log Notice "load-update-xml-2: email=$email"
 
 set update_xml ""
+
+
+# ------------------------------------------------------------
+# Fetch the update.xml file from the remote server
+#
 
 if { [catch {
 
@@ -55,6 +70,11 @@ if { [catch {
 	</pre></blockquote>[ad_footer]"
     return
 }	
+
+
+# ------------------------------------------------------------
+# Parse the XML file and generate the HTML table
+#
 
 # Sample record:
 #
@@ -122,6 +142,74 @@ foreach version_node $version_nodes {
 }
 
 
-# ad_return_complaint 1 "<pre>root_name=$root_name\n$debug</pre>"
+# ------------------------------------------------------------
+# Show the list of currently installed packages
+#
 
+set dimensional_list {
+    {
+        supertype "Package Type:" all {
+	    { apm_application "Applications" { where "[db_map apm_application]" } }
+	    { apm_service "Services" { where "t.package_type = 'apm_service'"} }
+	    { all "All" {} }
+	}
+    }
+    {
+
+	owned_by "Owned by:" everyone {
+	    { me "Me" {where "[db_map everyone]"} }
+	    { everyone "Everyone" {where "1 = 1"} }
+	}
+    }
+    {
+	status "Status:" latest {
+	    {
+		latest "Latest" {where "[db_map latest]" }
+	    }
+	    { all "All" {where "1 = 1"} }
+	}
+    }
+}
+
+set missing_text "<strong>No packages match criteria.</strong>"
+
+# append body "<center><table><tr><td>[ad_dimensional $dimensional_list]</td></tr></table></center>"
+
+set use_watches_p [expr ! [ad_parameter -package_id [ad_acs_kernel_id] PerformanceModeP request-processor 1]]
+
+set table_def {
+    { package_key "Key" "" "<td><a href=\"[export_vars -base /acs-admin/apm/version-view { version_id }]\">$package_key</a></td>" }
+    { pretty_name "Name" "" "<td><a href=\"[export_vars -base /acs-admin/apm/version-view { version_id }]\">$pretty_name</a></td>" }
+    { version_name "Ver." "" "" }
+    {
+	status "Status" "" {<td align=center>&nbsp;&nbsp;[eval {
+	    if { $installed_p == "t" } {
+		if { $enabled_p == "t" } {
+		    set status "Enabled"
+		} else {
+		    set status "Disabled"
+		}
+	    } elseif { $superseded_p } {
+		set status "Superseded"
+	    } else {
+		set status "Uninstalled"
+	    }
+	    format $status
+	}]&nbsp;&nbsp;</td>}
+    }
+}
+
+doc_body_flush
+
+set table [ad_table -Torderby $orderby -Tmissing_text $missing_text "apm_table" "" $table_def]
+
+db_release_unused_handles
+
+# The reload links make the page slow, so make them optional
+set page_url "[ad_conn url]?[export_vars -url {orderby owned_by supertype}]"
+if { $reload_links_p } {
+    set reload_filter "<a href=\"$page_url&reload_links_p=0\">Do not check for changed files</a>"
+} else {
+    set reload_filter "<a href=\"$page_url&reload_links_p=1\">Check for changed files</a>"
+}
 

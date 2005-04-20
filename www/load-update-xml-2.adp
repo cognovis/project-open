@@ -21,3 +21,8 @@
 
 
 
+<h1>Already Installed Packages</h1>
+
+@table;noquote@
+
+
