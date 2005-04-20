@@ -7,96 +7,111 @@ ad_page_contract {
     @cvs-id $Id$
 
 } {
-    {url ""}
-    {file_path ""}
-    {delete 0}
-} -validate {
-    
-    url_xor_file_path {
-	if {([empty_string_p $url] && [empty_string_p $file_path]) ||
-	(![empty_string_p $url] && ![empty_string_p $file_path]) } {
-	    ad_complain
-	}
-    }
-
-} -errors {
-    url_xor_file_path {You must specify either a URL to download or a file path, but not both.}
+    url
+    email
+    password
 }
 
-if {$delete} {
-    file delete -force [apm_workspace_install_dir]
-}
+set user_id [auth::require_login]
+set return_url "[ad_conn url]?[ad_conn query]"
+set page_title "Automatic Software Updates"
+set context_bar [im_context_bar $page_title]
 
-ad_return_top_of_page "[apm_header -form "package-load" [list "package-load" "Load a New Package"] "View Package Contents"]
-"
+set bgcolor(0) " class=roweven"
+set bgcolor(1) " class=rowodd"
 
-if {[empty_string_p $file_path]} {
+set full_url "$url?email=[ns_urlencode $email]&password=[ns_urlencode $password]"
 
-    if {[string range $url 0 6] == "http://"} {
-	set url [string range $url 7 end]
+ns_log Notice "load-update-xml-2: full_url=$full_url"
+ns_log Notice "load-update-xml-2: email=$email"
+
+set update_xml ""
+
+if { [catch {
+
+    ns_log Notice "load-update-xml-2: Opening $full_url"
+    set httpChan [lindex [ns_httpopen GET $full_url] 0]
+    ns_log Notice "load-update-xml-2: httpChan=$httpChan"
+
+    while {[gets $httpChan update_line] >= 0} {
+	append update_xml $update_line
     }
 
-    ns_write "
-<ul>
-    <li>Downloading <a href=\"http://$url\">http://$url</a>..."
-    if { [catch {
-	# Open a destination file.
-	set file_path [ns_tmpnam].apm
-	set fileChan [open $file_path w+ 0600]
-	# Open the channel to the server.
-	set httpChan [lindex [ns_httpopen GET "http://$url"] 0]
-	ns_log Debug "APM: Copying data from $url"
-	# Copy the data
-	fcopy $httpChan $fileChan
-	# Clean up.
-	ns_log Debug "APM: Done copying data."
-	close $httpChan
-	close $fileChan
-    } errmsg] } {
-	ns_write "Unable to download. Please check your URL.</ul>.
+    ns_log Debug "load-update-xml-2: Done copying data."
+    close $httpChan
+
+} errmsg] } {
+    ad_return_complaint 1 "Unable to download. Please check your URL.</ul>.
 	The following error was returned: <blockquote><pre>[ad_quotehtml $errmsg]
 	</pre></blockquote>[ad_footer]"
-	return
-    }	
-    
-} else {
-    ns_write "
-    Accessing $file_path...
-    <p>
-    <ul>
-    "
+    return
+}	
+
+# Sample record:
+#
+#  <version name="3.0.beta7">
+#    <package>All</package>
+#    <whats_new>Improved installer</whats_new>
+#    <cvs_server>berlin.dnsalias.com</cvs_server>
+#    <cvs_command>update -r v3-0-beta7</cvs_command>
+#    <update_urgency format="text/plain">Optional Upgrade</update_urgency>
+#  </version>
+
+set tree [xml_parse -persist $update_xml]
+set root_node [xml_doc_get_first_node $tree]
+
+set root_name [xml_node_get_name $root_node]
+if { ![string equal $root_name "update_info"] } {
+    error "Expected <update_info> as root node of update.xml file, found: 'root_name'"
 }
-ns_log Debug "APM: Loading $file_path"
-# If file_path ends in .apm, then load the single package.
-if { ![string compare [string range $file_path [expr [string length $file_path] -3] end] "apm"] } {
-    apm_load_apm_file -callback apm_ns_write_callback $file_path
-} else {
-    # See if this is a directory.
-    if { [file isdirectory $file_path] } {
-	#Find all the .APM and load them.
-	set apm_file_list [glob -nocomplain "$file_path/*.apm"] 
-	if {[empty_string_p $apm_file_list]} {
-	    ns_write "The directory specified, <code>$file_path</code>, does not contain any APM files.  Please <a href=\"package-load\">try again</a>.[ad_footer]"
-	    return
-	} else {
-	    foreach apm_file $apm_file_list {
-		ns_write "Loading $apm_file... <ul>"
-		apm_load_apm_file -callback apm_ns_write_callback $apm_file
-		ns_write "<li>Done.</ul><p>"
-	    }
-	}
-    } else {
-	# Not sure what to do... stop.
-	ns_write "The specified file path is not an APM file or a directory.  Please try
-	entering a new file path.[ad_footer]"
-	return
+
+set ctr 0
+set debug ""
+set version_list [list]
+set version_nodes [xml_node_get_children $root_node]
+set version_html ""
+foreach version_node $version_nodes {
+
+    set version_node_name [xml_node_get_name $version_node]
+    if { ![string equal $version_node_name "version"] } {
+	error "Expected <version> under the root node of update.xml file, found: '$version_node_name'"
     }
+    set version_name [apm_required_attribute_value $version_node name]
+    set version_url [apm_tag_value $version_node version_url]
+    set package [apm_tag_value -default "" $version_node package]
+    set package_url [apm_tag_value -default "" $version_node package_url]
+    set release_date [apm_tag_value -default "" $version_node release_date]
+    set whats_new [apm_tag_value -default "" $version_node whats_new]
+    set cvs_action [apm_tag_value -default "" $version_node cvs_action]
+    set cvs_server [apm_tag_value -default "" $version_node cvs_server]
+    set cvs_command [apm_tag_value -default "" $version_node cvs_command]
+    set update_urgency [apm_tag_value -default "" $version_node update_urgency]
+    set forum_url [apm_tag_value -default "" $version_node forum_url]
+    set forum_title [apm_tag_value -default "" $version_node forum_title]
+    set update_url [export_vars -base cvs_update {cvs_server cvs_command}]
+
+    set package_formatted $package
+    if {"" != $package_url} {set package_formatted "<a href=\"$package_url\">$package</a>" }
+
+    set version_formatted $version_name
+    if {"" != $version_url} {set version_formatted "<a href=\"$version_url\">$version_name</a>" }
+
+    append version_html "
+<tr $bgcolor([expr $ctr % 2])>
+  <td><a href=\"$update_url\" title=\"Update\" class=\"button\">$cvs_action</a>&nbsp;</td>
+  <td>$version_formatted</td>
+  <td>$release_date</td>
+  <td>$package_formatted</td>
+  <td><a href=\"$forum_url\">$forum_title</a></td>
+  <td>$update_urgency</td>
+  <td>$whats_new</td>
+</tr>
+"
+
+    incr ctr
 }
 
-ns_write "
-</ul>
-The package(s) are now extracted into your filesystem.  You can <a href=\"package-load\">load 
-another new package</a> from a URL or proceed to <a href=\"packages-install\">install</a> the package(s).
 
-[ad_footer]
-"
+# ad_return_complaint 1 "<pre>root_name=$root_name\n$debug</pre>"
+
+

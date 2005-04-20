@@ -2,20 +2,72 @@
 
 <update_info>
 
-  <version name="3.0.beta7">
-    <whats_new>Improved installer</whats_new>
+  <version name="3.0.beta8">
+    <version_url></version_url>
+    <release_date>2005-04-18</release_date>
+    <package>intranet-wiki</package>
+    <package_url>http://www.project-open.com/product/modules/km/wiki.html</package_url>
+    <cvs_action>Checkout</cvs_action>
     <cvs_server>berlin.dnsalias.com</cvs_server>
-    <description format="text/plain">Optional Upgrade</description>
+    <cvs_command>checkout intranet-wiki</cvs_command>
+    <update_urgency format="text/plain">Optional New Package</update_urgency>
+    <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
+    <forum_title>New Wiki Module</forum_title>
+    <whats_new>
+      See package description. Please also install the "wiki" module (below).
+    </whats_new>
   </version>
 
+
   <version name="3.0.beta8">
-    <whats_new>
-      <whats_new_item package="WinInstaller">
-         The installer detects an existing web server, PostgreSQL database of CygWin installation
-	</whats_new_item>
-    </whats_new>
+    <version_url></version_url>
+    <release_date>2005-04-18</release_date>
+    <package>wiki</package>
+    <package_url>http://www.project-open.com/product/modules/km/wiki.html</package_url>
+    <cvs_action>Checkout</cvs_action>
     <cvs_server>berlin.dnsalias.com</cvs_server>
-    <description format="text/plain">Optional Upgrade</description>
+    <cvs_command>checkout wiki</cvs_command>
+    <update_urgency format="text/plain">Optional New Package</update_urgency>
+    <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
+    <forum_title>New Wiki Module</forum_title>
+    <whats_new>
+      See package description. Please also install the "intranet-wiki" module (above).
+    </whats_new>
   </version>
+
+
+
+  <version name="3.0.beta8">
+    <version_url>http://www.project-open.org/download/win/3.0.beta8.html</version_url>
+    <release_date>2005-03-31</release_date>
+    <package>All</package>
+    <package_url></package_url>
+    <cvs_action>Update</cvs_action>
+    <cvs_server>berlin.dnsalias.com</cvs_server>
+    <cvs_command>update -r v3-0-beta8</cvs_command>
+    <update_urgency format="text/plain">Optional Upgrade</update_urgency>
+    <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
+    <forum_title>3.0.beta8 Update</forum_title>
+    <whats_new>
+      The installer detects an existing web server, PostgreSQL database or CygWin installation.
+    </whats_new>
+  </version>
+
+
+  <version name="3.0.beta7">
+    <version_url>http://www.project-open.org/download/win/3.0.beta7.html</version_url>
+    <release_date>2005-03-18</release_date>
+    <package>All</package>
+    <package_url></package_url>
+    <cvs_action>Update</cvs_action>
+    <cvs_server>berlin.dnsalias.com</cvs_server>
+    <cvs_command>update -r v3-0-beta7</cvs_command>
+    <update_urgency format="text/plain">Optional Upgrade</update_urgency>
+    <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
+    <forum_title>3.0.beta7 Update</forum_title>
+    <whats_new>Improved installer</whats_new>
+  </version>
+
+
 
 </update_info>

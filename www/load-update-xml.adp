@@ -5,17 +5,24 @@
 
 <h1>@page_title@</h1>
 
-<form action="@update_server;noquote@/register" method=POST>
-<input type=hidden name=return_url value="@update_url;noquote@">
-
+<form action="load-update-xml-2" method=POST>
 <table>
 <tr>
-  <td>URL:</td>
-  <td>@update_url;noquote@</td>
+  <td>Update URL:</td>
+  <td><input name=url size=60 value="@update_url;noquote@"></td>
 </tr>
 <tr>
   <td>Service<br>Email:</td>
   <td><input name=email size=40 value="@user_email;noquote@"></td>
+</tr>
+<tr>
+  <td>Service<br>Password:</td>
+  <td>
+    <input type=password name=password size=40 value=""><br>
+    <small>Attention! This is <strong>not</strong> the login password for you local server.</small>
+  </td>
+  <td>
+  </td>
 </tr>
 <tr>
   <td colspan=2 align=right>

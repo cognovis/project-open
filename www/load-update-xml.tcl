@@ -11,11 +11,10 @@ set context_bar [im_context_bar $page_title]
 
 set update_url [ad_parameter -package_id [im_update_client_package_id] UpdateServerURL -default "&lt;UpdateServerURL&gt;"]
 
+
+set update_url "http://projop/intranet-update-client/update"
+
+
 set update_server "http://[lindex [split $update_url "/"] 2]"
-
-#if {[string range $update_url 0 6] == "http://"} {
-#    set update_url [string range $update_url 7 end]
-#}
-
 
 set user_email [db_string user_email "select email from parties where party_id = :user_id" -default ""]
