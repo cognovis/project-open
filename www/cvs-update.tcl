@@ -1,15 +1,31 @@
 ad_page_contract {
-    Executes a CVS command on the server
+    Executes a CVS command on a remote CVS server.
+    <ul>
+    <li>First, we log the user in using a "cvs login" command.
+    <li>Then we execute the actual cvs_command.
+    </ul>
 
-    @param cvs_command
+    Please note that we have to export the HOME directory
+    because this environment variable is required by CVS
+    and a "bash -c" shell doesn't set it up. Maybe somebody
+    has a better idea?
+
+    @param cvs_server The name of the CVS server (example: "cvs.openacs.org")
+    @param cvs_root The standard CVS root (example: "/home/cvsroot")
+    @param cvs_command The command to execute (example: "update -r v3-0-0")
+    @param cvs_protocol The standard CVS protocol (example: "pserver")
+    @param cvs_user The CVS user to log in (example: "anonymous")
+    @param cvs_password The password for the CVS user (example: "")
+
     @author Frank Bergmann (frank.bergmann@project-open.com)
     @creation-date April 2005
 } {
     cvs_server
     cvs_root
     cvs_command
-    { cvs_user "cvs"}
-    { cvs_password ".cvsdev"}
+    { cvs_protocol "pserver" }
+    { cvs_user "anonymous" }
+    { cvs_password "" }
 }
 
 # ------------------------------------------------------------
@@ -38,8 +54,6 @@ set package_dir "/web/projop/packages/"
 ad_return_top_of_page "[im_header]\n[im_navbar]"
 
 
-
-
 # ------------------------------------------------------------
 # Log the dude in
 #
@@ -49,14 +63,14 @@ ns_write "CVS login using:\n<ul>\n"
 ns_write "<li>Username = $cvs_user\n"
 ns_write "<li>Password = $cvs_password\n"
 ns_write "<li>Server = $cvs_server\n"
-ns_write "<li>Protocol = pserver\n"
-ns_write "<li>CvsRoot = $cvs_root\n"
+ns_write "<li>Protocol = $cvs_protocol\n"
+ns_write "<li>Root = $cvs_root\n"
 ns_write "</ul>\n"
 ns_write "<pre>\n"
 
 if {[catch {
 
-    set cmd "export HOME=$acs_root_dir; cvs -d :pserver:$cvs_user@$cvs_server:$cvs_root login 2>&1"
+    set cmd "export HOME=$acs_root_dir; cvs -d :$cvs_protocol:$cvs_user@$cvs_server:$cvs_root login 2>&1"
     ns_write "$cmd\n"
 
     set fp [open "|/bin/bash -c \"$cmd\"" "w"]
@@ -75,20 +89,22 @@ if {[catch {
         <pre>"
 }
 
+ns_write "</pre>\n"
+
+
 
 # ------------------------------------------------------------
-# Execute a CVS command.
+# Execute the CVS command.
 # Example:
 #
 # cvs -z3 -d :pserver:anonymous@openacs.org:/cvsroot checkout -r oacs-4-6
 
-ns_write "</pre>\n"
 ns_write "<h2>CVS Update</h2>\n"
 ns_write "<pre>\n"
 
 if { [catch {
 
-    set cmd "export HOME=$acs_root_dir; cd $package_dir; cvs -z3 -d :pserver:$cvs_user@$cvs_server:$cvs_root $cvs_command 2>&1"
+    set cmd "export HOME=$acs_root_dir; cd $package_dir; cvs -z3 -d :$cvs_protocol:$cvs_user@$cvs_server:$cvs_root $cvs_command 2>&1"
     ns_write "$cmd\n\n"
     ns_log Notice "cvs-update: cmd=$cmd"
     set fp [open "|/bin/bash -c \"$cmd\"" "r"]
@@ -96,6 +112,7 @@ if { [catch {
 	ns_write "$line\n"
     }
     close $fp
+    ns_write "\nSuccessfully executed:\n\n"
 
 } errmsg] } {
     ns_write "</pre>
