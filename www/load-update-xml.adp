@@ -9,16 +9,16 @@
 <table>
 <tr>
   <td>Update URL:</td>
-  <td><input name=url size=60 value="@update_url;noquote@"></td>
+  <td><input name=service_url size=60 value="@update_url;noquote@"></td>
 </tr>
 <tr>
   <td>Service<br>Email:</td>
-  <td><input name=email size=40 value="@user_email;noquote@"></td>
+  <td><input name=service_email size=40 value="@user_email;noquote@"></td>
 </tr>
 <tr>
   <td>Service<br>Password:</td>
   <td>
-    <input type=password name=password size=40 value=""><br>
+    <input type=password name=service_password size=40 value=""><br>
     <small>Attention! This is <strong>not</strong> the login password for you local server.</small>
   </td>
   <td>

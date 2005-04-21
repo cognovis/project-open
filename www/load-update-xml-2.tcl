@@ -7,14 +7,15 @@ ad_page_contract {
     @cvs-id $Id$
 
 } {
-    url
-    email
-    password
+    service_url
+    service_email
+    service_password
 
     { orderby "package_key" }
     { owned_by "everyone" }
     { supertype "all" }
     { reload_links_p 0 }
+    { show_only_new_p 1 }
 }
 
 # ------------------------------------------------------------
@@ -36,13 +37,10 @@ set context [list [list "../developer" "Developer's Administration"] $page_title
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 
-set email "fraber@fraber.de"
-set password "fraber"
-
-set full_url "$url?email=[ns_urlencode $email]&password=[ns_urlencode $password]"
+set full_url "$service_url?email=[ns_urlencode $service_email]&password=[ns_urlencode $service_password]"
 
 ns_log Notice "load-update-xml-2: full_url=$full_url"
-ns_log Notice "load-update-xml-2: email=$email"
+ns_log Notice "load-update-xml-2: service_email=$service_email"
 
 set update_xml ""
 
@@ -90,8 +88,8 @@ set tree [xml_parse -persist $update_xml]
 set root_node [xml_doc_get_first_node $tree]
 
 set root_name [xml_node_get_name $root_node]
-if { ![string equal $root_name "update_info"] } {
-    error "Expected <update_info> as root node of update.xml file, found: 'root_name'"
+if { ![string equal $root_name "update_list"] } {
+    error "Expected <update_list> as root node of update.xml file, found: 'root_name'"
 }
 
 set ctr 0
@@ -99,46 +97,70 @@ set debug ""
 set version_list [list]
 set version_nodes [xml_node_get_children $root_node]
 set version_html ""
+set login_status ""
+set login_message ""
+
 foreach version_node $version_nodes {
 
     set version_node_name [xml_node_get_name $version_node]
-    if { ![string equal $version_node_name "version"] } {
-	error "Expected <version> under the root node of update.xml file, found: '$version_node_name'"
+
+    if { [string equal $version_node_name "login_status"] } {
+	set login_status [xml_node_get_content $version_node]
     }
-    set version_name [apm_required_attribute_value $version_node name]
-    set version_url [apm_tag_value $version_node version_url]
-    set package [apm_tag_value -default "" $version_node package]
-    set package_url [apm_tag_value -default "" $version_node package_url]
-    set release_date [apm_tag_value -default "" $version_node release_date]
-    set whats_new [apm_tag_value -default "" $version_node whats_new]
-    set cvs_action [apm_tag_value -default "" $version_node cvs_action]
-    set cvs_server [apm_tag_value -default "" $version_node cvs_server]
-    set cvs_root [apm_tag_value -default "" $version_node cvs_root]
-    set cvs_command [apm_tag_value -default "" $version_node cvs_command]
-    set update_urgency [apm_tag_value -default "" $version_node update_urgency]
-    set forum_url [apm_tag_value -default "" $version_node forum_url]
-    set forum_title [apm_tag_value -default "" $version_node forum_title]
-    set update_url [export_vars -base cvs-update {cvs_server cvs_command cvs_root}]
+    
+    if { [string equal $version_node_name "login_message"] } {
+	set login_message [xml_node_get_content $version_node]
+    }
+    
+    if { [string equal $version_node_name "update"] } {
 
-    set package_formatted $package
-    if {"" != $package_url} {set package_formatted "<a href=\"$package_url\">$package</a>" }
+	set package_name [apm_tag_value -default "" $version_node package_name]
+	set package_url [apm_tag_value -default "" $version_node package_url]
+	set package_version [apm_tag_value -default "" $version_node package_version]
 
-    set version_formatted $version_name
-    if {"" != $version_url} {set version_formatted "<a href=\"$version_url\">$version_name</a>" }
+	set po_version [apm_tag_value $version_node po_version]
+	set po_version_url [apm_tag_value $version_node po_version_url]
 
-    append version_html "
+	set is_new [apm_tag_value -default "" $version_node is_new]
+
+	set release_date [apm_tag_value -default "" $version_node release_date]
+	set whats_new [apm_tag_value -default "" $version_node whats_new]
+	set cvs_action [apm_tag_value -default "" $version_node cvs_action]
+	set cvs_server [apm_tag_value -default "" $version_node cvs_server]
+	set cvs_root [apm_tag_value -default "" $version_node cvs_root]
+	set cvs_command [apm_tag_value -default "" $version_node cvs_command]
+	set update_urgency [apm_tag_value -default "" $version_node update_urgency]
+	set forum_url [apm_tag_value -default "" $version_node forum_url]
+	set forum_title [apm_tag_value -default "" $version_node forum_title]
+	set update_url [export_vars -base cvs-update {cvs_server cvs_command cvs_root}]
+
+	set package_formatted $package_name
+	if {"" != $package_url} {set package_formatted "<a href=\"$package_url\">$package_name</a>" }
+
+	set po_version_formatted $po_version
+	if {"" != $po_version_url} {set po_version_formatted "<a href=\"$po_version_url\">$po_version</a>" }
+	
+	# Skip this item if it's not "new"
+	if {$show_only_new_p} {
+	    if {![string equal $is_new "t"]} { continue }
+	}
+	
+	append version_html "
 <tr $bgcolor([expr $ctr % 2])>
   <td><a href=\"$update_url\" title=\"Update\" class=\"button\">$cvs_action</a>&nbsp;</td>
-  <td>$version_formatted</td>
-  <td>$release_date</td>
   <td>$package_formatted</td>
+  <td>$package_version</td>
+  <td>$po_version_formatted</td>
+  <td>$release_date</td>
   <td><a href=\"$forum_url\">$forum_title</a></td>
   <td>$update_urgency</td>
   <td>$whats_new</td>
 </tr>
 "
 
-    incr ctr
+	incr ctr
+    }
+
 }
 
 

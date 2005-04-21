@@ -1,49 +1,70 @@
 <?xml version="1.0"?>
 
-<update_info>
+<update_list>
 
-  <version name="3.0.beta8">
-    <version_url></version_url>
-    <release_date>2005-04-18</release_date>
-    <package>intranet-wiki</package>
+  <login_status>Successful Login</login_status>
+  <login_message></login_message>
+
+  <update>
+    <package_name>intranet-wiki</package_name>
     <package_url>http://www.project-open.com/product/modules/km/wiki.html</package_url>
+    <package_version>3.0.0</package_version>
+
+    <po_version>3.0.beta8</po_version>
+    <po_version_url></po_version_url>
+
+    <is_new>t</is_new>
+
+    <release_date>2005-04-18</release_date>
     <cvs_action>Checkout</cvs_action>
     <cvs_server>berlin.dnsalias.com</cvs_server>
     <cvs_root>/home/cvsroot</cvs_root>
     <cvs_command>checkout intranet-wiki</cvs_command>
-    <update_urgency format="text/plain">Optional New Package</update_urgency>
+    <update_urgency format="text/plain">New Package</update_urgency>
     <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
     <forum_title>New Wiki Module</forum_title>
     <whats_new>
       See package description. Please also install the "wiki" module (below).
     </whats_new>
-  </version>
+  </update>
 
 
-  <version name="3.0.beta8">
-    <version_url></version_url>
-    <release_date>2005-04-18</release_date>
-    <package>wiki</package>
+  <update>
+    <package_name>wiki</package_name>
     <package_url>http://www.project-open.com/product/modules/km/wiki.html</package_url>
+    <package_version>0.1d</package_version>
+
+    <po_version>3.0.beta8</po_version>
+    <po_version_url></po_version_url>
+
+    <is_new>t</is_new>
+
+    <release_date>2005-04-18</release_date>
     <cvs_action>Checkout</cvs_action>
     <cvs_server>berlin.dnsalias.com</cvs_server>
     <cvs_root>/home/cvsroot</cvs_root>
     <cvs_command>checkout wiki</cvs_command>
-    <update_urgency format="text/plain">Optional New Package</update_urgency>
+    <update_urgency format="text/plain">New Package</update_urgency>
     <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
     <forum_title>New Wiki Module</forum_title>
     <whats_new>
       See package description. Please also install the "intranet-wiki" module (above).
     </whats_new>
-  </version>
+  </update>
 
 
 
-  <version name="3.0.beta8">
-    <version_url>http://www.project-open.org/download/win/3.0.beta8.html</version_url>
-    <release_date>2005-03-31</release_date>
-    <package>All</package>
+  <update>
+    <package_name>All</package_name>
     <package_url></package_url>
+    <package_version>-</package_version>
+
+    <po_version>3.0.beta8</po_version>
+    <po_version_url>http://www.project-open.org/download/win/3.0.beta8.html</po_version_url>
+
+    <is_new>t</is_new>
+
+    <release_date>2005-03-31</release_date>
     <cvs_action>Update</cvs_action>
     <cvs_server>berlin.dnsalias.com</cvs_server>
     <cvs_root>/home/cvsroot</cvs_root>
@@ -54,14 +75,20 @@
     <whats_new>
       The installer detects an existing web server, PostgreSQL database or CygWin installation.
     </whats_new>
-  </version>
+  </update>
 
 
-  <version name="3.0.beta7">
-    <version_url>http://www.project-open.org/download/win/3.0.beta7.html</version_url>
-    <release_date>2005-03-18</release_date>
-    <package>All</package>
+  <update>
+    <package_name>All</package_name>
     <package_url></package_url>
+    <package_version>-</package_version>
+
+    <po_version>3.0.beta7</po_version>
+    <po_version_url>http://www.project-open.org/download/win/3.0.beta7.html</po_version_url>
+
+    <is_new>t</is_new>
+
+    <release_date>2005-03-18</release_date>
     <cvs_action>Update</cvs_action>
     <cvs_server>berlin.dnsalias.com</cvs_server>
     <cvs_root>/home/cvsroot</cvs_root>
@@ -70,8 +97,7 @@
     <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
     <forum_title>3.0.beta7 Update</forum_title>
     <whats_new>Improved installer</whats_new>
-  </version>
+  </update>
 
 
-
-</update_info>
+</update_list>

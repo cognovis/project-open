@@ -28,28 +28,52 @@ array set auth_info [auth::authenticate \
 ]
 
 # Handle authentication problems
+set successful_login 0
+set login_message ""
+set login_status ""
 switch $auth_info(auth_status) {
     ok {
-	# Continue below
+	set successful_login 1
+	set login_status "Successful Login"
     }
     bad_password {
-	ad_return_complaint 1 "Bad Password: <br>Your password doesn't match your user name."
-	break
+	set login_status "Bad Password"
+	set login_message "Your password doesn't match your user name."
     }
     default {
-	ad_return_complaint 1 "Login Error: <br>There was an error during your authentification. 
-        <br>Possibly your email or password are wrong."
-	break
+	set login_status "Login Error"
+	set login_message "There was an error during your authentification. Possibly your email or password are wrong."
     }
 }
-
 
 set package_root_dir [acs_package_root_dir "intranet-update-client"]
 set file "$package_root_dir/update.xml"
-set guessed_file_type "text/xml"
 
-if {[file readable $file]} {
-    rp_serve_concrete_file $file
+
+if {$successful_login} {
+
+    if {[file readable $file]} {
+	rp_serve_concrete_file $file
+    } else {
+	set error_xml "
+<update_list>
+  <login_status>Internal Server Error</login_status>
+  <login_message>There was an internal server error. Please notify support@project-open.com.</login_message>
+</update_list>
+"
+	doc_return 500 text/xml $error_xml
+    }
+
+
 } else {
-    doc_return 500 text/html "[_ intranet-filestorage.lt_Did_not_find_the_spec]"
+
+    set error_xml "
+<update_list>
+  <login_status>$login_status</login_status>
+  <login_message>$login_message</login_message>
+</update_list>
+"
+    doc_return 500 text/xml $error_xml
 }
+
+

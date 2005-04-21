@@ -64,6 +64,9 @@ ad_return_top_of_page "[im_header]\n[im_navbar]"
 #
 
 ns_write "<h2>CVS Login</h2>\n"
+ns_write "<p>After this CVS update please visit the \n"
+ns_write "<a href=/acs-admin/apm/packages-install>ACS Package Manager</a>\n"
+ns_write "(APM) page and update the data model.\n</p>\n"
 ns_write "CVS login using:\n<ul>\n"
 ns_write "<li>Username = $cvs_user\n"
 ns_write "<li>Password = $cvs_password\n"
@@ -131,6 +134,10 @@ if { [catch {
 }
 
 ns_write "</pre>\n"
+
+ns_write "<p>After this CVS update please visit the \n"
+ns_write "<a href=/acs-admin/apm/packages-install>ACS Package Manager</a>\n"
+ns_write "(APM) page and update the data model.\n</p>\n"
 
 ns_log Notice "cvs-update: before writing footer"
 ns_write [im_footer]
