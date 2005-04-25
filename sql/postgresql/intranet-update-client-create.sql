@@ -62,10 +62,10 @@ BEGIN
         null,                   -- creation_ip
         null,                   -- context_id
         ''intranet-update-client'', -- package_name
-        ''software-update-client'', -- label
+        ''software_updates'',   -- label
         ''Software Updates'',   -- name
         ''/intranet-update-client/'', -- url
-        15,                     -- sort_order
+        12,                     -- sort_order
         v_admin_menu,            -- parent_menu_id
         null                    -- p_visible_tcl
     );
