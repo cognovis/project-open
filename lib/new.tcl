@@ -21,8 +21,8 @@ ad_form -name new -action "new" -export {name edit} -form {
     item_id:key
     title:text
     content:text(textarea)
-    revision_notes:text(textarea),optional
-    
+    {revision_notes:text(textarea),optional,nospell {label "Revision Notes} {html {rows 5 cols 40}}}
+
 } -edit_request {
 
     #    content::item::get -item_id $item_id
