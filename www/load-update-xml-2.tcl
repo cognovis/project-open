@@ -109,7 +109,7 @@ set tree [xml_parse -persist $update_xml]
 set root_node [xml_doc_get_first_node $tree]
 set root_name [xml_node_get_name $root_node]
 if { ![string equal $root_name "po_software_update"] } {
-    error "Expected <update_list> as root node of update.xml file, found: 'root_name'"
+    error "Expected <po_software_update> as root node of update.xml file, found: '$root_name'"
 }
 
 set ctr 0

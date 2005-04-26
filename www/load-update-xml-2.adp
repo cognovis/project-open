@@ -3,7 +3,7 @@
 <property name="main_navbar_label">admin</property>
 
 
-<h1>Automatic Software Updates - Login</h1>
+<h1>Login Status</h1>
 The <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
 server at "@service_url@" responded:
 <ul>
@@ -16,13 +16,15 @@ server at "@service_url@" responded:
 </ul>
 
 
+<if @ctr@ ne 0>
+
 <h1>Automatic Software Updates</h1>
 <ul>
 <li>Please <b>DON'T UPDATE</b> before having read completely
 the <a href="index">instructions</a>.<br> 
 <li>You need to perform a complete backup before each and every update.
 </ul>
-<if @ctr@ ne 0>
+
 <table cellspacing=2 cellpadding=2>
 <tr class=rowtitle>
   <td class=rowtitle align=middle>Update</td>
@@ -37,6 +39,7 @@ the <a href="index">instructions</a>.<br>
 @version_html;noquote@
 </table>
 <p>&nbsp;</p>
+
 </if>
 
 

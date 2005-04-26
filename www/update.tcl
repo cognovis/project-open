@@ -57,10 +57,18 @@ if {$successful_login} {
 	rp_serve_concrete_file $file
     } else {
 	set error_xml "
-<update_list>
-  <login_status>Internal Server Error</login_status>
-  <login_message>There was an internal server error. Please notify support@project-open.com.</login_message>
-</update_list>
+<po_software_update>
+  <login>
+    <login_status>fail</login_status>
+    <login_message>Internal Server Error: 'file not readable'. Please notify support@project-open.com.</login_message>
+  </login>
+
+  <account>
+  </account>
+
+  <update_list>
+  </update_list>
+</po_software_update>
 "
 	doc_return 500 text/xml $error_xml
     }
@@ -69,10 +77,18 @@ if {$successful_login} {
 } else {
 
     set error_xml "
-<update_list>
-  <login_status>$login_status</login_status>
-  <login_message>$login_message</login_message>
-</update_list>
+<po_software_update>
+  <login>
+    <login_status>$login_status</login_status>
+    <login_message>$login_message</login_message>
+  </login>
+
+  <account>
+  </account>
+
+  <update_list>
+  </update_list>
+</po_software_update>
 "
     doc_return 500 text/xml $error_xml
 }

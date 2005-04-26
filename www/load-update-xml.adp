@@ -32,10 +32,15 @@
 </table>
 </form>
 
-<h2>Do you Have Software Update Contract?</h2>
+<h2>How to get the Automatic Software Update Service?</h2>
 
 <p>
-This page allows you to check for software updates in order 
-to keep your system up to date.
-<p>
-Please enter your service email above 
+The <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+Automatic Software Update service is not free.<br>
+Please read the
+<a href="http://www.project-open.com/product/service/software-updates">
+service description</a> and 
+<a href="http://www.project-open.com/contact/">contact us</a>
+in order to get access <br>
+to the service.
+</p>
