@@ -34,15 +34,16 @@ set login_status ""
 switch $auth_info(auth_status) {
     ok {
 	set successful_login 1
-	set login_status "Successful Login"
+	set login_status "ok"
+	set login_message "Successful Login"
     }
     bad_password {
-	set login_status "Bad Password"
-	set login_message "Your password doesn't match your user name."
+	set login_status "fail"
+	set login_message "Bad password. Your password doesn't match your user name."
     }
     default {
-	set login_status "Login Error"
-	set login_message "There was an error during your authentification. Possibly your email or password are wrong."
+	set login_status "fail"
+	set login_message "Authentication error. There was an error during authentification. Please check your email and password."
     }
 }
 

@@ -5,12 +5,17 @@
 
 <h1>@page_title@</h1>
 
-Login Status:
+The 
+<span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+server at "@service_url@" responded:
+
 <ul>
-<li>@login_status@
+<li>Login status:<br> @login_status@
+    <br>&nbsp;
 
 <if @login_message@ ne "">
-<li>@login_message@
+<li>Login message:<br>@login_message@
+    <br>&nbsp;
 </if>
 
 </ul>
@@ -32,8 +37,11 @@ Login Status:
 
 </if>
 
-<h1>Already Installed Packages</h1>
+<if @login_status@ eq "ok">
+<h1>Installed Packages</h1>
 
 @table;noquote@
+</if>
+
 
 

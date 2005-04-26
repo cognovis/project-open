@@ -76,76 +76,113 @@ if { [catch {
 
 # Sample record:
 #
-#  <version name="3.0.beta7">
-#    <package>All</package>
-#    <whats_new>Improved installer</whats_new>
-#    <cvs_server>berlin.dnsalias.com</cvs_server>
-#    <cvs_command>update -r v3-0-beta7</cvs_command>
-#    <update_urgency format="text/plain">Optional Upgrade</update_urgency>
-#  </version>
+# <po_software_update>
+#   <login>
+#     <login_status>ok</login_status>
+#     <login_message>Successful Login</login_message>
+#   </login>
+#  <account>
+#  </account>
+#  <update_list>
+#   <update>
+#     <package_name>intranet-wiki</package_name>
+#     <package_url>http://www.project-open.com/product/modules/km/wiki.html</package_url>
+#     <package_version>3.0.0</package_version>
+#     <po_version>3.0.beta8</po_version>
+#     <po_version_url></po_version_url>
+#     <is_new>t</is_new>
+#     <release_date>2005-04-18</release_date>
+#     <cvs_action>Checkout</cvs_action>
+#     <cvs_server>berlin.dnsalias.com</cvs_server>
+#     <cvs_root>/home/cvsroot</cvs_root>
+#     <cvs_command>checkout intranet-wiki</cvs_command>
+#     <update_urgency format="text/plain">New Package</update_urgency>
+#     <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
+#     <forum_title>New Wiki Module</forum_title>
+#     <whats_new>
+#       See package description. Please also install the "wiki" module (below).
+#     </whats_new>
+#   </update>
+# </update_list>
 
 set tree [xml_parse -persist $update_xml]
 set root_node [xml_doc_get_first_node $tree]
-
 set root_name [xml_node_get_name $root_node]
-if { ![string equal $root_name "update_list"] } {
+if { ![string equal $root_name "po_software_update"] } {
     error "Expected <update_list> as root node of update.xml file, found: 'root_name'"
 }
 
 set ctr 0
 set debug ""
-set version_list [list]
-set version_nodes [xml_node_get_children $root_node]
+set root_nodes [xml_node_get_children $root_node]
+
+# login_status = "ok" or "fail"
+set login_status [[$root_node selectNodes {//login_status}] text]
+set login_message [[$root_node selectNodes {//login_message}] text]
 set version_html ""
-set login_status ""
-set login_message ""
 
-foreach version_node $version_nodes {
+foreach root_node $root_nodes {
 
-    set version_node_name [xml_node_get_name $version_node]
+    set root_node_name [xml_node_get_name $root_node]
+    ns_log Notice "load-update-xml-2: node_name=$root_node_name"
 
-    if { [string equal $version_node_name "login_status"] } {
-	set login_status [xml_node_get_content $version_node]
-    }
-    
-    if { [string equal $version_node_name "login_message"] } {
-	set login_message [xml_node_get_content $version_node]
-    }
-    
-    if { [string equal $version_node_name "update"] } {
+    switch $root_node_name {
 
-	set package_name [apm_tag_value -default "" $version_node package_name]
-	set package_url [apm_tag_value -default "" $version_node package_url]
-	set package_version [apm_tag_value -default "" $version_node package_version]
-
-	set po_version [apm_tag_value $version_node po_version]
-	set po_version_url [apm_tag_value $version_node po_version_url]
-
-	set is_new [apm_tag_value -default "" $version_node is_new]
-
-	set release_date [apm_tag_value -default "" $version_node release_date]
-	set whats_new [apm_tag_value -default "" $version_node whats_new]
-	set cvs_action [apm_tag_value -default "" $version_node cvs_action]
-	set cvs_server [apm_tag_value -default "" $version_node cvs_server]
-	set cvs_root [apm_tag_value -default "" $version_node cvs_root]
-	set cvs_command [apm_tag_value -default "" $version_node cvs_command]
-	set update_urgency [apm_tag_value -default "" $version_node update_urgency]
-	set forum_url [apm_tag_value -default "" $version_node forum_url]
-	set forum_title [apm_tag_value -default "" $version_node forum_title]
-	set update_url [export_vars -base cvs-update {cvs_server cvs_command cvs_root}]
-
-	set package_formatted $package_name
-	if {"" != $package_url} {set package_formatted "<a href=\"$package_url\">$package_name</a>" }
-
-	set po_version_formatted $po_version
-	if {"" != $po_version_url} {set po_version_formatted "<a href=\"$po_version_url\">$po_version</a>" }
-	
-	# Skip this item if it's not "new"
-	if {$show_only_new_p} {
-	    if {![string equal $is_new "t"]} { continue }
+	# Information about the successfull/unsuccessful login 
+	# process
+	login {
+	    # Ignore. Info is extracted via XPath above
 	}
-	
-	append version_html "
+
+	# Information about the customers account, such as an expriation,
+	# payment information etc.
+	account {
+	    # not used yet
+	}
+
+	update_list {
+
+	    set version_list [list]
+	    set version_nodes [xml_node_get_children $root_node]
+
+	    foreach version_node $version_nodes {
+
+		set version_node_name [xml_node_get_name $version_node]
+
+		if { [string equal $version_node_name "update"] } {
+
+		    set package_name [apm_tag_value -default "" $version_node package_name]
+		    set package_url [apm_tag_value -default "" $version_node package_url]
+		    set package_version [apm_tag_value -default "" $version_node package_version]
+
+		    set po_version [apm_tag_value $version_node po_version]
+		    set po_version_url [apm_tag_value $version_node po_version_url]
+		    
+		    set is_new [apm_tag_value -default "" $version_node is_new]
+
+		    set release_date [apm_tag_value -default "" $version_node release_date]
+		    set whats_new [apm_tag_value -default "" $version_node whats_new]
+		    set cvs_action [apm_tag_value -default "" $version_node cvs_action]
+		    set cvs_server [apm_tag_value -default "" $version_node cvs_server]
+		    set cvs_root [apm_tag_value -default "" $version_node cvs_root]
+		    set cvs_command [apm_tag_value -default "" $version_node cvs_command]
+		    set update_urgency [apm_tag_value -default "" $version_node update_urgency]
+		    set forum_url [apm_tag_value -default "" $version_node forum_url]
+		    set forum_title [apm_tag_value -default "" $version_node forum_title]
+		    set update_url [export_vars -base cvs-update {cvs_server cvs_command cvs_root}]
+		    
+		    set package_formatted $package_name
+		    if {"" != $package_url} {set package_formatted "<a href=\"$package_url\">$package_name</a>" }
+		    
+		    set po_version_formatted $po_version
+		    if {"" != $po_version_url} {set po_version_formatted "<a href=\"$po_version_url\">$po_version</a>" }
+		    
+		    # Skip this item if it's not "new"
+		    if {$show_only_new_p} {
+			if {![string equal $is_new "t"]} { continue }
+		    }
+		    
+		    append version_html "
 <tr $bgcolor([expr $ctr % 2])>
   <td><a href=\"$update_url\" title=\"Update\" class=\"button\">$cvs_action</a>&nbsp;</td>
   <td>$package_formatted</td>
@@ -158,10 +195,19 @@ foreach version_node $version_nodes {
 </tr>
 "
 
-	incr ctr
-    }
+		    incr ctr
+		}
+	    }
+	}
 
+	default {
+	    ns_log Notice "load-update-xml-2.tcl: ignoring root node '$root_node_name'"
+	}
+    }
 }
+
+
+xml_doc_free $tree
 
 
 # ------------------------------------------------------------
