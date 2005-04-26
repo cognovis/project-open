@@ -19,9 +19,9 @@ permission::require_permission \
 set edit ""
 ad_form -name new -action "new" -export {name edit} -form {
     item_id:key
-    title:text
-    content:text(textarea)
-    {revision_notes:text(textarea),optional,nospell {label "Revision Notes} {html {rows 5 cols 40}}}
+    {title:text {label "Title"} {html {size 60}}}
+    {content:text(textarea),optional,nospell {label "Content"} {html {rows 15 cols 60}}}
+    {revision_notes:text(textarea),optional,nospell {label "Revision Notes"} {html {rows 5 cols 60}}}
 
 } -edit_request {
 
