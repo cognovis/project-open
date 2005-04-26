@@ -19,7 +19,8 @@ server.
 
 <li><b>Please read</b>:<br>
     <a href=http://www.project-open.com/product/services/software-updates/>
-    Software Update Service overview</a>
+    Software Update Service overview</a> and the 
+    <a href=disclaimer>Disclaimer</a>
     <br>&nbsp;
 
 <li><b>Get a

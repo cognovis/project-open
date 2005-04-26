@@ -184,7 +184,7 @@ foreach root_node $root_nodes {
 		    
 		    append version_html "
 <tr $bgcolor([expr $ctr % 2])>
-  <td><a href=\"$update_url\" title=\"Update\" class=\"button\">$cvs_action</a>&nbsp;</td>
+  <td><a href=\"$update_url\" title=\"Update\" class=\"button\">Update</a>&nbsp;</td>
   <td>$package_formatted</td>
   <td>$package_version</td>
   <td>$po_version_formatted</td>

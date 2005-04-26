@@ -28,7 +28,7 @@
       <cvs_server>berlin.dnsalias.com</cvs_server>
       <cvs_root>/home/cvsroot</cvs_root>
       <cvs_command>checkout intranet-wiki</cvs_command>
-      <update_urgency format="text/plain">New Package</update_urgency>
+      <update_urgency format="text/plain">Optional new package</update_urgency>
       <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
       <forum_title>New Wiki Module</forum_title>
       <whats_new>See package description. Please also install the "wiki" module (below).</whats_new>
@@ -49,7 +49,7 @@
       <cvs_server>berlin.dnsalias.com</cvs_server>
       <cvs_root>/home/cvsroot</cvs_root>
       <cvs_command>checkout wiki</cvs_command>
-      <update_urgency format="text/plain">New Package</update_urgency>
+      <update_urgency format="text/plain">Optional new package</update_urgency>
       <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
       <forum_title>New Wiki Module</forum_title>
       <whats_new>See package description. Please also install the "intranet-wiki" module (above).</whats_new>
@@ -71,7 +71,7 @@
       <cvs_server>berlin.dnsalias.com</cvs_server>
       <cvs_root>/home/cvsroot</cvs_root>
       <cvs_command>update -r v3-0-beta8</cvs_command>
-      <update_urgency format="text/plain">Optional Upgrade</update_urgency>
+      <update_urgency format="text/plain">Optional upgrade</update_urgency>
       <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
       <forum_title>3.0.beta8 Update</forum_title>
       <whats_new>The installer detects an existing web server, PostgreSQL database or CygWin installation.</whats_new>
@@ -92,7 +92,7 @@
       <cvs_server>berlin.dnsalias.com</cvs_server>
       <cvs_root>/home/cvsroot</cvs_root>
       <cvs_command>update -r v3-0-beta7</cvs_command>
-      <update_urgency format="text/plain">Optional Upgrade</update_urgency>
+      <update_urgency format="text/plain">Optional upgrade</update_urgency>
       <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
       <forum_title>3.0.beta7 Update</forum_title>
       <whats_new>Improved installer</whats_new>
