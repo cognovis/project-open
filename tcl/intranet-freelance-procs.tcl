@@ -11,7 +11,7 @@ ad_library {
     - Freelance Quality Evaluation
     - Freelance "Marketplace"
 
-    @author guillermo.belcic@sls-international.com
+    @author guillermo.belcic@project-open.com
     @author frank.bergmann@project-open.com
 }
 
