@@ -23,7 +23,7 @@
 
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="CvsPath"  default="/usr/bin/cvs" description="Unix, Linux or CygWin Path for CVS command"/>
 
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="UpdateServerURL"  default="http://projop.dnsalias.com/intranet-update-server/versions.xml" description="URL of the XML file containing version information"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="UpdateServerURL"  default="http://projop.dnsalias.com/intranet-update-server/update" description="URL of the XML file containing version information"/>
 
         </parameters>
 
