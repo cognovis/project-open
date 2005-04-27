@@ -81,7 +81,7 @@ if {[catch {
     set cmd "export HOME=$acs_root_dir; cvs -d :$cvs_protocol:$cvs_user@$cvs_server:$cvs_root login 2>&1"
     ns_write "$cmd\n"
 
-    set fp [open "|/bin/bash -c \"$cmd\"" "w"]
+    set fp [open "|[im_bash_command] -c \"$cmd\"" "w"]
     puts $fp "$cvs_password\n"
     close $fp
     ns_write "Successfully executed:\n\n"
@@ -115,7 +115,7 @@ if { [catch {
     set cmd "export HOME=$acs_root_dir; cd $package_dir; cvs -z3 -d :$cvs_protocol:$cvs_user@$cvs_server:$cvs_root $cvs_command 2>&1"
     ns_write "$cmd\n\n"
     ns_log Notice "cvs-update: cmd=$cmd"
-    set fp [open "|/bin/bash -c \"$cmd\"" "r"]
+    set fp [open "|[im_bash_command] -c \"$cmd\"" "r"]
     while { [gets $fp line] >= 0 } {
 	ns_write "$line\n"
     }
