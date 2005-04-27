@@ -63,11 +63,37 @@ if { [catch {
     close $httpChan
 
 } errmsg] } {
-    ad_return_complaint 1 "Unable to download. Please check your URL.</ul>.
-	The following error was returned: <blockquote><pre>[ad_quotehtml $errmsg]
-	</pre></blockquote>[ad_footer]"
+    ad_return_complaint 1 "Error while accessing the URL '$service_url'.<br>
+    Please check your URL. The following error was returned: <br>
+    <blockquote><pre>[ad_quotehtml $errmsg]</pre></blockquote>"
     return
 }	
+
+# ------------------------------------------------------------
+# Check whether it's a HTML or an XML
+#
+
+# ad_return_complaint 1 "<pre>$update_xml</pre>"
+if {![regexp {<([^>]*)>\s*<([^>]*)>\s*<([^>]*)>} $update_xml match tag1 tag2 tag3]} {
+    ad_return_complaint 1 "Error while retreiving update information from
+    URL '$service_url'.<br>The retreived files doesn't seem to be a XML or HTML file:<br>
+    <pre>$update_xml</pre>"
+}
+
+if {[string tolower $tag1] == "html" || [string tolower $tag2] == "html" || [string tolower $tag3] == "html"} {
+    
+    ad_return_complaint 1 "Error while retreiving update information from  URL<br>
+    '$service_url'.<br>
+    The retreived result seems to be a HTML document and not an XML document.<br>
+    Please check the URL above and/or send an error report to 
+    <a href=\"mailto:support@project-open.com\">support@project-open.com</a>.
+    <br>&nbsp;</br>
+    Here is what the server returned:
+    <br>&nbsp;</br>
+    <pre>$update_xml</pre>"
+}
+
+ns_log notice "load-update-xml-2: match=$match, tag1=$tag1, tag2=$tag2, tag3=$tag3"
 
 
 # ------------------------------------------------------------
@@ -109,7 +135,7 @@ set tree [xml_parse -persist $update_xml]
 set root_node [xml_doc_get_first_node $tree]
 set root_name [xml_node_get_name $root_node]
 if { ![string equal $root_name "po_software_update"] } {
-    error "Expected <po_software_update> as root node of update.xml file, found: '$root_name'"
+    ad_return_complaint 1 "Expected <po_software_update> as root node of update.xml file, found: '$root_name'"
 }
 
 set ctr 0
