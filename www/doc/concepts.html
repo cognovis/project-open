@@ -1,0 +1,300 @@
+<html>
+<head>
+<title>Workflow Conceptual Guide</title>
+<style>
+dt { font-weight: bold; margin-top: 1em }
+</style>
+</head>
+
+<body bgcolor=white>
+<h2>Workflow Conceptual Guide</h2>
+
+By <a href="http://www.pinds.com/lars">Lars Pind</a> on 27 July 2000.
+
+<p>
+
+<a href="/doc/">OpenACS Documentation</a> : <a href="">Workflow</a> :
+Workflow Conceptual Guide
+
+<hr>
+
+Who should read this? The manager or developer who need to define a
+complex workflow process to use in his business or software
+application.
+
+<p>
+
+<h3>The Conceptual Model</h3>
+
+Think of workflows in terms of an <strong>'old-fashioned'
+office</strong>, where all the employees has a desk with an inbox
+sitting on it. The <strong>workflow engine is the attendant</strong>
+that puts a form in their inbox saying what needs to be done while
+tapping them on the shoulder to let them know they're on. When they're
+done, the workflow engine finds out what the next tasks are and takes
+the project on to the employees responsible.
+
+
+
+<h3>What is a Workflow?</h3>
+
+A workflow is the <strong>formal definition of the process</strong>
+used to manage cases of a specific kind (e.g. order fulfillment,
+article publishing). Each kind of case will have its own workflow
+process. Here's an example:
+
+<p>
+
+<table align=center>
+<tr><td align=center>
+<img src="order_wf.jpg" height=399 width=659 alt="Order Fulfillment Workflow">
+</td></tr>
+<tr><td align=center><small>Order Fulfillment Workflow (<a
+href="order_wf.jpg" target=_new>open in separate window</a>)</small></td></tr>
+</table>
+
+<p>
+
+The definition of a workflows (what needs to be done to a case and in
+what order), are formalized in terms of a computational model called
+<a href="http://www.daimi.au.dk/PetriNets/" title="The main site for
+Colored Petri Nets (CPN) research"><b>Petri nets</b></a>, and the
+example above is indeed a Petri net. Let's walk through it and
+explain it in detail.
+
+<p>
+
+<ul>
+
+<li>The <strong>circles</strong> are called <strong>places</strong> and
+represent the <strong>inboxes</strong> in the office-metaphor.
+
+<p>
+
+<li>The <strong>rectangles</strong> are called
+<strong>transitions</strong> and represent the <strong>tasks</strong>
+to be performed.
+
+</ul>
+
+<strong>Places are inactive</strong>. All the places do is hold
+<strong>tokens</strong> representing the state of the process. If, for
+example, there's a token in place D above, then that means we're ready
+to pack the order.
+
+<p>
+
+<strong>Transitions are active</strong>. They move tokens from their
+<strong>input places</strong> (the places that has an arc pointing
+into the transition) to their <strong>output places</strong> (the
+places you get to by following the arcs going out of the
+transition). When this happens, the transition is said to
+<strong>fire</strong>.
+
+<p>
+
+Transitions can only when there's <strong>at least one token in each
+input place</strong>. When that is the case, the transition is
+<strong>enabled</strong>. That the transition is
+<strong>enabled</strong> means it is <strong>able to fire</strong>. 
+
+<p>
+
+The time the transition is enabled and the time it fires are
+different. The thing that causes an enabled transition to fire is
+called <strong>trigger</strong>.
+
+<p>
+
+There are four diffent types of triggers:
+
+<ul>
+
+<li>Most transitions will normally be performed by a person. This is
+called a <strong>user trigger</strong> and is symbolized with a fat
+arrow pointing to the task.
+
+<p>
+
+<li>Some tasks, such as the user updating his billing information, are
+beyond the control of the workflow software. The workflow software
+receieves a message that the task has been performed, and thus these
+are called <strong>message trigger</strong>, symbolized with an
+envelope.
+
+<p>
+
+<li>Transitions with an <strong>Automatic trigger</strong> are
+performed by the system as soon as the transition is enabled. The
+'Spam Customer' task above is such a transition. When fired, it will
+execute some code to send off the email to the user. All other
+transitions can also execute application-specific code when they fire.
+
+<p>
+
+<li>Some automatic transitions need to occur at a certain point in
+time. The 'Cancel Order' transition above has a <strong>time
+trigger</strong>, symbolized with a stop watch, which will
+automatically cancel the order if the user hasn't gotten back to us
+with updated billing information within, say, three weeks.
+
+</ul>
+
+
+<h3>Routing</h3>
+
+When the workflow is started, a token is placed in the <strong>start
+place</strong> (A in the example). This enables the automatic
+transition 'Charge Credit Card'. 
+
+<p>
+
+The transition fires with a succes or a failure. If it was
+successful, it produces a token in place D. If there was a failure, it
+produces a token in place B. Thus, the outcome of the attempt at
+charging the credit card governs the further routing of the process.
+
+<p>
+
+<blockquote>The rule is that firing a token <strong>consumes one
+token from each of its input places, and places a token on each of its
+output places, for which the guard is true</strong>.</blockquote>
+
+<p>
+
+The <strong>guard</strong> is a predicate, in this case the
+<code>[success]</code> and <code>[failure]</code> on the arcs going
+out of 'Charge Credit Card'. Guards are what enables us to do
+<strong>conditional routing</strong>. The 'Charge Credit Card'
+transition acts as an <strong>or-split</strong>, because it chooses
+either one route or the other.
+
+<p>
+
+The above form of or-split is called an <strong>explicit</strong>
+or-split. There's another form of conditional routing, which is the
+<strong>implicit or-split</strong> that chooses between the
+transitions 'Update Billing Information' and 'Cancel Order'. Since
+there's only one token in place C, only one of the two transitions can
+have it. But, contrary to the explicit or-split, where the decision is
+explicitly made as soon as 'Charge Credit Card' finishes, the choice
+between 'Update Billing Information' and 'Cancel Order' is made as
+late as possible.
+
+<p>
+
+Both transitions will be enabled when there's a token in place C
+(i.e. when the spam has been sent). If the user updates his billing
+information before the timed 'Cancel Order' transition times out,
+'Cancel Order' is never fired. And vice versa: If the order is
+canceled (which will probably involve spamming the user again to let
+him know that his order was canceled), then he won't be able to update
+his billing information and will have to enter a new order. Thus, the
+choice is made implicitly, based on the timing.
+
+<p>
+
+The guard will generally depend on <strong>case
+attributes</strong>. The 'Charge Credit Card' transition above will
+set a case attribute to either 'success' or 'failure', and the guard
+will check this value to determine its result. Case attributes can
+hold more complex values than simple yes/no values, but the guard must
+always be either true or false.
+
+<p>
+
+The workflow package also handles <strong>parallel routing</strong>,
+where two or more things happen concurrently or in no particular
+order. This is done by having a transition produce more tokens than it
+consumes, which is called an <strong>and-split</strong>. To
+re-synchronize execution with a transition that waits for both
+concurrent threads to finish before it continues. This is called an
+<strong>and-join</strong> and is simply a transition that consumes
+more tokens than it produces.
+
+
+
+<h3>User Tasks</h3>
+
+An enabled user transition is called a <strong>user
+task</strong>. 
+
+<p>
+
+The user tasks must be <strong>assigned to one or more users or
+groups</strong>. This can be determined once and for all, e.g. the
+shipping department is responsible for shipping. It may also be done
+by hand for a specific case, e.g. the article on environmental
+pollution should be written by Jimmy, who knows everything about
+pollution. Or it can be done automatically, e.g. bugs are
+automatically assigned to the user responsible for the product the bug
+was found in. 
+
+<p>
+
+When a user is assigned to a task, the task will show up on the users
+worklist. From here, the user can pick a task to work on, and mark it
+started. This removes the task from the worklist of other assigned
+users, so the task won't get executed twice. 
+
+<p>
+
+Often, the task will have an output. In the 'Pack' transition, for
+example, the user is supposed to say whether the package is complete
+or not. This is set as a case attribute and used for branching in the
+or-split.
+
+<p>
+
+Not until the user finishes the task does the transition actually get
+fired. The user may also choose to cancel the task, in which case the
+task will re-appear on other users' work list.
+
+
+<h3>Summary</h3>
+
+That's what there is to it. If you're a workflow manager, you should
+now be able to start formalizing your own workflow. If you're a
+developer, you should read the <a href="developer">Workflow
+Developer's Guide</a> to learn how to use this with your own package.
+
+
+
+
+
+
+
+
+<h3>References</h3>
+
+<ul>
+
+<li><a
+href="http://www.workflowsoftware.com/workflowwp.pdf"><em>Workflow
+Technology - an Introduction</em></a>. A primer on automated workflow
+management.
+
+<p>
+
+<li><a href="http://www.wfmc.org/"><em>Workflow Management Coalition
+(WfMC)</em></a>. They're the standards organization for the workflow
+industry. They devise standards for terminology and interoperability
+of workflow management software.
+
+<p>
+
+<li><a href="http://wwwis.win.tue.nl/~wsinwa/jcsc/jcsc.html"><em>The
+Application of Petri Nets to Workflow Management</em></a>. The
+arguments in this paper convinced us to use Petri nets as the
+foundation for our Workflow Engine.
+
+</ul>
+
+<hr>
+
+<address><a href="mailto:lars@pinds.com">lars@pinds.com</a></address>
+<table align=right><tr><td>Last Modified: $Date: 2000/08/31 21:56:45
+$</td></tr></table>
+
+</body>
+</html>
