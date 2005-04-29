@@ -26,6 +26,26 @@ permission::require_permission -party_id $user_id \
 	    -object_id $folder_id -privilege admin
     
 
+# Where in the site map did we mount this wiki package?
+# (The package may be mounted several times)
+
+set wiki_mount_sql "
+        select
+                sn.name as wiki_mount
+        from
+                apm_packages ap,
+                cr_folders cf,
+                site_nodes sn
+        where
+		cf.folder_id = :folder_id
+		and ap.package_id = cf.package_id
+                and sn.object_id = ap.package_id
+"
+
+db_1row wiki_mount $wiki_mount_sql
+
+
+
 # Show only the modified items?
 set modified_only_where ""
 if {$modified_only} {
