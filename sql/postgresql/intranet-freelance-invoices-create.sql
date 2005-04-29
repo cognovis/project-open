@@ -68,7 +68,7 @@ begin
         ''intranet-freelance-invoices'',    -- package_name
         ''invoices_freelance_new_prov_invoice'',   -- label
         ''New Provider Invoice from Translation Tasks'',    -- name
-        ''/intranet-freelance-invoices/purchase-orders/index?target_cost_type_id=3704'',   -- url
+        ''/intranet-freelance-invoices/index?target_cost_type_id=3704'',   -- url
         80,                             -- sort_order
         v_invoices_new_menu,            -- parent_menu_id
         null                            -- visible_tcl

@@ -1,4 +1,4 @@
-# /packages/intranet-trans-invoices/www/purchase-orders/index.tcl
+# /packages/intranet-trans-invoices/www/index.tcl
 #
 # Copyright (C) 2003-2004 Project/Open
 #
@@ -129,7 +129,7 @@ db_foreach task_tasks $task_sql {
     
     # introduce spaces after "/" (by "/ ") to allow for graceful rendering
     regsub {/} $task_name "/ " task_name
-    ns_log Notice "/purchase-orders/index: task_name=$task_name"
+    ns_log Notice "task_name=$task_name"
 
     # Calculate the provider_select_widget 
     # that allows to choose the provider company

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE queryset PUBLIC "-//OpenACS//DTD XQL 1.0//EN" "/usr/share/emacs/DTDs/xql.dtd">
-<!-- packages/intranet-trans-invoices/www/purchase-orders/new-2-postgresql.xql -->
+<!-- packages/intranet-trans-invoices/www/new-2-postgresql.xql -->
 <!-- @author Juanjo Ruiz (juanjoruizx@yahoo.es) -->
 <!-- @creation-date 2004-10-07 -->
 <!-- @arch-tag 7874400c-d95a-4541-a9e9-bf9bb10e8552 -->
