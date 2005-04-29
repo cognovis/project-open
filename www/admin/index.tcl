@@ -166,7 +166,7 @@ db_multirow -extend { item_url latest_size live_size cancel_action confirm_actio
 
     set cms_admin_url "/cms/modules/items/index?item_id=$item_id"
 
-    set latest_creation_user_url "/acs-admin/users/one?user_id=$latest_creation_user"
+    set latest_creation_user_url "/intranet/users/view?user_id=$latest_creation_user"
 
     switch $content_type {
 	content_folder {
