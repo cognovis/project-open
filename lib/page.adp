@@ -8,22 +8,17 @@
 <include src="footer" edit_link_p="@edit_link_p@" admin_p="@admin_p@" folder_id="@folder_id@" >
 <hr />
   
+<h1>@title@</h1>
+  
 @content;noquote@
 
 <if @related_items:rowcount@ gt 0>
-<hr />
-<p>
 Pages that link to his page:
 <ul>
-
 <multiple name="related_items">
-
   <li><a href="@related_items.name@">@related_items.title@</a>
-
 </multiple>
-
 </ul>
-</p>
 </if>
 
 <hr />
