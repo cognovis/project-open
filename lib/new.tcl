@@ -5,6 +5,8 @@ ad_page_contract {
     item_id:integer,optional
 }
 
+if {"" == $name} { ad_return_complaint 1 "name is empty" }
+
 set folder_id [wiki::get_folder_id]
 set user_id [ad_conn user_id]
 set ip_address [ad_conn peeraddr]

@@ -99,6 +99,7 @@ set content [ad_wiki_text_to_html $content "wiki::get_info"]
 set context [list $title]
 set focus ""
 set header_stuff ""
+set page_title $title
 
 set edit_link_p [permission::permission_p \
                  -object_id $item_id \
