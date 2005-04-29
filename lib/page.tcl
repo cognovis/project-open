@@ -80,7 +80,7 @@ set stream [Wikit::Format::TextToStream $content]
 set refs [Wikit::Format::StreamToRefs $stream "wiki::get_info"]
 
 db_multirow related_items get_related_items "
-	select 
+	select distinct
 		cr.name, 
 		cr.title, 
 		cr.description 
