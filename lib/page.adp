@@ -1,4 +1,4 @@
-<master src="../www/master">
+<master>
   <property name="title">@title@</property>
   <property name="header_stuff">@header_stuff@</property>
   <property name="context">@context@</property>
