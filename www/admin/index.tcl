@@ -130,9 +130,6 @@ template::list::create \
 	mount_point {}
     }
 
-set wiki_mount "l10n-pm"
-set folder_id 3407
-
 db_multirow -extend { item_url latest_size live_size cancel_action confirm_action cancel_action_url confirm_action_url live_preview latest_preview live_preview_url latest_preview_url cms_admin_url latest_creation_user_url } folder_contents get_folder_contents "" {
 
     set cancel_action "Revert"
