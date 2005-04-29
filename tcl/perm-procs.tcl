@@ -47,8 +47,6 @@ ad_proc -public content::check_access { object_id privilege args } {
   -passthrough < { {name value} {name value} ... }
   -request_error: if present, use request error as opposed to error box
   -refresh: if present, update query cache
-
-
 } {
 
   # Set up the default options
