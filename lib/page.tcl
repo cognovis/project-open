@@ -115,5 +115,3 @@ set admin_p [permission::permission_p \
                  -privilege "admin"
              ]
 
-
-ad_return_template "page"
