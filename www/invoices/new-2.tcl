@@ -32,6 +32,8 @@ set current_user_id $user_id
 
 set page_focus "im_header_form.keywords"
 set view_name "invoice_tasks"
+set page_title "New Translation Invoice"
+set context_bar [im_context_bar $page_title]
 
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
@@ -40,6 +42,17 @@ set required_field "<font color=red size=+1><B>*</B></font>"
 if {![im_permission $user_id add_invoices]} {
     ad_return_complaint "[_ intranet-trans-invoices.lt_Insufficient_Privileg]" "
     <li>[_ intranet-trans-invoices.lt_You_dont_have_suffici]"    
+}
+
+if {[info exists select_project]} {
+    set project_id $select_project
+    if {[llength $select_project] > 1} {
+	set project_id [lindex $select_project 0]
+    }
+    set project_name [db_string project_name "select project_name from im_projects where project_id = :project_id" -default ""]
+    if {"" != $project_name} {
+	append page_title " for Project '$project_name'"
+    }
 }
 
 # ---------------------------------------------------------------
