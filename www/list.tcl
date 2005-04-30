@@ -7,13 +7,8 @@
 ad_page_contract { 
     List all costs together with their payments
 
-    @param order_by cost display order 
-    @param include_subcosts_p whether to include sub costs
-    @param cost_status_id criteria for cost status
-    @param item_type_id criteria for item_type_id
-    @param letter criteria for im_first_letter_default_to_a(ug.group_name)
-    @param start_idx the starting index for query
-    @param how_many how many rows to return
+    @param company_id Either customer or provide, when the calling
+           side doesn't know
 
     @author mbryzek@arsdigita.com
     @cvs-id index.tcl,v 3.24.2.9 2000/09/22 01:38:44 kevin Exp
@@ -23,6 +18,7 @@ ad_page_contract {
     { cost_type_id:integer 0 } 
     { customer_id:integer 0 } 
     { provider_id:integer 0 } 
+    { company_id:integer 0 } 
     { letter:trim "" }
     { start_idx:integer 0 }
     { how_many "" }
@@ -165,6 +161,12 @@ if {$customer_id} {
 if {$provider_id} {
     lappend criteria "c.provider_id=:provider_id"
 }
+if {$company_id} {
+    lappend criteria "(c.provider_id = :company_id OR c.customer_id = :company_id)"
+}
+
+
+
 if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string compare $letter "SCROLL"] != 0 } {
     lappend criteria "im_first_letter_default_to_a(cust.company_name)=:letter"
 }
@@ -259,8 +261,8 @@ from
 	$extra_from
 where
         c.customer_id=cust.company_id
-        and c.provider_id=prov.company_id
-	and c.project_id=proj.project_id(+)
+        and c.provider_id = prov.company_id
+	and c.project_id = proj.project_id(+)
 	and c.cost_id = o.object_id
 	and o.object_type = url.object_type
 	and o.object_type = ot.object_type
