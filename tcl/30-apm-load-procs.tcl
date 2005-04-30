@@ -207,6 +207,7 @@ ad_proc -public apm_get_package_files {
 
     set matching_files [list]
     foreach file $files {
+
         set rel_path [string range $file [expr [string length $package_path] + 1] end]
         set file_type [apm_guess_file_type $package_key $rel_path]
         set file_db_type [apm_guess_db_type $package_key $rel_path]
