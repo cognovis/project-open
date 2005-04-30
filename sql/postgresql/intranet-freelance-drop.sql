@@ -56,3 +56,14 @@ drop function im_freelance_skill_list (integer, integer);
 drop view im_freelance_skill_types;
 drop table im_freelance_skills;
 drop table im_freelancers;
+
+
+
+-----------------------------------------------------------
+-- Remove backup views
+--
+delete from im_view_columns where view_id = 120;
+delete from im_views where view_id = 120;
+
+delete from im_view_columns where view_id = 121;
+delete from im_views where view_id = 121;
