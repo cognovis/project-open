@@ -120,6 +120,8 @@ ns_log notice "load-update-xml-2: match=$match, tag1=$tag1, tag2=$tag2, tag3=$ta
 #     <release_date>2005-04-18</release_date>
 #     <cvs_action>Checkout</cvs_action>
 #     <cvs_server>berlin.dnsalias.com</cvs_server>
+#     <cvs_user>anonymous</cvs_user>
+#     <cvs_password></cvs_password>
 #     <cvs_root>/home/cvsroot</cvs_root>
 #     <cvs_command>checkout intranet-wiki</cvs_command>
 #     <update_urgency format="text/plain">New Package</update_urgency>
@@ -190,12 +192,14 @@ foreach root_node $root_nodes {
 		    set whats_new [apm_tag_value -default "" $version_node whats_new]
 		    set cvs_action [apm_tag_value -default "" $version_node cvs_action]
 		    set cvs_server [apm_tag_value -default "" $version_node cvs_server]
+		    set cvs_user [apm_tag_value -default "" $version_node cvs_user]
+		    set cvs_password [apm_tag_value -default "" $version_node cvs_password]
 		    set cvs_root [apm_tag_value -default "" $version_node cvs_root]
 		    set cvs_command [apm_tag_value -default "" $version_node cvs_command]
 		    set update_urgency [apm_tag_value -default "" $version_node update_urgency]
 		    set forum_url [apm_tag_value -default "" $version_node forum_url]
 		    set forum_title [apm_tag_value -default "" $version_node forum_title]
-		    set update_url [export_vars -base cvs-update {cvs_server cvs_command cvs_root}]
+		    set update_url [export_vars -base cvs-update {cvs_server cvs_user cvs_password cvs_command cvs_root}]
 		    
 		    set package_formatted $package_name
 		    if {"" != $package_url} {set package_formatted "<a href=\"$package_url\">$package_name</a>" }
