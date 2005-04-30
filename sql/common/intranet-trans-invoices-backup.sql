@@ -53,16 +53,16 @@ insert into im_views (
 SELECT
 	p.*,
 	im_category_from_id(p.uom_id) as uom,
-	c.customer_name as company_name,
+	c.company_name,
 	im_category_from_id(p.target_language_id) as target_language,
 	im_category_from_id(p.source_language_id) as source_language,
 	im_category_from_id(p.task_type_id) as task_type,
 	im_category_from_id(p.subject_area_id) as subject_area
 FROM
 	im_trans_prices p,
-	im_customers c
+	im_companies c
 WHERE
-	p.customer_id = c.customer_id
+	p.company_id = c.company_id
 ');
 
 
