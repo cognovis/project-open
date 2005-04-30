@@ -515,7 +515,7 @@ begin
         null,                           -- context_id
         ''intranet-trans-invoices'',    -- package_name
         ''invoices_trans_new_quote'',     -- label
-        ''New Translation Quote'',    -- name
+        ''New Quote from Translation Tasks'',    -- name
         ''/intranet-trans-invoices/invoices/new?target_cost_type_id=3702'',   -- url
         40,                                             -- sort_order
         v_invoices_new_menu,                            -- parent_menu_id
@@ -535,7 +535,7 @@ begin
         null,                           -- context_id
         ''intranet-trans-invoices'',    -- package_name
         ''invoices_trans_new_cust_invoice'',   -- label
-        ''New Translation Customer Invoice'',    -- name
+        ''New Customer Invoice from Translation Tasks'',    -- name
         ''/intranet-trans-invoices/invoices/new?target_cost_type_id=3700'',     -- url
         50,                             -- sort_order
         v_invoices_new_menu,            -- parent_menu_id
