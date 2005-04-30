@@ -59,12 +59,12 @@ insert into im_views (
 SELECT
 	c.*,
 	o.*,
-	cust.customer_name as customer_name,
-	prov.customer_name as provider_name,
-	p.project_name,
-	i.name as investment_name,
-	cc.cost_center_label,
-	cp.cost_nr as parent_cost_nr,
+	cust.company_name as customer_name,
+	prov.company_name as provider_name,
+	im_project_name_from_id(c.project_id) as project_name,
+	im_investment_name_from_id(c.investment_id) as investment_name,
+	im_cost_center_label_from_id(c.cost_center_id) as cost_center_label,
+	im_cost_nr_from_id(c.parent_id) as parent_cost_nr,
 	im_category_from_id(c.template_id) as template,
 	im_category_from_id(c.cost_status_id) as cost_status,
 	im_category_from_id(c.cost_type_id) as cost_type,
@@ -76,18 +76,13 @@ FROM
 	acs_objects o,
 	im_projects p,
 	im_investments i,
-	im_customers cust,
-	im_customers prov,
-	im_cost_centers cc,
+	im_companies cust,
+	im_companies prov,
 	im_costs cp
 WHERE
 	c.cost_id = o.object_id
-	and c.customer_id = cust.customer_id
-	and c.provider_id = prov.customer_id
-	and c.project_id = p.project_id(+)
-	and c.cost_center_id = cc.cost_center_id(+)
-	and c.parent_id = cp.cost_id(+)
-	and c.investment_id = i.investment_id(+)
+	and c.customer_id = cust.company_id
+	and c.provider_id = prov.company_id
 ');
 
 delete from im_view_columns where column_id > 19000 and column_id < 19099;
@@ -297,15 +292,14 @@ insert into im_views (
 	196, 'im_cost_centers', 1410, 200, '
 SELECT
 	cc.*,
-	ccp.cost_center_label as parent_label,
+	im_cost_center_label_from_id(cc.parent_id) as parent_label,
 	im_email_from_user_id(cc.manager_id) as manager_email,
 	im_category_from_id(cc.cost_center_status_id) as cost_center_status,
 	im_category_from_id(cc.cost_center_type_id) as cost_center_type
 FROM
-	im_cost_centers cc,
-	im_cost_centers ccp
+	im_cost_centers cc
 WHERE
-	cc.parent_id = ccp.cost_center_id(+)
+	1=1
 ');
 delete from im_view_columns where column_id > 19600 and column_id < 19699;
 --
