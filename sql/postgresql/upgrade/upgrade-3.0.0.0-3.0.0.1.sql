@@ -1,4 +1,31 @@
 
+
+-- -----------------------------------------------------
+-- Add new project fields to check if it's on track
+
+alter table im_projects add
+        percent_completed       float
+;
+
+alter table im_projects add
+        on_track_status_id	integer
+                                constraint im_project_on_track_status_id_fk
+				references im_categories
+;
+
+
+
+-- Project On Track Status
+insert into im_categories ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGORY, CATEGORY_TYPE) values
+('', 'f', '66', 'Green', 'Intranet Project On Track Status');
+insert into im_categories ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGORY, CATEGORY_TYPE) values
+('', 'f', '67', 'Yellow', 'Intranet Project On Track Status');
+insert into im_categories ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGORY, CATEGORY_TYPE) values
+('', 'f', '68', 'Red', 'Intranet Project On Track Status');
+
+
+
+
 -- Some helper functions to make our queries easier to read
 create or replace function im_project_name_from_id (integer)
 returns varchar as '
