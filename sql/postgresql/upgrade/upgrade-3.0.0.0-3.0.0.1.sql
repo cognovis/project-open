@@ -5,12 +5,23 @@
 
 alter table im_projects add
         percent_completed       float
+                                constraint im_project_percent_completed_ck
+                                check (percent_completed >= 0 and percent_completed <= 100)
 ;
+
+
 
 alter table im_projects add
         on_track_status_id	integer
                                 constraint im_project_on_track_status_id_fk
 				references im_categories
+;
+
+
+alter table im_projects add
+        project_budget_currency char(3)
+                                constraint im_costs_paid_currency_fk
+                                references currency_codes(iso)
 ;
 
 
@@ -23,6 +34,12 @@ insert into im_categories ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGO
 insert into im_categories ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGORY, CATEGORY_TYPE) values
 ('', 'f', '68', 'Red', 'Intranet Project On Track Status');
 
+-- Add the column as the first column to the project view
+--
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (2000,20,NULL,'Ok',
+'<center>[in_project_on_track_bb $on_track_status_id]</center>',
+'','',0,'');
 
 
 
