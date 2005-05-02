@@ -24,6 +24,10 @@ alter table im_projects add
                                 references currency_codes(iso)
 ;
 
+alter table im_projects add
+        project_budget_hours    float
+;
+
 
 
 -- Project On Track Status
