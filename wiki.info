@@ -7,7 +7,7 @@
     <initial-install-p>f</initial-install-p>
     <singleton-p>f</singleton-p>
     
-    <version name="0.1d" url="http://openacs.org/repository/download/apm/wiki-0.1d.apm">
+    <version name="0.2d" url="http://openacs.org/repository/download/apm/wiki-0.2d.apm">
         <owner url="mailto:dave@thedesignexperience,org">Dave Bauer</owner>
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Wiki</summary>
