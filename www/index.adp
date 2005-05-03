@@ -123,6 +123,7 @@ server.
     Account</a></li>
 <li><a href=load-update-xml>Check for Latest Software Updates</a></li>
 <li><a href=\"/acs-admin/apm/packages-install\">Install Packages</a></li>
+<li><a href=\"/acs-admin/server-restart\">Server Restart</a></li>
 </ul>
 
 Advanced Options
