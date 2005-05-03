@@ -68,17 +68,23 @@ ad_proc -public im_filestorage_find_cmd {} {
         set file_list [exec $find_cmd $find_cmd -maxdepth 0]
 
     } err_msg]} { 
-	ad_return_complaint 1 "Configuration Error:<br>
-        Command '$find_cmd' does not exist on this system.<br>
+	ad_return_complaint 1 "<B>Configuration Error</b>:
+        <p>
+        Command '$find_cmd' does not seem to exist on this system.<br>
         This error is probably due to a bad configuration of the 
-        parameter 'intranet-core.FindCmd'.<br>
+        parameter 'intranet-core.FindCmd' or due to the lack of the
+        file packages/acs-tcl/windows-procs.tcl (on a Win32 system).
+        </p>
         <ul>
           <li>Please contact your application administrator in order to
               change the value of the parameter.
           <li>Please make sure that CygWin is installed correctly if you are 
               running on a Windows platform.
         </ul>
-        Here is the error message for reference:<br><pre>$err_msg</pre>"
+        <p>
+        Here is the error message for reference:
+        </p><br>
+        <pre>$err_msg</pre>"
 	return ""
     }
     return $find_cmd
