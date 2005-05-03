@@ -42,6 +42,7 @@ if {!$user_is_admin_p} {
 set return_url "[ad_conn url]?[ad_conn query]"
 set page_title "Automatic Software Updates"
 set context_bar [im_context_bar $page_title]
+set error 0
 
 # Main directory of the OpenACS installatin
 # Example: /web/projop
@@ -84,9 +85,10 @@ if {[catch {
     set fp [open "|[im_bash_command] -c \"$cmd\"" "w"]
     puts $fp "$cvs_password\n"
     close $fp
-    ns_write "Successfully executed:\n\n"
+    ns_write "CVS Login successfully completed:\n\n"
 
 } errmsg] } {
+    set error 1
     ns_write "</pre>
         <p>Unable to execute update command:<br><pre>$cmd\n</pre>
 	The server returned the error:
@@ -107,23 +109,26 @@ ns_write "</pre>\n"
 #
 # cvs -z3 -d :pserver:anonymous@openacs.org:/cvsroot checkout -r oacs-4-6
 
-ns_write "<h2>CVS Update</h2>\n"
-ns_write "<pre>\n"
+if {!$error} {
+    ns_write "<h2>CVS Update</h2>\n"
+    ns_write "<p>This command will take several minutes, depending on your 
+          Internet connection. Please don't interrupt.</p>\n"
+    ns_write "<pre>\n"
 
-if { [catch {
+    if { [catch {
 
-    set cmd "export HOME=$acs_root_dir; cd $package_dir; cvs -z3 -d :$cvs_protocol:$cvs_user@$cvs_server:$cvs_root $cvs_command 2>&1"
-    ns_write "$cmd\n\n"
-    ns_log Notice "cvs-update: cmd=$cmd"
-    set fp [open "|[im_bash_command] -c \"$cmd\"" "r"]
-    while { [gets $fp line] >= 0 } {
-	ns_write "$line\n"
-    }
-    close $fp
-    ns_write "\nSuccessfully executed:\n\n"
+	set cmd "export HOME=$acs_root_dir; cd $package_dir; cvs -z3 -d :$cvs_protocol:$cvs_user@$cvs_server:$cvs_root $cvs_command 2>&1"
+	ns_write "$cmd\n\n"
+	ns_log Notice "cvs-update: cmd=$cmd"
+	set fp [open "|[im_bash_command] -c \"$cmd\"" "r"]
+	while { [gets $fp line] >= 0 } {
+	    ns_write "$line\n"
+	}
+	close $fp
+	ns_write "\nSuccessfully executed:\n\n"
 
-} errmsg] } {
-    ns_write "</pre>
+    } errmsg] } {
+	ns_write "</pre>
         <p>Unable to execute update command:<br><pre>$cmd\n</pre>
 	The server returned the error:
 	<pre>$errmsg\n</pre>
@@ -131,13 +136,14 @@ if { [catch {
         Please send us a note
         </a>:
         <pre>"
+    }
+
+    ns_write "</pre>\n"
+    ns_write "<p>After this CVS update please visit the \n"
+    ns_write "<a href=/acs-admin/apm/packages-install>ACS Package Manager</a>\n"
+    ns_write "(APM) page and update the data model.\n</p>\n"
+
 }
-
-ns_write "</pre>\n"
-
-ns_write "<p>After this CVS update please visit the \n"
-ns_write "<a href=/acs-admin/apm/packages-install>ACS Package Manager</a>\n"
-ns_write "(APM) page and update the data model.\n</p>\n"
 
 ns_log Notice "cvs-update: before writing footer"
 ns_write [im_footer]
