@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-forum" package_version="3.0.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-forum" package_version="3.0.0.0.4" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Accept_topic_type">Accept %topic_type%</msg>
   <msg key="Accepted">Accepted</msg>
@@ -22,6 +22,7 @@
   <msg key="Create_new_Task">Create new Task</msg>
   <msg key="Create_topic_type">Create %topic_type%</msg>
   <msg key="Deleted">Deleted</msg>
+  <msg key="Discussion">Discussion</msg>
   <msg key="Discussion_View">Discussion View</msg>
   <msg key="Due">Due</msg>
   <msg key="Due_Date">Due Date</msg>
@@ -41,6 +42,7 @@
   <msg key="Human_Resources_Forum_Items">Human Resources Forum Items</msg>
   <msg key="In_Project">In Project</msg>
   <msg key="Inbox">Inbox</msg>
+  <msg key="Incident">Incident</msg>
   <msg key="Low_Normal">Low Normal</msg>
   <msg key="lt_A_new_topic_type_has_">A new %topic_type% has been created. Please visit the link above for details.</msg>
   <msg key="lt_A_new_topic_type_has__1">A new %topic_type% has been modified. Please visit the link above for details.</msg>
@@ -86,6 +88,7 @@
   <msg key="needs_clarification">needs clarification</msg>
   <msg key="Needs_to_be_done">Needs to be done</msg>
   <msg key="New_topic_type">New %topic_type%</msg>
+  <msg key="News">News</msg>
   <msg key="Normal">Normal</msg>
   <msg key="Not_that_urgent">Not that urgent</msg>
   <msg key="Note">Note</msg>
