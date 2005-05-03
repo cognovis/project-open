@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-trans-invoices" package_version="3.0.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-trans-invoices" package_version="3.0.0.0.4" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Accounting_Contact">Accounting Contact</msg>
   <msg key="Add_New">Add New</msg>
@@ -11,6 +11,7 @@
   <msg key="Clients">Clients</msg>
   <msg key="Company">Company</msg>
   <msg key="Company_name">Company name</msg>
+  <msg key="context">context</msg>
   <msg key="Country">Country</msg>
   <msg key="Create_Invoice">Create Invoice</msg>
   <msg key="Currency">Currency</msg>
@@ -74,6 +75,7 @@
   <msg key="No_company_found">No company found</msg>
   <msg key="No_prices_found">No prices found</msg>
   <msg key="No_tasks_found">No tasks found</msg>
+  <msg key="No_Trans_Tasks">No Translation Tasks have been found for this project.</msg>
   <msg key="One_project">One project</msg>
   <msg key="Order">Order</msg>
   <msg key="Payment_Method">Payment Method</msg>
@@ -109,6 +111,7 @@
   <msg key="Task_Name">Task Name</msg>
   <msg key="Task_Type">Task Type</msg>
   <msg key="TAX">TAX</msg>
+  <msg key="Trados_Matrix">Tradox Matrix</msg>
   <msg key="Trg">Trg</msg>
   <msg key="Type">Type</msg>
   <msg key="Unit_of_Measure">Unit of Measure</msg>
