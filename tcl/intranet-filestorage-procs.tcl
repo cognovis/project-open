@@ -77,7 +77,8 @@ ad_proc -public im_filestorage_find_cmd {} {
               change the value of the parameter.
           <li>Please make sure that CygWin is installed correctly if you are 
               running on a Windows platform.
-        </ul>"
+        </ul>
+        Here is the error message for reference:<br><pre>$err_msg</pre>"
 	return ""
     }
     return $find_cmd
