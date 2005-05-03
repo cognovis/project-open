@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-search-pg</auto-mount>
 
-    <version name="0.1d" url="http://openacs.org/repository/download/apm/intranet-search-pg-0.1d.apm">
+    <version name="3.0.0.0.4" url="http://projop.dnsalias.com/download/apm/intranet-search-pg-3.0.0.0.4.apm">
         <owner url="mailto:jledesma@competitiveness.com">José Luis Ledesma</owner>
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Adapter for OpenACS &quot;Search&quot; module to index Project/Open contents</summary>
