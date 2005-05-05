@@ -137,9 +137,8 @@ You have successfully uploaded $n_bytes bytes of '$client_filename'.<br>
 You can now return to the project page.
 <P>
 
-<form method=post action=\"$return_url\">
-<input type=submit value=\"Return to Previous Page\">
-</form>
+<A href=\"$return_url\">Return to Previous Page</a>
+
 "
 
 db_release_unused_handles
