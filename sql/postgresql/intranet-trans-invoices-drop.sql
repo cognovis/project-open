@@ -68,4 +68,50 @@ delete from im_biz_object_urls where object_type = 'im_trans_invoice';
 
 -- drop main table and object_type
 drop table im_trans_invoices;
+
+
+
+-- ---------------------------------------------
+-- Delete translation invoices completely before 
+-- dropping the acs-objects
+--
+delete from im_invoice_items 
+where invoice_id in (
+	select object_id 
+	from acs_objects 
+	where object_type = 'im_trans_invoice'
+	)
+;
+
+delete from im_invoices 
+where invoice_id in (
+	select object_id 
+	from acs_objects 
+	where object_type = 'im_trans_invoice'
+	)
+;
+
+delete from im_payments 
+where cost_id in (
+	select object_id 
+	from acs_objects 
+	where object_type = 'im_trans_invoice'
+	)
+;
+
+
+delete from im_costs 
+where cost_id in (
+	select object_id 
+	from acs_objects 
+	where object_type = 'im_trans_invoice'
+	)
+;
+
+delete from acs_objects 
+where object_type = 'im_trans_invoice';
+
+
+-- Now we can drop the object type
 select acs_object_type__drop_type('im_trans_invoice', 'f');
+
