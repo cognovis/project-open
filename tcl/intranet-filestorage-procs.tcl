@@ -40,6 +40,10 @@ ad_proc intranet_home_download {} { intranet_download "home" }
 ad_proc intranet_zip_download {} { intranet_download "zip" }
 
 
+# -------------------------------------------------------
+# 
+# -------------------------------------------------------
+
 ad_proc -public im_package_filestorage_id {} {
     Returns the package id of the intranet-filestorage module
 } {
@@ -300,6 +304,7 @@ ad_proc im_filestorage_home_component { user_id } {
     set base_path [im_filestorage_home_path]
     set object_name "Home"
     set folder_type "home"
+    set object_id [ad_conn subsite_id]
     set object_id 0
     set return_url "/intranet/"
     set home_path [im_filestorage_home_path]
@@ -910,7 +915,7 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     set bgcolor(0) "roweven"
     set bgcolor(1) "rowodd"
 
-    set find_cmd [parameter::get -package_id [im_package_core_id] -parameter "FindCmd" -default "/bin/find"]
+    set find_cmd [im_filestorage_find_cmd]
     set current_url_without_vars [ns_conn url]
     set user_id [ad_maybe_redirect_for_registration]
 
@@ -1042,7 +1047,7 @@ where
     # Permissions are stored in a list with elements
     # [view - read - write - asmin]
     # ------------------------------------------------------------------
-    
+
     # Get the list of all relevant roles and profiles for permissions
     set roles [im_filestorage_roles $user_id $object_id]
     set profiles [im_filestorage_profiles $user_id $object_id]
@@ -1222,12 +1227,24 @@ where
 	    set perm_cmd "${object_type}_permissions \$user_id \$object_id object_view object_read object_write object_admin"
 	    eval $perm_cmd
 	    if {$object_write} { set user_perms [list 1 1 1 1] }
+
 	} else {
+
 	    # The home-component has object_id==0
+	    # Set the default permissions as "read"
 	    set object_view 1
 	    set object_read 1
 	    set object_write 0
 	    set object_admin 0
+	    
+	    # Check if the user has more permissions:
+	    # We use "edit_internal_offices", because the home FS belongs
+	    # to the "internal offices". Well, not 100%, but that's fairly ok..
+	    if {[im_permission $user_id edit_internal_offices]} { 
+		set object_write 1
+	    }
+	    if {$object_write} { set user_perms [list 1 1 1 1] }
+
 	}
 
 	# Don't even enter into the folder/file procs if the user shoudln't see it
@@ -1556,3 +1573,77 @@ ad_proc im_filestorage_erase_files { project_id file_name } {
 	exec rm $file_name 
     } err_msg] } { return $err_msg }
 }
+
+
+
+# -------------------------------------------------------
+# Permission Procs
+# -------------------------------------------------------
+
+
+ad_proc im_filestorage_perm_add_profile { folder_id perm profile_id p} {
+    ns_log Notice "add-perms-2: profile_id=$profile_id, folder_id=$folder_id, perm=$perm, p=$p"
+
+    # Don't add empty permissions...
+    if {!$p} { continue }
+
+    # Make sure the perm entry exists
+    set exists_p [db_string perms_exists "select count(*) from im_fs_folder_perms where folder_id = :folder_id and profile_id = :profile_id" -default 0]
+    if {!$exists_p} {
+	    if { [catch {
+        	db_dml add_perms  "
+insert into im_fs_folder_perms 
+(folder_id, profile_id) 
+values (:folder_id, :profile_id)
+"
+        } err_msg] } {  
+            ad_return_complaint 1 "<li>[_ intranet-filestorage.Internal_Error]<br><pre>$err_msg</pre>"
+        }
+    }
+
+    # Update the perm column
+    db_dml update_perms "
+update 
+	im_fs_folder_perms
+set 
+	${perm}_p = 1
+where 
+	folder_id = :folder_id
+	and profile_id = :profile_id"
+}
+
+
+ad_proc im_filestorage_perm_add_role { folder_id perm role_id p} {
+    ns_log Notice "add-perms-2: role_id=$role_id, folder_id=$folder_id, perm=$perm, p=$p"
+
+    # Don't add empty permissions...
+    if {!$p} { continue }
+
+    # Make sure the perm entry exists
+    set exists_p [db_string perms_exists "select count(*) from im_fs_folder_perms where folder_id = :folder_id and profile_id = :role_id" -default 0]
+    if {!$exists_p} {
+	    if { [catch {
+        	db_dml add_perms  "
+insert into im_fs_folder_perms 
+(folder_id, profile_id) 
+values (:folder_id, :role_id)
+"
+        } err_msg] } {  
+            ad_return_complaint 1 "<li>[_ intranet-filestorage.Internal_Error]<br><pre>$err_msg</pre>"
+        }
+    }
+
+    # Update the perm column
+    db_dml update_perms "
+update 
+	im_fs_folder_perms
+set 
+	${perm}_p = 1
+where 
+	folder_id = :folder_id
+	and profile_id = :role_id"
+}
+
+
+
+
