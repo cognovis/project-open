@@ -53,7 +53,7 @@ begin
 	select	invoice_id
 	from	im_trans_invoices
      loop
-	PREFORM im_trans_invoice__delete(row.invoice_id);
+	PERFORM im_trans_invoice__delete(row.invoice_id);
      end loop;
     return 0;
 end;' language 'plpgsql';
@@ -102,6 +102,22 @@ where cost_id in (
 
 delete from im_costs 
 where cost_id in (
+	select object_id 
+	from acs_objects 
+	where object_type = 'im_trans_invoice'
+	)
+;
+
+delete from acs_rels
+where object_id_one in (
+	select object_id 
+	from acs_objects 
+	where object_type = 'im_trans_invoice'
+	)
+;
+
+delete from acs_rels
+where object_id_two in (
 	select object_id 
 	from acs_objects 
 	where object_type = 'im_trans_invoice'
