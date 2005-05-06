@@ -38,8 +38,14 @@ set base_path [im_filestorage_base_path $folder_type $object_id]
 foreach id [array names file_id] {
     set erase [im_filestorage_erase_files $object_id $base_path/$id_path($id)]
 }
+
+
 foreach id [array names dir_id] {
-    set erase [im_filestorage_delete_folder $object_id $base_path/$id_path($id)]
+
+    set path $id_path($id)
+    set folder_id [db_string folder_exists "select folder_id from im_fs_folders where object_id = :object_id and path = :path" -default 0]
+    set erase [im_filestorage_delete_folder $object_id $folder_id $base_path/$id_path($id)]
+
 }
 ad_returnredirect $return_url
 

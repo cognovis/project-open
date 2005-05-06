@@ -1558,9 +1558,25 @@ ad_proc im_filestorage_is_directory_empty {folder} {
     if {$sub_files <= 1} { return 1} else { return 0}
 }
 
-ad_proc im_filestorage_delete_folder {project_id folder} {
+ad_proc im_filestorage_delete_folder {project_id folder_id folder} {
     
 } {
+
+    db_dml delete_folder_status "
+	delete from im_fs_folder_status
+	where folder_id = :folder_id
+    "
+
+    db_dml delete_folder_perms "
+	delete from im_fs_folder_perms
+	where folder_id = :folder_id
+    "
+
+    db_dml delete_folders "
+	delete from im_fs_folders
+	where folder_id = :folder_id
+    "
+
     if { [catch {
 	ns_rmdir $folder
     } err_msg] } { return $err_msg }

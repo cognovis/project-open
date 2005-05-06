@@ -62,6 +62,16 @@ foreach id [array names dir_id] {
     # Create the folder if it doesn't exist yet
     if {!$folder_id} {
 	set folder_id [db_nextval im_fs_folder_seq]
+
+	# There is a strange bug with preinstalled P/O systems
+	# where the im_fs_folder_seq doesn't get updated.
+	# So let's workaround with updating new folder_seq_ids...
+	set folder_id_exists [db_string folder_id_exists "select count(*) from im_fs_folders where folder_id=:folder_id" -default 0]
+	while {$folder_id_exists} {
+	    set folder_id [db_nextval im_fs_folder_seq]
+	    set folder_id_exists [db_string folder_id_exists "select count(*) from im_fs_folders where folder_id=:folder_id" -default 0]
+	}
+
 	ns_log Notice "add-perms-2: folder_id=$folder_id"
 	db_dml insert_folder_sql "
 insert into im_fs_folders
