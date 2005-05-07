@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-wiki</auto-mount>
 
-    <version name="3.0.0.0.7" url="http://projop.dnsalias.com/download/apm/intranet-wiki-3.0.0.0.7.apm">
+    <version name="3.0.0.1.0" url="http://projop.dnsalias.com/download/apm/intranet-wiki-3.0.0.1.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Integration between Project/Open and the OpenACS Wiki system</summary>
         <vendor url="http://www.project-open.com/">Project/Open</vendor>
