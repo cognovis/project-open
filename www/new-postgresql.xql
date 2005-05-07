@@ -4,8 +4,7 @@
 
 
 <fullquery name="material_insert">
-	<querytext>
-
+    <querytext>
     BEGIN
 	PERFORM im_material__new (
 		:material_id,		-- p_material_id
@@ -22,13 +21,22 @@
 	);
 	return 0;
     END;
-
-	</querytext>
+    </querytext>
 </fullquery>
 
-<fullquery name="material_update">
-	<querytext>
 
+<fullquery name="material_delete">
+    <querytext>
+    BEGIN
+	PERFORM im_material__delete (:material_id);
+	return 0;
+    END;
+    </querytext>
+</fullquery>
+
+
+<fullquery name="material_update">
+    <querytext>
 	update im_materials set
                 material_name	= :material_name,
                 material_nr	= :material_nr,
@@ -37,8 +45,7 @@
                 description	= :description
         where
 		material_id = :material_id;
-
-	</querytext>
+    </querytext>
 </fullquery>
 
 

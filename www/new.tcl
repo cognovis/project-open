@@ -45,17 +45,32 @@ if {"display" == $form_mode} {
 
 }
 
+
+set button_pressed [template::form get_action material]
+if {"delete" == $button_pressed} {
+
+    db_exec_plsql material_delete {}
+    ad_returnredirect $return_url
+
+}
+
+
 # ------------------------------------------------------------------
 # Build the form
 # ------------------------------------------------------------------
 
 set type_options [im_material_type_options]
 set status_options [im_material_status_options]
+set actions [list {"Edit" edit} ]
+if {[im_permission $user_id add_materials]} {
+    lappend actions {"Delete" delete}
+}
 
 ad_form \
     -name material \
     -cancel_url $return_url \
     -action $action_url \
+    -actions $actions \
     -mode $form_mode \
     -export {next_url user_id return_url} \
     -form {
