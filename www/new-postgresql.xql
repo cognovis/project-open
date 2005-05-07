@@ -17,6 +17,7 @@
 		:material_nr,
 		:material_type_id,
 		:material_status_id,
+		:material_uom_id,
 		:description
 	);
 	return 0;
@@ -42,6 +43,7 @@
                 material_nr	= :material_nr,
                 material_type_id= :material_type_id,
                 material_status_id=material_status_id,
+		material_uom_id = :material_uom_id,
                 description	= :description
         where
 		material_id = :material_id;

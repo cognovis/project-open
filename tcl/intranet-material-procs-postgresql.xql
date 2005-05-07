@@ -17,7 +17,8 @@
 select
 	m.*,
 	im_category_from_id(m.material_type_id) as material_type,
-	im_category_from_id(m.material_status_id) as material_status
+	im_category_from_id(m.material_status_id) as material_status,
+	im_category_from_id(m.material_uom_id) as uom
 from
         im_materials m
 where

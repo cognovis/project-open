@@ -22,10 +22,13 @@ create table im_materials (
 	material_name		varchar(2000),
 	material_nr		varchar(200),
 	material_type_id	integer not null
-				constraint im_material_materials_type_fk
+				constraint im_materials_material_type_fk
 				references im_categories,
 	material_status_id	integer
-				constraint im_material_materials_status_fk
+				constraint im_materials_material_status_fk
+				references im_categories,
+	material_uom_id		integer
+				constraint im_materials_material_uom_fk
 				references im_categories,
 	description		varchar(4000)
 );
@@ -85,6 +88,7 @@ create or replace function im_material__new (
 	varchar,
 	integer,
 	integer,
+	integer,
 	varchar
     ) 
 returns integer as '
@@ -100,7 +104,8 @@ declare
 	p_material_nr		alias for $8;	
 	p_material_type_id	alias for $9;
 	p_material_status_id	alias for $10;
-	p_description		alias for $11;
+	p_material_uom_id	alias for $11;
+	p_description		alias for $12;
 
 	v_material_id		integer;
     begin
@@ -120,6 +125,7 @@ declare
 		material_nr,
 		material_type_id,
 		material_status_id,
+		material_uom_id,
 		description
 	) values (
 		p_material_id,
@@ -127,6 +133,7 @@ declare
 		p_material_nr,
 		p_material_type_id,
 		p_material_status_id,
+		p_material_uom_id,
 		p_description
 	);
 
@@ -352,6 +359,10 @@ extra_select, extra_where, sort_order, visible_for) values (90004,900,NULL,'Type
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (90006,900,NULL,'Status',
 '$material_status','','',6,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (90008,900,NULL,'UoM',
+'$uom','','',8,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (90010,900,NULL,
