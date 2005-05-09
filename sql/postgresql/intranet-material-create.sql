@@ -288,7 +288,7 @@ delete from im_categories where category_type = 'Intranet Material Type';
 INSERT INTO im_categories VALUES (9000,'Software Development',
 '','Intranet Material Type','category','t','f');
 
-INSERT INTO im_categories VALUES (9002,'Software Testing',
+INSERT INTO im_categories VALUES (9002,'Maintenance',
 '','Intranet Material Type','category','t','f');
 
 INSERT INTO im_categories VALUES (9004,'Licenses',

@@ -63,6 +63,29 @@ ad_proc -private im_material_status_options { {-include_empty 1} } {
 }
 
 
+# Get a list of available materials
+ad_proc -private im_material_options { {-restrict_to_status_id 0} {-restrict_to_type_id 0} {-include_empty 1} } {
+
+    set where_clause ""
+    if {0 != $restrict_to_status_id} {
+	append where_clause "material_status_id = :-restrict_to_status_id\n"
+    }
+    if {0 != $restrict_to_type_id} {
+	append where_clause "material_type_id = :-restrict_to_type_id\n"
+    }
+
+    set options [db_list_of_lists material_options "
+        select material_nr, material_id
+        from im_materials
+        where 
+		1=1
+		$where_clause
+    "]
+    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
+    return $options
+}
+
+
 
 # ----------------------------------------------------------------------
 # Material List Page Component
@@ -152,7 +175,7 @@ ad_proc -public im_material_list_component {
     }
 
     ns_set delkey $bind_vars "order_by"
-    ns_set delkey $bind_vars "material_start_idx"
+    ns_set delkey $bind_vars "start_idx"
     set params [list]
     set len [ns_set size $bind_vars]
     for {set i 0} {$i < $len} {incr i} {
@@ -200,10 +223,22 @@ ad_proc -public im_material_list_component {
 
     set order_by_clause "order by m.material_nr"
     set order_by_clause_ext "order by material_nr"
-    switch $order_by {
-	"P" { 
-	    set order_by_clause "order by t.priority" 
-	    set order_by_clause_ext "m.material_nr"
+    switch [string tolower $order_by] {
+	"nr" { 
+	    set order_by_clause "order by m.material_nr" 
+	    set order_by_clause_ext "order by material_nr"
+	}
+	"name" { 
+	    set order_by_clause "order by m.material_name" 
+	    set order_by_clause_ext "order by material_name"
+	}
+	"type" { 
+	    set order_by_clause "order by m.material_type_id, m.material_nr" 
+	    set order_by_clause_ext "order by material_type_id, material_nr"
+	}
+	"uom" { 
+	    set order_by_clause "order by m.material_uom_id" 
+	    set order_by_clause_ext "order by material_uom_id"
 	}
     }
 	
@@ -259,7 +294,7 @@ ad_proc -public im_material_list_component {
     set table_body_html ""
     set ctr 0
     set idx $start_idx
-    set old_object_id 0
+    set old_material_type_id 0
 	
     db_foreach material_query_limited $selection {
 	
@@ -269,7 +304,7 @@ ad_proc -public im_material_list_component {
 		append table_body_html "
     	            <tr><td colspan=$colspan>&nbsp;</td></tr>
     	            <tr><td class=rowtitle colspan=$colspan>
-    	              <A href=/intranet/projects/view?project_id=$material_type_id>
+    	              <A href=index?[export_url_vars material_type_id project_id]>
     	                $material_type
     	              </A>
     	            </td></tr>\n"
@@ -303,8 +338,7 @@ ad_proc -public im_material_list_component {
 	# This means that there are rows that we decided not to return
 	# Include a link to go to the next page
 	set next_start_idx [expr $end_idx + 1]
-	set material_max_entries_per_page $max_entries_per_page
-	set next_page_url  "$current_page_url?[export_url_vars material_object_id material_max_entries_per_page order_by]&material_start_idx=$next_start_idx&$pass_through_vars_html"
+	set next_page_url  "$current_page_url?[export_url_vars max_entries_per_page order_by]&start_idx=$next_start_idx&$pass_through_vars_html"
 	set next_page_html "($remaining_items more) <A href=\"$next_page_url\">&gt;&gt;</a>"
     } else {
 	set next_page_html ""
@@ -315,7 +349,7 @@ ad_proc -public im_material_list_component {
 	# at least 1 previous row. add a previous page link
 	set previous_start_idx [expr $start_idx - $max_entries_per_page]
 	if { $previous_start_idx < 0 } { set previous_start_idx 0 }
-	set previous_page_html "<A href=$current_page_url?$pass_through_vars_html&order_by=$order_by&material_start_idx=$previous_start_idx>&lt;&lt;</a>"
+	set previous_page_html "<A href=$current_page_url?$pass_through_vars_html&order_by=$order_by&start_idx=$previous_start_idx>&lt;&lt;</a>"
     } else {
 	set previous_page_html ""
     }

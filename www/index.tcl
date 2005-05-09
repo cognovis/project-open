@@ -1,4 +1,4 @@
-# /packages/intranet-material/www/intranet/material/index.tcl
+# /packages/intranet-material/www/index.tcl
 #
 # Copyright (C) 2003-2004 Project/Open
 #
@@ -12,15 +12,13 @@
 ad_page_contract { 
     @author frank.bergmann@project-open.com
 } {
-    { material_order_by "Type" }
-    { material_view_name "material_list" }
-    { material_topic_type_id:integer 0 }
+    { order_by "Type" }
+    { view_name "material_list" }
     { material_status_id 0 }
     { material_type_id 0 }
-    { material_group_id:integer 0 }
-    { material_start_idx:integer 0 }
-    { material_how_many 0 }
-    { material_max_entries_per_page 0 }
+    { start_idx:integer 0 }
+    { how_many 0 }
+    { max_entries_per_page 0 }
 }
 
 # ---------------------------------------------------------------
@@ -38,16 +36,14 @@ set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set return_url [im_url_with_query]
 set current_url [ns_conn url]
 
-if { [empty_string_p $material_how_many] || $material_how_many < 1 } {
-    set material_how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50]
+if { [empty_string_p $how_many] || $how_many < 1 } {
+    set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50]
 } 
 
-set end_idx [expr $material_start_idx + $material_how_many - 1]
+set end_idx [expr $start_idx + $how_many - 1]
 
-if {[string equal $material_view_name "material_list_tasks"]} {
-    set material_view_name "material_list_material"
-    # Preselect "Tasks & Incidents"
-    set material_topic_type_id 1
+if {[string equal $view_name "material_list_tasks"]} {
+    set view_name "material_list_material"
 }
 
 # ---------------------------------------------------------------
@@ -106,17 +102,17 @@ set admin_html "
 # Variables of this page to pass through im_material_component to maintain the
 # current selection and view of the current project
 
-set export_var_list [list material_start_idx material_order_by material_how_many material_view_name]
+set export_var_list [list start_idx order_by how_many view_name]
 
 set material_content [im_material_list_component \
 	-user_id		$current_user_id \
 	-current_page_url	$current_url \
 	-return_url		$return_url \
-	-start_idx		$material_start_idx \
+	-start_idx		$start_idx \
 	-export_var_list	$export_var_list \
-	-view_name 		material_view_name \
-	-order_by		material_order_by \
-	-max_entries_per_page	$material_max_entries_per_page \
+	-view_name 		$view_name \
+	-order_by		$order_by \
+	-max_entries_per_page	$max_entries_per_page \
 	-restrict_to_type_id	$material_type_id \
 	-restrict_to_status_id	$material_status_id \
 ]
