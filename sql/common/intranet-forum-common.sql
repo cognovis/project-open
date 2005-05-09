@@ -148,7 +148,7 @@ extra_select, extra_where, sort_order, visible_for) values (4003,40,NULL,'Object
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4004,40,NULL,'Subject',
 '"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
-$subject</a>"','','',6,'');
+[string_truncate -len 80 $subject]</a>"','','',6,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4006,40,NULL,'Due',
@@ -180,7 +180,7 @@ extra_select, extra_where, sort_order, visible_for) values (4102,41,NULL,'Type',
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4104,41,NULL,'Subject',
 '"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
-$subject</a>"','','',6,'');
+[string_truncate -len 80 $subject]</a>"','','',6,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4106,41,NULL,'Due',
@@ -227,7 +227,7 @@ extra_select, extra_where, sort_order, visible_for) values (4202,42,NULL,'Type',
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4204,42,NULL,'Subject',
 '"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
-$subject</A>"','','',6,'');
+[string_truncate -len 80$subject]</A>"','','',6,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4206,42,NULL,'Due',
@@ -280,7 +280,7 @@ extra_select, extra_where, sort_order, visible_for) values (4402,44,NULL,'Type',
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4404,44,NULL,'Subject',
 '"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
-$subject</a>"','','',6,'');
+[string_truncate -len 80 $subject]</a>"','','',6,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4406,44,NULL,'Due',
@@ -321,7 +321,7 @@ extra_select, extra_where, sort_order, visible_for) values (4502,45,NULL,'Type',
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4504,45,NULL,'Subject',
 '"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
-$subject</a>"','','',6,'');
+[string_truncate -len 80 $subject]</a>"','','',6,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4506,45,NULL,'Due',
@@ -362,7 +362,7 @@ extra_select, extra_where, sort_order, visible_for) values (4602,46,NULL,'Type',
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4604,46,NULL,'Subject',
 '"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
-$subject</a>"','','',6,'');
+[string_truncate -len 80 $subject]</a>"','','',6,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4606,46,NULL,'Due',
