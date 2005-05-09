@@ -83,6 +83,18 @@ ad_proc -public im_cost_center_type_options { {include_empty 1} } {
 }
 
 
+ad_proc -public im_cost_uom_options { {include_empty 1} } {
+    Cost UoM (Unit of Measure) options
+} {
+    set options [db_list_of_lists cost_type_options "
+        select category, category_id
+        from im_categories
+	where category_type = 'Intranet UoM'
+    "]
+    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
+    return $options
+}
+
 
 # ---------------------------------------------------------------
 # Cost Item Creation
