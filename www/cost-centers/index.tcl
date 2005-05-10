@@ -74,7 +74,7 @@ set table_header "
   <td width=20></td>
   <td width=20></td>
   <td width=20></td>
-  <td width=20></td>
+  <td width=150></td>
 "
 
 set main_sql_select ""
