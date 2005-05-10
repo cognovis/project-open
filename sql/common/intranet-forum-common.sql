@@ -227,7 +227,7 @@ extra_select, extra_where, sort_order, visible_for) values (4202,42,NULL,'Type',
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4204,42,NULL,'Subject',
 '"<a href=/intranet-forum/view?[export_url_vars topic_id return_url]>\
-[string_truncate -len 80$subject]</A>"','','',6,'');
+[string_truncate -len 80 $subject]</A>"','','',6,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (4206,42,NULL,'Due',
