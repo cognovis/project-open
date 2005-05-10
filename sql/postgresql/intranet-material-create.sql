@@ -285,7 +285,7 @@ drop function inline_0 ();
 -- Material Types
 delete from im_categories where category_type = 'Intranet Material Type';
 
-INSERT INTO im_categories VALUES (9000,'Software Development',
+INSERT INTO im_categories VALUES (9000,'Undefined',
 '','Intranet Material Type','category','t','f');
 
 INSERT INTO im_categories VALUES (9002,'Maintenance',
