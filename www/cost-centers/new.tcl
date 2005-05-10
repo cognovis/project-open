@@ -39,8 +39,10 @@ if {[info exists cost_center_id]} {
     set page_title "Cost Center '$cc_name'"
 
     if {"" == $cc_name} {
-	ad_return_complaint 1 "We didn't find cost center \#$cost_center_id."
-	return
+#	ad_return_complaint 1 "We didn't find cost center \#$cost_center_id."
+#	return
+
+	set cc_name "New Cost Center"
     }
 }
 

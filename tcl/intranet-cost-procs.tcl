@@ -249,6 +249,15 @@ ad_proc -public im_department_options { {include_empty 0} } {
 }
 
 
+ad_proc -public im_cost_center_select { {-include_empty 0} {-department_only_p 0} select_name {default ""} } {
+    Returns a select box with all Cost Centers in the company.
+} {
+    set options [im_cost_center_options $include_empty $department_only_p]
+    return [im_options_to_select_box $select_name $options $default]
+}
+
+
+
 ad_proc -public im_cost_center_options { {include_empty 0} { department_only_p 0} } {
     Returns a list of all Cost Centers in the company.
 } {
@@ -264,12 +273,14 @@ ad_proc -public im_cost_center_options { {include_empty 0} { department_only_p 0
                 cc.cost_center_name,
                 cc.cost_center_id,
                 cc.cost_center_label,
-    		length(cc.cost_center_code) / 2 as indent_level
+    		(length(cc.cost_center_code) / 2) - 1 as indent_level
         from
                 im_cost_centers cc
 	where
 		1=1
 		$department_only_sql
+	order by
+		cc.cost_center_code
     "
 
     set options [list]
