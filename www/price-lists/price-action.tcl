@@ -51,13 +51,13 @@ if {"" != $del} {
     if {0 == [llength $price_list]} { ad_returnredirect $return_url }
     
     db_dml delete_prices "
-	delete from im_timesheet2-_prices
+	delete from im_timesheet_prices
 	where price_id in ([join $price_list ","])
     "
     ad_returnredirect $return_url
     return
 }
 
-ad_return_complaint 1 "<li>[_ intranet-timesheet2--invoices.lt_Unknown_action_for_pr]"
+ad_return_complaint 1 "<li>[_ intranet-timesheet2-invoices.lt_Unknown_action_for_pr]"
 return
 

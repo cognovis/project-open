@@ -66,7 +66,27 @@ set in_clause_list [list]
 foreach selected_project $select_project {
         lappend in_clause_list $selected_project
 }
-set projects_where_clause "and p.project_id in ([join $in_clause_list ","])"
+
+set projects_where_clause "
+    and p.project_id in (
+	select
+	        children.project_id
+	from
+	        im_projects parent,
+	        im_projects children
+	where
+	        children.project_status_id not in (
+			[im_project_status_deleted],
+			[im_project_status_canceled]
+		)
+	        and children.tree_sortkey 
+			between parent.tree_sortkey 
+			and tree_right(parent.tree_sortkey)
+	        and parent.project_id in ([join $in_clause_list ","])
+	order by
+	        children.tree_sortkey
+    )
+"
 
 
 # check that all projects are from the same client
@@ -111,13 +131,15 @@ select
 	p.project_path,
 	p.project_path as project_short_name,
 	t.task_id,
-	t.task_units,
 	t.task_name,
+	t.planned_units,
 	t.billable_units,
-	t.task_uom_id,
+	t.reported_units_cache,
+	t.uom_id,
 	t.task_type_id,
 	t.project_id,
-	im_category_from_id(t.task_uom_id) as uom_name,
+	im_material_name_from_id(t.material_id) as material_name,
+	im_category_from_id(t.uom_id) as uom_name,
 	im_category_from_id(t.task_type_id) as type_name,
 	im_category_from_id(t.task_status_id) as task_status
 from 
@@ -126,32 +148,48 @@ from
 where 
 	t.project_id = p.project_id
 	$task_invoice_id_null
-        and t.task_status_id in (
-                select task_status_id
-                from im_task_status
-                where upper(task_status) not in (
-                        'CLOSED','INVOICED','PARTIALLY PAID',
-                        'DECLINED','PAID','DELETED','CANCELED'
-                )
-        )
         $projects_where_clause
 order by
 	project_id, task_id
 "
 
+set disabled_task_status_where "
+        and t.task_status_id in (
+                select	category_id
+                from	im_categories
+                where	category_type = 'Intranet Timesheet Task Status'
+			and upper(category) not in (
+                        'CLOSED','INVOICED','PARTIALLY PAID',
+                        'DECLINED','PAID','DELETED','CANCELED'
+                )
+        )
+"
+
+
 set task_table "
 <tr> 
   <td class=rowtitle align=middle>[im_gif help "Include in Invoice"]</td>
   <td class=rowtitle>[_ intranet-timesheet2-invoices.Task_Name]</td>
-  <td class=rowtitle>[_ intranet-timesheet2-invoices.Units]</td>
+  <td class=rowtitle>[_ intranet-timesheet2-invoices.Material]</td>
+  <td class=rowtitle>[_ intranet-timesheet2-invoices.Planned_Units]</td>
   <td class=rowtitle>[_ intranet-timesheet2-invoices.Billable_Units]</td>
+  <td class=rowtitle>[_ intranet-timesheet2-invoices.Reported_Units]</td>
   <td class=rowtitle>  
     [_ intranet-timesheet2-invoices.UoM] [im_gif help "Unit of Measure"]
   </td>
   <td class=rowtitle>[_ intranet-timesheet2-invoices.Type]</td>
   <td class=rowtitle>[_ intranet-timesheet2-invoices.Status]</td>
 </tr>
-"
+<tr>
+  <td></td>
+  <td colspan=2>Please select the type of hours to use:</td>
+  <td align=center><input type=radio name=invoice_hour_type value=planned></td>
+  <td align=center><input type=radio name=invoice_hour_type value=billable checked></td>
+  <td align=center><input type=radio name=invoice_hour_type value=reported></td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>\n"
 
 set task_table_rows ""
 set ctr 0
@@ -181,8 +219,10 @@ db_foreach select_tasks $sql {
             <input type=checkbox name=include_task value=$task_id checked>
           </td>
 	  <td align=left>$task_name</td>
-	  <td align=right>$task_units</td>
+	  <td align=right>$material_name</td>
+	  <td align=right>$planned_units</td>
 	  <td align=right>$billable_units</td>
+	  <td align=right>$reported_units_cache</td>
 	  <td align=right>$uom_name</td>
 	  <td>$type_name</td>
 	  <td>$task_status</td>

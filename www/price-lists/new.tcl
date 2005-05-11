@@ -57,20 +57,7 @@ from im_categories
 where category_type = 'Intranet Project Type'
 "]
 set task_type_options [linsert $task_type_options 0 [list "" ""]]
-
-set language_options [db_list_of_lists uom_options "
-select category, category_id
-from im_categories
-where category_type = 'Intranet Translation Language'
-"]
-set language_options [linsert $language_options 0 [list "" ""]]
-
-set material_options [db_list_of_lists uom_options "
-select category, category_id
-from im_categories
-where category_type = 'Intranet Translation Subject Area'
-"]
-set material_options [linsert $material_options 0 [list "" ""]]
+set material_options [im_material_options -include_empty 1]
 
 set include_empty 0
 set currency_options [im_currency_options $include_empty]
@@ -82,7 +69,7 @@ ad_form \
     -mode $form_mode \
     -export {next_url user_id return_url} \
     -form {
-	price_id:key(im_trans_prices_seq)
+	price_id:key(im_timesheet_prices_seq)
 	{company_id:text(hidden)}
 	{uom_id:text(select) {label "[_ intranet-timesheet2-invoices.Unit_of_Measure]"} {options $uom_options} }
 	{task_type_id:text(select),optional {label "[_ intranet-timesheet2-invoices.Task_Type]"} {options $task_type_options} }
@@ -98,13 +85,13 @@ ad_form -extend -name price -on_request {
 } -select_query {
 
 	select	p.*
-	from	im_trans_prices p
+	from	im_timesheet_prices p
 	where	p.price_id = :price_id
 
 } -new_data {
 
     db_dml price_insert "
-insert into im_trans_prices (
+insert into im_timesheet_prices (
 	price_id,
 	uom_id,
 	company_id,

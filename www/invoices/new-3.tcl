@@ -25,6 +25,7 @@ ad_page_contract {
     include_task:multiple
     company_id:integer
     invoice_currency
+    invoice_hour_type
     target_cost_type_id:integer
     { return_url ""}
 }
@@ -46,6 +47,7 @@ set bgcolor(1) " class=rowodd"
 set required_field "<font color=red size=+1><B>*</B></font>"
 
 set number_format "99990.099"
+set cost_type_invoice [im_cost_type_invoice]
 
 if {![im_permission $user_id add_invoices]} {
     ad_return_complaint "[_ intranet-timesheet2-invoices.lt_Insufficient_Privileg]" "
@@ -117,107 +119,20 @@ where
 "
 
 # ---------------------------------------------------------------
-# Render the "Invoice Data" and "Receipient" blocks
-# ---------------------------------------------------------------
-set invoice_data_html "
-        <tr><td align=middle class=rowtitle colspan=2>[_ intranet-timesheet2-invoices.Invoice_Data]</td></tr>
-        <tr>
-          <td  class=rowodd>[_ intranet-timesheet2-invoices.Invoice_nr]:</td>
-          <td  class=rowodd> 
-            <input type=text name=invoice_nr size=15 value='$invoice_nr'>
-          </td>
-        </tr>
-        <tr> 
-          <td  class=roweven>[_ intranet-timesheet2-invoices.Invoice_date]:</td>
-          <td  class=roweven> 
-            <input type=text name=invoice_date size=15 value='$invoice_date'>
-          </td>
-        </tr>
-        <tr> 
-          <td class=rowodd>[_ intranet-timesheet2-invoices.Type]</td>
-          <td class=rowodd>[im_cost_type_select cost_type_id $cost_type_id [im_cost_type_company_doc]]</td>
-        </tr>\n"
-
-if {$cost_type_id == [im_cost_type_invoice]} {
-    append invoice_data_html "
-        <tr> 
-          <td class=roweven>[_ intranet-timesheet2-invoices.Payment_terms]</td>
-          <td class=roweven> 
-            <input type=text name=payment_days size=5 value='$payment_days'>
-            days date of invoice</td>
-        </tr>
-        <tr> 
-          <td class=rowodd>[_ intranet-timesheet2-invoices.Payment_Method]</td>
-          <td class=rowodd>[im_invoice_payment_method_select payment_method_id $payment_method_id]</td>
-        </tr>\n"
-}
-
-append invoice_data_html "
-        <tr> 
-          <td class=roweven>[_ intranet-timesheet2-invoices.Invoice_template]:</td>
-          <td class=roweven>[im_cost_template_select template_id $template_id]</td>
-        </tr>
-"
-
-set receipient_html "
-        <tr><td align=center valign=top class=rowtitle colspan=2>[_ intranet-timesheet2-invoices.Recipient]</td></tr>
-        <tr> 
-          <td  class=rowodd>[_ intranet-timesheet2-invoices.Company_name]</td>
-          <td  class=rowodd>
-            <A href=/intranet/companies/view?company_id=$company_id>$company_name</A>
-          </td>
-        </tr>
-        <tr> 
-          <td  class=roweven>[_ intranet-timesheet2-invoices.VAT]</td>
-          <td  class=roweven>$vat_number</td>
-        </tr>
-        <tr> 
-          <td  class=rowodd>[_ intranet-timesheet2-invoices.Accounting_Contact]</td>
-          <td  class=rowodd>
-            <A href=/intranet/users/view?user_id=$accounting_contact_id>$company_contact_name</A>
-          </td>
-        </tr>
-        <tr> 
-          <td  class=roweven>[_ intranet-timesheet2-invoices.Adress]</td>
-          <td  class=roweven>$address_line1 <br> $address_line2</td>
-        </tr>
-        <tr> 
-          <td  class=rowodd>[_ intranet-timesheet2-invoices.Zip]</td>
-          <td  class=rowodd>$address_postal_code</td>
-        </tr>
-        <tr> 
-          <td  class=roweven>[_ intranet-timesheet2-invoices.Country]</td>
-          <td  class=roweven>$country_name</td>
-
-        </tr>
-        <tr> 
-          <td  class=rowodd>[_ intranet-timesheet2-invoices.Phone]</td>
-          <td  class=rowodd>$phone</td>
-        </tr>
-        <tr> 
-          <td  class=roweven>[_ intranet-timesheet2-invoices.Fax]</td>
-          <td  class=roweven>$fax</td>
-        </tr>
-        <tr> 
-          <td  class=rowodd>[_ intranet-timesheet2-invoices.Email]</td>
-          <td  class=rowodd>$company_contact_email</td>
-        </tr>
-"
-
-# ---------------------------------------------------------------
 # 6. Select and render invoicable items 
 # ---------------------------------------------------------------
 
 set sql "
 select 
 	t.task_id,
-	t.task_units,
-	t.task_name,
+	t.planned_units,
 	t.billable_units,
-	t.task_uom_id,
+	t.reported_units_cache,
+	t.task_name,
+	t.uom_id,
 	t.task_type_id,
 	t.project_id,
-	im_category_from_id(t.task_uom_id) as uom_name,
+	im_category_from_id(t.uom_id) as uom_name,
 	im_category_from_id(t.task_type_id) as type_name,
 	im_category_from_id(t.task_status_id) as task_status,
 	p.project_name,
@@ -236,11 +151,32 @@ order by
 set task_table "
 <tr> 
   <td class=rowtitle>[_ intranet-timesheet2-invoices.Task_Name]</td>
-  <td class=rowtitle>[_ intranet-timesheet2-invoices.Units]</td>
+  <td class=rowtitle>[_ intranet-timesheet2-invoices.Planned_Units]</td>
   <td class=rowtitle>[_ intranet-timesheet2-invoices.Billable_Units]</td>
+  <td class=rowtitle>[_ intranet-timesheet2-invoices.Reported_Units]</td>
   <td class=rowtitle>[_ intranet-timesheet2-invoices.UoM] [im_gif help "Unit of Measure"]</td>
   <td class=rowtitle>[_ intranet-timesheet2-invoices.Type]</td>
   <td class=rowtitle>[_ intranet-timesheet2-invoices.Status]</td>
+</tr>
+"
+set planned_checked ""
+set billable_checked ""
+set reported_checked ""
+switch $invoice_hour_type {
+    planned { set planned_checked " checked" }
+    billable { set billable_checked " checked" }
+    reported { set reported_checked " checked" }
+}
+
+append task_table "
+<tr>
+  <td>Billing hour type:</td>
+  <td align=center><input type=radio name=invoice_hour_type value=planned disabled $planned_checked></td>
+  <td align=center><input type=radio name=invoice_hour_type value=billable disabled $billable_checked></td>
+  <td align=center><input type=radio name=invoice_hour_type value=reported disabled $reported_checked></td>
+  <td></td>
+  <td></td>
+  <td></td>
 </tr>
 "
 
@@ -271,8 +207,9 @@ db_foreach select_tasks $sql {
         <input type=hidden name=im_timesheet_task value=$task_id>
 	<tr $bgcolor([expr $ctr % 2])> 
 	  <td align=left>$task_name</td>
-	  <td align=right>$task_units</td>
+	  <td align=right>$planned_units</td>
 	  <td align=right>$billable_units</td>
+	  <td align=right>$reported_units_cache</td>
 	  <td align=right>$uom_name</td>
 	  <td>$type_name</td>
 	  <td>$task_status</td>
@@ -324,12 +261,14 @@ if {![string equal "" $task_table_rows]} {
     # function.
     set task_sum_inner_sql "
 select
-	sum(t.billable_units) as task_sum,
+	sum(t.planned_units) as planned_sum,
+	sum(t.billable_units) as billable_sum,
+	sum(t.reported_units_cache) as reported_sum,
 	t.task_type_id,
-	t.task_uom_id,
+	t.uom_id,
 	p.company_id,
 	p.project_id,
-	p.material_id
+	t.material_id
 from 
 	im_timesheet_tasks t,
 	im_projects p
@@ -337,41 +276,12 @@ where
 	$tasks_where_clause
 	and t.project_id=p.project_id
 group by
+	t.material_id,
 	t.task_type_id,
-	t.task_uom_id,
+	t.uom_id,
 	p.company_id,
-	p.project_id,
-	p.material_id
-"
-
-    # Take the "Inner Query" with the data (above) and add some "long names" 
-    # (categories, client names, ...) for pretty output
-    set task_sum_sql "
-select
-	s.task_sum,
-	s.task_type_id,
-	s.material_id,
-	s.task_uom_id,
-	c_type.category as task_type,
-	c_uom.category as task_uom,
-	s.company_id,
-	s.project_id,
-	p.project_name,
-	p.project_path,
-	p.project_path as project_short_name,
-	p.company_project_nr
-from
-	im_categories c_uom,
-	im_categories c_type,
-	im_projects p,
-	($task_sum_inner_sql) s
-where
-	s.task_type_id=c_type.category_id(+)
-	and s.task_uom_id=c_uom.category_id(+)
-	and s.project_id=p.project_id(+)
-order by
 	p.project_id
-    "
+"
 
 
     # Calculate the price for the specific service.
@@ -411,7 +321,7 @@ from
 			p.valid_through
 		from im_timesheet_prices p
 		where
-			uom_id=:task_uom_id
+			uom_id=:uom_id
 			and currency=:invoice_currency
 		)
 	) p,
@@ -429,21 +339,28 @@ order by
     set ctr 1
     set old_project_id 0
     set colspan 6
-    db_foreach task_sum $task_sum_sql {
+    db_foreach task_sum "" {
+
+	set task_sum 0
+	switch $invoice_hour_type {
+	    planned { set task_sum $planned_sum }
+	    billable { set task_sum $billable_sum }
+	    reported { set task_sum $reported_sum }
+	}
 
 	# insert intermediate headers for every project
 	if {$old_project_id != $project_id} {
 	    append task_sum_html "
 		<tr><td class=rowtitle colspan=$price_colspan>
 	          <A href=/intranet/projects/view?project_id=$project_id>$project_short_name</A>:
-	          $company_project_nr
+	          $project_nr
 	        </td></tr>\n"
 
 	    # Also add an intermediate header to the price list
 	    append reference_price_html "
 		<tr><td class=rowtitle colspan=$price_colspan>
 	          <A href=/intranet/projects/view?project_id=$project_id>$project_short_name</A>:
-	          $company_project_nr
+	          $project_nr
 	        </td></tr>\n"
 	
 	    set old_project_id $project_id
@@ -482,13 +399,13 @@ order by
 	    <input type=text name=item_sort_order.$ctr size=2 value='$ctr'>
 	  </td>
           <td>
-	    <input type=text name=item_name.$ctr size=40 value='$task_type'>
+	    <input type=text name=item_name.$ctr size=40 value='$material_name'>
 	  </td>
           <td align=right>
 	    <input type=text name=item_units.$ctr size=4 value='$task_sum'>
 	  </td>
           <td align=right>
-	    <input type=hidden name=item_uom_id.$ctr value='$task_uom_id'>
+	    <input type=hidden name=item_uom_id.$ctr value='$uom_id'>
 	    $task_uom
 	  </td>
           <td align=right>
@@ -503,103 +420,15 @@ order by
 	incr ctr
     }
 
-# ---------------------------------------------------------------
-# 9. Render VAT and TAX
-# ---------------------------------------------------------------
-
-set grand_total_html "
-        <tr>
-          <td> 
-          </td>
-          <td colspan=4 align=right> 
-            <table border=0 cellspacing=1 cellpadding=0>
-              <tr> 
-                <td>[_ intranet-timesheet2-invoices.VAT]</td>
-                <td><input type=text name=vat value='$vat' size=4> % &nbsp;</td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <tr> 
-          <td> 
-          </td>
-          <td colspan=4 align=right> 
-            <table border=0 cellspacing=1 cellpadding=0>
-              <tr> 
-                <td>[_ intranet-timesheet2-invoices.TAX]</td>
-                <td><input type=text name=tax value='$tax' size=4> % &nbsp;</td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <tr> 
-          <td>&nbsp; </td>
-          <td colspan=6 align=right> 
-              <input type=submit name=submit value='$button_text'>
-          </td>
-        </tr>
-"
 
 # ---------------------------------------------------------------
 # 10. Join all parts together
 # ---------------------------------------------------------------
 
-ns_log Notice "new-3: before joining the parts together"
-
-set page_body "
-[im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
-
-<form action=new-4 method=POST>
-[export_form_vars customer_id provider_id invoice_id cost_status_id return_url]
-
-"
-
+set include_task_html ""
 foreach task_id $in_clause_list {
-    append page_body "<input type=hidden name=include_task value=$task_id>\n"
+    append include_task_html "<input type=hidden name=include_task value=$task_id>\n"
 }
-
-append page_body "
-  <!-- Invoice Data and Receipient Tables -->
-  <table cellpadding=0 cellspacing=0 bordercolor=#6699CC border=0 width=100%>
-    <tr valign=top> 
-      <td>
-
-        <table border=0 cellPadding=0 cellspacing=2>
-	  $invoice_data_html
-<!--	  <tr><td colspan=2 align=right><input type=submit value='Update'></td></tr> -->
-        </table>
-
-      </td>
-      <td></td>
-      <td align=right>
-        <table border=0 cellspacing=2 cellpadding=0 >
-          $receipient_html</td>
-        </table>
-    </tr>
-  </table>
-
-  <!-- the list of tasks (invoicable items) -->
-  <table cellpadding=2 cellspacing=2 border=0 width='100%'>
-    $task_table
-  </table>
-
-  <!-- the list of task sums, distinguised by type and UOM -->
-  <table width=100%>
-    <tr>
-      <td align=right><table border=0 cellspacing=2 cellpadding=1>
-        $task_sum_html
-        $grand_total_html
-      </td>
-    </tr>
-  </table>
-
-</form>
-
-<!-- the list of reference prices -->
-<table>
-  $reference_price_html
-</table>
-"
 
 db_release_unused_handles
 

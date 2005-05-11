@@ -24,7 +24,8 @@ ad_proc im_timesheet_price_component { user_id company_id return_url} {
 
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
-    set price_format "000.00"
+#    set price_format "000.00"
+    set price_format "%0.2f"
 
     set colspan 7
     set price_list_html "
@@ -73,7 +74,7 @@ order by
 	  <td>$uom</td>
 	  <td>$task_type</td>
 	  <td>$material</td>
-          <td>[format "%0.3f" $price] $currency</td>
+          <td>[format $price_format $price] $currency</td>
           <td><input type=checkbox name=price_id.$price_id></td>
 	</tr>"
 	incr ctr
