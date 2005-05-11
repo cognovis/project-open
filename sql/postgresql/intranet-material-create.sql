@@ -191,6 +191,21 @@ BEGIN
 end;' language 'plpgsql';
 
 
+create or replace function im_material_name_from_id (integer)
+returns varchar as '
+DECLARE
+        p_id    alias for $1;
+        v_name  varchar(2000);
+BEGIN
+        select m.material_name
+        into v_name
+        from im_materials m
+        where material_id = p_id;
+
+        return v_name;
+end;' language 'plpgsql';
+
+
 
 
 
