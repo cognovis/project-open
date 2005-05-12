@@ -25,9 +25,6 @@ create table im_search_object_types (
 			on delete cascade
 );
 
-insert into im_search_object_types values (0,'im_project');
-
-
 
 -- The main search table with Full Text Index.
 --
@@ -65,39 +62,6 @@ create index im_search_objects_object_id_idx on im_search_objects (object_id);
 
 
 
-
-create or replace function im_search_insert (integer, varchar, integer, varchar)
-returns integer as '
-declare
-	p_object_id	alias for $1;
-	p_object_type	alias for $2;
-	p_biz_object_id	alias for $3;
-	p_text		alias for $4;
-
-	v_object_type_id	integer;
-        ts2_result		varchar;
-begin
-	select	object_type_id
-	into	v_object_type_id
-	from	im_search_object_types
-	where	object_type = p_object_type;
-
-	insert into im_search_objects (
-		object_id,
-		object_type_id,
-		biz_object_id,
-		fti
-	) values (
-		p_object_id,
-		v_object_type_id,
-		p_biz_object_id,
-		to_tsvector(''default'', p_text)
-	);
-
-	return 0;
-end;' language 'plpgsql';
-
-
 create or replace function im_search_update (integer, varchar, integer, varchar)
 returns integer as '
 declare
@@ -107,90 +71,100 @@ declare
 	p_text		alias for $4;
 
 	v_object_type_id	integer;
-        ts2_result		varchar;
+	v_exists_p		integer;
 begin
 	select	object_type_id
 	into	v_object_type_id
 	from	im_search_object_types
 	where	object_type = p_object_type;
 
-	update im_search_objects set
-		object_type_id	= v_object_type_id,
-		biz_object_id	= p_biz_object_id,
-		fti		= to_tsvector(''default'', p_text)
-	where
-		object_id	= p_object_id;
+	select	count(*)
+	into	v_exists_p
+	from	im_search_objects
+	where	object_id = p_object_id
+		and object_type_id = v_object_type_id;
+
+	if v_exists_p = 1 then
+		update im_search_objects set
+			object_type_id	= v_object_type_id,
+			biz_object_id	= p_biz_object_id,
+			fti		= to_tsvector(''default'', p_text)
+		where
+			object_id	= p_object_id;
+	else 
+		insert into im_search_objects (
+			object_id,
+			object_type_id,
+			biz_object_id,
+			fti
+		) values (
+			p_object_id,
+			v_object_type_id,
+			p_biz_object_id,
+			to_tsvector(''default'', p_text)
+		);
+	end if;
 
 	return 0;
 end;' language 'plpgsql';
 
 
+-----------------------------------------------------------
+-- im_project
 
-create or replace function im_projects_tsearch_insert () 
+insert into im_search_object_types values (0,'im_project');
+
+create or replace function im_projects_tsearch () 
 returns trigger as '
 begin
-	perform im_search_insert(new.project_id, ''im_project'', 0, new.project_name);
+	perform im_search_update(new.project_id, ''im_project'', 0, 
+		coalesce(new.project_name, '''') || '' '' ||
+		coalesce(new.project_nr, '''') || '' '' ||
+		coalesce(new.project_path, '''') || '' '' ||
+		coalesce(new.description, '''') || '' '' ||
+		coalesce(new.note, '''') || '' '' ||
+		coalesce(new.project_risk, '''')
+	);
 	return new;
 end;' language 'plpgsql';
 
-CREATE TRIGGER im_projects_tsearch_insert_tr 
-BEFORE INSERT ON im_projects
+CREATE TRIGGER im_projects_tsearch_tr 
+BEFORE INSERT or UPDATE
+ON im_projects
 FOR EACH ROW 
-EXECUTE PROCEDURE im_projects_tsearch_insert();
+EXECUTE PROCEDURE im_projects_tsearch();
 
 
 
-create or replace function im_projects_tsearch_update () 
+-----------------------------------------------------------
+-- user
+
+insert into im_search_object_types values (1,'user');
+
+create or replace function users_tsearch () 
 returns trigger as '
+declare
+	v_string	varchar;
 begin
-	perform im_search_update(new.project_id, ''im_project'', 0, new.project_name);
+	select	coalesce(email, '''') || '' '' ||
+		coalesce(url, '''') || '' '' ||
+		coalesce(first_names, '''') || '' '' ||
+		coalesce(last_name, '''') || '' '' ||
+		coalesce(username, '''') || '' '' ||
+		coalesce(screen_name, '''') || '' '' ||
+		coalesce(username, '''')
+	into	v_string
+	from	cc_users
+	where	user_id = new.user_id;
+
+	perform im_search_update(new.user_id, ''user'', 0, v_string);
 	return new;
 end;' language 'plpgsql';
 
-CREATE TRIGGER im_projects_tsearch_update_tr 
-BEFORE UPDATE ON im_projects
+CREATE TRIGGER users_tsearch_tr 
+BEFORE INSERT or UPDATE
+ON users
 FOR EACH ROW 
-EXECUTE PROCEDURE im_projects_tsearch_update();
-
-
-
-
-
-
--- select im_search_insert(9689, 'im_project', 0, 
--- 'Installation of Project/Open at Tigerpond');
-
-
-
-
-CREATE TRIGGER im_search_objects_tr BEFORE UPDATE OR INSERT ON im_search_objects
-FOR EACH ROW EXECUTE PROCEDURE tsearch2(fti, 'projec test');
-
-create or replace function ts2_to_tsvector ( varchar, varchar ) 
-returns varchar as '
-declare
-	ts2_cfg alias for $1;
-	ts2_txt alias for $2;
-	ts2_result varchar;
-begin
-	perform set_curcfg(ts2_cfg);
-	select to_tsvector(ts2_cfg,ts2_txt) into ts2_result;
-	return ts2_result;
-end;' language 'plpgsql';
-
-
-
-create or replace function ts2_to_tsquery ( varchar, varchar ) 
-returns tsquery as '
-declare
-	ts2_cfg alias for $1;
-	ts2_txt alias for $2;
-	ts2_result tsquery;
-begin
-	perform set_curcfg(ts2_cfg);
-	select 1 into ts2_result;
-	select to_tsquery(ts2_cfg,ts2_txt) into ts2_result;
-	return ts2_result;
-end;' language 'plpgsql';
+EXECUTE PROCEDURE users_tsearch();
 
 
