@@ -13,24 +13,19 @@ ad_page_contract {
     q:notnull {[_ search.lt_You_must_specify_some].}
 }
 
-
 set page_title "Search Results"
-
 set package_id [ad_conn package_id]
-
 set package_url [ad_conn package_url]
 set package_url_with_extras $package_url
-
 set context [list]
 set context_base_url $package_url
-
 set user_id [ad_conn user_id]
 set driver [ad_parameter -package_id $package_id FtsEngineDriver]
+
 array set info [acs_sc_call FtsEngineDriver info [list] $driver]
 
 if { [array get info] == "" } {
-    ReturnHeaders
-    ns_write "[_ search.lt_FtsEngineDriver_not_a]"
+    ad_return_complaint 1 [_ search.lt_FtsEngineDriver_not_a]
     return
 } 
 if { $num <= 0} {
@@ -52,6 +47,9 @@ set q [string tolower $q]
 set urlencoded_query [ad_urlencode $q]
 if { $offset < 0 } { set offset 0 }
 set t0 [clock clicks -milliseconds]
+
+# ad_return_complaint 1 [acs_sc_call FtsEngineDriver search [list $q $offset $limit $user_id $df $dt] $driver]
+
 array set result [acs_sc_call FtsEngineDriver search [list $q $offset $limit $user_id $df $dt] $driver]
 set tend [clock clicks -milliseconds]
 
@@ -73,6 +71,7 @@ if { $info(automatic_and_queries_p) && ([lsearch -exact $q and] > 0) } {
 } else {
     set and_queries_notice_p 0
 }
+
 set url_advanced_search ""
 append url_advanced_search "advanced-search?q=${urlencoded_query}"
 if { $num > 0 } { append url_advanced_search "&num=${num}" }
