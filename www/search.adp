@@ -1,17 +1,26 @@
 <master>
 <property name="title">@page_title@</property>
 <property name="context">@context;noquote@</property>
+
+<br>
 <form method=GET action=search>
-  <small>
-    <a href=@url_advanced_search@>#intranet-search-pg.Advanced_Search#</a>
-    <br>
+<table>
+<tr>
+  <td>
+    <%= [im_logo] %>
+  </td>
+  <td>
     <input type=text name=q size=31 maxlength=256 value="@query@">
     <input type=submit value="#intranet-search-pg.Search#" name=t>
-  </small>
+  </td>
+  <td>
+    <small>
+      <a href=@url_advanced_search@>#intranet-search-pg.Advanced_Search#</a><br>
+    </small>
+  </td>
+</tr>
+</table>
 </form>
-<if @t@ eq "Search">
-  <i>#intranet-search-pg.lt_Tip_In_most_browsers_#</i><br><br>
-</if>
 
 	<if @and_queries_notice_p@ eq 1>
       	  <font color=6f6f6f>
@@ -33,11 +42,37 @@
 	</if>
 
 
-@result_html;noquote@
+<table width=100% border=0 cellpadding=0 cellspacing=0>
+<tr>
+  <td bgcolor=#3366cc height=1 >
+  </td>
+</tr>
+</table>
+
+<table width=100% border=0 cellpadding=0 cellspacing=0 bgcolor=#e5ecf9>
+<tr>
+  <td bgcolor=#e5ecf9 nowrap>
+  <font size=+1>&nbsp;<b>
+    Intranet Results
+  </b></font>&nbsp;
+</td>
+<td bgcolor=#e5ecf9 align=right nowrap>
+  <font size=-1>
+    #intranet-search-pg.Results#
+    <b>@low@</b> - <b>@high@</b> 
+    #intranet-search-pg.of_about# 
+    <b>@count@</b>.
+    Search took
+    <b>@elapsed@</b> #intranet-search-pg.seconds#
+  </font>
+</td>
+</tr>
+</table>
+
+<br>
 
 <if @count@ eq 0>
-  Your search - <b>@query@</b> - did not match any documents.
-  <br>#intranet-search-pg.lt_No_pages_were_found_c#<b>@query@</b>".
+  <font size="+1">#intranet-search-pg.lt_No_pages_were_found_c#<b>@query@</b>&quot;</font>.
   <br><br>#intranet-search-pg.Suggestions#
   <ul>
     <li>#intranet-search-pg.lt_Make_sure_all_words_a#
@@ -48,20 +83,56 @@
     </if>
   </ul>
 </if>
+
 <else>
-  <table width=100% bgcolor=3366cc border=0 cellpadding=3 cellspacing=0>
-    <tr><td>
-      <font color=white>
-        #intranet-search-pg.Searched_for_query#
-      </font>
-    </td><td align=right>
-      <font color=white>
-        #intranet-search-pg.Results# <b>@low@-@high@</b> #intranet-search-pg.of_about# <b>@count@</b>#intranet-search-pg.________Search_took# <b>@elapsed@</b> #intranet-search-pg.seconds# 
-      </font>     
-    </td></tr>
+
+  <table>
+  @result_html;noquote@
   </table>
+
   <br clear=all>
+
 </else>
+
+
+<table width=100% border=0 cellpadding=0 cellspacing=0>
+<tr>
+  <td bgcolor=#3366cc>
+  </td>
+</tr>
+</table>
+
+<table width=100% border=0 cellpadding=0 cellspacing=0 bgcolor=#e5ecf9>
+<tr>
+  <td bgcolor=#e5ecf9 colspan=99>&nbsp;</td>
+</tr>
+<tr>
+  <td bgcolor=#e5ecf9 align=center>
+  <form method=GET action=search>
+  <table>
+    <tr>
+      <td>
+        <input type=text name=q size=31 maxlength=256 value="@query@">
+        <input type=submit value="#intranet-search-pg.Search#" name=t>
+      </td>
+    </tr>
+  </table>
+  </form>
+  </td>
+</tr>
+<tr>
+  <td bgcolor=#e5ecf9 colspan=99>&nbsp;</td>
+</tr>
+</table>
+
+<table width=100% border=0 cellpadding=0 cellspacing=0>
+<tr>
+  <td bgcolor=#3366cc>
+  </td>
+</tr>
+</table>
+
+
 
 <if @from_result_page@ lt @to_result_page@>
   <center>
@@ -77,26 +148,4 @@
 	<small><a href=@url_next@><font color=0000cc><b>#intranet-search-pg.Next#</b></font></a></small>
     </if>
   </center>
-</if>
-<if @count@ gt 0>
-  <center>
-    <table border=0 cellpadding=3 cellspacing=0>
-      <tr><td nowrap>
-        <form method=GET action=search>
-          <center>
-            <small>
-              <input type=text name=q size=31 maxlength=256 value="@query@">
-              <input type=submit value=Search>
-            </small>
-          </center>
-        </form>
-      </td></tr>
-    </table>
-  </center>
-
-  <if @stw@ not nil>
-    <center>
-      <font size=-1>#intranet-search-pg.lt_Try_your_query_on_stw#</font></center>
-    </center>
-  </if>
 </if>

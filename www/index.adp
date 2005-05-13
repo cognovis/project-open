@@ -4,13 +4,29 @@
 
 <center>
 <form method=GET action=search>
-  <small>
-  <a href=advanced-search>#intranet-search-pg.Advanced_Search#</a>
-  <br>
-  <input type=text name=q size=80 maxlength=256>
-  <br>
-  <input type=submit value="#intranet-search-pg.Search#" name=t>
-  <input type=submit value="#intranet-search-pg.Feeling_Lucky#" name=t>
-  </small>
+
+<table>
+<tr>
+  <td colspan=1 align=center>
+    <%= [im_logo] %>
+  </td>
+</tr>
+<tr>
+  <td>
+    <input type=text name=q size=40 maxlength=256 value="">
+  </td>
+  <td>
+    <small>
+      <a href=advanced_search>#intranet-search-pg.Advanced_Search#</a><br>
+    </small>
+  </td>
+</tr>
+<tr>
+  <td colspan=1 align=center>
+    <input type=submit value="Search Project/Open" name=t>
+  </td>
+</tr>
+</table>
+
 </form>
 </center>

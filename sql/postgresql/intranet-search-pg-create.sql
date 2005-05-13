@@ -46,10 +46,25 @@ create table im_search_objects (
 				constraint im_search_objects_biz_obj_id_fk
 				references acs_objects
 				on delete cascade,
+				-- Owner may not need to be a "user" (in the case
+				-- of a deleted user). Owners can be asked to give
+				-- permissions to a document even if the document
+				-- is not readable for the searching user.
+	owner_id		integer
+				constraint im_search_objects_owner_id_fk
+				references persons
+				on delete cascade,
+				-- Bitset with one bit for each "profile":
+				-- We use an integer instead of a "bit varying"
+				-- in order to keep the set compatible with Oracle.
+				-- A set bit indicates that object is readable to
+				-- members of the profile independent of the 
+				-- biz_object_id permissions.
+	profile_permissions	integer,
 				-- counter for number of accesses to this object
 				-- either from the permission() proc or from
 				-- reading in the server log file.
-	hit_count		integer,
+	popularity		integer,
 				-- Full Text Index
 	fti			tsvector,
 				-- For tables that don't respect the OpenACS object 
@@ -117,7 +132,7 @@ insert into im_search_object_types values (0,'im_project');
 create or replace function im_projects_tsearch () 
 returns trigger as '
 begin
-	perform im_search_update(new.project_id, ''im_project'', 0, 
+	perform im_search_update(new.project_id, ''im_project'', new.project_id, 
 		coalesce(new.project_name, '''') || '' '' ||
 		coalesce(new.project_nr, '''') || '' '' ||
 		coalesce(new.project_path, '''') || '' '' ||
@@ -157,7 +172,7 @@ begin
 	from	cc_users
 	where	user_id = new.user_id;
 
-	perform im_search_update(new.user_id, ''user'', 0, v_string);
+	perform im_search_update(new.user_id, ''user'', new.user_id, v_string);
 	return new;
 end;' language 'plpgsql';
 

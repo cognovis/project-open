@@ -11,9 +11,34 @@ if { $num == 0 } {
     set num [ad_parameter -package_id $package_id LimitDefault]
 }
 
-set title "Advanced Search"
-set context "advanced search"
-set context_bar [ad_context_bar $title]
+set page_title "Advanced Search"
 
+
+set sql "
+	select
+		sot.object_type_id,
+		aot.object_type,
+		aot.pretty_name as object_type_pretty_name,
+		aot.pretty_plural as object_type_pretty_plural
+	from
+		im_search_object_types sot,
+		acs_object_types aot
+	where
+		sot.object_type = aot.object_type
+"
+
+set objects_html ""
+db_foreach object_type $sql {
+    append objects_html "
+	<tr>
+	  <td>
+	    <input type=checkbox name=type value='$object_type' checked>
+	  </td>
+	  <td>
+	    $object_type_pretty_plural
+	  </td>
+	</tr>
+"
+}
 
 ad_return_template
