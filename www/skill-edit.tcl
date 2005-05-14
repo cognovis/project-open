@@ -131,13 +131,13 @@ db_foreach column_list $sql {
 	<tr$bgcolor([expr $ctr % 2])>
 	  <td>$skill_name</td>
 	  <td>
-[im_category_select "Intranet Experience Level" "claimed.$skill_id" $claimed_experience_id]
+[im_category_select_plain "Intranet Experience Level" "claimed.$skill_id" $claimed_experience_id]
 	  </td>"
 
     if {$admin} { 
         append skill_table "
 	  <td>
-[im_category_select "Intranet Experience Level" "confirmed.$skill_id" $confirmed_experience_id]
+[im_category_select_plain "Intranet Experience Level" "confirmed.$skill_id" $confirmed_experience_id]
 	  </td>\n"
     } else {
         append skill_table "<td>$confirmed_experience</td>\n"
@@ -194,7 +194,7 @@ append skill_table "
 	</tr>
 	<tr>
 	  <td>
-[im_category_select $value_range_category_type "add_skill_id" ""]
+[im_category_select_plain $value_range_category_type "add_skill_id" ""]
 	  </td>
 	  <td colspan=3>
 	    <input type=submit value=\"[_ intranet-freelance.Add]\" name=submit>
