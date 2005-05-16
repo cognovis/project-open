@@ -22,7 +22,7 @@
         <callbacks>
         </callbacks>
         <parameters>
-            <parameter datatype="integer"  min_n_values="1"  max_n_values="1"  name="EditingWordsPerHour"  default="1000" description="How many words does a freelance editor review per hour?"/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="EditingWordsPerHour"  default="1000" description="How many words does a freelance editor review per hour?"/>
         </parameters>
     </version>
 </package>
