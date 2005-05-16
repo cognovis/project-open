@@ -153,10 +153,10 @@ select im_component_plugin__new (
         null,                           -- context_id
         'Users Freelance Component',    -- plugin_name
         'intranet-freelance',           -- package_name
-        'bottom',                       -- location
+        'left',                       -- location
         '/intranet/users/view',         -- page_url
         null,                           -- view_name
-        10,                             -- sort_order
+        90,                             -- sort_order
         'im_freelance_info_component $current_user_id $user_id $return_url [im_opt_val freelance_view_name]'
     );
 

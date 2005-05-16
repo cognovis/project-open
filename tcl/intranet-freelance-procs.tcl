@@ -250,7 +250,7 @@ ad_proc im_freelance_skill_component { current_user_id user_id  return_url} {
 	return "" 
     }
 
-set sql "
+    set sql "
 select
         sk.skill_id,
         im_category_from_id(sk.skill_id) as skill,
@@ -275,26 +275,26 @@ where
         sk.skill_type_id(+) = c.category_id
 order by
         c.category_id
-"
+    "
 
-# ------------- Freelance Skill Table Header -------------------------------
+    # ------------- Freelance Skill Table Header -------------------------------
 
-set ctr 1
-set old_skill_type_id 0
-set skill_header_titles ""
-db_foreach column_list $sql {
-    if {$old_skill_type_id != $skill_type_id} {
-	append skill_header_titles "
+    set ctr 1
+    set old_skill_type_id 0
+    set skill_header_titles ""
+    db_foreach column_list $sql {
+	if {$old_skill_type_id != $skill_type_id} {
+	    append skill_header_titles "
 	<td align=center>
 	  <b>$skill_type</b>
 	</td>"
-	set old_skill_type_id $skill_type_id
+	    set old_skill_type_id $skill_type_id
+	}
+	incr ctr
     }
-    incr ctr
-}
-set colspan $ctr
+    set colspan $ctr
 
-set skill_header_html "
+    set skill_header_html "
 	<table cellpadding=0 cellspacing=2 border=0>
 	<tr>
 	  <td class=rowtitle align=center colspan=$colspan>[_ intranet-freelance.Skills]</td>
@@ -304,12 +304,12 @@ set skill_header_html "
 	</tr>\n"
 
 
-# ------------- Freelance Skill Table Body -------------------------------
-# A horizontal array of tables, each representing freelance skills
+    # ------------- Freelance Skill Table Body -------------------------------
+    # A horizontal array of tables, each representing freelance skills
 
-# Setup the horizontal table start
-#
-set skill_body_html "
+    # Setup the horizontal table start
+    #
+    set skill_body_html "
 	<tr valign=top class=rowodd>
 	  <td>
 	    <table cellpadding=0 cellspacing=1 border=1 width=100%>
@@ -318,21 +318,21 @@ set skill_body_html "
               <td align=center>[_ intranet-freelance.Claim]</td>
             </tr>"
 
-set old_skill_type_id 0
-set primera 1
-set ctr 1
+    set old_skill_type_id 0
+    set primera 1
+    set ctr 1
 
-# I make a comparation between Claimed and Confirmed
-# to generate a "tick" or not if confirmed is correct.
-db_foreach skill_body_html $sql {
+    # I make a comparation between Claimed and Confirmed
+    # to generate a "tick" or not if confirmed is correct.
+    db_foreach skill_body_html $sql {
 
-    if {$primera == 1} { 
-	set old_skill_type_id $skill_type_id
-	set primera 0
-    }
+	if {$primera == 1} { 
+	    set old_skill_type_id $skill_type_id
+	    set primera 0
+	}
 
-    if {$old_skill_type_id != $skill_type_id} {
-	append skill_body_html "
+	if {$old_skill_type_id != $skill_type_id} {
+	    append skill_body_html "
 	</table>
 	</td>
 	<td>
@@ -341,64 +341,64 @@ db_foreach skill_body_html $sql {
               <td>[_ intranet-freelance.Skill]</td>
               <td align=center>[_ intranet-freelance.Claim]</td>
             </tr>"
-	set old_skill_type_id $skill_type_id
-	set ctr 1
-    }
-
-    # Display a tick or a cross, depending whether the claimed
-    # experience is confirmed or not.
-    #
-    if {"" == $confirmed || [string equal "Unconfirmed" $confirmed]} {
-	set confirmation "&nbsp;"
-    } else {
-	if {$claimed_experience_id <= $confirmed_experience_id } {
-	    set confirmation [im_gif tick]
-	} else {
-	    set confirmation [im_gif wrong]
+	    set old_skill_type_id $skill_type_id
+	    set ctr 1
 	}
-    }
 
-    # Allow only administrators of this freelancer to see 
-    # the confirmation level
-    #
-    if {![string equal "" $skill]} {
-	if { $admin } {
-	    set experiences_html_eval "<td align=left>$claimed$confirmation</td></tr>\n\t"
+	# Display a tick or a cross, depending whether the claimed
+	# experience is confirmed or not.
+	#
+	if {"" == $confirmed || [string equal "Unconfirmed" $confirmed]} {
+	    set confirmation "&nbsp;"
 	} else {
-	    set experiences_html_eval "<td align=left>$claimed</td></tr>\n\t"
+	    if {$claimed_experience_id <= $confirmed_experience_id } {
+		set confirmation [im_gif tick]
+	    } else {
+		set confirmation [im_gif wrong]
+	    }
 	}
-    }
 
-    if {[string equal "" $skill]} {
-	append skill_body_html ""
-    } else {
-	append skill_body_html "<tr><td>$skill</td>"
-	append skill_body_html "$experiences_html_eval"
+	# Allow only administrators of this freelancer to see 
+	# the confirmation level
+	#
+#	if {![string equal "" $skill]} {
+#	    if { $admin } {
+		set experiences_html_eval "<td align=left>$claimed$confirmation</td></tr>\n\t"
+#	    } else {
+#		set experiences_html_eval "<td align=left>$claimed</td></tr>\n\t"
+#	    }
+#	}
+	
+	if {[string equal "" $skill]} {
+	    append skill_body_html ""
+	} else {
+	    append skill_body_html "<tr><td>$skill</td>"
+	    append skill_body_html "$experiences_html_eval"
+	}
+	incr ctr
     }
-    incr ctr
-}
-append skill_body_html "</table></td></tr>\n\t"
-
-if { $admin } {
-    # ------------  we put buttons for each skill for change its.
+    append skill_body_html "</table></td></tr>\n\t"
     
-    set languages_butons_html "<tr align=center>"
-    set old_skill_type_id 0
-    db_foreach column_list $sql {
-	if {$old_skill_type_id != $skill_type_id} {
-        append languages_butons_html "
+    if { $write } {
+	# ------------  we put buttons for each skill for change its.
+	
+	set languages_butons_html "<tr align=center>"
+	set old_skill_type_id 0
+	db_foreach column_list $sql {
+	    if {$old_skill_type_id != $skill_type_id} {
+		append languages_butons_html "
 <td><form method=POST action=/intranet-freelance/skill-edit>
 [export_form_vars user_id skill_type_id return_url]
 <input type=submit value=Edit></form></td>"
-        set old_skill_type_id $skill_type_id
-        }
-   }
-} else {
-   set languages_butons_html ""
-}
+                set old_skill_type_id $skill_type_id
+            }
+       }
+    } else {
+        set languages_butons_html ""
+    }
 
-append languages_butons_html "</tr>\n\t"
-append languages_html "
+    append languages_butons_html "</tr>\n\t"
+    append languages_html "
 $skill_header_html\n
 $skill_body_html\n
 $languages_butons_html

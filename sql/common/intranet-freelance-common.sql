@@ -214,20 +214,20 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 extra_select, extra_where, sort_order, visible_for) values (5108,51,NULL,'Recruiting Test Result',
 '$rec_test_result','','',8,'im_permission $user_id view_freelancers');
 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (5112,51,NULL,'Trans Rate',
-'$translation_rate','','',12,
-'im_permission $user_id view_freelancers');
+-- insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+-- extra_select, extra_where, sort_order, visible_for) values (5112,51,NULL,'Trans Rate',
+-- '$translation_rate','','',12,
+-- 'im_permission $user_id view_freelancers');
 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (5114,51,NULL,'Editing Rate',
-'$editing_rate','','',14,
-'im_permission $user_id view_freelancers');
+-- insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+-- extra_select, extra_where, sort_order, visible_for) values (5114,51,NULL,'Editing Rate',
+-- '$editing_rate','','',14,
+-- 'im_permission $user_id view_freelancers');
 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (5116,51,NULL,'Hourly Rate',
-'$hourly_rate','','',16,
-'im_permission $user_id view_freelancers');
+-- insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+-- extra_select, extra_where, sort_order, visible_for) values (5116,51,NULL,'Hourly Rate',
+-- '$hourly_rate','','',16,
+-- 'im_permission $user_id view_freelancers');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (5118,51,NULL,'Bank Account',
