@@ -134,6 +134,34 @@ if {[im_permission $user_id "view_users_all"]} {
 
 set sql "
 	select
+		'asfdasfsadf' as name,
+		rank(so.fti, :q::tsquery) as rank,
+		fti as full_text_index,
+		'asfdasdfasfd' as url,
+		so.object_id,
+		'im_forum_topic' as object_type,
+		'Forum' as object_type_pretty_name,
+		so.biz_object_id,
+		so.hit_count
+	from
+		im_search_objects so,
+		acs_object_types aot,
+		im_search_object_types sot
+		left outer join (
+			select	*
+			from	im_biz_object_urls
+			where	url_type = 'view'
+		) bou on (sot.object_type = bou.object_type)
+	where
+		so.object_type_id = sot.object_type_id
+		and sot.object_type = aot.object_type
+		and so.fti @@ :q::tsquery
+	order by
+		rank DESC
+"
+
+set sql "
+	select
 		acs_object__name(so.object_id) as name,
 		rank(so.fti, :q::tsquery) as rank,
 		fti as full_text_index,
@@ -153,20 +181,17 @@ set sql "
 			where	url_type = 'view'
 		) bou on (sot.object_type = bou.object_type),
 		(
-			select	project_id as object_id,
-				'im_project' as object_type
+			select	project_id as object_id
 			from	im_projects p
 			where	1=1
 				$project_perm_sql
 		    UNION
-			select	company_id as object_id,
-				'im_company' as object_type
+			select	company_id as object_id
 			from	im_companies c
 			where	1=1
 				$company_perm_sql
 		    UNION
-			select	person_id as object_id,
-				'user' as object_type
+			select	person_id as object_id
 			from	persons p
 			where	1=1
 				$user_perm_sql
@@ -175,12 +200,10 @@ set sql "
 		so.object_type_id = sot.object_type_id
 		and sot.object_type = aot.object_type
 		and so.biz_object_id = readable_biz_objs.object_id
-		and sot.object_type = readable_biz_objs.object_type
 		and so.fti @@ :q::tsquery
 	order by
 		rank DESC
 "
-
 
 set low 0
 set high 0
@@ -231,33 +254,6 @@ set from_result_page 1
 set current_result_page [expr ($offset / $results_per_page) + 1]
 set to_result_page [expr ceil(double($count) / double($results_per_page))]
 
-ad_return_template
-return
-
-
-
-
-template::multirow create searchresult title_summary txt_summary url_one
-
-for { set __i 0 } { $__i < [expr $high - $low +1] } { incr __i } {
-
-    set object_id [lindex $result(ids) $__i]
-    set object_type [acs_object_type $object_id]
-    array set datasource [acs_sc_call FtsContentProvider datasource [list $object_id] $object_type]
-    search_content_get txt $datasource(content) $datasource(mime) $datasource(storage_type)
-    set title_summary [acs_sc_call FtsEngineDriver summary [list $q $datasource(title)] $driver]
-    set txt_summary [acs_sc_call FtsEngineDriver summary [list $q $txt] $driver]
-    set url_one [acs_sc_call FtsContentProvider url [list $object_id] $object_type]
-    
-    # Replace the "index" with ETP as this is not needed for accessing the page
-    if {[string equal $object_type "etp_page_revision"]} {
-	set url_one [string trimright $url_one "index"]
-    }
-	template::multirow append searchresult $title_summary $txt_summary $url_one
-}
-
-
-
 set url_previous ""
 set url_next ""
 append url_previous "search?q=${urlencoded_query}"
@@ -273,28 +269,4 @@ if { $results_per_page > 0 } {
     append url_next "&results_per_page=$results_per_page"
 }
 
-
-set items [list]
-set links [list]
-set values [list]
-for { set __i $from_result_page } { $__i <= $to_result_page} { incr __i } {
-    set link ""
-    append link "search?q=${urlencoded_query}"
-    if { $__i > 1 } { append link "&offset=[expr ($__i - 1) * $limit]" }
-    if { $results_per_page > 0 } { append link "&results_per_page=$results_per_page" }
-
-    lappend items $__i
-    lappend links $link
-    lappend values $__i
-}
-
-set search_the_web [ad_parameter -package_id $package_id SearchTheWeb]
-if [llength $search_the_web] {
-    set stw ""
-    foreach {url site} $search_the_web {
-	append stw "<a href=[format $url $urlencoded_query]>$site</a> "
-    }
-}
-
-set choice_bar [search_choice_bar $items $links $values $current_result_page]
 

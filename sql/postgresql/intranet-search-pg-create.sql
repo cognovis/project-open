@@ -30,8 +30,6 @@ create table im_search_object_types (
 --
 create table im_search_objects (
 	object_id		integer
-				constraint im_search_objects_object_id_fk
-				references acs_objects
 				on delete cascade,
 				-- may include "object types" outside of OpenACS
 				-- that are not in the "acs_object_types" table.
@@ -182,4 +180,78 @@ ON users
 FOR EACH ROW 
 EXECUTE PROCEDURE users_tsearch();
 
+
+
+-----------------------------------------------------------
+-- im_forum_topics
+
+create or replace function inline_0 () 
+returns integer as '
+declare
+	v_exists_p	varchar;
+begin
+	select	count(*)
+	into	v_exists_p
+	from	acs_object_types
+	where	object_type = ''im_forum_topic'';
+
+	if 0 = v_exists_p then
+
+	    perform acs_object_type__create_type (
+        	''im_forum_topic'',	-- object_type
+        	''Forum Topic'',	-- pretty_name
+        	''Forum Topics'',	-- pretty_plural
+        	''acs_object'',   	-- supertype
+        	''im_forum_topics'',	-- table_name
+        	''material_id'',	-- id_column
+        	''intranet-forum'',	-- package_name
+        	''f'',			-- abstract_p
+        	null,			-- type_extension_table
+        	''im_forum_topic.name''	-- name_method
+	    );
+
+	end if;
+
+	return 0;
+end;' language 'plpgsql';
+
+select inline_0();
+drop function inline_0();
+
+insert into im_search_object_types values (2,'im_forum_topic');
+
+
+create or replace function im_forum_topics_tsearch () 
+returns trigger as '
+declare
+	v_string	varchar;
+begin
+	select	coalesce(topic_name, '''') || '' '' ||
+		coalesce(subject, '''') || '' '' ||
+		coalesce(message, '''')
+	into	v_string
+	from	im_forum_topics
+	where	topic_id = new.topic_id;
+
+	perform im_search_update(
+		new.topic_id, 
+		''im_forum_topic'', 
+		new.object_id, 
+		v_string
+	);
+	return new;
+end;' language 'plpgsql';
+
+CREATE TRIGGER im_forum_topics_tsearch_tr 
+BEFORE INSERT or UPDATE
+ON im_forum_topics
+FOR EACH ROW 
+EXECUTE PROCEDURE im_forum_topics_tsearch();
+
+
+
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_forum_topic','view','/intranet-forum/view?topic_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_forum_topic','edit','/intranet-forum/new?topic_id=');
 
