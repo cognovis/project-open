@@ -137,7 +137,8 @@ where
 array set provider_matrix [im_trans_trados_matrix $provider_id]
 
 # How many words does a translator edit per hour?
-set editing_words_per_hour 1000
+set editing_words_per_hour [ad_parameter -package_id [im_package_freelance_invoices_id] "EditingWordsPerHour" "" 1000]
+
 
 # Select out the sum of units from the provider translation
 # jobs.
