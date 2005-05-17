@@ -436,6 +436,7 @@ declare
         v_freelancers           integer;
         v_proman                integer;
         v_admins                integer;
+	v_reg_users		integer;
 BEGIN
 
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
@@ -445,6 +446,8 @@ BEGIN
     select group_id into v_employees from groups where group_name = ''Employees'';
     select group_id into v_companies from groups where group_name = ''Customers'';
     select group_id into v_freelancers from groups where group_name = ''Freelancers'';
+    select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+
 
     select menu_id
     into v_main_menu
@@ -474,6 +477,7 @@ BEGIN
     PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
     PERFORM acs_permission__grant_permission(v_menu, v_companies, ''read'');
     PERFORM acs_permission__grant_permission(v_menu, v_freelancers, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_reg_users, ''read'');
 
     return 0;
 end;' language 'plpgsql';
