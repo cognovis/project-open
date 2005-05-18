@@ -26,27 +26,6 @@
 </form>
 
 
-
-	<if @and_queries_notice_p@ eq 1>
-      	  <font color=6f6f6f>
-          #intranet-search-pg.The#
-          [<a href=help/basics#and>#intranet-search-pg.details#</a>]<br>
-        </font>
-	</if>
-	<if @nstopwords@ eq 1>
-        <font color=6f6f6f>
-          #intranet-search-pg.lt_bstopwordsb_is_a_very#
-          [<a href=help/basics#stopwords>#intranet-search-pg.details#</a>]<br>
-        </font>
-	</if>
-	<if @nstopwords@ gt 1>
-      	  <font color=6f6f6f>
-          #intranet-search-pg.lt_The_following_words_a# <b>@stopwords@</b>.
-          [<a href=help/basics#stopwords>#intranet-search-pg.details#</a>]<br>
-      	  </font>
-	</if>
-
-
 <table width=100% border=0 cellpadding=0 cellspacing=0>
 <tr>
   <td bgcolor=#3366cc height=1 >
@@ -64,9 +43,16 @@
 <td bgcolor=#e5ecf9 align=right nowrap>
   <font size=-1>
     #intranet-search-pg.Results#
-    <b>@low@</b> - <b>@high@</b> 
+    <b>@offset@</b> - <b><%= [expr $offset + $results_per_page] %></b> 
+
+<if @count@ eq @limit@>
+    of more then 
+</if>
+<else>
     #intranet-search-pg.of_about# 
-    <b>@count@</b>.
+</else>
+
+    <b>@num_results@</b>.
     Search took
     <b>@elapsed@</b> #intranet-search-pg.seconds#
   </font>
@@ -98,6 +84,11 @@
   <br clear=all>
 
 </else>
+
+
+<center>
+<h3>Result Page: @result_page_html;noquote@</h3>
+<center>
 
 
 <table width=100% border=0 cellpadding=0 cellspacing=0>
@@ -136,7 +127,6 @@
   </td>
 </tr>
 </table>
-
 
 
 <if @from_result_page@ lt @to_result_page@>

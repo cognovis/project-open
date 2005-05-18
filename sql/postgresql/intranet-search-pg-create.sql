@@ -29,8 +29,7 @@ create table im_search_object_types (
 -- The main search table with Full Text Index.
 --
 create table im_search_objects (
-	object_id		integer
-				on delete cascade,
+	object_id		integer,
 				-- may include "object types" outside of OpenACS
 				-- that are not in the "acs_object_types" table.
 	object_type_id		integer
