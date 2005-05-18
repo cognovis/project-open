@@ -4,6 +4,7 @@
 
 <br>
 <form method=GET action=search>
+
 <table>
 <tr>
   <td>
@@ -13,14 +14,18 @@
     <input type=text name=q size=31 maxlength=256 value="@query@">
     <input type=submit value="#intranet-search-pg.Search#" name=t>
   </td>
-  <td>
-    <small>
-      <a href=@url_advanced_search@>#intranet-search-pg.Advanced_Search#</a><br>
-    </small>
+  <td align=center>
+        <table cellspacing=0 cellpadding=0>
+        <tr><td colspan=2>Search for specific object types:</td></tr>
+        @objects_html;noquote@
+        </table>
   </td>
 </tr>
 </table>
+
 </form>
+
+
 
 	<if @and_queries_notice_p@ eq 1>
       	  <font color=6f6f6f>

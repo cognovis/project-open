@@ -38,6 +38,7 @@ ad_page_contract {
     {t:trim ""}
     {offset:integer 0}
     {results_per_page:integer 0}
+    {type:multiple "all"}
 } -errors {
     q:notnull {[_ search.lt_You_must_specify_some].}
 }
@@ -65,6 +66,42 @@ set q [string tolower $q]
 set urlencoded_query [ad_urlencode $q]
 if { $offset < 0 } { set offset 0 }
 set t0 [clock clicks -milliseconds]
+
+
+# -----------------------------------------------------------
+# Prepare the list of searchable object types
+# -----------------------------------------------------------
+
+set sql "
+	select
+		sot.object_type_id,
+		aot.object_type,
+		aot.pretty_name as object_type_pretty_name,
+		aot.pretty_plural as object_type_pretty_plural
+	from
+		im_search_object_types sot,
+		acs_object_types aot
+	where
+		sot.object_type = aot.object_type
+"
+
+set objects_html ""
+db_foreach object_type $sql {
+    set checked ""
+    if {[string equal $type "all"] || [lsearch $type $object_type] >= 0} {
+	set checked " checked"
+    }
+    append objects_html "
+	<tr>
+	  <td>
+	    <input type=checkbox name=type value='$object_type' $checked>
+	  </td>
+	  <td>
+	    $object_type_pretty_plural
+	  </td>
+	</tr>
+"
+}
 
 
 # -----------------------------------------------------------
@@ -128,6 +165,20 @@ if {[im_permission $user_id "view_users_all"]} {
         set user_perm_sql ""
 }
 
+
+# -----------------------------------------------------------
+# Build a suitable select for object types
+# -----------------------------------------------------------
+
+foreach t $type { lappend types "'$t'"} 
+set object_type_where "object_type in ([join $types ","])"
+if {[string equal "all" $type]} {
+    set object_type_where "1=1"
+}
+
+# ad_return_complaint 1 $object_type_where
+
+
 # -----------------------------------------------------------
 # Main SQL
 # -----------------------------------------------------------
@@ -174,7 +225,10 @@ set sql "
 	from
 		im_search_objects so,
 		acs_object_types aot,
-		im_search_object_types sot
+		(	select	*
+			from	im_search_object_types 
+			where	$object_type_where
+		) sot
 		left outer join (
 			select	*
 			from	im_biz_object_urls
