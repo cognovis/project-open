@@ -1093,7 +1093,7 @@ ad_proc -public im_cost_type_select { select_name { default "" } { super_type_id
 
 
 
-ad_proc -public im_cost_status_select { select_name { default "" } } {
+ad_proc -public im_cost_status_select { {-translate_p 1}  select_name { default "" } } {
     Returns an html select box named $select_name and defaulted to
     $default with a list of all the cost status_types in the system
 } {
@@ -1106,12 +1106,19 @@ ad_proc -public im_cost_status_select { select_name { default "" } } {
     }
 
     foreach option $options {
+
+        if { $translate_p } {
+            set text [_ intranet-core.[lang::util::suggest_key [lindex $option 0]]]
+        } else {
+            set text [lindex $option 0]
+        }
+	
 	set selected ""
 	if { [string equal $default [lindex $option 1]]} {
 	    set selected " selected"
 	}
 	append result "\t<option value=\"[util_quote_double_quotes [lindex $option 1]]\" $selected>"
-	append result "[lindex $option 0]</option>\n"
+	append result "$text</option>\n"
 
     }
 
