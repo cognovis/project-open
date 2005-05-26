@@ -344,7 +344,7 @@ set filter_html "
 <tr valign=top>
   <td valign=top>
 
-	<form method=get action='/intranet-cost/costs/cost-action'>
+	<form method=get action='/intranet-cost/list'>
 	[export_form_vars start_idx order_by how_many view_name include_subcosts_p letter]
 	<table border=0 cellpadding=1 cellspacing=1>
 	  <tr> 
