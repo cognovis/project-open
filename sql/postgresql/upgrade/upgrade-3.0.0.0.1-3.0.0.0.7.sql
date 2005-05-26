@@ -1,7 +1,7 @@
 
 
 insert into im_views (view_id, view_name, visible_for, view_type_id)
-values (3, 'company_cvs', 'view_companies', 1400);
+values (3, 'company_csv', 'view_companies', 1400);
 
 
 --
