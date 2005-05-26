@@ -695,6 +695,8 @@ ad_proc -public im_forum_component {
 
     set date_format "YYYY-MM-DD"
 
+    set user_id [ad_get_user_id]
+
     if {0 == $max_entries_per_page && [string equal "home" $forum_type]} {
 	set max_entries_per_page [ad_parameter -package_id [im_package_forum_id] "ForumItemsPerHomePage" "" 10]
     }
@@ -797,6 +799,7 @@ ad_proc -public im_forum_component {
 
     ns_set delkey $bind_vars "forum_order_by"
     ns_set delkey $bind_vars "forum_start_idx"
+    ns_set delkey $bind_vars "user_id"
     set params [list]
     set len [ns_set size $bind_vars]
     for {set i 0} {$i < $len} {incr i} {
