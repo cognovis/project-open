@@ -922,6 +922,21 @@ order by
     # ----------------- Hard Costs HTML -------------
     # Hard "real" costs such as invoices, bills and timesheet
 
+    # Add numbers to the im_projects table "cache" fields
+    if {[db_column_exists im_projects cost_invoices_cache]} {
+	db_dml update_projects "
+		update im_projects set
+			cost_invoices_cache = $subtotals([im_cost_type_invoice]$currency),
+			cost_bills_cache = $subtotals([im_cost_type_bill]$currency),
+			cost_timesheet_logged_cache = $subtotals([im_cost_type_timesheet]$currency),
+			cost_quotes_cache = $subtotals([im_cost_type_quote]$currency),
+			cost_purchase_orders_cache = $subtotals([im_cost_type_po]$currency),
+			cost_timesheet_planned_cache = 0
+		where
+			project_id = :project_id
+        "
+    }
+
     set hard_cost_html "
 <table>
   <tr class=rowtitle>

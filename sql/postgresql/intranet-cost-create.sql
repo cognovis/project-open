@@ -10,6 +10,23 @@
 -- refer to http://www.project-open.com/modules/<module-key>
 
 
+
+-------------------------------------------------------------
+-- Add "Cache" fields to im_projects
+--
+-- Add fields to store results from adding up costs in
+-- the "Finance" view of a project.
+
+alter table im_projects add     cost_quotes_cache		numeric(12,2);
+alter table im_projects add     cost_invoices_cache		numeric(12,2);
+alter table im_projects add     cost_timesheet_planed_cache	numeric(12,2);
+
+alter table im_projects add     cost_purchase_orders_cache	numeric(12,2);
+alter table im_projects add     cost_bills_cache		numeric(12,2);
+alter table im_projects add     cost_timesheet_logged_cache	numeric(12,2);
+
+
+
 -------------------------------------------------------------
 -- "Cost Centers"
 --
@@ -1336,6 +1353,22 @@ BEGIN
 
         return v_name;
 end;' language 'plpgsql';
+
+
+create or replace function im_cost_center_name_from_id (integer)
+returns varchar as '
+DECLARE
+        p_id	alias for $1;
+        v_name	varchar(100);
+BEGIN
+        select	cc.cost_center_name
+        into	v_name
+        from	im_cost_centers cc
+        where	cost_center_id = p_id;
+
+        return v_name;
+end;' language 'plpgsql';
+
 
 
 create or replace function im_cost_nr_from_id (integer)
