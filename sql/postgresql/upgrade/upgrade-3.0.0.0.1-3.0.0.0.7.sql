@@ -1,87 +1,107 @@
 
 
-insert into im_views (view_id, view_name, visible_for, view_type_id)
-values (3, 'company_csv', 'view_companies', 1400);
+create or replace function im_project_nr_from_id (integer)
+returns varchar as '
+DECLARE
+        p_project_id	alias for $1;
+        v_name		varchar(100);
+BEGIN
+        select project_nr
+        into v_name
+        from im_projects
+        where project_id = p_project_id;
+
+        return v_name;
+end;' language 'plpgsql';
 
 
+
+-- -------------------------------------------------------
+-- Setup an invisible Companies Admin menu 
+-- This can be extended later by other modules
+-- with more Admin Links
 --
-delete from im_view_columns where column_id >= 300 and column_id <= 399;
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        -- Menu IDs
+        v_menu                  integer;
+	v_admin_menu		integer;
+	v_main_menu		integer;
+BEGIN
+    select menu_id
+    into v_main_menu
+    from im_menus
+    where label = ''companies'';
+
+    -- Main admin menu - just an invisible top-menu
+    -- for all admin entries links under Companies
+    v_admin_menu := im_menu__new (
+        null,                   -- p_menu_id
+        ''acs_object'',         -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+        ''intranet-core'',      -- package_name
+        ''companies_admin'',    -- label
+        ''Companies Admin'',    -- name
+        ''/intranet-core/'',    -- url
+        90,                     -- sort_order
+        v_main_menu,            -- parent_menu_id
+        ''0''                   -- p_visible_tcl
+    );
+
+    return 0;
+end;' language 'plpgsql';
+
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+-- -------------------------------------------------------
+-- Setup an invisible Projects Admin menu 
+-- This can be extended later by other modules
+-- with more Admin Links
 --
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(301,3,NULL,'Company Name','$company_name','','',1,'');
 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(303,3,NULL,'Company Path','$company_path','','',3,'');
+create or replace function inline_0 ()
+returns integer as '
+declare
+        -- Menu IDs
+        v_menu                  integer;
+	v_admin_menu		integer;
+	v_main_menu		integer;
+BEGIN
+    select menu_id
+    into v_main_menu
+    from im_menus
+    where label = ''projects'';
 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(305,3,NULL,'Company Type','$company_type','','',5,'');
+    -- Main admin menu - just an invisible top-menu
+    -- for all admin entries links under Projects
+    v_admin_menu := im_menu__new (
+        null,                   -- p_menu_id
+        ''acs_object'',         -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+        ''intranet-core'',      -- package_name
+        ''projects_admin'',    -- label
+        ''Projects Admin'',    -- name
+        ''/intranet-core/'',    -- url
+        90,                     -- sort_order
+        v_main_menu,            -- parent_menu_id
+        ''0''                   -- p_visible_tcl
+    );
 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(307,3,NULL,'Company Status','$company_status','','',7,'');
+    return 0;
+end;' language 'plpgsql';
 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(309,3,NULL,'Contact Email','$company_contact_email','','',9,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(311,3,NULL,'Accounting Email','$accounting_contact_email','','',9,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(315,3,NULL,'Referral Source','$referral_source','','',15,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(317,3,NULL,'Note','$note','','',17,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(319,3,NULL,'Annual Revenue','$annual_revenue','','',19,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(321,3,NULL,'Billable','$billable_p','','',21,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(323,3,NULL,'VAT Nr','$vat_number','','',23,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(325,3,NULL,'Phone','$phone','','',25,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(327,3,NULL,'Fax','$fax','','',27,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(329,3,NULL,'Address Line1','$address_line1','','',29,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(331,3,NULL,'Address Line2','$address_line2','','',31,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(333,3,NULL,'City','$address_city','','',33,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(335,3,NULL,'Postal Code','$address_postal_code','','',35,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(337,3,NULL,'Country Code','$address_country_code','','',37,'');
-
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values 
-(339,3,NULL,'Note','"$company_note"','','',39,'');
-
+select inline_0 ();
+drop function inline_0 ();
 
