@@ -47,7 +47,7 @@ db_foreach menu_select $menu_select_sql {
     if {$company_id} { append url "&company_id=$company_id" }
     if {$project_id} { append url "&project_id=$project_id" }
     regsub -all " " $name "_" name_key
-    append new_list_html "<li><a href=\"$url\">[_ intranet-cost.$name_key]</a></li>\n"
+    append new_list_html "<li><a href=\"$url\">[_ $package_name.$name_key]</a></li>\n"
 }
 
 
