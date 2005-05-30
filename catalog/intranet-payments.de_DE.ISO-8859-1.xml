@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-payments" package_version="3.0.0.0.4" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="Add_New">Neu</msg>
+  <msg key="Add_payment">Neue Zahlung</msg>
+</message_catalog>
