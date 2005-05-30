@@ -62,7 +62,37 @@ ad_proc -public im_filestorage_find_cmd {} {
     Returns the Unix/Linux/CygWin find command as specified in the
     intranet-core.FindCmd command
 } {
-    # Check the parameter
+
+    # -------------------------------------------------
+    # First check for a default value for each platform:
+    global tcl_platform
+
+    set find_cmd ""
+    set platform [lindex $tcl_platform(platform) 0]
+    switch $platform {
+        unix { 
+	    # Let's use a Linux sefault
+	    set find_cmd "/usr/bin/find" 
+	}
+        windows { 
+	    # Windows CygWin default
+	    set find_cmd "/bin/find" 
+	}
+        default { 
+	    # Probably some kind of Unix derivate
+	    set find_cmd "/usr/bin/find" 
+	}
+    }
+
+    if { ![catch {
+	# Just run find on itself - this should return exactly one file
+        set file_list [exec $find_cmd $find_cmd -maxdepth 0]
+    } err_msg]} { 
+	return $find_cmd
+    }
+
+    # -------------------------------------------------
+    # Check for an explicit the parameter
     set find_cmd [parameter::get -package_id [im_package_core_id] -parameter "FindCmd" -default "/bin/find"]
 
     # Make sure it works
