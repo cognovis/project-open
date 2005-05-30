@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-freelance-invoices" package_version="3.0.0.1.0" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="New_Provider_Invoice_from_Translation_Tasks">New Provider Invoice from Translation Tasks</msg>
+  <msg key="New_Purchase_Order_from_Translation_Tasks">New Purchase Order from Translation Tasks</msg>
+</message_catalog>
