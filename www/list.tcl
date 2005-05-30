@@ -201,8 +201,8 @@ switch $order_by {
     "Name" { set order_by_clause "order by cost_name DESC" }
     "Type" { set order_by_clause "order by cost_type" }
     "Project" { set order_by_clause "order by project_nr" }
-    "Provider" { set order_by_clause "order by provider_name" }
-    "Client" { set order_by_clause "order by company_name" }
+    "Provider" { set order_by_clause "order by prov.company_name" }
+    "Client" { set order_by_clause "order by cust.company_name" }
     "Due Date" { set order_by_clause "order by due_date_calculated" }
     "Amount" { set order_by_clause "order by c.amount DESC" }
     "Paid" { set order_by_clause "order by paid_amount" }
