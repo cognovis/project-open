@@ -8,12 +8,12 @@
 -- @author pepels@gmail.com
 
 -----------------------------------------------------------
--- Tasks, Incidents, News and Discussions (TIND)
 --
--- ftscontenprovider support for projects in intranet-forum
------------------------------------------------------------
--- Topics
---
+
+
+select im_menu__del_module('intranet-search-pg');
+select im_component_plugin__del_module('intranet-search-pg');
+
 
 select acs_sc_impl__delete(
            'FtsContentProvider',                -- impl_contract_name
