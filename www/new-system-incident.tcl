@@ -143,7 +143,7 @@ Error Info:
 $error_info"
 
 set priority 3
-set due [db_string tomorrow "select sysdate+1 from dual"]
+set due [db_string tomorrow "select to_date(to_char(now(), 'J'), 'J') + 1 from dual"]
 
 
 set asignee_id $system_owner_id
@@ -163,7 +163,7 @@ INSERT INTO im_forum_topics (
         asignee_id, due_date
 ) VALUES (
         :topic_id, :report_object_id, :parent_id, :topic_type_id, :topic_status_id,
-        sysdate, :owner_id, :scope, :subject, :message, :priority,
+        now(), :owner_id, :scope, :subject, :message, :priority,
         :asignee_id, :due
 )"
 } on_error {
