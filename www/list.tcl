@@ -150,9 +150,9 @@ if { ![empty_string_p $cost_status_id] && $cost_status_id > 0 } {
 }
 if { ![empty_string_p $cost_type_id] && $cost_type_id != 0 } {
     lappend criteria "c.cost_type_id in (
-		select distinct	h.child_id
+		select distinct h.child_id
 		from	im_category_hierarchy h
-		where	(child_id=:cost_type_id or parent_id=:cost_type_id)
+		where	(h.child_id = :cost_type_id or h.parent_id = :cost_type_id)
 	)"
 }
 if {$customer_id} {
@@ -296,7 +296,7 @@ if {[string equal $letter "ALL"]} {
     # query results
     set total_in_limited [db_string costs_total_in_limited "
 	select count(*) 
-        from im_costs p, im_companies cust
+        from im_costs c, im_companies cust
         where 1=1 $where_clause"]
 
     set selection "select z.* from ($limited_query) z $order_by_clause"
