@@ -32,6 +32,7 @@
   <msg key="lt_Please_back_up_and_se">Bitte gehen sie zurück und wählen sie die Dateien oder Verzeichnise, die gelöscht werden sollen.</msg>
   <msg key="lt_Please_backup_select_">Bitte gehen sie zurück, wählen sie ein Verzeichnis und betätigen sie die Taste %im_gif_plus_9%.</msg>
   <msg key="lt_please_backup_up_and_">Bitte gehen sie zurück und wählen sie ein Unterverzeichnis.</msg>
+  <msg key="lt_Please_enter_the_name">Bitten den Verzeichnisnamen eingeben</msg>
   <msg key="lt_Remove_permissions_fr">Zugriffsberechtigungen verweigern</msg>
   <msg key="lt_Unable_to_compress_th">Das Verzeichniss kann nicht komprimiert werden.</msg>
   <msg key="lt_Unable_to_get_file_li">Es war nicht möglich, die Liste der Dateien im Verzeichnisses '%find_path%' zu lesen.</msg>
@@ -43,6 +44,7 @@
   <msg key="New_Folder">Neues Verzeichnis</msg>
   <msg key="No_files_found">Keine Dateien gefunden</msg>
   <msg key="Nothing_Selected">Nichts angewählt</msg>
+  <msg key="Project_Manager">Projektmanager</msg>
   <msg key="Read">Lesen</msg>
   <msg key="Senior_Managers">Geschäftsführung</msg>
   <msg key="Submit_and_Upload">Abschicken und hochladen</msg>
