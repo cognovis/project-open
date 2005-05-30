@@ -70,6 +70,9 @@
   <msg key="New_Invoice">New Invoice</msg>
   <msg key="New_Price">New Price</msg>
   <msg key="New_Purchase_Order">New Purchase Order</msg>
+  <msg key="New_Trans_Invoice">New Trans Invoice</msg>
+  <msg key="New_Translation_Customer_Invoice">New Translation Customer Invoice</msg>
+  <msg key="New_Translation_Quote">New Translation Quote</msg>
   <msg key="Next_Page">Next Page</msg>
   <msg key="No">No</msg>
   <msg key="No_company_found">No company found</msg>
