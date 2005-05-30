@@ -176,6 +176,16 @@ ad_proc -public im_forum_potential_asignees {user_id object_id} {
     set employee_group_id [im_employee_group_id]
     set admins [db_list get_admins "select member_id from group_distinct_member_map where group_id = :admin_group_id"]
 
+    if {![llength $admins]} {
+        ad_return_complaint 1 "Bad System Configuration:<br>
+        The list of system administrators is empty.<br>
+        However, this list is necessary to determine certain default
+        permissions in the Forum system.<br>
+        Please contact your system administrator and ask him to add
+        atleast one user to the group P/O Admins."
+	return
+    }
+
     set object_admins [im_biz_object_admin_ids $object_id]
 
     # Avoid empty select list: Add the system admins to the
