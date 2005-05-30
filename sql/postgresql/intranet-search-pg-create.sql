@@ -7,8 +7,13 @@
 --
 -- @author frank.bergmann@project-open.com
 
--- FIXME need to load tsearch2.sql from postgresql/share/contrib
--- (on debian /usr/share/postgresql/contrib)
+-- Load tsearch2.sql from postgresql/share/contrib
+-- This command may fail in Linux/Unix distributions
+-- different from Debian Woody and SuSE 9.2.
+-- In these cases please source the file manually and
+-- remove the line from this file for a local install.
+
+\i /usr/share/postgresql/contrib/tsearch2.sql
 
 
 -- "Abbreviation" of object_type for search purposes -
@@ -134,8 +139,7 @@ begin
 		coalesce(new.project_nr, '''') || '' '' ||
 		coalesce(new.project_path, '''') || '' '' ||
 		coalesce(new.description, '''') || '' '' ||
-		coalesce(new.note, '''') || '' '' ||
-		coalesce(new.project_risk, '''')
+		coalesce(new.note, '''')
 	);
 	return new;
 end;' language 'plpgsql';
@@ -253,4 +257,23 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_forum_topic','view','/intranet-forum/view?topic_id=');
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_forum_topic','edit','/intranet-forum/new?topic_id=');
+
+
+
+
+-----------------------------------------------------------
+-- Index the existing business objects
+
+update users
+set username = username
+;
+
+update im_projects
+set project_type_id = project_type_id
+;
+
+
+update im_forum_topics
+set scope = scope
+;
 
