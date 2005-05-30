@@ -24,6 +24,7 @@
   <msg key="lt_Employees_without_sup">Mitarbeiter ohne Vorgesetzte</msg>
   <msg key="lt_Error_creating_a_new_">Fehler bei der erstellung neuer wiederkehrenden Kosten für Mitarbeiter \#%employee_id%: </msg>
   <msg key="lt_Error_inserting_emplo">Fehler beim Eintrag der Mitarbeiter Kosteninformation:</msg>
+  <msg key="lt_For_the_org_chart_pag">Das Organigramm erwartet einen CEO, and den alle anderen Mitarbeiter direkt oder indirekt berichten.</msg>
   <msg key="lt_Internal_error_unknow">Interner Fehler: Unbekannter View '%view_name%' </msg>
   <msg key="lt_Monthly_Social_Securi">Monatliche Sozialversicherung</msg>
   <msg key="lt_Please_notify_your_sy">Bitte wenden sie sich an ihren Systemadministrator.</msg>
@@ -31,6 +32,7 @@
   <msg key="lt_Salary_Payments_per_Y">Jährliches Gehalt</msg>
   <msg key="lt_There_are_currently_n">Keine Einträge gefunden, die den gewählten Kriterien entsprechen.</msg>
   <msg key="lt_Voluntary_Termination">Einverständliche Beendigung des Arbeitsverhältnisses</msg>
+  <msg key="lt_You_are_trying_to_acc">Sie versuchen auf eine Sicht zuzugreifen, die nicht in der Datenbank definiert ist.</msg>
   <msg key="lt_You_dont_have_permiss">Sie haben nicht die Berechtigung, diese Seite zu sehen</msg>
   <msg key="lt_You_dont_have_permiss_1">Sie haben nicht die Berechtigung, diese Benutzer zu sehen</msg>
   <msg key="lt_You_have_insufficient">Sie haben nicht die Berechtigung, diese Seite zu sehen</msg>
