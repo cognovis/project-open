@@ -232,6 +232,7 @@ Para cambiar su contraseña, visite %reset_password_url%</msg>
   <msg key="Reject">Rechazar</msg>
   <msg key="Remember_my_login">Recordar mi contraseña en este equipo</msg>
   <msg key="Remove">Eliminar</msg>
+  <msg key="Remove_All">Borrar todos</msg>
   <msg key="Req_membership_comm">Solicitar pertenecer a esta comunidad</msg>
   <msg key="Req_membership_subs">Solicitar pertenecer a este subsitio</msg>
   <msg key="Request_membership">Solicitar la entrada</msg>
