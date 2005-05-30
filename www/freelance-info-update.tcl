@@ -49,9 +49,10 @@ where
 
 set user_id $org_user_id
 
+
 # --------------- Set page design as a function of the freelance data-----
 
-if { [empty_string_p $user_name]} {
+if { ![info exists user_name] || [empty_string_p $user_name]} {
     ad_return_complaint 1 "<li>[_ intranet-freelance.lt_We_couldnt_find_user_]"
     return
 }
