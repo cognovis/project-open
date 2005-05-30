@@ -18,27 +18,27 @@
 <table border=0 cellspacing=1 cellpadding=1>
 <tr class=rowtitle>
   <td class=rowtitle align=center colspan=2>
-    <#intranet-forum.Incident_Information#>
+    #intranet-forum.Incident_Information#
   </td>
 </tr>
 <tr>
-  <td><#intranet-forum.Your_Name#></td>
+  <td>#intranet-forum.Your_Name#</td>
   <td>@error_first_names@ @error_last_name@</td>
 </tr>
 <tr>
-  <td><#intranet-forum.Your_Email#></td>
+  <td>#intranet-forum.Your_Email#</td>
   <td>@error_user_email@</td>
 </tr>
 <tr>
-  <td><#intranet-forum.System_URL#></td>
+  <td>#intranet-forum.System_URL#</td>
   <td>@system_url@</td>
 </tr>
 <tr>
-  <td><#intranet-forum.Publisher_Name#></td>
+  <td>#intranet-forum.Publisher_Name#</td>
   <td>@publisher_name@</td>
 </tr>
 <tr>
-  <td><#intranet-forum.Error_URL#></td>
+  <td>#intranet-forum.Error_URL#</td>
   <td>@error_url@</td>
 </tr>
 </table>
@@ -50,7 +50,7 @@
 <table border=0 cellspacing=1 cellpadding=1>
 <tr class=rowtitle>
   <td class=rowtitle align=center colspan=2>
-    <#intranet-forum.Do_you_have_a_support_contract#>
+    #intranet-forum.Do_you_have_a_support_contract#
   </td>
 </tr>
 <tr>

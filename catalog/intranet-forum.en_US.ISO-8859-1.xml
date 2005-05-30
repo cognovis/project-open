@@ -24,6 +24,7 @@
   <msg key="Deleted">Deleted</msg>
   <msg key="Discussion">Discussion</msg>
   <msg key="Discussion_View">Discussion View</msg>
+  <msg key="Do_you_have_a_support_contract">Do you have a support contract?</msg>
   <msg key="Due">Due</msg>
   <msg key="Due_Date">Due Date</msg>
   <msg key="Edit">Edit</msg>
@@ -32,6 +33,7 @@
   <msg key="Emergency">Emergency</msg>
   <msg key="Enter_message_body">Enter message body</msg>
   <msg key="Enter_subject">Enter subject</msg>
+  <msg key="Error_URL">Error URL</msg>
   <msg key="Filter_Topics">Filter Topics</msg>
   <msg key="Folder">Folder</msg>
   <msg key="Forum">Forum</msg>
@@ -43,6 +45,8 @@
   <msg key="In_Project">In Project</msg>
   <msg key="Inbox">Inbox</msg>
   <msg key="Incident">Incident</msg>
+  <msg key="Incident_Information">Incident Information</msg>
+  <msg key="Incident_Received">Incident Received</msg>
   <msg key="Low_Normal">Low Normal</msg>
   <msg key="lt_A_new_topic_type_has_">A new %topic_type% has been created. Please visit the link above for details.</msg>
   <msg key="lt_A_new_topic_type_has__1">A new %topic_type% has been modified. Please visit the link above for details.</msg>
@@ -105,6 +109,7 @@
   <msg key="Project_Manager">Project Manager</msg>
   <msg key="Project_Manager_only">Project Manager only</msg>
   <msg key="Project_Status">Project Status</msg>
+  <msg key="Publisher_Name">Publisher Name</msg>
   <msg key="Re_subject">Re: %subject%</msg>
   <msg key="Read">Read</msg>
   <msg key="Receive_updates">Receive updates</msg>
@@ -116,8 +121,10 @@
   <msg key="Staff_employees_only">Staff (employees only)</msg>
   <msg key="Status">Status</msg>
   <msg key="Subject">Subject</msg>
+  <msg key="System_URL">System URL</msg>
   <msg key="Task">Task</msg>
   <msg key="Tasks__Incidents">Tasks &amp; Incidents</msg>
+  <msg key="Thank_you_for_submitting_your_incident">Thank you for submitting your incident.</msg>
   <msg key="Topic_Type">Topic Type</msg>
   <msg key="topic_type_Subject">%topic_type% Subject</msg>
   <msg key="Type">Type</msg>
@@ -126,4 +133,7 @@
   <msg key="Urgent">Urgent</msg>
   <msg key="View_Topic">View Topic</msg>
   <msg key="Visible_for">Visible for</msg>
+  <msg key="We_will_notify_you_as_soon_as_possible">We will notify you as soon as possible.</msg>
+  <msg key="Your_Email">Your Email</msg>
+  <msg key="Your_Name">Your Name</msg>
 </message_catalog>
