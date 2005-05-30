@@ -34,6 +34,8 @@ set bgcolor(1) " class=rowodd "
 set site_url "/intranet-cost/rep-costs"
 set cost_url "/intranet-cost/costs/new"
 set cost_create_url "/intranet-cost/rep-costs/new-rep-cost"
+set now [db_string now "select to_char(sysdate, 'YYYY-MM-DD') from dual"]
+
 
 if {![im_permission $user_id view_costs]} {
     ad_return_complaint 1 "<li>You have insufficiente privileges to view this page"
@@ -88,13 +90,13 @@ from	im_repeating_costs rc,
         im_start_months sm
 where	start_block >= rc.start_date
         and (rc.end_date is null or start_block < rc.end_date)
-        and start_block < sysdate + 365
+        and start_block < to_date(:now, 'YYYY-MM-DD') + 365
 "
 
 db_foreach all_start_blocks $all_start_blocks_sql {
     set key "$rep_cost_id:$start_block"
     # Fill the field with a link to create a new cost item
-    set blocks($key) "<a href=$cost_create_url?[export_url_vars rep_cost_id start_block return_url]>(<#_ create#>)</a>"
+    set blocks($key) "<a href='$cost_create_url?[export_url_vars rep_cost_id start_block return_url]'>([_ intranet-cost.create])</a>"
     ns_log Notice "/intranet-cos/rep-costs/index: key=$key"
 }
 
