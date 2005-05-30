@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <message_catalog package_key="intranet-trans-quality" package_version="3.0.0.0.4" locale="es_ES" charset="ISO-8859-1">
 
+  <msg key="Allowed_Err">Err permitido</msg>
   <msg key="Del">Del</msg>
   <msg key="lt_There_are_currently_n">Actualmente no hay informes que respondan al criterio</msg>
   <msg key="Quality">Calidad</msg>
