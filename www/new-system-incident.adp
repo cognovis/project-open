@@ -1,12 +1,12 @@
 <master src="../../intranet-core/www/master">
-<property name="title"><#Home Home#></property>
+<property name="title"><#Home Home#</property>
 
-<H1><#Incident_Received Incident Received#></H1>
+<H1>#intranet-forum.Incident_Received#</H1>
 
 <p>
-<#lt_Thank_you_for_submitt Thank you for submitting your incident.#>
+#intranet-forum.Thank_you_for_submitting_your_incident#
 </p><p>
-<#lt_We_will_notify_you_as We will notify you as soon as possible.#>
+#intranet-forum.We_will_notify_you_as_soon_as_possible#
 </p>
 
 
@@ -18,27 +18,27 @@
 <table border=0 cellspacing=1 cellpadding=1>
 <tr class=rowtitle>
   <td class=rowtitle align=center colspan=2>
-    <#Incident_Information Incident Information#>
+    <#intranet-forum.Incident_Information#>
   </td>
 </tr>
 <tr>
-  <td><#Your_Name Your Name#></td>
+  <td><#intranet-forum.Your_Name#></td>
   <td>@error_first_names@ @error_last_name@</td>
 </tr>
 <tr>
-  <td><#Your_Email Your Email#></td>
+  <td><#intranet-forum.Your_Email#></td>
   <td>@error_user_email@</td>
 </tr>
 <tr>
-  <td><#System_URL System URL#></td>
+  <td><#intranet-forum.System_URL#></td>
   <td>@system_url@</td>
 </tr>
 <tr>
-  <td><#Publisher_Name Publisher Name#></td>
+  <td><#intranet-forum.Publisher_Name#></td>
   <td>@publisher_name@</td>
 </tr>
 <tr>
-  <td><#Error_URL Error URL#></td>
+  <td><#intranet-forum.Error_URL#></td>
   <td>@error_url@</td>
 </tr>
 </table>
@@ -50,7 +50,7 @@
 <table border=0 cellspacing=1 cellpadding=1>
 <tr class=rowtitle>
   <td class=rowtitle align=center colspan=2>
-    <#lt_Do_you_have_a_support Do you have a support contract?#>
+    <#intranet-forum.Do_you_have_a_support_contract#>
   </td>
 </tr>
 <tr>
