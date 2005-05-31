@@ -90,7 +90,7 @@ $order_by_clause
     <querytext>
 select
 	t.*,
-	ug.project_name,
+	acs_object__name(t.object_id) as project_name,
 	tr.indent_level,
 	(10-tr.indent_level) as colspan_level,
 	ftc.category as topic_type,
@@ -111,7 +111,6 @@ from
 		and parent.topic_id = :topic_id
 	) tr,
 	users ou,
-	im_projects ug,
 	im_forum_topics t
       LEFT JOIN
 	users au ON t.asignee_id=au.user_id
@@ -122,7 +121,6 @@ from
 where
 	tr.topic_id = t.topic_id
 	and t.owner_id=ou.user_id
-	and ug.project_id=t.object_id
 order by tr.tree_sortkey
 
     </querytext>

@@ -560,7 +560,7 @@ ad_proc -public im_forum_render_thread { topic_id user_id object_id object_name 
     set topic_sql "
 select
 	t.*,
-	ug.project_name,
+	acs_object__name(t.object_id) as project_name,
 	tr.indent_level,
 	(10-tr.indent_level) as colspan_level,
 	ftc.category as topic_type,
@@ -581,13 +581,11 @@ from
 	im_forum_topics t,
 	users ou,
 	users au,
-	im_projects ug,
 	im_categories ftc,
 	im_categories fts
 where
 	tr.topic_id = t.topic_id
 	and t.owner_id=ou.user_id
-	and ug.project_id=t.object_id
 	and t.asignee_id=au.user_id(+)
 	and t.topic_type_id=ftc.category_id(+)
 	and t.topic_status_id=fts.category_id(+)
