@@ -111,12 +111,23 @@ ad_proc -public im_forum_scope_select {select_name user_id {default ""} } {
     }
 
     set option_list [list]
-    if {[im_permission $user_id add_topic_public]} { lappend option_list "<option value=public $public_selected>[_ intranet-forum.lt_Public_everybody_in_t]</option>\n" }
-    if {[im_permission $user_id add_topic_group]} { lappend option_list "<option value=group $group_selected>[_ intranet-forum.lt_Project_all_project_m]</option>" }
-    if {[im_permission $user_id add_topic_staff]} { lappend option_list "<option value=staff $staff_selected>[_ intranet-forum.Staff_employees_only]</option>" }
-    if {[im_permission $user_id add_topic_client]} { lappend option_list "<option value=client $client_selected>Clients and PM only</option>" }
-    if {[im_permission $user_id add_topic_noncli]} { lappend option_list "<option value=not_client $not_client_selected>[_ intranet-forum.lt_Provider_project_memb]</option>" }
-    if {[im_permission $user_id add_topic_pm]} { lappend option_list "<option value=pm $pm_selected>[_ intranet-forum.Project_Manager]</option>" }
+    if {[im_permission $user_id add_topic_public]} { 
+	lappend option_list "<option value=public $public_selected>[_ intranet-forum.lt_Public_everybody_in_t]</option>\n" 
+    }
+    if {[im_permission $user_id add_topic_group]} { 
+	lappend option_list "<option value=group $group_selected>[_ intranet-forum.lt_Project_all_project_m]</option>" 
+    }
+    if {[im_permission $user_id add_topic_staff]} { 
+	lappend option_list "<option value=staff $staff_selected>[_ intranet-forum.Staff_employees_only]</option>" 
+    }
+    if {[im_permission $user_id add_topic_client]} { 
+	lappend option_list "<option value=client $client_selected>Clients and PM only</option>" 
+    }
+    if {[im_permission $user_id add_topic_noncli]} { lappend option_list "<option value=not_client $not_client_selected>[_ intranet-forum.lt_Provider_project_memb]</option>" 
+    }
+    if {[im_permission $user_id add_topic_pm]} { 
+	lappend option_list "<option value=pm $pm_selected>[_ intranet-forum.Project_Manager]</option>" 
+    }
 
     if {1 == [llength $option_list]} {
 	return "ProjectManager<input type=hidden name=scope value=\"pm\">"
