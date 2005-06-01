@@ -1018,6 +1018,7 @@ ad_proc -public im_forum_component {
     	set old_object_id 0
 	
     	db_foreach forum_query_limited $selection {
+
     	    if {$read_p == "t"} {set read "read"} else {set read "unread"}
     	    if {$folder_id == ""} {set folder_name "Inbox"}
 	    if {0 == $asignee_id} { 
