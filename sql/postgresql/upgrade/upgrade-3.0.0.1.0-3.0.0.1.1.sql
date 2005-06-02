@@ -12,6 +12,24 @@ alter table im_projects add	cost_bills_cache		numeric(12,2);
 alter table im_projects add	cost_timesheet_logged_cache	numeric(12,2);
 
 
+
+create or replace function im_cost_center_name_from_id (integer)
+returns varchar as '
+DECLARE
+        p_id	alias for $1;
+        v_name	varchar(100);
+BEGIN
+        select	cc.cost_center_name
+        into	v_name
+        from	im_cost_centers cc
+        where	cost_center_id = p_id;
+
+        return v_name;
+end;' language 'plpgsql';
+
+
+
+
 -- Cost Center Menu as part of the Finance menu
 --
 create or replace function inline_0 ()
@@ -70,21 +88,5 @@ end;' language 'plpgsql';
 
 select inline_0 ();
 drop function inline_0 ();
-
-
-
-create or replace function im_cost_center_name_from_id (integer)
-returns varchar as '
-DECLARE
-        p_id	alias for $1;
-        v_name	varchar(100);
-BEGIN
-        select	cc.cost_center_name
-        into	v_name
-        from	im_cost_centers cc
-        where	cost_center_id = p_id;
-
-        return v_name;
-end;' language 'plpgsql';
 
 
