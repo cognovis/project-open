@@ -1041,6 +1041,7 @@ where
 "
  
     set last_folder_id 0
+    set folder_id_hash() 0
     db_foreach hash_query $query {
     	# Hash: Path -> open/closed
 	set open_p_hash($path) $open_p
