@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-search</auto-mount>
 
-    <version name="3.0.0.1.0" url="http://projop.dnsalias.com/download/apm/intranet-search-pg-3.0.0.1.0.apm">
+    <version name="3.0.0.1.1" url="http://projop.dnsalias.com/download/apm/intranet-search-pg-3.0.0.1.1.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Adapter for OpenACS &quot;Search&quot; module to index Project/Open contents</summary>
         <vendor url="http://www.project-open.com/">Project/Open</vendor>
