@@ -488,20 +488,6 @@ begin
     from im_menus
     where label='project';
 
-    v_menu := im_menu.new (
-	package_name => 'intranet-trans-invoices',
-	label =>	'project_pos',
-	name =>	'POs',
-	url =>	'/intranet-trans-invoices/purchase-orders/index?cost_type_id=3706',
-	sort_order =>   70,
-	parent_menu_id => v_project_menu
-    );
-
-    acs_permission.grant_permission(v_menu, v_admins, 'read');
-    acs_permission.grant_permission(v_menu, v_senman, 'read');
-    acs_permission.grant_permission(v_menu, v_accounting, 'read');
-    acs_permission.grant_permission(v_menu, v_companies, 'read');
-    acs_permission.grant_permission(v_menu, v_freelancers, 'read');
 end;
 /
 commit;
