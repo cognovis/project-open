@@ -19,7 +19,7 @@
 
 alter table im_projects add     cost_quotes_cache		numeric(12,2);
 alter table im_projects add     cost_invoices_cache		numeric(12,2);
-alter table im_projects add     cost_timesheet_planed_cache	numeric(12,2);
+alter table im_projects add     cost_timesheet_pladned_cache	numeric(12,2);
 
 alter table im_projects add     cost_purchase_orders_cache	numeric(12,2);
 alter table im_projects add     cost_bills_cache		numeric(12,2);
