@@ -12,38 +12,6 @@ alter table im_projects add	cost_bills_cache		numeric(12,2);
 alter table im_projects add	cost_timesheet_logged_cache	numeric(12,2);
 
 
-
-
--- 2480 - 2490 Reserved for Timesheet
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (
-2481,24,NULL,'Invoices','$cost_invoices_cache','','',81,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (
-2482,24,NULL,'Bills','$cost_bills_cache','','',82,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (
-2483,24,NULL,'TimeCosts','$cost_timesheet_logged_cache','','',83,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (
-2486,24,NULL,'Quotes','$cost_quotes_cache','','',86,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (
-2487,24,NULL,'POs','$cost_purchase_orders_cache','','',87,'');
-
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (
-2488,24,NULL,'TimeEstim','$cost_timesheet_planned_cache','','',88,'');
-
-
-
-
-
 -- Cost Center Menu as part of the Finance menu
 --
 create or replace function inline_0 ()
