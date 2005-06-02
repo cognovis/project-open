@@ -10,6 +10,7 @@
   <msg key="Company">Company</msg>
   <msg key="context">context</msg>
   <msg key="Cost_Items">Cost Items</msg>
+  <msg key="create">create</msg>
   <msg key="Currency">Currency</msg>
   <msg key="Customer">Customer</msg>
   <msg key="Customer_Invoices">Customer Invoices</msg>
