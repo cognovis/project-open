@@ -78,6 +78,7 @@ if {![regexp {<([^>]*)>\s*<([^>]*)>\s*<([^>]*)>} $update_xml match tag1 tag2 tag
     ad_return_complaint 1 "Error while retreiving update information from
     URL '$service_url'.<br>The retreived files doesn't seem to be a XML or HTML file:<br>
     <pre>$update_xml</pre>"
+    return
 }
 
 if {[string tolower $tag1] == "html" || [string tolower $tag2] == "html" || [string tolower $tag3] == "html"} {
