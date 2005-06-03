@@ -26,10 +26,20 @@ create or replace function inline_0 ()
 returns integer as '
 declare
         -- Menu IDs
+	v_count			integer;
         v_menu                  integer;
 	v_admin_menu		integer;
 	v_main_menu		integer;
 BEGIN
+    select count(*)
+    into v_count
+    from im_menus
+    where label = ''companies_admin'';
+
+    if v_count > 0 then
+        return 0;
+    end if;
+
     select menu_id
     into v_main_menu
     from im_menus
@@ -72,10 +82,21 @@ create or replace function inline_0 ()
 returns integer as '
 declare
         -- Menu IDs
+	v_count			integer;
         v_menu                  integer;
 	v_admin_menu		integer;
 	v_main_menu		integer;
 BEGIN
+    select count(*)
+    into v_count
+    from im_menus
+    where label = ''projects_admin'';
+
+    if v_count > 0 then
+        return 0;
+    end if;
+
+
     select menu_id
     into v_main_menu
     from im_menus
