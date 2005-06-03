@@ -731,9 +731,26 @@ order by
     # Get the list of all currencies
     set currencies [list]
     db_foreach all_currencies "select distinct currency from ($subtotals_sql) st" {
-	if {"" == $currency} { continue }
+
+# outcommented to make empty currency cause an error...
+# ToDo: Fix
+#	if {"" == $currency} { continue }
 	lappend currencies $currency
     }
+
+    if {[llength $currencies] > 1} {
+        ad_return_complaint 1 "<b>Cost Consistency Error</b>:<br>
+        We have found more then one currency in the cost elements
+        associated with this project.<br>
+        Project/Open is currently not able to deal with such
+        situations in a consisten way. Please modify your project
+        data.<p>
+        Please note that this error may als occur if one of the
+        cost items has an empty currency. This case can occur
+        with timesheet costs if the hourly rate has not been set
+        for an employee."
+    }
+
 
     # Initialize the subtotal array
     db_foreach subtotal_init "select category_id from im_categories where category_type='Intranet Cost Type'" {
