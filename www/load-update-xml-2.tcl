@@ -55,6 +55,7 @@ if { [catch {
     set httpChan [lindex [ns_httpopen GET $full_url] 0]
     ns_log Notice "load-update-xml-2: httpChan=$httpChan"
 
+    ns_log Notice "load-update-xml-2: before gets"
     while {[gets $httpChan update_line] >= 0} {
 	ns_log Notice "load-update-xml-2: getting line..."
 	append update_xml $update_line
