@@ -56,6 +56,7 @@ if { [catch {
     ns_log Notice "load-update-xml-2: httpChan=$httpChan"
 
     while {[gets $httpChan update_line] >= 0} {
+	ns_log Notice "load-update-xml-2: getting line..."
 	append update_xml $update_line
     }
 
