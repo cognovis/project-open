@@ -77,10 +77,11 @@ if {$q == "search"} {
 set query $q
 set nquery [llength $q]
 
+
 if {$nquery > 1} {
     
     if {[catch {
-	db_string test_query "select :q::tsquery"
+	db_string test_query "select to_tsquery('default',:q)"
     } errmsg]} {
 	ad_return_complaint 1 "<H2>Bad Query</h2>
         The <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
@@ -239,34 +240,6 @@ if {[string equal "all" $type]} {
 
 set sql "
 	select
-		'asfdasfsadf' as name,
-		rank(so.fti, :q::tsquery) as rank,
-		fti as full_text_index,
-		'asfdasdfasfd' as url,
-		so.object_id,
-		'im_forum_topic' as object_type,
-		'Forum' as object_type_pretty_name,
-		so.biz_object_id,
-		so.popularity
-	from
-		im_search_objects so,
-		acs_object_types aot,
-		im_search_object_types sot
-		left outer join (
-			select	*
-			from	im_biz_object_urls
-			where	url_type = 'view'
-		) bou on (sot.object_type = bou.object_type)
-	where
-		so.object_type_id = sot.object_type_id
-		and sot.object_type = aot.object_type
-		and so.fti @@ :q::tsquery
-	order by
-		rank DESC
-"
-
-set sql "
-	select
 		acs_object__name(so.object_id) as name,
 		rank(so.fti, :q::tsquery) as rank,
 		fti as full_text_index,
@@ -308,7 +281,7 @@ set sql "
 		so.object_type_id = sot.object_type_id
 		and sot.object_type = aot.object_type
 		and so.biz_object_id = readable_biz_objs.object_id
-		and so.fti @@ :q::tsquery
+		and so.fti @@ to_tsquery('default',:q)
 	order by
 		rank DESC
 	offset :offset
