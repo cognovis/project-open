@@ -718,6 +718,7 @@ where
 		[im_cost_type_po],
 		[im_cost_type_timesheet]
 	)
+	and ci.currency is not null
 group by
 	ci.currency,
         cat.category_id,
