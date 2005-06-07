@@ -18,7 +18,7 @@
 -- Create database tables for .LRN site-wide search
 --
 -- @author <a href="mailto:openacs@dirkgomez.de">openacs@dirkgomez.de</a>
--- @version $Id: search-tables-create.sql,v 1.2 2005/05/21 11:34:10 dirkg Exp $
+-- @version $Id: search-tables-create.sql,v 1.3 2005/06/07 19:00:07 dirkg Exp $
 -- @creation-date 13-May-2005
 --
 -- Partly ported from ACES.
@@ -29,6 +29,7 @@ create table site_wide_index (
                                         constraint sws_index_pk primary key
                                         constraint sws_index_fk references acs_objects(object_id) on delete cascade,
 	object_name	     	varchar(4000),
+	indexed_content	        clob,
 	datastore		char(1) not null,
         event_date                      date
                                         default sysdate,
