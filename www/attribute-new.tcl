@@ -21,7 +21,7 @@ ns_log Notice "attribute-new: attribute_id=$attribute_id, acs_attribute_id=$acs_
 set user_id [ad_maybe_redirect_for_registration]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 if {!$user_is_admin_p} {
-    ad_return_complaint 1 "[_ flexbase.You_have_insufficient_privileges_to_use_this_page]"
+    ad_return_complaint 1 "[_ intranet-dynfield.You_have_insufficient_privileges_to_use_this_page]"
     return
 }
 
@@ -31,7 +31,7 @@ if {!$user_is_admin_p} {
 if {0 != $acs_attribute_id} {
     set attribute_id [db_string attribute_id "
 	select attribute_id 
-	from flexbase_attributes 
+	from im_dynfield_attributes 
 	where acs_attribute_id=:acs_attribute_id
     " -default "acs_object"]
 }
@@ -48,7 +48,7 @@ if {0 != $attribute_id} {
     	fa.widget_name
     from 	
 	acs_attributes a,
-    	flexbase_attributes fa
+    	im_dynfield_attributes fa
     where
 	fa.attribute_id = :attribute_id
     	and fa.acs_attribute_id = a.attribute_id
@@ -60,7 +60,7 @@ if {0 != $attribute_id} {
 
 
 if {[empty_string_p $object_type]} {
-    ad_return_complaint 1 "[_ flexbase.No_object_type_found]<br>[_ flexbase.You_need_to_specifiy_either_the_object_type_or_an_attribute_id]"
+    ad_return_complaint 1 "[_ intranet-dynfield.No_object_type_found]<br>[_ intranet-dynfield.You_need_to_specifiy_either_the_object_type_or_an_attribute_id]"
     return
 }
 
@@ -70,11 +70,11 @@ if {![exists_and_not_null table_name]} {
    set table_name [db_string table_name "select table_name from acs_object_types where object_type=:object_type" -default ""]
 }
 if {[string equal $action "already_existing"]} {
-	set title "[_ flexbase.Add_Attribute]"
+	set title "[_ intranet-dynfield.Add_Attribute]"
 } else {
-	set title "[_ flexbase.Add_a_completely_new_attribute_modify_DB]"
+	set title "[_ intranet-dynfield.Add_a_completely_new_attribute_modify_DB]"
 }
-set context [list [list objects Objects] [list "object-type?object_type=$object_type" $object_info(pretty_name)] "[_ flexbase.Add_Attribute]"]
+set context [list [list objects Objects] [list "object-type?object_type=$object_type" $object_info(pretty_name)] "[_ intranet-dynfield.Add_Attribute]"]
 
 # ******************************************************
 # Determine all fields in the table that 
@@ -109,7 +109,7 @@ set existing_attributes [db_list existing_attributes "
 		attribute_name 
 	from
 		acs_attributes a,
-		flexbase_attributes fa
+		im_dynfield_attributes fa
 	where 
 		a.object_type=:object_type
 		and a.attribute_id = fa.acs_attribute_id
@@ -163,7 +163,7 @@ set form_fields {
 # modify an already existing attribute?
 if {[string equal $action "already_existing"]} {
     
-    lappend form_fields {attribute_name:text(select) {label {Attribute Name}} {options $attribute_name_options} {help_text "<!<li><a href=\"attribute-new?object_type=$object_type&action=completely_new\">[_ flexbase.lt_Add_a_completely_new_]</a>"}}
+    lappend form_fields {attribute_name:text(select) {label {Attribute Name}} {options $attribute_name_options} {help_text "<!<li><a href=\"attribute-new?object_type=$object_type&action=completely_new\">[_ intranet-dynfield.lt_Add_a_completely_new_]</a>"}}
     set modify_sql_p "f"
     lappend form_fields {modify_sql_p:text(hidden) {value $modify_sql_p}}
 
@@ -200,7 +200,7 @@ set widget_options " [db_list_of_lists select_widgets {
 		fw.widget_name, 
 		fw.widget_name 
 	from 
-		flexbase_widgets fw
+		im_dynfield_widgets fw
 	order by 
 		fw.widget_name 
 } ]"
@@ -218,7 +218,7 @@ ad_form -name attribute_form -form $form_fields -new_request {
         "You have used invalid characters."
     }
     { attribute_name 
-        { ![flexbase::attribute::exists_p -object_type object_type -attribute_name $attribute_name] } 
+        { ![intranet-dynfield::attribute::exists_p -object_type object_type -attribute_name $attribute_name] } 
         "Attribute $attribute_name already exists for <a href=\"object-type?[export_vars -url {object_type}]\">$object_info(pretty_name)</a>."
     }
 } -on_submit {
@@ -242,12 +242,12 @@ ad_form -name attribute_form -form $form_fields -new_request {
 			pretty_plural = :pretty_plural,
 			min_n_values = :min_n_values
 			where attribute_id = (select acs_attribute_id 
-					      from flexbase_attributes 
+					      from im_dynfield_attributes 
 					      where attribute_id = :attribute_id)"
 		# ******************************************************
-		# update flexbase_attributes table
+		# update im_dynfield_attributes table
 		# ******************************************************
-		db_dml "update flexbase_attributes" "update flexbase_attributes set
+		db_dml "update im_dynfield_attributes" "update im_dynfield_attributes set
 			widget_name = :widget_name
 			where attribute_id = :attribute_id"
 	}

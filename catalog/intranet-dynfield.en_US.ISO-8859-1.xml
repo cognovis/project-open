@@ -13,6 +13,7 @@
   <msg key="Attribute_Name">Attribute Name</msg>
   <msg key="Attribute_update">Attribute update</msg>
   <msg key="Attributes_in_page_url">Attributes in '%page_url%'</msg>
+  <msg key="Checkbox">Checkbox</msg>
   <msg key="Checkboxes">Checkboxes</msg>
   <msg key="Class">Class</msg>
   <msg key="Content">Content</msg>

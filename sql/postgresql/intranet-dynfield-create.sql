@@ -510,150 +510,143 @@ select im_dynfield_widget__new (
 );
 
 
-DECLARE
-	widget_id	integer;
-BEGIN
-	widget_id := im_dynfield_widget.new (
-				widget_name => 		'integer',
-				pretty_name =>		'#im_dynfield.Integer#',
-				pretty_plural =>	'#im_dynfield.Integers#',
-				storage_type =>		'value',
-				acs_datatype =>		'integer',
-				widget =>		'text',
-				sql_datatype =>		'integer',
-				parameters =>		'{html {size 6 maxlength 100}}'
-	);
-END;
-/
-show errors;
-
-
-DECLARE
-	widget_id	integer;
-BEGIN
-	widget_id := im_dynfield_widget.new (
-				widget_name => 		'textbox_small',
-				pretty_name =>		'#im_dynfield.Textbox# - #im_dynfield.Small#',
-				pretty_plural =>	'#im_dynfield.Textboxes# - #im_dynfield.Small#',
-				storage_type =>		'value',
-				acs_datatype =>		'string',
-				widget =>		'text',
-				sql_datatype =>		'text',
-				parameters =>		'{html {size 18 maxlength 30}}'
-	);
-END;
-/
-show errors;
-
-DECLARE
-	widget_id	integer;
-BEGIN
-	widget_id := im_dynfield_widget.new (
-				widget_name => 		'textbox_medium',
-				pretty_name =>		'#im_dynfield.Textbox# - #im_dynfield.Medium#',
-				pretty_plural =>	'#im_dynfield.Textboxes# - #im_dynfield.Medium#',
-				storage_type =>		'value',
-				acs_datatype =>		'string',
-				widget =>		'text',
-				sql_datatype =>		'text',
-				parameters =>		'{html {size 30 maxlength 100}}'
-	);
-END;
-/
-show errors;
-
-DECLARE
-	widget_id	integer;
-BEGIN
-	widget_id := im_dynfield_widget.new (
-				widget_name => 		'textbox_large',
-				pretty_name =>		'#im_dynfield.Textbox# - #im_dynfield.Large#',
-				pretty_plural =>	'#im_dynfield.Textboxes# - #im_dynfield.Large#',
-				storage_type =>		'value',
-				acs_datatype =>		'string',
-				widget =>		'text',
-				sql_datatype =>		'text',
-				parameters =>		'{html {size 50 maxlength 400}}'
-	);
-END;
-/
-show errors;
-
-DECLARE
-	widget_id	integer;
-BEGIN
-	widget_id := im_dynfield_widget.new (
-				widget_name => 		'textarea_small',
-				pretty_name =>		'#im_dynfield.Textarea# - #im_dynfield.Small#',
-				pretty_plural =>	'#im_dynfield.Textareas# - #im_dynfield.Small#',
-				storage_type =>		'value',
-				acs_datatype =>		'text',
-				widget =>		'textarea',
-				sql_datatype =>		'text',
-				parameters =>		'{html {cols 60 rows 6} validate {check_area }}'
-	);
-END;
-/
-show errors;
-
-DECLARE
-	widget_id	integer;
-BEGIN
-	widget_id := im_dynfield_widget.new (
-				widget_name => 		'textarea_small_nospell',
-				pretty_name =>		'#im_dynfield.Textarea# - #im_dynfield.Small# - #im_dynfield.No_Spellcheck#',
-				pretty_plural =>	'#im_dynfield.Textareas# - #im_dynfield.Small# - #im_dynfield.No_Spellcheck#',
-				storage_type =>		'value',
-				acs_datatype =>		'text',
-				widget =>		'textarea',
-				sql_datatype =>		'text',
-				parameters =>		'{html {cols 60 rows 6}} {nospell}'
-	);
-END;
-/
-show errors;
-
-
--- checkbox widget
-
-DECLARE
-	widget_id	integer;
-BEGIN
-	widget_id := im_dynfield_widget.new (
-				widget_name => 		'checkbox',
-				pretty_name =>		'#im_dynfield.Checkbox#',
-				pretty_plural =>	'#im_dynfield.Checkboxes#',
-				storage_type =>		'value',
-				acs_datatype =>		'boolean',
-				widget =>		'checkbox',
-				sql_datatype =>		'char(1)',
-				parameters =>		'{options {{"" t}}}'
-	);
-END;
-/
-show errors;
-
-
--- ------------------------------------------------------------------
--- qt_im_dynfield_interfaces
--- ------------------------------------------------------------------
-
-
-
-create table qt_im_dynfield_interfaces (
-	object_type		varchar2(1000)
-				constraint qt_flex_interfaces_obj_type_fk 
-				references acs_object_types(object_type)
-				constraint qt_im_dynfield_interfaces_pk 
-				primary key,
-	interface_type_key	varchar2(50)
-				constraint qt_flex_interfaces_type_key_fk 
-				references dbi_interface_types(interface_type_key)
-				constraint qt_flex_interfaces_type_key_nn 
-				not null,
-	join_column		varchar(30)
-				constraint qt_flex_interf_join_column_nn 
-				not null
+select im_dynfield_widget__new (
+        null,                   -- widget_id
+        'im_dynfield_widget',   -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+        'integer',        -- widget_name
+        '#intranet-dynfield.Integer#',    -- pretty_name
+        '#intranet-dynfield.Integer#',    -- pretty_plural
+        10007,                  -- storage_type_id
+        'integer',               -- acs_datatype
+        'text',               -- widget
+        'integer',               -- sql_datatype
+        '{html {size 6 maxlength 100}}' -- parameters
 );
-/
+
+
+select im_dynfield_widget__new (
+        null,                   -- widget_id
+        'im_dynfield_widget',   -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+        'textbox_small',        -- widget_name
+        '#intranet-dynfield.Textbox# #intranet-dynfield.Small#',    -- pretty_name
+        '#intranet-dynfield.Textboxes# #intranet-dynfield.Small#',    -- pretty_plural
+        10007,                  -- storage_type_id
+        'string',               -- acs_datatype
+        'text',               -- widget
+        'text',               -- sql_datatype
+        '{html {size 18 maxlength 30}}' -- parameters
+);
+
+select im_dynfield_widget__new (
+        null,                   -- widget_id
+        'im_dynfield_widget',   -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+        'textbox_medium',        -- widget_name
+        '#intranet-dynfield.Textbox# #intranet-dynfield.Medium#',    -- pretty_name
+        '#intranet-dynfield.Textboxes# #intranet-dynfield.Medium#',    -- pretty_plural
+        10007,                  -- storage_type_id
+        'string',               -- acs_datatype
+        'text',               -- widget
+        'text',               -- sql_datatype
+        '{html {size 30 maxlength 100}}' -- parameters
+);
+
+
+select im_dynfield_widget__new (
+        null,                   -- widget_id
+        'im_dynfield_widget',   -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+        'textbox_large',        -- widget_name
+        '#intranet-dynfield.Textbox# #intranet-dynfield.Large#',    -- pretty_name
+        '#intranet-dynfield.Textboxes# #intranet-dynfield.Large#',    -- pretty_plural
+        10007,                  -- storage_type_id
+        'string',               -- acs_datatype
+        'text',               -- widget
+        'text',               -- sql_datatype
+        '{html {size 50 maxlength 400}}' -- parameters
+);
+
+select im_dynfield_widget__new (
+        null,                   -- widget_id
+        'im_dynfield_widget',   -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+        'textarea_small',        -- widget_name
+        '#intranet-dynfield.Textarea# #intranet-dynfield.Small#',    -- pretty_name
+        '#intranet-dynfield.Textarea# #intranet-dynfield.Small#',    -- pretty_plural
+        10007,                  -- storage_type_id
+        'string',               -- acs_datatype
+        'textarea',               -- widget
+        'text',               -- sql_datatype
+        '{html {cols 60 rows 4} validate {check_area}}' -- parameters
+);
+
+select im_dynfield_widget__new (
+        null,                   -- widget_id
+        'im_dynfield_widget',   -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+        'textarea_small_nospell',        -- widget_name
+        '#intranet-dynfield.Textarea# #intranet-dynfield.Small#',    -- pretty_name
+        '#intranet-dynfield.Textarea# #intranet-dynfield.Small#',    -- pretty_plural
+        10007,                  -- storage_type_id
+        'string',               -- acs_datatype
+        'textarea',               -- widget
+        'text',               -- sql_datatype
+        '{html {cols 60 rows 4} {nospell}}' -- parameters
+);
+
+
+select im_dynfield_widget__new (
+        null,                   -- widget_id
+        'im_dynfield_widget',   -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+        'checkbox',        -- widget_name
+        '#intranet-dynfield.Checkbox#',    -- pretty_name
+        '#intranet-dynfield.Checkboxes#',    -- pretty_plural
+        10007,                  -- storage_type_id
+        'boolean',               -- acs_datatype
+        'checkbox',               -- widget
+        'char(1)',               -- sql_datatype
+        '{options {{"" t}}}' -- parameters
+);
+
+
+select im_dynfield_widget__new (
+        null,                   -- widget_id
+        'im_dynfield_widget',   -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+        'category_company_type',        -- widget_name
+        '#intranet-core.Company_Type#',    -- pretty_name
+        '#intranet-core.Company_Types#',    -- pretty_plural
+        10007,                  -- storage_type_id
+        'integer',               -- acs_datatype
+        'im_category_tree',               -- widget
+        'integer',               -- sql_datatype
+        '{custom {category_type "Intranet Company Type"}}' -- parameters
+);
 

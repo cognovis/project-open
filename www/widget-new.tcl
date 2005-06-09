@@ -66,7 +66,8 @@ set widget_options [list \
 	[list "Select" select] \
 	[list "Text" text] \
 	[list "Textarea" textarea] \
-	[list "Category" category_tree] \
+	[list "P/O Category" im_category_tree] \
+	[list "OpenACS Category" category_tree] \
 	[list "Generic SQL" generic_sql] \
 	[list "Hidden" hidden] \
 ]
@@ -112,7 +113,7 @@ ad_form -extend -name widget -on_request {
 		widget_name	= :widget_name,
 		pretty_name	= :pretty_name,
 		pretty_plural	= :pretty_plural,
-		storage_type	= :storage_type,
+		storage_type_id	= :storage_type_id,
 		acs_datatype	= :acs_datatype,
 		sql_datatype	= :sql_datatype,
 		widget		= :widget,
