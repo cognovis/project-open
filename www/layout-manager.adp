@@ -1,0 +1,12 @@
+<%
+  # /packages/flexbase/www/layout-manager.adp
+  # $Workfile: layout-manager.adp $ $Revision$ $Date$
+%>
+<master>
+
+<property name="title">@title@</property>
+<property name="context">@context@</property>
+
+<p>
+<listtemplate name="layout_list"></listtemplate>
+</p>
