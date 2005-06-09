@@ -42,7 +42,7 @@ create table im_dynfield_widgets (
 	pretty_plural		varchar(100)
 				constraint im_dynfield_widgets_pretty_pl_nn 
 				not null,
-	storage_type		integer
+	storage_type_id		integer
 				constraint im_dynfield_widgets_stor_typ_nn 
 				not null
 				constraint contact_widgets_stor_typ_fk 
@@ -69,8 +69,8 @@ create table im_dynfield_widgets (
 
 select acs_object_type__create_type (
 		'im_dynfield_attribute',
-		'Intranet-Dynfield Attribute',
-		'Intranet-Dynfield Attributes',
+		'Dynfield Attribute',
+		'Dynfield Attributes',
 		'acs_object',
 		'im_dynfield_attributes',
 		'attribute_id',
@@ -393,49 +393,48 @@ end;' language 'plpgsql';
 
 
 -- return a string coma separated with multimap values
-function multimap_val_to_str (
-		attr_id IN integer,
-		obj_id	IN integer,
-		widget_type IN varchar2 default NULL
-) return varchar2 is 
-	
-		v_ret_string varchar2(400);
-		v_value im_dynfield_attr_multi_value.value%TYPE;
-		v_cat_name category_translations.name%TYPE;
+create or replace function im_dynfield_multimap_val_to_str (integer, integer, varchar) 
+returns varchar as '
+DECLARE
+	p_attr_id		alias for $1;
+	p_obj_id		alias for $2;
+	p_widget_type		alias for $3;
+
+	v_ret_string varchar2(400);
+	v_value im_dynfield_attr_multi_value.value%TYPE;
+	v_cat_name category_translations.name%TYPE;
 		
-		CURSOR csr_flex_multi_attr_value (attr integer, obj integer) IS
-		SELECT value
-		FROM im_dynfield_attr_multi_value
-		WHERE attribute_id = attr
-		AND object_id = obj
-		AND value is not null;
+	CURSOR csr_flex_multi_attr_value (attr integer, obj integer) IS
+	SELECT value
+	FROM im_dynfield_attr_multi_value
+	WHERE attribute_id = attr
+	AND object_id = obj
+	AND value is not null;
 BEGIN
-		v_ret_string := null;
-		OPEN csr_flex_multi_attr_value (attr_id,obj_id);
-		LOOP 
-			FETCH csr_flex_multi_attr_value INTO v_value;
-			EXIT WHEN csr_flex_multi_attr_value%NOTFOUND;						
+	v_ret_string := null;
+	OPEN csr_flex_multi_attr_value (attr_id,obj_id);
+	LOOP 
+		FETCH csr_flex_multi_attr_value INTO v_value;
+		EXIT WHEN csr_flex_multi_attr_value%NOTFOUND;						
+
+		if v_ret_string is not null then 
+		 v_ret_string := v_ret_string || '', '';
+		end if; 
 	
-			if v_ret_string is not null then 
-			 v_ret_string := v_ret_string || ', ';
-			end if; 
-	
-			if widget_type = 'category_tree' then
-			 select category.name(v_value) into v_cat_name from dual;
+		if widget_type = ''category_tree'' then
+		 select category.name(v_value) into v_cat_name from dual;
+	 
+		 v_ret_string := v_ret_string || v_cat_name;
 			 
-			 v_ret_string := v_ret_string || v_cat_name;
-			 
-			else
-			 v_ret_string := v_ret_string || v_value;
-			end if;
-		END LOOP;
-		CLOSE csr_flex_multi_attr_value;
+		else
+		 v_ret_string := v_ret_string || v_value;
+		end if;
+	END LOOP;
+	CLOSE csr_flex_multi_attr_value;
 		 
-		return v_ret_string;
-	
-	END multimap_val_to_str;
-	
-end im_dynfield_attribute;
+	return v_ret_string;
+
+end;' language 'plpgsql';
 
 
 -- ------------------------------------------------------------------
@@ -561,7 +560,6 @@ select im_dynfield_widget__new (
         'text',               -- sql_datatype
         '{html {size 30 maxlength 100}}' -- parameters
 );
-
 
 select im_dynfield_widget__new (
         null,                   -- widget_id
