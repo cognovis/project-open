@@ -153,6 +153,36 @@ EXECUTE PROCEDURE im_projects_tsearch();
 
 
 -----------------------------------------------------------
+-- im_company
+
+insert into im_search_object_types values (3,'im_company');
+
+create or replace function im_companies_tsearch () 
+returns trigger as '
+begin
+	perform im_search_update(
+		new.company_id, 
+		''im_company'', 
+		new.company_id, 
+		coalesce(new.company_name, '''') || '' '' ||
+		coalesce(new.company_path, '''') || '' '' ||
+		coalesce(new.note, '''') || '' '' ||
+		coalesce(new.referral_source, '''') || '' '' ||
+		coalesce(new.site_concept, '''') || '' '' ||
+		coalesce(new.vat_number, '''')
+	);
+	return new;
+end;' language 'plpgsql';
+
+CREATE TRIGGER im_companies_tsearch_tr 
+BEFORE INSERT or UPDATE
+ON im_companies
+FOR EACH ROW 
+EXECUTE PROCEDURE im_companies_tsearch();
+
+
+
+-----------------------------------------------------------
 -- user
 
 insert into im_search_object_types values (1,'user');
@@ -268,10 +298,15 @@ update users
 set username = username
 ;
 
+
 update im_projects
 set project_type_id = project_type_id
 ;
 
+
+update im_companies
+set company_type_id = company_type_id
+;
 
 update im_forum_topics
 set scope = scope
