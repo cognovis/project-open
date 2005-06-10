@@ -1,13 +1,11 @@
-# /packages/mbryzek-subsite/tcl/attribute-procs.tcl
+# /packages/intranet-dynfield/tcl/attribute-procs.tcl
 
 ad_library {
     
     Procs to help with attributes for object types
-    
 
     @author mbryzek@arsdigita.com
     @author frank.bergmann@project-open.com
-    
 }
 
 
@@ -15,8 +13,8 @@ namespace eval attribute {
 
 
 
-ad_proc -public delete_xt { flexbase_attribute_id } {
-    FlexBase extended version of deleting the specified attribute id 
+ad_proc -public delete_xt { im_dynfield_attribute_id } {
+    Intranet-Dynfield extended version of deleting the specified attribute id 
     and all its values. This is irreversible. 
     Returns 1 if the attribute was actually deleted. 0 otherwise.
     <li>1. Drop the column
@@ -37,12 +35,12 @@ ad_proc -public delete_xt { flexbase_attribute_id } {
 		nvl(aa.column_name, aa.attribute_name) as column_name
 	from
 		acs_attributes aa,
-		flexbase_attributes fa,
+		im_dynfield_attributes fa,
 		acs_object_types t
 	where
 		fa.acs_attribute_id = aa.attribute_id
 		and t.object_type = aa.object_type
-		and fa.attribute_id = :flexbase_attribute_id
+		and fa.attribute_id = :im_dynfield_attribute_id
     }] } {
         # Attribute doesn't exist
 	ad_return_complaint 1 "Error in attribute::delete_xt: 
@@ -102,14 +100,19 @@ ad_proc -public add_xt {
 } {
     set default_value $default
 
+    set column_name ""
+    set sort_order ""
+    set storage ""
+    set static_p ""
+
     # We always use type-specific storage. Grab the tablename from 
     # the object_type
     
     if {"" == $table_name} {
 	if { ![db_0or1row select_table {
-	        select t.table_name
-		from acs_object_types t
-         	where t.object_type = :object_type
+	        select	t.table_name
+		from	acs_object_types t
+         	where	t.object_type = :object_type
         }] } {
             error "Specified object type \"$object_type\" does not exist"
     	}

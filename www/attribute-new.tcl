@@ -218,7 +218,7 @@ ad_form -name attribute_form -form $form_fields -new_request {
         "You have used invalid characters."
     }
     { attribute_name 
-        { ![intranet-dynfield::attribute::exists_p -object_type object_type -attribute_name $attribute_name] } 
+        { ![im_dynfield::attribute::exists_p -object_type object_type -attribute_name $attribute_name] } 
         "Attribute $attribute_name already exists for <a href=\"object-type?[export_vars -url {object_type}]\">$object_info(pretty_name)</a>."
     }
 } -on_submit {

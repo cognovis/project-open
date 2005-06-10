@@ -58,6 +58,7 @@
 </form>
 <ul class="action-links">
 <li><a href="attribute-new?object_type=@object_type@&action=already_existing">#intranet-dynfield.lt_Add_an_attribute_that#</a>
+<li><a href="attribute-new?object_type=@object_type@&action=completely_new">#intranet-dynfield.lt_Add_a_completely_new_#</a>
 <li><a href="layout-manager?object_type=@object_type@">#intranet-dynfield.Layout_Manager#</a></li>
 </ul>
 

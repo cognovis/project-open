@@ -41,7 +41,12 @@ acs_object_type::get -object_type $object_type -array "object_info"
 set title "Define Options"
 set context [list [list objects Objects] [list "object-type?object_type=$object_type" $object_info(pretty_name)] [list "attribute-add?object_type=$object_type" "Add Attribute"] $title]
 
-db_1row select_widget_pretty_and_storage_type { select storage_type from flexbase_widgets where widget_name = :widget_name }
+db_1row select_widget_pretty_and_storage_type { 
+	select	storage_type_id,
+		im_category_from_id(storage_type_id) as storage_type
+	from	im_dynfield_widgets 
+	where	widget_name = :widget_name 
+}
 
 acs_object_type::get -object_type $object_type -array "object_info"
 
@@ -51,7 +56,7 @@ set user_message "Attribute <a href=\"attribute?[export_vars -url {attribute_id}
 
 # Get datatype from Widget or parameter if not explicitely given
 if {"" == $datatype} {
-    set datatype [db_string acs_datatype "select acs_datatype from flexbase_widgets where widget_name = :widget_name" -default "string"]
+    set datatype [db_string acs_datatype "select acs_datatype from im_dynfield_widgets where widget_name = :widget_name" -default "string"]
 }
 
 
@@ -65,7 +70,7 @@ if { [string eq $required_p "t"] } {
 
 set attribute_name [string tolower $attribute_name]
 set acs_attribute_exists [attribute::exists_p $object_type $attribute_name]
-set flexbase_attribute_exists [flexbase::attribute::exists_p -object_type $object_type -attribute_name $attribute_name]
+set im_dynfield_attribute_exists [im_dynfield::attribute::exists_p -object_type $object_type -attribute_name $attribute_name]
 
 
 # Add the attributes to the specified object_type
@@ -105,15 +110,15 @@ db_transaction {
 	]
     }
 
-    if {!$flexbase_attribute_exists} {
+    if {!$im_dynfield_attribute_exists} {
 
-	# Let's create the new flexbase attribute
+	# Let's create the new intranet-dynfield attribute
 	# We're using exclusively TCL code here (not PL/PG/SQL
 	# API).
 	set attribute_id [db_exec_plsql create_object "
 	    select acs_object__new (
                 null,
-                'flexbase_attribute',
+                'im_dynfield_attribute',
                 now(),
                 '[ad_get_user_id]',
                 null,
@@ -121,8 +126,8 @@ db_transaction {
 	    );
         "]
 
-	db_dml insert_flexbase_attributes "
-            insert into flexbase_attributes
+	db_dml insert_im_dynfield_attributes "
+            insert into im_dynfield_attributes
                 (attribute_id, acs_attribute_id, widget_name, deprecated_p)
             values
                 (:attribute_id, :acs_attribute_id, :widget_name, :deprecated_p)

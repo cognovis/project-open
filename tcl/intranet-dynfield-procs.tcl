@@ -1,76 +1,20 @@
-# packages/flexbase/tcl/flexbase-procs.tcl
+# packages/intranet-dynfield/tcl/intranet-dynfield-procs.tcl
 ad_library {
 
-  Support procs for the flexbase package
+  Support procs for the intranet-dynfield package
 
   @author Matthew Geddert openacs@geddert.com
   @author Juanjo Ruiz juanjoruizx@yahoo.es
   @creation-date 2004-09-28
 
-  @vss $Workfile: flexbase-procs.tcl $ $Revision$ $Date$
+  @vss $Workfile: intranet-dynfield-procs.tcl $ $Revision$ $Date$
 
 }
 
 ad_proc -public im_dynfield_storage_type_id_multimap { } { return 10005 }
 
 
-namespace eval flexbase::util {}
-
-ad_proc -public flexbase::util::get_category_tree {
-  tree_id
-} {
-
-  Converts a category tree into 2 lists.
-  The first is a list of categories with their full path from the root
-  The second is their corresponding category IDs
-  Used by Smartforms admin/category-trees and
-  SF interfaces for trees
-  @author Michael Hinds [michael.hinds@quest.ie]
-
-} {
-
-  set display_values_list [list]
-  set categories_list [list]
-
-  set separator " -> "
-
-  set previous_level 0
-  set hierarchy_list [list]
-  foreach category [category_tree::get_tree $tree_id] {
-    set category_id [lindex $category 0]
-    set category_name [lindex $category 1]
-    set level [lindex $category 3]
-
-    lappend categories_list $category_id
-    if {$level > $previous_level} {
-      lappend hierarchy_list $category_name
-      lappend display_values_list "[join $hierarchy_list $separator]"
-    } elseif {$level == $previous_level} {
-      set hierarchy_list [lreplace $hierarchy_list end end]
-      lappend hierarchy_list $category_name
-      lappend display_values_list "[join $hierarchy_list $separator]"
-    } else {
-      set n [expr $previous_level - $level - 1]
-      set hierarchy_list [lreplace $hierarchy_list $n end]
-      lappend hierarchy_list $category_name
-      lappend display_values_list "[join $hierarchy_list $separator]"
-    }
-    set previous_level $level
-  }
-  
-  return [list $display_values_list $categories_list]
-
-} ;# end dbi::get_category_tree
-
-
-ad_proc -public im_is_user_site_wide_or_intranet_admin {
-  user_id
-} {
-    Dummy permissions proc. Code should be changed to use proper admin check.
-    ToDo
-} {
-  return 1
-}
+namespace eval im_dynfield::util {}
 
 ############
 # Add render_label element to get element labels in dynamic forms (works with flextag-init)
@@ -89,44 +33,45 @@ ad_proc -private template::element::render_label { form_id element_id tag_attrib
 }
 
 
-######
-namespace eval flexbase::attribute {}
 
-ad_proc -public flexbase::attribute::get {
-    -flexbase_attribute_id:required
+######
+namespace eval im_dynfield::attribute {}
+
+ad_proc -public im_dynfield::attribute::get {
+    -im_dynfield_attribute_id:required
     -array:required
 } {
-    Get the info on an flexbase_attribute
+    Get the info on an im_dynfield_attribute
 } {
     upvar 1 $array row
     db_1row select_attribute_info {} -column_array row
 }
 
-ad_proc -public flexbase::attribute::flush {
-    -flexbase_attribute_id:required
+ad_proc -public im_dynfield::attribute::flush {
+    -im_dynfield_attribute_id:required
 } {
-    Get the info on an flexbase_attribute
+    Get the info on an im_dynfield_attribute
 } {
-    flexbase::attribute::get -flexbase_attribute_id $flexbase_attribute_id -array attribute_info
+    im_dynfield::attribute::get -im_dynfield_attribute_id $im_dynfield_attribute_id -array attribute_info
 
     set object_type $attribute_info(object_type)
     set attribute_name $attribute_info(attribute_name)
-    flexbase::attribute::widget_flush -flexbase_attribute_id $flexbase_attribute_id
-    flexbase::attribute::exists_p_flush -object_type $object_type -attribute_name $attribute_name
-    flexbase::attribute::get_flexbase_attribute_id_flush -object_type $object_type -attribute_name  $attribute_name
-    flexbase::attribute::name_flush -flexbase_attribute_id $flexbase_attribute_id
-    flexbase::attribute::storage_type_flush -flexbase_attribute_id $flexbase_attribute_id
+    im_dynfield::attribute::widget_flush -im_dynfield_attribute_id $im_dynfield_attribute_id
+    im_dynfield::attribute::exists_p_flush -object_type $object_type -attribute_name $attribute_name
+    im_dynfield::attribute::get_im_dynfield_attribute_id_flush -object_type $object_type -attribute_name  $attribute_name
+    im_dynfield::attribute::name_flush -im_dynfield_attribute_id $im_dynfield_attribute_id
+    im_dynfield::attribute::storage_type_flush -im_dynfield_attribute_id $im_dynfield_attribute_id
 
 }
 
 
-ad_proc -public flexbase::attribute::widget {
-    -flexbase_attribute_id:required
+ad_proc -public im_dynfield::attribute::widget {
+    -im_dynfield_attribute_id:required
     {-required:boolean}
 } {
     @return an ad_form encoded attribute widget
 } {
-    set attribute_widget [flexbase::attribute::widget_cached -flexbase_attribute_id $flexbase_attribute_id]
+    set attribute_widget [im_dynfield::attribute::widget_cached -im_dynfield_attribute_id $im_dynfield_attribute_id]
 
     if { [string is false $required_p] } {
         # we need to add the optional flag
@@ -149,11 +94,11 @@ ad_proc -public flexbase::attribute::widget {
     return $attribute_widget
 }
 
-ad_proc -private flexbase::attribute::widget_not_cached { 
-    -flexbase_attribute_id:required
+ad_proc -private im_dynfield::attribute::widget_not_cached { 
+    -im_dynfield_attribute_id:required
 } {
     Returns an ad_form encoded attribute widget list, as used by other procs.
-    @see flexbase::attribute::widget_cached
+    @see im_dynfield::attribute::widget_cached
 } {
     db_1row select_attribute {}
 
@@ -167,7 +112,7 @@ ad_proc -private flexbase::attribute::widget_not_cached {
         append attribute_widget " ${parameters}"
     }
 
-    if { $storage_type == "flexbase_options" } {
+    if { $storage_type == "im_dynfield_options" } {
         set options {}
         db_foreach select_options {} {
             lappend options [list [_ $option] [lindex $option_id]]
@@ -177,34 +122,34 @@ ad_proc -private flexbase::attribute::widget_not_cached {
     return $attribute_widget
 }
 
-ad_proc -private flexbase::attribute::widget_cached {
-    -flexbase_attribute_id:required
+ad_proc -private im_dynfield::attribute::widget_cached {
+    -im_dynfield_attribute_id:required
 } {
     Returns an ad_form encoded attribute widget list, as used by other procs. Cached.
-    @see flexbase::attribute::widget_not_cached
+    @see im_dynfield::attribute::widget_not_cached
 } {
-    return [util_memoize [list flexbase::attribute::widget_not_cached -flexbase_attribute_id $flexbase_attribute_id]]
+    return [util_memoize [list im_dynfield::attribute::widget_not_cached -im_dynfield_attribute_id $im_dynfield_attribute_id]]
 }
 
 
-ad_proc -private flexbase::attribute::widget_flush {
-    -flexbase_attribute_id:required
+ad_proc -private im_dynfield::attribute::widget_flush {
+    -im_dynfield_attribute_id:required
 } {
     Returns an ad_form encoded attribute widget list, as used by other procs. Flush.
-    @see flexbase::attribute::widget_not_cached
+    @see im_dynfield::attribute::widget_not_cached
 } {
-    return [util_memoize_flush [list flexbase::attribute::widget_not_cached -flexbase_attribute_id $flexbase_attribute_id]]
+    return [util_memoize_flush [list im_dynfield::attribute::widget_not_cached -im_dynfield_attribute_id $im_dynfield_attribute_id]]
 }
 
 
-ad_proc -private flexbase::attribute::exists_p {
+ad_proc -private im_dynfield::attribute::exists_p {
     -object_type:required
     -attribute_name:required
 } {
-    Check if the flexbase attribute already exists.<br>
-    Considers the case that flexbase got installed and deinstalled
+    Check if the intranet-dynfield attribute already exists.<br>
+    Considers the case that intranet-dynfield got installed and deinstalled
     before, so it only considers attributes that exist in both
-    acs_attributes and flexbase_attributes.
+    acs_attributes and im_dynfield_attributes.
 
     @return 1 if the attribute_name exists for this object_type and 
             0 if the attribute_name does not exist
@@ -213,7 +158,7 @@ ad_proc -private flexbase::attribute::exists_p {
 	select count(*) 
 	from
 		acs_attributes a,
-		flexbase_attributes fa
+		im_dynfield_attributes fa
 	where
 		a.attribute_id = fa.acs_attribute_id
 		and a.object_type = :object_type
@@ -221,64 +166,64 @@ ad_proc -private flexbase::attribute::exists_p {
     " -default 0]
     return $attribute_exists_p
 
-#    set flexbase_attribute_id [flexbase::attribute::get_flexbase_attribute_id -object_type $object_type -attribute_name $attribute_name]
+#    set im_dynfield_attribute_id [im_dynfield::attribute::get_im_dynfield_attribute_id -object_type $object_type -attribute_name $attribute_name]
 }
 
 
-ad_proc -private flexbase::attribute::exists_p_flush {
+ad_proc -private im_dynfield::attribute::exists_p_flush {
     -object_type:required
     -attribute_name:required
 } {
     
     does an attribute with this given attribute_name for this object type exists? Flush.
 
-    @return flexbase_attribute_id if none exists then it returns blank
+    @return im_dynfield_attribute_id if none exists then it returns blank
 } {
-    return [util_memoize_flush [list flexbase::attribute::get_flexbase_attribute_id_not_cached -object_type $object_type -attribute_name $attribute_name]]
+    return [util_memoize_flush [list im_dynfield::attribute::get_im_dynfield_attribute_id_not_cached -object_type $object_type -attribute_name $attribute_name]]
 }
 
 
-ad_proc -private flexbase::attribute::get_flexbase_attribute_id {
+ad_proc -private im_dynfield::attribute::get_im_dynfield_attribute_id {
     -object_type:required
     -attribute_name:required
 } {
     
-    return the flexbase_attribute_id for the given flexbase_attriubte_name belonging to this object_type. Cached.
+    return the im_dynfield_attribute_id for the given im_dynfield_attriubte_name belonging to this object_type. Cached.
 
-    @return flexbase_attribute_id if none exists then it returns blank
+    @return im_dynfield_attribute_id if none exists then it returns blank
 } {
 
-    return [util_memoize [list flexbase::attribute::get_flexbase_attribute_id_not_cached -object_type $object_type -attribute_name $attribute_name]]
+    return [util_memoize [list im_dynfield::attribute::get_im_dynfield_attribute_id_not_cached -object_type $object_type -attribute_name $attribute_name]]
 }
 
-ad_proc -private flexbase::attribute::get_flexbase_attribute_id_not_cached {
+ad_proc -private im_dynfield::attribute::get_im_dynfield_attribute_id_not_cached {
     -object_type:required
     -attribute_name:required
 } {
     
-    return the flexbase_attribute_id for the given flexbase_attriubte_name belonging to this object_type.
+    return the im_dynfield_attribute_id for the given im_dynfield_attriubte_name belonging to this object_type.
 
-    @return flexbase_attribute_id if none exists then it returns blank
+    @return im_dynfield_attribute_id if none exists then it returns blank
 } {
 
-    return [db_string get_flexbase_attribute_id {} -default {}]
+    return [db_string get_im_dynfield_attribute_id {} -default {}]
 }
 
-ad_proc -private flexbase::attribute::get_flexbase_attribute_id_flush {
+ad_proc -private im_dynfield::attribute::get_im_dynfield_attribute_id_flush {
     -object_type:required
     -attribute_name:required
 } {
     
-    return the flexbase_attribute_id for the given flexbase_attriubte_name belonging to this object_type. Flush.
+    return the im_dynfield_attribute_id for the given im_dynfield_attriubte_name belonging to this object_type. Flush.
 
-    @return flexbase_attribute_id if none exists then it returns blank
+    @return im_dynfield_attribute_id if none exists then it returns blank
 } {
 
-    return [util_memoize_flush [list flexbase::attribute::get_flexbase_attribute_id_not_cached -object_type $object_type -attribute_name $attribute_name]]
+    return [util_memoize_flush [list im_dynfield::attribute::get_im_dynfield_attribute_id_not_cached -object_type $object_type -attribute_name $attribute_name]]
 }
 
-ad_proc -public flexbase::attribute::new {
-    {-flexbase_attribute_id ""}
+ad_proc -public im_dynfield::attribute::new {
+    {-im_dynfield_attribute_id ""}
     -object_type:required
     -attribute_name:required
     -pretty_name:required
@@ -291,19 +236,19 @@ ad_proc -public flexbase::attribute::new {
     {-no_complain:boolean}
     {-options}
 } {
-    create a new flexbase_attribute
+    create a new im_dynfield_attribute
 
     <p><dt><b>widget_name</b></dt><p>
     <dd>
-       This should be a widget_name used by flexbase. All available widgets can be found at <a href="/flexbase/widgets">/flexbase/widgets</a>.
+       This should be a widget_name used by intranet-dynfield. All available widgets can be found at <a href="/intranet-dynfield/widgets">/intranet-dynfield/widgets</a>.
     </dd>
     </dl>
 
 
     @param context_id defaults to package_id
     @param no_complain silently ignore attributes that already exist.
-    @param options a list of options for an flexbase_object that has the flexbase_options storage type the options will be ordered in the order of the list
-    @return flexbase_attribute_id
+    @param options a list of options for an im_dynfield_object that has the im_dynfield_options storage type the options will be ordered in the order of the list
+    @return im_dynfield_attribute_id
 } {
 
     switch $widget_name {
@@ -313,15 +258,15 @@ ad_proc -public flexbase::attribute::new {
         address  { set widget_name "postal_address" }
         phone    { set widget_name "telecom_number" }
     }
-    flexbase::attribute::exists_p_flush -object_type $object_type -attribute_name $attribute_name
-    if { [flexbase::attribute::exists_p -object_type $object_type -attribute_name $attribute_name] } {
+    im_dynfield::attribute::exists_p_flush -object_type $object_type -attribute_name $attribute_name
+    if { [im_dynfield::attribute::exists_p -object_type $object_type -attribute_name $attribute_name] } {
         if { !$no_complain_p } {
             error "Attribute $attribute_name Already Exists" "The attribute \"$attribute_name\" already exists for object_type \"$object_type\""
         } else {
-            return [flexbase::attribute::get_flexbase_attribute_id -object_type $object_type -attribute_name $attribute_name]
+            return [im_dynfield::attribute::get_im_dynfield_attribute_id -object_type $object_type -attribute_name $attribute_name]
         }
     } else {
-        set lang_key "flexbase.$object_type\:$attribute_name\:"
+        set lang_key "intranet-dynfield.$object_type\:$attribute_name\:"
         set pretty_name_key "$lang_key\pretty_name"
         set pretty_plural_key "$lang_key\pretty_plural"
         # register lang messages
@@ -341,143 +286,143 @@ ad_proc -public flexbase::attribute::new {
 
 
         if { [empty_string_p $context_id] } {
-            set context_id [flexbase::package_id]
+            set context_id [im_dynfield::package_id]
         }
         set extra_vars [ns_set create]
-        oacs_util::vars_to_ns_set -ns_set $extra_vars -var_list {flexbase_attribute_id object_type attribute_name pretty_name pretty_plural default_value description widget_name deprecated_p context_id}
-        set flexbase_attribute_id [package_instantiate_object -extra_vars $extra_vars flexbase_attribute]
+        oacs_util::vars_to_ns_set -ns_set $extra_vars -var_list {im_dynfield_attribute_id object_type attribute_name pretty_name pretty_plural default_value description widget_name deprecated_p context_id}
+        set im_dynfield_attribute_id [package_instantiate_object -extra_vars $extra_vars im_dynfield_attribute]
 
         # now we define options for an attribute - if they are provided and the attribute accepts options
-        if { [string equal [flexbase::attribute::storage_type -flexbase_attribute_id $flexbase_attribute_id] "flexbase_options"] && [exists_and_not_null options] } {
+        if { [string equal [im_dynfield::attribute::storage_type -im_dynfield_attribute_id $im_dynfield_attribute_id] "im_dynfield_options"] && [exists_and_not_null options] } {
             foreach { option } $options {
-                flexbase::option::new -flexbase_attribute_id $flexbase_attribute_id -option $option
+                im_dynfield::option::new -im_dynfield_attribute_id $im_dynfield_attribute_id -option $option
             }
         }
-        return $flexbase_attribute_id
+        return $im_dynfield_attribute_id
     }
 }
 
 
-ad_proc -private flexbase::attribute::name_not_cached {
-    -flexbase_attribute_id:required
+ad_proc -private im_dynfield::attribute::name_not_cached {
+    -im_dynfield_attribute_id:required
 } {
-    get the name of an flexbase_attribute
+    get the name of an im_dynfield_attribute
 
     @return attribute_name
 
-    @see flexbase::attribute::name
-    @see flexbase::attribute::name_flush
+    @see im_dynfield::attribute::name
+    @see im_dynfield::attribute::name_flush
 } {
-    return [db_string flexbase_attribute_name {}]
+    return [db_string im_dynfield_attribute_name {}]
 }
 
 
-ad_proc -public flexbase::attribute::name {
-    -flexbase_attribute_id:required
+ad_proc -public im_dynfield::attribute::name {
+    -im_dynfield_attribute_id:required
 } {
-    get the name of an flexbase_attribute. Cached.
+    get the name of an im_dynfield_attribute. Cached.
 
     @return attribute pretty_name
 
-    @see flexbase::attribute::name_not_cached
-    @see flexbase::attribute::name_flush
+    @see im_dynfield::attribute::name_not_cached
+    @see im_dynfield::attribute::name_flush
 } {
-    return [util_memoize [list flexbase::attribute::name_not_cached -flexbase_attribute_id $flexbase_attribute_id]]
+    return [util_memoize [list im_dynfield::attribute::name_not_cached -im_dynfield_attribute_id $im_dynfield_attribute_id]]
 }
 
 
-ad_proc -private flexbase::attribute::name_flush {
-    -flexbase_attribute_id:required
+ad_proc -private im_dynfield::attribute::name_flush {
+    -im_dynfield_attribute_id:required
 } {
-    Flush the storage_type of an flexbase_attribute.
+    Flush the storage_type of an im_dynfield_attribute.
 
     @return attribute pretty_name
 
-    @see flexbase::attribute::name_not_cached
-    @see flexbase::attribute::name_flush
+    @see im_dynfield::attribute::name_not_cached
+    @see im_dynfield::attribute::name_flush
 } {
-    util_memoize_flush [list flexbase::attribute::name_not_cached -flexbase_attribute_id $flexbase_attribute_id]
+    util_memoize_flush [list im_dynfield::attribute::name_not_cached -im_dynfield_attribute_id $im_dynfield_attribute_id]
 }
 
 
-ad_proc -private flexbase::attribute::storage_type_not_cached { 
-    -flexbase_attribute_id:required
+ad_proc -private im_dynfield::attribute::storage_type_not_cached { 
+    -im_dynfield_attribute_id:required
 } {
-    get the storage_type of an flexbase_attribute
+    get the storage_type of an im_dynfield_attribute
 
     @return storage_type
 
-    @see flexbase::attribute::storage_type
-    @see flexbase::attribute::storage_type_flush
+    @see im_dynfield::attribute::storage_type
+    @see im_dynfield::attribute::storage_type_flush
 } {
-    return [db_string flexbase_attribute_storage_type {}]
+    return [db_string im_dynfield_attribute_storage_type {}]
 }
 
 
-ad_proc -public flexbase::attribute::storage_type {
-    -flexbase_attribute_id:required
+ad_proc -public im_dynfield::attribute::storage_type {
+    -im_dynfield_attribute_id:required
 } {
-    get the storage_type of an flexbase_attribute. Cached.
+    get the storage_type of an im_dynfield_attribute. Cached.
 
     @return attribute pretty_name
 
-    @see flexbase::attribute::storage_type_not_cached
-    @see flexbase::attribute::storage_type_flush
+    @see im_dynfield::attribute::storage_type_not_cached
+    @see im_dynfield::attribute::storage_type_flush
 } {
-    return [util_memoize [list flexbase::attribute::storage_type_not_cached -flexbase_attribute_id $flexbase_attribute_id]]
+    return [util_memoize [list im_dynfield::attribute::storage_type_not_cached -im_dynfield_attribute_id $im_dynfield_attribute_id]]
 }
 
 
-ad_proc -private flexbase::attribute::storage_type_flush {
-    -flexbase_attribute_id:required
+ad_proc -private im_dynfield::attribute::storage_type_flush {
+    -im_dynfield_attribute_id:required
 } {
-    Flush the storage_type of a cached flexbase_attribute.
+    Flush the storage_type of a cached im_dynfield_attribute.
 
     @return attribute pretty_name
 
-    @see flexbase::attribute::storage_type_not_cached
-    @see flexbase::attribute::storage_type_flush
+    @see im_dynfield::attribute::storage_type_not_cached
+    @see im_dynfield::attribute::storage_type_flush
 } {
-    util_memoize_flush [list flexbase::attribute::storage_type_not_cached -flexbase_attribute_id $flexbase_attribute_id]
+    util_memoize_flush [list im_dynfield::attribute::storage_type_not_cached -im_dynfield_attribute_id $im_dynfield_attribute_id]
 }
 
-ad_proc -public flexbase::attribute::value {
+ad_proc -public im_dynfield::attribute::value {
     -object_id:required
-    -flexbase_attribute_id:required
+    -im_dynfield_attribute_id:required
 } {
-    this code returns the cached attribute value for a specific flexbase_attribute
+    this code returns the cached attribute value for a specific im_dynfield_attribute
 } {
-    set attribute_values_and_ids [flexbase::object::attributes::list_format -object_id $object_id]
+    set attribute_values_and_ids [im_dynfield::object::attributes::list_format -object_id $object_id]
     set attribute_value ""
     foreach attribute_value_and_id $attribute_values_and_ids {
-        if { [lindex $attribute_value_and_id 0] == $flexbase_attribute_id } {
+        if { [lindex $attribute_value_and_id 0] == $im_dynfield_attribute_id } {
             set attribute_value [lindex $attribute_value_and_id 1]
         }
     }
     return $attribute_value 
 }
 
-ad_proc -public flexbase::attribute::value_from_name {
+ad_proc -public im_dynfield::attribute::value_from_name {
     -object_type:required
     -attribute_name:required
     -object_id:required
 } {
-    this code returns the cached attribute value for a specific flexbase_attribute
+    this code returns the cached attribute value for a specific im_dynfield_attribute
 } {
-    return [flexbase::attribute::value -object_id $object_id [flexbase::attribute::get_flexbase_attribute_id -object_type $object_type -attribute_name $attribute_name]]
+    return [im_dynfield::attribute::value -object_id $object_id [im_dynfield::attribute::get_im_dynfield_attribute_id -object_type $object_type -attribute_name $attribute_name]]
 }
 
 
-namespace eval flexbase::attribute::value {}
+namespace eval im_dynfield::attribute::value {}
 
-ad_proc -public flexbase::attribute::value::new {
+ad_proc -public im_dynfield::attribute::value::new {
     -revision_id:required
-    -flexbase_attribute_id:required
+    -im_dynfield_attribute_id:required
     -attribute_value:required
 } {
     this code saves attributes input in a form
 } {
-    set storage_type [flexbase::attribute::storage_type -flexbase_attribute_id $flexbase_attribute_id]
+    set storage_type [im_dynfield::attribute::storage_type -im_dynfield_attribute_id $im_dynfield_attribute_id]
     set option_map_id ""
     set address_id ""
     set number_id ""
@@ -487,12 +432,12 @@ ad_proc -public flexbase::attribute::value::new {
 
     switch $storage_type {
 
-        flexbase_options {
+        im_dynfield_options {
             # we need to loop through the values
             # on the first option_map_id the option_map_id
             # will be set.
             foreach { option_id } $attribute_value {
-                set option_map_id [flexbase::option::map -option_map_id $option_map_id -option_id $option_id]
+                set option_map_id [im_dynfield::option::map -option_map_id $option_map_id -option_id $option_id]
             }
         }
 
@@ -514,28 +459,28 @@ ad_proc -public flexbase::attribute::value::new {
 }
 
 
-ad_proc -public flexbase::attribute::value::superseed {
+ad_proc -public im_dynfield::attribute::value::superseed {
     -revision_id:required
-    -flexbase_attribute_id:required
-    -flexbase_object_id:required
+    -im_dynfield_attribute_id:required
+    -im_dynfield_object_id:required
 } {
     superseed an attribute value
 } {
     db_dml superseed_attribute_value {}
 }
 
-namespace eval flexbase::multirow {}
+namespace eval im_dynfield::multirow {}
 
-ad_proc -private flexbase::multirow::extend {
+ad_proc -private im_dynfield::multirow::extend {
     -package_key:required
     -object_type:required
     -list_name:required
     -multirow:required
     -key:required
 } {
-    append flexbase_attribute_values to a multirow
+    append im_dynfield_attribute_values to a multirow
 } {
-    set list_id [flexbase::list::get_list_id \
+    set list_id [im_dynfield::list::get_list_id \
                      -package_key $package_key \
                      -object_type $object_type \
                      -list_name $list_name]
@@ -549,86 +494,86 @@ ad_proc -private flexbase::multirow::extend {
         lappend object_id_list [set $key]
     }
     if { [exists_and_not_null object_id_list] } {
-        flexbase::object::attribute::values_batch_process -object_id_list $object_id_list
+        im_dynfield::object::attribute::values_batch_process -object_id_list $object_id_list
     }
 
-    # now we extend the multirow with the flexbase_attribute_names
-    set flexbase_attribute_ids [flexbase::list::flexbase_attribute_ids -list_id $list_id]
-    set flexbase_attribute_names {}
-    foreach flexbase_attribute_id $flexbase_attribute_ids {
-        set flexbase_attribute_name [flexbase::attribute::name -flexbase_attribute_id $flexbase_attribute_id]
-        lappend flexbase_attribute_names $flexbase_attribute_name
-        template::multirow extend $multirow $flexbase_attribute_name
+    # now we extend the multirow with the im_dynfield_attribute_names
+    set im_dynfield_attribute_ids [im_dynfield::list::im_dynfield_attribute_ids -list_id $list_id]
+    set im_dynfield_attribute_names {}
+    foreach im_dynfield_attribute_id $im_dynfield_attribute_ids {
+        set im_dynfield_attribute_name [im_dynfield::attribute::name -im_dynfield_attribute_id $im_dynfield_attribute_id]
+        lappend im_dynfield_attribute_names $im_dynfield_attribute_name
+        template::multirow extend $multirow $im_dynfield_attribute_name
     }
 
-    # now we populate the multirow with flexbase_attribute_values
+    # now we populate the multirow with im_dynfield_attribute_values
     template::multirow foreach $multirow {
-        # first we set a null value for all flexbase_attribute_names
-        # since the flexbase::object::attribute::values proc only
-        # returns those flexbase_attribute_values that do not 
+        # first we set a null value for all im_dynfield_attribute_names
+        # since the im_dynfield::object::attribute::values proc only
+        # returns those im_dynfield_attribute_values that do not 
         # have a null value
-        foreach flexbase_attribute_name flexbase_attribute_names {
-            set [set $flexbase_attribute_name] {}
+        foreach im_dynfield_attribute_name im_dynfield_attribute_names {
+            set [set $im_dynfield_attribute_name] {}
         }
-        flexbase::object::attribute::values -vars -object_id [set $key]
+        im_dynfield::object::attribute::values -vars -object_id [set $key]
     }
 }
 
 
 
 
-namespace eval flexbase::object {}
+namespace eval im_dynfield::object {}
 
-namespace eval flexbase::object::attribute {}
-
-
+namespace eval im_dynfield::object::attribute {}
 
 
-ad_proc -private flexbase::object::attribute::value_memoize {
+
+
+ad_proc -private im_dynfield::object::attribute::value_memoize {
     -object_id:required
-    -flexbase_attribute_id:required
+    -im_dynfield_attribute_id:required
     -attribute_value:required
 } {
-    memoize an flexbase::object::attribute::value
+    memoize an im_dynfield::object::attribute::value
 } {
-    if { [string is true [util_memoize_cached_p [list flexbase::object::attribute::values_not_cached -object_id $object_id]]] } {
-        array set $object_id [util_memoize [list flexbase::object::attribute::values_not_cached -object_id $object_id]]        
+    if { [string is true [util_memoize_cached_p [list im_dynfield::object::attribute::values_not_cached -object_id $object_id]]] } {
+        array set $object_id [util_memoize [list im_dynfield::object::attribute::values_not_cached -object_id $object_id]]        
     }
     # if a value previously existed it will be superseeded
-    set ${object_id}($flexbase_attribute_id) $attribute_value
-    util_memoize_seed [list flexbase::object::attribute::values_not_cached -object_id $object_id] [array get ${object_id}]
+    set ${object_id}($im_dynfield_attribute_id) $attribute_value
+    util_memoize_seed [list im_dynfield::object::attribute::values_not_cached -object_id $object_id] [array get ${object_id}]
 }
 
-ad_proc -public  flexbase::object::attribute::value {
+ad_proc -public  im_dynfield::object::attribute::value {
     -object_id:required
-    -flexbase_attribute_id:required
+    -im_dynfield_attribute_id:required
 } {
 } {
-    flexbase::object::attribute::values -array $object_id -object_id $object_id
-    if { [info exists ${object_id}($flexbase_attribute_id)] } {
-        return ${object_id}($flexbase_attribute_id)
+    im_dynfield::object::attribute::values -array $object_id -object_id $object_id
+    if { [info exists ${object_id}($im_dynfield_attribute_id)] } {
+        return ${object_id}($im_dynfield_attribute_id)
     } else {
         return {}
     }
 }
 
-ad_proc -public  flexbase::object::attribute::values {
+ad_proc -public  im_dynfield::object::attribute::values {
     -object_id:required
     {-ids:boolean}
     {-vars:boolean}
     {-array ""}
 } {
-    @param ids - if specified we will return the flexbase_attribute_id instead of the attribute_name
+    @param ids - if specified we will return the im_dynfield_attribute_id instead of the attribute_name
     @param array - if specified the attribute values are returned in the given array
     @param vars - if sepecified the attribute values vars are returned to the calling environment
 
     if neither array nor vars are specified then a list is returned
 } {
-    set attribute_values_list [util_memoize [list flexbase::object::attribute::values_not_cached -object_id $object_id]]
+    set attribute_values_list [util_memoize [list im_dynfield::object::attribute::values_not_cached -object_id $object_id]]
     if { !$ids_p } {
         set attribute_values_list_with_names ""
         foreach { key value } $attribute_values_list {
-            lappend attribute_values_list_with_names [flexbase::attribute::name -flexbase_attribute_id $key]
+            lappend attribute_values_list_with_names [im_dynfield::attribute::name -im_dynfield_attribute_id $key]
             lappend attribute_values_list_with_names $value
         }
         set attribute_values_list $attribute_values_list_with_names
@@ -650,28 +595,28 @@ ad_proc -public  flexbase::object::attribute::values {
 }
 
 
-ad_proc -private flexbase::object::attribute::values_not_cached {
+ad_proc -private im_dynfield::object::attribute::values_not_cached {
     -object_id:required
 } {
 } {
-    flexbase::object::attribute::values_batch_process -object_id_list $object_id
-    if { [string is true [util_memoize_cached_p [list flexbase::object::attribute::values_not_cached -object_id $object_id]]] } {
-        return [util_memoize [list flexbase::object::attribute::values_not_cached -object_id $object_id]]        
+    im_dynfield::object::attribute::values_batch_process -object_id_list $object_id
+    if { [string is true [util_memoize_cached_p [list im_dynfield::object::attribute::values_not_cached -object_id $object_id]]] } {
+        return [util_memoize [list im_dynfield::object::attribute::values_not_cached -object_id $object_id]]        
     } else {
         return {}
     }
 }
 
 
-ad_proc -private flexbase::object::attribute::values_flush {
+ad_proc -private im_dynfield::object::attribute::values_flush {
     -object_id:required
 } {
 } {
-    return [util_memoize_flush [list flexbase::object::attribute::values_not_cached -object_id $object_id]]
+    return [util_memoize_flush [list im_dynfield::object::attribute::values_not_cached -object_id $object_id]]
 }
 
 
-ad_proc -private flexbase::object::attribute::values_batch_process {
+ad_proc -private im_dynfield::object::attribute::values_batch_process {
     -object_id_list:required
 } {
     @param object_ids a list of object_ids for which to save attributes in their respective caches.
@@ -679,21 +624,21 @@ ad_proc -private flexbase::object::attribute::values_batch_process {
 } {
     set objects_to_cache ""
     foreach object_id_from_list $object_id_list {
-        if { [string is false [util_memoize_cached_p [list flexbase::object::attribute::values -object_id $object_id_from_list]]] } {
+        if { [string is false [util_memoize_cached_p [list im_dynfield::object::attribute::values -object_id $object_id_from_list]]] } {
             lappend objects_to_cache $object_id_from_list
         }
     }
     if { [exists_and_not_null objects_to_cache] } {
-        set sql_object_id_list [flexbase::util::sqlify_list -list $objects_to_cache]
+        set sql_object_id_list [im_dynfield::util::sqlify_list -list $objects_to_cache]
         db_foreach get_attr_values "" {
-            switch [flexbase::attribute::storage_type -flexbase_attribute_id $flexbase_attribute_id] {
+            switch [im_dynfield::attribute::storage_type -im_dynfield_attribute_id $im_dynfield_attribute_id] {
                 telecom_number {
                     set attribute_value $telecom_number_string
                 }
                 postal_address {
                     set attribute_value $address_string
                 }
-                flexbase_options {
+                im_dynfield_options {
                     set attribute_value $options_string
                 }
                 time {
@@ -706,33 +651,33 @@ ad_proc -private flexbase::object::attribute::values_batch_process {
                     set attribute_value [list $value $value_mime_type] 
                 }
             }
-            set ${object_id}($flexbase_attribute_id) $attribute_value
+            set ${object_id}($im_dynfield_attribute_id) $attribute_value
         }
         foreach object_id_from_list $object_id_list {
-            util_memoize_seed [list flexbase::object::attribute::values_not_cached -object_id $object_id_from_list] [array get ${object_id_from_list}]
+            util_memoize_seed [list im_dynfield::object::attribute::values_not_cached -object_id $object_id_from_list] [array get ${object_id_from_list}]
         }
     }
 }
 
 
 
-namespace eval flexbase::object::revision {}
+namespace eval im_dynfield::object::revision {}
 
 
-ad_proc -public flexbase::object::revision::new {
+ad_proc -public im_dynfield::object::revision::new {
     {-package_id ""}
     -object_id:required
 } {
-    create a new flexbase_object_revision
+    create a new im_dynfield_object_revision
 
     @return revision_id
 } {
     if { [empty_string_p $package_id] } {
-        set package_id [flexbase::package_id]
+        set package_id [im_dynfield::package_id]
     }
     set extra_vars [ns_set create]
     oacs_util::vars_to_ns_set -ns_set $extra_vars -var_list { object_id package_id }
-    set revision_id [package_instantiate_object -extra_vars $extra_vars flexbase_object_revision]
+    set revision_id [package_instantiate_object -extra_vars $extra_vars im_dynfield_object_revision]
 
     return $revision_id
 }
@@ -748,69 +693,69 @@ ad_proc -public flexbase::object::revision::new {
 
 
 
-namespace eval flexbase::list {}
+namespace eval im_dynfield::list {}
 
-ad_proc -public flexbase::list::get {
+ad_proc -public im_dynfield::list::get {
     -list_id:required
     -array:required
 } {
-    Get the info on an flexbase_attribute
+    Get the info on an im_dynfield_attribute
 } {
     upvar 1 $array row
     db_1row select_list_info {} -column_array row
 }
 
-ad_proc -private flexbase::list::flexbase_attribute_ids_not_cached {
+ad_proc -private im_dynfield::list::im_dynfield_attribute_ids_not_cached {
     -list_id:required
 } {
-    Get a list of flexbase_attributes.
+    Get a list of im_dynfield_attributes.
 
-    @return list of flexbase_attribute_ids, in the correct order
+    @return list of im_dynfield_attribute_ids, in the correct order
 
-    @see flexbase::list::flexbase_attribute_ids
-    @see flexbase::list::flexbase_attribute_ids_flush
+    @see im_dynfield::list::im_dynfield_attribute_ids
+    @see im_dynfield::list::im_dynfield_attribute_ids_flush
 } {
-    return [db_list flexbase_attribute_ids {}]
+    return [db_list im_dynfield_attribute_ids {}]
 }
 
-ad_proc -private flexbase::list::flexbase_attribute_ids {
+ad_proc -private im_dynfield::list::im_dynfield_attribute_ids {
     -list_id:required
 } {
-    get this lists flexbase_attribute_ids. Cached.
+    get this lists im_dynfield_attribute_ids. Cached.
 
-    @return list of flexbase_attribute_ids, in the correct order
+    @return list of im_dynfield_attribute_ids, in the correct order
 
-    @see flexbase::list::flexbase_attribute_ids_not_cached
-    @see flexbase::list::flexbase_attribute_ids_flush
+    @see im_dynfield::list::im_dynfield_attribute_ids_not_cached
+    @see im_dynfield::list::im_dynfield_attribute_ids_flush
 } {
-    return [util_memoize [list flexbase::list::flexbase_attribute_ids_not_cached -list_id $list_id]]
+    return [util_memoize [list im_dynfield::list::im_dynfield_attribute_ids_not_cached -list_id $list_id]]
 }
 
-ad_proc -private flexbase::list::flexbase_attribute_ids_flush {
+ad_proc -private im_dynfield::list::im_dynfield_attribute_ids_flush {
     -list_id:required
 } {
-    Flush this lists flexbase_attribute_ids cache.
+    Flush this lists im_dynfield_attribute_ids cache.
 
-    @return list of flexbase_attribute_ids, in the correct order
+    @return list of im_dynfield_attribute_ids, in the correct order
 
-    @see flexbase::list::flexbase_attribute_ids_not_cached
-    @see flexbase::list::flexbase_attribute_ids
+    @see im_dynfield::list::im_dynfield_attribute_ids_not_cached
+    @see im_dynfield::list::im_dynfield_attribute_ids
 } {
-    return [util_memoize_flush [list flexbase::list::flexbase_attribute_ids_not_cached -list_id $list_id]]
+    return [util_memoize_flush [list im_dynfield::list::im_dynfield_attribute_ids_not_cached -list_id $list_id]]
 }
 
 
 
-ad_proc -private flexbase::list::exists_p {
+ad_proc -private im_dynfield::list::exists_p {
     -package_key:required
     -object_type:required
     -list_name:required
 } {
-    does an flexbase list like this exist?
+    does an intranet-dynfield list like this exist?
 
     @return 1 if the list exists for this object_type and package_key and 0 if the does not exist
 } {
-    set list_id [flexbase::list::get_list_id_not_cached -package_key $package_key -object_type $object_type -list_name $list_name]
+    set list_id [im_dynfield::list::get_list_id_not_cached -package_key $package_key -object_type $object_type -list_name $list_name]
     if { [exists_and_not_null list_id] } {
         return 1
     } else {
@@ -818,20 +763,20 @@ ad_proc -private flexbase::list::exists_p {
     }
 }
 
-ad_proc -private flexbase::list::flush {
+ad_proc -private im_dynfield::list::flush {
     -package_key:required
     -object_type:required
     -list_name:required
 } {
-    flush all inte info we have on an flexbase_list
+    flush all inte info we have on an im_dynfield_list
 
     @return 1 if the list exists for this object_type and package_key and 0 if the does not exist
 } {
-    flexbase::list::flexbase_attribute_ids_flush -list_id [flexbase::list::get_list_id_not_cached -package_key $package_key -object_type $object_type -list_name $list_name]
-    flexbase::list::get_list_id_flush -package_key $package_key -object_type $object_type -list_name $list_name
+    im_dynfield::list::im_dynfield_attribute_ids_flush -list_id [im_dynfield::list::get_list_id_not_cached -package_key $package_key -object_type $object_type -list_name $list_name]
+    im_dynfield::list::get_list_id_flush -package_key $package_key -object_type $object_type -list_name $list_name
 }
 
-ad_proc -private flexbase::list::get_list_id {
+ad_proc -private im_dynfield::list::get_list_id {
     -package_key:required
     -object_type:required
     -list_name:required
@@ -841,11 +786,11 @@ ad_proc -private flexbase::list::get_list_id {
 
     @return list_id if none exists then it returns blank
 } {
-    return [util_memoize [list flexbase::list::get_list_id_not_cached -package_key $package_key -object_type $object_type -list_name $list_name]]
+    return [util_memoize [list im_dynfield::list::get_list_id_not_cached -package_key $package_key -object_type $object_type -list_name $list_name]]
 }
 
 
-ad_proc -private flexbase::list::get_list_id_not_cached {
+ad_proc -private im_dynfield::list::get_list_id_not_cached {
     -package_key:required
     -object_type:required
     -list_name:required
@@ -858,7 +803,7 @@ ad_proc -private flexbase::list::get_list_id_not_cached {
     return [db_string get_list_id {} -default {}]
 }
 
-ad_proc -private flexbase::list::get_list_id_flush {
+ad_proc -private im_dynfield::list::get_list_id_flush {
     -package_key:required
     -object_type:required
     -list_name:required
@@ -868,10 +813,10 @@ ad_proc -private flexbase::list::get_list_id_flush {
 
     @return list_id if none exists then it returns blank
 } {
-    return [util_memoize_flush [list flexbase::list::get_list_id_not_cached -package_key $package_key -object_type $object_type -list_name $list_name]]
+    return [util_memoize_flush [list im_dynfield::list::get_list_id_not_cached -package_key $package_key -object_type $object_type -list_name $list_name]]
 }
 
-ad_proc -public flexbase::list::new {
+ad_proc -public im_dynfield::list::new {
     {-list_id ""}
     -package_key:required
     -object_type:required
@@ -881,44 +826,44 @@ ad_proc -public flexbase::list::new {
     {-description_mime_type "text/plain"}
     {-context_id ""}
 } {
-    create a new flexbase_group
+    create a new im_dynfield_group
 
     @return group_id
 } {
     if { [empty_string_p $context_id] } {
-        set context_id [flexbase::package_id]
+        set context_id [im_dynfield::package_id]
     }
     if { ![exists_and_not_null description] } {
         set description_mime_type ""
     }
-    set lang_key "flexbase.$package_key\:$object_type\:$list_name"
+    set lang_key "intranet-dynfield.$package_key\:$object_type\:$list_name"
     _mr en $lang_key $pretty_name
     set pretty_name $lang_key
 
     if { [exists_and_not_null description] } {
-        set lang_key "flexbase.$package_key\:$object_type\:$list_name\:description"
+        set lang_key "intranet-dynfield.$package_key\:$object_type\:$list_name\:description"
         _mr en $lang_key $description
         set description $lang_key
     }
 
     set extra_vars [ns_set create]
     oacs_util::vars_to_ns_set -ns_set $extra_vars -var_list { list_id package_key object_type list_name pretty_name description description_mime_type }
-    set list_id [package_instantiate_object -extra_vars $extra_vars flexbase_list]
+    set list_id [package_instantiate_object -extra_vars $extra_vars im_dynfield_list]
 
     return $list_id
 }
 
 
-namespace eval flexbase::list::attribute {}
+namespace eval im_dynfield::list::attribute {}
 
-ad_proc -public flexbase::list::attribute::map {
+ad_proc -public im_dynfield::list::attribute::map {
     -list_id:required
-    -flexbase_attribute_id:required
+    -im_dynfield_attribute_id:required
     {-sort_order ""}
     {-required_p "f"}
     {-section_heading ""}
 } {
-    Map an flexbase option for an attribute to an option_map_id, if no value is supplied for option_map_id a new option_map_id will be created.
+    Map an intranet-dynfield option for an attribute to an option_map_id, if no value is supplied for option_map_id a new option_map_id will be created.
 
     @param sort_order if null then the attribute will be placed as the last attribute in this groups sort order
 
@@ -927,43 +872,43 @@ ad_proc -public flexbase::list::attribute::map {
     if { ![exists_and_not_null sort_order] } {
         set sort_order [expr 1 + [db_string get_highest_sort_order {} -default "0"]]
     }
-    return [db_exec_plsql flexbase_list_attribute_map {}]
+    return [db_exec_plsql im_dynfield_list_attribute_map {}]
 }
 
-ad_proc -public flexbase::list::attribute::unmap {
+ad_proc -public im_dynfield::list::attribute::unmap {
     -list_id:required
-    -flexbase_attribute_id:required
+    -im_dynfield_attribute_id:required
 } {
-    Unmap an flexbase option from an flexbase list
+    Unmap an intranet-dynfield option from an intranet-dynfield list
 } {
-    db_dml flexbase_list_attribute_unmap {}
+    db_dml im_dynfield_list_attribute_unmap {}
 }
 
-ad_proc -public flexbase::list::attribute::required {
+ad_proc -public im_dynfield::list::attribute::required {
     -list_id:required
-    -flexbase_attribute_id:required
+    -im_dynfield_attribute_id:required
 } {
-    Specify and flexbase_attribute as required in an flexbase list
+    Specify and im_dynfield_attribute as required in an intranet-dynfield list
 } {
-    db_dml flexbase_list_attribute_required {}
+    db_dml im_dynfield_list_attribute_required {}
 }
 
-ad_proc -public flexbase::list::attribute::optional {
+ad_proc -public im_dynfield::list::attribute::optional {
     -list_id:required
-    -flexbase_attribute_id:required
+    -im_dynfield_attribute_id:required
 } {
-    Specify and flexbase_attribute as optional in an flexbase list
+    Specify and im_dynfield_attribute as optional in an intranet-dynfield list
 } {
-    db_dml flexbase_list_attribute_optional {}
+    db_dml im_dynfield_list_attribute_optional {}
 }
 
 
 
-namespace eval flexbase::util {}
+namespace eval im_dynfield::util {}
 
 
 
-ad_proc -public flexbase::util::sqlify_list {
+ad_proc -public im_dynfield::util::sqlify_list {
     -list:required
 } {
     set output_list {}
@@ -983,14 +928,14 @@ ad_proc -public flexbase::util::sqlify_list {
 
 
 
-namespace eval flexbase:: {}
+namespace eval im_dynfield:: {}
 
 
-ad_proc -public flexbase::attribute_load {
+ad_proc -public im_dynfield::attribute_load {
     -object_type:required
     -object_id:required
 } {
-    set flexbase attributes values
+    set intranet-dynfield attributes values
 } {
     db_1row object_type_info "
         select \
@@ -1034,14 +979,14 @@ ad_proc -public flexbase::attribute_load {
    }
 }
 
-ad_proc -public flexbase::attribute_show {
+ad_proc -public im_dynfield::attribute_show {
     -object_type:required
     {-page_url ""}
     {-style ""}
     {-form_id "dummy_form"}
 } {
-    Show flexbase attributes.<p>
-    There are three posible 'positioning' cases, you have to define each in the flexbase admin pages:
+    Show intranet-dynfield attributes.<p>
+    There are three posible 'positioning' cases, you have to define each in the intranet-dynfield admin pages:
     <ul>
      <li>absolute: we just wrap the label-widget attribute in div's using one *-absolute adp file. 
                    It is up to the css to place these attributes.
@@ -1051,8 +996,8 @@ ad_proc -public flexbase::attribute_show {
 
     @option object_type       The object_type attributes you want to add to the form
 
-    @option page_url          Which page_url (from the ones defined in flexbase admin pages) you want to use. 
-                              Default the one defined in flexbase admin pages.
+    @option page_url          Which page_url (from the ones defined in intranet-dynfield admin pages) you want to use. 
+                              Default the one defined in intranet-dynfield admin pages.
 
     @option style             The adp file you want to use for the templating, full path '/web/server/package/...'.
                               This overwrite the defaults explained in the 'positioning' cases.
@@ -1062,7 +1007,7 @@ ad_proc -public flexbase::attribute_show {
 	# get default page_url
 	set page_url [db_string get_default_page "
 	    select page_url
-	    from flexbase_layout_pages
+	    from im_dynfield_layout_pages
 	    where object_type = :object_type
 	    and default_p = 't'
 	" -default ""]
@@ -1072,12 +1017,12 @@ ad_proc -public flexbase::attribute_show {
     
     # verify correctness of page_url if something wrong just ignore dynamic position
     if { [db_0or1row exists_page_url_p "
-	select 1 from flexbase_layout_pages 
+	select 1 from im_dynfield_layout_pages 
 	where object_type = :object_type and page_url = :page_url"] 
     } {
 	db_1row get_page_info {
 	    select layout_type, table_width, table_height, adp_file 
-	    from flexbase_layout_pages
+	    from im_dynfield_layout_pages
 	    where object_type = :object_type and page_url = :page_url
 	} -column_array "page"
 	set attrib_list [db_list_of_lists get_page_attributes {
@@ -1089,8 +1034,8 @@ ad_proc -public flexbase::attribute_show {
                    fl.class as class,
 	           fl.sort_key
 	from acs_attributes attr,
-                 flexbase_attributes flex,
-	         flexbase_layout fl
+                 im_dynfield_attributes flex,
+	         im_dynfield_layout fl
 	where attr.object_type = :object_type 
 	and attr.attribute_id = flex.acs_attribute_id
 	and fl.attribute_id = flex.attribute_id
@@ -1099,7 +1044,7 @@ ad_proc -public flexbase::attribute_show {
 	order by fl.sort_key
 	}]
     } else {	
-	set attrib_list [db_list_of_lists  "get flexbase attributes" "select \
+	set attrib_list [db_list_of_lists  "get intranet-dynfield attributes" "select \
 		attr.attribute_id,\
 		attr.pretty_name,\
 		attr.attribute_name,\
@@ -1108,7 +1053,7 @@ ad_proc -public flexbase::attribute_show {
 		'' as class \
 		from \
 		acs_attributes attr,\
-		flexbase_attributes flex \
+		im_dynfield_attributes flex \
 		where \
 		attr.object_type = :object_type \
 		and attr.attribute_id = flex.acs_attribute_id"] 
@@ -1128,7 +1073,7 @@ ad_proc -public flexbase::attribute_show {
 		widget,\
 		parameters,\
 		sql_datatype\
-		from flexbase_widgets \
+		from im_dynfield_widgets \
 		where widget_name = :widget_name"
 
 
@@ -1146,7 +1091,7 @@ ad_proc -public flexbase::attribute_show {
 
 	# use the not used -help parameter (for dates) to manage the div wrappers in the adp
 	set form_element "$attribute_name:${acs_datatype}(${widget}),optional {value \"$value\"} {html $parameters} {help $class}"
-	if {$widget != "flexbase_hidden"} {
+	if {$widget != "im_dynfield_hidden"} {
 		append form_element " {label \"$pretty_name\"}"
 	}
 	
@@ -1162,11 +1107,11 @@ ad_proc -public flexbase::attribute_show {
     if { [empty_string_p $style] } {
 	switch -- $page(layout_type) {
 	    absolute {
-		set adp_file [parameter::get_from_package_key -package_key flexbase -parameter absolute_template -default "default-absolute"]
+		set adp_file [parameter::get_from_package_key -package_key intranet-dynfield -parameter absolute_template -default "default-absolute"]
 		set cols 1
 	    }
 	    relative {
-		set adp_file [parameter::get_from_package_key -package_key flexbase -parameter relative_template -default "default-relative"]
+		set adp_file [parameter::get_from_package_key -package_key intranet-dynfield -parameter relative_template -default "default-relative"]
 		#set cols "$page(table_width)" 
 		#set headers "headers"
 		#set title "title"
@@ -1180,8 +1125,8 @@ ad_proc -public flexbase::attribute_show {
 		set cols 1
 	    }
 	}
-	set style "../../../flexbase/resources/forms/${adp_file}"
-	#ns_log Notice "Style --------> ../../../flexbase/resources/forms/${adp_file}"
+	set style "../../../intranet-dynfield/resources/forms/${adp_file}"
+	#ns_log Notice "Style --------> ../../../intranet-dynfield/resources/forms/${adp_file}"
     }
 
     # Call ad_form to actually render the attributes.
@@ -1197,12 +1142,12 @@ ad_proc -public flexbase::attribute_show {
 }
 
 
-ad_proc -public flexbase::attribute_store {
+ad_proc -public im_dynfield::attribute_store {
     -object_type:required
     -object_id:required
     -form_id:required
 } {
-    store flexbase attributes 
+    store intranet-dynfield attributes 
 } {
 
     # ------------------------------------------
@@ -1259,7 +1204,7 @@ ad_proc -public flexbase::attribute_store {
 			where $column_i =:object_id"]} {
 			
 			# ------------------------------------------
-			# flexbase is not a method to create new objects
+			# intranet-dynfield is not a method to create new objects
 			# only is able to insert new rows in extensions tables.
 			# In general, insert a row in a table is not enought 
 			# to create a object, you may need a call plsql proc
@@ -1271,7 +1216,7 @@ ad_proc -public flexbase::attribute_store {
 				# not implmeneted yet
 				ad_return_error "ERROR - Object not exists" "Creating new objects not implmented yet<br>
 				Please create the object first via an existing maintenance screen
-				before using the FlexBase generic architecture to modify its fields"
+				before using the Intranet-Dynfield generic architecture to modify its fields"
 				return
 			}
 			
@@ -1303,21 +1248,21 @@ ad_proc -public flexbase::attribute_store {
 						}	
 				    	    	if {$multiple_p} {
 				    			# -------------------------
-				    			# get flexbase attribute_id
+				    			# get intranet-dynfield attribute_id
 				    			# -------------------------
 				    			db_1row "get flex attribute" "select attribute_id 
-				    	  				from flexbase_attributes
+				    	  				from im_dynfield_attributes
 				    	    				where acs_attribute_id = (select attribute_id
 				    	    							  from acs_attributes 
 				    	    							  where object_type = :object_type
 				    	    							  and attribute_name = :c)"
 				    			db_transaction {
-				    				db_dml "delete previous values" "delete from flexbase_attr_multi_value
+				    				db_dml "delete previous values" "delete from im_dynfield_attr_multi_value
 				    					where object_id = :object_id 
 				    					and attribute_id = :attribute_id"
 				    				    				
 				    				foreach val [template::element::get_values $form_id $c] {
-				    					db_dml "create multi value" "insert into flexbase_attr_multi_value
+				    					db_dml "create multi value" "insert into im_dynfield_attr_multi_value
 				    						(attribute_id,object_id,value)
 				    						values
 				    						(:attribute_id,:object_id,:val)"
@@ -1454,21 +1399,21 @@ ad_proc -public flexbase::attribute_store {
 			}
 			if {$multiple_p} {
 				# -------------------------
-				# get flexbase attribute_id
+				# get intranet-dynfield attribute_id
 				# -------------------------
 				db_1row "get flex attribute" "select attribute_id 
-					from flexbase_attributes
+					from im_dynfield_attributes
 					where acs_attribute_id = (select attribute_id
 							  from acs_attributes 
 							  where object_type = :object_type
 							  and attribute_name = :attribute_name)"
 				db_transaction {
-					db_dml "delete previous values" "delete from flexbase_attr_multi_value
+					db_dml "delete previous values" "delete from im_dynfield_attr_multi_value
 						where object_id = :object_id 
 						and attribute_id = :attribute_id"
 					#ns_log notice "***************** before multi values [set $attribute_name]"
 					foreach val [template::element::get_values $form_id $attribute_name] {
-						db_dml "create multi value" "insert into flexbase_attr_multi_value
+						db_dml "create multi value" "insert into im_dynfield_attr_multi_value
 										(attribute_id,object_id,value)
 										values
 										(:attribute_id,:object_id,:val)"
@@ -1537,22 +1482,22 @@ ad_proc -public flexbase::attribute_store {
 
 ######
 
-ad_proc -public flexbase::search_query {
+ad_proc -public im_dynfield::search_query {
     -object_type:required
     -form_id:required
     {-select_part ""}
     {-from_part ""}
     {-where_clause ""}
 } {
-    generate the search query using flexbase attributes for object_type
+    generate the search query using intranet-dynfield attributes for object_type
     
     @param object_type: the object type that you want to include attributes
     @param form_id: search form id
-    @param select_part: string, comma separated, of NON flexbase attributes that you want to get from DB.
+    @param select_part: string, comma separated, of NON intranet-dynfield attributes that you want to get from DB.
     	Format: the same as in sql query
     @param from_part string, comma separated, containing from tables for de query search. 
     	Format: the same as in sql query
-    @param where_clause: Non flexbase search conditions
+    @param where_clause: Non intranet-dynfield search conditions
     
     @return: list of lists ready to convert in array <br/>
     	array elements:
@@ -1560,8 +1505,8 @@ ad_proc -public flexbase::search_query {
     	   <li><b>select</b>: string, comma separated, ready to use in sql query after SELECT</li>
     	   <li><b>from</b>: string, comma separated, ready to use in sql query after FROM</li>
     	   <li><b>where</b>: string, ready to use in sql query after WHERE</li>
-    	   <li><b>list_elements</b>: flexbase attributes to append to list result elements </li>
-    	   <li><b>list_orderby</b>: flexbase attributes to append to orderby result elements </li>
+    	   <li><b>list_elements</b>: intranet-dynfield attributes to append to list result elements </li>
+    	   <li><b>list_orderby</b>: intranet-dynfield attributes to append to orderby result elements </li>
     	</ul>
 } {
         
@@ -1683,8 +1628,8 @@ ad_proc -public flexbase::search_query {
 	wdgt.parameters,
 	wdgt.storage_type
 	from acs_attributes attr,
-	flexbase_attributes flex,
-	flexbase_widgets wdgt
+	im_dynfield_attributes flex,
+	im_dynfield_widgets wdgt
 	where attr.object_type = :object_type
 	AND attr.attribute_id = flex.acs_attribute_id
 	AND flex.widget_name = wdgt.widget_name
@@ -1730,10 +1675,10 @@ ad_proc -public flexbase::search_query {
 				}
 				if {$multiple_p} {
 					# -------------------------
-					# get flexbase attribute_id
+					# get intranet-dynfield attribute_id
 					# -------------------------
 					db_1row "get flex attribute" "select attribute_id 
-						from flexbase_attributes
+						from im_dynfield_attributes
 						where acs_attribute_id = (select attribute_id
 								  from acs_attributes 
 								  where object_type = :object_type
@@ -1748,7 +1693,7 @@ ad_proc -public flexbase::search_query {
 								append where_clause "\n\t OR "
 							}
 							append where_clause " $table_alias.$column_i in (select object_id
-								from flexbase_attr_multi_value
+								from im_dynfield_attr_multi_value
 								where attribute_id = '$attribute_id'
 								and value = '$val')"
 							incr i
@@ -1811,7 +1756,7 @@ ad_proc -public flexbase::search_query {
 	switch $widget {
 		"category_tree" {
 			if {$multiple_p} {
-				lappend query_select_list "flexbase_attribute.multimap_val_to_str($attribute_id, $table_alias.$column_i,'$widget') as $attribute_name"
+				lappend query_select_list "im_dynfield_attribute.multimap_val_to_str($attribute_id, $table_alias.$column_i,'$widget') as $attribute_name"
 			} else {
 				lappend query_select_list "category.name($table_alias.$attribute_name) as $attribute_name"
 			}
@@ -1852,7 +1797,7 @@ ad_proc -public flexbase::search_query {
 	}
 
 	# -----------------------------------------------------------------
-	# avila 20050405 disable add flexbase attributes to result screen
+	# avila 20050405 disable add intranet-dynfield attributes to result screen
 	# -----------------------------------------------------------------
 	
 	append elements_list  " $attribute_name { 
@@ -1871,7 +1816,7 @@ ad_proc -public flexbase::search_query {
 
 
 ######
-ad_proc -public flexbase::append_attributes_to_form {
+ad_proc -public im_dynfield::append_attributes_to_form {
     -object_type:required
     -form_id:required
     {-object_id ""}
@@ -1880,8 +1825,8 @@ ad_proc -public flexbase::append_attributes_to_form {
     {-search_p "0"}
     {-cols_var ""}
 } {
-    Append flexbase attributes for object_type to an existing form.<p>
-    There are three posible 'positioning' cases, you have to define each in the flexbase admin pages:
+    Append intranet-dynfield attributes for object_type to an existing form.<p>
+    There are three posible 'positioning' cases, you have to define each in the intranet-dynfield admin pages:
     <ul>
      <li>absolute: we just wrap the label-widget attribute in div's using one *-absolute adp file.
                    It is up to the css to place these attributes.
@@ -1895,8 +1840,8 @@ ad_proc -public flexbase::append_attributes_to_form {
                             templating, this file must be placed in acs-templating/resources/form/... (default aims-form)
                             This overwrite the defaults explained in the 'positioning' cases.
 
-    @option page_url        Which page_url (from the ones defined in flexbase admin pages) you want to use.
-                            Default the one defined in flexbase admin pages.
+    @option page_url        Which page_url (from the ones defined in intranet-dynfield admin pages) you want to use.
+                            Default the one defined in intranet-dynfield admin pages.
 
 
     @option cols_var        The varname from the caller program which contains the number of columns for the relative
@@ -1922,7 +1867,7 @@ ad_proc -public flexbase::append_attributes_to_form {
         set cols ""
     }
 
-    #ns_log Notice "flexbase::append_attributes_to_form ---> Entering... ($style_var = $style) ($object_id) ($page_url)"
+    #ns_log Notice "im_dynfield::append_attributes_to_form ---> Entering... ($style_var = $style) ($object_id) ($page_url)"
 
     if { [empty_string_p $page_url] } {
 
@@ -1932,14 +1877,14 @@ ad_proc -public flexbase::append_attributes_to_form {
 	}
 	
 	# is this url one of the user defined pages for this object_type?
-	set exist_page_url_p [db_string exist_page_url "select 1 from flexbase_layout_pages \
+	set exist_page_url_p [db_string exist_page_url "select 1 from im_dynfield_layout_pages \
 		where object_type = :object_type and page_url = :page_url" -default "0"]
 
 	# if not get default for object_type, if no one we won't use layout
 	if { !$exist_page_url_p } {
 	    set page_url [db_string get_default_page "
 	    select page_url
-	    from flexbase_layout_pages
+	    from im_dynfield_layout_pages
 	    where object_type = :object_type
 	    and default_p = 't'
 	    " -default ""]
@@ -1948,7 +1893,7 @@ ad_proc -public flexbase::append_attributes_to_form {
 
     
     # verify correctness of page_url if something wrong just ignore dynamic position
-    if { [db_0or1row exists_page_url_p "select 1 from flexbase_layout_pages
+    if { [db_0or1row exists_page_url_p "select 1 from im_dynfield_layout_pages
         where object_type = :object_type and page_url = :page_url"]
     } {
 	set layout_page_p 1
@@ -1959,7 +1904,7 @@ ad_proc -public flexbase::append_attributes_to_form {
 	    table_width, 
 	    table_height, 
 	    adp_file 
-	    from flexbase_layout_pages
+	    from im_dynfield_layout_pages
 	    where object_type = :object_type 
 	    and page_url = :page_url
 	} -column_array "page"
@@ -1967,7 +1912,7 @@ ad_proc -public flexbase::append_attributes_to_form {
     } else {
     	set page_url [db_string get_default_page {
 		    select page_url
-		    from flexbase_layout_pages
+		    from im_dynfield_layout_pages
 		    where object_type = :object_type
 		    and default_p = 't'
         } -default ""]
@@ -2022,11 +1967,11 @@ ad_proc -public flexbase::append_attributes_to_form {
     if { [empty_string_p $style] && $layout_page_p } {
     	switch -- $page(layout_type) {
     	    absolute {
-    		set adp_file [parameter::get_from_package_key -package_key flexbase -parameter absolute_template -default "default-absolute"]
+    		set adp_file [parameter::get_from_package_key -package_key intranet-dynfield -parameter absolute_template -default "default-absolute"]
     		set cols 1
     	    }
     	    relative {
-    		set adp_file [parameter::get_from_package_key -package_key flexbase -parameter relative_template -default "default-relative"]
+    		set adp_file [parameter::get_from_package_key -package_key intranet-dynfield -parameter relative_template -default "default-relative"]
     		#set cols "$page(table_width)" 
     		#set headers "headers"
     		#set title "title"
@@ -2040,19 +1985,19 @@ ad_proc -public flexbase::append_attributes_to_form {
     		set cols 1
     	    }
     	}
-    	set style "../../../flexbase/resources/forms/${adp_file}"
+    	set style "../../../intranet-dynfield/resources/forms/${adp_file}"
     } elseif {[empty_string_p $style]} {
-	set style [parameter::get_from_package_key -package_key flexbase -parameter form_style -default "aims-form"]
+	set style [parameter::get_from_package_key -package_key intranet-dynfield -parameter form_style -default "aims-form"]
     }
 
     #ns_log Notice "Style ----------------------------> $style"
 
     # ------------------------------------------------------
-    # Create form elements from the "flexbase_attributes" 
+    # Create form elements from the "im_dynfield_attributes" 
     # table
     # ------------------------------------------------------
 
-    # The table "flexbase_attributes" contains the list of
+    # The table "im_dynfield_attributes" contains the list of
     # "attributes" (= fields or columns) of an object.
     # We are going to add these fields to the current view/
     # edit template.
@@ -2083,9 +2028,9 @@ ad_proc -public flexbase::append_attributes_to_form {
 		fl.sort_key
 	     from
 		acs_attributes a, 
-		flexbase_attributes aa,
-		flexbase_widgets aw,
-		flexbase_layout fl,
+		im_dynfield_attributes aa,
+		im_dynfield_widgets aw,
+		im_dynfield_layout fl,
 		acs_object_types t
 	     where 
 		t.object_type = :object_type
@@ -2125,8 +2070,8 @@ ad_proc -public flexbase::append_attributes_to_form {
 		'' as class
 	     from
 		acs_attributes a, 
-		flexbase_attributes aa,
-		flexbase_widgets aw,
+		im_dynfield_attributes aa,
+		im_dynfield_widgets aw,
 		acs_object_types t
 	     where 
 		t.object_type = :object_type
@@ -2154,7 +2099,7 @@ ad_proc -public flexbase::append_attributes_to_form {
 	if {$layout_page_p} {
 		if {![db_0or1row "get class" "select class, 
 			sort_key 
-			from flexbase_layout
+			from im_dynfield_layout
 			where attribute_id = :flex_attr_id
 			and page_url = :page_url
 			and object_type = :object_type"]} {
@@ -2254,8 +2199,8 @@ ad_proc -public flexbase::append_attributes_to_form {
 		
 		if { [string eq $required_p "f"] && ![string eq $widget "checkbox"]} {
 			# This is not a required option list... offer a default
-			#lappend option_list [list " [_ flexbase.no_value] " ""]
-			set option_list [linsert $option_list -1 [list " [_ flexbase.no_value] " ""]]
+			#lappend option_list [list " [_ intranet-dynfield.no_value] " ""]
+			set option_list [linsert $option_list -1 [list " [_ intranet-dynfield.no_value] " ""]]
 			
     		}
     		if {![template::element::exists $form_id "$attribute_name"]} {
@@ -2368,9 +2313,9 @@ ad_proc -public flexbase::append_attributes_to_form {
 			# --------------------------------------
 			
 			set parameters_list [db_string "get widget params" "select parameters \
-					from flexbase_widgets \
+					from im_dynfield_widgets \
 					where widget_name = (select widget_name \
-							     from flexbase_attributes \
+							     from im_dynfield_attributes \
 							     where acs_attribute_id = :attr_id)" \
 					-default ""]
 			# ----------------------------------------
@@ -2421,10 +2366,10 @@ ad_proc -public flexbase::append_attributes_to_form {
 					switch $widget_element {
 						"checkbox" - "multiselect" - "category_tree" {
 							# ---------------------------------
-							# get flexbase attribute id
+							# get intranet-dynfield attribute id
 							# ---------------------------------
 							db_1row "get flex attrib id" "select attribute_id 
-								from flexbase_attributes 
+								from im_dynfield_attributes 
 								where acs_attribute_id = (select attribute_id 
 											  from acs_attributes 
 											  where attribute_name = :attribute_name
@@ -2440,7 +2385,7 @@ ad_proc -public flexbase::append_attributes_to_form {
 							}
 							if {$multiple_p} {
 								set values_list [db_list "get values" "select value 
-												       from flexbase_attr_multi_value
+												       from im_dynfield_attr_multi_value
 												       where attribute_id = :attribute_id
 												       and object_id = :object_id"]
 							} else {
@@ -2471,12 +2416,12 @@ ad_proc -public flexbase::append_attributes_to_form {
 	}
     }
 
-    #ns_log Notice "flexbase::append_attributes_to_form ---> Exit."
+    #ns_log Notice "im_dynfield::append_attributes_to_form ---> Exit."
 }
 
 ######
 
-ad_proc -public flexbase::form {
+ad_proc -public im_dynfield::form {
     -object_type:required
     -form_id:required
     -object_id:required
@@ -2486,14 +2431,14 @@ ad_proc -public flexbase::form {
     Returns a fully formatted template, similar to ad_form.
     As a difference to ad_form, you don't need to specify the
     fields of the object, because they are defined dynamically
-    in the flexbase database.
-    Please see the FlexBase documentation for more details.
+    in the intranet-dynfield database.
+    Please see the Intranet-Dynfield documentation for more details.
 } {
     if { [empty_string_p $page_url] } {
         # get default page_url
         set page_url [db_string get_default_page {
 	    select page_url
-	    from flexbase_layout_pages
+	    from im_dynfield_layout_pages
 	    where object_type = :object_type
 	    and default_p = 't'
         } -default ""]
@@ -2501,7 +2446,7 @@ ad_proc -public flexbase::form {
 
     
     # verify correctness of page_url if something wrong just ignore dynamic position
-    if { [db_0or1row exists_page_url_p "select 1 from flexbase_layout_pages
+    if { [db_0or1row exists_page_url_p "select 1 from im_dynfield_layout_pages
         where object_type = :object_type and page_url = :page_url"]
     } {
 	set layout_page_p 1
@@ -2608,11 +2553,11 @@ ad_proc -public flexbase::form {
 
 
     # ------------------------------------------------------
-    # Create form elements from the "flexbase_attributes" 
+    # Create form elements from the "im_dynfield_attributes" 
     # table
     # ------------------------------------------------------
 
-    # The table "flexbase_attributes" contains the list of
+    # The table "im_dynfield_attributes" contains the list of
     # "attributes" (= fields or columns) of an object.
     # We are going to add these fields to the current view/
     # edit template.
@@ -2640,8 +2585,8 @@ ad_proc -public flexbase::form {
                at.object_type as attr_object_type
           from
           	acs_object_type_attributes a, 
-          	flexbase_attributes aa,
-          	flexbase_widgets aw,
+          	im_dynfield_attributes aa,
+          	im_dynfield_widgets aw,
           	acs_attributes at,
 		acs_object_types t
          where 
@@ -2750,7 +2695,7 @@ ad_proc -public flexbase::form {
 	    # not implmeneted yet
 	    ad_return_complaint 1 "Creating new objects not implmented yet<br>
 	    Please create the object first via an existing maintenance screen
-	    before using the FlexBase generic architecture to modify its fields"
+	    before using the Intranet-Dynfield generic architecture to modify its fields"
 	    return
 	}
 
@@ -2831,20 +2776,20 @@ ad_proc -public flexbase::form {
     }
 }
 
-ad_proc -public flexbase::attribute::delete {
-    -flexbase_attribute_id:required
+ad_proc -public im_dynfield::attribute::delete {
+    -im_dynfield_attribute_id:required
 } {
-    Delete an flexbase attribute, and all associated attribute values
+    Delete an intranet-dynfield attribute, and all associated attribute values
 
     @param option_id
 } {
-    db_exec_plsql flexbase_attribute_delete {}
+    db_exec_plsql im_dynfield_attribute_delete {}
 }
 
-ad_proc -public flexbase::package_id {} {
+ad_proc -public im_dynfield::package_id {} {
 
-    TODO: Get the FLEXBASE package ID, not the connection package_id
-    Get the package_id of the flexbase instance
+    TODO: Get the INTRANET-DYNFIELD package ID, not the connection package_id
+    Get the package_id of the intranet-dynfield instance
 
     @return package_id
 } {
@@ -2861,9 +2806,9 @@ ad_proc -public flexbase::package_id {} {
 
 
 
-namespace eval flexbase::ad_form {}
+namespace eval im_dynfield::ad_form {}
 
-ad_proc -public flexbase::ad_form::save { 
+ad_proc -public im_dynfield::ad_form::save { 
     -package_key:required
     -object_type:required
     -list_name:required
@@ -2873,50 +2818,50 @@ ad_proc -public flexbase::ad_form::save {
     this code saves attributes input in a form
 } {
 
-    set list_id [flexbase::list::get_list_id -package_key $package_key -object_type $object_type -list_name $list_name]
+    set list_id [im_dynfield::list::get_list_id -package_key $package_key -object_type $object_type -list_name $list_name]
 
-    flexbase::object::attribute::values -ids -array "oldvalues" -object_id $object_id
-    set flexbase_attribute_ids [flexbase::list::flexbase_attribute_ids -list_id $list_id]
+    im_dynfield::object::attribute::values -ids -array "oldvalues" -object_id $object_id
+    set im_dynfield_attribute_ids [im_dynfield::list::im_dynfield_attribute_ids -list_id $list_id]
     set variables {}
 
-    foreach flexbase_attribute_id $flexbase_attribute_ids {
-        set storage_type     [flexbase::attribute::storage_type -flexbase_attribute_id $flexbase_attribute_id]
-        set attribute_name   [flexbase::attribute::name -flexbase_attribute_id $flexbase_attribute_id]
+    foreach im_dynfield_attribute_id $im_dynfield_attribute_ids {
+        set storage_type     [im_dynfield::attribute::storage_type -im_dynfield_attribute_id $im_dynfield_attribute_id]
+        set attribute_name   [im_dynfield::attribute::name -im_dynfield_attribute_id $im_dynfield_attribute_id]
         set attribute_value  [template::element::get_value $form_name $attribute_name]
-        if { $storage_type == "flexbase_options" } {
+        if { $storage_type == "im_dynfield_options" } {
             # we always order the options_string in the order of the option_id
             # when doing internal processing
             set attribute_value [lsort [template::element::get_values $form_name $attribute_name]]
         }
-        if { [info exists oldvalues($flexbase_attribute_id)] } {
-            if { $attribute_value != $oldvalues($flexbase_attribute_id) } {
-                lappend variables $flexbase_attribute_id $attribute_value
+        if { [info exists oldvalues($im_dynfield_attribute_id)] } {
+            if { $attribute_value != $oldvalues($im_dynfield_attribute_id) } {
+                lappend variables $im_dynfield_attribute_id $attribute_value
             }
         } else {
             if { [exists_and_not_null attribute_value] } {
-                lappend variables $flexbase_attribute_id $attribute_value
+                lappend variables $im_dynfield_attribute_id $attribute_value
             }
         }
     }
     if { [exists_and_not_null variables] } {
 
         db_transaction {
-            flexbase::object::attribute::values_flush -object_id $object_id
-            set revision_id   [flexbase::object::revision::new -object_id $object_id]
-            set flexbase_object_id [flexbase_object_id -object_id $object_id]
-            foreach { flexbase_attribute_id attribute_value } $variables {
-                flexbase::attribute::value::superseed -revision_id $revision_id -flexbase_attribute_id $flexbase_attribute_id -flexbase_object_id $flexbase_object_id
+            im_dynfield::object::attribute::values_flush -object_id $object_id
+            set revision_id   [im_dynfield::object::revision::new -object_id $object_id]
+            set im_dynfield_object_id [im_dynfield_object_id -object_id $object_id]
+            foreach { im_dynfield_attribute_id attribute_value } $variables {
+                im_dynfield::attribute::value::superseed -revision_id $revision_id -im_dynfield_attribute_id $im_dynfield_attribute_id -im_dynfield_object_id $im_dynfield_object_id
                 if { [exists_and_not_null attribute_value] } {
-                    flexbase::attribute::value::new -revision_id $revision_id -flexbase_attribute_id $flexbase_attribute_id -attribute_value $attribute_value
+                    im_dynfield::attribute::value::new -revision_id $revision_id -im_dynfield_attribute_id $im_dynfield_attribute_id -attribute_value $attribute_value
                 }
             }
         }
     }
-    flexbase::object::attribute::values -object_id $object_id
+    im_dynfield::object::attribute::values -object_id $object_id
     return 1
 }
 
-ad_proc -public flexbase::ad_form::elements { 
+ad_proc -public im_dynfield::ad_form::elements { 
     -package_key:required
     -object_type:required
     -list_name:required
@@ -2924,7 +2869,7 @@ ad_proc -public flexbase::ad_form::elements {
 } {
     this code saves retrieves ad_form elements
 } {
-    set list_id [flexbase::list::get_list_id -package_key $package_key -object_type $object_type -list_name $list_name]
+    set list_id [im_dynfield::list::get_list_id -package_key $package_key -object_type $object_type -list_name $list_name]
 
     set element_list ""
     if { [exists_and_not_null key] } {
@@ -2932,9 +2877,9 @@ ad_proc -public flexbase::ad_form::elements {
     }
     db_foreach select_elements {} {
         if { $required_p } {
-            lappend element_list [flexbase::attribute::widget -flexbase_attribute_id $flexbase_attribute_id -required]
+            lappend element_list [im_dynfield::attribute::widget -im_dynfield_attribute_id $im_dynfield_attribute_id -required]
         } else {
-            lappend element_list [flexbase::attribute::widget -flexbase_attribute_id $flexbase_attribute_id]
+            lappend element_list [im_dynfield::attribute::widget -im_dynfield_attribute_id $im_dynfield_attribute_id]
         }
     }
     return $element_list
@@ -2942,21 +2887,21 @@ ad_proc -public flexbase::ad_form::elements {
 
 
 
-namespace eval flexbase::option {}
+namespace eval im_dynfield::option {}
 
-ad_proc -public flexbase::option::new {
-    -flexbase_attribute_id:required
+ad_proc -public im_dynfield::option::new {
+    -im_dynfield_attribute_id:required
     -option:required
     {-locale ""}
     {-sort_order ""}
 } {
-    Create a new flexbase option for an attribute
+    Create a new intranet-dynfield option for an attribute
 
     TODO validate that the attribute is in fact one that accepts options.<br>
     TODO auto input sort order if none is supplied<br>
-    TODO validate that option from the the string input from flexbase::lang_key_encode is equal to a pre-existing flexbase message if it is we need conflict resolution.
+    TODO validate that option from the the string input from im_dynfield::lang_key_encode is equal to a pre-existing intranet-dynfield message if it is we need conflict resolution.
 
-    @param flexbase_attribute_id
+    @param im_dynfield_attribute_id
     @param option This a pretty name option
     @param locale This is the locale the option name is in
     @param sort_order if null, this option will be sorted after last previously entered option for this attribute
@@ -2964,35 +2909,35 @@ ad_proc -public flexbase::option::new {
     @return option_id    
 } {
 
-    set lang_key "flexbase.option:[flexbase::lang_key_encode -string $option]"
+    set lang_key "intranet-dynfield.option:[im_dynfield::lang_key_encode -string $option]"
     _mr en $lang_key $option
     set option $lang_key
 
-    return [db_exec_plsql flexbase_option_new {}]
+    return [db_exec_plsql im_dynfield_option_new {}]
 }
 
 
-ad_proc -public flexbase::option::delete {
+ad_proc -public im_dynfield::option::delete {
     -option_id:required
 } {
-    Delete an flexbase option
+    Delete an intranet-dynfield option
 
     @param option_id
 } {
-    db_exec_plsql flexbase_option_delete {}
+    db_exec_plsql im_dynfield_option_delete {}
 }
 
 
-ad_proc -public flexbase::option::map {
+ad_proc -public im_dynfield::option::map {
     {-option_map_id ""}
     -option_id:required
 } {
-    Map an flexbase option for an attribute to an option_map_id, if no value is supplied for option_map_id a new option_map_id will be created.
+    Map an intranet-dynfield option for an attribute to an option_map_id, if no value is supplied for option_map_id a new option_map_id will be created.
 
     @param option_map_id
     @param option_id
 
     @return option_map_id
 } {
-    return [db_exec_plsql flexbase_option_map {}]
+    return [db_exec_plsql im_dynfield_option_map {}]
 }

@@ -65,10 +65,10 @@ list::create \
 	label "Default?"
         display_template {
 	    <if @layout_pages.default_url@ not nil>
-	    <a href="@layout_pages.default_url@" class="button">#flexbase.Set_as_the_default#</a>
+	    <a href="@layout_pages.default_url@" class="button">#intranet-dynfield.Set_as_the_default#</a>
 	    </if>
 	    <else>
-	    #flexbase.Default_page#
+	    #intranet-dynfield.Default_page#
 	    </else>
 	}
     }
@@ -91,7 +91,7 @@ list::create \
 
 db_multirow -extend {details_url edit_url delete_url default_url} layout_pages get_pages "
     select page_url, layout_type, default_p
-    from FLEXBASE_LAYOUT_PAGES 
+    from im_dynfield_layout_pages
     where object_type = :object_type
     [template::list::orderby_clause -name layout_list -orderby]
 " {
