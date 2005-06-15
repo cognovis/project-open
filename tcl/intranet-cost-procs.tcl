@@ -730,12 +730,13 @@ order by
     # ----------------- Initialize variables -------------
 
     # Get the list of all currencies
+    set currency ""
     set currencies [list]
     db_foreach all_currencies "select distinct currency from ($subtotals_sql) st" {
 
 # outcommented to make empty currency cause an error...
 # ToDo: Fix
-#	if {"" == $currency} { continue }
+	if {"" == $currency} { continue }
 	lappend currencies $currency
     }
 
