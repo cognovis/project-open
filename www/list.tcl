@@ -18,6 +18,7 @@ ad_page_contract {
     { cost_type_id:integer 0 } 
     { customer_id:integer 0 } 
     { provider_id:integer 0 } 
+    { project_id:integer 0 }
     { company_id:integer 0 } 
     { letter:trim "" }
     { start_idx:integer 0 }
@@ -164,6 +165,26 @@ if {$provider_id} {
 if {$company_id} {
     lappend criteria "(c.provider_id = :company_id OR c.customer_id = :company_id)"
 }
+if {$project_id} {
+    lappend criteria "c.cost_id in (
+	select distinct cost_id
+	from im_costs
+	where project_id=:project_id
+    UNION
+	select distinct cost_id
+	from im_costs
+	where parent_id = :project_id
+    UNION
+	select distinct object_id_two as cost_id
+	from acs_rels
+	where object_id_one = :project_id
+    UNION
+	select distinct object_id_two as cost_id
+	from acs_rels r, im_projects p
+	where object_id_one = p.project_id
+	      and p.parent_id = :project_id
+    )"
+}
 
 
 
@@ -209,7 +230,7 @@ switch $order_by {
     "Status" { set order_by_clause "order by cost_status_id" }
 }
 
-set where_clause [join $criteria " and\n            "]
+set where_clause [join $criteria " and\n	    "]
 if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
 }
@@ -234,40 +255,40 @@ set extra_where ""
 
 set sql "
 select
-        c.*,
+	c.*,
 	c.amount as amount_formatted,
 	to_date(c.start_block, :date_format) as start_block_formatted,
 	(to_date(to_char(c.effective_date,'YYYY-MM-DD'),'YYYY-MM-DD') + c.payment_days) as due_date_calculated,
 	o.object_type,
 	url.url as cost_url,
 	ot.pretty_name as object_type_pretty_name,
-        cust.company_name as customer_name,
-        cust.company_path as customer_short_name,
+	cust.company_name as customer_name,
+	cust.company_path as customer_short_name,
 	proj.project_nr,
 	prov.company_name as provider_name,
 	prov.company_path as provider_short_name,
-        im_category_from_id(c.cost_status_id) as cost_status,
-        im_category_from_id(c.cost_type_id) as cost_type,
+	im_category_from_id(c.cost_status_id) as cost_status,
+	im_category_from_id(c.cost_type_id) as cost_type,
 	sysdate - (c.effective_date + c.payment_days) as overdue
 	$extra_select
 from
-        im_costs c,
+	im_costs c,
 	acs_objects o,
 	acs_object_types ot,
-        im_companies cust,
-        im_companies prov,
+	im_companies cust,
+	im_companies prov,
 	im_projects proj,
 	(select * from im_biz_object_urls where url_type=:view_mode) url
 	$extra_from
 where
-        c.customer_id=cust.company_id
-        and c.provider_id = prov.company_id
+	c.customer_id=cust.company_id
+	and c.provider_id = prov.company_id
 	and c.project_id = proj.project_id(+)
 	and c.cost_id = o.object_id
 	and o.object_type = url.object_type
 	and o.object_type = ot.object_type
 	$company_where
-        $where_clause
+	$where_clause
 	$extra_where
 $order_by_clause
 "
@@ -296,8 +317,8 @@ if {[string equal $letter "ALL"]} {
     # query results
     set total_in_limited [db_string costs_total_in_limited "
 	select count(*) 
-        from im_costs c, im_companies cust
-        where 1=1 $where_clause"]
+	from im_costs c, im_companies cust
+	where 1=1 $where_clause"]
 
     set selection "select z.* from ($limited_query) z $order_by_clause"
 }	
@@ -314,11 +335,11 @@ if {"" != $parent_menu_label} {
     set parent_menu_id [db_string parent_admin_menu $parent_menu_sql -default ""]
 
     set menu_select_sql "
-        select  m.*
-        from    im_menus m
-        where   parent_menu_id = :parent_menu_id
-                and im_object_permission_p(m.menu_id, :user_id, 'read') = 't'
-        order by sort_order"
+	select  m.*
+	from    im_menus m
+	where   parent_menu_id = :parent_menu_id
+		and im_object_permission_p(m.menu_id, :user_id, 'read') = 't'
+	order by sort_order"
 
     # Start formatting the menu bar
     set new_document_menu ""
@@ -355,15 +376,15 @@ set filter_html "
 	  <tr>
 	    <td>[_ intranet-cost.Document_Status]:</td>
 	    <td>
-              [im_select cost_status_id $status_types ""]
-            </td>
+	      [im_select cost_status_id $status_types ""]
+	    </td>
 	  </tr>
 	  <tr>
 	    <td>[_ intranet-cost.Document_Type]:</td>
 	    <td>
-              [im_select cost_type_id $type_types ""]
-              <input type=submit value='[_ intranet-cost.Go]' name=submit>
-            </td>
+	      [im_select cost_type_id $type_types ""]
+	      <input type=submit value='[_ intranet-cost.Go]' name=submit>
+	    </td>
 	  </tr>
 	</table>
 	</form>
@@ -383,7 +404,7 @@ set filter_html "
 	      <ul>
 		$new_document_menu
 	      </ul>
-            </td>
+	    </td>
 	  </tr>
 	</table>
 	
@@ -466,9 +487,9 @@ db_foreach costs_info_query {} {
 # Show a reasonable message when there are no result rows:
 if { [empty_string_p $table_body_html] } {
     set table_body_html "
-        <tr><td colspan=$colspan><ul><li><b> 
-        [_ intranet-cost.lt_There_are_currently_n]
-        </b></ul></td></tr>"
+	<tr><td colspan=$colspan><ul><li><b> 
+	[_ intranet-cost.lt_There_are_currently_n]
+	</b></ul></td></tr>"
 }
 
 if { $ctr == $how_many && $end_idx < $total_in_limited } {

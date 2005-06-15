@@ -654,7 +654,22 @@ order by
 
 ad_proc im_costs_project_finance_component { user_id project_id } {
     Returns a HTML table containing a detailed summary of all
-    financial activities of the project. 
+    financial activities of the project. <p>
+
+    The complexity of this component comes from several sources:
+    <ul>
+    <li>We need to sum up the invoices and sort them into several
+        "buckets" that correspond to the different cost types
+        such as "customer invoices", "provider purchase orders",
+        internal "timesheet costs" etc.
+    <li>We can have costs and financial documents (see doc.) in
+        several currencies, so we can't just add these together.
+        Instead, we need to maintain separate sums per cost type
+        and currency.
+        Also, costs may have NULL cost values (timesheet costs
+        from persons whithout the "hourly cost" defined).
+    </ul>
+
 } {
     if {![im_permission $user_id view_costs]} {	return "" }
 
@@ -734,31 +749,19 @@ order by
     set currencies [list]
     db_foreach all_currencies "select distinct currency from ($subtotals_sql) st" {
 
-# outcommented to make empty currency cause an error...
-# ToDo: Fix
+	# simply skip the "" or NULL currency from timesheet
 	if {"" == $currency} { continue }
 	lappend currencies $currency
     }
-
-    if {[llength $currencies] > 1} {
-        ad_return_complaint 1 "<b>Cost Consistency Error</b>:<br>
-        We have found more then one currency in the cost elements
-        associated with this project.<br>
-        Project/Open is currently not able to deal with such
-        situations in a consisten way. Please modify your project
-        data.<p>
-        Please note that this error may als occur if one of the
-        cost items has an empty currency. This case can occur
-        with timesheet costs if the hourly rate has not been set
-        for an employee."
-    }
-
+    set num_currencies [llength $currencies]
 
     # Initialize the subtotal array
     db_foreach subtotal_init "select category_id from im_categories where category_type='Intranet Cost Type'" {
 	foreach currency $currencies {
 	    set subtotals($category_id$currency) 0
 	}
+	# Initialize the sum for the "empty currency" for uninitialized timesheet costs
+	set subtotals($category_id) 0
     }
 
     # ----------------- Calculate Subtotals per cost_type_id -------------
@@ -943,7 +946,13 @@ order by
 
     # Add numbers to the im_projects table "cache" fields
     if {[db_column_exists im_projects cost_invoices_cache]} {
-	db_dml update_projects "
+	
+	if {1 == $num_currencies} {
+
+	    # We can update the profit&loss because all financial documents
+	    # for this project are of the same currency.
+
+	    db_dml update_projects "
 		update im_projects set
 			cost_invoices_cache = $subtotals([im_cost_type_invoice]$currency),
 			cost_bills_cache = $subtotals([im_cost_type_bill]$currency),
@@ -953,13 +962,46 @@ order by
 			cost_timesheet_planned_cache = 0
 		where
 			project_id = :project_id
-        "
+            "
+	} else {
+
+	    # We can't calculate a consistent sum because there is
+	    # more then one currency
+
+	    db_dml update_projects "
+		update im_projects set
+			cost_invoices_cache = null,
+			cost_bills_cache = null,
+			cost_timesheet_logged_cache = null,
+			cost_quotes_cache = null,
+			cost_purchase_orders_cache = null,
+			cost_timesheet_planned_cache = null
+		where
+			project_id = :project_id
+            "
+	}
+    }
+
+    # Create some subheaders for each currency to make 
+    # it more clear to the user that he's got several
+    # curencies here
+    set currency_subheaders ""
+    if {$num_currencies > 1} {
+	set currency_subheaders "
+	    <tr>
+		<td>&nbsp;</td>\n"
+
+	foreach currency $currencies {
+	    append currency_subheaders "<td class=rowtitle align=center>$currency</td>\n"
+	}
+	append currency_subheaders "</tr>\n"
     }
 
     set hard_cost_html "
 <table>
   <tr class=rowtitle>
     <td class=rowtitle colspan=99 align=center>[_ intranet-cost.Real_Costs]</td>
+    $currency_subheaders
   </tr>
   <tr>
     <td>[_ intranet-cost.Customer_Invoices]</td>\n"
@@ -994,6 +1036,7 @@ order by
 <table>
   <tr class=rowtitle>
     <td class=rowtitle colspan=99 align=center>[_ intranet-cost.Preliminary_Costs]</td>
+    $currency_subheaders
   </tr>
   <tr>
     <td>[_ intranet-cost.Quotes]</td>\n"
