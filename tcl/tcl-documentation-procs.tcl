@@ -1808,6 +1808,12 @@ ad_page_contract_filter float { name value } {
     @author Steven Pulito (stevenp@seas.upenn.edu)
     @creation-date 22 August 2000
 } {
+    # Check if the first character is a "+" or "-"
+    set signum ""
+    if {[regexp {^([\+\-])(.*)} $value match signum rest]} {
+	set value $rest
+    }
+
     # remove the first decimal point, the theory being that
     # at this point a valid float will pass an integer test
     regsub {\.} $value "" value_to_be_tested
@@ -1822,6 +1828,10 @@ ad_page_contract_filter float { name value } {
 	# but not all of the zeros
 	set value "0"
     }
+
+    # finally add the signum character again
+    set value "$signum$value"
+
     return 1
 }
 
