@@ -28,9 +28,7 @@
 <fullquery name="attribute::delete_xt.drop_attribute">
 <querytext>
 
-    begin 
-	flexbase_attribute__del(:flexbase_attribute_id); 
-    end;
+    select im_dynfield_attribute__del(:im_dynfield_attribute_id); 
 
 </querytext>
 </fullquery>
@@ -48,9 +46,8 @@
 <fullquery name="attribute::add_xt.drop_attribute">
 <querytext>
 
-    begin 
-	acs_attribute__drop_attribute(:object_type, :attribute_name); 
-    end;
+    select acs_attribute__drop_attribute(:object_type, :attribute_name); 
+
 
 </querytext>
 </fullquery>

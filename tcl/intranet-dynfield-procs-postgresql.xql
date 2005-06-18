@@ -54,7 +54,8 @@
                acs.pretty_name,
                acs.pretty_plural,
                acs.object_type,
-               aw.storage_type
+               aw.storage_type_id,
+		im_category_from_id(aw.storage_type_id) as storage_type
           from intranet-dynfield_attributes intranet-dynfield,
                acs_attributes acs,
                intranet-dynfield_widgets aw
@@ -72,7 +73,8 @@
                aw.widget,
                aw.datatype,
                aw.parameters,
-               aw.storage_type
+               aw.storage_type_id,
+		im_category_from_id(aw.storage_type_id) as storage_type
           from intranet-dynfield_attributes aa,
                acs_attributes ac,
                intranet-dynfield_widgets aw
@@ -115,7 +117,8 @@
 
 <fullquery name="intranet-dynfield::attribute::storage_type_not_cached.intranet-dynfield_attribute_storage_type">
   <querytext>
-        select aw.storage_type
+        select aw.storage_type_id,
+		im_category_from_id(aw.storage_type_id) as storage_type
           from intranet-dynfield_widgets aw, intranet-dynfield_attributes aa
          where aa.intranet-dynfield_attribute_id = :intranet-dynfield_attribute_id
            and aw.widget_name = aa.widget_name

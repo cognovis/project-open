@@ -26,7 +26,7 @@
   </else>
 
     <td class="list-narrow">
-	<a href="attribute-new?attribute_id=@attributes.intranet-dynfield_attribute_id@">
+	<a href="attribute-new?attribute_id=@attributes.im_dynfield_attribute_id@">
 	  @attributes.attribute_name@
 	</a>
     </td>
@@ -43,7 +43,7 @@
     </td>
 
     <td class="list-narrow">
-	<input type=checkbox name=attribute_ids value="@attributes.intranet-dynfield_attribute_id@">
+	<input type=checkbox name=attribute_ids value="@attributes.im_dynfield_attribute_id@">
     </td>
 
   </tr>

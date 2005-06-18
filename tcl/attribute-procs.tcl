@@ -31,8 +31,9 @@ ad_proc -public delete_xt { im_dynfield_attribute_id } {
 		aa.attribute_name as acs_attribute_name,
 		aa.attribute_id as acs_attribute_id,
 		t.object_type,
-		decode(aa.storage,'type_specific',t.table_name,aa.table_name) as table_name,
-		nvl(aa.column_name, aa.attribute_name) as column_name
+		aa.storage,
+		aa.table_name,
+		aa.column_name
 	from
 		acs_attributes aa,
 		im_dynfield_attributes fa,
@@ -47,6 +48,12 @@ ad_proc -public delete_xt { im_dynfield_attribute_id } {
 	attribute #$attribute_id doesn't exist"
 	return 0
     }
+
+    if {"" == $column_name} {
+	set column_name $acs_attribute_name
+    }
+
+#    ad_return_complaint 1 "table_name=$table_name, column_name=$column_name"
 
     if { [empty_string_p $table_name] || [empty_string_p $column_name] } {
         # We have to have both a non-empty table name and column name

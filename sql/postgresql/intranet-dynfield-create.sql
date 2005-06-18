@@ -94,7 +94,7 @@ create table im_dynfield_attributes (
 				not null,
 	widget_name		varchar(100)
 				constraint im_dynfield_attr_widget_name_fk 
-				references im_dynfield_widgets
+				references im_dynfield_widgets(widget_name)
 				constraint im_dynfield_attr_widget_name_nn 
 				not null,
 	-- Determines if the database column should be deleted
@@ -353,18 +353,18 @@ BEGIN
 		acs_attributes aa
 	where
 		aa.attribute_id = fa.acs_attribute_id
-		and fa.attribute_id = v_attribute_id;
+		and fa.attribute_id = p_attribute_id;
 
 	-- Erase the im_dynfield_attributes item associated with the id
 	delete from im_dynfield_layout
-	where attribute_id = v_attribute_id;
+	where attribute_id = p_attribute_id;
 
 	-- Erase values for the im_dynfield_attribute item associated with the id
 	delete from im_dynfield_attr_multi_value
-	where attribute_id = v_attribute_id;
+	where attribute_id = p_attribute_id;
 
 	delete from im_dynfield_attributes
-	where attribute_id = v_attribute_id;
+	where attribute_id = p_attribute_id;
 
 	PERFORM acs_attribute__drop_attribute(v_object_type, v_acs_attribute_name);
         return 0;

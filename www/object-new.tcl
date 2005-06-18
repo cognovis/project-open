@@ -1,4 +1,4 @@
-# /flexbase/attributes/object-new.tcl
+# packages/intranet-dynfield/attributes/object-new.tcl
 
 ad_page_contract {
 
@@ -6,7 +6,7 @@ ad_page_contract {
     
     This pages allows to edit and create objects generically.
     It asumes that all (important) object fields are
-    defined in acs_attributes and flexbase_attributes (SQL
+    defined in acs_attributes and im_dynfield_attributes (SQL
     metadata).
     These metadata are used to generate the entries of
     a template form that handle the actual interaction
@@ -64,10 +64,10 @@ set form_id "add_object"
 template::form create $form_id
 		    
 # -------------------------------------------
-# create or extend form_id with flexbase_attributes
+# create or extend form_id with im_dynfield_attributes
 # -------------------------------------------
 
-flexbase::append_attributes_to_form -object_type $object_type \
+im_dynfield::append_attributes_to_form -object_type $object_type \
 	-form_id $form_id \
 	-object_id $object_id
 	
@@ -84,9 +84,9 @@ if {[template::form is_valid $form_id]} {
 	}
 	
 	# -------------------------------------------
-	# update flexbase values
+	# update intranet-dynfield values
 	# -------------------------------------------
-	flexbase::attribute_store -object_type $object_type -object_id $object_id -form_id $form_id
+	im_dynfield::attribute_store -object_type $object_type -object_id $object_id -form_id $form_id
 	template::forward "object-type?object_type=$object_type"
 }
 

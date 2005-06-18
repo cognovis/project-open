@@ -1,4 +1,4 @@
-# packages/flexbase/www/attribute-delete.tcl
+# packages/intranet-dynfield/www/attribute-delete.tcl
 
 ad_page_contract {
 
@@ -28,7 +28,7 @@ if {!$user_is_admin_p} {
     return
 }
 
-set title "[_ flexbase.Delete_Warning]"
+set title "[_ intranet-dynfield.Delete_Warning]"
 set context [list [list "object-types" "Object Types"] [list "$return_url" "$object_type"] $title]
 set html_warning ""
 
@@ -38,7 +38,7 @@ if {![exists_and_not_null continue_p]} {
 		db_1row "get attribute" "select attribute_name 
 			from acs_attributes 
 			where attribute_id = (select acs_attribute_id 
-					      from flexbase_attributes 
+					      from im_dynfield_attributes 
 					      where attribute_id = :attr_id)"
 		# -------------------------------
 		# check if attr_id has references
@@ -52,7 +52,7 @@ if {![exists_and_not_null continue_p]} {
 							   where tcl_proc = :proc_name)"]
 			if {[llength $letter_types] > 0} {
 				set continue_p 0
-				append html_warning " <br/> $attribute_name [_ flexbase.have_template_letter_references] ... <ul> "
+				append html_warning " <br/> $attribute_name [_ intranet-dynfield.have_template_letter_references] ... <ul> "
 				foreach l_t $letter_types {
 					append html_warning " <li>$l_t</li> "
 				}
@@ -72,11 +72,11 @@ if {![exists_and_not_null continue_p]} {
 				and sq.grouped_question_no_id = sgqn.grouped_question_no_id"]
 			if {[llength $questions_list] > 0} {
 				set continue_p 0
-				append html_warning " <br/> $attribute_name [_ flexbase.have_smart_form_references] ... <ul> "
+				append html_warning " <br/> $attribute_name [_ intranet-dynfield.have_smart_form_references] ... <ul> "
 				foreach question_pair $questions_list {
 					set section_no [lindex $question_pair 0]
 					set question_no [lindex $question_pair 1]
-					append html_warning " <li>[_ flexbase.Section]: $section_no [_ flexbase.Question]: $question_no</li> "
+					append html_warning " <li>[_ intranet-dynfield.Section]: $section_no [_ intranet-dynfield.Question]: $question_no</li> "
 				}
 				append html_warning " </ul> "
 
