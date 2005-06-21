@@ -187,6 +187,80 @@ alter table im_dynfield_layout add
 
 
 
+
+---------------------------------------------------------
+-- Register the component in the core TCL pages
+--
+-- These DB-entries allow the pages of Project/Open Core
+-- to render the forum components in the Home, Users, Projects
+-- and Company pages.
+--
+-- The TCL code in the "component_tcl" field is executed
+-- via "im_component_bay" in an "uplevel" statemente, exactly
+-- as if it would be written inside the .adp <%= ... %> tag.
+-- I know that's relatively dirty, but TCL doesn't provide
+-- another way of "late binding of component" ...
+
+
+-- delete potentially existing menus and plugins if this
+-- file is sourced multiple times during development...
+
+select im_component_plugin__del_module('intranet-dynfield');
+select im_menu__del_module('intranet-dynfield');
+
+
+-- Setup the "Dynfield" main menu entry
+--
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_menu                  integer;
+        v_admin_menu             integer;
+        v_admins                integer;
+BEGIN
+    select group_id into v_admins from groups where group_name = ''P/O Admins'';
+
+    select menu_id
+    into v_admin_menu
+    from im_menus
+    where label=''admin'';
+
+    v_menu := im_menu__new (
+        null,                   -- p_menu_id
+        ''acs_object'',         -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+        ''intranet-dynfield'',  -- package_name
+        ''dynfield_admin'',     -- label
+        ''DynField'',           -- name
+        ''/intranet-dynfield/'',-- url
+        750,                     -- sort_order
+        v_admin_menu,           -- parent_menu_id
+        null                    -- p_visible_tcl
+    );
+
+    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+
+    return 0;
+end;' language 'plpgsql';
+
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+
+
+
+---------------------------------------------------------
+-- Setup DynField Widgets Data
+---------------------------------------------------------
+
 create or replace function im_dynfield_widget__new (
 	integer, varchar, timestamptz, integer, varchar, integer,
 	varchar, varchar, varchar, integer, varchar, varchar, 
