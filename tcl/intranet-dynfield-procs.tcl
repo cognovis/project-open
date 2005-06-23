@@ -1142,6 +1142,160 @@ ad_proc -public im_dynfield::attribute_show {
 }
 
 
+
+ad_proc -public im_dynfield::search_sql_criteria_from_form {
+    -form_id:required
+    -object_type:required
+} {
+    This procedure generates a subquery SQL clause
+    "(select object_id from ...)" that can be used
+    by a main query clause either as a "where xxx_id in ..."
+    or via a join in order to limit the number of object_ids
+    to the ones that fit to the filter criteria.
+
+    @param form_id:
+   	    search form id
+    @return:
+		An array consisting of:
+		where: A SQL phrase and
+		bind_vars: a key-value paired list carrying the bind
+			vars for the SQL phrase
+} {
+    # Get the list of all elements in the form
+    set form_elements [template::form::get_elements $form_id]
+
+    # Get the main table for the data type
+    db_1row main_table "
+	select
+		table_name as main_table_name,
+		id_column as main_id_column
+	from
+		acs_object_types
+	where
+		object_type = :object_type
+    "
+
+    set attributes_sql "
+	select
+		a.attribute_id,
+		a.table_name as attribute_table_name,
+		a.attribute_name,
+		at.pretty_name,
+		a.datatype,
+		case when a.min_n_values = 0 then 'f' else 't' end as required_p,
+		a.default_value,
+		t.table_name as object_type_table_name,
+		t.id_column as object_type_id_column,
+		at.table_name as attribute_table,
+		at.object_type as attr_object_type
+	from
+		acs_object_type_attributes a,
+		im_dynfield_attributes aa,
+		acs_attributes at,
+		acs_object_types t
+	where
+		a.object_type = :object_type
+		and t.object_type = a.ancestor_type
+		and a.attribute_id = aa.acs_attribute_id
+		and a.attribute_id = at.attribute_id
+	order by
+		attribute_id
+    "
+
+    set ext_table_sql "
+	select distinct
+		attribute_table_name as ext_table_name,
+		object_type_id_column as ext_id_column
+	from
+		($attributes_sql) s
+    "
+    set ext_tables [list]
+    set ext_table_join_where ""
+    db_foreach ext_tables $ext_table_sql {
+	if {$ext_table_name == $main_table_name} { continue }
+	lappend ext_tables $ext_table_name
+	append ext_table_join_where "\tand $main_table.$main_id_column = $ext_table_name.$ext_id_column\n"
+    }
+
+    set sql_vars [ns_set create]
+
+    set bind_vars [ns_set create]
+    set criteria [list]
+    db_foreach attributes $attributes_sql {
+	
+	# Check whether the attribute is part of the form
+	if {[lsearch $form_elements $attribute_name] >= 0} {
+	    set value [template::element::get_value $form_id $attribute_name]
+	    if {"" == $value} { continue }
+	    ns_set put $bind_vars $attribute_name $value
+	    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
+	}
+    }
+
+    set where_clause [join $criteria " and\n            "]
+    if { ![empty_string_p $where_clause] } {
+	set where_clause " and $where_clause"
+    }
+
+    set sql "
+	(select
+		$main_id_column as object_id
+	from	
+		[join [concat [list $main_table_name] $ext_tables] ",\n\t"]
+	where	1 = 1 $ext_table_join_where
+		$where_clause
+	)
+    "
+
+    set extra(where) $sql
+    set extra(bind_vars) [util_ns_set_to_list -set $bind_vars]
+    ns_set free $bind_vars
+
+    return [array get extra]
+}
+
+
+
+ad_proc -public im_dynfield::set_form_values_from_http {
+    -form_id:required
+} {
+    Set the values of a form based on the values from "ns_conn form".
+    This procedure is usefule when using an ad_form as a "filter"
+    selector in P/O index ("report") pages, to pass the URL
+    parameters to the form.
+
+    @param form_id:
+		search form id
+    @return:
+		nothing
+
+} {
+    ns_log Notice "im_dynfield::set_form_values_from_form: form_id=$form_id"
+    
+    set form_elements [template::form::get_elements $form_id]
+    set form_vars [ns_conn form]
+    
+    if {"" == $form_vars} { 
+	# There are no variables from HTTP - so there
+	# are not values to be set...
+	return "" 
+    }
+
+    foreach element $form_elements {
+
+	# Only set the values for variables that are found in the
+	# HTTP variable frame to avoid ambiguities
+	set pos [ns_set find $form_vars $element]
+	if {$pos >= 0} {
+	   set value [ns_set get $form_vars $element]
+	   template::element::set_value $form_id $element $value
+	
+	   ns_log Notice "append_attributes_to_form: request_form: $element = $value"
+	}
+    }
+}
+
+
 ad_proc -public im_dynfield::attribute_store {
     -object_type:required
     -object_id:required
