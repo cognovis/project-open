@@ -103,8 +103,14 @@ ad_form -extend -name widget -on_request {
 
 } -new_data {
 
-
     db_exec_plsql create_widget ""
+
+} -validate {
+
+	{widget_name
+	    {![db_string unique_name_check "select count(*) from im_dynfield_widgets where widget_name = :widget_name"]}
+	    "Duplicate Widget Name. Please use a new name."
+	}
 
 } -edit_data {
 
