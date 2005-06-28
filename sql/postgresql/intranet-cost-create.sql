@@ -623,7 +623,7 @@ create index im_costs_start_block_idx on im_costs(start_block);
 
 -- create or replace package body im_cost
 -- is
- create or replace function im_cost__new (
+create or replace function im_cost__new (
        integer,
        varchar,
        timestamptz,
@@ -656,7 +656,7 @@ create index im_costs_start_block_idx on im_costs(start_block);
 returns integer as '
 declare
 	p_cost_id		alias for $1;		-- cost_id default null
-	p_object_type		alias for $2;		-- object_type default ''im_cost''
+	p_object_type		alias for $2;		-- object_type default im_cost
 	p_creation_date		alias for $3;		-- creation_date default now()
 	p_creation_user		alias for $4;		-- creation_user default null
 	p_creation_ip		alias for $5;		-- creation_ip default null
@@ -676,14 +676,14 @@ declare
 	p_effective_date	alias for $16;		-- effective_date default now()
 	p_payment_days		alias for $17;		-- payment_days default 30
 	p_amount		alias for $18;		-- amount default null
-	p_currency		alias for $19;		-- currency default ''EUR''
+	p_currency		alias for $19;		-- currency default EUR
 	p_vat			alias for $20;		-- vat default 0
 	p_tax			alias for $21;		-- tax default 0
 
-	p_variable_cost_p	alias for $22;		-- variable_cost_p default ''f''
-	p_needs_redistribution_p alias for $23;		-- needs_redistribution_p default ''f''
-	p_redistributed_p	alias for $24;		-- redistributed_p default ''f''
-	p_planning_p		alias for $25;		-- planning_p default ''f''
+	p_variable_cost_p	alias for $22;		-- variable_cost_p default f
+	p_needs_redistribution_p alias for $23;		-- needs_redistribution_p default f
+	p_redistributed_p	alias for $24;		-- redistributed_p default f
+	p_planning_p		alias for $25;		-- planning_p default f
 	p_planning_type_id	alias for $26;		-- planning_type_id default null
 
 	p_note			alias for $27;		-- note default null
