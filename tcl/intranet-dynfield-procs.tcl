@@ -1303,6 +1303,8 @@ ad_proc -public im_dynfield::attribute_store {
 } {
     store intranet-dynfield attributes 
 } {
+    # object_id may get destroyed with strange forms
+    set object_id_param $object_id
 
     # Get the list of all variables of the last form
     template::form get_values $form_id
@@ -1340,7 +1342,7 @@ ad_proc -public im_dynfield::attribute_store {
 	    if {![db_string object_exists "
 			select	count(*)
 			from	$table_n
-			where	$column_i =:object_id
+			where	$column_i =:object_id_param
 	    "]} {
 		
 		# intranet-dynfield is not a method to create new objects
@@ -1398,7 +1400,7 @@ ad_proc -public im_dynfield::attribute_store {
 					db_transaction {
 					    db_dml "delete previous values" "
 						delete from im_dynfield_attr_multi_value
-				    		where	object_id = :object_id 
+				    		where	object_id = :object_id_param 
 				    			and attribute_id = :attribute_id
 					    "
 				    				    				
@@ -1407,9 +1409,9 @@ ad_proc -public im_dynfield::attribute_store {
 							insert into im_dynfield_attr_multi_value (
 								attribute_id,object_id,value
 							) values (
-								:attribute_id,:object_id,:val
+								:attribute_id,:object_id_param,:val
 						)"
-						#ns_log notice "multi value created $c $attribute_id $object_id value $val"
+						#ns_log notice "multi value created $c $attribute_id $object_id_param value $val"
 					    }
 					}
 				    	
@@ -1452,7 +1454,7 @@ ad_proc -public im_dynfield::attribute_store {
 		    } else {
 
 			# table primary key is object_id
-			set $c $object_id
+			set $c $object_id_param
 			
 			# create a lists in order to generate
 			# insert query dynamicaly
@@ -1547,7 +1549,7 @@ ad_proc -public im_dynfield::attribute_store {
 		    db_transaction {
 			db_dml "delete previous values" "
 				delete from im_dynfield_attr_multi_value
-				where object_id = :object_id 
+				where object_id = :object_id_param 
 				and attribute_id = :attribute_id
 			"
 			#ns_log notice "before multi values [set $attribute_name]"
@@ -1556,9 +1558,9 @@ ad_proc -public im_dynfield::attribute_store {
 				insert into im_dynfield_attr_multi_value (
 					attribute_id,object_id,value
 				) values (
-					:attribute_id,:object_id,:val
+					:attribute_id,:object_id_param,:val
 				)"
-			    #ns_log notice "update multi value created $attribute_name $attribute_id $object_id value $val"
+			    #ns_log notice "update multi value created $attribute_name $attribute_id $object_id_param value $val"
 			}
 		    }
 
@@ -1606,7 +1608,7 @@ ad_proc -public im_dynfield::attribute_store {
     db_transaction {
     	foreach table_pair $object_type_tables {
 	    set table_n [lindex $table_pair 0]
-	    append update_sql($table_n) "\nwhere $pk($table_n) = :object_id\n"
+	    append update_sql($table_n) "\nwhere $pk($table_n) = :object_id_param\n"
 
 	    # only if there is attributes to update 
 	    # in current table
