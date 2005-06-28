@@ -162,7 +162,7 @@ create or replace function im_cost_center__new (
 returns integer as '
 DECLARE
 	p_cost_center_id alias for $1;		-- cost_center_id  default null
-	p_object_type	alias for $2;		-- object_type default ''im_cost_center''
+	p_object_type	alias for $2;		-- object_type default im_cost_center
 	p_creation_date	alias for $3;		-- creation_date default now()
 	p_creation_user alias for $4;		-- creation_user default null
 	p_creation_ip	alias for $5;		-- creation_ip default null
@@ -174,7 +174,7 @@ DECLARE
 	p_status_id	    alias for $11;	-- status_id
 	p_parent_id	    alias for $12;	-- parent_id
 	p_manager_id	    alias for $13;	-- manager_id default null
-	p_department_p	    alias for $14;	-- department_p default ''t''
+	p_department_p	    alias for $14;	-- department_p default t
 	p_description	    alias for $15;	-- description default null
 	p_note		    alias for $16;	-- note default null
 	v_cost_center_id    integer;
