@@ -565,23 +565,6 @@ select im_dynfield_widget__new (
 );
 
 
-select im_dynfield_widget__new (
-	null,			-- widget_id
-	'im_dynfield_widget',	-- object_type
-	now(),			-- creation_date
-	null,			-- creation_user
-	null,			-- creation_ip	
-	null,			-- context_id
-	'gender_select',	-- widget_name
-	'#intranet-dynfield.Gender_Select#',	-- pretty_name
-	'#intranet-dynfield.Gender_Select#',	-- pretty_plural
-	10007,			-- storage_type_id
-	'string',		-- acs_datatype
-	'select',		-- widget
-	'string',		-- sql_datatype
-	'{options {{Male m} {Female f}}}' -- parameters
-);
-
 
 select im_dynfield_widget__new (
         null,                   -- widget_id

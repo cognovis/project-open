@@ -1214,7 +1214,7 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
     db_foreach ext_tables $ext_table_sql {
 	if {$ext_table_name == $main_table_name} { continue }
 	lappend ext_tables $ext_table_name
-	append ext_table_join_where "\tand $main_table.$main_id_column = $ext_table_name.$ext_id_column\n"
+	append ext_table_join_where "\tand $main_table_name.$main_id_column = $ext_table_name.$ext_id_column\n"
     }
 
     set sql_vars [ns_set create]

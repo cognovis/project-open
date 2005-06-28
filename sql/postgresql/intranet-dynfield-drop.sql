@@ -1,30 +1,33 @@
 --
--- packages/flexbase/sql/postgresql/flexbase-drop.sql
+-- packages/intranet-dynfield/sql/postgresql/intranet-dynfield-drop.sql
 --
 -- @author Frank Bergmann frank.bergmann@project-open.com
 -- @creation-date 2005-01-06
 --
 --
 
-drop table flexbase_layout;
-drop table flexbase_layout_pages;
-drop table flexbase_attributes;
-drop table flexbase_widgets;
-drop table flexbase_storage_types;
+drop table im_dynfield_layout;
+drop table im_dynfield_layout_pages;
+drop table im_dynfield_attr_multi_value;
+drop table im_dynfield_attributes;
+drop table im_dynfield_widgets;
+drop table im_dynfield_storage_types;
 
 
-delete from acs_objects where object_type = 'flexbase_widget';
-delete from acs_objects where object_type = 'flexbase_attribute';
+delete from acs_objects where object_type = 'im_dynfield_widget';
+delete from acs_objects where object_type = 'im_dynfield_attribute';
 
 
-begin
-        acs_object_type.drop_type('flexbase_widget', 'f');
-        acs_object_type.drop_type('flexbase_attribute', 'f');
-end;
-/
-show errors
+-- begin
+        select acs_object_type__drop_type('im_dynfield_widget', 'f');
+        select acs_object_type__drop_type('im_dynfield_attribute', 'f');
+-- end;
 
-@upgrade-20050414-drop.sql
+delete from im_categories where category_type = 'Intranet DynField Storage Type';
+
+-- show errors
+
+-- \i upgrade-20050414-drop.sql
 
 
-@upgrade-20050419-drop.sql
+-- \i upgrade-20050419-drop.sql
