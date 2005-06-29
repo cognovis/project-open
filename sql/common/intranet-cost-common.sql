@@ -116,8 +116,8 @@ VALUES (3505,'Amortized','Intranet Investment Status','No remaining book value')
 
 -- Cost Templates
 delete from im_categories where category_id >= 900 and category_id < 1000;
-INSERT INTO im_categories VALUES (900,'invoice-english.adp','','Intranet Cost Template','category','t','f');
-INSERT INTO im_categories VALUES (902,'invoice-spanish.adp','','Intranet Cost Template','category','t','f');
+INSERT INTO im_categories VALUES (900,'invoice.en.adp','','Intranet Cost Template','category','t','f');
+INSERT INTO im_categories VALUES (902,'invoice.es.adp','','Intranet Cost Template','category','t','f');
 -- reserved until 999
 
 
