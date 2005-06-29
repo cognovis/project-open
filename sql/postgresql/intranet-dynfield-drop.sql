@@ -11,7 +11,7 @@ drop table im_dynfield_layout_pages;
 drop table im_dynfield_attr_multi_value;
 drop table im_dynfield_attributes;
 drop table im_dynfield_widgets;
-drop table im_dynfield_storage_types;
+-- drop table im_dynfield_storage_types;
 
 
 delete from acs_objects where object_type = 'im_dynfield_widget';
