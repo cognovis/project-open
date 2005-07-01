@@ -2,7 +2,7 @@
   <multiple name=elements>
 
     <if @elements.section@ not nil>
-      <tr class="form-section"><th colspan="2">@elements.section@</th></tr>
+      <tr class="form-section"><th colspan="2">@elements.section;noquote@</th></tr>
     </if>
 
     <group column="section">
