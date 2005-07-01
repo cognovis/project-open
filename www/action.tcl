@@ -310,6 +310,7 @@ $dirs_html
 	    exec /bin/tar czf $path $dest_path
 	} err_msg] } {
 	    # Nothing. We check if TAR was successfull if the file exists.
+	    ns_log notice "************ Problems creating tar ******************"
 	}
 
 	if { [catch {
@@ -318,12 +319,13 @@ $dirs_html
 	    ad_return_complaint 1 "<LI>[_ intranet-filestorage.lt_Unable_to_compress_th]"
 	    return
 	}
-
+	ns_log notice "****************** file_readable $file_readable ********************"
 	if $file_readable {
+	    ns_log notice "********* before redirect *******************"
 	    ad_returnredirect "/intranet/download/zip/0/$file"
 	    return
 	} else {
-	    doc_return 404 text/html "[_ intranet-filestorage.lt_Did_not_find_the_spec]"
+	    ad_return_error "[_ intranet-filestorage.lt_Did_not_find_the_spec]" "[_ intranet-filestorage.lt_Did_not_find_the_spec] $path"
 	    return
 	}
     }
