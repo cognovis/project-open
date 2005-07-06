@@ -26,6 +26,11 @@ if {$body_plain == "" && $body_html == ""} {
     return
 } 
 
+if {[db_0or1row "check subject exists" "select item_id from cr_items where name = :subject"]} {
+   ad_return_complaint 1 "There is another item with name \"$subject\". Please use another subject."
+    return
+}
+
 # --------------------------------------------------
 # Put variables together
 # --------------------------------------------------

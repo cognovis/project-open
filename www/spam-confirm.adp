@@ -7,15 +7,15 @@
 <h1>Confirm Spam</h1>
 
 <p>
-You are about to send the following message to 
+You are about to send the following message to
 <a href="@spam_show_users_url@">@num_recipients@ user(s)</a>.
 </p>
 
 <p>
-The mail will be sent on @pretty_date@ at @send_time.time@ @send_time.ampm@ 
+The mail will be sent on @pretty_date@ at @send_time.time@ @send_time.ampm@
 </p>
 
-<form action="@confirm_target@" method="post">
+<form action="@confirm_target@" method="post" enctype="multipart/form-data">
 @export_vars;noquote@
 <table cellspacing=1 border=0 cellpadding=1>
 	<tr class=rowodd>
@@ -42,7 +42,7 @@ The mail will be sent on @pretty_date@ at @send_time.time@ @send_time.ampm@
 	  <pre>@escaped_body_plain_subst;noquote@</pre>
 	  </td></tr></table>
 	</td></tr>
-</if>   
+</if>
 <if @body_html@ not nil>
 	<tr class=rowplain>
 	<td>HTML Text</td>
@@ -51,7 +51,13 @@ The mail will be sent on @pretty_date@ at @send_time.time@ @send_time.ampm@
 	  <pre>@body_html_subst;noquote@</pre>
 	  </td></tr></table>
 	</td></tr>
-</if>   
+</if>
+	<tr class=rowplain>
+		<td>Attachment</td>
+		<td>
+	       <input type="file" name="upload_file">
+	    </td>
+	</tr>
 	<tr  class=rowodd>
 	  <td>Actions</td>
 	  <td>
