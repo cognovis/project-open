@@ -72,7 +72,7 @@
   				  null,			-- description
   				  :guessed_file_type, 	-- mime_type 
   				  null,			-- nls_language
-  				  :content, 		-- text
+  				  :content_file, 		-- text
   				  null,			-- data
   				  null,			-- relation_tag
   				  null,			-- is_live

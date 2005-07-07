@@ -165,6 +165,9 @@ db_foreach spam_full_sql "" {
 			set subject "$subject-2"
 
 			ns_log Notice "//intranet-spam/www/spam-send: Setting up the attachment content_item"
+			set content_file_stream "[open $tmp_file "r"]"
+			set content_file [read $content_file_stream]
+			ns_log "notice" "contnet_file -----> $content_file"
 			set attachment_item_id [db_exec_plsql create_file_item "
 				begin
 					:1 := content_item.new (
