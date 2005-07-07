@@ -53,7 +53,7 @@ set elements_list {
   report_name {
     label "[_ intranet-reporting.Report_Name]"
     display_template {
-	    <a href="@Reports.Report_url@">@reports.report_name@</a>
+	    <a href="@reports.report_url@">@reports.report_name@</a>
     }
   }
   view_name {

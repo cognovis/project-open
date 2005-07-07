@@ -10,8 +10,5 @@
 </if>
 
 <property name="focus">@focus;noquote@</property>
-<formtemplate id="report"></formtemplate>
+<formtemplate id="variable"></formtemplate>
 
-<if @report_id@ not nil>
-	<listtemplate name="variable_list"></listtemplate>
-</if>

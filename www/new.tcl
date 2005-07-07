@@ -31,6 +31,7 @@ if {!$user_is_admin_p} {
     return
 }
 
+set user_ip [ad_conn peeraddr]
 set action_url ""
 set focus "report.report_name"
 set page_title "[_ intranet-reporting.New_report]"
@@ -43,6 +44,12 @@ if {![info exists report_id]} { set form_mode "edit" }
 # Build the form
 # ------------------------------------------------------------------
 
+set view_options [db_list_of_lists get_views {
+	select view_name, view_id
+	from IM_VIEWS
+	order by view_name 
+}]
+set view_options [linsert $view_options 0 {" " ""}]
 
 ad_form \
     -name report \
@@ -51,12 +58,12 @@ ad_form \
     -mode $form_mode \
     -export {user_id return_url} \
     -form {
-		report_id:key(im_reports_seq)
+		report_id:key
 		{report_name:text(text) {label #intranet-reporting.Report_Name#} }
-		{report_type_id:text(im_category_tree),optional {label #intranet-reporting.Report_Type#} {custom {category_type "Intranet DynReport Type"}} {value ""} }
-		{report_status_id:text(im_category_tree),optional {label #intranet-reporting.Report_Status#} {custom {category_type "Intranet DynReport Status"}} {value ""} }
-		{sort_order:integer(text),optional {label #intranet-reporting.Sort_Order#} {html {size 10 maxlength 15}}}
-		{report_sql:text(textarea),optional {label #intranet-reporting.Report_sql#} {html {cols 50 rows 5}}}
+		{view_id:integer(select) {label #intranet-reporting.View#} {options $view_options}}
+		{report_type_id:text(im_category_tree),optional {label #intranet-reporting.Report_Type#} {custom {category_type "Intranet Report Type"}} {value ""} }
+		{report_status_id:text(im_category_tree),optional {label #intranet-reporting.Report_Status#} {custom {category_type "Intranet Report Status"}} {value ""} }
+		{description:text(textarea),optional {label #intranet-reporting.Description#} {html {cols 50 rows 5}}}
     }
 
 
@@ -66,14 +73,14 @@ ad_form -extend -name report -on_request {
 
 } -select_query {
 
-	select	v.report_id,
-			v.report_name,
-			v.report_type_id,
-			v.report_status_id,
-			v.sort_order,
-			v.report_sql
-	from	im_reports v
-	where	v.report_id = :report_id
+	select	r.report_id,
+			r.report_name,
+			r.report_type_id,
+			r.report_status_id,
+			r.view_id,
+			r.description
+	from	im_reports r
+	where	r.report_id = :report_id
 
 } -validate {
 
@@ -85,22 +92,17 @@ ad_form -extend -name report -on_request {
 
 } -new_data {
 
-    db_dml report_insert "
-    insert into IM_VIEWS
-    (report_id, report_name, report_status_id, report_type_id, sort_order, report_sql)
-    values
-    (:report_id, :report_name, :report_status_id, :report_type_id, :sort_order, :report_sql)
-    "
+    db_exec_plsql report_insert { }
 
 } -edit_data {
 
     db_dml report_update "
 	update im_reports set
 	        report_name    = :report_name,
+	        view_id  = :view_id,
 	        report_status_id  = :report_status_id,
 	        report_type_id    = :report_type_id,
-	        sort_order      = :sort_order,
-	        report_sql  = :report_sql
+	        description  = :description
 	where
 		report_id = :report_id
 "
@@ -121,45 +123,45 @@ ad_form -extend -name report -on_request {
 # ------------------------------------------------------
 
 if { [exists_and_not_null report_id] } {
-	set action_list [list "[_ intranet-reporting.Add_new_Column]" "[export_vars -base "new-column" {report_id return_url}]" "[_ intranet-reporting.Add_new_Column]"]
+	set action_list [list "[_ intranet-reporting.Add_new_Variable]" "[export_vars -base "new-variable" {report_id return_url}]" "[_ intranet-reporting.Add_new_Variable]"]
 
 	set elements_list {
-	  column_id {
-		label "[_ intranet-reporting.Column_Id]"
+	  variable_id {
+		label "[_ intranet-reporting.Variable_Id]"
 	  }
-	  column_name {
-		label "[_ intranet-reporting.Column_Name]"
+	  variable_name {
+		label "[_ intranet-reporting.Variable_Name]"
 		display_template {
-			<a href="@columns.column_url@">@columns.column_name@</a>
+			<a href="@variables.variable_url@">@variables.variable_name@</a>
 		}
 	  }
-	  group_id {
-		label "[_ intranet-reporting.Group_Id]"
+	  pretty_name {
+		label "[_ intranet-reporting.Pretty_Name]"
 	  }
-	  sort_order {
-		label "[_ intranet-reporting.Sort_Order]"
+	  widget_name {
+		label "[_ intranet-reporting.Widget_Name]"
 	  }
 	}
 
 	list::create \
-			-name column_list \
-			-multirow columns \
-			-key column_id \
+			-name variable_list \
+			-multirow variables \
+			-key variable_id \
 			-actions $action_list \
 			-elements $elements_list \
 			-filters {
 				return_url
 			}
 
-	db_multirow -extend {column_url} columns get_columns { 
-		select vc.column_id,
-			vc.column_name,
-			vc.group_id,
-			vc.sort_order
-		from im_report_columns vc
-		where vc.report_id = :report_id
-		order by vc.column_name
+	db_multirow -extend {variable_url} variables get_variables { 
+		select rv.variable_id,
+			rv.variable_name,
+			rv.pretty_name,
+			rv.widget_name
+		from im_report_variables rv
+		where rv.report_id = :report_id
+		order by rv.variable_name
 	} {
-		set column_url [export_vars -base "new-column" {report_id column_id return_url}]
+		set variable_url [export_vars -base "new-variable" {report_id variable_id return_url}]
 	}
 }
