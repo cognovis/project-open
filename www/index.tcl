@@ -5,97 +5,110 @@
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
 
-# ---------------------------------------------------------------
-# Page Contract
-# ---------------------------------------------------------------
-
 ad_page_contract {
-    Demo page to show indicators
-    @author Frank Bergmann (frank.bergmann@project-open.com)
+    @author Frank Bergmann frank.bergmann@project-open.com
+    @creation-date 2005-06-04
+    @cvs-id $Id$
+
 } {
-    { form_mode "edit" }
-    { today "" }
+    {orderby "name"}
+    {today ""}
 }
 
+# ---------------------------------------------------------------
+# Default & Security
+# ---------------------------------------------------------------
 
-# ---------------------------------------------------------------
-# Defaults & Security
-# ---------------------------------------------------------------
+set page_title "Object Types"
+set context [list $page_title]
+set page_focus "im_header_form.keywords"
 
 set user_id [ad_maybe_redirect_for_registration]
-set page_title "[_ intranet-exchange-rate.Exchange-Rate]"
-set context_bar [im_context_bar $page_title]
-set page_focus "im_header_form.keywords"
-set return_url [im_url_with_query]
-
-set form_id "exchange_rates"
-set action_url "index"
+set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+if {!$user_is_admin_p} {
+    ad_return_complaint 1 "You have insufficient privileges to use this page"
+    return
+}
 
 if {"" == $today} {
     set today [lindex [split [ns_localsqltimestamp] " "] 0]
 }
 
-# ---------------------------------------------------------------
-# Indicators
-# ---------------------------------------------------------------
+set form_id "exchange_rates"
+
+# ------------------------------------------------------------------
+# Build the form
+# ------------------------------------------------------------------
 
 set supported_currencies [db_list supported_currencies "
-	select iso 
-	from currency_codes 
-	where supported_p = 't'
+        select iso
+        from currency_codes
+        where supported_p = 't'
 "]
 
-# ad_return_complaint 1 $supported_currencies
 
-ad_form \
+list::create \
     -name $form_id \
-    -cancel_url $return_url \
-    -action $action_url \
-    -mode $form_mode \
-    -export {return_url} \
-    -form {
-        {today:text(text)
-	    {label "Date"} 
-	    {html {size 10}}
-	}
-}
-
-foreach currency $supported_currencies {
-    template::element create $form_id "${currency}_rate" \
-	-datatype text \
-	-widget text \
-	-label $currency \
-	-html {size 10}
-}
-
-ad_form -extend -name $form_id -on_request {
-    # Populate elements from local variables
-
-    template::element::set_value $form_id today $today
-
-    foreach currency $supported_currencies {
-	template::element::set_value $form_id "${currency}_rate" [db_string rate "
-		select	rate
-		from	im_exchange_rates
-		where	currency = :currency
-			and day = to_date(:today, 'YYYY-MM-DD')
-
-	"]
+    -multirow $form_id \
+    -key day \
+    -row_pretty_plural "Exchange Rates" \
+    -checkbox_name checkbox \
+    -selected_format "normal" \
+    -class "list" \
+    -main_class "list" \
+    -sub_class "narrow" \
+    -actions {
+    } -bulk_actions {
+    } -elements {
+        day {
+            display_col day
+            label "Date"
+            link_url_eval "new?today=$day"
+        }
+        eur_rate {
+            display_col eur_rate
+            label "EUR"
+        }
+    } -filters {
+    } -groupby {
+    } -orderby {
+    } -formats {
+        normal {
+            label "Table"
+            layout table
+            row {
+                day {}
+                eur_rate {}
+            }
+        }
     }
-}  -after_submit {
 
-    foreach currency $supported_currencies {
-	set rate_name "${currency}_rate"
 
-	db_dml update_rates "
-		update im_exchange_rates
-		set rate = :$rate_name
-		where
-			day = to_date(:today, 'YYYY-MM-DD')
-			and currency = :currency
+db_multirow -extend { object_attributes_url } $form_id select_exchange_rates {
+	select
+		dates.day,
+		(select	ier.rate
+		 from	im_exchange_rates ier
+		 where 
+			ier.day = dates.day
+			and currency = 'EUR'
+		) as eur_rate
+	from
+		(select distinct
+			day
+			from im_exchange_rates
+			where
+				day >= to_date(to_char(to_date(:today, 'YYYY-MM-DD'), 'YYYY-MM'), 'YYYY-MM')
+				and
+				day <= to_date(to_char(to_date(:today, 'YYYY-MM-DD')+31, 'YYYY-MM'), 'YYYY-MM')
+		) dates
+	order by
+		dates.day
 
-        "
-    }
+} {
+    set object_attributes_url ""
 }
 
+
+ad_return_template
 
