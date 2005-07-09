@@ -1333,6 +1333,9 @@ ad_proc -public im_dynfield::attribute_store {
     
     # for all tables related to object_type
     # create new row if not exists
+
+    ns_log Notice "attributes_store: object_type_tables=$object_type_tables"
+
     db_transaction {
     	foreach table_pair $object_type_tables {
 	    set table_n [lindex $table_pair 0]
@@ -1608,7 +1611,11 @@ ad_proc -public im_dynfield::attribute_store {
     db_transaction {
     	foreach table_pair $object_type_tables {
 	    set table_n [lindex $table_pair 0]
-	    append update_sql($table_n) "\nwhere $pk($table_n) = :object_id_param\n"
+
+	    # !!!
+	    set primary_key $pk($table_n)
+
+	    append update_sql($table_n) "\nwhere $primary_key = :object_id_param\n"
 
 	    # only if there is attributes to update 
 	    # in current table
