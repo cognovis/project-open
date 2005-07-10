@@ -478,7 +478,7 @@ ad_proc im_costs_project_component { user_id project_id } {
 
 ad_proc im_costs_base_component { user_id {company_id ""} {project_id ""} } {
     Returns a HTML table containing a list of costs for a particular
-    company or a particular project.
+    company or project.
 } {
     if {![im_permission $user_id view_costs]} {
 	return ""
