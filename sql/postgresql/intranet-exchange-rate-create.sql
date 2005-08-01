@@ -107,4 +107,4 @@ BEGIN
     return v_from_rate / v_to_rate;
 end;' language 'plpgsql';
 
-select im_exchange_rate(to_date('2005-07-01','YYYY-MM-DD'), 'EUR', 'USD');
+-- select im_exchange_rate(to_date('2005-07-01','YYYY-MM-DD'), 'EUR', 'USD');
