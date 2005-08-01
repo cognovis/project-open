@@ -8,5 +8,6 @@
 -- @author frank.bergmann@project-open.com
 
 
+drop function im_exchange_rate (date, char(3), char(3));
 drop table im_exchange_rates;
 
