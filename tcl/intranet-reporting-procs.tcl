@@ -32,6 +32,34 @@ ad_proc -private im_package_reporting_id_helper {} {
 # Reporting Procs
 # -------------------------------------------------------
 
+
+ad_proc im_report_render_row {
+    -row
+    {-row_class ""}
+    {-field_class ""}
+} {
+    Renders one line of a report via ns_write directly
+    into a report HTTP session
+} {
+    set tr_class ""
+    if {"" != $row_class} { set tr_class "class=rowtitle" }
+
+    set td_class ""
+    if {"" != $field_class} { set td_class "class=rowtitle" }
+
+    ns_write "<tr $tr_class>\n"
+    foreach field $row {
+	set value ""
+	if {"" != $field} {
+	    set cmd "set value \"$field\""
+	    eval "$cmd"
+	}
+	ns_write "<td $td_class>$value</td>\n"
+    }
+    ns_write "</tr>\n"
+}
+
+
 ad_proc im_report_render_header {
     -group_def
     -last_value_array_list

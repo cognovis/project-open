@@ -35,7 +35,6 @@ set sql "
     order by
 	to_char(ic.effective_date, 'YYYY-MM'),
 	lower(cust.company_name)
-
 "
 
 set amount_counter [list \
@@ -58,7 +57,6 @@ set counters [list \
 ]
 
 
-
 set row {$effective_date_formatted $customer_name $provider_name "$amount $currency" "$paid_amount $paid_currency" "row"}
 
 set content3 [list  \
@@ -68,7 +66,7 @@ set content3 [list  \
 ]
 
 set header2 {"$effective_month" "$customer_name" "" "" "" "header2" }
-set footer2 {"$effective_month" "" "" "\$amount_subtotal" "" "footer2" }
+set footer2 {"$effective_month" "" "" "\$amount_subtotal" "\$paid_subtotal" "footer2" }
 set content2 [list  \
     header $header2 \
     footer $footer2 \
@@ -90,7 +88,6 @@ set header0 {"Date" "Customer" "Provider" "Amount" "Paid" "header0"}
 set footer0 {"" "" "" "" "" "footer0"}
 
 
-
 # ------------------------------------------------------------
 # Start formatting the page
 #
@@ -98,80 +95,44 @@ set footer0 {"" "" "" "" "" "footer0"}
 ad_return_top_of_page "
 [im_header]
 [im_navbar]
-"
-ns_write "<H1>$page_title</H1>\n"
-ns_write "<table border=0 cellspacing=1 cellpadding=1>\n"
+<H1>$page_title</H1>
+<table border=0 cellspacing=1 cellpadding=1>\n"
 
-ns_write "<tr class=rowtitle>\n"
-foreach field $header0 {
-    set value ""
-    if {"" != $field} {
-	set cmd "set value \"$field\""
-	eval "$cmd"
-    }
-    ns_write "<td>$value</td>\n"
-}
-ns_write "</tr>\n"
+im_report_render_row \
+    -row $header0 \
+    -row_class rowtitle \
+    -field_class rowtitle
 
-
-set amount_subtotal 1
-
-# Initialize the footer array:
-# We have to display this array with the _next_ row,
-# because the _display_ decision depends on the values
-# of the next row.
-# In contrast, the render information is related to
-# the previous row, so that the footer needs to be
-# rendered in the same db_forach iteration as its row.
-#
 set footer_array_list [list]
-
+set last_value_list [list]
 db_foreach sql $sql {
 
     im_report_display_footer \
 	-group_def $report_def \
         -footer_array_list $footer_array_list \
-	-last_value_array_list [array get group_by_last_value]
+	-last_value_array_list $last_value_list
 
     im_report_update_counters -counters $counters
 
-    set value_list_header [im_report_render_header \
+    set last_value_list [im_report_render_header \
 	-group_def $report_def \
-	-last_value_array_list [array get group_by_last_value] \
+	-last_value_array_list $last_value_list \
     ]
-    ns_log Notice "report: value_list_header=$value_list_header"
-    array set group_by_last_value $value_list_header
 
     set footer_array_list [im_report_render_footer \
 	-group_def $report_def \
-	-last_value_array_list [array get group_by_last_value] \
+	-last_value_array_list $last_value_list \
     ]
-    array set footer_array $footer_array_list
 
 }
 
 im_report_display_footer \
     -group_def $report_def \
     -footer_array_list $footer_array_list \
-    -last_value_array_list [array get group_by_last_value] \
+    -last_value_array_list $last_value_list \
     -display_all_footers_p 1
 
+im_report_render_row \
+    -row $footer0
 
-
-ns_write "<tr class=rowtitle>\n"
-foreach field $footer0 {
-    set value ""
-    if {"" != $field} {
-	set cmd "set value \"$field\""
-	eval "$cmd"
-    }
-    ns_write "<td>$value</td>\n"
-}
-ns_write "</tr>\n"
-
-
-ns_write "<table>\n"
-
-ns_write [im_footer]
-
-
+ns_write "</table>\n[im_footer]\n"
