@@ -687,13 +687,6 @@ ad_proc -public im_dynfield::object::revision::new {
 
 
 
-
-
-
-
-
-
-
 namespace eval im_dynfield::list {}
 
 ad_proc -public im_dynfield::list::get {
@@ -1498,8 +1491,6 @@ ad_proc -public im_dynfield::attribute_store {
 	
     }	
 
-
-
     set attrib_list [db_list_of_lists get_page_attributes {
 	select	attr.attribute_id,
 		attr.attribute_name,
@@ -1510,35 +1501,45 @@ ad_proc -public im_dynfield::attribute_store {
 		attr.object_type = :object_type 
     }]
 
-
-    # Build the update_list for all attributes 
-    # except $id_column
+    # Build the update_list for all attributes except $id_column
     foreach attrib $attrib_list {
 	set attribute_id [lindex $attrib 0]
 	set attribute_name [lindex $attrib 1]
+
 	set attribute_table [lindex $attrib 2]
-	
 	if {[empty_string_p $attribute_table]} {
 	    set attribute_table $main_table_name
 	}
 	
-	# Skip the index column - it doesn't need to be
-	# stored.
+	# Skip the index column - it doesn't need to be stored.
 	if {[string equal $attribute_name $pk($attribute_table)]} { continue }
 	
-	# skip attributes that does not exists in form
+	# skip attributes that do not exists in form
 	# maybe it's not present in this page
 	if {![template::element::exists $form_id $attribute_name]} { continue }
-	
+
+	# Check for the storage type of the attribute.
+	# The storage type is with the _widget_.
+	set storage_type_id 0
+	set storage_type_id [db_string storage_type_id "
+		select	storage_type_id
+		from	im_dynfield_widgets idw,
+			im_dynfield_attributes ida
+		where	idw.widget_name = ida.widget_name
+			and ida.acs_attribute_id = :attribute_id
+        "]
+
+	set multiple_p 0
+	if {$storage_type_id == [im_dynfield_storage_type_id_multimap]} {
+	    set multiple_p 1
+	}
+
+
 	set widget_element [template::element::get_property $form_id $attribute_name widget]
 	switch $widget_element {
 
 	    "checkbox" - "multiselect" - "category_tree" - "im_category_tree" {
-		#ns_log notice "$widget_element -----> values [set $attribute_name]"
-		set multiple_p [template::element::get_property $form_id $attribute_name multiple_p]
-		if {[empty_string_p $multiple_p]} {
-		    set multiple_p 0
-		}
+
 		if {$multiple_p} {
 
 		    # get intranet-dynfield attribute_id
@@ -1566,7 +1567,6 @@ ad_proc -public im_dynfield::attribute_store {
 				) values (
 					:attribute_id,:object_id_param,:val
 				)"
-			    #ns_log notice "update multi value created $attribute_name $attribute_id $object_id_param value $val"
 			}
 		    }
 
@@ -1613,11 +1613,9 @@ ad_proc -public im_dynfield::attribute_store {
     # execute update query for all tables
     db_transaction {
     	foreach table_pair $object_type_tables {
+
 	    set table_n [lindex $table_pair 0]
-
-	    # !!!
 	    set primary_key $pk($table_n)
-
 	    append update_sql($table_n) "\nwhere $primary_key = :object_id_param\n"
 
 	    # only if there is attributes to update 
@@ -2006,7 +2004,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 			the number of columns for the relative
 			layout. (rigth now not used)
 } {
-	
     ns_log Notice "im_dynfield::append_attributes_to_form: style_var = $style_var, object_tpye=$object_type, object_id=$object_id, page_url=$page_url"
 
     # -------------------------- Defaults -----------------------
@@ -2244,12 +2241,16 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	    	
 	# get class layout for this attribute
 	if {$layout_page_p} {
-	    if {![db_0or1row "get class" "select class, 
+	    if {![db_0or1row "get class" "
+		select	class, 
 			sort_key 
-			from im_dynfield_layout
-			where attribute_id = :flex_attr_id
+		from
+			im_dynfield_layout
+		where
+			attribute_id = :flex_attr_id
 			and page_url = :page_url
-			and object_type = :object_type"]} {
+			and object_type = :object_type"]
+		} {
 			set class ""
 			set sort_key ""
 	    }
@@ -2264,7 +2265,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		set translated_datatype "date"
 	}
 
-	ns_log Notice "im_dynfield::append_attributes_to_form: attribute_name=$attribute_name, datatype=$datatype, translated_datatype=$translated_datatype, widget=$widget"
+	ns_log Notice "im_dynfield::append_attributes_to_form: flex_attr_id=$flex_attr_id, attribute_name=$attribute_name, datatype=$datatype, translated_datatype=$translated_datatype, widget=$widget, storage_type_id=$storage_type_id"
 
 	set parameter_list [lindex $parameters 0]
 
@@ -2298,6 +2299,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	     [string eq $widget "radio"] || 
 	     [string eq $widget "select"] || 
 	     [string eq $widget "multiselect"] ||
+	     [string eq $widget "im_category_tree"] ||
 	     [string eq $widget "category_tree"]} {
 
 		# ------------------------------------------------
@@ -2449,66 +2451,87 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		# get only attribute values from table
 		# ------------------------------------------------
 		if {0 < [llength $attributes_table_list]} {
-			set sql_query "select
-					 [join $attributes_table_list ", "]
-				       from $t_name t
-				       where $i_column = :object_id"
-				       
+		    set sql_query "
+			select	[join $attributes_table_list ", "]
+			from	$t_name t
+			where	$i_column = :object_id
+		    "
 			
-			if {![db_0or1row "get values" "$sql_query"] } {
-				# ------------------------------------------------
-				# default to null
-				# ------------------------------------------------
-				foreach attribute_name $attributes_table_list {
-					set $attribute_name ""
-				}	
-	 		}
-	 		
+		    if {![db_0or1row "get values" "$sql_query"] } {
+			# default to null
 			foreach attribute_name $attributes_table_list {
-				if {[template::element::exists $form_id $attribute_name]} {
-					set widget_element [template::element::get_property $form_id $attribute_name "widget"]
-					switch $widget_element {
-						"checkbox" - "multiselect" - "category_tree" {
-							# ---------------------------------
-							# get intranet-dynfield attribute id
-							# ---------------------------------
-							db_1row "get flex attrib id" "select attribute_id 
-								from im_dynfield_attributes 
-								where acs_attribute_id = (select attribute_id 
-											  from acs_attributes 
-											  where attribute_name = :attribute_name
-											  and object_type = :object_type)"
+			    set $attribute_name ""
+			}	
+		    }
+
+		    foreach attribute_name $attributes_table_list {
+			if {[template::element::exists $form_id $attribute_name]} {
+			    set widget_element [template::element::get_property $form_id $attribute_name "widget"]
+
+			    switch $widget_element {
+				"checkbox" - "multiselect" - "category_tree" - "im_category_tree" {
+
+				    # get intranet-dynfield attribute id
+				    db_1row "get flex attrib id" "
+					select	attribute_id 
+					from	im_dynfield_attributes 
+					where	acs_attribute_id = (
+						select attribute_id 
+						from acs_attributes 
+						where	attribute_name = :attribute_name
+							and object_type = :object_type
+						)
+				    "
 							
-							# -------------------------------------
-							# get multiple values if exists
-							# -------------------------------------
-							
-							set multiple_p [template::element::get_property $form_id $attribute_name multiple_p]
-							if {[empty_string_p $multiple_p]} {
-								set multiple_p 0
-							}
-							if {$multiple_p} {
-								set values_list [db_list "get values" "select value 
-												       from im_dynfield_attr_multi_value
-												       where attribute_id = :attribute_id
-												       and object_id = :object_id"]
-							} else {
-								set values_list [list [set $attribute_name]]
-							}
-							template::element::set_values $form_id $attribute_name $values_list
-						}
-	 					"date" {
-							set value [template::util::date::get_property ansi [set $attribute_name]]
-							set value_list [split $value "-"]			
-							set value "[lindex $value_list 0] [lindex $value_list 1] [lindex $value_list 2]"
-							template::element::set_value $form_id $attribute_name $value
-	 					}
-	 					default  {
-	 						template::element::set_value $form_id $attribute_name [set $attribute_name]
-	 					}
-	 				}
-	 			}
-	 		}
+				    # get multiple values if exists
+				    set multiple_p [template::element::get_property $form_id $attribute_name multiple_p]
+				    if {[empty_string_p $multiple_p]} {
+					set multiple_p 0
+				    }
+				    if {$storage_type_id == [im_dynfield_storage_type_id_multimap]} {
+#					set multiple_p 1
+				    }
+				    
+				    if {$multiple_p} {
+					
+#					ad_return_complaint 1 $attribute_id 
+
+					set values_list [db_list "get values" "
+						select	value 
+						from	im_dynfield_attr_multi_value
+						where	attribute_id = :attribute_id
+							and object_id = :object_id
+					"]
+
+#					ad_return_complaint 1 "<pre>
+#						select	value 
+#						from	im_dynfield_attr_multi_value
+#						where	attribute_id = $attribute_id
+#							and object_id = $object_id
+#					</pre>"
+
+
+					template::element::set_values $form_id $attribute_name $values_list
+
+				    } else {
+
+					template::element::set_value $form_id $attribute_name [set $attribute_name]
+					
+				    }
+				}
+
+				"date" {
+				    set value [template::util::date::get_property ansi [set $attribute_name]]
+				    set value_list [split $value "-"]			
+				    set value "[lindex $value_list 0] [lindex $value_list 1] [lindex $value_list 2]"
+				    template::element::set_value $form_id $attribute_name $value
+				}
+				default  {
+				    template::element::set_value $form_id $attribute_name [set $attribute_name]
+				}
+			    }
+			}
+		    }
 	 	}
    	     }	    
 	} else {

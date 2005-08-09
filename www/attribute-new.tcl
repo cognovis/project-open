@@ -60,21 +60,27 @@ if {0 != $attribute_id} {
 
 
 if {[empty_string_p $object_type]} {
-    ad_return_complaint 1 "[_ intranet-dynfield.No_object_type_found]<br>[_ intranet-dynfield.You_need_to_specifiy_either_the_object_type_or_an_attribute_id]"
+    ad_return_complaint 1 "[_ intranet-dynfield.No_object_type_found]<br>
+    [_ intranet-dynfield.You_need_to_specifiy_either_the_object_type_or_an_attribute_id]"
     return
 }
 
 acs_object_type::get -object_type $object_type -array "object_info"
 
 if {![exists_and_not_null table_name]} {
-   set table_name [db_string table_name "select table_name from acs_object_types where object_type=:object_type" -default ""]
+   set table_name [db_string table_name "
+	select table_name 
+	from acs_object_types 
+	where object_type=:object_type
+    " -default ""]
 }
 if {[string equal $action "already_existing"]} {
-	set title "[_ intranet-dynfield.Add_Attribute]"
+    set title "[_ intranet-dynfield.Add_Attribute]"
 } else {
-	set title "[_ intranet-dynfield.Add_a_completely_new_attribute_modify_DB]"
+    set title "[_ intranet-dynfield.Add_a_completely_new_attribute_modify_DB]"
 }
 set context [list [list objects Objects] [list "object-type?object_type=$object_type" $object_info(pretty_name)] "[_ intranet-dynfield.Add_Attribute]"]
+
 
 # ******************************************************
 # Determine all fields in the table that 
@@ -95,7 +101,8 @@ set all_tables [linsert $all_ext_tables 0 $table_name]
 #if {[llength $all_ext_tables]>0} {
 #	set all_tables [concat $all_tables $all_ext_tables]
 #}
-ns_log notice "************************ $all_tables **************************"
+
+
 foreach table_n $all_tables {
     set table_columns [db_columns $table_n]
 
@@ -233,6 +240,7 @@ ad_form -name attribute_form -form $form_fields -new_request {
 	} else {
 		set min_n_values "1"
 	}
+
 	db_transaction {
 		# ******************************************************
 		# update acs_attributes table
@@ -251,18 +259,20 @@ ad_form -name attribute_form -form $form_fields -new_request {
 			widget_name = :widget_name
 			where attribute_id = :attribute_id"
 	}
+
 } -after_submit {
-    #ns_log notice "************* before: table $table_name | attribute $attribute_name"
+
     if {[regexp (.+):(.+) $attribute_name match t_name a_name]} {
     	set table_name $t_name
     	set attribute_name $a_name
     }
-    #ns_log notice "************* before: table $table_name | attribute $attribute_name"	
+
     ad_returnredirect "attribute-new-2?[export_vars -url {object_type widget_name attribute_name pretty_name table_name required_p modify_sql_p pretty_plural description}]"
     ad_script_abort
+
 }
 
-    
+
 ad_return_template
 
 

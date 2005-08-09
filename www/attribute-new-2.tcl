@@ -56,11 +56,15 @@ set user_message "Attribute <a href=\"attribute?[export_vars -url {attribute_id}
 
 # Get datatype from Widget or parameter if not explicitely given
 if {"" == $datatype} {
-    set datatype [db_string acs_datatype "select acs_datatype from im_dynfield_widgets where widget_name = :widget_name" -default "string"]
+    set datatype [db_string acs_datatype "
+	select acs_datatype 
+	from im_dynfield_widgets 
+	where widget_name = :widget_name
+    " -default "string"]
 }
 
 
-# Right now, we do not support multiple values for attributes
+# Right now, we do not support number restrictions for attributes
 set max_n_values 1
 if { [string eq $required_p "t"] } {
     set min_n_values 1
@@ -85,6 +89,7 @@ db_transaction {
 	    	-modify_sql_p $modify_sql_p \
 	    	-table_name $table_name \
 	    	-attribute_name $attribute_name \
+		-storage_type_id $storage_type_id \
 	    	$object_type $datatype \
 	    	$pretty_name $pretty_plural \
 	    ]
@@ -101,6 +106,7 @@ db_transaction {
 	    }
 
     } else {
+
 	set acs_attribute_id [db_string acs_attribute_id "
 		select attribute_id 
 		from acs_attributes 
