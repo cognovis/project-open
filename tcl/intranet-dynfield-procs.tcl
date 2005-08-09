@@ -11,6 +11,7 @@ ad_library {
 
 }
 
+ad_proc -public im_dynfield_storage_type_id_value { } { return 10007 }
 ad_proc -public im_dynfield_storage_type_id_multimap { } { return 10005 }
 
 
@@ -1212,12 +1213,12 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
     set ext_tables [list]
     set ext_table_join_where ""
     db_foreach ext_tables $ext_table_sql {
+	if {$ext_table_name == ""} { continue }
 	if {$ext_table_name == $main_table_name} { continue }
+
 	lappend ext_tables $ext_table_name
 	append ext_table_join_where "\tand $main_table_name.$main_id_column = $ext_table_name.$ext_id_column\n"
     }
-
-    set sql_vars [ns_set create]
 
     set bind_vars [ns_set create]
     set criteria [list]
@@ -1247,10 +1248,12 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 	)
     "
 
+    # Skip empty where clause
+    if {"" == $where_clause} { set sql "" }
+
     set extra(where) $sql
     set extra(bind_vars) [util_ns_set_to_list -set $bind_vars]
     ns_set free $bind_vars
-
     return [array get extra]
 }
 
@@ -1290,7 +1293,7 @@ ad_proc -public im_dynfield::set_form_values_from_http {
 	   set value [ns_set get $form_vars $element]
 	   template::element::set_value $form_id $element $value
 	
-	   ns_log Notice "append_attributes_to_form: request_form: $element = $value"
+	   ns_log Notice "set_form_values_from_http: request_form: $element = $value"
 	}
     }
 }
@@ -1958,12 +1961,12 @@ ad_proc -public im_dynfield::search_query {
       
     
     return [list [list "select" "[join $query_select_list ","]"] [list "from" "[join $query_from_tables ", \n"]"] \
-    		 [list "where" "$where_clause"] [list "list_elements" "$elements_list"] [list "list_orderby" "$orderby_list"]]
+	 [list "where" "$where_clause"] [list "list_elements" "$elements_list"] [list "list_orderby" "$orderby_list"]]
     
 }
 
 
-######
+
 ad_proc -public im_dynfield::append_attributes_to_form {
     -object_type:required
     -form_id:required

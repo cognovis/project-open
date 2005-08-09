@@ -85,6 +85,7 @@ ad_proc -public add_xt {
     { -required_p "f" }
     { -widget_name "" }
     { -attribute_name "" }
+    { -storage_type_id "" }
     { -sql_datatype "" }
     object_type
     datatype
@@ -98,12 +99,17 @@ ad_proc -public add_xt {
     Wrapper for the <code>acs_attribute.create_attribute</code>
     call. Note that this procedure assumes type-specific storage.
 
+    The code can deal with both "value" storage types (store the
+    value of the attribute together with the object's main or
+    extension tables) and the "multimap" storage type, where
+    the attribute's values are stored in a separate "skinny"
+    multimap-table.
+
     @author Michael Bryzek (mbryzek@arsdigita.com)
     @author Frank Bergmann (frank.bergmann@project-open.com)
     @creation-date 12/2004
 
     @return The <code>attribute_id</code> of the newly created attribute
-    
 } {
     set default_value $default
 
@@ -112,9 +118,7 @@ ad_proc -public add_xt {
     set storage ""
     set static_p ""
 
-    # We always use type-specific storage. Grab the tablename from 
-    # the object_type
-    
+    # Grab the tablename from the object_type
     if {"" == $table_name} {
 	if { ![db_0or1row select_table {
 	        select	t.table_name
@@ -140,7 +144,8 @@ ad_proc -public add_xt {
     }
     
     # Only add the column to the table if it doesn't already exist
-    if {[string equal $modify_sql_p "t"] && ![db_column_exists $table_name $attribute_name]} {
+    # and if the attribut's storage type if "value" (not a multimap)
+    if {[string equal $modify_sql_p "t"] && ![db_column_exists $table_name $attribute_name] && $storage_type_id == [im_dynfield_storage_type_id_value] } {
     	lappend plsql_drop [list "drop_attr_column" "FOO" db_dml]
     	lappend plsql [list "add_column" "FOO" db_dml]
     }
@@ -177,5 +182,6 @@ ad_proc -public add_xt {
 }
 
 
+# end of namespace attribute
 }
 
