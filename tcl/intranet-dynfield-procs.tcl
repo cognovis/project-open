@@ -2006,86 +2006,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 } {
     ns_log Notice "im_dynfield::append_attributes_to_form: style_var = $style_var, object_tpye=$object_type, object_id=$object_id, page_url=$page_url"
 
-    # -------------------------- Defaults -----------------------
-    set style ""
-    if { ![empty_string_p $style_var] } {
-	upvar 1 $style_var style 
-	if { ![info exists style]  } {
-	    set style ""
-	}
-    }
-
-    set cols ""
-    if { ![empty_string_p $cols_var] } {
-	upvar 1 $cols_var cols
-	if { ![info exists cols]  } {
-	    set cols ""
-	}
-    }
-
-    # -------------------------- Deal with page_url -----------------------
-    if { [empty_string_p $page_url] } {
-
-	# try to get the page_url from the relative url 
-	if { ![regexp (.*)\.tcl [ad_conn url] match page_url] } {
-	    set page_url [ad_conn url]
-	}
-	
-	# is this url one of the user defined pages for this object_type?
-	set exist_page_url_p [db_string exist_page_url "
-		select	1 
-		from	im_dynfield_layout_pages
-		where
-			object_type = :object_type 
-			and page_url = :page_url
-	" -default "0"]
-
-	# if not get default for object_type, if no one we won't use layout
-	if { !$exist_page_url_p } {
-	    set page_url [db_string get_default_page "
-	    select page_url
-	    from im_dynfield_layout_pages
-	    where object_type = :object_type
-	    and default_p = 't'
-	    " -default ""]
-	}
-    }
-
-    
-    # -------------------------- Dynamic Positioning -----------------------
-    # Verify correctness of page_url.
-    # Just ignore dynamic position if something is wrong
-    if { [db_0or1row exists_page_url_p "select 1 from im_dynfield_layout_pages
-	where object_type = :object_type and page_url = :page_url"]
-    } {
-	set layout_page_p 1
-	
-	# get layout information
-	db_1row get_page_info {
-	    select layout_type, 
-	    table_width, 
-	    table_height, 
-	    adp_file 
-	    from im_dynfield_layout_pages
-	    where object_type = :object_type 
-	    and page_url = :page_url
-	} -column_array "page"
-	
-    } else {
-    	set page_url [db_string get_default_page {
-		    select page_url
-		    from im_dynfield_layout_pages
-		    where object_type = :object_type
-		    and default_p = 't'
-	} -default ""]
-	if {[empty_string_p $page_url]} {
-		set layout_page_p 0
-	} else {
-		set layout_page_p 1
-	}
-    }
-
-    
     # ---------------------------- Create the Form --------------------------
     set variable_prefix ""
     if {![template::form exists $form_id]} {
@@ -2112,96 +2032,10 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     	}
     }
     
-    # ---------------------------- Apply style to Form --------------------------
-    # if we do not have an specific style, find the corresponding from layout_type
-    set tag_attributes [list]
-    if { [empty_string_p $style] && $layout_page_p } {
-    	switch -- $page(layout_type) {
-    	    absolute {
-    		set adp_file [parameter::get_from_package_key -package_key intranet-dynfield -parameter absolute_template -default "default-absolute"]
-    		set cols 1
-    	    }
-    	    relative {
-    		set adp_file [parameter::get_from_package_key -package_key intranet-dynfield -parameter relative_template -default "default-relative"]
-    		#set cols "$page(table_width)" 
-    		#set headers "headers"
-    		#set title "title"
-    		#foreach varname {headers title cols} {
-    		#    lappend tag_attributes $varname [set $varname]
-    		#    set form_properties($varname) [set $varname]
-    		#}
-    	    }
-    	    adp {
-    		set adp_file $page(adp_file)
-    		set cols 1
-    	    }
-    	}
-    	set style "../../../intranet-dynfield/resources/forms/${adp_file}"
-    } elseif {[empty_string_p $style]} {
-	set style [parameter::get_from_package_key -package_key intranet-dynfield -parameter form_style -default "aims-form"]
-    }
+    set style ""
+    set layout_page_p 0
 
-
-    # ----------------- Create dynamic form element ----------------------------
-    # Create form elements from the "im_dynfield_attributes" table.
-    # The table "im_dynfield_attributes" contains the list of
-    # "attributes" (= fields or columns) of an object.
-    # We are going to add these fields to the current view/
-    # edit template.
-    #
-    # There is a special treatment for attribute "parameters".
-    # These parameters are are passed on to the TCL widget
-    # that renders the specific attribute value.
-    
-    # Pull out all the attributes up the hierarchy from this object_type
-    # to the $object_type object type
-    if {$layout_page_p && $page(layout_type) != "adp" } {
-
-    	set attributes_sql "
-	     select a.attribute_id,
-		aa.attribute_id as flex_attr_id,
-		a.table_name as attribute_table_name,
-		a.attribute_name,
-		a.pretty_name,
-		a.datatype, 
-		case when a.min_n_values = 0 then 'f' else 't' end as required_p, 
-		a.default_value, 
-	   	t.table_name as object_type_table_name, 
-	   	t.id_column as object_type_id_column,
-		aw.widget,
-		aw.parameters,
-		aw.storage_type_id,
-		im_category_from_id(aw.storage_type_id) as storage_type,
-		fl.class,
-		fl.sort_key
-	     from
-		acs_attributes a, 
-		im_dynfield_attributes aa,
-		im_dynfield_widgets aw,
-		im_dynfield_layout fl,
-		acs_object_types t
-	     where 
-		t.object_type = :object_type
-		and a.object_type = :object_type
-		and a.attribute_id = aa.acs_attribute_id
-		and aa.attribute_id = fl.attribute_id
-		and fl.page_url = :page_url
-		and fl.object_type = :object_type
-		and aa.widget_name = aw.widget_name
-	     order by 
-		fl.sort_key
-	"
-
-    } else {
-	
-
-	# ------------------------------------------------
-	# no layout defined
-	# get all object_type attributes
-	# ------------------------------------------------
-	
-
-	set attributes_sql "
+    set attributes_sql "
 	     select a.attribute_id,
 		aa.attribute_id as flex_attr_id,
 		a.table_name as attribute_table_name,
@@ -2228,33 +2062,18 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		and a.attribute_id = aa.acs_attribute_id
 		and aa.widget_name = aw.widget_name
 	     order by aa.attribute_id
-	     "
-    }
+    "
 
 
     db_foreach attributes $attributes_sql {
     
+	ns_log Notice "im_dynfield::append_attributes_to_form: flex_attr_id=$flex_attr_id, attribute_name=$attribute_name, datatype=$datatype, widget=$widget, storage_type_id=$storage_type_id"
+
 	# set optional all attributes if search mode
-	if {$search_p} {
-		set required_p "f"
-	}
-	    	
-	# get class layout for this attribute
-	if {$layout_page_p} {
-	    if {![db_0or1row "get class" "
-		select	class, 
-			sort_key 
-		from
-			im_dynfield_layout
-		where
-			attribute_id = :flex_attr_id
-			and page_url = :page_url
-			and object_type = :object_type"]
-		} {
-			set class ""
-			set sort_key ""
-	    }
-	}
+	if {$search_p} { set required_p "f" }
+
+	# No help yet...
+	set help ""
 
 	# Might translate the datatype into one for which we have a
 	# validator (e.g. a string datatype would change into text).
@@ -2264,8 +2083,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	} elseif {$datatype == "date"} {
 		set translated_datatype "date"
 	}
-
-	ns_log Notice "im_dynfield::append_attributes_to_form: flex_attr_id=$flex_attr_id, attribute_name=$attribute_name, datatype=$datatype, translated_datatype=$translated_datatype, widget=$widget, storage_type_id=$storage_type_id"
 
 	set parameter_list [lindex $parameters 0]
 
@@ -2282,18 +2099,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	    set html_parameters [lindex $parameter_list [expr $html_pos + 1]]
 	}
 
-	# add id to widget
-	set help ""
-	if { [exists_and_not_null class] } {
-	    set help [list class $class]
-	}
-	
-	if {[info exists $attribute_name]} {
-	    set value [expr "\$$attribute_name"]
-	}
-	
-	if {![info exists value]} { set value ""}
-	
 	# avila 20050218: to be revised
 	if { [string eq $widget "checkbox"] || 
 	     [string eq $widget "radio"] || 
@@ -2319,8 +2124,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		if {$options_pos >= 0} {
 		    set option_list [lindex $parameter_list [expr $options_pos + 1]]
 		}
-		# fraber 050617: give error if there are no options defined?
-
 		
 		if { [string eq $required_p "f"] && ![string eq $widget "checkbox"]} {
 			# This is not a required option list... offer a default
