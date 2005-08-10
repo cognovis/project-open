@@ -1520,14 +1520,13 @@ ad_proc -public im_dynfield::attribute_store {
 
 	# Check for the storage type of the attribute.
 	# The storage type is with the _widget_.
-	set storage_type_id 0
 	set storage_type_id [db_string storage_type_id "
 		select	storage_type_id
 		from	im_dynfield_widgets idw,
 			im_dynfield_attributes ida
 		where	idw.widget_name = ida.widget_name
 			and ida.acs_attribute_id = :attribute_id
-        "]
+        " -default 0]
 
 	set multiple_p 0
 	if {$storage_type_id == [im_dynfield_storage_type_id_multimap]} {
@@ -2130,7 +2129,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		    select	$attribute_name
 		    from	$attribute_table_name
 		    where	$attribute_id_column = :object_id
-		"]
+		" -default ""]
 		template::element::set_value $form_id $attribute_name $value
 
 	    }
