@@ -1366,6 +1366,9 @@ ad_proc -private auth::send_email_verification_email {
     Sends out an email to the user that lets them verify their email.
     Throws an error if we couldn't send out the email.
 } {
+    ad_return_complaint 1 "This routine would have send out an email to user '$user(email)'"
+    return
+
     # These are used in the messages below
     set token [auth::get_user_secret_token -user_id $user_id]
     acs_user::get -user_id $user_id -array user
