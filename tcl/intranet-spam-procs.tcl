@@ -38,14 +38,14 @@ ad_proc -public spam_base {} {
 
 
 ad_proc spam_new_message {
-    {-context_id [db_null]}
-    {-send_date [db_null]}
+    {-context_id ""}
+    {-send_date ""}
     {-spam_id ""}
     {-subject ""}
     {-plain  ""}
     {-html ""}
-    {-sql [db_null]}
-    {-approved_p [db_null]}
+    {-sql ""}
+    {-approved_p ""}
 } {
     insert a new spam message into the acs_messages and spam_messages 
     table, and indirectly into the content repository.
@@ -63,26 +63,14 @@ ad_proc spam_new_message {
     # something general in ACS for this kind of stuff?).
     regsub { (\d):} $send_date { 0\1:} send_date
 
-    set sql_proc  "
-    begin
-      :1 := spam.new (
-         spam_id => :spam_id,
-         send_date => to_date(:send_date, 'yyyy-mm-dd hh:mi:ss AM'),
-         title => :subject,
-         sql_query => :sql,
-         html_text => :html,
-         plain_text => :plain,
-         creation_user => [ad_get_user_id],
-         creation_ip => '[ad_conn peeraddr]',
-         context_id => :context_id,
-         approved_p => :approved_p
-     );
-     end;"
-    
     set user_id [ad_get_user_id]
     set peeraddr [ad_conn peeraddr]
 
-    return [db_exec_plsql spam_insert_message $sql_proc]
+    set plain "asdf"
+
+    if {"" == $send_date} { set send_date [db_string now "select now() from dual"] }
+
+    return [db_exec_plsql spam_insert_message {}]
 }
 
 ad_proc spam_update_message {

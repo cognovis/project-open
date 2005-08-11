@@ -35,7 +35,7 @@
                 'spam_message', -- object_type
                 :approved_p,    -- approved_p
                 :sql,           -- sql_query
-                to_timestamp(:send_date, 'yyyy-mm-dd hh:mi:ss AM') -- send_date
+                to_timestamp(:send_date, 'yyyy-mm-dd hh:mi:ss') -- send_date
          );
 
         </querytext>
