@@ -11,7 +11,7 @@
                 null,           -- reply_to
                 null,           -- sent_date
                 null,           -- sender
-                null,           -- rfc822_id
+                :rfc822_id,     -- rfc822_id
                 :subject,       -- title
                 :html,          -- html_text
                 :plain,         -- plain_text

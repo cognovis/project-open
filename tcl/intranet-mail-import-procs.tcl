@@ -93,12 +93,15 @@ namespace eval im_mail_import {
         Processes all emails in MailDir
         @option mail_dir Maildir location
     } {
+	set debug "\n"
+
 	# Make sure the "Maildir/spam" folder exists"
 	set spam_folder "$mail_dir/spam"
 	if {![file exists $spam_folder]} {
 	    if {[catch { ns_mkdir $spam_folder } errmsg]} {
-		ns_log Notice "im_mail_import.process_mails: Error creating '$spam_folder' folder: $errmsg"
-		return {}
+		ns_log Notice "im_mail_import.process_mails: Error creating '$spam_folder' folder: '$errmsg'"
+		append debug "Error creating '$spam_folder' folder: '$errmsg'\n"
+		return $debug
 	    }
 	}
 
@@ -106,8 +109,9 @@ namespace eval im_mail_import {
 	set defered_folder "$mail_dir/defered"
 	if {![file exists $defered_folder]} {
 	    if {[catch { ns_mkdir $defered_folder } errmsg]} {
-		ns_log Notice "im_mail_import.process_mails: Error creating '$defered_folder' folder: $errmsg"
-		return {}
+		ns_log Notice "im_mail_import.process_mails: Error creating '$defered_folder' folder: '$errmsg'"
+		append debug "Error creating '$defered_folder' folder: '$errmsg'\n"
+		return $debug
 	    }
 	}
 
@@ -115,24 +119,32 @@ namespace eval im_mail_import {
 	set processed_folder "$mail_dir/processed"
 	if {![file exists $processed_folder]} {
 	    if {[catch { ns_mkdir $processed_folder } errmsg]} {
-		ns_log Notice "im_mail_import.process_mails: Error creating '$processed_folder' folder: $errmsg"
-		return {}
+		ns_log Notice "im_mail_import.process_mails: Error creating '$processed_folder' folder: '$errmsg'"
+		append debug "im_mail_import.process_mails: Error creating '$processed_folder' folder: '$errmsg'\n"
+		return $debug
 	    }
 	}
 
         if {[catch {
             set messages [glob "$mail_dir/new/*"]
         } errmsg]} {
-            ns_log Notice "im_mail_import.process_mails: No messages: $errmsg"
-            return {}
+            ns_log Notice "im_mail_import.process_mails: No messages: '$errmsg'"
+            append debug "No messages: '$errmsg'\n"
+            return $debug
         }
 
         set list_of_bounce_ids [list]
         set new_messages_p 0
 
+
+	if {0 == [llength $messages]} {
+            append debug "no messages in $mail_dir/new/\n"
+	}
+
 	# foreach incoming mail
         foreach msg $messages {
             ns_log Notice "im_mail_import.process_mails: mail $msg"
+            append debug "mail $msg\n"
 
 	    # Get the last piece of the Msg
 	    set msg_paths [split $msg "/"]
@@ -190,19 +202,23 @@ namespace eval im_mail_import {
 	    set to_header ""
 	    set subject_header "No Subject"
 	    set spam_header ""
+	    set rfc822_message_id ""
             catch {set from_header $email_headers(from)}
             catch {set to_header $email_headers(to)}
             catch {set subject_header $email_headers(subject)}
             catch {set spam_header $email_headers("x-spambayes-classification")}
+            catch {set rfc822_message_id $email_headers("message-id")}
 
 	    # Move to "/spam" if there is a Spambayes header...
             if {[string equal "spam" $spam_header] } {
                 if {[catch {
-                    ns_log Notice "im_mail_import.process_mails: Moving '$msg' to '$spam_folder/$msg_body'"
+                    ns_log Notice "im_mail_import.process_mails: Moving '$msg' to spam: '$spam_folder/$msg_body'"
+                    append debug "Moving '$msg' to spam: '$spam_folder/$msg_body'\n"
                     ns_rename $msg "$spam_folder/$msg_body"
 		    continue
                 } errmsg]} {
-                    ns_log Notice "im_mail_import.process_mails: Error moving '$msg' to '$spm_folder/$msg_body': $errmsg"
+                    ns_log Notice "im_mail_import.process_mails: Error moving '$msg' to spam: '$spm_folder/$msg_body': '$errmsg'"
+                    append debug "Error moving '$msg' to spam: '$spam_folder/$msg_body': '$errmsg'\n"
                     continue
                 }
             }
@@ -227,13 +243,14 @@ namespace eval im_mail_import {
 	    # Move to "defered" if there is no employee right now...
             if {0 == [llength $non_emp_ids]} {
                 if {[catch {
-                    ns_log Notice "im_mail_import.process_mails: Moving '$msg' to '$defered_folder/$msg_body'"
+                    ns_log Notice "im_mail_import.process_mails: Moving '$msg' to defered: '$defered_folder/$msg_body'"
+                    append debug "Moving '$msg' to defered: '$defered_folder/$msg_body'\n"
                     ns_rename $msg "$defered_folder/$msg_body"
-		    continue
                 } errmsg]} {
-                    ns_log Notice "im_mail_import.process_mails: Error moving '$msg' to '$defered_folder/$msg_body': $errmsg"
-                    continue
+                    ns_log Notice "im_mail_import.process_mails: Error moving '$msg' to defered: '$defered_folder/$msg_body': '$errmsg'"
+                    append debug "Error moving '$msg' to defered: '$defered_folder/$msg_body': '$errmsg'\n"
                 }
+		continue
             }
 
 	    # Create an OpenACS object with the mail
@@ -247,11 +264,13 @@ namespace eval im_mail_import {
 	    set peeraddr [ad_conn peeraddr]
 	    set approved_p 1
 	    set send_date [db_string now "select now() from dual"]
-	    set header_from $from_headers
-	    set header_to $to_headers
+	    set header_from $from_header
+	    set header_to $to_header
+	    set rfc822_id $rfc822_message_id
 
 	    set cr_item_id [db_exec_plsql im_mail_import_new_message {}]
 	    ns_log Notice "im_mail_import.process_mails: created spam_item \#$cr_item_id"
+	    append debug "created spam_item \#$cr_item_id\n"
 
 	    foreach non_emp_id $non_emp_ids {
 		
@@ -262,24 +281,21 @@ namespace eval im_mail_import {
 		set creation_ip $peeraddr
 		set rel_id [db_exec_plsql im_mail_import_new_rel {}]
 		ns_log Notice "im_mail_import.process_mails: created relationship \#$rel_id"
+		append debug "created relationship \#$rel_id\n"
 
 
-		# Move to "processed" if there is no employee right now...
-		if {0 == [llength $non_emp_ids]} {
-		    if {[catch {
-			ns_log Notice "im_mail_import.process_mails: Moving '$msg' to '$processed_folder/$msg_body'"
-			ns_rename $msg "$processed_folder/$msg_body"
-			continue
-		    } errmsg]} {
-			ns_log Notice "im_mail_import.process_mails: Error moving '$msg' to '$processed_folder/$msg_body': $errmsg"
-			continue
-		    }
+		# Move to "processed" 
+		if {[catch {
+		    ns_log Notice "im_mail_import.process_mails: Moving '$msg' to processed: '$processed_folder/$msg_body'"
+		    append debug "Moving '$msg' to processed: '$processed_folder/$msg_body'\n"
+		    ns_rename $msg "$processed_folder/$msg_body"
+		} errmsg]} {
+		    ns_log Notice "im_mail_import.process_mails: Error moving '$msg' to processed: '$processed_folder/$msg_body': '$errmsg'"
+		    append debug "Error moving '$msg' to processes: '$processed_folder/$msg_body': '$errmsg'\n"
 		}
-
 	    }
-	    
-#	    ad_return_complaint 1 "<pre>from: $from_ids\nto: $to_ids\nemps: $employee_ids\nnon-emps: $non_emp_ids\n$debug</pre>"
         }
+	return $debug
     }
     
     ad_proc -public scan_mails {} {

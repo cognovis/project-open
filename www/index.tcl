@@ -22,10 +22,14 @@ set current_url_without_vars [ns_conn url]
 
 # im_mail_import::scan_mails
 
-im_mail_import::process_mails -mail_dir [im_mail_import::mail_dir]
+set debug [im_mail_import::process_mails -mail_dir [im_mail_import::mail_dir]]
 
 
-set page_body ""
+set page_body "
+<pre>
+$debug
+</pre>
+"
 
 
 if {0} {
