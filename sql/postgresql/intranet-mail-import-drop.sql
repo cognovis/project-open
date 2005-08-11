@@ -6,3 +6,9 @@
 --
 
 -- nothing...
+
+
+-- Delete components and menus
+select  im_component_plugin__del_module('intranet-mail-import');
+select  im_menu__del_module('intranet-mail-import');
+

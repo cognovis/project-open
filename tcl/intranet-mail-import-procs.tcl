@@ -267,6 +267,8 @@ namespace eval im_mail_import {
 	    set header_from $from_header
 	    set header_to $to_header
 	    set rfc822_id $rfc822_message_id
+	    ns_log Notice "im_mail_import.process_mails: rfc822_id='$rfc822_id'"
+	    append debug "rfc822_id='$rfc822_id'\n"
 
 	    set cr_item_id [db_exec_plsql im_mail_import_new_message {}]
 	    ns_log Notice "im_mail_import.process_mails: created spam_item \#$cr_item_id"
@@ -329,6 +331,79 @@ namespace eval im_mail_import {
 	# nothing
     }
 
-
-
 }
+
+
+ad_proc im_mail_import_user_component {
+    {-view_name ""}
+    {-forum_order_by "priority"}
+    {-rel_user_id 0}
+} {
+    Show a list of imported mails
+} {
+    set bgcolor(0) " class=roweven"
+    set bgcolor(1) " class=rowodd"
+
+    if {0 == $rel_user_id} {
+	set rel_user_id [ad_get_user_id]
+    }
+
+    set html "
+<table>
+<tr class=rowtitle>
+   <td class=rowtitle align=center colspan=99>Associated Emails</td>
+</tr>
+<tr class=rowtitle>
+   <td class=rowtitle align=center>Date</td>
+   <td class=rowtitle align=center>Subject</td>
+   <td class=rowtitle align=center>From</td>
+   <td class=rowtitle align=center>To</td>
+</tr>
+"
+
+    set sql "
+	select
+		amb.*,
+		to_char(ao.creation_date, 'YYYY-MM-DD') as date_formatted
+	from
+		acs_rels ar,
+		acs_mail_bodies amb,
+		acs_objects ao
+	where
+		ar.object_id_one = amb.body_id
+		and amb.body_id = ao.object_id
+		and ar.object_id_two = :rel_user_id
+    "
+
+    set ctr 0
+    db_foreach mail_list $sql {
+
+	append html "
+<tr $bgcolor([expr $ctr%2])>
+   <td>$date_formatted</td>
+   <td><a href=\"/intranet-mail-import/view?body_id=$body_id\">
+     [string_truncate -len 50 $header_subject]
+  </a></td>
+   <td>[string_truncate -len 25 $header_from]</td>
+   <td>[string_truncate -len 25 $header_to]</td>
+
+</tr>
+"
+	incr ctr
+    }
+
+    if {0 == $ctr} {
+	append html "
+<tr $bgcolor([expr $ctr%2])>
+   <td colspan=99 align=center>No entries found</td>
+</tr>
+"
+    }
+
+    append html "
+</table>
+"
+
+    return $html
+}
+
