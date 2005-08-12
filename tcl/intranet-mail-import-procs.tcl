@@ -47,6 +47,9 @@ namespace eval im_mail_import {
 
         @option header_line A mail header like such as "from" or "to".
     } {
+	ns_log Notice "im_mail_import.extract_emails: line=$line"
+	
+	set line [string tolower $line]
 	regsub -all {\<} $line " " line
 	regsub -all {\>} $line " " line
 	regsub -all {\"} $line " " line
@@ -60,6 +63,7 @@ namespace eval im_mail_import {
 	    }
 	}
 
+	ns_log Notice "im_mail_import.extract_emails: email=$emails"
 	return $emails
     }
 
@@ -70,19 +74,21 @@ namespace eval im_mail_import {
 
         @option email_list A list of email address
     } {
+	ns_log Notice "im_mail_import.map_emails_to_ids: email_list=$email_list"
         set ids [list]
 
         foreach email $email_list {
 	    set id [db_string get_party "
 		select party_id 
 		from parties 
-		where email = :email
+		where lower(email) = lower(:email)
 	    " -default ""]
 
 	    if {"" != $id} {
 		append ids $id
 	    }
         }
+	ns_log Notice "im_mail_import.map_emails_to_ids: ids=$ids"
         return $ids
     }
 
@@ -196,18 +202,41 @@ namespace eval im_mail_import {
             }
             set body "\n[join [lrange $file_lines $i end] "\n"]"
 
+	    ns_log Notice "im_mail_import.process_mails: mail_header='[join $headers "' '"]'"
+
             # Extract headers values
             array set email_headers $headers
 	    set from_header ""
 	    set to_header ""
 	    set subject_header "No Subject"
-	    set spam_header ""
-	    set rfc822_message_id ""
             catch {set from_header $email_headers(from)}
             catch {set to_header $email_headers(to)}
             catch {set subject_header $email_headers(subject)}
-            catch {set spam_header $email_headers("x-spambayes-classification")}
-            catch {set rfc822_message_id $email_headers("message-id")}
+
+	    set spam_header ""
+	    if {[info exists email_headers(x-spambayes-classification)]} {
+		set spam_header $email_headers(x-spambayes-classification)
+		ns_log Notice "im_mail_import.process_mails: spam_header=$spam_header"
+	    } else {
+		ns_log Notice "im_mail_import.process_mails: No spam header found"
+	    }
+
+	    set rfc822_message_id ""
+	    if {[info exists email_headers(message-id)]} {
+		set rfc822_message_id $email_headers(message-id)
+		# remove the <...> brackets
+		if {[regexp {\<([^\>]*)\>} $rfc822_message_id match id]} {
+		    set rfc822_message_id $id
+		}
+		ns_log Notice "im_mail_import.process_mails: message-id=$rfc822_message_id"
+	    } else {
+		ns_log Notice "im_mail_import.process_mails: No message_id found"
+	    }
+
+            ns_log Notice "im_mail_import.process_mails: from_header=$from_header"
+            ns_log Notice "im_mail_import.process_mails: to_header=$to_header"
+            ns_log Notice "im_mail_import.process_mails: subject_header=$subject_header"
+            ns_log Notice "im_mail_import.process_mails: rfc822_message_id=$rfc822_message_id"
 
 	    # Move to "/spam" if there is a Spambayes header...
             if {[string equal "spam" $spam_header] } {
@@ -215,12 +244,11 @@ namespace eval im_mail_import {
                     ns_log Notice "im_mail_import.process_mails: Moving '$msg' to spam: '$spam_folder/$msg_body'"
                     append debug "Moving '$msg' to spam: '$spam_folder/$msg_body'\n"
                     ns_rename $msg "$spam_folder/$msg_body"
-		    continue
                 } errmsg]} {
-                    ns_log Notice "im_mail_import.process_mails: Error moving '$msg' to spam: '$spm_folder/$msg_body': '$errmsg'"
+                    ns_log Notice "im_mail_import.process_mails: Error moving '$msg' to spam: '$spam_folder/$msg_body': '$errmsg'"
                     append debug "Error moving '$msg' to spam: '$spam_folder/$msg_body': '$errmsg'\n"
-                    continue
                 }
+		continue
             }
 
 	    # The the list of emails from the To and From fields
@@ -270,33 +298,33 @@ namespace eval im_mail_import {
 	    ns_log Notice "im_mail_import.process_mails: rfc822_id='$rfc822_id'"
 	    append debug "rfc822_id='$rfc822_id'\n"
 
-	    set cr_item_id [db_exec_plsql im_mail_import_new_message {}]
-	    ns_log Notice "im_mail_import.process_mails: created spam_item \#$cr_item_id"
-	    append debug "created spam_item \#$cr_item_id\n"
+	    catch {
+		set cr_item_id [db_exec_plsql im_mail_import_new_message {}]
+		ns_log Notice "im_mail_import.process_mails: created spam_item \#$cr_item_id"
+		append debug "created spam_item \#$cr_item_id\n"
 
-	    foreach non_emp_id $non_emp_ids {
-		
-		set rel_type "im_mail_from"
-		set object_id_two $non_emp_id
-		set object_id_one $cr_item_id
-		set creation_user $user_id
-		set creation_ip $peeraddr
-		set rel_id [db_exec_plsql im_mail_import_new_rel {}]
-		ns_log Notice "im_mail_import.process_mails: created relationship \#$rel_id"
-		append debug "created relationship \#$rel_id\n"
-
-
-		# Move to "processed" 
-		if {[catch {
-		    ns_log Notice "im_mail_import.process_mails: Moving '$msg' to processed: '$processed_folder/$msg_body'"
-		    append debug "Moving '$msg' to processed: '$processed_folder/$msg_body'\n"
-		    ns_rename $msg "$processed_folder/$msg_body"
-		} errmsg]} {
-		    ns_log Notice "im_mail_import.process_mails: Error moving '$msg' to processed: '$processed_folder/$msg_body': '$errmsg'"
-		    append debug "Error moving '$msg' to processes: '$processed_folder/$msg_body': '$errmsg'\n"
+		foreach non_emp_id $non_emp_ids {
+		    set rel_type "im_mail_from"
+		    set object_id_two $non_emp_id
+		    set object_id_one $cr_item_id
+		    set creation_user $user_id
+		    set creation_ip $peeraddr
+		    set rel_id [db_exec_plsql im_mail_import_new_rel {}]
+		    ns_log Notice "im_mail_import.process_mails: created relationship \#$rel_id"
+		    append debug "created relationship \#$rel_id\n"
 		}
 	    }
-        }
+
+	    # Move to "processed" 
+	    if {[catch {
+		ns_log Notice "im_mail_import.process_mails: Moving '$msg' to processed: '$processed_folder/$msg_body'"
+		append debug "Moving '$msg' to processed: '$processed_folder/$msg_body'\n"
+		ns_rename $msg "$processed_folder/$msg_body"
+	    } errmsg]} {
+		ns_log Notice "im_mail_import.process_mails: Error moving '$msg' to processed: '$processed_folder/$msg_body': '$errmsg'"
+		append debug "Error moving '$msg' to processes: '$processed_folder/$msg_body': '$errmsg'\n"
+	    }
+	}
 	return $debug
     }
     
