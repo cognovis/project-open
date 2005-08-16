@@ -6,6 +6,7 @@ ad_page_contract {
     from
     subject
     message:allhtml
+    {send_email_p 0}
 } -properties {
     title:onevalue
     success_text:onevalue
@@ -91,22 +92,23 @@ while {[regexp {(.[^\n]+)} $userlist match_fodder row] } {
 
     # send email
 
-    set key_list [list first_names last_name email password]
-    set value_list [list $first_names $last_name $email $password]
+    if {$send_email_p} {
+	set key_list [list first_names last_name email password]
+	set value_list [list $first_names $last_name $email $password]
     
-    set sub_message $message
-    foreach key $key_list value $value_list {
-	regsub -all "<$key>" $sub_message $value sub_message
-    }
+	set sub_message $message
+	foreach key $key_list value $value_list {
+	    regsub -all "<$key>" $sub_message $value sub_message
+	}
     
-    if {[catch {ns_sendmail "$email" "$from" "$subject" "$sub_message"} errmsg]} {
-	ad_return_error "Mail Failed" "The system was unable to send email.  Please notify the user personally.  This problem is probably caused by a misconfiguration of your email system.  Here is the error: 
+	if {[catch {ns_sendmail "$email" "$from" "$subject" "$sub_message"} errmsg]} {
+	    ad_return_error "Mail Failed" "The system was unable to send email.  Please notify the user personally.  This problem is probably caused by a misconfiguration of your email system.  Here is the error: 
 <blockquote><pre>
 [ad_quotehtml $errmsg]
 </pre></blockquote>"
-        return
+            return
+        }
     }
-
 }
 
 ad_return_template
