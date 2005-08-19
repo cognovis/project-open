@@ -6,7 +6,7 @@
 
 <table width="100%">
 <tr valign=top>
-  <td width="50%">
+  <td width="70%">
 
 <h1>Automatic Software Updates</h1>
 
@@ -65,8 +65,9 @@ server.
 <li><b>Backup your
     <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
     database contents</b>:<br>
-    Please use the PostgreSQL built-in "pg_dump" tool for a complete
-    database backup: 
+    You can use the 
+    <a href="/intranet/admin/backup/pg_dump">built-in backup page</a>
+    or backup PostgreSQL manually viea the "pg_dump": 
     <nobr><tt>pg_dump -c -O -F p -f backup.YYYY-MM-DD.sql</tt></nobr>.<br> 
     This command works both with Windows (CygWin shell) and Unix/Linux.
     <br>&nbsp;
