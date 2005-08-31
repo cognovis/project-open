@@ -1,1 +1,1 @@
-@workflow_img_tag@
+@workflow_img_tag;noquote@
