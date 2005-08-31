@@ -35,9 +35,9 @@
 	      </td>
               <if @roles.user_select_widget@ not nil>
 		<form action="static-assignment-add" method="post">
-		  @roles.add_export_vars@
+		  @roles.add_export_vars;noquote@
 		  <td>
-		    @roles.user_select_widget@
+		    @roles.user_select_widget;noquote@
 		    <input type="submit" value="Add">
 		  </td>
 		</form>
