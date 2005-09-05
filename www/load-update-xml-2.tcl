@@ -196,6 +196,7 @@ foreach root_node $root_nodes {
 		    set cvs_action [apm_tag_value -default "" $version_node cvs_action]
 		    set cvs_server [apm_tag_value -default "" $version_node cvs_server]
 		    set cvs_user [apm_tag_value -default "" $version_node cvs_user]
+		    if {"" == $cvs_user} { set cvs_user "anonymous" }
 		    set cvs_password [apm_tag_value -default "" $version_node cvs_password]
 		    set cvs_root [apm_tag_value -default "" $version_node cvs_root]
 		    set cvs_command [apm_tag_value -default "" $version_node cvs_command]
