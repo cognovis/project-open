@@ -1982,6 +1982,8 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 } {
     ns_log Notice "im_dynfield::append_attributes_to_form: object_tpye=$object_type, object_id=$object_id"
 
+    set user_id [ad_get_user_id]
+
     # ---------------------------- Create the Form --------------------------
     if {![template::form exists $form_id]} {
 	ns_log Notice "im_dynfield::append_attributes_to_form: creating the form"
@@ -2036,6 +2038,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		and a.object_type = t.object_type
 		and a.attribute_id = aa.acs_attribute_id
 		and aa.widget_name = aw.widget_name
+		and im_object_permission_p(aa.attribute_id, :user_id, 'read') = 't'
 	order by 
 		aa.attribute_id
     "
