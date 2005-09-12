@@ -396,17 +396,17 @@ ad_proc -public acs_user::get {
 } {
     Get basic information about a user. Uses util_memoize to cache info from the database.
     You may supply either user_id, or  username. 
-    If you supply username, you may also supply authority_id, or you may leave it out, in which case it defaults to the local authority.
-    If you supply neither user_id nor username, and we have a connection, the currently logged in user will be assumed.
+    If you supply username, you may also supply authority_id, or you may leave it out, 
+    in which case it defaults to the local authority.
+    If you supply neither user_id nor username, and we have a connection, the currently 
+    logged in user will be assumed.
 
-    @option user_id     The user_id of the user to get the bio for. Leave blank for current user.
-    
+    @option user_id     The user_id of the user to get the bio for. 
+    			Leave blank for current user.
     @option include_bio Whether to include the bio in the user information
-
     @param  array       The name of an array into which you want the information put. 
     
     The attributes returned are: 
-
     <ul>
       <li> user_id 
       <li> username
@@ -465,7 +465,7 @@ ad_proc -private acs_user::get_from_user_id_not_cached { user_id } {
     @author Peter Marklund
 } {
     db_1row select_user_info {*SQL*} -column_array row
-    
+
     return [array get row]
 }
 
