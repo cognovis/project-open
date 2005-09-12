@@ -413,7 +413,7 @@ ad_proc im_mail_import_user_component {
 	append html "
 <tr $bgcolor([expr $ctr%2])>
    <td>$date_formatted</td>
-   <td><a href=\"/intranet-mail-import/view?body_id=$body_id\">
+   <td><a href=\"/intranet-mail-import/mail-view?body_id=$body_id\">
      [string_truncate -len 50 $header_subject]
   </a></td>
    <td>[string_truncate -len 25 $header_from]</td>
