@@ -2,8 +2,8 @@ ad_page_contract {
     spam confirmation page : displays spam body in plain text and HTML
     and prompts for confirmation 
 } { 
-    object_id
-    sql_query
+    object_id:integer
+    selector_id:integer
     {body_plain:trim ""}
     {body_html:allhtml,trim ""}
     subject:notnull
@@ -31,6 +31,24 @@ if {[db_0or1row "check subject exists" "select item_id from cr_items where name 
     return
 }
 
+set rows [db_0or1row selector_info "
+	select	short_name as selector_short_name,
+		selector_sql as sql_query
+	from	im_sql_selectors 
+	where	selector_id=:selector_id
+"]
+
+if {0 == $rows} {
+    ad_return_complaint 1 "We didn't find the SQL Selector #$selector_id"
+    return
+}
+
+set num_recipients [db_string get_num_recipients "
+    select count(*) 
+    from persons
+    where person_id in ($sql_query)
+"]
+
 # --------------------------------------------------
 # Put variables together
 # --------------------------------------------------
@@ -40,7 +58,7 @@ set object_type [db_string object_type "select object_type from acs_objects wher
 set object_rel_url [db_string object_url "select url from im_biz_object_urls where url_type = 'view' and object_type = :object_type"]
 append object_rel_url $object_id
 
-set spam_show_users_url "spam-show-users?[export_url_vars object_id sql_query]"
+set spam_show_users_url "/intranet-sql-selectors/view-results?[export_url_vars selector_id]"
 
 set spam_sender [db_string spam_sender "select first_names||' '||last_name||' <'||email||'>' from cc_users where user_id=:user_id"]
 

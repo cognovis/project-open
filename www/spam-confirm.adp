@@ -18,6 +18,11 @@ The mail will be sent on @pretty_date@ at @send_time.time@ @send_time.ampm@
 <form action="@confirm_target@" method="post" enctype="multipart/form-data">
 @export_vars;noquote@
 <table cellspacing=1 border=0 cellpadding=1>
+
+	<tr class=roweven>
+	  <td>User List:</td>
+	  <td>@selector_short_name@</td>
+	</tr>
 	<tr class=rowodd>
 	  <td>Subject:</td>
 	  <td>@subject_subst@</td>

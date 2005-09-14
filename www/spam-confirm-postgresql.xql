@@ -15,7 +15,6 @@
       <querytext>
 
     select
-	p2.*,
 	parties.email as user_email,
 	persons.first_names as user_first_names, 
 	persons.last_name as user_last_name,
@@ -23,7 +22,8 @@
     from
 	parties
       	left join persons on parties.party_id = person_id
-        join ($sql_query) p2 on p2.party_id = parties.party_id
+    where
+	parties.party_id in ($sql_query)
 
       </querytext>
   </fullquery>

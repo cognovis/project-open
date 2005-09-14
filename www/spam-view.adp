@@ -2,28 +2,31 @@
 <property name="title">View Spam</property>
 <property name="context">@context;noquote@</property>
 
-<table>
- <tr>
-  <th valign="top" align="left">Message Subject</th>
-  <td> @title@
- </tr>
- <tr>
-  <th valign="top" align="left">Date/time message<br> scheduled to send</th>
-  <td>@send_date@</td>
- </tr>
- <tr>
-  <th valign="top" align="left">Plain-text message body</th>
-  <td><pre>@plain_text@</pre>
-  </td>
- </tr>
- <tr>
-  <th valign="top" align="left">HTML message body</th>
-  <td>@html_text@
-  </td>
- </tr>
+<br>
+<table cellpadding=2 cellspacing=2 class="table-display">
+<tr valign=top class="table-header">
+  <th colspan=2>Message</th>
+</tr valign=top>
+<tr valign=top>
+  <td class="odd">From</td>
+  <td class="odd">@from@</td>
+</tr valign=top>
+<tr valign=top>
+  <td class="odd">To</td>
+  <td class="odd">@to@</td>
+</tr valign=top>
+<tr valign=top>
+  <td class="odd">Sent</td>
+  <td class="odd">@send_date@</td>
+</tr valign=top>
+<tr valign=top>
+  <td class="odd">Subject</td>
+  <td class="odd">@subject@</td>
+</tr valign=top>
+<tr valign=top>
+  <td class="odd">Body</td>
+  <td class="odd"><pre>@body@</pre></td>
+</tr valign=top>
 </table>
- 
-
-
   
 

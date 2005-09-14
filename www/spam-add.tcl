@@ -11,8 +11,10 @@ ad_page_contract {
     it will be held until it is approved by an administrator. 
     
     @author bschneid@arsdigita.com
+    @author frank.bergmann@project-open.com
 } {
-    { sql_query ""}
+    { selector_id 0 }
+    { selector_short_name "" }
     { object_id 0}
 } -properties {
     spam_id:onevalue
@@ -23,11 +25,32 @@ ad_page_contract {
     context:onevalue
 } 
 
-if {$sql_query == ""} { 
-    ad_return_complaint 1 "No user query supplied.  You can't invoke this \
-	    page directly."
-    return 
+set context [list "add message"]
+
+
+# Get sql_query based on a selector_short_name
+#
+if {"" != $selector_short_name} {
+    set selector_id [db_string get_selector_id "
+	select	selector_id
+	from	im_sql_selectors
+	where	short_name = :selector_short_name
+    " -default 0]
 }
+
+if {0 == $selector_id} {
+    set error "Unknown selector short name '$selector_short_name'"
+    ad_return_template spam-add-error
+    return
+}
+
+
+set sql_query [db_string sql_query "
+	select	selector_sql
+	from	im_sql_selectors
+	where	selector_id = :selector_id
+" -default ""]
+
 
 # --------------------------------------------------
 
@@ -44,14 +67,12 @@ append object_rel_url $object_id
 
 # --------------------------------------------------
 
-set spam_show_users_url "spam-show-users?[export_url_vars object_id sql_query]"
+set spam_show_users_url "spam-show-users?[export_url_vars object_id selector_id]"
 
-set export_vars [export_form_vars num_recipients spam_id]
+set export_vars [export_form_vars spam_id]
 
 set date_widget [ad_dateentrywidget send_date]
 set time_widget [spam_timeentrywidget send_time]
-
-set context [list "add message"]
 
 # db_multirow spam_list spam_get_party_list  {}
 
@@ -59,10 +80,6 @@ set context [list "add message"]
 # --------------------------------------------------
 # Get number and fields of sql query results
 # --------------------------------------------------
-
-set num_recipients [db_string get_num_recipients "
-    select count(*) from ($sql_query)
-"]
 
 db_with_handle -dbn "" db {
     set selection [db_exec select $db full_statement_name $sql_query]
