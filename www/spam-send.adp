@@ -12,4 +12,9 @@
 <p>You can <a href="spam-edit?spam_id=@spam_id@">edit your message</a> 
 before it gets sent out.
 
+<p>
+Here is the message that we have sent out:
+</p>
 
+<pre>@subject_subs@</pre>
+<pre>@body_plain_subs@</pre>

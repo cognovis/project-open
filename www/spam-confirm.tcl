@@ -4,12 +4,11 @@ ad_page_contract {
 } { 
     object_id:integer
     selector_id:integer
-    {body_plain:trim ""}
+    {body_plain:allhtml,trim ""}
     {body_html:allhtml,trim ""}
-    subject:notnull
+    subject:allhtml,trim
     send_date:array,date
     send_time:array,time
-    num_recipients
     spam_id:naturalnum
     {confirm_target "spam-send"}
 } 
@@ -74,13 +73,33 @@ set export_vars [export_form_vars send_date_ansi send_time_12hr subject body_pla
 
 db_foreach spam_full_sql "" {
 
-    set body_plain_subst [subst $body_plain]
-    set body_html_subst [subst $body_html]
-    set subject_subst [subst $subject]
+    # Calculate some additional variables to be used
+    # in the substitution process
+    set auto_login [im_generate_auto_login -user_id $user_id]
+
+    set party_from [ad_get_user_id]
+    set party_to $party_id
+
+    # Substitute <...> elements
+    set key_list [list user_id first_names last_name email auto_login]
+    set value_list [list $party_id $first_names $last_name $email $auto_login]
+
+    set body_plain_subs $body_plain
+    foreach key $key_list value $value_list {
+        regsub -all "<$key>" $body_plain_subs $value body_plain_subs
+    }
+
+    set body_html_subs $body_html
+    foreach key $key_list value $value_list {
+        regsub -all "<$key>" $body_html_subs $value body_html_subs
+    }
+
+    set subject_subs $subject
+    foreach key $key_list value $value_list {
+        regsub -all "<$key>" $subject_subs $value subject_subs
+    }
 
     # Only do this for the first user in the list
     break
 }
-
-set escaped_body_plain_subst [ad_convert_to_html $body_plain_subst]
 

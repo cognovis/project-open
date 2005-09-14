@@ -5,11 +5,6 @@
 
 <h1>Sending Spam to Users</h1>
 
-<p>
-#intranet-core.Send_Email_To#
-<a href="@spam_show_users_url;noquote@">@num_recipients@ #intranet-core.Member_s#</a> 
-#intranet-core.Of# <A href="@object_rel_url@">@object_name@</a>.
-</p>
 The following variables are available withing you message:<br>
 <tt>@query_field_html@</tt>.
 
@@ -36,14 +31,14 @@ The following variables are available withing you message:<br>
  <tr>
   <td valign="top" align="left">#intranet-core.Plain_Text_Message_Body#</td>
   <td>
-    <textarea name="body_plain" rows="10" cols="40"
+    <textarea name="body_plain" rows="10" cols="70"
     ><if @plain_text@ defined>@plain_text@</if></textarea>
   </td>
  </tr>
  <tr>
   <td valign="top" align="left">#intranet-core.Html_Message_Body#</td>
   <td>
-    <textarea name="body_html" rows="10" cols="40"
+    <textarea name="body_html" rows="10" cols="70"
     ><if @html_text@ defined>@html_text@</if></textarea>
   </td>
  </tr>

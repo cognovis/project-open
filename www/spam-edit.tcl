@@ -12,16 +12,21 @@ ad_page_contract {
     context:onevalue
 }
 
-ad_require_permission $spam_id write
+# ad_require_permission $spam_id write
 
 # grab the spam out of the table: with the most recent content revisions
 db_1row spam_get_message {
-    select header_subject as title, 
-      to_char(send_date, 'yyyy-mm-dd') as send_date, 
-      to_char(send_date, 'hh24:mi:ss') as send_time, 
-      sql_query, sent_p, content_object_id
-    from spam_messages_all
-    where spam_id = :spam_id
+    select 
+	header_subject as title, 
+	to_char(send_date, 'yyyy-mm-dd') as send_date, 
+	to_char(send_date, 'hh24:mi:ss') as send_time, 
+	sql_query, 
+	sent_p, 
+	content_object_id
+    from 
+	spam_messages_all
+    where 
+	spam_id = :spam_id
 }
 
 # XXX: see if spam already sent; don't let user edit spam once it's sent,

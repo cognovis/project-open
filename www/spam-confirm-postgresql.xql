@@ -15,15 +15,20 @@
       <querytext>
 
     select
-	parties.email as user_email,
-	persons.first_names as user_first_names, 
-	persons.last_name as user_last_name,
-	persons.first_names || ' ' || persons.last_name as user_name
+	parties.party_id as user_id,
+	parties.party_id as party_id,
+	parties.email as email,
+	persons.first_names as first_names, 
+	persons.last_name as last_name,
+	persons.first_names || ' ' || persons.last_name as name
     from
 	parties
       	left join persons on parties.party_id = person_id
     where
 	parties.party_id in ($sql_query)
+    order by
+        parties.party_id DESC
+
 
       </querytext>
   </fullquery>
