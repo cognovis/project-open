@@ -65,7 +65,7 @@ set send_date_ansi $send_date(date)
 set pretty_date [util_AnsiDatetoPrettyDate $send_date_ansi]
 set send_time_12hr "$send_time(time) $send_time(ampm)"
 
-set export_vars [export_form_vars send_date_ansi send_time_12hr subject body_plain body_html spam_id sql_query object_id]
+set export_vars [export_form_vars send_date_ansi send_time_12hr subject body_plain body_html spam_id selector_id object_id]
 
 # --------------------------------------------------
 # Format the sample text by substituting variables

@@ -31,7 +31,7 @@
    
   <fullquery name="create_text_item">
         <querytext>
-  	select content_item__new (:subject_subs, 		-- name
+  	select content_item__new (:cr_item_name, 	-- name
   				  null, 		-- parent_id
   				  null, 		-- item_id
   				  null,			-- locale

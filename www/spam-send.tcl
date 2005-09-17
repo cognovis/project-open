@@ -35,7 +35,7 @@ ad_page_contract {
     send_date_ansi:notnull
     send_time_12hr:notnull
     spam_id:naturalnum
-    sql_query
+    selector_id:integer
     object_id
 }
 
@@ -47,6 +47,18 @@ set context [list "confirm"]
 set user_id [ad_get_user_id]
 # set content_mime_type "text/html"
 set content_mime_type "text/plain"
+
+set rows [db_0or1row selector_info "
+	select	short_name as selector_short_name,
+		selector_sql as sql_query
+	from	im_sql_selectors 
+	where	selector_id=:selector_id
+"]
+
+if {0 == $rows} {
+    ad_return_complaint 1 "We didn't find the SQL Selector #$selector_id"
+    return
+}
 
 #double-click protection
 set already_there [db_string spam_check_double_click "
@@ -171,12 +183,7 @@ db_foreach spam_full_sql "" {
     }
 
     set content $body_plain_subs
-
-}
-
-ad_return_template
-return
-
+    set content_subs $body_plain_subs
 
 
     # --------------------------------------------------------
@@ -185,6 +192,8 @@ return
 
     set storage_type lob
     db_transaction {
+
+	if {1} {
 
 	ns_log notice "party to -----> $party_to"
 	set from_addr [db_string some_sql "select email from parties where party_id = :party_from"]
@@ -196,6 +205,9 @@ return
 	# create an acs_mail_body (with content_item_id = multipart_id )
 	set body_id [acs_mail_body_new -header_subject $subject_subs -content_item_id $multipart_id]
 	ns_log Notice "spam-send: body_id=$body_id"
+
+	# We need a unique name for each cr_item
+	set cr_item_name "$subject_subs $party_id"
 
 	set content_item_id [db_exec_plsql create_text_item {
 		begin
@@ -287,6 +299,8 @@ return
 
 	# End attaching uploaded file
 	}
+
+    }
 	
 
 	# Now: Send out the mail
@@ -323,6 +337,11 @@ return
 
 		db_dml outgoing_queue $sql_string
 		ns_log notice "spam-send: Mailing contact '$to_addr' End"
+
+
+	        # Add a link from the users's business object to the mail link:
+	        im_biz_object_add_role $party_id $mail_link_id [im_biz_object_role_email]
+
 	}
 
    } on_error {
