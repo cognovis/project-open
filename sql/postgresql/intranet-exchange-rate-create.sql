@@ -8,7 +8,7 @@
 -- @author frank.bergmann@project-open.com
 
 ----------------------------------------------------
--- Exchange rates of currencies with respect to the dollar
+-- Exchange rates of currencies with respect to the US dollar
 
 create table im_exchange_rates (
 	day			date
