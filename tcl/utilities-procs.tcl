@@ -2730,9 +2730,6 @@ ad_proc -public util_current_location {{}} {
     @author Lars Pind (lars@collaboraid.biz)
     @author Peter Marklund
 } {
-    set default_port(http) 80
-    set default_port(https) 443
-    
     switch [ad_conn driver] {
         nssock {
             set proto http
@@ -2778,7 +2775,7 @@ ad_proc -public util_current_location {{}} {
         }
     }
 
-    if { ![empty_string_p $port] && ![string equal $port $default_port($proto)] } {
+    if { ![empty_string_p $port] && ![string equal $port 80] && ![string equal $port 443]} {
         return "$proto://$hostname:$port"
     } else {
         return "$proto://$hostname"
