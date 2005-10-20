@@ -2775,7 +2775,18 @@ ad_proc -public util_current_location {{}} {
         }
     }
 
-    if { ![empty_string_p $port] && ![string equal $port 80] && ![string equal $port 443]} {
+    # HTTP port - straight return
+    if { ![empty_string_p $port] && [string equal $port 80]} {
+        return "$proto://$hostname"
+    }
+
+    # HTTPS port - replace the proto
+    # HTTPS will only be possible on port 443 though...
+    if { ![empty_string_p $port] && [string equal $port 443]} {
+        return "https://$hostname"
+    }
+
+    if { ![empty_string_p $port]} {
         return "$proto://$hostname:$port"
     } else {
         return "$proto://$hostname"
