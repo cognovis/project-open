@@ -13,7 +13,7 @@ ad_page_contract {
     @author juanjoruizx@yahoo.es
 } {
     report_id:integer,optional
-    return_url
+    {return_url "/intranet/"}
     edit_p:optional
     message:optional
     { form_mode "display" }
