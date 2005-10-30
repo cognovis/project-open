@@ -304,6 +304,7 @@ ad_proc -private im_filestorage_base_path { folder_type object_id } {
 }
 
 
+
 ad_proc -public im_filestorage_find_files { project_id } {
     Returns a list of files in a project directory
 } {
@@ -399,6 +400,15 @@ ad_proc im_filestorage_home_path { } {
     set package_id [im_package_filestorage_id]
     set base_path_unix [parameter::get -package_id $package_id -parameter "HomeBasePathUnix" -default "/tmp/home"]
     return "$base_path_unix"
+}
+
+
+ad_proc im_filestorage_backup_path { } {
+    Helper to determine the location where global backup files
+    are stored on the hard disk 
+} {
+    set backup_path [parameter::get -package_id [im_package_core_id] -parameter "BackupBasePathUnix" -default "/tmp"]
+    return $backup_path
 }
 
 
