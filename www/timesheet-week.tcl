@@ -34,6 +34,16 @@ if {"" == $start_year} { set start_year $todays_year }
 if {"" == $start_day} { set start_day $todays_day }
 if {"" == $start_month} { set start_month $todays_month }
 
+set company_url "/intranet/companies/view?company_id="
+set project_url "/intranet/projects/view?project_id="
+set user_url "/intranet/users/view?user_id="
+
+set start_years {2000 2000 2001 2001 2002 2002 2003 2003 2004 2004 2005 2005 2006 2006}
+set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep 10 Oct 11 Nov 12 Dec}
+set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
+set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
+
+
 
 # ------------------------------------------------------------
 # Define the report - SQL, counters, headers and footers 
@@ -45,6 +55,7 @@ select
 --	to_char(h.day, 'YY-MM-DD') as log_day,
 --	to_char(h.day, 'YY-MM') as log_month,
 	h.day as date,
+	to_char(h.day, 'J')::integer - to_char(to_date('$start_year-$start_month-$start_day', 'YYYY-MM-DD'), 'J')::integer as date_diff,
 	h.user_id,
 	p.project_id,
 	p.company_id,
@@ -79,6 +90,7 @@ group by
 set sql "
 select
 	to_char(s.date, 'YYYY-MM-DD') as date,
+	s.date_diff,
 	u.user_id,
 	u.first_names || ' ' || u.last_name as user_name,
 	p.project_id,
@@ -105,21 +117,47 @@ order by
 
 set report_def [list \
     group_by company_nr \
-    header {"<b><a href=/intranet/companies/view?company_id=$company_id>$company_name</a></b>"} \
+    header {"<b><a href=$company_url$company_id>$company_name</a></b>"} \
     content [list  \
-        group_by project_nr \
-        header {$company_nr "<b>$project_nr</b>" } \
-        content [list  \
-            header {
-                "$company_nr"
-                "$project_nr"
-		$date
-                "<a href=/intranet/users/view?user_id=$user_id>$user_name</a>"
-                $hours
-		$col2
-		$billing_rate} \
-            content {} \
-        ] \
+	group_by project_nr \
+	header {
+	    $company_nr 
+	    "<b><a href=$project_url$project_id>$project_nr</a></b>"
+	} \
+	content [list \
+	    group_by user_id \
+	    header {
+		$company_nr 
+		$project_nr 
+		"<b><a href=$user_url$user_id>$user_name</a></b>"
+	    } \
+	    content [list \
+		    header {
+			$company_nr
+			$project_nr
+			$user_name
+			$date
+			$date_diff
+			$hours
+			$billing_rate} \
+		    content {} \
+	    ] \
+	    footer {
+		$company_nr 
+		$project_nr 
+		$user_name
+		$hours0
+		$hours1
+		$hours2
+		$hours3
+		$hours4
+		$hours5
+		$hours6
+		$hours7
+		$hours8
+		$hours9
+	    } \
+	] \
     ] \
     footer {"" "" "" "" "" "" "" "" ""} \
 ]
@@ -142,12 +180,6 @@ set counters [list \
 # ------------------------------------------------------------
 # Start formatting the page
 #
-
-set start_years {2000 2000 2001 2001 2002 2002 2003 2003 2004 2004 2005 2005 2006 2006}
-set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep 10 Oct 11 Nov 12 Dec}
-set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
-set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
-
 
 set start_units $start_months
 if {"week" == $date_dimension} { set start_units $start_months }
@@ -186,15 +218,29 @@ im_report_render_row \
     -row_class rowtitle \
     -field_class rowtitle
 
+
+set hours0 ""
+set hours1 ""
+set hours2 ""
+set hours3 ""
+set hours4 ""
+set hours5 ""
+set hours6 ""
+set hours7 ""
+set hours8 ""
+set hours9 ""
+
+
 set footer_array_list [list]
 set last_value_list [list]
 db_foreach sql $sql {
 
-    set col2 $hours
+    # Distribute dates horizontally
+    set date_dist []
 
     im_report_display_footer \
 	-group_def $report_def \
-        -footer_array_list $footer_array_list \
+	-footer_array_list $footer_array_list \
 	-last_value_array_list $last_value_list
 
     im_report_update_counters -counters $counters

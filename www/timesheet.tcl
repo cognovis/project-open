@@ -45,19 +45,15 @@ where
 		from (
 			select to_char(w.start_block, 'YY-IW') as week
 			from im_start_weeks w
-			where start_block >= to_date('2005-01-01', 'YYYY-MM-DD')
+			where start_block >= to_date('2004-01-01', 'YYYY-MM-DD')
 		) w
 		order by w.week
-		limit 20
+		limit 2000
 	)
 group by
 	p.project_id,
 	p.company_id,
 	h.user_id,
-	p.tree_sortkey,
-	log_week
-order by
-	p.company_id,
 	p.tree_sortkey,
 	log_week
 "
@@ -82,14 +78,18 @@ where
 	s.user_id = u.user_id
 	and s.company_id = c.company_id
 	and s.project_id = p.project_id
+order by
+	s.company_id,
+	p.tree_sortkey,
+	log_week
 "
 
 set report_def [list \
     group_by company_nr \
-    header {"<b>$company_name</b>" "" "" "" "" "" "" "" ""} \
+    header {"<b><a href=/intranet/companies/view?company_id=$company_id>$company_name</a></b>"} \
     content [list  \
         group_by project_nr \
-        header {"" "<b>$project_nr</b>" "" "" "" "" "" "" ""} \
+        header {$company_nr "<b>$project_nr</b>" } \
         content [list  \
             header {
                 "$company_nr"
