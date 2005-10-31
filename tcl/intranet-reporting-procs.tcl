@@ -63,6 +63,7 @@ ad_proc im_report_render_row {
 ad_proc im_report_render_header {
     -group_def
     -last_value_array_list
+    {-max_level 999}
 } {
     Renders a single row in a project-open report. 
     The procedure takes a report definition, an array of the
@@ -75,7 +76,7 @@ ad_proc im_report_render_header {
     ns_log Notice "render_header: last_value_array_list=$last_value_array_list"
     array set last_value_array $last_value_array_list
 
-    while {[llength $group_def] > 0} {
+    while {[llength $group_def] > 0 && $group_level < $max_level} {
 	
 	array set group_array $group_def
 	set group_var $group_array(group_by)
@@ -141,6 +142,7 @@ ad_proc im_report_render_header {
 ad_proc im_report_render_footer {
     -group_def
     -last_value_array_list
+    {-max_level 999}
 } {
     Renders the footer stack of a single row in a project-open report. 
     The procedure acts similar to im_report_render_header,
@@ -222,6 +224,7 @@ ad_proc im_report_display_footer {
     -footer_array_list
     -last_value_array_list
     {-display_all_footers_p 0}
+    {-max_level 999}
 } {
     Display the footer stack of a single row in a project-open report. 
 } {
@@ -294,7 +297,7 @@ ad_proc im_report_display_footer {
     # -------------------------------------------------------
     # Calculate the maximum level in the report definition
     set max_group_level 1
-    while {[llength $group_def] > 0} {
+    while {[llength $group_def] > 0 && $max_group_level < $max_level} {
 	set group_def_array($max_group_level) $group_def
 	ns_log Notice "display_footer: group_def_array($max_group_level) = ..."
 	array set group_array $group_def
