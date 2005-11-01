@@ -35,7 +35,7 @@ ad_proc -private im_package_reporting_id_helper {} {
 
 ad_proc im_report_render_cell {
     -cell
-    -field_class
+    -cell_class
 } {
     Renders one cell via ns_write directly
     into a report HTTP session
@@ -50,32 +50,36 @@ ad_proc im_report_render_cell {
 	set rest [string range $cell $match_len end]
 	regexp {^[ ]*(.*)} $rest match rest
 
-	append td_fields "$key=$value "
+	set key [string tolower $key]
 	set cell $rest
-    }
 
-    ns_write "<td $td_fields $field_class>$cell</td>\n"
+	if {[string equal $key "class"]} {
+	    set cell_class $value
+	} else {
+	    append td_fields "$key=$value "
+	}
+    }
+    
+    if {"" != $cell_class} { append td_fields "class=$cell_class " }
+    ns_write "<td $td_fields>$cell</td>\n"
 }
 
 ad_proc im_report_render_row {
     -row
-    {-row_class ""}
-    {-field_class ""}
+    -row_class
+    -cell_class
 } {
     Renders one line of a report via ns_write directly
     into a report HTTP session
 } {
-    if {"" != $row_class} { set row_class "class=rowtitle" }
-    if {"" != $field_class} { set field_class "class=rowtitle" }
-
-    ns_write "<tr $row_class>\n"
+    ns_write "<tr class=$row_class>\n"
     foreach field $row {
 	set value ""
 	if {"" != $field} {
 	    set cmd "set value \"$field\""
 	    eval "$cmd"
 	}
-	im_report_render_cell -cell $value -field_class $field_class
+	im_report_render_cell -cell $value -cell_class $cell_class
     }
     ns_write "</tr>\n"
 }
@@ -85,6 +89,8 @@ ad_proc im_report_render_header {
     -group_def
     -last_value_array_list
     {-level_of_detail 999}
+    {-row_class ""}
+    {-cell_class ""}
 } {
     Renders a single row in a project-open report. 
     The procedure takes a report definition, an array of the
@@ -130,14 +136,14 @@ ad_proc im_report_render_header {
 	# Write out the header if last_value != new_value
 
 	if { ($content == "" || $new_value != $last_value) && ($group_level <= $level_of_detail)} {
-	    ns_write "<tr class=roweven>\n"
+	    ns_write "<tr>\n"
 	    foreach field $header {
 		set value ""
 		if {"" != $field} {
 		    set cmd "set value \"$field\""
 		    set value [uplevel 1 $cmd]
 		}
-		im_report_render_cell -cell $value -field_class ""
+		im_report_render_cell -cell $value -cell_class $cell_class
 	    }
 	    ns_write "</tr>\n"
 	}
@@ -167,6 +173,8 @@ ad_proc im_report_render_header {
 ad_proc im_report_render_footer {
     -group_def
     -last_value_array_list
+    {-row_class ""}
+    {-cell_class ""}
     {-level_of_detail 999}
 } {
     Renders the footer stack of a single row in a project-open report. 
@@ -253,6 +261,8 @@ ad_proc im_report_display_footer {
     -last_value_array_list
     {-display_all_footers_p 0}
     {-level_of_detail 999}
+    {-cell_class ""}
+    {-row_class ""}
 } {
     Display the footer stack of a single row in a project-open report. 
 } {
@@ -362,9 +372,9 @@ ad_proc im_report_display_footer {
 	# Write out the header if last_value != new_value
 
 	ns_log Notice "display_footer: writing footer for group_level=$group_level"
-	ns_write "<tr class=rowodd>\n"
+	ns_write "<tr>\n"
 	foreach field $footer_line {
-	    im_report_render_cell -cell $field -field_class ""
+	    im_report_render_cell -cell $field -cell_class $cell_class
 	}
 	ns_write "</tr>\n"
 
