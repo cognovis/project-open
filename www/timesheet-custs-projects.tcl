@@ -1,4 +1,4 @@
-# /packages/intranet-reporting/www/timesheet.tcl
+# /packages/intranet-reporting/www/timesheet-companies-projects.tcl
 #
 # Copyright (C) 2003-2004 Project/Open
 #
