@@ -171,9 +171,6 @@ set report_def [list \
 			"$hours4"
 			"$hours5"
 			"$hours6"
-			"$hours7"
-			"$hours8"
-			"$hours9"
 		    } \
 		    content {} \
 	    ] \
@@ -182,7 +179,17 @@ set report_def [list \
 		$company_nr 
 		$project_nr 
 		$user_name
-		""
+		date
+		diff
+		hours
+		rate
+		$hours0_subtotal
+		$hours1_subtotal
+		$hours2_subtotal
+		$hours3_subtotal
+		$hours4_subtotal
+		$hours5_subtotal
+		$hours6_subtotal
 	    } \
 	] \
     ] \
@@ -190,7 +197,7 @@ set report_def [list \
 ]
 
 # Global header/footer
-set header0 {header0 "Customer" "Project" "User" "Date" Diff Hours Rate "0" "1" "2" "3" "4" "5" "6" "7" "8" "9"}
+set header0 {header0 "Customer" "Project" "User" "Date" Diff Hours Rate "0" "1" "2" "3" "4" "5" "6"}
 set footer0 {footer0 "" "" "" "" "" ""}
 
 set hours_counter [list \
@@ -200,8 +207,64 @@ set hours_counter [list \
 	expr \$hours
 ]
 
+set hours0_counter [list \
+	pretty_name Hours0 \
+	var hours0_subtotal \
+	reset \$user_id \
+	expr \$hours0
+]
+
+set hours1_counter [list \
+	pretty_name Hours1 \
+	var hours1_subtotal \
+	reset \$user_id \
+	expr \$hours1
+]
+
+set hours2_counter [list \
+	pretty_name Hours2 \
+	var hours2_subtotal \
+	reset \$user_id \
+	expr \$hours2
+]
+
+set hours3_counter [list \
+	pretty_name Hours3 \
+	var hours3_subtotal \
+	reset \$user_id \
+	expr \$hours3
+]
+
+set hours4_counter [list \
+	pretty_name Hours4 \
+	var hours4_subtotal \
+	reset \$user_id \
+	expr \$hours4
+]
+
+set hours5_counter [list \
+	pretty_name Hours5 \
+	var hours5_subtotal \
+	reset \$user_id \
+	expr \$hours5
+]
+
+set hours6_counter [list \
+	pretty_name Hours6 \
+	var hours6_subtotal \
+	reset \$user_id \
+	expr \$hours6
+]
+
 set counters [list \
 	$hours_counter \
+	$hours0_counter \
+	$hours1_counter \
+	$hours2_counter \
+	$hours3_counter \
+	$hours4_counter \
+	$hours5_counter \
+	$hours6_counter \
 ]
 
 
