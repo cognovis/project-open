@@ -51,7 +51,10 @@ set context ""
 # ------------------------------------------------------------
 # Defaults
 
-set days_in_past 1
+set rowclass(0) "roweven"
+set rowclass(1) "rowodd"
+
+set days_in_past 7
 
 db_1row todays_date "
 select
@@ -180,14 +183,12 @@ order by
 set report_def [list \
     group_by company_nr \
     header {
-	header1
 	"\#colspan=99 <a href=$this_url&company_id=$company_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a> 
 	<b><a href=$company_url$company_id>$company_name</a></b>"
     } \
     content [list  \
 	group_by project_nr \
 	header {
-	    header2
 	    $company_nr 
 	    "\#colspan=99 <a href=$this_url&project_id=$project_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
 	    <b><a href=$project_url$project_id>$project_name</a></b>"
@@ -195,7 +196,6 @@ set report_def [list \
 	content [list \
 	    group_by user_id \
 	    header {
-		header3
 		$company_nr 
 		$project_nr 
 		"\#colspan=99 <a href=$this_url&project_id=$project_id&user_id=$user_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
@@ -203,7 +203,6 @@ set report_def [list \
 	    } \
 	    content [list \
 		    header {
-			header4
 			$company_nr
 			$project_nr
 			$user_name
@@ -215,7 +214,6 @@ set report_def [list \
 		    content {} \
 	    ] \
 	    footer {
-		footer3
 		$company_nr 
 		$project_nr 
 		$user_name
@@ -226,7 +224,6 @@ set report_def [list \
 	    } \
 	] \
 	footer {
-	    footer2
     	    $company_nr 
 	    $project_nr 
 	    ""
@@ -236,12 +233,12 @@ set report_def [list \
 	    ""
 	} \
     ] \
-    footer {footer1 "" "" "" "" "" "" ""} \
+    footer {"" "" "" "" "" "" ""} \
 ]
 
 # Global header/footer
-set header0 {header0 "Customer" "Project" "User" "Date" Hours Rate Note}
-set footer0 {footer0 "" "" "" "" "" ""}
+set header0 {"Customer" "Project" "User" "Date" Hours Rate Note}
+set footer0 {"" "" "" "" "" "" ""}
 
 set hours_user_counter [list \
 	pretty_name Hours \
@@ -288,7 +285,6 @@ set levels {1 "By Customer" 2 "By Project" 3 "By User" 4 "All Details"}
 ad_return_top_of_page "
 [im_header]
 [im_navbar]
-
 <form>
 <table border=0 cellspacing=1 cellpadding=1>
 <tr>
@@ -320,21 +316,24 @@ ad_return_top_of_page "
 
 im_report_render_row \
     -row $header0 \
-    -row_class rowtitle \
-    -field_class rowtitle
+    -row_class "rowtitle" \
+    -cell_class "rowtitle"
 
 
 set footer_array_list [list]
 set last_value_list [list]
+set class "rowodd"
 db_foreach sql $sql {
 
-	set note [string_truncate -len 100 $note]
+	set note [string_truncate -len 80 $note]
 
 	im_report_display_footer \
 	    -group_def $report_def \
 	    -footer_array_list $footer_array_list \
 	    -last_value_array_list $last_value_list \
-	    -level_of_detail $level_of_detail
+	    -level_of_detail $level_of_detail \
+	    -row_class $class \
+	    -cell_class $class
 	
 	im_report_update_counters -counters $counters
 	
@@ -342,15 +341,17 @@ db_foreach sql $sql {
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
+	    -row_class $class \
+	    -cell_class $class
         ]
 
         set footer_array_list [im_report_render_footer \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
+	    -row_class $class \
+	    -cell_class $class
         ]
-
-
 }
 
 im_report_display_footer \
@@ -358,9 +359,14 @@ im_report_display_footer \
     -footer_array_list $footer_array_list \
     -last_value_array_list $last_value_list \
     -level_of_detail $level_of_detail \
-    -display_all_footers_p 1
+    -display_all_footers_p 1 \
+    -row_class $class \
+    -cell_class $class
 
 im_report_render_row \
-    -row $footer0
+    -row $footer0 \
+    -row_class $class \
+    -cell_class $class
+
 
 ns_write "</table>\n[im_footer]\n"
