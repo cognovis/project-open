@@ -148,6 +148,7 @@ select
 	u.first_names || ' ' || u.last_name as user_name,
 	p.project_id,
 	p.project_nr,
+	p.project_name,
 	c.company_id,
 	c.company_path as company_nr,
 	c.company_name,
@@ -173,18 +174,16 @@ set report_def [list \
     group_by company_nr \
     header {
 	header1
-	"<a href=$this_url&company_id=$company_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a> 
+	"\#colspan=99 <a href=$this_url&company_id=$company_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a> 
 	<b><a href=$company_url$company_id>$company_name</a></b>"
-	"" "" "" "" "" ""
     } \
     content [list  \
 	group_by project_nr \
 	header {
 	    header2
 	    $company_nr 
-	    "<a href=$this_url&project_id=$project_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
-	    <b><a href=$project_url$project_id>$project_nr</a></b>"
-	    "" "" "" "" ""
+	    "\#colspan=99 <a href=$this_url&project_id=$project_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
+	    <b><a href=$project_url$project_id>$project_name</a></b>"
 	} \
 	content [list \
 	    group_by user_id \
@@ -192,9 +191,8 @@ set report_def [list \
 		header3
 		$company_nr 
 		$project_nr 
-		"<a href=$this_url&project_id=$project_id&user_id=$user_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
+		"\#colspan=99 <a href=$this_url&project_id=$project_id&user_id=$user_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
 		<b><a href=$user_url$user_id>$user_name</a></b>"
-		"" "" "" "" ""
 	    } \
 	    content [list \
 		    header {

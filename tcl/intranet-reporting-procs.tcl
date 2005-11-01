@@ -33,6 +33,30 @@ ad_proc -private im_package_reporting_id_helper {} {
 # -------------------------------------------------------
 
 
+ad_proc im_report_render_cell {
+    -cell
+    -field_class
+} {
+    Renders one cell via ns_write directly
+    into a report HTTP session
+} {
+    set td_fields ""
+
+    # Remove leading spaces
+    regexp {^[ ]*(.*)} $cell match cell
+
+    while {[regexp {^\#([^=]*)\=([^ ]*)} $cell match key value rest]} {
+	set match_len [string length $match]
+	set rest [string range $cell $match_len end]
+	regexp {^[ ]*(.*)} $rest match rest
+
+	append td_fields "$key=$value "
+	set cell $rest
+    }
+
+    ns_write "<td $td_fields $field_class>$cell</td>\n"
+}
+
 ad_proc im_report_render_row {
     -row
     {-row_class ""}
@@ -41,20 +65,17 @@ ad_proc im_report_render_row {
     Renders one line of a report via ns_write directly
     into a report HTTP session
 } {
-    set tr_class ""
-    if {"" != $row_class} { set tr_class "class=rowtitle" }
+    if {"" != $row_class} { set row_class "class=rowtitle" }
+    if {"" != $field_class} { set field_class "class=rowtitle" }
 
-    set td_class ""
-    if {"" != $field_class} { set td_class "class=rowtitle" }
-
-    ns_write "<tr $tr_class>\n"
+    ns_write "<tr $row_class>\n"
     foreach field $row {
 	set value ""
 	if {"" != $field} {
 	    set cmd "set value \"$field\""
 	    eval "$cmd"
 	}
-	ns_write "<td $td_class>$value</td>\n"
+	im_report_render_cell -cell $value -field_class $field_class
     }
     ns_write "</tr>\n"
 }
@@ -116,7 +137,7 @@ ad_proc im_report_render_header {
 		    set cmd "set value \"$field\""
 		    set value [uplevel 1 $cmd]
 		}
-		ns_write "<td>$value</td>\n"
+		im_report_render_cell -cell $value -field_class ""
 	    }
 	    ns_write "</tr>\n"
 	}
@@ -343,7 +364,7 @@ ad_proc im_report_display_footer {
 	ns_log Notice "display_footer: writing footer for group_level=$group_level"
 	ns_write "<tr class=rowodd>\n"
 	foreach field $footer_line {
-	    ns_write "<td>$field</td>\n"
+	    im_report_render_cell -cell $field -field_class ""
 	}
 	ns_write "</tr>\n"
 
