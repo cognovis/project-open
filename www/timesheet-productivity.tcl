@@ -12,7 +12,7 @@ ad_page_contract {
     @param start_unit Month or week to start within the start_year
 } {
     { start_date "" }
-    { level_of_detail 2 }
+    { level_of_detail 1 }
 }
 
 # ------------------------------------------------------------
