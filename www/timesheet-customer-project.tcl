@@ -86,7 +86,7 @@ set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set user_url "/intranet/users/view?user_id="
 
-set this_url [export_vars -base "/intranet-reporting/timesheet" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-reporting/timesheet-customer-project" {start_date end_date} ]
 
 
 # ------------------------------------------------------------
@@ -276,7 +276,7 @@ set start_years {2000 2000 2001 2001 2002 2002 2003 2003 2004 2004 2005 2005 200
 set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep 10 Oct 11 Nov 12 Dec}
 set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
 set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
-set levels {1 "By Customer" 2 "By Project" 3 "By User" 4 "All Details"} 
+set levels {1 "Customer Only" 2 "Customer+Project" 3 "Customer+Project+User" 4 "All Details"} 
 
 # ------------------------------------------------------------
 # Start formatting the page

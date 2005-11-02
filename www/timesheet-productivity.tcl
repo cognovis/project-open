@@ -139,23 +139,20 @@ order by
 set report_def [list \
     group_by user_id \
     header {
-	"\#colspan=99 <a href=$this_url&project_id=$project_id&user_id=$user_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
-	<b><a href=$user_url$user_id>$user_name</a></b>"
+	"\#colspan=99 <b><a href=$user_url$user_id>$user_name</a></b>"
     } \
     content [list  \
 	group_by company_id \
 	header {
 	    $user_name
-	    "\#colspan=99 <a href=$this_url&company_id=$company_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a> 
-	    <b><a href=$company_url$company_id>$company_name</a></b>"
+	    "\#colspan=99 <b><a href=$company_url$company_id>$company_name</a></b>"
 	} \
 	content [list \
 	    group_by project_id \
 	    header {
 		$user_name
 		$company_nr 
-		"\#colspan=99 <a href=$this_url&project_id=$project_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
-		<b><a href=$project_url$project_id>$project_name</a></b>"
+		"\#colspan=99 <b><a href=$project_url$project_id>$project_name</a></b>"
 	    } \
 	    content [list \
 		    header {
