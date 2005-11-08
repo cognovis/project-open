@@ -18,7 +18,7 @@
 -- Create the intermedia index for .LRN site-wide search
 --
 -- @author <a href="mailto:openacs@dirkgomez.de">openacs@dirkgomez.de</a>
--- @version $Id: search-index-create.sql,v 1.1 2005/05/21 11:34:10 dirkg Exp $
+-- @version $Id: search-index-create.sql,v 1.2 2005/11/08 18:24:06 dirkg Exp $
 -- @creation-date 13-May-2005
 --
 -- Partly ported from ACES.
@@ -28,7 +28,9 @@ begin
   ctx_ddl.create_section_group('swsgroup', 'basic_section_group');
   ctx_ddl.add_field_section('swsgroup', 'oneline', 'oneline', TRUE);
 end;
-/  
+/  create index swi_index on site_wide_index (indexed_content)
+indextype is ctxsys.context parameters ('datastore ctxsys.default_datastore memory 250M');
+
 
 -- create intermedia index for site wide index
 begin
@@ -37,7 +39,14 @@ begin
 end;
 /
 
-create index sws_ctx_index on site_wide_index (datastore)
-indextype is ctxsys.context parameters ('datastore sws_user_datastore memory 250M section group swsgroup');
+--create index swi_ctx_index on site_wide_index (datastore)
+--indextype is ctxsys.context parameters ('datastore sws_user_datastore memory 250M section group swsgroup');
+
+
+--create index swi_ctx_index on site_wide_index (datastore)
+--indextype is ctxsys.context parameters ('datastore ctxsys.default_datastore memory 250M');
+
+create index swi_index on site_wide_index (indexed_content)
+indextype is ctxsys.context parameters ('datastore ctxsys.default_datastore memory 250M');
 
 exit;
