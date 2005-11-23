@@ -91,6 +91,14 @@ ad_form -extend -name register -on_request {
         }
     }
 
+    # Fraber 051124: TSearch2: We need to update "persons"
+    # in order to trigger the TSearch2  # triggers
+    db_dml update_persons "
+        update persons
+        set first_names = first_names
+        where person_id = :user_id
+    "
+
     # Handle registration problems
     
     switch $creation_info(creation_status) {
