@@ -1299,6 +1299,8 @@ ad_proc -public im_dynfield::attribute_store {
 } {
     store intranet-dynfield attributes 
 } {
+    ns_log Notice "attributes_store: object_type=$object_type, object_id=$object_id, form_id=$form_id"
+
     # object_id may get destroyed with strange forms
     set object_id_param $object_id
 
