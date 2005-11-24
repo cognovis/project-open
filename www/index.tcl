@@ -35,7 +35,7 @@ if {!$user_is_admin_p} {
 
 if {"" == $return_url} { set return_url [ad_conn url] }
 
-set page_title "[_ intranet-reporting.Manage_Reports]"
+set page_title "[_ intranet-reporting.Reports]"
 set context_bar [im_context_bar $page_title]
 set context ""
 
@@ -47,50 +47,53 @@ set context ""
 set action_list [list "[_ intranet-reporting.Add_new_Report]" "[export_vars -base "new" {return_url}]" "[_ intranet-reporting.Add_new_Report]"]
 
 set elements_list {
-  report_id {
-    label "[_ intranet-reporting.Report_Id]"
-  }
-  report_name {
+  name {
     label "[_ intranet-reporting.Report_Name]"
     display_template {
-	    <a href="@reports.report_url@">@reports.report_name@</a>
+	<if @reports.indent_level@ gt 4>
+	    @reports.indent_spaces;noquote@ 
+	    <a href="@reports.url@">@reports.name@</a>
+	</if>
+	<else>
+	    <b>@reports.name@</b>
+	</else>
     }
   }
-  view_name {
-	label "[_ intranet-reporting.View_Name]"
-  }
-  report_type {
-  	label "[_ intranet-reporting.Report_Type]"
-  }
-  report_status {
-  	label "[_ intranet-reporting.Report_Status]"
-  }  
 }
+
+
+set top_menu_sortkey [db_string top_menu_sortkey "
+	select tree_sortkey 
+	from im_menus 
+	where label = 'reporting'
+" -default ""]
 
 list::create \
         -name report_list \
         -multirow reports \
-        -key report_id \
-        -actions $action_list \
+        -key menu_id \
         -elements $elements_list \
         -filters {
         	return_url
         }
         
-db_multirow -extend {report_url} reports get_reports { 
-	select 	r.report_id,
-		r.report_name,
-		c.category as report_type,
-		c2.category as report_status,
-		v.view_name as view_name 
-	from im_reports r
-		LEFT OUTER JOIN
-	     im_views v ON r.view_id = v.view_id
-		LEFT OUTER JOIN
-	     im_categories c ON r.report_type_id = c.category_id
-	     	LEFT OUTER JOIN
-	     im_categories c2 ON r.report_status_id = c2.category_id
-	order by r.report_name	 
-} {
-	set report_url [export_vars -base "new" {report_id return_url}]
+db_multirow -extend {report_url indent_spaces} reports get_reports "
+	select
+		m.*,
+	        length(tree_sortkey) as indent_level,
+	        (9-length(tree_sortkey)) as colspan_level
+	from
+	        im_menus m
+	where
+	        tree_sortkey like '$top_menu_sortkey%'
+	order by tree_sortkey
+" {
+	set report_url [export_vars -base "new" {menu_id return_url}]
+
+	set indent_spaces ""
+	for {set i 0} {$i < $indent_level} {incr i} {
+	    append indent_spaces "&nbsp;"
+	}
 }
+
+
