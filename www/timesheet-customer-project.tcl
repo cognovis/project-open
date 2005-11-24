@@ -22,6 +22,24 @@ ad_page_contract {
 # ------------------------------------------------------------
 # Security
 
+# Label: Provides the security context for this report
+# because it identifies unquely the report's Menu and
+# its permissions.
+set menu_label "reporting-timesheet-customer-project"
+
+set current_user_id [ad_maybe_redirect_for_registration]
+
+set read_p [db_string report_perms "
+	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
+	from	im_menus m
+	where	m.label = :menu_label
+" -default 'f']
+
+if {![string equal "t" $read_p]} {
+    ad_return_complaint 1 "<li>[_ intranet-core.lt_You_need_to_be_a_syst]">
+    return
+}
+
 # Check that Start & End-Date have correct format
 if {"" != $start_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $start_date]} {
     ad_return_complaint 1 "Start Date doesn't have the right format.<br>
@@ -34,14 +52,6 @@ if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $
     Current value: '$end_date'<br>
     Expected format: 'YYYY-MM-DD'"
 }
-
-set current_user_id [ad_maybe_redirect_for_registration]
-set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
-if {!$user_is_admin_p} {
-    ad_return_complaint 1 "<li>[_ intranet-core.lt_You_need_to_be_a_syst]">
-    return
-}
-
 
 set page_title "Timesheet Report"
 set context_bar [im_context_bar $page_title]
