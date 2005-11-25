@@ -31,6 +31,8 @@ if {!$user_is_admin_p} {
     return
 }
 
+ns_log Notice "dynfield/attribute-new-2: object_type=$object_type, widget_name=$widget_name, attribute_id=$attribute_id, attribute_name=$attribute_name, pretty_name=$pretty_name, pretty_plural=$pretty_plural, table_name=$table_name, required_p=$required_p, modify_sql_p=$modify_sql_p, deprecated_p=$deprecated_p, datatype=$datatype, default_value=$default_value"
+
 
 # ------------------------------------------------------------------
 # 
@@ -47,8 +49,6 @@ db_1row select_widget_pretty_and_storage_type {
 	from	im_dynfield_widgets 
 	where	widget_name = :widget_name 
 }
-
-acs_object_type::get -object_type $object_type -array "object_info"
 
 set return_url "object-type?[export_vars -url {object_type}]"
 set user_message "Attribute <a href=\"attribute?[export_vars -url {attribute_id}]\">$pretty_name</a> Created."
@@ -75,6 +75,31 @@ if { [string eq $required_p "t"] } {
 set attribute_name [string tolower $attribute_name]
 set acs_attribute_exists [attribute::exists_p $object_type $attribute_name]
 set im_dynfield_attribute_exists [im_dynfield::attribute::exists_p -object_type $object_type -attribute_name $attribute_name]
+
+# ad_return_complaint 1 "acs_attribute_exists=$acs_attribute_exists, im_dynfield_attribute_exists=$im_dynfield_attribute_exists"
+
+# Make sure there is an entry in acs_object_type_tables for the
+# object type's main table. This table is needed by a RI constraint
+# acs_attributes.
+
+set ext_table_name $object_info(table_name)
+set ext_table_id_column $object_info(id_column)
+set extension_table_exists_p [db_string ext_table_exists "select count(*) from acs_object_type_tables where object_type = :object_type and table_name = :ext_table_name"]
+
+if {!$extension_table_exists_p} {
+
+    db_dml insert_table "
+	    insert into acs_object_type_tables (
+	        object_type,
+	        table_name,
+	        id_column
+	    ) values (
+	        :object_type,
+	        :ext_table_name,
+	        :ext_table_id_column
+	    )
+    "
+}
 
 
 # Add the attributes to the specified object_type

@@ -29,7 +29,7 @@ acs_object_type::get -object_type $object_type -array "object_info"
 
 set object_type_pretty_name $object_info(pretty_name)
 
-set title "Intranet-Dynfield Attributes of $object_type_pretty_name"
+set title "Dynfield Attributes of $object_type_pretty_name"
 set context [list [list "object-types" "Object Types"] $title]
 
 

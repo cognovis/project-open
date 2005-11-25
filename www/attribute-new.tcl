@@ -126,9 +126,26 @@ set existing_attributes [db_list existing_attributes "
 # them from the list of fields
 set id_columns {}
 
+set main_table_name $object_info(table_name)
+set main_id_column $object_info(id_column)
+set extension_table_options [list]
 
-set extension_table_options [list [list $object_info(table_name) $object_info(table_name)]]
-db_foreach extension_tables "select table_name as table_n, id_column as id_c from acs_object_type_tables where object_type = :object_type" {
+# Show the list of extension tables
+# plus the main object's table
+set extension_tables_sql "
+	select
+		table_name as table_n, 
+		id_column as id_c
+	from
+		acs_object_type_tables 
+	where
+		object_type = :object_type
+    UNION
+	select
+		:main_table_name as table_n,
+		:main_id_column as id_c
+"
+db_foreach extension_tables $extension_tables_sql {
 
     # Add the table as a table belonging to this object
     lappend extension_table_options [list $table_n $table_n]
@@ -138,9 +155,6 @@ db_foreach extension_tables "select table_name as table_n, id_column as id_c fro
     lappend id_columns "$table_n:$id_c"
 
 }
-
-
-
 
 # Only add attributes that don't exist yet
 set attribute_name_options {}
