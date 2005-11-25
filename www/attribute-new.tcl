@@ -231,33 +231,35 @@ ad_form -name attribute_form -form $form_fields -new_request {
 } -on_submit {
 } -new_data {
 } -edit_data {
-	# ******************************************************
-	# Update information
-	# ******************************************************
-	
-	if {$required_p == "f"} {
-		set min_n_values "0"
-	} else {
-		set min_n_values "1"
-	}
+    # Update information
 
-	db_transaction {
-		# ******************************************************
-		# update acs_attributes table
-		# ******************************************************
-		db_dml "update acs_attributes" "update acs_attributes set
-			pretty_name = :pretty_name,
-			pretty_plural = :pretty_plural,
-			min_n_values = :min_n_values
-			where attribute_id = (select acs_attribute_id 
-					      from im_dynfield_attributes 
-					      where attribute_id = :attribute_id)"
-		# ******************************************************
-		# update im_dynfield_attributes table
-		# ******************************************************
-		db_dml "update im_dynfield_attributes" "update im_dynfield_attributes set
+    if {$required_p == "f"} {
+	set min_n_values "0"
+    } else {
+	set min_n_values "1"
+    }
+
+    db_transaction {
+	# update acs_attributes table
+	db_dml "update acs_attributes" "
+	    update acs_attributes set
+		pretty_name = :pretty_name,
+		pretty_plural = :pretty_plural,
+		min_n_values = :min_n_values
+	    where
+		attribute_id = (
+			select acs_attribute_id 
+			from im_dynfield_attributes 
+			where attribute_id = :attribute_id
+		)
+	"
+
+	# update im_dynfield_attributes table
+	db_dml "update im_dynfield_attributes" "
+		update im_dynfield_attributes set
 			widget_name = :widget_name
-			where attribute_id = :attribute_id"
+		where attribute_id = :attribute_id
+	"
 	}
 
 } -after_submit {
@@ -271,7 +273,6 @@ ad_form -name attribute_form -form $form_fields -new_request {
     ad_script_abort
 
 }
-
 
 ad_return_template
 
