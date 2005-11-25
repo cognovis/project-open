@@ -27,13 +27,13 @@ if {!$user_is_admin_p} {
 
 db_transaction {
     db_dml remove_old_default_page {
-	update flexbase_layout_pages
+	update im_dynfield_layout_pages
 	set default_p = 'f'
 	where default_p = 't'
     }
     
     db_dml set_default_page {
-        update flexbase_layout_pages
+        update im_dynfield_layout_pages
         set default_p = 't'
 	where page_url = :page_url
         and object_type = :object_type

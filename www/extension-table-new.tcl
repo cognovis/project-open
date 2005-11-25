@@ -48,7 +48,7 @@ ad_form \
 ad_form -extend -name extension_table_form  -select_query {
 
         select  w.*
-        from    flexbase_widgets w
+        from    im_dynfield_widgets w
         where   w.widget_id = :widget_id
 
 }

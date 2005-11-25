@@ -1,8 +1,8 @@
-# packages/flexbase/www/import.tcl
+# packages/intranet-dynfield/www/import.tcl
 
 ad_page_contract {
     
-    Import an XML file with the flexbase data
+    Import an XML file with the DynField data
     
     @author Toni Vila (avila@digiteix.com)
     @creation-date 2005-04-04
@@ -26,7 +26,7 @@ set user_id [ad_verify_and_get_user_id]
 # create global variables
 set caller_id [ad_conn user_id]
 set caller_ip [ad_conn peeraddr]
-set page_title "Importing Flexbase info ..."
+set page_title "Importing DynField info ..."
 set context_bar ""
 
 # read xml
@@ -54,7 +54,7 @@ if [catch {
 #set error_count 0
 #set error_text [list]
 
-set widgets_list [$root selectNodes /FLEXBASE/WIDGETS/WIDGET]
+set widgets_list [$root selectNodes /DYNFIELD/WIDGETS/WIDGET]
 
 ReturnHeaders
 ns_write "<ul>"
@@ -78,7 +78,7 @@ foreach widget_node $widgets_list {
     
     # check if this widget exists
     if {![db_0or1row widget_exists "select widget_id 
-    	from flexbase_widgets 
+    	from im_dynfield_widgets 
     	where widget_name = :widget_name"]} {
     	# create new widget	
     	db_transaction {
@@ -90,7 +90,7 @@ foreach widget_node $widgets_list {
     } else {
     	# update widget info
     	db_transaction {
-    		db_dml "update widget info" "update flexbase_widgets set
+    		db_dml "update widget info" "update im_dynfield_widgets set
 		       widget_name     = :widget_name,
 		       pretty_name     = :pretty_name,
 		       pretty_plural   = :pretty_plural,
@@ -111,7 +111,7 @@ foreach widget_node $widgets_list {
     
 }
 
-set object_types_list [$root selectNodes /FLEXBASE/OBJECT_TYPES/OBJECT_TYPE]
+set object_types_list [$root selectNodes /DYNFIELD/OBJECT_TYPES/OBJECT_TYPE]
 
 foreach obj_type $object_types_list {
     set object_type_name [$obj_type getAttribute name ""]
@@ -131,10 +131,10 @@ foreach obj_type $object_types_list {
     	
     	ns_write "<li>Interface type key: $interface_type_key Join Column: $join_column"
     	if {![db_0or1row "exist dbi interface" "select 1
-    		from qt_flexbase_interfaces
+    		from im_dynfield_interfaces
     		where object_type = :object_type_name"]} {
     		db_transaction {
-    			db_dml "create interface" "insert into qt_flexbase_interfaces
+    			db_dml "create interface" "insert into im_dynfield_interfaces
     				(object_type,interface_type_key,join_column)
     				values
     				(:object_type_name,:interface_type_key,:join_column)"
@@ -177,9 +177,9 @@ foreach obj_type $object_types_list {
     }
     ns_write "</ul>"
     
-    set flexbase_layout_pages_list [$obj_type selectNodes FLEXBASE_LAYOUT_PAGES/LAYOUT_PAGE]
+    set dynfield_layout_pages_list [$obj_type selectNodes DYNFIELD_LAYOUT_PAGES/LAYOUT_PAGE]
     ns_write "Layout Pages:<ul>"
-    foreach layout_page $flexbase_layout_pages_list {
+    foreach layout_page $dynfield_layout_pages_list {
 	set page_url [$layout_page getAttribute page_url ""]
 	set layout_type [$layout_page getAttribute layout_type ""]
 	set table_height [$layout_page getAttribute table_height ""]
@@ -190,13 +190,13 @@ foreach obj_type $object_types_list {
 	ns_write "<li>Page url: $page_url Layout type: $layout_type Table height: $table_height Table width $table_width Adp file: $adp_file Default? $default_p</li>"
 	ns_write "<br/> <ul>"
 	if {![db_0or1row "page exists" "select 1 
-		from flexbase_layout_pages 
+		from im_dynfield_layout_pages 
 		where object_type = :object_type_name
 		and page_url = :page_url"]} {
 		#insert new page layout
 		
 		db_transaction {
-			db_dml "insert layout page" "insert into flexbase_layout_pages 
+			db_dml "insert layout page" "insert into im_dynfield_layout_pages 
 				(page_url,object_type,layout_type,table_height,table_width,adp_file,default_p)
 				values
 				(:page_url,:object_type_name,:layout_type,:table_height,:table_width,:adp_file,:default_p)"
@@ -206,7 +206,7 @@ foreach obj_type $object_types_list {
 		}
 	} else {
 		db_transaction {
-			db_dml "update layout page" "update flexbase_layout_pages 
+			db_dml "update layout page" "update im_dynfield_layout_pages 
 				set layout_type = :layout_type,
 				table_height = :table_height,
 				table_width = :table_width,
@@ -250,7 +250,7 @@ foreach obj_type $object_types_list {
     		Deprecated? $deprecated_p</li>"
     	
     	set acs_attribute_exists [attribute::exists_p $object_type_name $attribute_name]
-	set flexbase_attribute_exists [flexbase::attribute::exists_p -object_type $object_type_name -attribute_name $attribute_name]
+	set dynfield_attribute_exists [dynfield::attribute::exists_p -object_type $object_type_name -attribute_name $attribute_name]
 	ns_write "<br/> <ul>"
 	db_transaction {
 		if {!$acs_attribute_exists} {
@@ -298,25 +298,25 @@ foreach obj_type $object_types_list {
 	                 ns_write "<li><font color=green> Acs attribute table name updated to '$table_name'</font></li>"
 		
 	
-   		if {!$flexbase_attribute_exists} {
+   		if {!$dynfield_attribute_exists} {
 		
-		        # Let's create the new flexbase attribute
+		        # Let's create the new dynfield attribute
 		        # We're using exclusively TCL code here (not PL/PG/SQL
 		        # API).
 		        set attribute_id [db_exec_plsql create_object ""]
 		
-		        db_dml insert_flexbase_attributes "
-		            insert into flexbase_attributes
+		        db_dml insert_dynfield_attributes "
+		            insert into im_dynfield_attributes
 		                (attribute_id, acs_attribute_id, widget_name, deprecated_p)
 		            values
 		                (:attribute_id, :acs_attribute_id, :widget_name, :deprecated_p)
 		        "
-			ns_write "<li><font color=green>Flexbase attribute created !!!!</font></li>"
+			ns_write "<li><font color=green>DynField attribute created !!!!</font></li>"
 		} else {
-			db_1row "get flexbase attribute_id" "select attribute_id 
-				from flexbase_attributes
+			db_1row "get dynfield attribute_id" "select attribute_id 
+				from im_dynfield_attributes
 				where acs_attribute_id = :acs_attribute_id"
-			ns_write "<li><font color=orange> Flexbase attribute already exists</font></li>"
+			ns_write "<li><font color=orange>DynField attribute already exists</font></li>"
 		}
 	} on_error {
 		ns_write "<li><font color=red>Error processing attribute:</font> $errmsg</li>"
@@ -332,19 +332,19 @@ foreach obj_type $object_types_list {
 		ns_write "<li> Page url: $page_url Class: $class Sort Key: $sort_key </li>"
 		ns_write "<br/> <ul>"
 		db_transaction {
-			if {![db_0or1row "exists page layout" "select 1 from flexbase_layout
+			if {![db_0or1row "exists page layout" "select 1 from im_dynfield_layout
 				where object_type = :object_type_name
 				and page_url = :page_url 
 				and attribute_id = :attribute_id"]} {
 				
-				db_dml "insert page layout" "insert into flexbase_layout
+				db_dml "insert page layout" "insert into im_dynfield_layout
 					(attribute_id, page_url, object_type, class, sort_key)
 					values
 					(:attribute_id,:page_url,:object_type_name,:class,:sort_key)"
 				ns_write "<li><font color=green>Page layout created !!!!</font></li>"
 				
 			} else {
-				db_dml "update page layout" "update flexbase_layout 
+				db_dml "update page layout" "update im_dynfield_layout 
 					set class = :class,
 					sort_key = :sort_key
 					where object_type = :object_type_name
@@ -353,7 +353,7 @@ foreach obj_type $object_types_list {
 				ns_write "<li><font color=green>Page layout updated !!!!</font></li>"
 			}
 		} on_error {
-			ns_write "<li><font color=red>Error processing flexbase layout:</font> $errmsg</li>"
+			ns_write "<li><font color=red>Error processing DynField layout:</font> $errmsg</li>"
 		}
 		ns_write "</ul>"
     	}

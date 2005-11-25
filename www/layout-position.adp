@@ -1,5 +1,5 @@
 <%
-  # /packages/flexbase/www/layout-position.adp
+  # /packages/intranet-dynfield/www/layout-position.adp
   # $Workfile: layout-position.adp $ $Revision$ $Date$
 %>
 <master>
@@ -13,6 +13,6 @@
 
 <if @page.layout_type@ eq "relative">
 <p>
-#flexbase.lt_Hint_Remember_that_yo#
+#intranet-dynfield.Hint_Remember_that_yo#
 </p>
 </if>

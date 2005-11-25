@@ -29,7 +29,7 @@ acs_object_type::get -object_type $object_type -array "object_info"
 
 set object_type_pretty_name $object_info(pretty_name)
 
-set title "Flexbase Attributes of $object_type_pretty_name"
+set title "DynField Attributes of $object_type_pretty_name"
 set context [list [list "object-types" "Object Types"] $title]
 
 
@@ -56,15 +56,15 @@ set attributes_query "
         aa.pretty_plural,
 	aa.table_name,
         aa.attribute_id as acs_attribute_id,
-        fa.attribute_id as flexbase_attribute_id,
+        fa.attribute_id as dynfield_attribute_id,
         fa.widget_name,
 	w.widget_id,
 	w.widget,
 	w.parameters
     from 
 	acs_attributes aa, 
-	flexbase_attributes fa,
-	flexbase_widgets w
+	im_dynfield_attributes fa,
+	im_dynfield_widgets w
     where 
 	aa.object_type = :object_type
 	and aa.attribute_id = fa.acs_attribute_id(+)
@@ -79,16 +79,16 @@ set dbi_procs ""
 # ------------------------------------------
 set generate_interfaces 1
 if {[catch {db_1row "get interfaces info" "select interface_type_key, join_column 
-	from qt_flexbase_interfaces
+	from im_dynfield_interfaces
 	where object_type = :object_type"} errmsg]} {
 	
 	set generate_interfaces 0
 	ns_log notice "******************* error $errmsg *************************"
 } else {
 	if {!$show_interfaces} {
-		set show_hidde_link "<a href=\"?[export_vars -base {} -url -override {{show_interfaces 1}} {object_type orderby show_interfaces}]\"> [_ flexbase.Show_interfaces]</a>"
+		set show_hidde_link "<a href=\"?[export_vars -base {} -url -override {{show_interfaces 1}} {object_type orderby show_interfaces}]\"> [_ intranet-dynfield.Show_interfaces]</a>"
 	} else {
-		set show_hidde_link "<a href=\"?[export_vars -base {} -url -override {{show_interfaces 0}} {object_type orderby show_interfaces}]\"> [_ flexbase.Hide_interfaces]</a>"
+		set show_hidde_link "<a href=\"?[export_vars -base {} -url -override {{show_interfaces 0}} {object_type orderby show_interfaces}]\"> [_ intranet-dynfield.Hide_interfaces]</a>"
 	}
 }
 

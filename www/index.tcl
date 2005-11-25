@@ -8,7 +8,7 @@ ad_page_contract {
 } {
 }
 
-set title "FlexBase Extensible Architecture"
+set title "DynField Extensible Architecture"
 set context {}
 
 set user_id [ad_maybe_redirect_for_registration]

@@ -110,7 +110,7 @@ create table im_dynfield_attributes (
 
 
 -- ------------------------------------------------------------------
--- flexbase_attr_multi_value
+-- im_dynfield_attr_multi_value
 -- ------------------------------------------------------------------
 
 create table im_dynfield_attr_multi_value (

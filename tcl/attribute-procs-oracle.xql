@@ -21,7 +21,7 @@
 <fullquery name="attribute::delete_xt.drop_attribute">
 <querytext>
     begin 
-	flexbase_attribute.del(:flexbase_attribute_id); 
+	dynfield_attribute.del(:dynfield_attribute_id); 
     end;
 </querytext>
 </fullquery>

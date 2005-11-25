@@ -40,7 +40,7 @@ if {[info exists extension_tables]} {
 			and table_name = :extension_table
 		"]} {
 		incr child_record_found
-		append explanation_text "<li> [_ flexbase.You_can_t_remove_table_explanation]</li>\n"
+		append explanation_text "<li> [_ intranet-dynfield.You_can_t_remove_table_explanation]</li>\n"
     	}
     }
 }

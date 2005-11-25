@@ -1,5 +1,5 @@
 <%
-  # /packages/flexbase/www/layout-position-2.adp
+  # /packages/dynfield/www/layout-position-2.adp
   # $Workfile: layout-position-2.adp $ $Revision$ $Date$
 %>
 <master>

@@ -8,7 +8,7 @@
 BEGIN
 	:1 := acs_object.new (
                 object_id =>		null,
-                object_type =>		'flexbase_attribute',
+                object_type =>		'im_dynfield_attribute',
                 creation_date =>	sysdate,
                 creation_user =>	'[ad_get_user_id]'
         );
@@ -21,7 +21,7 @@ END;
 BEGIN
         :1 := acs_object.new (
                 object_id =>            null,
-                object_type =>          'flexbase_attribute',
+                object_type =>          'im_dynfield_attribute',
                 creation_date =>        sysdate,
                 creation_user =>        '[ad_get_user_id]'
         );

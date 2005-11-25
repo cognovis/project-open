@@ -11,11 +11,11 @@
 <table class="list">
 
   <tr class="list-header">
-    <th class="list-narrow">#flexbase.Attribute_Name#</th>
-    <th class="list-narrow">#flexbase.Pretty_Name#</th>
-    <th class="list-narrow">#flexbase.Located# <br>#flexbase.in_Table#</th>
-    <th class="list-narrow">#flexbase.Widget_Name#</th>
-    <th class="list-narrow">#flexbase.Del#</th>
+    <th class="list-narrow">#intranet-dynfield.Attribute_Name#</th>
+    <th class="list-narrow">#intranet-dynfield.Pretty_Name#</th>
+    <th class="list-narrow">#intranet-dynfield.Located# <br>#intranet-dynfield.in_Table#</th>
+    <th class="list-narrow">#intranet-dynfield.Widget_Name#</th>
+    <th class="list-narrow">#intranet-dynfield.Del#</th>
   </tr>
 
   <multiple name=attributes>
@@ -26,7 +26,7 @@
   </else>
 
     <td class="list-narrow">
-	<a href="attribute-new?attribute_id=@attributes.flexbase_attribute_id@">
+	<a href="attribute-new?attribute_id=@attributes.dynfield_attribute_id@">
 	  @attributes.attribute_name@
 	</a>
     </td>
@@ -43,7 +43,7 @@
     </td>
 
     <td class="list-narrow">
-	<input type=checkbox name=attribute_ids value="@attributes.flexbase_attribute_id@">
+	<input type=checkbox name=attribute_ids value="@attributes.dynfield_attribute_id@">
     </td>
 
   </tr>
@@ -57,21 +57,21 @@
 </table>
 </form>
 <ul class="action-links">
-<li><a href="attribute-new?object_type=@object_type@&action=already_existing">#flexbase.lt_Add_an_attribute_that#</a>
-<li><a href="layout-manager?object_type=@object_type@">#flexbase.Layout_Manager#</a></li>
+<li><a href="attribute-new?object_type=@object_type@&action=already_existing">#intranet-dynfield.lt_Add_an_attribute_that#</a>
+<li><a href="layout-manager?object_type=@object_type@">#intranet-dynfield.Layout_Manager#</a></li>
 </ul>
 
 
-<h1>#flexbase.lt_Extension_Tables_for_#</h1>
+<h1>#intranet-dynfield.lt_Extension_Tables_for_#</h1>
 <form method=post action=extension-table-delete>
 <input type=hidden name=object_type value="@object_type@">
 <input type=hidden name=return_url value="@return_url@">
 <table class="list">
 
   <tr class="list-header">
-    <th class="list-narrow">#flexbase.Table_Name#</th>
-    <th class="list-narrow">#flexbase.ID_Column#</th>
-    <th class="list-narrow">#flexbase.Del#</th>
+    <th class="list-narrow">#intranet-dynfield.Table_Name#</th>
+    <th class="list-narrow">#intranet-dynfield.ID_Column#</th>
+    <th class="list-narrow">#intranet-dynfield.Del#</th>
   </tr>
 
   <multiple name=extension_tables>
@@ -102,20 +102,20 @@
 </form>
 
 <ul class="action-links">
-<li><a href="extension-table-new?object_type=@object_type@&return_url=@return_url_encoded;noquote@">#flexbase.lt_Add_a_new_extension_t#</a>
+<li><a href="extension-table-new?object_type=@object_type@&return_url=@return_url_encoded;noquote@">#intranet-dynfield.lt_Add_a_new_extension_t#</a>
 </ul>
 
 
 <p>
 
 
-<h1>#flexbase.lt_Instances_of_object_t#</h1>
+<h1>#intranet-dynfield.lt_Instances_of_object_t#</h1>
 
 <table class="list">
 
   <tr class="list-header">
-    <th class="list-narrow">#flexbase.Object_ID#</th>
-    <th class="list-narrow">#flexbase.Object_Name#</th>
+    <th class="list-narrow">#intranet-dynfield.Object_ID#</th>
+    <th class="list-narrow">#intranet-dynfield.Object_Name#</th>
   </tr>
 
   <multiple name=objects>

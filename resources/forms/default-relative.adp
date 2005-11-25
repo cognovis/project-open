@@ -5,7 +5,7 @@
 </tr>
 
 <if @elements:rowcount@ le 0>
-  <tr><td colspan=2><i>#flexbase.No_items#</i></td></tr>
+  <tr><td colspan=2><i>#intranet-dynfield.No_items#</i></td></tr>
 </if>
 <else>
 

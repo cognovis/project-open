@@ -46,13 +46,13 @@
 
 <!-- normal fields -->
  <div class="standard-form-row">
-      <label for="flexbase_ethnic_group" class="form-label"><noparse><formlabel id="flexbase_ethnic_group"></noparse></label>
-     <noparse><formwidget id="flexbase_ethnic_group"></noparse>
+      <label for="dynfield_ethnic_group" class="form-label"><noparse><formlabel id="dynfield_ethnic_group"></noparse></label>
+     <noparse><formwidget id="dynfield_ethnic_group"></noparse>
 <!-- error message -->
-    <formerror id="flexbase_ethnic_group">
+    <formerror id="dynfield_ethnic_group">
        <div class="standard-form-row">
           <span class="form-label"> </span>    
-<div class="standard-form-error" style="color:#ff0000">\@formerror.flexbase_ethnic_group;noquote@</div>
+<div class="standard-form-error" style="color:#ff0000">\@formerror.dynfield_ethnic_group;noquote@</div>
        </div>
     </formerror>
 <!-- help text -->
@@ -60,7 +60,7 @@
         <span class="form-label"> </span>
         <div class="standard-form-help-text">
        	  <img src="/shared/images/info.gif" width="12" height="9" alt="[i]" title="Help text"" border="0">
-          <noparse><formhelp id="flexbase_ethnic_group"></noparse>
+          <noparse><formhelp id="dynfield_ethnic_group"></noparse>
           </div>
         </div>
  </div>

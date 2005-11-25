@@ -6,7 +6,7 @@
 <fullquery name="create_widget">
   <querytext>
 BEGIN
-	:1 := flexbase_widget.new (
+	:1 := im_dynfield_widget.new (
                 widget_name =>          :widget_name,
                 pretty_name =>          :pretty_name,
                 pretty_plural =>        :pretty_plural,

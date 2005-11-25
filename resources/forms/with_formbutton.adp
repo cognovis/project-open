@@ -1,7 +1,7 @@
 <div class="standard-form">
 
 <!-- section delimiter -->
-<div class="standard-form-row"><div class="standard-form-section">#flexbase.Section#</div></div>
+<div class="standard-form-row"><div class="standard-form-section">#intranet-dynfield.Section#</div></div>
 
 <!-- hidden fields -->
 <noparse><formwidget id="_hidden_field_"></noparse>

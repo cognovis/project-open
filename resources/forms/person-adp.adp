@@ -4,21 +4,21 @@
  <div class="standard-form-row">
     <div class="standard-form-label" style="width: 20%">
 	<div class="standard-form-label-text-mandatory">
-	    <label for="flexbase_ethnic_group"><noparse><formlabel id="flexbase_ethnic_group"></noparse></label>
+	    <label for="dynfield_ethnic_group"><noparse><formlabel id="dynfield_ethnic_group"></noparse></label>
         </div>
 	<div class="standard-form-label-mandatory">*</div>
     </div>
     
     <div class="standard-form-text">
-	  <noparse><formwidget id="flexbase_ethnic_group"></noparse>
+	  <noparse><formwidget id="dynfield_ethnic_group"></noparse>
 <!-- error message -->
-          <formerror id="flexbase_ethnic_group">
-             <div class="standard-form-error" style="color:#ff0000">\@formerror.flexbase_ethnic_group;noquote@</div>
+          <formerror id="dynfield_ethnic_group">
+             <div class="standard-form-error" style="color:#ff0000">\@formerror.dynfield_ethnic_group;noquote@</div>
           </formerror>
 <!-- help text -->
           <div class="standard-form-help-text">
 
-              <noparse><formhelptext id="flexbase_ethnic_group">
+              <noparse><formhelptext id="dynfield_ethnic_group">
 	<img src="/shared/images/info.gif" width="12" height="9" alt="[i]" title="Help text" border="0">
 		</formhelptext></noparse>
           </div>

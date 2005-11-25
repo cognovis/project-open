@@ -28,7 +28,7 @@ if {!$user_is_admin_p} {
 # ******************************************************
 
 db_dml remove_attribute {
-    delete from flexbase_layout 
+    delete from im_dynfield_layout 
     where object_type = :object_type and page_url = :page_url and attribute_id = :attribute_id
 }
 

@@ -6,7 +6,7 @@
 <fullquery name="create_widget">
   <querytext>
 BEGIN
-	:1 := flexbase_widget.new (
+	:1 := dynfield_widget.new (
                 widget_name =>          :widget_name,
                 pretty_name =>          :pretty_name,
                 pretty_plural =>        :pretty_plural,
@@ -25,7 +25,7 @@ END;
 BEGIN
 	:1 := acs_object.new (
                 object_id =>		null,
-                object_type =>		'flexbase_attribute',
+                object_type =>		'dynfield_attribute',
                 creation_date =>	sysdate,
                 creation_user =>	'[ad_get_user_id]'
         );

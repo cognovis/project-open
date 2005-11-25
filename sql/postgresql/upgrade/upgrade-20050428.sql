@@ -1,16 +1,16 @@
 --
--- packages/flexbase/sql/oracle/upgrade-20050428.sql
+-- packages/intranet-dynfield/sql/oracle/upgrade-20050428.sql
 --
 -- @author Toni Vila toni.vila@quest.ie
 -- @creation-date 2005-04-28
 --
 --
 
-create or replace package body flexbase_attribute
+create or replace package body im_dynfield_attribute
 is
     function new (
 	attribute_id		in integer default null,
-	object_type     	in varchar default 'flexbase_attribute',
+	object_type     	in varchar default 'im_dynfield_attribute',
 	creation_date   	in date default sysdate,
 	creation_user   	in integer default null,
 	creation_ip     	in varchar default null,
@@ -51,7 +51,7 @@ is
 		context_id	=>	context_id
 	);
 
-	insert into flexbase_attributes (
+	insert into im_dynfield_attributes (
 		attribute_id, acs_attribute_id, widget_name,
 		deprecated_p, already_existed_p
 	) values (
@@ -80,23 +80,23 @@ is
 		v_object_type,
 		v_acs_attribute_name
 	from
-		flexbase_attributes fa,
+		im_dynfield_attributes fa,
 		acs_attributes aa
 	where
 		aa.attribute_id = fa.acs_attribute_id
 		and fa.attribute_id = del.attribute_id;
 
-	-- Erase the flexbase_attributes item associated with the id
+	-- Erase the im_dynfield_attributes item associated with the id
 
-	delete from flexbase_layout
+	delete from im_dynfield_layout
     	where attribute_id = del.attribute_id;
 
-	-- Erase values for the flexbase_attribute item associated with the id
+	-- Erase values for the im_dynfield_attribute item associated with the id
 
-	delete from flexbase_attr_multi_value
+	delete from im_dynfield_attr_multi_value
 	where attribute_id = del.attribute_id;
 
-	delete from flexbase_attributes
+	delete from im_dynfield_attributes
 	where attribute_id = del.attribute_id;
 
 	acs_attribute.drop_attribute(v_object_type, v_acs_attribute_name);
@@ -112,7 +112,7 @@ is
 	-- get the acs_attribute_id
 	select acs_attribute_id
 	into v_acs_attribute_id
-	from flexbase_attributes
+	from im_dynfield_attributes
 	where attribute_id = name.attribute_id;
 
 	select  attribute_name
@@ -123,6 +123,6 @@ is
 	return v_name;
     end name;
 
-end flexbase_attribute;
+end im_dynfield_attribute;
 /
 show errors;

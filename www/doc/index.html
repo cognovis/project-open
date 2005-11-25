@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>Flexbase Documentation</title>
+<title>DynField Documentation</title>
 <style type="text/css">
 pre {
       border: 1px solid #CCC;
@@ -20,7 +20,7 @@ code {
 </head>
 
 <body>
-<h1>FlexBase - Extensible Architecture</h1>
+<h1>DynField - Dynamic Field Extensible Architecture</h1>
 <p>By <A href="http://www.project-open.com">Frank Bergmann</a>
 and <A href="mailto:juanjoruizx@yahoo.es">Juanjo Ruiz</a></P>
 <hr>
@@ -29,27 +29,27 @@ and <A href="mailto:juanjoruizx@yahoo.es">Juanjo Ruiz</a></P>
 <a href="handover.html">Brian's notes</a>
 </p>
 
-<h2>What is FlexBase?</h2>
-<p>FlexBase is an extension of the original OpenACS SQL Metadata system. FlexBase
+<h2>What is DynField?</h2>
+<p>DynField is an extension of the original OpenACS SQL Metadata system. DynField
   allows developers to extend objects with new fields. These new fields will appear
   automatically on all suitable OpenACS pages that deal with this object such
   as the object's view-, edit and list pages.</p>
-<p>FlexBase is an _extension_ mechanism which allows adding dynamic attributes
-  to existing OpenACS objects. However, FlexBase is not a generic object management
-  system. The creation and deleting of objects are outside of the scope of FlexBase,
+<p>DynField is an _extension_ mechanism which allows adding dynamic attributes
+  to existing OpenACS objects. However, DynField is not a generic object management
+  system. The creation and deleting of objects are outside of the scope of DynField,
   because is functionality is frequently handled using PL/SQL or PG/SQL in an
   object specific way.</p>
-<p>FlexBase is based on code of the great Attribute Management System (AMS) from
+<p>DynField is based on code of the great Attribute Management System (AMS) from
   Matthew Geddard and Richard Hamilton. Also, this document is based on their
   documentation. </p>
-<h2>Do I need FlexBase?</h2>
-<p>The main purpose of FlexBase is to allow developers to customize the system
+<h2>Do I need DynField?</h2>
+<p>The main purpose of DynField is to allow developers to customize the system
   for specific web sites or customers without modifying the underlying TCL and
   ADP source code in the CVS version control system.</p>
 <ul>
-  <li>You probably won't need FlexBase if you only develop a single web community
+  <li>You probably won't need DynField if you only develop a single web community
     or if you are in the business of adapting OpenACS to customer requirements.</li>
-  <li>However, you probably need FlexBase if you develop a new module that may
+  <li>However, you probably need DynField if you develop a new module that may
     be useful to many customers with slight variations for each customer.</li>
 </ul>
 <h2>Design Decisions and Requirements</h2>
@@ -57,25 +57,25 @@ and <A href="mailto:juanjoruizx@yahoo.es">Juanjo Ruiz</a></P>
   an overview over design decisions and requirements. Basicly, we tried to keep
   the system as simple as possible (it only defines two new tables) and to stick
   as much as possible to the original OpenACS Metadata system.
-  Also check the <A href="FlexBase.050106.ppt">enclosed PowerPoint slides</A>.
+  Also check the <A href="DynField.050106.ppt">enclosed PowerPoint slides</A>.
 </p>
 
 <h2>Architecture</h2>
 
 <p>The architecture consists of an extension table to <tt>acs_attributes </tt>
   and one new table containing preconfigured &quot;widgets&quot;:</p>
-<p><img src=flexbase_data_model.gif></p>
+<p><img src=dynfield_data_model.gif></p>
 <p>acs_attributes already contains the link to OpenACS objects via the <tt>object_type</tt>
-  field, so <tt>flexbase_attributes</tt> is basicly an extension table that links
-  to <tt>flexbase_widgets</tt>.</p>
+  field, so <tt>dynfield_attributes</tt> is basicly an extension table that links
+  to <tt>dynfield_widgets</tt>.</p>
 <h2>Defining New Attributes</h2>
 <p><img align=right src="extension_tables.gif" width="211" height="302">
-FlexBase comes with several maintenance screens that allow to define new attributes
+DynField comes with several maintenance screens that allow to define new attributes
   for a given object type. There are two options:</p>
 <ul>
   <li>Create a new entry for an attribute that <strong>already exists</strong>.<br>
-    Use this option in order to enter the existing object fields into FlexBase.
-    This allows you to use FlexBase to create object maintenance screens</li>
+    Use this option in order to enter the existing object fields into DynField.
+    This allows you to use DynField to create object maintenance screens</li>
   <li>Create a new entry and create a <strong>new table column</strong>.<br>
     Use this option if you really want to extend the object type.</li>
 </ul>
@@ -91,9 +91,9 @@ FlexBase comes with several maintenance screens that allow to define new attribu
   database constraints related to these extension tables, and some of the extension
   tables may require a creation using a PL/SQL or PG/SQL database procedure.</p>
 <p>This is the reason why we decided NOT to support a generic object creation
-  functionality in FlexBase. Instead, FlexBase restricts itself to modifying existing
+  functionality in DynField. Instead, DynField restricts itself to modifying existing
   objects, which can be mapped into SQL &quot;update&quot; statements for the
-  extension tables. Even with these restrictions it is possible that a FlexBase
+  extension tables. Even with these restrictions it is possible that a DynField
   &quot;update&quot; will violate database constraints. However, the probability
   is much lower in general.</p>
 <h3>Attribute Widgets</h3>
@@ -108,15 +108,15 @@ FlexBase comes with several maintenance screens that allow to define new attribu
 </ul>
 <p>In short, the widget defines the semantics of an attribute. Widgets are explained
   further below.</p>
-<h2>FlexBase and ad_form</h2>
+<h2>DynField and ad_form</h2>
 
-<p>You have two options when dealing with FlexBase and ad_form. Shorthand and detailed.</p>
+<p>You have two options when dealing with DynField and ad_form. Shorthand and detailed.</p>
 
 <h3>Shorthand</h3>
 
 <p>Shorthands is a completely simple way of creating forms without many options.
   The supplied object_id must already exist in the acs_object table. The shorthand
-  procs is <a href="/api-doc/proc-view?proc=flexbase_form">flexbase_form</a>,
+  procs is <a href="/api-doc/proc-view?proc=dynfield_form">dynfield_form</a>,
   which is simply a wrapper for ad_form. For example, to create and ad_form named
   "contact_person_ae" create a page contacts/www/contact-person-ae.tcl with the
   following content:</p>
@@ -128,7 +128,7 @@ ad_page_contract {
 }
 set title "Contact Person Add/Edit"
 set context [list $title]
-flexbase_form -package_key "contacts" \
+dynfield_form -package_key "contacts" \
          -object_type "ct_contact" \
          -page_name "edit_page" \
          -form_name "contact_person_ae" \
@@ -137,7 +137,7 @@ flexbase_form -package_key "contacts" \
 ad_return_template</pre>
 
 <p>The positioning of the form elements on the screen is defined with the attributes
-  themselves. Please see the FlexBase &quot;layout manager&quot; for details.</p>
+  themselves. Please see the DynField &quot;layout manager&quot; for details.</p>
 <p>The contacts/www/contact-person-ae.adp would contain:</p>
 
 <pre>&lt;master&gt;
@@ -150,9 +150,9 @@ ad_return_template</pre>
 
 <h3>Detailed</h3>
 
-<p>For many application the FlexBase and ad_form shorthand will be too simplistic. For those situations, you can use FlexBase to interface with <a href="/api-doc/proc-view?proc=ad_form">ad_form</a>. You need to define ad_from <strong>-form</strong> elements like this:
+<p>For many application the DynField and ad_form shorthand will be too simplistic. For those situations, you can use DynField to interface with <a href="/api-doc/proc-view?proc=ad_form">ad_form</a>. You need to define ad_from <strong>-form</strong> elements like this:
 <pre>
-ad_form ... -form [flexbase::ad_form::elements \
+ad_form ... -form [dynfield::ad_form::elements \
 		-package_key "contacts" \
 		-object_type "ct_contact" \
 		-list_name "contact_person"] ...
@@ -163,7 +163,7 @@ ad_form ... -form [flexbase::ad_form::elements \
 <p>In the ad_form <strong>-edit_request</strong> block put</p>
 <pre>
 ad_form ... -edit_request {
-        flexbase::object::attribute::values -vars -object_id $object_id
+        dynfield::object::attribute::values -vars -object_id $object_id
     } ...</pre>
 
 <p>This returns the variables upvared into your page, i.e. the first_names attribute could be returned with a value of "Jane" and the last_name attribute with a value of "Doe"... etc. ad_from looks for all form elements and appropriately pre-fills the form with the given values.</p>
@@ -171,29 +171,29 @@ ad_form ... -edit_request {
 
 <pre>
 ad_from ... -on_submit {
-        flexbase::ad_form::save \
+        dynfield::ad_form::save \
             -package_key "contacts" \
             -object_type "ct_contact" \
             -list_name "contact_person" \
             -form_name "contact_person_ae" \
             -object_id $ct_contact_id
     }</pre>
-<p>This is how you interface with FlexBase and ad_form. You may also specify other
+<p>This is how you interface with DynField and ad_form. You may also specify other
   code in the <strong>-form -on_submit</strong> and <strong>-on_submit</strong>
   blocks.</p>
-<h2>FlexBase and Your Package's UI</h2>
+<h2>DynField and Your Package's UI</h2>
 
-<p>To display attributes you can call <a href="/api-doc/proc-view?proc=ams::object::attribute::values">flexbase::object::attribute::values</a>
+<p>To display attributes you can call <a href="/api-doc/proc-view?proc=ams::object::attribute::values">dynfield::object::attribute::values</a>
   to get the results back as upvared variables, as an array or as a list however
   you want. So, if on the contact-view page you do, for example to get an array
   with all attribute_values that are not null represented in. </p>
 
 <pre>
-flexbase::object::attribute::values -array "contact_info" -object_id $ct_contact_id</pre>
-<p>To add flexbase_attribute_values to a multirow you call <a href="/api-doc/proc-view?proc=ams::multirow::extend">flexbase::multirow::extend</a> to efficiently extend your multirow with flexbase_attribute_values. For example:</p>
+dynfield::object::attribute::values -array "contact_info" -object_id $ct_contact_id</pre>
+<p>To add dynfield_attribute_values to a multirow you call <a href="/api-doc/proc-view?proc=ams::multirow::extend">dynfield::multirow::extend</a> to efficiently extend your multirow with dynfield_attribute_values. For example:</p>
 <pre>
 db_multirow contacts get_contacts { select ct_contact_id from ct_contacts }
-flexbase::multirow::extend \
+dynfield::multirow::extend \
     -package_key "contacts" \
     -object_type "ct_contact" \
     -list_name "contact_person" \
@@ -204,9 +204,9 @@ flexbase::multirow::extend \
 
 
 <h2>&quot;Pages&quot; and Attribute Layout</h2>
-<p>FlexBase defines the notion of a &quot;page&quot;, allowing attributes to be
+<p>DynField defines the notion of a &quot;page&quot;, allowing attributes to be
   layouted differently in different TCL/ADP pages. Each page defines the position
-  for each attribute. There are three different types of layout defined in FlexBase,
+  for each attribute. There are three different types of layout defined in DynField,
   for each type there are specific actions to be taken, but in all of them you can specify
   which attributes you want to show and which not. This combined with the Cascade Style Sheets and
   the style option in the &lt;formtemplate&gt; ACS templating tag gives a wide variety of formating options.
@@ -255,7 +255,7 @@ flexbase::multirow::extend \
   <p>&quot;ADP template&quot; has all the posible freedom because you are editing line by line how you want your
      form to look like. For the people who has already embebed some dynamic form in a template it should be pretty
      straight forward as they are used to use the different <a href="/doc/acs-templating/tagref/">&lt;form[...]&gt;</a>
-     tags. The flexbase package just adds two new tags to the existent ones which we think are very usefull:
+     tags. The dynfield package just adds two new tags to the existent ones which we think are very usefull:
      <ul>
       <li>&lt;formlabel&gt;: Returns the label of the element</li>
       <li>&lt;formhelptext&gt;: Returns the help text and the 'chunk' between the (&lt;&gt;) and (&lt;/&gt;) tag</li>
@@ -266,9 +266,9 @@ flexbase::multirow::extend \
 </ol>
 
 <h3>Layout process</h3>
-<p>The flexbase package is just an extension of what we already have in our page. So you can add fields to pages without form, pages defining the form in the adp file or pages using template::form/ad_form. The drawback of this implementation is that one can get confuse about what is really being executed at one moment and which what values. The standard process shall be the following:</p>
+<p>The dynfield package is just an extension of what we already have in our page. So you can add fields to pages without form, pages defining the form in the adp file or pages using template::form/ad_form. The drawback of this implementation is that one can get confuse about what is really being executed at one moment and which what values. The standard process shall be the following:</p>
 <ul>
-  <li>Call to the load&show flexbase procedure in the tcl file which:
+  <li>Call to the load&show dynfield procedure in the tcl file which:
      <ol>
        <li>Get the old attributes values from the database</li>
        <li>Set the page layout/style. First look at the -style paramenter, if nil use the -page_url parameter, if nil get the default page_url for the specified object_type, if nil not to use layout manager (i.e. use standard ACS layout)</li>
@@ -278,11 +278,11 @@ flexbase::multirow::extend \
   </li>
   <li>Call to the &lt;formtemplate&gt; tag in the adp file
   </li>
-  <li>Call to the store flexbase procedure in the 'is_valid' section of your template::form/ad_form or in the *-2.tcl page if you do not use it.
+  <li>Call to the store dynfield procedure in the 'is_valid' section of your template::form/ad_form or in the *-2.tcl page if you do not use it.
   </li>
 </ul>
 <h3>Layout tables</h3>
-<p>The layout pages are defined in the table <strong>flexbase_layout_pages</strong>:</p>
+<p>The layout pages are defined in the table <strong>dynfield_layout_pages</strong>:</p>
 <ul>
   <li>object_type: each page can use attributes from more than one object_type</li>
   <li>page_url: we use the global page url as the page identifier</li>
@@ -292,26 +292,26 @@ flexbase::multirow::extend \
   <li>adp_file: name of the adp template to use, only for  'adp'  layouts</li>
   <li>default_p: use this page as the default one for this object_type</li>
 </ul>
-<p>The <strong>flexbase_layout</strong> table define the attributes showed in each page</p>
+<p>The <strong>dynfield_layout</strong> table define the attributes showed in each page</p>
 <ul>
-  <li>attribute_id: flexbase attribute identifier</li>
+  <li>attribute_id: dynfield attribute identifier</li>
   <li>object_type</li>
-  <li>page_url: reference to flexbase_layout_pages</li>
+  <li>page_url: reference to dynfield_layout_pages</li>
   <li>class: the name of the CSS class, only for 'absolute' layouts</li>
   <li>sort_key: an integer defining the place of the attribute, only for 'relative' layouts</li>
 </ul>
 <p>
-... For further reference please look the documentation in the flexbase procedures.
+... For further reference please look the documentation in the dynfield procedures.
 </p>
 <p>&nbsp;</p>
 
-<h2>FlexBase Widgets</h2>
-FlexBase defines several kinds of widgets:
+<h2>DynField Widgets</h2>
+DynField defines several kinds of widgets:
 <ul>
   <li> <b>Standard OpenACS Widgets</b>:<br>
     These widgets use the existing OpenACS widgets to display a wide range of
     data types.<br>
-    FlexBase sets up a number of these widgets during the installation process,
+    DynField sets up a number of these widgets during the installation process,
     so they are ready to use
   <li> <b>Category Select Widgets</b>:<br>
     These widgets define drop-down boxes with options defined using the OpenACS
@@ -390,7 +390,7 @@ FlexBase defines several kinds of widgets:
 <h3>Creating a New Category Widget</h3>
 
 <p>Creating a new Category Widget requires an integration between the OpenACS
-  &quot;Categories&quot; package and FlexBase:</p>
+  &quot;Categories&quot; package and DynField:</p>
 <ol>
   <li>You have to create a new Category tree for the widget (if it doesn't exist
     already). Go to the category admin pages at <a href="/categories/cadmin/">/categories/cadmin/</a>
@@ -409,7 +409,7 @@ FlexBase defines several kinds of widgets:
     as &quot;tree%5fid=630&quot;, with the &quot;%5f&quot; representing the underscore
     &quot;_&quot;. However, we need the number behind the &quot;=&quot;, so the
     630 in this example.</li>
-  <li>Now let's go to <a href="/flexbase/widgets/">/flexbase/widgets/</a> and
+  <li>Now let's go to <a href="/dynfield/widgets/">/dynfield/widgets/</a> and
     select &quot;Create a new widget&quot; link at the bottom.</li>
   <li>Let's enter the following data:
     <ul>
@@ -428,7 +428,7 @@ FlexBase defines several kinds of widgets:
     that is available when you define new attributes of an object.</li>
 </ol>
 <p>&nbsp; </p>
-<h2>FlexBase Permissions</h2>
+<h2>DynField Permissions</h2>
 <p>ToDo</p>
 <h3 style="color: red;">&nbsp;</h3>
 </body>

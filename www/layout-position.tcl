@@ -38,26 +38,26 @@ set context [list [list "object-types" "Object Types"] [list "[export_vars -base
 
 db_1row get_layout_type {
     select layout_type, table_height, table_width
-    from flexbase_layout_pages
+    from im_dynfield_layout_pages
     where object_type = :object_type
     and page_url = :page_url
 } -column_array "page"
 
 lappend action_list "Add attribute" "[export_vars -base "layout-position-2" { object_type page_url }]" "Add item to this order"
-set no_data "[_ flexbase.No_attributes_added_to_this_page]"
+set no_data "[_ intranet-dynfield.No_attributes_added_to_this_page]"
 
 set elements_list " pretty_name {
-        label \"[_ flexbase.Attribute]\"
+        label \"[_ intranet-dynfield.Attribute]\"
     }"
 
 if { $page(layout_type) == "absolute" } {
     append elements_list " class {
-	    label \"[_ flexbase.Class]\"
+	    label \"[_ intranet-dynfield.Class]\"
 	    html { align center }
 	}"
 } elseif { $page(layout_type) == "relative" } {
     append elements_list " sort_key {
-            label \"[_ flexbase.Sort_key]\"
+            label \"[_ intranet-dynfield.Sort_key]\"
             html { align center }
         }"
     set next_row [expr $page(table_width) + 1]
@@ -98,7 +98,7 @@ list::create \
 
 db_multirow -extend { edit_url delete_url } attrib_layout get_attributes "
     select aa.attribute_name, aa.pretty_name,  aa.pretty_plural, fl.class, fl.sort_key, fl.attribute_id
-    from FLEXBASE_LAYOUT fl, ACS_ATTRIBUTES aa, FLEXBASE_ATTRIBUTES fa
+    from IM_DYNFIELD_LAYOUT fl, ACS_ATTRIBUTES aa, IM_DYNFIELD_ATTRIBUTES fa
     where fl.object_type = :object_type
     and fl.page_url = :page_url
     and aa.attribute_id = fa.acs_attribute_id

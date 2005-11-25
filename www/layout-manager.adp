@@ -1,5 +1,5 @@
 <%
-  # /packages/flexbase/www/layout-manager.adp
+  # /packages/intranet-dynfield/www/layout-manager.adp
   # $Workfile: layout-manager.adp $ $Revision$ $Date$
 %>
 <master>

@@ -1,6 +1,6 @@
 ad_library {
 
-    Additional OpenACS Widgets for use with the FlexBase
+    Additional OpenACS Widgets for use with the DynField
     extensible architecture
 
     @author Frank Bergmann frank.bergmann@project-open.com
@@ -9,7 +9,7 @@ ad_library {
 }
 
 
-ad_proc -public template::widget::flexbase_hidden { element_reference tag_attributes } {
+ad_proc -public template::widget::dynfield_hidden { element_reference tag_attributes } {
     Hidden Widget
 
     @param expresion to get widget value.
@@ -23,7 +23,7 @@ ad_proc -public template::widget::flexbase_hidden { element_reference tag_attrib
     if { [info exists element(custom)] } {
     	set params $element(custom)
     } else {
-	return "Flexbase Hidden Widget: Error: Didn't find 'custom' parameter.<br>Please use a Parameter such as: <tt>{custom {sql {select sysdate from dual}}} </tt>"
+	return "Dynfield Hidden Widget: Error: Didn't find 'custom' parameter.<br>Please use a Parameter such as: <tt>{custom {sql {select sysdate from dual}}} </tt>"
     }
 
     set type [lindex $params 0]
@@ -37,7 +37,7 @@ ad_proc -public template::widget::flexbase_hidden { element_reference tag_attrib
        	   set val [eval $string_to_eval]
        	}
        default {
-	return "Flexbase Hidden Widget: Error: Didn't find type '$type' option parameter"
+	return "Dynfield Hidden Widget: Error: Didn't find type '$type' option parameter"
 	}
     }
 
