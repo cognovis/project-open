@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-dynfield" package_version="0.1d" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-dynfield" package_version="3.0.1.0.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="absolute">Absolute</msg>
   <msg key="ACS_Datatype">ACS Datatype</msg>
@@ -33,7 +33,6 @@
   <msg key="examples">examples</msg>
   <msg key="Exchequer_Supplier_Code">Exchequer Supplier Code</msg>
   <msg key="Export">Export Intranet-Dynfield Information</msg>
-  <msg key="Intranet-Dynfield_Attributes">Intranet-Dynfield Attributes</msg>
   <msg key="Gender_Select">Gender Select</msg>
   <msg key="Hide_interfaces">Hide Interfaces</msg>
   <msg key="ID_Column">ID Column</msg>
@@ -41,6 +40,7 @@
   <msg key="in_Table">in Table</msg>
   <msg key="Integer">Integer</msg>
   <msg key="Integers">Integers</msg>
+  <msg key="Intranet-Dynfield_Attributes">Intranet-Dynfield Attributes</msg>
   <msg key="Large">Large</msg>
   <msg key="Layout_Manager">Layout Manager</msg>
   <msg key="Located">Located</msg>
@@ -73,6 +73,7 @@
   <msg key="One_Option_Allowed">One Option Allowed</msg>
   <msg key="Parameters">Parameters</msg>
   <msg key="Party">Party</msg>
+  <msg key="Permissions">Permissions</msg>
   <msg key="Person">Person</msg>
   <msg key="Preferred_Communication">Preferred Communication</msg>
   <msg key="Pretty_Name">Pretty Name</msg>
