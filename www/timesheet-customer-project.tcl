@@ -15,6 +15,7 @@ ad_page_contract {
     { end_date "" }
     { level_of_detail 2 }
     project_id:integer,optional
+    task_id:integer,optional
     company_id:integer,optional
     user_id:integer,optional
 }
@@ -78,6 +79,9 @@ if {"" == $start_date} {
     set start_date "$todays_year-$todays_month-01"
 }
 
+# Maxlevel is 4. Normalize in order to show the right drop-down element
+if {$level_of_detail > 4} { set level_of_detail 4 }
+
 
 db_1row end_date "
 select
@@ -111,6 +115,10 @@ if {[info exists company_id]} {
 
 if {[info exists user_id]} {
     lappend criteria "h.user_id = :user_id"
+}
+
+if {[info exists task_id]} {
+    lappend criteria "h.timesheet_task_id = :task_id"
 }
 
 # Select project & subprojects
