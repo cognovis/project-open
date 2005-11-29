@@ -35,7 +35,7 @@ if {!$user_is_admin_p} {
 
 if {"" == $return_url} { set return_url [ad_conn url] }
 
-set page_title "[_ intranet-reporting.Reports]"
+set page_title [lang::message::lookup "" intranet-reporting.Available_Reports "Available Reports"]
 set context_bar [im_context_bar $page_title]
 set context ""
 
@@ -48,7 +48,7 @@ set action_list [list "[_ intranet-reporting.Add_new_Report]" "[export_vars -bas
 
 set elements_list {
   name {
-    label "[_ intranet-reporting.Report_Name]"
+    label $page_title
     display_template {
 	<if @reports.indent_level@ gt 4>
 	    @reports.indent_spaces;noquote@ 
