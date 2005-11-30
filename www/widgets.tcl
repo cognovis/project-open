@@ -13,8 +13,8 @@ ad_page_contract {
 # Default & Security
 # ******************************************************
 
-set title "Widgets"
-set context [list $title]
+set page_title "Widgets"
+set context_bar [im_context_bar [list /intranet-dynfield/ "DynField"] $page_title]
 
 set user_id [ad_maybe_redirect_for_registration]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]

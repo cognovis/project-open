@@ -36,8 +36,7 @@ if {!$user_is_admin_p} {
 if {"" == $return_url} { set return_url [ad_conn url] }
 
 set page_title "Dynfield Permissions"
-set context_bar [im_context_bar $page_title]
-set context ""
+set context_bar [im_context_bar [list /intranet-dynfield/ "DynField"] $page_title]
 
 set dynfield_url "/intranet-dynfield/attribute-new"
 set object_type_url "/intranet-dynfield/object-type"

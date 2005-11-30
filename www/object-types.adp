@@ -1,7 +1,7 @@
 <master>
 
-<property name="title">@title@</property>
-<property name="context">@context@</property>
+<property name="title">@page_title@</property>
+<property name="context">@context_bar@</property>
 
 
 
