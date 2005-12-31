@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-dashboard" package_version="3.0.0.2.1" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Average_Bill_Age">Average Bill Age</msg>
+  <msg key="Average_Invoice_Age">Average Invoice Age</msg>
+  <msg key="Average_Purchase_Price_S_Word">Average Purchase Price &lt;br&gt; per Source-Word</msg>
+  <msg key="Average_Sales_Price_S_Word">Average Sales Price&lt;br&gt; per Source-Word</msg>
+  <msg key="Dashboard">Dashboard</msg>
+</message_catalog>
