@@ -209,6 +209,9 @@ db_transaction {
                     set response_value [db_null]
                 }
 
+		# fraber 060103: missing variable clob_answer in .xql file
+		set clob_answer $response_value
+
 		db_dml survsimp_question_response_text_insert "
 insert into survsimp_question_responses
 (response_id, question_id, clob_answer)
