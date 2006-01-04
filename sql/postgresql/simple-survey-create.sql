@@ -61,9 +61,7 @@ begin;
 	select acs_privilege__add_child('survsimp_admin_survey','survsimp_modify_question');
 	select acs_privilege__add_child('survsimp_admin_survey','survsimp_delete_question');
 
-	select acs_privilege__add_child('read','survsimp_take_survey');
-
-
+	select acs_privilege__add_child('write','survsimp_take_survey');
 	select acs_privilege__add_child('admin','survsimp_admin_survey');
 
 end;
