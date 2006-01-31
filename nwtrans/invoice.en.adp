@@ -1,11 +1,11 @@
 <html>
 <head>
-<title>Bestellung</title>
+<title>INVOICE</title>
 <link rel='stylesheet' href='/intranet/style/invoice.css' type='text/css'>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 
 <style type="text/css">
-#lup_allaround {
+#border_allaround {
   border-width:1px;
   border-style:solid;
   border-color:black;
@@ -13,100 +13,97 @@
   text-align:left; }
 }
 </style>
-
-
-<%
-    if {[regexp {^(.)(..)(..)_(....)$} $invoice_nr match lup_prefix lup_decade lup_year lup_nr]} {
-        set invoice_nr_lup "FM$lup_year$lup_nr"
-    } else {
-        set invoice_nr_lup $invoice_nr
-    }
-%>
-
-
-
 </head>
+
 
 <body>
 <table border="0" cellspacing="1" cellpadding="1" width="100%">
   <tr> 
-    <td align="center"> <img src="nwtrans.logo.350.107.gif" width="350" height="107"></td>
+    <td align="center"> <img src="/intranet/images/nwtrans.logo.350.107.gif" width="350" height="107"></td>
   </tr>
 </table>
-<font face="Verdana" size="2">
 <br>
-
-</font>
 
 <table width="100%" border="0" cellspacing="1" cellpadding="1">
   <tr>
-    <td width="40%">
-      <table border="0" cellspacing="1" cellpadding="1" id="table1">
-        <tr width="50%">
-          <td class=roweven><font size="2" face="Verdana">Northwest Translations, 
-            Inc. </font></td>
-        </tr>
-        <tr>
-          <td class=roweven><font face="Verdana" size="2">P.O. Box 171</font></td>
-        </tr>
-        <tr>
-          <td class=roweven><font face="Verdana" size="2">Eagle, PA 19480</font></td>
-        </tr>
-        <tr>
-          <td class=roweven><font face="Verdana" size="2">United States</font></td>
-        </tr>
-        <tr><td class=rowodd><p><font face="Verdana" size="2">Toll Free 1-800-270-5620<br>
-              Fax (509) 351-7529<br>
-              sales@nwtranslations.com</font><font face="Verdana" size="2"><br>
-              </font></p>
-            </td></tr>
-      </table>
+    <td width="70%">
+	&nbsp;
     </td>
-    <td width="60%" valign="top">
+    <td width="30%" valign="top">
       <table border="0" cellspacing="1" cellpadding="1" width="70%">
         <tr width="50%"> 
-          <td class=roweven><p><strong><font size="4" face="Verdana">INVOICE</font></strong></p></td>
+          <td class=roweven><strong><font size="4">INVOICE</font></strong></td>
         </tr>
       </table>
-      <font face="Verdana" size="2">
+      
       <br>
-      </font>
+      
       <table width="100%" border="0" cellpadding="1" cellspacing="0" style="border-collapse:collapse">
         <tr width="50%"> 
-          <td class=roweven id=lup_allaround> <font face="Verdana" size="2"> <strong>DATE</strong><br>
-            <strong><%=$invoice_date_pretty %></strong> </font> </td>
-          <td class=roweven id=lup_allaround> <font face="Verdana" size="2"> <strong>INVOICE#</strong><br>
-            <strong> <%= $related_project_nrs %> </strong> </font> </td>
+          <td class=roweven id=border_allaround>  <strong>DATE</strong><br>
+            <strong><%=$invoice_date_pretty %></strong>  </td>
+          <td class=roweven id=border_allaround>  <strong>INVOICE#</strong><br>
+            <strong> <%= $invoice_nr %> </strong>  </td>
         </tr>
       </table> 
     </td>
   </tr>
 </table>
-<font face="Verdana" size="2">
+
 <br>
 
-</font>
 
-<table width="40%" border="0" cellpadding="1" cellspacing="0" style="border-collapse:collapse">
-  <tr> 
-    <td class="roweven" id=lup_allaround> <font face="Verdana" size="2"> <strong>INVOICE 
-      FOR </strong></font></td>
-  </tr>
-  <tr> 
-    <td id=lup_allaround>
-      <table border="0" cellpadding="1" cellspacing="0">
-        <tr><td class="roweven"><font face="Verdana" size="2"><%=$company_name%></font></td></tr>
-        <tr><td class=roweven><font face="Verdana" size="2"><%=$company_contact_name%></font></td></tr>
-        <tr><td class=roweven><font face="Verdana" size="2"><%=$address_line1%></font></td></tr>
-        <tr><td class=roweven><font face="Verdana" size="2"><%=$address_line2%></font></td></tr>
-        <tr><td class="roweven"><font face="Verdana" size="2"><%=$address_postal_code %> <%=$address_city %></font></td></tr>
-        <tr><td class="rowodd"><font face="Verdana" size="2"><%=$country_name%></font></td></tr>
-        <tr><td class="rowodd"><font face="Verdana" size="2"><%=$account_nr%></font></td></tr>
-      </table>
-    </td>
-  </tr>
+<table width="100%" cellspacing=0 cellpadding=0>
+<tr valign=top>
+  <td>
+
+	<table width="80%" height=200 border="0" cellpadding="1" cellspacing="0" style="border-collapse:collapse">
+	  <tr height=30> 
+	    <td class="roweven" id=border_allaround>  <strong>INVOICE FROM</strong></td>
+	  </tr>
+	  <tr valign=top> 
+	    <td id=border_allaround>
+	
+	      <table border="0" cellspacing="1" cellpadding="1" id="table1">
+	        <tr width="50%"><td class=roweven>Northwest Translations, Inc.</td></tr>
+	        <tr><td class=roweven>P.O. Box 171</td></tr>
+	        <tr><td class=roweven>Eagle, PA 19480</td></tr>
+	        <tr><td class=rowodd>Toll Free 1-800-270-5620</td></tr>
+	        <tr><td class=rowodd>Fax (509) 351-7529</td></tr>
+	        <tr><td class=rowodd>sales@nwtranslations.com</td></tr>
+	      </table>
+	
+	    </td>
+	  </tr>
+	</table>
+
+  </td>
+  <td align=right>
+
+	<table width="80%" height=200 border="0" cellpadding="1" cellspacing="0" style="border-collapse:collapse">
+	  <tr height=30> 
+	    <td class="roweven" id=border_allaround>  <strong>INVOICE FOR </strong></td>
+	  </tr>
+	  <tr valign=top> 
+	    <td id=border_allaround>
+	      <table border="0" cellpadding="1" cellspacing="0">
+	        <tr><td class="roweven"><%=$company_name%></td></tr>
+	        <tr><td class=roweven><%=$company_contact_name%></td></tr>
+	        <tr><td class=roweven><%=$address_line1%></td></tr>
+	        <tr><td class=roweven><%=$address_line2%></td></tr>
+	        <tr><td class="roweven"><%=$address_postal_code %> <%=$address_city %> </td></tr>
+	        <tr><td class="rowodd"><%=$country_name%> </td></tr>
+	        <tr><td class="rowodd"><%=$account_nr%> </td></tr>
+	      </table>
+	    </td>
+	  </tr>
+	</table>
+
+
+  </td>
+</tr>
 </table>
-<font face="Verdana" size="2">
+
 <br>
 
 <%
@@ -145,39 +142,37 @@
 
 %>
 
-</font>
 
 <table width="100%" border="0" cellpadding="2" cellspacing="0" style="border-collapse:collapse">
   <tr> 
-    <td id=lup_allaround> <font face="Verdana" size="2"> <strong>PROJECT INFORMATION</strong></font></td>
+    <td class="roweven" id=border_allaround>  <strong>PROJECT INFORMATION</strong></td>
   </tr>
   <tr> 
-    <td id=lup_allaround>
-	<font face="Verdana" size="2">Projektbez.: <%=$project_name%><br>
-        Ausgangssprache: <%=$source_language%><br>
-        Zielprache(n): <%=$target_language%><br>
-        Leistungszeitraum: <%=$start_date_pretty%> - <%=$end_date_pretty%><br>
-      </font>
+    <td class="roweven" id=border_allaround>
+	Projekt Name: <%=$project_name%><br>
+        Source Language: <%=$source_language%><br>
+        Target Language: <%=$target_language%><br>
+        Project Duration: <%=$start_date_pretty%> - <%=$end_date_pretty%><br>
       </td>
   </tr>
 </table>
-<font face="Verdana" size="2">
+
 <br>
 
-</font>
+
 
 <table border="1" cellspacing="0" cellpadding="2" bordercolor=black style="border-collapse:collapse" width="100%">
 <%=$item_list_html %>
 </table>
-<font face="Verdana" size="2">
+
 <br>
-</font> 
-<p> <font face="Verdana" size="2">Disclaimer: All our work is executed with the 
+ 
+<p> Disclaimer: All our work is executed with the 
   utmost professional care. However, we disclaim all liability for any legal implications 
   resulting from the use of it. Our maximum liability, whether by negligence, 
   contract or otherwise, will not exceed the return of the amount invoiced for 
   the work in dispute. Under no circunstances will we be liable for specific, 
-  individual or consequential damages.</font> </p>
+  individual or consequential damages. </p>
 
 </body>
 </html>
