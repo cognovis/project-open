@@ -1,11 +1,10 @@
 <html>
 <head>
-<title>Untitled Document</title>
+<title>Invoice</title>
 <link rel='stylesheet' href='http://www.project-open.com/css/invoice.css' type='text/css'>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
 
-<!-- <body text="#000000" background="/intranet/images/sls10.gif"> -->
 <body text="#000000">
 <table border="0" cellspacing="1" cellpadding="1" width="100%">
   <tr> 

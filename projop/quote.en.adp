@@ -1,19 +1,20 @@
 <html>
 <head>
-<title>Untitled Document</title>
+<title>Quote</title>
 <link rel='stylesheet' href='http://www.project-open.com/css/invoice.css' type='text/css'>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
 
-<!-- <body text="#000000" background="/intranet/images/sls10.gif"> -->
 <body text="#000000">
 <table border="0" cellspacing="1" cellpadding="1" width="100%">
   <tr> 
     <td>
-      <img src="http://www.project-open.com/images/logos/logo.project-open.horiz.tra.gif" width=230 height=52><br>
+      <img src="http://www.project-open.com/images/logos/project_open.38.10frame.gif"><br>
       <P><b><font size="5">QUOTE</font></b></P>
     </td>
-    <td align="right"> <p><font size="6"><b>Project/Open</b></font><br>
+    <td align="right"> <p><font size="6">
+<span class=brandsec>]</span><span class=brandfirst>project-open</span><span class=brandsec>[</span>
+    </font><br>
         <font size="4"><b>Manage your projects online-<br>
         anytime, anywhere</b></font></p>
       <b><font size="3">www.project-open.com</font></b> </td>
@@ -88,7 +89,7 @@
         </tr>
         <tr> 
           <td class=roweven>Company</td>
-          <td class=roweven>Project/Open</td>
+          <td class=roweven>]project-open[</td>
         </tr>
         <tr> 
           <td class=roweven>VAT</td>
@@ -139,8 +140,6 @@
 <table border="0" cellspacing="2" cellpadding="2">
 <%=$item_html %>
 </table>
-
-<P>&nbsp;</P>
 
 </body>
 </html>
