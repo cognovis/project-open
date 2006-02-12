@@ -138,7 +138,11 @@
 <br>
 
 <table border="0" cellspacing="2" cellpadding="2">
-<%=$item_html %>
+<%=$item_list_html %>
+</table>
+
+<table border="0" cellspacing="2" cellpadding="2">
+<%=$note_html %>
 </table>
 
 </body>
