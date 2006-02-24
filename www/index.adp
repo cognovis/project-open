@@ -1,25 +1,17 @@
-<master src="../../../intranet-core/www/master">
-<property name="title">@page_title;noquote@</property>
+<master src="../../intranet-core/www/master">
+<property name="title">#intranet-timesheet2.Timesheet#</property>
 <property name="context">#intranet-timesheet2.context#</property>
 <property name="main_navbar_label">finance</property>
 
-<if "" ne @message@>
-<h1>@header@</h1>
-
-<table width="70%">
-<tr><td>
-<div class="form-error">
-@message@
-</div>
-</tr></td>
-</table>
-
-<p>
-</if>
-
-@page_body;noquote@
 
 
+<form method=POST action=new-2>
+@export_form_vars;noquote@
 
+<select name=task_id>
+@results;noquote@
+</select>
 
+<input type=submit value="OK">
 
+</form>

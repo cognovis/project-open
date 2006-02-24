@@ -25,14 +25,35 @@ create table im_timesheet_popups (
 				constraint im_timesheet_popup_user_fk
 				references parties,
 	task_id			integer
+				constraint im_timesheet_popups_task_nn
+				not null
 				constraint im_timesheet_popups_task_fk
 				references im_timesheet_tasks,
 	log_time		timestamptz,
 	log_duration		interval,
 	note			varchar(400)
 );
-create unique index im_timesheet_popups_time_idx 
-on im_timesheet_popups  (log_time);
-create unique index im_timesheet_popups_user_idx 
-on im_timesheet_popups  (user_id);
+create index im_timesheet_popups_time_idx on im_timesheet_popups  (log_time);
+create index im_timesheet_popups_user_idx on im_timesheet_popups  (user_id);
+
+
+
+---------------------------------------------------------
+
+select im_component_plugin__new (
+        null,                                   -- plugin_id
+        'acs_object',                           -- object_type
+        now(),                                  -- creation_date
+        null,                                   -- creation_user
+        null,                                   -- creattion_ip
+        null,                                   -- context_id
+
+        'Timesheet2 Task Popup Component',      -- plugin_name
+        'intranet-timesheet2-task-popup-create', -- package_name
+        'right',                                -- location
+        'header',                               -- page_url
+        null,                                   -- view_name
+        50,                                     -- sort_order
+        'im_timesheet_task_popup_component'
+);
 
