@@ -2,7 +2,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.30 2005/11/08 18:24:07 dirkg Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.31 2006/03/11 14:33:00 daveb Exp $
 }
 
 namespace eval search {}
@@ -100,7 +100,7 @@ ad_proc -private search::indexer {} {
     set driver [ad_parameter -package_id [apm_package_id_from_key search] FtsEngineDriver]
 
     if {[empty_string_p $driver]
-        || ! [acs_sc_binding_exists_p FtsEngineDriver $driver]} {
+        || (![callback::exists -callback search::index -impl $driver] && ! [acs_sc_binding_exists_p FtsEngineDriver $driver]} {
         # Nothing to do if no driver
         ns_log Debug "search::indexer: driver=$driver binding exists? [acs_sc_binding_exists_p FtsEngineDriver $driver]"
         return
