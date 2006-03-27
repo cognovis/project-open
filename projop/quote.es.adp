@@ -14,7 +14,7 @@
     </td>
     <td align="right"> <p><font size="6"><b>Project/Open</b></font><br>
         <font size="4"><b>Gestiona tus proyectos online-<br>
-        cuando se, donde sea</b></font></p>
+        cuando sea, y donde sea</b></font></p>
       <b><font size="3">www.project-open.com</font></b> </td>
   </tr>
 </table>
