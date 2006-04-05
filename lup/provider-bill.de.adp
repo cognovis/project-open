@@ -118,6 +118,7 @@
 <%
     set source_language ""
     set target_language ""
+    set target_languages [list]
     set company_contact_name ""
     set errmsg ""
 
@@ -146,9 +147,10 @@
 	from	im_target_languages l
 	where	l.project_id = :rel_project_id
     " {
-	append target_language "$language"
+	lappend target_languages "$language"
     }]} errmsg
 
+    set target_language [join $target_languages ", "]
 %>
 
 </font>

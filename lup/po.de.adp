@@ -122,6 +122,7 @@
 <%
     set source_language ""
     set target_language ""
+    set target_languages [list]
     set company_contact_name ""
     set errmsg ""
 
@@ -150,8 +151,9 @@
 	from	im_target_languages l
 	where	l.project_id = :rel_project_id
     " {
-	append target_language "$language"
+	lappend target_languages "$language"
     }]} errmsg
+    set target_language [join $target_languages ", "]
 
 %>
 
@@ -171,6 +173,15 @@
         Ausgangssprache: <%=$source_language%><br>
         Zielprache(n): <%=$target_language%><br>
         Leistungszeitraum: <%=$start_date_pretty%> - <%=$end_date_pretty%><br>
+
+	<table cellspacing=0 cellpadding=0 border=0>
+	<tr valign=top>
+	<td>Notiz:</td>
+	<td>&nbsp;</td>
+	<td><pre><span style="font-family: verdana, arial, helvetica, sans-serif"><%=$cost_note %></font></pre></td>
+	</tr>
+	</table>
+
       </font>
       </td>
   </tr>

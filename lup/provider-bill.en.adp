@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>Rechnung</title>
+<title>Invoice</title>
 <link rel='stylesheet' href='/intranet/style/invoice.css' type='text/css'>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 
@@ -41,8 +41,7 @@
   <tr>
     <td width="40%">
       <table border="0" cellspacing="1" cellpadding="1" id="table1">
-        <tr width="50%"><td class=roweven><font face="Verdana" size="2">Leinh&auml;user und Partner 
-			Fachübersetzungen</font></td></tr>
+        <tr width="50%"><td class=roweven><font face="Verdana" size="2">Leinh&auml;user und Partner Translations</font></td></tr>
         <tr><td class=roweven><font face="Verdana" size="2">Inselkammerstr. 8</font></td></tr>
         <tr><td class=roweven><font face="Verdana" size="2">82008 Unterhaching</font></td></tr>
         <tr><td class=roweven><font face="Verdana" size="2">Deutschland</font></td></tr>
@@ -54,7 +53,7 @@
     <td width="60%" valign="top">
       <table border="0" cellspacing="1" cellpadding="1" width="70%">
         <tr width="50%"> 
-          <td class=roweven><p><strong><font size="4" face="Verdana">Rechnung</font></strong></p></td>
+          <td class=roweven><p><strong><font size="4" face="Verdana">Invoice</font></strong></p></td>
         </tr>
       </table>
       <font face="Verdana" size="2">
@@ -64,19 +63,19 @@
         <tr width="50%"> 
           <td class=roweven id=lup_allaround>
 	    <font face="Verdana" size="2">
-	    <strong>UstID</strong><br>
+	    <strong>VAT ID</strong><br>
 	    <strong>DE812266078</strong>
 	  </font>
 	  </td>
           <td class=roweven id=lup_allaround>
 	    <font face="Verdana" size="2">
-	    <strong>Datum</strong><br>
+	    <strong>Date</strong><br>
             <strong><%=$invoice_date_pretty %></strong>
 	  </font>
 	  </td>
           <td class=roweven id=lup_allaround>
 	    <font face="Verdana" size="2">
-	    <strong>Bestellnr.:</strong><br>
+	    <strong>Invoice Nr:</strong><br>
             <strong><%=$invoice_nr_lup %></strong>
 	  </font>
 	  </td>
@@ -94,7 +93,7 @@
   <tr> 
     <td class="roweven" id=lup_allaround>
       <font face="Verdana" size="2">
-      <strong>Rechnung von:</strong>
+      <strong>Invoice for:</strong>
     </font>
     </td>
   </tr>
@@ -118,6 +117,7 @@
 <%
     set source_language ""
     set target_language ""
+    set target_languages [list]
     set company_contact_name ""
     set errmsg ""
 
@@ -146,8 +146,10 @@
 	from	im_target_languages l
 	where	l.project_id = :rel_project_id
     " {
-	append target_language "$language"
+	lappend target_languages "$language"
     }]} errmsg
+
+    set target_language [join $target_languages ", "]
 
 %>
 
@@ -163,10 +165,10 @@
   </tr>
   <tr> 
     <td id=lup_allaround>
-	<font face="Verdana" size="2">Projektbez.: <%=$project_name%><br>
-        Ausgangssprache: <%=$source_language%><br>
-        Zielprache(n): <%=$target_language%><br>
-        Leistungszeitraum: <%=$start_date_pretty%> - <%=$end_date_pretty%><br>
+	<font face="Verdana" size="2">Project: <%=$project_name%><br>
+        Source Language: <%=$source_language%><br>
+        Target Language: <%=$target_language%><br>
+        Project Duration: <%=$start_date_pretty%> - <%=$end_date_pretty%><br>
       </font>
       </td>
   </tr>
