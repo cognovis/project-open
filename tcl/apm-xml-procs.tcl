@@ -205,6 +205,8 @@ ad_proc -public apm_read_package_info_file { path } {
     descriptive error.
 
 } {
+    ns_log Notice "apm_read_package_info_file: path=$path"
+
     global ad_conn
 
     # If the .info file hasn't changed since last read (i.e., has the same
