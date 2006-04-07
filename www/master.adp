@@ -216,7 +216,7 @@ function MM_jumpMenu(targ,selObj,restore){ //v3.0
                 <td valign="top" class="small">
 		  <a href="http://www.project-open.com/" class="right">
 		    Powered by <br>
-		    <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+<span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
 		  </a>
 	 	</td>
               </tr>
@@ -285,10 +285,7 @@ function MM_jumpMenu(targ,selObj,restore){ //v3.0
 				   </tr>
 				  <tr align="right">
 					
-                <td align=left>&copy; 2003 - 2005 with the respective authors
-
-<!-- <img width=1 height=1 src="http://www.projop.com:30016/intranet-crm-tracking/download/spacer.gif?source=projop"> -->
-                </td>
+                <td align=left>&copy; 2003 - 2005 with the respective authors</td>
 				  </tr>
 				</table>
 			</td></tr>
