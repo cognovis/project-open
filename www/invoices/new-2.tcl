@@ -101,9 +101,10 @@ from
 "]
 
 if {$num_clients > 1} {
-        ad_return_complaint "[_ intranet-timesheet2-invoices.lt_You_have_selected_mul]" "
+    ad_return_complaint "[_ intranet-timesheet2-invoices.lt_You_have_selected_mul]" "
         <li>[_ intranet-timesheet2-invoices.lt_You_have_selected_mul_1]<BR>
             [_ intranet-timesheet2-invoices.lt_Please_backup_and_res]"
+    return
 }
 
 
@@ -169,16 +170,16 @@ set disabled_task_status_where "
 set task_table "
 <tr> 
   <td class=rowtitle align=middle>[im_gif help "Include in Invoice"]</td>
-  <td class=rowtitle>[_ intranet-timesheet2-invoices.Task_Name]</td>
-  <td class=rowtitle>[_ intranet-timesheet2-invoices.Material]</td>
-  <td class=rowtitle>[_ intranet-timesheet2-invoices.Planned_Units]</td>
-  <td class=rowtitle>[_ intranet-timesheet2-invoices.Billable_Units]</td>
-  <td class=rowtitle>[_ intranet-timesheet2-invoices.Reported_Units]</td>
+  <td class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Task_Name "Task Name"]</td>
+  <td class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Material "Material"]</td>
+  <td class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Planned_Units "Planned Units"]</td>
+  <td class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Billable_Units "Billable Units"]</td>
+  <td class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Reported_Units "Reported Units"]</td>
   <td class=rowtitle>  
-    [_ intranet-timesheet2-invoices.UoM] [im_gif help "Unit of Measure"]
+    [lang::message::lookup ""  intranet-timesheet2-invoices.UoM "UoM"] [im_gif help "Unit of Measure"]
   </td>
-  <td class=rowtitle>[_ intranet-timesheet2-invoices.Type]</td>
-  <td class=rowtitle>[_ intranet-timesheet2-invoices.Status]</td>
+  <td class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Type Type]</td>
+  <td class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Status Status]</td>
 </tr>
 <tr>
   <td></td>
@@ -203,7 +204,7 @@ db_foreach select_tasks $sql {
 		<tr><td colspan=$colspan>&nbsp;</td></tr>
 		<tr>
 		  <td class=rowtitle colspan=$colspan>
-	            <A href=/intranet/projects/view?group_id=$project_id>
+	            <A href=/intranet/projects/view?project_id=$project_id>
 		      $project_short_name
 		    </A>: 
 		    $project_name
@@ -233,12 +234,12 @@ db_foreach select_tasks $sql {
 if {![string equal "" $task_table_rows]} {
     append task_table $task_table_rows
 } else {
-    append task_table "<tr><td colspan=$colspan align=center>[_ intranet-timesheet2-invoices.No_tasks_found]</td></tr>"
+    append task_table "<tr><td colspan=$colspan align=center>[lang::message::lookup "" intranet-timesheet2-invoices.No_tasks_found "No tasks found"]</td></tr>"
 }
 
 set deselect_button_html "
     <tr><td colspan=7 align=right>
-      <input type=submit name=submit value='[_ intranet-timesheet2-invoices.lt_Select_Tasks_for_Invo]'>
+      <input type=submit name=submit value='[lang::message::lookup "" intranet-timesheet2-invoices.lt_Select_Tasks_for_Invo "Select Tasks for Invoicing"]'>
     </td></tr>
     <tr><td>&nbsp;</td></tr>
 "

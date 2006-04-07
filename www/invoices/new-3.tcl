@@ -68,6 +68,13 @@ set tasks_where_clause "task_id in ([join $in_clause_list ","])"
 # We already know that all tasks are from the same company,
 # and we asume that the company_id is set from new-2.tcl.
 
+if { [catch {
+    db_1row invoices_info_query ""
+} err_msg] } {
+    ad_return_complaint 1 [lang::message::lookup "" intranet-timesheet2-invoices.Company_not_found "We didn't find any information about company\# %company_id%."]
+}
+
+
 # Create the default values for a new invoice.
 #
 # Calculate the next invoice number by calculating the maximum of
@@ -77,7 +84,7 @@ set button_text "[_ intranet-timesheet2-invoices.Create_Invoice]"
 set page_title "[_ intranet-timesheet2-invoices.New_Invoice]"
 set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-timesheet2-invoices.Invoices]"] $page_title]
 set invoice_id [im_new_object_id]
-set invoice_nr [im_next_invoice_nr]
+set invoice_nr [im_next_invoice_nr -invoice_type_id $target_cost_type_id]
 set invoice_date $todays_date
 set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCompanyInvoicePaymentDays" "" 30] 
 set due_date [db_string get_due_date "select to_date(to_char(sysdate,'YYYY-MM-DD'),'YYYY-MM-DD') + $payment_days from dual"]
@@ -93,30 +100,6 @@ set note ""
 set payment_method_id ""
 set template_id ""
 
-
-# ---------------------------------------------------------------
-# Gather company data from company_id
-# ---------------------------------------------------------------
-
-db_1row invoices_info_query "
-select 
-	c.*,
-        o.*,
-	im_email_from_user_id(c.accounting_contact_id) as company_contact_email,
-	im_name_from_user_id(c.accounting_contact_id) as  company_contact_name,
-	c.company_name,
-	c.company_path,
-	c.company_path as company_short_name,
-        cc.country_name
-from
-	im_companies c, 
-        im_offices o,
-        country_codes cc
-where 
-        c.company_id = :company_id
-        and c.main_office_id=o.office_id(+)
-        and o.address_country_code=cc.iso(+)
-"
 
 # ---------------------------------------------------------------
 # 6. Select and render invoicable items 
@@ -430,6 +413,4 @@ foreach task_id $in_clause_list {
     append include_task_html "<input type=hidden name=include_task value=$task_id>\n"
 }
 
-db_release_unused_handles
 
-ad_return_template

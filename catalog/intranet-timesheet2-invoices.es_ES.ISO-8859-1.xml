@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.0.0" locale="es_ES" charset="ISO-8859-1">
+<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.1.0.0.0" locale="es_ES" charset="ISO-8859-1">
 
   <msg key="Accounting_Contact">Persona de contacto en Contabilidad</msg>
   <msg key="Add_New">Añadir nueva</msg>
@@ -61,12 +61,16 @@
   <msg key="lt_You_have_insufficient_1">Carece de privilegios suficientes para utilizar esta página.</msg>
   <msg key="lt_You_have_selected_mul">Ha seleccionado múltiples clientes.</msg>
   <msg key="lt_You_have_selected_mul_1">Ha seleccionado múltiples clientes.</msg>
+  <msg key="Material">Material</msg>
   <msg key="MSM">MSM</msg>
   <msg key="Name">Nombre</msg>
   <msg key="New_cost_type">Nuevo %cost_type%</msg>
+  <msg key="New_Customer_Invoice_from_Timesheet_Tasks">Facturar tareas de parte de trabajo</msg>
   <msg key="New_Invoice">Nueva factura</msg>
   <msg key="New_Price">Nuevo precio</msg>
   <msg key="New_Purchase_Order">Nueva orden de compra</msg>
+  <msg key="New_Quote_from_Timesheet_Tasks">Presupuestar parte de trabajo</msg>
+  <msg key="New_Timesheet_Invoice">Facturar parte de trabajo</msg>
   <msg key="Next_Page">Página siguiente</msg>
   <msg key="No">No</msg>
   <msg key="No_company_found">No se ha encontrado ninguna empresa</msg>
@@ -78,6 +82,7 @@
   <msg key="Payment_Method">Forma de pago</msg>
   <msg key="Payment_terms">Condiciones de pago</msg>
   <msg key="Phone">Teléfono</msg>
+  <msg key="Planned_Units">Unidades planificadas</msg>
   <msg key="Previous_Page">Página anterior</msg>
   <msg key="Price">Precio</msg>
   <msg key="Price_List">Lista de precios</msg>
@@ -93,6 +98,7 @@
   <msg key="Recr_Test">Test de recl.</msg>
   <msg key="Reference_Prices">Precios de referencia</msg>
   <msg key="Rep">Rep</msg>
+  <msg key="Reported_Units">Unidades reportadas</msg>
   <msg key="Save">Guardar</msg>
   <msg key="Sel">Sel</msg>
   <msg key="Source">Partida</msg>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.0.0.0.4" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.1.1.0.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Accounting_Contact">Accounting Contact</msg>
   <msg key="Add_New">Add New</msg>
@@ -64,6 +64,7 @@
   <msg key="lt_You_have_insufficient_1">You have insufficient privileges to use this page</msg>
   <msg key="lt_You_have_selected_mul">You have selected multiple clients</msg>
   <msg key="lt_You_have_selected_mul_1">You have selected multiple clients.</msg>
+  <msg key="Material">Material</msg>
   <msg key="MSM">MSM</msg>
   <msg key="Name">Name</msg>
   <msg key="New_cost_type">New %cost_type%</msg>
@@ -84,6 +85,7 @@
   <msg key="Payment_Method">Payment Method</msg>
   <msg key="Payment_terms">Payment terms</msg>
   <msg key="Phone">Phone</msg>
+  <msg key="Planned_Units">Planned Units</msg>
   <msg key="Previous_Page">Previous Page</msg>
   <msg key="Price">Price</msg>
   <msg key="Price_List">Price List</msg>
@@ -99,6 +101,7 @@
   <msg key="Recr_Test">Recr Test</msg>
   <msg key="Reference_Prices">Reference Prices</msg>
   <msg key="Rep">Rep</msg>
+  <msg key="Reported_Units">Reported Units</msg>
   <msg key="Save">Save</msg>
   <msg key="Sel">Sel</msg>
   <msg key="Source">Source</msg>

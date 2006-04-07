@@ -59,9 +59,9 @@
 	    #intranet-timesheet2-invoices.Payment_Method#
 	  </td>
           <td class=rowodd>
-	    [im_invoice_payment_method_select payment_method_id $payment_method_id]
+	    <%= [im_invoice_payment_method_select payment_method_id $payment_method_id] %>
 	  </td>
-        </tr>\n"
+        </tr>
 </if>
 
         <tr> 

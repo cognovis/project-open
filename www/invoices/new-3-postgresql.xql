@@ -19,6 +19,7 @@
 select 
 	c.*,
         o.*,
+        c.default_invoice_template_id as template_id,
 	im_email_from_user_id(c.accounting_contact_id) as company_contact_email,
 	im_name_from_user_id(c.accounting_contact_id) as  company_contact_name,
 	c.company_name,
