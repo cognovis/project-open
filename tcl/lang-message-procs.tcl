@@ -12,7 +12,7 @@ ad_library {
     @author Bruno Mattarollo (bruno.mattarollo@ams.greenpeace.org)
     @author Peter Marklund (peter@collaboraid.biz)
     @author Lars Pind (lars@collaboraid.biz)
-    @cvs-id $Id: lang-message-procs.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: lang-message-procs.tcl,v 1.2 2006/04/07 22:47:06 cvs Exp $
 }
 
 namespace eval lang::message {}
@@ -651,7 +651,7 @@ ad_proc -public lang::message::message_exists_p { locale key } {
 ad_proc -public lang::message::lookup {
     locale
     key
-    {default "TRANSLATION MISSING"}
+    {default ""}
     {substitution_list {}}
     {upvar_level 1}
     {translator_mode_p 1}
@@ -765,7 +765,13 @@ ad_proc -public lang::message::lookup {
                         set message [nsv_get lang_message_$locale $key]
                     } else {
                         ns_log Error "lang::message::lookup: Key '$key' does not exist in en_US"
-                        set message "MESSAGE KEY MISSING: '$key'"
+
+			if {![empty_string_p $default]} {
+			    set message $default
+			} else {
+			    set message "MESSAGE KEY MISSING: '$key'"
+			}
+
                     }
                 }
             }

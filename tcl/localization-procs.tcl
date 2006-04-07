@@ -10,7 +10,7 @@ ad_library {
     @creation-date 30 September 2000
     @author Jeff Davis (davis@xarg.net) 
     @author Ashok Argent-Katwala (akatwala@arsdigita.com)
-    @cvs-id $Id: localization-procs.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: localization-procs.tcl,v 1.2 2006/04/07 22:47:06 cvs Exp $
 }
 
 
@@ -183,6 +183,8 @@ ad_proc -public lc_numeric {
     } else { 
         set out $num
     }
+
+    ns_log Notice "lc_numeric(num=$num, fmt=$fmt, loc=$locale): out=$out"
 
     set sep [lc_get -locale $locale "thousands_sep"]
     set dec [lc_get -locale $locale "decimal_point"]
