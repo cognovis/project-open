@@ -30,7 +30,7 @@ ad_proc -public im_employee_status_past {} { return 455 }
 # ----------------------------------------------------------------------
 
 ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
-    Show some simple information about a employeer
+    Show some simple information about a employee
 } {
     if {"" == $view_name} { set view_name "employees_view" }
     ns_log Notice "im_employee_info_component: employee_id=$employee_id, view_name=$view_name"
@@ -62,7 +62,10 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
     if {![im_permission $current_user_id view_hr]} { return "" }
 
     # Finally: Show this component only for employees
-    if {![im_user_is_employee_p $employee_id]} { return "" }
+    if {![im_user_is_employee_p $employee_id]} { 
+	ns_log Notice "im_employee_info_component: user is not an employee..."
+	return "" 
+    }
 
     # --------------- Select all values --------------------------
 

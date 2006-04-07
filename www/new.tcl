@@ -194,15 +194,15 @@ ad_form \
 	{social_security:text(text),optional {label $social_security_label} {html {size 10}} }
 	{insurance:text(text),optional {label $insurance_label} {html {size 10}} }
 	{other_costs:text(text),optional {label $other_cost_label} {html {size 10}} }
-	{currency:text(select),optional {label $currency_label} {options $currency_options} }
+	{currency:text(select) {label $currency_label} {options $currency_options} }
 	{salary_payments_per_year:text(text),optional {label $salary_payments_per_year_label} {html {size 10}} }
 
 	{birthdate:text(text),optional {label $birthdate_label} {html {size 10}} }
 	{job_title:text(text),optional {label $job_title_label} {html {size 30}} }
 	{job_description:text(textarea),nospell,optional {label $job_description_label} {html {rows 5 cols 40}}}
 
-	{start_date:text(text),optional {label $start_date_label} {html {size 10}} }
-	{end_date:text(text),optional {label $end_date_label} {html {size 10}} }
+	{start_date:text(text) {label $start_date_label} {html {size 10}} }
+	{end_date:text(text) {label $end_date_label} {html {size 10}} }
 
 	{voluntary_termination_p:text(radio),optional {label $voluntary_termination_p_label} {options $voluntary_termination_options} }
 	{termination_reason:text(textarea),nospell,optional {label $termination_reason_label} {html {rows 5 cols 40}}}
@@ -239,7 +239,8 @@ ad_form -extend -name cost -on_request {
                         THEN to_date(:end_century,:date_format)
                         ELSE to_date(to_char(rc.end_date,:date_format),:date_format)
                 END as end_date,
-		ci.*
+		ci.*,
+		to_char(e.birthdate,:date_format) as birthdate
 	from	parties p,
 		im_employees e,
 		im_repeating_costs rc,
@@ -249,6 +250,26 @@ ad_form -extend -name cost -on_request {
 		and p.party_id = e.employee_id
 		and p.party_id = ci.cause_object_id
 		and ci.cost_id = rc.rep_cost_id
+
+
+
+} -validate {
+
+    {birthdate
+	{ "" == $birthdate || [regexp {^....\-..\-..$} $birthdate] }
+	"Bad date. Please use 'YYYY-MM-DD' to format the date."
+    }
+
+    {end_date
+	{ "" == $end_date || [regexp {^....\-..\-..$} $end_date] }
+	"Bad date. Please use 'YYYY-MM-DD' to format the date."
+    }
+
+    {start_date
+	{ "" == $start_date || [regexp {^....\-..\-..$} $start_date] }
+	"Bad date. Please use 'YYYY-MM-DD' to format the date."
+    }
+
 } -after_submit {
 
     set cost_name $employee_name
