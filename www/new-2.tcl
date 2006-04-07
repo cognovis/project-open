@@ -35,6 +35,13 @@ set date_format "YYYY-MM-DD"
 set page_title "Quality"
 set context_bar [im_context_bar $page_title]
 
+
+if {![im_permission $user_id add_trans_quality]} {
+    ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_insufficient_6]"
+    return
+}
+
+
 # ---------------------------------------------------------------
 # Save the main quality report
 # ---------------------------------------------------------------

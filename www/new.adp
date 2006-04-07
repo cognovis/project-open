@@ -65,11 +65,15 @@
 
 	@errors_html;noquote@
 
-<if @form_mode@ eq "display">
-    <input type=submit name=submit value="Edit Report">
-</if> <else>
-    <input type=submit name=submit value="Submit Report">
-</else>
+<if @add_trans_quality_p@>
+
+    <if @form_mode@ eq "display">
+        <input type=submit name=submit value="Edit Report">
+    </if> <else>
+        <input type=submit name=submit value="Submit Report">
+    </else>
+
+</if>
 
     </form>
 

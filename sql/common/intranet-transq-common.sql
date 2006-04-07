@@ -55,7 +55,7 @@ delete from im_view_columns where column_id > 25000 and column_id < 25099;
 --
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (25001,250,'Task Name',
-'"<a href=/intranet-trans-quality/new?task_id=$task_id>$task_name</a>"',1);
+'$task_name',1);
 
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (25003,250,'Source','$source_language',3);
@@ -85,7 +85,7 @@ delete from im_view_columns where column_id > 25100 and column_id < 25199;
 --
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (25101,251,'Task Name',
-'"<a href=/intranet-trans-quality/new?task_id=$task_id>$task_name</a>"',1);
+'$task_name',1);
 
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (25103,251,'Source','$source_language',3);

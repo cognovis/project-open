@@ -122,5 +122,36 @@ select im_component_plugin__new (
 );
 
 
+
+
+-- -----------------------------------------------------
+-- Add privileges for trans_quality
+--
+select acs_privilege__create_privilege('add_trans_quality','Add Trans Quality','Add Trans Quality');
+select acs_privilege__add_child('admin', 'add_trans_quality');
+select acs_privilege__create_privilege('view_trans_quality','View Trans Quality','View Trans Quality');
+select acs_privilege__add_child('admin', 'view_trans_quality');
+
+
+-- Set preliminary privileges to setup the
+-- permission matrix
+
+select im_priv_create('view_trans_quality','Accounting');
+select im_priv_create('view_trans_quality','P/O Admins');
+select im_priv_create('view_trans_quality','Senior Managers');
+select im_priv_create('view_trans_quality','Project Managers');
+select im_priv_create('view_trans_quality','Accounting');
+select im_priv_create('view_trans_quality','Employees');
+
+
+
+select im_priv_create('add_trans_quality','P/O Admins');
+select im_priv_create('add_trans_quality','Senior Managers');
+select im_priv_create('add_trans_quality','Project Managers');
+select im_priv_create('add_trans_quality','Accounting');
+
+
+
+
 -- Views and categories common for Oracle and PostgreSQL
 \i ../common/intranet-transq-common.sql

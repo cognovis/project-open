@@ -29,6 +29,15 @@ set current_url [im_url_with_query]
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 
+if {![im_permission $user_id view_trans_quality]} {
+    ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_insufficient_6]"
+    return
+}
+
+# Get write permission
+set add_trans_quality_p [im_permission $user_id add_trans_quality]
+
+
 if {0 == $task_id && 0 == $report_id && 0 != $project_id} {
     # A project has been specified, but no task
     # => redirect to a page to select a translation task

@@ -100,9 +100,9 @@ ad_proc im_quality_project_component {
     Returns a formatted HTML component that shows a relative q-diagram
     and link a the quality controler page
 } {
-    if {![im_project_has_type $project_id "Translation Project"]} {
-        return ""
-    }
+    set user_id [ad_get_user_id]
+    if {![im_project_has_type $project_id "Translation Project"]} { return "" }
+    if {![im_permission $user_id view_trans_quality]} { return "" }
 
     db_0or1row sql_n_tasks "
 	select	count(qr.task_id) as n_reports
@@ -120,9 +120,11 @@ ad_proc im_quality_project_component {
 	append result "<li><a href=/intranet-trans-quality/list?[export_url_vars project_id]>See all reports for this project</a>\n"
 
     }
-    
 
-    append result "<li><a href=/intranet-trans-quality/new?[export_url_vars project_id]>Add a Quality Report for this Project</a>\n"
+    if {[im_permission $user_id add_trans_quality]} {
+	append result "<li><a href=/intranet-trans-quality/new?[export_url_vars project_id]>Add a Quality Report for this Project</a>\n"
+    }
+
     append result "</ul>\n"
     return $result
 }
@@ -282,6 +284,9 @@ ad_proc im_quality_histogram {
     "relative quality graph" for a given user, project
     or company
 } {
+    set user_id [ad_get_user_id]
+    if {![im_permission $user_id view_trans_quality]} { return "" }
+
     set where_condition ""
     set quality_list_page_url "/intranet-trans-quality/list"
     set url_append ""
@@ -450,6 +455,8 @@ ad_proc -public im_quality_list_component {
 } {
     # User id already verified by filters
     set user_id [ad_get_user_id]
+    if {![im_permission $user_id view_trans_quality]} { return "" }
+
     set local_url "list"
 
     if {"" == $return_url } { set return_url [im_url_with_query] }

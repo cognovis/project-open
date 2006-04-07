@@ -25,6 +25,11 @@ set context_bar [im_context_bar $page_title]
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 
+if {![im_permission $user_id add_trans_quality]} {
+    ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_insufficient_6]"
+    return
+}
+
 # ---------------------------------------------------------------
 # Show the list of tasks for this project
 # ---------------------------------------------------------------
