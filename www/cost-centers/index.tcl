@@ -31,7 +31,7 @@ set context ""
 
 set cost_center_url "/intranet-cost/cost-centers/new"
 set toggle_url "/intranet/admin/toggle"
-set group_url "/admin/groups/one?group_id="
+set group_url "/admin/groups/one"
 
 set bgcolor(0) " class=rowodd"
 set bgcolor(1) " class=roweven"

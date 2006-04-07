@@ -28,18 +28,18 @@ set user_id [ad_maybe_redirect_for_registration]
 set page_title "[_ intranet-cost.Edit_Cost]"
 set context [im_context_bar $page_title]
 
-#if {![im_permission $user_id view_costs]} {
-#    ad_return_complaint 1 "You have insufficient privileges to use this page"
-#    return
-#}
+if {![im_permission $user_id add_costs]} {
+    ad_return_complaint 1 "You have insufficient privileges to use this page"
+    return
+}
 
 set action_url "/intranet-cost/costs/new"
 set focus "cost.var_name"
 
 set admin_html "
 <ul>
-  <li><A href=''>[_ intranet-cost.lt_Distribute_costs_acco]</a>
-  <li><A href=''>!!!</a>
+<!--  <li><A href=''>[_ intranet-cost.lt_Distribute_costs_acco]</a> -->
+<!--  <li><A href=''>!!!</a> -->
 </ul>
 "
 
