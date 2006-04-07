@@ -49,14 +49,37 @@ ns_log Notice "add-perms-2: dir_id=[array get dir_id]"
 # User id already verified by filters
 set user_id [ad_maybe_redirect_for_registration]
 
-foreach id [array names dir_id] {
-    set path $id_path($id)
-    ns_log Notice "add-perms-2: object_id=$object_id, path=$path"
+# Get the list of all relevant roles and profiles for permissions
+set roles [im_filestorage_roles $user_id $object_id]
+set profiles [im_filestorage_profiles $user_id $object_id]
 
+# Get the group membership of the current (viewing) user
+set user_memberships [im_filestorage_user_memberships $user_id $object_id]
+
+# Get the list of all (known) permission of all folders of the FS
+# of the current object
+set perm_hash_array [im_filestorage_get_perm_hash $user_id $object_id $user_memberships]
+array set perm_hash $perm_hash_array
+
+
+
+
+foreach id [array names dir_id] {
+    set rel_path $id_path($id)
+    ns_log Notice "add-perms-2: object_id=$object_id, rel_path=$rel_path"
+
+    
+    # Check permissions and skip
+    set user_perms [im_filestorage_folder_permissions $user_id $object_id $rel_path $user_memberships $roles $profiles $perm_hash_array]
+    set admin_p [lindex $user_perms 3]
+    if {!$admin_p} {
+	ad_return_complaint 1 "You don't have permissions to administer $rel_path"
+	return
+    }
 
     # -----------------------------------------------
     # Make sure the folder exists...
-    set folder_id [db_string folder_exists "select folder_id from im_fs_folders where object_id = :object_id and path = :path" -default 0]
+    set folder_id [db_string folder_exists "select folder_id from im_fs_folders where object_id = :object_id and path = :rel_path" -default 0]
     ns_log Notice "add-perms-2: folder_id=$folder_id"
 
     # Create the folder if it doesn't exist yet
@@ -76,7 +99,7 @@ foreach id [array names dir_id] {
 	db_dml insert_folder_sql "
 insert into im_fs_folders
 (folder_id, object_id, path) 
-values (:folder_id, :object_id, :path)
+values (:folder_id, :object_id, :rel_path)
 "
     }
 

@@ -22,7 +22,7 @@ set context_bar [im_context_bar [list "/intranet/projects/" "Projects"]  [list "
 #
 set exception_text ""
 set exception_count 0
-if {!$user_is_admin_p && ![ad_user_group_member $project_id $user_id] } {
+if {!$user_is_admin_p && ![im_biz_object_member_p $user_id $project_id] } {
     append exception_text "<li>You are not a member of this project.\n"
     incr exception_count
 }

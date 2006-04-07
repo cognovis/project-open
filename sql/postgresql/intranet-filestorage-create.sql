@@ -127,6 +127,57 @@ create table im_fs_actions (
 
 
 ---------------------------------------------------------
+-- Normalize Company Pathes
+--
+
+
+create or replace function im_company_normalize_path (varchar) 
+returns varchar as '
+DECLARE
+        v_path		alias for $1;
+	path		varchar;
+	i		integer;
+	pos		integer;
+	char		varchar;
+	latin_char	varchar;
+	pathlen		integer;
+	spacing		integer;
+	asc		integer;
+BEGIN
+	path = '''';
+	pathlen = char_length(v_path);
+	spacing = 0;
+	FOR i IN 1 .. pathlen LOOP
+	    char = substring(v_path, i, 1);
+--	    char = convert(char, ''UNICODE'', ''LATIN1'');
+	    asc = ascii(char);
+	    pos = position(char in ''abcdefghijklmnopqrstuvwxyz'' || 
+			''ABCDEFGHIJKLMNOPQRSTUVWXYZ'' || 
+			''0123456789_'');
+--	    IF char = ''ö'' THEN  pos=1; char = ''oe'' END IF;
+	    IF asc > 127 THEN
+	        RAISE NOTICE ''path=%, i=%, char=%, pos=%, asc=%'', 
+			v_path, i, char, pos, asc;
+	    END IF;
+	    IF pos < 1 THEN
+		-- Add new char only if it is not another underscore
+		IF 0 = spacing THEN
+		    path = path || ''_'';
+		    spacing = 1;
+		END IF;
+	    ELSE
+		path = path || char;
+		spacing = 0;
+	    END IF;
+	END LOOP;
+	path = lower(path);
+	path = trim(both ''_'' from path);
+        return path;
+end;' language 'plpgsql';
+select im_company_normalize_path ('Profilex +newtec GmbH/');
+
+
+---------------------------------------------------------
 -- Register the component in the core TCL pages
 --
 -- These DB-entries allow the pages of Project/Open Core
@@ -235,4 +286,57 @@ SELECT im_component_plugin__new (
 
 
 
+
+
+-- -----------------------------------------------------
+-- Add privileges to handle the default privileges on
+-- empty filestorages
+
+select acs_privilege__create_privilege('fs_root_view','Default view privilege for FS root?','');
+select acs_privilege__add_child('admin', 'fs_root_view');
+
+select acs_privilege__create_privilege('fs_root_read','Default read privilege for FS root?','');
+select acs_privilege__add_child('admin', 'fs_root_read');
+
+select acs_privilege__create_privilege('fs_root_write','Default write privilege for FS root?','');
+select acs_privilege__add_child('admin', 'fs_root_write');
+
+select acs_privilege__create_privilege('fs_root_admin','Default admin privilege for FS root?','');
+select acs_privilege__add_child('admin', 'fs_root_admin');
+
+
+-- View Privileges
+--
+select im_priv_create('fs_root_view',        'Employees');
+select im_priv_create('fs_root_view',        'Accounting');
+select im_priv_create('fs_root_view',        'P/O Admins');
+select im_priv_create('fs_root_view',        'Project Managers');
+select im_priv_create('fs_root_view',        'Senior Managers');
+
+
+-- Read Privileges
+--
+select im_priv_create('fs_root_read',        'Employees');
+select im_priv_create('fs_root_read',        'Accounting');
+select im_priv_create('fs_root_read',        'P/O Admins');
+select im_priv_create('fs_root_read',        'Project Managers');
+select im_priv_create('fs_root_read',        'Senior Managers');
+
+
+-- Write Privileges
+--
+select im_priv_create('fs_root_write',        'Employees');
+select im_priv_create('fs_root_write',        'Accounting');
+select im_priv_create('fs_root_write',        'P/O Admins');
+select im_priv_create('fs_root_write',        'Project Managers');
+select im_priv_create('fs_root_write',        'Senior Managers');
+
+
+-- Admin Privileges
+--
+select im_priv_create('fs_root_admin',        'Employees');
+select im_priv_create('fs_root_admin',        'Accounting');
+select im_priv_create('fs_root_admin',        'P/O Admins');
+select im_priv_create('fs_root_admin',        'Project Managers');
+select im_priv_create('fs_root_admin',        'Senior Managers');
 
