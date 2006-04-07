@@ -37,7 +37,8 @@ set read_p [db_string report_perms "
 " -default 'f']
 
 if {![string equal "t" $read_p]} {
-    ad_return_complaint 1 "<li>[_ intranet-core.lt_You_need_to_be_a_syst]">
+    ad_return_complaint 1 "
+    [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
     return
 }
 
@@ -236,7 +237,7 @@ set report_def [list \
 		$project_nr 
 		$user_name
 		""
-		"<b>$hours_user_subtotal</b>"
+		"<i>$hours_user_subtotal</i>"
 		""
 		""
 	    } \
@@ -301,7 +302,7 @@ set levels {1 "Customer Only" 2 "Customer+Project" 3 "Customer+Project+User" 4 "
 #
 
 ad_return_top_of_page "
-[im_header]
+[im_header $page_title]
 [im_navbar]
 <form>
 <table border=0 cellspacing=1 cellpadding=1>

@@ -68,6 +68,7 @@ ad_proc im_report_render_row {
     -row
     -row_class
     -cell_class
+    {-upvar_level 0}
 } {
     Renders one line of a report via ns_write directly
     into a report HTTP session
@@ -77,7 +78,7 @@ ad_proc im_report_render_row {
 	set value ""
 	if {"" != $field} {
 	    set cmd "set value \"$field\""
-	    eval "$cmd"
+	    set value [uplevel $upvar_level $cmd]
 	}
 	im_report_render_cell -cell $value -cell_class $cell_class
     }
@@ -135,7 +136,7 @@ ad_proc im_report_render_header {
 	# -------------------------------------------------------
 	# Write out the header if last_value != new_value
 
-	if { ($content == "" || $new_value != $last_value) && ($group_level <= $level_of_detail)} {
+	if { ($content == "" || $new_value != $last_value) && ($group_level <= $level_of_detail) && [llength $header] > 0} {
 	    ns_write "<tr>\n"
 	    foreach field $header {
 		set value ""
@@ -444,3 +445,14 @@ ad_proc im_report_update_counters {
     }
 }
 
+ad_proc im_report_skip_if_zero {
+    amount
+    string
+} {
+    Returns an empty string if "amount" is zero.
+    This is used to suppress "0 EUR" sums if the sum
+    was zero...
+} {
+    if {0 == $amount} { return "" }
+    return $string
+}
