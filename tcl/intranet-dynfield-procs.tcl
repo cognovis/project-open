@@ -17,7 +17,7 @@ ad_proc -public im_dynfield_storage_type_id_multimap { } { return 10005 }
 
 namespace eval im_dynfield::util {}
 
-############
+
 # Add render_label element to get element labels in dynamic forms (works with flextag-init)
 namespace eval template::element {}
 
@@ -34,8 +34,6 @@ ad_proc -private template::element::render_label { form_id element_id tag_attrib
 }
 
 
-
-######
 namespace eval im_dynfield::attribute {}
 
 ad_proc -public im_dynfield::attribute::get {
@@ -1242,7 +1240,9 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
     "
 
     # Skip empty where clause
-    if {"" == $where_clause} { set sql "" }
+    if {"" == $where_clause} {
+	set sql "" 
+    }
 
     set extra(where) $sql
     set extra(bind_vars) [util_ns_set_to_list -set $bind_vars]
@@ -1809,15 +1809,14 @@ ad_proc -public im_dynfield::search_query {
 	# maybe it's not present in this page
 	#-------------------------------------------
 	set multiple_p 0
-	ns_log notice "***************** $attribute_name ***********************"
 	if {[template::element::exists $form_id $attribute_name]} { 
 
-		#################################################
 		set widget_element [template::element::get_property $form_id $attribute_name widget]
 		set $attribute_name [template::element::get_value $form_id $attribute_name]
 		ns_log notice "widget element -----> $widget_element"
 		switch $widget_element {
-			"checkbox" - "multiselect" - "category_tree" {
+			"checkbox" - "multiselect" - "category_tree"  - "im_category_tree" {
+
 				ns_log notice "$widget_element -----> values [set $attribute_name]"
 				set multiple_p [template::element::get_property $form_id $attribute_name multiple_p]
 				if {[empty_string_p $multiple_p]} {
@@ -2079,7 +2078,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	    set html_parameters [lindex $parameter_list [expr $html_pos + 1]]
 	}
 
-        switch $storage_type {
+        switch $widget {
 	    checkbox - radio - select - multiselect - im_category_tree - category_tree {
 
 		set option_list ""

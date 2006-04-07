@@ -110,7 +110,7 @@ create table im_dynfield_attributes (
 
 
 -- ------------------------------------------------------------------
--- im_dynfield_attr_multi_value
+-- dynfield_attr_multi_value
 -- ------------------------------------------------------------------
 
 create table im_dynfield_attr_multi_value (

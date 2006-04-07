@@ -24,7 +24,7 @@ if {!$user_is_admin_p} {
 acs_object_type::get -object_type $object_type -array "object_info"
 
 set title "Add Extension Table to $object_info(pretty_name)"
-set context [list [list objects Objects] [list "object-type?object_type=$object_type" $object_info(pretty_name)] $title]
+set context [list [list "/intranet-dynfield/" DynField] [list "/intranet-dynfield/object-types" "Object Types"] [list "object-type?object_type=$object_type" $object_info(pretty_name)] $title]
 
 
 # ******************************************************

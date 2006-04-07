@@ -24,7 +24,7 @@ if {!$user_is_admin_p} {
 }
 
 set title "Add/Modify Widget"
-set context [list [list widgets Widgets] $title]
+set context [list [list "/intranet-dynfield/" DynField] [list widgets Widgets] $title]
 
 set action_url "widget-new"
 set focus "menu.var_name"
