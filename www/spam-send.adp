@@ -1,6 +1,6 @@
 <master src=../../intranet-core/www/master>
 <property name="context">@context;noquote@</property>
-<property name="title">#intranet-spam.Spam_Queued#</property>
+<property name="title">#intranet-core.Spam_Queued#</property>
 <property name="main_navbar_label">admin</property>
 
 <h1>Success!</h1>

@@ -2,21 +2,21 @@
 
 <table>
  <tr>
-  <td valign="top" align="left">#intranet-spam.Subject#</th>
+  <td valign="top" align="left">#intranet-core.Subject#</th>
   <td><input type="text" name="subject" size="50" 
 	value="<if @title@ defined>@title@</if>">
  </tr>
  <tr>
-  <td valign="top" align="left">#intranet-spam.Date_Time_For_Message#</th>
+  <td valign="top" align="left">#intranet-core.Date_Time_For_Message#</th>
   <td>@date_widget;noquote@ &nbsp; @time_widget;noquote@</td>
  </tr>
  <tr>
-  <td valign="top" align="left">#intranet-spam.Plain_Text_Message_Body#</th>
+  <td valign="top" align="left">#intranet-core.Plain_Text_Message_Body#</th>
   <td><textarea name="body_plain" rows="10" cols="40"><if @plain_text@ defined>@plain_text@</if></textarea>
   </td>
  </tr>
  <tr>
-  <td valign="top" align="left">#intranet-spam.Html_Message_Body#</th>
+  <td valign="top" align="left">#intranet-core.Html_Message_Body#</th>
   <td><textarea name="body_html" rows="10" cols="40"><if @html_text@ defined>@html_text@</if></textarea>
   </td>
  </tr>

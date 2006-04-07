@@ -31,7 +31,7 @@ ad_page_contract {
     subject:allhtml,trim
     {body_plain:allhtml,trim ""}
     {body_html:allhtml,trim ""}
-    {attachment "//attachment/attach/"}
+    {upload_file ""}
     send_date_ansi:notnull
     send_time_12hr:notnull
     spam_id:naturalnum

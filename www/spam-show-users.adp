@@ -1,6 +1,6 @@
 <master src=../../intranet-core/www/master>
 <property name="context">@context;noquote@</property>
-<property name="title">#intranet-spam.Spam_Show_Users#</property>
+<property name="title">#intranet-core.Spam_Show_Users#</property>
 <property name="main_navbar_label">admin</property>
 
 <h1>Spamming Users</h1>

@@ -1,15 +1,10 @@
 <master src=../../intranet-core/www/master>
 <property name="context">@context;noquote@</property>
-<property name="title">#intranet-spam.Spam#</property>
+<property name="title">#intranet-core.Spam#</property>
 <property name="main_navbar_label">admin</property>
 
 <h1>Sending Spam to Users</h1>
 
-<p>
-#intranet-spam.Send_Email_To#
-<a href="@spam_show_users_url;noquote@">@num_recipients@ #intranet-spam.Member_s#</a> 
-#intranet-spam.Of# <A href="@object_rel_url@">@object_name@</a>.
-</p>
 The following variables are available withing you message:<br>
 <tt>@query_field_html@</tt>.
 
