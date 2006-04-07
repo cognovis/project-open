@@ -5,23 +5,41 @@
 <br>
 <form method=GET action=search>
 
+<center>
 <table>
 <tr>
   <td>
-    <%= [im_logo] %>
+<!--    <%= [im_logo] %>  -->
   </td>
   <td>
     <input type=text name=q size=31 maxlength=256 value="@query@">
     <input type=submit value="#intranet-search-pg.Search#" name=t>
   </td>
-  <td align=center>
-        <table cellspacing=0 cellpadding=0>
-        <tr><td colspan=2>Search for specific object types:</td></tr>
-        @objects_html;noquote@
-        </table>
+  <td>
+
+	<table>
+	<tr><td colspan=2>Search for specific object types:</td></tr>
+	<tr valign=top>
+	  <td align=center>
+		<table cellspacing=0 cellpadding=0>
+		@objects_html;noquote@
+		</table>
+	  </td>
+	  <td>
+		<table cellspacing=0 cellpadding=0>
+		<tr>
+		  <td><input type=checkbox name='include_deleted_p' value="1"></td>
+		  <td>Include Deleted</td>
+		</tr>
+		</table>
+	  </td>
+	</tr>
+	</table>
+
   </td>
 </tr>
 </table>
+</center>
 
 </form>
 

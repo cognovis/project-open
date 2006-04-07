@@ -6,24 +6,33 @@
 -- http://www.project-open.com/license/ for details.
 --
 -- @author pepels@gmail.com
-
------------------------------------------------------------
---
-
+-- @author frank.bergmann@project-open.com
+-- @author toni.vila@project-open.com
 
 select im_menu__del_module('intranet-search-pg');
 select im_component_plugin__del_module('intranet-search-pg');
 
+drop trigger im_forum_topics_tsearch_tr on im_forum_topics;
+drop trigger im_projects_tsearch_tr on im_projects;
+drop trigger im_companies_tsearch_tr on im_companies;
+drop trigger persons_tsearch_tr on persons;
+drop trigger users_tsearch_tr on users;
 
-select acs_sc_impl__delete(
-           'FtsContentProvider',                -- impl_contract_name
-           'im_project'
-      );
 
-drop trigger projects__utrg on im_projects;
-drop trigger projects__dtrg on im_projects;
-drop trigger projects__itrg on im_projects;
+drop function im_forum_topics_tsearch ();
+drop function users_tsearch ();
+drop function im_projects_tsearch ();
+drop function im_companies_tsearch ();
+drop function im_search_update (integer, varchar, integer, varchar);
 
-drop function projects__utrg();
-drop function projects__dtrg();
-drop function projects__itrg();
+drop table im_search_objects;
+drop table im_search_object_types;
+
+delete from im_biz_object_urls
+where object_type = 'im_forum_topic';
+
+-- Now use a modified drop script to get tsearch2
+-- out of the database again.
+
+\i untsearch2.sql
+

@@ -13,7 +13,7 @@
 -- In these cases please source the file manually and
 -- remove the line from this file for a local install.
 
-\i /usr/share/postgresql/contrib/tsearch2.sql
+-- \i tsearch2.sql
 
 
 -- "Abbreviation" of object_type for search purposes -
@@ -29,6 +29,15 @@ create table im_search_object_types (
 			references acs_object_types
 			on delete cascade
 );
+
+
+-- 0 | im_project
+-- 1 | user
+-- 2 | im_forum_topic
+-- 3 | im_company
+-- 4 | im_invoice
+
+
 
 
 -- The main search table with Full Text Index.
@@ -78,6 +87,225 @@ create index im_search_objects_fti_idx on im_search_objects using gist(fti);
 create index im_search_objects_object_id_idx on im_search_objects (object_id);
 
 
+-- Normalize text by replacing UTF-8 encoded accents and other
+-- "strange" characters by standard ASCII characters.
+--
+create or replace function norm_text_utf8 (varchar)
+returns varchar as '
+declare
+	p_str		alias for $1;
+	p_str1		varchar;
+	v_str		varchar;
+	v_len		integer;
+	v_asc		integer;
+	v_char		varchar;
+	v_i		integer;
+	v_array		integer;
+	v_found		integer;
+	r		integer[77][3];
+begin
+
+--		{197,145,111},	-- ?
+--		{197,177,117},	-- ?
+--		{197,179,117},	-- ?
+--		{196,159,103},	-- LATIN SMALL LETTER G WITH BREVE
+--		{196,155,101},	-- LATIN SMALL LETTER E WITH CARON
+--		{195,135,99},	-- LATIN CAPITAL LETTER C WITH CEDILLA
+--		{195,188,117},	-- LATIN SMALL LETTER U WITH DIAERESIS
+--		{195,169,101},	-- LATIN SMALL LETTER E WITH ACUTE
+--		{195,162,97},	-- LATIN SMALL LETTER A WITH CIRCUMFLEX
+--		{195,164,97},	-- LATIN SMALL LETTER A WITH DIAERESIS
+--		{195,160,97},	-- LATIN SMALL LETTER A WITH GRAVE
+--		{195,165,97},	-- LATIN SMALL LETTER A WITH RING ABOVE
+--		{195,167,99},	-- LATIN SMALL LETTER C WITH CEDILLA
+--		{195,170,101},	-- LATIN SMALL LETTER E WITH CIRCUMFLEX
+--		{195,171,101},	-- LATIN SMALL LETTER E WITH DIAERESIS
+--		{195,168,101},	-- LATIN SMALL LETTER E WITH GRAVE
+--		{195,175,105},	-- LATIN SMALL LETTER I WITH DIAERESIS
+--		{195,174,105},	-- LATIN SMALL LETTER I WITH CIRCUMFLEX
+--		{195,172,105},	-- LATIN SMALL LETTER I WITH GRAVE
+--		{195,132,97},	-- LATIN CAPITAL LETTER A WITH DIAERESIS
+--		{195,133,97},	-- LATIN CAPITAL LETTER A WITH RING ABOVE
+--		{195,137,101},	-- LATIN CAPITAL LETTER E WITH ACUTE
+--		{195,180,111},	-- LATIN SMALL LETTER O WITH CIRCUMFLEX
+--		{195,182,111},	-- LATIN SMALL LETTER O WITH DIAERESIS
+--		{195,178,111},	-- LATIN SMALL LETTER O WITH GRAVE
+--		{195,187,117},	-- LATIN SMALL LETTER U WITH CIRCUMFLEX
+--		{195,185,117},	-- LATIN SMALL LETTER U WITH GRAVE
+--		{195,191,121},	-- LATIN SMALL LETTER Y WITH DIAERESIS
+--		{195,150,111},	-- LATIN CAPITAL LETTER O WITH DIAERESIS
+--		{195,156,117},	-- LATIN CAPITAL LETTER U WITH DIAERESIS
+--		{197,165,116},	-- LATIN SMALL LETTER T WITH CARON
+--		{197,159,115},	-- LATIN SMALL LETTER S WITH CEDILLA
+--		{197,175,117},	-- LATIN SMALL LETTER U WITH RING ABOVE
+--		{197,174,117},	-- LATIN CAPITAL LETTER U WITH RING ABOVE
+--		{195,161,97},	-- LATIN SMALL LETTER A WITH ACUTE
+--		{195,173,105},	-- LATIN SMALL LETTER I WITH ACUTE
+--		{195,179,111},	-- LATIN SMALL LETTER O WITH ACUTE
+--		{195,186,117},	-- LATIN SMALL LETTER U WITH ACUTE
+--		{195,177,110},	-- LATIN SMALL LETTER N WITH TILDE
+--		{195,145,110},	-- LATIN CAPITAL LETTER N WITH TILDE
+--		{196,140,99},	-- LATIN CAPITAL LETTER C WITH CARON
+--		{196,141,99},	-- LATIN SMALL LETTER C WITH CARON
+--		{197,153,114},	-- LATIN SMALL LETTER R WITH CARON
+--		{197,152,114},	-- LATIN CAPITAL LETTER R WITH CARON
+--		{197,160,115},	-- LATIN CAPITAL LETTER S WITH CARON
+--		{197,161,115},	-- LATIN SMALL LETTER S WITH CARON
+--		{195,189,121},	-- LATIN SMALL LETTER Y WITH ACUTE
+--		{197,189,122},	-- LATIN CAPITAL LETTER Z WITH CARON
+--		{197,190,122},	-- LATIN SMALL LETTER Z WITH CARON
+--		{196,177,105},	-- LATIN SMALL LETTER DOTLESS I
+--		{195,152,111},	-- LATIN CAPITAL LETTER O WITH STROKE
+--		{206,177,97},	-- GREEK SMALL LETTER ALPHA
+--		{195,159,115},	-- LATIN SMALL LETTER SHARP S
+--		{206,147,103},	-- GREEK CAPITAL LETTER GAMMA
+--		{207,128,112},	-- GREEK SMALL LETTER PI
+--		{196,131,97},	-- LATIN SMALL LETTER A WITH BREVE
+--		{207,131,115},	-- GREEK SMALL LETTER SIGMA
+--		{206,179,103},	-- GREEK SMALL LETTER GAMMA
+--		{196,176,105},	-- LATIN CAPITAL LETTER I WITH DOT ABOVE
+--		{197,163,116},	-- LATIN SMALL LETTER T WITH CEDILLA
+--		{206,180,100},	-- GREEK SMALL LETTER DELTA
+--		{195,184,111},	-- LATIN SMALL LETTER O WITH STROKE
+--		{196,133,97},	-- LATIN SMALL LETTER A WITH OGONEK
+--		{196,153,101},	-- LATIN SMALL LETTER E WITH OGONEK
+--		{196,134,99},	-- LATIN CAPITAL LETTER C WITH ACUTE
+--		{196,135,99},	-- LATIN SMALL LETTER C WITH ACUTE
+--		{197,129,108},	-- LATIN CAPITAL LETTER L WITH STROKE
+--		{197,130,108},	-- LATIN SMALL LETTER L WITH STROKE
+--		{197,131,110},	-- LATIN CAPITAL LETTER N WITH ACUTE
+--		{197,132,110},	-- LATIN SMALL LETTER N WITH ACUTE
+--		{195,147,111},	-- LATIN CAPITAL LETTER O WITH ACUTE
+--		{197,154,115},	-- LATIN CAPITAL LETTER S WITH ACUTE
+--		{197,155,115},	-- LATIN SMALL LETTER S WITH ACUTE
+--		{197,185,122},	-- LATIN CAPITAL LETTER Z WITH ACUTE
+--		{197,186,122},	-- LATIN SMALL LETTER Z WITH ACUTE
+--		{197,187,122},	-- LATIN CAPITAL LETTER Z WITH DOT ABOVE
+--		{197,188,122}	-- LATIN SMALL LETTER Z WITH DOT ABOVE
+
+
+	r := ''{
+		{197,145,111},
+		{197,177,117},
+		{197,179,117},
+		{196,159,103},
+		{196,155,101},
+		{195,135,99},
+		{195,188,117},
+		{195,169,101},
+		{195,162,97},
+		{195,164,97},
+		{195,160,97},
+		{195,165,97},
+		{195,167,99},
+		{195,170,101},
+		{195,171,101},
+		{195,168,101},
+		{195,175,105},
+		{195,174,105},
+		{195,172,105},
+		{195,132,97},
+		{195,133,97},
+		{195,137,101},
+		{195,180,111},
+		{195,182,111},
+		{195,178,111},
+		{195,187,117},
+		{195,185,117},
+		{195,191,121},
+		{195,150,111},
+		{195,156,117},
+		{197,165,116},
+		{197,159,115},
+		{197,175,117},
+		{197,174,117},
+		{195,161,97},
+		{195,173,105},
+		{195,179,111},
+		{195,186,117},
+		{195,177,110},
+		{195,145,110},
+		{196,140,99},
+		{196,141,99},
+		{197,153,114},
+		{197,152,114},
+		{197,160,115},
+		{197,161,115},
+		{195,189,121},
+		{197,189,122},
+		{197,190,122},
+		{196,177,105},
+		{195,152,111},
+		{206,177,97},
+		{195,159,115},
+		{206,147,103},
+		{207,128,112},
+		{196,131,97},
+		{207,131,115},
+		{206,179,103},
+		{196,176,105},
+		{197,163,116},
+		{206,180,100},
+		{195,184,111},
+		{196,133,97},
+		{196,153,101},
+		{196,134,99},
+		{196,135,99},
+		{197,129,108},
+		{197,130,108},
+		{197,131,110},
+		{197,132,110},
+		{195,147,111},
+		{197,154,115},
+		{197,155,115},
+		{197,185,122},
+		{197,186,122},
+		{197,187,122},
+		{197,188,122}
+	}'';
+
+
+	v_str := '''';
+        p_str1 := coalesce(p_str, '''');
+        v_len := char_length(p_str1);
+	FOR v_i IN 1..v_len LOOP
+	    v_char := substr(p_str1, v_i, 1);
+	    v_asc := ascii(v_char);
+	    v_found := 0;
+	    FOR v_array IN 1..77 LOOP
+		IF v_asc = r[v_array][1] THEN
+		    -- found the first character
+		    IF ascii(substr(p_str1, v_i+1, 1)) = r[v_array][2] THEN
+			-- got the Unicode char!
+			v_str := v_str || chr(r[v_array][3]);
+			v_i := v_i + 1;
+			v_found := 1;
+		    END IF;
+		END IF;
+	    END LOOP;
+	    IF v_found = 0 THEN
+		-- Not found - so its just a normal charcter: add it
+		v_str := v_str || v_char;
+	    END IF;
+	END LOOP;
+
+	return v_str;
+end;' language 'plpgsql';
+
+
+create or replace function norm_text (varchar)
+returns varchar as '
+declare
+        p_str           alias for $1;
+        v_str           varchar;
+begin
+        select translate(p_str, ''@.-'', ''   '')
+        into v_str;
+
+        return norm_text_utf8(v_str);
+end;' language 'plpgsql';
+
+
 
 create or replace function im_search_update (integer, varchar, integer, varchar)
 returns integer as '
@@ -105,7 +333,7 @@ begin
 		update im_search_objects set
 			object_type_id	= v_object_type_id,
 			biz_object_id	= p_biz_object_id,
-			fti		= to_tsvector(''default'', p_text)
+			fti		= to_tsvector(''default'', norm_text(p_text))
 		where
 			object_id	= p_object_id;
 	else 
@@ -133,14 +361,34 @@ insert into im_search_object_types values (0,'im_project');
 
 create or replace function im_projects_tsearch () 
 returns trigger as '
+declare
+        v_string        varchar;
+        v_string2        varchar;
 begin
-	perform im_search_update(new.project_id, ''im_project'', new.project_id, 
-		coalesce(new.project_name, '''') || '' '' ||
-		coalesce(new.project_nr, '''') || '' '' ||
-		coalesce(new.project_path, '''') || '' '' ||
-		coalesce(new.description, '''') || '' '' ||
-		coalesce(new.note, '''')
-	);
+	select 	coalesce(project_name, '''') || '' '' ||
+		coalesce(project_nr, '''') || '' '' ||
+		coalesce(project_path, '''') || '' '' ||
+		coalesce(description, '''') || '' '' ||
+		coalesce(note, '''')
+	into	v_string
+	from	im_projects
+	where	project_id = new.project_id;
+
+	v_string2 := '''';
+	if column_exists(''im_projects'', ''company_project_nr'') then
+
+		select 	coalesce(company_project_nr, '''') || '' '' ||
+			coalesce(final_company, '''')
+		into	v_string2
+		from	im_projects
+		where	project_id = new.project_id;
+
+		v_string := v_string || '' '' || v_string2;
+
+	end if;
+
+	perform im_search_update(new.project_id, ''im_project'', new.project_id, v_string);
+
 	return new;
 end;' language 'plpgsql';
 
@@ -183,11 +431,11 @@ EXECUTE PROCEDURE im_companies_tsearch();
 
 
 -----------------------------------------------------------
--- user
+-- person
 
 insert into im_search_object_types values (1,'user');
 
-create or replace function users_tsearch () 
+create or replace function persons_tsearch () 
 returns trigger as '
 declare
 	v_string	varchar;
@@ -201,18 +449,23 @@ begin
 		coalesce(username, '''')
 	into	v_string
 	from	cc_users
-	where	user_id = new.user_id;
+	where	user_id = new.person_id;
 
-	perform im_search_update(new.user_id, ''user'', new.user_id, v_string);
+	perform im_search_update(new.person_id, ''user'', new.person_id, v_string);
 	return new;
 end;' language 'plpgsql';
 
-CREATE TRIGGER users_tsearch_tr 
-BEFORE INSERT or UPDATE
-ON users
-FOR EACH ROW 
-EXECUTE PROCEDURE users_tsearch();
+-- Frank Bergmann: 050709
+-- DONT add a trigger to "users": Users is being
+-- updated frequently when users are accessing the
+-- system etc., leading to serious slowdown of the
+-- machine.
 
+CREATE TRIGGER persons_tsearch_tr 
+BEFORE INSERT or UPDATE
+ON persons
+FOR EACH ROW 
+EXECUTE PROCEDURE persons_tsearch();
 
 
 -----------------------------------------------------------
@@ -231,16 +484,16 @@ begin
 	if 0 = v_exists_p then
 
 	    perform acs_object_type__create_type (
-        	''im_forum_topic'',	-- object_type
-        	''Forum Topic'',	-- pretty_name
-        	''Forum Topics'',	-- pretty_plural
-        	''acs_object'',   	-- supertype
-        	''im_forum_topics'',	-- table_name
-        	''material_id'',	-- id_column
-        	''intranet-forum'',	-- package_name
-        	''f'',			-- abstract_p
-        	null,			-- type_extension_table
-        	''im_forum_topic.name''	-- name_method
+		''im_forum_topic'',	-- object_type
+		''Forum Topic'',	-- pretty_name
+		''Forum Topics'',	-- pretty_plural
+		''acs_object'',   	-- supertype
+		''im_forum_topics'',	-- table_name
+		''material_id'',	-- id_column
+		''intranet-forum'',	-- package_name
+		''f'',			-- abstract_p
+		null,			-- type_extension_table
+		''im_forum_topic.name''	-- name_method
 	    );
 
 	end if;
@@ -283,6 +536,55 @@ EXECUTE PROCEDURE im_forum_topics_tsearch();
 
 
 
+
+-----------------------------------------------------------
+-- invoices
+
+-- We are going for Invoice instead of im_costs, because of
+-- performance reasons. There many be many cost items, but
+-- they don't usually interest us very much.
+
+insert into im_search_object_types values (4,'im_invoice');
+
+create or replace function im_invoice_tsearch ()
+returns trigger as '
+declare
+	v_string	varchar;
+begin
+	select  coalesce(i.invoice_nr, '''') || '' '' ||
+		coalesce(c.cost_nr, '''') || '' '' ||
+		coalesce(c.cost_name, '''') || '' '' ||
+		coalesce(c.description, '''') || '' '' ||
+		coalesce(c.note, '''')
+	into
+		v_string
+	from
+		im_invoices i,
+		im_costs c
+	where	
+		i.invoice_id = c.cost_id
+		and i.invoice_id = new.invoice_id;
+
+	perform im_search_update(new.invoice_id, ''im_invoice'', new.invoice_id, v_string);
+	return new;
+end;' language 'plpgsql';
+
+CREATE TRIGGER im_invoices_tsearch_tr
+BEFORE INSERT or UPDATE
+ON im_invoices
+FOR EACH ROW
+EXECUTE PROCEDURE im_invoice_tsearch();
+
+
+
+
+-----------------------------------------------------------
+-- Business Object View URLs
+
+-- remove potential old entries
+delete from im_biz_object_urls
+where object_type = 'im_forum_topic';
+
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_forum_topic','view','/intranet-forum/view?topic_id=');
 insert into im_biz_object_urls (object_type, url_type, url) values (
@@ -294,21 +596,20 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 -----------------------------------------------------------
 -- Index the existing business objects
 
-update users
-set username = username
-;
+update persons
+set first_names=first_names;
 
 
 update im_projects
-set project_type_id = project_type_id
-;
+set project_type_id = project_type_id;
 
 
 update im_companies
-set company_type_id = company_type_id
-;
+set company_type_id = company_type_id;
 
 update im_forum_topics
-set scope = scope
-;
+set scope = scope;
+
+update im_invoices
+set invoice_nr = invoice_nr;
 

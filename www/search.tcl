@@ -1,3 +1,18 @@
+# packages/intranet-search-pg/www/search.tcl
+#
+# Copyright (C) 1998-2004 various parties
+# The code is based on ArsDigita ACS 3.4
+#
+# This program is free software. You can redistribute it
+# and/or modify it under the terms of the GNU General
+# Public License as published by the Free Software Foundation;
+# either version 2 of the License, or (at your option)
+# any later version. This program is distributed in the
+# hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+
 ad_page_contract {
     @author Neophytos Demetriou <k2pts@cytanet.com.cy>
     @author Frank Bergmann <frank.bergmann@project-open.com>
@@ -39,15 +54,18 @@ ad_page_contract {
     {offset:integer 0}
     {results_per_page:integer 20}
     {type:multiple "all"}
+    {include_deleted_p 0}
 } -errors {
     q:notnull {[_ search.lt_You_must_specify_some].}
 }
+
 
 # -----------------------------------------------------------
 # Default & Security
 # -----------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
+set current_user_id $user_id
 set page_title "Search Results for \"$q\""
 set package_id [ad_conn package_id]
 set package_url [ad_conn package_url]
@@ -55,13 +73,21 @@ set package_url_with_extras $package_url
 set context [list]
 set context_base_url $package_url
 
+# Determine the user's group memberships
+set user_is_employee_p [im_user_is_employee_p $user_id]
+set user_is_customer_p [im_user_is_customer_p $user_id]
+set user_is_wheel_p [ad_user_group_member [im_wheel_group_id] $user_id]
+set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+set user_is_admin_p [expr $user_is_admin_p || $user_is_wheel_p]
+
+
 if { $results_per_page <= 0} {
     set results_per_page [ad_parameter -package_id $package_id SearchResultsPerPage]
 } else {
     set results_per_page $results_per_page
 }
 
-set limit [expr 10 * $results_per_page]
+set limit [expr 1 * $results_per_page]
 
 if {[lsearch im_document $type] >= 0} {
     ad_return_complaint 1 "<h3>Not implemented yet</h3>
@@ -69,14 +95,42 @@ if {[lsearch im_document $type] >= 0} {
     return
 }
 
-
 set q [string tolower $q]
-if {$q == "search"} {
-    set q "test"
-}
+
+# Remove accents and other special characters from
+# search query. Also remove "@", "-" and "." and 
+# convert them to spaces
+set q [db_exec_plsql normalize "select norm_text(:q)"]
+
 set query $q
 set nquery [llength $q]
 
+
+# -------------------------------------------------
+# Check if it's a simple query...
+# -------------------------------------------------
+
+set simple_query 1
+if {$nquery > 1} {
+
+    # Check that all keywords are alphanumeric
+    foreach keyword $query {
+
+	if {![regexp {^[a-zA-Z0-9]*$} $keyword]} {
+	    set simple_query 0
+	}
+    }
+
+}
+
+# insert "&" between elements of a simple query
+if {$simple_query && $nquery > 1} {
+    set q [join $query " & "]
+}
+
+# -------------------------------------------------
+# 
+# -------------------------------------------------
 
 if {$nquery > 1} {
     
@@ -84,7 +138,7 @@ if {$nquery > 1} {
 	db_string test_query "select to_tsquery('default',:q)"
     } errmsg]} {
 	ad_return_complaint 1 "<H2>Bad Query</h2>
-        The <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+        The <span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>
         search engine is capable of processing complex queries with more then
         one word. <br>
         However, you need to instruct the search engine how to search:
@@ -162,6 +216,7 @@ db_foreach object_type $sql {
 # Permissions for different types of business objects
 # -----------------------------------------------------------
 
+# --------------------- Project -----------------------------------
 set project_perm_sql "
 			and p.project_id in (
 			        select
@@ -171,13 +226,14 @@ set project_perm_sql "
 			                acs_rels r
 			        where
 			                r.object_id_one = p.project_id
-			                and r.object_id_two = :user_id
+			                and r.object_id_two = :current_user_id
 			)"
 
 if {[im_permission $user_id "view_projects_all"]} {
         set project_perm_sql ""
 }
 
+# --------------------- Companies ----------------------------------
 set company_perm_sql "
 			and c.company_id in (
 			        select
@@ -187,7 +243,7 @@ set company_perm_sql "
 			                acs_rels r
 			        where
 			                r.object_id_one = c.company_id
-			                and r.object_id_two = :user_id
+			                and r.object_id_two = :current_user_id
 			)"
 
 if {[im_permission $user_id "view_companies_all"]} {
@@ -195,33 +251,129 @@ if {[im_permission $user_id "view_companies_all"]} {
 }
 
 
+# --------------------- Invoices -----------------------------------
+# Let a user see the invoice if he can read/admin either the 
+# customer or the provider of the invoice
+# Include the join with "im_invoices", because it is actually
+# very selective (few cost items are financial documents)
+
+
+set customer_sql "
+	select distinct
+		c.company_id
+	from
+		im_companies c,
+		acs_rels r
+	where
+		c.company_type_id in (
+			select child_id
+			from im_category_hierarchy
+			where parent_id = [im_company_type_customer]
+		    UNION
+			select [im_company_type_customer] as child_id
+		)
+		and r.object_id_one = c.company_id
+		and r.object_id_two = :current_user_id
+		and c.company_path != 'internal'
+"
+if {![im_user_is_customer_p $user_id]} { set customer_sql "select 0 as company_id" }
+
+
+set provider_sql "
+	select distinct
+		c.company_id
+	from
+		im_companies c,
+		acs_rels r
+	where
+		c.company_type_id in (
+			select child_id
+			from im_category_hierarchy
+			where parent_id = [im_company_type_provider]
+		    UNION
+			select [im_company_type_provider] as child_id
+		)
+		and r.object_id_one = c.company_id
+		and r.object_id_two = :current_user_id
+		and c.company_path != 'internal'
+"
+if {![im_user_is_freelance_p $user_id]} { set provider_sql "select 0 as company_id" }
+
+
+set invoice_perm_sql "
+			and i.invoice_id in (
+				select
+					i.invoice_id
+				from
+					im_invoices i,
+					im_costs c
+				where
+					i.invoice_id = c.cost_id
+					and (
+					    c.customer_id in ($customer_sql)
+					OR
+					    c.provider_id in ($provider_sql)
+					)
+			)"
+
+if {[im_permission $user_id "view_invoices"]} {
+	set invoice_perm_sql ""
+}
+
+# ad_return_complaint 1 $invoice_perm_sql
+
+
+
+# --------------------- Users -----------------------------------
 # The list of prohibited users: They belong 
 # to a group which the current user should not see
 set user_perm_sql "
 			and person_id not in (
 select distinct
-        cc.user_id
+	cc.user_id
 from
-        cc_users cc,
-        (
-                select  group_id
-                from    groups
-                where   group_id > 0
-                        and 'f' = im_object_permission_p(group_id,8849,'read')
-        ) forbidden_groups,
-        group_approved_member_map gamm
+	cc_users cc,
+	(
+		select  group_id
+		from    groups
+		where   group_id > 0
+			and 'f' = im_object_permission_p(group_id,8849,'read')
+	) forbidden_groups,
+	group_approved_member_map gamm
 where
-        cc.user_id = gamm.member_id
-        and gamm.group_id = forbidden_groups.group_id
+	cc.user_id = gamm.member_id
+	and gamm.group_id = forbidden_groups.group_id
 			)"
 
 if {[im_permission $user_id "view_users_all"]} {
-        set user_perm_sql ""
+	set user_perm_sql ""
 }
 
 # user_perm_sql is very slow (~20 seconds), so
 # just leave the permission check for later...
 set user_perm_sql ""
+
+# Don't show deleted users (by default...)
+set deleted_users_sql "
+	and p.person_id not in (
+		select	m.member_id
+		from	group_member_map m, 
+			membership_rels mr
+		where  	m.group_id = acs__magic_object_id('registered_users') 
+		  	AND m.rel_id = mr.rel_id 
+		  	AND m.container_id = m.group_id 
+		  	AND m.rel_type::text = 'membership_rel'
+			AND mr.member_state = 'banned'
+	)
+"
+if {1 == $include_deleted_p} {
+    set deleted_users_sql ""
+}
+
+
+set forum_perm_sql ""
+
+
 
 # -----------------------------------------------------------
 # Build a suitable select for object types
@@ -241,6 +393,7 @@ if {[string equal "all" $type]} {
 set sql "
 	select
 		acs_object__name(so.object_id) as name,
+		acs_object__name(so.biz_object_id) as biz_object_name,
 		rank(so.fti, :q::tsquery) as rank,
 		fti as full_text_index,
 		bou.url,
@@ -248,7 +401,8 @@ set sql "
 		sot.object_type,
 		aot.pretty_name as object_type_pretty_name,
 		so.biz_object_id,
-		so.popularity
+		so.popularity,
+		readable_biz_objs.object_type as biz_object_type
 	from
 		im_search_objects so,
 		acs_object_types aot,
@@ -262,19 +416,29 @@ set sql "
 			where	url_type = 'view'
 		) bou on (sot.object_type = bou.object_type),
 		(
-			select	project_id as object_id
+			select	project_id as object_id,
+				'im_project' as object_type
 			from	im_projects p
 			where	1=1
 				$project_perm_sql
 		    UNION
-			select	company_id as object_id
+			select	company_id as object_id,
+				'im_company' as object_type
 			from	im_companies c
 			where	1=1
 				$company_perm_sql
 		    UNION
-			select	person_id as object_id
+			select	invoice_id as object_id,
+				'im_invoice' as object_type
+			from	im_invoices i
+			where	1=1
+				$invoice_perm_sql
+		    UNION
+			select	person_id as object_id,
+				'user' as object_type
 			from	persons p
 			where	1=1
+				$deleted_users_sql
 				$user_perm_sql
 		) readable_biz_objs
 	where
@@ -289,7 +453,6 @@ set sql "
 "
 
 set high 0
-
 set count 0
 set result_html ""
 
@@ -325,8 +488,54 @@ db_foreach full_text_query $sql {
 	    if {!$read} { continue }
 	}
 	im_forum_topic { 
-	    # Nothing. The topic is readable if it's business
-	    # object is readable, and that's already checked anyway.
+	    # The topic is readable if it's business object is readable
+	    # AND if the user belongs to the right "sphere"
+
+	    # Very ugly: The biz_object_id is not checked for "user"
+	    # because it is very slow... So check it here now.
+	    if {"user" == $biz_object_type} {
+		im_user_permissions $user_id $biz_object_id view read write admin
+		if {!$read} { continue }
+	    }
+
+	    # Determine if the current user belongs to the admins of
+	    # the "business object". This is necessary, because there
+	    # is the forum permission "PM Only" which gives rights only"
+	    # to the (project) managers of the of the container biz object
+	    set object_admin_sql "
+				( select count(*) 
+				  from	acs_rels r,
+					im_biz_object_members m
+				  where	r.object_id_two = :current_user_id
+					and r.object_id_one = :biz_object_id
+					and r.rel_id = m.rel_id
+					and m.object_role_id in (1301, 1302, 1303)
+				)::integer\n"
+	    if {$user_is_admin_p} { set object_admin_sql "1::integer\n" }
+
+	    # Determine the permissions for the forum item
+	    db_0or1row forum_perm "
+		select
+			t.subject,
+			im_forum_permission(
+				:current_user_id::integer,
+				t.owner_id,
+				t.asignee_id,
+				t.object_id,
+				t.scope,
+				1::integer,
+				$object_admin_sql ,
+				:user_is_employee_p::integer,
+				:user_is_customer_p::integer
+			) as forum_permission_p
+		from
+			im_forum_topics t
+		where
+			t.topic_id = :object_id
+	    "
+	    if {!$forum_permission_p} { continue }
+	    set name_link "<a href=\"$url$object_id\">$biz_object_name: $subject</a>\n"
+
 	}
     }
 
@@ -334,7 +543,7 @@ db_foreach full_text_query $sql {
       <tr>
 	<td>
 	  <font size=\"+1\">$object_type_pretty_name: $name_link</font><br>
-          $headline
+	  $headline
 	  <br>&nbsp;
 	</td>
       </tr>

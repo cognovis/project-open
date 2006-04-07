@@ -1,9 +1,17 @@
-# /packages/intranet-forum/tcl/intranet-forum.tcl
+# /packages/intranet-search-pg/tcl/intranet-search-pg-procs.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (C) 1998-2004 various parties
+# The code is based on ArsDigita ACS 3.4
 #
-# All rights reserved. Please check
-# http://www.project-open.com/license/ for details.
+# This program is free software. You can redistribute it
+# and/or modify it under the terms of the GNU General
+# Public License as published by the Free Software Foundation;
+# either version 2 of the License, or (at your option)
+# any later version. This program is distributed in the
+# hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
 
 ad_library {
     Procedures for tsearch full text enginge driver
