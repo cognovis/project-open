@@ -12,7 +12,7 @@
 
 
 Please follow the steps below for an "automatic sofware update" of your
-<span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+<span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
 server.
 
 <ol>
@@ -24,21 +24,21 @@ server.
     <br>&nbsp;
 
 <li><b>Get a
-    <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
     account</a></b>:<br>
     Please 
     <a href="http://projop.dnsalias.com/register/user-new">register</a> 
     at the 
-    <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
     server, fill out the registration form and follow the registration
     instructions. If possible, please use the same email address as with
     your corporate
-    <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
     server, but choose a different password.
     <br>&nbsp;
 
 <li><b>Test the 
-    <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
     account</b>:<br>
     Login manually at <a href="http://projop.dnsalias.com/">
     http://projop.dnsalias.com/</a>.
@@ -53,17 +53,17 @@ server.
     <br>&nbsp;
 
 <li><b>Backup your 
-    <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
     software</b>:<br>
     Please make a full backup of your
-    <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
     source code directory (C:\ProjectOpen\projop\packages in Windows and
     /web/projop/packages in Linux/Unix). You can use ZIP, TAR or any other
     archieving tool for this.
     <br>&nbsp;
 
 <li><b>Backup your
-    <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
     database contents</b>:<br>
     You can use the 
     <a href="/intranet/admin/backup/pg_dump">built-in backup page</a>
@@ -85,7 +85,7 @@ server.
     <br>&nbsp;
 
 <li><B>Upgrade the 
-    <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
     code</b>:<br>
     Pressing the "Update" button will update your 
     <span class=brandfirst>P/</span><span class=brandsec>O</span>
@@ -94,14 +94,19 @@ server.
     <br>&nbsp;
 
 <li><b>Update the 
-    <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
     database contents</b>:<br>
     Please use the <a href="/acs-admin/apm/packages-install">Package Manager</a>
-    to install the updates and to synchronize the database.
+    to updates and synchronize the database.<br>
+    Please perform <b>only "Update"</b> commands to update your existing
+    packages.
+    Please don't perform <b>any "Install"</b> options unless you know what
+    you are doing.
+
     <br>&nbsp;
 
 <li><b>Restart your 
-    <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
     server</b>:<br>
     Please use the <a href="/acs-admin/server-restart">Server Restart</a>
     page to restart the server. Or you can restart the server via the
@@ -120,7 +125,7 @@ server.
 <ul>
 <li><a href=\"http://projop.dnsalias.com/register/user-new\">
     Register your 
-    <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
     Account</a></li>
 <li><a href=load-update-xml>Check for Latest Software Updates</a></li>
 <li><a href=\"/acs-admin/apm/packages-install\">Install Packages</a></li>

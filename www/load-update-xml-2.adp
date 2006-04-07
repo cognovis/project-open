@@ -4,16 +4,44 @@
 
 
 <h1>Login Status</h1>
-The <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+<p>
+The <span class=brandsec>]</span><span class=brandfirst>project-open</span><span class=brandsec>[</span>
 server at "@service_url@" responded:
-<ul>
-<li>Login status:<br> @login_status@
-    <br>&nbsp;
-<if @login_message@ ne "">
-<li>Login message:<br>@login_message@
-    <br>&nbsp;
+</p>
+
+<table cellspacing=1 cellpadding=1>
+<tr class=rowtitle>
+  <td class=rowtitle>Field</td>
+  <td class=rowtitle>Value</td>
+</tr>
+<tr>
+  <td class=roweven>Login status</td>
+  <td class=roweven>@login_status@</td>
+</tr>
+
+<if @login_status@ eq "ok">
+  <tr>
+    <td class=rowodd>CVS User</td>
+    <td class=rowodd>@cvs_user@</td>
+  </tr>
+  <tr>
+    <td class=roweven>CVS Password</td>
+    <td class=roweven>@cvs_password@</td>
+  </tr>
 </if>
-</ul>
+
+<if @login_message@ ne "">
+  <tr>
+    <td class=rowodd>Login message</td>
+      <if @login_status@ eq "ok">
+        <td class=rowodd>@login_message@</td>
+     </if>
+     <else>
+       <td class=rowodd><font color=red>@login_message@</font></td>
+    </else>
+  </tr>
+</if>
+</table>
 
 
 <if @ctr@ ne 0>

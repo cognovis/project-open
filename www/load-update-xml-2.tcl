@@ -50,26 +50,24 @@ set update_xml ""
 #
 
 if { [catch {
-
-    ns_log Notice "load-update-xml-2: Opening $full_url"
-    set httpChan [lindex [ns_httpopen GET $full_url] 0]
-    ns_log Notice "load-update-xml-2: httpChan=$httpChan"
-
-    ns_log Notice "load-update-xml-2: before gets"
-    while {[gets $httpChan update_line] >= 0} {
-	ns_log Notice "load-update-xml-2: getting line..."
-	append update_xml $update_line
-    }
-
-    ns_log Debug "load-update-xml-2: Done copying data."
-    close $httpChan
-
+    set update_xml [ns_httpget $full_url]
 } errmsg] } {
     ad_return_complaint 1 "Error while accessing the URL '$service_url'.<br>
     Please check your URL. The following error was returned: <br>
     <blockquote><pre>[ad_quotehtml $errmsg]</pre></blockquote>"
     return
 }	
+
+if {"" == $update_xml} {
+    ad_return_complaint 1 "Found an empty XML file accessing the URL '$service_url'.<br>
+    This means that your server(!) was not able to access the URL.<br>
+    Please check the the Internet and firewall configuration of your
+    server and verify that the 'nsd' (Linux) or 'nsd4' (Windows) 
+    process has access to the URL.<br>
+    return
+}	
+
+
 
 # ------------------------------------------------------------
 # Check whether it's a HTML or an XML
@@ -147,9 +145,21 @@ set ctr 0
 set debug ""
 set root_nodes [xml_node_get_children $root_node]
 
+# ad_return_complaint 1 "<pre>$update_xml</pre>"
+
 # login_status = "ok" or "fail"
 set login_status [[$root_node selectNodes {//login_status}] text]
 set login_message [[$root_node selectNodes {//login_message}] text]
+
+# May be new or old protocol - accept the error and use defaults
+set cvs_user ""
+set cvs_password ""
+catch {
+    set cvs_user [[$root_node selectNodes {/po_software_update/login/cvs_user}] text]
+    set cvs_password [[$root_node selectNodes {/po_software_update/login/cvs_password}] text]
+} err_msg
+if {"" == $cvs_user} { set cvs_user "anonymous" }
+
 set version_html ""
 
 foreach root_node $root_nodes {
@@ -195,9 +205,8 @@ foreach root_node $root_nodes {
 		    set whats_new [apm_tag_value -default "" $version_node whats_new]
 		    set cvs_action [apm_tag_value -default "" $version_node cvs_action]
 		    set cvs_server [apm_tag_value -default "" $version_node cvs_server]
-		    set cvs_user [apm_tag_value -default "" $version_node cvs_user]
-		    if {"" == $cvs_user} { set cvs_user "anonymous" }
-		    set cvs_password [apm_tag_value -default "" $version_node cvs_password]
+#		    set cvs_user [apm_tag_value -default "" $version_node cvs_user]
+#		    set cvs_password [apm_tag_value -default "" $version_node cvs_password]
 		    set cvs_root [apm_tag_value -default "" $version_node cvs_root]
 		    set cvs_command [apm_tag_value -default "" $version_node cvs_command]
 		    set update_urgency [apm_tag_value -default "" $version_node update_urgency]

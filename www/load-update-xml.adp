@@ -35,7 +35,7 @@
 <h2>How to get the Automatic Software Update Service?</h2>
 
 <p>
-The <span class=brandfirst>Project/</span><span class=brandsec>Open</span>
+The <span class=brandsec>]</span><span class=brandfirst>project-open</span><span class=brandsec>[</span>
 Automatic Software Update service is not free.<br>
 Please read the
 <a href="http://www.project-open.com/product/service/software-updates">
