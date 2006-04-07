@@ -3,7 +3,6 @@ ad_page_contract {} {
     task_list
 }
 
-
 if { ![info exist date_format] || [empty_string_p $date_format] } {
     set date_format "Mon fmDDfm, YYYY HH24:MI:SS"
 }
@@ -18,6 +17,9 @@ if { ![info exists object_id] || [empty_string_p $object_id] } {
 if { ![info exists package_url] || [empty_string_p $package_url] } {
     set package_url [ad_conn package_url]
 }
+
+
+
 
 # DRB: setting return_url to point explicitly at ourselves will cause
 # custom workflow action panels to return to the right place whether
@@ -88,5 +90,5 @@ from   [join $from ",\n       "]
 where  [join $where "\n   and "]"
 
 db_multirow task_list started_tasks_select $sql {
-    set task_url "task?[export_vars -url {task_id return_url}]"
+    set task_url "[export_vars -base "task" {task_id return_url}]"
 }

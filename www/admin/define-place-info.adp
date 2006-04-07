@@ -17,7 +17,7 @@
                     (<a href="@place.delete_url@">delete place</a>)
                   </if>
                   <else>
-                    &nbsp;
+                    (can't delete place)
                   </else>
                 </td>
               </tr>
@@ -76,9 +76,15 @@
             <if @place.arc_add_url@ not nil>
               (<a href="@place.arc_add_url@">add arc</a>)
             </if>
+	    <else>
+		(can't add arc)
+	    </else>
             <if @place.arc_delete_url@ not nil>
               (<a href="@place.arc_delete_url@">delete arc</a>)
             </if>
+	    <else>
+		(can't delete arc)
+	    </else>
             &nbsp;
           </td>
         </tr>

@@ -11,7 +11,7 @@
   </tr>
   <tr>
     <th align="right">Assignments</th>
-    <td>@notification_chunk;noquote@</td>
+    <td>@widget;noquote@</td>
   </tr>
   <tr>
     <td>&nbsp;</td>

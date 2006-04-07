@@ -54,7 +54,7 @@ db_multirow panels panels {
 
     set panel_add_url "task-panel-add?[export_vars -url {workflow_key transition_key context_key return_url}]"
     set panel_edit_url "task-panel-edit?[export_vars -url {sort_order workflow_key transition_key context_key return_url}]"
-    set panel_delete_url [ad_quotehtml "javascript:if(confirm('Are you sure you want to delete this panel?'))location.href='task-panel-delete?[export_vars -url {sort_order workflow_key transition_key context_key return_url}]'"]
+    set panel_delete_url "task-panel-delete?[export_vars -url {sort_order workflow_key transition_key context_key return_url}]"
 
     set transition_edit_url "task-edit?[export_vars -url {workflow_key transition_key return_url}]"
     set panel_no $panel_count

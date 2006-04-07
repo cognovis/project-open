@@ -4,13 +4,13 @@
 
 <if @task_list:rowcount@ ne 0>
     <table cellspacing="0" cellpadding="0" border="0">
-    <tr><td bgcolor="#cccccc">
+    <tr><td>
     
     <table width="100%" cellspacing="1" cellpadding="4" border="0">
-    <tr bgcolor="#ffffe4">
-    <th>To do</th>	
-    <th>On what</th>
-    <th>As part of</th>
+    <tr class=rowtitle>
+    <th><%= [lang::message::lookup "" acs-workflow.To_Do "To do"] %></th>	
+    <th><%= [lang::message::lookup "" acs-workflow.On_what "On what?"] %></th>
+    <th><%= [lang::message::lookup "" acs-workflow.As_part_of "Part of"] %></th>
     
     <if @type@ eq "own">
 	<th>Started</th>
@@ -22,7 +22,7 @@
 	    
     <multiple name="task_list">
 	<tr valign="middle" bgcolor="#eeeeee">
-	    <td><a href="@package_url@@task_list.task_url@">@task_list.task_name@</a>
+	    <td><a href="@package_url;noquote@@task_list.task_url@">@task_list.task_name@</a>
 		    
 	    <if @task_list.state@ eq "started">
 		<if @task_list.holding_user@ not nil>

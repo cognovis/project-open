@@ -4,7 +4,7 @@
 <property name="focus">panel.header</property>
 
 <form action="task-panel-edit-2" name="panel" method="post">
-@panel.export_vars@
+@panel.export_vars;noquote@
 
 <table>
   <tr>

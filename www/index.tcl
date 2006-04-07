@@ -9,6 +9,7 @@ ad_page_contract {
     admin_p
 }
 
+set user_id [ad_maybe_redirect_for_registration]
 set admin_p [ad_permission_p [ad_conn package_id] "admin"] 
 
 set context [list]

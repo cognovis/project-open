@@ -2,7 +2,7 @@
 <if @task.state@ eq enabled>
     <if @task.this_user_is_assigned_p@ eq 1>
         <form action="task" method="post">
-	@export_form_vars@
+	@export_form_vars;noquote@
 	<table>
 	<tr><th align="right">Action:</th>
 	<td><input type="submit" name="action.start" value="Start task" /></td>
@@ -57,20 +57,20 @@
 <if @task.state@ eq started>
     <if @task.this_user_is_assigned_p@ eq 1>
         <form action="task" method="post">
-        @export_form_vars@
+        @export_form_vars;noquote@
         <table>
         
             <multiple name="task_roles_to_assign">
                 <tr>
                     <th align="right">Assign @task_roles_to_assign.role_name@</th>
-                    <td>@task_roles_to_assign.assignment_widget@</td>
+                    <td>@task_roles_to_assign.assignment_widget;noquote@</td>
                 </tr>
             </multiple>
     
             <multiple name="task_attributes_to_set">
                 <tr>
                     <th align="right">@task_attributes_to_set.pretty_name@</th>
-                    <td>@task_attributes_to_set.attribute_widget@</td>
+                    <td>@task_attributes_to_set.attribute_widget;noquote@</td>
                 </tr>
              </multiple>
     

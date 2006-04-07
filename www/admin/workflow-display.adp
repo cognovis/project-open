@@ -17,5 +17,5 @@
 
 </if>
 <else>
-@display@
+@display;noquote@
 </else>

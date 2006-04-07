@@ -1,10 +1,11 @@
 <master>
 <property name="title">Add panel</property>
 <property name="focus">panel.header</property>
+<property name="context">@context;noquote@</property>
+
 
 <h2>Add Panel</h2>
-@context@
-<hr>
+
 
 <form action="task-panel-add-2" name="panel" method="post">
 @export_vars;noquote@

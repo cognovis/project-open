@@ -48,7 +48,7 @@ The user performing the task <strong>@transition_name@</strong> will be asked to
     <td colspan="2">
       <if @to_be_assigned_by_this:rowcount@ gt 0>
 	<form action="@assign_url@">
-	@assign_export_vars@
+	@assign_export_vars;noquote@
 	Assign this:
 	<select name="role_key">
 	  <multiple name="to_be_assigned_by_this">

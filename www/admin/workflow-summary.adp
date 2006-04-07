@@ -6,7 +6,7 @@
 
 <if @workflow_img_tag@ not nil>
   <center>
-    @workflow_img_tag@
+    @workflow_img_tag;noquote@
   </center>
 </if>
 

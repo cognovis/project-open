@@ -44,15 +44,17 @@ db_multirow roles roles {
                    acs_object.name(p.party_id) as sel_name,
                    p.email as sel_email
             from   parties p
-            where  p.party_id not in 
-                  (select ca.party_id 
-                   from   wf_context_assignments ca
-                   where  ca.workflow_key = :workflow_key 
-                   and    ca.context_key = :context_key 
-                   and    ca.role_key = :role_key)
+            where  p.party_id not in (
+			select	ca.party_id 
+			from	wf_context_assignments ca
+			where	ca.workflow_key = :workflow_key 
+				and    ca.context_key = :context_key 
+				and    ca.role_key = :role_key
+		   )
+		   and p.party_id in (select group_id from groups)
 	} {
             incr counter
-            append user_select_widget "<option value=\"$sel_party_id\">$sel_name[ad_decode $sel_email "" "" " ($sel_email)"]</option>"
+            append user_select_widget "<option value=\"$sel_party_id\">$sel_name[ad_decode $sel_email "" "" " ($sel_email)"]</option>\n"
 	}   
 	append user_select_widget "</select>"
 	if { $counter == 0 } {

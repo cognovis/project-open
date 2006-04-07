@@ -58,7 +58,7 @@
       <td>&nbsp;</td>
       <td colspan="2">
 	<form action="@add_url@" method="post">
-	@add_export_vars@
+	@add_export_vars;noquote@
 	Set this:
 	<select name="attribute_id">
 	  <multiple name="attributes_not_set">
