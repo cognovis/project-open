@@ -19,6 +19,9 @@ ad_page_contract {
     { add_skill_id:integer ""}
     { submit "" }
     { return_url "" }
+    { button_add "" }
+    { button_del "" }
+    { button_update "" }
 }
 
 # ---------------------------------------------------------------
@@ -65,6 +68,11 @@ if {[string equal "" $return_url]} {
 # ---------------------------------------------------------------
 # Deal with Update, Del and Add commands
 # ---------------------------------------------------------------
+
+# Deal with multilingual button "values"
+if {"" != $button_add} { set submit "Add" }
+if {"" != $button_del} { set submit "Del" }
+if {"" != $button_update} { set submit "Update" }
 
 switch $submit {
 

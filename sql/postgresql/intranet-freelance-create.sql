@@ -141,62 +141,115 @@ BEGIN
 end;' language 'plpgsql';
 
 
-
 -- Show the freelance information in users view page
 --
 select im_component_plugin__new (
-        null,                           -- plugin_id
-        'acs_object',                   -- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-        'Users Freelance Component',    -- plugin_name
-        'intranet-freelance',           -- package_name
-        'left',                       -- location
-        '/intranet/users/view',         -- page_url
-        null,                           -- view_name
-        90,                             -- sort_order
-        'im_freelance_info_component $current_user_id $user_id $return_url [im_opt_val freelance_view_name]'
+	null,			   -- plugin_id
+	'acs_object',		   -- object_type
+	now(),			  -- creation_date
+	null,			   -- creation_user
+	null,			   -- creation_ip
+	null,			   -- context_id
+	'Users Freelance Component',    -- plugin_name
+	'intranet-freelance',	   -- package_name
+	'left',		       -- location
+	'/intranet/users/view',	 -- page_url
+	null,			   -- view_name
+	90,			     -- sort_order
+	'im_freelance_info_component $current_user_id $user_id $return_url [im_opt_val freelance_view_name]'
     );
 
 
 -- Show the freelance skills in users view page
 --
 select im_component_plugin__new (
-        null,                           -- plugin_id
-        'acs_object',                   -- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-        'Users Skills Component',       -- plugin_name
-        'intranet-freelance',           -- package_name
-        'bottom',                       -- location
-        '/intranet/users/view',         -- page_url
-        null,                           -- view_name
-        80,                             -- sort_order
-        'im_freelance_skill_component $current_user_id $user_id $return_url'
+	null,			   -- plugin_id
+	'acs_object',		   -- object_type
+	now(),			  -- creation_date
+	null,			   -- creation_user
+	null,			   -- creation_ip
+	null,			   -- context_id
+	'Users Skills Component',       -- plugin_name
+	'intranet-freelance',	   -- package_name
+	'bottom',		       -- location
+	'/intranet/users/view',	 -- page_url
+	null,			   -- view_name
+	80,			     -- sort_order
+	'im_freelance_skill_component $current_user_id $user_id $return_url'
     );
 
 
 -- Show the freelance list in member-add page
 --
 select im_component_plugin__new (
-        null,                           -- plugin_id
-        'acs_object',                   -- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-        'freelance list Component',     -- plugin_name
-        'intranet-freelance',           -- package_name
-        'bottom',                       -- location
-        '/intranet/member-add',         -- page_url
-        null,                           -- view_name
-        10,                             -- sort_order
-        'im_freelance_member_select_component $object_id $return_url'
+	null,			   -- plugin_id
+	'acs_object',		   -- object_type
+	now(),			  -- creation_date
+	null,			   -- creation_user
+	null,			   -- creation_ip
+	null,			   -- context_id
+	'freelance list Component',     -- plugin_name
+	'intranet-freelance',	   -- package_name
+	'bottom',		       -- location
+	'/intranet/member-add',	 -- page_url
+	null,			   -- view_name
+	10,			     -- sort_order
+	'im_freelance_member_select_component $object_id $return_url'
     );
 
+
+
+
+-- -----------------------------------------------------
+-- Add privileges for freelance_skills and freelance_skillconfs
+--
+select acs_privilege__create_privilege('add_freelance_skills','Add Freelance Skills','Add Freelance Skills');
+select acs_privilege__add_child('admin', 'add_freelance_skills');
+
+select acs_privilege__create_privilege('view_freelance_skills','View Freelance Skills','View Freelance Skills');
+select acs_privilege__add_child('admin', 'view_freelance_skills');
+
+select im_priv_create('view_freelance_skills','Accounting');
+select im_priv_create('view_freelance_skills','P/O Admins');
+select im_priv_create('view_freelance_skills','Project Managers');
+select im_priv_create('view_freelance_skills','Senior Managers');
+select im_priv_create('view_freelance_skills','Freelance Managers');
+select im_priv_create('view_freelance_skills','Employees');
+
+select im_priv_create('add_freelance_skills','Accounting');
+select im_priv_create('add_freelance_skills','P/O Admins');
+select im_priv_create('add_freelance_skills','Senior Managers');
+select im_priv_create('add_freelance_skills','Project Managers');
+select im_priv_create('add_freelance_skills','Freelance Managers');
+
+select im_priv_create('view_freelance_skills','Freelancers');
+select im_priv_create('add_freelance_skills','Freelancers');
+
+
+
+select acs_privilege__create_privilege('add_freelance_skillconfs','Add Freelance Skillconfs','Add Freelance Skillconfs');
+select acs_privilege__add_child('admin', 'add_freelance_skillconfs');
+
+select acs_privilege__create_privilege('view_freelance_skillconfs','View Freelance Skillconfs','View Freelance Skillconfs');
+select acs_privilege__add_child('admin', 'view_freelance_skillconfs');
+
+select im_priv_create('view_freelance_skillconfs','Accounting');
+select im_priv_create('view_freelance_skillconfs','P/O Admins');
+select im_priv_create('view_freelance_skillconfs','Project Managers');
+select im_priv_create('view_freelance_skillconfs','Senior Managers');
+select im_priv_create('view_freelance_skillconfs','Freelance Managers');
+select im_priv_create('view_freelance_skillconfs','Employees');
+
+select im_priv_create('add_freelance_skillconfs','Accounting');
+select im_priv_create('add_freelance_skillconfs','P/O Admins');
+select im_priv_create('add_freelance_skillconfs','Senior Managers');
+select im_priv_create('add_freelance_skillconfs','Project Managers');
+select im_priv_create('add_freelance_skillconfs','Freelance Managers');
+
+
+
+
+-- \i intranet-freelance-score.sql
 \i ../common/intranet-freelance-common.sql
 \i ../common/intranet-freelance-backup.sql
+

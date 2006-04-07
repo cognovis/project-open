@@ -52,6 +52,16 @@ if {!$read} {
     return
 }
 
+
+# Check permissions to see and modify freelance skills and their confirmations
+#
+set view_freelance_skills_p [im_permission $current_user_id view_freelance_skills]
+set add_freelance_skills_p [im_permission $current_user_id add_freelance_skills]
+set view_freelance_skillconfs_p [im_permission $current_user_id view_freelance_skillconfs]
+set add_freelance_skillconfs_p [im_permission $current_user_id add_freelance_skillconfs]
+
+
+
 # ---------------------------------------------------------------
 # User Information
 # ---------------------------------------------------------------
@@ -113,8 +123,12 @@ order by
 set skill_table_header "
 	<tr class=rowtitle>
 	  <td class=rowtitle>$skill_type</td>
-	  <td class=rowtitle>[_ intranet-freelance.Claimed]</td>
-	  <td class=rowtitle>[_ intranet-freelance.Confirmed]</td>
+	  <td class=rowtitle>[_ intranet-freelance.Claimed]</td>\n"
+if {$view_freelance_skillconfs_p} {
+    append skill_table_header "
+	  <td class=rowtitle>[_ intranet-freelance.Confirmed]</td>\n"
+}
+append skill_table_header "
 	  <td class=rowtitle align=center>[im_gif delete]</td>
 	</tr>
 "
@@ -131,16 +145,18 @@ db_foreach column_list $sql {
 	<tr$bgcolor([expr $ctr % 2])>
 	  <td>$skill_name</td>
 	  <td>
-[im_category_select_plain "Intranet Experience Level" "claimed.$skill_id" $claimed_experience_id]
+[im_category_select_plain -include_empty_p 0 "Intranet Experience Level" "claimed.$skill_id" $claimed_experience_id]
 	  </td>"
 
-    if {$admin} { 
+    if {$admin && $add_freelance_skillconfs_p} { 
         append skill_table "
 	  <td>
-[im_category_select_plain "Intranet Experience Level" "confirmed.$skill_id" $confirmed_experience_id]
+[im_category_select_plain -include_empty_p 0 "Intranet Experience Level" "confirmed.$skill_id" $confirmed_experience_id]
 	  </td>\n"
     } else {
-        append skill_table "<td>$confirmed_experience</td>\n"
+        if {$view_freelance_skillconfs_p} {
+            append skill_table "<td>$confirmed_experience</td>\n"
+        }
     }
 
     append skill_table "
@@ -157,11 +173,11 @@ if {"" != $skill_table} {
     append skill_table "
 	<tr>
 	  <td></td>
-	  <td colspan=2 align=center>
-	    <input type=submit value=\"[_ intranet-freelance.Update]\" name=submit>
+	  <td colspan=[expr 1+$view_freelance_skillconfs_p] align=center>
+	    <input type=submit name=button_update value=\"[_ intranet-freelance.Update]\" name=submit>
 	  </td>
 	  <td>
-	    <input type=submit value=\"[_ intranet-freelance.Del]\" name=submit>
+	    <input type=submit name=button_del value=\"[_ intranet-freelance.Del]\" name=submit>
 	  </td>
 	</tr>"
 } else {
@@ -194,10 +210,10 @@ append skill_table "
 	</tr>
 	<tr>
 	  <td>
-[im_category_select_plain $value_range_category_type "add_skill_id" ""]
+[im_category_select_plain -translate_p 0 -include_empty_p 0 $value_range_category_type "add_skill_id" ""]
 	  </td>
 	  <td colspan=3>
-	    <input type=submit value=\"[_ intranet-freelance.Add]\" name=submit>
+	    <input type=submit name=button_add value=\"[_ intranet-freelance.Add]\" name=submit>
 	  </td>
 	</tr>
 "

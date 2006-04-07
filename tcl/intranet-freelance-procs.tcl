@@ -250,6 +250,14 @@ ad_proc im_freelance_skill_component { current_user_id user_id  return_url} {
 	return "" 
     }
 
+
+    # Check permissions to see and modify freelance skills and their confirmations
+    #
+    set view_freelance_skills_p [im_permission $current_user_id view_freelance_skills]
+    set add_freelance_skills_p [im_permission $current_user_id add_freelance_skills]
+    set view_freelance_skillconfs_p [im_permission $current_user_id view_freelance_skillconfs]
+    set add_freelance_skillconfs_p [im_permission $current_user_id add_freelance_skillconfs]
+
     set sql "
 select
         sk.skill_id,
@@ -348,26 +356,18 @@ order by
 	# Display a tick or a cross, depending whether the claimed
 	# experience is confirmed or not.
 	#
-	if {"" == $confirmed || [string equal "Unconfirmed" $confirmed]} {
-	    set confirmation "&nbsp;"
-	} else {
-	    if {$claimed_experience_id <= $confirmed_experience_id } {
-		set confirmation [im_gif tick]
-	    } else {
-		set confirmation [im_gif wrong]
+	set confirmation ""
+	if {$view_freelance_skillconfs_p} {
+	    if {"" != $confirmed && ![string equal "Unconfirmed" $confirmed]} {
+		if {$claimed_experience_id <= $confirmed_experience_id } {
+		    set confirmation [im_gif tick]
+		} else {
+		    set confirmation [im_gif wrong]
+		}
 	    }
 	}
+	set experiences_html_eval "<td align=left>$claimed$confirmation</td></tr>\n\t"
 
-	# Allow only administrators of this freelancer to see 
-	# the confirmation level
-	#
-#	if {![string equal "" $skill]} {
-#	    if { $admin } {
-		set experiences_html_eval "<td align=left>$claimed$confirmation</td></tr>\n\t"
-#	    } else {
-#		set experiences_html_eval "<td align=left>$claimed</td></tr>\n\t"
-#	    }
-#	}
 	
 	if {[string equal "" $skill]} {
 	    append skill_body_html ""
@@ -456,7 +456,7 @@ where
     
     set freelance_sql_1 "
 select
-	pe.first_names || pe.last_name as name,
+	pe.first_names || ' ' || pe.last_name as name,
 	pe.person_id as user_id,
 	im_freelance_skill_list(pe.person_id, :sl) as source_languages,
 	im_freelance_skill_list(pe.person_id, :tl) as target_languages,
@@ -489,6 +489,9 @@ from
 	) mu
 where
 	pe.person_id = mu.user_id
+order by
+	pe.last_name,
+	pe.first_names
 "
 
     set freelance_header_html "
@@ -507,7 +510,7 @@ where
     db_foreach freelance $freelance_sql_1 {
 	append freelance_body_html "
 	<tr$bgcolor([expr $ctr % 2])>
-	  <td><a href=users/view?[export_url_vars user_id]>$name</a></td>
+	  <td><a href=users/view?[export_url_vars user_id]><nobr>$name</nobr></a></td>
 	  <td>$source_languages</td>
 	  <td>$target_languages</td>
 	  <td>$subject_area</td>
