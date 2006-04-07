@@ -82,6 +82,10 @@ if { [empty_string_p $how_many] || $how_many < 1 } {
 }
 set end_idx [expr $start_idx + $how_many - 1]
 
+if {0 != $project_id && "" != $project_id} {
+    set company_id [db_string company_from_project "select company_id from im_projects where project_id = :project_id" -default 0]
+}
+
 
 # ---------------------------------------------------------------
 # 3. Defined Table Fields
@@ -165,7 +169,7 @@ if {$provider_id} {
 if {$company_id} {
     lappend criteria "(c.provider_id = :company_id OR c.customer_id = :company_id)"
 }
-if {$project_id} {
+if {"" != $project_id && 0 != $project_id} {
     lappend criteria "c.cost_id in (
 	select distinct cost_id
 	from im_costs

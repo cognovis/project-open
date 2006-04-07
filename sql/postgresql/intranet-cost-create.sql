@@ -18,12 +18,18 @@
 -- the "Finance" view of a project.
 
 alter table im_projects add     cost_quotes_cache		numeric(12,2);
+alter table im_projects alter	cost_quotes_cache		set default 0;
 alter table im_projects add     cost_invoices_cache		numeric(12,2);
+alter table im_projects alter	cost_invoices_cache		set default 0;
 alter table im_projects add     cost_timesheet_planned_cache	numeric(12,2);
+alter table im_projects alter	cost_timesheet_planned_cache	set default 0;
 
 alter table im_projects add     cost_purchase_orders_cache	numeric(12,2);
+alter table im_projects alter	cost_purchase_orders_cache	set default 0;
 alter table im_projects add     cost_bills_cache		numeric(12,2);
+alter table im_projects alter	cost_bills_cache		set default 0;
 alter table im_projects add     cost_timesheet_logged_cache	numeric(12,2);
+alter table im_projects alter	cost_timesheet_logged_cache	set default 0;
 
 
 
@@ -162,7 +168,7 @@ create or replace function im_cost_center__new (
 returns integer as '
 DECLARE
 	p_cost_center_id alias for $1;		-- cost_center_id  default null
-	p_object_type	alias for $2;		-- object_type default im_cost_center
+	p_object_type	alias for $2;		-- object_type default ''im_cost_center''
 	p_creation_date	alias for $3;		-- creation_date default now()
 	p_creation_user alias for $4;		-- creation_user default null
 	p_creation_ip	alias for $5;		-- creation_ip default null
@@ -174,7 +180,7 @@ DECLARE
 	p_status_id	    alias for $11;	-- status_id
 	p_parent_id	    alias for $12;	-- parent_id
 	p_manager_id	    alias for $13;	-- manager_id default null
-	p_department_p	    alias for $14;	-- department_p default t
+	p_department_p	    alias for $14;	-- department_p default ''t''
 	p_description	    alias for $15;	-- description default null
 	p_note		    alias for $16;	-- note default null
 	v_cost_center_id    integer;
@@ -623,7 +629,7 @@ create index im_costs_start_block_idx on im_costs(start_block);
 
 -- create or replace package body im_cost
 -- is
-create or replace function im_cost__new (
+ create or replace function im_cost__new (
        integer,
        varchar,
        timestamptz,
@@ -656,7 +662,7 @@ create or replace function im_cost__new (
 returns integer as '
 declare
 	p_cost_id		alias for $1;		-- cost_id default null
-	p_object_type		alias for $2;		-- object_type default im_cost
+	p_object_type		alias for $2;		-- object_type default ''im_cost''
 	p_creation_date		alias for $3;		-- creation_date default now()
 	p_creation_user		alias for $4;		-- creation_user default null
 	p_creation_ip		alias for $5;		-- creation_ip default null
@@ -676,14 +682,14 @@ declare
 	p_effective_date	alias for $16;		-- effective_date default now()
 	p_payment_days		alias for $17;		-- payment_days default 30
 	p_amount		alias for $18;		-- amount default null
-	p_currency		alias for $19;		-- currency default EUR
+	p_currency		alias for $19;		-- currency default ''EUR''
 	p_vat			alias for $20;		-- vat default 0
 	p_tax			alias for $21;		-- tax default 0
 
-	p_variable_cost_p	alias for $22;		-- variable_cost_p default f
-	p_needs_redistribution_p alias for $23;		-- needs_redistribution_p default f
-	p_redistributed_p	alias for $24;		-- redistributed_p default f
-	p_planning_p		alias for $25;		-- planning_p default f
+	p_variable_cost_p	alias for $22;		-- variable_cost_p default ''f''
+	p_needs_redistribution_p alias for $23;		-- needs_redistribution_p default ''f''
+	p_redistributed_p	alias for $24;		-- redistributed_p default ''f''
+	p_planning_p		alias for $25;		-- planning_p default ''f''
 	p_planning_type_id	alias for $26;		-- planning_type_id default null
 
 	p_note			alias for $27;		-- note default null
@@ -808,7 +814,7 @@ begin
 	''Repeating Cost'',		-- pretty_plural
 	''im_cost'',			-- supertype
 	''im_repeating_costs'',		-- table_name
-	''cost_id'',			-- id_column
+	''rep_cost_id'',		-- id_column
 	''im_repeating_cost'',		-- package_name
 	''f'',				-- abstract_p
 	null,				-- type_extension_table
@@ -837,6 +843,40 @@ create table im_repeating_costs (
 		constraint im_rep_costs_start_end_date
 		check(start_date <= end_date)
 );
+
+
+-- Delete a single cost (if we know its ID...)
+create or replace function im_repeating_cost__delete (integer)
+returns integer as '
+DECLARE
+        p_cost_id alias for $1;
+begin
+        -- Erase the im_repeating_costs entry
+        delete from     im_repeating_costs
+        where           rep_cost_id = p_cost_id;
+
+        -- Erase the object
+        PERFORM im_cost__delete(p_cost_id);
+        return 0;
+end' language 'plpgsql';
+
+
+create or replace function im_repeating_cost__name (integer)
+returns varchar as '
+DECLARE
+        p_cost_id  alias for $1;        -- cost_id
+        v_name  varchar(40);
+    begin
+        select  cost_name
+        into    v_name
+        from    im_costs
+        where   cost_id = p_cost_id;
+
+        return v_name;
+end;' language 'plpgsql';
+
+
+
 
 -------------------------------------------------------------
 -- "Investments"
@@ -1288,6 +1328,29 @@ select  im_component_plugin__new (
 	50,				 -- sort_order
 	'im_costs_project_finance_component $user_id $project_id'  -- component_tcl
     );
+
+
+-- Show the finance component (summary view) in a projects "Summary" page
+--
+select  im_component_plugin__new (
+	null,				 -- plugin_id
+	'acs_object',			 -- object_type
+	now(),				 -- creation_date
+	null,				 -- creation_user
+	null,				 -- creation_ip
+	null,				 -- context_id
+
+	'Project Finance Summary Component',	 -- plugin_name
+	'intranet-cost',		 -- package_name
+	'left',			 -- location
+	'/intranet/projects/view',	 -- page_url
+	null,				 -- view_name
+	80,				 -- sort_order
+	'im_costs_project_finance_component -show_details_p 0 $user_id $project_id'  -- component_tcl
+    );
+
+
+
 
 
 -- Show the cost component in project page

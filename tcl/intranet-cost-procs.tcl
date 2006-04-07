@@ -57,6 +57,106 @@ ad_proc -private im_package_cost_id_helper {} {
 
 
 
+# -----------------------------------------------------------
+# Permissions
+# -----------------------------------------------------------
+
+ad_proc -public im_cost_permissions {user_id cost_id view_var read_var write_var admin_var} {
+    Fill the "by-reference" variables read, write and admin
+    with the permissions of $user_id on $cost_id.<br>
+
+    Basicly cost permissions are derived from the permissions on the
+    underlying companies.
+    Via an "or-conjunction", a "view_costs" privilege give a user permission
+    to view all cost items.
+    An "add_costs" privilege allows the user to admin all cost items.
+    The lack of this "add_costs" privilege will also erase any possibility
+    to create/write/edit/admin any cost items.
+} {
+    upvar $view_var view
+    upvar $read_var read
+    upvar $write_var write
+    upvar $admin_var admin
+
+    set user_is_freelance_p [im_user_is_freelance_p $user_id]
+    set user_is_customer_p [im_user_is_customer_p $user_id]
+
+    # determine customer & provider
+    set customer_id 0
+    set provider_id 0
+    db_0or1row get_companies "
+        select
+                customer_id,
+                provider_id
+        from
+                im_costs
+        where
+                cost_id = :cost_id
+    "
+
+    # Customers get the right to see _their_ invoices
+    set cust_view 0
+    set cust_read 0
+    set cust_write 0
+    set cust_admin 0
+    if {$user_is_customer_p && $customer_id && $customer_id != [im_company_internal]} {
+        im_company_permissions $user_id $customer_id cust_view cust_read cust_write cust_admin
+    }
+
+    # Providers get the right to see _their_ invoices
+    # This leads to the fact that FreelanceManagers (the guys
+    # who can convert themselves into freelancers) can also
+    # see the freelancer's permissions. Is this desired?
+    # I guess yes, even if they don't usually have the permission
+    # to see finance.
+    set prov_view 0
+    set prov_read 0
+    set prov_write 0
+    set prov_admin 0
+    if {$user_is_freelance_p && $provider_id && $provider_id != [im_company_internal]} {
+        im_company_permissions $user_id $provider_id prov_view prov_read prov_write prov_admin
+    }
+
+
+    # Set the permission as the OR-conjunction of provider and customer
+    set view [expr $cust_view || $prov_view]
+    set read [expr $cust_read || $prov_read]
+    set write [expr $cust_write || $prov_write]
+    set admin [expr $cust_admin || $prov_admin]
+
+    if {[im_permission $user_id view_invoices]} {
+        set read 1
+        set view 1
+    }
+
+
+    set can_read [expr [im_permission $user_id view_costs] || [im_permission $user_id view_invoices]]
+    set can_admin [expr [im_permission $user_id add_costs] || [im_permission $user_id add_invoices]]
+
+    if {$can_read} {
+        set read 1
+        set view 1
+    }
+
+    if {$can_admin} {
+        set admin 1
+        set write 1
+        set read 1
+        set view 1
+    }
+
+    # Limit rights of all users to view & read if they dont
+    # have the expressive permission to "add_costs or add_invoices".
+    if {!$can_admin} {
+        set write 0
+        set admin 0
+    }
+}
+
+# -----------------------------------------------------------
+# Options & Selects
+# -----------------------------------------------------------
+
 ad_proc -public im_cost_center_status_options { {include_empty 1} } { 
     Cost Center status options
 } {
@@ -94,6 +194,22 @@ ad_proc -public im_cost_uom_options { {include_empty 1} } {
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
 }
+
+
+
+# ---------------------------------------------------------------
+# Auxil
+# ---------------------------------------------------------------
+
+ad_proc -public n20 { value } { 
+    Converts null ("") values to numeric "0". This function
+    is used inside view definitions in order to deal with null
+    values in TCL 
+} {
+    if {"" == $value} { set value 0 }
+    return $value
+}
+
 
 
 # ---------------------------------------------------------------
@@ -538,7 +654,7 @@ select
 	url.url,
         im_category_from_id(ci.cost_status_id) as cost_status,
         im_category_from_id(ci.cost_type_id) as cost_type,
-	to_date(to_char(ci.effective_date,'yyyymmdd'),'yyyymmdd') + payment_days as calculated_due_date
+	to_date(to_char(ci.effective_date,'yyyymmdd'),'yyyymmdd') + ci.payment_days as calculated_due_date
 	$extra_select_clause
 from
 	im_costs ci,
@@ -592,7 +708,7 @@ order by
 	append cost_html "
 <tr$bgcolor([expr $ctr % 2])>
   <td colspan=$colspan>
-    <A HREF=/intranet-cost/index?status_id=0&[export_url_vars status_id company_id project_id]>
+    <A HREF=/intranet-cost/list?[export_url_vars status_id company_id project_id]>
       [_ intranet-cost.more_costs]
     </A>
   </td>
@@ -652,7 +768,12 @@ order by
 # Benefits & Loss Calculation per Project
 # ---------------------------------------------------------------
 
-ad_proc im_costs_project_finance_component { user_id project_id } {
+ad_proc im_costs_project_finance_component { 
+    {-show_details_p 1}
+    {-show_summary_p 1}
+    user_id 
+    project_id 
+} {
     Returns a HTML table containing a detailed summary of all
     financial activities of the project. <p>
 
@@ -677,6 +798,7 @@ ad_proc im_costs_project_finance_component { user_id project_id } {
     set bgcolor(1) " class=rowodd "
     set colspan 6
     set date_format "YYYY-MM-DD"
+    set num_format "9999999999.99"
 
     # Where to link when clicking on an object link? "edit" or "view"?
     set view_mode "view"
@@ -688,10 +810,13 @@ ad_proc im_costs_project_finance_component { user_id project_id } {
     set org_project_id $project_id
 
     # ----------------- Main SQL - select subtotals and their currencies -------------
+
+set ttt "to_char(sum(ci.amount), :num_format) as amount,"
+
     
     set subtotals_sql "
 select
-	sum(ci.amount) as amount,
+	to_char(sum(ci.amount), :num_format) as amount,
 	ci.currency,
         cat.category_id as cost_type_id,
         im_category_from_id(cat.category_id) as cost_type,
@@ -709,20 +834,20 @@ from
 			ci.cost_id in (
 		                select distinct cost_id
 		                from im_costs
-		                where project_id=:project_id
+		                where project_id = :org_project_id
 			    UNION
 				select distinct cost_id 
 				from im_costs 
-				where parent_id = :project_id
+				where parent_id = :org_project_id
 		            UNION
 		                select distinct object_id_two as cost_id
 		                from acs_rels
-		                where object_id_one = :project_id
+		                where object_id_one = :org_project_id
 			    UNION
 				select distinct object_id_two as cost_id
 				from acs_rels r, im_projects p
 				where object_id_one = p.project_id
-				      and p.parent_id = :project_id
+				      and p.parent_id = :org_project_id
 			)
 	) ci on (cat.category_id = ci.cost_type_id)
 where
@@ -784,6 +909,7 @@ select
 	ci.*,
 	ci.paid_amount as payment_amount,
 	ci.paid_currency as payment_currency,
+	to_char(ci.amount, :num_format) as amount,
 	p.project_nr,
 	p.project_name,
 	cust.company_name as customer_name,
@@ -791,7 +917,7 @@ select
 	url.url,
         im_category_from_id(ci.cost_status_id) as cost_status,
         im_category_from_id(ci.cost_type_id) as cost_type,
-	to_date(to_char(ci.effective_date,:date_format),:date_format) + payment_days as calculated_due_date
+	to_date(to_char(ci.effective_date,:date_format),:date_format) + ci.payment_days as calculated_due_date
 from
 	im_costs ci
 		LEFT OUTER JOIN im_projects p ON ci.project_id = p.project_id,
@@ -807,20 +933,20 @@ where
 	and ci.cost_id in (
 		select distinct cost_id 
 		from im_costs 
-		where project_id = :project_id
+		where project_id = :org_project_id
 	    UNION
 		select distinct cost_id 
 		from im_costs 
-		where parent_id = :project_id
+		where parent_id = :org_project_id
 	    UNION
 		select distinct object_id_two as cost_id
 		from acs_rels
-		where object_id_one = :project_id
+		where object_id_one = :org_project_id
 	    UNION
 		select distinct object_id_two as cost_id
 		from acs_rels r, im_projects p
 		where object_id_one = p.project_id
-		      and p.parent_id = :project_id
+		      and p.parent_id = :org_project_id
 	)
 order by
 	p.project_nr,
@@ -940,7 +1066,6 @@ order by
     # Close the main table
     append cost_html "</table>\n"
 
-
     # ----------------- Hard Costs HTML -------------
     # Hard "real" costs such as invoices, bills and timesheet
 
@@ -961,7 +1086,7 @@ order by
 			cost_purchase_orders_cache = $subtotals([im_cost_type_po]$currency),
 			cost_timesheet_planned_cache = 0
 		where
-			project_id = :project_id
+			project_id = :org_project_id
             "
 	} else {
 
@@ -977,7 +1102,7 @@ order by
 			cost_purchase_orders_cache = null,
 			cost_timesheet_planned_cache = null
 		where
-			project_id = :project_id
+			project_id = :org_project_id
             "
 	}
     }
@@ -998,9 +1123,9 @@ order by
     }
 
     set hard_cost_html "
-<table>
+<table width=\"100%\">
   <tr class=rowtitle>
-    <td class=rowtitle colspan=99 align=center>[_ intranet-cost.Real_Costs]</td>
+    <td class=rowtitle colspan=9 align=center>[_ intranet-cost.Real_Costs]</td>
     $currency_subheaders
   </tr>
   <tr>
@@ -1033,9 +1158,9 @@ order by
     # Preliminary (planned) Costs such as Quotes and Purchase Orders
 
     set prelim_cost_html "
-<table>
+<table width=\"100%\">
   <tr class=rowtitle>
-    <td class=rowtitle colspan=99 align=center>[_ intranet-cost.Preliminary_Costs]</td>
+    <td class=rowtitle colspan=9 align=center>[_ intranet-cost.Preliminary_Costs]</td>
     $currency_subheaders
   </tr>
   <tr>
@@ -1052,16 +1177,11 @@ order by
 	set grand_total($currency) [expr $grand_total($currency) - $subtotal]
     }
 
-# No planned timesheet yet - will be from resource planning
-#    append prelim_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Timesheet_Costs]</td>\n"
-#    foreach currency $currencies {
-#	append prelim_cost_html "<td align=right>
-#	  $subtotals([im_cost_type_timesheet]$currency) $currency
-#	</td>\n"
-#    }
-    append prelim_cost_html "</tr>\n<tr>\n<td></td>\n"
+    append prelim_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Timesheet_Costs]</td>\n"
     foreach currency $currencies {
-	append prelim_cost_html "<td align=right>&nbsp;</td>\n"
+	append prelim_cost_html "<td align=right>
+<!--	  $subtotals([im_cost_type_timesheet]$currency) $currency -->
+	</td>\n"
     }
 
     append prelim_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-cost.Grand_Total]</b></td>\n"
@@ -1078,6 +1198,7 @@ order by
     
     # Add some links to create new financial documents
     # if the intranet-invoices module is installed
+    set admin_html ""
     if {[db_table_exists im_invoices]} {
 
 	set admin_html "
@@ -1091,7 +1212,7 @@ order by
 	  <td colspan=$colspan>\n"
 
 	    # Customer invoices: customer = Project Customer, provider = Internal
-	    set customer_id [db_string project_customer "select company_id from im_projects where project_id=:project_id" -default ""]
+	    set customer_id [db_string project_customer "select company_id from im_projects where project_id = :org_project_id" -default ""]
 	    set provider_id [im_company_internal]
 	    set bind_vars [ad_tcl_vars_to_ns_set customer_id provider_id project_id]
       	    append admin_html [im_menu_ul_list "invoices_customers" $bind_vars]
@@ -1106,38 +1227,75 @@ order by
 	</tr>
         </table>
 	"
-
-	set cost_html "
-
-<table>
-<tr valign=top>
-  <td>
-    $cost_html
-  </td>
-  <td>
-    $admin_html
-  </td>
-</tr>
-</table>
-<br>
-
-<table cellspacing=0 cellpadding=0>
-<tr><td class=rowtitle colspan=99 align=center>Summary</td></tr>
-<tr valign=top>
-  <td>
-    $hard_cost_html
-  </td>
-  <td>&nbsp &nbsp;</td>
-  <td>
-    $prelim_cost_html
-  </td>
-</tr>
-</table>
-"
     }
 
-    return $cost_html
+    # Print out a warning in case of multiple currencies,
+    # because we can't include this project then in profit & loss
+    # and margin calculations
+    set multiple_currency_warning ""
+    if {1 < $num_currencies} { 
+	set multiple_currency_warning [_ intranet-cost.Multiple_Currency_Warning]  
+    }
 
+    set result_html ""
+
+    if {$show_details_p} {
+	set result_html "
+	$multiple_currency_warning
+	<table>
+	<tr valign=top>
+	  <td>
+	    $cost_html
+	  </td>
+	  <td>
+	    $admin_html
+	  </td>
+	</tr>
+	</table>\n"
+
+    }
+
+    if {$show_details_p && $show_summary_p} {
+	# Summary in broad format
+        append result_html "
+	<br>
+	<table cellspacing=0 cellpadding=0>
+	<tr><td class=rowtitle colspan=3 align=center>[_ intranet-cost.Financial_Summary]</td></tr>
+	<tr valign=top>
+	  <td>
+	    $hard_cost_html
+	  </td>
+	  <td>&nbsp &nbsp;</td>
+	  <td>
+	    $prelim_cost_html
+	  </td>
+	</tr>
+	</table>
+	"
+    }
+
+    if {!$show_details_p && $show_summary_p} {
+	# Summary in narrow format
+        append result_html "
+	<br>
+	<table cellspacing=0 cellpadding=0 width=\"70%\" >
+	<tr>
+	  <td class=rowtitle align=center>[_ intranet-cost.Financial_Summary]</td>
+	</tr>
+	<tr valign=top>
+	  <td>
+	    $hard_cost_html
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+	    $prelim_cost_html
+	  </td>
+	</tr>
+	</table>
+	"
+    }
+    return $result_html
 }
 
 
@@ -1215,7 +1373,7 @@ ad_proc im_cost_template_select { select_name { default "" } } {
     Returns an html select box named $select_name and defaulted to $default 
     with a list of all the partner statuses in the system
 } {
-    return [im_category_select -translate_p 0 "Intranet Cost Template" $select_name $default]
+    return [im_category_select_plain -translate_p 0 "Intranet Cost Template" $select_name $default]
 }
 
 

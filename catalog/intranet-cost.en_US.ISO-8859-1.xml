@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-cost" package_version="3.0.0.0.4" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-cost" package_version="3.1.0.0.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Absences">Absences</msg>
   <msg key="Administration">Administration</msg>
@@ -9,6 +9,7 @@
   <msg key="Companies">Companies</msg>
   <msg key="Company">Company</msg>
   <msg key="context">context</msg>
+  <msg key="Cost_Centers">Cost Centers</msg>
   <msg key="Cost_Items">Cost Items</msg>
   <msg key="create">create</msg>
   <msg key="Currency">Currency</msg>
@@ -29,6 +30,7 @@
   <msg key="finance">finance</msg>
   <msg key="Finance_Home">Finance Home</msg>
   <msg key="Financial_Documents">Financial Documents</msg>
+  <msg key="Financial_Summary">Financial Summary</msg>
   <msg key="Go">Go</msg>
   <msg key="Grand_Total">Grand Total</msg>
   <msg key="Investment">Investment</msg>
@@ -43,6 +45,12 @@
     find and enter all information about companies, projects
     and users.</msg>
   <msg key="more_costs">more costs...</msg>
+  <msg key="Multiple_Currency_Warning">&lt;h2&gt;Multiple Currency Warning&lt;/h2&gt;
+&lt;p&gt;
+This project includes financial documents with more then one currency.
+&lt;br&gt;
+While this is OK in general, it will keep us from calculating a single profit&amp;loss number for this project and to include this project in the project margin calculation.
+&lt;/p&gt;</msg>
   <msg key="Name">Name</msg>
   <msg key="New_Cost">New Cost</msg>
   <msg key="New_Cost_Item">New Cost Item</msg>
