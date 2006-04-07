@@ -15,11 +15,16 @@ ad_page_contract {
 }
 
 set user_id [ad_maybe_redirect_for_registration]
+if {![im_permission $user_id add_costs]} {
+    ad_return_complaint 1 "[_ intranet-trans-invoices.lt_You_have_insufficient_1]"
+    return
+}
+
 set page_title "[_ intranet-trans-invoices.lt_Upload_Client_Prices_]"
 
 set context_bar [im_context_bar [list "/intranet/companies/" "[_ intranet-trans-invoices.Clients]"] "[_ intranet-trans-invoices.Upload_CSV]"]
 
-set page_content "
+set page_body "
 <form enctype=multipart/form-data method=POST action=upload-prices-2.tcl>
 [export_form_vars company_id return_url]
                     <table border=0>

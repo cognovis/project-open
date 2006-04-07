@@ -26,7 +26,8 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
-if {!$user_is_admin_p} {
+
+if {![im_permission $user_id add_costs]} {
     ad_return_complaint 1 "[_ intranet-trans-invoices.lt_You_have_insufficient_1]"
     return
 }
@@ -49,12 +50,14 @@ set uom_options [db_list_of_lists uom_options "
 select category, category_id
 from im_categories
 where category_type = 'Intranet UoM'
+order by category
 "]
 
 set task_type_options [db_list_of_lists uom_options "
 select category, category_id
 from im_categories
 where category_type = 'Intranet Project Type'
+order by category
 "]
 set task_type_options [linsert $task_type_options 0 [list "" ""]]
 
@@ -62,6 +65,7 @@ set language_options [db_list_of_lists uom_options "
 select category, category_id
 from im_categories
 where category_type = 'Intranet Translation Language'
+order by category
 "]
 set language_options [linsert $language_options 0 [list "" ""]]
 
@@ -69,6 +73,7 @@ set subject_area_options [db_list_of_lists uom_options "
 select category, category_id
 from im_categories
 where category_type = 'Intranet Translation Subject Area'
+order by category
 "]
 set subject_area_options [linsert $subject_area_options 0 [list "" ""]]
 
@@ -89,8 +94,9 @@ ad_form \
 	{source_language_id:text(select),optional {label "[_ intranet-trans-invoices.Source_Language]"} {options $language_options} }
 	{target_language_id:text(select),optional {label "[_ intranet-trans-invoices.Target_Language]"} {options $language_options} }
 	{subject_area_id:text(select),optional {label "[_ intranet-trans-invoices.Subject_Area]"} {options $subject_area_options} }
-	{amount:text(text) {label "[_ intranet-trans-invoices.Amount]"} {html {size 10}}}
+	{amount:float(text) {label "[_ intranet-trans-invoices.Amount]"} {html {size 10}}}
 	{currency:text(select) {label "[_ intranet-trans-invoices.Currency]"} {options $currency_options} }
+	{note:text(textarea),optional {label "[_ intranet-core.Note]"} {}}
     }
 
 
@@ -99,7 +105,8 @@ ad_form -extend -name price -on_request {
 
 } -select_query {
 
-	select	p.*
+	select	p.*,
+		price as amount
 	from	im_trans_prices p
 	where	p.price_id = :price_id
 
@@ -115,7 +122,8 @@ insert into im_trans_prices (
 	source_language_id,
 	subject_area_id,
 	currency,
-	price
+	price,
+	note
 ) values (
 	:price_id,
 	:uom_id,
@@ -125,22 +133,25 @@ insert into im_trans_prices (
 	:source_language_id,
 	:subject_area_id,
 	:currency,
-	:amount
+	:amount,
+	:note
 )"
 
 } -edit_data {
 
     db_dml price_update "
-	update im_prices set
-	        package_name    = :package_name,
-	        label           = :label,
-	        name            = :name,
-	        url             = :url,
-	        sort_order      = :sort_order,
-	        parent_price_id  = :parent_price_id
-	where
-		price_id = :price_id
-"
+	update im_trans_prices set 
+	uom_id = :uom_id,
+	task_type_id = :task_type_id,
+	target_language_id = :target_language_id,
+	source_language_id = :source_language_id,
+	subject_area_id = :subject_area_id,
+	currency = :currency,
+	price = :amount,
+	note = :note
+	where price_id = :price_id
+    "
+
 } -on_submit {
 
 	ns_log Notice "new1: on_submit"

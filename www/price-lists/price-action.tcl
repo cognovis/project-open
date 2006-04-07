@@ -21,7 +21,16 @@ ad_page_contract {
     {return_url ""}
 }
 
+
+# ------------------------------------------------------------------
+# Default & Security
+# ------------------------------------------------------------------
+
 set user_id [ad_maybe_redirect_for_registration]
+if {![im_permission $user_id add_costs]} {
+    ad_return_complaint 1 "[_ intranet-trans-invoices.lt_You_have_insufficient_1]"
+}
+
 set page_body "<PRE>\n"
 
 if {$return_url == ""} {

@@ -25,8 +25,9 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
     set price_format "000.000"
+    set price_url_base "/intranet-trans-invoices/price-lists/new"
 
-    set colspan 7
+    set colspan 8
     set price_list_html "
 <form action=/intranet-trans-invoices/price-lists/price-action method=POST>
 [export_form_vars company_id return_url]
@@ -39,6 +40,7 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
 	  <td class=rowtitle>[_ intranet-trans-invoices.Target]</td>
 	  <td class=rowtitle>[_ intranet-trans-invoices.Subject]</td>
 	  <td class=rowtitle>[_ intranet-trans-invoices.Rate]</td>
+	  <td class=rowtitle>[_ intranet-core.Note]</td>
 	  <td class=rowtitle>[im_gif del "Delete"]</td>
 </tr>"
 
@@ -70,9 +72,15 @@ order by
     set old_currency ""
     db_foreach prices $price_sql {
 
+        # There can be errors when formatting an empty string...
+        set price_formatted ""
+        catch { set price_formatted [format "%0.3f" $price] } errmsg
+
 	if {"" != $old_currency && ![string equal $old_currency $currency]} {
 	    append price_rows_html "<tr><td colspan=$colspan>&nbsp;</td></tr>\n"
 	}
+
+        set price_url [export_vars -base $price_url_base { company_id price_id return_url }]
 
 	append price_rows_html "
         <tr $bgcolor([expr $ctr % 2]) nobreak>
@@ -81,7 +89,8 @@ order by
 	  <td>$source_language</td>
           <td>$target_language</td>
 	  <td>$subject_area</td>
-          <td>[format "%0.3f" $price] $currency</td>
+          <td><a href=\"$price_url\">$price_formatted $currency</a></td>
+          <td>[string_truncate -len 15 $note]</td>
           <td><input type=checkbox name=price_id.$price_id></td>
 	</tr>"
 	incr ctr
@@ -96,23 +105,38 @@ order by
 
     set sample_pracelist_link "<a href=/intranet-trans-invoices/price-lists/pricelist_sample.csv>[_ intranet-trans-invoices.lt_sample_pricelist_CSV_]</A>"
 
-    append price_list_html "
+    if {[im_permission $user_id add_costs]} {
+
+        append price_list_html "
 <tr>
   <td colspan=$colspan align=right>
     <input type=submit name=add_new value=\"[_ intranet-trans-invoices.Add_New]\">
     <input type=submit name=del value=\"[_ intranet-trans-invoices.Del]\">
   </td>
-</tr>
+</tr>\n"
+
+    }
+
+append price_list_html "
 </table>
 </form>
+"
+
+
+    if {[im_permission $user_id add_costs]} {
+
+        append price_list_html "
 <ul>
   <li>
-    <a href=/intranet-trans-invoices/upload-prices?[export_url_vars company_id return_url]>
+    <a href=/intranet-trans-invoices/price-lists/upload-prices?[export_url_vars company_id return_url]>
       [_ intranet-trans-invoices.Upload_prices]</A>
     [_ intranet-trans-invoices.lt_for_this_company_via_]
   <li>
     [_ intranet-trans-invoices.lt_Check_this_sample_pra]
     [_ intranet-trans-invoices.lt_It_contains_some_comm]
 </ul>\n"
+
+    }
+
     return $price_list_html
 }

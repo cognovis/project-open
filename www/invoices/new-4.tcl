@@ -17,6 +17,8 @@ ad_page_contract {
     customer_id:integer
     provider_id:integer
     { select_project:integer,multiple {} }
+    { company_contact_id "" }
+    { invoice_office_id "" }
     invoice_nr
     invoice_date
     cost_status_id:integer 
@@ -94,7 +96,9 @@ db_dml update_invoice "
 update im_invoices 
 set 
 	invoice_nr	= :invoice_nr,
-	payment_method_id = :payment_method_id
+	payment_method_id = :payment_method_id,
+	company_contact_id = :company_contact_id,
+	invoice_office_id = :invoice_office_id
 where
 	invoice_id = :invoice_id
 "

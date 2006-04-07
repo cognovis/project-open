@@ -19,8 +19,6 @@
 select 
 	c.*,
         o.*,
-	im_email_from_user_id(c.accounting_contact_id) as company_contact_email,
-	im_name_from_user_id(c.accounting_contact_id) as  company_contact_name,
 	c.company_name,
 	c.company_path,
 	c.company_path as company_short_name,
@@ -37,40 +35,5 @@ where
     </querytext>
   </fullquery>
 
-
-  <fullquery name="task_sum">
-    <querytext>
-
-select
-	trim(both ' ' from to_char(s.task_sum, :number_format)) as task_sum,
-	s.task_type_id,
-	s.subject_area_id,
-	s.source_language_id,
-	s.target_language_id,
-	s.task_uom_id,
-	c_type.category as task_type,
-	c_uom.category as task_uom,
-	c_target.category as target_language,
-	s.company_id,
-	s.project_id,
-	p.project_name,
-	p.project_path,
-	p.project_path as project_short_name,
-	p.company_project_nr
-from
-	($task_sum_inner_sql) s
-      LEFT JOIN
-	im_categories c_uom ON s.task_uom_id=c_uom.category_id
-      LEFT JOIN
-	im_categories c_type ON s.task_type_id=c_type.category_id
-      LEFT JOIN
-	im_categories c_target ON s.target_language_id=c_target.category_id
-      LEFT JOIN
-	im_projects p ON s.project_id=p.project_id
-order by
-	p.project_id
-
-    </querytext>
-  </fullquery>
 
 </queryset>

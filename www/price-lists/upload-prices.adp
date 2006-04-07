@@ -8,3 +8,5 @@
 <property name="main_navbar_label">finance</property>
 
 @page_body;noquote@
+
+

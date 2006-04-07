@@ -1,6 +1,6 @@
 # /packages/intranet-trans-invoices/www/new-2.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (C) 2003-2004 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -165,7 +165,7 @@ db_foreach select_tasks $sql {
 		<tr><td colspan=$colspan>&nbsp;</td></tr>
 		<tr>
 		  <td class=rowtitle colspan=$colspan>
-	            <A href=/intranet/projects/view?group_id=$project_id>
+	            <A href=/intranet/projects/view?project_id=$project_id>
 		      $project_short_name
 		    </A>: 
 		    $project_name
@@ -198,6 +198,10 @@ if {![string equal "" $task_table_rows]} {
 
 set deselect_button_html "
     <tr><td colspan=7 align=right>
+
+      <input type=checkbox name=aggregate_tasks_p value=1 checked>
+      [lang::message::lookup "" intranet-trans-invoices.Aggregate_tasks_of_the_same_type "Aggregate tasks of the same type"]
+
       <input type=submit name=submit value='[_ intranet-trans-invoices.lt_Select_Tasks_for_Invo]'>
     </td></tr>
     <tr><td>&nbsp;</td></tr>

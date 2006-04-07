@@ -1,6 +1,6 @@
 -- /packages/intranet-trans-invoices/sql/oracle/intranet-trans-invoices-create.sql
 --
--- Copyright (c) 2003-2004 Project/Open
+-- Copyright (c) 2003-2004 ]project-open[
 --
 -- All rights reserved. Please check
 -- http://www.project-open.com/license/ for details.
@@ -8,7 +8,7 @@
 -- @author frank.bergmann@project-open.com
 -- @author juanjoruizx@yahoo.es
 
--- Translation Invoicing for Project/Open
+-- Translation Invoicing for ]project-open[
 --
 -- Defines:
 --	im_trans_prices			List of prices with defaults
@@ -253,8 +253,13 @@ create table im_trans_prices (
 				check(valid_through - valid_from >= 0),
 	--
 	-- "Output variables"
-	currency		char(3) references currency_codes(ISO),
+	currency		char(3) references currency_codes(ISO)
+				constraint im_trans_prices_currency_nn
+				not null,
 	price			numeric(12,4)
+				constraint im_trans_prices_price_nn
+				not null,
+	note			varchar(1000)
 );
 
 -- make sure the same price doesn't get defined twice 
@@ -389,7 +394,7 @@ end;' language 'plpgsql';
 ---------------------------------------------------------
 -- Register the component in the core TCL pages
 --
--- These DB-entries allow the pages of Project/Open Core
+-- These DB-entries allow the pages of ]project-open[ Core
 -- to render the forum components in the Home, Users, Projects
 -- and Company pages.
 --

@@ -7,4 +7,12 @@
 <property name="context">@context_bar@</property>
 <property name="main_navbar_label">finance</property>
 
+
+<PRE>
+<A HREF=@return_url;noquote@>Return to Company Page</A>
+
 @page_body;noquote@
+
+
+
+

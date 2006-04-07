@@ -16,16 +16,21 @@ ad_page_contract {
 } 
 
 set current_user_id [ad_maybe_redirect_for_registration]
-set page_title "<#_ Upload New File/URL#>"
-set page_body "<PRE>\n<A HREF=$return_url><#_ Return to Company Page#></A>\n"
-set context_bar [im_context_bar [list "/intranet/cusomers/" "<#_ Clients#>"] "<#_ Upload CSV#>"]
+if {![im_permission $current_user_id add_costs]} {
+    ad_return_complaint 1 "[_ intranet-trans-invoices.lt_You_have_insufficient_1]"
+    return
+}
+
+
+set page_title "Upload New File/URL"
+set context_bar [im_context_bar [list "/intranet/cusomers/" "Clients"] "Upload CSV"]
 
 # Get the file from the user.
 # number_of_bytes is the upper-limit
 set max_n_bytes [ad_parameter -package_id [im_package_filestorage_id] MaxNumberOfBytes "" 0]
 set tmp_filename [ns_queryget upload_file.tmpfile]
 if { $max_n_bytes && ([file size $tmp_filename] > $max_n_bytes) } {
-    ad_return_complaint 1 "<#_ Your file is larger than the maximum permissible upload size#>:  [util_commify_number $max_n_bytes] bytes"
+    ad_return_complaint 1 "Your file is larger than the maximum permissible upload size:  [util_commify_number $max_n_bytes] bytes"
     return
 }
 
@@ -36,13 +41,13 @@ if ![regexp {([^//\\]+)$} $upload_file match company_filename] {
 }
 
 if {[regexp {\.\.} $company_filename]} {
-    set error "<#_ Filename contains forbidden characters#>"
+    set error "Filename contains forbidden characters"
     ad_returnredirect "/error.tcl?[export_url_vars error]"
 }
 
 if {![file readable $tmp_filename]} {
-    set err_msg "<#_ Unable to read the file '%tmp_filename%'.#> 
-<#_ Please check the file permissions or price your system administrator.#>"
+    set err_msg "Unable to read the file '%tmp_filename%'. 
+    Please check the file permissions or price your system administrator."
     append page_body "\n$err_msg\n"
     ad_return_template
     return
@@ -68,7 +73,7 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
     set csv_line [string trim [lindex $csv_files $i]]
     set csv_fields [split $csv_line ";"]
 
-    append page_body "<#_ Line #%i%#>: $csv_line\n"
+    append page_body "Line #%i%: $csv_line\n"
 
     # Skip empty lines or line starting with "#"
     if {[string equal "" [string trim $csv_line]]} { continue }
@@ -123,20 +128,28 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
     }
 
     if {![string equal "" $task_type]} {
-        set task_type_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Project Type' and category=:task_type"  -default 0]
+        set task_type_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Project Type' and lower(category) = lower(trim(:task_type))"  -default 0]
         if {$task_type_id == 0} { append errmsg "<li>Didn't find Task Type '$task_type'\n" }
     }
 
-    set source_language_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Translation Language' and category=:source_language"  -default ""]
+    set source_language_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Translation Language' and lower(category) = lower(trim(:source_language))"  -default ""]
+    if {$source_language_id == "" && $source_language != ""} { 
+        append errmsg "<li>Didn't find Source Language '$source_language'\n" 
+    }
 
-    set target_language_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Translation Language' and category=:target_language"  -default ""]
+    set target_language_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Translation Language' and lower(category) = lower(trim(:target_language))"  -default ""]
+    if {$target_language_id == "" && $target_language != ""} { 
+        append errmsg "<li>Didn't find Target Language '$target_language'\n" 
+    }
 
-    set subject_area_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Translation Subject Area' and category=:subject_area"  -default ""]
+    set subject_area_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Translation Subject Area' and lower(category) = lower(trim(:subject_area))"  -default ""]
+    if {$subject_area_id == "" && $subject_area != ""} { 
+        append errmsg "<li>Didn't find Subject Area '$subject_area'\n" 
+    }
 
     # It doesn't matter whether prices are given in European "," or American "." decimals
     regsub {,} $price {.} price
 
-#    append page_body "\n"
 #    append page_body "uom_id=$uom_id\n"
 #    append page_body "company_id=$company_id\n"
 #    append page_body "task_type_id=$task_type_id\n"
@@ -148,12 +161,14 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
 #    append page_body "price=$price\n"
 #    append page_body "currency=$currency\n"
 
+    set price_id [db_nextval "im_trans_prices_seq"]
+
     set insert_price_sql "INSERT INTO im_trans_prices (
        price_id, uom_id, company_id, task_type_id,
        target_language_id, source_language_id, subject_area_id,
        valid_from, valid_through, currency, price
     ) VALUES (
-       im_trans_prices_seq.nextval, :uom_id, :company_id, :task_type_id,
+       :price_id, :uom_id, :company_id, :task_type_id,
        :target_language_id, :source_language_id, :subject_area_id,
        :valid_from, :valid_through, :currency, :price
     )"
@@ -169,6 +184,6 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
     }
 }
 
-append page_body "\n<A HREF=$return_url><#_ Return to Project Page#></A>\n"
+append page_body "\n<A HREF=$return_url>Return to Project Page</A>\n"
 
 ad_return_template

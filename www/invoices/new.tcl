@@ -1,6 +1,6 @@
 # /packages/intranet-trans-invoices/www/new.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (C) 2003-2004 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -108,7 +108,7 @@ if { [empty_string_p $project_status_id] } {
 if { [empty_string_p $how_many] || $how_many < 1 } {
     set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50]
 }
-set end_idx [expr $start_idx + $how_many - 1]
+set end_idx [expr $start_idx + $how_many]
 
 
 # We don't need to show the select screen if only a single project
@@ -223,7 +223,7 @@ switch $order_by {
     "Type" { set order_by_clause "order by project_type" }
     "Status" { set order_by_clause "order by project_status_id" }
     "Delivery Date" { set order_by_clause "order by end_date" }
-    "Client" { set order_by_clause "order by company_name" }
+    "Client" { set order_by_clause "order by lower(company_name)" }
     "Words" { set order_by_clause "order by task_words" }
     "Final User" { set order_by_clause "order by final_company" }
     "Project #" { set order_by_clause "order by project_nr" }
@@ -265,8 +265,8 @@ select
         im_category_from_id(p.project_status_id) as project_status,
         im_proj_url_from_type(p.project_id, 'website') as url,
 	p.start_date,
-	p.end_date,
-	to_char(end_date, 'HH24:MI') as end_date_time
+	to_char(p.end_date, 'YYYY-MM-DD') as end_date,
+	to_char(p.end_date, 'HH24:MI') as end_date_time
 from 
 	im_projects p, 
         im_companies c,
@@ -298,16 +298,16 @@ if {[string compare $letter "ALL"]} {
     set how_many -1
     set selection "$sql"
 } else {
-    set limited_query [im_select_row_range $sql $start_idx $end_idx]
     # We can't get around counting in advance if we want to be able to 
     # sort inside the table on the page for only those users in the 
     # query results
     set total_in_limited [db_string projects_total_in_limited "
 	select count(*) 
-        from im_projects p 
-        where 1=1 $where_clause"]
+        from ($sql) s
+    "]
 
-    set selection "select z.* from ($limited_query) z $order_by_clause"
+    set selection [im_select_row_range $sql $start_idx $end_idx]
+    ns_log Notice "intranet-trans-invoices/new: start_idx=$start_idx end_idx=$end_idx how_many=$how_many total_in_limited=$total_in_limited"
 }	
 
 # ---------------------------------------------------------------
@@ -429,10 +429,10 @@ if { [empty_string_p $table_body_html] } {
         </b></ul></td></tr>"
 }
 
-if { $ctr == $how_many && $end_idx < $total_in_limited } {
+if { $end_idx < $total_in_limited } {
     # This means that there are rows that we decided not to return
     # Include a link to go to the next page
-    set next_start_idx [expr $end_idx + 1]
+    set next_start_idx [expr $end_idx + 0]
     set next_page_url "new?start_idx=$next_start_idx&[export_ns_set_vars url [list start_idx]]"
 } else {
     set next_page_url ""
@@ -456,7 +456,7 @@ if { $start_idx > 0 } {
 # => include a link to go to the next page 
 #
 if {$ctr==$how_many && $total_in_limited > 0 && $end_idx < $total_in_limited} {
-    set next_start_idx [expr $end_idx + 1]
+    set next_start_idx [expr $end_idx + 0]
     set next_page "<a href=new?start_idx=$next_start_idx&[export_ns_set_vars url [list start_idx]]>[_ intranet-trans-invoices.Next_Page]</a>"
 } else {
     set next_page ""

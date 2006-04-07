@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-trans-invoices" package_version="3.0.0.0.4" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-trans-invoices" package_version="3.1.0.0.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Accounting_Contact">Accounting Contact</msg>
   <msg key="Add_New">Add New</msg>
@@ -13,7 +13,7 @@
   <msg key="Company_name">Company name</msg>
   <msg key="context">context</msg>
   <msg key="Country">Country</msg>
-  <msg key="Create_Invoice">Create Invoice</msg>
+  <msg key="Create_Invoice">Create %type_name%</msg>
   <msg key="Currency">Currency</msg>
   <msg key="Del">Del</msg>
   <msg key="Delete">Delete</msg>
@@ -29,11 +29,11 @@
   <msg key="Home_Phone">Home Phone</msg>
   <msg key="Include_in_Invoice">Include in Invoice</msg>
   <msg key="Invoice_Currency">Invoice Currency</msg>
-  <msg key="Invoice_Data">Invoice Data</msg>
-  <msg key="Invoice_date">Invoice date</msg>
-  <msg key="Invoice_nr">Invoice nr.</msg>
+  <msg key="Invoice_Data">%type_name% Data</msg>
+  <msg key="Invoice_date">%type_name% date</msg>
+  <msg key="Invoice_nr">%type_name% nr.</msg>
   <msg key="Invoice_Status">Invoice Status</msg>
-  <msg key="Invoice_template">Invoice template</msg>
+  <msg key="Invoice_template">%type_name% template</msg>
   <msg key="Invoices">Invoices</msg>
   <msg key="Line">Line</msg>
   <msg key="lt_Check_this_sample_pra">Check this %sample_pracelist_link%.</msg>
@@ -67,9 +67,11 @@
   <msg key="MSM">MSM</msg>
   <msg key="Name">Name</msg>
   <msg key="New_cost_type">New %cost_type%</msg>
-  <msg key="New_Invoice">New Invoice</msg>
+  <msg key="New_Customer_Invoice_from_Translation_Tasks">New Customer Invoice from Translation Tasks</msg>
+  <msg key="New_Invoice">New %type_name%</msg>
   <msg key="New_Price">New Price</msg>
   <msg key="New_Purchase_Order">New Purchase Order</msg>
+  <msg key="New_Quote_from_Translation_Tasks">New Quote from Translation Tasks</msg>
   <msg key="New_Trans_Invoice">New Trans Invoice</msg>
   <msg key="New_Translation_Customer_Invoice">New Translation Customer Invoice</msg>
   <msg key="New_Translation_Quote">New Translation Quote</msg>
