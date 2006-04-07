@@ -224,6 +224,9 @@ ad_proc -public im_filestorage_profile_tds { user_id object_id } {
 # /intranet/download/<group_id>/...
 #
 proc intranet_download { folder_type } {
+    global tcl_platform
+	set platform [lindex $tcl_platform(platform) 0]
+    
     set url "[ns_conn url]"
     set user_id [ad_maybe_redirect_for_registration]
 
@@ -243,7 +246,6 @@ proc intranet_download { folder_type } {
 
     set file_comps [lrange $path_list $start_index $len]
     set file_name [join $file_comps "/"]
-    ns_log Notice "file_name=$file_name"
 
     set base_path [im_filestorage_base_path $folder_type $group_id]
     if {"" == $base_path} {
@@ -252,7 +254,7 @@ proc intranet_download { folder_type } {
     }
 
     set file "$base_path/$file_name"
-    ns_log Notice "file=$file"
+    ns_log Notice "file_name=$file_name file=$file"
 
     if { [catch {
         set file_readable [file readable $file]
@@ -264,9 +266,9 @@ proc intranet_download { folder_type } {
     }
 
     if $file_readable {
-	rp_serve_concrete_file $file
+		rp_serve_concrete_file $file		
     } else {
-	doc_return 500 text/html "[_ intranet-filestorage.lt_Did_not_find_the_spec]"
+		doc_return 500 text/html "[_ intranet-filestorage.lt_Did_not_find_the_spec]"
     }
 }
 
@@ -529,23 +531,15 @@ ad_proc im_filestorage_company_path { company_id } {
     Determine the location where the project files
     are stored on the hard disk
 } {
-    return [util_memoize "im_filestorage_company_path_helper $company_id"]
+    return [im_filestorage_company_path_helper $company_id]
+#    return [util_memoize "im_filestorage_company_path_helper $company_id"]
 }
 
 ad_proc im_filestorage_company_path_helper { company_id } {
     Determine the location where the project files
     are stored on the hard disk
 } {
-    set package_key "intranet-filestorage"
-    set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
-    set base_path_unix [parameter::get -package_id $package_id -parameter "CompanyBasePathUnix" -default "/tmp/companies"]
-
-    # Return a demo path for all project, clients etc.
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	set path [ad_parameter "TestDemoDevPath" "" "companies"]
-	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
-	return "$base_path_unix/$path"
-    }
+    set base_path_unix [parameter::get -package_id [im_package_filestorage_id] -parameter "CompanyBasePathUnix" -default "/tmp/companies"]
 
     set company_path "undefined"
     if {[catch {
@@ -575,56 +569,66 @@ ad_proc im_filestorage_project_workflow_dirs { project_type_id } {
     # 94: Trans + Internal Edit
 } {
     ns_log Notice "im_filestorage_project_workflow_dirs: project_type_id=$project_type_id"
+
+    # Localize the workflow stage directories
+    set locale "en_US"
+    set source [lang::message::lookup $locale intranet-translation.Workflow_source_directory "source"]
+    set trans [lang::message::lookup $locale intranet-translation.Workflow_trans_directory "trans"]
+    set edit [lang::message::lookup $locale intranet-translation.Workflow_edit_directory "edit"]
+    set proof [lang::message::lookup $locale intranet-translation.Workflow_proof_directory "proof"]
+    set deliv [lang::message::lookup $locale intranet-translation.Workflow_deliv_directory "deliv"]
+    set other [lang::message::lookup $locale intranet-translation.Workflow_other_directory "other"]
+
     switch $project_type_id {
 	
 	87 { 
 	    # Trans + Edit
-	    return [list deliv trans edit]
+	    return [list $deliv $trans $edit]
 	}
 
 	88 {
 	    # Edit Only
-	    return [list deliv edit]
+	    return [list $deliv $edit]
 	}
 
 	89 {
 	    # Trans + Edit + Proof
-	    return [list deliv trans edit proof]
+	    return [list $deliv $trans $edit $proof]
 	}
 
 	90 {
 	    # Linguistic
-	    return [list deliv]
+	    return [list $deliv]
 	}
 
 	91 {
 	    # Localization
-	    return [list deliv]
+	    return [list $deliv]
 	}
 
 	92 {
 	    # Technology
-	    return [list deliv]
+	    return [list $deliv]
 	}
 
 	93 {
 	    # Trans Only
-	    return [list deliv trans]
+	    return [list $deliv $trans]
 	}
 
 	94 {
 	    # Trans + Int. Spotcheck
-	    return [list deliv trans edit]
+	    return [list $deliv $trans $edit]
 	}
 
 	95 {
 	    # Proof Only
-	    return [list deliv proof]
+	    return [list $deliv $proof]
 	}
 
 	96 {
 	    # Glossary Compilation
-	    return [list deliv]
+	    return [list $deliv]
 	}
 
 	default {
@@ -641,6 +645,9 @@ ad_proc im_filestorage_create_directories { project_id } {
     Returns "" if successful 
     Returns a formatted errors string otherwise.
 } {
+    # Localize the workflow stage directories
+    set locale "en_US"
+    set source [lang::message::lookup $locale intranet-translation.Workflow_source_directory "source"]
 
     if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
 	# We're at a demo server, so don't create any directories!
@@ -702,7 +709,7 @@ where
     # Create a source language directory
     # if source_language is defined...
     if {"" != $source_language} {
-	set source_dir "$project_dir/source_$source_language"
+	set source_dir "$project_dir/${source}_$source_language"
 	ns_log Notice "im_filestorage_create_directories: source_dir=$source_dir"
 	if {[catch {
 	    if {![file exists $source_dir]} {
@@ -827,7 +834,7 @@ ad_proc -private im_filestorage_user_memberships { user_id object_id } {
 	where
 		m.member_id = :user_id
 		and m.group_id = p.profile_id
-UNION
+    UNION
 	-- get the list of roles that the current user
 	-- has in his relationship with the object_id
 	select distinct
@@ -840,7 +847,16 @@ UNION
 		and r.object_id_two = :user_id
 		and r.rel_id = m.rel_id"
 
-    return [db_list user_profiles $sql]
+    set profile_list [db_list user_profiles $sql]
+
+    # Make sure there is atleast on element to the list
+    # in order to avoid errors when using it in a where ...in (...)
+    # statement
+    if {0 == [llength $profile_list]} {
+	set profile_list [list 0]
+    }
+
+    return $profile_list
 }
 
 ad_proc -private im_filestorage_merge_perms { perms1 perms2 } {
@@ -924,6 +940,160 @@ ad_proc -public im_filestorage_path_perms { path perm_hash_array roles profiles}
     # Return hash as a list
     return [array get perms]
 }
+
+
+ad_proc -public im_filestorage_get_perm_hash { 
+    user_id
+    object_id 
+    user_memberships
+} {
+    Returns a hash (path -> [v r w a]) for all pathes of the
+    current object.
+    This routine is used inside the main filestorage
+    and "stand alone" to determine permission on folders
+    for the add/del permissions screens
+} {
+
+    set last_perm_parent ""
+    set last_perm_parent_depth 0
+    # The root is always readable for everybody
+    set root_path ""
+    set perm_hash($root_path) [list 0 0 0 0]
+
+    # Extract all (path - profile_id) -> permission
+    # information from the DB and store them in a 
+    # hash array for fast access
+    set perm_sql "
+select
+        p.profile_id,
+	f.path as folder_path,
+	p.view_p,
+	p.read_p,
+	p.write_p,
+	p.admin_p
+from
+	im_fs_folder_perms p,
+	im_fs_folders f
+where
+	f.object_id = :object_id
+	and p.folder_id = f.folder_id
+"
+
+    set ctr 0
+    db_foreach perm_init $perm_sql {
+
+	incr ctr
+	set hash_key "$folder_path-$profile_id"
+	
+	if {$view_p} {
+	    set perms [list 1 0 0 0]
+	    if {[info exists perm_hash($hash_key)]} { 
+		set old_perms $perm_hash($hash_key)
+		set perms [im_filestorage_merge_perms $old_perms $perms]
+	    }
+	    set perm_hash($hash_key) $perms
+	}
+	if {$read_p} {
+	    set perms [list 0 1 0 0]
+	    if {[info exists perm_hash($hash_key)]} { 
+		set old_perms $perm_hash($hash_key)
+		set perms [im_filestorage_merge_perms $old_perms $perms]
+	    }
+	    set perm_hash($hash_key) $perms
+	}
+	if {$write_p} {
+	    set perms [list 0 0 1 0]
+	    if {[info exists perm_hash($hash_key)]} { 
+		set old_perms $perm_hash($hash_key)
+		set perms [im_filestorage_merge_perms $old_perms $perms]
+	    }
+	    set perm_hash($hash_key) $perms
+	}
+	if {$admin_p} {
+	    set perms [list 0 0 0 1]
+	    if {[info exists perm_hash($hash_key)]} { 
+		set old_perms $perm_hash($hash_key)
+		set perms [im_filestorage_merge_perms $old_perms $perms]
+	    }
+	    set perm_hash($hash_key) $perms
+	}
+    }
+
+    # Default value if no permissions have been set for
+    # a folder: make everything readable for everybody.
+    if {!$ctr} { 
+	set view [im_permission $user_id fs_root_view]
+	set read [im_permission $user_id fs_root_read]
+	set write [im_permission $user_id fs_root_write]
+	set admin [im_permission $user_id fs_root_admin]
+
+	set perm_hash($root_path) [list $view $read $write $admin]
+    }
+
+    return [array get perm_hash]
+}
+
+
+ad_proc -public im_filestorage_folder_permissions { 
+    user_id
+    object_id
+    rel_path
+    user_memberships
+    roles
+    profiles
+    perm_hash_array
+} {
+    Get the userss permissions for a specific path.
+    Returns a list [v r w a].
+} {
+
+    # Loop for all profile memberships of the current user
+    # and "or-join" the permissions together
+    
+    array set profile_perms [im_filestorage_path_perms $rel_path $perm_hash_array $roles $profiles]
+    
+    set user_perms [list 0 0 0 0]
+    foreach profile_id $user_memberships {
+	set hash_key "$profile_id"
+	if {[info exists profile_perms($hash_key)]} {
+	    set perms $profile_perms($hash_key)
+	    set user_perms [im_filestorage_merge_perms $user_perms $perms]
+	}
+    }
+
+    # Give base-object administrators (write permissions to the object)
+    # full access to all files
+    if {$object_id > 0} {
+	
+	# Permissions for all usual projects, companies etc.
+	set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id"]
+	set perm_cmd "${object_type}_permissions \$user_id \$object_id object_view object_read object_write object_admin"
+	
+	eval $perm_cmd
+	if {$object_write} { set user_perms [list 1 1 1 1] }
+	
+    } else {
+	
+	# The home-component has object_id==0
+	# Set the default permissions as "read"
+	set object_view 1
+	set object_read 1
+	set object_write 0
+	set object_admin 0
+	
+	# Check if the user has more permissions:
+	# We use "edit_internal_offices", because the home FS belongs
+	# to the "internal offices". Well, not 100%, but that's fairly ok..
+	if {[im_permission $user_id edit_internal_offices]} { 
+	    set object_write 1
+	}
+	if {$object_write} { set user_perms [list 1 1 1 1] }
+	
+    }
+
+    return $user_perms
+}
+
 
 
 
@@ -1096,79 +1266,8 @@ where
     # Get the group membership of the current (viewing) user
     set user_memberships [im_filestorage_user_memberships $user_id $object_id]
 
-    set last_perm_parent ""
-    set last_perm_parent_depth 0
-    # The root is always readable for everybody
-    set root_path ""
-    set perm_hash($root_path) [list 0 0 0 0]
-
-    # Extract all (path - profile_id) -> permission
-    # information from the DB and store them in a 
-    # hash array for fast access
-    set perm_sql "
-select
-        p.profile_id,
-	f.path as folder_path,
-	p.view_p,
-	p.read_p,
-	p.write_p,
-	p.admin_p
-from
-	im_fs_folder_perms p,
-	im_fs_folders f
-where
-	f.object_id = :object_id
-	and p.folder_id = f.folder_id
-"
-
-    set ctr 0
-    db_foreach perm_init $perm_sql {
-
-	incr ctr
-	set hash_key "$folder_path-$profile_id"
-	
-	if {$view_p} {
-	    set perms [list 1 0 0 0]
-	    if {[info exists perm_hash($hash_key)]} { 
-		set old_perms $perm_hash($hash_key)
-		set perms [im_filestorage_merge_perms $old_perms $perms]
-	    }
-	    set perm_hash($hash_key) $perms
-	}
-	if {$read_p} {
-	    set perms [list 0 1 0 0]
-	    if {[info exists perm_hash($hash_key)]} { 
-		set old_perms $perm_hash($hash_key)
-		set perms [im_filestorage_merge_perms $old_perms $perms]
-	    }
-	    set perm_hash($hash_key) $perms
-	}
-	if {$write_p} {
-	    set perms [list 0 0 1 0]
-	    if {[info exists perm_hash($hash_key)]} { 
-		set old_perms $perm_hash($hash_key)
-		set perms [im_filestorage_merge_perms $old_perms $perms]
-	    }
-	    set perm_hash($hash_key) $perms
-	}
-	if {$admin_p} {
-	    set perms [list 0 0 0 1]
-	    if {[info exists perm_hash($hash_key)]} { 
-		set old_perms $perm_hash($hash_key)
-		set perms [im_filestorage_merge_perms $old_perms $perms]
-	    }
-	    set perm_hash($hash_key) $perms
-	}
-    }
-
-    # Default value if no permissions have been set for
-    # a folder: make everything readable for everybody.
-    if {!$ctr} { set perm_hash($root_path) [list 1 1 1 1]}
-
-    # Extract into an array because needs to be passed to
-    # a subroutine frequently (for every line)
-    set perm_hash_array [array get perm_hash]
-
+    set perm_hash_array [im_filestorage_get_perm_hash $user_id $object_id $user_memberships]
+    array set perm_hash $perm_hash_array
 
     # ------------------------------------------------------------------
     # Here we start rendering the file tree
@@ -1194,6 +1293,14 @@ where
 	set file_size "invalid"
 	set file_modified "invalid"
 	set file_extension ""
+
+	# fraber 050803: Nope, doesn't work...
+	# in windows add install directory to file
+	# global tcl_platform 
+	# if { [string match $tcl_platform(platform) "windows"] } {
+    	#    set file "C:/ProjectOpen/cygwin${file}"
+	#}
+	
 	if { [catch {
 	    set file_type [file type $file]
 	    set file_size [expr [file size $file] / 1024]
@@ -1246,47 +1353,7 @@ where
 	# ----------------------------------------------------
 	# Determine access permissions
 
-	# Loop for all profile memberships of the current user
-	# and "or-join" the permissions together
-
-	array set profile_perms [im_filestorage_path_perms $rel_path $perm_hash_array $roles $profiles]
-	set user_perms [list 0 0 0 0]
-	foreach profile_id $user_memberships {
-	    set hash_key "$profile_id"
-	    if {[info exists profile_perms($hash_key)]} {
-		set perms $profile_perms($hash_key)
-		set user_perms [im_filestorage_merge_perms $user_perms $perms]
-	    }
-	}
-
-	# Give base-object administrators (write permissions to the object)
-	# full access to all files
-	if {$object_id > 0} {
-	    
-	    # Permissions for all usual projects, companies etc.
-	    set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id"]
-	    set perm_cmd "${object_type}_permissions \$user_id \$object_id object_view object_read object_write object_admin"
-	    eval $perm_cmd
-	    if {$object_write} { set user_perms [list 1 1 1 1] }
-
-	} else {
-
-	    # The home-component has object_id==0
-	    # Set the default permissions as "read"
-	    set object_view 1
-	    set object_read 1
-	    set object_write 0
-	    set object_admin 0
-	    
-	    # Check if the user has more permissions:
-	    # We use "edit_internal_offices", because the home FS belongs
-	    # to the "internal offices". Well, not 100%, but that's fairly ok..
-	    if {[im_permission $user_id edit_internal_offices]} { 
-		set object_write 1
-	    }
-	    if {$object_write} { set user_perms [list 1 1 1 1] }
-
-	}
+	set user_perms [im_filestorage_folder_permissions $user_id $object_id $rel_path $user_memberships $roles $profiles $perm_hash_array]
 
 	# Don't even enter into the folder/file procs if the user shoudln't see it
 	set view_p [lindex $user_perms 0]

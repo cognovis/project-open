@@ -31,7 +31,8 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set base_path [im_filestorage_base_path $folder_type $object_id]
 set context_bar ""
-
+set page_title ""
+set page_content ""
 
 set url_base_list [split $return_url "?"]
 set url_base [lindex $url_base_list 0]
@@ -49,6 +50,20 @@ ns_set delkey $bind_vars return_url
 # be removed
 ns_set delkey $bind_vars x
 ns_set delkey $bind_vars y
+
+
+# Get the list of all relevant roles and profiles for permissions
+set roles [im_filestorage_roles $user_id $object_id]
+set profiles [im_filestorage_profiles $user_id $object_id]
+
+# Get the group membership of the current (viewing) user
+set user_memberships [im_filestorage_user_memberships $user_id $object_id]
+
+# Get the list of all (known) permission of all folders of the FS
+# of the current object
+set perm_hash_array [im_filestorage_get_perm_hash $user_id $object_id $user_memberships]
+array set perm_hash $perm_hash_array
+
 
 
 foreach var [ad_ns_set_keys $bind_vars] {
@@ -83,6 +98,12 @@ switch $actions {
             set rel_path $id_path($id)
             set abs_path "$base_path/$rel_path"
             set checked "checked"
+
+	    # Check permissions and skip
+	    set user_perms [im_filestorage_folder_permissions $user_id $object_id $rel_path $user_memberships $roles $profiles $perm_hash_array]
+	    set admin_p [lindex $user_perms 3]
+	    if {!$admin_p} { continue }
+
             incr ctr
             append dirs_html "
 <tr $bgcolor([expr $ctr % 2])>
@@ -168,7 +189,8 @@ $dirs_html
 	    set im_gif_plus_9 [im_gif plus_9]
 	    set page_content "
 <H1>[_ intranet-filestorage.lt_No_Directories_Select]</H1>
-[_ intranet-filestorage.lt_You_have_not_selected]<p>
+[_ intranet-filestorage.lt_You_have_not_selected]<br>
+[lang::message::lookup "" intranet-filestorage.Or_no_permissions_for_items "Or you don't have permission to administrate any of the items."]<p>
 [_ intranet-filestorage.lt_Please_backup_select_]<p>
 "
 	}
@@ -192,6 +214,12 @@ $dirs_html
             set rel_path $id_path($id)
             set abs_path "$base_path/$rel_path"
             set checked "checked"
+
+	    # Check permissions and skip
+	    set user_perms [im_filestorage_folder_permissions $user_id $object_id $rel_path $user_memberships $roles $profiles $perm_hash_array]
+	    set admin_p [lindex $user_perms 3]
+#	    if {!$admin_p} { continue }
+
             incr ctr
             append dirs_html "
 <tr $bgcolor([expr $ctr % 2])>
@@ -277,7 +305,8 @@ $dirs_html
 	    set im_gif_plus_9 [im_gif plus_9]
 	    set page_content "
 <H1>[_ intranet-filestorage.lt_No_Directories_Select]</H1>
-[_ intranet-filestorage.lt_You_have_not_selected]<p>
+[_ intranet-filestorage.lt_You_have_not_selected]<br>
+[lang::message::lookup "" intranet-filestorage.Or_no_permissions_for_items "Or you don't have permission to administrate any of the items."]<p>
 [_ intranet-filestorage.lt_Please_backup_select_]<p>
 "
 	}
@@ -288,51 +317,111 @@ $dirs_html
     }
 
     "zip" {
+		global tcl_platform
+		set platform [lindex $tcl_platform(platform) 0]
 
-	# --------------------- Download a ZIP --------------------- 
+		# --------------------- Download a ZIP --------------------- 
 
-	# Find out where the current directory starts on the hard disk
-	set base_path [im_filestorage_base_path $folder_type $object_id]
-	if {"" == $base_path} {
-	    ad_return_complaint 1 "<LI>[_ intranet-filestorage.lt_Unknown_folder_type_f]"
-	    return
-	}
-	set dest_path "$base_path/$bread_crum_path"
 
-	# Determine a random .tgz file
-	set r [ns_rand 10000000]
-	set file "zip.$user_id.$r.tgz"
-	ns_log Notice "file=$file"
-	set path "/tmp/$file"
-	ns_log Notice "/bin/tar czf $path $dest_path"
-	
-	if { [catch {
-	    exec /bin/tar czf $path $dest_path
-	} err_msg] } {
-	    # Nothing. We check if TAR was successfull if the file exists.
-	    ns_log notice "************ Problems creating tar ******************"
-	}
+		# Find out where the current directory starts on the hard disk
+		set base_path [im_filestorage_base_path $folder_type $object_id]
+		if {"" == $base_path} {
+			ad_return_complaint 1 "<LI>[_ intranet-filestorage.lt_Unknown_folder_type_f]"
+			return
+		}
 
-	if { [catch {
-	    set file_readable [file readable $path]
-	} err_msg] } {
-	    ad_return_complaint 1 "<LI>[_ intranet-filestorage.lt_Unable_to_compress_th]"
-	    return
-	}
-	ns_log notice "****************** file_readable $file_readable ********************"
-	if $file_readable {
-	    ns_log notice "********* before redirect *******************"
-	    ad_returnredirect "/intranet/download/zip/0/$file"
-	    return
-	} else {
-	    ad_return_error "[_ intranet-filestorage.lt_Did_not_find_the_spec]" "[_ intranet-filestorage.lt_Did_not_find_the_spec] $path"
-	    return
-	}
+		# Get the list of all relevant roles and profiles for permissions
+		set roles [im_filestorage_roles $user_id $object_id]
+		set profiles [im_filestorage_profiles $user_id $object_id]
+
+		# Get the group membership of the current (viewing) user
+		# Avoid syntax errors in SQL with empty membership list
+		set user_memberships [im_filestorage_user_memberships $user_id $object_id]
+		lappend user_memberships 0
+
+		# Get folders with read permission
+		set dest_path ""
+		set folder_sql "
+		select
+			f.path as folder_path
+		from
+			im_fs_folder_perms p,
+			im_fs_folders f
+		where
+			f.object_id = :object_id
+			and p.folder_id = f.folder_id
+			and p.profile_id in ([join $user_memberships ", "])
+			and p.read_p = 1
+	"
+
+		db_foreach get_folders $folder_sql {
+			append dest_path "$base_path/$folder_path "    
+		}    
+
+		# privileged users
+		set object_write 0
+		if {[im_permission $user_id edit_internal_offices]} { 
+			set object_write 1
+		}
+		# Permissions for all usual projects, companies etc.
+		set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id"]
+		set perm_cmd "${object_type}_permissions \$user_id \$object_id object_view object_read object_write object_admin"
+		eval $perm_cmd
+
+		if { [empty_string_p $dest_path] || $object_write } {
+			set dest_path $base_path/$bread_crum_path
+		}
+
+		# Determine a random .tgz file
+		set r [ns_rand 10000000]
+		set file "zip.$user_id.$r.tgz"
+		ns_log Notice "file=$file"
+		set path "/tmp/$file"
+
+		#build exec command 
+		set tar_command  "/bin/tar czf"
+		lappend tar_command $path
+		lappend tar_command $dest_path
+		ns_log Notice "-----> $tar_command"
+
+		if { [catch {
+			eval "exec [join $tar_command]"
+		} err_msg] } {
+			ns_log Error "------> $err_msg"
+			# Nothing. We check if TAR was successfull if the file exists.
+		}
+
+	    if { $platform == "windows" } {
+	    	set path "[acs_root_dir]/../cygwin/$path"	
+	    }
+ 
+		if { [catch {
+			set file_readable [file readable $path]
+		} err_msg] } {
+			ad_return_complaint 1 "<LI>[_ intranet-filestorage.lt_Unable_to_compress_th]"
+			return
+		}
+
+		if $file_readable {
+			ad_returnredirect "/intranet/download/zip/0/$file"
+			return
+		} else {
+			doc_return 404 text/html "[_ intranet-filestorage.lt_Did_not_find_the_spec]"
+			return
+		}
     }
 
     "new-folder" {
 
 	# --------------------- New Folder --------------------- 
+
+	# Check permissions and skip
+	set user_perms [im_filestorage_folder_permissions $user_id $object_id $bread_crum_path $user_memberships $roles $profiles $perm_hash_array]
+	set admin_p [lindex $user_perms 3]
+	if {!$admin_p} {
+	    ad_return_complaint 1 "You don't have permission to create a subdirectory in folder '$bread_crum_path'"
+	    return
+	}
 
         set page_title "[_ intranet-filestorage.New_Folder]"
         set context_bar [im_context_bar $page_title]
@@ -354,7 +443,15 @@ $dirs_html
 
     "upload" {
 
-	# --------------------- New Folder --------------------- 
+	# --------------------- Upload --------------------- 
+
+	# Check permissions and skip
+	set user_perms [im_filestorage_folder_permissions $user_id $object_id $bread_crum_path $user_memberships $roles $profiles $perm_hash_array]
+	set write_p [lindex $user_perms 2]
+	if {!$write_p} {
+	    ad_return_complaint 1 "You don't have permission to write to folder '$bread_crum_path'"
+	    return
+	}
 
         set page_title "[_ intranet-filestorage.Upload_File]"
         set context_bar [im_context_bar $page_title]
@@ -407,6 +504,18 @@ $dirs_html
 
 	set files_html ""
 	foreach id [array names file_id] {
+
+	    set file_path $id_path($id)
+	    set file_path_list [split $file_path {/}]
+	    set len [expr [llength $file_path_list] - 2]
+	    set path_list [lrange $file_path_list 0 $len]
+	    set path [join $path_list "/"]
+
+	    # Check permissions
+	    set user_perms [im_filestorage_folder_permissions $user_id $object_id $path $user_memberships $roles $profiles $perm_hash_array]
+	    set admin_p [lindex $user_perms 3]
+	    if {!$admin_p} { continue }
+
 	    incr ctr
 	    append files_html "<tr $bgcolor([expr $ctr % 2])>
 <td>
@@ -421,6 +530,13 @@ $dirs_html
 	    set abs_path "$base_path/$rel_path"
 	    set err_msg ""
             set checked "checked"
+
+
+	    # Check permissions and skip
+	    set user_perms [im_filestorage_folder_permissions $user_id $object_id $rel_path $user_memberships $roles $profiles $perm_hash_array]
+	    set admin_p [lindex $user_perms 3]
+	    if {!$admin_p} { continue }
+
 	    if {![im_filestorage_is_directory_empty $abs_path]} {
 		set err_msg "<font color=red>[_ intranet-filestorage.lt_Directory_is_not_empt]</font>\n"
                 set checked ""
@@ -457,6 +573,7 @@ Are you sure you really want to delete the following files?
             # Both are empty - show empty help string
             set page_content "
 <h1>[_ intranet-filestorage.Nothing_Selected]</h1>
+[lang::message::lookup "" intranet-filestorage.Or_no_permissions_for_items "Or you don't have permission to administrate any of the items."]<p>
 [_ intranet-filestorage.lt_Please_back_up_and_se]<br>
 [_ intranet-filestorage.lt_by_marking_the_checkb]
 "
@@ -493,16 +610,3 @@ ad_return_complaint 1 "<pre>$vars</pre>"
 return
 
 set page_title "[_ intranet-filestorage.lt_Upload_into_my_folder]"
-
-
-
-
-
-
-
-
-
-
-
-
-

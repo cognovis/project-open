@@ -24,29 +24,35 @@ set user_id [ad_maybe_redirect_for_registration]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 set page_title "Upload into '$bread_crum_path'"
 set today [db_string today "select to_char(sysdate,'YYYY-MM-DD') from dual"]
-
 set context_bar [im_context_bar [list "/intranet/projects/" "Projects"]  [list "/intranet/projects/view?group_id=$object_id" "One Project"]  "Upload File"]
 
 
-# --------------- Get the users permissions on the underlying object ----
+# Get the list of all relevant roles and profiles for permissions
+set roles [im_filestorage_roles $user_id $object_id]
+set profiles [im_filestorage_profiles $user_id $object_id]
 
-# Gets object permissions using commands like: "im_project_permissions" ...
-#
-set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id" -default ""]
+# Get the group membership of the current (viewing) user
+set user_memberships [im_filestorage_user_memberships $user_id $object_id]
 
-set perm_cmd "${object_type}_permissions \$user_id \$object_id object_view object_read object_write object_admin"
+# Get the list of all (known) permission of all folders of the FS
+# of the current object
+set perm_hash_array [im_filestorage_get_perm_hash $user_id $object_id $user_memberships]
+array set perm_hash $perm_hash_array
 
-eval $perm_cmd
+
+# Check permissions and skip
+set user_perms [im_filestorage_folder_permissions $user_id $object_id $bread_crum_path $user_memberships $roles $profiles $perm_hash_array]
+set write_p [lindex $user_perms 2]
+if {!$write_p} {
+    ad_return_complaint 1 "You don't have permission to write to folder '$bread_crum_path'"
+    return
+}
 
 
 # -------------------- Check the user input first ----------------------------
 #
 set exception_text ""
 set exception_count 0
-if {!$object_read} {
-    append exception_text "<li>You have insufficient privileges to upload this file.\n"
-    incr exception_count
-}
 if {"" == $folder_type} {
     append exception_text "<LI>Internal Error: folder_type not specified"
     incr exception_count
