@@ -289,6 +289,16 @@ We'll need to create a site-wide administrator for your server (like the root
 user in UNIX). Please type in the email address, first and last name, and password
 for this user.
 
+<p>
+<font color=red>Please do not use any non-ASCII characters
+(accented characters, Umlaut, Asian etc...)
+in the fields below. This will break the installation process.
+</font>
+<br>
+This restriction is only for the screen below. You can modify
+the name of the system administrator later.
+</p>
+
 <script language=\"javascript\">
 function updateSystemEmails() {
     var form = document.forms\[0\];

@@ -38,7 +38,7 @@ proc acs_package_root_dir { package } {
 
 proc ad_make_relative_path { path } {
     set root_length [string length [acs_root_dir]]
-    if { ![string compare [acs_root_dir] [string range $path 0 [expr { $root_length - 1 }]]] } {
+    if { ![string compare -nocase [acs_root_dir] [string range $path 0 [expr { $root_length - 1 }]]] } {
 	return [string range $path [expr { $root_length + 1 }] [string length $path]]
     }
     error "$path is not under the path root ([acs_root_dir])"
@@ -298,7 +298,7 @@ proc ad_proc args {
     set root_dir [nsv_get acs_properties root_directory]
     set script [info script]
     set root_length [string length $root_dir]
-    if { ![string compare $root_dir [string range $script 0 [expr { $root_length - 1 }]]] } {
+    if { ![string compare -nocase $root_dir [string range $script 0 [expr { $root_length - 1 }]]] } {
         set script [string range $script [expr { $root_length + 1 }] end]
     }
     
