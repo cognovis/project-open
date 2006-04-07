@@ -14,6 +14,12 @@ ad_page_contract {
     payment_id:naturalnum,notnull
 }
 
+set current_user_id [ad_maybe_redirect_for_registration]
+if {![im_permission $current_user_id add_payments]} {
+    ad_return_complaint 1 "<li>[_ intranet-invoices.lt_You_have_insufficient]"
+    return
+}
+
 
 db_0or1row get_payment_info \
 	"select ug.group_name as project_name, ug.group_id,

@@ -19,6 +19,13 @@ ad_page_contract {
     payment_id:naturalnum,notnull
 }
 
+
+set current_user_id [ad_maybe_redirect_for_registration]
+if {![im_permission $current_user_id add_payments]} {
+    ad_return_complaint 1 "<li>[_ intranet-invoices.lt_You_have_insufficient]"
+    return
+}
+
 db_dml delete_payment \
 	"delete from im_project_payments p where p.payment_id = :payment_id"
 

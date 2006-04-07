@@ -15,7 +15,7 @@
   <td>#intranet-payments.Cost_Name#</td>
   <td>
     <input type=hidden name=cost_id value=@cost_id@>
-    <A HREF=/intranet-costs/view?cost_id=@cost_id@>@cost_name@</A>
+    <A HREF=/intranet-invoices/view?invoice_id=@cost_id@>@cost_name@</A>
   </td>
 </tr>
 <tr> 
@@ -43,7 +43,11 @@
 </tr>
  <tr> 
   <td valign=top> </td>
-  <td><input type=submit value="@button_name@" name=submit2></td>
+  <td>
+    <input type=submit value="@button_name@" name=submit2>
+    <input type=checkbox name=mark_document_as_paid_p value=1 checked>
+    <%= [lang::message::lookup "" intranet-payments.Mark_invoice_as_paid "Mark %fin_document_type% as paid."] %>
+  </td>
 </tr>
 </table>
 </form>
