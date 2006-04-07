@@ -57,7 +57,15 @@ set material_types [im_memoize_list select_material_types \
    "select * from im_material_types order by material_type_id"]
 set material_types [linsert $material_types 0 1 "Tasks / Incidents]"]
 set material_types [linsert $material_types 0 0 "All"]
-ns_log Notice "/intranet-material/index: material_types=$material_types"
+
+
+# Material Topic Stati come from a category list, but we need
+# some manual extensions...
+#
+set material_stati [im_memoize_list select_material_stati \
+   "select * from im_material_status order by material_status_id"]
+set material_stati [linsert $material_stati 0 0 "All"]
+
 
 # ---------------------------------------------------------------
 # Format the Filter
@@ -75,7 +83,7 @@ set filter_html "
     append filter_html "
 <tr>
   <td valign=top>[_ intranet-material.Status]:</td>
-  <td valign=top>[im_select material_status_id $material_types $material_status_id]</td>
+  <td valign=top>[im_select material_status_id $material_stati $material_status_id]</td>
 </tr>
 <tr>
   <td valign=top>[_ intranet-material.Type]:</td>

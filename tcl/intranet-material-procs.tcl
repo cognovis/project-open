@@ -80,6 +80,8 @@ ad_proc -private im_material_options { {-restrict_to_status_id 0} {-restrict_to_
         where 
 		1=1
 		$where_clause
+	order by
+		material_nr
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options

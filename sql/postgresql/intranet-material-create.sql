@@ -18,7 +18,10 @@
 
 create table im_materials (
 	material_id		integer
-				constraint im_material_pk primary key,
+				constraint im_material_pk 
+				primary key
+				constraint im_material_id_fk
+				references acs_objects,
 	material_name		varchar(2000),
 	material_nr		varchar(200),
 	material_type_id	integer not null
@@ -334,15 +337,15 @@ INSERT INTO im_categories VALUES (9102,'Inactive',
 
 
 create or replace view im_material_status as 
-select 	category_id as material_type_id, 
-	category as material_type
+select 	category_id as material_status_id, 
+	category as material_status
 from im_categories 
 where category_type = 'Intranet Material Status';
 	
 
 create or replace view im_material_status_active as 
-select 	category_id as material_type_id, 
-	category as material_type
+select 	category_id as material_status_id, 
+	category as material_status
 from im_categories 
 where	category_type = 'Intranet Material Status'
 	and category_id not in (9102);
