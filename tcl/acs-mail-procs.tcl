@@ -198,147 +198,142 @@ ad_proc -private acs_mail_encode_content {
     ns_log Debug "acs-mail: encode: starting $content_item_id"
     # What sort of content do we have?
     if ![acs_mail_multipart_p $content_item_id] {
-		ns_log Debug "acs-mail: encode: one part $content_item_id"
+
+	ns_log Debug "acs-mail: encode: one part $content_item_id"
         # Easy as pie.
         # Let's get the data.
 
-		# vinodk: first get the latest revision
-		set revision_id [db_exec_plsql get_latest_revision "
+	# vinodk: first get the latest revision
+	set revision_id [db_exec_plsql get_latest_revision "
 	      begin
 		    return content_item__get_latest_revision ( :content_item_id );
 	      end;"
-		]
-
-		set storage_type [db_string get_storage_type "
-			select storage_type from cr_items 
-			where item_id = :content_item_id
-		"]
-		
-		if [db_0or1row acs_mail_body_to_mime_get_content_simple {
-			select content, mime_type as v_content_type
-			from cr_revisions
-			where revision_id = :revision_id
-		}] {
-			if [string equal $storage_type text] {
-				ns_log Debug "acs-mail: encode: one part hit $content_item_id"
-				# vinodk: no need for this, since we're checking
-				#         storage_type
-				#
-				# We win!  Hopefully.  Check if there are 8bit characters/data.
-				# HT NL CR SP-~  The full range of ASCII with spaces but no
-				# control characters.
-				#if ![regexp "\[^\u0009\u000A\u000D\u0020-\u007E\]" $content] {
-				#	ns_log Debug "acs-mail: encode: good code $content_item_id"
-				#	# We're still okay.  Use it!
-					return [list $v_content_type $content]
-				#}
-				#ns_log "Notice" "acs-mail: encode: bad code $content_item_id"
-			} else {
-				# this content is in the file system or a blob
-				ns_log Debug "acs-mail: encode: binary content $content_item_id"
-
-				if  [string equal $storage_type file] {
-					ns_log Debug "acs-mail: encode: file $content_item_id"
-					set encoded_content [acs_mail_uuencode_file [cr_fs_path]$content]
-				} else {
-					ns_log Debug "acs-mail: encode: lob $content_item_id"
-					# Blob. Now we need to decide if this is binary
-					# so we can uuencode it if necessary.
-					# We'll use the mime type to decide
-					
-					if { [string first "text" $v_content_type] == 0 } {
-						ns_log Debug "acs-mail: encode: plain content"
-						set encoded_content "$content"
-					} else {
-						# binary content - copy the blob to temp file
-						# that we will then uuencode
-						set file [ns_tmpnam]
-						db_blob_get_file copy_blob_to_file "
-						    select r.content, i.storage_type 
-						    from cr_revisions r, cr_items i 
-						    where r.revision_id = $revision_id and
-						          r.item_id = i.item_id " -file $file
-						ns_log Debug "acs-mail: encode: binary content"
-						set encoded_content [acs_mail_uuencode_file $file]
-					}
-				}
-
-				return [list $v_content_type $encoded_content]
-			}
-		}
-	} else {
-		# Harder.  Oops.
-		ns_log Debug "acs-mail: encode: multipart $content_item_id"
-		set boundary "=-=-="
-		set contents {}
-		# Get the component pieces
-		set multipart_list [db_list_of_lists acs_mail_body_to_mime_get_contents {
-			select mime_filename, mime_disposition, content_item_id as ci_id
-			from acs_mail_multipart_parts
-			where multipart_id = :content_item_id
-			order by sequence_number
-		} 
-		]
-		
-		if ![empty_string_p $multipart_list] {
-			foreach multipart_item $multipart_list {
-				set mime_filename [lindex $multipart_item 0]
-				set mime_disposition [lindex $multipart_item 1]
-				set ci_id [lindex $multipart_item 2]
-				
-				if {[string equal "" $mime_disposition]} {
-					if {![string equal "" $mime_filename]} {
-						set mime_disposition "attachment; filename=$mime_filename"
-					} else {
-						set mime_disposition "inline"
-					}
-				} else {
-					if {![string equal "" $mime_filename]} {
-						set mime_disposition \
-								"$mime_disposition; filename=$mime_filename"
-					}
-				}
-				set content [acs_mail_encode_content $ci_id]
-				while {[regexp -- "--$boundary--" $content]} {
-					set boundary "=$boundary"
-				}
-				lappend contents [list $mime_disposition $content]
-			}
-		} else {
-			# Defaults
-			return {
-				"text/plain; charset=us-ascii"
-				"An OpenACS object was unable to be encoded here.\n"
-			}
-		}
-		
-		set content_type \
-				"multipart/[acs_mail_multipart_type $content_item_id]; boundary=\"$boundary\""
-		set content ""
-		foreach {cont} $contents {
-			set c_disp [lindex $cont 0]
-			set c_type [lindex [lindex $cont 1] 0]
-			set c_cont [lindex [lindex $cont 1] 1]
-			append content "--$boundary\n"
-			append content "Content-Type: $c_type\n"
-			if { [string first "text" $c_type] != 0 } {
-				# not a text item: therefore base64
-				append content "Content-Transfer-Encoding: base64\n"
-			}
-			append content "Content-Disposition: $c_disp\n"
-			append content "\n"
-			append content $c_cont
-			append content "\n\n"
-		}
-		append content "--$boundary--\n"
-		return [list $content_type $content]
-	}
+	]
 	
-	# Defaults
-	return {
+	set storage_type [db_string get_storage_type "
+		select storage_type 
+		from cr_items 
+		where item_id = :content_item_id
+	"]
+		
+	if [db_0or1row acs_mail_body_to_mime_get_content_simple {
+		select content, mime_type as v_content_type
+		from cr_revisions
+		where revision_id = :revision_id
+	}] {
+	    if [string equal $storage_type text] {
+		ns_log Debug "acs-mail: encode: one part hit $content_item_id"
+		return [list $v_content_type $content]
+	    } else {
+		# this content is in the file system or a blob
+		ns_log Debug "acs-mail: encode: binary content $content_item_id"
+
+		if  [string equal $storage_type file] {
+		    ns_log Debug "acs-mail: encode: file $content_item_id"
+		    set encoded_content [acs_mail_uuencode_file [cr_fs_path]$content]
+		} else {
+		    ns_log Debug "acs-mail: encode: lob $content_item_id"
+		    # Blob. Now we need to decide if this is binary
+		    # so we can uuencode it if necessary.
+		    # We'll use the mime type to decide
+		    
+		    if { [string first "text" $v_content_type] == 0 } {
+			ns_log Debug "acs-mail: encode: plain content"
+			set encoded_content "$content"
+		    } else {
+			# binary content - copy the blob to temp file
+			# that we will then uuencode
+			set file [ns_tmpnam]
+			db_blob_get_file copy_blob_to_file "
+			    select r.content, i.storage_type 
+			    from cr_revisions r, cr_items i 
+			    where r.revision_id = $revision_id and
+			          r.item_id = i.item_id " -file $file
+			ns_log Debug "acs-mail: encode: binary content"
+			set encoded_content [acs_mail_uuencode_file $file]
+		    }
+		}
+		
+		return [list $v_content_type $encoded_content]
+	    }
+	}
+
+    } else {
+
+	# This is a multipart item.
+	# Harder.  Oops.
+	ns_log Debug "acs-mail: encode: multipart $content_item_id"
+	set boundary "=-=-="
+	set contents {}
+	# Get the component pieces
+	set multipart_list [db_list_of_lists acs_mail_body_to_mime_get_contents {
+		select mime_filename, mime_disposition, content_item_id as ci_id
+		from acs_mail_multipart_parts
+		where multipart_id = :content_item_id
+		order by sequence_number
+	}]
+	
+	if ![empty_string_p $multipart_list] {
+	    foreach multipart_item $multipart_list {
+		set mime_filename [lindex $multipart_item 0]
+		set mime_disposition [lindex $multipart_item 1]
+		set ci_id [lindex $multipart_item 2]
+		
+		if {[string equal "" $mime_disposition]} {
+		    if {![string equal "" $mime_filename]} {
+			set mime_disposition "attachment; filename=$mime_filename"
+		    } else {
+			set mime_disposition "inline"
+		    }
+		} else {
+		    if {![string equal "" $mime_filename]} {
+			set mime_disposition \
+			    "$mime_disposition; filename=$mime_filename"
+		    }
+		}
+		set content [acs_mail_encode_content $ci_id]
+		while {[regexp -- "--$boundary--" $content]} {
+		    set boundary "=$boundary"
+		}
+		lappend contents [list $mime_disposition $content]
+	    }
+
+	} else {
+
+	    # Defaults
+	    return {
 		"text/plain; charset=us-ascii"
 		"An OpenACS object was unable to be encoded here.\n"
+	    }
 	}
+		
+	set content_type \
+	    "multipart/[acs_mail_multipart_type $content_item_id]; boundary=\"$boundary\""
+	set content ""
+	foreach {cont} $contents {
+	    set c_disp [lindex $cont 0]
+	    set c_type [lindex [lindex $cont 1] 0]
+	    set c_cont [lindex [lindex $cont 1] 1]
+	    append content "--$boundary\n"
+	    append content "Content-Type: $c_type\n"
+	    if { [string first "text" $c_type] != 0 } {
+		# not a text item: therefore base64
+		append content "Content-Transfer-Encoding: base64\n"
+	    }
+	    append content "Content-Disposition: $c_disp\n"
+	    append content "\n"
+	    append content $c_cont
+	    append content "\n\n"
+	}
+	append content "--$boundary--\n"
+	return [list $content_type $content]
+    }
+    
+    # Defaults
+    return {
+	"text/plain; charset=us-ascii"
+	"An OpenACS object was unable to be encoded here.\n"
+    }
 }
 
 ad_proc -private acs_mail_body_to_output_format {
@@ -404,7 +399,8 @@ ad_proc -private acs_mail_process_queue {
             from acs_mail_queue_outgoing
     } {
         set to_send [acs_mail_body_to_output_format -link_id $message_id]
-		set to_send_2 [list $envelope_to $envelope_from [lindex $to_send 2] [lindex $to_send 3] [lindex $to_send 4]]
+	set to_send_2 [list $envelope_to $envelope_from [lindex $to_send 2] [lindex $to_send 3] [lindex $to_send 4]]
+	ns_log notice "acs_mail_process_queue: to_send_2=$to_send_2"
 
         if [catch {
             eval ns_sendmail $to_send_2

@@ -164,7 +164,7 @@ create table acs_mail_gc_objects (
   -- Mail bodies
 
 create table acs_mail_bodies (
-    body_id				integer
+    body_id			integer
 						constraint acs_mail_bodies_body_id_pk 
 						primary key
 						constraint acs_mail_bodies_body_id_fk
@@ -177,7 +177,7 @@ create table acs_mail_bodies (
 						constraint acs_mail_bodies_body_from_fk
 						references parties on delete set null,
     body_date			timestamptz,
-    header_message_id	varchar(1000)
+    header_message_id		varchar(1000)
 						constraint acs_mail_bodies_h_m_id_un 
 						unique
 						constraint acs_mail_bodies_h_m_id_nn 
@@ -233,7 +233,7 @@ create table acs_mail_multipart_parts (
 						constraint acs_mail_mp_parts_mp_id_fk
 						references acs_mail_multiparts on delete cascade,
     mime_filename		varchar(1000),
-    mime_disposition	varchar(1000),
+    mime_disposition		varchar(1000),
     sequence_number		integer,
     content_item_id		integer
 						constraint acs_mail_mp_parts_c_itm_id_fk 
@@ -248,12 +248,12 @@ create index acs_mail_mpp_cr_item_id_idx ON acs_mail_multipart_parts(content_ite
 -- Mail Links
 
 create table acs_mail_links (
-    mail_link_id integer
+    mail_link_id	integer
 				 constraint acs_mail_links_ml_id_pk 
 				 primary key
 				 constraint acs_mail_links_ml_id_fk 
 				 references acs_objects on delete cascade,
-    body_id		 integer
+    body_id		integer
 				 constraint acs_mail_links_body_id_nn 
 				 not null
 				 constraint acs_mail_links_body_id_fk 

@@ -51,9 +51,13 @@ end;
 -- first create a CR item.
 -- then call acs_mail_body__new with the CR item's item_id
 
-
-create or replace function acs_mail_body__new (integer,integer,integer,timestamptz,varchar,varchar,text,text,text,integer,varchar,timestamptz,integer,varchar,integer)
-returns integer as ' 
+create function acs_mail_body__new (
+	integer,integer,integer,
+	timestamptz,varchar,varchar,
+	text,text,text,
+	integer,varchar,date,
+	integer,varchar,integer
+) returns integer as ' 
 declare
 	p_body_id			alias for $1;    -- default null
 	p_body_reply_to		alias for $2;    -- default null

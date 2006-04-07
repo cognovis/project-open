@@ -140,12 +140,12 @@ where r.revision_id = $revision_id and
 <querytext>
 
 select acs_mail_gc_object__new (
-  :object_id,				-- gc_object_id 
+  :object_id,			-- gc_object_id 
   'acs_mail_gc_object',		-- object_type
-  now(),					-- creation_date
-  :creation_user,			-- creation_user 
-  :creation_ip,				-- creation_ip 
-  null						-- context_id
+  now(),			-- creation_date
+  :creation_user,		-- creation_user 
+  :creation_ip,			-- creation_ip 
+  null				-- context_id
 );
 
 </querytext>
@@ -156,21 +156,21 @@ select acs_mail_gc_object__new (
 <querytext>
 
 select acs_mail_body__new (
-  :body_id,				-- body_id 
+  :body_id,			-- body_id 
   :body_reply_to,		-- body_reply_to 
   :body_from,			-- body_from 
   :body_date,			-- body_date 
-  :header_message_id,	-- header_message_id 
+  :header_message_id,		-- header_message_id 
   :header_reply_to,		-- header_reply_to 
-  :header_subject,      -- header_subject 
+  :header_subject,      	-- header_subject 
   :header_from,			-- header_from 
   :header_to,			-- header_to 
   :content_item_id,		-- content_item_id 
   'acs_mail_body',		-- object_type
-  now(),				-- creation_date
+  now() ::date,			-- creation_date
   :creation_user,		-- creation_user 
   :creation_ip,			-- creation_ip 
-  null					-- context_id
+  null				-- context_id
 );
 
 </querytext>
