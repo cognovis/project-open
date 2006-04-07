@@ -3,7 +3,7 @@
 <property name="main_navbar_label">finance</property>
 
 <form action="/intranet-invoices/new-2" method=POST>
-<%= [export_form_vars company_id invoice_id freelance_id provider_id project_id cost_status_id return_url] %>
+<%= [export_form_vars company_id invoice_id freelance_id provider_id project_id select_project cost_status_id return_url] %>
 
 <%= [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]] %>
 
@@ -30,16 +30,16 @@
 	        <tr> 
 	          <td class=roweven>Payment terms</td>
 	          <td class=roweven> 
-	            <input type=text name=payment_days size=5 value='@payment_days@'>
+	            <input type=text name=payment_days size=5 value='@default_payment_days@'>
 	            days date of invoice</td>
 	        </tr>
 	        <tr> 
 	          <td class=rowodd>Payment Method</td>
-	          <td class=rowodd><%= [im_invoice_payment_method_select payment_method_id $payment_method_id] %></td>
+	          <td class=rowodd><%= [im_invoice_payment_method_select payment_method_id $default_payment_method_id] %></td>
 	        </tr>
 	        <tr> 
 	          <td class=roweven>Purchase Order template:</td>
-	          <td class=roweven><%= [im_cost_template_select template_id $template_id] %></td>
+	          <td class=roweven><%= [im_cost_template_select template_id $default_invoice_template_id] %></td>
 	        </tr>
                 <tr>
                   <td class=roweven>Type</td>
@@ -70,12 +70,8 @@
 	          <td  class=roweven>@vat_number@</td>
 	        </tr>
 	        <tr> 
-	          <td  class=rowodd> Accounting Contact</td>
-	          <td  class=rowodd>
-	            <A href="/intranet/users/view?user_id=@accounting_contact_id@">
-		      @company_contact_name@
-		    </A>
-	          </td>
+	          <td  class=rowodd>#intranet-core.Contact#</td>
+	          <td  class=rowodd>@company_contact_select;noquote@</td>
 	        </tr>
 	        <tr> 
 	          <td  class=roweven>Adress</td>
@@ -127,7 +123,7 @@
 	            <table border=0 cellspacing=1 cellpadding=0>
 	              <tr> 
 	                <td>VAT&nbsp;</td>
-	                <td><input type=text name=vat value='@vat@' size=4> % &nbsp;</td>
+	                <td><input type=text name=vat value='@default_vat@' size=4> % &nbsp;</td>
 	              </tr>
 	            </table>
 	          </td>

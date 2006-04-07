@@ -94,6 +94,7 @@ set personal_project_query "
 	        im_name_from_user_id(project_lead_id) as lead_name,
 	        im_category_from_id(p.project_type_id) as project_type,
 	        im_category_from_id(p.project_status_id) as project_status,
+	        to_char(end_date, 'YYYY-MM-DD') as end_date,
 	        to_char(end_date, 'HH24:MI') as end_date_time
 	FROM
 		$perm_sql p,

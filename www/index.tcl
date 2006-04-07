@@ -47,6 +47,8 @@ if {0 == $project_id } {
     ad_returnredirect project-select?[export_url_vars return_url]
 }
 
+set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+
 # ---------------------------------------------------------------------
 # Select and format the list of tasks
 # ---------------------------------------------------------------------
@@ -178,6 +180,9 @@ db_foreach task_tasks $task_sql {
 	    append task_html "
 		<tr class=rowplain>
 		  <td colspan=$task_colspan align=right>
+		    [_ intranet-trans-invoices.Invoice_Currency]: [im_currency_select currency $default_currency]
+		    <input type=checkbox name=aggregate_tasks_p value=1 checked>
+		    [lang::message::lookup "" intranet-trans-invoices.Aggregate_tasks "Aggregate Tasks?"]
 		    <input type=submit value=Submit>  
 		  </td>
 		</tr>
@@ -187,7 +192,7 @@ db_foreach task_tasks $task_sql {
 
 	append task_html "
 	<form method=POST action=new-2>
-	[export_form_vars freelance_id target_cost_type_id target_cost_status_id return_url]
+	[export_form_vars freelance_id target_cost_type_id target_cost_status_id project_id return_url]
 	<table border=0>
 	  <tr>
 	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Task_Name]</td>
@@ -232,9 +237,12 @@ db_foreach task_tasks $task_sql {
 if {$ctr > 1} {
 
     append task_html "
-	<tr>
+	<tr class=rowplain>
 	  <td colspan=$task_colspan align=right>
-	    <input type=submit value=\"[_ intranet-trans-invoices.Submit]\">  
+	    [_ intranet-trans-invoices.Invoice_Currency]: [im_currency_select currency $default_currency]
+	    <input type=checkbox name=aggregate_tasks_p value=1 checked>
+	    [lang::message::lookup "" intranet-trans-invoices.Aggregate_tasks "Aggregate Tasks?"]
+	    <input type=submit value=Submit>
 	  </td>
 	</tr>\n"
 
@@ -244,9 +252,9 @@ if {$ctr > 1} {
     append task_html "
 	<tr>
 	  <td colspan=$task_colspan align=center>
-            &nbsp;<br>
+	    &nbsp;<br>
 	    [_ intranet-trans-invoices.No_Trans_Tasks]
-            <br>&nbsp;
+	    <br>&nbsp;
 	  </td>
 	</tr>\n"
 
