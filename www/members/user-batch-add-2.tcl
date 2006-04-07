@@ -2,11 +2,10 @@ ad_page_contract {
     Interface for specifying a list of users to sign up as a batch
     @cvs-id $Id$
 } -query {
-    userlist:allhtml
+    userlist
     from
     subject
     message:allhtml
-    {send_email_p 0}
 } -properties {
     title:onevalue
     success_text:onevalue
@@ -31,62 +30,10 @@ while {[regexp {(.[^\n]+)} $userlist match_fodder row] } {
     # remove each row as it's handled
     set remove_count [string length $row]
     set userlist [string range $userlist [expr $remove_count + 1] end]
-
-    # Distinguish between "Komma" format (email, first, last)
-    # and Email list format ("first [middle] last <addr@domain.com>").
-
-    # Try "Komma format" first
-    set fields [split $row ,]
-    set email [string trim [lindex $fields 0]]
-    set first_names [string trim [lindex $fields 1]]
-    set last_name [string trim [lindex $fields 2]]
-
-    # Now let's try the other one...
-    if {![util_email_valid_p $email]} {
-	# We first would have to remove all tabs and normalize
-	# multiple spaced in a single space...
-
-	set fields [split $row <]
-	set name_field [string trim [lindex $fields 0]]
-	set email [string trim [lindex $fields 1]]
-	set email_fields [split $email >]
-	set email [string trim [lindex $email_fields 0]]
-	set email [string tolower $email]
-	
-	set names [split $name_field {\ }]
-	set name_count [llength $names]
-
-	set first_names ""
-	set last_name_name ""
-
-	switch $name_count {
-	    1 { 
-		set first_names [lindex $names 0]
-		set last_name [lindex $names 0]		
-	    }
-	    2 {
-		set first_names [lindex $names 0]
-		set last_name [lindex $names 1]
-	    }
-	    3 {
-		set middle_name [lindex $names 1]
-		if {[string length $middle_name] < 3} {
-
-		    set first_names [lindex $names 0]
-		    set last_name [lindex $names 2]
-
-		} else {
-
-		    set first_names "[lindex $names 0] [lindex $names 1]"
-		    set last_name [lindex $names 2]
-
-		}
-	    }
-	}
-
-#	ad_return_complaint 1 "first_names='$first_names', last_name='$last_name', email='$email', name_count=$name_count"
-
-    }
+    set row [split $row ,]
+    set email [string trim [lindex $row 0]]
+    set first_names [string trim [lindex $row 1]]
+    set last_name [string trim [lindex $row 2]]
     
     if {![info exists email] || ![util_email_valid_p $email]} {
 	append exception_text "<li>Couldn't find a valid email address in ($row).</li>\n"
@@ -141,28 +88,21 @@ while {[regexp {(.[^\n]+)} $userlist match_fodder row] } {
 	ad_script_abort
     }
 
-    # Do this for the sake of the FTI search engine
-    db_dml update_persons "
-	update persons
-	set first_names=first_names
-	where person_id=:user_id
-    "
-
 
     # send email
 
-    if {$send_email_p} {
-	set key_list [list first_names last_name email password]
-	set value_list [list $first_names $last_name $email $password]
+    set key_list [list first_names last_name email password]
+    set value_list [list $first_names $last_name $email $password]
     
-	set sub_message $message
-	foreach key $key_list value $value_list {
-	    regsub -all "<$key>" $sub_message $value sub_message
-	}
+    set sub_message $message
+    foreach key $key_list value $value_list {
+	regsub -all "<$key>" $sub_message $value sub_message
+    }
     
     if {[catch {ns_sendmail "$email" "$from" "$subject" "$sub_message"} errmsg]} {
 
     }
+
 }
 
 ad_return_template
