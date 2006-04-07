@@ -451,12 +451,12 @@ ad_proc -private auth::local::registration::Register {
     # LARS TODO: Move this out of the local driver and into the auth framework
     # Send password confirmation email to user
 
-    # Fraber: 051123: remove the "$generated_pwd_p || \" and
-    #  [parameter::get -parameter RegistrationProvidesRandomPasswordP -package_id [ad_conn subsite_id] -default 0] || 
-    # Because we don't want to send people a mail if we register them
-    # for CRM
-    if { [parameter::get -parameter EmailRegistrationConfirmationToUserP -package_id [ad_conn subsite_id] -default 0] } {
+    # Fraber: 051123: Removed parts of OR clause to avoid sending out
+    # passwords for users registered for CRM:
+    # $generated_pwd_p ||
+    # [parameter::get -parameter RegistrationProvidesRandomPasswordP -package_id [ad_conn subsite_id] -default 0] ||
 
+    if { [parameter::get -parameter EmailRegistrationConfirmationToUserP -package_id [ad_conn subsite_id] -default 0] } {
 	with_catch errmsg {
             auth::password::email_password \
                 -username $username \
