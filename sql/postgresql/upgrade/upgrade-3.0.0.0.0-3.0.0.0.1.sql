@@ -195,7 +195,7 @@ begin
         null,                   -- context_id
         ''intranet-core'',      -- package_name
         ''customers_inactive'',   -- label
-        ''Inctive Customers'',      -- name
+        ''Inactive Customers'',   -- name
         ''/intranet/companies/index?status_id=48&type_id=57'',  -- url
         30,                     -- sort_order
         v_companies_menu,       -- parent_menu_id
