@@ -10,7 +10,8 @@ ad_page_contract {
     @param due_date 
     @param received_date 
     @param note 
-
+    @param mark_document_as_paid_p Set the status of the financial document
+           to "paid" after registering the payment
     @author fraber@fraber.de
     @creation-date Aug 2003
 } {
@@ -22,6 +23,7 @@ ad_page_contract {
     received_date
     payment_type_id
     note
+    { mark_document_as_paid_p:integer 0 }
     { return_url "/intranet-payments/" }
 }
 
@@ -59,7 +61,7 @@ if {"" == $cost_id } {
 set company_id [db_string get_company_from_invoice "select customer_id from im_costs where cost_id=:cost_id" -default 0]
 
 set provider_id [db_string get_provider_from_invoice "select provider_id from im_costs where cost_id=:cost_id" -default 0]
-ns_log notice "****************** provider_id $provider_id ***********************"
+
 # ---------------------------------------------------------------
 # Insert data into the DB
 # ---------------------------------------------------------------
@@ -129,6 +131,13 @@ set paid_amount = (
 where cost_id = :cost_id
 "
 
-
+# Mark the financial document as paid to save time
+if {"1" == $mark_document_as_paid_p} {
+    db_dml update_cost_items "
+	update	im_costs
+	set	cost_status_id = [im_cost_status_paid]
+	where	cost_id = :cost_id
+    "
+}
 
 ad_returnredirect $return_url
