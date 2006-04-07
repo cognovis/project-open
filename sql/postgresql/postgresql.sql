@@ -286,7 +286,7 @@ begin
     if v_bitfromint4_count = 0 then
 	create or replace function bitfromint4 (integer) returns bit varying as ''
 	begin 
-    	    return "bit"($1);
+    	    return $1::bit(32);
 	end;'' language ''plpgsql'' immutable strict;
    end if;
    return 1;
@@ -347,7 +347,7 @@ drop function inline_1();
 -- SQL92 standard "bit varying" so I've used the synonym "varbit"
 -- throughout.
 
-create function int_to_tree_key(integer) returns varbit as '
+create or replace function int_to_tree_key(integer) returns varbit as '
 
 -- Convert an integer into the bit string format used to store
 -- tree sort keys.   Using 4 bytes for the long keys requires

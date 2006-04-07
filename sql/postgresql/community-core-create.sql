@@ -310,14 +310,13 @@ end;' language 'plpgsql';
 create or replace function party__name (integer)
 returns varchar as '
 declare
-  party_id               alias for $1;  
+  p_party_id               alias for $1;  
 begin
-  if party_id = -1 then
+  if p_party_id = -1 then
    return ''The Public'';
   else
-   return null;
+   return email from parties p where p.party_id = p_party_id;
   end if;
-  
 end;' language 'plpgsql' immutable strict;
 
 create or replace function party__email (integer)
