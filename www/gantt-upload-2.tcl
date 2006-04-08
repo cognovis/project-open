@@ -16,62 +16,24 @@ ad_page_contract {
 } {
     { user_id:integer 0 }
     { expiry_date "" }
-    { project_id:integer 9689 }
+    project_id:integer 
     { security_token "" }
-    upload_file
+    { upload_gan ""}
+    { upload_gif ""}
 }
 
 # ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
 
-set today [db_string today "select to_char(now(), 'YYYY-MM-DD')"]
-
-
-# ---------------------------------------------------------------
-# Procedures
-# ---------------------------------------------------------------
-
-ad_proc -public im_ganttproject_depend { depend_node task_node } {
-    Stores a dependency between two tasks into the database
-    Depend: <depend id="2" type="2" difference="0" hardness="Strong"/>
-    Task: <task id="1" name="Linux Installation" ...>
-            <notes>Note for first task</notes>
-            <depend id="2" type="2" difference="0" hardness="Strong"/>
-            <customproperty taskproperty-id="tpc0" value="nothing..." />
-          </task>
-} {
-    set task_id_one [$task_node getAttribute id]
-    set task_id_two [$depend_node getAttribute id]
-    set depend_type [$depend_node getAttribute type]
-    set difference [$depend_node getAttribute difference]
-    set hardness [$depend_node getAttribute hardness]
-
-    set hardness_type_id 0
-    if {[string equal "Hard" $hardness]} {set hardness_type_id 1}
-
-    set map_exists_p [db_string map_exists "select count(*) from im_timesheet_task_dependency_map where task_id_one = :task_id_one and task_id_two = :task_id_two"]
-
-    if {!$map_exists_p} {
-	db_dml insert_dependency "
-		insert into im_timesheet_task_dependency_map (
-			task_id_one, task_id_two
-		) values (
-			:task_id_one, :task_id_two
-		)
- 	"
-    }
-
-    db_dml update_dependency "
-	update im_timesheet_task_dependency_map set
-		dependency_type_id = :depend_type,
-		difference = :difference,
-		hardness_type_id = :hardness_type_id
-	where
-		task_id_one = :task_id_one
-		and task_id_two = :task_id_two
-    "
+if {"" == $upload_gan && "" == $upload_gif} {
+    ad_return_complaint 1 "You need to specify a file to upload"
 }
+
+
+#ToDo: Security
+set today [db_string today "select to_char(now(), 'YYYY-MM-DD')"]
+ad_return_top_of_page "[im_header]\n[im_navbar]"
 
 
 # -------------------------------------------------------------------
@@ -81,7 +43,7 @@ ad_proc -public im_ganttproject_depend { depend_node task_node } {
 # Get the file from the user.
 # number_of_bytes is the upper-limit
 set max_n_bytes [ad_parameter -package_id [im_package_filestorage_id] MaxNumberOfBytes "" 0]
-set tmp_filename [ns_queryget upload_file.tmpfile]
+set tmp_filename [ns_queryget upload_gan.tmpfile]
 ns_log Notice "upload-2: tmp_filename=$tmp_filename"
 set file_size [file size $tmp_filename]
 
@@ -102,72 +64,117 @@ if {[catch {
     return
 }
 
-
-
-# -------------------------------------------------------------------
-# Process the Outer file
-# -------------------------------------------------------------------
-
 set doc [dom parse $binary_content]
 set root_node [$doc documentElement]
 
 
-# --------- Tasks -----------
-set tasks_node [$root_node selectNodes /project/tasks]
+# -------------------------------------------------------------------
+# Save the new Tasks from GanttProject
+# -------------------------------------------------------------------
 
-set html ""
+# Save the tasks.
+# The task_hash contains a mapping table from gantt_project_ids
+# to task_ids.
+
+ns_write "<h2>Pass 1: Saving Tasks</h2><ul>\n"
+set task_hash_array [list]
+
+set task_hash_array [im_gp_save_tasks \
+	-enable_save_dependencies 0 \
+	 -task_hash_array $task_hash_array \
+	$root_node \
+	$project_id \
+]
+array set task_hash $task_hash_array
 
 
-foreach child [$tasks_node childNodes] {
+#ns_write "<h2>Pass 2: Saving Dependencies</h2><ul>\n"
+#set task_hash_array [im_gp_save_tasks \
+#	-enable_save_dependencies 1 \
+#	-task_hash_array $task_hash_array \
+#	$root_node \
+#	$project_id \
+#]
 
-    switch [$child nodeName] {
+# -------------------------------------------------------------------
+# Process Resources
+# <allocation task-id="12391" resource-id="7" function="Default:0" responsible="true" load="100.0"/>
+# -------------------------------------------------------------------
 
-	"task" {
+ns_write "<h2>Saving Resources</h2>\n"
+ns_write "<ul>\n"
 
-	    set task_id [$child getAttribute id ""]
-	    set task_exists_p [db_0or1row task_info "select * from im_timesheet_tasks where task_id = :task_id"]
+set resource_node [$root_node selectNodes /project/resources]
+set resource_hash_array [im_gp_save_resources $resource_node]
 
-	    set task_name [$child getAttribute name ""]
-	    set start_date [$child getAttribute start ""]
-	    set duration [$child getAttribute duration ""]
-	    set percent_completed [$child getAttribute complete "0"]
-	    set priority [$child getAttribute priority ""]
-	    set expand_p [$child getAttribute expand ""]
-	    set description ""
+ns_write "</ul>\n"
 
-	    set end_date [db_string end_date "select :start_date::date + :duration::integer"]
+# -------------------------------------------------------------------
+# Process Allocations
+# <allocation task-id="12391" resource-id="7" function="Default:0" responsible="true" load="100.0"/>
+# -------------------------------------------------------------------
 
-	    # Process task sub-nodes
-	    foreach taskchild [$child childNodes] {
+ns_write "<h2>Saving Allocations</h2>\n"
+ns_write "<ul>\n"
 
-		switch [$taskchild nodeName] {
-		    notes { set description [$taskchild nodeValue]}
-		    depend { im_ganttproject_depend $taskchild $child }
-		    customproperty { }
-		}
-	    }
+set allocations_node [$root_node selectNodes /project/allocations]
+im_gp_save_allocations \
+	$allocations_node \
+	$task_hash_array \
+        $resource_hash_array
 
-	    if {!$task_exists_p} { db_exec_plsql task_insert {} }
-	    db_dml task_update {}
-	    db_dml update_task2 "
-		update im_timesheet_tasks set
-			start_date = :start_date,
-			end_date = :end_date
-		where task_id = :task_id
-	    "
 
-	    append html "[ns_quotehtml [$child asXML]]<br>&nbsp;<br>"
-	}
+ns_write "</ul>\n"
 
-	default {
-	    # Probably "taskproperties", but 
-	    # we don't save them yet.
-	}
-    }
+
+# -------------------------------------------------------------------
+# Delete the tasks that have been deleted in GanttProject
+# -------------------------------------------------------------------
+
+ns_write "<h2>Deleting Deleted Tasks</h2>\n"
+
+# Extract a tree of tasks from the Database
+set xml_tree [im_gp_extract_xml_tree $root_node $task_hash_array]
+set db_tree [im_gp_extract_db_tree $project_id]
+set db_list [lsort -integer -unique [im_gp_flatten $db_tree]]
+set xml_list [lsort -integer -unique [im_gp_flatten $xml_tree]]
+
+ns_log Notice "task_hash_array: $task_hash_array"
+ns_log Notice "gantt-upload-2: DB Tree: $db_tree\n"
+ns_log Notice "gantt-upload-2: XML Tree: $xml_tree\n"
+ns_log Notice "gantt-upload-2: DB List: $db_list\n"
+ns_log Notice "gantt-upload-2: XML List: $xml_list\n"
+
+
+# Now calculate the difference between the two lists
+#
+set diff_list [im_gp_difference $db_list [lappend xml_list $project_id]]
+
+# Deal with the case of an empty diff_list
+lappend diff_list 0
+
+ns_log Notice "gantt-upload-2: Diff List: $diff_list\n"
+
+set del_projects_sql "
+	select	p.project_id
+	from	im_projects p
+	where	p.project_id in ([join $diff_list ","])
+"
+db_foreach del_projects $del_projects_sql {
+    ns_write "<li>Nuking project# $project_id\n"
+    im_project_nuke $project_id
 }
 
-ns_return 200 text/html $html
+
+set del_tasks_sql "
+	select	p.task_id
+	from	im_timesheet_tasks p
+	where	p.task_id in ([join $diff_list ","])
+"
+db_foreach del_tasks $del_tasks_sql {
+    ns_write "<li>Nuking task# $task_id\n"
+    im_timesheet_task_nuke $task_id
+}
 
 
-# ns_return 200 text/xml [$tasks_node asXML -indent 2 -escapeNonASCII]
-
+ns_write [im_footer]
