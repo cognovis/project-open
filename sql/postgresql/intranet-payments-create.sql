@@ -2,7 +2,7 @@
 --
 -- Payments module for Project/Open
 --
--- (c) 2003 Frank Bergmann (fraber@fraber.de)
+-- (c) 2003 Frank Bergmann (frank.bergmann@project-open.com)
 --
 -- Defines:
 --	im_payments			Payments
