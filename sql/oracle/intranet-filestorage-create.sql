@@ -11,7 +11,7 @@
 -- and the state (opened or closed) in which the user they have
 -- left the last time he used the filestorage module.
 --
--- @author Frank Bergmann (fraber@fraber.de)
+-- @author Frank Bergmann (frank.bergmann@project-open.com)
 --
 -- Note: These tables are not yet used by the filestorage module,
 -- but thought for the next version of the module.
