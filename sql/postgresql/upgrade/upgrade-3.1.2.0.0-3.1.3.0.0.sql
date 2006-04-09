@@ -1,7 +1,7 @@
 -- /packages/intranet-cost/sql/postgres/upgrade/upgrade-3.1.2.0.0-3.1.3.0.0.sql
 --
 -- Project/Open Cost Core
--- 040207 fraber@fraber.de
+-- 040207 frank.bergmann@project-open.com
 --
 -- Copyright (C) 2004 Project/Open
 --

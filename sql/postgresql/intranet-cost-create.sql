@@ -1,7 +1,7 @@
 -- /packages/intranet-cost/sql/oracle/intranet-cost-create.sql
 --
 -- Project/Open Cost Core
--- 040207 fraber@fraber.de
+-- 040207 frank.bergmann@project-open.com
 -- 040917 avila@digiteix.com 
 --
 -- Copyright (C) 2004 Project/Open

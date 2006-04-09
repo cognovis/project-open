@@ -1,7 +1,7 @@
 -- /packages/intranet-cost/sql/common/intranet-cost-create.sql
 --
 -- Project/Open Cost Core
--- 040207 fraber@fraber.de
+-- 040207 frank.bergmann@project-open.com
 --
 -- Copyright (C) 2004 Project/Open
 --

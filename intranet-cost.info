@@ -9,7 +9,7 @@
     <auto-mount>intranet-cost</auto-mount>
 
     <version name="3.2.0.0.0" url="http://projop.dnsalias.com/download/apm/intranet-cost-3.2.0.0.0.apm">
-        <owner url="mailto:fraber@fraber.de">Frank Bergmann</owner>
+        <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Base for cost management</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Defines cost centers, cost items and investments</description>
