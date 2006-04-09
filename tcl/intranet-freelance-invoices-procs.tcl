@@ -4,7 +4,7 @@ ad_library {
     Bring together all "components" (=HTML + SQL code)
     related to creating Provider Purchase Orders
 
-    @author fraber@fraber.de
+    @author frank.bergmann@project-open.com
     @creation-date  27 June 2003
 }
 
