@@ -100,11 +100,16 @@ alter table im_timesheet_tasks drop column gantt_project_id;
 
 -- Create a unified view to tasks
 
+drop view im_timesheet_tasks_view;
+
 create or replace view im_timesheet_tasks_view as
-select  p.*,
-        t.*,
+select	t.*,
+	p.parent_id as project_id,
+	p.project_name as task_name,
+	p.project_nr as task_nr,
+	p.percent_completed,
 	p.project_type_id as task_type_id,
-	p.project_status_id as task_status_id,
+	p.project_status_id as task_status_id
 from
 	im_projects p,
 	im_timesheet_tasks t
