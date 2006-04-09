@@ -12,7 +12,7 @@ ad_page_contract {
     @param note 
     @param mark_document_as_paid_p Set the status of the financial document
            to "paid" after registering the payment
-    @author fraber@fraber.de
+    @author frank.bergmann@project-open.com
     @creation-date Aug 2003
 } {
     { cost_id:integer "" }

@@ -6,7 +6,7 @@ ad_page_contract {
     @param company_id Must have this if we're adding a payment
     @param payment_id Must have this if we're editing a payment
 
-    @author fraber@fraber.de
+    @author frank.bergmann@project-open.com
     @creation-date August 2003
 } {
     payment_id
