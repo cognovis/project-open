@@ -162,7 +162,7 @@ BEGIN
 		select distinct
 			t.project_id
 		from
-			im_timesheet_tasks t
+			im_timesheet_tasks_view t
 		where
 			t.invoice_id = p_invoice_id
 	);

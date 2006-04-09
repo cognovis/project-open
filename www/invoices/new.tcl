@@ -270,7 +270,7 @@ from
         im_companies c,
 	(select project_id,
 		count(*) as task_count 
-	 from	im_timesheet_tasks 
+	 from	im_timesheet_tasks_view 
 	 where	1=1 $task_invoice_id_null
 	 group by project_id
 	) t

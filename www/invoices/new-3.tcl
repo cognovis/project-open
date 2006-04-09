@@ -122,7 +122,7 @@ select
 	p.project_path,
 	p.project_path as project_short_name
 from 
-	im_timesheet_tasks t,
+	im_timesheet_tasks_view t,
 	im_projects p
 where 
 	$tasks_where_clause
@@ -253,7 +253,7 @@ select
 	p.project_id,
 	t.material_id
 from 
-	im_timesheet_tasks t,
+	im_timesheet_tasks_view t,
 	im_projects p
 where 
 	$tasks_where_clause

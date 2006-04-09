@@ -144,7 +144,7 @@ select
 	im_category_from_id(t.task_type_id) as type_name,
 	im_category_from_id(t.task_status_id) as task_status
 from 
-	im_timesheet_tasks t,
+	im_timesheet_tasks_view t,
 	im_projects p
 where 
 	t.project_id = p.project_id
