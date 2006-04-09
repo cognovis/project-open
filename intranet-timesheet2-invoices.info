@@ -10,7 +10,7 @@
 
     <version name="3.2.0.0.0" url="http://projop.dnsalias.com/download/apm/intranet-timesheet2-invoices-3.2.0.0.0.apm">
 
-        <owner url="mailto:fraber@fraber.de">Frank Bergmann</owner>
+        <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
 
         <provides url="intranet-timesheet2-invoices" version="3.0.0"/>
