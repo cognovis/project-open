@@ -13,10 +13,12 @@ alter table im_projects drop constraint im_projects_nr_un;
 --
 
 
-alter table im_projects drop constraint im_projects_nr_unn;
+-- alter table im_projects drop constraint im_projects_nr_un;
+
+-- Dont allow the same project_nr  for the same company+level
 alter table im_projects add
-        constraint im_projects_nr_unn
-        unique(parent_id, project_nr);
+        constraint im_projects_nr_un
+        unique(project_nr, company_id, parent_id);
 
 
 -- Add a new category for the project_type.
@@ -25,5 +27,4 @@ alter table im_projects add
 --
 insert into im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE) 
 values ('84', 'Project Task', 'Intranet Project Type');
-
 
