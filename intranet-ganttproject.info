@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-ganttproject</auto-mount>
 
-    <version name="3.1.2" url="http://openacs.org/repository/download/apm/intranet-ganttproject-3.1.2.apm">
+    <version name="3.2" url="http://openacs.org/repository/download/apm/intranet-ganttproject-3.2.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Integration with GanttProject</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
@@ -16,8 +16,8 @@
 
         <!-- No dependency information -->
 
-        <provides url="intranet-ganttproject" version="3.1.2"/>
-        <requires url="intranet-core" version="3.1.2"/>
+        <provides url="intranet-ganttproject" version="3.2"/>
+        <requires url="intranet-core" version="3.0.0"/>
 
         <callbacks>
         </callbacks>
