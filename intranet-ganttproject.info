@@ -23,9 +23,9 @@
         </callbacks>
         <parameters>
 
-        <parameter datatype="number" min_n_values="1" max_n_values="1" name="GanttProjectThumbnailSize"  default="360x360" description="Default size for GanttProject thumbnails. A typical value for a 1024x768 screen resolution is 360x360"/>
+	<parameter datatype="number" min_n_values="1" max_n_values="1" name="GanttProjectThumbnailSize"  default="360x360" description="Default size for GanttProject thumbnails. A typical value for a 1024x768 screen resolution is 360x360"/>
 
-        <parameter datatype="string" min_n_values="1" max_n_values="1" name="GanttProjectPreviewFilename"  default="ganttproject.preview" description="Default file to look for in the project folder for a GanttProject icon"/>
+	<parameter datatype="string" min_n_values="1" max_n_values="1" name="GanttProjectPreviewFilename"  default="ganttproject.preview" description="Default file to look for in the project folder for a GanttProject icon"/>
 
         </parameters>
 
