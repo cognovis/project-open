@@ -36,7 +36,7 @@ if {0 == $user_id} {
 # Write Out a Single Task
 # ---------------------------------------------------------------
 
-ad_proc -public im_ganttproject_write_project_task {
+ad_proc -public im_ganttproject_write_project_tasks {
     task_id
     doc
     project_node
@@ -53,12 +53,31 @@ ad_proc -public im_ganttproject_write_project_task {
     set task_view_url "$base_url/intranet-timesheet2-tasks/new?task_id="
     set project_view_url "$base_url/intranet/projects/view?project_id="
 
+    # ------------ Get everything about the project -------------
+    if {![db_0or1row project_info "
+        select  p.*,
+                p.start_date::date as project_start_date,
+                p.end_date::date as project_end_date,
+                p.end_date::date - p.start_date::date as duration,
+                1 as priority,
+                c.company_name
+        from    im_projects p,
+                im_companies c
+        where   project_id = :project_id
+                and p.company_id = c.company_id
+        order by
+                sort_order
+    "]} {
+        ad_return_complaint 1 [lang::message::lookup "" intranet-ganttproject.Project_Not_Found "Didn't find project \\#%project_id%"]
+        return
+    }
+
     set project_tasks_sql "
     	select	t.*,
     		t.start_date::date as start_date_date,
     		t.end_date::date as end_date_date,
     		(to_char(t.end_date, 'J')::integer - to_char(t.start_date, 'J')::integer) as duration
-    	from 	im_timesheet_tasks t
+    	from 	im_timesheet_tasks_view t
     	where	t.task_id = :task_id
     "
     db_foreach project_tasks $project_tasks_sql {
@@ -136,7 +155,7 @@ ad_proc -public im_ganttproject_write_project {
     set task_view_url "$base_url/intranet-timesheet2-tasks/new?task_id="
     set project_view_url "$base_url/intranet/projects/view?project_id="
 
-    # ------------ Create the Project Node -------------
+    # ------------ Get everything about the project -------------
     if {![db_0or1row project_info "
         select  p.*,
                 p.start_date::date as project_start_date,
@@ -202,7 +221,7 @@ ad_proc -public im_ganttproject_write_project {
 		select	t.task_id as object_id,
 			'im_timesheet_task' as object_type,
 			t.sort_order
-		from	im_timesheet_tasks t
+		from	im_timesheet_tasks_view t
 		where	t.project_id = :project_id
 	   ) ttt
 	order by sort_order
@@ -214,7 +233,7 @@ ad_proc -public im_ganttproject_write_project {
 
 	switch $object_type {
 	    "im_timesheet_task" {
-		im_ganttproject_write_project_task \
+		im_ganttproject_write_project_tasks \
 			$object_id \
 			$doc \
 			$project_node \
@@ -234,7 +253,7 @@ ad_proc -public im_ganttproject_write_project {
                 "
 		db_foreach sub_projects $subproject_sql {
 		    # ToDo: Check infinite loop!!!
-		    im_ganttproject_write_project_tasks $doc $project_node $project_id
+		    im_ganttproject_write_project_tasks $object_id $doc $project_node $tree_node $project_id
 		}
 	    }
 	    default {
@@ -396,7 +415,7 @@ set project_allocations_sql "
 	where
 		tta.task_id in (
 			select	task_id
-			from	im_timesheet_tasks
+			from	im_timesheet_tasks_view
 			where	project_id in (
 				select	children.project_id as subproject_id
 				from	im_projects parent,
