@@ -109,10 +109,84 @@ select	t.*,
 	p.project_nr as task_nr,
 	p.percent_completed,
 	p.project_type_id as task_type_id,
-	p.project_status_id as task_status_id
+	p.project_status_id as task_status_id,
+	p.start_date,
+	p.end_date
 from
 	im_projects p,
 	im_timesheet_tasks t
 where
 	t.task_id = p.project_id
 ;
+
+
+
+
+-- Defines the relationship between two tasks, based on
+-- the data model of GanttProject.
+-- <depend id="5" type="2" difference="0" hardness="Strong"/>
+create table im_timesheet_task_dependencies (
+	task_id_one		integer
+				constraint im_timesheet_task_map_one_nn
+				not null
+				constraint im_timesheet_task_map_one_fk
+				references acs_objects,
+	task_id_two		integer
+				constraint im_timesheet_task_map_two_nn
+				not null
+				constraint im_timesheet_task_map_two_fk
+				references acs_objects,
+	dependency_type_id	integer
+				constraint im_timesheet_task_map_dep_type_fk
+				references im_categories,
+	difference		numeric(12,2),
+	hardness_type_id	integer
+				constraint im_timesheet_task_map_hardness_fk
+				references im_categories,
+
+	primary key (task_id_one, task_id_two)
+);
+
+create index im_timesheet_tasks_dep_task_one_idx 
+on im_timesheet_task_dependencies (task_id_one);
+
+create index im_timesheet_tasks_dep_task_two_idx 
+on im_timesheet_task_dependencies (task_id_two);
+
+
+
+
+-- Allocate a user to a specific task 
+-- with a certain percentage of his time
+--
+create table im_timesheet_task_allocations (
+	task_id			integer
+				constraint im_timesheet_task_alloc_task_nn
+				not null
+				constraint im_timesheet_task_alloc_task_fk
+				references acs_objects,
+        user_id			integer
+				constraint im_timesheet_task_alloc_user_fk
+				references users,
+	role_id			integer
+				constraint im_timesheet_task_alloc_role_fk
+				references im_categories,
+	percentage		numeric(6,2),
+--				-- No check anymore - might want to alloc 120%...
+--				constraint im_timesheet_task_alloc_perc_ck
+--				check (percentage >= 0 and percentage <= 200),
+	task_manager_p		char(1)
+				constraint im_timesheet_task_resp_ck
+				check (task_manager_p in ('t','f')),
+	note			varchar(1000),
+
+	primary key (task_id, user_id)
+);
+
+create index im_timesheet_tasks_dep_alloc_task_idx 
+on im_timesheet_task_allocations (task_id);
+
+create index im_timesheet_tasks_dep_alloc_user_idx 
+on im_timesheet_task_allocations (user_id);
+
+
