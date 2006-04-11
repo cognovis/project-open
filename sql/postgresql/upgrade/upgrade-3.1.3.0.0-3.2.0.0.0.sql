@@ -28,3 +28,9 @@ alter table im_projects add
 insert into im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE) 
 values ('84', 'Project Task', 'Intranet Project Type');
 
+
+-------------------------------------------------------------
+-- Add a "sort order" field to Projects
+--
+alter table im_projects add sort_order integer;
+
