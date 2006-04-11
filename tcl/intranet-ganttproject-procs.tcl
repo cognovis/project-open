@@ -32,6 +32,138 @@ ad_proc -private im_package_ganttproject_id_helper {} {
 
 
 # ----------------------------------------------------------------------
+# Recursively write out task structure
+# ----------------------------------------------------------------------
+
+ad_proc -public im_ganttproject_write_project { 
+    project_id
+    doc
+    tree_node 
+} {
+    Recursively write out the information about projects and tasks
+    below a specific project
+} {
+    ns_log Notice "im_ganttproject_write_project: doc=$doc, tree_node=$tree_node, project_id=$project_id"
+    if { [security::secure_conn_p] } {
+	set base_url "https://[ad_host][ad_port]"
+    } else {
+	set base_url "http://[ad_host][ad_port]"
+    }
+    set task_view_url "$base_url/intranet-timesheet2-tasks/new?task_id="
+    set project_view_url "$base_url/intranet/projects/view?project_id="
+
+    # ------------ Get everything about the project -------------
+    if {![db_0or1row project_info "
+        select  p.*,
+		t.*,
+		o.object_type,
+                p.start_date::date,
+                p.end_date::date,
+		p.end_date::date - p.start_date::date as duration,
+                c.company_name
+        from    im_projects p
+		LEFT OUTER JOIN im_timesheet_tasks t on (p.project_id = t.task_id),
+		acs_objects o,
+                im_companies c
+        where   p.project_id = :project_id
+		and p.project_id = o.object_id
+                and p.company_id = c.company_id
+    "]} {
+	ad_return_complaint 1 [lang::message::lookup "" intranet-ganttproject.Project_Not_Found "Didn't find project \#%project_id%"]
+	return
+    }
+
+    if {"" == $percent_completed} { set percent_completed "0" }
+    if {"" == $priority} { set priority "1" }
+    if {"" == $start_date} { set start_date_date [db_string today "select to_char(now(), 'YYYY-MM-DD')"] }
+    if {"" == $end_date} { set end_date_date [db_string today "select to_char(now(), 'YYYY-MM-DD')"] }
+
+    # Is this a task (as opposed to a project)?
+    set task_p [string equal "im_timesheet_task" $object_type]
+
+    set project_node [$doc createElement task]
+    $tree_node appendChild $project_node
+    $project_node setAttribute id $project_id
+    $project_node setAttribute name $project_name
+    $project_node setAttribute meeting "false"
+    $project_node setAttribute start $start_date
+    $project_node setAttribute duration $duration
+    $project_node setAttribute complete $percent_completed
+    $project_node setAttribute priority $priority
+    $project_node setAttribute webLink "$project_view_url$project_id"
+    $project_node setAttribute expand "true"
+
+    # Custom Property "task_nr"
+    # <customproperty taskproperty-id="tpc0" value="linux_install" />
+    set task_nr_node [$doc createElement customproperty]
+    $project_node appendChild $task_nr_node
+    $task_nr_node setAttribute taskproperty-id tpc0
+    $task_nr_node setAttribute value $project_nr
+   
+    # Custom Property "task_id"
+    # <customproperty taskproperty-id="tpc1" value="12345" />
+    set task_id_node [$doc createElement customproperty]
+    $project_node appendChild $task_id_node
+    $task_id_node setAttribute taskproperty-id tpc1
+    $task_id_node setAttribute value $project_id
+
+    # Add dependencies to predecessors
+    set dependency_sql "
+	    	select * from im_timesheet_task_dependencies 
+	    	where task_id_one = :task_id
+    "
+    db_foreach dependency $dependency_sql {
+	set depend_node [$doc createElement depend]
+	$task_node appendChild $depend_node
+	$depend_node setAttribute id $task_id_two
+	$depend_node setAttribute type 2
+	$depend_node setAttribute difference 0
+	$depend_node setAttribute hardness "Strong"
+    }
+    
+    # ------------ Select both Tasks and Sub-Projects -------------
+    # ... in the sort_order
+
+    set object_list_list [db_list_of_lists sorted_query "
+	select *
+	from
+	    (	select	p.project_id as object_id,
+			'im_project' as object_type,
+			sort_order
+		from	im_projects p
+		where	parent_id = :project_id
+	                and project_status_id not in (
+				[im_project_status_deleted], 
+				[im_project_status_closed]
+			)
+	    UNION
+		select	t.task_id as object_id,
+			'im_timesheet_task' as object_type,
+			t.sort_order
+		from	im_timesheet_tasks_view t
+		where	t.project_id = :project_id
+	   ) ttt
+	order by sort_order
+    "]
+
+    foreach object_record $object_list_list {
+	set object_id [lindex $object_record 0]
+
+	im_ganttproject_write_project \
+	    $object_id \
+	    $doc \
+	    $tree_node
+	}
+    }
+}
+
+
+
+
+
+
+
+# ----------------------------------------------------------------------
 # Project Page Component 
 # ----------------------------------------------------------------------
 
