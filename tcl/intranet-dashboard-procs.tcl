@@ -142,5 +142,4 @@ ad_proc im_dashboard_info_component { dashboard_id return_url {view_name ""} } {
     append dashboard_html "</table></form>\n"
 
     return $dashboard_html
-    return [im_table_with_title "[_ intranet-hr.Dashboard_Information]" $dashboard_html]
 }
