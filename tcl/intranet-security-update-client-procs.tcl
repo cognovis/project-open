@@ -100,8 +100,5 @@ ad_proc im_security_update_client_component { } {
 </form>
 "
 
-
-
-    
-    return [im_table_with_title $security_update_l10n $sec_html]
+    return $sec_html
 }
