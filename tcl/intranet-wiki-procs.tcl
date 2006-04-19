@@ -105,5 +105,5 @@ ad_proc im_wiki_base_component { object_type object_id } {
     # Skip the component if there is no Wiki
     if {0 == $ctr} { return "" }
 
-    return [im_table_with_title "Wikis" $wikis_html]
+    return $wikis_html
 }
