@@ -183,6 +183,60 @@ set title_tcl = 'lang::message::lookup "" intranet-wiki.Company_Wiki "Company Wi
 where plugin_name = 'Company Wiki Component';
 
 
+-------------------------------------------------------------
+-- Update some components to remove the "im_table_with_title"
+
+update im_component_plugins set 
+component_tcl = 'im_forum_component -user_id $user_id -forum_object_id 0 -current_page_url $current_url -return_url $return_url -export_var_list [list forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type home -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -start_idx [im_opt_val forum_start_idx] -restrict_to_mine_p t -restrict_to_new_topics 1',
+title_tcl = 'im_forum_create_bar "<B>[_ intranet-forum.Forum_Items]<B>" 0 $return_url'
+where plugin_name = 'Home Forum Component';
+
+
+update im_component_plugins set
+component_tcl = 'im_forum_component -user_id $user_id -forum_object_id $project_id -current_page_url $current_url -return_url $return_url -forum_type "project" -export_var_list [list project_id forum_start_idx forum_order_by forum_how_many forum_view_name] -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -start_idx [im_opt_val forum_start_idx] -restrict_to_mine_p "f" -restrict_to_new_topics 0',
+title_tcl = 'im_forum_create_bar "<B>[_ intranet-forum.Forum_Items]<B>" $project_id $return_url'
+where plugin_name = 'Project Forum Component';
+
+
+update im_component_plugins set
+component_tcl = 'im_forum_component -user_id $user_id -forum_object_id $company_id -current_page_url $current_url -return_url $return_url -export_var_list [list company_id forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type company -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -restrict_to_mine_p "f" -restrict_to_new_topics 0',
+title_tcl = 'im_forum_create_bar "<B>[_ intranet-forum.Forum_Items]<B>" $company_id $return_url'
+where plugin_name = 'Companies Forum Component';
+
+
+update im_component_plugins set
+component_tcl = 'im_timesheet_project_component $user_id $project_id'
+where plugin_name = 'Project Timesheet Component';
+
+
+update im_component_plugins set
+component_tcl = 'im_timesheet_home_component $user_id'
+where plugin_name = 'Home Timesheet Component';
+
+update im_component_plugins set
+component_tcl = 'im_group_member_component $project_id $current_user_id $user_admin_p $return_url "" "" 1'
+where plugin_name = 'Project Members';
+
+
+update im_component_plugins set
+component_tcl = 'im_office_user_component $current_user_id $user_id'
+where plugin_name = 'User Offices';
+
+
+update im_component_plugins set
+component_tcl = 'im_office_company_component $user_id $company_id'
+where plugin_name = 'Company Offices';
+
+
+update im_component_plugins set
+component_tcl = 'im_group_member_component $office_id $user_id $admin $return_url "" "" 1'
+where plugin_name = 'Office Members';
+
+
+
+
+
+
 
 
 
