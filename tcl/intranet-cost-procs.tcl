@@ -513,7 +513,6 @@ ad_proc im_costs_object_list_component { user_id cost_id return_url } {
     Returns a HTML table containing a list of objects
     associated with a particular financial document.
 } {
-
     set bgcolor(0) "class=roweven"
     set bgcolor(1) "class=rowodd"
 
