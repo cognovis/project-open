@@ -151,5 +151,4 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
     append employee_html "</table></form>\n"
 
     return $employee_html
-    return [im_table_with_title "[_ intranet-hr.Employee_Information]" $employee_html]
 }
