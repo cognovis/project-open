@@ -236,11 +236,6 @@ where plugin_name = 'Office Members';
 
 
 
-
-
-
-
-
 -------------------------------------------------------------
 -- Update the .new for plugins
 drop function im_component_plugin__new (
@@ -294,5 +289,62 @@ begin
 
         return v_plugin_id;
 end;' language 'plpgsql';
+
+
+
+
+
+-------------------------------------------------------------
+-- Map component plugins to users
+
+comment on table im_component_plugins is '
+ Components Plugins are handeled in the database in order to allow
+ customizations to survive system updates.
+';
+
+
+create table im_component_plugin_user_map (
+        plugin_id               integer
+                                constraint im_comp_plugin_user_map_plugin_fk
+                                references im_component_plugins,
+        user_id                 integer
+                                constraint im_comp_plugin_user_map_user_fk
+                                references users,
+        sort_order              integer not null,
+        location                varchar(100) not null,
+                constraint im_comp_plugin_user_map_plugin_pk
+                primary key (plugin_id, user_id)
+);
+
+comment on table im_component_plugin_user_map is '
+ This table maps Component Plugins to particular users,
+ effectively allowing users to customize their GUI
+ layout.
+';
+
+
+
+
+
+-- View to show a "unified" view to the component_plugins, derived
+-- from the main table and the overriding user_map:
+--
+create or replace view im_component_plugin_user_map_all as (
+        select
+                c.plugin_id,
+                c.sort_order,
+                c.location,
+                null as user_id
+        from
+                im_component_plugins c
+  UNION
+        select
+                m.plugin_id,
+                m.sort_order,
+                m.location,
+                m.user_id
+        from
+                im_component_plugin_user_map m
+);
 
 
