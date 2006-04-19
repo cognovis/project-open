@@ -118,7 +118,7 @@ select im_component_plugin__new (
         '/intranet/projects/view',      -- page_url
         null,                           -- view_name
         10,                             -- sort_order
-        'im_table_with_title "Quality" [im_quality_project_component -project_id $project_id -return_url $return_url]'
+        'im_quality_project_component -project_id $project_id -return_url $return_url'
 );
 
 
