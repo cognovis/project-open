@@ -76,9 +76,6 @@ ad_proc im_survsimp_component { object_id } {
 		    )
 		and im_object_permission_p(ss.survey_id, :current_user_id, 'survsimp_take_survey') = 't'
     "
-
-    set simple_surveys_l10n [lang::message::lookup "" intranet-simple-survey.${aot_pretty_name}_Surveys "$aot_pretty_name Surveys"]
-
     set survsimp_html ""
     set ctr 0
     db_foreach survsimp_map $survsimp_sql {
@@ -112,6 +109,6 @@ ad_proc im_survsimp_component { object_id } {
 	</table>
     "
 
-    return [im_table_with_title $simple_surveys_l10n $survsimp_html]
+    return $survsimp_html
 }
 
