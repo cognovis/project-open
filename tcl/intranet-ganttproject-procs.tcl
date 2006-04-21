@@ -153,14 +153,8 @@ ad_proc -public im_ganttproject_write_project {
 	    $object_id \
 	    $doc \
 	    $tree_node
-	}
     }
 }
-
-
-
-
-
 
 
 # ----------------------------------------------------------------------
