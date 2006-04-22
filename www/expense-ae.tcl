@@ -22,6 +22,7 @@ ad_page_contract {
     project_id:integer
     { return_url "/intranet-expenses/"}
     expense_id:integer,optional
+    {form_mode "edit"}
 }
 
 # ------------------------------------------------------------------
@@ -36,103 +37,131 @@ set user_id [ad_maybe_redirect_for_registration]
 #}
 
 set action_url "new"
-set focus "price.var_name"
-set page_title "[_ intranet-timesheet2-invoices.New_Price]"
+set page_title "[_ intranet-expenses.New_Expense]"
 set context [im_context_bar $page_title]
+append return_url "index?[export_vars -url project_id]"
 
-
-if {"" == $currency} {
+if {![exists_and_not_null currency]} {
     set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 }
 
 # ------------------------------------------------------------------
 # Build the form
 # ------------------------------------------------------------------
-
-set uom_options [db_list_of_lists uom_options "
-select category, category_id
-from im_categories
-where category_type = 'Intranet UoM'
-"]
-
-set task_type_options [db_list_of_lists uom_options "
-select category, category_id
-from im_categories
-where category_type = 'Intranet Project Type'
-"]
-set task_type_options [linsert $task_type_options 0 [list "" ""]]
-set material_options [im_material_options -include_empty 1]
+set form_id "expense_ae"
+set focus "$form_id\.var_name"
 
 set include_empty 0
 set currency_options [im_currency_options $include_empty]
 
-ad_form \
-    -name price \
-    -cancel_url $return_url \
-    -action $action_url \
-    -mode $form_mode \
-    -export {next_url user_id return_url} \
-    -form {
-	price_id:key(im_timesheet_prices_seq)
-	{company_id:text(hidden)}
-	{uom_id:text(select) {label "[_ intranet-timesheet2-invoices.Unit_of_Measure]"} {options $uom_options} }
-	{task_type_id:text(select),optional {label "[_ intranet-timesheet2-invoices.Task_Type]"} {options $task_type_options} }
-	{material_id:text(select),optional {label "[_ intranet-timesheet2-invoices.Material]"} {options $material_options} }
-	{amount:text(text) {label "[_ intranet-timesheet2-invoices.Amount]"} {html {size 10}}}
-	{currency:text(select) {label "[_ intranet-timesheet2-invoices.Currency]"} {options $currency_options} }
+template::form::create $form_id \
+    -cancel_url "$return_url" \
+    -mode "$form_mode" \
+    -view_buttons [list [list "[_ intranet-core.Back]" back]]
+
+element::create $form_id expense_id \
+    -widget hidden \
+    -optional
+element::create $form_id project_id \
+    -widget hidden \
+    -value $project_id
+
+element::create $form_id expense_amount \
+    -datatype text \
+    -widget text \
+    -html {size 10} \
+    -label "[_ intranet-expenses.Amount]"
+
+element::create $form_id vat_included \
+    -datatype text \
+    -widget text \
+    -html {size 10} \
+    -label "[_ intranet-expenses.Vat_Included]"
+    
+element::create $form_id expense_currency \
+    -datatype text \
+    -widget select \
+    -options $currency_options \
+    -label "[_ intranet-expenses.Currency]"
+
+element::create $form_id expense_date \
+    -datatype date \
+    -widget date \
+    -label "[_ intranet-expenses.Expense_Date]"
+
+element::create $form_id external_company_name \
+    -datatype text \
+    -widget text \
+    -label "[_ intranet-expenses.External_company_name]"
+
+element::create $form_id receip_reference \
+    -datatype text \
+    -widget text \
+    -label "[_ intranet-expenses.Receip_reference]"
+
+set expense_type_options [db_list_of_lists "get expense type" "select expense_type, expense_type_id from im_expense_type"]
+element::create $form_id expense_type_id \
+    -datatype integer \
+    -widget select \
+    -options $expense_type_options \
+    -label "[_ intranet-expenses.Expense_Type]"
+
+
+element::create $form_id billable_p \
+    -datatype text \
+    -widget radio \
+    -options {{yes T} {no F}}\
+    -label "[_ intranet-expenses.Billable_p]"
+
+element::create $form_id reimbursable \
+    -datatype text \
+    -widget text \
+    -html {size 10} \
+    -label "[_ intranet-expenses.reimbursable]"
+
+set expense_payment_type_options [db_list_of_lists "get expense payment type" "select expense_payment_type, \
+        expense_payment_type_id \
+        from im_expense_payment_type"]
+element::create $form_id expense_payment_type_id \
+    -datatype integer \
+    -widget select \
+    -options $expense_payment_type_options \
+    -label "[_ intranet-expenses.Expense_Payment_Type]"
+
+if {[form is_request $form_id]} {
+    ns_log notice "is request"
+    #form get_values $form_id
+    if {[exists_and_not_null expense_id]} {
+	# get db values for current expense
+
+    }
+    template::element::set_value $form_id expense_currency $currency
+}
+
+if {[form is_submission $form_id]} {
+    form get_values $form_id
+    #check conditions
+    set n_errors 0
+    if {![empty_string_p $vat_included]} {
+        if {0>$vat_included || 100<$vat_included} {
+            template::element::set_error $form_id vat_included "[_ intranet-expenses.vat_included_not_valid]"
+            incr n_errors
+        }
     }
 
-
-ad_form -extend -name price -on_request {
-    # Populate elements from local variables
-
-} -select_query {
-
-	select	p.*
-	from	im_timesheet_prices p
-	where	p.price_id = :price_id
-
-} -new_data {
-
-    db_dml price_insert "
-insert into im_timesheet_prices (
-	price_id,
-	uom_id,
-	company_id,
-	task_type_id,
-	material_id,
-	currency,
-	price
-) values (
-	:price_id,
-	:uom_id,
-	:company_id,
-	:task_type_id,
-	:material_id,
-	:currency,
-	:amount
-)"
-
-} -edit_data {
-
-    db_dml price_update "
-	update im_prices set
-	        package_name    = :package_name,
-	        label           = :label,
-	        name            = :name,
-	        url             = :url,
-	        sort_order      = :sort_order,
-	        parent_price_id  = :parent_price_id
-	where
-		price_id = :price_id
-"
-} -on_submit {
-
-	ns_log Notice "new1: on_submit"
-
-
-} -after_submit {
-
-	ad_returnredirect $return_url
-	ad_script_abort
+    if {![empty_string_p $reimbursable]} {
+        if {0>$reimbursable || 100<$reimbursable} {
+            template::element::set_error $form_id reimbursable "[_ intranet-expenses.reimbursable_not_valid]"
+            incr n_errors
+        }
+    }
+    if {0 < $n_errors} {
+	return
+    }
 }
+
+if {[form is_valid $form_id]} {
+
+}
+
+template::forward $return_url
