@@ -38,7 +38,11 @@ delete from im_biz_object_urls where object_type='im_expense';
     select im_component_plugin__del_module('intranet-expenses');
 -- END;
 
-
+-------------------------------------------------------------
+-- drop functions
+-- drop function im_expense__new ();
+-- drop function im_expense__name ();
+-- drop function im_expense__delete ();
 
 -------------------------------------------------------------
 -- before remove priviliges remove granted permissions

@@ -100,6 +100,126 @@ DECLARE
         return v_name;
 end;' language 'plpgsql';
 
+-- create or replace package body im_expense
+-- is
+create or replace function im_expense__new (
+        integer,
+        varchar,
+        timestamptz,
+        integer,
+        varchar,
+        integer,
+        varchar,
+        integer,
+        timestamptz,
+        char(3),
+        integer,
+        integer,
+        integer,
+        integer,
+        numeric,
+        numeric,
+        numeric,
+        varchar,
+        numeric,
+        varchar,
+        varchar,
+        integer,
+        char(1),
+        numeric,
+        integer
+    )
+returns integer as '
+declare
+        p_expense_id            alias for $1;           -- expense_id default null
+        p_object_type           alias for $2;           -- object_type default ''im_expense''
+        p_creation_date         alias for $3;           -- creation_date default now()
+        p_creation_user         alias for $4;           -- creation_user
+        p_creation_ip           alias for $5;           -- creation_ip default null
+        p_context_id            alias for $6;           -- context_id default null
+
+        p_expense_name          alias for $7;           -- expense_name
+        p_project_id            alias for $8;           -- project_id
+        
+        p_expense_date          alias for $9;           -- expense_date now()
+        p_expense_currency      alias for $10;          -- expense_currency default ''EUR''
+        p_expense_template_id   alias for $11;          -- expense_template_id default null
+        p_expense_status_id     alias for $12;          -- expense_status_id default 602
+        p_expense_type_id       alias for $13;          -- expense_type_id default 700
+        p_payment_days          alias for $14;          -- payment_days default 30
+	p_amount                alias for $15;          -- amount
+	p_vat                   alias for $16;          -- vat default 0
+	p_tax                   alias for $17;          -- tax default 0
+	p_note                  alias for $18;          -- note
+	
+	p_vat_included		alias for $19;		-- vat included
+	p_external_company_name alias for $20;		-- hotel name, taxi, ...
+	p_receip_reference	alias for $21;		-- receip reference
+	p_expense_type_id	alias for $22;		-- expense type default null
+	p_billable_p		alias for $23;		-- is billable to client 
+	p_reimbursable		alias for $24;		-- % reibursable from amount value
+	p_expense_payment_type_id alias for $25;	-- credit card used to pay, ...
+	
+	v_expense_id            integer;
+    begin
+	v_expense_id := im_cost__new (
+		p_expense_id,        -- cost_id
+		p_object_type,       -- object_type
+		p_creation_date,     -- creation_date
+		p_creation_user,     -- creation_user
+		p_creation_ip,       -- creation_ip
+		p_context_id,        -- context_id
+
+		p_expense_name,      -- cost_name
+		null,                -- parent_id
+		p_project_id,        -- project_id
+		null,        	     -- company_id
+		null,                -- provider_id
+		null,                -- investment_id
+
+		p_expense_status_id, -- cost_status_id
+		p_expense_type_id,   -- cost_type_id
+		p_expense_template_id,  -- template_id
+
+		p_expense_date,         -- effective_date
+		p_payment_days,         -- payment_days
+		p_amount,               -- amount
+		p_expense_currency,     -- currency
+		p_vat,                  -- vat
+		p_tax,                  -- tax
+
+		''f'',                  -- variable_cost_p
+		''f'',                  -- needs_redistribution_p
+		''f'',                  -- redistributed_p
+		''f'',                  -- planning_p
+		null,                   -- planning_type_id
+
+		p_note,                 -- note
+			null                    -- description
+		);
+
+		insert into im_expenses (
+			expense_id,
+			vat_included,
+			external_company_name,
+			receip_reference,
+			expense_type_id,
+			billable_p,
+			reimbursable,
+			expense_payment_type_id
+		) values (
+			v_expense_id,
+			p_vat_included,
+			p_external_company_name,
+			p_receip_reference,
+			p_expense_type_id,
+			p_billable_p,
+			p_reimbursable,
+			p_expense_payment_type_id
+		);
+
+		return v_expense_id;
+end;' language 'plpgsql';
 
 
 -------------------------------------------------------------
