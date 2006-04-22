@@ -44,7 +44,7 @@ set current_url [ns_conn url]
 # Admin Links
 # ---------------------------------------------------------------
 
-set admin_links "<li><a href=\"new?[export_url_vars project_id return_url]\">[_ project-expenses.Add_a_new_Expense]</a>\n"
+set admin_links "<li><a href=\"expense-ae?[export_url_vars project_id return_url]\">[_ project-expenses.Add_a_new_Expense]</a>\n"
 
 
 # ---------------------------------------------------------------
