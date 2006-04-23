@@ -248,8 +248,8 @@ $project_node appendXML "<description>[ns_quotehtml $note]</description>"
 $project_node appendXML "
     <taskdisplaycolumns>
 	<displaycolumn property-id='tpd3' order='0' width='150' />
-	<displaycolumn property-id='tpc0' order='3' width='80' />
-	<displaycolumn property-id='tpc1' order='4' width='40' />
+<!--	<displaycolumn property-id='tpc0' order='3' width='80' /> -->
+<!--	<displaycolumn property-id='tpc1' order='4' width='40' /> -->
     </taskdisplaycolumns>
 "
 

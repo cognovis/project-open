@@ -158,7 +158,7 @@ ad_proc -public im_ganttproject_write_project {
 	    -default_duration $duration \
 	    $object_id \
 	    $doc \
-	    $tree_node
+	    $project_node
     }
 }
 
