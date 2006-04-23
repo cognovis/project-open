@@ -37,6 +37,7 @@ if {![db_0or1row project_info "
 	select	p.*,
 		p.start_date::date as project_start_date,
 		p.end_date::date as project_end_date,
+		p.end_date::date - p.start_date::date as project_duration,
 		c.company_name
 	from	im_projects p,
 		im_companies c
@@ -98,7 +99,12 @@ $tasks_node appendXML "
 "
 
 # Recursively write out the task hierarchy
-im_ganttproject_write_project $project_id $doc $tasks_node
+im_ganttproject_write_project \
+    -default_start_date $project_start_date \
+    -default_duration $project_duration \
+    $project_id \
+    $doc \
+    $tasks_node
 
 
 # -------- Resources -------------
