@@ -190,3 +190,103 @@ create index im_timesheet_tasks_dep_alloc_user_idx
 on im_timesheet_task_allocations (user_id);
 
 
+
+
+
+
+create or replace function im_timesheet_task__name (integer)
+returns varchar as '
+declare
+        p_task_id alias for $1; -- timesheet_task_id
+        v_name  varchar(1000);
+begin
+        select  project_name
+        into    v_name
+        from    im_projects
+        where   project_id = p_task_id;
+        return v_name;
+end;' language 'plpgsql';
+
+
+
+-- Delete a single timesheet_task (if we know its ID...)
+create or replace function im_timesheet_task__delete (integer)
+returns integer as '
+declare
+        p_task_id alias for $1; -- timesheet_task_id
+begin
+        -- Erase the timesheet_task
+        delete from     im_timesheet_tasks
+        where           task_id = p_task_id;
+
+        -- Erase the object
+        PERFORM im_project__delete(p_task_id);
+        return 0;
+end;' language 'plpgsql';
+
+
+create or replace function im_timesheet_task__new (
+	integer, varchar, timestamptz, integer, varchar, integer,
+	varchar, varchar, integer, integer, integer, integer, integer, integer, varchar
+) returns integer as '
+declare
+	p_task_id		alias for $1;		-- timesheet task_id default null
+	p_object_type		alias for $2;		-- object_type default ''im_timesheet task''
+	p_creation_date		alias for $3;		-- creation_date default now()
+	p_creation_user		alias for $4;		-- creation_user
+	p_creation_ip		alias for $5;		-- creation_ip default null
+	p_context_id		alias for $6;		-- context_id default null
+
+	p_task_nr		alias for $7;
+	p_task_name		alias for $8;
+	p_project_id		alias for $9;
+	p_material_id		alias for $10;
+	p_cost_center_id	alias for $11;
+	p_uom_id		alias for $12;
+	p_task_type_id		alias for $13;
+	p_task_status_id	alias for $14;
+	p_description		alias for $15;
+
+	v_task_id		integer;
+	v_company_id		integer;
+    begin
+	select	p.company_id
+	into	v_company_id
+	from	im_projects p
+	where	p.project_id = p_project_id;
+
+	v_task_id := im_project__new (
+		p_task_id,		-- object_id
+		p_object_type,		-- object_type
+		p_creation_date,	-- creation_date
+		p_creation_user,	-- creation_user
+		p_creation_ip,		-- creation_ip
+		p_context_id,		-- context_id
+
+		p_task_name,		-- project_name
+		p_task_nr,		-- project_nr
+		p_task_nr,		-- project_path
+		p_project_id,		-- parent_id
+		v_company_id,		-- company_id
+		p_task_type_id,		-- project_type
+		p_task_status_id	-- project_status
+	);
+
+	update	im_projects
+	set	description = p_description
+	where	project_id = v_task_id;
+
+	insert into im_timesheet_tasks (
+		task_id,
+		material_id,
+		uom_id
+	) values (
+		v_task_id,
+		p_material_id,
+		p_uom_id
+	);
+
+	return v_task_id;
+end;' language 'plpgsql';
+
+
