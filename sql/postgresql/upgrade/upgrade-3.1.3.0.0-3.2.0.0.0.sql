@@ -290,3 +290,8 @@ declare
 end;' language 'plpgsql';
 
 
+
+
+insert into im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+values ('100', 'Task', 'Intranet Project Type');
+
