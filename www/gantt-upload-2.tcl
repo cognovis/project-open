@@ -1,6 +1,6 @@
 # /packages/intranet-ganttproject/www/gantt-upload-2.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (C) 2003-2006 Project/Open
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -88,13 +88,13 @@ set task_hash_array [im_gp_save_tasks \
 array set task_hash $task_hash_array
 
 
-#ns_write "<h2>Pass 2: Saving Dependencies</h2><ul>\n"
-#set task_hash_array [im_gp_save_tasks \
-#	-enable_save_dependencies 1 \
-#	-task_hash_array $task_hash_array \
-#	$root_node \
-#	$project_id \
-#]
+ns_write "<h2>Pass 2: Saving Dependencies</h2><ul>\n"
+set task_hash_array [im_gp_save_tasks \
+	-enable_save_dependencies 1 \
+	-task_hash_array $task_hash_array \
+	$root_node \
+	$project_id \
+]
 
 # -------------------------------------------------------------------
 # Process Resources

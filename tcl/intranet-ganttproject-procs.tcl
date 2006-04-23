@@ -84,6 +84,7 @@ ad_proc -public im_ganttproject_write_project {
     if {"" == $start_date} { set start_date [db_string today "select to_char(now(), 'YYYY-MM-DD')"] }
     if {"" == $duration} { set duration $default_duration }
     if {"" == $duration} { set duration 1 }
+    if {"0" == $duration} { set duration 1 }
 
     # Is this a task (as opposed to a project)?
     set task_p [string equal "im_timesheet_task" $object_type]
@@ -122,7 +123,7 @@ ad_proc -public im_ganttproject_write_project {
     "
     db_foreach dependency $dependency_sql {
 	set depend_node [$doc createElement depend]
-	$task_node appendChild $depend_node
+	$project_node appendChild $depend_node
 	$depend_node setAttribute id $task_id_two
 	$depend_node setAttribute type 2
 	$depend_node setAttribute difference 0
@@ -346,7 +347,7 @@ ad_proc -public im_gp_extract_db_tree { project_id} {
     # --------- Check the Tasks Just Below Project --------
     set project_tasks_sql "
     	select	t.*
-    	from 	im_timesheet_tasks t
+    	from 	im_timesheet_tasks_view t
     	where	t.project_id = :project_id
     "
     db_foreach project_tasks $project_tasks_sql {
@@ -516,7 +517,7 @@ ad_proc -public im_ganttproject_create_dependency { depend_node task_node task_h
 	# Search for a task in this project with the "gantt_task_id = task_id_one"
 	set task_id_one [db_string recover_task_id_one "
 		select	task_id
-		from	im_timesheet_tasks
+		from	im_timesheet_tasks_view
 		where	gantt_project_id = :task_id_one
         " -default 0]
     }
@@ -526,7 +527,7 @@ ad_proc -public im_ganttproject_create_dependency { depend_node task_node task_h
 	# Search for a task in this project with the "gantt_task_id = task_id_two"
 	set task_id_two [db_string recover_task_id_two "
 		select	task_id
-		from	im_timesheet_tasks
+		from	im_timesheet_tasks_view
 		where	gantt_project_id = :task_id_two
         " -default 0]
     }
@@ -573,6 +574,7 @@ ad_proc -public im_gp_save_tasks {
     The top task entries should actually be projects, otherwise
     we return an "incorrect structure" error.
 } {
+    ns_write "<li>im_gp_save_tasks: root_node=$root_node, super_project_id=$super_project_id"
     set tasks_node [$root_node selectNodes /project/tasks]
     set super_task_node ""
 
@@ -585,6 +587,9 @@ ad_proc -public im_gp_save_tasks {
 
     foreach child [$tasks_node childNodes] {
 	incr sort_order
+	ns_write "<li>Child: [$child nodeName]\n"
+	ns_write "<ul>\n"
+
 	switch [$child nodeName] {
 	    "task" {
 		set task_id [$child getAttribute id ""]
@@ -592,6 +597,8 @@ ad_proc -public im_gp_save_tasks {
 		select object_type from acs_objects 
 		where object_id = :task_id" -default "none"]
 		
+		ns_write "<li>task_id=$task_id, object_type=$object_type\n"
+
 		if {"im_project" != $object_type} {
 		    ad_return_complaint 1 "<b>Invalid GanttProject File Structure</b><br>
 		GanttProject files need to contain 'Projects' at the top level of
@@ -617,6 +624,8 @@ ad_proc -public im_gp_save_tasks {
 	    }
 	    default {}
 	}
+
+	ns_write "</ul>\n"
     }
     # Return the mapping hash
     return [array get task_hash]
@@ -633,7 +642,7 @@ ad_proc -public im_gp_save_tasks2 {
     Stores a single task into the database
 } {
     array set task_hash $task_hash_array
-#    ns_write "<li>im_gp_save_tasks2($task_node, $super_project_id): '[array get task_hash]'\n"
+    ns_write "<li>im_gp_save_tasks2($task_node, $super_project_id): '[array get task_hash]'\n"
     set task_url "/intranet-timesheet2-tasks/new?task_id="
 
     set org_super_project_id $super_project_id
@@ -689,8 +698,8 @@ ad_proc -public im_gp_save_tasks2 {
 
     # -----------------------------------------------------
     # Set some default variables for new tasks
-    set task_status_id [im_timesheet_task_status_active]
-    set task_type_id [im_timesheet_task_type_standard]
+    set task_status_id [im_project_status_open]
+    set task_type_id [im_project_type_task]
     set uom_id [im_uom_hour]
     set cost_center_id ""
     set material_id [im_material_default_material_id]
@@ -728,14 +737,14 @@ ad_proc -public im_gp_save_tasks2 {
     # Check if the task already exists in the database
     set task_exists_p [db_string tasks_exists "
 	select	count(*)
-	from	im_timesheet_tasks
+	from	im_timesheet_tasks_view
 	where	task_id = :task_id
     "]
     # Give it a second chance to deal with the case that there is
     # already a task with the same task_nr in the same project (same level!):
     set existing_task_id [db_string task_id_from_nr "
 	select	task_id 
-	from	im_timesheet_tasks 
+	from	im_timesheet_tasks_view
 	where	project_id = :super_project_id and task_nr = :task_nr
     " -default 0]
 
@@ -897,8 +906,6 @@ ad_proc -public im_gp_save_tasks2 {
 	}
     }
 
-
-
     # Now the object type is OK. We still need to update the object:
     set object_type [db_string cur_object_type "
 	select object_type 
@@ -906,8 +913,7 @@ ad_proc -public im_gp_save_tasks2 {
 	where object_id = :task_id
     " -default ""]
 
-    if {[string equal "im_project" $object_type]} {
-	db_dml project_update "
+    db_dml project_update "
 	    update im_projects set
 		project_name	= :task_name,
 		project_nr	= :task_nr,
@@ -915,27 +921,11 @@ ad_proc -public im_gp_save_tasks2 {
 		start_date	= :start_date,
 		end_date	= :end_date,
 		note		= :description,
-		sort_order	= :sort_order
+		sort_order	= :sort_order,
+		percent_completed = :percent_completed
 	    where
 		project_id = :task_id
-        "
-    }
-
-    if {[string equal "im_timesheet_task" $object_type]} {
-	db_dml task_update "
-	update im_timesheet_tasks set
-		task_name	= :task_name,
-		task_nr		= :task_nr,
-		project_id	= :super_project_id,
-		description	= :description,
-		gantt_project_id= :gantt_project_id,
-		start_date	= :start_date,
-		end_date	= :end_date,
-		sort_order	= :sort_order
-	where
-		task_id = :task_id"
-    }
-
+    "
 
     if {"" != $super_project_id} {
 
@@ -1036,7 +1026,7 @@ ad_proc -public im_gp_save_allocations {
 		ns_write "<li>Allocation: User# $resource_id allocated to task# $task_id with $percentage%\n"
 		ns_log Notice "im_gp_save_allocations: [$child asXML]"
 
-		set project_id [db_string project_id "select project_id from im_timesheet_tasks where task_id = :task_id"]
+		set project_id [db_string project_id "select project_id from im_timesheet_tasks_view where task_id = :task_id"]
 
 		# Check if the resource is already member of the project
 		im_biz_object_add_role $resource_id $project_id [im_biz_object_role_full_member]
