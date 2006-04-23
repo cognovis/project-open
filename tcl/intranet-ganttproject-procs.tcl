@@ -36,6 +36,8 @@ ad_proc -private im_package_ganttproject_id_helper {} {
 # ----------------------------------------------------------------------
 
 ad_proc -public im_ganttproject_write_project { 
+    { -default_start_date "" }
+    { -default_duration "" }
     project_id
     doc
     tree_node 
@@ -43,7 +45,7 @@ ad_proc -public im_ganttproject_write_project {
     Recursively write out the information about projects and tasks
     below a specific project
 } {
-    ns_log Notice "im_ganttproject_write_project: doc=$doc, tree_node=$tree_node, project_id=$project_id"
+    ns_log Notice "im_ganttproject_write_project: doc=$doc, tree_node=$tree_node, project_id=$project_id, default_start_date=$default_start_date, default_duration=$default_duration"
     if { [security::secure_conn_p] } {
 	set base_url "https://[ad_host][ad_port]"
     } else {
@@ -57,8 +59,8 @@ ad_proc -public im_ganttproject_write_project {
         select  p.*,
 		t.*,
 		o.object_type,
-                p.start_date::date,
-                p.end_date::date,
+                p.start_date::date as start_date,
+                p.end_date::date as end_date,
 		p.end_date::date - p.start_date::date as duration,
                 c.company_name
         from    im_projects p
@@ -73,10 +75,15 @@ ad_proc -public im_ganttproject_write_project {
 	return
     }
 
+    # Make sure some important variables are set to default values
+    # because empty values are not accepted by GanttProject:
+    #
     if {"" == $percent_completed} { set percent_completed "0" }
     if {"" == $priority} { set priority "1" }
-    if {"" == $start_date} { set start_date_date [db_string today "select to_char(now(), 'YYYY-MM-DD')"] }
-    if {"" == $end_date} { set end_date_date [db_string today "select to_char(now(), 'YYYY-MM-DD')"] }
+    if {"" == $start_date} { set start_date $default_start_date }
+    if {"" == $start_date} { set start_date [db_string today "select to_char(now(), 'YYYY-MM-DD')"] }
+    if {"" == $duration} { set duration $default_duration }
+    if {"" == $duration} { set duration 1 }
 
     # Is this a task (as opposed to a project)?
     set task_p [string equal "im_timesheet_task" $object_type]
@@ -109,8 +116,9 @@ ad_proc -public im_ganttproject_write_project {
 
     # Add dependencies to predecessors
     set dependency_sql "
-	    	select * from im_timesheet_task_dependencies 
-	    	where task_id_one = :task_id
+	    	select	* 
+		from	im_timesheet_task_dependencies 
+	    	where	task_id_one = :task_id
     "
     db_foreach dependency $dependency_sql {
 	set depend_node [$doc createElement depend]
@@ -121,28 +129,24 @@ ad_proc -public im_ganttproject_write_project {
 	$depend_node setAttribute hardness "Strong"
     }
     
-    # ------------ Select both Tasks and Sub-Projects -------------
-    # ... in the sort_order
+    # ------------ Get Sub-Projects and Tasks -------------
+    # ... in the right sort_order
 
     set object_list_list [db_list_of_lists sorted_query "
-	select *
-	from
-	    (	select	p.project_id as object_id,
-			'im_project' as object_type,
-			sort_order
-		from	im_projects p
-		where	parent_id = :project_id
-	                and project_status_id not in (
-				[im_project_status_deleted], 
-				[im_project_status_closed]
-			)
-	    UNION
-		select	t.task_id as object_id,
-			'im_timesheet_task' as object_type,
-			t.sort_order
-		from	im_timesheet_tasks_view t
-		where	t.project_id = :project_id
-	   ) ttt
+	select
+		p.project_id as object_id,
+		o.object_type,
+		p.sort_order
+	from	
+		im_projects p,
+		acs_objects o
+	where
+		p.project_id = o.object_id
+		and parent_id = :project_id
+                and p.project_status_id not in (
+			[im_project_status_deleted], 
+			[im_project_status_closed]
+		)
 	order by sort_order
     "]
 
@@ -150,6 +154,8 @@ ad_proc -public im_ganttproject_write_project {
 	set object_id [lindex $object_record 0]
 
 	im_ganttproject_write_project \
+	    -default_start_date $start_date \
+	    -default_duration $duration \
 	    $object_id \
 	    $doc \
 	    $tree_node
