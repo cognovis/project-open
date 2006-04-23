@@ -34,6 +34,10 @@ ad_proc -private im_package_material_id_helper {} {
     } -default 0]
 }
 
+ad_proc -private im_material_default_material_id {} {
+    return  [util_memoize {db_string default_material "select material_id from im_materials where material_nr='default'" -default 0}]
+}
+
 
 
 # ----------------------------------------------------------------------
