@@ -250,13 +250,12 @@ create table im_timesheet_prices (
 );
 
 -- make sure the same price doesn't get defined twice 
-create unique index im_price_idx on im_timesheet_prices (
+create unique index im_timesheet_price_idx on im_timesheet_prices (
 	uom_id, company_id, task_type_id, material_id, currency
 );
 
 
 ------------------------------------------------------
--- Views to Business Objects
 --
 
 -- Calculate a match value between a price list item and an invoice_item
