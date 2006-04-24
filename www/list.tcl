@@ -121,31 +121,6 @@ db_foreach column_list_sql $column_sql {
 }
 
 # ---------------------------------------------------------------
-# 4. Define Filter Categories
-# ---------------------------------------------------------------
-
-# status_types will be a list of pairs of (cost_status_id, cost_status)
-set status_types [im_memoize_list select_cost_status_types "
-	select	0 as cost_status_id,
-	'All' as cost_status
-	from dual
-UNION
-	select cost_status_id, cost_status
-	from im_cost_status
-"]
-
-
-# type_types will be a list of pairs of (cost_type_id, cost_type)
-set type_types [im_memoize_list select_cost_type_types "
-        select  0 as cost_type_id,
-        'All' as cost_type
-        from dual
-UNION
-	select cost_type_id, cost_type
-	from im_cost_type"]
-
-
-# ---------------------------------------------------------------
 # 5. Generate SQL Query
 # ---------------------------------------------------------------
 
@@ -380,13 +355,13 @@ set filter_html "
 	  <tr>
 	    <td>[_ intranet-cost.Document_Status]:</td>
 	    <td>
-	      [im_select cost_status_id $status_types ""]
+	      [im_category_select -include_empty_p 1 "Intranet Cost Status" cost_status_id $cost_status_id]
 	    </td>
 	  </tr>
 	  <tr>
 	    <td>[_ intranet-cost.Document_Type]:</td>
 	    <td>
-	      [im_select cost_type_id $type_types ""]
+	      [im_category_select -include_empty_p 1 "Intranet Cost Type" cost_type_id $cost_type_id]
 	      <input type=submit value='[_ intranet-cost.Go]' name=submit>
 	    </td>
 	  </tr>
