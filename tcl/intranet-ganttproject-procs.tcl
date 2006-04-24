@@ -179,6 +179,11 @@ ad_proc -public im_ganttproject_component {
     Check for "project.thumb.xxx" and a "project.full.xxx"
     files with xxx in (gif, png, jpg)
 } {
+    # Is this a "Consulting Project"?
+    if {![im_project_has_type $project_id "Consulting Project"]} {
+        return ""
+    }
+
     set user_id [ad_get_user_id]
     set thumbnail_size [parameter::get -package_id [im_package_ganttproject_id] -parameter "GanttProjectThumbnailSize" -default "360x360"]
 
