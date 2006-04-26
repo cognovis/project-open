@@ -261,7 +261,7 @@ SELECT im_component_plugin__new (
         'Project Sales Filestorage Component',  -- plugin_name
         'intranet-filestorage',         -- package_name
         'files',                        -- location
-        '/intrane/projects/view',         -- page_url
+        '/intranet/projects/view',         -- page_url
         null,                           -- view_name
         89,                             -- sort_order
         'im_filestorage_project_sales_component $user_id $project_id $project_name $return_url' -- component_tcl
@@ -278,7 +278,7 @@ SELECT im_component_plugin__new (
         'Project Filestorage Component',  -- plugin_name
         'intranet-filestorage',         -- package_name
         'files',                        -- location
-        '/intrane/projects/view',         -- page_url
+        '/intranet/projects/view',         -- page_url
         null,                           -- view_name
         90,                             -- sort_order
         'im_filestorage_project_component $user_id $project_id $project_name $return_url' -- component_tcl
