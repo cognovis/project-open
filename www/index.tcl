@@ -127,7 +127,7 @@ select
 	t.material_id,
 	t.uom_id,
 	t.planned_units,
-	t.reported_units_cache,
+	t.reported_hours_cache,
 	m.material_name,
         children.project_id as project_id,
         children.project_nr as project_nr,
