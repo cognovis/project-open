@@ -41,4 +41,10 @@
 <br>
 
 <!--- Start expenses part ---!>
+<h2>#intranet-expenses.Expenses#</h2>
 <listtemplate name="@list_id@"></listtemplate>
+
+<!--- Start invoice part ---!>
+<h2>#intranet-expenses.Travel_cost_invoices#</h2>
+<listtemplate name="@list2_id@"></listtemplate>
+
