@@ -110,7 +110,7 @@ select
 	t.task_id,
 	t.planned_units,
 	t.billable_units,
-	t.reported_units_cache,
+	t.reported_hours_cache,
 	t.task_name,
 	t.uom_id,
 	t.task_type_id,
@@ -192,7 +192,7 @@ db_foreach select_tasks $sql {
 	  <td align=left>$task_name</td>
 	  <td align=right>$planned_units</td>
 	  <td align=right>$billable_units</td>
-	  <td align=right>$reported_units_cache</td>
+	  <td align=right>$reported_hours_cache</td>
 	  <td align=right>$uom_name</td>
 	  <td>$type_name</td>
 	  <td>$task_status</td>
@@ -246,7 +246,7 @@ if {![string equal "" $task_table_rows]} {
 select
 	sum(t.planned_units) as planned_sum,
 	sum(t.billable_units) as billable_sum,
-	sum(t.reported_units_cache) as reported_sum,
+	sum(t.reported_hours_cache) as reported_sum,
 	t.task_type_id,
 	t.uom_id,
 	p.company_id,

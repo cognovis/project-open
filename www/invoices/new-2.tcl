@@ -135,7 +135,7 @@ select
 	t.task_name,
 	t.planned_units,
 	t.billable_units,
-	t.reported_units_cache,
+	t.reported_hours_cache,
 	t.uom_id,
 	t.task_type_id,
 	t.project_id,
@@ -223,7 +223,7 @@ db_foreach select_tasks $sql {
 	  <td align=right>$material_name</td>
 	  <td align=right>$planned_units</td>
 	  <td align=right>$billable_units</td>
-	  <td align=right>$reported_units_cache</td>
+	  <td align=right>$reported_hours_cache</td>
 	  <td align=right>$uom_name</td>
 	  <td>$type_name</td>
 	  <td>$task_status</td>
