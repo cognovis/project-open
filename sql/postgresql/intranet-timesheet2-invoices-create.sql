@@ -135,7 +135,7 @@ BEGIN
 end;' language 'plpgsql';
 
 
-    -- Delete a single invoice (if we know its ID...)
+-- Delete a single invoice (if we know its ID...)
 create or replace function  im_timesheet_invoice__delete (integer)
 returns integer as '
 DECLARE
