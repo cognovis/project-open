@@ -102,6 +102,18 @@ alter table im_timesheet_tasks drop column gantt_project_id;
 
 drop view im_timesheet_tasks_view;
 
+
+-- sum of timesheet hours cached here for reporting
+alter table im_projects add reported_hours_cache float;
+
+
+
+
+-- ToDo: Causes error
+alter table im_timesheet_tasks drop reported_units_cache;
+
+
+-- recreate the view
 create or replace view im_timesheet_tasks_view as
 select	t.*,
 	p.parent_id as project_id,
@@ -118,8 +130,6 @@ from
 where
 	t.task_id = p.project_id
 ;
-
-
 
 
 -- Defines the relationship between two tasks, based on
@@ -294,4 +304,6 @@ end;' language 'plpgsql';
 
 insert into im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 values ('100', 'Task', 'Intranet Project Type');
+
+
 
