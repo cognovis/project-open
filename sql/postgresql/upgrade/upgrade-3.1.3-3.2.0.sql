@@ -21,37 +21,6 @@
 -- create index im_hours_day_idx on im_hours(day);
 
 
--- Migrate the "reported_units_cache" from timesheet tasks
--- to projects
---
-alter table im_projects add reported_units_cache float;
-
-
-create or replace function inline_0 ()
-returns integer as '
-DECLARE
-        row     RECORD;
-        v_oid   integer;
-BEGIN
-    for row in
-	select  *
-        from    im_timesheet_tasks
-    loop
-
-	update im_projects
-	set reported_units_cache = row.reported_units_cache
-	where project_id = row.task_id;
-
-    end loop;
-    return 0;
-END;' language 'plpgsql';
-select inline_0 ();
-drop function inline_0 ();
-
-alter table im_timesheet_tasks drop reported_units_cache;
-
-
-
 create or replace function inline_0 ()
 returns integer as '
 declare
