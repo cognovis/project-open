@@ -98,38 +98,87 @@ alter table im_timesheet_tasks drop column gantt_project_id;
 
 
 
+--------------------------------------------------------
+-- Migrate reported_unis_cache to im_projects
+--------------------------------------------------------
+
 -- Create a unified view to tasks
 
+-- ToDo: If exists...
 drop view im_timesheet_tasks_view;
 
 
+-- ToDo: If not yet exists...
 -- sum of timesheet hours cached here for reporting
 alter table im_projects add reported_hours_cache float;
 
 
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+        row     RECORD;
+        v_oid   integer;
+BEGIN
+    for row in
+	select  *
+        from    im_timesheet_tasks
+    loop
+
+	update im_projects
+	set reported_hours_cache = row.reported_units_cache
+	where project_id = row.task_id;
+
+    end loop;
+    return 0;
+END;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
--- ToDo: Causes error
+-- ToDo: If exists...
 alter table im_timesheet_tasks drop reported_units_cache;
 
 
--- recreate the view
+
+
+
 create or replace view im_timesheet_tasks_view as
-select	t.*,
-	p.parent_id as project_id,
-	p.project_name as task_name,
-	p.project_nr as task_nr,
-	p.percent_completed,
-	p.project_type_id as task_type_id,
-	p.project_status_id as task_status_id,
-	p.start_date,
-	p.end_date
+select  t.*,
+        p.parent_id as project_id,
+        p.project_name as task_name,
+        p.project_nr as task_nr,
+        p.percent_completed,
+        p.project_type_id as task_type_id,
+        p.project_status_id as task_status_id,
+        p.start_date,
+        p.end_date,
+        p.reported_hours_cache,
+        p.reported_hours_cache as reported_units_cache
 from
-	im_projects p,
-	im_timesheet_tasks t
+        im_projects p,
+        im_timesheet_tasks t
 where
-	t.task_id = p.project_id
+        t.task_id = p.project_id
 ;
+
+
+
+
+delete from im_view_columns where column_id = 91014;
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (91014,910,NULL,'Log',
+'"<a href=[export_vars -base $timesheet_report_url { task_id { project_id $project_id } return_url}]>
+$reported_hours_cache</a>"','','',14,'');
+
+
+delete from im_view_columns where column_id = 91108;
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (91108,911,NULL,'Log',
+'"<a href=[export_vars -base $timesheet_report_url { task_id { project_id $project_id } return_url}]>
+$reported_hours_cache</a>"','','',8,'');
+
 
 
 -- Defines the relationship between two tasks, based on
