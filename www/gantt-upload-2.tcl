@@ -131,7 +131,7 @@ ns_write "</ul>\n"
 # Delete the tasks that have been deleted in GanttProject
 # -------------------------------------------------------------------
 
-ns_write "<h2>Deleting Deleted Tasks</h2>\n"
+ns_write "<h2>Deleting Tasks</h2>\n"
 
 # Extract a tree of tasks from the Database
 set xml_tree [im_gp_extract_xml_tree $root_node $task_hash_array]
