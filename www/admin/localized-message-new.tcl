@@ -6,7 +6,7 @@ ad_page_contract {
     @author Bruno Mattarollo <bruno.mattarollo@ams.greenpeace.org>
     @author Christian Hvid
     @creation-date 15 April 2002
-    @cvs-id $Id: localized-message-new.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: localized-message-new.tcl,v 1.2 2006/04/28 18:23:33 cvs Exp $
 
 } {
     locale
@@ -15,6 +15,8 @@ ad_page_contract {
     {return_url {[export_vars -base message-list { locale package_key }]}}
 }
 
+
+set focus ""
 
 # We rename to avoid conflict in queries
 set current_locale $locale
