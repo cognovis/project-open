@@ -799,6 +799,8 @@ ad_proc im_costs_project_finance_component {
     set date_format "YYYY-MM-DD"
     set num_format "9999999999.99"
 
+    set return_url [im_url_with_query]
+
     # Where to link when clicking on an object link? "edit" or "view"?
     set view_mode "view"
 
@@ -948,10 +950,12 @@ where
 		      and p.parent_id = :org_project_id
 	)
 order by
-	p.project_nr,
 	ci.cost_type_id,
 	ci.effective_date desc
 "
+
+set order_by_ttt"	p.project_nr,"
+
 
     set cost_html "
 <table border=0>
@@ -961,14 +965,13 @@ order by
     </td>
   </tr>
   <tr class=rowtitle>
-    <td align=center class=rowtitle>[_ intranet-cost.Project]</td>
+<!--    <td align=center class=rowtitle>[_ intranet-cost.Project]</td> -->
     <td align=center class=rowtitle>[_ intranet-cost.Document]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Company]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Due]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Amount]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Paid]</td>
   </tr>
-  <tr><td colspan=99>&nbsp;</td></tr>
 "
 
     set ctr 1
@@ -981,13 +984,15 @@ order by
 
         # Write an intermediate header for each project
 	if {$project_nr != $old_project_nr} {
-	    append cost_html "
-		<tr class=rowplain><td colspan=99>&nbsp;</td></tr>
-		<tr>
-		  <td colspan=99 class=rowtitle>$project_name</td>
-		</tr>
-		<tr class=rowplain><td colspan=99>&nbsp;</td></tr>\n"
-	    set old_project_nr $project_nr
+
+#	    append cost_html "
+#		<tr class=rowplain><td colspan=99>&nbsp;</td></tr>
+#		<tr>
+#		  <td colspan=99 class=rowtitle>$project_name</td>
+#		</tr>
+#		<tr class=rowplain><td colspan=99>&nbsp;</td></tr>\n"
+#	    set old_project_nr $project_nr
+
         }
 
         # Write the subtotal line of the last cost_type_id section
@@ -1021,14 +1026,16 @@ order by
 	} else {
 	    set company_name $provider_name
 	}
+	
+	set cost_url "$url$cost_id&return_url=[ns_urlencode $return_url]"
 
 	append cost_html "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td>$project_nr</td>
-	  <td><A href=\"$url$cost_id\">[string range $cost_name 0 20]</A></td>
+<!--	  <td>$project_nr</td> -->
+	  <td><nobr><A href=\"$cost_url\">[string range $cost_name 0 20]</A></nobr></td>
 	  <td>$company_name</td>
 	  <td>$calculated_due_date</td>
-	  <td>$amount $currency</td>
+	  <td><nobr>$amount $currency</nobr></td>
 	  <td>$payment_amount $payment_currency</td>
 	</tr>\n"
 	incr ctr
