@@ -1014,7 +1014,7 @@ set order_by_ttt"	p.project_nr,"
 
 	    append cost_html "
 		<tr class=rowtitle>
-		  <td class=rowtitle colspan=99>$cost_type</td>
+		  <td class=rowplain colspan=99>$cost_type</td>
 		</tr>\n"
 
 	    set old_cost_type_id $cost_type_id
@@ -1254,7 +1254,7 @@ set order_by_ttt"	p.project_nr,"
 	    $cost_html
 	  </td>
 	  <td>
-	    $admin_html
+<!--	    $admin_html    -->
 	  </td>
 	</tr>
 	</table>\n"
