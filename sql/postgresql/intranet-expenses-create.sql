@@ -51,7 +51,7 @@ create table im_expenses (
 				constraint im_expenses_vat_included_ck
 				check (vat_included >=0 and vat_included <= 100),
 	external_company_name   varchar(400),
-	receipt_reference   varchar(100),
+	receipt_reference       varchar(100),
 	expense_type_id    	integer
                                 constraint im_expense_type_fk
                                 references im_categories,
@@ -127,7 +127,9 @@ create or replace function im_expense__new (
         integer,
         char(1),
         numeric,
-        integer
+        integer,
+	integer,
+	integer
     )
 returns integer as '
 declare
@@ -145,7 +147,7 @@ declare
         p_expense_currency      alias for $10;          -- expense_currency default ''EUR''
         p_expense_template_id   alias for $11;          -- expense_template_id default null
         p_expense_status_id     alias for $12;          -- expense_status_id default 602
-        p_expense_type_id       alias for $13;          -- expense_type_id default 700
+        p_cost_type_id          alias for $13;             -- expense_type_id default 700
         p_payment_days          alias for $14;          -- payment_days default 30
 	p_amount                alias for $15;          -- amount
 	p_vat                   alias for $16;          -- vat default 0
@@ -154,11 +156,13 @@ declare
 	
 	p_vat_included		alias for $19;		-- vat included
 	p_external_company_name alias for $20;		-- hotel name, taxi, ...
-	p_receip_reference	alias for $21;		-- receip reference
+	p_receipt_reference	alias for $21;		-- receipt reference
 	p_expense_type_id	alias for $22;		-- expense type default null
 	p_billable_p		alias for $23;		-- is billable to client 
 	p_reimbursable		alias for $24;		-- % reibursable from amount value
 	p_expense_payment_type_id alias for $25;	-- credit card used to pay, ...
+	p_customer_id 		alias for $26;		-- customer_id
+	p_provider_id 		alias for $27;		-- provider_id
 	
 	v_expense_id            integer;
     begin
@@ -173,8 +177,8 @@ declare
 		p_expense_name,      -- cost_name
 		null,                -- parent_id
 		p_project_id,        -- project_id
-		null,        	     -- company_id
-		null,                -- provider_id
+		p_customer_id, 	     -- company_id
+		p_provider_id,                -- provider_id
 		null,                -- investment_id
 
 		p_expense_status_id, -- cost_status_id
@@ -202,7 +206,7 @@ declare
 			expense_id,
 			vat_included,
 			external_company_name,
-			receip_reference,
+			receipt_reference,
 			expense_type_id,
 			billable_p,
 			reimbursable,
@@ -211,7 +215,7 @@ declare
 			v_expense_id,
 			p_vat_included,
 			p_external_company_name,
-			p_receip_reference,
+			p_receipt_reference,
 			p_expense_type_id,
 			p_billable_p,
 			p_reimbursable,

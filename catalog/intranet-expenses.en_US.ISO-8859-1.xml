@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-expenses" package_version="0.1d" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Add_a_new_Expense">Add a new Expense</msg>
+  <msg key="Amount">Amount</msg>
+  <msg key="Billable_p">Billable ?</msg>
+  <msg key="create_trabel_cost_help">Create trabel cost invoices</msg>
+  <msg key="Create_Travel_Cost">Create Travel Cost</msg>
+  <msg key="Currency">Currency</msg>
+  <msg key="Delete">Delete</msg>
+  <msg key="Expense_Date">Expense Date</msg>
+  <msg key="Expense_Payment_Type">Expense Payment Type</msg>
+  <msg key="Expense_Type">Expense Type</msg>
+  <msg key="Expenses">Expenses</msg>
+  <msg key="External_company_name">External Company Name</msg>
+  <msg key="ID">ID</msg>
+  <msg key="Invoice">Invoice</msg>
+  <msg key="New_Expense">New Expense</msg>
+  <msg key="Receip_reference">Receip Reference</msg>
+  <msg key="Receipt_reference">Receipt Reference</msg>
+  <msg key="reibursable">Reibursable %</msg>
+  <msg key="reimbursable">Reimbursable</msg>
+  <msg key="Remove_checked_items">Remove checked items</msg>
+  <msg key="Travel_cost_invoices">Travel Cost Invoices</msg>
+  <msg key="Vat_Included">Vat Included</msg>
+</message_catalog>

@@ -40,6 +40,14 @@ insert into im_biz_object_urls (
 );
 
 
+
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3720,'Expense Item','Intranet Cost Type');
+
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3722,'Expense Report','Intranet Cost Type');
+
+
 -- prompt *** intranet-expenses: Creating Expense categories
 -- Intranet Expense Type
 delete from im_categories where category_id >= 4000 and category_id < 4100;
