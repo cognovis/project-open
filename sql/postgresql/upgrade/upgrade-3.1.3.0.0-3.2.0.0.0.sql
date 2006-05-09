@@ -188,13 +188,67 @@ add constraint im_trans_task_id_fk
 foreign key (task_id) references acs_objects;
 
 
------------------------------------------------------------
 -- Post-Process all tables that depend on im_trans_tasks
------------------------------------------------------------
-
-
+--
 alter table im_trans_quality_reports
 add constraint im_transq_task_fk
 foreign key (task_id) references im_trans_tasks;
 
 
+-----------------------------------------------------------
+-- Clone the translation tasks of a project to another
+-- project
+-----------------------------------------------------------
+
+
+create or replace function im_trans_task__project_clone (integer, integer) 
+returns integer as '
+DECLARE
+	p_parent_project_id	alias for $1;
+	p_clone_project_id	alias for $2;
+
+        row		RECORD;
+        v_task_id	integer;
+BEGIN
+    FOR row IN
+	select	t.*
+	from	im_trans_tasks t
+	where	project_id = p_parent_project_id
+    LOOP
+	v_task_id := im_trans_task__new(
+		null,			-- task_id
+		''im_trans_task'',	-- object_type
+		now(),			-- creation_date
+		0,			-- creation_user
+		''0.0.0.0'',		-- creation_ip
+		null,			-- context_id
+		p_clone_project_id,	-- project_id
+		row.task_type_id,	-- task_type_id
+		row.task_status_id,	-- task_status_id
+		row.source_language_id,	-- source_language_id
+		row.target_language_id,	-- target_language_id
+		row.task_uom_id		-- task_uom_id
+	);
+
+	UPDATE im_trans_tasks SET
+		task_name = row.task_name,
+		task_filename = row.task_filename,
+		description = row.description,
+		task_units = row.task_units,
+		billable_units = row.billable_units,
+		match100 = row.match100,
+		match95 = row.match95,
+		match85 = row.match85,
+		match0 = row.match0
+	WHERE 
+		task_id = v_task_id
+	;
+    END LOOP;
+    return 0;
+end;' language 'plpgsql';
+
+
+
+
+-----------------------------------------------------------
+-----------------------------------------------------------
