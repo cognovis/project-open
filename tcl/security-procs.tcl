@@ -339,7 +339,7 @@ ad_proc -public ad_change_password {
         error "No user_id supplied"
     } 
     
-    if {[db_column_exists users cleartext_password]} {
+    if {[util_memoize "db_column_exists users cleartext_password"]} {
 	db_dml cleartext_pwd "update users set cleartext_password = :new_password where user_id = :user_id"
     }
 
