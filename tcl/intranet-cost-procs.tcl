@@ -38,6 +38,11 @@ ad_proc -public im_cost_type_employee {} { return 3714 }
 ad_proc -public im_cost_type_repeating {} { return 3716 }
 ad_proc -public im_cost_type_timesheet {} { return 3718 }
 
+# Defined in intranet-expenses:
+# ad_proc -public im_cost_type_expense_item {} { return 3720 }
+
+
+
 # Payment Methods
 ad_proc -public im_payment_method_undefined {} { return 800 }
 ad_proc -public im_payment_method_cash {} { return 802 }
@@ -1254,7 +1259,7 @@ set order_by_ttt"	p.project_nr,"
 	    $cost_html
 	  </td>
 	  <td>
-<!--	    $admin_html    -->
+	    $admin_html
 	  </td>
 	</tr>
 	</table>\n"
