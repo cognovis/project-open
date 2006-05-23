@@ -238,10 +238,11 @@ where plugin_name = 'Office Members';
 
 -------------------------------------------------------------
 -- Update the .new for plugins
-drop function im_component_plugin__new (
-        integer, varchar, timestamptz, integer, varchar, integer,
-        varchar, varchar, varchar, varchar, varchar, integer,
-        varchar);
+-- drop function im_component_plugin__new (
+--        integer, varchar, timestamptz, integer, varchar, integer,
+--        varchar, varchar, varchar, varchar, varchar, integer,
+--       varchar);
+--
 
 
 create or replace function im_component_plugin__new (
