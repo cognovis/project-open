@@ -29,9 +29,10 @@ set page_focus "im_header_form.keywords"
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set date_format "YYYY-MM-DD"
 
-set project_name [db_string project_name "select project_name from im_projects where project_id=:project_id" -default [_ intranet-core.One_project]]
+set project_name [db_string project_name "select project_name from im_projects where project_id=:project_id" -default [lang::message::lookup "" intranet-expenes.Unassigned "Unassigned"]]
 
-set page_title $project_name
+set page_title "$project_name [_ intranet-expenses.Expenses]"
+
 if {[im_permission $user_id view_projects_all]} {
     set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
 } else {
@@ -47,9 +48,10 @@ set current_url [ns_conn url]
 # Admin Links
 # ---------------------------------------------------------------
 set add_expense_p [im_permission $user_id "add_expense"]
-###### to be removed
+
+# ToDo: Add Security
 set add_expense_p 1
-######
+
 
 
 set admin_links ""
@@ -121,6 +123,9 @@ template::list::create \
 	expense_payment_type {
 	    label "[_ intranet-expenses.Expense_Payment_Type]"
 	}
+	project_name {
+	    label "[_ intranet-expenses.Project_Name]"
+	}
 	expense_chk {
 	    label "<input type=\"checkbox\" 
                           name=\"_dummy\" 
@@ -133,7 +138,13 @@ template::list::create \
     }
 
 set project_where ""
-if {0 != $project_id} { set project_where "\tand project_id=:project_id\n" }
+if {0 == $project_id} { 
+    set project_where "\tand c.project_id is null\n" 
+} else {
+    set project_where "\tand c.project_id = :project_id\n" 
+}
+
+
 
 db_multirow -extend {expense_chk} expense_lines expenses_lines "
   select
@@ -148,9 +159,11 @@ db_multirow -extend {expense_chk} expense_lines expenses_lines "
 	invoice_id,
 	billable_p,
 	reimbursable,
-	expense_payment_type 
+	expense_payment_type,
+	p.project_name
   from
-	im_costs, 
+	im_costs c
+	LEFT OUTER JOIN im_projects p on (c.project_id = p.project_id),
 	im_expenses e, 
 	im_expense_type et, 
 	im_expense_payment_type ept

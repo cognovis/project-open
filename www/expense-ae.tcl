@@ -235,12 +235,16 @@ if {!$is_submission && [exists_and_not_null expense_id]} {
     }
 }
 
+
+
+# ------------------------------------------------------------------
+# Set default variables if New
+# ------------------------------------------------------------------
+
 set expense_date_value [template::element::get_value $form_id expense_date]
 if {"" == $expense_date_value} {
     template::element::set_value $form_id expense_date $today
 }
-
-
 
 set expense_payment_type_value [template::element::get_value $form_id expense_payment_type_id]
 if {"" == $expense_payment_type_value} {
@@ -296,6 +300,7 @@ if {[form is_submission $form_id]} {
 
 if {[form is_valid $form_id]} {
     form get_values $form_id
+
     # temp vars
     set expense_name "$expense_id"
     set customer_id "[im_company_internal]"

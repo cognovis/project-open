@@ -40,7 +40,7 @@
 
 <br>
 
-<h2>#intranet-expenses.Expenses#</h2>
+<h2>@page_title;noquote@</h2>
 <listtemplate name="@list_id@"></listtemplate>
 
 
