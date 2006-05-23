@@ -29,19 +29,24 @@ BEGIN
 		project_id, project_name, project_nr,
 		project_path, parent_id, company_id,
 		project_type_id, project_status_id, 
-		description, start_date, end_date, 
+		description,
 		percent_completed
 	) values (
 		row.task_id, row.task_name, row.task_nr,
-		row.task_nr, row.project_id, row.company_id,
+		row.task_nr || row.project_id::varchar, row.project_id, row.company_id,
 		84, 76,
-		row.description, row.start_date, row.end_date,
+		row.description,
 		row.percent_completed
 	);
     end loop;
     return 0;
 END;' language 'plpgsql';
 select inline_0 ();
+
+alter table im_timesheet_tasks
+add constraint im_timesheet_task_pk
+primary key(task_id);
+
 drop function inline_0 ();
 
 
@@ -77,6 +82,11 @@ drop constraint im_timesheet_task_fk;
 alter table im_timesheet_tasks
 add constraint im_timesheet_task_fk
 FOREIGN KEY (task_id) references im_projects;
+
+
+alter table im_timesheet_tasks
+add constraint im_timesheet_task_pk
+primary key(task_id);
 
 
 
