@@ -13,7 +13,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
 
-    { project_id }
+    { project_id 0}
     { cost_type_id:integer "[im_cost_type_invoice]" }
     { form_mode "edit" }
 }
@@ -27,6 +27,7 @@ set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
 set page_focus "im_header_form.keywords"
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+set date_format "YYYY-MM-DD"
 
 set project_name [db_string project_name "select project_name from im_projects where project_id=:project_id" -default [_ intranet-core.One_project]]
 
@@ -91,11 +92,13 @@ template::list::create \
     } \
     -row_pretty_plural "[_ intranet-expenses.Expenses_Items]" \
     -elements {
-	expense_id {
-	    label "[_ intranet-expenses.ID]"
+	effective_date {
+	    label "[_ intranet-expenses.Expense_Date]"
+	    link_url_eval "/intranet-expenses/expense-ae?expense_id=$expense_id"
 	}
 	amount {
 	    label "[_ intranet-expenses.Amount]"
+	    display_template { <nobr>@expense_lines.amount;noquote@</nobr> }
 	}
 	vat_included {
 	    label "[_ intranet-expenses.Vat_Included]"
@@ -103,17 +106,11 @@ template::list::create \
 	external_company_name {
 	    label "[_ intranet-expenses.External_company_name]"
 	}
-	effective_date {
-	    label "[_ intranet-expenses.Expense_Date]"
-	}
 	receipt_reference {
 	    label "[_ intranet-expenses.Receipt_reference]"
 	}
 	expense_type {
 	    label "[_ intranet-expenses.Expense_Type]"
-	}
-	invoice_id {
-	    label "[_ intranet-expenses.Invoice]"
 	}
 	billable_p {
 	    label "[_ intranet-expenses.Billable_p]"
@@ -135,35 +132,44 @@ template::list::create \
 	}
     }
 
-db_multirow -extend {expense_chk} expense_lines "get expenses" {
-    select expense_id,  
-           amount, 
-           currency, 
-           vat_included, 
-	   external_company_name,
-           to_char(effective_date,'DD/MM/YYYY') as effective_date,
+set project_where ""
+if {0 != $project_id} { set project_where "\tand project_id=:project_id\n" }
+
+db_multirow -extend {expense_chk} expense_lines expenses_lines "
+  select
+	expense_id,  
+	amount, 
+	currency, 
+	vat_included, 
+	external_company_name,
+	to_char(effective_date, :date_format) as effective_date,
 	receipt_reference,
 	expense_type,
 	invoice_id,
 	billable_p,
 	reimbursable,
 	expense_payment_type 
-    from im_costs, im_expenses e, im_expense_type et, im_expense_payment_type ept
-    where project_id = :project_id 
+  from
+	im_costs, 
+	im_expenses e, 
+	im_expense_type et, 
+	im_expense_payment_type ept
+  where
+	provider_id = :user_id
+	$project_where
 	and cost_id = expense_id
-        and provider_id = :user_id
-        and et.expense_type_id =e.expense_type_id 
-        and ept.expense_payment_type_id = e.expense_payment_type_id
-} {
+	and et.expense_type_id =e.expense_type_id 
+	and ept.expense_payment_type_id = e.expense_payment_type_id
+" {
 
     set amount "[format %.2f [expr $amount * [expr 1 + [expr $vat_included / 100]]]] $currency"
     set vat_included "[format %.1f $vat_included] %"
     set reimbursable "[format %.1f $reimbursable] %"
     if {![exists_and_not_null invoice_id]} {
 	set expense_chk "<input type=\"checkbox\" 
-                                name=\"expense_id\" 
-                                value=\"$expense_id\" 
-                                id=\"expenses_list,$expense_id\">"
+				name=\"expense_id\" 
+				value=\"$expense_id\" 
+				id=\"expenses_list,$expense_id\">"
     }
 }
 
@@ -191,6 +197,7 @@ template::form::create $form_id \
 element::create $form_id expense_id \
     -widget hidden \
     -optional
+
 element::create $form_id project_id \
     -widget hidden \
     -value $project_id
@@ -249,8 +256,8 @@ element::create $form_id reimbursable \
     -label "[_ intranet-expenses.reimbursable]"
 
 set expense_payment_type_options [db_list_of_lists "get expense payment type" "select expense_payment_type, \
-        expense_payment_type_id \
-        from im_expense_payment_type"]
+	expense_payment_type_id \
+	from im_expense_payment_type"]
 element::create $form_id expense_payment_type_id \
     -datatype integer \
     -widget select \
@@ -272,17 +279,17 @@ if {[form is_submission $form_id]} {
     #check conditions
     set n_errors 0
     if {![empty_string_p $vat_included]} {
-        if {0>$vat_included || 100<$vat_included} {
-            template::element::set_error $form_id vat_included "[_ intranet-expenses.vat_included_not_valid]"
-            incr n_errors
-        }
+	if {0>$vat_included || 100<$vat_included} {
+	    template::element::set_error $form_id vat_included "[_ intranet-expenses.vat_included_not_valid]"
+	    incr n_errors
+	}
     }
 
     if {![empty_string_p $reimbursable]} {
-        if {0>$reimbursable || 100<$reimbursable} {
-            template::element::set_error $form_id reimbursable "[_ intranet-expenses.reimbursable_not_valid]"
-            incr n_errors
-        }
+	if {0>$reimbursable || 100<$reimbursable} {
+	    template::element::set_error $form_id reimbursable "[_ intranet-expenses.reimbursable_not_valid]"
+	    incr n_errors
+	}
     }
     if {0 < $n_errors} {
 	return
@@ -317,11 +324,11 @@ if {[form is_valid $form_id]} {
     db_dml update_expense "
 update im_expenses 
 set 
-        external_company_name = :external_company_name,
-        receipt_reference = :receipt_reference,
-        billable_p = :billable_p,
-        reimbursable = :reimbursable,
-        expense_payment_type_id = :expense_payment_type_id
+	external_company_name = :external_company_name,
+	receipt_reference = :receipt_reference,
+	billable_p = :billable_p,
+	reimbursable = :reimbursable,
+	expense_payment_type_id = :expense_payment_type_id
 where
 	expense_id = :expense_id
 "
@@ -333,7 +340,7 @@ set
 	cost_name	= :expense_id,
 	customer_id	= :customer_id,
 	cost_nr		= :expense_id,
-        cost_type_id    = :cost_type_id,
+	cost_type_id    = :cost_type_id,
 	provider_id	= :provider_id,
 	template_id	= :template_id,
 	effective_date	= $expense_date_sql,
@@ -399,10 +406,10 @@ template::list::create \
 
 db_multirow -extend {invoice_chk} invoice_lines "get invoices" {
     select c1.cost_id,  
-           c1.amount,
-           c1.currency, 
-           c1.vat, 
-           to_char(c1.effective_date,'DD/MM/YYYY') as effective_date
+	   c1.amount,
+	   c1.currency, 
+	   c1.vat, 
+	   to_char(c1.effective_date,'DD/MM/YYYY') as effective_date
     from im_costs c1
     where c1.project_id = :project_id 
 	and c1.cost_id in (select invoice_id 
@@ -412,15 +419,15 @@ db_multirow -extend {invoice_chk} invoice_lines "get invoices" {
 			and c2.cost_id = expense_id
 			and c2.provider_id = :user_id
 		       )
-        and c1. provider_id = :user_id
+	and c1. provider_id = :user_id
 } {
 
     set amount "[format %.2f [expr $amount * [expr 1 + [expr $vat / 100]]]] $currency"
     set vat "[format %.1f $vat] %"
     set invoice_chk "<input type=\"checkbox\" 
-                                name=\"invoice_id\" 
-                                value=\"$cost_id\" 
-                                id=\"invoices_list,$cost_id\">"
+				name=\"invoice_id\" 
+				value=\"$cost_id\" 
+				id=\"invoices_list,$cost_id\">"
 }
 
 

@@ -10,6 +10,12 @@ ad_library {
     @author frank.bergmann@project-open.com
 }
 
+
+
+ad_proc -public im_expense_payment_type_cash {} { return 4100 }
+ad_proc -public im_expense_payment_type_visa1 {} { return 4101 }
+ad_proc -public im_expense_payment_type_paypal {} { return 4102 }
+
 # ----------------------------------------------------------------------
 # 
 # ----------------------------------------------------------------------
@@ -26,6 +32,9 @@ ad_proc -private im_package_expenses_id_helper {} {
         where package_key = 'intranet-expenses'
     } -default 0]
 }
+
+
+ad_proc -public im_cost_type_expense_item {} { return 3720 }
 
 
 # ----------------------------------------------------------------------

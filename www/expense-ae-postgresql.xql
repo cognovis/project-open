@@ -14,11 +14,11 @@
 		null,				-- context_id
 		'NEW EXPENSE',         		-- expense_name
         	:project_id,            	-- project_id
-        	$expense_date_sql,          	-- expense_date now()
+        	:expense_date,          	-- expense_date now()
         	'EUR',		        	-- expense_currency default ''EUR''
         	null,		        	-- expense_template_id default null
-        	:cost_status,                    	-- expense_status_id default 3802
-        	:cost_type_id,	 	        	-- expense_type_id default 3720
+        	:cost_status,			-- expense_status_id default 3802
+        	:cost_type_id,			-- expense_type_id default 3720
         	30,		        	-- payment_days default 30
 		:amount,        		-- amount
 		0,	                	-- vat default 0

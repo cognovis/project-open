@@ -52,8 +52,6 @@ VALUES (3722,'Expense Report','Intranet Cost Type');
 -- Intranet Expense Type
 delete from im_categories where category_id >= 4000 and category_id < 4100;
 
--- !!! Google "project-open travel costs"
-
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (4000,'Meals','Intranet Expense Type');
 
@@ -103,10 +101,10 @@ VALUES (4012,'Other','Intranet Expense Type');
 delete from im_categories where category_id >= 4100 and category_id < 4200;
 
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4100,'Company Visa 1','Intranet Expense Payment Type');
+VALUES (4100,'Cash Outlay','Intranet Expense Payment Type');
 
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4101,'Company Visa 2','Intranet Expense Payment Type');
+VALUES (4101,'Company Visa 1','Intranet Expense Payment Type');
 
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (4102,'PayPal tigerpond@tigerpond.com','Intranet Expense Payment Type');
