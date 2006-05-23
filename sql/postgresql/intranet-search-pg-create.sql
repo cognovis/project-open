@@ -335,7 +335,8 @@ begin
 			biz_object_id	= p_biz_object_id,
 			fti		= to_tsvector(''default'', norm_text(p_text))
 		where
-			object_id	= p_object_id;
+			object_id	= p_object_id
+			and object_type_id = v_object_type_id;
 	else 
 		insert into im_search_objects (
 			object_id,
@@ -352,6 +353,10 @@ begin
 
 	return 0;
 end;' language 'plpgsql';
+
+--	RAISE EXCEPTION ''im_search_update(oid=%, type=%): exists=%'', 
+--	p_object_id, p_object_type, v_exists_p;
+
 
 
 -----------------------------------------------------------
