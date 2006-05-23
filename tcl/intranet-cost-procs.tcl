@@ -658,7 +658,8 @@ select
 	url.url,
         im_category_from_id(ci.cost_status_id) as cost_status,
         im_category_from_id(ci.cost_type_id) as cost_type,
-	to_date(to_char(ci.effective_date,'yyyymmdd'),'yyyymmdd') + ci.payment_days as calculated_due_date
+	to_date(to_char(ci.effective_date,'yyyymmdd'),'yyyymmdd') 
+		+ ci.payment_days as calculated_due_date
 	$extra_select_clause
 from
 	im_costs ci,
@@ -817,8 +818,6 @@ ad_proc im_costs_project_finance_component {
 
     # ----------------- Main SQL - select subtotals and their currencies -------------
 
-set ttt "to_char(sum(ci.amount), :num_format) as amount,"
-
     
     set subtotals_sql "
 select
@@ -862,7 +861,9 @@ where
 		[im_cost_type_quote],
 		[im_cost_type_bill],
 		[im_cost_type_po],
-		[im_cost_type_timesheet]
+		[im_cost_type_timesheet],
+		[im_cost_type_expense_item],
+		[im_cost_type_expense_report]
 	)
 	and ci.currency is not null
 group by
@@ -926,16 +927,14 @@ select
 	to_date(to_char(ci.effective_date,:date_format),:date_format) + ci.payment_days as calculated_due_date
 from
 	im_costs ci
-		LEFT OUTER JOIN im_projects p ON ci.project_id = p.project_id,
+		LEFT OUTER JOIN im_projects p ON (ci.project_id = p.project_id)
+		LEFT OUTER JOIN im_companies cust on (ci.customer_id = cust.company_id)
+		LEFT OUTER JOIN im_companies prov on (ci.provider_id = prov.company_id),
 	acs_objects o,
-        (select * from im_biz_object_urls where url_type=:view_mode) url,
-	im_companies cust,
-	im_companies prov
+        (select * from im_biz_object_urls where url_type=:view_mode) url
 where
 	ci.cost_id = o.object_id
 	and o.object_type = url.object_type
-	and ci.customer_id = cust.company_id
-	and ci.provider_id = prov.company_id
 	and ci.cost_id in (
 		select distinct cost_id 
 		from im_costs 
@@ -958,8 +957,6 @@ order by
 	ci.cost_type_id,
 	ci.effective_date desc
 "
-
-set order_by_ttt"	p.project_nr,"
 
 
     set cost_html "
@@ -1093,9 +1090,11 @@ set order_by_ttt"	p.project_nr,"
 			cost_invoices_cache = $subtotals([im_cost_type_invoice]$currency),
 			cost_bills_cache = $subtotals([im_cost_type_bill]$currency),
 			cost_timesheet_logged_cache = $subtotals([im_cost_type_timesheet]$currency),
+			cost_expense_logged_cache = $subtotals([im_cost_type_expense_report]$currency),
 			cost_quotes_cache = $subtotals([im_cost_type_quote]$currency),
 			cost_purchase_orders_cache = $subtotals([im_cost_type_po]$currency),
-			cost_timesheet_planned_cache = 0
+			cost_timesheet_planned_cache = 0,
+			cost_expense_planned_cache = 0
 		where
 			project_id = :org_project_id
             "
@@ -1109,9 +1108,11 @@ set order_by_ttt"	p.project_nr,"
 			cost_invoices_cache = null,
 			cost_bills_cache = null,
 			cost_timesheet_logged_cache = null,
+			cost_expense_logged_cache = null,
 			cost_quotes_cache = null,
 			cost_purchase_orders_cache = null,
-			cost_timesheet_planned_cache = null
+			cost_timesheet_planned_cache = null,
+			cost_expense_planned_cache = null
 		where
 			project_id = :org_project_id
             "
@@ -1158,6 +1159,12 @@ set order_by_ttt"	p.project_nr,"
 	append hard_cost_html "<td align=right>- $subtotal $currency</td>\n"
 	set grand_total($currency) [expr $grand_total($currency) - $subtotal]
     }
+    append hard_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Expenses "Expenses"]</td>\n"
+    foreach currency $currencies {
+	set subtotal $subtotals([im_cost_type_expense_report]$currency)
+	append hard_cost_html "<td align=right>- $subtotal $currency</td>\n"
+	set grand_total($currency) [expr $grand_total($currency) - $subtotal]
+    }
     append hard_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-cost.Grand_Total]</b></td>\n"
     foreach currency $currencies {
 	append hard_cost_html "<td align=right><b>$grand_total($currency) $currency</b></td>\n"
@@ -1192,6 +1199,13 @@ set order_by_ttt"	p.project_nr,"
     foreach currency $currencies {
 	append prelim_cost_html "<td align=right>
 <!--	  $subtotals([im_cost_type_timesheet]$currency) $currency -->
+	</td>\n"
+    }
+
+    append prelim_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Expenses "Expenses"]</td>\n"
+    foreach currency $currencies {
+	append prelim_cost_html "<td align=right>
+<!--	  $subtotals([im_cost_type_expense_report]$currency) $currency -->
 	</td>\n"
     }
 
