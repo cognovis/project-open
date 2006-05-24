@@ -67,7 +67,15 @@ set expense_payment_type_options [db_list_of_lists payment_options "
 "]
 
 
-set project_options [im_project_options -member_user_id $user_id]
+# Get the list of active projects (both main and subprojects)
+# where the current user is a direct member
+# ToDo: This could give problems with Tasks. Maybe exclude
+# tasks in the future?
+#
+set project_options [im_project_options \
+	-exclude_subprojects_p 0 \
+	-member_user_id $user_id
+]
 
 set include_empty 0
 set currency_options [im_currency_options $include_empty]
