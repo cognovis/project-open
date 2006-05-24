@@ -219,6 +219,7 @@ ad_proc -deprecated ad_admin_present_user {
 
 ad_proc -deprecated ad_header {
     {-focus ""}
+    {-extra_stuff_for_body ""}
     page_title
     {extra_stuff_for_document_head ""} 
 } {
@@ -229,12 +230,17 @@ ad_proc -deprecated ad_header {
     #	return [ad_header_with_extra_stuff -focus $focus $page_title [ad_pdm] [ad_pdm_spacer]]
     #    } else {
     #    }
-    return [ad_header_with_extra_stuff -focus $focus $page_title $extra_stuff_for_document_head]
-
+    return [ad_header_with_extra_stuff \
+	-focus $focus \
+	-extra_stuff_for_body $extra_stuff_for_body \
+	$page_title \
+	$extra_stuff_for_document_head \
+    ]
 }
 
 ad_proc -deprecated ad_header_with_extra_stuff {
     {-focus ""}
+    {-extra_stuff_for_body ""}
     page_title
     {extra_stuff_for_document_head ""} 
     {pre_content_html ""}
@@ -266,7 +272,7 @@ $extra_stuff_for_document_head
     foreach attr [array names attrs] {
 	lappend attr_list "$attr=\"$attrs($attr)\""
     }
-    append html "<body [join $attr_list]>\n"
+    append html "<body [join $attr_list] $extra_stuff_for_body>\n"
 
     append html $pre_content_html
     return $html
