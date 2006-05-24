@@ -21,3 +21,11 @@ alter table im_projects add     cost_expense_logged_cache	numeric(12,2);
 alter table im_projects alter	cost_expense_logged_cache	set default 0;
 
 
+
+
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3720,'Expense Item','Intranet Cost Type');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3722,'Expense Report','Intranet Cost Type');
+
+

@@ -26,6 +26,7 @@ ad_proc -public im_cost_status_deleted {} { return 3812 }
 ad_proc -public im_cost_status_filed {} { return 3814 }
 
 
+
 # Frequently used Cost Types
 ad_proc -public im_cost_type_invoice {} { return 3700 }
 ad_proc -public im_cost_type_quote {} { return 3702 }
@@ -37,6 +38,8 @@ ad_proc -public im_cost_type_provider_travel {} { return 3712 }
 ad_proc -public im_cost_type_employee {} { return 3714 }
 ad_proc -public im_cost_type_repeating {} { return 3716 }
 ad_proc -public im_cost_type_timesheet {} { return 3718 }
+ad_proc -public im_cost_type_expense_item {} { return 3720 }
+ad_proc -public im_cost_type_expense_report {} { return 3722 }
 
 # Defined in intranet-expenses:
 # ad_proc -public im_cost_type_expense_item {} { return 3720 }
