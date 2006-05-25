@@ -32,7 +32,7 @@ ad_proc -private im_package_workflow_id_helper {} {
 # Selects & Options
 # ---------------------------------------------------------------------
 
-ad_proc -public wf_workflow_list_options {
+ad_proc -public im_workflow_list_options {
     {-include_empty 0}
     {-min_case_count 0}
 } {
@@ -41,21 +41,91 @@ ad_proc -public wf_workflow_list_options {
     set min_count_where ""
     if {$min_case_count > 0} { set min_count_where "and count(c.case_id) > 0\n" }
     set options [db_list_of_lists project_options "
-            select
-                   t.pretty_name,
-                   w.workflow_key,
-                   count(c.case_id) as num_cases,
-                   0 as num_unassigned_tasks
-            from   wf_workflows w left outer join wf_cases c
-                     on (w.workflow_key = c.workflow_key and c.state = 'active'),
-                   acs_object_types t
-            where  w.workflow_key = t.object_type
-                   $min_count_where
-            group  by w.workflow_key, t.pretty_name
-            order  by t.pretty_name
+	 select
+		t.pretty_name,
+		w.workflow_key,
+		count(c.case_id) as num_cases,
+		0 as num_unassigned_tasks
+	 from   wf_workflows w left outer join wf_cases c
+		  on (w.workflow_key = c.workflow_key and c.state = 'active'),
+		acs_object_types t
+	 where  w.workflow_key = t.object_type
+		$min_count_where
+	 group  by w.workflow_key, t.pretty_name
+	 order  by t.pretty_name
     "]
     if {$include_empty} { set options [linsert $options "" { "" "" }] }
     return $options
+}
+
+
+ad_proc -public im_workflow_pretty_name {
+    workflow_key
+} {
+    Returns a pretty name for the WF
+} {
+    if {![regexp {^[a-z0-9_]*$} $workflow_key match]} {
+	ad_return_complaint 1 "Bad Workflow Name:<br>must be only alphanumerical.<br>
+        Found: '$workflow_key'"
+	return "$workflow_key"
+    }
+    return [util_memoize "db_string pretty_name \"select pretty_name from acs_object_types where object_type = '$workflow_key'\" -default $workflow_key"]
+}
+
+
+ad_proc -public im_workflow_status_options {
+    {-include_empty 1}
+    {-include_empty_name ""}
+    workflow_key
+} {
+    Returns a list of stati (actually: Places) 
+    for the given workflow
+} {
+    #ToDo: Use util_memoize to reduce db-load
+
+    set options [db_list_of_lists project_options "
+	 select	place_key,
+		place_key
+	from	wf_places wfp
+	where	workflow_key = :workflow_key
+    "]
+    if {$include_empty} { set options [linsert $options 0 [list $include_empty_name "" ]] }
+    return $options
+}
+
+ad_proc -public im_workflow_status_select { 
+    {-include_empty 1}
+    {-include_empty_name ""}
+    {-translate_p 0}
+    workflow_key
+    select_name
+    { default "" }
+} {
+    Returns an html select box named $select_name and defaulted to
+    $default with a list of all the project_types in the system
+} {
+    if {"" == $workflow_key} {
+	ad_return_complaint 1 "im_workflow_status_select:<br>
+        Found an empty workflow_key. Please inform your SysAdmin."
+        return
+    }
+
+    set options [im_workflow_status_options \
+	-include_empty $include_empty \
+	-include_empty_name $include_empty_name \
+	$workflow_key \
+    ]
+
+    set result "<select name=\"$select_name\">"
+    foreach option $options {
+	set value [lindex $option 0]
+	set key [lindex $option 1]
+	set selected ""
+	if {[string equal $default $key]} { set selected "selected" }
+        append result "<option value='$key' $selected>$value</option>\n"
+    }
+    append result "</select>\n"
+    return $result
 }
 
 
@@ -111,8 +181,8 @@ ad_proc -public im_workflow_graph_sort_order {
 } {
     set arc_sql "
 	select *
-        from wf_arcs
-        where workflow_key = :workflow_key
+	from wf_arcs
+	where workflow_key = :workflow_key
     "
     db_foreach arcs $arc_sql {
 	set distance($place_key) 9999999999
@@ -133,8 +203,8 @@ ad_proc -public im_workflow_graph_sort_order {
 	ns_log Notice "im_workflow_graph_sort_order: cnt=$cnt, active_nodes=$active_nodes"
 	if {$cnt > 10000} {
 	    ad_return_complaint 1 "Workflow:<br>
-            Infinite loop in im_workflow_graph_sort_order. <br>
-            Please contact your system administrator"
+	    Infinite loop in im_workflow_graph_sort_order. <br>
+	    Please contact your system administrator"
 	    return
 	}
 
