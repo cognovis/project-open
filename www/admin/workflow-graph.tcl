@@ -35,7 +35,7 @@ if { [wf_graphviz_installed_p] } {
     set dot_text [wf_generate_dot_representation -size $size workflow]
     
     set tmpfile [wf_graphviz_dot_exec -to_file -output gif $dot_text]
-    
+
     set width_and_height ""
     if { ![catch { set image_size [ns_gifsize $tmpfile] } error] } {
 	if { ![empty_string_p $image_size] } {
@@ -45,7 +45,7 @@ if { [wf_graphviz_installed_p] } {
     
     ad_set_client_property wf wf_net_tmpfile $tmpfile
     
-    set workflow_img_tag "<img src=\"workflow-gif?[export_url_vars tmpfile]\" border=0 $width_and_height alt=\"Graphical representation of the process network\">"
+    set workflow_img_tag "<img src=\"/workflow/admin/workflow-gif?[export_url_vars tmpfile]\" border=0 $width_and_height alt=\"Graphical representation of the process network\">"
 } else {
     set workflow_img_tag ""
 }
