@@ -104,6 +104,7 @@ ad_proc -public im_workflow_status_select {
     Returns an html select box named $select_name and defaulted to
     $default with a list of all the project_types in the system
 } {
+
     if {"" == $workflow_key} {
 	ad_return_complaint 1 "im_workflow_status_select:<br>
         Found an empty workflow_key. Please inform your SysAdmin."
@@ -122,7 +123,7 @@ ad_proc -public im_workflow_status_select {
 	set key [lindex $option 1]
 	set selected ""
 	if {[string equal $default $key]} { set selected "selected" }
-        append result "<option value='$key' $selected>$value</option>\n"
+        append result "<option value=\"$key\" $selected>$value</option>\n"
     }
     append result "</select>\n"
     return $result
