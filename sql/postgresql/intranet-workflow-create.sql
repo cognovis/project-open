@@ -139,7 +139,6 @@ BEGIN
     PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
     PERFORM acs_permission__grant_permission(v_menu, v_companies, ''read'');
     PERFORM acs_permission__grant_permission(v_menu, v_freelancers, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_reg_users, ''read'');
 
     return 0;
 end;' language 'plpgsql';
