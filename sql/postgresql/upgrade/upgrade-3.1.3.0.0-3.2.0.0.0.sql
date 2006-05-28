@@ -402,6 +402,27 @@ drop function inline_1();
 
 
 
+
+
+-- Returns the name of the menu
+create or replace function im_menu__name (integer) returns varchar as '
+DECLARE
+        p_menu_id   alias for $1;
+        v_name      im_menus.name%TYPE;
+BEGIN
+        select  name
+        into    v_name
+        from    im_menus
+        where   menu_id = p_menu_id;
+
+        return v_name;
+end;' language 'plpgsql';
+
+
+
+
+
+
 ToDo: Change the "GifPath" parameter to "navbar_default" only
 
 
