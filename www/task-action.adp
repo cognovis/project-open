@@ -1,7 +1,7 @@
 
 <if @task.state@ eq enabled>
     <if @task.this_user_is_assigned_p@ eq 1>
-        <form action="task" method="post">
+        <form action="@task.action_url@" method="post">
 	@export_form_vars;noquote@
 	<table>
 	<tr><th align="right">Action:</th>

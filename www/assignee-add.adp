@@ -15,14 +15,14 @@
 
 <else>
   <form action="assignee-add-2" name="assign">
-  @export_vars@
+  @export_vars;noquote@
   <table>
     <tr>
       <th align="right">
 	Party to assign
       </th>
       <td>
-	@party_widget@ <input type="submit" value="Add" />
+	@party_widget;noquote@ <input type="submit" value="Add" />
       </td>
     </tr>
     </table>
