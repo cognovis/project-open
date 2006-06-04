@@ -2,7 +2,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.32 2006/06/03 00:09:53 donb Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.33 2006/06/04 00:45:56 donb Exp $
 }
 
 namespace eval search {}
@@ -282,7 +282,6 @@ ad_proc -private search::choice_bar {
     }
 
 }
-
 
 ad_proc -callback search::datasource {
     -object_id:required

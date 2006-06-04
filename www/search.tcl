@@ -1,7 +1,7 @@
 ad_page_contract {
     @author Neophytos Demetriou <k2pts@cytanet.com.cy>
     @creation-date September 01, 2001
-    @cvs-id $Id: search.tcl,v 1.19 2005/11/08 18:24:08 dirkg Exp $
+    @cvs-id $Id: search.tcl,v 1.20 2006/06/04 00:45:56 donb Exp $
 } {
     q:trim
     {t:trim ""}
@@ -93,7 +93,7 @@ set params [list $q $offset $limit $user_id $df]
 if {[ad_parameter -package_id $package_id SubsiteSearchP -default 1]
     && [subsite::main_site_id] != [ad_conn subsite_id]} {
     # We are in a subsite and SubsiteSearchP is true
-    lappend params [subsite::util::packages -node_id [ad_conn node_id]]
+    lappend params [concat [ad_conn subsite_id] [subsite::util::packages -node_id [ad_conn node_id]]]
 } else { 
     lappend params {}    
 }
@@ -156,7 +156,7 @@ set stopwords $result(stopwords)
 set nstopwords [llength $result(stopwords)] 
 set count $result(count)
 
-template::multirow create searchresult title_summary txt_summary url_one
+template::multirow create searchresult title_summary txt_summary url_one object_id
 
 for { set __i 0 } { $__i < [expr $high - $low +1] } { incr __i } {
 
