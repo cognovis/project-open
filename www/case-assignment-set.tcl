@@ -48,7 +48,7 @@ set current_assignments [db_list assignment_select "
 
 set widget "<select name=\"assignments\" multiple size=10>"
 db_foreach party_with_at_least_one_member {
-    select p.party_id,
+    sselect p.party_id,
            acs_object.name(p.party_id) as name, 
            decode(p.email, '', '', '('||p.email||')') as email
     from   parties p
