@@ -21,11 +21,11 @@
 
 
 INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
-(4100,'External', 'Intranet TM Integration Type','Trados is integrated by up/downloading files');
+(4200,'External', 'Intranet TM Integration Type','Trados is integrated by up/downloading files');
 INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
-(4102,'Ophelia', 'Intranet TM Integration Type','Ophelia in integrated via UserExists');
+(4202,'Ophelia', 'Intranet TM Integration Type','Ophelia in integrated via UserExists');
 INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
-(4104,'None', 'Intranet TM Integration Type','No integration - not a TM task');
+(4204,'None', 'Intranet TM Integration Type','No integration - not a TM task');
 
 
 alter table im_trans_tasks
