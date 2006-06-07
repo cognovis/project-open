@@ -19,18 +19,22 @@
 
 -- 4100-4199    Intranet Trans TM Type
 
+
 INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
-(4100,'Trados', 'Intranet Translation TM Type','Trados is integrated by up/downloading files');
+(4100,'External', 'Intranet TM Integration Type','Trados is integrated by up/downloading files');
 INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
-(4102,'Ophelia', 'Intranet Translation TM Type','Ophelia in integrated via UserExists');
+(4102,'Ophelia', 'Intranet TM Integration Type','Ophelia in integrated via UserExists');
+INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
+(4104,'None', 'Intranet TM Integration Type','No integration - not a TM task');
+
 
 alter table im_trans_tasks
-add tm_type_id integer references im_categories;
+add tm_integration_type_id integer references im_categories;
 
-alter table im_trans_tasks alter column tm_type_id 
-set default 4100;
+-- No default - default should be handled by TCL
+-- alter table im_trans_tasks alter column tm_type_id 
+-- set default 4100;
 
-update im_trans_tasks set tm_type_id = 4100;
 
 
 
