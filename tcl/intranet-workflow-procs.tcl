@@ -131,6 +131,22 @@ ad_proc -public im_workflow_status_select {
 
 
 # ----------------------------------------------------------------------
+# Check if the workflow is stuck with an unassigned task
+# ---------------------------------------------------------------------
+
+ad_proc -public im_workflow_stuck_p {
+} {
+    Checks whether the workflow is "stuck".
+    That means: If all of the currently enabled tasks are
+    unassigned.
+} {
+    return 0
+}
+
+
+
+
+# ----------------------------------------------------------------------
 # Workflow Task List Component
 # ---------------------------------------------------------------------
 
