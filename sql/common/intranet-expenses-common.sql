@@ -101,13 +101,16 @@ VALUES (4012,'Other','Intranet Expense Type');
 delete from im_categories where category_id >= 4100 and category_id < 4200;
 
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4100,'Cash Outlay','Intranet Expense Payment Type');
+VALUES (4100,'Cash','Intranet Expense Payment Type');
 
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4101,'Company Visa 1','Intranet Expense Payment Type');
+VALUES (4105,'Company Visa 1','Intranet Expense Payment Type');
 
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4102,'PayPal tigerpond@tigerpond.com','Intranet Expense Payment Type');
+VALUES (4110,'Company Visa 2','Intranet Expense Payment Type');
+
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (4115,'PayPal tigerpond@tigerpond.com','Intranet Expense Payment Type');
 
 
 -- commit;

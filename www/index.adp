@@ -17,6 +17,17 @@
 	<form method=get action='index'>
 	<%= [export_form_vars material_group_id material_start_idx material_order_by material_how_many material_view_name] %>
 
+	<table>
+	  <tr>
+	    <td colspan='2' class=rowtitle align=center>
+	      <%= [lang::message::lookup "" intranet-expenses.Filter_Expenses "Filter Expenses"] %>
+	    </td>
+	  </tr>
+	  <tr>
+	    <td><%= [lang::message::lookup "" intranet-expenses.Project "Project"] %></td>
+	    <td><%= [im_project_select -include_all 0 project_id $project_id] %></td>
+	  </tr>
+	</table>
 	</form>
 
   </td> <!-- end of left hand filter TD -->

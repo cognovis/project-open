@@ -1,6 +1,6 @@
 # /packages/intranet-expenses/www/expense-ae.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (C) 2003-2006 Project/Open
 # 060421 avila@digiteix.com
 #
 # All rights reserved. Please check
@@ -30,25 +30,21 @@ ad_page_contract {
 # ------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
+if {![im_permission $user_id "add_expenses"]} {
+    ad_return_complaint 1 "[_ intranet-timesheet2-invoices.lt_You_have_insufficient_1]"
+    return
+}
 
-# ToDo: Security
-#set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
-#if {!$user_is_admin_p} {
-#    ad_return_complaint 1 "[_ intranet-timesheet2-invoices.lt_You_have_insufficient_1]"
-#    return
-#}
-
+set today [lindex [split [ns_localsqltimestamp] " "] 0]
 set action_url "new"
-set page_title [lang::message::lookup "" intranet-expenses.New_Expense "New Expense"]
+set page_title [lang::message::lookup "" intranet-expenses.New_Expense "New Expense Item"]
 set context_bar [im_context_bar $page_title]
 set date_format "YYYY-MM-DD"
-
 
 if {"" != $project_id} {
     append return_url "index?[export_vars -url project_id]"
 }
 
-set today [lindex [split [ns_localsqltimestamp] " "] 0]
 
 if {![exists_and_not_null currency]} {
     set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
@@ -93,6 +89,24 @@ set expense_type_options [db_list_of_lists expense_types "
 set form_id "expense_ae"
 set focus "$form_id\.var_name"
 
+set include_empty 0
+set currency_options [im_currency_options $include_empty]
+
+
+set expense_type_options [db_list_of_lists expense_types "select expense_type, expense_type_id from im_expense_type"]
+set expense_type_options [linsert $expense_type_options 0 [list [lang::message::lookup "" "intranet-expenses.--Select--" "-- Please Select --"] 0]]
+
+
+
+set expense_payment_type_options [db_list_of_lists expense_payment_type "
+	select	expense_payment_type,
+		expense_payment_type_id
+        from
+		im_expense_payment_type
+"]
+set expense_payment_type_options [linsert $expense_payment_type_options 0 [list [lang::message::lookup "" "intranet-expenses.--Select--" "-- Please Select --"] 0]]
+
+
 template::form::create $form_id \
     -cancel_url "$return_url" \
     -mode "$form_mode" \
@@ -101,10 +115,6 @@ template::form::create $form_id \
 element::create $form_id expense_id \
     -widget hidden \
     -optional
-
-#element::create $form_id project_id \
-#    -widget hidden \
-#    -optional
 
 element::create $form_id project_id \
     -optional \
@@ -138,13 +148,32 @@ element::create $form_id vat_included \
     
 element::create $form_id expense_date \
     -datatype text \
+    -widget select \
+    -options $currency_options \
+    -label "[_ intranet-expenses.Date]"
+
+element::create $form_id vat_included \
+    -datatype text \
     -widget text \
-    -html {size 10} \
+    -html {size 6} \
+    -label "[_ intranet-expenses.Vat_Included]"
+
+template::element::set_value $form_id vat_included 0
+
+
+element::create $form_id expense_date \
+    -datatype date \
+    -widget text \
+    -html {size 8} \
     -label "[_ intranet-expenses.Expense_Date]"
+
+template::element::set_value $form_id expense_date $today
+
 
 element::create $form_id external_company_name \
     -datatype text \
     -widget text \
+    -html {size 40} \
     -label "[_ intranet-expenses.External_company_name]"
 
 element::create $form_id external_company_vatnr \
@@ -158,6 +187,7 @@ element::create $form_id receipt_reference \
     -optional \
     -datatype text \
     -widget text \
+    -html {size 40} \
     -label "[_ intranet-expenses.Receipt_reference]"
 
 element::create $form_id expense_type_id \
@@ -175,6 +205,8 @@ element::create $form_id billable_p \
 template::element::set_value $form_id billable_p "f"
 
 
+template::element::set_value $form_id billable_p "f"
+
 element::create $form_id reimbursable \
     -datatype text \
     -widget text \
@@ -185,6 +217,8 @@ if {"" == $reimbursable_value} {
     template::element::set_value $form_id reimbursable "100"
 }
 
+
+template::element::set_value $form_id reimbursable 100
 
 element::create $form_id expense_payment_type_id \
     -datatype integer \
@@ -323,10 +357,8 @@ if {[form is_valid $form_id]} {
     set amount [expr $expense_amount / [expr 1 + [expr $vat_included / 100.0]]]
 
     if {![exists_and_not_null expense_id]} {
-
 	# Let's create the new expense
 	set expense_id [db_exec_plsql create_expense ""]
-
     }
  
     # Update the invoice itself
@@ -352,7 +384,7 @@ set
         cost_type_id    = :cost_type_id,
 	provider_id	= :provider_id,
 	template_id	= :template_id,
-	effective_date	= :expense_date,
+	effective_date	= to_timestamp('YYYY-MM-DD', :expense_date),
 	payment_days	= :payment_days,
 	vat		= :vat_included,
 	tax		= :tax,
