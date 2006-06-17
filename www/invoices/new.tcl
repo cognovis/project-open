@@ -95,6 +95,7 @@ if {"" == $target_cost_type_id} {
 }
 
 
+
 # Determine the default status if not set
 if { [empty_string_p $project_status_id] } {
 
@@ -113,13 +114,28 @@ set end_idx [expr $start_idx + $how_many]
 
 # We don't need to show the select screen if only a single project
 # has been selected...
-if { ![empty_string_p $project_id] && $project_id != 0 } {
+if { ![empty_string_p $project_id] && $project_id != 0} {
 
-    set invoice_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
-    ad_returnredirect "/intranet-trans-invoices/invoices/new-2?select_project=$project_id&[export_url_vars target_cost_type_id invoice_currency]"
-    set page_body ""
-    return
+
+    if {$include_subprojects_p} {
+
+	# Just one project - forget about status and state
+	# Instead, we'll go for the subprojects
+	set project_status_id ""
+	set project_type_id ""
+
+    } else {
+	
+	# Just one project and no subproject - just go forward
+	set invoice_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+	ad_returnredirect "/intranet-trans-invoices/invoices/new-2?select_project=$project_id&[export_url_vars target_cost_type_id invoice_currency]"
+	set page_body ""
+	return
+
+    }
+
 }
+
 
 
 # ---------------------------------------------------------------
@@ -152,26 +168,6 @@ db_foreach column_list_sql $column_sql {
 	lappend column_vars "$column_render_tcl"
     }
 }
-
-
-
-# ---------------------------------------------------------------
-# 4. Define Filter Categories
-# ---------------------------------------------------------------
-
-# status_types will be a list of pairs of (project_status_id, project_status)
-set status_types [im_memoize_list select_project_status_types \
-	"select project_status_id, project_status
-         from im_project_status
-         order by lower(project_status)"]
-set status_types [linsert $status_types 0 0 All]
-
-# project_types will be a list of pairs of (project_type_id, project_type)
-set project_types [im_memoize_list select_project_types \
-	"select project_type_id, project_type
-         from im_project_types
-        order by lower(project_type)"]
-set project_types [linsert $project_types 0 0 All]
 
 
 # ---------------------------------------------------------------
@@ -319,44 +315,39 @@ if {[string compare $letter "ALL"]} {
 # Note that we use a nested table because im_slider might
 # return a table with a form in it (if there are too many
 # options
-set filter_html "
 
-<table><tr>
-  <td>
-	<form method=POST action='/intranet-trans-invoices/invoices/new'>
-	[export_form_vars start_idx order_by how_many target_cost_type_id view_name include_subprojects_p letter]
-	<table border=0 cellpadding=0 cellspacing=0>
-	<tr> 
-	  <td colspan='2' class=rowtitle align=center>
-	    [_ intranet-trans-invoices.Filter_Projects] [im_new_project_html $user_id]
-	  </td>
-	</tr>
-	<tr>
-	  <td valign=top>[_ intranet-trans-invoices.Project_Status]:</td>
-	  <td valign=top>[im_select project_status_id $status_types $project_status_id]</td>
-	</tr>
-	<tr>
-	  <td valign=top>[_ intranet-trans-invoices.Project_Type]:</td>
-	  <td valign=top>
-	    [im_select project_type_id $project_types $project_type_id]
-		  <input type=submit value=Go name=submit>
-	  </td>
-	</tr>
-	</table>
-	</form>
-  </td>
-  <td>
-	<table><tr>
-	  <td>
-	    <blockquote>
-		[_ intranet-trans-invoices.lt_To_create_a_new_invoi]
-	    <blockquote>
-	  </td>
-	</tr></table>
-	
-  </td>
-</tr></table>
+set filter_html "
+<form method=get action='/intranet-trans-invoices/invoices/new'>
+[export_form_vars start_idx order_by how_many view_name include_subprojects_p letter]
+
+<table border=0 cellpadding=0 cellspacing=0>
+  <tr>
+    <td colspan='2' class=rowtitle align=center>
+[_ intranet-core.Filter_Projects]
+    </td>
+  </tr>
 "
+
+if {[im_permission $current_user_id "view_projects_all"]} {
+    append filter_html "
+  <tr>
+    <td valign=top>[_ intranet-core.Project_Status]:</td>
+    <td valign=top>[im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id $project_status_id]</td>
+  </tr>\n"
+}
+
+append filter_html "
+  <tr>
+    <td valign=top>[_ intranet-core.Project_Type]:</td>
+    <td valign=top>
+      [im_category_select -include_empty_p 1 "Intranet Project Type" project_type_id $project_type_id]
+          <input type=submit value=Go name=submit>
+    </td>
+  </tr>
+</table>
+</form>
+"
+
 
 # ---------------------------------------------------------------
 # 7. Format the List Table Header
@@ -494,24 +485,13 @@ set submit_button "
 
 
 # ---------------------------------------------------------------
-# 10. Join all parts together
+# 
 # ---------------------------------------------------------------
 
-set page_body "
-$filter_html
-[im_costs_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list project_status_id target_cost_type_id project_type_id start_idx order_by how_many mine_p view_name letter include_subprojects_p] ""]
 
-<form method=POST action='new-2'>
-[export_form_vars target_cost_type_id]
-  <table width=100% cellpadding=2 cellspacing=2 border=0>
-    $table_header_html
-    $table_body_html
-    $table_continuation_html
-    $submit_button
-  </table>
-</form>
-"
+
+set cost_navbar [im_costs_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list project_status_id target_cost_type_id project_type_id start_idx order_by how_many mine_p view_name letter include_subprojects_p] ""]
+
 
 db_release_unused_handles
-
 ad_return_template

@@ -49,7 +49,12 @@ if {[info exists select_project]} {
     if {[llength $select_project] > 1} {
 	set project_id [lindex $select_project 0]
     }
-    set project_name [db_string project_name "select project_name from im_projects where project_id = :project_id" -default ""]
+    set project_name [db_string project_name "
+	select project_name 
+	from im_projects 
+	where 
+		project_id = :project_id
+     " -default ""]
     if {"" != $project_name} {
 	append page_title " for Project '$project_name'"
     }
