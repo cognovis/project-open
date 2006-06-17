@@ -30,7 +30,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     { order_by "Client" }
-    { include_subprojects_p "f" }
+    { include_subprojects_p 1 }
     { project_status_id "" } 
     { project_type_id:integer "0" } 
     { project_id "" }
@@ -204,7 +204,9 @@ if { ![empty_string_p $project_type_id] && $project_type_id != 0 } {
 if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string compare $letter "SCROLL"] != 0 } {
     lappend criteria "im_first_letter_default_to_a(p.project_name)=:letter"
 }
-if { $include_subprojects_p == "f" } {
+if { !$include_subprojects_p } {
+
+    ad_return_complaint 1 asdf
     lappend criteria "p.parent_id is null"
 }
 
