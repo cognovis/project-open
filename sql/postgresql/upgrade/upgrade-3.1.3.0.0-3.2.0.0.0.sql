@@ -423,7 +423,7 @@ end;' language 'plpgsql';
 
 
 
-ToDo: Change the "GifPath" parameter to "navbar_default" only
+-- ToDo: Change the "GifPath" parameter to "navbar_default" only
 
 
 
