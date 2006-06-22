@@ -120,8 +120,33 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 -- Prepare converting im_trans_task to object
 -----------------------------------------------------------
 
-alter table im_trans_quality_reports
-drop constraint im_transq_task_fk;
+
+-- -----------------------------------------------------
+-- Remove the RI constraint from translation quality
+-- if it exist
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select  count(*)
+        into    v_count
+        from    user_tab_columns
+        where   lower(table_name) = ''im_trans_quality_reports'';
+
+        if v_count = 0 then
+            return 0;
+        end if;
+
+        alter table im_trans_quality_reports
+        drop constraint im_transq_task_fk;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
 
 
@@ -135,7 +160,14 @@ returns integer as '
 DECLARE
 	row	RECORD;
 	v_oid	integer;
+
+        v_quality_count                 integer;
 BEGIN
+    select  count(*)
+    into    v_quality_count
+    from    user_tab_columns
+    where   lower(table_name) = ''im_trans_quality_reports'';
+
     for row in
 	select	*
 	from	im_trans_tasks
@@ -159,9 +191,11 @@ BEGIN
 	where	task_id = row.task_id;
 
 	-- Update Translation Quality
-	update	im_trans_quality_reports
-	set	task_id = v_oid
-	where	task_id = row.task_id;
+	if v_quality_count > 0 then
+	    update	im_trans_quality_reports
+	    set	task_id = v_oid
+	    where	task_id = row.task_id;
+	end if;
 
 	-- Finally update the TransTask table itself
 	update im_trans_tasks
@@ -190,9 +224,28 @@ foreign key (task_id) references acs_objects;
 
 -- Post-Process all tables that depend on im_trans_tasks
 --
-alter table im_trans_quality_reports
-add constraint im_transq_task_fk
-foreign key (task_id) references im_trans_tasks;
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select  count(*)
+        into    v_count
+        from    user_tab_columns
+        where   lower(table_name) = ''im_trans_quality_reports'';
+
+        if v_count = 0 then
+            return 0;
+        end if;
+
+	alter table im_trans_quality_reports
+	add constraint im_transq_task_fk
+	foreign key (task_id) references im_trans_tasks;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 -----------------------------------------------------------
