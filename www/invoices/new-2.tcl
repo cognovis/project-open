@@ -71,7 +71,21 @@ set in_clause_list [list]
 foreach selected_project $select_project {
         lappend in_clause_list $selected_project
 }
-set projects_where_clause "and p.project_id in ([join $in_clause_list ","])"
+# Simple projects_were: Select only the selected projects
+# set projects_where_clause "and p.project_id in ([join $in_clause_list ","])"
+
+# Recursive projects_where: Select both parent and subprojects
+set projects_where_clause "and p.project_id in (
+      select
+        children.project_id
+      from
+        im_projects parent,
+        im_projects children
+      where
+        children.project_status_id not in ([im_project_status_deleted],[im_project_status_canceled])
+        and children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+        and parent.project_id in ([join $in_clause_list ","])
+)"
 
 
 # check that all projects are from the same client
