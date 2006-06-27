@@ -326,7 +326,7 @@ ad_proc -public im_filestorage_find_files { project_id } {
 	set file_list ""
     }
 
-    set files [split $file_list "\n"]
+    set files [lsort [split $file_list "\n"]]
     return $files
 }
 
@@ -1167,7 +1167,7 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
         exec /bin/mkdir -p $find_path
         exec /bin/chmod ug+w $find_path
 	set file_list [exec $find_cmd $find_path]
-	set files [split $file_list "\n"]
+	set files [lsort [split $file_list "\n"]]
 
     } err_msg] } { 
 	return "<ul><li>[_ intranet-filestorage.lt_Unable_to_get_file_li]:<br><pre>find_path=$find_path\n$err_msg</pre></ul>"
