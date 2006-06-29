@@ -426,9 +426,7 @@ ad_proc im_filestorage_project_path_helper { project_id } {
     Determine the location where the project files
     are stored on the hard disk for this project
 } {
-    set package_key "intranet-filestorage"
-    set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
-    set base_path_unix [parameter::get -package_id $package_id -parameter "ProjectBasePathUnix" -default "/tmp/projects"]
+    set base_path_unix [parameter::get -package_id [im_package_filestorage_id] -parameter "ProjectBasePathUnix" -default "/tmp/projects"]
 
     # Return a demo path for all project, clients etc.
     if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
@@ -640,9 +638,53 @@ ad_proc im_filestorage_project_workflow_dirs { project_type_id } {
 
 # ---------------------------------------------------------------------
 
-ad_proc im_filestorage_create_directories { project_id } {
+ad_proc im_filestorage_copy_source_directory { project_id sub_project_id } {
     Create directory structure for a new project
     Returns "" if successful 
+    Returns a formatted errors string otherwise.
+} {
+    # Localize the workflow stage directories
+    set locale "en_US"
+    set source [lang::message::lookup $locale intranet-translation.Workflow_source_directory "source"]
+
+    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
+	# We're at a demo server, so don't create any directories!
+	return
+    }
+
+    set project_path [im_filestorage_project_path $project_id]
+    set sub_project_path [im_filestorage_project_path $sub_project_id]
+
+    # Source language is identical between project and subprojects
+    set source_language [db_string sourcelang "
+	select im_category_from_id(source_language_id)
+	from im_projects
+	where project_id = :project_id
+    " -default ""]
+
+    set source_dir "$project_path/${source}_$source_language"
+    set sub_source_dir "$sub_project_path/${source}_$source_language"
+
+    # Copy files if source_language is defined...
+    if {"" != $source_language} {
+	ns_log Notice "im_filestorage_copy_directory: $source_dir -> $sub_source_dir"
+	if {[catch {
+
+	    ns_log Notice "im_filestorage_copy_source_directory: exec /bin/cp -r $source_dir/* $sub_source_dir/"
+	    exec /bin/cp -r "$source_dir" "$sub_source_dir"
+
+	} err_msg]} { return $err_msg }
+    }
+    
+    return ""
+}
+
+
+
+# ---------------------------------------------------------------------
+
+ad_proc im_filestorage_create_directories { project_id } {
+    Copy the files from project/source_xx folder to subpoject/source_yy
     Returns a formatted errors string otherwise.
 } {
     # Localize the workflow stage directories
@@ -678,9 +720,7 @@ where
     #	- Project directory
 
 
-    set package_key "intranet-filestorage"
-    set package_id [db_string parameter_package "select package_id from apm_packages where package_key=:package_key" -default 0]
-    set base_path_unix [parameter::get -package_id $package_id -parameter "ProjectBasePathUnix" -default "/tmp/projects"]
+    set base_path_unix [parameter::get -package_id [im_package_filestorage_id] -parameter "ProjectBasePathUnix" -default "/tmp/projects"]
 
     # Create a company directory if it doesn't already exist
     set company_dir "$base_path_unix/$company_path"
@@ -749,6 +789,11 @@ where
 
     return ""
 }
+
+
+
+
+
 
 
 ad_proc im_filestorage_tool_tds { folder folder_type project_id return_url up_link } {
