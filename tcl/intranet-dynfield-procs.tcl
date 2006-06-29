@@ -2083,6 +2083,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
         switch $widget {
 	    checkbox - radio - select - multiselect - im_category_tree - category_tree {
 
+		ns_log Notice "im_dynfield::append_attributes_to_form: select-widgets: with options"
 		set option_list ""
 		set options_pos [lsearch $parameter_list "options"]
 		if {$options_pos >= 0} {
@@ -2106,6 +2107,8 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	    }
 
 	    default {
+
+		ns_log Notice "im_dynfield::append_attributes_to_form: default: no options"
 		if {![template::element::exists $form_id "$attribute_name"]} {
 		    template::element create $form_id "$attribute_name" \
 			-datatype $translated_datatype [ad_decode $required_p f "-optional" ""] \
@@ -2131,6 +2134,8 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     db_foreach attributes $attributes_sql {
 	switch $storage_type {
 	    value - default {
+
+		ns_log Notice "im_dynfield::append_attributes_to_form: value - default storage"
 		set value [db_string get_single_value "
 		    select	$attribute_name
 		    from	$attribute_table_name
@@ -2141,6 +2146,8 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	    }
 
 	    multimap {
+
+		ns_log Notice "im_dynfield::append_attributes_to_form: multipmap storage"
 		template::element set_properties $form_id $attribute_name "multiple_p" "1"
 		set value_list [db_list get_multiple_values "
 			select	value 
@@ -2149,13 +2156,19 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 				and object_id = :object_id
 		"]
 		template::element::set_values $form_id $attribute_name $value_list
+
 	    }
 
 	    date {
+
+		# ToDo: Remove this part. It's not used anymore. Dates are stored as
+		# values in YYYY-MM-DD format
+		ns_log Notice "im_dynfield::append_attributes_to_form: date storage"
 		set value [template::util::date::get_property ansi [set $attribute_name]]
 		set value_list [split $value "-"]			
 		set value "[lindex $value_list 0] [lindex $value_list 1] [lindex $value_list 2]"
 		template::element::set_value $form_id $attribute_name $value
+
 	    }
 	}
     }
