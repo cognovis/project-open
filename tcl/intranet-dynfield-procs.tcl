@@ -1623,6 +1623,8 @@ ad_proc -public im_dynfield::attribute_store {
 	    # in current table
 	    if {$first($table_n) == 0} {
 		#ns_log notice "$table_n ----> $update_sql($table_n)"
+#		ad_return_complaint 1 "<pre>$update_sql($table_n)</pre>"
+
 		db_dml update_object $update_sql($table_n)
 	    }
 	}
