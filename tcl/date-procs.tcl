@@ -3,7 +3,7 @@
 # Copyright (C) 1999-2000 ArsDigita Corporation
 # Author: Stanislav Freidin (sfreidin@arsdigita.com)
 #
-# $Id: date-procs.tcl,v 1.3 2006/06/29 15:14:47 cvs Exp $
+# $Id: date-procs.tcl,v 1.4 2006/06/29 15:18:05 cvs Exp $
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -1037,11 +1037,9 @@ ad_proc -public template::widget::date { element_reference tag_attributes } {
   }
 
   # Deal with ]project-open[ date format "YYYY-MM-DD"
-  ns_log Notice "template::widget::date: value.before=$value"
   if {[regexp {^(....)\-(..)\-(..)$} $value match year month day]} {
       set value "$year [template::util::leadingTrim $month] [template::util::leadingTrim $day]"
   }
-  ns_log Notice "template::widget::date: value.after=$value"
 
 
   # Keep taking tokens off the top of the string until out
