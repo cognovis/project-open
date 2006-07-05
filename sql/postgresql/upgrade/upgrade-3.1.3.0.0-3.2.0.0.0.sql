@@ -148,6 +148,11 @@ select inline_0 ();
 drop function inline_0 ();
 
 
+-- -----------------------------------------------------
+-- Remove the RI constraint from im_trans_task_actions
+
+alter table im_task_actions
+drop constraint im_task_action_task_fk;
 
 
 -----------------------------------------------------------
@@ -155,7 +160,7 @@ drop function inline_0 ();
 -----------------------------------------------------------
 
 
-create or replace function inline_0 ()
+create or replace function im_trans_tasks2objects ()
 returns integer as '
 DECLARE
 	row	RECORD;
@@ -193,7 +198,7 @@ BEGIN
 	-- Update Translation Quality
 	if v_quality_count > 0 then
 	    update	im_trans_quality_reports
-	    set	task_id = v_oid
+	    set		task_id = v_oid
 	    where	task_id = row.task_id;
 	end if;
 
@@ -204,8 +209,16 @@ BEGIN
     end loop;
     return 0;
 END;' language 'plpgsql';
-select inline_0 ();
-drop function inline_0 ();
+select im_trans_tasks2objects ();
+# drop function im_trans_tasks2objects ();
+
+
+--------------------------------------------
+-- Add the constraint on im_trans_tasks.task_id again
+alter table im_trans_tasks
+add constraint im_task_action_task_fk
+foreign key (task_id) references im_trans_tasks;
+
 
 
 -- No need anymore for the task sequence. Do this
