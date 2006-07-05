@@ -2,6 +2,7 @@
 <property name="title">@page_title@</property>
 <property name="context_bar">@context_bar;noquote@</property>
 <property name="main_navbar_label">projects</property>
+<!-- <property name="focus">@focus;noquote@</property> -->
 
 <h2>@page_title@</h2>
 
@@ -9,7 +10,6 @@
   <div class="general-message">@message@</div>
 </if>
 
-<property name="focus">@focus;noquote@</property>
 <formtemplate id="@form_id@"></formtemplate>
 
 
