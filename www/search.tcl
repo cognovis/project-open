@@ -52,7 +52,7 @@ ad_page_contract {
     q:notnull,trim
     {t:trim ""}
     {offset:integer 0}
-    {results_per_page:integer 20}
+    {results_per_page:integer 0}
     {type:multiple "all"}
     {include_deleted_p 0}
 } -errors {
@@ -82,12 +82,12 @@ set user_is_admin_p [expr $user_is_admin_p || $user_is_wheel_p]
 
 
 if { $results_per_page <= 0} {
-    set results_per_page [ad_parameter -package_id $package_id SearchResultsPerPage]
+    set results_per_page [ad_parameter -package_id $package_id SearchResultsPerPage -default 20]
 } else {
     set results_per_page $results_per_page
 }
 
-set limit [expr 1 * $results_per_page]
+set limit [expr 100 * $results_per_page]
 
 if {[lsearch im_document $type] >= 0} {
     ad_return_complaint 1 "<h3>Not implemented yet</h3>
