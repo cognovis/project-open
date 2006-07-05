@@ -143,32 +143,16 @@ element::create $form_id expense_currency \
 element::create $form_id vat_included \
     -datatype text \
     -widget text \
-    -html {size 10} \
-    -label "[_ intranet-expenses.Vat_Included]"
-    
-element::create $form_id expense_date \
-    -datatype text \
-    -widget select \
-    -options $currency_options \
-    -label "[_ intranet-expenses.Date]"
-
-element::create $form_id vat_included \
-    -datatype text \
-    -widget text \
     -html {size 6} \
     -label "[_ intranet-expenses.Vat_Included]"
-
 template::element::set_value $form_id vat_included 0
-
 
 element::create $form_id expense_date \
     -datatype date \
     -widget text \
-    -html {size 8} \
+    -html {size 10} \
     -label "[_ intranet-expenses.Expense_Date]"
-
 template::element::set_value $form_id expense_date $today
-
 
 element::create $form_id external_company_name \
     -datatype text \
