@@ -12,7 +12,7 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-    { employee_id:integer,optional }
+    employee_id:integer
     { return_url "/intranet-hr/index"}
     edit_p:optional
     message:optional
@@ -30,25 +30,18 @@ set today [db_string birthday_today "select to_char(sysdate,'YYYY-MM-DD') from d
 set date_format "YYYY-MM-DD"
 set end_century "2099-12-31"
 set internal_id [im_company_internal]
+set action_url "/intranet-hr/new"
+set focus "cost.var_name"
+set employee_name ""
+set form_mode "edit"
 
-if {![im_permission $user_id view_users]} {
+im_user_permissions $user_id $employee_id view read write admin
+if {!$write || ![im_permission $user_id view_hr]} {
     ad_return_complaint 1 "[_ intranet-hr.lt_You_have_insufficient]"
     return
 }
 
-set action_url "/intranet-hr/new"
-set focus "cost.var_name"
-set employee_name ""
-
-set form_mode "edit"
-
-if {[info exists employee_id]} {
-    set employee_name [db_string employee_name "select im_name_from_user_id(:employee_id) from dual"]
-    ns_log Notice "/intranet-hr/new/: employee_id=$employee_id"
-} else {
-    ns_log Notice "/intranet-hr/new/: employee_id doesn't exist"
-}
-
+set employee_name [db_string employee_name "select im_name_from_user_id(:employee_id) from dual"]
 set page_title "[_ intranet-hr.lt_Employee_Information_]"
 set context [im_context_bar $page_title]
 
