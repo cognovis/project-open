@@ -42,16 +42,6 @@ $ -->
   </fullquery>
 
 
-  <fullquery name="task_delete">
-    <querytext>
-    BEGIN
-        PERFORM im_task__delete (:task_id);
-        return 0;
-    END;
-    </querytext>
-  </fullquery>
-
-
   <fullquery name="task_update">
     <querytext>
         update im_timesheet_tasks set
@@ -70,45 +60,6 @@ $ -->
                 task_id = :task_id;
     </querytext>
   </fullquery>
-
-
-  <fullquery name="delete_timesheet_costs">
-    <querytext>
-
-      DECLARE
-         row RECORD;
-      BEGIN
-         for row in
-		select	cost_id
-		from	im_costs
-		where	cost_type_id = [im_cost_type_timesheet]
-			and project_id = :project_id
-			and effective_date = to_date(:julian_date, 'J')
-			and cause_object_id = :timesheet_task_id
-         loop
-                PERFORM im_cost__delete(row.cost_id);
-         end loop;
-         return 0;
-      END;
-
-    </querytext>
-  </fullquery>
-
-
-  <fullquery name="update_timesheet_task">
-    <querytext>
-
-	update im_projects
-	set reported_hours_cache = (
-		select	sum(h.hours)
-		from	im_hours h
-		where	h.project_id = :project_id
-	)
-	where project_id = :project_id
-
-    </querytext>
-  </fullquery>
-
 
 </queryset>
 
