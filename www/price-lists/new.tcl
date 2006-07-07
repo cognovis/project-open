@@ -24,18 +24,20 @@ ad_page_contract {
 # Default & Security
 # ------------------------------------------------------------------
 
-set user_id [ad_maybe_redirect_for_registration]
-set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
-if {!$user_is_admin_p} {
-    ad_return_complaint 1 "[_ intranet-timesheet2-invoices.lt_You_have_insufficient_1]"
-    return
-}
-
 set action_url "new"
 set focus "price.var_name"
 set page_title "[_ intranet-timesheet2-invoices.New_Price]"
 set context [im_context_bar $page_title]
 
+set user_id [ad_maybe_redirect_for_registration]
+
+# Check permissions. "See details" is an additional check for
+# critical information
+im_company_permissions $user_id $company_id view read write admin
+if {!$write || ![im_permission $user_id add_finance]} {
+    ad_return_complaint 1 "[_ intranet-timesheet2-invoices.lt_You_have_insufficient_1]"
+    return
+}
 
 if {"" == $currency} {
     set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
