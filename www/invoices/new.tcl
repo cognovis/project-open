@@ -112,31 +112,6 @@ if { [empty_string_p $how_many] || $how_many < 1 } {
 set end_idx [expr $start_idx + $how_many]
 
 
-# We don't need to show the select screen if only a single project
-# has been selected...
-if { ![empty_string_p $project_id] && $project_id != 0} {
-
-
-    if {$include_subprojects_p} {
-
-	# Just one project - forget about status and state
-	# Instead, we'll go for the subprojects
-	set project_status_id ""
-	set project_type_id ""
-
-    } else {
-	
-	# Just one project and no subproject - just go forward
-	set invoice_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
-	ad_returnredirect "/intranet-trans-invoices/invoices/new-2?select_project=$project_id&[export_url_vars target_cost_type_id invoice_currency]"
-	set page_body ""
-	return
-
-    }
-
-}
-
-
 
 # ---------------------------------------------------------------
 # 3. Defined Table Fields
@@ -171,10 +146,56 @@ db_foreach column_list_sql $column_sql {
 
 
 # ---------------------------------------------------------------
-# 5. Generate SQL Query
+#
 # ---------------------------------------------------------------
 
 set criteria [list]
+
+# We don't need to show the select screen if only a single project
+# has been selected...
+if { ![empty_string_p $project_id] && $project_id != 0} {
+
+
+    if {$include_subprojects_p} {
+
+	# Just one project - forget about status and state
+	# Instead, we'll go for the subprojects
+	set project_status_id ""
+	set project_type_id ""
+
+	# Restrict the search for tasks to the subprojects
+	# of the current project and the project itself
+	lappend criteria "
+		p.project_id in (
+		      select	children.project_id
+		      from	im_projects parent,
+				im_projects children
+		      where
+				children.tree_sortkey 
+					between parent.tree_sortkey 
+					and tree_right(parent.tree_sortkey)
+				and parent.project_id = :project_id
+		)
+	"
+
+    } else {
+	
+	# Just one project and no subproject - just go forward
+	set invoice_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+	ad_returnredirect "/intranet-trans-invoices/invoices/new-2?select_project=$project_id&[export_url_vars target_cost_type_id invoice_currency]"
+	set page_body ""
+	return
+
+    }
+
+}
+
+
+
+# ---------------------------------------------------------------
+# 5. Generate SQL Query
+# ---------------------------------------------------------------
+
 if { ![empty_string_p $project_status_id] && $project_status_id > 0 } {
     lappend criteria "p.project_status_id in (
 	select :project_status_id from dual
