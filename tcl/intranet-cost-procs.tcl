@@ -842,24 +842,31 @@ from
 			ci.cost_id in (
 		                select distinct cost_id
 		                from im_costs
-		                where project_id = :org_project_id
-			    UNION
-				select distinct cost_id 
-				from im_costs 
-				where parent_id = :org_project_id
-		            UNION
-		                select distinct object_id_two as cost_id
-		                from acs_rels
-		                where object_id_one = :org_project_id
+		                where project_id in (
+					select	children.project_id
+					from	im_projects parent,
+						im_projects children
+					where	children.tree_sortkey 
+							between parent.tree_sortkey 
+							and tree_right(parent.tree_sortkey)
+						and parent.project_id = :org_project_id
+				)
 			    UNION
 				select distinct object_id_two as cost_id
-				from acs_rels r, im_projects p
-				where object_id_one = p.project_id
-				      and p.parent_id = :org_project_id
+				from acs_rels
+				where object_id_one in (
+					select	children.project_id
+					from	im_projects parent,
+						im_projects children
+					where	children.tree_sortkey 
+							between parent.tree_sortkey 
+							and tree_right(parent.tree_sortkey)
+						and parent.project_id = :org_project_id
+				)
 			)
 	) ci on (cat.category_id = ci.cost_type_id)
 where
-        cat.category_id in (
+	cat.category_id in (
 		[im_cost_type_invoice],
 		[im_cost_type_quote],
 		[im_cost_type_bill],
@@ -871,10 +878,10 @@ where
 	and ci.currency is not null
 group by
 	ci.currency,
-        cat.category_id,
+	cat.category_id,
 	ci.cost_type_id
 order by
-        cat.category_id
+	cat.category_id
 "
 
     # ----------------- Initialize variables -------------
@@ -913,7 +920,6 @@ order by
     # Only get "real" costs (=invoices and bills) and ignore
     # quotes and purchase orders 
  
- 
     set costs_sql "
 select
 	ci.*,
@@ -925,8 +931,8 @@ select
 	cust.company_name as customer_name,
 	prov.company_name as provider_name,
 	url.url,
-        im_category_from_id(ci.cost_status_id) as cost_status,
-        im_category_from_id(ci.cost_type_id) as cost_type,
+	im_category_from_id(ci.cost_status_id) as cost_status,
+	im_category_from_id(ci.cost_type_id) as cost_type,
 	to_date(to_char(ci.effective_date,:date_format),:date_format) + ci.payment_days as calculated_due_date
 from
 	im_costs ci
@@ -934,27 +940,34 @@ from
 		LEFT OUTER JOIN im_companies cust on (ci.customer_id = cust.company_id)
 		LEFT OUTER JOIN im_companies prov on (ci.provider_id = prov.company_id),
 	acs_objects o,
-        (select * from im_biz_object_urls where url_type=:view_mode) url
+	(select * from im_biz_object_urls where url_type=:view_mode) url
 where
 	ci.cost_id = o.object_id
 	and o.object_type = url.object_type
 	and ci.cost_id in (
-		select distinct cost_id 
-		from im_costs 
-		where project_id = :org_project_id
-	    UNION
-		select distinct cost_id 
-		from im_costs 
-		where parent_id = :org_project_id
-	    UNION
-		select distinct object_id_two as cost_id
-		from acs_rels
-		where object_id_one = :org_project_id
-	    UNION
-		select distinct object_id_two as cost_id
-		from acs_rels r, im_projects p
-		where object_id_one = p.project_id
-		      and p.parent_id = :org_project_id
+		                select distinct cost_id
+		                from im_costs
+		                where project_id in (
+					select	children.project_id
+					from	im_projects parent,
+						im_projects children
+					where	children.tree_sortkey 
+							between parent.tree_sortkey 
+							and tree_right(parent.tree_sortkey)
+						and parent.project_id = :org_project_id
+				)
+			    UNION
+				select distinct object_id_two as cost_id
+				from acs_rels
+				where object_id_one in (
+					select	children.project_id
+					from	im_projects parent,
+						im_projects children
+					where	children.tree_sortkey 
+							between parent.tree_sortkey 
+							and tree_right(parent.tree_sortkey)
+						and parent.project_id = :org_project_id
+				)
 	)
 order by
 	ci.cost_type_id,
@@ -987,7 +1000,7 @@ order by
     set old_cost_type_id 0
     db_foreach recent_costs $costs_sql {
 
-        # Write an intermediate header for each project
+	# Write an intermediate header for each project
 	if {$project_nr != $old_project_nr} {
 
 #	    append cost_html "
@@ -998,9 +1011,9 @@ order by
 #		<tr class=rowplain><td colspan=99>&nbsp;</td></tr>\n"
 #	    set old_project_nr $project_nr
 
-        }
+	}
 
-        # Write the subtotal line of the last cost_type_id section
+	# Write the subtotal line of the last cost_type_id section
 	if {$cost_type_id != $old_cost_type_id} {
 	    foreach curcur [array names currencies] {
 		if {0 != $old_cost_type_id} {
@@ -1100,7 +1113,7 @@ order by
 			cost_expense_planned_cache = 0
 		where
 			project_id = :org_project_id
-            "
+	    "
 	} else {
 
 	    # We can't calculate a consistent sum because there is
@@ -1118,7 +1131,7 @@ order by
 			cost_expense_planned_cache = null
 		where
 			project_id = :org_project_id
-            "
+	    "
 	}
     }
 
@@ -1253,7 +1266,7 @@ order by
 	    append admin_html "	
 	  </td>
 	</tr>
-        </table>
+	</table>
 	"
     }
 
@@ -1285,7 +1298,7 @@ order by
 
     if {$show_details_p && $show_summary_p} {
 	# Summary in broad format
-        append result_html "
+	append result_html "
 	<br>
 	<table cellspacing=0 cellpadding=0>
 	<tr><td class=rowtitle colspan=3 align=center>[_ intranet-cost.Financial_Summary]</td></tr>
@@ -1304,7 +1317,7 @@ order by
 
     if {!$show_details_p && $show_summary_p} {
 	# Summary in narrow format
-        append result_html "
+	append result_html "
 	<br>
 	<table cellspacing=0 cellpadding=0 width=\"70%\" >
 	<tr>
@@ -1339,17 +1352,17 @@ ad_proc -public im_cost_type_select { select_name { default "" } { super_type_id
     set sql "
 	select	c.category_id,
 		c.category
-        from	im_categories c
-        where	c.category_type = :category_type"
+	from	im_categories c
+	where	c.category_type = :category_type"
 
     if {$super_type_id} {
-        ns_set put $bind_vars super_type_id $super_type_id
-        append sql "\n	and c.category_id in (
+	ns_set put $bind_vars super_type_id $super_type_id
+	append sql "\n	and c.category_id in (
 		select distinct
 			child_id
 		from	im_category_hierarchy
 		where	parent_id = :super_type_id
-        )"
+	)"
     }
     return [im_selection_to_select_box $bind_vars category_select $sql $select_name $default]
 }
@@ -1370,11 +1383,11 @@ ad_proc -public im_cost_status_select { {-translate_p 1}  select_name { default 
 
     foreach option $options {
 
-        if { $translate_p } {
-            set text [_ intranet-core.[lang::util::suggest_key [lindex $option 0]]]
-        } else {
-            set text [lindex $option 0]
-        }
+	if { $translate_p } {
+	    set text [_ intranet-core.[lang::util::suggest_key [lindex $option 0]]]
+	} else {
+	    set text [lindex $option 0]
+	}
 	
 	set selected ""
 	if { [string equal $default [lindex $option 1]]} {
@@ -1434,8 +1447,8 @@ where
     if { ![empty_string_p $exclude_status] } {
 	set exclude_string [im_append_list_to_ns_set $bind_vars cost_status_type $exclude_status]
 	append sql " and cost_status_id in (select cost_status_id 
-                                                  from im_cost_status 
-                                                 where cost_status not in ($exclude_string)) "
+						from im_cost_status 
+						where cost_status not in ($exclude_string)) "
     }
     append sql " order by lower(cost_name)"
     return [im_selection_to_select_box $bind_vars "cost_status_select" $sql $select_name $default]
