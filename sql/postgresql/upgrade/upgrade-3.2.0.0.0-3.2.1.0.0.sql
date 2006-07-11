@@ -4,6 +4,13 @@
 
 
 
+-------------------------------------------------------------
+-- Portrait Fields
+--
+alter table persons add portrait_checkdate date;
+alter table persons add portrait_file varchar(400);
+
+
 -- Helper functions to make our queries easier to read
 -- and to avoid outer joins with parent projects etc.
 create or replace function im_project_name_from_id (integer)
