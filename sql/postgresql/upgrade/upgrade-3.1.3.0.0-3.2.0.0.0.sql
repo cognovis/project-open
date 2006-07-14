@@ -42,11 +42,6 @@ BEGIN
     return 0;
 END;' language 'plpgsql';
 select inline_0 ();
-
-alter table im_timesheet_tasks
-add constraint im_timesheet_task_pk
-primary key(task_id);
-
 drop function inline_0 ();
 
 
