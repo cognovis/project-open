@@ -404,6 +404,14 @@ drop function inline_1();
 
 
 
+
+-- 060714 fraber: Function changes its type, so we have to
+-- delete first.
+-- However, there is no dependency on the function by any
+-- other PlPg/SQL function, so that should be OK without
+-- recompilation.
+drop function im_menu__name(integer);
+
 -- Returns the name of the menu
 create or replace function im_menu__name (integer) returns varchar as '
 DECLARE
