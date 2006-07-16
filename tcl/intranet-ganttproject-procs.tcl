@@ -186,9 +186,11 @@ ad_proc -public im_ganttproject_component {
 
     set user_id [ad_get_user_id]
     set thumbnail_size [parameter::get -package_id [im_package_ganttproject_id] -parameter "GanttProjectThumbnailSize" -default "360x360"]
+    ns_log Notice "im_ganttproject_component: thumbnail_size=$thumbnail_size"
 
     # This is the filename to look for in the toplevel folder
     set ganttproject_preview [parameter::get -package_id [im_package_ganttproject_id] -parameter "GanttProjectPreviewFilename" -default "ganttproject.preview"]
+    ns_log Notice "im_ganttproject_component: ganttproject_preview=$ganttproject_preview"
 
     # get the current users permissions for this project
     im_project_permissions $user_id $project_id view read write admin
@@ -212,6 +214,7 @@ ad_proc -public im_ganttproject_component {
 	if {[regexp "^$ganttproject_preview\.$thumbnail_size\....\$" $rel_path match]} { set thumb $rel_path}
 	if {[regexp "^$ganttproject_preview\....\$" $rel_path match]} { set full $rel_path}
     }
+    ns_log Notice "im_ganttproject_component: thumb=$thumb, full=$full"
 
     # Include the thumbnail in the project's view
     set img ""
