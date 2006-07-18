@@ -6,10 +6,32 @@
 -- of timesheet-tasks in for logging hours. Now
 -- timesheet-tasks are a subclass of im_project.
 
+-- Remove the timesheet_task_id constraint (leave 
+-- the field for compatibility) from im_hours
+-- This field is not necessary anymore, as timesheet_tasks
+-- are now a subtype of project.
+
+-- drop the primary key, because the primary key
+-- can contain the timesheet_task_id:
+--
+alter table im_hours
+drop constraint im_hours_pkey;
+
 -- copy the timesheet_task column to projects 
--- and drop the column
--- update im_hours set project_id = timesheet_task_id;
--- alter table im_hours drop timesheet_task_id;
+--
+update im_hours set project_id = timesheet_task_id
+where timesheet_task_id is not null;
+
+-- drop the timesheet_task_id column
+--
+alter table im_hours drop timesheet_task_id;
+
+-- Add a new primary key composed by the project_id
+-- and the user_id only:
+alter table im_hours 
+add primary key (user_id, project_id, day);
+
+
 
 
 -- Recreate the indices. 
@@ -94,5 +116,6 @@ BEGIN
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
 
 
