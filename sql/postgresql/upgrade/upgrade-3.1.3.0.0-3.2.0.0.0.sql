@@ -210,11 +210,15 @@ BEGIN
     return 0;
 END;' language 'plpgsql';
 select im_trans_tasks2objects ();
-# drop function im_trans_tasks2objects ();
+drop function im_trans_tasks2objects ();
 
 
 --------------------------------------------
 -- Add the constraint on im_trans_tasks.task_id again
+
+-- ToDo: Does this really make sense or was it 
+-- an error? Reference the table itself?
+
 alter table im_trans_tasks
 add constraint im_task_action_task_fk
 foreign key (task_id) references im_trans_tasks;
