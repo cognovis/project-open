@@ -47,9 +47,6 @@ create table im_expenses (
 				primary key
 				constraint im_expense_id_fk
 				references im_costs,
-	vat_included		numeric(6,3)
-				constraint im_expenses_vat_included_ck
-				check (vat_included >=0 and vat_included <= 100),
 	external_company_name   varchar(400),
 	receipt_reference       varchar(100),
 	expense_type_id    	integer
