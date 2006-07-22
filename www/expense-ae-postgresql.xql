@@ -12,7 +12,7 @@
                 :user_id,			-- creation_user
                 '[ad_conn peeraddr]',		-- creation_ip
 		null,				-- context_id
-		'NEW EXPENSE',         		-- expense_name
+		:expense_name,         		-- expense_name
         	:project_id,            	-- project_id
         	:expense_date,          	-- expense_date now()
         	:currency,			-- expense_currency default ''EUR''

@@ -41,7 +41,7 @@ foreach id $expense_id {
     db_1row "get expense info" "select
            amount, 
            currency, 
-           vat_included, 
+           vat, 
 	   external_company_name,
 	receipt_reference,
 	invoice_id,
@@ -53,7 +53,7 @@ foreach id $expense_id {
         and invoice_id is null"
 
     set amount_before_vat [expr $amount_before_vat + $amount]
-    set total_amount [expr $total_amount + [expr $amount * [expr 1 + [expr $vat_included / 100.0]]]]
+    set total_amount [expr $total_amount + [expr $amount * [expr 1 + [expr $vat / 100.0]]]]
     lappend expenses_list $id
 }
 

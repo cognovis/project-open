@@ -221,12 +221,14 @@ ad_form -extend -name $form_id -on_request {
 } -new_data {
 
     set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
+    set expense_name $expense_id
     
     db_exec_plsql create_expense {}
     
 } -edit_data {
 
     set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
+    set expense_name $expense_id
 
     # Update the invoice itself
     db_dml update_expense "
@@ -246,7 +248,7 @@ ad_form -extend -name $form_id -on_request {
 	update im_costs
 	set
 		project_id	= :project_id,
-		cost_name	= :expense_id,
+		cost_name	= :expense_name,
 		customer_id	= :customer_id,
 		cost_nr		= :expense_id,
 	        cost_type_id    = :cost_type_id,

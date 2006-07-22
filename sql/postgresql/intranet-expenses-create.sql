@@ -158,7 +158,7 @@ declare
 		null,			-- investment_id
 
 		p_expense_status_id,	-- cost_status_id
-		p_expense_type_id,	-- cost_type_id
+		p_cost_type_id,		-- cost_type_id
 		p_expense_template_id,	-- template_id
 
 		p_expense_date,		-- effective_date
