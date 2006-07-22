@@ -47,9 +47,10 @@ create table im_expenses (
 				primary key
 				constraint im_expense_id_fk
 				references im_costs,
-	external_company_name   varchar(400),
-	receipt_reference       varchar(100),
-	expense_type_id    	integer
+	external_company_name	varchar(400),
+	external_company_vat_number	varchar(50),
+	receipt_reference	varchar(100),
+	expense_type_id		integer
 				constraint im_expense_type_fk
 				references im_categories,
 	invoice_id		integer
@@ -103,7 +104,7 @@ create or replace function im_expense__new (
 	varchar, integer, varchar, integer,
 	timestamptz, char(3), integer, integer,
 	integer, integer, numeric, numeric,
-	numeric, varchar, numeric, varchar,
+	numeric, varchar, varchar, varchar,
 	varchar, integer, char(1), numeric,
 	integer, integer, integer
 ) returns integer as '
@@ -129,8 +130,8 @@ declare
 	p_tax			alias for $17;	-- tax default 0
 	p_note			alias for $18;	-- note
 	
-	p_vat_included		alias for $19;	-- vat included
-	p_external_company_name alias for $20;	-- hotel name, taxi, ...
+	p_external_company_name alias for $19;	-- hotel name, taxi, ...
+	p_external_company_vat_number alias for $20;	-- hotel name, taxi, ...
 	p_receipt_reference	alias for $21;	-- receipt reference
 	p_expense_type_id	alias for $22;	-- expense type default null
 	p_billable_p		alias for $23;	-- is billable to client 
@@ -164,7 +165,7 @@ declare
 		p_payment_days,		-- payment_days
 		p_amount,		-- amount
 		p_expense_currency,     -- currency
-		p_vat,			-- vat
+		p_vat,			-- v
 		p_tax,			-- tax
 
 		''f'',			-- variable_cost_p
@@ -179,7 +180,6 @@ declare
 
 	insert into im_expenses (
 		expense_id,
-		vat_included,
 		external_company_name,
 		receipt_reference,
 		expense_type_id,
@@ -188,7 +188,6 @@ declare
 		expense_payment_type_id
 	) values (
 		v_expense_id,
-		p_vat_included,
 		p_external_company_name,
 		p_receipt_reference,
 		p_expense_type_id,

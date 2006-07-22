@@ -15,17 +15,17 @@
 		'NEW EXPENSE',         		-- expense_name
         	:project_id,            	-- project_id
         	:expense_date,          	-- expense_date now()
-        	'EUR',		        	-- expense_currency default ''EUR''
+        	:currency,			-- expense_currency default ''EUR''
         	null,		        	-- expense_template_id default null
         	:cost_status,			-- expense_status_id default 3802
         	:cost_type_id,			-- expense_type_id default 3720
         	30,		        	-- payment_days default 30
 		:amount,        		-- amount
-		0,	                	-- vat default 0
+		:vat,	                	-- vat default 0
 		0,		        	-- tax default 0
-		'',	                	-- note
-		:vat_included,			-- vat included
+		:note,				-- note
 		:external_company_name,		-- hotel name, taxi, ...
+		:external_company_vat_number,	-- vat number
 		:receipt_reference,		-- receip reference
 		:expense_type_id,		-- expense type default null
 		:billable_p,			-- is billable to client 
@@ -36,6 +36,8 @@
             )
         </querytext>
 </fullquery>
+
+
 <fullquery name="__create_rel">
     <querytext>
 
