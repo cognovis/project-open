@@ -37,20 +37,12 @@ if {![im_permission $user_id "add_expenses"]} {
 }
 
 set today [lindex [split [ns_localsqltimestamp] " "] 0]
-set action_url "new"
 set page_title [lang::message::lookup "" intranet-expenses.New_Expense "New Expense Item"]
 set context_bar [im_context_bar $page_title]
 set date_format "YYYY-MM-DD"
 set currency_format "FM9999999999999.90"
 set percent_format "FM999"
-
-set action_url "/intranet-expenses/expenses-ae"
-
-
-
-if {"" != $project_id} {
-    append return_url "index?[export_vars -url project_id]"
-}
+set action_url "/intranet-expenses/expense-ae"
 
 
 # ------------------------------------------------------------------
@@ -110,6 +102,7 @@ set expense_payment_type_options [linsert $expense_payment_type_options 0 [list 
 # Form defaults
 # ------------------------------------------------------------------
 
+# Default variables for "costs" (not really applicable)
 set customer_id [im_company_internal]
 set provider_id $user_id
 set template_id ""
@@ -118,22 +111,17 @@ set cost_status [im_cost_status_created]
 set cost_type_id [im_cost_type_expense_item]
 set tax "0"
 
+if {![info exists reimbursable]} { set reimbursable 100 }
+if {![info exists expense_date]} { set expense_date $today }
+if {![info exists billable_p]} { set billable_p "f" }
 
-# if {"" == $reimbursable_value} {
-#     template::element::set_value $form_id reimbursable "100"
-# }
+if {![info exists expense_payment_type_id]} { 
+    set expense_payment_type_id [im_expense_payment_type_cash]
+}
 
-
-# !!! set expense_date_value [template::element::get_value $form_id expense_date]
-# if {"" == $expense_date_value} {
-#     template::element::set_value $form_id expense_date $today
-# }
-
-# set expense_payment_type_value [template::element::get_value $form_id expense_payment_type_id]
-# if {"" == $expense_payment_type_value} {
-#     template::element::set_value $form_id expense_payment_type_id [im_expense_payment_type_cash]
-# }
-
+if {![info exists currency]} { 
+    set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"] 
+}
 
 
 # ------------------------------------------------------------------
@@ -151,20 +139,20 @@ ad_form \
     -export {customer_id provider_id template_id payment_days cost_status cost_type_id tax return_url} \
     -form {
         expense_id:key
-        {project_id:text(select) 
+        {project_id:text(select),optional
 	    {label "[lang::message::lookup {} intranet-expenses.Project Project]" } 
 	    {options $project_options}
 	}
 	{expense_amount:text(text) {label "[_ intranet-expenses.Amount]"} {html {size 10}}}
-	{expense_currency:text(select) 
+	{currency:text(select) 
 	    {label "[_ intranet-expenses.Currency]"}
 	    {options $currency_options} 
 	}
-	{vat_included:text(text) {label "[_ intranet-expenses.Vat_Included]"} {html {size 6}}}
+	{vat:text(text) {label "[_ intranet-expenses.Vat_Included]"} {html {size 6}}}
 	{expense_date:text(text) {label "[_ intranet-expenses.Expense_Date]"} {html {size 10}}}
 	{external_company_name:text(text) {label "[_ intranet-expenses.External_company_name]"} {html {size 40}}}
-	{external_company_vatnr:text(text) {label "[_ intranet-expenses.External_Company_VatNr]"} {html {size 20}}}
-	{receipt_reference:text(text) {label "[_ intranet-expenses.Receipt_reference]"} {html {size 40}}}
+	{external_company_vat_number:text(text),optional {label "[_ intranet-expenses.External_Company_VatNr]"} {html {size 20}}}
+	{receipt_reference:text(text),optional {label "[_ intranet-expenses.Receipt_reference]"} {html {size 40}}}
 	{expense_type_id:text(select) 
 	    {label "[_ intranet-expenses.Expense_Type]"}
 	    {options $expense_type_options} 
@@ -180,9 +168,9 @@ ad_form \
 
 
 #    check conditions
-#    if {![empty_string_p $vat_included]} {
-#        if {0>$vat_included || 100<$vat_included} {
-#            template::element::set_error $form_id vat_included "[_ intranet-expenses.vat_included_not_valid]"
+#    if {![empty_string_p $vat]} {
+#        if {0>$vat || 100<$vat} {
+#            template::element::set_error $form_id vat "[_ intranet-expenses.vat_not_valid]"
 #            incr n_errors
 #        }
 #    }
@@ -219,10 +207,12 @@ ad_form -extend -name $form_id -on_request {
 } -select_query {
     
 	select	*,
-		to_char(c.amount * (1 + e.vat_included / 100), :currency_format) as expense_amount,
+		to_char(c.amount * (1 + c.vat / 100), :currency_format) as expense_amount,
 		to_char(c.effective_date, :date_format) as expense_date,
-		to_char(e.vat_included, :percent_format) as vat_included
-	from	im_costs c,
+		to_char(c.vat, :percent_format) as vat,
+		to_char(e.reimbursable, :percent_format) as reimbursable
+	from
+		im_costs c,
 		im_expenses e
 	where
 		c.cost_id = e.expense_id
@@ -230,19 +220,20 @@ ad_form -extend -name $form_id -on_request {
 
 } -new_data {
 
-    set amount [expr $expense_amount / [expr 1 + [expr $vat_included / 100.0]]]
+    set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
     
     db_exec_plsql create_expense {}
     
 } -edit_data {
 
-    set amount [expr $expense_amount / [expr 1 + [expr $vat_included / 100.0]]]
+    set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
 
     # Update the invoice itself
     db_dml update_expense "
 	update im_expenses 
 	set 
 	        external_company_name = :external_company_name,
+	        external_company_vat_number = :external_company_vat_number,
 	        receipt_reference = :receipt_reference,
 	        billable_p = :billable_p,
 	        reimbursable = :reimbursable,
@@ -261,13 +252,13 @@ ad_form -extend -name $form_id -on_request {
 	        cost_type_id    = :cost_type_id,
 		provider_id	= :provider_id,
 		template_id	= :template_id,
-		effective_date	= to_timestamp('YYYY-MM-DD', :expense_date),
+		effective_date	= to_timestamp(:expense_date, 'YYYY-MM-DD'),
 		payment_days	= :payment_days,
-		vat		= :vat_included,
+		vat		= :vat,
 		tax		= :tax,
 		variable_cost_p = 't',
 		amount		= :amount,
-		currency	= :expense_currency,
+		currency	= :currency,
 		note		= :note
 	where
 		cost_id = :expense_id
