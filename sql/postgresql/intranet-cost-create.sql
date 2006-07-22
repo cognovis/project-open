@@ -627,13 +627,59 @@ create index im_costs_cause_object_idx on im_costs(cause_object_id);
 create index im_costs_start_block_idx on im_costs(start_block);
 
 
+
+-------------------------------------------------------------
+-- Audit for im_costs
+-- (not active yet)
+
+
+create table im_costs_audit (
+	cost_id			integer primary key,
+	cost_name		varchar(400),
+	cost_nr			varchar(400),
+	project_id		integer,
+	customer_id		integer,
+	cost_center_id		integer,
+	provider_id		integer,
+	investment_id		integer,
+	cost_status_id		integer,
+	cost_type_id		integer,
+	cause_object_id		integer,
+	template_id		integer,
+	effective_date		timestamptz,
+	start_block		timestamptz,
+	payment_days		integer,
+	amount			numeric(12,3),
+	currency		char(3),
+	paid_amount		numeric(12,3),
+	paid_currency		char(3),
+	vat			numeric(12,5),
+	tax			numeric(12,5),
+	variable_cost_p		char(1),
+	needs_redistribution_p	char(1),
+	parent_id		integer,
+	redistributed_p		char(1),
+	planning_p		char(1),
+	planning_type_id	integer,
+	description		varchar(4000),
+	note			varchar(4000),
+
+	last_modified		timestamptz,
+	modifying_user		integer,
+	modifying_ip		varchar(50)
+);
+
+
+
+
+
 -------------------------------------------------------------
 -- Cost Object Packages
 --
 
 -- create or replace package body im_cost
 -- is
- create or replace function im_cost__new (
+create or replace function im_cost__new (
        integer,
        varchar,
        timestamptz,
