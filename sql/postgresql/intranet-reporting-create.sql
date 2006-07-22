@@ -418,7 +418,7 @@ BEGIN
         null,                   -- context_id
         ''intranet-reporting'', -- package_name
         ''reporting-finance-quotes-pos'',          -- label
-        ''Finance Quotes & POs'',          -- name
+        ''Finance Documents and their projects'',          -- name
         ''/intranet-reporting/finance-quotes-pos'', -- url
         30,                    -- sort_order
         v_main_menu,            -- parent_menu_id
@@ -525,7 +525,7 @@ BEGIN
         null,                   -- context_id
         ''intranet-reporting'', -- package_name
         ''reporting-finance-projects-documents'',          -- label
-        ''Finance Projects & Documents'',          -- name
+        ''Finance Projects and their documents'',          -- name
         ''/intranet-reporting/finance-projects-documents'', -- url
         50,                    -- sort_order
         v_main_menu,            -- parent_menu_id

@@ -14,7 +14,6 @@ ad_page_contract {
     { start_date "" }
     { end_date "" }
     { level_of_detail 2 }
-    project_id:integer,optional
     customer_id:integer,optional
 }
 
@@ -52,7 +51,6 @@ set cur_format "999,999,999.09"
 set date_format "YYYY-MM-DD"
 
 set company_url "/intranet/companies/view?company_id="
-set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 set user_url "/intranet/users/view?user_id="
 set this_url [export_vars -base "/intranet-reporting/finance-income-statement" {start_date end_date} ]
@@ -66,7 +64,7 @@ set start_years {2000 2000 2001 2001 2002 2002 2003 2003 2004 2004 2005 2005 200
 set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep 10 Oct 11 Nov 12 Dec}
 set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
 set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
-set levels {1 "Customer Only" 2 "Customer+Project" 3 "All Details"} 
+set levels {1 "Sections Only" 2 "Sections+Customers" 3 "All Details"} 
 
 
 
@@ -97,7 +95,7 @@ set context ""
 set help_text "
 <strong>Income Statement:</strong><br>
 
-This report provides a basic income statement to be use for 
+This report provides a basic income statement to be used for 
 quarterly financial reporting.
 
 All financial items are considerted with effective_date 
@@ -153,21 +151,7 @@ if {"" == $end_date} {
 set criteria [list]
 
 if {[info exists customer_id]} {
-    lappend criteria "pcust.company_id = :customer_id"
-}
-
-# Select project & subprojects
-if {[info exists project_id]} {
-    lappend criteria "p.project_id in (
-	select
-		p.project_id
-	from
-		im_projects p,
-		im_projects parent_p
-	where
-		parent_p.project_id = :project_id
-		and p.tree_sortkey between parent_p.tree_sortkey and tree_right(parent_p.tree_sortkey)
-    )"
+    lappend criteria "cust.company_id = :customer_id"
 }
 
 set where_clause [join $criteria " and\n            "]
@@ -203,8 +187,7 @@ select
 	  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
 	  , 2) as amount_converted,
 	c.amount,
-	c.currency,
-	r.object_id_one as project_id
+	c.currency
 from
 	im_costs c
 	LEFT OUTER JOIN acs_rels r on (c.cost_id = r.object_id_two)
@@ -215,6 +198,13 @@ where
 	and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
 "
 
+set expense_select ", '' as external_company_name"
+set expense_from ""
+set expense_where ""
+if {[db_table_exists im_expenses]} {
+    set expense_select ", e.external_company_name"
+    set expense_from "LEFT OUTER JOIN im_expenses e on (c.cost_id = e.expense_id)"
+}
 
 set sql "
 select
@@ -228,11 +218,11 @@ select
 	cust.company_name as customer_name,
 	prov.company_path as provider_nr,
 	prov.company_name as provider_name,
-	CASE WHEN c.cost_type_id = 3700 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
+	CASE WHEN c.cost_type_id = 3700 THEN to_char(c.amount, :cur_format)
 	END as invoice_amount_pretty,
-	CASE WHEN c.cost_type_id = 3704 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
+	CASE WHEN c.cost_type_id = 3704 THEN to_char(c.amount, :cur_format)
 	END as bill_amount_pretty,
-	CASE WHEN c.cost_type_id = 3720 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
+	CASE WHEN c.cost_type_id = 3720 THEN to_char(c.amount, :cur_format)
 	END as expense_amount_pretty,
 
 	CASE
@@ -247,70 +237,100 @@ select
 		ELSE 0
 	END as tax_amount,
 
-	to_char(c.amount_converted * vat / 100, :cur_format) || ' ' || c.currency as vat_amount_pretty,
-	to_char(c.amount_converted * tax / 100, :cur_format) || ' ' || c.currency as tax_amount_pretty,
-	to_char(c.paid_amount, :cur_format) || ' ' || c.paid_currency as paid_amount_pretty,
-	p.project_name,
-	p.project_nr,
-	pcust.company_id as project_customer_id,
-	pcust.company_name as project_customer_name
+	CASE
+		WHEN c.cost_type_id in (3700) THEN to_char(c.amount_converted * vat / 100, :cur_format)
+		WHEN c.cost_type_id in (3704,3720,3720) THEN to_char(-c.amount_converted * vat / 100, :cur_format)
+		ELSE ''
+	END as vat_amount_pretty,
+
+	CASE
+		WHEN c.cost_type_id in (3700) THEN to_char(c.amount_converted * tax / 100, :cur_format)
+		WHEN c.cost_type_id in (3704,3720,3720) THEN to_char(-c.amount_converted * tax / 100, :cur_format)
+		ELSE ''
+	END as tax_amount_pretty,
+
+	to_char(c.paid_amount, :cur_format) as paid_amount_pretty,
+	cust.company_id as customer_id,
+	cust.company_name as customer_name,
+	im_category_from_id(c.cost_type_id) as cost_type
+	$expense_select
 from
 	($inner_sql) c
-	LEFT OUTER JOIN im_projects p on (c.project_id = p.project_id)
 	LEFT OUTER JOIN im_companies cust on (c.customer_id = cust.company_id)
 	LEFT OUTER JOIN im_companies prov on (c.provider_id = prov.company_id)
-	LEFT OUTER JOIN im_companies pcust on (p.company_id = pcust.company_id)
+	$expense_from
 where
 	1 = 1
 	$where_clause
+	$expense_where
 order by
-	pcust.company_name,
-	p.project_name
+	c.cost_type_id,
+	c.customer_id, 
+	c.provider_id
 "
 
-
 set report_def [list \
-    group_by project_customer_id \
+    group_by cost_type_id \
     header {
-	"\#colspan=10 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4 
-	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
-	<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
+	"\#colspan=10 
+	<b>$cost_type</b>"
     } \
         content [list \
-            group_by project_id \
-            header { } \
+            group_by customer_id \
+            header { 
+		"" 
+		"<a href=$this_url&customer_id=$customer_id&level_of_detail=4 
+		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
+		<b><a href=$company_url$customer_id>$customer_name</a></b>"
+		"" 
+		""
+		""
+		""
+		""
+		""
+		""
+		""
+	    } \
 	    content [list \
 		    header {
 			""
-			""
+			"<nobr>$company_html</nobr>"
 			"<nobr>$effective_date_formatted</nobr>"
-			"<nobr>$paid_amount $paid_currency</nobr>"
+			"<nobr>$paid_amount</nobr>"
 			"<nobr><a href=$invoice_url$cost_id>$cost_name</a></nobr>"
 			"<nobr>$invoice_amount_pretty</nobr>"
 			"<nobr>$bill_amount_pretty</nobr>"
 			"<nobr>$expense_amount_pretty</nobr>"
 			"<nobr>$vat_amount_pretty</nobr>"
 			"<nobr>$tax_amount_pretty</nobr>"
-			""
 		    } \
 		    content {} \
 	    ] \
             footer {
-		"" 
-		"<a href=$this_url&project_id=$project_id&level_of_detail=4 
-		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
-		<b><a href=$project_url$project_id>$project_name</a></b>"
-		"" 
+		"&nbsp;"
 		""
 		""
-		"<i>$invoice_subtotal $default_currency</i>" 
-		"<i>$bill_subtotal $default_currency</i>" 
-		"<i>$expense_subtotal $default_currency</i>"
-		"<i>$vat_subtotal $default_currency</i>"
-		"<i>$tax_subtotal $default_currency</i>"
+		""
+		""
+		""
+		""
+		""
+		""
+		""
             } \
     ] \
-    footer {  } \
+    footer {  
+		""
+		""
+		"" 
+		"<i>$paid_subtotal</i>"
+		""
+		"<i>$invoice_subtotal</i>" 
+		"<i>$bill_subtotal</i>" 
+		"<i>$expense_subtotal</i>"
+		"<i>$vat_subtotal</i>"
+		"<i>$tax_subtotal</i>"
+    } \
 ]
 
 set invoice_total 0
@@ -324,54 +344,68 @@ set footer0 {
 	"" 
 	"" 
 	"<br><b>Total:</b>" 
-	"<br><b>$invoice_total $default_currency</b>" 
-	"<br><b>$bill_total $default_currency</b>" 
-	"<br><b>$expense_total $default_currency</b>"
-	"<br><b>$vat_total $default_currency</b>"
-	"<br><b>$tax_total $default_currency</b>"
+	"<br><b>$invoice_total</b>" 
+	"<br><b>$bill_total</b>" 
+	"<br><b>$expense_total</b>"
+	"<br><b>$vat_total</b>"
+	"<br><b>$tax_total</b>"
 }
 
 #
 # Subtotal Counters (per project)
 #
+set paid_subtotal_counter [list \
+        pretty_name "Paid Amount" \
+        var paid_subtotal \
+        reset \$cost_type_id \
+        expr "\$paid_amount+0" \
+]
+
 set invoice_subtotal_counter [list \
         pretty_name "Invoice Amount" \
         var invoice_subtotal \
-        reset \$project_id \
+        reset \$cost_type_id \
         expr "\$invoice_amount+0" \
 ]
 
 set bill_subtotal_counter [list \
         pretty_name "Bill Amount" \
         var bill_subtotal \
-        reset \$project_id \
+        reset \$cost_type_id \
         expr "\$bill_amount+0" \
 ]
 
 set expense_subtotal_counter [list \
         pretty_name "Expence Amount" \
         var expense_subtotal \
-        reset \$project_id \
+        reset \$cost_type_id \
         expr "\$expense_amount+0" \
 ]
 
 set vat_subtotal_counter [list \
         pretty_name "VAT Amount" \
         var vat_subtotal \
-        reset \$project_id \
+        reset \$cost_type_id \
         expr "\$vat_amount+0" \
 ]
 
 set tax_subtotal_counter [list \
         pretty_name "Tax Amount" \
         var tax_subtotal \
-        reset \$project_id \
+        reset \$cost_type_id \
         expr "\$tax_amount+0" \
 ]
 
 #
 # Grand Total Counters
 #
+set paid_grand_total_counter [list \
+        pretty_name "Paid Amount" \
+        var paid_total \
+        reset 0 \
+        expr "\$paid_amount+0" \
+]
+
 set invoice_grand_total_counter [list \
         pretty_name "Invoice Amount" \
         var invoice_total \
@@ -411,11 +445,13 @@ set tax_grand_total_counter [list \
 
 
 set counters [list \
+	$paid_subtotal_counter \
 	$invoice_subtotal_counter \
 	$bill_subtotal_counter \
 	$expense_subtotal_counter \
 	$vat_subtotal_counter \
 	$tax_subtotal_counter \
+	$paid_grand_total_counter \
 	$invoice_grand_total_counter \
 	$bill_grand_total_counter \
 	$expense_grand_total_counter \
@@ -495,9 +531,18 @@ ns_log Notice "intranet-reporting/finance-income-statement: sql=\n$sql"
 
 db_foreach sql $sql {
 
-	if {"" == $project_id} {
-	    set project_id 0
-	    set project_name "No Project"
+	if {"" == $customer_id} {
+	    set customer_id 0
+	    set customer_name "No Customer"
+	}
+
+	# Get the "interesting" company (the one that is NOT "internal")
+	set company_html "<a href=$company_url$customer_id>$customer_name</a>"
+	if {$customer_id == [im_company_internal]} {
+	    set company_html "<a href=$company_url$provider_id>$provider_name</a>"
+	}
+	if {$cost_type_id == [im_cost_type_expense_item]} {
+	    set company_html $external_company_name
 	}
 
 	im_report_display_footer \
