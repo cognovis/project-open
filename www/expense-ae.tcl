@@ -41,18 +41,17 @@ set action_url "new"
 set page_title [lang::message::lookup "" intranet-expenses.New_Expense "New Expense Item"]
 set context_bar [im_context_bar $page_title]
 set date_format "YYYY-MM-DD"
+set currency_format "FM9999999999999.90"
+set percent_format "FM999"
 
 set action_url "/intranet-expenses/expenses-ae"
+
 
 
 if {"" != $project_id} {
     append return_url "index?[export_vars -url project_id]"
 }
 
-
-if {![exists_and_not_null currency]} {
-    set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
-}
 
 # ------------------------------------------------------------------
 # Form Options
@@ -111,6 +110,14 @@ set expense_payment_type_options [linsert $expense_payment_type_options 0 [list 
 # Form defaults
 # ------------------------------------------------------------------
 
+set customer_id [im_company_internal]
+set provider_id $user_id
+set template_id ""
+set payment_days "30"
+set cost_status [im_cost_status_created]
+set cost_type_id [im_cost_type_expense_item]
+set tax "0"
+
 
 # if {"" == $reimbursable_value} {
 #     template::element::set_value $form_id reimbursable "100"
@@ -141,7 +148,7 @@ ad_form \
     -cancel_url $return_url \
     -action $action_url \
     -mode $form_mode \
-    -export {return_url} \
+    -export {customer_id provider_id template_id payment_days cost_status cost_type_id tax return_url} \
     -form {
         expense_id:key
         {project_id:text(select) 
@@ -153,7 +160,7 @@ ad_form \
 	    {label "[_ intranet-expenses.Currency]"}
 	    {options $currency_options} 
 	}
-	{vat_included:text(text) {label "[_ intranet-expenses.Vat_Included]"} {html {size 60}}}
+	{vat_included:text(text) {label "[_ intranet-expenses.Vat_Included]"} {html {size 6}}}
 	{expense_date:text(text) {label "[_ intranet-expenses.Expense_Date]"} {html {size 10}}}
 	{external_company_name:text(text) {label "[_ intranet-expenses.External_company_name]"} {html {size 40}}}
 	{external_company_vatnr:text(text) {label "[_ intranet-expenses.External_Company_VatNr]"} {html {size 20}}}
@@ -168,9 +175,8 @@ ad_form \
 	    {label "[_ intranet-expenses.Expense_Payment_Type]"}
 	    {options $expense_payment_type_options} 
 	}
-        {note:text(textarea),optional {label "[_ intranet-expenses.Note]"} {html {cols 40}}}
+        {note:text(textarea),optional {label "[lang::message::lookup {} intranet-expenses.Note Note]"} {html {cols 40}}}
     }
-
 
 
 #    check conditions
@@ -207,117 +213,76 @@ set expense_id_exists [exists_and_not_null expense_id]
 # ------------------------------------------------------------------
 
 ad_form -extend -name $form_id -on_request {
-    # Populate elements from local variables
-} 
 
-ad_form -extend -name $form_id -select_query {
+    # Populate elements from local variables
+
+} -select_query {
     
 	select	*,
-		to_char(c.effective_date, :date_format) as expense_date
+		to_char(c.amount * (1 + e.vat_included / 100), :currency_format) as expense_amount,
+		to_char(c.effective_date, :date_format) as expense_date,
+		to_char(e.vat_included, :percent_format) as vat_included
 	from	im_costs c,
 		im_expenses e
 	where
-		c.cost_id = :expense_id
-		and c.cost_id = e.expense_id
+		c.cost_id = e.expense_id
+		and c.cost_id = :expense_id
 
-}
+} -new_data {
 
-# Reconstruct the amount from the fractioned amount
-# including VAT
-# !!! set expense_amount [format %.2f [expr $amount * [expr 1 + [expr $vat_included / 100]]]]
-
-
-ad_form -extend -name $form_id -new_data {
+    set amount [expr $expense_amount / [expr 1 + [expr $vat_included / 100.0]]]
     
-    db_exec_plsql cost_center_insert {}
+    db_exec_plsql create_expense {}
     
-} 
-
-
-ad_form -extend -name $form_id -edit_data {
-    
-    db_dml cost_center_update "
-        update im_cost_centers set
-                cost_center_name        = :cost_center_name,
-                cost_center_label       = :cost_center_label,
-                cost_center_code        = :cost_center_code,
-                cost_center_type_id     = :cost_center_type_id,
-                cost_center_status_id   = :cost_center_status_id,
-                department_p            = :department_p,
-                parent_id               = :parent_id,
-                manager_id              = :manager_id,
-                description             = :description
-        where
-                cost_center_id = :cost_center_id
-"
-
-
-    # temp vars
-    set expense_name "$expense_id"
-    set customer_id "[im_company_internal]"
-    set cost_nr ""
-    set provider_id "$user_id"
-    set template_id ""
-    set payment_days "30"
-    set cost_status [im_cost_status_created]
-    set cost_type_id [im_cost_type_expense_item]
-    set tax "0"
+} -edit_data {
 
     set amount [expr $expense_amount / [expr 1 + [expr $vat_included / 100.0]]]
 
-    if {![exists_and_not_null expense_id]} {
-	# Let's create the new expense
-	set expense_id [db_exec_plsql create_expense ""]
-    }
- 
     # Update the invoice itself
     db_dml update_expense "
-update im_expenses 
-set 
-        external_company_name = :external_company_name,
-        receipt_reference = :receipt_reference,
-        billable_p = :billable_p,
-        reimbursable = :reimbursable,
-        expense_payment_type_id = :expense_payment_type_id
-where
-	expense_id = :expense_id
-"
+	update im_expenses 
+	set 
+	        external_company_name = :external_company_name,
+	        receipt_reference = :receipt_reference,
+	        billable_p = :billable_p,
+	        reimbursable = :reimbursable,
+	        expense_payment_type_id = :expense_payment_type_id
+	where
+		expense_id = :expense_id
+    "
 
     db_dml update_costs "
-update im_costs
-set
-	project_id	= :project_id,
-	cost_name	= :expense_id,
-	customer_id	= :customer_id,
-	cost_nr		= :expense_id,
-        cost_type_id    = :cost_type_id,
-	provider_id	= :provider_id,
-	template_id	= :template_id,
-	effective_date	= to_timestamp('YYYY-MM-DD', :expense_date),
-	payment_days	= :payment_days,
-	vat		= :vat_included,
-	tax		= :tax,
-	variable_cost_p = 't',
-	amount		= :amount,
-	currency	= :expense_currency,
-	note		= :note
-where
-	cost_id = :expense_id
-"
+	update im_costs
+	set
+		project_id	= :project_id,
+		cost_name	= :expense_id,
+		customer_id	= :customer_id,
+		cost_nr		= :expense_id,
+	        cost_type_id    = :cost_type_id,
+		provider_id	= :provider_id,
+		template_id	= :template_id,
+		effective_date	= to_timestamp('YYYY-MM-DD', :expense_date),
+		payment_days	= :payment_days,
+		vat		= :vat_included,
+		tax		= :tax,
+		variable_cost_p = 't',
+		amount		= :amount,
+		currency	= :expense_currency,
+		note		= :note
+	where
+		cost_id = :expense_id
+    "
 
-
-
-
-}
-
-ad_form -extend -name $form_id -on_submit {
+} -on_submit {
     
     ns_log Notice "new1: on_submit"
     
-}
-
-ad_form -extend -name $form_id -after_submit {
+} -after_submit {
 
     ad_returnredirect $return_url
     ad_script_abort
 }
+
+
+
+
