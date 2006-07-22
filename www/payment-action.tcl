@@ -26,6 +26,7 @@ if {![im_permission $user_id add_payments]} {
     ad_return_complaint 1 "<li>[_ intranet-payments.lt_You_have_insufficient]"
     return
 }
+
 if {"" != $del} {
     ns_log Notice "payment-action: delete payments: $payment_id"
 
