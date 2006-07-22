@@ -209,7 +209,7 @@ from
 	im_costs c
 	LEFT OUTER JOIN acs_rels r on (c.cost_id = r.object_id_two)
 where
-	c.cost_type_id in (3700, 3702, 3704, 3706, 3720)
+	c.cost_type_id in (3700, 3704, 3720)
 	and c.effective_date >= to_date(:start_date, 'YYYY-MM-DD')
 	and c.effective_date < to_date(:end_date, 'YYYY-MM-DD')
 	and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
@@ -222,34 +222,28 @@ select
 	to_char(c.effective_date, :date_format) as effective_date_formatted,
 	to_char(c.effective_date, 'YYMM')::integer * customer_id as effective_month,
 	CASE WHEN c.cost_type_id = 3700 THEN c.amount_converted END as invoice_amount,
-	CASE WHEN c.cost_type_id = 3702 THEN c.amount_converted END as quote_amount,
 	CASE WHEN c.cost_type_id = 3704 THEN c.amount_converted END as bill_amount,
-	CASE WHEN c.cost_type_id = 3706 THEN c.amount_converted END as po_amount,
-	CASE WHEN c.cost_type_id = 3706 THEN c.amount_converted END as expense_amount,
+	CASE WHEN c.cost_type_id = 3720 THEN c.amount_converted END as expense_amount,
 	cust.company_path as customer_nr,
 	cust.company_name as customer_name,
 	prov.company_path as provider_nr,
 	prov.company_name as provider_name,
 	CASE WHEN c.cost_type_id = 3700 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
 	END as invoice_amount_pretty,
-	CASE WHEN c.cost_type_id = 3702 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
-	END as quote_amount_pretty,
 	CASE WHEN c.cost_type_id = 3704 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
 	END as bill_amount_pretty,
-	CASE WHEN c.cost_type_id = 3706 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
-	END as po_amount_pretty,
 	CASE WHEN c.cost_type_id = 3720 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
 	END as expense_amount_pretty,
 
 	CASE
 		WHEN c.cost_type_id in (3700) THEN c.amount_converted * vat / 100
-		WHEN c.cost_type_id in (3704,3720,3722) THEN -c.amount_converted * vat / 100
+		WHEN c.cost_type_id in (3704,3720,3720) THEN -c.amount_converted * vat / 100
 		ELSE 0
 	END as vat_amount,
 
 	CASE
 		WHEN c.cost_type_id in (3700) THEN c.amount_converted * tax / 100
-		WHEN c.cost_type_id in (3704,3720,3722) THEN -c.amount_converted * tax / 100
+		WHEN c.cost_type_id in (3704,3720,3720) THEN -c.amount_converted * tax / 100
 		ELSE 0
 	END as tax_amount,
 
@@ -293,9 +287,7 @@ set report_def [list \
 			"<nobr>$paid_amount $paid_currency</nobr>"
 			"<nobr><a href=$invoice_url$cost_id>$cost_name</a></nobr>"
 			"<nobr>$invoice_amount_pretty</nobr>"
-			"<nobr>$quote_amount_pretty</nobr>"
 			"<nobr>$bill_amount_pretty</nobr>"
-			"<nobr>$po_amount_pretty</nobr>"
 			"<nobr>$expense_amount_pretty</nobr>"
 			"<nobr>$vat_amount_pretty</nobr>"
 			"<nobr>$tax_amount_pretty</nobr>"
@@ -312,9 +304,7 @@ set report_def [list \
 		""
 		""
 		"<i>$invoice_subtotal $default_currency</i>" 
-		"<i>$quote_subtotal $default_currency</i>" 
 		"<i>$bill_subtotal $default_currency</i>" 
-		"<i>$po_subtotal $default_currency</i>"
 		"<i>$expense_subtotal $default_currency</i>"
 		"<i>$vat_subtotal $default_currency</i>"
 		"<i>$tax_subtotal $default_currency</i>"
@@ -324,12 +314,10 @@ set report_def [list \
 ]
 
 set invoice_total 0
-set quote_total 0
 set bill_total 0
-set po_total 0
 
 # Global header/footer
-set header0 {"Cust" "Project" "Effective Date" "Paid" "Name" "Invoice" "Quote" "Bill" "PO" "Expenses" "Vat" "Tax"}
+set header0 {"Cust" "Project" "Effective Date" "Paid" "Name" "Invoice" "Bill" "Expenses" "Vat" "Tax"}
 set footer0 {
 	"" 
 	"" 
@@ -337,9 +325,7 @@ set footer0 {
 	"" 
 	"<br><b>Total:</b>" 
 	"<br><b>$invoice_total $default_currency</b>" 
-	"<br><b>$quote_total $default_currency</b>" 
 	"<br><b>$bill_total $default_currency</b>" 
-	"<br><b>$po_total $default_currency</b>"
 	"<br><b>$expense_total $default_currency</b>"
 	"<br><b>$vat_total $default_currency</b>"
 	"<br><b>$tax_total $default_currency</b>"
@@ -355,25 +341,11 @@ set invoice_subtotal_counter [list \
         expr "\$invoice_amount+0" \
 ]
 
-set quote_subtotal_counter [list \
-        pretty_name "Quote Amount" \
-        var quote_subtotal \
-        reset \$project_id \
-        expr "\$quote_amount+0" \
-]
-
 set bill_subtotal_counter [list \
         pretty_name "Bill Amount" \
         var bill_subtotal \
         reset \$project_id \
         expr "\$bill_amount+0" \
-]
-
-set po_subtotal_counter [list \
-        pretty_name "Po Amount" \
-        var po_subtotal \
-        reset \$project_id \
-        expr "\$po_amount+0" \
 ]
 
 set expense_subtotal_counter [list \
@@ -407,25 +379,11 @@ set invoice_grand_total_counter [list \
         expr "\$invoice_amount+0" \
 ]
 
-set quote_grand_total_counter [list \
-        pretty_name "Quote Amount" \
-        var quote_total \
-        reset 0 \
-        expr "\$quote_amount+0" \
-]
-
 set bill_grand_total_counter [list \
         pretty_name "Bill Amount" \
         var bill_total \
         reset 0 \
         expr "\$bill_amount+0" \
-]
-
-set po_grand_total_counter [list \
-        pretty_name "Po Amount" \
-        var po_total \
-        reset 0 \
-        expr "\$expense_amount+0" \
 ]
 
 set expense_grand_total_counter [list \
@@ -454,16 +412,12 @@ set tax_grand_total_counter [list \
 
 set counters [list \
 	$invoice_subtotal_counter \
-	$quote_subtotal_counter \
 	$bill_subtotal_counter \
-	$po_subtotal_counter \
 	$expense_subtotal_counter \
 	$vat_subtotal_counter \
 	$tax_subtotal_counter \
 	$invoice_grand_total_counter \
-	$quote_grand_total_counter \
 	$bill_grand_total_counter \
-	$po_grand_total_counter \
 	$expense_grand_total_counter \
 	$vat_grand_total_counter \
 	$tax_grand_total_counter \
@@ -537,7 +491,7 @@ set footer_array_list [list]
 set last_value_list [list]
 set class "rowodd"
 
-ns_log Notice "intranet-reporting/finance-quotes-pos: sql=\n$sql"
+ns_log Notice "intranet-reporting/finance-income-statement: sql=\n$sql"
 
 db_foreach sql $sql {
 
@@ -556,13 +510,6 @@ db_foreach sql $sql {
 	
 	im_report_update_counters -counters $counters
 	
-	# Calculated Variables 
-	set po_per_quote_perc "undef"
-	if {[expr $quote_subtotal+0] != 0} {
-	  set po_per_quote_perc [expr int(10000.0 * $po_subtotal / $quote_subtotal) / 100.0]
-	  set po_per_quote_perc "$po_per_quote_perc %"
-	}
-
 	set last_value_list [im_report_render_header \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
@@ -579,12 +526,6 @@ db_foreach sql $sql {
 	    -cell_class $class
         ]
 }
-
-set po_per_quote_perc "undef"
-if {[expr $quote_subtotal+0] != 0} {
-    set po_per_quote_perc [expr int(10000.0 * $po_total / $quote_total) / 100.0]
-}
-
 
 im_report_display_footer \
     -group_def $report_def \
