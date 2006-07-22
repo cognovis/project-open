@@ -29,3 +29,48 @@ INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3722,'Expense Report','Intranet Cost Type');
 
 
+
+create or replace function im_payments_audit_tr () returns opaque as '
+begin
+        insert into im_payments_audit (
+               payment_id,
+               cost_id,
+               company_id,
+               provider_id,
+               received_date,
+               start_block,
+               payment_type_id,
+               payment_status_id,
+               amount,
+               currency,
+               note,
+               last_modified,
+               last_modifying_user,
+               modified_ip_address
+        ) values (
+               old.payment_id,
+               old.cost_id,
+               old.company_id,
+               old.provider_id,
+               old.received_date,
+               old.start_block,
+               old.payment_type_id,
+               old.payment_status_id,
+               old.amount,
+               old.currency,
+               old.note,
+               old.last_modified,
+               old.last_modifying_user,
+               old.modified_ip_address
+        );
+        return new;
+end;' language 'plpgsql';
+
+
+
+-- 060720 Frank Bergmann: Does work!
+--
+create trigger im_payments_audit_tr
+before update or delete on im_payments
+for each row execute procedure im_payments_audit_tr ();
+
