@@ -142,10 +142,11 @@ end;' language 'plpgsql';
 -- it blocks the deletion of payment records. So let's
 -- disable it until a new version of PostgreSQL comes 
 -- out...
+-- 060720 Frank Bergmann: Does work!
 --
--- create trigger im_payments_audit_tr
--- before update or delete on im_payments
--- for each row execute procedure im_payments_audit_tr ();
+create trigger im_payments_audit_tr
+before update or delete on im_payments
+for each row execute procedure im_payments_audit_tr ();
 	
 
 create or replace view im_payment_type as 
