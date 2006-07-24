@@ -157,6 +157,9 @@ VALUES (3720,'Expense Item','Intranet Cost Type');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3722,'Expense Report','Intranet Cost Type');
 
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3724,'Delivery Note','Intranet Cost Type');
+
 
 -- commit;
 -- reserved until 3799

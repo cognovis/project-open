@@ -29,6 +29,8 @@ INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3722,'Expense Report','Intranet Cost Type');
 
 
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3724,'Delivery Note','Intranet Cost Type');
 
 create or replace function im_payments_audit_tr () returns opaque as '
 begin
