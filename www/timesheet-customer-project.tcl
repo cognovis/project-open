@@ -119,7 +119,7 @@ if {[info exists user_id]} {
 }
 
 if {[info exists task_id]} {
-    lappend criteria "h.timesheet_task_id = :task_id"
+    lappend criteria "h.project_id = :task_id"
 }
 
 # Select project & subprojects
