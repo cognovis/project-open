@@ -14,7 +14,6 @@ delete from im_costs where cost_id in (select object_id from acs_objects where o
 delete from acs_objects where object_type = 'im_expenses';
 
 
-
 -------------------------------------------------------------
 -- Intranet Expenses Type
 
