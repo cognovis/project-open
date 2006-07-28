@@ -13,7 +13,7 @@ ad_page_contract {
 } {
     { start_date "" }
     { end_date "" }
-    { level_of_detail 2 }
+    { level_of_detail 3 }
     customer_id:integer,optional
 }
 
