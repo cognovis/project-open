@@ -693,6 +693,8 @@ ad_proc -private xmlrpc::invoke_method {
     @return result of the OpenACS proc
     @author Vinod Kurup
 } {
+    ns_log Notice "xmlrpc::invoke_method: Invoking method_name=$method_name, arguments=$arguments"
+
     # check that the method is registered as a valid XML-RPC method
     if {![nsv_exists xmlrpc_procs $method_name]} {
         return -code error -errorcode 2 "methodName $method_name doesn't exist"
