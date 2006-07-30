@@ -26,11 +26,11 @@
 
 <tr class=roweven>
   <td valign=top>Object Type:</td>
-  <td><input type=text name=object_type value="im_project" size=20></td>
-</tr>
-<tr class=rowodd>
-  <td valign=top>Object ID:</td>
-  <td><input type=text name=object_id value="9718" size=20></td>
+  <td>
+    <select name=object_type>
+    @select_options;noquoteq@
+    </select>
+  </td>
 </tr>
 <tr>
   <td></td>

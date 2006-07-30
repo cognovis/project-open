@@ -4,10 +4,10 @@ ad_page_contract {
     
     @author Frank Bergmann (frank.bergmann@project-open.com)
 } {
-    { url ""}
-    { user_id ""}
-    { timestamp ""}
-    { token ""}
+    user_id
+    timestamp
+    token
+    {url "/RPC2/" }
 }
 
 
@@ -27,5 +27,41 @@ if {!$user_is_admin_p} {
 }
 
 # ------------------------------------------------------------
-# 
+# Get the list of object types from the target system
 # ------------------------------------------------------------
+
+set error ""
+set query_results [list]
+if {[catch {
+
+    set query_results [xmlrpc::remote_call http://172.26.0.3:30038/RPC2 sqlapi.select \
+                  -string $user_id \
+                  -string $timestamp \
+                  -string $token \
+                  -string "object_type"
+    ]
+
+} err_msg]} {
+    append error $err_msg
+}
+
+set status [lindex $query_results 0]
+if {"ok" != $status} {
+
+    set error "$status "
+    append error [lindex $query_results 1]
+
+} else {
+
+    set object_fields [lindex $query_results 1]
+    array set ovars $object_fields
+    set keys [array names ovars]
+
+    set result "<table>\n"
+    foreach key $keys {
+	append result "<tr><td>$key</td><td>$ovars($key)</td></tr>\n"
+    }
+    append result "</table>\n"
+}
+
+

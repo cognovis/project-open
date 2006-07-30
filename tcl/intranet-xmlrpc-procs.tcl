@@ -38,7 +38,59 @@ ad_proc -private im_package_xmlrpc_id_helper {} {
 # ----------------------------------------------------------------------
 
 
-ad_proc -public sqlapi.select { user_id timestamp token object_type object_id } {
+ad_proc -public sqlapi.select { authinfo object_type } {
+    Retreives all information for an object of a given object type
+    Returns:
+    1. Status ("ok" or anything else indicating an error)
+    2. A key-value list with information about the object
+} {
+    ns_log Notice "sqlapi.select: user_id=$user_id, timestamp=$timestamp, token=$token, object_type=$object_type, object_id=$object_id"
+
+    set login_p [im_valid_auto_login_p -user_id $user_id -auto_login $token]
+    if {!$login_p} { 
+	ns_log Notice "sqlapi.select: Bad login info: user_id=$user_id, timestamp=$timestamp, token=$token"
+	return [list -string "invalid_auth_token"] 
+    }
+
+    set object_table [db_string object_table "select table_name from acs_object_types where object_type=:object_type" -default ""]
+    set id_column [db_string id_column "select id_column from acs_object_types where object_type=:object_type" -default ""]
+
+    set query "select * from $object_table where $id_column = $object_id"
+    ns_log Notice "sqlapi.select: object_table=$object_table, id_column=$id_column, sql=$query"
+
+    db_with_handle db {
+	set selection [ns_db select $db $query]
+	if {[ns_db getrow $db $selection]} {
+
+	    set result [list]
+	    for {set i 0} {$i < [ns_set size $selection]} {incr i} {
+		set column [ns_set key $selection $i]
+		set value [ns_set value $selection $i]
+		ns_log Notice "sqlapi.select: i=$i, column=$column, value=$value"
+		
+		lappend result $column
+		lappend result [list -string $value]
+	    }
+
+	    # Skip any possibly remaining records
+	    ns_db flush $db
+	    
+	    # Return the key-value list as a "struct"
+            return [list -array [list \
+		[list -string "ok"] \
+		[list -struct $result] \
+	    ]]
+
+	} else {
+
+	    return [list -string no_records_found]
+
+	}
+    }
+}
+
+
+ad_proc -public sqlapi.get_object { user_id timestamp token object_type object_id } {
     Retreives all information for an object of a given object type
     Returns:
     1. Status ("ok" or anything else indicating an error)
