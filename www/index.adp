@@ -19,15 +19,34 @@
   </p>
 
   <ul>
-  <li><a href="login-test">Login</a>
+  <li><a href="login-test?@vars@">Login</a>
   </ul>
 
 </if>
 <else>
 
+	<table>
+	<tr class=roweven>
+	  <td valign=top>URL:</td>
+	  <td>@url@</td>
+	</tr>
+	<tr class=rowodd>
+	  <td valign=top>User ID:</td>
+	  <td>@user_id@</td>
+	</tr>
+	<tr class=roweven>
+	  <td valign=top>Timestamp:</td>
+	  <td>@timestamp@</td>
+	</tr>
+	<tr class=rowodd>
+	  <td valign=top>Token:</td>
+		  <td>@token@</td>
+	</tr>
+	</table>
+
   <ul>
-  <li><a href="select-test">Select</a>
-  <li><a href="call-test">Call</a>
+  <li><a href="select-test?@vars@">Select</a>
+  <li><a href="call-test?@vars@">Call</a>
   </ul>
 
 

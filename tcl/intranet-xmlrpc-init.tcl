@@ -5,4 +5,5 @@ ad_library {
 }
 
 xmlrpc::register_proc sqlapi.login
+xmlrpc::register_proc sqlapi.select
 

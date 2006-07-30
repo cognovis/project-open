@@ -38,15 +38,19 @@ ad_proc -private im_package_xmlrpc_id_helper {} {
 # ----------------------------------------------------------------------
 
 
-ad_proc -public sqlapi.select { email token object_type object_id } {
+ad_proc -public sqlapi.select { user_id timestamp token object_type object_id } {
     Retreives all information for an object of a given object type
+    Returns:
+    1. Status ("ok" or anything else indicating an error)
+    2. A key-value list with information about the object
 } {
-    ns_log Notice "sqlapi.select: email=$email, token=$token, object_type=$object_type, object_id=$object_id"
+    ns_log Notice "sqlapi.select: user_id=$user_id, timestamp=$timestamp, token=$token, object_type=$object_type, object_id=$object_id"
 
-    set user_id [db_string user_id "select party_id from parties where email=:email" -default 0]
     set login_p [im_valid_auto_login_p -user_id $user_id -auto_login $token]
-
-    if {!$login_p} { return [list -string "invalid_auth_token"] }
+    if {!$login_p} { 
+	ns_log Notice "sqlapi.select: Bad login info: user_id=$user_id, timestamp=$timestamp, token=$token"
+	return [list -string "invalid_auth_token"] 
+    }
 
     set object_table [db_string object_table "select table_name from acs_object_types where object_type=:object_type" -default ""]
     set id_column [db_string id_column "select id_column from acs_object_types where object_type=:object_type" -default ""]
@@ -72,7 +76,11 @@ ad_proc -public sqlapi.select { email token object_type object_id } {
 	    ns_db flush $db
 	    
 	    # Return the key-value list as a "struct"
-	    return [list -struct $result]
+            return [list -array [list \
+		[list -string "ok"] \
+		[list -struct $result] \
+	    ]]
+
 	} else {
 
 	    return [list -string no_records_found]
@@ -86,9 +94,15 @@ ad_proc -public sqlapi.login {email password} {
     Returns an authentication token of the user provides
     us with a valid email/password
 
-    @return A list composed of 1. a status and 2. a token or
-            an error message. Status can be "ok", or anything
-            else such as "bad_password" etc.
+    @return A list composed of:
+    	1. a status,
+	2. a user_id,
+	3. a timestamp in format "YYYY-MM-DD HH:MM:SS"
+	   or "" to indicate a perpetual lease
+	4. a token
+    or
+	an error message. Status can be "ok", or anything
+        else such as "bad_password" etc.
 
     @author Frank Bergmann (frank.bergmann@project-open.com)
 } {
@@ -104,16 +118,25 @@ ad_proc -public sqlapi.login {email password} {
                              -password $password \
     ]
 
+    ns_log Notice "sqlapi.login: [array get auth_info]"
+
     # Handle authentication problems
     switch $auth_info(auth_status) {
         ok {
 	    set user_id $auth_info(user_id)
 	    set sec_token [im_generate_auto_login -user_id $user_id]
-	    return [list -array [list [list -string $auth_info(auth_status)] [list -string $sec_token]]]
+	    return [list -array [list \
+		[list -string $auth_info(auth_status)] \
+		[list -string $user_id] \
+		[list -string ""] \
+		[list -string $sec_token] \
+	    ]]
         }
         default {
-
-	    return [list -array [list [list -string $auth_info(auth_status)] [list -string $auth_info(auth_message)]]]
+	    return [list -array [list \
+		[list -string $auth_info(auth_status)] \
+		[list -string $auth_info(auth_message)] \
+	    ]]
         }
     }
 }
