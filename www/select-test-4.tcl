@@ -7,7 +7,7 @@ ad_page_contract {
     user_id
     timestamp
     token
-    object_type
+    object_id
     {url "/RPC2/" }
     {method "sqlapi.select"}
 }
@@ -29,7 +29,7 @@ if {!$user_is_admin_p} {
 }
 
 # ------------------------------------------------------------
-# 
+# Call the Login XML-RPC procedure
 # ------------------------------------------------------------
 
 set error ""
@@ -38,47 +38,47 @@ set info ""
 
 set query_results [list]
 
-
-# Get the list of all objects of that type
 if {[catch {
 
     set authinfo [list \
-	   [list -string token] \
-	   [list -int $user_id] \
-	   [list -string $timestamp] \
-	   [list -string $token] \
+           [list -string token] \
+           [list -int $user_id] \
+           [list -string $timestamp] \
+           [list -string $token] \
     ]
 
+    # sqlapi.select(user_id timestamp token object_type object_id)
     set query_results [xmlrpc::remote_call \
 	http://172.26.0.3:30038/RPC2 \
-	"sqlapi.select" \
+	sqlapi.object_info \
 	-array $authinfo \
-	-string $object_type \
-	-array [list [list -string foo] [list -string "bar"]]
+	-int $object_id \
     ]
 
 } err_msg]} {
     append error $err_msg
 }
 
+# ad_return_complaint 1 $error
+
 
 set status [lindex $query_results 0]
-set object_id_options [list]
-
 if {"ok" != $status} {
 
     set error "$status "
     append error [lindex $query_results 1]
 
-
 } else {
 
-    set object_ids [lindex $query_results 1]
-    foreach id $object_ids {
-	set object_id [lindex $id 0]
-	set object_name [lindex $id 1]
-	append object_id_options "<option value=\"$object_id\">$object_name</option>\n"
+    set object_fields [lindex $query_results 1]
+    array set ovars $object_fields
+    set keys [array names ovars]
+
+    set result "<table>\n"
+    foreach key $keys {
+	append result "<tr><td>$key</td><td>$ovars($key)</td></tr>\n"
     }
+    append result "</table>\n"
 }
 
 

@@ -34,18 +34,27 @@ set error ""
 set query_results [list]
 if {[catch {
 
-    set query_results [xmlrpc::remote_call http://172.26.0.3:30038/RPC2 sqlapi.select \
-                  -string $user_id \
-                  -string $timestamp \
-                  -string $token \
-                  -string "object_type"
+    set authinfo [list \
+	   [list -string token] \
+	   [list -int $user_id] \
+	   [list -string $timestamp] \
+	   [list -string $token] \
     ]
+
+    set query_results [xmlrpc::remote_call \
+			   http://172.26.0.3:30038/RPC2 \
+			   sqlapi.object_types \
+			   -array $authinfo
+		      ]
 
 } err_msg]} {
     append error $err_msg
 }
 
+set object_type_options ""
 set status [lindex $query_results 0]
+set object_types_list [lindex $query_results 1]
+
 if {"ok" != $status} {
 
     set error "$status "
@@ -53,15 +62,14 @@ if {"ok" != $status} {
 
 } else {
 
-    set object_fields [lindex $query_results 1]
-    array set ovars $object_fields
-    set keys [array names ovars]
-
-    set result "<table>\n"
-    foreach key $keys {
-	append result "<tr><td>$key</td><td>$ovars($key)</td></tr>\n"
+    foreach object_type_record $object_types_list {
+	set object_type [lindex $object_type_record 0]
+	set pretty_name [lindex $object_type_record 1]
+	append object_type_options "<option value=\"$object_type\">$pretty_name</option>\n"
     }
-    append result "</table>\n"
 }
+
+
+
 
 

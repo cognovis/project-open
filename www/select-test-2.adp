@@ -4,8 +4,8 @@
 
 <h1>@page_title@</h1>
 
-<form action="select-test-2" method=POST>
-<%= [export_form_vars url token timestamp user_id] %>
+<form action="select-test-4" method=POST>
+<%= [export_form_vars url token timestamp user_id object_type] %>
 <table cellpadding=2 cellspacing=0 border=0>
 <tr class=roweven>
   <td valign=top>URL:</td>
@@ -26,11 +26,16 @@
 
 <tr class=roweven>
   <td valign=top>Object Type:</td>
-  <td><input type=text name=object_type value="im_project" size=20></td>
+  <td><input type=text name=object_type value="@object_type@" size=20 disabled></td>
 </tr>
+
 <tr class=rowodd>
   <td valign=top>Object ID:</td>
-  <td><input type=text name=object_id value="9718" size=20></td>
+  <td>
+    <select name=object_id>
+    @object_id_options;noquote@
+    </select>
+  </td>
 </tr>
 <tr>
   <td></td>

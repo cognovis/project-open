@@ -38,76 +38,148 @@ ad_proc -private im_package_xmlrpc_id_helper {} {
 # ----------------------------------------------------------------------
 
 
-ad_proc -public sqlapi.select { authinfo object_type } {
-    Retreives all information for an object of a given object type
+
+ad_proc -public sqlapi.authenticate { authinfo } {
+    Takes an "authinfo" array and checks its validity.
     Returns:
-    1. Status ("ok" or anything else indicating an error)
-    2. A key-value list with information about the object
+    - An empty list if everything is OK
+    - An error message (non-empty list) if there's an error
 } {
-    ns_log Notice "sqlapi.select: user_id=$user_id, timestamp=$timestamp, token=$token, object_type=$object_type, object_id=$object_id"
+    ns_log Notice "sqlapi.authenticate: authinfo=$authinfo"
 
-    set login_p [im_valid_auto_login_p -user_id $user_id -auto_login $token]
-    if {!$login_p} { 
-	ns_log Notice "sqlapi.select: Bad login info: user_id=$user_id, timestamp=$timestamp, token=$token"
-	return [list -string "invalid_auth_token"] 
-    }
-
-    set object_table [db_string object_table "select table_name from acs_object_types where object_type=:object_type" -default ""]
-    set id_column [db_string id_column "select id_column from acs_object_types where object_type=:object_type" -default ""]
-
-    set query "select * from $object_table where $id_column = $object_id"
-    ns_log Notice "sqlapi.select: object_table=$object_table, id_column=$id_column, sql=$query"
-
-    db_with_handle db {
-	set selection [ns_db select $db $query]
-	if {[ns_db getrow $db $selection]} {
-
-	    set result [list]
-	    for {set i 0} {$i < [ns_set size $selection]} {incr i} {
-		set column [ns_set key $selection $i]
-		set value [ns_set value $selection $i]
-		ns_log Notice "sqlapi.select: i=$i, column=$column, value=$value"
-		
-		lappend result $column
-		lappend result [list -string $value]
+    set auth_method [lindex $authinfo 0]
+    ns_log Notice "sqlapi.authenticate: auth_method=$auth_method"
+    switch $auth_method {
+	token {
+	    set user_id [lindex $authinfo 1]
+	    set timestamp [lindex $authinfo 2]
+	    set token [lindex $authinfo 3]
+	    set login_p [im_valid_auto_login_p -user_id $user_id -auto_login $token]
+	    if {!$login_p} { 
+		ns_log Notice "sqlapi.authenticate: Bad login info: user_id=$user_id, timestamp=$timestamp, token=$token"
+		return [list -string "invalid_auth_token"] 
 	    }
-
-	    # Skip any possibly remaining records
-	    ns_db flush $db
-	    
-	    # Return the key-value list as a "struct"
-            return [list -array [list \
-		[list -string "ok"] \
-		[list -struct $result] \
-	    ]]
-
-	} else {
-
-	    return [list -string no_records_found]
-
+	}
+	default {
+	    ns_log Notice "sqlapi.authenticate: Unkown auth_method=$auth_method"
+	    return [list -string "invalid_auth_token"] 
 	}
     }
+    return []
+}    
+
+
+ad_proc -public sqlapi.object_types { authinfo } {
+    Retreives a list of all object types in the system
+} {
+    ns_log Notice "sqlapi.object_types: authinfo=$authinfo"
+    set auth_error [sqlapi.authenticate $authinfo]
+    if {[llength $auth_error] > 0} { return $auth_error }
+    ns_log Notice "sqlapi.object_types: authentication successful"
+
+    set result [list]
+    set query "
+	select * 
+	from acs_object_types
+	order by pretty_name
+    "
+    db_foreach object_types $query {
+	lappend result [list -array [list \
+				[list -string $object_type] \
+				[list -string $pretty_name] \
+        ]]
+    }
+
+    # Return {"ok", {<key-value list>}} 
+    return [list -array [list \
+		      [list -string "ok"] \
+		      [list -array $result] \
+    ]]
 }
 
 
-ad_proc -public sqlapi.get_object { user_id timestamp token object_type object_id } {
+ad_proc -public sqlapi.select { authinfo object_type constraints } {
     Retreives all information for an object of a given object type
     Returns:
     1. Status ("ok" or anything else indicating an error)
     2. A key-value list with information about the object
 } {
-    ns_log Notice "sqlapi.select: user_id=$user_id, timestamp=$timestamp, token=$token, object_type=$object_type, object_id=$object_id"
+    ns_log Notice "sqlapi.select: authinfo=$authinfo, object_type=$object_type"
+    set auth_error [sqlapi.authenticate $authinfo]
+    if {[llength $auth_error] > 0} { return $auth_error }
+    ns_log Notice "sqlapi.select: authentication successful"
 
-    set login_p [im_valid_auto_login_p -user_id $user_id -auto_login $token]
-    if {!$login_p} { 
-	ns_log Notice "sqlapi.select: Bad login info: user_id=$user_id, timestamp=$timestamp, token=$token"
-	return [list -string "invalid_auth_token"] 
+    set object_table [db_string object_table "
+	select table_name 
+	from acs_object_types 
+	where object_type = :object_type
+    " -default ""]
+
+    set id_column [db_string id_column "
+	select id_column 
+	from acs_object_types 
+	where object_type = :object_type
+    " -default ""]
+
+    set query "
+	select $id_column,
+		acs_object__name($id_column) as name
+	from $object_table 
+	where 1=1
+    "
+
+    ns_log Notice "sqlapi.select: object_table=$object_table, id_column=$id_column, sql=$query"
+
+    set result [list]
+    db_foreach select_query $query {
+	lappend result [list -array [list [list -int [expr $$id_column]] [list -string $name]]]
+
     }
 
-    set object_table [db_string object_table "select table_name from acs_object_types where object_type=:object_type" -default ""]
-    set id_column [db_string id_column "select id_column from acs_object_types where object_type=:object_type" -default ""]
+    # Return the key-value list as a "struct"
+    return [list -array [list \
+	[list -string "ok"] \
+	[list -array $result] \
+    ]]
 
-    set query "select * from $object_table where $id_column = $object_id"
+}
+
+
+ad_proc -public sqlapi.object_info { authinfo object_id } {
+    Retreives all information for an object of a given object type
+    Returns:
+    1. Status ("ok" or anything else indicating an error)
+    2. A key-value list with information about the object
+} {
+    ns_log Notice "sqlapi.objectinfo: authinfo=$authinfo, object_id=$object_id"
+    set auth_error [sqlapi.authenticate $authinfo]
+    if {[llength $auth_error] > 0} { return $auth_error }
+    ns_log Notice "sqlapi.select: authentication successful"
+
+
+    set object_type [db_string object_type "
+	select object_type
+	from acs_objects
+	where object_id = :object_id
+    " -default ""]
+
+    set object_table [db_string object_table "
+	select table_name 
+	from acs_object_types 
+	where object_type=:object_type
+    " -default ""]
+
+    set id_column [db_string id_column "
+	select id_column 
+	from acs_object_types 
+	where object_type=:object_type
+    " -default ""]
+
+    set query "
+	select * 
+	from $object_table 
+	where $id_column = $object_id
+    "
     ns_log Notice "sqlapi.select: object_table=$object_table, id_column=$id_column, sql=$query"
 
     db_with_handle db {

@@ -2,13 +2,15 @@
 <property name="title">@page_title@</property>
 <property name="main_navbar_label">admin</property>
 
-<h1>@page_title@</h1>
 
 <table cellpadding=2 cellspacing=0 border=0 width=100%>
 <tr>
   <td valign=top width="50%">
 
 <if "" eq @token@>
+
+  <h1>You need to Login</h1>
+
 
   <p>
   You have to login and obtain a security token before
@@ -24,6 +26,9 @@
 
 </if>
 <else>
+
+  <h1>Login Information</h1>
+
 
 	<table>
 	<tr class=roweven>
@@ -43,6 +48,8 @@
 		  <td>@token@</td>
 	</tr>
 	</table>
+
+  <h1>Available Tests</h1>
 
   <ul>
   <li><a href="select-test?@vars@">Select</a>

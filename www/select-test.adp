@@ -28,7 +28,7 @@
   <td valign=top>Object Type:</td>
   <td>
     <select name=object_type>
-    @select_options;noquoteq@
+    @object_type_options;noquote@
     </select>
   </td>
 </tr>
@@ -38,4 +38,7 @@
 </tr>
 </table>
 </form>
+
+
+@error;noquote@
 
