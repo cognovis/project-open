@@ -591,6 +591,8 @@ ad_proc -private xmlrpc::parse_response {xml} {
     @param xml the XML response
     @return result 
 } {
+    ns_log Notice "xmlrpc::parse_response: xml=$xml"
+
     set doc [xml_parse -persist $xml]
     set root [xml_doc_get_first_node $doc]
 
