@@ -8,12 +8,14 @@
 This form has already been set to a testing user.<br>
 You just need to press Submit:
 <ul>
-<li>Server: <br>
+<li>URL:<br>
     Please use "http://172.26.0.3:30038/RPC2" to connect<br>
     to our internal test server or choose your own XML-RPC server.
 </li>
 <li>Email: <br>
     "ssales@tigerpond.com"</li>
+<li>Timestamp: <br>
+    "" (leave empty for perpetual)</li>
 <li>Passwd: <br>
     "sally"</li>
 </ul>
@@ -29,6 +31,10 @@ You just need to press Submit:
 <tr>
   <td valign=top>Email:</td>
   <td><input type=text name=email value="ssales@tigerpond.com" size=30></td>
+</tr>
+<tr>
+  <td valign=top>Timestamp:</td>
+  <td><input type=text name=timestamp value="" size=30></td>
 </tr>
 <tr>
   <td valign=top>Password:</td>

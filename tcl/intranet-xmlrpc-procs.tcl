@@ -114,6 +114,71 @@ ad_proc -public sqlapi.object_types { authinfo } {
 }
 
 
+
+ad_proc -public sqlapi.object_fields { authinfo object_type } {
+    Retreives a list of all object fields, together with
+    their SQL datatype.
+} {
+    ns_log Notice "sqlapi.object_fields: authinfo=$authinfo"
+    set auth_error [sqlapi.authenticate $authinfo]
+    if {[llength $auth_error] > 0} { return $auth_error }
+    ns_log Notice "sqlapi.object_fields: authentication successful"
+
+    set result [list]
+    set query "
+	select	lower(column_name) as column_name,
+		lower(data_type) as data_type
+	from	user_tab_columns
+	where	lower(table_name) in (
+			select	lower(table_name)
+			from	acs_object_type_tables
+			where	object_type = :object_type
+		     UNION
+			select	lower(table_name)
+			from	acs_object_types
+			where	object_type = :object_type
+		)
+	order	by column_name
+    "
+    db_foreach object_fields $query {
+	lappend result [list -array [list \
+				[list -string $column_name] \
+				[list -string $data_type] \
+        ]]
+    }
+
+    # Return {"ok", {<key-value list>}} 
+    return [list -array [list \
+		      [list -string "ok"] \
+		      [list -array $result] \
+    ]]
+}
+
+
+
+ad_proc -private sqlapi.select_where_clause { constraints } {
+    Convert a list of constraints into a where clause.
+    In the future we might want to check permissions here,
+    currently, everything goes.
+} {
+    ns_log Notice "sqlapi.select_where_clause: constraints=$constraints"
+
+    set constrs [list]
+    foreach c $constraints {
+	# Expecting something like {project_name like 'Test%'} in c
+	set cc [join $c " "]
+	ns_log Notice "sqlapi.select_where_clause: cc=$cc"
+	lappend constrs $cc
+    }
+    set where_clause [join $constrs "\n\tand "]
+    ns_log Notice "sqlapi.select_where_clause: where_clause = $where_clause"
+
+    if {[llength $constrs] > 0} { set where_clause "and $where_clause" }
+
+    return $where_clause
+}
+
+
 ad_proc -public sqlapi.select { authinfo object_type constraints } {
     Retreives all information for an object of a given object type
     Returns:
@@ -137,26 +202,45 @@ ad_proc -public sqlapi.select { authinfo object_type constraints } {
 	where object_type = :object_type
     " -default ""]
 
+    set where_clause [sqlapi.select_where_clause $constraints]
+
     set query "
 	select $id_column,
 		acs_object__name($id_column) as name
 	from $object_table 
-	where 1=1
+	where 1=1 $where_clause
     "
 
     ns_log Notice "sqlapi.select: object_table=$object_table, id_column=$id_column, sql=$query"
 
     set result [list]
-    db_foreach select_query $query {
-	lappend result [list -array [list [list -int [expr $$id_column]] [list -string $name]]]
+    set err_msg ""
+    catch {
+	db_foreach select_query $query {
+	    lappend result [list -array \
+		[list [list -int [expr $$id_column]] \
+		[list -string $name]] \
+	    ]
+	}
+    } err_msg
+    
+    ns_log Notice "sqlapi.select: err_msg=$err_msg"
 
+    if {"" != $err_msg} {
+	# Return an error structure
+	ns_log Notice "sqlapi.select: Return error structure: err_msg=$err_msg"
+	return [list -array [list \
+		[list -string "error_sql"] \
+		[list -string $err_msg] \
+	]]
+    } else {
+	# Return the key-value list as a "struct"
+	ns_log Notice "sqlapi.select: Return result=$result"
+	return [list -array [list \
+	    [list -string "ok"] \
+	    [list -array $result] \
+        ]]
     }
-
-    # Return the key-value list as a "struct"
-    return [list -array [list \
-	[list -string "ok"] \
-	[list -array $result] \
-    ]]
 
 }
 
@@ -230,7 +314,7 @@ ad_proc -public sqlapi.object_info { authinfo object_id } {
 }
 
 
-ad_proc -public sqlapi.login {email password} {
+ad_proc -public sqlapi.login {email timestamp password} {
     Returns an authentication token of the user provides
     us with a valid email/password
 

@@ -23,7 +23,6 @@
   <td valign=top>Token:</td>
   <td>@token@</td>
 </tr>
-
 <tr class=roweven>
   <td valign=top>Object Type:</td>
   <td>
@@ -32,6 +31,7 @@
     </select>
   </td>
 </tr>
+
 <tr>
   <td></td>
   <td><input type=submit></td>

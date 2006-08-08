@@ -5,6 +5,7 @@ ad_page_contract {
     @author Frank Bergmann (frank.bergmann@project-open.com)
 } {
     email
+    timestamp
     pass
     url
     {method "sqlapi.login"}
@@ -25,13 +26,23 @@ set current_user_id [im_xmlrpc_get_user_id]
 # ------------------------------------------------------------
 
 set error ""
-set result ""
-set token ""
-set info ""
 set status "error"
+set user_id ""
+set timestamp ""
+set token ""
+set result ""
+set info ""
 
 if {[catch {
-    set login_result [xmlrpc::remote_call $url sqlapi.login -string $email -string $pass]
+
+    set login_result [xmlrpc::remote_call \
+	$url \
+	sqlapi.login \
+	-string $email \
+	-string $timestamp \
+	-string $pass \
+    ]
+
     set status [lindex $login_result 0]
     set user_id [lindex $login_result 1]
     set timestamp [lindex $login_result 2]

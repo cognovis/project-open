@@ -8,6 +8,4 @@ xmlrpc::register_proc sqlapi.login
 xmlrpc::register_proc sqlapi.select
 xmlrpc::register_proc sqlapi.object_info
 xmlrpc::register_proc sqlapi.object_types
-
-
-
+xmlrpc::register_proc sqlapi.object_fields

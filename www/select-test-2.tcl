@@ -44,11 +44,10 @@ if {[catch {
     ]
 
     set query_results [xmlrpc::remote_call \
-	http://172.26.0.3:30038/RPC2 \
-	"sqlapi.select" \
+	$url \
+	"sqlapi.object_fields" \
 	-array $authinfo \
-	-string $object_type \
-	-array [list [list -string foo] [list -string "bar"]]
+	-string $object_type
     ]
 
 } err_msg]} {
@@ -57,21 +56,20 @@ if {[catch {
 
 
 set status [lindex $query_results 0]
-set object_id_options [list]
+set column_options [list]
 
 if {"ok" != $status} {
 
     set error "$status "
-    append error [lindex $query_results 1]
+    set error_msg [lindex $query_results 1]
 
 
 } else {
 
-    set object_ids [lindex $query_results 1]
-    foreach id $object_ids {
-	set object_id [lindex $id 0]
-	set object_name [lindex $id 1]
-	append object_id_options "<option value=\"$object_id\">$object_name</option>\n"
+    set columns [lindex $query_results 1]
+    foreach column $columns {
+	set column_name [lindex $column 0]
+	append column_options "<option value=\"$column_name\">$column_name</option>\n"
     }
 }
 
