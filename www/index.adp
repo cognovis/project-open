@@ -52,8 +52,8 @@
   <h1>Available Tests</h1>
 
   <ul>
-  <li><a href="select-test?@vars@">Select</a>
-  <li><a href="call-test?@vars@">Call</a>
+  <li><a href="select-test?@vars@">Select Test Wizard</a>
+  <li><a href="call-test?@vars@">Call Test Wizard</a>
   </ul>
 
 
