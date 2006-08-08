@@ -8,7 +8,7 @@ ad_page_contract {
     timestamp
     token
     object_id
-    {url "/RPC2/" }
+    url
     {method "sqlapi.select"}
 }
 
@@ -43,7 +43,7 @@ if {[catch {
 
     # sqlapi.select(user_id timestamp token object_type object_id)
     set query_results [xmlrpc::remote_call \
-	http://172.26.0.3:30038/RPC2 \
+	$url \
 	sqlapi.object_info \
 	-array $authinfo \
 	-int $object_id \
