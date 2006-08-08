@@ -18,11 +18,10 @@ ad_page_contract {
 set return_url "[ad_conn url]?[ad_conn query]"
 set page_title "XML-RPC"
 set context_bar [im_context_bar $page_title]
-
-set vars [export_vars {user_id timestamp token url}]
+set current_user_id [im_xmlrpc_get_user_id]
 
 # ------------------------------------------------------------
 # 
 # ------------------------------------------------------------
 
-
+set vars [export_vars {user_id timestamp token url}]

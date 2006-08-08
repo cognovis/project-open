@@ -32,6 +32,22 @@ ad_proc -private im_package_xmlrpc_id_helper {} {
     } -default 0]
 }
 
+ad_proc -public im_xmlrpc_get_user_id {} {
+    This is a private autentication routine in order
+    to allow for special permissions to use XML-RPC
+} {
+    set user_id [ad_maybe_redirect_for_registration]
+
+    set ttt {
+    set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+    if {!$user_is_admin_p} {
+	ad_return_complaint 1 "<li>[_ intranet-core.lt_You_need_to_be_a_syst]"
+	return
+    }
+    }
+    return $user_id
+}
+
 
 # ----------------------------------------------------------------------
 # sqlapi procedures

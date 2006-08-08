@@ -18,13 +18,7 @@ ad_page_contract {
 set return_url "[ad_conn url]?[ad_conn query]"
 set page_title "Select-Test"
 set context_bar [im_context_bar $page_title]
-
-set current_user_id [ad_maybe_redirect_for_registration]
-set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
-if {!$user_is_admin_p} {
-    ad_return_complaint 1 "<li>[_ intranet-core.lt_You_need_to_be_a_syst]">
-    return
-}
+set current_user_id [im_xmlrpc_get_user_id]
 
 # ------------------------------------------------------------
 # Get the list of object types from the target system
