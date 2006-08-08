@@ -4,7 +4,7 @@ ad_page_contract {
     
     @author Frank Bergmann (frank.bergmann@project-open.com)
 } {
-    { url "/RPC2/"}
+    { url ""}
     { user_id ""}
     { timestamp ""}
     { token ""}

@@ -6,7 +6,7 @@ ad_page_contract {
 } {
     email
     pass
-    {url "/RPC2/" }
+    url
     {method "sqlapi.login"}
 }
 
@@ -28,8 +28,10 @@ set error ""
 set result ""
 set token ""
 set info ""
+set status "error"
+
 if {[catch {
-    set login_result [xmlrpc::remote_call http://172.26.0.3:30038/RPC2 sqlapi.login -string $email -string $pass]
+    set login_result [xmlrpc::remote_call $url sqlapi.login -string $email -string $pass]
     set status [lindex $login_result 0]
     set user_id [lindex $login_result 1]
     set timestamp [lindex $login_result 2]
@@ -38,11 +40,8 @@ if {[catch {
     append error $err_msg
 }
 
-# ad_return_complaint 1 "$error - $status - token=$token - $login_result"
-
 if {"ok" == $status} {
-    ad_returnredirect [export_vars -base "index" {user_id timestamp token}]
+    ad_returnredirect [export_vars -base "index" {user_id timestamp token url}]
 }
 
-# ad_return_complaint 1 "<pre>token=$token\ninfo=$info\nerror=$error</pre>"
 
