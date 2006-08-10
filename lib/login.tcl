@@ -8,11 +8,20 @@
 #   username
 #   email
 #
+#   otp_enabled_p - optional, OTP = one-time-password
+#   otp - optional, the OTP
 
 # Redirect to HTTPS if so configured
 if { [security::RestrictLoginToSSLP] } {
     security::require_secure_conn
 }
+
+# Check if there is an OTP (one time password) module installed
+set otp_installed_p [db_string otp_installed "
+	select count(*) 
+	from apm_enabled_package_versions 
+	where package_key = 'intranet-otp'
+" -default 0]
 
 set self_registration [parameter::get_from_package_key \
                                   -package_key acs-authentication \
@@ -36,6 +45,7 @@ if { ![info exists email] } {
     set email {}
 }
 
+# email and username are empty, but we still remember the dude.
 if { [empty_string_p $email] && [empty_string_p $username] && [ad_conn untrusted_user_id] != 0 } {
     acs_user::get -user_id [ad_conn untrusted_user_id] -array untrusted_user
     if { [auth::UseEmailForLoginP] } {
@@ -130,6 +140,19 @@ ad_form -extend -name login -form {
     }
 }
 
+# One-Time-Password Enabled - show form element
+if {$otp_installed_p && [exists_and_not_null otp_enabled_p]} {
+
+    set tan_id [im_otp_random_tan_id]
+
+    # Just unconditionally show the OTP.
+    # There is now sense to "abuse" this if OTP
+    # isn't activated...
+
+    set label [lang::message::lookup "" intranet-otp.OTP "OTP \#$tan_id"]
+    ad_form -extend -name login -form [list [list otp:text(text) [list label $label ]]]
+}
+
 set options_list [list [list [_ acs-subsite.Remember_my_login] "t"]]
 if { $allow_persistent_login_p } {
     ad_form -extend -name login -form {
@@ -182,19 +205,60 @@ ad_form -extend -name login -on_request {
     if { ![exists_and_not_null persistent_p] } {
         set persistent_p "f"
     }
-    
+
+    # Authenticate.
+    # But don't set the auth-cookie yet, we first have to
+    # make sure that the person has the right to autenticate
+    # from the intranet/intranet:
     array set auth_info [auth::authenticate \
                              -return_url $return_url \
                              -authority_id $authority_id \
                              -email [string trim $email] \
                              -username [string trim $username] \
                              -password $password \
-                             -persistent=[expr $allow_persistent_login_p && [template::util::is_true $persistent_p]]]
+                             -persistent=[expr $allow_persistent_login_p && [template::util::is_true $persistent_p]] \
+			     -no_cookie=1 \
+    ]
     
-    # Handle authentication problems
+    # Check if there is a secure login module installed
+    # and redirect if the user requires extra auth.
+    if {$otp_installed_p} {
+
+	if {[exists_and_not_null otp]} {
+
+	    # Check of OTP (One-Time-Password) is OK
+	    ad_return_complaint 1 "otp=$otp"
+
+
+	} else {
+
+	    # OTP is not there yet.
+	    # Check if we need to redirect the user
+	    if {[im_otp_user_needs_otp $auth_info(user_id)]} {
+		
+		# Redirect the user to the extended login page
+		ad_returnredirect [export_vars \
+			-base [ad_conn url] \
+			{email return_url {otp_enabled_p 1}}
+		]
+		ad_script_abort
+		
+	    } else {
+		# Nothing - just continue with the standard auth.
+	    }
+
+	}
+
+    }
+
+
+    # Handle authentication status
     switch $auth_info(auth_status) {
         ok {
-            # Continue below
+	    auth::issue_login \
+		-user_id $auth_info(user_id) \
+		-persistent=[expr $allow_persistent_login_p && [template::util::is_true $persistent_p]] \
+		-account_status $auth_info(account_status)
         }
         bad_password {
             form set_error login password $auth_info(auth_message)

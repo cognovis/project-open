@@ -6,5 +6,6 @@ ad_page_contract {
     {username ""}
     {email ""}
     {return_url ""}
+    {otp_enabled_p "" }
 }
 
