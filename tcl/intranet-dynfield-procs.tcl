@@ -1983,18 +1983,19 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     </ul>
 
 } {
-    ns_log Notice "im_dynfield::append_attributes_to_form: object_tpye=$object_type, object_id=$object_id"
+    set debug 0
+    if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: object_tpye=$object_type, object_id=$object_id" }
 
     set user_id [ad_get_user_id]
 
     # ---------------------------- Create the Form --------------------------
     if {![template::form exists $form_id]} {
-	ns_log Notice "im_dynfield::append_attributes_to_form: creating the form"
+	if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: creating the form" }
     	template::form create $form_id
     }
 	
     if {![template::element::exists $form_id "object_type"]} {
-	ns_log Notice "im_dynfield::append_attributes_to_form: creating object_type=$object_type"
+	if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: creating object_type=$object_type" }
     	template::element create $form_id "object_type" \
     			    -datatype text \
     			    -widget hidden \
@@ -2004,7 +2005,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     # object_id only necessary in edit mode
     if {[exists_and_not_null object_id]} {
     	if {![template::element::exists $form_id "object_id"]} {
-	    ns_log Notice "im_dynfield::append_attributes_to_form: creating object_id=$object_id"
+	    if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: creating object_id=$object_id" }
 	    template::element create $form_id "object_id" \
 		-datatype integer \
 		-widget hidden \
@@ -2048,7 +2049,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
     db_foreach attributes $attributes_sql {
     
-	ns_log Notice "im_dynfield::append_attributes_to_form: attribute_name=$attribute_name, datatype=$datatype, widget=$widget, storage_type_id=$storage_type_id"
+	if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: attribute_name=$attribute_name, datatype=$datatype, widget=$widget, storage_type_id=$storage_type_id" }
 
 	# set optional all attributes if search mode
 	if {$search_p} { set required_p "f" }
@@ -2083,7 +2084,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
         switch $widget {
 	    checkbox - radio - select - multiselect - im_category_tree - category_tree {
 
-		ns_log Notice "im_dynfield::append_attributes_to_form: select-widgets: with options"
+		if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: select-widgets: with options" }
 		set option_list ""
 		set options_pos [lsearch $parameter_list "options"]
 		if {$options_pos >= 0} {
@@ -2108,7 +2109,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
 	    default {
 
-		ns_log Notice "im_dynfield::append_attributes_to_form: default: no options"
+		if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: default: no options" }
 		if {![template::element::exists $form_id "$attribute_name"]} {
 		    template::element create $form_id "$attribute_name" \
 			-datatype $translated_datatype [ad_decode $required_p f "-optional" ""] \
