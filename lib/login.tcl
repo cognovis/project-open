@@ -28,8 +28,6 @@ However, there is no OTP set up for you yet.<br>
 Please logon via VPN or Intranet and setup an OTP.
 "]
 
-set bad_otp_message [lang::message::lookup "" intranet-otp.Bad_OTP "Bad One Time Password - Please try again."]
-
 # -------------------------------------------------------
 # Parameters and Configuration
 # -------------------------------------------------------
@@ -192,8 +190,20 @@ if {$otp_installed_p && [exists_and_not_null otp_enabled_p]} {
 	ad_script_abort
     }
 
+    set min_otps_left [parameter::get_from_package_key \
+	-package_key intranet-otp \
+	-parameter MinOtpsLeftBeforeNotice \
+	-default 10
+    ]
+
+    set otps_left [im_otp_otps_left -user_id $otp_user_id]
+    set help_text ""
+    if {$otps_left > $min_otps_left} {
+	set help_text [lang::message::lookup "" intranet-otp.Few_OTPs_Left "There are only %otps_left% OTPs left. Please update your OTP list<br>or you will loose access from this location."]
+    }
+
     set label [lang::message::lookup "" intranet-otp.OTP "OTP \#$otp_nr"]
-    ad_form -extend -name login -form [list [list otp:text(text) [list label $label]]]
+    ad_form -extend -name login -form [list [list otp:text(text) [list help_text $help_text] [list label $label] ]]
     ad_form -extend -name login -form [list [list otp_nr:text(hidden)]]
 }
 
@@ -293,6 +303,8 @@ ad_form -extend -name login -on_request {
 	    }
 
 	    if {![string equal [string tolower [string trim $otp]] [string tolower [string trim $correct_otp]]]} {
+		set remaining_attempts [im_otp_failed_login_attempt -user_id $otp_user_id]
+		set bad_otp_message [lang::message::lookup "" intranet-otp.Bad_OTP "Bad One Time Password - Please try again.<br>There are %remaining_attempts% attempts left."]
 		form set_error login otp $bad_otp_message
 		break
 	    }
@@ -312,7 +324,9 @@ ad_form -extend -name login -on_request {
 	    set auth_info(auth_status) "ok"
 	    set auth_info(account_status) "ok"
 	    set auth_info(user_id) $otp_user_id
-
+	    im_otp_mark_otp_as_used -user_id $otp_user_id -otp_nr $otp_nr
+	    im_otp_reset_failed_logins -user_id $otp_user_id
+	    # ... continues further below with issuing the cookie
 
 	} else {
 
@@ -322,7 +336,8 @@ ad_form -extend -name login -on_request {
 		
 		# Redirect the user to the extended login page
 		set password_hash [im_generate_auto_login -expiry_date $time -user_id $otp_user_id]
-		set otp_nr [im_otp_random_tan_id]
+		set otp_nr [im_otp_next_otp_nr -algorithm sequential -user_id $otp_user_id]
+
 		ad_returnredirect [export_vars -base [ad_conn url] { \
 			email \
 			return_url \
