@@ -336,7 +336,7 @@ ad_form -extend -name login -on_request {
 		
 		# Redirect the user to the extended login page
 		set password_hash [im_generate_auto_login -expiry_date $time -user_id $otp_user_id]
-		set otp_nr [im_otp_next_otp_nr -algorithm sequential -user_id $otp_user_id]
+		set otp_nr [im_otp_next_otp_nr -user_id $otp_user_id]
 
 		ad_returnredirect [export_vars -base [ad_conn url] { \
 			email \
