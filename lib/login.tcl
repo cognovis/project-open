@@ -196,7 +196,7 @@ if {$otp_installed_p && [exists_and_not_null otp_enabled_p]} {
 	-default 10
     ]
 
-    set otps_left [im_otp_otps_left -user_id $otp_user_id]
+    set otps_left [llength [im_otp_unused_otps -user_id $otp_user_id]]
     set help_text ""
     if {$otps_left > $min_otps_left} {
 	set help_text [lang::message::lookup "" intranet-otp.Few_OTPs_Left "There are only %otps_left% OTPs left. Please update your OTP list<br>or you will loose access from this location."]
