@@ -4,7 +4,7 @@ ad_library {
 
     @author Dirk Gomez <openacs@dirkgomez.de>
     @creation-date 2005-06-25
-    @cvs-id $Id: search-convert-procs.tcl,v 1.1 2005/11/08 18:24:07 dirkg Exp $
+    @cvs-id $Id: search-convert-procs.tcl,v 1.2 2006/08/21 22:21:07 daveb Exp $
 }
 
 
@@ -30,11 +30,13 @@ ad_proc -public search::convert::binary_to_text {
 	{application/vnd.ms-word} {
 	    set convert_command {/usr/local/bin/catdoc $filename >$tmp_filename}
 	}
-	{application/powerpoint} {
-	    set convert_command {strings $filename >$tmp_filename}
-	}
-	{application/msexcel} {
+	{application/msexcel} -
+	{application/vnd.ms-excel} {
 	    set convert_command {/usr/local/bin/xls2csv $filename >$tmp_filename}
+	}
+	{application/mspowerpoint} -
+	{application/vnd.ms-powerpoint} {
+	    set convert_command {/usr/local/bin/ppthtml $filename >$tmp_filename}
 	}
 	{application/pdf} {
 	    set convert_command {/usr/local/bin/pdftotext $filename $tmp_filename}
