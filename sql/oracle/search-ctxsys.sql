@@ -18,7 +18,7 @@
 -- Create ctxsys schema objects for .LRN site-wide search
 --
 -- @author <a href="mailto:openacs@dirkgomez.de">openacs@dirkgomez.de</a>
--- @version $Id: search-ctxsys.sql,v 1.1 2005/05/21 11:34:10 dirkg Exp $
+-- @version $Id: search-ctxsys.sql,v 1.2 2006/08/31 07:31:29 emmar Exp $
 -- @creation-date 13-May-2005
 --
 -- Partly ported from ACES.
@@ -37,5 +37,3 @@ grant ctxapp to &1;
 
 -- stuff to make interMedia faster
 exec ctx_adm.set_parameter('max_index_memory', '1G');
-
-exit;

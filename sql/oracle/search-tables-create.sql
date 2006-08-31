@@ -18,7 +18,7 @@
 -- Create database tables for .LRN site-wide search
 --
 -- @author <a href="mailto:openacs@dirkgomez.de">openacs@dirkgomez.de</a>
--- @version $Id: search-tables-create.sql,v 1.6 2006/08/10 16:01:47 daveb Exp $
+-- @version $Id: search-tables-create.sql,v 1.7 2006/08/31 07:31:29 emmar Exp $
 -- @creation-date 13-May-2005
 --
 -- Partly ported from ACES.
@@ -74,4 +74,3 @@ create table sws_log_messages (
   logmessage varchar2(4000),
   logtime    date default sysdate);
 
-exit;

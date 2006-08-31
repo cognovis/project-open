@@ -18,7 +18,7 @@
 -- Create the intermedia index for .LRN site-wide search
 --
 -- @author <a href="mailto:openacs@dirkgomez.de">openacs@dirkgomez.de</a>
--- @version $Id: search-index-create.sql,v 1.2 2005/11/08 18:24:06 dirkg Exp $
+-- @version $Id: search-index-create.sql,v 1.3 2006/08/31 07:31:29 emmar Exp $
 -- @creation-date 13-May-2005
 --
 -- Partly ported from ACES.
@@ -49,4 +49,3 @@ end;
 create index swi_index on site_wide_index (indexed_content)
 indextype is ctxsys.context parameters ('datastore ctxsys.default_datastore memory 250M');
 
-exit;

@@ -18,7 +18,7 @@
 -- Populate .LRN's intermedia index
 --
 -- @author <a href="mailto:openacs@dirkgomez.de">Dirk Gomez</a>
--- @version $Id: search-from-scratch.sql,v 1.2 2005/11/08 18:24:06 dirkg Exp $
+-- @version $Id: search-from-scratch.sql,v 1.3 2006/08/31 07:31:29 emmar Exp $
 -- @creation-date 13-May-2005
 --
 
@@ -54,9 +54,3 @@ commit;
 
 
 --alter index swi_index rebuild parameters ('sync') ;
-
-
-exit;
-
-
-

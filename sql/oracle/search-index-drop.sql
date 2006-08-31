@@ -18,7 +18,7 @@
 -- Drop the intermedia index for .LRN site-wide search
 --
 -- @author <a href="mailto:openacs@dirkgomez.de">Dirk Gomez</a>
--- @version $Id: search-index-drop.sql,v 1.2 2005/11/08 18:24:06 dirkg Exp $
+-- @version $Id: search-index-drop.sql,v 1.3 2006/08/31 07:31:29 emmar Exp $
 -- @creation-date 13-May-2005
 
 begin
@@ -28,5 +28,3 @@ end;
 /  
 
 drop index swi_ctx_index;
-
-exit;
