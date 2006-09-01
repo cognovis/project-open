@@ -185,11 +185,15 @@ db_transaction {
 		    -guard_callback "#" \
 		    -guard_description "Not $task($transition_key,loop_question)"
 
+	    # Default guard to call. Depends on PG/Oracle
+	    set guard_callback "wf_callback__guard_attribute_true"
+	    # ToDo: replace "__" by "." for Oracle.
+
 	    wf_add_arc_out \
 		    -workflow_key $workflow_key \
 		    -from_transition_key $transition_key \
 		    -to_place_key $true_place \
-		    -guard_callback "wf_callback.guard_attribute_true" \
+		    -guard_callback $guard_callback \
 		    -guard_custom_arg $task($transition_key,loop_attribute_name) \
 		    -guard_description $task($transition_key,loop_question)
 	}
