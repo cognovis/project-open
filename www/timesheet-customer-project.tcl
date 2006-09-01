@@ -371,10 +371,6 @@ ad_return_top_of_page "
 	    <input type=textfield name=end_date value=$end_date>
 	  </td>
 	</tr>
-	<tr>
-	  <td></td>
-	  <td><input type=submit value=Submit></td>
-	</tr>
 	</table>
 
 </td><td>
@@ -384,6 +380,11 @@ ad_return_top_of_page "
 	</table>
 
 </td></tr>
+	<tr>
+	  <td colspan=2 align=right><input type=submit value=Submit></td>
+	</tr>
+
+
 </table>
 </form>
 
