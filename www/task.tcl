@@ -25,6 +25,9 @@ ad_page_contract {
 
 set user_id [ad_get_user_id]
 
+# Fire all message transitions before:
+wf_sweep_message_transition_tcl
+
 
 ####################
 #
@@ -152,6 +155,13 @@ if {[string compare $case_state "active"] == 0} {
     template::multirow append extreme_actions "case-state-change?[export_url_vars case_id]&action=suspend" "suspend case"
     template::multirow append extreme_actions "case-state-change?[export_url_vars case_id]&action=cancel" "cancel case"
 }
+
+
+
+# Fire all message transitions after the action:
+wf_sweep_message_transition_tcl
+
+
 
 set export_form_vars [export_vars -form {task_id return_url}]
 

@@ -19,6 +19,8 @@ if { ![info exists package_url] || [empty_string_p $package_url] } {
 }
 
 
+# Fire all message transitions before:
+wf_sweep_message_transition_tcl
 
 
 # DRB: setting return_url to point explicitly at ourselves will cause
