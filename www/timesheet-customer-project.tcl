@@ -10,10 +10,14 @@ ad_page_contract {
 	testing reports	
     @param start_year Year to start the report
     @param start_unit Month or week to start within the start_year
+    @param truncate_note_length Truncate (ellipsis) the note field
+           to the given number of characters. 0 indicates no
+           truncation.
 } {
     { start_date "" }
     { end_date "" }
     { level_of_detail 2 }
+    { truncate_note_length 80}
     project_id:integer,optional
     task_id:integer,optional
     company_id:integer,optional
@@ -296,38 +300,90 @@ set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep
 set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
 set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
 set levels {1 "Customer Only" 2 "Customer+Project" 3 "Customer+Project+User" 4 "All Details"} 
+set truncate_note_options {0 "Full Length" 80 "Standard (80)" 20 "Short (20)"} 
 
 # ------------------------------------------------------------
 # Start formatting the page
 #
 
+set report_options_html ""
+if {$level_of_detail > 3} {
+    append report_options_html "
+	<tr>
+	  <td class=form-label>Size of Note Field</td>
+	  <td class=form-widget>
+	    [im_select -translate_p 0 truncate_note_length $truncate_note_options $truncate_note_length]
+	  </td>
+	</tr>
+    "
+}
+
+
+if {[info exists project_id]} {
+    append report_options_html "
+	<tr>
+	  <td class=form-label></td>
+	  <td class=form-widget>
+            <input type=hidden name=project_id value=\"$project_id\">
+	  </td>
+	</tr>
+    "
+}
+
+
+if {[info exists task_id]} {
+    append report_options_html "
+	<tr>
+	  <td class=form-label></td>
+	  <td class=form-widget>
+            <input type=hidden name=task_id value=\"$task_id\">
+	  </td>
+	</tr>
+    "
+}
+
+
+
 ad_return_top_of_page "
 [im_header $page_title]
 [im_navbar]
 <form>
+
 <table border=0 cellspacing=1 cellpadding=1>
-<tr>
-  <td class=form-label>Level of Details</td>
-  <td class=form-widget>
-    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
-  </td>
-</tr>
-<tr>
-  <td class=form-label>Start Date</td>
-  <td class=form-widget>
-    <input type=textfield name=start_date value=$start_date>
-  </td>
-</tr>
-<tr>
-  <td class=form-label>End Date</td>
-  <td class=form-widget>
-    <input type=textfield name=end_date value=$end_date>
-  </td>
-</tr>
-<tr>
-  <td></td>
-  <td><input type=submit value=Submit></td>
-</tr>
+<tr valign=top><td>
+
+	<table border=0 cellspacing=1 cellpadding=1>
+	<tr>
+	  <td class=form-label>Level of Details</td>
+	  <td class=form-widget>
+	    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
+	  </td>
+	</tr>
+	<tr>
+	  <td class=form-label>Start Date</td>
+	  <td class=form-widget>
+	    <input type=textfield name=start_date value=$start_date>
+	  </td>
+	</tr>
+	<tr>
+	  <td class=form-label>End Date</td>
+	  <td class=form-widget>
+	    <input type=textfield name=end_date value=$end_date>
+	  </td>
+	</tr>
+	<tr>
+	  <td></td>
+	  <td><input type=submit value=Submit></td>
+	</tr>
+	</table>
+
+</td><td>
+
+	<table border=0 cellspacing=1 cellpadding=1>
+        $report_options_html
+	</table>
+
+</td></tr>
 </table>
 </form>
 
@@ -344,7 +400,7 @@ set last_value_list [list]
 set class "rowodd"
 db_foreach sql $sql {
 
-	set note [string_truncate -len 80 $note]
+	set note [string_truncate -len $truncate_note_length $note]
 
 	im_report_display_footer \
 	    -group_def $report_def \
