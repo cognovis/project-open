@@ -1580,7 +1580,8 @@ ad_proc -private auth::authentication::Authenticate {
     # version number -jfr 
 
     set authentication_version [util_memoize [list apm_highest_version_name acs-authentication]]
-    set old_version_p [util_memoize [list apm_version_names_compare 5.1.3 $authentication_version]]
+    set old_version_p [util_memoize [list apm_version_names_compare 5.2.0 $authentication_version]]
+    set old_version_p 0
 
     if {[string is true $old_version_p]} {
 	return [acs_sc::invoke \
