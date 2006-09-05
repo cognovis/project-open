@@ -163,19 +163,36 @@ ad_proc -public im_workflow_home_component {
 
     set package_url "/workflow/"
 
-    set own_tasks [template::adp_parse $template_path [list package_url $package_url type own]]
-    set all_tasks [template::adp_parse $template_path [list package_url $package_url]]
 
-    if {[string length own_tasks] < 50} { set own_tasks "" }
-    if {[string length unassigned_tasks] < 50} { set unassigned_tasks "" }
+    set own_tasks [template::adp_parse $template_path [list package_url $package_url type own]]
+    set own_tasks "<h3>[lang::message::lookup "" intranet-workflow.All_Tasks "Your Tasks"]</h3>\n$own_tasks"
+
+    set all_tasks ""
+    if {$admin_p} {
+	set all_tasks [template::adp_parse $template_path [list package_url $package_url]]
+	set all_tasks "<h3>[lang::message::lookup "" intranet-workflow.All_Tasks "All Tasks"]</h3>\n$all_tasks"
+    }
+
+    set unassigned_tasks ""
+    if {$admin_p} {
+	set unassigned_tasks [template::adp_parse $template_path [list package_url $package_url type unassigned]]
+	set unassigned_tasks "<h3>[lang::message::lookup "" intranet-workflow.Unassigned_Tasks "Unassigned Tasks"]</h3>\n$unassigned_tasks"
+    }
+	
+    
+#    if {[string length own_tasks] < 50} { set own_tasks "" }
+#    if {[string length all_tasks] < 50} { set all_tasks "" }
+#    if {[string length unassigned_tasks] < 50} { set unassigned_tasks "" }
 
     set component_html "
 <table cellspacing=1 cellpadding=0>
 <tr><td>
 $own_tasks
 $all_tasks
+$unassigned_tasks
 </td></tr>
 </table>
+<br>
 "
 
     return $component_html
