@@ -1803,9 +1803,11 @@ ad_proc wf_sweep_message_transition_tcl {} {
 	select
 		ta.*,
 		tr.*,
+		ca.object_id,
 		ti.enable_custom_arg as tcl_call
 	from
 		wf_tasks ta,
+		wf_cases ca,
 		wf_transitions tr,
 		wf_context_transition_info ti
 	where
@@ -1813,6 +1815,7 @@ ad_proc wf_sweep_message_transition_tcl {} {
 		and ta.transition_key = tr.transition_key
 		and ta.workflow_key = ti.workflow_key
 		and ta.transition_key = ti.transition_key
+		and ta.case_id = ca.case_id
 		and
 			(ti.enable_callback = '' OR ti.enable_callback is NULL) and
 			ta.state = 'enabled'
@@ -1824,8 +1827,8 @@ ad_proc wf_sweep_message_transition_tcl {} {
 		select journal_entry__new (
 			null,
 			:case_id,
-		        'task ' || :task_id || ' enable TCL ' || :tcl_call,
-			null,
+		        'task ' || :task_id || ' tcl enable',
+		        'Enable TCL task' || :task_id || ': ' || :tcl_call,
 			now(),
 			:user_id,
 			:ip_address,
