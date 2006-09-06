@@ -163,15 +163,11 @@ ad_proc -public im_workflow_home_component {
 
     set package_url "/workflow/"
 
-
     set own_tasks [template::adp_parse $template_path [list package_url $package_url type own]]
     set own_tasks "<h3>[lang::message::lookup "" intranet-workflow.All_Tasks "Your Tasks"]</h3>\n$own_tasks"
 
-    set all_tasks ""
-    if {$admin_p} {
-	set all_tasks [template::adp_parse $template_path [list package_url $package_url]]
-	set all_tasks "<h3>[lang::message::lookup "" intranet-workflow.All_Tasks "All Tasks"]</h3>\n$all_tasks"
-    }
+    set all_tasks [template::adp_parse $template_path [list package_url $package_url]]
+    set all_tasks "<h3>[lang::message::lookup "" intranet-workflow.All_Tasks "All Tasks"]</h3>\n$all_tasks"
 
     set unassigned_tasks ""
     if {$admin_p} {
