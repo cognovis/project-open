@@ -40,13 +40,13 @@ insert into im_biz_object_urls (
 );
 
 
-delete from im_categories where category_id in (3720, 3722);
+# delete from im_categories where category_id in (3720, 3722);
 
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3720,'Expense Item','Intranet Cost Type');
+# INSERT INTO im_categories (category_id, category, category_type)
+# VALUES (3720,'Expense Item','Intranet Cost Type');
 
-INSERT INTO im_categories (category_id, category, category_type)
-VALUES (3722,'Expense Report','Intranet Cost Type');
+# INSERT INTO im_categories (category_id, category, category_type)
+# VALUES (3722,'Expense Report','Intranet Cost Type');
 
 
 -- prompt *** intranet-expenses: Creating Expense categories

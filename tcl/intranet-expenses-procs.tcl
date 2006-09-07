@@ -34,10 +34,6 @@ ad_proc -private im_package_expenses_id_helper {} {
 }
 
 
-ad_proc -public im_cost_type_expense_item {} { return 3720 }
-ad_proc -public im_cost_type_expense_report {} { return 3722 }
-
-
 # ----------------------------------------------------------------------
 # 
 # ----------------------------------------------------------------------
