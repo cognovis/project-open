@@ -25,7 +25,6 @@ alter table im_projects add     cost_timesheet_planned_cache	numeric(12,2);
 alter table im_projects alter	cost_timesheet_planned_cache	set default 0;
 alter table im_projects add     cost_expense_planned_cache	numeric(12,2);
 alter table im_projects alter	cost_expense_planned_cache	set default 0;
-
 alter table im_projects add     cost_purchase_orders_cache	numeric(12,2);
 alter table im_projects alter	cost_purchase_orders_cache	set default 0;
 alter table im_projects add     cost_bills_cache		numeric(12,2);
@@ -34,6 +33,8 @@ alter table im_projects add     cost_timesheet_logged_cache	numeric(12,2);
 alter table im_projects alter	cost_timesheet_logged_cache	set default 0;
 alter table im_projects add     cost_expense_logged_cache	numeric(12,2);
 alter table im_projects alter	cost_expense_logged_cache	set default 0;
+alter table im_projects alter	cost_delivery_notes_cache	numeric(12,2);
+alter table im_projects alter	cost_delivery_notes_cache	set default 0;
 
 
 

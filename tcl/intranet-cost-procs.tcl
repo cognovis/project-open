@@ -42,9 +42,6 @@ ad_proc -public im_cost_type_expense_item {} { return 3720 }
 ad_proc -public im_cost_type_expense_report {} { return 3722 }
 ad_proc -public im_cost_type_delivery_note {} { return 3724 }
 
-# Defined in intranet-expenses:
-# ad_proc -public im_cost_type_expense_item {} { return 3720 }
-
 
 
 # Payment Methods
