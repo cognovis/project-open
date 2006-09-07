@@ -7,11 +7,11 @@
 <table>
   <tr>
     <th align="right">Task</th>
-    <td>@transition_name@</td>
+    <td>@transition_name;noquote@</td>
   </tr>
   <tr>
     <th align="right">Deadline</th>
-    <td>@date_widget@ </td>
+    <td>@date_widget;noquote@ </td>
   </tr>
   <tr>
     <td>&nbsp;</td>

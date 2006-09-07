@@ -19,7 +19,7 @@
  
 <fullquery name="a_week_from_now">      
       <querytext>
-      select current_timestamp+7 
+      select now()::date + 7 
       </querytext>
 </fullquery>
 

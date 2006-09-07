@@ -27,12 +27,19 @@ db_foreach unassigned_parties {
            acs_object.name(p.party_id) as name,
            p.email
       from parties p
-     where not exists (select 1 from wf_task_assignments ta where ta.task_id = :task_id and ta.party_id = p.party_id)
-       and 0 < (select count(*)
+	   groups g
+     where p.party_id = g.group_id
+	   and not exists (
+		select 1 
+		from wf_task_assignments ta 
+		where ta.task_id = :task_id and ta.party_id = p.party_id
+	   )
+    	   and 0 < (
+		select count(*)
                 from   users u, party_approved_member_map m
                 where  m.party_id = p.party_id
-                and    u.user_id = m.member_id)
-
+                and    u.user_id = m.member_id
+	   )
 } {
     incr count
     append party_widget "<option value=\"$party_id\">$name [ad_decode $email "" "" "(<a href=\"mailto:$email\">$email</a>)"]</option>\n"

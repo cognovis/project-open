@@ -4,7 +4,8 @@ ad_page_contract {} {
 }
 
 if { ![info exist date_format] || [empty_string_p $date_format] } {
-    set date_format "Mon fmDDfm, YYYY HH24:MI:SS"
+#    set date_format "Mon fmDDfm, YYYY HH24:MI:SS"
+    set date_format "YYYY-MM-DD HH24:MI"
 }
 if { ![info exists type] || [empty_string_p $type] } {
     set type enabled
@@ -93,4 +94,11 @@ where  [join $where "\n   and "]"
 
 db_multirow task_list started_tasks_select $sql {
     set task_url "[export_vars -base "task" {task_id return_url}]"
+
+    # Eliminate the "00:00" hour extension
+    # because 00:00 implicitely means "until the end of that day"
+    if {[regexp {^([^\ ]*)\ (00\:00)$} $deadline_pretty match day hour]} {
+	set deadline_pretty $day
+    }
+
 }

@@ -15,7 +15,7 @@
     to_char(t.started_date, :date_format) as started_date_pretty,
     t.deadline,
     to_char(t.deadline, :date_format) as deadline_pretty,
-    t.deadline - now() as days_till_deadline,
+    t.deadline::date - now()::date as days_till_deadline,
     t.state, 
     c.object_id, 
     ot.object_type as object_type,
