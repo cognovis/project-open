@@ -58,10 +58,11 @@ if {![exists_and_not_null cost_id]} {
     set provider_id [im_company_internal]
     set cost_status_id [im_cost_status_created]
     set amount 0
+    set paid_amount 0
     set vat 0
     set tax 0
-
     set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+    set paid_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
     set form_mode "edit"
 }
 
@@ -91,7 +92,9 @@ set investment_label "[_ intranet-cost.Investment]"
 set effective_date_label "[_ intranet-cost.Effective_Date]"
 set payment_days_label "[_ intranet-cost.Payment_Days]"
 set amount_label "[_ intranet-cost.Amount]"
+set paid_amount_label [lang::message::lookup "" intranet-cost.Paid_Amount "Paid Amount"]
 set currency_label "[_ intranet-cost.Currency]"
+set paid_currency_label [lang::message::lookup "" intranet-cost.Paid_Currency "Paid Currency"]
 set vat_label "[_ intranet-cost.VAT]"
 set tax_label "[_ intranet-cost.TAX]"
 set desc_label "[_ intranet-cost.Description]"
@@ -120,6 +123,9 @@ ad_form \
 	
 	{amount:text(text) {label $amount_label} {html {size 20}} }
 	{currency:text(select) {label $currency_label} {options $currency_options} }
+
+	{paid_amount:text(text) {label $paid_amount_label} {html {size 20}} }
+	{paid_currency:text(select) {label $paid_currency_label} {options $currency_options} }
 
 	{vat:text(text) {label $vat_label} {html {size 20}} }
 	{tax:text(text) {label $tax_label} {html {size 20}} }
@@ -187,7 +193,9 @@ ad_form -extend -name cost -on_request {
 		start_block		= :start_block,
                 payment_days    	= :payment_days,
 		amount			= :amount,
+		paid_amount		= :paid_amount,
                 currency        	= :currency,
+                paid_currency        	= :paid_currency,
                 vat             	= :vat,
                 tax             	= :tax,
                 cause_object_id		= :cause_object_id,
