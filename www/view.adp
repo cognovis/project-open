@@ -14,7 +14,7 @@
 	  <tr> 
 	    <td>#intranet-payments.Cost_Nr#</td>
 	    <td>
-	      <A href=/intranet-costs/view?cost_id=@cost_id@>@cost_name@</A>
+	      <A href=/intranet-cost/costs/new?form_mode=display&cost_id=@cost_id@>@cost_name@</A>
 	    </td>
 	  </tr>
 	  <tr> 

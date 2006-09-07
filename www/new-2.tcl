@@ -62,6 +62,10 @@ set company_id [db_string get_company_from_invoice "select customer_id from im_c
 
 set provider_id [db_string get_provider_from_invoice "select provider_id from im_costs where cost_id=:cost_id" -default 0]
 
+# Default Currency
+set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+
+
 # ---------------------------------------------------------------
 # Insert data into the DB
 # ---------------------------------------------------------------
@@ -122,13 +126,14 @@ insert into im_payments (
 # ---------------------------------------------------------------
 
 db_dml update_cost_items "
-update im_costs
-set paid_amount = (
-	select	sum(amount)
-	from	im_payments
-	where	cost_id = :cost_id
-)
-where cost_id = :cost_id
+	update im_costs set 
+		paid_amount = (
+			select	sum(amount * im_exchange_rate(received_date::date, currency, :default_currency))
+			from	im_payments
+			where	cost_id = :cost_id
+		),
+		paid_currency = :default_currency
+	where cost_id = :cost_id
 "
 
 # Mark the financial document as paid to save time
