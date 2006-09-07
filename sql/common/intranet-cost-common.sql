@@ -167,6 +167,7 @@ insert into im_category_hierarchy values (3710,3704);
 insert into im_category_hierarchy values (3710,3706);
 insert into im_category_hierarchy values (3708,3700);
 insert into im_category_hierarchy values (3708,3702);
+insert into im_category_hierarchy values (3708,3724);
 
 
 -- prompt *** intranet-costs: Creating category Cost Status
