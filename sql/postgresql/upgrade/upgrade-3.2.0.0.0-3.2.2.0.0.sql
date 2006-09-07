@@ -18,3 +18,9 @@ alter table im_projects add     cost_delivery_notes_cache       numeric(12,2);
 alter table im_projects alter   cost_delivery_notes_cache       set default 0;
 
 
+-- Remove old "Travel Costs" cost type
+delete from im_categories where category_id = 3712;
+
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (3724,'Delivery Note','Intranet Cost Type');
+

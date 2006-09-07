@@ -1249,10 +1249,18 @@ order by
 }
 
 
-ad_proc -public im_cost_type_select { select_name { default "" } { super_type_id 0 } } {
+ad_proc -public im_cost_type_select { 
+    select_name 
+    { default "" } 
+    { super_type_id 0 } 
+    { cost_item_group "" }
+} {
     Returns an html select box named $select_name and defaulted to
     $default with a list of all the cost_types in the system.
     If super_type_id is specified then return only those types "below" super_type.
+
+    @param cost_item_group Can be "" (all) or "financial_doc".
+           Limits the number of cost types to a certain group of FinDocs
 } {
     set category_type "Intranet Cost Type"
     set bind_vars [ns_set create]
@@ -1263,6 +1271,19 @@ ad_proc -public im_cost_type_select { select_name { default "" } { super_type_id
 		c.category
 	from	im_categories c
 	where	c.category_type = :category_type"
+
+    # Restrict to specific subtypes of FinDocs
+    switch [string tolower $cost_item_group] {
+	"financial_doc" {
+	    append sql "\n\t\tand c.category_id in (
+		[im_cost_type_invoice],
+		[im_cost_type_quote],
+		[im_cost_type_bill],
+		[im_cost_type_po],
+		[im_cost_type_delivery_note]
+		)"
+	}
+    }
 
     if {$super_type_id} {
 	ns_set put $bind_vars super_type_id $super_type_id
