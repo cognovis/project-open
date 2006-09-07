@@ -823,25 +823,14 @@ ad_proc im_costs_project_finance_component {
 
     # ----------------- Main SQL - select subtotals and their currencies -------------
 
-    
-    set subtotals_sql "
-select
-	to_char(sum(ci.amount), :num_format) as amount,
-	ci.currency,
-        cat.category_id as cost_type_id,
-        im_category_from_id(cat.category_id) as cost_type,
-	case 
-		when cat.category_id = [im_cost_type_invoice] then 1
-		when cat.category_id = [im_cost_type_quote] then 1
-		else -1
-	end as sign	
-from
-	im_categories cat left outer join 
-	(
-		select	*
-		from	im_costs ci
-		where
-			ci.cost_id in (
+    # Determines the cost_ids to be included in in this view.
+    # There are two options:
+    # - Those cost items that contain our project_id in the "project_id" column
+    #   (generated from normal invoicing process) and
+    # - Those that are N:M related to a project via acs_rels.
+    #   These holds for cummulative invoices, for example in translation.
+    #
+    set project_cost_ids_sql "
 		                select distinct cost_id
 		                from im_costs
 		                where project_id in (
@@ -865,6 +854,33 @@ from
 							and tree_right(parent.tree_sortkey)
 						and parent.project_id = :org_project_id
 				)
+    "
+
+   
+    set subtotals_sql "
+select
+	to_char(sum(ci.amount), :num_format) as amount,
+	to_char(sum(ci.amount_converted), :num_format) as amount_converted,
+	ci.currency,
+        cat.category_id as cost_type_id,
+        im_category_from_id(cat.category_id) as cost_type,
+	case 
+		when cat.category_id = [im_cost_type_invoice] then 1
+		when cat.category_id = [im_cost_type_quote] then 1
+		else -1
+	end as sign	
+from
+	im_categories cat left outer join 
+	(
+		select	ci.*,
+			im_exchange_rate(
+				ci.effective_date::date, 
+				ci.currency, 
+				:default_currency
+			) * amount as amount_converted
+		from	im_costs ci
+		where	ci.cost_id in (
+				$project_cost_ids_sql
 			)
 	) ci on (cat.category_id = ci.cost_type_id)
 where
@@ -888,33 +904,19 @@ order by
 
     # ----------------- Initialize variables -------------
 
-    # Get the list of all currencies
-    set currency ""
-    set currencies [list]
-    db_foreach all_currencies "select distinct currency from ($subtotals_sql) st" {
-
-	# simply skip the "" or NULL currency from timesheet
-	if {"" == $currency} { continue }
-	lappend currencies $currency
-    }
-    set num_currencies [llength $currencies]
-
     # Initialize the subtotal array
-    db_foreach subtotal_init "select category_id from im_categories where category_type='Intranet Cost Type'" {
-	foreach currency $currencies {
-	    set subtotals($category_id$currency) 0
-	}
-	# Initialize the sum for the "empty currency" for uninitialized timesheet costs
+    set cost_type_sql "select category_id from im_categories where category_type='Intranet Cost Type'"
+    db_foreach subtotal_init $cost_type_sql {
 	set subtotals($category_id) 0
     }
 
     # ----------------- Calculate Subtotals per cost_type_id -------------
 
     db_foreach subtotals $subtotals_sql {
-	if {"" == $amount} { set amount 0 }
+	if {"" == $amount_converted} { set amount_converted 0 }
 	if {"" == $currency} { set currency $default_currency }
-	set subtotals($cost_type_id$currency) $amount
-	ns_log Notice "im_costs_project_finance_component: subtotals($cost_type_id$currency) = $amount"
+	set subtotals($cost_type_id) $amount_converted
+	ns_log Notice "im_costs_project_finance_component: subtotals($cost_type_id) = $amount_converted"
     }
 
 
@@ -925,9 +927,10 @@ order by
     set costs_sql "
 select
 	ci.*,
-	ci.paid_amount as payment_amount,
+	to_char(ci.paid_amount, :num_format) as payment_amount,
 	ci.paid_currency as payment_currency,
 	to_char(ci.amount, :num_format) as amount,
+	to_char(ci.amount * im_exchange_rate(ci.effective_date::date, ci.currency, :default_currency), :num_format) as amount_converted,
 	p.project_nr,
 	p.project_name,
 	cust.company_name as customer_name,
@@ -947,29 +950,7 @@ where
 	ci.cost_id = o.object_id
 	and o.object_type = url.object_type
 	and ci.cost_id in (
-		                select distinct cost_id
-		                from im_costs
-		                where project_id in (
-					select	children.project_id
-					from	im_projects parent,
-						im_projects children
-					where	children.tree_sortkey 
-							between parent.tree_sortkey 
-							and tree_right(parent.tree_sortkey)
-						and parent.project_id = :org_project_id
-				)
-			    UNION
-				select distinct object_id_two as cost_id
-				from acs_rels
-				where object_id_one in (
-					select	children.project_id
-					from	im_projects parent,
-						im_projects children
-					where	children.tree_sortkey 
-							between parent.tree_sortkey 
-							and tree_right(parent.tree_sortkey)
-						and parent.project_id = :org_project_id
-				)
+		$project_cost_ids_sql
 	)
 order by
 	ci.cost_type_id,
@@ -990,6 +971,7 @@ order by
     <td align=center class=rowtitle>[_ intranet-cost.Company]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Due]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Amount]</td>
+    <td align=center class=rowtitle>[lang::message::lookup "" intranet-cost.Org_Amount "Org"]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Paid]</td>
   </tr>
 "
@@ -1002,34 +984,19 @@ order by
     set old_cost_type_id 0
     db_foreach recent_costs $costs_sql {
 
-	# Write an intermediate header for each project
-	if {$project_nr != $old_project_nr} {
-
-#	    append cost_html "
-#		<tr class=rowplain><td colspan=99>&nbsp;</td></tr>
-#		<tr>
-#		  <td colspan=99 class=rowtitle>$project_name</td>
-#		</tr>
-#		<tr class=rowplain><td colspan=99>&nbsp;</td></tr>\n"
-#	    set old_project_nr $project_nr
-
-	}
-
 	# Write the subtotal line of the last cost_type_id section
 	if {$cost_type_id != $old_cost_type_id} {
-	    foreach curcur [array names currencies] {
-		if {0 != $old_cost_type_id} {
-		    append cost_html "
+	    if {0 != $old_cost_type_id} {
+		append cost_html "
 		<tr class=rowplain>
-		  <td colspan=[expr $colspan-2]>&nbsp;</td>
+		  <td colspan=[expr $colspan-3]>&nbsp;</td>
 		  <td colspan=2>
-		    <b>$subtotals($old_cost_type_id$curcur) $curcur</b>
+		    <b>$subtotals($old_cost_type_id) $default_currency</b>
 		  </td>
 		</tr>
 		<tr>
 		  <td colspan=99 class=rowplain>&nbsp;</td>
 		</tr>\n"
-		}
 	    }
 
 	    append cost_html "
@@ -1049,48 +1016,51 @@ order by
 	
 	set cost_url "$url$cost_id&return_url=[ns_urlencode $return_url]"
 
+	set amount_unconverted "<nobr>([string trim $amount] $currency)</nobr>"
+	if {[string equal $currency $default_currency]} { set amount_unconverted "" }
+
+	set amount_paid "$payment_amount $default_currency"
+	if {"" == $payment_amount} { set amount_paid "" }
 	append cost_html "
 	<tr $bgcolor([expr $ctr % 2])>
-<!--	  <td>$project_nr</td> -->
 	  <td><nobr><A href=\"$cost_url\">[string range $cost_name 0 20]</A></nobr></td>
 	  <td>$company_name</td>
 	  <td>$calculated_due_date</td>
-	  <td><nobr>$amount $currency</nobr></td>
-	  <td>$payment_amount $payment_currency</td>
+	  <td><nobr>$amount_converted $default_currency</nobr></td>
+	  <td><nobr>$amount_unconverted</td>
+	  <td><nobr>$amount_paid</nobr></td>
 	</tr>\n"
 	incr ctr
     }
 
-
     # Write the subtotal line of the last cost_type_id section
-    foreach curcur [array names currencies] {
-	if {0 != $old_cost_type_id} {
-	    append cost_html "
+    if {$ctr > 1} {
+	append cost_html "
 		<tr class=rowplain>
-		  <td colspan=[expr $colspan-2]>&nbsp;</td>
+		  <td colspan=[expr $colspan-3]>&nbsp;</td>
 		  <td colspan=2>
-		    <b>$subtotals($old_cost_type_id$curcur) $curcur</b>
+		    <b>$subtotals($old_cost_type_id) $default_currency</b>
 		  </td>
 		</tr>
 		<tr>
 		  <td colspan=99 class=rowplain>&nbsp;</td>
 		</tr>\n"
-	}
     }
 
     # Add a reasonable message if there are no documents
     if {$ctr == 1} {
 	append cost_html "
-<tr$bgcolor([expr $ctr % 2])>
-  <td colspan=$colspan align=center>
-    <I>[_ intranet-cost.lt_No_financial_document]</I>
-  </td>
-</tr>\n"
+	<tr$bgcolor([expr $ctr % 2])>
+	  <td colspan=$colspan align=center>
+	    <I>[_ intranet-cost.lt_No_financial_document]</I>
+	  </td>
+	</tr>\n"
 	incr ctr
     }
 
     # Close the main table
     append cost_html "</table>\n"
+
 
     # ----------------- Hard Costs HTML -------------
     # Hard "real" costs such as invoices, bills and timesheet
@@ -1098,95 +1068,51 @@ order by
     # Add numbers to the im_projects table "cache" fields
     if {[db_column_exists im_projects cost_invoices_cache]} {
 	
-	if {1 == $num_currencies} {
-
-	    # We can update the profit&loss because all financial documents
-	    # for this project are of the same currency.
-
-	    db_dml update_projects "
+	# We can update the profit&loss because all financial documents
+	# for this project are of the same currency.
+	db_dml update_projects "
 		update im_projects set
-			cost_invoices_cache = $subtotals([im_cost_type_invoice]$currency),
-			cost_bills_cache = $subtotals([im_cost_type_bill]$currency),
-			cost_timesheet_logged_cache = $subtotals([im_cost_type_timesheet]$currency),
-			cost_expense_logged_cache = $subtotals([im_cost_type_expense_report]$currency),
-			cost_quotes_cache = $subtotals([im_cost_type_quote]$currency),
-			cost_purchase_orders_cache = $subtotals([im_cost_type_po]$currency),
+			cost_invoices_cache = $subtotals([im_cost_type_invoice]),
+			cost_bills_cache = $subtotals([im_cost_type_bill]),
+			cost_timesheet_logged_cache = $subtotals([im_cost_type_timesheet]),
+			cost_expense_logged_cache = $subtotals([im_cost_type_expense_report]),
+			cost_quotes_cache = $subtotals([im_cost_type_quote]),
+			cost_purchase_orders_cache = $subtotals([im_cost_type_po]),
 			cost_timesheet_planned_cache = 0,
 			cost_expense_planned_cache = 0
 		where
 			project_id = :org_project_id
-	    "
-	} else {
-
-	    # We can't calculate a consistent sum because there is
-	    # more then one currency
-
-	    db_dml update_projects "
-		update im_projects set
-			cost_invoices_cache = null,
-			cost_bills_cache = null,
-			cost_timesheet_logged_cache = null,
-			cost_expense_logged_cache = null,
-			cost_quotes_cache = null,
-			cost_purchase_orders_cache = null,
-			cost_timesheet_planned_cache = null,
-			cost_expense_planned_cache = null
-		where
-			project_id = :org_project_id
-	    "
-	}
-    }
-
-    # Create some subheaders for each currency to make 
-    # it more clear to the user that he's got several
-    # curencies here
-    set currency_subheaders ""
-    if {$num_currencies > 1} {
-	set currency_subheaders "
-	    <tr>
-		<td>&nbsp;</td>\n"
-
-	foreach currency $currencies {
-	    append currency_subheaders "<td class=rowtitle align=center>$currency</td>\n"
-	}
-	append currency_subheaders "</tr>\n"
+	"
     }
 
     set hard_cost_html "
 <table width=\"100%\">
   <tr class=rowtitle>
     <td class=rowtitle colspan=9 align=center>[_ intranet-cost.Real_Costs]</td>
-    $currency_subheaders
   </tr>
   <tr>
     <td>[_ intranet-cost.Customer_Invoices]</td>\n"
-    foreach currency $currencies {
-	set subtotal $subtotals([im_cost_type_invoice]$currency)
-	append hard_cost_html "<td align=right>$subtotal $currency</td>\n"
-	set grand_total($currency) $subtotal
-    }
+    set subtotal $subtotals([im_cost_type_invoice])
+    append hard_cost_html "<td align=right>$subtotal $default_currency</td>\n"
+    set grand_total $subtotal
+
     append hard_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Provider_Bills]</td>\n"
-    foreach currency $currencies {
-	set subtotal $subtotals([im_cost_type_bill]$currency)
-	append hard_cost_html "<td align=right>- $subtotal $currency</td>\n"
-	set grand_total($currency) [expr $grand_total($currency) - $subtotal]
-    }
+    set subtotal $subtotals([im_cost_type_bill])
+    append hard_cost_html "<td align=right>- $subtotal $currency</td>\n"
+    set grand_total [expr $grand_total - $subtotal]
+
     append hard_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Timesheet_Costs]</td>\n"
-    foreach currency $currencies {
-	set subtotal $subtotals([im_cost_type_timesheet]$currency)
-	append hard_cost_html "<td align=right>- $subtotal $currency</td>\n"
-	set grand_total($currency) [expr $grand_total($currency) - $subtotal]
-    }
+    set subtotal $subtotals([im_cost_type_timesheet])
+    append hard_cost_html "<td align=right>- $subtotal $currency</td>\n"
+    set grand_total [expr $grand_total - $subtotal]
+
     append hard_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Expenses "Expenses"]</td>\n"
-    foreach currency $currencies {
-	set subtotal $subtotals([im_cost_type_expense_report]$currency)
-	append hard_cost_html "<td align=right>- $subtotal $currency</td>\n"
-	set grand_total($currency) [expr $grand_total($currency) - $subtotal]
-    }
+    set subtotal $subtotals([im_cost_type_expense_report])
+    append hard_cost_html "<td align=right>- $subtotal $currency</td>\n"
+    set grand_total [expr $grand_total - $subtotal]
+
     append hard_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-cost.Grand_Total]</b></td>\n"
-    foreach currency $currencies {
-	append hard_cost_html "<td align=right><b>$grand_total($currency) $currency</b></td>\n"
-    }
+    append hard_cost_html "<td align=right><b>$grand_total $currency</b></td>\n"
     append hard_cost_html "</tr>\n</table>\n"
 
 
@@ -1197,40 +1123,33 @@ order by
 <table width=\"100%\">
   <tr class=rowtitle>
     <td class=rowtitle colspan=9 align=center>[_ intranet-cost.Preliminary_Costs]</td>
-    $currency_subheaders
   </tr>
   <tr>
     <td>[_ intranet-cost.Quotes]</td>\n"
-    foreach currency $currencies {
-	set subtotal $subtotals([im_cost_type_quote]$currency)
-	append prelim_cost_html "<td align=right>$subtotal $currency</td>\n"
-	set grand_total($currency) $subtotal
-    }
+
+    set subtotal $subtotals([im_cost_type_quote])
+    append prelim_cost_html "<td align=right>$subtotal $currency</td>\n"
+    set grand_total $subtotal
+
     append prelim_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Purchase_Orders]</td>\n"
-    foreach currency $currencies {
-	set subtotal $subtotals([im_cost_type_po]$currency)
-	append prelim_cost_html "<td align=right>- $subtotal $currency</td>\n"
-	set grand_total($currency) [expr $grand_total($currency) - $subtotal]
-    }
+    set subtotal $subtotals([im_cost_type_po])
+    append prelim_cost_html "<td align=right>- $subtotal $currency</td>\n"
+    set grand_total [expr $grand_total - $subtotal]
 
     append prelim_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Timesheet_Costs]</td>\n"
-    foreach currency $currencies {
-	append prelim_cost_html "<td align=right>
-<!--	  $subtotals([im_cost_type_timesheet]$currency) $currency -->
+    
+    append prelim_cost_html "<td align=right>
+<!--	  $subtotals([im_cost_type_timesheet]) $currency -->
 	</td>\n"
-    }
 
     append prelim_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Expenses "Expenses"]</td>\n"
-    foreach currency $currencies {
-	append prelim_cost_html "<td align=right>
-<!--	  $subtotals([im_cost_type_expense_report]$currency) $currency -->
+    append prelim_cost_html "<td align=right>
+<!--	  $subtotals([im_cost_type_expense_report]) $currency -->
 	</td>\n"
-    }
+
 
     append prelim_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-cost.Grand_Total]</b></td>\n"
-    foreach currency $currencies {
-	append prelim_cost_html "<td align=right><b>$grand_total($currency) $currency</b></td>\n"
-    }
+    append prelim_cost_html "<td align=right><b>$grand_total $currency</b></td>\n"
     append prelim_cost_html "</tr>\n</table>\n"
 
 
@@ -1272,19 +1191,10 @@ order by
 	"
     }
 
-    # Print out a warning in case of multiple currencies,
-    # because we can't include this project then in profit & loss
-    # and margin calculations
-    set multiple_currency_warning ""
-    if {1 < $num_currencies} { 
-	set multiple_currency_warning [_ intranet-cost.Multiple_Currency_Warning]  
-    }
-
     set result_html ""
 
     if {$show_details_p} {
 	set result_html "
-	$multiple_currency_warning
 	<table>
 	<tr valign=top>
 	  <td>
@@ -1455,6 +1365,27 @@ where
     append sql " order by lower(cost_name)"
     return [im_selection_to_select_box $bind_vars "cost_status_select" $sql $select_name $default]
 }
+
+
+ad_proc im_cost_update_payments { cost_id } {
+    Update the payment amount for a cost item by
+    summing up all payments for this item.
+} {
+    set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+
+    db_dml update_cost_payment "
+	update im_costs set 
+	    paid_amount = (
+	        select  sum(amount * im_exchange_rate(received_date::date, currency, :default_currency))
+	        from    im_payments
+	        where   cost_id = :cost_id
+	    ),
+	    paid_currency = :default_currency
+	where cost_id = :cost_id
+    "
+}
+
+
 
 
 

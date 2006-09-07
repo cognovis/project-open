@@ -17,6 +17,7 @@
         <provides url="intranet-cost" version="3.0.0"/>
         <requires url="acs-subsite" version="5.0"/>
         <requires url="intranet-core" version="3.0.0"/>
+        <requires url="intranet-exchange-rate" version="3.0.0"/>
 
         <callbacks>
         </callbacks>
