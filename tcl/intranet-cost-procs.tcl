@@ -63,6 +63,29 @@ ad_proc -private im_package_cost_id_helper {} {
 
 
 
+
+# -----------------------------------------------------------
+# Characteristics & Grouping
+# -----------------------------------------------------------
+
+ad_proc -public im_cost_type_is_invoice_or_quote_p { cost_type_id } {
+    Invoices and Quotes have a "Company" fields,
+    so we need to identify them:
+} {
+    set invoice_or_quote_p [expr $cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_quote] || $cost_type_id == [im_cost_type_delivery_note]]
+    return $invoice_or_quote_p
+}
+
+
+ad_proc -public im_cost_type_is_invoice_or_bill_p { cost_type_id } {
+    Invoices and Bills have a "Payment Terms" field.
+    So we need to identify them:
+} {
+    set invoice_or_bill_p [expr $cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_bill]]
+    return $invoice_or_bill_p
+}
+
+
 # -----------------------------------------------------------
 # Permissions
 # -----------------------------------------------------------
@@ -888,7 +911,8 @@ where
 		[im_cost_type_po],
 		[im_cost_type_timesheet],
 		[im_cost_type_expense_item],
-		[im_cost_type_expense_report]
+		[im_cost_type_expense_report],
+		[im_cost_type_delivery_note]
 	)
 	and ci.currency is not null
 group by
@@ -1075,6 +1099,7 @@ order by
 			cost_expense_logged_cache = $subtotals([im_cost_type_expense_report]),
 			cost_quotes_cache = $subtotals([im_cost_type_quote]),
 			cost_purchase_orders_cache = $subtotals([im_cost_type_po]),
+			cost_delivery_notes_cache = $subtotals([im_cost_type_delivery_note]),
 			cost_timesheet_planned_cache = 0,
 			cost_expense_planned_cache = 0
 		where
