@@ -386,6 +386,20 @@ ad_proc -public im_currency_options { {include_empty 1} } {
 }
 
 
+ad_proc im_supported_currencies { } {
+    Returns the list of supported currencies
+} {
+    set include_empty 0
+    set currency_options [im_currency_options $include_empty]
+    set result [list]
+    foreach option $currency_options {
+	lappend result [lindex $option 0]
+    }
+    return $result
+}
+
+
+
 ad_proc -public im_department_options { {include_empty 0} } {
     Returns a list of all Departments in the company.
 } {
@@ -841,6 +855,7 @@ ad_proc im_costs_project_finance_component {
     # project_id may get overwritten by SQL query
     set org_project_id $project_id
 
+
     # ----------------- Main SQL - select subtotals and their currencies -------------
 
     # Determines the cost_ids to be included in in this view.
@@ -1175,6 +1190,48 @@ order by
     append prelim_cost_html "</tr>\n</table>\n"
 
 
+    # ----------------- Check that the Exchange Rates are still valid  -------------
+
+    # See which currencies are to be added here...
+    set used_currencies [db_list currencies_used "
+	select distinct
+		ci.currency
+	from	im_costs ci
+	where	ci.currency != :default_currency
+		and cost_id in (
+		    $project_cost_ids_sql
+		)
+    "]
+
+    set exchange_rates_outdated [im_exchange_rate_outdated_currencies]
+    set currency_outdated_warning ""
+    if {[llength $used_currencies] > 0 && [llength $exchange_rates_outdated] > 0} {
+
+	set currency_outdated_warning [lang::message::lookup "" intranet-costs.The_exchange_rates_are_outdated "The exchanges rates for the following currencies are outdated. <br>Please contact your System Administrator to update the following exchange rates:"]
+	append currency_outdated_warning "\n<br>\n"
+	append currency_outdated_warning "\n<table>\n"
+
+	foreach entry $exchange_rates_outdated {
+	    set currency [lindex $entry 0]
+	    set days [lindex $entry 1]
+	    set outdated_msg [lang::message::lookup "" intranet-costs.Outdated_since_x_days "Outdated since %days% days"]
+	    append currency_outdated_warning "\n<tr><td>$currency:</td><td>$outdated_msg</td></tr>\n"
+	}
+	append currency_outdated_warning "\n</table>\n"
+
+
+	set currency_outdated_warning "
+		<table>
+		<tr class=rowtitle><td class=rowtitle align=center>
+		[lang::message::lookup "" intranet-costs.Outdated_Message "Outdated Exhcange Rates Warning"]
+		</td></tr>
+		<tr><td>$currency_outdated_warning</td></tr>
+		</table>
+        "
+
+    }
+
+
     # ----------------- Admin Links --------------------------------
 
     # Restore value overwritten by SQL query
@@ -1217,6 +1274,7 @@ order by
 
     if {$show_details_p} {
 	set result_html "
+        $currency_outdated_warning
 	<table>
 	<tr valign=top>
 	  <td>
