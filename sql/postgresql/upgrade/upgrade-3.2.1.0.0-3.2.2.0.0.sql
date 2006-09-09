@@ -91,7 +91,10 @@ BEGIN
 
     return 0;
 end;' language 'plpgsql';
-select inline_0 ();
+
+-- Disabled - Manage Exchange Rates only in Admin (?)
+-- select inline_0 ();
+
 drop function inline_0 ();
 
 
