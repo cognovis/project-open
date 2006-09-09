@@ -1523,3 +1523,116 @@ end;' language 'plpgsql';
 
 
 
+-------------------------------------------------------------
+-- Cost Center Permissions for Financial Documents
+-------------------------------------------------------------
+
+-- Permissions and Privileges
+--
+select acs_privilege__create_privilege('fi_read_invoices','Read Invoices','Read Invoices');
+select acs_privilege__create_privilege('fi_write_invoices','Write Invoices','Write Invoices');
+select acs_privilege__add_child('read', 'fi_read_invoices');
+select acs_privilege__add_child('write', 'fi_write_invoices');
+
+select acs_privilege__create_privilege('fi_read_quotes','Read Quotes','Read Quotes');
+select acs_privilege__create_privilege('fi_write_quotes','Write Quotes','Write Quotes');
+select acs_privilege__add_child('read', 'fi_read_quotes');
+select acs_privilege__add_child('write', 'fi_write_quotes');
+
+select acs_privilege__create_privilege('fi_read_bills','Read Bills','Read Bills');
+select acs_privilege__create_privilege('fi_write_bills','Write Bills','Write Bills');
+select acs_privilege__add_child('read', 'fi_read_bills');
+select acs_privilege__add_child('write', 'fi_write_bills');
+
+select acs_privilege__create_privilege('fi_read_pos','Read Pos','Read Pos');
+select acs_privilege__create_privilege('fi_write_pos','Write Pos','Write Pos');
+select acs_privilege__add_child('read', 'fi_read_pos');
+select acs_privilege__add_child('write', 'fi_write_pos');
+
+
+
+select im_priv_create('fi_read_invoices','P/O Admins');
+select im_priv_create('fi_read_invoices','Senior Managers');
+select im_priv_create('fi_read_invoices','Accounting');
+select im_priv_create('fi_write_invoices','P/O Admins');
+select im_priv_create('fi_write_invoices','Senior Managers');
+select im_priv_create('fi_write_invoices','Accounting');
+
+select im_priv_create('fi_read_quotes','P/O Admins');
+select im_priv_create('fi_read_quotes','Senior Managers');
+select im_priv_create('fi_read_quotes','Accounting');
+select im_priv_create('fi_write_quotes','P/O Admins');
+select im_priv_create('fi_write_quotes','Senior Managers');
+select im_priv_create('fi_write_quotes','Accounting');
+
+select im_priv_create('fi_read_bills','P/O Admins');
+select im_priv_create('fi_read_bills','Senior Managers');
+select im_priv_create('fi_read_bills','Accounting');
+select im_priv_create('fi_write_bills','P/O Admins');
+select im_priv_create('fi_write_bills','Senior Managers');
+select im_priv_create('fi_write_bills','Accounting');
+
+select im_priv_create('fi_read_pos','P/O Admins');
+select im_priv_create('fi_read_pos','Senior Managers');
+select im_priv_create('fi_read_pos','Accounting');
+select im_priv_create('fi_write_pos','P/O Admins');
+select im_priv_create('fi_write_pos','Senior Managers');
+select im_priv_create('fi_write_pos','Accounting');
+
+
+
+-------------------------------------------------------------
+-- Update the context_id fields of the cost centers, 
+-- so that permissions are inherited
+--
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+    row                         RECORD;
+BEGIN
+    FOR row IN
+        select  *
+        from    im_cost_centers
+    LOOP
+        RAISE NOTICE ''inline_0: cc_id=%'', row.cost_center_id;
+
+        update acs_objects
+        set context_id = row.parent_id
+        where object_id = row.cost_center_id;
+
+    END LOOP;
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0();
+
+
+
+-------------------------------------------------------------
+-- Update the context_id field of the "Co - The Company"
+-- so that permissions are inherited from SubSite
+--
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+        v_subsite_id             integer;
+BEGIN
+     -- Get the Main Site id, used as the global identified for permissions
+     select package_id
+     into v_subsite_id
+     from apm_packages
+     where package_key=''acs-subsite'';
+
+     update acs_objects
+     set context_id = v_subsite_id
+     where object_id in (
+	select cost_center_id
+	from im_cost_centers
+	where parent_id is null
+     );
+
+     return 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+

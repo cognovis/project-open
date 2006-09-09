@@ -30,7 +30,7 @@ set context_bar [im_context_bar $page_title]
 set context ""
 
 set cost_center_url "/intranet-cost/cost-centers/new"
-set toggle_url "/intranet/admin/toggle"
+set toggle_url "/intranet/admin/toggle-privilege"
 set group_url "/admin/groups/one"
 
 set bgcolor(0) " class=rowodd"
@@ -40,6 +40,7 @@ if {"" == $return_url} {
     set return_url [ad_conn url]
 }
 
+set privs [list invoices quotes bills pos delnotes]
 
 # ------------------------------------------------------
 # Get the list of all relevant "Profiles"
@@ -59,6 +60,9 @@ where
         g.group_id = o.object_id
 	and g.group_id = p.profile_id
         and o.object_type = 'im_profile'
+	and g.group_name not in (
+		'Customers', 'Freelancers', 'Freelance Managers', 'HR Managers', 'P/O Admins'
+	)
 }
 
 
@@ -82,9 +86,19 @@ set num_profiles 0
 db_foreach group_list $group_list_sql {
     lappend group_ids $group_id
     lappend group_names $group_name
+
     append main_sql_select "\tim_object_permission_p(m.cost_center_id, $group_id, 'read') as p${group_id}_read_p,\n"
+    append main_sql_select "\tim_object_permission_p(m.cost_center_id, $group_id, 'write') as p${group_id}_write_p,\n"
+
+    foreach priv $privs {
+
+	append main_sql_select "\tim_object_permission_p(m.cost_center_id, $group_id, 'fi_read_$priv') as p${group_id}_read_${priv}_p,\n"
+	append main_sql_select "\tim_object_permission_p(m.cost_center_id, $group_id, 'fi_write_$priv') as p${group_id}_write_${priv}_p,\n"
+
+    }
+
     append table_header "
-      <td class=rowtitle><A href=$group_url?group_id=$group_id>
+      <td class=rowtitle align=center><A href=$group_url?group_id=$group_id>
       [im_gif $profile_gif $group_name]
     </A></td>\n"
     incr num_profiles
@@ -108,61 +122,116 @@ from
 order by cost_center_code
 "
 
-set table "
-<form action=cost-center-action method=post>
-[export_form_vars return_url]
-<table>
-$table_header\n"
-
+set table ""
 set ctr 0
 set old_package_name ""
 db_foreach cost_centers $main_sql {
+
     incr ctr
+    set object_id $cost_center_id
 
     append table "\n<tr$bgcolor([expr $ctr % 2])>\n"
-
     if {0 != $indent_level} {
 	append table "\n<td colspan=$indent_level>&nbsp;</td>"
     }
 
     append table "
-  <td colspan=$colspan_level>
-    <A href=$cost_center_url?cost_center_id=$cost_center_id&return_url=$return_url>$cost_center_code - $cost_center_name</A>
-  </td>
-"
+	  <td colspan=$colspan_level>
+            <nobr>
+	    <A href=$cost_center_url?cost_center_id=$cost_center_id&return_url=$return_url
+	    >$cost_center_code - $cost_center_name</A>
+            </nobr>
+	  </td>
+    "
 
     foreach horiz_group_id $group_ids {
-        set read_p [expr "\$p${horiz_group_id}_read_p"]
-	set object_id $cost_center_id
-        set read "<A href=$toggle_url?action=add_readable&[export_url_vars object_id horiz_group_id return_url]>r</A>\n"
-        if {$read_p == "t"} {
-            set read "<A href=$toggle_url?action=remove_readable&[export_url_vars object_id horiz_group_id return_url]><b>R</b></A>\n"
-        }
 
-        append table "
-  <td align=center>
-    $read
-  </td>
-"
+	append table "<td align=left>\n"
+
+	# ---------------------------- Read Group -------------------------------
+	append table "<nobr>\n"
+
+        set read_p [expr "\$p${horiz_group_id}_read_p"]
+        if {$read_p == "t"} {
+	    set action "revoke"
+	    set render "<b>R</b>"
+	} else {
+	    set action "grant"
+	    set render "r"
+	}
+
+	set privilege "read"
+        append table "<A href=\"[export_vars -base $toggle_url {object_id horiz_group_id action privilege return_url}]\">$render</A>\n"
+
+	foreach priv $privs {
+
+	    set priv_initial [string range $priv 0 0]
+	    set read_p [expr "\$p${horiz_group_id}_read_${priv}_p"]
+	    set privilege "fi_read_$priv"
+
+	    if {$read_p == "t"} {
+		set action "revoke"
+		set render "<b>[string toupper "r$priv_initial"]</b>"
+	    } else {
+		set action "grant"
+		set render "r$priv_initial"
+	    }
+	    append table "<A href=\"[export_vars -base $toggle_url {object_id horiz_group_id action privilege return_url}]\">$render</A>\n"
+	}
+	append table "</nobr>\n"
+
+
+	# ---------------------------- Write Group -------------------------------
+	append table "<nobr>\n"
+
+        set write_p [expr "\$p${horiz_group_id}_write_p"]
+        if {$write_p == "t"} {
+	    set action "revoke"
+	    set render "<b>W</b>"
+	} else {
+	    set action "grant"
+	    set render "w"
+	}
+
+	set privilege "write"
+        append table "<A href=\"[export_vars -base $toggle_url {object_id horiz_group_id action privilege return_url}]\">$render</A>\n"
+
+	foreach priv $privs {
+	    set priv_initial [string range $priv 0 0]
+	    set write_p [expr "\$p${horiz_group_id}_write_${priv}_p"]
+	    set privilege "fi_write_$priv"
+
+	    if {$write_p == "t"} {
+		set action "revoke"
+		set render "<b>[string toupper "w$priv_initial"]</b>"
+	    } else {
+		set action "grant"
+		set render "w$priv_initial"
+	    }
+
+	    append table "<A href=\"[export_vars -base $toggle_url {object_id horiz_group_id action privilege return_url}]\">$render</A>\n"
+	}
+	append table "</nobr>\n"
+
+
+	append table "</td>\n"
     }
 
     append table "
-  <td>
-    <input type=checkbox name=cost_center_id.$cost_center_id>
-  </td>
-</tr>
-"
+	  <td>
+	    <input type=checkbox name=cost_center_id.$cost_center_id>
+	  </td>
+	</tr>
+    "
 }
 
 append table "
-<tr>
-  <td colspan=[expr $num_profiles + 9] align=right>
-    <A href=new?[export_url_vars return_url]>New Cost Center</a>
-  </td>
-  <td>
-    <input type=submit value='Del'>
-  </td>
-</tr>
-</table>
-</form>
+	<tr>
+	  <td colspan=[expr $num_profiles + 9] align=right>
+	    <A href=new?[export_url_vars return_url]>New Cost Center</a>
+	  </td>
+	  <td>
+	    <input type=submit value='Del'>
+	  </td>
+	</tr>
 "
