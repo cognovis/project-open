@@ -97,8 +97,8 @@ ad_page_contract {
 set page_title "Projects-02 Tutorial Report"
 set context_bar [im_context_bar $page_title]
 set help_text "
-	<strong>Project-01 Tutorial Report:</strong><br>
-	This is the first reports of the Reporting Tutorial.
+	<strong>Projects-02 Tutorial Report:</strong><br>
+	This is the second reports of the Reporting Tutorial.
 	The report shows all projects if their end_date is inside
 	the interval between start_date and end_date, including
 	the start_date, but excluding the end_date.

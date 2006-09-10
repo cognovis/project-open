@@ -1,4 +1,4 @@
-# /packages/intranet-reporting-tutorial/www/projects-02.tcl
+# /packages/intranet-reporting-tutorial/www/projects-03.tcl
 #
 # Copyright (c) 2003-2006 ]project-open[
 #
@@ -7,7 +7,7 @@
 
 
 # ------------------------------------------------------------
-# Projects-02 Tutorial Contents
+# Projects-03 Tutorial Contents
 #
 # This report contains everything from projects-01 plus
 # some new features. Search for "New!" for the new stuff:
@@ -16,24 +16,7 @@
 # - Parameter value checks using Regular Expressions
 # - HREF links to users and projects
 # - Field Length Restriction
-
-#
-# Does not yet contain:
-#
-# - Category based parameters with drop-down
-# - Custom parameters with drop-down
-# - Parameter value checks
-# - Level of details
-# - Grouping
-# - Grand Totals
-# - Subtotals
 # - Simple Joins
-# - Left Outer Joins
-# - Calculated variables
-# - Localized Strings
-# - Localized Date & Number & Currencies
-# - Drill-down
-
 
 
 # ------------------------------------------------------------
@@ -45,11 +28,11 @@
 # You can overwrite the default values by specifying the
 # parameters in the URL, for example:
 # http://your_server/intranet-reporting-tutorial/ ...
-# ... /projects-02?start_date=2006-01-01&end_date=2006-12-31
+# ... /projects-03?start_date=2006-01-01&end_date=2006-12-31
 #
 
 ad_page_contract {
-    Reporting Tutorial "projects-02" Report
+    Reporting Tutorial "projects-03" Report
     This reports lists all projects in a time interval
     It is one of the easiest reports imaginable...
 
@@ -62,7 +45,7 @@ ad_page_contract {
 
 
 # ------------------------------------------------------------
-# Security
+# Security (New!)
 #
 # The access permissions for the report are taken from the
 # "im_menu" Menu Items in the "Reports" section that link 
@@ -107,7 +90,7 @@ if {![string equal "t" $read_p]} {
 
 
 # ------------------------------------------------------------
-# Check Parameters
+# Check Parameters (New!)
 #
 # Check that start_date and end_date have correct format.
 # We are using a regular expression check here for convenience.
@@ -140,11 +123,11 @@ if {![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $end_date]} {
 # it can become very difficult to interpret the data shown.
 #
 
-set page_title "Projects-02 Tutorial Report"
+set page_title "Projects-03 Tutorial Report"
 set context_bar [im_context_bar $page_title]
 set help_text "
-	<strong>Project-01 Tutorial Report:</strong><br>
-	This is the first reports of the Reporting Tutorial.
+	<strong>Projects-03 Tutorial Report:</strong><br>
+	This is the third reports of the Reporting Tutorial.
 	The report shows all projects if their end_date is inside
 	the interval between start_date and end_date, including
 	the start_date, but excluding the end_date.
@@ -198,9 +181,20 @@ set level_of_detail 1
 # grouping and filters to create a "real-world" report.
 #
 
+# This version of the select query uses a join with 
+# im_companies on (p.company_id = company.company_id).
+# This join is possible, because the p.company_id field
+# is a non-null field constraint via referential integrity
+# to the im_companies table.
+# In the absence of such strong integrity contraints you
+# will have to use "LEFT OUTER JOIN"s instead. (New!)
+#
 set report_sql "
 	select
 		p.*,
+		cust.company_path as customer_nr,
+		cust.company_name as customer_name,
+
 		to_char(p.start_date, :date_format) as start_date_formatted,
 		to_char(p.end_date, :date_format) as end_date_formatted,
 		im_name_from_user_id(p.project_lead_id) as project_lead_name,
@@ -212,9 +206,11 @@ set report_sql "
 		to_char(p.cost_bills_cache, :currency_format) as bills,
 		to_char(p.cost_expense_logged_cache, :currency_format) as expenses
 	from
-		im_projects p
+		im_projects p,
+		im_companies cust
 	where
-		parent_id is null
+		p.company_id = cust.company_id
+		and parent_id is null
 		and p.end_date >= :start_date
 		and p.end_date <= :end_date
 	
@@ -295,11 +291,12 @@ set report_sql "
 
 # Global Header Line
 set header0 {
-	"Project Nr" 
-	"Project Name" 
-	"Start Date" 
-	"End Date"
-	"Project Manager" 
+	"Customer<br>Nr" 
+	"Project<br>Nr" 
+	"Project<br>Name" 
+	"Start<br>Date" 
+	"End<br>Date"
+	"Project<br>Manager" 
 	"Invoices"
 	"Quotes"
 	"Del. Notes"
@@ -308,9 +305,13 @@ set header0 {
 	"Expenses"
 }
 
+# The entries in this list include <a HREF=...> tags
+# in order to link the entries to the rest of the system (New!)
+#
 set report_def [list \
     group_by project_id \
     header {
+	"<a href='$company_url$company_id'>$customer_nr</a>"
 	"<a href='$project_url$project_id'>$project_nr</a>"
 	$project_name
 	$start_date_formatted
@@ -430,7 +431,7 @@ db_foreach sql $report_sql {
 	set class $rowclass([expr $counter % 2])
 
 	# Restrict the length of the project_name to max.
-	# 40 characters.
+	# 40 characters. (New!)
 	set project_name [string_truncate -len 40 $project_name]
 
 	im_report_display_footer \

@@ -26,7 +26,7 @@
 set page_title "Projects-01-Few-Comments Tutorial Report"
 set context_bar [im_context_bar $page_title]
 set help_text "
-	<strong>Project-01-Few-Comments Tutorial Report:</strong><br>
+	<strong>Projects-01-Few-Comments Tutorial Report:</strong><br>
 	This is the first report of the Reporting Tutorial.
 	The report shows all 'main' projects in the system.
 "
