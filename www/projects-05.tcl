@@ -554,7 +554,7 @@ ad_return_top_of_page "
 	[im_navbar]
 	<table cellspacing=0 cellpadding=0 border=0>
 	<tr valign=top>
-	  <td width='50%'>
+	  <td width='30%'>
 		<!-- 'Filters' - Show the Report parameters -->
 		<form>
 		<table cellspacing=2>
@@ -562,13 +562,13 @@ ad_return_top_of_page "
 		  <td class=rowtitle colspan=2 align=center>Filters</td>
 		</tr>
 		<tr>
-		  <td>Level of Details</td>
+		  <td>Level of<br>Details</td>
 		  <td>
 		    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
 		  </td>
 		</tr>
 		<tr>
-		  <td>Start Date:</td>
+		  <td><nobr>Start Date:</nobr></td>
 		  <td><input type=text name=start_date value='$start_date'></td>
 		</tr>
 		<tr>
@@ -582,7 +582,7 @@ ad_return_top_of_page "
 		</table>
 		</form>
 	  </td>
-	  <td align=center width='50%'>
+	  <td align=center>
 		<table cellspacing=2 width='90%'>
 		<tr>
 		  <td>$help_text</td>
