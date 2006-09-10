@@ -12,21 +12,17 @@
 # This report contains everything from projects-01 plus
 # some new features. Search for "New!" for the new stuff:
 #
-# - Page Contract
-# - Simple Parameters
-# - Even/Odd line formatting
-# - Simple SQL value formatting
-# - Global Footer Line
-# - im_name_from_user_id function
-
-
+# - Security
+# - Parameter value checks using Regular Expressions
+# - HREF links to users and projects
+# - Field Length Restriction
 
 #
 # Does not yet contain:
+#
 # - Category based parameters with drop-down
 # - Custom parameters with drop-down
 # - Parameter value checks
-# - Security
 # - Level of details
 # - Grouping
 # - Grand Totals
@@ -37,11 +33,11 @@
 # - Localized Strings
 # - Localized Date & Number & Currencies
 # - Drill-down
-#
+
 
 
 # ------------------------------------------------------------
-# Page Contract (New!)
+# Page Contract 
 #
 # This section give some comments about the page for the 
 # automatic documentation function and defines parameters 
@@ -68,18 +64,68 @@ ad_page_contract {
 # ------------------------------------------------------------
 # Security
 #
-# No security yet - Everybody can see the report if he or she
-# knows that URL of the report.
-#
+# The access permissions for the report are taken from the
+# "im_menu" Menu Items in the "Reports" section that link 
+# to this report. It's just a convenient way to handle 
+# security, that avoids errors (different rights for the 
+# Menu Item then for the report) and redundancy.
+
+# What is the "label" of the Menu Item linking to this report?
+set menu_label "reporting-tutorial-projects-03"
+
+# Get the current user and make sure that he or she is
+# logged in. Registration is handeled transparently - 
+# the user is redirected to this URL after registration 
+# if he wasn't logged in.
+set current_user_id [ad_maybe_redirect_for_registration]
+
+# Determine whether the current_user has read permissions. 
+# "db_string" takes a name as the first argument 
+# ("report_perms") and then executes the SQL statement in 
+# the second argument. 
+# It returns an error if there is more then one result row.
+# im_object_permission_p is a PlPg/SQL procedure that is 
+# defined as part of ]project-open[.
+set read_p [db_string report_perms "
+	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
+	from	im_menus m
+	where	m.label = :menu_label
+" -default 'f']
+
+# For testing - set manually
+set read_p "t"
+
+# Write out an error message if the current user doesn't
+# have read permissions and abort the execution of the
+# current screen.
+if {![string equal "t" $read_p]} {
+    set message "You don't have the necessary permissions to view this page"
+    ad_return_complaint 1 "<li>$message"
+    ad_script_abort
+}
+
 
 
 # ------------------------------------------------------------
 # Check Parameters
 #
-# No parameter check yet - Bad parameters values will dead to
-# an "ugly" error message, as opposed to an error message
-# identifying the bad parameters.
-#
+# Check that start_date and end_date have correct format.
+# We are using a regular expression check here for convenience.
+
+if {![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $start_date]} {
+    ad_return_complaint 1 "Start Date doesn't have the right format.<br>
+    Current value: '$start_date'<br>
+    Expected format: 'YYYY-MM-DD'"
+    ad_script_abort
+}
+
+if {![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $end_date]} {
+    ad_return_complaint 1 "End Date doesn't have the right format.<br>
+    Current value: '$end_date'<br>
+    Expected format: 'YYYY-MM-DD'"
+    ad_script_abort
+}
+
 
 
 # ------------------------------------------------------------
@@ -115,17 +161,26 @@ set help_text "
 
 # Default report line formatting - alternating between the
 # CSS styles "roweven" (grey) and "rowodd" (lighter grey).
-# (New!)
 #
 set rowclass(0) "roweven"
 set rowclass(1) "rowodd"
 
 # Variable formatting - Default formatting is quite ugly
 # normally. In the future we will include locale specific
-# formatting. (New!)
+# formatting. 
 #
 set currency_format "999,999,999.09"
 set date_format "YYYY-MM-DD"
+
+# Set URLs on how to get to other parts of the system
+# for convenience. (New!)
+# This_url includes the parameters passed on to this report.
+#
+set company_url "/intranet/companies/view?company_id="
+set project_url "/intranet/projects/view?project_id="
+set invoice_url "/intranet-invoices/view?invoice_id="
+set user_url "/intranet/users/view?user_id="
+set this_url [export_vars -base "/intranet-reporting-tutorial/projects-03" {start_date end_date} ]
 
 # Level of Details
 # Will be used more extensively with groupings
@@ -148,7 +203,14 @@ set report_sql "
 		p.*,
 		to_char(p.start_date, :date_format) as start_date_formatted,
 		to_char(p.end_date, :date_format) as end_date_formatted,
-		im_name_from_user_id(p.project_lead_id) as project_manager_name
+		im_name_from_user_id(p.project_lead_id) as project_lead_name,
+
+		to_char(p.cost_invoices_cache, :currency_format) as invoices,
+		to_char(p.cost_quotes_cache, :currency_format) as quotes,
+		to_char(p.cost_delivery_notes_cache, :currency_format) as delnotes,
+		to_char(p.cost_purchase_orders_cache, :currency_format) as pos,
+		to_char(p.cost_bills_cache, :currency_format) as bills,
+		to_char(p.cost_expense_logged_cache, :currency_format) as expenses
 	from
 		im_projects p
 	where
@@ -182,10 +244,10 @@ set report_sql "
 #
 #		p.start_date::date as start_date_formatted,
 #		p.end_date::date as end_date_formatted,
-#		im_name_from_user_id(p.project_lead_id) as project_manager_name
+#		im_name_from_user_id(p.project_lead_id) as project_lead_name
 #
 # These lines demonstrate some basic formatting applied to
-# table fields: (New!)
+# table fields: 
 #
 #	- "to_char(var, format) is a PostgreSQL way to format the
 #	  value.
@@ -212,7 +274,7 @@ set report_sql "
 #
 # Please note the SQL "colon variables". Colon variables
 # are different from normal variables ("string variables",
-# "$start_date") by the moment of dereferentiation. (New!)
+# "$start_date") by the moment of dereferentiation.
 # Colon variables are dereferenced _inside_ the PostgreSQL
 # SQL driver, so that the usual "SQL injection" security
 # attacks don't work. Try yourself setting setting "start_date"
@@ -235,26 +297,38 @@ set report_sql "
 set header0 {
 	"Project Nr" 
 	"Project Name" 
-	"Project Manager" 
 	"Start Date" 
 	"End Date"
+	"Project Manager" 
+	"Invoices"
+	"Quotes"
+	"Del. Notes"
+	"POs"
+	"Bills"
+	"Expenses"
 }
 
 set report_def [list \
     group_by project_id \
     header {
-	$project_nr
+	"<a href='$project_url$project_id'>$project_nr</a>"
 	$project_name
-	$project_manager_name
 	$start_date_formatted
 	$end_date_formatted
+	"<a href='$user_url$project_lead_id'>$project_lead_name</a>"
+	$invoices
+	$quotes
+	$delnotes
+	$pos
+	$bills
+	$expenses
     } \
     content {} \
     footer {} \
 ]
 
 
-# Global Footer Line (New!)
+# Global Footer Line
 set footer0 {
 	"" 
 	"" 
@@ -284,7 +358,7 @@ set counters [list]
 # report is still being calculated.
 #
 
-# Write out the report header with Parameters (New!)
+# Write out the report header with Parameters
 # We use simple "input" type of fields for start_date 
 # and end_date with default values coming from the input 
 # parameters (the "value='...' section).
@@ -352,8 +426,12 @@ db_foreach sql $report_sql {
 	# Select either "roweven" or "rowodd" from
 	# a "hash", depending on the value of "counter".
 	# You need explicite evaluation ("expre") in TCL
-	# to calculate arithmetic expressions. (New!)
+	# to calculate arithmetic expressions. 
 	set class $rowclass([expr $counter % 2])
+
+	# Restrict the length of the project_name to max.
+	# 40 characters.
+	set project_name [string_truncate -len 40 $project_name]
 
 	im_report_display_footer \
 	    -group_def $report_def \
