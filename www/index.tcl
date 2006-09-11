@@ -34,6 +34,7 @@ set menu_select_sql "
         select  m.*
         from    im_menus m
         where   parent_menu_id = :parent_menu_id
+		and enabled_p = 't'
                 and im_object_permission_p(m.menu_id, :user_id, 'read') = 't'
         order by sort_order"
 
@@ -63,6 +64,7 @@ db_foreach menu_select $menu_select_sql {
         select  m.*
         from    im_menus m
         where   parent_menu_id = :parent_menu_id
+		and enabled_p = 't'
                 and im_object_permission_p(m.menu_id, :user_id, 'read') = 't'
         order by sort_order"
 
@@ -85,6 +87,7 @@ db_foreach menu_select $menu_select_sql {
         select  m.*
         from    im_menus m
         where   parent_menu_id = :parent_menu_id
+		and enabled_p = 't'
                 and im_object_permission_p(m.menu_id, :user_id, 'read') = 't'
         order by sort_order"
 
