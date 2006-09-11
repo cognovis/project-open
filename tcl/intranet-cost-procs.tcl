@@ -43,6 +43,25 @@ ad_proc -public im_cost_type_expense_report {} { return 3722 }
 ad_proc -public im_cost_type_delivery_note {} { return 3724 }
 
 
+ad_proc -public im_cost_type_short_name { cost_type_id } { 
+    switch $cost_type_id {
+	3700 { return "invoice" }
+	3702 { return "quote" }
+	3704 { return "bill" }
+	3706 { return "po" }
+	3708 { return "customer_doc" }
+	3710 { return "provider_doc" }
+	3712 { return "provider_travel" }
+	3714 { return "employee" }
+	3716 { return "repeating" }
+	3718 { return "timesheet" }
+	3720 { return "expense" }
+	3722 { return "expense_report" }
+	3724 { return "delivery_note" }
+	default { return "unknown" }
+    }
+}
+
 
 # Payment Methods
 ad_proc -public im_payment_method_undefined {} { return 800 }
@@ -408,19 +427,46 @@ ad_proc -public im_department_options { {include_empty 0} } {
 }
 
 
-ad_proc -public im_cost_center_select { {-include_empty 0} {-department_only_p 0} select_name {default ""} } {
+ad_proc -public im_cost_center_select { 
+    {-include_empty 0} 
+    {-department_only_p 0} 
+    select_name 
+    {default ""} 
+    {cost_type_id ""} 
+} {
     Returns a select box with all Cost Centers in the company.
 } {
-    set options [im_cost_center_options $include_empty $department_only_p]
+    set options [im_cost_center_options $include_empty $department_only_p $cost_type_id]
     return [im_options_to_select_box $select_name $options $default]
 }
 
 
 
-ad_proc -public im_cost_center_options { {include_empty 0} { department_only_p 0} } {
-    Returns a list of all Cost Centers in the company.
+
+ad_proc -public im_cost_center_options { 
+    {include_empty 0} 
+    {department_only_p 0} 
+    {cost_type_id ""} 
 } {
-    set start_center_id [db_string start_center_id "select cost_center_id from im_cost_centers where cost_center_label='company'" -default 0]
+    Returns a list of all Cost Centers in the company.
+    Takes into account the permission of the user to 
+    charge FinDocs to CostCenters
+} {
+    set user_id [ad_get_user_id]
+    set start_center_id [db_string start_center_id "
+	select cost_center_id 
+	from im_cost_centers 
+	where cost_center_label='company'
+    " -default 0]
+
+    set cost_type "Invalid"
+    if {"" != $cost_type_id} { set cost_type [db_string ct "select im_category_from_id(:cost_type_id)"] }
+
+    set cost_type_sql ""
+    set short_name [im_cost_type_short_name $cost_type_id]
+    if {"" != $cost_type_id} { 
+	set cost_type_sql "and im_object_permission_p(cost_center_id, :user_id, 'fi_write_${short_name}s') = 't'\n"
+    }
 
     set department_only_sql ""
     if {$department_only_p} {
@@ -438,6 +484,7 @@ ad_proc -public im_cost_center_options { {include_empty 0} { department_only_p 0
 	where
 		1=1
 		$department_only_sql
+		$cost_type_sql
 	order by
 		cc.cost_center_code
     "
@@ -450,6 +497,12 @@ ad_proc -public im_cost_center_options { {include_empty 0} { department_only_p 0
         }
         lappend options [list "$spaces$cost_center_name" $cost_center_id]
     }
+
+    if {$include_empty && [llength $options] == 0} {
+	set invalid_cc [lang::message::lookup "" intranet-cost.No_CC_permissions_for_cost_type "No CC permissions for \"%cost_type%\""]
+	lappend options [list $invalid_cc ""]
+    }
+
     return $options
 }
 
@@ -1135,21 +1188,21 @@ order by
 
     append hard_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Provider_Bills]</td>\n"
     set subtotal $subtotals([im_cost_type_bill])
-    append hard_cost_html "<td align=right>- $subtotal $currency</td>\n"
+    append hard_cost_html "<td align=right>- $subtotal $default_currency</td>\n"
     set grand_total [expr $grand_total - $subtotal]
 
     append hard_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Timesheet_Costs]</td>\n"
     set subtotal $subtotals([im_cost_type_timesheet])
-    append hard_cost_html "<td align=right>- $subtotal $currency</td>\n"
+    append hard_cost_html "<td align=right>- $subtotal $default_currency</td>\n"
     set grand_total [expr $grand_total - $subtotal]
 
     append hard_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Expenses "Expenses"]</td>\n"
     set subtotal $subtotals([im_cost_type_expense_report])
-    append hard_cost_html "<td align=right>- $subtotal $currency</td>\n"
+    append hard_cost_html "<td align=right>- $subtotal $default_currency</td>\n"
     set grand_total [expr $grand_total - $subtotal]
 
     append hard_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-cost.Grand_Total]</b></td>\n"
-    append hard_cost_html "<td align=right><b>$grand_total $currency</b></td>\n"
+    append hard_cost_html "<td align=right><b>$grand_total $default_currency</b></td>\n"
     append hard_cost_html "</tr>\n</table>\n"
 
 
@@ -1165,28 +1218,28 @@ order by
     <td>[_ intranet-cost.Quotes]</td>\n"
 
     set subtotal $subtotals([im_cost_type_quote])
-    append prelim_cost_html "<td align=right>$subtotal $currency</td>\n"
+    append prelim_cost_html "<td align=right>$subtotal $default_currency</td>\n"
     set grand_total $subtotal
 
     append prelim_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Purchase_Orders]</td>\n"
     set subtotal $subtotals([im_cost_type_po])
-    append prelim_cost_html "<td align=right>- $subtotal $currency</td>\n"
+    append prelim_cost_html "<td align=right>- $subtotal $default_currency</td>\n"
     set grand_total [expr $grand_total - $subtotal]
 
     append prelim_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Timesheet_Costs]</td>\n"
     
     append prelim_cost_html "<td align=right>
-<!--	  $subtotals([im_cost_type_timesheet]) $currency -->
+<!--	  $subtotals([im_cost_type_timesheet]) $default_currency -->
 	</td>\n"
 
     append prelim_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Expenses "Expenses"]</td>\n"
     append prelim_cost_html "<td align=right>
-<!--	  $subtotals([im_cost_type_expense_report]) $currency -->
+<!--	  $subtotals([im_cost_type_expense_report]) $default_currency -->
 	</td>\n"
 
 
     append prelim_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-cost.Grand_Total]</b></td>\n"
-    append prelim_cost_html "<td align=right><b>$grand_total $currency</b></td>\n"
+    append prelim_cost_html "<td align=right><b>$grand_total $default_currency</b></td>\n"
     append prelim_cost_html "</tr>\n</table>\n"
 
 

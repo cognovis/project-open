@@ -162,7 +162,7 @@ BEGIN
      where object_id in (
 	select cost_center_id
 	from im_cost_centers
-	where parent_id is null
+	where cost_center_label=''company''
      );
 
      return 0;
