@@ -40,7 +40,7 @@ if {"" == $return_url} {
     set return_url [ad_conn url]
 }
 
-set privs [list invoices quotes bills pos delnotes]
+set privs [list invoices quotes delivery_notes bills pos timesheets expense_reports]
 
 # ------------------------------------------------------
 # Get the list of all relevant "Profiles"
@@ -87,14 +87,12 @@ db_foreach group_list $group_list_sql {
     lappend group_ids $group_id
     lappend group_names $group_name
 
-    append main_sql_select "\tim_object_permission_p(m.cost_center_id, $group_id, 'read') as p${group_id}_read_p,\n"
-    append main_sql_select "\tim_object_permission_p(m.cost_center_id, $group_id, 'write') as p${group_id}_write_p,\n"
+    append main_sql_select "\tim_object_permission_p(m.cost_center_id, $group_id, 'fi_read_all') as p${group_id}_read_p,\n"
+    append main_sql_select "\tim_object_permission_p(m.cost_center_id, $group_id, 'fi_write_all') as p${group_id}_write_p,\n"
 
     foreach priv $privs {
-
 	append main_sql_select "\tim_object_permission_p(m.cost_center_id, $group_id, 'fi_read_$priv') as p${group_id}_read_${priv}_p,\n"
 	append main_sql_select "\tim_object_permission_p(m.cost_center_id, $group_id, 'fi_write_$priv') as p${group_id}_write_${priv}_p,\n"
-
     }
 
     append table_header "
@@ -160,7 +158,7 @@ db_foreach cost_centers $main_sql {
 	    set render "r"
 	}
 
-	set privilege "read"
+	set privilege "fi_read_all"
         append table "<A href=\"[export_vars -base $toggle_url {object_id horiz_group_id action privilege return_url}]\">$render</A>\n"
 
 	foreach priv $privs {
@@ -193,7 +191,7 @@ db_foreach cost_centers $main_sql {
 	    set render "w"
 	}
 
-	set privilege "write"
+	set privilege "fi_write_all"
         append table "<A href=\"[export_vars -base $toggle_url {object_id horiz_group_id action privilege return_url}]\">$render</A>\n"
 
 	foreach priv $privs {
