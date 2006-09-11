@@ -27,3 +27,46 @@ end;' language 'plpgsql';
 
 
 
+
+-- Helper functions to make our queries easier to read
+-- and to avoid outer joins with parent projects etc.
+--
+-- Now: With varchar(1000) = length(project_name)
+--
+create or replace function im_project_name_from_id (integer)
+returns varchar as '
+DECLARE
+        p_project_id    alias for $1;
+        v_project_name  varchar(1000);
+BEGIN
+        select project_name
+        into v_project_name
+        from im_projects
+        where project_id = p_project_id;
+
+        return v_project_name;
+end;' language 'plpgsql';
+
+
+
+-----------------------------------------------
+-- Configuration Management:
+-- Add "enabled_p" to menus and components
+--
+alter table im_menus add enabled_p char(1);
+alter table im_menus alter enabled_p set default 't';
+update im_menus set enabled_p = 't';
+alter table im_menus add constraint im_menus_enabled_ck
+	check (enabled_p in ('t','f'));
+
+
+alter table im_component_plugins add enabled_p char(1);
+alter table im_component_plugins alter enabled_p set default 't';
+update im_component_plugins set enabled_p = 't';
+alter table im_component_plugins add constraint im_comp_plugin_enabled_ck
+	check (enabled_p in ('t','f'));
+
+
+
+
+
