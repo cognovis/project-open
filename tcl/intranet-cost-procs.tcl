@@ -113,13 +113,8 @@ ad_proc -public im_cost_permissions {user_id cost_id view_var read_var write_var
     Fill the "by-reference" variables read, write and admin
     with the permissions of $user_id on $cost_id.<br>
 
-    Basicly cost permissions are derived from the permissions on the
-    underlying companies.
-    Via an "or-conjunction", a "view_costs" privilege give a user permission
-    to view all cost items.
-    An "add_costs" privilege allows the user to admin all cost items.
-    The lack of this "add_costs" privilege will also erase any possibility
-    to create/write/edit/admin any cost items.
+    Cost permissions depend on the rights of the underlying company
+    and on Cost Center permissions.
 } {
     upvar $view_var view
     upvar $read_var read
@@ -129,19 +124,44 @@ ad_proc -public im_cost_permissions {user_id cost_id view_var read_var write_var
     set user_is_freelance_p [im_user_is_freelance_p $user_id]
     set user_is_customer_p [im_user_is_customer_p $user_id]
 
-    # determine customer & provider
+
+    # -----------------------------------------------------
+    # Get Cost information
     set customer_id 0
     set provider_id 0
+    set cost_center_id 0
+    set cost_type_id 0
     db_0or1row get_companies "
         select
                 customer_id,
-                provider_id
+                provider_id,
+		cost_center_id,
+		cost_type_id
         from
                 im_costs
         where
                 cost_id = :cost_id
     "
 
+    # -----------------------------------------------------
+    # Cost Center permissions - check if the user has read permissions
+    # for this particular cost center
+    set cc_read [im_cost_center_read_p $cost_center_id $cost_type_id $user_id]
+    set cc_write [im_cost_center_write_p $cost_center_id $cost_type_id $user_id]
+
+    set can_read [expr [im_permission $user_id view_costs] || [im_permission $user_id view_invoices]]
+    set can_write [expr [im_permission $user_id add_costs] || [im_permission $user_id add_invoices]]
+
+    # AND-connection with add/view - costs/invoices
+    if {!$can_read} { set cc_read 0 }
+    if {!$can_write} { set cc_write 0 }
+
+    # Set the other two variables
+    set cc_admin $cc_write
+    set cc_view $cc_read
+
+
+    # -----------------------------------------------------
     # Customers get the right to see _their_ invoices
     set cust_view 0
     set cust_read 0
@@ -151,6 +171,7 @@ ad_proc -public im_cost_permissions {user_id cost_id view_var read_var write_var
         im_company_permissions $user_id $customer_id cust_view cust_read cust_write cust_admin
     }
 
+    # -----------------------------------------------------
     # Providers get the right to see _their_ invoices
     # This leads to the fact that FreelanceManagers (the guys
     # who can convert themselves into freelancers) can also
@@ -166,40 +187,24 @@ ad_proc -public im_cost_permissions {user_id cost_id view_var read_var write_var
     }
 
 
+    # -----------------------------------------------------
     # Set the permission as the OR-conjunction of provider and customer
-    set view [expr $cust_view || $prov_view]
-    set read [expr $cust_read || $prov_read]
-    set write [expr $cust_write || $prov_write]
-    set admin [expr $cust_admin || $prov_admin]
-
-    if {[im_permission $user_id view_invoices]} {
-        set read 1
-        set view 1
-    }
-
-
-    set can_read [expr [im_permission $user_id view_costs] || [im_permission $user_id view_invoices]]
-    set can_admin [expr [im_permission $user_id add_costs] || [im_permission $user_id add_invoices]]
-
-    if {$can_read} {
-        set read 1
-        set view 1
-    }
-
-    if {$can_admin} {
-        set admin 1
-        set write 1
-        set read 1
-        set view 1
-    }
+    set view [expr $cust_view || $prov_view || $cc_view]
+    set read [expr $cust_read || $prov_read || $cc_read]
+    set write [expr $cust_write || $prov_write || $cc_write]
+    set admin [expr $cust_admin || $prov_admin || $cc_admin]
 
     # Limit rights of all users to view & read if they dont
     # have the expressive permission to "add_costs or add_invoices".
-    if {!$can_admin} {
+    if {!$can_write} {
         set write 0
         set admin 0
     }
+
+#    ad_return_complaint 1 "$cost_center_id $cc_read $cc_write $view $read $write $admin"
 }
+
+
 
 # -----------------------------------------------------------
 # Options & Selects
@@ -353,7 +358,7 @@ ad_proc -public im_cost_type_options { {include_empty 1} } {
 } {
    set options [db_list_of_lists cost_type_options "
 	select cost_type, cost_type_id
-	from im_cost_type
+	from im_cost_types
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
@@ -436,12 +441,23 @@ ad_proc -public im_cost_center_select {
 } {
     Returns a select box with all Cost Centers in the company.
 } {
+#   ad_return_complaint 1 "include_empty=$include_empty, department_only_p=$department_only_p, select_name=$select_name, default=$default, cost_type_id=$cost_type_id"
+
     set options [im_cost_center_options $include_empty $department_only_p $cost_type_id]
+
+    # Only one option, so 
+    # write out string instead of select component
+    if {[llength $options] == 1} {
+	set cc_entry [lindex $options 0]
+	set cc_id [lindex $cc_entry 1]
+	set cc_name [string trim [lindex $cc_entry 0]]
+	# Replace &nbsp; by " "
+	regsub -all {\&nbsp\;} $cc_name " " cc_name
+	return "$cc_name <input type=hidden name=\"$select_name\" value=\"$cc_id\">\n"
+    }
+
     return [im_options_to_select_box $select_name $options $default]
 }
-
-
-
 
 ad_proc -public im_cost_center_options { 
     {include_empty 0} 
@@ -507,6 +523,64 @@ ad_proc -public im_cost_center_options {
 }
 
 
+
+
+ad_proc -public im_costs_default_cost_center_for_user { 
+    user_id
+} {
+    Returns a reasonable default cost center for a given user.
+} {
+    # For an employee return the department_id:
+    set cost_center_id [db_string employee_cost_center "
+	select	department_id
+	from	im_employees
+	where	employee_id = :user_id
+    " -default 0]
+
+    # No further logic yet - maybe assign groups to default
+    # cost centers in the future?
+
+    return $cost_center_id
+}
+
+
+
+ad_proc -public im_cost_center_read_p {
+    cost_center_id
+    cost_type_id
+    user_id
+} {
+    Returns "1" if the user can read the CC, "0" otherwise.
+    This TCL-level query makes sense, because it is cached
+    and thus quite cheap to execute, while executing the
+    acs_permission__permission_p() query could be quite
+    expensive with a considerable number of financial docs.
+} {
+   return [string equal "t" [util_memoize "db_string cc_perms \"
+	select	im_object_permission_p($cost_center_id, $user_id, ct.read_privilege)
+	from	im_cost_types ct
+	where	ct.cost_type_id = $cost_type_id
+   \"" 60]]
+}
+
+
+ad_proc -public im_cost_center_write_p {
+    cost_center_id
+    cost_type_id
+    user_id
+} {
+    Returns "1" if the user can write to the CC, "0" otherwise.
+    This TCL-level query makes sense, because it is cached
+    and thus quite cheap to execute, while executing the
+    acs_permission__permission_p() query could be quite
+    expensive with a considerable number of financial docs.
+} {
+   return [string equal "t" [util_memoize "db_string cc_perms \"
+	select	im_object_permission_p($cost_center_id, $user_id, ct.write_privilege)
+	from	im_cost_types ct
+	where	ct.cost_type_id = $cost_type_id
+   \"" 60]]
+}
 
 
 ad_proc -public im_costs_navbar { default_letter base_url next_page_url prev_page_url export_var_list {select_label ""} } {
@@ -918,6 +992,9 @@ ad_proc im_costs_project_finance_component {
     # - Those that are N:M related to a project via acs_rels.
     #   These holds for cummulative invoices, for example in translation.
     #
+
+    
+
     set project_cost_ids_sql "
 		                select distinct cost_id
 		                from im_costs
@@ -967,7 +1044,8 @@ from
 				:default_currency
 			) * amount as amount_converted
 		from	im_costs ci
-		where	ci.cost_id in (
+		where	
+			ci.cost_id in (
 				$project_cost_ids_sql
 			)
 	) ci on (cat.category_id = ci.cost_type_id)
@@ -1066,6 +1144,8 @@ order by
 "
 
     set ctr 1
+    set atleast_one_unreadable_p 0
+    set old_atleast_one_unreadable_p 0
     set payment_amount ""
     set payment_currency ""
 
@@ -1076,13 +1156,17 @@ order by
 	# Write the subtotal line of the last cost_type_id section
 	if {$cost_type_id != $old_cost_type_id} {
 	    if {0 != $old_cost_type_id} {
+		if {!$atleast_one_unreadable_p} {
+		    append cost_html "
+			<tr class=rowplain>
+			  <td colspan=[expr $colspan-3]>&nbsp;</td>
+			  <td colspan=2>
+			    <b>$subtotals($old_cost_type_id) $default_currency</b>
+			  </td>
+			</tr>
+		    "
+		}
 		append cost_html "
-		<tr class=rowplain>
-		  <td colspan=[expr $colspan-3]>&nbsp;</td>
-		  <td colspan=2>
-		    <b>$subtotals($old_cost_type_id) $default_currency</b>
-		  </td>
-		</tr>
 		<tr>
 		  <td colspan=99 class=rowplain>&nbsp;</td>
 		</tr>\n"
@@ -1094,7 +1178,13 @@ order by
 		</tr>\n"
 
 	    set old_cost_type_id $cost_type_id
+	    set old_atleast_one_unreadable_p $atleast_one_unreadable_p
+	    set atleast_one_unreadable_p 0
 	}
+
+	# Check permissions - query is cached
+	set read_p [im_cost_center_read_p $cost_center_id $cost_type_id $user_id]
+	if {!$read_p} { set atleast_one_unreadable_p 1 }
 
 	set company_name ""
 	if {$cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_quote]} {
@@ -1103,19 +1193,31 @@ order by
 	    set company_name $provider_name
 	}
 	
-	set cost_url "$url$cost_id&return_url=[ns_urlencode $return_url]"
+	set cost_url "<A href=\"$url$cost_id&return_url=[ns_urlencode $return_url]\">"
+	set cost_url_end "</A>"
 
 	set amount_unconverted "<nobr>([string trim $amount] $currency)</nobr>"
 	if {[string equal $currency $default_currency]} { set amount_unconverted "" }
 
 	set amount_paid "$payment_amount $default_currency"
 	if {"" == $payment_amount} { set amount_paid "" }
+
+	set default_currency_read_p $default_currency
+	if {!$read_p} {
+	    set cost_url ""
+	    set cost_url_end ""
+	    set amount_converted ""
+	    set amount_unconverted ""
+	    set amount_paid ""
+	    set default_currency_read_p ""
+	}
+
 	append cost_html "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td><nobr><A href=\"$cost_url\">[string range $cost_name 0 20]</A></nobr></td>
+	  <td><nobr>$cost_url[string range $cost_name 0 20]</A></nobr></td>
 	  <td>$company_name</td>
 	  <td>$calculated_due_date</td>
-	  <td><nobr>$amount_converted $default_currency</nobr></td>
+	  <td><nobr>$amount_converted $default_currency_read_p</nobr></td>
 	  <td><nobr>$amount_unconverted</td>
 	  <td><nobr>$amount_paid</nobr></td>
 	</tr>\n"
@@ -1124,13 +1226,17 @@ order by
 
     # Write the subtotal line of the last cost_type_id section
     if {$ctr > 1} {
-	append cost_html "
+	if {!$atleast_one_unreadable_p} {
+	    append cost_html "
 		<tr class=rowplain>
 		  <td colspan=[expr $colspan-3]>&nbsp;</td>
 		  <td colspan=2>
 		    <b>$subtotals($old_cost_type_id) $default_currency</b>
 		  </td>
 		</tr>
+            "
+	}
+	append cost_html "
 		<tr>
 		  <td colspan=99 class=rowplain>&nbsp;</td>
 		</tr>\n"

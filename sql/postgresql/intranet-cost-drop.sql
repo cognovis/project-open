@@ -120,7 +120,7 @@ delete from im_biz_object_urls where object_type='im_cost';
 -- drop package im_cost;
 
 drop view im_cost_status;
-drop view im_cost_type;
+drop view im_cost_types;
 delete from im_category_hierarchy where (parent_id >= 3700 and parent_id < 3799) or (child_id >= 3700 and child_id < 3799);
 delete from im_categories where category_id >= 3700 and category_id < 3799;
 delete from im_category_hierarchy where (parent_id >= 3800 and parent_id < 3899) or (child_id >= 3800 and child_id < 3899);
