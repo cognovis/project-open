@@ -556,11 +556,21 @@ ad_proc -public im_cost_center_read_p {
     acs_permission__permission_p() query could be quite
     expensive with a considerable number of financial docs.
 } {
-   return [string equal "t" [util_memoize "db_string cc_perms \"
-	select	im_object_permission_p($cost_center_id, $user_id, ct.read_privilege)
+    return [string equal "t" [util_memoize "im_cost_center_read_p_helper $cost_center_id $cost_type_id $user_id" 60]]
+}
+
+ad_proc -public im_cost_center_read_p_helper {
+    cost_center_id
+    cost_type_id
+    user_id
+} {
+    Returns "t" if the user can read the CC, "f" otherwise.
+} {
+    return [db_string cc_perms "
+	select	im_object_permission_p(:cost_center_id, :user_id, ct.read_privilege)
 	from	im_cost_types ct
-	where	ct.cost_type_id = $cost_type_id
-   \"" 60]]
+	where	ct.cost_type_id = :cost_type_id
+    " -default "f"]
 }
 
 
@@ -575,11 +585,21 @@ ad_proc -public im_cost_center_write_p {
     acs_permission__permission_p() query could be quite
     expensive with a considerable number of financial docs.
 } {
-   return [string equal "t" [util_memoize "db_string cc_perms \"
-	select	im_object_permission_p($cost_center_id, $user_id, ct.write_privilege)
+    return [string equal "t" [util_memoize "im_cost_center_write_p_helper $cost_center_id $cost_type_id $user_id" 60]]
+}
+
+ad_proc -public im_cost_center_write_p_helper {
+    cost_center_id
+    cost_type_id
+    user_id
+} {
+    Returns "t" if the user can write to the CC, "f" otherwise.
+} {
+    return [db_string cc_perms "
+	select	im_object_permission_p(:cost_center_id, :user_id, ct.write_privilege)
 	from	im_cost_types ct
-	where	ct.cost_type_id = $cost_type_id
-   \"" 60]]
+	where	ct.cost_type_id = :cost_type_id
+    " -default "f"]
 }
 
 
