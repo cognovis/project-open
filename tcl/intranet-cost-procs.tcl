@@ -124,7 +124,6 @@ ad_proc -public im_cost_permissions {user_id cost_id view_var read_var write_var
     set user_is_freelance_p [im_user_is_freelance_p $user_id]
     set user_is_customer_p [im_user_is_customer_p $user_id]
 
-
     # -----------------------------------------------------
     # Get Cost information
     set customer_id 0
@@ -160,7 +159,6 @@ ad_proc -public im_cost_permissions {user_id cost_id view_var read_var write_var
     set cc_admin $cc_write
     set cc_view $cc_read
 
-
     # -----------------------------------------------------
     # Customers get the right to see _their_ invoices
     set cust_view 0
@@ -186,7 +184,6 @@ ad_proc -public im_cost_permissions {user_id cost_id view_var read_var write_var
         im_company_permissions $user_id $provider_id prov_view prov_read prov_write prov_admin
     }
 
-
     # -----------------------------------------------------
     # Set the permission as the OR-conjunction of provider and customer
     set view [expr $cust_view || $prov_view || $cc_view]
@@ -200,8 +197,63 @@ ad_proc -public im_cost_permissions {user_id cost_id view_var read_var write_var
         set write 0
         set admin 0
     }
+}
 
-#    ad_return_complaint 1 "$cost_center_id $cc_read $cc_write $view $read $write $admin"
+
+
+
+
+ad_proc -public im_cost_type_write_p {
+    user_id
+    cost_type_id
+} {
+    Returns "1" if the user can create costs of type cost_type_id or 0 otherwise
+} {
+    set create_cost_types [im_cost_type_write_permissions $user_id]
+    return [expr [lsearch -exact $create_cost_types $cost_type_id] != -1]
+}
+
+
+ad_proc -public im_cost_type_write_permissions {
+    user_id
+} {
+    Returns a list of all cost_type_ids for which the user has
+    write permissions for atleast one Cost Center.
+} {
+    return [im_cost_type_create_permissions_helper $user_id]
+#    return [util_memoize "im_cost_type_create_permissions_helper $user_id" 60]
+}
+
+
+ad_proc -public im_cost_type_write_permissions_helper {
+    user_id 
+} {
+    Returns a list of all cost_type_ids for which the user has
+    write permissions for atleast one Cost Center.
+} {
+    # Financial Write permissions are required
+    set can_write [expr [im_permission $user_id add_costs] || [im_permission $user_id add_invoices]]
+    if {!$can_write} { return [list] }
+
+    set result [db_list writable_cost_centers "
+	select distinct
+		ct.cost_type_id
+	from
+		im_cost_centers cc,
+		im_cost_types ct,
+	        acs_permissions p,
+	        party_approved_member_map m,
+	        acs_object_context_index c,
+	        acs_privilege_descendant_map h
+	where
+		cc.cost_center_id = c.object_id
+		and ct.write_privilege = h.descendant
+	        and p.object_id = c.ancestor_id
+	        and m.member_id = :user_id
+	        and p.privilege = h.privilege
+	        and p.grantee_id = m.party_id
+    "]
+    return $result
 }
 
 

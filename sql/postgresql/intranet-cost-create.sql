@@ -1484,6 +1484,21 @@ BEGIN
 end;' language 'plpgsql';
 
 
+create or replace function im_cost_center_code_from_id (integer)
+returns varchar as '
+DECLARE
+        p_id	alias for $1;
+        v_name	varchar(400);
+BEGIN
+        select	cc.cost_center_code
+        into	v_name
+        from	im_cost_centers cc
+        where	cost_center_id = p_id;
+
+        return v_name;
+end;' language 'plpgsql';
+
+
 
 create or replace function im_cost_nr_from_id (integer)
 returns varchar as '
