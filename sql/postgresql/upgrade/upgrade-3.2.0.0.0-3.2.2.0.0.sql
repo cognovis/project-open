@@ -199,3 +199,28 @@ select inline_0 ();
 drop function inline_0();
 
 
+
+
+-------------------------------------------------------------
+-- New view to im_cost_type(s). The (s) is new, corrected.
+--
+create or replace view im_cost_types as
+select  category_id as cost_type_id,
+        category as cost_type,
+        CASE
+            WHEN category_id = 3700 THEN 'fi_read_invoices'
+            WHEN category_id = 3702 THEN 'fi_read_quotes'
+            WHEN category_id = 3704 THEN 'fi_read_bills'
+            WHEN category_id = 3706 THEN 'fi_read_pos'
+            ELSE 'fi_read_xxxxx'
+        END as read_privilege,
+        CASE
+            WHEN category_id = 3700 THEN 'fi_write_invoices'
+            WHEN category_id = 3702 THEN 'fi_write_quotes'
+            WHEN category_id = 3704 THEN 'fi_write_bills'
+            WHEN category_id = 3706 THEN 'fi_write_pos'
+            ELSE 'fi_write_xxxxx'
+        END as write_privilege
+from    im_categories
+where   category_type = 'Intranet Cost Type';
+

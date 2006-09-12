@@ -200,12 +200,36 @@ from 	im_categories
 where	category_type = 'Intranet Cost Status' and
 	category_id not in (3812);
 
-create or replace view im_cost_type as
+
+create or replace view im_cost_types as
 select	category_id as cost_type_id, 
-	category as cost_type
+	category as cost_type,
+	CASE 
+	    WHEN category_id = 3700 THEN 'fi_read_invoices'
+	    WHEN category_id = 3702 THEN 'fi_read_quotes'
+	    WHEN category_id = 3704 THEN 'fi_read_bills'
+	    WHEN category_id = 3706 THEN 'fi_read_pos'
+	    WHEN category_id = 3716 THEN 'fi_read_repeatings'
+	    WHEN category_id = 3718 THEN 'fi_read_timesheets'
+	    WHEN category_id = 3720 THEN 'fi_read_expense_items'
+	    WHEN category_id = 3722 THEN 'fi_read_expense_reports'
+	    WHEN category_id = 3724 THEN 'fi_read_delivery_notes'
+	    ELSE 'fi_read_all'
+	END as read_privilege,
+	CASE 
+	    WHEN category_id = 3700 THEN 'fi_write_invoices'
+	    WHEN category_id = 3702 THEN 'fi_write_quotes'
+	    WHEN category_id = 3704 THEN 'fi_write_bills'
+	    WHEN category_id = 3706 THEN 'fi_write_pos'
+	    WHEN category_id = 3716 THEN 'fi_write_repeatings'
+	    WHEN category_id = 3718 THEN 'fi_write_timesheets'
+	    WHEN category_id = 3720 THEN 'fi_write_expense_items'
+	    WHEN category_id = 3722 THEN 'fi_write_expense_reports'
+	    WHEN category_id = 3724 THEN 'fi_write_delivery_notes'
+	    ELSE 'fi_write_all'
+	END as write_privilege
 from 	im_categories
 where 	category_type = 'Intranet Cost Type';
-
 
 
 -------------------------------------------------------------
