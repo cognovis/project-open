@@ -81,6 +81,12 @@ set table_header "
   <td width=150></td>
 "
 
+append table_header "
+  <td class=rowtitle align=center>[lang::message::lookup "" intranet-cost.DeptQuest "Dept?"]</td>
+  <td class=rowtitle align=center>[lang::message::lookup "" intranet-cost.Manager "Manager"]</td>
+"
+
+
 set main_sql_select ""
 set num_profiles 0
 db_foreach group_list $group_list_sql {
@@ -114,7 +120,8 @@ set main_sql "
 select
 ${main_sql_select}	m.*,
 	length(cost_center_code) / 2 as indent_level,
-	(9 - (length(cost_center_code)/2)) as colspan_level
+	(9 - (length(cost_center_code)/2)) as colspan_level,
+	im_name_from_user_id(m.manager_id) as manager_name
 from
 	im_cost_centers m
 order by cost_center_code
@@ -140,6 +147,8 @@ db_foreach cost_centers $main_sql {
 	    >$cost_center_code - $cost_center_name</A>
             </nobr>
 	  </td>
+	  <td>$department_p</td>
+	  <td><a href=[export_vars -base "/intranet/users/view" {user_id $manager_id}]>$manager_name</a></td>
     "
 
     foreach horiz_group_id $group_ids {
