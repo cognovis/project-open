@@ -597,6 +597,23 @@ ad_proc -public im_costs_default_cost_center_for_user {
 
 
 
+
+ad_proc -public im_cost_center_company {
+} {
+    Returns the ID of the "Company - Co" Cost Center
+} {
+    set cc [db_string cost_center_company "
+	select	cost_center_id
+	from	im_cost_centers
+	where	cost_center_label = 'company'
+    " -default 0]
+
+    if {0 == $cc} { ad_return_complaint 1 "Unable to find Cost Center 'company'" }
+    return $cc
+}
+
+
+
 ad_proc -public im_cost_center_read_p {
     cost_center_id
     cost_type_id
@@ -608,6 +625,7 @@ ad_proc -public im_cost_center_read_p {
     acs_permission__permission_p() query could be quite
     expensive with a considerable number of financial docs.
 } {
+    if {"" == $cost_center_id} { return 1 }
     return [string equal "t" [util_memoize "im_cost_center_read_p_helper $cost_center_id $cost_type_id $user_id" 60]]
 }
 
@@ -637,6 +655,7 @@ ad_proc -public im_cost_center_write_p {
     acs_permission__permission_p() query could be quite
     expensive with a considerable number of financial docs.
 } {
+    if {"" == $cost_center_id} { return 1 }
     return [string equal "t" [util_memoize "im_cost_center_write_p_helper $cost_center_id $cost_type_id $user_id" 60]]
 }
 
@@ -1039,7 +1058,7 @@ ad_proc im_costs_project_finance_component {
 
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
-    set colspan 6
+    set colspan 7
     set date_format "YYYY-MM-DD"
     set num_format "9999999999.99"
 
@@ -1177,6 +1196,7 @@ select
 	url.url,
 	im_category_from_id(ci.cost_status_id) as cost_status,
 	im_category_from_id(ci.cost_type_id) as cost_type,
+	im_cost_center_code_from_id(ci.cost_center_id) as cost_center_code,
 	to_date(to_char(ci.effective_date,:date_format),:date_format) + ci.payment_days as calculated_due_date
 from
 	im_costs ci
@@ -1207,6 +1227,7 @@ order by
   <tr class=rowtitle>
 <!--    <td align=center class=rowtitle>[_ intranet-cost.Project]</td> -->
     <td align=center class=rowtitle>[_ intranet-cost.Document]</td>
+    <td align=center class=rowtitle>[lang::message::lookup "" intranet-cost.CostCenter_short "CC"]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Company]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Due]</td>
     <td align=center class=rowtitle>[_ intranet-cost.Amount]</td>
@@ -1287,6 +1308,7 @@ order by
 	append cost_html "
 	<tr $bgcolor([expr $ctr % 2])>
 	  <td><nobr>$cost_url[string range $cost_name 0 20]</A></nobr></td>
+	  <td>$cost_center_code</td>
 	  <td>$company_name</td>
 	  <td>$calculated_due_date</td>
 	  <td><nobr>$amount_converted $default_currency_read_p</nobr></td>
