@@ -29,9 +29,34 @@ insert into im_category_hierarchy values (3708,3724);
 
 
 
+
+
 -------------------------------------------------------------
 -- 
+-------------------------------------------------------------
+
+
+
+create or replace function im_cost_center_code_from_id (integer)
+returns varchar as '
+DECLARE
+        p_id    alias for $1;
+        v_name  varchar(400);
+BEGIN
+        select  cc.cost_center_code
+        into    v_name
+        from    im_cost_centers cc
+        where   cost_center_id = p_id;
+
+        return v_name;
+end;' language 'plpgsql';
+
+
+-------------------------------------------------------------
+-- Menus
+-- Create a Cost Centers menu in Admin
 ---------------------------------------------------------
+
 
 create or replace function inline_0 ()
 returns integer as '
@@ -87,57 +112,71 @@ drop function inline_0 ();
 
 -- Permissions and Privileges
 --
+
+-- All privilege - We cannot directly inherit from "read" or "write",
+-- because all registered_users have read access to the "SubSite".
+--
+select acs_privilege__create_privilege('fi_read_all','Read All','Read All');
+select acs_privilege__create_privilege('fi_write_all','Write All','Write All');
+select acs_privilege__add_child('admin', 'fi_read_all');
+select acs_privilege__add_child('admin', 'fi_write_all');
+
+-- Start defining the cost_type specific privileges
+--
 select acs_privilege__create_privilege('fi_read_invoices','Read Invoices','Read Invoices');
 select acs_privilege__create_privilege('fi_write_invoices','Write Invoices','Write Invoices');
-select acs_privilege__add_child('read', 'fi_read_invoices');
-select acs_privilege__add_child('write', 'fi_write_invoices');
+select acs_privilege__add_child('fi_read_all', 'fi_read_invoices');
+select acs_privilege__add_child('fi_write_all', 'fi_write_invoices');
 
 select acs_privilege__create_privilege('fi_read_quotes','Read Quotes','Read Quotes');
 select acs_privilege__create_privilege('fi_write_quotes','Write Quotes','Write Quotes');
-select acs_privilege__add_child('read', 'fi_read_quotes');
-select acs_privilege__add_child('write', 'fi_write_quotes');
+select acs_privilege__add_child('fi_read_all', 'fi_read_quotes');
+select acs_privilege__add_child('fi_write_all', 'fi_write_quotes');
 
 select acs_privilege__create_privilege('fi_read_bills','Read Bills','Read Bills');
 select acs_privilege__create_privilege('fi_write_bills','Write Bills','Write Bills');
-select acs_privilege__add_child('read', 'fi_read_bills');
-select acs_privilege__add_child('write', 'fi_write_bills');
+select acs_privilege__add_child('fi_read_all', 'fi_read_bills');
+select acs_privilege__add_child('fi_write_all', 'fi_write_bills');
 
 select acs_privilege__create_privilege('fi_read_pos','Read Pos','Read Pos');
 select acs_privilege__create_privilege('fi_write_pos','Write Pos','Write Pos');
-select acs_privilege__add_child('read', 'fi_read_pos');
-select acs_privilege__add_child('write', 'fi_write_pos');
+select acs_privilege__add_child('fi_read_all', 'fi_read_pos');
+select acs_privilege__add_child('fi_write_all', 'fi_write_pos');
+
+select acs_privilege__create_privilege('fi_read_timesheets','Read Timesheets','Read Timesheets');
+select acs_privilege__create_privilege('fi_write_timesheets','Write Timesheets','Write Timesheets');
+select acs_privilege__add_child('fi_read_all', 'fi_read_timesheets');
+select acs_privilege__add_child('fi_write_all', 'fi_write_timesheets');
+
+select acs_privilege__create_privilege('fi_read_delivery_notes','Read Delivery Notes','Read Delivery Notes');
+select acs_privilege__create_privilege('fi_write_delivery_notes','Write Delivery Notes','Write Delivery Notes');
+select acs_privilege__add_child('fi_read_all', 'fi_read_delivery_notes');
+select acs_privilege__add_child('fi_write_all', 'fi_write_delivery_notes');
+
+select acs_privilege__create_privilege('fi_read_expense_items','Read Expense Items','Read Expense Items');
+select acs_privilege__create_privilege('fi_write_expense_items','Write Expense Items','Write Expense Items');
+select acs_privilege__add_child('fi_read_all', 'fi_read_expense_items');
+select acs_privilege__add_child('fi_write_all', 'fi_write_expense_items');
+
+select acs_privilege__create_privilege('fi_read_expense_reports','Read Expense Reports','Read Expense Reports');
+select acs_privilege__create_privilege('fi_write_expense_reports','Write Expense Reports','Write Expense Reports');
+select acs_privilege__add_child('fi_read_all', 'fi_read_expense_reports');
+select acs_privilege__add_child('fi_write_all', 'fi_write_expense_reports');
+
+select acs_privilege__create_privilege('fi_read_repeatings','Read Repeatings','Read Repeatings');
+select acs_privilege__create_privilege('fi_write_repeatings','Write Repeatings','Write Repeatings');
+select acs_privilege__add_child('fi_read_all', 'fi_read_repeatings');
+select acs_privilege__add_child('fi_write_all', 'fi_write_repeatings');
 
 
 
-select im_priv_create('fi_read_invoices','P/O Admins');
-select im_priv_create('fi_read_invoices','Senior Managers');
-select im_priv_create('fi_read_invoices','Accounting');
-select im_priv_create('fi_write_invoices','P/O Admins');
-select im_priv_create('fi_write_invoices','Senior Managers');
-select im_priv_create('fi_write_invoices','Accounting');
 
-select im_priv_create('fi_read_quotes','P/O Admins');
-select im_priv_create('fi_read_quotes','Senior Managers');
-select im_priv_create('fi_read_quotes','Accounting');
-select im_priv_create('fi_write_quotes','P/O Admins');
-select im_priv_create('fi_write_quotes','Senior Managers');
-select im_priv_create('fi_write_quotes','Accounting');
-
-select im_priv_create('fi_read_bills','P/O Admins');
-select im_priv_create('fi_read_bills','Senior Managers');
-select im_priv_create('fi_read_bills','Accounting');
-select im_priv_create('fi_write_bills','P/O Admins');
-select im_priv_create('fi_write_bills','Senior Managers');
-select im_priv_create('fi_write_bills','Accounting');
-
-select im_priv_create('fi_read_pos','P/O Admins');
-select im_priv_create('fi_read_pos','Senior Managers');
-select im_priv_create('fi_read_pos','Accounting');
-select im_priv_create('fi_write_pos','P/O Admins');
-select im_priv_create('fi_write_pos','Senior Managers');
-select im_priv_create('fi_write_pos','Accounting');
-
-
+select im_priv_create('fi_read_all','P/O Admins');
+select im_priv_create('fi_read_all','Senior Managers');
+select im_priv_create('fi_read_all','Accounting');
+select im_priv_create('fi_write_all','P/O Admins');
+select im_priv_create('fi_write_all','Senior Managers');
+select im_priv_create('fi_write_all','Accounting');
 
 
 
@@ -205,22 +244,32 @@ drop function inline_0();
 -- New view to im_cost_type(s). The (s) is new, corrected.
 --
 create or replace view im_cost_types as
-select  category_id as cost_type_id,
-        category as cost_type,
-        CASE
-            WHEN category_id = 3700 THEN 'fi_read_invoices'
-            WHEN category_id = 3702 THEN 'fi_read_quotes'
-            WHEN category_id = 3704 THEN 'fi_read_bills'
-            WHEN category_id = 3706 THEN 'fi_read_pos'
-            ELSE 'fi_read_xxxxx'
-        END as read_privilege,
-        CASE
-            WHEN category_id = 3700 THEN 'fi_write_invoices'
-            WHEN category_id = 3702 THEN 'fi_write_quotes'
-            WHEN category_id = 3704 THEN 'fi_write_bills'
-            WHEN category_id = 3706 THEN 'fi_write_pos'
-            ELSE 'fi_write_xxxxx'
-        END as write_privilege
-from    im_categories
-where   category_type = 'Intranet Cost Type';
+select	category_id as cost_type_id, 
+	category as cost_type,
+	CASE 
+	    WHEN category_id = 3700 THEN 'fi_read_invoices'
+	    WHEN category_id = 3702 THEN 'fi_read_quotes'
+	    WHEN category_id = 3704 THEN 'fi_read_bills'
+	    WHEN category_id = 3706 THEN 'fi_read_pos'
+	    WHEN category_id = 3716 THEN 'fi_read_repeatings'
+	    WHEN category_id = 3718 THEN 'fi_read_timesheets'
+	    WHEN category_id = 3720 THEN 'fi_read_expense_items'
+	    WHEN category_id = 3722 THEN 'fi_read_expense_reports'
+	    WHEN category_id = 3724 THEN 'fi_read_delivery_notes'
+	    ELSE 'fi_read_all'
+	END as read_privilege,
+	CASE 
+	    WHEN category_id = 3700 THEN 'fi_write_invoices'
+	    WHEN category_id = 3702 THEN 'fi_write_quotes'
+	    WHEN category_id = 3704 THEN 'fi_write_bills'
+	    WHEN category_id = 3706 THEN 'fi_write_pos'
+	    WHEN category_id = 3716 THEN 'fi_write_repeatings'
+	    WHEN category_id = 3718 THEN 'fi_write_timesheets'
+	    WHEN category_id = 3720 THEN 'fi_write_expense_items'
+	    WHEN category_id = 3722 THEN 'fi_write_expense_reports'
+	    WHEN category_id = 3724 THEN 'fi_write_delivery_notes'
+	    ELSE 'fi_write_all'
+	END as write_privilege
+from 	im_categories
+where 	category_type = 'Intranet Cost Type';
 
