@@ -178,10 +178,10 @@ db_foreach cost_centers $main_sql {
 
 	    if {$read_p == "t"} {
 		set action "revoke"
-		set render "<b>[string toupper "r$priv_initial"]</b>"
+		set render "<b>[string toupper "$priv_initial"]</b>"
 	    } else {
 		set action "grant"
-		set render "r$priv_initial"
+		set render "$priv_initial"
 	    }
 	    append table "<A href=\"[export_vars -base $toggle_url {object_id horiz_group_id action privilege return_url}]\">$render</A>\n"
 	}
@@ -210,10 +210,10 @@ db_foreach cost_centers $main_sql {
 
 	    if {$write_p == "t"} {
 		set action "revoke"
-		set render "<b>[string toupper "w$priv_initial"]</b>"
+		set render "<b>[string toupper "$priv_initial"]</b>"
 	    } else {
 		set action "grant"
-		set render "w$priv_initial"
+		set render "$priv_initial"
 	    }
 
 	    append table "<A href=\"[export_vars -base $toggle_url {object_id horiz_group_id action privilege return_url}]\">$render</A>\n"
