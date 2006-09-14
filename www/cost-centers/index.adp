@@ -24,19 +24,22 @@ Please note that this table 'inherits' from the permissions set in the
 you have set there.<p>
 
 <h3>Abbreviations</h3>
+
+In the following, the first line refers to to Read permissions, while the
+second line revers to Write permissions:
 "] %>
 </td></tr>
 </table>
 
 <li>R - Read All - User can read all types of financial documents for this Cost Center
 <li>W - Read All - User can create/modify all types of financial documents for this Cost Center
-<li>RI/WI - Read/Write Customer Invoices
-<li>RQ/WQ - Read/Write Customer Quotes
-<li>RD/WD - Read/Write Delivery Notes
-<li>RB/WB - Read/Write Provider Bills
-<li>RP/WP - Read/Write Purchase Orders
-<li>RT/WT - Read/Write Timesheet Information
-<li>RE/WE - Read/Write Expense Reports
+<li>I - Customer Invoices
+<li>Q - Customer Quotes
+<li>D - Delivery Notes
+<li>B - Provider Bills
+<li>P - Purchase Orders
+<li>T - Timesheet Information
+<li>E - Expense Reports
 
 <form action=cost-center-action method=post>
 <%= [export_form_vars return_url] %>
