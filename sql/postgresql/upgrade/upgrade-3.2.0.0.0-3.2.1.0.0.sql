@@ -20,12 +20,32 @@
 -- 4100-4199    Intranet Trans TM Type
 
 
-INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
-(4200,'External', 'Intranet TM Integration Type','Trados is integrated by up/downloading files');
-INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
-(4202,'Ophelia', 'Intranet TM Integration Type','Ophelia in integrated via UserExists');
-INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
-(4204,'None', 'Intranet TM Integration Type','No integration - not a TM task');
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select  count(*)
+        into    v_count
+        from    im_categories
+        where   category_id = 4200;
+
+        if v_count = 1 then
+            return 0;
+        end if;
+
+	INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
+	(4200,'External', 'Intranet TM Integration Type','Trados is integrated by up/downloading files');
+	INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
+	(4202,'Ophelia', 'Intranet TM Integration Type','Ophelia in integrated via UserExists');
+	INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
+	(4204,'None', 'Intranet TM Integration Type','No integration - not a TM task');
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
 
 alter table im_trans_tasks
