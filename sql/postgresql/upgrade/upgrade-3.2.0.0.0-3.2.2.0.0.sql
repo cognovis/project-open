@@ -255,6 +255,20 @@ drop function inline_0();
 
 
 
+-------------------------------------------------------------
+-- Update all im_costs with empty cost_center_id
+-- to set them to 'company'
+--
+update im_costs
+set cost_center_id = (
+	select cost_center_id
+	from im_cost_centers
+	where cost_center_label = 'company'
+)
+where cost_center_id is null;
+
+
+
 
 -------------------------------------------------------------
 -- New view to im_cost_type(s). The (s) is new, corrected.
