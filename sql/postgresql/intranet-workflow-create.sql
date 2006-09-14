@@ -48,6 +48,17 @@ where category_id = 96;
 
 
 
+-- ------------------------------------------------------
+-- Cleanup
+-- ------------------------------------------------------
+
+-- delete potentially existing menus and plugins if this
+-- file is sourced multiple times during development...
+
+select im_component_plugin__del_module('intranet-workflow');
+select im_menu__del_module('intranet-workflow');
+
+
 
 -- ------------------------------------------------------
 -- Components
@@ -77,13 +88,6 @@ SELECT im_component_plugin__new (
 -- ------------------------------------------------------
 -- Menus
 -- ------------------------------------------------------
-
--- delete potentially existing menus and plugins if this
--- file is sourced multiple times during development...
-
-select im_component_plugin__del_module('intranet-forum');
-select im_menu__del_module('intranet-forum');
-
 
 create or replace function inline_0 ()
 returns integer as '
