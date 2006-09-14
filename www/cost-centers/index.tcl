@@ -183,7 +183,7 @@ db_foreach cost_centers $main_sql {
 		set action "grant"
 		set render "$priv_initial"
 	    }
-	    append table "<A href=\"[export_vars -base $toggle_url {object_id horiz_group_id action privilege return_url}]\">$render</A>\n"
+	    append table "<A href=\"[export_vars -base $toggle_url {object_id horiz_group_id action privilege return_url}]\">$render</A>"
 	}
 	append table "</nobr>\n"
 
@@ -216,7 +216,7 @@ db_foreach cost_centers $main_sql {
 		set render "$priv_initial"
 	    }
 
-	    append table "<A href=\"[export_vars -base $toggle_url {object_id horiz_group_id action privilege return_url}]\">$render</A>\n"
+	    append table "<A href=\"[export_vars -base $toggle_url {object_id horiz_group_id action privilege return_url}]\">$render</A>"
 	}
 	append table "</nobr>\n"
 
