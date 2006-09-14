@@ -21,21 +21,37 @@ alter table im_projects alter   cost_delivery_notes_cache       set default 0;
 -- Remove old "Travel Costs" cost type
 delete from im_categories where category_id = 3712;
 
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (3724,'Delivery Note','Intranet Cost Type');
 
--- Establish that a Delivery Note is a "Customer Documents"
-insert into im_category_hierarchy values (3708,3724);
+-- Add a new category "Delivery Note" if not already there...
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select  count(*)
+        into    v_count
+        from    im_categories
+        where   category_id = 3724;
 
+        if v_count = 1 then
+            return 0;
+        end if;
 
+	INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+	VALUES (3724,''Delivery Note'',''Intranet Cost Type'');
 
+	-- Establish that a Delivery Note is a "Customer Documents"
+	insert into im_category_hierarchy values (3708,3724);
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 -------------------------------------------------------------
 -- 
 -------------------------------------------------------------
-
-
 
 create or replace function im_cost_center_code_from_id (integer)
 returns varchar as '
