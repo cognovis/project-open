@@ -920,11 +920,29 @@ select
 from
 	im_costs ci,
 	acs_objects o,
-        (select * from im_biz_object_urls where url_type=:view_mode) url
+        (select * from im_biz_object_urls where url_type=:view_mode) url,
+	(	select	cc.cost_center_id,
+			ct.cost_type_id
+		from	im_cost_centers cc,
+			im_cost_types ct,
+			acs_permissions p,
+			party_approved_member_map m,
+			acs_object_context_index c, 
+			acs_privilege_descendant_map h
+		where
+			p.object_id = c.ancestor_id
+			and h.descendant = ct.read_privilege
+			and c.object_id = cc.cost_center_id
+			and m.member_id = :user_id
+			and p.privilege = h.privilege
+			and p.grantee_id = m.party_id
+	) readable_ccs
 	$extra_from_clause
 where
 	ci.cost_id = o.object_id
 	and o.object_type = url.object_type
+	and ci.cost_center_id = readable_ccs.cost_center_id
+	and ci.cost_type_id = readable_ccs.cost_type_id
 	$extra_where_clause
 order by
 	ci.effective_date desc
