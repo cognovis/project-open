@@ -69,7 +69,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 
     # --------------- Select all values --------------------------
 
-    set employee_info_exists [db_0or1row employee_info "
+    if {[catch {db_1row employee_info "
 	select	
 		pe.first_names||' '||pe.last_name as user_name,
 		p.email,
@@ -102,10 +102,14 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 		and u.user_id = :employee_id
 		and u.user_id = e.employee_id
 		and e.department_id = cc.cost_center_id
-    "]
+    "} err_msg]} {
+	set employee_info_exists 0
+    } else {
+	set employee_info_exists 1
+    }
 
     set view_id [db_string get_view "select view_id from im_views where view_name=:view_name" -default 0]
-    ns_log Notice "im_employee_info_component: view_id=$view_id"
+    ns_log Notice "im_employee_info_component: view_id=$view_id, emp_info_exists=$employee_info_exists"
 
     set column_sql "
 	select	c.column_name,
@@ -129,6 +133,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 	# if the row makes references to "private Note" and the user isn't
 	# adminstrator, this row don't appear in the browser.
 	db_foreach column_list_sql $column_sql {
+	    ns_log Notice "im_employee_info_component: visible_for=$visible_for"
 	    if {"" == $visible_for || [eval $visible_for]} {
 		append employee_html "
                 <tr $td_class([expr $ctr % 2])>
