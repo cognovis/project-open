@@ -75,7 +75,7 @@ set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurr
 set cur_format "999,999,999.09"
 set date_format "YYYY-MM-DD"
 
-set days_in_past 90
+set days_in_past 30
 db_1row todays_date "
 select
 	to_char(sysdate::date - :days_in_past::integer, 'YYYY') as todays_year,
