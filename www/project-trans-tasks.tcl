@@ -14,8 +14,9 @@ ad_page_contract {
     { start_date "" }
     { end_date "" }
     { level_of_detail 3 }
-    project_id:integer,optional
-    customer_id:integer,optional
+    { project_id:integer 0}
+    { customer_id:integer 0}
+    { project_manager_id:integer 0}
 }
 
 # ------------------------------------------------------------
@@ -119,12 +120,12 @@ set this_url [export_vars -base "/intranet-reporting/project-trans-tasks" {start
 
 set criteria [list]
 
-if {[info exists customer_id]} {
+if {0 != $customer_id} {
     lappend criteria "pcust.company_id = :customer_id"
 }
 
 # Select project & subprojects
-if {[info exists project_id]} {
+if {0 != $project_id} {
     lappend criteria "p.project_id in (
 	select
 		p.project_id
@@ -137,11 +138,17 @@ if {[info exists project_id]} {
     )"
 }
 
+if {0 != $project_manager_id} {
+    lappend criteria "p.project_lead_id = :project_manager_id"
+}
+
 set where_clause [join $criteria " and\n            "]
 if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
 }
 
+set warn_interval 3
+set today '2006-07-22'
 
 # ------------------------------------------------------------
 # Define the report - SQL, counters, headers and footers 
@@ -154,6 +161,8 @@ set sql "
 		p.project_nr,
 		p.start_date::date as project_start_date,
 		p.end_date::date as project_end_date,
+		p.project_lead_id as project_manager_id,
+		im_name_from_user_id(p.project_lead_id) as project_manager_name,
 		children.project_id as children_id,
 		children.project_nr as children_nr,
 		cust.company_id as customer_id,
@@ -169,7 +178,15 @@ set sql "
 		im_category_from_id(t.task_type_id) as task_type,
 		im_category_from_id(t.source_language_id) as source_language,
 		im_category_from_id(t.target_language_id) as target_language,
-		im_category_from_id(t.task_uom_id) as task_uom
+		im_category_from_id(t.task_uom_id) as task_uom,
+		CASE 
+			WHEN t.end_date <= :today::date 
+			     AND t.task_status_id not in (358, 360) THEN 'red'
+			WHEN t.end_date <= (:today::date + :warn_interval::integer)
+			     AND t.end_date > :today::date 
+			     AND t.task_status_id not in (358, 360) THEN 'orange'
+			ELSE 'black'
+		END as warn_color
 	from
 		im_projects p,
 		im_projects children,
@@ -194,7 +211,7 @@ set sql "
 set report_def [list \
     group_by customer_id \
     header {
-	"\#colspan=9 <a href=$this_url&customer_id=$customer_id&level_of_detail=4 
+	"\#colspan=11 <a href=$this_url&customer_id=$customer_id&level_of_detail=4 
 	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 	<b><a href=$company_url$customer_id>$customer_name</a></b>"
     } \
@@ -202,21 +219,17 @@ set report_def [list \
             group_by project_id \
             header { 
 		"<a href=$project_url$project_id>$project_nr</a>"
-		"\#colspan=8 <a href=$this_url&project_id=$project_id&level_of_detail=4 
+		"\#colspan=2 <a href=$this_url&project_id=$project_id&level_of_detail=4 
 		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 		<b><a href=$project_url$project_id>$project_nr $project_name</a></b>"
-		"" 
-		"" 
-		"" 
-		"" 
-		"" 
+		"\#colspan=8 <a href=$user_url$project_manager_id>$project_manager_name</a>"
 	    } \
 	    content [list \
 		    header {
 			"<a href=$project_url$children_id>$children_nr</a>"
 			""
 			"$task_name"
-			"$task_end_date_formatted"
+			"<font color='$warn_color'>$task_end_date_formatted</font>"
 			"$source_language"
 			"$target_language"
 			"$task_type"
@@ -227,28 +240,19 @@ set report_def [list \
 		    } \
 		    content {} \
 	    ] \
-            footer {
-		"" 
-		"" 
-		"" 
-		"" 
-		"" 
-		"" 
-		"" 
-		"" 
-		"" 
-		"" 
+	    footer {
+		"&nbsp;" "" "" "" "" "" "" "" "" "" "" 
             } \
     ] \
-    footer {  } \
+    footer {  
+	"&nbsp;"  ""  ""  ""  ""  ""  ""  ""  ""  ""  "" 
+    } \
 ]
 
 # Global header/footer
 set header0 {"Cust" "Project" "Task Name" "Deadl." "Sr" "Tg" "Type" "Status" "Units" "Bill" "Unit"}
 set footer0 {
-	"" 
-	"" 
-	"<br><b>Total:</b>" 
+	"&nbsp;"  ""  ""  ""  ""  ""  ""  ""  ""  ""  "" 
 }
 
 set counters [list ]
@@ -293,6 +297,12 @@ ad_return_top_of_page "
   <td class=form-label>End Date</td>
   <td class=form-widget>
     <input type=textfield name=end_date value=$end_date>
+  </td>
+</tr>
+<tr>
+  <td class=form-label>Project Manager</td>
+  <td class=form-widget>
+    [im_user_select project_manager_id $project_manager_id]
   </td>
 </tr>
 <tr>
