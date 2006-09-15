@@ -4,7 +4,7 @@
 
 <br>
 @filter_html;noquote@
-<%= [im_costs_navbar $letter "/intranet-cost/list" $next_page_url $previous_page_url [list cost_status_id cost_type_id company_id start_idx order_by how_many view_name letter] "<#_ costs#>"] %>
+<%= [im_costs_navbar "none" "/intranet-cost/list" $next_page_url $previous_page_url [list cost_status_id cost_type_id company_id start_idx order_by how_many view_name letter] "<#_ costs#>"] %>
 
 <form action=/intranet-cost/costs/cost-action method=POST>
 <%= [export_form_vars company_id cost_id return_url]%>

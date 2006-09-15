@@ -225,82 +225,8 @@ set extra_select ""
 set extra_from ""
 set extra_where ""
 
-# -----------------------------------------------------------------
-# Main SQL
-# -----------------------------------------------------------------
-
-# ToDo: SQL is replaced by .xql file. However,the XQL still doesn't
-# contain a "limited query" piece.
-
-set sql "
-select
-	c.*,
-	c.amount as amount_formatted,
-	to_date(c.start_block, :date_format) as start_block_formatted,
-	(to_date(to_char(c.effective_date,'YYYY-MM-DD'),'YYYY-MM-DD') + c.payment_days) as due_date_calculated,
-	o.object_type,
-	url.url as cost_url,
-	ot.pretty_name as object_type_pretty_name,
-	cust.company_name as customer_name,
-	cust.company_path as customer_short_name,
-	proj.project_nr,
-	prov.company_name as provider_name,
-	prov.company_path as provider_short_name,
-	im_category_from_id(c.cost_status_id) as cost_status,
-	im_category_from_id(c.cost_type_id) as cost_type,
-	sysdate - (c.effective_date + c.payment_days) as overdue
-	$extra_select
-from
-	im_costs c,
-	acs_objects o,
-	acs_object_types ot,
-	im_companies cust,
-	im_companies prov,
-	im_projects proj,
-	(select * from im_biz_object_urls where url_type=:view_mode) url
-	$extra_from
-where
-	c.customer_id=cust.company_id
-	and c.provider_id = prov.company_id
-	and c.project_id = proj.project_id(+)
-	and c.cost_id = o.object_id
-	and o.object_type = url.object_type
-	and o.object_type = ot.object_type
-	$company_where
-	$where_clause
-	$extra_where
-$order_by_clause
-"
-
-# ---------------------------------------------------------------
-# 5a. Limit the SQL query to MAX rows and provide << and >>
-# ---------------------------------------------------------------
-
-# Limit the search results to N data sets only
-# to be able to manage large sites
-#
-
-if {[string equal $letter "ALL"]} {
-    # Set these limits to negative values to deactivate them
-    set total_in_limited -1
-    set how_many -1
-    set selection "$sql"
-} else {
-    ###########
-    # todo: PAGINATION
-    #       this part is not executed
-    ###########
-    set limited_query [im_select_row_range $sql $start_idx $end_idx]
-    # We can't get around counting in advance if we want to be able to 
-    # sort inside the table on the page for only those users in the 
-    # query results
-    set total_in_limited [db_string costs_total_in_limited "
-	select count(*) 
-	from im_costs c, im_companies cust
-	where 1=1 $where_clause"]
-
-    set selection "select z.* from ($limited_query) z $order_by_clause"
-}	
+set total_in_limited -1
+set how_many -1
 
 # ---------------------------------------------------------------
 # 6a. Format the Filter: Get the admin menu
