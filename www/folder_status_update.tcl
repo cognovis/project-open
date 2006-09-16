@@ -54,7 +54,7 @@ if {!$exists_status_p} {
 
     if {!$folder_id} {
 
-	set folder_id [db_nextval im_fs_folder_status_seq]
+	set folder_id [db_nextval im_fs_folder_seq]
 	db_dml insert_folder "
 	insert into im_fs_folders (
 		folder_id,
