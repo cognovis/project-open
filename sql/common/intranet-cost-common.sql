@@ -318,6 +318,11 @@ extra_select, extra_where, sort_order, visible_for) values (2107,21,NULL,'Status
 '$project_status','','',7,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (2009,21,NULL,'Project Manager',
+'"<A HREF=/intranet/users/view?user_id=$project_lead_id>$lead_name</A>"',
+'','',9,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2111,21,NULL,'Budget',
 '"$project_budget $project_budget_currency"','','',11,'');
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
