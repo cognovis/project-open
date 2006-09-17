@@ -36,6 +36,9 @@ create table im_search_object_types (
 -- 2 | im_forum_topic
 -- 3 | im_company
 -- 4 | im_invoice
+-- 5 | emails (in CR)
+-- 6 | im_fs_files (Filenames)
+-- 7 | im_fs_files (Full-Text)
 
 
 
