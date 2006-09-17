@@ -303,3 +303,10 @@ select	category_id as cost_type_id,
 from 	im_categories
 where 	category_type = 'Intranet Cost Type';
 
+
+-- Add a Project Manager field to Profit & Loss Analysis
+delete from im_view_columns where column_id = 2009;
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (2009,21,NULL,'Project Manager',
+'"<A HREF=/intranet/users/view?user_id=$project_lead_id>$lead_name</A>"',
+'','',9,'');
