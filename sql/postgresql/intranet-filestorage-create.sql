@@ -54,6 +54,60 @@ create index im_fs_folders_object_idx on im_fs_folders(object_id);
 
 
 ---------------------------------------------------------
+-- Files
+--
+-- A table to keep the list of files. Files are not OpenACS objects 
+-- because applying OpenACS permission means a storage complexity of
+-- order (users * folders). 
+-- Instead, we are using "sparce" permissions on the file's folders
+-- to save storage complexity. 
+
+create sequence im_fs_file_seq start 1;
+create table im_fs_files (
+	file_id		integer 
+			constraint im_fs_files_pk
+			primary key,
+			-- Pointer to folder - this is where all 
+			-- security is located
+	folder_id	integer 
+			constraint im_fs_files_folder_fk
+			references im_fs_foldters,
+			-- Who is the owner? (Creator/Updator/...)
+	owner_id	integer 
+			constraint im_fs_files_folder_fk
+			references im_fs_foldters,
+			-- Filename, starting at folder. Should not
+			-- contain any slash / characters.
+	filename	varchar(100)
+			constraint im_fs_files_filename_nn 
+			not null,
+	language_id	integer
+			constraint im_fs_file_lang_fk
+			references im_categories,
+			-- Full file hash to identify duplicate files
+	binary_hash	character(40),
+			-- Hash on file strings for similar files
+	text_hash	character(40),
+			-- How many times has the file been downloaded?
+			-- Calculated from im_fs_actions
+	downloads_cache	integer,
+			-- Used to mark deleted files as non-existing
+			-- before they are deleted from the list.
+	exists_p	char(1) default '1'
+			constraint im_fs_files_exists_ck
+			check(exists_p in ('0','1')),
+			-- last time of update
+	last_updated	timestamptz,
+		-- Only one file with the same name below a folder
+		constraint im_fs_files_un
+		unique (folder_id, filename)
+);
+-- We need to select frequently the files per folder:
+create index im_fs_files_folder_idx on im_fs_files(folder_id);
+
+
+
+---------------------------------------------------------
 -- Folder Status
 --
 -- Basicly, a folder can be opened ("+" - showing all files 
@@ -80,7 +134,7 @@ create index im_fs_folder_status_user_idx on im_fs_folder_status(user_id);
 
 
 ---------------------------------------------------------
--- Folder Permission Map
+-- Folder Permission Map and Cache
 --
 -- Maps folders to groups with read_p, write_p and view_p.
 -- Perhaps we should change this to separate entries for
@@ -94,18 +148,23 @@ create table im_fs_folder_perms (
 				-- we use it to store "roles" as well.
 	profile_id		integer,
 	view_p			char(1) default('0')
-				constraint im_fs_folder_status_view_p 
+				constraint im_fs_folder_perms_status_view_ck
 				check(view_p in ('0','1')),
 	read_p			char(1) default('0')
-				constraint im_fs_folder_status_read_p 
+				constraint im_fs_folder_perms_status_read_ck
 				check(read_p in ('0','1')),
 	write_p			char(1) default('0')
-				constraint im_fs_folder_status_write_p 
+				constraint im_fs_folder_perms_status_write_ck
 				check(write_p in ('0','1')),
 	admin_p			char(1) default('0')
-				constraint im_fs_folder_status_admin_p 
+				constraint im_fs_folder_perms_status_admin_ck 
 				check(admin_p in ('0','1')),
-	constraint im_fs_folders_perm_pk
+				-- Is this a genuine entry, or is this
+				-- a precalculated (cached) entry?
+	cached_p		char(1)
+				constraint im_fs_folder_perms_cached_ck 
+				check(admin_p in ('0','1')),
+	constraint im_fs_folders_permd_pk
 	primary key (folder_id, profile_id)
 );
 
