@@ -19,6 +19,7 @@ ad_page_contract {
     { select_project:integer,multiple {} }
     { company_contact_id "" }
     { invoice_office_id "" }
+    cost_center_id:integer
     invoice_nr
     invoice_date
     cost_status_id:integer 
@@ -51,6 +52,12 @@ if {![im_permission $user_id add_invoices]} {
     return
 }
 
+set allowed_cost_type [im_cost_type_write_permissions $user_id]
+if {[lsearch -exact $allowed_cost_type $cost_type_id] == -1} {
+    ad_return_complaint "Insufficient Privileges" "
+        <li>You can't create documents of type \#$cost_type_id."
+    ad_script_abort
+}
 
 set project_id ""
 if {1 == [llength $select_project]} {
@@ -113,6 +120,7 @@ set
 	provider_id	= :provider_id,
 	cost_status_id	= :cost_status_id,
 	cost_type_id	= :cost_type_id,
+	cost_center_id 	= :cost_center_id,
 	template_id	= :template_id,
 	effective_date	= :invoice_date,
 	start_block	= ( select max(start_block) 

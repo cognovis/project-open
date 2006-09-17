@@ -88,6 +88,18 @@ if {![im_permission $user_id add_invoices]} {
     <li>[_ intranet-trans-invoices.lt_You_dont_have_suffici]"    
 }
 
+set allowed_cost_type [im_cost_type_write_permissions $current_user_id]
+if {[lsearch -exact $allowed_cost_type $target_cost_type_id] == -1} {
+    ad_return_complaint "Insufficient Privileges" "
+        <li>You can't create documents of type \#$target_cost_type_id."
+    ad_script_abort
+}
+
+
+# ---------------------------------------------------------------
+# 
+# ---------------------------------------------------------------
+
 set letter [string toupper $letter]
 
 if {"" == $target_cost_type_id} { 

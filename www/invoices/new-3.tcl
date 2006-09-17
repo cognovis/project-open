@@ -26,6 +26,7 @@ ad_page_contract {
     company_id:integer
     invoice_currency
     target_cost_type_id:integer
+    { cost_center_id:integer 0}
     { aggregate_tasks_p "0" }
     { return_url ""}
 }
@@ -48,12 +49,29 @@ set required_field "<font color=red size=+1><B>*</B></font>"
 
 set price_url_base "/intranet-trans-invoices/price-lists/new"
 
-set number_format "99990.099"
+set number_format [im_l10n_sql_currency_format]
 
 if {![im_permission $user_id add_invoices]} {
     ad_return_complaint "[_ intranet-trans-invoices.lt_Insufficient_Privileg]" "
     <li>[_ intranet-trans-invoices.lt_You_dont_have_suffici]"    
 }
+
+set allowed_cost_type [im_cost_type_write_permissions $user_id]
+if {[lsearch -exact $allowed_cost_type $target_cost_type_id] == -1} {
+    ad_return_complaint "Insufficient Privileges" "
+        <li>You can't create documents of type \#$target_cost_type_id."
+    ad_script_abort
+}
+
+# Default for cost-centers - take the user's
+# dept from HR.
+if {0 == $cost_center_id} {
+    set cost_center_id [im_costs_default_cost_center_for_user $user_id]
+}
+
+set cost_center_label [lang::message::lookup "" intranet-invoices.Cost_Center "Cost Center"]
+set cost_center_select [im_cost_center_select -include_empty 1 -department_only_p 0 cost_center_id $cost_center_id $target_cost_type_id]
+
 
 # ---------------------------------------------------------------
 # Gather invoice data
@@ -143,6 +161,12 @@ set invoice_data_html "
           <td  class=roweven>[_ intranet-trans-invoices.Invoice_date]:</td>
           <td  class=roweven> 
             <input type=text name=invoice_date size=15 value='$invoice_date'>
+          </td>
+        </tr>
+        <tr>
+          <td  class=roweven>$cost_center_label</td>
+          <td  class=roweven>
+          $cost_center_select
           </td>
         </tr>
         <tr> 
