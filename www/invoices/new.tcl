@@ -349,7 +349,7 @@ if {[string compare $letter "ALL"]} {
 
 set filter_html "
 <form method=get action='/intranet-trans-invoices/invoices/new'>
-[export_form_vars start_idx project_id project_status_id project_type_id order_by how_many target_cost_type_id view_name include_subprojects_p letter]
+[export_form_vars start_idx project_id order_by how_many target_cost_type_id view_name include_subprojects_p letter]
 <table border=0 cellpadding=0 cellspacing=0>
   <tr>
     <td colspan='2' class=rowtitle align=center>
@@ -534,10 +534,7 @@ set submit_button "
 # 
 # ---------------------------------------------------------------
 
-# Disable Alpha-Bar
-set letter "none"
-
-set cost_navbar [im_costs_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list project_status_id target_cost_type_id project_type_id start_idx order_by how_many mine_p view_name letter include_subprojects_p] ""]
+set cost_navbar [im_costs_navbar $letter "/intranet-trans-invoices/invoices/new" $next_page_url $previous_page_url [list project_status_id target_cost_type_id project_type_id start_idx order_by how_many mine_p view_name letter include_subprojects_p] ""]
 
 
 db_release_unused_handles

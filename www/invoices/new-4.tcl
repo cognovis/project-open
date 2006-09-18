@@ -52,10 +52,10 @@ if {![im_permission $user_id add_invoices]} {
     return
 }
 
-set allowed_cost_type [im_cost_type_write_permissions $user_id]
-if {[lsearch -exact $allowed_cost_type $cost_type_id] == -1} {
+set write_p [im_cost_center_write_p $cost_center_id $cost_type_id $user_id]
+if {!$write_p} {
     ad_return_complaint "Insufficient Privileges" "
-        <li>You can't create documents of type \#$cost_type_id."
+        <li>You can't create documents of type \#$cost_type_id in CostCenter \#$cost_center_id."
     ad_script_abort
 }
 
