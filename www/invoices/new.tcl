@@ -88,6 +88,14 @@ if {![im_permission $user_id add_invoices]} {
     <li>[_ intranet-timesheet2-invoices.lt_You_dont_have_suffici]"    
 }
 
+set allowed_cost_type [im_cost_type_write_permissions $current_user_id]
+if {[lsearch -exact $allowed_cost_type $target_cost_type_id] == -1} {
+    ad_return_complaint "Insufficient Privileges" "
+        <li>You can't create documents of type \#$target_cost_type_id."
+    ad_script_abort
+}
+
+
 set letter [string toupper $letter]
 
 if {"" == $target_cost_type_id} { 
@@ -229,7 +237,8 @@ switch $order_by {
     "Project #" { set order_by_clause "order by project_nr" }
     "Project Manager" { set order_by_clause "order by upper(lead_name)" }
     "URL" { set order_by_clause "order by upper(url)" }
-    "Project Name" { set order_by_clause "" }
+    "Project Name" { set order_by_clause "order by lower(project_name)" }
+    "Project_Name" { set order_by_clause "order by lower(project_name)" }
 }
 
 set where_clause [join $criteria " and\n            "]
@@ -263,7 +272,7 @@ select
         im_category_from_id(p.project_status_id) as project_status,
         im_proj_url_from_type(p.project_id, 'website') as url,
 	p.start_date,
-	p.end_date,
+	to_char(p.end_date, 'YYYY-MM-DD') as end_date,
 	to_char(end_date, 'HH24:MI') as end_date_time
 from 
 	im_projects p, 

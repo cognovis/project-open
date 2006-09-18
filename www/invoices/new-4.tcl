@@ -21,6 +21,9 @@ ad_page_contract {
     invoice_date
     cost_status_id:integer 
     cost_type_id:integer
+    cost_center_id:integer
+    { company_contact_id "" }
+    { invoice_office_id "" }
     { payment_days:integer 0 }
     { payment_method_id:integer "" }
     template_id:integer
@@ -49,6 +52,12 @@ if {![im_permission $user_id add_invoices]} {
     return
 }
 
+set write_p [im_cost_center_write_p $cost_center_id $cost_type_id $user_id]
+if {!$write_p} {
+    ad_return_complaint "Insufficient Privileges" "
+        <li>You can't create documents of type \#$cost_type_id in CostCenter \#$cost_center_id."
+    ad_script_abort
+}
 
 set project_id ""
 if {1 == [llength $select_project]} {
@@ -94,7 +103,9 @@ db_dml update_invoice "
 update im_invoices 
 set 
 	invoice_nr	= :invoice_nr,
-	payment_method_id = :payment_method_id
+        company_contact_id = :company_contact_id,
+	payment_method_id = :payment_method_id,
+        invoice_office_id = :invoice_office_id
 where
 	invoice_id = :invoice_id
 "
@@ -109,6 +120,7 @@ set
 	provider_id	= :provider_id,
 	cost_status_id	= :cost_status_id,
 	cost_type_id	= :cost_type_id,
+        cost_center_id  = :cost_center_id,
 	template_id	= :template_id,
 	effective_date	= :invoice_date,
 	start_block	= ( select max(start_block) 
@@ -191,7 +203,8 @@ db_dml update_invoice_amount $update_invoice_amount_sql
 # ---------------------------------------------------------------
 
 foreach project_id $select_project {
-    db_exec_plsql insert_acs_rels "
+
+    catch {db_exec_plsql insert_acs_rels "
 	DECLARE
 		v_rel_id	integer;
 	BEGIN
@@ -199,7 +212,8 @@ foreach project_id $select_project {
 			object_id_one => :project_id,
 			object_id_two => :invoice_id
 		);
-	END;"
+	END;
+    "} err_msg
 }
 
 

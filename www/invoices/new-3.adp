@@ -40,6 +40,12 @@
             <input type=text name=invoice_date size=15 value='@invoice_date@'>
           </td>
         </tr>
+        <tr>
+          <td class=roweven>@cost_center_label@</td>
+          <td class=roweven>
+          @cost_center_select;noquote@
+          </td>
+        </tr>
         <tr> 
           <td class=rowodd>#intranet-timesheet2-invoices.Type#</td>
           <td class=rowodd>
@@ -82,46 +88,28 @@
 	    #intranet-timesheet2-invoices.Recipient#
 	  </td>
 	</tr>
-        <tr> 
-          <td  class=rowodd>#intranet-timesheet2-invoices.Company_name#</td>
+
+
+        <tr><td align=center valign=top class=rowtitle colspan=2>#intranet-invoices.Recipient#</td></tr>
+        <tr>
+          <td  class=rowodd>#intranet-invoices.Company_name#</td>
           <td  class=rowodd>
-            <A href=/intranet/companies/view?company_id=@company_id@>@company_name@</A>
+            <A href="/intranet/companies/view?company_id=@company_id@">@company_name@</A>
           </td>
         </tr>
-        <tr> 
-          <td  class=roweven>#intranet-timesheet2-invoices.VAT#</td>
+        <tr>
+          <td  class=roweven>#intranet-invoices.VAT#</td>
           <td  class=roweven>@vat_number@</td>
         </tr>
-        <tr> 
-          <td  class=rowodd>#intranet-timesheet2-invoices.Accounting_Contact#</td>
+        <tr>
+          <td  class=rowodd>#intranet-invoices.Invoice_Address#</td>
+          <td  class=rowodd><%= [im_company_office_select invoice_office_id $invoice_office_id $company_id] %></td>
+        </tr>
+        <tr>
+          <td  class=rowodd>#intranet-core.Contact#</td>
           <td  class=rowodd>
-            <A href=/intranet/users/view?user_id=@accounting_contact_id@>@company_contact_name@</A>
+            <%= [im_company_contact_select company_contact_id $company_contact_id $company_id] %>
           </td>
-        </tr>
-        <tr> 
-          <td  class=roweven>#intranet-timesheet2-invoices.Adress#</td>
-          <td  class=roweven>@address_line1@ <br> @address_line2@</td>
-        </tr>
-        <tr> 
-          <td  class=rowodd>#intranet-timesheet2-invoices.Zip#</td>
-          <td  class=rowodd>@address_postal_code@</td>
-        </tr>
-        <tr> 
-          <td  class=roweven>#intranet-timesheet2-invoices.Country#</td>
-          <td  class=roweven>@country_name@</td>
-
-        </tr>
-        <tr> 
-          <td  class=rowodd>#intranet-timesheet2-invoices.Phone#</td>
-          <td  class=rowodd>@phone@</td>
-        </tr>
-        <tr> 
-          <td  class=roweven>#intranet-timesheet2-invoices.Fax#</td>
-          <td  class=roweven>@fax@</td>
-        </tr>
-        <tr> 
-          <td  class=rowodd>#intranet-timesheet2-invoices.Email#</td>
-          <td  class=rowodd>@company_contact_email@</td>
         </tr>
         </table>
 
