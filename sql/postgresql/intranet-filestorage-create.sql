@@ -71,11 +71,11 @@ create table im_fs_files (
 			-- security is located
 	folder_id	integer 
 			constraint im_fs_files_folder_fk
-			references im_fs_foldters,
+			references im_fs_folders,
 			-- Who is the owner? (Creator/Updator/...)
 	owner_id	integer 
 			constraint im_fs_files_folder_fk
-			references im_fs_foldters,
+			references im_fs_folders,
 			-- Filename, starting at folder. Should not
 			-- contain any slash / characters.
 	filename	varchar(100)
