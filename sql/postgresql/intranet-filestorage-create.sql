@@ -74,7 +74,7 @@ create table im_fs_files (
 			references im_fs_folders,
 			-- Who is the owner? (Creator/Updator/...)
 	owner_id	integer 
-			constraint im_fs_files_folder_fk
+			constraint im_fs_files_owner_fk
 			references im_fs_folders,
 			-- Filename, starting at folder. Should not
 			-- contain any slash / characters.
