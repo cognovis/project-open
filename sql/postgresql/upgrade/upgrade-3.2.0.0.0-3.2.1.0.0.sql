@@ -35,11 +35,11 @@ begin
         end if;
 
 	INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
-	(4200,'External', 'Intranet TM Integration Type','Trados is integrated by up/downloading files');
+	(4200,''External'', ''Intranet TM Integration Type'',''Trados is integrated by up/downloading files'');
 	INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
-	(4202,'Ophelia', 'Intranet TM Integration Type','Ophelia in integrated via UserExists');
+	(4202,''Ophelia'', ''Intranet TM Integration Type'',''Ophelia in integrated via UserExists'');
 	INSERT INTO im_categories (category_id, category, category_type, category_description) VALUES
-	(4204,'None', 'Intranet TM Integration Type','No integration - not a TM task');
+	(4204,''None'', ''Intranet TM Integration Type'',''No integration - not a TM task'');
 
         return 0;
 end;' language 'plpgsql';
