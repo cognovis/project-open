@@ -39,7 +39,7 @@ set user_id [ad_maybe_redirect_for_registration]
 set org_company_id $company_id
 
 if {"" == $return_url} {set return_url [im_url_with_query] }
-set todays_date [db_string get_today "select sysdate from dual"]
+set todays_date [db_string get_today "select now()::date"]
 set page_focus "im_header_form.keywords"
 set view_name "invoice_tasks"
 

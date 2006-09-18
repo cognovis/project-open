@@ -33,7 +33,7 @@ ad_page_contract {
     { include_subprojects_p 1 }
     { project_status_id "" } 
     { project_type_id:integer "0" } 
-    { project_id "" }
+    { project_id:integer 0 }
     { target_cost_type_id "" }
     { letter:trim "all" }
     { start_idx:integer 0 }
@@ -106,8 +106,6 @@ if {"" == $target_cost_type_id} {
     set target_cost_type_id [im_cost_type_invoice] 
 }
 
-
-
 # Determine the default status if not set
 if { [empty_string_p $project_status_id] } {
 
@@ -165,7 +163,7 @@ set criteria [list]
 
 # We don't need to show the select screen if only a single project
 # has been selected...
-if { ![empty_string_p $project_id] && $project_id != 0} {
+if {$project_id != 0} {
 
 
     if {$include_subprojects_p} {
@@ -351,12 +349,11 @@ if {[string compare $letter "ALL"]} {
 
 set filter_html "
 <form method=get action='/intranet-trans-invoices/invoices/new'>
-[export_form_vars start_idx order_by how_many view_name include_subprojects_p letter]
-
+[export_form_vars start_idx project_id project_status_id project_type_id order_by how_many target_cost_type_id view_name include_subprojects_p letter]
 <table border=0 cellpadding=0 cellspacing=0>
   <tr>
     <td colspan='2' class=rowtitle align=center>
-[_ intranet-core.Filter_Projects]
+      [_ intranet-core.Filter_Projects]
     </td>
   </tr>
 "
@@ -373,9 +370,25 @@ append filter_html "
   <tr>
     <td valign=top>[_ intranet-core.Project_Type]:</td>
     <td valign=top>
-      [im_category_select -include_empty_p 1 "Intranet Project Type" project_type_id $project_type_id]
-          <input type=submit value=Go name=submit>
+[im_category_select -include_empty_p 1 "Intranet Project Type" project_type_id $project_type_id]
     </td>
+  </tr>
+"
+
+if {0 != $project_id} {
+    set project_name [db_string pname "select project_name from im_projects where project_id = :project_id" -default ""]
+    append filter_html "
+  <tr>
+    <td valign=top>[_ intranet-cost.Project]:</td>
+    <td valign=top>$project_name</td>
+  </tr>
+    "
+}
+
+append filter_html "
+  <tr>
+    <td valign=top></td>
+    <td valign=top><input type=submit value=Go name=submit></td>
   </tr>
 </table>
 </form>
@@ -521,7 +534,8 @@ set submit_button "
 # 
 # ---------------------------------------------------------------
 
-
+# Disable Alpha-Bar
+set letter "none"
 
 set cost_navbar [im_costs_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list project_status_id target_cost_type_id project_type_id start_idx order_by how_many mine_p view_name letter include_subprojects_p] ""]
 

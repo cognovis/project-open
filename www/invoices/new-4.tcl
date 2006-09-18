@@ -203,15 +203,21 @@ db_dml update_invoice_amount $update_invoice_amount_sql
 # ---------------------------------------------------------------
 
 foreach project_id $select_project {
-    db_exec_plsql insert_acs_rels "
-	DECLARE
-		v_rel_id	integer;
-	BEGIN
-		v_rel_id := acs_rel.new(
-			object_id_one => :project_id,
-			object_id_two => :invoice_id
-		);
-	END;"
+
+    # Catch error - the rels may already exist if the
+    # user has pressed the back-button
+    catch {
+	db_exec_plsql insert_acs_rels "
+		DECLARE
+			v_rel_id	integer;
+		BEGIN
+			v_rel_id := acs_rel.new(
+				object_id_one => :project_id,
+				object_id_two => :invoice_id
+			);
+		END;
+       "
+    } err_msg
 }
 
 
