@@ -26,6 +26,7 @@ ad_page_contract {
     company_id:integer
     invoice_currency
     invoice_hour_type
+    { cost_center_id:integer 0}
     target_cost_type_id:integer
     { return_url ""}
 }
@@ -54,6 +55,14 @@ if {![im_permission $user_id add_invoices]} {
     <li>[_ intranet-timesheet2-invoices.lt_You_dont_have_suffici]"    
 }
 
+set allowed_cost_type [im_cost_type_write_permissions $user_id]
+if {[lsearch -exact $allowed_cost_type $target_cost_type_id] == -1} {
+    ad_return_complaint "Insufficient Privileges" "
+        <li>You can't create documents of type \#$target_cost_type_id."
+    ad_script_abort
+}
+
+
 # ---------------------------------------------------------------
 # Gather invoice data
 # ---------------------------------------------------------------
@@ -73,6 +82,47 @@ if { [catch {
 } err_msg] } {
     ad_return_complaint 1 [lang::message::lookup "" intranet-timesheet2-invoices.Company_not_found "We didn't find any information about company\# %company_id%."]
 }
+
+
+# Default for cost-centers - take the user's
+# dept from HR.
+if {0 == $cost_center_id} {
+    set cost_center_id [im_costs_default_cost_center_for_user $user_id]
+}
+
+set cost_center_label [lang::message::lookup "" intranet-invoices.Cost_Center "Cost Center"]
+set cost_center_select [im_cost_center_select -include_empty 1 -department_only_p 0 cost_center_id $cost_center_id $target_cost_type_id]
+
+
+set contact_ids [db_list contact_ids "
+        select distinct
+		company_contact_id
+	from
+		im_timesheet_tasks t,
+		im_projects p
+	where
+		t.task_id = p.project_id
+		and 
+		$tasks_where_clause
+"]
+
+if {[llength $contact_ids] > 0} {
+    set company_contact_id [lindex $contact_ids 0]
+} else {
+    set company_contact_id $accounting_contact_id
+}
+
+db_1row accounting_contact_info "
+    select
+        im_name_from_user_id(:company_contact_id) as company_contact_name,
+        im_email_from_user_id(:company_contact_id) as company_contact_email
+"
+
+set invoice_office_id [db_string company_main_office_info "select main_office_id from im_companies where company_id = :org_company_id" -default ""]
+
+
+
+
 
 
 # Create the default values for a new invoice.
