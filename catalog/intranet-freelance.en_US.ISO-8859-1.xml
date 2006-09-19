@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-freelance" package_version="3.1.0.0.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-freelance" package_version="3.2.1.0.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Account_Unavailable">Account Unavailable</msg>
   <msg key="Add">Add</msg>
@@ -8,6 +8,7 @@
   <msg key="Argument_Error">Argument Error</msg>
   <msg key="Bank">Bank</msg>
   <msg key="Bank_Account">Bank Account</msg>
+  <msg key="Cell_Phone">Cell Phone</msg>
   <msg key="Claim">Claim</msg>
   <msg key="Claimed">Claimed</msg>
   <msg key="Comment">Comment</msg>
@@ -18,11 +19,13 @@
   <msg key="Del">Del</msg>
   <msg key="Edit">Edit</msg>
   <msg key="Editing_rate">Editing rate</msg>
+  <msg key="Email">Email</msg>
   <msg key="erase">erase</msg>
   <msg key="Error">Error</msg>
   <msg key="Filter_Freelancers">Filter Freelancers</msg>
   <msg key="Freelance">Freelance</msg>
   <msg key="Go">Go</msg>
+  <msg key="Home_Phone">Home Phone</msg>
   <msg key="Hourly_rate">Hourly rate</msg>
   <msg key="lt_Add_a_new_value_range">Add a new %value_range_category_type%</msg>
   <msg key="lt_Error_updating_experi">Error updating experience</msg>
@@ -48,6 +51,7 @@
   <msg key="lt_You_have_insufficient_3">You have insufficient rights to pursue this operation</msg>
   <msg key="lt_You_need_to_specify_a">You need to specify add_skill_id.</msg>
   <msg key="modify_the_comment">modify the comment</msg>
+  <msg key="Name">Name</msg>
   <msg key="no_freelancers">no freelancers</msg>
   <msg key="Note">Note</msg>
   <msg key="Notify">Notify</msg>
@@ -56,6 +60,8 @@
   <msg key="Portrait">Portrait</msg>
   <msg key="Private_Notes">Private Notes</msg>
   <msg key="Rates_Information">Rates Information</msg>
+  <msg key="Recr_Status">Recr. Status</msg>
+  <msg key="Recr_Test">Recr. Test</msg>
   <msg key="Recruiting_Status">Recruiting Status</msg>
   <msg key="Recruiting_Test_Type">Recruiting Test Type</msg>
   <msg key="Recruting_Source">Recruting Source</msg>
@@ -70,4 +76,6 @@
   <msg key="upload_a_portrait">upload a portrait</msg>
   <msg key="Uploaded">Uploaded</msg>
   <msg key="Users">Users</msg>
+  <msg key="Work_Phone">Work Phone</msg>
+  <msg key="Worked_with_customer">Worked_with_customer</msg>
 </message_catalog>
