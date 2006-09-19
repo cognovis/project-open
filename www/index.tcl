@@ -12,7 +12,6 @@
 ad_page_contract { 
     @author frank.bergmann@project-open.com
 } {
-
     { project_id 0}
     { cost_type_id:integer "[im_cost_type_invoice]" }
     { form_mode "edit" }
@@ -29,6 +28,9 @@ set page_focus "im_header_form.keywords"
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set date_format "YYYY-MM-DD"
 
+set return_url [im_url_with_query]
+set current_url [ns_conn url]
+
 set project_name [db_string project_name "select project_name from im_projects where project_id=:project_id" -default [lang::message::lookup "" intranet-expenses.Unassigned "Unassigned"]]
 
 set page_title "$project_name [_ intranet-expenses.Expenses]"
@@ -40,36 +42,25 @@ if {[im_permission $user_id view_projects_all]} {
 }
 
 
-set return_url [im_url_with_query]
-set current_url [ns_conn url]
-
-
 # ---------------------------------------------------------------
 # Admin Links
 # ---------------------------------------------------------------
-set add_expense_p [im_permission $user_id "add_expense"]
-
-# ToDo: Add Security
-set add_expense_p 1
-
-
+set add_expense_p [im_permission $user_id "add_expenses"]
 
 set admin_links ""
+set bulk_actions_list "[list]"
 
 if {$add_expense_p} {
+
     append admin_links " <li><a href=\"new?[export_url_vars project_id return_url]\">[_ intranet-expenses.Add_a_new_Expense]</a>\n"
+
+    lappend bulk_actions_list "[_ intranet-expenses.Delete]" "expense-del" "[_ intranet-expenses.Remove_checked_items]"
+
 }
 
-set bulk_actions_list "[list]"
-#[im_permission $user_id "delete_expense"]
-set delete_expense_p 1 
-if {$delete_expense_p} {
-    lappend bulk_actions_list "[_ intranet-expenses.Delete]" "expense-del" "[_ intranet-expenses.Remove_checked_items]"
-}
-#[im_permission $user_id "add_expense_invoice"]
-set create_invoice_p 1
+set create_invoice_p [im_permission $user_id "add_expense_invoice"]
 if {$create_invoice_p} {
-    lappend bulk_actions_list "[_ intranet-expenses.Create_Travel_Cost]" "create-tc" "[_ intranet-expenses.create_trabel_cost_help]"
+    lappend bulk_actions_list "[_ intranet-expenses.Create_Travel_Cost]" "[export_vars -base "create-tc" {project_id}]" "[_ intranet-expenses.create_trabel_cost_help]"
 }
 
 # ---------------------------------------------------------------
@@ -137,7 +128,7 @@ template::list::create \
 	    label "[_ intranet-expenses.Project_Name]"
 	}
 	note {
-	    label "[_ intranet-expenses.Note]"
+	    label "[lang::message::lookup {} intranet-expenses.Note {Note}]"
 	}
     }
 
@@ -198,9 +189,8 @@ db_multirow -extend {expense_chk} expense_lines expenses_lines "
 
 set list2_id "invoices_list"
 
-set bulk2_actions_list "[list]"
-#[im_permission $user_id "delete_expense_invoice"]
-set delete_invoice_p 1 
+set delete_invoice_p [im_permission $user_id "add_expense_invoice"]
+set bulk2_actions_list [list]
 if {$delete_invoice_p} {
     lappend bulk2_actions_list "[_ intranet-expenses.Delete]" "invoice-del" "[_ intranet-expenses.Remove_checked_items]"
 }

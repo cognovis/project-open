@@ -26,6 +26,12 @@ drop function inline_0 ();
 
 
 
+
+
+-------------------------------------------------------
+-- Reload the object methods
+-------------------------------------------------------
+
 -- Delete a single expense (if we know its ID...)
 create or replace function im_expenses__delete (integer)
 returns integer as '

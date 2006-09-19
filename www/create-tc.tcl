@@ -17,16 +17,20 @@ ad_page_contract {
 
     @author avila@digiteix.com
 } {
-
     { cost_type_id:integer "[im_cost_type_invoice]" }
     project_id:integer
     { return_url "/intranet-expenses/"}
-    expense_id:multiple
+    expense_id:multiple,optional
 }
 
 # ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
+
+# No ExpenseItems specified? => Go back
+if {![info exists expense_id]} {
+    template::forward "$return_url?[export_vars -url project_id]"    
+}
 
 # User id already verified by filters
 set user_id [ad_maybe_redirect_for_registration]
