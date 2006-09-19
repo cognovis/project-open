@@ -57,7 +57,7 @@ set add_expense_p 1
 set admin_links ""
 
 if {$add_expense_p} {
-    append admin_links " <li><a href=\"expense-ae?[export_url_vars project_id return_url]\">[_ intranet-expenses.Add_a_new_Expense]</a>\n"
+    append admin_links " <li><a href=\"new?[export_url_vars project_id return_url]\">[_ intranet-expenses.Add_a_new_Expense]</a>\n"
 }
 
 set bulk_actions_list "[list]"
@@ -105,12 +105,12 @@ template::list::create \
 	}
 	effective_date {
 	    label "[_ intranet-expenses.Expense_Date]"
-	    link_url_eval "/intranet-expenses/expense-ae?expense_id=$expense_id"
+	    link_url_eval "/intranet-expenses/new?expense_id=$expense_id"
 	}
 	amount {
 	    label "[_ intranet-expenses.Amount]"
 	    display_template { <nobr>@expense_lines.amount;noquote@</nobr> }
-	    link_url_eval "/intranet-expenses/expense-ae?expense_id=$expense_id"
+	    link_url_eval "/intranet-expenses/new?expense_id=$expense_id"
 	}
 	vat {
 	    label "[_ intranet-expenses.Vat_Included]"

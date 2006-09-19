@@ -1,4 +1,4 @@
-# /packages/intranet-expenses/www/expense-ae.tcl
+# /packages/intranet-expenses/www/new.tcl
 #
 # Copyright (C) 2003-2006 Project/Open
 # 060421 avila@digiteix.com
@@ -42,7 +42,7 @@ set context_bar [im_context_bar $page_title]
 set date_format "YYYY-MM-DD"
 set currency_format "FM9999999999999.90"
 set percent_format "FM999"
-set action_url "/intranet-expenses/expense-ae"
+set action_url "/intranet-expenses/new"
 
 
 # ------------------------------------------------------------------
@@ -151,14 +151,14 @@ ad_form \
 	{vat:text(text) {label "[_ intranet-expenses.Vat_Included]"} {html {size 6}}}
 	{expense_date:text(text) {label "[_ intranet-expenses.Expense_Date]"} {html {size 10}}}
 	{external_company_name:text(text) {label "[_ intranet-expenses.External_company_name]"} {html {size 40}}}
-	{external_company_vat_number:text(text),optional {label "[_ intranet-expenses.External_Company_VatNr]"} {html {size 20}}}
+	{external_company_vat_number:text(text),optional {label "[lang::message::lookup {} intranet-expenses.External_Company_VatNr {External Company Vat Nr.}]"} {html {size 20}}}
 	{receipt_reference:text(text),optional {label "[_ intranet-expenses.Receipt_reference]"} {html {size 40}}}
 	{expense_type_id:text(select) 
 	    {label "[_ intranet-expenses.Expense_Type]"}
 	    {options $expense_type_options} 
 	}
         {billable_p:text(radio) {label "[_ intranet-expenses.Billable_p]"} {options {{[_ intranet-core.Yes] t} {[_ intranet-core.No] f}}} }
-	{reimbursable:text(text) {label "[_ intranet-expenses.reimbursable]"} {html {size 10}}}
+	{reimbursable:text(text) {label "[_ intranet-expenses.reimbursable]"} { html {size 10}}}
 	{expense_payment_type_id:text(select) 
 	    {label "[_ intranet-expenses.Expense_Payment_Type]"}
 	    {options $expense_payment_type_options} 
