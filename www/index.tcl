@@ -31,9 +31,9 @@ set date_format "YYYY-MM-DD"
 set return_url [im_url_with_query]
 set current_url [ns_conn url]
 
-set project_name [db_string project_name "select project_name from im_projects where project_id=:project_id" -default [lang::message::lookup "" intranet-expenses.Unassigned "Unassigned"]]
+set project_name [db_string project_name "select project_name from im_projects where project_id=:project_id" -default ""]
 
-set page_title "$project_name [_ intranet-expenses.Expenses]"
+set page_title "$project_name [_ intranet-expenses.Unassigned_Expenses]"
 
 if {[im_permission $user_id view_projects_all]} {
     set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
@@ -54,7 +54,7 @@ if {$add_expense_p} {
 
     append admin_links " <li><a href=\"new?[export_url_vars project_id return_url]\">[_ intranet-expenses.Add_a_new_Expense]</a>\n"
 
-    lappend bulk_actions_list "[_ intranet-expenses.Delete]" "expense-del" "[_ intranet-expenses.Remove_checked_items]"
+    lappend bulk_actions_list "[_ intranet-expenses.Delete]" "expense-del" "[_ intranet-expenses.Delete_Expenses]"
 
 }
 

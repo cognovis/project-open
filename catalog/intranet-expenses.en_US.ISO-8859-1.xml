@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-expenses" package_version="0.1d" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-expenses" package_version="3.2.2.0.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Add_a_new_Expense">Add a new Expense</msg>
   <msg key="Amount">Amount</msg>
@@ -8,19 +8,28 @@
   <msg key="Create_Travel_Cost">Create Travel Cost</msg>
   <msg key="Currency">Currency</msg>
   <msg key="Delete">Delete</msg>
+  <msg key="Delete_Expenses">Borrar Gastos</msg>
   <msg key="Expense_Date">Expense Date</msg>
   <msg key="Expense_Payment_Type">Expense Payment Type</msg>
   <msg key="Expense_Type">Expense Type</msg>
   <msg key="Expenses">Expenses</msg>
+  <msg key="Expenses_Items">Expenses</msg>
   <msg key="External_company_name">External Company Name</msg>
+  <msg key="Filter_Expenses">Filter Expenses</msg>
   <msg key="ID">ID</msg>
   <msg key="Invoice">Invoice</msg>
+  <msg key="Invoice_Items">Travel Costs</msg>
   <msg key="New_Expense">New Expense</msg>
+  <msg key="Note">Note</msg>
+  <msg key="Project">Project</msg>
+  <msg key="Project_Name">Project Name</msg>
   <msg key="Receip_reference">Receip Reference</msg>
   <msg key="Receipt_reference">Receipt Reference</msg>
   <msg key="reibursable">Reibursable %</msg>
   <msg key="reimbursable">Reimbursable</msg>
   <msg key="Remove_checked_items">Remove checked items</msg>
   <msg key="Travel_cost_invoices">Travel Cost Invoices</msg>
+  <msg key="Unassigned">No-Assignado</msg>
+  <msg key="Unassigned_Expenses">Unassigned Expenses</msg>
   <msg key="Vat_Included">Vat Included</msg>
 </message_catalog>
