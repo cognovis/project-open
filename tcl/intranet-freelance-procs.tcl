@@ -496,11 +496,11 @@ order by
 
     set freelance_header_html "
 	<tr class=rowtitle>
-	  <td>[_ intranet-freelance.Freelance]</td>
-	  <td>[_ intranet-freelance.Source_Language]</td>
-	  <td>[_ intranet-freelance.Target_Language]</td>
-	  <td>[_ intranet-freelance.Subject_Area]</td>
-	  <td>[_ intranet-freelance.Select]</td>
+	  <td class=rowtitle>[_ intranet-freelance.Freelance]</td>
+	  <td class=rowtitle>[_ intranet-freelance.Source_Language]</td>
+	  <td class=rowtitle>[_ intranet-freelance.Target_Language]</td>
+	  <td class=rowtitle>[_ intranet-freelance.Subject_Area]</td>
+	  <td class=rowtitle>[lang::message::lookup "" intranet-freelance.Sel "Sel"]</td>
 	</tr>"
     
     set bgcolor(0) " class=roweven "
@@ -524,25 +524,26 @@ order by
     }
     
     set select_freelance "
-<form method=POST action=/intranet/member-add-2>
-[export_entire_form]
-<input type=hidden name=target value=[im_url_stub]/member-add-2>
-<input type=hidden name=passthrough value='object_id role return_url also_add_to_group_id'>
-<table cellpadding=0 cellspacing=2 border=0>
-<tr>
-<td class=rowtitle align=middle colspan=5>Freelance</td>
-</tr>
-$freelance_header_html
-$freelance_body_html
-  <tr> 
-    <td colspan=5>add as 
-      [im_biz_object_roles_select role_id $object_id $default_role_id]
-      <input type=submit value=\"[_ intranet-freelance.Add]\">
-      <input type=checkbox name=notify_asignee value=1 checked>[_ intranet-freelance.Notify]<br>
-    </td>
-  </tr>
-</table>
-</form>\n"
+	<form method=POST action=/intranet/member-add-2>
+	[export_entire_form]
+	<input type=hidden name=target value=[im_url_stub]/member-add-2>
+	<input type=hidden name=passthrough value='object_id role return_url also_add_to_group_id'>
+	<table cellpadding=0 cellspacing=2 border=0>
+	<tr>
+	<td class=rowtitle align=middle colspan=5>Freelance</td>
+	</tr>
+	$freelance_header_html
+	$freelance_body_html
+	  <tr> 
+	    <td colspan=5>add as 
+	      [im_biz_object_roles_select role_id $object_id $default_role_id]
+	      <input type=submit value=\"[_ intranet-freelance.Add]\">
+	      <input type=checkbox name=notify_asignee value=1 checked>[_ intranet-freelance.Notify]<br>
+	    </td>
+	  </tr>
+	</table>
+	</form>
+"
 
 
 return $select_freelance
