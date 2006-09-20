@@ -222,9 +222,22 @@ ad_form -extend -name $form_id -on_request {
 
     set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
     set expense_name $expense_id
+
+    # Get the user's department as default CC
+    set cost_center_id [db_string user_cc "
+	select	department_id
+	from	im_employees
+	where	employee_id = :user_id
+    " -default ""]
     
     db_exec_plsql create_expense {}
     
+    db_dml update_costs "
+	update im_costs set
+	cost_center_id = :cost_center_id
+	where cost_id = :expense_id
+    "
+
 } -edit_data {
 
     set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
