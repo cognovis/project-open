@@ -44,27 +44,64 @@ if {"" == $return_url} {
 set privs [list invoices quotes delivery_notes bills pos timesheets expense_reports]
 
 # ------------------------------------------------------
-# Get the list of all relevant "Profiles"
-# and generate the dynamic part of the SQL
+# Get the list of all relevant groups and users who
+# should have CC perms.
+# 
+# Groups: 
+#	- Take only "Profile" (filter out any other groups)
+#	- Filter out Admins, Customers and Freelancers who
+#	  should either have all Perms anyway (admins) or
+#	  who should never get perms (custs & freels)
+#
+# Persons: 
+#	- Only show persons who already have some perms on
+#	  CCs.
+#	- Don't include Admins, because they have full perms
+#	  anyway.
 # ------------------------------------------------------
 
-set group_list_sql {
-select DISTINCT
-        g.group_name,
-        g.group_id,
-	p.profile_gif
+set group_list_sql "
+select	*
 from
-        acs_objects o,
-        groups g,
-	im_profiles p
-where
-        g.group_id = o.object_id
-	and g.group_id = p.profile_id
-        and o.object_type = 'im_profile'
-	and g.group_name not in (
-		'Customers', 'Freelancers', 'Freelance Managers', 'HR Managers', 'P/O Admins'
-	)
-}
+	(select DISTINCT
+	        g.group_name,
+	        g.group_id,
+		p.profile_gif,
+		'group' as object_type
+	from
+	        acs_objects o,
+	        groups g,
+		im_profiles p
+	where
+	        g.group_id = o.object_id
+		and g.group_id = p.profile_id
+	        and o.object_type = 'im_profile'
+		and g.group_name not in (
+			'Customers', 'Freelancers', 'Freelance Managers', 'HR Managers', 'P/O Admins'
+		)
+    UNION
+	select DISTINCT
+		p.first_names || ' ' || p.last_name as group_name,
+		p.person_id as group_id,
+		'' as profile_gif,
+		'person' as object_type
+	from
+		persons p,
+		acs_permissions_all apa,
+		im_cost_centers cc
+	where
+		p.person_id = apa.grantee_id 
+		and apa.object_id = cc.cost_center_id
+		and p.person_id not in (
+			select	member_id
+			from	group_approved_member_map
+			where	group_id = [im_admin_group_id]
+		)
+	) g
+order by
+	object_type,
+	group_name
+"
 
 
 set group_ids [list]
