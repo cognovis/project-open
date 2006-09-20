@@ -78,6 +78,8 @@ set cost_status_options [im_cost_status_options]
 set investment_options [im_investment_options]
 set template_options [im_cost_template_options]
 set currency_options [im_currency_options]
+set cost_center_options [im_cost_center_options 1 0 ""]
+
 
 set cost_name_label "[_ intranet-cost.Name]"
 set project_label "[_ intranet-cost.Project]"
@@ -112,7 +114,7 @@ ad_form \
 	{project_id:text(select),optional {label $project_label} {options $project_options} }
 	{customer_id:text(select) {label "$customer_label <br><small>($wp_label)</small>"} {options $customer_options} }
 	{provider_id:text(select) {label "$provider_label <br><small>($wg_label)</small>"} {options $provider_options} }
-
+	{cost_center_id:text(select) {label "[lang::message::lookup {} intranet-cost.Cost_Center {Cost Center}]" } {options $cost_center_options} }
 	{cost_type_id:text(select) {label $type_label} {options $cost_type_options} }
 	{cost_status_id:text(select) {label $cost_status_label} {options $cost_status_options} }
 	{template_id:text(select),optional {label $template_label} {options $template_options} }
@@ -124,8 +126,8 @@ ad_form \
 	{amount:text(text) {label $amount_label} {html {size 20}} }
 	{currency:text(select) {label $currency_label} {options $currency_options} }
 
-	{paid_amount:text(text) {label $paid_amount_label} {html {size 20}} }
-	{paid_currency:text(select) {label $paid_currency_label} {options $currency_options} }
+	{paid_amount:text(text),optional {label $paid_amount_label} {html {size 20}} }
+	{paid_currency:text(select),optional {label $paid_currency_label} {options $currency_options} }
 
 	{vat:text(text) {label $vat_label} {html {size 20}} }
 	{tax:text(text) {label $tax_label} {html {size 20}} }
@@ -186,6 +188,7 @@ ad_form -extend -name cost -on_request {
 		project_id		= :project_id,
                 customer_id     	= :customer_id,
                 provider_id     	= :provider_id,
+                cost_center_id    	= :cost_center_id,
                 cost_status_id  	= :cost_status_id,
                 cost_type_id    	= :cost_type_id,
                 template_id     	= :template_id,
