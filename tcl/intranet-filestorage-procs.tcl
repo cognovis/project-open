@@ -1705,16 +1705,13 @@ ad_proc im_filestorage_file_row { file_body base_path folder_type rel_path objec
     return "$component_html"
 }
 
-
-
 ad_proc im_filestorage_create_folder {folder folder_name} {
-
+    Create a new folder
 } {
      if { [catch {
 	 exec mkdir $folder/$folder_name
      } err_msg] } { return $err_msg }   
 }
-
 
 ad_proc im_filestorage_is_directory_empty {folder} {
 
