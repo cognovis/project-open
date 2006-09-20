@@ -10,7 +10,7 @@
            person__name(u.user_id) as name,
            u.email
     from   cc_users u
-    where  u.user_id not in (select grantee_id from acs_permissions_all where object_id = :object_id)
+    where  1 = 1
     order  by name
 
 
