@@ -1254,6 +1254,8 @@ order by
   </tr>
 "
 
+    set can_read_summary_p 1
+
     set ctr 1
     set atleast_one_unreadable_p 0
     set old_atleast_one_unreadable_p 0
@@ -1295,7 +1297,10 @@ order by
 
 	# Check permissions - query is cached
 	set read_p [im_cost_center_read_p $cost_center_id $cost_type_id $user_id]
-	if {!$read_p} { set atleast_one_unreadable_p 1 }
+	if {!$read_p} { 
+	    set atleast_one_unreadable_p 1 
+	    set can_read_summary_p 0
+	}
 
 	set company_name ""
 	if {$cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_quote]} {
@@ -1559,9 +1564,11 @@ order by
 
     }
 
+    set summary_html ""
+
     if {$show_details_p && $show_summary_p} {
 	# Summary in broad format
-	append result_html "
+	set summary_html "
 	<br>
 	<table cellspacing=0 cellpadding=0>
 	<tr><td class=rowtitle colspan=3 align=center>[_ intranet-cost.Financial_Summary]</td></tr>
@@ -1580,7 +1587,7 @@ order by
 
     if {!$show_details_p && $show_summary_p} {
 	# Summary in narrow format
-	append result_html "
+	set summary_html "
 	<br>
 	<table cellspacing=0 cellpadding=0 width=\"70%\" >
 	<tr>
@@ -1599,6 +1606,13 @@ order by
 	</table>
 	"
     }
+
+    # Only show the summary to the user if the user can read
+    # all of it's elements
+    if {$can_read_summary_p} { 
+	append result_html $summary_html 
+    }
+
     return $result_html
 }
 
