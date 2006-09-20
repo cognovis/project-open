@@ -32,6 +32,7 @@ set context ""
 set cost_center_url "/intranet-cost/cost-centers/new"
 set toggle_url "/intranet/admin/toggle-privilege"
 set group_url "/admin/groups/one"
+set perm_url "perms"
 
 set bgcolor(0) " class=rowodd"
 set bgcolor(1) " class=roweven"
@@ -82,6 +83,7 @@ set table_header "
 "
 
 append table_header "
+  <td class=rowtitle align=center>[lang::message::lookup "" intranet-cost.Perms "Perms"]</td>
   <td class=rowtitle align=center>[lang::message::lookup "" intranet-cost.DeptQuest "Dept?"]</td>
   <td class=rowtitle align=center>[lang::message::lookup "" intranet-cost.Manager "Manager"]</td>
 "
@@ -147,6 +149,7 @@ db_foreach cost_centers $main_sql {
 	    >$cost_center_code - $cost_center_name</A>
             </nobr>
 	  </td>
+	  <td><a href='$perm_url?object_id=$cost_center_id'>Perms</a></td>
 	  <td>$department_p</td>
 	  <td><a href=[export_vars -base "/intranet/users/view" {user_id $manager_id}]>$manager_name</a></td>
     "
