@@ -612,9 +612,7 @@ ad_proc -public im_cost_center_company {
     return $cc
 }
 
-
-
-ad_proc -public im_cost_center_read_p {
+ad_proc -public -deprecated im_cost_center_read_p {
     cost_center_id
     cost_type_id
     user_id
@@ -629,7 +627,7 @@ ad_proc -public im_cost_center_read_p {
     return [string equal "t" [util_memoize "im_cost_center_read_p_helper $cost_center_id $cost_type_id $user_id" 60]]
 }
 
-ad_proc -public im_cost_center_read_p_helper {
+ad_proc -private -deprecated im_cost_center_read_p_helper {
     cost_center_id
     cost_type_id
     user_id
@@ -643,6 +641,31 @@ ad_proc -public im_cost_center_read_p_helper {
     " -default "f"]
 }
 
+
+ad_proc -public im_cc_read_p {
+    {-user_id 0}
+    {-cost_center_id 0}
+    {-cost_type_id 0}
+    {-privilege ""}
+} {
+    Returns "1" if the user can read the global "company" CC
+} {
+    if {0 == $user_id} { set user_id [ad_get_user_id] }
+    if {0 == $cost_center_id} { set cost_center_id [im_cost_center_company] }
+    if {0 != $cost_type_id} {
+	set privilege [util_memoize "db_string priv \"
+		select read_privilege 
+		from im_cost_types 
+		where cost_type_id = $cost_type_id
+	\" -default \"\" "]
+    }
+    if {"" == $privilege} { set privilege "fi_read_all" }
+
+    set true_false [util_memoize "db_string company_cc_read \"
+	select	im_object_permission_p($cost_center_id, $user_id, '$privilege')
+    \" -default f" 60]
+    return [string equal "t" $true_false]
+}
 
 ad_proc -public im_cost_center_write_p {
     cost_center_id
