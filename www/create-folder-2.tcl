@@ -48,6 +48,9 @@ if {!$admin_p} {
 if {"" != $bread_crum_path} { append base_path "/" }
 append base_path $bread_crum_path
 
+set char_style [parameter::get -package_id [im_package_filestorage_id] -parameter "FilenameCharactersSupported" -default "none"]
+set folder_name [im_l10n_normalize_string -style $char_style $folder_name]
+
 set err_msg [im_filestorage_create_folder $base_path $folder_name]
 
 db_release_unused_handles

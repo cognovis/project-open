@@ -3,27 +3,26 @@
 
 <package key="intranet-filestorage" url="http://openacs.org/repository/apm/packages/intranet-filestorage" type="apm_application">
     <package-name>]project-open[ Filestorage</package-name>
-    <pretty-plural>]project-open[ Filestorages</pretty-plural>
+    <pretty-plural>Project/Open Filestorages</pretty-plural>
     <initial-install-p>f</initial-install-p>
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-filestorage</auto-mount>
 
     <version name="3.2.2.0.0" url="http://projop.dnsalias.com/download/apm/intranet-filestorage-3.2.2.0.0.apm">
-
         <owner url="mailto:fraber@project-open.com">Frank Bergmann</owner>
         <summary>Filesystem folders for business objects</summary>
         <release-date>2004-01-29</release-date>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Allows access to filesystem documents and folders for various types of business objects.</description>
 
-        <provides url="intranet-filestorage" version="3.0.0"/>
+        <provides url="intranet-filestorage" version="3.2.2.0.0"/>
         <requires url="intranet-core" version="3.0.0"/>
 
         <callbacks>
         </callbacks>
         <parameters>
-
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="CompanyBasePathUnix"  default="C:/ProjectOpen/filestorage/companies" description="CompanyBasePathUnix"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="FilenameCharactersSupported"  default="alphanum" description="Determines what types of characters are supported by the underlying filesystem. The setting is used either to return a message if the filename is not supported or to normalize the filename to something more suitable. Possible options include &quot;alphanum_lower&quot; (lowercase letters and numbers without spaces), &quot;alphanum&quot; (alphanumeric without spaces, this is the default), &quot;alphanum_spaces&quot; (alphanum with spaces), &quot;latin&quot; (Latin-1 filenames) or &quot;utf8&quot;."/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="HomeBasePathUnix"  default="C:/ProjectOpen/filestorage/home" description="HomeBasePathUnix"/>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="MaxNumberOfBytes"  default="0" description="MaxNumberOfBytes"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ProjectBasePathUnix"  default="C:/ProjectOpen/filestorage/projects" description="ProjectBasePathUnix"/>
