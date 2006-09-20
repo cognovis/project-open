@@ -310,3 +310,23 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 extra_select, extra_where, sort_order, visible_for) values (2109,21,NULL,'Project Manager',
 '"<A HREF=/intranet/users/view?user_id=$project_lead_id>$lead_name</A>"',
 '','',9,'');
+
+
+
+-- Fix Profit & Loss report to show columns only if Company-CC is readable 
+update	im_view_columns set 
+	visible_for = 'expr [im_permission $user_id view_finance] && [im_cc_read_p]'
+where	view_id = 21
+	and visible_for = 'im_permission $user_id view_finance'
+;
+
+update im_view_columns set
+	visible_for = 'im_permission $user_id view_budget'
+where	column_id = 2111;
+
+update im_view_columns set
+	visible_for = 'im_permission $user_id view_budget_hours'
+where	column_id = 2113
+;
+
+
