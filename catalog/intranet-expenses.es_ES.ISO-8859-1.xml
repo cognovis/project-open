@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-expenses" package_version="3.2.2.0.0" locale="es_ES" charset="ISO-8859-1">
+
+  <msg key="Add_a_new_Expense">Añadir un nuevo Gasto</msg>
+  <msg key="Amount">Importe</msg>
+  <msg key="Billable_p">Facturable?</msg>
+  <msg key="Create_Travel_Cost">Crear Gasto</msg>
+  <msg key="Expense_Date">Fecha</msg>
+  <msg key="Expense_Payment_Type">Tipo de Pago</msg>
+  <msg key="Expense_Type">Tipo de Gasto</msg>
+  <msg key="Expenses">Gastos</msg>
+  <msg key="External_company_name">Nombre de Empresa Externa</msg>
+  <msg key="Filter_Expenses">Filtrar Gastos</msg>
+  <msg key="ID">ID</msg>
+  <msg key="Invoice_Items">Gastos</msg>
+  <msg key="Note">Nota</msg>
+  <msg key="Project">Proyecto</msg>
+  <msg key="Project_Name">Nombre del Proyecto</msg>
+  <msg key="Receipt_reference">Referencia Recibo</msg>
+  <msg key="Vat_Included">IVA Incluida</msg>
+</message_catalog>
