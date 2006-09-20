@@ -75,7 +75,7 @@ create table im_fs_files (
 			-- Who is the owner? (Creator/Updator/...)
 	owner_id	integer 
 			constraint im_fs_files_owner_fk
-			references im_fs_folders,
+			references persons,
 			-- Filename, starting at folder. Should not
 			-- contain any slash / characters.
 	filename	varchar(100)
