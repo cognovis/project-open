@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-workflow" package_version="3.2.2.0.0" locale="es_ES" charset="ISO-8859-1">
+
+  <msg key="Admin_workflows">Administrar Workflow</msg>
+  <msg key="All_Tasks">Todos Tareas</msg>
+  <msg key="Unassigned_Tasks">Tareas no Assignadas</msg>
+</message_catalog>
