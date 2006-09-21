@@ -39,8 +39,9 @@ if {![im_permission $user_id "add_expenses"]} {
 set today [lindex [split [ns_localsqltimestamp] " "] 0]
 set page_title [lang::message::lookup "" intranet-expenses.New_Expense "New Expense Item"]
 set context_bar [im_context_bar $page_title]
-set date_format "YYYY-MM-DD"
-set currency_format "FM9999999999999.90"
+
+set currency_format [im_l10n_sql_currency_format]
+set date_format [im_l10n_sql_date_format]
 set percent_format "FM999"
 set action_url "/intranet-expenses/new"
 
