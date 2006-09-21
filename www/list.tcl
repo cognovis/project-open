@@ -68,9 +68,9 @@ set page_focus "im_header_form.keywords"
 set return_url [im_url_with_query]
 # Needed for im_view_columns, defined in intranet-views.tcl
 set amp "&"
-set cur_format "99,999.99"
+set cur_format [im_l10n_sql_currency_format]
+set date_format [im_l10n_sql_date_format]
 set local_url "list"
-set date_format "YYYY-MM-DD"
 
 if {![im_permission $user_id view_costs]} {
     ad_return_complaint 1 "<li>You have insufficiente privileges to view this page"
