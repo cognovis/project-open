@@ -1555,7 +1555,7 @@ order by
 	    # Customer invoices: customer = Project Customer, provider = Internal
 	    set customer_id [db_string project_customer "select company_id from im_projects where project_id = :org_project_id" -default ""]
 	    set provider_id [im_company_internal]
-	    set bind_vars [ad_tcl_vars_to_ns_set customer_id provider_id project_id]
+	    set bind_vars [ad_tcl_vars_to_ns_set project_id customer_id provider_id]
       	    append admin_html [im_menu_ul_list "invoices_customers" $bind_vars]
 
 	    # Provider invoices: customer = Internal, no provider yet defined
