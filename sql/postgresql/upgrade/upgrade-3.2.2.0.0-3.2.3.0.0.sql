@@ -1,5 +1,6 @@
 
 -- Add a "CostCenter" column to the main Inovice list
+delete from im_view_columns where column_id=3002;
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (3002,30,NULL,'CC',
 '$cost_center_code','','',2,'');
