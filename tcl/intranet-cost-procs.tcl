@@ -1164,6 +1164,7 @@ select
 	case 
 		when cat.category_id = [im_cost_type_invoice] then 1
 		when cat.category_id = [im_cost_type_quote] then 1
+		when cat.category_id = [im_cost_type_delivery_note] then 1
 		else -1
 	end as sign	
 from
@@ -1326,7 +1327,7 @@ order by
 	}
 
 	set company_name ""
-	if {$cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_quote]} {
+	if {$cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_quote] || $cost_type_id == [im_cost_type_delivery_note]} {
 	    set company_name $customer_name
 	} else {
 	    set company_name $provider_name
