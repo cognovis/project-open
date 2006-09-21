@@ -72,8 +72,8 @@ set rowclass(0) "roweven"
 set rowclass(1) "rowodd"
 
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
-set cur_format "999,999,999.09"
-set date_format "YYYY-MM-DD"
+set cur_format [im_l10n_sql_currency_format]
+set date_format [im_l10n_sql_date_format]
 
 set days_in_past 30
 db_1row todays_date "
