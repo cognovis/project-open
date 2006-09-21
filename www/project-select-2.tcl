@@ -32,8 +32,8 @@ set context_bar [im_context_bar $page_title]
 
 # Needed for im_view_columns, defined in intranet-views.tcl
 set amp "&"
-set cur_format "99,999.99"
-set date_format "YYYY-MM-DD"
+set cur_format [im_l10n_sql_currency_format]
+set date_format [im_l10n_sql_date_format]
 
 if { [empty_string_p $how_many] || $how_many < 1 } {
     set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50]
