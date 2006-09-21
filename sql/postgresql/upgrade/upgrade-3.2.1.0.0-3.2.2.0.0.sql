@@ -159,7 +159,11 @@ BEGIN
     END LOOP;
     return 0;
 end;' language 'plpgsql';
--- select im_exchange_rate_fill_holes ();
+
+
+-- Execute the function in order to make sure that there are
+-- exchange rates.
+select im_exchange_rate_fill_holes ();
 
 
 
