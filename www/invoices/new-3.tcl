@@ -169,10 +169,7 @@ set invoice_data_html "
           $cost_center_select
           </td>
         </tr>
-        <tr> 
-          <td class=rowodd>[_ intranet-trans-invoices.Type]</td>
-          <td class=rowodd>[im_cost_type_select cost_type_id $cost_type_id [im_cost_type_company_doc]]</td>
-        </tr>\n"
+"
 
 if {$cost_type_id == [im_cost_type_invoice]} {
     append invoice_data_html "
@@ -192,6 +189,10 @@ append invoice_data_html "
         <tr> 
           <td class=roweven>[_ intranet-trans-invoices.Invoice_template]:</td>
           <td class=roweven>[im_cost_template_select template_id $default_invoice_template_id]</td>
+        </tr>
+        <tr> 
+          <td class=rowodd>[_ intranet-trans-invoices.Type]</td>
+          <td class=rowodd>$type_name <input type=hidden name=cost_type_id value=$target_cost_type_id></td>
         </tr>
 "
 
