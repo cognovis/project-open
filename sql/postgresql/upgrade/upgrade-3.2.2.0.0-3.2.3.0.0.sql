@@ -121,3 +121,54 @@ end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
+
+
+
+
+-- ------------------------------------------------
+-- Update all FinancialDocuments to set the "project_id" field
+-- IF there is exactly one project associated
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+    row                         RECORD;
+    v_project_id		integer;
+BEGIN
+    FOR row IN
+	select  c.cost_id,
+	        c.project_id,
+	        t.cnt
+	from    im_costs c
+	        LEFT OUTER JOIN (
+	                 select  c.cost_id,
+	                         count(*) as cnt
+	                 from    im_costs c,
+	                         im_projects p,
+	                         acs_rels r
+	                 where   r.object_id_one = p.project_id
+	                         and r.object_id_two = c.cost_id
+	                 group by c.cost_id
+	        ) t ON (c.cost_id = t.cost_id)
+	where	c.project_id is null
+	        and t.cnt = 1
+    LOOP
+	-- There is exactly one project to which the cost item is associated.
+	select	max(p.project_id)
+	into	v_project_id
+	from	im_projects p,
+		acs_rels r
+	where	p.project_id = r.object_id_one
+		and r.object_id_two = row.cost_id;
+        RAISE NOTICE ''inline_0: cost_id=%-> pid=%'', row.cost_id, v_project_id;
+
+	update im_costs
+	set project_id = v_project_id
+	where cost_id = row.cost_id;
+    END LOOP;
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0();
+
+
+
