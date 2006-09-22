@@ -32,9 +32,16 @@ if {"" == $return_url} { set return_url $current_url }
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 
-if {![im_permission $user_id add_costs]} {
+if {![im_permission $user_id add_invoices]} {
     ad_return_complaint 1 "<li>You don't have sufficient privileges to view this page"
     return
+}
+
+set allowed_cost_type [im_cost_type_write_permissions $user_id]
+if {[lsearch -exact $allowed_cost_type $target_cost_type_id] == -1} {
+    ad_return_complaint "Insufficient Privileges" "
+        <li>You can't create documents of type \\#$target_cost_type_id."
+    ad_script_abort
 }
 
 
