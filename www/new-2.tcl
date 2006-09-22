@@ -23,6 +23,7 @@ ad_page_contract {
     provider_id:integer
     freelance_id:integer
     target_cost_type_id:integer
+    { cost_center_id:integer 0 }
     { project_id:integer "" }
     { aggregate_tasks_p 0}
     { target_cost_status_id:integer 0 }
@@ -142,6 +143,17 @@ if {[catch {
     set locale $user_locale
 }
 
+
+
+# ---------------------------------------------------------------
+# Default for cost-centers - take the user's
+# dept from HR.
+if {0 == $cost_center_id} {
+    set cost_center_id [im_costs_default_cost_center_for_user $user_id]
+}
+
+set cost_center_label [lang::message::lookup "" intranet-invoices.Cost_Center "Cost Center"]
+set cost_center_select [im_cost_center_select -include_empty 1 -department_only_p 0 cost_center_id $cost_center_id $target_cost_type_id]
 
 
 # ---------------------------------------------------------------

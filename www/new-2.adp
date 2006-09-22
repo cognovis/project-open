@@ -27,6 +27,12 @@
 	            <input type=text name=invoice_date size=15 value='@invoice_date@'>
 	          </td>
 	        </tr>
+
+	        <tr> 
+	          <td class=roweven>@cost_center_label@</td>
+	          <td class=roweven>@cost_center_select;noquote@</td>
+	        </tr>
+
 	        <tr> 
 	          <td class=roweven>Payment terms</td>
 	          <td class=roweven> 
