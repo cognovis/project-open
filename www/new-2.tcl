@@ -125,24 +125,7 @@ insert into im_payments (
 # Update Cost Items
 # ---------------------------------------------------------------
 
-db_dml update_cost_items "
-	update im_costs set 
-		paid_amount = (
-			select	sum(amount * im_exchange_rate(received_date::date, currency, :default_currency))
-			from	im_payments
-			where	cost_id = :cost_id
-		),
-		paid_currency = :default_currency
-	where cost_id = :cost_id
-"
-
-# Mark the financial document as paid to save time
-if {"1" == $mark_document_as_paid_p} {
-    db_dml update_cost_items "
-	update	im_costs
-	set	cost_status_id = [im_cost_status_paid]
-	where	cost_id = :cost_id
-    "
-}
+# Update paid_amount
+im_cost_update_payments $cost_id 
 
 ad_returnredirect $return_url
