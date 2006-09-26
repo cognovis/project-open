@@ -34,6 +34,10 @@ if {"" != $del} {
 	
 	db_dml delete_payment "delete from im_payments where payment_id=:pid"
     }
+   
+    # Update the cost_id amount
+    im_cost_update_payments $cost_id
+
     ad_returnredirect $return_url
     return
 }
