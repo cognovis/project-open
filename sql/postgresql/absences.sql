@@ -1,99 +1,93 @@
+------------------------------------------------------------
+-- Absences
+------------------------------------------------------------
 
 -- Get everything about a particular absence
-        select
-                a.owner_id,
-                description,
-                contact_info,
-                to_char(a.start_date, :date_format) as start_date,
-                to_char(a.end_date, :date_format) as end_date,
-                im_name_from_user_id(owner_id) as owner_name,
-                im_category_from_id(a.absence_type_id) as absence_type
-        from
-                im_user_absences a
-        where
-                a.absence_id = :absence_id
-;
+select
+	a.owner_id,
+	description,
+	contact_info,
+	to_char(a.start_date, :date_format) as start_date,
+	to_char(a.end_date, :date_format) as end_date,
+	im_name_from_user_id(owner_id) as owner_name,
+	im_category_from_id(a.absence_type_id) as absence_type
+from
+	im_user_absences a
+where
+	a.absence_id = :absence_id;
+
 
 -- List of absences
 select
-        a.absence_id,
-        a.owner_id,
-        substring(a.description from 1 for 40) as description,
-        substring(a.contact_info from 1 for 40) as contact_info,
-        to_char(a.start_date, :date_format) as start_date,
-        to_char(a.end_date, :date_format) as end_date,
-        im_name_from_user_id(a.owner_id) as owner_name,
-        im_category_from_id(a.absence_type_id) as absence_type
+	a.absence_id,
+	a.owner_id,
+	substring(a.description from 1 for 40) as description,
+	substring(a.contact_info from 1 for 40) as contact_info,
+	to_char(a.start_date, :date_format) as start_date,
+	to_char(a.end_date, :date_format) as end_date,
+	im_name_from_user_id(a.owner_id) as owner_name,
+	im_category_from_id(a.absence_type_id) as absence_type
 from
-        im_user_absences a
+	im_user_absences a
 where
-        $where_clause
+	$where_clause
 ;
 
 
 -- Create a new Absence
-                        INSERT INTO im_user_absences (
-                                absence_id,
-                                owner_id,
-                                start_date,
-                                end_date,
-                                description,
-                                contact_info,
-                                absence_type_id
-                        ) values (
-                                :absence_id,
-                                :owner_id,
-                                :start_date,
-                                :end_date,
-                                :description,
-                                :contact_info,
-                                :absence_type_id
-            );
+INSERT INTO im_user_absences (
+	absence_id,
+	owner_id,
+	start_date,
+	end_date,
+	description,
+	contact_info,
+	absence_type_id
+) values (
+	:absence_id,
+	:owner_id,
+	:start_date,
+	:end_date,
+	:description,
+	:contact_info,
+	:absence_type_id
+);
 
 -- Update Absence information
-                        UPDATE im_user_absences SET
-                                owner_id = :owner_id,
-                                start_date = :start_date,
-                                end_date = :end_date,
-                                description = :description,
-                                contact_info = :contact_info,
-                                absence_type_id = :absence_type_id
-                        WHERE
-                                absence_id = :absence_id
-;
+UPDATE im_user_absences SET
+	owner_id = :owner_id,
+	start_date = :start_date,
+	end_date = :end_date,
+	description = :description,
+	contact_info = :contact_info,
+	absence_type_id = :absence_type_id
+WHERE
+	absence_id = :absence_id;
 
 
 ------------------------------------------------------
 -- Absences
 --
-
 create sequence im_user_absences_id_seq start 1;
 create table im_user_absences (
-        absence_id              integer
-                                constraint im_user_absences_pk
-                                primary key,
-        owner_id                integer
-                                constraint im_user_absences_user_fk
-                                references users,
-        start_date              timestamptz
-                                constraint im_user_absences_start_const not null,
-        end_date                timestamptz
-                                constraint im_user_absences_end_const not null,
-        description             varchar(4000),
-        contact_info            varchar(4000),
-        -- should this user receive email during the absence?
-        receive_email_p         char(1) default 't'
-                                constraint im_user_absences_email_const
-                                check (receive_email_p in ('t','f')),
-        last_modified           date,
-        absence_type_id		integer
-                                references im_categories
-                                constraint im_user_absences_type_const not null
+	absence_id		integer
+				constraint im_user_absences_pk
+				primary key,
+	owner_id		integer
+				constraint im_user_absences_user_fk
+				references users,
+	start_date		timestamptz
+				constraint im_user_absences_start_const not null,
+	end_date		timestamptz
+				constraint im_user_absences_end_const not null,
+	description		varchar(4000),
+	contact_info		varchar(4000),
+	-- should this user receive email during the absence?
+	receive_email_p		char(1) default 't'
+				constraint im_user_absences_email_const
+				check (receive_email_p in ('t','f')),
+	last_modified		date,
+	absence_type_id		integer
+				references im_categories
+				constraint im_user_absences_type_const not null
 );
-alter table im_user_absences add constraint owner_and_start_date_unique unique (owner_id,start_date);
-
-create index im_user_absences_user_id_idx on im_user_absences(owner_id);
-create index im_user_absences_dates_idx on im_user_absences(start_date, end_date);
-create index im_user_absences_type_idx on im_user_absences(absence_type_id);
-
-

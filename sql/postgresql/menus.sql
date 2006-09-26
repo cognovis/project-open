@@ -1,3 +1,7 @@
+------------------------------------------------------------
+-- Menus
+------------------------------------------------------------
+
 -- Select a specific menu. Label is used as a fixed reference
 -- See the Menu maintenance screens for the name of the parent 
 -- menu.
@@ -13,13 +17,13 @@ where
 
 -- Select all menus below a parent Menu with read permissions for the
 -- current user
-        select  m.*
-        from    im_menus m
-        where   parent_menu_id = :parent_menu_id
-                and enabled_p = 't'
-                and im_object_permission_p(m.menu_id, :user_id, 'read') = 't'
-        order by sort_order
-;
+select  m.*
+from    im_menus m
+where   parent_menu_id = :parent_menu_id
+	and enabled_p = 't'
+	and im_object_permission_p(m.menu_id, :user_id, 'read') = 't'
+order by sort_order;
+
 
 -- How to create new menus
 -- This function creates a new menu in the "Admin" section
@@ -29,11 +33,11 @@ create or replace function inline_1 ()
 returns integer as '
 declare
       -- Menu IDs
-      v_menu                  integer;
-      v_admin_menu	      integer;
+      v_menu		integer;
+      v_admin_menu	integer;
 
       -- Groups
-      v_admins                integer;
+      v_admins		integer;
 begin
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
 
@@ -43,19 +47,19 @@ begin
     where label=''admin'';
 
     v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',           -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-core'',      -- package_name
-        ''admin_user_exits'',   -- label
-        ''User Exits'',            -- name
-        ''/intranet/admin/user_exits'', -- url
-        110,                     -- sort_order
-        v_admin_menu,         -- parent_menu_id
-        null                    -- p_visible_tcl
+	null,			-- p_menu_id
+	''acs_object'',		-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	''intranet-core'',      -- package_name
+	''admin_user_exits'',   -- label
+	''User Exits'',		-- name
+	''/intranet/admin/user_exits'', -- url
+	110,			-- sort_order
+	v_admin_menu,		-- parent_menu_id
+	null			-- p_visible_tcl
     );
 
     PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
@@ -63,12 +67,6 @@ begin
 end;' language 'plpgsql';
 select inline_1 ();
 drop function inline_1();
-
-
-
-
-
-
 
 
 ---------------------------------------------------------
@@ -128,8 +126,8 @@ CREATE TABLE im_menus (
 	visible_tcl		varchar(1000) default null,
 				-- Managmenent of different configurations
 	enabled_p		char(1) default('t')
-                                constraint im_menus_enabled_ck
-                                check (enabled_p in ('t','f')),
+				constraint im_menus_enabled_ck
+				check (enabled_p in ('t','f')),
 				-- Make sure there are no two identical
 				-- menus on the same _level_.
 	constraint im_menus_label_un

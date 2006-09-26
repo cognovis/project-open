@@ -1,3 +1,7 @@
+------------------------------------------------------------
+-- Timesheet Invoices
+------------------------------------------------------------
+
 -- Timesheet Invoices are a subtype of Invoice.
 --
 -- There are actually no additional data associated
@@ -7,75 +11,69 @@
 -- removes dependencies with im_timesheet_tasks.
 
 
-
 -- Get the list of timesheet prices for a company.
 select
-        p.*,
-        c.company_path as company_short_name,
-        im_category_from_id(uom_id) as uom,
-        im_category_from_id(task_type_id) as task_type,
-        im_material_nr_from_id(material_id) as material
+	p.*,
+	c.company_path as company_short_name,
+	im_category_from_id(uom_id) as uom,
+	im_category_from_id(task_type_id) as task_type,
+	im_material_nr_from_id(material_id) as material
 from
-        im_timesheet_prices p
+	im_timesheet_prices p
       LEFT JOIN
-        im_companies c USING (company_id)
+	im_companies c USING (company_id)
 where
-        p.company_id = :company_id
+	p.company_id = :company_id
 order by
-        currency,
-        uom_id,
-        task_type_id desc
-;
-
+	currency,
+	uom_id,
+	task_type_id desc;
 
 
 -- Create a new Timesheet Invoice
-      select im_timesheet_invoice__new (
-                :invoice_id,
-                'im_timesheet_invoice',
-                now(),
-                :user_id,
-                '[ad_conn peeraddr]',
-                null,
-                :invoice_nr,
-                :customer_id,
-                :provider_id,
-                null,
-                :invoice_date,
-                'EUR',
-                :template_id,
-                :cost_status_id,
-                :cost_type_id,
-                :payment_method_id,
-                :payment_days,
-                '0',
-                :vat,
-                :tax,
-                null
-            );
+select im_timesheet_invoice__new (
+	:invoice_id,
+	'im_timesheet_invoice',
+	now(),
+	:user_id,
+	'[ad_conn peeraddr]',
+	null,
+	:invoice_nr,
+	:customer_id,
+	:provider_id,
+	null,
+	:invoice_date,
+	'EUR',
+	:template_id,
+	:cost_status_id,
+	:cost_type_id,
+	:payment_method_id,
+	:payment_days,
+	'0',
+	:vat,
+	:tax,
+	null
+);
 
 -- Associate a Timesheet Invoice with a project.
 -- This works the same as with im_invoices and im_costs.
-      select acs_rel__new(
-               null,
-               'relationship',
-               :project_id,
-               :invoice_id,
-               null,
-               null,
-               null
-      );
-
+select acs_rel__new(
+       null,
+       'relationship',
+       :project_id,
+       :invoice_id,
+       null,
+       null,
+       null
+);
 
 -- Update Timesheet Tasks and set points to the Timesheet Invoice.
 -- These points are used to make sure that there is no TimesheetTask
 -- that has not been invoiced yet.
 --
-        update  im_timesheet_tasks
-        set     invoice_id = :invoice_id
-        where   task_id in ([join $im_timesheet_task ","])
-
-
+update  im_timesheet_tasks
+set     invoice_id = :invoice_id
+where   task_id in ([join $im_timesheet_task ","]);
 
 
 
@@ -97,18 +95,3 @@ create table im_timesheet_invoices (
 				constraint im_timesheet_invoices_fk
 				references im_invoices
 );
-
-
-select acs_object_type__create_type (
-	'im_timesheet_invoice',		-- object_type
-	'Timesheet Invoice',		-- pretty_name
-	'Timesheet Invoices',		-- pretty_plural
-	'im_invoice',			-- supertype
-	'im_timesheet_invoices',	-- table_name
-	'invoice_id',			-- id_column
-	'intranet-timesheet2-invoices',	-- package_name
-	'f',				-- abstract_p
-	null,				-- type_extension_table
-	'im_timesheet_invoice__name'	-- name_method
-);
-

@@ -1,3 +1,6 @@
+------------------------------------------------------------
+-- Costs
+------------------------------------------------------------
 
 -- Get a list of all Cost Items visible for the current user,
 -- together with customer, provider and project (if associated
@@ -56,42 +59,39 @@ where
 	$company_where
 	$where_clause
 	$extra_where
-	$order_by_clause
+	$order_by_clause;
 
 
 -- Update a Cost Item
-        update  im_costs set
-                cost_name               = :cost_name,
-                project_id              = :project_id,
-                customer_id             = :customer_id,
-                provider_id             = :provider_id,
-                cost_center_id          = :cost_center_id,
-                cost_status_id          = :cost_status_id,
-                cost_type_id            = :cost_type_id,
-                template_id             = :template_id,
-                effective_date          = :effective_date,
-                start_block             = :start_block,
-                payment_days            = :payment_days,
-                amount                  = :amount,
-                paid_amount             = :paid_amount,
-                currency                = :currency,
-                paid_currency           = :paid_currency,
-                vat                     = :vat,
-                tax                     = :tax,
-                cause_object_id         = :cause_object_id,
-                description             = :description,
-                note                    = :note
-        where
-                cost_id = :cost_id
+update  im_costs set
+	cost_name		= :cost_name,
+	project_id		= :project_id,
+	customer_id		= :customer_id,
+	provider_id		= :provider_id,
+	cost_center_id		= :cost_center_id,
+	cost_status_id		= :cost_status_id,
+	cost_type_id		= :cost_type_id,
+	template_id		= :template_id,
+	effective_date		= :effective_date,
+	start_block		= :start_block,
+	payment_days		= :payment_days,
+	amount			= :amount,
+	paid_amount		= :paid_amount,
+	currency		= :currency,
+	paid_currency		= :paid_currency,
+	vat			= :vat,
+	tax			= :tax,
+	cause_object_id		= :cause_object_id,
+	description	   	= :description,
+	note		   	= :note
+where
+	cost_id = :cost_id;
 
 
 -- Update only the status of a Cost Item
-update im_costs 
-set cost_status_id=:cost_status_id 
-where cost_id = :cost_id
-;
-
-
+update	im_costs 
+set	cost_status_id=:cost_status_id 
+where	cost_id = :cost_id;
 
 
 -- Delete a Cost Item
@@ -112,47 +112,45 @@ PERFORM ${otype}__delete(:cost_id)
 select im_exchange_rate(to_date('2005-07-01','YYYY-MM-DD'), 'EUR', 'USD');
 
 
-
-
 -- Create a new (basic!) cost Item
 -- Don't use this for cost items of derived types such as
 -- im_invoice, im_expense etc.
 --
-      select im_cost__new (
-                null,           -- cost_id
-                'im_cost',      -- object_type
-                now(),          -- creation_date
-                :user_id,       -- creation_user
-                '[ad_conn peeraddr]', -- creation_ip
-                null,           -- context_id
-      
-                :cost_name,     -- cost_name
-                null,           -- parent_id
-		:project_id,    -- project_id
-                :customer_id,    -- customer_id
-                :provider_id,   -- provider_id
-                null,           -- investment_id
+select im_cost__new (
+	null,			-- cost_id
+	'im_cost',		-- object_type
+	now(),			-- creation_date
+	:user_id,		-- creation_user
+	'[ad_conn peeraddr]',	-- creation_ip
+	null,			-- context_id
+	  
+	:cost_name,		-- cost_name
+	null,			-- parent_id
+	:project_id,		-- project_id
+	:customer_id,		-- customer_id
+	:provider_id,		-- provider_id
+	null,			-- investment_id
 
-                :cost_status_id, -- cost_status_id
-                :cost_type_id,  -- cost_type_id
-                :template_id,   -- template_id
-      
-                :effective_date, -- effective_date
-                :payment_days,  -- payment_days
-		:amount,        -- amount
-                :currency,      -- currency
-                :vat,           -- vat
-                :tax,           -- tax
+	:cost_status_id,	-- cost_status_id
+	:cost_type_id,  	-- cost_type_id
+	:template_id,		-- template_id
+	  
+	:effective_date,	-- effective_date
+	:payment_days,  	-- payment_days
+	:amount,		-- amount
+	:currency,		-- currency
+	:vat,			-- vat
+	:tax,			-- tax
 
-                'f',            -- variable_cost_p
-                'f',            -- needs_redistribution_p
-                'f',            -- redistributed_p
-                'f',            -- planning_p
-                null,           -- planning_type_id
+	'f',			-- variable_cost_p
+	'f',			-- needs_redistribution_p
+	'f',			-- redistributed_p
+	'f',			-- planning_p
+	null,			-- planning_type_id
 
-                :description,   -- description
-                :note           -- note
-      )
+	:description,		-- description
+	:note			-- note
+);
 
 
 
@@ -163,25 +161,25 @@ select im_exchange_rate(to_date('2005-07-01','YYYY-MM-DD'), 'EUR', 'USD');
 select	c.*
 from	im_costs c
 where
-    c.cost_id in (
-        select distinct cost_id
-        from im_costs
-        where project_id = :project_id
-    UNION
-        select distinct cost_id
-        from im_costs
-        where parent_id = :project_id
-    UNION
-        select distinct object_id_two as cost_id
-        from acs_rels
-        where object_id_one = :project_id
-    UNION
-        select distinct object_id_two as cost_id
-        from acs_rels r, im_projects p
-        where object_id_one = p.project_id
-              and p.parent_id = :project_id
-    )
-
+	c.cost_id in (
+		select distinct cost_id
+		from im_costs
+		where project_id = :project_id
+	UNION
+		select distinct cost_id
+		from im_costs
+		where parent_id = :project_id
+	UNION
+		select distinct object_id_two as cost_id
+		from acs_rels
+		where object_id_one = :project_id
+	UNION
+		select distinct object_id_two as cost_id
+		from acs_rels r, im_projects p
+		where object_id_one = p.project_id
+		and p.parent_id = :project_id
+	)
+;
 
 -- Check if there is already a relation between a project
 -- and a cost item:
@@ -189,10 +187,7 @@ select
 	count(*) as v_rel_exists
 from	acs_rels
 where	object_id_one = :project_id
-	and object_id_two = :invoice_id
-;
-
-
+	and object_id_two = :invoice_id;
 
 
 -------------------------------------------------------------
@@ -216,43 +211,18 @@ where	object_id_one = :project_id
 -- company in the case of travel costs.
 --
 
--- prompt *** intranet-costs: Creating im_costs
-create or replace function inline_0 ()
-returns integer as '
-declare
-	v_object_type	integer;
-begin
-    v_object_type := acs_object_type__create_type (
-	''im_cost'',		-- object_type
-	''Cost'',		-- pretty_name
-	''Costs'',		-- pretty_plural
-	''acs_object'',		-- supertype
-	''im_costs'',		-- table_name
-	''cost_id'',		-- id_column
-	''im_costs'',		-- package_name
-	''f'',			-- abstract_p
-	null,			-- type_extension_table
-	''im_costs__name''	-- name_method
-    );
-    return 0;
-end;' language 'plpgsql';
-select inline_0 ();
-drop function inline_0 ();
-
-
--- prompt *** intranet-costs: Creating im_costs
 create table im_costs (
 	cost_id			integer
 				constraint im_costs_pk
 				primary key
 				constraint im_costs_cost_fk
-                                references acs_objects,
+				references acs_objects,
 	-- force a name because we may want to use object.name()
 	-- later to list cost
 	cost_name		varchar(400)
 				constraint im_costs_name_nn
 				not null,
-        -- Nr is a current number to provide a unique 
+	-- Nr is a current number to provide a unique 
 	-- identifier of a cost item for backup/restore.
 	cost_nr			varchar(400)
 				constraint im_costs_nr_nn
@@ -345,122 +315,3 @@ create table im_costs (
 	description		varchar(4000),
 	note			varchar(4000)
 );
-create index im_costs_cause_object_idx on im_costs(cause_object_id);
-create index im_costs_start_block_idx on im_costs(start_block);
-
-
-
--------------------------------------------------------------
--- Cost Object Packages
---
-
--- create or replace package body im_cost
--- is
-create or replace function im_cost__new (
-       integer,
-       varchar,
-       timestamptz,
-       integer,
-       varchar,
-       integer,
-       varchar,
-       integer,
-       integer,
-       integer,
-       integer,
-       integer,
-       integer,
-       integer,
-       integer,
-       timestamptz,
-       integer,
-       numeric,
-       varchar,
-       numeric,
-       numeric,
-       varchar,
-       varchar,
-       varchar,
-       varchar,
-       integer,
-       varchar,
-       varchar
-)
-returns integer as '
-declare
-	p_cost_id		alias for $1;		-- cost_id default null
-	p_object_type		alias for $2;		-- object_type default ''im_cost''
-	p_creation_date		alias for $3;		-- creation_date default now()
-	p_creation_user		alias for $4;		-- creation_user default null
-	p_creation_ip		alias for $5;		-- creation_ip default null
-	p_context_id		alias for $6;		-- context_id default null
-
-	p_cost_name		alias for $7;		-- cost_name default null
-	p_parent_id		alias for $8;		-- parent_id default null
-	p_project_id		alias for $9;		-- project_id default null
-	p_customer_id		alias for $10;		-- customer_id
-	p_provider_id		alias for $11;		-- provider_id
-	p_investment_id		alias for $12;		-- investment_id default null
-
-	p_cost_status_id	alias for $13;		-- cost_status_id
-	p_cost_type_id		alias for $14;		-- cost_type_id
-	p_template_id		alias for $15;		-- template_id default null
-
-	p_effective_date	alias for $16;		-- effective_date default now()
-	p_payment_days		alias for $17;		-- payment_days default 30
-	p_amount		alias for $18;		-- amount default null
-	p_currency		alias for $19;		-- currency default ''EUR''
-	p_vat			alias for $20;		-- vat default 0
-	p_tax			alias for $21;		-- tax default 0
-
-	p_variable_cost_p	alias for $22;		-- variable_cost_p default ''f''
-	p_needs_redistribution_p alias for $23;		-- needs_redistribution_p default ''f''
-	p_redistributed_p	alias for $24;		-- redistributed_p default ''f''
-	p_planning_p		alias for $25;		-- planning_p default ''f''
-	p_planning_type_id	alias for $26;		-- planning_type_id default null
-
-	p_note			alias for $27;		-- note default null
-	p_description		alias for $28;		-- description default null
-	v_cost_cost_id		integer;
- begin
-end' language 'plpgsql';
-
-
--- Delete a single cost (if we know its ID...)
-create or replace function im_cost__delete (integer)
-returns integer as '
-DECLARE
-	p_cost_id alias for $1;
-begin
-end' language 'plpgsql';
-
-
-create or replace function im_cost__name (integer)
-returns varchar as '
-DECLARE
-	p_cost_id  alias for $1;	-- cost_id
-	v_name  varchar(40);
-begin
-end;' language 'plpgsql';
-
-
-
-
-
-
-
-create or replace function im_cost_nr_from_id (integer)
-returns varchar as '
-DECLARE
-        p_id    alias for $1;
-        v_name  varchar(50);
-BEGIN
-        select cost_nr
-        into v_name
-        from im_costs
-        where cost_id = p_id;
-
-        return v_name;
-end;' language 'plpgsql';
-
-

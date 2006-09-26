@@ -1,4 +1,6 @@
-
+------------------------------------------------------------
+-- Freelance Skills
+------------------------------------------------------------
 
 -- Get the list of all Skill Types in the system
 select
@@ -10,7 +12,7 @@ from
 where
 	st.category_type = 'Intranet Skill Type'
 order by
-	st.category_id
+	st.category_id;
 
 
 -- Get the skills of a person for a given Skill Type
@@ -25,8 +27,7 @@ where
 	user_id = :user_id
 	and skill_type_id = :skill_type_id
 order by
-	s.skill_id
-
+	s.skill_id;
 
 
 -- Get the list of all skills for a person
@@ -52,10 +53,7 @@ from
 		order by skill_type_id
 	) sk ON sk.skill_type_id = c.category_id
 order by
-	c.category_id
-;
-
-
+	c.category_id;
 
 
 -- Get the list of all skills for a give user in a singe text
@@ -63,7 +61,6 @@ order by
 --
 select im_freelance_skill_list(26,2000) from dual;
 -- -> 'es es_LA'
-
 
 
 -----------------------------------------------------------

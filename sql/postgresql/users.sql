@@ -1,86 +1,88 @@
-
+------------------------------------------------------------
+-- Users
+------------------------------------------------------------
 
 -- Get everything about a user
 select
-        u.*,
-        $freelance_select
-        c.*,
+	u.*,
+	$freelance_select
+	c.*,
 	emp.*,
-        pe.*,
-        pa.*
+	pe.*,
+	pa.*
 from
-        users u
-        $freelance_pg_join
-      LEFT JOIN
-        persons pe ON u.user_id = pe.person_id
-      LEFT JOIN
-        parties pa ON u.user_id = pa.party_id
-      LEFT JOIN
-        users_contact c USING (user_id)
-      LEFT JOIN
-        im_employees emp ON u.user_id = emp.employee_id
-      LEFT JOIN
-        country_codes ha_cc ON c.ha_country_code = ha_cc.iso
-      LEFT JOIN
-        country_codes wa_cc ON c.wa_country_code = wa_cc.iso
+	users u
+	$freelance_pg_join
+	LEFT JOIN
+		persons pe ON u.user_id = pe.person_id
+	LEFT JOIN
+		parties pa ON u.user_id = pa.party_id
+	LEFT JOIN
+		users_contact c USING (user_id)
+	LEFT JOIN
+		im_employees emp ON u.user_id = emp.employee_id
+	LEFT JOIN
+		country_codes ha_cc ON c.ha_country_code = ha_cc.iso
+	LEFT JOIN
+		country_codes wa_cc ON c.wa_country_code = wa_cc.iso
 where
-        u.user_id = :user_id
+	u.user_id = :user_id
 
 
 -- Get a list of recently registered users
 select
-        u.user_id,
-        u.username,
-        u.screen_name,
-        u.last_visit,
-        u.second_to_last_visit,
-        u.n_sessions,
-        to_char(u.creation_date, :date_format) as creation_date,
-        u.member_state,
-        im_email_from_user_id(u.user_id) as email,
-        im_name_from_user_id(u.user_id) as name
+	u.user_id,
+	u.username,
+	u.screen_name,
+	u.last_visit,
+	u.second_to_last_visit,
+	u.n_sessions,
+	to_char(u.creation_date, :date_format) as creation_date,
+	u.member_state,
+	im_email_from_user_id(u.user_id) as email,
+	im_name_from_user_id(u.user_id) as name
 from
-        cc_users u
+	cc_users u
 order by
-        u.creation_date DESC
+	u.creation_date DESC
 ;
 
 -- Get the Profile ("group") memberships of a user
-        select DISTINCT
-                g.group_id,
-                g.group_name
-        from
-                acs_objects o,
-                groups g,
-                group_member_map m,
-                membership_rels mr
-        where
-                m.member_id = :user_id
-                and m.group_id = g.group_id
-                and g.group_id = o.object_id
-                and o.object_type = 'im_profile'
-                and m.rel_id = mr.rel_id
-                and mr.member_state = 'approved'
+select DISTINCT
+	g.group_id,
+	g.group_name
+from
+	acs_objects o,
+	groups g,
+	group_member_map m,
+	membership_rels mr
+where
+	m.member_id = :user_id
+	and m.group_id = g.group_id
+	and g.group_id = o.object_id
+	and o.object_type = 'im_profile'
+	and m.rel_id = mr.rel_id
+	and mr.member_state = 'approved'
 ;
 
 
 -- Get Employee information.
 -- Not all users are employees - obviously.
 select
-        u.user_id,
-        im_name_from_user_id(u.user_id) as employee_name,
+	u.user_id,
+	im_name_from_user_id(u.user_id) as employee_name,
 	emp.*
 from
-        registered_users u,
-        group_distinct_member_map gm
+	registered_users u,
+	group_distinct_member_map gm
 	LEFT OUTER JOIN
 		im_employees_active emp ON (u.user_id = emp.employee_id)
 where
-        u.user_id = gm.member_id
-        and gm.group_id = [im_employee_group_id]
+	u.user_id = gm.member_id
+	and gm.group_id = [im_employee_group_id]
 order by 
 	lower(im_name_from_user_id(u.user_id))
-
+;
 
 
 -- Is the :current_user_id allowed to manage :user_id?
@@ -91,46 +93,41 @@ order by
 -- :current_user_id must be able to have view/read/write/admin
 -- perms on ALL of these groups.
 select
-        m.group_id,
-        im_object_permission_p(m.group_id, :current_user_id, 'view') as view_p,
-        im_object_permission_p(m.group_id, :current_user_id, 'read') as read_p,
-        im_object_permission_p(m.group_id, :current_user_id, 'write') as write_p,
-        im_object_permission_p(m.group_id, :current_user_id, 'admin') as admin_p
+	m.group_id,
+	im_object_permission_p(m.group_id, :current_user_id, 'view') as view_p,
+	im_object_permission_p(m.group_id, :current_user_id, 'read') as read_p,
+	im_object_permission_p(m.group_id, :current_user_id, 'write') as write_p,
+	im_object_permission_p(m.group_id, :current_user_id, 'admin') as admin_p
 from
-        acs_objects o,
-        group_distinct_member_map m
+	acs_objects o,
+	group_distinct_member_map m
 where
-        m.member_id=:user_id
-        and m.group_id = o.object_id
-        and o.object_type = 'im_profile'
+	m.member_id=:user_id
+	and m.group_id = o.object_id
+	and o.object_type = 'im_profile'
 ;
 
 
 
 -- Create a new User
 select acs_user__new(
-        null,           -- user_id
-        'user',         -- object_type
-        now(),          -- creation_date
-        null,           -- creation_user
-        null,           -- creation_ip
-        null,           -- authority_id
-        :username,      -- username
-        :email,         -- email
-        null,           -- url
-        :first_names,   -- first_names
-        :last_name,     -- last_name
-        :password,      -- password
-        :salt,          -- salt
-        null,           -- screen_name
-        't',
-        null            -- context_id
+	null,		-- user_id
+	'user',		-- object_type
+	now(),		-- creation_date
+	null,		-- creation_user
+	null,		-- creation_ip
+	null,		-- authority_id
+	:username,	-- username
+	:email,		-- email
+	null,		-- url
+	:first_names,	-- first_names
+	:last_name,	-- last_name
+	:password,	-- password
+	:salt,		-- salt
+	null,		-- screen_name
+	't',
+	null		-- context_id
 );
-
-
-
-
-
 
 
 -------------------------------------------------------------
@@ -192,6 +189,3 @@ create table users_contact (
 	note			varchar(4000),
 	current_information	varchar(4000)
 );
-
-
-

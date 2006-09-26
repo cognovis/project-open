@@ -1,54 +1,57 @@
+------------------------------------------------------------
+-- Projects
+------------------------------------------------------------
 
 
 -- Get everything about a Project
 select
-        p.*,
-        c.company_name,
-        c.company_path,
-        to_char(p.end_date, 'HH24:MI') as end_date_time,
-        to_char(p.start_date, 'YYYY-MM-DD') as start_date_formatted,
-        to_char(p.end_date, 'YYYY-MM-DD') as end_date_formatted,
-        to_char(p.percent_completed, '999990.9%') as percent_completed_formatted,
-        im_category_from_id(p.project_type_id) as project_type,
-        im_category_from_id(p.project_status_id) as project_status,
-        c.primary_contact_id as company_contact_id,
-        im_name_from_user_id(c.primary_contact_id) as company_contact,
-        im_email_from_user_id(c.primary_contact_id) as company_contact_email,
-        im_name_from_user_id(p.project_lead_id) as project_lead,
-        im_name_from_user_id(p.supervisor_id) as supervisor,
-        im_name_from_user_id(c.manager_id) as manager
+	p.*,
+	c.company_name,
+	c.company_path,
+	to_char(p.end_date, 'HH24:MI') as end_date_time,
+	to_char(p.start_date, 'YYYY-MM-DD') as start_date_formatted,
+	to_char(p.end_date, 'YYYY-MM-DD') as end_date_formatted,
+	to_char(p.percent_completed, '999990.9%') as percent_completed_formatted,
+	im_category_from_id(p.project_type_id) as project_type,
+	im_category_from_id(p.project_status_id) as project_status,
+	c.primary_contact_id as company_contact_id,
+	im_name_from_user_id(c.primary_contact_id) as company_contact,
+	im_email_from_user_id(c.primary_contact_id) as company_contact_email,
+	im_name_from_user_id(p.project_lead_id) as project_lead,
+	im_name_from_user_id(p.supervisor_id) as supervisor,
+	im_name_from_user_id(c.manager_id) as manager
 from
-        im_projects p,
-        im_companies c
+	im_projects p,
+	im_companies c
 
 where
-        p.project_id=:project_id
-        and p.company_id = c.company_id
+	p.project_id=:project_id
+	and p.company_id = c.company_id
 ;
 
 
 -- Get the entire Project hierarchy of a main project
 select
-        children.project_id as subproject_id,
-        children.project_nr as subproject_nr,
-        children.project_name as subproject_name,
-        im_category_from_id(children.project_status_id) as subproject_status,
-        im_category_from_id(children.project_type_id) as subproject_type,
-        tree_level(children.tree_sortkey) -
-        tree_level(parent.tree_sortkey) as subproject_level
+	children.project_id as subproject_id,
+	children.project_nr as subproject_nr,
+	children.project_name as subproject_name,
+	im_category_from_id(children.project_status_id) as subproject_status,
+	im_category_from_id(children.project_type_id) as subproject_type,
+	tree_level(children.tree_sortkey) -
+	tree_level(parent.tree_sortkey) as subproject_level
 from
-        im_projects parent,
-        $perm_sql children
+	im_projects parent,
+	$perm_sql children
 where
-        children.project_status_id not in (
-                [im_project_status_deleted],
-                [im_project_status_canceled]
-        )
-        and children.project_type_id not in (
-                84, [im_project_type_task]
-        )
-        and children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
-        and parent.project_id = :super_project_id
+	children.project_status_id not in (
+		[im_project_status_deleted],
+		[im_project_status_canceled]
+	)
+	and children.project_type_id not in (
+		84, [im_project_type_task]
+	)
+	and children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+	and parent.project_id = :super_project_id
 order by 
 	children.tree_sortkey
 ;
@@ -58,134 +61,124 @@ order by
 -- Only show projects with :user_id as a member.
 SELECT *
 FROM
-        ( SELECT
-                p.*,
-                c.company_name,
-                im_name_from_user_id(project_lead_id) as lead_name,
-                im_category_from_id(p.project_type_id) as project_type,
-                im_category_from_id(p.project_status_id) as project_status,
-                to_char(p.start_date, 'YYYY-MM-DD') as start_date_formatted,
-                to_char(p.end_date, 'YYYY-MM-DD') as end_date_formatted,
-                to_char(p.end_date, 'HH24:MI') as end_date_time
-                $extra_select
-        FROM (
+	( SELECT
+		p.*,
+		c.company_name,
+		im_name_from_user_id(project_lead_id) as lead_name,
+		im_category_from_id(p.project_type_id) as project_type,
+		im_category_from_id(p.project_status_id) as project_status,
+		to_char(p.start_date, 'YYYY-MM-DD') as start_date_formatted,
+		to_char(p.end_date, 'YYYY-MM-DD') as end_date_formatted,
+		to_char(p.end_date, 'HH24:MI') as end_date_time
+		$extra_select
+	FROM (
 		select	p.*
-	        from	im_projects p,
-	                acs_rels r
-	        where	r.object_id_one = p.project_id
-	                and r.object_id_two = :user_id
-	                $where_clause
-	        ) p,
-                im_companies c
-                $extra_from
-        WHERE
-                p.company_id = c.company_id
-                $where_clause
-                $extra_where
-        ) projects
+		from	im_projects p,
+			acs_rels r
+		where	r.object_id_one = p.project_id
+			and r.object_id_two = :user_id
+			$where_clause
+		) p,
+		im_companies c
+		$extra_from
+	WHERE
+		p.company_id = c.company_id
+		$where_clause
+		$extra_where
+	) projects
 $order_by_clause
 
 
 -- Get all members of a Project
-        select
-                r.*,
-                m.object_role_id,
-                o.object_type
-        from
-                acs_rels r
-                        left outer join im_biz_object_members m
-                        on r.rel_id = m.rel_id,
-                acs_objects o
-        where
-                r.object_id_two = o.object_id
-                and r.object_id_one = :project_id
-;
-
+select
+	r.*,
+	m.object_role_id,
+	o.object_type
+from
+	acs_rels r
+		left outer join im_biz_object_members m
+		on r.rel_id = m.rel_id,
+	acs_objects o
+where
+	r.object_id_two = o.object_id
+	and r.object_id_one = :project_id;
 
 
 -- Partial update of a Project
 -- We can never know all fields of a Project, because other
 -- modules might have extended the project. However, other
 -- modules can't add non-null fields.
-        update im_projects set
-                project_name =  :project_name,
-                project_path =  :project_path,
-                project_nr =    :project_nr,
-                project_type_id =:project_type_id,
-                project_status_id =:project_status_id,
-                project_lead_id =:project_lead_id,
-                company_id =    :company_id,
-                supervisor_id = :supervisor_id,
-                parent_id =     :parent_id,
-                description =   :description,
-                requires_report_p =:requires_report_p,
-                percent_completed = :percent_completed,
-                on_track_status_id =:on_track_status_id,
-                start_date =    $start_date,
-                end_date =      $end_date
-        where
-                project_id = :project_id
+update im_projects set
+	project_name =  :project_name,
+	project_path =  :project_path,
+	project_nr =    :project_nr,
+	project_type_id =:project_type_id,
+	project_status_id =:project_status_id,
+	project_lead_id =:project_lead_id,
+	company_id =    :company_id,
+	supervisor_id = :supervisor_id,
+	parent_id =     :parent_id,
+	description =   :description,
+	requires_report_p =:requires_report_p,
+	percent_completed = :percent_completed,
+	on_track_status_id =:on_track_status_id,
+	start_date =    $start_date,
+	end_date =      $end_date
+where
+	project_id = :project_id;
 
 
 -- Update the translation specific fields of a Project
-        update im_projects set
-                company_project_nr =    :company_project_nr,
-                company_contact_id =    :company_contact_id,
-                source_language_id =    :source_language_id,
-                subject_area_id =       :subject_area_id,
-                expected_quality_id =   :expected_quality_id,
-                final_company =         :final_company,
-                trans_project_words =   :trans_project_words,
-                trans_project_hours =   :trans_project_hours
-        where
-                project_id = :new_project_id
+update im_projects set
+	company_project_nr =    :company_project_nr,
+	company_contact_id =    :company_contact_id,
+	source_language_id =    :source_language_id,
+	subject_area_id =       :subject_area_id,
+	expected_quality_id =   :expected_quality_id,
+	final_company =	 :final_company,
+	trans_project_words =   :trans_project_words,
+	trans_project_hours =   :trans_project_hours
+where
+	project_id = :new_project_id;
 
 
 -- Update Cost specific fields of a Project
-        update im_projects set
-                cost_quotes_cache =             :cost_quotes_cache,
-                cost_invoices_cache =           :cost_invoices_cache,
-                cost_timesheet_planned_cache =  :cost_timesheet_planned_cache,
-                cost_purchase_orders_cache =    :cost_purchase_orders_cache,
-                cost_bills_cache =              :cost_bills_cache,
-                cost_timesheet_logged_cache =   :cost_timesheet_logged_cache
-        where
-                project_id = :new_project_id
-
-
+update im_projects set
+	cost_quotes_cache =	     :cost_quotes_cache,
+	cost_invoices_cache =	   :cost_invoices_cache,
+	cost_timesheet_planned_cache =  :cost_timesheet_planned_cache,
+	cost_purchase_orders_cache =    :cost_purchase_orders_cache,
+	cost_bills_cache =	      :cost_bills_cache,
+	cost_timesheet_logged_cache =   :cost_timesheet_logged_cache
+where
+	project_id = :new_project_id;
 
 
 -- Update a Project's budget
 -- Only available for users with special permissions.
-            update im_projects set
-                project_budget =:project_budget,
-                project_budget_currency =:project_budget_currency
-        where
-                project_id = :project_id
-;
-
+update	im_projects set
+	project_budget =:project_budget,
+	project_budget_currency =:project_budget_currency
+where
+	project_id = :project_id;
 
 
 -- Create a new Project
 select im_project__new (
-        NULL,
-        'im_project',
-        :creation_date,
-        :creation_user,
-        :creation_ip,
-        :context_id,
-        :project_name,
-        :project_nr,
-        :project_path,
-        :parent_id,
-        :company_id,
-        :project_type_id,
-        :project_status_id
+	NULL,
+	'im_project',
+	:creation_date,
+	:creation_user,
+	:creation_ip,
+	:context_id,
+	:project_name,
+	:project_nr,
+	:project_path,
+	:parent_id,
+	:company_id,
+	:project_type_id,
+	:project_status_id
 );
-
-
-
-
 
 -- Select all subprojects (including the main project)
 -- of a "main"-project
@@ -195,20 +188,16 @@ from
 	im_projects p
 where
 	p.project_id in (
-                      select    children.project_id
-                      from      im_projects parent,
-                                im_projects children
-                      where
-                                children.tree_sortkey
-                                        between parent.tree_sortkey
-                                        and tree_right(parent.tree_sortkey)
-                                and parent.project_id = :project_id
-                )
-
-
-
-
-
+		      select    children.project_id
+		      from      im_projects parent,
+				im_projects children
+		      where
+				children.tree_sortkey
+					between parent.tree_sortkey
+					and tree_right(parent.tree_sortkey)
+				and parent.project_id = :project_id
+		)
+;
 
 -------------------------------------------------------------
 -- Projects
@@ -299,33 +288,3 @@ create table im_projects (
 				references users,
 	sort_order		integer
 );
-
-
--------------------------------------------------------------
--- Add "Cache" fields to im_projects
---
--- Add fields to store results from adding up costs in
--- the "Finance" view of a project.
-
-alter table im_projects add     cost_quotes_cache		numeric(12,2);
-alter table im_projects alter	cost_quotes_cache		set default 0;
-alter table im_projects add     cost_invoices_cache		numeric(12,2);
-alter table im_projects alter	cost_invoices_cache		set default 0;
-alter table im_projects add     cost_timesheet_planned_cache	numeric(12,2);
-alter table im_projects alter	cost_timesheet_planned_cache	set default 0;
-alter table im_projects add     cost_expense_planned_cache	numeric(12,2);
-alter table im_projects alter	cost_expense_planned_cache	set default 0;
-alter table im_projects add     cost_purchase_orders_cache	numeric(12,2);
-alter table im_projects alter	cost_purchase_orders_cache	set default 0;
-alter table im_projects add     cost_bills_cache		numeric(12,2);
-alter table im_projects alter	cost_bills_cache		set default 0;
-alter table im_projects add     cost_timesheet_logged_cache	numeric(12,2);
-alter table im_projects alter	cost_timesheet_logged_cache	set default 0;
-alter table im_projects add     cost_expense_logged_cache	numeric(12,2);
-alter table im_projects alter	cost_expense_logged_cache	set default 0;
-alter table im_projects alter	cost_delivery_notes_cache	numeric(12,2);
-alter table im_projects alter	cost_delivery_notes_cache	set default 0;
-
-
-
-
