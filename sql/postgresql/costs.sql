@@ -102,6 +102,18 @@ where cost_id = :cost_id
 PERFORM ${otype}__delete(:cost_id)
 
 
+
+-- Exchange Rates:
+-- Invoices and Cost Items are stored together with their original
+-- currency to avoid any rounding errors etc.
+-- In order to calculate a sum of invoices you have to use the
+-- Exchange Rates module:
+--
+select im_exchange_rate(to_date('2005-07-01','YYYY-MM-DD'), 'EUR', 'USD');
+
+
+
+
 -- Create a new (basic!) cost Item
 -- Don't use this for cost items of derived types such as
 -- im_invoice, im_expense etc.
