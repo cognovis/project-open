@@ -171,6 +171,16 @@ where
     )
 
 
+-- Check if there is already a relation between a project
+-- and a cost item:
+select
+	count(*) as v_rel_exists
+from	acs_rels
+where	object_id_one = :project_id
+	and object_id_two = :invoice_id
+;
+
+
 
 
 -------------------------------------------------------------
