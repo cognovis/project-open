@@ -2,15 +2,17 @@
 -- See the Menu maintenance screens for the name of the parent 
 -- menu.
 
-select menu_id 
-from im_menus 
-where label='finance'
+select
+	m.*
+from
+	im_menus 
+where
+	label='finance'
 ;
 
 
--- Select all menus below a Parent with read permissions of the
+-- Select all menus below a parent Menu with read permissions for the
 -- current user
-
         select  m.*
         from    im_menus m
         where   parent_menu_id = :parent_menu_id
@@ -94,23 +96,6 @@ drop function inline_1();
 -- lowest sort_key.
 
 
-SELECT acs_object_type__create_type (
-        'im_menu',		    -- object_type
-        'Menu',			    -- pretty_name
-        'Menus',		    -- pretty_plural
-        'acs_object',               -- supertype
-        'im_menus',		    -- table_name
-        'menu_id',		    -- id_column
-        'im_menu',		    -- package_name
-        'f',                        -- abstract_p
-        null,                       -- type_extension_table
-        'im_menu.name'  -- name_method
-    );
-
-
--- The idea is to use OpenACS permissions in the future to
--- control who should see what menu.
-
 CREATE TABLE im_menus (
 	menu_id 		integer
 				constraint im_menu_id_pk
@@ -150,49 +135,3 @@ CREATE TABLE im_menus (
 	constraint im_menus_label_un
 	unique(label)
 );
-
-create or replace function im_menu__new (integer, varchar, timestamptz, integer, varchar, integer,
-varchar, varchar, varchar, varchar, integer, integer, varchar) returns integer as '
-declare
-	p_menu_id	  alias for $1;   -- default null
-        p_object_type	  alias for $2;   -- default ''acs_object''
-        p_creation_date	  alias for $3;   -- default now()
-        p_creation_user	  alias for $4;   -- default null
-        p_creation_ip	  alias for $5;   -- default null
-        p_context_id	  alias for $6;   -- default null
-	p_package_name	  alias for $7;
-	p_label		  alias for $8;
-	p_name		  alias for $9;
-	p_url		  alias for $10;
-	p_sort_order	  alias for $11;
-	p_parent_menu_id  alias for $12;
-	p_visible_tcl	  alias for $13;  -- default null
-begin
-end;' language 'plpgsql';
-
-
-
--- Delete a single menu (if we know its ID...)
-create or replace function im_menu__delete (integer) returns integer as '
-DECLARE
-	p_menu_id	alias for $1;
-BEGIN
-end;' language 'plpgsql';
-
-
--- Delete all menus of a module.
-create or replace function im_menu__del_module (varchar) returns integer as '
-DECLARE
-	p_module_name   alias for $1;
-BEGIN
-end;' language 'plpgsql';
-
-
--- Returns the name of the menu
-create or replace function im_menu__name (integer) returns varchar as '
-DECLARE
-        p_menu_id   alias for $1;
-BEGIN
-end;' language 'plpgsql';
-
-
