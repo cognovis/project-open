@@ -1,4 +1,28 @@
 
+
+
+
+-- Select all subprojects (including the main project)
+-- of a "main"-project
+select
+	p.*
+from
+	im_projects p
+where
+	p.project_id in (
+                      select    children.project_id
+                      from      im_projects parent,
+                                im_projects children
+                      where
+                                children.tree_sortkey
+                                        between parent.tree_sortkey
+                                        and tree_right(parent.tree_sortkey)
+                                and parent.project_id = :project_id
+                )
+
+
+
+
 -------------------------------------------------------------
 -- Add "Cache" fields to im_projects
 --
@@ -23,6 +47,7 @@ alter table im_projects add     cost_expense_logged_cache	numeric(12,2);
 alter table im_projects alter	cost_expense_logged_cache	set default 0;
 alter table im_projects alter	cost_delivery_notes_cache	numeric(12,2);
 alter table im_projects alter	cost_delivery_notes_cache	set default 0;
+
 
 
 
