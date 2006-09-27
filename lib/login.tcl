@@ -279,6 +279,19 @@ ad_form -extend -name login -on_request {
 			     -no_cookie=1 \
         ]
 
+	# Handle authentication errors
+	switch $auth_info(auth_status) {
+	    ok { }
+	    bad_password {
+		form set_error login password $auth_info(auth_message)
+		break
+	    }
+	    default {
+		form set_error login $user_id_widget_name $auth_info(auth_message)
+		break
+	    }
+	}
+
 	set otp_user_id 0
 	if {[exists_and_not_null auth_info(user_id)]} { set otp_user_id $auth_info(user_id) }
     }
