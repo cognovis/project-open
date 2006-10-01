@@ -12,9 +12,7 @@
 ad_page_contract { 
     @author frank.bergmann@project-open.com
 } {
-    { project_id 0}
-    { cost_type_id:integer "[im_cost_type_invoice]" }
-    { form_mode "edit" }
+    { project_id:integer 0}
 }
 
 # ---------------------------------------------------------------
