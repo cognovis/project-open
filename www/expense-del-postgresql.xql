@@ -16,7 +16,7 @@
   
   <fullquery name="del_expense">
     <querytext>
-        select im_expenses__delete(:id);
+        select im_expense__delete(:id);
     </querytext>
   </fullquery>
 </queryset>

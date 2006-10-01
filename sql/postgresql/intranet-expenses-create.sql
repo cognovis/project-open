@@ -69,7 +69,7 @@ create table im_expenses (
 
 
 -- Delete a single expense (if we know its ID...)
-create or replace function im_expenses__delete (integer)
+create or replace function im_expense__delete (integer)
 returns integer as '
 DECLARE
 	p_expense_id alias for $1;		 -- expense_id
@@ -84,7 +84,7 @@ begin
 end' language 'plpgsql';
 
 
-create or replace function im_expenses__name (integer)
+create or replace function im_expense__name (integer)
 returns varchar as '
 DECLARE
 	p_expenses_id  alias for $1;	-- expense_id
