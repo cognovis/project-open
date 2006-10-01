@@ -23,22 +23,13 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
 set page_focus "im_header_form.keywords"
-set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set date_format "YYYY-MM-DD"
-
 set return_url [im_url_with_query]
 set current_url [ns_conn url]
-
 set project_name [db_string project_name "select project_name from im_projects where project_id=:project_id" -default ""]
-
 set page_title "$project_name [_ intranet-expenses.Unassigned_Expenses]"
 
-if {[im_permission $user_id view_projects_all]} {
-    set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
-} else {
-    set context_bar [im_context_bar $page_title]
-}
-
+set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
 
 # ---------------------------------------------------------------
 # Admin Links
