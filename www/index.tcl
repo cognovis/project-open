@@ -34,22 +34,20 @@ set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Proj
 # ---------------------------------------------------------------
 # Admin Links
 # ---------------------------------------------------------------
+
 set add_expense_p [im_permission $user_id "add_expenses"]
+set create_invoice_p [im_permission $user_id "add_expense_invoice"]
 
 set admin_links ""
 set bulk_actions_list "[list]"
 
 if {$add_expense_p} {
-
-    append admin_links " <li><a href=\"new?[export_url_vars project_id return_url]\">[_ intranet-expenses.Add_a_new_Expense]</a>\n"
-
+    append admin_links "<li><a href=\"new?[export_url_vars project_id return_url]\">[_ intranet-expenses.Add_a_new_Expense]</a>\n"
     lappend bulk_actions_list "[_ intranet-expenses.Delete]" "expense-del" "[_ intranet-expenses.Delete_Expenses]"
-
 }
 
-set create_invoice_p [im_permission $user_id "add_expense_invoice"]
 if {$create_invoice_p} {
-    lappend bulk_actions_list "[_ intranet-expenses.Create_Travel_Cost]" "[export_vars -base "create-tc" {project_id}]" "[_ intranet-expenses.create_trabel_cost_help]"
+    lappend bulk_actions_list "[_ intranet-expenses.Create_Invoice]" "[export_vars -base "create-tc" {project_id}]" "[_ intranet-expenses.create_invoice_help]"
 }
 
 # ---------------------------------------------------------------
@@ -159,7 +157,6 @@ db_multirow -extend {expense_chk} expense_lines expenses_lines "
    order by
 	c.effective_date DESC
 " {
-
     set amount "[format %.2f [expr $amount * [expr 1 + [expr $vat / 100]]]] $currency"
     set vat "[format %.1f $vat] %"
     set reimbursable "[format %.1f $reimbursable] %"

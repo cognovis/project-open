@@ -55,6 +55,6 @@
 <listtemplate name="@list_id@"></listtemplate>
 
 
-<h2>#intranet-expenses.Travel_cost_invoices#</h2>
+<h2>#intranet-expenses.Expense_Invoices#</h2>
 <listtemplate name="@list2_id@"></listtemplate>
 
