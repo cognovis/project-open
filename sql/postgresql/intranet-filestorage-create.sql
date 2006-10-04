@@ -96,7 +96,9 @@ create table im_fs_files (
 	exists_p	char(1) default '1'
 			constraint im_fs_files_exists_ck
 			check(exists_p in ('0','1')),
-			-- last time of update
+			-- last changed date of file on FS
+	last_changed	timestamptz,
+			-- last time of PO update
 	last_updated	timestamptz,
 		-- Only one file with the same name below a folder
 		constraint im_fs_files_un

@@ -5,4 +5,6 @@
 <master src="../../intranet-core/www/master">
 <property name="title"></property>
 
+<br>
+@navbar;noquote@
 @page_body;noquote@
