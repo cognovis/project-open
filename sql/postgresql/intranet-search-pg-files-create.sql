@@ -93,3 +93,21 @@ FOR EACH ROW
 EXECUTE PROCEDURE im_fs_files_tsearch();
 
 
+
+create or replace function im_fs_files_tsearch_del ()
+returns trigger as '
+begin
+	delete from im_search_objects
+	where	object_id = old.file_id
+		and object_type_id = 6;
+
+	return new;
+end;' language 'plpgsql';
+
+
+CREATE TRIGGER im_fs_files_tsearch_del_tr
+AFTER DELETE ON im_fs_files
+FOR EACH ROW
+EXECUTE PROCEDURE im_fs_files_tsearch_del();
+
+

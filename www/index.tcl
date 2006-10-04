@@ -4,18 +4,27 @@ ad_page_contract {
 
 }
 
-set user_id [ad_get_user_id]
-
-
 ad_proc -public intranet_search_pg_files_index_object {
     -object_type
     -object_id
 } {
     Index the files of a single objec such as a project, company or user.
 } {
-    ns_log Notice "intranet_search_pg_files_index_object($object_type, $object_id)"
-
+    set debug "intranet_search_pg_files_index_object($object_type, $object_id)\n"
+    ns_log Notice $debug
+    
+    set user_id [ad_get_user_id]
     set find_cmd [im_filestorage_find_cmd]
+
+    # Delete all files from the DB associated with this object
+    db_dml delete_files "
+	delete from im_fs_files
+	where folder_id in (
+		select	folder_id
+		from	im_fs_folders
+		where	object_id = :object_id
+	)
+    "
 
     # Home Filestorage depends on object type...
     switch $object_type {
@@ -26,10 +35,16 @@ ad_proc -public intranet_search_pg_files_index_object {
     }
 
     set home_path_len [expr [string length $home_path] + 1]
-    set dir_list [exec $find_cmd $home_path -type d]
-    set dirs [lsort [split $dir_list "\n"]]
-    set file_list [exec $find_cmd $home_path -type f]
-    set files [lsort [split $file_list "\n"]]
+
+    set files [list]
+    if {[catch {
+	set file_list [exec $find_cmd $home_path -type f]
+	set files [lsort [split $file_list "\n"]]
+    } errmsg]} {
+	set str "Unable to get list of files for '$home_path':\n$errmsg"
+	ns_log Notice $str
+	append debug "$str\n"
+    }
 
     foreach file_path $files {
 
@@ -85,13 +100,19 @@ ad_proc -public intranet_search_pg_files_index_object {
 		)
         "
 
-	append debug "path='$path' body='$body' folder_id=$folder_id\n"
+	# ToDo: Optimize: This update seems to be
+	# necessary in order to trigger indexing
+	db_dml update_file "update im_fs_files set owner_id = :user_id where file_id = :file_id"
+
     }   
+
+    return $debug
 }
 
 
 set debug ""
 set biz_object_types {im_project user im_company}
+set biz_object_types {im_company}
 set cnt 0
 
 foreach otype $biz_object_types {
@@ -100,19 +121,23 @@ foreach otype $biz_object_types {
 	from	acs_object_types
 	where	object_type = :otype
     "
-    db_1row object_type_info $type_sql
+    db_1row object_type_info $otype_sql
 
     set objects_sql "
 	select	$id_column as object_id
 	from	$table_name
     "
     db_foreach object_list $objects_sql {
-	intranet_search_pg_files_index_object $otype $object_id
+	set d [intranet_search_pg_files_index_object -object_type $otype -object_id $object_id]
+	append debug $d
+
+	incr cnt
+	if {$cnt > 2500} { 
+	    ad_return_complaint 1 "<pre>\n$debug\n</pre>" 
+	    return
+	}
+
     }
-    incr cnt
-
-    if {$cnt > 10} { ad_return_complaint 1 "<pre>\n$debug\n</pre>" }
-
 }
 
 ad_return_complaint 1 "<pre>\n$debug\n</pre>"
