@@ -61,7 +61,7 @@
 <td bgcolor=#e5ecf9 align=right nowrap>
   <font size=-1>
     #intranet-search-pg.Results#
-    <b>@offset@</b> - <b><%= [expr $offset + $results_per_page] %></b> 
+    <b>@offset;noquote@</b> - <b><%= [expr $offset + $results_per_page] %></b> 
 
 <if @count@ eq @limit@>
     of more then 
@@ -70,7 +70,7 @@
     #intranet-search-pg.of_about# 
 </else>
 
-    <b>@num_results@</b>.
+    <b>@num_results;noquote@</b>.
     Search took
     <b>@elapsed@</b> #intranet-search-pg.seconds#
   </font>

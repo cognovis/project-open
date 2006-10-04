@@ -371,6 +371,29 @@ if {1 == $include_deleted_p} {
 }
 
 
+# --------------------- Files -----------------------------------
+set file_perm_sql "
+			and p.file_id in (
+			        select
+			                p.file_id
+			        from
+			                im_files p,
+			                acs_rels r
+			        where
+			                r.object_id_one = p.file_id
+			                and r.object_id_two = :current_user_id
+			)"
+
+if {[im_permission $user_id "view_projects_all"]} {
+        set file_perm_sql ""
+}
+
+# ToDo: Remove testing line
+set file_perm_sql ""
+
+
+
+# --------------------- Forums -----------------------------------
 set forum_perm_sql ""
 
 
@@ -486,6 +509,48 @@ db_foreach full_text_query $sql {
 	user { 
 	    im_user_permissions $user_id $object_id view read write admin
 	    if {!$read} { continue }
+	}
+	im_fs_file { 
+	    # The file is readable if it's business object is readable
+	    # AND if the folder is readable
+
+	    # Very ugly: The biz_object_id is not checked for "user"
+	    # because it is very slow... So check it here now.
+	    if {"user" == $biz_object_type} {
+		im_user_permissions $user_id $biz_object_id view read write admin
+		if {!$read} { continue }
+	    }
+
+	    # Determine if the current user belongs to the admins of
+	    # the "business object". This allows to skip any other permission
+	    # checks.
+	    set object_admin_sql "
+				( select count(*) 
+				  from	acs_rels r,
+					im_biz_object_members m
+				  where	r.object_id_two = :current_user_id
+					and r.object_id_one = :biz_object_id
+					and r.rel_id = m.rel_id
+					and m.object_role_id in (1301, 1302, 1303)
+				)::integer\n"
+	    if {$user_is_admin_p} { set object_admin_sql "1::integer\n" }
+
+	    # Determine the permissions for the file
+	    db_1row forum_perm "
+		select
+			f.filename,
+			'1' as file_permission_p
+		from
+			im_fs_files f
+		where
+			f.file_id = :object_id
+	    "
+	    if {!$file_permission_p} { continue }
+
+	    # Only with files - biz_object_id==0 means Home Filestorage
+#	    if {0 == $biz_object_id} { set biz_object_name [lang::message::lookup "" intranet-fs.Home_Filestorage "Home Filestorage"] }
+
+	    set name_link "<a href=\"$url$object_id\">$biz_object_name: $filename</a>\n"
 	}
 	im_forum_topic { 
 	    # The topic is readable if it's business object is readable
