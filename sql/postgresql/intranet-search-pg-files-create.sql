@@ -7,6 +7,22 @@
 --
 -- @author frank.bergmann@project-open.com
 
+
+-- Table to keep track of the last time we have
+-- updated a business object.
+-- No Referencial Integrity with acs_objects in order
+-- not to break deleting objects. We need to make
+-- sure the object exists.
+create table im_search_pg_file_biz_objects (
+	object_id	integer
+			constraint im_search_pg_file_bo_pk
+			primary key,
+	last_update	timestamptz
+);
+
+
+
+
 -----------------------------------------------------------
 -- im_fs_files
 
