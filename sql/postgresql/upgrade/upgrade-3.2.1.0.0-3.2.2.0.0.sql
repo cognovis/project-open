@@ -11,7 +11,18 @@ declare
 	v_accounting	integer;
 	v_senman	integer;
 	v_admins	integer;
+
+        v_count                 integer;
 BEGIN
+    select  count(*)
+    into    v_count
+    from    im_menus
+    where   label = ''admin_exchange_rates'';
+
+    if v_count = 1 then
+            return 0;
+    end if;
+
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
     select group_id into v_senman from groups where group_name = ''Senior Managers'';
     select group_id into v_accounting from groups where group_name = ''Accounting'';
@@ -59,7 +70,18 @@ declare
 	v_accounting	integer;
 	v_senman	integer;
 	v_admins	integer;
+
+        v_count                 integer;
 BEGIN
+    select  count(*)
+    into    v_count
+    from    im_menus
+    where   label = ''finance_exchange_rates'';
+
+    if v_count = 1 then
+            return 0;
+    end if;
+
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
     select group_id into v_senman from groups where group_name = ''Senior Managers'';
     select group_id into v_accounting from groups where group_name = ''Accounting'';
