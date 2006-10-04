@@ -11,17 +11,17 @@ begin
         select  count(*)
         into    v_count
         from    im_biz_object_urls
-        where   object_type = 'im_timesheet_task'
-		and url_type = 'view';
+        where   object_type = ''im_timesheet_task''
+		and url_type = ''view'';
 
         if v_count = 1 then
             return 0;
         end if;
 
 	insert into im_biz_object_urls (object_type, url_type, url) values (
-	'im_timesheet_task','view','/intranet/projects/view?project_id=');
+	''im_timesheet_task'',''view'',''/intranet/projects/view?project_id='');
 	insert into im_biz_object_urls (object_type, url_type, url) values (
-	'im_timesheet_task','edit','/intranet/projects/new?project_id=');
+	''im_timesheet_task'',''edit'',''/intranet/projects/new?project_id='');
 
         return 0;
 end;' language 'plpgsql';
@@ -93,10 +93,10 @@ begin
         end if;
 
 	alter table im_menus add enabled_p char(1);
-	alter table im_menus alter enabled_p set default 't';
-	update im_menus set enabled_p = 't';
+	alter table im_menus alter enabled_p set default ''t'';
+	update im_menus set enabled_p = ''t'';
 	alter table im_menus add constraint im_menus_enabled_ck
-		check (enabled_p in ('t','f'));
+		check (enabled_p in (''t'',''f''));
 
         return 0;
 end;' language 'plpgsql';
@@ -121,10 +121,10 @@ begin
         end if;
 
 	alter table im_component_plugins add enabled_p char(1);
-	alter table im_component_plugins alter enabled_p set default 't';
-	update im_component_plugins set enabled_p = 't';
+	alter table im_component_plugins alter enabled_p set default ''t'';
+	update im_component_plugins set enabled_p = ''t'';
 	alter table im_component_plugins add constraint im_comp_plugin_enabled_ck
-		check (enabled_p in ('t','f'));
+		check (enabled_p in (''t'',''f''));
 
         return 0;
 end;' language 'plpgsql';
