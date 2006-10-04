@@ -48,12 +48,36 @@ drop function inline_0 ();
 
 
 
-alter table im_trans_tasks
-add tm_integration_type_id integer references im_categories;
-
 -- No default - default should be handled by TCL
 -- alter table im_trans_tasks alter column tm_type_id 
 -- set default 4100;
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select  count(*)
+        into    v_count
+        from    user_tab_columns
+        where   lower(table_name) = ''im_trans_tasks''
+                and lower(column_name) = ''tm_integration_type_id'';
+
+        if v_count = 1 then
+            return 0;
+        end if;
+
+	alter table im_trans_tasks
+	add tm_integration_type_id integer references im_categories;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
 
 
 
