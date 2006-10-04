@@ -165,57 +165,77 @@ drop function inline_0 ();
 -- All privilege - We cannot directly inherit from "read" or "write",
 -- because all registered_users have read access to the "SubSite".
 --
-select acs_privilege__create_privilege('fi_read_all','Read All','Read All');
-select acs_privilege__create_privilege('fi_write_all','Write All','Write All');
-select acs_privilege__add_child('admin', 'fi_read_all');
-select acs_privilege__add_child('admin', 'fi_write_all');
 
--- Start defining the cost_type specific privileges
---
-select acs_privilege__create_privilege('fi_read_invoices','Read Invoices','Read Invoices');
-select acs_privilege__create_privilege('fi_write_invoices','Write Invoices','Write Invoices');
-select acs_privilege__add_child('fi_read_all', 'fi_read_invoices');
-select acs_privilege__add_child('fi_write_all', 'fi_write_invoices');
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select  count(*)
+        into    v_count
+        from    acs_privileges
+        where   privilege = ''fi_read_all'';
 
-select acs_privilege__create_privilege('fi_read_quotes','Read Quotes','Read Quotes');
-select acs_privilege__create_privilege('fi_write_quotes','Write Quotes','Write Quotes');
-select acs_privilege__add_child('fi_read_all', 'fi_read_quotes');
-select acs_privilege__add_child('fi_write_all', 'fi_write_quotes');
+        if v_count = 1 then
+            return 0;
+        end if;
 
-select acs_privilege__create_privilege('fi_read_bills','Read Bills','Read Bills');
-select acs_privilege__create_privilege('fi_write_bills','Write Bills','Write Bills');
-select acs_privilege__add_child('fi_read_all', 'fi_read_bills');
-select acs_privilege__add_child('fi_write_all', 'fi_write_bills');
+	select acs_privilege__create_privilege(''fi_read_all'',''Read All'',''Read All'');
+	select acs_privilege__create_privilege(''fi_write_all'',''Write All'',''Write All'');
+	select acs_privilege__add_child(''admin'', ''fi_read_all'');
+	select acs_privilege__add_child(''admin'', ''fi_write_all'');
+	
+	-- Start defining the cost_type specific privileges
+	--
+	select acs_privilege__create_privilege(''fi_read_invoices'',''Read Invoices'',''Read Invoices'');
+	select acs_privilege__create_privilege(''fi_write_invoices'',''Write Invoices'',''Write Invoices'');
+	select acs_privilege__add_child(''fi_read_all'', ''fi_read_invoices'');
+	select acs_privilege__add_child(''fi_write_all'', ''fi_write_invoices'');
+	
+	select acs_privilege__create_privilege(''fi_read_quotes'',''Read Quotes'',''Read Quotes'');
+	select acs_privilege__create_privilege(''fi_write_quotes'',''Write Quotes'',''Write Quotes'');
+	select acs_privilege__add_child(''fi_read_all'', ''fi_read_quotes'');
+	select acs_privilege__add_child(''fi_write_all'', ''fi_write_quotes'');
+	
+	select acs_privilege__create_privilege(''fi_read_bills'',''Read Bills'',''Read Bills'');
+	select acs_privilege__create_privilege(''fi_write_bills'',''Write Bills'',''Write Bills'');
+	select acs_privilege__add_child(''fi_read_all'', ''fi_read_bills'');
+	select acs_privilege__add_child(''fi_write_all'', ''fi_write_bills'');
+	
+	select acs_privilege__create_privilege(''fi_read_pos'',''Read Pos'',''Read Pos'');
+	select acs_privilege__create_privilege(''fi_write_pos'',''Write Pos'',''Write Pos'');
+	select acs_privilege__add_child(''fi_read_all'', ''fi_read_pos'');
+	select acs_privilege__add_child(''fi_write_all'', ''fi_write_pos'');
+	
+	select acs_privilege__create_privilege(''fi_read_timesheets'',''Read Timesheets'',''Read Timesheets'');
+	select acs_privilege__create_privilege(''fi_write_timesheets'',''Write Timesheets'',''Write Timesheets'');
+	select acs_privilege__add_child(''fi_read_all'', ''fi_read_timesheets'');
+	select acs_privilege__add_child(''fi_write_all'', ''fi_write_timesheets'');
+	
+	select acs_privilege__create_privilege(''fi_read_delivery_notes'',''Read Delivery Notes'',''Read Delivery Notes'');
+	select acs_privilege__create_privilege(''fi_write_delivery_notes'',''Write Delivery Notes'',''Write Delivery Notes'');
+	select acs_privilege__add_child(''fi_read_all'', ''fi_read_delivery_notes'');
+	select acs_privilege__add_child(''fi_write_all'', ''fi_write_delivery_notes'');
+	
+	select acs_privilege__create_privilege(''fi_read_expense_items'',''Read Expense Items'',''Read Expense Items'');
+	select acs_privilege__create_privilege(''fi_write_expense_items'',''Write Expense Items'',''Write Expense Items'');
+	select acs_privilege__add_child(''fi_read_all'', ''fi_read_expense_items'');
+	select acs_privilege__add_child(''fi_write_all'', ''fi_write_expense_items'');
+	
+	select acs_privilege__create_privilege(''fi_read_expense_reports'',''Read Expense Reports'',''Read Expense Reports'');
+	select acs_privilege__create_privilege(''fi_write_expense_reports'',''Write Expense Reports'',''Write Expense Reports'');
+	select acs_privilege__add_child(''fi_read_all'', ''fi_read_expense_reports'');
+	select acs_privilege__add_child(''fi_write_all'', ''fi_write_expense_reports'');
+	
+	select acs_privilege__create_privilege(''fi_read_repeatings'',''Read Repeatings'',''Read Repeatings'');
+	select acs_privilege__create_privilege(''fi_write_repeatings'',''Write Repeatings'',''Write Repeatings'');
+	select acs_privilege__add_child(''fi_read_all'', ''fi_read_repeatings'');
+	select acs_privilege__add_child(''fi_write_all'', ''fi_write_repeatings'');
 
-select acs_privilege__create_privilege('fi_read_pos','Read Pos','Read Pos');
-select acs_privilege__create_privilege('fi_write_pos','Write Pos','Write Pos');
-select acs_privilege__add_child('fi_read_all', 'fi_read_pos');
-select acs_privilege__add_child('fi_write_all', 'fi_write_pos');
-
-select acs_privilege__create_privilege('fi_read_timesheets','Read Timesheets','Read Timesheets');
-select acs_privilege__create_privilege('fi_write_timesheets','Write Timesheets','Write Timesheets');
-select acs_privilege__add_child('fi_read_all', 'fi_read_timesheets');
-select acs_privilege__add_child('fi_write_all', 'fi_write_timesheets');
-
-select acs_privilege__create_privilege('fi_read_delivery_notes','Read Delivery Notes','Read Delivery Notes');
-select acs_privilege__create_privilege('fi_write_delivery_notes','Write Delivery Notes','Write Delivery Notes');
-select acs_privilege__add_child('fi_read_all', 'fi_read_delivery_notes');
-select acs_privilege__add_child('fi_write_all', 'fi_write_delivery_notes');
-
-select acs_privilege__create_privilege('fi_read_expense_items','Read Expense Items','Read Expense Items');
-select acs_privilege__create_privilege('fi_write_expense_items','Write Expense Items','Write Expense Items');
-select acs_privilege__add_child('fi_read_all', 'fi_read_expense_items');
-select acs_privilege__add_child('fi_write_all', 'fi_write_expense_items');
-
-select acs_privilege__create_privilege('fi_read_expense_reports','Read Expense Reports','Read Expense Reports');
-select acs_privilege__create_privilege('fi_write_expense_reports','Write Expense Reports','Write Expense Reports');
-select acs_privilege__add_child('fi_read_all', 'fi_read_expense_reports');
-select acs_privilege__add_child('fi_write_all', 'fi_write_expense_reports');
-
-select acs_privilege__create_privilege('fi_read_repeatings','Read Repeatings','Read Repeatings');
-select acs_privilege__create_privilege('fi_write_repeatings','Write Repeatings','Write Repeatings');
-select acs_privilege__add_child('fi_read_all', 'fi_read_repeatings');
-select acs_privilege__add_child('fi_write_all', 'fi_write_repeatings');
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 
@@ -257,35 +277,6 @@ BEGIN
 end;' language 'plpgsql';
 select inline_0();
 drop function inline_0();
-
-
-
-
--------------------------------------------------------------
--- Update the context_id fields of the cost centers, 
--- so that permissions are inherited
---
-create or replace function inline_0 ()
-returns integer as '
-DECLARE
-    row                         RECORD;
-BEGIN
-    FOR row IN
-        select  *
-        from    im_cost_centers
-    LOOP
-        RAISE NOTICE ''inline_0: cc_id=%'', row.cost_center_id;
-
-        update acs_objects
-        set context_id = row.parent_id
-        where object_id = row.cost_center_id;
-
-    END LOOP;
-    return 0;
-end;' language 'plpgsql';
-select inline_0 ();
-drop function inline_0();
-
 
 
 -------------------------------------------------------------
@@ -361,5 +352,37 @@ update im_view_columns set
 	visible_for = 'im_permission $user_id view_budget_hours'
 where	column_id = 2113
 ;
+
+
+
+
+
+-------------------------------------------------------------
+-- Update the context_id fields of the cost centers, 
+-- so that permissions are inherited
+--
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+    row                         RECORD;
+BEGIN
+    FOR row IN
+        select  *
+        from    im_cost_centers
+    LOOP
+        RAISE NOTICE ''inline_0: cc_id=%'', row.cost_center_id;
+
+        update acs_objects
+        set context_id = row.parent_id
+        where object_id = row.cost_center_id;
+
+    END LOOP;
+    return 0;
+
+END;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0();
+
+
 
 
