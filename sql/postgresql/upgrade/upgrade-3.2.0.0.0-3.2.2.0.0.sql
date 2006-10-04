@@ -14,8 +14,30 @@
 
 -- Add cache fields for Delivery Notes
 
-alter table im_projects add     cost_delivery_notes_cache       numeric(12,2);
-alter table im_projects alter   cost_delivery_notes_cache       set default 0;
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select  count(*)
+        into    v_count
+        from    user_tab_columns
+        where   lower(table_name) = ''im_projects''
+                and lower(column_name) = ''cost_delivery_notes_cache'';
+
+        if v_count = 1 then
+            return 0;
+        end if;
+
+	alter table im_projects add cost_delivery_notes_cache numeric(12,2);
+	alter table im_projects alter cost_delivery_notes_cache set default 0;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 
 -- Remove old "Travel Costs" cost type
@@ -85,7 +107,18 @@ declare
 	v_accounting	integer;
 	v_senman	integer;
 	v_admins	integer;
+
+        v_count                 integer;
 BEGIN
+    select  count(*)
+    into    v_count
+    from    im_menus
+    where   label = ''admin_cost_centers'';
+
+    if v_count = 1 then
+            return 0;
+    end if;
+
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
     select group_id into v_senman from groups where group_name = ''Senior Managers'';
     select group_id into v_accounting from groups where group_name = ''Accounting'';
