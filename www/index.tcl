@@ -34,7 +34,10 @@ if {0 != $file_id} {
 }
 
 set object_type [db_string otype "select object_type from acs_objects where object_id = :object_id" -default ""]
-set object_type [db_string oname "select acs_object__name(:object_id)" -default ""]
+set object_name [db_string oname "select acs_object__name(:object_id)" -default ""]
+
+
+set title $object_name
 
 set navbar ""
 
