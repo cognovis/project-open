@@ -43,7 +43,6 @@ ad_proc -public intranet_search_pg_files_index_object {
     ns_log Notice $debug
     if {"" == $object_type} { return "" }
 
-    set user_id [ad_get_user_id]
     set find_cmd [im_filestorage_find_cmd]
 
     # Delete all files from the DB associated with this object
@@ -117,6 +116,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 	    "
 	}
 
+	set user_id 624
 	set file_id [db_nextval im_fs_file_seq]
 	db_dml insert_file "
 		insert into im_fs_files (
@@ -170,8 +170,7 @@ ad_proc -public intranet_search_pg_files_index_all {
 }
 
 
-ad_proc -public intranet_search_pg_files_search_indexer {
-} {
+ad_proc intranet_search_pg_files_search_indexer {} {
     Index the entire server.
     This routine is schedule every 60 seconds or so.
     We use this to determine the "oldest" business object
@@ -232,14 +231,23 @@ ad_proc -public intranet_search_pg_files_search_indexer {
     }
 
 
+    # Index ONLY the oldest biz object
     set oldest_object_sql "
 	select	object_id
 	from	im_search_pg_file_biz_objects
-	order by last_update DESC
+	order by last_update
 	limit 1
     "
     db_foreach oldest_objects $oldest_object_sql {
-	intranet_search_pg_files_index_object -object_id $object_id	
+
+	intranet_search_pg_files_index_object -object_id $object_id
+
+	# Mark the last object as the last object...
+	db_dml update_oldest_object "
+		update im_search_pg_file_biz_objects
+		set last_update = now()
+		where object_id = :object_id
+        "
     }
 }
 
