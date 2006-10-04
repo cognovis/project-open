@@ -13,55 +13,56 @@ ad_page_contract {
     @creation-date Nov 2003
 } {
     { bread_crum_path "" }
+    { object_id -999 }
+    { file_id 0 }
 }
 
 set user_id [ad_maybe_redirect_for_registration]
 set return_url "/intranet-filestorage/"
 set current_url_without_vars [ns_conn url]
 
-if {1} {
 
-    set page_body [im_filestorage_home_component $user_id]
-
-    db_release_unused_handles
-
-    return
-
-} else {
-
-    set html "<pre>\n"
-
-    set header_vars [ns_conn headers]
-    foreach var [ad_ns_set_keys $header_vars] {
-	set value [ns_set get $header_vars $var]
-	
-	append html "header:	$var	= $value\n"
-    }
-    
-    
-    set form_vars [ns_conn form]
-    if {"" != $form_vars} {
-	foreach var [ad_ns_set_keys $form_vars] {
-	    set value [ns_set get $form_vars $var]
-	    
-	    append html "form:	$var	= $value\n"
-	}
-    }
-    
-    
-    append html "\nquery: [ns_conn query]"
-    
-    append html "</pre>\n"
-    
-    
-    append html "
-<form action=index method=POST>
-<input type=text name=erter value=ertz>
-<input type=submit name=adsf value=sdfg>
-</form>
-"
-    
-    doc_return  200 text/html $html
-    db_release_unused_handles
-    
+# Determine the right "Business Object" if file_id was given
+if {0 != $file_id} {
+    set object_id [db_string biz_oid "
+	select	object_id
+	from	im_fs_folders ff,
+		im_fs_files f
+	where	f.file_id = :file_id
+		and f.folder_id = ff.folder_id
+    "]
 }
+
+set object_type [db_string otype "select object_type from acs_objects where object_id = :object_id" -default ""]
+set object_type [db_string oname "select acs_object__name(:object_id)" -default ""]
+
+set navbar ""
+
+switch $object_type {
+    im_project {
+	set project_path [im_filestorage_project_path $object_id]
+	set folder_type "project"
+	set object_name "Project"
+	set page_body [im_filestorage_base_component $user_id $object_id $object_name $project_path $folder_type]
+
+	set bind_vars [ns_set create]
+	ns_set put $bind_vars project_id $object_id
+	set parent_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
+	set navbar [im_sub_navbar $parent_menu_id $bind_vars "" "pagedesriptionbar" "project_files"]
+    }
+    im_company {
+	set company_path [im_filestorage_company_path $company_id]
+	set folder_type "company"
+	set page_body [im_filestorage_base_component $user_id $company_id $company_name $company_path $folder_type]
+    }
+    user {
+	set user_path [im_filestorage_user_path $object_id]
+	set folder_type "user"
+	set user_name $object_id
+	set page_body [im_filestorage_base_component $user_id $user_id $user_name $user_path $folder_type]
+    }
+    default {
+	set page_body [im_filestorage_home_component $user_id]
+    }
+}
+
