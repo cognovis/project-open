@@ -43,6 +43,7 @@ ad_proc -public intranet_search_pg_files_index_object {
     ns_log Notice $debug
     if {"" == $object_type} { return "" }
 
+    set admin_user_id [im_sysadmin_user_default]
     set find_cmd [im_filestorage_find_cmd]
 
     # Delete all files from the DB associated with this object
@@ -116,7 +117,6 @@ ad_proc -public intranet_search_pg_files_index_object {
 	    "
 	}
 
-	set user_id 624
 	set file_id [db_nextval im_fs_file_seq]
 	db_dml insert_file "
 		insert into im_fs_files (
@@ -125,14 +125,14 @@ ad_proc -public intranet_search_pg_files_index_object {
 			exists_p, last_updated
 		) values (
 			:file_id, :folder_id,
-			:user_id, :body,
+			:admin_user_id, :body,
 			'1', now()
 		)
         "
 
 	# ToDo: Optimize: This update seems to be
 	# necessary in order to trigger indexing
-	db_dml update_file "update im_fs_files set owner_id = :user_id where file_id = :file_id"
+	db_dml update_file "update im_fs_files set owner_id = :admin_user_id where file_id = :file_id"
 
     }   
 
