@@ -28,7 +28,7 @@ begin
 	        owner_id        integer
 	                        constraint im_fs_files_owner_fk
 	                        references users,
-	        filename        varchar(100)
+	        filename        varchar(1000)
 	                        constraint im_fs_files_filename_nn
 	                        not null,
 	        language_id     integer
