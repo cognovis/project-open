@@ -90,20 +90,26 @@ ad_proc -public intranet_search_pg_files_index_object {
 
 	# Remove the "home_path" from the returned value
 	set file_path [string range $file_path $home_path_len end]
-	
-	# ToDo: What happens if there are more then one folder for
-	# one object, even thought the path is ""?
-	if {"" != $file_path} {
-	    set path_sql ":file_path"
-	} else {
-	    set path_sql "''"
-	}
 
 	# Split the remaining path into folder path and file body
 	set pieces [split $file_path "/"]
 	set body [lindex $pieces [expr [llength $pieces]-1]]
 	set folder_path [join [lrange $pieces 0 end-1] "/"]
 	
+	# ToDo: What happens if there are more then one folder for
+	# one object, even thought the path is ""?
+	if {"" != $folder_path} {
+	    set path_sql ":folder_path"
+	} else {
+	    set path_sql "''"
+	}
+
+	ns_log Notice "intranet_search_pg_files_index_object: file_path=$file_path"
+	ns_log Notice "intranet_search_pg_files_index_object: pieces=$pieces"
+	ns_log Notice "intranet_search_pg_files_index_object: body=$body"
+	ns_log Notice "intranet_search_pg_files_index_object: folder_path=$folder_path"
+	ns_log Notice "intranet_search_pg_files_index_object: path_sql=$path_sql"
+
 	# Make sure the folder exists...
 	set folder_id [db_string folder_exists "
 		select	folder_id 
@@ -115,7 +121,6 @@ ad_proc -public intranet_search_pg_files_index_object {
 	# Create the folder if it doesn't exist yet
 	if {!$folder_id} {
 	    set folder_id [db_nextval im_fs_folder_seq]
-
 	    db_dml insert_folder_sql "
 		insert into im_fs_folders (
 			folder_id, object_id, path
@@ -179,7 +184,9 @@ ad_proc -public intranet_search_pg_files_index_all {
 }
 
 
-ad_proc intranet_search_pg_files_search_indexer {} {
+ad_proc intranet_search_pg_files_search_indexer {
+    {-max_files 100}
+} {
     Index the entire server.
     This routine is schedule every 60 seconds or so.
     We use this to determine the "oldest" business object
@@ -245,11 +252,15 @@ ad_proc intranet_search_pg_files_search_indexer {} {
 	select	object_id
 	from	im_search_pg_file_biz_objects
 	order by last_update
-	limit 1
+	limit :max_files
     "
+    set ctr 0
     db_foreach oldest_objects $oldest_object_sql {
 
-	intranet_search_pg_files_index_object -object_id $object_id
+	set nfiles [intranet_search_pg_files_index_object -object_id $object_id]
+	
+	set ctr [expr $ctr + $nfiles]
+	if {$ctr > $max_files} { break }
 
 	# Mark the last object as the last object...
 	db_dml update_oldest_object "
