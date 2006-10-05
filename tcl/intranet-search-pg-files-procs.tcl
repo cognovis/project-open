@@ -37,11 +37,16 @@ ad_proc -public intranet_search_pg_files_index_object {
     -object_id
 } {
     Index the files of a single objec such as a project, company or user.
+    Returns the number of new files.
 } {
-    set object_type [db_string otype "select object_type from acs_objects where object_id = :object_id" -default ""]
-    set debug "intranet_search_pg_files_index_object($object_type, $object_id)\n"
-    ns_log Notice $debug
-    if {"" == $object_type} { return "" }
+    set object_type [db_string otype "
+	select object_type 
+	from acs_objects 
+	where object_id = :object_id
+    " -default ""]
+
+    ns_log Notice "intranet_search_pg_files_index_object($object_type, $object_id)"
+    if {"" == $object_type} { return 0 }
 
     set admin_user_id [im_sysadmin_user_default]
     set find_cmd [im_filestorage_find_cmd]
@@ -61,7 +66,10 @@ ad_proc -public intranet_search_pg_files_index_object {
 	im_project { set home_path [im_filestorage_project_path $object_id] }
 	im_company { set home_path [im_filestorage_company_path $object_id] }
 	user { set home_path [im_filestorage_user_path $object_id] }
-	default { ad_return_redirect 1 "Unknown object type: '$object_type'" }
+	default { 
+	    ns_log Error "intranet_search_pg_files_index_object($object_id): Unknown object type: '$object_type'" 
+	    return 0
+	}
     }
 
     set home_path_len [expr [string length $home_path] + 1]
@@ -71,11 +79,11 @@ ad_proc -public intranet_search_pg_files_index_object {
 	set file_list [exec $find_cmd $home_path -type f]
 	set files [lsort [split $file_list "\n"]]
     } errmsg]} {
-	set str "Unable to get list of files for '$home_path':\n$errmsg"
-	ns_log Notice $str
-	append debug "$str\n"
+	ns_log Notice "Unable to get list of files for '$home_path':\n$errmsg"
+	return 0
     }
 
+    set file_ctr 0
     foreach file_path $files {
 
 	ns_log Notice "intranet_search_pg_files_index_object: $file_path"
@@ -134,9 +142,10 @@ ad_proc -public intranet_search_pg_files_index_object {
 	# necessary in order to trigger indexing
 	db_dml update_file "update im_fs_files set owner_id = :admin_user_id where file_id = :file_id"
 
+	incr file_ctr
     }   
 
-    return $debug
+    return $file_ctr
 }
 
 
