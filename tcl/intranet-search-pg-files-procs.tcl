@@ -249,7 +249,7 @@ ad_proc intranet_search_pg_files_search_indexer {
 
     # Index ONLY the oldest biz object
     set oldest_object_sql "
-	select	object_id
+	select	object_id as search_object_id
 	from	im_search_pg_file_biz_objects
 	order by last_update
 	limit :max_files
@@ -257,17 +257,17 @@ ad_proc intranet_search_pg_files_search_indexer {
     set ctr 0
     db_foreach oldest_objects $oldest_object_sql {
 
-	set nfiles [intranet_search_pg_files_index_object -object_id $object_id]
+	set nfiles [intranet_search_pg_files_index_object -object_id $search_object_id]
 	
-	set ctr [expr $ctr + $nfiles]
-	if {$ctr > $max_files} { break }
-
 	# Mark the last object as the last object...
 	db_dml update_oldest_object "
 		update im_search_pg_file_biz_objects
 		set last_update = now()
-		where object_id = :object_id
+		where object_id = :search_object_id
         "
+
+	set ctr [expr $ctr + $nfiles]
+	if {$ctr > $max_files} { break }
     }
 }
 
