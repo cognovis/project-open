@@ -54,15 +54,15 @@ switch $object_type {
 	set navbar [im_sub_navbar $parent_menu_id $bind_vars "" "pagedesriptionbar" "project_files"]
     }
     im_company {
-	set company_path [im_filestorage_company_path $company_id]
+	set company_path [im_filestorage_company_path $object_id]
 	set folder_type "company"
-	set page_body [im_filestorage_base_component $user_id $company_id $company_name $company_path $folder_type]
+	set page_body [im_filestorage_base_component $user_id $object_id $object_name $company_path $folder_type]
     }
     user {
 	set user_path [im_filestorage_user_path $object_id]
 	set folder_type "user"
 	set user_name $object_id
-	set page_body [im_filestorage_base_component $user_id $user_id $user_name $user_path $folder_type]
+	set page_body [im_filestorage_base_component $user_id $object_id $object_name $user_path $folder_type]
     }
     default {
 	set page_body [im_filestorage_home_component $user_id]
