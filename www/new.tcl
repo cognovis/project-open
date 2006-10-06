@@ -66,6 +66,8 @@ set expense_payment_type_options [db_list_of_lists payment_options "
 #
 set project_options [im_project_options \
 	-exclude_subprojects_p 0 \
+	-member_user_id $user_id \
+	-project_id $project_id \
 ]
 
 set include_empty 0
