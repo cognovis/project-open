@@ -1,6 +1,6 @@
-# /packages/intranet-reporting/www/finance-quotes-pos.tcl
+# /packages/intranet-reporting/www/finance-expenses.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (C) 2003-2006 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/ for licensing details.
@@ -11,8 +11,8 @@ ad_page_contract {
     @param start_year Year to start the report
     @param start_unit Month or week to start within the start_year
 } {
-    { start_date "" }
-    { end_date "" }
+    { start_date "2006-01-01" }
+    { end_date "2007-01-01" }
     { level_of_detail 2 }
     project_id:integer,optional
     customer_id:integer,optional
@@ -24,10 +24,8 @@ ad_page_contract {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
-set menu_label "reporting-finance-quotes-pos"
-
+set menu_label "reporting-finance-expenses"
 set current_user_id [ad_maybe_redirect_for_registration]
-
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
 	from	im_menus m
@@ -35,10 +33,20 @@ set read_p [db_string report_perms "
 " -default 'f']
 
 if {![string equal "t" $read_p]} {
-    ad_return_complaint 1 "<li>
-[lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
+    set msg [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]
+    ad_return_complaint 1 "<li>$msg"
     return
 }
+
+# Check if the intranet-expenses module is installed
+if {[catch {
+    set package_id [im_package_expenses_id]
+} err_msg]} {
+    set msg [lang::message::lookup "" intranet-reporting.Expense_module_not_installed "The Expense module 'intranet-expenses' is not installed in your system, so this report wouldn't work."]
+    ad_return_complaint 1 "<li>$msg"
+    return
+}
+
 
 # Check that Start & End-Date have correct format
 if {"" != $start_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $start_date]} {
@@ -56,27 +64,15 @@ if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $
 # ------------------------------------------------------------
 # Page Settings
 
-set page_title "Projects and Financial Documents"
+set page_title "Projects Expenses"
 set context_bar [im_context_bar $page_title]
 set context ""
 
 set help_text "
-<strong>Projects and Their Financial Documents:</strong><br>
+<strong>Expenses:</strong><br>
 
-The purpose of this report is to determine the profitability of
-the projects that end (end_date) in the time period between StartDate and End Date
-by showing the relationship between quotes and purchase orders
-(an approximation of the gross margin).
-
-The report lists all projects that have started in the period 
-between Start Date and End Date and lists their financial documents. 
-This selection is meant to provide a reasonable approximation 
-for 'revenues in this period' if there are many small projects, 
-as it is the case in translation agencies.<br>
-
-The report shows all financial documents for the selected projects,
-even if their creation and due dates are outside of the period 
-between Start Date and End Date.
+This report shows all exenses in the system in a given period, 
+grouped by project.
 "
 
 
@@ -124,9 +120,10 @@ if {"" == $end_date} {
 set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
-
+set expense_url "/intranet-expenses/view?cost_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting/finance-quotes-pos" {start_date end_date} ]
+
+set this_url [export_vars -base "/intranet-reporting/finance-expenses" {start_date end_date project_id} ]
 
 
 # ------------------------------------------------------------
@@ -163,84 +160,70 @@ if { ![empty_string_p $where_clause] } {
 # Define the report - SQL, counters, headers and footers 
 #
 
-
 set inner_sql "
 	select
-		c.cost_id,
-		c.cost_type_id,
-		c.cost_status_id,
-		c.cost_nr,
-		c.cost_name,
-		c.effective_date,
-		c.customer_id,
-		c.provider_id,
-		round((c.paid_amount * 
-		  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
-		  , 2) as paid_amount_converted,
-		c.paid_amount,
-		c.paid_currency,
-		round((c.amount * 
-		  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
-		  , 2) as amount_converted,
-		c.amount,
-		c.currency,
-		c.project_project_id
+	        c.*,
+	        round((c.paid_amount *
+		 im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+		 , 2) as paid_amount_converted,
+	        round((c.amount *
+		 im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+		 , 2) as amount_converted,
+	        r.project_id as project_project_id
 	from
-		(select distinct
-			p.project_id as project_project_id,
-			c.*
-		 from
-			(select	project_id
-			 from	im_projects p
-			 where	p.end_date >= to_date(:start_date, 'YYYY-MM-DD')
-				and p.end_date < to_date(:end_date, 'YYYY-MM-DD')
-				and p.end_date::date < to_date(:end_date, 'YYYY-MM-DD')
-			) p	 
-			LEFT OUTER JOIN acs_rels r on (p.project_id = r.object_id_one)
-			LEFT OUTER JOIN im_costs c on (c.cost_id = r.object_id_two OR c.project_id = p.project_id)
-		) c
+	        im_costs c
+		LEFT OUTER JOIN (
+			select	r.object_id_one as project_id,
+				r.object_id_two as cost_id
+			from	acs_rels r,
+				im_expenses e
+			where	r.object_id_two = e.expense_id
+		    UNION
+			select	c.project_id,
+				c.cost_id
+			from	im_costs c
+			where	c.cost_type_id in (
+					[im_cost_type_expense_item],
+					[im_cost_type_expense_report]
+				)
+		) r on (c.cost_id = r.cost_id)
 	where
-		(c.cost_type_id is null OR c.cost_type_id in (3700, 3702, 3704, 3706, null))
+	        c.cost_type_id in (
+			[im_cost_type_expense_item],
+			[im_cost_type_expense_report]
+		)
+	        and c.effective_date >= to_date(:start_date, 'YYYY-MM-DD')
+	        and c.effective_date < to_date(:end_date, 'YYYY-MM-DD')
+	        and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
 "
-
 
 set sql "
 select
-	c.*,
-	c.project_project_id as project_id,
-	to_char(c.effective_date, :date_format) as effective_date_formatted,
-	to_char(c.effective_date, 'YYMM')::integer * customer_id as effective_month,
+	cc.*,
+	e.*,
+	im_category_from_id(e.expense_type_id) as expense_type,
+	im_category_from_id(e.expense_payment_type_id) as expense_payment_type,
+	to_char(cc.effective_date, :date_format) as effective_date_formatted,
+	to_char(cc.effective_date, 'YYMM')::integer * cc.customer_id as effective_month,
 	cust.company_path as customer_nr,
 	cust.company_name as customer_name,
-	prov.company_path as provider_nr,
-	prov.company_name as provider_name,
-	CASE WHEN c.cost_type_id = 3700 THEN c.amount_converted END as invoice_amount,
-	CASE WHEN c.cost_type_id = 3702 THEN c.amount_converted END as quote_amount,
-	CASE WHEN c.cost_type_id = 3704 THEN c.amount_converted END as bill_amount,
-	CASE WHEN c.cost_type_id = 3706 THEN c.amount_converted END as po_amount,
-	CASE WHEN c.cost_type_id = 3700 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
-	END as invoice_amount_pretty,
-	CASE WHEN c.cost_type_id = 3702 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
-	END as quote_amount_pretty,
-	CASE WHEN c.cost_type_id = 3704 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
-	END as bill_amount_pretty,
-	CASE WHEN c.cost_type_id = 3706 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
-	END as po_amount_pretty,
-	to_char(c.paid_amount, :cur_format) || ' ' || c.paid_currency as paid_amount_pretty,
+	pcust.company_id as project_customer_id,
+	pcust.company_name as project_customer_name,
+	im_name_from_user_id(u.user_id) as provider_name,
 	p.project_name,
 	p.project_nr,
-	p.end_date::date as project_end_date,
-	pcust.company_id as project_customer_id,
-	pcust.company_name as project_customer_name
+	p.end_date::date as project_end_date
 from
-	($inner_sql
-	) c
-	LEFT OUTER JOIN im_projects p on (c.project_project_id = p.project_id)
-	LEFT OUTER JOIN im_companies cust on (c.customer_id = cust.company_id)
-	LEFT OUTER JOIN im_companies prov on (c.provider_id = prov.company_id)
+	im_costs c,
+	im_expenses e,
+	($inner_sql) cc
+	LEFT OUTER JOIN im_projects p on (cc.project_project_id = p.project_id)
+	LEFT OUTER JOIN im_companies cust on (cc.customer_id = cust.company_id)
 	LEFT OUTER JOIN im_companies pcust on (p.company_id = pcust.company_id)
+	LEFT OUTER JOIN cc_users u on (cc.provider_id = u.user_id)
 where
-	1 = 1
+	cc.cost_id = c.cost_id
+	and cc.cost_id = e.expense_id
 	$where_clause
 order by
 	pcust.company_name,
@@ -256,43 +239,42 @@ set report_def [list \
 	<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
     } \
         content [list \
-            group_by project_id \
-            header { } \
-	    content [list \
-		    header {
-			""
-			""
-			"<a href=$invoice_url$cost_id>$cost_name</a>"
-			"<nobr>$invoice_amount_pretty</nobr>"
-			"<nobr>$quote_amount_pretty</nobr>"
-			"<nobr>$bill_amount_pretty</nobr>"
-			"<nobr>$po_amount_pretty</nobr>"
-			""
-			""
-		    } \
-		    content {} \
-	    ] \
-            footer {
+	   group_by project_id \
+	   header { 
 		"" 
-		"<a href=$this_url&project_id=$project_id&level_of_detail=4 
+		"\#colspan=8 <a href=$this_url&project_id=$project_id&level_of_detail=4 
 		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 		<b><a href=$project_url$project_id>$project_name</a></b>"
 		"" 
-		"<nobr><i>$invoice_subtotal $default_currency</i></nobr>" 
-		"<nobr><i>$quote_subtotal $default_currency</i></nobr>" 
-		"<nobr><i>$bill_subtotal $default_currency</i></nobr>" 
-		"<nobr><i>$po_subtotal $default_currency</i></nobr>"
-		"<nobr><i>$po_per_quote_perc</i></nobr>"
-		"<nobr><i>$gross_profit</i></nobr>"
-            } \
+		""
+	   } \
+	    content [list \
+		    header {
+			""
+			"$provider_name"
+			"<a href=$invoice_url$cost_id>$cost_name</a>"
+			"<nobr>$amount</nobr>"
+			"$external_company_name"
+			"$expense_type"
+			"$billable_p"
+			"$reimbursable"
+			"$expense_payment_type"
+			"$external_company_vat_number"
+			"$note"
+		    } \
+		    content {} \
+	    ] \
+	   footer {
+		"" 
+		""
+		"" 
+		"<nobr><i>$project_subtotal $default_currency</i></nobr>" 
+	   } \
     ] \
     footer {  } \
 ]
 
-set invoice_total 0
-set quote_total 0
-set bill_total 0
-set po_total 0
+set total 0
 
 # Global header/footer
 set header0 {"Cust" "Project" "Name" "Invoice" "Quote" "Bill" "PO" "PO/Quote" "Gross Profit"}
@@ -300,88 +282,32 @@ set footer0 {
 	"" 
 	"" 
 	"<br><b>Total:</b>" 
-	"<br><b>$invoice_total $default_currency</b>" 
-	"<br><b>$quote_total $default_currency</b>" 
-	"<br><b>$bill_total $default_currency</b>" 
-	"<br><b>$po_total $default_currency</b>"
-	"<br><b>$po_per_quote_perc %</b>"
-	"<br><b>$gross_profit</b>"
+	"<br><b>$total $default_currency</b>" 
 }
 
 #
 # Subtotal Counters (per project)
 #
-set invoice_subtotal_counter [list \
+set project_subtotal_counter [list \
         pretty_name "Invoice Amount" \
-        var invoice_subtotal \
+        var project_subtotal \
         reset \$project_id \
-        expr "\$invoice_amount+0" \
-]
-
-set quote_subtotal_counter [list \
-        pretty_name "Quote Amount" \
-        var quote_subtotal \
-        reset \$project_id \
-        expr "\$quote_amount+0" \
-]
-
-set bill_subtotal_counter [list \
-        pretty_name "Bill Amount" \
-        var bill_subtotal \
-        reset \$project_id \
-        expr "\$bill_amount+0" \
-]
-
-set po_subtotal_counter [list \
-        pretty_name "Po Amount" \
-        var po_subtotal \
-        reset \$project_id \
-        expr "\$po_amount+0" \
+        expr "\$amount+0" \
 ]
 
 #
 # Grand Total Counters
 #
-set invoice_grand_total_counter [list \
+set project_grand_total_counter [list \
         pretty_name "Invoice Amount" \
-        var invoice_total \
+        var project_total \
         reset 0 \
-        expr "\$invoice_amount+0" \
+        expr "\$amount+0" \
 ]
-
-set quote_grand_total_counter [list \
-        pretty_name "Quote Amount" \
-        var quote_total \
-        reset 0 \
-        expr "\$quote_amount+0" \
-]
-
-set bill_grand_total_counter [list \
-        pretty_name "Bill Amount" \
-        var bill_total \
-        reset 0 \
-        expr "\$bill_amount+0" \
-]
-
-set po_grand_total_counter [list \
-        pretty_name "Po Amount" \
-        var po_total \
-        reset 0 \
-        expr "\$po_amount+0" \
-]
-
-
-
 
 set counters [list \
-	$invoice_subtotal_counter \
-	$quote_subtotal_counter \
-	$bill_subtotal_counter \
-	$po_subtotal_counter \
-	$invoice_grand_total_counter \
-	$quote_grand_total_counter \
-	$bill_grand_total_counter \
-	$po_grand_total_counter \
+	$project_subtotal_counter \
+	$project_grand_total_counter \
 ]
 
 
@@ -479,15 +405,6 @@ db_foreach sql $sql {
 	
 	im_report_update_counters -counters $counters
 	
-	# Calculated Variables 
-	set po_per_quote_perc "undef"
-	if {[expr $quote_subtotal+0] != 0} {
-	  set po_per_quote_perc [expr int(10000.0 * $po_subtotal / $quote_subtotal) / 100.0]
-	  set po_per_quote_perc "$po_per_quote_perc %"
-	}
-
-	set gross_profit [expr $invoice_subtotal - $bill_subtotal]
-
 	set last_value_list [im_report_render_header \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
@@ -504,15 +421,6 @@ db_foreach sql $sql {
 	    -cell_class $class
         ]
 }
-
-# Calculated Variables for footer0
-set po_per_quote_perc "undef"
-if {[expr $quote_subtotal+0] != 0} {
-    set po_per_quote_perc [expr int(10000.0 * $po_total / $quote_total) / 100.0]
-}
-
-set gross_profit [expr $invoice_total - $bill_total]
-
 
 
 im_report_display_footer \
