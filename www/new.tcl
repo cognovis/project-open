@@ -209,7 +209,7 @@ ad_form -extend -name $form_id -on_request {
 } -select_query {
     
 	select	*,
-		to_char(c.amount * (1 + c.vat / 100), :currency_format) as expense_amount,
+		trim(both from to_char(c.amount * (1 + c.vat / 100), :currency_format)) as expense_amount,
 		to_char(c.effective_date, :date_format) as expense_date,
 		to_char(c.vat, :percent_format) as vat,
 		to_char(e.reimbursable, :percent_format) as reimbursable
