@@ -71,7 +71,7 @@ set context ""
 set help_text "
 <strong>Expenses:</strong><br>
 
-This report shows all exenses in the system in a given period, 
+This report shows all exenses in the system in a given period,
 grouped by project.
 "
 
@@ -96,7 +96,7 @@ select
 from dual
 "
 
-if {"" == $start_date} { 
+if {"" == $start_date} {
     set start_date "$todays_year-$todays_month-01"
 }
 
@@ -112,7 +112,7 @@ select
 from dual
 "
 
-if {"" == $end_date} { 
+if {"" == $end_date} {
     set end_date "$end_year-$end_month-01"
 }
 
@@ -120,7 +120,7 @@ if {"" == $end_date} {
 set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
-set expense_url "/intranet-expenses/view?cost_id="
+set expense_url "/intranet-expenses/new?form_mode=display&expense_id="
 set user_url "/intranet/users/view?user_id="
 
 set this_url [export_vars -base "/intranet-reporting/finance-expenses" {start_date end_date project_id} ]
@@ -157,7 +157,7 @@ if { ![empty_string_p $where_clause] } {
 
 
 # ------------------------------------------------------------
-# Define the report - SQL, counters, headers and footers 
+# Define the report - SQL, counters, headers and footers
 #
 
 set inner_sql "
@@ -205,6 +205,10 @@ select
 	im_category_from_id(e.expense_payment_type_id) as expense_payment_type,
 	to_char(cc.effective_date, :date_format) as effective_date_formatted,
 	to_char(cc.effective_date, 'YYMM')::integer * cc.customer_id as effective_month,
+	to_char(c.vat, '990') as vat_formatted,
+	to_char(c.amount, :cur_format) as amount_formatted,
+	to_char(cc.amount_converted, :cur_format) as amount_converted_formatted,
+	to_char(o.creation_date, :date_format) as cost_creation_date_formatted,
 	cust.company_path as customer_nr,
 	cust.company_name as customer_name,
 	pcust.company_id as project_customer_id,
@@ -213,9 +217,12 @@ select
 	im_name_from_user_id(u.user_id) as employee_name,
 	p.project_name,
 	p.project_nr,
-	p.end_date::date as project_end_date
+	p.project_id,
+	p.end_date::date as project_end_date,
+	p.project_id * u.user_id as pu_id
 from
 	im_costs c,
+	acs_objects o,
 	im_expenses e,
 	($inner_sql) cc
 	LEFT OUTER JOIN im_projects p on (cc.project_project_id = p.project_id)
@@ -225,84 +232,84 @@ from
 where
 	cc.cost_id = c.cost_id
 	and cc.cost_id = e.expense_id
+	and cc.cost_id = o.object_id
 	$where_clause
 order by
 	pcust.company_name,
 	p.project_name,
-	u.user_id
+	u.last_name,
+	u.first_names
 "
 
 
 set report_def [list \
-    group_by project_customer_id \
-    header {
-	"\#colspan=9 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4 
-	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
-	<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
-    } \
-    content [list \
-	group_by project_id \
-	header { 
-		"" 
-		"\#colspan=8 <a href=$this_url&project_id=$project_id&level_of_detail=4 
-		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
-		<b><a href=$project_url$project_id>$project_name</a></b>"
-		"" 
-		""
+	group_by project_customer_id \
+	header {
+		"\#colspan=13 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4
+		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
+		<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
 	} \
 	content [list \
-		group_by employee_id \
-		header { 
+		group_by project_id \
+		header {
 			""
+			"\#colspan=10 <a href=$this_url&project_id=$project_id&level_of_detail=4
+			target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
+			<b><a href=$project_url$project_id>$project_name</a></b>"
 			""
-			"\#colspan=7 <a href=$this_url&project_id=$project_id&level_of_detail=4 
-			target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
-			<b><a href=$user_url$employee_id>$employee_name</a></b>"
-			"" 
 			""
 		} \
 		content [list \
+			group_by pu_id \
 			header {
 				""
 				""
-				"$employee_name"
-				"<nobr>$amount</nobr>"
-				"$external_company_name"
-				"$expense_type"
-				"$billable_p"
-				"$reimbursable"
-				"$expense_payment_type"
-				"$external_company_vat_number"
-				"$note"
+				"\#colspan=9 <a href=$this_url&employee_id=$employee_id&level_of_detail=4
+				target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
+				<b><a href=$user_url$employee_id>$employee_name</a></b>"
+				""
+				""
 			} \
-			content {} \
+			content [list \
+				header {
+					""
+					""
+					""
+					"<a href=$expense_url$cost_id><nobr>$effective_date_formatted</nobr></a>"
+					"<nobr>$cost_creation_date_formatted</nobr>"
+					"$expense_type"
+					"$external_company_name"
+					"$expense_payment_type"
+					"$vat_formatted"
+					"<nobr>$amount_formatted $currency</nobr>"
+					"<nobr>$amount_converted_formatted $default_currency</nobr>"
+					"$billable_p"
+					"$note"
+				} \
+				content {} \
+			] \
+			footer {
+				"\#colspan=10"
+				"\#colspan=3 <nobr><i>$employee_subtotal $default_currency</i></nobr>"
+			} \
 		] \
 		footer {
-			"" 
-			""
-			"" 
-			"<nobr><i>$project_subtotal $default_currency</i></nobr>" 
+			"\#colspan=10"
+			"\#colspan=3 <nobr><b>$project_subtotal $default_currency</b></nobr>"
 		} \
 	] \
-	footer {
-		"" 
-		""
-		"" 
-		"<nobr><i>$project_subtotal $default_currency</i></nobr>" 
-	} \
-    ] \
-    footer {  } \
+	footer {  } \
 ]
-
+	
 set total 0
 
 # Global header/footer
-set header0 {"Cust" "Project" "Name" "Invoice" "Quote" "Bill" "PO" "PO/Quote" "Gross Profit"}
+set header0 {"Cust" "Proj" "Emp" "Expense<br>Date" "Enter<br>Date" "Type" "Ext<br>Company" "Pay<br>Type" "%VAT" "Amount" "Amount<br>Conv" "Bill<br>able?" "Note"}
 set footer0 {
-	"" 
-	"" 
-	"<br><b>Total:</b>" 
-	"<br><b>$total $default_currency</b>" 
+	""
+	""
+	"<br><b>Total:</b>"
+	"<br><b>$total $default_currency</b>"
 }
 
 #
@@ -312,6 +319,13 @@ set project_subtotal_counter [list \
         pretty_name "Invoice Amount" \
         var project_subtotal \
         reset \$project_id \
+        expr "\$amount+0" \
+]
+
+set employee_subtotal_counter [list \
+        pretty_name "Invoice Amount" \
+        var employee_subtotal \
+        reset "\$project_id+\$employee_id" \
         expr "\$amount+0" \
 ]
 
@@ -327,6 +341,7 @@ set project_grand_total_counter [list \
 
 set counters [list \
 	$project_subtotal_counter \
+	$employee_subtotal_counter \
 	$project_grand_total_counter \
 ]
 
@@ -339,7 +354,7 @@ set start_years {2000 2000 2001 2001 2002 2002 2003 2003 2004 2004 2005 2005 200
 set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep 10 Oct 11 Nov 12 Dec}
 set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
 set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
-set levels {1 "Customer" 2 "Project" 3 "User" 4 "All Details"} 
+set levels {1 "Customer" 2 "Project" 3 "User" 4 "All Details"}
 
 # ------------------------------------------------------------
 # Start formatting the page
@@ -410,9 +425,21 @@ ns_log Notice "intranet-reporting/finance-quotes-pos: sql=\n$sql"
 
 db_foreach sql $sql {
 
+	set expense_payment_type [string_truncate -len 13 $expense_payment_type]
+	set note [string_truncate -len 20 $note]
+
 	if {"" == $project_id} {
 	    set project_id 0
 	    set project_name "No Project"
+	}
+
+	if {"" == $project_customer_id} {
+	    set project_customer_id 0
+	    set project_customer_name "No Customer"
+	}
+
+	if {"" == $amount_converted} {
+	    set amount_converted "<font color=red>exchange rate missing</font>"
 	}
 
 	im_report_display_footer \
