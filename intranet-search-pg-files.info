@@ -14,16 +14,16 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Provides full-text indexing for files and filenames in the ]po[ filestorages. Uses a number of external filters to periodically scan the ]po[ storages for new files, builds up a  Full Text Index and allows the user to retreive the files using the normal search interface.</description>
 
-        <!-- No dependency information -->
-
         <provides url="intranet-intranet-search-pg-files" version="3.0.0"/>
+        <provides url="intranet-search-pg-files" version="3.2.2"/>
         <requires url="intranet-core" version="3.0.0"/>
         <requires url="intranet-filestorage" version="3.0.0"/>
 
         <callbacks>
         </callbacks>
         <parameters>
-        <!-- No version parameters -->
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="IndexerMaxFiles"  default="100" description="Limit indexer activity to MaxFiles. You can determine this parameter by dividing the number of files in your intranet (example: 30.000) by the time interval (in seconds) to check all files (for example: 24*60*60 for 1 day) and multiplying with the SearchIndexerInterval (example: 300). You have to make sure that the indexer can handle MaxFiles in SearchIndexerInterval, otherwise the system may get overload. "/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="SearchIndexerInterval"  default="300" description="Run the search indexer every X seconds"/>
         </parameters>
 
     </version>
