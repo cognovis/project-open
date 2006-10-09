@@ -28,7 +28,7 @@ begin
 	        owner_id        integer
 	                        constraint im_fs_files_owner_fk
 	                        references users,
-	        filename        varchar(1000)
+	        filename        varchar(500)
 	                        constraint im_fs_files_filename_nn
 	                        not null,
 	        language_id     integer
@@ -40,7 +40,11 @@ begin
 	        exists_p        char(1) default ''1''
 	                        constraint im_fs_files_exists_ck
 	                        check(exists_p in (''0'',''1'')),
+		ft_indexed_p    char(1) default '0'
+				constraint im_fs_files_ftindexed_ck
+				check(exists_p in ('0','1')),
 		last_updated	timestamptz,
+		last_modified   varchar(30),
 	                constraint im_fs_files_un
 	                unique (folder_id, filename)
 	);
