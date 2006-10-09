@@ -384,5 +384,7 @@ ad_proc intranet_search_pg_files_search_indexer {
 	set ctr [expr $ctr + $nfiles]
 	if {$ctr > $max_files} { break }
     }
+
+    return $ctr
 }
 
