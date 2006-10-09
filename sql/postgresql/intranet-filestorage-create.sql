@@ -78,7 +78,7 @@ create table im_fs_files (
 			references persons,
 			-- Filename, starting at folder. Should not
 			-- contain any slash / characters.
-	filename	varchar(1000)
+	filename	varchar(500)
 			constraint im_fs_files_filename_nn 
 			not null,
 	language_id	integer
@@ -96,8 +96,13 @@ create table im_fs_files (
 	exists_p	char(1) default '1'
 			constraint im_fs_files_exists_ck
 			check(exists_p in ('0','1')),
-			-- last changed date of file on FS
-	last_changed	timestamptz,
+			-- Full-Text indexed? Used to indicate the
+			-- necessity to FTindex a new file
+	ft_indexed_p	char(1) default '0'
+			constraint im_fs_files_ft_indexed_ck
+			check(exists_p in ('0','1')),
+			-- last changed date of file on the Hard Disk
+	last_modified	varchar(30),
 			-- last time of PO update
 	last_updated	timestamptz,
 		-- Only one file with the same name below a folder
