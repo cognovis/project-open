@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-expenses" package_version="3.2.2.0.0" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="Add_a_new_Expense">Neue Ausgabe</msg>
+  <msg key="Amount">Betrag</msg>
+  <msg key="Billable_p">Abrechenbar?</msg>
+  <msg key="Expense_Date">Datum</msg>
+  <msg key="Expense_Payment_Type">Zahlungstyp</msg>
+  <msg key="Expense_Type">Ausgabentyp</msg>
+  <msg key="Expenses">Ausgaben</msg>
+  <msg key="Expenses_Items">Ausabenelement(e)</msg>
+  <msg key="External_company_name">Externer Firmenname</msg>
+  <msg key="ID">ID</msg>
+  <msg key="Invoice">Rechnung</msg>
+  <msg key="Invoice_Items">Rechnungen</msg>
+  <msg key="Receipt_reference">Referenznummer</msg>
+  <msg key="reimbursable">Zu ersetzen</msg>
+  <msg key="Vat_Included">Enthaltene MwSt. </msg>
+</message_catalog>
