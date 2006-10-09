@@ -26,7 +26,7 @@ ad_page_contract {
 # because it identifies unquely the report's Menu and
 # its permissions.
 set current_user_id [ad_maybe_redirect_for_registration]
-set menu_label "reporting-finance-quotes-pos"
+set menu_label "project-trans-tasks"
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
 	from	im_menus m
