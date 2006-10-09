@@ -4,8 +4,13 @@
   <msg key="Add_a_new_Expense">Añadir un nuevo Gasto</msg>
   <msg key="Amount">Importe</msg>
   <msg key="Billable_p">Facturable?</msg>
+  <msg key="Create_Invoice">Crear Factura de Gastos</msg>
+  <msg key="create_invoice_help">'Facturas de Gastos' son grupos de gastos confirmados que pueden ser assiciados con un proyecto.</msg>
   <msg key="Create_Travel_Cost">Crear Gasto</msg>
+  <msg key="Delete">Borrar</msg>
+  <msg key="Delete_Expenses">Borrar Gastos</msg>
   <msg key="Expense_Date">Fecha</msg>
+  <msg key="Expense_Invoices">Facturas de Gastos</msg>
   <msg key="Expense_Payment_Type">Tipo de Pago</msg>
   <msg key="Expense_Type">Tipo de Gasto</msg>
   <msg key="Expenses">Gastos</msg>
@@ -17,5 +22,7 @@
   <msg key="Project">Proyecto</msg>
   <msg key="Project_Name">Nombre del Proyecto</msg>
   <msg key="Receipt_reference">Referencia Recibo</msg>
+  <msg key="reimbursable">Reembolsable %%</msg>
+  <msg key="Unassigned_Expenses">Gastos no assignados</msg>
   <msg key="Vat_Included">IVA Incluida</msg>
 </message_catalog>
