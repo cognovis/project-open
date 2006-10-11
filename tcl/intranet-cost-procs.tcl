@@ -1075,6 +1075,7 @@ order by
 ad_proc im_costs_project_finance_component { 
     {-show_details_p 1}
     {-show_summary_p 1}
+    {-show_admin_links_p 0}
     user_id 
     project_id 
 } {
@@ -1096,6 +1097,10 @@ ad_proc im_costs_project_finance_component {
     </ul>
 
 } {
+#    ad_return_complaint 1 "details=$show_details_p, summary=$show_summary_p, admin=$show_admin_links_p"
+
+    if {$show_details_p} { set show_admin_links_p 1 }
+
     if {![im_permission $user_id view_costs]} {	return "" }
 
     set bgcolor(0) " class=roweven "
@@ -1398,6 +1403,8 @@ order by
     # Close the main table
     append cost_html "</table>\n"
 
+    if {!$show_details_p} { set cost_html "" }
+
 
     # ----------------- Hard Costs HTML -------------
     # Hard "real" costs such as invoices, bills and timesheet
@@ -1424,9 +1431,9 @@ order by
     }
 
     set hard_cost_html "
-<table width=\"100%\">
+<table with=\"100%\">
   <tr class=rowtitle>
-    <td class=rowtitle colspan=9 align=center>[_ intranet-cost.Real_Costs]</td>
+    <td class=rowtitle colspan=2 align=center>[_ intranet-cost.Real_Costs]</td>
   </tr>
   <tr>
     <td>[_ intranet-cost.Customer_Invoices]</td>\n"
@@ -1460,7 +1467,7 @@ order by
     set prelim_cost_html "
 <table width=\"100%\">
   <tr class=rowtitle>
-    <td class=rowtitle colspan=9 align=center>[_ intranet-cost.Preliminary_Costs]</td>
+    <td class=rowtitle colspan=2 align=center>[_ intranet-cost.Preliminary_Costs]</td>
   </tr>
   <tr>
     <td>[_ intranet-cost.Quotes]</td>\n"
@@ -1484,7 +1491,6 @@ order by
     append prelim_cost_html "<td align=right>
 <!--	  $subtotals([im_cost_type_expense_report]) $default_currency -->
 	</td>\n"
-
 
     append prelim_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-cost.Grand_Total]</b></td>\n"
     append prelim_cost_html "<td align=right><b>$grand_total $default_currency</b></td>\n"
@@ -1541,17 +1547,17 @@ order by
     # Add some links to create new financial documents
     # if the intranet-invoices module is installed
     set admin_html ""
-    if {[db_table_exists im_invoices]} {
+    if {$show_admin_links_p && [db_table_exists im_invoices]} {
 
 	set admin_html "
 	<table>
 	<tr>
-	  <td colspan=$colspan class=rowtitle align=center>
+	  <td class=rowtitle align=center>
 	    [_ intranet-core.Admin_Links]
 	  </td>
 	</tr>
 	<tr class=rowplain>
-	  <td colspan=$colspan>\n"
+	  <td>\n"
 
 	    # Customer invoices: customer = Project Customer, provider = Internal
 	    set customer_id [db_string project_customer "select company_id from im_projects where project_id = :org_project_id" -default ""]
@@ -1571,72 +1577,63 @@ order by
 	"
     }
 
-    set result_html ""
+    # ----------------- Assemble the "Summary" component ---------------------------
+    # With preliminary and hard costs
 
+    set summary_html ""
     if {$show_details_p} {
-	set result_html "
+
+	# Summary in broad format
+	set summary_html "
+	<table cellspacing=0 cellpadding=0>
+	<tr><td class=rowtitle colspan=3 align=center>[_ intranet-cost.Financial_Summary]</td></tr>
+	<tr valign=top>
+	  <td>$hard_cost_html</td>
+	  <td>&nbsp &nbsp;</td>
+	  <td>$prelim_cost_html</td>
+	</tr>
+	</table>\n"
+
+    } else {
+
+	# Summary in narrow format
+	set summary_html "
+	<table cellspacing=0 cellpadding=0 width=\"100%\">
+	<tr><td class=rowtitle align=center>[_ intranet-cost.Financial_Summary]</td></tr>
+	<tr valign=top><td>$hard_cost_html</td></tr>
+	<tr><td>$prelim_cost_html</td></tr>
+	</table>\n"
+
+	set summary_html "
+	$hard_cost_html
+        <br>
+	$prelim_cost_html
+        "
+
+    }
+
+    if {!$show_summary_p} { set summary_html "" }
+    if {!$can_read_summary_p} { set summary_html "" }
+
+    # ----------------- Put the component/page together ---------------------------
+
+    set result_html "
         $currency_outdated_warning
 	<table>
 	<tr valign=top>
 	  <td>
 	    $cost_html
+            <br>
+            $summary_html
 	  </td>
 	  <td>
 	    $admin_html
 	  </td>
 	</tr>
-	</table>\n"
-
-    }
-
-    set summary_html ""
-
-    if {$show_details_p && $show_summary_p} {
-	# Summary in broad format
-	set summary_html "
-	<br>
-	<table cellspacing=0 cellpadding=0>
-	<tr><td class=rowtitle colspan=3 align=center>[_ intranet-cost.Financial_Summary]</td></tr>
-	<tr valign=top>
-	  <td>
-	    $hard_cost_html
-	  </td>
-	  <td>&nbsp &nbsp;</td>
-	  <td>
-	    $prelim_cost_html
-	  </td>
-	</tr>
+        <tr><td colspan=2>
+        </td></tr>
 	</table>
-	"
-    }
-
-    if {!$show_details_p && $show_summary_p} {
-	# Summary in narrow format
-	set summary_html "
-	<br>
-	<table cellspacing=0 cellpadding=0 width=\"70%\" >
-	<tr>
-	  <td class=rowtitle align=center>[_ intranet-cost.Financial_Summary]</td>
-	</tr>
-	<tr valign=top>
-	  <td>
-	    $hard_cost_html
-	  </td>
-	</tr>
-	<tr>
-	  <td>
-	    $prelim_cost_html
-	  </td>
-	</tr>
-	</table>
-	"
-    }
-
-    # Only show the summary to the user if the user can read
-    # all of it's elements
-    if {$can_read_summary_p} { 
-	append result_html $summary_html 
-    }
+    "
 
     return $result_html
 }
