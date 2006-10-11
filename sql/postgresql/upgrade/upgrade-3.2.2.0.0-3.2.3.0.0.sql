@@ -1,3 +1,4 @@
+-- upgrade-3.2.2.0.0-3.2.3.0.0.sql
 
 -- Add a "CostCenter" column to the main Inovice list
 delete from im_view_columns where column_id=3002;
