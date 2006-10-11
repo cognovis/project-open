@@ -227,7 +227,19 @@ select	category_id as cost_type_id,
 	    WHEN category_id = 3722 THEN 'fi_write_expense_reports'
 	    WHEN category_id = 3724 THEN 'fi_write_delivery_notes'
 	    ELSE 'fi_write_all'
-	END as write_privilege
+	END as write_privilege,
+	CASE 
+	    WHEN category_id = 3700 THEN 'invoice'
+	    WHEN category_id = 3702 THEN 'quote'
+	    WHEN category_id = 3704 THEN 'bill'
+	    WHEN category_id = 3706 THEN 'po'
+	    WHEN category_id = 3716 THEN 'repcost'
+	    WHEN category_id = 3718 THEN 'timesheet'
+	    WHEN category_id = 3720 THEN 'expitem'
+	    WHEN category_id = 3722 THEN 'expreport'
+	    WHEN category_id = 3724 THEN 'delnote'
+	    ELSE 'unknown'
+	END as short_name
 from 	im_categories
 where 	category_type = 'Intranet Cost Type';
 
