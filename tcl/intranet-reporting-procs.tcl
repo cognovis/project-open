@@ -32,10 +32,29 @@ ad_proc -private im_package_reporting_id_helper {} {
 # Reporting Procs
 # -------------------------------------------------------
 
+ad_proc im_report_quote_cell {
+    {-output_format "html"}
+    cell
+} {
+    Take care of output specific characters: 
+    <li> Quote HTML characters for HTML
+    <li> Quote double quotes for CSV
+} {
+    switch $output_format {
+	html { return [ns_quotehtml $cell] }
+	csv { 
+	    regsub -all {\<[^\>*]\>} $cell "" notag_cell
+	    regsub -all {\"} $notag_cell "\"\"" quoted_cell
+	    return $quoted_cell
+	}
+	default { return $cell }
+    }
+}
 
 ad_proc im_report_render_cell {
     -cell
     -cell_class
+    {-output_format "html"}
 } {
     Renders one cell via ns_write directly
     into a report HTTP session
@@ -61,34 +80,49 @@ ad_proc im_report_render_cell {
     }
     
     if {"" != $cell_class} { append td_fields "class=$cell_class " }
-    ns_write "<td $td_fields>$cell</td>\n"
+    set quoted_cell [im_report_quote_cell -output_format $output_format $cell]
+
+    switch $output_format {
+	html { ns_write "<td $td_fields>$quoted_cell</td>\n" }
+	csv { ns_write "\"$quoted_cell\";" }
+   }
 }
 
 ad_proc im_report_render_row {
     -row
     -row_class
     -cell_class
+    {-output_format "html"}
     {-upvar_level 0}
 } {
     Renders one line of a report via ns_write directly
     into a report HTTP session
 } {
-    ns_write "<tr class=$row_class>\n"
+    switch $output_format {
+        html { ns_write "<tr class=$row_class>\n" }
+        csv { }
+    }
+
     foreach field $row {
 	set value ""
 	if {"" != $field} {
 	    set cmd "set value \"$field\""
 	    set value [uplevel $upvar_level $cmd]
 	}
-	im_report_render_cell -cell $value -cell_class $cell_class
+	im_report_render_cell -output_format $output_format -cell $value -cell_class $cell_class
     }
-    ns_write "</tr>\n"
+
+    switch $output_format {
+        html { ns_write "</tr>\n" }
+        csv { }
+    }
 }
 
 
 ad_proc im_report_render_header {
     -group_def
     -last_value_array_list
+    {-output_format "html"}
     {-level_of_detail 999}
     {-row_class ""}
     {-cell_class ""}
@@ -137,16 +171,24 @@ ad_proc im_report_render_header {
 	# Write out the header if last_value != new_value
 
 	if { ($content == "" || $new_value != $last_value) && ($group_level <= $level_of_detail) && [llength $header] > 0} {
-	    ns_write "<tr>\n"
+	    switch $output_format {
+		html { ns_write "<tr>\n" }
+		csv { }
+	    }
+
 	    foreach field $header {
 		set value ""
 		if {"" != $field} {
 		    set cmd "set value \"$field\""
 		    set value [uplevel 1 $cmd]
 		}
-		im_report_render_cell -cell $value -cell_class $cell_class
+		im_report_render_cell -output_format $output_format -cell $value -cell_class $cell_class
 	    }
-	    ns_write "</tr>\n"
+	    
+	    switch $output_format {
+		html { ns_write "</tr>\n" }
+		csv { ns_write "\n" }
+	    }
 	}
 
 	# -------------------------------------------------------
@@ -174,6 +216,7 @@ ad_proc im_report_render_header {
 ad_proc im_report_render_footer {
     -group_def
     -last_value_array_list
+    {-output_format "html"}
     {-row_class ""}
     {-cell_class ""}
     {-level_of_detail 999}
@@ -225,7 +268,7 @@ ad_proc im_report_render_footer {
             }
             set cmd "set new_value \"\$$group_var\""
             eval $cmd
-            ns_log Notice "render_header: level=$group_level, new_value='$new_value'"
+            ns_log Notice "render_footer: level=$group_level, new_value='$new_value'"
         }
 
 	# -------------------------------------------------------
@@ -260,6 +303,7 @@ ad_proc im_report_display_footer {
     -group_def
     -footer_array_list
     -last_value_array_list
+    {-output_format "html"}
     {-display_all_footers_p 0}
     {-level_of_detail 999}
     {-cell_class ""}
@@ -373,11 +417,20 @@ ad_proc im_report_display_footer {
 	# Write out the header if last_value != new_value
 
 	ns_log Notice "display_footer: writing footer for group_level=$group_level"
-	ns_write "<tr>\n"
+
+	switch $output_format {
+	    html { ns_write "<tr>\n" }
+	    csv {  }
+	}
+
 	foreach field $footer_line {
 	    im_report_render_cell -cell $field -cell_class $cell_class
 	}
-	ns_write "</tr>\n"
+
+	switch $output_format {
+	    html { ns_write "</tr>\n" }
+	    csv { ns_write "\n" }
+	}
 
     }
 }
@@ -456,3 +509,48 @@ ad_proc im_report_skip_if_zero {
     if {0 == $amount} { return "" }
     return $string
 }
+
+
+
+# -------------------------------------------------------
+# Format Procs
+# -------------------------------------------------------
+
+
+ad_proc im_report_output_format_select {
+    name
+    { output_format ""}
+} {
+    Returns a formatted select widget (radio buttons)
+    to allow a user to select the output format
+} {
+    set html_checked ""
+    set excel_checked ""
+    set csv_checked ""
+    switch $output_format {
+	html { set html_checked "checked" }
+	excel { set excel_checked "checked" }
+	csv { set csv_checked "checked" }
+    }
+    return "
+	<nobr>
+	<input name=output_format type=radio value='html' $html_checked>HTML
+ 	<input name=output_format type=radio value='csv' $csv_checked>CSV
+	</nobr>
+    "
+}
+
+
+
+ad_proc im_report_mime_type {
+    -output_format
+} {
+    Returns the suitable MIME type for the given output_format
+} {
+    switch $output_format {
+        html { return "text/html" }
+        excel { return "application/csv" }
+        csv { return "application/csv" }
+    }
+}
+
