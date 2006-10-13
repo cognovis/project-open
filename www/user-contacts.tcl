@@ -295,6 +295,7 @@ set footer_array_list [list]
 set last_value_list [list]
 
 im_report_render_row \
+    -encoding $encoding \
     -output_format $output_format \
     -row $header0 \
     -row_class "rowtitle" \
@@ -328,6 +329,7 @@ db_foreach sql $report_sql {
 	set class $rowclass([expr $counter % 2])
 
 	im_report_display_footer \
+	    -encoding $encoding \
 	    -output_format $output_format \
 	    -group_def $report_def \
 	    -footer_array_list $footer_array_list \
@@ -339,6 +341,7 @@ db_foreach sql $report_sql {
 	im_report_update_counters -counters $counters
 
 	set last_value_list [im_report_render_header \
+	    -encoding $encoding \
 	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
@@ -348,6 +351,7 @@ db_foreach sql $report_sql {
 	]
 
 	set footer_array_list [im_report_render_footer \
+	    -encoding $encoding \
 	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
@@ -360,6 +364,7 @@ db_foreach sql $report_sql {
 }
 
 im_report_display_footer \
+    -encoding $encoding \
     -output_format $output_format \
     -group_def $report_def \
     -footer_array_list $footer_array_list \
@@ -370,6 +375,7 @@ im_report_display_footer \
     -cell_class $class
 
 im_report_render_row \
+    -encoding $encoding \
     -output_format $output_format \
     -row $footer0 \
     -row_class $class \

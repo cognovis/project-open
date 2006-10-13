@@ -43,7 +43,7 @@ ad_proc im_report_quote_cell {
 } {
     switch $output_format {
 	html { return $cell }
-	csv { 
+	default { 
 	    regsub -all {\<[^\>]*\>} $cell "" cell
 	    regsub -all {\"} $cell "\"\"" cell
 	    if {"" != $encoding} {
@@ -51,7 +51,6 @@ ad_proc im_report_quote_cell {
 	    }
 	    return $cell
 	}
-	default { return $cell }
     }
 }
 
@@ -433,7 +432,7 @@ ad_proc im_report_display_footer {
 	}
 
 	foreach field $footer_line {
-	    im_report_render_cell -cell $field -cell_class $cell_class
+	    im_report_render_cell -encoding $encoding -output_format $output_format -cell $field -cell_class $cell_class
 	}
 
 	switch $output_format {
