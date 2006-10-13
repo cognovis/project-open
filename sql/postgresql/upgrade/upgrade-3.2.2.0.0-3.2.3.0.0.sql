@@ -15,3 +15,7 @@ BEGIN
     return v_country;
 END;' language 'plpgsql';
 
+
+SELECT pg_catalog.setval('im_categories_seq', 10000000, true);
+
+
