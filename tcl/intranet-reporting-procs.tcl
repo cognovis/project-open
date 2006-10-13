@@ -33,6 +33,7 @@ ad_proc -private im_package_reporting_id_helper {} {
 # -------------------------------------------------------
 
 ad_proc im_report_quote_cell {
+    {-encoding ""}
     {-output_format "html"}
     cell
 } {
@@ -41,11 +42,14 @@ ad_proc im_report_quote_cell {
     <li> Quote double quotes for CSV
 } {
     switch $output_format {
-	html { return [ns_quotehtml $cell] }
+	html { return $cell }
 	csv { 
-	    regsub -all {\<[^\>*]\>} $cell "" notag_cell
-	    regsub -all {\"} $notag_cell "\"\"" quoted_cell
-	    return $quoted_cell
+	    regsub -all {\<[^\>]*\>} $cell "" cell
+	    regsub -all {\"} $cell "\"\"" cell
+	    if {"" != $encoding} {
+		set cell [encoding convertto "utf-8" $cell]
+	    }
+	    return $cell
 	}
 	default { return $cell }
     }
@@ -54,6 +58,7 @@ ad_proc im_report_quote_cell {
 ad_proc im_report_render_cell {
     -cell
     -cell_class
+    {-encoding ""}
     {-output_format "html"}
 } {
     Renders one cell via ns_write directly
@@ -80,7 +85,7 @@ ad_proc im_report_render_cell {
     }
     
     if {"" != $cell_class} { append td_fields "class=$cell_class " }
-    set quoted_cell [im_report_quote_cell -output_format $output_format $cell]
+    set quoted_cell [im_report_quote_cell -encoding $encoding -output_format $output_format $cell]
 
     switch $output_format {
 	html { ns_write "<td $td_fields>$quoted_cell</td>\n" }
@@ -92,6 +97,7 @@ ad_proc im_report_render_row {
     -row
     -row_class
     -cell_class
+    {-encoding ""}
     {-output_format "html"}
     {-upvar_level 0}
 } {
@@ -109,7 +115,7 @@ ad_proc im_report_render_row {
 	    set cmd "set value \"$field\""
 	    set value [uplevel $upvar_level $cmd]
 	}
-	im_report_render_cell -output_format $output_format -cell $value -cell_class $cell_class
+	im_report_render_cell -encoding $encoding -output_format $output_format -cell $value -cell_class $cell_class
     }
 
     switch $output_format {
@@ -122,6 +128,7 @@ ad_proc im_report_render_row {
 ad_proc im_report_render_header {
     -group_def
     -last_value_array_list
+    {-encoding ""}
     {-output_format "html"}
     {-level_of_detail 999}
     {-row_class ""}
@@ -182,7 +189,7 @@ ad_proc im_report_render_header {
 		    set cmd "set value \"$field\""
 		    set value [uplevel 1 $cmd]
 		}
-		im_report_render_cell -output_format $output_format -cell $value -cell_class $cell_class
+		im_report_render_cell -encoding $encoding -output_format $output_format -cell $value -cell_class $cell_class
 	    }
 	    
 	    switch $output_format {
@@ -216,6 +223,7 @@ ad_proc im_report_render_header {
 ad_proc im_report_render_footer {
     -group_def
     -last_value_array_list
+    {-encoding ""}
     {-output_format "html"}
     {-row_class ""}
     {-cell_class ""}
@@ -303,6 +311,7 @@ ad_proc im_report_display_footer {
     -group_def
     -footer_array_list
     -last_value_array_list
+    {-encoding ""}
     {-output_format "html"}
     {-display_all_footers_p 0}
     {-level_of_detail 999}

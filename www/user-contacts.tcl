@@ -11,9 +11,13 @@ ad_page_contract {
 } {
     { level_of_detail:integer 3 }
     { company_id 0 }
+    { output_format "html" }
+    { encoding "" }
+    { redirect_p "1" }
 }
 
-set current_user_id [ad_maybe_redirect_for_registration]
+# set current_user_id [ad_maybe_redirect_for_registration]
+set current_user_id [ad_get_user_id]
 set menu_label "reporting-user-contacts"
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
@@ -57,9 +61,18 @@ set levels {2 "Customers" 3 "Customers+Projects"}
 
 set company_url "/intranet/companies/view?company_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting/user-contacts" {start_date end_date} ]
+set this_base "/intranet-reporting/user-contacts"
+set export_var_list [list level_of_detail company_id output_format encoding]
+set this_url [export_vars -base $this_base $export_var_list]
 
-
+switch $output_format {
+    html { }
+    default {
+	if {$redirect_p } {
+	    ad_returnredirect [export_vars -base $this_base.csv $export_var_list]
+	}
+    }
+}
 
 # ------------------------------------------------------------
 # Report SQL
@@ -112,6 +125,8 @@ set report_sql "
 		c.company_name,
 		u.last_name,
 		u.first_names
+	limit	100
+
 "
 
 # ------------------------------------------------------------
@@ -220,7 +235,12 @@ set counters [list]
 # ------------------------------------------------------------
 # Start Formatting the HTML Page Contents
 
-ad_return_top_of_page "
+ReturnHeaders [im_report_mime_type -output_format $output_format]
+# ReturnHeaders "text/plain"
+
+switch $output_format {
+    html {
+	ns_write "
 	[im_header]
 	[im_navbar]
 	<table cellspacing=0 cellpadding=0 border=0>
@@ -238,7 +258,13 @@ ad_return_top_of_page "
 		  </td>
 		</tr>
 		<tr>
-		  <td</td>
+		  <td>Format</td>
+		  <td>
+		    [im_report_output_format_select output_format $output_format]
+		  </td>
+		</tr>
+		<tr>
+		  <td></td>
 		  <td><input type=submit value='Submit'></td>
 		</tr>
 		</table>
@@ -256,7 +282,11 @@ ad_return_top_of_page "
 	
 	<!-- Here starts the main report table -->
 	<table border=0 cellspacing=1 cellpadding=1>
-"
+        "
+    }
+    default { }
+}
+
 
 # ------------------------------------------------------
 # The following report loop is "magic"
@@ -265,6 +295,7 @@ set footer_array_list [list]
 set last_value_list [list]
 
 im_report_render_row \
+    -output_format $output_format \
     -row $header0 \
     -row_class "rowtitle" \
     -cell_class "rowtitle"
@@ -297,6 +328,7 @@ db_foreach sql $report_sql {
 	set class $rowclass([expr $counter % 2])
 
 	im_report_display_footer \
+	    -output_format $output_format \
 	    -group_def $report_def \
 	    -footer_array_list $footer_array_list \
 	    -last_value_array_list $last_value_list \
@@ -307,6 +339,7 @@ db_foreach sql $report_sql {
 	im_report_update_counters -counters $counters
 
 	set last_value_list [im_report_render_header \
+	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
@@ -315,6 +348,7 @@ db_foreach sql $report_sql {
 	]
 
 	set footer_array_list [im_report_render_footer \
+	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
@@ -326,6 +360,7 @@ db_foreach sql $report_sql {
 }
 
 im_report_display_footer \
+    -output_format $output_format \
     -group_def $report_def \
     -footer_array_list $footer_array_list \
     -last_value_array_list $last_value_list \
@@ -335,6 +370,7 @@ im_report_display_footer \
     -cell_class $class
 
 im_report_render_row \
+    -output_format $output_format \
     -row $footer0 \
     -row_class $class \
     -cell_class $class \
@@ -344,8 +380,6 @@ im_report_render_row \
 # Write out the HTMl to close the main report table
 # and write out the page footer.
 #
-ns_write "
-	</table>
-	[im_footer]
-"
-
+switch $output_format {
+    html { ns_write "</table>\n[im_footer]\n"}
+}
