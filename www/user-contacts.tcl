@@ -57,7 +57,7 @@ set rowclass(1) "rowodd"
 
 set currency_format [im_l10n_sql_currency_format]
 set date_format [im_l10n_sql_date_format]
-set levels {2 "Customers" 3 "Customers+Projects"} 
+set levels {3 "All Details"} 
 
 set company_url "/intranet/companies/view?company_id="
 set user_url "/intranet/users/view?user_id="
@@ -248,20 +248,26 @@ switch $output_format {
 		  <td class=rowtitle colspan=2 align=center>Filters</td>
 		</tr>
 		<tr>
-		  <td>Level of<br>Details</td>
-		  <td>
+		  <td class=form-label>Level of<br>Details</td>
+		  <td class=form-widget>
 		    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
 		  </td>
 		</tr>
 		<tr>
-		  <td>Format</td>
-		  <td>
+		  <td class=form-label>Company<br>Type</td>
+		  <td class=form-widget>
+		    [im_category_select -include_empty_p 1 "Intranet Company Type" company_type_id $company_type_id]
+		  </td>
+		</tr>
+		<tr>
+		  <td class=form-label>Format</td>
+		  <td class=form-widget>
 		    [im_report_output_format_select output_format $output_format]
 		  </td>
 		</tr>
 		<tr>
-		  <td></td>
-		  <td><input type=submit value='Submit'></td>
+		  <td class=form-label></td>
+		  <td class=form-widget><input type=submit value='Submit'></td>
 		</tr>
 		</table>
 		</form>
