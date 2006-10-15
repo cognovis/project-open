@@ -540,34 +540,8 @@ ad_proc im_report_skip_if_zero {
 
 
 # -------------------------------------------------------
-# Form HTML Utilities
+# Deal with CSV HTTP headers 
 # -------------------------------------------------------
-
-
-ad_proc im_report_write_http_headers {
-    -output_format
-} {
-    Writes a suitable HTTP header to the connection.
-    We need this custom routine in order to deal with
-    strange IE5/6 and MS-Excel behaviour that require
-    Latin1 (iso-8859-1) or other encodings, depending 
-    on the country specific version of Excel...
-} {
-    set content_type [im_report_content_type -output_format $output_format]
-    set http_encoding [im_report_http_encoding -output_format $output_format]
-
-    # ad_return_complaint 1 $http_encoding
-    # set content_type "text/html"
-
-    append content_type "; charset=$http_encoding"
-    
-    set all_the_headers "HTTP/1.0 200 OK
-MIME-Version: 1.0
-Content-Type: $content_type\r\n"
-    
-    util_WriteWithExtraOutputHeaders $all_the_headers
-    ns_startcontent -type $content_type
-}
 
 
 ad_proc im_report_output_format_select {
@@ -593,32 +567,30 @@ ad_proc im_report_output_format_select {
     "
 }
 
-
-
-ad_proc im_report_encoding_select {
-    name
-    { encoding ""}
+ad_proc im_report_write_http_headers {
+    -output_format
 } {
-    Returns a formatted select widget (radio buttons)
-    to allow a user to select the output encoding (TCL 'encoding')
+    Writes a suitable HTTP header to the connection.
+    We need this custom routine in order to deal with
+    strange IE5/6 and MS-Excel behaviour that require
+    Latin1 (iso-8859-1) or other encodings, depending 
+    on the country specific version of Excel...
 } {
-    set cp1252_checked ""
-    set none_checked ""
-    set utf8_checked ""
-    switch $encoding {
-	cp1252 { set cp1252_checked "checked" }
-	utf8 { set utf8_checked "checked" }
-	"" { set none_checked "checked" }
-    }
-    return "
-	<nobr>
-	<input name=$name type=radio value='' $none_checked>none
-	<input name=$name type=radio value='cp1252' $cp1252_checked>cp1252
- 	<input name=$name type=radio value='utf-8' $utf8_checked>UTF-8
-	</nobr>
-    "
+    set content_type [im_report_content_type -output_format $output_format]
+    set http_encoding [im_report_http_encoding -output_format $output_format]
+
+    # ad_return_complaint 1 $http_encoding
+    # set content_type "text/html"
+
+    append content_type "; charset=$http_encoding"
+    
+    set all_the_headers "HTTP/1.0 200 OK
+MIME-Version: 1.0
+Content-Type: $content_type\r\n"
+    
+    util_WriteWithExtraOutputHeaders $all_the_headers
+    ns_startcontent -type $content_type
 }
-
 
 
 ad_proc im_report_content_type {
@@ -675,7 +647,7 @@ ad_proc im_report_http_encoding {
         csv { 
 	    return [parameter::get_from_package_key \
 			-package_key intranet-dw-light \
-			-parameter CsvTclCharacterEncoding \
+			-parameter CsvHttpCharacterEncoding \
 			-default "iso-8859-1" \
 	    ]
 	}

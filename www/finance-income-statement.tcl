@@ -15,8 +15,7 @@ ad_page_contract {
     { end_date "" }
     { level_of_detail 3 }
     { output_format "html" }
-    { encoding "" }
-    customer_id:integer,optional
+    { customer_id:integer 0}
 }
 
 # ------------------------------------------------------------
@@ -25,7 +24,8 @@ ad_page_contract {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
-set current_user_id [ad_maybe_redirect_for_registration]
+# set current_user_id [ad_maybe_redirect_for_registration]
+set current_user_id [ad_get_user_id]
 set menu_label "reporting-income-statement"
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
@@ -152,7 +152,7 @@ if {"" == $end_date} {
 
 set criteria [list]
 
-if {[info exists customer_id]} {
+if {0 != $customer_id} {
     lappend criteria "cust.company_id = :customer_id"
 }
 
@@ -466,12 +466,13 @@ set counters [list \
 
 
 # ------------------------------------------------------------
-# Start formatting the page
+# Start formatting the page header
 #
 
-ReturnHeaders [im_report_mime_type -output_format $output_format]
-# ReturnHeaders "text/plain"
+# Write out HTTP header, considering CSV/MS-Excel formatting
+im_report_write_http_headers -output_format $output_format
 
+# Add the HTML select box to the head of the page
 switch $output_format {
     html {
 	ns_write "
@@ -481,6 +482,7 @@ switch $output_format {
 	<tr valign=top>
 	<td>
 	<form>
+		[export_form_vars customer_id]
 		<table border=0 cellspacing=1 cellpadding=1>
 		<tr>
 		  <td class=form-label>Level of Details</td>
@@ -523,9 +525,17 @@ switch $output_format {
 	<table border=0 cellspacing=1 cellpadding=1>\n"
     }
 }
-	
+
+
+# ------------------------------------------------------------
+# Start formatting the report body
+#
+
+set tcl_encoding [im_report_tcl_encoding -output_format $output_format]
+set tcl_encoding ""
+
 im_report_render_row \
-    -encoding $encoding \
+    -encoding $tcl_encoding \
     -output_format $output_format \
     -row $header0 \
     -row_class "rowtitle" \
@@ -555,7 +565,7 @@ db_foreach sql $sql {
 	}
 
 	im_report_display_footer \
-	    -encoding $encoding \
+	    -encoding $tcl_encoding \
 	    -output_format $output_format \
 	    -group_def $report_def \
 	    -footer_array_list $footer_array_list \
@@ -567,7 +577,7 @@ db_foreach sql $sql {
 	im_report_update_counters -counters $counters
 	
 	set last_value_list [im_report_render_header \
-	    -encoding $encoding \
+	    -encoding $tcl_encoding \
 	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
@@ -577,7 +587,7 @@ db_foreach sql $sql {
         ]
 
         set footer_array_list [im_report_render_footer \
-	    -encoding $encoding \
+	    -encoding $tcl_encoding \
 	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
@@ -588,7 +598,7 @@ db_foreach sql $sql {
 }
 
 im_report_display_footer \
-    -encoding $encoding \
+    -encoding $tcl_encoding \
     -output_format $output_format \
     -group_def $report_def \
     -footer_array_list $footer_array_list \
@@ -599,7 +609,7 @@ im_report_display_footer \
     -cell_class $class
 
 im_report_render_row \
-    -encoding $encoding \
+    -encoding $tcl_encoding \
     -output_format $output_format \
     -row $footer0 \
     -row_class $class \
