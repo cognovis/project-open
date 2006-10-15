@@ -15,6 +15,7 @@
 
         <provides url="intranet-reporting" version="3.0.0"/>
         <requires url="intranet-exchange-rate" version="3.0.0"/>
+        <requires url="intranet-dw-light" version="3.0.0"/>
 
         <callbacks>
         </callbacks>
