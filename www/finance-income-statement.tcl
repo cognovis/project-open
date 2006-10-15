@@ -32,9 +32,6 @@ set read_p [db_string report_perms "
 	from	im_menus m
 	where	m.label = :menu_label
 " -default 'f']
-
-set read_p "t"
-
 if {![string equal "t" $read_p]} {
     ad_return_complaint 1 "<li>
 [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
@@ -518,11 +515,7 @@ switch $output_format {
 # Start formatting the report body
 #
 
-set tcl_encoding [im_report_tcl_encoding -output_format $output_format]
-set tcl_encoding ""
-
 im_report_render_row \
-    -encoding $tcl_encoding \
     -output_format $output_format \
     -row $header0 \
     -row_class "rowtitle" \
@@ -558,7 +551,6 @@ db_foreach sql $sql {
     }
     
     im_report_display_footer \
-	-encoding $tcl_encoding \
 	-output_format $output_format \
 	-group_def $report_def \
 	-footer_array_list $footer_array_list \
@@ -586,7 +578,6 @@ db_foreach sql $sql {
 
     
     set last_value_list [im_report_render_header \
-	    -encoding $tcl_encoding \
 	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
@@ -596,7 +587,6 @@ db_foreach sql $sql {
     ]
 
     set footer_array_list [im_report_render_footer \
-	    -encoding $tcl_encoding \
 	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
@@ -607,7 +597,6 @@ db_foreach sql $sql {
 }
 
 im_report_display_footer \
-    -encoding $tcl_encoding \
     -output_format $output_format \
     -group_def $report_def \
     -footer_array_list $footer_array_list \
@@ -618,7 +607,6 @@ im_report_display_footer \
     -cell_class $class
 
 im_report_render_row \
-    -encoding $tcl_encoding \
     -output_format $output_format \
     -row $footer0 \
     -row_class $class \
