@@ -29,6 +29,29 @@ ad_proc -private im_package_reporting_id_helper {} {
 
 
 # -------------------------------------------------------
+# Report specific number formatting
+#
+# Needed for localized versions of Excel that take either
+# "." or "," as decimal separator
+# -------------------------------------------------------
+
+ad_proc im_report_format_number {
+    amount
+    {output_format "csv"}
+    {locale ""}
+    {rounding_precision 2}
+} {
+    Write out the number in a suitably formatted way for the 
+    output medium.
+} {
+    if {"" == $locale} { set locale [lang::user::locale] }
+    set amount_zeros [im_numeric_add_trailing_zeros [expr $amount+0] $rounding_precision]
+    set amount_pretty [lc_numeric $amount_zeros "" $locale]
+    return $amount_pretty
+}
+
+
+# -------------------------------------------------------
 # Reporting Procs
 # -------------------------------------------------------
 
