@@ -49,8 +49,10 @@ set rowclass(0) "roweven"
 set rowclass(1) "rowodd"
 
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+set locale [lang::user::locale]
 set cur_format [im_l10n_sql_currency_format]
 set date_format [im_l10n_sql_date_format]
+set rounding_precision 2
 
 set company_url "/intranet/companies/view?company_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
@@ -182,12 +184,12 @@ select
 	c.tax,
 	round((c.paid_amount * 
 	  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
-	  , 2) as paid_amount_converted,
+	  , 2) as paid_amount_conv,
 	c.paid_amount,
 	c.paid_currency,
 	round((c.amount * 
 	  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
-	  , 2) as amount_converted,
+	  , 2) as amount_conv,
 	c.amount,
 	c.currency
 from
@@ -213,9 +215,9 @@ select
 	c.*,
 	to_char(c.effective_date, :date_format) as effective_date_formatted,
 	to_char(c.effective_date, 'YYMM')::integer * customer_id as effective_month,
-	CASE WHEN c.cost_type_id = 3700 THEN c.amount_converted END as invoice_amount,
-	CASE WHEN c.cost_type_id = 3704 THEN c.amount_converted END as bill_amount,
-	CASE WHEN c.cost_type_id = 3720 THEN c.amount_converted END as expense_amount,
+	CASE WHEN c.cost_type_id = 3700 THEN c.amount_conv END as invoice_amount,
+	CASE WHEN c.cost_type_id = 3704 THEN c.amount_conv END as bill_amount,
+	CASE WHEN c.cost_type_id = 3720 THEN c.amount_conv END as expense_amount,
 	cust.company_path as customer_nr,
 	cust.company_name as customer_name,
 	prov.company_path as provider_nr,
@@ -226,31 +228,16 @@ select
 	END as bill_amount_pretty,
 	CASE WHEN c.cost_type_id = 3720 THEN to_char(c.amount, :cur_format)
 	END as expense_amount_pretty,
-
 	CASE
-		WHEN c.cost_type_id in (3700) THEN c.amount_converted * vat / 100
-		WHEN c.cost_type_id in (3704,3720,3720) THEN -c.amount_converted * vat / 100
+		WHEN c.cost_type_id in (3700) THEN c.amount_conv * vat / 100
+		WHEN c.cost_type_id in (3704,3720,3720) THEN -c.amount_conv * vat / 100
 		ELSE 0
 	END as vat_amount,
-
 	CASE
-		WHEN c.cost_type_id in (3700) THEN c.amount_converted * tax / 100
-		WHEN c.cost_type_id in (3704,3720,3720) THEN -c.amount_converted * tax / 100
+		WHEN c.cost_type_id in (3700) THEN c.amount_conv * tax / 100
+		WHEN c.cost_type_id in (3704,3720,3720) THEN -c.amount_conv * tax / 100
 		ELSE 0
 	END as tax_amount,
-
-	CASE
-		WHEN c.cost_type_id in (3700) THEN to_char(c.amount_converted * vat / 100, :cur_format)
-		WHEN c.cost_type_id in (3704,3720,3720) THEN to_char(-c.amount_converted * vat / 100, :cur_format)
-		ELSE ''
-	END as vat_amount_pretty,
-
-	CASE
-		WHEN c.cost_type_id in (3700) THEN to_char(c.amount_converted * tax / 100, :cur_format)
-		WHEN c.cost_type_id in (3704,3720,3720) THEN to_char(-c.amount_converted * tax / 100, :cur_format)
-		ELSE ''
-	END as tax_amount_pretty,
-
 	to_char(c.paid_amount, :cur_format) as paid_amount_pretty,
 	cust.company_id as customer_id,
 	cust.company_name as customer_name,
@@ -300,6 +287,7 @@ set report_def [list \
 			"<nobr>$effective_date_formatted</nobr>"
 			"<nobr>$paid_amount</nobr>"
 			"<nobr><a href=$invoice_url$cost_id>$cost_name</a></nobr>"
+
 			"<nobr>$invoice_amount_pretty</nobr>"
 			"<nobr>$bill_amount_pretty</nobr>"
 			"<nobr>$expense_amount_pretty</nobr>"
@@ -325,13 +313,13 @@ set report_def [list \
 		""
 		""
 		"" 
-		"<i>$paid_subtotal</i>"
+		"<i>$paid_subtotal_pretty</i>"
 		""
-		"<i>$invoice_subtotal</i>" 
-		"<i>$bill_subtotal</i>" 
-		"<i>$expense_subtotal</i>"
-		"<i>$vat_subtotal</i>"
-		"<i>$tax_subtotal</i>"
+		"<i>$invoice_subtotal_pretty</i>" 
+		"<i>$bill_subtotal_pretty</i>" 
+		"<i>$expense_subtotal_pretty</i>"
+		"<i>$vat_subtotal_pretty</i>"
+		"<i>$tax_subtotal_pretty</i>"
     } \
 ]
 
@@ -349,11 +337,11 @@ set footer0 {
 	"" 
 	"" 
 	"<br><b>Total:</b>" 
-	"<br><b>$invoice_total</b>" 
-	"<br><b>$bill_total</b>" 
-	"<br><b>$expense_total</b>"
-	"<br><b>$vat_total</b>"
-	"<br><b>$tax_total</b>"
+	"<br><b>$invoice_total_pretty</b>" 
+	"<br><b>$bill_total_pretty</b>" 
+	"<br><b>$expense_total_pretty</b>"
+	"<br><b>$vat_total_pretty</b>"
+	"<br><b>$tax_total_pretty</b>"
 }
 
 #
@@ -550,43 +538,81 @@ ns_log Notice "intranet-reporting/finance-income-statement: sql=\n$sql"
 
 db_foreach sql $sql {
 
-	if {"" == $customer_id} {
-	    set customer_id 0
-	    set customer_name "No Customer"
-	}
+    set invoice_amount_zeros [im_numeric_add_trailing_zeros [expr $invoice_amount+0] $rounding_precision]
+    set invoice_amount_pretty [lc_numeric $invoice_amount_zeros "" $locale]
+    set bill_amount_zeros [im_numeric_add_trailing_zeros [expr $bill_amount+0] $rounding_precision]
+    set bill_amount_pretty [lc_numeric $bill_amount_zeros "" $locale]
+    set expense_amount_zeros [im_numeric_add_trailing_zeros [expr $expense_amount+0] $rounding_precision]
+    set expense_amount_pretty [lc_numeric $expense_amount_zeros "" $locale]
+    set vat_amount_zeros [im_numeric_add_trailing_zeros [expr $vat_amount+0] $rounding_precision]
+    set vat_amount_pretty [lc_numeric $vat_amount_zeros "" $locale]
+    set tax_amount_zeros [im_numeric_add_trailing_zeros [expr $tax_amount+0] $rounding_precision]
+    set tax_amount_pretty [lc_numeric $tax_amount_zeros "" $locale]
 
-	# Get the "interesting" company (the one that is NOT "internal")
-	set company_html "<a href=$company_url$customer_id>$customer_name</a>"
-	if {$customer_id == [im_company_internal]} {
-	    set company_html "<a href=$company_url$provider_id>$provider_name</a>"
-	}
-	if {$cost_type_id == [im_cost_type_expense_item]} {
-	    set company_html $external_company_name
-	}
+    if {"" == $customer_id} {
+	set customer_id 0
+	set customer_name "No Customer"
+    }
+    
+    # Get the "interesting" company (the one that is NOT "internal")
+    set company_html "<a href=$company_url$customer_id>$customer_name</a>"
+    if {$customer_id == [im_company_internal]} {
+	set company_html "<a href=$company_url$provider_id>$provider_name</a>"
+    }
+    if {$cost_type_id == [im_cost_type_expense_item]} {
+	set company_html $external_company_name
+    }
+    
+    im_report_display_footer \
+	-encoding $tcl_encoding \
+	-output_format $output_format \
+	-group_def $report_def \
+	-footer_array_list $footer_array_list \
+	-last_value_array_list $last_value_list \
+	-level_of_detail $level_of_detail \
+	-row_class $class \
+	-cell_class $class
+    
+    im_report_update_counters -counters $counters
 
-	im_report_display_footer \
+    set paid_subtotal_zeros [im_numeric_add_trailing_zeros [expr $paid_subtotal+0] $rounding_precision]
+    set paid_subtotal_pretty [lc_numeric $paid_subtotal_zeros "" $locale]
+    set invoice_subtotal_zeros [im_numeric_add_trailing_zeros [expr $invoice_subtotal+0] $rounding_precision]
+    set invoice_subtotal_pretty [lc_numeric $invoice_subtotal_zeros "" $locale]
+    set bill_subtotal_zeros [im_numeric_add_trailing_zeros [expr $bill_subtotal+0] $rounding_precision]
+    set bill_subtotal_pretty [lc_numeric $bill_subtotal_zeros "" $locale]
+    set expense_subtotal_zeros [im_numeric_add_trailing_zeros [expr $expense_subtotal+0] $rounding_precision]
+    set expense_subtotal_pretty [lc_numeric $expense_subtotal_zeros "" $locale]
+    set tax_subtotal_zeros [im_numeric_add_trailing_zeros [expr $tax_subtotal+0] $rounding_precision]
+    set tax_subtotal_pretty [lc_numeric $tax_subtotal_zeros "" $locale]
+    set vat_subtotal_zeros [im_numeric_add_trailing_zeros [expr $vat_subtotal+0] $rounding_precision]
+    set vat_subtotal_pretty [lc_numeric $vat_subtotal_zeros "" $locale]
+
+    set paid_total_zeros [im_numeric_add_trailing_zeros [expr $paid_total+0] $rounding_precision]
+    set paid_total_pretty [lc_numeric $paid_total_zeros "" $locale]
+    set invoice_total_zeros [im_numeric_add_trailing_zeros [expr $invoice_total+0] $rounding_precision]
+    set invoice_total_pretty [lc_numeric $invoice_total_zeros "" $locale]
+    set bill_total_zeros [im_numeric_add_trailing_zeros [expr $bill_total+0] $rounding_precision]
+    set bill_total_pretty [lc_numeric $bill_total_zeros "" $locale]
+    set expense_total_zeros [im_numeric_add_trailing_zeros [expr $expense_total+0] $rounding_precision]
+    set expense_total_pretty [lc_numeric $expense_total_zeros "" $locale]
+    set tax_total_zeros [im_numeric_add_trailing_zeros [expr $tax_total+0] $rounding_precision]
+    set tax_total_pretty [lc_numeric $tax_total_zeros "" $locale]
+    set vat_total_zeros [im_numeric_add_trailing_zeros [expr $vat_total+0] $rounding_precision]
+    set vat_total_pretty [lc_numeric $vat_total_zeros "" $locale]
+
+    
+    set last_value_list [im_report_render_header \
 	    -encoding $tcl_encoding \
 	    -output_format $output_format \
 	    -group_def $report_def \
-	    -footer_array_list $footer_array_list \
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
 	    -row_class $class \
 	    -cell_class $class
-	
-	im_report_update_counters -counters $counters
-	
-	set last_value_list [im_report_render_header \
-	    -encoding $tcl_encoding \
-	    -output_format $output_format \
-	    -group_def $report_def \
-	    -last_value_array_list $last_value_list \
-	    -level_of_detail $level_of_detail \
-	    -row_class $class \
-	    -cell_class $class
-        ]
+    ]
 
-        set footer_array_list [im_report_render_footer \
+    set footer_array_list [im_report_render_footer \
 	    -encoding $tcl_encoding \
 	    -output_format $output_format \
 	    -group_def $report_def \
@@ -594,7 +620,7 @@ db_foreach sql $sql {
 	    -level_of_detail $level_of_detail \
 	    -row_class $class \
 	    -cell_class $class
-        ]
+    ]
 }
 
 im_report_display_footer \
