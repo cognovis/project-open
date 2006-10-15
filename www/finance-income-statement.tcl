@@ -26,12 +26,14 @@ ad_page_contract {
 # its permissions.
 # set current_user_id [ad_maybe_redirect_for_registration]
 set current_user_id [ad_get_user_id]
-set menu_label "reporting-income-statement"
+set menu_label "reporting-finance-income-statement"
+
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
 	from	im_menus m
 	where	m.label = :menu_label
 " -default 'f']
+
 if {![string equal "t" $read_p]} {
     ad_return_complaint 1 "<li>
 [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
@@ -293,7 +295,7 @@ set report_def [list \
 		    content {} \
 	    ] \
             footer {
-		"&nbsp; footer"
+		"&nbsp;"
 		""
 		""
 		""
@@ -319,11 +321,11 @@ set report_def [list \
     } \
 ]
 
-set invoice_total 0
-set bill_total 0
-set expense_total 0
-set vat_total 0
-set tax_total 0
+set invoice_total_pretty 0
+set bill_total_pretty 0
+set expense_total_pretty 0
+set vat_total_pretty 0
+set tax_total_pretty 0
 
 # Global header/footer
 set header0 {"Cust" "Project" "Effective Date" "Paid" "Name" "Invoice" "Bill" "Expenses" "Vat" "Tax"}

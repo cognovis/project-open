@@ -18,6 +18,7 @@ ad_page_contract {
     { end_date "" }
     { level_of_detail 2 }
     { truncate_note_length 80}
+    { output_format "html" }
     project_id:integer,optional
     task_id:integer,optional
     company_id:integer,optional
@@ -344,53 +345,64 @@ if {[info exists task_id]} {
 
 
 
-ad_return_top_of_page "
-[im_header $page_title]
-[im_navbar]
-<form>
+# ------------------------------------------------------------
+# Start Formatting the HTML Page Contents
 
-<table border=0 cellspacing=1 cellpadding=1>
-<tr valign=top><td>
+# Write out HTTP header, considering CSV/MS-Excel formatting
+im_report_write_http_headers -output_format $output_format
 
+switch $output_format {
+    html {
+	ns_write "
+	[im_header $page_title]
+	[im_navbar]
+	<form>
 	<table border=0 cellspacing=1 cellpadding=1>
-	<tr>
-	  <td class=form-label>Level of Details</td>
-	  <td class=form-widget>
-	    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
-	  </td>
-	</tr>
-	<tr>
-	  <td class=form-label>Start Date</td>
-	  <td class=form-widget>
-	    <input type=textfield name=start_date value=$start_date>
-	  </td>
-	</tr>
-	<tr>
-	  <td class=form-label>End Date</td>
-	  <td class=form-widget>
-	    <input type=textfield name=end_date value=$end_date>
-	  </td>
-	</tr>
+	<tr valign=top><td>
+		<table border=0 cellspacing=1 cellpadding=1>
+		<tr>
+	          <td class=form-label>Level of Details</td>
+		  <td class=form-widget>
+		    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
+		  </td>
+		</tr>
+		<tr>
+		  <td class=form-label>Start Date</td>
+		  <td class=form-widget>
+		    <input type=textfield name=start_date value=$start_date>
+		  </td>
+		</tr>
+		<tr>
+		  <td class=form-label>End Date</td>
+		  <td class=form-widget>
+		    <input type=textfield name=end_date value=$end_date>
+		  </td>
+		</tr>
+                <tr>
+                  <td class=form-label>Format</td>
+                  <td class=form-widget>
+                    [im_report_output_format_select output_format $output_format]
+                  </td>
+                </tr>
+		<tr>
+		  <td class=form-label></td>
+		  <td class=form-widget><input type=submit value=Submit></td>
+		</tr>
+		</table>
+	</td><td>
+		<table border=0 cellspacing=1 cellpadding=1>
+	        $report_options_html
+		</table>
+	</td></tr>
 	</table>
+	</form>
+	<table border=0 cellspacing=1 cellpadding=1>\n"
+    }
+}
 
-</td><td>
-
-	<table border=0 cellspacing=1 cellpadding=1>
-        $report_options_html
-	</table>
-
-</td></tr>
-	<tr>
-	  <td colspan=2 align=right><input type=submit value=Submit></td>
-	</tr>
-
-
-</table>
-</form>
-
-<table border=0 cellspacing=1 cellpadding=1>\n"
 
 im_report_render_row \
+    -output_format $output_format \
     -row $header0 \
     -row_class "rowtitle" \
     -cell_class "rowtitle"
@@ -404,6 +416,7 @@ db_foreach sql $sql {
 	set note [string_truncate -len $truncate_note_length $note]
 
 	im_report_display_footer \
+	    -output_format $output_format \
 	    -group_def $report_def \
 	    -footer_array_list $footer_array_list \
 	    -last_value_array_list $last_value_list \
@@ -414,6 +427,7 @@ db_foreach sql $sql {
 	im_report_update_counters -counters $counters
 	
 	set last_value_list [im_report_render_header \
+	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
@@ -422,6 +436,7 @@ db_foreach sql $sql {
         ]
 
         set footer_array_list [im_report_render_footer \
+	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
@@ -431,6 +446,7 @@ db_foreach sql $sql {
 }
 
 im_report_display_footer \
+    -output_format $output_format \
     -group_def $report_def \
     -footer_array_list $footer_array_list \
     -last_value_array_list $last_value_list \
@@ -440,9 +456,15 @@ im_report_display_footer \
     -cell_class $class
 
 im_report_render_row \
+    -output_format $output_format \
     -row $footer0 \
     -row_class $class \
     -cell_class $class
 
 
-ns_write "</table>\n[im_footer]\n"
+# Write out the HTMl to close the main report table
+# and write out the page footer.
+#
+switch $output_format {
+    html { ns_write "</table>\n[im_footer]\n"}
+}
