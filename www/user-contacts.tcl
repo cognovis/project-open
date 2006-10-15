@@ -11,8 +11,8 @@ ad_page_contract {
 } {
     { level_of_detail:integer 3 }
     { company_id 0 }
+    { company_type_id 0 }
     { output_format "html" }
-    { encoding "" }
     { redirect_p "1" }
 }
 
@@ -61,25 +61,19 @@ set levels {2 "Customers" 3 "Customers+Projects"}
 
 set company_url "/intranet/companies/view?company_id="
 set user_url "/intranet/users/view?user_id="
-set this_base "/intranet-reporting/user-contacts"
-set export_var_list [list level_of_detail company_id output_format encoding]
-set this_url [export_vars -base $this_base $export_var_list]
+set this_url "/intranet-reporting/user-contacts?"
 
-switch $output_format {
-    html { }
-    default {
-	if {$redirect_p } {
-	    ad_returnredirect [export_vars -base $this_base.csv $export_var_list]
-	}
-    }
-}
 
 # ------------------------------------------------------------
 # Report SQL
 
 set company_sql ""
 if {0 != $company_id} {
-    set company_sql "and p.company_id = :company_id\n"
+    set company_sql "and c.company_id = :company_id\n"
+}
+
+if {0 != $company_type_id} {
+    append company_sql "and c.company_type_id = :company_type_id\n"
 }
 
 set report_sql "
@@ -120,6 +114,8 @@ set report_sql "
 			from	group_distinct_member_map
 			where	group_id = 465
 		) free ON (u.user_id = free.member_id)
+	where	1=1
+		$company_sql
 	order by
 		c.company_type_id,
 		c.company_name,
@@ -235,8 +231,8 @@ set counters [list]
 # ------------------------------------------------------------
 # Start Formatting the HTML Page Contents
 
-ReturnHeaders [im_report_mime_type -output_format $output_format]
-# ReturnHeaders "text/plain"
+# Write out HTTP header, considering CSV/MS-Excel formatting
+im_report_write_http_headers -output_format $output_format
 
 switch $output_format {
     html {
@@ -295,7 +291,6 @@ set footer_array_list [list]
 set last_value_list [list]
 
 im_report_render_row \
-    -encoding $encoding \
     -output_format $output_format \
     -row $header0 \
     -row_class "rowtitle" \
@@ -329,7 +324,6 @@ db_foreach sql $report_sql {
 	set class $rowclass([expr $counter % 2])
 
 	im_report_display_footer \
-	    -encoding $encoding \
 	    -output_format $output_format \
 	    -group_def $report_def \
 	    -footer_array_list $footer_array_list \
@@ -341,7 +335,6 @@ db_foreach sql $report_sql {
 	im_report_update_counters -counters $counters
 
 	set last_value_list [im_report_render_header \
-	    -encoding $encoding \
 	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
@@ -351,7 +344,6 @@ db_foreach sql $report_sql {
 	]
 
 	set footer_array_list [im_report_render_footer \
-	    -encoding $encoding \
 	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
@@ -364,7 +356,6 @@ db_foreach sql $report_sql {
 }
 
 im_report_display_footer \
-    -encoding $encoding \
     -output_format $output_format \
     -group_def $report_def \
     -footer_array_list $footer_array_list \
@@ -375,7 +366,6 @@ im_report_display_footer \
     -cell_class $class
 
 im_report_render_row \
-    -encoding $encoding \
     -output_format $output_format \
     -row $footer0 \
     -row_class $class \
