@@ -49,10 +49,9 @@ set rowclass(0) "roweven"
 set rowclass(1) "rowodd"
 
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
-set locale [lang::user::locale]
 set cur_format [im_l10n_sql_currency_format]
 set date_format [im_l10n_sql_date_format]
-set rounding_precision 2
+set locale [lang::user::locale]
 
 set company_url "/intranet/companies/view?company_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
@@ -538,16 +537,11 @@ ns_log Notice "intranet-reporting/finance-income-statement: sql=\n$sql"
 
 db_foreach sql $sql {
 
-    set invoice_amount_zeros [im_numeric_add_trailing_zeros [expr $invoice_amount+0] $rounding_precision]
-    set invoice_amount_pretty [lc_numeric $invoice_amount_zeros "" $locale]
-    set bill_amount_zeros [im_numeric_add_trailing_zeros [expr $bill_amount+0] $rounding_precision]
-    set bill_amount_pretty [lc_numeric $bill_amount_zeros "" $locale]
-    set expense_amount_zeros [im_numeric_add_trailing_zeros [expr $expense_amount+0] $rounding_precision]
-    set expense_amount_pretty [lc_numeric $expense_amount_zeros "" $locale]
-    set vat_amount_zeros [im_numeric_add_trailing_zeros [expr $vat_amount+0] $rounding_precision]
-    set vat_amount_pretty [lc_numeric $vat_amount_zeros "" $locale]
-    set tax_amount_zeros [im_numeric_add_trailing_zeros [expr $tax_amount+0] $rounding_precision]
-    set tax_amount_pretty [lc_numeric $tax_amount_zeros "" $locale]
+    set invoice_amount_pretty [im_report_format_number $invoice_amount $output_format $locale]
+    set bill_amount_pretty [im_report_format_number $bill_amount $output_format $locale]
+    set expense_amount_pretty [im_report_format_number $expense_amount $output_format $locale]
+    set vat_amount_pretty [im_report_format_number $vat_amount $output_format $locale]
+    set tax_amount_pretty [im_report_format_number $tax_amount $output_format $locale]
 
     if {"" == $customer_id} {
 	set customer_id 0
@@ -572,34 +566,23 @@ db_foreach sql $sql {
 	-level_of_detail $level_of_detail \
 	-row_class $class \
 	-cell_class $class
-    
+
+    # Update Counters and calculate pretty counter values
     im_report_update_counters -counters $counters
 
-    set paid_subtotal_zeros [im_numeric_add_trailing_zeros [expr $paid_subtotal+0] $rounding_precision]
-    set paid_subtotal_pretty [lc_numeric $paid_subtotal_zeros "" $locale]
-    set invoice_subtotal_zeros [im_numeric_add_trailing_zeros [expr $invoice_subtotal+0] $rounding_precision]
-    set invoice_subtotal_pretty [lc_numeric $invoice_subtotal_zeros "" $locale]
-    set bill_subtotal_zeros [im_numeric_add_trailing_zeros [expr $bill_subtotal+0] $rounding_precision]
-    set bill_subtotal_pretty [lc_numeric $bill_subtotal_zeros "" $locale]
-    set expense_subtotal_zeros [im_numeric_add_trailing_zeros [expr $expense_subtotal+0] $rounding_precision]
-    set expense_subtotal_pretty [lc_numeric $expense_subtotal_zeros "" $locale]
-    set tax_subtotal_zeros [im_numeric_add_trailing_zeros [expr $tax_subtotal+0] $rounding_precision]
-    set tax_subtotal_pretty [lc_numeric $tax_subtotal_zeros "" $locale]
-    set vat_subtotal_zeros [im_numeric_add_trailing_zeros [expr $vat_subtotal+0] $rounding_precision]
-    set vat_subtotal_pretty [lc_numeric $vat_subtotal_zeros "" $locale]
+    set paid_subtotal_pretty [im_report_format_number $paid_subtotal $output_format $locale]
+    set invoice_subtotal_pretty [im_report_format_number $invoice_subtotal $output_format $locale]
+    set bill_subtotal_pretty [im_report_format_number $bill_subtotal $output_format $locale]
+    set expense_subtotal_pretty [im_report_format_number $expense_subtotal $output_format $locale]
+    set tax_subtotal_pretty [im_report_format_number $tax_subtotal $output_format $locale]
+    set vat_subtotal_pretty [im_report_format_number $vat_subtotal $output_format $locale]
 
-    set paid_total_zeros [im_numeric_add_trailing_zeros [expr $paid_total+0] $rounding_precision]
-    set paid_total_pretty [lc_numeric $paid_total_zeros "" $locale]
-    set invoice_total_zeros [im_numeric_add_trailing_zeros [expr $invoice_total+0] $rounding_precision]
-    set invoice_total_pretty [lc_numeric $invoice_total_zeros "" $locale]
-    set bill_total_zeros [im_numeric_add_trailing_zeros [expr $bill_total+0] $rounding_precision]
-    set bill_total_pretty [lc_numeric $bill_total_zeros "" $locale]
-    set expense_total_zeros [im_numeric_add_trailing_zeros [expr $expense_total+0] $rounding_precision]
-    set expense_total_pretty [lc_numeric $expense_total_zeros "" $locale]
-    set tax_total_zeros [im_numeric_add_trailing_zeros [expr $tax_total+0] $rounding_precision]
-    set tax_total_pretty [lc_numeric $tax_total_zeros "" $locale]
-    set vat_total_zeros [im_numeric_add_trailing_zeros [expr $vat_total+0] $rounding_precision]
-    set vat_total_pretty [lc_numeric $vat_total_zeros "" $locale]
+    set paid_total_pretty [im_report_format_number $paid_total $output_format $locale]
+    set invoice_total_pretty [im_report_format_number $invoice_total $output_format $locale]
+    set bill_total_pretty [im_report_format_number $bill_total $output_format $locale]
+    set expense_total_pretty [im_report_format_number $expense_total $output_format $locale]
+    set tax_total_pretty [im_report_format_number $tax_total $output_format $locale]
+    set vat_total_pretty [im_report_format_number $vat_total $output_format $locale]
 
     
     set last_value_list [im_report_render_header \
