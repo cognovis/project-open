@@ -42,13 +42,32 @@ ad_proc im_report_quote_cell {
     <li> Quote double quotes for CSV
 } {
     switch $output_format {
-	html { return $cell }
-	default { 
-	    regsub -all {\<[^\>]*\>} $cell "" cell
-	    regsub -all {\"} $cell "\"\"" cell
+	html { 
 	    if {"" != $encoding} {
-		set cell [encoding convertto "utf-8" $cell]
+		set cell [encoding convertto $encoding $cell]
 	    }
+	    return $cell 
+	}
+	default { 
+
+	    # Remove any <..> tags from the cell that are used
+	    # for HTML formatting
+	    regsub -all {\<[^\>]*\>} $cell "" cell
+
+	    # Remove "&nbsp;" spaces
+	    regsub -all {\&nbsp\;} $cell " " cell
+
+	    # Quote all double quotes by doubling them
+	    regsub -all {\"} $cell "\"\"" cell
+
+	    # Convert to target encoding scheme 
+	    if {"" != $encoding} {
+		set cell [encoding convertto $encoding $cell]
+	    }
+
+	    # Remove leading and trailing spaces
+	    set cell [string trim $cell]
+
 	    return $cell
 	}
     }
@@ -521,8 +540,34 @@ ad_proc im_report_skip_if_zero {
 
 
 # -------------------------------------------------------
-# Format Procs
+# Form HTML Utilities
 # -------------------------------------------------------
+
+
+ad_proc im_report_write_http_headers {
+    -output_format
+} {
+    Writes a suitable HTTP header to the connection.
+    We need this custom routine in order to deal with
+    strange IE5/6 and MS-Excel behaviour that require
+    Latin1 (iso-8859-1) or other encodings, depending 
+    on the country specific version of Excel...
+} {
+    set content_type [im_report_content_type -output_format $output_format]
+    set http_encoding [im_report_http_encoding -output_format $output_format]
+
+    # ad_return_complaint 1 $http_encoding
+    # set content_type "text/html"
+
+    append content_type "; charset=$http_encoding"
+    
+    set all_the_headers "HTTP/1.0 200 OK
+MIME-Version: 1.0
+Content-Type: $content_type\r\n"
+    
+    util_WriteWithExtraOutputHeaders $all_the_headers
+    ns_startcontent -type $content_type
+}
 
 
 ad_proc im_report_output_format_select {
@@ -542,23 +587,99 @@ ad_proc im_report_output_format_select {
     }
     return "
 	<nobr>
-	<input name=output_format type=radio value='html' $html_checked>HTML
- 	<input name=output_format type=radio value='csv' $csv_checked>CSV
+	<input name=$name type=radio value='html' $html_checked>HTML
+ 	<input name=$name type=radio value='csv' $csv_checked>CSV
 	</nobr>
     "
 }
 
 
 
-ad_proc im_report_mime_type {
+ad_proc im_report_encoding_select {
+    name
+    { encoding ""}
+} {
+    Returns a formatted select widget (radio buttons)
+    to allow a user to select the output encoding (TCL 'encoding')
+} {
+    set cp1252_checked ""
+    set none_checked ""
+    set utf8_checked ""
+    switch $encoding {
+	cp1252 { set cp1252_checked "checked" }
+	utf8 { set utf8_checked "checked" }
+	"" { set none_checked "checked" }
+    }
+    return "
+	<nobr>
+	<input name=$name type=radio value='' $none_checked>none
+	<input name=$name type=radio value='cp1252' $cp1252_checked>cp1252
+ 	<input name=$name type=radio value='utf-8' $utf8_checked>UTF-8
+	</nobr>
+    "
+}
+
+
+
+ad_proc im_report_content_type {
     -output_format
 } {
     Returns the suitable MIME type for the given output_format
 } {
     switch $output_format {
         html { return "text/html" }
-        excel { return "application/csv" }
-        csv { return "application/csv" }
+        csv { 
+	    return [parameter::get_from_package_key \
+			-package_key intranet-dw-light \
+			-parameter CsvContentType \
+			-default "application/csv" \
+	    ]
+	}
+        default { return "text/plain" }
+    }
+}
+
+
+ad_proc im_report_tcl_encoding {
+    -output_format
+} {
+    Returns a suitable conversion for the 'encoding convertto' command.
+    Please see 'encoding list' for a list of values and the TCL manuals
+    for an introduction to character encoding.
+    Please note that the values are similar to the HTTP encodings,
+    but not identical.
+} {
+    switch $output_format {
+        html { return "" }
+        csv { 
+	    return [parameter::get_from_package_key \
+			-package_key intranet-dw-light \
+			-parameter CsvTclCharacterEncoding \
+			-default "iso8859-1" \
+	    ]
+	}
+        default { return "" }
+    }
+}
+
+
+ad_proc im_report_http_encoding {
+    -output_format
+} {
+    Returns a suitable HTTP "Content-Type" value.
+    Please note that the values are similar to the TCL encodings,
+    but not identical.
+} {
+    switch $output_format {
+        html { return "utf-8" }
+        csv { 
+	    return [parameter::get_from_package_key \
+			-package_key intranet-dw-light \
+			-parameter CsvTclCharacterEncoding \
+			-default "iso-8859-1" \
+	    ]
+	}
+        default { return "utf-8" }
     }
 }
 
