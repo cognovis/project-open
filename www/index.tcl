@@ -26,9 +26,8 @@ set page_focus "im_header_form.keywords"
 set date_format "YYYY-MM-DD"
 set return_url [im_url_with_query]
 set current_url [ns_conn url]
-set project_name [db_string project_name "select project_name from im_projects where project_id=:project_id" -default ""]
-set page_title "$project_name [_ intranet-expenses.Unassigned_Expenses]"
-
+set project_nr [db_string project_nr "select project_nr from im_projects where project_id=:project_id" -default ""]
+set page_title "$project_nr - [_ intranet-expenses.Unassigned_Expenses]"
 set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
 
 # ---------------------------------------------------------------
