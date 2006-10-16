@@ -291,6 +291,11 @@ set quote_total 0
 set bill_total 0
 set po_total 0
 
+set invoice_subtotal 0
+set quote_subtotal 0
+set bill_subtotal 0
+set po_subtotal 0
+
 # Global header/footer
 set header0 {"Cust" "Project" "Effective Date" "Paid" "Name" "Invoice" "Quote" "Bill" "PO" "PO/Quote"}
 set footer0 {
