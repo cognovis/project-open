@@ -1,4 +1,4 @@
-# /packages/intranet-reporting/www/finance-payments.tcl
+# /packages/intranet-reporting/www/finance-payment-balance.tcl
 #
 # Copyright (C) 2003-2004 Project/Open
 #
@@ -24,7 +24,7 @@ ad_page_contract {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
-set menu_label "reporting-finance-payments"
+set menu_label "reporting-finance-payment-balance"
 set current_user_id [ad_maybe_redirect_for_registration]
 
 set read_p [db_string report_perms "
