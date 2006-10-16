@@ -161,7 +161,7 @@ ad_proc im_report_render_row {
 
     switch $output_format {
         html { ns_write "</tr>\n" }
-        csv { }
+        csv { ns_write "\n" }
     }
 }
 
@@ -621,6 +621,8 @@ ad_proc im_report_content_type {
 } {
     Returns the suitable MIME type for the given output_format
 } {
+    # return "text/html"
+
     switch $output_format {
         html { return "text/html" }
         csv { 
