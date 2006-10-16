@@ -417,7 +417,7 @@ set sql "
 	select
 		acs_object__name(so.object_id) as name,
 		acs_object__name(so.biz_object_id) as biz_object_name,
-		(rank(so.fti, :q::tsquery) * sot.rel_weight)::numeric(12,3) as rank,
+		(rank(so.fti, :q::tsquery) * sot.rel_weight)::numeric(12,2) as rank,
 		fti as full_text_index,
 		bou.url,
 		so.object_id,
