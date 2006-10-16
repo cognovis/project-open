@@ -59,7 +59,7 @@ drop function inline_0();
 
 
 
-insert into im_search_object_types values (6,'im_fs_file');
+insert into im_search_object_types values (6,'im_fs_file',0.1);
 
 
 -----------------------------------------------------------

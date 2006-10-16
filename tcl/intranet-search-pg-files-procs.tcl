@@ -36,10 +36,12 @@ ad_proc -private im_package_search_pg_files_id_helper {} {
 ad_proc -public intranet_search_pg_files_index_object {
     -object_id
 } {
-    Index the files of a single objec such as a project, company or user.
+    Index the files of a single object such as a project, company or user.
     Returns the number of new files.
 } {
+    # Disable Debugging
     set debug 0
+
     set object_type [db_string otype "
 	select object_type 
 	from acs_objects 
