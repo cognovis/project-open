@@ -1,4 +1,4 @@
-# /packages/intranet-reporting/www/finance-quotes-pos.tcl
+# /packages/intranet-reporting/www/finance-projects-documents.tcl
 #
 # Copyright (C) 2003-2004 Project/Open
 #
@@ -14,6 +14,7 @@ ad_page_contract {
     { start_date "" }
     { end_date "" }
     { level_of_detail 2 }
+    { output_format "html" }
     project_id:integer,optional
     customer_id:integer,optional
 }
@@ -24,7 +25,7 @@ ad_page_contract {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
-set menu_label "reporting-finance-quotes-pos"
+set menu_label "reporting-finance-projects-documents"
 
 set current_user_id [ad_maybe_redirect_for_registration]
 
@@ -126,7 +127,7 @@ set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting/finance-quotes-pos" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-reporting/finance-projects-documents" {start_date end_date} ]
 
 
 # ------------------------------------------------------------
@@ -289,11 +290,6 @@ set report_def [list \
     footer {  } \
 ]
 
-set invoice_total 0
-set quote_total 0
-set bill_total 0
-set po_total 0
-
 # Global header/footer
 set header0 {"Cust" "Project" "Name" "Invoice" "Quote" "Bill" "PO" "PO/Quote" "Gross Profit"}
 set footer0 {
@@ -396,61 +392,77 @@ set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 1
 set levels {1 "Customer Only" 2 "Customer+Project" 3 "All Details"} 
 
 # ------------------------------------------------------------
-# Start formatting the page
+# Start formatting the page header
 #
 
-ad_return_top_of_page "
-[im_header]
-[im_navbar]
+# Write out HTTP header, considering CSV/MS-Excel formatting
+im_report_write_http_headers -output_format $output_format
 
-<table cellspacing=0 cellpadding=0 border=0>
-<tr valign=top>
-<td>
-<form>
-<table border=0 cellspacing=1 cellpadding=1>
-<tr>
-  <td class=form-label>Level of Details</td>
-  <td class=form-widget>
-    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
-  </td>
-</tr>
-<tr>
-  <td class=form-label>Start Date</td>
-  <td class=form-widget>
-    <input type=textfield name=start_date value=$start_date>
-  </td>
-</tr>
-<tr>
-  <td class=form-label>End Date</td>
-  <td class=form-widget>
-    <input type=textfield name=end_date value=$end_date>
-  </td>
-</tr>
-<tr>
-  <td></td>
-  <td><input type=submit value=Submit></td>
-</tr>
-</table>
-</form>
+# Add the HTML select box to the head of the page
+switch $output_format {
+    html {
+	ns_write "
+	[im_header]
+	[im_navbar]
+	<table cellspacing=0 cellpadding=0 border=0>
+	<tr valign=top>
+	<td>
+	<form>
+		<table border=0 cellspacing=1 cellpadding=1>
+		<tr>
+		  <td class=form-label>Level of Details</td>
+		  <td class=form-widget>
+		    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
+		  </td>
+		</tr>
+		<tr>
+		  <td class=form-label>Start Date</td>
+		  <td class=form-widget>
+		    <input type=textfield name=start_date value=$start_date>
+		  </td>
+		</tr>
+		<tr>
+		  <td class=form-label>End Date</td>
+		  <td class=form-widget>
+		    <input type=textfield name=end_date value=$end_date>
+		  </td>
+		</tr>
+                <tr>
+                  <td class=form-label>Format</td>
+                  <td class=form-widget>
+                    [im_report_output_format_select output_format $output_format]
+                  </td>
+                </tr>
+		<tr>
+		  <td class=form-label></td>
+		  <td class=form-widget><input type=submit value=Submit></td>
+		</tr>
+		</table>
+	</form>
+	</td>
+	<td align=center>
+		<table cellspacing=2 width=90%>
+		<tr><td>$help_text</td></tr>
+		</table>
+	</td>
+	</tr>
+	</table>
+	<table border=0 cellspacing=1 cellpadding=1>\n"
+    }
+}
 
-</td>
-<td align=center>
+set invoice_total 0
+set quote_total 0
+set bill_total 0
+set po_total 0
 
-<table cellspacing=2 width=90%>
-<tr>
-<td>
-$help_text
-</td>
-</tr>
-</table>
-
-</td>
-</tr>
-</table>
-
-<table border=0 cellspacing=1 cellpadding=1>\n"
+set invoice_subtotal 0
+set quote_subtotal 0
+set bill_subtotal 0
+set po_subtotal 0
 
 im_report_render_row \
+    -output_format $output_format \
     -row $header0 \
     -row_class "rowtitle" \
     -cell_class "rowtitle"
@@ -460,7 +472,7 @@ set footer_array_list [list]
 set last_value_list [list]
 set class "rowodd"
 
-ns_log Notice "intranet-reporting/finance-quotes-pos: sql=\n$sql"
+ns_log Notice "intranet-reporting/finance-projects-documents: sql=\n$sql"
 
 db_foreach sql $sql {
 
@@ -470,6 +482,7 @@ db_foreach sql $sql {
 	}
 
 	im_report_display_footer \
+	    -output_format $output_format \
 	    -group_def $report_def \
 	    -footer_array_list $footer_array_list \
 	    -last_value_array_list $last_value_list \
@@ -489,6 +502,7 @@ db_foreach sql $sql {
 	set gross_profit [expr $invoice_subtotal - $bill_subtotal]
 
 	set last_value_list [im_report_render_header \
+	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
@@ -497,6 +511,7 @@ db_foreach sql $sql {
         ]
 
         set footer_array_list [im_report_render_footer \
+	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
@@ -516,6 +531,7 @@ set gross_profit [expr $invoice_total - $bill_total]
 
 
 im_report_display_footer \
+    -output_format $output_format \
     -group_def $report_def \
     -footer_array_list $footer_array_list \
     -last_value_array_list $last_value_list \
@@ -525,10 +541,14 @@ im_report_display_footer \
     -cell_class $class
 
 im_report_render_row \
+    -output_format $output_format \
     -row $footer0 \
     -row_class $class \
     -cell_class $class \
     -upvar_level 1
 
 
-ns_write "</table>\n[im_footer]\n"
+switch $output_format {
+    html { ns_write "</table>\n[im_footer]\n" }
+}
+
