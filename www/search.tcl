@@ -607,7 +607,7 @@ db_foreach full_text_query $sql {
     append result_html "
       <tr>
 	<td>
-	  <font size=\"+1\">$object_type_pretty_name: $name_link</font><br>
+	  $object_type_pretty_name: $name_link<br>
 	  $headline
 	  <br>&nbsp;
 	</td>
