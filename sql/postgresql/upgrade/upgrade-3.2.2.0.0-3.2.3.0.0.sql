@@ -47,3 +47,27 @@ begin
 
         return 0;
 end;' language 'plpgsql';
+
+
+
+-- Relative weight of the object type.
+-- Highly relevant types with few objectys
+-- (companies, users) should get a very high
+-- weight (max. 10), while files should have
+-- low weights (min. 0.1)
+alter table im_search_object_types add
+        rel_weight      numeric(5,2)
+;
+
+
+-- Set relative weights of objects
+-- according to the number of objects available.
+-- 
+update im_search_object_types set rel_weight = 1 where object_type = 'im_project';
+update im_search_object_types set rel_weight = 5 where object_type = 'user';
+update im_search_object_types set rel_weight = 0.5 where object_type = 'im_forum_topic';
+update im_search_object_types set rel_weight = 10 where object_type = 'im_company';
+update im_search_object_types set rel_weight = 1 where object_type = 'im_invoice';
+-- update im_search_object_types set rel_weight = 0.2 where object_type = '<email>';
+update im_search_object_types set rel_weight = 0.1 where object_type = 'im_fs_file';
+

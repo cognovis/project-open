@@ -27,17 +27,23 @@ create table im_search_object_types (
 	object_type	varchar(100)
 			constraint im_search_objects_object_type_fk
 			references acs_object_types
-			on delete cascade
+			on delete cascade,
+			-- Relative weight of the object type.
+			-- Highly relevant types with few objectys
+			-- (companies, users) should get a very high
+			-- weight (max. 10), while files should have
+			-- low weights (min. 0.1)
+	rel_weight	numeric(5,2) default 1
 );
 
 
--- 0 | im_project
--- 1 | user
--- 2 | im_forum_topic
--- 3 | im_company
--- 4 | im_invoice
--- 5 | emails (in CR)
--- 6 | im_fs_files
+-- 0 | im_project     | 1
+-- 1 | user           | 5
+-- 2 | im_forum_topic | 0.5
+-- 3 | im_company     | 10
+-- 4 | im_invoice     | 1
+-- 5 | emails (in CR) | 0.2
+-- 6 | im_fs_files    | 0.1
 
 
 
@@ -364,7 +370,7 @@ end;' language 'plpgsql';
 -----------------------------------------------------------
 -- im_project
 
-insert into im_search_object_types values (0,'im_project');
+insert into im_search_object_types values (0,'im_project',1);
 
 create or replace function im_projects_tsearch () 
 returns trigger as '
@@ -410,7 +416,7 @@ EXECUTE PROCEDURE im_projects_tsearch();
 -----------------------------------------------------------
 -- im_company
 
-insert into im_search_object_types values (3,'im_company');
+insert into im_search_object_types values (3,'im_company',10);
 
 create or replace function im_companies_tsearch () 
 returns trigger as '
@@ -440,7 +446,7 @@ EXECUTE PROCEDURE im_companies_tsearch();
 -----------------------------------------------------------
 -- person
 
-insert into im_search_object_types values (1,'user');
+insert into im_search_object_types values (1,'user',5);
 
 create or replace function persons_tsearch () 
 returns trigger as '
@@ -511,7 +517,7 @@ end;' language 'plpgsql';
 select inline_0();
 drop function inline_0();
 
-insert into im_search_object_types values (2,'im_forum_topic');
+insert into im_search_object_types values (2,'im_forum_topic',0.5);
 
 
 create or replace function im_forum_topics_tsearch () 
@@ -551,7 +557,7 @@ EXECUTE PROCEDURE im_forum_topics_tsearch();
 -- performance reasons. There many be many cost items, but
 -- they don't usually interest us very much.
 
-insert into im_search_object_types values (4,'im_invoice');
+insert into im_search_object_types values (4,'im_invoice',1);
 
 create or replace function im_invoice_tsearch ()
 returns trigger as '
