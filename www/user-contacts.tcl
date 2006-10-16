@@ -54,6 +54,7 @@ set help_text "
 
 set rowclass(0) "roweven"
 set rowclass(1) "rowodd"
+set class "roweven"
 
 set currency_format [im_l10n_sql_currency_format]
 set date_format [im_l10n_sql_date_format]
@@ -68,11 +69,11 @@ set this_url "/intranet-reporting/user-contacts?"
 # Report SQL
 
 set company_sql ""
-if {0 != $company_id} {
+if {"" != $company_id && 0 != $company_id} {
     set company_sql "and c.company_id = :company_id\n"
 }
 
-if {0 != $company_type_id} {
+if {"" != $company_type_id && 0 != $company_type_id} {
     append company_sql "and c.company_type_id = :company_type_id\n"
 }
 
@@ -121,8 +122,6 @@ set report_sql "
 		c.company_name,
 		u.last_name,
 		u.first_names
-	limit	100
-
 "
 
 # ------------------------------------------------------------
