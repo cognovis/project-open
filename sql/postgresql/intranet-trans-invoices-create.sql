@@ -384,7 +384,7 @@ BEGIN
 		match_value := match_value + 1;
 	end if;
 	if v_price_company_id != v_internal_company_id and v_price_company_id != v_item_company_id then
-		match_value := match_value -10;
+		match_value := match_value -100;
 	end if;
 
 	return match_value;
