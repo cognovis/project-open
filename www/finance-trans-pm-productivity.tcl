@@ -442,6 +442,7 @@ switch $output_format {
 	<tr valign=top>
 	<td>
 	<form>
+                [export_form_vars project_id project_manager_id]
 		<table border=0 cellspacing=1 cellpadding=1>
 		<tr>
 		  <td class=form-label>Level of Details</td>
