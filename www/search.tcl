@@ -417,7 +417,7 @@ set sql "
 	select
 		acs_object__name(so.object_id) as name,
 		acs_object__name(so.biz_object_id) as biz_object_name,
-		rank(so.fti, :q::tsquery) as rank,
+		(rank(so.fti, :q::tsquery) * sot.rel_weight)::numeric(12,3) as rank,
 		fti as full_text_index,
 		bou.url,
 		so.object_id,
@@ -470,7 +470,7 @@ set sql "
 		and so.biz_object_id = readable_biz_objs.object_id
 		and so.fti @@ to_tsquery('default',:q)
 	order by
-		rank DESC
+		(rank(so.fti, :q::tsquery) * sot.rel_weight) DESC
 	offset :offset
 	limit :limit
 "
@@ -607,7 +607,7 @@ db_foreach full_text_query $sql {
     append result_html "
       <tr>
 	<td>
-	  $object_type_pretty_name: $name_link<br>
+	  $object_type_pretty_name: $name_link ($rank)<br>
 	  $headline
 	  <br>&nbsp;
 	</td>
