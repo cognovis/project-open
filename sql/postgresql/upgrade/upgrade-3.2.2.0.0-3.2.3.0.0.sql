@@ -19,3 +19,11 @@ END;' language 'plpgsql';
 SELECT pg_catalog.setval('im_categories_seq', 10000000, true);
 
 
+
+-- Update the security tokensof the local server 
+-- Users might be a way to gain access if the tokens are
+-- publicly known (from the default installation)
+
+delete from secret_tokens;
+SELECT pg_catalog.setval('t_sec_security_token_id_seq', 1, true);
+
