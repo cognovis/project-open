@@ -33,6 +33,8 @@ declare
 	v_freelancers		integer;
 	v_proman		integer;
 	v_admins		integer;
+
+	v_count			integer;
 begin
 
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
@@ -40,7 +42,7 @@ begin
     select group_id into v_proman from groups where group_name = ''Project Managers'';
     select group_id into v_accounting from groups where group_name = ''Accounting'';
     select group_id into v_employees from groups where group_name = ''Employees'';
-    select group_id into v_companies from groups where group_name = ''Customers'';
+    select group_id into v_customers from groups where group_name = ''Customers'';
     select group_id into v_freelancers from groups where group_name = ''Freelancers'';
 
     select menu_id
@@ -53,69 +55,77 @@ begin
     from im_menus
     where label=''invoices_providers'';
 
-    v_menu := im_menu__new (
-	null,                           -- menu_id
-        ''acs_object'',                 -- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-	''intranet-invoices'',		-- package_name
-	''invoices_providers_new_po'',	-- label
-	''New Purchase Order from scratch'',	-- name
-	''/intranet-invoices/new?cost_type_id=3706'',	-- url
-	40,						-- sort_order
-	v_invoices_providers,				-- parent_menu_id
-	null						-- visible_tcl
-    );
+    select count(*) into v_count from im_menus 
+    where label = ''invoices_providers_new_po'';
 
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+    IF v_count = 0 THEN
+	    v_menu := im_menu__new (
+		null,						-- menu_id
+		''acs_object'',					-- object_type
+		now(),						-- creation_date
+		null,						-- creation_user
+		null,						-- creation_ip
+		null,						-- context_id
+		''intranet-invoices'',				-- package_name
+		''invoices_providers_new_po'',			-- label
+		''New Purchase Order from scratch'',		-- name
+		''/intranet-invoices/new?cost_type_id=3706'',	-- url
+		40,						-- sort_order
+		v_invoices_providers,				-- parent_menu_id
+		null						-- visible_tcl
+	    );
+	    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+    END IF;
 
-    v_menu := im_menu__new (
-	null,                           -- menu_id
-        ''acs_object'',                 -- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-	''intranet-invoices'',		-- package_name
-	''invoices_providers_new_delnote'',	-- label
-	''New Delivery Note from scratch'',	-- name
-	''/intranet-invoices/new?cost_type_id=3724'',	-- url
-	30,						-- sort_order
-	v_invoices_customers,				-- parent_menu_id
-	null						-- visible_tcl
-    );
+    select count(*) into v_count from im_menus 
+    where label = ''invoices_providers_new_delnote'';
 
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+    IF v_count = 0 THEN
+	    v_menu := im_menu__new (
+		null,			   -- menu_id
+		''acs_object'',		 -- object_type
+		now(),			  -- creation_date
+		null,			   -- creation_user
+		null,			   -- creation_ip
+		null,			   -- context_id
+		''intranet-invoices'',		-- package_name
+		''invoices_providers_new_delnote'',	-- label
+		''New Delivery Note from scratch'',	-- name
+		''/intranet-invoices/new?cost_type_id=3724'',	-- url
+		30,						-- sort_order
+		v_invoices_customers,				-- parent_menu_id
+		null						-- visible_tcl
+	    );
+	    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+    END IF;
 
-    v_menu := im_menu__new (
-	null,                           -- menu_id
-        ''acs_object'',                 -- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-	''intranet-invoices'',		-- package_name
-	''invoices_customers_new_delnote_from_quote'',	-- label
-	''New Delivery Note from Quote'',		-- name
-					-- url
-	''/intranet-invoices/new-copy?target_cost_type_id=3724\&source_cost_type_id=3702'',
-					-- sort_order
-	20,				
-					-- parent_menu_id
-	v_invoices_customers,		
-					-- visible_tcl
-	null				
-    );
+    select count(*) into v_count from im_menus 
+    where label = ''invoices_customers_new_delnote_from_quote'';
 
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+    IF v_count = 0 THEN
+	    v_menu := im_menu__new (
+		null,			   -- menu_id
+		''acs_object'',		 -- object_type
+		now(),			  -- creation_date
+		null,			   -- creation_user
+		null,			   -- creation_ip
+		null,			   -- context_id
+		''intranet-invoices'',		-- package_name
+		''invoices_customers_new_delnote_from_quote'',	-- label
+		''New Delivery Note from Quote'',		-- name
+		''/intranet-invoices/new-copy?target_cost_type_id=3724\&source_cost_type_id=3702'',
+		20,				-- sort_order
+		v_invoices_customers,		-- parent_menu_id
+		null				-- visible_tcl
+	    );
+	    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+    END IF;
 
     return 0;
 end;' language 'plpgsql';
@@ -132,26 +142,26 @@ drop function inline_0 ();
 create or replace function inline_0 ()
 returns integer as '
 DECLARE
-    row                         RECORD;
+    row			 RECORD;
     v_project_id		integer;
 BEGIN
     FOR row IN
 	select  c.cost_id,
-	        c.project_id,
-	        t.cnt
+		c.project_id,
+		t.cnt
 	from    im_costs c
-	        LEFT OUTER JOIN (
-	                 select  c.cost_id,
-	                         count(*) as cnt
-	                 from    im_costs c,
-	                         im_projects p,
-	                         acs_rels r
-	                 where   r.object_id_one = p.project_id
-	                         and r.object_id_two = c.cost_id
-	                 group by c.cost_id
-	        ) t ON (c.cost_id = t.cost_id)
+		LEFT OUTER JOIN (
+			 select  c.cost_id,
+				 count(*) as cnt
+			 from    im_costs c,
+				 im_projects p,
+				 acs_rels r
+			 where   r.object_id_one = p.project_id
+				 and r.object_id_two = c.cost_id
+			 group by c.cost_id
+		) t ON (c.cost_id = t.cost_id)
 	where	c.project_id is null
-	        and t.cnt = 1
+		and t.cnt = 1
     LOOP
 	-- There is exactly one project to which the cost item is associated.
 	select	max(p.project_id)
@@ -160,7 +170,7 @@ BEGIN
 		acs_rels r
 	where	p.project_id = r.object_id_one
 		and r.object_id_two = row.cost_id;
-        RAISE NOTICE ''inline_0: cost_id=%-> pid=%'', row.cost_id, v_project_id;
+	RAISE NOTICE ''inline_0: cost_id=%-> pid=%'', row.cost_id, v_project_id;
 
 	update im_costs
 	set project_id = v_project_id
@@ -182,8 +192,7 @@ drop function inline_0();
 -----------------------------------------------------------------
 
 -- Set unit precesision to 3 digits
-alter table im_invoice_items alter item_units type numeric(12,3);
-
+alter table im_invoice_items alter column item_units type numeric(12,3);
 
 
 
@@ -206,6 +215,8 @@ declare
 	v_freelancers	   integer;
 	v_proman		integer;
 	v_admins		integer;
+
+	v_count			integer;
 begin
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
     select group_id into v_senman from groups where group_name = ''Senior Managers'';
@@ -218,27 +229,33 @@ begin
     from im_menus
     where label=''invoices_providers'';
 
-    v_finance_menu := im_menu__new (
-	null,			   -- menu_id
-	''acs_object'',		 -- object_type
-	now(),			  -- creation_date
-	null,			   -- creation_user
-	null,			   -- creation_ip
-	null,			   -- context_id
-	''intranet-invoices'',	  -- package_name
-	''invoices_providers_new_po'',  -- label
-	''New Purchase Order from scratch'',	-- name
-	''/intranet-invoices/new?cost_type_id=3706'', -- url
-	30,					   -- sort_order
-	v_invoices_new_menu,			  -- parent_menu_id
-	null					  -- visible_tcl
-    );
+    select count(*) into v_count from im_menus 
+    where label = ''invoices_providers_new_po'';
 
-    PERFORM acs_permission__grant_permission(v_finance_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_finance_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_finance_menu, v_accounting, ''read'');
-    PERFORM acs_permission__grant_permission(v_finance_menu, v_customers, ''read'');
-    PERFORM acs_permission__grant_permission(v_finance_menu, v_freelancers, ''read'');
+    IF v_count = 0 THEN
+	    v_finance_menu := im_menu__new (
+		null,					-- menu_id
+		''acs_object'',				-- object_type
+		now(),					-- creation_date
+		null,					-- creation_user
+		null,					-- creation_ip
+		null,					-- context_id
+		''intranet-invoices'',			-- package_name
+		''invoices_providers_new_po'',  	-- label
+		''New Purchase Order from scratch'',	-- name
+		''/intranet-invoices/new?cost_type_id=3706'', -- url
+		30,					-- sort_order
+		v_invoices_new_menu,			-- parent_menu_id
+		null					-- visible_tcl
+	    );
+	
+	    PERFORM acs_permission__grant_permission(v_finance_menu, v_admins, ''read'');
+	    PERFORM acs_permission__grant_permission(v_finance_menu, v_senman, ''read'');
+	    PERFORM acs_permission__grant_permission(v_finance_menu, v_accounting, ''read'');
+	    PERFORM acs_permission__grant_permission(v_finance_menu, v_customers, ''read'');
+	    PERFORM acs_permission__grant_permission(v_finance_menu, v_freelancers, ''read'');
+    END IF;
+
     return 0;
 end;' language 'plpgsql';
 
@@ -246,6 +263,42 @@ select inline_0 ();
 
 drop function inline_0 ();
 
+
+
+
+
+
+-- -------------------------------------------------------------
+-- Add a "category_invoice_template" widget to DynField Widgets
+-- if not there already.
+-- The new widget shows a list of templates.
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count			integer;
+begin
+	select count(*)
+	into v_count
+	from im_dynfield_widgets
+	where widget_name = ''category_invoice_template'';
+
+	IF v_count = 0 THEN
+
+		PERFORM im_dynfield_widget__new (
+			null, ''im_dynfield_widget'', now()::date,
+			null, null, null,
+			''category_invoice_template'', ''Invoice Template'', ''Invoice Template'',
+			10007, ''integer'', ''im_category_tree'', ''integer'',
+			''{custom {category_type "Intranet Cost Template"}}''
+		);
+	END IF;
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 
@@ -264,10 +317,16 @@ declare
 	v_attrib_pretty		varchar;
 	v_acs_attrib_id		integer;
 	v_attrib_id		integer;
+	v_count			integer;
 begin
 	v_attrib_name := ''default_bill_template_id'';
 	v_attrib_pretty := ''Default Provider Bill Template'';
 
+	select count(*)	into v_count
+	from acs_attributes
+	where attribute_name = v_attrib_name;
+	IF 0 != v_count THEN return 0; END IF;
+
 	v_acs_attrib_id := acs_attribute__create_attribute (
 		''im_company'',
 		v_attrib_name,
@@ -275,29 +334,21 @@ begin
 		v_attrib_pretty,
 		v_attrib_pretty,
 		''im_companies'',
-		NULL, NULL,
-		''0'', ''1'',
-		NULL, NULL,
-		NULL
+		NULL, NULL, ''0'', ''1'',
+		NULL, NULL, NULL
 	);
-
-        alter table im_companies add default_bill_template_id integer;
-
+	alter table im_companies add default_bill_template_id integer;
 	v_attrib_id := acs_object__new (
 		null,
 		''im_dynfield_attribute'',
 		now(),
-		null,
-		null, 
-		null
+		null, null, null
 	);
-
 	insert into im_dynfield_attributes (
 		attribute_id, acs_attribute_id, widget_name, deprecated_p
 	) values (
 		v_attrib_id, v_acs_attrib_id, ''category_invoice_template'', ''f''
 	);
-
     return 0;
 end;' language 'plpgsql';
 select inline_0 ();
@@ -315,10 +366,16 @@ declare
 	v_attrib_pretty		varchar;
 	v_acs_attrib_id		integer;
 	v_attrib_id		integer;
+	v_count			integer;
 begin
 	v_attrib_name := ''default_po_template_id'';
 	v_attrib_pretty := ''Default PO Template'';
 
+	select count(*)	into v_count
+	from acs_attributes
+	where attribute_name = v_attrib_name;
+	IF 0 != v_count THEN return 0; END IF;
+
 	v_acs_attrib_id := acs_attribute__create_attribute (
 		''im_company'',
 		v_attrib_name,
@@ -332,7 +389,7 @@ begin
 		NULL
 	);
 
-        alter table im_companies add default_po_template_id integer;
+	alter table im_companies add default_po_template_id integer;
 
 	v_attrib_id := acs_object__new (
 		null,
@@ -358,11 +415,6 @@ drop function inline_0 ();
 
 
 
-
-
-
-
-
 create or replace function inline_0 ()
 returns integer as '
 declare
@@ -370,9 +422,15 @@ declare
 	v_attrib_pretty		varchar;
 	v_acs_attrib_id		integer;
 	v_attrib_id		integer;
+	v_count			integer;
 begin
 	v_attrib_name := ''default_delnote_template_id'';
 	v_attrib_pretty := ''Default Delivery Note Template'';
+
+	select count(*)	into v_count
+	from acs_attributes
+	where attribute_name = v_attrib_name;
+	IF 0 != v_count THEN return 0; END IF;
 
 	v_acs_attrib_id := acs_attribute__create_attribute (
 		''im_company'',
@@ -387,7 +445,7 @@ begin
 		NULL
 	);
 
-        alter table im_companies add default_delnote_template_id integer;
+	alter table im_companies add default_delnote_template_id integer;
 
 	v_attrib_id := acs_object__new (
 		null,
