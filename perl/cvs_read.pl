@@ -657,14 +657,24 @@ sub parse_cvs_file
 	$relative_working_file = "";
     }
     print "working_file = $working_file\n";
-    print "------------------------------------------------------------";
+    print "------------------------------------------------------------\n";
 
     
     @pieces = reverse(@pieces);
-
+  
     foreach $descr (@pieces) {
-
+	
 	my @lines = split("\n", $descr);
+	
+	my $working_file = ""; 
+	my $rlog_module = "";
+	my $revision = "";
+	my $date = "";
+	my $author = "";
+	my $state = "";
+	my $lines_added = "";
+	my $lines_removed = "";
+	my $comment = "";
 
 	foreach $line (@lines) {
 
@@ -686,11 +696,87 @@ sub parse_cvs_file
 
 		    if ("" eq $lines_added) { $lines_added = 0; }
 		    if ("" eq $lines_removed) { $lines_removed = 0; }
-
-		    # This revision lives on the branch of interest.
-		    if ($file_on_branch)
+	    }
+	    elsif (/^date: (\d\d\d\d\/\d\d\/\d\d \d\d:\d\d:\d\d); .* author: (.*); .* state: dead;.*$/)	{
+		# File has been removed.
+		$date = $1;
+		$author = $2;
+		$users{$author} = 1;
+		
+	    }
+	    elsif (/^date: (\d\d\d\d\/\d\d\/\d\d \d\d:\d\d:\d\d); .* author: (.*); .* state: ([^;]*);.*$/) {
+		$date = $1;
+		$author = $2;
+		$users{$author} = 1;
+		$state = $3;
+		
+		$lines_added = 0;
+		$lines_removed = 0;
+		
+		# Unfortunately, cvs log doesn't indicate the number of
+		# lines an initial revision is created with, so find this
+		# out using the following cvs command.  Note the regexp
+		# below has an optional drive delimeter to support DOS
+		# installations.
+		my $lccmd = "";
+		if ($rlog_module ne "") {
+		    print "Working cvsdir is: $working_cvsdir working file: $working_file\n" if $debug;
+		    
+		    # For DOS-based repositories, the filename may contain
+		    # a drive letter.  Also need to be flexible with the
+		    # pathname separator.
+		    if (! ($working_file =~ /^([A-z]:)?${working_cvsdir}[\/\\](.*)$/)) {
+		        print STDERR "-cvsdir argument $working_cvsdir doesn't match ";
+		        print STDERR "repository filename prefix $working_file\n";
+		        print STDERR "Please correct your -cvsdir argument and try again\n";
+		        exit 1;
+		    }
+		    $lccmd = sprintf("cvs $cvs_global_args -d %s co -r %s -p %s",
+					 quote($cvsdir),
+					 quote($revision),
+					 quote($2));
+		    } 
+	            else 
 		    {
-			$sql = qq { INSERT INTO im_cvs_activity (
+			$lccmd = sprintf("cvs $cvs_global_args update -r %s -p %s",
+					 quote($revision),
+					 quote($relative_working_file));
+		    }
+
+		    print "Executing $lccmd\n" if $debug;
+		    
+		    my $WTR = gensym();
+		    my $RDR = gensym();
+		    my $ERR = gensym();
+		    my $pid = open3($WTR, $RDR, $ERR, $lccmd);
+		    for ($number_lines = 0; defined <$RDR>; $number_lines++) {}
+		    close ($RDR);
+		    my $error_string = "";
+		    while (<$ERR>)
+		    {
+			$error_string .= $_;
+		    }
+		    waitpid $pid, 0;
+		    
+		    if ($?) {
+			print "CVS command failed: \"$lccmd\" status $?\n";
+			print "$error_string\n";
+			exit 1;
+		    }
+		    
+		    print "$working_file 1.1 = $number_lines lines\n" if $debug;
+		    
+		    if ("" eq $lines_added) { $lines_added = 0; }
+		    if ("" eq $lines_removed) { $lines_removed = 0; }
+		}
+	        else 
+		{
+		    $comment .= "$line\n";
+		}
+        } 
+
+
+        $sql = qq { INSERT INTO im_cvs_activity (
 				line_id, 
 				filename, cvs_project,
 				revision, date,
@@ -703,33 +789,17 @@ sub parse_cvs_file
 				'$date'::timestamp,
 				'$author',
 				'$state',
-				$lines_added,
-				$lines_removed,
+				'$lines_added',
+				'$lines_removed',
 				'$comment'
-			) };
-			$dbh->do($sql) || print "cvs_read: Error executing '$sql'\n";
-		    }
-	        }
+        ) };
+        $dbh->do($sql) || print "cvs_read: Error executing '$sql'\n";
 
+        print "$comment\n";
+        print "---------------------------\n";
 
-
-
-
-
-
-
-
-
-
-
-	}
-
-	print "---------------------------\n";
-	
-    }
-
+    }	
     print "======================================\n";
-
 }
 
 
