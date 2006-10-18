@@ -38,7 +38,7 @@
 <tr>
   <td>#intranet-payments.Note#</td>
   <td>
-     <TEXTAREA NAME=note COLS=45 ROWS=5 wrap=soft>@note@</textarea>
+     <TEXTAREA NAME=note COLS=45 ROWS=5 wrap="<%=[im_html_textarea_wrap]%>">@note@</textarea>
   </td>
 </tr>
  <tr> 
