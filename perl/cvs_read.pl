@@ -25,6 +25,7 @@ use Config;
 use Cwd;
 use Symbol;
 use IPC::Open3;
+use DBI;
 
 # Whether debugging is enabled or not.
 $debug = 0;
@@ -59,6 +60,17 @@ $branch_tag = "";
 @pattern_include = ();
 @pattern_regexp = ();
 
+
+
+# --------------------------------------------------------
+# Database Connection Parameters
+
+$db_datasource = "dbi:Pg:dbname=projop";
+$db_username = "projop";
+$db_pwd = "";
+
+
+
 # A hash (by date) of a hash (by filename) of lines added.
 %line_stats = ();
 
@@ -90,9 +102,26 @@ $branch_tag = "";
 $osname = $Config{'osname'};
 $windows = (defined $osname && $osname eq "MSWin32") ? 1 : 0;
 
+
+
+# --------------------------------------------------------
+# Establish the database connection
+# The parameters are defined in common_constants.pm
+$dbh = DBI->connect($db_datasource, $db_username, $db_pwd) ||
+    die "cvs_read: Unable to connect to database.\n";
+
+
+# --------------------------------------------------------
+# Main Activitiy
+
 check_missing_modules();
 process_command_line_arguments();
 get_cvs_statistics();
+
+
+# --------------------------------------------------------
+# Disconnect from DB
+$dbh->disconnect();
 
 ###############################################################################
 # Utility method for quoting an argument for a shell command.  ShellQuote
@@ -391,21 +420,31 @@ sub get_cvs_statistics
 		    $state = $3;
 		    $lines_added = $4;
 		    $lines_removed = $5;
-		    $number_lines = $count_lines_changed ?
-			$lines_added + $lines_removed : $lines_added - $lines_removed;
 
-		    $file_version_delta{$working_file}{$revision} =
-			$number_lines;
-		    $file_version_state{$working_file}{$revision} = $state;
-		    $file_version_author{$working_file}{$revision} = $author;
+		    if ("" eq $lines_added) { $lines_added = 0; }
+		    if ("" eq $lines_removed) { $lines_removed = 0; }
 
+		    # This revision lives on the branch of interest.
 		    if ($file_on_branch)
 		    {
-			# This revision lives on the branch of interest.
-			$line_stats{$date}{$working_file} += $number_lines;
-			$state_stats{$date}{$working_file} = $state;
-			$revision_stats{$date}{$working_file} = $revision;
-			$author_stats{$date}{$working_file} = $author;
+			$sql = qq { INSERT INTO im_cvs_activity (
+				line_id, 
+				filename, cvs_project,
+				revision, date,
+				author, state, lines_add, lines_del,
+				note
+			   ) values (
+				nextval('im_cvs_activity_line_seq'),
+				'$working_file', '$rlog_module',
+				'$revision',
+				'$date'::timestamp,
+				'$author',
+				'$state',
+				$lines_added,
+				$lines_removed,
+				''
+			) };
+			$dbh->do($sql) || print "cvs_read: Error executing '$sql'\n";
 		    }
 	        }
 		elsif (/^date: (\d\d\d\d\/\d\d\/\d\d \d\d:\d\d:\d\d); .* author: (.*); .* state: dead;.*$/)
@@ -415,17 +454,6 @@ sub get_cvs_statistics
 		    $author = $2;
 		    $users{$author} = 1;
 
-		    $file_version_delta{$working_file}{$revision} = 0;
-		    $file_version_state{$working_file}{$revision} = "dead";
-		    $file_version_author{$working_file}{$revision} = $author;
-		    
-		    if ($file_on_branch)
-		    {
-			$line_stats{$date}{$working_file} = 0;
-			$state_stats{$date}{$working_file} = "dead";
-			$revision_stats{$date}{$working_file} = $revision;
-			$author_stats{$date}{$working_file} = $author;
-		    }
 		}
 		elsif (/^date: (\d\d\d\d\/\d\d\/\d\d \d\d:\d\d:\d\d); .* author: (.*); .* state: ([^;]*);.*$/)
 		{
@@ -433,6 +461,9 @@ sub get_cvs_statistics
 		    $author = $2;
 		    $users{$author} = 1;
 		    $state = $3;
+
+		    $lines_added = 0;
+		    $lines_removed = 0;
 
 		    # Unfortunately, cvs log doesn't indicate the number of
 		    # lines an initial revision is created with, so find this
@@ -492,7 +523,33 @@ sub get_cvs_statistics
 			$number_lines;
 		    $file_version_state{$working_file}{$revision} = $state;
 		    $file_version_author{$working_file}{$revision} = $author;
-		    
+
+		    if ("" eq $lines_added) { $lines_added = 0; }
+		    if ("" eq $lines_removed) { $lines_removed = 0; }
+
+		    # This revision lives on the branch of interest.
+		    if ($file_on_branch)
+		    {
+			$sql = qq { INSERT INTO im_cvs_activity (
+				line_id, 
+				filename, cvs_project,
+				revision, date,
+				author, state, lines_add, lines_del,
+				note
+			   ) values (
+				nextval('im_cvs_activity_line_seq'),
+				'$working_file', '$rlog_module',
+				'$revision',
+				'$date'::timestamp,
+				'$author',
+				'$state',
+				'$lines_added',
+				'$lines_removed',
+				''
+			) };
+			$dbh->do($sql) || print "cvs_read: Error executing '$sql'\n";
+		    }
+	    
 		    if ($file_on_branch)
 		    {
 			$line_stats{$date}{$working_file} += $number_lines;
@@ -504,13 +561,6 @@ sub get_cvs_statistics
 		else
 		{
 		    print "Couldn't parse: $_";
-		}
-		if ($debug)
-		{
-		    print "File \"$working_file\" rev $revision ";
-		    print "delta $file_version_delta{$working_file}{$revision} ";
-		    print "state $file_version_state{$working_file}{$revision}\n";
-		    print "author $file_version_author{$working_file}{$revision}\n";
 		}
 	    }
 	}

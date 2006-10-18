@@ -17,10 +17,15 @@
 -- this allows us to track how many lines have been
 -- written on what project by a developer.
 
-create im_cvs_line_seq start 1;
+drop sequence im_cvs_activity_line_seq;
+drop table im_cvs_activity;
 
+create sequence im_cvs_activity_line_seq start 1;
 create table im_cvs_activity (
-	line_id			integer,
+	line_id			integer
+				constraint im_cvs_activity_pk
+				primary key,
+	cvs_project		varchar(500),
 	filename		varchar(500),
 	revision		varchar(50),
 	date			timestamptz,
@@ -28,5 +33,7 @@ create table im_cvs_activity (
 	state			varchar(50),
 	lines_add		integer,
 	lines_del		integer,
-	note			varchar(4000)	
+	note			varchar(4000),
+		constraint im_cvs_activity_filname_un
+		unique (filename, date)
 );
