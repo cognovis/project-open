@@ -70,19 +70,6 @@ $db_username = "projop";
 $db_pwd = "";
 
 
-
-# A hash (by date) of a hash (by filename) of lines added.
-%line_stats = ();
-
-# A hash (by date) of a hash (by filename) of the status.
-%state_stats = ();
-
-# A hash (by date) of a hash (by filename) of the revision.
-%revision_stats = ();
-
-# A hash (by date) of a hash (by filename) of the author.
-%author_stats = ();
-
 # A hash (by filename) of a hash (by version) of lines added.
 %file_version_delta = ();
 
@@ -116,12 +103,15 @@ $dbh = DBI->connect($db_datasource, $db_username, $db_pwd) ||
 
 check_missing_modules();
 process_command_line_arguments();
-get_cvs_statistics();
+get_cvs_statistics2();
 
 
 # --------------------------------------------------------
 # Disconnect from DB
 $dbh->disconnect();
+
+
+
 
 ###############################################################################
 # Utility method for quoting an argument for a shell command.  ShellQuote
@@ -231,6 +221,10 @@ sub include_file
     return 0;
 }
 
+
+
+
+
 ###############################################################################
 # Using "cvs log" and a few other commands, gather all of the necessary
 # statistics.
@@ -277,6 +271,9 @@ sub get_cvs_statistics
     # true indicates that the parser is waiting for the start of a cvs log
     # entry.
     $search_file = 1;
+
+    # Initialize comment part
+    $comment = "";
 
     # Build up the command string appropriately, depending on what options
     # have been set.
@@ -364,6 +361,9 @@ sub get_cvs_statistics
 	    }
 	    elsif (/^----------------------------$/)
 	    {
+		print "----------------------------\n";
+		$comment = "";
+
 		# Matched the description separator.  If a branch has been
 		# specified, but this file doesn't exist on it, skip this file.
 		if (($branch_tag ne "") &&
@@ -442,7 +442,7 @@ sub get_cvs_statistics
 				'$state',
 				$lines_added,
 				$lines_removed,
-				''
+				'$comment'
 			) };
 			$dbh->do($sql) || print "cvs_read: Error executing '$sql'\n";
 		    }
@@ -545,24 +545,20 @@ sub get_cvs_statistics
 				'$state',
 				'$lines_added',
 				'$lines_removed',
-				''
+				'$comment'
 			) };
 			$dbh->do($sql) || print "cvs_read: Error executing '$sql'\n";
-		    }
-	    
-		    if ($file_on_branch)
-		    {
-			$line_stats{$date}{$working_file} += $number_lines;
-			$state_stats{$date}{$working_file} = "Exp";
-			$revision_stats{$date}{$working_file} = $revision;
-			$author_stats{$date}{$working_file} = $author;
 		    }
 		}
 		else
 		{
-		    print "Couldn't parse: $_";
+		    print "Couldn't parse date line: $_";
 		}
+	    } else {
+		print "Comment: $_";
+		$comment .= $_;
 	    }
+	     
 	}
     }
     close(CVSLOG);
@@ -573,6 +569,177 @@ sub get_cvs_statistics
 	chdir $saved_cwd;
     }
 }
+
+
+
+
+
+###############################################################################
+# Using "cvs log" and a few other commands, gather all of the necessary
+# statistics.
+#
+sub get_cvs_statistics2
+{
+    # Explicitly set the timezone for window platforms, so that DateManip works.
+    if ($windows) { $ENV{TZ} = "C"; }
+
+    my $working_file = "";
+    my $relative_working_file = "";
+    my $working_cvsdir = "";
+    my $search_file = 0;
+
+    # Change to the directory nominated by $cvsdir, and save the current
+    # directory, only if we aren't using the -rlog option.
+    if ($rlog_module eq "") {
+	$saved_cwd = cwd();
+	chdir $cvsdir || die "Failed to change to directory \"$cvsdir\": $!";
+    } else {
+	# Remove the accessor part, and just get the pathname.
+	$cvsdir =~ /([^:]+)$/;
+	$working_cvsdir = $1;
+	print "Got working_cvsdir as $working_cvsdir\n" if $debug;
+
+	# Since this is used in a regexp below, need to make sure DOS pathnames
+	# are correctly matched against.
+	$working_cvsdir =~ s/\\/\\\\/g;
+    }
+
+    # Flag to indicate what the state is when parsing the output from cvs log.
+    # true indicates that the parser is waiting for the start of a cvs log
+    # entry.
+    $search_file = 1;
+
+    # Build up the command string appropriately, depending on what options
+    # have been set.
+    my $command = ($rlog_module eq '') ? "cvs $cvs_global_args log" :
+	sprintf("cvs $cvs_global_args -d %s rlog %s",
+		quote($cvsdir), quote($rlog_module));
+
+    print "Executing \"$command\"\n" if $debug;
+    open (CVSLOG, "$command |") || die "Couldn't execute \"$command\"";
+
+
+    $content = "";
+    while (<CVSLOG>)
+    {
+	if (/^=============================================================================$/) {
+	    parse_cvs_file($content);
+	    $content = "";
+	} else {
+	    $content .= $_;
+	}
+    }
+    close(CVSLOG);
+
+    # Go back to the original directory if we aren't using the -rlog option.
+    if ($rlog_module eq "")
+    {
+	chdir $saved_cwd;
+    }
+}
+
+
+
+###############################################################################
+# Method for writing out help if modules are missing.
+sub parse_cvs_file
+{
+    my ($content) = @_;
+    @pieces = split("----------------------------", $content);
+    print "======================================\n";
+
+    @pieces = reverse(@pieces);
+    $head = pop(@pieces);
+
+    if ($head =~ /RCS file: (.*),v/) {
+	$working_file = $1;
+	$working_file =~ s/Attic\///g;
+	$relative_working_file = "";
+    }
+    print "working_file = $working_file\n";
+    print "------------------------------------------------------------";
+
+    
+    @pieces = reverse(@pieces);
+
+    foreach $descr (@pieces) {
+
+	my @lines = split("\n", $descr);
+
+	foreach $line (@lines) {
+
+	    if ($line =~ /^revision ([\d\.]+)$/) {
+		# Record the revision, and whether it is part of the tag of interest.
+		$revision = $1;
+		print "revision = $revision\n";
+	    }
+	    
+	    elsif (/^date: (\d\d\d\d\/\d\d\/\d\d \d\d:\d\d:\d\d); .* author: (.*); .* state: (.*);.*lines: \+(\d+) \-(\d+).*$/) {
+		    # Note for some CVS clients, state dead is presented in
+		    # this this way, as the following pattern.
+		    $date = $1;
+		    $author = $2;
+		    $users{$author} = 1;
+		    $state = $3;
+		    $lines_added = $4;
+		    $lines_removed = $5;
+
+		    if ("" eq $lines_added) { $lines_added = 0; }
+		    if ("" eq $lines_removed) { $lines_removed = 0; }
+
+		    # This revision lives on the branch of interest.
+		    if ($file_on_branch)
+		    {
+			$sql = qq { INSERT INTO im_cvs_activity (
+				line_id, 
+				filename, cvs_project,
+				revision, date,
+				author, state, lines_add, lines_del,
+				note
+			   ) values (
+				nextval('im_cvs_activity_line_seq'),
+				'$working_file', '$rlog_module',
+				'$revision',
+				'$date'::timestamp,
+				'$author',
+				'$state',
+				$lines_added,
+				$lines_removed,
+				'$comment'
+			) };
+			$dbh->do($sql) || print "cvs_read: Error executing '$sql'\n";
+		    }
+	        }
+
+
+
+
+
+
+
+
+
+
+
+
+	}
+
+	print "---------------------------\n";
+	
+    }
+
+    print "======================================\n";
+
+}
+
+
+
+
+
+
+
+
+
 
 # Variable to store results when calling get_line_count.
 %memorise_line_count = ();
