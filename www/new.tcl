@@ -125,6 +125,16 @@ if {![info exists currency]} {
     set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"] 
 }
 
+# Don't allow the user to modify an "invoiced" item
+set has_edit 0
+set expense_invoice_id ""
+if {[info exists expense_id]} {
+    set expense_invoice_id [db_string expense_invoice "select invoice_id from im_expenses where expense_id = :expense_id" -default ""]
+}
+if {"" != $expense_invoice_id} { 
+    set form_mode "display"
+    set has_edit 1
+}
 
 # ------------------------------------------------------------------
 # Build the form
@@ -137,6 +147,7 @@ ad_form \
     -name $form_id \
     -cancel_url $return_url \
     -action $action_url \
+    -has_edit $has_edit \
     -mode $form_mode \
     -export {customer_id provider_id template_id payment_days cost_status cost_type_id tax return_url} \
     -form {
@@ -185,19 +196,6 @@ ad_form \
 #    }
 
 
-
-# ------------------------------------------------------------------
-# Debug
-# ------------------------------------------------------------------
-
-set is_request [template::form::is_request $form_id]
-set is_submission [template::form::is_submission $form_id]
-set is_valid [template::form::is_valid $form_id]
-set expense_id_exists [exists_and_not_null expense_id]
-
-# ad_return_complaint 1 "r=$is_request, s=$is_submission, v=$is_valid, x=$expense_id_exists"
-
-
 # ------------------------------------------------------------------
 # Form Actions
 # ------------------------------------------------------------------
@@ -242,6 +240,11 @@ ad_form -extend -name $form_id -on_request {
 
 } -edit_data {
 
+    # Security Check: Don't allow to change an "invoiced" expense
+    set expense_invoice_id [db_string expense_invoice "select invoice_id from im_expenses where expense_id = :expense_id" -default ""]
+    if {"" != $expense_invoice_id} {
+	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Cant_change_invoiced_item "You can't change an already invoiced expense"]
+    }
     set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
     set expense_name $expense_id
 

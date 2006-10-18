@@ -24,8 +24,12 @@
 	    </td>
 	  </tr>
 	  <tr>
-	    <td><%= [lang::message::lookup "" intranet-expenses.Project "Project"] %></td>
-	    <td><%= [im_project_select -include_all 0 project_id $project_id] %></td>
+	    <td class=form-label><%= [lang::message::lookup "" intranet-expenses.Project "Project"] %></td>
+	    <td class=form-widget><%= [im_project_select -include_all 0 project_id $project_id] %></td>
+	  </tr>
+	  <tr>
+	    <td class=form-label></td>
+	    <td class=form-widget><input type=submit></td>
 	  </tr>
 	</table>
 	</form>

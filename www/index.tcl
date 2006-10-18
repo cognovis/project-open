@@ -82,12 +82,12 @@ template::list::create \
 	}
 	effective_date {
 	    label "[_ intranet-expenses.Expense_Date]"
-	    link_url_eval "/intranet-expenses/new?expense_id=$expense_id"
+	    link_url_eval $expense_new_url
 	}
 	amount {
 	    label "[_ intranet-expenses.Amount]"
 	    display_template { <nobr>@expense_lines.amount;noquote@</nobr> }
-	    link_url_eval "/intranet-expenses/new?expense_id=$expense_id"
+	    link_url_eval $expense_new_url
 	}
 	vat {
 	    label "[_ intranet-expenses.Vat_Included]"
@@ -125,7 +125,7 @@ if {0 != $project_id} {
 
 
 
-db_multirow -extend {expense_chk} expense_lines expenses_lines "
+db_multirow -extend {expense_chk expense_new_url} expense_lines expenses_lines "
   select
 	expense_id,  
 	amount, 
@@ -165,6 +165,7 @@ db_multirow -extend {expense_chk} expense_lines expenses_lines "
 				value=\"$expense_id\" 
 				id=\"expenses_list,$expense_id\">"
     }
+    set expense_new_url [export_vars -base "/intranet-expenses/new" {expense_id return_url}]
 }
 
 
