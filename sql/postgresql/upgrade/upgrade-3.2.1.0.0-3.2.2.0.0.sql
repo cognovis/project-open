@@ -30,6 +30,8 @@ declare
         v_proman                integer;
         v_admins                integer;
 	v_reg_users		integer;
+
+	v_count			integer;
 BEGIN
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
     select group_id into v_senman from groups where group_name = ''Senior Managers'';
@@ -39,10 +41,14 @@ BEGIN
     select group_id into v_customers from groups where group_name = ''Customers'';
     select group_id into v_freelancers from groups where group_name = ''Freelancers'';
     select group_id into v_reg_users from groups where group_name = ''Registered Users'';
-    select menu_id
-    into v_main_menu
-    from im_menus
-    where label=''reporting-finance'';
+
+    select menu_id into v_main_menu
+    from im_menus where label=''reporting-finance'';
+
+    select menu_id into v_count from im_menus
+    where label = ''reporting-finance-income-statement'';
+    IF v_count != 0 THEN return 0; END IF;
+
     v_menu := im_menu__new (
         null,                   -- p_menu_id
         ''acs_object'',         -- object_type
@@ -88,6 +94,8 @@ declare
         v_proman                integer;
         v_admins                integer;
 	v_reg_users		integer;
+
+	v_count			integer;
 BEGIN
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
     select group_id into v_senman from groups where group_name = ''Senior Managers'';
@@ -98,10 +106,12 @@ BEGIN
     select group_id into v_freelancers from groups where group_name = ''Freelancers'';
     select group_id into v_reg_users from groups where group_name = ''Registered Users'';
 
-    select menu_id
-    into v_main_menu
-    from im_menus
+    select menu_id into v_main_menu from im_menus
     where label=''reporting-finance'';
+
+    select menu_id into v_count from im_menus
+    where label = ''reporting-finance-expenses'';
+    IF v_count != 0 THEN return 0; END IF;
 
     v_menu := im_menu__new (
         null,                   -- p_menu_id
@@ -147,6 +157,8 @@ declare
         v_proman                integer;
         v_admins                integer;
 	v_reg_users		integer;
+
+	v_count			integer;
 BEGIN
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
     select group_id into v_senman from groups where group_name = ''Senior Managers'';
@@ -157,10 +169,12 @@ BEGIN
     select group_id into v_freelancers from groups where group_name = ''Freelancers'';
     select group_id into v_reg_users from groups where group_name = ''Registered Users'';
 
-    select menu_id
-    into v_main_menu
-    from im_menus
+    select menu_id into v_main_menu from im_menus
     where label=''reporting-finance'';
+
+    select menu_id into v_count from im_menus
+    where label = ''reporting-finance-trans-pm-productivity'';
+    IF v_count != 0 THEN return 0; END IF;
 
     v_menu := im_menu__new (
         null,                   -- p_menu_id
@@ -207,6 +221,8 @@ declare
         v_proman                integer;
         v_admins                integer;
 	v_reg_users		integer;
+
+	v_count			integer;
 BEGIN
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
     select group_id into v_senman from groups where group_name = ''Senior Managers'';
@@ -217,10 +233,12 @@ BEGIN
     select group_id into v_freelancers from groups where group_name = ''Freelancers'';
     select group_id into v_reg_users from groups where group_name = ''Registered Users'';
 
-    select menu_id
-    into v_main_menu
-    from im_menus
+    select menu_id into v_main_menu from im_menus
     where label=''reporting-other'';
+
+    select menu_id into v_count from im_menus
+    where label = ''reporting-user-contacts'';
+    IF v_count != 0 THEN return 0; END IF;
 
     v_menu := im_menu__new (
         null,                   -- p_menu_id
