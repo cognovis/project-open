@@ -19,7 +19,6 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set project_path [im_filestorage_project_path $project_id]
-set today [db_string today "select to_char(sysdate,'YYYY-MM-DD') from dual"]
 
 set file "$project_path/$file_name"
 set guessed_file_type [ns_guesstype $file]
@@ -38,7 +37,7 @@ insert into im_fs_actions (
 ) values (
 	[im_file_action_download],
 	:user_id,
-	:today,
+	now(),
 	:file_name
 )"
 

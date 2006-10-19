@@ -186,7 +186,7 @@ create table im_fs_folder_perms (
 create table im_fs_actions (
         action_type_id          integer references im_categories,
         user_id                 integer not null references persons,
-        action_date             date,
+        action_date             timestamptz,
         file_name               varchar(1000),
                 primary key (user_id, action_date, file_name)
 );

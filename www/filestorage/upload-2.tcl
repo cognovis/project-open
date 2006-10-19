@@ -112,7 +112,7 @@ insert into im_fs_actions (
 ) values (
         [im_file_action_upload],
         :user_id,
-        :today,
+        now(),
         '$dest_path/$client_filename'
 )"
 
