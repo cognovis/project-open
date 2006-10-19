@@ -1866,4 +1866,37 @@ where
 
 
 
+# -------------------------------------------------------
+# Check if a string complies with a certain character class
+# -------------------------------------------------------
+
+
+ad_proc im_filestorage_check_filename { 
+    char_class filename 
+} {
+    Check what types of characters are supported - supported by the underlying
+    filesystem. The setting is used either to return a message if the filename 
+    is not supported or to normalize the filename to something more suitable.
+    Possible options include:
+    <li>alphanum_lower - lowercase letters and numbers without spaces
+    <li>alphanum - alphanumeric without spaces, this is the default
+    <li>alphanum_spaces - (alphanum with spaces)
+    <li>latin (Latin-1 filenames) or 
+    <li>utf8
+
+    Returns 1 if everything is OK or 0 if the filename contains forbidden chars
+} {
+    ns_log Notice "im_filestorage_check_filename: char_class=$char_class, filename=$filename"
+
+    switch $char_class {
+	alphanum_lower {  if {[regexp {[^0-9a-z_\.\-]} $filename match]} { return 0 } }
+	alphanum {        if {[regexp {[^0-9A-Za-z_\.\-]} $filename match]} { return 0 } }
+	alphanum_spaces { if {[regexp {[^0-9A-Za-z_\.\ \-]} $filename match]} { return 0 } }
+	latin { return 1 }
+	utf8 { return 1 }
+	default { return 0 }
+    }
+    return 1
+}
+
 

@@ -23,7 +23,6 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 set page_title "Upload into '$bread_crum_path'"
-set today [db_string today "select to_char(sysdate,'YYYY-MM-DD') from dual"]
 set context_bar [im_context_bar [list "/intranet/projects/" "Projects"]  [list "/intranet/projects/view?group_id=$object_id" "One Project"]  "Upload File"]
 
 
@@ -92,6 +91,21 @@ if {[regexp {\.\.} $client_filename]} {
     ad_return_complaint "User Error" $error
 }
 
+# ---------- Check for charset compliance -----------
+
+set filename $client_filename
+set charset [ad_parameter -package_id [im_package_filestorage_id] FilenameCharactersSupported "" "alphanum"]
+if {![im_filestorage_check_filename $charset $filename]} {
+    ad_return_complaint 1 [lang::message::lookup "" intranet-filestorage.Invalid_Character_Set "
+                <b>Invalid Character(s) found</b>:<br>
+                Your filename '%filename%' contains atleast one character that is not allowed
+                in your character set '%charset%'."]
+    ad_script_abort
+}
+
+
+
+
 # ---------- Determine the location where to save the file -----------
 
 
@@ -130,7 +144,7 @@ insert into im_fs_actions (
 ) values (
         [im_file_action_upload],
         :user_id,
-        :today,
+        now(),
         '$dest_path/$client_filename'
 )"
 

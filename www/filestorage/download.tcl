@@ -39,7 +39,7 @@ insert into im_fs_actions (
 ) values (
         [im_file_action_download],
         :user_id,
-        :today,
+        now(),
         :file_name
 )"
 
