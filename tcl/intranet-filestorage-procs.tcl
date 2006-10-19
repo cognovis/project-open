@@ -918,6 +918,31 @@ ad_proc -private im_filestorage_merge_perms { perms1 perms2 } {
     return $perms
 }
 
+
+ad_proc -public im_filestorage_home_folder_profile_perms {
+    profile_id
+} {
+    Returns a TCL list [list $view $read $write $admin] of the
+    profile's permission on the home folder.
+    Cache the result for 600 seconds, we'll not change home
+    folder permissions very frequently...
+} {
+    set subsite_id [ad_conn subsite_id]
+    set path_perms [util_memoize "db_string path_perms \"
+                select
+                CASE acs_permission__permission_p($subsite_id, $profile_id, 'fs_root_view')
+                WHEN 't' THEN 1 ELSE 0 END || ' ' ||
+                CASE acs_permission__permission_p($subsite_id, $profile_id, 'fs_root_read')
+                WHEN 't' THEN 1 ELSE 0 END || ' ' ||
+                CASE acs_permission__permission_p($subsite_id, $profile_id, 'fs_root_write')
+                WHEN 't' THEN 1 ELSE 0 END || ' ' ||
+                CASE acs_permission__permission_p($subsite_id, $profile_id, 'fs_root_admin')
+                WHEN 't' THEN 1 ELSE 0 END\"" 600]
+
+    return $path_perms
+}
+
+
 ad_proc -public im_filestorage_path_perms { path perm_hash_array roles profiles} {
     Returns a hash of (profile_ids -> [1 1 1 1]) for the given path,
     inheriting permissions from all super-directories
@@ -927,15 +952,19 @@ ad_proc -public im_filestorage_path_perms { path perm_hash_array roles profiles}
     ns_log Notice "im_filestorage_path_perms: roles=$roles"
     ns_log Notice "im_filestorage_path_perms: profiles=$profiles"
     ns_log Notice "im_filestorage_path_perms: perm_hash_array=$perm_hash_array"
-    
+
+    # The perm_hash represents the content of the im_fs_folder_perms
+    # The default is "{} -> {1 1 1 1}", representing full permissions
+    # for the root folder for the current(?) user
     array set perm_hash $perm_hash_array
+
     foreach profile $profiles {
+
 	set profile_id [lindex $profile 0]
 
 	# Initialize the perms with the perms of the root directory
 	set cur_path ""
-	set hash_key "$cur_path-$profile_id"
-	set path_perms $perm_hash($cur_path)
+	set path_perms [im_filestorage_home_folder_profile_perms $profile_id]
 
 	# Loop for all paths and check if there are other perms defined
 	set path_list [split $path "/"]
@@ -961,7 +990,11 @@ ad_proc -public im_filestorage_path_perms { path perm_hash_array roles profiles}
 	# Initialize the perms with the perms of the root directory
 	set cur_path ""
 	set hash_key "$cur_path-$role_id"
-	set path_perms $perm_hash($cur_path)
+	switch $role_id {
+	    1301 { set path_perms [list 1 1 1 1] }
+	    1302 { set path_perms [list 1 1 1 1] }
+	    default { set path_perms [list 0 0 0 0] }
+	}
 
 	# Loop for all paths and check if there are other perms defined
 	set path_list [split $path "/"]
