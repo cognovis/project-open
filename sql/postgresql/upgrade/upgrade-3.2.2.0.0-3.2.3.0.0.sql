@@ -5,6 +5,12 @@
 -- All rights including reserved. To inquire license terms please
 -- refer to http://www.project-open.com/modules/<module-key>
 
+-- (re-) create to make sure the drop works
+create or replace view im_cost_type as
+select  category_id as cost_type_id,
+        category as cost_type
+from    im_categories
+where   category_type = 'Intranet Cost Type';
 
 drop view im_cost_types;
 
