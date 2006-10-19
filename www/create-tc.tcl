@@ -66,7 +66,11 @@ set invoice_vat [expr [expr [expr $total_amount - $amount_before_vat] / $amount_
 # --------------------------------------
 # create invoice for these expenses
 # --------------------------------------
-set cost_name "__expense_invoice"
+
+set project_nr [db_string project_nr "select project_nr from im_projects where project_id = :project_id" -default ""]
+set cost_name [lang::message::lookup "" intranet-expenses.Expense_Invoice "Expense Invoice"]
+set cost_name "$cost_name - $project_nr"
+
 set customer_id "[im_company_internal]"
 set provider_id $user_id
 set cost_status_id [im_cost_status_created]
@@ -83,13 +87,11 @@ db_transaction {
     set invoice_id [db_exec_plsql create_expense_invoice ""] 
     set expenses_list_sql [join $expenses_list ","]
     db_dml "set invoice_id to expense_items" "
-update 
-     im_expenses 
-     set 
-         invoice_id = :invoice_id 
-where expense_id in ($expenses_list_sql)"
+	update im_expenses 
+	set invoice_id = :invoice_id 
+	where expense_id in ($expenses_list_sql)
+    "
 }
-
 
 
 template::forward "$return_url?[export_vars -url project_id]"
