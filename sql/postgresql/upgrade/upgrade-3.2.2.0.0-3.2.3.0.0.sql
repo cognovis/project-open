@@ -192,7 +192,7 @@ drop function inline_0();
 -----------------------------------------------------------------
 
 -- Set unit precesision to 3 digits
-alter table im_invoice_items alter column item_units type numeric(12,3);
+-- alter table im_invoice_items alter column item_units type numeric(12,3);
 
 
 
