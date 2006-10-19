@@ -35,5 +35,5 @@ create table im_cvs_activity (
 	lines_del		integer,
 	note			varchar(4000),
 		constraint im_cvs_activity_filname_un
-		unique (filename, date)
+		unique (filename, date, revision)
 );
