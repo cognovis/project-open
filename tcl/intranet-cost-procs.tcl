@@ -1189,15 +1189,10 @@ from
 			)
 	) ci on (cat.category_id = ci.cost_type_id)
 where
-	cat.category_id in (
-		[im_cost_type_invoice],
-		[im_cost_type_quote],
-		[im_cost_type_bill],
-		[im_cost_type_po],
-		[im_cost_type_timesheet],
-		[im_cost_type_expense_item],
-		[im_cost_type_expense_report],
-		[im_cost_type_delivery_note]
+	cat.category_id not in (
+		[im_cost_type_employee],
+		[im_cost_type_repeating],
+		[im_cost_type_expense_item]
 	)
 	and ci.currency is not null
 group by
@@ -1259,6 +1254,11 @@ where
 	and ci.cost_id in (
 		$project_cost_ids_sql
 	)
+      	and ci.cost_type_id not in (
+                [im_cost_type_employee],
+                [im_cost_type_repeating],
+                [im_cost_type_expense_item]
+        )
 order by
 	ci.cost_type_id,
 	ci.effective_date desc
