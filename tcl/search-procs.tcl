@@ -2,7 +2,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.36 2006/08/21 22:25:05 daveb Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.37 2006/10/20 21:04:49 daveb Exp $
 }
 
 namespace eval search {}
@@ -142,7 +142,7 @@ ad_proc -private search::indexer {} {
 				if {![info exists datasource(package_id)]} {
 				    set datasource(package_id) ""
 				}
-				set datasource(community_id) [search::dotlrn::get_community_id -package_id $datasource(package_id)]
+#				set datasource(community_id) [search::dotlrn::get_community_id -package_id $datasource(package_id)]
 				
 				if {![info exists datasource(relevant_date)]} {
 				    set datasource(relevant_date) ""

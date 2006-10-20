@@ -1,7 +1,7 @@
 ad_page_contract {
     @author Neophytos Demetriou <k2pts@cytanet.com.cy>
     @creation-date September 01, 2001
-    @cvs-id $Id: search.tcl,v 1.20 2006/06/04 00:45:56 donb Exp $
+    @cvs-id $Id: search.tcl,v 1.21 2006/10/20 21:04:49 daveb Exp $
 } {
     q:trim
     {t:trim ""}
@@ -33,14 +33,14 @@ if {[callback::impl_exists -impl $driver -callback search::driver_info]} {
     array set info [acs_sc_call FtsEngineDriver info [list] $driver]
 }
 
-set dotlrn_package_id [dotlrn::get_package_id]
-set is_guest_p [search::is_guest_p]
+#set dotlrn_package_id [dotlrn::get_package_id]
+#set is_guest_p [search::is_guest_p]
 
 # Ugly .LRNism: guests must not search for people. Here's the security
 # check that makes sure they cannot fiddle around with the URL
-if {$is_guest_p && [string equal $object_type "phb_person"]} {
-    ad_return_error "Security Breakin!" "Security Alert. This incident has been logged."
-}
+#if {$is_guest_p && [string equal $object_type "phb_person"]} {
+#    ad_return_error "Security Breakin!" "Security Alert. This incident has been logged."
+#}
 if { [array get info] == "" } {
     ReturnHeaders
     ns_write "[_ search.lt_FtsEngineDriver_not_a]"
