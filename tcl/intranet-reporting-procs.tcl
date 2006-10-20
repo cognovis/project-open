@@ -583,10 +583,15 @@ ad_proc im_report_output_format_select {
 	csv { set csv_checked "checked" }
     }
     return "
-	<nobr>
-	<input name=$name type=radio value='html' $html_checked>HTML
- 	<input name=$name type=radio value='csv' $csv_checked>CSV
-	</nobr>
+        <table cellspacing=0 cellpadding=0>
+        <tr>
+        <td><input name=$name type=radio value='html' $html_checked>HTML</td>
+        <td>&nbsp; asdf asdf </td>
+        <td>
+ 	  <input name=$name type=radio value='csv' $csv_checked>CSV
+        </td>
+        </tr>
+        </table>
     "
 }
 
