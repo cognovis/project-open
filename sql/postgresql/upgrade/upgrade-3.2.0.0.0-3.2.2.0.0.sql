@@ -180,57 +180,57 @@ begin
             return 0;
         end if;
 
-	select acs_privilege__create_privilege(''fi_read_all'',''Read All'',''Read All'');
-	select acs_privilege__create_privilege(''fi_write_all'',''Write All'',''Write All'');
-	select acs_privilege__add_child(''admin'', ''fi_read_all'');
-	select acs_privilege__add_child(''admin'', ''fi_write_all'');
+	PERFORM acs_privilege__create_privilege(''fi_read_all'',''Read All'',''Read All'');
+	PERFORM acs_privilege__create_privilege(''fi_write_all'',''Write All'',''Write All'');
+	PERFORM acs_privilege__add_child(''admin'', ''fi_read_all'');
+	PERFORM acs_privilege__add_child(''admin'', ''fi_write_all'');
 	
 	-- Start defining the cost_type specific privileges
 	--
-	select acs_privilege__create_privilege(''fi_read_invoices'',''Read Invoices'',''Read Invoices'');
-	select acs_privilege__create_privilege(''fi_write_invoices'',''Write Invoices'',''Write Invoices'');
-	select acs_privilege__add_child(''fi_read_all'', ''fi_read_invoices'');
-	select acs_privilege__add_child(''fi_write_all'', ''fi_write_invoices'');
+	PERFORM acs_privilege__create_privilege(''fi_read_invoices'',''Read Invoices'',''Read Invoices'');
+	PERFORM acs_privilege__create_privilege(''fi_write_invoices'',''Write Invoices'',''Write Invoices'');
+	PERFORM acs_privilege__add_child(''fi_read_all'', ''fi_read_invoices'');
+	PERFORM acs_privilege__add_child(''fi_write_all'', ''fi_write_invoices'');
 	
-	select acs_privilege__create_privilege(''fi_read_quotes'',''Read Quotes'',''Read Quotes'');
-	select acs_privilege__create_privilege(''fi_write_quotes'',''Write Quotes'',''Write Quotes'');
-	select acs_privilege__add_child(''fi_read_all'', ''fi_read_quotes'');
-	select acs_privilege__add_child(''fi_write_all'', ''fi_write_quotes'');
+	PERFORM acs_privilege__create_privilege(''fi_read_quotes'',''Read Quotes'',''Read Quotes'');
+	PERFORM acs_privilege__create_privilege(''fi_write_quotes'',''Write Quotes'',''Write Quotes'');
+	PERFORM acs_privilege__add_child(''fi_read_all'', ''fi_read_quotes'');
+	PERFORM acs_privilege__add_child(''fi_write_all'', ''fi_write_quotes'');
 	
-	select acs_privilege__create_privilege(''fi_read_bills'',''Read Bills'',''Read Bills'');
-	select acs_privilege__create_privilege(''fi_write_bills'',''Write Bills'',''Write Bills'');
-	select acs_privilege__add_child(''fi_read_all'', ''fi_read_bills'');
-	select acs_privilege__add_child(''fi_write_all'', ''fi_write_bills'');
+	PERFORM acs_privilege__create_privilege(''fi_read_bills'',''Read Bills'',''Read Bills'');
+	PERFORM acs_privilege__create_privilege(''fi_write_bills'',''Write Bills'',''Write Bills'');
+	PERFORM acs_privilege__add_child(''fi_read_all'', ''fi_read_bills'');
+	PERFORM acs_privilege__add_child(''fi_write_all'', ''fi_write_bills'');
 	
-	select acs_privilege__create_privilege(''fi_read_pos'',''Read Pos'',''Read Pos'');
-	select acs_privilege__create_privilege(''fi_write_pos'',''Write Pos'',''Write Pos'');
-	select acs_privilege__add_child(''fi_read_all'', ''fi_read_pos'');
-	select acs_privilege__add_child(''fi_write_all'', ''fi_write_pos'');
+	PERFORM acs_privilege__create_privilege(''fi_read_pos'',''Read Pos'',''Read Pos'');
+	PERFORM acs_privilege__create_privilege(''fi_write_pos'',''Write Pos'',''Write Pos'');
+	PERFORM acs_privilege__add_child(''fi_read_all'', ''fi_read_pos'');
+	PERFORM acs_privilege__add_child(''fi_write_all'', ''fi_write_pos'');
 	
-	select acs_privilege__create_privilege(''fi_read_timesheets'',''Read Timesheets'',''Read Timesheets'');
-	select acs_privilege__create_privilege(''fi_write_timesheets'',''Write Timesheets'',''Write Timesheets'');
-	select acs_privilege__add_child(''fi_read_all'', ''fi_read_timesheets'');
-	select acs_privilege__add_child(''fi_write_all'', ''fi_write_timesheets'');
+	PERFORM acs_privilege__create_privilege(''fi_read_timesheets'',''Read Timesheets'',''Read Timesheets'');
+	PERFORM acs_privilege__create_privilege(''fi_write_timesheets'',''Write Timesheets'',''Write Timesheets'');
+	PERFORM acs_privilege__add_child(''fi_read_all'', ''fi_read_timesheets'');
+	PERFORM acs_privilege__add_child(''fi_write_all'', ''fi_write_timesheets'');
 	
-	select acs_privilege__create_privilege(''fi_read_delivery_notes'',''Read Delivery Notes'',''Read Delivery Notes'');
-	select acs_privilege__create_privilege(''fi_write_delivery_notes'',''Write Delivery Notes'',''Write Delivery Notes'');
-	select acs_privilege__add_child(''fi_read_all'', ''fi_read_delivery_notes'');
-	select acs_privilege__add_child(''fi_write_all'', ''fi_write_delivery_notes'');
+	PERFORM acs_privilege__create_privilege(''fi_read_delivery_notes'',''Read Delivery Notes'',''Read Delivery Notes'');
+	PERFORM acs_privilege__create_privilege(''fi_write_delivery_notes'',''Write Delivery Notes'',''Write Delivery Notes'');
+	PERFORM acs_privilege__add_child(''fi_read_all'', ''fi_read_delivery_notes'');
+	PERFORM acs_privilege__add_child(''fi_write_all'', ''fi_write_delivery_notes'');
 	
-	select acs_privilege__create_privilege(''fi_read_expense_items'',''Read Expense Items'',''Read Expense Items'');
-	select acs_privilege__create_privilege(''fi_write_expense_items'',''Write Expense Items'',''Write Expense Items'');
-	select acs_privilege__add_child(''fi_read_all'', ''fi_read_expense_items'');
-	select acs_privilege__add_child(''fi_write_all'', ''fi_write_expense_items'');
+	PERFORM acs_privilege__create_privilege(''fi_read_expense_items'',''Read Expense Items'',''Read Expense Items'');
+	PERFORM acs_privilege__create_privilege(''fi_write_expense_items'',''Write Expense Items'',''Write Expense Items'');
+	PERFORM acs_privilege__add_child(''fi_read_all'', ''fi_read_expense_items'');
+	PERFORM acs_privilege__add_child(''fi_write_all'', ''fi_write_expense_items'');
 	
-	select acs_privilege__create_privilege(''fi_read_expense_reports'',''Read Expense Reports'',''Read Expense Reports'');
-	select acs_privilege__create_privilege(''fi_write_expense_reports'',''Write Expense Reports'',''Write Expense Reports'');
-	select acs_privilege__add_child(''fi_read_all'', ''fi_read_expense_reports'');
-	select acs_privilege__add_child(''fi_write_all'', ''fi_write_expense_reports'');
+	PERFORM acs_privilege__create_privilege(''fi_read_expense_reports'',''Read Expense Reports'',''Read Expense Reports'');
+	PERFORM acs_privilege__create_privilege(''fi_write_expense_reports'',''Write Expense Reports'',''Write Expense Reports'');
+	PERFORM acs_privilege__add_child(''fi_read_all'', ''fi_read_expense_reports'');
+	PERFORM acs_privilege__add_child(''fi_write_all'', ''fi_write_expense_reports'');
 	
-	select acs_privilege__create_privilege(''fi_read_repeatings'',''Read Repeatings'',''Read Repeatings'');
-	select acs_privilege__create_privilege(''fi_write_repeatings'',''Write Repeatings'',''Write Repeatings'');
-	select acs_privilege__add_child(''fi_read_all'', ''fi_read_repeatings'');
-	select acs_privilege__add_child(''fi_write_all'', ''fi_write_repeatings'');
+	PERFORM acs_privilege__create_privilege(''fi_read_repeatings'',''Read Repeatings'',''Read Repeatings'');
+	PERFORM acs_privilege__create_privilege(''fi_write_repeatings'',''Write Repeatings'',''Write Repeatings'');
+	PERFORM acs_privilege__add_child(''fi_read_all'', ''fi_read_repeatings'');
+	PERFORM acs_privilege__add_child(''fi_write_all'', ''fi_write_repeatings'');
 
         return 0;
 end;' language 'plpgsql';
