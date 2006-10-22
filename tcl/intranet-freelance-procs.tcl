@@ -419,42 +419,15 @@ ad_proc im_freelance_member_select_component { object_id return_url } {
     to select freelancers according to the characteristics of
     the current project.
 } {
-    # ToDo: "Virtualize" this procedure by adapting the SQL statement to the
-    # number of "hard conditions" specified in "hard_conditions_list"
-
-    # Full Member as default:
+    # Default Role: "Full Member"
     set default_role_id 1300
-    
-    set count 0
-    set hard_conditions_list [list "Source Language" "Target Language" "Subjects"]
-    set project_cat_id [list ]
-    
-    foreach project_ids $hard_conditions_list {
-	set cat [lindex $hard_conditions_list $count]
-	db_1row project_id "
-select
-	category_id
-from
-	im_categories
-where
-	category = '$cat'
-"
-	lappend project_cat_id $category_id
-	incr count
-    }
-    
-    # Determine the list of user_ids that match the "hard"
-    # criterial to participate in a project: That the basic
-    # source and target languages must be covered by the
-    # translators. "Basic" means the language without country
-    # extension such as [es] instead of [es_MX]
-    #
 
-    set sl [lindex $project_cat_id 0]
-    set tl [lindex $project_cat_id 1]
-    set sa [lindex $project_cat_id 2]
-    
-    set freelance_sql_1 "
+    set sl [db_string source_language "select category_id from im_categories where category = 'Source Language' and category_type = 'Intranet Skill Type'" -default 0]
+    set tl [db_string target_language "select category_id from im_categories where category = 'Target Language' and category_type = 'Intranet Skill Type'" -default 0]
+    set sa [db_string target_language "select category_id from im_categories where category = 'Subject Type' and category_type = 'Intranet Skill Type'" -default 0]
+
+
+    set freelance_sql "
 select
 	pe.first_names || ' ' || pe.last_name as name,
 	pe.person_id as user_id,
@@ -496,25 +469,25 @@ order by
 
     set freelance_header_html "
 	<tr class=rowtitle>
+	  <td class=rowtitle>[lang::message::lookup "" intranet-freelance.Sel "Sel"]</td>
 	  <td class=rowtitle>[_ intranet-freelance.Freelance]</td>
 	  <td class=rowtitle>[_ intranet-freelance.Source_Language]</td>
 	  <td class=rowtitle>[_ intranet-freelance.Target_Language]</td>
 	  <td class=rowtitle>[_ intranet-freelance.Subject_Area]</td>
-	  <td class=rowtitle>[lang::message::lookup "" intranet-freelance.Sel "Sel"]</td>
 	</tr>"
     
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
     set ctr 0
     set freelance_body_html ""
-    db_foreach freelance $freelance_sql_1 {
+    db_foreach freelance $freelance_sql {
 	append freelance_body_html "
 	<tr$bgcolor([expr $ctr % 2])>
+          <td><input type=radio name=user_id_from_search value=$user_id></td>
 	  <td><a href=users/view?[export_url_vars user_id]><nobr>$name</nobr></a></td>
 	  <td>$source_languages</td>
 	  <td>$target_languages</td>
 	  <td>$subject_area</td>
-          <td><input type=radio name=user_id_from_search value=$user_id></td>
 	</tr>"
         incr ctr
     }
@@ -537,7 +510,7 @@ order by
 	  <tr> 
 	    <td colspan=5>add as 
 	      [im_biz_object_roles_select role_id $object_id $default_role_id]
-	      <input type=submit value=\"[_ intranet-freelance.Add]\">
+	      <input type=submit value=\"[_ intranet-core.Add]\">
 	      <input type=checkbox name=notify_asignee value=1 checked>[_ intranet-freelance.Notify]<br>
 	    </td>
 	  </tr>
