@@ -1,6 +1,6 @@
 # /packages/intranet-freelance/tcl/intranet-freelance-procs.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (c) 2003-2006 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -422,58 +422,62 @@ ad_proc im_freelance_member_select_component { object_id return_url } {
     # Default Role: "Full Member"
     set default_role_id 1300
 
-    set sl [db_string source_language "select category_id from im_categories where category = 'Source Language' and category_type = 'Intranet Skill Type'" -default 0]
-    set tl [db_string target_language "select category_id from im_categories where category = 'Target Language' and category_type = 'Intranet Skill Type'" -default 0]
-    set sa [db_string target_language "select category_id from im_categories where category = 'Subject Type' and category_type = 'Intranet Skill Type'" -default 0]
+    # Enable RFQs?
+    set enable_rfq_p 0
 
+    set colspan 5
+    if {$enable_rfq_p} { set colspan 6 }
+
+    set source_lang_skill_type [db_string source_lang "select category_id from im_categories where category = 'Source Language' and category_type = 'Intranet Skill Type'" -default 0]
+    set target_lang_skill_type [db_string target_lang "select category_id from im_categories where category = 'Target Language' and category_type = 'Intranet Skill Type'" -default 0]
+    set subject_area_skill_type [db_string target_lang "select category_id from im_categories where category = 'Subject Type' and category_type = 'Intranet Skill Type'" -default 0]
+
+    set project_source_lang [db_string source_lang "select substr(im_category_from_id(source_language_id), 1, 2) from im_projects where project_id = :object_id" -default 0]
+    set project_target_langs [db_list target_langs "select '''' || substr(im_category_from_id(language_id), 1, 2) || '''' from im_target_languages where project_id = :object_id"]
 
     set freelance_sql "
 select
-	pe.first_names || ' ' || pe.last_name as name,
-	pe.person_id as user_id,
-	im_freelance_skill_list(pe.person_id, :sl) as source_languages,
-	im_freelance_skill_list(pe.person_id, :tl) as target_languages,
-	im_freelance_skill_list(pe.person_id, :sa) as subject_area
+	u.user_id,
+	im_name_from_user_id(u.user_id) as name,
+	im_freelance_skill_list(u.user_id, :source_lang_skill_type) as source_langs,
+	im_freelance_skill_list(u.user_id, :target_lang_skill_type) as target_langs,
+	im_freelance_skill_list(u.user_id, :subject_area_skill_type) as subject_area
 from
-	persons pe,
-	(select distinct
-	        u.user_id
-	from
-	        users u,
-	        (select sk.*, substr(im_category_from_id(sk.skill_id),1,2) as lang
-	        from im_freelance_skills sk where sk.skill_type_id=$sl
-	        ) sks,
-	        (select sk.*, substr(im_category_from_id(sk.skill_id),1,2) as lang
-	         from im_freelance_skills sk where sk.skill_type_id=$tl
-	        ) skt,
-	        (select substr(im_category_from_id(p.source_language_id),1,2) as source_lang,
-			substr(im_category_from_id(language_id),1,2) as target_lang
-	         from	im_projects p,
-			im_target_languages itl
-		 where 
-			itl.project_id = :object_id
-			and p.project_id = itl.project_id
-	        ) p
-	where
-	        sks.user_id = u.user_id
-	        and skt.user_id = u.user_id
-	        and sks.lang = p.source_lang
-	        and skt.lang = p.target_lang
-	) mu
+	cc_users u,
+	(
+		select	user_id
+		from	im_freelance_skills
+		where	skill_type_id = :source_lang_skill_type
+			and substr(im_category_from_id(skill_id), 1, 2) = :project_source_lang
+
+	) sls,
+	(	
+		select	user_id
+		from	im_freelance_skills
+		where	skill_type_id = :target_lang_skill_type
+			and substr(im_category_from_id(skill_id), 1, 2) in ([join $project_target_langs ","])
+	) tls
 where
-	pe.person_id = mu.user_id
+	1=1
+	and sls.user_id = u.user_id
+	and tls.user_id = u.user_id
 order by
-	pe.last_name,
-	pe.first_names
+	u.last_name,
+	u.first_names
 "
 
     set freelance_header_html "
-	<tr class=rowtitle>
-	  <td class=rowtitle>[lang::message::lookup "" intranet-freelance.Sel "Sel"]</td>
+	<tr class=rowtitle>\n"
+    if {$enable_rfq_p} {
+	append freelance_header_html "
+	  <td class=rowtitle>[lang::message::lookup "" intranet-freelance.Sel "Sel"]</td>\n"
+    }
+    append freelance_header_html "
 	  <td class=rowtitle>[_ intranet-freelance.Freelance]</td>
 	  <td class=rowtitle>[_ intranet-freelance.Source_Language]</td>
 	  <td class=rowtitle>[_ intranet-freelance.Target_Language]</td>
 	  <td class=rowtitle>[_ intranet-freelance.Subject_Area]</td>
+	  <td class=rowtitle>[lang::message::lookup "" intranet-freelance.Sel "Sel"]</td>
 	</tr>"
     
     set bgcolor(0) " class=roweven "
@@ -482,18 +486,31 @@ order by
     set freelance_body_html ""
     db_foreach freelance $freelance_sql {
 	append freelance_body_html "
-	<tr$bgcolor([expr $ctr % 2])>
-          <td><input type=radio name=user_id_from_search value=$user_id></td>
+	<tr$bgcolor([expr $ctr % 2])>\n"
+	if {$enable_rfq_p} {
+	    append freelance_header_html "
+          <td><input type=checkbox name=invitee_id value=$user_id></td>\n"
+	}
+	append freelance_body_html "
 	  <td><a href=users/view?[export_url_vars user_id]><nobr>$name</nobr></a></td>
-	  <td>$source_languages</td>
-	  <td>$target_languages</td>
+	  <td>$source_langs</td>
+	  <td>$target_langs</td>
 	  <td>$subject_area</td>
+          <td><input type=radio name=user_id_from_search value=$user_id></td>
 	</tr>"
         incr ctr
     }
 
     if { $freelance_body_html == "" } {
-	set freelance_body_html "<tr><td colspan=5 align=center><b>[_ intranet-freelance.no_freelancers]</b></td>"
+	set freelance_body_html "<tr><td colspan=$colspan align=center><b>[_ intranet-freelance.no_freelancers]</b></td>"
+    }
+
+    set freelance_invite_html ""
+    if {$enable_rfq_p} {
+        append freelance_invite_html "
+	    [lang::message::lookup "" intranet-freelance.Invite_for_RFQ "Invite to RFQ"]<br>
+	    <input type=submit name=submit_invite value=\"[lang::message::lookup "" intranet-freelance.Invite "Invite"]\">
+        "
     }
     
     set select_freelance "
@@ -503,15 +520,29 @@ order by
 	<input type=hidden name=passthrough value='object_id role return_url also_add_to_group_id'>
 	<table cellpadding=0 cellspacing=2 border=0>
 	<tr>
-	<td class=rowtitle align=middle colspan=5>Freelance</td>
+	<td class=rowtitle align=middle colspan=$colspan>Freelance</td>
 	</tr>
 	$freelance_header_html
 	$freelance_body_html
 	  <tr> 
-	    <td colspan=5>add as 
-	      [im_biz_object_roles_select role_id $object_id $default_role_id]
-	      <input type=submit value=\"[_ intranet-core.Add]\">
-	      <input type=checkbox name=notify_asignee value=1 checked>[_ intranet-freelance.Notify]<br>
+	    <td colspan=$colspan>
+
+		<table cellspacing=0 cellpadding=0 width=\"100%\">
+		<tr valign=top>
+		<td width=\"50%\">
+			$freelance_invite_html
+		</td>
+		<td width=\"50%\" align=right>
+
+		      [_ intranet-core.add_as]
+		      [im_biz_object_roles_select role_id $object_id $default_role_id]<br>
+		      <input type=submit name=submit_add value=\"[_ intranet-core.Add]\">
+		      <input type=checkbox name=notify_asignee value=1 checked>[_ intranet-freelance.Notify]<br>
+
+		</td>
+		</tr>
+		</table>
+
 	    </td>
 	  </tr>
 	</table>
