@@ -116,7 +116,11 @@ begin
         where attribute_name = v_attrib_name;
         IF 0 != v_count THEN return 0; END IF;
 
-        alter table im_projects add final_company varchar(200);
+	select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_projects'' and lower(column_name) = ''final_company'';
+	IF v_count = 0 THEN
+		alter table im_projects add final_company varchar(200);
+	END IF;
 
         v_acs_attrib_id := acs_attribute__create_attribute (
                 v_object,
