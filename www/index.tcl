@@ -178,7 +178,7 @@ db_foreach column_list_sql $column_sql {
 
 
 # ---------------------------------------------------------------
-# 4. Define Filter Categories
+# Define Filter Categories
 # ---------------------------------------------------------------
 
 # rec_stati will be a list of pairs of (status_id, status)
@@ -351,32 +351,30 @@ set skill_sql "
 	order by st.category_id
 "
 
-ns_log Notice "intranet-freelance/index: skill_type_filter names = [array names skill_type_filter]"
 set skill_filter_html ""
+
 db_foreach skills $skill_sql {
 
-    ns_log Notice "intranet-freelance/index: Checking for skill_type_id=$skill_type_id"
     set default ""
     if {[info exists skill_type_filter($skill_type_id)]} { 
 	set default $skill_type_filter($skill_type_id)
-	ns_log Notice "intranet-freelance/index: Found skill_type_id=$skill_type_id default=$default"
     }
 
     append skill_filter_html "
-<tr>
-<td>$skill_type</td>
-<td>
-[im_category_select \
-     -include_empty_p 1 \
-     -plain_p 1 \
-     -include_empty_name "All" \
-     $skill_category \
-     skill_type_filter.$skill_type_id \
-     $default \
-]
-</td>
-</tr>
-"
+	<tr>
+	<td>$skill_type</td>
+	<td>
+	[im_category_select \
+	     -include_empty_p 1 \
+	     -plain_p 1 \
+	     -include_empty_name "All" \
+	     $skill_category \
+	     skill_type_filter.$skill_type_id \
+	     $default \
+	]
+	</td>
+	</tr>
+    "
 }
 
 
