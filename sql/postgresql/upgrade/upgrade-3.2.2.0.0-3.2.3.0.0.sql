@@ -59,7 +59,12 @@ begin
 		insert into acs_object_type_tables (object_type, table_name, id_column)
 		values (''im_project'', ''im_projects'', ''project_id'');
 	END IF;
-        alter table im_projects add company_project_nr varchar(50);
+
+	select  count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_projects'' and lower(column_name) = ''company_project_nr'';
+	IF v_count = 0 THEN
+		alter table im_projects add company_project_nr varchar(50);
+	END IF;
 
         v_acs_attrib_id := acs_attribute__create_attribute (
                 v_object,
