@@ -11,6 +11,7 @@
 select    im_component_plugin__del_module('intranet-trans-invoices');
 select    im_menu__del_module( 'intranet-trans-invoices');
 
+
 create or replace function inline_01 ()
 returns integer as '
 DECLARE
