@@ -1,0 +1,24 @@
+if { ![regexp {com/([^/]+)/(.*)$} [ad_conn extra_url] match url_name rest] } {
+    # Try adding a slash
+    ad_returnredirect "[ad_conn url]/"
+    return
+}
+
+set package_id [ad_conn package_id]
+
+set found_p [db_0or1row component { select component_id from bt_components where project_id = :package_id and url_name = :url_name }]
+
+if { $found_p } {
+        
+    if { [empty_string_p $rest] } {
+        set rest "index"
+    }
+
+    bug_tracker::conn -set component_id $component_id
+   
+    set redirect_to [file join / packages bug-tracker www $rest]
+        
+    rp_internal_redirect $redirect_to
+} else {
+    ns_returnnotfound
+}

@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Submitting a Patch</title>
+  </head>
+
+  <body>
+    <h1>Submitting a Patch</h1>
+
+    <p>
+      The very short answer is <code>diff -u</code> or
+      better, <code>cvs diff -u</code> and in either case you should
+      then inspect the resulting patch file to insure that it is what
+      you expect and manually remove any changes which should not be
+      part of the submitted patch. <em>For people not using GNU diff,
+        -u and -N may not work, use -c for context diffs, and
+        <code>diff /dev/null filename</diff> to generate a diff to
+          create a file</em>.
+    </p>
+
+    <h2>The best way: Make changes in a current cvs checkout</h2>
+    
+    <p> 
+      If you have made changes in a cvs checkout just type
+      <blockquote>
+        <code>cvs diff -Nu package-dir &gt; patch-file</code> 
+      </blockquote>
+      in the package /web/openacs-4/package directory to generate
+      the patch (see below if you have also added files).
+    </p>
+
+    <h2>The bad way</h2>
+    <p>
+      If you are working from code that is not a cvs checkout
+      (definitely less desirable, see below) then you should type
+      either:
+      <blockquote>
+        <code>diff -u package-dir/.../old-file  package-dir/.../new-file &gt; patch-file</code> 
+      </blockquote>
+      or if you have modified more than one file you might want to do
+      <blockquote>
+        <code>diff -rNu old-package-dir new-package-dir &gt; patch-file</code>
+      </blockquote>
+      which will do a recursive context diff of the old directory versus the
+      new directory (the <code>-r</code> flag) and generate patches which
+      will create new files if you have added files (the <code>-N</code>
+      flag).
+    </p>
+
+    <h2>Gory Details</h2>
+
+    <h3>General</h3>
+    <p>
+      We prefer patches be generated from the top-level directory of
+      the package so that it is clear from the patch where the file 
+      belongs.
+    </p>
+    <p>
+      The <code>-N</code> flag will generate a chunk in the patch file
+      to create any new files you have added but please be careful
+      that the files that will created really should be part of the
+      patch.  It is easy to have editor backup file and others show up
+      (although cvs diff generally does not have this problem).
+    </p>
+    <p>
+      Try to avoid reformatting large blocks of code unless absolutely
+      necessary.  It is quite important that the changes be as small as
+      possible so the the patch maintainer can inspect the patch quickly
+      and apply it if needed.
+    </p>
+
+    <h3>cvs diff</h3>
+
+    <p>
+      If you have cvs commit and are going to commit your changes but
+      want to produce a diff for documentation purposes you should 
+      <code>cvs add</code> any new files you have made first so that 
+      cvs diff will produce a diff which will create the new files.
+    </p>
+    <p>
+      If you are working from an anonymous checkout you should do the 
+      following to add diffs for new files to the patch file:
+      <blockqoute> 
+        <code>diff -u /dev/null package-dir/.../new-file &gt;&gt; patch-file</code>
+      </blockquote>
+    </p>
+
+    <h3>Non-cvs checkout</h3>
+    <p>
+      In an ideal world you would do a checkout from the head, make
+      your changes, test them, and submit a <code>cvs diff</code> as 
+      above.  If you are unwilling to do so, a diff based patch is
+      still useful to the project but is less likely to be applied 
+      as quickly (if at all).  Posting entire changed files is almost 
+      useless since it is difficult and time consuming to find 
+      what you have changed and such postings are entirely likely 
+      to be rejected outright.
+    </p>
+    <p>
+      if you have new files to add to your patch, add them to the 
+      patch file via:
+      <blockqoute> 
+        <code>diff -u /dev/null new-file &gt;&gt; patch-file</code>
+      </blockquote>
+    </p>
+
+
+
+
+
+    <hr>
+      <address><a href="mailto:davis@netcomuk.co.uk">Jeff Davis</a></address>
+      <!-- Created: Sun Sep 15 12:11:31 EDT 2002 -->
+      <!-- hhmts start -->
+Last modified: Fri Dec 13 06:39:02 EST 2002
+<!-- hhmts end -->
+  </body>
+</html>
