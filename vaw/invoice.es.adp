@@ -59,10 +59,7 @@ p {
 	font-size: 6pt;
 }
 
-
 </style>
-
-
 </head>
 
 <body text="#000000">
