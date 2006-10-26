@@ -271,7 +271,7 @@ set filter_html "
   <td valign=top>
 
 	<form method=get action='/intranet-cost/list'>
-	[export_form_vars start_idx order_by how_many view_name include_subcosts_p letter]
+	[export_form_vars start_idx order_by how_many view_name view_mode include_subcosts_p customer_id provider_id company_id project_id letter]
 	<table border=0 cellpadding=1 cellspacing=1>
 	  <tr> 
 	    <td colspan='2' class=rowtitle align=center>
