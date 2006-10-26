@@ -15,6 +15,7 @@ ad_page_contract {
     { end_date "" }
     { level_of_detail 3 }
     { output_format "html" }
+    { number_locale "" }
     { customer_id:integer 0}
 }
 
@@ -51,6 +52,7 @@ set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurr
 set cur_format [im_l10n_sql_currency_format]
 set date_format [im_l10n_sql_date_format]
 set locale [lang::user::locale]
+if {"" == $number_locale} { set number_locale $locale  }
 
 set company_url "/intranet/companies/view?company_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
@@ -494,6 +496,12 @@ switch $output_format {
                     [im_report_output_format_select output_format $output_format]
                   </td>
                 </tr>
+                <tr>
+                  <td class=form-label><nobr>Number Format</nobr></td>
+                  <td class=form-widget>
+                    [im_report_number_locale_select number_locale $number_locale]
+                  </td>
+                </tr>
 		<tr>
 		  <td class=form-label></td>
 		  <td class=form-widget><input type=submit value=Submit></td>
@@ -531,13 +539,13 @@ set class "rowodd"
 ns_log Notice "intranet-reporting/finance-income-statement: sql=\n$sql"
 
 db_foreach sql $sql {
-
+    
     set invoice_amount_pretty [im_report_format_number $invoice_amount $output_format $locale]
     set bill_amount_pretty [im_report_format_number $bill_amount $output_format $locale]
     set expense_amount_pretty [im_report_format_number $expense_amount $output_format $locale]
     set vat_amount_pretty [im_report_format_number $vat_amount $output_format $locale]
     set tax_amount_pretty [im_report_format_number $tax_amount $output_format $locale]
-
+    
     if {"" == $customer_id} {
 	set customer_id 0
 	set customer_name "No Customer"

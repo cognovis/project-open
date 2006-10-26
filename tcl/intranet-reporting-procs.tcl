@@ -569,11 +569,14 @@ ad_proc im_report_skip_if_zero {
 
 ad_proc im_report_output_format_select {
     name
+    {locale ""}
     { output_format ""}
 } {
     Returns a formatted select widget (radio buttons)
     to allow a user to select the output format
 } {
+    if {"" == $locale} { set locale [lang::user::locale] }
+
     set html_checked ""
     set excel_checked ""
     set csv_checked ""
@@ -583,17 +586,31 @@ ad_proc im_report_output_format_select {
 	csv { set csv_checked "checked" }
     }
     return "
-        <table cellspacing=0 cellpadding=0>
-        <tr>
-        <td><input name=$name type=radio value='html' $html_checked>HTML</td>
-        <td>&nbsp; asdf asdf </td>
-        <td>
- 	  <input name=$name type=radio value='csv' $csv_checked>CSV
-        </td>
-        </tr>
-        </table>
+	<nobr>
+        <input name=$name type=radio value='html' $html_checked>HTML &nbsp;
+ 	<input name=$name type=radio value='csv' $csv_checked>CSV
+        </nobr>
     "
 }
+
+
+ad_proc im_report_number_locale_select {
+    name
+    {locale ""}
+} {
+    Returns a formatted select widget (select)
+    to allow a user to select the number locale of a report
+} {
+    if {"" == $locale} { set locale [lang::user::locale] }
+
+    return "
+          <select name=number_format>
+		<option value='de_DE'>de_DE</option>
+		<option value='en_US' selected>en_US</option>
+          </select>
+    "
+}
+
 
 ad_proc im_report_write_http_headers {
     -output_format
