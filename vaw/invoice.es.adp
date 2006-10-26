@@ -191,26 +191,25 @@ Verlag Automobil Wirtschaft S.L. | Alcalde Ferrer i Mon&eacute;s, 23 | 08820 Bar
     if {$cost_type_id == [im_cost_type_bill]} { set doc_title "Factura" }
 %>
 
-      <p><b><%= $doc_title %><b></p>
+      <p><b><%= $doc_title %> <%= [join $related_project_nrs ", "] %> <b></p>
 
         <table border="0" cellspacing="1" cellpadding="1">
           <tr> 
             <td colspan="2" class="rowtitle"></td>
           </tr>
           <tr> 
-
             <td class=address>Verlag Automobil Wirtschaft S.L.</td>
           </tr>
           <tr> 
-
+            <td class=address><%= $internal_contact_name %> </td>
+          </tr>
+          <tr> 
             <td class=address>Alcalde Ferrer i Mon&eacute;s, 23</td>
           </tr>
           <tr> 
-
             <td class=address>08820 Barcelona</td>
           </tr>
           <tr> 
-
             <td class=address>Espa&ntilde;a</td>
           </tr>
         </table>
@@ -233,7 +232,7 @@ Verlag Automobil Wirtschaft S.L. | Alcalde Ferrer i Mon&eacute;s, 23 | 08820 Bar
           </tr>
           <tr> 
             <td class=address>Correo</td>
-            <td class=address>info@vaw-online.com</td>
+            <td class=address><%= $internal_contact_email %> </td>
           </tr>
         </table>
     </td>
@@ -253,7 +252,7 @@ Verlag Automobil Wirtschaft S.L. | Alcalde Ferrer i Mon&eacute;s, 23 | 08820 Bar
 
     <tr> 
       <td class=rowtitle>Su pedido no:&nbsp;</td>
-      <td class=address></td>
+      <td class=address> <%= [join $related_customer_project_nrs ", "] %></td>
     </tr>
 
   </table>
@@ -285,22 +284,18 @@ Verlag Automobil Wirtschaft S.L. | Alcalde Ferrer i Mon&eacute;s, 23 | 08820 Bar
 <table border="0" cellspacing="2" cellpadding="2">
 <%=$item_list_html %>
 </table>
-  <table border="0" cellpadding="1" cellspacing="1">
-<!--
-    <tr> 
-      <td class=rowtitle><nobr>Albaranes:&nbsp;</nobr></td>
-      <td class=rowodd> nothing defined yet </td>
-    </tr>
--->
+
+<table border="0" cellpadding="1" cellspacing="1">
     <tr> 
       <td class=rowtitle><nobr><%= $cond_pago_string%></nobr></font></td>
-      <td class=address>Esta factura se considerara como impagada posterior a <%=$calculated_due_date_pretty %>.</td>
+      <td class=address>Esta factura se considerara como impagada posterior a 
+	<%=$calculated_due_date_pretty %>.</td>
     </tr>
     <tr> 
       <td class=rowtitle><nobr><%=$forma_pago_string %></nobr></td>
-      <td class=address><%= [lang::message::lookup $locale intranet-core.[lang::util::suggest_key $invoice_payment_method] $invoice_payment_method] %></td>
-
-
+      <td class=address>
+      <%= [lang::message::lookup $locale intranet-core.[lang::util::suggest_key $invoice_payment_method] $invoice_payment_method] %>
+      </td>
     </tr>
     <tr valign=top> 
       <td class=rowtitle><%=$nota_string %></td>
@@ -308,7 +303,7 @@ Verlag Automobil Wirtschaft S.L. | Alcalde Ferrer i Mon&eacute;s, 23 | 08820 Bar
        <pre><div class=address><%=$cost_note %></div></pre>
        </td>
     </tr>
-  </table>
+</table>
 <br>
 
 
