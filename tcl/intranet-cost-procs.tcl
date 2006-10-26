@@ -945,7 +945,8 @@ from
 	im_costs ci,
 	acs_objects o,
         (select * from im_biz_object_urls where url_type=:view_mode) url,
-	(	select	cc.cost_center_id,
+	(	select distinct
+			cc.cost_center_id,
 			ct.cost_type_id
 		from	im_cost_centers cc,
 			im_cost_types ct,
