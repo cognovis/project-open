@@ -19,20 +19,11 @@ span.list-label {
 }
 
 
-tr.list-header {
-  background-color: white; 
-}
 tr.list-subheader {
   background-color: white; 
   font-weight: bold;
   border-top: 3px solid #A0BDEB;
   border-bottom: 1px solid #A0BDEB;
-}
-tr.list-even {
-  background-color: white;
-}
-tr.list-odd {
-  background-color: #EAF2FF;
 }
 tr.list-spacer {
   background-color: #f9f9f9;
@@ -44,11 +35,7 @@ th.list {
   padding-right: 16px;
   border-bottom: 3px solid #A0BDEB;
 }
-th.list-narrow {
-  padding-left: 4px; 
-  padding-right: 4px;
-  border-bottom: 3px solid #A0BDEB;
-}
+
 th.list a {
   color: black;
 }
