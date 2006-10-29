@@ -50,6 +50,64 @@ ad_proc -private im_package_bug_tracker_id_helper {} {
 
 
 # ----------------------------------------------------------------------
+# Options & Selects
+# ----------------------------------------------------------------------
+
+ad_proc -public im_bt_project_options { 
+    {-include_empty_p 0}
+} {
+    Get a list of "BT Container Projects" for the current user.
+} {
+    set user_id [ad_get_user_id]
+    set options [db_list_of_lists project_options "
+	select
+		p.project_id,
+		p.project_name
+	from
+		im_projects p,
+		acs_rels r
+	where
+		project_type_id = [im_project_type_bt_container]
+		and r.object_id_one = p.project_id
+		and r.object_id_two = :user_id
+    "]
+    if {$include_empty_p} { set options [linsert $options 0 { "" "" }] }
+    return $options
+}
+
+ad_proc -public im_bt_generic_select { 
+    {-include_empty_p 0}
+    { -options ""}
+    name
+    default
+} {
+    Get a list of "BT Container Projects" for the current user.
+} {
+    set result "<select name=\"$name\">\n"
+    foreach option $options {
+	set id [lindex $option 0]
+	set name [lindex $option 1]
+	if {$default == $id} { set selected "" } else { set selected "selected" }
+	append result "<option value=\"$id\" $selected>$name</option>\n"
+    }
+    append result "</select>\n"
+    return $result
+}
+
+ad_proc -public im_bt_project_select { 
+    {-include_empty_p 0}
+    name
+    default
+} {
+    Get a list of "BT Container Projects" for the current user.
+} {
+    set options [im_bt_project_options -include_empty_p $include_empty_p]
+    return [im_bt_generic_select -include_empty_p $include_empty_p -options $options $name $default]
+}
+
+
+
+# ----------------------------------------------------------------------
 # Components
 # ----------------------------------------------------------------------
 
@@ -61,10 +119,44 @@ ad_proc -public im_bug_tracker_container_component {
     and the current version, so that the customer doesn't need to set
     all these variables.
 } {
-    return ""
+    set action_url "/intranet-bug-tracker/bug-add"
+    set return_url [im_url_with_query]
+    set options [im_bt_project_options]
+    if {[llength $options] > 0} {
+	set project_html [im_bt_generic_select -options $options maintenance_project_id ""]
+	set button_text [lang::message::lookup "" intranet-bug-tracker.New_Issue "New Issue"]
+	set button_html "<input type=submit value=\"$button_text\">"
+    } else {
+	# Just return an empty string in order to disable this component
+	return ""
+	set project_html [lang::message::lookup "" intranet-bug-tracker.You_are_not_a_member_of_any_maintenance_projects "You are not a member of any maintenance project"]
+	set button_html ""
+    }
 
-
-
-
+    set html "
+	<table cellspacing=1 cellpadding=1>
+	<form action=\"$action_url\" method=GET>
+        [export_form_vars return_url]
+	<tr class=rowtitle>
+	  <td class=rowtitle colspan=2>
+	    [lang::message::lookup "" intranet-bug-tracker.Create_a_New_Issue "Create a New Issue"]
+	  </td>
+	</tr>
+	<tr>
+	  <td class=form-label>
+	    [lang::message::lookup "" intranet-bug-tracker.Project "Project"] &nbsp;
+	  </td>
+	  <td class=form-widget>
+	    $project_html
+	  </td>
+	</tr>
+	<tr>
+	  <td class=form-label></td>
+	  <td class=form-widget>$button_html</td>
+	</tr>
+	</form>
+	</table>
+    "
+    return $html
 }
 

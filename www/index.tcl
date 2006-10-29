@@ -23,17 +23,6 @@ if { ![bug_tracker::bugs_exist_p] } {
 
 set project_id [ad_conn package_id]
 
-#####
-#
-# Get bug list
-#
-#####
-
-
-# TODO: Get /com/* URLs working again
-# TODO: Other important suggestions from threads, etc.
-# TODO: Bulk actions (set fix for version, reassign, etc.)
-
 
 bug_tracker::bug::get_list
 

@@ -114,9 +114,10 @@ end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
-	
 
--- Show the forum component in project page
+-----------------------------------------------------------	
+
+-- Bug Creation Component on HomePage
 --
 SELECT im_component_plugin__new (
         null,                           -- plugin_id
@@ -125,16 +126,18 @@ SELECT im_component_plugin__new (
         null,                           -- creation_user
         null,                           -- creation_ip
         null,                           -- context_id
-        'Project Forum Component',      -- plugin_name
-        'intranet-forum',               -- package_name
-        'right',                        -- location
-        '/intranet/projects/view',      -- page_url
+        'Home Bug-Tracker Component',	-- plugin_name
+        'intranet-bug-tracker',		-- package_name
+        'left',				-- location
+        '/intranet/index',		-- page_url
         null,                           -- view_name
-        10,                             -- sort_order
-	'im_forum_component -user_id $user_id -forum_object_id $project_id -current_page_url $current_url -return_url $return_url -forum_type "project" -export_var_list [list project_id forum_start_idx forum_order_by forum_how_many forum_view_name] -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -start_idx [im_opt_val forum_start_idx] -restrict_to_mine_p "f" -restrict_to_new_topics 0',
-	'im_forum_create_bar "<B><nobr>[_ intranet-forum.Forum_Items]</nobr></B>" $project_id $return_url'
+        22,                             -- sort_order
+	'im_bug_tracker_container_component',
+	'lang::message::lookup "" intranet-bug-tracker.Bug_Tracker_Component "Bug Tracker Component"'
 );
 
+
+-----------------------------------------------------------
 
 -- Show the forum component in company page
 --
