@@ -26,6 +26,15 @@ ad_proc bug_tracker::conn { args } {
         set var [lindex $args 1]
     }
 
+    set package_id [ad_conn package_id]
+    set pos [lsearch $args "-package_id"]
+    if {$pos >= 0} {
+	set package_id [lindex $args [expr $pos+1]]
+    }
+
+#    ad_return_complaint 1 "pos=$pos, pack=$package_id, 0: [lindex $args 0] 1: [lindex $args 1] 2: [lindex $args 2]"
+
+
     switch -- $flag {
         -set {
             set bt_conn($var) [lindex $args 2]
@@ -54,7 +63,7 @@ ad_proc bug_tracker::conn { args } {
                         if { [ad_conn user_id] == 0 } {
                             return ""
                         } else {
-                            array set info [get_user_prefs]
+                            array set info [get_user_prefs -package_id $package_id]
                             foreach name [array names info] {
                                 set bt_conn($name) $info($name)
                             }
@@ -280,7 +289,9 @@ ad_proc bug_tracker::get_user_prefs {
         set user_id [ad_conn user_id]
     }
 
-    return [util_memoize [list bug_tracker::get_user_prefs_internal $package_id $user_id]]
+    return [bug_tracker::get_user_prefs_internal $package_id $user_id]
+
+#    return [util_memoize [list bug_tracker::get_user_prefs_internal $package_id $user_id]]
 }
 
 ad_proc bug_tracker::get_user_prefs_flush {
