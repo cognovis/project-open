@@ -42,6 +42,163 @@ INSERT INTO im_categories ( category_id, category, category_type) values
 (4305, 'Bug Tracker Task', 'Intranet Project Type');
 
 
+insert into im_category_hierarchy values (
+	(select category_id 
+	from im_categories 
+	where category = 'Consulting Project'),
+	4300
+);
+
+insert into im_category_hierarchy values (
+	(select category_id 
+	from im_categories 
+	where category = 'Consulting Project'),
+	4305
+);
+
+
+-----------------------------------------------------------
+
+
+-- Setup the "Bug-Tracker" main menu entry
+--
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_menu                  integer;	v_main_menu		integer;
+
+        v_employees             integer;        v_accounting            integer;
+        v_senman                integer;        v_companies             integer;
+        v_freelancers           integer;        v_proman                integer;
+        v_admins                integer;	v_reg_users		integer;
+BEGIN
+    select group_id into v_admins from groups where group_name = ''P/O Admins'';
+    select group_id into v_senman from groups where group_name = ''Senior Managers'';
+    select group_id into v_proman from groups where group_name = ''Project Managers'';
+    select group_id into v_accounting from groups where group_name = ''Accounting'';
+    select group_id into v_employees from groups where group_name = ''Employees'';
+    select group_id into v_companies from groups where group_name = ''Customers'';
+    select group_id into v_freelancers from groups where group_name = ''Freelancers'';
+    select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+
+    select menu_id into v_main_menu from im_menus where label=''main'';
+
+    v_menu := im_menu__new (
+        null,                   -- p_menu_id
+        ''acs_object'',         -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+        ''intranet-bug-tracker'',     -- package_name
+        ''bug_tracker'',              -- label
+        ''Bugs'',              -- name
+        ''/intranet-bug-tracker/'',   -- url
+        15,                     -- sort_order
+        v_main_menu,            -- parent_menu_id
+        null                    -- p_visible_tcl
+    );
+
+    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_companies, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_freelancers, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_reg_users, ''read'');
+
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+	
+
+-- Show the forum component in project page
+--
+SELECT im_component_plugin__new (
+        null,                           -- plugin_id
+        'acs_object',                   -- object_type
+        now(),                          -- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+        'Project Forum Component',      -- plugin_name
+        'intranet-forum',               -- package_name
+        'right',                        -- location
+        '/intranet/projects/view',      -- page_url
+        null,                           -- view_name
+        10,                             -- sort_order
+	'im_forum_component -user_id $user_id -forum_object_id $project_id -current_page_url $current_url -return_url $return_url -forum_type "project" -export_var_list [list project_id forum_start_idx forum_order_by forum_how_many forum_view_name] -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -start_idx [im_opt_val forum_start_idx] -restrict_to_mine_p "f" -restrict_to_new_topics 0',
+	'im_forum_create_bar "<B><nobr>[_ intranet-forum.Forum_Items]</nobr></B>" $project_id $return_url'
+);
+
+
+-- Show the forum component in company page
+--
+SELECT im_component_plugin__new (
+        null,                           -- plugin_id
+        'acs_object',                   -- object_type
+        now(),                          -- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+        'Companies Forum Component',    -- plugin_name
+        'intranet-forum',               -- package_name
+        'right',                        -- location
+        '/intranet/companies/view',     -- page_url
+        null,                           -- view_name
+        10,                             -- sort_order
+	'im_forum_component -user_id $user_id -forum_object_id $company_id -current_page_url $current_url -return_url $return_url -export_var_list [list company_id forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type company -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -restrict_to_mine_p "f" -restrict_to_new_topics 0',
+	'im_forum_create_bar "<B>[_ intranet-forum.Forum_Items]<B>" $company_id $return_url'
+    );
+
+
+-- Show the forum component in home page
+--
+
+delete from im_component_plugins where plugin_name='Home Forum Component';
+
+SELECT im_component_plugin__new (
+        null,                           -- plugin_id
+        'acs_object',                   -- object_type
+        now(),                          -- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+        'Home Forum Component',         -- plugin_name
+        'intranet-forum',               -- package_name
+        'right',                        -- location
+        '/intranet/index',              -- page_url
+        null,                           -- view_name
+        10,                             -- sort_order
+	'im_forum_component -user_id $user_id -forum_object_id 0 -current_page_url $current_url -return_url $return_url -export_var_list [list forum_start_idx forum_order_by forum_how_many forum_view_name ] -forum_type home -view_name [im_opt_val forum_view_name] -forum_order_by [im_opt_val forum_order_by] -start_idx [im_opt_val forum_start_idx] -restrict_to_mine_p t -restrict_to_new_topics 1',
+	'im_forum_create_bar "<B>[_ intranet-forum.Forum_Items]<B>" 0 $return_url'
+    );
+
+\i ../common/intranet-forum-common.sql
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------------
+
+
+
 -- Create a new DynField widget for bt_projects
 select im_dynfield_widget__new (
 	null,				-- widget_id
