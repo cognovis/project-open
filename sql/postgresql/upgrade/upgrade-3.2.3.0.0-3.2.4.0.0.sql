@@ -11,7 +11,7 @@ select acs_privilege__create_privilege(
 	'View Timesheet Task',
 	'View Timesheet Task'
 );
-select acs_privilege__view_child('admin', 'view_timesheet_tasks');
+select acs_privilege__add_child('admin', 'view_timesheet_tasks');
 
 
 select im_priv_create('view_timesheet_tasks', 'Accounting');
@@ -20,4 +20,12 @@ select im_priv_create('view_timesheet_tasks', 'P/O Admins');
 select im_priv_create('view_timesheet_tasks', 'Project Managers');
 select im_priv_create('view_timesheet_tasks', 'Sales');
 select im_priv_create('view_timesheet_tasks', 'Senior Managers');
+
+
+
+------------------------------------------------------
+-- Set permissions of the "Tasks" tab 
+update im_menus
+set visible_tcl = '[expr [im_permission $user_id view_timesheet_tasks] && [im_project_has_type [ns_set get $bind_vars project_id] "Consulting Project"]]'
+where label = 'project_timesheet_task';
 
