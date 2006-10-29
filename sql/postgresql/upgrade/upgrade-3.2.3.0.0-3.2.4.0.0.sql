@@ -1,5 +1,7 @@
 -- upgrade-3.2.3.0.0-3.2.4.0.0.sql
 
+------------------------------------------------------
+-- del_module didnt delete GUI user mapping
 
 
 create or replace function im_component_plugin__del_module (varchar) returns integer as '
@@ -20,4 +22,6 @@ BEGIN
 
         return 0;
 end;' language 'plpgsql';
+
+
 
