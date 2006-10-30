@@ -434,6 +434,7 @@ ad_proc im_freelance_member_select_component { object_id return_url } {
 
     set project_source_lang [db_string source_lang "select substr(im_category_from_id(source_language_id), 1, 2) from im_projects where project_id = :object_id" -default 0]
     set project_target_langs [db_list target_langs "select '''' || substr(im_category_from_id(language_id), 1, 2) || '''' from im_target_languages where project_id = :object_id"]
+    if {0 == [llength $project_target_langs]} { set project_target_langs [list "'none'"]}
 
     set freelance_sql "
 select
@@ -533,12 +534,17 @@ order by
 			$freelance_invite_html
 		</td>
 		<td width=\"50%\" align=right>
-
+"
+    if {$ctr > 0} {
+	append select_freelance "
 		      [_ intranet-core.add_as]
 		      [im_biz_object_roles_select role_id $object_id $default_role_id]<br>
 		      <input type=submit name=submit_add value=\"[_ intranet-core.Add]\">
 		      <input type=checkbox name=notify_asignee value=1 checked>[_ intranet-freelance.Notify]<br>
+        "
+    }
 
+    append select_freelance "
 		</td>
 		</tr>
 		</table>
