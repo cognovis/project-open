@@ -1,4 +1,4 @@
-# /packages/intranet-trans-invoices/www/project-select-2.tcl
+# /packages/intranet-freelance-invoices/www/project-select-2.tcl
 #
 # Copyright (C) 2003-2005 Project/Open
 #

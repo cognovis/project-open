@@ -1,4 +1,4 @@
-# /packages/intranet-trans-invoices/www/new-3.tcl
+# /packages/intranet-freelance-invoices/www/new-3.tcl
 #
 # Copyright (C) 2003-2004 Project/Open
 #
@@ -92,9 +92,9 @@ set invoice_mode "new"
 
 # Create the default values for a new purchase order
 #
-set button_text "[_ intranet-trans-invoices.lt_Create_Purchase_Order]"
-set page_title "[_ intranet-trans-invoices.New_Purchase_Order]"
-set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-trans-invoices.Purchase_Orders]"] $page_title]
+set button_text "[_ intranet-freelance-invoices.lt_Create_Purchase_Order]"
+set page_title "[_ intranet-freelance-invoices.New_Purchase_Order]"
+set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-freelance-invoices.Purchase_Orders]"] $page_title]
 set invoice_id [im_new_object_id]
 set invoice_nr [im_next_invoice_nr -invoice_type_id $target_cost_type_id]
 set invoice_date $todays_date
@@ -338,19 +338,19 @@ order by
 
     set task_table "
 <tr> 
-  <td class=rowtitle>[_ intranet-trans-invoices.Task_Name]</td>
-  <td class=rowtitle>[_ intranet-trans-invoices.Src]</td>
-  <td class=rowtitle>[_ intranet-trans-invoices.Trg]</td>
-  <td class=rowtitle>[_ intranet-trans-invoices.XTr]</td>
-  <td class=rowtitle>[_ intranet-trans-invoices.Rep]</td>
+  <td class=rowtitle>[_ intranet-freelance-invoices.Task_Name]</td>
+  <td class=rowtitle>[_ intranet-freelance-invoices.Src]</td>
+  <td class=rowtitle>[_ intranet-freelance-invoices.Trg]</td>
+  <td class=rowtitle>[_ intranet-freelance-invoices.XTr]</td>
+  <td class=rowtitle>[_ intranet-freelance-invoices.Rep]</td>
   <td class=rowtitle>100 %</td>
   <td class=rowtitle>95 %</td>
   <td class=rowtitle>85 %</td>
   <td class=rowtitle>75 %</td>
   <td class=rowtitle>50 %</td>
   <td class=rowtitle>0 %</td>
-  <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
-  <td class=rowtitle>[_ intranet-trans-invoices.Type]</td>
+  <td class=rowtitle>[_ intranet-freelance-invoices.Units]</td>
+  <td class=rowtitle>[_ intranet-freelance-invoices.Type]</td>
 </tr>
     "
 
@@ -398,7 +398,7 @@ order by
     if {![string equal "" $task_table_rows]} {
 	append task_table $task_table_rows
     } else {
-	append task_table "<tr><td colspan=$colspan align=center>[_ intranet-trans-invoices.No_tasks_found]</td></tr>"
+	append task_table "<tr><td colspan=$colspan align=center>[_ intranet-freelance-invoices.No_tasks_found]</td></tr>"
     }
 }
 
@@ -412,11 +412,11 @@ if {[string equal $invoice_mode "new"]} {
     # start formatting the list of sums with the header...
     set task_sum_html "
         <tr align=center> 
-          <td class=rowtitle>[_ intranet-trans-invoices.Order]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Description]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.UOM]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Rate]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Order]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Description]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Units]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.UOM]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Rate]</td>
         </tr>
     "
 
@@ -425,16 +425,16 @@ if {[string equal $invoice_mode "new"]} {
     #
     set price_colspan 11
     set reference_price_html "
-        <tr><td align=middle class=rowtitle colspan=$price_colspan>[_ intranet-trans-invoices.Reference_Prices]</td></tr>
+        <tr><td align=middle class=rowtitle colspan=$price_colspan>[_ intranet-freelance-invoices.Reference_Prices]</td></tr>
         <tr>
-          <td class=rowtitle>[_ intranet-trans-invoices.Company]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.UoM]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Task_Type]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Target]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Source]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Subject_Area]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Company]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.UoM]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Task_Type]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Target]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Source]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Subject_Area]</td>
           <td class=rowtitle>[_ intranet-core.Note]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Price]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Price]</td>
         </tr>\n"
 
 
@@ -644,10 +644,10 @@ order by
     # start formatting the list of sums with the header...
     set task_sum_html "
         <tr align=center> 
-          <td class=rowtitle>[_ intranet-trans-invoices.Order]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Description]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.UoM]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Order]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Description]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Units]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.UoM]</td>
         </tr>
     "
 

@@ -1,4 +1,4 @@
-# /packages/intranet-translation//www/new.tcl
+# /packages/intranet-freelance-invoices/www/new.tcl
 #
 # Copyright (C) 2003-2004 Project/Open
 #
@@ -48,8 +48,8 @@ if {"" != $create_invoice_from_template} {
 # User id already verified by filters
 set user_id [ad_maybe_redirect_for_registration]
 if {![im_permission $user_id view_invoices]} {
-    ad_return_complaint "[_ intranet-trans-invoices.lt_Insufficient_Privileg]" "
-    <li>[_ intranet-trans-invoices.lt_You_dont_have_suffici]"    
+    ad_return_complaint "[_ intranet-freelance-invoices.lt_Insufficient_Privileg]" "
+    <li>[_ intranet-freelance-invoices.lt_You_dont_have_suffici]"    
 }
 
 set return_url [im_url_with_query]
@@ -120,9 +120,9 @@ where
 "
 
     set invoice_mode "exists"
-    set button_text "[_ intranet-trans-invoices.Edit_cost_type]"
-    set page_title "[_ intranet-trans-invoices.Edit_cost_type]"
-    set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-trans-invoices.Finance]"] $page_title]
+    set button_text "[_ intranet-freelance-invoices.Edit_cost_type]"
+    set page_title "[_ intranet-freelance-invoices.Edit_cost_type]"
+    set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-freelance-invoices.Finance]"] $page_title]
 
     # Check if there is a single currency being used in the invoice
     # and get it.
@@ -147,9 +147,9 @@ where
     set invoice_mode "new"
     set in_clause_list [list]
     set cost_type [db_string cost_type "select im_category_from_id(:cost_type_id) from dual"]
-    set button_text "[_ intranet-trans-invoices.New_cost_type]"
+    set button_text "[_ intranet-freelance-invoices.New_cost_type]"
     set page_title $button_text
-    set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-trans-invoices.Finance]"] $page_title]
+    set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-freelance-invoices.Finance]"] $page_title]
 
     set invoice_id [im_new_object_id]
     set invoice_nr [im_next_invoice_nr -invoice_type_id $cost_type_id]
@@ -210,12 +210,12 @@ if {[string equal $invoice_mode "new"]} {
     # start formatting the list of sums with the header...
     set task_sum_html "
         <tr align=center> 
-          <td class=rowtitle>[_ intranet-trans-invoices.Line]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Description]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Type]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.UOM]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Rate]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Line]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Description]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Type]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Units]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.UOM]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Rate]</td>
         </tr>
     "
 
@@ -254,12 +254,12 @@ order by
     # start formatting the list of sums with the header...
     set task_sum_html "
         <tr align=center> 
-          <td class=rowtitle>[_ intranet-trans-invoices.Line]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Description]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Type]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.UOM]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Rate]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Line]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Description]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Type]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Units]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.UOM]</td>
+          <td class=rowtitle>[_ intranet-freelance-invoices.Rate]</td>
         </tr>
     "
 

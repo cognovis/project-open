@@ -1,6 +1,6 @@
-# /packages/intranet-trans-invoices/www/index.tcl
+# /packages/intranet-freelance-invoices/www/index.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (c) 2003-2006 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -23,8 +23,8 @@ ad_page_contract {
 # -------------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-set page_title "[_ intranet-trans-invoices.lt_Generate_Purchase_Ord]"
-set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-trans-invoices.Projects]"] [list "/intranet/projects/view?project_id=$project_id" "[_ intranet-trans-invoices.One_project]"] $page_title]
+set page_title "[_ intranet-freelance-invoices.lt_Generate_Purchase_Ord]"
+set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-freelance-invoices.Projects]"] [list "/intranet/projects/view?project_id=$project_id" "[_ intranet-freelance-invoices.One_project]"] $page_title]
 
 set current_url [im_url_with_query]
 if {"" == $return_url} { set return_url $current_url }
@@ -171,9 +171,9 @@ db_foreach task_tasks $task_sql {
     if {"" == $freelance_company_html} {
 	set user_id $freelance_id
 	set freelance_company_html "
-	<i>[_ intranet-trans-invoices.No_company_found]</i><br>
+	<i>[_ intranet-freelance-invoices.No_company_found]</i><br>
 	<a href=/intranet/companies/new-company-from-user?[export_url_vars user_id]>
-	  [_ intranet-trans-invoices.lt_Create_a_new_company_]
+	  [_ intranet-freelance-invoices.lt_Create_a_new_company_]
 	</a>"
     }
     set freelance_company_html "
@@ -187,9 +187,9 @@ db_foreach task_tasks $task_sql {
 	    append task_html "
 		<tr class=rowplain>
 		  <td colspan=$task_colspan align=right>
-		    [_ intranet-trans-invoices.Invoice_Currency]: [im_currency_select currency $default_currency]
+		    [_ intranet-freelance-invoices.Invoice_Currency]: [im_currency_select currency $default_currency]
 		    <input type=checkbox name=aggregate_tasks_p value=1 checked>
-		    [lang::message::lookup "" intranet-trans-invoices.Aggregate_tasks "Aggregate Tasks?"]
+		    [lang::message::lookup "" intranet-freelance-invoices.Aggregate_tasks "Aggregate Tasks?"]
 		    <input type=submit value=Submit>  
 		  </td>
 		</tr>
@@ -202,14 +202,14 @@ db_foreach task_tasks $task_sql {
 	[export_form_vars freelance_id target_cost_type_id target_cost_status_id project_id return_url]
 	<table border=0>
 	  <tr>
-	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Task_Name]</td>
-	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Source]</td>
-	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Target]</td>
-	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Status]</td>
-	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Type]</td>
-	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Units]</td>
-	    <td class=rowtitle align=center>[_ intranet-trans-invoices.UoM]</td>
-	    <td class=rowtitle align=center>[_ intranet-trans-invoices.Sel]</td>
+	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Task_Name]</td>
+	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Source]</td>
+	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Target]</td>
+	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Status]</td>
+	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Type]</td>
+	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Units]</td>
+	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.UoM]</td>
+	    <td class=rowtitle align=center>[_ intranet-freelance-invoices.Sel]</td>
 	  </tr>
 	  <tr class=rowtitle>
 	    <td>
@@ -246,9 +246,9 @@ if {$ctr > 1} {
     append task_html "
 	<tr class=rowplain>
 	  <td colspan=$task_colspan align=right>
-	    [_ intranet-trans-invoices.Invoice_Currency]: [im_currency_select currency $default_currency]
+	    [_ intranet-freelance-invoices.Invoice_Currency]: [im_currency_select currency $default_currency]
 	    <input type=checkbox name=aggregate_tasks_p value=1 checked>
-	    [lang::message::lookup "" intranet-trans-invoices.Aggregate_tasks "Aggregate Tasks?"]
+	    [lang::message::lookup "" intranet-freelance-invoices.Aggregate_tasks "Aggregate Tasks?"]
 	    <input type=submit value=Submit>
 	  </td>
 	</tr>\n"
@@ -260,7 +260,7 @@ if {$ctr > 1} {
 	<tr>
 	  <td colspan=$task_colspan align=center>
 	    &nbsp;<br>
-	    [_ intranet-trans-invoices.No_Trans_Tasks]
+	    [_ intranet-freelance-invoices.No_Trans_Tasks]
 	    <br>&nbsp;
 	  </td>
 	</tr>\n"
