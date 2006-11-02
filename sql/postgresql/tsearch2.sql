@@ -1,8 +1,6 @@
 -- Adjust this setting to control where the objects get CREATEd.
 SET search_path = public;
 
-BEGIN;
-
 --dict conf
 CREATE TABLE pg_ts_dict (
 	dict_name	text not null primary key,
@@ -44,7 +42,7 @@ CREATE FUNCTION set_curdict(text)
 	with (isstrict);
 
 --built-in dictionaries
-CREATE FUNCTION dex_init(text)
+CREATE FUNCTION dex_init(internal)
 	returns internal
 	as '$libdir/tsearch2' 
 	language 'C';
@@ -63,7 +61,7 @@ insert into pg_ts_dict select
 	'Simple example of dictionary.'
 ;
 	 
-CREATE FUNCTION snb_en_init(text)
+CREATE FUNCTION snb_en_init(internal)
 	returns internal
 	as '$libdir/tsearch2' 
 	language 'C';
@@ -82,7 +80,7 @@ insert into pg_ts_dict select
 	'English Stemmer. Snowball.'
 ;
 
-CREATE FUNCTION snb_ru_init(text)
+CREATE FUNCTION snb_ru_init(internal)
 	returns internal
 	as '$libdir/tsearch2' 
 	language 'C';
@@ -95,7 +93,7 @@ insert into pg_ts_dict select
 	'Russian Stemmer. Snowball.'
 ;
 	 
-CREATE FUNCTION spell_init(text)
+CREATE FUNCTION spell_init(internal)
 	returns internal
 	as '$libdir/tsearch2' 
 	language 'C';
@@ -114,7 +112,7 @@ insert into pg_ts_dict select
 	'ISpell interface. Must have .dict and .aff files'
 ;
 
-CREATE FUNCTION syn_init(text)
+CREATE FUNCTION syn_init(internal)
 	returns internal
 	as '$libdir/tsearch2' 
 	language 'C';
@@ -707,4 +705,4 @@ where
 --update pg_ts_dict set dict_initoption='DictFile="/usr/local/share/ispell/russian.dict" ,AffFile ="/usr/local/share/ispell/russian.aff", StopFile="/usr/local/share/ispell/russian.stop"' where dict_id=4;
 --example of synonym dict
 --update pg_ts_dict set dict_initoption='/usr/local/share/ispell/english.syn' where dict_id=5;
-END;
+
