@@ -437,8 +437,10 @@ ad_proc im_freelance_member_select_component { object_id return_url } {
     if {0 == [llength $project_target_langs]} { set project_target_langs [list "'none'"]}
 
     set freelance_sql "
-select
+select distinct
 	u.user_id,
+	u.last_name,
+	u.first_names,
 	im_name_from_user_id(u.user_id) as name,
 	im_freelance_skill_list(u.user_id, :source_lang_skill_type) as source_langs,
 	im_freelance_skill_list(u.user_id, :target_lang_skill_type) as target_langs,
