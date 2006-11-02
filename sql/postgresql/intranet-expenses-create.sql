@@ -93,7 +93,7 @@ begin
 	select	cost_name
 	into	v_name
 	from	im_costs
-	where	cost_id = p_expense_id;
+	where	cost_id = p_expenses_id;
 
 	return v_name;
 end;' language 'plpgsql';
