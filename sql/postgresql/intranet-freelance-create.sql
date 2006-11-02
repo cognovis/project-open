@@ -203,49 +203,63 @@ select im_component_plugin__new (
 -- -----------------------------------------------------
 -- Add privileges for freelance_skills and freelance_skillconfs
 --
-select acs_privilege__create_privilege('add_freelance_skills','Add Freelance Skills','Add Freelance Skills');
-select acs_privilege__add_child('admin', 'add_freelance_skills');
-
-select acs_privilege__create_privilege('view_freelance_skills','View Freelance Skills','View Freelance Skills');
-select acs_privilege__add_child('admin', 'view_freelance_skills');
-
-select im_priv_create('view_freelance_skills','Accounting');
-select im_priv_create('view_freelance_skills','P/O Admins');
-select im_priv_create('view_freelance_skills','Project Managers');
-select im_priv_create('view_freelance_skills','Senior Managers');
-select im_priv_create('view_freelance_skills','Freelance Managers');
-select im_priv_create('view_freelance_skills','Employees');
-
-select im_priv_create('add_freelance_skills','Accounting');
-select im_priv_create('add_freelance_skills','P/O Admins');
-select im_priv_create('add_freelance_skills','Senior Managers');
-select im_priv_create('add_freelance_skills','Project Managers');
-select im_priv_create('add_freelance_skills','Freelance Managers');
-
-select im_priv_create('view_freelance_skills','Freelancers');
-select im_priv_create('add_freelance_skills','Freelancers');
 
 
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select  count(*) into v_count
+        from    acs_privileges
+	where	privilege = ''add_freelance_skills'';
+        IF v_count > 0 THEN return 0; END IF;
 
-select acs_privilege__create_privilege('add_freelance_skillconfs','Add Freelance Skillconfs','Add Freelance Skillconfs');
-select acs_privilege__add_child('admin', 'add_freelance_skillconfs');
+	select acs_privilege__create_privilege(''add_freelance_skills'',''Add Freelance Skills'',''Add Freelance Skills'');
+	select acs_privilege__add_child(''admin'', ''add_freelance_skills'');
+	
+	select acs_privilege__create_privilege(''view_freelance_skills'',''View Freelance Skills'',''View Freelance Skills'');
+	select acs_privilege__add_child(''admin'', ''view_freelance_skills'');
+	
+	select im_priv_create(''view_freelance_skills'',''Accounting'');
+	select im_priv_create(''view_freelance_skills'',''P/O Admins'');
+	select im_priv_create(''view_freelance_skills'',''Project Managers'');
+	select im_priv_create(''view_freelance_skills'',''Senior Managers'');
+	select im_priv_create(''view_freelance_skills'',''Freelance Managers'');
+	select im_priv_create(''view_freelance_skills'',''Employees'');
+	
+	select im_priv_create(''add_freelance_skills'',''Accounting'');
+	select im_priv_create(''add_freelance_skills'',''P/O Admins'');
+	select im_priv_create(''add_freelance_skills'',''Senior Managers'');
+	select im_priv_create(''add_freelance_skills'',''Project Managers'');
+	select im_priv_create(''add_freelance_skills'',''Freelance Managers'');
+	
+	select im_priv_create(''view_freelance_skills'',''Freelancers'');
+	select im_priv_create(''add_freelance_skills'',''Freelancers'');
 
-select acs_privilege__create_privilege('view_freelance_skillconfs','View Freelance Skillconfs','View Freelance Skillconfs');
-select acs_privilege__add_child('admin', 'view_freelance_skillconfs');
+	select acs_privilege__create_privilege(''add_freelance_skillconfs'',''Add Freelance Skillconfs'',''Add Freelance Skillconfs'');
+	select acs_privilege__add_child(''admin'', ''add_freelance_skillconfs'');
+	
+	select acs_privilege__create_privilege(''view_freelance_skillconfs'',''View Freelance Skillconfs'',''View Freelance Skillconfs'');
+	select acs_privilege__add_child(''admin'', ''view_freelance_skillconfs'');
+	
+	select im_priv_create(''view_freelance_skillconfs'',''Accounting'');
+	select im_priv_create(''view_freelance_skillconfs'',''P/O Admins'');
+	select im_priv_create(''view_freelance_skillconfs'',''Project Managers'');
+	select im_priv_create(''view_freelance_skillconfs'',''Senior Managers'');
+	select im_priv_create(''view_freelance_skillconfs'',''Freelance Managers'');
+	select im_priv_create(''view_freelance_skillconfs'',''Employees'');
+	
+	select im_priv_create(''add_freelance_skillconfs'',''Accounting'');
+	select im_priv_create(''add_freelance_skillconfs'',''P/O Admins'');
+	select im_priv_create(''add_freelance_skillconfs'',''Senior Managers'');
+	select im_priv_create(''add_freelance_skillconfs'',''Project Managers'');
+	select im_priv_create(''add_freelance_skillconfs'',''Freelance Managers'');
 
-select im_priv_create('view_freelance_skillconfs','Accounting');
-select im_priv_create('view_freelance_skillconfs','P/O Admins');
-select im_priv_create('view_freelance_skillconfs','Project Managers');
-select im_priv_create('view_freelance_skillconfs','Senior Managers');
-select im_priv_create('view_freelance_skillconfs','Freelance Managers');
-select im_priv_create('view_freelance_skillconfs','Employees');
-
-select im_priv_create('add_freelance_skillconfs','Accounting');
-select im_priv_create('add_freelance_skillconfs','P/O Admins');
-select im_priv_create('add_freelance_skillconfs','Senior Managers');
-select im_priv_create('add_freelance_skillconfs','Project Managers');
-select im_priv_create('add_freelance_skillconfs','Freelance Managers');
-
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 

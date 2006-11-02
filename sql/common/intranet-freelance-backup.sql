@@ -84,10 +84,6 @@ insert into im_view_columns (column_id, view_id, group_id, column_name,
 column_render_tcl,extra_select, extra_where, sort_order, visible_for) values (
 12017,120,NULL,'private_note','[ns_urlencode $private_note]','','',11,'');
 
---
-commit;
-
-
 
 
 ---------------------------------------------------------
@@ -128,5 +124,5 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 extra_select, extra_where, sort_order, visible_for) values (12111,121,NULL,'confirmation_user_email','$confirmation_user_email','','',11,'');
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (12113,121,NULL,'confirmation_date','$confirmation_date','','',11,'');
---
-commit;
+
+
