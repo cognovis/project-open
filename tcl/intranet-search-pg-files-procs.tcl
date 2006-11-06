@@ -28,6 +28,81 @@ ad_proc -private im_package_search_pg_files_id_helper {} {
 }
 
 
+# -------------------------------------------------------
+# Full-Text File Indexing
+# -------------------------------------------------------
+
+ad_proc -public intranet_search_pg_files_fti_content {
+    filename
+} {
+    Extract and normalize the file contents -
+    using a best effort attempt using variuos filters
+} {
+    # Skip if not readable
+    if {![file readable $filename]} { return "not readable" }
+    set lower_filename [string tolower $filename]
+
+    # Determine file type (extension)
+    regexp {\.([a-z]+)} $lower_filename match file_ext
+
+    # Fun with encoding - We may encounter files encoded using
+    # "binary", "latin-1", "utf-8" etc. Try binary first
+
+
+    set catdoc "/usr/local/bin/catdoc"
+    set wvtext "/usr/bin/wvText"
+    set htmltotext "/usr/bin/html2text"
+
+    # Process the contents depending on file type (extensions)
+    switch $file_ext {
+	txt {
+	    # Just get the file's content
+	    if {[catch {
+		set encoding "binary"
+		set fl [open $filename]
+		fconfigure $fl -encoding $encoding
+		set content [read $fl]
+		close $fl
+	    } err]} {
+		ns_log Error "intranet_search_pg_files_fti_content: $filename: Unable to open: $err"
+		return "intranet_search_pg_files_fti_content: $filename: Unable to open: $err"
+	    }
+	}
+	doc {
+	    # Convert using wvText doc->text converter
+	    if {[catch {
+		set content [exec $catdoc -s8859-1 -d8859-1 $filename]
+	    } err]} {
+		ns_log Error "intranet_search_pg_files_fti_content: '$err'"
+		return "intranet_search_pg_files_fti_content: '$err'"
+	    }
+	}
+	htm - html {
+	    # Convert html to text
+	    if {[catch {
+		set content [exec $htmltotext -nobs $filename]
+	    } err]} {
+		ns_log Error "intranet_search_pg_files_fti_content: '$err'"
+		return "intranet_search_pg_files_fti_content: '$err'"
+	    }
+	}
+    }
+
+    # Normalize contents
+    set content [string tolower $content]
+    set content [string map -nocase {"@" " " "\\" " " "." " " "-" " " "_" " " ":" " " ";" " "} $content]
+    set content [string map -nocase {"\<" " " "\>" " " "\{" " " "\}" " " "\[" " " "\]" " "} $content]
+    set content [string map -nocase {"\(" " " "\)" " " "!" " " "?" " " "=" " "} $content]
+    set content [string map -nocase {"\"" " " "\'" " " "/" " " "+" " " "*" " " "," " "} $content]
+    set content [string map -nocase {"\n" " " "\t" " "} $content]
+    set content [string map -nocase {"" " " "" " " "" " " "" " " "" " " "" " "} $content]
+
+    # Replace multiple spaces
+    regsub -all {\ +} $content " " content
+
+    return $content
+}
+
 
 # -------------------------------------------------------
 # Search Indexing Functions
@@ -146,6 +221,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 	set file_exists_key "$folder_path/$body"
 	set file_exists($file_exists_key) $file_last_modified
 
+	# ------------------ Check if the file has changed ----------------------
 	# Skip adding the file to the database if the modified
 	# date is still the same...
 	if {$db_last_modified == $file_last_modified} { 
@@ -155,6 +231,8 @@ ad_proc -public intranet_search_pg_files_index_object {
 	
 	# ------------------ File has changed - Update DB ----------------------
 	ns_log Notice "im_ftio: last_modfied changed: db:$db_last_modified - file:$file_last_modified"
+
+#	set file_contents [intranet_search_pg_files_fti_content $file_path]
 
 	# Make sure the folder exists...
 	set folder_id [db_string folder_exists "
