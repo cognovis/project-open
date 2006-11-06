@@ -55,9 +55,33 @@ end;' language 'plpgsql';
 -- (companies, users) should get a very high
 -- weight (max. 10), while files should have
 -- low weights (min. 0.1)
-alter table im_search_object_types add
-        rel_weight      numeric(5,2)
-;
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select  count(*)
+        into    v_count
+        from    user_tab_columns
+        where   lower(table_name) = ''im_search_object_types''
+                and lower(column_name) = ''rel_weight'';
+
+        if v_count = 1 then
+            return 0;
+        end if;
+
+	alter table im_search_object_types 
+	add rel_weight numeric(5,2);
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
 
 
 -- Set relative weights of objects
