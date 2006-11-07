@@ -146,9 +146,7 @@ DECLARE
     v_project_id		integer;
 BEGIN
     FOR row IN
-	select  c.cost_id,
-		c.project_id,
-		t.cnt
+	select  c.cost_id, c.project_id, t.cnt
 	from    im_costs c
 		LEFT OUTER JOIN (
 			 select  c.cost_id,
@@ -171,7 +169,6 @@ BEGIN
 	where	p.project_id = r.object_id_one
 		and r.object_id_two = row.cost_id;
 	RAISE NOTICE ''inline_0: cost_id=%-> pid=%'', row.cost_id, v_project_id;
-
 	update im_costs
 	set project_id = v_project_id
 	where cost_id = row.cost_id;
