@@ -522,7 +522,7 @@ begin
         ''invoices_trans_new_quote'',     -- label
         ''New Quote from Translation Tasks'',    -- name
         ''/intranet-trans-invoices/invoices/new?target_cost_type_id=3702'',   -- url
-        40,                                             -- sort_order
+        140,                                             -- sort_order
         v_invoices_new_menu,                            -- parent_menu_id
         null                                            -- visible_tcl
     );
@@ -542,7 +542,7 @@ begin
         ''invoices_trans_new_cust_invoice'',   -- label
         ''New Customer Invoice from Translation Tasks'',    -- name
         ''/intranet-trans-invoices/invoices/new?target_cost_type_id=3700'',     -- url
-        50,                             -- sort_order
+        340,                             -- sort_order
         v_invoices_new_menu,            -- parent_menu_id
         null                            -- visible_tcl
     );
