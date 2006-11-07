@@ -61,6 +61,7 @@ where
 	and p.company_id=c.company_id(+)
 order by
 	currency,
+	subject_area_id,
 	uom_id,
 	target_language_id desc,
 	task_type_id desc,
