@@ -48,7 +48,7 @@ begin
 		''invoices_customers_new_quote_from_quote'',  	-- label
 		''New Quote from Quote'',		-- name
 		''/intranet-invoices/new-copy?target_cost_type_id=3702\&source_cost_type_id=3702'',
-		40,					-- sort_order
+		120,					-- sort_order
 		v_invoices_new_menu,			-- parent_menu_id
 		null					-- visible_tcl
 	    );
