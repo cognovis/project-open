@@ -103,7 +103,7 @@ Verlag Automobil Wirtschaft S.L. | Alcalde Ferrer i Mon&eacute;s, 23 | 08820 Bar
             <td class="address"><%=$country_name %></td>
           </tr>
 <%
-    sset address1 ""
+    set address1 ""
     if {![string equal "" $address_line1]} {
 	set address1 "
         <tr> 
