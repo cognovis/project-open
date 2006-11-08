@@ -85,7 +85,7 @@ declare
 	oid		integer;
 begin
 	select
-		coalesce(f.filename, '''') || '' '',
+		coalesce(f.filename, '''') || '' '' ||  coalesce(f.fti_content, ''''),
 		ff.object_id
 	into
 		v_string, oid
