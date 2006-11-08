@@ -38,8 +38,12 @@ ad_proc -public intranet_search_pg_files_fti_content {
     Extract and normalize the file contents -
     using a best effort attempt using variuos filters
 } {
+    ns_log Notice "intranet_search_pg_files_fti_content: '$filename'"
+
     # Skip if not readable
-    if {![file readable $filename]} { return "not readable" }
+    if {![file readable $filename]} { 
+	return "not readable: '$filename'" 
+    }
     set lower_filename [string tolower $filename]
 
     # Determine file type (extension)
@@ -86,6 +90,9 @@ ad_proc -public intranet_search_pg_files_fti_content {
 		return "intranet_search_pg_files_fti_content: '$err'"
 	    }
 	}
+	default {
+	    set content ""
+	}
     }
 
     # Normalize contents
@@ -100,6 +107,7 @@ ad_proc -public intranet_search_pg_files_fti_content {
     # Replace multiple spaces
     regsub -all {\ +} $content " " content
 
+    ns_log Notice "intranet_search_pg_files_fti_content: $filename => $content"
     return $content
 }
 
@@ -193,9 +201,9 @@ ad_proc -public intranet_search_pg_files_index_object {
 	# Split the remaining path into folder path and file body
 	# Retreive the "last_modified" information from the database.
 	set file_entries [split $file_entry "\t"]
-	set file_path [lindex $file_entries 0]
+	set filename [lindex $file_entries 0]
 	set file_last_modified [lindex $file_entries 1]
-	set file_path [string range $file_path $home_path_len end]
+	set file_path [string range $filename $home_path_len end]
 	set pieces [split $file_path "/"]
 	set body [lindex $pieces [expr [llength $pieces]-1]]
 	set folder_path [join [lrange $pieces 0 end-1] "/"]
@@ -207,6 +215,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 	}
 	
 	if {$debug} {
+	    ns_log Notice "im_ftio: filename=$filename"
 	    ns_log Notice "im_ftio: file_path=$file_path"
 	    ns_log Notice "im_ftio: pieces=$pieces"
 	    ns_log Notice "im_ftio: body=$body"
@@ -232,7 +241,12 @@ ad_proc -public intranet_search_pg_files_index_object {
 	# ------------------ File has changed - Update DB ----------------------
 	ns_log Notice "im_ftio: last_modfied changed: db:$db_last_modified - file:$file_last_modified"
 
-#	set file_contents [intranet_search_pg_files_fti_content $file_path]
+	# Determine the file content
+	if {[catch {
+	    set fti_content [intranet_search_pg_files_fti_content $filename]
+	} errmsg]} {
+	    set fti_content "Error parsing '$filename': '$errmsg'"
+	}
 
 	# Make sure the folder exists...
 	set folder_id [db_string folder_exists "
@@ -272,11 +286,13 @@ ad_proc -public intranet_search_pg_files_index_object {
 		insert into im_fs_files (
 			file_id, folder_id,
 			owner_id, filename,
-			last_updated, last_modified
+			last_updated, last_modified,
+			fti_content
 		) values (
 			:file_id, :folder_id,
 			:admin_user_id, :body,
-			now(), :file_last_modified
+			now(), :file_last_modified,
+			:fti_content
 		)
             "
 	    ns_log Notice "im_ftio: insert: file_id=$file_id"
@@ -287,7 +303,8 @@ ad_proc -public intranet_search_pg_files_index_object {
 	    db_dml update_file "
 		update im_fs_files set 
 			ft_indexed_p = '0',
-			last_modified = :file_last_modified
+			last_modified = :file_last_modified,
+			fti_content = :fti_content
 		where file_id = :file_id
 	    "
 	    ns_log Notice "im_ftio: update: file_id=$file_id, file_last_modified=$file_last_modified"
