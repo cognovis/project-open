@@ -16,8 +16,21 @@ ad_page_contract {
     { return_url "/intranet-hr/index"}
     edit_p:optional
     message:optional
-    { availability "100" }
     { form_mode "display" }
+    { availability:integer "100" }
+    { hourly_cost:float "0" }
+    { job_title "" }
+    { job_description "" }
+    { ss_number "" }
+    { salary:float "0" }
+    { social_security:float "0" }
+    { insurance:float "0" }
+    { other_costs:float "0" }
+    { birthdate "" }
+    { salary_payments_per_year:integer "" }
+    { years_experience:integer "" }
+    { termination_reason "" }
+    { referred_by "0" }
 }
 
 
