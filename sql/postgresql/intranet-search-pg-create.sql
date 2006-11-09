@@ -325,11 +325,15 @@ declare
 
 	v_object_type_id	integer;
 	v_exists_p		integer;
+	v_text		varchar;
 begin
 	select	object_type_id
 	into	v_object_type_id
 	from	im_search_object_types
 	where	object_type = p_object_type;
+
+	-- Add the name for the business object to the search string
+	v_text := acs_object__name(p_biz_object_id) || '' '' || p_text;
 
 	select	count(*)
 	into	v_exists_p
@@ -341,7 +345,7 @@ begin
 		update im_search_objects set
 			object_type_id	= v_object_type_id,
 			biz_object_id	= p_biz_object_id,
-			fti		= to_tsvector(''default'', norm_text(p_text))
+			fti		= to_tsvector(''default'', norm_text(v_text))
 		where
 			object_id	= p_object_id
 			and object_type_id = v_object_type_id;
@@ -355,7 +359,7 @@ begin
 			p_object_id,
 			v_object_type_id,
 			p_biz_object_id,
-			to_tsvector(''default'', p_text)
+			to_tsvector(''default'', norm_text(v_text))
 		);
 	end if;
 
