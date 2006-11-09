@@ -59,7 +59,7 @@ ad_proc -public intranet_search_pg_files_fti_content {
 
     # Process the contents depending on file type (extensions)
     switch $file_ext {
-	txt {
+	txt - perl - text - php - sql {
 	    # Just get the file's content
 	    if {[catch {
 		set encoding "binary"
@@ -81,7 +81,7 @@ ad_proc -public intranet_search_pg_files_fti_content {
 		return "intranet_search_pg_files_fti_content: '$err'"
 	    }
 	}
-	htm - html {
+	htm - html - xml - asp {
 	    # Convert html to text
 	    if {[catch {
 		set content [exec $htmltotext -nobs $filename]
@@ -90,9 +90,10 @@ ad_proc -public intranet_search_pg_files_fti_content {
 		return "intranet_search_pg_files_fti_content: '$err'"
 	    }
 	}
-	default {
-	    set content ""
-	}
+	gif - jpg - pgp - bmp - png - wav - mp3 - ico { set content "" }
+	log - bz2 - zip - tar - tgz - rar - gz - js - mso { set content "" }
+	xls - rtf - exe { set content "" }
+	default { set content "" }
     }
 
     # Normalize contents
