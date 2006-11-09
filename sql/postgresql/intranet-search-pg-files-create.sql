@@ -85,7 +85,9 @@ declare
 	oid		integer;
 begin
 	select
-		coalesce(f.filename, '''') || '' '' ||  coalesce(f.fti_content, ''''),
+		coalesce(translate(ff.path, ''/.,-_()&'', ''        ''), '''') 
+			|| '' '' || coalesce(f.filename, '''') 
+			|| '' '' ||  coalesce(f.fti_content, ''''),
 		ff.object_id
 	into
 		v_string, oid

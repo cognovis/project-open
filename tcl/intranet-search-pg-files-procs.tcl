@@ -33,6 +33,7 @@ ad_proc -private im_package_search_pg_files_id_helper {} {
 # -------------------------------------------------------
 
 ad_proc -public intranet_search_pg_files_fti_content {
+    {-max_content_length 100000}
     filename
 } {
     Extract and normalize the file contents -
@@ -108,6 +109,11 @@ ad_proc -public intranet_search_pg_files_fti_content {
 
     # Replace multiple spaces
     regsub -all {\ +} $content " " content
+
+
+    if {[string length $content] > $max_content_length} {
+	set content "file truncated to $max_content_length: [string range $content 0 $max_content_length]"
+    } 
 
     ns_log Notice "intranet_search_pg_files_fti_content: $filename => $content"
     return $content
