@@ -105,6 +105,8 @@ create table im_fs_files (
 	last_modified	varchar(30),
 			-- last time of PO update
 	last_updated	timestamptz,
+			-- contents normalized for FTI
+	fti_content	text,
 		-- Only one file with the same name below a folder
 		constraint im_fs_files_un
 		unique (folder_id, filename)

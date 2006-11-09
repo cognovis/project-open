@@ -25,3 +25,7 @@ alter table im_fs_actions
 	add constraint im_fs_actions_pkey
 	primary key (user_id, action_date, file_name);
 
+
+alter table im_fs_files
+add fti_content text;
+
