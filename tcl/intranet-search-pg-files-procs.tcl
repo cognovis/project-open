@@ -47,8 +47,12 @@ ad_proc -public intranet_search_pg_files_fti_content {
     }
     set lower_filename [string tolower $filename]
 
-    # Determine file type (extension)
-    regexp {\.([a-z]+)} $lower_filename match file_ext
+    # Determine file type (extension). There can be strange cases where
+    # the ending could be ".doc.bz2.LCK"
+    set file_ext "unknown"
+    if {[regexp {\.([a-z]+)$} $lower_filename match match_file_ext]} {
+	set file_ext $ match_file_ext
+    }
 
     # Fun with encoding - We may encounter files encoded using
     # "binary", "latin-1", "utf-8" etc. Try binary first
