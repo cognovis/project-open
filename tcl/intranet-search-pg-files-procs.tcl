@@ -102,6 +102,7 @@ ad_proc -public intranet_search_pg_files_fti_content {
     set content [string map -nocase {"\<" " " "\>" " " "\{" " " "\}" " " "\[" " " "\]" " "} $content]
     set content [string map -nocase {"\(" " " "\)" " " "!" " " "?" " " "=" " "} $content]
     set content [string map -nocase {"\"" " " "\'" " " "/" " " "+" " " "*" " " "," " "} $content]
+    set content [string map -nocase {"\$" " " "\#" " "} $content]
     set content [string map -nocase {"\n" " " "\t" " "} $content]
     set content [string map -nocase {"" " " "" " " "" " " "" " " "" " " "" " "} $content]
 
@@ -397,92 +398,105 @@ ad_proc intranet_search_pg_files_search_indexer {
     {-max_files 0}
 } {
     Index the entire server.
-    This routine is schedule every 60 seconds or so.
+    This routine is schedule every 600 seconds or so.
     We use this to determine the "oldest" business object
     to be index and update it.
 } {
-
-    if {0 == $max_files} {
-	set max_files [parameter::get_from_package_key -package_key intranet-search-pg-files -parameter IndexerMaxFiles -default 100]
+    # Make sure that only one thread is indexing at a time
+    if {[nsv_incr intranet_search_pg_files search_indexer_p] > 1} {
+	nsv_incr intranet_search_pg_files search_indexer_p -1
+	ns_log Notice "intranet_search_pg_files_search_indexer: Aborting. There is another process running"
+	return
     }
 
-    set unindexed_projects_sql "
-	select	project_id 
-	from	im_projects
-	where	project_id not in (
-			select object_id 
-			from im_search_pg_file_biz_objects
-	)
-    "
-    db_foreach unindexed_projects $unindexed_projects_sql {
-	db_dml insert_project "
-		insert into im_search_pg_file_biz_objects (
-			object_id, last_update
-		) values (
-			:project_id, (now()::date - 365)::timestamptz
-		)
-        "
-    }
-
-    set unindexed_companies_sql "
-	select	company_id 
-	from	im_companies
-	where	company_id not in (
-			select object_id 
-			from im_search_pg_file_biz_objects
-	)
-    "
-    db_foreach unindexed_companies $unindexed_companies_sql {
-	db_dml insert_company "
-		insert into im_search_pg_file_biz_objects (
-			object_id, last_update
-		) values (
-			:company_id, (now()::date - 365)::timestamptz
-		)
-        "
-    }
-
-    set unindexed_persons_sql "
-	select	person_id 
-	from	persons
-	where	person_id not in (
-			select object_id 
-			from im_search_pg_file_biz_objects
-	)
-    "
-    db_foreach unindexed_persons $unindexed_persons_sql {
-	db_dml insert_person "
-		insert into im_search_pg_file_biz_objects (
-			object_id, last_update
-		) values (
-			:person_id, (now()::date - 365)::timestamptz
-		)
-        "
-    }
+    catch {
 
 
-    # Index ONLY the oldest biz object
-    set oldest_object_sql "
-	select	object_id as search_object_id
-	from	im_search_pg_file_biz_objects
-	order by last_update
-	limit :max_files
-    "
-    set ctr 0
-    db_foreach oldest_objects $oldest_object_sql {
-
-	set nfiles [intranet_search_pg_files_index_object -object_id $search_object_id]
+	    if {0 == $max_files} {
+		set max_files [parameter::get_from_package_key -package_key intranet-search-pg-files -parameter IndexerMaxFiles -default 100]
+	    }
 	
-	# Mark the last object as the last object...
-	db_dml update_oldest_object "
-		update im_search_pg_file_biz_objects
-		set last_update = now()
-		where object_id = :search_object_id
-        "
-
-	set ctr [expr $ctr + $nfiles]
-	if {$ctr > $max_files} { break }
-    }
+	    set unindexed_projects_sql "
+		select	project_id 
+		from	im_projects
+		where	project_id not in (
+				select object_id 
+				from im_search_pg_file_biz_objects
+		)
+	    "
+	    db_foreach unindexed_projects $unindexed_projects_sql {
+		db_dml insert_project "
+			insert into im_search_pg_file_biz_objects (
+				object_id, last_update
+			) values (
+				:project_id, (now()::date - 365)::timestamptz
+			)
+	        "
+	    }
+	
+	    set unindexed_companies_sql "
+		select	company_id 
+		from	im_companies
+		where	company_id not in (
+				select object_id 
+				from im_search_pg_file_biz_objects
+		)
+	    "
+	    db_foreach unindexed_companies $unindexed_companies_sql {
+		db_dml insert_company "
+			insert into im_search_pg_file_biz_objects (
+				object_id, last_update
+			) values (
+				:company_id, (now()::date - 365)::timestamptz
+			)
+	        "
+	    }
+	
+	    set unindexed_persons_sql "
+		select	person_id 
+		from	persons
+		where	person_id not in (
+				select object_id 
+				from im_search_pg_file_biz_objects
+		)
+	    "
+	    db_foreach unindexed_persons $unindexed_persons_sql {
+		db_dml insert_person "
+			insert into im_search_pg_file_biz_objects (
+				object_id, last_update
+			) values (
+				:person_id, (now()::date - 365)::timestamptz
+			)
+	        "
+	    }
+	
+	
+	    # Index ONLY the oldest biz object
+	    set oldest_object_sql "
+		select	object_id as search_object_id
+		from	im_search_pg_file_biz_objects
+		order by last_update
+		limit :max_files
+	    "
+	    set ctr 0
+	    db_foreach oldest_objects $oldest_object_sql {
+	
+		set nfiles [intranet_search_pg_files_index_object -object_id $search_object_id]
+		
+		# Mark the last object as the last object...
+		db_dml update_oldest_object "
+			update im_search_pg_file_biz_objects
+			set last_update = now()
+			where object_id = :search_object_id
+	        "
+	
+		set ctr [expr $ctr + $nfiles]
+		if {$ctr > $max_files} { break }
+	    }
+	
+    } errmsg	
+	
+    nsv_incr intranet_search_pg_files search_indexer_p -1
 
     return $ctr
 }
