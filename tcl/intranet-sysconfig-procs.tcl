@@ -71,12 +71,13 @@ ad_proc -public im_sysconfig_component { } {
 	</table>
     "
 
+    set asdf asdf
 
     set progress "
 	<table cellspacing=0 cellpadding=4 border=0>
 	<tr>
-		<td><a class=button href=''>Previous</a></td>
-		<td><a class=button href='/intranet-sysconfig/index'>Next</a></td>
+		<td><a class=button href=''>&lt;&lt; Previous</a></td>
+		<td><a class=button href='[export_vars -base "/intranet-sysconfig/index" {asdf {sdfg $asdf}}]'>Next &gt;&gt;</a></td>
 	</tr>
 	</table>
     "
