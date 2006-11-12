@@ -35,7 +35,7 @@ where label = 'project_timesheet_task';
 ------------------------------------------------------
 -- Update Timesheet Tasks Status to Project Status
 --
--- Cleanup configuration mess
+-- Cleanup Stati configuration mess
 
 update im_projects
 set project_status_id = 76
@@ -46,9 +46,25 @@ set project_status_id = 81
 where project_status_id = 9602;
 
 
+-- Cleanup Type Configuration Mess
+
 update im_projects
 set project_type_id = 100
 where project_type_id = 84;
+
+delete from im_categories
+where category_id = 84;
+
+
+
+update im_projects
+set project_type_id = 100
+where project_type_id = 9500;
+
+
+
+
+
 
 delete from im_categories
 where category_id = 84;
