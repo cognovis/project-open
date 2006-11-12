@@ -413,7 +413,9 @@ set last_value_list [list]
 set class "rowodd"
 db_foreach sql $sql {
 
-	set note [string_truncate -len $truncate_note_length $note]
+	if {[string length $note] > $truncate_note_length} {
+	    set note "[string range $note 0 $truncate_note_length] ..."
+	}
 
 	im_report_display_footer \
 	    -output_format $output_format \
