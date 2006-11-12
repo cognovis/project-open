@@ -29,3 +29,26 @@ update im_menus
 set visible_tcl = '[expr [im_permission $user_id view_timesheet_tasks] && [im_project_has_type [ns_set get $bind_vars project_id] "Consulting Project"]]'
 where label = 'project_timesheet_task';
 
+
+
+
+------------------------------------------------------
+-- Update Timesheet Tasks Status to Project Status
+--
+-- Cleanup configuration mess
+
+update im_projects
+set project_status_id = 76
+where project_status_id = 9600;
+
+update im_projects
+set project_status_id = 81
+where project_status_id = 9602;
+
+
+update im_projects
+set project_type_id = 100
+where project_type_id = 84;
+
+delete from im_categories
+where category_id = 84;
