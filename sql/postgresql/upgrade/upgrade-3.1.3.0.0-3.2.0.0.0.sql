@@ -26,7 +26,7 @@ alter table im_projects add
 -- the the fixed IDs from ACS 3.4 Intranet...
 --
 insert into im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE) 
-values ('84', 'Project Task', 'Intranet Project Type');
+values ('100', 'Task', 'Intranet Project Type');
 
 
 -------------------------------------------------------------
