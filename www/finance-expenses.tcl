@@ -430,13 +430,20 @@ im_report_render_row \
 set footer_array_list [list]
 set last_value_list [list]
 set class "rowodd"
+set expense_payment_type_length 13
+set note_length 20
 
 ns_log Notice "intranet-reporting/finance-quotes-pos: sql=\n$sql"
 
 db_foreach sql $sql {
 
-	set expense_payment_type [string_truncate -len 13 $expense_payment_type]
-	set note [string_truncate -len 20 $note]
+	if {[string length $expense_payment_type] > $expense_payment_type_length} {
+	    set expense_payment_type "[string range $expense_payment_type 0 $expense_payment_type_length] ..."
+	}
+
+	if {[string length $note] > $note_length} {
+	    set note "[string range $note 0 $note_length] ..."
+	}
 
 	if {"" == $project_id} {
 	    set project_id 0
