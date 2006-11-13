@@ -343,7 +343,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 	    ns_log Notice "im_ftio: del: doesn't exist in the FS: '$filename'"
 
 	    # Split the remaining path into folder path and file body
-	    set pieces [split $file_path "/"]
+	    set pieces [split $filename "/"]
 	    set body [lindex $pieces [expr [llength $pieces]-1]]
 	    set folder_path [join [lrange $pieces 0 end-1] "/"]
 
