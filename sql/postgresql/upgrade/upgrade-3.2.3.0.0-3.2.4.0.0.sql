@@ -31,9 +31,3 @@ set cost_id = (
 		and c.cause_object_id = im_hours.user_id
 		and c.project_id = im_hours.project_id
 );
-
-
-update im_hours
-set project_id = timesheet_task2_id
-where
-	timesheet_task2_id is not null;
