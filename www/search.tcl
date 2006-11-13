@@ -1,7 +1,7 @@
 ad_page_contract {
     @author Neophytos Demetriou <k2pts@cytanet.com.cy>
     @creation-date September 01, 2001
-    @cvs-id $Id: search.tcl,v 1.22 2006/10/21 07:28:20 maltes Exp $
+    @cvs-id $Id: search.tcl,v 1.23 2006/11/13 00:55:40 daveb Exp $
 } {
     q:trim
     {t:trim ""}
@@ -158,7 +158,7 @@ if { $num > 0 } { append url_advanced_search "&num=${num}" }
 
 
 set query $q
-set nquery [llength $q]
+set nquery [llength [split $q]]
 set stopwords $result(stopwords)
 set nstopwords [llength $result(stopwords)] 
 set count $result(count)
