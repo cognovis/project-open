@@ -70,6 +70,7 @@ set task(assign_yourself_url) "assign-yourself?[export_vars -url {task_id return
 set task(manage_assignments_url) "task-assignees?[export_vars -url {task_id return_url}]"
 set task(cancel_url) "task?[export_vars -url {task_id return_url {action.cancel Cancel}}]"
 set task(action_url) "task"
+set task(return_url) $return_url
 
 set context [list [list "case?case_id=$task(case_id)" "$task(object_name) case"] "$task(task_name)"]
 
