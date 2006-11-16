@@ -2,7 +2,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.37 2006/10/20 21:04:49 daveb Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.38 2006/11/16 12:43:40 daveb Exp $
 }
 
 namespace eval search {}
@@ -157,7 +157,7 @@ ad_proc -private search::indexer {} {
                             ns_log Error "search::indexer: error getting datasource for $object_id $object_type: $errMsg\n[ad_print_stack_trace]\n"
                         } else {
                             # call the action so other people who do indexey things have a hook
-#                            callback -catch search::action \
+                            callback -catch search::action \
                                 -action $event \
                                 -object_id $object_id \
                                 -datasource datasource \
