@@ -328,6 +328,8 @@ namespace eval im_cost {
 	{-cost_status_id 0}
 	{-customer_id 0}
 	{-provider_id 0}
+	{-user_id 0}
+	{-creation_ip ""}
 	{-object_type "im_cost"}
 	-cost_name
 	-cost_type_id
@@ -342,9 +344,9 @@ namespace eval im_cost {
 	if {0 == $provider_id} { set provider_id [im_company_internal] }
 	if {0 == $cost_id} { set cost_id [db_nextval acs_object_id_seq]}
 	if {0 == $cost_status_id} { set cost_status_id [im_cost_status_created]}
+	if {0 == $user_id} { set user_id [ad_get_user_id] }
+	if {"" == $creation_ip} { set creation_ip [ad_conn peeraddr] }
 
-	set user_id [ad_get_user_id]
-	set creation_ip [ad_conn peeraddr]
 	set today [db_string today "select sysdate from dual"]
 	if [catch {
 	    db_dml insert_costs "
