@@ -137,6 +137,9 @@ ad_proc -public intranet_search_pg_files_index_object {
     # Disable Debugging
     set debug 0
 
+    # Should we index the contents of the files?
+    set fti_contents_enabled_p [parameter::get_from_package_key -package_key intranet-search-pg-files -parameter IndexFileContentsP -default 0]
+
     set object_type [db_string otype "
 	select object_type 
 	from acs_objects 
@@ -253,11 +256,19 @@ ad_proc -public intranet_search_pg_files_index_object {
 	# ------------------ File has changed - Update DB ----------------------
 	ns_log Notice "im_ftio: last_modfied changed: db:$db_last_modified - file:$file_last_modified"
 
-	# Determine the file content
-	if {[catch {
-	    set fti_content [intranet_search_pg_files_fti_content $filename]
-	} errmsg]} {
-	    set fti_content "Error parsing '$filename': '$errmsg'"
+	# Determine the file content. Not all companies need the contents
+	# indexed. In particular, translation companies only need the file
+	# _names_, instead of the file _contents_, because the contents are
+	# related to their customers, but not to their business.
+	set fti_content ""
+	if {$fti_contents_enabled_p} {
+
+	    if {[catch {
+		set fti_content [intranet_search_pg_files_fti_content $filename]
+	    } errmsg]} {
+		set fti_content "Error parsing '$filename': '$errmsg'"
+	    }
+
 	}
 
 	# Make sure the folder exists...
