@@ -24,6 +24,8 @@
         <parameters>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="IndexerMaxFiles"  default="100" description="Limit indexer activity to MaxFiles. You can determine this parameter by dividing the number of files in your intranet (example: 30.000) by the time interval (in seconds) to check all files (for example: 24*60*60 for 1 day) and multiplying with the SearchIndexerInterval (example: 300). You have to make sure that the indexer can handle MaxFiles in SearchIndexerInterval, otherwise the system may get overload. "/>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="SearchIndexerInterval"  default="300" description="Run the search indexer every X seconds"/>
+
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="IndexFileContentsP"  default="1" description="Should we index the _contents_ of a file, in addition to its filename? Disable this parameter if you are running a translation business, because your file contents are related to your customers, but not to your own business (in general)."/>
         </parameters>
 
     </version>
