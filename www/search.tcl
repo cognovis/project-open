@@ -49,16 +49,13 @@ ad_page_contract {
     </ul>
 
 } {
-    q:notnull,trim
+    {q:trim ""}
     {t:trim ""}
     {offset:integer 0}
     {results_per_page:integer 0}
     {type:multiple "all"}
     {include_deleted_p 0}
-} -errors {
-    q:notnull {[_ search.lt_You_must_specify_some].}
-}
-
+} 
 
 # -----------------------------------------------------------
 # Default & Security
@@ -80,6 +77,10 @@ set user_is_wheel_p [ad_user_group_member [im_wheel_group_id] $user_id]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 set user_is_admin_p [expr $user_is_admin_p || $user_is_wheel_p]
 
+
+if {"" == $q} {
+    ad_return_complaint 1 [_ search.lt_You_must_specify_some]
+}
 
 if { $results_per_page <= 0} {
     set results_per_page [ad_parameter -package_id $package_id SearchResultsPerPage -default 20]
