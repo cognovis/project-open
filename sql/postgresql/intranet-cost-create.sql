@@ -240,7 +240,7 @@ begin
 	where		object_id = v_cost_center_id;
 
 	-- Finally delete the object iself
-	acs_object__delete(v_cost_center_id);
+	PERFORM acs_object__delete(v_cost_center_id);
 	return 0;
 end;' language 'plpgsql';
 
