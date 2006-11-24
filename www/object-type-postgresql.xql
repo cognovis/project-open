@@ -19,12 +19,16 @@
         fa.widget_name,
 	w.widget_id,
 	w.widget,
-	w.parameters
+	w.parameters,
+	la.*
     from 
 	acs_attributes aa
 	right outer join 
 		im_dynfield_attributes fa 
-		on (aa.attribute_id = fa.acs_attribute_id),
+		on (aa.attribute_id = fa.acs_attribute_id)
+	left outer join
+		(select	* from im_dynfield_layout where page_url = '') la
+		on (fa.attribute_id = la.attribute_id),
 	im_dynfield_widgets w
     where 
 	aa.object_type = :object_type

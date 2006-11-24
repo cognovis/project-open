@@ -2030,20 +2030,24 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		aw.storage_type_id,
 		im_category_from_id(aw.storage_type_id) as storage_type
 	from
-		im_dynfield_attributes aa,
+		im_dynfield_attributes aa
+		LEFT OUTER JOIN
+			(select * from im_dynfield_layout where page_url = '') dl
+			ON (aa.attribute_id = dl.attribute_id),
 		im_dynfield_widgets aw,
 		acs_object_types t,
-		acs_attributes a left outer join acs_object_type_tables tt on (
-			tt.object_type = :object_type
-			and tt.table_name = a.table_name
-		)
+		acs_attributes a 
+		left outer join 
+			acs_object_type_tables tt 
+			on (tt.object_type = :object_type and tt.table_name = a.table_name)
 	where 
 		t.object_type = :object_type
 		and a.object_type = t.object_type
 		and a.attribute_id = aa.acs_attribute_id
 		and aa.widget_name = aw.widget_name
 		and im_object_permission_p(aa.attribute_id, :user_id, 'read') = 't'
-	order by 
+	order by
+		dl.pos_y,
 		aa.attribute_id
     "
 

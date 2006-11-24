@@ -11,6 +11,7 @@ ad_page_contract {
     {required_p "f"}
     {modify_sql_p "f"}
     {action ""}
+    {label_style "plain" }
 }
 
 # ******************************************************
@@ -45,10 +46,16 @@ if {0 != $attribute_id} {
 	a.attribute_name,
 	a.table_name,
 	case when a.min_n_values = 0 then 'f' else 't' end as required_p,
-    	fa.widget_name
+    	fa.widget_name,
+	dl.pos_x, dl.pos_y,
+	dl.size_x, dl.size_y,
+	dl.label_style, dl.div_class
     from 	
 	acs_attributes a,
     	im_dynfield_attributes fa
+	LEFT OUTER JOIN
+		(select * from im_dynfield_layout where page_url = '') dl
+		ON (fa.attribute_id = dl.attribute_id)
     where
 	fa.attribute_id = :attribute_id
     	and fa.acs_attribute_id = a.attribute_id
@@ -58,6 +65,7 @@ if {0 != $attribute_id} {
     set element_mode "edit"
 }
 
+if {"" == $label_style} { set label_style "plain" }
 
 if {[empty_string_p $object_type]} {
     ad_return_complaint 1 "[_ intranet-dynfield.No_object_type_found]<br>
@@ -208,9 +216,17 @@ foreach field {
     {required_p:text(radio) {label {Required}} {options {{Yes t} {No f}}} {value $required_p}}
     {object_type:text(hidden) {label {Object Type}} {} {html {size 30 maxlength 100}}  }
     {widget_name:text(select) {label Widget} {options $widget_options } {help_text {<a href=widgets>Widgets descriptions</a> are available}}}
+
+    {pos_x:text(hidden),optional {label {Pos-X}} {html {size 5 maxlength 4}}}
+    {pos_y:text,optional {label {Pos-Y}} {html {size 5 maxlength 4}}}
+    {size_x:text(hidden),optional {label {Size-X}} {html {size 5 maxlength 4}}}
+    {size_y:text(hidden),optional {label {Size-Y}} {html {size 5 maxlength 4}}}
+    {label_style:text(hidden) {label {Label Style}} {options {{Plain plain} {{No Label} no_label} }} {value $required_p}}
 } {
     lappend form_fields $field
 }
+
+
 
 # ******************************************************
 # Build the form
@@ -274,7 +290,31 @@ ad_form -name attribute_form -form $form_fields -new_request {
 			widget_name = :widget_name
 		where attribute_id = :attribute_id
 	"
-	}
+    }
+
+    # Make sure there is a layout entry for this DynField
+    set layout_exists_p [db_string layout_exists "select count(*) from im_dynfield_layout where attribute_id = :attribute_id and page_url = ''"]
+    if {!$layout_exists_p && 0 != $attribute_id} {
+	    db_dml insert_layout "
+		insert into im_dynfield_layout (
+			attribute_id, page_url, label_style
+		) values (
+			:attribute_id, '', :label_style
+		)
+	    "
+    }
+
+    db_dml update_layout "
+		update im_dynfield_layout set
+			pos_x = :pos_x,
+			pos_y = :pos_y,
+			size_x = :size_x,
+			size_y = :size_y,
+			label_style = :label_style
+		where
+			attribute_id = :attribute_id
+			and page_url = ''
+    "
 
 } -after_submit {
 
