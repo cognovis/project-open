@@ -42,42 +42,34 @@ ad_proc -public im_sysconfig_component { } {
     set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
 
     set wizard "
-	<h2>$po Configuration Wizard</h2>
-	<p>Please let us know about the purpose of your installation.</p>
+	<h2>License Agreement</h2>
 
-	<h3>What is the purpose of this installation?</h3>
-	<table border=0>
-	<tr valign=top>
-	  <td><input type=radio name=config_purpose value=first_try></td>
-	  <td>	<b>First Evaluation</b><br>
-		<p>I want to get a first impression of $po, but don't confuse me.<br>
-		Show me a demo system with the essential functionality.<br>&nbsp;
-	  </td>
-	</tr>
-	<tr valign=top>
-	  <td><input type=radio name=config_purpose value=second_try></td>
-	  <td>	<b>Second Evaluation</b><br>
-		<p>I want to see if $po has the right functionality for my company.<br>
-		Show me a demo system with all functionality that you've got.<br>&nbsp;
-	  </td>
-	</tr>
-	<tr valign=top>
-	  <td><input type=radio name=config_purpose value=second_try></td>
-	  <td>	<b>Production Use</b><br>
-		<p>I want to start using $po in my company.<br>
-		Delete all demo data and configure the system for my first project.<br>&nbsp;
-	  </td>
-	</tr>
-	</table>
-    "
+	<p>
+	This software has been developed by $po<br>
+	(<a href=http://www.project-open.org/>http://www.project-open.org/</a>) 
+	based on the work of <br>
+	several open-source projects and other contributors.
+	</p>
+<table cellpadding=2>
+<tr><td>Novell/SuSE</td>	<td>http://www.novell.com/licensing/eula/suse_pro_93.pdf</td></tr>
+<tr><td>&\#93;project-open&\#91;</td>	<td>http://www.project-open.com/license/</td></tr>
+<tr><td>AOLserver</td>		<td>http://www.aolserver.com/license/</td></tr>
+<tr><td>OpenACS</td>		<td>http://openacs.org/about/licensing/</td></tr>
+<tr><td>VMWare Tools</td>	<td>http://www.vmware.com/support/</td></tr>
+</table>
 
-    set asdf asdf
+	<p>
+	You need to agree with the license terms of ALL of <br>
+	these authors prio to using the software.
+	</p>
+
+"
 
     set progress "
 	<table cellspacing=0 cellpadding=4 border=0>
 	<tr>
-		<td><a class=button href=''>&lt;&lt; Previous</a></td>
-		<td><a class=button href='[export_vars -base "/intranet-sysconfig/index" {asdf {sdfg $asdf}}]'>Next &gt;&gt;</a></td>
+		<td><span class=button>&lt;&lt; Previous</span></td>
+		<td><a class=button href='[export_vars -base "/intranet-sysconfig/segment/index"]'>Next &gt;&gt;</a></td>
 	</tr>
 	</table>
     "
