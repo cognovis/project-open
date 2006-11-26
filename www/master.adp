@@ -25,6 +25,10 @@
 		<slave>
 
 	</td></tr>
+
+        <tr align=center valign=bottom><td>@navbar;noquote@<br>&nbsp;</td></tr>
+
+
 	</table>
 
 	</td></tr>

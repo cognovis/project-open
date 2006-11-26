@@ -13,3 +13,5 @@
 set bg "/intranet/images/girlongrass.600x400.jpg"
 set po "<span class=brandsec>&\\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\\#91;</span>"
 
+
+set navbar [im_sysconfig_navigation_bar_sector $page]
