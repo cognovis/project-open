@@ -69,7 +69,7 @@ ad_proc -public im_sysconfig_component { } {
 	<table cellspacing=0 cellpadding=4 border=0>
 	<tr>
 		<td><span class=button>&lt;&lt; Previous</span></td>
-		<td><a class=button href='[export_vars -base "/intranet-sysconfig/segment/index"]'>Next &gt;&gt;</a></td>
+		<td><a class=button href='[export_vars -base "/intranet-sysconfig/segment/sector"]'>Next &gt;&gt;</a></td>
 	</tr>
 	</table>
     "
@@ -118,3 +118,35 @@ ad_proc -public im_sysconfig_progress_bar {
     "
 
 }
+
+
+
+ad_proc -public im_sysconfig_navigation_bar_sector {
+    page
+} {
+    Returns a formatted HTML block representing the advancing
+    of the configuration process.
+    @param wizard_stages - A list of wizard stages
+    Each stage consists of {Name URL Var}
+} {
+    switch $page {
+	sector {
+	    set previous "/intranet/"
+	    set next "/intranet-sysconfig/segment/features"
+	}
+    }
+
+    # !!!
+
+
+    set navbar "
+	<table cellspacing=0 cellpadding=4 border=0>
+	<tr>
+		<td><a class=button href='[export_vars -base $previous]'>&lt;&lt; Previous </a></td>
+		<td><a class=button href='[export_vars -base $next]'>Next &gt;&gt;</a></td>
+	</tr>
+	</table>
+    "
+    return $navbar
+}
+
