@@ -35,6 +35,8 @@ ad_require_permission $package_id survsimp_create_survey
 
 set user_id [ad_get_user_id]
 
+set short_name [string range $name 0 19]
+
 set exception_count 0
 set exception_text ""
 
