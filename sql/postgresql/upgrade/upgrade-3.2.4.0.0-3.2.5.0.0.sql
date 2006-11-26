@@ -11,7 +11,8 @@ extra_select, extra_where, sort_order, visible_for) values (1107,11,NULL,'Userna
 'parameter::get_from_package_key -package_key intranet-core -parameter EnableUsersUsernameP -default 0');
 
 
-
-
+-- Make all Categories "enabled", after introducing an enabled_p
+-- sensitive CategoryWidget
+update im_categories set enabled_p = 't';
 
 
