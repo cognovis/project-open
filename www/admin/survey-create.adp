@@ -8,7 +8,7 @@
 <%= [ad_export_vars -form type] %>
 <p>
 
-Survey Name:  <input type=text name=name value="@name@" size=21 maxlength=20>
+Survey Name:  <input type=text name=name value="@name@" size=41 maxlength=40>
 <p>
 Survey Description: 
 <br>
