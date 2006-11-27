@@ -31,6 +31,13 @@
     </td>
   </tr>
   <tr>
+    <th align="right">Override both panels?</th>
+    <td>
+      <input type="radio" name="overrides_both_panels_p" value="t" \>Yes  
+      <input type="radio" name="overrides_both_panels_p" value="f" checked="checked" \>No
+    </td>
+  </tr>
+  <tr>
     <th align="right">Only display when task is stared?</th>
     <td>
       <input type="radio" name="only_display_when_started_p" value="t" \>Yes  

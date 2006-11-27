@@ -26,6 +26,13 @@
     </td>
   </tr>
   <tr>
+    <th align="right">Override both panels?</th>
+    <td>
+      <input type="radio" name="overrides_both_panels_p" value="t" <%=[ad_decode $panel(overrides_both_panels_p) "t" "checked=\"checked\"" ""]%> />Yes  
+      <input type="radio" name="overrides_both_panels_p" value="f" <%=[ad_decode $panel(overrides_both_panels_p) "f" "checked=\"checked\"" ""]%> />No
+    </td>
+  </tr>
+  <tr>
     <th align="right">Only display when task is stared?</th>
     <td>
       <input type="radio" name="only_display_when_started_p" value="t" <%=[ad_decode $panel(only_display_when_started_p) "t" "checked=\"checked\"" ""]%> \>Yes  

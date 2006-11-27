@@ -8,6 +8,7 @@
 	set    header = :header,
 	       template_url = :template_url,
                overrides_action_p = :overrides_action_p,
+               overrides_both_panels_p = :overrides_both_panels_p,
 	       only_display_when_started_p = :only_display_when_started_p
 	where  workflow_key = :workflow_key
 	and    transition_key = :transition_key

@@ -12,6 +12,7 @@ ad_page_contract {
     header:notnull
     template_url:notnull
     overrides_action_p:notnull,boolean
+    overrides_both_panels_p:notnull,boolean
     only_display_when_started_p:notnull,boolean
     {return_url "task-panels?[export_vars -url { workflow_key transition_key context_key }]"}
     cancel:optional
@@ -19,17 +20,7 @@ ad_page_contract {
 
 if { ![info exists cancel] || [empty_string_p $cancel] } {
 
-    db_dml panel_update {
-	update wf_context_task_panels
-	set    header = :header,
-	       template_url = :template_url,
-               overrides_action_p = :overrides_action_p,
-	       only_display_when_started_p = :only_display_when_started_p
-	where  workflow_key = :workflow_key
-	and    transition_key = :transition_key
-	and    context_key = :context_key
-	and    sort_order = :sort_order
-    }   
+    db_dml panel_update {}
 }
 
 ad_returnredirect $return_url

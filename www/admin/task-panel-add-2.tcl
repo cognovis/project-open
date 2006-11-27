@@ -12,6 +12,7 @@ ad_page_contract {
     template_url
     only_display_when_started_p:boolean
     overrides_action_p:boolean
+    overrides_both_panels_p:boolean
     {return_url "task-panels?[export_vars -url { workflow_key transition_key context_key }]"}
     cancel:optional
 } -validate {
