@@ -6,4 +6,7 @@ constraint wf_context_panels_ovrd_both_ck
 CHECK (overrides_both_panels_p = 't'::bpchar OR overrides_both_panels_p = 'f'::bpchar)
 ;
 
+alter table wf_context_task_panels
+alter column overrides_both_panels_p set default 'f';
+
 
