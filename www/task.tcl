@@ -23,22 +23,13 @@ ad_page_contract {
     extreme_p 
 }
 
+# ---------------------------------------------------------
+# Defaults & Security
+
+# We don't force the user to authentify, is that right?
 set user_id [ad_get_user_id]
 
-# Fire all message transitions before:
-wf_sweep_message_transition_tcl
-
-
-####################
-#
-# Process the form
-#
-####################
-
-#
-# NOTE! We need to add some double-click protection here.
-#
-
+# ToDo: NOTE! We need to add some double-click protection here.
 
 set the_action [array names action]
 if { [llength $the_action] > 1 } {
@@ -53,15 +44,15 @@ if { [llength $the_action] > 1 } {
 }
 
 
+# ---------------------------------------------------------
+# Fire all message transitions before:
 
-####################
-#
-# Output the page
-#
-####################
+wf_sweep_message_transition_tcl
 
 
 
+# ---------------------------------------------------------
+# Get everything about the task
 
 array set task [wf_task_info $task_id]
 
@@ -73,30 +64,19 @@ set task(action_url) "task"
 set task(return_url) $return_url
 
 set context [list [list "case?case_id=$task(case_id)" "$task(object_name) case"] "$task(task_name)"]
-
 set panel_color "#dddddd"
 
-template::multirow create panels header template_url bgcolor
+set show_action_panel_p 1
 
+# ---------------------------------------------------------
+# Get "information panel" information - displayed on the left usually
+
+template::multirow create panels header template_url bgcolor
 set this_user_is_assigned_p $task(this_user_is_assigned_p)
 
-db_multirow panels panels {
-    select tp.header, 
-           tp.template_url,
-           '' as bgcolor
-      from wf_context_task_panels tp, 
-           wf_cases c,
-           wf_tasks t
-     where t.task_id = :task_id
-       and c.case_id = t.case_id
-       and tp.context_key = c.context_key
-       and tp.workflow_key = c.workflow_key
-       and tp.transition_key = t.transition_key
-       and (tp.only_display_when_started_p = 'f' or (t.state = 'started' and :this_user_is_assigned_p = 1))
-       and tp.overrides_action_p = 'f'
-    order by tp.sort_order
-} {
+db_multirow panels panels {} {
     set bgcolor $panel_color
+    if {"t" == $overrides_both_panels_p} { set show_action_panel_p 0 }
 }
 
 # Only display the default-info-panel when we have nothing better
@@ -104,50 +84,40 @@ if { ${panels:rowcount} == 0 } {
     template::multirow append panels "Case" "task-default-info" $panel_color
 }
 
+
+# ---------------------------------------------------------
 # Display instructions, if any
-if { [db_string instruction_check "
-    select count(*) 
-    from wf_transition_info ti, wf_tasks t
-    where t.task_id = :task_id
-      and t.transition_key = ti.transition_key
-      and t.workflow_key = ti.workflow_key
-      and instructions is not null
-"] } {
+
+if { [db_string instruction_check ""] } {
     template::multirow append panels "Instructions" "task-instructions" $panel_color
 }
 
+
+# ---------------------------------------------------------
 # Now for action panels -- these are always displayed at the far right
 
-set override_action 0
-db_foreach action_panels {
-    select tp.header, 
-           tp.template_url
-      from wf_context_task_panels tp, 
-           wf_cases c,
-           wf_tasks t
-     where t.task_id = :task_id
-       and c.case_id = t.case_id
-       and tp.context_key = c.context_key
-       and tp.workflow_key = c.workflow_key
-       and tp.transition_key = t.transition_key
-       and (tp.only_display_when_started_p = 'f' or (t.state = 'started' and :this_user_is_assigned_p = 1))
-       and tp.overrides_action_p = 't'
-    order by tp.sort_order
-} {
-    set override_action 1
-    template::multirow append panels $header $template_url "#ffffff"
+if {$show_action_panel_p} {
+
+    set override_action 0
+    db_foreach action_panels {} {
+	set override_action 1
+	template::multirow append panels $header $template_url "#ffffff"
+    }
+
+    if { $override_action == 0 } {
+	template::multirow append panels "Action" "task-action" "#ffffff"
+    }
 }
 
-if { $override_action == 0 } {
-    template::multirow append panels "Action" "task-action" "#ffffff"
-}
 
 set panel_width [expr {100/(${panels:rowcount})}]
-
 set case_id $task(case_id)
-
-
 set case_state [db_string case_state "select state from wf_cases where case_id = :case_id"]
+
+
+
+# ---------------------------------------------------------
+# "Extreme Actions" - cancel and/or suspend the case
 
 set extreme_p 0
 if {[string compare $case_state "active"] == 0} {
@@ -159,7 +129,9 @@ if {[string compare $case_state "active"] == 0} {
 
 
 
+# ---------------------------------------------------------
 # Fire all message transitions after the action:
+
 wf_sweep_message_transition_tcl
 
 

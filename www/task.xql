@@ -6,6 +6,7 @@
       
     select tp.header, 
            tp.template_url,
+	   tp.overrides_both_panels_p,
            '' as bgcolor
       from wf_context_task_panels tp, 
            wf_cases c,
@@ -32,6 +33,7 @@
       and t.transition_key = ti.transition_key
       and t.workflow_key = ti.workflow_key
       and instructions is not null
+      and trim(instructions) != ''
 
       </querytext>
 </fullquery>
