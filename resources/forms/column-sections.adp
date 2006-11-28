@@ -10,7 +10,7 @@ implemented as a single ad_form.
 
 <!-- Start "Section" Table -->
 <table cellspacing=2 cellpadding=0 border=0>
-<tr>
+<tr valign=top>
 <td>
 
 
@@ -34,7 +34,8 @@ implemented as a single ad_form.
 
         <if @elements.widget@ eq "submit">
           <tr class="form-element">
-            <td align="left" colspan="2">
+	    <td></td>
+            <td align="left">
               <group column="widget">
                 <noparse><formwidget id="@elements.id@"></noparse>
               </group>
