@@ -16,3 +16,13 @@ extra_select, extra_where, sort_order, visible_for) values (1107,11,NULL,'Userna
 update im_categories set enabled_p = 't';
 
 
+-- Weaken the project_path_un constraint so that it isnt global
+-- anymore, just local (wrt to parent_id)
+
+alter table im_projects
+drop constraint im_projects_path_un;
+
+alter table im_projects
+add constraint im_projects_path_un UNIQUE (project_nr, company_id, parent_id);
+
+
