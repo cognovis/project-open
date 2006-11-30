@@ -16,6 +16,26 @@ extra_select, extra_where, sort_order, visible_for) values (1107,11,NULL,'Userna
 update im_categories set enabled_p = 't';
 
 
+
+-- Add a new privilege to determine who can edit
+-- a projects base data in order to protect start- and enddate
+--
+select acs_privilege__create_privilege('edit_project_basedata','Edit Project Base Data','Edit Project Base Data');
+select acs_privilege__add_child('admin', 'edit_project_basedata');
+
+select im_priv_create('edit_project_basedata','Employees');
+select im_priv_create('edit_project_basedata','Customers');
+select im_priv_create('edit_project_basedata','Freelancers');
+select im_priv_create('edit_project_basedata','Accounting');
+select im_priv_create('edit_project_basedata','P/O Admins');
+select im_priv_create('edit_project_basedata','Project Managers');
+select im_priv_create('edit_project_basedata','Senior Managers');
+select im_priv_create('edit_project_basedata','Sales');
+select im_priv_create('edit_project_basedata','HR Managers');
+select im_priv_create('edit_project_basedata','Freelance Managers');
+
+
+
 -- Weaken the project_path_un constraint so that it isnt global
 -- anymore, just local (wrt to parent_id)
 
@@ -24,5 +44,4 @@ drop constraint im_projects_path_un;
 
 alter table im_projects
 add constraint im_projects_path_un UNIQUE (project_nr, company_id, parent_id);
-
 
