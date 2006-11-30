@@ -3,7 +3,7 @@
 <property name="title">@title@</property>
 <property name="context">@context@</property>
 
-
+<h2>@title@</h2>
 
 <form method=post action=attribute-delete>
 <input type=hidden name=return_url value="@return_url@">
@@ -70,8 +70,9 @@
 <li><a href="layout-manager?object_type=@object_type@">#intranet-dynfield.Layout_Manager#</a></li>
 </ul>
 
+<p>&nbsp;
 
-<h1>#intranet-dynfield.lt_Extension_Tables_for_#</h1>
+<h2>#intranet-dynfield.lt_Extension_Tables_for_#</h2>
 <form method=post action=extension-table-delete>
 <input type=hidden name=object_type value="@object_type@">
 <input type=hidden name=return_url value="@return_url@">
