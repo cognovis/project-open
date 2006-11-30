@@ -80,7 +80,38 @@ alter table im_dynfield_layout add
 -- ;
 
 
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'cost_centers',		-- widget_name
+	'#intranet-core.Cost_Center#',	-- pretty_name
+	'#intranet-core.Cost_Centers#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_cost_center_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{custom {start_cc_id ""} {department_only_p 0} {include_empty_p 1} {translate_p 0}}'
+);
 
 
-
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'departments',		-- widget_name
+	'#intranet-core.Departments#',	-- pretty_name
+	'#intranet-core.Departments#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_cost_center_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{custom {start_cc_id ""} {department_only_p 1} {include_empty_p 1} {translate_p 0}}'
+);
 
