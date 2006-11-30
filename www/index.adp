@@ -16,14 +16,6 @@
   <li><a href="permissions"><b>Permissions</b></a>:<br>
 	Defines who can read or write a DynField.
 	
-  <li><a href="permissions_per_object_type"><b>Configuration per Object Sub-Type</b></a>:<br>
-	Allows you to configure DynFields depending on 
-	an object's sub-type. For example, you can define that
-	a company of sub-type "Customer" should exhibit an 
-	"A-B-C" classification field, 
-	while a company of sub-type "Partner" may exhibit a "Partner Status"
-	field.
-
   <li><a href="widgets"><b>Widgets</b></a><br>
 	DynField-Widgets are pieces of HTML code to display the value of
 	a dynfield, together with the definition of a value range. 
@@ -41,6 +33,14 @@
 <H2>Soon Available</H2>
 
 <ul>
+  <li><a hhref="permissions_per_object_type"><b>Configuration per Object Sub-Type</b></a>:<br>
+	Allows you to configure DynFields depending on 
+	an object's sub-type. For example, you can define that
+	a company of sub-type "Customer" should exhibit an 
+	"A-B-C" classification field, 
+	while a company of sub-type "Partner" may exhibit a "Partner Status"
+	field.
+
   <li><a hhref="permissions_per_object_status"><b>Configuration per Object Status</b></a>:<br>
 	Allows you to display DynFields depending on 
 	an object's status. For example, you can show a "Budget"
