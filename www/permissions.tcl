@@ -86,6 +86,7 @@ db_foreach group_list $group_list_sql {
     lappend group_names $group_name
 
     append main_sql_select "\tim_object_permission_p(fa.attribute_id, $group_id, 'read') as p${group_id}_read_p,\n"
+    append main_sql_select "\tim_object_permission_p(fa.attribute_id, $group_id, 'write') as p${group_id}_write_p,\n"
 
     append table_header "
       <td class=rowtitle><A href=$group_url?group_id=$group_id>
@@ -162,19 +163,28 @@ db_foreach attributes $attributes_sql {
 
     foreach horiz_group_id $group_ids {
         set read_p [expr "\$p${horiz_group_id}_read_p"]
+        set write_p [expr "\$p${horiz_group_id}_write_p"]
 	set object_id $im_dynfield_attribute_id
+
 	set action "add_readable"
 	set letter "r"
         if {$read_p == "t"} {
-            set read "<A href=$toggle_url?object_id=$im_dynfield_attribute_id&action=remove_readable&[export_url_vars horiz_group_id return_url]><b>R</b></A>\n"
 	    set action "remove_readable"
 	    set letter "<b>R</b>"
         }
 	set read "<A href=$toggle_url?[export_url_vars horiz_group_id object_id action return_url]>$letter</A>\n"
 
+	set action "add_writable"
+	set letter "w"
+        if {$write_p == "t"} {
+	    set action "remove_writable"
+	    set letter "<b>W</b>"
+        }
+	set write "<A href=$toggle_url?[export_url_vars horiz_group_id object_id action return_url]>$letter</A>\n"
+
         append table "
   <td align=center>
-    $read
+    $read$write
   </td>
 "
     }
