@@ -10,7 +10,7 @@
 <h2>DynField Administration Pages</h2>
 <ul>
   <li><a href="object-types"><b>Object Types</b></a>:<br>
-	The main DynField editing page. Allows you to define DynFields
+	The main DynField configuration page. Allows you to define DynFields
 	per object type.<br>
 	
   <li><a href="permissions"><b>Permissions</b></a>:<br>

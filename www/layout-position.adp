@@ -2,7 +2,7 @@
   # /packages/intranet-dynfield/www/layout-position.adp
   # $Workfile: layout-position.adp $ $Revision$ $Date$
 %>
-<master>
+<master src="master">
 
 <property name="title">@title@</property>
 <property name="context">@context;noquote@</property>
