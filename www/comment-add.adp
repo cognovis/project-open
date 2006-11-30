@@ -13,7 +13,7 @@
 <tr><td bgcolor="#cccccc">
 
 <form action="comment-add-2" method="post" name="comment">
-@export_form_vars@
+@export_form_vars;noquote@
 <table width="100%" cellspacing="1" cellpadding="2" border="0">
 
 <tr valign="middle">

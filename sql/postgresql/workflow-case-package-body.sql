@@ -640,7 +640,7 @@ begin
 
         -- make the same assignment as a manual assignment
 
-        if add_task_assignment__permanent_p = ''t'' then
+        IF add_task_assignment__permanent_p = ''t'' and v_role_key is not null THEN
 	    /* We do this up-front, because 
 	     * even though the user already had a task assignment, 
 	     * he might not have a case assignment.
