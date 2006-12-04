@@ -23,4 +23,3 @@ begin
         PERFORM acs_object__delete(v_cost_center_id);
         return 0;
 end;' language 'plpgsql';
-

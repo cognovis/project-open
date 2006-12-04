@@ -580,6 +580,95 @@ ad_proc -public im_cost_center_options {
 
 
 
+
+
+
+ad_proc -public template::widget::im_cost_center_tree { element_reference tag_attributes } {
+    ad_form tree widget for cost centers and departments.
+    <tt>Usage: {custom {department_only_p 1} {start_cc_id 1234} {include_empty_p 0}}</tt>
+
+    @param start_cc_id
+	Set to a cc_id in order to display only a subtree
+
+    @param department_only_p 
+	Set to 1 in order to show only departments (subset of CCs)
+
+    @param include_empty_p
+	Set to 1 in order to include an empty line at the top
+
+    @param translate_p
+	Set to 1 in order to use L10n
+
+    The widget displays a department tree, starting at the top (or start_cc_id).
+} {
+    # Defaults
+    set include_empty_p 1
+    set start_cc_id ""
+    set department_only_p 1
+    set tranlate_p 0
+   
+    # Get references to parameters (magic...)
+    upvar $element_reference element
+    array set attributes $tag_attributes
+    set field_name $element(name)
+    set default_value_list $element(values)
+
+    # Determine parameters
+    if { [info exists element(custom)] } {
+	set params $element(custom)
+
+	set include_empty_pos [lsearch $params include_empty_p]
+	if { $include_empty_pos >= 0 } {
+	    set include_empty_p [lindex $params [expr $include_empty_pos + 1]]
+	}
+	set department_only_p_pos [lsearch $params department_only_p]
+	if { $department_only_p_pos >= 0 } {
+	    set department_only_p [lindex $params [expr $department_only_p_pos + 1]]
+	}
+	set translate_p_pos [lsearch $params translate_p]
+	if { $translate_p_pos >= 0 } {
+	    set translate_p [lindex $params [expr $translate_p_pos + 1]]
+	}
+    }
+
+    # Determine the default value for the widget
+    set default_value ""
+    if {[info exists element(value)]} {
+	set default_value $element(values)
+    }
+
+    # Debug
+    if {0} {
+	set debug ""
+	foreach key [array names element] {
+	    set value $element($key)
+	    append debug "$key = $value\n"
+	}
+	ad_return_complaint 1 "<pre>$element(name)\n$debug\n</pre>"
+	return
+    }
+
+    # Render the widget, depending on the display_mode (edit/display):
+    if { "edit" == $element(mode)} {
+
+	return [im_cost_center_select \
+		    -include_empty $include_empty_p \
+		    -department_only_p $department_only_p \
+		    $field_name \
+		    $default_value \
+	]
+
+    } else {
+
+	if {"" != $default_value && "\{\}" != $default_value} {
+	    return [db_string cat "select im_category_from_id($default_value)"]
+	}
+	return ""
+    }
+}
+
+
+
 ad_proc -public im_costs_default_cost_center_for_user { 
     user_id
 } {
