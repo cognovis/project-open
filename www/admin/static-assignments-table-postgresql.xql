@@ -6,7 +6,8 @@
 <fullquery name="roles">      
       <querytext>
 
-    select r.role_key, 
+select
+	   r.role_key, 
            r.role_name,
            p.party_id,
            acs_object__name(p.party_id) as party_name,
@@ -14,15 +15,21 @@
            '' as user_select_widget,
            '' as add_export_vars,
            '' as remove_url
-    from   wf_roles r 
-	   left outer join
-           wf_context_assignments ca 
-	   on (ca.context_key = :context_key and ca.role_key = r.role_key)
-	   left outer join
-           parties p
-	   using (party_id)
-    where  r.workflow_key = :workflow_key
-    order by r.sort_order, r.role_key
+from
+	   wf_roles r 
+	   LEFT OUTER JOIN
+		wf_context_assignments ca ON (
+			ca.workflow_key = r.workflow_key 
+			and ca.context_key = :context_key 
+			and ca.role_key = r.role_key
+		)
+	   LEFT OUTER JOIN
+		parties p
+		USING (party_id)
+where
+	r.workflow_key = :workflow_key
+order by
+	r.sort_order, r.role_key
 
       </querytext>
 </fullquery>
