@@ -3,7 +3,7 @@
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <master src="../../intranet-core/www/master">
-<property name="title">@title@</property>
+<property name="title">@page_title@</property>
 
 <br>
 @navbar;noquote@
