@@ -13,6 +13,7 @@ ad_page_contract {
     orgsize:optional
     features:optional
     deptcomp:optional
+    prodtest:optional
 }
 
 # ---------------------------------------------------------------
@@ -22,7 +23,7 @@ ad_page_contract {
 set base_url "/intranet-sysconfig/segment"
 
 # Define Wizard params
-set pages [list index sector deptcomp features orgsize confirm]
+set pages [list index sector deptcomp features orgsize prodtest confirm]
 
 
 # Frequent used HTML snippets
@@ -93,11 +94,11 @@ switch $page {
 set prev_page [lindex $pages [expr $index-1]]
 set next_page [lindex $pages [expr $index+1]]
 
-set prev_link "<input type=button class=button value='&lt;&lt; Prev'
+set prev_link "<input type=button class=button name=prev value='&lt;&lt; Prev'
 	onClick=\"window.document.wizard.action='$prev_page'; submit();\" 
 	title='&lt;&lt; Prev' alt='&lt;&lt; Prev'
 >"
-set next_link "<input type=button class=button  value='Next &gt;&gt;'
+set next_link "<input type=button class=button name=next value='Next &gt;&gt;'
 	onClick=\"window.document.wizard.action='$next_page'; submit();\" 
 	title='Next &gt;&gt;' alt='Next &gt;&gt;'
 >"
