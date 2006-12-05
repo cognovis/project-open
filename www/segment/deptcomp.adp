@@ -15,7 +15,11 @@
 	<p>
 	Do you want to run the entire company on @po_short;noquote@ 
 	or just your department?
-	
+<!--
+	<p>
+	There are different @po_short;noquote@ modules available for
+	the different options.
+-->
 	<p>
 	My organization is a:<br>&nbsp;
 	</p>

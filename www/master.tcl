@@ -38,6 +38,7 @@ set advance_component ""
 foreach p $pages {
 
     if {"index" == $p} { continue }
+    if {"confirm" == $p} { continue }
     set p_l10n [lang::message::lookup "" "intranet-sysconfig.Page_$p" $p]
 
     if {[exists_and_not_null $p]} {
@@ -75,6 +76,7 @@ set cmd [linsert $export_vars 0 "export_form_vars"]
 set export_vars [eval $cmd]
 
 
+
 # ---------------------------------------------------------------
 # Setup << Pref & Next >> Buttons
 # ---------------------------------------------------------------
@@ -91,22 +93,21 @@ switch $page {
 set prev_page [lindex $pages [expr $index-1]]
 set next_page [lindex $pages [expr $index+1]]
 
-set prev_link "<input type=image class=button 
+set prev_link "<input type=button class=button value='&lt;&lt; Prev'
 	onClick=\"window.document.wizard.action='$prev_page'; submit();\" 
 	title='&lt;&lt; Prev' alt='&lt;&lt; Prev'
 >"
-set next_link "<input type=image class=button 
+set next_link "<input type=button class=button  value='Next &gt;&gt;'
 	onClick=\"window.document.wizard.action='$next_page'; submit();\" 
 	title='Next &gt;&gt;' alt='Next &gt;&gt;'
 >"
+
 
 if {"" == $prev_page} { set prev_link "" }
 if {"" == $next_page} { set next_link "" }
 
 set navbar "
 	<table cellspacing=0 cellpadding=4 border=0>
-	<tr>
-		<td>$prev_link</td><td>$next_link</td>
-	</tr>
+	<tr><td>$prev_link</td><td>$next_link</td></tr>
 	</table>
 "

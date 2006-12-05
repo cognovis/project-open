@@ -14,8 +14,6 @@
 
 	<p>
 	@po;noquote@ can be adapted to different organization sizes.
-	You can change the configuration later, so don't worry too much
-	about the values that you put now.
 	</p>
 	
 	<p>

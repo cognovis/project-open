@@ -66,12 +66,14 @@ ad_proc -public im_sysconfig_component { } {
 "
 
     set progress "
+	<form action='/intranet-sysconfig/segment/sector' method=POST>
 	<table cellspacing=0 cellpadding=4 border=0>
 	<tr>
-		<td><span class=button>&lt;&lt; Previous</span></td>
-		<td><a class=button href='[export_vars -base "/intranet-sysconfig/segment/sector"]'>Next &gt;&gt;</a></td>
+		<td></td>
+		<td><input type=submit value='Next &gt;&gt;'></td>
 	</tr>
 	</table>
+	</form>
     "
 
     return "
@@ -81,88 +83,3 @@ ad_proc -public im_sysconfig_component { } {
 	</table>
     "
 }
-
-
-ad_proc -public im_sysconfig_progress_bar {
-    {-wizard_stage 0}
-    {-wizard_stages ""}
-} {
-    Returns a formatted HTML block representing the advancing
-    of the configuration process.
-    @param wizard_stages - A list of wizard stages
-           Each stage consists of {Name URL Var}
-} {
-    set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
-
-    set progress ""
-    set stage [lindex $wizard_stages $wizard_stage]
-
-    # Element is "previous"
-    if {0 == $wizard_stage} {
-	append progress "<td>[lindex $stage 0]</td>\n"
-    } else {
-	append progress "<td><a href=[lindex $stage 1]>[lindex $stage 0]</a></td>\n"
-    }
-
-    if {$wizard_stage > 0 && $wizard_stage < [llength $wizard_stages]} {
-
-    }
-
-    return "
-	<table border=0>
-	<tr>
-		<td><font color=grey>Previous</font></td>
-		<td><font color=grey><a href=/intranet-sysconfig/index?Purpose</font></td>
-	</tr>
-	</table>
-    "
-
-}
-
-
-
-ad_proc -public im_sysconfig_navigation_bar_sector {
-    page
-} {
-    Returns a formatted HTML block representing the advancing
-    of the configuration process.
-    @param wizard_stages - A list of wizard stages
-    Each stage consists of {Name URL Var}
-} {
-    set pages [list index sector deptcomp features orgsize]
-    set vars [list sector deptcomp features orgsize]
-
-    set base_url "/intranet-sysconfig/segment"
-
-    # Determine prev & next links
-    set index [lsearch $pages $page]
-#    ad_return_complaint 1 "$index $page"
-    set prev "$base_url/[lindex $pages [expr $index-1]]"
-    set next "$base_url/[lindex $pages [expr $index+1]]"
-
-    # Deal with Exceptions
-    switch $page {
-	index {
-	    set prev ""
-	}
-    }
-
-    set prev_link "<a class=button href='[export_vars -base $prev]'>&lt;&lt; Previous </a>"
-    set next_link "<a class=button href='[export_vars -base $next]'>Next &gt;&gt;</a>"
-
-    set prev_link "<input type=image class=button onClick=\"window.document.wizard.action='[lindex $pages [expr $index-1]]'; submit();\" title='&lt;&lt; Prev' alt='&lt;&lt; Prev'>"
-    set next_link "<input type=image class=button onClick=\"window.document.wizard.action='[lindex $pages [expr $index+1]]'; submit();\" title='Next &gt;&gt;' alt='Next &gt;&gt;'>"
-
-#    if {"" == $prev} { set prev_link "" }
-#    if {"" == $next} { set next_link "" }
-
-    set navbar "
-	<table cellspacing=0 cellpadding=4 border=0>
-	<tr>
-		<td>$prev_link</td><td>$next_link</td>
-	</tr>
-	</table>
-    "
-    return $navbar
-}
-

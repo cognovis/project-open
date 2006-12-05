@@ -23,7 +23,7 @@
 <tr valign=top>
   <td><input type=radio name=features value=minimum <if @features@ eq "minimum">checked</if>></td>
   <td colspan=2>
-	<b>Minimum System</b><br>
+	<b>Simplified System</b><br>
 	Please only install essentail packages.<br>
 	This option is useful for first time users and users
 	who don't want to be confused by the system.
@@ -43,7 +43,7 @@
 <tr valign=top>
   <td><input type=radio name=features value=other <if @features@ eq "other">checked</if>></td>
   <td colspan=2>
-	<b>Everything / Full Instllation</b><br>
+	<b>Complete / Full Installation</b><br>
 	Please install everything.<br>
 	This option is useful if you are checking for specific
 	features/ options for your organization or if you want to
