@@ -27,3 +27,15 @@ set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</s
 set sector [ns_set iget [ad_conn form] "sector"]
 
 
+# ---------------------------------------------------------------
+# Check if everything is togehter
+# ---------------------------------------------------------------
+
+set pages [list sector deptcomp features orgsize prodtest]
+set ready 1
+
+foreach v $pages {
+    set $v [ns_set iget [ad_conn form] $v]
+    if {![exists_and_not_null $v]} { set ready 0 }
+}
+

@@ -2,7 +2,7 @@
 <!-- @author Frank Bergmann (frank.bergmann@project-open.com) -->
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
-<master src="../master">
+<master src="master">
 <property name="title">Business Sector</property>
 
 <h2>Business Sector</h2>
@@ -25,7 +25,7 @@
 </td></tr>
 <tr valign=top>
   <td>
-  <input type=radio name=sector value=it_consulting <if @sector@ eq "it_consulting">checked</if>>
+	<input type=radio name=sector value=it_consulting <if @sector@ eq "it_consulting">checked</if>>
   </td>
   <td colspan=2>
 	<b>Information Technology</b><br>

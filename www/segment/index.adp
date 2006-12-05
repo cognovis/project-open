@@ -2,7 +2,7 @@
 <!-- @author Frank Bergmann (frank.bergmann@project-open.com) -->
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
-<master src="../master">
+<master src="master">
 <property name="title">@page_title@</property>
 
 <h2>License Agreement</h2>
