@@ -401,6 +401,18 @@ ad_proc im_filestorage_home_path { } {
 } {
     set package_id [im_package_filestorage_id]
     set base_path_unix [parameter::get -package_id $package_id -parameter "HomeBasePathUnix" -default "/tmp/home"]
+
+    # Check if the base_path has a trailing "/" and produce an error:
+    if {[regexp {.\/$} $base_path_unix]} {
+	ad_return_complaint 1 "<br><blockquote>
+             The '$base_path_unix' path for this filestorage contains a trailing slash ('/') at the end.
+             Please notify your system administrator and ask him or her to remove any trailing
+             slashes in the Admin -&gt; Parameters -&gt; 'intranet-filestorage' section.
+        </blockquote><br>
+        "
+	return
+    }
+
     return "$base_path_unix"
 }
 
@@ -410,6 +422,18 @@ ad_proc im_filestorage_backup_path { } {
     are stored on the hard disk 
 } {
     set backup_path [parameter::get -package_id [im_package_core_id] -parameter "BackupBasePathUnix" -default "/tmp"]
+
+    # Check if the base_path has a trailing "/" and produce an error:
+    if {[regexp {.\/$} $backup_path]} {
+	ad_return_complaint 1 "<br><blockquote>
+             The '$backup_path' path for this filestorage contains a trailing slash ('/') at the end.
+             Please notify your system administrator and ask him or her to remove any trailing
+             slashes in the Admin -&gt; Parameters -&gt; 'intranet-filestorage' section.
+        </blockquote><br>
+        "
+	return
+    }
+
     return $backup_path
 }
 
@@ -427,6 +451,17 @@ ad_proc im_filestorage_project_path_helper { project_id } {
     are stored on the hard disk for this project
 } {
     set base_path_unix [parameter::get -package_id [im_package_filestorage_id] -parameter "ProjectBasePathUnix" -default "/tmp/projects"]
+
+    # Check if the base_path has a trailing "/" and produce an error:
+    if {[regexp {.\/$} $base_path_unix]} {
+	ad_return_complaint 1 "<br><blockquote>
+             The '$base_path_unix' path for this filestorage contains a trailing slash ('/') at the end.
+             Please notify your system administrator and ask him or her to remove any trailing
+             slashes in the Admin -&gt; Parameters -&gt; 'intranet-filestorage' section.
+        </blockquote><br>
+        "
+	return
+    }
 
     # Return a demo path for all project, clients etc.
     if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
@@ -475,6 +510,17 @@ ad_proc im_filestorage_project_sales_path_helper { project_id } {
     set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
     set base_path_unix [parameter::get -package_id $package_id -parameter "ProjectSalesBasePathUnix" -default "/tmp/project_sales"]
 
+    # Check if the base_path has a trailing "/" and produce an error:
+    if {[regexp {.\/$} $base_path_unix]} {
+	ad_return_complaint 1 "<br><blockquote>
+             The '$base_path_unix' path for this filestorage contains a trailing slash ('/') at the end.
+             Please notify your system administrator and ask him or her to remove any trailing
+             slashes in the Admin -&gt; Parameters -&gt; 'intranet-filestorage' section.
+        </blockquote><br>
+        "
+	return
+    }
+
     # Return a demo path for all project, clients etc.
     if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
 	set path [ad_parameter "TestDemoDevPath" "" "internal/demo"]
@@ -514,6 +560,17 @@ ad_proc im_filestorage_user_path { user_id } {
     set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
     set base_path_unix [parameter::get -package_id $package_id -parameter "UserBasePathUnix" -default "/tmp/users"]
 
+    # Check if the base_path has a trailing "/" and produce an error:
+    if {[regexp {.\/$} $base_path_unix]} {
+	ad_return_complaint 1 "<br><blockquote>
+             The '$base_path_unix' path for this filestorage contains a trailing slash ('/') at the end.
+             Please notify your system administrator and ask him or her to remove any trailing
+             slashes in the Admin -&gt; Parameters -&gt; 'intranet-filestorage' section.
+        </blockquote><br>
+        "
+	return
+    }
+
     # Return a demo path for all project, clients etc.
     if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
 	set path [ad_parameter "TestDemoDevUserPath" "" "users"]
@@ -538,6 +595,17 @@ ad_proc im_filestorage_company_path_helper { company_id } {
     are stored on the hard disk
 } {
     set base_path_unix [parameter::get -package_id [im_package_filestorage_id] -parameter "CompanyBasePathUnix" -default "/tmp/companies"]
+
+    # Check if the base_path has a trailing "/" and produce an error:
+    if {[regexp {.\/$} $base_path_unix]} {
+	ad_return_complaint 1 "<br><blockquote>
+             The '$base_path_unix' path for this filestorage contains a trailing slash ('/') at the end.
+             Please notify your system administrator and ask him or her to remove any trailing
+             slashes in the Admin -&gt; Parameters -&gt; 'intranet-filestorage' section.
+        </blockquote><br>
+        "
+	return
+    }
 
     set company_path "undefined"
     if {[catch {
@@ -721,6 +789,17 @@ where
 
 
     set base_path_unix [parameter::get -package_id [im_package_filestorage_id] -parameter "ProjectBasePathUnix" -default "/tmp/projects"]
+
+    # Check if the base_path has a trailing "/" and produce an error:
+    if {[regexp {.\/$} $base_path_unix]} {
+	ad_return_complaint 1 "<br><blockquote>
+             The '$base_path_unix' path for this filestorage contains a trailing slash ('/') at the end.
+             Please notify your system administrator and ask him or her to remove any trailing
+             slashes in the Admin -&gt; Parameters -&gt; 'intranet-filestorage' section.
+        </blockquote><br>
+        "
+	return
+    }
 
     # Create a company directory if it doesn't already exist
     set company_dir "$base_path_unix/$company_path"
@@ -1254,7 +1333,6 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     # remove the first (root path) from the list of files returned by "find".
     set files [lrange $files 1 [llength $files]]
 
-
     # ------------------------------------------------------------------
     # Format the bread crum bar
     
@@ -1451,6 +1529,30 @@ where
 
 	    set dir_bread_crum_list [lrange $file_paths $base_path_depth [llength $file_paths]]
 	    set dir_bread_crum_path [join $dir_bread_crum_list "/"]
+
+	    if {0} {
+		ad_return_complaint 1 "
+			    -user_id $user_id \
+			    -file_body $file_body  \
+			    -base_path $base_path \
+			    -bind_vars $bind_vars  \
+			    -current_url_without_vars $current_url_without_vars  \
+			    -return_url $return_url  \
+			    -folder_id $folder_id_hash($rel_path)  \
+			    -object_id $object_id \
+			    -base_path_depth $base_path_depth  \
+			    -current_depth $current_depth  \
+			    -open_p $open_p_hash($rel_path) \
+			    -ctr $ctr \
+			    -rel_path $rel_path  \
+			    -bread_crum_path $dir_bread_crum_path \
+			    -rowclass $rowclass \
+			    -roles $roles \
+			    -profiles $profiles \
+			    -perm_hash_array $perm_hash_array \
+			    -user_perms $user_perms \
+	        "
+	    }
 
 	    # Printing one row with the directory information
 	    append files_html [im_filestorage_dir_row \
