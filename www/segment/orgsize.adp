@@ -13,10 +13,7 @@
 <tr><td colspan=3>
 
 	<p>
-	@po;noquote@ can be adapted to organizations of different size.
-	Smaller organization may be able to work with a simplified version
-	while larger organizaitons need all available communication and
-	organization features.
+	@po;noquote@ can be adapted to different organization sizes.
 	</p>
 	
 	<p>
@@ -32,64 +29,49 @@
 	or translation department of a larger corporation).
 
 	<p>
-	My organization consists of
+	My organization consists of:<br>&nbsp;
 	</p>
 
 </td></tr>
 <tr valign=top>
-  <td><input type=radio name=orgsize value=2</td>
+  <td width="30"><input type=radio name=orgsize value=2-6></td>
   <td colspan=2>
-	<b>2-4 Full-Time Members</b><br>
-	We are a very small organization with mutual trust. 
-	We don't need any internal structure and i
-
+	<b>2-6 Full-Time Members</b><br>
   </td>
 </tr>
 
 <tr valign=top>
-  <td><input type=radio name=orgsize value=biz_consulting</td>
+  <td><input type=radio name=orgsize value=6-12></td>
   <td colspan=2>
-	<b>Business Consulting</b><br>
-	Strategic Consulting, Financial Consulting, Organizational Development, ... <br>&nbsp;
+	<b>6-12 Full-Time Members</b><br>
   </td>
 </tr>
 
 <tr valign=top>
-  <td><input type=radio name=orgsize value=translation</td>
+  <td><input type=radio name=orgsize value=12-25></td>
   <td colspan=2>
-	<b>Translation and Localization</b><br>
-	Translation, Software Localization, Technical Documentation, ...<br>&nbsp;
+	<b>12-25 Full-Time Members</b><br>
   </td>
 </tr>
 
 <tr valign=top>
-  <td><input type=radio name=orgsize value=advertizing</td>
+  <td><input type=radio name=orgsize value=25-50></td>
   <td colspan=2>
-	<b>Advertizing &amp; Web Development</b><br>
-	Advertizing or Interactive Media development. <br>&nbsp;
+	<b>25-50 Full-Time Members</b><br>
   </td>
 </tr>
 
 <tr valign=top>
-  <td><input type=radio name=orgsize value=it_consulting</td>
+  <td><input type=radio name=orgsize value=50-100></td>
   <td colspan=2>
-	<b>Product Development & Engineering</b><br>
-	Mechanical Engineering, Electrical Engineering, Marketing, ... <br>&nbsp;
+	<b>50-100 Full-Time Members</b><br>
   </td>
 </tr>
 
 <tr valign=top>
-  <td><input type=radio name=orgsize value=other</td>
-  <td>
-	<b>Other / Everything</b><br>
-	Install everything. <br>
-	Please specify your area:
-	
-  </td>
-  <td align=left><input type=text name=other size=30>
+  <td><input type=radio name=orgsize value=100-200></td>
+  <td colspan=2>
+	<b>100-200 Full-Time Members</b><br>
   </td>
 </tr>
-
-
-
 </table>
