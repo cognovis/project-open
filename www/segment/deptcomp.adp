@@ -23,7 +23,7 @@
 </td></tr>
 
 <tr valign=top>
-  <td><input type=radio name=deptcomp value=dept</td>
+  <td><input type=radio name=deptcomp value=dept></td>
   <td colspan=2>
 	<b>Corporate Department</b><br>
 	We would use @po_short;noquote@ to manage a department
@@ -33,7 +33,7 @@
 </tr>
 
 <tr valign=top>
-  <td><input type=radio name=deptcomp value=subsidary</td>
+  <td><input type=radio name=deptcomp value=subsidary></td>
   <td colspan=2>
 	<b>Independent Subsidary or Division</b><br>
 	My organization is a subsidary or division of a larger corporation.
@@ -43,7 +43,7 @@
 </tr>
 
 <tr valign=top>
-  <td><input type=radio name=deptcomp value=sme</td>
+  <td><input type=radio name=deptcomp value=sme></td>
   <td colspan=2>
 	<b>Small or Medium Enterprise (SME)</b><br>
 	My company is a SME with 2-200 employees. We need to export
@@ -53,7 +53,7 @@
 </tr>
 
 <tr valign=top>
-  <td><input type=radio name=deptcomp value=other</td>
+  <td><input type=radio name=deptcomp value=other></td>
   <td>
 	<b>Other / Everything</b><br>
 	None of the above fits my type of organization.<br>

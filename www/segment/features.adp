@@ -1,0 +1,54 @@
+<!-- packages/intranet-sysconfig/sector/index.adp -->
+<!-- @author Frank Bergmann (frank.bergmann@project-open.com) -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<master src="../master">
+<property name="title">System Configuration Wizard</property>
+
+
+<h2>Simplified or Complete Install?</h2>
+
+<table border=0 width="90%">
+<tr><td colspan=3>
+
+	<p>
+	@po;noquote@ offers a total of ~100 packages which can
+	be enabled/disabled individually. However enabling/
+	disabling them may take some time. So please select 
+	your start configuration. You can later change the
+	configuration by running this wizard again.<br>&nbsp;
+	</p>
+	
+</td></tr>
+<tr valign=top>
+  <td><input type=radio name=features value=minimum></td>
+  <td colspan=2>
+	<b>Minimum System</b><br>
+	Please only install essentail packages.<br>
+	This option is useful for first time users and users
+	who don't want to be confused by the system.
+	<br>&nbsp;
+  </td>
+</tr>
+
+<tr valign=top>
+  <td><input type=radio name=features value=frequently_used></td>
+  <td colspan=2>
+	<b>Default System</b><br>
+	Please install frequently used packages and disables less 
+	frequently used extensions.<br>&nbsp;
+  </td>
+</tr>
+
+<tr valign=top>
+  <td><input type=radio name=features value=other></td>
+  <td colspan=2>
+	<b>Everything / Full Instllation</b><br>
+	Please install everything.<br>
+	This option is useful if you are checking for specific
+	features/ options for your organization or if you want to
+	enable/ disable features yourself.
+	<br>&nbsp;
+  </td>
+</tr>
+</table>
