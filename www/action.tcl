@@ -433,7 +433,7 @@ $dirs_html
 </td></tr>
 <tr><td>
   <input type='text' name='folder_name' value='' style='width: 100%;'>
-  <input type='submit' value='[_ intranet-filestorage.create_folder]'>
+  <input type='submit' value='[lang::message::lookup "" intranet-filestorage.Create_Folder "Create Folder"]'>
 </td></tr>
 </table>
 </form>\n"
