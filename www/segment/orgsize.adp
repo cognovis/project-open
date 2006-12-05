@@ -14,64 +14,46 @@
 
 	<p>
 	@po;noquote@ can be adapted to different organization sizes.
+	You can change the configuration later, so don't worry too much
+	about the values that you put now.
 	</p>
 	
 	<p>
-	"<i>Size</i>" refers to full-time members inside your organization such
-	as employees and management team.
-	Please don't include external users such as your customers,
-	freelancers or vendors.
+	"<i>Organization Size</i>" refers to full-time members inside your 
+	"core" organization that is going to use @po_short;noquote@. 
+	Please don't include "external" users such as vendors, freelancers, 
+	customer or users of other departments that might peek into the 
+	system from time to time.
 	
 	<p>
-	"<i>Organization</i>" refers to the actual organization to use
-	@po_small;noquote@. Please give only the size of your department 
-	if your department is part of a larger company (such as the IT
-	or translation department of a larger corporation).
-
-	<p>
-	My organization consists of:<br>&nbsp;
+	My "core" organization consists of:<br>&nbsp;
 	</p>
 
 </td></tr>
 <tr valign=top>
-  <td width="30"><input type=radio name=orgsize value=2-6></td>
+  <td width="30"><input type=radio name=orgsize value=one <if @orgsize@ eq "one">checked</if>></td>
   <td colspan=2>
-	<b>2-6 Full-Time Members</b><br>
+	<b>One hierarchical level</b><br> 
+	2-8 full-time members plus support & financial staff
+	<br>&nbsp;
   </td>
 </tr>
 
 <tr valign=top>
-  <td><input type=radio name=orgsize value=6-12></td>
+  <td><input type=radio name=orgsize value=two <if @orgsize@ eq "two">checked</if>></td>
   <td colspan=2>
-	<b>6-12 Full-Time Members</b><br>
+	<b>Two hierarchical levels</b><br>
+	8-40 full-time members plus support & financial staff
+	<br>&nbsp;
   </td>
 </tr>
 
 <tr valign=top>
-  <td><input type=radio name=orgsize value=12-25></td>
+  <td><input type=radio name=orgsize value=three <if @orgsize@ eq "three">checked</if>></td>
   <td colspan=2>
-	<b>12-25 Full-Time Members</b><br>
-  </td>
-</tr>
-
-<tr valign=top>
-  <td><input type=radio name=orgsize value=25-50></td>
-  <td colspan=2>
-	<b>25-50 Full-Time Members</b><br>
-  </td>
-</tr>
-
-<tr valign=top>
-  <td><input type=radio name=orgsize value=50-100></td>
-  <td colspan=2>
-	<b>50-100 Full-Time Members</b><br>
-  </td>
-</tr>
-
-<tr valign=top>
-  <td><input type=radio name=orgsize value=100-200></td>
-  <td colspan=2>
-	<b>100-200 Full-Time Members</b><br>
+	<b>Three hierarchical levels</b><br>
+	40-200 full-time members plus support & financial staff</b><br>
+	<br>&nbsp;
   </td>
 </tr>
 </table>

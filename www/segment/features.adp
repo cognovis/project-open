@@ -21,7 +21,7 @@
 	
 </td></tr>
 <tr valign=top>
-  <td><input type=radio name=features value=minimum></td>
+  <td><input type=radio name=features value=minimum <if @features@ eq "minimum">checked</if>></td>
   <td colspan=2>
 	<b>Minimum System</b><br>
 	Please only install essentail packages.<br>
@@ -32,7 +32,7 @@
 </tr>
 
 <tr valign=top>
-  <td><input type=radio name=features value=frequently_used></td>
+  <td><input type=radio name=features value=frequently_used <if @features@ eq "frequently_used">checked</if>></td>
   <td colspan=2>
 	<b>Default System</b><br>
 	Please install frequently used packages and disables less 
@@ -41,7 +41,7 @@
 </tr>
 
 <tr valign=top>
-  <td><input type=radio name=features value=other></td>
+  <td><input type=radio name=features value=other <if @features@ eq "other">checked</if>></td>
   <td colspan=2>
 	<b>Everything / Full Instllation</b><br>
 	Please install everything.<br>

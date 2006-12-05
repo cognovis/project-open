@@ -23,3 +23,7 @@ ad_page_contract {
 set bg "/intranet/images/girlongrass.600x400.jpg"
 set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
 set po_small "<span class=brandsec>&\#93;</span><span class=brandfirst>po</span><span class=brandsec>&\#91;</span>"
+
+set features [ns_set iget [ad_conn form] "features"]
+
+

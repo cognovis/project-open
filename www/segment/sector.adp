@@ -3,9 +3,7 @@
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <master src="../master">
-<property name="title">System Configuration Wizard</property>
-<property name="page">sector</property>
-
+<property name="title">Business Sector</property>
 
 <h2>Business Sector</h2>
 
@@ -27,60 +25,59 @@
 </td></tr>
 <tr valign=top>
   <td>
-  <input type=radio name=sector value=it_consulting<if @sector@ eq "it_consulting">checked</if>>
+  <input type=radio name=sector value=it_consulting <if @sector@ eq "it_consulting">checked</if>>
   </td>
   <td colspan=2>
 	<b>Information Technology</b><br>
-	Software Development, IT Consulting, Software Testing, ... <br>&nbsp;
+	Software Development, IT Consulting, Software Testing, ...
   </td>
 </tr>
 
 <tr valign=top>
   <td>
-  <input type=radio name=sector value=biz_consulting<if @sector@ eq "biz_consulting">checked</if>>
+  <input type=radio name=sector value=biz_consulting <if @sector@ eq "biz_consulting">checked</if>>
   </td>
   <td colspan=2>
 	<b>Business Consulting</b><br>
-	Strategic Consulting, Financial Consulting, Organizational Development, ... <br>&nbsp;
+	Strategic Consulting, Financial Consulting, Organizational Development, ...
   </td>
 </tr>
 
 <tr valign=top>
   <td>
-  <input type=radio name=sector value=translation<if @sector@ eq "translation">checked</if>>
+  <input type=radio name=sector value=translation <if @sector@ eq "translation">checked</if>>
   </td>
   <td colspan=2>
 	<b>Translation and Localization</b><br>
-	Translation, Software Localization, Technical Documentation, ...<br>&nbsp;
+	Translation, Software Localization, Technical Documentation, ...
   </td>
 </tr>
 
 <tr valign=top>
-  <td><input type=radio name=sector value=advertizing<if @sector@ eq "advertizing">checked</if>></td>
+  <td><input type=radio name=sector value=advertizing <if @sector@ eq "advertizing">checked</if>></td>
   <td colspan=2>
 	<b>Advertizing &amp; Web Development</b><br>
-	Advertizing or Interactive Media development. <br>&nbsp;
+	Advertizing or Interactive Media development...
   </td>
 </tr>
 
 <tr valign=top>
   <td>
-  <input type=radio name=sector value=engineering<if @sector@ eq "engineering">checked</if>>
+  <input type=radio name=sector value=engineering <if @sector@ eq "engineering">checked</if>>
   </td>
   <td colspan=2>
 	<b>Product Development & Engineering</b><br>
-	Mechanical Engineering, Electrical Engineering, Marketing, ... <br>&nbsp;
+	Mechanical Engineering, Electrical Engineering, Marketing, ...
   </td>
 </tr>
 
 <tr valign=top>
   <td>
-  <input type=radio name=sector value=other<if @sector@ eq "other">checked</if>>
+  <input type=radio name=sector value=other <if @sector@ eq "other">checked</if>>
   </td>
   <td>
 	<b>Other / Everything</b><br>
-	None of the above fits my organization<br>
-	Please install everything.
+	None of the above fits my organization. Please install everything.
 	
   </td>
 </tr>

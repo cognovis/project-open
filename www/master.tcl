@@ -22,7 +22,7 @@ ad_page_contract {
 set base_url "/intranet-sysconfig/segment"
 
 # Define Wizard params
-set pages [list index sector deptcomp features orgsize]
+set pages [list index sector deptcomp features orgsize confirm]
 
 
 # Frequent used HTML snippets
@@ -31,28 +31,23 @@ set po "<span class=brandsec>&\\#93;</span><span class=brandfirst>project-open</
 
 
 # ---------------------------------------------------------------
-# Save variables to DB
+# Advance Component
 # ---------------------------------------------------------------
 
-set export_vars [list]
-if {[exists_and_not_null biz_sector]} {
-#    ad_return_complaint 1 $biz_sector
+set advance_component ""
+foreach p $pages {
+
+    if {"index" == $p} { continue }
+    set p_l10n [lang::message::lookup "" "intranet-sysconfig.Page_$p" $p]
+
+    if {[exists_and_not_null $p]} {
+	set v [expr "\$$p"]
+	append advance_component "<input type=checkbox name=asdf checked disabled> $p_l10n=$v<br>\n"
+    } else {
+	set v ""
+	append advance_component "<input type=checkbox name=asdf disabled> $p_l10n=$v <br>\n"
+    }
 }
-
-if {[exists_and_not_null orgsize]} {  
-#    ad_return_complaint 1 $orgsize
-}
-
-if {[exists_and_not_null features]} {  
-#    ad_return_complaint 1 $features
-}
-
-if {[exists_and_not_null deptcomp]} {  
-#    ad_return_complaint 1 $deptcomp
-}
-
-
-
 
 # ---------------------------------------------------------------
 # Calculate the Prev & Next buttons
@@ -81,9 +76,8 @@ set export_vars [eval $cmd]
 
 
 # ---------------------------------------------------------------
-#
+# Setup << Pref & Next >> Buttons
 # ---------------------------------------------------------------
-
 
 set index [lsearch $pages $page]
 
@@ -97,9 +91,14 @@ switch $page {
 set prev_page [lindex $pages [expr $index-1]]
 set next_page [lindex $pages [expr $index+1]]
 
-
-set prev_link "<input type=image class=button onClick=\"window.document.wizard.action='$prev_page'; submit();\" title='&lt;&lt; Prev' alt='&lt;&lt; Prev'>"
-set next_link "<input type=image class=button onClick=\"window.document.wizard.action='$next_page'; submit();\" title='Next &gt;&gt;' alt='Next &gt;&gt;'>"
+set prev_link "<input type=image class=button 
+	onClick=\"window.document.wizard.action='$prev_page'; submit();\" 
+	title='&lt;&lt; Prev' alt='&lt;&lt; Prev'
+>"
+set next_link "<input type=image class=button 
+	onClick=\"window.document.wizard.action='$next_page'; submit();\" 
+	title='Next &gt;&gt;' alt='Next &gt;&gt;'
+>"
 
 if {"" == $prev_page} { set prev_link "" }
 if {"" == $next_page} { set next_link "" }
