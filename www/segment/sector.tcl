@@ -23,11 +23,7 @@ ad_page_contract {
 set bg "/intranet/images/girlongrass.600x400.jpg"
 set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
 
-set sector ""
-set vars [ad_conn form]
-for { set i 0 } { $i < [ns_set size $vars] } { incr i } {
-    set key [ns_set key $vars $i]
-    set val [ns_set value $vars $i]
 
-    if {"sector" == $key} { set sector $val }
-}
+set sector [ns_set iget [ad_conn form] "sector"]
+
+

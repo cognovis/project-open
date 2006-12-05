@@ -129,21 +129,37 @@ ad_proc -public im_sysconfig_navigation_bar_sector {
     @param wizard_stages - A list of wizard stages
     Each stage consists of {Name URL Var}
 } {
+    set pages [list index sector deptcomp features orgsize]
+    set vars [list sector deptcomp features orgsize]
+
+    set base_url "/intranet-sysconfig/segment"
+
+    # Determine prev & next links
+    set index [lsearch $pages $page]
+#    ad_return_complaint 1 "$index $page"
+    set prev "$base_url/[lindex $pages [expr $index-1]]"
+    set next "$base_url/[lindex $pages [expr $index+1]]"
+
+    # Deal with Exceptions
     switch $page {
-	sector {
-	    set previous "/intranet/"
-	    set next "/intranet-sysconfig/segment/features"
+	index {
+	    set prev ""
 	}
     }
 
-    # !!!
+    set prev_link "<a class=button href='[export_vars -base $prev]'>&lt;&lt; Previous </a>"
+    set next_link "<a class=button href='[export_vars -base $next]'>Next &gt;&gt;</a>"
 
+    set prev_link "<input type=image class=button onClick=\"window.document.wizard.action='[lindex $pages [expr $index-1]]'; submit();\" title='&lt;&lt; Prev' alt='&lt;&lt; Prev'>"
+    set next_link "<input type=image class=button onClick=\"window.document.wizard.action='[lindex $pages [expr $index+1]]'; submit();\" title='Next &gt;&gt;' alt='Next &gt;&gt;'>"
+
+#    if {"" == $prev} { set prev_link "" }
+#    if {"" == $next} { set next_link "" }
 
     set navbar "
 	<table cellspacing=0 cellpadding=4 border=0>
 	<tr>
-		<td><a class=button href='[export_vars -base $previous]'>&lt;&lt; Previous </a></td>
-		<td><a class=button href='[export_vars -base $next]'>Next &gt;&gt;</a></td>
+		<td>$prev_link</td><td>$next_link</td>
 	</tr>
 	</table>
     "

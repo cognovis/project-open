@@ -22,19 +22,7 @@ ad_page_contract {
 
 set bg "/intranet/images/girlongrass.600x400.jpg"
 set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
-set po_small "<span class=brandsec>&\#93;</span><span class=brandfirst>po</span><span class=brandsec>&\#91;</span>"
+set po_short "<span class=brandsec>&\#93;</span><span class=brandfirst>po</span><span class=brandsec>&\#91;</span>"
 
+set orgsize [ns_set iget [ad_conn form] "orgsize"]
 
-# ---------------------------------------------------------------
-# Extract form var
-# ---------------------------------------------------------------
-
-
-set orgsize ""
-set vars [ad_conn form]
-for { set i 0 } { $i < [ns_set size $vars] } { incr i } {
-    set key [ns_set key $vars $i]
-    set val [ns_set value $vars $i]
-
-    if {"orgsize" == $key} { set orgsize $val }
-}

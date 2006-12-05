@@ -1,4 +1,4 @@
-<%= [im_header $title] %>
+<%= [im_header "[lang::message::lookup "" intranet-sysconfig.SysConfig_Wizard "SysConfig Wizard:"] $title"] %>
 <%= [im_navbar "admin"] %>
 
 <img src="/intranet/images/cleardot.gif" width=2 height=2>
@@ -19,13 +19,22 @@
 </td></tr>
 </thead>
 <form name="wizard" method=GET action="">
-@export_vars@
 @export_vars;noquote@
 <tbody>
 <tr><td class=tablebody colspan=3><font size=-1>
 
+
 	<table height=400 width=600 cellspacing=0 cellpadding=0 border=0 background='/intranet/images/girlongrass.600x400.jpg'>
 	<tr valign=top><td>
+
+		<table border=0 align=right>
+		<tr>
+		<td>
+		<b>Progress</b><br>
+		@advance_component;noquote@
+		</td>
+		</tr>
+		</table>
 
 		<slave>
 
