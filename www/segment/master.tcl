@@ -20,6 +20,7 @@ ad_page_contract {
 # Constants
 # ---------------------------------------------------------------
 
+set current_user_id [ad_maybe_redirect_for_registration]
 set base_url "/intranet-sysconfig/segment"
 
 # Define Wizard params

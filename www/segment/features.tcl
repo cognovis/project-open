@@ -20,6 +20,9 @@ ad_page_contract {
 # Frequently used variables
 # ---------------------------------------------------------------
 
+
+set current_user_id [ad_maybe_redirect_for_registration]
+
 set bg "/intranet/images/girlongrass.600x400.jpg"
 set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
 set po_small "<span class=brandsec>&\#93;</span><span class=brandfirst>po</span><span class=brandsec>&\#91;</span>"
