@@ -19,11 +19,12 @@ ad_page_contract {
     prodtest 
 }
 
-
 # ---------------------------------------------------------------
 # Output headers
 # Allows us to write out progress info during the execution
 # ---------------------------------------------------------------
+
+set current_user_id [ad_maybe_redirect_for_registration]
 
 set content_type "text/html"
 set http_encoding "iso8859-1"
@@ -84,8 +85,8 @@ switch $sector {
 }
 
 
-set install_pc 0
-set install_pt 0
+set install_pc 1
+set install_pt 1
 
 
 # ---------------------------------------------------------------
@@ -211,6 +212,15 @@ if {!$install_pt} {
 
 
 }
+
+
+
+# ---------------------------------------------------------------
+# Feature Simplifications
+# ---------------------------------------------------------------
+
+
+
 
 
 
