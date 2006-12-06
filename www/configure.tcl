@@ -214,10 +214,62 @@ if {!$install_pt} {
 }
 
 
-
 # ---------------------------------------------------------------
 # Feature Simplifications
 # ---------------------------------------------------------------
+
+set disable_workflow 0
+set disable_bug_tracker 0
+set disable_chat 0
+set disable_amberjack 0
+set disable_big_brother 0
+set disable_crm 0
+set disable_expenses 0
+set disable_forum 0
+set disable_filestorage 0
+set disable_ganttproject 0
+set disable_search_pg 0
+set disable_simple_survey 0
+set disable_timesheet 0
+set disable_wiki 0
+
+switch $features {
+    minimum {
+
+	set disable_workflow 1
+	set disable_bug_tracker 1
+	set disable_chat 1
+	set disable_amberjack 1
+	set disable_big_brother 1
+	set disable_crm 1
+	set disable_expenses 1
+	set disable_forum 1
+	set disable_filestorage 1
+	set disable_ganttproject 0
+	set disable_search_pg 0
+	set disable_simple_survey 1
+	set disable_timesheet 1
+	set disable_wiki 1
+
+    }
+    frequently_used {
+
+	set disable_bug_tracker 1
+	set disable_chat 1
+	set disable_big_brother 1
+	set disable_crm 1
+	set disable_forum 1
+	set disable_filestorage 0
+	set disable_ganttproject 0
+	set disable_search_pg 0
+	set disable_simple_survey 1
+	set disable_timesheet 0
+	set disable_wiki 1
+    }
+    other {
+
+    }
+}
 
 
 
