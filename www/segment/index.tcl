@@ -20,6 +20,8 @@ ad_page_contract {
 # Frequently used variables
 # ---------------------------------------------------------------
 
+set current_user_id [ad_maybe_redirect_for_registration]
+
 set page_title "[lang::message::lookup "" intranet-sysconfig.System_Configuration_Wizard "System Configuration Wizard"]"
 set context_bar [im_context_bar $page_title]
 
