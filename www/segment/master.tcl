@@ -45,10 +45,10 @@ foreach p $pages {
 
     if {[exists_and_not_null $p]} {
 	set v [expr "\$$p"]
-	append advance_component "<input type=checkbox name=asdf checked disabled> $p_l10n=$v<br>\n"
+	append advance_component "<input type=checkbox name=asdf checked disabled> $p_l10n<br>\n"
     } else {
 	set v ""
-	append advance_component "<input type=checkbox name=asdf disabled> $p_l10n=$v <br>\n"
+	append advance_component "<input type=checkbox name=asdf disabled> $p_l10n<br>\n"
     }
 }
 
