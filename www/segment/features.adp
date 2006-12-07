@@ -12,10 +12,9 @@
 <tr><td colspan=3>
 
 	<p>
-	@po;noquote@ offers a total of ~100 packages which can
-	be enabled/disabled individually. However enabling/
-	disabling them may take some time. So please select 
-	your start configuration. You can later change the
+	@po;noquote@ offers a total of ~100 packages which can be enabled/disabled<br>
+	 individually. However enabling/disabling them may take some time. <br>
+	So please select your start configuration. You can later change the <br>
 	configuration by running this wizard again.<br>&nbsp;
 	</p>
 	
