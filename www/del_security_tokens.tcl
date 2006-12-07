@@ -51,12 +51,23 @@ ns_write "[im_header] [im_navbar]"
 # Users might be a way to gain access if the tokens are
 # publicly known (from the default installation)
 
-
 ns_write "<h2>Deleting Security Tokens</h2>\n"
 ns_write "<li>Deleting ...\n"
 
 db_dml del_sec_tokens "delete from secret_tokens"
 db_string reset_sect_token_seq "SELECT pg_catalog.setval('t_sec_security_token_id_seq', 1, true)"
+ns_write "done\n"
+
+
+
+# ---------------------------------------------------------------
+# Delete Component User Preferences
+# ---------------------------------------------------------------
+
+ns_write "<h2>Deleting Component User Preferences</h2>\n"
+ns_write "<li>Deleting ...\n"
+
+db_dml del_sec_tokens "delete from im_component_plugin_user_map"
 ns_write "done\n"
 
 
