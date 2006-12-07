@@ -218,61 +218,100 @@ if {!$install_pt} {
 # Feature Simplifications
 # ---------------------------------------------------------------
 
-set disable_workflow 0
-set disable_bug_tracker 0
-set disable_chat 0
-set disable_amberjack 0
-set disable_big_brother 0
-set disable_crm 0
-set disable_expenses 0
-set disable_forum 0
-set disable_filestorage 0
-set disable_ganttproject 0
-set disable_search_pg 0
-set disable_simple_survey 0
-set disable_timesheet 0
-set disable_wiki 0
+set disable(intranet-bug-tracker) 0
+set disable(intranet-chat) 0
+set disable(intranet-big-brother) 0
+set disable(intranet-expenses) 0
+set disable(intranet-filestorage) 0
+set disable(intranet-forum) 0
+set disable(intranet-freelance) 0
+set disable(intranet-freelance-invoices) 0
+set disable(intranet-ganttproject) 0
+set disable(intranet-search-pg) 0
+set disable(intranet-search-pg-files) 0
+set disable(intranet-simple_survey) 0
+set disable(intranet-timesheet2) 0
+set disable(intranet-timesheet2-invoices) 0
+set disable(intranet-timesheet2-tasks) 0
+set disable(intranet-timesheet2-task-popup) 1
+set disable(intranet-translation) 0
+set disable(intranet-trans-rfq) 0
+set disable(intranet-trans-quality) 0
+set disable(intranet-wiki) 0
+set disable(intranet-workflow) 0
 
 switch $features {
     minimum {
+	set disable(intranet-bug-tracker) 1
+	set disable(intranet-chat) 1
+	set disable(intranet-big-brother) 1
+	set disable(intranet-expenses) 1
+	set disable(intranet-forum) 1
+	set disable(intranet-filestorage) 1
+	set disable(intranet-freelance) 1
+	set disable(intranet-freelance-invoices) 1
+	set disable(intranet-ganttproject) 1
+	set disable(intranet-simple_survey) 1
+	set disable(intranet-timesheet2) 1
+	set disable(intranet-timesheet2-invoices) 1
+	set disable(intranet-timesheet2-tasks) 1
+	set disable(intranet-timesheet2-task-popup) 1
+	set disable(intranet-trans-rfq) 1
+	set disable(intranet-trans-quality) 1
+	set disable(intranet-wiki) 1
+	set disable(intranet-workflow) 1
 
-	set disable_workflow 1
-	set disable_bug_tracker 1
-	set disable_chat 1
-	set disable_amberjack 1
-	set disable_big_brother 1
-	set disable_crm 1
-	set disable_expenses 1
-	set disable_forum 1
-	set disable_filestorage 1
-	set disable_ganttproject 0
-	set disable_search_pg 0
-	set disable_simple_survey 1
-	set disable_timesheet 1
-	set disable_wiki 1
+        db_dml fincomp "update im_component_plugins set enabled_p = 'f' where plugin_name = 'Project Finance Summary Component'"
+	
+	parameter::set_from_package_key -package_key "intranet-core" -parameter "EnableCloneProjectLinkP" -value "0"
+	parameter::set_from_package_key -package_key "intranet-core" -parameter "EnableExecutionProjectLinkP" -value "0"
+	parameter::set_from_package_key -package_key "intranet-core" -parameter "EnableNestedProjectsP" -value "0"
+	parameter::set_from_package_key -package_key "intranet-core" -parameter "EnableNewFromTemplateLinkP" -value "0"
 
     }
     frequently_used {
-
-	set disable_bug_tracker 1
-	set disable_chat 1
-	set disable_big_brother 1
-	set disable_crm 1
-	set disable_forum 1
-	set disable_filestorage 0
-	set disable_ganttproject 0
-	set disable_search_pg 0
-	set disable_simple_survey 1
-	set disable_timesheet 0
-	set disable_wiki 1
+	set disable(intranet-bug-tracker) 1
+	set disable(intranet-chat) 1
+	set disable(intranet-big-brother) 1
+	set disable(intranet-forum) 1
+	set disable(intranet-ganttproject) 1
+	set disable(intranet-simple_survey) 1
+	set disable(intranet-trans-rfq) 1
+	set disable(intranet-wiki) 1
     }
-    other {
-
+    default { 
+	set disable(intranet-big-brother) 1
     }
 }
 
 
 
+# ---------------------------------------------------------------
+# Disable Modules
+
+foreach package [array names disable] {
+    
+    set dis $disable($package)
+    if {$dis} {
+	ns_write "<h2>Disabling '$package'</h2>\n"
+	
+	ns_write "<li>Disabling '$package' Menus ... "
+	catch {db_dml disable_trans_cats "
+		update	im_menus
+		set	enabled_p = 'f'
+		where	package_name = :package
+        "}  err
+	ns_write "done<br><pre>$err</pre>\n"
+
+	ns_write "<li>Disabling '$package' Components ... "
+	catch {db_dml disable_trans_cats "
+		update	im_component_plugins
+		set	enabled_p = 'f'
+		where	package_name = :package
+        "}  err
+	ns_write "done<br><pre>$err</pre>\n"
+    }
+}
 
 
 
@@ -280,6 +319,11 @@ switch $features {
 # ---------------------------------------------------------------
 # Finish off page
 # ---------------------------------------------------------------
+
+# Remove all permission related entries in the system cache
+util_memoize_flush_regexp ".*"
+im_permission_flush
+
 
 ns_write "[im_footer]\n"
 

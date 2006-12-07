@@ -9,7 +9,7 @@ ad_page_contract {
     This is the master file that deals with functions
     common to all wizard parges
 } {
-    sector:optional
+    sector:optional 
     orgsize:optional
     features:optional
     deptcomp:optional
