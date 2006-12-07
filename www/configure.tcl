@@ -319,7 +319,11 @@ foreach package [array names disable] {
     }
 }
 
+ns_write "<p>&nbsp;</p>\n"
+ns_write "<p>&nbsp;</p>\n"
 ns_write "<b>Please return now to the <a href='/intranet/'>Home Page</a></b>.\n"
+ns_write "<p>&nbsp;</p>\n"
+ns_write "<p>&nbsp;</p>\n"
 
 
 # ---------------------------------------------------------------
