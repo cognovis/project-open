@@ -230,6 +230,7 @@ set disable(intranet-ganttproject) 0
 set disable(intranet-search-pg) 0
 set disable(intranet-search-pg-files) 0
 set disable(intranet-simple_survey) 0
+set disable(intranet-sysconfig) 1
 set disable(intranet-timesheet2) 0
 set disable(intranet-timesheet2-invoices) 0
 set disable(intranet-timesheet2-tasks) 0
