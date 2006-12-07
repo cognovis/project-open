@@ -31,5 +31,6 @@ set bg "/intranet/images/girlongrass.600x400.jpg"
 set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
 set po_short "<span class=brandsec>&\#93;</span><span class=brandfirst>po</span><span class=brandsec>&\#91;</span>"
 
-set orgsize [ns_set iget [ad_conn form] "orgsize"]
+set orgsize ""
+catch {set orgsize [ns_set iget [ad_conn form] "orgsize"]}  err
 

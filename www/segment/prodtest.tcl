@@ -33,8 +33,7 @@ if {!$user_is_admin_p} {
 set bg "/intranet/images/girlongrass.600x400.jpg"
 set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
 
-
-set prodtest [ns_set iget [ad_conn form] "prodtest"]
-
+set prodtest ""
+catch {set prodtest [ns_set iget [ad_conn form] "prodtest"]}  err
 if {"" == $prodtest} { set prodtest "test" }
 

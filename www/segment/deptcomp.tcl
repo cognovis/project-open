@@ -31,4 +31,6 @@ set bg "/intranet/images/girlongrass.600x400.jpg"
 set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
 set po_short "<span class=brandsec>&\#93;</span><span class=brandfirst>po</span><span class=brandsec>&\#91;</span>"
 
-set deptcomp [ns_set iget [ad_conn form] "deptcomp"]
+set deptcomp ""
+catch {set deptcomp [ns_set iget [ad_conn form] "deptcomp"]}  err
+
