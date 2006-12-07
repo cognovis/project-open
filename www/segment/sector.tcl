@@ -30,7 +30,8 @@ if {!$user_is_admin_p} {
 set bg "/intranet/images/girlongrass.600x400.jpg"
 set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
 
+set sector ""
+catch {set sector [ns_set iget [ad_conn form] "sector"]} err
 
-set sector [ns_set iget [ad_conn form] "sector"]
 
 
