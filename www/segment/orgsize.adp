@@ -17,9 +17,9 @@
 	</p>
 	
 	<p>
-	"<i>Organization Size</i>" refers to full-time members inside your 
-	"core" organization that is going to use @po_short;noquote@. 
-	Please don't include "external" users such as vendors, freelancers, 
+	"<i>Organization Size</i>" refers to full-time members inside your "core" organization<br>
+	that is going to use @po_short;noquote@. Please don't include "external" users such as <br>
+	vendors, freelancers, 
 	customer or users of other departments that might peek into the 
 	system from time to time.
 	
