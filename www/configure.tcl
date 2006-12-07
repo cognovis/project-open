@@ -235,7 +235,7 @@ set disable(intranet-ganttproject) 0
 set disable(intranet-search-pg) 0
 set disable(intranet-search-pg-files) 0
 set disable(intranet-simple_survey) 0
-set disable(intranet-sysconfig) 1
+set disable(intranet-sysconfig) 0
 set disable(intranet-timesheet2) 0
 set disable(intranet-timesheet2-invoices) 0
 set disable(intranet-timesheet2-tasks) 0
@@ -320,9 +320,7 @@ foreach package [array names disable] {
 }
 
 ns_write "<p>&nbsp;</p>\n"
-ns_write "<p>&nbsp;</p>\n"
-ns_write "<b>Please return now to the <a href='/intranet/'>Home Page</a></b>.\n"
-ns_write "<p>&nbsp;</p>\n"
+ns_write "<blockquote><b>Please return now to the <a href='/intranet/'>Home Page</a></b>.</blockquote>\n"
 ns_write "<p>&nbsp;</p>\n"
 
 
