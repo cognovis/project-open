@@ -13,21 +13,22 @@
 
 <tr><td colspan=3>
 
-	<p>Please confirm your selection.
-	<p>You can return any time to this wizard using the
-	"SysConfig" menu in the "Admin" section and reverse
-	your selections.
-	<p>&nbsp;
-	<p>&nbsp;</p>
+	<p>Please read the latest release notes:
+	</p>
 
-</td><tr>
-    <tr><td colspan=3>
+	<iframe src="http://www.project-open.org/download/vmware/3.2.beta2.html" width="90%" height="200" name="Release Notes">
+  <p>No IFrames supported...</p>
+</iframe>
+
+	<p>Please confirm your section and start the configuration process:
+	</p>
+
 	<blockquote>
 	<input type=button value='Start Configuration Process'
 	onClick="window.document.wizard.action='/intranet-sysconfig/configure'; submit();" 
 	title='Confirm' alt='Confirm'>
 	</blockquote
-    </td><tr>
+</td><tr>
 
 </if>
 <else
