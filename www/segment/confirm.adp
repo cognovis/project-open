@@ -20,7 +20,7 @@
   <p>No IFrames supported...</p>
 </iframe>
 
-	<p>Please confirm your section and start the configuration process:
+	<p>Please confirm your selection and start the configuration process:
 	</p>
 
 	<blockquote>
