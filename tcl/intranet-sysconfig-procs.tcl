@@ -67,7 +67,6 @@ ad_proc -public im_sysconfig_component { } {
 
     set progress "
 	<form action='/intranet-sysconfig/segment/sector' method=POST>
-	<input type=hidden name=sector value=' '>
 	<table cellspacing=0 cellpadding=4 border=0>
 	<tr>
 		<td></td>
