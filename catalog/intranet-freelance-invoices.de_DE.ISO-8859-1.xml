@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <message_catalog package_key="intranet-freelance-invoices" package_version="3.2.1.0.0" locale="de_DE" charset="ISO-8859-1">
 
-  <msg key="New_Provider_Invoice_from_Translation_Tasks">Neue Zuliefererrechnung auf Basis von Übersetzungsaufgaben
-</msg>
-  <msg key="New_Purchase_Order_from_Translation_Tasks">Neuer Auftrage auf Basis von Übersetzungsaufgaben
-</msg>
   <msg key="Accounting_Contact">Rechnungskontakt</msg>
   <msg key="Add_New">Neuer Eintrag</msg>
   <msg key="Adress">Addresse</msg>
@@ -61,7 +57,11 @@
   <msg key="New_cost_type">Neu(e) %cost_type%</msg>
   <msg key="New_Invoice">Neue Rechnung</msg>
   <msg key="New_Price">Neuer Preis</msg>
+  <msg key="New_Provider_Invoice_from_Translation_Tasks">Neue Zuliefererrechnung auf Basis von Übersetzungsaufgaben
+</msg>
   <msg key="New_Purchase_Order">Neuer Auftrag</msg>
+  <msg key="New_Purchase_Order_from_Translation_Tasks">Neuer Auftrage auf Basis von Übersetzungsaufgaben
+</msg>
   <msg key="New_Trans_Invoice">Neue Rechnung auf Basis von Übersetzungsaufgaben</msg>
   <msg key="New_Translation_Customer_Invoice">Neue Kundenrechnung auf Basis von Übersetzungsaufgaben</msg>
   <msg key="New_Translation_Quote">Neues Angebot auf Basis von Übersetzungsaufgaben</msg>
@@ -123,4 +123,3 @@
   <msg key="Yes">Ja</msg>
   <msg key="Zip">PLZ</msg>
 </message_catalog>
-

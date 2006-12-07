@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <message_catalog package_key="intranet-freelance-invoices" package_version="3.2.1.0.0" locale="en_US" charset="ISO-8859-1">
 
-  <msg key="New_Provider_Invoice_from_Translation_Tasks">New Provider Invoice from Translation Tasks</msg>
-  <msg key="New_Purchase_Order_from_Translation_Tasks">New Purchase Order from Translation Tasks</msg>
   <msg key="Accounting_Contact">Accounting Contact</msg>
   <msg key="Add_New">Add New</msg>
   <msg key="Adress">Adress</msg>
@@ -72,7 +70,9 @@
   <msg key="New_Customer_Invoice_from_Translation_Tasks">New Customer Invoice from Translation Tasks</msg>
   <msg key="New_Invoice">New %type_name%</msg>
   <msg key="New_Price">New Price</msg>
+  <msg key="New_Provider_Invoice_from_Translation_Tasks">New Provider Invoice from Translation Tasks</msg>
   <msg key="New_Purchase_Order">New Purchase Order</msg>
+  <msg key="New_Purchase_Order_from_Translation_Tasks">New Purchase Order from Translation Tasks</msg>
   <msg key="New_Quote_from_Translation_Tasks">New Quote from Translation Tasks</msg>
   <msg key="New_Trans_Invoice">New Trans Invoice</msg>
   <msg key="New_Translation_Customer_Invoice">New Translation Customer Invoice</msg>
