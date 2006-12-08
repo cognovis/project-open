@@ -6,5 +6,4 @@
 <property name="title">@page_title@</property>
 
 <br>
-@navbar;noquote@
 @page_body;noquote@

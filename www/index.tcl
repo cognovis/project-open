@@ -71,7 +71,9 @@ if {$object_id != 0} {
     # expect commands such as: "im_project_permissions" ...
     set perm_cmd "${object_type}_permissions \$user_id \$object_id object_view object_read object_write object_admin"
     eval $perm_cmd
+
 } else {
+
     # We've been called without an object => Yes, we are allowed to see the home FS
     set object_view 1
     set object_read 1
