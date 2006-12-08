@@ -324,6 +324,22 @@ ns_write "<blockquote><b>Please return now to the <a href='/intranet/'>Home Page
 ns_write "<p>&nbsp;</p>\n"
 
 
+
+# ---------------------------------------------------------------
+# Finish off page
+# ---------------------------------------------------------------
+
+ns_write "<h2>Disabling 'intranet-sysconfig' Components</h2>\n"
+
+ns_write "<li>Disabling 'intranet-sysconfig' Components ... "
+catch {db_dml disable_trans_cats "
+		update	im_component_plugins
+		set	enabled_p = 'f'
+		where	package_name = 'intranet-sysconfig'
+"}  err
+ns_write "done<br><pre>$err</pre>\n"
+
+
 # ---------------------------------------------------------------
 # Finish off page
 # ---------------------------------------------------------------
