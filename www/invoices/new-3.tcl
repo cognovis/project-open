@@ -39,17 +39,20 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set org_company_id $company_id
 
+set number_format "99990.099"
+set date_format "YYYY-MM-DD"
+set cost_type_invoice [im_cost_type_invoice]
+
+
+
 if {"" == $return_url} {set return_url [im_url_with_query] }
-set todays_date [db_string get_today "select sysdate from dual"]
+set todays_date [db_string get_today "select to_char(now(), :date_format)"]
 set page_focus "im_header_form.keywords"
 set view_name "invoice_tasks"
 
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 set required_field "<font color=red size=+1><B>*</B></font>"
-
-set number_format "99990.099"
-set cost_type_invoice [im_cost_type_invoice]
 
 if {![im_permission $user_id add_invoices]} {
     ad_return_complaint "[_ intranet-timesheet2-invoices.lt_Insufficient_Privileg]" "
