@@ -340,6 +340,15 @@ catch {db_dml disable_trans_cats "
 ns_write "done<br><pre>$err</pre>\n"
 
 
+
+# ---------------------------------------------------------------
+# Disable the 100 - Task category
+# This disable is overwritten by the enable all above
+# ---------------------------------------------------------------
+
+db_dml disable_task_project_type "update im_categories set enabled_p = 'f' where category_id = 100"
+
+
 # ---------------------------------------------------------------
 # Finish off page
 # ---------------------------------------------------------------
