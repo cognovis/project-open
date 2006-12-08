@@ -41,6 +41,16 @@ set read_p [db_string report_perms "
 	where	m.label = :menu_label
 " -default 'f']
 
+
+
+# ------------------------------------------------------------
+# Constants
+
+set number_format "999,999.99"
+
+
+# ------------------------------------------------------------
+
 if {![string equal "t" $read_p]} {
     ad_return_complaint 1 "
     [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
@@ -186,8 +196,8 @@ select
 	c.company_id,
 	c.company_path as company_nr,
 	c.company_name,
-	to_char(s.hours, '999,999.9') as hours,
-	to_char(s.billing_rate, '999,999.9') as billing_rate
+	to_char(s.hours, :number_format) as hours,
+	to_char(s.billing_rate, :number_format) as billing_rate
 from
 	($inner_sql) s,
 	im_companies c,
