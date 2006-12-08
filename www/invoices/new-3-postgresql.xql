@@ -48,7 +48,7 @@ select
 	trim(both ' ' from to_char(s.reported_sum, :number_format)) as reported_sum,
 	s.task_type_id,
 	s.material_id,
-	im_material_name_from_id(s.material_id) as material_name,
+	s.task_name,
 	s.uom_id,
 	c_type.category as task_type,
 	c_uom.category as task_uom,

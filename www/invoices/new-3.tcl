@@ -29,6 +29,7 @@ ad_page_contract {
     { cost_center_id:integer 0}
     target_cost_type_id:integer
     { return_url ""}
+    { aggregate_tasks_p "0" }
 }
 
 # ---------------------------------------------------------------
@@ -261,8 +262,8 @@ if {![string equal "" $task_table_rows]} {
 # for a new invoice
 # ---------------------------------------------------------------
 
-    # start formatting the list of sums with the header...
-    set task_sum_html "
+# start formatting the list of sums with the header...
+set task_sum_html "
         <tr align=center> 
           <td class=rowtitle>[_ intranet-timesheet2-invoices.Order]</td>
           <td class=rowtitle>[_ intranet-timesheet2-invoices.Description]</td>
@@ -270,13 +271,13 @@ if {![string equal "" $task_table_rows]} {
           <td class=rowtitle>[_ intranet-timesheet2-invoices.UOM]</td>
           <td class=rowtitle>[_ intranet-timesheet2-invoices.Rate]</td>
         </tr>
-    "
+"
 
-    # Start formatting the "reference price list" as well, even though it's going
-    # to be shown at the very bottom of the page.
-    #
-    set price_colspan 11
-    set reference_price_html "
+# Start formatting the "reference price list" as well, even though it's going
+# to be shown at the very bottom of the page.
+#
+set price_colspan 11
+set reference_price_html "
         <tr><td align=middle class=rowtitle colspan=$price_colspan>[_ intranet-timesheet2-invoices.Reference_Prices]</td></tr>
         <tr>
           <td class=rowtitle>[_ intranet-timesheet2-invoices.Company]</td>
@@ -289,32 +290,59 @@ if {![string equal "" $task_table_rows]} {
         </tr>\n"
 
 
+if {$aggregate_tasks_p} {
+
     # Calculate the sum of tasks (distinct by TaskType and UnitOfMeasure)
     # and determine the price of each line using a custom definable
     # function.
     set task_sum_inner_sql "
-select
-	sum(t.planned_units) as planned_sum,
-	sum(t.billable_units) as billable_sum,
-	sum(t.reported_hours_cache) as reported_sum,
-	t.task_type_id,
-	t.uom_id,
-	p.company_id,
-	p.project_id,
-	t.material_id
-from 
-	im_timesheet_tasks_view t,
-	im_projects p
-where 
-	$tasks_where_clause
-	and t.project_id=p.project_id
-group by
-	t.material_id,
-	t.task_type_id,
-	t.uom_id,
-	p.company_id,
-	p.project_id
-"
+	select
+		sum(t.planned_units) as planned_sum,
+		sum(t.billable_units) as billable_sum,
+		sum(t.reported_hours_cache) as reported_sum,
+		im_material_name_from_id(t.material_id) as task_name,
+		t.task_type_id,
+		t.uom_id,
+		p.company_id,
+		p.project_id,
+		t.material_id
+	from 
+		im_timesheet_tasks_view t,
+		im_projects p
+	where 
+		$tasks_where_clause
+		and t.project_id=p.project_id
+	group by
+		t.material_id,
+		t.task_type_id,
+		t.uom_id,
+		p.company_id,
+		p.project_id
+    "
+
+} else {
+
+    # Don't aggregate - just show the list of tasks
+    #
+    set task_sum_inner_sql "
+        select
+                t.planned_units as planned_sum,
+                t.billable_units as billable_sum,
+                t.reported_hours_cache as reported_sum,
+		t.task_name,
+                t.task_type_id,
+                t.uom_id,
+                p.company_id,
+                p.project_id,
+                t.material_id
+        from
+                im_timesheet_tasks_view t,
+                im_projects p
+        where
+                $tasks_where_clause
+                and t.project_id=p.project_id
+    "
+}
 
 
     # Calculate the price for the specific service.
@@ -432,7 +460,7 @@ order by
 	    <input type=text name=item_sort_order.$ctr size=2 value='$ctr'>
 	  </td>
           <td>
-	    <input type=text name=item_name.$ctr size=40 value='$material_name'>
+	    <input type=text name=item_name.$ctr size=40 value='$task_name'>
 	  </td>
           <td align=right>
 	    <input type=text name=item_units.$ctr size=4 value='$task_sum'>
