@@ -50,7 +50,10 @@ create table wf_workflows (
 			constraint wf_workflows_workflow_key_fk
 			references acs_object_types(object_type)
 			on delete cascade,
-  description           text
+  description           text,
+  object_type		varchar(100)
+			constraint wf_workflows_otype_fk
+			references acs_object_types
 );
 
 comment on table wf_workflows is '
