@@ -583,6 +583,48 @@ ad_proc -public im_cost_center_options {
 
 
 
+ad_proc -public template::widget::im_currencies { element_reference tag_attributes } {
+    ad_form widget for active currencies
+    The widget displays a list of active currencies.
+} {
+    # Defaults
+    set include_empty_p 1
+   
+    # Get references to parameters (magic...)
+    upvar $element_reference element
+    array set attributes $tag_attributes
+    set field_name $element(name)
+    set default_value_list $element(values)
+
+    # Determine parameters
+    if { [info exists element(custom)] } {
+	set params $element(custom)
+
+	set include_empty_pos [lsearch $params include_empty_p]
+	if { $include_empty_pos >= 0 } {
+	    set include_empty_p [lindex $params [expr $include_empty_pos + 1]]
+	}
+    }
+
+    # Determine the default value for the widget
+    set default_value ""
+    if {[info exists element(value)]} {
+	set default_value $element(values)
+    }
+
+    # Render the widget, depending on the display_mode (edit/display):
+    if { "edit" == $element(mode)} {
+
+	return [im_currency_select $field_name $default_value]
+
+    } else {
+
+	return $default_value
+    }
+}
+
+
+
 ad_proc -public template::widget::im_cost_center_tree { element_reference tag_attributes } {
     ad_form tree widget for cost centers and departments.
     <tt>Usage: {custom {department_only_p 1} {start_cc_id 1234} {include_empty_p 0}}</tt>
