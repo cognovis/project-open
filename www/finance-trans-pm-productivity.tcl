@@ -465,7 +465,7 @@ switch $output_format {
                 <tr>
                   <td class=form-label>Format</td>
                   <td class=form-widget>
-                    [im_report_output_format_select output_format $output_format]
+                    [im_report_output_format_select output_format "" $output_format]
                   </td>
                 </tr>
 		<tr>
