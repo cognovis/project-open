@@ -1,20 +1,20 @@
 # /packages/intranet-reporting/www/vaw-projects-transfer-prices.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (c) 2003-2006 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/ for licensing details.
 
 
 ad_page_contract {
-	testing reports	
-    @param start_year Year to start the report
-    @param start_unit Month or week to start within the start_year
+    Determine hours, internal costs, other costs and external costs
+    per projects.
 } {
     { start_date "" }
     { end_date "" }
     { level_of_detail 2 }
     { output_format "html" }
+    { customer_type_id 0 }
     project_id:integer,optional
     customer_id:integer,optional
 }
@@ -25,10 +25,8 @@ ad_page_contract {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
-set menu_label "reporting-finance-projects-documents"
-
+set menu_label "reporting-vaw-project-transfer-prices"
 set current_user_id [ad_maybe_redirect_for_registration]
-
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
 	from	im_menus m
@@ -57,27 +55,17 @@ if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $
 # ------------------------------------------------------------
 # Page Settings
 
-set page_title "Projects and Financial Documents"
+set page_title [lang::message::lookup "" intranet-reporting.Project_Transfer_Prices "Project Transfer Prices"]
 set context_bar [im_context_bar $page_title]
 set context ""
+set help_text "<strong>$page_title</strong><br>
 
-set help_text "
-<strong>Projects and Their Financial Documents:</strong><br>
+The report lists all reported hours in the specified period,
+together with other financial elements during the same period.
+Financial items outside the reporting period are ignored.
 
-The purpose of this report is to determine the profitability of
-the projects that end (end_date) in the time period between StartDate and End Date
-by showing the relationship between quotes and purchase orders
-(an approximation of the gross margin).
-
-The report lists all projects that have started in the period 
-between Start Date and End Date and lists their financial documents. 
-This selection is meant to provide a reasonable approximation 
-for 'revenues in this period' if there are many small projects, 
-as it is the case in translation agencies.<br>
-
-The report shows all financial documents for the selected projects,
-even if their creation and due dates are outside of the period 
-between Start Date and End Date.
+The start date is 'inclusive' (included in the reporting period), 
+while the end date is 'exclusive' (not included).
 "
 
 
