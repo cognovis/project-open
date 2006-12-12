@@ -16,5 +16,5 @@ select im_dynfield_widget__new (
 	'string',		-- acs_datatype
 	'generic_sql',		-- widget
 	'char(3)',		-- sql_datatype
-	'{custom {sql {select iso, iso from currency_codes where supported_p = 't' }}}'
+	'{custom {sql {select iso, iso from currency_codes where supported_p = ''t'' }}}'
 );
