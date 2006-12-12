@@ -13,7 +13,8 @@ ad_page_contract {
 } {
     { start_date "" }
     { end_date "" }
-    { cost_creation_user_id 0 }
+    { date_scale_format "YY-MM" }
+    { cost_type_id "3700" }
     { customer_type_id:integer 0 }
     { customer_id:integer 0 }
 }
@@ -59,7 +60,9 @@ if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $
 
 set grey "grey"
 
-set page_title [lang::message::lookup "" intranet-reporting.Yearly_Revenues_by_Project_Type "Yearly Revenues by Project Type"]
+set cost_type [db_string cost_type "select im_category_from_id(:cost_type_id)"]
+
+set page_title [lang::message::lookup "" intranet-reporting.Yearly_Evolution_of_by_Project_Type "Yearly Evolution of '%cost_type%' by Project Type"]
 set context_bar [im_context_bar $page_title]
 set context ""
 set help_text "<strong>$page_title</strong><br>
@@ -71,6 +74,9 @@ The purpose of this report is to check if customers suddenly stop
 to purchase certain service types and start buying something else.
 An example could be a customer that still buys one type of service,
 while changing the provider for a different type of service.
+<p>
+Please Note: Financial documents associated with multiple projects
+are not included in this overview.
 "
 
 
@@ -81,7 +87,7 @@ while changing the provider for a different type of service.
 set rowclass(0) "roweven"
 set rowclass(1) "rowodd"
 
-set days_in_past 7
+set days_in_past 365
 
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 set cur_format [im_l10n_sql_currency_format]
@@ -101,9 +107,9 @@ if {"" == $start_date} {
 
 db_1row end_date "
 select
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'YYYY') as end_year,
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'MM') as end_month,
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'DD') as end_day
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer, 'YYYY') as end_year,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer, 'MM') as end_month,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer, 'DD') as end_day
 from dual
 "
 
@@ -127,6 +133,8 @@ set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep
 set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
 set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
 
+set date_scale_format_options {"YYYY-MM" "Year and Month" "YYYY-IW" "Year and Week"}
+
 
 # ------------------------------------------------------------
 # Conditional SQL Where-Clause
@@ -134,19 +142,16 @@ set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 1
 
 set criteria [list]
 
-if {0 != $customer_id} {
-    lappend criteria "pcust.company_id = :customer_id"
-}
 
-if {0 != $cost_creation_user_id} {
-    lappend criteria "creation_user = :cost_creation_user_id"
+if {"" != $customer_id && 0 != $customer_id} {
+    lappend criteria "c.customer_id = :customer_id"
 }
 
 if {"" != $customer_type_id && 0 != $customer_type_id} {
     lappend criteria "pcust.company_type_id in (
-	select	child_id
-	from	im_category_hierarchy
-	where	(parent_id = :customer_type_id or child_id = :customer_type_id)
+        select  child_id
+        from    im_category_hierarchy
+        where   (parent_id = :customer_type_id or child_id = :customer_type_id)
     )"
 }
 
@@ -169,23 +174,14 @@ set inner_sql "
 		  , 2) as paid_amount_converted,
 		round((c.amount * 
 		  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
-		  , 2) as amount_converted,
-		p.project_id
+		  , 2) as amount_converted
 	from
 		im_costs c
-		LEFT OUTER JOIN (
-			select	p.project_id,
-				p.project_type_id,
-				r.object_id_two as cost_id
-			from
-				im_projects p,
-				acs_rels r
-			where
-				 r.object_id_one = p.project_id
-		) p ON (c.cost_id = p.cost_id)
 	where
-		c.cost_type_id in (3700, 3702, 3724)
-		and c.cost_type_id in (3700)
+		c.cost_type_id = :cost_type_id
+		and c.effective_date::date >= to_date(:start_date, 'YYYY-MM-DD')
+		and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
+		and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
 "
 
 
@@ -193,22 +189,21 @@ set sql "
 select
 	c.*,
 	to_char(c.effective_date, :date_format) as effective_date_formatted,
-	to_char(c.effective_date, 'YYMM')::integer * customer_id as effective_month,
+	to_char(c.effective_date, :date_scale_format) as effective_month,
 	substring(c.cost_name, 1, 14) as cost_name_cut,
 	CASE WHEN c.cost_type_id = 3700 THEN c.amount_converted END as invoice_amount,
 	CASE WHEN c.cost_type_id = 3702 THEN c.amount_converted END as quote_amount,
 	CASE WHEN c.cost_type_id = 3724 THEN c.amount_converted END as delnote_amount,
 	p.project_name,
-	p.project_nr
+	p.project_nr,
+	p.project_type_id,
+	im_category_from_id(p.project_type_id) as project_type
 from
 	($inner_sql) c
 	LEFT OUTER JOIN im_projects p ON (c.project_id = p.project_id)
 where
 	1 = 1
 	$where_clause
-order by
-	pcust.company_name,
-	p.project_name
 "
 
 
@@ -241,6 +236,27 @@ ns_write "
 	  </td>
 	</tr>
 	<tr>
+	  <td class=form-label>Cost Type</td>
+	  <td class=form-widget>
+	    [im_category_select -translate_p 1 "Intranet Cost Type" cost_type_id $cost_type_id]
+	  </td>
+	</tr>
+
+                <tr>
+                  <td class=form-label>Customer Type</td>
+                  <td class=form-widget>
+                    [im_category_select -include_empty_p 1 "Intranet Company Type" customer_type_id $customer_type_id]
+                  </td>
+                </tr>
+                <tr>
+                  <td class=form-label>Customer</td>
+                  <td class=form-widget>
+                    [im_company_select customer_id $customer_id]
+                  </td>
+                </tr>
+
+
+	<tr>
 	  <td class=form-label></td>
 	  <td class=form-widget><input type=submit value=Submit></td>
 	</tr>
@@ -263,35 +279,98 @@ ns_write "
 
 db_foreach query $sql {
 
+    if {"" == $project_type_id} { set project_type_id "none" }
+
     # Sum up the values for the matrix cells
     set key "${effective_month}.${project_type_id}"
     set sum 0
     if {[info exists hash($key)]} { set sum $hash($key) }
-    set sum [expr sum + $amount_converted]
+    if {"" == $amount_converted} { set amount_converted 0 }
+    set sum [expr $sum + $amount_converted]
     set hash($key) $sum
+    ns_log Notice "finance-yearly: hash($key) = $sum"
+
+    # Get the list of distinct keys for the upper dimension
+    set upper_key ${effective_month}
+    set upper($upper_key) $upper_key
 
     # Get the list of distinct keys for the left dimension
-    set left_key ${effective_month}
+    set left_key ${project_type_id}
     set left($left_key) $left_key
 
-    # Get the list of distinct keys for the top dimension
-    set top_key ${project_type_id}
-    set top($top_key) $top_key
+    # Define mapping from type_id to type
+    set project_type_hash($project_type_id) $project_type
+}
 
+
+
+# ------------------------------------------------------------
+# Create a sorted and contiguous upper date dimension
+
+
+set date_sql "
+	select distinct
+		to_char(start_block, :date_scale_format) as effective_date
+	from
+		im_start_weeks w
+	where
+		w.start_block::date >= to_date(:start_date, 'YYYY-MM-DD')
+		and w.start_block::date < to_date(:end_date, 'YYYY-MM-DD')
+	order by
+		effective_date
+"
+
+set upper_dim [list]
+db_foreach date_dim $date_sql {
+    set upper_key ${effective_date}
+    lappend upper_dim $upper_key
 }
 
 
 # ------------------------------------------------------------
-# Display the contents of the Hash array
+# Display the Table Header
 
 ns_write "<tr><td>&nbsp;</td>\n"
-foreach key [array names top] {
+foreach key $upper_dim {
     ns_write "<td class=rowtitle>$key</td>\n"
 }
 ns_write "</tr>\n"
 
 
+# ------------------------------------------------------------
+# Display the table body
 
+set ctr 0
+foreach left_key [array names left] {
+
+    set project_type_id $left_key
+    set project_type $project_type_hash($project_type_id)
+    if {"" == $project_type} { set project_type "none" }
+
+    set class $rowclass([expr $ctr % 2])
+    incr ctr
+
+    ns_write "<tr class=$class>\n"
+    ns_write "<td>$project_type</td>\n"
+    foreach upper_key $upper_dim {
+
+	set key "${upper_key}.${left_key}"
+	set val "&nbsp;"
+	if {[info exists hash($key)]} { set val $hash($key) }
+
+	ns_log Notice "finance-yearly: hash($key) -> $val"
+
+	ns_write "<td>$val</td>\n"
+
+    }
+    ns_write "</tr>\n"
+
+}
+
+
+
+# ------------------------------------------------------------
+# Finish up the table
 
 ns_write "</table>\n[im_footer]\n"
 
