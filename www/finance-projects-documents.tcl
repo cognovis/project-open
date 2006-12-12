@@ -13,10 +13,12 @@ ad_page_contract {
 } {
     { start_date "" }
     { end_date "" }
-    { level_of_detail 2 }
+    { level_of_detail:integer 2 }
     { output_format "html" }
-    project_id:integer,optional
-    customer_id:integer,optional
+    { customer_type_id:integer 0 }
+    { sales_rep_id:integer 0 }
+    { project_id:integer 0 }
+    { customer_id:integer 0 }
 }
 
 # ------------------------------------------------------------
@@ -125,9 +127,37 @@ if {"" == $end_date} {
 set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
-
 set user_url "/intranet/users/view?user_id="
 set this_url [export_vars -base "/intranet-reporting/finance-projects-documents" {start_date end_date} ]
+
+
+# ------------------------------------------------------------
+# Options
+#
+
+set start_years {2000 2000 2001 2001 2002 2002 2003 2003 2004 2004 2005 2005 2006 2006}
+set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep 10 Oct 11 Nov 12 Dec}
+set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
+set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
+set levels {1 "Customer Only" 2 "Customer+Project" 3 "All Details"} 
+
+# Get the list of everybody who once created in invoice
+set sales_rep_options [db_list_of_lists sales_reps "
+    select * from (
+	select distinct
+		im_name_from_user_id(creation_user) as user_name,
+		creation_user as user_id
+	from
+		acs_objects o,
+		im_costs c,
+		im_invoices i
+	where
+		i.invoice_id = c.cost_id
+		and c.cost_id = o.object_id
+   ) t
+   order by user_name
+"]
+set sales_rep_options [linsert $sales_rep_options 0 [list "" 0]]
 
 
 # ------------------------------------------------------------
@@ -136,12 +166,25 @@ set this_url [export_vars -base "/intranet-reporting/finance-projects-documents"
 
 set criteria [list]
 
-if {[info exists customer_id]} {
+
+if {0 != $sales_rep_id} {
+    lappend criteria "c.creation_user = :sales_rep_id"
+}
+
+if {0 != $customer_id && "" != $customer_id} {
     lappend criteria "pcust.company_id = :customer_id"
 }
 
+if {"" != $customer_type_id && 0 != $customer_type_id} {
+    lappend criteria "pcust.company_type_id in (
+        select  child_id
+        from    im_category_hierarchy
+        where   (parent_id = :customer_type_id or child_id = :customer_type_id)
+    )"
+}
+
 # Select project & subprojects
-if {[info exists project_id]} {
+if {0 != $project_id && "" != $project_id} {
     lappend criteria "p.project_id in (
 	select
 		p.project_id
@@ -185,8 +228,10 @@ set inner_sql "
 		  , 2) as amount_converted,
 		c.amount,
 		c.currency,
-		c.project_project_id
+		c.project_project_id,
+		o.creation_user
 	from
+		acs_objects o,
 		(select distinct
 			p.project_id as project_project_id,
 			c.*
@@ -197,11 +242,17 @@ set inner_sql "
 				and p.end_date < to_date(:end_date, 'YYYY-MM-DD')
 				and p.end_date::date < to_date(:end_date, 'YYYY-MM-DD')
 			) p	 
-			LEFT OUTER JOIN acs_rels r on (p.project_id = r.object_id_one)
-			LEFT OUTER JOIN im_costs c on (c.cost_id = r.object_id_two OR c.project_id = p.project_id)
+			LEFT OUTER JOIN acs_rels r 
+				ON (p.project_id = r.object_id_one)
+			LEFT OUTER JOIN im_costs c 
+				ON (c.cost_id = r.object_id_two OR c.project_id = p.project_id)
 		) c
 	where
-		(c.cost_type_id is null OR c.cost_type_id in (3700, 3702, 3704, 3706, null))
+		c.cost_id = o.object_id
+		and (
+			c.cost_type_id is null 
+			OR c.cost_type_id in (3700, 3702, 3704, 3706, 3718, 3722, 3724, null)
+		)
 "
 
 
@@ -211,14 +262,21 @@ select
 	c.project_project_id as project_id,
 	to_char(c.effective_date, :date_format) as effective_date_formatted,
 	to_char(c.effective_date, 'YYMM')::integer * customer_id as effective_month,
+	c.creation_user as sales_rep_id,
+	im_name_from_user_id(c.creation_user) as sales_rep_name,
 	cust.company_path as customer_nr,
 	cust.company_name as customer_name,
 	prov.company_path as provider_nr,
 	prov.company_name as provider_name,
+
 	CASE WHEN c.cost_type_id = 3700 THEN c.amount_converted END as invoice_amount,
 	CASE WHEN c.cost_type_id = 3702 THEN c.amount_converted END as quote_amount,
 	CASE WHEN c.cost_type_id = 3704 THEN c.amount_converted END as bill_amount,
 	CASE WHEN c.cost_type_id = 3706 THEN c.amount_converted END as po_amount,
+	CASE WHEN c.cost_type_id = 3718 THEN c.amount_converted END as timesheet_amount,
+	CASE WHEN c.cost_type_id = 3722 THEN c.amount_converted END as expense_amount,
+	CASE WHEN c.cost_type_id = 3724 THEN c.amount_converted END as delnote_amount,
+
 	CASE WHEN c.cost_type_id = 3700 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
 	END as invoice_amount_pretty,
 	CASE WHEN c.cost_type_id = 3702 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
@@ -227,6 +285,13 @@ select
 	END as bill_amount_pretty,
 	CASE WHEN c.cost_type_id = 3706 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
 	END as po_amount_pretty,
+	CASE WHEN c.cost_type_id = 3718 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
+	END as timesheet_amount_pretty,
+	CASE WHEN c.cost_type_id = 3722 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
+	END as expense_amount_pretty,
+	CASE WHEN c.cost_type_id = 3724 THEN to_char(c.amount, :cur_format) || ' ' || c.currency 
+	END as delnote_amount_pretty,
+
 	to_char(c.paid_amount, :cur_format) || ' ' || c.paid_currency as paid_amount_pretty,
 	p.project_name,
 	p.project_nr,
@@ -252,7 +317,7 @@ order by
 set report_def [list \
     group_by project_customer_id \
     header {
-	"\#colspan=9 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4 
+	"\#colspan=13 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4 
 	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 	<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
     } \
@@ -264,10 +329,14 @@ set report_def [list \
 			""
 			""
 			"<a href=$invoice_url$cost_id>$cost_name</a>"
+			"<nobr><a href=$user_url$sales_rep_id>$sales_rep_name</a></nobr>"
 			"<nobr>$invoice_amount_pretty</nobr>"
+			"<nobr>$delnote_amount_pretty</nobr>"
 			"<nobr>$quote_amount_pretty</nobr>"
 			"<nobr>$bill_amount_pretty</nobr>"
 			"<nobr>$po_amount_pretty</nobr>"
+			"<nobr>$expense_amount_pretty</nobr>"
+			"<nobr>$timesheet_amount_pretty</nobr>"
 			""
 			""
 		    } \
@@ -279,29 +348,38 @@ set report_def [list \
 		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 		<b><a href=$project_url$project_id>$project_name</a></b>"
 		"" 
+		"" 
 		"<nobr><i>$invoice_subtotal $default_currency</i></nobr>" 
+		"<nobr><i>$delnote_subtotal $default_currency</i></nobr>" 
 		"<nobr><i>$quote_subtotal $default_currency</i></nobr>" 
 		"<nobr><i>$bill_subtotal $default_currency</i></nobr>" 
 		"<nobr><i>$po_subtotal $default_currency</i></nobr>"
+		"<nobr><i>$expense_subtotal $default_currency</i></nobr>"
+		"<nobr><i>$timesheet_subtotal $default_currency</i></nobr>"
 		"<nobr><i>$po_per_quote_perc</i></nobr>"
 		"<nobr><i>$gross_profit</i></nobr>"
             } \
     ] \
-    footer {  } \
+    footer {  
+	"" 
+	""
+	""
+	"" 
+	"<b>$invoice_total $default_currency</b>" 
+	"<b>$delnote_total $default_currency</b>" 
+	"<b>$quote_total $default_currency</b>" 
+	"<b>$bill_total $default_currency</b>" 
+	"<b>$po_total $default_currency</b>"
+	"<b>$expense_total $default_currency</b>"
+	"<b>$timesheet_total $default_currency</b>"
+	"<b>$po_per_quote_perc</b>"
+	"<b>$gross_profit</b>"
+    } \
 ]
 
 # Global header/footer
-set header0 {"Cust" "Project" "Name" "Invoice" "Quote" "Bill" "PO" "PO/Quote" "Gross Profit"}
+set header0 {"Cust" "Project" "Name" "Sales Rep" "Invoice" "Delnote" "Quote" "Bill" "PO" "Expense" "Timesheet" "PO/Quote" "Gross Profit"}
 set footer0 {
-	"" 
-	"" 
-	"<br><b>Total:</b>" 
-	"<br><b>$invoice_total $default_currency</b>" 
-	"<br><b>$quote_total $default_currency</b>" 
-	"<br><b>$bill_total $default_currency</b>" 
-	"<br><b>$po_total $default_currency</b>"
-	"<br><b>$po_per_quote_perc %</b>"
-	"<br><b>$gross_profit</b>"
 }
 
 #
@@ -312,6 +390,13 @@ set invoice_subtotal_counter [list \
         var invoice_subtotal \
         reset \$project_id \
         expr "\$invoice_amount+0" \
+]
+
+set delnote_subtotal_counter [list \
+        pretty_name "Delnote Amount" \
+        var delnote_subtotal \
+        reset \$project_id \
+        expr "\$delnote_amount+0" \
 ]
 
 set quote_subtotal_counter [list \
@@ -335,35 +420,70 @@ set po_subtotal_counter [list \
         expr "\$po_amount+0" \
 ]
 
+set expense_subtotal_counter [list \
+        pretty_name "Expense Amount" \
+        var expense_subtotal \
+        reset \$project_id \
+        expr "\$expense_amount+0" \
+]
+
+set timesheet_subtotal_counter [list \
+        pretty_name "Timesheet Amount" \
+        var timesheet_subtotal \
+        reset \$project_id \
+        expr "\$timesheet_amount+0" \
+]
+
 #
 # Grand Total Counters
 #
 set invoice_grand_total_counter [list \
         pretty_name "Invoice Amount" \
         var invoice_total \
-        reset 0 \
+        reset \$project_customer_id \
         expr "\$invoice_amount+0" \
+]
+
+set delnote_grand_total_counter [list \
+        pretty_name "Delnote Amount" \
+        var delnote_total \
+        reset \$project_customer_id \
+        expr "\$delnote_amount+0" \
 ]
 
 set quote_grand_total_counter [list \
         pretty_name "Quote Amount" \
         var quote_total \
-        reset 0 \
+        reset \$project_customer_id \
         expr "\$quote_amount+0" \
 ]
 
 set bill_grand_total_counter [list \
         pretty_name "Bill Amount" \
         var bill_total \
-        reset 0 \
+        reset \$project_customer_id \
         expr "\$bill_amount+0" \
 ]
 
 set po_grand_total_counter [list \
         pretty_name "Po Amount" \
         var po_total \
-        reset 0 \
+        reset \$project_customer_id \
         expr "\$po_amount+0" \
+]
+
+set expense_grand_total_counter [list \
+        pretty_name "Expense Amount" \
+        var expense_total \
+        reset \$project_customer_id \
+        expr "\$expense_amount+0" \
+]
+
+set timesheet_grand_total_counter [list \
+        pretty_name "Timesheet Amount" \
+        var timesheet_total \
+        reset \$project_customer_id \
+        expr "\$timesheet_amount+0" \
 ]
 
 
@@ -371,25 +491,21 @@ set po_grand_total_counter [list \
 
 set counters [list \
 	$invoice_subtotal_counter \
+	$delnote_subtotal_counter \
 	$quote_subtotal_counter \
 	$bill_subtotal_counter \
 	$po_subtotal_counter \
+	$expense_subtotal_counter \
+	$timesheet_subtotal_counter \
 	$invoice_grand_total_counter \
+	$delnote_grand_total_counter \
 	$quote_grand_total_counter \
 	$bill_grand_total_counter \
 	$po_grand_total_counter \
+	$expense_grand_total_counter \
+	$timesheet_grand_total_counter \
 ]
 
-
-# ------------------------------------------------------------
-# Constants
-#
-
-set start_years {2000 2000 2001 2001 2002 2002 2003 2003 2004 2004 2005 2005 2006 2006}
-set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep 10 Oct 11 Nov 12 Dec}
-set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
-set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
-set levels {1 "Customer Only" 2 "Customer+Project" 3 "All Details"} 
 
 # ------------------------------------------------------------
 # Start formatting the page header
@@ -427,6 +543,25 @@ switch $output_format {
 		    <input type=textfield name=end_date value=$end_date>
 		  </td>
 		</tr>
+
+                <tr>
+                  <td class=form-label>Company Type</td>
+                  <td class=form-widget>
+                    [im_category_select -include_empty_p 1 "Intranet Company Type" customer_type_id $customer_type_id]
+                  </td>
+                </tr>
+                <tr>
+                  <td class=form-label>Company</td>
+                  <td class=form-widget>
+                    [im_company_select customer_id $customer_id]
+                  </td>
+                </tr>
+                <tr>
+                  <td class=form-label>Sales Rep</td>
+                  <td class=form-widget>
+		    [im_options_to_select_box sales_rep_id $sales_rep_options $sales_rep_id]
+                  </td>
+                </tr>
                 <tr>
                   <td class=form-label>Format</td>
                   <td class=form-widget>
@@ -452,14 +587,20 @@ switch $output_format {
 }
 
 set invoice_total 0
+set delnote_total 0
 set quote_total 0
 set bill_total 0
 set po_total 0
+set invoice_total 0
+set timesheet_total 0
 
 set invoice_subtotal 0
+set delnote_subtotal 0
 set quote_subtotal 0
 set bill_subtotal 0
 set po_subtotal 0
+set invoice_subtotal 0
+set timesheet_subtotal 0
 
 im_report_render_row \
     -output_format $output_format \
