@@ -41,6 +41,10 @@ if {![string equal "t" $read_p]} {
     return
 }
 
+
+# ------------------------------------------------------------
+# Check Parameters
+
 # Check that Start & End-Date have correct format
 if {"" != $start_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $start_date]} {
     ad_return_complaint 1 "Start Date doesn't have the right format.<br>
@@ -56,12 +60,9 @@ if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $
 
 
 # ------------------------------------------------------------
-# Page Settings
-
-set grey "grey"
+# Page Title & Help Text
 
 set cost_type [db_string cost_type "select im_category_from_id(:cost_type_id)"]
-
 set page_title [lang::message::lookup "" intranet-reporting.Yearly_Evolution_of_by_Project_Type "Yearly Evolution of '%cost_type%' by Project Type"]
 set context_bar [im_context_bar $page_title]
 set context ""
@@ -86,6 +87,8 @@ are not included in this overview.
 
 set rowclass(0) "roweven"
 set rowclass(1) "rowodd"
+
+set gray "gray"
 
 set days_in_past 365
 
@@ -137,77 +140,6 @@ set date_scale_format_options {"YYYY-MM" "Year and Month" "YYYY-IW" "Year and We
 
 
 # ------------------------------------------------------------
-# Conditional SQL Where-Clause
-#
-
-set criteria [list]
-
-
-if {"" != $customer_id && 0 != $customer_id} {
-    lappend criteria "c.customer_id = :customer_id"
-}
-
-if {"" != $customer_type_id && 0 != $customer_type_id} {
-    lappend criteria "pcust.company_type_id in (
-        select  child_id
-        from    im_category_hierarchy
-        where   (parent_id = :customer_type_id or child_id = :customer_type_id)
-    )"
-}
-
-set where_clause [join $criteria " and\n            "]
-if { ![empty_string_p $where_clause] } {
-    set where_clause " and $where_clause"
-}
-
-
-# ------------------------------------------------------------
-# Define the report - SQL, counters, headers and footers 
-#
-
-
-set inner_sql "
-	select
-		c.*,
-		round((c.paid_amount * 
-		  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
-		  , 2) as paid_amount_converted,
-		round((c.amount * 
-		  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
-		  , 2) as amount_converted
-	from
-		im_costs c
-	where
-		c.cost_type_id = :cost_type_id
-		and c.effective_date::date >= to_date(:start_date, 'YYYY-MM-DD')
-		and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
-		and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
-"
-
-
-set sql "
-select
-	c.*,
-	to_char(c.effective_date, :date_format) as effective_date_formatted,
-	to_char(c.effective_date, :date_scale_format) as effective_month,
-	substring(c.cost_name, 1, 14) as cost_name_cut,
-	CASE WHEN c.cost_type_id = 3700 THEN c.amount_converted END as invoice_amount,
-	CASE WHEN c.cost_type_id = 3702 THEN c.amount_converted END as quote_amount,
-	CASE WHEN c.cost_type_id = 3724 THEN c.amount_converted END as delnote_amount,
-	p.project_name,
-	p.project_nr,
-	p.project_type_id,
-	im_category_from_id(p.project_type_id) as project_type
-from
-	($inner_sql) c
-	LEFT OUTER JOIN im_projects p ON (c.project_id = p.project_id)
-where
-	1 = 1
-	$where_clause
-"
-
-
-# ------------------------------------------------------------
 # Start formatting the page
 #
 
@@ -241,21 +173,18 @@ ns_write "
 	    [im_category_select -translate_p 1 "Intranet Cost Type" cost_type_id $cost_type_id]
 	  </td>
 	</tr>
-
-                <tr>
-                  <td class=form-label>Customer Type</td>
-                  <td class=form-widget>
-                    [im_category_select -include_empty_p 1 "Intranet Company Type" customer_type_id $customer_type_id]
-                  </td>
-                </tr>
-                <tr>
-                  <td class=form-label>Customer</td>
-                  <td class=form-widget>
-                    [im_company_select customer_id $customer_id]
-                  </td>
-                </tr>
-
-
+	<tr>
+	  <td class=form-label>Customer Type</td>
+	  <td class=form-widget>
+	    [im_category_select -include_empty_p 1 "Intranet Company Type" customer_type_id $customer_type_id]
+	  </td>
+	</tr>
+	<tr>
+	  <td class=form-label>Customer</td>
+	  <td class=form-widget>
+	    [im_company_select customer_id $customer_id]
+	  </td>
+	</tr>
 	<tr>
 	  <td class=form-label></td>
 	  <td class=form-widget><input type=submit value=Submit></td>
@@ -275,84 +204,191 @@ ns_write "
 
 
 # ------------------------------------------------------------
-# Execute query and read values into a Hash array
-
-db_foreach query $sql {
-
-    if {"" == $project_type_id} { set project_type_id "none" }
-
-    # Sum up the values for the matrix cells
-    set key "${effective_month}.${project_type_id}"
-    set sum 0
-    if {[info exists hash($key)]} { set sum $hash($key) }
-    if {"" == $amount_converted} { set amount_converted 0 }
-    set sum [expr $sum + $amount_converted]
-    set hash($key) $sum
-    ns_log Notice "finance-yearly: hash($key) = $sum"
-
-    # Get the list of distinct keys for the upper dimension
-    set upper_key ${effective_month}
-    set upper($upper_key) $upper_key
-
-    # Get the list of distinct keys for the left dimension
-    set left_key ${project_type_id}
-    set left($left_key) $left_key
-
-    # Define mapping from type_id to type
-    set project_type_hash($project_type_id) $project_type
-}
-
-
-
-# ------------------------------------------------------------
 # Create a sorted and contiguous upper date dimension
 
-
-set date_sql "
+# Date scale is a list of lists.
+# Example: {{2006 01} {2006 02} ...}
+set date_scale [db_list_of_lists date_scale "
 	select distinct
-		to_char(start_block, :date_scale_format) as effective_date
+		to_char(start_block, 'YYYY') as year,
+		to_char(start_block, 'MM') as month
 	from
 		im_start_weeks w
 	where
 		w.start_block::date >= to_date(:start_date, 'YYYY-MM-DD')
 		and w.start_block::date < to_date(:end_date, 'YYYY-MM-DD')
 	order by
-		effective_date
-"
+		year,
+		month
+"]
 
-set upper_dim [list]
-db_foreach date_dim $date_sql {
-    set upper_key ${effective_date}
-    lappend upper_dim $upper_key
-}
+
+# ------------------------------------------------------------
+# Create a sorted and contiguous upper left dimension
+
+# Scale is a list of lists.
+# Example: {{2006 01} {2006 02} ...}
+set left_scale [db_list_of_lists date_scale "
+	select
+		im_category_from_id(category_id)
+	from
+		im_categories
+	where
+		category_type = 'Intranet Project Type'
+	order by
+		category
+"]
+
 
 
 # ------------------------------------------------------------
 # Display the Table Header
 
-ns_write "<tr><td>&nbsp;</td>\n"
-foreach key $upper_dim {
-    ns_write "<td class=rowtitle>$key</td>\n"
+set header ""
+
+# Determine how many date rows (year, month, day, ...) we've got
+set first_cell [lindex $date_scale 0]
+set date_scale_rows [llength $first_cell]
+
+for {set row 0} {$row < $date_scale_rows} { incr row } {
+    append header "<tr class=rowtitle>\n"
+    append header "<td></td>\n"
+    for {set col 0} {$col <= [expr [llength $date_scale]-1]} { incr col } {
+	set scale_entry [lindex $date_scale $col]
+	set scale_item [lindex $scale_entry $row]
+	# Check if the previous item was of the same content
+	set prev_scale_entry [lindex $date_scale [expr $col-1]]
+	set prev_scale_item [lindex $prev_scale_entry $row]
+	if {$prev_scale_item == $scale_item} {
+	    # Prev and current are same => just skip.
+	    # The cell was already covered by the previous entry via "colspan"
+	} else {
+	    # This is the first entry of a new content.
+	    # Look forward to check if we can issue a "colspan" command
+	    set colspan 1
+	    set next_col [expr $col+1]
+	    while {$scale_item == [lindex [lindex $date_scale $next_col] $row]} {
+		incr next_col
+		incr colspan
+	    }
+	    append header "\t<td class=rowtitle colspan=$colspan>$scale_item</td>\n"	    
+	}
+    }
+    append header "</tr>\n"
 }
-ns_write "</tr>\n"
+
+ns_write $header
+
+
+# ------------------------------------------------------------
+# Conditional SQL Where-Clause
+#
+
+set criteria [list]
+
+
+if {"" != $customer_id && 0 != $customer_id} {
+    lappend criteria "c.customer_id = :customer_id"
+}
+
+if {"" != $customer_type_id && 0 != $customer_type_id} {
+    lappend criteria "pcust.company_type_id in (
+	select  child_id
+	from    im_category_hierarchy
+	where   (parent_id = :customer_type_id or child_id = :customer_type_id)
+    )"
+}
+
+set where_clause [join $criteria " and\n	    "]
+if { ![empty_string_p $where_clause] } {
+    set where_clause " and $where_clause"
+}
+
+
+# ------------------------------------------------------------
+# Define the report - SQL, counters, headers and footers 
+#
+
+set inner_sql "
+	select
+		c.*,
+		round((c.paid_amount * 
+		  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+		  , 2) as paid_amount_converted,
+		round((c.amount * 
+		  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+		  , 2) as amount_converted
+	from
+		im_costs c
+	where
+		c.cost_type_id = :cost_type_id
+		and c.effective_date::date >= to_date(:start_date, 'YYYY-MM-DD')
+		and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
+		and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
+"
+
+
+set sql "
+select
+	c.*,
+	to_char(c.effective_date, 'YYYY') as year,
+	to_char(c.effective_date, 'MM') as month,
+	substring(c.cost_name, 1, 14) as cost_name_cut,
+	CASE WHEN c.cost_type_id = 3700 THEN c.amount_converted END as invoice_amount,
+	CASE WHEN c.cost_type_id = 3702 THEN c.amount_converted END as quote_amount,
+	CASE WHEN c.cost_type_id = 3724 THEN c.amount_converted END as delnote_amount,
+	p.project_name,
+	p.project_nr,
+	p.project_type_id,
+	im_category_from_id(p.project_type_id) as project_type
+from
+	($inner_sql) c
+	LEFT OUTER JOIN im_projects p ON (c.project_id = p.project_id)
+where
+	1 = 1
+	$where_clause
+"
+
+
+# ------------------------------------------------------------
+# Execute query and aggregate values into a Hash array
+
+db_foreach query $sql {
+
+    if {"" == $project_type_id} { set project_type_id "none" }
+
+    # Sum up the values for the matrix cells
+    set key "${year}-${month}.${project_type_id}"
+    set sum 0
+    if {[info exists hash($key)]} { set sum $hash($key) }
+    if {"" == $amount_converted} { set amount_converted 0 }
+    set sum [expr $sum + $amount_converted]
+    set hash($key) $sum
+    ns_log Notice "finance-yearly: hash($key) = $sum"
+}
 
 
 # ------------------------------------------------------------
 # Display the table body
 
 set ctr 0
-foreach left_key [array names left] {
-
-    set project_type_id $left_key
-    set project_type $project_type_hash($project_type_id)
-    if {"" == $project_type} { set project_type "none" }
+foreach left_entry $left_scale {
 
     set class $rowclass([expr $ctr % 2])
     incr ctr
 
+    set project_type [lindex $left_entry 0]
+    if {"" == $project_type} { set project_type "none" }
+    set left_key $project_type
+
     ns_write "<tr class=$class>\n"
     ns_write "<td>$project_type</td>\n"
-    foreach upper_key $upper_dim {
+
+    foreach top_entry $date_scale {
+
+	set year [lindex $top_entry 0]
+	set month [lindex $top_entry 1]
+	set upper_key "$year-$month"
 
 	set key "${upper_key}.${left_key}"
 	set val "&nbsp;"
@@ -364,7 +400,6 @@ foreach left_key [array names left] {
 
     }
     ns_write "</tr>\n"
-
 }
 
 
