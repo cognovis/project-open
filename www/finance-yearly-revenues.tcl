@@ -13,11 +13,21 @@ ad_page_contract {
 } {
     { start_date "" }
     { end_date "" }
-    { date_scale_format "YY-MM" }
+    { date_scale_vars "year month_of_year" }
     { cost_type_id "3700" }
     { customer_type_id:integer 0 }
     { customer_id:integer 0 }
 }
+
+
+# ------------------------------------------------------------
+# Define Dimensions
+
+set left_vars [list customer_type customer_name]
+
+set date_scale_vars [ns_urldecode $date_scale_vars]
+set top_vars $date_scale_vars
+set group_vars [concat $top_vars $left_vars]
 
 # ------------------------------------------------------------
 # Security
@@ -81,7 +91,6 @@ are not included in this overview.
 "
 
 
-
 # ------------------------------------------------------------
 # Defaults
 
@@ -89,7 +98,6 @@ set rowclass(0) "roweven"
 set rowclass(1) "rowodd"
 
 set gray "gray"
-
 set days_in_past 365
 
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
@@ -136,7 +144,13 @@ set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep
 set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
 set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
 
-set date_scale_format_options {"YYYY-MM" "Year and Month" "YYYY-IW" "Year and Week"}
+set date_scale_vars_options {
+	"year month_of_year" "Year and Month" 
+	"year quarter_of_year month_of_year" "Year, Quarter and Month" 
+	"year quarter_of_year month_of_year day_of_month" "Year, Quarter, Month and Day" 
+	"year week_of_year" "Year and Week"
+	"month_of_year year" "Month and Year (compare years)"
+}
 
 
 # ------------------------------------------------------------
@@ -166,6 +180,13 @@ ns_write "
 	  <td class=form-widget>
 	    <input type=textfield name=end_date value=$end_date>
 	  </td>
+	</tr>
+
+	<tr>
+	  <td class=form-label>Date Dimension</td>
+	    <td class=form-widget>
+	      [im_select -translate_p 0 date_scale_vars $date_scale_vars_options $date_scale_vars]
+	    </td>
 	</tr>
 	<tr>
 	  <td class=form-label>Cost Type</td>
@@ -202,96 +223,6 @@ ns_write "
 <table border=0 cellspacing=1 cellpadding=1>
 "
 
-# ------------------------------------------------------------
-# Define Dimensions
-
-set left_vars [list project_type_id]
-set top_vars [list year month_of_year]
-
-set group_vars [concat $top_vars $left_vars]
-
-
-
-# ------------------------------------------------------------
-# Create a sorted and contiguous upper date dimension
-
-# Date scale is a list of lists.
-# Example: {{2006 01} {2006 02} ...}
-set date_scale [db_list_of_lists date_scale "
-	select distinct
-		[join $top_vars ", "]
-	from
-		(select	im_day_enumerator as day,
-		        to_char(im_day_enumerator, 'YYYY') as year,
-		        to_char(im_day_enumerator, 'MM') as month_of_year,
-		        to_char(im_day_enumerator, 'Q') as quarter_of_year,
-		        to_char(im_day_enumerator, 'IW') as week_of_year,
-		        to_char(im_day_enumerator, 'DD') as day_of_month
-		from
-			im_day_enumerator(:start_date, :end_date)
-		) d
-	order by
-		[join $top_vars ", "]
-"]
-
-
-
-
-# ------------------------------------------------------------
-# Create a sorted and contiguous upper left dimension
-
-# Scale is a list of lists.
-# Example: {{2006 01} {2006 02} ...}
-set left_scale [db_list_of_lists date_scale "
-	select
-		category_id
-	from
-		im_categories
-	where
-		category_type = 'Intranet Project Type'
-	order by
-		category
-"]
-
-
-
-# ------------------------------------------------------------
-# Display the Table Header
-
-set header ""
-
-# Determine how many date rows (year, month, day, ...) we've got
-set first_cell [lindex $date_scale 0]
-set date_scale_rows [llength $first_cell]
-
-for {set row 0} {$row < $date_scale_rows} { incr row } {
-    append header "<tr class=rowtitle>\n"
-    append header "<td></td>\n"
-    for {set col 0} {$col <= [expr [llength $date_scale]-1]} { incr col } {
-	set scale_entry [lindex $date_scale $col]
-	set scale_item [lindex $scale_entry $row]
-	# Check if the previous item was of the same content
-	set prev_scale_entry [lindex $date_scale [expr $col-1]]
-	set prev_scale_item [lindex $prev_scale_entry $row]
-	if {$prev_scale_item == $scale_item} {
-	    # Prev and current are same => just skip.
-	    # The cell was already covered by the previous entry via "colspan"
-	} else {
-	    # This is the first entry of a new content.
-	    # Look forward to check if we can issue a "colspan" command
-	    set colspan 1
-	    set next_col [expr $col+1]
-	    while {$scale_item == [lindex [lindex $date_scale $next_col] $row]} {
-		incr next_col
-		incr colspan
-	    }
-	    append header "\t<td class=rowtitle colspan=$colspan>$scale_item</td>\n"	    
-	}
-    }
-    append header "</tr>\n"
-}
-
-ns_write $header
 
 
 # ------------------------------------------------------------
@@ -323,61 +254,175 @@ if { ![empty_string_p $where_clause] } {
 # Define the report - SQL, counters, headers and footers 
 #
 
+# Inner - Try to be as selective as possible and select
+# the relevant data from the fact table.
 set inner_sql "
-	select
-		trunc((c.paid_amount * 
-		  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
-		  , 2) as paid_amount_converted,
-		trunc((c.amount * 
-		  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
-		  , 2) as amount_converted,
-		c.*
-	from
-		im_costs c
-	where
-		c.cost_type_id = :cost_type_id
-		and c.effective_date::date >= to_date(:start_date, 'YYYY-MM-DD')
-		and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
-		and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
+		select
+			trunc((c.paid_amount * 
+			  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+			  , 2) as paid_amount_converted,
+			trunc((c.amount * 
+			  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+			  , 2) as amount_converted,
+			c.*
+		from
+			im_costs c
+		where
+			c.cost_type_id = :cost_type_id
+			and c.effective_date::date >= to_date(:start_date, 'YYYY-MM-DD')
+			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
+			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
 "
 
-
+# Aggregate additional/important fields to the fact table.
 set middle_sql "
-select
-	c.*,
-	to_char(c.effective_date, 'YYYY') as year,
-	to_char(c.effective_date, 'MM') as month_of_year,
-	to_char(c.effective_date, 'Q') as quarter_of_year,
-	to_char(c.effective_date, 'IW') as week_of_year,
-	to_char(c.effective_date, 'DD') as day_of_month,
-	CASE WHEN c.cost_type_id = 3700 THEN c.amount_converted ELSE 0 END as invoice_amount,
-	CASE WHEN c.cost_type_id = 3702 THEN c.amount_converted ELSE 0 END as quote_amount,
-	CASE WHEN c.cost_type_id = 3724 THEN c.amount_converted ELSE 0 END as delnote_amount,
-	substring(c.cost_name, 1, 14) as cost_name_cut,
-	p.project_name,
-	p.project_nr,
-	p.project_type_id,
-	im_category_from_id(p.project_type_id) as project_type
-from
-	($inner_sql) c
-	LEFT OUTER JOIN im_projects p ON (c.project_id = p.project_id)
-where
-	1 = 1
-	$where_clause
+	select
+		c.*,
+		to_char(c.effective_date, 'YYYY') as year,
+		to_char(c.effective_date, 'MM') as month_of_year,
+		to_char(c.effective_date, 'Q') as quarter_of_year,
+		to_char(c.effective_date, 'IW') as week_of_year,
+		to_char(c.effective_date, 'DD') as day_of_month,
+		CASE WHEN c.cost_type_id = 3700 THEN c.amount_converted ELSE 0 END as invoice_amount,
+		CASE WHEN c.cost_type_id = 3702 THEN c.amount_converted ELSE 0 END as quote_amount,
+		CASE WHEN c.cost_type_id = 3724 THEN c.amount_converted ELSE 0 END as delnote_amount,
+		substring(c.cost_name, 1, 14) as cost_name_cut,
+		p.project_name,
+		p.project_nr,
+		p.project_type_id,
+		im_category_from_id(p.project_type_id) as project_type,
+		cust.company_name as customer_name,
+		cust.company_path as customer_path,
+		cust.company_type_id as customer_type_id,
+		im_category_from_id(cust.company_type_id) as customer_type,
+		prov.company_name as provider_name,
+		prov.company_path as provider_path,
+		prov.company_type_id as provider_type_id,
+		im_category_from_id(prov.company_type_id) as provider_type,
+
+		0 as zero
+	from
+		($inner_sql) c
+		LEFT OUTER JOIN im_projects p ON (c.project_id = p.project_id)
+		LEFT OUTER JOIN im_companies cust ON (c.customer_id = cust.company_id)
+		LEFT OUTER JOIN im_companies prov ON (c.provider_id = prov.company_id)
+	where
+		1 = 1
+		$where_clause
 "
 
 set sql "
-	select
-		sum(c.invoice_amount) as invoice_amount,
-		sum(c.quote_amount) as quote_amount,
-		sum(c.delnote_amount) as delnote_amount,
-		sum(c.paid_amount) as paid_amount,
-		[join $group_vars ",\n\t"]
+select
+	sum(c.invoice_amount) as invoice_amount,
+	sum(c.quote_amount) as quote_amount,
+	sum(c.delnote_amount) as delnote_amount,
+	sum(c.paid_amount) as paid_amount,
+	[join $group_vars ",\n\t"]
+from
+	($middle_sql) c
+group by
+	[join $group_vars ",\n\t"]
+"
+
+
+# ------------------------------------------------------------
+# Create a sorted and contiguous upper date dimension
+
+# Date scale is a list of lists.
+# Example: {{2006 01} {2006 02} ...}
+set date_scale_plain [db_list_of_lists date_scale "
+	select distinct
+		[join $top_vars ", "]
+	from
+		(select	im_day_enumerator as day,
+		        to_char(im_day_enumerator, 'YYYY') as year,
+		        to_char(im_day_enumerator, 'MM') as month_of_year,
+		        to_char(im_day_enumerator, 'Q') as quarter_of_year,
+		        to_char(im_day_enumerator, 'IW') as week_of_year,
+		        to_char(im_day_enumerator, 'DD') as day_of_month
+		from
+			im_day_enumerator(:start_date, :end_date)
+		) d
+	order by
+		[join $top_vars ", "]
+"]
+
+# Add subtotals whenever a "main" (not the most detailed) scale changes
+set date_scale [list]
+set last_item [lindex $date_scale_plain 0]
+foreach scale_item $date_scale_plain {
+
+    set diff_idx -1
+    for {set i [expr [llength $last_item]-2]} {$i >= 0} {set i [expr $i-1]} {
+
+	set last_var [lindex $last_item $i]
+	set cur_var [lindex $scale_item $i]
+	if {$last_var != $cur_var} {
+	    lappend date_scale [lrange $last_item 0 $i]
+	}
+    }
+
+    lappend date_scale $scale_item
+
+    set last_item $scale_item
+}
+
+
+
+# ------------------------------------------------------------
+# Create a sorted left dimension
+
+# Scale is a list of lists.
+# Example: {{2006 01} {2006 02} ...}
+set left_scale [db_list_of_lists date_scale "
+	select distinct
+		[join $left_vars ", "]
 	from
 		($middle_sql) c
-	group by
-		[join $group_vars ",\n\t"]
-"
+	order by
+		[join $left_vars ", "]
+"]
+
+
+
+# ------------------------------------------------------------
+# Display the Table Header
+
+set header ""
+
+# Determine how many date rows (year, month, day, ...) we've got
+set first_cell [lindex $date_scale 0]
+set date_scale_rows [llength $first_cell]
+set left_scale_size [llength [lindex $left_scale 0]]
+
+for {set row 0} {$row < $date_scale_rows} { incr row } {
+    append header "<tr class=rowtitle>\n"
+    append header "<td colspan=$left_scale_size></td>\n"
+    for {set col 0} {$col <= [expr [llength $date_scale]-1]} { incr col } {
+	set scale_entry [lindex $date_scale $col]
+	set scale_item [lindex $scale_entry $row]
+	# Check if the previous item was of the same content
+	set prev_scale_entry [lindex $date_scale [expr $col-1]]
+	set prev_scale_item [lindex $prev_scale_entry $row]
+	if {$prev_scale_item == $scale_item} {
+	    # Prev and current are same => just skip.
+	    # The cell was already covered by the previous entry via "colspan"
+	} else {
+	    # This is the first entry of a new content.
+	    # Look forward to check if we can issue a "colspan" command
+	    set colspan 1
+	    set next_col [expr $col+1]
+	    while {$scale_item == [lindex [lindex $date_scale $next_col] $row]} {
+		incr next_col
+		incr colspan
+	    }
+	    append header "\t<td class=rowtitle colspan=$colspan>$scale_item</td>\n"	    
+	}
+    }
+    append header "</tr>\n"
+}
+
+ns_write $header
 
 
 # ------------------------------------------------------------
@@ -385,19 +430,35 @@ set sql "
 
 db_foreach query $sql {
 
-    if {"" == $project_type_id} { set project_type_id "none" }
+    # Get all possible permutations (N out of M) from the group_vars
+    set perms [im_report_take_all_ordered_permutations $group_vars]
 
-    # Sum up the values for the matrix cells
-    set key "${year}-${month_of_year}.${project_type_id}"
-    set sum 0
-    if {[info exists hash($key)]} { set sum $hash($key) }
+    # Add the invoice amount to ALL of the variable permutations.
+    # The "full permutation" (all elements of the list) corresponds
+    # to the individual cell entries.
+    # The "empty permutation" (no variable) corresponds to the
+    # gross total of all values.
+    # Permutations with less elements correspond to subtotals
+    # of the values along the missing dimension. Clear?
+    #
+    foreach perm $perms {
 
-    set amount $invoice_amount
-    if {"" == $amount} { set amount 0 }
-    set sum [expr $sum + $amount]
-    set hash($key) $sum
+	# Calculate the key for this permutation
+	# something like "$year-$month-$customer_id"
+	set key_expr "\$[join $perm "-\$"]"
+	set key [eval "set a \"$key_expr\""]
 
-    ns_log Notice "finance-yearly: hash($key) = $sum"
+	# Sum up the values for the matrix cells
+	set sum 0
+	if {[info exists hash($key)]} { set sum $hash($key) }
+	
+	set amount $invoice_amount
+	if {"" == $amount} { set amount 0 }
+	set sum [expr $sum + $amount]
+	set hash($key) $sum
+	
+	ns_log Notice "finance-yearly: hash($key) = $sum"
+    }
 }
 
 
@@ -410,20 +471,34 @@ foreach left_entry $left_scale {
     set class $rowclass([expr $ctr % 2])
     incr ctr
 
-    set project_type [lindex $left_entry 0]
-    if {"" == $project_type} { set project_type "none" }
-    set left_key $project_type
-
+    # Start the row and show the left_scale values at the left
     ns_write "<tr class=$class>\n"
-    ns_write "<td>$project_type</td>\n"
+    foreach val $left_entry { ns_write "<td>$val</td>\n" }
 
+    # Write the left_scale values to their corresponding local 
+    # variables so that we can access them easily when calculating
+    # the "key".
+    for {set i 0} {$i < [llength $left_vars]} {incr i} {
+	set var_name [lindex $left_vars $i]
+	set var_value [lindex $left_entry $i]
+	set $var_name $var_value
+    }
+    
     foreach top_entry $date_scale {
 
-	set year [lindex $top_entry 0]
-	set month_of_year [lindex $top_entry 1]
-	set upper_key "$year-$month_of_year"
+	# Write the top_scale values to their corresponding local 
+	# variables so that we can access them easily for $key
+	for {set i 0} {$i < [llength $top_vars]} {incr i} {
+	    set var_name [lindex $top_vars $i]
+	    set var_value [lindex $top_entry $i]
+	    set $var_name $var_value
+	}
 
-	set key "${upper_key}.${left_key}"
+	# Calculate the key for this permutation
+	# something like "$year-$month-$customer_id"
+	set key_expr "\$[join $group_vars "-\$"]"
+	set key [eval "set a \"$key_expr\""]
+
 	set val "&nbsp;"
 	if {[info exists hash($key)]} { set val $hash($key) }
 
