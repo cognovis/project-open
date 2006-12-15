@@ -202,6 +202,15 @@ ns_write "
 <table border=0 cellspacing=1 cellpadding=1>
 "
 
+# ------------------------------------------------------------
+# Define Dimensions
+
+set left_vars [list project_type_id]
+set top_vars [list year month_of_year]
+
+set group_vars [concat $top_vars $left_vars]
+
+
 
 # ------------------------------------------------------------
 # Create a sorted and contiguous upper date dimension
@@ -210,17 +219,22 @@ ns_write "
 # Example: {{2006 01} {2006 02} ...}
 set date_scale [db_list_of_lists date_scale "
 	select distinct
-		to_char(start_block, 'YYYY') as year,
-		to_char(start_block, 'MM') as month
+		[join $top_vars ", "]
 	from
-		im_start_weeks w
-	where
-		w.start_block::date >= to_date(:start_date, 'YYYY-MM-DD')
-		and w.start_block::date < to_date(:end_date, 'YYYY-MM-DD')
+		(select	im_day_enumerator as day,
+		        to_char(im_day_enumerator, 'YYYY') as year,
+		        to_char(im_day_enumerator, 'MM') as month_of_year,
+		        to_char(im_day_enumerator, 'Q') as quarter_of_year,
+		        to_char(im_day_enumerator, 'IW') as week_of_year,
+		        to_char(im_day_enumerator, 'DD') as day_of_month
+		from
+			im_day_enumerator(:start_date, :end_date)
+		) d
 	order by
-		year,
-		month
+		[join $top_vars ", "]
 "]
+
+
 
 
 # ------------------------------------------------------------
@@ -230,7 +244,7 @@ set date_scale [db_list_of_lists date_scale "
 # Example: {{2006 01} {2006 02} ...}
 set left_scale [db_list_of_lists date_scale "
 	select
-		im_category_from_id(category_id)
+		category_id
 	from
 		im_categories
 	where
@@ -311,13 +325,13 @@ if { ![empty_string_p $where_clause] } {
 
 set inner_sql "
 	select
-		c.*,
-		round((c.paid_amount * 
+		trunc((c.paid_amount * 
 		  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
 		  , 2) as paid_amount_converted,
-		round((c.amount * 
+		trunc((c.amount * 
 		  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
-		  , 2) as amount_converted
+		  , 2) as amount_converted,
+		c.*
 	from
 		im_costs c
 	where
@@ -328,15 +342,18 @@ set inner_sql "
 "
 
 
-set sql "
+set middle_sql "
 select
 	c.*,
 	to_char(c.effective_date, 'YYYY') as year,
-	to_char(c.effective_date, 'MM') as month,
+	to_char(c.effective_date, 'MM') as month_of_year,
+	to_char(c.effective_date, 'Q') as quarter_of_year,
+	to_char(c.effective_date, 'IW') as week_of_year,
+	to_char(c.effective_date, 'DD') as day_of_month,
+	CASE WHEN c.cost_type_id = 3700 THEN c.amount_converted ELSE 0 END as invoice_amount,
+	CASE WHEN c.cost_type_id = 3702 THEN c.amount_converted ELSE 0 END as quote_amount,
+	CASE WHEN c.cost_type_id = 3724 THEN c.amount_converted ELSE 0 END as delnote_amount,
 	substring(c.cost_name, 1, 14) as cost_name_cut,
-	CASE WHEN c.cost_type_id = 3700 THEN c.amount_converted END as invoice_amount,
-	CASE WHEN c.cost_type_id = 3702 THEN c.amount_converted END as quote_amount,
-	CASE WHEN c.cost_type_id = 3724 THEN c.amount_converted END as delnote_amount,
 	p.project_name,
 	p.project_nr,
 	p.project_type_id,
@@ -349,6 +366,19 @@ where
 	$where_clause
 "
 
+set sql "
+	select
+		sum(c.invoice_amount) as invoice_amount,
+		sum(c.quote_amount) as quote_amount,
+		sum(c.delnote_amount) as delnote_amount,
+		sum(c.paid_amount) as paid_amount,
+		[join $group_vars ",\n\t"]
+	from
+		($middle_sql) c
+	group by
+		[join $group_vars ",\n\t"]
+"
+
 
 # ------------------------------------------------------------
 # Execute query and aggregate values into a Hash array
@@ -358,12 +388,15 @@ db_foreach query $sql {
     if {"" == $project_type_id} { set project_type_id "none" }
 
     # Sum up the values for the matrix cells
-    set key "${year}-${month}.${project_type_id}"
+    set key "${year}-${month_of_year}.${project_type_id}"
     set sum 0
     if {[info exists hash($key)]} { set sum $hash($key) }
-    if {"" == $amount_converted} { set amount_converted 0 }
-    set sum [expr $sum + $amount_converted]
+
+    set amount $invoice_amount
+    if {"" == $amount} { set amount 0 }
+    set sum [expr $sum + $amount]
     set hash($key) $sum
+
     ns_log Notice "finance-yearly: hash($key) = $sum"
 }
 
@@ -387,8 +420,8 @@ foreach left_entry $left_scale {
     foreach top_entry $date_scale {
 
 	set year [lindex $top_entry 0]
-	set month [lindex $top_entry 1]
-	set upper_key "$year-$month"
+	set month_of_year [lindex $top_entry 1]
+	set upper_key "$year-$month_of_year"
 
 	set key "${upper_key}.${left_key}"
 	set val "&nbsp;"
