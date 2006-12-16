@@ -720,7 +720,7 @@ ad_proc -public im_report_take_n_from_list { list n } {
         set left_rest [lrange $list 0 [expr $i-1]]
         set right_rest [lrange $list [expr $i+1] end]
         set rest [concat $left_rest $right_rest]
-        set rest_perms [im_take_n_from_list $rest [expr $n-1]]
+        set rest_perms [im_report_take_n_from_list $rest [expr $n-1]]
 
 	foreach rest_perm $rest_perms {
 	    lappend result $rest_perm
@@ -737,7 +737,7 @@ ad_proc -public im_report_take_all_ordered_permutations { list } {
 
     set result [list]
     for {set i 0} {$i < [llength $list]} {incr i} {
-	set result [concat $result [im_take_n_from_list $list $i]]
+	set result [concat $result [im_report_take_n_from_list $list $i]]
     }
     lappend result [list]
     return $result

@@ -14,6 +14,9 @@ ad_page_contract {
     { start_date "" }
     { end_date "" }
     { date_scale_vars "year month_of_year" }
+    { left_scale1 "customer_name" }
+    { left_scale2 "" }
+    { left_scale3 "" }
     { cost_type_id "3700" }
     { customer_type_id:integer 0 }
     { customer_id:integer 0 }
@@ -23,7 +26,11 @@ ad_page_contract {
 # ------------------------------------------------------------
 # Define Dimensions
 
-set left_vars [list customer_type customer_name]
+set left_vars [list]
+if {"" != $left_scale1} { lappend left_vars $left_scale1 }
+if {"" != $left_scale2} { lappend left_vars $left_scale2 }
+if {"" != $left_scale3} { lappend left_vars $left_scale3 }
+
 
 set date_scale_vars [ns_urldecode $date_scale_vars]
 set top_vars $date_scale_vars
@@ -154,6 +161,22 @@ set date_scale_vars_options {
 	"month_of_year year" "Month and Year (compare years)"
 }
 
+set left_scale_options {
+	"" ""
+	"project_name" "Project Name"
+	"project_nr" "Project Nr"
+	"project_type" "Project Type"
+	"project_status" "Project Status"
+
+	"customer_name" "Customer Name"
+	"customer_path" "Customer Nr"
+	"customer_type" "Customer Type"
+	"customer_status" "Customer Status"
+
+	"cost_type" "Cost Type"
+	"cost_status" "Cost Status"
+}
+
 
 # ------------------------------------------------------------
 # Start formatting the page
@@ -166,10 +189,12 @@ ns_write "
 [im_header]
 [im_navbar]
 <table cellspacing=0 cellpadding=0 border=0>
+
+<form>
+[export_form_vars project_id]
+
 <tr valign=top>
 <td>
-<form>
-	[export_form_vars project_id]
 	<table border=0 cellspacing=1 cellpadding=1>
 	<tr>
 	  <td class=form-label>Start Date</td>
@@ -193,7 +218,7 @@ ns_write "
 	<tr>
 	  <td class=form-label>Cost Type</td>
 	  <td class=form-widget>
-	    [im_category_select -translate_p 1 "Intranet Cost Type" cost_type_id $cost_type_id]
+	    [im_category_select -include_empty_p 1 -translate_p 1 "Intranet Cost Type" cost_type_id $cost_type_id]
 	  </td>
 	</tr>
 	<tr>
@@ -208,12 +233,35 @@ ns_write "
 	    [im_company_select customer_id $customer_id]
 	  </td>
 	</tr>
+
+	<tr>
+	  <td class=form-label>Left 1</td>
+	  <td class=form-widget>
+	    [im_select -translate_p 0 left_scale1 $left_scale_options $left_scale1]
+	  </td>
+	</tr>
+	<tr>
+	  <td class=form-label>Left 2</td>
+	  <td class=form-widget>
+	    [im_select -translate_p 0 left_scale2 $left_scale_options $left_scale2]
+	  </td>
+	</tr>
+	<tr>
+	  <td class=form-label>Left 3</td>
+	  <td class=form-widget>
+	    [im_select -translate_p 0 left_scale3 $left_scale_options $left_scale3]
+	  </td>
+	</tr>
+
 	<tr>
 	  <td class=form-label></td>
 	  <td class=form-widget><input type=submit value=Submit></td>
 	</tr>
 	</table>
-</form>
+</td>
+<td>
+	<table>
+	</table>
 </td>
 <td>
 	<table cellspacing=2 width=90%>
@@ -221,6 +269,7 @@ ns_write "
 	</table>
 </td>
 </tr>
+</form>
 </table>
 <table border=0 cellspacing=1 cellpadding=1>
 "
@@ -236,6 +285,14 @@ set criteria [list]
 
 if {"" != $customer_id && 0 != $customer_id} {
     lappend criteria "c.customer_id = :customer_id"
+}
+
+if {"" != $cost_type_id && 0 != $cost_type_id} {
+    lappend criteria "c.cost_type_id in (
+	select  child_id
+	from    im_category_hierarchy
+	where   (parent_id = :cost_type_id or child_id = :cost_type_id)
+    )"
 }
 
 if {"" != $customer_type_id && 0 != $customer_type_id} {
@@ -270,7 +327,7 @@ set inner_sql "
 		from
 			im_costs c
 		where
-			c.cost_type_id = :cost_type_id
+			1=1
 			and c.effective_date::date >= to_date(:start_date, 'YYYY-MM-DD')
 			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
 			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
@@ -280,6 +337,7 @@ set inner_sql "
 set middle_sql "
 	select
 		c.*,
+		im_category_from_id(c.cost_type_id) as cost_type,
 		to_char(c.effective_date, 'YYYY') as year,
 		to_char(c.effective_date, 'MM') as month_of_year,
 		to_char(c.effective_date, 'Q') as quarter_of_year,
@@ -297,10 +355,14 @@ set middle_sql "
 		cust.company_path as customer_path,
 		cust.company_type_id as customer_type_id,
 		im_category_from_id(cust.company_type_id) as customer_type,
+		cust.company_status_id as customer_status_id,
+		im_category_from_id(cust.company_status_id) as customer_status,
 		prov.company_name as provider_name,
 		prov.company_path as provider_path,
 		prov.company_type_id as provider_type_id,
 		im_category_from_id(prov.company_type_id) as provider_type,
+		prov.company_status_id as provider_status_id,
+		im_category_from_id(prov.company_status_id) as provider_status,
 
 		0 as zero
 	from
@@ -376,6 +438,7 @@ for {set i [expr [llength $last_item]-2]} {$i >= 0} {set i [expr $i-1]} {
     lappend date_scale $item
 }
 
+# Add a very last row with grand total sum over all years and months...
 set item [list]
 while {[llength $item] < [llength $last_item]} { lappend item $sigma }
 lappend date_scale $item
@@ -387,7 +450,7 @@ lappend date_scale $item
 
 # Scale is a list of lists.
 # Example: {{2006 01} {2006 02} ...}
-set left_scale [db_list_of_lists date_scale "
+set left_scale_plain [db_list_of_lists left_scale "
 	select distinct
 		[join $left_vars ", "]
 	from
@@ -395,6 +458,40 @@ set left_scale [db_list_of_lists date_scale "
 	order by
 		[join $left_vars ", "]
 "]
+
+
+# Add subtotals whenever a "main" (not the most detailed) scale changes
+set left_scale [list]
+set last_item [lindex $left_scale_plain 0]
+foreach scale_item $left_scale_plain {
+    set diff_idx -1
+    for {set i [expr [llength $last_item]-2]} {$i >= 0} {set i [expr $i-1]} {
+	set last_var [lindex $last_item $i]
+	set cur_var [lindex $scale_item $i]
+	if {$last_var != $cur_var} {
+
+	    set item [lrange $last_item 0 $i]
+	    while {[llength $item] < [llength $last_item]} { lappend item $sigma }
+	    lappend left_scale $item
+	}
+    }
+    lappend left_scale $scale_item
+    set last_item $scale_item
+}
+
+# Add some last elements with total sums etc.
+for {set i [expr [llength $last_item]-2]} {$i >= 0} {set i [expr $i-1]} {
+    set item [lrange $last_item 0 $i]
+    while {[llength $item] < [llength $last_item]} { lappend item $sigma }
+    lappend left_scale $item
+}
+
+# Add a very last row with grand total sum over all years and months...
+set item [list]
+while {[llength $item] < [llength $last_item]} { lappend item $sigma }
+lappend left_scale $item
+
+
 
 
 
@@ -527,7 +624,6 @@ foreach left_entry $left_scale {
     }
     ns_write "</tr>\n"
 }
-
 
 
 # ------------------------------------------------------------
