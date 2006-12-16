@@ -29,6 +29,7 @@ set date_scale_vars [ns_urldecode $date_scale_vars]
 set top_vars $date_scale_vars
 set group_vars [concat $top_vars $left_vars]
 
+
 # ------------------------------------------------------------
 # Security
 
@@ -98,6 +99,7 @@ set rowclass(0) "roweven"
 set rowclass(1) "rowodd"
 
 set gray "gray"
+set sigma "&Sigma;"
 set days_in_past 365
 
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
@@ -347,25 +349,36 @@ set date_scale_plain [db_list_of_lists date_scale "
 		[join $top_vars ", "]
 "]
 
+
 # Add subtotals whenever a "main" (not the most detailed) scale changes
 set date_scale [list]
 set last_item [lindex $date_scale_plain 0]
 foreach scale_item $date_scale_plain {
-
     set diff_idx -1
     for {set i [expr [llength $last_item]-2]} {$i >= 0} {set i [expr $i-1]} {
-
 	set last_var [lindex $last_item $i]
 	set cur_var [lindex $scale_item $i]
 	if {$last_var != $cur_var} {
-	    lappend date_scale [lrange $last_item 0 $i]
+
+	    set item [lrange $last_item 0 $i]
+	    while {[llength $item] < [llength $last_item]} { lappend item $sigma }
+	    lappend date_scale $item
 	}
     }
-
     lappend date_scale $scale_item
-
     set last_item $scale_item
 }
+
+# Add some last elements with total sums etc.
+for {set i [expr [llength $last_item]-2]} {$i >= 0} {set i [expr $i-1]} {
+    set item [lrange $last_item 0 $i]
+    while {[llength $item] < [llength $last_item]} { lappend item $sigma }
+    lappend date_scale $item
+}
+
+set item [list]
+while {[llength $item] < [llength $last_item]} { lappend item $sigma }
+lappend date_scale $item
 
 
 
@@ -496,7 +509,12 @@ foreach left_entry $left_scale {
 
 	# Calculate the key for this permutation
 	# something like "$year-$month-$customer_id"
-	set key_expr "\$[join $group_vars "-\$"]"
+	set key_expr_list [list]
+	foreach var_name $group_vars {
+	    set var_value [eval set a "\$$var_name"]
+	    if {$sigma != $var_value} { lappend key_expr_list $var_name }
+	}
+	set key_expr "\$[join $key_expr_list "-\$"]"
 	set key [eval "set a \"$key_expr\""]
 
 	set val "&nbsp;"
