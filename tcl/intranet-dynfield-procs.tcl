@@ -2180,6 +2180,72 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 }
 
 
+ad_proc -public im_dynfield::append_attributes_to_im_view {
+    -object_type:required
+    {-table_prefix "" }
+} {
+    Returns a list with two elements:
+
+    Element 0: A list of PrettyNames, suitable to be appended to the
+    "column_headers" list of a project-open im_view type of ListPage
+    (such as ProjectListPage, CompanyListPage, ...)
+
+    Element 1: A list of "display_tcl" expressions suitable to be appended 
+    to the "column_vars" list of a project-open im_view ListPage.
+
+    Element 2: A list of select expressions suitable to be included
+    in a SQL select statement
+
+    ToDo: Element 1 currently only contains works for columns of 
+    storage type "table_column" and will only show the table value
+    itself, instead of a value, depending on the "display" mode of
+    the corresponding widet.
+
+    table_prefix is a trick when your're trying to aggregate values
+    of a joined object, such as the "im_company" in the case of
+    im_invoices.
+} {
+    set current_user_id [ad_get_user_id]
+
+    set attributes_sql "
+	select	a.*,
+		aa.attribute_id as dynfield_attribute_id,
+		tt.id_column as attribute_id_column,
+		t.table_name as object_type_table_name,
+		t.id_column as object_type_id_column,
+		aw.widget,
+		aw.parameters,
+		aw.storage_type_id,
+		im_category_from_id(aw.storage_type_id) as storage_type
+	from
+		im_dynfield_attributes aa,
+		im_dynfield_widgets aw,
+		acs_object_types t,
+		acs_attributes a
+		left outer join
+			acs_object_type_tables tt
+			on (tt.object_type = :object_type and tt.table_name = a.table_name)
+	where
+		t.object_type = :object_type
+		and a.object_type = t.object_type
+		and a.attribute_id = aa.acs_attribute_id
+		and aa.widget_name = aw.widget_name
+		and im_object_permission_p(aa.attribute_id, :current_user_id, 'read') = 't'
+    "
+
+    set column_headers [list]
+    set column_vars [list]
+    set column_select [list]
+    db_foreach dynfield_attributes $attributes_sql {
+	lappend column_headers $pretty_name
+	lappend column_vars "\$$attribute_name"
+	lappend column_select "$table_prefix$attribute_name,"
+    }
+
+    return [list $column_headers $column_vars $column_select]
+}
+
+
 ad_proc -public im_dynfield::form {
     -object_type:required
     -form_id:required
