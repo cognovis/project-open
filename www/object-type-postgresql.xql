@@ -20,7 +20,9 @@
 	w.widget_id,
 	w.widget,
 	w.parameters,
-	la.*
+	la.pos_x, pos_y, size_x, size_y,
+	la.div_class,
+	la.label_style
     from 
 	acs_attributes aa
 	right outer join 
