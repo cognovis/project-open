@@ -53,15 +53,20 @@ set main_id_column $id_column
 # ******************************************************
 
 db_multirow attributes attributes_query {} {
-	if {[empty_string_p $table_name]} {
-		set table_name $main_table_name
-		set id_column $main_id_column
-	} else {
-		db_1row "get id_column" "select id_column 
-			from acs_object_type_tables 
-			where object_type = :object_type 
+
+    if {[empty_string_p $table_name]} {
+	
+	set table_name $main_table_name
+	set id_column $main_id_column
+	
+    } else {
+
+	db_1row "get id_column" "
+		select	id_column 
+		from	acs_object_type_tables 
+		where	object_type = :object_type 
 			and table_name = :table_name"
-	}
+    }
 }
 
 # ******************************************************
