@@ -1,15 +1,15 @@
 ad_page_contract {
-
+    Toggle attribute display mode
+    
     @author Frank Bergmann (frank.bergmann@project-open.com)
-    @creation-date 2004-07-28
     @cvs-id $Id$
-
 } {
+    acs_object_type:notnull
+    attribute_name:notnull
+    object_type_id:integer,notnull
+    display_mode:notnull
+    return_url:notnull
 }
-
-set page_title "DynField Extensible Architecture"
-set context_bar [im_context_bar $page_title]
-
 
 set user_id [ad_maybe_redirect_for_registration]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
@@ -18,4 +18,9 @@ if {!$user_is_admin_p} {
     return
 }
 
-ad_return_template
+
+
+ad_returnredirect $return_url
+
+
+
