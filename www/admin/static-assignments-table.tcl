@@ -18,24 +18,7 @@ if { ![info exists context_key] } {
 }
 
 set last_role_key {}
-db_multirow roles roles {
-    select r.role_key, 
-           r.role_name,
-           p.party_id,
-           acs_object.name(p.party_id) as party_name,
-           p.email as party_email,
-           '' as user_select_widget,
-           '' as add_export_vars,
-           '' as remove_url
-    from   wf_roles r,
-           wf_context_assignments ca,
-           parties p
-    where  r.workflow_key = :workflow_key
-    and    ca.context_key (+) = :context_key
-    and    ca.role_key (+) = r.role_key
-    and    p.party_id (+) = ca.party_id
-    order by r.sort_order, r.role_key
-} {
+db_multirow roles roles {} {
     if { ![string equal $role_key $last_role_key] } {
 	set counter 0
 	set user_select_widget "<select name=party_id><option>--Please select--</option>"
