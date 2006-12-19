@@ -1,8 +1,16 @@
-<master>
+<master src="master">
 <property name="title">@page_title;noquote@</property>
 <property name="context">@context;noquote@</property>
 
 <h1>@page_title;noquote@</h1>
+
+<b>Explanation</b>
+<ul>
+<li>N - D - E
+<li>First = "None" - Don't display the field
+<li>Second = "Display" - "Read only" mode
+<li>Third = "Edit" - Edit the field
+</ul>
 
 <table>
 <form action=attribute-type-map-2 method=POST>

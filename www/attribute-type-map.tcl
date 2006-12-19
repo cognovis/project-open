@@ -50,7 +50,7 @@ set top_scale [db_list top_dim "
 
 # The array maps category_id into "category" - a pretty 
 # string for each column, to be used as column header
-set max_length 5
+set max_length 8
 db_foreach top_scale_map "
 	select	category_id,
 		category
@@ -160,9 +160,11 @@ foreach left $left_scale {
 	}
 
 	set val "
-<nobr><input value=none type=radio name=\"attrib.$attribute_id.$object_type_id\" $none_checked>none</nobr>
-<nobr><input value=display type=radio name=\"attrib.$attribute_id.$object_type_id\" $disp_checked>disp</nobr>
-<nobr><input value=edit type=radio name=\"attrib.$attribute_id.$object_type_id\" $edit_checked>edit</nobr>
+<nobr>
+<input value=none type=radio name=\"attrib.$attribute_id.$object_type_id\" $none_checked>
+<input value=display type=radio name=\"attrib.$attribute_id.$object_type_id\" $disp_checked>
+<input value=edit type=radio name=\"attrib.$attribute_id.$object_type_id\" $edit_checked>
+</nobr>
 "
 
 	append body_html "<td>$val</td>\n"

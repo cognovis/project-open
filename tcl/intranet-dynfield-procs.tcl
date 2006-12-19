@@ -2041,6 +2041,10 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	ns_log Notice "append_attributes_to_form: display_mode($key) <= $dm"
     }
 
+    # Disable the mechanism if the object_type_id hasn't been specified
+    # (compatibility mode)
+    if {"" == $object_type_id} { set default_display_mode "edit" }
+
 
     set attributes_sql "
 	select a.attribute_id,
