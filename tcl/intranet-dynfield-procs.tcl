@@ -1968,6 +1968,7 @@ ad_proc -public im_dynfield::search_query {
 
 
 ad_proc -public im_dynfield::append_attributes_to_form {
+    {-object_type_id "" }
     -object_type:required
     -form_id:required
     {-object_id ""}
@@ -2012,7 +2013,35 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		-value  $object_id
     	}
     }
-    
+
+
+    # Get display mode per attribute and object_type_id
+    set sql "
+        select  m.attribute_id,
+                m.object_type_id as ot,
+                m.display_mode as dm
+        from
+                im_dynfield_type_attribute_map m,
+                im_dynfield_attributes a,
+                acs_attributes aa
+        where
+                m.attribute_id = a.attribute_id
+                and a.acs_attribute_id = aa.attribute_id
+                and aa.object_type = 'im_project'
+    "
+
+    # Default: Set all field sto "edit" if there is NO
+    # entry in attribute map.
+    set default_display_mode "edit"
+
+    db_foreach attribute_table_map $sql {
+	set key "$attribute_id.$ot"
+	set display_mode_hash($key) $dm
+	set default_display_mode "none"
+	ns_log Notice "append_attributes_to_form: display_mode($key) <= $dm"
+    }
+
+
     set attributes_sql "
 	select a.attribute_id,
 		aa.attribute_id as dynfield_attribute_id,
@@ -2053,6 +2082,13 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
     db_foreach attributes $attributes_sql {
     
+	set display_mode $default_display_mode
+	set key "$dynfield_attribute_id.$object_type_id"
+	if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
+	ns_log Notice "append_attributes_to_form: display_mode($key) => $dm"
+	if {"none" == $display_mode} { continue }
+
+
 	if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: attribute_name=$attribute_name, datatype=$datatype, widget=$widget, storage_type_id=$storage_type_id" }
 
 	# set optional all attributes if search mode
@@ -2107,7 +2143,8 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 			-options $option_list \
 			-custom $custom_parameters \
 			-html $html_parameters \
-			-help $help
+			-help $help \
+			-mode $display_mode
 		}
 	    }
 
@@ -2121,7 +2158,8 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 			-label $pretty_name \
 			-html $html_parameters \
 			-custom $custom_parameters\
-			-help $help
+			-help $help \
+			-mode $display_mode
 		}
 	    }
 	}
@@ -2137,6 +2175,13 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
     # Same loop as before...
     db_foreach attributes $attributes_sql {
+
+	set display_mode $default_display_mode
+	set key "$dynfield_attribute_id.$object_type_id"
+	if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
+	if {"none" == $display_mode} { continue }
+
+
 	switch $storage_type {
 	    value - default {
 

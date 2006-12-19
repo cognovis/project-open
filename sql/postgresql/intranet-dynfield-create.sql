@@ -193,9 +193,7 @@ create table im_dynfield_attributes (
 create table im_dynfield_type_attribute_map (
         attribute_id            integer
                                 constraint im_dynfield_type_attr_map_attr_fk
-                                references acs_objects
-                                constraint im_dynfield_type_attr_map_pk
-                                primary key,
+                                references acs_objects,
 	object_type_id		integer 
 				constraint im_dynfield_type_attr_map_otype_nn
 				not null
@@ -205,7 +203,8 @@ create table im_dynfield_type_attribute_map (
                                 constraint im_dynfield_type_attr_map_dmode_nn
                                 not null
                                 constraint im_dynfield_type_attr_map_dmode_ck
-                                check (display_mode in ('edit', 'display', 'none'))
+                                check (display_mode in ('edit', 'display', 'none')),
+	unique (attribute_id, object_type_id)
 );
 
 

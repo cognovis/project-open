@@ -105,22 +105,22 @@ db_foreach left_scale_map "
 # Get the information about the map and stuff it into a hash array
 # for convenient matrix display.
 set sql "
-	select	a.attribute_id,
-		c.category_id as object_type_id,
-		m.display_mode
+	select  m.attribute_id,
+	        m.object_type_id,
+	        m.display_mode
 	from
-		im_dynfield_attributes a,
-		acs_attributes aa,
-		im_categories c,
-		im_dynfield_type_attribute_map m
+	        im_dynfield_type_attribute_map m,
+	        im_dynfield_attributes a,
+	        acs_attributes aa
 	where
-		a.acs_attribute_id = aa.attribute_id
-		and aa.object_type = :acs_object_type
-		and c.category_type = :category_type
+	        m.attribute_id = a.attribute_id
+	        and a.acs_attribute_id = aa.attribute_id
+	        and aa.object_type = 'im_project'
 "
 db_foreach attribute_table_map $sql {
-    set key "$attribute_id-$object_type_id"
+    set key "$attribute_id.$object_type_id"
     set hash($key) $display_mode
+    ns_log Notice "attribute-type-map: hash($key) <= $display_mode"
 }
 
 
@@ -145,23 +145,24 @@ foreach left $left_scale {
 
     foreach top $top_scale {
 	set object_type_id $top
-	set key "$attribute_id-$object_type_id"
+	set key "$attribute_id.$object_type_id"
 	set mode "none"
 	if {[info exists hash($key)]} { set mode $hash($key) }
+	ns_log Notice "attribute-type-map: hash($key) => $mode"
 
 	set none_checked ""
 	set disp_checked ""
 	set edit_checked ""
 	switch $mode {
 	    none { set none_checked "checked" }
-	    disp { set disp_checked "checked" }
+	    display { set disp_checked "checked" }
 	    edit { set edit_checked "checked" }
 	}
 
 	set val "
-<nobr><input type=radio name=\"attrib.$attribute_id.$object_type_id\" $none_checked>none</nobr>
-<nobr><input type=radio name=\"attrib.$attribute_id.$object_type_id\" $disp_checked>disp</nobr>
-<nobr><input type=radio name=\"attrib.$attribute_id.$object_type_id\" $edit_checked>edit</nobr>
+<nobr><input value=none type=radio name=\"attrib.$attribute_id.$object_type_id\" $none_checked>none</nobr>
+<nobr><input value=display type=radio name=\"attrib.$attribute_id.$object_type_id\" $disp_checked>disp</nobr>
+<nobr><input value=edit type=radio name=\"attrib.$attribute_id.$object_type_id\" $edit_checked>edit</nobr>
 "
 
 	append body_html "<td>$val</td>\n"
