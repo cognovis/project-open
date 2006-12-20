@@ -285,12 +285,27 @@ ad_proc -public im_workflow_graph_component {
     Show the current workflow state if the current
     object is associated with a WF
 } {
-    return ""
+    # Check if there is a WF case with object_id as reference object
+    set cases [db_list case "select case_id from wf_cases where object_id = :object_id"]
 
-    set result "asdf"
-
-
-
-    return [im_table_with_title $result "Title"]
-
+    switch [llength $cases] {
+	0 {
+	    # No case found - just return an empty string, 
+	    # so that the component disappears
+	    return ""
+	}
+	1 {
+	    # Exactly one case found (default situation).
+	    # Return the WF graph component
+	    set params [list [list case_id [lindex $cases 0]]]
+	    set result [ad_parse_template -params $params "/packages/acs-workflow/www/case-state-graph"]
+	    return $result
+	}
+	default {
+	    # More then one WF for this object.
+	    # This is possible in terms of the WF structure,
+	    # but not desired here.
+	    return ""
+	}
+    }
 }
