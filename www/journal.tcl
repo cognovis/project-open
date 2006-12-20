@@ -1,6 +1,10 @@
 # assume that the following are set:
 #    case_id
 
+
+set workflow_url [apm_package_url_from_key "acs-workflow"]
+set return_url [ns_urlencode "[ad_conn url]?[ad_conn query]"]
+
 if { ![info exists date_format] || [empty_string_p $date_format] } {
     set date_format "Mon fmDDfm, YYYY HH24:MI:SS"
 }

@@ -9,7 +9,7 @@
                 <th width="20%">&nbsp;</th>
                 <th>Journal</th>
                 <td width="20%" align="right">
-                  <if @comment_link@ eq 1>[ <a href="comment-add?case_id=@case_id@">comment</a> ]</if>
+                  <if @comment_link@ eq 1>[ <a href="@workflow_url;noquote@comment-add?case_id=@case_id@&return_url=@return_url;noquote@">comment</a> ]</if>
                   <if @comment_link@ ne 1>&nbsp;</if>
                 </td>
               </tr>
