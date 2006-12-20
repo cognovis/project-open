@@ -1,13 +1,37 @@
+-- upgrade-4.5.0-4.5.1.sql
+
+
 
 -- Add a new column to determine that both panels should be overwritten
-alter table wf_context_task_panels
-add overrides_both_panels_p char(1)
-constraint wf_context_panels_ovrd_both_ck
-CHECK (overrides_both_panels_p = 't'::bpchar OR overrides_both_panels_p = 'f'::bpchar)
-;
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select  count(*)
+        into    v_count
+        from    user_tab_columns
+        where   lower(table_name) = ''wf_context_task_panels''
+                and lower(column_name) = ''overrides_both_panels_p'';
 
-alter table wf_context_task_panels
-alter column overrides_both_panels_p set default 'f';
+        if v_count = 1 then
+            return 0;
+        end if;
+
+	alter table wf_context_task_panels
+	add overrides_both_panels_p char(1)
+	constraint wf_context_panels_ovrd_both_ck
+	CHECK (overrides_both_panels_p = ''t'' OR overrides_both_panels_p = ''f'');
+
+	alter table wf_context_task_panels
+	alter column overrides_both_panels_p set default ''f'';
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 
 
