@@ -14,6 +14,7 @@
 #
 #####
 
+set workflow_url [apm_package_url_from_key "acs-workflow"]
 set workflow_key [db_string workflow_key_from_case_id { select workflow_key from wf_cases where case_id = :case_id }]
 
 set workflow_info [wf_get_workflow_net $workflow_key]
@@ -85,7 +86,7 @@ if { [wf_graphviz_installed_p] } {
     
     ad_set_client_property wf wf_net_tmpfile $tmpfile
     
-    set workflow_img_tag "<img src=\"workflow-gif?[export_url_vars tmpfile]\" border=0 $width_and_height alt=\"Graphical representation of the process network\">"
+    set workflow_img_tag "<img src=\"${workflow_url}workflow-gif?[export_url_vars tmpfile]\" border=0 $width_and_height alt=\"Graphical representation of the process network\">"
 } else {
     set workflow_img_tag ""
 }
