@@ -55,8 +55,8 @@ where category_id = 96;
 -- delete potentially existing menus and plugins if this
 -- file is sourced multiple times during development...
 
-select im_component_plugin__del_module('intranet-workflow');
-select im_menu__del_module('intranet-workflow');
+-- select im_component_plugin__del_module('intranet-workflow');
+-- select im_menu__del_module('intranet-workflow');
 
 
 
@@ -82,6 +82,28 @@ SELECT im_component_plugin__new (
         1,                              -- sort_order
 	'im_workflow_home_component'
 );
+
+
+
+-- Project WF Display
+--
+SELECT im_component_plugin__new (
+        null,                           -- plugin_id
+        'acs_object',                   -- object_type
+        now(),                          -- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+        'Project Workflow Graph',       -- plugin_name
+        'intranet-workflow',            -- package_name
+        'right',                        -- location
+        '/intranet/projects/view',     -- page_url
+        null,                           -- view_name
+        20,                              -- sort_order
+        'im_workflow_graph_component -object_id $project_id'
+);
+
+
 
 
 

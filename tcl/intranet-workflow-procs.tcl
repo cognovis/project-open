@@ -269,3 +269,28 @@ ad_proc -public im_workflow_graph_sort_order {
     }
 }
 
+
+
+
+# ----------------------------------------------------------------------
+# Show a Graphical WF representation of the project
+# don't know yet for which page. Could be Basel RFCs
+# ---------------------------------------------------------------------
+
+
+
+ad_proc -public im_workflow_graph_component {
+    -object_id:required
+} {
+    Show the current workflow state if the current
+    object is associated with a WF
+} {
+    return ""
+
+    set result "asdf"
+
+
+
+    return [im_table_with_title $result "Title"]
+
+}
