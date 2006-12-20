@@ -273,17 +273,14 @@ ad_proc -public im_workflow_graph_sort_order {
 
 
 # ----------------------------------------------------------------------
-# Show a Graphical WF representation of the project
-# don't know yet for which page. Could be Basel RFCs
+# Adapters to show WF components
 # ---------------------------------------------------------------------
-
-
 
 ad_proc -public im_workflow_graph_component {
     -object_id:required
 } {
-    Show the current workflow state if the current
-    object is associated with a WF
+    Show a Graphical WF representation of a workflow associated
+    with an object.
 } {
     # Check if there is a WF case with object_id as reference object
     set cases [db_list case "select case_id from wf_cases where object_id = :object_id"]
@@ -297,7 +294,8 @@ ad_proc -public im_workflow_graph_component {
 	1 {
 	    # Exactly one case found (default situation).
 	    # Return the WF graph component
-	    set params [list [list case_id [lindex $cases 0]]]
+	    set size "3,4"
+	    set params [list [list case_id [lindex $cases 0]] [list size $size]]
 	    set result [ad_parse_template -params $params "/packages/acs-workflow/www/case-state-graph"]
 	    return $result
 	}
@@ -308,4 +306,19 @@ ad_proc -public im_workflow_graph_component {
 	    return ""
 	}
     }
+}
+
+
+ad_proc -public im_workflow_journal_component {
+    -object_id:required
+} {
+    Show the WF Journal for an object
+} {
+    # Check if there is a WF case with object_id as reference object
+    set cases [db_list case "select case_id from wf_cases where object_id = :object_id"]
+    if {[llength $cases] != 1} { return "" }
+
+    set params [list [list case_id [lindex $cases 0]]]
+    set result [ad_parse_template -params $params "/packages/acs-workflow/www/journal"]
+    return $result
 }
