@@ -2089,7 +2089,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	set display_mode $default_display_mode
 	set key "$dynfield_attribute_id.$object_type_id"
 	if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
-	ns_log Notice "append_attributes_to_form: display_mode($key) => $dm"
 	if {"none" == $display_mode} { continue }
 
 
