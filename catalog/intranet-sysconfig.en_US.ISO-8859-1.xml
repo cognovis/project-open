@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-sysconfig" package_version="3.2.5.0.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-sysconfig" package_version="3.2.6.0.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Page_deptcomp">Department?</msg>
   <msg key="Page_features">Features</msg>
   <msg key="Page_orgsize">Size</msg>
   <msg key="Page_prodtest">Evaluation</msg>
   <msg key="Page_sector">Sector</msg>
+  <msg key="SysConfig">SysConfig</msg>
   <msg key="SysConfig_Wizard">SysConfig Wizard</msg>
   <msg key="System_Config_Wizard">System Configuration Wizard</msg>
 </message_catalog>
