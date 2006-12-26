@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-cost" package_version="3.2.4.0.0" locale="es_ES" charset="ISO-8859-1">
+<message_catalog package_key="intranet-cost" package_version="3.2.6.0.0" locale="es_ES" charset="ISO-8859-1">
 
   <msg key="Absences">Ausencias</msg>
   <msg key="Administration">Administración</msg>
@@ -48,11 +48,16 @@
   <msg key="lt_There_are_currently_n">Actualmente no existen costes que se ajusten a los criterios seleccionados</msg>
   <msg key="lt_This_is_the_homepage_">Esta es la portada del &quot;Área financiera&quot;. Aquí podrá encontrar e introducir toda la información sobre empresas, proyectos y usarios.</msg>
   <msg key="more_costs">más costes...</msg>
-  <msg key="Multiple_Currency_Warning">&amp;lt;h2&amp;gt;Advertencia: divisa m&amp;uacute;ltiple &amp;lt;/h2&amp;gt;
-&amp;lt;p&amp;gt;
-Este proyecto incluye documentos financieros con m&amp;aacute; de una divisa.
-&amp;lt;br&amp;gt;
-Aunque es correcto en general, esto nos impide calcular el resultado de p&amp;eacute;rdidas y ganancias para este proyecto e incluirlo en el c&amp;aacute;lculo de margen de proyecto.
+  <msg key="Multiple_Currency_Warning">&amp;lt;h2&amp;gt;Advertencia: divisa m&amp;uacute;ltiple &amp;lt;/h2&amp;gt;
+
+&amp;lt;p&amp;gt;
+
+Este proyecto incluye documentos financieros con m&amp;aacute; de una divisa.
+
+&amp;lt;br&amp;gt;
+
+Aunque es correcto en general, esto nos impide calcular el resultado de p&amp;eacute;rdidas y ganancias para este proyecto e incluirlo en el c&amp;aacute;lculo de margen de proyecto.
+
 &amp;lt;/p&amp;gt;</msg>
   <msg key="Name">Nombre</msg>
   <msg key="New_Cost">Nuevo coste</msg>
