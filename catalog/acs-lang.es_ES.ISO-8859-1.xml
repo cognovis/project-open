@@ -20,7 +20,7 @@
   <msg key="localization-formbuilder_date_format">MONTH DD YYYY</msg>
   <msg key="localization-formbuilder_time_format">HH24:MI</msg>
   <msg key="localization-frac_digits">2</msg>
-  <msg key="localization-grouping">-1 -1 </msg>
+  <msg key="localization-grouping">3 3</msg>
   <msg key="localization-int_curr_symbol">EUR </msg>
   <msg key="localization-int_frac_digits">2</msg>
   <msg key="localization-mon">{enero} {febrero} {marzo} {abril} {mayo} {junio} {julio} {agosto} {septiembre} {octubre} {noviembre} {diciembre}</msg>
