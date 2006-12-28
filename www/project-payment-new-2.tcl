@@ -92,9 +92,12 @@ ns_conn close
 set project_name [db_string get_project_name \
 	"select group_name from user_groups where group_id = :group_id"]
 
-db_1row get_user_info \
-	"select first_names || ' ' || last_name as editing_user, email as editing_email
-         from users where user_id = :user_id"
+db_1row get_user_info "
+	select	im_name_from_user_id(u.user_id) as editing_user, 
+		email as editing_email
+	from	users 
+	where	user_id = :user_id
+"
 
 set message "
 
