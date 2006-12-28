@@ -280,7 +280,7 @@ if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string
 # contain order_by_clauses.
 if {"" == $extra_order_by} {
     switch $order_by {
-	"Name" { set extra_order_by "order by upper(p.last_name||p.first_names)" }
+	"Name" { set extra_order_by "order by name" }
 	"Email" { set extra_order_by "order by upper(email)" }
 	"AIM" { set extra_order_by "order by upper(aim_screen_name)" }
 	"Cell Phone" { set extra_order_by "order by upper(cell_phone)" }

@@ -71,7 +71,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 
     if {[catch {db_1row employee_info "
 	select	
-		pe.first_names||' '||pe.last_name as user_name,
+		im_name_from_user_id(pe.person_id) as user_name,
 		p.email,
 		e.*,
 		rc.*,

@@ -96,7 +96,8 @@ append page_body [tree_to_horizontal_table [im_prune_org_chart [db_tree nodes_di
 # aren't starting_employee_id and they don't have supervisors
 
 set employee_listing_sql "
-select u.employee_id, u.first_names || ' ' || u.last_name as employee_name
+	select	u.employee_id, 
+		im_name_from_user_id(u.employee_id) as employee_name
            from im_employees_active u
           where u.employee_id <> :starting_employee_id
             and u.supervisor_id is null
