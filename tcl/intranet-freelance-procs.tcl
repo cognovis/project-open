@@ -164,7 +164,7 @@ ad_proc im_freelance_info_component { current_user_id user_id return_url freelan
     ns_log Notice "intranet-freelance: view_id=$view_id"
 
     set freelance_rates_sql "
-	select	pe.first_names||' '||pe.last_name as user_name,
+	select	im_name_from_user_id(pe.person_id) as user_name,
 		p.email,
 		f.*,
 		u.user_id,
@@ -439,8 +439,7 @@ ad_proc im_freelance_member_select_component { object_id return_url } {
     set freelance_sql "
 select distinct
 	u.user_id,
-	u.last_name,
-	u.first_names,
+	im_name_from_user_id(u.user_id) as user_name,
 	im_name_from_user_id(u.user_id) as name,
 	im_freelance_skill_list(u.user_id, :source_lang_skill_type) as source_langs,
 	im_freelance_skill_list(u.user_id, :target_lang_skill_type) as target_langs,
@@ -465,8 +464,7 @@ where
 	and sls.user_id = u.user_id
 	and tls.user_id = u.user_id
 order by
-	u.last_name,
-	u.first_names
+	user_name
 "
 
     set freelance_header_html "

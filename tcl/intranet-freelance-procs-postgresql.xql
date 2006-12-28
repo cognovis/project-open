@@ -16,7 +16,7 @@
   
   <fullquery name="im_freelance_info_component.freelance_info_query">
     <querytext>
-        select  pe.first_names||' '||pe.last_name as user_name,
+        select  im_name_from_user_id(pe.person_id) as user_name,
                 p.email,
                 f.*,
                 u.user_id,

@@ -19,7 +19,7 @@
     <querytext>
 
 select
-    pe.first_names||' '||pe.last_name as user_name,
+    im_name_from_user_id(pe.person_id) as user_name,
     f.*
 from
     persons pe

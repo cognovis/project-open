@@ -37,7 +37,7 @@ if {!$admin} {
 set org_user_id $user_id
 db_0or1row freelancers_info {
 select
-    pe.first_names||' '||pe.last_name as user_name,
+    im_name_from_user_id(pe.person_id) as user_name,
     f.*
 from 
     persons pe,

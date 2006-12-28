@@ -66,9 +66,13 @@ set add_freelance_skillconfs_p [im_permission $current_user_id add_freelance_ski
 # User Information
 # ---------------------------------------------------------------
 
-db_0or1row user_full_name "select first_names, last_name from persons where person_id = :user_id"
+db_0or1row user_full_name "
+	select	im_name_from_user_id(person_id) as user_name
+	from	persons
+	where	person_id = :user_id
+"
 
-set page_title "$first_names $last_name"
+set page_title $user_name
 if {[im_permission $current_user_id view_users]} {
     set context_bar [im_context_bar [list /intranet/users/view?user_id=$user_id "$page_title"] "[_ intranet-freelance.Confirmations]"]
 } else {
@@ -76,7 +80,7 @@ if {[im_permission $current_user_id view_users]} {
 }
 
 # use [info exists ] here?
-if { [empty_string_p $first_names] && [empty_string_p $last_name] } {
+if { [empty_string_p $user_name] } {
     ad_return_complaint 1 "<li>[_ intranet-freelance.lt_We_couldnt_find_user_]"
     return
 }
