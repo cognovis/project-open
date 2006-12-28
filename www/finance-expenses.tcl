@@ -33,6 +33,8 @@ set read_p [db_string report_perms "
 	where	m.label = :menu_label
 " -default 'f']
 
+set read_p "t"
+
 if {![string equal "t" $read_p]} {
     set msg [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]
     ad_return_complaint 1 "<li>$msg"
@@ -238,8 +240,7 @@ where
 order by
 	pcust.company_name,
 	p.project_name,
-	u.last_name,
-	u.first_names
+	employee_name
 "
 
 
