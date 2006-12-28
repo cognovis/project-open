@@ -19,8 +19,7 @@ set sql "
 	im_category_from_id(p.language_id) as person_language,
 	pa.email,
 	p.person_id,
-	p.first_names,
-	p.last_name,
+	im_name_from_user_id(p.person_id) as person_name,
 	im_category_from_id(p.business_sector_id) as person_sector,
 	c.company_name,
 	im_category_from_id(c.business_sector_id) as company_sector
@@ -43,7 +42,7 @@ set sql "
 	c.company_name
 "
 
-set row {$person_id "<a href=mailto:$email>$email</a>" $first_names $last_name $person_sector $company_name $company_sector}
+set row {$person_id "<a href=mailto:$email>$email</a>" $person_name $person_sector $company_name $company_sector}
 
 
 set content3 [list  \
