@@ -97,9 +97,10 @@
    <fullquery name="acs_mail_lite::get_address_array.get_user_name_and_id">
      <querytext>
 
-       select user_id, first_names || ' ' || last_name as user_name
-       from cc_users
-       where email = :email
+       select	user_id, 
+		im_name_from_user_id(user_id) as user_name
+       from	cc_users
+       where	email = :email
 
      </querytext>
    </fullquery>
