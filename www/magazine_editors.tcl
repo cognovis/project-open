@@ -19,8 +19,7 @@ set sql "
 	im_category_from_id(p.language_id) as person_language,
 	pa.email,
 	p.person_id,
-	p.first_names,
-	p.last_name,
+	im_name_from_user_id(p.person_id) as person_name,
 	p.business_sector_id as person_sector_id,
 	im_category_from_id(p.business_sector_id) as person_sector,
 	c.company_id,
@@ -59,8 +58,8 @@ set report_def [list \
 		"$person_sector $person_sector_id"
 		"$person_id"
 		"<a href=mailto:$email>$email</a>" 
-		"<a href=/intranet/users/view?user_id=$person_id>$first_names</a>"
-		$last_name 
+		"<a href=/intranet/users/view?user_id=$person_id>$person_name</a>"
+		""
 		$person_sector 
 		"<a href=/intranet/companies/new?company_id=$company_id>$company_name</a>"
 		$company_sector} \
