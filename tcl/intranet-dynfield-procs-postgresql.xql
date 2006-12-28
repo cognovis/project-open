@@ -262,15 +262,6 @@
 </fullquery>
 
 
-<fullquery name="contacts::get::values::multirow.first_names_from_party_id">
-  <querytext>
-        select first_names
-          from persons
-         where person_id = :party_id
-  </querytext>
-</fullquery>
-
-
 <fullquery name="contacts::get::values::multirow.organization_types_from_party_and_intranet-dynfield_attribute_id">
   <querytext>
         select cao.option_id, cao.option
@@ -285,7 +276,7 @@
 </fullquery>
 
 
-<fullquery name="contact::get::values::multirow.first_names_from_party_id">
+<fullquery name="contacts::get::values::multirow.first_names_from_party_id">
   <querytext>
         select first_names
           from persons
