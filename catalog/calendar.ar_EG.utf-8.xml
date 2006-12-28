@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="calendar" package_version="2.1.0b1" locale="ar_EG" charset="utf-8">
+
+  <msg key="Add">أضفّ</msg>
+  <msg key="add">أضفّ</msg>
+  <msg key="Add_a_new_Audience">أضف مشاهداً جديداً</msg>
+  <msg key="add_an_event">أضفْ حدثاً</msg>
+  <msg key="Add_Item">أضف البند</msg>
+  <msg key="All_Day_Event">حدث طوال النهار</msg>
+  <msg key="all_events">كُلّ الأحداث</msg>
+  <msg key="and_Time">والوقت</msg>
+  <msg key="Attachments">:الملحقات</msg>
+  <msg key="Audiences_for_item">مُشاهدون للمادةِ</msg>
+  <msg key="Calendar">رُوزْنامَة</msg>
+  <msg key="Calendar_Add_Item">المفكرة: أضف البند</msg>
+  <msg key="Calendar_Edit_Item">المفكرة: عدّل بنداً</msg>
+  <msg key="Calendar_Item">بند المفكرة</msg>
+  <msg key="Calendar_Item_Types">أنواع بند المفكرة</msg>
+  <msg key="Calendar_Name">إسم المفكرة</msg>
+  <msg key="Calendar_Permissions">&quot;إِجَازَات المفكرة&quot;</msg>
+  <msg key="Calendar_Preferences">&quot;تفضيلات المفكرة&quot;</msg>
+  <msg key="Calendars">روزنامات</msg>
+  <msg key="Choose">إخترْ</msg>
+  <msg key="Current_Permissions">الإجازات الحاليةُ</msg>
+  <msg key="Date">:التأريخُ</msg>
+  <msg key="day">يوم</msg>
+  <msg key="Delete">أحذف</msg>
+  <msg key="delete">إمحيّ</msg>
+  <msg key="Details">:التفاصيلُ</msg>
+  <msg key="Edit">عدل</msg>
+  <msg key="edit">عدّل</msg>
+  <msg key="Friday">الجمعة</msg>
+  <msg key="from">من</msg>
+  <msg key="Monday">الإثنين</msg>
+  <msg key="New_Type">:النوع الجديد</msg>
+  <msg key="No">لا</msg>
+  <msg key="Repeat_every">كرّر كلّ</msg>
+  <msg key="same">نفسه</msg>
+  <msg key="Saturday">السبت</msg>
+  <msg key="Sunday">الأحد</msg>
+  <msg key="Thursday">الخميس</msg>
+  <msg key="Time">:الوقت</msg>
+  <msg key="Title">:العنوان</msg>
+  <msg key="to">إلى</msg>
+  <msg key="Tuesday">الثلاثاء</msg>
+  <msg key="Type">:النوع</msg>
+  <msg key="Wednesday">الأربعاء</msg>
+  <msg key="year">سنة</msg>
+  <msg key="Yes">نعم</msg>
+  <msg key="yes_delete_it">نعم، احذفه</msg>
+  <msg key="Yes_I_am_sure">!نعم، أنا متأكّد</msg>
+</message_catalog>

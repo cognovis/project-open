@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="calendar" package_version="2.1.0b1" locale="tr_TR" charset="utf-8">
+
+  <msg key="Add">Ekle</msg>
+  <msg key="add">ekle</msg>
+  <msg key="add_an_event">bir olay ekle</msg>
+  <msg key="Add_Item">Madde Ekle</msg>
+  <msg key="Add_Recurrence">Tekrarlılık Ekle</msg>
+  <msg key="All_Day_Event">Günlük Olay</msg>
+  <msg key="all_events">Bütün olaylar</msg>
+  <msg key="and_Time">ve Saat</msg>
+</message_catalog>

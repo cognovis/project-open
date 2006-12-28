@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="calendar" package_version="2.1.0b1" locale="th_TH" charset="utf-8">
+
+  <msg key="Add">เพิ่ม</msg>
+  <msg key="add">เพิ่ม</msg>
+  <msg key="Calendar">ปฏิทิน</msg>
+  <msg key="Calendar_Add_Item">ปฏิทิน: เพิ่มรายการ</msg>
+  <msg key="Calendar_Edit_Item">ปฏิทิน: แก้ไขรายการ</msg>
+  <msg key="Calendars">ปฏิทิน</msg>
+  <msg key="Choose">เลือก</msg>
+  <msg key="day">วัน</msg>
+  <msg key="day_s">วัน</msg>
+  <msg key="Description">รายละเอียด</msg>
+  <msg key="Friday">ศุกร์</msg>
+  <msg key="Type_1">ประเภท</msg>
+</message_catalog>
