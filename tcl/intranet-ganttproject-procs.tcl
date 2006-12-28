@@ -1070,7 +1070,7 @@ ad_proc -public im_gp_save_resources {
 		set person_id [db_string resource_id "
 			select	person_id
 			from	persons
-			where	lower(trim(:name)) = lower(trim(first_names || ' ' || last_name))
+			where	lower(trim(:name)) = lower(im_name_from_user_id(person_id))
 		" -default 0]
 
 		if {0 != $person_id} {

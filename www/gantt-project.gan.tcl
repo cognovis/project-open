@@ -120,7 +120,8 @@ set project_resources_sql "
 	select	bom.object_role_id,
 		uc.*,
 		p.*,
-		pa.*
+		pa.*,
+		im_name_from_user_id(p.person_id) as user_name
 	from 	users_contact uc,
 		acs_rels r,
 		im_biz_object_members bom,
@@ -162,7 +163,7 @@ db_foreach project_resources $project_resources_sql {
     $resources_node appendChild $resource_node
 
     $resource_node setAttribute id $user_id
-    $resource_node setAttribute name [ns_quotehtml "$first_names $last_name"]
+    $resource_node setAttribute name [ns_quotehtml $user_name]
     $resource_node setAttribute function [ns_quotehtml $function]
     $resource_node setAttribute contacts [ns_quotehtml $email]
     $resource_node setAttribute phone [ns_quotehtml [join $phone ", "]]
