@@ -150,19 +150,19 @@ INSERT INTO im_categories VALUES (2354,'Linux','','Intranet Operating System','c
 delete from im_categories where category_type = 'Intranet Recruiting Status';
 insert into im_categories
 ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-values ('', 'f', '6000', 'Potential Freelancer', 'Intranet Recruiting Status');
+values ('', 't', '6000', 'Potential Freelancer', 'Intranet Recruiting Status');
 
 insert into im_categories
 ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-values ('', 'f', '6002', 'Test sent', 'Intranet Recruiting Status');
+values ('', 't', '6002', 'Test sent', 'Intranet Recruiting Status');
 
 insert into im_categories
 ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-values ('', 'f', '6004', 'Test received', 'Intranet Recruiting Status');
+values ('', 't', '6004', 'Test received', 'Intranet Recruiting Status');
 
 insert into im_categories
 ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-values ('', 'f', '6006', 'Test evaluated', 'Intranet Recruiting Status');
+values ('', 't', '6006', 'Test evaluated', 'Intranet Recruiting Status');
 
 
 
@@ -171,15 +171,15 @@ values ('', 'f', '6006', 'Test evaluated', 'Intranet Recruiting Status');
 delete from im_categories where category_type = 'Intranet Recruiting Test Result';
 insert into im_categories
 ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-values ('', 'f', '6100', 'A - Test approved', 'Intranet Recruiting Test Result');
+values ('', 't', '6100', 'A - Test approved', 'Intranet Recruiting Test Result');
 
 insert into im_categories
 ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-values ('', 'f', '6102', 'B - No the best...', 'Intranet Recruiting Test Result');
+values ('', 't', '6102', 'B - No the best...', 'Intranet Recruiting Test Result');
 
 insert into im_categories
 ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-values ('', 'f', '6104', 'C - Test completely failed', 'Intranet Recruiting Test Result');
+values ('', 't', '6104', 'C - Test completely failed', 'Intranet Recruiting Test Result');
 
 
 
