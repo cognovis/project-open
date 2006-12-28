@@ -81,7 +81,7 @@ from
 		)
     UNION
 	select DISTINCT
-		p.first_names || ' ' || p.last_name as group_name,
+		im_name_from_user_id(p.person_id) as group_name,
 		p.person_id as group_id,
 		'' as profile_gif,
 		'person' as object_type
