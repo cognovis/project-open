@@ -125,7 +125,7 @@ select
 	CASE c.company_id != :internal_company_id WHEN true THEN s.hours ELSE 0 END as hours_extl,
 	to_char(s.date, 'YYYY-MM-DD') as date,
 	u.user_id,
-	u.first_names || ' ' || u.last_name as user_name,
+	im_name_from_user_id(u.user_id) as user_name,
 	p.project_id,
 	p.project_nr,
 	p.project_name,

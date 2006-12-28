@@ -189,7 +189,7 @@ select
 	s.date_diff,
 	s.note,
 	u.user_id,
-	u.first_names || ' ' || u.last_name as user_name,
+	im_name_from_user_id(u.user_id) as user_name,
 	p.project_id,
 	p.project_nr,
 	p.project_name,

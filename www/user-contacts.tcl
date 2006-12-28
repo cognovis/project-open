@@ -120,8 +120,7 @@ set report_sql "
 	order by
 		c.company_type_id,
 		c.company_name,
-		u.last_name,
-		u.first_names
+		user_name
 "
 
 # ------------------------------------------------------------
