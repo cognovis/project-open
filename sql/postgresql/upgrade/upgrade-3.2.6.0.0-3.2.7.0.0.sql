@@ -28,3 +28,32 @@ INSERT INTO im_category_hierarchy
 INSERT INTO im_category_hierarchy VALUES (40, 41);
 INSERT INTO im_category_hierarchy VALUES (40, 46);
 
+
+
+-- Return a string with all profiles of the user
+create or replace function im_profiles_from_user_id(integer)
+returns varchar as '
+DECLARE
+        v_user_id       alias for $1;
+        v_profiles      varchar;
+        row             RECORD;
+BEGIN
+        v_profiles := '''';
+        FOR row IN
+                select  group_name
+                from    groups g,
+                        im_profiles p,
+                        group_distinct_member_map m
+                where   m.member_id = v_user_id
+                        and g.group_id = m.group_id
+                        and g.group_id = p.profile_id
+        LOOP
+            IF '''' != v_profiles THEN v_profiles := v_profiles || '', ''; END IF;
+            v_profiles := v_profiles || row.group_name;
+        END LOOP;
+
+        return v_profiles;
+END;' language 'plpgsql';
+select im_profiles_from_user_id(624);
+
+
