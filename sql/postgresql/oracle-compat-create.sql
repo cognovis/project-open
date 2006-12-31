@@ -90,10 +90,8 @@ begin
 end;' language 'plpgsql';
 
 
-create function next_day (
-       --
+create or replace function next_day (
        -- Equivalent of Oracle next_day function
-       --
        -- @author jowell@jsabino.com
        --
        -- @param somedate	Reference date
@@ -103,8 +101,7 @@ create function next_day (
        --
        timestamptz,   -- somedate
        varchar	      -- weekday 	      
-)
-returns timestamptz as '
+) returns timestamptz as '
 declare
        next_day__somedate	alias for $1;
        next_day__weekday	alias for $2;
@@ -129,8 +126,8 @@ begin
 
 	-- Do date math
 	return next_day__somedate + to_interval(v_add_days,''days'');
-
 end;' language 'plpgsql';
+
 
 create function add_months (
        --
