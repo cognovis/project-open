@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="calendar" package_version="2.1.0b1" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="calendar" package_version="2.1.0b6" locale="en_US" charset="ISO-8859-1">
 
   <msg key="_You_may_choose_to">. You may choose to:</msg>
   <msg key="Add">Add</msg>
   <msg key="add">add</msg>
   <msg key="Add_a_new_Audience">Add a new Audience</msg>
+  <msg key="Add_all_day_event">Add an all day event</msg>
   <msg key="add_an_event">add an event</msg>
+  <msg key="Add_an_item">Add an item</msg>
   <msg key="Add_Item">Add Item</msg>
+  <msg key="Add_item_beginning_at">Add an item beginning at </msg>
   <msg key="Add_Recurrence">Add Recurrence</msg>
   <msg key="All_Day_Event">All Day Event</msg>
   <msg key="all_events">all events</msg>
@@ -53,6 +56,16 @@
   <msg key="Events_over_a">Events over a</msg>
   <msg key="Friday">Friday</msg>
   <msg key="from">from</msg>
+  <msg key="Go_to_date">Go to date</msg>
+  <msg key="Go_to_monthsname">Go to %months.name%</msg>
+  <msg key="Go_to_year_next_year">Go to year %next_year%</msg>
+  <msg key="Go_to_year_prev_year">Go to year %prev_year%</msg>
+  <msg key="goto_day_items_day_number">Go to day %items.day_number%</msg>
+  <msg key="goto_days_day_number">Go to day %days.day_number%</msg>
+  <msg key="goto_items_event_name">Go to %items.event_name%</msg>
+  <msg key="goto_items_without_time_event_name">Go to %items_without_time.event_name%</msg>
+  <msg key="goto_months_name">Go to %months.name%</msg>
+  <msg key="goto_today">Go to today</msg>
   <msg key="Grant">Grant</msg>
   <msg key="Grant_Permissions">Grant Permissions</msg>
   <msg key="is_recurring">Item is recurring.</msg>
@@ -75,6 +88,31 @@
   <msg key="lt_Edit_your_Calendar_Pr">Edit your Calendar Preferences</msg>
   <msg key="lt_everyone_have_read_pe">everyone have read permission, and can see the items, registered 
 	          and un-reg-ed users alike.</msg>
+  <msg key="lt_Go_to_month_name_days">Go to %month_name% %days.day_number%, %year%</msg>
+  <msg key="lt_Go_to_monthsname_curr">Go to %months.name% %curr_year%</msg>
+  <msg key="lt_Go_to_monthsname_curr_1">Go to %months.name% %curr_year%&gt;%months.name%&lt;/a&gt;&lt;/td&gt;
+            &lt;/else&gt;         
+           &lt;/multiple&gt;
+        &lt;/if&gt;
+
+        &lt;else&gt;
+          &lt;tr class=&quot;days&quot;&gt;
+            &lt;multiple name=&quot;days_of_week&quot;&gt;
+              &lt;td&gt;%days_of_week.day_short%&lt;/td&gt;
+            &lt;/multiple&gt;
+          &lt;/tr&gt;
+      
+          &lt;multiple name=&quot;days&quot;&gt;
+            &lt;if %days.beginning_of_week_p% true&gt;
+              &lt;tr&gt;
+            &lt;/if&gt;
+        
+            &lt;if %days.active_p% true&gt;
+              &lt;if %days.today_p% true&gt;
+                &lt;td class=&quot;today&quot; onclick=&quot;javascript:location.href='%days.url%';&quot;&gt;
+                  &lt;a href=&quot;%days.url%&quot; title=&quot;&lt;#_ Go to %month_name% %days.day_number%, %year%</msg>
+  <description key="lt_Go_to_monthsname_curr_1">This looks like a buggy internationalization of the package.</description>
+
   <msg key="lt_Hide_Checked_Calendar">Hide Selected Calendars</msg>
   <msg key="lt_Manage_Calendar_Audie">Manage Calendar Audiences</msg>
   <msg key="lt_no_parties_exist_cont">no parties exist. contact your system admin</msg>
@@ -93,6 +131,10 @@ than once in your calendar. The event's details are:</msg>
   <msg key="lt_You_have_no_party_wid">You have no party wide calendars</msg>
   <msg key="Monday">Monday</msg>
   <msg key="New_Type">New Type:</msg>
+  <msg key="next_day">Next day</msg>
+  <msg key="next_month">Next Month</msg>
+  <msg key="next_week">Next week</msg>
+  <msg key="next_year">Next Year</msg>
   <msg key="No">No</msg>
   <msg key="No_Calendars">No Calendars</msg>
   <msg key="No_Items">No items</msg>
@@ -100,6 +142,10 @@ than once in your calendar. The event's details are:</msg>
   <msg key="Note">Note</msg>
   <msg key="of_the_month">of the month</msg>
   <msg key="of_the_week">of the week</msg>
+  <msg key="prev_day">Previous day</msg>
+  <msg key="prev_month">Previous Month</msg>
+  <msg key="prev_week">Previous week</msg>
+  <msg key="prev_year">Previous Year</msg>
   <msg key="Private">Private:</msg>
   <msg key="private">private</msg>
   <msg key="Public">Public:</msg>
@@ -113,7 +159,12 @@ than once in your calendar. The event's details are:</msg>
   <msg key="same">same</msg>
   <msg key="Saturday">Saturday</msg>
   <msg key="Select_Calendars">Select Calendars</msg>
+  <msg key="select_views_name">Select view %views.name%</msg>
   <msg key="Sharing">Sharing</msg>
+  <msg key="skip_day_calendar">Skip day calendar</msg>
+  <msg key="skip_month_calendar">Skip month calendar</msg>
+  <msg key="sort_by_date">Sort by date</msg>
+  <msg key="sort_by_type">Sort by type</msg>
   <msg key="Start_Time">Start Time</msg>
   <msg key="start_time_before_end_time">Start time is before end time</msg>
   <msg key="Submit_query">Submit query</msg>
@@ -127,8 +178,10 @@ than once in your calendar. The event's details are:</msg>
   <msg key="Tuesday">Tuesday</msg>
   <msg key="Type">Type:</msg>
   <msg key="Type_1">Type</msg>
+  <msg key="Type_Help">Your calendar item can optionally be classified into types. Choose one from the drop down.</msg>
   <msg key="Use_Hours_Below">Use Hours Below:</msg>
   <msg key="Wednesday">Wednesday</msg>
+  <msg key="y-m-d">y-m-d</msg>
   <msg key="year">year</msg>
   <msg key="Yes">Yes</msg>
   <msg key="yes_delete_it">yes, delete it</msg>

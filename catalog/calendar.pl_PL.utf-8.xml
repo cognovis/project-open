@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="calendar" package_version="2.1.0b1" locale="pl_PL" charset="utf-8">
+<message_catalog package_key="calendar" package_version="2.1.0b6" locale="pl_PL" charset="utf-8">
 
   <msg key="_You_may_choose_to">, Możesz wybrać:</msg>
   <msg key="Add">Dodaj</msg>
@@ -11,6 +11,7 @@
   <msg key="All_Day_Event">Wydarzenie Całodzienne</msg>
   <msg key="all_events">wszystkie wydarzenia</msg>
   <msg key="and_Time">i Czas</msg>
+  <msg key="Apply_to_all">Zastosuj do wszystkich wydarzeń</msg>
   <msg key="Attachments">Załączniki:</msg>
   <msg key="Audiences_for_item">Publiczność dla wydarzenia</msg>
   <msg key="Calendar">Kalendarz</msg>
@@ -41,6 +42,7 @@
   <msg key="from">z</msg>
   <msg key="Grant">Przyznaj</msg>
   <msg key="Grant_Permissions">Przyznaj Prawa</msg>
+  <msg key="is_recurring">Wpis jest powtarzalny.</msg>
   <msg key="Item">Termin</msg>
   <msg key="lt_Are_you_sure_you_want">Czy na pewno usunąć ten kalendarz? Wszystkie terminy i prawa z nimi związane zostaną usunięte wraz z nim.</msg>
   <msg key="lt_Are_you_sure_you_want_1">Czy na pewno usunąć ten termin?</msg>
@@ -74,6 +76,7 @@
   <msg key="New_Type">Nowy Typ:</msg>
   <msg key="No">Nie</msg>
   <msg key="No_Calendars">Brak Kalendarzy</msg>
+  <msg key="No_Items">Brak wpisów</msg>
   <msg key="no_keep_it">nie, zachowaj to</msg>
   <msg key="Note">Uwaga</msg>
   <msg key="of_the_month">miesiąca</msg>
@@ -89,7 +92,9 @@
   <msg key="same">taki sam</msg>
   <msg key="Saturday">Sobota</msg>
   <msg key="Select_Calendars">Wybierz Kalendarze</msg>
+  <msg key="Sharing">Udostępnianie</msg>
   <msg key="Start_Time">Początek</msg>
+  <msg key="start_time_before_end_time">Czas rozpoczęcia jest przed czasem zakończenia</msg>
   <msg key="Submit_query">Wyślij Zapytanie</msg>
   <msg key="Sunday">Niedziela</msg>
   <msg key="sync_with_Outlook">synchronizuj z Outlookiem:</msg>

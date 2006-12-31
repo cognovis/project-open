@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="calendar" package_version="2.1.0b1" locale="nn_NO" charset="ISO-8859-1">
+<message_catalog package_key="calendar" package_version="2.1.0b6" locale="nn_NO" charset="ISO-8859-1">
 
   <msg key="_You_may_choose_to">. Du kan velje å</msg>
   <msg key="Add">Legg til</msg>
@@ -15,7 +15,7 @@
   <msg key="Attachments">Vedlegg:</msg>
   <msg key="Audiences_for_item">Kven som kan sjå innlegget %cal_item_name% </msg>
   <msg key="Calendar">Kalender</msg>
-  <msg key="Calendar_Add_Item">Kalender: Nyt aktivitet</msg>
+  <msg key="Calendar_Add_Item">Kalender: Ny aktivitet</msg>
   <msg key="Calendar_Edit_Item">Kalender: rediger aktivitet</msg>
   <msg key="Calendar_Item">Kalenderaktivitet</msg>
   <msg key="Calendar_Item_Delete">Kalenderinnlegg Slett</msg>
@@ -97,6 +97,7 @@
   <msg key="Select_Calendars">Vel kalendrar</msg>
   <msg key="Sharing">Deling</msg>
   <msg key="Start_Time">Starttid</msg>
+  <msg key="start_time_before_end_time">Start time is before end time</msg>
   <msg key="Submit_query">Send spurnad</msg>
   <msg key="Sunday">sundag</msg>
   <msg key="sync_with_Outlook">synkroniser med Outlook</msg>

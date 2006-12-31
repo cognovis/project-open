@@ -24,11 +24,11 @@
 <table class="cal-table-display" border=0 cellspacing=0 cellpadding=2>
   <tr class="cal-table-header">
   <th align=left>#acs-datetime.Day_of_Week#</th>
-  <th align="center"><a href="@start_date_url@">#calendar.Date_1#</a></th>
+  <th align="center"><a href="@start_date_url@" title="#calendar.sort_by_date#">#calendar.Date_1#</a></th>
   <th align="center">#calendar.Start_Time#</th>
   <th align="center">#calendar.End_Time#</th>
-  <th align="center"><a href="@item_type_url@">#calendar.Type_1#</a></th>
-  <th align=left>Title</th></tr>
+  <th align="center"><a href="@item_type_url@" title="#calendar.sort_by_type#">#calendar.Type_1#</a></th>
+  <th align=left>#calendar.Title_1#</th></tr>
 
   <multiple name="items">
 
@@ -47,7 +47,7 @@
   <td class="@items.today@" align="center">@items.end_time@</td>
   <td class="@items.today@" align="center">@items.item_type@</td>
   <td class="@items.today@"
-  align=left><a href="@items.event_url@">@items.event_name@</a>
+  align=left><a href="@items.event_url@" title="#calendar.goto_items_event_name#">@items.event_name@</a>
 
   <if @show_calendar_name_p@>
   (@items.calendar_name@)

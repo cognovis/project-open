@@ -24,6 +24,8 @@ show errors
 drop package cal_item;
 
 
+drop index cal_items_on_which_cal_idx;
+
   -- drop table  
 drop table cal_items;
 

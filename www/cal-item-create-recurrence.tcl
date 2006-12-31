@@ -54,11 +54,12 @@ ad_form -name cal_item  -export {return_url} -form {
         {options $recurrance_options}
     }
 
-    {recur_until:text,text
+    {recur_until:date
         {label "[_ calendar.lt_Repeat_this_event_unt]"}
+	{format "YYYY MM DD"}
 	{html {id sel1}}
-	{after_html {<input type='reset' value=' ... ' onclick=\"return showCalendar('sel1', 'y-m-d');\"> \[<b>y-m-d </b>\]
-        }}
+	{after_html {<input type="button" style="height:23px; width:23px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendarWithDateWidget('sel1', 'y-m-d');" /> \[<b>[_ calendar.y-m-d]</b>\] 
+        } }
 
     }
 
@@ -67,19 +68,20 @@ ad_form -name cal_item  -export {return_url} -form {
 } -validate {
     {recur_until
         {
-            [calendar::item::dates_valid_p -start_date $cal_item(start_date) -end_date $recur_until]
+            [calendar::item::dates_valid_p -start_date $cal_item(start_date) -end_date [calendar::to_sql_datetime -date $recur_until -time "" -time_p 0]]
         }
        {[_ calendar.start_time_before_end_time]}
     }
 } -edit_data {
 
     # To support green calendar
-    set recur_until [split $recur_until "-"]
-    lappend recur_until ""
-    lappend recur_until ""
-    lappend recur_until ""
-    lappend recur_until "DD MONTH YYYY"
- 
+    #set recur_until [split $recur_until "-"]
+    #lappend recur_until ""
+    #lappend recur_until ""
+    #lappend recur_until ""
+    #lappend recur_until "DD MONTH YYYY"
+    #set recur_until "[template::util::date::get_property day $recur_until] [template::util::date::get_property long_month_name $recur_until] [template::util::date::get_property year $recur_until]"
+
     calendar::item::add_recurrence \
         -cal_item_id $cal_item_id \
         -interval_type $interval_type \
@@ -87,12 +89,13 @@ ad_form -name cal_item  -export {return_url} -form {
         -days_of_week $days_of_week \
         -recur_until [calendar::to_sql_datetime -date $recur_until -time "" -time_p 0]
 } -edit_request {
-    set aux [template::util::date::from_ansi $cal_item(start_date)]
-    set recur_until [lindex $aux 0]
-    append recur_until "-"
-    append recur_until [lindex $aux 1]
-    append recur_until "-"
-    append recur_until [lindex $aux 2]
+    #set aux [template::util::date::from_ansi $cal_item(start_date)]
+    #set recur_until [lindex $aux 0]
+    #append recur_until "-"
+    #append recur_until [lindex $aux 1]
+    #append recur_until "-"
+    #append recur_until [lindex $aux 2]
+    set recur_until [calendar::from_sql_datetime -sql_date $cal_item(start_date)  -format "YYY-MM-DD"]
     set interval_type week
 } -after_submit {
     ad_returnredirect $return_url

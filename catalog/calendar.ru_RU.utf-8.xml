@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="calendar" package_version="2.1.0b1" locale="ru_RU" charset="utf-8">
+<message_catalog package_key="calendar" package_version="2.1.0b6" locale="ru_RU" charset="utf-8">
 
   <msg key="_You_may_choose_to">. Вы можете:</msg>
   <msg key="Add">Добавить</msg>
@@ -11,6 +11,7 @@
   <msg key="All_Day_Event">Целый день</msg>
   <msg key="all_events">все события</msg>
   <msg key="and_Time">и Время</msg>
+  <msg key="Apply_to_all">Применить ко всем событиям</msg>
   <msg key="Attachments">Дополнения:</msg>
   <msg key="Audiences_for_item">Кому это интересно</msg>
   <msg key="Calendar">Календарь</msg>
@@ -42,6 +43,9 @@
   <msg key="Grant">Дать</msg>
   <msg key="Grant_Permissions">Дать Разрешение</msg>
   <msg key="Item">Событие</msg>
+  <msg key="lt_Are_you_sure_you_want">Are you sure you want to delete this calendar. All the calendar items
+      and all the permission that's associated with this calendar will be 
+      deleted as well.</msg>
   <msg key="lt_Are_you_sure_you_want_1">Вы уверены, что вы хотите удалить это событие?</msg>
   <msg key="lt_Audiences_for_calenda">Публика этого календаря</msg>
   <msg key="lt_Calendar_Administrati">Администрирование Календаря</msg>
@@ -54,6 +58,7 @@
   <msg key="lt_Create_a_new_calendar">Создать новый календарь</msg>
   <msg key="lt_delete_all_occurrence">удалить все повторения</msg>
   <msg key="lt_Edit_your_Calendar_Pr">Редактировать настройки календаря</msg>
+  <msg key="lt_Hide_Checked_Calendar">Hide Selected Calendars</msg>
   <msg key="lt_no_parties_exist_cont">Никаких партии нет.  Обратитесь к системному администратору.</msg>
   <msg key="lt_no_privilege_exist_co">Никаких прав нет. Обратитесь к системному администратору.</msg>
   <msg key="lt_no_privilege_has_been">привелегии не были предоставлены</msg>
@@ -67,6 +72,7 @@
   <msg key="New_Type">Новый тип:</msg>
   <msg key="No">Нет</msg>
   <msg key="No_Calendars">Календари отсутствуют</msg>
+  <msg key="No_Items">Нет событий</msg>
   <msg key="no_keep_it">нет, оставить</msg>
   <msg key="Note">Внимание</msg>
   <msg key="of_the_month">месяца</msg>
@@ -82,6 +88,7 @@
   <msg key="same">такой же</msg>
   <msg key="Saturday">Суббота</msg>
   <msg key="Select_Calendars">Выбрать календарь</msg>
+  <msg key="Sharing">Общее</msg>
   <msg key="Start_Time">Начало</msg>
   <msg key="Submit_query">Послать запрос</msg>
   <msg key="Sunday">Воскресенье</msg>

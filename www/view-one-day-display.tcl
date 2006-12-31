@@ -8,15 +8,18 @@ if {[info exists url_stub_callback]} {
 }
 
 set current_date $date
+if {![info exists return_url]} {
+    set return_url [ad_urlencode "../"]
+}
 
 if {[info exists portlet_mode_p] && $portlet_mode_p} {
-    set item_template "\${url_stub}cal-item-view?show_cal_nav=0&return_url=[ad_urlencode "../"]&action=edit&cal_item_id=\$item_id"
+    set item_template "\${url_stub}cal-item-view?show_cal_nav=0&return_url=${return_url}&action=edit&cal_item_id=\$item_id"
     set url_stub_callback "calendar_portlet_display::get_url_stub"
-    set hour_template "calendar/cal-item-new?date=$current_date&start_time=\$day_current_hour"
+    set hour_template "calendar/cal-item-new?date=$current_date&start_time=\$day_current_hour&return_url=$return_url"
 } else {
     set item_template "cal-item-view?cal_item_id=\$item_id"
     set url_stub_callback ""
-    set hour_template {cal-item-new?date=$current_date&start_time=$day_current_hour}
+    set hour_template {cal-item-new?date=$current_date&start_time=$day_current_hour&return_url=$return_url}
 }
 
 if { ![info exists show_calendar_name_p] } {

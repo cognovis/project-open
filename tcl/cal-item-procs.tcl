@@ -58,6 +58,14 @@ ad_proc -public calendar::item::new {
         # by default, the cal_item permissions 
         # are going to be inherited from the calendar permissions
         set cal_item_id [db_exec_plsql cal_item_add {}]
+	
+	db_dml set_item_type_id "update cal_items set item_type_id=:item_type_id where cal_item_id=:cal_item_id"
+
+		# removing inherited permissions
+		if { [calendar::personal_p -calendar_id $calendar_id] } {
+			permission::set_not_inherit -object_id $cal_item_id
+		}
+		# ##
 
         assign_permission  $cal_item_id  $creation_user read
         assign_permission  $cal_item_id  $creation_user write
@@ -82,8 +90,11 @@ ad_proc -public calendar::item::get {
 
 } {
     upvar $array row
+    if { [catch  {
+      set attachments_enabled_p [calendar::attachments_enabled_p]
+    }] } { set attachments_enabled_p 0 }
 
-    if {[calendar::attachments_enabled_p]} {
+    if { $attachments_enabled_p } {
         set query_name select_item_data_with_attachment
     } else {
         set query_name select_item_data

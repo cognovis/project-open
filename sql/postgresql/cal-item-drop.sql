@@ -32,6 +32,8 @@ drop function cal_item__new (
 
 drop function cal_item__delete (integer);
 
+drop index cal_items_on_which_calendar_idx;
+
 drop table cal_items;
 --drop objects
 delete from acs_objects where object_type='cal_item';

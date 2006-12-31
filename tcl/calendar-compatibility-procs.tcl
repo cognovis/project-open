@@ -16,7 +16,7 @@ ad_proc -deprecated calendar_have_private_p {
     party_id 
 } {
 } {
-    calendar::have_private_p -return_id $return_id -calendar_id_list $calendar_id_list -party_id $party_id
+    calendar::have_private_p -return_id $return_id -calendar_id_list $calendar_id_list $party_id
 }
 
 ad_proc -deprecated calendar_assign_permissions { calendar_id

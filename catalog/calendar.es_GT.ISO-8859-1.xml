@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="calendar" package_version="2.1.0b1" locale="es_GT" charset="ISO-8859-1">
+<message_catalog package_key="calendar" package_version="2.1.0b6" locale="es_GT" charset="ISO-8859-1">
 
   <msg key="_You_may_choose_to">. Puede optar por:</msg>
   <msg key="Add">Agregar</msg>
   <msg key="add">agregar</msg>
   <msg key="Add_a_new_Audience">Agregar una nueva Audiencia</msg>
   <msg key="add_an_event">Agregar una cita</msg>
-  <msg key="Add_Item">Agregar Elemento</msg>
+  <msg key="Add_Item">Añadir cita</msg>
   <msg key="Add_Recurrence">Agregar cita periódica</msg>
   <msg key="All_Day_Event">Evento para todo el día</msg>
   <msg key="all_events">todos los eventos</msg>

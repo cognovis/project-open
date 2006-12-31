@@ -12,11 +12,14 @@ where event_id= :cal_item_id
 <fullquery name="calendar::item::add_recurrence.insert_cal_items">
 <querytext>
 insert into cal_items 
-(cal_item_id, on_which_calendar)
+(cal_item_id, on_which_calendar, item_type_id)
 select
 event_id, 
 (select on_which_calendar 
 as calendar_id from cal_items 
+where cal_item_id = :cal_item_id),
+(select item_type_id 
+as item_type from cal_items 
 where cal_item_id = :cal_item_id)
 from acs_events where recurrence_id= :recurrence_id 
 and event_id <> :cal_item_id

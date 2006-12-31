@@ -15,7 +15,6 @@ ad_library {
 namespace eval calendar {}
 namespace eval calendar::notification {}
 
-
 ad_proc calendar::make_datetime {
     event_date
     {event_time ""}
@@ -500,7 +499,7 @@ ad_proc -public calendar::do_notifications {
     append new_content $cal_item(description)
 
     acs_user::get -user_id $cal_item(creation_user) -array user_info
-    append new_content "Author: <a href=\"mailto:$user_info(email)\">$user_info(first_names) $user_info(last_name)</a><br>\n"
+    append new_content "<br>Author: <a href=\"mailto:$user_info(email)\">$user_info(first_names) $user_info(last_name)</a><br>\n"
 
     # send text for now.
     set new_content [ad_html_to_text -- $new_content]

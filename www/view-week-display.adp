@@ -1,9 +1,9 @@
  <table class="cal-table-display" cellpadding="0" cellspacing="0" border="0" width="99%">
   <tr>
     <td class="cal-month-title-text">
-      <a href="@previous_week_url@"><img border=0 src="<%=[dt_left_arrow]%>" alt="back one week"></a>
+      <a href="@previous_week_url@" title="#calendar.prev_week#"><img border=0 src="<%=[dt_left_arrow]%>" alt="#calendar.prev_week#"></a>
       @dates@
-      <a href="@next_week_url@"><img border=0 src="<%=[dt_right_arrow]%>" alt="forward one week"></a>
+      <a href="@next_week_url@" title="#calendar.next_week#"><img border=0 src="<%=[dt_right_arrow]%>" alt="#calendar.next_week#"></a>
     </td>
   </tr>
   <tr>
@@ -17,11 +17,10 @@
       </td>
 
       <td width="95%" class="cal-week">
-      <a href="@items.add_url@">
-         <img border="0" align="right" height="7" width="7"
-           src="/resources/acs-subsite/add.gif" alt="#calendar.Add_Item#">
+      <a href="@items.day_url@" title="#calendar.Go_to_date#">@items.start_date@</a>
+      <a href="@items.add_url@" title="#calendar.Add_Item#">
+         <img border="0" align="right" src="/resources/acs-subsite/add.gif" alt="#calendar.Add_Item#">
       </a>
-      <a href="@items.day_url@">@items.start_date@</a>
       </td>
       </tr>
     
@@ -40,7 +39,7 @@
             <if @items.no_time_p@ false>
             @items.start_time@ - @items.end_time@
             </if>
-            <a href="@items.event_url@">@items.event_name@</a>
+            <a href="@items.event_url@" title="#calendar.goto_items_event_name#">@items.event_name@</a>
             <if @items.no_time_p@ true>
             </span>
             </if>

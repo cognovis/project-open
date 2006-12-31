@@ -8,7 +8,10 @@ if {[info exists url_stub_callback]} {
 }
 
 if {[info exists portlet_mode_p] && $portlet_mode_p} {
-    set item_template "\${url_stub}cal-item-view?show_cal_nav=0&return_url=[ad_urlencode "../"]&action=edit&cal_item_id=\$item_id"
+    if {![info exists return_url]} {
+	set return_url [ad_urlencode "../"]
+    }
+    set item_template "\${url_stub}cal-item-view?show_cal_nav=0&return_url=${return_url}&action=edit&cal_item_id=\$item_id"
     set url_stub_callback "calendar_portlet_display::get_url_stub"
     set page_num_formvar [export_form_vars page_num]
     set page_num "&page_num=$page_num"
@@ -48,14 +51,6 @@ if { ![info exists period_days] } {
     set period_days [parameter::get -parameter ListView_DefaultPeriodDays -default 31]
 }  else {
     set end_date [clock format [clock scan "+${period_days} days" -base [clock scan $start_date]] -format "%Y-%m-%d 00:00"]
-}
-
-if {[exists_and_not_null page_num]} {
-    set page_num_formvar [export_form_vars page_num]
-    set page_num "&page_num=$page_num"
-} else {
-    set page_num_formvar ""
-    set page_num ""
 }
 
 set package_id [ad_conn package_id]

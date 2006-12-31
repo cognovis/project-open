@@ -25,7 +25,8 @@
          it.type as item_type,
          on_which_calendar as calendar_id,
          c.calendar_name,
-         o.creation_user
+         o.creation_user,
+         c.package_id as calendar_package_id
        from
          acs_events e join timespans s
            on (e.timespan_id = s.timespan_id)
@@ -53,14 +54,15 @@
          (select count(*) from attachments where object_id = cal_item_id) as n_attachments,
          to_char(start_date, 'YYYY-MM-DD HH24:MI:SS') as start_date_ansi,
          to_char(end_date, 'YYYY-MM-DD HH24:MI:SS') as end_date_ansi,
-         coalesce(a.name, e.name) as name,
+         coalesce(e.name, a.name) as name,
          coalesce(e.description, a.description) as description,
          recurrence_id,
          i.item_type_id,
          it.type as item_type,
          on_which_calendar as calendar_id,
          c.calendar_name,
-         o.creation_user
+         o.creation_user,
+         c.package_id as calendar_package_id
        from
          acs_events e join timespans s
            on (e.timespan_id = s.timespan_id)
@@ -132,7 +134,7 @@ select acs_event__insert_instances(:cal_item_id, NULL);
 	select cal_item__new (
 					null,
 					:calendar_id,
-					null,
+					:name,
 					null,
                                         null,
                                         null,

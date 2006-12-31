@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="calendar" package_version="2.1.0b1" locale="it_IT" charset="ISO-8859-1">
+<message_catalog package_key="calendar" package_version="2.1.0b6" locale="it_IT" charset="ISO-8859-1">
 
   <msg key="_You_may_choose_to">. Puoi scegliere di:</msg>
   <msg key="Add">Aggiungi</msg>
@@ -11,6 +11,7 @@
   <msg key="All_Day_Event">L'evento copre tutta la giornata</msg>
   <msg key="all_events">Tutti gli eventi</msg>
   <msg key="and_Time">e ora</msg>
+  <msg key="Apply_to_all">Applica a tutti gli eventi</msg>
   <msg key="Attachments">Allegati:</msg>
   <msg key="Audiences_for_item">Partecipanti all'elemento</msg>
   <msg key="Calendar">Calendario</msg>
@@ -44,6 +45,7 @@
   <msg key="from">da</msg>
   <msg key="Grant">Garantisci</msg>
   <msg key="Grant_Permissions">Garantisci i permessi</msg>
+  <msg key="is_recurring">Appuntamento che è ricorsivo</msg>
   <msg key="Item">Elemento</msg>
   <msg key="lt_Are_you_sure_you_want">Sei sicuro di voler cancellare questo calendario? Tutti i suoi elementi e i permessi associati verranno cancellati.</msg>
   <msg key="lt_Are_you_sure_you_want_1">Sei sicuro di voler cancellare questo evento?</msg>
@@ -93,7 +95,9 @@
   <msg key="same">stesso</msg>
   <msg key="Saturday">Sabato</msg>
   <msg key="Select_Calendars">Seleziona Calendari</msg>
+  <msg key="Sharing">Condivisione</msg>
   <msg key="Start_Time">Ora iniziale</msg>
+  <msg key="start_time_before_end_time">Ora d'inizio e di termine</msg>
   <msg key="Submit_query">Invia</msg>
   <msg key="Sunday">Domenica</msg>
   <msg key="sync_with_Outlook">sincronizza con Outlook</msg>

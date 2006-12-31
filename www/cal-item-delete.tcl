@@ -9,12 +9,12 @@ ad_page_contract {
     {confirm_p 0}
 }
 
+permission::require_permission -object_id $cal_item_id -privilege delete
+
 if {!$confirm_p} {
     ad_returnredirect "cal-item-delete-confirm?cal_item_id=$cal_item_id"
     ad_script_abort
 }
-
-auth::require_login
 
 calendar::item::delete -cal_item_id $cal_item_id
 

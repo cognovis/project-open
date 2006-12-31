@@ -6,7 +6,7 @@ ad_page_contract {
     @cvs-id $Id$
 } {
     cal_item_id:integer
-    {return_url ""}
+    {return_url [ad_return_url]}
 }
 
 set user_id [ad_conn user_id]
@@ -18,10 +18,13 @@ calendar::item::get -cal_item_id $cal_item_id -array cal_item
 
 set write_p [permission::write_permission_p -object_id $cal_item_id -creation_user $cal_item(creation_user)]
 
+if {[exists_and_not_null return_url]} {
+    set return_url [ad_urlencode $return_url]
+}
 
 # Attachments?
 if {$cal_item(n_attachments) > 0} {
-    set item_attachments [attachments::get_attachments -object_id $cal_item(cal_item_id)]
+    set item_attachments [attachments::get_attachments -object_id $cal_item(cal_item_id) -return_url [ad_return_url]]
 } else {
     set item_attachments [list]
 }
@@ -31,12 +34,14 @@ set cal_item(no_time_p) [dt_no_time_p -start_time $cal_item(start_time) -end_tim
 
 # Attachment URLs
 if {[calendar::attachments_enabled_p]} {
-    set attachment_options " | <A href=\"[attachments::add_attachment_url -object_id $cal_item(cal_item_id) -return_url "../cal-item-view?cal_item_id=$cal_item(cal_item_id)"]\" class=\"button\" >add attachment</a>"
+    set attachment_options "\[<A href=\"[attachments::add_attachment_url -object_id $cal_item(cal_item_id) -pretty_name $cal_item(name) -return_url "../cal-item-view?cal_item_id=$cal_item(cal_item_id)"]\" class=\"button\" >add attachment</a>\]"
 } else { 
     set attachment_options {} 
 }
 
 set date $cal_item(start_date)
+set show_synch_p [parameter::get -package_id $package_id -parameter ShowSynchP -default 1]
+set cal_item(description) [ad_html_text_convert -from text/enhanced -to text/html $cal_item(description)]
 
 ad_return_template 
 

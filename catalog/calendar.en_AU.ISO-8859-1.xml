@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="calendar" package_version="2.1.0b1" locale="en_AU" charset="ISO-8859-1">
+<message_catalog package_key="calendar" package_version="2.1.0b6" locale="en_AU" charset="ISO-8859-1">
 
   <msg key="_You_may_choose_to">. You may choose to:</msg>
   <msg key="Add">Add</msg>
@@ -14,8 +14,6 @@
   <msg key="Apply_to_all">Apply to all events</msg>
   <msg key="Attachments">Attachments:</msg>
   <msg key="Audiences_for_item">Audiences for item %cal_item_name%</msg>
-  <description key="Audiences_for_item">Used as a header where the audiences of a calendar item are shown.</description>
-
   <msg key="Calendar">Calendar</msg>
   <msg key="Calendar_Add_Item">Calendar: Add Item</msg>
   <msg key="Calendar_Edit_Item">Calendar: Edit Item</msg>
@@ -33,8 +31,6 @@
   <msg key="Date_1">Date</msg>
   <msg key="day">day</msg>
   <msg key="day_rolling_period">day rolling period</msg>
-  <description key="day_rolling_period">Please, could you give more info of the context for this, thanks</description>
-
   <msg key="day_s">day (s)</msg>
   <msg key="Delete">Delete</msg>
   <msg key="delete">delete</msg>
@@ -108,8 +104,6 @@ than once in your calendar. The event's details are:</msg>
   <msg key="Repeat_1">Repeat?</msg>
   <msg key="Repeat_every">Repeat every</msg>
   <msg key="revoke">revoke</msg>
-  <description key="revoke">Used in the context of revoking a privilege.</description>
-
   <msg key="same">same</msg>
   <msg key="Saturday">Saturday</msg>
   <msg key="Select_Calendars">Select Calendars</msg>

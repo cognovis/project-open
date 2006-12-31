@@ -12,7 +12,7 @@ foreach item_type $item_types {
             continue
         }
 
-      template::adp_puts "<li> \[ <a href=\"item-type-delete?calendar_id=$calendar_id&item_type_id=$item_type_id\">delete</a> \]  &nbsp; $type</li>\n"
+      template::adp_puts "<li> \[ <a href=\"item-type-delete?calendar_id=$calendar_id&item_type_id=$item_type_id\">#acs-kernel.common_delete#</a> \]  &nbsp; $type</li>\n"
 }
 %>
 </ul>

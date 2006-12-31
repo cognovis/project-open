@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="calendar" package_version="2.1.0b1" locale="th_TH" charset="utf-8">
+<message_catalog package_key="calendar" package_version="2.1.0b6" locale="th_TH" charset="utf-8">
 
   <msg key="Add">เพิ่ม</msg>
   <msg key="add">เพิ่ม</msg>
+  <msg key="Add_Item">เพิ่มรายการ</msg>
   <msg key="Calendar">ปฏิทิน</msg>
   <msg key="Calendar_Add_Item">ปฏิทิน: เพิ่มรายการ</msg>
   <msg key="Calendar_Edit_Item">ปฏิทิน: แก้ไขรายการ</msg>

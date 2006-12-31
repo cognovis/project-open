@@ -8,7 +8,10 @@ if {[info exists url_stub_callback]} {
 }
 
 if {[info exists portlet_mode_p] && $portlet_mode_p} {
-    set item_template "\${url_stub}cal-item-view?show_cal_nav=0&return_url=[ad_urlencode "../"]&action=edit&cal_item_id=\$item_id"
+    if {![info exists return_url]} {
+	set return_url [ad_urlencode "../"]
+    }
+    set item_template "\${url_stub}cal-item-view?show_cal_nav=0&return_url=${return_url}&action=edit&cal_item_id=\$item_id"
     set url_stub_callback "calendar_portlet_display::get_url_stub"
     set page_num_formvar [export_form_vars page_num]
     set page_num_urlvar "&page_num=$page_num"
@@ -105,7 +108,7 @@ db_foreach dbqd.calendar.www.views.select_items {} {
             "" \
             "" \
             "" \
-            "${base_url}cal-item-new?date=${ansi_this_date}&start_time=&end_time=" \
+            "${base_url}cal-item-new?date=${ansi_this_date}&start_time=&end_time=&return_url=$return_url" \
             "?view=day&date=$ansi_this_date&page_num_urlvar"
     }
 
@@ -138,7 +141,7 @@ db_foreach dbqd.calendar.www.views.select_items {} {
         $end_time \
         $no_time_p \
         "?view=day&date=$ansi_start_date&page_num_urlvar" \
-        "${base_url}cal-item-new?date=${ansi_this_date}&start_time=&end_time=" 
+        "${base_url}cal-item-new?date=${ansi_this_date}&start_time=&end_time=&return_url=$return_url" 
     set current_weekday $day_of_week
 }
 
@@ -157,7 +160,7 @@ if {$current_weekday < 7} {
             "" \
             "" \
             "" \
-            "${base_url}cal-item-new?date=${ansi_this_date}&start_time=&end_time=" \
+            "${base_url}cal-item-new?date=${ansi_this_date}&start_time=&end_time=&return_url=$return_url" \
             "?view=day&date=$ansi_this_date&page_num_urlvar" 
     }
 }
@@ -171,3 +174,4 @@ if {$portlet_mode_p} {
     set previous_week_url "?view=week&date=[ad_urlencode [dt_julian_to_ansi [expr $first_weekday_julian - 7]]]"
     set next_week_url "?view=week&date=[ad_urlencode [dt_julian_to_ansi [expr $first_weekday_julian + 7]]]"
 }
+

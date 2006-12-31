@@ -25,6 +25,9 @@ ad_page_contract {
 set package_id [ad_conn package_id]
 set user_id [ad_conn user_id]
 
+# HAM : try to create a return url back here after creating a new item
+set return_url [ad_urlencode [ad_return_url]]
+
 set admin_p [permission::permission_p -object_id $package_id -privilege calendar_admin]
 
 set show_calendar_name_p [parameter::get -parameter Show_Calendar_Name_p -default 1]

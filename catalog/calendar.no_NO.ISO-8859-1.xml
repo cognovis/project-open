@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="calendar" package_version="2.1.0b1" locale="no_NO" charset="ISO-8859-1">
+<message_catalog package_key="calendar" package_version="2.1.0b6" locale="no_NO" charset="ISO-8859-1">
 
   <msg key="_You_may_choose_to">. Du kan velge å:</msg>
   <msg key="Add">Legg til</msg>
   <msg key="add">legg til</msg>
   <msg key="Add_a_new_Audience">Legg til en ny gruppe personer</msg>
   <msg key="add_an_event">legg inn avtale</msg>
-  <msg key="Add_Item">Nyt aktivitet</msg>
+  <msg key="Add_Item">Ny aktivitet</msg>
   <msg key="Add_Recurrence">Legg til gjentakelse</msg>
   <msg key="All_Day_Event">Hele dagen</msg>
   <msg key="all_events">alle aktivitetar</msg>
@@ -30,7 +30,7 @@
   <msg key="Date">Dato:</msg>
   <msg key="Date_1">Dato</msg>
   <msg key="day">dag</msg>
-  <msg key="day_rolling_period">dager rullende periode</msg>
+  <msg key="day_rolling_period">dager rullerende periode</msg>
   <msg key="day_s">dag (er)</msg>
   <msg key="Delete">Slett</msg>
   <msg key="delete">slett</msg>
@@ -40,7 +40,7 @@
   <msg key="Edit">Rediger</msg>
   <msg key="edit">rediger</msg>
   <msg key="End_Time">Sluttid</msg>
-  <msg key="Events_over_a">Innlegg over en</msg>
+  <msg key="Events_over_a">Innlegg i en</msg>
   <msg key="Friday">Fredag</msg>
   <msg key="from">fra</msg>
   <msg key="Grant">Gi</msg>
@@ -97,6 +97,7 @@
   <msg key="Select_Calendars">Velg kalendere</msg>
   <msg key="Sharing">Deling</msg>
   <msg key="Start_Time">Starttid</msg>
+  <msg key="start_time_before_end_time">Starttid er før sluttid</msg>
   <msg key="Submit_query">Send forespørsel</msg>
   <msg key="Sunday">Søndag</msg>
   <msg key="sync_with_Outlook">synkroniser med Outlook:</msg>

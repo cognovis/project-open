@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="calendar" package_version="2.1.0b1" locale="ar_LB" charset="utf-8">
+<message_catalog package_key="calendar" package_version="2.1.0b6" locale="ar_LB" charset="utf-8">
 
   <msg key="_You_may_choose_to">. يمكنك أن تختار:</msg>
   <msg key="Add">أضفّ</msg>
@@ -98,6 +98,7 @@
   <msg key="Select_Calendars">اِخْتارْ مفكرات</msg>
   <msg key="Sharing">مشاركة</msg>
   <msg key="Start_Time">بداية التوقيت</msg>
+  <msg key="start_time_before_end_time">Start time is before end time</msg>
   <msg key="Submit_query">إرسُلْ إستعلامْ</msg>
   <msg key="Sunday">الأحد</msg>
   <msg key="sync_with_Outlook">تَزامَنْ مع أوتلوك:</msg>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="calendar" package_version="2.1.0b1" locale="ja_JP" charset="utf-8">
+<message_catalog package_key="calendar" package_version="2.1.0b6" locale="ja_JP" charset="utf-8">
 
   <msg key="All_Day_Event">予定</msg>
   <msg key="Calendar">カレンダー</msg>

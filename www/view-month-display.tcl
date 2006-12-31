@@ -1,8 +1,14 @@
+if {![info exists add_p] || [string equal "" $add_p]} {
+    set add_p t
+}
+if {![info exists link_day_p] || [string equal "" $link_day_p]} {
+    set link_day_p t
+}
 if {![info exists date] || [empty_string_p $date]} {
     # Default to todays date in the users (the connection) timezone
     set server_now_time [dt_systime]
     set user_now_time [lc_time_system_to_conn $server_now_time]
-    set date [lc_time_fmt $user_now_time "%x"]
+    set date $user_now_time
 }
 
 dt_get_info $date
@@ -14,19 +20,49 @@ if {[info exists url_stub_callback]} {
     set portlet_mode_p 1
 }
 
+set url_stub_callback ""
+set page_num_urlvar ""
+
+if { [info exists calendar_id_list] } {
+    if {[llength $calendar_id_list] > 1} {
+	set force_calendar_id [calendar::have_private_p -return_id 1 -calendar_id_list $calendar_id_list -party_id [ad_conn user_id]]
+    } else {
+	set force_calendar_id [lindex $calendar_id_list 0]
+    }
+
+    calendar::get -calendar_id $force_calendar_id -array force_calendar
+    set base_url [apm_package_url_from_id $force_calendar(package_id)]
+} else {
+    set base_url ""
+}
+
+if {![info exists return_url]} {
+    set return_url [ad_urlencode "../"]
+}
+
 if {[info exists portlet_mode_p] && $portlet_mode_p} {
     set page_num_urlvar "&page_num=$page_num"
-    set item_template "\${url_stub}cal-item-view?show_cal_nav=0&return_url=[ad_urlencode "../"]&action=edit&cal_item_id=\$item_id"
+    if {![info exists return_url]} {
+	set return_url [ad_urlencode "../"]
+    }
+    set item_template "\${url_stub}cal-item-view?show_cal_nav=0&return_url=${return_url}&action=edit&cal_item_id=\$item_id"
     set prev_month_template "?view=month&date=\[ad_urlencode \$prev_month\]&page_num=$page_num"
     set next_month_template "?view=month&date=\[ad_urlencode \$next_month\]&page_num=$page_num"
     set url_stub_callback "calendar_portlet_display::get_url_stub"
-} else {
+} elseif {![info exists item_template] || [string equal "" $item_template]} {
+    # allow item_template to be passed in as a parameter
     set item_template "cal-item-view?cal_item_id=\$item_id"
-    set prev_month_template "view?view=month&\date=[ad_urlencode $prev_month]"
-    set next_month_template "view?view=month&\date=[ad_urlencode $next_month]"
-    set url_stub_callback ""
-    set page_num_urlvar ""
-    set base_url ""
+} 
+# allow prev_month_template and next_month_template to be passed in
+if {![info exists prev_month_template] || [string equal "" $prev_month_template]} {
+    set prev_month_template "view?view=month&date=\[ad_urlencode \$prev_month\]"
+}
+if {![info exists next_month_template] || [string equal "" $next_month_template]} {
+    set next_month_template "view?view=month&date=\[ad_urlencode \$next_month\]"
+}
+
+if { ![info exists show_calendar_name_p] } {
+    set show_calendar_name_p 1
 }
 
 if { ![info exists show_calendar_name_p] } {
@@ -76,6 +112,7 @@ set today_julian_date [dt_ansi_to_julian [lindex $today_ansi_list 0] [lindex $to
 
 
 # Create the multirow that holds the calendar information
+# NOTE: added show_calendarname_p to determine if we want to show the calendar name in [ ]
 multirow create items \
     event_name \
     event_url \
@@ -114,7 +151,7 @@ for {set current_day 0} {$current_day < $greyed_days_before_month} {incr current
 	t \
 	"" \
 	"" \
-	""
+	"" 
 }
 
 set current_day $first_julian_date_of_month
@@ -148,6 +185,11 @@ db_foreach dbqd.calendar.www.views.select_items {} {
                      -current_day $current_day \
                      -today_julian_date $today_julian_date \
                      -first_julian_date_of_month $first_julian_date_of_month]
+	    if {$link_day_p} {
+		set day_link "?view=day&date=[dt_julian_to_ansi $current_day]&$page_num_urlvar"
+	    } else {
+		set day_link ""
+	    }
             multirow append items \
 		"" \
 		"" \
@@ -160,8 +202,9 @@ db_foreach dbqd.calendar.www.views.select_items {} {
                 $display_information(today_p) \
 		f \
 		0 \
-                "${base_url}cal-item-new?date=[dt_julian_to_ansi $current_day]&start_time=&end_time" \
-		"?view=day&date=[dt_julian_to_ansi $current_day]&$page_num_urlvar"
+                "${base_url}cal-item-new?date=[dt_julian_to_ansi $current_day]&start_time=&end_time&return_url=$return_url" \
+		$day_link 
+
         } 
     }
 
@@ -187,7 +230,11 @@ db_foreach dbqd.calendar.www.views.select_items {} {
              -current_day $current_day \
              -today_julian_date $today_julian_date \
              -first_julian_date_of_month $first_julian_date_of_month]
-
+    if {$link_day_p} {
+	set day_link "?view=day&date=[dt_julian_to_ansi $current_day]&$page_num_urlvar"
+    } else {
+	set day_link ""
+    }
     multirow append items \
 	$name \
 	[subst $item_template] \
@@ -200,8 +247,9 @@ db_foreach dbqd.calendar.www.views.select_items {} {
         $display_information(today_p) \
 	f \
 	$time_p \
-        "${base_url}cal-item-new?date=[dt_julian_to_ansi $current_day]&start_time=&end_time" \
-	"?view=day&date=[dt_julian_to_ansi $current_day]&$page_num_urlvar"
+        "${base_url}cal-item-new?date=[dt_julian_to_ansi $current_day]&start_time=&end_time&return_url=$return_url" \
+	$day_link 
+
 }
 
 # Add cells for remaining days inside the month
@@ -211,6 +259,12 @@ for {} {$current_day <= $last_julian_date_in_month} {incr current_day} {
              -current_day $current_day \
              -today_julian_date $today_julian_date \
              -first_julian_date_of_month $first_julian_date_of_month]
+
+    if {$link_day_p} {
+	set day_link "?view=day&date=[dt_julian_to_ansi $current_day]&$page_num_urlvar"
+    } else {
+	set day_link ""
+    }
 
     multirow append items \
 	"" \
@@ -224,8 +278,9 @@ for {} {$current_day <= $last_julian_date_in_month} {incr current_day} {
 	$display_information(today_p) \
 	f \
         0 \
-	"${base_url}cal-item-new?date=[dt_julian_to_ansi $current_day]&start_time=&end_time" \
-	"?view=day&date=[dt_julian_to_ansi $current_day]&$page_num_urlvar"
+	"${base_url}cal-item-new?date=[dt_julian_to_ansi $current_day]&start_time=&end_time&return_url=$return_url" \
+	$day_link 
+
 }
 
 # Add cells for remaining days outside the month
@@ -246,6 +301,7 @@ if {$remaining_days > 0} {
 	    t \
 	    0 \
 	    "" \
-	    ""
+	    "" 
+
     }
 }

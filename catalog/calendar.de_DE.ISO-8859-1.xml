@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="calendar" package_version="2.1.0b1" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="calendar" package_version="2.1.0b6" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="_You_may_choose_to">. Sie können</msg>
   <msg key="Add">Hinzufügen</msg>
   <msg key="add">Hinzufügen</msg>
   <msg key="Add_a_new_Audience">Neue Zielgruppe hinzufügen</msg>
   <msg key="add_an_event">Neuen Eintrag hinzufügen</msg>
+  <msg key="Add_an_item">Einen Eintrag hinzufügen</msg>
   <msg key="Add_Item">Eintrag hinzufügen</msg>
+  <msg key="Add_item_beginning_at">Fügen Sie eine Position hinzu die bei  %localized_day_current_hour% on %localized_date_current% beginnt</msg>
   <msg key="Add_Recurrence">OK</msg>
   <msg key="All_Day_Event">Ganztägig</msg>
   <msg key="all_events">Alle Ereignisse</msg>
@@ -43,6 +45,9 @@
   <msg key="Events_over_a">Ereignisse innerhalb eines Zeitraums von</msg>
   <msg key="Friday">Freitag</msg>
   <msg key="from">von</msg>
+  <msg key="Go_to_monthsname">Gehe zu %months.name%</msg>
+  <msg key="Go_to_year_next_year">Gehe zum Jahr %next_year%</msg>
+  <msg key="Go_to_year_prev_year">Gehe zum Jahr %prev_year%</msg>
   <msg key="Grant">Erteilen</msg>
   <msg key="Grant_Permissions">Berechtigungen erteilen</msg>
   <msg key="is_recurring">Wiederkehrendes Ereignis</msg>
@@ -62,6 +67,9 @@
   <msg key="lt_delete_only_this_inst">Nur dieses einzelne Ereignis löschen</msg>
   <msg key="lt_Edit_your_Calendar_Pr">Eigene Kalendereinstellungen bearbeiten</msg>
   <msg key="lt_everyone_have_read_pe">Jeder hat Leserecht und kann die Einträge sehen, sowohl registrierte als auch nicht registrierte Benutzer.</msg>
+  <msg key="lt_Go_to_month_name_days">Gehe zu %month_name% %days.day_number%, %year%</msg>
+  <msg key="lt_Go_to_monthsname_curr">Gehe zu %months.name% %curr_year%</msg>
+  <msg key="lt_Go_to_monthsname_curr_1">Gehe zu %months.name% %curr_year%&gt;%months.name%&lt;/a&gt;&lt;/td&gt;  &lt;/else&gt; &lt;/multiple&gt;  &lt;/if&gt;  &lt;else&gt;  &lt;tr class=&quot;days&quot;&gt;  &lt;multiple name=&quot;days_of_week&quot;&gt;  &lt;td&gt;%days_of_week.day_short%&lt;/td&gt;  &lt;/multiple&gt;  &lt;/tr&gt;  &lt;multiple name=&quot;days&quot;&gt;  &lt;if %days.beginning_of_week_p% true&gt;  &lt;tr&gt;  &lt;/if&gt;  &lt;if %days.active_p% true&gt;  &lt;if %days.today_p% true&gt;  &lt;td class=&quot;today&quot; onclick=&quot;javascript:location.href='%days.url%';&quot;&gt;  &lt;a href=&quot;%days.url%&quot; title=&quot;&lt;#_ Go to %month_name% %days.day_number%, %year%</msg>
   <msg key="lt_Hide_Checked_Calendar">Ausgewählte Kalender verbergen</msg>
   <msg key="lt_Manage_Calendar_Audie">Zielgruppen für Kalender verwalten</msg>
   <msg key="lt_no_parties_exist_cont">Es sind keine Zielgruppen vorhanden. Wenden Sie sich an den Systemadministrator.</msg>
@@ -77,6 +85,8 @@
   <msg key="lt_You_have_no_party_wid">You have no party wide calendars</msg>
   <msg key="Monday">Montag</msg>
   <msg key="New_Type">Neue Eintragskategorie:</msg>
+  <msg key="next_month">Next Month</msg>
+  <msg key="next_year">Next Year</msg>
   <msg key="No">Nein</msg>
   <msg key="No_Calendars">Keine Kalender vorhanden</msg>
   <msg key="No_Items">Keine Einträge vorhanden</msg>
@@ -84,6 +94,8 @@
   <msg key="Note">Hinweis</msg>
   <msg key="of_the_month">des Monats</msg>
   <msg key="of_the_week">&amp;nbsp;</msg>
+  <msg key="prev_month">Previous Month</msg>
+  <msg key="prev_year">Previous Year</msg>
   <msg key="Private">Privat:</msg>
   <msg key="private">Privat</msg>
   <msg key="Public">Öffentlich:</msg>
@@ -96,6 +108,8 @@
   <msg key="Saturday">Samstag</msg>
   <msg key="Select_Calendars">Kalender auswählen</msg>
   <msg key="Sharing">Freigabe</msg>
+  <msg key="skip_day_calendar">Tageskalender überspringen</msg>
+  <msg key="skip_month_calendar">Monatskalender überspringen</msg>
   <msg key="Start_Time">Beginnt</msg>
   <msg key="start_time_before_end_time">Startzeitpunkt muss vor Endzeitpunkt liegen</msg>
   <msg key="Submit_query">Anfrage senden</msg>
@@ -109,8 +123,10 @@
   <msg key="Tuesday">Dienstag</msg>
   <msg key="Type">Kategorie:</msg>
   <msg key="Type_1">Kategorie</msg>
+  <msg key="Type_Help">Your calendar item can optionally be classified into types. Choose one from the drop down.</msg>
   <msg key="Use_Hours_Below">Uhrzeit:</msg>
   <msg key="Wednesday">Mittwoch</msg>
+  <msg key="y-m-d">JJJJ-MM-TT</msg>
   <msg key="year">Jahr</msg>
   <msg key="Yes">Ja</msg>
   <msg key="yes_delete_it">Ja, löschen</msg>

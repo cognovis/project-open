@@ -7,22 +7,26 @@
     <initial-install-p>f</initial-install-p>
     <singleton-p>f</singleton-p>
     
-    <version name="2.1.0b3" url="http://openacs.org/repository/download/apm/calendar-2.1.0b3.apm">
+    <version name="2.1.0b6" url="http://openacs.org/repository/download/apm/calendar-2.1.0b6.apm">
         <owner url="mailto:openacs-calendar@dirkgomez.de">Dirk Gomez</owner>
         <summary>Personal and shared event calendars.</summary>
         <release-date>2004-03-04</release-date>
         <vendor url="http://openacs.org">OpenACS</vendor>
         <description format="text/html">Manage group and shared calendars with download.</description>
 
-        <provides url="calendar" version="2.1.0b3"/>
+        <provides url="calendar" version="2.1.0b6"/>
         <requires url="acs-datetime" version="4.0"/>
         <requires url="acs-events" version="0.1d"/>
         <requires url="acs-lang" version="5.0.0b4"/>
         <requires url="notifications" version="5.0.0b4"/>
         <requires url="ref-timezones" version="5.0.0b4"/>
 
-        <callbacks>
+       <callbacks>
+            <callback type="after-install"  proc="calendar::install::package_install"/>
+            <callback type="before-uninstall"  proc="calendar::install::package_uninstall"/>
+            <callback type="before-upgrade"  proc="calendar::install::package_upgrade"/>
         </callbacks>
+
         <parameters>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="Attachments"  default="0" description="Allow Files to be Uploaded"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultView"  default="day" description="The default list for this instance of calendar: one of day, list, week, month. Defaults to day."/>

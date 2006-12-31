@@ -1,5 +1,5 @@
-.cal-table-header {
-	background: #99CCFF;
+ca.cal-table-header {
+	background: #587d91;
 	color: #000000;
 	margin: 0px;
 	padding: 0px;
@@ -9,7 +9,7 @@
 .cal-month-title-text {
         font-size: 140%;
         font-weight: bold;
-        background-color: #003366;
+        background-color: #003b53;
         text-align: center;
         color: #FFFFFF;
 }
@@ -27,7 +27,8 @@
 	font-weight: bold;
 	border-width: 0px 0px 1px 0px;
 	border-style: solid;
-	border-color: #99CCFF;
+	border-color: #dfe2e5;
+	vertical-align: top;
 }
 
 .cal-week {
@@ -36,11 +37,11 @@
 	font-weight: bold;
 	border-width: 0px 0px 1px 0px;
 	border-style: solid;
-	border-color: #99CCFF;
+	border-color: #dfe2e5;
 }
 
 .cal-month-day {
-	background: #DDEEFF;
+	background: #dfe2e5;
 	border: 0px none;
 	color: #003366;
 	font-weight: bold;
@@ -56,7 +57,7 @@
 
 .cal-month-today {
 	font-weight: bold;
-	background-color: #003366;
+	background-color: #587d91;
 	text-align: left;
 	color: #FFFFFF;
 	border: 0px solid;
@@ -69,7 +70,7 @@
         cursor: pointer;
 }
 .cal-month-today a {
-	color: #DDEEFF;
+	color: #dfe2e5;
 }
 
 .cal-no-border {
@@ -82,10 +83,10 @@
 	font-size: 8pt;
 	white-space: nowrap;
 	font-weight: bold;
-	border-top: 0px solid #99CCFF;
-	border-right: 0px solid #99CCFF;
-	border-bottom: 1px solid #99CCFF;
-	border-left: 0px solid #99CCFF;
+	border-top: 0px solid #dfe2e5;
+	border-right: 0px solid #dfe2e5;
+	border-bottom: 1px solid #dfe2e5;
+	border-left: 0px solid #dfe2e5;
 }
 
 .mini-calendar .view-list td {
@@ -97,7 +98,7 @@
 }
 
 .mini-calendar .view-list .selected {
-	background-color: #CEE6FF;
+	background-color: #6b96ad;
 }
 
 .mini-calendar .view-list a {
@@ -130,7 +131,7 @@
 	color: #000000;
 	margin: 0px;
 	padding: 0px;
-	border: 1px solid #99CCFF;
+	border: 1px solid #dfe2e5;
 	background-color: #FFFFFF;
 }
 
@@ -192,7 +193,7 @@
 	white-space: nowrap;
 	border-width: 0px 0px 0px 1px;
 	border-style: solid;
-	border-color: #99CCFF;
+	border-color: #dfe2e5;
 }
 
 .cal-navbar-spacer-start {
@@ -242,12 +243,12 @@
 	margin: 0px;
 	padding: 0px;
 	border: 1px solid #000000;
-	cursor: hand;
+	cursor: pointer;
 	color: #FFFFFF;
 }
 
 .cal-row-dark {
-        background: #DDEEFF;
+        background: #dfe2e5;
 }
 
 .cal-row-light {
@@ -256,12 +257,12 @@
 
 .cal-row-hi {
 	font-weight: bold;
-	border: 0px solid #7D7DFF;
+	border: 0px solid #6b96ad;
 }
 
 .cal-row-lo {
 	color: #999999;
-	border: 0px solid #7D7DFF;
+	border: 0px solid #6b96ad;
 }
 
 #at-a-glance {
@@ -275,7 +276,7 @@
 	padding: 1px;
         width: 30px;
         border: 1px solid #ffffff;
-	background-color: #DDEEFF;
+	background-color: #Dfe2e5;
 }
 
 #at-a-glance td.months {
@@ -316,7 +317,7 @@
 }
 
 #at-a-glance td.inactive {
-	background-color: #DDEEFF;
+	background-color: #dfe2e5;
 	text-align: right;
 }
 
@@ -325,7 +326,7 @@
 }
 
 #at-a-glance td.active {
-	background-color: #DDEEFF;
+	background-color: #dfe2e5;
 	text-align: right;
 }
 #at-a-glance td.active:hover {
@@ -344,7 +345,7 @@
 }
 
 #jump {
-	background: #99CCFF;
+	background: #6b96ad;
 	color: #000000;
 	margin: 0px;
 	padding: 0px;
@@ -388,13 +389,13 @@
 }
 
 .mini-calendar .header td.back {
-	background-color: #003366;
+	background-color: #003b53;
 	vertical-align: middle;
         text-align: left;
 }
 
 .mini-calendar .header td.forward {
-	background-color: #003366;
+	background-color: #003b53;
 	vertical-align: middle;
         text-align: right;
 }
@@ -402,20 +403,20 @@
 .mini-calendar .header td.current_view {
 	font-size: 140%;
 	font-weight: bold;
-	background-color: #003366;
+	background-color: #003b53;
 	text-align: center;
 	color: #FFFFFF;
 }
 
 .mini-calendar {
-	border: 1px solid #99CCFF;
+	border: 1px solid #dfe2e5;
 	font-size: 90%;
         width: 240px;
 }
 
 .cal-month {
 	font-weight: bold;
-	background-color: #DDEEFF;
+	background-color: #Dfe2e5;
 	text-align: center;
 	line-height: 160%;
 
@@ -434,7 +435,7 @@
 }
 .cal-week-events {
 	width: 100%;
-	background-color: #DDEEFF;
+	background-color: #dfe2e5;
 
 
 }
@@ -499,12 +500,12 @@
 }
 
 .cal-week-event-notime {
-	background-color: #DDEEFF;
+	background-color: #dfe2e5;
 	font-weight: bold;
 }
 
 .cal-week-event-notime a {
-	background-color: #DDEEFF;
+	background-color: #dfe2e5;
 }
 
 .cal-day-event-notime {
@@ -527,17 +528,18 @@
 .cal-table-data-title {
 	background: #FFFFFF;
 	font-weight: bold;
-	border: 0px solid #99CCFF;
+	border: 0px solid #dfe2e5;
 	text-align: right;
-	padding-top: 0px 10px 0px 0px;
+	padding: 0px 10px 0px 0px;
 	width: 1%;
 	white-space: nowrap;
+        vertical-align: top;
 }
 
 .cal-table-data-action {
-	background: #DDEEFF;
+	background: #dfe2e5;
 	font-weight: bold;
-	border: 1px solid #99CCFF;
+	border: 1px solid #dfe2e5;
 	text-align: center;
 	width: 1%;
 	white-space: nowrap;
