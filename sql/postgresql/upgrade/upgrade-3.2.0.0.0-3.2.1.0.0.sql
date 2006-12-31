@@ -63,8 +63,8 @@ begin
         select  count(*)
         into    v_count
         from    user_tab_columns
-        where   lower(table_name) = ''persons''
-                and lower(column_name) = ''portrait_checkdate'';
+        where   lower(table_name) = ''im_categories''
+                and lower(column_name) = ''aux_int1'';
 
         if v_count = 1 then
             return 0;

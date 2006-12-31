@@ -29,6 +29,25 @@ end;' language 'plpgsql';
 
 
 -- Add "edit_companies_all" privilege
-select acs_privilege__create_privilege('edit_companies_all','Edit All Companies','Edit All Companies');
-select acs_privilege__add_child('admin', 'edit_companies_all');
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from acs_privileges
+        where privilege = ''edit_companies_all'';
+        IF 0 != v_count THEN return 0; END IF;
+
+	select acs_privilege__create_privilege(
+		''edit_companies_all'',
+		''Edit All Companies'',
+		''Edit All Companies''
+	);
+	select acs_privilege__add_child(''admin'', ''edit_companies_all'');
+
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
