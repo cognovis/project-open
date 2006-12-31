@@ -55,7 +55,7 @@ if {[llength $dimension_vars] != [llength $unique_dimension_vars]} {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
-set menu_label "reporting-finance-yearly-revenues"
+set menu_label "reporting-finance-cube"
 set current_user_id [ad_maybe_redirect_for_registration]
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
@@ -442,7 +442,11 @@ set left_scale_plain [db_list_of_lists left_scale "
 	from		($middle_sql) c
 	order by	[join $left_vars ", "]
 "]
-lappend top_scale_plain [list $sigma $sigma $sigma $sigma $sigma $sigma]
+set last_sigma [list]
+foreach t [lindex $left_scale_plain 0] {
+    lappend last_sigma $sigma
+}
+lappend left_scale_plain $last_sigma
 
 
 # Add subtotals whenever a "main" (not the most detailed) scale changes

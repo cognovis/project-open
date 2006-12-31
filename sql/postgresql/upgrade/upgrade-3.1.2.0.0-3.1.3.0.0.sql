@@ -20,6 +20,8 @@ declare
         v_proman                integer;
         v_admins                integer;
 	v_reg_users		integer;
+
+	v_count			integer;
 BEGIN
 
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
@@ -35,6 +37,10 @@ BEGIN
     into v_main_menu
     from im_menus
     where label=''reporting-finance'';
+
+    select count(*) into v_count from im_menus 
+    where label=''reporting-finance-payments'';
+    if v_count = 1 then return 0; end if;
 
     v_menu := im_menu__new (
         null,                   -- p_menu_id
@@ -87,6 +93,8 @@ declare
         v_proman                integer;
         v_admins                integer;
 	v_reg_users		integer;
+
+	v_count			integer;
 BEGIN
 
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
@@ -102,6 +110,10 @@ BEGIN
     into v_main_menu
     from im_menus
     where label=''reporting-finance'';
+
+    select count(*) into v_count from im_menus 
+    where label=''reporting-finance-trans-pm-productivity'';
+    if v_count = 1 then return 0; end if;
 
     v_menu := im_menu__new (
         null,                   -- p_menu_id
