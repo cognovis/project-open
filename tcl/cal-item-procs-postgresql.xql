@@ -14,6 +14,7 @@
     <fullquery name="calendar::item::get.select_item_data">      
       <querytext>
       select
+	 e.*,
          i.cal_item_id,
          0 as n_attachments,
          to_char(start_date, 'YYYY-MM-DD HH24:MI:SS') as start_date_ansi,
@@ -50,6 +51,7 @@
     <fullquery name="calendar::item::get.select_item_data_with_attachment">      
       <querytext>
        select
+	 e.*,
          i.cal_item_id,
          (select count(*) from attachments where object_id = cal_item_id) as n_attachments,
          to_char(start_date, 'YYYY-MM-DD HH24:MI:SS') as start_date_ansi,

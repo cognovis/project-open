@@ -45,9 +45,6 @@ set user_id [ad_conn user_id]
 
 set start_date $date
 
-# Convert date from user timezone to system timezone
-#set system_start_date [lc_time_conn_to_system "$date 00:00:00"]
-
 set first_day_of_week [lc_get firstdayofweek]
 set first_us_weekday [lindex [lc_get -locale en_US day] $first_day_of_week]
 set last_us_weekday [lindex [lc_get -locale en_US day] [expr [expr $first_day_of_week + 6] % 7]]
@@ -72,6 +69,7 @@ multirow create items \
     add_url \
     day_url
 
+
 # Convert date from user timezone to system timezone
 set first_weekday_of_the_week_tz [lc_time_conn_to_system "$first_weekday_of_the_week 00:00:00"]
 set last_weekday_of_the_week_tz [lc_time_conn_to_system "$last_weekday_of_the_week 00:00:00"]
@@ -93,6 +91,9 @@ db_foreach dbqd.calendar.www.views.select_items {} {
 
     set start_time [lc_time_fmt $ansi_start_date "%X"]
     set end_time [lc_time_fmt $ansi_end_date "%X"]
+
+
+#    ad_return_complaint 1 "$start_date $end_date"
 
     # need to add dummy entries to show all days
     for {  } { $current_weekday < $day_of_week } { incr current_weekday } {

@@ -18,6 +18,10 @@ calendar::item::get -cal_item_id $cal_item_id -array cal_item
 
 set write_p [permission::write_permission_p -object_id $cal_item_id -creation_user $cal_item(creation_user)]
 
+# Direct redirect
+if {"t" == $cal_item(redirect_to_rel_link_p)} { ad_returnredirect $cal_item(related_link_url) }
+
+
 if {[exists_and_not_null return_url]} {
     set return_url [ad_urlencode $return_url]
 }

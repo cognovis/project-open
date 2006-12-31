@@ -37,6 +37,13 @@
      <if @cal_item.no_time_p@ eq 0>, #calendar.from# @cal_item.start_time@ #calendar.to# @cal_item.end_time@</if></td>
     </tr>
 
+    <if @cal_item.related_link_url@ not nil>
+     <tr>
+      <th class="cal-table-data-title"><%= [lang::message::lookup "" calendar.Related_Link "Related Link"] %></th>
+      <td><a href="@cal_item.related_link_url;noquote@">@cal_item.related_link_text;noquote@</a></td>
+     </tr>
+    </if>
+    
     <if @cal_item.item_type@ not nil>
      <tr>
       <th class="cal-table-data-title">#calendar.Type#</th>
@@ -65,7 +72,7 @@
         <a href="cal-item-new?cal_item_id=@cal_item_id@&return_url=@return_url@" class="button">#calendar.edit#</a>
         <a href="./cal-item-delete?cal_item_id=@cal_item_id@&return_url=@return_url@" class="button">#calendar.delete#</a>
 	</if>
-      <p><a href="ics/@cal_item_id@.ics">#calendar.sync_with_Outlook#</a>
+      <p><a href="ics/@cal_item_id@.ics" class="button">#calendar.sync_with_Outlook#</a>
 	<if @cal_item.recurrence_id@ not nil>(<a  href="ics/@cal_item_id@.ics?all_occurences_p=1">#calendar.all_events#</a>)</if>
     </td>
   </tr>
