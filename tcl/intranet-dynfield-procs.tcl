@@ -1973,6 +1973,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     -form_id:required
     {-object_id ""}
     {-search_p "0"}
+    {-form_display_mode "edit" }
 } {
     Append intranet-dynfield attributes for object_type to an existing form.<p>
     @option object_type The object_type attributes you want to add to the form
@@ -2030,14 +2031,18 @@ ad_proc -public im_dynfield::append_attributes_to_form {
                 and aa.object_type = 'im_project'
     "
 
-    # Default: Set all field sto "edit" if there is NO
-    # entry in attribute map.
-    set default_display_mode "edit"
+    # Default: Set all field to form's display mode
+    set default_display_mode $form_display_mode
 
     db_foreach attribute_table_map $sql {
 	set key "$attribute_id.$ot"
 	set display_mode_hash($key) $dm
+
+	# Now we've got atleast one display mode configured:
+	# Set the default to "none", so that non except for the
+	# configured fields appear.
 	set default_display_mode "none"
+
 	ns_log Notice "append_attributes_to_form: display_mode($key) <= $dm"
     }
 
@@ -2089,6 +2094,10 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	set display_mode $default_display_mode
 	set key "$dynfield_attribute_id.$object_type_id"
 	if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
+
+	if {"edit" == $display_mode && "display" == $form_display_mode}  {
+            set display_mode $form_display_mode
+        }
 	if {"none" == $display_mode} { continue }
 
 
