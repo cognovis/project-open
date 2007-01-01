@@ -72,6 +72,34 @@ ns_write "done\n"
 
 
 # ---------------------------------------------------------------
+# Move projects forward until atleast on project works in the future
+# ---------------------------------------------------------------
+
+ns_write "<h2>Moving projects forward</h2>\n"
+ns_write "<li>Moving ...\n"
+
+set future_projects_sql "
+	select	count(*)
+	from	im_projects
+	where	end_date > now()
+"
+
+select future_projects [db_string future_projects $future_projects_sql]
+while {0 == $future_projects} {
+
+    db_dml move_projects "
+	update im_projects set
+		start_date = start_date::date + 30,
+		end_date = end_date::date + 30
+    "
+}
+
+
+db_dml del_sec_tokens "delete from im_component_plugin_user_map"
+ns_write "done\n"
+
+
+# ---------------------------------------------------------------
 # Finish off page
 # ---------------------------------------------------------------
 

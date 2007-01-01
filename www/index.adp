@@ -23,6 +23,9 @@
 	<li><a href="/intranet-sysconfig/del_security_tokens">Delete Security Tokens</a><br>
 	&nbsp;
 
+	<li><a href="/intranet-sysconfig/move_projects">Move Projects & Forum Topics</a><br>
+	&nbsp;
+
     </ul>
     <%= [im_component_bay left] %>
 

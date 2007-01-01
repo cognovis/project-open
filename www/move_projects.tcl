@@ -59,8 +59,8 @@ set future_projects [db_string future_projects $future_projects_sql]
 while {0 == $future_projects} {
     db_dml move_projects "
 	update im_projects set
-		start_date = start_date::date + 30,
-		end_date = end_date::date + 30
+		start_date = start_date::date + 60,
+		end_date = end_date::date + 60
     "
     set future_projects [db_string future_projects $future_projects_sql]
 }
@@ -78,8 +78,8 @@ ns_write "<li>Moving ...\n"
 
 db_dml distribute_projects "
 	update im_projects set
-		start_date = start_date::date + (random() * 10 - 5)::integer,
-		end_date = end_date::date + (random() * 10 - 5)::integer
+		start_date = start_date::date + (random() * 20 - 10)::integer,
+		end_date = end_date::date + (random() * 20 - 10)::integer
 "
 
 ns_write "done\n"
@@ -123,7 +123,7 @@ ns_write "<li>Moving ...\n"
 
 db_dml distribute_forum_topics "
 	update im_forum_topics set
-		due_date = due_date ::date + (random() * 10 - 5)::integer
+		due_date = due_date ::date + (random() * 30 - 15)::integer
 "
 
 ns_write "done\n"
