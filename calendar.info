@@ -29,7 +29,7 @@
 
         <parameters>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="Attachments"  default="0" description="Allow Files to be Uploaded"/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultView"  default="day" description="The default list for this instance of calendar: one of day, list, week, month. Defaults to day."/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultView"  default="week" description="The default list for this instance of calendar: one of day, list, week, month. Defaults to day."/>
         </parameters>
 
     </version>

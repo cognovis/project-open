@@ -7,9 +7,9 @@ ca.cal-table-header {
 }
 
 .cal-month-title-text {
-        font-size: 140%;
+        font-size: 100%;
         font-weight: bold;
-        background-color: #003b53;
+        background-color: #6699CC;
         text-align: center;
         color: #FFFFFF;
 }
@@ -98,7 +98,7 @@ ca.cal-table-header {
 }
 
 .mini-calendar .view-list .selected {
-	background-color: #6b96ad;
+	background-color: #6699CC;
 }
 
 .mini-calendar .view-list a {
@@ -389,13 +389,13 @@ ca.cal-table-header {
 }
 
 .mini-calendar .header td.back {
-	background-color: #003b53;
+	background-color: #6699CC;
 	vertical-align: middle;
         text-align: left;
 }
 
 .mini-calendar .header td.forward {
-	background-color: #003b53;
+	background-color: #6699CC;
 	vertical-align: middle;
         text-align: right;
 }
@@ -403,7 +403,7 @@ ca.cal-table-header {
 .mini-calendar .header td.current_view {
 	font-size: 140%;
 	font-weight: bold;
-	background-color: #003b53;
+	background-color: #6699CC;
 	text-align: center;
 	color: #FFFFFF;
 }

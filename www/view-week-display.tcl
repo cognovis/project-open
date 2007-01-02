@@ -7,6 +7,8 @@ if {[info exists url_stub_callback]} {
     set portlet_mode_p 0 
 }
 
+if {![info exists base_url]} { set base_url "" }
+
 if {[info exists portlet_mode_p] && $portlet_mode_p} {
     if {![info exists return_url]} {
 	set return_url [ad_urlencode "../"]
@@ -16,12 +18,12 @@ if {[info exists portlet_mode_p] && $portlet_mode_p} {
     set page_num_formvar [export_form_vars page_num]
     set page_num_urlvar "&page_num=$page_num"
 } else {
-    set item_template "cal-item-view?cal_item_id=\$item_id"
+    set item_template "\${base_url}cal-item-view?cal_item_id=\$item_id"
     set url_stub_callback ""
     set page_num_formvar ""
     set page_num_urlvar ""
-    set base_url ""
 }
+
 
 if { ![info exists show_calendar_name_p] } {
     set show_calendar_name_p 1
@@ -40,7 +42,7 @@ if {[empty_string_p $date]} {
     set date [lc_time_fmt $user_now_time "%x"]
 }
 
-set package_id [ad_conn package_id]
+if {![info exists package_id]} { set package_id [ad_conn package_id] }
 set user_id [ad_conn user_id]
 
 set start_date $date
@@ -92,9 +94,6 @@ db_foreach dbqd.calendar.www.views.select_items {} {
     set start_time [lc_time_fmt $ansi_start_date "%X"]
     set end_time [lc_time_fmt $ansi_end_date "%X"]
 
-
-#    ad_return_complaint 1 "$start_date $end_date"
-
     # need to add dummy entries to show all days
     for {  } { $current_weekday < $day_of_week } { incr current_weekday } {
         set ansi_this_date [dt_julian_to_ansi [expr $first_weekday_julian + $current_weekday]]
@@ -110,7 +109,7 @@ db_foreach dbqd.calendar.www.views.select_items {} {
             "" \
             "" \
             "${base_url}cal-item-new?date=${ansi_this_date}&start_time=&end_time=&return_url=$return_url" \
-            "?view=day&date=$ansi_this_date&page_num_urlvar"
+            "${base_url}?view=day&date=$ansi_this_date&page_num_urlvar"
     }
 
     set ansi_this_date [dt_julian_to_ansi [expr $first_weekday_julian + $current_weekday]]
@@ -141,7 +140,7 @@ db_foreach dbqd.calendar.www.views.select_items {} {
         $start_time \
         $end_time \
         $no_time_p \
-        "?view=day&date=$ansi_start_date&page_num_urlvar" \
+        "${base_url}?view=day&date=$ansi_start_date&page_num_urlvar" \
         "${base_url}cal-item-new?date=${ansi_this_date}&start_time=&end_time=&return_url=$return_url" 
     set current_weekday $day_of_week
 }
@@ -162,7 +161,7 @@ if {$current_weekday < 7} {
             "" \
             "" \
             "${base_url}cal-item-new?date=${ansi_this_date}&start_time=&end_time=&return_url=$return_url" \
-            "?view=day&date=$ansi_this_date&page_num_urlvar" 
+            "${base_url}?view=day&date=$ansi_this_date&page_num_urlvar" 
     }
 }
 
@@ -172,7 +171,7 @@ if {$portlet_mode_p} {
     set previous_week_url "?$page_num_urlvar&view=week&date=[ad_urlencode [dt_julian_to_ansi [expr $first_weekday_julian - 7]]]"
     set next_week_url "?$page_num_urlvar&view=week&date=[ad_urlencode [dt_julian_to_ansi [expr $first_weekday_julian + 7]]]"
 } else {
-    set previous_week_url "?view=week&date=[ad_urlencode [dt_julian_to_ansi [expr $first_weekday_julian - 7]]]"
-    set next_week_url "?view=week&date=[ad_urlencode [dt_julian_to_ansi [expr $first_weekday_julian + 7]]]"
+    set previous_week_url "${base_url}?view=week&date=[ad_urlencode [dt_julian_to_ansi [expr $first_weekday_julian - 7]]]"
+    set next_week_url "${base_url}?view=week&date=[ad_urlencode [dt_julian_to_ansi [expr $first_weekday_julian + 7]]]"
 }
 
