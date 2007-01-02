@@ -59,6 +59,7 @@ ad_proc -public im_calendar_home_component {
 	[list base_url "/calendar/"] \
 	[list date $today] \
 	[list package_id $package_id] \
+	[list show_calendar_name_p 0] \
 	[list return_url [im_url_with_query]] \
     ]
     set result [ad_parse_template -params $params "/packages/calendar/www/view-week-display"]
