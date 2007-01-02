@@ -29,9 +29,9 @@ SELECT calendar__new(
 	null,		-- calendar_id
 	'Global Calendar',-- calendar_name
 	'calendar',	-- object_type
-	(select object_id from acs_magic_objects where name = 'registered_users'),-- owner_id
+	(select object_id from acs_magic_objects where name = 'registered_users'), -- owner_id
 	'f',		-- private_p
-	(select package_id from apm_packages where package_key = 'calendar'),-- package_id
+	(select package_id from apm_packages where package_key = 'calendar'), -- package_id
 	(select package_id from apm_packages where package_key = 'calendar'), -- context_id
 	now(),		-- creation_date
 	null,		-- creation_user
@@ -408,3 +408,27 @@ execute procedure im_forum_topics_calendar_update_tr ();
 
 update im_forum_topics set due_date = due_date;
 
+
+
+---------------------------------------------------------
+-- Calendar Component
+--
+
+-- Show the forum component in project page
+--
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Home Calendar Component',	-- plugin_name
+	'intranet-calendar',		-- package_name
+	'top',				-- location
+	'/intranet/index',		-- page_url
+	null,				-- view_name
+	10,				-- sort_order
+	'im_calendar_home_component',
+	'lang::message::lookup "" intranet-calendar.Calendar "Calendar"'
+);
