@@ -67,7 +67,7 @@ drop function inline_0();
 -- Projects Trigger
 -- --------------------------------------------------------
 
-drop trigger im_projects_calendar_update_tr on im_projects;
+-- drop trigger im_projects_calendar_update_tr on im_projects;
 -- drop function im_projects_calendar_update_tr();
 
 create or replace function im_projects_calendar_update_tr () returns trigger as '
@@ -186,7 +186,7 @@ execute procedure im_projects_calendar_update_tr ();
 -- Translation Tasks Trigger
 -- --------------------------------------------------------
 
-drop trigger im_trans_tasks_calendar_update_tr on im_trans_tasks;
+-- drop trigger im_trans_tasks_calendar_update_tr on im_trans_tasks;
 -- drop function im_trans_tasks_calendar_update_tr();
 
 create or replace function im_trans_tasks_calendar_update_tr () returns trigger as '
@@ -305,7 +305,7 @@ execute procedure im_trans_tasks_calendar_update_tr ();
 -- Forum Topics Trigger
 -- --------------------------------------------------------
 
-drop trigger im_forum_topics_calendar_update_tr on im_forum_topics;
+-- drop trigger im_forum_topics_calendar_update_tr on im_forum_topics;
 -- drop function im_forum_topics_calendar_update_tr();
 
 create or replace function im_forum_topics_calendar_update_tr () returns trigger as '
