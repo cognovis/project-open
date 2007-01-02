@@ -425,10 +425,10 @@ SELECT im_component_plugin__new (
 	null,				-- context_id
 	'Home Calendar Component',	-- plugin_name
 	'intranet-calendar',		-- package_name
-	'top',				-- location
+	'left',				-- location
 	'/intranet/index',		-- page_url
 	null,				-- view_name
-	10,				-- sort_order
+	-10,				-- sort_order
 	'im_calendar_home_component',
 	'lang::message::lookup "" intranet-calendar.Calendar "Calendar"'
 );
