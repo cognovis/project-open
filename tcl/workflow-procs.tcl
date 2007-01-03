@@ -1706,6 +1706,7 @@ values
                header,
                template_url,
                overrides_action_p,
+	       overrides_both_panels_p,
                only_display_when_started_p
         from   wf_context_task_panels
         where  context_key = :context_key
@@ -1720,6 +1721,7 @@ values
  header,
  template_url,
  overrides_action_p,
+ overrides_both_panels_p,
  only_display_when_started_p)
 values
 ('[db_quote $context_key]',
@@ -1729,6 +1731,7 @@ values
  '[db_quote $header]',
  '[db_quote $template_url]',
  '[db_quote $overrides_action_p]',
+ '[db_quote $overrides_both_panels_p]',
  '[db_quote $only_display_when_started_p]');
 
 "
