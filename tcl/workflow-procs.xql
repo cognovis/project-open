@@ -324,6 +324,7 @@
                header,
                template_url,
                overrides_action_p,
+               overrides_both_panels_p,
                only_display_when_started_p
         from   wf_context_task_panels
         where  context_key = :context_key
