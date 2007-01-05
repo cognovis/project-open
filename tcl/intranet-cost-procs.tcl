@@ -482,9 +482,8 @@ ad_proc -public im_department_options { {include_empty 0} } {
     Returns a list of all Departments in the company.
 } {
     set department_only_p 1
-    return [im_cost_center_options $include_empty $department_only_p]
+    return [im_cost_center_options -include_empty $include_empty -department_only_p $department_only_p]
 }
-
 
 ad_proc -public im_cost_center_select { 
     {-include_empty 0} 
@@ -497,7 +496,8 @@ ad_proc -public im_cost_center_select {
 } {
 #   ad_return_complaint 1 "include_empty=$include_empty, department_only_p=$department_only_p, select_name=$select_name, default=$default, cost_type_id=$cost_type_id"
 
-    set options [im_cost_center_options $include_empty $department_only_p $cost_type_id]
+    set options [im_cost_center_options -include_empty $include_empty -department_only_p $department_only_p -cost_type_id $cost_type_id]
+
 
     # Only one option, so 
     # write out string instead of select component
@@ -515,9 +515,9 @@ ad_proc -public im_cost_center_select {
 
 
 ad_proc -public im_cost_center_options { 
-    {include_empty 0} 
-    {department_only_p 0} 
-    {cost_type_id ""} 
+    {-include_empty 0} 
+    {-department_only_p 0} 
+    {-cost_type_id ""} 
 } {
     Returns a list of all Cost Centers in the company.
     Takes into account the permission of the user to 
@@ -561,6 +561,8 @@ ad_proc -public im_cost_center_options {
     "
 
     set options [list]
+    if {$include_empty} { lappend options [list "" ""] }
+
     db_foreach cost_center_options $options_sql {
         set spaces ""
         for {set i 0} {$i < $indent_level} { incr i } {

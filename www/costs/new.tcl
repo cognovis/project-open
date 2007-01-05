@@ -78,7 +78,7 @@ set cost_status_options [im_cost_status_options]
 set investment_options [im_investment_options]
 set template_options [im_cost_template_options]
 set currency_options [im_currency_options]
-set cost_center_options [im_cost_center_options 1 0 ""]
+set cost_center_options [im_cost_center_options -include_empty 1 -department_only_p 0]
 
 
 set cost_name_label "[_ intranet-cost.Name]"

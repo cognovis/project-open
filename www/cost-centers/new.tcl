@@ -55,7 +55,7 @@ if {![info exists cost_center_id]} { set form_mode "edit" }
 # Build the form
 # ------------------------------------------------------------------
 
-set cost_center_parent_options [im_cost_center_options 0 0 ""]
+set cost_center_parent_options [im_cost_center_options]
 set cost_center_type_options [im_cost_center_type_options]
 set cost_center_status_options [im_cost_center_status_options]
 set manager_options [im_employee_options]
