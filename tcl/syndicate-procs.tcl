@@ -2,7 +2,7 @@ ad_library {
     Syndication callback and support routines.
 
     @author Jeff Davis (davis@xarg.net)
-    @cvs-id $Id: syndicate-procs.tcl,v 1.1 2005/03/29 23:39:45 jeffd Exp $
+    @cvs-id $Id: syndicate-procs.tcl,v 1.2 2007/01/10 21:22:14 gustafn Exp $
 }
 
 ad_proc -public -callback search::action -impl syndicate {} {
@@ -19,7 +19,7 @@ ad_proc -public -callback search::action -impl syndicate {} {
     if {![parameter::get -boolean -package_id [apm_package_id_from_key search] -parameter Syndicate -default 0]} {
         return
     }
-    if {[string equal $action DELETE]} {
+    if {$action eq "DELETE"} {
         db_dml nuke {delete from syndication where object_id = :object_id}
     } else {
         upvar $datasource d

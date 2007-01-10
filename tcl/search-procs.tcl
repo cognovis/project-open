@@ -2,7 +2,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.38 2006/11/16 12:43:40 daveb Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.39 2007/01/10 21:22:14 gustafn Exp $
 }
 
 namespace eval search {}
@@ -24,8 +24,8 @@ ad_proc -public search::queue {
 
     @author Jeff Davis (davis@xarg.net)
 } {
-    if {![empty_string_p $object_id]
-        && ![empty_string_p $event]} {
+    if {$object_id ne ""
+        && $event ne ""} {
         package_exec_plsql \
             -var_list [list \
                            [list object_id $object_id] \
@@ -49,9 +49,9 @@ ad_proc -public search::dequeue {
 
     @author Jeff Davis (davis@xarg.net)
 } {
-    if {![empty_string_p $object_id]
-        && ![empty_string_p $event_date]
-        && ![empty_string_p $event]} {
+    if {$object_id ne ""
+        && $event_date ne ""
+        && $event ne ""} {
             package_exec_plsql \
                 -var_list [list [list object_id $object_id] \
                                [list event_date $event_date] \
@@ -266,7 +266,7 @@ ad_proc -private search::choice_bar {
     set return_list [list]
 
     foreach value $values {
-        if {[string compare $default $value] == 0} {
+        if {$default eq $value } {
             lappend return_list "<font color=\"\#a90a08\"><strong>[lindex $items $count]</strong></font>"
         } else {
             lappend return_list "<a href=\"[lindex $links $count]\"><font color=\"\#000000\">[lindex $items $count]</font></a>"
