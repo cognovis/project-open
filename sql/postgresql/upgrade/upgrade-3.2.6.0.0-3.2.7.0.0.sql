@@ -5,3 +5,7 @@
 
 delete from im_view_columns where column_id= 91100;
 
+
+# Replaced by im_biz_object_member relationship "pecentage" column
+drop table im_timesheet_task_allocations;
+
