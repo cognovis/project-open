@@ -26,6 +26,8 @@ ad_page_contract {
 # Defaults & Security
 # ---------------------------------------------------------------
 
+set debug 0
+
 if {"" == $upload_gan && "" == $upload_gif} {
     ad_return_complaint 1 "You need to specify a file to upload"
 }
@@ -76,25 +78,28 @@ set root_node [$doc documentElement]
 # The task_hash contains a mapping table from gantt_project_ids
 # to task_ids.
 
-ns_write "<h2>Pass 1: Saving Tasks</h2><ul>\n"
+ns_write "<h2>Pass 1: Saving Tasks</h2>\n"
 set task_hash_array [list]
-
 set task_hash_array [im_gp_save_tasks \
-	-enable_save_dependencies 0 \
-	 -task_hash_array $task_hash_array \
+	-create_tasks 1 \
+	-save_dependencies 0 \
+	-task_hash_array $task_hash_array \
+	-debug $debug \
 	$root_node \
 	$project_id \
 ]
 array set task_hash $task_hash_array
 
-
-ns_write "<h2>Pass 2: Saving Dependencies</h2><ul>\n"
+ns_write "<h2>Pass 2: Saving Dependencies</h2>\n"
 set task_hash_array [im_gp_save_tasks \
-	-enable_save_dependencies 1 \
+	-create_tasks 0 \
+	-save_dependencies 1 \
 	-task_hash_array $task_hash_array \
+	-debug $debug \
 	$root_node \
 	$project_id \
 ]
+
 
 # -------------------------------------------------------------------
 # Process Resources
@@ -105,7 +110,7 @@ ns_write "<h2>Saving Resources</h2>\n"
 ns_write "<ul>\n"
 
 set resource_node [$root_node selectNodes /project/resources]
-set resource_hash_array [im_gp_save_resources $resource_node]
+set resource_hash_array [im_gp_save_resources -debug $debug $resource_node]
 
 ns_write "</ul>\n"
 
@@ -119,6 +124,7 @@ ns_write "<ul>\n"
 
 set allocations_node [$root_node selectNodes /project/allocations]
 im_gp_save_allocations \
+	-debug $debug \
 	$allocations_node \
 	$task_hash_array \
         $resource_hash_array
@@ -133,11 +139,14 @@ ns_write "</ul>\n"
 
 ns_write "<h2>Deleting Tasks</h2>\n"
 
-# Extract a tree of tasks from the Database
+# Extract the list of all task_ids in the GanttProject XML tree.
 set xml_tree [im_gp_extract_xml_tree $root_node $task_hash_array]
+lappend xml_tree $project_id
+set xml_list [lsort -integer -unique [im_gp_flatten $xml_tree]]
+
+# Extract the list of all task_ids from the database
 set db_tree [im_gp_extract_db_tree $project_id]
 set db_list [lsort -integer -unique [im_gp_flatten $db_tree]]
-set xml_list [lsort -integer -unique [im_gp_flatten $xml_tree]]
 
 ns_log Notice "task_hash_array: $task_hash_array"
 ns_log Notice "gantt-upload-2: DB Tree: $db_tree\n"
@@ -155,21 +164,10 @@ lappend diff_list 0
 
 ns_log Notice "gantt-upload-2: Diff List: $diff_list\n"
 
-set del_projects_sql "
+set del_tasks_sql "
 	select	p.project_id
 	from	im_projects p
 	where	p.project_id in ([join $diff_list ","])
-"
-db_foreach del_projects $del_projects_sql {
-    ns_write "<li>Nuking project# $project_id\n"
-    im_project_nuke $project_id
-}
-
-
-set del_tasks_sql "
-	select	p.task_id
-	from	im_timesheet_tasks p
-	where	p.task_id in ([join $diff_list ","])
 "
 db_foreach del_tasks $del_tasks_sql {
     ns_write "<li>Nuking task# $task_id\n"
