@@ -389,12 +389,16 @@ ad_proc -public im_gp_extract_xml_tree {
     root_node 
     task_hash_array
 } {
+    Returns a list of task_ids for all tasks in the GanttProject
+    XML tree.
+
     Solving the mapping issue upfront is going to save us a lot of 
     hassle when it comes to saving the changes to the database.
     And we can - somehow - separate synchronization logic from
     the database commands.
 } {
     ns_log Notice "im_gp_extract_xml_tree: Extract XML Tree"
+    array set task_hash $task_hash_array
     set xml_tree [list]
     set tasks_node [$root_node selectNodes /project/tasks]
     set super_task_node ""
@@ -402,18 +406,15 @@ ad_proc -public im_gp_extract_xml_tree {
 	switch [$child nodeName] {
 	    "task" {
 		set task_id [$child getAttribute id ""]
-		if {[info exists task_hash($task_id)]} { set task_id $task_hash($task_id) }
-
-		set object_type [db_string obj_type "
-		select object_type from acs_objects 
-		where object_id = :task_id" -default "none"]
-		
-		if {"im_project" != $object_type} {
-		    ad_return_complaint 1 "<b>Invalid GanttProject File Structure</b><br>
-		GanttProject files need to contain 'Projects' at the top level of
-		the file. Instead, we have found the type: '$object_type'"
-		    return
+		if {![info exists task_hash($task_id)]} {
+		    ns_write "<li>im_gp_extract_xml_tree: Didn't find task=$task_id\n"
+		    continue
 		}
+
+		set task_id $task_hash($task_id)
+
+		lappend xml_tree $task_id
+
 		
 		# Go through sub-tasks
 		foreach task_child [$child childNodes] {
@@ -574,15 +575,16 @@ ad_proc -public im_ganttproject_create_dependency { depend_node task_node task_h
 # -------------------------------------------------------------------
 
 ad_proc -public im_gp_save_tasks { 
-    {-enable_save_dependencies 1}
+    {-create_tasks 1}
+    {-save_dependencies 1}
     {-task_hash_array ""}
+    {-debug 0}
     root_node 
     super_project_id 
 } {
     The top task entries should actually be projects, otherwise
     we return an "incorrect structure" error.
 } {
-    ns_write "<li>im_gp_save_tasks: root_node=$root_node, super_project_id=$super_project_id"
     set tasks_node [$root_node selectNodes /project/tasks]
     set super_task_node ""
 
@@ -595,40 +597,21 @@ ad_proc -public im_gp_save_tasks {
 
     foreach child [$tasks_node childNodes] {
 	incr sort_order
-	ns_write "<li>Child: [$child nodeName]\n"
+	if {$debug} { ns_write "<li>Child: [$child nodeName]\n" }
 	ns_write "<ul>\n"
 
 	switch [$child nodeName] {
 	    "task" {
-		set task_id [$child getAttribute id ""]
-		set object_type [db_string obj_type "
-		select object_type from acs_objects 
-		where object_id = :task_id" -default "none"]
-		
-		ns_write "<li>task_id=$task_id, object_type=$object_type\n"
-
-		if {"im_project" != $object_type} {
-		    ad_return_complaint 1 "<b>Invalid GanttProject File Structure</b><br>
-		GanttProject files need to contain 'Projects' at the top level of
-		the file. Instead, we have found the type: '$object_type'"
-		    return
-		}
-		
-		# Go through sub-tasks
-		foreach task_child [$child childNodes] {
-		    incr sort_order
-		    if {"task" == [$task_child nodeName]} {
-			set task_hash_array [im_gp_save_tasks2 \
-				-enable_save_dependencies $enable_save_dependencies \
-				$task_child \
-				$super_project_id \
-				$sort_order \
-				[array get task_hash] \
-			]
-			array set task_hash $task_hash_array
-		    }
-		}
-		ns_write "</ul>\n"
+		set task_hash_array [im_gp_save_tasks2 \
+			-create_tasks $create_tasks \
+			-save_dependencies $save_dependencies \
+			-debug $debug \
+			$child \
+			$super_project_id \
+			$sort_order \
+			[array get task_hash] \
+		]
+		array set task_hash $task_hash_array
 	    }
 	    default {}
 	}
@@ -641,7 +624,9 @@ ad_proc -public im_gp_save_tasks {
 
 
 ad_proc -public im_gp_save_tasks2 {
-    -enable_save_dependencies
+    {-debug 0}
+    -create_tasks
+    -save_dependencies
     task_node 
     super_project_id 
     sort_order
@@ -650,9 +635,10 @@ ad_proc -public im_gp_save_tasks2 {
     Stores a single task into the database
 } {
     array set task_hash $task_hash_array
-    ns_write "<li>im_gp_save_tasks2($task_node, $super_project_id): '[array get task_hash]'\n"
+    if {$debug} { ns_write "<li>GanttProject($task_node, $super_project_id): '[array get task_hash]'\n" }
     set task_url "/intranet-timesheet2-tasks/new?task_id="
 
+    # What does this mean???
     set org_super_project_id $super_project_id
     if {[info exists task_hash($super_project_id)]} {
         set super_project_id $task_hash($super_project_id)
@@ -678,6 +664,7 @@ ad_proc -public im_gp_save_tasks2 {
 
     # -----------------------------------------------------
     # Extract the custom properties tpc0 (task_nr) and tpc1 (task_id)
+    # for tasks that have been exported out of ]project-open[
     foreach taskchild [$task_node childNodes] {
         switch [$taskchild nodeName] {
             task { set has_subobjects_p 1 }
@@ -703,7 +690,6 @@ ad_proc -public im_gp_save_tasks2 {
 	set task_nr "task_$gantt_project_id"
     }
 
-
     # -----------------------------------------------------
     # Set some default variables for new tasks
     set task_status_id [im_project_status_open]
@@ -712,19 +698,16 @@ ad_proc -public im_gp_save_tasks2 {
     set cost_center_id ""
     set material_id [im_material_default_material_id]
 
-    ns_write "<li>GanttProject: $task_nr: '$gantt_project_id' =&gt; task_id='$task_id'"
-
-
-    # Set some default variables for new project
+    # Get the customer of the super-project
     db_1row super_project_info "
-	select	company_id,
-		project_type_id,
-		project_status_id
-	from
-		im_projects
-	where
-		project_id = :super_project_id
+	select	company_id
+	from	im_projects
+	where	project_id = :super_project_id
     "
+
+    ns_write "<li>$task_name...\n"
+    if {$debug} { ns_write "<li>task_nr='$task_nr', gantt_id=$gantt_project_id, task_id=$task_id" }
+
 
     # -----------------------------------------------------
     # Check if we had mapped this task from a GanttProject ID
@@ -734,13 +717,6 @@ ad_proc -public im_gp_save_tasks2 {
 	set task_id $task_hash($gantt_project_id)
     }
 
-    set task_otype [db_string task_otype "
-	select	object_type
-	from	acs_objects o
-	where	o.object_id=:task_id
-    " -default ""]
-
-
     # -----------------------------------------------------
     # Check if the task already exists in the database
     set task_exists_p [db_string tasks_exists "
@@ -748,6 +724,8 @@ ad_proc -public im_gp_save_tasks2 {
 	from	im_timesheet_tasks_view
 	where	task_id = :task_id
     "]
+
+    # -----------------------------------------------------
     # Give it a second chance to deal with the case that there is
     # already a task with the same task_nr in the same project (same level!):
     set existing_task_id [db_string task_id_from_nr "
@@ -760,102 +738,18 @@ ad_proc -public im_gp_save_tasks2 {
 	set task_hash($gantt_project_id) $existing_task_id
 	set task_id $existing_task_id
 	set task_exists_p 1
+        if {$debug} { ns_write "<li>GanttProject: found task_id=$existing_task_id for task with task_nr=$task_nr" }
     }
 
 
     # -----------------------------------------------------
-    # Check if the project already exists in the database
-    set project_exists_p [db_string project_exists "
-        select  count(*)
-        from    im_projects
-        where   project_id = :task_id
-    "]
-    # Give it a second chance to deal with the case that there is
-    # a project with the same project_nr in the same project (same level!):
-    set existing_project_id [db_string project_id_from_nr "
-        select	project_id
-        from	im_projects
-        where	parent_id = :super_project_id 
-		and project_nr = :task_nr
-    " -default 0]
-
-    if {0 != $existing_project_id} {
-	set task_hash($gantt_project_id) $existing_project_id
-#        ns_write "<li>im_gp_save_tasks2: found project_id=$existing_project_id for project with project_nr=$task_nr"
-        set task_id $existing_project_id
-        set project_exists_p 1
-    }
-
-    # Check the cases that the "task" has changed its type
-    set cur_object_type [db_string cur_object_type "select object_type from acs_objects where object_id = :task_id" -default ""]
-
-
-
-    # -----------------------------------------------------
-    # Now we have several cases:
-
-
-    # Inconsistency handling:
-    # Both a project and a task exist.
-    # This error occurs during "demotion"
-    #
-    if {$task_exists_p && $project_exists_p} {
-#	ad_return_complaint 1 "Not implemented yet: Both a project and a task exist with task_nr=$task_nr."
-    }
-
-
-    # -----------------------------------------------------
-    # Needs to be "demoted" from project to task
-    if {!$has_subobjects_p && [string equal "im_project" $cur_object_type]} {
-
-	ns_write "<li>im_gp_save_tasks2: <font color=red>Demote</font> project# $task_id to a task"
-	# Nuke the old project
-	im_project_nuke $task_id
-
-	# Set the task_id to 0 to initiate project creation further below.
-	set task_id 0
-    }
-
-
-    # -----------------------------------------------------
-    # Needs to be "promoted" from task to project
-    if {$has_subobjects_p && [string equal "im_timesheet_task" $cur_object_type]} {
-
-	ns_write "<li>im_gp_save_tasks2: <font color=red>Promote</font> task# $task_id to a project"
-	# Nuke the old task
-	im_timesheet_task_nuke $task_id
-
-	# Set the task_id to 0 to initiate project creation further below.
-	set task_id 0
-    }
-
-
-    # -----------------------------------------------------
-    # Needs to be "demoted" from project to task
-    #
-    # Does a project really needs to be "demoted" to a task?
-    # It seems that a project can accomodate the same data as
-    # task. This way we don't have to delete all the forums,
-    # permission, Filestorage, ...
-    #
-    if {0 && !$has_subobjects_p && [string equal "im_project" $cur_object_type]} {
-	ad_return_complaint 1 "Demotion from Project to Task is not implemented yet:<br>
-	<li>Name = $task_name
-	<li>Nr = $task_nr
-	<li>ID = $task_id
-        "
-	return [array get task_hash]
-    }
-
-
     # Create a new task if:
-    # - if the task_id is "" or 0 (new task created in GanttProject)
+    # - if task_id=0 (new task created in GanttProject)
     # - if there is a task_id, but it's not in the DB (import from GP)
-    if {!$has_subobjects_p} {
-	if {0 == $task_id || !$task_exists_p} {
+    if {0 == $task_id || !$task_exists_p} {
 
-	    ns_write "<li>im_gp_save_tasks2: Creating new task: nr=$task_nr, name=$task_name, super_project=$super_project_id"
-
+	if {$create_tasks} {
+	    ns_write "Creating new task with task_nr='$task_nr'\n"
 	    set task_id [im_exec_dml task_insert "
 	    	im_timesheet_task__new (
 			null,			-- p_task_id
@@ -875,51 +769,12 @@ ad_proc -public im_gp_save_tasks2 {
 			:description
 		)"
 	    ]
-	    ns_write "<li>im_gp_save_tasks2: Creating new task: gp_id=$gantt_project_id =&gt; $task_id"
 	    set task_hash($gantt_project_id) $task_id
 	}
+
+    } else {
+	if {$create_tasks} { ns_write "Updating existing task\n" }
     }
-
-    # Create a new project if:
-    # - if the task_id is "" or 0 (new task created in GanttProject)
-    # - if there is a task_id, but it's not in the DB (import from GP)
-
-
-    # No task_id means that it's a new item:
-    #
-    if {$has_subobjects_p} {
-	if {0 == $task_id || !$project_exists_p} {
-
-	    ns_write "<li>Creating new project nr=$task_nr"
-	    set task_id [project::new \
-                -project_name           $task_name \
-                -project_nr             $task_nr \
-                -project_path           $task_nr \
-                -company_id             $company_id \
-                -parent_id              $super_project_id \
-                -project_type_id        $project_type_id \
-                -project_status_id      $project_status_id \
-	    ]
-
-	    set task_id [db_string project_id "select project_id from im_projects where project_nr = :task_nr"]
-	    set task_hash($gantt_project_id) $task_id
-	    set parent_id [db_string parent_id "select parent_id from im_projects where project_nr = :task_nr"]
-	    if {$parent_id != $super_project_id} {
-		ad_return_complaint 1 "Error with project_nr:<br>
-		The project with project_nr='$task_nr' already exists outside of the 
-		scope of this project. We can't overwrite this project.
-		Please either rename this project or modify the task_nr in GanttProject."
-	    }
-
-	}
-    }
-
-    # Now the object type is OK. We still need to update the object:
-    set object_type [db_string cur_object_type "
-	select object_type 
-	from acs_objects 
-	where object_id = :task_id
-    " -default ""]
 
     db_dml project_update "
 	    update im_projects set
@@ -960,14 +815,24 @@ ad_proc -public im_gp_save_tasks2 {
 	switch [$taskchild nodeName] {
 	    notes { set description [$taskchild nodeValue]}
 	    depend { 
-		if {$enable_save_dependencies} {
+		if {$save_dependencies} {
+
+		    ns_write "<li>Creating dependency relationship\n"
 		    im_ganttproject_create_dependency $taskchild $task_node [array get task_hash]
+
 		}
 	    }
 	    customproperty { }
 	    task {
 		# Recursive sub-tasks
-		set task_hash_array [im_gp_save_tasks2 -enable_save_dependencies $enable_save_dependencies $taskchild $gantt_project_id [expr 10 * $sort_order] [array get task_hash]]
+		set task_hash_array [im_gp_save_tasks2 \
+			-create_tasks $create_tasks \
+			-save_dependencies $save_dependencies \
+			$taskchild \
+			$gantt_project_id \
+			[expr 10 * $sort_order] \
+			[array get task_hash] \
+		]
 		array set task_hash $task_hash_array
 	    }
 	}
@@ -987,6 +852,7 @@ ad_proc -public im_gp_save_tasks2 {
 # ----------------------------------------------------------------------
 
 ad_proc -public im_gp_save_allocations { 
+    {-debug 0}
     allocations_node
     task_hash_array
     resource_hash_array
@@ -999,45 +865,38 @@ ad_proc -public im_gp_save_allocations {
     foreach child [$allocations_node childNodes] {
 	switch [$child nodeName] {
 	    "allocation" {
+
 		set task_id [$child getAttribute task-id ""]
-		if {[info exists task_hash($task_id)]} { set task_id $task_hash($task_id) }
+		if {![info exists task_hash($task_id)]} {
+		    ns_write "<li>Allocation: <font color=red>Didn't find task \#$task_id</font>. Skipping... \n"
+		    continue
+		}
+		set task_id $task_hash($task_id)
+
 		set resource_id [$child getAttribute resource-id ""]
-		if {[info exists resource_hash($resource_id)]} { set resource_id $resource_hash($resource_id) }
+		if {![info exists resource_hash($resource_id)]} {
+		    ns_write "<li>Allocation: <font color=red>Didn't find user \#$resource_id</font>. Skipping... \n"
+		    continue
+		}
+		set resource_id $resource_hash($resource_id)
 
 		set function [$child getAttribute function ""]
 		set responsible [$child getAttribute responsible ""]
 		set percentage [$child getAttribute load "0"]
 		
-		set allocation_exists_p [db_0or1row allocation_info "
-			select	* 
-			from	im_timesheet_task_allocations 
-			where	task_id = :task_id 
-				and user_id = :resource_id
-	        "]
-
 		set role_id [im_biz_object_role_full_member]
 		if {[string equal "Default:1" $function]} { 
 		    set role_id [im_biz_object_role_project_manager]
 		}
-		if {!$allocation_exists_p} { 
-		    db_dml insert_allocation "
-			insert into im_timesheet_task_allocations 
-			(task_id, user_id) values (:task_id, :resource_id)"
-		}
-		db_dml update_allocation "
-			update im_timesheet_task_allocations set
-				role_id	= [im_biz_object_role_full_member],
-				percentage = :percentage
-			where	task_id = :task_id
-				and user_id = :resource_id
-	        "
-		ns_write "<li>Allocation: User# $resource_id allocated to task# $task_id with $percentage%\n"
+
+		# Add the dude to the task with a given percentage
+		im_biz_object_add_role -percentage $percentage $resource_id $task_id $role_id
+
+		set user_name [im_name_from_user_id $resource_id]
+		set task_name [db_string task_name "select project_name from im_projects where project_id=:task_id" -default $task_id]
+		ns_write "<li>Allocation: $user_name allocated to $task_name with $percentage%\n"
 		ns_log Notice "im_gp_save_allocations: [$child asXML]"
 
-		set project_id [db_string project_id "select project_id from im_timesheet_tasks_view where task_id = :task_id"]
-
-		# Check if the resource is already member of the project
-		im_biz_object_add_role $resource_id $project_id [im_biz_object_role_full_member]
 	    }
 	    default { }
 	}
@@ -1054,7 +913,66 @@ ad_proc -public im_gp_save_allocations {
 #
 # ----------------------------------------------------------------------
 
+
+ad_proc -public im_gp_find_person_for_name { 
+    -name
+    -email
+} {
+    Tries to determine the person_id for a name string.
+    Uses all kind of fuzzy matching trying to be intuitive...
+} {
+    # Check for an exact match with the User Name
+    set person_id [db_string resource_id "
+			select	person_id
+			from	persons
+			where	:name = lower(im_name_from_user_id(person_id))
+    " -default 0]
+		
+    # Check for an exact match with Email
+    if {0 == $person_id} {
+		    set person_id [db_string email_check "
+			select	party_id
+			from	parties
+			where	lower(trim(email)) = lower(trim(:email))
+    " -default 0]
+    }
+
+    # Check if we get a single match looking for the pieces of the
+    # resources name
+    if {0 == $person_id} {
+	set name_pieces [split $name " "]
+	# Initialize result to the list of all persons
+	set result [db_list all_resources "
+				select	person_id
+				from	persons
+	"]
+
+	# Iterate through all parts of the name and 
+	#make sure we find all pieces of name in the name
+	foreach piece $name_pieces {
+	    if {[string length $piece] > 1} {
+		set person_ids [db_list resource_id "
+					select	person_id
+					from	persons
+					where	position(:piece in lower(im_name_from_user_id(person_id))) > 0
+		"]
+		set result [set_intersection $result $person_ids]
+	    }
+	}
+
+	# Assign the guy only if there is exactly one match.
+	if {1 == [llength $result]} {
+	    set person_id [lindex $result 0]
+	}
+    }
+    
+    return $person_id
+}
+
+
 ad_proc -public im_gp_save_resources { 
+    {-debug 0}
+    {-project_id 0}
     resources_node
 } {
     Saves resource information from GanttProject
@@ -1064,21 +982,25 @@ ad_proc -public im_gp_save_resources {
 	switch [$child nodeName] {
 	    "resource" {
 		set resource_id [$child getAttribute id ""]
-		set name [$child getAttribute name ""]
+		set name [string tolower [string trim [$child getAttribute name ""]]]
 		set function [$child getAttribute function ""]
+		set email [$child getAttribute contacts ""]
 
-		set person_id [db_string resource_id "
-			select	person_id
-			from	persons
-			where	lower(trim(:name)) = lower(im_name_from_user_id(person_id))
-		" -default 0]
+		# Do all kinds of fuzzy searching
+		set person_id [im_gp_find_person_for_name -name $name -email $email]
 
 		if {0 != $person_id} {
-		    ns_write "<li>Resource: $name ($resource_id) -&gt; $person_id as $function\n"
+		    ns_write "<li>Resource: $name as $function\n"
 		    set resource_hash($resource_id) $person_id
+
+		    # make the resource a member of the project
+		    im_biz_object_add_role $person_id $project_id [im_biz_object_role_full_member]
+
 		} else {
-		    ns_write "<li>Unknown Resource: $name ($resource_id)\n"
+		    ns_write "<li>Resource: $name - <font color=red>Unknown Resource</font>\n"
 		}
+
+		if {$debug} { ns_write "<li>Resource: ($resource_id) -&gt; $person_id\n" }
 
 		ns_log Notice "im_gp_save_resources: [$child asXML]"
 	    }
