@@ -17,6 +17,15 @@ ad_page_contract {
     features 
     orgsize 
     prodtest 
+
+    name
+    name_name
+    name_email
+
+    logo_file
+    logo_url
+
+    profiles_array:array,optional
 }
 
 # ---------------------------------------------------------------
@@ -68,7 +77,78 @@ ns_write "<li>Enabling projects ... "
 catch {db_dml enable_projects "update im_projects set project_status_id = [im_project_status_open] where project_status_id = [im_project_status_deleted]"}  err
 ns_write "done<br><pre>$err</pre>\n"
 
+# ---------------------------------------------------------------
+# Set Name, Email, Logo
+# ---------------------------------------------------------------
 
+ns_write "<h2>Setting Name, Email, Logo</h2>\n";
+
+ns_write "<li>setting name ... "
+catch {db_dml set_name "update im_companies set company_name = :name_name where company_path='internal' "} err
+ns_write "done<br><pre>$err</pre>\n"
+
+ns_write "<li>setting email ... "
+parameter::set_from_package_key -package_key "acs-kernel" -parameter "HostAdministrator" -value $name_email
+parameter::set_from_package_key -package_key "acs-kernel" -parameter "OutgoingSender" -value $name_email
+parameter::set_from_package_key -package_key "acs-kernel" -parameter "AdminOwner" -value $name_email
+parameter::set_from_package_key -package_key "acs-kernel" -parameter "SystemOwner" -value $name_email
+parameter::set_from_package_key -package_key "acs-mail-lite" -parameter "NotificationSender" -value $name_email
+parameter::set_from_package_key -package_key "acs-subsite" -parameter "NewRegistrationEmailAddress" -value $name_email
+ns_write "done<br>\n"
+
+ns_write "<li>setting url ... "
+parameter::set_from_package_key -package_key "acs-kernel" -parameter "SystemURL" -value "http://[ad_host]:[ad_port]/" 
+ns_write "done<br>\n"
+
+if { ![empty_string_p $logo_file]
+} {
+    ns_write "<li>setting logo... "
+
+    set logo_path logo[file extension $logo_file]
+    file rename -force [acs_root_dir]/www/sysconf-logo.tmp [acs_root_dir]/www/$logo_path
+    parameter::set_from_package_key -package_key "intranet-core" -parameter "SystemLogo" -value "/$logo_path"
+    parameter::set_from_package_key -package_key "intranet-core" -parameter "SystemLogoLink" -value $logo_url
+    ns_write "done<br>\n"
+}
+
+# ---------------------------------------------------------------
+# Profile Configuration
+# ---------------------------------------------------------------
+
+ns_write "<h2>Profiles</h2>\n";
+
+set subsite_id [ad_conn subsite_id]
+
+array set group_ids {
+    employees        463
+    project_managers 467
+    senior_managers  469
+}
+
+foreach i [array names group_ids] {
+    ns_write "<li>"
+    ns_write [lang::message::lookup "" "intranet-sysconfig.profiles_$i" $i] 
+
+    set party_id $group_ids($i)
+
+    if {[info exists profiles_array($i,all_companies)] || $i=="senior_managers"} {
+	if {[catch { db_string setting_profiles "select acs_permission__grant_permission(:subsite_id, :party_id, 'edit_companies_all')" } err]} { ns_write $err }
+	if {[catch { db_string setting_profiles "select acs_permission__grant_permission(:subsite_id, :party_id, 'view_companies_all')" } err]} { ns_write $err }
+    }	  
+
+    if {[info exists profiles_array($i,all_projects)] || $i=="senior_managers"} {
+	if {[catch { db_string setting_profiles "select acs_permission__grant_permission(:subsite_id, :party_id, 'edit_projects_all')" } err]} { ns_write $err }
+	if {[catch { db_string setting_profiles "select acs_permission__grant_permission(:subsite_id, :party_id, 'view_projects_all')" } err]} { ns_write $err }
+	if {[catch { db_string setting_profiles "select acs_permission__grant_permission(:subsite_id, :party_id, 'view_timesheet_tasks_all')" } err]} {	ns_write $err }
+	
+    }
+    if {[info exists profiles_array($i,finance)] || $i=="senior_managers"} {
+	foreach j [list add_budget add_budget_hours add_costs add_finance add_invoices add_payments fi_read_all fi_write_all view_costs view_expenses_all view_finance view_hours_all view_invoices view_payments] {
+	    if {[catch { db_string setting_profiles "select acs_permission__grant_permission(:subsite_id, :party_id, :j)" } err]} {	    ns_write $err }
+	}
+    }
+    ns_write "...done<br>\n"
+}
 
 # ---------------------------------------------------------------
 # Sector Configuration
