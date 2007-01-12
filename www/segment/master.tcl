@@ -14,6 +14,17 @@ ad_page_contract {
     features:optional
     deptcomp:optional
     prodtest:optional
+
+    name:optional
+    { name_name:optional Tigerpond }
+    { name_email:optional sysadmin@tigerpond.com }
+
+    logo:optional
+    logo_file:optional
+    { logo_url:optional http://www.project-open.com/ }
+
+    profiles:optional
+    profiles_array:array,optional
 }
 
 # ---------------------------------------------------------------
@@ -30,13 +41,13 @@ if {!$user_is_admin_p} {
 set base_url "/intranet-sysconfig/segment"
 
 # Define Wizard params
-set pages [list index sector deptcomp features orgsize prodtest confirm]
-
+set pages [list index sector deptcomp features orgsize name logo profiles prodtest confirm]
+set vars $pages
+lappend vars name_name name_email logo_file logo_url profiles_array:multiple
 
 # Frequent used HTML snippets
 set bg "/intranet/images/girlongrass.600x400.jpg"
 set po "<span class=brandsec>&\\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\\#91;</span>"
-
 
 # ---------------------------------------------------------------
 # Advance Component
@@ -67,7 +78,15 @@ set url_pieces [split $url "/"]
 set url_last_piece [lindex $url_pieces [expr [llength $url_pieces]-1]]
 set page $url_last_piece
 
+# ---------------------------------------------------------------
+# Handle logo file upload
+# ---------------------------------------------------------------
 
+set tmp_filename [ns_queryget logo_file.tmpfile]
+if {![empty_string_p $tmp_filename] 
+} { 
+    file copy -force $tmp_filename [acs_root_dir]/www/sysconf-logo.tmp
+}
 
 # ---------------------------------------------------------------
 # See what variables to export
@@ -75,15 +94,14 @@ set page $url_last_piece
 # ---------------------------------------------------------------
 
 set export_vars [list]
-foreach p $pages {
-    if {$p == $page} { continue }
+foreach p $vars {
+    set p_first_piece [lindex [split $p "_"] 0]
+
+    if {$p_first_piece == $page} { continue }
     lappend export_vars $p
 }
 
-set cmd [linsert $export_vars 0 "export_form_vars"]
-set export_vars [eval $cmd]
-
-
+set export_vars [eval "export_vars -form { $export_vars }"]
 
 # ---------------------------------------------------------------
 # Setup << Pref & Next >> Buttons
