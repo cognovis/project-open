@@ -19,6 +19,9 @@ ad_page_contract {
     { sales_rep_id:integer 0 }
     { project_id:integer 0 }
     { customer_id:integer 0 }
+    { project_status_ids:multiple {76 78 79} }
+
+
 }
 
 # ------------------------------------------------------------
@@ -197,6 +200,11 @@ if {0 != $project_id && "" != $project_id} {
     )"
 }
 
+if {[llength $project_status_ids] > 0} {
+    lappend criteria "p.project_status_id in ([join $project_status_ids ","])"
+} 
+
+
 set where_clause [join $criteria " and\n            "]
 if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
@@ -349,15 +357,15 @@ set report_def [list \
 		<b><a href=$project_url$project_id>$project_name</a></b>"
 		"" 
 		"" 
-		"<nobr><i>$invoice_subtotal $default_currency</i></nobr>" 
-		"<nobr><i>$delnote_subtotal $default_currency</i></nobr>" 
-		"<nobr><i>$quote_subtotal $default_currency</i></nobr>" 
-		"<nobr><i>$bill_subtotal $default_currency</i></nobr>" 
-		"<nobr><i>$po_subtotal $default_currency</i></nobr>"
-		"<nobr><i>$expense_subtotal $default_currency</i></nobr>"
-		"<nobr><i>$timesheet_subtotal $default_currency</i></nobr>"
-		"<nobr><i>$po_per_quote_perc</i></nobr>"
-		"<nobr><i>$gross_profit</i></nobr>"
+		"<nobr><i>$invoice_subsubtotal $default_currency</i></nobr>" 
+		"<nobr><i>$delnote_subsubtotal $default_currency</i></nobr>" 
+		"<nobr><i>$quote_subsubtotal $default_currency</i></nobr>" 
+		"<nobr><i>$bill_subsubtotal $default_currency</i></nobr>" 
+		"<nobr><i>$po_subsubtotal $default_currency</i></nobr>"
+		"<nobr><i>$expense_subsubtotal $default_currency</i></nobr>"
+		"<nobr><i>$timesheet_subsubtotal $default_currency</i></nobr>"
+		"<nobr><i>$po_per_quote_perc_subsubtotal</i></nobr>"
+		"<nobr><i>$gross_profit_subsubtotal</i></nobr>"
             } \
     ] \
     footer {  
@@ -365,131 +373,80 @@ set report_def [list \
 	""
 	""
 	"" 
-	"<b>$invoice_total $default_currency</b>" 
-	"<b>$delnote_total $default_currency</b>" 
-	"<b>$quote_total $default_currency</b>" 
-	"<b>$bill_total $default_currency</b>" 
-	"<b>$po_total $default_currency</b>"
-	"<b>$expense_total $default_currency</b>"
-	"<b>$timesheet_total $default_currency</b>"
-	"<b>$po_per_quote_perc</b>"
-	"<b>$gross_profit</b>"
+	"<b>$invoice_subtotal $default_currency</b>" 
+	"<b>$delnote_subtotal $default_currency</b>" 
+	"<b>$quote_subtotal $default_currency</b>" 
+	"<b>$bill_subtotal $default_currency</b>" 
+	"<b>$po_subtotal $default_currency</b>"
+	"<b>$expense_subtotal $default_currency</b>"
+	"<b>$timesheet_subtotal $default_currency</b>"
+	"<b>$po_per_quote_perc_subtotal</b>"
+	"<b>$gross_profit_subtotal</b>"
     } \
 ]
 
 # Global header/footer
 set header0 {"Cust" "Project" "Name" "Sales Rep" "Invoice" "Delnote" "Quote" "Bill" "PO" "Expense" "Timesheet" "PO/Quote" "Gross Profit"}
 set footer0 {
+	"" 
+	""
+	""
+	"<br><b><i>Total:</i></b>" 
+	"<br><b><i>$invoice_total $default_currency</i></b>" 
+	"<br><b><i>$delnote_total $default_currency</i></b>" 
+	"<br><b><i>$quote_total $default_currency</i></b>" 
+	"<br><b><i>$bill_total $default_currency</i></b>" 
+	"<br><b><i>$po_total $default_currency</i></b>"
+	"<br><b><i>$expense_total $default_currency</i></b>"
+	"<br><b><i>$timesheet_total $default_currency</i></b>"
+	"<br><b><i>$po_per_quote_perc_total</i></b>"
+	"<br><b><i>$gross_profit_total</i></b>"
 }
 
-#
-# Subtotal Counters (per project)
-#
-set invoice_subtotal_counter [list \
-        pretty_name "Invoice Amount" \
-        var invoice_subtotal \
-        reset \$project_id \
-        expr "\$invoice_amount+0" \
-]
-
-set delnote_subtotal_counter [list \
-        pretty_name "Delnote Amount" \
-        var delnote_subtotal \
-        reset \$project_id \
-        expr "\$delnote_amount+0" \
-]
-
-set quote_subtotal_counter [list \
-        pretty_name "Quote Amount" \
-        var quote_subtotal \
-        reset \$project_id \
-        expr "\$quote_amount+0" \
-]
-
-set bill_subtotal_counter [list \
-        pretty_name "Bill Amount" \
-        var bill_subtotal \
-        reset \$project_id \
-        expr "\$bill_amount+0" \
-]
-
-set po_subtotal_counter [list \
-        pretty_name "Po Amount" \
-        var po_subtotal \
-        reset \$project_id \
-        expr "\$po_amount+0" \
-]
-
-set expense_subtotal_counter [list \
-        pretty_name "Expense Amount" \
-        var expense_subtotal \
-        reset \$project_id \
-        expr "\$expense_amount+0" \
-]
-
-set timesheet_subtotal_counter [list \
-        pretty_name "Timesheet Amount" \
-        var timesheet_subtotal \
-        reset \$project_id \
-        expr "\$timesheet_amount+0" \
-]
 
 #
-# Grand Total Counters
+# SubSubtotal Counters (per project)
 #
-set invoice_grand_total_counter [list \
-        pretty_name "Invoice Amount" \
-        var invoice_total \
-        reset \$project_customer_id \
-        expr "\$invoice_amount+0" \
-]
-
-set delnote_grand_total_counter [list \
-        pretty_name "Delnote Amount" \
-        var delnote_total \
-        reset \$project_customer_id \
-        expr "\$delnote_amount+0" \
-]
-
-set quote_grand_total_counter [list \
-        pretty_name "Quote Amount" \
-        var quote_total \
-        reset \$project_customer_id \
-        expr "\$quote_amount+0" \
-]
-
-set bill_grand_total_counter [list \
-        pretty_name "Bill Amount" \
-        var bill_total \
-        reset \$project_customer_id \
-        expr "\$bill_amount+0" \
-]
-
-set po_grand_total_counter [list \
-        pretty_name "Po Amount" \
-        var po_total \
-        reset \$project_customer_id \
-        expr "\$po_amount+0" \
-]
-
-set expense_grand_total_counter [list \
-        pretty_name "Expense Amount" \
-        var expense_total \
-        reset \$project_customer_id \
-        expr "\$expense_amount+0" \
-]
-
-set timesheet_grand_total_counter [list \
-        pretty_name "Timesheet Amount" \
-        var timesheet_total \
-        reset \$project_customer_id \
-        expr "\$timesheet_amount+0" \
-]
+set invoice_subsubtotal_counter [list pretty_name "Invoice Amount" var invoice_subsubtotal reset \$project_id expr "\$invoice_amount+0"]
+set delnote_subsubtotal_counter [list pretty_name "Delnote Amount" var delnote_subsubtotal reset \$project_id expr "\$delnote_amount+0"]
+set quote_subsubtotal_counter [list pretty_name "Quote Amount" var quote_subsubtotal reset \$project_id expr "\$quote_amount+0"]
+set bill_subsubtotal_counter [list pretty_name "Bill Amount" var bill_subsubtotal reset \$project_id expr "\$bill_amount+0"]
+set po_subsubtotal_counter [list pretty_name "Po Amount" var po_subsubtotal reset \$project_id expr "\$po_amount+0"]
+set expense_subsubtotal_counter [list pretty_name "Expense Amount" var expense_subsubtotal reset \$project_id expr "\$expense_amount+0"]
+set timesheet_subsubtotal_counter [list pretty_name "Timesheet Amount" var timesheet_subsubtotal reset \$project_id expr "\$timesheet_amount+0"]
 
 
+#
+# SubTotal Counters (per customer)
+#
+set invoice_subtotal_counter [list pretty_name "Invoice Amount" var invoice_subtotal reset \$project_customer_id expr "\$invoice_amount+0"]
+set delnote_subtotal_counter [list pretty_name "Delnote Amount" var delnote_subtotal reset \$project_customer_id expr "\$delnote_amount+0"]
+set quote_subtotal_counter [list pretty_name "Quote Amount" var quote_subtotal reset \$project_customer_id expr "\$quote_amount+0"]
+set bill_subtotal_counter [list pretty_name "Bill Amount" var bill_subtotal reset \$project_customer_id expr "\$bill_amount+0"]
+set po_subtotal_counter [list pretty_name "Po Amount" var po_subtotal reset \$project_customer_id expr "\$po_amount+0"]
+set expense_subtotal_counter [list pretty_name "Expense Amount" var expense_subtotal reset \$project_customer_id expr "\$expense_amount+0"]
+set timesheet_subtotal_counter [list pretty_name "Timesheet Amount" var timesheet_subtotal reset \$project_customer_id expr "\$timesheet_amount+0"]
+
+#
+# GrandTotal Counters (everything)
+#
+set invoice_total_counter [list pretty_name "Invoice Amount" var invoice_total reset 0 expr "\$invoice_amount+0"]
+set delnote_total_counter [list pretty_name "Delnote Amount" var delnote_total reset 0 expr "\$delnote_amount+0"]
+set quote_total_counter [list pretty_name "Quote Amount" var quote_total reset 0 expr "\$quote_amount+0"]
+set bill_total_counter [list pretty_name "Bill Amount" var bill_total reset 0 expr "\$bill_amount+0"]
+set po_total_counter [list pretty_name "Po Amount" var po_total reset 0 expr "\$po_amount+0"]
+set expense_total_counter [list pretty_name "Expense Amount" var expense_total reset 0 expr "\$expense_amount+0"]
+set timesheet_total_counter [list pretty_name "Timesheet Amount" var timesheet_total reset 0 expr "\$timesheet_amount+0"]
 
 
 set counters [list \
+	$invoice_subsubtotal_counter \
+	$delnote_subsubtotal_counter \
+	$quote_subsubtotal_counter \
+	$bill_subsubtotal_counter \
+	$po_subsubtotal_counter \
+	$expense_subsubtotal_counter \
+	$timesheet_subsubtotal_counter \
 	$invoice_subtotal_counter \
 	$delnote_subtotal_counter \
 	$quote_subtotal_counter \
@@ -497,13 +454,13 @@ set counters [list \
 	$po_subtotal_counter \
 	$expense_subtotal_counter \
 	$timesheet_subtotal_counter \
-	$invoice_grand_total_counter \
-	$delnote_grand_total_counter \
-	$quote_grand_total_counter \
-	$bill_grand_total_counter \
-	$po_grand_total_counter \
-	$expense_grand_total_counter \
-	$timesheet_grand_total_counter \
+	$invoice_total_counter \
+	$delnote_total_counter \
+	$quote_total_counter \
+	$bill_total_counter \
+	$po_total_counter \
+	$expense_total_counter \
+	$timesheet_total_counter \
 ]
 
 
@@ -543,31 +500,36 @@ switch $output_format {
 		    <input type=textfield name=end_date value=$end_date>
 		  </td>
 		</tr>
-
-                <tr>
-                  <td class=form-label>Company Type</td>
-                  <td class=form-widget>
-                    [im_category_select -include_empty_p 1 "Intranet Company Type" customer_type_id $customer_type_id]
-                  </td>
-                </tr>
-                <tr>
-                  <td class=form-label>Company</td>
-                  <td class=form-widget>
-                    [im_company_select customer_id $customer_id]
-                  </td>
-                </tr>
-                <tr>
-                  <td class=form-label>Sales Rep</td>
-                  <td class=form-widget>
+	        <tr>
+	          <td class=form-label>Project Status</td>
+	          <td class=form-widget>
+	            [im_category_select_multiple "Intranet Project Status" intranet_project_status $project_status_ids 3 multiple]
+	          </td>
+	        </tr>
+	        <tr>
+	          <td class=form-label>Company Type</td>
+	          <td class=form-widget>
+	            [im_category_select -include_empty_p 1 "Intranet Company Type" customer_type_id $customer_type_id]
+	          </td>
+	        </tr>
+	        <tr>
+	          <td class=form-label>Company</td>
+	          <td class=form-widget>
+	            [im_company_select customer_id $customer_id]
+	          </td>
+	        </tr>
+	        <tr>
+	          <td class=form-label>Sales Rep</td>
+	          <td class=form-widget>
 		    [im_options_to_select_box sales_rep_id $sales_rep_options $sales_rep_id]
-                  </td>
-                </tr>
-                <tr>
-                  <td class=form-label>Format</td>
-                  <td class=form-widget>
-                    [im_report_output_format_select output_format "" $output_format]
-                  </td>
-                </tr>
+	          </td>
+	        </tr>
+	        <tr>
+	          <td class=form-label>Format</td>
+	          <td class=form-widget>
+	            [im_report_output_format_select output_format "" $output_format]
+	          </td>
+	        </tr>
 		<tr>
 		  <td class=form-label></td>
 		  <td class=form-widget><input type=submit value=Submit></td>
@@ -591,7 +553,6 @@ set delnote_total 0
 set quote_total 0
 set bill_total 0
 set po_total 0
-set invoice_total 0
 set timesheet_total 0
 
 set invoice_subtotal 0
@@ -599,8 +560,14 @@ set delnote_subtotal 0
 set quote_subtotal 0
 set bill_subtotal 0
 set po_subtotal 0
-set invoice_subtotal 0
 set timesheet_subtotal 0
+
+set invoice_subsubtotal 0
+set delnote_subsubtotal 0
+set quote_subsubtotal 0
+set bill_subsubtotal 0
+set po_subsubtotal 0
+set timesheet_subsubtotal 0
 
 im_report_render_row \
     -output_format $output_format \
@@ -634,13 +601,21 @@ db_foreach sql $sql {
 	im_report_update_counters -counters $counters
 	
 	# Calculated Variables 
-	set po_per_quote_perc "undef"
-	if {[expr $quote_subtotal+0] != 0} {
-	  set po_per_quote_perc [expr int(10000.0 * $po_subtotal / $quote_subtotal) / 100.0]
-	  set po_per_quote_perc "$po_per_quote_perc %"
+	set po_per_quote_perc_subsubtotal "undef"
+	if {[expr $quote_subsubtotal+0] != 0} {
+	  set po_per_quote_perc_subsubtotal [expr int(10000.0 * $po_subsubtotal / $quote_subsubtotal) / 100.0]
+	  set po_per_quote_perc_subsubtotal "$po_per_quote_perc_subsubtotal %"
 	}
+	set gross_profit_subsubtotal [expr $invoice_subsubtotal - $bill_subsubtotal]
 
-	set gross_profit [expr $invoice_subtotal - $bill_subtotal]
+
+	# Calculated Variables for footer0
+	set po_per_quote_perc_subtotal "undef"
+	if {[expr $quote_subtotal+0] != 0} {
+	    set po_per_quote_perc_subtotal [expr int(10000.0 * $po_subtotal / $quote_subtotal) / 100.0]
+	}
+	set gross_profit_subtotal [expr $invoice_subtotal - $bill_subtotal]
+
 
 	set last_value_list [im_report_render_header \
 	    -output_format $output_format \
@@ -649,25 +624,24 @@ db_foreach sql $sql {
 	    -level_of_detail $level_of_detail \
 	    -row_class $class \
 	    -cell_class $class
-        ]
+	]
 
-        set footer_array_list [im_report_render_footer \
+	set footer_array_list [im_report_render_footer \
 	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
 	    -row_class $class \
 	    -cell_class $class
-        ]
+	]
 }
 
 # Calculated Variables for footer0
-set po_per_quote_perc "undef"
-if {[expr $quote_subtotal+0] != 0} {
-    set po_per_quote_perc [expr int(10000.0 * $po_total / $quote_total) / 100.0]
+set po_per_quote_perc_total "undef"
+if {[expr $quote_total+0] != 0} {
+    set po_per_quote_perc_total [expr int(10000.0 * $po_total / $quote_total) / 100.0]
 }
-
-set gross_profit [expr $invoice_total - $bill_total]
+set gross_profit_total [expr $invoice_total - $bill_total]
 
 
 
