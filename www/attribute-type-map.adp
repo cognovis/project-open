@@ -12,16 +12,17 @@
 <li>Third = "Edit" - Edit the field
 </ul>
 
-<table>
 <form action=attribute-type-map-2 method=POST>
 <%= [export_form_vars acs_object_type return_url] %>
+
+<table>
 @header_html;noquote@
 @body_html;noquote@
 <tr>
   <td></td>
   <td colspan=99><input type=submit></td>
 </tr>
-</form>
 </table>
+</form>
 
 
