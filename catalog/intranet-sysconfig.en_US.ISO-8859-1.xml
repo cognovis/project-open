@@ -6,6 +6,8 @@
   <msg key="Page_orgsize">Size</msg>
   <msg key="Page_prodtest">Evaluation</msg>
   <msg key="Page_sector">Sector</msg>
+  <msg key="Page_name">Name</msg>
+  <msg key="Page_logo">Logo</msg>
   <msg key="SysConfig">SysConfig</msg>
   <msg key="SysConfig_Wizard">SysConfig Wizard</msg>
   <msg key="System_Config_Wizard">System Configuration Wizard</msg>
