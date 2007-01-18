@@ -141,7 +141,7 @@
 	            <table border=0 cellspacing=1 cellpadding=0>
 	              <tr> 
 	                <td>TAX&nbsp;</td>
-	                <td><input type=text name=tax value='@tax@' size=4> % &nbsp;</td>
+	                <td><input type=text name=tax value='@default_tax@' size=4> % &nbsp;</td>
 	              </tr>
 	            </table>
 	          </td>

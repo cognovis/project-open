@@ -100,6 +100,7 @@ set invoice_nr [im_next_invoice_nr -invoice_type_id $target_cost_type_id]
 set invoice_date $todays_date
 set default_payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 30] 
 set default_vat 0
+set default_tax 0
 set tax 0
 set note ""
 set default_payment_method_id ""
