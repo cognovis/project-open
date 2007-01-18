@@ -110,6 +110,7 @@ set cost_status_id [im_cost_status_created]
 set tax 0
 set note ""
 set default_vat 0
+set default_tax 0
 set default_payment_method_id ""
 set default_invoice_template_id ""
 
@@ -632,7 +633,7 @@ set grand_total_html "
             <table border=0 cellspacing=1 cellpadding=0>
               <tr> 
                 <td>[_ intranet-trans-invoices.TAX]</td>
-                <td><input type=text name=tax value='$tax' size=4> % &nbsp;</td>
+                <td><input type=text name=tax value='$default_tax' size=4> % &nbsp;</td>
               </tr>
             </table>
           </td>
