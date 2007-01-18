@@ -58,7 +58,7 @@ if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $
 # ------------------------------------------------------------
 # Page Settings
 
-set grey "grey"
+set gray "gray"
 
 set page_title [lang::message::lookup "" intranet-reporting.Project_Transfer_Prices "Project Transfer Prices"]
 set context_bar [im_context_bar $page_title]
@@ -323,9 +323,9 @@ set report_def [list \
 			"<nobr>$hours</nobr>"
 			"<nobr>$timesheet_amount_pretty</nobr>"
 			"<nobr>$expense_amount_pretty</nobr>"
-			"<nobr><font color=$grey>$po_amount_pretty</font></nobr>"
+			"<nobr><font color=$gray>$po_amount_pretty</font></nobr>"
 			"<nobr>$bill_amount_pretty</nobr>"
-			"<nobr><font color=$grey>$quote_amount_pretty</font></nobr>"
+			"<nobr><font color=$gray>$quote_amount_pretty</font></nobr>"
 			"<nobr>$invoice_amount_pretty</nobr>"
 			""
 			""
@@ -340,9 +340,9 @@ set report_def [list \
 		"<i><nobr>$hours_subtotal</nobr></i>"	
 		"<i><nobr>$timesheet_subtotal $default_currency</nobr></i>" 
 		"<i><nobr>$expense_subtotal $default_currency</nobr></i>" 
-		"<i><nobr><font color=$grey>$po_subtotal $default_currency</font></nobr></i>"
+		"<i><nobr><font color=$gray>$po_subtotal $default_currency</font></nobr></i>"
 		"<i><nobr>$bill_subtotal $default_currency</nobr></i>" 
-		"<i><nobr><font color=$grey>$quote_subtotal $default_currency</font></nobr></i>" 
+		"<i><nobr><font color=$gray>$quote_subtotal $default_currency</font></nobr></i>" 
 		"<i><nobr>$invoice_subtotal $default_currency</nobr></i>" 
 		"" 
 		"<i><nobr>$benefit_subtotal $default_currency</nobr></i>" 
