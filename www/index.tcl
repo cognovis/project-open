@@ -123,6 +123,10 @@ if {0 != $project_id} {
     set project_where "\tand c.project_id = :project_id\n" 
 }
 
+# Allow accounting guys to see all expense items,
+# not just their own ones...
+set personal_only_sql "provider_id = :user_id"
+if {$create_invoice_p} { set personal_only_sql "" }
 
 
 db_multirow -extend {expense_chk expense_new_url} expense_lines expenses_lines "
@@ -148,9 +152,8 @@ db_multirow -extend {expense_chk expense_new_url} expense_lines expenses_lines "
 	im_expense_type et, 
 	im_expense_payment_type ept
   where
-	provider_id = :user_id
+	cost_id = expense_id
 	$project_where
-	and cost_id = expense_id
 	and et.expense_type_id =e.expense_type_id 
 	and ept.expense_payment_type_id = e.expense_payment_type_id
    order by
