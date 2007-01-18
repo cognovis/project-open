@@ -355,6 +355,7 @@ set middle_sql "
 	select
 		c.*,
 		im_category_from_id(c.cost_type_id) as cost_type,
+		im_category_from_id(c.cost_status_id) as cost_status,
 		to_char(c.effective_date, 'YYYY') as year,
 		to_char(c.effective_date, 'MM') as month_of_year,
 		to_char(c.effective_date, 'Q') as quarter_of_year,
