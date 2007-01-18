@@ -125,7 +125,7 @@ if {0 != $project_id} {
 
 # Allow accounting guys to see all expense items,
 # not just their own ones...
-set personal_only_sql "provider_id = :user_id"
+set personal_only_sql "and provider_id = :user_id"
 if {$create_invoice_p} { set personal_only_sql "" }
 
 
@@ -153,6 +153,7 @@ db_multirow -extend {expense_chk expense_new_url} expense_lines expenses_lines "
 	im_expense_payment_type ept
   where
 	cost_id = expense_id
+	$personal_only_sql
 	$project_where
 	and et.expense_type_id =e.expense_type_id 
 	and ept.expense_payment_type_id = e.expense_payment_type_id
@@ -215,23 +216,38 @@ template::list::create \
 	}
     }
 
-db_multirow -extend {invoice_chk} invoice_lines "get invoices" {
-    select c1.cost_id,  
-	   c1.amount,
-	   c1.currency, 
-	   c1.vat, 
-	   to_char(c1.effective_date,'DD/MM/YYYY') as effective_date
-    from im_costs c1
-    where c1.project_id = :project_id 
-	and c1.cost_id in (select invoice_id 
-			from im_costs c2, 
-			     im_expenses 
-			where c2.project_id = :project_id 
+
+# Allow accounting guys to see all expense items,
+# not just their own ones...
+set c1_personal_only_sql "and c1.provider_id = :user_id"
+set c2_personal_only_sql "and c2.provider_id = :user_id"
+if {$create_invoice_p} { 
+	set c1_personal_only_sql "" 
+	set c2_personal_only_sql "" 
+}
+
+db_multirow -extend {invoice_chk} invoice_lines "get invoices" "
+    select
+	c1.cost_id,  
+	c1.amount,
+	c1.currency, 
+	c1.vat, 
+	to_char(c1.effective_date,'DD/MM/YYYY') as effective_date
+    from 
+	im_costs c1
+    where 
+	c1.project_id = :project_id 
+	and c1.cost_id in (
+		select	invoice_id 
+		from	im_costs c2, 
+			im_expenses 
+		where
+			c2.project_id = :project_id 
 			and c2.cost_id = expense_id
-			and c2.provider_id = :user_id
-		       )
-	and c1. provider_id = :user_id
-} {
+			$c2_personal_only_sql
+	)
+	$c1_personal_only_sql
+" {
 
     set amount "[format %.2f [expr $amount * [expr 1 + [expr $vat / 100]]]] $currency"
     set vat "[format %.1f $vat] %"
