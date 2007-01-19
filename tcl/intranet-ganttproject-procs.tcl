@@ -115,11 +115,12 @@ ad_proc -public im_ganttproject_write_project {
     $task_id_node setAttribute taskproperty-id tpc1
     $task_id_node setAttribute value $project_id
 
-    # Add dependencies to predecessors
+    # Add dependencies to predecessors 
+    # 9650 == 'Intranet Timesheet Task Dependency Type'
     set dependency_sql "
 	    	select	* 
 		from	im_timesheet_task_dependencies 
-	    	where	task_id_one = :task_id
+	    	where	task_id_one = :task_id AND dependency_type_id=9650
     "
     db_foreach dependency $dependency_sql {
 	set depend_node [$doc createElement depend]
