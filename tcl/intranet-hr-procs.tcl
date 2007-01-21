@@ -74,9 +74,9 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 		im_name_from_user_id(pe.person_id) as user_name,
 		p.email,
 		e.*,
-		rc.*,
-		to_char(rc.start_date,:date_format) as start_date_formatted,
-		to_char(rc.end_date,:date_format) as end_date_formatted,
+		ci.*,
+		to_char(ci.start_date,:date_format) as start_date_formatted,
+		to_char(ci.end_date,:date_format) as end_date_formatted,
 		to_char(e.birthdate,:date_format) as birthdate_formatted,
 		to_char(salary, :number_format) as salary_formatted,
 		to_char(hourly_cost, :number_format) as hourly_cost_formatted,
@@ -88,20 +88,21 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 		im_name_from_user_id(e.supervisor_id) as supervisor_name
 	from	
 		users u,
-		im_employees e,
-		im_repeating_costs rc,
-		im_costs ci,
 		parties p,
 		persons pe,
-		im_cost_centers cc
+		im_employees e
+		LEFT OUTER JOIN im_cost_centers cc ON (e.department_id = cc.cost_center_id)
+		LEFT OUTER JOIN (
+			select	ci.*, rc.*
+			from	im_costs ci,
+				im_repeating_costs rc
+			where	ci.cost_id = rc.rep_cost_id
+		) ci ON (e.employee_id = ci.cause_object_id)
 	where	
 		pe.person_id = u.user_id
 		and p.party_id = u.user_id
-		and u.user_id = ci.cause_object_id
-		and ci.cost_id = rc.rep_cost_id
 		and u.user_id = :employee_id
 		and u.user_id = e.employee_id
-		and e.department_id = cc.cost_center_id
     "} err_msg]} {
 	set employee_info_exists 0
     } else {
