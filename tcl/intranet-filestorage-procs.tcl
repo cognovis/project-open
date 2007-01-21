@@ -731,7 +731,7 @@ ad_proc im_filestorage_copy_source_directory { project_id sub_project_id } {
     " -default ""]
 
     set source_dir "$project_path/${source}_$source_language"
-    set sub_source_dir "$sub_project_path/${source}_$source_language"
+    set sub_source_dir "$sub_project_path"
 
     # Copy files if source_language is defined...
     if {"" != $source_language} {
