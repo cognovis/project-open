@@ -115,6 +115,13 @@ ad_proc -public im_ganttproject_write_task {
     $task_id_node setAttribute taskproperty-id tpc1
     $task_id_node setAttribute value $project_id
 
+    if {$note != ""} {
+	set note_node [$doc createElement "notes"]
+	$note_node appendChild [$doc createTextNode $note]
+	$project_node appendChild $note_node
+    }
+
+
     # Add dependencies to predecessors 
     # 9650 == 'Intranet Timesheet Task Dependency Type'
     set dependency_sql "
@@ -792,20 +799,6 @@ ad_proc -public im_gp_save_tasks2 {
 	if {$create_tasks} { ns_write "Updating existing task\n" }
     }
 
-    db_dml project_update "
-	    update im_projects set
-		project_name	= :task_name,
-		project_nr	= :task_nr,
-		parent_id	= :super_project_id,
-		start_date	= :start_date,
-		end_date	= :end_date,
-		note		= :description,
-		sort_order	= :sort_order,
-		percent_completed = :percent_completed
-	    where
-		project_id = :task_id
-    "
-
     if {"" != $super_project_id} {
 
 	set task_id_one $super_project_id
@@ -829,7 +822,9 @@ ad_proc -public im_gp_save_tasks2 {
     foreach taskchild [$task_node childNodes] {
 	incr sort_order
 	switch [$taskchild nodeName] {
-	    notes { set description [$taskchild nodeValue]}
+	    notes { 
+		set description [$taskchild text] 
+	    }
 	    depend { 
 		if {$save_dependencies} {
 
@@ -854,6 +849,22 @@ ad_proc -public im_gp_save_tasks2 {
 	}
     }
     ns_write "</ul>\n"
+
+    ns_log Notice "xxx: updating $task_name $task_nr $description"
+
+    db_dml project_update "
+	    update im_projects set
+		project_name	= :task_name,
+		project_nr	= :task_nr,
+		parent_id	= :super_project_id,
+		start_date	= :start_date,
+		end_date	= :end_date,
+		note		= :description,
+		sort_order	= :sort_order,
+		percent_completed = :percent_completed
+	    where
+		project_id = :task_id
+    "
 
     return [array get task_hash]
 }
