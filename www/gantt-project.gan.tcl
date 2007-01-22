@@ -250,7 +250,7 @@ $project_node appendXML "
 </calendars>"
 
 # -------- Description -------------
-$project_node appendXML "<description>[ns_quotehtml $note]</description>"
+$project_node appendXML "<description>[ns_quotehtml $description]</description>"
 
 
 
