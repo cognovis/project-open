@@ -99,7 +99,7 @@ $tasks_node appendXML "
 "
 
 # Recursively write out the task hierarchy
-im_ganttproject_write_project \
+im_ganttproject_write_subtasks \
     -default_start_date $project_start_date \
     -default_duration $project_duration \
     $project_id \
@@ -178,6 +178,12 @@ db_foreach project_resources $project_resources_sql {
 #   <allocation task-id="12302" resource-id="8892" function="Default:0" responsible="true" load="50.0"/>
 # </allocations>
 
+
+# TODO:
+# disabled for now, "im_timesheet_task_allocations" doesn't exist anymore
+#
+if 0 {
+
 set allocations_node [$doc createElement allocations]
 $project_node appendChild $allocations_node
 
@@ -218,6 +224,9 @@ db_foreach project_allocations $project_allocations_sql {
     $allocation_node setAttribute responsible $responsible
     $allocation_node setAttribute load $percentage
 }
+
+}
+
 
 
 # -------- Zooming State -------------

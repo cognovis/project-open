@@ -35,7 +35,7 @@ ad_proc -private im_package_ganttproject_id_helper {} {
 # Recursively write out task structure
 # ----------------------------------------------------------------------
 
-ad_proc -public im_ganttproject_write_project { 
+ad_proc -public im_ganttproject_write_task { 
     { -default_start_date "" }
     { -default_duration "" }
     project_id
@@ -45,7 +45,7 @@ ad_proc -public im_ganttproject_write_project {
     Recursively write out the information about projects and tasks
     below a specific project
 } {
-    ns_log Notice "im_ganttproject_write_project: doc=$doc, tree_node=$tree_node, project_id=$project_id, default_start_date=$default_start_date, default_duration=$default_duration"
+    ns_log Notice "im_ganttproject_write_task: doc=$doc, tree_node=$tree_node, project_id=$project_id, default_start_date=$default_start_date, default_duration=$default_duration"
     if { [security::secure_conn_p] } {
 	set base_url "https://[ad_host][ad_port]"
     } else {
@@ -130,6 +130,22 @@ ad_proc -public im_ganttproject_write_project {
 	$depend_node setAttribute difference 0
 	$depend_node setAttribute hardness "Strong"
     }
+
+    im_ganttproject_write_subtasks \
+	-default_start_date $start_date \
+	-default_duration $duration \
+	$project_id \
+	$doc \
+	$project_node
+}
+
+ad_proc -public im_ganttproject_write_subtasks { 
+    { -default_start_date "" }
+    { -default_duration "" }
+    project_id
+    doc
+    tree_node 
+} {
     
     # ------------ Get Sub-Projects and Tasks -------------
     # ... in the right sort_order
@@ -155,15 +171,14 @@ ad_proc -public im_ganttproject_write_project {
     foreach object_record $object_list_list {
 	set object_id [lindex $object_record 0]
 
-	im_ganttproject_write_project \
-	    -default_start_date $start_date \
-	    -default_duration $duration \
+	im_ganttproject_write_task \
+	    -default_start_date $default_start_date \
+	    -default_duration $default_duration \
 	    $object_id \
 	    $doc \
-	    $project_node
+	    $tree_node
     }
 }
-
 
 # ----------------------------------------------------------------------
 # Project Page Component 
