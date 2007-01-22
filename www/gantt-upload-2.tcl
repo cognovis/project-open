@@ -105,10 +105,10 @@ set task_hash_array [im_gp_save_tasks \
 # Description
 # -------------------------------------------------------------------
 
-ns_write "<h2>Saving Description</h2>\n"
+if {[set node [$root_node selectNodes /project/description]] != ""} {
+    ns_write "<h2>Saving Description</h2>\n"
 
-set node [$root_node selectNodes /project/description]
-set description [$node text]
+    set description [$node text]
 
     db_dml project_update "
 	    update im_projects set
@@ -117,42 +117,42 @@ set description [$node text]
 		project_id = :project_id
     "
 
-ns_write "ok\n"
+    ns_write "<ul><li>ok</ul>\n"
+}
 
 # -------------------------------------------------------------------
 # Process Resources
 # <allocation task-id="12391" resource-id="7" function="Default:0" responsible="true" load="100.0"/>
 # -------------------------------------------------------------------
 
-ns_write "<h2>Saving Resources</h2>\n"
-ns_write "<ul>\n"
+if {[set resource_node [$root_node selectNodes /project/resources]] != ""} {
+    ns_write "<h2>Saving Resources</h2>\n"
+    ns_write "<ul>\n"
 
-set resource_node [$root_node selectNodes /project/resources]
-set resource_hash_array [im_gp_save_resources -debug $debug $resource_node]
-
-ns_write "</ul>\n"
-
-
+    set resource_hash_array [im_gp_save_resources -debug $debug $resource_node]
+    
+    ns_write "</ul>\n"
+}
 
 # -------------------------------------------------------------------
 # Process Allocations
 # <allocation task-id="12391" resource-id="7" function="Default:0" responsible="true" load="100.0"/>
 # -------------------------------------------------------------------
 
-if (0) {
-ns_write "<h2>Saving Allocations</h2>\n"
-ns_write "<ul>\n"
+if {[set allocations_node [$root_node selectNodes /project/allocations]] != ""} {
 
-set allocations_node [$root_node selectNodes /project/allocations]
-im_gp_save_allocations \
+    ns_write "<h2>Saving Allocations</h2>\n"
+    ns_write "<ul>\n"
+
+    im_gp_save_allocations \
 	-debug $debug \
 	$allocations_node \
 	$task_hash_array \
         $resource_hash_array
-
-
-ns_write "</ul>\n"
+    
+    ns_write "</ul>\n"
 }
+
 
 #
 # disabled delete for now
