@@ -857,7 +857,7 @@ ad_proc -public im_gp_save_tasks2 {
 		parent_id	= :super_project_id,
 		start_date	= :start_date,
 		end_date	= :end_date,
-		note		= :note
+		note		= :note,
 		sort_order	= :sort_order,
 		percent_completed = :percent_completed
 	    where
