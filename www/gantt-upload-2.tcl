@@ -102,6 +102,24 @@ set task_hash_array [im_gp_save_tasks \
 
 
 # -------------------------------------------------------------------
+# Description
+# -------------------------------------------------------------------
+
+ns_write "<h2>Saving Description</h2>\n"
+
+set node [$root_node selectNodes /project/description]
+set description [$node text]
+
+    db_dml project_update "
+	    update im_projects set
+              description = :description
+	    where
+		project_id = :project_id
+    "
+
+ns_write "ok\n"
+
+# -------------------------------------------------------------------
 # Process Resources
 # <allocation task-id="12391" resource-id="7" function="Default:0" responsible="true" load="100.0"/>
 # -------------------------------------------------------------------
@@ -114,11 +132,14 @@ set resource_hash_array [im_gp_save_resources -debug $debug $resource_node]
 
 ns_write "</ul>\n"
 
+
+
 # -------------------------------------------------------------------
 # Process Allocations
 # <allocation task-id="12391" resource-id="7" function="Default:0" responsible="true" load="100.0"/>
 # -------------------------------------------------------------------
 
+if (0) {
 ns_write "<h2>Saving Allocations</h2>\n"
 ns_write "<ul>\n"
 
@@ -131,7 +152,7 @@ im_gp_save_allocations \
 
 
 ns_write "</ul>\n"
-
+}
 
 #
 # disabled delete for now
