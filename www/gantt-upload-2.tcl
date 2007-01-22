@@ -133,6 +133,11 @@ im_gp_save_allocations \
 ns_write "</ul>\n"
 
 
+#
+# disabled delete for now
+#
+if 0 {
+
 # -------------------------------------------------------------------
 # Delete the tasks that have been deleted in GanttProject
 # -------------------------------------------------------------------
@@ -142,7 +147,10 @@ ns_write "<h2>Deleting Tasks</h2>\n"
 # Extract the list of all task_ids in the GanttProject XML tree.
 set xml_tree [im_gp_extract_xml_tree $root_node $task_hash_array]
 lappend xml_tree $project_id
+
 set xml_list [lsort -integer -unique [im_gp_flatten $xml_tree]]
+
+
 
 # Extract the list of all task_ids from the database
 set db_tree [im_gp_extract_db_tree $project_id]
@@ -174,5 +182,6 @@ db_foreach del_tasks $del_tasks_sql {
     im_timesheet_task_nuke $task_id
 }
 
+}
 
 ns_write [im_footer]

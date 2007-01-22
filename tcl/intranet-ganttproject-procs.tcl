@@ -680,7 +680,7 @@ ad_proc -public im_gp_save_tasks2 {
     set priority [$task_node getAttribute priority ""]
     set expand_p [$task_node getAttribute expand ""]
     set end_date [db_string end_date "select :start_date::date + :duration::integer"]
-    set description ""
+    set note ""
     set task_nr ""
     set task_id 0
     set has_subobjects_p 0
@@ -789,7 +789,7 @@ ad_proc -public im_gp_save_tasks2 {
 			:uom_id,
 			:task_type_id,
 			:task_status_id,
-			:description
+			:note
 		)"
 	    ]
 	    set task_hash($gantt_project_id) $task_id
@@ -823,7 +823,7 @@ ad_proc -public im_gp_save_tasks2 {
 	incr sort_order
 	switch [$taskchild nodeName] {
 	    notes { 
-		set description [$taskchild text] 
+		set note [$taskchild text] 
 	    }
 	    depend { 
 		if {$save_dependencies} {
@@ -850,8 +850,6 @@ ad_proc -public im_gp_save_tasks2 {
     }
     ns_write "</ul>\n"
 
-    ns_log Notice "xxx: updating $task_name $task_nr $description"
-
     db_dml project_update "
 	    update im_projects set
 		project_name	= :task_name,
@@ -859,7 +857,7 @@ ad_proc -public im_gp_save_tasks2 {
 		parent_id	= :super_project_id,
 		start_date	= :start_date,
 		end_date	= :end_date,
-		note		= :description,
+		note		= :note
 		sort_order	= :sort_order,
 		percent_completed = :percent_completed
 	    where
