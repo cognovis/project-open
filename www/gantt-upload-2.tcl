@@ -177,7 +177,7 @@ if {[set ids [array names db_task_ids]]==""} {
 
 db_multirow delete_tasks delete_tasks "
   SELECT
-    project_id,
+    project_id as task_id,
     project_name,
     project_nr
   FROM
@@ -188,8 +188,11 @@ db_multirow delete_tasks delete_tasks "
 
 template::list::create \
     -name delete_tasks \
-    -key project_id \
+    -key task_id \
     -elements {
+	task_id {
+            label "task id"
+        } 
         project_nr {
             label "Task NR"
         } 
@@ -200,6 +203,6 @@ template::list::create \
     -bulk_actions {
         "Delete" "delete-task" "Delete selected tasks"
     } \
-    -bulk_action_export_vars { return_url } \
-    -bulk_action_method post 
+    -bulk_action_export_vars { return_url project_id } \
+    -bulk_action_method post
 
