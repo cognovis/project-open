@@ -20,6 +20,7 @@ ad_page_contract {
     { security_token "" }
     { upload_gan ""}
     { upload_gif ""}
+    return_url
 }
 
 # ---------------------------------------------------------------
@@ -35,7 +36,7 @@ if {"" == $upload_gan && "" == $upload_gif} {
 
 #ToDo: Security
 set today [db_string today "select to_char(now(), 'YYYY-MM-DD')"]
-ad_return_top_of_page "[im_header]\n[im_navbar]"
+#ad_return_top_of_page "[im_header]\n[im_navbar]"
 
 
 # -------------------------------------------------------------------
@@ -66,19 +67,28 @@ if {[catch {
     return
 }
 
-set doc [dom parse $binary_content]
-set root_node [$doc documentElement]
 
+# -------------------------------------------------------------------
+# Get a list of tasks from db (needed for deletion later)
+# -------------------------------------------------------------------
+
+array set db_task_ids {} 
+foreach i [im_gp_extract_db_tree $project_id] {
+    set db_task_ids($i) 1
+}
 
 # -------------------------------------------------------------------
 # Save the new Tasks from GanttProject
 # -------------------------------------------------------------------
 
+set doc [dom parse $binary_content]
+set root_node [$doc documentElement]
+
 # Save the tasks.
 # The task_hash contains a mapping table from gantt_project_ids
 # to task_ids.
 
-ns_write "<h2>Pass 1: Saving Tasks</h2>\n"
+#ns_write "<h2>Pass 1: Saving Tasks</h2>\n"
 set task_hash_array [list]
 set task_hash_array [im_gp_save_tasks \
 	-create_tasks 1 \
@@ -90,7 +100,7 @@ set task_hash_array [im_gp_save_tasks \
 ]
 array set task_hash $task_hash_array
 
-ns_write "<h2>Pass 2: Saving Dependencies</h2>\n"
+#ns_write "<h2>Pass 2: Saving Dependencies</h2>\n"
 set task_hash_array [im_gp_save_tasks \
 	-create_tasks 0 \
 	-save_dependencies 1 \
@@ -100,14 +110,11 @@ set task_hash_array [im_gp_save_tasks \
 	$project_id \
 ]
 
-
 # -------------------------------------------------------------------
 # Description
 # -------------------------------------------------------------------
 
 if {[set node [$root_node selectNodes /project/description]] != ""} {
-    ns_write "<h2>Saving Description</h2>\n"
-
     set description [$node text]
 
     db_dml project_update "
@@ -116,8 +123,6 @@ if {[set node [$root_node selectNodes /project/description]] != ""} {
 	    where
 		project_id = :project_id
     "
-
-    ns_write "<ul><li>ok</ul>\n"
 }
 
 # -------------------------------------------------------------------
@@ -126,12 +131,12 @@ if {[set node [$root_node selectNodes /project/description]] != ""} {
 # -------------------------------------------------------------------
 
 if {[set resource_node [$root_node selectNodes /project/resources]] != ""} {
-    ns_write "<h2>Saving Resources</h2>\n"
-    ns_write "<ul>\n"
+    #ns_write "<h2>Saving Resources</h2>\n"
+    #ns_write "<ul>\n"
 
     set resource_hash_array [im_gp_save_resources -debug $debug $resource_node]
     
-    ns_write "</ul>\n"
+    #ns_write "</ul>\n"
 }
 
 # -------------------------------------------------------------------
@@ -141,8 +146,8 @@ if {[set resource_node [$root_node selectNodes /project/resources]] != ""} {
 
 if {[set allocations_node [$root_node selectNodes /project/allocations]] != ""} {
 
-    ns_write "<h2>Saving Allocations</h2>\n"
-    ns_write "<ul>\n"
+    #ns_write "<h2>Saving Allocations</h2>\n"
+    #ns_write "<ul>\n"
 
     im_gp_save_allocations \
 	-debug $debug \
@@ -150,59 +155,46 @@ if {[set allocations_node [$root_node selectNodes /project/allocations]] != ""} 
 	$task_hash_array \
         $resource_hash_array
     
-    ns_write "</ul>\n"
+    #ns_write "</ul>\n"
 }
 
-
-#
-# disabled delete for now
-#
-if 0 {
-
 # -------------------------------------------------------------------
-# Delete the tasks that have been deleted in GanttProject
+# find tasks to delete
 # -------------------------------------------------------------------
 
-ns_write "<h2>Deleting Tasks</h2>\n"
+# we don't want to delete the project (which never is in the xml)
+unset db_task_ids($project_id)
+foreach i $task_hash_array {
+    if [info exists db_task_ids($i)] {
+	unset db_task_ids($i)
+    }
+}
 
-# Extract the list of all task_ids in the GanttProject XML tree.
-set xml_tree [im_gp_extract_xml_tree $root_node $task_hash_array]
-lappend xml_tree $project_id
-
-set xml_list [lsort -integer -unique [im_gp_flatten $xml_tree]]
-
-
-
-# Extract the list of all task_ids from the database
-set db_tree [im_gp_extract_db_tree $project_id]
-set db_list [lsort -integer -unique [im_gp_flatten $db_tree]]
-
-ns_log Notice "task_hash_array: $task_hash_array"
-ns_log Notice "gantt-upload-2: DB Tree: $db_tree\n"
-ns_log Notice "gantt-upload-2: XML Tree: $xml_tree\n"
-ns_log Notice "gantt-upload-2: DB List: $db_list\n"
-ns_log Notice "gantt-upload-2: XML List: $xml_list\n"
-
-
-# Now calculate the difference between the two lists
-#
-set diff_list [im_gp_difference $db_list [lappend xml_list $project_id]]
-
-# Deal with the case of an empty diff_list
-lappend diff_list 0
-
-ns_log Notice "gantt-upload-2: Diff List: $diff_list\n"
-
-set del_tasks_sql "
-	select	p.project_id
-	from	im_projects p
-	where	p.project_id in ([join $diff_list ","])
+db_multirow delete_tasks delete_tasks "
+  SELECT
+    project_id,
+    project_name,
+    project_nr
+  FROM
+    im_projects
+  WHERE 
+    project_id IN ([join [array names db_task_ids] ','])
 "
-db_foreach del_tasks $del_tasks_sql {
-    ns_write "<li>Nuking task# $task_id\n"
-    im_timesheet_task_nuke $task_id
-}
 
-}
+template::list::create \
+    -name delete_tasks \
+    -key project_id \
+    -elements {
+        project_nr {
+            label "Task NR"
+        } 
+        project_name {
+            label "Task Name"
+        }
+    } \
+    -bulk_actions {
+        "Delete" "delete-task" "Delete selected tasks"
+    } \
+    -bulk_action_export_vars { return_url } \
+    -bulk_action_method post 
 
-ns_write [im_footer]

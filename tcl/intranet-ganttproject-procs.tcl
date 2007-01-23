@@ -278,7 +278,7 @@ ad_proc -public im_ganttproject_component {
 	  Upload .gan 
         </td>
 	<td>
-		<form enctype=multipart/form-data method=POST action=/intranet-ganttproject/gantt-upload-2.tcl>
+		<form enctype=multipart/form-data method=POST action=/intranet-ganttproject/gantt-upload-2>
 		[export_form_vars return_url project_id]
 		<table cellspacing=0 cellpadding=0>
 		<tr>
@@ -362,30 +362,14 @@ ad_proc -public im_gp_difference { list1 list2 } {
 
 
 # ---------------------------------------------------------------
-# Create Database Task Tree (recursively
-#
-# Takes the ID of the topmost project (always a project!) and
-# returns a tree of project and tasks as leaves.
+# Get a list of Database task_ids (recursively)
 # ---------------------------------------------------------------
 
-ad_proc -public im_gp_extract_db_tree { project_id} {
-    Recursively write out the information about the tasks
-    below a specific project.
-} {
-    # Initialize the list of tasks for this project
-    set project_task_list [list]
+ad_proc -public im_gp_extract_db_tree { project_id } {
 
-    # --------- Check the Tasks Just Below Project --------
-    set project_tasks_sql "
-    	select	t.*
-    	from 	im_timesheet_tasks_view t
-    	where	t.project_id = :project_id
-    "
-    db_foreach project_tasks $project_tasks_sql {
-	lappend project_task_list $task_id
-    }
-
-    # ------------ Recurse into Sub-Projects -------------
+    # I do the sql query here first and then the recursion, otherwise there
+    # will be to many open db connections
+    set task_list [list]
     set subproject_sql "
 	select	project_id as sub_project_id
 	from	im_projects
@@ -393,16 +377,15 @@ ad_proc -public im_gp_extract_db_tree { project_id} {
     "
     db_foreach sub_projects $subproject_sql {
 	# ToDo: Check infinite loop!!!
-	lappend project_task_list [im_gp_extract_db_tree $sub_project_id]
+	lappend task_list $sub_project_id
     }
-
-    return [list $project_id $project_task_list]
+    
+    set r $project_id
+    foreach i $task_list {
+	set r "$r [im_gp_extract_db_tree $i]"
+    }
+    return $r
 }
-
-
-
-
-
 
 # -------------------------------------------------------------------
 # Map the XML tasks (GanttProject) to the DB tasks (]project-open[)
@@ -620,8 +603,7 @@ ad_proc -public im_gp_save_tasks {
 
     foreach child [$tasks_node childNodes] {
 	incr sort_order
-	if {$debug} { ns_write "<li>Child: [$child nodeName]\n" }
-	ns_write "<ul>\n"
+	if {$debug} { ns_write "<li>Child: [$child nodeName]\n<ul>\n" }
 
 	switch [$child nodeName] {
 	    "task" {
@@ -639,7 +621,7 @@ ad_proc -public im_gp_save_tasks {
 	    default {}
 	}
 
-	ns_write "</ul>\n"
+	if {$debug} { ns_write "</ul>\n" }
     }
     # Return the mapping hash
     return [array get task_hash]
@@ -728,8 +710,7 @@ ad_proc -public im_gp_save_tasks2 {
 	where	project_id = :super_project_id
     "
 
-    ns_write "<li>$task_name...\n"
-    if {$debug} { ns_write "<li>task_nr='$task_nr', gantt_id=$gantt_project_id, task_id=$task_id" }
+    if {$debug} { ns_write "<li>$task_name...\n<li>task_nr='$task_nr', gantt_id=$gantt_project_id, task_id=$task_id" }
 
 
     # -----------------------------------------------------
@@ -772,7 +753,7 @@ ad_proc -public im_gp_save_tasks2 {
     if {0 == $task_id || !$task_exists_p} {
 
 	if {$create_tasks} {
-	    ns_write "Creating new task with task_nr='$task_nr'\n"
+	    if {$debug} { ns_write "Creating new task with task_nr='$task_nr'\n" }
 	    set task_id [im_exec_dml task_insert "
 	    	im_timesheet_task__new (
 			null,			-- p_task_id
@@ -796,7 +777,7 @@ ad_proc -public im_gp_save_tasks2 {
 	}
 
     } else {
-	if {$create_tasks} { ns_write "Updating existing task\n" }
+	if {$create_tasks && $debug} { ns_write "Updating existing task\n" }
     }
 
     if {"" != $super_project_id} {
@@ -818,7 +799,7 @@ ad_proc -public im_gp_save_tasks2 {
 
     # ---------------------------------------------------------------
     # Process task sub-nodes
-    ns_write "<ul>\n"
+    if {$debug} { ns_write "<ul>\n" }
     foreach taskchild [$task_node childNodes] {
 	incr sort_order
 	switch [$taskchild nodeName] {
@@ -828,7 +809,7 @@ ad_proc -public im_gp_save_tasks2 {
 	    depend { 
 		if {$save_dependencies} {
 
-		    ns_write "<li>Creating dependency relationship\n"
+		    if {$debug} { ns_write "<li>Creating dependency relationship\n" }
 		    im_ganttproject_create_dependency $taskchild $task_node [array get task_hash]
 
 		}
@@ -848,7 +829,7 @@ ad_proc -public im_gp_save_tasks2 {
 	    }
 	}
     }
-    ns_write "</ul>\n"
+    if {$debug} { ns_write "</ul>\n" }
 
     db_dml project_update "
 	    update im_projects set
@@ -893,14 +874,14 @@ ad_proc -public im_gp_save_allocations {
 
 		set task_id [$child getAttribute task-id ""]
 		if {![info exists task_hash($task_id)]} {
-		    ns_write "<li>Allocation: <font color=red>Didn't find task \#$task_id</font>. Skipping... \n"
+		    if {$debug} { ns_write "<li>Allocation: <font color=red>Didn't find task \#$task_id</font>. Skipping... \n" }
 		    continue
 		}
 		set task_id $task_hash($task_id)
 
 		set resource_id [$child getAttribute resource-id ""]
 		if {![info exists resource_hash($resource_id)]} {
-		    ns_write "<li>Allocation: <font color=red>Didn't find user \#$resource_id</font>. Skipping... \n"
+		    if {$debug} { ns_write "<li>Allocation: <font color=red>Didn't find user \#$resource_id</font>. Skipping... \n" }
 		    continue
 		}
 		set resource_id $resource_hash($resource_id)
@@ -919,7 +900,7 @@ ad_proc -public im_gp_save_allocations {
 
 		set user_name [im_name_from_user_id $resource_id]
 		set task_name [db_string task_name "select project_name from im_projects where project_id=:task_id" -default $task_id]
-		ns_write "<li>Allocation: $user_name allocated to $task_name with $percentage%\n"
+		if {$debug} { ns_write "<li>Allocation: $user_name allocated to $task_name with $percentage%\n" }
 		ns_log Notice "im_gp_save_allocations: [$child asXML]"
 
 	    }
@@ -1015,14 +996,14 @@ ad_proc -public im_gp_save_resources {
 		set person_id [im_gp_find_person_for_name -name $name -email $email]
 
 		if {0 != $person_id} {
-		    ns_write "<li>Resource: $name as $function\n"
+		    if {$debug} { ns_write "<li>Resource: $name as $function\n" }
 		    set resource_hash($resource_id) $person_id
 
 		    # make the resource a member of the project
 		    im_biz_object_add_role $person_id $project_id [im_biz_object_role_full_member]
 
 		} else {
-		    ns_write "<li>Resource: $name - <font color=red>Unknown Resource</font>\n"
+		    if {$debug} { ns_write "<li>Resource: $name - <font color=red>Unknown Resource</font>\n" }
 		}
 
 		if {$debug} { ns_write "<li>Resource: ($resource_id) -&gt; $person_id\n" }
