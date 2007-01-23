@@ -170,6 +170,11 @@ foreach i $task_hash_array {
     }
 }
 
+# return if we don't have to delete anything
+if {[set ids [array names db_task_ids]]==""} {
+    ad_returnredirect $return_url
+}
+
 db_multirow delete_tasks delete_tasks "
   SELECT
     project_id,
@@ -178,7 +183,7 @@ db_multirow delete_tasks delete_tasks "
   FROM
     im_projects
   WHERE 
-    project_id IN ([join [array names db_task_ids] ','])
+    project_id IN ([join $ids ','])
 "
 
 template::list::create \
