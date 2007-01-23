@@ -86,9 +86,6 @@ ad_proc -public im_ganttproject_write_task {
     if {"" == $duration} { set duration 1 }
     if {"0" == $duration} { set duration 1 }
 
-    # Is this a task (as opposed to a project)?
-    set task_p [string equal "im_timesheet_task" $object_type]
-
     set project_node [$doc createElement task]
     $tree_node appendChild $project_node
     $project_node setAttribute id $project_id
