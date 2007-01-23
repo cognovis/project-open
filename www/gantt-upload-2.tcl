@@ -183,7 +183,7 @@ db_multirow delete_tasks delete_tasks "
   FROM
     im_projects
   WHERE 
-    project_id IN ([join $ids ','])
+    project_id IN ([join $ids ,])
 "
 
 template::list::create \
