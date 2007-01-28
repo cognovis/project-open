@@ -602,13 +602,18 @@ ad_proc im_report_number_locale_select {
     to allow a user to select the number locale of a report
 } {
     if {"" == $locale} { set locale [lang::user::locale] }
+    set locales [list de_DE en_US]
 
-    return "
-          <select name=number_format>
-		<option value='de_DE'>de_DE</option>
-		<option value='en_US' selected>en_US</option>
-          </select>
-    "
+    set result "<select name=\"$name\">\n"
+    foreach loc $locales {
+	if {$locale == $loc} {
+	    append result "<option value='$loc' selected>$loc</option>\n"
+	} else {
+	    append result "<option value='$loc'>$loc</option>\n"
+	}
+    }
+    append result "</select>\n"
+    return $result
 }
 
 
