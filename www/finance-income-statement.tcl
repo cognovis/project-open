@@ -222,12 +222,6 @@ select
 	cust.company_name as customer_name,
 	prov.company_path as provider_nr,
 	prov.company_name as provider_name,
-	CASE WHEN c.cost_type_id = 3700 THEN to_char(c.amount, :cur_format)
-	END as invoice_amount_pretty,
-	CASE WHEN c.cost_type_id = 3704 THEN to_char(c.amount, :cur_format)
-	END as bill_amount_pretty,
-	CASE WHEN c.cost_type_id = 3720 THEN to_char(c.amount, :cur_format)
-	END as expense_amount_pretty,
 	CASE
 		WHEN c.cost_type_id in (3700) THEN c.amount_conv * vat / 100
 		WHEN c.cost_type_id in (3704,3720,3720) THEN -c.amount_conv * vat / 100
@@ -238,7 +232,6 @@ select
 		WHEN c.cost_type_id in (3704,3720,3720) THEN -c.amount_conv * tax / 100
 		ELSE 0
 	END as tax_amount,
-	to_char(c.paid_amount, :cur_format) as paid_amount_pretty,
 	cust.company_id as customer_id,
 	cust.company_name as customer_name,
 	im_category_from_id(c.cost_type_id) as cost_type
@@ -540,11 +533,11 @@ ns_log Notice "intranet-reporting/finance-income-statement: sql=\n$sql"
 
 db_foreach sql $sql {
     
-    set invoice_amount_pretty [im_report_format_number $invoice_amount $output_format $locale]
-    set bill_amount_pretty [im_report_format_number $bill_amount $output_format $locale]
-    set expense_amount_pretty [im_report_format_number $expense_amount $output_format $locale]
-    set vat_amount_pretty [im_report_format_number $vat_amount $output_format $locale]
-    set tax_amount_pretty [im_report_format_number $tax_amount $output_format $locale]
+    set invoice_amount_pretty [im_report_format_number $invoice_amount $output_format $number_locale]
+    set bill_amount_pretty [im_report_format_number $bill_amount $output_format $number_locale]
+    set expense_amount_pretty [im_report_format_number $expense_amount $output_format $number_locale]
+    set vat_amount_pretty [im_report_format_number $vat_amount $output_format $number_locale]
+    set tax_amount_pretty [im_report_format_number $tax_amount $output_format $number_locale]
     
     if {"" == $customer_id} {
 	set customer_id 0
@@ -572,19 +565,19 @@ db_foreach sql $sql {
     # Update Counters and calculate pretty counter values
     im_report_update_counters -counters $counters
 
-    set paid_subtotal_pretty [im_report_format_number $paid_subtotal $output_format $locale]
-    set invoice_subtotal_pretty [im_report_format_number $invoice_subtotal $output_format $locale]
-    set bill_subtotal_pretty [im_report_format_number $bill_subtotal $output_format $locale]
-    set expense_subtotal_pretty [im_report_format_number $expense_subtotal $output_format $locale]
-    set tax_subtotal_pretty [im_report_format_number $tax_subtotal $output_format $locale]
-    set vat_subtotal_pretty [im_report_format_number $vat_subtotal $output_format $locale]
+    set paid_subtotal_pretty [im_report_format_number $paid_subtotal $output_format $number_locale]
+    set invoice_subtotal_pretty [im_report_format_number $invoice_subtotal $output_format $number_locale]
+    set bill_subtotal_pretty [im_report_format_number $bill_subtotal $output_format $number_locale]
+    set expense_subtotal_pretty [im_report_format_number $expense_subtotal $output_format $number_locale]
+    set tax_subtotal_pretty [im_report_format_number $tax_subtotal $output_format $number_locale]
+    set vat_subtotal_pretty [im_report_format_number $vat_subtotal $output_format $number_locale]
 
-    set paid_total_pretty [im_report_format_number $paid_total $output_format $locale]
-    set invoice_total_pretty [im_report_format_number $invoice_total $output_format $locale]
-    set bill_total_pretty [im_report_format_number $bill_total $output_format $locale]
-    set expense_total_pretty [im_report_format_number $expense_total $output_format $locale]
-    set tax_total_pretty [im_report_format_number $tax_total $output_format $locale]
-    set vat_total_pretty [im_report_format_number $vat_total $output_format $locale]
+    set paid_total_pretty [im_report_format_number $paid_total $output_format $number_locale]
+    set invoice_total_pretty [im_report_format_number $invoice_total $output_format $number_locale]
+    set bill_total_pretty [im_report_format_number $bill_total $output_format $number_locale]
+    set expense_total_pretty [im_report_format_number $expense_total $output_format $number_locale]
+    set tax_total_pretty [im_report_format_number $tax_total $output_format $number_locale]
+    set vat_total_pretty [im_report_format_number $vat_total $output_format $number_locale]
 
     
     set last_value_list [im_report_render_header \
