@@ -172,17 +172,12 @@ db_foreach project_resources $project_resources_sql {
 
 
 # -------- Allocations -------------
-# Allocations only work on tasks, not on projects (super-tasks)
 # <allocations>
 #   <allocation task-id="12391" resource-id="9021" function="Default:1" responsible="true" load="20.0"/>
 #   <allocation task-id="12302" resource-id="9021" function="Default:1" responsible="false" load="50.0"/>
 #   <allocation task-id="12302" resource-id="8892" function="Default:0" responsible="true" load="50.0"/>
 # </allocations>
 
-
-# TODO:
-# disabled for now, "im_timesheet_task_allocations" doesn't exist anymore
-#
 
 set allocations_node [$doc createElement allocations]
 $project_node appendChild $allocations_node
