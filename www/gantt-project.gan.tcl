@@ -117,7 +117,8 @@ set resources_node [$doc createElement resources]
 $project_node appendChild $resources_node
 
 set project_resources_sql "
-	select	bom.object_role_id,
+	select	distinct 
+                bom.object_role_id,
 		uc.*,
 		p.*,
 		pa.*,
@@ -182,16 +183,21 @@ db_foreach project_resources $project_resources_sql {
 # TODO:
 # disabled for now, "im_timesheet_task_allocations" doesn't exist anymore
 #
-if 0 {
 
 set allocations_node [$doc createElement allocations]
 $project_node appendChild $allocations_node
 
 set project_allocations_sql "
-	select	*
-	from	im_timesheet_task_allocations tta
+
+
+	select	
+                object_id_one AS task_id,
+                object_id_two AS user_id,
+                percentage
+	from	acs_rels,im_biz_object_members
 	where
-		tta.task_id in (
+                acs_rels.rel_id=im_biz_object_members.rel_id AND
+		object_id_one in (
 			select	task_id
 			from	im_timesheet_tasks_view
 			where	project_id in (
@@ -216,7 +222,7 @@ db_foreach project_allocations $project_allocations_sql {
     $allocations_node appendChild $allocation_node
 
     set responsible "false"
-    if {"t" == $task_manager_p} { set responsible "true" }
+    #TODO: if {"t" == $task_manager_p} { set responsible "true" }
 
     $allocation_node setAttribute task-id $task_id
     $allocation_node setAttribute resource-id $user_id
@@ -225,7 +231,7 @@ db_foreach project_allocations $project_allocations_sql {
     $allocation_node setAttribute load $percentage
 }
 
-}
+
 
 
 
