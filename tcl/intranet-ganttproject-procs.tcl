@@ -452,7 +452,6 @@ ad_proc -public im_gp_save_tasks {
     array set task_hash $task_hash_array
 
     foreach child [$tasks_node childNodes] {
-	incr sort_order
 	if {$debug} { ns_write "<li>Child: [$child nodeName]\n<ul>\n" }
 
 	switch [$child nodeName] {
@@ -463,7 +462,7 @@ ad_proc -public im_gp_save_tasks {
 			-debug $debug \
 			$child \
 			$super_project_id \
-			$sort_order \
+			sort_order \
 			[array get task_hash] \
 		]
 		array set task_hash $task_hash_array
@@ -484,11 +483,15 @@ ad_proc -public im_gp_save_tasks2 {
     -save_dependencies
     task_node 
     super_project_id 
-    sort_order
+    sort_order_name
     task_hash_array
 } {
     Stores a single task into the database
 } {
+    upvar 1 $sort_order_name sort_order
+    incr sort_order
+    set my_sort_order $sort_order 
+
     array set task_hash $task_hash_array
     if {$debug} { ns_write "<li>GanttProject($task_node, $super_project_id): '[array get task_hash]'\n" }
     set task_url "/intranet-timesheet2-tasks/new?task_id="
@@ -651,7 +654,6 @@ ad_proc -public im_gp_save_tasks2 {
     # Process task sub-nodes
     if {$debug} { ns_write "<ul>\n" }
     foreach taskchild [$task_node childNodes] {
-	incr sort_order
 	switch [$taskchild nodeName] {
 	    notes { 
 		set note [$taskchild text] 
@@ -672,7 +674,7 @@ ad_proc -public im_gp_save_tasks2 {
 			-save_dependencies $save_dependencies \
 			$taskchild \
 			$gantt_project_id \
-			[expr 10 * $sort_order] \
+			sort_order \
 			[array get task_hash] \
 		]
 		array set task_hash $task_hash_array
@@ -689,7 +691,7 @@ ad_proc -public im_gp_save_tasks2 {
 		start_date	= :start_date,
 		end_date	= :end_date,
 		note		= :note,
-		sort_order	= :sort_order,
+		sort_order	= :my_sort_order,
 		percent_completed = :percent_completed
 	    where
 		project_id = :task_id
