@@ -201,7 +201,7 @@ template::list::create \
         }
     } \
     -bulk_actions {
-        "Delete" "delete-task" "Delete selected tasks"
+        "Delete" "/intranet-timesheet2-tasks/task-action" "Delete selected tasks"
     } \
     -bulk_action_export_vars { return_url project_id } \
     -bulk_action_method post
