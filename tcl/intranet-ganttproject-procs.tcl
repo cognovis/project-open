@@ -118,7 +118,6 @@ ad_proc -public im_ganttproject_write_task {
 	$project_node appendChild $note_node
     }
 
-
     # Add dependencies to predecessors 
     # 9650 == 'Intranet Timesheet Task Dependency Type'
     set dependency_sql "
@@ -631,23 +630,6 @@ ad_proc -public im_gp_save_tasks2 {
 
     } else {
 	if {$create_tasks && $debug} { ns_write "Updating existing task\n" }
-    }
-
-    if {"" != $super_project_id} {
-
-	set task_id_one $super_project_id
-	set task_id_two $task_id
-
-	set map_exists_p [db_string map_exists "select count(*) from im_timesheet_task_dependencies where task_id_one = :task_id_one and task_id_two = :task_id_two"]
-	if {!$map_exists_p} {
-	    db_dml insert_super_dependency "
-                insert into im_timesheet_task_dependencies (
-			task_id_one, task_id_two, dependency_type_id
-		) values (
-			:task_id_one, :task_id_two, 9652
-		)
-            "
-	}
     }
 
     # ---------------------------------------------------------------
