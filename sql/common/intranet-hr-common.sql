@@ -77,8 +77,8 @@ column_render_tcl, extra_select, extra_from, extra_where, sort_order, visible_fo
 ) values (5500,55,NULL,'Name',
 	'"<a href=/intranet/users/view?user_id=$user_id>$name</a>"',
 	'e.supervisor_id, im_name_from_user_id(e.supervisor_id) as supervisor_name',
-	'im_employees e',
-	'u.user_id = e.employee_id',
+	'',
+	'',
 	0,
 	''
 );
