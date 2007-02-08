@@ -11,14 +11,14 @@ ad_page_contract {
 } {
     { start_date "" }
     { end_date "" }
-    { top_vars "year quarter_of_year" }
+    { top_vars "year month_of_year" }
     { top_scale1 "" }
     { top_scale2 "" }
-    { left_scale1 "customer_type" }
-    { left_scale2 "customer_name" }
+    { left_scale1 "project_type" }
+    { left_scale2 "project_name" }
     { left_scale3 "" }
-    { cost_type_id:integer "3700" }
     { customer_type_id:integer 0 }
+    { project_type_id:integer 0 }
     { customer_id:integer 0 }
 }
 
@@ -37,6 +37,9 @@ set top_vars [ns_urldecode $top_vars]
 if {"" != $top_scale1} { lappend top_vars $top_scale1 }
 if {"" != $top_scale2} { lappend top_vars $top_scale2 }
 
+# No top dimension at all gives an error...
+if {![llength $top_vars]} { set top_vars [list year] }
+
 # The complete set of dimensions - used as the key for
 # the "cell" hash. Subtotals are calculated by dropping on
 # or more of these dimensions
@@ -45,8 +48,11 @@ set dimension_vars [concat $top_vars $left_vars]
 # Check for duplicate variables
 set unique_dimension_vars [lsort -unique $dimension_vars]
 if {[llength $dimension_vars] != [llength $unique_dimension_vars]} {
-    ad_return_complaint 1 "<b>Duplicate Variable</b>:<br>
-    You have specified a variable more then once."
+    ad_return_complaint 1 "
+	<b>[lang::message::lookup "" intranet-reporting.Duplicate_dimension "Duplicate Dimension"]</b>:
+	<br>[lang::message::lookup "" intranet-reporting.You_have_specified_a_dimension_multiple "
+	You have specified a dimension more then once."
+    "]
 }
 
 # ------------------------------------------------------------
@@ -55,17 +61,16 @@ if {[llength $dimension_vars] != [llength $unique_dimension_vars]} {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
-set menu_label "reporting-finance-cube"
+set menu_label "reporting-timesheet-cube"
 set current_user_id [ad_maybe_redirect_for_registration]
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
 	from	im_menus m
 	where	m.label = :menu_label
 " -default 'f']
-
 if {![string equal "t" $read_p]} {
-    ad_return_complaint 1 "<li>
-[lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
+    ad_return_complaint 1 [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "
+	You don't have the necessary permissions to view this page"]
     return
 }
 
@@ -90,22 +95,15 @@ if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $
 # ------------------------------------------------------------
 # Page Title & Help Text
 
-set cost_type [db_string cost_type "select im_category_from_id(:cost_type_id)"]
-
-set page_title [lang::message::lookup "" intranet-reporting.Financial_Cube_for "Financial Cube for '%cost_type%'"]
+set page_title [lang::message::lookup "" intranet-reporting.Timesheet_Cube "Timesheet Cube"]
 set context_bar [im_context_bar $page_title]
 set context ""
 set help_text "<strong>$page_title</strong><br>
 
-This Pivot Table ('cube') is a kind of report that shows Invoice,
-Quote or Delivery Note amounts according to a a number of variables
-that you can specify.
+This Pivot Table ('cube') is a kind of report that shows timesheet
+hours according to a number of 'dimensions' that you can specify.
 This cube effectively replaces a dozen of specific reports and allows
-you to 'drill down' into results.
-<p>
-
-Please Note: Financial documents associated with multiple projects
-are not included in this overview.
+you to 'drill down' into results.<p>
 "
 
 
@@ -117,10 +115,8 @@ set rowclass(1) "rowodd"
 
 set gray "gray"
 set sigma "&Sigma;"
-set days_in_past 365
+set days_in_past 31
 
-set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
-set cur_format [im_l10n_sql_currency_format]
 set date_format [im_l10n_sql_date_format]
 
 db_1row todays_date "
@@ -131,9 +127,7 @@ select
 from dual
 "
 
-if {"" == $start_date} { 
-    set start_date "$todays_year-$todays_month-01"
-}
+if {"" == $start_date} { set start_date "$todays_year-$todays_month-01" }
 
 db_1row end_date "
 select
@@ -143,26 +137,21 @@ select
 from dual
 "
 
-if {"" == $end_date} { 
-    set end_date "$end_year-$end_month-01"
-}
+if {"" == $end_date} { set end_date "$end_year-$end_month-01" }
 
+
+# ------------------------------------------------------------
+# URLs to different parts of the system
 
 set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting/finance-cube" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-reporting/timesheet-cube" {start_date end_date} ]
 
 
 # ------------------------------------------------------------
 # Options
-
-set cost_type_options {
-	3700 "Customer Invoice"
-	3702 "Quote"
-	3724 "Delivery Note"
-}
 
 set top_vars_options {
 	"" "No Date Dimension" 
@@ -172,8 +161,7 @@ set top_vars_options {
 	"year quarter_of_year month_of_year" "Year, Quarter and Month" 
 	"year quarter_of_year month_of_year day_of_month" "Year, Quarter, Month and Day" 
 	"year week_of_year" "Year and Week"
-	"quarter_of_year year" "Quarter and Year (compare quarters)"
-	"month_of_year year" "Month and Year (compare months)"
+	"month_of_year year" "Month and Year (compare years)"
 }
 
 set left_scale_options {
@@ -183,11 +171,93 @@ set left_scale_options {
 	"project_type" "Project Type"
 	"project_status" "Project Status"
 	"customer_name" "Customer Name"
-	"customer_path" "Customer Nr"
 	"customer_type" "Customer Type"
 	"customer_status" "Customer Status"
-	"cost_status" "Cost Status"
 }
+
+
+# ------------------------------------------------------------
+# add all DynField attributes from Projects with datatype integer and a
+# CategoryWidget for display. This widget shows distinct values suitable
+# as dimension.
+
+set dynfield_sql "
+	select	aa.attribute_name,
+		aa.pretty_name,
+		w.widget as tcl_widget,
+		w.widget_name as dynfield_widget
+	from
+		im_dynfield_attributes a,
+		im_dynfield_widgets w,
+		acs_attributes aa
+	where
+		a.widget_name = w.widget_name
+		and a.acs_attribute_id = aa.attribute_id
+		and w.widget in ('select', 'generic_sql', 'im_category_tree', 'im_cost_center_tree', 'checkbox')
+		and aa.object_type in ('im_project','im_company')
+		and aa.attribute_name not like 'default%'
+" 
+
+set derefs [list]
+db_foreach dynfield_attributes $dynfield_sql {
+
+    lappend left_scale_options ${attribute_name}_deref
+    lappend left_scale_options $pretty_name
+
+    # How to dereferentiate the attribute_name to attribute_name_deref?
+    # The code is going to be executed as part of an SQL
+
+    # Skip adding "deref" stuff if the variable is not looked at...
+    if {[lsearch $dimension_vars ${attribute_name}_deref] < 0} { 
+	continue 
+    }
+
+    # Catch the generic ones - We know how to dereferentiate integer references of these fields.
+    set deref ""
+    switch $tcl_widget {
+	im_category_tree {
+	    set deref "im_category_from_id($attribute_name) as ${attribute_name}_deref"
+	}
+	im_cost_center_tree {
+	    set deref "im_cost_center_name_from_id($attribute_name) as ${attribute_name}_deref"
+	}
+    }
+
+    switch $dynfield_widget {
+	gender_select { set deref "im_category_from_id($attribute_name) as ${attribute_name}_deref" }
+	employees { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	employees_and_customers { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	customers { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	bit_member { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	active_projects { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	cost_centers { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	project_account_manager { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	pl_fachbereich { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+    }
+	
+    if {"" == $deref} { set deref "$attribute_name as ${attribute_name}_deref" }
+    lappend derefs $deref
+}
+
+# ------------------------------------------------------------
+# Determine which "dereferenciations" we need (pulling out nice value for integer reference)
+foreach var $dimension_vars {
+    switch $var {
+	company_type { lappend derefs "im_category_from_id(h.company_type_id) as company_type" }
+	year { lappend derefs "to_char(h.day, 'YYYY') as year" }
+	month_of_year { lappend derefs "to_char(h.day, 'MM') as month_of_year" }
+	quarter_of_year { lappend derefs "to_char(h.day, 'Q') as quarter_of_year" }
+	week_of_year { lappend derefs "to_char(h.day, 'IW') as week_of_year" }
+	day_of_month { lappend derefs "to_char(h.day, 'DD') as day_of_month" }
+	project_type { lappend derefs "im_category_from_id(h.project_type_id) as project_type" }
+	project_status { lappend derefs "im_category_from_id(h.project_status_id) as project_status" }
+	customer_type { lappend derefs "im_category_from_id(h.company_type_id) as customer_type" }
+	customer_status { lappend derefs "im_category_from_id(h.company_status_id) as customer_status" }
+    }
+}
+
+if {[llength $derefs] == 0} { lappend derefs "1 as dummy"}
+
 
 # ------------------------------------------------------------
 # Start formatting the page
@@ -214,12 +284,6 @@ ns_write "
 	  <td class=form-label>End Date</td>
 	  <td class=form-widget colspan=3>
 	    <input type=textfield name=end_date value=$end_date>
-	  </td>
-	</tr>
-	<tr>
-	  <td class=form-label>Cost Type</td>
-	  <td class=form-widget colspan=3>
-	    [im_select -translate_p 1 cost_type_id $cost_type_options $cost_type_id]
 	  </td>
 	</tr>
 	<tr>
@@ -300,19 +364,19 @@ ns_write "
 set criteria [list]
 
 if {"" != $customer_id && 0 != $customer_id} {
-    lappend criteria "c.customer_id = :customer_id"
+    lappend criteria "p.customer_id = :customer_id"
 }
 
-if {1} {
-    lappend criteria "c.cost_type_id in (
+if {"" != $project_type_id && 0 != $project_type_id} {
+    lappend criteria "p.project_type_id in (
 	select  child_id
 	from    im_category_hierarchy
-	where   (parent_id = :cost_type_id or child_id = :cost_type_id)
+	where   (parent_id = :project_type_id or child_id = :project_type_id)
     )"
 }
 
 if {"" != $customer_type_id && 0 != $customer_type_id} {
-    lappend criteria "pcust.company_type_id in (
+    lappend criteria "c.company_type_id in (
 	select  child_id
 	from    im_category_hierarchy
 	where   (parent_id = :customer_type_id or child_id = :customer_type_id)
@@ -329,74 +393,39 @@ if { ![empty_string_p $where_clause] } {
 # Define the report - SQL, counters, headers and footers 
 #
 
-# Inner - Try to be as selective as possible and select
-# the relevant data from the fact table.
+# Inner - Try to be as selective as possible for the relevant data from the fact table.
 set inner_sql "
-		select
-			trunc((c.paid_amount * 
-			  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
-			  , 2) as paid_amount_converted,
-			trunc((c.amount * 
-			  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
-			  , 2) as amount_converted,
+		select	
+			h.*, 
+			p.*, 
 			c.*
 		from
-			im_costs c
+			im_hours h,
+			im_projects p,
+			im_companies c
 		where
-			1=1
-			and c.cost_type_id = :cost_type_id
-			and c.effective_date::date >= to_date(:start_date, 'YYYY-MM-DD')
-			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
-			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
+			h.project_id = p.project_id
+			and p.company_id = c.company_id
+			and h.day::date >= to_date(:start_date, 'YYYY-MM-DD')
+			and h.day::date < to_date(:end_date, 'YYYY-MM-DD')
+			$where_clause
 "
+
 
 # Aggregate additional/important fields to the fact table.
 set middle_sql "
 	select
-		c.*,
-		im_category_from_id(c.cost_type_id) as cost_type,
-		im_category_from_id(c.cost_status_id) as cost_status,
-		to_char(c.effective_date, 'YYYY') as year,
-		to_char(c.effective_date, 'MM') as month_of_year,
-		to_char(c.effective_date, 'Q') as quarter_of_year,
-		to_char(c.effective_date, 'IW') as week_of_year,
-		to_char(c.effective_date, 'DD') as day_of_month,
-		substring(c.cost_name, 1, 14) as cost_name_cut,
-		p.project_name,
-		p.project_nr,
-		p.project_type_id,
-		im_category_from_id(p.project_type_id) as project_type,
-		p.project_status_id,
-		im_category_from_id(p.project_status_id) as project_status,
-		cust.company_name as customer_name,
-		cust.company_path as customer_path,
-		cust.company_type_id as customer_type_id,
-		im_category_from_id(cust.company_type_id) as customer_type,
-		cust.company_status_id as customer_status_id,
-		im_category_from_id(cust.company_status_id) as customer_status,
-		prov.company_name as provider_name,
-		prov.company_path as provider_path,
-		prov.company_type_id as provider_type_id,
-		im_category_from_id(prov.company_type_id) as provider_type,
-		prov.company_status_id as provider_status_id,
-		im_category_from_id(prov.company_status_id) as provider_status
-	from
-		($inner_sql) c
-		LEFT OUTER JOIN im_projects p ON (c.project_id = p.project_id)
-		LEFT OUTER JOIN im_companies cust ON (c.customer_id = cust.company_id)
-		LEFT OUTER JOIN im_companies prov ON (c.provider_id = prov.company_id)
-	where
-		1 = 1
-		$where_clause
+		h.*,
+		[join $derefs ",\n\t\t"]
+	from	($inner_sql) h
 "
 
-set sql "
+set outer_sql "
 select
-	sum(c.amount_converted) as amount_converted,
-	sum(c.paid_amount) as paid_amount,
+	sum(h.hours) as hours,
 	[join $dimension_vars ",\n\t"]
 from
-	($middle_sql) c
+	($middle_sql) h
 group by
 	[join $dimension_vars ",\n\t"]
 "
@@ -407,10 +436,6 @@ group by
 
 # Top scale is a list of lists such as {{2006 01} {2006 02} ...}
 # The last element of the list the grand total sum.
-
-# No top dimension at all gives an error...
-if {![llength $top_vars]} { set top_vars [list year] }
-
 set top_scale_plain [db_list_of_lists top_scale "
 	select distinct	[join $top_vars ", "]
 	from		($middle_sql) c
@@ -441,7 +466,7 @@ foreach scale_item $top_scale_plain {
 # ------------------------------------------------------------
 # Create a sorted left dimension
 
-# No top dimension at all gives an error...
+# No left dimension at all gives an error...
 if {![llength $left_vars]} {
     ns_write "
 	<p>&nbsp;<p>&nbsp;<p>&nbsp;<p><blockquote>
@@ -487,7 +512,6 @@ foreach scale_item $left_scale_plain {
     lappend left_scale $scale_item
     set last_item $scale_item
 }
-
 
 
 # ------------------------------------------------------------
@@ -543,12 +567,12 @@ ns_write $header
 # ------------------------------------------------------------
 # Execute query and aggregate values into a Hash array
 
-db_foreach query $sql {
+db_foreach query $outer_sql {
 
     # Get all possible permutations (N out of M) from the dimension_vars
     set perms [im_report_take_all_ordered_permutations $dimension_vars]
 
-    # Add the invoice amount to ALL of the variable permutations.
+    # Add the timesheet hours to ALL of the variable permutations.
     # The "full permutation" (all elements of the list) corresponds
     # to the individual cell entries.
     # The "empty permutation" (no variable) corresponds to the
@@ -567,8 +591,8 @@ db_foreach query $sql {
 	set sum 0
 	if {[info exists hash($key)]} { set sum $hash($key) }
 	
-	if {"" == $amount_converted} { set amount_converted 0 }
-	set sum [expr $sum + $amount_converted]
+	if {"" == $hours} { set hours 0 }
+	set sum [expr $sum + $hours]
 	set hash($key) $sum
     }
 }
