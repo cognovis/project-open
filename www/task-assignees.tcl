@@ -15,9 +15,17 @@ ad_page_contract {
 array set task [wf_task_info $task_id]
 
 set party_id [ad_conn user_id]
+set subsite_id [ad_conn subsite_id]
 set sub_return_url "[ns_conn url]?[export_vars -url {task_id return_url}]"
 set task(add_assignee_url) "assignee-add?[export_vars -url {task_id {return_url $sub_return_url}}]"
 set task(assign_yourself_url) "assignee-add-2?[export_vars -url {task_id party_id {return_url $sub_return_url}}]"
+
+set reassign_p [permission::permission_p -party_id $party_id -object_id $subsite_id -privilege "wf_reassign_tasks"]
+if {!$reassign_p} {
+    ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_insufficient_1]"
+    return
+}
+
 
 
 set context [list [list "case?[export_vars -url {{case_id $task(case_id)}}]" "$task(object_name) case"] [list "task?[export_vars -url {task_id}]" "$task(task_name)"] "Assignees"]

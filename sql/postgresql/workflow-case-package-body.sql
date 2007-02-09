@@ -995,9 +995,10 @@ declare
   execute_time_callback__transition_key         alias for $4;  
   v_rec                                         record;
   v_str                                         text;
+  v_result					timestamptz;
 begin
         if execute_time_callback__callback = '''' or execute_time_callback__callback is null then
-            raise EXCEPTION ''-20000: There''''s no time_callback function for the timed transition "%"'', execute_time_callback__transition_key;
+		return null;
         end if;
  
         v_str := ''select '' || execute_time_callback__callback || ''('' || 
@@ -1007,11 +1008,11 @@ begin
 
         for v_rec in execute v_str
         LOOP
-            return v_rec.trigger_time;
+            v_result := v_rec.trigger_time;
         end LOOP;
 
-        return null;
-     
+	RAISE NOTICE ''workflow_case__execute_time_callback: res=%, sql=%'', v_result, v_str;
+        return v_result;
 end;' language 'plpgsql';
 
 
@@ -1338,7 +1339,8 @@ declare
   v_finished_p                                        boolean;       
   task_rec                                            record;
 begin
-
+	RAISE NOTICE ''sweep_automatic_transitions(%,%)'', 
+		sweep_automatic_transitions__case_id, sweep_automatic_transitions__journal_id;
         PERFORM workflow_case__enable_transitions(sweep_automatic_transitions__case_id);
         while v_done_p != ''t'' loop
             v_done_p := ''t'';
@@ -1717,14 +1719,14 @@ begin
                     enable_transitions__case_id, 
                     trans_rec.transition_key
                 );
-            else if trans_rec.trigger_type = ''time'' then
-		    v_trigger_time := workflow_case__execute_time_callback (
+            end if;
+
+	    v_trigger_time := workflow_case__execute_time_callback (
                                         trans_rec.time_callback, 
                                         trans_rec.time_custom_arg,
                                         enable_transitions__case_id, 
                                         trans_rec.transition_key);
-		 end if;
-            end if;
+
 
             /* we are ready to insert the row */
             select wf_task_id_seq.nextval into v_task_id from dual;

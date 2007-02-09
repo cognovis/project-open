@@ -7,9 +7,11 @@
       <querytext>
 
     select t.task_id, 
-           t.transition_key, 
+           t.transition_key,
            t.state, 
            t.case_id,
+	   t.holding_user,
+	   acs_object__name(t.holding_user) as holding_user_name,
            tr.transition_name,
            to_char(t.enabled_date, :date_format) as enabled_date_pretty,
            to_char(t.started_date, :date_format) as started_date_pretty,

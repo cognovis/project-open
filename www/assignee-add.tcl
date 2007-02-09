@@ -11,14 +11,23 @@ ad_page_contract {
     focus
 }
 
+# ------------------------------------------------------------
+# Check Permissions		
+
+set user_id [ad_conn user_id]
+set subsite_id [ad_conn subsite_id]
+set reassign_p [permission::permission_p -party_id $user_id -object_id $subsite_id -privilege "wf_reassign_tasks"]
+if {!$reassign_p} {
+    ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_insufficient_1]"
+    return
+}
+
+# ------------------------------------------------------------
+
 array set task [wf_task_info $task_id]
-
 set context [list [list "case?[export_vars -url {{case_id $task(case_id)}}]" "$task(object_name) case"] [list "task?[export_vars -url {task_id}]" "$task(task_name)"] "Add assignee"]
-
 set export_vars [export_vars -form {task_id return_url}]
-
 set focus "assign.party_id"
-
 set party_widget "<select name=\"party_id\">\n"
 
 set count 0

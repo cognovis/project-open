@@ -54,7 +54,20 @@ wf_sweep_message_transition_tcl
 # ---------------------------------------------------------
 # Get everything about the task
 
-array set task [wf_task_info $task_id]
+
+if {[catch {
+    array set task [wf_task_info $task_id]
+} err_msg]} {
+    ad_return_complaint 1 "<li>
+	<b>[lang::message::lookup "" acs-workflow.Task_not_found "Task not found:"]</b><p>
+	[lang::message::lookup "" acs-workflow.Task_not_found_message "
+		This error can occur if a system administrator has deleted a workflow.<br>
+		This situation should not occur during normal operations.<p>
+		Please contact your System Administrator
+	"]
+    "
+    return
+}
 
 set task(add_assignee_url) "assignee-add?[export_url_vars task_id]"
 set task(assign_yourself_url) "assign-yourself?[export_vars -url {task_id return_url}]"
