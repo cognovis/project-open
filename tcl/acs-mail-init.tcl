@@ -13,6 +13,8 @@ ad_library {
 # Default interval is 15 minutes.
 
 ad_schedule_proc -thread t 900 acs_mail_process_queue
+# ad_schedule_proc -thread t 58 acs_mail_process_queue
+
 
 ad_proc -private acs_mail_check_uuencode { } {
 	Check if ns_uuencode is properly encoding binary files
