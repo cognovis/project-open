@@ -1823,7 +1823,7 @@ ad_proc im_filestorage_file_row { file_body base_path folder_type rel_path objec
     }
 
     if {$read_p} {
-	append component_html "<A href=\"/intranet/download/$folder_type/$object_id/$rel_path\">$icon</A>"
+	append component_html "<A href=\"/intranet/download/$folder_type/$object_id/$rel_path\" target=_blank>$icon</A>"
     } else {
 	append component_html "$icon"
     }
