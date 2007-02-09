@@ -61,6 +61,7 @@ While this is OK in general, it will keep us from calculating a single profit&am
   <msg key="New_Cost_Item">New Cost Item</msg>
   <msg key="New_Customer_Docs">Create a New Customer Document</msg>
   <msg key="New_Provider_Docs">Create a New Provider Document</msg>
+  <msg key="New_Timesheet_Invoice">New Timesheet Invoice</msg>
   <msg key="New_Trans_Invoice">New Trans Invoice</msg>
   <msg key="Next_Page">Next Page</msg>
   <msg key="Note">Note</msg>
