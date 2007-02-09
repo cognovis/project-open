@@ -35,6 +35,8 @@
     where 
 	aa.object_type = :object_type
 	and fa.widget_name = w.widget_name
+    order by
+	la.pos_y, la.pos_x, aa.attribute_name
 
   </querytext>
 </fullquery>

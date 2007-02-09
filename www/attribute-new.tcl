@@ -47,6 +47,7 @@ if {0 != $attribute_id} {
 	a.table_name,
 	case when a.min_n_values = 0 then 'f' else 't' end as required_p,
     	fa.widget_name,
+	fa.include_in_search_p,
 	dl.pos_x, dl.pos_y,
 	dl.size_x, dl.size_y,
 	dl.label_style, dl.div_class
@@ -208,7 +209,6 @@ if {[string equal $action "already_existing"]} {
 
 }
 
-#{description:text(textarea),optional {label Description} {nospell} {html {cols 55 rows 4}}}
 foreach field {
     {action:text(hidden),optional {}}
     {pretty_name:text {label {Pretty Name}} {html {size 30 maxlength 100}}}
@@ -222,6 +222,7 @@ foreach field {
     {size_x:text(hidden),optional {label {Size-X}} {html {size 5 maxlength 4}}}
     {size_y:text(hidden),optional {label {Size-Y}} {html {size 5 maxlength 4}}}
     {label_style:text(hidden) {label {Label Style}} {options {{Plain plain} {{No Label} no_label} }} {value $required_p}}
+    {include_in_search_p:text(checkbox) {label {Include in Search?}} {options {{Yes t}}} {value $required_p}}
 } {
     lappend form_fields $field
 }
@@ -287,7 +288,8 @@ ad_form -name attribute_form -form $form_fields -new_request {
 	# update im_dynfield_attributes table
 	db_dml "update im_dynfield_attributes" "
 		update im_dynfield_attributes set
-			widget_name = :widget_name
+			widget_name = :widget_name,
+			include_in_search_p = :include_in_search_p
 		where attribute_id = :attribute_id
 	"
     }
@@ -330,12 +332,3 @@ ad_form -name attribute_form -form $form_fields -new_request {
 
 ad_return_template
 
-
-#set a {
-#    {attribute_name:text {label "Attribute Name"} {html {size 30 maxlength 100}} {help_text {Attribute name = column_name. <br>This name must be lower case, contain only letters and underscores, and contain no spaces}}} \
-#    {object_type:text {label "Object Type"} {} {html {size 30 maxlength 100}}  }
-#    {table_name:text {label "Table Name"} {html {size 30 maxlength 100}}}
-#    {modify_sql_p:text(radio) {label "Modify the<br>SQL Table?"} {options {{"Yes" "t"} {No f}}} {value $modify_sql_p} {help_text {Please choose 'No' if you are unsure.<br>The system will try to add a new column to the database schema if you choose "Yes".}}   }
-#    {widget_name:text(multiselect) {label "Widget"} {options $widget_options } {help_text {<a href="widgets">Widgets descriptions</a> are available}}}
-#    {description:text(textarea),optional {label "Description"} {nospell} {html {cols 55 rows 4}}}
-#}

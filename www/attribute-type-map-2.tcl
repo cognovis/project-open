@@ -48,6 +48,8 @@ set sql "
                 m.attribute_id = a.attribute_id
                 and a.acs_attribute_id = aa.attribute_id
                 and aa.object_type = 'im_project'
+	order by
+		aa.sort_order, aa.pretty_name
 "
 db_foreach attribute_table_map $sql {
     set key "$attribute_id.$object_type_id"

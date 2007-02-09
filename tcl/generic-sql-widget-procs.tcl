@@ -36,8 +36,22 @@ ad_proc -public template::widget::generic_sql { element_reference tag_attributes
 	return "Generic SQL Widget: Error: Didn't find 'sql' parameter"
     }
 
+    # The "include_empty_p" adds an empty line
+    set include_empty_p 1
+    set include_empty_p_pos [lsearch $params include_empty_p]
+    if { $include_empty_p_pos >= 0 } {
+        set include_empty_p [lindex $params [expr $include_empty_p_pos + 1]]
+    }
+
+    # The "include_empty_name" pops up as first line
+    set include_empty_name ""
+    # [lang::message::lookup "" intranet-dynfield.no_value]
+    set include_empty_name_pos [lsearch $params include_empty_name]
+    if { $include_empty_name_pos >= 0 } {
+        set include_empty_name [lindex $params [expr $include_empty_name_pos + 1]]
+    }
+
     array set attributes $tag_attributes
-    #set attributes(multiple) {}
 
     set key_value_list [list]
     if {[catch {set key_value_list [db_list_of_lists sql_statement $sql_statement]} errmsg]} {
@@ -70,9 +84,11 @@ ad_proc -public template::widget::generic_sql { element_reference tag_attributes
 			incr i 2
     		}
     	append sql_html " >\n"
-    	if {[exists_and_not_null element(optional)] && $element(optional)} {
-		append sql_html "<option value=\"\"> [_ intranet-dynfield.no_value]</option>"
+
+    	if {$include_empty_p} {
+		append sql_html "<option value=\"\">$include_empty_name</option>"
     	}
+
     	foreach sql $key_value_list {
 		set key [lindex $sql 0]
 		set value [lindex $sql 1]

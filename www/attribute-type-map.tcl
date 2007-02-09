@@ -8,6 +8,7 @@ ad_page_contract {
     @cvs-id $Id$
 } {
     { acs_object_type "im_project" }
+    { object_subtype_id 0 }
 }
 
 # --------------------------------------------------------------
@@ -41,11 +42,28 @@ switch $acs_object_type {
     default { set category_type "" }
 }
 
+
+set object_subtype_sql ""
+if {$object_subtype_id} {
+    set object_subtype_sql "
+		and category_id in (
+			select	child_id
+			from	im_category_hierarchy
+			where	parent_id = :object_subtype_id
+		    UNION
+			select	:object_subtype_id
+		)
+    "
+}
+
 # The "dimension" is a list of values to be displayed on top.
 set top_scale [db_list top_dim "
 	select	category_id
 	from	im_categories
 	where	category_type = :category_type
+		$object_subtype_sql
+	order by
+		category_id
 "]
 
 # The array maps category_id into "category" - a pretty 
@@ -56,6 +74,9 @@ db_foreach top_scale_map "
 		category
 	from	im_categories
 	where	category_type = :category_type
+		$object_subtype_sql
+	order by
+		category_id
 " { 
     set col_title ""
     foreach c $category {
@@ -84,6 +105,8 @@ set left_scale [db_list left_dim "
 	where
 		a.acs_attribute_id = aa.attribute_id
 		and aa.object_type = :acs_object_type
+	order by
+		aa.sort_order, aa.pretty_name
 "]
 
 # The array maps category_id into "attribute_id category" - a pretty
@@ -97,6 +120,8 @@ db_foreach left_scale_map "
 	where
 		a.acs_attribute_id = aa.attribute_id
 		and aa.object_type = :acs_object_type
+	order by
+		aa.sort_order, aa.pretty_name
 " { set left_scale_map($attribute_id) $pretty_name }
 
 
@@ -116,6 +141,8 @@ set sql "
 	        m.attribute_id = a.attribute_id
 	        and a.acs_attribute_id = aa.attribute_id
 	        and aa.object_type = 'im_project'
+	order by
+		aa.sort_order, aa.pretty_name
 "
 db_foreach attribute_table_map $sql {
     set key "$attribute_id.$object_type_id"
@@ -131,7 +158,11 @@ db_foreach attribute_table_map $sql {
 set header "<td></td>\n"
 foreach top $top_scale {
     set top_pretty $top_scale_map($top)
-    append header "<td class=rowtitle>$top_pretty</td>\n"
+    append header "
+	<td class=rowtitle>
+	$top_pretty
+	</td>
+    "
 }
 set header_html "<tr class=rowtitle valign=top>\n$header</tr>\n"
 
@@ -161,9 +192,11 @@ foreach left $left_scale {
 
 	set val "
 <nobr>
+<font size=-2>
 <input value=none type=radio name=\"attrib.$attribute_id.$object_type_id\" $none_checked>
 <input value=display type=radio name=\"attrib.$attribute_id.$object_type_id\" $disp_checked>
 <input value=edit type=radio name=\"attrib.$attribute_id.$object_type_id\" $edit_checked>
+</font>
 </nobr>
 "
 

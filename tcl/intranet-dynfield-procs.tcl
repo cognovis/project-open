@@ -1292,6 +1292,42 @@ ad_proc -public im_dynfield::set_form_values_from_http {
 }
 
 
+ad_proc -public im_dynfield::set_local_form_vars_from_http {
+    -form_id:required
+} {
+    Set local variables to the values passed on in HTTP,
+    so that we don't need to add all of them into the ad_header.
+    @param form_id: search form id
+    @return:	Form_vars that are also in the HTTP are set to the
+		calling variable frame
+} {
+    ns_log Notice "im_dynfield::set_local_form_vars_form_http: form_id=$form_id"
+    
+    set form_elements [template::form::get_elements $form_id]
+    set form_vars [ns_conn form]
+    
+    if {"" == $form_vars} { 
+	# There are no variables from HTTP - so there
+	# are not values to be set...
+	return "" 
+    }
+
+    foreach element $form_elements {
+	# Only set the values for variables that are found in the
+	# HTTP variable frame to avoid ambiguities
+	set pos [ns_set find $form_vars $element]
+	if {$pos >= 0} {
+	   set value [ns_set get $form_vars $element]
+
+	   # Write the values to the calling stack frame
+	   upvar $element $element
+	   set $element $value
+	}
+	append debug " $element"
+    }
+}
+
+
 ad_proc -public im_dynfield::attribute_store {
     -object_type:required
     -object_id:required
@@ -1968,15 +2004,20 @@ ad_proc -public im_dynfield::search_query {
 
 
 ad_proc -public im_dynfield::append_attributes_to_form {
-    {-object_type_id "" }
+    {-object_subtype_id "" }
     -object_type:required
     -form_id:required
     {-object_id ""}
     {-search_p "0"}
     {-form_display_mode "edit" }
+    {-advanced_filter_p 0}
 } {
     Append intranet-dynfield attributes for object_type to an existing form.<p>
     @option object_type The object_type attributes you want to add to the form
+    @option object_subtype_id Specifies the "subtype" of the objects (i.e. project_type_id)
+    @option advanced_filter_p Tells us that the dynfields are used for an 
+            "advanced filter" as oposed to a data form. Text fields dont make
+            much sense here, so we'll skip them.
 
     The code consists of two main parts:
     <ul>
@@ -2015,10 +2056,9 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     	}
     }
 
-
     # Get display mode per attribute and object_type_id
     set sql "
-        select  m.attribute_id,
+       select	m.attribute_id,
                 m.object_type_id as ot,
                 m.display_mode as dm
         from
@@ -2039,8 +2079,8 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	set display_mode_hash($key) $dm
 
 	# Now we've got atleast one display mode configured:
-	# Set the default to "none", so that non except for the
-	# configured fields appear.
+	# Set the default to "none", so that no field is shown
+	# except for the configured fields.
 	set default_display_mode "none"
 
 	ns_log Notice "append_attributes_to_form: display_mode($key) <= $dm"
@@ -2048,8 +2088,17 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
     # Disable the mechanism if the object_type_id hasn't been specified
     # (compatibility mode)
-    if {"" == $object_type_id} { set default_display_mode "edit" }
+    if {"" == $object_subtype_id} { set default_display_mode "edit" }
 
+    set extra_wheres [list "1=1"]
+    if {$advanced_filter_p} {
+	lappend extra_wheres "aw.widget in (
+		'select', 'generic_sql', 
+		'im_category_tree', 'im_cost_center_tree',
+		'checkbox'
+	)"
+    }
+    set extra_where [join $extra_wheres "\n\t\tand "]
 
     set attributes_sql "
 	select a.attribute_id,
@@ -2084,6 +2133,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		and a.attribute_id = aa.acs_attribute_id
 		and aa.widget_name = aw.widget_name
 		and im_object_permission_p(aa.attribute_id, :user_id, 'read') = 't'
+		and $extra_where
 	order by
 		dl.pos_y,
 		aa.attribute_id
@@ -2092,8 +2142,10 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     db_foreach attributes $attributes_sql {
     
 	set display_mode $default_display_mode
-	set key "$dynfield_attribute_id.$object_type_id"
-	if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
+	set key "$dynfield_attribute_id.$object_subtype_id"
+	if {[info exists display_mode_hash($key)]} { 
+	    set display_mode $display_mode_hash($key) 
+	}
 
 	if {"edit" == $display_mode && "display" == $form_display_mode}  {
             set display_mode $form_display_mode
@@ -2189,7 +2241,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     db_foreach attributes $attributes_sql {
 
 	set display_mode $default_display_mode
-	set key "$dynfield_attribute_id.$object_type_id"
+	set key "$dynfield_attribute_id.$object_subtype_id"
 	if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
 	if {"none" == $display_mode} { continue }
 
@@ -2821,3 +2873,5 @@ ad_proc -public im_dynfield::option::map {
 } {
     return [db_exec_plsql im_dynfield_option_map {}]
 }
+
+

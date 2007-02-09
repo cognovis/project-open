@@ -58,7 +58,12 @@ create table im_dynfield_widgets (
 	sql_datatype		varchar(200) 
 				constraint im_dynfield_widgets_datatype_nn 
 				not null,
-	parameters		varchar(4000)
+	parameters		varchar(4000),
+				-- Name of a PlPg/SQL function to convert a 
+				-- reference (integer, timestamptz) into a
+				-- printable value. Example: im_name_from_user_id,
+				-- im_cost_center_name_from_id
+	deref_plpgsql_function	varchar(100) default 'im_name_from_id'
 );
 
 
@@ -184,8 +189,11 @@ create table im_dynfield_attributes (
 	deprecated_p		char default 'f'
 				constraint im_dynfield_attr_deprecated_nn 
 				not null
+				-- Should the field be included in intranet-search-pg?
+	include_in_search_p	char(1) default 'f'
+				constraint im_dynfield_attributes_search_ch
+				check (include_in_search_p in ('t','f'))
 );
-
 
 
 --

@@ -4,6 +4,22 @@
 
 <h1>@page_title;noquote@</h1>
 
+<form action="attribute-type-map" method=POST>
+<%= [export_form_vars acs_object_type return_url] %>
+	<table>
+	<tr class=rowtitle><td class=rowtitle align=center colspan=2>Filter Subtypes</td></tr>
+	<tr>
+	  <td class=form-label>Object Subtype</td>
+	  <td class=form-widget><%= [im_category_select -include_empty_p 1 $category_type object_subtype_id $object_subtype_id] %></td>
+	</tr>
+	<tr>
+	  <td class=form-label></td>
+	  <td class=form-widget><input type=submit></td>
+	</tr>
+	</table>
+</form>
+
+
 <b>Explanation</b>
 <ul>
 <li>N - D - E
@@ -12,8 +28,9 @@
 <li>Third = "Edit" - Edit the field
 </ul>
 
-<form action=attribute-type-map-2 method=POST>
-<%= [export_form_vars acs_object_type return_url] %>
+
+<form action="attribute-type-map-2" method=POST>
+<%= [export_form_vars acs_object_type object_subtype_id return_url] %>
 
 <table>
 @header_html;noquote@
@@ -23,6 +40,7 @@
   <td colspan=99><input type=submit></td>
 </tr>
 </table>
+
 </form>
 
 

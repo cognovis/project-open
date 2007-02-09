@@ -73,6 +73,16 @@ set widget_options [list \
 ]
 
 
+set deref_options [list \
+	[list "Generic Default (im_name_from_id)" "im_name_from_id"] \
+	[list "User Name (im_name_from_user_id)" "im_name_from_user_id"] \
+	[list "User Email (im_email_from_user_id)" "im_email_from_user_id"] \
+	[list "Cost Center Name (im_cost_center_name_from_id)" "im_cost_center_name_from_id"] \
+]
+#	[list "" ""] \
+
+
+
 ad_form \
     -name widget \
     -cancel_url $return_url \
@@ -87,8 +97,9 @@ ad_form \
 	{storage_type_id:text(select) {label "Storage Type"} {options $storage_options} }
 	{acs_datatype:text(select) {label "ACS Datatype"} {options $acs_datatype_options} }
 	{sql_datatype:text(text) {label "SQL Datatype"} {html {size 60}} {help_text {Please specify the datatype for this attribute when we generate a new SQL column. Examples: <table><tr><td><li>integer<li>varchar(200)</td><td><li>number(12,2)<li>clob</td></tr></table>}} }
-	{widget:text(select) {label "Widget"} {options $widget_options} }
-	{parameters:text(text),optional {label "Parameters"} {html {size 60}}}
+	{widget:text(select) {label "TCL Widget"} {options $widget_options} }
+	{deref_plpgsql_function:text(select) {label "Dereferencing function"} {options $deref_options} {help_text {Select the function that converts an attribute of this widget into a printable/ searchable string.<br>Default is im_name_from_id which deals reasonably with most data.}} }
+	{parameters:text(textarea),optional {label "Parameters"} {nospell} {html {cols 65 rows 8}}}
     }
 
 
@@ -124,6 +135,7 @@ ad_form -extend -name widget -on_request {
 		acs_datatype	= :acs_datatype,
 		sql_datatype	= :sql_datatype,
 		widget		= :widget,
+		deref_plpgsql_function = :deref_plpgsql_function,
 		parameters	= :parameters
 	where
 		widget_id = :widget_id
