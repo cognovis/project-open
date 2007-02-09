@@ -2,6 +2,17 @@
 
 
 -------------------------------------------------------------
+-- Slow query for Employees (the most frequent one...)
+-- because of missing outer-join reordering in PG 7.4...
+-- Now adding the "im_employees" (in extra-from/extra-where)
+-- INSIDE the basic query.
+
+update im_view_columns set extra_from = null, extra_where = null where column_id = 5500;
+
+
+
+
+-------------------------------------------------------------
 -- Allow to make quotes for both active and potential companies
 
 
@@ -56,4 +67,59 @@ BEGIN
 END;' language 'plpgsql';
 select im_profiles_from_user_id(624);
 
+
+
+
+
+
+create or replace function im_name_from_id(integer)
+returns varchar as '
+DECLARE
+        v_integer       alias for $1;
+        v_result        varchar(4000);
+BEGIN
+        -- Try with category - probably the fastest
+        select category
+        into v_result
+        from im_categories
+        where category_id = v_integer;
+
+        IF v_result is not null THEN return v_result; END IF;
+
+        -- Try with ACS_OBJECT
+        select acs_object__name(v_integer)
+        into v_result;
+
+        return v_result;
+
+END;' language 'plpgsql';
+
+
+create or replace function im_name_from_id(varchar)
+returns varchar as '
+DECLARE
+        v_result	alias for $1;
+BEGIN
+        return v_result;
+END;' language 'plpgsql';
+
+
+
+create or replace function im_name_from_id(timestamptz)
+returns varchar as '
+DECLARE
+        v_timestamp	alias for $1;
+BEGIN
+        return to_char(v_timestamp, ''YYYY-MM-DD'');
+END;' language 'plpgsql';
+
+
+
+create or replace function im_name_from_id(numeric)
+returns varchar as '
+DECLARE
+        v_result        alias for $1;
+BEGIN
+        return v_result::varchar;
+END;' language 'plpgsql';
 
