@@ -4,4 +4,5 @@
   <msg key="Admin_workflows">Admin Workflows</msg>
   <msg key="All_Tasks">All Tasks</msg>
   <msg key="Unassigned_Tasks">Unassigned Tasks</msg>
+  <msg key="Your_Tasks">Meine RFCs</msg>
 </message_catalog>
