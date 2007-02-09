@@ -81,7 +81,7 @@
 <br>
 
 <if @count@ eq 0>
-  <font size="+1">#intranet-search-pg.lt_No_pages_were_found_c#<b>@query@</b>&quot;</font>.
+  <font size="+1">#intranet-search-pg.lt_No_pages_were_found_c#: &quot;<b>@query@</b>&quot;</font>.
   <br><br>#intranet-search-pg.Suggestions#
   <ul>
     <li>#intranet-search-pg.lt_Make_sure_all_words_a#
