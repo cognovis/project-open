@@ -618,6 +618,21 @@ im_report_render_row \
 
 
 switch $output_format {
-    html { ns_write "</table>\n[im_footer]\n" }
-}
+    html { 
+	ns_write "
+		<tr><td colspan=9>&nbsp;</td></tr>
+		<tr><td colspan=8 align=right>Total Earning</td><td>$invoice_total</td></tr>
+		<tr><td colspan=8 align=right>Total Expenses</td><td>[expr $bill_total + $expense_total]</td></tr>
+		<tr><td colspan=8 align=right>Profit</td><td>[expr $invoice_total - $bill_total - $expense_total]</td></tr>
+		<tr><td colspan=8 align=right>Retained IRPF</td><td>[expr -1 * $tax_total]</td></tr>
+		<tr><td colspan=8 align=right>EBT (Earning before TAX)</td><td>[expr $invoice_total - $bill_total - $expense_total + $tax_total]</td></tr>
+		<tr><td colspan=9>&nbsp;</td></tr>
 
+		<tr><td colspan=8 align=right>VAT Debt</td><td>$vat_total_pretty</td></tr>
+
+
+	" 
+
+	ns_write "</table>\n[im_footer]\n" 
+    }
+}
