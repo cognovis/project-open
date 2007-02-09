@@ -9,10 +9,8 @@
   <msg key="Companies">Empresas</msg>
   <msg key="Company">Empresa</msg>
   <msg key="context">contexto</msg>
-  <msg key="Cost_Center">Cost Center</msg>
   <msg key="Cost_Centers">Centros de coste</msg>
   <msg key="Cost_Items">Elementos de coste</msg>
-  <msg key="CostCenter_short">CC</msg>
   <msg key="create">Crear</msg>
   <msg key="Currency">Moneda</msg>
   <msg key="Customer">Cliente</msg>
@@ -68,7 +66,6 @@ Aunque es correcto en general, esto nos impide calcular el resultado de p&amp;ea
   <msg key="Next_Page">Página siguiente</msg>
   <msg key="Note">Nota</msg>
   <msg key="Options">Opciones:</msg>
-  <msg key="Org_Amount">Org</msg>
   <msg key="Paid">Pagada</msg>
   <msg key="Paid_Amount">Pagado Importe</msg>
   <msg key="Paid_Currency">Pagado Moneda</msg>
