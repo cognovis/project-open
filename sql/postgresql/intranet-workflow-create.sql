@@ -9,6 +9,19 @@
 
 
 
+-- ------------------------------------------------------
+-- Privileges
+-- ------------------------------------------------------
+
+select acs_privilege__create_privilege('wf_reassign_tasks','Reassign tasks to other users','');
+select acs_privilege__add_child('admin', 'wf_reassign_tasks');
+
+select im_priv_create('wf_reassign_tasks','Accounting');
+select im_priv_create('wf_reassign_tasks','P/O Admins');
+select im_priv_create('wf_reassign_tasks','Senior Managers');
+
+
+
 
 -- ------------------------------------------------------
 -- Update Project/Task types with Workflow types
@@ -191,6 +204,49 @@ end;' language 'plpgsql';
 select inline_0 ();
 
 drop function inline_0 ();
+
+
+
+
+
+
+-- ------------------------------------------------------
+-- Callback functions for Workflow
+-- ------------------------------------------------------
+
+-- Set the status of the associated project
+
+create or replace function im_workflow__set_project_status (integer,varchar,text)
+returns integer as '
+declare
+	p_case_id		alias for $1;
+	p_transition_key	alias for $2;
+	p_custom_arg		alias for $3;
+
+	v_project_id		integer;
+	v_project_status_id	integer;
+begin
+	-- get the project_id
+	select	object_id
+	into	v_project_id
+	from	wf_cases
+	where	case_id = p_case_id;
+
+	-- get the project status
+	select	project_status_id
+	into	v_project_status_id
+	from	im_project_status
+	where	lower(project_status) = lower(p_custom_arg);
+
+	IF v_project_id is null OR v_project_status_id is null THEN return 0; END IF;
+
+	update	im_projects
+	set	project_status_id = v_project_status_id
+	where	project_id = v_project_id;
+
+	return 0;
+end;' language 'plpgsql';
+
 
 
 
