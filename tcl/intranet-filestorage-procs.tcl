@@ -317,11 +317,11 @@ ad_proc -public im_filestorage_find_files { project_id } {
 
 	exec /bin/mkdir -p $project_path
         exec /bin/chmod ug+w $project_path
-	set file_list [exec $find_cmd $project_path -type f]
+	set file_list [exec $find_cmd $project_path -noleaf -type f]
 
     } err_msg] } {
 	# Probably some permission errors - return empty string
-	set err "'exec $find_cmd $project_path' failed with error:
+	set err "'exec $find_cmd $project_path -noleaf -type f' failed with error:
 	err_msg=$err_msg\n"
 	set file_list ""
     }
@@ -1323,7 +1323,7 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
 	# Executing the find command
         exec /bin/mkdir -p $find_path
         exec /bin/chmod ug+w $find_path
-	set file_list [exec $find_cmd $find_path]
+	set file_list [exec $find_cmd $find_path -noleaf]
 	set files [lsort [split $file_list "\n"]]
 
     } err_msg] } { 
