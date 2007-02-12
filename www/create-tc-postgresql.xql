@@ -17,39 +17,39 @@
   <fullquery name="create_expense_invoice">
     <querytext>
       select im_cost__new (
-                null,           -- cost_id
-                'im_invoice',      -- object_type
-                now(),          -- creation_date
-                :user_id,       -- creation_user
-                '[ad_conn peeraddr]', -- creation_ip
-                null,           -- context_id
+		null,			-- cost_id
+		'im_invoice',   	-- object_type
+		now(),			-- creation_date
+		:current_user_id,	-- creation_user
+		'[ad_conn peeraddr]',	-- creation_ip
+		null,			-- context_id
       
-                :cost_name,     -- cost_name
-                null,           -- parent_id
-		:project_id,    -- project_id
-                :customer_id,    -- customer_id
-                :provider_id,   -- provider_id
-                null,           -- investment_id
+		:cost_name,     	-- cost_name
+		null,			-- parent_id
+		:common_project_id,    	-- project_id
+		:common_customer_id,	-- customer_id
+		:common_provider_id,	-- provider_id
+		null,			-- investment_id
 
-                :cost_status_id, -- cost_status_id
-                :cost_type_id,  -- cost_type_id
-                :template_id,   -- template_id
+		:cost_status_id,	-- cost_status_id
+		:cost_type_id,		-- cost_type_id
+		:template_id,		-- template_id
       
-                now(), -- effective_date
-                :payment_days,  -- payment_days
-		:amount_before_vat,        -- amount
-                :currency,      -- currency
-                :invoice_vat,           -- vat
-                :tax,           -- tax
+		now(),			-- effective_date
+		:payment_days,  	-- payment_days
+		:amount_before_vat,	-- amount
+		:currency,      	-- currency
+		:invoice_vat,		-- vat
+		:tax,			-- tax
 
-                'f',            -- variable_cost_p
-                'f',            -- needs_redistribution_p
-                'f',            -- redistributed_p
-                'f',            -- planning_p
-                null,           -- planning_type_id
+		'f',			-- variable_cost_p
+		'f',			-- needs_redistribution_p
+		'f',			-- redistributed_p
+		'f',			-- planning_p
+		null,			-- planning_type_id
 
-                :description,   -- description
-                :note           -- note
+		:description,   	-- description
+		:note			-- note
       )
     </querytext>
   </fullquery>

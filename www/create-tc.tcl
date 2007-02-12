@@ -18,61 +18,105 @@ ad_page_contract {
     @author avila@digiteix.com
 } {
     { cost_type_id:integer "[im_cost_type_invoice]" }
-    project_id:integer
-    { return_url "/intranet-expenses/"}
-    expense_id:multiple,optional
+    return_url
+    expense_id:integer,multiple,optional
 }
+
 
 # ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
 
 # No ExpenseItems specified? => Go back
-if {![info exists expense_id]} {
-    template::forward "$return_url?[export_vars -url project_id]"    
-}
+if {![info exists expense_id]} { ad_returnredirect $return_url }
 
 # User id already verified by filters
-set user_id [ad_maybe_redirect_for_registration]
-set current_user_id $user_id
-set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+set current_user_id [ad_maybe_redirect_for_registration]
+set add_expense_invoices_p [im_permission $current_user_id "add_expense_invoice"]
+
+if {!$add_expense_invoices_p} {
+    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_perms "You don't have permission to see this page:"]
+    ad_script_abort
+}
+
+# Add a "0" expense to avoid syntax error if the list was empty.
+lappend epense_id 0
+
+set expense_ids $expense_id
+
+
+# ---------------------------------------------------------------
+# Sum up the expenses
+# ---------------------------------------------------------------
 
 set amount_before_vat 0
 set total_amount 0
 set expenses_list [list]
+set common_project_id 0
+set common_customer_id 0
+set common_provider_id 0
 
-foreach id $expense_id {
-    db_1row "get expense info" "select
-           amount, 
-           currency, 
-           vat, 
-	   external_company_name,
-	receipt_reference,
-	invoice_id,
-	billable_p,
-	reimbursable
-    from im_costs, im_expenses e
-    where cost_id = :id 
-	and cost_id = expense_id
-        and invoice_id is null"
+set expense_sql "
+	select
+		c.*,
+		e.*
+	from
+		im_costs c, 
+		im_expenses e
+	where
+		c.cost_id in ([join $expense_ids ", "])
+		and c.cost_id = e.expense_id
+        	and e.invoice_id is null
+"
+db_foreach expenses $expense_sql {
 
     set amount_before_vat [expr $amount_before_vat + $amount]
     set total_amount [expr $total_amount + [expr $amount * [expr 1 + [expr $vat / 100.0]]]]
-    lappend expenses_list $id
+
+    if {0 == $common_project_id & $project_id != ""} { set common_project_id $project_id }
+    if {0 != $common_project_id & $project_id != "" & $common_project_id != $project_id} {
+	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_projects "
+		You can't included expense items from several project in one expense invoice.
+	"]
+	ad_script_abort
+    }
+
+    if {0 == $common_customer_id & $customer_id != ""} { set common_customer_id $customer_id }
+    if {0 != $common_customer_id & $customer_id != "" & $common_customer_id != $customer_id} {
+	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_customers "
+		You can't included expense items from several 'customer' in one expense invoice.
+	"]
+	ad_script_abort
+    }
+
+    if {0 == $common_provider_id & $provider_id != ""} { set common_provider_id $provider_id }
+    if {0 != $common_provider_id & $provider_id != "" & $common_provider_id != $provider_id} {
+	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_projects "
+		You can't included expense items from several 'providers' in one expense invoice.
+	"]
+	ad_script_abort
+    }
+
 }
 
 set invoice_vat [expr [expr [expr $total_amount - $amount_before_vat] / $amount_before_vat] * 100.0]
+
+
+if {0 == $common_project_id} {
+    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_project_specified "No project specified"]
+    ad_abort_script
+}
 
 # --------------------------------------
 # create invoice for these expenses
 # --------------------------------------
 
-set project_nr [db_string project_nr "select project_nr from im_projects where project_id = :project_id" -default ""]
+set project_nr [db_string project_nr "select project_nr from im_projects where project_id = :common_project_id" -default ""]
 set cost_name [lang::message::lookup "" intranet-expenses.Expense_Invoice "Expense Invoice"]
 set cost_name "$cost_name - $project_nr"
 
 set customer_id "[im_company_internal]"
-set provider_id $user_id
+set provider_id $current_user_id
 set cost_status_id [im_cost_status_created]
 set cost_type_id [im_cost_type_expense_report]
 set template_id ""
@@ -84,14 +128,17 @@ set note ""
 # create invoice as a cost
 # Let's create the new expense
 db_transaction {
-    set invoice_id [db_exec_plsql create_expense_invoice ""] 
+
+    set expense_invoice_id [db_exec_plsql create_expense_invoice ""] 
     set expenses_list_sql [join $expenses_list ","]
-    db_dml "set invoice_id to expense_items" "
+
+    db_dml update_expense_items "
 	update im_expenses 
-	set invoice_id = :invoice_id 
-	where expense_id in ($expenses_list_sql)
+	set invoice_id = :expense_invoice_id 
+	where expense_id in ([join $expense_ids ", "])
     "
+
 }
 
 
-template::forward "$return_url?[export_vars -url project_id]"
+ad_returnredirect $return_url

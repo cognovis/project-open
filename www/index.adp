@@ -5,7 +5,7 @@
 <master src="../../intranet-core/www/master">
 <property name="title">@page_title@</property>
 <property name="context">@context_bar@</property>
-<property name="main_navbar_label">projects</property>
+<property name="main_navbar_label">@main_navbar_label@</property>
 
 <br>
 @project_menu;noquote@
@@ -15,22 +15,44 @@
   <td> <!-- TD for the left hand filter HTML -->
 
 	<form method=get action='index'>
-	<%= [export_form_vars material_group_id material_start_idx material_order_by material_how_many material_view_name] %>
+	<%= [export_form_vars orderby] %>
 
 	<table>
-	  <tr>
+	<tr>
 	    <td colspan='2' class=rowtitle align=center>
 	      <%= [lang::message::lookup "" intranet-expenses.Filter_Expenses "Filter Expenses"] %>
 	    </td>
-	  </tr>
-	  <tr>
+	</tr>
+
+	<tr>
+	    <td class=form-label><%= [lang::message::lookup "" intranet-expenses.Unassigned_items "Unassigned:"] %></td>
+	    <td class=form-widget><%= [im_select -translate_p 0 unassigned $unassigned_p_options $unassigned] %></td>
+	</tr>
+
+<!--
+	<tr>
+	  <td class=form-label>Start Date</td>
+	  <td class=form-widget>
+	    <input type=textfield name=start_date value=@start_date@>
+	  </td>
+	</tr>
+	<tr>
+	  <td class=form-label>End Date</td>
+	  <td class=form-widget>
+	    <input type=textfield name=end_date value=@end_date@>
+	  </td>
+	</tr>
+-->
+
+	<tr>
 	    <td class=form-label><%= [lang::message::lookup "" intranet-expenses.Project "Project"] %></td>
-	    <td class=form-widget><%= [im_project_select -include_all 0 project_id $project_id] %></td>
+	    <td class=form-widget><%= [im_project_select -include_all 0 -exclude_status_id [im_project_status_closed] project_id $org_project_id] %></td>
 	  </tr>
 	  <tr>
 	    <td class=form-label></td>
 	    <td class=form-widget><input type=submit></td>
-	  </tr>
+	</tr>
+
 	</table>
 	</form>
 
@@ -40,7 +62,7 @@
     <table border=0 cellpadding=0 cellspacing=0>
     <tr>
       <td class=rowtitle align=center>
-        #intranet-core.Admin_Links#
+	#intranet-core.Admin_Links#
       </td>
     </tr>
     <tr>

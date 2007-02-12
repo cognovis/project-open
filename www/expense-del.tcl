@@ -17,9 +17,7 @@ ad_page_contract {
 
     @author avila@digiteix.com
 } {
-
-    project_id:integer
-    { return_url "/intranet-expenses/"}
+    return_url
     expense_id:multiple
 }
 
@@ -41,4 +39,4 @@ foreach id $expense_id {
     }
 }
 
-template::forward "$return_url?[export_vars -url project_id]"
+ad_returnredirect $return_url
