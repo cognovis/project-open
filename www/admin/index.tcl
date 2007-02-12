@@ -88,50 +88,50 @@ template::list::create \
     -multirow folder_contents \
     -has_checkboxes \
     -key item_id \
-    -page_size 50 \
+    -page_size 100 \
     -page_query_name get_folder_contents_paginate \
     -actions $actions \
     -elements {
 	title {
-	    label "Name"
+	    label "Wiki Page"
 	    link_html { title "View this item"}
-	    link_url_col cms_admin_url
 	    orderby title
 	}
 
 	live_preview {
-	    label "Conf. Prev"
+	    label "Confirmed<br>Version"
 	    link_html { title "View the latest confirmed version of this item"}
 	    link_url_col live_preview_url
 	}
-	latest_preview {
-	    label "New Prev"
-	    link_html { title "View the latest version of this item"}
-	    link_url_col latest_preview_url
-	}
-
-	live_size {
-	    label "Conf. Size"
-	}
-	latest_size {
-	    label "New Size"
-	}
-
 	live_publish_date {
-	    label "Conf. Date"
+	    label "Confirmation<br>Date"
 	    display_eval { [lc_time_fmt $live_publish_date "%y-%m-%d"] }
 	    orderby u.publish_date
 	}
+	live_size {
+	    label "Confirmed<br>Size"
+	}
+
+
+	latest_preview {
+	    label "New<br>Version"
+	    link_html { title "View the latest version of this item"}
+	    link_url_col latest_preview_url
+	}
 	latest_publish_date {
-	    label "New Date"
+	    label "New<br>Date"
 	    display_eval { [lc_time_fmt $latest_publish_date "%y-%m-%d"] }
 	    orderby v.publish_date
 	}
+	latest_size {
+	    label "New<br>Size"
+	}
 
-	latest_creation_user {
-	    label "Mod. by"
+	latest_creation_user_name {
+	    label "Modified by"
 	    link_html { title "More information about this user"}
 	    link_url_col latest_creation_user_url
+	    orderby latest_creation_user_name
 	}
 	cancel_action {
 	    label "Revert"
@@ -143,6 +143,11 @@ template::list::create \
 	    link_html { title "Confirm the new revision"}
 	    link_url_col confirm_action_url
 	}
+	delete_action {
+	    label "Delete"
+	    link_html { title "Delete the item with all revisions"}
+	    link_url_col delete_action_url
+	}
     } \
     -filters {
 	folder_id {}
@@ -150,22 +155,20 @@ template::list::create \
 	mount_point {}
     }
 
-db_multirow -extend { item_url latest_size live_size cancel_action confirm_action cancel_action_url confirm_action_url live_preview latest_preview live_preview_url latest_preview_url cms_admin_url latest_creation_user_url } folder_contents get_folder_contents "" {
+db_multirow -extend { item_url latest_size live_size cancel_action confirm_action cancel_action_url delete_action delete_action_url confirm_action_url live_preview latest_preview live_preview_url latest_preview_url cms_admin_url latest_creation_user_url } folder_contents get_folder_contents "" {
 
     set cancel_action "Revert"
     set cancel_action_url [export_vars -base "update_latest_revision?item_id=$item_id&revision_id=$live_revision_id" { return_url} ]
-
     set confirm_action "Confirm"
     set confirm_action_url [export_vars -base "update_live_revision?item_id=$item_id&revision_id=$latest_revision_id" { return_url} ]
-    
+    set delete_action "Delete"
+    set delete_action_url [export_vars -base "delete?item_id=$item_id&revision_id=$latest_revision_id" { return_url} ]
+
     set latest_preview "New"
     set latest_preview_url "/$wiki_mount/[ns_urlencode $name]"
-
     set live_preview "Confirmed"
     set live_preview_url "/$wiki_mount/[ns_urlencode $name]?revision_id=$live_revision_id"
-
     set cms_admin_url "/cms/modules/items/index?item_id=$item_id"
-
     set latest_creation_user_url "/intranet/users/view?user_id=$latest_creation_user"
 
     switch $content_type {

@@ -7,7 +7,9 @@
       <querytext>
 
   select
-    r.item_id, v.title, last_modified
+    r.item_id, v.title, last_modified,
+	o.creation_user as latest_creation_user,
+	acs_object__name(o.creation_user) as latest_creation_user_name
   from 
     cr_items i
         LEFT OUTER JOIN
@@ -44,6 +46,7 @@
 	v.content_length as latest_length,
 	v.publish_date as latest_publish_date,
 	ro.creation_user as latest_creation_user,
+	acs_object__name(ro.creation_user) as latest_creation_user_name,
 
 	u.revision_id as live_revision_id, 
 	u.publish_date as live_publish_date,
