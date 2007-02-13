@@ -174,6 +174,7 @@ set left_scale_options {
 	"customer_type" "Customer Type"
 	"customer_status" "Customer Status"
 	"department" "Department"
+	"project_manager_name" "Project Manager"
 }
 
 
@@ -365,7 +366,7 @@ ns_write "
 set criteria [list]
 
 if {"" != $customer_id && 0 != $customer_id} {
-    lappend criteria "p.customer_id = :customer_id"
+    lappend criteria "p.company_id = :customer_id"
 }
 
 if {"" != $project_type_id && 0 != $project_type_id} {
@@ -398,7 +399,8 @@ if { ![empty_string_p $where_clause] } {
 set inner_sql "
 		select	
 			h.*, 
-			p.*, 
+			p.*,
+			im_name_from_user_id(p.project_lead_id) as project_manager_name,
 			c.*,
 			u.*,
 			e.*,
