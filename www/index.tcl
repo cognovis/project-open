@@ -77,8 +77,8 @@ if {"" == $project_id | 0 == $project_id} { set main_navbar_label "expenses" }
 
 
 set unassigned_p_options [list \
-        [list [lang::message::lookup "" intranet-expenses.All "All"] "all"] \
-        [list [lang::message::lookup "" intranet-expenses.Unassigned_items "Unassigned"] "unassigned"] \
+        "all" [lang::message::lookup "" intranet-expenses.All "All"] \
+        "unassigned" [lang::message::lookup "" intranet-expenses.Unassigned_items "Unassigned"] \
 ]
 
 
