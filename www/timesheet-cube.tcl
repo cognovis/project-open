@@ -173,6 +173,7 @@ set left_scale_options {
 	"customer_name" "Customer Name"
 	"customer_type" "Customer Type"
 	"customer_status" "Customer Status"
+	"department" "Department"
 }
 
 
@@ -398,13 +399,19 @@ set inner_sql "
 		select	
 			h.*, 
 			p.*, 
-			c.*
+			c.*,
+			u.*,
+			e.*,
+			im_cost_center_name_from_id(e.department_id) as department
 		from
 			im_hours h,
 			im_projects p,
-			im_companies c
+			im_companies c,
+			cc_users u
+			LEFT OUTER JOIN im_employees e ON (u.user_id = e.employee_id)
 		where
 			h.project_id = p.project_id
+			and h.user_id = u.user_id
 			and p.company_id = c.company_id
 			and h.day::date >= to_date(:start_date, 'YYYY-MM-DD')
 			and h.day::date < to_date(:end_date, 'YYYY-MM-DD')
