@@ -22,43 +22,6 @@ create table im_search_pg_file_biz_objects (
 
 
 
-
------------------------------------------------------------
--- im_fs_files
-
-create or replace function inline_0 ()
-returns integer as '
-declare
-        v_exists_p      varchar;
-begin
-        select  count(*)
-        into    v_exists_p
-        from    acs_object_types
-        where   object_type = ''im_fs_file'';
-
-        if 0 = v_exists_p then
-
-	    perform acs_object_type__create_type (
-		''im_fs_file'',		-- object_type
-		''Filestorage File'',	-- pretty_name
-		''Filestorage Files'',	-- pretty_plural
-		''acs_object'',		-- supertype
-		''im_fs_files'',	-- table_name
-		''file_id'',		-- id_column
-		''intranet-filestorage'', -- package_name
-		''f'',			-- abstract_p
-		null,			-- type_extension_table
-		''im_fs_files.name''	-- name_method
-	    );
-	end if;
-
-	return 0;
-end;' language 'plpgsql';
-select inline_0();
-drop function inline_0();
-
-
-
 insert into im_search_object_types values (6,'im_fs_file',0.1);
 
 
