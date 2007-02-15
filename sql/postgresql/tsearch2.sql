@@ -4,9 +4,9 @@ SET search_path = public;
 --dict conf
 CREATE TABLE pg_ts_dict (
 	dict_name	text not null primary key,
-	dict_init	oid,
+	dict_init	regprocedure,
 	dict_initoption	text,
-	dict_lexize	oid not null,
+	dict_lexize	regprocedure not null,
 	dict_comment	text
 ) with oids;
 
@@ -42,7 +42,7 @@ CREATE FUNCTION set_curdict(text)
 	with (isstrict);
 
 --built-in dictionaries
-CREATE FUNCTION dex_init(internal)
+CREATE FUNCTION dex_init(text)
 	returns internal
 	as '$libdir/tsearch2' 
 	language 'C';
@@ -55,13 +55,13 @@ CREATE FUNCTION dex_lexize(internal,internal,int4)
 
 insert into pg_ts_dict select 
 	'simple', 
-	(select oid from pg_proc where proname='dex_init'),
+	'dex_init(text)',
 	null,
-	(select oid from pg_proc where proname='dex_lexize'),
+	'dex_lexize(internal,internal,int4)',
 	'Simple example of dictionary.'
 ;
 	 
-CREATE FUNCTION snb_en_init(internal)
+CREATE FUNCTION snb_en_init(text)
 	returns internal
 	as '$libdir/tsearch2' 
 	language 'C';
@@ -74,26 +74,26 @@ CREATE FUNCTION snb_lexize(internal,internal,int4)
 
 insert into pg_ts_dict select 
 	'en_stem', 
-	(select oid from pg_proc where proname='snb_en_init'),
-	'/usr/share/postgresql/contrib/english.stop',
-	(select oid from pg_proc where proname='snb_lexize'),
+	'snb_en_init(text)',
+	'contrib/english.stop',
+	'snb_lexize(internal,internal,int4)',
 	'English Stemmer. Snowball.'
 ;
 
-CREATE FUNCTION snb_ru_init(internal)
+CREATE FUNCTION snb_ru_init(text)
 	returns internal
 	as '$libdir/tsearch2' 
 	language 'C';
 
 insert into pg_ts_dict select 
 	'ru_stem', 
-	(select oid from pg_proc where proname='snb_ru_init'),
-	'/usr/share/postgresql/contrib/russian.stop',
-	(select oid from pg_proc where proname='snb_lexize'),
+	'snb_ru_init(text)',
+	'contrib/russian.stop',
+	'snb_lexize(internal,internal,int4)',
 	'Russian Stemmer. Snowball.'
 ;
 	 
-CREATE FUNCTION spell_init(internal)
+CREATE FUNCTION spell_init(text)
 	returns internal
 	as '$libdir/tsearch2' 
 	language 'C';
@@ -106,13 +106,13 @@ CREATE FUNCTION spell_lexize(internal,internal,int4)
 
 insert into pg_ts_dict select 
 	'ispell_template', 
-	(select oid from pg_proc where proname='spell_init'),
+	'spell_init(text)',
 	null,
-	(select oid from pg_proc where proname='spell_lexize'),
+	'spell_lexize(internal,internal,int4)',
 	'ISpell interface. Must have .dict and .aff files'
 ;
 
-CREATE FUNCTION syn_init(internal)
+CREATE FUNCTION syn_init(text)
 	returns internal
 	as '$libdir/tsearch2' 
 	language 'C';
@@ -125,20 +125,20 @@ CREATE FUNCTION syn_lexize(internal,internal,int4)
 
 insert into pg_ts_dict select 
 	'synonym', 
-	(select oid from pg_proc where proname='syn_init'),
+	'syn_init(text)',
 	null,
-	(select oid from pg_proc where proname='syn_lexize'),
+	'syn_lexize(internal,internal,int4)',
 	'Example of synonym dictionary'
 ;
 
 --dict conf
 CREATE TABLE pg_ts_parser (
 	prs_name	text not null primary key,
-	prs_start	oid not null,
-	prs_nexttoken	oid not null,
-	prs_end		oid not null,
-	prs_headline	oid not null,
-	prs_lextype	oid not null,
+	prs_start	regprocedure not null,
+	prs_nexttoken	regprocedure not null,
+	prs_end		regprocedure not null,
+	prs_headline	regprocedure not null,
+	prs_lextype	regprocedure not null,
 	prs_comment	text
 ) with oids;
 
@@ -225,11 +225,11 @@ CREATE FUNCTION prsd_headline(internal,internal,internal)
 
 insert into pg_ts_parser select
 	'default',
-	(select oid from pg_proc where proname='prsd_start'),	
-	(select oid from pg_proc where proname='prsd_getlexeme'),	
-	(select oid from pg_proc where proname='prsd_end'),	
-	(select oid from pg_proc where proname='prsd_headline'),
-	(select oid from pg_proc where proname='prsd_lextype'),
+	'prsd_start(internal,int4)',
+	'prsd_getlexeme(internal,internal,internal)',
+	'prsd_end(internal)',
+	'prsd_headline(internal,internal,internal)',
+	'prsd_lextype(internal)',
 	'Parser from OpenFTS v0.34'
 ;	
 
@@ -270,65 +270,63 @@ insert into pg_ts_cfg values ('default', 'default','C');
 insert into pg_ts_cfg values ('default_russian', 'default','ru_RU.KOI8-R');
 insert into pg_ts_cfg values ('simple', 'default');
 
-copy pg_ts_cfgmap from stdin;
-default	lword	{en_stem}
-default	nlword	{simple}
-default	word	{simple}
-default	email	{simple}
-default	url	{simple}
-default	host	{simple}
-default	sfloat	{simple}
-default	version	{simple}
-default	part_hword	{simple}
-default	nlpart_hword	{simple}
-default	lpart_hword	{en_stem}
-default	hword	{simple}
-default	lhword	{en_stem}
-default	nlhword	{simple}
-default	uri	{simple}
-default	file	{simple}
-default	float	{simple}
-default	int	{simple}
-default	uint	{simple}
-default_russian	lword	{en_stem}
-default_russian	nlword	{ru_stem}
-default_russian	word	{ru_stem}
-default_russian	email	{simple}
-default_russian	url	{simple}
-default_russian	host	{simple}
-default_russian	sfloat	{simple}
-default_russian	version	{simple}
-default_russian	part_hword	{simple}
-default_russian	nlpart_hword	{ru_stem}
-default_russian	lpart_hword	{en_stem}
-default_russian	hword	{ru_stem}
-default_russian	lhword	{en_stem}
-default_russian	nlhword	{ru_stem}
-default_russian	uri	{simple}
-default_russian	file	{simple}
-default_russian	float	{simple}
-default_russian	int	{simple}
-default_russian	uint	{simple}
-simple	lword	{simple}
-simple	nlword	{simple}
-simple	word	{simple}
-simple	email	{simple}
-simple	url	{simple}
-simple	host	{simple}
-simple	sfloat	{simple}
-simple	version	{simple}
-simple	part_hword	{simple}
-simple	nlpart_hword	{simple}
-simple	lpart_hword	{simple}
-simple	hword	{simple}
-simple	lhword	{simple}
-simple	nlhword	{simple}
-simple	uri	{simple}
-simple	file	{simple}
-simple	float	{simple}
-simple	int	{simple}
-simple	uint	{simple}
-\.
+insert into pg_ts_cfgmap values ('default', 'lword', '{en_stem}');
+insert into pg_ts_cfgmap values ('default', 'nlword', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'word', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'email', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'url', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'host', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'sfloat', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'version', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'part_hword', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'nlpart_hword', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'lpart_hword', '{en_stem}');
+insert into pg_ts_cfgmap values ('default', 'hword', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'lhword', '{en_stem}');
+insert into pg_ts_cfgmap values ('default', 'nlhword', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'uri', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'file', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'float', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'int', '{simple}');
+insert into pg_ts_cfgmap values ('default', 'uint', '{simple}');
+insert into pg_ts_cfgmap values ('default_russian', 'lword', '{en_stem}');
+insert into pg_ts_cfgmap values ('default_russian', 'nlword', '{ru_stem}');
+insert into pg_ts_cfgmap values ('default_russian', 'word', '{ru_stem}');
+insert into pg_ts_cfgmap values ('default_russian', 'email', '{simple}');
+insert into pg_ts_cfgmap values ('default_russian', 'url', '{simple}');
+insert into pg_ts_cfgmap values ('default_russian', 'host', '{simple}');
+insert into pg_ts_cfgmap values ('default_russian', 'sfloat', '{simple}');
+insert into pg_ts_cfgmap values ('default_russian', 'version', '{simple}');
+insert into pg_ts_cfgmap values ('default_russian', 'part_hword', '{simple}');
+insert into pg_ts_cfgmap values ('default_russian', 'nlpart_hword', '{ru_stem}');
+insert into pg_ts_cfgmap values ('default_russian', 'lpart_hword', '{en_stem}');
+insert into pg_ts_cfgmap values ('default_russian', 'hword', '{ru_stem}');
+insert into pg_ts_cfgmap values ('default_russian', 'lhword', '{en_stem}');
+insert into pg_ts_cfgmap values ('default_russian', 'nlhword', '{ru_stem}');
+insert into pg_ts_cfgmap values ('default_russian', 'uri', '{simple}');
+insert into pg_ts_cfgmap values ('default_russian', 'file', '{simple}');
+insert into pg_ts_cfgmap values ('default_russian', 'float', '{simple}');
+insert into pg_ts_cfgmap values ('default_russian', 'int', '{simple}');
+insert into pg_ts_cfgmap values ('default_russian', 'uint', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'lword', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'nlword', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'word', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'email', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'url', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'host', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'sfloat', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'version', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'part_hword', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'nlpart_hword', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'lpart_hword', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'hword', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'lhword', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'nlhword', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'uri', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'file', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'float', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'int', '{simple}');
+insert into pg_ts_cfgmap values ('simple', 'uint', '{simple}');
 
 --tsvector type
 CREATE FUNCTION tsvector_in(cstring)
@@ -579,7 +577,7 @@ RETURNS internal
 AS '$libdir/tsearch2'
 LANGUAGE 'C';
 
-CREATE FUNCTION gtsvector_union(bytea, internal)
+CREATE FUNCTION gtsvector_union(internal, internal)
 RETURNS _int4
 AS '$libdir/tsearch2'
 LANGUAGE 'C';
@@ -595,7 +593,7 @@ DEFAULT FOR TYPE tsvector USING gist
 AS
         OPERATOR        1       @@ (tsvector, tsquery)  RECHECK ,
         FUNCTION        1       gtsvector_consistent (gtsvector, internal, int4),
-        FUNCTION        2       gtsvector_union (bytea, internal),
+        FUNCTION        2       gtsvector_union (internal, internal),
         FUNCTION        3       gtsvector_compress (internal),
         FUNCTION        4       gtsvector_decompress (internal),
         FUNCTION        5       gtsvector_penalty (internal, internal, internal),
@@ -645,6 +643,12 @@ CREATE TYPE statinfo
 --); 
 
 CREATE FUNCTION stat(text)
+	returns setof statinfo
+	as '$libdir/tsearch2', 'ts_stat'
+	language 'C'
+	with (isstrict);
+
+CREATE FUNCTION stat(text,text)
 	returns setof statinfo
 	as '$libdir/tsearch2', 'ts_stat'
 	language 'C'
@@ -700,9 +704,115 @@ where
         c.oid=show_curcfg() 
 ' language 'SQL' with(isstrict);
 
+--compare functions
+CREATE FUNCTION tsvector_cmp(tsvector,tsvector)
+RETURNS int4
+AS '$libdir/tsearch2'
+LANGUAGE 'C' WITH (isstrict,iscachable);
+
+CREATE FUNCTION tsvector_lt(tsvector,tsvector)
+RETURNS bool
+AS '$libdir/tsearch2'
+LANGUAGE 'C' WITH (isstrict,iscachable);
+
+CREATE FUNCTION tsvector_le(tsvector,tsvector)
+RETURNS bool
+AS '$libdir/tsearch2'
+LANGUAGE 'C' WITH (isstrict,iscachable);
+        
+CREATE FUNCTION tsvector_eq(tsvector,tsvector)
+RETURNS bool
+AS '$libdir/tsearch2'
+LANGUAGE 'C' WITH (isstrict,iscachable);
+
+CREATE FUNCTION tsvector_ge(tsvector,tsvector)
+RETURNS bool
+AS '$libdir/tsearch2'
+LANGUAGE 'C' WITH (isstrict,iscachable);
+        
+CREATE FUNCTION tsvector_gt(tsvector,tsvector)
+RETURNS bool
+AS '$libdir/tsearch2'
+LANGUAGE 'C' WITH (isstrict,iscachable);
+
+CREATE FUNCTION tsvector_ne(tsvector,tsvector)
+RETURNS bool
+AS '$libdir/tsearch2'
+LANGUAGE 'C' WITH (isstrict,iscachable);
+
+CREATE OPERATOR < (
+        LEFTARG = tsvector,
+        RIGHTARG = tsvector,
+        PROCEDURE = tsvector_lt,
+        COMMUTATOR = '>',
+        NEGATOR = '>=',
+        RESTRICT = contsel,
+        JOIN = contjoinsel
+);
+
+CREATE OPERATOR <= (
+        LEFTARG = tsvector,
+        RIGHTARG = tsvector,
+        PROCEDURE = tsvector_le,
+        COMMUTATOR = '>=',
+        NEGATOR = '>',
+        RESTRICT = contsel,
+        JOIN = contjoinsel
+);
+
+CREATE OPERATOR >= (
+        LEFTARG = tsvector,
+        RIGHTARG = tsvector,
+        PROCEDURE = tsvector_ge,
+        COMMUTATOR = '<=',
+        NEGATOR = '<',
+        RESTRICT = contsel,
+        JOIN = contjoinsel
+);
+
+CREATE OPERATOR > (
+        LEFTARG = tsvector,
+        RIGHTARG = tsvector,
+        PROCEDURE = tsvector_gt,
+        COMMUTATOR = '<',
+        NEGATOR = '<=',
+        RESTRICT = contsel,
+        JOIN = contjoinsel
+);
+
+CREATE OPERATOR = (
+        LEFTARG = tsvector,
+        RIGHTARG = tsvector,
+        PROCEDURE = tsvector_eq,
+        COMMUTATOR = '=',
+        NEGATOR = '<>',
+        RESTRICT = eqsel,
+        JOIN = eqjoinsel,
+        SORT1 = '<',
+        SORT2 = '<'
+);
+
+CREATE OPERATOR <> (
+        LEFTARG = tsvector,
+        RIGHTARG = tsvector,
+        PROCEDURE = tsvector_ne,
+        COMMUTATOR = '<>',
+        NEGATOR = '=',
+        RESTRICT = neqsel,
+        JOIN = neqjoinsel
+);
+
+CREATE OPERATOR CLASS tsvector_ops
+    DEFAULT FOR TYPE tsvector USING btree AS
+        OPERATOR        1       < ,
+        OPERATOR        2       <= , 
+        OPERATOR        3       = ,
+        OPERATOR        4       >= ,
+        OPERATOR        5       > ,
+        FUNCTION        1       tsvector_cmp(tsvector, tsvector);
 
 --example of ISpell dictionary
---update pg_ts_dict set dict_initoption='DictFile="/usr/local/share/ispell/russian.dict" ,AffFile ="/usr/local/share/ispell/russian.aff", StopFile="/usr/local/share/ispell/russian.stop"' where dict_id=4;
+--update pg_ts_dict set dict_initoption='DictFile="/usr/local/share/ispell/russian.dict" ,AffFile ="/usr/local/share/ispell/russian.aff", StopFile="/usr/local/share/ispell/russian.stop"' where dict_name='ispell_template';
 --example of synonym dict
 --update pg_ts_dict set dict_initoption='/usr/local/share/ispell/english.syn' where dict_id=5;
 
