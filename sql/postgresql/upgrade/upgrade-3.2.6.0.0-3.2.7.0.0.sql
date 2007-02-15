@@ -16,28 +16,45 @@ update im_view_columns set extra_from = null, extra_where = null where column_id
 -- Allow to make quotes for both active and potential companies
 
 
-insert into im_categories (
-        CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID,
-        CATEGORY, CATEGORY_TYPE
-) values (
-        '', 'f', '40',
-        'Active or Potential', 'Intranet Company Status'
-);
 
--- Introduce "Active or Potential" as supertype of both
--- "Acative" and "Potential"
---
--- im_category_hierarchy(parent, child)
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from im_categories
+	where category = ''Active or Potential'';
+        IF 0 != v_count THEN return 0; END IF;
 
-INSERT INTO im_category_hierarchy 
-	SELECT 40, child_id
-	FROM im_category_hierarchy
-	WHERE parent_id = 41
-;
+	insert into im_categories (
+	        CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID,
+	        CATEGORY, CATEGORY_TYPE
+	) values (
+	        '''', ''f'', ''40'',
+	        ''Active or Potential'', ''Intranet Company Status''
+	);
 
--- Make "Potential" and "Active" themselves children of "Act or Pot"
-INSERT INTO im_category_hierarchy VALUES (40, 41);
-INSERT INTO im_category_hierarchy VALUES (40, 46);
+
+	-- Introduce "Active or Potential" as supertype of both
+	-- "Acative" and "Potential"
+	--
+	-- im_category_hierarchy(parent, child)
+	
+	INSERT INTO im_category_hierarchy 
+		SELECT 40, child_id
+		FROM im_category_hierarchy
+		WHERE parent_id = 41
+	;
+
+	-- Make "Potential" and "Active" themselves children of "Act or Pot"
+	INSERT INTO im_category_hierarchy VALUES (40, 41);
+	INSERT INTO im_category_hierarchy VALUES (40, 46);
+
+	return 1;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
 
 
@@ -65,7 +82,7 @@ BEGIN
 
         return v_profiles;
 END;' language 'plpgsql';
-select im_profiles_from_user_id(624);
+-- select im_profiles_from_user_id(624);
 
 
 
