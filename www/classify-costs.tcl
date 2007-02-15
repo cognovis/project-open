@@ -29,7 +29,7 @@ if {![im_permission $current_user_id "add_expense_invoice"]} {
 
 set expense_ids $expense_id
 
-set page_title [lang::message::lookup "" intranet-expenses.Assign_Expense_Items "Assign Expense Items"]
+set page_title [lang::message::lookup "" intranet-expenses.Assign_Expenses_to_Projects "Assign Expenses to Projects"]
 set context_bar [im_context_bar $page_title]
 
 set date_format [im_l10n_sql_date_format]

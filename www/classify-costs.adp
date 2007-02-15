@@ -10,7 +10,6 @@
 </if>
 
 
-
 <form method=get action='classify-costs-2'>
 <%= [export_form_vars return_url] %>
 
@@ -32,6 +31,10 @@
 </tr>
 </table>
 </form>
+
+
+<h2>Assign These Expenses</h2>
+
 
 <listtemplate name="@list_id@"></listtemplate>
 
