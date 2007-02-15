@@ -195,3 +195,101 @@ BEGIN
         return v_result::varchar;
 END;' language 'plpgsql';
 
+
+
+
+
+-------------------------------------------------------------
+-- Fix issue with deleting Wiki items
+
+
+create or replace function content_item__del (integer)
+returns integer as '
+declare
+	delete__item_id                alias for $1;  
+	v_symlink_val                  record;
+	v_revision_val                 record;
+	v_rel_val                      record;
+begin
+	raise NOTICE ''2) Deleting symlinks...'';
+	FOR v_symlink_val in 
+		select	symlink_id
+		from	cr_symlinks
+		where	target_id = delete__item_id 
+	LOOP
+	    PERFORM content_symlink__delete(v_symlink_val.symlink_id);
+	end loop;
+
+	raise NOTICE ''Unscheduling item...'';
+	delete from cr_release_periods where item_id = delete__item_id;
+
+	raise NOTICE ''3a) Deleting associated publish audits...'';
+	delete from cr_item_publish_audit where item_id = delete__item_id;
+
+
+	raise NOTICE ''3b) Delete latest and live revision links...'';
+	update cr_items set 
+		live_revision = null, 
+		latest_revision = null
+	where item_id =  delete__item_id;
+
+	raise NOTICE ''3c) Deleting associated revisions...'';
+	FOR v_revision_val in
+		select	revision_id 
+		from	cr_revisions
+		where	item_id = delete__item_id
+	LOOP
+	    raise NOTICE ''3d) acs_object__delete(%)'', v_revision_val.revision_id;
+	    PERFORM acs_object__delete(v_revision_val.revision_id);
+	end loop;
+	
+	raise NOTICE ''4) Deleting associated item templates...'';
+	delete from cr_item_template_map where item_id = delete__item_id; 
+
+	raise NOTICE ''Deleting item relationships...'';
+	FOR v_rel_val in 
+		select	rel_id
+		from	cr_item_rels
+		where	item_id = delete__item_id
+			or related_object_id = delete__item_id 
+	LOOP
+	    PERFORM acs_rel__delete(v_rel_val.rel_id);
+	end loop;  
+
+	raise NOTICE ''Deleting child relationships...'';
+	FOR v_rel_val in
+		select	rel_id
+		from	cr_child_rels
+		where	child_id = delete__item_id 
+	LOOP
+	    PERFORM acs_rel__delete(v_rel_val.rel_id);
+	end loop;  
+
+	raise NOTICE ''Deleting parent relationships...'';
+	FOR v_rel_val in 
+		select	rel_id, child_id
+		from	cr_child_rels
+		where	parent_id = delete__item_id 
+	LOOP
+	    PERFORM acs_rel__delete(v_rel_val.rel_id);
+	    PERFORM content_item__delete(v_rel_val.child_id);
+	end loop;  
+
+	raise NOTICE ''5) Deleting associated permissions...'';
+	delete from acs_permissions
+	where object_id = delete__item_id;
+
+	raise NOTICE ''6) Deleting keyword associations...'';
+	delete from cr_item_keyword_map
+	where item_id = delete__item_id;
+
+	raise NOTICE ''7) Deleting associated comments...'';
+	PERFORM journal_entry__delete_for_object(delete__item_id);
+
+	raise NOTICE ''Deleting content item...'';
+	PERFORM acs_object__delete(delete__item_id);
+
+	return 0; 
+end;' language 'plpgsql';
+
+
