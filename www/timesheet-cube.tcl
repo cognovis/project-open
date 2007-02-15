@@ -160,6 +160,8 @@ set top_vars_options {
 	"year month_of_year" "Year and Month" 
 	"year quarter_of_year month_of_year" "Year, Quarter and Month" 
 	"year quarter_of_year month_of_year day_of_month" "Year, Quarter, Month and Day" 
+	"year month_of_year week_of_year" "Year, Month and Week"
+	"year month_of_year week_of_year day_of_month" "Year, Month, Week and Day"
 	"year week_of_year" "Year and Week"
 	"month_of_year year" "Month and Year (compare years)"
 }
@@ -402,6 +404,7 @@ set inner_sql "
 			p.*,
 			im_name_from_user_id(p.project_lead_id) as project_manager_name,
 			c.*,
+			c.company_name as customer_name,
 			u.*,
 			e.*,
 			im_cost_center_name_from_id(e.department_id) as department
