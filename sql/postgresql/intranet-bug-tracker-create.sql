@@ -1,4 +1,4 @@
--- /packages/intranet-forum/sql/postgresql/intranet-bug-tracker.sql
+-- /packages/intranet-bug-tracker/sql/postgresql/intranet-bug-tracker-create.sql
 --
 -- Copyright (c) 2003-2006 ]project-open[
 --
@@ -36,25 +36,41 @@ alter table im_timesheet_tasks
 
 -- Create a new BT Container Project Type
 
-INSERT INTO im_categories ( category_id, category, category_type) values
-(4300, 'Bug Tracker Container', 'Intranet Project Type');
-INSERT INTO im_categories ( category_id, category, category_type) values
-(4305, 'Bug Tracker Task', 'Intranet Project Type');
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from im_categories
+	where category = ''Bug Tracker Container'';
+        IF 0 != v_count THEN return 0; END IF;
+
+	INSERT INTO im_categories ( category_id, category, category_type) values
+	(4300, ''Bug Tracker Container'', ''Intranet Project Type'');
+	INSERT INTO im_categories ( category_id, category, category_type) values
+	(4305, ''Bug Tracker Task'', ''Intranet Project Type'');
+
+	insert into im_category_hierarchy values (
+		(select category_id 
+		from im_categories 
+		where category = ''Consulting Project''),
+		4300
+	);
+
+	insert into im_category_hierarchy values (
+		(select category_id 
+		from im_categories 
+		where category = ''Consulting Project''),
+		4305
+	);
+
+	return 1;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
-insert into im_category_hierarchy values (
-	(select category_id 
-	from im_categories 
-	where category = 'Consulting Project'),
-	4300
-);
-
-insert into im_category_hierarchy values (
-	(select category_id 
-	from im_categories 
-	where category = 'Consulting Project'),
-	4305
-);
 
 
 -----------------------------------------------------------
@@ -67,7 +83,6 @@ create or replace function inline_0 ()
 returns integer as '
 declare
         v_menu                  integer;	v_main_menu		integer;
-
         v_employees             integer;        v_accounting            integer;
         v_senman                integer;        v_companies             integer;
         v_freelancers           integer;        v_proman                integer;
