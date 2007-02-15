@@ -20,6 +20,7 @@ ad_page_contract {
     { customer_type_id:integer 0 }
     { project_type_id:integer 0 }
     { customer_id:integer 0 }
+    { project_id:integer 0 }
 }
 
 
@@ -275,7 +276,7 @@ ns_write "
 [im_navbar]
 <table cellspacing=0 cellpadding=0 border=0>
 <form>
-[export_form_vars project_id]
+[export_form_vars]
 <tr valign=top><td>
 	<table border=0 cellspacing=1 cellpadding=1>
 	<tr>
@@ -300,6 +301,12 @@ ns_write "
 	  <td class=form-label>Customer</td>
 	  <td class=form-widget colspan=3>
 	    [im_company_select customer_id $customer_id]
+	  </td>
+	</tr>
+	<tr>
+	  <td class=form-label>Project</td>
+	  <td class=form-widget colspan=3>
+	    [im_project_select project_id $project_id]
 	  </td>
 	</tr>
 	<tr>
@@ -369,6 +376,10 @@ set criteria [list]
 
 if {"" != $customer_id && 0 != $customer_id} {
     lappend criteria "p.company_id = :customer_id"
+}
+
+if {"" != $project_id && 0 != $project_id} {
+    lappend criteria "p.project_id = :project_id"
 }
 
 if {"" != $project_type_id && 0 != $project_type_id} {

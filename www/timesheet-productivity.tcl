@@ -43,6 +43,7 @@ set page_title "Timesheet Productivity Report"
 set context_bar [im_context_bar $page_title]
 set context ""
 
+
 # Check that Start-Date have correct format
 if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]$} $start_date]} {
     ad_return_complaint 1 "Start Date doesn't have the right format.<br>
