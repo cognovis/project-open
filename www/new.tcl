@@ -49,7 +49,23 @@ if {"display" == $form_mode} {
 set button_pressed [template::form get_action material]
 if {"delete" == $button_pressed} {
 
-    db_exec_plsql material_delete {}
+    if {[catch {
+	db_exec_plsql material_delete {}
+    } err_msg]} {
+
+	set task_names [db_list mat_tasks "select acs_object__name(task_id) from im_timesheet_tasks where material_id = :material_id"]
+	set price_names [db_list_of_lists prices "select acs_object__name(company_id), im_category_from_id(task_type_id), * from im_timesheet_prices where material_id = :material_id"]
+
+	ad_return_complaint 1 "<b>Error deleting Material</b>:<p>
+	This error is probably due to the fact there there are still 
+	'Timesheet Tasks' or 'Timesheet Prices' referencing this material:<p>
+	Timesheet Tasks:<br>
+	<pre>[join $task_names "\n>"]</pre><p>
+	Timesheet Prices:<br>
+	<pre>[join $price_names "\n>"]</pre><p>
+	Please change these items to remove the material you want to delete\n"
+	return
+    }
     ad_returnredirect $return_url
 
 }
