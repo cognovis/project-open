@@ -9,64 +9,44 @@
 ad_page_contract {
     Gantt Resource "Cube"
 } {
-    { start_date "" }
-    { end_date "" }
-    { top_vars "year month_of_year week_of_year" }
-    { left_scale1 "user" }
-    { left_scale2 "project_name" }
-    { left_scale3 "" }
+    { start_date "2006-01-01" }
+    { end_date "2007-07-01" }
+    { top_vars "week_of_year day_of_month" }
+    { left_vars "user_name_link project_name_link" }
     { project_id:integer,multiple 0 }
     { customer_id:integer 0 }
 }
 
+set s [clock clicks -milliseconds]
+ns_log Notice "gantt-resources: Start:		[ns_conn url]"
 
-# ------------------------------------------------------------
-# Define Dimensions
+# set left_vars "user_name_link"
+# set top_vars "week_of_year"
 
-# Left Dimension - defined by users selects
-set left_vars [list]
-if {"" != $left_scale1} { lappend left_vars $left_scale1 }
-if {"" != $left_scale2} { lappend left_vars $left_scale2 }
-if {"" != $left_scale3} { lappend left_vars $left_scale3 }
-
-# Top Dimension
-set top_vars [ns_urldecode $top_vars]
-if {"" != $top_scale1} { lappend top_vars $top_scale1 }
-if {"" != $top_scale2} { lappend top_vars $top_scale2 }
-
-# No top dimension at all gives an error...
-if {![llength $top_vars]} { set top_vars [list year] }
-
-# The complete set of dimensions - used as the key for
-# the "cell" hash. Subtotals are calculated by dropping on
-# or more of these dimensions
-set dimension_vars [concat $top_vars $left_vars]
-
-
-# ------------------------------------------------------------
-# Page Title & Help Text
-
-set page_title [lang::message::lookup "" intranet-reporting.Timesheet_Cube "Timesheet Cube"]
-set context_bar [im_context_bar $page_title]
-set context ""
-set help_text "<strong>$page_title</strong><br>
-
-This Pivot Table ('cube') is a kind of report that shows timesheet
-hours according to a number of 'dimensions' that you can specify.
-This cube effectively replaces a dozen of specific reports and allows
-you to 'drill down' into results.<p>
-"
+set project_id [db_list pids "
+	select	project_id
+	from	im_projects
+	where	parent_id is null
+		and project_status_id = [im_project_status_open]
+"]
 
 
 # ------------------------------------------------------------
 # Defaults
 
+set page_title [lang::message::lookup "" intranet-reporting.Gantt_Resources "Gantt Resources"]
 set rowclass(0) "roweven"
 set rowclass(1) "rowodd"
-
-set gray "gray"
 set sigma "&Sigma;"
-set days_in_past 31
+
+
+# ------------------------------------------------------------
+# Define Dimensions
+
+# The complete set of dimensions - used as the key for
+# the "cell" hash. Subtotals are calculated by dropping on
+# or more of these dimensions
+set dimension_vars [concat $top_vars $left_vars]
 
 
 # ------------------------------------------------------------
@@ -76,7 +56,10 @@ set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting/timesheet-cube" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-reporting/gantt-cube" {start_date end_date} ]
+
+
+ns_log Notice "gantt-resources: After init:	[expr [clock clicks -milliseconds]-$s]"
 
 
 # ------------------------------------------------------------
@@ -105,7 +88,7 @@ if {"" != $customer_id && 0 != $customer_id} {
 }
 
 if {"" != $project_id && 0 != $project_id} {
-    lappend criteria "p.project_id = :project_id"
+    lappend criteria "parent.project_id in ([join $project_id ", "])"
 }
 
 set where_clause [join $criteria " and\n\t\t\t"]
@@ -123,8 +106,8 @@ set inner_sql "
 		select
 		        child.*,
 		        u.user_id,
-		        m.percentage,
-		        d.d
+			m.percentage as perc,
+			d.d
 		from
 		        im_projects parent,
 		        im_projects child,
@@ -147,7 +130,6 @@ set inner_sql "
 		        and d.d 
 				between child.start_date 
 				and child.end_date
-		        and parent.project_id = 24535
 			$where_clause
 "
 
@@ -156,13 +138,21 @@ set inner_sql "
 set middle_sql "
 	select
 		h.*,
-		[join $derefs ",\n\t\t"]
+		trunc(h.perc) as percentage,
+		'<a href=${user_url}'||user_id||'>'||im_name_from_id(h.user_id)||'</a>' as user_name_link,
+		'<a href=${project_url}'||project_id||'>'||project_name||'</a>' as project_name_link,
+		to_char(h.d, 'YYYY') as year,
+		to_char(h.d, 'Q') as quarter_of_year,
+		to_char(h.d, 'MM') as month_of_year,
+		to_char(h.d, 'YYYY-IW') as week_of_year,
+		to_char(h.d, 'DD') as day_of_month
 	from	($inner_sql) h
+	where	h.perc is not null
 "
 
 set outer_sql "
 select
-	sum(h.hours) as hours,
+	sum(h.percentage) as percentage,
 	[join $dimension_vars ",\n\t"]
 from
 	($middle_sql) h
@@ -174,6 +164,9 @@ group by
 # ------------------------------------------------------------
 # Create upper date dimension
 
+ns_log Notice "gantt-resources: Before date dims:	[expr [clock clicks -milliseconds]-$s]"
+
+
 # Top scale is a list of lists such as {{2006 01} {2006 02} ...}
 # The last element of the list the grand total sum.
 set top_scale_plain [db_list_of_lists top_scale "
@@ -183,6 +176,8 @@ set top_scale_plain [db_list_of_lists top_scale "
 "]
 lappend top_scale_plain [list $sigma $sigma $sigma $sigma $sigma $sigma]
 
+ns_log Notice "gantt-resources: After date dims:	[expr [clock clicks -milliseconds]-$s]"
+
 
 # Insert subtotal columns whenever a scale changes
 set top_scale [list]
@@ -190,21 +185,27 @@ set last_item [lindex $top_scale_plain 0]
 foreach scale_item $top_scale_plain {
     for {set i [expr [llength $last_item]-2]} {$i >= 0} {set i [expr $i-1]} {
 
-	set last_var [lindex $last_item $i]
-	set cur_var [lindex $scale_item $i]
-	if {$last_var != $cur_var} {
-	    set item [lrange $last_item 0 $i]
-	    while {[llength $item] < [llength $last_item]} { lappend item $sigma }
-	    lappend top_scale $item
-	}
+        set last_var [lindex $last_item $i]
+        set cur_var [lindex $scale_item $i]
+        if {$last_var != $cur_var} {
+            set item [lrange $last_item 0 $i]
+            while {[llength $item] < [llength $last_item]} { lappend item $sigma }
+            lappend top_scale $item
+        }
+
     }
     lappend top_scale $scale_item
     set last_item $scale_item
 }
 
+ns_log Notice "gantt-resources: After date dim scale:	[expr [clock clicks -milliseconds]-$s]"
+
+
 
 # ------------------------------------------------------------
 # Create a sorted left dimension
+
+ns_log Notice "gantt-resources: Before left dims:	[expr [clock clicks -milliseconds]-$s]"
 
 # No left dimension at all gives an error...
 if {![llength $left_vars]} {
@@ -257,6 +258,9 @@ foreach scale_item $left_scale_plain {
 # ------------------------------------------------------------
 # Display the Table Header
 
+ns_log Notice "gantt-resources: Before table header:	[expr [clock clicks -milliseconds]-$s]"
+
+
 # Determine how many date rows (year, month, day, ...) we've got
 set first_cell [lindex $top_scale 0]
 set top_scale_rows [llength $first_cell]
@@ -266,7 +270,8 @@ set header ""
 for {set row 0} {$row < $top_scale_rows} { incr row } {
 
     append header "<tr class=rowtitle>\n"
-    append header "<td colspan=$left_scale_size></td>\n"
+    set col_l10n [lang::message::lookup "" "intranet-ganttproject.Dim_[lindex $top_vars $row]" [lindex $top_vars $row]]
+    append header "<td class=rowtitle colspan=$left_scale_size align=right>$col_l10n</td>\n"
 
     for {set col 0} {$col <= [expr [llength $top_scale]-1]} { incr col } {
 
@@ -307,12 +312,19 @@ ns_write $header
 # ------------------------------------------------------------
 # Execute query and aggregate values into a Hash array
 
+
+ns_log Notice "gantt-resources: Before db_foreach:	[expr [clock clicks -milliseconds]-$s]"
+
+set cnt_outer 0
+set cnt_inner 0
 db_foreach query $outer_sql {
+
+    if {"" == $percentage} { continue }
 
     # Get all possible permutations (N out of M) from the dimension_vars
     set perms [im_report_take_all_ordered_permutations $dimension_vars]
 
-    # Add the timesheet hours to ALL of the variable permutations.
+    # Add the gantt hours to ALL of the variable permutations.
     # The "full permutation" (all elements of the list) corresponds
     # to the individual cell entries.
     # The "empty permutation" (no variable) corresponds to the
@@ -331,15 +343,24 @@ db_foreach query $outer_sql {
 	set sum 0
 	if {[info exists hash($key)]} { set sum $hash($key) }
 	
-	if {"" == $hours} { set hours 0 }
-	set sum [expr $sum + $hours]
+	if {"" == $percentage} { set percentage 0 }
+	set sum [expr $sum + $percentage]
 	set hash($key) $sum
+
+	incr cnt_inner
     }
+    incr cnt_outer
 }
+
+ns_log Notice "gantt-resources: After db_foreach:	[expr [clock clicks -milliseconds]-$s]"
+ns_log Notice "gantt-resources: After db_foreach:	outer=$cnt_outer, inner=$cnt_inner"
 
 
 # ------------------------------------------------------------
 # Display the table body
+
+ns_log Notice "gantt-resources: Before table disp:	[expr [clock clicks -milliseconds]-$s]"
+
 
 set ctr 0
 foreach left_entry $left_scale {
@@ -380,8 +401,27 @@ foreach left_entry $left_scale {
 	set key_expr "\$[join $key_expr_list "-\$"]"
 	set key [eval "set a \"$key_expr\""]
 
-	set val "&nbsp;"
+	set val ""
 	if {[info exists hash($key)]} { set val $hash($key) }
+
+	
+	# ------------------------------------------------------------
+	# Format the percentage value for percent-arithmetics:
+	# - Sum up percentage values per day
+	# - When showing percentag per week then sum up and divide by 5 (working days)
+	# ToDo: Include vacation calendar and resource availability in
+	# the future.
+
+	if {0 == $val} { set val "" }
+	if {![regexp {[^0-9]} $val match]} {
+	    set color "\#000000"
+	    if {$val > 100} { set color "\#808000" }
+	    if {$val > 200} { set color "\#FF0000" }
+	    set val "<font color=$color>$val</font>\n"
+	}
+
+
+	# ------------------------------------------------------------
 
 	ns_write "<td>$val</td>\n"
 
@@ -389,6 +429,8 @@ foreach left_entry $left_scale {
     ns_write "</tr>\n"
 }
 
+
+ns_log Notice "gantt-resources: After table disp:	[expr [clock clicks -milliseconds]-$s]"
 
 # ------------------------------------------------------------
 # Finish up the table
