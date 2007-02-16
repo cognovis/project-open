@@ -8,13 +8,22 @@
 
 ad_page_contract {
     Gantt Resource "Cube"
+
+    @param start_date Hard start of reporting period. Defaults to start of first project
+    @param end_date Hard end of replorting period. Defaults to end of last project
+    @param level_of_details Details of date axis: 1 (month), 2 (week) or 3 (day)
+    @param left_vars Variables to show at the left-hand side
+    @param project_id Id of project(s) to show. Defaults to all active projects
+    @param customer_id Id of customer's projects to show
+    @param user_name_link_opened List of users with details shown
 } {
     { start_date "" }
     { end_date "" }
     { level_of_detail:integer 2 }
     { left_vars "user_name_link project_name_link" }
-    { project_id:integer,multiple "" }
+    { project_id:multiple "" }
     { customer_id:integer 0 }
+    { user_name_link_opened "" }
 }
 
 set s [clock clicks -milliseconds]
@@ -120,10 +129,8 @@ set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting/gantt-resources-cube" {start_date end_date} ]
-
-
-ns_log Notice "gantt-resources: After init:	[expr [clock clicks -milliseconds]-$s]"
+set this_url [export_vars -base "/intranet-reporting/gantt-resources-cube" {start_date end_date level_of_detail left_vars customer_id} ]
+foreach pid $project_id { append this_url "&project_id=$pid" }
 
 
 # ------------------------------------------------------------
@@ -437,21 +444,66 @@ ns_log Notice "gantt-resources: Before table disp:	[expr [clock clicks -millisec
 set ctr 0
 foreach left_entry $left_scale {
 
+    # ------------------------------------------------------------
+    # Check open/close logic of user's projects
+    set project_pos [lsearch $left_vars "project_name_link"]
+    set project_val [lindex $left_entry $project_pos]
+
+    set user_pos [lsearch $left_vars "user_name_link"]
+    set user_val [lindex $left_entry $user_pos]
+    # A bit ugly - extract the user_id from user's URL...
+    regexp {user_id\=([0-9]*)} $user_val match user_id
+
+    if {$sigma != $project_val} {
+	# The current line is not the summary line (which is always shown).
+	# Start checking the open/close logic
+
+	if {[lsearch $user_name_link_opened $user_id] < 0} { continue }
+    }
+
+    # ------------------------------------------------------------
     # Add empty line before the total sum. The total sum of percentage
     # shows the overall resource assignment and doesn't make much sense...
     set user_pos [lsearch $left_vars "user_name_link"]
     set user_val [lindex $left_entry $user_pos]
     if {$sigma == $user_val} {
-	ns_write "<tr><td colspan=99>&nbsp;</td></tr>\n"
+	continue
+	# ns_write "<tr><td colspan=99>&nbsp;</td></tr>\n"
     }
 
     set class $rowclass([expr $ctr % 2])
     incr ctr
 
+
+    # ------------------------------------------------------------
     # Start the row and show the left_scale values at the left
     ns_write "<tr class=$class>\n"
-    foreach val $left_entry { ns_write "<td>$val</td>\n" }
+    set left_entry_ctr 0
+    foreach val $left_entry { 
 
+	# Special logic: Add +/- in front of User name for drill-in
+	if {"user_name_link" == [lindex $left_vars $left_entry_ctr] & $sigma == $project_val} {
+	    
+	    if {[lsearch $user_name_link_opened $user_id] < 0} {
+		set opened $user_name_link_opened
+		lappend opened $user_id
+		set open_url [export_vars -base $this_url {{user_name_link_opened $opened}}]
+		set val "<a href=$open_url>[im_gif "plus_9"]</a> $val"
+	    } else {
+		set opened $user_name_link_opened
+		set user_id_pos [lsearch $opened $user_id]
+		set opened [lreplace $opened $user_id_pos $user_id_pos]
+		set close_url [export_vars -base $this_url {{user_name_link_opened $opened}}]
+		set val "<a href=$close_url>[im_gif "minus_9"]</a> $val"
+	    } 
+	}
+	    
+	ns_write "<td>$val</td>\n" 
+	incr left_entry_ctr
+    }
+
+
+    # ------------------------------------------------------------
     # Write the left_scale values to their corresponding local 
     # variables so that we can access them easily when calculating
     # the "key".
@@ -460,7 +512,10 @@ foreach left_entry $left_scale {
 	set var_value [lindex $left_entry $i]
 	set $var_name $var_value
     }
-    
+
+   
+    # ------------------------------------------------------------
+    # Start writing out the matrix elements
     foreach top_entry $top_scale {
 
 	# Skip the last line with all sigmas - doesn't sum up...
@@ -500,18 +555,16 @@ foreach left_entry $left_scale {
 
 	if {"" == $val} { set val 0 }
 
-	set week_pos [lsearch $top_vars "week_of_year"]
-	set week_val [lindex $top_entry $week_pos]
-
 	set day_pos [lsearch $top_vars "day_of_month"]
 	set day_val [lindex $top_entry $day_pos]
-
 	set period "day"
 	if {"" == $day_val | $sigma == $day_val} {
 	    set val_week [expr round($val/5)]
 	    set period "week"
 	}
 
+	set week_pos [lsearch $top_vars "week_of_year"]
+	set week_val [lindex $top_entry $week_pos]
 	if {"" == $week_val | $sigma == $week_val} {
 	    set val_month [expr round($val/20)]
 	    set period "month"
@@ -522,7 +575,6 @@ foreach left_entry $left_scale {
 	    month { set val $val_month }
 	}
 
-#	set val "$val $week_val"
 
 	# ------------------------------------------------------------
 
