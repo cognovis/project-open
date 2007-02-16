@@ -9,11 +9,11 @@
 ad_page_contract {
     Gantt Resource "Cube"
 } {
-    { start_date "2006-01-01" }
-    { end_date "2007-07-01" }
-    { top_vars "week_of_year day_of_month" }
+    { start_date "" }
+    { end_date "" }
+    { level_of_detail:integer 2 }
     { left_vars "user_name_link project_name_link" }
-    { project_id:integer,multiple 0 }
+    { project_id:integer,multiple "" }
     { customer_id:integer 0 }
 }
 
@@ -21,15 +21,19 @@ set s [clock clicks -milliseconds]
 ns_log Notice "gantt-resources: Start:		[ns_conn url]"
 
 # set left_vars "user_name_link"
+
 # set top_vars "week_of_year"
 
-set project_id [db_list pids "
-	select	project_id
-	from	im_projects
-	where	parent_id is null
-		and project_status_id = [im_project_status_open]
-"]
+set top_vars "month_of_year week_of_year day_of_month"
+# set top_vars "month_of_year week_of_year"
 
+switch $level_of_detail {
+    1 { set top_vars "month_of_year" }
+    2 { set top_vars "month_of_year week_of_year" }
+    3 { set top_vars "month_of_year week_of_year day_of_month" }
+    default { set top_vars "month_of_year" }
+}
+    
 
 # ------------------------------------------------------------
 # Defaults
@@ -38,6 +42,66 @@ set page_title [lang::message::lookup "" intranet-reporting.Gantt_Resources "Gan
 set rowclass(0) "roweven"
 set rowclass(1) "rowodd"
 set sigma "&Sigma;"
+
+
+
+if {0 != $customer_id && "" == $project_id} {
+    set project_id [db_list pids "
+	select	project_id
+	from	im_projects
+	where	parent_id is null
+		and company_id = :customer_id
+    "]
+}
+
+# No projects specified? Show the list of all active projects
+if {"" == $project_id} {
+    set project_id [db_list pids "
+	select	project_id
+	from	im_projects
+	where	parent_id is null
+		and project_status_id = [im_project_status_open]
+    "]
+}
+
+# ------------------------------------------------------------
+# Start and End-Dat as min/max of selected projects.
+# Note that the sub-projects might "stick out" before and after
+# the main/parent project.
+
+if {"" == $start_date} {
+    set start_date [db_string start_date "
+	select
+		to_char(min(child.start_date), 'YYYY-MM-DD')
+	from
+		im_projects parent,
+		im_projects child
+	where
+		parent.project_id in ([join $project_id ", "])
+		and parent.parent_id is null
+		and child.tree_sortkey
+			between parent.tree_sortkey
+			and tree_right(parent.tree_sortkey)
+
+    "]
+}
+
+if {"" == $end_date} {
+    set end_date [db_string end_date "
+	select
+		to_char(max(child.end_date), 'YYYY-MM-DD')
+	from
+		im_projects parent,
+		im_projects child
+	where
+		parent.project_id in ([join $project_id ", "])
+		and parent.parent_id is null
+		and child.tree_sortkey
+			between parent.tree_sortkey
+			and tree_right(parent.tree_sortkey)
+    "]
+}
+
 
 
 # ------------------------------------------------------------
@@ -56,7 +120,7 @@ set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting/gantt-cube" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-reporting/gantt-resources-cube" {start_date end_date} ]
 
 
 ns_log Notice "gantt-resources: After init:	[expr [clock clicks -milliseconds]-$s]"
@@ -143,8 +207,8 @@ set middle_sql "
 		'<a href=${project_url}'||project_id||'>'||project_name||'</a>' as project_name_link,
 		to_char(h.d, 'YYYY') as year,
 		to_char(h.d, 'Q') as quarter_of_year,
-		to_char(h.d, 'MM') as month_of_year,
-		to_char(h.d, 'YYYY-IW') as week_of_year,
+		to_char(h.d, 'YYYY') || '<br>' || to_char(h.d, 'MM') as month_of_year,
+		to_char(h.d, 'IW') as week_of_year,
 		to_char(h.d, 'DD') as day_of_month
 	from	($inner_sql) h
 	where	h.perc is not null
@@ -183,17 +247,17 @@ ns_log Notice "gantt-resources: After date dims:	[expr [clock clicks -millisecon
 set top_scale [list]
 set last_item [lindex $top_scale_plain 0]
 foreach scale_item $top_scale_plain {
-    for {set i [expr [llength $last_item]-2]} {$i >= 0} {set i [expr $i-1]} {
 
+    for {set i [expr [llength $last_item]-2]} {$i >= 0} {set i [expr $i-1]} {
         set last_var [lindex $last_item $i]
         set cur_var [lindex $scale_item $i]
         if {$last_var != $cur_var} {
-            set item [lrange $last_item 0 $i]
-            while {[llength $item] < [llength $last_item]} { lappend item $sigma }
-            lappend top_scale $item
+            set item_sigma [lrange $last_item 0 $i]
+            while {[llength $item_sigma] < [llength $last_item]} { lappend item_sigma $sigma }
+            lappend top_scale $item_sigma
         }
-
     }
+
     lappend top_scale $scale_item
     set last_item $scale_item
 }
@@ -278,6 +342,13 @@ for {set row 0} {$row < $top_scale_rows} { incr row } {
 	set scale_entry [lindex $top_scale $col]
 	set scale_item [lindex $scale_entry $row]
 
+	# Skip the last line with all sigmas - doesn't sum up...
+	set all_sigmas_p 1
+	foreach e $scale_entry { if {$e != $sigma} { set all_sigmas_p 0 }	}
+	if {$all_sigmas_p} { continue }
+
+
+
 	# Check if the previous item was of the same content
 	set prev_scale_entry [lindex $top_scale [expr $col-1]]
 	set prev_scale_item [lindex $prev_scale_entry $row]
@@ -319,6 +390,7 @@ set cnt_outer 0
 set cnt_inner 0
 db_foreach query $outer_sql {
 
+    # Skip empty percentage entries. Improves performance...
     if {"" == $percentage} { continue }
 
     # Get all possible permutations (N out of M) from the dimension_vars
@@ -365,6 +437,14 @@ ns_log Notice "gantt-resources: Before table disp:	[expr [clock clicks -millisec
 set ctr 0
 foreach left_entry $left_scale {
 
+    # Add empty line before the total sum. The total sum of percentage
+    # shows the overall resource assignment and doesn't make much sense...
+    set user_pos [lsearch $left_vars "user_name_link"]
+    set user_val [lindex $left_entry $user_pos]
+    if {$sigma == $user_val} {
+	ns_write "<tr><td colspan=99>&nbsp;</td></tr>\n"
+    }
+
     set class $rowclass([expr $ctr % 2])
     incr ctr
 
@@ -382,6 +462,12 @@ foreach left_entry $left_scale {
     }
     
     foreach top_entry $top_scale {
+
+	# Skip the last line with all sigmas - doesn't sum up...
+	set all_sigmas_p 1
+	foreach e $top_entry { if {$e != $sigma} { set all_sigmas_p 0 }	}
+	if {$all_sigmas_p} { continue }
+
 
 	# Write the top_scale values to their corresponding local 
 	# variables so that we can access them easily for $key
@@ -412,6 +498,34 @@ foreach left_entry $left_scale {
 	# ToDo: Include vacation calendar and resource availability in
 	# the future.
 
+	if {"" == $val} { set val 0 }
+
+	set week_pos [lsearch $top_vars "week_of_year"]
+	set week_val [lindex $top_entry $week_pos]
+
+	set day_pos [lsearch $top_vars "day_of_month"]
+	set day_val [lindex $top_entry $day_pos]
+
+	set period "day"
+	if {"" == $day_val | $sigma == $day_val} {
+	    set val_week [expr round($val/5)]
+	    set period "week"
+	}
+
+	if {"" == $week_val | $sigma == $week_val} {
+	    set val_month [expr round($val/20)]
+	    set period "month"
+	}
+
+	switch $period {
+	    week { set val $val_week }
+	    month { set val $val_month }
+	}
+
+#	set val "$val $week_val"
+
+	# ------------------------------------------------------------
+
 	if {0 == $val} { set val "" }
 	if {![regexp {[^0-9]} $val match]} {
 	    set color "\#000000"
@@ -419,9 +533,6 @@ foreach left_entry $left_scale {
 	    if {$val > 200} { set color "\#FF0000" }
 	    set val "<font color=$color>$val</font>\n"
 	}
-
-
-	# ------------------------------------------------------------
 
 	ns_write "<td>$val</td>\n"
 
