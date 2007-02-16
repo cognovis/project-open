@@ -286,7 +286,7 @@ BEGIN
         ''intranet-reporting'', -- package_name
         ''reporting-timesheet-customer-project'', -- label
         ''Timesheet Customers and Projects'',          -- name
-        ''/intranet-reporting/timesheet-customer-project'', -- url
+        ''/intranet-reporting/timesheet-customer-project?'', -- url
         100,                     -- sort_order
         v_main_menu,            -- parent_menu_id
         null                    -- p_visible_tcl

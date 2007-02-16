@@ -95,3 +95,14 @@ select inline_1 ();
 drop function inline_1();
 
 
+
+
+
+-- ------------------------------------------------
+-- Add a ? to the end of the reports to pass-on parameters
+update im_menus set url = url || '?'
+where label = 'reporting-timesheet-customer-project';
+
+update im_menus set url = url || '?'
+where label = 'reporting-timesheet-cube';
+
