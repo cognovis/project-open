@@ -109,7 +109,7 @@ BEGIN
         ''intranet-bug-tracker'',     -- package_name
         ''bug_tracker'',              -- label
         ''Bugs'',              -- name
-        ''/intranet-bug-tracker/'',   -- url
+        ''/bug-tracker/'',   -- url
         15,                     -- sort_order
         v_main_menu,            -- parent_menu_id
         null                    -- p_visible_tcl
