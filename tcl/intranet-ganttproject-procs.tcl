@@ -858,7 +858,7 @@ ad_proc -public im_gp_save_resources {
 # Resource Report
 # ----------------------------------------------------------------------
 
-ad_proc -public im_ganttproject_resource_cube {
+ad_proc -public im_ganttproject_resource_component {
     { -start_date "" }
     { -end_date "" }
     { -level_of_detail 2 }
