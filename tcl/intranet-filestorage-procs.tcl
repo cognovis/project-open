@@ -887,7 +887,7 @@ ad_proc im_filestorage_tool_tds { folder folder_type project_id return_url up_li
   modifying the URL variables. Doesn't work yet 100%, so better
   disable meanwhile...
    <td>
-     <input type=image src=/intranet/images/up-folder.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='up-folder'; submit();\" title='[_ intranet-filestorage.Folder_up]' alt='[_ intranet-filestorage.Folder_up]'>
+     <input type=image src=/intranet/images/upfolder.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='up-folder'; submit();\" title='[_ intranet-filestorage.Folder_up]' alt='[_ intranet-filestorage.Folder_up]'>
    </td>
 -->
    <td>
