@@ -35,5 +35,5 @@ where object_type = 'im_forum_topic';
 -- Now use a modified drop script to get tsearch2
 -- out of the database again.
 
-\i untsearch2.sql
+-- \i untsearch2.sql
 
