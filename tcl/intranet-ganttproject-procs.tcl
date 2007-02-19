@@ -1419,6 +1419,7 @@ ad_proc -public im_ganttproject_gantt_component {
     set level_of_detail 3
 
     set opened_projects [list 24535 25108 25117]
+
     
     switch $level_of_detail {
 	1 { set top_vars "month_of_year" }
@@ -1757,8 +1758,8 @@ ad_proc -public im_ganttproject_gantt_component {
     set left_sql "
 	select distinct
 		c.project_id,
-		c.project_name,
-		c.level,
+		c.project_name,	
+	c.level,
 		c.tree_sortkey
 	from
 		($middle_sql) c
@@ -1801,35 +1802,35 @@ ad_proc -public im_ganttproject_gantt_component {
 	    set left_entry_ctr_pp [expr $left_entry_ctr+1]
 	    set left_entry_ctr_mm [expr $left_entry_ctr-1]
 
-	    if {"" != $project_id} {
 
-		set open_p [expr [lsearch $opened_projects $project_id] >= 0]
-		if {$open_p} {
-		    set opened $opened_projects
-		    set project_id_pos [lsearch $opened $project_id]
-		    set opened [lreplace $opened $project_id_pos $project_id_pos]
-		    set url [export_vars -base $this_url {{opened_projects $opened}}]
-		    set gif [im_gif "minus_9"]
-		} else {
-		    set opened $opened_projects
-		    lappend opened $project_id
-		    set url [export_vars -base $this_url {{opened_projects $opened}}]
-		    set gif [im_gif "plus_9"]
-		}
 
-		if {$child_count_hash($project_id) == 0} { 
-		    set url ""
-		    set gif [im_gif "cleardot" "" 0 9 9]
-		}
-
-		set col_val($left_entry_ctr_mm) ""
-		set col_val($left_entry_ctr) "<a href=$url>$gif</a>"
-		set col_val($left_entry_ctr_pp) "$project_name ($project_id)"
-		
-		set col_span($left_entry_ctr_mm) 1
-		set col_span($left_entry_ctr) 1
-		set col_span($left_entry_ctr_pp) [expr $max_level+1-$left_entry_ctr]
+	    set open_p [expr [lsearch $opened_projects $project_id] >= 0]
+	    if {$open_p} {
+		set opened $opened_projects
+		set project_id_pos [lsearch $opened $project_id]
+		set opened [lreplace $opened $project_id_pos $project_id_pos]
+		set url [export_vars -base $this_url {{opened_projects $opened}}]
+		set gif [im_gif "minus_9"]
+	    } else {
+		set opened $opened_projects
+		lappend opened $project_id
+		set url [export_vars -base $this_url {{opened_projects $opened}}]
+		set gif [im_gif "plus_9"]
 	    }
+	    
+	    if {$child_count_hash($project_id) == 0} { 
+		set url ""
+		set gif [im_gif "cleardot" "" 0 9 9]
+	    }
+	    
+	    set col_val($left_entry_ctr_mm) ""
+	    set col_val($left_entry_ctr) "<a href=$url>$gif</a>"
+	    set col_val($left_entry_ctr_pp) "$project_name ($project_id)"
+	    
+	    set col_span($left_entry_ctr_mm) 1
+	    set col_span($left_entry_ctr) 1
+	    set col_span($left_entry_ctr_pp) [expr $max_level+1-$left_entry_ctr]
+
 	    incr left_entry_ctr
 	}
 
