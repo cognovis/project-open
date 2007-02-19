@@ -1176,7 +1176,7 @@ ad_proc -public im_ganttproject_resource_component {
 	}
 	append header "</tr>\n"
     }
-    set html $header
+    append html $header
 
     # ------------------------------------------------------------
     # Execute query and aggregate values into a Hash array
@@ -1374,7 +1374,556 @@ ad_proc -public im_ganttproject_resource_component {
 	append html "</tr>\n"
     }
 
+    set html "<table>\n$html\n</table>\n"
+
+
+    append html "<br><h1>Gantt</h1>[im_ganttproject_gantt_component -project_id $project_id -level_of_detail $level_of_detail]"
+
+    return $html
+
+}
+
+
+
+
+
+
+
+
+# ----------------------------------------------------------------------
+# Resource Report
+# ----------------------------------------------------------------------
+
+ad_proc -public im_ganttproject_gantt_component {
+    { -start_date "" }
+    { -end_date "" }
+    { -project_id "" }
+    { -customer_id 0 }
+    { -level_of_detail 2 }
+    { -return_url "" }
+    { -export_var_list "" }
+} {
+    Gantt View
+
+    @param start_date Hard start of reporting period. Defaults to start of first project
+    @param end_date Hard end of replorting period. Defaults to end of last project
+    @param level_of_details Details of date axis: 1 (month), 2 (week) or 3 (day)
+    @param project_id Id of project(s) to show. Defaults to all active projects
+    @param customer_id Id of customer's projects to show
+    @param user_name_link_opened List of users with details shown
+} {
+    set rowclass(0) "roweven"
+    set rowclass(1) "rowodd"
+    set sigma "&Sigma;"
+
+    set level_of_detail 3
+
+    set opened_projects [list 24535 25108 25117]
+    
+    switch $level_of_detail {
+	1 { set top_vars "month_of_year" }
+	2 { set top_vars "month_of_year week_of_year" }
+	3 { set top_vars "month_of_year week_of_year day_of_month" }
+	default { set top_vars "month_of_year" }
+    }
+    
+    if {0 != $customer_id && "" == $project_id} {
+	set project_id [db_list pids "
+	select	project_id
+	from	im_projects
+	where	parent_id is null
+		and company_id = :customer_id
+        "]
+    }
+    
+    # No projects specified? Show the list of all active projects
+    if {"" == $project_id} {
+        set project_id [db_list pids "
+	select	project_id
+	from	im_projects
+	where	parent_id is null
+		and project_status_id = [im_project_status_open]
+        "]
+    }
+
+    # ------------------------------------------------------------
+    # Start and End-Dat as min/max of selected projects.
+    # Note that the sub-projects might "stick out" before and after
+    # the main/parent project.
+    
+    if {"" == $start_date} {
+	set start_date [db_string start_date "
+	select
+		to_char(min(child.start_date), 'YYYY-MM-DD')
+	from
+		im_projects parent,
+		im_projects child
+	where
+		parent.project_id in ([join $project_id ", "])
+		and parent.parent_id is null
+		and child.tree_sortkey
+			between parent.tree_sortkey
+			and tree_right(parent.tree_sortkey)
+
+        "]
+    }
+
+    if {"" == $end_date} {
+	set end_date [db_string end_date "
+	select
+		to_char(max(child.end_date), 'YYYY-MM-DD')
+	from
+		im_projects parent,
+		im_projects child
+	where
+		parent.project_id in ([join $project_id ", "])
+		and parent.parent_id is null
+		and child.tree_sortkey
+			between parent.tree_sortkey
+			and tree_right(parent.tree_sortkey)
+        "]
+    }
+
+
+    # ------------------------------------------------------------
+    # Define Dimensions
+    
+    set left_vars [list project_id]
+
+    # The complete set of dimensions - used as the key for
+    # the "cell" hash. Subtotals are calculated by dropping on
+    # or more of these dimensions
+    set dimension_vars [concat $top_vars $left_vars]
+
+
+    # ------------------------------------------------------------
+    # URLs to different parts of the system
+
+    set company_url "/intranet/companies/view?company_id="
+    set project_url "/intranet/projects/view?project_id="
+    set user_url "/intranet/users/view?user_id="
+    set this_url [export_vars -base "/intranet-reporting/gantt-resources-cube" {start_date end_date level_of_detail left_vars customer_id} ]
+    foreach pid $project_id { append this_url "&project_id=$pid" }
+    
+
+
+    # ------------------------------------------------------------
+    # Conditional SQL Where-Clause
+    #
+    
+    set criteria [list]
+    
+    if {"" != $customer_id && 0 != $customer_id} {
+	lappend criteria "p.company_id = :customer_id"
+    }
+    
+    if {"" != $project_id && 0 != $project_id} {
+	lappend criteria "parent.project_id in ([join $project_id ", "])"
+    }
+    
+    set where_clause [join $criteria " and\n\t\t\t"]
+    if { ![empty_string_p $where_clause] } {
+	set where_clause " and $where_clause"
+    }
+    
+
+    # ------------------------------------------------------------
+    # Define the report - SQL, counters, headers and footers 
+    #
+    
+    # Inner - Try to be as selective as possible for the relevant data from the fact table.
+    set inner_sql "
+		select
+			1 as days,
+			tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as level,
+		        child.project_id,
+		        child.project_name,
+			child.project_nr,
+			child.tree_sortkey,
+			d.d
+		from
+		        im_projects parent,
+		        im_projects child,
+		        ( select im_day_enumerator as d
+		          from im_day_enumerator(
+				to_date(:start_date, 'YYYY-MM-DD'), 
+				to_date(:end_date, 'YYYY-MM-DD')
+			) ) d
+		where
+			parent.project_status_id in (76)
+		        and parent.parent_id is null
+		        and child.tree_sortkey 
+				between parent.tree_sortkey 
+				and tree_right(parent.tree_sortkey)
+		        and d.d 
+				between child.start_date 
+				and child.end_date
+			$where_clause
+    "
+
+
+    # Aggregate additional/important fields to the fact table.
+    set middle_sql "
+	select
+		h.*,
+		'<a href=${project_url}'||project_id||'>'||project_name||'</a>' as project_name_link,
+		to_char(h.d, 'YYYY') as year,
+		to_char(h.d, 'Q') as quarter_of_year,
+		to_char(h.d, 'YYYY') || '<br>' || to_char(h.d, 'MM') as month_of_year,
+		to_char(h.d, 'IW') as week_of_year,
+		to_char(h.d, 'DD') as day_of_month
+	from	($inner_sql) h
+    "
+
+    set outer_sql "
+	select
+		sum(h.days) as days,
+		[join $dimension_vars ",\n\t"]
+	from
+		($middle_sql) h
+	group by
+		[join $dimension_vars ",\n\t"]
+    "
+
+    # Get the level of task indenting in the project
+    set max_level [db_string max_depth "select max(level) from ($middle_sql) c" -default 0]
+
+
+    # ------------------------------------------------------------
+    # Create upper date dimension
+
+
+    # Top scale is a list of lists such as {{2006 01} {2006 02} ...}
+    # The last element of the list the grand total sum.
+    set top_scale_plain [db_list_of_lists top_scale "
+	select distinct	[join $top_vars ", "]
+	from		($middle_sql) c
+	order by	[join $top_vars ", "]
+    "]
+
+    # Insert subtotal columns whenever a scale changes
+    set top_scale [list]
+    set last_item [lindex $top_scale_plain 0]
+    foreach scale_item $top_scale_plain {
+	
+	for {set i [expr [llength $last_item]-2]} {$i >= 0} {set i [expr $i-1]} {
+	    set last_var [lindex $last_item $i]
+	    set cur_var [lindex $scale_item $i]
+	    if {$last_var != $cur_var} {
+		set item_sigma [lrange $last_item 0 $i]
+		while {[llength $item_sigma] < [llength $last_item]} { lappend item_sigma $sigma }
+		lappend top_scale $item_sigma
+	    }
+	}
+	
+	lappend top_scale $scale_item
+	set last_item $scale_item
+    }
+    set top_scale $top_scale_plain
+
+
+    # ------------------------------------------------------------
+    # Display the Table Header
+    
+    # Determine how many date rows (year, month, day, ...) we've got
+    set first_cell [lindex $top_scale 0]
+    set top_scale_rows [llength $first_cell]
+    set left_scale_size $max_level
+    
+    set header ""
+    for {set row 0} {$row < $top_scale_rows} { incr row } {
+	
+	append header "<tr class=rowtitle>\n"
+	set col_l10n [lang::message::lookup "" "intranet-ganttproject.Dim_[lindex $top_vars $row]" [lindex $top_vars $row]]
+	append header "<td class=rowtitle colspan=[expr $max_level+2] align=right>$col_l10n</td>\n"
+	
+	for {set col 0} {$col <= [expr [llength $top_scale]-1]} { incr col } {
+	    
+	    set scale_entry [lindex $top_scale $col]
+	    set scale_item [lindex $scale_entry $row]
+	    
+	    # Skip the last line with all sigmas - doesn't sum up...
+	    set all_sigmas_p 1
+	    foreach e $scale_entry { if {$e != $sigma} { set all_sigmas_p 0 }	}
+	    if {$all_sigmas_p} { continue }
+
+	    
+	    # Check if the previous item was of the same content
+	    set prev_scale_entry [lindex $top_scale [expr $col-1]]
+	    set prev_scale_item [lindex $prev_scale_entry $row]
+
+	    # Check for the "sigma" sign. We want to display the sigma
+	    # every time (disable the colspan logic)
+	    if {$scale_item == $sigma} { 
+		append header "\t<td class=rowtitle>$scale_item</td>\n"
+		continue
+	    }
+	    
+	    # Prev and current are same => just skip.
+	    # The cell was already covered by the previous entry via "colspan"
+	    if {$prev_scale_item == $scale_item} { continue }
+	    
+	    # This is the first entry of a new content.
+	    # Look forward to check if we can issue a "colspan" command
+	    set colspan 1
+	    set next_col [expr $col+1]
+	    while {$scale_item == [lindex [lindex $top_scale $next_col] $row]} {
+		incr next_col
+		incr colspan
+	    }
+	    append header "\t<td class=rowtitle colspan=$colspan>$scale_item</td>\n"	    
+	    
+	}
+	append header "</tr>\n"
+    }
+    set html $header
+
+
+    # ------------------------------------------------------------
+    # Execute query and aggregate values into a Hash array
+
+    set cnt_outer 0
+    set cnt_inner 0
+    db_foreach query $outer_sql {
+
+	# Get all possible permutations (N out of M) from the dimension_vars
+	set perms [im_report_take_all_ordered_permutations $dimension_vars]
+	
+	# Add the gantt hours to ALL of the variable permutations.
+	# The "full permutation" (all elements of the list) corresponds
+	# to the individual cell entries.
+	# The "empty permutation" (no variable) corresponds to the
+	# gross total of all values.
+	# Permutations with less elements correspond to subtotals
+	# of the values along the missing dimension. Clear?
+	#
+	foreach perm $perms {
+	    
+	    # Calculate the key for this permutation
+	    # something like "$year-$month-$customer_id"
+	    set key_expr "\$[join $perm "-\$"]"
+	    set key [eval "set a \"$key_expr\""]
+	    
+	    # Sum up the values for the matrix cells
+	    set sum 0
+	    if {[info exists hash($key)]} { set sum $hash($key) }
+	    
+	    if {"" == $days} { set days 0 }
+	    set sum [expr $sum + $days]
+	    set hash($key) $sum
+	    
+	    incr cnt_inner
+	}
+	incr cnt_outer
+    }
+
+
+
+    # ------------------------------------------------------------
+    # Display the table body
+    
+    set left_sql "
+		select
+		        child.project_id,
+		        child.project_name,
+			child.parent_id
+		from
+		        im_projects parent,
+		        im_projects child
+		where
+			parent.project_status_id in (76)
+		        and parent.parent_id is null
+		        and child.tree_sortkey 
+				between parent.tree_sortkey 
+				and tree_right(parent.tree_sortkey)
+			$where_clause
+    "
+    db_foreach left $left_sql {
+
+	# Store the project_id - project_name relationship
+	set project_name_hash($project_id) $project_name
+
+	# Determine the number of children per project
+	if {![info exists child_count_hash($project_id)]} { set child_count_hash($project_id) 0 }
+	if {![info exists child_count_hash($parent_id)]} { set child_count_hash($parent_id) 0 }
+	set child_count $child_count_hash($parent_id)
+	set child_count_hash($parent_id) [expr $child_count+1]
+    }
+    
+
+    # ------------------------------------------------------------
+    # Display the table body
+    
+    set left_sql "
+	select distinct
+		c.project_id,
+		c.project_name,
+		c.level,
+		c.tree_sortkey
+	from
+		($middle_sql) c
+	order by
+		c.tree_sortkey
+    "
+
+    set ctr 0
+    set project_name_hash($sigma) "sigma"
+    set project_name_hash("") "empty"
+    set project_name_hash() "empty"
+
+    db_foreach left $left_sql {
+
+	# Store/overwrite the position of project_id in the hierarchy
+	set project_hierarchy($level) $project_id
+
+	# Determine the project-"path" from the top project to the current level
+	set project_path [list]
+	set open_p 1
+	for {set i 0} {$i < $level} {incr i} { 
+	    lappend project_path $project_hierarchy($i) 
+	    if {[lsearch $opened_projects $project_hierarchy($i)] < 0} { set open_p 0 }
+	}
+	if {!$open_p} { continue }
+	lappend project_path $project_id
+
+	set org_project_id $project_id
+	set class $rowclass([expr $ctr % 2])
+	incr ctr
+	
+
+	# Start the row and show the left_scale values at the left
+	append html "<tr class=$class>\n"
+
+	set left_entry_ctr 0
+	foreach project_id $project_path { 
+
+	    set project_name $project_name_hash($project_id)
+	    set left_entry_ctr_pp [expr $left_entry_ctr+1]
+	    set left_entry_ctr_mm [expr $left_entry_ctr-1]
+
+	    if {"" != $project_id} {
+
+		set open_p [expr [lsearch $opened_projects $project_id] >= 0]
+		if {$open_p} {
+		    set opened $opened_projects
+		    set project_id_pos [lsearch $opened $project_id]
+		    set opened [lreplace $opened $project_id_pos $project_id_pos]
+		    set url [export_vars -base $this_url {{opened_projects $opened}}]
+		    set gif [im_gif "minus_9"]
+		} else {
+		    set opened $opened_projects
+		    lappend opened $project_id
+		    set url [export_vars -base $this_url {{opened_projects $opened}}]
+		    set gif [im_gif "plus_9"]
+		}
+
+		if {$child_count_hash($project_id) == 0} { 
+		    set url ""
+		    set gif [im_gif "cleardot" "" 0 9 9]
+		}
+
+		set col_val($left_entry_ctr_mm) ""
+		set col_val($left_entry_ctr) "<a href=$url>$gif</a>"
+		set col_val($left_entry_ctr_pp) "$project_name ($project_id)"
+		
+		set col_span($left_entry_ctr_mm) 1
+		set col_span($left_entry_ctr) 1
+		set col_span($left_entry_ctr_pp) [expr $max_level+1-$left_entry_ctr]
+	    }
+	    incr left_entry_ctr
+	}
+
+
+	set left_entry_ctr 0
+	foreach project_id $project_path { 
+	    append html "<td colspan=$col_span($left_entry_ctr)><nobr>$col_val($left_entry_ctr)</nobr></td>\n" 
+	    incr left_entry_ctr
+	}
+	append html "<td colspan=$col_span($left_entry_ctr)><nobr>$col_val($left_entry_ctr)</nobr></td>\n" 
+
+	
+   
+	# ------------------------------------------------------------
+	# Start writing out the matrix elements
+	set project_id $org_project_id
+	foreach top_entry $top_scale {
+	    
+	    # Skip the last line with all sigmas - doesn't sum up...
+	    set all_sigmas_p 1
+	    foreach e $top_entry { if {$e != $sigma} { set all_sigmas_p 0 }	}
+	    if {$all_sigmas_p} { continue }
+	    
+	    # Write the top_scale values to their corresponding local 
+	    # variables so that we can access them easily for $key
+	    for {set i 0} {$i < [llength $top_vars]} {incr i} {
+		set var_name [lindex $top_vars $i]
+		set var_value [lindex $top_entry $i]
+		set $var_name $var_value
+	    }
+	    
+	    # Calculate the key for this permutation
+	    # something like "$year-$month-$customer_id"
+	    set key_expr_list [list]
+	    foreach var_name $dimension_vars {
+		set var_value [eval set a "\$$var_name"]
+		if {$sigma != $var_value} { lappend key_expr_list $var_name }
+	    }
+	    set key_expr "\$[join $key_expr_list "-\$"]"
+	    set key [eval "set a \"$key_expr\""]
+	    
+	    set val ""
+	    if {[info exists hash($key)]} { set val $hash($key) }
+	    
+	    # ------------------------------------------------------------
+	    # Format the percentage value for percent-arithmetics:
+	    # - Sum up percentage values per day
+	    # - When showing percentag per week then sum up and divide by 5 (working days)
+	    # ToDo: Include vacation calendar and resource availability in
+	    # the future.
+	    
+	    if {"" == $val} { set val 0 }
+	    
+	    set day_pos [lsearch $top_vars "day_of_month"]
+	    set day_val [lindex $top_entry $day_pos]
+	    set period "day"
+	    if {"" == $day_val | $sigma == $day_val} {
+		set val_week [expr round($val/5)]
+		set period "week"
+	    }
+	    
+	    set week_pos [lsearch $top_vars "week_of_year"]
+	    set week_val [lindex $top_entry $week_pos]
+	    if {"" == $week_val | $sigma == $week_val} {
+		set val_month [expr round($val/20)]
+		set period "month"
+	    }
+	    
+	    switch $period {
+		week { set val $val_week }
+		month { set val $val_month }
+	    }
+	    
+	    
+	    # ------------------------------------------------------------
+	    
+	    if {0 == $val} { set val "" }
+	    if {![regexp {[^0-9]} $val match]} {
+		set color "\#000000"
+		if {$val > 100} { set color "\#808000" }
+		if {$val > 200} { set color "\#FF0000" }
+		set val "<font color=$color>$val</font>\n"
+	    }
+	    
+	    append html "<td>$val</td>\n"
+	    
+	}
+	append html "</tr>\n"
+    }
+
     return "<table>\n$html\n</table>\n"
 }
+
+
+
 
 
