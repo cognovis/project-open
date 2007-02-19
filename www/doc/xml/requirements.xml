@@ -1,0 +1,143 @@
+<?xml version='1.0' ?>
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+]>
+<sect1 id="requirements">
+  <title>Requirements</title>
+  <authorblurb>
+    <para>by <ulink url="mailto:joel@aufrecht.org">Joel Aufrecht</ulink></para>
+  </authorblurb>
+
+  <sect2 id="requirements-introduction">
+    <title>Introduction</title>
+    <para>Automated Testing provides a framework for executing tests of all varieties and for storing and viewing the results.</para>
+  </sect2>
+
+  <sect2 id="gatekeeper-functional-requirements">
+      <title>Functional Requirements</title>
+
+      <informaltable>
+        <tgroup cols="4">
+          <thead>
+            <row>
+              <entry><emphasis role="strong">Req #</emphasis></entry>
+              <entry><emphasis role="strong">Status in 5.0</emphasis></entry>
+              <entry><emphasis role="strong">Priority for 5.1 (A=required, B=optional)</emphasis></entry>
+              <entry><emphasis role="strong">Description</emphasis></entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>1</entry>
+              <entry>Done</entry>
+              <entry>Done</entry>
+              <entry>Store trees of category labels</entry>
+            </row>
+            <row>
+              <entry>1.1</entry>
+              <entry>?</entry>
+              <entry>A</entry>
+              <entry>Category is package-aware.  (Data in one package is not visible from another package.  There is a permission-based way to accomplish this, but it is not obvious in the UI.)</entry>
+            </row>
+            <row>
+              <entry>2</entry>
+              <entry>Done</entry>
+              <entry>Done</entry>
+              <entry>There is a GUI for administrators to manage category trees (create, delete, move leaves, edit leaves).</entry>
+            </row>
+            <row>
+              <entry>3</entry>
+              <entry>Done</entry>
+              <entry>Done</entry>
+              <entry>An OpenACS Object can be associated with zero, one, or more categories.</entry>
+            </row>
+            <row>
+              <entry>3.1</entry>
+              <entry>partial</entry>
+              <entry>A</entry>
+              <entry>There is a GUI to control which categories are associated with an object.</entry>
+            </row>
+            <row>
+              <entry>3.1.1</entry>
+              <entry>Done</entry>
+              <entry>Done</entry>
+              <entry>A package administrator can choose which category trees apply to a package or parent object.  The list of category trees which apply to an object or its parent is called the <emphasis>enabled tree</emphasis> list.</entry>
+            </row>
+            <row>
+              <entry>3.1.2</entry>
+              <entry>Done</entry>
+              <entry>Done</entry>
+              <entry>There is a facility to control object/category association.  (via /categories/www/form-page.tcl.)</entry>
+            </row>
+            <row>
+              <entry>3.1.3</entry>
+              <entry></entry>
+              <entry>Done</entry>
+              <entry>The <emphasis>enabled trees</emphasis> for an object can be added as fields in form builder.  (Current ad_form implementation supports single select and multiple select; all enabled trees or none.  <computeroutput>/categories/www/widget</computeroutput> is a deprecated solution.)</entry>
+            </row>
+            <row>
+              <entry>3.1.4</entry>
+              <entry></entry>
+              <entry>B</entry>
+              <entry>A GUI for linking any category (even one not in the <emphasis>enabled trees</emphasis>) to an object.</entry>
+            </row>
+            <row>
+              <entry>3.2</entry>
+              <entry>partial</entry>
+              <entry>A</entry>
+              <entry>A GUI to see an object's categories.</entry>
+            </row>
+
+            <row>
+              <entry>3.2.1</entry>
+              <entry></entry>
+              <entry>A</entry>
+              <entry>All of the categories which an object belongs to can be displayed via an includelet on an object view page. (<computeroutput>/categories/www/widget</computeroutput>)</entry>
+            </row>
+            <row>
+              <entry>4</entry>
+              <entry></entry>
+              <entry>A</entry>
+              <entry>List-builder can sort and filter by category.  (Implemented; not documented.  single-select only.)</entry>
+            </row>
+            <row>
+              <entry>5</entry>
+              <entry>partial</entry>
+              <entry>A</entry>
+            <entry>Show all objects in a category.  The current implementation is deprecated - see <ulink url="http://openacs.org/forums/message-view?message_id=158903">TIP #44: Service Contract to resolve the url from an object_id</ulink> and <ulink url="http://openacs.org/forums/message-view?message_id=158875">TIP #43: Adding object_name to acs_objects</ulink></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+	</sect2>
+	<sect2>
+	    <title>References</title>
+	    	<itemizedlist>
+	    	    	<listitem>
+	    	<para><ulink url="http://openacs.org/forums/message-view?message_id=153265">Forum Posting</ulink></para></listitem>
+	    	</itemizedlist>
+</sect2>      
+    <sect2 id="revisions-history">
+      <title>Revision History</title>
+      <informaltable>
+        <tgroup cols="4">
+          <thead>
+            <row>
+              <entry><emphasis role="strong">Document Revision #</emphasis></entry>
+              <entry><emphasis role="strong">Action Taken, Notes</emphasis></entry>
+              <entry><emphasis role="strong">When?</emphasis></entry>
+              <entry><emphasis role="strong">By Whom?</emphasis></entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>1</entry>
+              <entry>Creation</entry>
+              <entry>18 Jan 2004</entry>
+              <entry>Joel Aufrecht</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+  </sect1>
