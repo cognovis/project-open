@@ -186,6 +186,7 @@ declare
     p_creation_user         alias for $3;
     p_creation_ip           alias for $4;
 
+    source		    RECORD;
     v_new_left_ind          integer;
     v_category_id	    integer;
 begin
