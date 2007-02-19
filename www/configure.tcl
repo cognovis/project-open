@@ -429,6 +429,89 @@ ns_write "done<br><pre>$err</pre>\n"
 db_dml disable_task_project_type "update im_categories set enabled_p = 'f' where category_id = 100"
 
 
+
+# ---------------------------------------------------------------
+# Install TSearch2
+#
+# TSearch2 installation depends on the PostgreSQL version:
+#	7.4.x - No install (crashes Backup/Restore)
+#	8.0.1 - tsearch2.801.tcl
+#	8.0.8 - tsearch2.808.tcl
+# ---------------------------------------------------------------
+
+ns_write "<h2>Installing Full-Text Search</h2>\n"
+
+set psql_version "0.0.0"
+set err_msg ""
+if {[catch {
+    set psql_string [exec psql --version] 
+    regexp {([0-9]\.[0-9]\.[0-9])} $psql_string match psql_version
+} err_msg]} {
+    ns_write "<li>Error getting PostgreSQL version number: <pre>'$err_msg'</pre> \n"
+} else {
+    ns_write "<li>Found psql version '$psql_version'\n"
+}
+
+
+set pageroot [ns_info pageroot]
+set serverroot [join [lrange [split $pageroot "/"] 0 end-1] "/"]
+set search_sql_dir "$serverroot/packages/intranet-search-pg/sql/postgresql"
+
+ns_write "<li>Found search_sql_dir: $search_sql_dir\n"
+
+
+switch $psql_version {
+    "8.0.1" - "8.0.8" {
+	set install_package_p 1
+	set sql_file "$search_sql_dir/tsearch2.$psql_version.sql"
+	set result ""
+	ns_write "<li>Sourcing $sql_file ...\n"
+	catch { set result [db_source_sql_file -callback apm_ns_write_callback $sql_file] } err
+	ns_write "done<br><pre>$err</pre>\n"
+	ns_write "<li>Result: <br><pre>$result</pre>\n"
+    }
+    default {
+	set install_package_p 0
+	ns_write "<li>PostgreSQL Version $psql_version not supported.\n"
+    }
+}
+
+# Set the default configuration for TSearch2 (stemming etc...)
+if {$install_package_p} {
+
+    ns_write "<li>Set the default locale for TSearch2  ...\n"
+    set lc_messages [db_string lc_messages "show lc_messages"]
+    db_dml pg_ts_cfg "update pg_ts_cfg set locale=:lc_messages where ts_name='default'"
+    ns_write "done\n"
+
+}
+
+
+# Install the package
+if {$install_package_p} {
+    set enable_p 1
+    set package_path "$serverroot/packages/intranet-search-pg"
+    set callback "apm_ns_write_callback"
+    set data_model_files [list "$search_sql_dir/intranet-search-pg-create.sql" data_model_create "intranet-search-pg"]
+    set mount_path "intranet-search"
+    set spec_file "$serverroot/packages/intranet-search-pg/intranet-search-pg.info"
+
+    if {[catch {
+	set version_id [apm_package_install \
+		    -enable=$enable_p \
+		    -package_path $package_path \
+		    -callback $callback \
+		    -load_data_model \
+		    -data_model_files $data_model_files \
+		    -mount_path $mount_path \
+		    $spec_file \
+        ]
+    } err_msg]} {
+	ns_write "<li>Error installing package: <pre>'$err_msg'</pre> \n"
+    }
+}
+
+
 # ---------------------------------------------------------------
 # Finish off page
 # ---------------------------------------------------------------
