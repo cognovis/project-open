@@ -175,6 +175,22 @@ if {[set ids [array names db_task_ids]]==""} {
     ad_returnredirect $return_url
 }
 
+set keep_tasks ""
+db_foreach keep_tasks "
+  SELECT
+    project_id as task_id,
+    project_name,
+    project_nr
+  FROM
+    im_projects
+  WHERE 
+    project_id IN ([join $task_hash_array ,])
+  ORDER BY 
+    project_nr
+" {
+    append keep_tasks "<option value=\"$task_id\">$project_nr : $project_name</option>"
+}
+
 db_multirow delete_tasks delete_tasks "
   SELECT
     project_id as task_id,
@@ -187,6 +203,9 @@ db_multirow delete_tasks delete_tasks "
 "
 
 template::list::create \
+    -pass_properties {
+	keep_tasks
+    } \
     -name delete_tasks \
     -key task_id \
     -elements {
@@ -199,6 +218,10 @@ template::list::create \
         project_name {
             label "Task Name"
         }
+	assign_to {
+	    label "Assign to"
+	    display_template { <select name=\"assign_to.@delete_tasks.task_id@\">$keep_tasks</select> }
+	}
     } \
     -bulk_actions {
         "Delete" "/intranet-timesheet2-tasks/task-delete" "Delete selected tasks"
