@@ -41,7 +41,7 @@ if {!$user_is_admin_p} {
 set base_url "/intranet-sysconfig/segment"
 
 # Define Wizard params
-set pages [list index sector deptcomp features orgsize name logo profiles prodtest confirm]
+set pages [list index sector deptcomp features orgsize name logo profiles confirm]
 set vars $pages
 lappend vars name_name name_email logo_file logo_url profiles_array:multiple
 

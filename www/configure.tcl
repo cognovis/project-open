@@ -12,21 +12,25 @@
 ad_page_contract {
     Configures the system according to Wizard variables
 } {
-    sector
-    deptcomp 
-    features 
-    orgsize 
-    prodtest 
-
-    name
-    name_name
-    name_email
-
-    logo_file
-    logo_url
-
+    { sector "default" }
+    { deptcomp "" }
+    { features "default" }
+    { orgsize "" }
+    { prodtest "test" }
+    { name "Tigerpond" }
+    { name_name "Tigerpond, Inc." }
+    { name_email "sysadmin@tigerpond.com" }
+    { logo_file "" }
+    { logo_url "http://www.project-open.com" }
     profiles_array:array,optional
 }
+
+# Default value if profiles_array wasn't specified in a default call
+if {![info exists profiles_array]} {
+    array set profiles_array {employees,all_projects on project_managers,all_projects on project_managers,all_companies on}
+}
+
+
 
 # ---------------------------------------------------------------
 # Output headers
@@ -55,6 +59,8 @@ ns_startcontent -type $content_type
 ns_write "[im_header] [im_navbar]"
 
 
+
+
 # ---------------------------------------------------------------
 # Enabling everything
 # ---------------------------------------------------------------
@@ -81,7 +87,7 @@ ns_write "done<br><pre>$err</pre>\n"
 # Set Name, Email, Logo
 # ---------------------------------------------------------------
 
-ns_write "<h2>Setting Name, Email, Logo</h2>\n";
+ns_write "<h2>Setting Name='$name_name', Email='$name_email', Logo</h2>\n";
 
 ns_write "<li>setting name ... "
 catch {db_dml set_name "update im_companies set company_name = :name_name where company_path='internal' "} err
@@ -399,14 +405,9 @@ foreach package [array names disable] {
     }
 }
 
-ns_write "<p>&nbsp;</p>\n"
-ns_write "<blockquote><b>Please return now to the <a href='/intranet/'>Home Page</a></b>.</blockquote>\n"
-ns_write "<p>&nbsp;</p>\n"
-
-
 
 # ---------------------------------------------------------------
-# Finish off page
+# Disabling components
 # ---------------------------------------------------------------
 
 ns_write "<h2>Disabling 'intranet-sysconfig' Components</h2>\n"
@@ -439,7 +440,8 @@ db_dml disable_task_project_type "update im_categories set enabled_p = 'f' where
 #	8.0.8 - tsearch2.808.tcl
 # ---------------------------------------------------------------
 
-set tsearch_installed_p [db_table_exists "pg_ts_cfg"]
+set tsearch_installed_p [db_string tsearch_exists "select count(*) from pg_class where relname = lower('pg_ts_cfg') and relkind = 'r'"]
+
 set search_pg_installed_p [db_string search_pg "
 	select	count(*) 
 	from	apm_package_versions 
@@ -471,10 +473,10 @@ if {!$search_pg_installed_p} {
     
     ns_write "<li>Found search_sql_dir: $search_sql_dir\n"
     
+    set install_package_p 1
     if {!$tsearch_installed_p} {
 	switch $psql_version {
 	    "8.0.1" - "8.0.8" {
-		set install_package_p 1
 		set sql_file "$search_sql_dir/tsearch2.$psql_version.sql"
 		set result ""
 		ns_write "<li>Sourcing $sql_file ...\n"
@@ -487,6 +489,8 @@ if {!$search_pg_installed_p} {
 		ns_write "<li>PostgreSQL Version $psql_version not supported.\n"
 	    }
 	}
+    } else {
+	ns_write "<li>TSearch2 already installed - no action taken.\n"
     }
     
     # Set the default configuration for TSearch2 (stemming etc...)
@@ -505,10 +509,9 @@ if {!$search_pg_installed_p} {
 	set enable_p 1
 	set package_path "$serverroot/packages/intranet-search-pg"
 	set callback "apm_ns_write_callback"
-	set data_model_files [list "$search_sql_dir/intranet-search-pg-create.sql" data_model_create "intranet-search-pg"]
+	set data_model_files [list [list "sql/postgresql/intranet-search-pg-create.sql" data_model_create "intranet-search-pg"]]
 	set mount_path "intranet-search"
 	set spec_file "$serverroot/packages/intranet-search-pg/intranet-search-pg.info"
-	
 	if {[catch {
 	    set version_id [apm_package_install \
 				-enable=$enable_p \
@@ -529,6 +532,14 @@ if {!$search_pg_installed_p} {
 # ---------------------------------------------------------------
 # Finish off page
 # ---------------------------------------------------------------
+
+
+ns_write "<p>&nbsp;</p>\n"
+ns_write "<blockquote><b>Please return now to the <a href='/intranet/'>Home Page</a></b>.</blockquote>\n"
+ns_write "<p>&nbsp;</p>\n"
+
+
+
 
 # Remove all permission related entries in the system cache
 util_memoize_flush_regexp ".*"

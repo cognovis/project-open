@@ -38,7 +38,7 @@ set sector [ns_set iget [ad_conn form] "sector"]
 # Check if everything is togehter
 # ---------------------------------------------------------------
 
-set pages [list sector deptcomp features orgsize prodtest]
+set pages [list sector deptcomp features orgsize]
 set ready 1
 
 foreach v $pages {
