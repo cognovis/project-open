@@ -450,6 +450,8 @@ set search_pg_installed_p [db_string search_pg "
 		and package_key like 'intranet-search-pg'
 "]
 
+set search_pg_installed_p 1
+
 if {!$search_pg_installed_p} {
 
     ns_write "<h2>Installing Full-Text Search</h2>\n"

@@ -14,7 +14,8 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Wizard-based configuration of a ]po[ system for one of the different &quot;flavours&quot;. This wizard appears after a fresh installation as the only option and guides the user through the setup process.</description>
 
-        <!-- No dependency information -->
+        <provides url="intranet-sysconfig" version="3.2.7.0.0"/>
+        <requires url="intranet-core" version="3.2"/>
 
         <callbacks>
         </callbacks>
