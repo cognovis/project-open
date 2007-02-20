@@ -87,15 +87,15 @@ if {!$exists_p} {
 # im_costs contains a "cause_object_id" field pointing to employee_id.
 # The join between im_costs and im_repeating_costs is necessary
 # in order to elimiate all the non-repeating cost items.
-set rep_cost_id [db_string rep_costs_exist "
+set rep_cost_ids [db_list rep_costs_exist "
 	select	rc.rep_cost_id
 	from	im_repeating_costs rc,
 		im_costs ci
 	where 	rc.rep_cost_id = ci.cost_id
 		and ci.cause_object_id = :employee_id
-" -default 0]
+"]
 
-if {!$rep_cost_id} {
+if {[llength $rep_cost_ids] == 0} {
     if [catch {
 	set rep_cost_id [im_cost::new -object_type "im_repeating_cost" -cost_name $employee_id -cost_type_id [im_cost_type_repeating]]
 	
