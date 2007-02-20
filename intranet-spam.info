@@ -22,9 +22,9 @@
         <vendor url="http://www.project-open.org">]project-open[</vendor>
         <description format="text/plain">Provides a UI for sending e-mail to groups of users, selected based on some criteria in the database.  Applications may link to the spam system with their own set of criteria (SQL queries).</description>
 
-        <provides url="intranet-spam" version="3.0.0"/>
-        <requires url="intranet-core" version="3.0.0"/>
-        <requires url="acs-mail" version="5."/>
+        <provides url="intranet-spam" version="3.2.7.0.0"/>
+        <requires url="intranet-core" version="3.2"/>
+        <requires url="acs-mail" version="5.1"/>
 
     </version>
 </package>
