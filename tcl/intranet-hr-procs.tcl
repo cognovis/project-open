@@ -94,6 +94,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 			select	* 
 			from	im_costs c, im_repeating_costs rc
 			where	c.cost_id = rc.rep_cost_id
+				and c.cost_type_id = [im_cost_type_employee]
 				and c.cause_object_id = :employee_id
 		) ci ON (u.user_id = ci.cause_object_id),
 		parties p,
