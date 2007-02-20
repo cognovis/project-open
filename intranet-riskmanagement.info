@@ -13,8 +13,8 @@
         <owner url="mailto:mai-bee@gmx.net">Alwin Egger</owner>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
 
-        <provides url="intranet-timesheet" version="1.0"/>
-        <requires url="intranet-core" version="1.0"/>
+        <provides url="intranet-riskmanagement" version="3.2.7.0.0"/>
+        <requires url="intranet-core" version="3.2"/>
 
         <callbacks>
         </callbacks>
