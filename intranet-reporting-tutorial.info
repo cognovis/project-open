@@ -14,7 +14,10 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Some sample reports with rising (development) difficulty for teaching the art of report writing</description>
 
-        <!-- No dependency information -->
+
+        <provides url="intranet-reporting-tutorial" version="3.2.0"/>
+        <requires url="intranet-reporting" version="3.2.0"/>
+        <requires url="intranet-core" version="3.2.0"/>
 
         <callbacks>
         </callbacks>
