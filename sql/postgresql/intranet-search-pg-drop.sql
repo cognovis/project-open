@@ -16,12 +16,11 @@ drop trigger im_forum_topics_tsearch_tr on im_forum_topics;
 drop trigger im_projects_tsearch_tr on im_projects;
 drop trigger im_companies_tsearch_tr on im_companies;
 drop trigger persons_tsearch_tr on persons;
-drop trigger users_tsearch_tr on users;
 drop trigger im_invoices_tsearch_tr on im_invoices;
 
 
 drop function im_forum_topics_tsearch ();
-drop function users_tsearch ();
+drop function persons_tsearch ();
 drop function im_projects_tsearch ();
 drop function im_companies_tsearch ();
 drop function im_search_update (integer, varchar, integer, varchar);
