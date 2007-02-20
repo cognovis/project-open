@@ -75,8 +75,8 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 		p.email,
 		e.*,
 		ci.*,
-		to_char(rc.start_date,:date_format) as start_date_formatted,
-		to_char(rc.end_date,:date_format) as end_date_formatted,
+		to_char(ci.start_date,:date_format) as start_date_formatted,
+		to_char(ci.end_date,:date_format) as end_date_formatted,
 		to_char(e.birthdate,:date_format) as birthdate_formatted,
 		to_char(salary, :number_format) as salary_formatted,
 		to_char(hourly_cost, :number_format) as hourly_cost_formatted,
@@ -90,8 +90,12 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 		users u
 		LEFT OUTER JOIN im_employees e ON (u.user_id = e.employee_id)
 		LEFT OUTER JOIN im_cost_centers cc ON (e.department_id = cc.cost_center_id)
-		LEFT OUTER JOIN im_costs ci ON (u.user_id = ci.cause_object_id)
-		LEFT OUTER JOIN im_repeating_costs rc ON (ci.cost_id = rc.rep_cost_id),
+		LEFT OUTER JOIN (
+			select	* 
+			from	im_costs c, im_repeating_costs rc
+			where	c.cost_id = rc.rep_cost_id
+				and c.cause_object_id = :employee_id
+		) ci ON (u.user_id = ci.cause_object_id),
 		parties p,
 		persons pe
 	where	
@@ -100,6 +104,8 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 		and u.user_id = :employee_id
 
     "} err_msg]} {
+
+	ad_return_complaint 1 "<pre>$err_msg</pre>"
 	ns_log Notice "im_employees: err=$err_msg"
 	set employee_info_exists 0
     } else {
