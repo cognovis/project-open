@@ -16,8 +16,8 @@
 
         <!-- No dependency information -->
 
-        <provides url="intranet-ganttproject" version="3.2"/>
-        <requires url="intranet-core" version="3.0.0"/>
+        <provides url="intranet-ganttproject" version="3.2.7.0.0"/>
+        <requires url="intranet-core" version="3.2"/>
 
         <callbacks>
         </callbacks>
