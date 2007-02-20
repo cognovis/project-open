@@ -306,7 +306,7 @@ ad_proc -public im_ganttproject_component {
             may lead to deleted timesheet hours, cost
 	    items and others. Please read the manual and/or
 	    request more information.<br>
-	You need to install <a href='http://prdownloads.sourceforge.net/ganttproject/ganttproject-2.0.exe?download'>GanttProject</a> on your computer.
+	You need to install <a href='http://sourceforge.net/project/showfiles.php?group_id=72728'>GanttProject</a> on your computer.
 
 
 	</td></tr>
