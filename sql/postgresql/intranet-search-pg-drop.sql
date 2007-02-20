@@ -25,15 +25,14 @@ drop function users_tsearch ();
 drop function im_projects_tsearch ();
 drop function im_companies_tsearch ();
 drop function im_search_update (integer, varchar, integer, varchar);
+drop function norm_text (varchar);
+drop function norm_text_utf8 (varchar);
 
 drop table im_search_objects;
 drop table im_search_object_types;
 
-delete from im_biz_object_urls
-where object_type = 'im_forum_topic';
 
--- Now use a modified drop script to get tsearch2
--- out of the database again.
-
+-- Dont uninstall TSearch2.
+-- Done by TCL script during SysConfig
 -- \i untsearch2.sql
 
