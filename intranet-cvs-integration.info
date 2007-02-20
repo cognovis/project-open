@@ -14,7 +14,8 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Collect statistics on programmer´s activities from CVS</description>
 
-        <!-- No dependency information -->
+        <provides url="intranet-cvs-integration" version="3.2.7.0.0"/>
+        <requires url="intranet-core" version="3.2"/>
 
         <callbacks>
         </callbacks>
