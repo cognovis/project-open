@@ -155,7 +155,7 @@ BEGIN
         ''reporting-tutorial-projects02'',          -- label
         ''Project Report 02'',          -- name
         ''/intranet-reporting-tutorial/projects-02'', -- url
-        10,                    -- sort_order
+        20,                    -- sort_order
         v_main_menu,            -- parent_menu_id
         null                    -- p_visible_tcl
     );
@@ -175,7 +175,7 @@ BEGIN
         ''reporting-tutorial-projects03'',          -- label
         ''Project Report 03'',          -- name
         ''/intranet-reporting-tutorial/projects-03'', -- url
-        10,                    -- sort_order
+        30,                    -- sort_order
         v_main_menu,            -- parent_menu_id
         null                    -- p_visible_tcl
     );
@@ -195,7 +195,7 @@ BEGIN
         ''reporting-tutorial-projects04'',          -- label
         ''Project Report 04'',          -- name
         ''/intranet-reporting-tutorial/projects-04'', -- url
-        10,                    -- sort_order
+        40,                    -- sort_order
         v_main_menu,            -- parent_menu_id
         null                    -- p_visible_tcl
     );
@@ -215,7 +215,7 @@ BEGIN
         ''reporting-tutorial-projects05'',          -- label
         ''Project Report 05'',          -- name
         ''/intranet-reporting-tutorial/projects-05'', -- url
-        10,                    -- sort_order
+        50,                    -- sort_order
         v_main_menu,            -- parent_menu_id
         null                    -- p_visible_tcl
     );
