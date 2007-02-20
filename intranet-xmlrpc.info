@@ -15,6 +15,7 @@
         <description format="text/plain">Provides an XML-RPC wrapper that allows the users to access to the PlPg/SQL database API and to retreive information about business objects via a 'select * from objects where ...' statement. Authentication is performed via an auth-token. Security is handleled by HTTPS.</description>
 
         <provides url="intranet-xmlrpc" version="3.2.0.0"/>
+        <requires url="intranet-core" version="3.2"/>
         <requires url="acs-kernel" version="5.1"/>
         <requires url="xml-rpc" version="0.1"/>
 
