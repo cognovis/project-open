@@ -58,8 +58,27 @@ SELECT im_component_plugin__new (
         '/intranet/projects/view',      -- page_url
         null,                           -- view_name
         10,                            -- sort_order
-	'im_ganttproject_resource_cube -project_id $project_id -level_of_detail 2 -return_url $return_url -export_var_list [list project_id]',
+	'im_ganttproject_resource_component -project_id $project_id -level_of_detail 2 -return_url $return_url -export_var_list [list project_id]',
 	'lang::message::lookup "" intranet-ganttproject.Project_Gantt_Resource_Assignations "Project Gantt Resource Assignations"'
 );
 
+
+
+
+SELECT im_component_plugin__new (
+        null,                           -- plugin_id
+        'acs_object',                   -- object_type
+        now(),                          -- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+        'Project Gantt View',		-- plugin_name
+        'intranet-ganttproject',	-- package_name
+        'bottom',			-- location
+        '/intranet/projects/view',	-- page_url
+        null,                           -- view_name
+        50,                             -- sort_order
+	'im_ganttproject_gantt_component -project_id $project_id -level_of_detail 2 -return_url $return_url -export_var_list [list project_id]',
+	'lang::message::lookup "" intranet-ganttproject.Project_Gantt_View "Project Gantt View"'
+);
 

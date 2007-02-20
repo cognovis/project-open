@@ -1375,15 +1375,8 @@ ad_proc -public im_ganttproject_resource_component {
     }
 
     set html "<table>\n$html\n</table>\n"
-
-
-    append html "<br><h1>Gantt</h1>[im_ganttproject_gantt_component -project_id $project_id -level_of_detail $level_of_detail]"
-
     return $html
-
 }
-
-
 
 
 
