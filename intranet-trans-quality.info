@@ -15,9 +15,9 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Uses a variant of LISA quality templates to capture translation quality, measuring error points per sample size.</description>
 
-        <provides url="intranet-trans-quality" version="2.0.0"/>
-        <requires url="intranet-translation" version="3.0.0"/>
-        <requires url="intranet-core" version="3.0.0"/>
+        <provides url="intranet-trans-quality" version="3.2"/>
+        <requires url="intranet-translation" version="3.2"/>
+        <requires url="intranet-core" version="3.2"/>
 
         <callbacks>
         </callbacks>
