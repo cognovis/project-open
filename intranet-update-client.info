@@ -14,8 +14,8 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">This package provides functionality to allow a system administrator to upgrade his system fully automaticalla to a newer version. The package allows to 1. check for new software versions, 2. browse the available software versions and 3. update to the newest version via CVS integration. However, the user will have to run the APM update procedure manually after the upgrade.</description>
 
-        <requires url="intranet-core" version="3.0.0"/>
-        <provides url="intranet-update-client" version="3.0.0"/>
+        <provides url="intranet-update-client" version="3.2"/>
+        <requires url="intranet-core" version="3.2"/>
 
         <callbacks>
         </callbacks>
