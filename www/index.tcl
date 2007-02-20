@@ -20,6 +20,22 @@ set return_url "[ad_conn url]?[ad_conn query]"
 set parent_var :folder_id
 set page_title "Active Wikis"
 
+# Redirect to wiki if there is exactly one..
+set folder_ids [db_list folder_ids "
+	select f.folder_id 
+	from apm_packages p, cr_folders f 
+	where	p.package_id = f.package_id 
+		and p.package_key = 'wiki'
+"]
+
+if {[llength $folder_ids] == 1} {
+    set folder_id [lindex $folder_ids 0]
+    ad_returnredirect [export_vars -base "/wiki/admin/index?" {folder_id}]
+    ad_script_abort
+}
+
+
+
 set wiki_component [im_wiki_home_component]
     
 # Get the list of currently existing Wiki installations
