@@ -293,3 +293,8 @@ begin
 end;' language 'plpgsql';
 
 
+----------------------------------------------------------------
+-- percentage column for im_biz_object_members
+
+ALTER TABLE im_biz_object_members ADD column percentage numeric(8,2);
+
