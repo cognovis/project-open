@@ -14,8 +14,8 @@
         <summary>Freelance Skills, &quot;Marketplace&quot; workflow to ask freelancers by mail whether they want to participate in a project</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
 
-        <provides url="intranet-freelance" version="3.0.0"/>
-        <requires url="intranet-core" version="3.0.0"/>
+        <provides url="intranet-freelance" version="3.2.7.0.0"/>
+        <requires url="intranet-core" version="3.2"/>
 
         <callbacks>
         </callbacks>
