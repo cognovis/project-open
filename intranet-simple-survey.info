@@ -15,8 +15,8 @@
         <description format="text/plain">&quot;Simple Surveys&quot; are able to capture semi-structured information such as project reports, provider evaluations, ... This module allows to associate recurring surveys for objects and to track their completion</description>
 
 
-        <provides url="intranet-simple-survey" version="3.0.0"/>
-        <requires url="intranet-core" version="3.0.0"/>
+        <provides url="intranet-simple-survey" version="3.2.7.0.0"/>
+        <requires url="intranet-core" version="3.2"/>
         <requires url="simple-survey" version="0.2"/>
 
         <callbacks>
