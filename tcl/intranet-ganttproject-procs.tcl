@@ -861,19 +861,20 @@ ad_proc -public im_gp_save_resources {
 ad_proc -public im_ganttproject_resource_component {
     { -start_date "" }
     { -end_date "" }
-    { -level_of_detail 2 }
+    { -top_vars "" }
     { -left_vars "user_name_link project_name_link" }
     { -project_id "" }
     { -customer_id 0 }
     { -user_name_link_opened "" }
     { -return_url "" }
     { -export_var_list "" }
+    { -max_col 12 }
+    { -max_row 20 }
 } {
     Gantt Resource "Cube"
 
     @param start_date Hard start of reporting period. Defaults to start of first project
     @param end_date Hard end of replorting period. Defaults to end of last project
-    @param level_of_details Details of date axis: 1 (month), 2 (week) or 3 (day)
     @param left_vars Variables to show at the left-hand side
     @param project_id Id of project(s) to show. Defaults to all active projects
     @param customer_id Id of customer's projects to show
@@ -883,14 +884,6 @@ ad_proc -public im_ganttproject_resource_component {
     set rowclass(1) "rowodd"
     set sigma "&Sigma;"
     
-    switch $level_of_detail {
-	1 { set top_vars "month_of_year" }
-	2 { set top_vars "month_of_year week_of_year" }
-	3 { set top_vars "month_of_year week_of_year day_of_month" }
-	default { set top_vars "month_of_year" }
-    }
-    
-
     if {0 != $customer_id && "" == $project_id} {
 	set project_id [db_list pids "
 	select	project_id
@@ -949,6 +942,24 @@ ad_proc -public im_ganttproject_resource_component {
     }
 
 
+    # Adaptive behaviour - limit the size of the component to a summary
+    # suitable for the left/right columns of a project.
+    if {"" == $top_vars} {
+	set duration_days [db_string dur "select to_date(:end_date, 'YYYY-MM-DD') - to_date(:start_date, 'YYYY-MM-DD')"]
+	set duration_weeks [expr $duration_days / 7]
+	set duration_months [expr $duration_days / 30]
+	set duration_years [expr $duration_days / 365]
+
+	set days_too_long [expr $duration_days > $max_col]
+	set weeks_too_long [expr $duration_weeks > $max_col]
+	set months_too_long [expr $duration_months > $max_col]
+
+	set top_vars "week_of_year day_of_month"
+	if {$days_too_long} { set top_vars "month_of_year week_of_year" }
+	if {$weeks_too_long} { set top_vars "month_of_year" }
+	if {$months_too_long} { set top_vars "year" }
+    }
+
     # ------------------------------------------------------------
     # Define Dimensions
     
@@ -964,9 +975,8 @@ ad_proc -public im_ganttproject_resource_component {
     set company_url "/intranet/companies/view?company_id="
     set project_url "/intranet/projects/view?project_id="
     set user_url "/intranet/users/view?user_id="
-    set this_url [export_vars -base "/intranet-reporting/gantt-resources-cube" {start_date end_date level_of_detail left_vars customer_id} ]
+    set this_url [export_vars -base "/intranet-ganttproject/gantt-resources-cube" {start_date end_date left_vars customer_id} ]
     foreach pid $project_id { append this_url "&project_id=$pid" }
-    
 
 
     # ------------------------------------------------------------
@@ -974,15 +984,12 @@ ad_proc -public im_ganttproject_resource_component {
     #
     
     set criteria [list]
-    
     if {"" != $customer_id && 0 != $customer_id} {
 	lappend criteria "p.company_id = :customer_id"
     }
-    
     if {"" != $project_id && 0 != $project_id} {
 	lappend criteria "parent.project_id in ([join $project_id ", "])"
     }
-    
     set where_clause [join $criteria " and\n\t\t\t"]
     if { ![empty_string_p $where_clause] } {
 	set where_clause " and $where_clause"
@@ -990,7 +997,7 @@ ad_proc -public im_ganttproject_resource_component {
     
 
     # ------------------------------------------------------------
-    # Define the report - SQL, counters, headers and footers 
+    # Define the report SQL
     #
     
     # Inner - Try to be as selective as possible for the relevant data from the fact table.
@@ -1110,13 +1117,14 @@ ad_proc -public im_ganttproject_resource_component {
 	for {set i [expr [llength $last_item]-2]} {$i >= 0} {set i [expr $i-1]} {
 	    set last_var [lindex $last_item $i]
 	    set cur_var [lindex $scale_item $i]
+
 	    if {$last_var != $cur_var} {
-		
 		set item [lrange $last_item 0 $i]
 		while {[llength $item] < [llength $last_item]} { lappend item $sigma }
 		lappend left_scale $item
 	    }
 	}
+
 	lappend left_scale $scale_item
 	set last_item $scale_item
     }
@@ -1135,6 +1143,7 @@ ad_proc -public im_ganttproject_resource_component {
 	
 	append header "<tr class=rowtitle>\n"
 	set col_l10n [lang::message::lookup "" "intranet-ganttproject.Dim_[lindex $top_vars $row]" [lindex $top_vars $row]]
+	if {0 == $row} {set col_l10n "<a href=[export_vars -base $this_url {}]>[im_gif "magnifier"]</a>$col_l10n" }
 	append header "<td class=rowtitle colspan=$left_scale_size align=right>$col_l10n</td>\n"
 	
 	for {set col 0} {$col <= [expr [llength $top_scale]-1]} { incr col } {
@@ -1267,13 +1276,13 @@ ad_proc -public im_ganttproject_resource_component {
 		if {[lsearch $user_name_link_opened $user_id] < 0} {
 		    set opened $user_name_link_opened
 		    lappend opened $user_id
-		    set open_url [export_vars -base $this_url {{user_name_link_opened $opened}}]
+		    set open_url [export_vars -base $this_url {top_vars {user_name_link_opened $opened}}]
 		    set val "<a href=$open_url>[im_gif "plus_9"]</a> $val"
 		} else {
 		    set opened $user_name_link_opened
 		    set user_id_pos [lsearch $opened $user_id]
 		    set opened [lreplace $opened $user_id_pos $user_id_pos]
-		    set close_url [export_vars -base $this_url {{user_name_link_opened $opened}}]
+		    set close_url [export_vars -base $this_url {top_vars {user_name_link_opened $opened}}]
 		    set val "<a href=$close_url>[im_gif "minus_9"]</a> $val"
 		} 
 	    } else {
@@ -1374,7 +1383,39 @@ ad_proc -public im_ganttproject_resource_component {
 	append html "</tr>\n"
     }
 
+
+    # ------------------------------------------------------------
+    # Show a line to open up an entire level
+
+    # Check whether all user_ids are included in $user_name_link_opened
+    set user_ids [lsort -unique [db_list user_ids "select distinct user_id from ($inner_sql) h order by user_id"]]
+    set intersect [lsort -unique [set_intersection $user_name_link_opened $user_ids]]
+
+    if {$user_ids == $intersect} {
+
+	# All user_ids already opened - show "-" sign
+	append html "<tr class=rowtitle>\n"
+	set opened [list]
+	set url [export_vars -base $this_url {{user_name_link_opened $opened}}]
+	append html "<td class=rowtitle><a href=$url>[im_gif "minus_9"]</a></td>\n"
+	append html "<td class=rowtitle colspan=[expr [llength $top_scale]+3]>&nbsp;</td></tr>\n"
+
+    } else {
+
+	# Not all user_ids are opened - show a "+" sign
+	append html "<tr class=rowtitle>\n"
+	set opened [lsort -unique [concat $user_name_link_opened $user_ids]]
+	set url [export_vars -base $this_url {{user_name_link_opened $opened}}]
+	append html "<td class=rowtitle><a href=$url>[im_gif "plus_9"]</a></td>\n"
+	append html "<td class=rowtitle colspan=[expr [llength $top_scale]+3]>&nbsp;</td></tr>\n"
+
+    }
+
+    # ------------------------------------------------------------
+    # Close the table
+
     set html "<table>\n$html\n</table>\n"
+
     return $html
 }
 
@@ -1384,7 +1425,7 @@ ad_proc -public im_ganttproject_resource_component {
 
 
 # ----------------------------------------------------------------------
-# Resource Report
+# GanttView to Project(s)
 # ----------------------------------------------------------------------
 
 ad_proc -public im_ganttproject_gantt_component {
@@ -1392,15 +1433,17 @@ ad_proc -public im_ganttproject_gantt_component {
     { -end_date "" }
     { -project_id "" }
     { -customer_id 0 }
-    { -level_of_detail 2 }
+    { -opened_projects "" }
+    { -top_vars "" }
     { -return_url "" }
     { -export_var_list "" }
+    { -max_col 12 }
+    { -max_row 20 }
 } {
     Gantt View
 
     @param start_date Hard start of reporting period. Defaults to start of first project
     @param end_date Hard end of replorting period. Defaults to end of last project
-    @param level_of_details Details of date axis: 1 (month), 2 (week) or 3 (day)
     @param project_id Id of project(s) to show. Defaults to all active projects
     @param customer_id Id of customer's projects to show
     @param user_name_link_opened List of users with details shown
@@ -1409,18 +1452,6 @@ ad_proc -public im_ganttproject_gantt_component {
     set rowclass(1) "rowodd"
     set sigma "&Sigma;"
 
-    set level_of_detail 3
-
-    set opened_projects [list 24535 25108 25117]
-
-    
-    switch $level_of_detail {
-	1 { set top_vars "month_of_year" }
-	2 { set top_vars "month_of_year week_of_year" }
-	3 { set top_vars "month_of_year week_of_year day_of_month" }
-	default { set top_vars "month_of_year" }
-    }
-    
     if {0 != $customer_id && "" == $project_id} {
 	set project_id [db_list pids "
 	select	project_id
@@ -1479,6 +1510,24 @@ ad_proc -public im_ganttproject_gantt_component {
     }
 
 
+    # Adaptive behaviour - limit the size of the component to a summary
+    # suitable for the left/right columns of a project.
+    if {"" == $top_vars} {
+	set duration_days [db_string dur "select to_date(:end_date, 'YYYY-MM-DD') - to_date(:start_date, 'YYYY-MM-DD')"]
+	set duration_weeks [expr $duration_days / 7]
+	set duration_months [expr $duration_days / 30]
+	set duration_years [expr $duration_days / 365]
+
+	set days_too_long [expr $duration_days > $max_col]
+	set weeks_too_long [expr $duration_weeks > $max_col]
+	set months_too_long [expr $duration_months > $max_col]
+
+	set top_vars "week_of_year day_of_month"
+	if {$days_too_long} { set top_vars "month_of_year week_of_year" }
+	if {$weeks_too_long} { set top_vars "month_of_year" }
+	if {$months_too_long} { set top_vars "year" }
+    }
+
     # ------------------------------------------------------------
     # Define Dimensions
     
@@ -1496,9 +1545,8 @@ ad_proc -public im_ganttproject_gantt_component {
     set company_url "/intranet/companies/view?company_id="
     set project_url "/intranet/projects/view?project_id="
     set user_url "/intranet/users/view?user_id="
-    set this_url [export_vars -base "/intranet-reporting/gantt-resources-cube" {start_date end_date level_of_detail left_vars customer_id} ]
+    set this_url [export_vars -base "/intranet-ganttproject/gantt-view-cube" {start_date end_date left_vars customer_id} ]
     foreach pid $project_id { append this_url "&project_id=$pid" }
-    
 
 
     # ------------------------------------------------------------
@@ -1629,6 +1677,7 @@ ad_proc -public im_ganttproject_gantt_component {
 	
 	append header "<tr class=rowtitle>\n"
 	set col_l10n [lang::message::lookup "" "intranet-ganttproject.Dim_[lindex $top_vars $row]" [lindex $top_vars $row]]
+	if {0 == $row} {set col_l10n "<a href=[export_vars -base $this_url {}]>[im_gif "magnifier"]</a>$col_l10n" }
 	append header "<td class=rowtitle colspan=[expr $max_level+2] align=right>$col_l10n</td>\n"
 	
 	for {set col 0} {$col <= [expr [llength $top_scale]-1]} { incr col } {
@@ -1720,7 +1769,8 @@ ad_proc -public im_ganttproject_gantt_component {
 		select
 		        child.project_id,
 		        child.project_name,
-			child.parent_id
+			child.parent_id,
+			tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as level
 		from
 		        im_projects parent,
 		        im_projects child
@@ -1742,9 +1792,14 @@ ad_proc -public im_ganttproject_gantt_component {
 	if {![info exists child_count_hash($parent_id)]} { set child_count_hash($parent_id) 0 }
 	set child_count $child_count_hash($parent_id)
 	set child_count_hash($parent_id) [expr $child_count+1]
+	
+	# Create a list of projects for each level for fast opening
+	set level_list [list]
+	if {[info exists level_lists($level)]} { set level_list $level_lists($level) }
+	lappend level_list $project_id
+	set level_lists($level) $level_list
     }
     
-
     # ------------------------------------------------------------
     # Display the table body
     
@@ -1752,7 +1807,7 @@ ad_proc -public im_ganttproject_gantt_component {
 	select distinct
 		c.project_id,
 		c.project_name,	
-	c.level,
+		c.level,
 		c.tree_sortkey
 	from
 		($middle_sql) c
@@ -1795,19 +1850,17 @@ ad_proc -public im_ganttproject_gantt_component {
 	    set left_entry_ctr_pp [expr $left_entry_ctr+1]
 	    set left_entry_ctr_mm [expr $left_entry_ctr-1]
 
-
-
 	    set open_p [expr [lsearch $opened_projects $project_id] >= 0]
 	    if {$open_p} {
 		set opened $opened_projects
 		set project_id_pos [lsearch $opened $project_id]
 		set opened [lreplace $opened $project_id_pos $project_id_pos]
-		set url [export_vars -base $this_url {{opened_projects $opened}}]
+		set url [export_vars -base $this_url {top_vars {opened_projects $opened}}]
 		set gif [im_gif "minus_9"]
 	    } else {
 		set opened $opened_projects
 		lappend opened $project_id
-		set url [export_vars -base $this_url {{opened_projects $opened}}]
+		set url [export_vars -base $this_url {top_vars {opened_projects $opened}}]
 		set gif [im_gif "plus_9"]
 	    }
 	    
@@ -1818,7 +1871,7 @@ ad_proc -public im_ganttproject_gantt_component {
 	    
 	    set col_val($left_entry_ctr_mm) ""
 	    set col_val($left_entry_ctr) "<a href=$url>$gif</a>"
-	    set col_val($left_entry_ctr_pp) "$project_name ($project_id)"
+	    set col_val($left_entry_ctr_pp) $project_name
 	    
 	    set col_span($left_entry_ctr_mm) 1
 	    set col_span($left_entry_ctr) 1
@@ -1913,6 +1966,20 @@ ad_proc -public im_ganttproject_gantt_component {
 	}
 	append html "</tr>\n"
     }
+
+
+    # ------------------------------------------------------------
+    # Show a line to open up an entire level
+
+    append html "<tr class=rowtitle>\n"
+    set level_list [list]
+    for {set col 0} {$col < $max_level} {incr col} {
+	if {[info exists level_lists($col)]} { set level_list [concat $level_list $level_lists($col)] }
+	set opened [lsort -unique [concat $opened_projects $level_list]]
+	set url [export_vars -base $this_url {{opened_projects $opened}}]
+	append html "<td class=rowtitle><a href=$url>[im_gif "plus_9"]</a></td>\n"
+    }
+    append html "<td class=rowtitle colspan=[expr [llength $top_scale]+2]>&nbsp;</td></tr>\n"
 
     return "<table>\n$html\n</table>\n"
 }
