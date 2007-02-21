@@ -12,3 +12,4 @@ select im_component_plugin__del_module('intranet-ganttproject');
 select im_menu__del_module('intranet-ganttproject');
 
 
+alter table im_biz_object_members DROP column percentage;

@@ -12,21 +12,20 @@ ad_page_contract {
     @param start_date Hard start of reporting period. Defaults to start of first project
     @param end_date Hard end of replorting period. Defaults to end of last project
     @param level_of_details Details of date axis: 1 (month), 2 (week) or 3 (day)
-    @param left_vars Variables to show at the left-hand side
     @param project_id Id of project(s) to show. Defaults to all active projects
     @param customer_id Id of customer's projects to show
     @param user_name_link_opened List of users with details shown
 } {
     { start_date "" }
     { end_date "" }
-    { top_vars "month_of_year week_of_year day_of_month" }
-    { left_vars "user_name_link project_name_link" }
+    { top_vars "" }
     { project_id:multiple "" }
     { customer_id:integer 0 }
     { user_name_link_opened "" }
     { opened_projects "" }
+    { max_col 100 }
+    { max_row 1000 }
 }
-
 
 # ---------------------------------------------------------------
 # Project Menu
@@ -62,8 +61,8 @@ set html [im_ganttproject_gantt_component \
 	-project_id $project_id \
 	-customer_id $customer_id \
 	-opened_projects $opened_projects \
-	-max_col 1000 \
-	-max_row 1000 \
+	-max_col $max_col \
+	-max_row $max_row \
 ]
 
 

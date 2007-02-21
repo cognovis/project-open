@@ -24,6 +24,8 @@ ad_page_contract {
     { project_id:multiple "" }
     { customer_id:integer 0 }
     { user_name_link_opened "" }
+    { max_col 100 }
+    { max_row 1000 }
 }
 
 
@@ -63,8 +65,8 @@ set html [im_ganttproject_resource_component \
 	-project_id $project_id \
 	-customer_id $customer_id \
 	-user_name_link_opened $user_name_link_opened  \
-	-max_col 1000 \
-	-max_row 1000 \
+	-max_col $max_col \
+	-max_row $max_row \
 ]
 
 
