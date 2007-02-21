@@ -871,10 +871,6 @@ where
 
 
 
-
-
-
-
 ad_proc im_filestorage_tool_tds { folder folder_type project_id return_url up_link } {
     Returns a formatted HTML component with a number of GIFs.
 } {
@@ -891,25 +887,14 @@ ad_proc im_filestorage_tool_tds { folder folder_type project_id return_url up_li
    </td>
 -->
    <td>
-     <input type=image src=/intranet/images/newfol.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-folder'; submit();\" title='[_ intranet-filestorage.Create_a_new_folder]' alt='[_ intranet-filestorage.Create_a_new_folder]'>
-   </td><td>
-     <input type=image src=/intranet/images/upload.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='upload'; submit();\" title='[_ intranet-filestorage.Upload_a_file]' alt='[_ intranet-filestorage.Upload_a_file]'>
-   </td><td>
-<!--     <input type=image src=/intranet/images/new-doc.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-doc'; submit();\" title='[_ intranet-filestorage.lt_Create_a_new_document]' alt='[_ intranet-filestorage.lt_Create_a_new_document]'> -->
-   </td><td>
-     <input type=image src=/intranet/images/del.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='del'; submit();\" title='[_ intranet-filestorage.lt_Delete_files_and_fold]' alt='[_ intranet-filestorage.lt_Delete_files_and_fold]'>
-   </td><td>
-     <input type=image src=/intranet/images/zip.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='zip'; submit();\" title='[_ intranet-filestorage.lt_Download_all_files_as]' alt='[_ intranet-filestorage.lt_Download_all_files_as]'>
-   </td><td>
-
-    <table border=0 cellspacing=0 cellpadding=0 width=20>
-    <tr><td align=center>
-     <input type=image src=/intranet/images/plus_9.gif width=9 height=9 onClick=\"window.document.$folder_type.actions.value='add-perms'; submit();\" title='[_ intranet-filestorage.lt_Add_permissions_to_fo]' alt='[_ intranet-filestorage.lt_Add_permissions_to_fo]'>
-    </td></tr>
-    <tr><td align=center>
-     <input type=image src=/intranet/images/minus_9.gif width=9 height=9 onClick=\"window.document.$folder_type.actions.value='del-perms'; submit();\" title='[_ intranet-filestorage.lt_Remove_permissions_fr]' alt='[_ intranet-filestorage.lt_Remove_permissions_fr]'>
-    </td></tr>
-    </table>
+     <input type=image src=/intranet/images/folder-add.png width=16 height=16 onClick=\"window.document.$folder_type.actions.value='new-folder'; submit();\" title='[_ intranet-filestorage.Create_a_new_folder]' alt='[_ intranet-filestorage.Create_a_new_folder]'>
+   </td><td><input type=image src=/intranet/images/add.png width=16 height=16 onClick=\"window.document.$folder_type.actions.value='upload'; submit();\" title='[_ intranet-filestorage.Upload_a_file]' alt='[_ intranet-filestorage.Upload_a_file]'>
+   </td><!--<td><input type=image src=/intranet/images/new-doc.gif width=21 height=21 onClick=\"window.document.$folder_type.actions.value='new-doc'; submit();\" title='[_ intranet-filestorage.lt_Create_a_new_document]' alt='[_ intranet-filestorage.lt_Create_a_new_document]'>
+   </td>--><td><input type=image src=/intranet/images/cancel.png width=16 height=16 onClick=\"window.document.$folder_type.actions.value='del'; submit();\" title='[_ intranet-filestorage.lt_Delete_files_and_fold]' alt='[_ intranet-filestorage.lt_Delete_files_and_fold]'>
+   </td><td><input type=image src=/intranet/images/compress.png width=16 height=16 onClick=\"window.document.$folder_type.actions.value='zip'; submit();\" title='[_ intranet-filestorage.lt_Download_all_files_as]' alt='[_ intranet-filestorage.lt_Download_all_files_as]'>
+   </td><td><input type=image src=/intranet/images/lock-add.png width=16 height=16 onClick=\"window.document.$folder_type.actions.value='add-perms'; submit();\" title='[_ intranet-filestorage.lt_Add_permissions_to_fo]' alt='[_ intranet-filestorage.lt_Add_permissions_to_fo]'>
+    </td><td><input type=image src=/intranet/images/lock-delete.png width=16 height=16 onClick=\"window.document.$folder_type.actions.value='del-perms'; submit();\" title='[_ intranet-filestorage.lt_Remove_permissions_fr]' alt='[_ intranet-filestorage.lt_Remove_permissions_fr]'>
+    </td>
   </td>
 "
 }
@@ -1614,7 +1599,7 @@ where
 [export_form_vars object_id bread_crum_path folder_type return_url]
 
 <TABLE border=0 cellpadding=0 cellspacing=0>
-  <TR align=center valign=middle class=rowtitle> 
+  <TR  valign=middle class=rowtitle> 
     <TD colspan=5>
       <table border=0 cellspacing=0 cellpadding=1>
       <tr>
@@ -1776,7 +1761,7 @@ ad_proc im_filestorage_file_row { file_body base_path folder_type rel_path objec
     <input type=checkbox name=file_id.$ctr>
     <input type=hidden name=id_path.$ctr value=\"$rel_path\">
   </td>
-  <td>" 
+  <td valign=middle>" 
     set i 1
     while {$i < $current_depth} {
 	append component_html [im_gif empty21]
@@ -1823,17 +1808,14 @@ ad_proc im_filestorage_file_row { file_body base_path folder_type rel_path objec
     }
 
     if {$read_p} {
-	append component_html "<A href=\"/intranet/download/$folder_type/$object_id/$rel_path\" target=_blank>$icon</A>"
+	append component_html "<A href=\"/intranet/download/$folder_type/$object_id/$rel_path\" target=_blank>$icon</A></td>"
     } else {
-	append component_html "$icon"
+	append component_html "$icon</td>"
     }
-
-    append component_html "
-  $file_body
-  
-  </td>
-  <td>$file_size Kb</td>
-  <td>$file_modified</td>
+  append component_html "
+  <td>$file_body</td>
+  <td valign=middle>&nbsp;$file_size Kb</td>
+  <td valign=middle>&nbsp;$file_modified</td>
   <td colspan=99></td>
 </tr>\n"
 
