@@ -293,8 +293,26 @@ begin
 end;' language 'plpgsql';
 
 
+
 ----------------------------------------------------------------
 -- percentage column for im_biz_object_members
 
-ALTER TABLE im_biz_object_members ADD column percentage numeric(8,2);
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_biz_object_members'' and lower(column_name) = ''percentage'';
+        IF 0 != v_count THEN return 0; END IF;
+
+	ALTER TABLE im_biz_object_members ADD column percentage numeric(8,2);
+
+        return 1;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
