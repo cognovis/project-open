@@ -23,6 +23,7 @@ ad_page_contract {
     { customer_id:integer 0 }
     { user_name_link_opened "" }
     { opened_projects "" }
+    { zoom "" }
     { max_col 100 }
     { max_row 1000 }
 }
@@ -61,6 +62,7 @@ set html [im_ganttproject_gantt_component \
 	-project_id $project_id \
 	-customer_id $customer_id \
 	-opened_projects $opened_projects \
+	-zoom $zoom \
 	-max_col $max_col \
 	-max_row $max_row \
 ]
