@@ -308,6 +308,7 @@ begin
         IF 0 != v_count THEN return 0; END IF;
 
 	ALTER TABLE im_biz_object_members ADD column percentage numeric(8,2);
+	ALTER TABLE im_biz_object_members ALTER column percentage set default 100;
 
         return 1;
 end;' language 'plpgsql';
