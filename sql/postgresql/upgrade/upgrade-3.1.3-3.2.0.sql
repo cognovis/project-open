@@ -119,3 +119,7 @@ drop function inline_0 ();
 
 
 
+update im_menus set url='/intranet-timesheet2/absences/index' where label = 'timesheet2_absences';
+
+
+
