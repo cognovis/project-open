@@ -885,7 +885,7 @@ ad_proc -public im_ganttproject_resource_component {
     set rowclass(0) "roweven"
     set rowclass(1) "rowodd"
     set sigma "&Sigma;"
-    
+
     if {0 != $customer_id && "" == $project_id} {
 	set project_id [db_list pids "
 	select	project_id
@@ -933,9 +933,15 @@ ad_proc -public im_ganttproject_resource_component {
 		to_char(max(child.end_date), 'YYYY-MM-DD')
 	from
 		im_projects parent,
-		im_projects child
+		im_projects child,
+		acs_rels r,
+		im_biz_object_members m
 	where
-		parent.project_id in ([join $project_id ", "])
+		r.object_id_one = child.project_id
+		and r.rel_id = m.rel_id
+		and m.percentage > 0
+
+		and parent.project_id in ([join $project_id ", "])
 		and parent.parent_id is null
 		and child.tree_sortkey
 			between parent.tree_sortkey
@@ -943,23 +949,24 @@ ad_proc -public im_ganttproject_resource_component {
         "]
     }
 
-
     # Adaptive behaviour - limit the size of the component to a summary
     # suitable for the left/right columns of a project.
-    if {"" == $top_vars} {
+    if {$auto_open | "" == $top_vars} {
 	set duration_days [db_string dur "select to_date(:end_date, 'YYYY-MM-DD') - to_date(:start_date, 'YYYY-MM-DD')"]
 	set duration_weeks [expr $duration_days / 7]
 	set duration_months [expr $duration_days / 30]
-	set duration_years [expr $duration_days / 365]
+	set duration_quarters [expr $duration_days / 91]
 
 	set days_too_long [expr $duration_days > $max_col]
 	set weeks_too_long [expr $duration_weeks > $max_col]
 	set months_too_long [expr $duration_months > $max_col]
+	set quarters_too_long [expr $duration_quarters > $max_col]
 
 	set top_vars "week_of_year day_of_month"
 	if {$days_too_long} { set top_vars "month_of_year week_of_year" }
-	if {$weeks_too_long} { set top_vars "month_of_year" }
-	if {$months_too_long} { set top_vars "year" }
+	if {$weeks_too_long} { set top_vars "quarter_of_year month_of_year" }
+	if {$months_too_long} { set top_vars "year quarter_of_year" }
+	if {$quarters_too_long} { set top_vars "year quarter_of_year" }
     }
 
     set top_vars [im_ganttproject_zoom_top_vars -zoom $zoom -top_vars $top_vars]
@@ -1017,8 +1024,8 @@ ad_proc -public im_ganttproject_resource_component {
 		        acs_rels r
 		        LEFT OUTER JOIN im_biz_object_members m on (r.rel_id = m.rel_id),
 		        cc_users u,
-		        ( select im_day_enumerator as d
-		          from im_day_enumerator(
+		        ( select im_day_enumerator_weekdays as d
+		          from im_day_enumerator_weekdays(
 				to_date(:start_date, 'YYYY-MM-DD'), 
 				to_date(:end_date, 'YYYY-MM-DD')
 			) ) d
@@ -1045,9 +1052,9 @@ ad_proc -public im_ganttproject_resource_component {
 		'<a href=${user_url}'||user_id||'>'||im_name_from_id(h.user_id)||'</a>' as user_name_link,
 		'<a href=${project_url}'||project_id||'>'||project_name||'</a>' as project_name_link,
 		to_char(h.d, 'YYYY') as year,
-		to_char(h.d, 'Q') as quarter_of_year,
-		to_char(h.d, 'YYYY') || '<br>' || to_char(h.d, 'MM') as month_of_year,
-		to_char(h.d, 'IW') as week_of_year,
+		'Q' || to_char(h.d, 'Q') as quarter_of_year,
+		to_char(h.d, 'Mon') as month_of_year,
+		'W' || to_char(h.d, 'IW') as week_of_year,
 		to_char(h.d, 'DD') as day_of_month
 	from	($inner_sql) h
 	where	h.perc is not null
@@ -1141,7 +1148,7 @@ ad_proc -public im_ganttproject_resource_component {
 	set col_l10n [lang::message::lookup "" "intranet-ganttproject.Dim_[lindex $top_vars $row]" [lindex $top_vars $row]]
 	if {0 == $row} {
 	    set zoom_in "<a href=[export_vars -base $this_url {top_vars {zoom "in"}}]>[im_gif "magnifier_zoom_in"]</a>\n" 
-	    set zoom_out "<a href=[export_vars -base $this_url {top vars {zoom "out"}}]>[im_gif "magifier_zoom_out"]</a>\n" 
+	    set zoom_out "<a href=[export_vars -base $this_url {top_vars {zoom "out"}}]>[im_gif "magifier_zoom_out"]</a>\n" 
 	    set col_l10n "$zoom_in $zoom_out $col_l10n\n" 
 	}
 	append header "<td class=rowtitle colspan=$left_scale_size align=right>$col_l10n</td>\n"
@@ -1227,7 +1234,18 @@ ad_proc -public im_ganttproject_resource_component {
 	}
 	incr cnt_outer
     }
-    
+
+    set ttt {
+	set debug ""
+	set dctr 0
+	foreach h [array get hash] {
+	    append debug $h
+	    if {[expr $dctr % 2] == 1} {append debug "\n"} else {append debug " - "}
+	    incr dctr
+	}
+	ad_return_complaint 1 "<pre>$debug</pre>"
+    }
+   
     # ------------------------------------------------------------
     # Display the table body
     
@@ -1345,34 +1363,42 @@ ad_proc -public im_ganttproject_resource_component {
 	    # the future.
 	    
 	    if {"" == $val} { set val 0 }
-	    
-	    set day_pos [lsearch $top_vars "day_of_month"]
-	    set day_val [lindex $top_entry $day_pos]
-	    set period "day"
-	    if {"" == $day_val | $sigma == $day_val} {
-		set val_week [expr round($val/5)]
-		set period "week"
+
+	    set val_week "-"
+	    set val_month "-"
+	    set val_quarter "-"
+	    set val_year "-"
+
+	    set period "day_of_month"
+	    for {set top_idx 0} {$top_idx < [llength $top_vars]} {incr top_idx} {
+		set top_var [lindex $top_vars $top_idx]
+		set top_value [lindex $top_entry $top_idx]
+		if {$sigma != $top_value} { set period $top_var }
 	    }
-	    
-	    set week_pos [lsearch $top_vars "week_of_year"]
-	    set week_val [lindex $top_entry $week_pos]
-	    if {"" == $week_val | $sigma == $week_val} {
-		set val_month [expr round($val/20)]
-		set period "month"
-	    }
-	    
+
+	    set val_day $val
+	    set val_week [expr round($val/5)]
+	    set val_month [expr round($val/22)]
+	    set val_quarter [expr round($val/65)]
+	    set val_year [expr round($val/260)]
+
 	    switch $period {
-		week { set val $val_week }
-		month { set val $val_month }
+		"day_of_month" { set val $val_day }
+		"week_of_year" { set val "$val_week" }
+		"month_of_year" { set val "$val_month" }
+		"quarter_of_year" { set val "$val_quarter" }
+		"year" { set val "$val_year" }
+		default { ad_return_complaint 1 "Bad period: $period" }
 	    }
 	    
-	    
+	    set val "$val%"
+
 	    # ------------------------------------------------------------
 	    
 	    if {0 == $val} { set val "" }
 	    if {![regexp {[^0-9]} $val match]} {
 		set color "\#000000"
-		if {$val > 100} { set color "\#808000" }
+		if {$val > 100} { set color "\#EE0000" }
 		if {$val > 200} { set color "\#FF0000" }
 		set val "<font color=$color>$val</font>\n"
 	    }
@@ -1396,7 +1422,7 @@ ad_proc -public im_ganttproject_resource_component {
 	# All user_ids already opened - show "-" sign
 	append html "<tr class=rowtitle>\n"
 	set opened [list]
-	set url [export_vars -base $this_url {{user_name_link_opened $opened}}]
+	set url [export_vars -base $this_url {top_vars {user_name_link_opened $opened}}]
 	append html "<td class=rowtitle><a href=$url>[im_gif "minus_9"]</a></td>\n"
 	append html "<td class=rowtitle colspan=[expr [llength $top_scale]+3]>&nbsp;</td></tr>\n"
 
@@ -1405,7 +1431,7 @@ ad_proc -public im_ganttproject_resource_component {
 	# Not all user_ids are opened - show a "+" sign
 	append html "<tr class=rowtitle>\n"
 	set opened [lsort -unique [concat $user_name_link_opened $user_ids]]
-	set url [export_vars -base $this_url {{user_name_link_opened $opened}}]
+	set url [export_vars -base $this_url {top_vars {user_name_link_opened $opened}}]
 	append html "<td class=rowtitle><a href=$url>[im_gif "plus_9"]</a></td>\n"
 	append html "<td class=rowtitle colspan=[expr [llength $top_scale]+3]>&nbsp;</td></tr>\n"
 
@@ -1511,27 +1537,29 @@ ad_proc -public im_ganttproject_gantt_component {
         "]
     }
 
-
     # Adaptive behaviour - limit the size of the component to a summary
     # suitable for the left/right columns of a project.
     if {$auto_open | "" == $top_vars} {
+
 	set duration_days [db_string dur "select to_date(:end_date, 'YYYY-MM-DD') - to_date(:start_date, 'YYYY-MM-DD')"]
 	set duration_weeks [expr $duration_days / 7]
 	set duration_months [expr $duration_days / 30]
+	set duration_quarters [expr $duration_days / 91]
 	set duration_years [expr $duration_days / 365]
 
 	set days_too_long [expr $duration_days > $max_col]
 	set weeks_too_long [expr $duration_weeks > $max_col]
 	set months_too_long [expr $duration_months > $max_col]
+	set quarters_too_long [expr $duration_quarters > $max_col]
 
 	set top_vars "week_of_year day_of_month"
 	if {$days_too_long} { set top_vars "month_of_year week_of_year" }
 	if {$weeks_too_long} { set top_vars "month_of_year" }
-	if {$months_too_long} { set top_vars "year" }
+	if {$months_too_long} { set top_vars "year quarter_of_year" }
+	if {$quarters_too_long} { set top_vars "year quarter_of_year" }
     }
 
     set top_vars [im_ganttproject_zoom_top_vars -zoom $zoom -top_vars $top_vars]
-
 
     # Adaptive behaviour - Open up the first level of projects
     # unless that's more then max_cols
@@ -1598,8 +1626,8 @@ ad_proc -public im_ganttproject_gantt_component {
 		from
 		        im_projects parent,
 		        im_projects child,
-		        ( select im_day_enumerator as d
-		          from im_day_enumerator(
+		        ( select im_day_enumerator_weekdays as d
+		          from im_day_enumerator_weekdays(
 				to_date(:start_date, 'YYYY-MM-DD'), 
 				to_date(:end_date, 'YYYY-MM-DD')
 			) ) d
@@ -1622,9 +1650,9 @@ ad_proc -public im_ganttproject_gantt_component {
 		h.*,
 		'<a href=${project_url}'||project_id||'>'||project_name||'</a>' as project_name_link,
 		to_char(h.d, 'YYYY') as year,
-		to_char(h.d, 'Q') as quarter_of_year,
-		to_char(h.d, 'YYYY') || '<br>' || to_char(h.d, 'MM') as month_of_year,
-		to_char(h.d, 'IW') as week_of_year,
+		'Q' || to_char(h.d, 'Q') as quarter_of_year,
+		to_char(h.d, 'Mon') as month_of_year,
+		'W' || to_char(h.d, 'IW') as week_of_year,
 		to_char(h.d, 'DD') as day_of_month
 	from	($inner_sql) h
     "
@@ -2007,37 +2035,23 @@ ad_proc -public im_ganttproject_zoom_top_vars {
 } {
     if {"in" == $zoom} {
 	# check for most detailed variable in top_vars
-	if {[lsearch $top_vars "day_of_month"] >= 0} { 
-	    return {week_of_year day_of_month} 
-	}
-	if {[lsearch $top_vars "week_of_year"] >= 0} {
-	    return {week_of_year day_of_month} 
-	}
-	if {[lsearch $top_vars "month_of_year"] >= 0} { 
-	    return {month_of_year week_of_year} 
-	}
-	if {[lsearch $top_vars "quarter_of_year"] >= 0} { 
-	    return {quarter_of_year month_of_year} 
-	}
+	if {[lsearch $top_vars "day_of_month"] >= 0} { return {week_of_year day_of_month} }
+	if {[lsearch $top_vars "week_of_year"] >= 0} { return {week_of_year day_of_month} }
+	if {[lsearch $top_vars "month_of_year"] >= 0} { return {month_of_year week_of_year} }
+	if {[lsearch $top_vars "quarter_of_year"] >= 0} { return {quarter_of_year month_of_year} }
+	if {[lsearch $top_vars "year"] >= 0} { return {year quarter_of_year} }
     }
 
     if {"out" == $zoom} {
-	# check for most coarse-grain  variable in top_vars
-	if {[lsearch $top_vars "year"] >= 0} { 
-	    return {year quarter_of_year} 
-	}
-	if {[lsearch $top_vars "quarter_of_year"] >= 0} { 
-	    return {year quarter_of_year} 
-	}
-	if {[lsearch $top_vars "month_of_year"] >= 0} { 
-	    return {quarter_of_year month_of_year} 
-	}
-	if {[lsearch $top_vars "week_of_year"] >= 0} { 
-	    return {month_of_year week_of_year} 
-	}
-	if {[lsearch $top_vars "day_of_month"] >= 0} { 
-	    return {week_of_year day_of_month} 
-	}
+	# check for most coarse-grain variable in top_vars
+	if {[lsearch $top_vars "year"] >= 0} { return {year quarter_of_year} }
+	if {[lsearch $top_vars "quarter_of_year"] >= 0} { return {year quarter_of_year} }
+
+#	ad_return_complaint 1 $top_vars
+
+	if {[lsearch $top_vars "month_of_year"] >= 0} { return {quarter_of_year month_of_year} }
+	if {[lsearch $top_vars "week_of_year"] >= 0} { return {month_of_year week_of_year} }
+	if {[lsearch $top_vars "day_of_month"] >= 0} { return {week_of_year day_of_month} }
     }
 
     return $top_vars
