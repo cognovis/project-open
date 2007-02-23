@@ -869,6 +869,7 @@ ad_proc -public im_ganttproject_resource_component {
     { -return_url "" }
     { -export_var_list "" }
     { -zoom "" }
+    { -auto_open 0 }
     { -max_col 12 }
     { -max_row 20 }
 } {
@@ -988,7 +989,7 @@ ad_proc -public im_ganttproject_resource_component {
     
     set criteria [list]
     if {"" != $customer_id && 0 != $customer_id} {
-	lappend criteria "p.company_id = :customer_id"
+	lappend criteria "parent.company_id = :customer_id"
     }
     if {"" != $project_id && 0 != $project_id} {
 	lappend criteria "parent.project_id in ([join $project_id ", "])"
@@ -1437,6 +1438,7 @@ ad_proc -public im_ganttproject_gantt_component {
     { -return_url "" }
     { -export_var_list "" }
     { -zoom "" }
+    { -auto_open 0 }
     { -max_col 12 }
     { -max_row 20 }
 } {
@@ -1512,7 +1514,7 @@ ad_proc -public im_ganttproject_gantt_component {
 
     # Adaptive behaviour - limit the size of the component to a summary
     # suitable for the left/right columns of a project.
-    if {"" == $top_vars} {
+    if {$auto_open | "" == $top_vars} {
 	set duration_days [db_string dur "select to_date(:end_date, 'YYYY-MM-DD') - to_date(:start_date, 'YYYY-MM-DD')"]
 	set duration_weeks [expr $duration_days / 7]
 	set duration_months [expr $duration_days / 30]
@@ -1529,6 +1531,14 @@ ad_proc -public im_ganttproject_gantt_component {
     }
 
     set top_vars [im_ganttproject_zoom_top_vars -zoom $zoom -top_vars $top_vars]
+
+
+    # Adaptive behaviour - Open up the first level of projects
+    # unless that's more then max_cols
+    if {$auto_open} {
+	set opened_projects $project_id
+    }
+
 
     # ------------------------------------------------------------
     # Define Dimensions
@@ -1558,7 +1568,7 @@ ad_proc -public im_ganttproject_gantt_component {
     set criteria [list]
     
     if {"" != $customer_id && 0 != $customer_id} {
-	lappend criteria "p.company_id = :customer_id"
+	lappend criteria "parent.company_id = :customer_id"
     }
     
     if {"" != $project_id && 0 != $project_id} {
@@ -1639,32 +1649,11 @@ ad_proc -public im_ganttproject_gantt_component {
 
     # Top scale is a list of lists such as {{2006 01} {2006 02} ...}
     # The last element of the list the grand total sum.
-    set top_scale_plain [db_list_of_lists top_scale "
+    set top_scale [db_list_of_lists top_scale "
 	select distinct	[join $top_vars ", "]
 	from		($middle_sql) c
 	order by	[join $top_vars ", "]
     "]
-
-    # Insert subtotal columns whenever a scale changes
-    set top_scale [list]
-    set last_item [lindex $top_scale_plain 0]
-    foreach scale_item $top_scale_plain {
-	
-	for {set i [expr [llength $last_item]-2]} {$i >= 0} {set i [expr $i-1]} {
-	    set last_var [lindex $last_item $i]
-	    set cur_var [lindex $scale_item $i]
-	    if {$last_var != $cur_var} {
-		set item_sigma [lrange $last_item 0 $i]
-		while {[llength $item_sigma] < [llength $last_item]} { lappend item_sigma $sigma }
-		lappend top_scale $item_sigma
-	    }
-	}
-	
-	lappend top_scale $scale_item
-	set last_item $scale_item
-    }
-    set top_scale $top_scale_plain
-
 
     # ------------------------------------------------------------
     # Display the Table Header
@@ -1673,18 +1662,18 @@ ad_proc -public im_ganttproject_gantt_component {
     set first_cell [lindex $top_scale 0]
     set top_scale_rows [llength $first_cell]
     set left_scale_size $max_level
-    
+    set header_class "rowtitle"
     set header ""
     for {set row 0} {$row < $top_scale_rows} { incr row } {
 	
-	append header "<tr class=rowtitle>\n"
+	append header "<tr class=$header_class>\n"
 	set col_l10n [lang::message::lookup "" "intranet-ganttproject.Dim_[lindex $top_vars $row]" [lindex $top_vars $row]]
 	if {0 == $row} {
 	    set zoom_in "<a href=[export_vars -base $this_url {top_vars opened_projects {zoom "in"}}]>[im_gif "magnifier_zoom_in"]</a>\n" 
 	    set zoom_out "<a href=[export_vars -base $this_url {top_vars opened_projects {zoom "out"}}]>[im_gif "magifier_zoom_out"]</a>\n" 
 	    set col_l10n "$zoom_in $zoom_out $col_l10n\n" 
 	}
-	append header "<td class=rowtitle colspan=[expr $max_level+2] align=right>$col_l10n</td>\n"
+	append header "<td class=$header_class colspan=[expr $max_level+2] align=right>$col_l10n</td>\n"
 	
 	for {set col 0} {$col <= [expr [llength $top_scale]-1]} { incr col } {
 	    
@@ -1704,7 +1693,7 @@ ad_proc -public im_ganttproject_gantt_component {
 	    # Check for the "sigma" sign. We want to display the sigma
 	    # every time (disable the colspan logic)
 	    if {$scale_item == $sigma} { 
-		append header "\t<td class=rowtitle>$scale_item</td>\n"
+		append header "\t<td class=$header_class>$scale_item</td>\n"
 		continue
 	    }
 	    
@@ -1720,7 +1709,7 @@ ad_proc -public im_ganttproject_gantt_component {
 		incr next_col
 		incr colspan
 	    }
-	    append header "\t<td class=rowtitle colspan=$colspan>$scale_item</td>\n"	    
+	    append header "\t<td class=$header_class colspan=$colspan>$scale_item</td>\n"	    
 	    
 	}
 	append header "</tr>\n"
@@ -1899,13 +1888,38 @@ ad_proc -public im_ganttproject_gantt_component {
 	# ------------------------------------------------------------
 	# Start writing out the matrix elements
 	set project_id $org_project_id
-	foreach top_entry $top_scale {
+	set last_days 0
+
+	for {set top_entry_idx 0} {$top_entry_idx < [llength $top_scale]} {incr top_entry_idx} {
+
+	    set top_entry_next [lindex $top_scale [expr $top_entry_idx+1]]
+	    for {set i 0} {$i < [llength $top_vars]} {incr i} {
+		set var_name [lindex $top_vars $i]
+		set var_value [lindex $top_entry_next $i]
+		set $var_name $var_value
+	    }
+	    set key_expr_list [list]
+	    foreach var_name $dimension_vars {
+		set var_value [eval set a "\$$var_name"]
+		if {$sigma != $var_value} { lappend key_expr_list $var_name }
+	    }
+	    set key_expr "\$[join $key_expr_list "-\$"]"
+	    set key [eval "set a \"$key_expr\""]
+	    set next_days ""
+	    if {[info exists hash($key)]} { set next_days $hash($key) }
+	    if {"" == $next_days} { set next_days 0 }
+	    if {1 < $next_days} { set next_days 1 }
+
+
+
+
+	    set top_entry [lindex $top_scale $top_entry_idx]
 	    
 	    # Skip the last line with all sigmas - doesn't sum up...
 	    set all_sigmas_p 1
-	    foreach e $top_entry { if {$e != $sigma} { set all_sigmas_p 0 }	}
+	    foreach e $top_entry { if {$e != $sigma} { set all_sigmas_p 0 } }
 	    if {$all_sigmas_p} { continue }
-	    
+
 	    # Write the top_scale values to their corresponding local 
 	    # variables so that we can access them easily for $key
 	    for {set i 0} {$i < [llength $top_vars]} {incr i} {
@@ -1923,51 +1937,28 @@ ad_proc -public im_ganttproject_gantt_component {
 	    }
 	    set key_expr "\$[join $key_expr_list "-\$"]"
 	    set key [eval "set a \"$key_expr\""]
-	    
-	    set val ""
-	    if {[info exists hash($key)]} { set val $hash($key) }
-	    
-	    # ------------------------------------------------------------
-	    # Format the percentage value for percent-arithmetics:
-	    # - Sum up percentage values per day
-	    # - When showing percentag per week then sum up and divide by 5 (working days)
-	    # ToDo: Include vacation calendar and resource availability in
-	    # the future.
-	    
-	    if {"" == $val} { set val 0 }
-	    
-	    set day_pos [lsearch $top_vars "day_of_month"]
-	    set day_val [lindex $top_entry $day_pos]
-	    set period "day"
-	    if {"" == $day_val | $sigma == $day_val} {
-		set val_week [expr round($val/5)]
-		set period "week"
+	    set days ""
+	    if {[info exists hash($key)]} { set days $hash($key) }
+	    if {"" == $days} { set days 0 }
+	    if {1 < $days} { set days 1 }
+
+	    set gif "del"
+	    switch "$last_days$days$next_days" {
+		"000" { set gif "" }
+		"001" { set gif "" }
+		"010" { set gif "gant_bar_single_15" }
+		"011" { set gif "gant_bar_left_15" }
+		"100" { set gif "" }
+		"101" { set gif "" }
+		"110" { set gif "gant_bar_right_15" }
+		"111" { set gif "gant_bar_middle_15" }
 	    }
-	    
-	    set week_pos [lsearch $top_vars "week_of_year"]
-	    set week_val [lindex $top_entry $week_pos]
-	    if {"" == $week_val | $sigma == $week_val} {
-		set val_month [expr round($val/20)]
-		set period "month"
-	    }
-	    
-	    switch $period {
-		week { set val $val_week }
-		month { set val $val_month }
-	    }
-	    
-	    
-	    # ------------------------------------------------------------
-	    
-	    if {0 == $val} { set val "" }
-	    if {![regexp {[^0-9]} $val match]} {
-		set color "\#000000"
-		if {$val > 100} { set color "\#808000" }
-		if {$val > 200} { set color "\#FF0000" }
-		set val "<font color=$color>$val</font>\n"
-	    }
-	    
-	    append html "<td>$val</td>\n"
+
+	    set img "<img src=\"/intranet-ganttproject/images/$gif.gif\">"
+	    if {"" == $gif} { set img "" }
+	    append html "<td>$img</td>\n"
+	    set last_days $days
+
 	    
 	}
 	append html "</tr>\n"
@@ -1977,7 +1968,7 @@ ad_proc -public im_ganttproject_gantt_component {
     # ------------------------------------------------------------
     # Show a line to open up an entire level
 
-    append html "<tr class=rowtitle>\n"
+    append html "<tr class=$header_class>\n"
     set level_list [list]
     for {set col 0} {$col < $max_level} {incr col} {
 
@@ -1991,55 +1982,19 @@ ad_proc -public im_ganttproject_gantt_component {
 	    # Everything opened - display a "-" button
 	    set opened [set_difference $opened_projects $local_level_list]
 	    set url [export_vars -base $this_url {top_vars {opened_projects $opened}}]
-	    append html "<td class=rowtitle><a href=$url>[im_gif "minus_9"]</a></td>\n"
+	    append html "<td class=$header_class><a href=$url>[im_gif "minus_9"]</a></td>\n"
 	} else {
 	    set opened [lsort -unique [concat $opened_projects $level_list]]
 	    set url [export_vars -base $this_url {top_vars {opened_projects $opened}}]
-	    append html "<td class=rowtitle><a href=$url>[im_gif "plus_9"]</a></td>\n"
+	    append html "<td class=$header_class><a href=$url>[im_gif "plus_9"]</a></td>\n"
 	}
 
 
     }
-    append html "<td class=rowtitle colspan=[expr [llength $top_scale]+2]>&nbsp;</td></tr>\n"
+    append html "<td class=$header_class colspan=[expr [llength $top_scale]+2]>&nbsp;</td></tr>\n"
 
     return "<table>\n$html\n</table>\n"
 }
-
-
-
-# ------------------------------------------------------------
-# Show a line to open up an entire level
-
-# Check whether all user_ids are included in $user_name_link_opened
-set user_ids [lsort -unique [db_list user_ids "select distinct user_id from ($inner_sql) h order by user_id"]]
-set intersect [lsort -unique [set_intersection $user_name_link_opened $user_ids]]
-
-if {$user_ids == $intersect} {
-
-    # All user_ids already opened - show "-" sign
-    append html "<tr class=rowtitle>\n"
-    set opened [list]
-    set url [export_vars -base $this_url {{user_name_link_opened $opened}}]
-    append html "<td class=rowtitle><a href=$url>[im_gif "minus_9"]</a></td>\n"
-    append html "<td class=rowtitle colspan=[expr [llength $top_scale]+3]>&nbsp;</td></tr>\n"
-    
-} else {
-    
-    # Not all user_ids are opened - show a "+" sign
-    append html "<tr class=rowtitle>\n"
-    set opened [lsort -unique [concat $user_name_link_opened $user_ids]]
-    set url [export_vars -base $this_url {{user_name_link_opened $opened}}]
-    append html "<td class=rowtitle><a href=$url>[im_gif "plus_9"]</a></td>\n"
-    append html "<td class=rowtitle colspan=[expr [llength $top_scale]+3]>&nbsp;</td></tr>\n"
-    
-}
-
-
-
-
-
-
-
 
 
 
@@ -2051,7 +2006,6 @@ ad_proc -public im_ganttproject_zoom_top_vars {
     Zooms in/out of top_vars
 } {
     if {"in" == $zoom} {
-
 	# check for most detailed variable in top_vars
 	if {[lsearch $top_vars "day_of_month"] >= 0} { 
 	    return {week_of_year day_of_month} 
@@ -2067,11 +2021,7 @@ ad_proc -public im_ganttproject_zoom_top_vars {
 	}
     }
 
-
     if {"out" == $zoom} {
-
-#	ad_return_complaint 1 "0 $top_vars"
-
 	# check for most coarse-grain  variable in top_vars
 	if {[lsearch $top_vars "year"] >= 0} { 
 	    return {year quarter_of_year} 
@@ -2080,11 +2030,9 @@ ad_proc -public im_ganttproject_zoom_top_vars {
 	    return {year quarter_of_year} 
 	}
 	if {[lsearch $top_vars "month_of_year"] >= 0} { 
-#	    ad_return_complaint 1 "3 $top_vars"
 	    return {quarter_of_year month_of_year} 
 	}
 	if {[lsearch $top_vars "week_of_year"] >= 0} { 
-#	    ad_return_complaint 1 "4 $top_vars"
 	    return {month_of_year week_of_year} 
 	}
 	if {[lsearch $top_vars "day_of_month"] >= 0} { 
