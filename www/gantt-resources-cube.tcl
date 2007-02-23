@@ -19,7 +19,7 @@ ad_page_contract {
 } {
     { start_date "" }
     { end_date "" }
-    { top_vars "month_of_year week_of_year day_of_month" }
+    { top_vars "" }
     { left_vars "user_name_link project_name_link" }
     { project_id:multiple "" }
     { customer_id:integer 0 }
@@ -48,7 +48,6 @@ if {[llength $project_id] == 1} {
     set project_menu [im_sub_navbar $project_menu_id $bind_vars "" "pagedesriptionbar" "project_gantt"]
 
     set main_navbar_label "projects"
-
 }
 
 

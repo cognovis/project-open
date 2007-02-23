@@ -133,7 +133,7 @@ SELECT im_component_plugin__new (
         'right',                        -- location
         '/intranet/projects/view',      -- page_url
         null,                           -- view_name
-        -8,                            -- sort_order
+        -13,                            -- sort_order
 	'im_ganttproject_resource_component -project_id $project_id -return_url $return_url -export_var_list [list project_id]',
 	'lang::message::lookup "" intranet-ganttproject.Project_Gantt_Resource_Assignations "Project Gantt Resource Assignations"'
 );
@@ -153,7 +153,7 @@ SELECT im_component_plugin__new (
         'right',			-- location
         '/intranet/projects/view',	-- page_url
         null,                           -- view_name
-        -9,                             -- sort_order
+        12,                             -- sort_order
 	'im_ganttproject_gantt_component -project_id $project_id -return_url $return_url -export_var_list [list project_id]',
 	'lang::message::lookup "" intranet-ganttproject.Project_Gantt_View "Project Gantt View"'
 );
