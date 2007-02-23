@@ -1052,10 +1052,10 @@ ad_proc -public im_ganttproject_resource_component {
 		'<a href=${user_url}'||user_id||'>'||im_name_from_id(h.user_id)||'</a>' as user_name_link,
 		'<a href=${project_url}'||project_id||'>'||project_name||'</a>' as project_name_link,
 		to_char(h.d, 'YYYY') as year,
-		'Q' || to_char(h.d, 'Q') as quarter_of_year,
-		to_char(h.d, 'Mon') as month_of_year,
-		'W' || to_char(h.d, 'IW') as week_of_year,
-		to_char(h.d, 'DD') as day_of_month
+		'<!--' || to_char(h.d, 'YYYY') || '-->Q' || to_char(h.d, 'Q') as quarter_of_year,
+		'<!--' || to_char(h.d, 'YYYY-MM') || '-->' || to_char(h.d, 'Mon') as month_of_year,
+		'<!--' || to_char(h.d, 'YYYY-MM') || '-->W' || to_char(h.d, 'IW') as week_of_year,
+		'<!--' || to_char(h.d, 'YYYY-MM') || '-->' || to_char(h.d, 'DD') as day_of_month
 	from	($inner_sql) h
 	where	h.perc is not null
     "
@@ -1364,11 +1364,6 @@ ad_proc -public im_ganttproject_resource_component {
 	    
 	    if {"" == $val} { set val 0 }
 
-	    set val_week "-"
-	    set val_month "-"
-	    set val_quarter "-"
-	    set val_year "-"
-
 	    set period "day_of_month"
 	    for {set top_idx 0} {$top_idx < [llength $top_vars]} {incr top_idx} {
 		set top_var [lindex $top_vars $top_idx]
@@ -1379,7 +1374,7 @@ ad_proc -public im_ganttproject_resource_component {
 	    set val_day $val
 	    set val_week [expr round($val/5)]
 	    set val_month [expr round($val/22)]
-	    set val_quarter [expr round($val/65)]
+	    set val_quarter [expr round($val/66)]
 	    set val_year [expr round($val/260)]
 
 	    switch $period {
@@ -1390,8 +1385,8 @@ ad_proc -public im_ganttproject_resource_component {
 		"year" { set val "$val_year" }
 		default { ad_return_complaint 1 "Bad period: $period" }
 	    }
-	    
-	    set val "$val%"
+
+	    if {0 == $val} { set val "" } else { set val "$val%" }
 
 	    # ------------------------------------------------------------
 	    
@@ -1626,8 +1621,8 @@ ad_proc -public im_ganttproject_gantt_component {
 		from
 		        im_projects parent,
 		        im_projects child,
-		        ( select im_day_enumerator_weekdays as d
-		          from im_day_enumerator_weekdays(
+		        ( select im_day_enumerator as d
+		          from im_day_enumerator (
 				to_date(:start_date, 'YYYY-MM-DD'), 
 				to_date(:end_date, 'YYYY-MM-DD')
 			) ) d
@@ -1650,10 +1645,10 @@ ad_proc -public im_ganttproject_gantt_component {
 		h.*,
 		'<a href=${project_url}'||project_id||'>'||project_name||'</a>' as project_name_link,
 		to_char(h.d, 'YYYY') as year,
-		'Q' || to_char(h.d, 'Q') as quarter_of_year,
-		to_char(h.d, 'Mon') as month_of_year,
-		'W' || to_char(h.d, 'IW') as week_of_year,
-		to_char(h.d, 'DD') as day_of_month
+		'<!--' || to_char(h.d, 'YYYY') || '-->Q' || to_char(h.d, 'Q') as quarter_of_year,
+		'<!--' || to_char(h.d, 'YYYY-MM') || '-->' || to_char(h.d, 'Mon') as month_of_year,
+		'<!--' || to_char(h.d, 'YYYY-MM') || '-->W' || to_char(h.d, 'IW') as week_of_year,
+		'<!--' || to_char(h.d, 'YYYY-MM') || '-->' || to_char(h.d, 'DD') as day_of_month
 	from	($inner_sql) h
     "
 
@@ -1808,7 +1803,7 @@ ad_proc -public im_ganttproject_gantt_component {
     db_foreach left $left_sql {
 
 	# Store the project_id - project_name relationship
-	set project_name_hash($project_id) $project_name
+	set project_name_hash($project_id) "<a href=\"$project_url$project_id\">$project_name</a>"
 
 	# Determine the number of children per project
 	if {![info exists child_count_hash($project_id)]} { set child_count_hash($project_id) 0 }
@@ -2046,9 +2041,6 @@ ad_proc -public im_ganttproject_zoom_top_vars {
 	# check for most coarse-grain variable in top_vars
 	if {[lsearch $top_vars "year"] >= 0} { return {year quarter_of_year} }
 	if {[lsearch $top_vars "quarter_of_year"] >= 0} { return {year quarter_of_year} }
-
-#	ad_return_complaint 1 $top_vars
-
 	if {[lsearch $top_vars "month_of_year"] >= 0} { return {quarter_of_year month_of_year} }
 	if {[lsearch $top_vars "week_of_year"] >= 0} { return {month_of_year week_of_year} }
 	if {[lsearch $top_vars "day_of_month"] >= 0} { return {week_of_year day_of_month} }
