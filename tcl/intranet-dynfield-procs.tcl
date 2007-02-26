@@ -2018,6 +2018,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     @option advanced_filter_p Tells us that the dynfields are used for an 
             "advanced filter" as oposed to a data form. Text fields dont make
             much sense here, so we'll skip them.
+    @return Returns the number of added fields
 
     The code consists of two main parts:
     <ul>
@@ -2139,6 +2140,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		aa.attribute_id
     "
 
+    set field_cnt 0
     db_foreach attributes $attributes_sql {
     
 	set display_mode $default_display_mode
@@ -2173,6 +2175,9 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	set parameter_list [lindex $parameters 0]
 
 	# Find out if there is a "custom" parameter and extract its value
+	# "Custom" is the parameter to pass-on widget parameters from the
+	# DynField Maintenance page to certain form Widgets.
+	# Example: "custom {sql {select ...}}" in the "generic_sql" widget.
 	set custom_parameters ""
 	set custom_pos [lsearch $parameter_list "custom"]
 	if {$custom_pos >= 0} {
@@ -2227,6 +2232,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		}
 	    }
 	}
+	incr field_cnt
     }
 	
 
@@ -2247,20 +2253,11 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
 
 	switch $storage_type {
-	    value - default {
-
-		ns_log Notice "im_dynfield::append_attributes_to_form: value - default storage"
-		set value [db_string get_single_value "
-		    select	$attribute_name
-		    from	$attribute_table_name
-		    where	$attribute_id_column = :object_id
-		" -default ""]
-		template::element::set_value $form_id $attribute_name $value
-
-	    }
-
 	    multimap {
 
+		# "MultiMaps" (select with multiple values) are stored in a separate
+		# "im_dynfield_attr_multi_value", because we can't store it like the
+		# other attributes directly inside the object's table.
 		ns_log Notice "im_dynfield::append_attributes_to_form: multipmap storage"
 		template::element set_properties $form_id $attribute_name "multiple_p" "1"
 		set value_list [db_list get_multiple_values "
@@ -2284,8 +2281,26 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		template::element::set_value $form_id $attribute_name $value
 
 	    }
+
+	    value - default {
+
+		# ToDo: slow. This piece issues N SQL statements, instead of constructing
+		# a single SQL and issuing it once. Causes performance problems at BaselKB
+		# for example.
+		ns_log Notice "im_dynfield::append_attributes_to_form: value - default storage"
+		set value [db_string get_single_value "
+		    select	$attribute_name
+		    from	$attribute_table_name
+		    where	$attribute_id_column = :object_id
+		" -default ""]
+		template::element::set_value $form_id $attribute_name $value
+
+	    }
+
 	}
     }
+    
+    return $field_cnt
 }
 
 
