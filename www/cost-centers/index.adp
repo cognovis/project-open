@@ -10,9 +10,9 @@
 <h3>Cost Center Permission Help</h3>
 
 'Cost Centers' represent a kind of refined department structure of a company.
-This structure is suitable particularmente for larger companies to determine
+This structure is suitable for larger companies to determine
 the access rights for finanancial documents. A department head should be
-able to see what's happening in his group. However, he or she should not
+able to see what's happening in his group. However, she should not
 necessarily know what's going on in other departments and in the company
 as a whole.<p>
 "] %>
