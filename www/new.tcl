@@ -33,7 +33,6 @@ ad_page_contract {
     { referred_by "0" }
 }
 
-
 # ------------------------------------------------------------------
 # Default & Security
 # ------------------------------------------------------------------
@@ -47,6 +46,9 @@ set action_url "/intranet-hr/new"
 set focus "cost.var_name"
 set employee_name ""
 set form_mode "edit"
+
+
+set employee_id 624
 
 im_user_permissions $user_id $employee_id view read write admin
 if {!$write || ![im_permission $user_id view_hr]} {
@@ -94,6 +96,7 @@ set rep_cost_ids [db_list rep_costs_exist "
 	where 	rc.rep_cost_id = ci.cost_id
 		and ci.cause_object_id = :employee_id
 "]
+
 
 if {[llength $rep_cost_ids] == 0} {
     if [catch {

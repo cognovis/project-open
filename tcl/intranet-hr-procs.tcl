@@ -106,7 +106,11 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 
     "} err_msg]} {
 
-	ad_return_complaint 1 "<pre>$err_msg</pre>"
+	return "<b>Multiple Salary Items per User</b>:<br>
+		This error is probably due to an incomplete update to version V3.2.<br>
+		Please notify your System Administrator and tell him (or her) to<br>
+		execute the script /packages/intranet-hr/sql/postgresql/update/upgrade-3.2.6.0.0-3.2.7.0.0.sql.
+		<p><pre>$err_msg</pre>"
 	ns_log Notice "im_employees: err=$err_msg"
 	set employee_info_exists 0
     } else {
@@ -125,6 +129,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 	order by sort_order"
 
    set employee_id $org_employee_id
+
    set employee_html "
 	<form method=POST action=/intranet-hr/new>
 	[export_form_vars employee_id return_url]
