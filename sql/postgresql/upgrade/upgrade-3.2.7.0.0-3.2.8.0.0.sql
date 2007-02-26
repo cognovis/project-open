@@ -46,3 +46,19 @@ BEGIN
 end;' language 'plpgsql';
 
 
+
+-- Delete the customer_project_nr DynField.
+-- The DynField has become part of the static Project fields.
+
+delete	
+from im_dynfield_attributes
+where	acs_attribute_id in (
+		select	attribute_id 
+		from
+			acs_attributes 
+		where 
+			attribute_name = 'company_project_nr' 
+			and object_type = 'im_project'
+	)
+;
+
