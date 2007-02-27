@@ -58,7 +58,7 @@ BEGIN
 		''Reporting Finance'',			-- name
 		''/intranet-reporting-finance/'',	-- url
 		50,					-- sort_order
-		v_main_menu,				-- parent_menu_id
+		v_reporting_menu,			-- parent_menu_id
 		null					-- p_visible_tcl
 	);
 
