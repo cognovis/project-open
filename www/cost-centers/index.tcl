@@ -68,17 +68,17 @@ append table_header "
 # ------------------------------------------------------
 
 set main_sql "
-select distinct
-        m.*,
-	length(cost_center_code) / 2 as indent_level,
-	(9 - (length(cost_center_code)/2)) as colspan_level,
-	im_name_from_user_id(m.manager_id) as manager_name,
-        e.employee_id as employee_id,
-        im_name_from_user_id(e.employee_id) as employee_name
-from
-	im_cost_centers m
-        left join im_employees e on (department_id=cost_center_id and e.employee_id<>m.manager_id)
-order by cost_center_code,employee_name
+	select distinct
+		m.*,
+		length(cost_center_code) / 2 as indent_level,
+		(9 - (length(cost_center_code)/2)) as colspan_level,
+		im_name_from_user_id(m.manager_id) as manager_name,
+		e.employee_id as employee_id,
+		im_name_from_user_id(e.employee_id) as employee_name
+	from
+		im_cost_centers m
+		left join im_employees e on (department_id=cost_center_id and e.employee_id <> m.manager_id)
+	order by cost_center_code,employee_name
 "
 
 set table ""
@@ -98,22 +98,22 @@ db_foreach cost_centers $main_sql {
     if {$last_id!=$cost_center_id} {
 	append table "
 	  <td colspan=$colspan_level>
-            <nobr>
+	    <nobr>
 	    <A href=$cost_center_url?cost_center_id=$cost_center_id&return_url=$return_url
 	    >$cost_center_code - $cost_center_name</A>
-            </nobr>
+	    </nobr>
 	  </td>
 	  <td>$department_p</td>
 	  <td><a href=[export_vars -base "/intranet/users/view" -override {{user_id $manager_id}}]>$manager_name</a></td>
-        "
+	"
     } else {
 	append table "
-          <td colspan=9></td>
-        "
+	  <td colspan=9></td>
+	"
     }
 
     append table "
-          <td><a href=[export_vars -base "/intranet/users/view" -override {{user_id $employee_id}}]>$employee_name</a></td>
+	  <td><a href=[export_vars -base "/intranet/users/view" -override {{user_id $employee_id}}]>$employee_name</a></td>
 	  <td>
        "
     
