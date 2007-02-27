@@ -953,6 +953,8 @@ ad_proc -public im_ganttproject_resource_component {
     # suitable for the left/right columns of a project.
     if {$auto_open | "" == $top_vars} {
 	set duration_days [db_string dur "select to_date(:end_date, 'YYYY-MM-DD') - to_date(:start_date, 'YYYY-MM-DD')"]
+	if {"" == $duration_days} { set duration_days 0 }
+
 	set duration_weeks [expr $duration_days / 7]
 	set duration_months [expr $duration_days / 30]
 	set duration_quarters [expr $duration_days / 91]
