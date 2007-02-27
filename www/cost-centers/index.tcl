@@ -77,7 +77,7 @@ set main_sql "
 		im_name_from_user_id(e.employee_id) as employee_name
 	from
 		im_cost_centers m
-		left join im_employees e on (department_id=cost_center_id and e.employee_id <> m.manager_id)
+		LEFT JOIN im_employees e ON (department_id=cost_center_id)
 	order by cost_center_code,employee_name
 "
 
