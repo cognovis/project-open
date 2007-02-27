@@ -111,11 +111,9 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 		Please notify your System Administrator and tell him (or her) to<br>
 		execute the script /packages/intranet-hr/sql/postgresql/update/upgrade-3.2.6.0.0-3.2.7.0.0.sql.
 		<p><pre>$err_msg</pre>"
-	ns_log Notice "im_employees: err=$err_msg"
-	set employee_info_exists 0
-    } else {
-	set employee_info_exists 1
-    }
+    } 
+	
+    set employee_info_exists 1
 
     set view_id [db_string get_view "select view_id from im_views where view_name=:view_name" -default 0]
     ns_log Notice "im_employee_info_component: view_id=$view_id, emp_info_exists=$employee_info_exists"
