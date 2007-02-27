@@ -544,7 +544,9 @@ ad_proc -public im_gp_save_tasks2 {
     # ToDo: Potentially dangerous - there could be a case with
     # a duplicated gantt_id.
     if {"" == $task_nr} {
-	set task_nr "task_$gantt_project_id"
+	set task_id_zeros $gantt_project_id
+	while {[string length $task_id_zeros] < 4} { set task_id_zeros "0$task_id_zeros" }
+	set task_nr "task_$task_id_zeros"
     }
 
     # -----------------------------------------------------
@@ -1237,6 +1239,9 @@ ad_proc -public im_ganttproject_resource_component {
 	incr cnt_outer
     }
 
+    # Skip component if there are not items to be displayed
+    if {0 == $cnt_outer} { return "" }
+
     set ttt {
 	set debug ""
 	set dctr 0
@@ -1539,6 +1544,8 @@ ad_proc -public im_ganttproject_gantt_component {
     if {$auto_open | "" == $top_vars} {
 
 	set duration_days [db_string dur "select to_date(:end_date, 'YYYY-MM-DD') - to_date(:start_date, 'YYYY-MM-DD')"]
+	if {"" == $duration_days} { set duration_days 0 }
+
 	set duration_weeks [expr $duration_days / 7]
 	set duration_months [expr $duration_days / 30]
 	set duration_quarters [expr $duration_days / 91]
@@ -1780,6 +1787,8 @@ ad_proc -public im_ganttproject_gantt_component {
 	incr cnt_outer
     }
 
+    # Skip component if there are not items to be displayed
+    if {0 == $cnt_outer} { return "" }
 
 
     # ------------------------------------------------------------
@@ -1914,9 +1923,12 @@ ad_proc -public im_ganttproject_gantt_component {
 	# Start writing out the matrix elements
 	set project_id $org_project_id
 	set last_days 0
+	set last_colspan 0
 
 	for {set top_entry_idx 0} {$top_entry_idx < [llength $top_scale]} {incr top_entry_idx} {
 
+	    # --------------------------------------------------
+	    # Get the "next_days" (=days of the next table column)
 	    set top_entry_next [lindex $top_scale [expr $top_entry_idx+1]]
 	    for {set i 0} {$i < [llength $top_vars]} {incr i} {
 		set var_name [lindex $top_vars $i]
@@ -1938,6 +1950,7 @@ ad_proc -public im_ganttproject_gantt_component {
 
 
 
+	    # --------------------------------------------------
 	    set top_entry [lindex $top_scale $top_entry_idx]
 	    
 	    # Skip the last line with all sigmas - doesn't sum up...
@@ -1967,21 +1980,39 @@ ad_proc -public im_ganttproject_gantt_component {
 	    if {"" == $days} { set days 0 }
 	    if {1 < $days} { set days 1 }
 
-	    set gif "del"
+
+	    # --------------------------------------------------
+	    # Determine how to render the combination of last_days - days $next_days
+
+	    set cell_html ""
 	    switch "$last_days$days$next_days" {
-		"000" { set gif "" }
-		"001" { set gif "" }
-		"010" { set gif "gant_bar_single_15" }
-		"011" { set gif "gant_bar_left_15" }
-		"100" { set gif "" }
-		"101" { set gif "" }
-		"110" { set gif "gant_bar_right_15" }
-		"111" { set gif "gant_bar_middle_15" }
+		"000" { set cell_html "<td></td>\n" }
+		"001" { set cell_html "<td></td>\n" }
+		"010" { 
+		    set cell_html "<td><img src=\"/intranet-ganttproject/images/gant_bar_single_15.gif\"></td>\n"
+		}
+		"011" { 
+		    # Start of a new bar.
+		    # Do nothing - delayed until "110"
+		    set cell_html ""
+		    set last_colspan 1
+		}
+		"100" { set cell_html "<td></td>\n" }
+		"101" { set cell_html "<td></td>\n" }
+		"110" { 
+		    # Write out the entire cell with $last_colspan
+		    incr last_colspan
+		    set cell_html "
+			<td colspan=$last_colspan>
+			  <table width='100%' border=1 cellspacing=0 cellpadding=0 bordercolor=black bgcolor='\#8CB6CE'>
+			    <tr height=11><td></td></tr>
+			  </table>
+			</td>\n"
+		}
+		"111" { incr last_colspan }
 	    }
 
-	    set img "<img src=\"/intranet-ganttproject/images/$gif.gif\">"
-	    if {"" == $gif} { set img "" }
-	    append html "<td>$img</td>\n"
+	    append html $cell_html
 	    set last_days $days
 
 	    
