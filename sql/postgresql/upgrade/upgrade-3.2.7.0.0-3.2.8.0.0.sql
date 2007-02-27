@@ -1,74 +1,5 @@
--- /packages/intranet-calendar/sql/postgresql/intranet-calendar-create.sql
---
--- Copyright (c) 2003-2004 Project/Open
---
--- All rights reserved. Please check
--- http://www.project-open.com/license/ for details.
---
--- @author frank.bergmann@project-open.com
+-- upgrade-3.2.7.0.0-3.2.8.0.0.sql
 
------------------------------------------------------------
--- 
-
--- Add a new field to acs_events to point back to the related object.
-
-alter table acs_events
-add related_object_id integer;
-
-alter table acs_events
-add related_object_type varchar(100)
-	constraint acs_events_rel_otype_fk
-	references acs_object_types;
-
-create index acs_events_rel_object_ids on acs_events (related_object_id);
-
-
--- Start off with a single (global) calendar
-
-SELECT calendar__new(
-	null,		-- calendar_id
-	'Global Calendar',-- calendar_name
-	'calendar',	-- object_type
-	(select object_id from acs_magic_objects where name = 'registered_users'), -- owner_id
-	'f',		-- private_p
-	(select package_id from apm_packages where package_key = 'calendar'), -- package_id
-	(select package_id from apm_packages where package_key = 'calendar'), -- context_id
-	now(),		-- creation_date
-	null,		-- creation_user
-	'0.0.0.0'	-- creation_ip
-);
-
-
-
-
-create or replace function inline_0() returns integer as '
-declare
-	row			record;
-begin
-	FOR row IN
-		SELECT	cal_item_id
-		FROM	cal_items
-	LOOP
-		RAISE NOTICE ''inline_0: cal_item_id=%'', row.cal_item_id;
-		PERFORM cal_item__delete(row.cal_item_id);
-
-	END LOOP;
-
-        return 0;
-end;' language 'plpgsql';
-
--- select inline_0();
-drop function inline_0();
-
-
-
-
--- --------------------------------------------------------
--- Projects Trigger
--- --------------------------------------------------------
-
--- drop trigger im_projects_calendar_update_tr on im_projects;
--- drop function im_projects_calendar_update_tr();
 
 create or replace function im_projects_calendar_update_tr () returns trigger as '
 declare
@@ -169,25 +100,6 @@ begin
 	return new;
 end;' language 'plpgsql';
 
-create trigger im_projects_calendar_update_tr after insert or update
-on im_projects for each row
-execute procedure im_projects_calendar_update_tr ();
-
--- update im_projects set start_date = start_date::date where project_nr like '2005_0134';
--- update im_projects set start_date = start_date::date where project_nr like '2006%';
-
-
-
-
-
-
-
--- --------------------------------------------------------
--- Translation Tasks Trigger
--- --------------------------------------------------------
-
--- drop trigger im_trans_tasks_calendar_update_tr on im_trans_tasks;
--- drop function im_trans_tasks_calendar_update_tr();
 
 create or replace function im_trans_tasks_calendar_update_tr () returns trigger as '
 declare
@@ -290,23 +202,7 @@ begin
 	return new;
 end;' language 'plpgsql';
 
-create trigger im_trans_tasks_calendar_update_tr after insert or update
-on im_trans_tasks for each row
-execute procedure im_trans_tasks_calendar_update_tr ();
 
--- update im_trans_tasks set end_date = end_date;
-
-
-
-
-
-
--- --------------------------------------------------------
--- Forum Topics Trigger
--- --------------------------------------------------------
-
--- drop trigger im_forum_topics_calendar_update_tr on im_forum_topics;
--- drop function im_forum_topics_calendar_update_tr();
 
 create or replace function im_forum_topics_calendar_update_tr () returns trigger as '
 declare
@@ -402,33 +298,3 @@ begin
 	return new;
 end;' language 'plpgsql';
 
-create trigger im_forum_topics_calendar_update_tr after insert or update
-on im_forum_topics for each row
-execute procedure im_forum_topics_calendar_update_tr ();
-
-update im_forum_topics set due_date = due_date;
-
-
-
----------------------------------------------------------
--- Calendar Component
---
-
--- Show the forum component in project page
---
-SELECT im_component_plugin__new (
-	null,				-- plugin_id
-	'acs_object',			-- object_type
-	now(),				-- creation_date
-	null,				-- creation_user
-	null,				-- creation_ip
-	null,				-- context_id
-	'Home Calendar Component',	-- plugin_name
-	'intranet-calendar',		-- package_name
-	'left',				-- location
-	'/intranet/index',		-- page_url
-	null,				-- view_name
-	-10,				-- sort_order
-	'im_calendar_home_component',
-	'lang::message::lookup "" intranet-calendar.Calendar "Calendar"'
-);
