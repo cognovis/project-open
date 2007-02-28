@@ -1650,14 +1650,14 @@ order by
     set currency_outdated_warning ""
     if {[llength $used_currencies] > 0 && [llength $exchange_rates_outdated] > 0} {
 
-	set currency_outdated_warning [lang::message::lookup "" intranet-costs.The_exchange_rates_are_outdated "The exchanges rates for the following currencies are outdated. <br>Please contact your System Administrator to update the following exchange rates:"]
+	set currency_outdated_warning [lang::message::lookup "" intranet-cost.The_exchange_rates_are_outdated "The exchanges rates for the following currencies are outdated. <br>Please contact your System Administrator to update the following exchange rates:"]
 	append currency_outdated_warning "\n<br>\n"
 	append currency_outdated_warning "\n<table>\n"
 
 	foreach entry $exchange_rates_outdated {
 	    set currency [lindex $entry 0]
 	    set days [lindex $entry 1]
-	    set outdated_msg [lang::message::lookup "" intranet-costs.Outdated_since_x_days "Outdated since %days% days"]
+	    set outdated_msg [lang::message::lookup "" intranet-cost.Outdated_since_x_days "Outdated since %days% days"]
 	    append currency_outdated_warning "\n<tr><td>$currency:</td><td>$outdated_msg</td></tr>\n"
 	}
 	append currency_outdated_warning "\n</table>\n"
@@ -1666,7 +1666,7 @@ order by
 	set currency_outdated_warning "
 		<table>
 		<tr class=rowtitle><td class=rowtitle align=center>
-		[lang::message::lookup "" intranet-costs.Outdated_Message "Outdated Exhcange Rates Warning"]
+		[lang::message::lookup "" intranet-cost.Outdated_Message "Outdated Exchange Rates Warning"]
 		</td></tr>
 		<tr><td>$currency_outdated_warning</td></tr>
 		</table>
