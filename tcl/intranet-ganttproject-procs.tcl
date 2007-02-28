@@ -872,7 +872,7 @@ ad_proc -public im_ganttproject_resource_component {
     { -export_var_list "" }
     { -zoom "" }
     { -auto_open 0 }
-    { -max_col 12 }
+    { -max_col 8 }
     { -max_row 20 }
 } {
     Gantt Resource "Cube"
