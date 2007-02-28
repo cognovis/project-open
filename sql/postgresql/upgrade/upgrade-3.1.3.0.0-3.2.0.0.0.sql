@@ -115,7 +115,7 @@ set title_tcl = 'lang::message::lookup "" intranet-filestorage.Filestorage "File
 where plugin_name = 'Users Filestorage Component';
 
 update im_component_plugins 
-set title_tcl = 'lang::message::lookup "" intranet-timesheet.Timesheet "Timesheet"' 
+set title_tcl = 'lang::message::lookup "" intranet-timesheet2.Timesheet "Timesheet"' 
 where plugin_name = 'Project Timesheet Component';
 
 update im_component_plugins 
