@@ -1,6 +1,54 @@
 Change Log
 
 
+
+==============================================================
+V3.2.7.0 (V3.2.Beta4) Changes
+==============================================================
+
+This is the former V4.0 version. We renamed it to V3.2 because the planned GUI 
+changes were smaller then expected (not based on OpenACS/dotLrn code). So 
+there will be an automatic upgrade path from V3.1 via the ASUS.
+
+
+Major Enhancements:
+      * "Web 1.5" GUI Overhaul:
+	The improved GUI includes the option for users to move their 
+	GUI components around in a "Web 1.5" style. Also, we have added new 
+	icons and a new CSS.
+
+      * GanttProject Integration:
+	We have finally managed to integrate an interface to GanttProject 
+	(an open-source MS-Project clone written in Java).
+	Project Managers can conveniently define the project structure with
+	GanttProject and then upload the structure into ]po[
+	 
+      * Resource Planning and Resource Assignments:
+	You can now add resources to projects and task and determine resource
+	overload across projects.
+	 
+      * Integration of "Petri-Net Workflow":
+	]project-open[ now includes a fully-fledged workflow with graphical
+	process editor.
+	 
+      * Expenses and Travel Costs:
+	The modules allows for decentralized capturing of travel costs and 
+	other expenses.
+	 
+      * Project Templates:
+	Project templates (creating new projects based on an existing
+	project template) allows you to standardize and accelerate the 
+	generation of projects with similar schedules.
+
+
+Minor Enhancements:
+      * More then 100 bugs have been fixed
+
+      * More then 50 small enhancements have been included thanks to 
+	feedback from more then 100 companies in 18 countries.
+
+
+
 ==============================================================
 V3.1.2.0 Changes
 ==============================================================
