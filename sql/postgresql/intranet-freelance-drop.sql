@@ -28,6 +28,7 @@ set url='/intranet/users/index?user_group_name=Freelancers'
 where label='users_freelancers';
 
 
+
 -----------------------------------------------------------
 -- Delete Views
 
@@ -36,6 +37,21 @@ delete from im_view_columns where column_id >= 5100 and column_id < 5199;
 
 -- 'user_list_freelance'
 delete from im_view_columns where column_id >= 5000 and column_id < 5099;
+
+
+delete from im_view_columns where view_id >= 50 and view_id < 60;
+delete from im_views where view_id >= 50 and view_id < 60;
+
+
+
+
+-----------------------------------------------------------
+-- Delete Categories
+
+
+delete from im_freelance_skills;
+delete from im_freelance_skill_types;
+
 
 -- Freelance LOC Tools & Operating Systems
 delete from im_categories where category_id >= 2300 and category_id < 2400;
@@ -49,8 +65,10 @@ delete from im_categories where category_id >= 2100 and category_id < 2200;
 -- Freelance Skill Types
 delete from im_categories where category_id >= 2000 and category_id < 2100;
 
-delete from im_view_columns where view_id >= 50 and view_id < 60;
-delete from im_views where view_id >= 50 and view_id < 60;
+
+-----------------------------------------------------------
+-- Delete Views
+
 
 drop function im_freelance_skill_list (integer, integer);
 drop view im_freelance_skill_types;
