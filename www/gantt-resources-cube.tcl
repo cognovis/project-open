@@ -25,8 +25,8 @@ ad_page_contract {
     { customer_id:integer 0 }
     { user_name_link_opened "" }
     { zoom "" }
-    { max_col 100 }
-    { max_row 1000 }
+    { max_col 20 }
+    { max_row 100 }
 }
 
 
@@ -37,7 +37,7 @@ ad_page_contract {
 
 set main_navbar_label "reporting"
 
-set project_menu_html ""
+set project_menu ""
 if {[llength $project_id] == 1} {
     # Exactly one project - quite a frequent case.
     # Show a ProjectMenu so that it looks like we've gone to a different tab.
