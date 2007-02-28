@@ -27,21 +27,44 @@ Major Enhancements:
 	You can now add resources to projects and task and determine resource
 	overload across projects.
 	 
-      * Integration of "Petri-Net Workflow":
-	]project-open[ now includes a fully-fledged workflow with graphical
-	process editor.
-	 
+      * System Configuration Wizard
+	A new "SysConfig" wizard allows the first-time user to tailor the
+	]project-open[ installation for business sectors and company size,
+	reducing the overall complexity.
+
       * Expenses and Travel Costs:
 	The modules allows for decentralized capturing of travel costs and 
 	other expenses.
+	 
+      * Integration of "Petri-Net Workflow":
+	]project-open[ now includes a fully-fledged workflow with graphical
+	process editor.
 	 
       * Project Templates:
 	Project templates (creating new projects based on an existing
 	project template) allows you to standardize and accelerate the 
 	generation of projects with similar schedules.
 
+      * New Calendar:
+	]project-open[ now includes a calendar modules that allows you to
+	track scheduled calls and project deadlines in a calendar view.
+	The calendar also includes shared global and group calendars.
+
+      * New Bug-Tracker:
+	]project-open[ now includes a fully-fledged bug-tracker that 
+	compares to industry leading bug trackers.
+
 
 Minor Enhancements:
+
+      * DynField Extensions:
+	The "DynField" module allows you to add new fields to projects,
+	users and companies. DynField has been extended in V3.2 to allow
+	dynamic fields per object "subtype", for example specific fields
+	for "customers" vs. "providers" (both subtypes of "company").
+
+
+Bug Fixes:
       * More then 100 bugs have been fixed
 
       * More then 50 small enhancements have been included thanks to 
