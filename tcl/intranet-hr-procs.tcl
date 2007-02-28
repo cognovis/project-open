@@ -129,7 +129,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
    set employee_id $org_employee_id
 
    set employee_html "
-	<form method=POST action=/intranet-hr/new>
+	<form method=GET action=/intranet-hr/new>
 	[export_form_vars employee_id return_url]
 	<table cellpadding=1 cellspacing=1 border=0>
 	<tr> 
