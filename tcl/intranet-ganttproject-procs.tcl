@@ -907,6 +907,16 @@ ad_proc -public im_ganttproject_resource_component {
         "]
     }
 
+    # ToDo: Highlight the sub-project if we're showning the sub-project
+    # of a main-project and open the GanttDiagram at the right place
+    if {[llength $project_id] == 1} {
+	set parent_id [db_string parent_id "select parent_id from im_projects where project_id = :project_id" -default ""]
+	while {"" != $parent_id} {
+	    set project_id $parent_id
+	    set parent_id [db_string parent_id "select parent_id from im_projects where project_id = :project_id" -default ""]
+	}
+    }
+
     # ------------------------------------------------------------
     # Start and End-Dat as min/max of selected projects.
     # Note that the sub-projects might "stick out" before and after
@@ -1499,6 +1509,16 @@ ad_proc -public im_ganttproject_gantt_component {
 	where	parent_id is null
 		and project_status_id = [im_project_status_open]
         "]
+    }
+
+    # ToDo: Highlight the sub-project if we're showning the sub-project
+    # of a main-project and open the GanttDiagram at the right place
+    if {[llength $project_id] == 1} {
+	set parent_id [db_string parent_id "select parent_id from im_projects where project_id = :project_id" -default ""]
+	while {"" != $parent_id} {
+	    set project_id $parent_id
+	    set parent_id [db_string parent_id "select parent_id from im_projects where project_id = :project_id" -default ""]
+	}
     }
 
     # ------------------------------------------------------------
