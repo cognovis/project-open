@@ -47,9 +47,6 @@ set focus "cost.var_name"
 set employee_name ""
 set form_mode "edit"
 
-
-set employee_id 624
-
 im_user_permissions $user_id $employee_id view read write admin
 if {!$write || ![im_permission $user_id view_hr]} {
     ad_return_complaint 1 "[_ intranet-hr.lt_You_have_insufficient]"
