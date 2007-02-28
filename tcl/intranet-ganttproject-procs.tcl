@@ -1848,11 +1848,13 @@ ad_proc -public im_ganttproject_gantt_component {
     set project_name_hash($sigma) "sigma"
     set project_name_hash("") "empty"
     set project_name_hash() "empty"
+    set project_hierarchy(0) 0
 
     db_foreach left $left_sql {
 
 	# Store/overwrite the position of project_id in the hierarchy
 	set project_hierarchy($level) $project_id
+	ns_log Notice "im_ganttproject_gantt_component: project_hierarchy($level) = $project_id"
 
 	# Determine the project-"path" from the top project to the current level
 	set project_path [list]
