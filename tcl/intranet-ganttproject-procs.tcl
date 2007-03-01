@@ -1403,16 +1403,18 @@ ad_proc -public im_ganttproject_resource_component {
 		default { ad_return_complaint 1 "Bad period: $period" }
 	    }
 
-	    if {0 == $val} { set val "" } else { set val "$val%" }
-
 	    # ------------------------------------------------------------
 	    
-	    if {0 == $val} { set val "" }
 	    if {![regexp {[^0-9]} $val match]} {
 		set color "\#000000"
-		if {$val > 100} { set color "\#EE0000" }
-		if {$val > 200} { set color "\#FF0000" }
-		set val "<font color=$color>$val</font>\n"
+		if {$val > 100} { set color "\#800000" }
+		if {$val > 150} { set color "\#FF0000" }
+	    }
+
+	    if {0 == $val} { 
+		set val "" 
+	    } else { 
+		set val "<font color=$color>$val%</font>\n"
 	    }
 	    
 	    append html "<td>$val</td>\n"
