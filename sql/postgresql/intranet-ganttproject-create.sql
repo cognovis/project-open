@@ -134,7 +134,7 @@ BEGIN
         ''intranet-ganttproject'',     -- package_name
         ''projects_admin_gantt_resources'',    -- label
         ''Resource Planning Report'',    -- name
-        ''/intranet-ganttproject/gantt-resources-cube'', -- url
+        ''/intranet-ganttproject/gantt-resources-cube?config=resource_planning_report'', -- url
         60,                     -- sort_order
         v_admin_menu,            -- parent_menu_id
         null                     -- p_visible_tcl
