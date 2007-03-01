@@ -50,7 +50,6 @@ delete from im_views where view_id >= 50 and view_id < 60;
 
 
 delete from im_freelance_skills;
-delete from im_freelance_skill_types;
 
 
 -- Freelance LOC Tools & Operating Systems
