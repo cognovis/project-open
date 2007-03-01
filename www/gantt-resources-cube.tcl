@@ -27,6 +27,7 @@ ad_page_contract {
     { zoom "" }
     { max_col 20 }
     { max_row 100 }
+    { config "" }
 }
 
 
@@ -56,6 +57,20 @@ if {[llength $project_id] == 1} {
 
 set page_title [lang::message::lookup "" intranet-reporting.Gantt_Resources "Gantt Resources"]
 
+
+switch $config {
+    resource_planning_report {
+	# Configure the parameters to show the current month only
+	set start_date [db_string start_date "select to_char(now()::date, 'YYYY-MM-DD')"]
+	set end_date [db_string start_date "select to_char(now()::date+14, 'YYYY-MM-DD')"]
+	set max_col 30
+    }
+}
+
+
+
+# ------------------------------------------------------------
+# Contents
 
 set html [im_ganttproject_resource_component \
 	-start_date $start_date \
