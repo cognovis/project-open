@@ -1247,6 +1247,7 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
     set extra(where) $sql
     set extra(bind_vars) [util_ns_set_to_list -set $bind_vars]
     ns_set free $bind_vars
+
     return [array get extra]
 }
 
@@ -2091,6 +2092,17 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     # (compatibility mode)
     if {"" == $object_subtype_id} { set default_display_mode "edit" }
 
+
+    db_1row object_type_info "
+        select
+                t.table_name as object_type_table_name,
+                t.id_column as object_type_id_column
+        from
+                acs_object_types t
+        where
+                t.object_type = :object_type
+    "
+
     set extra_wheres [list "1=1"]
     if {$advanced_filter_p} {
 	lappend extra_wheres "aw.widget in (
@@ -2111,8 +2123,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		a.datatype, 
 		case when a.min_n_values = 0 then 'f' else 't' end as required_p, 
 		a.default_value, 
-	   	t.table_name as object_type_table_name, 
-	   	t.id_column as object_type_id_column,
 		aw.widget,
 		aw.parameters,
 		aw.storage_type_id,
@@ -2123,14 +2133,12 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 			(select * from im_dynfield_layout where page_url = '') dl
 			ON (aa.attribute_id = dl.attribute_id),
 		im_dynfield_widgets aw,
-		acs_object_types t,
 		acs_attributes a 
 		left outer join 
 			acs_object_type_tables tt 
 			on (tt.object_type = :object_type and tt.table_name = a.table_name)
 	where 
-		t.object_type = :object_type
-		and a.object_type = t.object_type
+		a.object_type = :object_type
 		and a.attribute_id = aa.acs_attribute_id
 		and aa.widget_name = aw.widget_name
 		and im_object_permission_p(aa.attribute_id, :user_id, 'read') = 't'
