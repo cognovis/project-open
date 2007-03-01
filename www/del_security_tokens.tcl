@@ -84,7 +84,7 @@ set future_projects_sql "
 	where	end_date > now()
 "
 
-select future_projects [db_string future_projects $future_projects_sql]
+set future_projects [db_string future_projects $future_projects_sql]
 while {0 == $future_projects} {
 
     db_dml move_projects "
