@@ -85,3 +85,34 @@ where	acs_attribute_id in (
 	)
 ;
 
+
+
+
+SELECT  im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+	'Task Members',			-- plugin_name
+	'intranet',			-- package_name
+	'right',			-- location
+	'/intranet-timesheet2-tasks/new',	-- page_url
+	null,				-- view_name	
+	20,				-- sort_order
+	'im_table_with_title "[_ intranet-core.Task_Members]" [im_group_member_component $task_id $current_user_id $user_admin_p $return_url "" "" 1 ]'			-- component_tcl
+    );
+
+
+
+
+-- Allow for "Full-Member" membership of a timesheet-task
+insert into im_biz_object_role_map values ('im_timesheet_task',85,1300);
+
+
+
+-- Create an index on tree_sortkey to speed up child queries
+create index im_project_treesort_idx on im_projects(tree_sortkey);
+
+
