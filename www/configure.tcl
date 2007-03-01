@@ -111,9 +111,11 @@ if { ![empty_string_p $logo_file]
     ns_write "<li>setting logo... "
 
     set logo_path logo[file extension $logo_file]
-    file rename -force [acs_root_dir]/www/sysconf-logo.tmp [acs_root_dir]/www/$logo_path
-    parameter::set_from_package_key -package_key "intranet-core" -parameter "SystemLogo" -value "/$logo_path"
-    parameter::set_from_package_key -package_key "intranet-core" -parameter "SystemLogoLink" -value $logo_url
+    catch {
+	file rename -force [acs_root_dir]/www/sysconf-logo.tmp [acs_root_dir]/www/$logo_path
+	parameter::set_from_package_key -package_key "intranet-core" -parameter "SystemLogo" -value "/$logo_path"
+	parameter::set_from_package_key -package_key "intranet-core" -parameter "SystemLogoLink" -value $logo_url
+    } err_msg
     ns_write "done<br>\n"
 }
 
@@ -449,8 +451,6 @@ set search_pg_installed_p [db_string search_pg "
 		enabled_p = 't' 
 		and package_key like 'intranet-search-pg'
 "]
-
-set search_pg_installed_p 1
 
 if {!$search_pg_installed_p} {
 
