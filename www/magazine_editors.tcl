@@ -89,7 +89,9 @@ ad_return_top_of_page "
 im_report_render_row \
     -row $header0 \
     -row_class rowtitle \
-    -field_class rowtitle
+    -row_class "rowtitle" \
+    -cell_class "rowtitle"
+
 
 set footer_array_list [list]
 set last_value_list [list]
