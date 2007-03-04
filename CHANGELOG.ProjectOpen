@@ -6,69 +6,95 @@ Change Log
 V3.2.7.0 (V3.2.Beta4) Changes
 ==============================================================
 
-This is the former V4.0 version. We renamed it to V3.2 because the planned GUI 
-changes were smaller then expected (not based on OpenACS/dotLrn code). So 
-there will be an automatic upgrade path from V3.1 via the ASUS.
-
 
 Major Enhancements:
-      * "Web 1.5" GUI Overhaul:
-	The improved GUI includes the option for users to move their 
-	GUI components around in a "Web 1.5" style. Also, we have added new 
-	icons and a new CSS.
-
       * GanttProject Integration:
-	We have finally managed to integrate an interface to GanttProject 
-	(an open-source MS-Project clone written in Java).
-	Project Managers can conveniently define the project structure with
-	GanttProject and then upload the structure into ]po[
-	 
+        Project Managers can now conveniently define and modify project
+        structures with GanttProject and then upload the result into ]po[
+	("round-trip integration"). 
+	GanttProject is an open-source MS-Project clone written in Java.
+	The combination of GanttProject and ]po[ offers an open	alternative 
+	to MS-Project and MS-Project-Server.
+
+      * "Web 1.5" GUI Overhaul:
+      	We have improved the GUI to allow users to move their GUI components 
+      	and to select/disable components. Also, we have added new icons and a 
+      	new CSS.
+
       * Resource Planning and Resource Assignments:
-	You can now add resources to projects and task and determine resource
-	overload across projects.
-	 
-      * System Configuration Wizard
-	A new "SysConfig" wizard allows the first-time user to tailor the
-	]project-open[ installation for business sectors and company size,
-	reducing the overall complexity.
+        You can now add resources to projects and task and determine resource
+        overload across projects.
+
+      * Calendar:
+	The new module shows project and task deadlines per day, week and month.
+	Calendars can be either "shared" or "individual". Support for group 
+	calendars will follow soon.
+
+      * Bug-Tracker:
+	]po[ now includes a fully fledged bug-tracker that compares to industry 
+	leading bug trackers.
 
       * Expenses and Travel Costs:
-	The modules allows for decentralized capturing of travel costs and 
-	other expenses.
-	 
-      * Integration of "Petri-Net Workflow":
-	]project-open[ now includes a fully-fledged workflow with graphical
-	process editor.
-	 
+        The new modules allows you to capture consultant's travel costs and 
+        other expenses per project.
+
+      * Reporting Engine:
+	]po[ now includes its own reporting engine, similar to Crystal Reports
+	or Jaspar Reports. A "reporting tutorial" explains step-by-step how to 
+	write new reports. A graphical editor is not (yet) available.
+	
+      * System Configuration Wizard
+        A new "SysConfig" wizard allows the first-time user to tailor the
+        ]project-open[ installation for business sectors and company size,
+        reducing the overall complexity.
+
+      * "Petri-Net Workflow Engine":
+        ]po[ now includes a fully-fledged workflow with graphical process editor.
+        The WF can be used for example to set and confirm project budgets by
+        senior executives, to priorize projects in a portfolio etc.
+
       * Project Templates:
-	Project templates (creating new projects based on an existing
-	project template) allows you to standardize and accelerate the 
-	generation of projects with similar schedules.
+        Project templates (creating new projects based on an existing
+        project template) allows you to standardize and accelerate the
+        generation of projects with similar schedules.
 
-      * New Calendar:
-	]project-open[ now includes a calendar modules that allows you to
-	track scheduled calls and project deadlines in a calendar view.
-	The calendar also includes shared global and group calendars.
+      * Dynamic Fields for Project, Companies and Users:
+	We have greatly extended the "DynField" module to include DynFields
+	in reports and CVS exports. Also, DynFields are now specific to
+	object subtypes (for example: Type of projects).
 
-      * New Bug-Tracker:
-	]project-open[ now includes a fully-fledged bug-tracker that 
-	compares to industry leading bug trackers.
+      * New "Delivery Note" Financial Document Type
+	Delivery notes are a step before issuing an invoice.
+
+
+
+
+New Commercial "Enterprise Extension Modules":
+
+The following modules are closed-source extensions of ]po[ covering the needs
+of large organizations. These modules are available separately from the ]po[
+product at http://www.project-open.com/shop/.
+
+      * GAAP/IAS compliant Auditability
+	This module captures all changes to financial objects and projects.
+
+      * One-Time-Passwords:
+      	Manages a list of TANs (Transaction Numbers) for one-time authentication
+      	of users with special permissions (i.e. senior mannagers, accounting,...).
+
+      * Profit Center Management & Permissions:
+	The modules allows corporations to define fine-grain financial
+	permissions across departments (who can see/modify the invoices of
+	each department) and to calculate profit/loss per department.
+
+      * SAP Integration:
+	Import and export interfaces to SAP FI.
 
 
 Minor Enhancements:
 
-      * DynField Extensions:
-	The "DynField" module allows you to add new fields to projects,
-	users and companies. DynField has been extended in V3.2 to allow
-	dynamic fields per object "subtype", for example specific fields
-	for "customers" vs. "providers" (both subtypes of "company").
-
-
-Bug Fixes:
-      * More then 100 bugs have been fixed
-
-      * More then 50 small enhancements have been included thanks to 
-	feedback from more then 100 companies in 18 countries.
+There were more then 500 minor enhancements in the last 6 months improving usability
+and fixing bugs.
 
 
 
