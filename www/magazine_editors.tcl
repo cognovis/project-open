@@ -10,6 +10,8 @@ set context_bar [im_context_bar $page_title]
 set context ""
 set today [db_string today "select to_char(sysdate, 'YYYYMMDD.HHmm') from dual"]
 
+set row_class "rowtitle"
+
 # ------------------------------------------------------------
 # Define the report - SQL, counters, headers and footers 
 #
@@ -28,20 +30,24 @@ set sql "
 	im_category_from_id(c.business_sector_id) as company_sector
     from
 	group_member_map m,
-	persons p,
 	parties pa,
-	im_companies c,
-	acs_rels r
+	persons p
+	LEFT OUTER JOIN (
+		select	r.object_id_two as person_id,
+			c.*
+		from	acs_rels r,
+			im_companies c
+		where	r.object_id_one = c.company_id
+	) c ON (p.person_id = c.person_id)
+
     where
 	m.group_id = 5372
 	and m.member_id = p.person_id
 	and pa.party_id = p.person_id
-	and p.spam_frequency_id != 11130
-	and r.object_id_two = p.person_id
-	and r.object_id_one = c.company_id
+	and (p.spam_frequency_id is null OR p.spam_frequency_id != 11130)
     order by
 	person_language,
-	company_sector,
+	person_sector,
 	p.person_id,
 	c.company_name
 "
@@ -123,6 +129,9 @@ im_report_display_footer \
     -display_all_footers_p 1
 
 im_report_render_row \
-    -row $footer0
+    -row $footer0 \
+    -row_class rowtitle \
+    -row_class "rowtitle" \
+    -cell_class "rowtitle"
 
 ns_write "</table>\n[im_footer]\n"
