@@ -13,7 +13,7 @@ SELECT im_component_plugin__new (
         '/intranet/projects/view',      -- page_url
         null,                           -- view_name
         10,                            -- sort_order
-	'im_ganttproject_resource_cube -project_id $project_id -return_url $return_url -export_var_list [list project_id]',
+	'im_ganttproject_resource_component -project_id $project_id -return_url $return_url -export_var_list [list project_id]',
 	'lang::message::lookup "" intranet-ganttproject.Project_Gantt_Resource_Assignations "Project Gantt Resource Assignations"'
 );
 
