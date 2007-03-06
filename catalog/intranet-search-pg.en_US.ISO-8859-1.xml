@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-search-pg" package_version="3.2.6.0.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-search-pg" package_version="3.2.7.0.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Advanced_Search">Advanced Search</msg>
   <msg key="lt_Make_sure_all_words_a">Make sure all words are spelled correctly.</msg>
