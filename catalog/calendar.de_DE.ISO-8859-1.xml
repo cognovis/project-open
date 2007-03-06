@@ -8,7 +8,6 @@
   <msg key="add_an_event">Neuen Eintrag hinzufügen</msg>
   <msg key="Add_an_item">Einen Eintrag hinzufügen</msg>
   <msg key="Add_Item">Eintrag hinzufügen</msg>
-  <msg key="Add_item_beginning_at">Fügen Sie eine Position hinzu die bei  %localized_day_current_hour% on %localized_date_current% beginnt</msg>
   <msg key="Add_Recurrence">OK</msg>
   <msg key="All_Day_Event">Ganztägig</msg>
   <msg key="all_events">Alle Ereignisse</msg>
