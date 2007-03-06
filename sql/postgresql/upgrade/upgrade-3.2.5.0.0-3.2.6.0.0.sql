@@ -1,65 +1,105 @@
 -- upgrade-3.2.5.0.0-3.2.6.0.0.sql
 
 
-select im_dynfield_widget__new (
-	null,			-- widget_id
-	'im_dynfield_widget',	-- object_type
-	now(),			-- creation_date
-	null,			-- creation_user
-	null,			-- creation_ip
-	null,			-- context_id
 
-	'currencies',		-- widget_name
-	'#intranet-core.Currency#',	-- pretty_name
-	'#intranet-core.Currencies#',	-- pretty_plural
-	10007,			-- storage_type_id
-	'string',		-- acs_datatype
-	'generic_sql',		-- widget
-	'char(3)',		-- sql_datatype
-	'{custom {sql {select iso, iso from currency_codes where supported_p = ''t'' }}}'
-);
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count
+	from im_dynfield_widgets where widget_name = ''currencies'';
+        IF 0 != v_count THEN return 0; END IF;
 
+	select im_dynfield_widget__new (
+		null,			-- widget_id
+		''im_dynfield_widget'',	-- object_type
+		now(),			-- creation_date
+		null,			-- creation_user
+		null,			-- creation_ip
+		null,			-- context_id
+	
+		''currencies'',		-- widget_name
+		''#intranet-core.Currency#'',	-- pretty_name
+		''#intranet-core.Currencies#'',	-- pretty_plural
+		10007,			-- storage_type_id
+		''string'',		-- acs_datatype
+		''generic_sql'',		-- widget
+		''char(3)'',		-- sql_datatype
+		''{custom {sql {select iso, iso from currency_codes where supported_p = ''''t'''' }}}''
+	);
 
-
-select im_dynfield_widget__new (
-	null,			-- widget_id
-	'im_dynfield_widget',	-- object_type
-	now(),			-- creation_date
-	null,			-- creation_user
-	null,			-- creation_ip
-	null,			-- context_id
-
-	'category_payment_method',		-- widget_name
-	'#intranet-core.Payment_Method#',	-- pretty_name
-	'#intranet-core.Payment_Methods#',	-- pretty_plural
-	10007,			-- storage_type_id
-	'integer',		-- acs_datatype
-	'im_category_tree',	-- widget
-	'integer',		-- sql_datatype
-	'{custom {category_type "Intranet Invoice Payment Method"}}' -- parameters
-);
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count
+	from im_dynfield_widgets where widget_name = ''category_payment_method'';
+        IF 0 != v_count THEN return 0; END IF;
+
+	select im_dynfield_widget__new (
+		null,			-- widget_id
+		''im_dynfield_widget'',	-- object_type
+		now(),			-- creation_date
+		null,			-- creation_user
+		null,			-- creation_ip
+		null,			-- context_id
+	
+		''category_payment_method'',		-- widget_name
+		''#intranet-core.Payment_Method#'',	-- pretty_name
+		''#intranet-core.Payment_Methods#'',	-- pretty_plural
+		10007,			-- storage_type_id
+		''integer'',		-- acs_datatype
+		''im_category_tree'',	-- widget
+		''integer'',		-- sql_datatype
+		''{custom {category_type "Intranet Invoice Payment Method"}}'' -- parameters
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 
-create table im_dynfield_type_attribute_map (
-        attribute_id            integer
-                                constraint im_dynfield_type_attr_map_attr_fk
-                                references acs_objects,
-        object_type_id          integer
-                                constraint im_dynfield_type_attr_map_otype_nn
-                                not null
-                                constraint im_dynfield_type_attr_map_otype_fk
-                                references im_categories,
-        display_mode            varchar(10)
-                                constraint im_dynfield_type_attr_map_dmode_nn
-                                not null
-                                constraint im_dynfield_type_attr_map_dmode_ck
-                                check (display_mode in ('edit', 'display', 'none')),
-        unique (attribute_id, object_type_id)
-);
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''im_dynfield_type_attribute_map'';
+	IF 0 != v_count THEN return 0; END IF;
+
+	create table im_dynfield_type_attribute_map (
+	        attribute_id            integer
+	                                constraint im_dynfield_type_attr_map_attr_fk
+	                                references acs_objects,
+	        object_type_id          integer
+	                                constraint im_dynfield_type_attr_map_otype_nn
+	                                not null
+	                                constraint im_dynfield_type_attr_map_otype_fk
+	                                references im_categories,
+	        display_mode            varchar(10)
+	                                constraint im_dynfield_type_attr_map_dmode_nn
+	                                not null
+	                                constraint im_dynfield_type_attr_map_dmode_ck
+	                                check (display_mode in ('edit', 'display', 'none')),
+	        unique (attribute_id, object_type_id)
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 comment on table im_dynfield_type_attribute_map is '
