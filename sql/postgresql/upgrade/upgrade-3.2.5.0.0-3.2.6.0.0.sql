@@ -92,11 +92,12 @@ begin
 	                                constraint im_dynfield_type_attr_map_dmode_nn
 	                                not null
 	                                constraint im_dynfield_type_attr_map_dmode_ck
-	                                check (display_mode in ('edit', 'display', 'none')),
+	                                check (display_mode in (''edit'', ''display'', ''none'')),
 	        unique (attribute_id, object_type_id)
 	);
 
 	return 0;
+
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
