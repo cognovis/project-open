@@ -8,6 +8,7 @@
 -- @author frank.bergmann@project-open.com
 
 
+\i notifications-create.sql
 
 -- ------------------------------------------------------
 -- Privileges
