@@ -1541,121 +1541,6 @@ end;' language 'plpgsql';
 
 
 
--- Determine the default locale for the user
-create or replace function workflow_case__notify_assignee_get_locale (integer) returns text as '
-declare
-	p_user_id	alias for $1;
-
-	v_workflow_key		varchar(100);
-	v_transition_key	varchar(100);
-	v_acs_lang_package_id	integer;
-	v_locale		varchar(10);
-begin
-	-- Get the users local from preferences
-	select	locale into v_locale
-	from	user_preferences
-	where	user_id = p_user_id;
-
-	-- Get users locale from global default
-	IF v_locale is null THEN
-		select	package_id
-		into	v_acs_lang_package_id
-		from	apm_packages
-		where	package_key = ''acs-lang'';
-
-		v_locale := apm__get_value (v_acs_lang_package_id, ''SiteWideLocale'');
-	END IF;
-
-	-- Partial locale - lookup complete one
-	IF length(v_locale) = 2 THEN
-		select	locale into v_locale
-		from	ad_locales
-		where	language = v_locale
-			and enabled_p = ''t''
-			and (default_p = ''t''
-			   or (select count(*) from ad_locales where language = v_locale) = 1
-			);
-	END IF;
-
-	-- Default: English
-	IF v_locale is null THEN
-		v_locale := ''en_US'';
-	END IF;
-
-	return v_locale;
-end;' language 'plpgsql';
-
-
--- Determine the message string for (locale, package_key, message_key):
-create or replace function workflow_case__notify_assignee_get_message (text, text, text) returns text as '
-declare
-	p_locale		alias for $1;
-	p_package_key		alias for $2;
-	p_message_key		alias for $3;
-	v_message		text;
-	v_locale		text;
-	v_acs_lang_package_id	integer;
-begin
-	-- --------------------------------------------
-	-- Check full locale
-	select	message into v_message
-	from	lang_messages
-	where	message_key = p_message_key
-		and package_key = p_package_key
-		and locale = p_locale;
-	IF v_message is not null THEN return v_message; END IF;
-
-	-- --------------------------------------------
-	-- Partial locale - lookup complete one
-	v_locale := substring(p_locale from 1 for 2);
-
-	select	locale into v_locale
-	from	ad_locales
-	where	language = v_locale
-		and enabled_p = ''t''
-		and (default_p = ''t'' or
-		(select count(*) from ad_locales where language = v_locale) = 1);
-
-	select	message into v_message
-	from	lang_messages
-	where	message_key = p_message_key
-		and package_key = p_package_key
-		and locale = v_locale;
-	IF v_message is not null THEN return v_message; END IF;
-
-	-- --------------------------------------------
-	-- Try System Locale
-	select	package_id into	v_acs_lang_package_id
-	from	apm_packages
-	where	package_key = ''acs-lang'';
-	v_locale := apm__get_value (v_acs_lang_package_id, ''SiteWideLocale'');
-
-	select	message into v_message
-	from	lang_messages
-	where	message_key = p_message_key
-		and package_key = p_package_key
-		and locale = v_locale;
-	IF v_message is not null THEN return v_message; END IF;
-
-	-- --------------------------------------------
-	-- Try with English...
-	v_locale := ''en_US'';
-	select	message into v_message
-	from	lang_messages
-	where	message_key = p_message_key
-		and package_key = p_package_key
-		and locale = v_locale;
-	IF v_message is not null THEN return v_message; END IF;
-
-	-- --------------------------------------------
-	-- Nothing found...
-	v_message := ''MISSING '' || p_locale || '' TRANSLATION for '' || p_package_key || ''.'' || p_message_key;
-	return v_message;	
-
-end;' language 'plpgsql';
-
-
-
 -- procedure notify_assignee
 create or replace function workflow_case__notify_assignee (integer,integer,varchar,varchar)
 returns integer as '
@@ -1674,7 +1559,7 @@ declare
   v_body                                  text; 
   v_request_id                            integer; 
   v_workflow_url			  text;
-  v_acs_lang_package_id			  text;
+  v_acs_lang_package_id			  integer;
   v_locale				  text;
 begin
         select to_char(ta.deadline,''Mon fmDDfm, YYYY HH24:MI:SS''),
@@ -1686,7 +1571,7 @@ begin
 	   and tr.workflow_key = c.workflow_key
 	   and tr.transition_key = ta.transition_key;
 
-	select apm__get_value(p.package_id,''SystemURL'') || site_node__url(s.node_id)
+	select apm__get_value(p.package_id, ''SystemURL'') || site_node__url(s.node_id)
 	  into v_workflow_url
 	  from site_nodes s, apm_packages a,
 	       (select package_id
@@ -1723,21 +1608,28 @@ begin
 	v_body := replace(v_body, ''%deadline%'', v_deadline_pretty);
 	v_body := replace(v_body, ''%workflow_url%'', v_workflow_url);
 
-	select notification__new(
-		null,
-		(select type_id from notification_types where short_name = ''wf_assignment_notif''),
-		(select package_id from apm_packages where package_key = ''acs-workflow''),
-		now(),
-		null,
-			624,
-		v_subject,
-		v_body,
-		null,
-		now(),
-			624,
-		''0.0.0.0'',
-		null
-	);
+        if notify_assignee__callback != '''' and notify_assignee__callback is not null then
+            v_str :=  ''select '' || notify_assignee__callback || '' ('' ||
+                      notify_assignee__task_id || '','' ||
+                      coalesce(quote_literal(notify_assignee__custom_arg),''null'') ||
+                      '','' ||
+                      notify_assignee__user_id || '','' ||
+                      v_party_from || '','' ||
+                      quote_literal(v_subject) || '','' ||
+                      quote_literal(v_body) || '')'';
+
+            execute v_str;
+        else
+            v_request_id := acs_mail_nt__post_request (
+                v_party_from,                 -- party_from
+                notify_assignee__user_id,     -- party_to
+                ''f'',                        -- expand_group
+                v_subject,                    -- subject
+                v_body,                       -- message
+                0                             -- max_retries
+            );
+        end if;
+
     return 0; 
 end;' language 'plpgsql';
 
