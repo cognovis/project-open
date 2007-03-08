@@ -60,9 +60,28 @@ set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurr
 # Select and format the list of tasks
 # ---------------------------------------------------------------------
 
+set subprojects [db_list subprojects "
+	select	children.project_id
+	from	im_projects parent,
+		im_projects children
+	where
+		children.project_status_id not in (
+			select	child_id
+			from	im_category_hierarchy
+			where	parent_id = [im_project_status_closed]
+		)
+		and children.tree_sortkey 
+			between parent.tree_sortkey 
+			and tree_right(parent.tree_sortkey)
+		and parent.project_id = :project_id
+"]
+
+lappend subprojects 0
+set subproject_sql "([join $subprojects ", "])"
+
 
 set task_sql "
-select
+select distinct
 	pe.person_id as freelance_id,
 	im_name_from_user_id (pe.person_id) as freelance_name,
 	im_category_from_id(m.object_role_id) as role,
@@ -82,7 +101,7 @@ from
 			im_category_from_id([im_project_type_trans]) as po_task_type,
 			tt.*
 		  from	im_trans_tasks tt
-		  where	tt.project_id = :project_id
+		  where	tt.project_id in $subproject_sql
 			and tt.trans_id is not null
 	  UNION
 		select
@@ -92,7 +111,7 @@ from
 			im_category_from_id([im_project_type_edit]) as po_task_type,
 			tt.*
 		  from	im_trans_tasks tt
-		  where	tt.project_id = :project_id
+		  where	tt.project_id in $subproject_sql
 			and tt.edit_id is not null
 	  UNION
 		select
@@ -102,7 +121,7 @@ from
 			im_category_from_id([im_project_type_proof]) as po_task_type,
 			tt.*
 		  from	im_trans_tasks tt
-		  where	tt.project_id = :project_id
+		  where	tt.project_id in $subproject_sql
 			and tt.proof_id is not null
 	  UNION
 		select
@@ -112,13 +131,15 @@ from
 			im_category_from_id([im_project_type_other]) as po_task_type,
 			tt.*
 		  from	im_trans_tasks tt
-		  where	tt.project_id = :project_id
+		  where	tt.project_id in $subproject_sql
 			and tt.other_id is not null
 	) tt,
 	persons pe,
+	im_projects p,
 	group_distinct_member_map fmem
 where
-	r.object_id_one = :project_id
+	r.object_id_one = p.project_id
+	and p.project_id in $subproject_sql
 	and r.rel_id = m.rel_id
 	and r.object_id_two = pe.person_id
 	and fmem.group_id = [im_freelance_group_id]
@@ -193,8 +214,8 @@ db_foreach task_tasks $task_sql {
 		    <input type=submit value=Submit>  
 		  </td>
 		</tr>
-              </table>
-              </form>\n"
+	      </table>
+	      </form>\n"
 	}
 
 	append task_html "
@@ -213,13 +234,13 @@ db_foreach task_tasks $task_sql {
 	  </tr>
 	  <tr class=rowtitle>
 	    <td>
-              <A href=/intranet/users/view?user_id=$freelance_id>$freelance_name</a>
+	      <A href=/intranet/users/view?user_id=$freelance_id>$freelance_name</a>
 	    </td>
-            <td colspan=[expr $task_colspan-1] align=left>
+	    <td colspan=[expr $task_colspan-1] align=left>
 	      $freelance_company_html
-            </td>
-          </tr>
-         "
+	    </td>
+	  </tr>
+	 "
 
 	set old_freelance_id $freelance_id
     }
@@ -230,14 +251,14 @@ db_foreach task_tasks $task_sql {
 	  <td>$target_language</td>
 	  <td>
 	    $task_status
-          </td>
+	  </td>
 	  <td>
 	    $po_task_type
-          </td>
+	  </td>
 	  <td>$task_units</td>
 	  <td>$task_uom</td>
 	  <td><input type=checkbox name=\"$action.$task_id\" value=1 checked></td>
-        </tr>\n"
+	</tr>\n"
     incr ctr    
 }
 
