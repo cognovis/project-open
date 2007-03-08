@@ -42,7 +42,7 @@
                 material_name	= :material_name,
                 material_nr	= :material_nr,
                 material_type_id= :material_type_id,
-                material_status_id=material_status_id,
+                material_status_id = :material_status_id,
 		material_uom_id = :material_uom_id,
                 description	= :description
         where
