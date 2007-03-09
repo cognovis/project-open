@@ -415,7 +415,7 @@ set inner_sql "
 			LEFT OUTER JOIN im_employees e ON (u.user_id = e.employee_id)
 		where
 			h.project_id = p.project_id
-			and p.project_status_id not in (select child_id from im_category_hierarchy where parent_id = [im_project_status_closed])
+			and p.project_status_id not in ([im_project_status_deleted])
 			and h.user_id = u.user_id
 			and p.company_id = c.company_id
 			and h.day::date >= to_date(:start_date, 'YYYY-MM-DD')
