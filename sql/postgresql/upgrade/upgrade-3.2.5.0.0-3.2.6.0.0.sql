@@ -11,7 +11,7 @@ begin
 	from im_dynfield_widgets where widget_name = ''currencies'';
         IF 0 != v_count THEN return 0; END IF;
 
-	select im_dynfield_widget__new (
+	PERFORM im_dynfield_widget__new (
 		null,			-- widget_id
 		''im_dynfield_widget'',	-- object_type
 		now(),			-- creation_date
@@ -45,7 +45,7 @@ begin
 	from im_dynfield_widgets where widget_name = ''category_payment_method'';
         IF 0 != v_count THEN return 0; END IF;
 
-	select im_dynfield_widget__new (
+	PERFORM im_dynfield_widget__new (
 		null,			-- widget_id
 		''im_dynfield_widget'',	-- object_type
 		now(),			-- creation_date
