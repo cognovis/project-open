@@ -199,7 +199,7 @@ if {0 != $project_id && "" != $project_id} {
 		and p.tree_sortkey 
 			between parent_p.tree_sortkey 
 			and tree_right(parent_p.tree_sortkey)
-		and p.project_status_id not in (select child_id from im_category_hierarchy where parent_id = [im_project_status_closed])
+		and p.project_status_id not in ([im_project_status_deleted])
     )"
 }
 
@@ -252,7 +252,7 @@ set inner_sql "
 			 where	p.end_date >= to_date(:start_date, 'YYYY-MM-DD')
 				and p.end_date < to_date(:end_date, 'YYYY-MM-DD')
 				and p.end_date::date < to_date(:end_date, 'YYYY-MM-DD')
-				and p.project_status_id not in (select child_id from im_category_hierarchy where parent_id = [im_project_status_closed])
+				and p.project_status_id not in ([im_project_status_deleted])
 			) p	 
 			LEFT OUTER JOIN acs_rels r 
 				ON (p.project_id = r.object_id_one)
