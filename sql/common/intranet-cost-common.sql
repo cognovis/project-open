@@ -342,6 +342,12 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 extra_select, extra_where, sort_order, visible_for) values (2113,21,NULL,'Budget Hours',
 '$project_budget_hours','','',13,'im_permission $user_id view_budget_hours');
 
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (2114,21,NULL,'Reported Hours',
+'$reported_hours_cache','','',14,'im_permission $user_id view_budget_hours');
+
+
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2115,21,NULL,'Perc Compl',
 '$percent_completed','','',15,'');
@@ -349,26 +355,37 @@ extra_select, extra_where, sort_order, visible_for) values (2115,21,NULL,'Perc C
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2131,21,NULL,'Invoices',
 '$cost_invoices_cache','','',31,'expr [im_permission $user_id view_finance] && [im_cc_read_p]');
+
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2133,21,NULL,'Bills',
 '$cost_bills_cache','','',33,'expr [im_permission $user_id view_finance] && [im_cc_read_p]');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (2134,21,NULL,'Expenses',
+'$cost_expense_logged_cache','','',34,'expr [im_permission $user_id view_finance] && [im_cc_read_p]');
+
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2135,21,NULL,'Time sheet',
 '$cost_timesheet_logged_cache','','',35,'expr [im_permission $user_id view_finance] && [im_cc_read_p]');
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2137,21,NULL,'Profit',
-'[expr [n20 $cost_invoices_cache] - [n20 $cost_bills_cache] - [n20 $cost_timesheet_logged_cache]]',
+'[expr [n20 $cost_invoices_cache] - [n20 $cost_bills_cache] - [n20 $cost_expense_logged_cache] - [n20 $cost_timesheet_logged_cache]]',
 '','',37,'expr [im_permission $user_id view_finance] && [im_cc_read_p]');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2141,21,NULL,'Quotes',
 '$cost_quotes_cache','','',41,'expr [im_permission $user_id view_finance] && [im_cc_read_p]');
+
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2143,21,NULL,'POs',
 '$cost_purchase_orders_cache','','',43,'expr [im_permission $user_id view_finance] && [im_cc_read_p]');
+
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2145,21,NULL,'Time plan',
 '$cost_timesheet_planned_cache','','',45,'expr [im_permission $user_id view_finance] && [im_cc_read_p]');
+
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2147,21,NULL,'Prelim Profit',
 '[expr [n20 $cost_quotes_cache] - [n20 $cost_purchase_orders_cache] - [n20 $cost_timesheet_planned_cache]]',
