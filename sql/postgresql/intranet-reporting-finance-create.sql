@@ -575,6 +575,8 @@ declare
 	v_count			integer;
 BEGIN
 
+    return 0;
+
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
     select group_id into v_senman from groups where group_name = ''Senior Managers'';
     select group_id into v_proman from groups where group_name = ''Project Managers'';
