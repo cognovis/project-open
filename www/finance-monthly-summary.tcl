@@ -128,6 +128,7 @@ if {[info exists project_id]} {
 	where
 		parent_p.project_id = :project_id
 		and p.tree_sortkey between parent_p.tree_sortkey and tree_right(parent_p.tree_sortkey)
+		and p.project_status_id not in (select child_id from im_category_hierarchy where parent_id = [im_project_status_closed])
     )"
 }
 

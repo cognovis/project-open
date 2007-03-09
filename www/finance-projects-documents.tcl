@@ -196,7 +196,10 @@ if {0 != $project_id && "" != $project_id} {
 		im_projects parent_p
 	where
 		parent_p.project_id = :project_id
-		and p.tree_sortkey between parent_p.tree_sortkey and tree_right(parent_p.tree_sortkey)
+		and p.tree_sortkey 
+			between parent_p.tree_sortkey 
+			and tree_right(parent_p.tree_sortkey)
+		and p.project_status_id not in (select child_id from im_category_hierarchy where parent_id = [im_project_status_closed])
     )"
 }
 
@@ -249,6 +252,7 @@ set inner_sql "
 			 where	p.end_date >= to_date(:start_date, 'YYYY-MM-DD')
 				and p.end_date < to_date(:end_date, 'YYYY-MM-DD')
 				and p.end_date::date < to_date(:end_date, 'YYYY-MM-DD')
+				and p.project_status_id not in (select child_id from im_category_hierarchy where parent_id = [im_project_status_closed])
 			) p	 
 			LEFT OUTER JOIN acs_rels r 
 				ON (p.project_id = r.object_id_one)
@@ -354,7 +358,7 @@ set report_def [list \
 		"" 
 		"<a href=$this_url&project_id=$project_id&level_of_detail=4 
 		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
-		<b><a href=$project_url$project_id>$project_name</a></b>"
+		<b><a href=$project_url$project_id><nobr>$project_name</nobr></a></b>"
 		"" 
 		"" 
 		"<nobr><i>$invoice_subsubtotal $default_currency</i></nobr>" 
