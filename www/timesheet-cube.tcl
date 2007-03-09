@@ -170,10 +170,11 @@ set left_scale_options {
 	"project_nr" "Project Nr"
 	"project_type" "Project Type"
 	"project_status" "Project Status"
+	"user_name" "User Name"
+	"department" "User Department"
 	"customer_name" "Customer Name"
 	"customer_type" "Customer Type"
 	"customer_status" "Customer Status"
-	"department" "Department"
 	"project_manager_name" "Project Manager"
 }
 
@@ -404,7 +405,8 @@ set inner_sql "
 			c.*,
 			u.*,
 			e.*,
-			im_cost_center_name_from_id(e.department_id) as department
+			im_cost_center_name_from_id(e.department_id) as department,
+			im_name_from_user_id(u.user_id) as user_name
 		from
 			im_hours h,
 			im_projects p,
