@@ -62,7 +62,10 @@ set context ""
 
 set help_text "
 <strong>Projects and Translation Tasks:</strong><br>
-Shows translation tasks groupd by project and customer.
+Shows translation tasks groupd by project and customer.<br>
+
+Start Date &amp; End Date refer to the start and end of the
+project that contains the translation tasks.
 "
 
 
