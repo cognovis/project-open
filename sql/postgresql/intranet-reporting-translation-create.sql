@@ -55,7 +55,7 @@ BEGIN
 		null,					-- context_id
 		''intranet-reporting-translation'',		-- package_name
 		''reporting-translation'',			-- label
-		''Reporting Translation'',			-- name
+		''Translation'',			-- name
 		''/intranet-reporting-translation/'',	-- url
 		50,					-- sort_order
 		v_reporting_menu,			-- parent_menu_id
