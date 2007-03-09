@@ -13,7 +13,6 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
 
         <provides url="intranet-reporting-finance" version="3.2.0"/>
-        <provides url="intranet-reporting" version="3.2.0"/>
         <requires url="intranet-exchange-rate" version="3.2.0"/>
         <requires url="intranet-core" version="3.2.0"/>
         <requires url="intranet-dw-light" version="3.2.0"/>
