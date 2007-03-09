@@ -112,7 +112,7 @@ BEGIN
 		null,					-- creation_ip
 		null,					-- context_id
 		''intranet-reporting-translation'',		-- package_name
-		''reporting-translation-monthly-summary'',	-- label
+		''reporting-project-trans-tasks'',	-- label
 		''Translation Tasks'',		-- name
 		''/intranet-reporting-translation/project-trans-tasks'', -- url
 		20,					-- sort_order
