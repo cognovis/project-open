@@ -64,10 +64,16 @@ set expense_payment_type_options [db_list_of_lists payment_options "
 # ToDo: This could give problems with Tasks. Maybe exclude
 # tasks in the future?
 #
+
+if {[info exists expense_id]} {
+    set project_id [db_string expense_project "select project_id from im_costs where cost_id = :expense_id" -default ""]
+}
+
 set project_options [im_project_options \
 	-exclude_subprojects_p 0 \
 	-member_user_id $user_id \
 	-project_id $project_id \
+	-exclude_status_id [im_project_status_closed] \
 ]
 
 set include_empty 0
