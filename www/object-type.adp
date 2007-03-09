@@ -1,9 +1,9 @@
-<master src="master">
+<master>
 
 <property name="title">@title@</property>
 <property name="context">@context@</property>
 
-<h2>@title@</h2>
+
 
 <form method=post action=attribute-delete>
 <input type=hidden name=return_url value="@return_url@">
@@ -15,7 +15,6 @@
     <th class="list-narrow">#intranet-dynfield.Pretty_Name#</th>
     <th class="list-narrow">#intranet-dynfield.Located# <br>#intranet-dynfield.in_Table#</th>
     <th class="list-narrow">#intranet-dynfield.Widget_Name#</th>
-    <th class="list-narrow">Pos-Y <!-- X/Y W/H --></th>
     <th class="list-narrow">#intranet-dynfield.Del#</th>
   </tr>
 
@@ -42,14 +41,7 @@
 	  @attributes.widget_name@
 	</a>
     </td>
-    <td class="list-narrow">
-        @attributes.pos_y@
-	<!--
-	@attributes.pos_x@/@attributes.pos_y@
-	@attributes.size_x@/@attributes.size_y@
-	@attributes.label_style@
-	-->
-    </td>
+
     <td class="list-narrow">
 	<input type=checkbox name=attribute_ids value="@attributes.im_dynfield_attribute_id@">
     </td>
@@ -70,9 +62,8 @@
 <li><a href="layout-manager?object_type=@object_type@">#intranet-dynfield.Layout_Manager#</a></li>
 </ul>
 
-<p>&nbsp;
 
-<h2>#intranet-dynfield.lt_Extension_Tables_for_#</h2>
+<h1>#intranet-dynfield.lt_Extension_Tables_for_#</h1>
 <form method=post action=extension-table-delete>
 <input type=hidden name=object_type value="@object_type@">
 <input type=hidden name=return_url value="@return_url@">
@@ -114,3 +105,62 @@
 <ul class="action-links">
 <li><a href="extension-table-new?object_type=@object_type@&return_url=@return_url_encoded;noquote@">#intranet-dynfield.lt_Add_a_new_extension_t#</a>
 </ul>
+
+
+<p>
+
+
+<h1>#intranet-dynfield.lt_Instances_of_object_t#</h1>
+
+<table class="list">
+
+  <tr class="list-header">
+    <th class="list-narrow">#intranet-dynfield.Object_ID#</th>
+    <th class="list-narrow">#intranet-dynfield.Object_Name#</th>
+  </tr>
+
+  <multiple name=objects>
+  <if @objects.rownum@ odd>
+    <tr class="list-odd">
+  </if> <else>
+    <tr class="list-even">
+  </else>
+
+    <td class="list-narrow">
+	@objects.object_id@
+    </td>
+    <td class="list-narrow">
+      <a href=object-new?object_type=@object_type@&object_id=@objects.object_id@>
+	@objects.object_name@
+      </a>
+    </td>
+
+  </tr>
+  </multiple>
+</table>
+
+<if @generate_interfaces@ eq "1" and @attributes:rowcount@ gt "0">
+	<if @show_interfaces_p@ eq "1">
+		<br/>
+		@show_hidde_link;noquote@
+		<br/>
+		<h1>#intranet-dynfield.dbi_interfaces#</h1>
+
+		<h5>#intranet-dynfield.dbi_headers#</h5>
+		@dbi_interfaces;noquote@
+
+		<br/>
+
+		<h5>#intranet-dynfield.dbi_inserts#</h5>
+		@dbi_inserts;noquote@
+
+		<br/>
+
+		<h5>#felxbase.dbi_procs#</h5>
+<pre>
+@dbi_procs;noquote@
+</pre>
+	</if>
+	<br>
+	@show_hidde_link;noquote@
+</if>
