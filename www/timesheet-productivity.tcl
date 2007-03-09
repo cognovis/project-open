@@ -113,6 +113,7 @@ from
 		on (u.user_id = e.employee_id)
 where
 	h.project_id = p.project_id
+	and p.project_status_id not in (select child_id from im_category_hierarchy where parent_id = [im_project_status_closed])
 	and h.user_id = u.user_id
 	and h.day >= to_date(:start_date, 'YYYY-MM')
 	and h.day < to_date(:start_date, 'YYYY-MM') + 31
@@ -142,6 +143,7 @@ from
 	cc_users u
 where
 	s.user_id = u.user_id
+	and p.project_status_id not in (select child_id from im_category_hierarchy where parent_id = [im_project_status_closed])
 	and s.company_id = c.company_id
 	and s.project_id = p.project_id
 order by
