@@ -64,8 +64,8 @@ set help_text "
 <strong>Projects and Translation Tasks:</strong><br>
 Shows translation tasks groupd by project and customer.<br>
 
-Start Date &amp; End Date refer to the start and end of the
-project that contains the translation tasks.
+The report shows projects only if the project's end_date is greater
+or equal Start Date and less then End Date. 
 "
 
 
