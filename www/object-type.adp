@@ -14,7 +14,9 @@
     <th class="list-narrow">#intranet-dynfield.Attribute_Name#</th>
     <th class="list-narrow">#intranet-dynfield.Pretty_Name#</th>
     <th class="list-narrow">#intranet-dynfield.Located# <br>#intranet-dynfield.in_Table#</th>
-    <th class="list-narrow">#intranet-dynfield.Widget_Name#</th>
+    <th class="list-narrow">Widget<br>Name</th>
+    <th class="list-narrow">Attrib<br>Type</th>
+    <th class="list-narrow">Table<br>Type</th>
     <th class="list-narrow">#intranet-dynfield.Del#</th>
   </tr>
 
@@ -41,7 +43,12 @@
 	  @attributes.widget_name@
 	</a>
     </td>
-
+    <td class="list-narrow">
+	@attributes.attribute_data_type@
+    </td>
+    <td class="list-narrow">
+	@attributes.table_data_type@
+    </td>
     <td class="list-narrow">
 	<input type=checkbox name=attribute_ids value="@attributes.im_dynfield_attribute_id@">
     </td>
@@ -108,36 +115,6 @@
 
 
 <p>
-
-
-<h1>#intranet-dynfield.lt_Instances_of_object_t#</h1>
-
-<table class="list">
-
-  <tr class="list-header">
-    <th class="list-narrow">#intranet-dynfield.Object_ID#</th>
-    <th class="list-narrow">#intranet-dynfield.Object_Name#</th>
-  </tr>
-
-  <multiple name=objects>
-  <if @objects.rownum@ odd>
-    <tr class="list-odd">
-  </if> <else>
-    <tr class="list-even">
-  </else>
-
-    <td class="list-narrow">
-	@objects.object_id@
-    </td>
-    <td class="list-narrow">
-      <a href=object-new?object_type=@object_type@&object_id=@objects.object_id@>
-	@objects.object_name@
-      </a>
-    </td>
-
-  </tr>
-  </multiple>
-</table>
 
 <if @generate_interfaces@ eq "1" and @attributes:rowcount@ gt "0">
 	<if @show_interfaces_p@ eq "1">
