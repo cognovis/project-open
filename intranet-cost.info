@@ -25,6 +25,9 @@
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultCurrency"  default="EUR" description="Default currency used in various forms"/>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="DefaultCompanyInvoicePaymentDays"  default="30" description="Default value for payment days of Company Invoices"/>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="DefaultProviderBillPaymentDays"  default="60" description="Default value for payment to providers"/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="CostCacheSweeperInterval"  default="57" description="Check every X seconds for the project's cost cache. Default is 60 (every 1 minutes)"/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="CostCacheSweeperInterval"  default="50" description="Check for a maximum of N projects every time the Sweeper is activated. Default is 50"/>
+
         </parameters>
 
     </version>
