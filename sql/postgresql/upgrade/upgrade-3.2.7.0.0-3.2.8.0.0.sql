@@ -1,6 +1,7 @@
 -- upgrade-3.2.7.0.0-3.2.8.0.0.sql
 
 
+
 ----------------------------------------------------------------
 -- percentage column for im_biz_object_members
 
