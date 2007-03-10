@@ -822,7 +822,8 @@ begin
 		IF v_last_dirty is not null THEN return v_count; END IF;
 
 		-- Set the "dirty"-flag. There is a sweeper to cleanup afterwards.
-	        RAISE NOTICE ''im_cost_project_cache_invalidator: invalidating cost cache of project %'', p_project_id;
+	        RAISE NOTICE ''im_cost_project_cache_invalidator: 
+	invalidating cost cache of project %'', p_project_id;
 		update im_projects
 		set cost_cache_dirty = now()
 		where project_id = v_project_id;
@@ -881,7 +882,7 @@ begin
 end;' language 'plpgsql';
 
 CREATE TRIGGER im_costs_project_cache_del_tr
-BEFORE DELETE
+AFTER DELETE
 ON im_costs
 FOR EACH ROW
 EXECUTE PROCEDURE im_cost_project_cache_del_tr();

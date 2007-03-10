@@ -17,6 +17,7 @@ select im_component_plugin__del_module('intranet-cost');
 
 DROP TRIGGER im_projects_project_cache_del_tr ON im_projects;
 DROP TRIGGER im_projects_project_cache_up_tr ON im_projects;
+
 DROP TRIGGER im_costs_project_cache_del_tr ON im_costs;
 DROP TRIGGER im_costs_project_cache_up_tr ON im_costs;
 DROP TRIGGER im_costs_project_cache_ins_tr ON im_costs;
@@ -26,6 +27,7 @@ drop function im_cost_project_cache_invalidator (integer);
 drop function im_cost_project_cache_up_tr ();
 drop function im_cost_project_cache_del_tr ();
 drop function im_cost_project_cache_ins_tr ();
+
 drop function im_project_project_cache_up_tr ();
 drop function im_project_project_cache_del_tr ();
 
