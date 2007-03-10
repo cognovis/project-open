@@ -8,14 +8,29 @@
 -- All rights including reserved. To inquire license terms please 
 -- refer to http://www.project-open.com/modules/<module-key>
 
--- BEGIN
-    select im_menu__del_module('intranet-cost');
-    select im_component_plugin__del_module('intranet-cost');
--- END;
+select im_menu__del_module('intranet-cost');
+select im_component_plugin__del_module('intranet-cost');
 
--- show errors
 
--- commit;
+
+--------------------------------------------------------------
+
+DROP TRIGGER im_projects_project_cache_del_tr ON im_projects;
+DROP TRIGGER im_projects_project_cache_up_tr ON im_projects;
+DROP TRIGGER im_costs_project_cache_del_tr ON im_costs;
+DROP TRIGGER im_costs_project_cache_up_tr ON im_costs;
+
+drop function im_cost_project_cache_invalidator (integer);
+drop function im_cost_project_cache_up_tr ();
+drop function im_cost_project_cache_del_tr ();
+drop function im_project_project_cache_up_tr ();
+
+drop function im_project_project_cache_del_tr ();
+
+
+
+
+--------------------------------------------------------------
 
 
 alter table im_projects drop column cost_quotes_cache;
