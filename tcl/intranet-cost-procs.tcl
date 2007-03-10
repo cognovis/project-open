@@ -1256,18 +1256,10 @@ ad_proc im_costs_project_finance_component {
     # project_id may get overwritten by SQL query
     set org_project_id $project_id
 
+    # Get a hash array of subtotals per cost_type
+    array set subtotals [im_cost_update_project_cost_cache $project_id]
 
-    # ----------------- Main SQL - select subtotals and their currencies -------------
-
-    # Determines the cost_ids to be included in in this view.
-    # There are two options:
-    # - Those cost items that contain our project_id in the "project_id" column
-    #   (generated from normal invoicing process) and
-    # - Those that are N:M related to a project via acs_rels.
-    #   These holds for cummulative invoices, for example in translation.
-    #
-
-    
+    # ----------------- Compose Main SQL Query --------------------------------
 
     set project_cost_ids_sql "
 		                select distinct cost_id
@@ -1279,7 +1271,7 @@ ad_proc im_costs_project_finance_component {
 					where	children.tree_sortkey 
 							between parent.tree_sortkey 
 							and tree_right(parent.tree_sortkey)
-						and parent.project_id = :org_project_id
+						and parent.project_id = :project_id
 				)
 			    UNION
 				select distinct object_id_two as cost_id
@@ -1291,134 +1283,67 @@ ad_proc im_costs_project_finance_component {
 					where	children.tree_sortkey 
 							between parent.tree_sortkey 
 							and tree_right(parent.tree_sortkey)
-						and parent.project_id = :org_project_id
+						and parent.project_id = :project_id
 				)
     "
 
-   
-    set subtotals_sql "
-select
-	to_char(sum(ci.amount), :num_format) as amount,
-	to_char(sum(ci.amount_converted), :num_format) as amount_converted,
-	ci.currency,
-        cat.category_id as cost_type_id,
-        im_category_from_id(cat.category_id) as cost_type,
-	case 
-		when cat.category_id = [im_cost_type_invoice] then 1
-		when cat.category_id = [im_cost_type_quote] then 1
-		when cat.category_id = [im_cost_type_delivery_note] then 1
-		else -1
-	end as sign	
-from
-	im_categories cat left outer join 
-	(
-		select	ci.*,
-			im_exchange_rate(
-				ci.effective_date::date, 
-				ci.currency, 
-				:default_currency
-			) * amount as amount_converted
-		from	im_costs ci
-		where	
-			ci.cost_id in (
-				$project_cost_ids_sql
-			)
-	) ci on (cat.category_id = ci.cost_type_id)
-where
-	cat.category_id not in (
-		[im_cost_type_employee],
-		[im_cost_type_repeating],
-		[im_cost_type_expense_item]
-	)
-	and ci.currency is not null
-group by
-	ci.currency,
-	cat.category_id,
-	ci.cost_type_id
-order by
-	cat.category_id
-"
-
-    # ----------------- Initialize variables -------------
-
-    # Initialize the subtotal array
-    set cost_type_sql "select category_id from im_categories where category_type='Intranet Cost Type'"
-    db_foreach subtotal_init $cost_type_sql {
-	set subtotals($category_id) 0
-    }
-
-    # ----------------- Calculate Subtotals per cost_type_id -------------
-
-    db_foreach subtotals $subtotals_sql {
-	if {"" == $amount_converted} { set amount_converted 0 }
-	if {"" == $currency} { set currency $default_currency }
-	set subtotals($cost_type_id) $amount_converted
-	ns_log Notice "im_costs_project_finance_component: subtotals($cost_type_id) = $amount_converted"
-    }
-
-
-    # ----------------- Compose SQL Query --------------------------------
-    # Only get "real" costs (=invoices and bills) and ignore
-    # quotes and purchase orders 
- 
     set costs_sql "
-select
-	ci.*,
-	to_char(ci.paid_amount, :num_format) as payment_amount,
-	ci.paid_currency as payment_currency,
-	to_char(ci.amount, :num_format) as amount,
-	to_char(ci.amount * im_exchange_rate(ci.effective_date::date, ci.currency, :default_currency), :num_format) as amount_converted,
-	p.project_nr,
-	p.project_name,
-	cust.company_name as customer_name,
-	prov.company_name as provider_name,
-	url.url,
-	im_category_from_id(ci.cost_status_id) as cost_status,
-	im_category_from_id(ci.cost_type_id) as cost_type,
-	im_cost_center_code_from_id(ci.cost_center_id) as cost_center_code,
-	to_date(to_char(ci.effective_date,:date_format),:date_format) + ci.payment_days as calculated_due_date
-from
-	im_costs ci
-		LEFT OUTER JOIN im_projects p ON (ci.project_id = p.project_id)
-		LEFT OUTER JOIN im_companies cust on (ci.customer_id = cust.company_id)
-		LEFT OUTER JOIN im_companies prov on (ci.provider_id = prov.company_id),
-	acs_objects o,
-	(select * from im_biz_object_urls where url_type=:view_mode) url
-where
-	ci.cost_id = o.object_id
-	and o.object_type = url.object_type
-	and ci.cost_id in (
-		$project_cost_ids_sql
-	)
-      	and ci.cost_type_id not in (
-                [im_cost_type_employee],
-                [im_cost_type_repeating],
-                [im_cost_type_expense_item]
-        )
-order by
-	ci.cost_type_id,
-	ci.effective_date desc
-"
+	select
+		ci.*,
+		to_char(ci.paid_amount, :num_format) as payment_amount,
+		ci.paid_currency as payment_currency,
+		to_char(ci.amount, :num_format) as amount,
+		to_char(ci.amount * im_exchange_rate(ci.effective_date::date, ci.currency, :default_currency), :num_format) as amount_converted,
+		p.project_nr,
+		p.project_name,
+		cust.company_name as customer_name,
+		prov.company_name as provider_name,
+		url.url,
+		im_category_from_id(ci.cost_status_id) as cost_status,
+		im_category_from_id(ci.cost_type_id) as cost_type,
+		im_cost_center_code_from_id(ci.cost_center_id) as cost_center_code,
+		to_date(to_char(ci.effective_date,:date_format),:date_format) + ci.payment_days as calculated_due_date
+	from
+		im_costs ci
+			LEFT OUTER JOIN im_projects p ON (ci.project_id = p.project_id)
+			LEFT OUTER JOIN im_companies cust on (ci.customer_id = cust.company_id)
+			LEFT OUTER JOIN im_companies prov on (ci.provider_id = prov.company_id),
+		acs_objects o,
+		(select * from im_biz_object_urls where url_type=:view_mode) url
+	where
+		ci.cost_id = o.object_id
+		and o.object_type = url.object_type
+		and ci.cost_id in (
+			$project_cost_ids_sql
+		)
+	      	and ci.cost_type_id not in (
+	                [im_cost_type_employee],
+	                [im_cost_type_repeating],
+	                [im_cost_type_expense_item]
+	        )
+	order by
+		ci.cost_type_id,
+		ci.effective_date desc
+    "
 
 
     set cost_html "
-<table border=0>
-  <tr>
-    <td colspan=$colspan class=rowtitle align=center>
-      [_ intranet-cost.Financial_Documents]
-    </td>
-  </tr>
-  <tr class=rowtitle>
-<!--    <td align=center class=rowtitle>[_ intranet-cost.Project]</td> -->
-    <td align=center class=rowtitle>[_ intranet-cost.Document]</td>
-    <td align=center class=rowtitle>[lang::message::lookup "" intranet-cost.CostCenter_short "CC"]</td>
-    <td align=center class=rowtitle>[_ intranet-cost.Company]</td>
-    <td align=center class=rowtitle>[_ intranet-cost.Due]</td>
-    <td align=center class=rowtitle>[_ intranet-cost.Amount]</td>
-    <td align=center class=rowtitle>[lang::message::lookup "" intranet-cost.Org_Amount "Org"]</td>
-    <td align=center class=rowtitle>[_ intranet-cost.Paid]</td>
-  </tr>
-"
+	<table border=0>
+	  <tr>
+	    <td colspan=$colspan class=rowtitle align=center>
+	      [_ intranet-cost.Financial_Documents]
+	    </td>
+	  </tr>
+	  <tr class=rowtitle>
+	    <td align=center class=rowtitle>[_ intranet-cost.Document]</td>
+	    <td align=center class=rowtitle>[lang::message::lookup "" intranet-cost.CostCenter_short "CC"]</td>
+	    <td align=center class=rowtitle>[_ intranet-cost.Company]</td>
+	    <td align=center class=rowtitle>[_ intranet-cost.Due]</td>
+	    <td align=center class=rowtitle>[_ intranet-cost.Amount]</td>
+	    <td align=center class=rowtitle>[lang::message::lookup "" intranet-cost.Org_Amount "Org"]</td>
+	    <td align=center class=rowtitle>[_ intranet-cost.Paid]</td>
+	  </tr>
+    "
 
     set can_read_summary_p 1
 
@@ -1544,27 +1469,6 @@ order by
 
     # ----------------- Hard Costs HTML -------------
     # Hard "real" costs such as invoices, bills and timesheet
-
-    # Add numbers to the im_projects table "cache" fields
-    if {[db_column_exists im_projects cost_invoices_cache]} {
-	
-	# We can update the profit&loss because all financial documents
-	# for this project are of the same currency.
-	db_dml update_projects "
-		update im_projects set
-			cost_invoices_cache = $subtotals([im_cost_type_invoice]),
-			cost_bills_cache = $subtotals([im_cost_type_bill]),
-			cost_timesheet_logged_cache = $subtotals([im_cost_type_timesheet]),
-			cost_expense_logged_cache = $subtotals([im_cost_type_expense_report]),
-			cost_quotes_cache = $subtotals([im_cost_type_quote]),
-			cost_purchase_orders_cache = $subtotals([im_cost_type_po]),
-			cost_delivery_notes_cache = $subtotals([im_cost_type_delivery_note]),
-			cost_timesheet_planned_cache = 0,
-			cost_expense_planned_cache = 0
-		where
-			project_id = :org_project_id
-	"
-    }
 
     set hard_cost_html "
 <table with=\"100%\">
@@ -1933,4 +1837,141 @@ ad_proc im_cost_update_payments { cost_id } {
 
 
 
+# -----------------------------------------------------------
+# Cost Cache Sweeper
+#
+# This is an offline process that is scheduled every ~60 seconds
+# to check for projects with the "cost_cache_dirty" NOT NULL.
+# 
+# Projects with this mark have suffered from changes in the 
+# associated financial documents, possibly from sub-projects,
+# or structural changes (new or removed subproject).
+#
+# So this sweeper updates the cost_cache (various "cache" fields
+# of im_projects), keeping the controlling information up to date
+# within the given limits.
+# -----------------------------------------------------------
 
+ad_proc -public im_cost_cache_sweeper { } {
+    Checks for the MaxCount projects with the "oldest" outdated
+    cost caches. The "im_cost_project_cache_invalidator" does not
+    overwrite existing "cost_cache_dirty" entries, so that this
+    fields contains the first modification dates in a correct order,
+    allowing us an "oldest first" update. This way we best and
+    deterministicly limit the average outdated time per cache.
+} {
+    set max_projects [parameter::get_from_package_key -package_key intranet-cost -parameter "CostCacheSweeperMaxProjects" -default 50]
+
+    set sql "
+	select	project_id
+	from	im_projects
+	where	cost_cache_dirty is not null
+	order by cost_cache_dirty
+	LIMIT :max_projects
+    "
+    db_foreach sweep_cost_cache_projects $sql {
+	# Update the sum of financial items across subprojects
+	im_cost_update_project_cost_cache $project_id
+    }
+}
+
+
+
+
+
+ad_proc -public im_cost_update_project_cost_cache { 
+    project_id 
+} {
+    Calculates the sums of all cost elements per project,
+    including subprojects of arbitrary depth.
+    Returns the "subtotals" array.
+} {
+
+    set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+
+    set project_cost_ids_sql "
+		                select distinct cost_id
+		                from im_costs
+		                where project_id in (
+					select	children.project_id
+					from	im_projects parent,
+						im_projects children
+					where	children.tree_sortkey 
+							between parent.tree_sortkey 
+							and tree_right(parent.tree_sortkey)
+						and parent.project_id = :project_id
+				)
+			    UNION
+				select distinct object_id_two as cost_id
+				from acs_rels
+				where object_id_one in (
+					select	children.project_id
+					from	im_projects parent,
+						im_projects children
+					where	children.tree_sortkey 
+							between parent.tree_sortkey 
+							and tree_right(parent.tree_sortkey)
+						and parent.project_id = :project_id
+				)
+    "
+
+   
+    set subtotals_sql "
+	select
+		sum(ci.amount_converted) as amount_converted,
+	        cat.cost_type_id
+	from
+		im_cost_types cat 
+		LEFT OUTER JOIN	(
+			select	ci.*,
+				round((im_exchange_rate(
+					ci.effective_date::date, 
+					ci.currency, 
+					:default_currency
+				) * amount)::numeric, 2) as amount_converted
+			from	im_costs ci
+			where	
+				ci.cost_id in (
+					$project_cost_ids_sql
+				)
+		) ci on (cat.cost_type_id = ci.cost_type_id)
+	where
+		cat.cost_type_id not in (
+			[im_cost_type_employee],
+			[im_cost_type_repeating],
+			[im_cost_type_expense_item]
+		)
+		and ci.currency is not null
+	group by
+		cat.cost_type_id
+    "
+
+    set cost_type_sql "select category_id from im_categories where category_type='Intranet Cost Type'"
+    db_foreach subtotal_init $cost_type_sql {
+	set subtotals($category_id) 0
+    }
+
+    db_foreach subtotals $subtotals_sql {
+	if {"" == $amount_converted} { set amount_converted 0 }
+        set subtotals($cost_type_id) $amount_converted
+    }
+
+    # We can update the profit & loss because all financial documents
+    # have been converted to default_currency
+    db_dml update_projects "
+		update im_projects set
+			cost_invoices_cache = $subtotals([im_cost_type_invoice]),
+			cost_bills_cache = $subtotals([im_cost_type_bill]),
+			cost_timesheet_logged_cache = $subtotals([im_cost_type_timesheet]),
+			cost_expense_logged_cache = $subtotals([im_cost_type_expense_report]),
+			cost_quotes_cache = $subtotals([im_cost_type_quote]),
+			cost_purchase_orders_cache = $subtotals([im_cost_type_po]),
+			cost_delivery_notes_cache = $subtotals([im_cost_type_delivery_note]),
+			cost_timesheet_planned_cache = 0,
+			cost_expense_planned_cache = 0,
+			cost_cache_dirty = null
+		where
+			project_id = :project_id
+    "
+    return [array get subtotals]
+}
