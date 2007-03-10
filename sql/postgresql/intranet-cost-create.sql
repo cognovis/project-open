@@ -935,7 +935,7 @@ begin
 end;' language 'plpgsql';
 
 CREATE TRIGGER im_projects_project_cache_del_tr
-BEFORE DELETE
+AFTER DELETE
 ON im_projects
 FOR EACH ROW
 EXECUTE PROCEDURE im_project_project_cache_del_tr();
