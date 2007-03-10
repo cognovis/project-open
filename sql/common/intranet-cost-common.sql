@@ -340,7 +340,7 @@ extra_select, extra_where, sort_order, visible_for) values (2109,21,NULL,'Projec
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2110,21,NULL,'Invalid Since',
-'"$cost_cache_dirty"','','',10,'');
+'"[string range $cost_cache_dirty 0 9]"','','',10,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2111,21,NULL,'Budget',

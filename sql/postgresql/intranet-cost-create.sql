@@ -852,11 +852,25 @@ begin
 end;' language 'plpgsql';
 
 CREATE TRIGGER im_costs_project_cache_up_tr
-AFTER INSERT OR UPDATE
+AFTER UPDATE
 ON im_costs
 FOR EACH ROW
 EXECUTE PROCEDURE im_cost_project_cache_up_tr();
 
+
+create or replace function im_cost_project_cache_ins_tr ()
+returns trigger as '
+begin
+        RAISE NOTICE ''im_cost_project_cache_ins_tr: %'', new.cost_id;
+	PERFORM im_cost_project_cache_invalidator (new.project_id);
+        return new;
+end;' language 'plpgsql';
+
+CREATE TRIGGER im_costs_project_cache_ins_tr
+AFTER INSERT
+ON im_costs
+FOR EACH ROW
+EXECUTE PROCEDURE im_cost_project_cache_ins_tr();
 
 create or replace function im_cost_project_cache_del_tr ()
 returns trigger as '
