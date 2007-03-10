@@ -33,8 +33,11 @@ alter table im_projects add     cost_timesheet_logged_cache	numeric(12,2);
 alter table im_projects alter	cost_timesheet_logged_cache	set default 0;
 alter table im_projects add     cost_expense_logged_cache	numeric(12,2);
 alter table im_projects alter	cost_expense_logged_cache	set default 0;
-alter table im_projects alter	cost_delivery_notes_cache	numeric(12,2);
+alter table im_projects add	cost_delivery_notes_cache	numeric(12,2);
 alter table im_projects alter	cost_delivery_notes_cache	set default 0;
+
+-- Dirty field with date when the cache became "dirty"
+alter table im_projects add     cost_cache_dirty		timestamptz;
 
 
 
@@ -622,55 +625,16 @@ create table im_costs (
 				constraint im_costs_planning_type_fk
 				references im_categories,
 	description		varchar(4000),
-	note			varchar(4000)
+	note			varchar(4000),
+	-- Audit fields
+        last_modified           timestamptz,
+        last_modifying_user     integer
+                                constraint im_costs_last_mod_user
+                                references users,
+	last_modifying_ip 	varchar(20)
 );
 create index im_costs_cause_object_idx on im_costs(cause_object_id);
 create index im_costs_start_block_idx on im_costs(start_block);
-
-
-
--------------------------------------------------------------
--- Audit for im_costs
--- (not active yet)
-
-
-create table im_costs_audit (
-	cost_id			integer primary key,
-	cost_name		varchar(400),
-	cost_nr			varchar(400),
-	project_id		integer,
-	customer_id		integer,
-	cost_center_id		integer,
-	provider_id		integer,
-	investment_id		integer,
-	cost_status_id		integer,
-	cost_type_id		integer,
-	cause_object_id		integer,
-	template_id		integer,
-	effective_date		timestamptz,
-	start_block		timestamptz,
-	payment_days		integer,
-	amount			numeric(12,3),
-	currency		char(3),
-	paid_amount		numeric(12,3),
-	paid_currency		char(3),
-	vat			numeric(12,5),
-	tax			numeric(12,5),
-	variable_cost_p		char(1),
-	needs_redistribution_p	char(1),
-	parent_id		integer,
-	redistributed_p		char(1),
-	planning_p		char(1),
-	planning_type_id	integer,
-	description		varchar(4000),
-	note			varchar(4000),
-
-	last_modified		timestamptz,
-	modifying_user		integer,
-	modifying_ip		varchar(50)
-);
-
-
 
 
 
@@ -820,6 +784,48 @@ DECLARE
 
 	return v_name;
 end;' language 'plpgsql';
+
+
+
+
+
+-------------------------------------------------------------
+-- Invalidate the cost cache of related projects
+-- (set dirty-flag to current date)
+-------------------------------------------------------------
+
+create or replace function im_cost_project_cache_invalidator ()
+returns trigger as '
+declare
+        v_string        varchar;
+begin
+        RAISE NOTICE ''im_cost_project_cache_invalidator: %'', new.cost_id;
+
+        return new;
+end;' language 'plpgsql';
+
+
+create or replace function im_cost_project_cache_up_tr ()
+returns trigger as '
+declare
+        v_string        varchar;
+begin
+        RAISE NOTICE ''im_cost_project_cache_up_tr: %'', new.cost_id;
+
+        return new;
+end;' language 'plpgsql';
+
+
+
+CREATE TRIGGER im_costs_project_cache_up_tr
+AFTER INSERT OR UPDATE
+ON im_costs
+FOR EACH ROW
+EXECUTE PROCEDURE im_cost_project_cache_up_tr();
+
+
+
+
 
 
 -------------------------------------------------------------
