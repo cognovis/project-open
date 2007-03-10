@@ -19,9 +19,7 @@ ad_page_contract {
     { sales_rep_id:integer 0 }
     { project_id:integer 0 }
     { customer_id:integer 0 }
-    { project_status_ids:multiple {76 78 79} }
-
-
+    { project_status_ids:multiple "76 78 79" }
 }
 
 # ------------------------------------------------------------
@@ -507,7 +505,7 @@ switch $output_format {
 	        <tr>
 	          <td class=form-label>Project Status</td>
 	          <td class=form-widget>
-	            [im_category_select_multiple "Intranet Project Status" intranet_project_status $project_status_ids 3 multiple]
+	            [im_category_select_multiple "Intranet Project Status" project_status_ids $project_status_ids 5 multiple]
 	          </td>
 	        </tr>
 	        <tr>
@@ -558,6 +556,7 @@ set quote_total 0
 set bill_total 0
 set po_total 0
 set timesheet_total 0
+set expense_total 0
 
 set invoice_subtotal 0
 set delnote_subtotal 0
