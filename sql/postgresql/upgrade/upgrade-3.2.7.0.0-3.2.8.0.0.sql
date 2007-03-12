@@ -102,7 +102,7 @@ SELECT  im_component_plugin__new (
 	'/intranet-timesheet2-tasks/new',	-- page_url
 	null,				-- view_name	
 	20,				-- sort_order
-	'im_table_with_title "[_ intranet-core.Task_Members]" [im_group_member_component $task_id $current_user_id $user_admin_p $return_url "" "" 1 ]'			-- component_tcl
+	'im_group_member_component $task_id $current_user_id $user_admin_p $return_url "" "" 1'
     );
 
 
