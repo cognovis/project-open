@@ -442,8 +442,6 @@ db_dml disable_task_project_type "update im_categories set enabled_p = 'f' where
 #	8.0.8 - tsearch2.808.tcl
 # ---------------------------------------------------------------
 
-set tsearch_installed_p [db_string tsearch_exists "select count(*) from pg_class where relname = lower('pg_ts_cfg') and relkind = 'r'"]
-
 set search_pg_installed_p [db_string search_pg "
 	select	count(*) 
 	from	apm_package_versions 
@@ -475,8 +473,10 @@ if {!$search_pg_installed_p} {
     
     ns_write "<li>Found search_sql_dir: $search_sql_dir\n"
     
-    set install_package_p 1
+    set install_package_p 0
+    set tsearch_installed_p [db_string tsearch_exists "select count(*) from pg_class where relname = lower('pg_ts_cfg') and relkind = 'r'"]
     if {!$tsearch_installed_p} {
+
 	switch $psql_version {
 	    "8.0.1" - "8.0.8" {
 		set sql_file "$search_sql_dir/tsearch2.$psql_version.sql"
@@ -485,14 +485,19 @@ if {!$search_pg_installed_p} {
 		catch { set result [db_source_sql_file -callback apm_ns_write_callback $sql_file] } err
 		ns_write "done<br><pre>$err</pre>\n"
 		ns_write "<li>Result: <br><pre>$result</pre>\n"
+		set install_package_p 1
 	    }
 	    default {
 		set install_package_p 0
 		ns_write "<li>PostgreSQL Version $psql_version not supported.\n"
 	    }
 	}
+
     } else {
+
 	ns_write "<li>TSearch2 already installed - no action taken.\n"
+	set install_package_p 1
+
     }
     
     # Set the default configuration for TSearch2 (stemming etc...)
