@@ -542,7 +542,7 @@ if {!$search_pg_installed_p} {
 
 
 ns_write "<p>&nbsp;</p>\n"
-ns_write "<blockquote><b>Please return now to the <a href='/intranet/'>Home Page</a></b>.</blockquote>\n"
+ns_write "<blockquote><b>Please <a href='/acs-admin/server-restart'>Restart your server now</a></b>.</blockquote>\n"
 ns_write "<p>&nbsp;</p>\n"
 
 
