@@ -455,7 +455,7 @@ set search_pg_installed_p [db_string search_pg "
 if {!$search_pg_installed_p} {
 
     ns_write "<h2>Installing Full-Text Search</h2>\n"
-
+ 
 
     set psql_version "0.0.0"
     set err_msg ""
