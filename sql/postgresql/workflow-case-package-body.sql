@@ -1595,14 +1595,13 @@ begin
 	where	package_key = ''acs-lang'';
 	v_locale := apm__get_value (v_acs_lang_package_id, ''SiteWideLocale'');
 
-	v_subject := ''Notification_Subject || ''_'' || v_transition_key;
-	v_subject := workflow_case__notify_assignee_get_message(v_locale, ''acs-workflow'', v_subject);
-	v_subject := workflow_case__notify_assignee_email_text(notify_assignee__task_id, 624, ''Subject'');
+	v_subject := ''Notification_Subject_'' || v_transition_key;
+	v_subject := acs_lang_lookup_message(v_locale, ''acs-workflow'', v_subject);
 	v_subject := replace(v_subject, ''%object_name%'', v_object_name);
 	v_subject := replace(v_subject, ''%transition_name%'', v_transition_name);
 
-	v_body := ''Notification_Body || ''_'' || v_transition_key;
-	v_body := workflow_case__notify_assignee_get_message(v_locale, ''acs-workflow'', v_body);
+	v_body := ''Notification_Body_'' || v_transition_key;
+	v_body := acs_lang_lookup_message(v_locale, ''acs-workflow'', v_body);
 	v_body := replace(v_body, ''%object_name%'', v_object_name);
 	v_body := replace(v_body, ''%transition_name%'', v_transition_name);
 	v_body := replace(v_body, ''%deadline%'', v_deadline_pretty);
