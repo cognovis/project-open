@@ -90,6 +90,55 @@ drop function inline_0 ();
 
 
 
+create or replace function inline_0 ()
+returns integer as'
+declare
+        -- Menu IDs
+        v_menu                  integer;
+        v_project_menu          integer;
+
+        -- Groups
+        v_accounting            integer;
+        v_senman                integer;
+        v_sales                 integer;
+        v_proman                integer;
+
+begin
+    select group_id into v_proman from groups where group_name = ''Project Managers'';
+    select group_id into v_senman from groups where group_name = ''Senior Managers'';
+    select group_id into v_sales from groups where group_name = ''Sales'';
+    select group_id into v_accounting from groups where group_name = ''Accounting'';
+
+    select menu_id into v_project_menu
+    from im_menus where label=''project'';
+
+    v_menu := im_menu__new (
+        null,                   -- p_menu_id
+        ''acs_object'',         -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+        ''intranet-ganttproject'', -- package_name
+        ''project_resources'',  -- label
+        ''Resources'',               -- name
+        ''/intranet-ganttproject/gantt-resources-cube?view=default'',  -- url
+        130,                    -- sort_order
+        v_project_menu,         -- parent_menu_id
+        null                    -- p_visible_tcl
+    );
+
+    PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_sales, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 
 
