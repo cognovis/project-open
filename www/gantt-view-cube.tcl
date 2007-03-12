@@ -52,7 +52,7 @@ if {[llength $project_id] == 1} {
 # ------------------------------------------------------------
 # Defaults
 
-set page_title [lang::message::lookup "" intranet-reporting.Gantt_Resources "Gantt Resources"]
+set page_title [lang::message::lookup "" intranet-reporting.Gantt_Diagram "Gantt Diagram"]
 
 
 set html [im_ganttproject_gantt_component \
