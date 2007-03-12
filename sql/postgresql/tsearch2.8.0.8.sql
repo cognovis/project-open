@@ -1,7 +1,6 @@
 -- Adjust this setting to control where the objects get CREATEd.
 SET search_path = public;
 
-BEGIN;
 
 --dict conf
 CREATE TABLE pg_ts_dict (
@@ -817,4 +816,4 @@ CREATE OPERATOR CLASS tsvector_ops
 --update pg_ts_dict set dict_initoption='DictFile="/usr/local/share/ispell/russian.dict" ,AffFile ="/usr/local/share/ispell/russian.aff", StopFile="/usr/local/share/ispell/russian.stop"' where dict_name='ispell_template';
 --example of synonym dict
 --update pg_ts_dict set dict_initoption='/usr/local/share/ispell/english.syn' where dict_id=5;
-END;
+
