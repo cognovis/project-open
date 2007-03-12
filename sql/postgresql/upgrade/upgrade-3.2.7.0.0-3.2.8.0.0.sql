@@ -2,18 +2,51 @@
 
 
 -- Dirty field with date when the cache became "dirty"
-alter table im_projects add     cost_cache_dirty                timestamptz;
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_projects'' and lower(column_name) = ''cost_cache_dirty'';
+        IF v_count > 0 THEN return 0; END IF;
+
+	ALTER TABLE im_projects ADD cost_cache_dirty timestamptz;
+
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
+
+
+
 
 
 -- Audit fields
-alter table im_costs add last_modified           timestamptz;
-alter table im_costs add last_modifying_user     integer;
-alter table im_costs add constraint im_costs_last_mod_user foreign key (last_modifying_user) references users;
-alter table im_costs add last_modifying_ip 	 varchar(20);
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_costs'' and lower(column_name) = ''last_modified'';
+        IF v_count > 0 THEN return 0; END IF;
+
+	ALTER TABLE im_costs add last_modified           timestamptz;
+	ALTER TABLE im_costs add last_modifying_user     integer;
+	ALTER TABLE im_costs add constraint im_costs_last_mod_user foreign key (last_modifying_user) references users;
+	ALTER TABLE im_costs add last_modifying_ip 	 varchar(20);
+
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
 
 
 
 
+delete from im_view_columns where column_id = 2134;
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2134,21,NULL,'Expenses',
 '$cost_expense_logged_cache','','',34,'expr [im_permission $user_id view_finance] && [im_cc_read_p]');
