@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-mail-import</auto-mount>
 
-    <version name="3.2.7.0.0" url="http://projop.dnsalias.com/download/apm/intranet-mail-import-3.2.7.0.0.apm">
+    <version name="3.2.8.0.0" url="http://projop.dnsalias.com/download/apm/intranet-mail-import-3.2.8.0.0.apm">
         <owner url="mailto:eric@openforce.biz">Eric Lorenzo</owner>
         <owner url="mailto:timo@studio-k4.de">Timo Hentschel</owner>
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
