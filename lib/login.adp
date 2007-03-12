@@ -39,7 +39,7 @@
 		        <img 
 			  src="/intranet/images/project_open.70x26.gif" 
 			  alt="Open Source based Project Management" 
-			  title="Open Source based Project Management" 
+			  title="Open Source based Project Management, Collaboration, Controlling and Workflow" 
 			  border=0
 		        >
 		      </a>
