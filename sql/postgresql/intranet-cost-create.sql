@@ -842,6 +842,25 @@ end;' language 'plpgsql';
 
 -------------------------------------------------------------
 -- Trigger for im_cost to invalidate project cost cache on changes
+-------------------------------------------------------------
+
+
+-------------------------------------------------------------
+-- Costs Delete Trigger
+
+create or replace function inline_0 () 
+returns integer as '
+declare
+        v_count         integer;
+begin
+	select count(*) into v_count from pg_trigger
+	where lower(tgname) = ''im_costs_project_cache_up_tr'';
+	IF v_count = 0 THEN return 0; END IF;
+	DROP TRIGGER im_costs_project_cache_up_tr ON im_costs;
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
 
 create or replace function im_cost_project_cache_up_tr ()
 returns trigger as '
@@ -859,6 +878,25 @@ FOR EACH ROW
 EXECUTE PROCEDURE im_cost_project_cache_up_tr();
 
 
+
+-------------------------------------------------------------
+-- Costs Insert Trigger
+
+create or replace function inline_0 () 
+returns integer as '
+declare
+        v_count         integer;
+begin
+	select count(*) into v_count from pg_trigger
+	where lower(tgname) = ''im_costs_project_cache_ins_tr'';
+	IF v_count = 0 THEN return 0; END IF;
+	DROP TRIGGER im_costs_project_cache_ins_tr ON im_costs;
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
+
+
 create or replace function im_cost_project_cache_ins_tr ()
 returns trigger as '
 begin
@@ -872,6 +910,25 @@ AFTER INSERT
 ON im_costs
 FOR EACH ROW
 EXECUTE PROCEDURE im_cost_project_cache_ins_tr();
+
+
+-------------------------------------------------------------
+-- Costs Delete Trigger
+
+create or replace function inline_0 () 
+returns integer as '
+declare
+        v_count         integer;
+begin
+	select count(*) into v_count from pg_trigger
+	where lower(tgname) = ''im_costs_project_cache_del_tr'';
+	IF v_count = 0 THEN return 0; END IF;
+	DROP TRIGGER im_costs_project_cache_del_tr ON im_costs;
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
+
 
 create or replace function im_cost_project_cache_del_tr ()
 returns trigger as '
@@ -897,6 +954,23 @@ EXECUTE PROCEDURE im_cost_project_cache_del_tr();
 -- of a project invalidates the cost caches of its superprojects.
 
 
+-------------------------------------------------------------
+-- Project Insert Trigger
+
+create or replace function inline_0 () 
+returns integer as '
+declare
+        v_count         integer;
+begin
+	select count(*) into v_count from pg_trigger
+	where lower(tgname) = ''im_projects_project_cache_up_tr'';
+	IF v_count = 0 THEN return 0; END IF;
+	DROP TRIGGER im_projects_project_cache_up_tr ON im_projects;
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
+
 create or replace function im_project_project_cache_up_tr ()
 returns trigger as '
 begin
@@ -918,18 +992,66 @@ begin
 end;' language 'plpgsql';
 
 CREATE TRIGGER im_projects_project_cache_up_tr
-AFTER INSERT OR UPDATE
+AFTER UPDATE
 ON im_projects
 FOR EACH ROW
 EXECUTE PROCEDURE im_project_project_cache_up_tr();
 
 
+-------------------------------------------------------------
+-- Project Insert Trigger
 
+create or replace function inline_0 () 
+returns integer as '
+declare
+        v_count         integer;
+begin
+	select count(*) into v_count from pg_trigger
+	where lower(tgname) = ''im_projects_project_cache_ins_tr'';
+	IF v_count = 0 THEN return 0; END IF;
+	DROP TRIGGER im_projects_project_cache_ins_tr ON im_projects;
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
+
+create or replace function im_project_project_cache_ins_tr ()
+returns trigger as '
+begin
+        RAISE NOTICE ''im_project_project_cache_ins_tr: %'', new.project_id;
+	PERFORM im_cost_project_cache_invalidator (new.parent_id);
+        return new;
+end;' language 'plpgsql';
+
+CREATE TRIGGER im_projects_project_cache_ins_tr
+AFTER INSERT
+ON im_projects
+FOR EACH ROW
+EXECUTE PROCEDURE im_project_project_cache_ins_tr();
+
+
+
+-------------------------------------------------------------
+-- Project Delete Trigger
+
+create or replace function inline_0 () 
+returns integer as '
+declare
+        v_count         integer;
+begin
+	select count(*) into v_count from pg_trigger
+	where lower(tgname) = ''im_projects_project_cache_del_tr'';
+	IF v_count = 0 THEN return 0; END IF;
+	DROP TRIGGER im_projects_project_cache_del_tr ON im_projects;
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
 
 create or replace function im_project_project_cache_del_tr ()
 returns trigger as '
 begin
-        RAISE NOTICE ''im_project_project_cache_del_tr: %'', old.cost_id;
+        RAISE NOTICE ''im_project_project_cache_del_tr: %'', old.project_id;
 	PERFORM im_cost_project_cache_invalidator (old.project_id);
         return new;
 end;' language 'plpgsql';
