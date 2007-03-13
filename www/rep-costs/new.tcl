@@ -49,7 +49,7 @@ if {![exists_and_not_null rep_cost_id]} {
     set context [im_context_bar $page_title]
     set effective_date [db_string get_today "select sysdate from dual"]
     set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 60]
-    set customer_id [im_customer_internal]
+    set customer_id [im_company_internal]
     set cost_status_id [im_cost_status_created]
     set amount 0
     set vat 0
@@ -72,21 +72,21 @@ set investment_options [im_investment_options]
 set template_options [im_cost_template_options]
 set currency_options [im_currency_options]
 
-set cost_name_label "<#_ Name#>"
-set project_label "<#_ Project#>"
-set customer_label "<#_ Customer#>"
-set wp_label "<#_ Who pays?#>"
-set provider_label "<#_ Provider#>"
-set wg_label "<#_ Who gets the money?#>"
-set type_label "[_ intranet-cost.Type]"
-set status_label "<#_ Status#>"
-set investment_label "<#_ Investment#>"
-set amount_label "<#_ Amount#>"
-set currency_label "<#_ Currency#>"
-set vat_label "<#_ VAT#>"
-set tax_label "<#_ TAX#>"
-set desc_label "<#_ Description#>"
-set note_label "<#_ Note#>"
+set cost_name_label [_ intranet-cost.Name]
+set project_label [_ intranet-cost.Project]
+set customer_label [_ intranet-cost.Customer]
+set wp_label [_ intranet-cost.Who_pays]
+set provider_label [_ intranet-cost.Provider]
+set wg_label [_ intranet-cost.Who_gets_the_money]
+set type_label [lang::message::lookup "" intranet-cost.Type "Type"]
+set status_label [_ intranet-cost.Status]
+set investment_label [_ intranet-cost.Investment]
+set amount_label [_ intranet-cost.Amount]
+set currency_label [_ intranet-cost.Currency]
+set vat_label [_ intranet-cost.VAT]
+set tax_label [_ intranet-cost.TAX]
+set desc_label [_ intranet-cost.Description]
+set note_label [_ intranet-cost.Note]
 ad_form \
     -name cost \
     -cancel_url $return_url \
