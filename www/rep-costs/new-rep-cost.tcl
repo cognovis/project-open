@@ -21,7 +21,7 @@ ad_page_contract {
 # ------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-set page_title "<#_ Create Employee Cost Item#>"
+set page_title [lang::message::lookup "" intranet-cost.Create_Repeating_Cost_Item "Create Repeating Cost Item"]
 set context [im_context_bar $page_title]
 set today [db_string birthday_today "select to_char(sysdate,'YYYY-MM-DD') from dual"]
 
@@ -85,24 +85,24 @@ set investment_options [im_investment_options]
 set template_options [im_cost_template_options]
 set currency_options [im_currency_options]
 
-set name_label "<#_ Name#>"
-set project_label "<#_ Project#>"
-set customer_label "<#_ Customer#>"
-set wp_label "<#_ Who pays?#>"
-set provider_label "<# Provider#>"
-set wg_label "<#_ Who gets the money?#>"
-set type_label "[intranet-cost.Type]"
-set status_label "<#_ Status#>"
-set investement_label "<#_ Investment#>"
-set effective_date_label "<#_ Effective Date#>"
-set start_block_label "<#_ Start Block#>"
-set amount_label "<#_ Amount#>"
-set currency_label "<#_ Currency#>"
-set vat_label "<#_ VAT#>"
-set tax_label "<#_ TAX#>"
-set cause_object_label "<#_ Cause Object#>"
-set desc_label "<#_ Description#>"
-set note_label "<#_ Note#>"
+set name_label [_ intranet-cost.Name]
+set project_label [_ intranet-cost.Project]
+set customer_label [_ intranet-cost.Customer]
+set wp_label [_ intranet-cost.Who_pays]
+set provider_label [_ intranet-cost.Provider]
+set wg_label [_ intranet-cost.Who_gets_the_money]
+set type_label [_ intranet-cost.Type]
+set status_label [_ intranet-cost.Status]
+set investment_label [_ intranet-cost.Investment]
+set effective_date_label [_ intranet-cost.Effective_Date]
+set start_block_label [_ intranet-cost.Start_Block]
+set amount_label [_ intranet-cost.Amount]
+set currency_label [_ intranet-cost.Currency]
+set vat_label [_ intranet-cost.VAT]
+set tax_label [_ intranet-cost.TAX]
+set cause_object_label [_ intranet-cost.Cause_Object]
+set desc_label [_ intranet-cost.Description]
+set note_label [_ intranet-cost.Note]
 
 ad_form \
     -name cost \
@@ -124,7 +124,7 @@ ad_form \
 	{start_block:text(text) {label $start_block_label} {html {size 20}}}
 
 	{amount:text(text) {label $amount_label} {html {size 20}} }
-	{currency:text(select) {label $curruncy_label} {options $currency_options} }
+	{currency:text(select) {label $currency_label} {options $currency_options} }
 
 	{vat:text(text),optional {label $vat_label} {html {size 20}} }
 	{tax:text(text),optional {label $tax_label} {html {size 20}} }
