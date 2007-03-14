@@ -537,6 +537,23 @@ if {!$search_pg_installed_p} {
 }
 
 # ---------------------------------------------------------------
+# Delete Security Tokens
+# ---------------------------------------------------------------
+
+
+# Update the security tokensof the local server
+# Users might be a way to gain access if the tokens are
+# publicly known (from the default installation)
+
+ns_write "<h2>Deleting Security Tokens</h2>\n"
+ns_write "<li>Deleting ...\n"
+
+db_dml del_sec_tokens "delete from secret_tokens"
+db_string reset_sect_token_seq "SELECT pg_catalog.setval('t_sec_security_token_id_seq', 1, true)"
+ns_write "done\n"
+
+
+# ---------------------------------------------------------------
 # Finish off page
 # ---------------------------------------------------------------
 
