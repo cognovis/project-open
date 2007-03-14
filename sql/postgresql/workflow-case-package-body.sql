@@ -628,6 +628,8 @@ declare
   callback_rec                record;
   v_assigned_user             record;
 begin
+	IF add_task_assignment__party_id is null THEN return 0; END IF;
+
         -- get some needed information
 
         select ta.case_id, ta.workflow_key, ta.transition_key, tr.role_key, c.context_key
@@ -1549,6 +1551,7 @@ declare
   notify_assignee__user_id                alias for $2;  
   notify_assignee__callback               alias for $3;  
   notify_assignee__custom_arg             alias for $4;  
+
   v_deadline_pretty                       varchar;  
   v_object_name                           text; 
   v_transition_key                        wf_transitions.transition_key%TYPE;
@@ -1560,7 +1563,12 @@ declare
   v_request_id                            integer; 
   v_workflow_url			  text;
   v_acs_lang_package_id			  integer;
+
+  v_notification_type_id		  integer;
+  v_workflow_package_id			  integer;
+  v_notification_n_seconds		  integer;
   v_locale				  text;
+  v_count				  integer;
 begin
         select to_char(ta.deadline,''Mon fmDDfm, YYYY HH24:MI:SS''),
                acs_object__name(c.object_id), tr.transition_key, tr.transition_name
@@ -1571,8 +1579,8 @@ begin
 	   and tr.workflow_key = c.workflow_key
 	   and tr.transition_key = ta.transition_key;
 
-	select apm__get_value(p.package_id, ''SystemURL'') || site_node__url(s.node_id)
-	  into v_workflow_url
+	select a.package_id, apm__get_value(p.package_id, ''SystemURL'') || site_node__url(s.node_id)
+	  into v_workflow_package_id, v_workflow_url
 	  from site_nodes s, apm_packages a,
 	       (select package_id
 		from apm_packages 
@@ -1588,6 +1596,32 @@ begin
 	     and wfi.workflow_key = c.workflow_key
 	     and wfi.context_key = c.context_key;
 	if NOT FOUND then v_party_from := -1; end if;
+
+	-- Check whether the "notifications" package is installed and get
+	-- the notification interval of the user.
+	select count(*) into v_count 
+	from user_tab_columns
+	where lower(table_name) = ''notifications'';
+	IF v_count > 0 THEN
+
+		-- Notification Type is a kind of "channel" where to spread notifics
+		select type_id into v_notification_type_id
+		from notification_types
+		where short_name = ''wf_assignment_notif'';
+
+		-- Check the 
+		select	n_seconds into v_notification_n_seconds
+		from	notification_requests r,
+			notification_intervals i
+		where	r.interval_id = i.interval_id
+			and user_id = notify_assignee__user_id
+			and object_id = v_workflow_package_id
+			and type_id = v_notification_type_id;
+
+		-- Skip notification if there are no notifications defined
+		IF v_notification_n_seconds is null THEN return 0; END IF;
+
+	END IF;
 
 	-- Get the System Locale
 	select	package_id into	v_acs_lang_package_id
