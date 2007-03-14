@@ -2,7 +2,25 @@
 
 
 -- Replaced by im_biz_object_member relationship "pecentage" column
-drop table im_timesheet_task_allocations;
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_timesheet_task_allocations'';
+        IF v_count = 0 THEN return 0; END IF;
+
+	drop table im_timesheet_task_allocations;
+
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
+
+
 
 
 -- Delete the "project_nr" column from the Tasks list
