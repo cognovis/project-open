@@ -19,14 +19,18 @@ if {$user_is_admin_p} {
 # <a href="/notifications/request-new?object_id=@user_id@&type_id=@type_id@&return_url=@return_page@
 set notification_object_id [apm_package_id_from_key "acs-workflow"]
 set notification_type_id [notification::type::get_type_id -short_name "wf_assignment_notif"]
-set notification_url [export_vars -base "/notifications/request-new?" {
+set notification_delivery_method_id [notification::get_delivery_method_id -name "email"]
+set notification_interval_id [notification::get_interval_id -name "instant"]
+
+set notification_subscribe_url [export_vars -base "/notifications/request-new?" {
     {object_id $notification_object_id} 
     {type_id $notification_type_id}
+    {delivery_method_id $notification_delivery_method_id}
+    {interval_id $notification_interval_id}
+    {"form\:id" "subscribe"}
+    {formbutton\:ok "OK"}
     return_url
 }]
-
-append admin_html "<li><a href=\"$notification_url\">Subscribe</a>\n"
-
 
 
 # ----------------------------------------------------
@@ -58,6 +62,7 @@ foreach type {
                          -url $return_url \
                          -user_id $user_id \
                          -pretty_name $pretty_name]
+	set url $notification_subscribe_url
     }
 
     if { ![empty_string_p $url] } {
