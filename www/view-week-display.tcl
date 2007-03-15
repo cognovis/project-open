@@ -82,6 +82,10 @@ set additional_limitations_clause ""
 set additional_select_clause " , (to_date(start_date,'YYYY-MM-DD HH24:MI:SS')  - to_date(:first_weekday_of_the_week_tz,         'YYYY-MM-DD HH24:MI:SS')) as day_of_week"
 
 db_foreach dbqd.calendar.www.views.select_items {} {
+
+    # Replace $ (variable dollars) by harmless "X"
+    regsub {\$} $name X name
+
     # Convert from system timezone to user timezone
     set ansi_start_date [lc_time_system_to_conn $ansi_start_date]
     set ansi_end_date [lc_time_system_to_conn $ansi_end_date]

@@ -67,6 +67,10 @@ set interval_limitation_clause [db_map dbqd.calendar.www.views.day_interval_limi
 #just without the Oracle +ORDERED hint, which speeds every other
 #query but slows this one.
 db_foreach dbqd.calendar.www.views.select_items {} {
+
+    # Replace $ (variable dollars) by harmless "X"
+    regsub {\$} $name X name
+
     # reset url stub
     set url_stub ""
     

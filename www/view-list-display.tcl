@@ -113,6 +113,10 @@ if {[string match [db_type] "postgresql"]} {
 set additional_select_clause " , to_char($sysdate, 'YYYY-MM-DD HH24:MI:SS') as ansi_today, recurrence_id"
 
 db_foreach dbqd.calendar.www.views.select_items {} {
+
+    # Replace $ (variable dollars) by harmless "X"
+    regsub {\$} $name X name
+
     # Timezonize
     set ansi_start_date [lc_time_system_to_conn $ansi_start_date]
     set ansi_end_date [lc_time_system_to_conn $ansi_end_date]

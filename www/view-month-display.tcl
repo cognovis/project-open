@@ -162,6 +162,11 @@ set additional_select_clause ""
 set interval_limitation_clause [db_map dbqd.calendar.www.views.month_interval_limitation]
 
 db_foreach dbqd.calendar.www.views.select_items {} {
+
+    # Replace $ (variable dollars) by harmless "X"
+    regsub {\$} $name X name
+
+
     # Convert from system timezone to user timezone
     set ansi_start_date [lc_time_system_to_conn $ansi_start_date]
     set ansi_end_date [lc_time_system_to_conn $ansi_end_date]
