@@ -64,21 +64,23 @@ set subprojects [db_list subprojects "
 	select	children.project_id
 	from	im_projects parent,
 		im_projects children
-	where
-		children.project_status_id not in (
-			select	child_id
-			from	im_category_hierarchy
-			where	parent_id = [im_project_status_closed]
-		)
+	where	1=1
 		and children.tree_sortkey 
 			between parent.tree_sortkey 
 			and tree_right(parent.tree_sortkey)
 		and parent.project_id = :project_id
 "]
 
+set ttt {
+		children.project_status_id not in (
+			select	child_id
+			from	im_category_hierarchy
+			where	parent_id = [im_project_status_closed]
+		)
+}
+
 lappend subprojects 0
 set subproject_sql "([join $subprojects ", "])"
-
 
 set task_sql "
 select distinct
