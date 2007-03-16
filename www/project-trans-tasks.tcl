@@ -177,6 +177,8 @@ set sql "
 		p.end_date::date as project_end_date,
 		p.project_lead_id as main_project_manager_id,
 		im_name_from_user_id(p.project_lead_id) as main_project_manager_name,
+		im_category_from_id(p.project_type_id) as main_project_type,
+		im_category_from_id(p.project_status_id) as main_project_status,
 		children.project_lead_id as project_manager_id,
 		im_name_from_user_id(children.project_lead_id) as project_manager_name,
 		children.project_id as children_id,
@@ -250,10 +252,11 @@ set report_def [list \
 		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 		<b><a href=$project_url$project_id>$project_nr $project_name</a></b>"
 		"<nobr><a href=$user_url$main_project_manager_id>$main_project_manager_name</a></nobr>"
-		""
-		""
 		"$project_end_date_formatted</a>"
-		"\#colspan=7 $project_end_date_formatted</a>"
+		""
+		""
+		"$main_project_type</a>"
+		"\#colspan=8 $main_project_status</a>"
 	    } \
 	    content [list \
 		    header {
