@@ -135,38 +135,14 @@ BEGIN
 end;' language 'plpgsql';
 
 
-    -- Delete a single invoice (if we know its ID...)
+-- Delete a single invoice (if we know its ID...)
+-- DONT reset projects to status delivered anymore.
+-- This should be done via a wizard or similar.
 create or replace function  im_trans_invoice__delete (integer)
 returns integer as '
 DECLARE
 	p_invoice_id	alias for $1;
 BEGIN
-     	-- Reset the status of all project to "delivered" that
-	-- were included in the invoice
-	update im_projects
-	set project_status_id = 78
-	where project_id in (
-		select distinct
-			r.object_id_one
-		from
-			acs_rels r
-		where
-			r.object_id_two = p_invoice_id
-	);
-
-	-- Set all projects back to "delivered" that have tasks
-	-- that were included in the invoices to delete.
-	update im_projects
-	set project_status_id = 78
-	where project_id in (
-		select distinct
-			t.project_id
-		from
-			im_trans_tasks t
-		where
-			t.invoice_id = p_invoice_id
-	);
-
 	-- Reset the status of all invoiced tasks to delivered.
 	update	im_trans_tasks
 	set	invoice_id = null
