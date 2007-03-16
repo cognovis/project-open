@@ -18,6 +18,7 @@ ad_page_contract {
     { project_id:integer 0}
     { customer_id:integer 0}
     { project_manager_id:integer 0}
+    { project_member_id:integer 0}
 }
 
 # ------------------------------------------------------------
@@ -145,6 +146,14 @@ if {"" != $project_id && 0 != $project_id} {
 
 if {"" != $project_manager_id && 0 != $project_manager_id} {
     lappend criteria "p.project_lead_id = :project_manager_id"
+}
+
+if {"" != $project_member_id && 0 != $project_member_id} {
+    lappend criteria "p.project_id in (
+		select	object_id_one
+		from	acs_rels
+		where	object_id_two = :project_member_id
+ 	)"
 }
 
 set where_clause [join $criteria " and\n            "]
@@ -315,6 +324,12 @@ switch $output_format {
 		  <td class=form-label>Project Manager</td>
 		  <td class=form-widget>
 		    [im_user_select project_manager_id $project_manager_id]
+		  </td>
+		</tr>
+		<tr>
+		  <td class=form-label>Project Member</td>
+		  <td class=form-widget>
+		    [im_user_select project_member_id $project_member_id]
 		  </td>
 		</tr>
                 <tr>
