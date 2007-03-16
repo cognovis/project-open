@@ -269,7 +269,7 @@ switch $output_format {
 		  </td>
 		</tr>
 		<tr>
-		  <td class=form-label>Start Date</td>
+		  <td class=form-label>Month</td>
 		  <td class=form-widget>
 		    <input type=textfield name=start_date value=$start_date>
 		  </td>
