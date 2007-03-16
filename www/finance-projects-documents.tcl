@@ -72,8 +72,6 @@ the projects that end (end_date) in the time period between StartDate and End Da
 by showing the relationship between quotes and purchase orders
 (an approximation of the gross margin).
 
-The report lists all projects that have started in the period 
-between Start Date and End Date and lists their financial documents. 
 This selection is meant to provide a reasonable approximation 
 for 'revenues in this period' if there are many small projects, 
 as it is the case in translation agencies.<br>
@@ -327,7 +325,7 @@ order by
 set report_def [list \
     group_by project_customer_id \
     header {
-	"\#colspan=13 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4 
+	"\#colspan=14 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4 
 	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 	<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
     } \
@@ -336,6 +334,7 @@ set report_def [list \
             header { } \
 	    content [list \
 		    header {
+			""
 			""
 			""
 			"<a href=$invoice_url$cost_id>$cost_name</a>"
@@ -355,10 +354,11 @@ set report_def [list \
 	    ] \
             footer {
 		"" 
-		"<a href=$this_url&project_id=$project_id&level_of_detail=4 
-		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
-		<b><a href=$project_url$project_id><nobr>$project_name</nobr></a></b>"
-		"" 
+		"<nobr><a href=$this_url&project_id=$project_id&level_of_detail=4 
+		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
+		<b><a href=$project_url$project_id>$project_nr</nobr></a></b>"
+		"<b><a href=$project_url$project_id><nobr>$project_name</nobr></a></b>"
+		""
 		"" 
 		"<nobr><i>$invoice_subsubtotal $default_currency</i></nobr>" 
 		"<nobr><i>$delnote_subsubtotal $default_currency</i></nobr>" 
