@@ -26,7 +26,8 @@
 	      <a href="admin/">#calendar.lt_Calendar_Administrati#</a>
 	    </if>
 	</p>
-	<p><include src="cal-options"></p>
+
+<!--	<p><include src="cal-options"></p> -->
 
 </td>
 <td>&nbsp;</td>
