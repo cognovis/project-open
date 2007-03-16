@@ -218,7 +218,45 @@ set sql "
 		im_projects p,
 		im_projects children,
 		im_companies cust,
-		im_trans_tasks t
+		(
+			select	task_id,
+				project_id,
+				task_name,
+				task_type_id,
+				task_status_id,
+				source_language_id,
+				target_language_id,
+				task_units,
+				billable_units,
+				task_uom_id,
+				invoice_id,
+				trans_id,
+				edit_id,
+				proof_id,
+				other_id,
+				end_date
+			from	im_trans_tasks
+		    UNION
+			select	task_id,
+				p.parent_id as project_id,
+				p.project_name as task_name,
+				p.project_type_id as task_type_id,
+				p.project_status_id as task_status_id,
+				null as source_language_id,
+				null as target_language_id,
+				planned_units as task_units,
+				billable_units,
+				uom_id as task_uom_id,
+				invoice_id,
+				null as trans_id,
+				null as edit_id,
+				null as proof_id,
+				null as other_id,
+				p.end_date
+			from	im_projects p,
+				im_timesheet_tasks t
+			where	p.project_id = t.task_id
+		) t
 	where
 		p.parent_id is null
 		and	children.tree_sortkey between
