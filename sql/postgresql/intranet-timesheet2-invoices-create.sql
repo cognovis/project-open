@@ -141,32 +141,6 @@ returns integer as '
 DECLARE
 	p_invoice_id	alias for $1;
 BEGIN
-	-- Reset the status of all project to "delivered" that
-	-- were included in the invoice
-	update im_projects
-	set project_status_id = 78
-	where project_id in (
-		select distinct
-			r.object_id_one
-		from
-			acs_rels r
-		where
-			r.object_id_two = p_invoice_id
-	);
-
-	-- Set all projects back to "delivered" that have tasks
-	-- that were included in the invoices to delete.
-	update im_projects
-	set project_status_id = 78
-	where project_id in (
-		select distinct
-			t.project_id
-		from
-			im_timesheet_tasks_view t
-		where
-			t.invoice_id = p_invoice_id
-	);
-
 	-- Reset the status of all invoiced tasks to delivered.
 	update	im_timesheet_tasks
 	set	invoice_id = null
