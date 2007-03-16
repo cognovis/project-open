@@ -171,7 +171,7 @@ if { ![empty_string_p $where_clause] } {
 
 
 set inner_sql "
-select
+select distinct
 	c.cost_id,
 	c.cost_type_id,
 	c.cost_status_id,
