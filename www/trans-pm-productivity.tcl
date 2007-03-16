@@ -25,7 +25,7 @@ ad_page_contract {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
-set menu_label "reporting-finance-trans-pm-productivity"
+set menu_label "reporting-trans-pm-productivity"
 
 set current_user_id [ad_maybe_redirect_for_registration]
 
