@@ -349,6 +349,7 @@ set report_def [list \
 			"<nobr>$timesheet_amount_pretty</nobr>"
 			""
 			""
+			""
 		    } \
 		    content {} \
 	    ] \
@@ -368,6 +369,7 @@ set report_def [list \
 		"<nobr><i>$timesheet_subsubtotal $default_currency</i></nobr>"
 		"<nobr><i>$po_per_quote_perc_subsubtotal</i></nobr>"
 		"<nobr><i>$gross_profit_subsubtotal</i></nobr>"
+		"<nobr><i>$wip_subsubtotal</i></nobr>"
             } \
     ] \
     footer {  
@@ -384,11 +386,12 @@ set report_def [list \
 	"<b>$timesheet_subtotal $default_currency</b>"
 	"<b>$po_per_quote_perc_subtotal</b>"
 	"<b>$gross_profit_subtotal</b>"
+	"<b>$wip_subtotal</b>"
     } \
 ]
 
 # Global header/footer
-set header0 {"Cust" "Project" "Name" "Sales Rep" "Invoice" "Delnote" "Quote" "Bill" "PO" "Expense" "Timesheet" "PO/Quote" "Gross Profit"}
+set header0 {"Cust" "Project" "Name" "Sales Rep" "Invoice" "Delnote" "Quote" "Bill" "PO" "Expense" "Timesheet" "PO/Quote" "Gross Profit" "WIP"}
 set footer0 {
 	"" 
 	""
@@ -403,6 +406,7 @@ set footer0 {
 	"<br><b><i>$timesheet_total $default_currency</i></b>"
 	"<br><b><i>$po_per_quote_perc_total</i></b>"
 	"<br><b><i>$gross_profit_total</i></b>"
+	"<br><b><i>$wip_total</i></b>"
 }
 
 
@@ -609,7 +613,8 @@ db_foreach sql $sql {
 	  set po_per_quote_perc_subsubtotal [expr int(10000.0 * $po_subsubtotal / $quote_subsubtotal) / 100.0]
 	  set po_per_quote_perc_subsubtotal "$po_per_quote_perc_subsubtotal %"
 	}
-	set gross_profit_subsubtotal [expr $invoice_subsubtotal - $bill_subsubtotal]
+	set gross_profit_subsubtotal [expr $invoice_subsubtotal - $bill_subsubtotal - $expense_subsubtotal]
+	set wip_subsubtotal [expr $timesheet_subsubtotal + $bill_subsubtotal + $expense_subsubtotal - $invoice_subsubtotal]
 
 
 	# Calculated Variables for footer0
@@ -617,7 +622,8 @@ db_foreach sql $sql {
 	if {[expr $quote_subtotal+0] != 0} {
 	    set po_per_quote_perc_subtotal [expr int(10000.0 * $po_subtotal / $quote_subtotal) / 100.0]
 	}
-	set gross_profit_subtotal [expr $invoice_subtotal - $bill_subtotal]
+	set gross_profit_subtotal [expr $invoice_subtotal - $bill_subtotal - $expense_subtotal]
+	set wip_subtotal [expr $timesheet_subtotal + $bill_subtotal + $expense_subtotal - $invoice_subtotal]
 
 
 	set last_value_list [im_report_render_header \
@@ -644,7 +650,8 @@ set po_per_quote_perc_total "undef"
 if {[expr $quote_total+0] != 0} {
     set po_per_quote_perc_total [expr int(10000.0 * $po_total / $quote_total) / 100.0]
 }
-set gross_profit_total [expr $invoice_total - $bill_total]
+set gross_profit_total [expr $invoice_total - $bill_total - $expense_total]
+set wip_total [expr $timesheet_total + $bill_total + $expense_total - $invoice_total]
 
 
 
