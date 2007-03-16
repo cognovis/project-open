@@ -10,15 +10,6 @@
 -- Sets up an interface to the OpenACS Wiki System
 
 ---------------------------------------------------------
--- Delete potentially existing menus and plugins if this 
--- file is sourced multiple times during development...
-
-select im_component_plugin__del_module('intranet-wiki');
-select im_menu__del_module('intranet-wiki');
-
-
-
----------------------------------------------------------
 -- Register components
 
 create or replace function inline_0 ()
