@@ -250,7 +250,10 @@ set report_def [list \
 		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 		<b><a href=$project_url$project_id>$project_nr $project_name</a></b>"
 		"<nobr><a href=$user_url$main_project_manager_id>$main_project_manager_name</a></nobr>"
-		"\#colspan=12 $project_end_date_formatted</a>"
+		""
+		""
+		"$project_end_date_formatted</a>"
+		"\#colspan=7 $project_end_date_formatted</a>"
 	    } \
 	    content [list \
 		    header {
