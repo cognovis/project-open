@@ -175,8 +175,10 @@ set sql "
 		p.project_nr,
 		p.start_date::date as project_start_date,
 		p.end_date::date as project_end_date,
-		p.project_lead_id as project_manager_id,
-		im_name_from_user_id(p.project_lead_id) as project_manager_name,
+		p.project_lead_id as main_project_manager_id,
+		im_name_from_user_id(p.project_lead_id) as main_project_manager_name,
+		children.project_lead_id as project_manager_id,
+		im_name_from_user_id(children.project_lead_id) as project_manager_name,
 		children.project_id as children_id,
 		children.project_nr as children_nr,
 		cust.company_id as customer_id,
@@ -187,7 +189,16 @@ set sql "
 		t.task_units,
 		t.billable_units,
 		t.end_date,
+		t.trans_id as trans_user_id,
+		im_name_from_user_id(t.trans_id) as trans_user_name,
+		t.edit_id as edit_user_id,
+		im_name_from_user_id(t.edit_id) as edit_user_name,
+		t.proof_id as proof_user_id,
+		im_name_from_user_id(t.proof_id) as proof_user_name,
+		t.other_id as other_user_id,
+		im_name_from_user_id(t.other_id) as other_user_name,
 		to_char(t.end_date, :date_format) as task_end_date_formatted,
+		to_char(p.end_date, :date_format) as project_end_date_formatted,
 		im_category_from_id(t.task_status_id) as task_status,
 		im_category_from_id(t.task_type_id) as task_type,
 		im_category_from_id(t.source_language_id) as source_language,
@@ -226,48 +237,56 @@ set sql "
 set report_def [list \
     group_by customer_id \
     header {
-	"\#colspan=11 <a href=$this_url&customer_id=$customer_id&level_of_detail=4 
+	"\#colspan=17 <a href=$this_url&customer_id=$customer_id&level_of_detail=4 
 	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 	<b><a href=$company_url$customer_id>$customer_name</a></b>"
     } \
         content [list \
             group_by project_id \
             header { 
+		""
 		"<a href=$project_url$project_id>$project_nr</a>"
 		"\#colspan=2 <a href=$this_url&project_id=$project_id&level_of_detail=4 
 		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 		<b><a href=$project_url$project_id>$project_nr $project_name</a></b>"
-		"\#colspan=8 <a href=$user_url$project_manager_id>$project_manager_name</a>"
+		"<nobr><a href=$user_url$main_project_manager_id>$main_project_manager_name</a></nobr>"
+		"\#colspan=12 $project_end_date_formatted</a>"
 	    } \
 	    content [list \
 		    header {
+			""
 			"<a href=$project_url$children_id>$children_nr</a>"
 			""
 			"$task_name"
+			"<nobr><a href=$user_url$project_manager_id>$project_manager_name</a></nobr>"
 			"<font color='$warn_color'>$task_end_date_formatted</font>"
 			"$source_language"
 			"$target_language"
-			"$task_type"
+			"<nobr>$task_type</nobr>"
 			"$task_status"
 			"$task_units"
 			"$billable_units"
 			"$task_uom"
+			"<nobr><a href=$user_url$trans_user_id>$trans_user_name</a></nobr>"
+			"<nobr><a href=$user_url$edit_user_id>$edit_user_name</a></nobr>"
+			"<nobr><a href=$user_url$proof_user_id>$proof_user_name</a></nobr>"
+			"<nobr><a href=$user_url$other_user_id>$other_user_name</a></nobr>"
 		    } \
 		    content {} \
 	    ] \
 	    footer {
-		"&nbsp;" "" "" "" "" "" "" "" "" "" "" 
+		"&nbsp;" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" ""
             } \
     ] \
     footer {  
-	"&nbsp;"  ""  ""  ""  ""  ""  ""  ""  ""  ""  "" 
+	"&nbsp;"  ""  ""  ""  ""  ""  ""  ""  ""  ""  "" "" "" "" "" "" ""
     } \
 ]
 
 # Global header/footer
-set header0 {"Cust" "Project" "Task Name" "Deadl." "Sr" "Tg" "Type" "Status" "Units" "Bill" "Unit"}
+set header0 {"Cus" "Nr" "Project" "Task Name" "PM" "Deadl." "Sr" "Tg" "Type" "Status" "Units" "Bill" "Unit" Trans Edit Proof Other}
 set footer0 {
-	"&nbsp;"  ""  ""  ""  ""  ""  ""  ""  ""  ""  "" 
+	"&nbsp;"  ""  ""  ""  ""  ""  ""  ""  ""  ""  "" "" "" "" "" "" ""
 }
 
 set counters [list ]
