@@ -10,8 +10,13 @@
 create or replace function inline_0 ()
 returns integer as '
 DECLARE
-        row RECORD;
+        row		RECORD;
+	v_count		integer;
 BEGIN
+    select count(*) into v_count from user_tab_columns
+    where lower(table_name) = ''im_timesheet_tasks'' and lower(column_name) = ''project_id'';
+    IF v_count = 0 THEN return 0; END IF;
+
     for row in
         select	t.*,
 		p.company_id
@@ -140,7 +145,7 @@ declare
 begin
         select count(*) into v_count from user_tab_columns
         where lower(table_name) = ''im_timesheet_tasks'' and lower(column_name) = ''project_id'';
-        IF v_count = 0 THEN return 0; END IF;
+        IF v_count > 0 THEN return 0; END IF;
 
 	alter table im_timesheet_tasks drop column project_id;
 	alter table im_timesheet_tasks drop column task_name;
@@ -436,8 +441,28 @@ end;' language 'plpgsql';
 
 
 
-insert into im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-values ('100', 'Task', 'Intranet Project Type');
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from im_categories
+        where category_id = 100;
+        IF v_count > 0 THEN return 0; END IF;
+
+	insert into im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+	values (100, ''Task'', ''Intranet Project Type'');
+
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
+
+
+
+
+
 
 
 
