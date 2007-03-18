@@ -55,16 +55,44 @@ drop function inline_0 ();
 -- tasks to this dummy project so that the tasks and 
 -- their timesheet information isn't lost?
 
-delete from im_hours
-where timesheet_task_id in (
-	select	t.task_id
-	from	im_timesheet_tasks t
-	where	t.project_id not in (select project_id from im_projects)
-);
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_hours'' and lower(column_name) = ''timesheet_task_id'';
+        IF v_count = 0 THEN return 0; END IF;
 
-delete from im_timesheet_tasks 
-where project_id not in (select project_id from im_projects);
+	delete from im_hours
+	where timesheet_task_id in (
+		select	t.task_id
+		from	im_timesheet_tasks t
+		where	t.project_id not in (select project_id from im_projects)
+	);
 
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_timesheet_tasks'' and lower(column_name) = ''project_id'';
+        IF v_count = 0 THEN return 0; END IF;
+
+	delete from im_timesheet_tasks 
+	where project_id not in (select project_id from im_projects);
+
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
 
 
 --------------------------------------------------------
@@ -79,9 +107,24 @@ add constraint im_timesheet_task_fk
 FOREIGN KEY (task_id) references im_projects;
 
 
-alter table im_timesheet_tasks
-add constraint im_timesheet_task_pk
-primary key(task_id);
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from pg_constraint
+        where lower(conname) = ''im_timesheet_tasks_pk'';
+        IF v_count > 0 THEN return 0; END IF;
+
+	alter table im_timesheet_tasks
+	add constraint im_timesheet_tasks_pk
+	primary key(task_id);
+
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
+
 
 
 
@@ -89,17 +132,31 @@ primary key(task_id);
 -- 4. Delete the fields in im_timesheet_tasks that are
 -- not necessary anymore (taken over by im_project)
 
-alter table im_timesheet_tasks drop column project_id;
-alter table im_timesheet_tasks drop column task_name;
-alter table im_timesheet_tasks drop column task_type_id;
-alter table im_timesheet_tasks drop column task_status_id;
-alter table im_timesheet_tasks drop column description;
-alter table im_timesheet_tasks drop column task_nr;
-alter table im_timesheet_tasks drop column percent_completed;
-alter table im_timesheet_tasks drop column start_date;
-alter table im_timesheet_tasks drop column end_date;
-alter table im_timesheet_tasks drop column gantt_project_id;
 
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_timesheet_tasks'' and lower(column_name) = ''project_id'';
+        IF v_count = 0 THEN return 0; END IF;
+
+	alter table im_timesheet_tasks drop column project_id;
+	alter table im_timesheet_tasks drop column task_name;
+	alter table im_timesheet_tasks drop column task_type_id;
+	alter table im_timesheet_tasks drop column task_status_id;
+	alter table im_timesheet_tasks drop column description;
+	alter table im_timesheet_tasks drop column task_nr;
+	alter table im_timesheet_tasks drop column percent_completed;
+	alter table im_timesheet_tasks drop column start_date;
+	alter table im_timesheet_tasks drop column end_date;
+	alter table im_timesheet_tasks drop column gantt_project_id;
+
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
 
 
 
@@ -110,38 +167,61 @@ alter table im_timesheet_tasks drop column gantt_project_id;
 -- Create a unified view to tasks
 
 -- ToDo: If exists...
-drop view im_timesheet_tasks_view;
-
-
--- ToDo: If not yet exists...
--- sum of timesheet hours cached here for reporting
-alter table im_projects add reported_hours_cache float;
 
 
 create or replace function inline_0 ()
 returns integer as '
-DECLARE
-        row     RECORD;
-        v_oid   integer;
-BEGIN
-    for row in
-	select  *
-        from    im_timesheet_tasks
-    loop
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from pg_class
+        where lower(relname) = ''im_timesheet_tasks_view'';
+        IF v_count = 0 THEN return 0; END IF;
 
-	update im_projects
-	set reported_hours_cache = row.reported_units_cache
-	where project_id = row.task_id;
+	drop view im_timesheet_tasks_view;
 
-    end loop;
-    return 0;
-END;' language 'plpgsql';
-select inline_0 ();
-drop function inline_0 ();
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
 
 
--- ToDo: If exists...
-alter table im_timesheet_tasks drop reported_units_cache;
+
+-- ToDo: If not yet exists...
+-- sum of timesheet hours cached here for reporting
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_projects'' and lower(column_name) = ''reported_hours_cache'';
+        IF v_count > 0 THEN return 0; END IF;
+
+	alter table im_projects add reported_hours_cache numeric(12,2);
+
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_timesheet_tasks'' and lower(column_name) = ''reported_units_cache'';
+        IF v_count = 0 THEN return 0; END IF;
+
+	alter table im_timesheet_tasks drop reported_units_cache;
+
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
 
 
 
