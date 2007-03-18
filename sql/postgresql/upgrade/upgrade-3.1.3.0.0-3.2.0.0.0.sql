@@ -145,7 +145,7 @@ declare
 begin
         select count(*) into v_count from user_tab_columns
         where lower(table_name) = ''im_timesheet_tasks'' and lower(column_name) = ''project_id'';
-        IF v_count > 0 THEN return 0; END IF;
+        IF v_count = 0 THEN return 0; END IF;
 
 	alter table im_timesheet_tasks drop column project_id;
 	alter table im_timesheet_tasks drop column task_name;
