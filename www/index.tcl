@@ -49,10 +49,10 @@ db_foreach wikis $wikis_sql {
     incr ctr
 }
 
-if {1 == $ctr} {
-    ad_returnredirect [export_vars -base "/$wiki_mount/admin/index?" {folder_id}]
-    ad_script_abort
-}
+# if {1 == $ctr} {
+#     ad_returnredirect [export_vars -base "/$wiki_mount/admin/index?" {folder_id}]
+#     ad_script_abort
+# }
 
 
 # ----------------------------------------------------
