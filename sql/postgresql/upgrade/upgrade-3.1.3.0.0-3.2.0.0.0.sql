@@ -37,8 +37,8 @@ BEGIN
 		description,
 		percent_completed
 	) values (
-		row.task_id, row.task_name, row.task_nr,
-		row.task_nr || row.project_id::varchar, row.project_id, row.company_id,
+		row.task_id, row.task_name, substring(row.task_nr from 1 for 80),
+		substring(row.task_nr from 1 for 80) || row.project_id::varchar, row.project_id, row.company_id,
 		100, 76,
 		row.description,
 		row.percent_completed
