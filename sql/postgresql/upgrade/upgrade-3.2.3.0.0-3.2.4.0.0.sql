@@ -56,9 +56,11 @@ update im_invoice_items
 set item_type_id = 100
 where item_type_id = 84;
 
-update im_trans_tasks
-set task_type_id = 100
-where task_type_id = 84;
+
+-- im_trans_tasks dont exist anymore at this upgrade time
+-- update im_trans_tasks
+-- set task_type_id = 100
+-- where task_type_id = 84;
 
 delete from im_categories
 where category_id = 84;
