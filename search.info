@@ -6,7 +6,8 @@
     <pretty-plural>Search</pretty-plural>
     <initial-install-p>t</initial-install-p>
     <singleton-p>f</singleton-p>
-    
+    <auto-mount>search</auto-mount>
+
     <version name="5.1.5" url="http://openacs.org/repository/download/apm/search-5.1.5.apm">
         <owner url="http://openacs.org">OpenACS</owner>
         <release-date>2004-02-28</release-date>
