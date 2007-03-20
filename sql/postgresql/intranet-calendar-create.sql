@@ -290,9 +290,29 @@ begin
 	return new;
 end;' language 'plpgsql';
 
-create trigger im_trans_tasks_calendar_update_tr after insert or update
-on im_trans_tasks for each row
-execute procedure im_trans_tasks_calendar_update_tr ();
+
+-- dont install trigger if there is not translation module installed
+-- (upgrade from V3.1 project-consulting)
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+        row             RECORD;
+        v_count         integer;
+BEGIN
+    select count(*) into v_count from user_tab_columns
+    where lower(table_name) = ''im_timesheet_tasks'' and lower(column_name) = ''project_id'';
+    IF v_count = 0 THEN return 0; END IF;
+
+	create trigger im_trans_tasks_calendar_update_tr after insert or update
+	on im_trans_tasks for each row
+	execute procedure im_trans_tasks_calendar_update_tr ();
+
+    return 0;
+END;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 -- update im_trans_tasks set end_date = end_date;
 
