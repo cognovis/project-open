@@ -6,6 +6,7 @@
     <pretty-plural>Bug Trackers</pretty-plural>
     <initial-install-p>f</initial-install-p>
     <singleton-p>f</singleton-p>
+    <auto-mount>bug-tracker</auto-mount>
     
     <version name="1.3a7" url="http://openacs.org/repository/download/apm/bug-tracker-1.3a7.apm">
     <database-support>
