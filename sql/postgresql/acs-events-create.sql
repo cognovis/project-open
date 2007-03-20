@@ -669,7 +669,7 @@ create function acs_event__get_html_p (
 )
 returns boolean as '	-- acs_events.html_p%TYPE
 declare
-       get_html_p__event_id    acs_events.event_id%TYPE 
+       get_html_p__event_id    acs_events.event_id%TYPE;
        v_html_p		acs_events.html_p%TYPE; 
 begin
        select coalesce(e.html_p, a.html_p) into v_html_p
@@ -697,7 +697,7 @@ create function acs_event__get_status_summary (
 )
 returns boolean as '	-- acs_events.status_summary%TYPE
 declare
-       get_status_summary__event_id    acs_events.event_id%TYPE 
+       get_status_summary__event_id    acs_events.event_id%TYPE;
        v_status_summary		acs_events.status_summary%TYPE; 
 begin
        select coalesce(e.status_summary, a.status_summary) into v_status_summary
