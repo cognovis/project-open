@@ -78,7 +78,7 @@ create table im_fs_files (
 			references persons,
 			-- Filename, starting at folder. Should not
 			-- contain any slash / characters.
-	filename	varchar(500)
+	filename	text
 			constraint im_fs_files_filename_nn 
 			not null,
 	language_id	integer
