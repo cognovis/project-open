@@ -21,7 +21,7 @@ ad_page_contract {
     { output_format "html" }
     project_id:integer,optional
     task_id:integer,optional
-    company_id:integer,optional
+    { company_id:integer ""}
     user_id:integer,optional
 }
 
@@ -125,7 +125,7 @@ set this_url [export_vars -base "/intranet-reporting/timesheet-customer-project"
 
 set criteria [list]
 
-if {[info exists company_id]} {
+if {[info exists company_id] & "" != $company_id} {
     lappend criteria "p.company_id = :company_id"
 }
 
@@ -389,6 +389,12 @@ switch $output_format {
 		  <td class=form-label>End Date</td>
 		  <td class=form-widget>
 		    <input type=textfield name=end_date value=$end_date>
+		  </td>
+		</tr>
+		<tr>
+		  <td class=form-label>Customer</td>
+		  <td class=form-widget>
+		    [im_company_select company_id $company_id]
 		  </td>
 		</tr>
                 <tr>
