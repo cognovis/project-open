@@ -9,7 +9,7 @@ declare
 begin
         select count(*) into v_count from user_tab_columns
         where lower(table_name) = ''im_fs_files'' and lower(column_name) = ''folder_id'';
-        IF 0 > v_count THEN return 0; END IF;
+        IF v_count > 0 THEN return 0; END IF;
 
 	alter table im_fs_files add folder_id integer;
 	alter table im_fs_files add constraint im_fs_files_folder_fk
@@ -30,7 +30,7 @@ declare
 begin
         select count(*) into v_count from user_tab_columns
         where lower(table_name) = ''im_fs_files'' and lower(column_name) = ''owner_id'';
-        IF 0 > v_count THEN return 0; END IF;
+        IF v_count > 0 THEN return 0; END IF;
 
 	alter table im_fs_files add owner_id integer;
 	alter table im_fs_files add constraint im_fs_files_owner_fk
@@ -51,7 +51,7 @@ declare
 begin
         select count(*) into v_count from user_tab_columns
         where lower(table_name) = ''im_fs_files'' and lower(column_name) = ''filename'';
-        IF 0 > v_count THEN return 0; END IF;
+        IF v_count > 0 THEN return 0; END IF;
 
 	alter table im_fs_files add filename text not null;
 
@@ -70,7 +70,7 @@ declare
 begin
         select count(*) into v_count from user_tab_columns
         where lower(table_name) = ''im_fs_files'' and lower(column_name) = ''language_id'';
-        IF 0 > v_count THEN return 0; END IF;
+        IF v_count > 0 THEN return 0; END IF;
 
 	alter table im_fs_files add language_id integer;
 	alter table im_fs_files add constraint im_fs_files_lang_fk
@@ -91,7 +91,7 @@ declare
 begin
         select count(*) into v_count from user_tab_columns
         where lower(table_name) = ''im_fs_files'' and lower(column_name) = ''binary_hash'';
-        IF 0 > v_count THEN return 0; END IF;
+        IF v_count > 0 THEN return 0; END IF;
 
 	alter table im_fs_files add binary_hash character(40);
 
@@ -110,7 +110,7 @@ declare
 begin
         select count(*) into v_count from user_tab_columns
         where lower(table_name) = ''im_fs_files'' and lower(column_name) = ''text_hash'';
-        IF 0 > v_count THEN return 0; END IF;
+        IF v_count > 0 THEN return 0; END IF;
 
 	alter table im_fs_files add text_hash character(40);
 
@@ -128,7 +128,7 @@ declare
 begin
         select count(*) into v_count from user_tab_columns
         where lower(table_name) = ''im_fs_files'' and lower(column_name) = ''downloads_cache'';
-        IF 0 > v_count THEN return 0; END IF;
+        IF v_count > 0 THEN return 0; END IF;
 
 	alter table im_fs_files add downloads_cache integer;
 
@@ -147,7 +147,7 @@ declare
 begin
         select count(*) into v_count from user_tab_columns
         where lower(table_name) = ''im_fs_files'' and lower(column_name) = ''exists_p'';
-        IF 0 > v_count THEN return 0; END IF;
+        IF v_count > 0 THEN return 0; END IF;
 
 	alter table im_fs_files add exists_p char(1);
 	alter table im_fs_files alter column exists_p set default ''1'';
@@ -167,7 +167,7 @@ declare
 begin
         select count(*) into v_count from user_tab_columns
         where lower(table_name) = ''im_fs_files'' and lower(column_name) = ''ft_indexed_p'';
-        IF 0 > v_count THEN return 0; END IF;
+        IF v_count > 0 THEN return 0; END IF;
 
 	alter table im_fs_files add ft_indexed_p char(1);
 	alter table im_fs_files alter column ft_indexed_p set default ''0'';
