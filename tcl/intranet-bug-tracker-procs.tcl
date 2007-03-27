@@ -166,6 +166,10 @@ ad_proc -public im_bug_tracker_list_component {
 } {
     shows a list of bugs in the current project
 } {
+    if {![im_project_has_type $project_id "Bug Tracker Container"]} {
+        return ""
+    }
+
     set html ""
 
     db_multirow bug_list bug_list "
