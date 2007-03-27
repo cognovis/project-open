@@ -169,12 +169,18 @@ ad_proc -public im_bug_tracker_list_component {
     set html ""
 
     db_multirow bug_list bug_list "
-            SELECT
-                bug_number,summary
-            FROM 
+	select
+		bug_number,summary
+	from
+		im_projects parent,
+		im_projects children,
                 bt_bugs
-            WHERE 
-                bug_container_project_id=:project_id
+	where
+		children.project_type_id not in ([im_project_type_task])
+		and children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+		and parent.project_id = [im_project_super_project_id $project_id]
+                and bug_container_project_id=children.project_id
+	order by bug_number desc
             "
     
    template::list::create \
