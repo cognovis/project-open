@@ -6,7 +6,7 @@ ad_page_contract {
     @creation-date 2002-03-25
     @cvs-id $Id$
 } {
-    maintenance_project_id
+    {maintenance_project_id ""}
     {return_url ""}
 }
 
@@ -19,7 +19,6 @@ set user_id [ad_maybe_redirect_for_registration]
 
 db_1row maint_project_info "
     select
-	p.bt_project_id as package_id,
 	p.bt_project_id as project_id,
 	p.project_name as project_name,
 	p.bt_component_id as component_id,
@@ -30,6 +29,11 @@ db_1row maint_project_info "
     where
 	project_id = :maintenance_project_id
 "
+
+set package_id [db_string im_package_core_id {
+        select package_id from apm_packages
+        where package_key = 'bug-tracker'
+    } -default 0]
 
 # Set some common bug-tracker variables
 set package_key [db_string package_key "select package_key from apm_packages where package_id = :package_id"]
@@ -51,7 +55,7 @@ ad_form -name bug -cancel_url $return_url -form {
     {component_id:text(select) 
         {label "[bug_tracker::conn Component -package_id $package_id]"} 
 	{options {[bug_tracker::components_get_options -package_id $package_id]}} 
-	{value {[bug_tracker::conn component_id -package_id $package_id]}}
+	{values {[bug_tracker::conn component_id -package_id $package_id]}}
     }
     {summary:text 
 	{label "Summary"} 
@@ -60,12 +64,12 @@ ad_form -name bug -cancel_url $return_url -form {
     {found_in_version:text(select),optional 
         {label "Found in Version"}  
         {options {[bug_tracker::version_get_options -include_unknown -package_id $package_id]}} 
-        {value {[bug_tracker::conn user_version_id -package_id $package_id]}}
+	{values {$bt_found_in_version_id}}
     }
     {fix_for_version:text(select),optional 
         {label "Fix For Version"}  
-        {options {[bug_tracker::version_get_options -include_unknown -package_id $package_id]}} 
-        {value {[bug_tracker::conn user_version_id -package_id $package_id]}}
+        {options {[bug_tracker::version_get_options -include_unknown -package_id $package_id]}}
+	{values {$bt_fix_for_version_id}}
     }
 
     {assign_to:text(select),optional 
@@ -73,6 +77,7 @@ ad_form -name bug -cancel_url $return_url -form {
         {options {[bug_tracker::assignee_get_options -workflow_id $workflow_id -include_unknown]}} 
     }
 
+    {maintenance_project_id:text(hidden) { value $maintenance_project_id }}
     {return_url:text(hidden) {value $return_url}}
 }
 foreach {category_id category_name} [bug_tracker::category_types] {
@@ -112,7 +117,9 @@ ad_form -extend -name bug -new_data {
 	-desc_format [template::util::richtext::get_property format $description] \
         -keyword_ids $keyword_ids \
 	-fix_for_version $fix_for_version \
-	-assign_to $assign_to
+	-assign_to $assign_to 
+
+    db_dml add_project_id { update bt_bugs set bug_container_project_id=:maintenance_project_id where bug_id=:bug_id }
 
 
 } -after_submit {

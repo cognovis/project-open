@@ -160,3 +160,41 @@ ad_proc -public im_bug_tracker_container_component {
     return $html
 }
 
+
+ad_proc -public im_bug_tracker_list_component {
+    project_id
+} {
+    shows a list of bugs in the current project
+} {
+    set html ""
+
+    db_multirow bug_list bug_list "
+            SELECT
+                bug_number,summary
+            FROM 
+                bt_bugs
+            WHERE 
+                bug_container_project_id=:project_id
+            "
+    
+   template::list::create \
+	-name bug_list \
+	-key bug_id \
+	-pass_properties { return_url } \
+	-elements {
+	    bug_number {
+		label "bug\#"
+		link_url_eval { 
+			[return "/bug-tracker/bug?[export_vars -url { bug_number return_url  } ]" ]
+		}
+	    } 
+	    summary {
+		label "Summary"
+	    }
+	} 
+    
+    append html [template::list::render -name bug_list]
+    
+    return $html
+}
+
