@@ -61,10 +61,10 @@ ad_proc -public bug_tracker::bug::get {
     
     # Derived fields
     set row(bug_number_display) "#$row(bug_number)"
-    set row(component_name) [bug_tracker::component_get_name -component_id $row(component_id)]
-    set row(found_in_version_name) [bug_tracker::version_get_name -version_id $row(found_in_version)]
-    set row(fix_for_version_name) [bug_tracker::version_get_name -version_id $row(fix_for_version)]
-    set row(fixed_in_version_name) [bug_tracker::version_get_name -version_id $row(fixed_in_version)]
+    set row(component_name) [bug_tracker::component_get_name -component_id $row(component_id) -package_id $row(project_id)]
+    set row(found_in_version_name) [bug_tracker::version_get_name -version_id $row(found_in_version) -package_id $row(project_id)]
+    set row(fix_for_version_name) [bug_tracker::version_get_name -version_id $row(fix_for_version) -package_id $row(project_id)]
+    set row(fixed_in_version_name) [bug_tracker::version_get_name -version_id $row(fixed_in_version) -package_id $row(project_id)]
     
     
     # Get state information
