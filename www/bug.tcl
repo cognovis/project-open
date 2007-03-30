@@ -148,7 +148,7 @@ ad_form -name bug -cancel_url $return_url -mode display -has_edit 1 -actions $ac
     }
     {bug_container_project_id:integer(select),optional
 	{label "Project"}
-	{options {[im_bt_project_options_form]}}
+	{options {[im_bt_project_options_form -include_empty]}}
     }
  }
 

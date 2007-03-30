@@ -45,6 +45,11 @@ ad_form -name bug -cancel_url $return_url -form {
 	{label "Summary"} 
 	{html {size 50}}
     }
+    {bug_container_project_id:integer(select),optional
+	{label "Project"}
+	{options {[im_bt_project_options_form -include_empty]}}
+    }
+
     {found_in_version:text(select),optional 
         {label "Found in Version"}  
         {options {[bug_tracker::version_get_options -include_unknown]}} 
@@ -90,6 +95,8 @@ ad_form -extend -name bug -new_data {
         lappend keyword_ids [element get_value bug $category_id]
     }
 
+    ns_log notice "xxx1 $bug_container_project_id"
+
     bug_tracker::bug::new \
 	-bug_id $bug_id \
 	-package_id $package_id \
@@ -100,7 +107,9 @@ ad_form -extend -name bug -new_data {
 	-desc_format [template::util::richtext::get_property format $description] \
         -keyword_ids $keyword_ids \
 	-fix_for_version $fix_for_version \
-	-assign_to $assign_to
+	-assign_to $assign_to \
+	-bug_container_project_id $bug_container_project_id
+       
 
 
 } -after_submit {

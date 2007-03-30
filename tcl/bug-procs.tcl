@@ -93,6 +93,7 @@ ad_proc -public bug_tracker::bug::insert {
     {-content_type "bt_bug_revision"}
     {-fix_for_version ""}
     {-assign_to ""}
+    {-bug_container_project_id 0}
 } {
     Inserts a new bug into the content repository.
     You probably don't want to run this yourself - to create a new bug, use bug_tracker::bug::new
@@ -116,7 +117,9 @@ ad_proc -public bug_tracker::bug::insert {
     set extra_vars [ns_set create]
     oacs_util::vars_to_ns_set \
         -ns_set $extra_vars \
-        -var_list { bug_id package_id component_id found_in_version summary user_agent comment_content comment_format creation_date fix_for_version assign_to}
+        -var_list { bug_id package_id component_id found_in_version summary user_agent comment_content comment_format creation_date fix_for_version assign_to bug_container_project_id}
+
+    ns_log notice "xxx3: $bug_container_project_id"
 
 
     set bug_id [package_instantiate_object \
@@ -147,6 +150,7 @@ ad_proc -public bug_tracker::bug::new {
     {-keyword_ids {}}
     {-fix_for_version {}}
     {-assign_to ""}
+    {-bug_container_project_id 0}
 } {
     Create a new bug, then send out notifications, starts workflow, etc.
 
@@ -156,6 +160,7 @@ ad_proc -public bug_tracker::bug::new {
     @return bug_id The same bug_id passed in, just for convenience.
 } {
    
+    ns_log notice "xxx2: $bug_container_project_id"
 
     db_transaction {
 
@@ -172,7 +177,8 @@ ad_proc -public bug_tracker::bug::new {
                 -ip_address $ip_address \
                 -item_subtype $item_subtype \
                 -content_type $content_type \
-		-fix_for_version $fix_for_version ]
+		-fix_for_version $fix_for_version \
+		-bug_container_project_id $bug_container_project_id ]
 
         foreach keyword_id $keyword_ids {
             cr::keyword::item_assign -item_id $bug_id -keyword_id $keyword_id
