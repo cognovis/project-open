@@ -735,6 +735,10 @@ ad_proc bug_tracker::bug::get_list {
             display_col comment_short
             hide_p 1
         }
+	bug_container_project_name {
+	    label "Project"
+	    display_template {<if @bugs.bug_container_parent_name@ not nil>@bugs.bug_container_parent_name@ : </if>@bugs.bug_container_project_name@ }
+	}
         state {
             label "State"
             display_template {@bugs.pretty_state@<if @bugs.resolution@ not nil> (@bugs.resolution_pretty@)</if>}
@@ -951,6 +955,8 @@ ad_proc bug_tracker::bug::get_multirow {} {
         upvar \#[template::adp_level] $var $var
     }
 
+    set current_user_id [ad_maybe_redirect_for_registration]
+
     set workflow_id [bug_tracker::bug::get_instance_workflow_id]
     set truncate_len [parameter::get -parameter "TruncateDescriptionLength" -default 200]
 
@@ -975,6 +981,7 @@ ad_proc bug_tracker::bug::get_multirow {} {
 
     array set row_category $category_defaults
     array set row_category_names $category_defaults
+
     db_multirow -extend $extend_list bugs select_bugs [get_query] {
 
         # parent_id is part of the column name
@@ -993,7 +1000,8 @@ ad_proc bug_tracker::bug::get_multirow {} {
             set submitter_url [acs_community_member_url -user_id $submitter_user_id]
             set assignee_url [acs_community_member_url -user_id $assigned_user_id]
             set resolution_pretty [bug_tracker::resolution_pretty $resolution]
-            
+
+
             # Hide fields in this state
             foreach element $hide_fields {
                 set $element {}

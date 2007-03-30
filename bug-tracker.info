@@ -8,7 +8,7 @@
     <singleton-p>f</singleton-p>
     <auto-mount>bug-tracker</auto-mount>
     
-    <version name="1.3a7" url="http://openacs.org/repository/download/apm/bug-tracker-1.3a7.apm">
+    <version name="1.3a9" url="http://openacs.org/repository/download/apm/bug-tracker-1.3a9.apm">
     <database-support>
         <database>postgresql</database>
         <database>oracle</database>
@@ -19,7 +19,7 @@
         <vendor url="http://www.museatech.net">Musea Technologies</vendor>
         <description format="text/html">Bug tracking application with notifications, configurable state management, and patch upload.
         Contains the best of SDM, Bugzilla, FogBUGZ, and bughost.com.</description>
-        <provides url="bug-tracker" version="1.3a7"/>
+        <provides url="bug-tracker" version="1.3a9"/>
         <requires url="acs-content-repository" version="5.1.4d4"/>
         <requires url="acs-kernel" version="5.0d13"/>
         <requires url="acs-tcl" version="4.6.2d"/>

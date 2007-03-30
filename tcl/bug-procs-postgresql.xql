@@ -174,19 +174,28 @@ from (
          b.found_in_version,
          b.fix_for_version,
          b.fixed_in_version,
+         bcp.project_name as bug_container_project_name,
+	 bcpp.project_name as bug_container_parent_name,
          cas.case_id
          $more_columns
-    from $from_bug_clause,
+    from $from_bug_clause
+	 left join im_projects bcp on (b.bug_container_project_id=bcp.project_id)
+	 left join im_projects bcpp on (bcp.parent_id=bcpp.project_id),
          acs_users_all submitter,
          workflow_cases cas,
          workflow_case_fsm cfsm,
          workflow_fsm_states st 
+
    where submitter.user_id = b.creation_user
      and cas.workflow_id = :workflow_id
      and cas.object_id = b.bug_id
      and cfsm.case_id = cas.case_id
      and cfsm.parent_enabled_action_id is null
      and st.state_id = cfsm.current_state 
+     and (b.bug_container_project_id IS NULL 
+       OR ad_group_member_p( :current_user_id, bcp.project_id )='t'
+       OR ad_group_member_p( :current_user_id, bcpp.project_id )='t'
+     )
    $orderby_category_where_clause
    [template::list::page_where_clause -and -name bugs -key bug_id]
 ) q

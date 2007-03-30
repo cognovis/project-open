@@ -316,6 +316,8 @@ create table bt_bugs(
   -- denormalized from acs_objects
   creation_date                 timestamptz,
   creation_user                 integer,
+  -- for you in project open intranet-bug-tracker
+  bug_container_project_id 	integer,
   -- constraint
   constraint bt_bug_parent_id_bug_number_un
   unique (parent_id, bug_number)
