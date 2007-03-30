@@ -62,12 +62,15 @@ ad_proc -public im_bt_project_options {
     set options [db_list_of_lists project_options "
 	select
 		p.project_id,
-		p.project_name
+		p.project_name,
+                pp.project_name AS parent_name
 	from
-		im_projects p,
+		im_projects p LEFT JOIN im_projects pp ON (
+                  p.parent_id = pp.project_id
+                ),
 		acs_rels r
 	where
-		project_type_id = [im_project_type_bt_container]
+		p.project_type_id = [im_project_type_bt_container]
 		and r.object_id_one = p.project_id
 		and r.object_id_two = :user_id
     "]
@@ -87,8 +90,9 @@ ad_proc -public im_bt_generic_select {
     foreach option $options {
 	set id [lindex $option 0]
 	set name [lindex $option 1]
+	set parent_name [lindex $option 2]
 	if {$default == $id} { set selected "" } else { set selected "selected" }
-	append result "<option value=\"$id\" $selected>$name</option>\n"
+	append result "<option value=\"$id\" $selected>$parent_name : $name</option>\n"
     }
     append result "</select>\n"
     return $result

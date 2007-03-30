@@ -16,7 +16,7 @@
 
         <provides url="intranet-bug-tracker" version="3.2.7.0.0"/>
         <requires url="intranet-core" version="3.2"/>
-        <requires url="bug-tracker" version="1.3a7"/>
+        <requires url="bug-tracker" version="1.3a9"/>
 
         <callbacks>
         </callbacks>

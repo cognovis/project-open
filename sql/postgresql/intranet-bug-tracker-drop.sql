@@ -13,3 +13,4 @@ alter table im_timesheet_tasks drop column bt_bug_id;
 
 select im_menu__del_module('intranet-bug-tracker');
 select im_component_plugin__del_module('intranet-bug-tracker');
+select im_component_plugin__del_module('intranet-bug-tracker');
