@@ -146,7 +146,11 @@ ad_form -name bug -cancel_url $return_url -mode display -has_edit 1 -actions $ac
 	{mode display}
 	{html {size 50}}
     }
-}
+    {bug_container_project_id:integer(select),optional
+	{label "Project"}
+	{options {[im_bt_project_options_form]}}
+    }
+ }
 
 
 ad_form -extend -name bug -form {
@@ -255,6 +259,8 @@ ad_form -extend -name bug -on_submit {
     }
     
     set description [element get_value bug description]
+
+    set row(bug_container_project_id) $bug_container_project_id
     
     bug_tracker::bug::edit \
             -bug_id $bug(bug_id) \
@@ -286,7 +292,7 @@ if { ![form is_valid bug] } {
     set element_names {
         bug_number component_id summary pretty_state resolution 
         found_in_version user_agent fix_for_version fixed_in_version 
-        bug_number_display entry_id
+        bug_number_display entry_id bug_container_project_id
     }
 
     # update the element_name list and bug array with category stuff

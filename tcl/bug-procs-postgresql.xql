@@ -18,6 +18,7 @@
              b.found_in_version,
              b.fix_for_version,
              b.fixed_in_version,
+	     b.bug_container_project_id,
              to_char(now(), 'fmMM/DDfm/YYYY') as now_pretty
       from   bt_bugs b
       where  b.bug_id = :bug_id
@@ -38,7 +39,8 @@
             :summary,
             now(),
             :creation_user,
-            :creation_ip
+            :creation_ip,
+	    :bug_container_project_id
         );
     </querytext>
   </fullquery>

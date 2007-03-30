@@ -486,7 +486,8 @@ begin
         p_summary,                 -- summary
         p_creation_date,           -- creation_date
         p_creation_user,           -- creation_user
-        p_creation_ip             -- creation_ip
+        p_creation_ip             -- creation_ip,
+	null			   -- bug_container_project_id
     );
 
     return v_bug_id;
@@ -547,7 +548,8 @@ create or replace function bt_bug_revision__new(
     varchar,        -- summary
     timestamptz,    -- creation_date
     integer,        -- creation_user
-    varchar        -- creation_ip
+    varchar,        -- creation_ip
+    integer         -- bug_container_project_id
 ) returns int
 as '
 declare
@@ -563,6 +565,7 @@ declare
     p_creation_date         alias for $10;
     p_creation_user         alias for $11;
     p_creation_ip           alias for $12;
+    p_bug_container_project_id alias for $13;
 
     v_revision_id               integer;
 begin
@@ -599,7 +602,8 @@ begin
            user_agent = p_user_agent,
            found_in_version = p_found_in_version,
            fix_for_version = p_fix_for_version,
-           fixed_in_version = p_fixed_in_version
+           fixed_in_version = p_fixed_in_version,
+	   bug_container_project_id = p_bug_container_project_id
     where  bug_id = p_bug_id;
 
     return v_revision_id;
