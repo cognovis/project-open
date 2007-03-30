@@ -79,7 +79,7 @@ ad_proc -public im_bt_project_options {
 }
 
 ad_proc -public im_bt_project_options_form { 
-    {-include_empty_p 0}
+   {-include_empty:boolean 0}
 } {
     Get a list of "BT Container Projects" for the current user.
 } {
