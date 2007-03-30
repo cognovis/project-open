@@ -14,7 +14,7 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Provides a project-based customer's interface to the OpenACS bug tracker. Permissions are restricted on a per-project base and the bugs are timesheet costs associated can be automatically invoiced</description>
 
-        <provides url="intranet-bug-tracker" version="3.2.7.0.0"/>
+        <provides url="intranet-bug-tracker" version="3.2.8.0.0"/>
         <requires url="intranet-core" version="3.2"/>
         <requires url="bug-tracker" version="1.3a9"/>
 

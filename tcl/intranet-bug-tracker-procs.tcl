@@ -78,6 +78,38 @@ ad_proc -public im_bt_project_options {
     return $options
 }
 
+ad_proc -public im_bt_project_options_form { 
+    {-include_empty_p 0}
+} {
+    Get a list of "BT Container Projects" for the current user.
+} {
+    set user_id [ad_get_user_id]
+    set options [db_list_of_lists project_options "
+	select
+            case when pp.project_name is null 
+                then 
+                    p.project_name
+                else
+		    pp.project_name || ' : ' ||
+                    p.project_name
+                end  AS name,
+		p.project_id
+	from
+		im_projects p LEFT JOIN im_projects pp ON (
+                  p.parent_id = pp.project_id
+                ),
+		acs_rels r
+	where
+		p.project_type_id = [im_project_type_bt_container]
+		and r.object_id_one = p.project_id
+		and r.object_id_two = :user_id
+        order by 
+                name
+    "]
+    if {$include_empty_p} { set options [linsert $options 0 { "" "" }] }
+    return $options
+}
+
 ad_proc -public im_bt_generic_select { 
     {-include_empty_p 0}
     { -options ""}
