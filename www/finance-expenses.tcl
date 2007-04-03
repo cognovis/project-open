@@ -15,6 +15,7 @@ ad_page_contract {
     { end_date "2007-01-01" }
     { level_of_detail 4 }
     { output_format "html" }
+    { group_style "cust_proj_emp" }
     project_id:integer,optional
     customer_id:integer,optional
 }
@@ -73,7 +74,7 @@ set help_text "
 <strong>Expenses:</strong><br>
 
 This report shows all exenses in the system in a given period,
-grouped by project.
+grouped by Group Style.
 "
 
 
@@ -199,6 +200,32 @@ set inner_sql "
 	        and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
 "
 
+
+switch $group_style {
+    cust_proj_emp { 
+	set order_by_clause "
+		pcust.company_name,
+		p.project_name,
+		employee_name
+        "
+    }
+    cust_proj_exptype {
+	set order_by_clause "
+		pcust.company_name,
+		p.project_name,
+		expense_type
+        "
+    }
+    emp_cust_proj { 
+	set order_by_clause "
+		employee_name,
+		pcust.company_name,
+		p.project_name
+        "
+    }
+}
+
+
 set sql "
 select
 	cc.*,
@@ -237,114 +264,305 @@ where
 	and cc.cost_id = o.object_id
 	$where_clause
 order by
-	pcust.company_name,
-	p.project_name,
-	employee_name
+	$order_by_clause
 "
 
 
-set report_def [list \
-	group_by project_customer_id \
-	header {
-		"\#colspan=13 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4
-		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
-		<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
-	} \
-	content [list \
-		group_by project_id \
+set total 0
+set employee_subtotal 0
+
+
+switch $group_style {
+
+    cust_proj_emp {
+
+	# -------------------------------------------------------------------------------------------------
+	set report_def [list \
+		group_by project_customer_id \
 		header {
-			""
-			"\#colspan=10 <a href=$this_url&project_id=$project_id&level_of_detail=4
+			"\#colspan=13 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4
 			target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
-			<b><a href=$project_url$project_id>$project_name</a></b>"
-			""
-			""
+			<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
 		} \
 		content [list \
-			group_by pu_id \
+			group_by project_id \
 			header {
 				""
-				""
-				"\#colspan=9 <a href=$this_url&employee_id=$employee_id&level_of_detail=4
+				"\#colspan=10 <a href=$this_url&project_id=$project_id&level_of_detail=4
 				target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
-				<b><a href=$user_url$employee_id>$employee_name</a></b>"
+				<b><a href=$project_url$project_id>$project_name</a></b>"
 				""
 				""
 			} \
 			content [list \
+				group_by pu_id \
 				header {
 					""
 					""
+					"\#colspan=9 <a href=$this_url&employee_id=$employee_id&level_of_detail=4
+					target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
+					<b><a href=$user_url$employee_id>$employee_name</a></b>"
 					""
-					"<a href=$expense_url$cost_id><nobr>$effective_date_formatted</nobr></a>"
-					"<nobr>$cost_creation_date_formatted</nobr>"
-					"$expense_type"
-					"$external_company_name"
-					"$expense_payment_type"
-					"$vat_formatted"
-					"<nobr>$amount_formatted $currency</nobr>"
-					"<nobr>$amount_converted_formatted $default_currency</nobr>"
-					"$billable_p"
-					"$note"
+					""
 				} \
-				content {} \
+				content [list \
+					header {
+						""
+						""
+						""
+						"<a href=$expense_url$cost_id><nobr>$effective_date_formatted</nobr></a>"
+						"<nobr>$cost_creation_date_formatted</nobr>"
+						"$expense_type"
+						"$external_company_name"
+						"$expense_payment_type"
+						"$vat_formatted"
+						"<nobr>$amount_formatted $currency</nobr>"
+						"<nobr>$amount_converted_formatted</nobr>"
+						"$billable_p"
+						"$note"
+					} \
+					content {} \
+				] \
+				footer {
+					"\#colspan=10"
+					"\#colspan=3 <nobr><i>$employee_subtotal</i></nobr>"
+				} \
 			] \
 			footer {
 				"\#colspan=10"
-				"\#colspan=3 <nobr><i>$employee_subtotal $default_currency</i></nobr>"
+				"\#colspan=3 <nobr><b>$project_subtotal</b></nobr>"
 			} \
 		] \
-		footer {
-			"\#colspan=10"
-			"\#colspan=3 <nobr><b>$project_subtotal $default_currency</b></nobr>"
-		} \
-	] \
-	footer {  } \
-]
-	
-set total 0
+		footer {  } \
+	]
+		
+	# Global header/footer
+	set header0 {"Cust" "Proj" "Emp" "Expense<br>Date" "Enter<br>Date" "Type" "Ext<br>Company" "Pay<br>Type" "%VAT" "Amount" "Amount<br>Conv" "Bill<br>able?" "Note"}
+	set footer0 { }
 
-# Global header/footer
-set header0 {"Cust" "Proj" "Emp" "Expense<br>Date" "Enter<br>Date" "Type" "Ext<br>Company" "Pay<br>Type" "%VAT" "Amount" "Amount<br>Conv" "Bill<br>able?" "Note"}
-set footer0 {
-	""
-	""
-	"<br><b>Total:</b>"
-	"<br><b>$total $default_currency</b>"
+	set project_subtotal_counter [list \
+	        pretty_name "Invoice Amount" \
+	        var project_subtotal \
+	        reset "\$customer_id+\$project_id" \
+	        expr "\$amount+0" \
+	]
+	
+	set employee_subtotal_counter [list \
+	        pretty_name "Invoice Amount" \
+	        var employee_subtotal \
+	        reset "\$customer_id+\$project_id+\$employee_id" \
+	        expr "\$amount+0" \
+	]
+	set project_grand_total_counter [list \
+	        pretty_name "Invoice Amount" \
+	        var project_total \
+	        reset 0 \
+	        expr "\$amount+0" \
+	]
+	
+	set counters [list \
+		$project_subtotal_counter \
+		$employee_subtotal_counter \
+		$project_grand_total_counter \
+	]
+
+    }
+
+
+    cust_proj_exptype {
+
+	# -------------------------------------------------------------------------------------------------
+	set report_def [list \
+		group_by project_customer_id \
+		header {
+			"\#colspan=13 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4
+			target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
+			<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
+		} \
+		content [list \
+			group_by project_id \
+			header {
+				""
+				"\#colspan=10 <a href=$this_url&project_id=$project_id&level_of_detail=4
+				target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
+				<b><a href=$project_url$project_id>$project_name</a></b>"
+				""
+				""
+			} \
+			content [list \
+				group_by expense_type \
+				header {
+					""
+					""
+					"\#colspan=9 $expense_type"
+					""
+					""
+				} \
+				content [list \
+					header {
+						""
+						""
+						""
+						"<a href=$expense_url$cost_id><nobr>$effective_date_formatted</nobr></a>"
+						"<nobr>$cost_creation_date_formatted</nobr>"
+						"<a href=$user_url$employee_id>$employee_name</a>"
+						"$external_company_name"
+						"$expense_payment_type"
+						"$vat_formatted"
+						"<nobr>$amount_formatted $currency</nobr>"
+						"<nobr>$amount_converted_formatted</nobr>"
+						"$billable_p"
+						"$note"
+					} \
+					content {} \
+				] \
+				footer {
+					"\#colspan=10"
+					"\#colspan=3 <nobr><i>$exptype_subtotal</i></nobr>"
+				} \
+			] \
+			footer {
+				"\#colspan=10"
+				"\#colspan=3 <nobr><b>$project_subtotal</b></nobr>"
+			} \
+		] \
+		footer {  } \
+	]
+		
+	# Global header/footer
+	set header0 {"Cust" "Proj" "Type" "Expense<br>Date" "Enter<br>Date" "Emp" "Ext<br>Company" "Pay<br>Type" "%VAT" "Amount" "Amount<br>Conv" "Bill<br>able?" "Note"}
+	set footer0 { }
+	
+	set project_subtotal_counter [list \
+	        pretty_name "Invoice Amount" \
+	        var project_subtotal \
+	        reset \$project_id \
+	        expr "\$amount+0" \
+	]
+	
+	set exptype_subtotal_counter [list \
+	        pretty_name "Invoice Amount" \
+	        var exptype_subtotal \
+	        reset "\$project_id+\$expense_type_id" \
+	        expr "\$amount+0" \
+	]
+	set project_grand_total_counter [list \
+	        pretty_name "Invoice Amount" \
+	        var project_total \
+	        reset 0 \
+	        expr "\$amount+0" \
+	]
+	
+	set counters [list \
+		$project_subtotal_counter \
+		$exptype_subtotal_counter \
+		$project_grand_total_counter \
+	]
+
+
+    }
+
+    emp_cust_proj {
+
+	# -------------------------------------------------------------------------------------------------
+	set report_def [list \
+		group_by employee_id \
+		header {
+			"\#colspan=13 <a href=$this_url&employee_id=$employee_id&level_of_detail=4
+			target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
+			<b><a href=$user_url$employee_id>$employee_name</a></b>"
+		} \
+		content [list \
+			group_by customer_id \
+			header {
+				""
+				"\#colspan=10 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4
+				target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
+				<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
+				""
+				""
+			} \
+			content [list \
+				group_by project_id \
+				header {
+					""
+					""
+					"\#colspan=9 <a href=$this_url&project_id=$project_id&level_of_detail=4
+					target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
+					<b><a href=$project_url$project_id>$project_name</a></b>"
+					""
+					""
+				} \
+				content [list \
+					header {
+						""
+						""
+						""
+						"<a href=$expense_url$cost_id><nobr>$effective_date_formatted</nobr></a>"
+						"<nobr>$cost_creation_date_formatted</nobr>"
+						"$expense_type"
+						"$external_company_name"
+						"$expense_payment_type"
+						"$vat_formatted"
+						"<nobr>$amount_formatted $currency</nobr>"
+						"<nobr>$amount_converted_formatted</nobr>"
+						"$billable_p"
+						"$note"
+					} \
+					content {} \
+				] \
+				footer {
+					"\#colspan=10"
+					"\#colspan=3 <nobr>Proj: <i>$project_subtotal</i></nobr>"
+				} \
+			] \
+			footer {
+				"\#colspan=10"
+				"\#colspan=3 <nobr>Cust: <b>$customer_subtotal</b></nobr>"
+			} \
+		] \
+		footer {  
+			"\#colspan=10"
+			"\#colspan=3 <nobr>Emp: <b>$employee_subtotal</b></nobr>"
+		} \
+	]
+
+	# Global header/footer
+	set header0 {"Emp" "Cust" "Proj" "Expense<br>Date" "Enter<br>Date" "Type" "Ext<br>Company" "Pay<br>Type" "%VAT" "Amount" "Amount<br>Conv" "Bill<br>able?" "Note"}
+	set footer0 { }
+	
+	set employee_subtotal_counter [list \
+	        pretty_name "Invoice Amount" \
+	        var employee_subtotal \
+	        reset "\$employee_id" \
+	        expr "\$amount+0" \
+	]
+	set customer_subtotal_counter [list \
+	        pretty_name "Invoice Amount" \
+	        var customer_subtotal \
+	        reset "\$employee_id+\$customer_id" \
+	        expr "\$amount+0" \
+	]
+	set project_subtotal_counter [list \
+	        pretty_name "Invoice Amount" \
+	        var project_subtotal \
+	        reset "\$employee_id+\$customer_id+\$project_id" \
+	        expr "\$amount+0" \
+	]
+	set counters [list \
+		$project_subtotal_counter \
+		$customer_subtotal_counter \
+		$employee_subtotal_counter \
+	]
+
+
+    }
+
 }
 
-#
-# Subtotal Counters (per project)
-#
-set project_subtotal_counter [list \
-        pretty_name "Invoice Amount" \
-        var project_subtotal \
-        reset \$project_id \
-        expr "\$amount+0" \
-]
 
-set employee_subtotal_counter [list \
-        pretty_name "Invoice Amount" \
-        var employee_subtotal \
-        reset "\$project_id+\$employee_id" \
-        expr "\$amount+0" \
-]
+	
 
-#
-# Grand Total Counters
-#
-set project_grand_total_counter [list \
-        pretty_name "Invoice Amount" \
-        var project_total \
-        reset 0 \
-        expr "\$amount+0" \
-]
-
-set counters [list \
-	$project_subtotal_counter \
-	$employee_subtotal_counter \
-	$project_grand_total_counter \
-]
 
 
 # ------------------------------------------------------------
@@ -356,6 +574,7 @@ set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep
 set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
 set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
 set levels {1 "Customer" 2 "Project" 3 "User" 4 "All Details"}
+set group_style_options {"cust_proj_emp" "Customer - Project - Employee" "cust_proj_exptype" "Customer - Project - Expense Type" "emp_cust_proj" "Employee - Customer - Project"}
 
 # ------------------------------------------------------------
 # Start formatting the page
@@ -381,6 +600,12 @@ switch $output_format {
 		  <td class=form-label>Level of Details</td>
 		  <td class=form-widget>
 		    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
+		  </td>
+		</tr>
+		<tr>
+		  <td class=form-label>Group Style</td>
+		  <td class=form-widget>
+		    [im_select -translate_p 0 group_style $group_style_options $group_style]
 		  </td>
 		</tr>
 		<tr>
