@@ -71,8 +71,6 @@ drop function inline_0 ();
 -- Component in Homepage
 --
 
-select im_component_plugin__del_module('intranet-forum');
-
 -- Show the forum component in project page
 --
 SELECT im_component_plugin__new (
