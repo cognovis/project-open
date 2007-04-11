@@ -1,4 +1,4 @@
--- /packages/intranet-forum/sql/oracle/intranet-forum-pg-create.sql
+-- /packages/intranet-search-pg/sql/oracle/intranet-search-pg-create.sql
 --
 -- Copyright (c) 2003-2005 Project/Open
 --
