@@ -1,4 +1,4 @@
--- /packages/intranet-forum/sql/oracle/intranet-forum-sc-create.sql
+-- /packages/intranet-search-pg/sql/postgres/intranet-search-pg-drop.sql
 --
 -- Copyright (c) 2003-2004 Project/Open
 --
