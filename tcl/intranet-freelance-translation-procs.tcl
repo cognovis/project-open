@@ -59,7 +59,6 @@ ad_proc im_freelance_trans_member_select_component {
     }
     set freel_trans_order_by [string tolower $freel_trans_order_by]
 
-
     # ------------------------------------------------
     # Constants
 
