@@ -414,10 +414,16 @@ $languages_butons_html
 
 # this proc is only used without quality module
 
-ad_proc im_freelance_member_select_component { object_id return_url } {
+ad_proc im_freelance_member_select_component { 
+    object_id 
+    return_url 
+} {
     Component that returns a formatted HTML table that allows 
     to select freelancers according to the characteristics of
     the current project.
+
+    ToDo: Remove translation specific code to make the component
+    universally usable, also for "consulting" projects.
 } {
     # Default Role: "Full Member"
     set default_role_id 1300
