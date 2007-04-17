@@ -27,10 +27,38 @@ ad_proc im_freelance_trans_member_select_component {
 } {
     # ------------------------------------------------
     # Security
+
     set user_id [ad_get_user_id]
     if {![im_project_has_type $object_id "Translation Project"] || ![im_permission $user_id view_trans_proj_detail]} {
         return ""
     }
+
+
+    # ------------------------------------------------
+    # Parameter Logic
+    # 
+    # Get the freel_trans_order_by variable from the http header
+    # because we can't trust that the embedding page will pass
+    # this param into this component.
+
+    set current_url [ad_conn url]
+    set header_vars [ns_conn form]
+    set var_list [ad_ns_set_keys $header_vars]
+
+    # set local TCL vars from header vars
+    ad_ns_set_to_tcl_vars $header_vars
+
+    # Remove the "freel_trans_order_by" from the var_list
+    set order_by_pos [lsearch $var_list "freel_trans_order_by"]
+    if {$order_by_pos > -1} {
+	set var_list [lreplace $var_list $order_by_pos $order_by_pos]
+    }
+
+    if {![info exists freel_trans_order_by]} {
+	set freel_trans_order_by [parameter::get_from_package_key -package_key intranet-freelance-translation -parameter FreelanceListSortOder -default "S-Word"]
+    }
+    set freel_trans_order_by [string tolower $freel_trans_order_by]
+
 
     # ------------------------------------------------
     # Constants
@@ -43,6 +71,7 @@ ad_proc im_freelance_trans_member_select_component {
 
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
+
 
     set source_lang_skill_type [db_string source_lang "
 		select	category_id 
@@ -136,9 +165,22 @@ ad_proc im_freelance_trans_member_select_component {
 
     db_foreach price_hash $price_sql {
 	set key "$user_id-$uom_id"
-	set med_price_hash($key) [expr ($min_price + $max_price) / 2.0]
 	set price_hash($key) "$min_price - $max_price"
 	if {$min_price == $max_price} { set price_hash($key) "$min_price" }
+
+	switch $freel_trans_order_by {
+            "s-word" {
+		if {$uom_id == 324} {
+		    set sort_hash($user_id) [expr ($min_price + $max_price) / 2.0]
+		}
+	    }
+            "hour" {
+		if {$uom_id == 320} {
+		    set sort_hash($user_id) [expr ($min_price + $max_price) / 2.0]
+		}
+	    }
+            default { }
+        }
     }
 
     set uom_listlist [db_list_of_lists uom_list "
@@ -151,17 +193,12 @@ ad_proc im_freelance_trans_member_select_component {
     # ------------------------------------------------
     # Mix Freelance Info with Prices
 
-    # Sort by S-Word
-    set sort_uom_id 324
-
     set table_rows [list]
     db_foreach freelance $freelance_sql {
 	set row [list $user_id $name $source_langs $target_langs $subject_area]
 
-	# sort_val - value for sorting the table
-	set sort_val 999999999999
-	set key "$user_id-$sort_uom_id"
-	if {[info exists med_price_hash($key)]} { set sort_val $med_price_hash($key) }
+	set sort_val 999999999
+	if {[info exists sort_hash($user_id)]} { set sort_val $sort_hash($user_id) }
 	lappend row $sort_val
 
 	lappend table_rows $row
@@ -182,7 +219,19 @@ ad_proc im_freelance_trans_member_select_component {
 	  <td class=rowtitle>[_ intranet-freelance.Subject_Area]</td>
     "
     foreach uom_tuple $uom_listlist {
-        append freelance_header_html "<td class=rowtitle>[lindex $uom_tuple 1]</td>\n"
+	set title [lindex $uom_tuple 1]
+	set dir_select ""
+	if {$freel_trans_order_by == [string tolower $title]} {
+	    set dir_select "v"
+	}
+	
+	append freelance_header_html "
+		<td class=rowtitle>
+		<a href=[export_vars -base $current_url $var_list]&freel_trans_order_by=$title>$title</a>
+		$dir_select
+		</td>
+	"
+
 	incr colspan
     }
     append freelance_header_html "
