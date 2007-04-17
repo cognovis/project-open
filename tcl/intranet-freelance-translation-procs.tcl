@@ -103,6 +103,8 @@ ad_proc im_freelance_trans_member_select_component {
     "]
     if {0 == [llength $project_target_langs]} { set project_target_langs [list "'none'"]}
 
+#    ad_return_complaint 1 "$source_lang_skill_type $target_lang_skill_type $subject_area_skill_type $project_source_lang '$project_target_langs'"
+
     # ------------------------------------------------
     # Put together the main SQL
 
