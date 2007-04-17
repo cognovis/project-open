@@ -20,7 +20,7 @@
         </callbacks>
 
         <parameters>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="FreelanceListSortOder"  default="med_price" description="How to sort the Translation Freelance list by default? Valid options currently include 's_word' - median price per source word and 'hour' - median price per hour"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="FreelanceListSortOder"  default="S-Word" description="How to sort the Translation Freelance list by default? The parameter corresponds to the column name. Valid options currently include 'S-Word' - price per source word and 'Hour' - price per hour"/>
         </parameters>
 
     </version>
