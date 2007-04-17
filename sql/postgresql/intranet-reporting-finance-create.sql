@@ -10,6 +10,12 @@
 -- Financial Invoices for ]po[
 
 
+-- Delete old menu entries 
+delete from im_menus
+where	package_name = 'intranet-reporting'
+	and label like 'reporting-finance-%';
+
+
 ---------------------------------------------------------
 -- Finance Report Menus
 --
