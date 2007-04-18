@@ -200,24 +200,8 @@ where
 # Make sure the creator and the manager become Key Accounts
 # -----------------------------------------------------------------
 
-#set rel_count [db_string rel_count "select count(*) from acs_rels where object_id_one=:company_id and object_id_two = :freelance_id"]
-#if {!$rel_count} {
-#    # add the creating current user to the group
-#    relation_add \
-#	-member_state "approved" \
-#	"admin_rel" \
-#	$company_id \
-#	$freelance_id
-#}
-
 set role_id [im_company_role_key_account]
-
 im_biz_object_add_role $user_id $company_id $role_id
-
-#if {"" != $manager_id } {
-#    im_biz_object_add_role $manager_id $company_id $role_id
-#}
-
 
 db_release_unused_handles
 
