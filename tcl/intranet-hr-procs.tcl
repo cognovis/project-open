@@ -156,7 +156,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 	append employee_html "<tr><td colspan=2><i>[_ intranet-hr.Nothing_defined_yet]</i></tr></td>\n"
     }
 
-    if {$admin } {
+    if {$write} {
         append employee_html "
         <tr $td_class([expr $ctr % 2])>
         <td></td><td><input type=submit value='[_ intranet-hr.Edit]'></td></tr>\n"
