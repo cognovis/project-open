@@ -17,6 +17,7 @@
     <th class="list-narrow">Widget<br>Name</th>
     <th class="list-narrow">Attrib<br>Type</th>
     <th class="list-narrow">Table<br>Type</th>
+    <th class="list-narrow">Y-Pos</th>
     <th class="list-narrow">#intranet-dynfield.Del#</th>
   </tr>
 
@@ -48,6 +49,9 @@
     </td>
     <td class="list-narrow">
 	@attributes.table_data_type@
+    </td>
+    <td class="list-narrow">
+	@attributes.pos_y@
     </td>
     <td class="list-narrow">
 	<input type=checkbox name=attribute_ids value="@attributes.im_dynfield_attribute_id@">
@@ -113,31 +117,3 @@
 <li><a href="extension-table-new?object_type=@object_type@&return_url=@return_url_encoded;noquote@">#intranet-dynfield.lt_Add_a_new_extension_t#</a>
 </ul>
 
-
-<p>
-
-<if @generate_interfaces@ eq "1" and @attributes:rowcount@ gt "0">
-	<if @show_interfaces_p@ eq "1">
-		<br/>
-		@show_hidde_link;noquote@
-		<br/>
-		<h1>#intranet-dynfield.dbi_interfaces#</h1>
-
-		<h5>#intranet-dynfield.dbi_headers#</h5>
-		@dbi_interfaces;noquote@
-
-		<br/>
-
-		<h5>#intranet-dynfield.dbi_inserts#</h5>
-		@dbi_inserts;noquote@
-
-		<br/>
-
-		<h5>#felxbase.dbi_procs#</h5>
-<pre>
-@dbi_procs;noquote@
-</pre>
-	</if>
-	<br>
-	@show_hidde_link;noquote@
-</if>
