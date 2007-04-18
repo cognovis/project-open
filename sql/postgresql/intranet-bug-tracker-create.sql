@@ -229,7 +229,7 @@ select im_dynfield_widget__new (
 	null,				-- creation_user
 	null,				-- creation_ip
 	null,				-- context_id
-	'bt_components',		-- widget_name
+	'bt_component',		-- widget_name
 	'#intranet-bug-tracker.BT_Component#',	-- pretty_name
 	'#intranet-bug-tracker.BT_Component#',	-- pretty_plural
 	10007,				-- storage_type_id
@@ -260,6 +260,7 @@ begin
 	select count(*) into v_count from acs_attributes
 	where attribute_name = v_attrib_name;
 	IF 0 != v_count THEN return 0; END IF;
+
 	select count(*) into v_count from user_tab_columns
 	where lower(table_name) = v_table and lower(column_name) = v_attrib_name;
 	IF v_count = 0 THEN
@@ -268,6 +269,7 @@ begin
 			constraint im_project_bt_comp_fk 
 			references bt_components;
 	END IF;
+
 	v_acs_attrib_id := acs_attribute__create_attribute (
 		v_object, v_attrib_name,	-- object_type, attribute_name
 		v_datatype, v_attrib_pretty, 	-- datatype, pretty_name
