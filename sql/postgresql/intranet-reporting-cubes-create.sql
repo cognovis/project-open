@@ -55,7 +55,7 @@ BEGIN
 		''intranet-reporting-cubes'',		-- package_name
 		''reporting-cubes-finance'', -- label
 		''Finance Data-Warehouse Cube'', -- name
-		''/intranet-reporting-cubes/finance-cube'', -- url
+		''/intranet-reporting-cubes/finance-cube?'', -- url
 		50,					-- sort_order
 		v_main_menu,				-- parent_menu_id
 		null					-- p_visible_tcl
@@ -118,7 +118,7 @@ BEGIN
 		''intranet-reporting-cubes'',		-- package_name
 		''reporting-cubes-timesheet'', -- label
 		''Timesheet Data-Warehouse Cube'', -- name
-		''/intranet-reporting-cubes/timesheet-cube'', -- url
+		''/intranet-reporting-cubes/timesheet-cube?'', -- url
 		50,					-- sort_order
 		v_main_menu,				-- parent_menu_id
 		null					-- p_visible_tcl
