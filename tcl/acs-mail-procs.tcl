@@ -405,7 +405,7 @@ ad_proc -private acs_mail_process_queue {
         if [catch {
             eval ns_sendmail $to_send_2
         } errMsg] {
-            ns_log "Notice" "acs-mail-queue: failure: $errMsg"
+            ns_log "Notice" "acs_mail_process_queue: failure: $errMsg"
         } else {
             db_dml acs_message_delete_sent {
                 delete from acs_mail_queue_outgoing
@@ -415,7 +415,7 @@ ad_proc -private acs_mail_process_queue {
             }
         }
     }
-    ns_log Debug "acs-mail-queue: cleaning up"
+    ns_log Debug "acs_mail_process_queue: cleaning up"
     # All done.  Delete dangling links.
     db_dml acs_message_cleanup_queue {
         delete from acs_mail_queue_messages
@@ -424,7 +424,7 @@ ad_proc -private acs_mail_process_queue {
                 and message_id not in
                     (select message_id from acs_mail_queue_incoming)
     }
-    ns_log Debug "acs-mail-queue: done cleaning up"
+    ns_log Debug "acs_mail_process_queue: done cleaning up"
 }
 
 ## Basic API ###########################################################
