@@ -1543,7 +1543,7 @@ end;' language 'plpgsql';
 
 
 
--- procedure notify_assignee
+-- Compatibility proc - to maintain API
 create or replace function workflow_case__notify_assignee (integer,integer,varchar,varchar)
 returns integer as '
 declare
@@ -1551,6 +1551,20 @@ declare
   notify_assignee__user_id                alias for $2;  
   notify_assignee__callback               alias for $3;  
   notify_assignee__custom_arg             alias for $4;  
+begin
+	return workflow_case__notify_assignee($1,$2,$3,$4,null);
+end;' language 'plpgsql';
+
+
+-- procedure notify_assignee
+create or replace function workflow_case__notify_assignee (integer,integer,varchar,varchar,varchar)
+returns integer as '
+declare
+  notify_assignee__task_id                alias for $1;
+  notify_assignee__user_id                alias for $2;
+  notify_assignee__callback               alias for $3;
+  notify_assignee__custom_arg             alias for $4;
+  notify_assignee__notification_type      alias for $5;
 
   v_deadline_pretty                       varchar;  
   v_object_name                           text; 
@@ -1564,12 +1578,19 @@ declare
   v_workflow_url			  text;
   v_acs_lang_package_id			  integer;
 
+  v_notification_type			  varchar;
   v_notification_type_id		  integer;
   v_workflow_package_id			  integer;
   v_notification_n_seconds		  integer;
   v_locale				  text;
   v_count				  integer;
 begin
+      -- Default notification type
+      v_notification_type := notify_assignee__notification_type;
+      IF v_notification_type is null THEN
+              v_notification_type := ''wf_assignment_notif'';
+      END IF;
+
         select to_char(ta.deadline,''Mon fmDDfm, YYYY HH24:MI:SS''),
                acs_object__name(c.object_id), tr.transition_key, tr.transition_name
         into   v_deadline_pretty, v_object_name, v_transition_key, v_transition_name
@@ -1607,7 +1628,7 @@ begin
 		-- Notification Type is a kind of "channel" where to spread notifics
 		select type_id into v_notification_type_id
 		from notification_types
-		where short_name = ''wf_assignment_notif'';
+		where short_name = v_notification_type;
 
 		-- Check the 
 		select	n_seconds into v_notification_n_seconds
@@ -1629,17 +1650,44 @@ begin
 	where	package_key = ''acs-lang'';
 	v_locale := apm__get_value (v_acs_lang_package_id, ''SiteWideLocale'');
 
-	v_subject := ''Notification_Subject_'' || v_transition_key;
+	-- make sure there are no null values - replaces(...,null) returns null...
+	IF v_deadline_pretty is NULL THEN v_deadline_pretty := ''undefined''; END IF;
+	IF v_workflow_url is NULL THEN v_workflow_url := ''undefined''; END IF;
+
+	-- ------------------------------------------------------------
+	-- Try with specific translation first
+	v_subject := ''Notification_Subject_'' || v_transition_key || ''_'' || v_notification_type;
 	v_subject := acs_lang_lookup_message(v_locale, ''acs-workflow'', v_subject);
+
+	-- Fallback to generic (no transition key) translation
+	IF substring(v_subject from 1 for 7) = ''MISSING'' THEN
+		v_subject := ''Notification_Subject_'' || v_transition_key;
+		v_subject := acs_lang_lookup_message(v_locale, ''acs-workflow'', v_subject);
+	END IF;
+	
+	-- Replace variables
 	v_subject := replace(v_subject, ''%object_name%'', v_object_name);
 	v_subject := replace(v_subject, ''%transition_name%'', v_transition_name);
+	v_subject := replace(v_subject, ''%deadline%'', v_deadline_pretty);
 
-	v_body := ''Notification_Body_'' || v_transition_key;
+	-- ------------------------------------------------------------
+	-- Try with specific translation first
+	v_body := ''Notification_Body_'' || v_transition_key || ''_'' || v_notification_type;
 	v_body := acs_lang_lookup_message(v_locale, ''acs-workflow'', v_body);
+
+	-- Fallback to generic (no transition key) translation
+	IF substring(v_body from 1 for 7) = ''MISSING'' THEN
+		v_body := ''Notification_Body_'' || v_transition_key;
+		v_body := acs_lang_lookup_message(v_locale, ''acs-workflow'', v_body);
+	END IF;
+
+	-- Replace variables
 	v_body := replace(v_body, ''%object_name%'', v_object_name);
 	v_body := replace(v_body, ''%transition_name%'', v_transition_name);
 	v_body := replace(v_body, ''%deadline%'', v_deadline_pretty);
 	v_body := replace(v_body, ''%workflow_url%'', v_workflow_url);
+
+	RAISE NOTICE ''workflow_case__notify_assignee: Subject=%, Body=%'', v_subject, v_body;
 
         if notify_assignee__callback != '''' and notify_assignee__callback is not null then
             v_str :=  ''select '' || notify_assignee__callback || '' ('' ||
