@@ -358,7 +358,6 @@ set report_def [list \
 		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
 		<b><a href=$project_url$project_id>$project_nr</nobr></a></b>"
 		"<b><a href=$project_url$project_id><nobr>$project_name</nobr></a></b>"
-		""
 		"" 
 		"<nobr><i>$invoice_subsubtotal $default_currency</i></nobr>" 
 		"<nobr><i>$delnote_subsubtotal $default_currency</i></nobr>" 
