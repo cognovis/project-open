@@ -17,3 +17,70 @@ begin
 end;' language 'plpgsql';
 select inline_1 ();
 drop function inline_1();
+
+
+create or replace function inline_1 ()
+returns integer as '
+declare
+        v_count                 integer;
+	v_menu_id		integer;
+	row			RECORD;
+begin
+	FOR row IN
+		select	*
+		from	im_menus
+		where	label like ''reporting-finance-%''
+			and package_name = ''intranet-reporting''
+	LOOP
+		PERFORM im_menu__delete(row.menu_id);
+	END LOOP;
+
+	return 0;
+end;' language 'plpgsql';
+select inline_1 ();
+drop function inline_1();
+
+
+create or replace function inline_1 ()
+returns integer as '
+declare
+        v_count                 integer;
+	v_menu_id		integer;
+	row			RECORD;
+begin
+	FOR row IN
+		select	*
+		from	im_menus
+		where	(label like ''reporting-project-trans-%'' OR
+			 label like ''reporting-trans-%'')
+			and package_name = ''intranet-reporting''
+	LOOP
+		PERFORM im_menu__delete(row.menu_id);
+	END LOOP;
+
+	return 0;
+end;' language 'plpgsql';
+select inline_1 ();
+drop function inline_1();
+
+
+create or replace function inline_1 ()
+returns integer as '
+declare
+        v_count                 integer;
+        v_menu_id               integer;
+        row                     RECORD;
+begin
+        FOR row IN
+                select  *
+                from    im_menus
+                where   label like ''%cube%''
+                        and package_name = ''intranet-reporting''
+        LOOP
+                PERFORM im_menu__delete(row.menu_id);
+        END LOOP;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_1 ();
+drop function inline_1();

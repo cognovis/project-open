@@ -14,6 +14,7 @@ ad_page_contract {
     { start_date "" }
     { level_of_detail 1 }
     { output_format "html" }
+    { user_id 0 }
 }
 
 # ------------------------------------------------------------
@@ -81,6 +82,24 @@ set levels {1 "User Only" 2 "User+Company" 3 "User+Company+Project" 4 "All Detai
 
 set num_format "999,990.99"
 
+
+# ------------------------------------------------------------
+# Conditional SQL Where-Clause
+#
+
+set criteria [list]
+
+if {[info exists user_id] && 0 != $user_id && "" != $user_id} {
+    lappend criteria "h.user_id = :user_id"
+}
+
+set where_clause [join $criteria " and\n            "]
+if { ![empty_string_p $where_clause] } {
+    set where_clause " and $where_clause"
+}
+
+
+
 # ------------------------------------------------------------
 # Define the report - SQL, counters, headers and footers 
 #
@@ -118,6 +137,7 @@ where
 	and h.day >= to_date(:start_date, 'YYYY-MM')
 	and h.day < to_date(:start_date, 'YYYY-MM') + 31
 	and :start_date = to_char(h.day, 'YYYY-MM')
+	$where_clause
 "
 
 set sql "
@@ -274,13 +294,18 @@ switch $output_format {
 		    <input type=textfield name=start_date value=$start_date>
 		  </td>
 		</tr>
+		<tr>
+		  <td class=form-label>User</td>
+		  <td class=form-widget>
+		    [im_user_select -include_empty_p 1 user_id $user_id]
+		  </td>
+		</tr>
                 <tr>
                   <td class=form-label>Format</td>
                   <td class=form-widget>
                     [im_report_output_format_select output_format "" $output_format]
                   </td>
                 </tr>
-
 		<tr>
 		  <td class=form-label></td>
 		  <td class=form-widget><input type=submit value=Submit></td>

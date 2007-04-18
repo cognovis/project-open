@@ -19,10 +19,10 @@ ad_page_contract {
     { level_of_detail 2 }
     { truncate_note_length 4000}
     { output_format "html" }
-    project_id:integer,optional
-    task_id:integer,optional
-    { company_id:integer ""}
-    user_id:integer,optional
+    { project_id:integer 0}
+    { task_id:integer 0}
+    { company_id:integer 0}
+    { user_id:integer 0}
 }
 
 # ------------------------------------------------------------
@@ -125,20 +125,20 @@ set this_url [export_vars -base "/intranet-reporting/timesheet-customer-project"
 
 set criteria [list]
 
-if {[info exists company_id] & "" != $company_id} {
+if {0 != $company_id && "" != $company_id} {
     lappend criteria "p.company_id = :company_id"
 }
 
-if {[info exists user_id]} {
+if {0 != $user_id && "" != $user_id} {
     lappend criteria "h.user_id = :user_id"
 }
 
-if {[info exists task_id]} {
+if {0 != $task_id && "" != $task_id} {
     lappend criteria "h.project_id = :task_id"
 }
 
 # Select project & subprojects
-if {[info exists project_id]} {
+if {0 != $project_id && "" != $project_id} {
     lappend criteria "p.project_id in (
 	select
 		p.project_id
@@ -395,6 +395,12 @@ switch $output_format {
 		  <td class=form-label>Customer</td>
 		  <td class=form-widget>
 		    [im_company_select company_id $company_id]
+		  </td>
+		</tr>
+		<tr>
+		  <td class=form-label>User</td>
+		  <td class=form-widget>
+		    [im_user_select -include_empty_p 1 user_id $user_id]
 		  </td>
 		</tr>
                 <tr>
