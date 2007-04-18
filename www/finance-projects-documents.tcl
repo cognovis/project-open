@@ -336,7 +336,6 @@ set report_def [list \
 		    header {
 			""
 			""
-			""
 			"<a href=$invoice_url$cost_id>$cost_name</a>"
 			"<nobr><a href=$user_url$sales_rep_id>$sales_rep_name</a></nobr>"
 			"<nobr>$invoice_amount_pretty</nobr>"
