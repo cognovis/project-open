@@ -199,7 +199,8 @@ ad_proc -public im_ganttproject_component {
     files with xxx in (gif, png, jpg)
 } {
     # Is this a "Consulting Project"?
-    if {![im_project_has_type $project_id "Consulting Project"]} {
+    set consulting_project_category [parameter::get -package_id [im_package_ganttproject_id] -parameter "GanttProjectType" -default "Consulting Service"]
+    if {![im_project_has_type $project_id $consulting_project_category]} {
         return ""
     }
 
@@ -1549,6 +1550,26 @@ ad_proc -public im_ganttproject_gantt_component {
 	set end_date [db_string end_date "
 	select
 		to_char(max(child.end_date), 'YYYY-MM-DD')
+	from
+		im_projects parent,
+		im_projects child
+	where
+		parent.project_id in ([join $project_id ", "])
+		and parent.parent_id is null
+		and child.tree_sortkey
+			between parent.tree_sortkey
+			and tree_right(parent.tree_sortkey)
+        "]
+    }
+
+    if {"" == $end_date} {
+	set end_date [db_string now "select now()::date"]
+    }
+
+    if {"" == $start_date} {
+	set start_date [db_string start_date "
+	select
+		to_char(min(child.start_date), 'YYYY-MM-DD')
 	from
 		im_projects parent,
 		im_projects child
