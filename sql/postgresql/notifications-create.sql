@@ -46,7 +46,7 @@ begin
             NULL,
                 impl_id,
                 ''wf_assignment_notif'',
-                ''Workflow Assignation'',
+                ''All Workflow Assignation'',
                 ''Notifications of new jobs added to the jobs system'',
         now(),
                 NULL,

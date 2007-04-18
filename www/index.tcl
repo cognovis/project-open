@@ -16,22 +16,9 @@ if {$user_is_admin_p} {
 }
 
 
-# <a href="/notifications/request-new?object_id=@user_id@&type_id=@type_id@&return_url=@return_page@
 set notification_object_id [apm_package_id_from_key "acs-workflow"]
-set notification_type_id [notification::type::get_type_id -short_name "wf_assignment_notif"]
 set notification_delivery_method_id [notification::get_delivery_method_id -name "email"]
 set notification_interval_id [notification::get_interval_id -name "instant"]
-
-set notification_subscribe_url [export_vars -base "/notifications/request-new?" {
-    {object_id $notification_object_id} 
-    {type_id $notification_type_id}
-    {delivery_method_id $notification_delivery_method_id}
-    {interval_id $notification_interval_id}
-    {"form\:id" "subscribe"}
-    {formbutton\:ok "OK"}
-    return_url
-}]
-
 
 # ----------------------------------------------------
 # Create a component to manage subscriptions
@@ -39,11 +26,19 @@ set notification_subscribe_url [export_vars -base "/notifications/request-new?" 
 multirow create notifications url label title subscribed_p
 set manage_url "[apm_package_url_from_key [notification::package_key]]manage"
 
-foreach type { 
-    wf_assignment_notif
-} {
-    set pretty_name "Workflow Assignments"
+foreach type [db_list wf_notifs "select short_name from notification_types where short_name like 'wf%'"] {
+    set pretty_name [db_string pretty_name "select pretty_name from notification_types where short_name = :type"]
     set type_id [notification::type::get_type_id -short_name $type]
+
+    set notification_subscribe_url [export_vars -base "/notifications/request-new?" {
+	{object_id $notification_object_id} 
+	{type_id $type_id}
+	{delivery_method_id $notification_delivery_method_id}
+	{interval_id $notification_interval_id}
+	{"form\:id" "subscribe"}
+	{formbutton\:ok "OK"}
+	return_url
+    }]
 
     # Check if subscribed
     set request_id [notification::request::get_request_id \
