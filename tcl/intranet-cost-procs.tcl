@@ -1898,7 +1898,7 @@ ad_proc -public im_cost_update_project_cost_cache {
     set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 
     # Update the logged hours cache
-    hours_sum $project_id
+    im_timesheet_update_timesheet_cache -project_id $project_id
 
     set project_cost_ids_sql "
 		                select distinct cost_id
