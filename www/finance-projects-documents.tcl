@@ -131,7 +131,7 @@ set context_bar [im_context_bar $page_title]
 set context ""
 
 set help_text "
-<strong>Projects and Their Financial Documents:</strong><br>
+<strong><nobr>$page_title</nobr></strong><br>
 
 The purpose of this report is to determine the profitability of
 the projects that end (end_date) in the time period between StartDate and End Date
