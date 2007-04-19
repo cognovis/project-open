@@ -11,20 +11,15 @@ ad_page_contract {
     @param start_year Year to start the report
     @param start_unit Month or week to start within the start_year
 } {
-    {start_date "" }
-    {end_date "" }
-    {level_of_detail:integer 2 }
-    {output_format "html" }
-    {customer_type_id:integer 0 }
-    {sales_rep_id:integer 0 }
-    {project_id:integer 0 }
-    {customer_id:integer 0 }
-    {project_status_ids:multiple "76 78 79" }
-    location:array,optional
-    field:array,optional    
-    {custom_fields_p 0}
-    {max_col 3}
-    {max_fields 5}
+    { start_date "" }
+    { end_date "" }
+    { level_of_detail:integer 2 }
+    { output_format "html" }
+    { customer_type_id:integer 0 }
+    { sales_rep_id:integer 0 }
+    { project_id:integer 0 }
+    { customer_id:integer 0 }
+    { project_status_ids:multiple "76 78 79" }
 }
 
 # ------------------------------------------------------------
@@ -61,67 +56,6 @@ if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $
     Current value: '$end_date'<br>
     Expected format: 'YYYY-MM-DD'"
 }
-
-
-if {!$custom_fields_p} {
-    set max_col 0
-    set max_fields 0
-    set custom_fields_checked ""
-} else {
-    set custom_fields_checked "checked"
-}
-
-
-
-# ------------------------------------------------------------
-# Find out all fields per object type
-
-ad_proc im_dynfield_object_attributes_for_select {
-     -object_type:required
-} {
-    Returns a list {key1 value1 key2 value2 ...} of attributes
-    and pretty_names for object.
-    The result is meant to be appended to the select list of
-    a report with custom fields
-} {
-
-    set dynfield_sql "
-    select 
-	aa.attribute_name,
-        aa.pretty_name,
-	ot.pretty_name as object_type_pretty_name
-    from 
-	acs_attributes aa
-	RIGHT OUTER join 
-		im_dynfield_attributes fa 
-		ON (aa.attribute_id = fa.acs_attribute_id)
-	LEFT OUTER join
-		(select	* from im_dynfield_layout where page_url = '') la
-		ON (fa.attribute_id = la.attribute_id)
-	LEFT OUTER join
-		user_tab_columns c
-		ON (c.table_name = upper(aa.table_name) and c.column_name = upper(aa.attribute_name)),
-	im_dynfield_widgets w,
-	acs_object_types ot
-    where 
-	aa.object_type = :object_type
-	and fa.widget_name = w.widget_name
-	and aa.object_type = ot.object_type
-    order by
-	la.pos_y, la.pos_x, aa.attribute_name
-    "
-
-    set field_options [list]
-    db_foreach dynfield_fields $dynfield_sql {
-	lappend field_options $attribute_name
-	lappend field_options "$object_type_pretty_name - $pretty_name"
-    }
-    
-    return $field_options
-}
-
-
-
 
 # ------------------------------------------------------------
 # Page Settings
@@ -194,7 +128,7 @@ set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 set user_url "/intranet/users/view?user_id="
 set this_url [export_vars -base "/intranet-reporting/finance-projects-documents" {start_date end_date} ]
-set current_url [im_url_with_query]
+
 
 # ------------------------------------------------------------
 # Options
@@ -269,6 +203,7 @@ if {[llength $project_status_ids] > 0} {
     lappend criteria "p.project_status_id in ([join $project_status_ids ","])"
 } 
 
+
 set where_clause [join $criteria " and\n            "]
 if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
@@ -278,6 +213,7 @@ if { ![empty_string_p $where_clause] } {
 # ------------------------------------------------------------
 # Define the report - SQL, counters, headers and footers 
 #
+
 
 set inner_sql "
 	select
@@ -331,8 +267,6 @@ set inner_sql "
 set sql "
 select
 	c.*,
-	pcust.*,
-	p.*,
 	c.project_project_id as project_id,
 	to_char(c.effective_date, :date_format) as effective_date_formatted,
 	to_char(c.effective_date, 'YYMM')::integer * customer_id as effective_month,
@@ -371,25 +305,10 @@ select
 	p.project_nr,
 	p.end_date::date as project_end_date,
 	pcust.company_id as project_customer_id,
-	pcust.company_name as project_customer_name,
-	im_category_from_id(pcust.company_status_id) as project_customer_status,
-	im_category_from_id(pcust.company_type_id) as project_customer_type,
-	'<a href=/intranet/users/view?user_id=' || pcust.manager_id || '>' || 
-		im_name_from_user_id(pcust.manager_id) || '</a>' as project_customer_manager_link,
-	im_category_from_id(p.project_status_id) as project_status,
-	im_category_from_id(p.project_type_id) as project_type,
-	trunc(p.percent_completed::numeric, 2) as percent_completed_formatted,
-	'<a href=/intranet/users/view?user_id=' || p.project_lead_id || '>' || 
-		im_name_from_user_id(p.project_lead_id) || '</a>' as project_lead_link,
-	to_char(p.project_budget, :cur_format) || ' ' || p.project_budget_currency as project_budget_formatted,
-	to_char(p.end_date, :date_format) as end_date_formatted,
-	to_char(p.start_date, :date_format) as start_date_formatted,
-	'<a href=/intranet/users/view?user_id=' || p.company_contact_id || '>' || 
-		im_name_from_user_id(p.company_contact_id) || '</a>' as company_contact_link,
-	im_category_from_id(p.source_language_id) as source_language,
-	im_category_from_id(p.subject_area_id) as subject_area
+	pcust.company_name as project_customer_name
 from
-	($inner_sql) c
+	($inner_sql
+	) c
 	LEFT OUTER JOIN im_projects p on (c.project_project_id = p.project_id)
 	LEFT OUTER JOIN im_companies cust on (c.customer_id = cust.company_id)
 	LEFT OUTER JOIN im_companies prov on (c.provider_id = prov.company_id)
@@ -403,113 +322,6 @@ order by
 "
 
 
-# -----------------------------------------------------
-# Cost-Header - The most detailed structure
-
-set cost_header [list \
-	"" \
-	"" \
-	"<a href=\$invoice_url\$cost_id>\$cost_name</a>" \
-]
-
-# Lookup the position and add the field for the given position
-for {set i 1} {$i <= $max_col} {incr i} {
-    set cont ""
-    set pos [lsearch [array get location] "cost$i"]
-    if {$pos > -1} {
-	set row [lindex [array get location] [expr $pos-1]]
-	set cont "<nobr>\$$field($row)</nobr>"
-    }
-    lappend cost_header $cont
-}
-
-set cost_header [concat $cost_header [list \
-	"<nobr><a href=\$user_url\$sales_rep_id>\$sales_rep_name</a></nobr>" \
-	"<nobr>\$invoice_amount_pretty</nobr>" \
-	"<nobr>\$delnote_amount_pretty</nobr>" \
-	"<nobr>\$quote_amount_pretty</nobr>" \
-	"<nobr>\$bill_amount_pretty</nobr>" \
-	"<nobr>\$po_amount_pretty</nobr>" \
-	"<nobr>\$expense_amount_pretty</nobr>" \
-	"<nobr>\$timesheet_amount_pretty</nobr>" \
-	"" \
-	"" \
-	"" \
-]]
-
-
-# -----------------------------------------------------
-# Project-Footer - The middle structure
-
-set project_footer {
-	"" 
-	"<nobr><a href=$this_url&project_id=$project_id&level_of_detail=4 
-	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
-	<b><a href=$project_url$project_id>$project_nr</nobr></a></b>"
-	"<b><a href=$project_url$project_id><nobr>$project_name</nobr></a></b>"
-}
-
-# Lookup the position and add the field for the given position
-for {set i 1} {$i <= $max_col} {incr i} {
-    set cont ""
-    set pos [lsearch [array get location] "proj$i"]
-    if {$pos > -1} {
-	set row [lindex [array get location] [expr $pos-1]]
-	set cont "<nobr>\$$field($row)</nobr>"
-    }
-    lappend project_footer $cont
-}
-
-set project_footer [concat $project_footer [list \
-	"" \
-	"<nobr><i>\$invoice_subsubtotal \$default_currency</i></nobr>" \
-	"<nobr><i>\$delnote_subsubtotal \$default_currency</i></nobr>" \
-	"<nobr><i>\$quote_subsubtotal \$default_currency</i></nobr>" \
-	"<nobr><i>\$bill_subsubtotal \$default_currency</i></nobr>" \
-	"<nobr><i>\$po_subsubtotal \$default_currency</i></nobr>" \
-	"<nobr><i>\$expense_subsubtotal \$default_currency</i></nobr>" \
-	"<nobr><i>\$timesheet_subsubtotal \$default_currency</i></nobr>" \
-	"<nobr><i>\$po_per_quote_perc_subsubtotal</i></nobr>" \
-	"<nobr><i>\$gross_profit_subsubtotal</i></nobr>" \
-	"<nobr><i>\$wip_subsubtotal</i></nobr>" \
-]]
-
-
-# -----------------------------------------------------
-# Project-Customer Footer
-
-set project_customer_footer { 
-	"" 
-	"" 
-	""
-}
-
-# Lookup the position and add the field for the given position
-for {set i 1} {$i <= $max_col} {incr i} {
-    set cont ""
-    set pos [lsearch [array get location] "cust$i"]
-    if {$pos > -1} {
-	set row [lindex [array get location] [expr $pos-1]]
-	set cont "<nobr>\$$field($row)</nobr>"
-    }
-    lappend project_customer_footer $cont
-}
-
-set project_customer_footer [concat $project_customer_footer [list \
-	"" \
-	"<b>\$invoice_subtotal \$default_currency</b>" \
-	"<b>\$delnote_subtotal \$default_currency</b>" \
-	"<b>\$quote_subtotal \$default_currency</b>" \
-	"<b>\$bill_subtotal \$default_currency</b>" \
-	"<b>\$po_subtotal \$default_currency</b>" \
-	"<b>\$expense_subtotal \$default_currency</b>" \
-	"<b>\$timesheet_subtotal \$default_currency</b>" \
-	"<b>\$po_per_quote_perc_subtotal</b>" \
-	"<b>\$gross_profit_subtotal</b>" \
-	"<b>\$wip_subtotal</b>" \
-]]
-
-
 set report_def [list \
     group_by project_customer_id \
     header {
@@ -521,29 +333,67 @@ set report_def [list \
             group_by project_id \
             header { } \
 	    content [list \
-		    header $cost_header \
+		    header {
+			""
+			""
+			"<a href=$invoice_url$cost_id>$cost_name</a>"
+			"<nobr><a href=$user_url$sales_rep_id>$sales_rep_name</a></nobr>"
+			"<nobr>$invoice_amount_pretty</nobr>"
+			"<nobr>$delnote_amount_pretty</nobr>"
+			"<nobr>$quote_amount_pretty</nobr>"
+			"<nobr>$bill_amount_pretty</nobr>"
+			"<nobr>$po_amount_pretty</nobr>"
+			"<nobr>$expense_amount_pretty</nobr>"
+			"<nobr>$timesheet_amount_pretty</nobr>"
+			""
+			""
+			""
+		    } \
 		    content {} \
 	    ] \
-            footer $project_footer \
+            footer {
+		"" 
+		"<nobr><a href=$this_url&project_id=$project_id&level_of_detail=4 
+		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
+		<b><a href=$project_url$project_id>$project_nr</nobr></a></b>"
+		"<b><a href=$project_url$project_id><nobr>$project_name</nobr></a></b>"
+		"" 
+		"<nobr><i>$invoice_subsubtotal $default_currency</i></nobr>" 
+		"<nobr><i>$delnote_subsubtotal $default_currency</i></nobr>" 
+		"<nobr><i>$quote_subsubtotal $default_currency</i></nobr>" 
+		"<nobr><i>$bill_subsubtotal $default_currency</i></nobr>" 
+		"<nobr><i>$po_subsubtotal $default_currency</i></nobr>"
+		"<nobr><i>$expense_subsubtotal $default_currency</i></nobr>"
+		"<nobr><i>$timesheet_subsubtotal $default_currency</i></nobr>"
+		"<nobr><i>$po_per_quote_perc_subsubtotal</i></nobr>"
+		"<nobr><i>$gross_profit_subsubtotal</i></nobr>"
+		"<nobr><i>$wip_subsubtotal</i></nobr>"
+            } \
     ] \
-    footer $project_customer_footer \
+    footer {  
+	"" 
+	""
+	""
+	"" 
+	"<b>$invoice_subtotal $default_currency</b>" 
+	"<b>$delnote_subtotal $default_currency</b>" 
+	"<b>$quote_subtotal $default_currency</b>" 
+	"<b>$bill_subtotal $default_currency</b>" 
+	"<b>$po_subtotal $default_currency</b>"
+	"<b>$expense_subtotal $default_currency</b>"
+	"<b>$timesheet_subtotal $default_currency</b>"
+	"<b>$po_per_quote_perc_subtotal</b>"
+	"<b>$gross_profit_subtotal</b>"
+	"<b>$wip_subtotal</b>"
+    } \
 ]
 
 # Global header/footer
-set header0 [list "Cust" "Project" "Name"]
-for {set i 1} {$i <= $max_col} {incr i} { lappend header0 "<nobr>Col #$i</nobr>" }
-set header0 [concat $header0 [list "Sales Rep" "Invoice" "Delnote" "Quote" "Bill" "PO" "Expense" "Timesheet" "PO/Quote" "Gross Profit" "WIP"]]
-
+set header0 {"Cust" "Project" "Name" "Sales Rep" "Invoice" "Delnote" "Quote" "Bill" "PO" "Expense" "Timesheet" "PO/Quote" "Gross Profit" "WIP"}
 set footer0 {
 	"" 
 	""
 	""
-}
-
-# Add empty cols spacers
-for {set i 1} {$i <= $max_col} {incr i} { lappend footer0 "" }
-
-set footer0 [concat $footer0 {
 	"<br><b><i>Total:</i></b>" 
 	"<br><b><i>$invoice_total $default_currency</i></b>" 
 	"<br><b><i>$delnote_total $default_currency</i></b>" 
@@ -555,7 +405,7 @@ set footer0 [concat $footer0 {
 	"<br><b><i>$po_per_quote_perc_total</i></b>"
 	"<br><b><i>$gross_profit_total</i></b>"
 	"<br><b><i>$wip_total</i></b>"
-}]
+}
 
 
 #
@@ -619,103 +469,6 @@ set counters [list \
 
 
 # ------------------------------------------------------------
-# Field Table - Allow to add fields
-
-set field_options {
-	"" ""
-	project_customer_status "Company - Company Status"
-	project_customer_type "Company - Company Type"
-	project_customer_manager_link "Company - Key Account"
-}
-set field_options [concat $field_options [im_dynfield_object_attributes_for_select -object_type "im_company"]]
-
-set field_options [concat $field_options {
-	project_status "Project - Project Status"
-	project_type "Project - Project Type"
-	project_lead_link "Project - Project Manager"
-	project_budget_formatted "Project - Project Budget"
-	project_budget_hours "Project - Project Budget Hours"
-	percent_completed_formatted "Project - Percent Completed"
-	end_date_formatted "Project - Start Date"
-	start_date_formatted "Project - End Date"
-	company_contact_link "Project - Customer Contact"
-	company_project_nr "Project - Customer's Project Nr"
-	source_language "Project - Source Language"
-	subject_area "Project - Subject Area"	
-	final_company "Project - Final Company"
-	reported_hours_cache "Project - Reported Hours"
-	cost_quotes_cache "Project - Quotes"
-	cost_invoices_cache "Project - Invoices"
-	cost_purchase_orders_cache "Project - Purchase Orders"
-	cost_bills_cache "Project - Provider Bills"
-	cost_timesheet_logged_cache "Project - Timesheet Costs"
-	cost_expense_logged_cache "Project - Exenses"
-	cost_delivery_notes_cache "Project - Delivery Notes"
-}]
-set field_options [concat $field_options [im_dynfield_object_attributes_for_select -object_type "im_project"]]
-
-
-set location_options {"" ""}
-for {set col 1} {$col <= $max_col} {incr col} {
-	lappend location_options "cust$col"
-	lappend location_options "Customer Group - Col \#$col"
-}
-for {set col 1} {$col <= $max_col} {incr col} {
-	lappend location_options "proj$col"
-	lappend location_options "Project Group - Col \#$col"
-}
-for {set col 1} {$col <= $max_col} {incr col} {
-	lappend location_options "cost$col"
-	lappend location_options "Cost Group - Col \#$col"
-}
-
-
-set field_table "<table cellspacing=1 cellpadding=1>"
-append field_table "
-        <tr class=rowtitle><td class=rowtitle colspan=2 align=center>Additional Custom Fields</td></tr>
-        <tr class=rowtitle>
-	    <td class=rowtitle align=center>Field</td>
-	    <td class=rowtitle align=center>Location</td>
-	</tr>
-"
-
-for {set row 1} {$row <= $max_fields} {incr row} {
-    if {![info exists field($row)]} { set field($row) "" }
-    if {![info exists location($row)]} { set location($row) ""}
-    append field_table "
-	<tr>
-	<td class=form-label>[im_select -translate_p 0 field.$row $field_options $field($row)]</td>
-	<td class=form-widget>[im_select -translate_p 0 location.$row $location_options $location($row)]</td>
-	</tr>
-    "
-}
-
-append field_table "
-    <tr>
-	<td class=form-label>&nbsp;</td>
-	<td class=form-widget><input type=submit value=Submit></td>
-    </tr>
-"
-
-append field_table "
-    <tr>
-	<td class=form-label>Max Custom Fields</td>
-	<td class=form-widget><input type=text name=max_fields value=$max_fields size=3></td>
-    </tr>
-"
-append field_table "
-    <tr>
-	<td class=form-label>Additional Columns</td>
-	<td class=form-widget><input type=text name=max_col value=$max_col size=3></td>
-    </tr>
-"
-
-append field_table "</table>\n"
-
-
-if {!$custom_fields_p} { set field_table "" }
-
-# ------------------------------------------------------------
 # Start formatting the page header
 #
 
@@ -728,16 +481,11 @@ switch $output_format {
 	ns_write "
 	[im_header]
 	[im_navbar]
-
-	<form>
-
 	<table cellspacing=0 cellpadding=0 border=0>
 	<tr valign=top>
 	<td>
+	<form>
 		<table border=0 cellspacing=1 cellpadding=1>
-		<tr>
-		  <td class=rowtitle colspan=2 align=center>Filters</td>
-		</tr>
 		<tr>
 		  <td class=form-label>Level of Details</td>
 		  <td class=form-widget>
@@ -786,23 +534,12 @@ switch $output_format {
 	            [im_report_output_format_select output_format "" $output_format]
 	          </td>
 	        </tr>
-
-		<tr>
-		  <td class=form-label><nobr>Custom Fields?</nobr></td>
-		  <td class=form-widget>
-			<input type=checkbox name=custom_fields_p value=1 $custom_fields_checked>
-		  </td>
-		</tr>
-
-
 		<tr>
 		  <td class=form-label></td>
 		  <td class=form-widget><input type=submit value=Submit></td>
 		</tr>
 		</table>
-	</td>
-	<td align=center>
-		$field_table
+	</form>
 	</td>
 	<td align=center>
 		<table cellspacing=2 width=90%>
@@ -811,9 +548,6 @@ switch $output_format {
 	</td>
 	</tr>
 	</table>
-
-	</form>
-
 	<table border=0 cellspacing=1 cellpadding=1>\n"
     }
 }
