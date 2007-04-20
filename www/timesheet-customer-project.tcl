@@ -162,34 +162,15 @@ if { ![empty_string_p $where_clause] } {
 # Define the report - SQL, counters, headers and footers 
 #
 
-set inner_sql "
-select
-	h.day::date as date,
-	h.note,
-	to_char(h.day, 'J')::integer - to_char(to_date(:start_date, 'YYYY-MM-DD'), 'J')::integer as date_diff,
-	h.user_id,
-	p.project_id,
-	p.company_id,
-	h.hours,
-	h.billing_rate
-from
-	im_hours h,
-	im_projects p,
-	cc_users u
-where
-	h.project_id = p.project_id
-	and p.project_status_id not in ([im_project_status_deleted])
-	and h.user_id = u.user_id
-	and h.day >= to_date(:start_date, 'YYYY-MM-DD')
-	and h.day < to_date(:end_date, 'YYYY-MM-DD')
-	$where_clause
-"
-
 set sql "
 select
-	to_char(s.date, 'YYYY-MM-DD') as date,
-	s.date_diff,
-	s.note,
+	h.note,
+	h.hours,
+	h.billing_rate,
+	to_char(h.day, 'YYYY-MM-DD') as date,
+	to_char(h.day, 'J')::integer - to_char(to_date(:start_date, 'YYYY-MM-DD'), 'J')::integer as date_diff,
+	to_char(h.hours, :number_format) as hours,
+	to_char(h.billing_rate, :number_format) as billing_rate,
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name,
 	p.project_id,
@@ -197,24 +178,25 @@ select
 	p.project_name,
 	c.company_id,
 	c.company_path as company_nr,
-	c.company_name,
-	to_char(s.hours, :number_format) as hours,
-	to_char(s.billing_rate, :number_format) as billing_rate
+	c.company_name
 from
-	($inner_sql) s,
-	im_companies c,
+	im_hours h,
 	im_projects p,
+	im_companies c,
 	cc_users u
 where
-	s.user_id = u.user_id
+	h.project_id = p.project_id
 	and p.project_status_id not in ([im_project_status_deleted])
-	and s.company_id = c.company_id
-	and s.project_id = p.project_id
+	and h.user_id = u.user_id
+	and h.day >= to_date(:start_date, 'YYYY-MM-DD')
+	and h.day < to_date(:end_date, 'YYYY-MM-DD')
+	and p.company_id = c.company_id
+	$where_clause
 order by
-	s.company_id,
+	c.company_id,
 	p.project_id,
 	u.user_id,
-	s.date
+	h.day
 "
 
 set report_def [list \
