@@ -155,11 +155,11 @@ ad_proc -public im_bug_tracker_container_component {
     and the current version, so that the customer doesn't need to set
     all these variables.
 } {
-    set action_url "/intranet-bug-tracker/bug-add"
+    set action_url "/bug-tracker/bug-add"
     set return_url [im_url_with_query]
     set options [im_bt_project_options]
     if {[llength $options] > 0} {
-	set project_html [im_bt_generic_select -options $options maintenance_project_id ""]
+	set project_html [im_bt_generic_select -options $options bug_container_project_id ""]
 	set button_text [lang::message::lookup "" intranet-bug-tracker.New_Issue "New Issue"]
 	set button_html "<input type=submit value=\"$button_text\">"
     } else {
