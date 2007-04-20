@@ -12,8 +12,7 @@ ad_page_contract {
 #----------------------------------------------------------------------
 
 set cvs_command "cvs"
-set cvs_root ":pserver:anonymous@openacs.org:/cvsroot"
-set dotlrn_cvs_root ":pserver:anonymous@dotlrn.openacs.org:/dotlrn-cvsroot"
+set cvs_root ":pserver:anonymous@cvs.openacs.org:/cvsroot"
 
 set work_dir "[acs_root_dir]/repository-builder/"
 
@@ -27,10 +26,10 @@ set index_template "/packages/acs-admin/www/apm/repository-index"
 # from these packages
 #set exclude_package_list { cms cms-news-demo glossary site-wide-search spam library }
 set exclude_package_list {}
-set head_channel "5-1"
+set head_channel "5-3"
 
 # Set this to 1 to only checkout sample packages -- useful for debugging and testing
-set debug_p 1
+set debug_p 0
 
 #----------------------------------------------------------------------
 # Prepare output
@@ -49,8 +48,8 @@ ns_write <ul>
 file mkdir $work_dir
 
 cd $work_dir
-catch { exec $cvs_command -d $cvs_root -z3 co openacs-4/readme.txt }
 
+catch { exec $cvs_command -d $cvs_root -z3 co openacs-4/readme.txt }
 catch { exec $cvs_command -d $cvs_root -z3 log -h openacs-4/readme.txt } output
 
 set lines [split $output \n]
@@ -108,8 +107,6 @@ foreach channel [lsort -decreasing [array names channel_tag]] {
 
     # Wipe and re-create the checkout directory
     file delete -force "${work_dir}openacs-4"
-    file delete -force "${work_dir}dotlrn"
-    file mkdir -force "${work_dir}dotlrn/packages"
     
     # Prepare channel directory
     set channel_dir "${work_dir}repository/${channel}/"
@@ -129,8 +126,7 @@ foreach channel [lsort -decreasing [array names channel_tag]] {
         # Full list for real use
         set checkout_list [list \
                                $work_dir $cvs_root openacs-4/packages \
-                               $work_dir $cvs_root openacs-4/contrib/packages \
-                               ${work_dir}dotlrn/packages/ $dotlrn_cvs_root dotlrn-core]
+                               $work_dir $cvs_root openacs-4/contrib/packages]
     }
     
     foreach { cur_work_dir cur_cvs_root cur_module } $checkout_list {
@@ -153,17 +149,18 @@ foreach channel [lsort -decreasing [array names channel_tag]] {
     template::multirow create packages \
         package_path package_key version pretty_name \
         package_type summary description \
-        release_date vendor_url vendor
+        release_date vendor_url vendor \
+        license_url license maturity maturity_text 
     
     foreach packages_dir \
         [list "${work_dir}openacs-4/packages" \
-             "${work_dir}openacs-4/contrib/packages" \
-             "${work_dir}dotlrn/packages"] {
+             "${work_dir}openacs-4/contrib/packages"] {
 
         foreach spec_file [lsort [apm_scan_packages $packages_dir]] {
         
             set package_path [eval file join [lrange [file split $spec_file] 0 end-1]]
             set package_key [lindex [file split $spec_file] end-1]
+            set version_id [apm_version_id_from_package_key $package_key]
 
             if { [lsearch -exact $exclude_package_list $package_key] != -1 } {
                 ns_write "Package $package_key is on list of packages to exclude - skipping"
@@ -195,13 +192,21 @@ foreach channel [lsort -decreasing [array names channel_tag]] {
                     append manifest {    } {<description format="} [ad_quotehtml $version(description.format)] {">} 
                     append manifest [ad_quotehtml $version(description)] {</description>} \n
                     append manifest {    } {<release-date>} [ad_quotehtml $version(release-date)] {</release-date>} \n
+                    append manifest {    } {<maturity>} [ad_quotehtml $version(maturity)] {</maturity>} \n
+                    append manifest {    } {<license url="} [ad_quotehtml $version(license_url)] {">}
+		    append manifest [ad_quotehtml $version(license)] {</license>} \n
                     append manifest {    } {<vendor url="} [ad_quotehtml $version(vendor.url)] {">} 
                     append manifest [ad_quotehtml $version(vendor)] {</vendor>} \n
-                    
+
+                    append manifest [apm::package_version::attributes::generate_xml \
+                                         -version_id $version_id \
+                                         -indentation {    }]
+
                     template::multirow append packages \
                         $package_path $package_key $version(name) $version(package-name) \
                         $version(package.type) $version(summary) $version(description) \
-                        $version(release-date) $version(vendor.url) $version(vendor)
+                        $version(release-date) $version(vendor.url) $version(vendor) \
+                        $version(license_url) $version(license) $version(maturity) [apm::package_version::attributes::maturity_int_to_text $version(maturity)]
 
                     set apm_file "${channel_dir}${version(package.key)}-${version(name)}.apm"
 
@@ -219,13 +224,17 @@ foreach channel [lsort -decreasing [array names channel_tag]] {
 
                         # The path to the 'packages' directory in the checkout
                         set packages_root_path [eval file join [lrange [file split $spec_file] 0 end-2]]
-                        
-                        lappend cmd -C $packages_root_path
+                        set tmp_filename [ns_tmpnam]
+                        lappend cmd  --files-from $tmp_filename -C $packages_root_path
+
+                        set fp [open $tmp_filename w]
                         foreach file $files {
-                            lappend cmd $package_key/$file
+                          puts $fp $package_key/$file
                         }
+                        close $fp
+
                         lappend cmd "|" [apm_gzip_cmd] -c ">" $apm_file
-                        ns_log Notice "Executing: [ad_quotehtml $cmd]"
+                        #ns_log Notice "Executing: [ad_quotehtml $cmd]"
                         eval $cmd
                     }
 
@@ -297,5 +306,3 @@ if { [file exists $repository_dirname] } {
 file rename $work_repository_dirname  $repository_dirname
 
 ns_write "</ul> <h2>DONE</h2>\n"
-
-        
