@@ -188,8 +188,8 @@ where
 	h.project_id = p.project_id
 	and p.project_status_id not in ([im_project_status_deleted])
 	and h.user_id = u.user_id
-	and h.day >= to_date(:start_date, 'YYYY-MM-DD')
-	and h.day < to_date(:end_date, 'YYYY-MM-DD')
+	and h.day >= to_timestamp(:start_date, 'YYYY-MM-DD')
+	and h.day < to_timestamp(:end_date, 'YYYY-MM-DD')
 	and p.company_id = c.company_id
 	$where_clause
 order by
