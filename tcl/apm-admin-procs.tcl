@@ -56,10 +56,6 @@ ad_proc apm_header { { -form "" } args } {
             lappend cmd $elem
         }
         set context_bar [eval $cmd]
-        # this is rather a hack, but just needed for streaming output
-        # a more general solution can be provided at some later time...
-        regsub "#acs-kernel.Main_Site#" $context_bar \
-	    [_ acs-kernel.Main_Site] context_bar
     }
     set header [ad_header $title ""]
     append body "$header\n"
@@ -484,14 +480,10 @@ ad_proc -private apm_build_repository {
 				     # The path to the 'packages' directory in the checkout
 				     set packages_root_path [eval file join [lrange [file split $spec_file] 0 end-2]]
 				     
-				     set tmp_filename [ns_tmpnam]
-				     lappend cmd  --files-from $tmp_filename -C $packages_root_path
-
-				     set fp [open $tmp_filename w]
+				     lappend cmd -C $packages_root_path
 				     foreach file $files {
-				       puts $fp $package_key/$file
+					 lappend cmd $package_key/$file
 				     }
-				     close $fp
 				     lappend cmd "|" [apm_gzip_cmd] -c ">" $apm_file
 				     ns_log Notice "Executing: [ad_quotehtml $cmd]"
 				     eval $cmd
