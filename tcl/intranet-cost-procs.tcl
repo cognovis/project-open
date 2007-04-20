@@ -1153,7 +1153,6 @@ order by
     set project_id $org_project_id
     set company_id $org_company_id
 
-    if {$ctr > $max_costs} {
 	append cost_html "
 <tr$bgcolor([expr $ctr % 2])>
   <td colspan=$colspan>
@@ -1162,7 +1161,6 @@ order by
     </A>
   </td>
 </tr>\n"
-    }
 
     # Add a reasonable message if there are no documents
     if {$ctr == 1} {
