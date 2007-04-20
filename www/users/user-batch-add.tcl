@@ -1,35 +1,17 @@
 ad_page_contract {
-    Processes a new user created by an admin
+    Interface for specifying a list of users to sign up as a batch
     @cvs-id $Id$
-} -query {
-    user_id
-    password
-    {referer "/acs-admin/users"}
 } -properties {
     context:onevalue
-    export_vars:onevalue
     system_name:onevalue
     system_url:onevalue
-    first_names:onevalue
-    last_name:onevalue
-    email:onevalue
-    password:onevalue
     administration_name:onevalue
+    admin_email:onevalue
 }
 
 set admin_user_id [ad_conn user_id]
-
-# Get user info
-acs_user::get -user_id $user_id -array user
-# easier to work with scalar vars than array
-foreach var_name [array names user] {
-    set $var_name $user($var_name)
-}
-
-if { [empty_string_p $password] } {
-    set password [ad_generate_random_string]
-}
-
+set admin_email [db_string unused "select email from 
+parties where party_id = :admin_user_id"]
 set administration_name [db_string admin_name "select
 first_names || ' ' || last_name from persons where person_id = :admin_user_id"]
 
