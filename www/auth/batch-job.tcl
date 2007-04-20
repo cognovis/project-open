@@ -11,9 +11,9 @@ ad_page_contract {
 
 auth::sync::job::get -job_id $job_id -array batch_job
 
-set page_title "\#acs-admin.One_batch_job\#"
+set page_title "One batch job"
 set context [list \
-                 [list "." "[_ acs-admin.Authentication]"] \
+                 [list "." "Authentication"] \
                  [list [export_vars -base authority { {authority_id $batch_job(authority_id)} }] "$batch_job(authority_pretty_name)"] $page_title]
 
 ad_form \
@@ -22,50 +22,50 @@ ad_form \
     -display_buttons {} \
     -form {
         {authority_pretty_name:text(inform)
-            {label "\#acs-admin.Authority_name\#"}                
+            {label "Authority name"}                
         }            
         {job_start_time:text(inform)
-            {label "\#acs-admin.Start_time\#"}                
+            {label "Start time"}                
         }
         {job_end_time:text(inform)
-            {label "\#acs-admin.End_time\#"}                
+            {label "End time"}                
         }
         {run_time_seconds:text(inform)
-            {label "\#acs-admin.Running_time\#"}
-            {after_html " [_ acs-admin.seconds]"}
+            {label "Running time"}
+            {after_html " seconds"}
         }
         {interactive_p:text(inform)
-            {label "\#acs-admin.Interactive\#"}
+            {label "Interactive"}
         }
         {snapshot_p:text(inform)
-            {label "\#acs-admin.Snapshot\#"}                
+            {label "Snapshot"}                
         }            
         {message:text(inform)
-            {label "\#acs-admin.Message"}                
+            {label "Message"}                
         }            
         {creation_user:text(inform)
-            {label "\#acs-admin.Creation_user\#"}                
+            {label "Creation user"}                
         }            
         {doc_start_time:text(inform)
-            {label "\#acs-admin.Document_start_time\#"}
+            {label "Document start time"}
         }            
         {doc_end_time:text(inform)
-            {label "\#acs-admin.Document_end_time\#"}                
+            {label "Document end time"}                
         }            
         {doc_status:text(inform)
-            {label "\#acs-admin.Document_status\#"}                
+            {label "Document status"}                
         }            
         {doc_message:text(inform)
-            {label "\#acs-admin.Document_message\#"}                
+            {label "Document message"}                
         }            
         {document_download:text(inform)
-            {label "\#acs-admin.Document\#"}
+            {label "Document"}
         }
         {num_actions:text(inform)
-            {label "\#acs-admin.Number_of_actions\#"}
+            {label "Number of actions"}
         }
         {num_problems:text(inform)
-            {label "\#acs-admin.Number_of_problems\#"}
+            {label "Number of problems"}
         }
     } -on_request {
         foreach element_name [array names batch_job] {
@@ -82,7 +82,7 @@ ad_form \
         set job_start_time [lc_time_fmt $batch_job(job_start_time) "%x %X"]
         set job_end_time [lc_time_fmt $batch_job(job_end_time) "%x %X"]
 
-        set document_download "<a href=\"[export_vars -base batch-document-download { job_id }]\">[_ acs-admin.download]</a>"
+        set document_download "<a href=\"[export_vars -base batch-document-download { job_id }]\">download</a>"
     }
 
 list::create \
@@ -93,37 +93,37 @@ list::create \
     -page_query_name pagination \
     -elements {
         entry_time_pretty {
-            label "\#acs-admin.Timestamp\#"
+            label "Timestamp"
             link_url_eval {$entry_url}
-            link_html { title "\#acs-admin.View_log_entry\#" }
+            link_html { title "View log entry" }
         }
         operation {
-            label "\#acs-admin.Operation\#"
+            label "Operation"
         }
         username {
-            label "\#acs-admin.Username\#"
+            label "Username"
             link_url_col user_url
         }
         success_p {
-            label "\#acs-admin.Success\#"
+            label "Success"
             display_template {
                 <if @batch_actions.success_p@ eq "t">
-                  <font color="green">\#acs-admin.Yes\#</font>
+                  <font color="green">Yes</font>
                 </if>
                 <else>
-                  <font color="red">\#acs-admin.No\#</font>
+                  <font color="red">No</font>
                 </else>
             }
         }
         short_message {
-            label "\#acs-admin.Message\#"
+            label "Message"
         }
     } -filters {
         job_id {
             hide_p 1
         }
         success_p {
-            label "\#acs-admin.Success\#"
+            label "Success"
             values {
                 { Success t }
                 { Failure f }

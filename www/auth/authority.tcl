@@ -27,90 +27,84 @@ set form_widgets_full {
 
     authority_id:key(acs_object_id_seq)
 
-    {-section "gen" {legendtext \#acs-admin.General\#}}
     {pretty_name:text
         {html {size 50}}
-        {label "\#acs-admin.Name\#"}
+        {label "Name"}
+        {section "General"}
     }        
 
     {short_name:text,optional
         {html {size 50}}
-        {label "\#acs-admin.Short_Name\#"}
+        {label "Short Name"}
         {mode {[ad_decode $local_authority_p 1 "display" ""]}}
-        {help_text "[_ acs-admin.Authority_short_name_help_text]"}
+        {help_text "This is used when referring to the authority in parameters etc. Even if you need to change the display name above, this should stay unchanged."}
     }        
 
     {enabled_p:text(radio)
-        {label "\#acs-admin.Enabled\#"}
-        {options {{[_ acs-admin.Yes] t} {[_ acs-admin.No] f}}}
+        {label "Enabled"}
+        {options {{Yes t} {No f}}}
     }
 
     {help_contact_text:richtext,optional
         {html {cols 60 rows 13}} 
-        {label "\#acs-admin.Help_contact_text\#"}
-        {help_text "[_ acs-admin.Help_contact_help_text]"}
+        {label "Help contact text"}
+        {help_text "Contact information (phone, email, etc.) to be displayed as a last resort when people are having problems with an authority."}
     }        
-
-    {-section "auth" {legendtext \#acs-admin.Authentication\#}}
-
     {auth_impl_id:integer(select),optional
-        {label "\#acs-admin.Authentication\#"}
+        {label "Authentication"}
+        {section "Authentication"}
         {options {[acs_sc::impl::get_options -empty_label "--Disabled--" -contract_name auth_authentication]}}
     }
 
-    {-section "pwmngt" {legendtext \#acs-admin.Password_Management\#}}
-
     {pwd_impl_id:integer(select),optional
-        {label "\#acs-admin.Password_Management\#"}
+        {label "Password management"}
+        {section "Password Management"}
         {options {[acs_sc::impl::get_options -empty_label "--Disabled--" -contract_name auth_password]}}
     }
 
     {forgotten_pwd_url:text,optional
         {html {size 50}}
-        {label "\#acs-admin.Recover_password_URL\#"}
-        {help_text "[_ acs-admin.Recover_password_URL_help_text]"}
+        {label "Recover password URL"}
+        {help_text "Instead of a password management driver, you may provide a URL to which users are sent when they need help recovering their password. Any username in this url must be on the syntax foo={username} and {username} will be replaced with the real username."}
     }        
     {change_pwd_url:text,optional
         {html {size 50}}
-        {label "\#acs-admin.Change_password_URL\#"}
-        {help_text "[_ acs-admin.Change_password_URL_help_text]"}
+        {label "Change password URL"}
+        {help_text "Instead of a password management driver, you may provide a URL to which users are sent when they want to change their password. Any username in this url must be on the syntax foo={username} and {username} will be replaced with the real username."}
     }        
 
-    {-section "accreg" {legendtext \#acs-admin.Account_Registration\#}}
-
     {register_impl_id:integer(select),optional
-        {label "\#acs-admin.Account_Registration\#"}
+        {label "Account registration"}
+        {section "Account Registration"}
         {options {[acs_sc::impl::get_options -empty_label "--Disabled--" -contract_name auth_registration]}}
     }
 
     {register_url:text,optional
         {html {size 50}}
-        {label "\#acs-admin.Account_registration_URL\#"}
-        {help_text "[_ acs-admin.Account_reg_URL_help_text]"}
+        {label "Account registration URL"}
+        {help_text "URL where users register for a new account."}
     }        
 
-    {-section "ondemsyn" {legendtext \#acs-admin.On-Demand_Sync\#}}
-
     {user_info_impl_id:integer(select),optional
-        {label "\#acs-admin.User_Info\#"}
+        {label "User Info"}
+        {section "On-Demand Sync"}
         {options {[acs_sc::impl::get_options -empty_label "--Disabled--" -contract_name auth_user_info]}}
-        {help_text "[_ acs-admin.User_Info_help_text]"}
+        {help_text "The implementation for getting user information from the authority in real-time"}
     }
 
-    {-section "batchsyn" {legendtext \#acs-admin.Batch_Synchronization\#}}
-
     {batch_sync_enabled_p:text(radio)
-        {label "\#acs-admin.Batch_sync_enabled\#"}
-        {options {{[_ acs-admin.Yes] t} {[_ acs-admin.No] f}}}
+        {label "Batch sync enabled"}
+        {options {{Yes t} {No f}}}
+        {section {Batch Synchronization}}
     }
 
     {get_doc_impl_id:integer(select),optional
-        {label "\#acs-admin.GetDocument_implementation\#"}
+        {label "GetDocument implementation"}
         {options {[acs_sc::impl::get_options -empty_label "--Disabled--" -contract_name auth_sync_retrieve]}}
     }
 
     {process_doc_impl_id:integer(select),optional
-        {label "\#acs-admin.ProcessDocument_implementation\#"}
+        {label "ProcessDocument implementation"}
         {options {[acs_sc::impl::get_options -empty_label "--Disabled--" -contract_name auth_sync_process]}}
     }
 }
@@ -224,33 +218,33 @@ list::create \
     -key job_id \
     -elements {
         start_time_pretty {
-            label "\#acs-admin.Start_time\#"
+            label "Start time"
             link_url_eval {$job_url}
         }
         end_time_pretty {
-            label "\#acs-admin.End_time\#"
+            label "End time"
         }            
         run_time {
-            label "\#acs-admin.Run_time\#"
+            label "Run time"
             html { align right }
         }
         num_actions {
-            label "\#acs-admin.Actions\#"
+            label "Actions"
             html { align right }
         }
         num_problems {
-            label "\#acs-admin.Problems\#"
+            label "Problems"
             html { align right }
         }
         actions_per_minute {
-            label "\#acs-admin.Actions_Minute\#"
+            label "Actions/Minute"
             html { align right }
         }
         short_message {
-            label "\#acs-admin.Message\#"
+            label "Message"
         }
         interactive_pretty {
-            label "\#acs-admin.Interactive\#"
+            label "Interactive"
             html { align center }
         }
     }

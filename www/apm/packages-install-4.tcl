@@ -22,7 +22,6 @@ ns_write "[apm_header  "Package Installation"]
 <ul>
 "
 
-
 # We have a set of SQL files that need to be sourced at the appropriate time.
 set sql_files [list]
 foreach index $sql_file {
@@ -32,7 +31,6 @@ foreach index $sql_file {
 
 set installed_count 0
 foreach pkg_info $pkg_install_list {
-
     set spec_file [pkg_info_spec $pkg_info]
     set package_path [pkg_info_path $pkg_info]
 
@@ -72,9 +70,6 @@ foreach pkg_info $pkg_install_list {
     ns_log Debug "APM: Installing package at $package_path."
 
     set enable_p [expr [lsearch -exact $pkg_enable_list $package_key] != -1]
-
-
-#    ad_return_complaint 1 "apm_package_install -enable=$enable_p  -package_path $package_path -callback apm_ns_write_callback  -load_data_model -data_model_files $data_model_files  -mount_path $selected_mount_path  $spec_file"
 
     set version_id [apm_package_install \
                 -enable=$enable_p \
