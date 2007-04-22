@@ -9,7 +9,7 @@ begin
 	select	menu_id into v_menu_id
 	from	im_menus
 	where	label = ''reporting-timesheet-cube''
-		and package_id = ''intranet-reporting'';
+		and package_name = ''intranet-reporting'';
 
 	PERFORM im_menu__delete(v_menu_id);
 
