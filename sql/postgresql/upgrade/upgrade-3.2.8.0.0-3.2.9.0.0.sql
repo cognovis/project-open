@@ -1,9 +1,24 @@
 -- upgrade-3.2.8.0.0-3.2.9.0.0.sql
 
 
-alter table persons add demo_group varchar(50);
-alter table persons add demo_password varchar(50);
 
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+        v_count                 integer;
+BEGIN
+	select count(*) into v_count
+	from user_tab_columns
+	where	lower(table_name) = ''persons''
+		and lower(column_name) = ''demo_group'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	alter table persons add demo_group varchar(50);
+	alter table persons add demo_password varchar(50);
+	return 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
 
 
 
