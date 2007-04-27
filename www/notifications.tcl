@@ -22,6 +22,7 @@ if { [exists_and_not_null bug_number] } {
 
 set user_id [ad_conn user_id]
 set return_url [ad_return_url]
+set admin_p [permission::permission_p -object_id [ad_conn package_id] -privilege admin]
 
 multirow create notifications url label title subscribed_p
 
@@ -42,6 +43,9 @@ foreach type {
                 set pretty_name "all [bug_tracker::conn bugs] you're participating in"
             }
             workflow {
+		if { !$admin_p } {
+		    continue
+		}
                 set pretty_name "all [bug_tracker::conn bugs] in this project"
             }
             default {
