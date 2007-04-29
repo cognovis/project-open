@@ -395,8 +395,12 @@ ad_proc -private acs_mail_process_queue {
     Process the outgoing message queue.
 } {
     db_foreach acs_message_send {
-        select message_id, envelope_from, envelope_to
-            from acs_mail_queue_outgoing
+	select	message_id, 
+		envelope_from,
+		envelope_to
+	from
+		acs_mail_queue_outgoing
+	LIMIT 700
     } {
         set to_send [acs_mail_body_to_output_format -link_id $message_id]
 	set to_send_2 [list $envelope_to $envelope_from [lindex $to_send 2] [lindex $to_send 3] [lindex $to_send 4]]
@@ -413,7 +417,7 @@ ad_proc -private acs_mail_process_queue {
                         and envelope_from = :envelope_from
                         and envelope_to = :envelope_to
             }
-        }
+        }    
     }
     ns_log Debug "acs_mail_process_queue: cleaning up"
     # All done.  Delete dangling links.

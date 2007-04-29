@@ -74,18 +74,6 @@ select header_name, header_content from acs_mail_body_headers
 
 
 
- 
-<fullquery name="acs_mail_process_queue.acs_message_send">      
-<querytext>
-      
-select message_id, envelope_from, envelope_to from acs_mail_queue_outgoing
-    
-</querytext>
-</fullquery>
-
- 
-
-
 <fullquery name="acs_mail_process_queue.acs_message_delete_sent">      
 <querytext>
       
