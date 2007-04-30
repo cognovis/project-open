@@ -42,6 +42,8 @@ set admin_html "
 <!--  <li><A href=''>!!!</a> -->
 </ul>
 "
+set admin_html ""
+
 
 # ------------------------------------------------------------------
 # Get everything about the cost
