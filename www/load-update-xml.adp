@@ -38,7 +38,7 @@
 The <span class=brandsec>]</span><span class=brandfirst>project-open</span><span class=brandsec>[</span>
 Automatic Software Update service is not free.<br>
 Please read the
-<a href="http://www.project-open.com/product/service/software-updates">
+<a href="http://www.project-open.com/en/services/">
 service description</a> and 
 <a href="http://www.project-open.com/contact/">contact us</a>
 in order to get access <br>

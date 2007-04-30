@@ -1,161 +1,100 @@
 <master src="../../intranet-core/www/admin/master">
-<property name="title">Automatic Software Update Client</property>
+<property name="title">Automatic Software Update Service</property>
 <property name="main_navbar_label">admin</property>
 <property name="admin_navbar_label">software_updates</property>
 
 
 <table width="100%">
 <tr valign=top>
-  <td width="70%">
+  <td width="60%">
 
-<h1>Automatic Software Updates</h1>
+<h1>Automatic Software Update Service</h1>
 
 
-Please follow the steps below for an "automatic sofware update" of your
-<span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
-server.
+The Automatic Software Update Service (ASUS) automatically keeps your @po;noquote@ 
+system up to date and fixes security issues. 
+All software has bugs, so it is highly recommended to update a production system
+atleast once every month.
+
+
+<h4>Free Manual Updates</h4>
+
+For manual updates please check the "Latest News" section at our 
+<a href="http://sourceforge.net/projects/project-open/">SourceForge</a> community
+for new versions and follow the update instructions.
+
+
+<h4>Register for ASUS</h4>
+
+The ASUS service is a convenience service that automates updates. 
+The ASU service is <i>not free</i>. 
+Please read <a href=http://www.project-open.com/en/services/#asus>Overview</a> 
+and the <a href=disclaimer>Disclaimer</a>.
+Then <a href="http://projop.dnsalias.com/register/user-new?return_url=/intranet-cust-projop/asus/new-asus"
+>Register your Account</a>. We will contact you for details.
+
+
+<h4>Update your System</h4>
+
 
 <ol>
-
-<li><b>Please read</b>:<br>
-    <a href=http://www.project-open.com/product/services/software-updates/>
-    Software Update Service overview</a> and the 
-    <a href=disclaimer>Disclaimer</a>
+<li><b>Perform a backup</b>:<br>
+    Please perform a <a href="/intranet/admin/backup/">database backup</a> and
+    save your source code at C:\ProjectOpen\projop\packages (Win32)
+    or /web/projop/packages (Linux) using zip or tar.
     <br>&nbsp;
 
-<li><b>Get a
-    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
-    account</a></b>:<br>
-    Please 
-    <a href="http://projop.dnsalias.com/register/user-new">register</a> 
-    at the 
-    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
-    server, fill out the registration form and follow the registration
-    instructions. If possible, please use the same email address as with
-    your corporate
-    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
-    server, but choose a different password.
+<li><b>Test your ASUS account</b>:<br>
+    Login manually at <a href="http://projop.dnsalias.com/">http://projop.dnsalias.com/</a>
+    using your ASUS email/password.
     <br>&nbsp;
 
-<li><b>Test the 
-    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
-    account</b>:<br>
-    Login manually at <a href="http://projop.dnsalias.com/">
-    http://projop.dnsalias.com/</a>.
-    <br>&nbsp;
-
-<li><b>Subscribe to the Automatic Update Service</b>:<br>
-    Please use our 
-    <a href="http://www.project-open.com/contact/">contact form</a> 
-    to request participation in the "automatic software update" service. 
-    We will send you an email message once the service is set up for
-    you.
-    <br>&nbsp;
-
-<li><b>Backup your 
-    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
-    software</b>:<br>
-    Please make a full backup of your
-    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
-    source code directory (C:\ProjectOpen\projop\packages in Windows and
-    /web/projop/packages in Linux/Unix). You can use ZIP, TAR or any other
-    archieving tool for this.
-    <br>&nbsp;
-
-<li><b>Backup your
-    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
-    database contents</b>:<br>
-    You can use the 
-    <a href="/intranet/admin/backup/pg_dump">built-in backup page</a>
-    or backup PostgreSQL manually viea the "pg_dump": 
-    <nobr><tt>pg_dump -c -O -F p -f backup.YYYY-MM-DD.sql</tt></nobr>.<br> 
-    This command works both with Windows (CygWin shell) and Unix/Linux.
-    <br>&nbsp;
-
-<li><b><a href=load-update-xml>Check for Latest Software Updates</a></b>:<br>
-    Go to this page (Admin / Software Updates) and follow this link.
-    You will get a menu of the latest updates.
+<li><b>Check for ASUS updates</b>:<br>
+    Check for the <a href=load-update-xml>latest software updates</a>.
+    You will see a menu of the available updates. Please use the same email/password
+    as in the previous step.
     <br>&nbsp;
 
 <li><b>Decide whether you want to update</b>:<br>
-    You don't have to follow each and every upgrade. The system is
-    capable of upgrading several versions at a time.<br>
-    Also, please check the forum link ("Forum" column in the update menu)
-    associated with each particular update for more information.
+    Please check the forum links to decide whether you want to upgrade. 
+    You don't have to follow each and every upgrade.
     <br>&nbsp;
 
-<li><B>Upgrade the 
-    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
-    code</b>:<br>
-    Pressing the "Update" button will update your 
-    <span class=brandfirst>P/</span><span class=brandsec>O</span>
-    code. However, you will still have to get the database in sync
-    with the new code. This is done in the next step.
+<li><B>Upgrade your system</b>:<br>
+    Pressing the "Update" button will update your @po;noquote@ code. 
     <br>&nbsp;
 
-<li><b>Update the 
-    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
-    database contents</b>:<br>
+<li><b>Update your database</b>:<br>
     Please use the <a href="/acs-admin/apm/packages-install">Package Manager</a>
-    to updates and synchronize the database.<br>
-    Please perform <b>only "Update"</b> commands to update your existing
-    packages.
-    Please don't perform <b>any "Install"</b> options unless you know what
-    you are doing.
-
+    to update the database. Please check <b>only</b> the "Update" options.
+    Please don't perform any "Install" options unless you know what you are doing.
     <br>&nbsp;
 
-<li><b>Restart your 
-    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
-    server</b>:<br>
+<li><b>Restart your server</b>:<br>
     Please use the <a href="/acs-admin/server-restart">Server Restart</a>
-    page to restart the server. Or you can restart the server via the
-    Windows "Start ProjectOpen Server" menu.
+    page to restart the server.
     <br>&nbsp;
-
 </ol>
 
 </td>
 <td>
 
-<table>
-<tr><td>
-<%= [im_table_with_title "Quick Links" "
-
-<ul>
-<li><a href=\"http://projop.dnsalias.com/register/user-new\">
-    Register your 
-    <span class=brandsec>&#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&#91;</span>
-    Account</a></li>
-<li><a href=load-update-xml>Check for Latest Software Updates</a></li>
-<li><a href=\"/acs-admin/apm/packages-install\">Install Packages</a></li>
-<li><a href=\"/acs-admin/server-restart\">Server Restart</a></li>
-</ul>
-
-Advanced Options
-<p>
-Please see the <a href=\"http://www.openacs.org/doc/openacs-5-1\">
-OpenACS documentation</a> for more information about the following
-options:
-</p>
-
-<ul>
-<li><a href=\"/acs-admin/apm/\">OpenACS Package Manager</a></li>
-<li><a href=\"/acs-admin/\">OpenACS Core Administration</a></li>
-<li><a href=\"/acs-admin/developer\">OpenACS Developer Administration</a></li>
-<li><a href=\"/admin/site-map/\">OpenACS Site Map</a></li>
-</ul>
-
-"] %>
-
-</td></tr>
-</table>
+	<table width="100%">
+	<tr><td>
+	<%= [im_table_with_title "Quick Links" "
+		<ul>
+		<li><a href=load-update-xml>Check for Latest Software Updates</a></li>
+		<li><a href=\"/acs-admin/apm/packages-install\">Install Packages</a></li>
+		<li><a href=\"/acs-admin/server-restart\">Server Restart</a></li>
+		</ul>
+	"] %>
+	
+	</td></tr>
+	</table>
 
 </td>
 </tr>
 </table>
 
-That's it. Please contact <a href="mailto:support@project-open.com">
-support@project-open.com</a>
 
 

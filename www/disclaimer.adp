@@ -10,7 +10,7 @@
 <h1>Disclaimer of Warranty and Exclusive Remedies</h1>
 
 <p>
-Project/Open does not accept any liabilities for errors during the Automatic Software Update Service.
+@po;noquote@ does not accept any liabilities for errors during the Automatic Software Update Service.
 </p>
 
 <p>
@@ -32,7 +32,7 @@ possibility of such damages.
 </p>
 
 <p>
-If Customer is dissatisfied with Project/Open' service or any of its terms, 
+If Customer is dissatisfied with @po;noquote@' service or any of its terms, 
 conditions, rules, policies, guidelines, or practices, customer's sole and 
 exclusive remedy is to discontinue using the service. 
 </p>
