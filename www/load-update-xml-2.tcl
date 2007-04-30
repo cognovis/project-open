@@ -37,7 +37,18 @@ set context [list [list "../developer" "Developer's Administration"] $page_title
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 
-set full_url "$service_url?email=[ns_urlencode $service_email]&password=[ns_urlencode $service_password]"
+set core_versions [db_list core_versions "
+	select version_name
+	from apm_package_versions
+	where version_id in (
+		select max(version_id) 
+		from apm_package_versions 
+		where package_key = 'intranet-core'
+	)
+"]
+set core_version [lindex $core_versions 0]
+
+set full_url [export_vars -base $service_url {{email $service_email} {password $service_password} core_version }  ]
 
 ns_log Notice "load-update-xml-2: full_url=$full_url"
 ns_log Notice "load-update-xml-2: service_email=$service_email"
