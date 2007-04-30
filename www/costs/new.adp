@@ -25,6 +25,7 @@
 	
   </td>
   <td valign=top>
+  <if "" ne @admin_html@>
 
 	    <table cellspacing=1 cellpadding=1 border=0>
 	    <tr>
@@ -36,6 +37,7 @@
 	      </td>
 	    </tr>
 	    </table>
+  </if>
   </td>
 </tr>
 </table>
