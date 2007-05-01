@@ -236,8 +236,6 @@ if {[string equal $platform "windows"]} {
 
 }
 
-
-
 ns_log Notice "cvs-update: before writing footer"
 ns_write [im_footer]
 
