@@ -28,6 +28,7 @@ ad_page_contract {
     { max_row 100 }
 }
 
+
 # ---------------------------------------------------------------
 # Project Menu
 # ---------------------------------------------------------------
@@ -56,7 +57,7 @@ set page_title [lang::message::lookup "" intranet-reporting.Gantt_Diagram "Gantt
 
 
 set html [im_ganttproject_gantt_component \
-	-auto_open 1 \
+	-auto_open 0 \
 	-export_var_list [list project_id] \
 	-start_date $start_date \
 	-end_date $end_date \
