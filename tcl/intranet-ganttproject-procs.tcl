@@ -1495,12 +1495,16 @@ ad_proc -public im_ganttproject_gantt_component {
     set rowclass(1) "rowodd"
     set sigma "&Sigma;"
 
+
+    # -----------------------------------------------------------------
+    # No project_id specified but customer - get all projects of this customer
     if {0 != $customer_id && "" == $project_id} {
 	set project_id [db_list pids "
 	select	project_id
 	from	im_projects
 	where	parent_id is null
 		and company_id = :customer_id
+		and project_status_id = [im_project_status_open]
         "]
     }
     
@@ -1514,13 +1518,24 @@ ad_proc -public im_ganttproject_gantt_component {
         "]
     }
 
-    # ToDo: Highlight the sub-project if we're showning the sub-project
+    # ToDo: Highlight the sub-project if we're showing the sub-project
     # of a main-project and open the GanttDiagram at the right place
+
+    # One project specified - check parent_it to make sure we get the
+    # top project.
     if {[llength $project_id] == 1} {
-	set parent_id [db_string parent_id "select parent_id from im_projects where project_id = :project_id" -default ""]
+	set parent_id [db_string parent_id "
+		select parent_id 
+		from im_projects 
+		where project_id = :project_id
+	" -default ""]
 	while {"" != $parent_id} {
 	    set project_id $parent_id
-	    set parent_id [db_string parent_id "select parent_id from im_projects where project_id = :project_id" -default ""]
+	    set parent_id [db_string parent_id "
+		select parent_id 
+		from im_projects 
+		where project_id = :project_id
+	    " -default ""]
 	}
     }
 
@@ -1531,13 +1546,10 @@ ad_proc -public im_ganttproject_gantt_component {
     
     if {"" == $start_date} {
 	set start_date [db_string start_date "
-	select
-		to_char(min(child.start_date), 'YYYY-MM-DD')
-	from
-		im_projects parent,
+	select	to_char(min(child.start_date), 'YYYY-MM-DD')
+	from	im_projects parent,
 		im_projects child
-	where
-		parent.project_id in ([join $project_id ", "])
+	where	parent.project_id in ([join $project_id ", "])
 		and parent.parent_id is null
 		and child.tree_sortkey
 			between parent.tree_sortkey
@@ -1548,13 +1560,10 @@ ad_proc -public im_ganttproject_gantt_component {
 
     if {"" == $end_date} {
 	set end_date [db_string end_date "
-	select
-		to_char(max(child.end_date), 'YYYY-MM-DD')
-	from
-		im_projects parent,
+	select	to_char(max(child.end_date), 'YYYY-MM-DD')
+	from	im_projects parent,
 		im_projects child
-	where
-		parent.project_id in ([join $project_id ", "])
+	where	parent.project_id in ([join $project_id ", "])
 		and parent.parent_id is null
 		and child.tree_sortkey
 			between parent.tree_sortkey
@@ -1562,19 +1571,14 @@ ad_proc -public im_ganttproject_gantt_component {
         "]
     }
 
-    if {"" == $end_date} {
-	set end_date [db_string now "select now()::date"]
-    }
+    if {"" == $end_date} { set end_date [db_string now "select now()::date"] }
 
     if {"" == $start_date} {
 	set start_date [db_string start_date "
-	select
-		to_char(min(child.start_date), 'YYYY-MM-DD')
-	from
-		im_projects parent,
+	select	to_char(min(child.start_date), 'YYYY-MM-DD')
+	from	im_projects parent,
 		im_projects child
-	where
-		parent.project_id in ([join $project_id ", "])
+	where	parent.project_id in ([join $project_id ", "])
 		and parent.parent_id is null
 		and child.tree_sortkey
 			between parent.tree_sortkey
@@ -1582,11 +1586,14 @@ ad_proc -public im_ganttproject_gantt_component {
         "]
     }
 
+    # -----------------------------------------------------------------
     # Adaptive behaviour - limit the size of the component to a summary
     # suitable for the left/right columns of a project.
     if {$auto_open | "" == $top_vars} {
 
-	set duration_days [db_string dur "select to_date(:end_date, 'YYYY-MM-DD') - to_date(:start_date, 'YYYY-MM-DD')"]
+	set duration_days [db_string dur "
+		select to_date(:end_date, 'YYYY-MM-DD') - to_date(:start_date, 'YYYY-MM-DD')
+	"]
 	if {"" == $duration_days} { set duration_days 0 }
 
 	set duration_weeks [expr $duration_days / 7]
@@ -1613,7 +1620,6 @@ ad_proc -public im_ganttproject_gantt_component {
     if {$auto_open} {
 	set opened_projects $project_id
     }
-
 
     # ------------------------------------------------------------
     # Define Dimensions
@@ -2087,14 +2093,18 @@ ad_proc -public im_ganttproject_gantt_component {
 	# Check whether all project_ids are included in $level_list
 	set intersect [lsort -unique [set_intersection $opened_projects $level_list]]
 	if {$level_list == $intersect} {
+
 	    # Everything opened - display a "-" button
 	    set opened [set_difference $opened_projects $local_level_list]
 	    set url [export_vars -base $this_url {top_vars {opened_projects $opened}}]
 	    append html "<td class=$header_class><a href=$url>[im_gif "minus_9"]</a></td>\n"
+
 	} else {
+
 	    set opened [lsort -unique [concat $opened_projects $level_list]]
 	    set url [export_vars -base $this_url {top_vars {opened_projects $opened}}]
 	    append html "<td class=$header_class><a href=$url>[im_gif "plus_9"]</a></td>\n"
+
 	}
 
 
@@ -2102,6 +2112,36 @@ ad_proc -public im_ganttproject_gantt_component {
     append html "<td class=$header_class colspan=[expr [llength $top_scale]+2]>&nbsp;</td></tr>\n"
 
     return "<table>\n$html\n</table>\n"
+}
+
+
+
+
+
+set ttt {
+    append html "<tr class=rowtitle>\n"
+    set user_ids [lsort -unique [db_list user_ids "select distinct user_id from ($inner_sql) h order by user_id"]]
+
+    set intersect [lsort -unique [set_intersection $user_name_link_opened $user_ids]]
+
+    if {$user_ids == $intersect} {
+
+	# All user_ids already opened - show "-" sign
+	set opened [list]
+	set url [export_vars -base $this_url {top_vars {user_name_link_opened $opened}}]
+	append html "<td class=rowtitle><a href=$url>[im_gif "minus_9"]</a></td>\n"
+	append html "<td class=rowtitle colspan=[expr [llength $top_scale]+3]>&nbsp;</td></tr>\n"
+
+    } else {
+
+	# Not all user_ids are opened - show a "+" sign
+	set opened [lsort -unique [concat $user_name_link_opened $user_ids]]
+	set url [export_vars -base $this_url {top_vars {user_name_link_opened $opened}}]
+	append html "<td class=rowtitle><a href=$url>[im_gif "plus_9"]</a></td>\n"
+	append html "<td class=rowtitle colspan=[expr [llength $top_scale]+3]>&nbsp;</td></tr>\n"
+
+    }
+
 }
 
 
