@@ -1253,17 +1253,6 @@ ad_proc -public im_ganttproject_resource_component {
     # Skip component if there are not items to be displayed
     if {0 == $cnt_outer} { return "" }
 
-    set ttt {
-	set debug ""
-	set dctr 0
-	foreach h [array get hash] {
-	    append debug $h
-	    if {[expr $dctr % 2] == 1} {append debug "\n"} else {append debug " - "}
-	    incr dctr
-	}
-	ad_return_complaint 1 "<pre>$debug</pre>"
-    }
-   
     # ------------------------------------------------------------
     # Display the table body
     
@@ -2113,38 +2102,6 @@ ad_proc -public im_ganttproject_gantt_component {
 
     return "<table>\n$html\n</table>\n"
 }
-
-
-
-
-
-set ttt {
-    append html "<tr class=rowtitle>\n"
-    set user_ids [lsort -unique [db_list user_ids "select distinct user_id from ($inner_sql) h order by user_id"]]
-
-    set intersect [lsort -unique [set_intersection $user_name_link_opened $user_ids]]
-
-    if {$user_ids == $intersect} {
-
-	# All user_ids already opened - show "-" sign
-	set opened [list]
-	set url [export_vars -base $this_url {top_vars {user_name_link_opened $opened}}]
-	append html "<td class=rowtitle><a href=$url>[im_gif "minus_9"]</a></td>\n"
-	append html "<td class=rowtitle colspan=[expr [llength $top_scale]+3]>&nbsp;</td></tr>\n"
-
-    } else {
-
-	# Not all user_ids are opened - show a "+" sign
-	set opened [lsort -unique [concat $user_name_link_opened $user_ids]]
-	set url [export_vars -base $this_url {top_vars {user_name_link_opened $opened}}]
-	append html "<td class=rowtitle><a href=$url>[im_gif "plus_9"]</a></td>\n"
-	append html "<td class=rowtitle colspan=[expr [llength $top_scale]+3]>&nbsp;</td></tr>\n"
-
-    }
-
-}
-
-
 
 
 ad_proc -public im_ganttproject_zoom_top_vars {
