@@ -535,7 +535,11 @@ ad_proc -public im_cost_center_options {
 
     set cost_type_sql ""
     set short_name [im_cost_type_short_name $cost_type_id]
-    if {"" != $cost_type_id} { 
+
+    # Profit-Center-Module (perms on CCs) installed?
+    set pcenter_p [util_memoize "db_string pcent {select count(*) from apm_packages where package_key = 'intranet-cost-center'}"]
+
+    if {$pcenter_p && "" != $cost_type_id} { 
 	set cost_type_sql "and im_object_permission_p(cost_center_id, :user_id, 'fi_write_${short_name}s') = 't'\n"
     }
 
