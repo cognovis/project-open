@@ -220,7 +220,6 @@ ad_proc -public im_cost_type_write_permissions {
     Returns a list of all cost_type_ids for which the user has
     write permissions for atleast one Cost Center.
 } {
-#    return [im_cost_type_write_permissions_helper $user_id]
     return [util_memoize "im_cost_type_write_permissions_helper $user_id" 60]
 }
 
