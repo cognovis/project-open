@@ -198,6 +198,9 @@ ad_proc -public im_ganttproject_component {
     Check for "project.thumb.xxx" and a "project.full.xxx"
     files with xxx in (gif, png, jpg)
 } {
+    # 070502 Fraber: Moved into intranet-core/projects/view.tcl
+    return ""
+
     # Is this a "Consulting Project"?
     set consulting_project_category [parameter::get -package_id [im_package_ganttproject_id] -parameter "GanttProjectType" -default "Consulting Project"]
     if {![im_project_has_type $project_id $consulting_project_category]} {
@@ -234,7 +237,6 @@ ad_proc -public im_ganttproject_component {
 	if {[regexp "^$ganttproject_preview\.$thumbnail_size\....\$" $rel_path match]} { set thumb $rel_path}
 	if {[regexp "^$ganttproject_preview\....\$" $rel_path match]} { set full $rel_path}
     }
-    ns_log Notice "im_ganttproject_component: thumb=$thumb, full=$full"
 
     # Include the thumbnail in the project's view
     set img ""
@@ -267,6 +269,7 @@ ad_proc -public im_ganttproject_component {
     set fs_filename "$ganttproject_preview.png"
 
     if {$admin} {
+
 	append result "
 	<table cellspacing=1 cellpadding=1>
 	<tr>
@@ -279,37 +282,15 @@ ad_proc -public im_ganttproject_component {
 		[export_form_vars return_url project_id]
 		<table cellspacing=0 cellpadding=0>
 		<tr>
-		<td><input type=file name=upload_gan size=10></td>
-		<td><input type=submit name=button_gan value='$ok_string'></td>
+		<td>
+			<input type=file name=upload_gan size=10>
+		</td>
+		<td>
+			<input type=submit name=button_gan value='$ok_string'>
+		</td>
 		</tr>
 		</table>
 		</form>
-	</td></tr>
-	<tr>
-	<td>
-	  [im_gif "exp-gif" "Upload Preview Image"]
-	  Upload .png
-	</td>
-	<td>
-		<form enctype=multipart/form-data method=POST action=/intranet-filestorage/upload-2.tcl>
-		[export_form_vars project_id return_url folder_type fs_filename object_id thumbnail_size bread_crum_path]
-		<table cellspacing=0 cellpadding=0>
-		<tr>
-		<td><input type=file name=upload_file size=10></td>
-		<td><input type=submit name=button_gan value='$ok_string'></td>
-		</tr>
-		</table>
-		</form>
-	</td>
-	<tr><td colspan=2 class=small>
-	    Warning: Don't modify the project structure
-	    while the project is being executed. Changes
-            may lead to deleted timesheet hours, cost
-	    items and others. Please read the manual and/or
-	    request more information.<br>
-	You need to install <a href='http://sourceforge.net/project/showfiles.php?group_id=72728'>GanttProject</a> on your computer.
-
-
 	</td></tr>
 	</table>
         "
