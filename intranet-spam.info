@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-spam</auto-mount>
 
-    <version name="3.2.9.0.0" url="http://projop.dnsalias.com/download/apm/intranet-spam-3.2.9.0.0.apm">
+    <version name="3.2.10.1.0" url="http://projop.dnsalias.com/download/apm/intranet-spam-3.2.10.1.0.apm">
     <database-support>
         <database>oracle</database>
         <database>postgresql</database>
