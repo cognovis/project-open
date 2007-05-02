@@ -493,10 +493,7 @@ ad_proc -public im_cost_center_select {
 } {
     Returns a select box with all Cost Centers in the company.
 } {
-#   ad_return_complaint 1 "include_empty=$include_empty, department_only_p=$department_only_p, select_name=$select_name, default=$default, cost_type_id=$cost_type_id"
-
     set options [im_cost_center_options -include_empty $include_empty -department_only_p $department_only_p -cost_type_id $cost_type_id]
-
 
     # Only one option, so 
     # write out string instead of select component
@@ -523,12 +520,7 @@ ad_proc -public im_cost_center_options {
     charge FinDocs to CostCenters
 } {
     set user_id [ad_get_user_id]
-    set start_center_id [db_string start_center_id "
-	select cost_center_id 
-	from im_cost_centers 
-	where cost_center_label='company'
-    " -default 0]
-
+    set start_center_id [im_cost_center_company]
     set cost_type "Invalid"
     if {"" != $cost_type_id} { set cost_type [db_string ct "select im_category_from_id(:cost_type_id)"] }
 
@@ -548,15 +540,12 @@ ad_proc -public im_cost_center_options {
     }
 
     set options_sql "
-        select
-                cc.cost_center_name,
+        select	cc.cost_center_name,
                 cc.cost_center_id,
                 cc.cost_center_label,
     		(length(cc.cost_center_code) / 2) - 1 as indent_level
-        from
-                im_cost_centers cc
-	where
-		1=1
+        from	im_cost_centers cc
+	where	1=1
 		$department_only_sql
 		$cost_type_sql
 	order by
@@ -581,11 +570,6 @@ ad_proc -public im_cost_center_options {
 
     return $options
 }
-
-
-
-
-
 
 
 ad_proc -public template::widget::im_currencies { element_reference tag_attributes } {
@@ -715,7 +699,6 @@ ad_proc -public template::widget::im_cost_center_tree { element_reference tag_at
 }
 
 
-
 ad_proc -public im_costs_default_cost_center_for_user { 
     user_id
 } {
@@ -728,13 +711,12 @@ ad_proc -public im_costs_default_cost_center_for_user {
 	where	employee_id = :user_id
     " -default 0]
 
-    # No further logic yet - maybe assign groups to default
-    # cost centers in the future?
+    if {"" == $cost_center_id || 0 == $cost_center_id} {
+	set cost_center_id [im_cost_center_company]
+    }
 
     return $cost_center_id
 }
-
-
 
 
 ad_proc -public im_cost_center_company {
@@ -782,6 +764,10 @@ ad_proc -private -deprecated im_cost_center_read_p_helper {
 } {
     Returns "t" if the user can read the CC, "f" otherwise.
 } {
+    # User can read all CCs if no Profit Center Controlling is installed
+    set pcenter_p [util_memoize "db_string pcent {select count(*) from apm_packages where package_key = 'intranet-cost-center'}"]
+    if {!$pcenter_p} { return "t" }
+
     return [db_string cc_perms "
 	select	im_object_permission_p(:cost_center_id, :user_id, ct.read_privilege)
 	from	im_cost_types ct
@@ -798,6 +784,11 @@ ad_proc -public im_cc_read_p {
 } {
     Returns "1" if the user can read the global "company" CC
 } {
+    # User can read all CCs if no Profit Center Controlling is installed
+    set pcenter_p [util_memoize "db_string pcent {select count(*) from apm_packages where package_key = 'intranet-cost-center'}"]
+    if {!$pcenter_p} { return 1 }
+
+    # Deal with exceptions
     if {0 == $user_id} { set user_id [ad_get_user_id] }
     if {0 == $cost_center_id} { set cost_center_id [im_cost_center_company] }
     if {0 != $cost_type_id} {
@@ -837,6 +828,10 @@ ad_proc -public im_cost_center_write_p_helper {
 } {
     Returns "t" if the user can write to the CC, "f" otherwise.
 } {
+    # User can write all CCs if no Profit Center Controlling is installed
+    set pcenter_p [util_memoize "db_string pcent {select count(*) from apm_packages where package_key = 'intranet-cost-center'}"]
+    if {!$pcenter_p} { return "t" }
+
     return [db_string cc_perms "
 	select	im_object_permission_p(:cost_center_id, :user_id, ct.write_privilege)
 	from	im_cost_types ct
@@ -1078,47 +1073,47 @@ ad_proc im_costs_base_component { user_id {company_id ""} {project_id ""} } {
     if {"" != $extra_select_clause} { set extra_select_clause ",\n\t$extra_select_clause" }
 
     set costs_sql "
-select
-	ci.*,
-	ci.paid_amount as payment_amount,
-	ci.paid_currency as payment_currency,
-	url.url,
-        im_category_from_id(ci.cost_status_id) as cost_status,
-        im_category_from_id(ci.cost_type_id) as cost_type,
-	to_date(to_char(ci.effective_date,'yyyymmdd'),'yyyymmdd') 
-		+ ci.payment_days as calculated_due_date
-	$extra_select_clause
-from
-	im_costs ci,
-	acs_objects o,
-        (select * from im_biz_object_urls where url_type=:view_mode) url,
-	(	select distinct
-			cc.cost_center_id,
-			ct.cost_type_id
-		from	im_cost_centers cc,
-			im_cost_types ct,
-			acs_permissions p,
-			party_approved_member_map m,
-			acs_object_context_index c, 
-			acs_privilege_descendant_map h
-		where
-			p.object_id = c.ancestor_id
-			and h.descendant = ct.read_privilege
-			and c.object_id = cc.cost_center_id
-			and m.member_id = :user_id
-			and p.privilege = h.privilege
-			and p.grantee_id = m.party_id
-	) readable_ccs
-	$extra_from_clause
-where
-	ci.cost_id = o.object_id
-	and o.object_type = url.object_type
-	and ci.cost_center_id = readable_ccs.cost_center_id
-	and ci.cost_type_id = readable_ccs.cost_type_id
-	$extra_where_clause
-order by
-	ci.effective_date desc
-"
+	select
+		ci.*,
+		ci.paid_amount as payment_amount,
+		ci.paid_currency as payment_currency,
+		url.url,
+	        im_category_from_id(ci.cost_status_id) as cost_status,
+	        im_category_from_id(ci.cost_type_id) as cost_type,
+		to_date(to_char(ci.effective_date,'yyyymmdd'),'yyyymmdd') 
+			+ ci.payment_days as calculated_due_date
+		$extra_select_clause
+	from
+		im_costs ci,
+		acs_objects o,
+	        (select * from im_biz_object_urls where url_type=:view_mode) url,
+		(	select distinct
+				cc.cost_center_id,
+				ct.cost_type_id
+			from	im_cost_centers cc,
+				im_cost_types ct,
+				acs_permissions p,
+				party_approved_member_map m,
+				acs_object_context_index c, 
+				acs_privilege_descendant_map h
+			where
+				p.object_id = c.ancestor_id
+				and h.descendant = ct.read_privilege
+				and c.object_id = cc.cost_center_id
+				and m.member_id = :user_id
+				and p.privilege = h.privilege
+				and p.grantee_id = m.party_id
+		) readable_ccs
+		$extra_from_clause
+	where
+		ci.cost_id = o.object_id
+		and o.object_type = url.object_type
+		and ci.cost_center_id = readable_ccs.cost_center_id
+		and ci.cost_type_id = readable_ccs.cost_type_id
+		$extra_where_clause
+	order by
+		ci.effective_date desc
+    "
 
     set cost_html "
 <table border=0>
