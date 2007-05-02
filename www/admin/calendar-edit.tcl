@@ -36,6 +36,7 @@ ad_form -name calendar -form {
 		"]
 	"
     }
+
 } -edit_data {
     calendar::rename \
         -calendar_id $calendar_id \
