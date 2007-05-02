@@ -342,9 +342,26 @@ ad_proc -public calendar::adjust_date {
 ad_proc -public calendar::new {
     {-owner_id:required}
     {-private_p "f"}
-    {-calendar_name:required}
+    {-calendar_name ""}
     {-package_id ""}
 } {
+    set duplicate_cal_p [db_string duplicate_cal "
+	select count(*)
+	from calendars
+	where calendar_name = :calendar_name
+    "]
+
+    if {[empty_string_p $calendar_name] || $duplicate_cal_p} {
+
+        set user_name [db_string uname "select im_name_from_user_id([ad_get_user_id])"]
+	if {"f" != $private_p} {
+	    set calendar_name [lang::message::lookup "" calendar.Pers_Cal_Name "%user_name% Personal Calendar"]
+	} else {
+	    set calendar_name [lang::message::lookup "" calendar.Pub_Cal_Name "%user_name% Public Calendar"]
+	}
+
+    }
+
     if { [empty_string_p $package_id] } {
         set package_id [ad_conn package_id]
     }
