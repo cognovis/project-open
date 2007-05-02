@@ -988,6 +988,10 @@ ad_proc -public im_filestorage_home_folder_profile_perms {
     Cache the result for 600 seconds, we'll not change home
     folder permissions very frequently...
 } {
+
+    # SourceForge Bug 1696693: Empty profile gives error
+    if {"" == $profile_id} {  set profile_id 0 }
+
     set subsite_id [ad_conn subsite_id]
     set path_perms [util_memoize "db_string path_perms \"
                 select
