@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-update-client</auto-mount>
 
-    <version name="3.2.9.0.0" url="http://projop.dnsalias.com/download/apm/intranet-update-client-3.2.9.0.0.apm">
+    <version name="3.2.10.1.0" url="http://projop.dnsalias.com/download/apm/intranet-update-client-3.2.10.1.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Check for version information from the ]project-open[ server in order to present the user with a list of software updates. </summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
