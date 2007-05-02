@@ -74,8 +74,8 @@ ad_proc -public im_transq_rel_quality { allowed_error_percentage  sample_size  t
 } {
     # How many errors should have been in the translation?
     set allowed_errors [expr $allowed_error_percentage * $sample_size / 100]
-    if {0 == $allowed_errors} { set allowed_errors "0.001" }
-    
+    if {0 == $total_errors} { set allowed_errors "0.001" }
+
     set dif [expr log($allowed_errors / $total_errors) / log(2)]
     
     if { $dif <= -3.5 } { return -4 }
