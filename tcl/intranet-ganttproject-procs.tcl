@@ -199,7 +199,7 @@ ad_proc -public im_ganttproject_component {
     files with xxx in (gif, png, jpg)
 } {
     # Is this a "Consulting Project"?
-    set consulting_project_category [parameter::get -package_id [im_package_ganttproject_id] -parameter "GanttProjectType" -default "Consulting Service"]
+    set consulting_project_category [parameter::get -package_id [im_package_ganttproject_id] -parameter "GanttProjectType" -default "Consulting Project"]
     if {![im_project_has_type $project_id $consulting_project_category]} {
         return ""
     }
