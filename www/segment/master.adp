@@ -18,7 +18,11 @@
 
 </td></tr>
 </thead>
+<% if {$page=="logo"} { %>
 <form name="wizard" method="POST" enctype="multipart/form-data">
+<% } else { %>
+<form name="wizard" method="GET">
+<% } %>
 @export_vars;noquote@
 <tbody>
 <tr><td class=tablebody colspan=3><font size=-1>
