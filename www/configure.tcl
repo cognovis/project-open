@@ -478,7 +478,7 @@ if {!$search_pg_installed_p} {
     if {!$tsearch_installed_p} {
 
 	switch $psql_version {
-	    "8.0.1" - "8.0.8" {
+	    "8.0.1" - "8.0.8" - "8.1.5" - "8.1.8" {
 		set sql_file "$search_sql_dir/tsearch2.$psql_version.sql"
 		set result ""
 		ns_write "<li>Sourcing $sql_file ...\n"
