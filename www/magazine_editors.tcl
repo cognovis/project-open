@@ -5,7 +5,7 @@ ad_page_contract {
 }
 
 set user_id [ad_maybe_redirect_for_registration]
-set page_title "Invoices Report"
+set page_title "Magazine Editors Report"
 set context_bar [im_context_bar $page_title]
 set context ""
 set today [db_string today "select to_char(sysdate, 'YYYYMMDD.HHmm') from dual"]
@@ -17,39 +17,75 @@ set row_class "rowtitle"
 #
 
 set sql "
-    select 
-	im_category_from_id(p.language_id) as person_language,
-	pa.email,
-	p.person_id,
-	im_name_from_user_id(p.person_id) as person_name,
-	p.business_sector_id as person_sector_id,
-	im_category_from_id(p.business_sector_id) as person_sector,
-	c.company_id,
-	c.company_name,
-	c.business_sector_id as company_sector_id,
-	im_category_from_id(c.business_sector_id) as company_sector
-    from
-	group_member_map m,
-	parties pa,
-	persons p
-	LEFT OUTER JOIN (
-		select	r.object_id_two as person_id,
-			c.*
-		from	acs_rels r,
+    select * from (
+	    	select 
+			im_category_from_id(p.language_id) as person_language,
+			pa.email,
+			p.person_id,
+			im_name_from_user_id(p.person_id) as person_name,
+			p.business_sector_id as person_sector_id,
+			im_category_from_id(p.business_sector_id) as person_sector,
+			c.company_id,
+			c.company_name,
+			c.business_sector_id as company_sector_id,
+			im_category_from_id(c.business_sector_id) as company_sector
+		    from
+			group_member_map m,
+			parties pa,
+			persons p
+			LEFT OUTER JOIN (
+				select	r.object_id_two as person_id,
+					c.*
+				from	acs_rels r,
+					im_companies c
+				where	r.object_id_one = c.company_id
+			) c ON (p.person_id = c.person_id)
+		
+		    where
+			m.group_id = 5372
+			and m.member_id = p.person_id
+			and pa.party_id = p.person_id
+			and (p.spam_frequency_id is null OR p.spam_frequency_id != 11130)
+ 	UNION
+	    	select 
+			'' as person_language,
+			'' as email,
+			0 as person_id,
+			'' as person_name,
+			c.business_sector_id as person_sector_id,
+			im_category_from_id(c.business_sector_id) as person_sector,
+			c.company_id,
+			c.company_name,
+			c.business_sector_id as company_sector_id,
+			im_category_from_id(c.business_sector_id) as company_sector
+		from
 			im_companies c
-		where	r.object_id_one = c.company_id
-	) c ON (p.person_id = c.person_id)
-
-    where
-	m.group_id = 5372
-	and m.member_id = p.person_id
-	and pa.party_id = p.person_id
-	and (p.spam_frequency_id is null OR p.spam_frequency_id != 11130)
+		where
+			c.company_type_id in (
+				select child_id 
+				from im_category_hierarchy 
+				where parent_id = 10026
+			    UNION
+				select 10026 as child_id
+			)
+			and c.company_id not in (
+				select distinct
+					c.company_id
+				from	acs_rels r,
+					persons p,
+					im_companies c,
+					group_member_map m
+				where	r.object_id_two = p.person_id
+					and r.object_id_one = c.company_id
+					and m.member_id = p.person_id
+					and m.group_id = 5372
+			)
+    ) t
     order by
 	person_language,
 	person_sector,
-	p.person_id,
-	c.company_name
+	person_id,
+	company_name
 "
 
 set report_def [list \
