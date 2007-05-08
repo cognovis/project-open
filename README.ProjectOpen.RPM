@@ -27,8 +27,8 @@
 
   1. Prerequisites:
 
-  The RPM is currently tested only on Suse 10.0 and CentOS 4.4 it need the
-  postgres database version included in the distribution.
+  The RPM is currently tested only on OpenSuse 10.2, Fedora Core 6 and CentOS
+  4.4 it needs the postgres database version included in the distribution.
 
   You will also need ImageMagick, also included in your distribution.
 
@@ -50,6 +50,21 @@
   nscache	1.5		aolserver module
   project-open	3.2		project-open install
 
+  You can find all of these in the download area on sourceforge. The aolserver
+  packages are in a tar file for each distribution and the project-open is a
+  seperate rpm download.
+
+  You can identify the files for you distribution by the extension:
+
+  rhel4:  CentOS 4 or Red Hat Enterprise Linux 4
+  os102:  OpenSuse 10.2
+  fc6:	  Fedora Core 6
+
+  The source RPMS are the same for all distributions, that is why only the
+  rhel4 version is provided.
+
+  sourceforge url: https://sourceforge.net/project/showfiles.php?group_id=86419
+  
   ______________________________________________________________________
 
   3. What the ]project-open[ RPMs install
