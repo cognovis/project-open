@@ -52,7 +52,7 @@ if {[llength $dimension_vars] != [llength $unique_dimension_vars]} {
 	<b>[lang::message::lookup "" intranet-reporting.Duplicate_dimension "Duplicate Dimension"]</b>:
 	<br>[lang::message::lookup "" intranet-reporting.You_have_specified_a_dimension_multiple "
 	You have specified a dimension more then once."
-    "]
+    ]
 }
 
 # ------------------------------------------------------------
