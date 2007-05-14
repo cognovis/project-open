@@ -2,7 +2,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.39 2007/01/10 21:22:14 gustafn Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.40 2007/05/14 20:30:29 donb Exp $
 }
 
 namespace eval search {}
@@ -67,7 +67,8 @@ ad_proc -public search::is_guest_p {
     Checks whether the logged-in user is a guest
 } {
     set user_id [ad_conn user_id]
-    return [db_string get_is_guest_p {select dotlrn_privacy.guest_p(:user_id) from dual}]
+#    return [db_string get_is_guest_p {select dotlrn_privacy.guest_p(:user_id) from dual}]
+    return 0
 }
 
 ad_proc -public -callback search::action {
