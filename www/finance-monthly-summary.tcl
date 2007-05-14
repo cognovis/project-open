@@ -1,4 +1,4 @@
-# /packages/intranet-reporting/www/finance-monthly-summary.tcl
+# /packages/intranet-reporting-finance/www/finance-monthly-summary.tcl
 #
 # Copyright (C) 2003-2004 Project/Open
 #
@@ -104,7 +104,7 @@ if {"" == $end_date} {
 set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting/finance-monthly-summary" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-reporting-finance/finance-monthly-summary" {start_date end_date} ]
 
 
 # ------------------------------------------------------------

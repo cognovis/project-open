@@ -1,4 +1,4 @@
-# /packages/intranet-reporting/www/finance-payment-balance.tcl
+# /packages/intranet-reporting-finance/www/finance-payment-balance.tcl
 #
 # Copyright (C) 2003-2004 Project/Open
 #
@@ -122,7 +122,7 @@ set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting/finance-quotes-pos" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-reporting-finance/finance-quotes-pos" {start_date end_date} ]
 
 
 # ------------------------------------------------------------
@@ -457,7 +457,7 @@ set footer_array_list [list]
 set last_value_list [list]
 set class "rowodd"
 
-ns_log Notice "intranet-reporting/finance-quotes-pos: sql=\n$sql"
+ns_log Notice "intranet-reporting-finance/finance-quotes-pos: sql=\n$sql"
 
 db_foreach sql $sql {
 

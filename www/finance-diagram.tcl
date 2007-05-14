@@ -1,4 +1,4 @@
-# /packages/intranet-reporting/www/finance-yearly-revenues.tcl
+# /packages/intranet-reporting-finance/www/finance-yearly-revenues.tcl
 #
 # Copyright (c) 2003-2006 ]project-open[
 #
@@ -152,7 +152,7 @@ set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting/finance-quotes-pos" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-reporting-finance/finance-quotes-pos" {start_date end_date} ]
 
 
 # ------------------------------------------------------------

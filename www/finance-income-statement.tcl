@@ -1,4 +1,4 @@
-# /packages/intranet-reporting/www/finance-income-statement.tcl
+# /packages/intranet-reporting-finance/www/finance-income-statement.tcl
 #
 # Copyright (C) 2003-2006 Project/Open
 #
@@ -57,7 +57,7 @@ if {"" == $number_locale} { set number_locale $locale  }
 set company_url "/intranet/companies/view?company_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting/finance-income-statement" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-reporting-finance/finance-income-statement" {start_date end_date} ]
 
 
 # ------------------------------------------------------------
@@ -529,7 +529,7 @@ set footer_array_list [list]
 set last_value_list [list]
 set class "rowodd"
 
-ns_log Notice "intranet-reporting/finance-income-statement: sql=\n$sql"
+ns_log Notice "intranet-reporting-finance/finance-income-statement: sql=\n$sql"
 
 db_foreach sql $sql {
     
