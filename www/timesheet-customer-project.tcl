@@ -41,7 +41,8 @@ set read_p [db_string report_perms "
 	where	m.label = :menu_label
 " -default 'f']
 
-
+# Has the current user the right to edit all timesheet information?
+set edit_timesheet_p [im_permission $current_user_id "edit_hours_all"]
 
 # ------------------------------------------------------------
 # Constants
@@ -115,8 +116,11 @@ if {"" == $end_date} {
 set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set user_url "/intranet/users/view?user_id="
+set hours_url "/intranet-timesheet2/hours/one"
+set this_url [export_vars -base "/intranet-reporting/timesheet-customer-project" {start_date end_date level_of_detail project_id task_id company_id user_id} ]
 
-set this_url [export_vars -base "/intranet-reporting/timesheet-customer-project" {start_date end_date} ]
+# BaseURL for drill-down. Needs company_id, project_id, user_id, level_of_detail
+set base_url [export_vars -base "/intranet-reporting/timesheet-customer-project" {start_date end_date task_id} ]
 
 
 # ------------------------------------------------------------
@@ -168,6 +172,7 @@ select
 	h.hours,
 	h.billing_rate,
 	to_char(h.day, 'YYYY-MM-DD') as date,
+	to_char(h.day, 'J') as julian_date,
 	to_char(h.day, 'J')::integer - to_char(to_date(:start_date, 'YYYY-MM-DD'), 'J')::integer as date_diff,
 	to_char(h.hours, :number_format) as hours,
 	to_char(h.billing_rate, :number_format) as billing_rate,
@@ -183,7 +188,7 @@ from
 	im_hours h,
 	im_projects p,
 	im_companies c,
-	cc_users u
+	users u
 where
 	h.project_id = p.project_id
 	and p.project_status_id not in ([im_project_status_deleted])
@@ -202,14 +207,14 @@ order by
 set report_def [list \
     group_by company_nr \
     header {
-	"\#colspan=99 <a href=$this_url&company_id=$company_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a> 
+	"\#colspan=99 <a href=$base_url&company_id=$company_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a> 
 	<b><a href=$company_url$company_id>$company_name</a></b>"
     } \
     content [list  \
 	group_by project_nr \
 	header {
 	    $company_nr 
-	    "\#colspan=99 <a href=$this_url&project_id=$project_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
+	    "\#colspan=99 <a href=$base_url&project_id=$project_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
 	    <b><a href=$project_url$project_id>$project_name</a></b>"
 	} \
 	content [list \
@@ -217,7 +222,7 @@ set report_def [list \
 	    header {
 		$company_nr 
 		$project_nr 
-		"\#colspan=99 <a href=$this_url&project_id=$project_id&user_id=$user_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
+		"\#colspan=99 <a href=$base_url&project_id=$project_id&user_id=$user_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
 		<b><a href=$user_url$user_id>$user_name</a></b>"
 	    } \
 	    content [list \
@@ -226,7 +231,7 @@ set report_def [list \
 			$project_nr
 			$user_name
 			$date
-			$hours
+			$hours_link
 			$billing_rate
 			$note
 		    } \
@@ -422,6 +427,10 @@ db_foreach sql $sql {
 
 	if {[string length $note] > $truncate_note_length} {
 	    set note "[string range $note 0 $truncate_note_length] ..."
+	}
+	set hours_link $hours
+	if {$edit_timesheet_p} {
+	    set hours_link "<a href=\"[export_vars -base $hours_url {julian_date user_id project_id {return_url $this_url}}]\">$hours</a>\n"
 	}
 
 	im_report_display_footer \

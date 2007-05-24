@@ -46,6 +46,7 @@ set context ""
 
 
 # Check that Start-Date have correct format
+set start_date [string range $start_date 0 6]
 if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]$} $start_date]} {
     ad_return_complaint 1 "Start Date doesn't have the right format.<br>
     Current value: '$start_date'<br>
@@ -126,7 +127,7 @@ select
 from
 	im_hours h,
 	im_projects p,
-	cc_users u
+	users u
 	LEFT OUTER JOIN
 		im_employees e
 		on (u.user_id = e.employee_id)
