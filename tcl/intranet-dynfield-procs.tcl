@@ -1257,6 +1257,7 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 
 ad_proc -public im_dynfield::create_clone_update_sql {
     -object_type:required
+    -object_id:required
 } {
     Returns an SQL update statement that can be executed in
     the context of an object clone() procedure in order to
@@ -1302,63 +1303,17 @@ ad_proc -public im_dynfield::create_clone_update_sql {
     "
 
     set sql "update $main_table_name set\n"
-
-    set ext_tables [list]
-    set ext_table_join_where ""
-    db_foreach ext_tables $ext_table_sql {
-	if {$ext_table_name == ""} { continue }
-	if {$ext_table_name == $main_table_name} { continue }
-
-	lappend ext_tables $ext_table_name
-	append ext_table_join_where "\tand $main_table_name.$main_id_column = $ext_table_name.$ext_id_column\n"
-    }
-
-    set bind_vars [ns_set create]
-    set criteria [list]
+    set komma_required 0
     db_foreach attributes $attributes_sql {
-	
-	# Check whether the attribute is part of the form
-	if {[lsearch $form_elements $attribute_name] >= 0} {
-	    set value [template::element::get_value $form_id $attribute_name]
-	    if {"" == $value} { continue }
-	    ns_set put $bind_vars $attribute_name $value
-	    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
-	}
+	if {$komma_required} { append sql "," }
+	append sql "\t$attribute_name = :$attribute_name\n"
+	set komma_required 1
     }
 
-    set where_clause [join $criteria " and\n            "]
-    if { ![empty_string_p $where_clause] } {
-	set where_clause " and $where_clause"
-    }
+    append sql "where $main_id_column = $object_id\n"
 
-    set sql "
-	(select
-		$main_id_column as object_id
-	from	
-		[join [concat [list $main_table_name] $ext_tables] ",\n\t"]
-	where	1 = 1 $ext_table_join_where
-		$where_clause
-	)
-    "
-
-    # Skip empty where clause
-    if {"" == $where_clause} {
-	set sql "" 
-    }
-
-    set extra(where) $sql
-    set extra(bind_vars) [util_ns_set_to_list -set $bind_vars]
-    ns_set free $bind_vars
-
-    return [array get extra]
+    return $sql
 }
-
-
-
-
-
-
-
 
 
 
