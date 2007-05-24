@@ -14,14 +14,13 @@ ad_page_contract {
     { top_vars "year quarter_of_year" }
     { top_scale1 "" }
     { top_scale2 "" }
-    { left_scale1 "customer_type" }
-    { left_scale2 "customer_name" }
+    { left_scale1 "cost_type" }
+    { left_scale2 "customer_type" }
     { left_scale3 "" }
-    { cost_type_id:integer "3700" }
+    { cost_type_id:multiple "3700 3704 3722 3718" }
     { customer_type_id:integer 0 }
     { customer_id:integer 0 }
 }
-
 
 # ------------------------------------------------------------
 # Define Dimensions
@@ -90,7 +89,11 @@ if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $
 # ------------------------------------------------------------
 # Page Title & Help Text
 
-set cost_type [db_string cost_type "select im_category_from_id(:cost_type_id)"]
+set cost_type [db_list cost_type "
+	select	im_category_from_id(category_id)
+	from	im_categories
+	where	category_id in ([join $cost_type_id ", "])
+"]
 
 set page_title [lang::message::lookup "" intranet-reporting.Financial_Cube_for "Financial Cube for '%cost_type%'"]
 set context_bar [im_context_bar $page_title]
@@ -162,6 +165,15 @@ set cost_type_options {
 	3700 "Customer Invoice"
 	3702 "Quote"
 	3724 "Delivery Note"
+	3704 "Provider Bill"
+	3706 "Purchase Order"
+	3722 "Expense Report"
+	3718 "Timesheet Cost"
+}
+
+set non_active_cost_type_options {
+	3714 "Employee Salary"
+	3720 "Expense Item"
 }
 
 set top_vars_options {
@@ -186,6 +198,13 @@ set left_scale_options {
 	"customer_path" "Customer Nr"
 	"customer_type" "Customer Type"
 	"customer_status" "Customer Status"
+
+	"provider_name" "Provider Name"
+	"provider_path" "Provider Nr"
+	"provider_type" "Provider Type"
+	"provider_status" "Provider Status"
+
+	"cost_type" "Cost Type"
 	"cost_status" "Cost Status"
 }
 
@@ -219,7 +238,7 @@ ns_write "
 	<tr>
 	  <td class=form-label>Cost Type</td>
 	  <td class=form-widget colspan=3>
-	    [im_select -translate_p 1 cost_type_id $cost_type_options $cost_type_id]
+	    [im_select -translate_p 1 -multiple_p 1 -size 7 cost_type_id $cost_type_options $cost_type_id]
 	  </td>
 	</tr>
 	<tr>
@@ -307,7 +326,7 @@ if {1} {
     lappend criteria "c.cost_type_id in (
 	select  child_id
 	from    im_category_hierarchy
-	where   (parent_id = :cost_type_id or child_id = :cost_type_id)
+	where   (parent_id in ([join $cost_type_id ", "]) or child_id in ([join $cost_type_id ", "]))
     )"
 }
 
@@ -344,7 +363,7 @@ set inner_sql "
 			im_costs c
 		where
 			1=1
-			and c.cost_type_id = :cost_type_id
+			and c.cost_type_id in ([join $cost_type_id ", "])
 			and c.effective_date::date >= to_date(:start_date, 'YYYY-MM-DD')
 			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
 			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
@@ -368,18 +387,21 @@ set middle_sql "
 		im_category_from_id(p.project_type_id) as project_type,
 		p.project_status_id,
 		im_category_from_id(p.project_status_id) as project_status,
+
 		cust.company_name as customer_name,
 		cust.company_path as customer_path,
 		cust.company_type_id as customer_type_id,
 		im_category_from_id(cust.company_type_id) as customer_type,
 		cust.company_status_id as customer_status_id,
 		im_category_from_id(cust.company_status_id) as customer_status,
+
 		prov.company_name as provider_name,
 		prov.company_path as provider_path,
 		prov.company_type_id as provider_type_id,
 		im_category_from_id(prov.company_type_id) as provider_type,
 		prov.company_status_id as provider_status_id,
 		im_category_from_id(prov.company_status_id) as provider_status
+
 	from
 		($inner_sql) c
 		LEFT OUTER JOIN im_projects p ON (c.project_id = p.project_id)
