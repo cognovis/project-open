@@ -85,4 +85,9 @@ set html [im_ganttproject_resource_component \
 	-max_row $max_row \
 ]
 
+if {"" == $html} { 
+    set html [lang::message::lookup "" intrant-ganttproject.No_resource_assignments_found "No resource assignments found"]
+    set html "<p>&nbsp;<p><blockquote><i>$html</i></blockquote><p>&nbsp;<p>\n"
+}
+
 
