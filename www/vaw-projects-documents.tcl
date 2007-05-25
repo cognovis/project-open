@@ -163,11 +163,7 @@ if {0 != $cost_creation_user_id} {
 }
 
 if {"" != $customer_type_id && 0 != $customer_type_id} {
-    lappend criteria "pcust.company_type_id in (
-	select	child_id
-	from	im_category_hierarchy
-	where	(parent_id = :customer_type_id or child_id = :customer_type_id)
-    )"
+    lappend criteria "pcust.company_type_id in ([join [im_sub_categories $customer_type_id] ","])"
 }
 
 # Select project & subprojects
