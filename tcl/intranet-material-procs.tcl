@@ -251,22 +251,10 @@ ad_proc -public im_material_list_component {
 	
     set restrictions [list]
     if {$restrict_to_status_id} {
-	lappend criteria "m.material_status_id in (
-        	select :material_status_id from dual
-        	UNION
-        	select child_id
-        	from im_category_hierarchy
-        	where parent_id = :material_status_id
-        )"
+	lappend criteria "m.material_status_id in ([join [im_sub_categories $material_status_id] ","])"
     }
     if {$restrict_to_type_id} {
-	lappend criteria "m.material_type_id in (
-        	select :material_type_id from dual
-        	UNION
-        	select child_id
-        	from im_category_hierarchy
-        	where parent_id = :material_type_id
-        )"
+	lappend criteria "m.material_type_id in ([join [im_sub_categories $material_type_id] ","])"
     }
 
     set restriction_clause [join $restrictions "\n\tand "]
