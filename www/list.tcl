@@ -126,14 +126,10 @@ db_foreach column_list_sql $column_sql {
 
 set criteria [list]
 if { ![empty_string_p $cost_status_id] && $cost_status_id > 0 } {
-    lappend criteria "c.cost_status_id=:cost_status_id"
+    lappend criteria "c.cost_status_id in ([join [im_sub_categories $cost_status_id] ","])"
 }
 if { ![empty_string_p $cost_type_id] && $cost_type_id != 0 } {
-    lappend criteria "c.cost_type_id in (
-		select distinct h.child_id
-		from	im_category_hierarchy h
-		where	(h.child_id = :cost_type_id or h.parent_id = :cost_type_id)
-	)"
+    lappend criteria "c.cost_type_id in ([join [im_sub_categories $cost_type_id] ","])"
 }
 if {$customer_id} {
     lappend criteria "c.customer_id=:customer_id"
