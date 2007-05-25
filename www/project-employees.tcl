@@ -45,11 +45,9 @@ set number_format "999,999.99"
 # ------------------------------------------------------------
 
 set project_closure_sql "
-	select
-		project_id,
+	select	project_id,
 		parent_id
-	from
-		im_projects
+	from	im_projects
 "
 
 array set project_closure {}
@@ -68,15 +66,12 @@ db_foreach project_closure $project_closure_sql {
 # and store the result in a hash array.
 # ------------------------------------------------------------
 
-
 set hours_sql "
-	SELECT 
-		h.project_id,
+	SELECT 	h.project_id,
 		h.user_id,
 		SUM(hours) AS hours,
 		im_name_from_user_id(h.user_id) AS name
-	FROM 
-		im_hours h
+	FROM	im_hours h
 	GROUP BY 
 		h.project_id, h.user_id
 	HAVING SUM(hours)>0
@@ -114,15 +109,29 @@ set elements {
 	html "nowrap"
     }
     cost_invoices_cache { 
-	label "Invoices" 
+	label "Invoices"
     }
-    cost_delivery_notes_cache { label "DelNotes" }
-    cost_quotes_cache { label "Quotes" }
-    cost_bills_cache { label "Bills" }
-    cost_expense_logged_cache { label "Expenses" }
-    cost_timesheet_logged_cache { label "Timesheet Cost" }
-    cost_purchase_orders_cache { label "POs" }
-    reported_hours_cache { label "Hours" }
+    cost_delivery_notes_cache { 
+	label "DelNotes" 
+    }
+    cost_quotes_cache { 
+	label "Quotes" 
+    }
+    cost_bills_cache { 
+	label "Bills" 
+    }
+    cost_expense_logged_cache { 
+	label "Expenses" 
+    }
+    cost_timesheet_logged_cache { 
+	label "Timesheet Cost" 
+    }
+    cost_purchase_orders_cache { 
+	label "POs" 
+    }
+    reported_hours_cache { 
+	label "Hours" 
+    }
 }
 
 
@@ -141,7 +150,19 @@ db_multirow project_list project_list "
 	select	p.*
 	from	im_projects p
 	where	parent_id is null
-"
+" {
+    set project_name "         $project_name"
+
+    if {0 == $cost_invoices_cache} { set cost__cache ""}
+    if {0 == $cost_delivery_notes_cache} { set cost_delivery_notes_cache ""}
+    if {0 == $cost_quotes_cache} { set cost_quotes_cache ""}
+    if {0 == $cost_bills_cache} { set cost_bills_cache ""}
+    if {0 == $cost_expense_logged_cache} { set cost_expense_logged_cache ""}
+    if {0 == $cost_timesheet_logged_cache} { set cost_timesheet_logged_cache ""}
+    if {0 == $cost_purchase_orders_cache} { set cost_purchase_orders_cache ""}
+    if {0 == $reported_hours_cache} { set reported_hours_cache ""}
+
+}
 
 multirow_sort_tree project_list project_id parent_id project_name
 
