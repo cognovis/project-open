@@ -166,10 +166,16 @@ set top_vars_options {
 
 set left_scale_options {
 	"" ""
-	"project_name" "Project Name"
-	"project_nr" "Project Nr"
-	"project_type" "Project Type"
-	"project_status" "Project Status"
+	"main_project_name" "Main Project Name"
+	"main_project_nr" "Main Project Nr"
+	"main_project_type" "Main Project Type"
+	"main_project_status" "Main Project Status"
+
+	"project_name" "SubProject Name"
+	"project_nr" "SubProject Nr"
+	"project_type" "SubProject Type"
+	"project_status" "SubProject Status"
+
 	"user_name" "User Name"
 	"department" "User Department"
 	"customer_name" "Customer Name"
@@ -252,10 +258,16 @@ foreach var $dimension_vars {
 	quarter_of_year { lappend derefs "to_char(h.day, 'Q') as quarter_of_year" }
 	week_of_year { lappend derefs "to_char(h.day, 'IW') as week_of_year" }
 	day_of_month { lappend derefs "to_char(h.day, 'DD') as day_of_month" }
+
+	main_project_type { lappend derefs "im_category_from_id(p.project_type_id) as main_project_type" }
+	main_project_status { lappend derefs "im_category_from_id(p.project_status_id) as main_project_status" }
+
 	project_type { lappend derefs "im_category_from_id(h.project_type_id) as project_type" }
 	project_status { lappend derefs "im_category_from_id(h.project_status_id) as project_status" }
-	customer_type { lappend derefs "im_category_from_id(h.company_type_id) as customer_type" }
-	customer_status { lappend derefs "im_category_from_id(h.company_status_id) as customer_status" }
+
+	customer_type { lappend derefs "im_category_from_id(p.company_type_id) as customer_type" }
+	customer_status { lappend derefs "im_category_from_id(p.company_status_id) as customer_status" }
+
     }
 }
 
@@ -406,7 +418,8 @@ set inner_sql "
 			u.*,
 			e.*,
 			im_cost_center_name_from_id(e.department_id) as department,
-			im_name_from_user_id(u.user_id) as user_name
+			im_name_from_user_id(u.user_id) as user_name,
+			tree_ancestor_key(p.tree_sortkey, 1) as main_project_sortkey
 		from
 			im_hours h,
 			im_projects p,
@@ -428,8 +441,14 @@ set inner_sql "
 set middle_sql "
 	select
 		h.*,
+		p.project_name as main_project_name,
+		p.project_nr as main_project_nr,
+		p.project_type_id as main_project_type_id,
+		p.project_status_id as main_project_status_id,
 		[join $derefs ",\n\t\t"]
-	from	($inner_sql) h
+	from	($inner_sql) h,
+		im_projects p
+	where	h.main_project_sortkey = p.tree_sortkey
 "
 
 set outer_sql "

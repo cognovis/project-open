@@ -323,19 +323,11 @@ if {"" != $customer_id && 0 != $customer_id} {
 }
 
 if {1} {
-    lappend criteria "c.cost_type_id in (
-	select  child_id
-	from    im_category_hierarchy
-	where   (parent_id in ([join $cost_type_id ", "]) or child_id in ([join $cost_type_id ", "]))
-    )"
+    lappend criteria "c.cost_type_id in ([join [im_sub_categories $cost_type_id] ", "])"
 }
 
 if {"" != $customer_type_id && 0 != $customer_type_id} {
-    lappend criteria "pcust.company_type_id in (
-	select  child_id
-	from    im_category_hierarchy
-	where   (parent_id = :customer_type_id or child_id = :customer_type_id)
-    )"
+    lllappend criteria "pcust.company_type_id in ([join [im_sub_categories $customer_type_id] ", "])
 }
 
 set where_clause [join $criteria " and\n\t\t\t"]
