@@ -65,11 +65,7 @@ set subprojects [db_list subprojects "
 	from	im_projects parent,
 		im_projects children
 	where
-		children.project_status_id not in (
-			select	child_id
-			from	im_category_hierarchy
-			where	parent_id = [im_project_status_closed]
-		)
+		children.project_status_id not in ([join [im_sub_categories [im_project_status_closed]] ","])
 		and children.tree_sortkey 
 			between parent.tree_sortkey 
 			and tree_right(parent.tree_sortkey)
