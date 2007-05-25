@@ -57,7 +57,8 @@ array set project_closure {}
 db_foreach project_closure $project_closure_sql {
     set l [list $project_id]
     if {[info exists project_closure($project_id)] } { set l project_closure($project_id) }
-    lappend l $parent_id
+
+    if {"" != $parent_id} { lappend l $parent_id }
     set project_closure($project_id) $l
 }
 
@@ -69,28 +70,21 @@ db_foreach project_closure $project_closure_sql {
 
 
 set hours_sql "
-    SELECT 
-        tmp.*,
-        im_projects.parent_id
-    FROM
-       (SELECT 
-        h.project_id,
-        h.user_id,
-        SUM(hours) AS hours,
-        im_name_from_user_id(h.user_id) AS name
-       FROM 
-          im_hours h,
-          im_projects p
-       GROUP BY 
-           h.project_id,h.user_id
-       HAVING SUM(hours)>0
-       ) AS tmp
-    WHERE 
-       tmp.project_id=im_projects.project_id
+	SELECT 
+		h.project_id,
+		h.user_id,
+		SUM(hours) AS hours,
+		im_name_from_user_id(h.user_id) AS name
+	FROM 
+		im_hours h
+	GROUP BY 
+		h.project_id, h.user_id
+	HAVING SUM(hours)>0
 "
 
 array set users {}
 array set projects {}
+
 
 db_foreach hours $hours_sql {
     set users($user_id) $name
@@ -102,7 +96,6 @@ db_foreach hours $hours_sql {
 	set projects($parent_id,$user_id) [expr $projects($parent_id,$user_id) + $hours]
     }
 }
-
 
 
 # ------------------------------------------------------------
@@ -126,7 +119,7 @@ set elements {
     cost_delivery_notes_cache { label "DelNotes" }
     cost_quotes_cache { label "Quotes" }
     cost_bills_cache { label "Bills" }
-    cost_expense_cache { label "Expenses" }
+    cost_expense_logged_cache { label "Expenses" }
     cost_timesheet_logged_cache { label "Timesheet Cost" }
     cost_purchase_orders_cache { label "POs" }
     reported_hours_cache { label "Hours" }
@@ -147,6 +140,7 @@ foreach user_id [array names users] {
 db_multirow project_list project_list "
 	select	p.*
 	from	im_projects p
+	where	parent_id is null
 "
 
 multirow_sort_tree project_list project_id parent_id project_name

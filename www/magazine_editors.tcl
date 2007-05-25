@@ -28,7 +28,8 @@ set sql "
 			c.company_id,
 			c.company_name,
 			c.business_sector_id as company_sector_id,
-			im_category_from_id(c.business_sector_id) as company_sector
+			im_category_from_id(c.business_sector_id) as company_sector,
+			im_category_from_id(c.abc_prio_id) as abc
 		    from
 			group_member_map m,
 			parties pa,
@@ -57,7 +58,8 @@ set sql "
 			c.company_id,
 			c.company_name,
 			c.business_sector_id as company_sector_id,
-			im_category_from_id(c.business_sector_id) as company_sector
+			im_category_from_id(c.business_sector_id) as company_sector,
+			im_category_from_id(c.abc_prio_id) as abc
 		from
 			im_companies c
 		where
@@ -92,12 +94,12 @@ set report_def [list \
 	    header {
 		"$person_language"
 		"$person_sector $person_sector_id"
-		"$person_id"
 		"<a href=mailto:$email>$email</a>" 
 		"<a href=/intranet/users/view?user_id=$person_id>$person_name</a>"
 		""
 		$person_sector 
-		"<a href=/intranet/companies/new?company_id=$company_id>$company_name</a>"
+		"$abc"
+		"<a href=/intranet/companies/view?company_id=$company_id>$company_name</a>"
 		$company_sector} \
 	    content {} \
         ] \
@@ -106,8 +108,8 @@ set report_def [list \
 ]
 
 # Global header/footer
-set header0 {"Lang" "Sector" "Id" "Email" "First" "Last" "Sector" "Company" "Sector"}
-set footer0 {"" "" "" "" "" ""}
+set header0 {"Lang" "Sector" "Email" "First" "Last" "Sector" "A" "Company" "Sector"}
+set footer0 {"" "" "" "" "" "" "" "" ""}
 
 set counters [list]
 
