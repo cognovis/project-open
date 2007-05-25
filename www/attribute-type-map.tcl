@@ -45,15 +45,7 @@ switch $acs_object_type {
 
 set object_subtype_sql ""
 if {$object_subtype_id} {
-    set object_subtype_sql "
-		and category_id in (
-			select	child_id
-			from	im_category_hierarchy
-			where	parent_id = :object_subtype_id
-		    UNION
-			select	:object_subtype_id
-		)
-    "
+    set object_subtype_sql "and category_id in ([join [im_sub_categories $object_subtype_id] ","])"
 }
 
 # The "dimension" is a list of values to be displayed on top.
