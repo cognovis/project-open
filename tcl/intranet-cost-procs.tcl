@@ -1722,12 +1722,7 @@ ad_proc -public im_cost_type_select {
 
     if {$super_type_id} {
 	ns_set put $bind_vars super_type_id $super_type_id
-	append sql "\n	and c.category_id in (
-		select distinct
-			child_id
-		from	im_category_hierarchy
-		where	parent_id = :super_type_id
-	)"
+	append sql "\n	and c.category_id in ([join [im_sub_categories $super_type_id] ","])"
     }
     return [im_selection_to_select_box $bind_vars category_select $sql $select_name $default]
 }
