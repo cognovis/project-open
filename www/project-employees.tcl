@@ -120,13 +120,18 @@ set elements {
 	}
 	html "nowrap"
     }
-    cost_invoices_cache { }
-    cost_purchase_orders_cache { }
-    cost_bills_cache { }
-    cost_timesheet_logged_cache {
-	label cost_timesheet_logged_cache
+    cost_invoices_cache { 
+	label "Invoices" 
     }
+    cost_delivery_notes_cache { label "DelNotes" }
+    cost_quotes_cache { label "Quotes" }
+    cost_bills_cache { label "Bills" }
+    cost_expense_cache { label "Expenses" }
+    cost_timesheet_logged_cache { label "Timesheet Cost" }
+    cost_purchase_orders_cache { label "POs" }
+    reported_hours_cache { label "Hours" }
 }
+
 
 # Extend the "elements" list definition by the number of users who logged hours
 foreach user_id [array names users] {
