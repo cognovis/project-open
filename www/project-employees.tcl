@@ -1,39 +1,114 @@
+# /packages/intranet-reporting/www/projects-timesheet.tcl
+#
+# Copyright (C) 2003-2007 ]project-open[
+#
+# All rights reserved. Please check
+# http://www.project-open.com/ for licensing details.
+
 ad_page_contract {
-    
+    Report showing the project hierarchy, together with financial information
+    and timesheet hours
 } {
+    { start_date "" }
+    { end_date "" }
+    { output_format "html" }
+    { project_id:integer 0}
+    { company_id:integer 0}
+    { user_id:integer 0}
 }
 
-array set users {}
-array set projects {}
+# ------------------------------------------------------------
+# Security
 
-db_foreach hours "
+# Label: Provides the security context for this report
+# because it identifies unquely the report's Menu and
+# its permissions.
+set menu_label "reporting-projects-timesheet"
+set current_user_id [ad_maybe_redirect_for_registration]
+set read_p [db_string report_perms "
+        select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
+        from    im_menus m
+        where   m.label = :menu_label
+" -default 'f']
+
+
+# ------------------------------------------------------------
+# Constants
+
+set number_format "999,999.99"
+
+
+
+# ------------------------------------------------------------
+# Calculate the transitive closure for projects, that is
+# sub_project_id => {sub_project_id, parent_1_id, parent_2_id, ...}
+# ------------------------------------------------------------
+
+set project_closure_sql "
+	select
+		project_id,
+		parent_id
+	from
+		im_projects
+"
+
+array set project_closure {}
+
+db_foreach project_closure $project_closure_sql {
+    set l [list $project_id]
+    if {[info exists project_closure($project_id)] } { set l project_closure($project_id) }
+    lappend l $parent_id
+    set project_closure($project_id) $l
+}
+
+
+# ------------------------------------------------------------
+# Calculate the sum of hours per project and user
+# and store the result in a hash array.
+# ------------------------------------------------------------
+
+
+set hours_sql "
     SELECT 
         tmp.*,
         im_projects.parent_id
     FROM
        (SELECT 
-        im_hours.project_id,
-        im_hours.user_id,
+        h.project_id,
+        h.user_id,
         SUM(hours) AS hours,
-        im_name_from_user_id(im_hours.user_id) AS name
+        im_name_from_user_id(h.user_id) AS name
        FROM 
-          im_hours,
-          im_projects
+          im_hours h,
+          im_projects p
        GROUP BY 
-           im_hours.project_id,im_hours.user_id
+           h.project_id,h.user_id
        HAVING SUM(hours)>0
        ) AS tmp
     WHERE 
        tmp.project_id=im_projects.project_id
-" {
+"
+
+array set users {}
+array set projects {}
+
+db_foreach hours $hours_sql {
     set users($user_id) $name
     
-    if { ![info exists projects($project_id,$user_id)] } {
-	set projects($project_id,$user_id) 0
+    foreach parent_id $project_closure($project_id) {
+	if { ![info exists projects($parent_id,$user_id)] } {
+	    set projects($parent_id,$user_id) 0
+	}
+	set projects($parent_id,$user_id) [expr $projects($parent_id,$user_id) + $hours]
     }
-    
-    set projects($project_id,$user_id) [expr $projects($project_id,$user_id)+$hours]
 }
+
+
+
+# ------------------------------------------------------------
+# Create the main list
+# ------------------------------------------------------------
+
 
 set elements {
     tree_level {
@@ -44,51 +119,40 @@ set elements {
 	    [return "/intranet/projects/view?[export_vars -url { project_id } ]" ]
 	}
 	html "nowrap"
-	
     }
-    cost_invoices_cache {
-    }
-    cost_purchase_orders_cache {
-    }
-    cost_bills_cache {
-    }
+    cost_invoices_cache { }
+    cost_purchase_orders_cache { }
+    cost_bills_cache { }
     cost_timesheet_logged_cache {
 	label cost_timesheet_logged_cache
     }
 }
 
+# Extend the "elements" list definition by the number of users who logged hours
 foreach user_id [array names users] {
     multirow extend project_list "user_$user_id"
     lappend elements "user_$user_id"
     lappend elements [list label $users($user_id) ]
 }
 
+
+
+# ------------------------------------------------------------
+
 db_multirow project_list project_list "
-      select 
-        project_id,
-        project_name,
-        parent_id,
-        cost_invoices_cache,
-        cost_purchase_orders_cache,
-        cost_bills_cache,
-        cost_timesheet_logged_cache
-      from 
-        im_projects
+	select	p.*
+	from	im_projects p
 "
 
 multirow_sort_tree project_list project_id parent_id project_name
 
+
+
+# ------------------------------------------------------------
+
 set i 1
-set last_parent_id 0
-array set parent_row {}
 
 template::multirow foreach project_list {
-    if {$parent_id!=$last_parent_id} {
-	set last_parent_id $parent_id
-	set parent_row($tree_level) $i
-    }
-
-#    ns_write "$i $tree_level $parent_row($tree_level)\n"
 
     foreach user_id [array names users] {
 	if { [info exists projects($project_id,$user_id)] } {
@@ -99,22 +163,10 @@ template::multirow foreach project_list {
 	
 	template::multirow set project_list $i "user_$user_id" $hours
 
-	set j [expr $tree_level-1]
-	while {$j >= 0} {
-	    set row $parent_row($j)
-
-	    set row_hours [template::multirow get project_list $row "user_$user_id"]
-	    if {$row_hours==""} {
-		set row_hours 0
-	    }
-
-	    template::multirow set project_list $row "user_$user_id" [expr $hours + $row_hours]
-	    
-	    set j [expr $j-1]
-	}
     }
     incr i
 }
+
 
 
 template::list::create \
