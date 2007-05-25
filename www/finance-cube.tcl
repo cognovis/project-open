@@ -190,10 +190,16 @@ set top_vars_options {
 
 set left_scale_options {
 	"" ""
-	"project_name" "Project Name"
-	"project_nr" "Project Nr"
-	"project_type" "Project Type"
-	"project_status" "Project Status"
+	"main_project_name" "Main Project Name"
+	"main_project_nr" "Main Project Nr"
+	"main_project_type" "Main Project Type"
+	"main_project_status" "Main Project Status"
+
+	"sub_project_name" "Sub Project Name"
+	"sub_project_nr" "Sub Project Nr"
+	"sub_project_type" "Sub Project Type"
+	"sub_project_status" "Sub Project Status"
+
 	"customer_name" "Customer Name"
 	"customer_path" "Customer Nr"
 	"customer_type" "Customer Type"
@@ -344,6 +350,11 @@ if { ![empty_string_p $where_clause] } {
 # the relevant data from the fact table.
 set inner_sql "
 		select
+			p.project_name as sub_project_name,
+			p.project_nr as sub_project_nr,
+			p.project_type_id as sub_project_type_id,
+			p.project_status_id as sub_project_status_id,
+			tree_ancestor_key(p.tree_sortkey, 1) as main_project_sortkey,
 			trunc((c.paid_amount * 
 			  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
 			  , 2) as paid_amount_converted,
@@ -353,6 +364,7 @@ set inner_sql "
 			c.*
 		from
 			im_costs c
+			LEFT OUTER JOIN im_projects p ON (c.project_id = p.project_id)
 		where
 			1=1
 			and c.cost_type_id in ([join $cost_type_id ", "])
@@ -373,12 +385,16 @@ set middle_sql "
 		to_char(c.effective_date, 'IW') as week_of_year,
 		to_char(c.effective_date, 'DD') as day_of_month,
 		substring(c.cost_name, 1, 14) as cost_name_cut,
-		p.project_name,
-		p.project_nr,
-		p.project_type_id,
-		im_category_from_id(p.project_type_id) as project_type,
-		p.project_status_id,
-		im_category_from_id(p.project_status_id) as project_status,
+
+		im_category_from_id(c.sub_project_type_id) as sub_project_type,
+		im_category_from_id(c.sub_project_status_id) as sub_project_status,
+
+		mainp.project_name as main_project_name,
+		mainp.project_nr as main_project_nr,
+		mainp.project_type_id as main_project_type_id,
+		im_category_from_id(mainp.project_type_id) as main_project_type,
+		mainp.project_status_id as main_project_status_id,
+		im_category_from_id(mainp.project_status_id) as main_project_status,
 
 		cust.company_name as customer_name,
 		cust.company_path as customer_path,
@@ -396,7 +412,7 @@ set middle_sql "
 
 	from
 		($inner_sql) c
-		LEFT OUTER JOIN im_projects p ON (c.project_id = p.project_id)
+		LEFT OUTER JOIN im_projects mainp ON (c.main_project_sortkey = mainp.tree_sortkey)
 		LEFT OUTER JOIN im_companies cust ON (c.customer_id = cust.company_id)
 		LEFT OUTER JOIN im_companies prov ON (c.provider_id = prov.company_id)
 	where
