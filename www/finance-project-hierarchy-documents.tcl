@@ -13,7 +13,7 @@ ad_page_contract {
 } {
     {start_date "" }
     {end_date "" }
-    {level_of_detail:integer 2 }
+    {level_of_detail:integer 3 }
     {output_format "html" }
     {customer_type_id:integer 0 }
     {sales_rep_id:integer 0 }
@@ -173,7 +173,7 @@ if {"" == $start_date} {
 }
 
 # Maxlevel is 4. Normalize in order to show the right drop-down element
-if {$level_of_detail > 3} { set level_of_detail 3 }
+if {$level_of_detail > 4} { set level_of_detail 4 }
 
 
 db_1row end_date "
@@ -241,11 +241,7 @@ if {0 != $customer_id && "" != $customer_id} {
 }
 
 if {"" != $customer_type_id && 0 != $customer_type_id} {
-    lappend criteria "pcust.company_type_id in (
-        select  child_id
-        from    im_category_hierarchy
-        where   (parent_id = :customer_type_id or child_id = :customer_type_id)
-    )"
+    lappend criteria "pcust.company_type_id in ([join [im_sub_categories $customer_type_id] ","])"
 }
 
 # Select project & subprojects
@@ -489,12 +485,12 @@ set project_footer [concat $project_footer [list \
 # -----------------------------------------------------
 # Main-Project-Footer - The middle structure
 
-set main_project_footer {
+set main_project_header {
 	"" 
-	"<nobr><a href=$this_url&main_project_id=$main_project_id&level_of_detail=4 
+	"\#colspan=14 <nobr><a href=$this_url&main_project_id=$main_project_id&level_of_detail=4 
 	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
-	<b><a href=$project_url$main_project_id>$main_project_nr</nobr></a></b>"
-	"<b><a href=$project_url$main_project_id><nobr>$main_project_name</nobr></a></b>"
+	<b><a href=$project_url$main_project_id>$main_project_nr</nobr></a></b>
+	<b><a href=$project_url$main_project_id><nobr>$main_project_name</nobr></a></b>"
 }
 
 # Lookup the position and add the field for the given position
@@ -505,10 +501,10 @@ for {set i 1} {$i <= $max_col} {incr i} {
 	set row [lindex [array get location] [expr $pos-1]]
 	set cont "<nobr>\$$field($row)</nobr>"
     }
-    lappend main_project_footer $cont
+    lappend main_project_header $cont
 }
 
-set main_project_footer [concat $main_project_footer [list \
+set main_project_header [concat $main_project_header [list \
 	"" \
 ]]
 
@@ -519,6 +515,7 @@ set main_project_footer [concat $main_project_footer [list \
 set project_customer_footer { 
 	"" 
 	"" 
+	""
 	""
 }
 
@@ -557,7 +554,7 @@ set report_def [list \
     } \
     content [list \
             group_by main_project_id \
-            header $main_project_footer \
+            header $main_project_header \
             content [list \
 	            group_by project_id \
 	            header { } \
