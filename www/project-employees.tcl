@@ -99,38 +99,45 @@ db_foreach hours $hours_sql {
 
 
 set elements {
-    tree_level {
-    }
     project_name {
 	label "Project Name"
-	link_url_eval { 
-	    [return "/intranet/projects/view?[export_vars -url { project_id } ]" ]
-	}
-	html "nowrap"
+	display_template { 
+		<nobr>@project_list.level_spacer;noquote@ 
+		<a href="/intranet/projects/view?project_id=@ project_list.project_id@">@project_list.project_name@</a>
+		</nobr> 
+    }
     }
     cost_invoices_cache { 
-	label "Invoices"
+	label "Invoice"
+	html "align right"
     }
     cost_delivery_notes_cache { 
-	label "DelNotes" 
+	label "DelNote" 
+	html "align right"
     }
     cost_quotes_cache { 
-	label "Quotes" 
+	label "Quote" 
+	html "align right"
     }
     cost_bills_cache { 
-	label "Bills" 
+	label "Bill" 
+	html "align right"
     }
     cost_expense_logged_cache { 
-	label "Expenses" 
+	label "Expense"
+	html "align right"
     }
     cost_timesheet_logged_cache { 
-	label "Timesheet Cost" 
+	label "TimeS" 
+	html "align right"
     }
     cost_purchase_orders_cache { 
 	label "POs" 
+	html "align right"
     }
     reported_hours_cache { 
 	label "Hours" 
+	html "align right"
     }
 }
 
@@ -139,21 +146,21 @@ set elements {
 foreach user_id [array names users] {
     multirow extend project_list "user_$user_id"
     lappend elements "user_$user_id"
-    lappend elements [list label $users($user_id) ]
+    lappend elements [list label $users($user_id) html "align right"]
 }
 
 
 
 # ------------------------------------------------------------
 
-db_multirow project_list project_list "
-	select	p.*
+db_multirow -extend {level_spacer} project_list project_list "
+	select	p.*,
+		tree_level(tree_sortkey) as tree_level
 	from	im_projects p
-	where	parent_id is null
 " {
     set project_name "         $project_name"
 
-    if {0 == $cost_invoices_cache} { set cost__cache ""}
+    if {0 == $cost_invoices_cache} { set cost_invoices_cache ""}
     if {0 == $cost_delivery_notes_cache} { set cost_delivery_notes_cache ""}
     if {0 == $cost_quotes_cache} { set cost_quotes_cache ""}
     if {0 == $cost_bills_cache} { set cost_bills_cache ""}
@@ -162,6 +169,8 @@ db_multirow project_list project_list "
     if {0 == $cost_purchase_orders_cache} { set cost_purchase_orders_cache ""}
     if {0 == $reported_hours_cache} { set reported_hours_cache ""}
 
+    set level_spacer ""
+    for {set i 0} {$i < $tree_level} {incr i} { append level_spacer "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" }
 }
 
 multirow_sort_tree project_list project_id parent_id project_name
