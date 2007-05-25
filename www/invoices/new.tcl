@@ -159,6 +159,7 @@ db_foreach column_list_sql $column_sql {
 #
 # ---------------------------------------------------------------
 
+
 set criteria [list]
 
 # We don't need to show the select screen if only a single project
@@ -201,30 +202,15 @@ if {$project_id != 0} {
 }
 
 
-
 # ---------------------------------------------------------------
 # 5. Generate SQL Query
 # ---------------------------------------------------------------
 
 if { ![empty_string_p $project_status_id] && $project_status_id > 0 } {
-    lappend criteria "p.project_status_id in (
-	select :project_status_id from dual
-	UNION
-	select child_id
-	from im_category_hierarchy
-	where parent_id = :project_status_id
-    )"
+    lappend criteria "p.project_status_id in ([join [im_sub_categories $project_status_id] ","])"
 }
 if { ![empty_string_p $project_type_id] && $project_type_id != 0 } {
-    # Select the specified project type and its subtypes
-    lappend criteria "p.project_type_id in (
-	select :project_type_id from dual
-	UNION
-	select child_id 
-	from im_category_hierarchy
-	where parent_id = :project_type_id
-    )
-"
+    lappend criteria "p.project_type_id in ([join [im_sub_categories $project_type_id] ","])"
 }
 
 
