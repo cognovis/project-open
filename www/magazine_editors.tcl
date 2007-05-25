@@ -61,13 +61,7 @@ set sql "
 		from
 			im_companies c
 		where
-			c.company_type_id in (
-				select child_id 
-				from im_category_hierarchy 
-				where parent_id = 10026
-			    UNION
-				select 10026 as child_id
-			)
+			c.company_type_id in ([join [im_sub_categories 10026] ","])
 			and c.company_id not in (
 				select distinct
 					c.company_id
