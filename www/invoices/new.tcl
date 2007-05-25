@@ -102,17 +102,6 @@ if {"" == $target_cost_type_id} {
     set target_cost_type_id [im_cost_type_invoice] 
 }
 
-
-# Determine the default status if not set
-if { [empty_string_p $project_status_id] } {
-
-    if {$target_cost_type_id == [im_cost_type_quote]} {
-	set project_status_id [im_project_status_potential]
-    } else {
-	set project_status_id [im_project_status_delivered]
-    }
-}
-
 if { [empty_string_p $how_many] || $how_many < 1 } {
     set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50]
 }
@@ -164,48 +153,16 @@ db_foreach column_list_sql $column_sql {
 
 
 # ---------------------------------------------------------------
-# 4. Define Filter Categories
-# ---------------------------------------------------------------
-
-# status_types will be a list of pairs of (project_status_id, project_status)
-set status_types [im_memoize_list select_project_status_types \
-	"select project_status_id, project_status
-         from im_project_status
-         order by lower(project_status)"]
-set status_types [linsert $status_types 0 0 All]
-
-# project_types will be a list of pairs of (project_type_id, project_type)
-set project_types [im_memoize_list select_project_types \
-	"select project_type_id, project_type
-         from im_project_types
-        order by lower(project_type)"]
-set project_types [linsert $project_types 0 0 All]
-
-
-# ---------------------------------------------------------------
 # 5. Generate SQL Query
 # ---------------------------------------------------------------
 
 set criteria [list]
 if { ![empty_string_p $project_status_id] && $project_status_id > 0 } {
-    lappend criteria "p.project_status_id in (
-	select :project_status_id from dual
-	UNION
-	select child_id
-	from im_category_hierarchy
-	where parent_id = :project_status_id
-    )"
+    lappend criteria "p.project_status_id in ([join [im_sub_categories $project_status_id] ","])"
 }
 if { ![empty_string_p $project_type_id] && $project_type_id != 0 } {
     # Select the specified project type and its subtypes
-    lappend criteria "p.project_type_id in (
-	select :project_type_id from dual
-	UNION
-	select child_id 
-	from im_category_hierarchy
-	where parent_id = :project_type_id
-    )
-"
+    llappend criteria "p.project_type_id in ([join [im_sub_categories $project_type_id] ","])"
 }
 
 
@@ -338,12 +295,12 @@ set filter_html "
 	</tr>
 	<tr>
 	  <td valign=top>[_ intranet-timesheet2-invoices.Project_Status]:</td>
-	  <td valign=top>[im_select project_status_id $status_types $project_status_id]</td>
+	  <td valign=top>[im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id $project_status_id]</td>
 	</tr>
 	<tr>
 	  <td valign=top>[_ intranet-timesheet2-invoices.Project_Type]:</td>
 	  <td valign=top>
-	    [im_select project_type_id $project_types $project_type_id]
+	    [im_category_select -include_empty_p 1 "Intranet Project Type" project_type_id $project_type_id]
 		  <input type=submit value=Go name=submit>
 	  </td>
 	</tr>
