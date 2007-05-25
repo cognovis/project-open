@@ -296,7 +296,6 @@ end;' language 'plpgsql';
 create or replace function inline_0 ()
 returns integer as '
 DECLARE
-        row             RECORD;
         v_count         integer;
 BEGIN
     select count(*) into v_count from user_tab_columns
