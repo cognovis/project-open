@@ -266,13 +266,7 @@ set customer_sql "
 		im_companies c,
 		acs_rels r
 	where
-		c.company_type_id in (
-			select child_id
-			from im_category_hierarchy
-			where parent_id = [im_company_type_customer]
-		    UNION
-			select [im_company_type_customer] as child_id
-		)
+		c.company_type_id in ([join [im_sub_categories [im_company_type_customer]] ","])
 		and r.object_id_one = c.company_id
 		and r.object_id_two = :current_user_id
 		and c.company_path != 'internal'
@@ -287,13 +281,7 @@ set provider_sql "
 		im_companies c,
 		acs_rels r
 	where
-		c.company_type_id in (
-			select child_id
-			from im_category_hierarchy
-			where parent_id = [im_company_type_provider]
-		    UNION
-			select [im_company_type_provider] as child_id
-		)
+		c.company_type_id in ([join [im_sub_categories [im_company_type_provider]] ","])
 		and r.object_id_one = c.company_id
 		and r.object_id_two = :current_user_id
 		and c.company_path != 'internal'
