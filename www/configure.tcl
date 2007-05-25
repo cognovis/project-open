@@ -194,13 +194,7 @@ if {!$install_pc} {
     catch {db_dml disable_trans_cats "
 	update im_categories 
 	set enabled_p = 'f'
-	where category_id in (
-		select child_id
-		from im_category_hierarchy
-		where parent_id = :project_type_consulting_id
-	    UNION
-		select :project_type_consulting_id
-	)
+	where category_id in ([join [im_sub_categories $project_type_consulting_id] ","])
     "}  err
     ns_write "done<br><pre>$err</pre>\n"
   
@@ -208,13 +202,7 @@ if {!$install_pc} {
     catch {db_dml disable_trans_cats "
 	update im_projects
 	set project_status_id = [im_project_status_deleted]
-	where project_type_id in (
-		select child_id
-		from im_category_hierarchy
-		where parent_id = :project_type_consulting_id
-	    UNION
-		select :project_type_consulting_id
-	)
+	where project_type_id in ([join [im_sub_categories $project_type_consulting_id] ","])
     "}  err
     ns_write "done<br><pre>$err</pre>\n"
 
@@ -257,13 +245,7 @@ if {!$install_pt} {
     catch {db_dml disable_trans_cats "
 	update im_categories 
 	set enabled_p = 'f'
-	where category_id in (
-		select child_id
-		from im_category_hierarchy
-		where parent_id = :project_type_translation_id
-	    UNION
-		select :project_type_translation_id
-	)
+	where category_id in ([join [im_sub_categories $project_type_translation_id] ","])
     "}  err
     ns_write "done<br><pre>$err</pre>\n"
 
@@ -272,13 +254,7 @@ if {!$install_pt} {
     catch {db_dml disable_trans_cats "
 	update im_projects
 	set project_status_id = [im_project_status_deleted]
-	where project_type_id in (
-		select child_id
-		from im_category_hierarchy
-		where parent_id = :project_type_translation_id
-	    UNION
-		select :project_type_translation_id
-	)
+	where project_type_id in ([join [im_sub_categories $project_type_translation_id] ","])
     "}  err
     ns_write "done<br><pre>$err</pre>\n"
 
