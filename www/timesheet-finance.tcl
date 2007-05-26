@@ -33,6 +33,11 @@ set read_p [db_string report_perms "
         from    im_menus m
         where   m.label = :menu_label
 " -default 'f']
+if {![string equal "t" $read_p]} {
+    ad_return_complaint 1 [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]
+    ad_script_abort
+}
+
 
 
 # Check security. opened_projects should only contain integers.
