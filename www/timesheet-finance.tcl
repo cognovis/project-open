@@ -14,9 +14,10 @@ ad_page_contract {
     { end_date "" }
     { output_format "html" }
     { project_id:integer 0}
-    { company_id:integer 0}
-    { employee_id:integer,multiple 0}
+    { customer_id:integer 0}
+    { employee_id:multiple 0}
     { opened_projects "" }
+    { display_fields:multiple "cost_invoices_cache cost_quotes_cache cost_bills_cache cost_expense_logged_cache cost_timesheet_logged_cache reported_hours_cache" }
 }
 
 # ------------------------------------------------------------
@@ -37,9 +38,17 @@ set read_p [db_string report_perms "
 # Check security. opened_projects should only contain integers.
 if {[regexp {[^0-9\ ]} $opened_projects match]} {
         im_security_alert \
-            -location "Timesheet Finance Report" \
-            -message "Received non-integer value for opened_projects" \
-            -value $opened_projects
+            -location "Timesheet Finance Report" -value $opened_projects \
+            -message "Received non-integer value for opened_projects" 
+
+    return [list]
+}
+
+# Check security. opened_projects should only contain integers.
+if {[regexp {[^0-9\ ]} $employee_id match]} {
+        im_security_alert -location "Timesheet Finance Report" \
+            -message "Received non-integer value for employee_id" \
+            -value $employee_id
     return [list]
 }
 
@@ -50,6 +59,26 @@ if {[regexp {[^0-9\ ]} $opened_projects match]} {
 set number_format "999,999.99"
 
 set level_options {1 "Main Project" 2 "Main &amp; Subprojects" 3 "All Details"}
+
+set display_field_options { \
+	"customer_name" "Customer Name" \
+	"start_date" "Start Date" \
+	"end_date" "End Date" \
+	"project_nr" "Project Nr" \
+	"project_status" "Project Status" \
+	"project_type" "Project Type" \
+
+	"cost_invoices_cache" "Invoices" \
+	"cost_delivery_notes_cache" "Delivery Notes" \
+	"cost_quotes_cache" "Quotes" \
+	"cost_bills_cache" "Bills" \
+	"cost_expense_logged_cache" "Expenses" \
+	"cost_timesheet_logged_cache" "Timesheet" \
+	"cost_purchase_orders_cache" "Purchase Orders" \
+	"reported_hours_cache" "Total Timesheet" \
+}
+
+
 
 if {0 == $employee_id} { set employee_id [db_list emp_list "select employee_id from im_employees"] }
 
@@ -73,9 +102,9 @@ set days_in_past 7
 
 db_1row todays_date "
 select
-        to_char(sysdate::date - :days_in_past::integer, 'YYYY') as todays_year,
-        to_char(sysdate::date - :days_in_past::integer, 'MM') as todays_month,
-        to_char(sysdate::date - :days_in_past::integer, 'DD') as todays_day
+	to_char(sysdate::date - :days_in_past::integer, 'YYYY') as todays_year,
+	to_char(sysdate::date - :days_in_past::integer, 'MM') as todays_month,
+	to_char(sysdate::date - :days_in_past::integer, 'DD') as todays_day
 from dual
 "
 
@@ -89,9 +118,9 @@ if {$level_of_detail > 4} { set level_of_detail 4 }
 
 db_1row end_date "
 select
-        to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'YYYY') as end_year,
-        to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'MM') as end_month,
-        to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'DD') as end_day
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'YYYY') as end_year,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'MM') as end_month,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'DD') as end_day
 from dual
 "
 
@@ -100,11 +129,23 @@ if {"" == $end_date} {
 }
 
 
-set company_url "/intranet/companies/view?company_id="
+set customer_url "/intranet/companies/view?customer_id="
 set project_url "/intranet/projects/view?project_id="
 set user_url "/intranet/users/view?user_id="
 set this_url [export_vars -base "/intranet-reporting/timesheet-finance" {start_date end_date} ]
 set current_url [im_url_with_query]
+
+
+# ------------------------------------------------------------
+# ------------------------------------------------------------
+
+set criteria [list]
+if {"" != $customer_id && 0 != $customer_id} {
+    lappend criteria "p.company_id = :customer_id"
+}
+set where_clause [join $criteria "\n\tand "]
+if {"" != $where_clause} { set where_clause "and $where_clause" }
+
 
 
 # ------------------------------------------------------------
@@ -114,10 +155,10 @@ set current_url [im_url_with_query]
 
 set project_superprojs_sql "
 	select
-		project_id,
-		parent_id
+		p.project_id,
+		p.parent_id
 	from
-		im_projects
+		im_projects p
 "
 
 array set project_parent {}
@@ -218,28 +259,39 @@ if {"" != $hours_where} { set hours_where "and $hours_where" }
 set hours_sql "
 	SELECT 	h.project_id,
 		h.user_id,
-		SUM(hours) AS hours,
+		SUM(hours) AS logged_hours,
 		im_name_from_user_id(h.user_id) AS name
 	FROM	im_hours h
 	WHERE	1=1
+		and user_id in (
+			select	member_id
+			from	group_distinct_member_map
+			where	group_id = [im_employee_group_id]
+		)
 		$hours_where
 	GROUP BY 
 		h.project_id, h.user_id
-	HAVING SUM(hours)>0
+	HAVING SUM(hours) > 0
 "
 
 array set users {}
-array set projects {}
+array set project_hours {}
 
 db_foreach hours $hours_sql {
     set users($user_id) $name
-    
+
+    if { ![info exists projects($project_id,$user_id)] } {
+	set projects($project_id,$user_id) 0
+    }
+    set projects($project_id,$user_id) [expr $projects($project_id,$user_id) + $logged_hours]
+
     foreach parent_id $project_parents($project_id) {
 	if { ![info exists projects($parent_id,$user_id)] } {
 	    set projects($parent_id,$user_id) 0
 	}
-	set projects($parent_id,$user_id) [expr $projects($parent_id,$user_id) + $hours]
+	set projects($parent_id,$user_id) [expr $projects($parent_id,$user_id) + $logged_hours]
     }
+
 }
 
 
@@ -247,58 +299,117 @@ db_foreach hours $hours_sql {
 # Create the main list
 # ------------------------------------------------------------
 
+set elements [list]
 
-set elements {
-    project_name {
-	label "Project Name"
+if {[lsearch $display_fields "customer_name"] >= 0} {
+    lappend elements customer_name
+    lappend elements {
+	label "Customer"
 	display_template { 
+	    <a href="/intranet/companies/view?company_id=@project_list.company_id@"
+	    >@project_list.company_name@
+	    </a>
+	}
+    }
+}
+if {[lsearch $display_fields "project_nr"] >= 0} {
+    lappend elements project_nr 
+    lappend elements {
+	label "Project Nr"
+	display_template { 
+	    <a href="/intranet/projects/view?project_id=@project_list.project_id@"
+	    >@project_list.project_nr@
+	    </a>
+	}
+    }
+}
+lappend elements project_name 
+lappend elements {
+    label "Project Name"
+    display_template { 
 		<nobr>@project_list.level_spacer;noquote@ 
 		@project_list.open_gif;noquote@
 		<a href="/intranet/projects/view?project_id=@project_list.project_id@"
 			>@project_list.project_name@
 		</a>
 		</nobr> 
-        }
-    }
-    child_start_date  { 
-	label "Start"
-    }
-    child_end_date  { 
-	label "End"
-    }
-    cost_invoices_cache { 
-	label "Invoice"
-	html "align right"
-    }
-    cost_delivery_notes_cache { 
-	label "DelNote" 
-	html "align right"
-    }
-    cost_quotes_cache { 
-	label "Quote" 
-	html "align right"
-    }
-    cost_bills_cache { 
-	label "Bill" 
-	html "align right"
-    }
-    cost_expense_logged_cache { 
-	label "Expense"
-	html "align right"
-    }
-    cost_timesheet_logged_cache { 
-	label "TimeS" 
-	html "align right"
-    }
-    cost_purchase_orders_cache { 
-	label "POs" 
-	html "align right"
-    }
-    reported_hours_cache { 
-	label "Hours" 
-	html "align right"
     }
 }
+
+if {[lsearch $display_fields "start_date"] >= 0} {
+    lappend elements child_start_date
+    lappend elements {
+	label "Start"
+	display_template { <nobr>@project_list.child_start_date@</nobr> }
+    }
+}
+
+if {[lsearch $display_fields "end_date"] >= 0} {
+    lappend elements child_end_date
+    lappend elements {
+	label "End"
+	display_template { <nobr>@project_list.child_end_date@</nobr> }
+    }
+}
+
+if {[lsearch $display_fields "cost_invoices_cache"] >= 0} {
+    lappend elements cost_invoices_cache
+    lappend elements {
+	label "Invoice"
+	html "align right"
+}
+}
+
+if {[lsearch $display_fields "cost_delivery_notes_cache"] >= 0} {
+lappend elements cost_delivery_notes_cache
+lappend elements {
+	label "DelNote" 
+	html "align right"
+}
+}
+if {[lsearch $display_fields "cost_quotes_cache"] >= 0} {
+lappend elements cost_quotes_cache
+lappend elements {
+	label "Quote" 
+	html "align right"
+}
+}
+if {[lsearch $display_fields "cost_bills_cache"] >= 0} {
+lappend elements cost_bills_cache
+lappend elements {
+	label "Bill" 
+	html "align right"
+}
+}
+if {[lsearch $display_fields "cost_expense_logged_cache"] >= 0} {
+lappend elements cost_expense_logged_cache
+lappend elements {
+	label "Expense"
+	html "align right"
+}
+}
+if {[lsearch $display_fields "cost_timesheet_logged_cache"] >= 0} {
+lappend elements cost_timesheet_logged_cache
+lappend elements {
+	label "TimeS" 
+	html "align right"
+}
+}
+if {[lsearch $display_fields "cost_purchase_orders_cache"] >= 0} {
+lappend elements cost_purchase_orders_cache
+lappend elements {
+	label "POs" 
+	html "align right"
+}
+}
+if {[lsearch $display_fields "reported_hours_cache"] >= 0} {
+lappend elements reported_hours_cache
+lappend elements {
+	label "Total <br>Hours" 
+	display_template { <b><div align=right>@project_list.reported_hours_cache@</div></b> }
+}
+}
+
 
 
 # Extend the "elements" list definition by the number of users who logged hours
@@ -311,13 +422,6 @@ foreach user_id [array names users] {
 
 # ------------------------------------------------------------
 
-set ttt {
-OR child.parent_id in ([join $opened_projects ","]))
-
-		and (child.parent_id is null OR )
-
-}
-
 db_multirow -extend {level_spacer open_gif} project_list project_list "
 
 	select	
@@ -325,10 +429,8 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		child.project_name,
 		child.project_nr,
 		child.parent_id,
-
 		child.start_date::date as child_start_date,
 		child.end_date::date as child_end_date,
-
 		child.cost_invoices_cache,
 		child.cost_delivery_notes_cache,
 		child.cost_quotes_cache,
@@ -337,25 +439,29 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		child.cost_timesheet_logged_cache,
 		child.cost_purchase_orders_cache,
 		child.reported_hours_cache,
-
-		tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as tree_level
+		tree_level(child.tree_sortkey) - tree_level(p.tree_sortkey) as tree_level,
+		c.company_id,
+		c.company_name,
+		c.company_path as company_nr
 	from	
-		im_projects parent,
-		im_projects child
+		im_projects p,
+		im_projects child,
+		im_companies c
 	where
-		parent.parent_id is null
-		and parent.end_date >= to_date(:start_date, 'YYYY-MM-DD')
-		and parent.start_date < to_date(:end_date, 'YYYY-MM-DD')
-		and parent.project_status_id not in ([im_project_status_deleted])
-		and child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+		p.parent_id is null
+		and p.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+		and p.start_date < to_date(:end_date, 'YYYY-MM-DD')
+		and child.tree_sortkey between p.tree_sortkey and tree_right(p.tree_sortkey)
 		and (
-			child.project_id = parent.project_id
+			child.project_id = p.project_id
 			OR child.parent_id in ([join $opened_projects ","])
 		)
+		and p.company_id = c.company_id
+		$where_clause
 
 
 " {
-    set project_name "         $project_name"
+    set project_name "	 $project_name"
 
     if {0 == $cost_invoices_cache} { set cost_invoices_cache ""}
     if {0 == $cost_delivery_notes_cache} { set cost_delivery_notes_cache ""}
@@ -381,20 +487,17 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 	    set rem_from_list [list $project_id]
 	}
 	set opened [set_difference $opened_projects $rem_from_list]
-	set url [export_vars -base $this_url {{opened_projects $opened}}]
+	set url [export_vars -base $this_url {level_of_detail project_id customer_id employee_id {opened_projects $opened}}]
 	set gif [im_gif "minus_9"]
     } else {
 	set opened $opened_projects
 	lappend opened $project_id
-	set url [export_vars -base $this_url {{opened_projects $opened}}]
+	set url [export_vars -base $this_url {level_of_detail project_id customer_id employee_id {opened_projects $opened}}]
 	set gif [im_gif "plus_9"]
     }
     
     set open_gif "<a href=\"$url\">$gif</a>"
-
-    if {![info exists project_has_children_p($project_id)]} { 
-	set open_gif [im_gif empty21 "" 0 9 9]
-    }
+    if {![info exists project_has_children_p($project_id)]} { set open_gif [im_gif empty21 "" 0 9 9] }
 
 }
 
