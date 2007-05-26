@@ -10,6 +10,7 @@
 <form>
 <table border=0 cellspacing=1 cellpadding=1>
 <tr valign=top><td>
+
 	<table border=0 cellspacing=1 cellpadding=1>
 	<tr>
 	  <td class=form-label>Level of Details</td>
@@ -32,7 +33,7 @@
 	<tr>
 	  <td class=form-label>Customer</td>
 	  <td class=form-widget>
-	    <%= [im_company_select company_id $company_id] %>
+	    <%= [im_company_select customer_id $customer_id] %>
 	  </td>
 	</tr>
 	<tr>
@@ -46,6 +47,18 @@
 	  <td class=form-widget><input type=submit value=Submit></td>
 	</tr>
 	</table>
+
+</td><td>
+
+	<table border=0 cellspacing=1 cellpadding=1>
+	<tr>
+	  <td class=form-label>Show<br>Fields</td>
+	  <td class=form-widget>
+	    <%= [im_select -translate_p 0 -multiple_p 1 -size 14 display_fields $display_field_options $display_fields] %>
+	  </td>
+	</tr>
+	</table>
+
 </td></tr>
 </table>
 </form>
