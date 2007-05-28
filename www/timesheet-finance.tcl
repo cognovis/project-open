@@ -16,7 +16,7 @@ ad_page_contract {
     { project_id:integer 0}
     { customer_id:integer 0}
     { employee_id:multiple 0}
-    { opened_projects "" }
+    { opened_projects:multiple "" }
     { display_fields:multiple "cost_invoices_cache cost_quotes_cache cost_bills_cache cost_expense_logged_cache cost_timesheet_logged_cache reported_hours_cache" }
 }
 
@@ -38,30 +38,39 @@ if {![string equal "t" $read_p]} {
     ad_script_abort
 }
 
+# Ugly but effective: Remove list markup to convert param into a list...
+regsub -all {\{} $opened_projects "" opened_projects
+regsub -all {\}} $opened_projects "" opened_projects
+regsub -all {\{} $employee_id "" employee_id
+regsub -all {\}} $employee_id "" employee_id
+
 
 
 # Check security. opened_projects should only contain integers.
 if {[regexp {[^0-9\ ]} $opened_projects match]} {
-        im_security_alert \
-            -location "Timesheet Finance Report" -value $opened_projects \
-            -message "Received non-integer value for opened_projects" 
-
-    return [list]
+    catch {im_security_alert \
+	       -location "Timesheet Finance Report" \
+	       -value $opened_projects \
+	       -message "Received non-integer value for opened_projects" 
+    } err
+    ad_return_complaint 1 "Invalid argument:<br>opened_projects=$opened_projects"
+    ad_script_abort
 }
 
 # Check security. opened_projects should only contain integers.
 if {[regexp {[^0-9\ ]} $employee_id match]} {
-        im_security_alert -location "Timesheet Finance Report" \
-            -message "Received non-integer value for employee_id" \
-            -value $employee_id
-    return [list]
+    catch {im_security_alert \
+	       -location "Timesheet Finance Report" \
+	       -message "Received non-integer value for employee_id" \
+	       -value $employee_id
+    } err
+    ad_return_complaint 1 "Invalid argument:<br>employee_id=$employee_id"
+    ad_script_abort
 }
 
 
 # ------------------------------------------------------------
 # Constants & Options
-
-set number_format "999,999.99"
 
 set level_options {1 "Main Project" 2 "Main &amp; Subprojects" 3 "All Details"}
 
@@ -500,7 +509,7 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 	set url [export_vars -base $this_url {level_of_detail project_id customer_id employee_id {opened_projects $opened}}]
 	set gif [im_gif "plus_9"]
     }
-    
+
     set open_gif "<a href=\"$url\">$gif</a>"
     if {![info exists project_has_children_p($project_id)]} { set open_gif [im_gif empty21 "" 0 9 9] }
 

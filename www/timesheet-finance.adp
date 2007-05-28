@@ -8,6 +8,8 @@
 
 
 <form>
+<%= [export_form_vars opened_projects] %>
+
 <table border=0 cellspacing=1 cellpadding=1>
 <tr valign=top><td>
 
