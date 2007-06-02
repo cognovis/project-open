@@ -34,6 +34,11 @@ alter table im_timesheet_tasks
 
 
 
+
+alter table bt_bugs add bug_container_project_id integer references im_projects;
+
+
+
 -- Create a new BT Container Project Type
 
 
