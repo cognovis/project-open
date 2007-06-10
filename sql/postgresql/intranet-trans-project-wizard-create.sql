@@ -26,5 +26,5 @@ SELECT im_component_plugin__new (
 	null,					-- view_name
 	-10,					-- sort_order
 	'im_trans_project_wizard_component -project_id $project_id',
-	'lang::message::lookup "" intranet-trans-project-wizard.Project_Translation_Wizard "Project Translation Wizard"'
+	'lang::message::lookup "" intranet-trans-project-wizard.Translation_Project_Wizard "Translation Project Wizard"'
 );

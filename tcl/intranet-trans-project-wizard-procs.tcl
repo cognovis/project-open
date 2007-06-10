@@ -17,10 +17,20 @@ ad_proc im_trans_project_wizard_component {
 } {
     Returns a formatted HTML table representing the status of the translation project
 } {
+    if {![im_project_has_type $project_id "Translation Project"]} { return "" }
+
     set params [list \
 		    [list project_id $project_id] \
     ]
-    set result [ad_parse_template -params $params "/packages/intranet-trans-project-wizard/www/trans-project-wizard"]
+
+    set result ""
+    if {[catch {
+    } err_msg]} {
+	set result "Error in Translation Project Wizard:<p><pre>$err_msg</pre>"
+    }
+
+	set result [ad_parse_template -params $params "/packages/intranet-trans-project-wizard/www/trans-project-wizard"]
+
     return $result
 
 }
