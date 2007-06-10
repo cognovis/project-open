@@ -5,6 +5,7 @@
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
 
+set ttt {
 ad_page_contract {
     Show the status and a description of a number of steps to 
     execute a translation project
@@ -14,7 +15,7 @@ ad_page_contract {
 } {
     project_id
 }
-
+}
 
 # ---------------------------------------------------------------------
 # Permissions & Defaults
@@ -33,25 +34,24 @@ if {!$read} {
 
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
-set multi_row_count 0
+
+set table_width 500
 
 set project_url "/intranet/projects/view"
 set help_gif_url "/intranet/images/help.gif"
+set progress_url "/intranet/images/progress_greygreen"
 
-set status_display(todo) "0"
-set status_display(done) "10"
-
-set status_display(0) "0"
-set status_display(1) "1"
-set status_display(2) "2"
-set status_display(3) "3"
-set status_display(4) "4"
-set status_display(5) "5"
-set status_display(6) "6"
-set status_display(7) "7"
-set status_display(8) "8"
-set status_display(9) "9"
-set status_display(10) "10"
+set status_display(0) "<img src=$progress_url.0.gif>"
+set status_display(1) "<img src=$progress_url.1.gif>"
+set status_display(2) "<img src=$progress_url.2.gif>"
+set status_display(3) "<img src=$progress_url.3.gif>"
+set status_display(4) "<img src=$progress_url.4.gif>"
+set status_display(5) "<img src=$progress_url.5.gif>"
+set status_display(6) "<img src=$progress_url.6.gif>"
+set status_display(7) "<img src=$progress_url.7.gif>"
+set status_display(8) "<img src=$progress_url.8.gif>"
+set status_display(9) "<img src=$progress_url.9.gif>"
+set status_display(10) "<img src=$progress_url.10.gif>"
 
 
 # ---------------------------------------------------------------------
@@ -63,32 +63,35 @@ multirow create call_to_quote status value url name description class
 multirow create execution status value url name description class
 multirow create invoicing status value url name description class
 
-
-
+set multi_row_count 0
 
 # ------------------------------------------------------------------------------------------------
 # Call-To-Quote Worklfow
 # ------------------------------------------------------------------------------------------------
 
+set call_to_quote_header [lang::message::lookup "" intranet-trans-project-wizard.Call_to_Quote_header "From Call to Quote"]
 set call_to_quote_description [lang::message::lookup "" intranet-trans-project-wizard.Call_to_Quote_Workflow_descr "
-The quoting workflow leads you from the definition of a new project to the creation
-of a quote. 
-The average time for performing this workflow is 2''40 (two minutes and 40 seconds)
-plus TM analysis time, according to benchmarks with several customers.
+The 'Call to Quote' process leads you through the definition and setup of a new project.
+Average duration is 2.5 minutes plus TM analysis time.
 "]
-set ttt "The workflow is triggered by a customer's request, such as an email with some files to translate."
 
 # ---------------------------------------------------------------------
 # Project Base Data
 # ---------------------------------------------------------------------
 
-# Show status "done", as the base data must have been entered to get
+# Show status "done" = 10, as the base data must have been entered to get
 # to this page...
+
+set base_data_info [db_string base_data_info "
+	select	project_nr
+	from	im_projects
+	where	project_id = :project_id
+"]
 
 incr multi_row_count
 multirow append call_to_quote \
-    $status_display(done) \
-    "" \
+    $status_display(10) \
+    $base_data_info \
     [export_vars -base $project_url {project_id}] \
     [lang::message::lookup "" intranet-trans-project-wizard.Define_Project_Base_Data_name "Define Project Base Data"] \
     [lang::message::lookup "" intranet-trans-project-wizard.Project_Base_Data_descr "
@@ -146,7 +149,7 @@ if {$trans_tasks > 0} { set trans_tasks_status 10} else { set trans_tasks_status
 incr multi_row_count
 multirow append call_to_quote \
     $status_display($trans_tasks_status) \
-    "$trans_tasks [lang::message::lookup "" intranet-trans-project-wizard.Trans_Tasks "Tasks"]" \
+    "$trans_tasks [lang::message::lookup "" intranet-trans-project-wizard.Trans_Tasks "Task(s)"]" \
     [export_vars -base $project_url {project_id}] \
     [lang::message::lookup "" intranet-trans-project-wizard.Trans_Tasks_name "Define Translation Tasks"] \
     [lang::message::lookup "" intranet-trans-project-wizard.Trans_Tasks_descr "
@@ -171,9 +174,9 @@ if {$quotes > 0} { set quotes_status 10} else { set quotes_status 0}
 incr multi_row_count
 multirow append call_to_quote \
     $status_display($quotes_status) \
-    "$quotes [lang::message::lookup "" intranet-trans-project-wizard.Quotes "Quotes"]" \
+    "$quotes [lang::message::lookup "" intranet-trans-project-wizard.Quote_s_ "Quote(s)"]" \
     [export_vars -base $project_url {project_id}] \
-    [lang::message::lookup "" intranet-trans-project-wizard.Quotes_name "Write Quote"] \
+    [lang::message::lookup "" intranet-trans-project-wizard.Quotes_name "Write Quotes"] \
     [lang::message::lookup "" intranet-trans-project-wizard.Quotes_descr "
 	Create a quote by applying the customer's price list of the translation tasks."] \
     $bgcolor([expr $multi_row_count % 2])
@@ -188,8 +191,10 @@ multirow append call_to_quote \
 # Execution Workflow
 # ------------------------------------------------------------------------------------------------
 
+set execution_header [lang::message::lookup "" intranet-trans-project-wizard.Execution_header "From Quote to Deliverable"]
 set execution_description [lang::message::lookup "" intranet-trans-project-wizard.Execution_Workflow_descr "
-The execution workflow leads you from the confirmation of your quote to the finished deliveries.
+The 'Quote to Deliverable' process covers the staffing, assignation and execution of the project. 
+The execution itself is driven by translators down- and uploading translation files.
 "]
 
 
@@ -205,8 +210,8 @@ set freelancers [db_string freelancers "
 		acs_rels r,
 		group_distinct_member_map m
         where
-		r.object_id_two = :project_id
-		and r.object_id_one = p.person_id
+		r.object_id_one = :project_id
+		and r.object_id_two = p.person_id
 		and p.person_id = m.member_id
 		and m.group_id = [im_freelance_group_id]
 
@@ -221,8 +226,8 @@ set in_house_translators [db_string in_house_translators "
 		acs_rels r,
 		group_distinct_member_map m
         where
-		r.object_id_two = :project_id
-		and r.object_id_one = pe.person_id
+		r.object_id_one = :project_id
+		and r.object_id_two = pe.person_id
 		and pe.person_id = m.member_id
 		and m.group_id = [im_employee_group_id]
 		and pe.person_id in (
@@ -246,7 +251,7 @@ if {$freelancers > 0} { set freelancers_status 10} else { set freelancers_status
 incr multi_row_count
 multirow append execution \
     $status_display($freelancers_status) \
-    "$freelancers [lang::message::lookup "" intranet-trans-project-wizard.Translators "Translators"]" \
+    "$freelancers [lang::message::lookup "" intranet-trans-project-wizard.Translators "Translator(s)"]" \
     [export_vars -base $project_url {project_id}] \
     [lang::message::lookup "" intranet-trans-project-wizard.Freelancers_name "Select translators"] \
     [lang::message::lookup "" intranet-trans-project-wizard.Freelancers_descr "
@@ -281,7 +286,7 @@ if {$assignations_status > 10} { set assignations_status 10 }
 incr multi_row_count
 multirow append execution \
     $status_display($assignations_status) \
-    "$assigned_tasks [lang::message::lookup "" intranet-trans-project-wizard.Assigned_Tasks "Assigned Tasks"]" \
+    "$assigned_tasks [lang::message::lookup "" intranet-trans-project-wizard.Assigned_Tasks "Assigned Task(s)"]" \
     [export_vars -base $project_url {project_id}] \
     [lang::message::lookup "" intranet-trans-project-wizard.Assignations_name "Assign Translators to Tasks"] \
     [lang::message::lookup "" intranet-trans-project-wizard.Assignations_descr "
@@ -313,7 +318,7 @@ if {$pos_status > 10} { set pos_status 10 }
 incr multi_row_count
 multirow append execution \
     $status_display($pos_status) \
-    "$pos [lang::message::lookup "" intranet-trans-project-wizard.POs "POs"]" \
+    "$pos [lang::message::lookup "" intranet-trans-project-wizard.POs "PO(s)"]" \
     [export_vars -base $project_url {project_id}] \
     [lang::message::lookup "" intranet-trans-project-wizard.POs_name "Write Purchase Orders"] \
     [lang::message::lookup "" intranet-trans-project-wizard.POs_descr "
@@ -323,13 +328,164 @@ multirow append execution \
 
 
 
+# ---------------------------------------------------------------------
+# Translation Workflow Completion
+# ---------------------------------------------------------------------
+
+set translation_advance [im_trans_task_project_advance $project_id]
+set translation_advance [expr round($translation_advance)]
+
+set translation_advance_status [expr round($translation_advance / 10)]
+
+incr multi_row_count
+multirow append execution \
+    $status_display($translation_advance_status) \
+    "$translation_advance [lang::message::lookup "" intranet-trans-project-wizard.Perc_Done "%%done"]" \
+    [export_vars -base $project_url {project_id}] \
+    [lang::message::lookup "" intranet-trans-project-wizard.POs_name "Watch Translation Advance"] \
+    [lang::message::lookup "" intranet-trans-project-wizard.POs_descr "
+	The automatic translation workflow is driven by translator's and editors download \
+	of source files and upload of the deliverable. This process advances automatically \
+	without the intervention of the project manager."] \
+    $bgcolor([expr $multi_row_count % 2])
+
+
+
+
 
 # ------------------------------------------------------------------------------------------------
 # Post-Delivery Workflow
 # ------------------------------------------------------------------------------------------------
 
+set invoicing_header [lang::message::lookup "" intranet-trans-project-wizard.Invoicing_header "From Deliverable to Cash"]
 set invoicing_description [lang::message::lookup "" intranet-trans-project-wizard.Invoicing_Workflow_descr "
 The invoicing workflow leads you 
 "]
+
+
+
+# ---------------------------------------------------------------------
+# Provider Bills
+# ---------------------------------------------------------------------
+
+set bills [db_string bills "
+        select  count(*)
+        from    im_costs
+        where   project_id = :project_id
+                and cost_type_id = [im_cost_type_bill]
+"]
+
+if {0 != $pos} {
+    set bills_status [expr round($bills / $pos)]
+} else {
+    set bills_status 0
+}
+if {$bills_status > 10} { set bills_status 10}
+
+
+incr multi_row_count
+multirow append invoicing \
+    $status_display($bills_status) \
+    "$bills [lang::message::lookup "" intranet-trans-project-wizard.Bills "Bills"]" \
+    [export_vars -base $project_url {project_id}] \
+    [lang::message::lookup "" intranet-trans-project-wizard.Bills_name "Write Bill"] \
+    [lang::message::lookup "" intranet-trans-project-wizard.Bills_descr "
+	Each Purchase Order should be folled by a 'Provider Bill' for the same provider."] \
+    $bgcolor([expr $multi_row_count % 2])
+
+
+
+
+# ---------------------------------------------------------------------
+# Invoices
+# ---------------------------------------------------------------------
+
+set invoices [db_string invoices "
+        select  count(*)
+        from    im_costs
+        where   project_id = :project_id
+                and cost_type_id = [im_cost_type_invoice]
+"]
+
+if {0 != $pos} {
+    set invoices_status [expr round($invoices / $pos)]
+} else {
+    set invoices_status 0
+}
+if {$invoices_status > 10} { set invoices_status 10}
+
+
+incr multi_row_count
+multirow append invoicing \
+    $status_display($invoices_status) \
+    "$invoices [lang::message::lookup "" intranet-trans-project-wizard.Invoices "Invoices"]" \
+    [export_vars -base $project_url {project_id}] \
+    [lang::message::lookup "" intranet-trans-project-wizard.Invoices_name "Write Invoice"] \
+    [lang::message::lookup "" intranet-trans-project-wizard.Invoices_descr "
+	Each Quote should be folled by an Invoice to the customer."] \
+    $bgcolor([expr $multi_row_count % 2])
+
+
+
+# ---------------------------------------------------------------------
+# Bills Payment
+# ---------------------------------------------------------------------
+
+set paid_bills [db_string paid_bills "
+        select  count(*)
+        from    im_costs
+        where   project_id = :project_id
+                and cost_type_id = [im_cost_type_bill]
+		and paid_amount > 0
+"]
+
+if {0 != $bills} {
+    set paid_bills_status [expr round($paid_bills / $bills)]
+} else {
+    set paid_bills_status 0
+}
+if {$paid_bills_status > 10} { set paid_bills_status 10}
+
+
+incr multi_row_count
+multirow append invoicing \
+    $status_display($paid_bills_status) \
+    "$paid_bills [lang::message::lookup "" intranet-trans-project-wizard.Paid_Bills "Paid Bills"]" \
+    [export_vars -base $project_url {project_id}] \
+    [lang::message::lookup "" intranet-trans-project-wizard.Paid_Bills_name "Pay Providers"] \
+    [lang::message::lookup "" intranet-trans-project-wizard.Paid_Bills_descr "
+	Each Provider Bill should register a payment."] \
+    $bgcolor([expr $multi_row_count % 2])
+
+
+# ---------------------------------------------------------------------
+# Invoices Payment
+# ---------------------------------------------------------------------
+
+set paid_invoices [db_string paid_invoices "
+        select  count(*)
+        from    im_costs
+        where   project_id = :project_id
+                and cost_type_id = [im_cost_type_invoice]
+		and paid_amount > 0
+"]
+
+if {0 != $invoices} {
+    set paid_invoices_status [expr round($paid_invoices / $invoices)]
+} else {
+    set paid_invoices_status 0
+}
+if {$paid_invoices_status > 10} { set paid_invoices_status 10}
+
+
+incr multi_row_count
+multirow append invoicing \
+    $status_display($paid_invoices_status) \
+    "$paid_invoices [lang::message::lookup "" intranet-trans-project-wizard.Paid_Invoices "Paid Invoices"]" \
+    [export_vars -base $project_url {project_id}] \
+    [lang::message::lookup "" intranet-trans-project-wizard.Paid_Invoices_name "Receive Payments"] \
+    [lang::message::lookup "" intranet-trans-project-wizard.Paid_Invoices_descr "
+	Each Invoice should register a payment."] \
+    $bgcolor([expr $multi_row_count % 2])
 
 

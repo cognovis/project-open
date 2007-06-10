@@ -14,14 +14,13 @@ ad_library {
 
 ad_proc im_trans_project_wizard_component { 
     -project_id:required
-    -return_url:required
 } {
     Returns a formatted HTML table representing the status of the translation project
 } {
     set params [list \
 		    [list project_id $project_id] \
     ]
-    set result [ad_parse_template -params $params "/packages/intranet-trans-project-wizard-procs/www/trans-project-wizard"]
+    set result [ad_parse_template -params $params "/packages/intranet-trans-project-wizard/www/trans-project-wizard"]
     return $result
 
 }
