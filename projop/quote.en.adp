@@ -9,18 +9,19 @@
 <table border="0" cellspacing="1" cellpadding="1" width="100%">
   <tr> 
     <td>
-      <img src="http://www.project-open.com/images/logos/project_open.38.10frame.gif"><br>
-      <P><b><font size="5">QUOTE</font></b></P>
+      <img src="http://www.project-open.com/images/logos/project_open.38.10frame.gif">
     </td>
-    <td align="right"> <p><font size="6">
+    <td align="right"><!-- <p><font size="6">
 <span class=brandsec>]</span><span class=brandfirst>project-open</span><span class=brandsec>[</span>
     </font><br>
         <font size="4"><b>Manage your projects online-<br>
         anytime, anywhere</b></font></p>
-      <b><font size="3">www.project-open.com</font></b> </td>
+      <b><font size="3">www.project-open.com</font></b>--><b><font size="6">QUOTE</font></b> </td>
   </tr>
 </table>
 <hr>
+<br>
+<br>
 <table border="0" cellspacing="1" cellpadding="1" width="100%">
   <tr> 
     <td valign="top"> 
@@ -124,23 +125,27 @@
   </tr>
 </table>
 <br>
-
+<br>
+<br>
 <table border="0" cellspacing="1" cellpadding="1">
   <tr> 
-    <td><b><font size=2>Date</font></b></td>
-    <td><font size=2><%=$invoice_date_pretty %></font></td>
+    <td><b><font size=3>Date</font></b></td>
+    <td><font size=3><%=$invoice_date_pretty %></font></td>
   </tr>
   <tr> 
-    <td><b><font size=2>Quote No. </font></b></td>
-    <td><font size=2><%=$invoice_nr %></font></td>
+    <td><b><font size=3>Quote No. </font></b></td>
+    <td><font size=3><%=$invoice_nr %></font></td>
   </tr>
 </table>
 <br>
-
+<br>
+<br>
+<br>
 <table border="0" cellspacing="2" cellpadding="2">
 <%=$item_list_html %>
 </table>
-
+<br>
+<br>
 <table border="0" cellspacing="2" cellpadding="2">
 <%=$note_html %>
 </table>
