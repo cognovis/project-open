@@ -377,8 +377,6 @@ if {[im_permission $user_id "view_projects_all"]} {
         set file_perm_sql ""
 }
 
-# ToDo: Remove testing line
-set file_perm_sql ""
 
 
 
