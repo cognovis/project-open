@@ -537,7 +537,15 @@ begin
 		coalesce(current_information, '''') || '' '' ||
 
 		coalesce(ha_cc.country_name, '''') || '' '' ||
-		coalesce(wa_cc.country_name, '''')
+		coalesce(wa_cc.country_name, '''') || '' '' ||
+
+		coalesce(im_cost_center_name_from_id(department_id), '''') || '' '' ||
+		coalesce(job_title, '''') || '' '' ||
+		coalesce(job_description, '''') || '' '' ||
+		coalesce(skills, '''') || '' '' ||
+		coalesce(educational_history, '''') || '' '' ||
+		coalesce(last_degree_completed, '''') || '' '' ||
+		coalesce(termination_reason, '''')
 
 	into	v_string
 	from
@@ -545,6 +553,7 @@ begin
 		persons pe
 		LEFT OUTER JOIN users u ON (pe.person_id = u.user_id)
 		LEFT OUTER JOIN users_contact uc ON (pe.person_id = uc.user_id)
+		LEFT OUTER JOIN im_employees e ON (pe.person_id = e.employee_id)
 		LEFT OUTER JOIN country_codes ha_cc ON (uc.ha_country_code = ha_cc.iso)
 		LEFT OUTER JOIN country_codes wa_cc ON (uc.wa_country_code = wa_cc.iso)
 	where
@@ -555,6 +564,8 @@ begin
 	perform im_search_update(new.person_id, ''user'', new.person_id, v_string);
 	return new;
 end;' language 'plpgsql';
+
+
 
 -- Frank Bergmann: 050709
 -- DONT add a trigger to "users": Users is being
