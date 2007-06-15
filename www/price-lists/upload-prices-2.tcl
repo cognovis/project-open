@@ -87,6 +87,7 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
     set target_language ""
     set source_language ""
     set subject_area ""
+    set file_type ""
     set valid_from ""
     set valid_through ""
     set price ""
@@ -114,17 +115,24 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
     set source_language_id ""
     set target_language_id ""
     set subject_area_id ""
+    set file_type_id ""
 
     set errmsg ""
     if {![string equal "" $uom]} {
-        set uom_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet UoM' and category=:uom" -default 0]
+        set uom_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet UoM' and lower(category) = lower(:uom)" -default 0]
         if {$uom_id == 0} { append errmsg "<li>Didn't find UoM '$uom'\n" }
     }
 
+    set company [string trim $company]
     if {![string equal "" $company]} {
-         set price_company_id [db_string get_company_id "select company_id from im_companies where company_path = :company" -default 0]
-         if {$price_company_id == 0} { append errmsg "<li>Didn't find Company '$company'\n" }
-         if {$price_company_id != $company_id} { append errmsg "<li>Uploading prices for the wrong company ('$price_company_id' instead of '$company_id')" }
+	set price_company_id [db_string get_company_id "select company_id from im_companies where lower(company_path) = lower(:company)" -default 0]
+        if {$price_company_id == 0} { 
+	     set price_company_id [db_string get_company_id "select company_id from im_companies where lower(company_name) = lower(:company)" -default 0] 
+	}
+        if {$price_company_id == 0} { append errmsg "<li>Didn't find Company '$company'\n" }
+        if {$price_company_id != $company_id} { 
+	    append errmsg "<li>Uploading prices for the wrong company ('$price_company_id' instead of '$company_id')" 
+	}
     }
 
     if {![string equal "" $task_type]} {
@@ -142,10 +150,19 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
         append errmsg "<li>Didn't find Target Language '$target_language'\n" 
     }
 
+
     set subject_area_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Translation Subject Area' and lower(category) = lower(trim(:subject_area))"  -default ""]
     if {$subject_area_id == "" && $subject_area != ""} { 
         append errmsg "<li>Didn't find Subject Area '$subject_area'\n" 
     }
+
+
+    set file_type_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Translation File Type' and lower(category) = lower(trim(:file_type))"  -default ""]
+    if {$file_type_id == "" && $file_type != ""} { 
+        append errmsg "<li>Didn't find File Type '$file_type'\n" 
+    }
+
+
 
     # It doesn't matter whether prices are given in European "," or American "." decimals
     regsub {,} $price {.} price
@@ -156,6 +173,7 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
 #    append page_body "source_language_id=$source_language_id\n"
 #    append page_body "target_language_id=$target_language_id\n"
 #    append page_body "subject_area_id=$subject_area_id\n"
+#    append page_body "file_type_id=$file_type_id\n"
 #    append page_body "valid_from=$valid_from\n"
 #    append page_body "valid_through=$valid_through\n"
 #    append page_body "price=$price\n"
@@ -164,13 +182,15 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
     set price_id [db_nextval "im_trans_prices_seq"]
 
     set insert_price_sql "INSERT INTO im_trans_prices (
-       price_id, uom_id, company_id, task_type_id,
-       target_language_id, source_language_id, subject_area_id,
+	price_id, uom_id, company_id, task_type_id,
+	target_language_id, source_language_id, subject_area_id,
+	file_type_id,
        valid_from, valid_through, currency, price
     ) VALUES (
-       :price_id, :uom_id, :company_id, :task_type_id,
-       :target_language_id, :source_language_id, :subject_area_id,
-       :valid_from, :valid_through, :currency, :price
+	:price_id, :uom_id, :company_id, :task_type_id,
+	:target_language_id, :source_language_id, :subject_area_id,
+	:file_type_id,
+	:valid_from, :valid_through, :currency, :price
     )"
 
     if {[string equal "" $errmsg]} {

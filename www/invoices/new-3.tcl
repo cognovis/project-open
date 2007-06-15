@@ -102,6 +102,7 @@ set invoice_id [im_new_object_id]
 set invoice_nr [im_next_invoice_nr -invoice_type_id $target_cost_type_id]
 set invoice_date $todays_date
 set default_payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCompanyInvoicePaymentDays" "" 30] 
+set enable_file_type_p [parameter::get_from_package_key -package_key intranet-trans-invoices -parameter "EnableFileTypeInTranslationPriceList" -default 0]
 set due_date [db_string get_due_date "select to_date(to_char(sysdate,'YYYY-MM-DD'),'YYYY-MM-DD') + $default_payment_days from dual"]
 set provider_id [im_company_internal]
 set customer_id $company_id
@@ -336,6 +337,11 @@ if {1} {
     # to be shown at the very bottom of the page.
     #
     set price_colspan 11
+    if {$enable_file_type_p} { incr price_colspan}
+
+    set file_type_html "<td class=rowtitle>[lang::message::lookup "" intranet-trans-invoices.File_Type "File Type"]</td>"
+    if {!$enable_file_type_p} { set file_type_html "" }
+
     set reference_price_html "
         <tr><td align=middle class=rowtitle colspan=$price_colspan>[_ intranet-trans-invoices.Reference_Prices]</td></tr>
         <tr>
@@ -345,6 +351,7 @@ if {1} {
           <td class=rowtitle>[_ intranet-trans-invoices.Target]</td>
           <td class=rowtitle>[_ intranet-trans-invoices.Source]</td>
           <td class=rowtitle>[_ intranet-trans-invoices.Subject_Area]</td>
+	  $file_type_html
 <!--          <td class=rowtitle>[_ intranet-trans-invoices.Valid_From]</td>	-->
 <!--          <td class=rowtitle>[_ intranet-trans-invoices.Valid_Through]</td>	-->
           <td class=rowtitle>[_ intranet-core.Note]</td>
@@ -358,63 +365,66 @@ if {1} {
 	# and determine the price of each line using a custom definable
 	# function.
 	set task_sum_inner_sql "
-select
-	sum(t.billable_units) as task_sum,
-        '' as task_title,
-	t.task_type_id,
-	t.task_uom_id,
-	t.source_language_id,
-	t.target_language_id,
-	p.company_id,
-	p.project_id,
-	p.subject_area_id
-from 
-	im_trans_tasks t,
-	im_projects p
-where 
-	$tasks_where_clause
-	and t.project_id=p.project_id
-group by
-	t.task_type_id,
-	t.task_uom_id,
-	p.company_id,
-	p.project_id,
-	t.source_language_id,
-	t.target_language_id,
-	p.subject_area_id
-        "
-
-	# Take the "Inner Query" with the data (above) and add some "long names" 
-	# (categories, client names, ...) for pretty output
-	set task_sum_sql "
 	select
-		trim(both ' ' from to_char(s.task_sum, :number_format)) as task_sum,
-		s.task_type_id,
-		s.subject_area_id,
-		s.source_language_id,
-		s.target_language_id,
-		s.task_uom_id,
-		c_type.category as task_type,
-		c_uom.category as task_uom,
-		c_target.category as target_language,
-		s.company_id,
-		s.project_id,
-		p.project_name,
-		p.project_path,
-		p.project_path as project_short_name,
-		p.company_project_nr
-	from
-		($task_sum_inner_sql) s
-	      LEFT JOIN
-		im_categories c_uom ON s.task_uom_id=c_uom.category_id
-	      LEFT JOIN
-		im_categories c_type ON s.task_type_id=c_type.category_id
-	      LEFT JOIN
-		im_categories c_target ON s.target_language_id=c_target.category_id
-	      LEFT JOIN
-		im_projects p ON s.project_id=p.project_id
-	order by
-		p.project_id
+		sum(t.billable_units) as task_sum,
+	        '' as task_title,
+		t.task_type_id,
+		t.task_uom_id,
+		t.source_language_id,
+		t.target_language_id,
+		p.company_id,
+		p.project_id,
+		p.subject_area_id,
+		im_file_type_from_trans_task(t.task_id) as file_type_id
+	from 
+		im_trans_tasks t,
+		im_projects p
+	where 
+		$tasks_where_clause
+		and t.project_id=p.project_id
+	group by
+		t.task_type_id,
+		t.task_uom_id,
+		p.company_id,
+		p.project_id,
+		t.source_language_id,
+		t.target_language_id,
+		p.subject_area_id,
+		file_type_id
+	        "
+	
+		# Take the "Inner Query" with the data (above) and add some "long names" 
+		# (categories, client names, ...) for pretty output
+		set task_sum_sql "
+		select
+			trim(both ' ' from to_char(s.task_sum, :number_format)) as task_sum,
+			s.task_type_id,
+			s.subject_area_id,
+			s.file_type_id,
+			s.source_language_id,
+			s.target_language_id,
+			s.task_uom_id,
+			c_type.category as task_type,
+			c_uom.category as task_uom,
+			c_target.category as target_language,
+			s.company_id,
+			s.project_id,
+			p.project_name,
+			p.project_path,
+			p.project_path as project_short_name,
+			p.company_project_nr
+		from
+			($task_sum_inner_sql) s
+		      LEFT JOIN
+			im_categories c_uom ON s.task_uom_id=c_uom.category_id
+		      LEFT JOIN
+			im_categories c_type ON s.task_type_id=c_type.category_id
+		      LEFT JOIN
+			im_categories c_target ON s.target_language_id=c_target.category_id
+		      LEFT JOIN
+			im_projects p ON s.project_id=p.project_id
+		order by
+			p.project_id
 	"
 	
     } else {
@@ -439,7 +449,8 @@ group by
 	        p.project_path,
 	        p.project_path as project_short_name,
 	        p.company_project_nr,
-		p.subject_area_id
+		p.subject_area_id,
+		p.file_type_id
 	from
 	        im_trans_tasks t
 	    LEFT JOIN
@@ -469,6 +480,7 @@ select
 	p.target_language_id as target_language_id,
 	p.source_language_id as source_language_id,
 	p.subject_area_id as subject_area_id,
+	p.file_type_id as file_type_id,
 	p.valid_from,
 	p.valid_through,
 	p.price_note,
@@ -477,7 +489,8 @@ select
         im_category_from_id(p.task_type_id) as price_task_type,
         im_category_from_id(p.target_language_id) as price_target_language,
         im_category_from_id(p.source_language_id) as price_source_language,
-        im_category_from_id(p.subject_area_id) as price_subject_area
+        im_category_from_id(p.subject_area_id) as price_subject_area,
+        im_category_from_id(p.file_type_id) as price_file_type
 from
 	(
 		(select 
@@ -486,7 +499,8 @@ from
 				p.task_type_id, :task_type_id,
 				p.subject_area_id, :subject_area_id,
 				p.target_language_id, :target_language_id,
-				p.source_language_id, :source_language_id
+				p.source_language_id, :source_language_id,
+				p.file_type_id, :file_type_id
 			) as relevancy,
 			p.price_id,
 			p.price,
@@ -496,6 +510,7 @@ from
 			p.target_language_id,
 			p.source_language_id,
 			p.subject_area_id,
+			p.file_type_id,
 			p.valid_from,
 			p.valid_through,
 			p.note as price_note
@@ -557,6 +572,9 @@ order by
 
 	    set price_url [export_vars -base $price_url_base { company_id price_id return_url }]
 
+	    set file_type_html "<td class=$bgcolor([expr $price_list_ctr % 2])>$price_file_type</td>"
+	    if {!$enable_file_type_p} { set file_type_html "" }
+
 	    append reference_price_html "
         <tr>
           <td class=$bgcolor([expr $price_list_ctr % 2])>
@@ -567,6 +585,7 @@ order by
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_target_language</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_source_language</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>$price_subject_area</td>
+	  $file_type_html
 <!--          <td class=$bgcolor([expr $price_list_ctr % 2])>$valid_from</td>		-->
 <!--          <td class=$bgcolor([expr $price_list_ctr % 2])>$valid_through</td> 	-->
           <td class=$bgcolor([expr $price_list_ctr % 2])>[string_truncate -len 30 $price_note]</td>

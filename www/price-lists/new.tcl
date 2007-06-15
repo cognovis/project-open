@@ -37,6 +37,7 @@ set focus "price.var_name"
 set page_title "[_ intranet-trans-invoices.New_Price]"
 set context [im_context_bar $page_title]
 
+if {![info exists uom_id] || "" == $uom_id} { set uom_id [im_uom_s_word] }
 
 if {"" == $currency} {
     set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
@@ -47,35 +48,44 @@ if {"" == $currency} {
 # ------------------------------------------------------------------
 
 set uom_options [db_list_of_lists uom_options "
-select category, category_id
-from im_categories
-where category_type = 'Intranet UoM'
-order by category
+	select category, category_id
+	from im_categories
+	where category_type = 'Intranet UoM'
+	order by category
 "]
 
 set task_type_options [db_list_of_lists uom_options "
-select category, category_id
-from im_categories
-where category_type = 'Intranet Project Type'
-order by category
+	select category, category_id
+	from im_categories
+	where category_type = 'Intranet Project Type'
+	order by category
 "]
 set task_type_options [linsert $task_type_options 0 [list "" ""]]
 
-set language_options [db_list_of_lists uom_options "
-select category, category_id
-from im_categories
-where category_type = 'Intranet Translation Language'
-order by category
+set language_options [db_list_of_lists language_options "
+	select category, category_id
+	from im_categories
+	where category_type = 'Intranet Translation Language'
+	order by category
 "]
 set language_options [linsert $language_options 0 [list "" ""]]
 
-set subject_area_options [db_list_of_lists uom_options "
-select category, category_id
-from im_categories
-where category_type = 'Intranet Translation Subject Area'
-order by category
+set subject_area_options [db_list_of_lists subject_area_options "
+	select category, category_id
+	from im_categories
+	where category_type = 'Intranet Translation Subject Area'
+	order by category
 "]
 set subject_area_options [linsert $subject_area_options 0 [list "" ""]]
+
+set file_type_options [db_list_of_lists file_type_options "
+	select category, category_id from im_categories
+	where category_type = 'Intranet Translation File Type'
+	order by category
+"]
+set file_type_options [linsert $file_type_options 0 [list "" ""]]
+
+
 
 set include_empty 0
 set currency_options [im_currency_options $include_empty]
@@ -94,6 +104,7 @@ ad_form \
 	{source_language_id:text(select),optional {label "[_ intranet-trans-invoices.Source_Language]"} {options $language_options} }
 	{target_language_id:text(select),optional {label "[_ intranet-trans-invoices.Target_Language]"} {options $language_options} }
 	{subject_area_id:text(select),optional {label "[_ intranet-trans-invoices.Subject_Area]"} {options $subject_area_options} }
+	{file_type_id:text(select),optional {label "[_ intranet-trans-invoices.File_Type]" } {options $file_type_options} }
 	{amount:float(text) {label "[_ intranet-trans-invoices.Amount]"} {html {size 10}}}
 	{currency:text(select) {label "[_ intranet-trans-invoices.Currency]"} {options $currency_options} }
 	{note:text(textarea),optional {label "[_ intranet-core.Note]"} {}}
@@ -121,6 +132,7 @@ insert into im_trans_prices (
 	target_language_id,
 	source_language_id,
 	subject_area_id,
+	file_type_id,
 	currency,
 	price,
 	note
@@ -132,6 +144,7 @@ insert into im_trans_prices (
 	:target_language_id,
 	:source_language_id,
 	:subject_area_id,
+	:file_type_id,
 	:currency,
 	:amount,
 	:note
@@ -146,6 +159,7 @@ insert into im_trans_prices (
 	target_language_id = :target_language_id,
 	source_language_id = :source_language_id,
 	subject_area_id = :subject_area_id,
+	file_type_id = :file_type_id,
 	currency = :currency,
 	price = :amount,
 	note = :note

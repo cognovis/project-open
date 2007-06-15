@@ -23,6 +23,9 @@
         <parameters>
 
 	  <parameter datatype="integer"  min_n_values="1"  max_n_values="1"  name="EnableFileTypeInTranslationPriceList"  default="0" description="Do you want file types to appear in your price list? Default is no for most translation companies."/>
+
+	  <parameter datatype="integer"  min_n_values="1"  max_n_values="1"  name="DefaultPriceListUomID"  default="324" description="Do you want file types to appear in your price list? Default is no for most translation companies."/>
+
         </parameters>
     </version>
 </package>

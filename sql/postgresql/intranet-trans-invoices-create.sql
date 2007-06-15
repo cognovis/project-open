@@ -205,22 +205,25 @@ create table im_trans_prices (
 	--
 	-- "Input variables"
 	uom_id			integer not null 
-				constraint im_trans_prices_uom_id
+				constraint im_trans_prices_uom_fk
 				references im_categories,
 	company_id		integer not null 
-				constraint im_trans_prices_company_id
+				constraint im_trans_prices_company_fk
 				references im_companies,
 	task_type_id		integer
-				constraint im_trans_prices_task_type_id
+				constraint im_trans_prices_task_type_fk
 				references im_categories,
 	target_language_id	integer
-				constraint im_trans_prices_target_lang
+				constraint im_trans_prices_target_fk
 				references im_categories,
 	source_language_id	integer
-				constraint im_trans_prices_source_lang
+				constraint im_trans_prices_source_flg
 				references im_categories,
 	subject_area_id		integer
-				constraint im_trans_prices_subject_are
+				constraint im_trans_prices_subject_fk
+				references im_categories,
+	file_type_id		integer
+				constraint im_trans_prices_file_type_fk
 				references im_categories,
 	valid_from		timestamptz,
 	valid_through		timestamptz,
@@ -252,6 +255,8 @@ create unique index im_trans_price_idx on im_trans_prices (
 -- Calculate a match value between a price list item and an invoice_item
 -- The higher the match value the better the fit.
 
+
+-- Compatibility with previous version
 create or replace function im_trans_prices_calc_relevancy ( 
        integer, integer, integer, integer, integer, integer, integer, integer, integer, integer
 ) returns numeric as '
@@ -266,6 +271,75 @@ DECLARE
 	v_item_target_language_id	alias for $8;
 	v_price_source_language_id	alias for $9;	
 	v_item_source_language_id	alias for $10;
+BEGIN
+	return im_trans_prices_calc_relevancy(
+		v_price_company_id,
+		v_item_company_id,
+		v_price_task_type_id,
+		v_item_task_type_id,
+		v_price_subject_area_id,
+		v_item_subject_area_id,
+		v_price_target_language_id,
+		v_item_target_language_id,
+		v_price_source_language_id,
+		v_item_source_language_id,
+		0, 0
+	);
+end;' language 'plpgsql';
+
+
+
+
+
+-- Determine the filetype from a translation task
+create or replace function im_file_type_from_trans_task (integer)
+returns integer as '
+DECLARE
+        p_task_id       alias for $1;
+
+        v_task_name     varchar;
+        v_extension     varchar;
+        v_result        integer;
+BEGIN
+        select  task_filename
+        into    v_task_name
+        from    im_trans_tasks
+        where   task_id = p_task_id;
+
+        v_extension := lower(substring(v_task_name from length(v_task_name)-2));
+        -- RAISE NOTICE ''%'', v_extension;
+
+        select  min(category_id)
+        into    v_result
+        from    im_categories
+        where   category_type = ''Intranet Translation File Type''
+                and aux_string1 = v_extension;
+
+        return v_result;
+end;' language 'plpgsql';
+
+
+
+
+
+-- New procedure with added filetype
+create or replace function im_trans_prices_calc_relevancy ( 
+       integer, integer, integer, integer, integer, integer, integer, integer, integer, integer, integer, integer
+) returns numeric as '
+DECLARE
+	v_price_company_id		alias for $1;		
+	v_item_company_id		alias for $2;
+	v_price_task_type_id		alias for $3;	
+	v_item_task_type_id		alias for $4;
+	v_price_subject_area_id		alias for $5;	
+	v_item_subject_area_id		alias for $6;
+	v_price_target_language_id	alias for $7;	
+	v_item_target_language_id	alias for $8;
+	v_price_source_language_id	alias for $9;	
+	v_item_source_language_id	alias for $10;
+	v_price_file_type_id		alias for $11;
+	v_item_file_type_id		alias for $12;
+
 	match_value			numeric;
 	v_internal_company_id		integer;
 	v_price_target_language		varchar(100);
@@ -342,7 +416,7 @@ BEGIN
 		end if;
 	end if;
 
-
+	- Subject Area
 	if v_price_subject_area_id = v_item_subject_area_id then
 		match_value := match_value + 1;
 	end if;
@@ -362,6 +436,16 @@ BEGIN
 	if v_price_company_id != v_internal_company_id and v_price_company_id != v_item_company_id then
 		match_value := match_value -100;
 	end if;
+
+
+	-- File Type
+	if v_price_file_type_id = v_item_file_type_id then
+		match_value := match_value + 1;
+	end if;
+	if not(v_price_file_type_id is null) and v_price_file_type_id != v_item_file_type_id then
+		match_value := match_value - 10;
+	end if;
+
 
 	return match_value;
 end;' language 'plpgsql';
@@ -387,7 +471,7 @@ end;' language 'plpgsql';
 -- Show the translation specific fields in the ProjectViewPage
 --
 select im_component_plugin__new (
-        null,                           -- plugin_id
+	null,                           -- plugin_id
         'acs_object',                   -- object_type
         now(),                          -- creation_date
         null,                           -- creation_user
@@ -535,4 +619,16 @@ drop function inline_0 ();
 
 \i ../common/intranet-trans-invoices-common.sql
 \i ../common/intranet-trans-invoices-backup.sql
+
+
+
+insert into im_categories (category_id, category, category_type) values
+(600, 'MS-Word', 'Intranet Translation File Type');
+
+insert into im_categories (category_id, category, category_type) values
+(602, 'MS-Excel', 'Intranet Translation File Type');
+
+insert into im_categories (category_id, category, category_type) values
+(604, 'MS-PowerPoint', 'Intranet Translation File Type');
+
 

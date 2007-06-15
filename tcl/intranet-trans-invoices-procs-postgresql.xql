@@ -24,7 +24,8 @@ select
 	im_category_from_id(task_type_id) as task_type,
 	im_category_from_id(target_language_id) as target_language,
 	im_category_from_id(source_language_id) as source_language,
-	im_category_from_id(subject_area_id) as subject_area
+	im_category_from_id(subject_area_id) as subject_area,
+	im_category_from_id(file_type_id) as file_type
 from
 	im_trans_prices p
       LEFT JOIN

@@ -18,9 +18,9 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
     prices for the current company
 } {
 
-    if {![im_permission $user_id view_costs]} {
-        return ""
-    }
+    if {![im_permission $user_id view_costs]} { return "" }
+    
+    set enable_file_type_p [parameter::get_from_package_key -package_key intranet-trans-invoices -parameter "EnableFileTypeInTranslationPriceList" -default 0]
 
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
@@ -28,6 +28,11 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
     set price_url_base "/intranet-trans-invoices/price-lists/new"
 
     set colspan 8
+    if {$enable_file_type_p} { incr colspan}
+
+    set file_type_html "<td class=rowtitle>[lang::message::lookup "" intranet-trans-invoices.File_Type "File Type"]</td>"
+    if {!$enable_file_type_p} { set file_type_html "" }
+
     set price_list_html "
 <form action=/intranet-trans-invoices/price-lists/price-action method=POST>
 [export_form_vars company_id return_url]
@@ -39,39 +44,16 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
 	  <td class=rowtitle>[_ intranet-trans-invoices.Source]</td>
 	  <td class=rowtitle>[_ intranet-trans-invoices.Target]</td>
 	  <td class=rowtitle>[_ intranet-trans-invoices.Subject]</td>
+	  $file_type_html
 	  <td class=rowtitle>[_ intranet-trans-invoices.Rate]</td>
 	  <td class=rowtitle>[_ intranet-core.Note]</td>
 	  <td class=rowtitle>[im_gif del "Delete"]</td>
 </tr>"
 
-    set price_sql "
-select
-	p.*,
-	c.company_path as company_short_name,
-	im_category_from_id(uom_id) as uom,
-	im_category_from_id(task_type_id) as task_type,
-	im_category_from_id(target_language_id) as target_language,
-	im_category_from_id(source_language_id) as source_language,
-	im_category_from_id(subject_area_id) as subject_area
-from
-	im_trans_prices p,
-	im_companies c
-where 
-	p.company_id=:company_id
-	and p.company_id=c.company_id(+)
-order by
-	currency,
-	subject_area_id,
-	uom_id,
-	target_language_id desc,
-	task_type_id desc,
-	source_language_id desc
-"
-
     set price_rows_html ""
     set ctr 1
     set old_currency ""
-    db_foreach prices $price_sql {
+    db_foreach prices {} {
 
         # There can be errors when formatting an empty string...
         set price_formatted ""
@@ -83,6 +65,9 @@ order by
 
         set price_url [export_vars -base $price_url_base { company_id price_id return_url }]
 
+	set file_type_html "<td>$file_type</td>"
+	if {!$enable_file_type_p} { set file_type_html "" }
+
 	append price_rows_html "
         <tr $bgcolor([expr $ctr % 2]) nobreak>
 	  <td>$uom</td>
@@ -90,6 +75,7 @@ order by
 	  <td>$source_language</td>
           <td>$target_language</td>
 	  <td>$subject_area</td>
+	  $file_type_html
           <td><a href=\"$price_url\">$price_formatted $currency</a></td>
           <td>[string_truncate -len 15 $note]</td>
           <td><input type=checkbox name=price_id.$price_id></td>

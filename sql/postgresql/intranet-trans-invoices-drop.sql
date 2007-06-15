@@ -39,6 +39,10 @@ drop function im_trans_prices_calc_relevancy (
      integer, integer, integer, integer, integer, integer, integer, integer, integer, integer
 );
 
+drop function im_trans_prices_calc_relevancy (
+     integer, integer, integer, integer, integer, integer, integer, integer, integer, integer, integer, integer
+);
+
 drop sequence im_trans_prices_seq;
 drop table im_trans_prices;
 
