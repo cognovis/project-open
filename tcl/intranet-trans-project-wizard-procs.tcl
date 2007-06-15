@@ -19,6 +19,9 @@ ad_proc im_trans_project_wizard_component {
 } {
     if {![im_project_has_type $project_id "Translation Project"]} { return "" }
 
+    im_project_permissions [ad_get_user_id] $project_id view read write admin
+    if {!$write} { return "" }
+
     set params [list \
 		    [list project_id $project_id] \
     ]
