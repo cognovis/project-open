@@ -14,6 +14,9 @@ select  im_component_plugin__del_module('intranet-notes');
 select  im_menu__del_module('intranet-notes');
 
 
+-----------------------------------------------------------
+-- Drop main structures info
+
 -- Drop functions
 drop function im_note__name(integer);
 drop function im_note__new (
@@ -34,3 +37,17 @@ delete from acs_objects where object_type = 'im_note';
 -- Completely delete the object type from the
 -- object system
 SELECT acs_object_type__drop_type ('im_note', 't');
+
+
+
+-----------------------------------------------------------
+-- Drop Categories
+--
+
+drop view im_note_status;
+drop view im_note_type;
+
+delete from im_categories where category_type = 'Intranet Notes Status';
+delete from im_categories where category_type = 'Intranet Notes Type';
+
+
