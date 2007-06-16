@@ -156,21 +156,36 @@ values (11402, 'Deleted', 'Intranet Notes Status');
 
 
 insert into im_categories(category_id, category, category_type) 
-values (11500, 'Address', 'Intranet Notes Status');
+values (11500, 'Address', 'Intranet Notes Type');
 insert into im_categories(category_id, category, category_type) 
-values (11502, 'Email', 'Intranet Notes Status');
+values (11502, 'Email', 'Intranet Notes Type');
 insert into im_categories(category_id, category, category_type) 
-values (11504, 'Http', 'Intranet Notes Status');
+values (11504, 'Http', 'Intranet Notes Type');
 insert into im_categories(category_id, category, category_type) 
-values (11506, 'Ftp', 'Intranet Notes Status');
+values (11506, 'Ftp', 'Intranet Notes Type');
 insert into im_categories(category_id, category, category_type) 
-values (11508, 'Phone', 'Intranet Notes Status');
+values (11508, 'Phone', 'Intranet Notes Type');
 insert into im_categories(category_id, category, category_type) 
-values (11510, 'Fax', 'Intranet Notes Status');
+values (11510, 'Fax', 'Intranet Notes Type');
 insert into im_categories(category_id, category, category_type) 
-values (11512, 'Mobile', 'Intranet Notes Status');
+values (11512, 'Mobile', 'Intranet Notes Type');
 insert into im_categories(category_id, category, category_type) 
-values (11514, 'Other', 'Intranet Notes Status');
+values (11514, 'Other', 'Intranet Notes Type');
+
+
+-----------------------------------------------------------
+-- Create views for shortcut
+--
+
+create or replace view im_note_status as
+select category_id as note_status_id, category as note_status
+from im_categories
+where category_type = 'Intranet Notes Status';
+
+create or replace view im_note_types as
+select category_id as note_type_id, category as note_type
+from im_categories
+where category_type = 'Intranet Notes Type';
 
 
 
@@ -190,10 +205,10 @@ SELECT im_component_plugin__new (
 	'Project Notes Component',	-- plugin_name
 	'intranet-notes',		-- package_name
 	'right',			-- location
-	'/intranet/projects/index',	-- page_url
+	'/intranet/projects/view',	-- page_url
 	null,				-- view_name
 	90,				-- sort_order
-	'im_notes_project_component'	-- component_tcl
+	'im_notes_project_component -project_id $project_id'	-- component_tcl
 );
 
 
