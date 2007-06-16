@@ -19,13 +19,16 @@ drop function im_note__name(integer);
 drop function im_note__new (
 	integer, varchar, timestamptz,
 	integer, varchar, integer,
-	varchar, integer
+	varchar, integer, integer, integer
 );
 drop function im_note__delete(integer);
 
 
 -- Drop the main table
 drop table im_notes;
+
+-- Delete entries from acs_objects
+delete from acs_objects where object_type = 'im_note';
 
 
 -- Completely delete the object type from the
