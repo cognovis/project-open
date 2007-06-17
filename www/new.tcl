@@ -15,7 +15,7 @@ ad_page_contract {
     @author all@devcon.project-open.com
 } {
     note_id:integer,optional
-    project_id:integer
+    object_id:integer
     {note ""}
     {return_url "/intranet-notes/index"}
     {form_mode "edit"}
@@ -40,7 +40,7 @@ set form_id "form"
 ad_form \
     -name $form_id \
     -mode $form_mode \
-    -export "project_id return_url" \
+    -export "object_id return_url" \
     -form {
 	note_id:key
 	{note_type_id:text(select) {label "[_ intranet-core.Type]"} {options $note_type_options} }
@@ -62,7 +62,7 @@ ad_form -extend -name $form_id \
 			'[ad_conn peeraddr]',
 			null,
 			:note,
-			:project_id,
+			:object_id,
 			:note_type_id,
 			[im_note_status_active]
 		)

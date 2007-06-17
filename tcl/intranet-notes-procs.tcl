@@ -41,15 +41,16 @@ ad_proc -private im_package_notes_id_helper {} {
 # ---------------------------------------------------------------------
 
 ad_proc -public im_notes_project_component {
-    -project_id
+    -object_id
 } {
     Returns a HTML component to show all project related notes
 } {
     set params [list \
 		    [list base_url "/intranet-notes/"] \
-		    [list project_id $project_id] \
+		    [list object_id $object_id] \
 		    [list return_url [im_url_with_query]] \
 		    ]
+
     set result [ad_parse_template -params $params "/packages/intranet-notes/www/notes-list-component"]
     return $result
 }
