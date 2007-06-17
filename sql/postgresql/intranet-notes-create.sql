@@ -43,13 +43,23 @@ create table im_notes (
 			not null
 			constraint im_note_type_fk
 			references im_categories,
-	note		text,
+	note		text
+			constraint im_note_note_nn
+			not null,
 	object_id	integer
-			cosntraint im_note_oid_nn
+			constraint im_note_oid_nn
 			not null
 			constraint im_object_id_fk
 			references acs_objects
 );
+
+-- allow for quick searching of all notes per object.
+create index im_notes_object_idx on im_notes(object_id);
+
+-- avoid duplicate entries
+create unique index im_notes_object_note_idx on im_notes(object_id, note);
+
+
 
 
 -----------------------------------------------------------
