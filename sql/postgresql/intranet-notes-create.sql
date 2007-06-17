@@ -44,9 +44,11 @@ create table im_notes (
 			constraint im_note_type_fk
 			references im_categories,
 	note		text,
-	project_id	integer
-			constraint im_project_id_fk
-			references im_projects
+	object_id	integer
+			cosntraint im_note_oid_nn
+			not null
+			constraint im_object_id_fk
+			references acs_objects
 );
 
 
@@ -87,7 +89,7 @@ DECLARE
 	p_context_id	alias for $6;		-- context_id default null
 
 	p_note		alias for $7;		-- note_name
-	p_project_id	alias for $8;		-- project_id
+	p_object_id	alias for $8;		-- object_id
 	p_note_type_id	alias for $9;		
 	p_note_status_id alias for $10;
 
@@ -104,10 +106,10 @@ BEGIN
 	);
 
 	insert into im_notes (
-		note_id, note, project_id,
+		note_id, note, object_id,
 		note_type_id, note_status_id
 	) values (
-		v_note_id, p_note, p_project_id,
+		v_note_id, p_note, p_object_id,
 		p_note_type_id, p_note_status_id
 	);
 
@@ -134,7 +136,7 @@ end;' language 'plpgsql';
 
 
 -----------------------------------------------------------
--- Types and Stati
+-- Type and Status
 --
 -- Create categories for Notes type and status.
 -- Status acutally is not use, so we just define "active"
@@ -202,13 +204,30 @@ SELECT im_component_plugin__new (
 	null,				-- creation_user
 	null,				-- creation_ip
 	null,				-- context_id
-	'Project Notes Component',	-- plugin_name
+	'Project Notes',		-- plugin_name
 	'intranet-notes',		-- package_name
 	'right',			-- location
 	'/intranet/projects/view',	-- page_url
 	null,				-- view_name
 	90,				-- sort_order
-	'im_notes_project_component -project_id $project_id'	-- component_tcl
+	'im_notes_project_component -object_id $project_id'	-- component_tcl
+);
+
+
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Company Notes',		-- plugin_name
+	'intranet-notes',		-- package_name
+	'right',			-- location
+	'/intranet/companies/view',	-- page_url
+	null,				-- view_name
+	90,				-- sort_order
+	'im_notes_project_component -object_id $company_id'	-- component_tcl
 );
 
 
