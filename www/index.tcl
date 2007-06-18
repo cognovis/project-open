@@ -12,7 +12,7 @@
 ad_page_contract { 
     @author frank.bergmann@project-open.com
 } {
-    { project_id 0}
+    { object_id 0}
     { form_mode "edit" }
 }
 
@@ -33,9 +33,9 @@ set date_format "YYYY-MM-DD"
 
 
 
-set project_name [db_string project_name "select project_name from im_projects where project_id=:project_id" -default [lang::message::lookup "" intranet-expenes.Unassigned "Unassigned"]]
+set object_name [db_string object_name "select acs_object__name(:object_id)" -default [lang::message::lookup "" intranet-expenes.Unassigned "Unassigned"]]
 
-set page_title "$project_name [_ intranet-notes.Notes]"
+set page_title "$object_name [_ intranet-notes.Notes]"
 
 if {[im_permission $user_id view_projects_all]} {
     set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
@@ -61,7 +61,7 @@ set add_expense_p 1
 set admin_links ""
 
 if {$add_expense_p} {
-    append admin_links " <li><a href=\"new?[export_url_vars project_id return_url]\">[_ intranet-notes.Add_a_new_Note]</a>\n"
+    append admin_links " <li><a href=\"new?[export_url_vars object_id return_url]\">[_ intranet-notes.Add_a_new_Note]</a>\n"
 }
 
 set bulk_actions_list "[list]"
@@ -94,7 +94,7 @@ template::list::create \
     -has_checkboxes \
     -bulk_actions $bulk_actions_list \
     -bulk_action_export_vars  {
-	project_id
+	object_id
     } \
     -row_pretty_plural "[_ intranet-notes.Notes_Items]" \
     -elements {
@@ -109,7 +109,7 @@ template::list::create \
 	}
 	creation_date {
 	    label "[_ intranet-notes.Note_Date]"
-	    link_url_eval {[export_vars -base new {note_id project_id return_url}]}
+	    link_url_eval {[export_vars -base new {note_id object_id return_url}]}
 	}
         user_name {
 	    label "[_ intranet-notes.Note_CreationUser]"
@@ -118,17 +118,17 @@ template::list::create \
     }
 
 set project_where ""
-if {0 == $project_id} { 
-    set project_where "\tand c.project_id is null\n" 
+if {0 == $object_id} { 
+    set project_where "\tand c.object_id is null\n" 
 } else {
-    set project_where "\tand c.project_id = :project_id\n" 
+    set project_where "\tand c.object_id = :object_id\n" 
 }
 
 set project_where ""
-if {0 == $project_id} { 
-    set project_where "\tand n.project_id is null\n" 
+if {0 == $object_id} { 
+    set project_where "\tand n.object_id is null\n" 
 } else {
-    set project_where "\tand n.project_id = :project_id\n" 
+    set project_where "\tand n.object_id = :object_id\n" 
 }
 
 
@@ -136,7 +136,7 @@ if {0 == $project_id} {
 db_multirow -extend {note_chk return_url} note_lines notes_lines "
   select
 	note_id,  
-	project_id,  
+	n.object_id,  
 	note, 
 	creation_date,
 	to_char(creation_date, :date_format) as creation_date,
@@ -160,7 +160,7 @@ db_multirow -extend {note_chk return_url} note_lines notes_lines "
 
 # Setup the subnavbar
 set bind_vars [ns_set create]
-ns_set put $bind_vars project_id $project_id
+ns_set put $bind_vars object_id $object_id
 set project_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
 set project_menu [im_sub_navbar $project_menu_id $bind_vars "" "pagedesriptionbar" "project_expenses"]
 
