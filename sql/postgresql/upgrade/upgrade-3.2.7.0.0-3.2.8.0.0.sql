@@ -88,33 +88,89 @@ where	acs_attribute_id in (
 
 
 
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from im_component_plugins
+        where lower(plugin_name) = lower(''Task Members'');
+        IF 0 != v_count THEN return 0; END IF;
 
-SELECT  im_component_plugin__new (
-	null,				-- plugin_id
-	'acs_object',			-- object_type
-	now(),				-- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-	'Task Members',			-- plugin_name
-	'intranet',			-- package_name
-	'right',			-- location
-	'/intranet-timesheet2-tasks/new',	-- page_url
-	null,				-- view_name	
-	20,				-- sort_order
-	'im_group_member_component $task_id $current_user_id $user_admin_p $return_url "" "" 1'
-    );
+        ALTER TABLE im_biz_object_members ADD column percentage numeric(8,2);
+        ALTER TABLE im_biz_object_members ALTER column percentage set default 100;
 
+
+	SELECT  im_component_plugin__new (
+		null,				-- plugin_id
+		''acs_object'',			-- object_type
+		now(),				-- creation_date
+	        null,                           -- creation_user
+	        null,                           -- creation_ip
+	        null,                           -- context_id
+		''Task Members'',			-- plugin_name
+		''intranet'',			-- package_name
+		''right'',			-- location
+		''/intranet-timesheet2-tasks/new'',	-- page_url
+		null,				-- view_name	
+		20,				-- sort_order
+		''im_group_member_component $task_id $current_user_id $user_admin_p $return_url "" "" 1''
+	);
+
+        return 1;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 
 -- Allow for "Full-Member" membership of a timesheet-task
-insert into im_biz_object_role_map values ('im_timesheet_task',85,1300);
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select	count(*) into v_count from im_biz_object_role_map
+        where	acs_object_type = ''im_timesheet_task''
+		and object_type_id = 85
+		and object_role_id = 1300;
+
+        IF 0 = v_count THEN 
+		insert into im_biz_object_role_map values (''im_timesheet_task'',85,1300);
+	END IF;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 
 -- Create an index on tree_sortkey to speed up child queries
-create index im_project_treesort_idx on im_projects(tree_sortkey);
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from pg_class 
+	where lower(relname) = ''im_project_treesort_idx'';
+
+        IF 0 = v_count THEN 
+		create index im_project_treesort_idx on im_projects(tree_sortkey);
+	END IF;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+
+
+
+
 
 
 
