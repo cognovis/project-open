@@ -34,21 +34,37 @@ update im_view_columns set extra_from = null, extra_where = null where column_id
 
 
 -- Notifications Component for each user
-SELECT  im_component_plugin__new (
-        null,                           -- plugin_id
-        'acs_object',                   -- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-        'User Notifications',           -- plugin_name
-        'intranet',                     -- package_name
-        'right',                        -- location
-        '/intranet/users/view',         -- page_url
-        null,                           -- view_name
-        85,                             -- sort_order
-	'im_notification_user_component -user_id $user_id'   -- component_tcl
-);
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from im_component_plugins
+        where lower(plugin_name) = lower(''User Notifications'');
+        IF v_count > 0 THEN return 0; END IF;
+
+	SELECT  im_component_plugin__new (
+	        null,                           -- plugin_id
+	        ''acs_object'',                   -- object_type
+	        now(),                          -- creation_date
+	        null,                           -- creation_user
+	        null,                           -- creation_ip
+	        null,                           -- context_id
+	        ''User Notifications'',           -- plugin_name
+	        ''intranet'',                     -- package_name
+	        ''right'',                        -- location
+	        ''/intranet/users/view'',         -- page_url
+	        null,                           -- view_name
+	        85,                             -- sort_order
+		''im_notification_user_component -user_id $user_id''   -- component_tcl
+	);
+
+        return 1;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 
 
