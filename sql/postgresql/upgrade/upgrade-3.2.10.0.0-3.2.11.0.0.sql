@@ -22,5 +22,3 @@ add	   deadline_start_date	timestamptz;
 alter table im_invoices
 add	   deadline_interval	interval;
 
-
-a
