@@ -442,6 +442,7 @@ if {1} {
 			')'
 			as task_title,
 		t.billable_units as task_sum,
+		im_file_type_from_trans_task(t.task_id) as file_type_id,
 	        im_category_from_id(t.task_type_id) as task_type,
 	        im_category_from_id(t.task_uom_id) as task_uom,
 	        im_category_from_id(t.target_language_id) as target_language,
@@ -449,8 +450,7 @@ if {1} {
 	        p.project_path,
 	        p.project_path as project_short_name,
 	        p.company_project_nr,
-		p.subject_area_id,
-		p.file_type_id
+		p.subject_area_id
 	from
 	        im_trans_tasks t
 	    LEFT JOIN
