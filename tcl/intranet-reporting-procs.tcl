@@ -124,6 +124,9 @@ ad_proc im_report_render_cell {
 	    append td_fields "$key=$value "
 	}
     }
+
+    # Check for cell values starting with "-". This gives a Syntax Error at runtime!!
+    if {"-" == [string range $cell 0 0]} { set cell " $cell" }
     
     if {"" != $cell_class} { append td_fields "class=$cell_class " }
     set quoted_cell [im_report_quote_cell -encoding $encoding -output_format $output_format $cell]
