@@ -345,6 +345,7 @@ if {1} {
     set reference_price_html "
         <tr><td align=middle class=rowtitle colspan=$price_colspan>[_ intranet-trans-invoices.Reference_Prices]</td></tr>
         <tr>
+          <td class=rowtitle>[lang::message::lookup "" intranet-trans-invoices.Score "Score"]</td>
           <td class=rowtitle>[_ intranet-trans-invoices.Company]</td>
           <td class=rowtitle>[_ intranet-trans-invoices.UoM]</td>
           <td class=rowtitle>[_ intranet-trans-invoices.Task_Type]</td>
@@ -557,7 +558,11 @@ order by
 	}
 
 	if {"" == $task_title} {
-	    set task_title "$task_type ($target_language)"
+	    set msg_key [lang::util::suggest_key $task_type]
+	    set task_type_l10n [lang::message::lookup "" intranet-core.$msg_key $task_type]
+	    set msg_key [lang::util::suggest_key $target_language]
+	    set target_language_l10n [lang::message::lookup "" intranet-core.$msg_key $target_language]
+	    set task_title [lang::message::lookup "" intranet-trans-invoices.Task_Title_Format "%task_type_l10n% (%target_language_l10n%)"]
 	}
 
 	# Determine the price from a ranked list of "price list hits"
@@ -577,6 +582,7 @@ order by
 
 	    append reference_price_html "
         <tr>
+          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_relevancy</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>
 		<a href=\"[export_vars -base "/intranet/companies/view" { {company_id $price_company_id} return_url }]\">$price_company_name</a>
 	  </td>
