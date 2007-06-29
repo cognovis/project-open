@@ -300,6 +300,8 @@ ad_form -extend -name login -on_request {
     # and redirect if the user requires extra auth.
     if {$otp_installed_p} {
 
+	ad_return_complaint 1 otp_installed
+
 	if {[exists_and_not_null otp]} {
 
 	    # We now have to check a lot of stuff to be sure
@@ -343,6 +345,8 @@ ad_form -extend -name login -on_request {
 
 	} else {
 
+	ad_return_complaint 1 no_otp_installed
+
 	    # OTP is not there yet.
 	    # Check if we need to redirect the user
 	    if {[im_otp_user_needs_otp $otp_user_id]} {
@@ -369,7 +373,6 @@ ad_form -extend -name login -on_request {
 	}
 
     }
-
 
     # Handle authentication status
     switch $auth_info(auth_status) {
