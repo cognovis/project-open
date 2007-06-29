@@ -107,7 +107,7 @@ ad_form \
 	{file_type_id:text(select),optional {label "[_ intranet-trans-invoices.File_Type]" } {options $file_type_options} }
 	{amount:float(text) {label "[_ intranet-trans-invoices.Amount]"} {html {size 10}}}
 	{currency:text(select) {label "[_ intranet-trans-invoices.Currency]"} {options $currency_options} }
-	{note:text(textarea),optional {label "[_ intranet-core.Note]"} {}}
+	{note:text(textarea),optional {label "[_ intranet-core.Note]"} {html {cols 50}}}
     }
 
 

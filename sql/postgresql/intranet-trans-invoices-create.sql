@@ -244,7 +244,7 @@ create table im_trans_prices (
 -- make sure the same price doesn't get defined twice 
 create unique index im_trans_price_idx on im_trans_prices (
 	uom_id, company_id, task_type_id, target_language_id, 
-	source_language_id, subject_area_id, currency
+	source_language_id, subject_area_id, file_type_id, currency
 );
 
 
