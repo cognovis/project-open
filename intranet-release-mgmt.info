@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-release-mgmt</auto-mount>
 
-    <version name="0.1d" url="http://openacs.org/repository/download/apm/intranet-release-mgmt-0.1d.apm">
+    <version name="3.2.11.0.0" url="http://projop.dnsalias.com/download/apm/intranet-release-mgmt-3.2.11.0.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Release management, tracking the status of several release items</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
