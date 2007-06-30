@@ -135,6 +135,46 @@ ad_proc -public im_user_skill_permissions { current_user_id user_id view_var rea
 # $languages_html<BR>
 # $freelance_html<BR>
 
+
+# ---------------------------------------------------------------
+# Freelance Skills Component
+# ---------------------------------------------------------------
+
+ad_proc im_freelance_skill_select { 
+    {-translate_p 0}
+    {-include_empty_p 1}
+    {-include_empty_name ""}
+    select_name
+    skill_type_id
+    { default "" }
+} {
+    Returns HTML code for a select box to choose the
+    skill of a specified skill type.
+} {
+    set bind_vars [ns_set create]
+
+    set skill_type [db_string skill_type "select aux_string1 from im_categories where category_id=:skill_type_id"]
+    if {"" == $skill_type} {
+        set skill_type [db_string skill_type "select category_description from im_categories where category_id=:skill_type_id"]
+    }
+
+    ns_set put $bind_vars skill_type $skill_type
+
+    set sql "
+        select	category_id,
+		category
+        from	im_categories
+        where	category_type = :skill_type
+        order by lower(category_id)
+    "
+
+    return [im_selection_to_select_box -translate_p $translate_p $bind_vars $select_name $sql $select_name $default]
+}
+
+
+
+
+
 # ----------------------------------------------------------------------
 # Freelance Info Component
 # Some simple extension data for freelancers

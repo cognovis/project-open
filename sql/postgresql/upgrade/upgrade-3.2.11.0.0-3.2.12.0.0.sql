@@ -7,7 +7,7 @@
 -- from English into Spanish (required condition) and be 
 -- preferably specialized in "Legal" or "Business".
 
-
+create sequence im_object_freelance_skill_seq;
 
 create table im_object_freelance_skill_map (
         object_skill_map_id     integer
