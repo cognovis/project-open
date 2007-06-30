@@ -118,6 +118,9 @@ create table im_object_freelance_skill_map (
 	skill_type_id		integer not null 
 				constraint im_o_skills_skill_type_fk
 				references im_categories,
+	experience_id		integer
+				constraint im_o_skills_skill_exp_fk
+				references im_categories,
 	skill_weight		integer
 				constraint im_o_skills_claimed_ck
 				check (skill_weight > 0 and skill_weight <= 100),
