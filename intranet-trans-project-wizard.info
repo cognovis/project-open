@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-trans-project-wizard</auto-mount>
 
-    <version name="3.2.10.0.0" url="http://openacs.org/repository/download/apm/intranet-trans-project-wizard-3.2.10.0.0.apm">
+    <version name="3.2.11.0.0" url="http://projop.dnsalias.com/download/apm/intranet-trans-project-wizard-3.2.11.0.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Wizard for translation projects</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
