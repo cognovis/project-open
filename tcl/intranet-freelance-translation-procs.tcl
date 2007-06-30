@@ -87,7 +87,7 @@ ad_proc im_freelance_trans_member_select_component {
     set subject_area_skill_type [db_string target_lang "
 		select	category_id	
 		from	im_categories	
-		where	category = 'Subject Type' 
+		where	category = 'Subjects' 
 			and category_type = 'Intranet Skill Type'" \
     -default 0]
     set project_source_lang [db_string source_lang "
