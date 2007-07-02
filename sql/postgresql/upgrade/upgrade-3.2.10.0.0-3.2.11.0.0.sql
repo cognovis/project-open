@@ -6,6 +6,7 @@ alter table im_invoices
 add        discount_text	   text;
 alter table im_invoices 
 ALTER discount_perc set default 0;
+update im_invoices set discount_perc = 0 where discount_perc is null;
 
 
 alter table im_invoices
@@ -14,6 +15,8 @@ alter table im_invoices
 add        surcharge_text          text;
 alter table im_invoices 
 ALTER surcharge_perc set default 0;
+update im_invoices set surcharge_perc = 0 where surcharge_perc is null;
+
 
 
 alter table im_invoices
