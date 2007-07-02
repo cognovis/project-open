@@ -271,3 +271,29 @@ extra_select, extra_where, sort_order, visible_for) values (5126,51,NULL,'Privat
 '<blockqote>$private_note</blockquote>','','',26,
 'im_permission $user_id view_freelancers');
 
+
+
+
+
+-- 2400-2419    Intranet Skill Weight
+
+delete from im_categories where category_type = 'Intranet Skill Weight';
+INSERT INTO im_categories (category_id, category, category_type, aux_int1)
+VALUES (2400, 'Very Important', 'Intranet Skill Weight', 20);
+
+INSERT INTO im_categories (category_id, category, category_type, aux_int1)
+VALUES (2402, 'Important', 'Intranet Skill Weight', 10);
+
+INSERT INTO im_categories (category_id, category, category_type, aux_int1)
+VALUES (2404, 'Some Importance', 'Intranet Skill Weight', 2);
+
+INSERT INTO im_categories (category_id, category, category_type, aux_int1)
+VALUES (2406, 'No Importance', 'Intranet Skill Weight', 0);
+
+INSERT INTO im_categories (category_id, category, category_type, aux_int1)
+VALUES (2408, 'Negative Importance (avoid)', 'Intranet Skill Weight', -10);
+
+
+
+
+

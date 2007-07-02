@@ -85,6 +85,7 @@ create table im_freelance_skills (
 );
 
 create index im_freelance_skills_user_idx on im_freelance_skills(user_id);
+create index im_freelance_skills_skill_idx on im_freelance_skills(skill_type_id, skill_id);
 
 
 create or replace view im_freelance_skill_types as 

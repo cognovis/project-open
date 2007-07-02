@@ -41,3 +41,24 @@ on im_object_freelance_skill_map(object_id, skill_type_id, skill_id);
 create index im_object_freelance_skillsmap_idx
 on im_object_freelance_skill_map(object_id);
 
+
+
+
+-- 2400-2419    Intranet Skill Weight
+
+delete from im_categories where category_type = 'Intranet Skill Weight';
+INSERT INTO im_categories (category_id, category, category_type, aux_int1) 
+VALUES (2400, 'Very Important', 'Intranet Skill Weight', 20);
+
+INSERT INTO im_categories (category_id, category, category_type, aux_int1) 
+VALUES (2402, 'Important', 'Intranet Skill Weight', 10);
+
+INSERT INTO im_categories (category_id, category, category_type, aux_int1) 
+VALUES (2404, 'Some Importance', 'Intranet Skill Weight', 2);
+
+INSERT INTO im_categories (category_id, category, category_type, aux_int1) 
+VALUES (2406, 'No Importance', 'Intranet Skill Weight', 0);
+
+INSERT INTO im_categories (category_id, category, category_type, aux_int1) 
+VALUES (2408, 'Negative Importance (avoid)', 'Intranet Skill Weight', -10);
+
