@@ -1,0 +1,476 @@
+# /packages/intranet-freelance-rfqs/www/new-rfq-2.tcl
+#
+# Copyright (c) 2003-2006 ]project-open[
+#
+# All rights reserved. Please check
+# http://www.project-open.com/license/ for details.
+
+# ---------------------------------------------------------------
+# 1. Page Contract
+# ---------------------------------------------------------------
+ad_page_contract { 
+    Add / edit freelance-rfqs in project
+    @param project_id
+} {
+    rfq_id:integer,optional
+    return_url
+}
+
+# ------------------------------------------------------------------
+# Default & Security
+# ------------------------------------------------------------------
+
+set user_id [ad_maybe_redirect_for_registration]
+if {![im_permission $user_id "add_freelance_rfqs"]} {
+    ad_return_complaint 1 "[_ intranet-timesheet2-invoices.lt_You_have_insufficient_1]"
+    return
+}
+
+set page_title [lang::message::lookup "" intranet-freelance-rfqs.RFQ_Base_Data "RFQ Base Data"]
+set context_bar [im_context_bar $page_title]
+set action_url "/intranet-freelance-rfqs/new-rfq"
+set case_url_base "/workflow/case"
+
+set todays_date [lindex [split [ns_localsqltimestamp] " "] 0]
+set todays_time [lindex [split [ns_localsqltimestamp] " "] 1]
+
+# Display the list of following types to add to the RFQ
+set active_skill_types [list 2000 2002 2004 2014]
+# 2000 = Source Language 2002 = Target Language 2014 = Subjects 
+# 2010 = OS 2004 = Sworn Language  2006 = TM Tools 2008 = LOC Tools
+
+# Default level required
+set default_experience_level 2200
+# 2203 High
+# 2201 Low
+# 2202 Medium
+# 2200 Unconfirmed
+
+set default_skill_weight 2402
+
+set bgcolor(0) " class=roweven "
+set bgcolor(1) " class=rowodd "
+
+# Return_URL to this page.
+set return_url2 [im_url_with_query]
+
+# ------------------------------------------------------------------
+# Form Options
+# ------------------------------------------------------------------
+
+
+set freelance_rfq_type_options [db_list_of_lists freelance_rfq_type "
+	select	freelance_rfq_type, 
+		freelance_rfq_type_id 
+	from	im_freelance_rfq_type
+"]
+set freelance_rfq_type_options [linsert $freelance_rfq_type_options 0 [list [lang::message::lookup "" "intranet-freelance-rfqs.--Select--" "-- Please Select --"] 0]]
+
+set freelance_rfq_status_options [db_list_of_lists freelance_rfq_status "
+	select	freelance_rfq_status,
+		freelance_rfq_status_id
+	from	im_freelance_rfq_status
+"]
+set freelance_rfq_status_options [linsert $freelance_rfq_status_options 0 [list [lang::message::lookup "" "intranet-freelance-rfqs.--Select--" "-- Please Select --"] 0]]
+
+set uom_options [im_cost_uom_options]
+
+
+# ------------------------------------------------------------------
+# Build the form
+# ------------------------------------------------------------------
+
+set form_id "freelance_rfq"
+set focus "$form_id\.var_name"
+set form_mode "display"
+
+
+ad_form \
+    -name $form_id \
+    -cancel_url $return_url \
+    -action $action_url \
+    -mode $form_mode \
+    -export {project_id return_url} \
+    -form {
+	rfq_id:key
+	{rfq_name:text(text) {label "[_ intranet-freelance-rfqs.Name]"} {html {size 40}}}
+	{rfq_type_id:text(select) 
+	    {label "[_ intranet-freelance-rfqs.RFQ_Type]"}
+	    {options $freelance_rfq_type_options} 
+	}
+	{rfq_status_id:text(select) 
+	    {label "[_ intranet-freelance-rfqs.RFQ_Status]"}
+	    {options $freelance_rfq_status_options} 
+	}
+
+	{rfq_start_date:date(date) {label "[_ intranet-freelance-rfqs.Start_date]"} }
+	{rfq_end_date:date(date) {label "[_ intranet-freelance-rfqs.End_date]"} {format "DD Month YYYY HH24:MI"} }
+
+	{rfq_units:text(text),optional {label "[_ intranet-freelance-rfqs.Units]"} {html {size 6}}}
+	{rfq_uom_id:text(select) 
+	    {label "[_ intranet-freelance-rfqs.UoM]"}
+	    {options $uom_options} 
+	}
+	{rfq_description:text(textarea),optional {label "[lang::message::lookup {} intranet-freelance-rfqs.Description Description]"} {html {cols 40}}}
+	{rfq_note:text(textarea),optional {label "[lang::message::lookup {} intranet-freelance-rfqs.Note Note]"} {html {cols 40}}}
+    }
+
+
+# ------------------------------------------------------------------
+# Form Actions
+# ------------------------------------------------------------------
+
+
+ad_form -extend -name $form_id -on_request {
+
+    # Populate elements from local variables
+
+
+} -select_query {
+
+	select	*,
+		to_char(rfq_start_date, 'YYYY MM DD') as rfq_start_date,
+		to_char(rfq_end_date, 'YYYY MM DD HH24 MI') as rfq_end_date
+	from	im_freelance_rfqs
+	where	rfq_id = :rfq_id
+
+} -on_submit {
+    
+    ns_log Notice "on_submit"
+    
+} -after_submit {
+
+    set next_url [export_vars -base "new-rfq-2" {return_url rfq_id}]
+    ad_returnredirect $next_url
+    ad_script_abort
+}
+
+
+# Set default values for start and end date - if form is ""
+if {"" == [template::element::get_value $form_id rfq_start_date]} {
+    set start_date_list [split $todays_date "-"]
+    set start_date_list [concat $start_date_list [split $todays_time ":"]]
+    template::element::set_value $form_id rfq_start_date $start_date_list
+}
+
+if {"" == [template::element::get_value $form_id rfq_end_date]} {
+    set end_date_list [split $todays_date "-"]
+    set end_date_list [concat $end_date_list [split $todays_time ":"]]
+    template::element::set_value $form_id rfq_end_date $end_date_list
+}
+    
+
+
+# ------------------------------------------------------------------
+# Show skills
+# ------------------------------------------------------------------
+
+
+set bulk_actions_list [list]
+
+set delete_msg [lang::message::lookup "" intranet-freelance-rfqs.Delete_Skill "Delete"]
+lappend bulk_actions_list $delete_msg "del-rfq-skills" $delete_msg
+
+
+set actions_list [list]
+# lappend actions_list "[lang::message::lookup "" intranet-freelance-rfqs.Add_Skill "Add Skill"]" "add-rfq-skills" "[lang::message::lookup "" intranet-freelance-rfqs.Add_Skill "Add Skill"]"
+
+
+set export_var_list [list return_url]
+set list_id "skill_list"
+
+template::list::create \
+    -name $list_id \
+    -multirow skill_list_lines \
+    -key object_skill_map_id \
+    -has_checkboxes \
+    -actions $actions_list \
+    -bulk_actions $bulk_actions_list \
+    -bulk_action_export_vars  {
+	rfq_id
+	{ return_url $return_url2 }
+    } \
+    -row_pretty_plural "[_ intranet-freelance-rfqs.RFQs_Items]" \
+    -elements {
+	rfq_chk {
+	    label "<input type=\"checkbox\" name=\"_dummy\" onclick=\"acs_ListCheckAll('skills_list', this.checked)\" title=\"Check/uncheck all rows\">"
+	    display_template {
+		@skill_list_lines.skill_chk;noquote@
+	    }
+	}
+	skill_type {
+	    label "[lang::message::lookup {} intranet-freelance-rfqs.Skill_Type {Skill Type}]"
+	}
+	skill {
+	    label "[lang::message::lookup {} intranet-freelance-rfqs.Skill {Skill}]"
+	}
+	experience {
+	    label "[lang::message::lookup {} intranet-freelance-rfqs.Experience {Experience}]"
+	}
+	skill_weight {
+	    label "[lang::message::lookup {} intranet-freelance-rfqs.Weight {Weight}]"
+	}
+    }
+
+
+db_multirow -extend {skill_chk skill_new_url} skill_list_lines skills "
+	select	*,
+		im_category_from_id(skill_id) as skill,
+		im_category_from_id(skill_type_id) as skill_type,
+		im_category_from_id(experience_id) as experience
+	from	im_object_freelance_skill_map m
+	where	m.object_id = :rfq_id
+	order by skill_type_id,	skill_id
+" {
+    set skill_chk "<input type=checkbox name=object_skill_map_ids value=$object_skill_map_id id='skills_list,$object_skill_map_id'>"
+    set rfq_new_url [export_vars -base "/rfc-new-skill" {skill_id return_url}]
+}
+
+
+# ---------------------------------------------------------------
+# Add Required Skills to RFQ
+# ---------------------------------------------------------------
+
+set ctr 0
+set add_skill_trs ""
+foreach skill_type_id $active_skill_types {
+
+    append add_skill_trs "
+	<tr$bgcolor([expr $ctr % 2])>
+	  <td>[im_category_from_id -translate_p 0 $skill_type_id]</td>
+	  <td>[im_freelance_skill_select skill_ids.$skill_type_id $skill_type_id ""]</td>
+	  <td>[im_category_select_plain -include_empty_p 1 -include_empty_name "Optional" "Intranet Experience Level" exp_ids.$skill_type_id $default_experience_level]</td>
+	  <td>[im_category_select_plain -include_empty_p 0 "Intranet Skill Weight" weight_ids.$skill_type_id $default_skill_weight]</td>
+	</tr>
+    "
+    incr ctr
+}
+
+
+# ------------------------------------------------------------------
+# Show list of Candidates and Manage invitations and workflow
+# ------------------------------------------------------------------
+
+set actions_list [list]
+set bulk_actions_list [list]
+
+set invite_participants_msg [lang::message::lookup "" intranet-freelance-rfqs.Invite_Participants "Invite Participants"]
+lappend bulk_actions_list $invite_participants_msg "invite-rfq-members" $invite_participants_msg
+
+set confirm_invitations_msg [lang::message::lookup "" intranet-freelance-rfqs.Confirm_RFQ "Confirm RFQ"]
+lappend bulk_actions_list $confirm_invitations_msg "confirm-rfq-members" $confirm_invitations_msg
+
+set decline_invitations_msg [lang::message::lookup "" intranet-freelance-rfqs.Decline_RFQ "Decline RFQ"]
+lappend bulk_actions_list $decline_invitations_msg "decline-rfq-members" $decline_invitations_msg
+
+
+set source_lang_skill_type [db_string source_lang "select category_id from im_categories where category = 'Source Language' and category_type = 'Intranet Skill Type'" -default 0]
+set target_lang_skill_type [db_string target_lang "select category_id from im_categories where category = 'Target Language' and category_type = 'Intranet Skill Type'" -default 0]
+set subject_area_skill_type [db_string target_lang "select category_id from im_categories where category = 'Subjects' and category_type = 'Intranet Skill Type'" -default 0]
+
+set elements {
+	rfq_chk {
+	    label "<input type=\"checkbox\" name=\"_dummy\" \
+		  onclick=\"acs_ListCheckAll('candidates_list', this.checked)\" \
+		  title=\"Check/uncheck all rows\">"
+	    display_template {
+		@candidate_list_lines.candidate_chk;noquote@
+	    }
+	}
+	score {	label "[lang::message::lookup {} intranet-freelance-rfqs.Score {Score}]" }
+	user_name {	
+	    label "[lang::message::lookup {} intranet-freelance-rfqs.User {User}]"
+	    link_url_eval $case_url
+	}
+}
+
+# -------------------------------------------------------------
+# Add columns for each skill:
+#	- in SQL to extract "claimed experience"
+#	- in SQL to extract "confirmed experience"
+#	- in SQL to limit
+
+set skill_sql "
+	select	*,
+		im_category_from_id(skill_id) as skill,
+		im_category_from_id(skill_type_id) as skill_type
+	from	im_object_freelance_skill_map m
+	where	m.object_id = :rfq_id
+"
+db_multirow skills skills $skill_sql 
+
+set extend_list {candidate_chk user_url case_url score note}
+set skill_select_sql ""
+set skill_where_sql ""
+template::multirow foreach skills {
+    append skill_select_sql "
+	,(	select	s.claimed_experience_id
+		from	im_freelance_skills s
+		where	user_id=u.user_id
+			and s.skill_type_id = $skill_type_id
+			and s.skill_id = $skill_id
+	) as u$object_skill_map_id
+    "
+    append skill_select_sql "
+	,(	select	s.confirmed_experience_id
+		from	im_freelance_skills s
+		where	user_id=u.user_id
+			and s.skill_type_id = $skill_type_id
+			and s.skill_id = $skill_id
+	) as c$object_skill_map_id
+    "
+
+    if {"" != $experience_id} {
+        append skill_where_sql "
+		and u.user_id in (
+			select	user_id
+			from	im_freelance_skills s
+			where	s.skill_type_id = $skill_type_id
+				and s.skill_id = $skill_id
+				and confirmed_experience_id >= $experience_id
+		)
+        "
+    }
+
+    set skill_key [lang::util::suggest_key $skill]
+    set skill_l10n [lang::message::lookup "" intranet-core.$skill_key $skill]
+    set skill_type_key [lang::util::suggest_key $skill_type]
+    set skill_type_l10n [lang::message::lookup "" intranet-core.$skill_type_key $skill_type]
+    set label [lang::message::lookup {} intranet-freelance-rfqs.${skill_type_l10n}_${skill_l10n} "$skill_type_l10n<br>$skill_l10n"]
+
+    lappend extend_list "s$object_skill_map_id"
+
+    lappend elements "s$object_skill_map_id"
+    lappend elements [list label $label display_template "@candidate_list_lines.s$object_skill_map_id;noquote@"]
+
+}
+
+lappend elements answer_amount
+lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Amount {Amount}]" }
+
+lappend elements transition_name
+lappend elements { 
+    label "[lang::message::lookup {} intranet-freelance-rfqs.Transition {Transition}]" 
+    link_url_eval $case_url
+
+}
+
+lappend elements task_state
+lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Task_State {Task State}]" }
+
+lappend elements source_langs 
+lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.All_Source_Languages {All Sourc Langs}]" }
+lappend elements target_langs 
+lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.All_Target_Languages {All Target Langs}]" }
+lappend elements subject_areas 
+lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Subject_Areas {Subject Areas}]" }
+
+lappend elements note 
+lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Note {Note}]" }
+
+
+
+# -------------------------------------------------------------
+# Define the list view
+
+set export_var_list [list rfq_id return_url]
+set list_id "candidate_list"
+
+template::list::create \
+    -name $list_id \
+    -multirow candidate_list_lines \
+    -key object_candidate_map_id \
+    -has_checkboxes \
+    -actions $actions_list \
+    -bulk_actions $bulk_actions_list \
+    -bulk_action_export_vars  {
+	rfq_id
+	{ return_url $return_url2 }
+    } \
+    -row_pretty_plural "[_ intranet-freelance-rfqs.RFQs_Items]" \
+    -elements $elements
+
+
+
+db_multirow -extend $extend_list candidate_list_lines candidates "
+	select
+		u.user_id,
+		a.*,
+		c.*,
+		t.*,
+		t.state as task_state,
+		tt.transition_name,
+		im_name_from_user_id(u.user_id) as user_name,
+		im_freelance_skill_list(u.user_id, :source_lang_skill_type) as source_langs,
+		im_freelance_skill_list(u.user_id, :target_lang_skill_type) as target_langs,
+		im_freelance_skill_list(u.user_id, :subject_area_skill_type) as subject_areas
+		$skill_select_sql
+	from
+		cc_users u
+		LEFT OUTER JOIN im_freelance_rfq_answers a ON (
+			a.answer_user_id = u.user_id
+			and a.answer_rfq_id = :rfq_id
+		)
+		LEFT OUTER JOIN wf_cases c ON (c.object_id = a.answer_id)
+		LEFT OUTER JOIN wf_tasks t ON (
+			t.case_id = c.case_id
+			and t.state not in ('canceled')
+		)
+		LEFT OUTER JOIN wf_transitions tt ON (
+			t.transition_key = tt.transition_key
+			and t.workflow_key = tt.workflow_key
+		)
+	where
+		1=1
+		$skill_where_sql
+" {
+    set candidate_chk "<input type=checkbox name=user_ids value=$user_id id='candidates_list,$user_id'>"
+    set user_url [export_vars -base "/intranet/users/view" {user_id}]
+    set case_url [export_vars -base $case_url_base {case_id}]
+
+    set note ""
+    set score 0
+
+    # Check the skill levels for all required skills
+    db_foreach skills $skill_sql {
+
+	# Check freelancer's skill level and kick the guy out if he doesn't meet the criteria
+	set confirmed_exp_id [expr "\$c$object_skill_map_id"]
+	set claimed_exp_id [expr "\$u$object_skill_map_id"]
+
+	if {"" == $claimed_exp_id } { set claimed_exp_id $confirmed_exp_id }
+	if {"" == $confirmed_exp_id } { set confirmed_exp_id 2200 }
+
+	set exp_id $claimed_exp_id
+	if {$confirmed_exp_id < $exp_id} { set exp_id $confirmed_exp_id}
+
+	set exp [im_category_from_id $exp_id]
+
+	set weight [db_string confweight "select aux_int1 from im_categories where category_id = :exp_id" -default 1]
+
+	if {$exp_id >= $experience_id} { set add [expr $skill_weight * $weight] }
+	set score [expr $score + $add]
+
+	set skill_var "s$object_skill_map_id"
+	set $skill_var "$exp ($add)"
+
+
+#	append note "$skill_type: claim=$claimed_exp_id, conf=$confirmed_exp_id, \n"
+
+    }
+}
+
+template::multirow sort candidate_list_lines -integer -decreasing score
+
+
+# ---------------------------------------------------------------
+# Project Menu
+# ---------------------------------------------------------------
+
+# Setup the subnavbar
+set project_id [db_string rfq_project "select rfq_project_id from im_freelance_rfqs where rfq_id = :rfq_id" -default 0]
+set bind_vars [ns_set create]
+ns_set put $bind_vars project_id $project_id
+set project_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
+set project_menu [im_sub_navbar $project_menu_id $bind_vars "" "pagedesriptionbar" "project_freelance_rfqs"]
+

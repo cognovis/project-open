@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-freelance-rfqs" package_version="3.2.6.0.0" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="--Select--">-- Select --</msg>
+  <msg key="Add_a_new_RFQ">Add a new RFQ</msg>
+  <msg key="Amount">Amount</msg>
+  <msg key="Available_Variables">The following variables are available within you message:&lt;br&gt;
+&lt;tt&gt;%email_vars%&lt;/tt&gt;</msg>
+  <msg key="Body">Body</msg>
+  <msg key="Currency">Currency</msg>
+  <msg key="Delete">Delete</msg>
+  <msg key="Delete_RFQ">Delete RFQ</msg>
+  <msg key="Description">Description</msg>
+  <msg key="End">End</msg>
+  <msg key="End_date">End Date</msg>
+  <msg key="Filter_RFQs">Filter RFQs</msg>
+  <msg key="Header">Header</msg>
+  <msg key="Invite_Candidates">Invite Candidates</msg>
+  <msg key="Invite_Users">Invite Candidates</msg>
+  <msg key="Name">Name</msg>
+  <msg key="New_Trans_RFQ">New Trans RFQ</msg>
+  <msg key="Note">Note</msg>
+  <msg key="Overall_Status">Overall Status</msg>
+  <msg key="Project">Project</msg>
+  <msg key="RFQ">RFQ</msg>
+  <msg key="RFQ_Candidates">RFQ Candidates</msg>
+  <msg key="RFQ_Details">RFQ Details</msg>
+  <msg key="RFQ_Name">RFQ Name</msg>
+  <msg key="RFQ_Status">RFQ Status</msg>
+  <msg key="RFQ_Type">RFQ Type</msg>
+  <msg key="RFQs">RFQs</msg>
+  <msg key="RFQs_Items">RFQ Items</msg>
+  <msg key="Send_Invitations">Send Invitations</msg>
+  <msg key="Send_me_a_copy">Send me a copy</msg>
+  <msg key="Source">Source</msg>
+  <msg key="Start">Start</msg>
+  <msg key="Start_date">Start Date</msg>
+  <msg key="Subject_Areas">Subject Areas</msg>
+  <msg key="Target">Target</msg>
+  <msg key="Units">Units</msg>
+  <msg key="UoM">UoM</msg>
+  <msg key="Workflow">Workflow</msg>
+  <msg key="Your_Answer">Your Answer</msg>
+</message_catalog>
