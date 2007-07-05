@@ -29,6 +29,35 @@ ad_proc -public im_freelance_recruiting_status_result_b {} { return 6102 }
 ad_proc -public im_freelance_recruiting_status_result_c {} { return 6104 }
 
 
+ad_proc -public im_freelance_experience_level_unconfirmed {} { return 2200 }
+ad_proc -public im_freelance_experience_level_low {} { return 2201 }
+ad_proc -public im_freelance_experience_level_medium {} { return 2202 }
+ad_proc -public im_freelance_experience_level_high {} { return 2203 }
+
+
+ad_proc -public im_freelance_skill_type_source_language {} {
+    return [db_string source_lang "
+	select category_id 
+	from im_categories 
+	where category = 'Source Language' and category_type = 'Intranet Skill Type'
+    " -default 0]
+}
+ad_proc -public im_freelance_skill_type_target_language {} {
+    return [db_string target_lang "
+	select category_id 
+	from im_categories 
+	where category = 'Target Language' and category_type = 'Intranet Skill Type'
+    " -default 0]
+}
+ad_proc -public im_freelance_skill_type_subject_area {} {
+    return [db_string target_lang "
+	select category_id 
+	from im_categories 
+	where category = 'Subjects' and category_type = 'Intranet Skill Type'
+    " -default 0]
+}
+
+
 # ----------------------------------------------------------------------
 # Permissions
 # ----------------------------------------------------------------------
@@ -474,9 +503,9 @@ ad_proc im_freelance_member_select_component {
     set colspan 5
     if {$enable_rfq_p} { set colspan 6 }
 
-    set source_lang_skill_type [db_string source_lang "select category_id from im_categories where category = 'Source Language' and category_type = 'Intranet Skill Type'" -default 0]
-    set target_lang_skill_type [db_string target_lang "select category_id from im_categories where category = 'Target Language' and category_type = 'Intranet Skill Type'" -default 0]
-    set subject_area_skill_type [db_string target_lang "select category_id from im_categories where category = 'Subject Type' and category_type = 'Intranet Skill Type'" -default 0]
+    set source_lang_skill_type [im_freelance_skill_type_source_language]
+    set target_lang_skill_type [im_freelance_skill_type_target_language]
+    set subject_area_skill_type [im_freelance_skill_type_subject_area]
 
     set project_source_lang [db_string source_lang "select substr(im_category_from_id(source_language_id), 1, 2) from im_projects where project_id = :object_id" -default 0]
     set project_target_langs [db_list target_langs "select '''' || substr(im_category_from_id(language_id), 1, 2) || '''' from im_target_languages where project_id = :object_id"]
