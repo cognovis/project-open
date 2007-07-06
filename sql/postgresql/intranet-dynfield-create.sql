@@ -405,8 +405,8 @@ end;' language 'plpgsql';
 
 create or replace function im_dynfield_attribute__new (
 	integer, varchar, timestamptz, integer, varchar, integer,
-	varchar, varchar, varchar, integer, varchar, varchar, 
-	varchar, varchar
+	varchar, varchar, integer, integer, varchar, 
+	varchar, varchar, varchar, varchar, char, char
 ) returns integer as '
 DECLARE
 	p_attribute_id		alias for $1;
@@ -421,6 +421,7 @@ DECLARE
 	p_min_n_values		alias for $9;
 	p_max_n_values		alias for $10;
 	p_default_value		alias for $11;
+
 	p_datatype		alias for $12;
 	p_pretty_name		alias for $13;
 	p_pretty_plural		alias for $14;
@@ -430,30 +431,34 @@ DECLARE
 
 	v_acs_attribute_id	integer;
 	v_attribute_id		integer;
+	v_table_name		varchar;
 BEGIN
+	select table_name into v_table_name
+	from acs_object_types where object_type = p_attribute_object_type;
+
 	v_acs_attribute_id := acs_attribute__create_attribute (
-		p_object_type,
+		p_attribute_object_type,
 		p_attribute_name,
 		p_datatype,
 		p_pretty_name,
 		p_pretty_plural,
-		null,			-- table_name
+		v_table_name,		-- table_name
 		null,			-- column_name
-		default_value,
-		min_n_values,
-		max_n_values,
+		p_default_value,
+		p_min_n_values,
+		p_max_n_values,
 		null,			-- sort order
 		''type_specific'',	-- storage
 		''f''			-- static_p
 	);
 
 	v_attribute_id := acs_object__new (
-		object_id,
-		object_type,
-		creation_date,
-		creation_user,
-		creation_ip,
-		context_id
+		p_attribute_id,
+		p_object_type,
+		p_creation_date,
+		p_creation_user,
+		p_creation_ip,
+		p_context_id
 	);
 
 	insert into im_dynfield_attributes (
