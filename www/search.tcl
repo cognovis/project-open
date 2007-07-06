@@ -603,6 +603,7 @@ db_foreach full_text_query $sql {
             "
 	    switch $content_type {
 		"content_revision" {
+		    # Wiki
 		    set read_p [permission::permission_p \
 				    -object_id $object_id \
 				    -party_id $user_id \
@@ -615,6 +616,7 @@ db_foreach full_text_query $sql {
 		    set name_link "<a href=\"/wiki/$name\">wiki: $name</a>\n"
 		} 
 		"workflow_case_log_entry" {
+		    # Bug-Tracker
 		    set bug_number [db_string bug_from_cr_item "
                         select bug_number from bt_bugs,cr_items where item_id=:object_id and cr_items.parent_id=bug_id
                     "]
