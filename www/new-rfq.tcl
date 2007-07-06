@@ -100,9 +100,21 @@ ad_form \
 	    {label "[_ intranet-freelance-rfqs.UoM]"}
 	    {options $uom_options} 
 	}
+    }
+
+
+im_dynfield::append_attributes_to_form \
+    -object_type "im_freelance_rfq" \
+    -object_subtype_id $rfq_type_id \
+    -form_id $form_id \
+    -form_display_mode "edit"
+
+
+ad_form -extend -name $form_id -form {
         {rfq_description:text(textarea),optional {label "[lang::message::lookup {} intranet-freelance-rfqs.Description Description]"} {html {cols 40}}}
         {rfq_note:text(textarea),optional {label "[lang::message::lookup {} intranet-freelance-rfqs.Note Note]"} {html {cols 40}}}
     }
+
 
 # ------------------------------------------------------------------
 # Form Actions
@@ -156,6 +168,12 @@ ad_form -extend -name $form_id -on_request {
 		rfq_note = :rfq_note
 	where rfq_id = :rfq_id
     "
+
+    im_dynfield::attribute_store \
+        -object_type "im_freelance_rfq" \
+        -object_id $rfq_id \
+        -form_id $form_id
+
 
     # Add Source Language
     set source_language_id [db_string slid "select source_language_id from im_projects where project_id = :rfq_project_id" -default ""]
@@ -260,6 +278,12 @@ ad_form -extend -name $form_id -on_request {
 		rfq_note = :rfq_note
 	where rfq_id = :rfq_id
     "
+
+    im_dynfield::attribute_store \
+        -object_type "im_freelance_rfq" \
+        -object_id $rfq_id \
+        -form_id $form_id
+
 
 } -on_submit {
     

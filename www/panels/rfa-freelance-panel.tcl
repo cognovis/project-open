@@ -104,15 +104,26 @@ set reassign_perm_p [permission::permission_p -party_id $current_user_id -object
 set task(add_assignee_url) "/workflow/assignee-add?[export_url_vars task_id]"
 set task(assign_yourself_url) "/workflow/assign-yourself?[export_vars -url {task_id return_url}]"
 
-# -----------------------------------------------------------
+# ------------------------------------------------------------------
 # Options
-# -----------------------------------------------------------
+# ------------------------------------------------------------------
 
-set customer_options "[list [list "[_ intranet-core.--_Please_select_--]" ""]]"
-set customer_list_options [concat $customer_options [im_company_options -include_empty 0 -status "Active" -type "CustOrIntl"]]
 
-set project_lead_options "[list [list "[_ intranet-core.--_Please_select_--]" ""]]"
-set project_lead_list_options [concat $project_lead_options [im_employee_options 0]]
+set freelance_rfq_type_options [db_list_of_lists freelance_rfq_type "
+	select	freelance_rfq_type, 
+		freelance_rfq_type_id 
+	from	im_freelance_rfq_type
+"]
+set freelance_rfq_type_options [linsert $freelance_rfq_type_options 0 [list "" 0]]
+
+set freelance_rfq_status_options [db_list_of_lists freelance_rfq_status "
+	select	freelance_rfq_status,
+		freelance_rfq_status_id
+	from	im_freelance_rfq_status
+"]
+set freelance_rfq_status_options [linsert $freelance_rfq_status_options 0 [list "" 0]]
+
+set uom_options [im_cost_uom_options]
 
 
 # -----------------------------------------------------------
@@ -131,49 +142,61 @@ db_1row rfq_info "
 # Create the Form with RFA information
 # -----------------------------------------------------------
 
-
 set form_id "rfa-form"
+set focus "$form_id\.var_name"
 
-template::form::create $form_id
-template::form::section $form_id ""
+ad_form \
+    -name $form_id \
+    -export {return_url} \
+    -form {
+        rfq_id:key
+        {answer_id:text(hidden)}
+        {task_id:text(hidden)}
+        {rfq_name:text(text) {label "[_ intranet-freelance-rfqs.Name]"} {html {size 40}} {mode "display"} }
+        {rfq_type_id:text(select)
+            {label "[_ intranet-freelance-rfqs.RFQ_Type]"}
+            {options $freelance_rfq_type_options}
+	    {mode "display"}
+        }
+        {rfq_status_id:text(select)
+            {label "[_ intranet-freelance-rfqs.RFQ_Status]"}
+            {options $freelance_rfq_status_options}
+	    {mode "display"}
+        }
 
-template::element::create $form_id rfq_id -widget "hidden"
-template::element::create $form_id answer_id -widget "hidden"
-template::element::create $form_id return_url -widget "hidden" -optional -datatype text
-template::element::create $form_id task_id -widget "hidden" -optional -datatype text
+        {rfq_start_date:date(date) {label "[_ intranet-freelance-rfqs.Start_date]"}  {mode "display"} }
+        {rfq_end_date:date(date) {label "[_ intranet-freelance-rfqs.End_date]"} {format "DD Month YYYY HH24:MI"}  {mode "display"} }
 
-template::element::create $form_id rfq_name \
-    -datatype text\
-    -label "[lang::message::lookup "" intranet-freelance-rfqs.RFQ_Name "RFQ Name"]" \
-    -html {size 60} \
-    -mode display
-template::element::create $form_id rfq_start_date \
-    -label "[lang::message::lookup "" intranet-freelance-rfqs.RFQ_Start_Date {RFQ Start Date}]" \
-    -datatype "date" \
-    -widget "date" \
-    -mode "display"
-template::element::create $form_id rfq_end_date \
-    -label "[lang::message::lookup "" intranet-freelance-rfqs.RFQ_End_Date {RFQ End Date}]" \
-    -datatype "date" \
-    -widget "date" \
-    -mode "display"
+        {rfq_units:text(text),optional {label "[_ intranet-freelance-rfqs.Units]"} {html {size 6}} {mode "display"} }
+        {rfq_uom_id:text(select)
+            {label "[_ intranet-freelance-rfqs.UoM]"}
+            {options $uom_options}
+	    {mode "display"}
+        }
+    }
 
 
 im_dynfield::append_attributes_to_form \
     -object_type "im_freelance_rfq" \
+    -object_subtype_id $rfq_type_id \
     -form_id $form_id \
-    -object_id $rfq_id \
     -form_display_mode "display"
 
-set ttt {    -object_subtype_id $rfq_type_id  }
 
+ad_form -extend -name $form_id -form {
+    {rfq_description:text(textarea),optional \
+	 {label "[lang::message::lookup {} intranet-freelance-rfqs.Description Description]"} \
+	 {html {cols 40}} {mode "display"} \
+     }
+    {rfq_note:text(textarea),optional \
+	 {label "[lang::message::lookup {} intranet-freelance-rfqs.Note Note]"} \
+	 {html {cols 40}} {mode "display"} \
+     }
+}
 
 # ------------------------------------------------------
 # Show Input Fields
 # ------------------------------------------------------
-
-
-
 
 # This line forces the "column-sections" form-template
 # to create a new column for the right-hand action section.
@@ -184,18 +207,36 @@ template::form::section $form_id "Action Section"
 #  Add a comment field statically on the "right side"
 # ------------------------------------------------------
 
+im_dynfield::append_attributes_to_form \
+    -object_type "im_freelance_rfq_answer" \
+    -form_id $form_id \
+    -form_display_mode "edit"
+
+
 # Show basic comment field before buttons
 template::element::create $form_id wf_comment \
     -optional \
     -datatype text \
     -widget textarea \
     -label "[lang::message::lookup "" intranet-freelance-rfqs.Comment {Comment}]" \
-    -html {rows 5 cols 35}
+    -html {rows 5 cols 35} \
+    -form_display_mode "edit"
 
 
 # ------------------------------------------------------
 # 
 # ------------------------------------------------------
+
+ad_form -extend -name $form_id -select_query {
+	select	*,
+		to_char(rfq_start_date, 'YYYY MM DD') as rfq_start_date,
+		to_char(rfq_end_date, 'YYYY MM DD HH24 MI') as rfq_end_date
+	from	im_freelance_rfqs
+	where	rfq_id = :rfq_id
+
+} 
+
+set ttt {
 
 template::element::set_value $form_id rfq_id $rfq_id
 template::element::set_value $form_id answer_id $answer_id
@@ -206,6 +247,8 @@ set rfq_start_date_list [split $rfq_start_date "-"]
 template::element::set_value $form_id rfq_start_date $rfq_start_date_list
 set rfq_end_date_list [concat [split $rfq_end_date "-"] [split $rfq_end_time ":"]]
 template::element::set_value $form_id rfq_end_date $rfq_end_date_list
+
+}
 
 
 # -----------------------------------------------------------------

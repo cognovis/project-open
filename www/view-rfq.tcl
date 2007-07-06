@@ -111,6 +111,17 @@ ad_form \
 	    {label "[_ intranet-freelance-rfqs.UoM]"}
 	    {options $uom_options} 
 	}
+    }
+
+if {![info exists rfq_type_id]} { set rfq_type_id "" }
+im_dynfield::append_attributes_to_form \
+    -object_type "im_freelance_rfq" \
+    -object_subtype_id $rfq_type_id \
+    -form_id $form_id \
+    -form_display_mode "display"
+
+
+ad_form -extend -name $form_id -form {
 	{rfq_description:text(textarea),optional {label "[lang::message::lookup {} intranet-freelance-rfqs.Description Description]"} {html {cols 40}}}
 	{rfq_note:text(textarea),optional {label "[lang::message::lookup {} intranet-freelance-rfqs.Note Note]"} {html {cols 40}}}
     }
