@@ -72,54 +72,68 @@ set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurr
 set last_modified_date [db_string "get current date" "select sysdate from dual"]
 set modified_ip_address [ns_conn peeraddr]
 db_dml payment_update "
-update
-	im_payments 
-set
-	cost_id =		:cost_id,
-	amount =		:amount,
-	currency =		:currency,
-	received_date =		:received_date,
-	payment_type_id = 	:payment_type_id,
-	note =			:note,
-        last_modified =         :last_modified_date,
-	last_modifying_user = 	:user_id,
-	modified_ip_address = 	:modified_ip_address
-where
-	payment_id = :payment_id" 
+	update
+		im_payments 
+	set
+		cost_id =		:cost_id,
+		amount =		:amount,
+		currency =		:currency,
+		received_date =		:received_date,
+		payment_type_id = 	:payment_type_id,
+		note =			:note,
+	        last_modified =         :last_modified_date,
+		last_modifying_user = 	:user_id,
+		modified_ip_address = 	:modified_ip_address
+	where
+		payment_id = :payment_id
+"
 
 
 if {[db_resultrows] == 0} {
     
     db_dml new_payment_insert "
-insert into im_payments ( 
-	payment_id, 
-	cost_id,
-	company_id,
-	provider_id,
-	amount, 
-	currency,
-	received_date,
-	payment_type_id,
-	note, 
-	last_modified, 
-	last_modifying_user, 
-	modified_ip_address
-) values ( 
-	:payment_id, 
-	:cost_id,
-	:company_id,
-	:provider_id,
-        :amount, 
-	:currency,
-	:received_date,
-	:payment_type_id,
-        :note, 
-	(select sysdate from dual), 
-	:user_id, 
-	'[ns_conn peeraddr]' 
-)" 
+	insert into im_payments ( 
+		payment_id, 
+		cost_id,
+		company_id,
+		provider_id,
+		amount, 
+		currency,
+		received_date,
+		payment_type_id,
+		note, 
+		last_modified, 
+		last_modifying_user, 
+		modified_ip_address
+    ) values ( 
+		:payment_id, 
+		:cost_id,
+		:company_id,
+		:provider_id,
+	        :amount, 
+		:currency,
+		:received_date,
+		:payment_type_id,
+	        :note, 
+		(select sysdate from dual), 
+		:user_id, 
+		'[ns_conn peeraddr]' 
+    )" 
 }
 
+
+# ---------------------------------------------------------------
+# Mark invoice as paid
+# ---------------------------------------------------------------
+
+
+if {$mark_document_as_paid_p} {
+    db_dml mark_invoice_as_paid "
+	update im_costs set
+		cost_status_id = [im_cost_status_paid]
+	where cost_id = :cost_id
+    "
+}
 
 # ---------------------------------------------------------------
 # Update Cost Items
