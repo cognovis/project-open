@@ -32,6 +32,8 @@ switch $acs_object_type {
     im_company { set category_type "Intranet Project Type" }
     im_office { set category_type "Intranet Office Type" }
     user { set category_type "Intranet Project Type" }
+    im_freelance_rfq { set category_type "Intranet Freelance RFQ Type" }
+    im_freelance_rfq_answer { set category_type "Intranet Freelance RFQ Answer Type" }
     default { set category_type "" }
 }
 
@@ -47,7 +49,7 @@ set sql "
         where
                 m.attribute_id = a.attribute_id
                 and a.acs_attribute_id = aa.attribute_id
-                and aa.object_type = 'im_project'
+                and aa.object_type = :acs_object_type
 	order by
 		aa.sort_order, aa.pretty_name
 "

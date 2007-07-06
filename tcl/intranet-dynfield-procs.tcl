@@ -2093,7 +2093,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
 } {
     set debug 0
-    if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: object_tpye=$object_type, object_id=$object_id" }
+    if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: object_type=$object_type, object_id=$object_id" }
 
     set user_id [ad_get_user_id]
 
@@ -2134,7 +2134,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
         where
                 m.attribute_id = a.attribute_id
                 and a.acs_attribute_id = aa.attribute_id
-                and aa.object_type = 'im_project'
+                and aa.object_type = :object_type
     "
 
     # Default: Set all field to form's display mode

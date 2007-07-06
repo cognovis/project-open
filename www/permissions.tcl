@@ -18,6 +18,7 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
+    { object_type "" }
     { return_url "" }
 }
 
@@ -36,6 +37,9 @@ if {!$user_is_admin_p} {
 if {"" == $return_url} { set return_url [ad_conn url] }
 
 set page_title "Dynfield Permissions"
+if {"" != $object_type} { append page_title " for $object_type" }
+
+
 set context_bar [im_context_bar [list /intranet-dynfield/ "DynField"] $page_title]
 
 set dynfield_url "/intranet-dynfield/attribute-new"
@@ -59,18 +63,18 @@ set table_header "
 
 
 set group_list_sql {
-select DISTINCT
-        g.group_name,
-        g.group_id,
-        p.profile_gif
-from
-        acs_objects o,
-        groups g,
-        im_profiles p
-where
-        g.group_id = o.object_id
-        and g.group_id = p.profile_id
-        and o.object_type = 'im_profile'
+	select DISTINCT
+	        g.group_name,
+	        g.group_id,
+	        p.profile_gif
+	from
+	        acs_objects o,
+	        groups g,
+	        im_profiles p
+	where
+	        g.group_id = o.object_id
+	        and g.group_id = p.profile_id
+	        and o.object_type = 'im_profile'
 }
 
 set main_sql_select ""
@@ -110,6 +114,8 @@ set table "
 <table>
 $table_header\n"
 
+set object_type_where ""
+if {"" != $object_type} { set object_type_where "and aa.object_type = :object_type" }
 
 set attributes_sql "
     select 
@@ -137,6 +143,7 @@ set attributes_sql "
 	$object_type_constraint
 	and fa.widget_name = w.widget_name
 	and aa.object_type = aot.object_type
+	$object_type_where
     order by
 	aa.object_type,
 	aa.attribute_id

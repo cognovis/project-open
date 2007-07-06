@@ -68,9 +68,20 @@
 </table>
 </form>
 <ul class="action-links">
-<li><a href="attribute-new?object_type=@object_type@&action=already_existing">#intranet-dynfield.lt_Add_an_attribute_that#</a>
 <li><a href="attribute-new?object_type=@object_type@&action=completely_new">#intranet-dynfield.lt_Add_a_completely_new_#</a>
-<li><a href="layout-manager?object_type=@object_type@">#intranet-dynfield.Layout_Manager#</a></li>
+    or
+   <a href="attribute-new?object_type=@object_type@&action=already_existing">#intranet-dynfield.lt_Add_an_attribute_that#</a>
+<!-- <li><a href="layout-manager?object_type=@object_type@">#intranet-dynfield.Layout_Manager#</a>:<br> -->
+<li><a href="attribute-type-map?object_type=@object_type@">Attribute-Type-Map</a>:<br>
+	You need to configure when to show a DynFields, depending on the 
+	object's sub-type. <br>
+	For example, you can define that
+	a company of sub-type "Customer" should exhibit an <br>
+	"A-B-C" classification field, 
+	while a company of sub-type "Partner" may exhibit a <br>
+	"Partner Status" field.
+<li><a href="permissions?object_type=@object_type@">Attribute Permissions</a>:<br>
+	You need to configure who should be able to read or write a DynField.
 </ul>
 
 
