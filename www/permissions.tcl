@@ -34,7 +34,7 @@ if {!$user_is_admin_p} {
     return
 }
 
-if {"" == $return_url} { set return_url [ad_conn url] }
+if {"" == $return_url} { set return_url [im_url_with_query] }
 
 set page_title "Dynfield Permissions"
 if {"" != $object_type} { append page_title " for $object_type" }
@@ -110,7 +110,7 @@ append table_header "
 
 set table "
 <form action=dynfield-action method=post>
-[export_form_vars return_url]
+[export_form_vars object_type return_url]
 <table>
 $table_header\n"
 
