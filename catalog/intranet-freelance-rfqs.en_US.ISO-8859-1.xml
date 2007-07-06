@@ -1,28 +1,78 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-freelance-rfqs" package_version="3.2.6.0.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-freelance-rfqs" package_version="3.2.11.0.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="--Select--">-- Select --</msg>
   <msg key="Add_a_new_RFQ">Add a new RFQ</msg>
+  <msg key="Add_Required_Skills">Add Required Skills</msg>
+  <msg key="All">All</msg>
+  <msg key="All_Source_Languages">All Source Languages</msg>
+  <msg key="All_Target_Languages">All Target Languages</msg>
   <msg key="Amount">Amount</msg>
   <msg key="Available_Variables">The following variables are available within you message:&lt;br&gt;
 &lt;tt&gt;%email_vars%&lt;/tt&gt;</msg>
   <msg key="Body">Body</msg>
+  <msg key="Comment">Comment</msg>
+  <msg key="Confirm_for_RFQ_of_Project_Body">Dear %first_names%,
+
+We would confirm your participation in our %rfq_type% for project '%project_name%'.
+
+I will soon contact you with more details.
+
+Best regards,
+%current_user_first_names%</msg>
+  <msg key="Confirm_for_RFQ_of_Project_Header">Confirmation for: %rfq_name%</msg>
+  <msg key="Confirm_RFQ">Confirm RFQ</msg>
+  <msg key="Create_a_new_RFQ">Create a new RFQ</msg>
+  <msg key="Create_New_RFQ">Create New RFQ</msg>
   <msg key="Currency">Currency</msg>
+  <msg key="Decline_for_RFQ_of_Project_Body">Dear %first_names%,
+
+Unfortunately, you have not been selected to participate in this %rfq_type% for project '%project_name%'.
+
+Please contact me for more details.
+
+Best regards,
+%current_user_first_names%</msg>
+  <msg key="Decline_for_RFQ_of_Project_Header">Declined: %rfq_name%</msg>
+  <msg key="Decline_RFQ">Decline RFQ</msg>
   <msg key="Delete">Delete</msg>
   <msg key="Delete_RFQ">Delete RFQ</msg>
+  <msg key="Delete_Skill">Delete Skill</msg>
   <msg key="Description">Description</msg>
   <msg key="End">End</msg>
   <msg key="End_date">End Date</msg>
+  <msg key="Experience">Experience</msg>
   <msg key="Filter_RFQs">Filter RFQs</msg>
+  <msg key="General_Outcome">General Outcome</msg>
   <msg key="Header">Header</msg>
   <msg key="Invite_Candidates">Invite Candidates</msg>
+  <msg key="Invite_for_RFQ_of_Project_Body">Dear %first_names%,
+
+We would invite you to participate in a %rfq_type% for project '%project_name%'.
+
+Please click on the link below, follow the instructions on the page:
+
+%rfq_url%
+
+Best regards,
+%current_user_first_names%</msg>
+  <msg key="Invite_for_RFQ_of_Project_Header">Invitation for: %rfq_name%</msg>
+  <msg key="Invite_Participants">Invite Participants</msg>
   <msg key="Invite_Users">Invite Candidates</msg>
+  <msg key="Minimum_Skill_Level">Minimum Skill Level</msg>
   <msg key="Name">Name</msg>
   <msg key="New_Trans_RFQ">New Trans RFQ</msg>
+  <msg key="No_decline">No, I decline</msg>
+  <msg key="No_I_decline">No, I decline.</msg>
   <msg key="Note">Note</msg>
+  <msg key="Num_Conformations">#Conf</msg>
+  <msg key="Num_Decl">#Decl</msg>
+  <msg key="Num_Invitations">#Inv</msg>
   <msg key="Overall_Status">Overall Status</msg>
   <msg key="Project">Project</msg>
+  <msg key="Required_RFQ_Skills">Required RFQ Skills</msg>
   <msg key="RFQ">RFQ</msg>
+  <msg key="RFQ_Base_Data">RFQ Base Data</msg>
   <msg key="RFQ_Candidates">RFQ Candidates</msg>
   <msg key="RFQ_Details">RFQ Details</msg>
   <msg key="RFQ_Name">RFQ Name</msg>
@@ -30,15 +80,24 @@
   <msg key="RFQ_Type">RFQ Type</msg>
   <msg key="RFQs">RFQs</msg>
   <msg key="RFQs_Items">RFQ Items</msg>
+  <msg key="Score">Score</msg>
   <msg key="Send_Invitations">Send Invitations</msg>
   <msg key="Send_me_a_copy">Send me a copy</msg>
+  <msg key="Skill">Skill</msg>
+  <msg key="Skill_Type">Skill Type</msg>
+  <msg key="Skill_Weight">Skill Weight</msg>
   <msg key="Source">Source</msg>
   <msg key="Start">Start</msg>
   <msg key="Start_date">Start Date</msg>
   <msg key="Subject_Areas">Subject Areas</msg>
   <msg key="Target">Target</msg>
+  <msg key="Task_State">Task State</msg>
+  <msg key="Transition">Transition</msg>
   <msg key="Units">Units</msg>
   <msg key="UoM">UoM</msg>
+  <msg key="User">User</msg>
+  <msg key="Weight">Weight</msg>
   <msg key="Workflow">Workflow</msg>
+  <msg key="Yes_I_can_do">Yes, I can deliver the specified work in time.</msg>
   <msg key="Your_Answer">Your Answer</msg>
 </message_catalog>
