@@ -24,7 +24,12 @@ set user_id [ad_conn user_id]
 set return_url [ad_return_url]
 set admin_p [permission::permission_p -object_id [ad_conn package_id] -privilege admin]
 
-multirow create notifications url label title subscribed_p
+multirow create notifications url_on url_off label
+
+set type_id [notification::type::get_type_id -short_name "workflow_case"]
+
+set watched_bugs [llength [bug_tracker::get_watch_bugs -type_id $type_id -user_id $user_id -watched 1]]
+set unwatched_bugs [llength [bug_tracker::get_watch_bugs -type_id $type_id -user_id $user_id]]
 
 foreach type { 
     workflow_assignee workflow_my_cases workflow
@@ -35,6 +40,9 @@ foreach type {
                        -case_id $case_id]
 
     if { ![empty_string_p $object_id] } {
+	set url_on ""
+	set url_off ""
+
         switch $type {
             workflow_assignee {
                 set pretty_name "all [bug_tracker::conn bugs] you're assigned to"
@@ -43,9 +51,6 @@ foreach type {
                 set pretty_name "all [bug_tracker::conn bugs] you're participating in"
             }
             workflow {
-		if { !$admin_p } {
-		    continue
-		}
                 set pretty_name "all [bug_tracker::conn bugs] in this project"
             }
             default {
@@ -62,26 +67,37 @@ foreach type {
                             -object_id $object_id \
                             -user_id $user_id]
 
-        set subscribed_p [expr ![empty_string_p $request_id]]
-        
-        if { $subscribed_p } {
-            set url [notification::display::unsubscribe_url -request_id $request_id -url $return_url]
+        if { $request_id != "" } {
+            set url_off [notification::display::unsubscribe_url -request_id $request_id -url $return_url]
         } else {
-            set url [notification::display::subscribe_url \
-                         -type $type \
+            set url_on [notification::display::subscribe_url \
+			    -type $type \
                          -object_id $object_id \
                          -url $return_url \
                          -user_id $user_id \
                          -pretty_name $pretty_name]
         }
 
-        if { ![empty_string_p $url] } {
-            multirow append notifications \
-                $url \
-                [string totitle $pretty_name] \
-                [ad_decode $subscribed_p 1 "Unsubscribe from $pretty_name" "Subscribe to $pretty_name"] \
-                $subscribed_p
-        }
+	if { $type == "workflow" && !$admin_p} {
+	    if { $unwatched_bugs==0 } {
+		set url_on ""
+	    } else {
+		set url_on "watch_all_bugs?return_url=$return_url"
+	    }
+
+	    if { $watched_bugs==0 } {
+		set url_off ""
+	    } else {
+		set url_off "watch_all_bugs?return_url=$return_url&unwatch=1"
+	    } 
+		
+	    set pretty_name "all [bug_tracker::conn bugs] currenty available to me (subscribed:$watched_bugs,unsubscribed:$unwatched_bugs)"
+	}
+
+	multirow append notifications \
+	    $url_on \
+	    $url_off \
+	    [string totitle $pretty_name]
     }
 }
 

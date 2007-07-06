@@ -1346,3 +1346,36 @@ ad_proc bug_tracker::state_get_filter_data {
                              -package_id $package_id \
                              -workflow_id $workflow_id]]
 }
+
+ad_proc -public bug_tracker::get_watch_bugs {
+    {-type_id:required}
+    {-user_id:required}
+    {-watched 0}
+} {
+    if {$watched} {
+	set where "and nr.object_id is not null";
+    } else {
+	set where "and nr.object_id is null";
+    }
+
+    return [db_list get_watch_bugs "
+        SELECT b.bug_id
+        FROM 
+          bt_bugs b
+          left join notification_requests nr on (b.bug_id=nr.object_id and nr.type_id=:type_id)
+	  left join im_projects bcp on (b.bug_container_project_id=bcp.project_id)
+	  left join im_projects bcpp on (bcp.parent_id=bcpp.project_id),
+          acs_users_all submitter,
+          workflow_cases cas,
+          workflow_case_fsm cfsm,
+          workflow_fsm_states st
+        WHERE submitter.user_id = b.creation_user
+          AND cas.object_id = b.bug_id
+          AND cfsm.case_id = cas.case_id
+          AND cfsm.parent_enabled_action_id is null
+          AND st.state_id = cfsm.current_state 
+          AND (b.bug_container_project_id IS NULL 
+            OR ad_group_member_p( :user_id, bcp.project_id )='t'
+            OR ad_group_member_p( :user_id, bcpp.project_id )='t')
+          $where"]
+}
