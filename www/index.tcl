@@ -13,6 +13,8 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     { project_id:integer "" }
+    { rfq_type_id:integer "" }
+    { rfq_status_id:integer "" }
 }
 
 # ---------------------------------------------------------------
@@ -31,6 +33,10 @@ set page_title "$project_nr - [_ intranet-freelance-rfqs.RFQs]"
 set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
 set org_project_id $project_id
 
+set date_format "YYYY-MM-DD"
+set date_time_format "YYYY-MM-DD HH24:MI"
+
+
 # ---------------------------------------------------------------
 # Admin Links
 # ---------------------------------------------------------------
@@ -41,11 +47,55 @@ set bulk_actions_list "[list]"
 
 if {$add_rfq_p} {
     lappend bulk_actions_list "[_ intranet-freelance-rfqs.Delete]" "del-rfq" "[_ intranet-freelance-rfqs.Delete_RFQ]"
-    lappend bulk_actions_list "[lang::message::lookup "" intranet-freelance-rfqs.Create_a_new_RFQ "Create a new RFQ"]" "new-rfq" "[lang::message::lookup "" intranet-freelance-rfqs.Create_a_new_RFQ "Create a new RFQ"]"
 }
 
+
+# ------------------------------------------------------------------
+# Form Options
+# ------------------------------------------------------------------
+
+set freelance_rfq_type_options [db_list_of_lists freelance_rfq_type "
+	select	freelance_rfq_type, 
+		freelance_rfq_type_id 
+	from	im_freelance_rfq_type
+"]
+set freelance_rfq_type_options [linsert $freelance_rfq_type_options 0 [list [lang::message::lookup "" "intranet-freelance-rfqs.All" "All"] ""]]
+
+set freelance_rfq_status_options [db_list_of_lists freelance_rfq_status "
+	select	freelance_rfq_status,
+		freelance_rfq_status_id
+	from	im_freelance_rfq_status
+"]
+set freelance_rfq_status_options [linsert $freelance_rfq_status_options 0 [list [lang::message::lookup "" "intranet-freelance-rfqs.All" "All"] ""]]
+
+
+# ------------------------------------------------------------------
+# Build the form
+# ------------------------------------------------------------------
+
+set form_id "rfq_filters"
+set focus "$form_id\.var_name"
+set form_mode "edit"
+set action_url "index"
+
+ad_form \
+    -name $form_id \
+    -action $action_url \
+    -mode $form_mode \
+    -export {project_id return_url} \
+    -form {
+	{rfq_type_id:text(select),optional
+	    {label "[_ intranet-freelance-rfqs.RFQ_Type]"}
+	    {options $freelance_rfq_type_options} 
+	}
+	{rfq_status_id:text(select),optional
+	    {label "[_ intranet-freelance-rfqs.RFQ_Status]"}
+	    {options $freelance_rfq_status_options} 
+	}
+    }
+
 # ---------------------------------------------------------------
-# RFQs info
+# List RFQs according to filters
 # ---------------------------------------------------------------
 
 set export_var_list [list return_url]
@@ -78,42 +128,42 @@ template::list::create \
 		@rfq_lines.rfq_chk;noquote@
 	    }
 	}
+	rfq_name {
+	    label "[_ intranet-freelance-rfqs.RFQ_Name]"
+	    link_url_eval $rfq_view_url
+	}
 	req_project_id {
 	    label "[_ intranet-freelance-rfqs.Project]"
 	    display_template { <nobr>@rfq_lines.project_name;noquote@</nobr> }
 	    link_url_eval $rfq_project_url
 	}
-	rfq_name {
-	    label "[_ intranet-freelance-rfqs.RFQ_Name]"
-	    link_url_eval $rfq_view_url
-	}
-	rfq_workflow_key {
-	    label "[_ intranet-freelance-rfqs.Workflow]"
-	}
-	rfq_type {
-	    label "[lang::message::lookup {} intranet-freelance-rfqs.RFQ_Type {RFQ Type}]"
-	}
-	num_inv {
-	    label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Invitations {# Inv}]"
-	}
-	num_conf {
-	    label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Conformations {# Conf}]"
-	}
-	num_decl {
-	    label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Decl {# Decl}]"
-	}
+	rfq_type {label "[lang::message::lookup {} intranet-freelance-rfqs.RFQ_Type {RFQ Type}]"}
+	rfq_start_date_pretty {label "[lang::message::lookup {} intranet-freelance-rfqs.Start_Date {Starts}]"}
+	rfq_end_date_pretty {label "[lang::message::lookup {} intranet-freelance-rfqs.End_Date {Ends}]"}
+	rfq_status {label "[lang::message::lookup {} intranet-freelance-rfqs.RFQ_Status {RFQ Status}]"}
+	num_inv {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Invitations {# Inv}]"}
+	num_conf {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Conformations {# Conf}]"}
+	num_decl {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Decl {# Decl}]"}
     }
 
 set project_where ""
 if {"" != $project_id} { 
-    set project_where "\tand r.rfq_project_id = :project_id\n" 
+    append project_where "\tand r.rfq_project_id = :project_id\n" 
 }
-
+if {"" != $rfq_type_id} { 
+    append project_where "\tand r.rfq_type_id = :rfq_type_id\n" 
+}
+if {"" != $rfq_status_id} { 
+    append project_where "\tand r.rfq_status_id = :rfq_status_id\n" 
+}
 
 db_multirow -extend {rfq_chk rfq_new_url rfq_view_url rfq_project_url} rfq_lines rfqs_lines "
     select
 		*,
 		im_category_from_id(rfq_type_id) as rfq_type,
+		im_category_from_id(rfq_status_id) as rfq_status,
+		to_char(rfq_start_date, :date_format) as rfq_start_date_pretty,
+		to_char(rfq_end_date, :date_time_format) as rfq_end_date_pretty,
 		(select count(*) from im_freelance_rfq_answers a where a.answer_rfq_id = r.rfq_id) as num_inv,
 		(	select	count(*) 
 			from	im_freelance_rfq_answers a,
@@ -122,7 +172,7 @@ db_multirow -extend {rfq_chk rfq_new_url rfq_view_url rfq_project_url} rfq_lines
 			where	a.answer_rfq_id = r.rfq_id
 				and a.answer_id = c.object_id
 				and c.case_id = t.case_id
-				and t.transition_key = 'confirmed'
+				and t.transition_key = 'confirm'
 		) as num_conf,
 		(	select	count(*) 
 			from	im_freelance_rfq_answers a,
@@ -131,7 +181,7 @@ db_multirow -extend {rfq_chk rfq_new_url rfq_view_url rfq_project_url} rfq_lines
 			where	a.answer_rfq_id = r.rfq_id
 				and a.answer_id = c.object_id
 				and c.case_id = t.case_id
-				and t.transition_key = 'rejected'
+				and t.transition_key = 'decline'
 		) as num_decl
     from
 		im_freelance_rfqs r

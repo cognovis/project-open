@@ -80,8 +80,10 @@ set answer_type_id 4400
 set answer_status_id 4450
 	
 # Where to preset the WF for confirmation/declination?
-set declined_place_key "before_rejected"
-set confirmed_place_key "before_confirmed"
+set declined_place_key "before_decline"
+set confirmed_place_key "before_confirm"
+
+set error_count 0
 
 # ---------------------------------------------------------------
 # Get everything about the RFQ and the project
@@ -135,6 +137,7 @@ foreach uid $user_ids {
 
     if {[regexp {\ } $email match]} {
 	append result_html "<li><a href=[export_vars -base $user_url {user_id}]>$user_name</a>: Found invalid characters in email: '$email' - skipping\n"
+	incr error_count
 	continue
     }
 
@@ -169,6 +172,7 @@ foreach uid $user_ids {
 		    ns_sendmail $email $current_user_email $email_header $email_body
 		} errmsg] {
 		    append result_html "<li>$user_name: Problem sending email:<br><pre>$errmsg</pre>\n"
+		    incr error_count
 	    	} else {
 		    append result_html "<li>$user_name: Successfully sent out email:<br><pre>$email_header\n\n$email_body</pre>\n"
 		}
@@ -195,6 +199,7 @@ foreach uid $user_ids {
 		"
 	    } else {
 		append result_html "<li>$user_name: No Email sent. The user was already invited.\n"
+		incr error_count
 	    }
 	
 	
@@ -217,6 +222,7 @@ foreach uid $user_ids {
 	        ]
 	    } else {
 		append result_html "<li>$user_name: There is already a workflow for this user.\n"
+		incr error_count
 	    }
 	
 	    # ---------------------------------------------------------------
@@ -280,6 +286,7 @@ foreach uid $user_ids {
 		ns_sendmail $email $current_user_email $email_header $email_body
 	    } errmsg] {
 		append result_html "<li>$user_name: Problem sending email:<br><pre>$errmsg</pre>\n"
+		incr error_count
 	    } else {
 		append result_html "<li>$user_name: Successfully sent out email:<br><pre>$email_header\n\n$email_body</pre>\n"
 	    }
@@ -319,6 +326,7 @@ foreach uid $user_ids {
 #		append result_html "<li>$user_name: Sending email: <pre>ns_sendmail $email $current_user_email \"$email_header\" ... </pre>\n"
 		ns_sendmail $email $current_user_email $email_header $email_body
 	    } errmsg] {
+		incr error_count
 		append result_html "<li>$user_name: Problem sending email:<br><pre>$errmsg</pre>\n"
 	    } else {
 		append result_html "<li>$user_name: Successfully sent out email:<br><pre>$email_header\n\n$email_body</pre>\n"
@@ -370,6 +378,11 @@ foreach uid $user_ids {
 
 
 append result_html "</ul>\n"
+
+
+if {$error_count == 0} {
+    ad_returnredirect $return_url
+}
 
 # ---------------------------------------------------------------
 # Project Menu

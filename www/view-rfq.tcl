@@ -355,8 +355,8 @@ lappend elements {
 
 }
 
-lappend elements task_state
-lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Task_State {Task State}]" }
+# lappend elements task_state
+# lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Task_State {Task State}]" }
 
 lappend elements source_langs 
 lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.All_Source_Languages {All Sourc Langs}]" }

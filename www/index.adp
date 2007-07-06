@@ -5,12 +5,24 @@
 <master src="../../intranet-core/www/master">
 <property name="title">@page_title@</property>
 <property name="context">@context_bar@</property>
-<property name="main_navbar_label">projects</property>
+<property name="main_navbar_label">freelance_rfqs</property>
 
 <br>
 @project_menu;noquote@
 
 <h2>Available RFQs</h2>
+
+<if @project_id@ eq "">
+<table cellspacing=0 cellpadding=1>
+	<tr class=rowtitle>
+	  <td class=rowtitle align=center>#intranet-freelance-rfqs.Filter_RFQs#</td>
+	</tr>
+	<tr>
+	  <td><formtemplate id="rfq_filters"></formtemplate></td>
+	</tr>
+</table>
+</if>
+
 
 <table border=0 cellpadding=0 cellspacing=0>
 <tr>

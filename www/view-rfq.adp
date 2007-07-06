@@ -16,11 +16,22 @@
 
 <table cellspacing=2 cellpadding=2>
 <tr valign=top>
-<td>
+<td width="50%">
 	<h2>@page_title@</h2>
-	<formtemplate id="@form_id@"></formtemplate>
+
+
+	<table cellspacing=0 cellpadding=1>
+		<tr class=rowtitle>
+		  <td class=rowtitle align=center>#intranet-freelance-rfqs.RFQ_Base_Data#</td>
+		</tr>
+		<tr>
+		  <td><formtemplate id="@form_id@"></formtemplate></td>
+		</tr>
+	</table>
+
+
 </td>
-<td>
+<td width="50%">
 	<h2><%= [lang::message::lookup "" intranet-freelance-rfqs.Required_RFQ_Skills "Required RFQ Skills"] %></h2>
 	<listtemplate name="skill_list"></listtemplate>
 	

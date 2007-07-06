@@ -79,10 +79,10 @@ delete from im_categories where category_type = 'Intranet Freelance RFQ Type';
 -- Intranet Freelance RFQ Type
 
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE, AUX_STRING1)
-VALUES (4400,'Request for Availability','Intranet Freelance RFQ Type', 'rfa__request_for_availabili_wf');
+VALUES (4400,'Request for Availability','Intranet Freelance RFQ Type', 'request_for_availability_wf');
 
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE, AUX_STRING1)
-VALUES (4402,'Request for Quotation','Intranet Freelance RFQ Type', 'rfq__request_for_quotation_wf');
+VALUES (4402,'Request for Quotation','Intranet Freelance RFQ Type', 'request_for_quotation_wf');
 
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (4404,'Reverse Auction','Intranet Freelance RFQ Type', 'reverse_auction_wf');
