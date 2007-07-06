@@ -450,6 +450,11 @@ set sql "
 			where	1=1
 				$deleted_users_sql
 				$user_perm_sql
+                    UNION
+                        select  item_id as object_id,
+                                'content_item' as object_type
+                        from    cr_items c
+                        where   1=1
 		) readable_biz_objs
 	where
 		so.object_type_id = sot.object_type_id
@@ -588,6 +593,42 @@ db_foreach full_text_query $sql {
 	    if {!$forum_permission_p} { continue }
 	    set name_link "<a href=\"$url$object_id\">$biz_object_name: $subject</a>\n"
 
+	}
+	content_item {
+	    db_1row content_item_detail "
+               select
+                   name,content_type
+               from cr_items 
+               where item_id=:object_id
+            "
+	    switch $content_type {
+		"content_revision" {
+		    set read_p [permission::permission_p \
+				    -object_id $object_id \
+				    -party_id $user_id \
+				    -privilege "read" ]
+
+		    if {!$read_p} { continue }
+			
+		    
+		    
+		    set name_link "<a href=\"/wiki/$name\">wiki: $name</a>\n"
+		} 
+		"workflow_case_log_entry" {
+		    set bug_number [db_string bug_from_cr_item "
+                        select bug_number from bt_bugs,cr_items where item_id=:object_id and cr_items.parent_id=bug_id
+                    "]
+		    
+		    if {!$bug_number} { continue }
+
+		    set name_link "<a href=\"/bug-tracker/bug?bug_number=$bug_number\">bug: $bug_number $name</a>"
+
+
+		}
+		default {
+		    set name_link "unknown content_item type: $content_type"
+		}
+	    }
 	}
     }
 
