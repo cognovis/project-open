@@ -207,6 +207,7 @@ template::form::section $form_id "Action Section"
 #  Add a comment field statically on the "right side"
 # ------------------------------------------------------
 
+
 im_dynfield::append_attributes_to_form \
     -object_type "im_freelance_rfq_answer" \
     -form_id $form_id \
