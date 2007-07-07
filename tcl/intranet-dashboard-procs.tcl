@@ -1,6 +1,6 @@
-# /packages/intranet-hr/tcl/intranet-hr-procs.tcl
+# /packages/intranet-reporting-dashborad/tcl/intranet-reporting-dashboard-procs.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (c) 2003-2007 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -11,135 +11,152 @@ ad_library {
 }
 
 # ----------------------------------------------------------------------
-# Constant Functions
+# Define a color bar from red to blue or similar...
 # ----------------------------------------------------------------------
 
-
-ad_proc -public im_dashboard_status_id {} { return 450 }
-
-
-# ----------------------------------------------------------------------
-# Employee Info Component
-# Some simple extension data for employeers
-# ----------------------------------------------------------------------
-
-ad_proc im_dashboard_info_component { dashboard_id return_url {view_name ""} } {
-    Show some simple information about a dashboardr
+ad_proc im_dashboard_pie_colors { 
+    { -max_entries 8 }
+    { -red_start 0 }
+    { -red_end 255 }
+    { -blue_start 255 }
+    { -blue_end 0 }
+    { -green_start 128 }
+    { -green_end 128 }
 } {
-    if {"" == $view_name} { set view_name "dashboards_view" }
-    ns_log Notice "im_dashboard_info_component: dashboard_id=$dashboard_id, view_name=$view_name"
-    set current_user_id [ad_get_user_id]
+    Returns an array with color codes from 0.. $max_entries
+    (max_entries+1 in total)
+} {
 
-    set date_format "YYYY-MM-DD"
-    set number_format "9999990D99"
+    # Aux string for hex conversions
+    set h "0123456789ABCDEF"
+    set max [expr $max_entries + 1]
 
-    set department_url "/intranet-cost/cost-centers/new?cost_center_id="
-    set user_url "/intranet/users/view?user_id="
+    set blue_incr [expr 1.0 * ($blue_end - $blue_start) / $max]
+    set red_incr [expr 1.0 * ($red_end - $red_start) / $max]
+    set green_incr [expr 1.0 * ($green_end - $green_start) / $max]
 
-    set td_class(0) "class=roweven"
-    set td_class(1) "class=rowodd"
-
-    # dashboard_id gets modified by the SQl ... :-(
-    set org_dashboard_id $dashboard_id    
-
-    # --------------- Security --------------------------
-
-    set view 0
-    set read 0
-    set write 0
-    set admin 0
-    im_user_permissions $current_user_id $dashboard_id view read write admin
-    ns_log Notice "im_dashboard_info_component: view=$view, read=$read, write=$write, admin=$admin"
-    if {!$read} { return "" }
-
-    # Check if the current_user is a HR manager
-    if {![im_permission $current_user_id view_hr]} { return "" }
-
-    # Finally: Show this component only for dashboards
-    if {![im_user_is_dashboard_p $dashboard_id]} { return "" }
-
-    # --------------- Select all values --------------------------
-
-    set dashboard_info_exists [db_0or1row dashboard_info "
-	select	
-		pe.first_names||' '||pe.last_name as user_name,
-		p.email,
-		e.*,
-		rc.*,
-		to_char(rc.start_date,:date_format) as start_date_formatted,
-		to_char(rc.end_date,:date_format) as end_date_formatted,
-		to_char(e.birthdate,:date_format) as birthdate_formatted,
-		to_char(salary, :number_format) as salary_formatted,
-		to_char(hourly_cost, :number_format) as hourly_cost_formatted,
-		to_char(other_costs, :number_format) as other_costs_formatted,
-		to_char(insurance, :number_format) as insurance_formatted,
-		to_char(social_security, :number_format) as social_security_formatted,
-		u.user_id,
-		cc.cost_center_name as department_name,
-		im_name_from_user_id(e.supervisor_id) as supervisor_name
-	from	
-		users u,
-		im_dashboards e,
-		im_repeating_costs rc,
-		im_costs ci,
-		parties p,
-		persons pe,
-		im_cost_centers cc
-	where	
-		pe.person_id = u.user_id
-		and p.party_id = u.user_id
-		and u.user_id = ci.cause_object_id
-		and ci.cost_id = rc.rep_cost_id
-		and u.user_id = :dashboard_id
-		and u.user_id = e.dashboard_id
-		and e.department_id = cc.cost_center_id
-    "]
-
-    set view_id [db_string get_view "select view_id from im_views where view_name=:view_name" -default 0]
-    ns_log Notice "im_dashboard_info_component: view_id=$view_id"
-
-    set column_sql "
-	select	c.column_name,
-		c.column_render_tcl,
-		c.visible_for
-	from	im_view_columns c
-	where	c.view_id=:view_id
-	order by sort_order"
-
-   set dashboard_id $org_dashboard_id
-   set dashboard_html "
-	<form method=POST action=/intranet-hr/new>
-	[export_form_vars dashboard_id return_url]
-	<table cellpadding=1 cellspacing=1 border=0>
-	<tr> 
-	  <td colspan=2 class=rowtitle align=center>[_ intranet-hr.Dashboard_Information]</td>
-	</tr>\n"
-
-    set ctr 1
-    if {$dashboard_info_exists} {
-	# if the row makes references to "private Note" and the user isn't
-	# adminstrator, this row don't appear in the browser.
-	db_foreach column_list_sql $column_sql {
-	    if {"" == $visible_for || [eval $visible_for]} {
-		append dashboard_html "
-                <tr $td_class([expr $ctr % 2])>
-		<td>[_ "intranet-hr.[lang::util::suggest_key $column_name]"] &nbsp;</td><td>"
-		set cmd "append dashboard_html $column_render_tcl"
-		eval $cmd
-		append dashboard_html "</td></tr>\n"
-		incr ctr
-	    }
-	}
-    } else {
-	append dashboard_html "<tr><td colspan=2><i>[_ intranet-hr.Nothing_defined_yet]</i></tr></td>\n"
+    for {set i 0} {$i <= $max_entries} {incr i} {
+        set blue [expr round($blue_start + round($i*$blue_incr))]
+        set red [expr round($red_start + round($i*$red_incr))]
+        set green [expr round($green_start + round($i*$green_incr))]
+    
+        set red_low [expr $red % 16]
+        set red_high [expr round($red / 16)]
+        set blue_low [expr $blue % 16]
+        set blue_high [expr round($blue / 16)]
+        set green_low [expr $green % 16]
+        set green_high [expr round($green / 16)]
+    
+        set col "\#[string range $h $red_high $red_high][string range $h $red_low $red_low]"
+        append col "[string range $h $green_high $green_high][string range $h $green_low $green_low]"
+        append col "[string range $h $blue_high $blue_high][string range $h $blue_low $blue_low]"
+    
+        set pie_colors($i) $col
     }
-
-    if {$admin } {
-        append dashboard_html "
-        <tr $td_class([expr $ctr % 2])>
-        <td></td><td><input type=submit value='[_ intranet-hr.Edit]'></td></tr>\n"
-    }
-    append dashboard_html "</table></form>\n"
-
-    return $dashboard_html
+    return [array get pie_colors]
 }
+
+
+
+# ----------------------------------------------------------------------
+# Draw a reasonable Pie chart
+# ----------------------------------------------------------------------
+
+ad_proc im_dashboard_pie_chart { 
+    { -max_entries 7 }
+    { -values {} }
+    { -red_start 0 }
+    { -red_end 255 }
+    { -blue_start 255 }
+    { -blue_end 0 }
+    { -green_start 128 }
+    { -green_end 128 }
+} {
+    Returns a formatted HTML text to display a piechart
+    based on Lutz Tautenhahn' "Javascript Diagram Builder", v3.3.
+    @param max_entries Determines the max. number of entries
+           in the pie chart. It also determines the Y-size of the diagram.
+    @param values A list of {name value} pairs to be displayed.
+           Values must be numeric (comparable using the "<" operator.      
+} {
+    # Get a range of suitable colors
+    array set pie_colors [im_dashboard_pie_colors \
+	       -max_entries $max_entries \
+	       -blue_start $blue_start -blue_end $blue_end \
+	       -red_start $red_start -red_end $red_end \
+	       -green_start $green_start -green_end $green_end \
+    ]
+
+    # Sum up the values as a 100% base to calculate percentages
+    set pie_sum 0
+    foreach value $values {
+        set val [lindex $value 1]
+        set pie_sum [expr $pie_sum + $val]
+    }
+    if {0 == $pie_sum} { set pie_sum 0.00001}
+    
+    # Sort list according to value (2nd element)
+    set values [reverse [qsort $values [lambda {s} { lindex $s 1 }]]]
+    
+    # Format the elements
+    set pie_pieces_html ""
+    set pie_bars_html ""
+    set count 0
+    set angle 0
+    foreach pie_degree $values {
+        if {$count >= $max_entries} { continue }
+        set key [lindex $pie_degree 0]
+        set val [lindex $pie_degree 1]
+        set perc [expr round($val * 1000.0 / $pie_sum) / 10.0]
+        set degrees [expr $val * 360.0 / $pie_sum]
+        set col $pie_colors($count)
+        lappend pie_pieces_html "P\[$count\]=new Pie(100, 100, 0, 80, [expr $angle-1.0], [expr $angle+$degrees+1.0], \"$col\");\n"
+        set angle [expr $angle+$degrees]
+        set perc_text "${perc}%"
+        set pie_text [string range $key 0 12]
+    
+        lappend pie_bars_html "new Bar(200, [expr 20+$count*20], 250, [expr 35+$count*20], \"$col\", \"$perc_text\", \"#000000\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
+    
+        lappend pie_bars_html "new Bar(260, [expr 20+$count*20], 360, [expr 35+$count*20], \"$col\", \"$pie_text\", \"#000000\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
+    
+        incr count
+    }
+    
+   
+    # Show the "Other"
+    if {360 != [expr round($angle)]} {
+        set col $pie_colors($count)
+        set perc_text "[expr round(10 * (360.0 - $angle)) / 10.0]%"
+        set pie_text "Other"
+    
+        lappend pie_pieces_html "P\[$count\]=new Pie(100, 100, 0, 80, $angle, 360, \"$col\");\n"
+    
+        lappend pie_bars_html "new Bar(200, [expr 20+$count*20], 250, [expr 35+$count*20], \"$col\", \"$perc_text\", \"#000000\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
+    
+        lappend pie_bars_html "new Bar(260, [expr 20+$count*20], 360, [expr 35+$count*20], \"$col\", \"$pie_text\", \"#000000\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
+    }
+
+    set border "border:2px solid blue; "
+    set border ""
+
+    return "
+        <SCRIPT Language=JavaScript src=/resources/diagram/diagram/diagram.js></SCRIPT> 
+        <div style='$border position:relative;top:0px;height:200px;width:500px;'>
+        <SCRIPT Language=JavaScript>
+        P=new Array();
+        document.open();
+        _BFont=\"color:\#000000;font-family:Verdana;font-weight:normal;font-size:8pt;line-height:10pt;\";
+    
+        $pie_pieces_html
+        $pie_bars_html
+    
+        document.close();
+        function MouseOver(i) { P\[i\].MoveTo(\"\",\"\",10); }
+        function MouseOut(i) { P\[i\].MoveTo(\"\",\"\",0); }
+        </SCRIPT>
+        </div>
+    "
+
+}
+    
+
