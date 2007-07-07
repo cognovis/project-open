@@ -661,53 +661,33 @@ ns_write "</table>\n"
 # ------------------------------------------------------------
 # Get the values for the pie chart
 
-set pie_max_entries 10
+set pie_max_entries 7
 
-set pie_keys [list]
 set pie_values [list]
 set h "0123456789ABCDEF"
 
 # Extract the leftmost elements from the $left_scale_plain
-foreach left_scale_line $left_scale_plain {
-    lappend pie_keys [lindex $left_scale_line 0]
-}
-
-# Create a list of {$key $value} for pie
-foreach pie_key $pie_keys {
-    if {$pie_key == $sigma} { continue }
-    set val $hash($pie_key)
-    lappend pie_values [list $pie_key $val]
-}
-
-# Sort list according to value (2nd element)
-set sorted_pie_values [reverse [qsort $pie_values [lambda {s} { lindex $s 1 }]]]
-
-
-# Sump up the values to calculate percentage value for each entry
 set pie_sum 0
-foreach pie_elem $sorted_pie_values {
-    set pie_sum [expr $pie_sum + [lindex $pie_elem 1]]
+set count 0
+foreach left_scale_line $left_scale_plain {
+    set pie_key [lindex $left_scale_line 0]
+    if {$pie_key == $sigma} { continue }
+
+    set val $hash($pie_key)
+    set pie_sum [expr $pie_sum + $val]
+    lappend pie_values [list $pie_key $val]
+    incr count
 }
 if {0 == $pie_sum} { set pie_sum 0.00001}
 
-
-# Calculate the pie degrees of the to #10 entries
-set pie_degrees [list]
-set count 0
-foreach pie_value $sorted_pie_values {
-    if {$count > $pie_max_entries} { continue }
-    set key [lindex $pie_value 0]
-    set val [lindex $pie_value 1]
-    set degrees [expr $val * 360.0 / $pie_sum]
-    lappend pie_degrees [list $key $degrees]
-    incr count
-}
+# Sort list according to value (2nd element)
+set pie_values [reverse [qsort $pie_values [lambda {s} { lindex $s 1 }]]]
 
 if {$count < $pie_max_entries} { set pie_max_entries $count}
 set color_incr [expr 255.0 / $pie_max_entries]
 
 # Pie Colors
-for {set i 0} {$i < $pie_max_entries} {incr i} {
+for {set i 0} {$i <= $pie_max_entries} {incr i} {
     set blue [expr 255 - round($i*$color_incr)]
     set red [expr round($i * $color_incr)]
     set green 128
@@ -730,20 +710,46 @@ set pie_pieces_html ""
 set pie_bars_html ""
 set count 0
 set angle 0
-foreach pie_degree $pie_degrees {
+foreach pie_degree $pie_values {
+
+    if {$count >= $pie_max_entries} { continue }
+
     set key [lindex $pie_degree 0]
-    set degrees [lindex $pie_degree 1]
+    set val [lindex $pie_degree 1]
+
+    set perc [expr round($val * 1000.0 / $pie_sum) / 10.0]
+    set degrees [expr $val * 360.0 / $pie_sum]
     set col $pie_colors($count)
 
     lappend pie_pieces_html "P\[$count\]=new Pie(100, 100, 0, 80, $angle, [expr $angle+$degrees], \"$col\");\n"
     set angle [expr $angle+$degrees]
 
-    set pie_text "
+    set perc_text "${perc}%"
+    set pie_text [string range $key 0 12]
 
-    lappend pie_bars_html "new Bar(200, [expr 20+$count*20], 300, [expr 40+$count*20], \"$col\", \"$key\", \"#000000\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
+    lappend pie_bars_html "new Bar(200, [expr 20+$count*20], 250, [expr 35+$count*20], \"$col\", \"$perc_text\", \"#000000\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
+
+    lappend pie_bars_html "new Bar(300, [expr 20+$count*20], 400, [expr 35+$count*20], \"$col\", \"$pie_text\", \"#000000\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
 
     incr count
 }
+
+
+# Showing the "rest"
+if {360 != [expr round($angle)]} {
+    set col $pie_colors($count)
+    set perc_text "[expr round(10 * (360.0 - $angle)) / 10.0]%"
+    set pie_text "Other"
+
+    lappend pie_pieces_html "P\[$count\]=new Pie(100, 100, 0, 80, $angle, 360, \"$col\");\n"
+
+    lappend pie_bars_html "new Bar(200, [expr 20+$count*20], 250, [expr 35+$count*20], \"$col\", \"$perc_text\", \"#000000\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
+
+    lappend pie_bars_html "new Bar(300, [expr 20+$count*20], 400, [expr 35+$count*20], \"$col\", \"$pie_text\", \"#000000\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
+
+
+}
+
 
 ns_write {
     <SCRIPT Language="JavaScript" src="/resources/diagram/diagram/diagram.js"></SCRIPT> 
@@ -751,17 +757,11 @@ ns_write {
     <SCRIPT Language=JavaScript>
     P=new Array();
     document.open();
+    _BFont="color:\#000000;font-family:Verdana;font-weight:normal;font-size:8pt;line-height:10pt;";
 }
 
 ns_write $pie_pieces_html
 ns_write $pie_bars_html
-
-set ttt {
-new Bar(200, 40, 280, 60, "#ff6060", "Apples", "#000000", "",  "void(0)", "MouseOver(0)", "MouseOut(0)");
-new Bar(200, 80, 280, 100, "#ffa000", "Oranges", "#000000", "",  "void(0)", "MouseOver(1)", "MouseOut(1)");
-new Bar(200, 120, 280, 140, "#f6f600", "Bananas", "#000000", "",  "void(0)", "MouseOver(2)", "MouseOut(2)");
-}
-
 
 ns_write {
     document.close();
