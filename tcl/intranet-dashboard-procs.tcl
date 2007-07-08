@@ -73,7 +73,7 @@ ad_proc im_dashboard_pie_colors {
 # ----------------------------------------------------------------------
 
 ad_proc im_dashboard_pie_chart { 
-    { -max_entries 7 }
+    { -max_entries 8 }
     { -values {} }
     { -bar_y_size 15 }
     { -bar_x_size 100 }
@@ -94,7 +94,17 @@ ad_proc im_dashboard_pie_chart {
            in the pie chart. It also determines the Y-size of the diagram.
     @param values A list of {name value} pairs to be displayed.
            Values must be numeric (comparable using the "<" operator.      
+
+    Short example:
+	<pre>set pie_chart [im_dashboard_pie_chart \
+        -max_entries 3 \
+	-values {{Abc 10} {Bcde 20} {Cdefg 30} {Defg 25}} \
+        -start_color "0080FF" \
+	-end_color "80FF80"]</pre>
+
 } {
+    if {[llength $values] < $max_entries} { set max_entries [llength $values] }
+
     set perc_x_start [expr $outer_distance + 2 * $radius + $outer_distance]
     set perc_x_end [expr $perc_x_start + $perc_x_size]
 
