@@ -11,6 +11,20 @@ ad_library {
 }
 
 
+# ----------------------------------------------------------------------
+# Sweeper - Cleans up the dashboard cache
+# ---------------------------------------------------------------------
+
+
+ad_proc -public im_reporting_dashboard_sweeper { 
+    dummy
+} {
+    Deletes old dashboard DW entries
+} {
+    db_dml del_values "delete from im_reporting_cube_values"
+    db_dml del_cubes "delete from im_reporting_cubes"
+}
+
 
 # ----------------------------------------------------------------------
 # All Time Top Customers
