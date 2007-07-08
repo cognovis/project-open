@@ -93,7 +93,7 @@ ad_proc im_dashboard_pie_chart {
     @param max_entries Determines the max. number of entries
            in the pie chart. It also determines the Y-size of the diagram.
     @param values A list of {name value} pairs to be displayed.
-           Values must be numeric (comparable using the "<" operator.      
+           Values must be numeric (comparable using the "<" operator).
 
     Short example:
 	<pre>set pie_chart [im_dashboard_pie_chart \
@@ -102,6 +102,7 @@ ad_proc im_dashboard_pie_chart {
         -start_color "0080FF" \
 	-end_color "80FF80"]</pre>
 
+			       
 } {
     if {[llength $values] < $max_entries} { set max_entries [llength $values] }
 
@@ -201,7 +202,230 @@ ad_proc im_dashboard_pie_chart {
         </SCRIPT>
         </div>
     "
-
 }
+
+
+# ----------------------------------------------------------------------
+# Get Cube data finance
+# ----------------------------------------------------------------------
+
+ad_proc im_dashboard_finance_cube {
+    { -start_date "1900-01-01" }
+    { -end_date "2099-12-31" }
+    { -left_vars "customer_name" }
+    { -top_vars "" }
+    { -cost_type_id {3700} }
+    { -customer_type_id 0 }
+    { -customer_id 0 }
+} {
+    Returns a list containing:
+    - An array with the cube data
+    - An array for the left dimension
+    - An array for the top dimension
+} {
+    # ------------------------------------------------------------
+    # Defaults
     
+    set sigma "&Sigma;"
+    
+    # The complete set of dimensions - used as the key for
+    # the "cell" hash. Subtotals are calculated by dropping on
+    # or more of these dimensions
+    set dimension_vars [concat $top_vars $left_vars]
+    
+    # ------------------------------------------------------------
+    # Conditional SQL Where-Clause
+    #
+    
+    set criteria [list]
+    
+    if {"" != $customer_id && 0 != $customer_id} {
+        lappend criteria "c.customer_id = :customer_id"
+    }
+    if {1} {
+        lappend criteria "c.cost_type_id in ([join [im_sub_categories $cost_type_id] ", "])"
+    }
+    if {"" != $customer_type_id && 0 != $customer_type_id} {
+        lappend criteria "pcust.company_type_id in ([join [im_sub_categories $customer_type_id] ", "])"
+    }
+    set where_clause [join $criteria " and\n\t\t\t"]
+    if { ![empty_string_p $where_clause] } {
+        set where_clause " and $where_clause"
+    }
+    
+    
+    # ------------------------------------------------------------
+    # Define the report - SQL, counters, headers and footers 
+    #
+    
+    # Inner - Try to be as selective as possible and select
+    # the relevant data from the fact table.
+    set inner_sql "
+    		select
+    			p.project_name as sub_project_name,
+    			p.project_nr as sub_project_nr,
+    			p.project_type_id as sub_project_type_id,
+    			p.project_status_id as sub_project_status_id,
+    			tree_ancestor_key(p.tree_sortkey, 1) as main_project_sortkey,
+    			trunc((c.paid_amount * 
+    			  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+    			  , 2) as paid_amount_converted,
+    			trunc((c.amount * 
+    			  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+    			  , 2) as amount_converted,
+    			c.*
+    		from
+    			im_costs c
+    			LEFT OUTER JOIN im_projects p ON (c.project_id = p.project_id)
+    		where
+    			1=1
+    			and c.cost_type_id in ([join $cost_type_id ", "])
+    			and c.effective_date::date >= to_date(:start_date, 'YYYY-MM-DD')
+    			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
+    			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
+    "
+    
+    # Aggregate additional/important fields to the fact table.
+    set middle_sql "
+    	select
+    		c.*,
+    		im_category_from_id(c.cost_type_id) as cost_type,
+    		im_category_from_id(c.cost_status_id) as cost_status,
+    		to_char(c.effective_date, 'YYYY') as year,
+    		to_char(c.effective_date, 'MM') as month_of_year,
+    		to_char(c.effective_date, 'Q') as quarter_of_year,
+    		to_char(c.effective_date, 'IW') as week_of_year,
+    		to_char(c.effective_date, 'DD') as day_of_month,
+    		substring(c.cost_name, 1, 14) as cost_name_cut,
+    
+    		im_category_from_id(c.sub_project_type_id) as sub_project_type,
+    		im_category_from_id(c.sub_project_status_id) as sub_project_status,
+    
+    		mainp.project_name as main_project_name,
+    		mainp.project_nr as main_project_nr,
+    		mainp.project_type_id as main_project_type_id,
+    		im_category_from_id(mainp.project_type_id) as main_project_type,
+    		mainp.project_status_id as main_project_status_id,
+    		im_category_from_id(mainp.project_status_id) as main_project_status,
+    
+    		cust.company_name as customer_name,
+    		cust.company_path as customer_path,
+    		cust.company_type_id as customer_type_id,
+    		im_category_from_id(cust.company_type_id) as customer_type,
+    		cust.company_status_id as customer_status_id,
+    		im_category_from_id(cust.company_status_id) as customer_status,
+    
+    		prov.company_name as provider_name,
+    		prov.company_path as provider_path,
+    		prov.company_type_id as provider_type_id,
+    		im_category_from_id(prov.company_type_id) as provider_type,
+    		prov.company_status_id as provider_status_id,
+    		im_category_from_id(prov.company_status_id) as provider_status
+    
+    	from
+    		($inner_sql) c
+    		LEFT OUTER JOIN im_projects mainp ON (c.main_project_sortkey = mainp.tree_sortkey)
+    		LEFT OUTER JOIN im_companies cust ON (c.customer_id = cust.company_id)
+    		LEFT OUTER JOIN im_companies prov ON (c.provider_id = prov.company_id)
+    	where
+    		1 = 1
+    		$where_clause
+    "
+    
+    set sql "
+    select
+    	sum(c.amount_converted) as amount_converted,
+    	sum(c.paid_amount) as paid_amount,
+    	[join $dimension_vars ",\n\t"]
+    from
+    	($middle_sql) c
+    group by
+    	[join $dimension_vars ",\n\t"]
+    "
+
+    # ------------------------------------------------------------
+    # Create upper date dimension
+    
+    # Top scale is a list of lists such as {{2006 01} {2006 02} ...}
+    # The last element of the list the grand total sum.
+    
+    # No top dimension at all gives an error...
+    if {![llength $top_vars]} { set top_vars [list year] }
+    
+    set top_scale_plain [db_list_of_lists top_scale "
+    	select distinct	[join $top_vars ", "]
+    	from		($middle_sql) c
+    	order by	[join $top_vars ", "]
+    "]
+    lappend top_scale_plain [list $sigma $sigma $sigma $sigma $sigma $sigma]
+
+    # ------------------------------------------------------------
+    # Create a sorted left dimension
+    
+    # No top dimension at all gives an error...
+    if {![llength $left_vars]} {
+        ns_write "
+    	<p>&nbsp;<p>&nbsp;<p>&nbsp;<p><blockquote>
+    	[lang::message::lookup "" intranet-reporting.No_left_dimension "No 'Left' Dimension Specified"]:<p>
+    	[lang::message::lookup "" intranet-reporting.No_left_dimension_message "
+    		You need to specify atleast one variable for the left dimension.
+    	"]
+    	</blockquote><p>&nbsp;<p>&nbsp;<p>&nbsp;
+        "
+        ns_write "</table>\n[im_footer]\n"
+        return
+    }
+    
+    # Scale is a list of lists. Example: {{2006 01} {2006 02} ...}
+    # The last element is the grand total.
+    set left_scale_plain [db_list_of_lists left_scale "
+    	select distinct	[join $left_vars ", "]
+    	from		($middle_sql) c
+    	order by	[join $left_vars ", "]
+    "]
+    set last_sigma [list]
+    foreach t [lindex $left_scale_plain 0] {
+        lappend last_sigma $sigma
+    }
+    lappend left_scale_plain $last_sigma
+    
+    # ------------------------------------------------------------
+    # Execute query and aggregate values into a Hash array
+    
+    db_foreach query $sql {
+    
+        # Get all possible permutations (N out of M) from the dimension_vars
+        set perms [im_report_take_all_ordered_permutations $dimension_vars]
+    
+        # Add the invoice amount to ALL of the variable permutations.
+        # The "full permutation" (all elements of the list) corresponds
+        # to the individual cell entries.
+        # The "empty permutation" (no variable) corresponds to the
+        # gross total of all values.
+        # Permutations with less elements correspond to subtotals
+        # of the values along the missing dimension. Clear?
+        #
+        foreach perm $perms {
+    
+	    # Calculate the key for this permutation
+	    # something like "$year-$month-$customer_id"
+	    set key_expr "\$[join $perm "-\$"]"
+	    set key [eval "set a \"$key_expr\""]
+    
+	    # Sum up the values for the matrix cells
+	    set sum 0
+	    if {[info exists hash($key)]} { set sum $hash($key) }
+	    
+	    if {"" == $amount_converted} { set amount_converted 0 }
+	    set sum [expr $sum + $amount_converted]
+	    set hash($key) $sum
+        }
+    }
+
+    return [list \
+	$left_scale_plain \
+	$top_scale_plain \
+	[array get hash] \
+    ]
+}
 

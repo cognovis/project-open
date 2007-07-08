@@ -672,11 +672,9 @@ foreach left_scale_line $left_scale_plain {
 }
 
 set pie_chart [im_dashboard_pie_chart \
-	-max_entries 8 \
 	-values $pie_values \
-	-blue_start 255 -blue_end 128 \
-	-red_start 0 -red_end 128 \
-	-green_start 128 -green_end 255 \
+	-start_color "0080FF" \
+	-end_color "80FF80" \
 ]
 
 ns_write "$pie_chart\n"
