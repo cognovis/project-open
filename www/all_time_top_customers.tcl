@@ -45,7 +45,7 @@ if {"pie" == $show} {
 		-end_color "80FF80" \
 	]
 
-	set cube_link "<a href=[export_vars -base "/intranet-reporting-dashboard/finance-cube-diagram" {top_vars left_vars}]>Data Warehouse</a>\n"
+	set cube_link "<a href=[export_vars -base "/intranet-reporting-cubes/finance-cube" {top_vars left_vars}]>Data Warehouse</a>\n"
 
 
 } else {
