@@ -1,15 +1,17 @@
-ad_page_contract {
-} {
-}
 
-set cube_name "finance"
-set start_date [db_string start "select to_date(now()::date-10000, 'YYYY-MM-01')"]
-set end_date [db_string start "select to_date(now()::date+60, 'YYYY-MM-01')"]
-set cost_type_id {3700}
+# Called as a component
+
+if {![info exists component_name]} { set component_name "Undefined Component" }
+if {![info exists cube_name]} { set  cube_name "finance" }
+if {![info exists start_date]} { set start_date "" }
+if {![info exists end_date]} { set end_date "" }
+if {![info exists cost_type_id]} { set cost_type_id "3700" }
+if {![info exists top_vars]} { set top_vars "year" }
+if {![info exists left_vars]} { set left_vars "customer_name" }
+if {![info exists return_url]} { set return_url ""}
+
+
 set sigma "&Sigma;"
-
-set top_vars "year"
-set left_vars "customer_name"
 
 set cube_array [im_reporting_cubes_cube \
     -cube_name $cube_name \

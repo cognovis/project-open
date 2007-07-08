@@ -11,6 +11,56 @@ ad_library {
 }
 
 
+
+# ----------------------------------------------------------------------
+# All Time Top Customers
+# ---------------------------------------------------------------------
+
+
+ad_proc -public im_dashboard_all_time_top_customers_component {
+    { -ttt ""}
+} {
+    Returns a dashboard component for the home page
+} {
+    set params [list \
+		    [list return_url [im_url_with_query]] \
+		    ]
+    set result [ad_parse_template -params $params "/packages/intranet-reporting-dashboard/www/all_time_top_customers"]
+    return $result
+}
+
+
+ad_proc -public im_dashboard_generic_component {
+    { -component "generic" }
+    { -component_name "Unknown Component Name" }
+    { -cube_name "finance" }
+    { -start_date "" }
+    { -end_date "" }
+    { -cost_type_id {3700} }
+    { -top_vars "year" }
+    { -left_vars "sub_project_type" }
+} {
+    Returns a dashboard component for the home page
+} {
+
+    if {"" == $start_date} { set start_date [db_string start "select to_date(now()::date-10000, 'YYYY-MM-01')"] }
+    if {"" == $end_date} { set end_date [db_string start "select to_date(now()::date+60, 'YYYY-MM-01')"] }
+
+    set params [list \
+		    [list component_name $component_name] \
+		    [list cube_name $cube_name] \
+		    [list start_date $start_date] \
+		    [list end_date $end_date] \
+		    [list top_vars $top_vars] \
+		    [list left_vars $left_vars] \
+		    [list return_url [im_url_with_query]] \
+		    ]
+    set result [ad_parse_template -params $params "/packages/intranet-reporting-dashboard/www/$component"]
+    return $result
+}
+
+
+
 # ----------------------------------------------------------------------
 # Define a color bar from red to blue or similar...
 # ----------------------------------------------------------------------

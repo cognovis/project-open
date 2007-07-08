@@ -70,3 +70,51 @@ create table im_reporting_cube_values (
 	value_hash_array	text
 );
 
+
+
+
+----------------------------------------------------
+-- Components
+
+
+-- All Time Top Customers
+--
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Home All-Time Top Customers',	-- plugin_name
+	'intranet-reporting-dashboard',	-- package_name
+	'left',				-- location
+	'/intranet/index',		-- page_url
+	null,				-- view_name
+	100,				-- sort_order
+	'im_dashboard_all_time_top_customers_component',
+	'lang::message::lookup "" intranet-reporting-dashboard.All_Time_Top_Customers "All-Time Top Customers"'
+);
+
+
+
+-- All Time Top Customers
+--
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Home All-Time Top Services',	-- plugin_name
+	'intranet-reporting-dashboard',	-- package_name
+	'left',				-- location
+	'/intranet/index',		-- page_url
+	null,				-- view_name
+	100,				-- sort_order
+	'im_dashboard_generic_component -component "generic" -left_vars "sub_project_type"',
+	'lang::message::lookup "" intranet-reporting-dashboard.All_Time_Top_Services "All-Time Top Services"'
+);
+
+
