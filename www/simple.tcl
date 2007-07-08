@@ -1,6 +1,6 @@
 ad_page_contract {
 } {
-    { show "cube" }
+    { show "pie" }
 }
 
 set start_date [db_string start "select to_date(now()::date-10000, 'YYYY-MM-01')"]

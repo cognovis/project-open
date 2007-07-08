@@ -1,6 +1,6 @@
 ad_page_contract {
 } {
-    { show "cube" }
+    { show "pie" }
 }
 
 set start_date [db_string start "select to_date(now()::date-10000, 'YYYY-MM-01')"]
@@ -44,6 +44,9 @@ if {"pie" == $show} {
 		-start_color "0080FF" \
 		-end_color "80FF80" \
 	]
+
+	set cube_link "<a href=[export_vars -base "/intranet-reporting-dashboard/finance-cube-diagram" {top_vars left_vars}]>Data Warehouse</a>\n"
+
 
 } else {
 
