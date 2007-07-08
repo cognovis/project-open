@@ -16,19 +16,29 @@ ad_library {
 
 ad_proc im_dashboard_pie_colors { 
     { -max_entries 8 }
-    { -red_start 0 }
-    { -red_end 255 }
-    { -blue_start 255 }
-    { -blue_end 0 }
-    { -green_start 128 }
-    { -green_end 128 }
+    { -start_color "0080FF" }
+    { -end_color "FF8000" }
 } {
     Returns an array with color codes from 0.. $max_entries
     (max_entries+1 in total)
 } {
-
     # Aux string for hex conversions
     set h "0123456789ABCDEF"
+
+    set red_start [expr 16 * [string first [string range $start_color 0 0] $h]]
+    set red_start [expr $red_start + [string first [string range $start_color 1 1] $h]]
+    set green_start [expr 16 * [string first [string range $start_color 2 2] $h]]
+    set green_start [expr $green_start + [string first [string range $start_color 3 3] $h]]
+    set blue_start [expr 16 * [string first [string range $start_color 4 4] $h]]
+    set blue_start [expr $blue_start + [string first [string range $start_color 5 5] $h]]
+
+    set red_end [expr 16 * [string first [string range $end_color 0 0] $h]]
+    set red_end [expr $red_end + [string first [string range $end_color 1 1] $h]]
+    set green_end [expr 16 * [string first [string range $end_color 2 2] $h]]
+    set green_end [expr $green_end + [string first [string range $end_color 3 3] $h]]
+    set blue_end [expr 16 * [string first [string range $end_color 4 4] $h]]
+    set blue_end [expr $blue_end + [string first [string range $end_color 5 5] $h]]
+
     set max [expr $max_entries + 1]
 
     set blue_incr [expr 1.0 * ($blue_end - $blue_start) / $max]
@@ -65,12 +75,16 @@ ad_proc im_dashboard_pie_colors {
 ad_proc im_dashboard_pie_chart { 
     { -max_entries 7 }
     { -values {} }
-    { -red_start 0 }
-    { -red_end 255 }
-    { -blue_start 255 }
-    { -blue_end 0 }
-    { -green_start 128 }
-    { -green_end 128 }
+    { -bar_y_size 15 }
+    { -bar_x_size 200 }
+    { -perc_x_size 50 }
+    { -radius 100 }
+    { -bar_distance 5 }
+    { -outer_distance 30 }
+    { -start_color "0080FF" }
+    { -end_color "FF8000" }
+    { -font_color "000000" }
+    { -font_style "font-family:Verdana;font-weight:normal;font-size:8pt;line-height:10pt;" }
 } {
     Returns a formatted HTML text to display a piechart
     based on Lutz Tautenhahn' "Javascript Diagram Builder", v3.3.
@@ -79,12 +93,20 @@ ad_proc im_dashboard_pie_chart {
     @param values A list of {name value} pairs to be displayed.
            Values must be numeric (comparable using the "<" operator.      
 } {
+    set perc_x_start [expr $outer_distance + 2 * $radius + $outer_distance]
+    set perc_x_end [expr $perc_x_start + $perc_x_size]
+
+    set bar_x_start [expr $perc_x_end + $bar_distance]
+    set bar_x_end [expr $bar_x_start + $bar_x_size]
+
+    set diagram_x_size [expr $bar_x_end + $outer_distance]
+    set diagram_y_size [expr $outer_distance + ($max_entries+1) * ($bar_y_size + $bar_distance) + $outer_distance]
+
     # Get a range of suitable colors
     array set pie_colors [im_dashboard_pie_colors \
-	       -max_entries $max_entries \
-	       -blue_start $blue_start -blue_end $blue_end \
-	       -red_start $red_start -red_end $red_end \
-	       -green_start $green_start -green_end $green_end \
+	-max_entries $max_entries \
+	-start_color $start_color \
+	-end_color $end_color \
     ]
 
     # Sum up the values as a 100% base to calculate percentages
@@ -110,14 +132,20 @@ ad_proc im_dashboard_pie_chart {
         set perc [expr round($val * 1000.0 / $pie_sum) / 10.0]
         set degrees [expr $val * 360.0 / $pie_sum]
         set col $pie_colors($count)
-        lappend pie_pieces_html "P\[$count\]=new Pie(100, 100, 0, 80, [expr $angle-1.0], [expr $angle+$degrees+1.0], \"$col\");\n"
+        append pie_pieces_html "P\[$count\]=new Pie([expr $radius+$outer_distance], [expr $radius+$outer_distance], 0, $radius, [expr round($angle-0.1)], [expr $angle+$degrees+0.1], \"$col\");\n"
+
         set angle [expr $angle+$degrees]
         set perc_text "${perc}%"
         set pie_text [string range $key 0 12]
+
+	set perc_y_start [expr $outer_distance + $count * ($bar_y_size + $bar_distance)]
+	set perc_y_end [expr $perc_y_start + $bar_y_size]
+	set bar_y_start $perc_y_start
+	set bar_y_end $perc_y_end
+
+        append pie_bars_html "new Bar($perc_x_start, $perc_y_start, $perc_x_end, $perc_y_end, \"$col\", \"$perc_text\", \"\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
     
-        lappend pie_bars_html "new Bar(200, [expr 20+$count*20], 250, [expr 35+$count*20], \"$col\", \"$perc_text\", \"#000000\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
-    
-        lappend pie_bars_html "new Bar(260, [expr 20+$count*20], 360, [expr 35+$count*20], \"$col\", \"$pie_text\", \"#000000\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
+        append pie_bars_html "new Bar($bar_x_start, $bar_y_start, $bar_x_end, $bar_y_end, \"$col\", \"$pie_text\", \"\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
     
         incr count
     }
@@ -129,23 +157,23 @@ ad_proc im_dashboard_pie_chart {
         set perc_text "[expr round(10 * (360.0 - $angle)) / 10.0]%"
         set pie_text "Other"
     
-        lappend pie_pieces_html "P\[$count\]=new Pie(100, 100, 0, 80, $angle, 360, \"$col\");\n"
+        append pie_pieces_html "P\[$count\]=new Pie([expr $radius+$outer_distance], [expr $radius+$outer_distance], 0, $radius, $angle, 360, \"$col\");\n"
     
-        lappend pie_bars_html "new Bar(200, [expr 20+$count*20], 250, [expr 35+$count*20], \"$col\", \"$perc_text\", \"#000000\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
+        append pie_bars_html "new Bar($perc_x_start, [expr $outer_distance + $count*$bar_y_size], $perc_x_end, [expr (2+$count)*$bar_y_size-$bar_distance], \"$col\", \"$perc_text\", \"\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
     
-        lappend pie_bars_html "new Bar(260, [expr 20+$count*20], 360, [expr 35+$count*20], \"$col\", \"$pie_text\", \"#000000\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
+        append pie_bars_html "new Bar($bar_x_start, [expr $outer_distance + $count*$bar_y_size], $bar_x_end, [expr (2+$count)*$bar_y_size-$bar_distance], \"$col\", \"$pie_text\", \"\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
     }
 
     set border "border:2px solid blue; "
-    set border ""
+#    set border ""
 
     return "
         <SCRIPT Language=JavaScript src=/resources/diagram/diagram/diagram.js></SCRIPT> 
-        <div style='$border position:relative;top:0px;height:200px;width:500px;'>
+        <div style='$border position:relative;top:0px;height:${diagram_y_size}px;width:${diagram_x_size}px;'>
         <SCRIPT Language=JavaScript>
         P=new Array();
         document.open();
-        _BFont=\"color:\#000000;font-family:Verdana;font-weight:normal;font-size:8pt;line-height:10pt;\";
+        _BFont=\"color:\#$font_color;$font_style\";
     
         $pie_pieces_html
         $pie_bars_html
