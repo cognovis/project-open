@@ -128,12 +128,14 @@ ad_proc im_reporting_cubes_cube {
 		insert into im_reporting_cubes (
 			cube_id,
 			cube_name,
+			cube_params,
 			cube_top_vars,
 			cube_left_vars,
 			cube_update_interval
 		) values (
 			:base_cube_id,
 			'finance',
+			:params_hash,
 			:top_vars,
 			:left_vars,
 			'$cache_days days'::interval
