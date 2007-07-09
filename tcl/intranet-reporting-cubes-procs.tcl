@@ -50,6 +50,12 @@ ad_proc im_reporting_cubes_cube {
     - An array for the top dimension
 } {
     if {"" == $top_vars} { set top_vars "year" }
+    set params(start_date) $start_date
+    set params(end_date) $end_date
+    set params(cost_type_id) $cost_type_id
+    set params(customer_type_id) $customer_type_id
+    set params(customer_id) $customer_id
+    set params_hash [array get params]
 
     if {!$no_cache_p} {
         set cached_result ""
@@ -61,6 +67,7 @@ ad_proc im_reporting_cubes_cube {
 		where
 			c.cube_id = v.cube_id
 			and c.cube_name = :cube_name
+			and c.cube_params = :params_hash
 			and c.cube_left_vars = :left_vars
 			and c.cube_top_vars = :top_vars
 			and v.evaluation_date >= now()-c.cube_update_interval
