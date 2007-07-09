@@ -57,19 +57,25 @@ ad_proc im_reporting_cubes_cube {
     set params(customer_id) $customer_id
     set params_hash [array get params]
 
-    if {!$no_cache_p} {
+    set base_cube_id [db_string cube_id "
+		select	cube_id
+		from	im_reporting_cubes c
+		where	c.cube_name = :cube_name
+			and c.cube_params = :params_hash
+			and c.cube_left_vars = :left_vars
+			and c.cube_top_vars = :top_vars
+    "-default ""]
+
+    if {"" != $base_cube_id && !$no_cache_p} {
         set cached_result ""
         set cube_value_sql "
 		select	*
 		from
-			im_reporting_cubes c,
+			im_reporting_cubec c
 			im_reporting_cube_values v
 		where
+			c.cube_id = :base_cube_id
 			c.cube_id = v.cube_id
-			and c.cube_name = :cube_name
-			and c.cube_params = :params_hash
-			and c.cube_left_vars = :left_vars
-			and c.cube_top_vars = :top_vars
 			and v.evaluation_date >= now()-c.cube_update_interval
 		order by
 			v.evaluation_date DESC
@@ -86,7 +92,14 @@ ad_proc im_reporting_cubes_cube {
         	hash_array $value_hash_array \
             ]
         }
-	if {"" != $cached_result} { return $cached_result }
+	if {"" != $cached_result} { 
+	    db_dml update_counter "
+		update im_reporting_cubes set
+			cube_usage_counter = cube_usage_counter + 1
+		where cube_id = :base_cube_id
+	    "
+	    return $cached_result 
+	}
     }
 
 
@@ -109,16 +122,8 @@ ad_proc im_reporting_cubes_cube {
     }
     array set cube $cube_array
 
-    set cube_id [db_string cube_id "
-	select	cube_id 
-	from	im_reporting_cubes 
-	where	cube_name = 'finance'
-		and cube_top_vars = :top_vars
-		and cube_left_vars = :left_vars
-    " -default ""]
-
-    if {"" == $cube_id} {
-	set cube_id [db_nextval "im_reporting_cubes_seq"]
+    if {"" == $base_cube_id} {
+	set base_cube_id [db_nextval "im_reporting_cubes_seq"]
 	db_dml insert_cube "
 		insert into im_reporting_cubes (
 			cube_id,
@@ -127,7 +132,7 @@ ad_proc im_reporting_cubes_cube {
 			cube_left_vars,
 			cube_update_interval
 		) values (
-			:cube_id,
+			:base_cube_id,
 			'finance',
 			:top_vars,
 			:left_vars,
@@ -152,7 +157,7 @@ ad_proc im_reporting_cubes_cube {
 		value_hash_array
 	) values (
 		:cube_value_id,
-		:cube_id,
+		:base_cube_id,
 		now(),
 		:top_scale,
 		:left_scale,
@@ -160,7 +165,6 @@ ad_proc im_reporting_cubes_cube {
 	)
     "
 
-#    ad_return_complaint 1 "[llength $cube_array]<pre>[join $cube_array "\n"]</pre>"
     return $cube_array
 }
 
