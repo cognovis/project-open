@@ -38,6 +38,14 @@ ad_proc -public im_dashboard_all_time_top_customers_component {
 } {
     Returns a dashboard component for the home page
 } {
+    set menu_label "reporting-cubes-finance"
+    set current_user_id [ad_maybe_redirect_for_registration]
+    set read_p [db_string report_perms "
+        select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
+        from    im_menus m where m.label = :menu_label
+    " -default 'f']
+    if {![string equal "t" $read_p]} { return "" }
+
     set params [list \
 		    [list return_url [im_url_with_query]] \
 		    ]
@@ -58,6 +66,13 @@ ad_proc -public im_dashboard_generic_component {
 } {
     Returns a dashboard component for the home page
 } {
+    set menu_label "reporting-cubes-finance"
+    set current_user_id [ad_maybe_redirect_for_registration]
+    set read_p [db_string report_perms "
+        select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
+        from    im_menus m where m.label = :menu_label
+    " -default 'f']
+    if {![string equal "t" $read_p]} { return "" }
 
     if {"" == $start_date} { set start_date [db_string start "select to_date(now()::date-10000, 'YYYY-MM-01')"] }
     if {"" == $end_date} { set end_date [db_string start "select to_date(now()::date+60, 'YYYY-MM-01')"] }
