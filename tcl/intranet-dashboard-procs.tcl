@@ -21,8 +21,10 @@ ad_proc -public im_reporting_dashboard_sweeper {
 } {
     Deletes old dashboard DW entries
 } {
+    # Delete _values_. 
+    # It's not necessary to delete the cube definitions
+    # (im_reporting_cubes). They also contain counters.
     db_dml del_values "delete from im_reporting_cube_values"
-    db_dml del_cubes "delete from im_reporting_cubes"
 }
 
 
@@ -203,7 +205,7 @@ ad_proc im_dashboard_pie_chart {
     set values [reverse [qsort $values [lambda {s} { lindex $s 1 }]]]
     
     # Format the elements
-    set pie_pieces_html ""
+    set pie_pieces_html "\n"
     set pie_bars_html ""
     set count 0
     set angle 0
@@ -223,7 +225,7 @@ ad_proc im_dashboard_pie_chart {
 	}
 
         set col $pie_colors($count)
-        append pie_pieces_html "P\[$count\]=new Pie([expr $radius+$outer_distance], [expr $radius+$outer_distance], 0, $radius, [expr round($angle-0.5)], [expr $angle+$degrees+0.5], \"$col\");\n"
+        append pie_pieces_html "P\[$count\]=new Pie([expr $radius+$outer_distance], [expr $radius+$outer_distance], 0, $radius, [expr $angle-0.3], [expr $angle+$degrees+0.3], \"$col\");\n"
 
         set angle [expr $angle+$degrees]
         set perc_text "${perc}%"
@@ -234,15 +236,9 @@ ad_proc im_dashboard_pie_chart {
 	set bar_y_start $perc_y_start
 	set bar_y_end $perc_y_end
 
-        append pie_bars_html "new Bar(
-		$perc_x_start, $perc_y_start, $perc_x_end, $perc_y_end, 
-		\"$col\", \"$perc_text\", \"\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\"
-	);\n"
+        append pie_bars_html "new Bar($perc_x_start, $perc_y_start, $perc_x_end, $perc_y_end, \"$col\", \"$perc_text\", \"\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
     
-        append pie_bars_html "new Bar(
-		$bar_x_start, $bar_y_start, $bar_x_end, $bar_y_end, 
-		\"$col\", \"$pie_text\", \"\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\"
-	);\n"
+        append pie_bars_html "new Bar($bar_x_start, $bar_y_start, $bar_x_end, $bar_y_end, \"$col\", \"$pie_text\", \"\", \"\",  \"void(0)\", \"MouseOver($count)\", \"MouseOut($count)\");\n"
     
         incr count
     }
@@ -257,10 +253,8 @@ ad_proc im_dashboard_pie_chart {
         P=new Array();
         document.open();
         _BFont=\"color:\#$font_color;font-size:${font_size}pt;$font_style\";
-    
         $pie_pieces_html
         $pie_bars_html
-    
         document.close();
         function MouseOver(i) { P\[i\].MoveTo(\"\",\"\",10); }
         function MouseOut(i) { P\[i\].MoveTo(\"\",\"\",0); }
