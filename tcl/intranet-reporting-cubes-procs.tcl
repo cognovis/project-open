@@ -64,7 +64,7 @@ ad_proc im_reporting_cubes_cube {
 			and c.cube_params = :params_hash
 			and c.cube_left_vars = :left_vars
 			and c.cube_top_vars = :top_vars
-    "-default ""]
+    " -default ""]
 
     if {"" != $base_cube_id && !$no_cache_p} {
         set cached_result ""

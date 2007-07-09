@@ -33,6 +33,8 @@ create table im_reporting_cubes (
 	cube_usage_counter	integer default 0
 );
 
+-- Make sure there is atmost one cube definition...
+create unique index im_reporting_cubes_un on im_reporting_cubes(cube_name, cube_params, cube_top_vars, cube_left_vars);
 
 
 ----------------------------------------------------
