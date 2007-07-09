@@ -71,11 +71,11 @@ ad_proc im_reporting_cubes_cube {
         set cube_value_sql "
 		select	*
 		from
-			im_reporting_cubec c
+			im_reporting_cubes c,
 			im_reporting_cube_values v
 		where
 			c.cube_id = :base_cube_id
-			c.cube_id = v.cube_id
+			and c.cube_id = v.cube_id
 			and v.evaluation_date >= now()-c.cube_update_interval
 		order by
 			v.evaluation_date DESC
@@ -104,6 +104,7 @@ ad_proc im_reporting_cubes_cube {
 
 
     # Calculate the new version of the cube
+    set cube_array ""
     switch $cube_name {
 	finance {
 	    set cube_array [im_reporting_cubes_finance \
@@ -120,6 +121,8 @@ ad_proc im_reporting_cubes_cube {
 		ad_return_complaint 1 "Not define yet: Cube $cube_name"
 	}
     }
+    if {"" == $cube_array} { return "" }
+
     array set cube $cube_array
 
     if {"" == $base_cube_id} {
@@ -338,8 +341,8 @@ ad_proc im_reporting_cubes_finance {
     	"]
     	</blockquote><p>&nbsp;<p>&nbsp;<p>&nbsp;
         "
-        ns_write "</table>\n[im_footer]\n"
-        return
+        ns_write "</table>\n"
+        return ""
     }
     
     # Scale is a list of lists. Example: {{2006 01} {2006 02} ...}
@@ -468,8 +471,7 @@ ad_proc im_reporting_cubes_display {
 	"]
 	</blockquote><p>&nbsp;<p>&nbsp;<p>&nbsp;
     "
-	ns_write "\n[im_footer]\n"
-	return
+	return ""
     }
     
     # Add subtotals whenever a "main" (not the most detailed) scale_pretty changes

@@ -153,7 +153,7 @@ set cost_type [db_list cost_type "
 	where	category_id in ([join $cost_type_id ", "])
 "]
 
-set page_title [lang::message::lookup "" intranet-reporting.Financial_Cube_for "Financial Cube for '%cost_type%'"]
+set page_title [lang::message::lookup "" intranet-reporting.Financial_Cube "Financial Cube"]
 set context_bar [im_context_bar $page_title]
 set context ""
 set help_text "<strong>$page_title</strong><br>
@@ -389,24 +389,26 @@ set cube_array [im_reporting_cubes_cube \
     -customer_id $customer_id \
 ]
 
-array set cube $cube_array
+if {"" != $cube_array} {
+    array set cube $cube_array
 
-# Extract the variables from cube
-set left_scale $cube(left_scale)
-set top_scale $cube(top_scale)
-array set hash $cube(hash_array)
+    # Extract the variables from cube
+    set left_scale $cube(left_scale)
+    set top_scale $cube(top_scale)
+    array set hash $cube(hash_array)
 
 
-# ------------------------------------------------------------
-# Display the Cube Table
-
-ns_write [im_reporting_cubes_display \
+    # ------------------------------------------------------------
+    # Display the Cube Table
+    
+    ns_write [im_reporting_cubes_display \
 	      -hash_array [array get hash] \
 	      -left_vars $left \
 	      -top_vars $top \
 	      -top_scale $top_scale \
 	      -left_scale $left_scale \
-]
+    ]
+}
 
 
 # ------------------------------------------------------------
