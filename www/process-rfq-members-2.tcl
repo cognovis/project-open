@@ -175,7 +175,7 @@ foreach uid $user_ids {
 			null,
 			:uid,
 			:rfq_id,
-			:[im_freelance_rfq_answer_type_default],
+			[im_freelance_rfq_answer_type_default],
 			:rfq_action_id
 		    )
 	"]

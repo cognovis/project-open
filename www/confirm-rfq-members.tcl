@@ -21,5 +21,5 @@ ad_page_contract {
     return_url
 }
 
-ad_returnredirect [export_vars -base "process-rfq-members" {{rfq_action confirm} user_ids notify_assignee rfq_id return_url}]
+ad_returnredirect [export_vars -base "process-rfq-members" {{rfq_action_id confirm} user_ids notify_assignee rfq_id return_url}]
 
