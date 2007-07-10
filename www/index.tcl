@@ -42,6 +42,8 @@ set date_time_format "YYYY-MM-DD HH24:MI"
 # ---------------------------------------------------------------
 
 set add_rfq_p [im_permission $user_id "add_freelance_rfqs"]
+set view_rfq_p [im_permission $user_id "view_freelance_rfqs"]
+
 set admin_links ""
 set bulk_actions_list "[list]"
 
@@ -98,27 +100,20 @@ ad_form \
 # List RFQs according to filters
 # ---------------------------------------------------------------
 
-set export_var_list [list return_url]
-
 # define list object
 set list_id "rfqs_list"
 
-
 set actions_list [list]
-set add_rfq_msg [lang::message::lookup "" intranet-freelance-rfqs.Create_New_RFQ "Create a New RFQ"]
-lappend actions_list $add_rfq_msg [export_vars -base "new-rfq" {{rfq_project_id $project_id} return_url}] $add_rfq_msg
+set export_var_list [list return_url]
 
+if {$add_rfq_p} {
+    set add_rfq_msg [lang::message::lookup "" intranet-freelance-rfqs.Create_New_RFQ "Create a New RFQ"]
+    lappend actions_list $add_rfq_msg [export_vars -base "new-rfq" {{rfq_project_id $project_id} return_url}] $add_rfq_msg
+}
 
-template::list::create \
-    -name $list_id \
-    -multirow rfq_lines \
-    -key rfq_id \
-    -has_checkboxes \
-    -actions $actions_list \
-    -bulk_actions $bulk_actions_list \
-    -bulk_action_export_vars { return_url } \
-    -row_pretty_plural "[_ intranet-freelance-rfqs.RFQs_Items]" \
-    -elements {
+set elements {}
+if {$add_rfq_p} {
+    set elements {
 	rfq_chk {
 	    label "<input type=\"checkbox\" 
                           name=\"_dummy\" 
@@ -128,6 +123,10 @@ template::list::create \
 		@rfq_lines.rfq_chk;noquote@
 	    }
 	}
+    }
+}
+
+set elements [concat $elements {
 	rfq_name {
 	    label "[_ intranet-freelance-rfqs.RFQ_Name]"
 	    link_url_eval $rfq_view_url
@@ -141,10 +140,29 @@ template::list::create \
 	rfq_start_date_pretty {label "[lang::message::lookup {} intranet-freelance-rfqs.Start_Date {Starts}]"}
 	rfq_end_date_pretty {label "[lang::message::lookup {} intranet-freelance-rfqs.End_Date {Ends}]"}
 	rfq_status {label "[lang::message::lookup {} intranet-freelance-rfqs.RFQ_Status {RFQ Status}]"}
+}]
+	
+if {$view_rfq_p} {
+    set elements [concat $elements {
 	num_inv {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Invitations {# Inv}]"}
 	num_conf {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Conformations {# Conf}]"}
 	num_decl {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Decl {# Decl}]"}
-    }
+    }]
+}
+
+
+template::list::create \
+    -name $list_id \
+    -multirow rfq_lines \
+    -key rfq_id \
+    -has_checkboxes \
+    -actions $actions_list \
+    -bulk_actions $bulk_actions_list \
+    -bulk_action_export_vars { return_url } \
+    -row_pretty_plural "[_ intranet-freelance-rfqs.RFQs_Items]" \
+    -elements $elements
+
+
 
 set project_where ""
 if {"" != $project_id} { 
@@ -157,6 +175,22 @@ if {"" != $rfq_status_id} {
     append project_where "\tand r.rfq_status_id = :rfq_status_id\n" 
 }
 
+
+# ---------------------------------------------------------------
+# Permissions - a bit complex
+# Start off that each user can read the RFQs where he participates.
+# 
+set allowed_rfqs "(
+			select distinct answer_rfq_id as rfq_id 
+			from im_freelance_rfq_answers 
+			where answer_user_id = :current_user_id
+		)"
+
+if {[im_permission $current_user_id "view_freelance_rfqs_all"]} {
+    set allowed_rfqs "(select rfq_id from im_freelance_rfqs)"
+}
+
+
 db_multirow -extend {rfq_chk rfq_new_url rfq_view_url rfq_project_url} rfq_lines rfqs_lines "
     select
 		*,
@@ -166,41 +200,29 @@ db_multirow -extend {rfq_chk rfq_new_url rfq_view_url rfq_project_url} rfq_lines
 		to_char(rfq_end_date, :date_time_format) as rfq_end_date_pretty,
 		(select count(*) from im_freelance_rfq_answers a where a.answer_rfq_id = r.rfq_id) as num_inv,
 		(	select	count(*) 
-			from	im_freelance_rfq_answers a,
-				wf_cases c,
-				wf_tasks t
+			from	im_freelance_rfq_answers a
 			where	a.answer_rfq_id = r.rfq_id
-				and a.answer_id = c.object_id
-				and c.case_id = t.case_id
-				and t.transition_key = 'confirm'
+				and a.answer_status_id = [im_freelance_rfq_answer_status_confirmed]
 		) as num_conf,
 		(	select	count(*) 
-			from	im_freelance_rfq_answers a,
-				wf_cases c,
-				wf_tasks t
+			from	im_freelance_rfq_answers a
 			where	a.answer_rfq_id = r.rfq_id
-				and a.answer_id = c.object_id
-				and c.case_id = t.case_id
-				and t.transition_key = 'decline'
+				and a.answer_status_id = [im_freelance_rfq_answer_status_declined]
 		) as num_decl
     from
 		im_freelance_rfqs r
-		LEFT OUTER JOIN im_projects p on (r.rfq_project_id = p.project_id)
+		LEFT OUTER JOIN im_projects p ON (r.rfq_project_id = p.project_id)
     where
 		1=1
 		$project_where
     order by
 		r.rfq_name
 " {
-    if {![exists_and_not_null invoice_id]} {
-	set rfq_chk "<input type=\"checkbox\" 
-				name=\"rfq_id\" 
-				value=\"$rfq_id\" 
-				id=\"rfqs_list,$rfq_id\">"
-    }
+    set rfq_chk "<input type=\"checkbox\" name=\"rfq_id\" value=\"$rfq_id\" id=\"rfqs_list,$rfq_id\">"
     set rfq_new_url [export_vars -base "/intranet-freelance-rfqs/new-rfq" {rfq_id project_id return_url}]
     set rfq_view_url [export_vars -base "/intranet-freelance-rfqs/view-rfq" {rfq_id project_id return_url}]
     set rfq_project_url [export_vars -base "/intranet/projects/view" {project_id return_url}]
+    if {!$view_rfq_p} { set rfq_project_url "" }
 }
 
 

@@ -32,14 +32,19 @@
 
 </td>
 <td width="50%">
+
 	<h2><%= [lang::message::lookup "" intranet-freelance-rfqs.Required_RFQ_Skills "Required RFQ Skills"] %></h2>
 	<listtemplate name="skill_list"></listtemplate>
 	
 	<br>
 
+    <if @add_freelance_rfqs_p@>
+
 	<form action=add-rfq-skills method=POST>
 	<%= [export_form_vars rfq_id] %>
 	<input type=hidden name=return_url value="@return_url2;noquote@">
+
+
 	<table>
 	<tr>
 	  <td colspan=4 class=rowtitle align=center>
@@ -60,6 +65,7 @@
 	    <%= [lang::message::lookup "" intranet-freelance-rfqs.Skill_Weight "Skill Weight"] %>
 	  </td>
 	</tr>
+
 	@add_skill_trs;noquote@
 	<tr>
 	  <td></td>
@@ -67,8 +73,12 @@
 	    <input type=submit value='<%= [lang::message::lookup "" intranet-freelance-rfqs.Add_Required_Skills "Add Required Skills"] %>'>
 	  </td>
 	</tr>
+
 	</table>
 	</form>
+
+    </if>
+
 
 </td>
 </tr>

@@ -16,8 +16,8 @@ ad_page_contract {
     { rfq_project_id:integer "" }
     return_url
     { form_mode "edit"}
-    { rfq_status_id 4450 }
-    { rfq_type_id 4400 }
+    { rfq_status_id "[im_freelance_rfq_status_open]" }
+    { rfq_type_id "[im_freelance_rfq_type_rfa]" }
     { uom_units 324 }
     { rfq_start_date "" }
     { rfq_end_date "" }

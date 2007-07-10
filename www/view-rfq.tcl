@@ -20,10 +20,21 @@ ad_page_contract {
 # Default & Security
 # ------------------------------------------------------------------
 
-set user_id [ad_maybe_redirect_for_registration]
-if {![im_permission $user_id "add_freelance_rfqs"]} {
+set current_user_id [ad_maybe_redirect_for_registration]
+if {![im_permission $current_user_id "view_freelance_rfqs"]} {
+
+    # The current user doesn't have permissions to see _RFQs_
+    # However, the user might have been invited to fill out an RFQ _Answer_
+    set invited_p [db_string invited "
+	select	count(*) 
+	from	im_freelance_rfq_answers
+	where	answer_rfq_id = :rfq_id 
+		and answer_user_id = :current_user_id
+    "]
+    if {$invited_p} { ad_returnredirect [export_vars -base "new-answer" {rfq_id return_url}] }
+
     ad_return_complaint 1 "[_ intranet-timesheet2-invoices.lt_You_have_insufficient_1]"
-    return
+    ad_script_abort
 }
 
 set page_title [lang::message::lookup "" intranet-freelance-rfqs.RFQ_Base_Data "RFQ Base Data"]
@@ -33,6 +44,8 @@ set case_url_base "/workflow/case"
 
 set todays_date [lindex [split [ns_localsqltimestamp] " "] 0]
 set todays_time [lindex [split [ns_localsqltimestamp] " "] 1]
+
+set add_freelance_rfqs_p [im_permission $current_user_id "add_freelance_rfqs"]
 
 # Display the list of following types to add to the RFQ
 set active_skill_types [list 2000 2002 2004 2014]
@@ -53,6 +66,11 @@ set bgcolor(1) " class=rowodd "
 
 # Return_URL to this page.
 set return_url2 [im_url_with_query]
+
+set source_lang_skill_type [db_string source_lang "select category_id from im_categories where category = 'Source Language' and category_type = 'Intranet Skill Type'" -default 0]
+set target_lang_skill_type [db_string target_lang "select category_id from im_categories where category = 'Target Language' and category_type = 'Intranet Skill Type'" -default 0]
+set subject_area_skill_type [db_string target_lang "select category_id from im_categories where category = 'Subjects' and category_type = 'Intranet Skill Type'" -default 0]
+
 
 # ------------------------------------------------------------------
 # Form Options
@@ -177,15 +195,14 @@ if {"" == [template::element::get_value $form_id rfq_end_date]} {
 # ------------------------------------------------------------------
 
 
+set actions_list [list]
 set bulk_actions_list [list]
 
-set delete_msg [lang::message::lookup "" intranet-freelance-rfqs.Delete_Skill "Delete"]
-lappend bulk_actions_list $delete_msg "del-rfq-skills" $delete_msg
 
-
-set actions_list [list]
-# lappend actions_list "[lang::message::lookup "" intranet-freelance-rfqs.Add_Skill "Add Skill"]" "add-rfq-skills" "[lang::message::lookup "" intranet-freelance-rfqs.Add_Skill "Add Skill"]"
-
+if {[im_permission $current_user_id "add_freelance_rfqs"]} {
+    set delete_msg [lang::message::lookup "" intranet-freelance-rfqs.Delete_Skill "Delete"]
+    lappend bulk_actions_list $delete_msg "del-rfq-skills" $delete_msg
+}
 
 set export_var_list [list return_url]
 set list_id "skill_list"
@@ -265,19 +282,16 @@ foreach skill_type_id $active_skill_types {
 set actions_list [list]
 set bulk_actions_list [list]
 
-set invite_participants_msg [lang::message::lookup "" intranet-freelance-rfqs.Invite_Participants "Invite Participants"]
-lappend bulk_actions_list $invite_participants_msg "invite-rfq-members" $invite_participants_msg
-
-set confirm_invitations_msg [lang::message::lookup "" intranet-freelance-rfqs.Confirm_RFQ "Confirm RFQ"]
-lappend bulk_actions_list $confirm_invitations_msg "confirm-rfq-members" $confirm_invitations_msg
-
-set decline_invitations_msg [lang::message::lookup "" intranet-freelance-rfqs.Decline_RFQ "Decline RFQ"]
-lappend bulk_actions_list $decline_invitations_msg "decline-rfq-members" $decline_invitations_msg
-
-
-set source_lang_skill_type [db_string source_lang "select category_id from im_categories where category = 'Source Language' and category_type = 'Intranet Skill Type'" -default 0]
-set target_lang_skill_type [db_string target_lang "select category_id from im_categories where category = 'Target Language' and category_type = 'Intranet Skill Type'" -default 0]
-set subject_area_skill_type [db_string target_lang "select category_id from im_categories where category = 'Subjects' and category_type = 'Intranet Skill Type'" -default 0]
+if {[im_permission $current_user_id "add_freelance_rfqs"]} {
+    set invite_participants_msg [lang::message::lookup "" intranet-freelance-rfqs.Invite_Participants "Invite Participants"]
+    lappend bulk_actions_list $invite_participants_msg "invite-rfq-members" $invite_participants_msg
+    
+    set confirm_invitations_msg [lang::message::lookup "" intranet-freelance-rfqs.Confirm_RFQ "Confirm RFQ"]
+    lappend bulk_actions_list $confirm_invitations_msg "confirm-rfq-members" $confirm_invitations_msg
+    
+    set decline_invitations_msg [lang::message::lookup "" intranet-freelance-rfqs.Decline_RFQ "Decline RFQ"]
+    lappend bulk_actions_list $decline_invitations_msg "decline-rfq-members" $decline_invitations_msg
+}
 
 set elements {
 	rfq_chk {
@@ -294,6 +308,18 @@ set elements {
 	    link_url_eval $case_url
 	}
 }
+
+lappend elements answer_status
+lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Answer_Status {Status}]" }
+
+# lappend elements source_langs 
+# lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.All_Source_Languages {All Sourc Langs}]" }
+# lappend elements target_langs 
+# lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.All_Target_Languages {All Target Langs}]" }
+# lappend elements subject_areas 
+# lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Subject_Areas {Subject Areas}]" }
+
+
 
 # -------------------------------------------------------------
 # Add columns for each skill:
@@ -317,7 +343,7 @@ template::multirow foreach skills {
     append skill_select_sql "
 	,(	select	s.claimed_experience_id
 		from	im_freelance_skills s
-		where	user_id=u.user_id
+		where	user_id = u.user_id
 			and s.skill_type_id = $skill_type_id
 			and s.skill_id = $skill_id
 	) as u$object_skill_map_id
@@ -325,7 +351,7 @@ template::multirow foreach skills {
     append skill_select_sql "
 	,(	select	s.confirmed_experience_id
 		from	im_freelance_skills s
-		where	user_id=u.user_id
+		where	user_id = u.user_id
 			and s.skill_type_id = $skill_type_id
 			and s.skill_id = $skill_id
 	) as c$object_skill_map_id
@@ -356,25 +382,33 @@ template::multirow foreach skills {
 
 }
 
-lappend elements answer_amount
-lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Amount {Amount}]" }
 
-lappend elements transition_name
-lappend elements { 
-    label "[lang::message::lookup {} intranet-freelance-rfqs.Transition {Transition}]" 
-    link_url_eval $case_url
+# ------------------------------------------------------------
+# Add the DynFields from im_freelance_rfq_answers
+
+set extra_selects [list "0 as zero"]
+set column_sql "
+        select  w.deref_plpgsql_function,
+                aa.attribute_name,
+		aa.pretty_name
+        from    im_dynfield_widgets w,
+                im_dynfield_attributes a,
+                acs_attributes aa
+        where   a.widget_name = w.widget_name and
+                a.acs_attribute_id = aa.attribute_id and
+                aa.object_type = 'im_freelance_rfq_answer'
+"
+db_foreach column_list_sql $column_sql {
+
+    # Select another field
+    lappend extra_selects "${deref_plpgsql_function}($attribute_name) as ${attribute_name}_deref"
+
+    # Show this field in the template::list
+    lappend elements ${attribute_name}_deref
+    lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.$attribute_name $pretty_name]" }
 
 }
-
-# lappend elements task_state
-# lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Task_State {Task State}]" }
-
-lappend elements source_langs 
-lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.All_Source_Languages {All Sourc Langs}]" }
-lappend elements target_langs 
-lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.All_Target_Languages {All Target Langs}]" }
-lappend elements subject_areas 
-lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Subject_Areas {Subject Areas}]" }
+set extra_select [join $extra_selects ",\n\t"]
 
 lappend elements note 
 lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Note {Note}]" }
@@ -406,30 +440,18 @@ template::list::create \
 db_multirow -extend $extend_list candidate_list_lines candidates "
 	select
 		u.user_id,
-		a.*,
-		c.*,
-		t.*,
-		t.state as task_state,
-		tt.transition_name,
+		im_category_from_id(a.answer_status_id) as answer_status,
 		im_name_from_user_id(u.user_id) as user_name,
 		im_freelance_skill_list(u.user_id, :source_lang_skill_type) as source_langs,
 		im_freelance_skill_list(u.user_id, :target_lang_skill_type) as target_langs,
-		im_freelance_skill_list(u.user_id, :subject_area_skill_type) as subject_areas
+		im_freelance_skill_list(u.user_id, :subject_area_skill_type) as subject_areas,
+		$extra_select
 		$skill_select_sql
 	from
 		cc_users u
 		LEFT OUTER JOIN im_freelance_rfq_answers a ON (
 			a.answer_user_id = u.user_id
 			and a.answer_rfq_id = :rfq_id
-		)
-		LEFT OUTER JOIN wf_cases c ON (c.object_id = a.answer_id)
-		LEFT OUTER JOIN wf_tasks t ON (
-			t.case_id = c.case_id
-			and t.state not in ('canceled')
-		)
-		LEFT OUTER JOIN wf_transitions tt ON (
-			t.transition_key = tt.transition_key
-			and t.workflow_key = tt.workflow_key
 		)
 	where
 		1=1
@@ -464,6 +486,7 @@ db_multirow -extend $extend_list candidate_list_lines candidates "
 
 	set skill_var "s$object_skill_map_id"
 	set $skill_var "$exp ($add)"
+	set $skill_var "$exp"
 
 
 #	append note "$skill_type: claim=$claimed_exp_id, conf=$confirmed_exp_id, \n"

@@ -18,6 +18,32 @@ ad_library {
 
 
 # ---------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------
+
+
+ad_proc -public im_freelance_rfq_type_rfa {} { return 4400 }
+ad_proc -public im_freelance_rfq_type_rfq {} { return 4402 }
+ad_proc -public im_freelance_rfq_type_reverse_auction {} { return 4404 }
+
+ad_proc -public im_freelance_rfq_status_open {} { return 4420 }
+ad_proc -public im_freelance_rfq_status_closed {} { return 4422 }
+ad_proc -public im_freelance_rfq_status_canceled {} { return 4424 }
+ad_proc -public im_freelance_rfq_status_deleted {} { return 4426 }
+
+
+ad_proc -public im_freelance_rfq_answer_type_default {} { return 4450 }
+
+ad_proc -public im_freelance_rfq_answer_status_invited {} { return 4470 }
+ad_proc -public im_freelance_rfq_answer_status_confirmed {} { return 4472 }
+ad_proc -public im_freelance_rfq_answer_status_declined {} { return 4474 }
+ad_proc -public im_freelance_rfq_answer_status_canceled {} { return 4476 }
+ad_proc -public im_freelance_rfq_answer_status_closed {} { return 4478 }
+ad_proc -public im_freelance_rfq_answer_status_deleted {} { return 4499 }
+
+
+
+# ---------------------------------------------------------------
 # Freelance Member Select Component
 # ---------------------------------------------------------------
 

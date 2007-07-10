@@ -12,12 +12,18 @@ ad_page_contract {
     @param user_id user_id to add
     @param rfq_id RFQ to which to add 
     @param return_url Return URL
-
+    @param rfq_action_id Determines what should happend with the user. Values:
+	invited		4470
+	confirmed	4472
+	declined	4474
+	canceled	4476
+	closed		4478
+	deleted		4499
     @author frank.bergmann@project-open.com
 } {
     { user_ids:integer,multiple "" }
     { notify_asignee 1 }
-    rfq_action
+    rfq_action_id
     email_header
     email_body
     rfq_id:integer
@@ -48,6 +54,7 @@ if {0 == [llength $user_ids]} {
 # --------------------------------------------------------
 
 set system_name [ad_system_name]
+set rfq_action [im_category_from_id $rfq_action_id]
 set rfq_action_upper "[string toupper [string range $rfq_action 0 0]][string range $rfq_action 1 end]"
 set rfq_action_upper_l10n [lang::message::lookup "" intranet-freelance-rfqs.$rfq_action $rfq_action_upper]
 set project_name [db_string project_name "select acs_object__name(:project_id)"]
@@ -76,9 +83,6 @@ set user_url "/intranet/users/view"
 
 set return_to_previous_page_html [lang::message::lookup "" intranet-freelance-rfqs.Return_to_previous_page "Return to <a href=\"%return_url%\">previous page</a>."]
 
-set answer_type_id 4400
-set answer_status_id 4450
-	
 # Where to preset the WF for confirmation/declination?
 set declined_place_key "before_decline"
 set confirmed_place_key "before_confirm"
@@ -136,7 +140,7 @@ foreach uid $user_ids {
     "
 
     if {[regexp {\ } $email match]} {
-	append result_html "<li><a href=[export_vars -base $user_url {user_id}]>$user_name</a>: Found invalid characters in email: '$email' - skipping\n"
+	append result_html "<li><font color=red><a href=[export_vars -base $user_url {user_id}]>$user_name</a>: Found invalid characters in email: '$email' - skipping</font>\n"
 	incr error_count
 	continue
     }
@@ -159,25 +163,9 @@ foreach uid $user_ids {
 
     append result_html "</ul>\n<ul>\n<li>$user_name: Started processing: rfq_action=$rfq_action, answer_id=$answer_id\n"
 
-    switch $rfq_action {
-	invite {
-
-	    # ---------------------------------------------------------------
-	    # Invitation
-
-	    if {"" == $answer_id } {
-	
-		if [catch {
-#		    append result_html "<li>$user_name: Sending email: <pre>ns_sendmail $email $current_user_email \"$email_header\" ... </pre>\n"
-		    ns_sendmail $email $current_user_email $email_header $email_body
-		} errmsg] {
-		    append result_html "<li>$user_name: Problem sending email:<br><pre>$errmsg</pre>\n"
-		    incr error_count
-	    	} else {
-		    append result_html "<li>$user_name: Successfully sent out email:<br><pre>$email_header\n\n$email_body</pre>\n"
-		}
-	
-		set answer_id [db_string new_answer "
+    # Create an answer object if not there already
+    if {"" == $answer_id } {
+	set answer_id [db_string new_answer "
 		    select im_freelance_rfq_answer__new (
 			null,
 			'im_freelance_rfq_answer',
@@ -187,191 +175,33 @@ foreach uid $user_ids {
 			null,
 			:uid,
 			:rfq_id,
-			:answer_type_id,
-			:answer_status_id
+			:[im_freelance_rfq_answer_type_default],
+			:rfq_action_id
 		    )
-	        "]
+	"]
 	
-		db_dml update_answer "
-			update im_freelance_rfq_answers set
-				answer_start_date = now()
-			where answer_id = :answer_id
-		"
-	    } else {
-		append result_html "<li>$user_name: No Email sent. The user was already invited.\n"
-		incr error_count
-	    }
-	
-	
-	    if {0 == $answer_id} {
-		ad_return_complaint 1 "Unable to create a base answer object for user $user_name"
-		ad_script_abort
-	    }
+	db_dml update_answer "
+		update im_freelance_rfq_answers set
+			answer_start_date = now()
+		where answer_id = :answer_id
+	"
+    }
 
+    # Update the status of the answer to the "rfq_action_id".
+    db_dml update_answer "
+		update im_freelance_rfq_answers set
+			answer_status_id = :rfq_action_id
+		where answer_id = :answer_id
+    "
 
-
-	    # Start workflow case
-	    # Context_key not used aparently...
-	    set context_key ""
-	    set case_id [db_string caseid "select case_id from wf_cases where object_id = :answer_id" -default ""]
-	    if {"" == $case_id} {
-		set case_id [wf_case_new \
-			 $rfq_org_workflow_key \
-			 $context_key \
-			 $answer_id \
-	        ]
-	    } else {
-		append result_html "<li>$user_name: There is already a workflow for this user.\n"
-		incr error_count
-	    }
-	
-	    # ---------------------------------------------------------------
-	    # Determine the first task in the case to be executed
-	    # Please note that there can be potentially more then
-	    # one of such tasks. However, that would be an error
-	    # of the particular WF design.vv
-	
-	    # Get the first "enabled" task of the new case_id:
-	    set enabled_tasks [db_list enabled_tasks "
-		select	task_id
-		from	wf_tasks
-		where	case_id = :case_id
-			and state = 'enabled'	
-	    "]
-	
-	    if {[llength $enabled_tasks] == 1} {
-	
-		# Get the first one - shouldn't be more...
-		set task_id [lindex $enabled_tasks 0]
-	    
-		# Assign the first task to the user himself
-		set wf_case_assig [db_string wf_case_assignment "
-		    select workflow_case__add_task_assignment (:task_id, :uid, 't')
-	        "]
-	
-		# Start the task.
-		# This step saves the user the work to press the "Start Task" button.
-		set action "start"
-		set message ""
-		set action_ip [ad_conn peeraddr]
-		set journal_id [db_string wf_begin_task_start "
-		    select workflow_case__begin_task_action (
-			:task_id,
-			:action,
-			:action_ip,
-			:uid,
-			:message
-		    )
-	        "]
-	
-		set journal_id [db_string wf_start_task "
-		    select workflow_case__start_task (
-			:task_id,
-			:uid,
-			:journal_id
-		    )
-	        "]
-	
-	    }	
-
-	    # Skip sending email at the end
-	    continue
-	}
-
-
-	confirm {
-
-	    if [catch {
-#	        append result_html "<li>$user_name: Sending email: <pre>ns_sendmail $email $current_user_email \"$email_header\" ... </pre>\n"
-		ns_sendmail $email $current_user_email $email_header $email_body
-	    } errmsg] {
-		append result_html "<li>$user_name: Problem sending email:<br><pre>$errmsg</pre>\n"
-		incr error_count
-	    } else {
-		append result_html "<li>$user_name: Successfully sent out email:<br><pre>$email_header\n\n$email_body</pre>\n"
-	    }
-
-	    # Delete all tokens of the case
-	    db_dml delete_tokens "delete from wf_tokens where case_id = :case_id and state in ('free', 'locked')"
-	
-	    # Cancel all active tasks    
-	    set tasks_sql "select task_id as wf_task_id from wf_tasks where case_id = :case_id and state in ('started')"
-	    db_foreach tasks $tasks_sql { set journal_id [im_workflow_task_action -task_id $wf_task_id -action "cancel" -message "Reassign task"] }
-	  
-	    set journal_id [db_string journal "
-		select journal_entry__new(
-			null, 
-			:case_id,
-			:confirmed_place_key, 
-			:confirmed_place_key, 
-			now(), 
-			:current_user_id, 
-			'0.0.0.0', 
-			:confirmed_place_key)
-	    "]
-	
-	    # Adding a new token
-	    im_exec_dml add_token "workflow_case__add_token (:case_id, :confirmed_place_key, :journal_id)"
-	    
-	    # Enable the next (cancel) transition
-	    im_exec_dml sweep "workflow_case__sweep_automatic_transitions (:case_id, :journal_id)"
-
-	}
-
-
-	decline {
-	    append result_html "<li>$user_name: Declining RFQ: case_id=$case_id\n"
-
-	    if [catch {
-#		append result_html "<li>$user_name: Sending email: <pre>ns_sendmail $email $current_user_email \"$email_header\" ... </pre>\n"
-		ns_sendmail $email $current_user_email $email_header $email_body
-	    } errmsg] {
-		incr error_count
-		append result_html "<li>$user_name: Problem sending email:<br><pre>$errmsg</pre>\n"
-	    } else {
-		append result_html "<li>$user_name: Successfully sent out email:<br><pre>$email_header\n\n$email_body</pre>\n"
-	    }
-	
-	    # Delete all tokens of the case
-	    db_dml delete_tokens "
-	    	delete from wf_tokens
-	    	where case_id = :case_id
-	    	and state in ('free', 'locked')
-	    "
-	
-	    # Cancel all active tasks    
-	    set tasks_sql "
-	    	select task_id as wf_task_id
-	    	from wf_tasks
-	    	where case_id = :case_id
-	    	      and state in ('started')
-	    "
-	    db_foreach tasks $tasks_sql {
-	        ns_log Notice "new-rfc: canceling task $wf_task_id"
-	        set journal_id [im_workflow_task_action -task_id $wf_task_id -action "cancel" -message "Reassigning task"]
-	    }
-	  
-	    set journal_id [db_string journal "
-		select journal_entry__new(
-			null, 
-			:case_id,
-			:declined_place_key, 
-			:declined_place_key, 
-			now(), 
-			:current_user_id, 
-			'0.0.0.0', 
-			:declined_place_key)
-	    "]
-	
-	    # Adding a new token
-	    im_exec_dml add_token "workflow_case__add_token (:case_id, :declined_place_key, :journal_id)"
-	    
-	    # Enable the next (cancel) transition
-	    im_exec_dml sweep "workflow_case__sweep_automatic_transitions (:case_id, :journal_id)"
-	
-	
-	}
-
+    # send out the email
+    if [catch {
+	ns_sendmail $email $current_user_email $email_header $email_body
+    } errmsg] {
+	append result_html "<li><font color=red>$user_name: Problem sending email:<br><pre>$errmsg</pre></font>\n"
+	incr error_count
+    } else {
+	append result_html "<li>$user_name: Successfully sent out email:<br><pre>$email_header\n\n$email_body</pre>\n"
     }
 
 }

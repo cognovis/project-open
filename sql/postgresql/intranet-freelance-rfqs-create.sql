@@ -72,52 +72,93 @@ create index im_freelance_rfqs_project_idx on im_freelance_rfqs (rfq_project_id)
 -------------------------------------------------------------
 -- Status & Type Categories
 
--- 4400-4499    Intranet Freelance RFQ
+-- 4400-4449    Intranet Freelance RFQ
 
-delete from im_categories where category_type = 'Intranet Freelance RFQ Type';
 
 -- Intranet Freelance RFQ Type
+delete from im_categories where category_type = 'Intranet Freelance RFQ Type';
 
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE, AUX_STRING1)
 VALUES (4400,'Request for Availability','Intranet Freelance RFQ Type', 'request_for_availability_wf');
-
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE, AUX_STRING1)
 VALUES (4402,'Request for Quotation','Intranet Freelance RFQ Type', 'request_for_quotation_wf');
-
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (4404,'Reverse Auction','Intranet Freelance RFQ Type', 'reverse_auction_wf');
 
 
 -- Intranet Freelance RFQ Status
+delete from im_categories where category_type = 'Intranet Freelance RFQ Status';
 
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4450,'Open','Intranet Freelance RFQ Status');
-
+VALUES (4420,'Open','Intranet Freelance RFQ Status');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4455,'Closed','Intranet Freelance RFQ Status');
-
+VALUES (4422,'Closed','Intranet Freelance RFQ Status');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4460,'Canceled','Intranet Freelance RFQ Status');
-
+VALUES (4424,'Canceled','Intranet Freelance RFQ Status');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4465,'Deleted','Intranet Freelance RFQ Status');
+VALUES (4426,'Deleted','Intranet Freelance RFQ Status');
 
 
 -- intranet-freelance_rfqs: Creating status and type views
 create or replace view im_freelance_rfq_type as
-select
-        category_id as freelance_rfq_type_id,
+select	category_id as freelance_rfq_type_id,
         category as freelance_rfq_type
 from    im_categories
 where   category_type = 'Intranet Freelance RFQ Type';
 
 
 create or replace view im_freelance_rfq_status as
-select
-        category_id as freelance_rfq_status_id,
+select	category_id as freelance_rfq_status_id,
         category as freelance_rfq_status
 from    im_categories
 where   category_type = 'Intranet Freelance RFQ Status';
+
+
+
+-------------------------------------------------------------
+-- Status & Type Categories
+
+-- 4450-4499    Intranet Freelance RFQ Answer
+
+
+
+-- Intranet Freelance RFQ Answer Type
+delete from im_categories where category_type = 'Intranet Freelance RFQ Answer Type';
+
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE, AUX_STRING1)
+VALUES (4450,'Default','Intranet Freelance RFQ Answer Type', 'request_for_availability_wf');
+
+
+-- Intranet Freelance RFQ Answer Status
+delete from im_categories where category_type = 'Intranet Freelance RFQ Answer Status';
+
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (4470,'Invited','Intranet Freelance RFQ Answer Status');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (4472,'Confirmed','Intranet Freelance RFQ Answer Status');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (4474,'Declined','Intranet Freelance RFQ Answer Status');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (4476,'Canceled','Intranet Freelance RFQ Answer Status');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (4478,'Closed','Intranet Freelance RFQ Answer Status');
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+VALUES (4499,'Deleted','Intranet Freelance RFQ Answer Status');
+
+
+-- intranet-freelance_rfqs: Creating status and type views
+create or replace view im_freelance_rfq_answer_type as
+select	category_id as freelance_rfq_type_id,
+        category as freelance_rfq_type
+from    im_categories
+where   category_type = 'Intranet Freelance RFQ Answer Type';
+
+
+create or replace view im_freelance_rfq_answer_status as
+select	category_id as freelance_rfq_status_id,
+        category as freelance_rfq_status
+from    im_categories
+where   category_type = 'Intranet Freelance RFQ Answer Status';
 
 
 
@@ -326,16 +367,19 @@ select acs_privilege__add_child('admin', 'view_freelance_rfqs_all');
 
 
 
+select im_priv_create('add_freelance_rfqs','P/O Admins');
 select im_priv_create('add_freelance_rfqs','Project Managers');
 select im_priv_create('add_freelance_rfqs','Senior Managers');
 select im_priv_create('add_freelance_rfqs','Sales');
 select im_priv_create('add_freelance_rfqs','Accounting');
 
+select im_priv_create('view_freelance_rfqs','P/O Admins');
 select im_priv_create('view_freelance_rfqs','Project Managers');
 select im_priv_create('view_freelance_rfqs','Senior Managers');
 select im_priv_create('view_freelance_rfqs','Sales');
 select im_priv_create('view_freelance_rfqs','Accounting');
 
+select im_priv_create('view_freelance_rfqs_all','P/O Admins');
 select im_priv_create('view_freelance_rfqs_all','Project Managers');
 select im_priv_create('view_freelance_rfqs_all','Senior Managers');
 select im_priv_create('view_freelance_rfqs_all','Sales');

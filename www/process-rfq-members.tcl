@@ -17,7 +17,7 @@ ad_page_contract {
 } {
     { user_ids:multiple "" }
     { notify_asignee 1 }
-    rfq_action
+    rfq_action_id
     rfq_id:integer
     return_url
 }
@@ -54,6 +54,7 @@ if {[string equal "/" $last_char]} {
     set system_url "[string range $system_url 0 [expr $sysurl_len-2]]"
 }
 
+set rfq_action [im_category_from_id $rfq_action_id]
 set rfq_action_upper "[string toupper [string range $rfq_action 0 0]][string range $rfq_action 1 end]"
 set rfq_action_upper_l10n [lang::message::lookup "" intranet-freelance-rfqs.$rfq_action $rfq_action_upper]
 
@@ -78,7 +79,7 @@ set context [list $page_title]
 # Variables for email & current user
 # --------------------------------------------------------
 
-set export_vars [export_form_vars rfq_id rfq_action return_url]
+set export_vars [export_form_vars rfq_id rfq_action_id return_url]
 foreach uid $user_ids {
     append export_vars "<input type=hidden name=user_ids value=$uid>\n"
 }
