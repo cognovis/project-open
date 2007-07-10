@@ -421,6 +421,9 @@ create table im_freelance_rfq_answers (
 	answer_rfq_id		integer
 				constraint im_freelance_rfq_answer_rfq_fk
 				references im_freelance_rfqs,
+	answer_accepted_p	char(1) default('t')
+				constraint im_freelance_rfq_answers_accepted_p
+				check (answer_accepted_p in ('t','f')),
 	answer_status_id	integer
 				constraint im_freelance_rfq_answer_status_fk
 				references im_categories,
