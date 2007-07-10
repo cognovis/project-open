@@ -58,6 +58,10 @@ ad_proc -public im_release_mgmt_project_component {
 } {
     Returns a list release items associated to the current project
 } {
+    # Is this a "Software Release" Project
+    set release_category [parameter::get -package_id [im_package_ganttproject_id] -parameter "ReleaseProjectType" -default "Software Release"]
+    if {![im_project_has_type $project_id $release_category]} { return "" }
+
     set params [list \
 	[list project_id $project_id] \
 	[list return_url [im_url_with_query]] \
@@ -79,6 +83,10 @@ ad_proc -public im_release_mgmt_journal_component {
 } {
     Show the Journal for the current project
 } {
+    # Is this a "Software Release" Project
+    set release_category [parameter::get -package_id [im_package_ganttproject_id] -parameter "ReleaseProjectType" -default "Software Release"]
+    if {![im_project_has_type $project_id $release_category]} { return "" }
+
     set params [list [list object_id $project_id]]
     set result [ad_parse_template -params $params "/packages/intranet-release-mgmt/www/journal"]
     return $result

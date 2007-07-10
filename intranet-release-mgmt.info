@@ -14,12 +14,13 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Allows a release manager to track the status of several projects or project tasks that make up the specific release.</description>
 
-        <!-- No dependency information -->
+        <provides url="intranet-release-mgmt" version="3.2.11.0.0"/>
 
         <callbacks>
         </callbacks>
         <parameters>
-        <!-- No version parameters -->
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ReleaseMgmtReleaseItemsCustomColumns"  description="A list of DynField custom variables to show in the projects list of Release Items. You can use the associated &quot;_deref&quot; values for integer values such as user ids etc. Example: Let's asume a DynField &quot;pl_area&quot; in &quot;im_projects&quot;, referring to an Area Project Leader. Then DynFields define a &quot;pl_area_deref&quot; variable that you can use here. Multiple variables of this type can be specified separated by a space."/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ReleaseProjectType"  default="Software Release" description="What is the name of the category to indicate a software release project?"/>
         </parameters>
 
     </version>

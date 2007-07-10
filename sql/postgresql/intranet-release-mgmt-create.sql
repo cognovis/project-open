@@ -230,7 +230,7 @@ begin
 	insert into im_dynfield_type_attribute_map (
 		 attribute_id, object_type_id, display_mode
 	) values (
-		v_attrib_id, 4599, 'edit'
+		v_attrib_id, 4599, ''edit''
 	);
 
 	return 0;

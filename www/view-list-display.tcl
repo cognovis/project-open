@@ -49,13 +49,14 @@ set elements {
 	}
     }
 
-set custom_cols { pl_area_deref rfc_customer_deref}
-foreach col $custom_cols {
-    set col_title [lang::message::lookup "" intranet-release-mgmt.$col $col]
-    lappend elements $col
-    lappend elements {label $col_title }
-}
 
+set custom_cols [parameter::get_from_package_key -package_key "intranet-release-mgmt" -parameter "ReleaseMgmtReleaseItemsCustomColumns" -default ""]
+
+foreach col $custom_cols {
+    set col_title [lang::message::lookup "" intranet-release-mgmt.[lang::util::suggest_key $col] $col]
+    lappend elements $col
+    lappend elements [list label $col_title ]
+}
 
 lappend elements release_status 
 lappend elements {
