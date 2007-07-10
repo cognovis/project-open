@@ -45,8 +45,9 @@
 <tr>
 <td class=form-label></td>
 <td class=form-widget>
-<input type="submit" value="#intranet-freelance-rfqs.Send_Invitations#" />
-<input type=checkbox name=send_me_a_copy value=1 checked>
+<input type="submit" name=email_send value="#intranet-freelance-rfqs.Send_Invitations#" />
+<input type="submit" name=email_nosend value="#intranet-freelance-rfqs.Dont_Send_Invitations#" />
+<input type=checkbox name=send_me_a_copy value=1>
 <%= [lang::message::lookup "" intranet-freelance-rfqs.Send_me_a_copy "Send me a copy"] %>
 </td>
 </tr>

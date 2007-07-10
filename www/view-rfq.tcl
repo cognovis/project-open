@@ -312,6 +312,7 @@ set elements {
 lappend elements answer_status
 lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Answer_Status {Status}]" }
 
+
 # lappend elements source_langs 
 # lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.All_Source_Languages {All Sourc Langs}]" }
 # lappend elements target_langs 
@@ -336,7 +337,7 @@ set skill_sql "
 "
 db_multirow skills skills $skill_sql 
 
-set extend_list {candidate_chk user_url case_url score note}
+set extend_list {candidate_chk user_url case_url score note answer_accepted}
 set skill_select_sql ""
 set skill_where_sql ""
 template::multirow foreach skills {
@@ -383,6 +384,10 @@ template::multirow foreach skills {
 }
 
 
+lappend elements answer_accepted
+lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Answer_Accepted {Accepted?}]" }
+
+
 # ------------------------------------------------------------
 # Add the DynFields from im_freelance_rfq_answers
 
@@ -410,7 +415,7 @@ db_foreach column_list_sql $column_sql {
 }
 set extra_select [join $extra_selects ",\n\t"]
 
-lappend elements note 
+lappend elements answer_note 
 lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Note {Note}]" }
 
 
@@ -439,6 +444,7 @@ template::list::create \
 
 db_multirow -extend $extend_list candidate_list_lines candidates "
 	select
+		a.*,
 		u.user_id,
 		im_category_from_id(a.answer_status_id) as answer_status,
 		im_name_from_user_id(u.user_id) as user_name,
@@ -460,6 +466,12 @@ db_multirow -extend $extend_list candidate_list_lines candidates "
     set candidate_chk "<input type=checkbox name=user_ids value=$user_id id='candidates_list,$user_id'>"
     set user_url [export_vars -base "/intranet/users/view" {user_id}]
     set case_url [export_vars -base $case_url_base {case_id}]
+
+    switch $answer_accepted_p {
+	t { set answer_accepted "Accept" }
+	f { set answer_accepted "Decline" }
+	default { set answer_accepted "?" }
+    }
 
     set note ""
     set score 0

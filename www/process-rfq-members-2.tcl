@@ -22,7 +22,9 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     { user_ids:integer,multiple "" }
-    { notify_asignee 1 }
+    { send_me_a_copy 1 }
+    { email_send "" }
+    { email_nosend "" }
     rfq_action_id
     email_header
     email_body
@@ -194,14 +196,30 @@ foreach uid $user_ids {
 		where answer_id = :answer_id
     "
 
+
+    if {"" != $email_send} {
+
+	# send out the email
+	if [catch {
+	    ns_sendmail $email $current_user_email $email_header $email_body
+	} errmsg] {
+	    append result_html "<li><font color=red>$user_name: Problem sending email:<br><pre>$errmsg</pre></font>\n"
+	    incr error_count
+	} else {
+	    append result_html "<li>$user_name: Successfully sent out email:<br><pre>$email_header\n\n$email_body</pre>\n"
+	}
+
+    }
+}
+
+
+if {$send_me_a_copy} {
+
     # send out the email
     if [catch {
-	ns_sendmail $email $current_user_email $email_header $email_body
+	ns_sendmail $current_user_email $current_user_email $email_header $email_body
     } errmsg] {
-	append result_html "<li><font color=red>$user_name: Problem sending email:<br><pre>$errmsg</pre></font>\n"
-	incr error_count
-    } else {
-	append result_html "<li>$user_name: Successfully sent out email:<br><pre>$email_header\n\n$email_body</pre>\n"
+	# No action...
     }
 
 }

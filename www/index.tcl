@@ -147,6 +147,7 @@ if {$view_rfq_p} {
 	num_inv {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Invitations {# Inv}]"}
 	num_conf {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Conformations {# Conf}]"}
 	num_decl {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Decl {# Decl}]"}
+	num_rem {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Remaining {# Rem}]"}
     }]
 }
 
@@ -191,7 +192,7 @@ if {[im_permission $current_user_id "view_freelance_rfqs_all"]} {
 }
 
 
-db_multirow -extend {rfq_chk rfq_new_url rfq_view_url rfq_project_url} rfq_lines rfqs_lines "
+db_multirow -extend {rfq_chk rfq_new_url rfq_view_url rfq_project_url num_rem} rfq_lines rfqs_lines "
     select
 		*,
 		im_category_from_id(rfq_type_id) as rfq_type,
@@ -211,9 +212,10 @@ db_multirow -extend {rfq_chk rfq_new_url rfq_view_url rfq_project_url} rfq_lines
 		) as num_decl
     from
 		im_freelance_rfqs r
-		LEFT OUTER JOIN im_projects p ON (r.rfq_project_id = p.project_id)
+		LEFT OUTER JOIN im_projects p ON (r.rfq_project_id = p.project_id),
+		$allowed_rfqs a
     where
-		1=1
+		r.rfq_id = a.rfq_id
 		$project_where
     order by
 		r.rfq_name
@@ -222,6 +224,7 @@ db_multirow -extend {rfq_chk rfq_new_url rfq_view_url rfq_project_url} rfq_lines
     set rfq_new_url [export_vars -base "/intranet-freelance-rfqs/new-rfq" {rfq_id project_id return_url}]
     set rfq_view_url [export_vars -base "/intranet-freelance-rfqs/view-rfq" {rfq_id project_id return_url}]
     set rfq_project_url [export_vars -base "/intranet/projects/view" {project_id return_url}]
+    set num_rem [expr $num_inv - $num_conf - $num_decl]
     if {!$view_rfq_p} { set rfq_project_url "" }
 }
 

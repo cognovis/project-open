@@ -142,6 +142,14 @@ ad_form -extend -name "rfq-form" -select_query {
 # Create the Form with RFQ Answer Information
 # -----------------------------------------------------------
 
+set answer_id [db_string answer_id "
+	select	answer_id
+	from	im_freelance_rfq_answers a
+	where	answer_rfq_id = :rfq_id
+		and answer_user_id = :current_user_id
+" -default ""]
+
+
 ad_form \
     -name "rfq-answer-form" \
     -export {return_url} \
@@ -156,22 +164,50 @@ ad_form \
 
 im_dynfield::append_attributes_to_form \
     -object_type "im_freelance_rfq_answer" \
-    -object_subtype_id $rfq_type_id \
+    -object_subtype_id [im_freelance_rfq_answer_type_default] \
     -form_id "rfq-answer-form"
 
 
 ad_form -extend -name "rfq-answer-form" -form {
-    {rfq_note:text(textarea),optional
+    {answer_note:text(textarea),optional
 	{label "[lang::message::lookup {} intranet-freelance-rfqs.Note Note]"}
 	{html {cols 40 rows 8} }
     }
 }
 
 ad_form -extend -name "rfq-answer-form" -select_query {
+
 	select	*,
+		answer_rfq_id as rfq_id
 	from	im_freelance_rfq_answers
 	where	answer_id = :answer_id
 
-} 
 
+} -new_data {
+
+    ad_return_complaint 1 "Error: Reply already exists"
+
+} -edit_data {
+
+    db_dml update_answer "
+                update im_freelance_rfq_answers set
+                        answer_accepted_p = :answer_accepted_p,
+			answer_note = :answer_note
+                where answer_id = :answer_id
+    "
+
+    im_dynfield::attribute_store \
+        -object_type "im_freelance_rfq_answer" \
+        -object_id $answer_id \
+        -form_id "rfq-answer-form"
+
+} -on_submit {
+    
+    ns_log Notice "on_submit"
+    
+} -after_submit {
+
+    ad_returnredirect $return_url
+    ad_script_abort
+}
 
