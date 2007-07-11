@@ -40,7 +40,7 @@ if {![im_permission $current_user_id "view_freelance_rfqs"]} {
 set page_title [lang::message::lookup "" intranet-freelance-rfqs.RFQ_Base_Data "RFQ Base Data"]
 set context_bar [im_context_bar $page_title]
 set action_url "/intranet-freelance-rfqs/new-rfq"
-set case_url_base "/workflow/case"
+set user_url_base "/intranet/users/view"
 
 set todays_date [lindex [split [ns_localsqltimestamp] " "] 0]
 set todays_time [lindex [split [ns_localsqltimestamp] " "] 1]
@@ -305,7 +305,7 @@ set elements {
 	score {	label "[lang::message::lookup {} intranet-freelance-rfqs.Score {Score}]" }
 	user_name {	
 	    label "[lang::message::lookup {} intranet-freelance-rfqs.User {User}]"
-	    link_url_eval $case_url
+	    link_url_eval $user_url
 	}
 }
 
@@ -337,7 +337,7 @@ set skill_sql "
 "
 db_multirow skills skills $skill_sql 
 
-set extend_list {candidate_chk user_url case_url score note answer_accepted}
+set extend_list {candidate_chk user_url score note answer_accepted}
 set skill_select_sql ""
 set skill_where_sql ""
 template::multirow foreach skills {
@@ -464,8 +464,7 @@ db_multirow -extend $extend_list candidate_list_lines candidates "
 		$skill_where_sql
 " {
     set candidate_chk "<input type=checkbox name=user_ids value=$user_id id='candidates_list,$user_id'>"
-    set user_url [export_vars -base "/intranet/users/view" {user_id}]
-    set case_url [export_vars -base $case_url_base {case_id}]
+    set user_url [export_vars -base $user_url_base {user_id}]
 
     switch $answer_accepted_p {
 	t { set answer_accepted "Accept" }
@@ -492,6 +491,7 @@ db_multirow -extend $extend_list candidate_list_lines candidates "
 	set exp [im_category_from_id $exp_id]
 
 	set weight [db_string confweight "select aux_int1 from im_categories where category_id = :exp_id" -default 1]
+	if {"" == $weight} { set weight 1 }
 
 	if {$exp_id >= $experience_id} { set add [expr $skill_weight * $weight] }
 	set score [expr $score + $add]

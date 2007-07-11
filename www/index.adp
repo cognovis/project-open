@@ -51,3 +51,14 @@
 </tr>
 </table>
 
+
+<p>
+Explanation:
+</p>
+
+<ul>
+<li>#intranet-freelance-rfqs.Num_Invitations# - #intranet-freelance-rfqs.Num_Inv_Explanation#
+<li>#intranet-freelance-rfqs.Num_Confirmations# - #intranet-freelance-rfqs.Num_Conf_Explanation#
+<li>#intranet-freelance-rfqs.Num_Declinations# - #intranet-freelance-rfqs.Num_Decl_Explanation#
+<li>#intranet-freelance-rfqs.Num_Remaining# - #intranet-freelance-rfqs.Num_Rem_Explanation#
+</ul>

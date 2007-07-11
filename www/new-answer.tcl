@@ -16,11 +16,38 @@ ad_page_contract {
     { return_url "/intranet/" }
     { task_page_url "" }
     { default_assignee_fulfill_rfc_id 0 }
+    { user_id "" }
+    { auto_login "" }
 }
 
 # ------------------------------------------------------
 # 
 # ------------------------------------------------------
+
+if {"" != $auto_login} {
+    # We probably have a freelance who received an invitations...
+    set valid_p [im_valid_auto_login_p -user_id $user_id -auto_login $auto_login]
+
+    # Don't let administrators in this way...
+    if {[im_is_user_site_wide_or_intranet_admin $user_id]} { set valid_p 0 }
+
+    if {$valid_p} {
+	# Log the dude in!
+	auth::issue_login \
+	    -user_id $user_id \
+	    -persistent=1
+    } else {
+	# Bad auto-login. Maybe somebody tries to tamper with security?
+	im_security_alert \
+            -location "intranet-freelance-rfqs/new-answer" \
+            -message "Auto-Login attempt failed for user $user_id" \
+	    -severity "Bad Auto-Login Attempt:" \
+            -value "
+user_id=$user_id
+auto_login=$auto_login
+	    "
+    }
+}
 
 set current_user_id [ad_maybe_redirect_for_registration]
 set current_url [im_url_with_query]
@@ -127,6 +154,7 @@ ad_form -extend -name "rfq-form" -form {
     }
 }
 
+
 ad_form -extend -name "rfq-form" -select_query {
 	select	*,
 		to_char(rfq_start_date, 'YYYY MM DD') as rfq_start_date,
@@ -135,7 +163,6 @@ ad_form -extend -name "rfq-form" -select_query {
 	where	rfq_id = :rfq_id
 
 } 
-
 
 
 # -----------------------------------------------------------
@@ -148,6 +175,15 @@ set answer_id [db_string answer_id "
 	where	answer_rfq_id = :rfq_id
 		and answer_user_id = :current_user_id
 " -default ""]
+
+
+if {"" == $answer_id} {
+	ad_return_complaint 1 "Internal error: answer_id=null:<br>
+	Please contact your system administrator:<br>
+	rfq_id=$rfq_id, current_user_id=$current_user_id"
+	ad_script_abort
+}
+
 
 
 ad_form \

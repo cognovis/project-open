@@ -64,10 +64,12 @@ set rfq_action_upper_l10n [lang::message::lookup "" intranet-freelance-rfqs.$rfq
 
 db_1row rfq_info "
 	select	rfq_project_id as project_id,
+		im_category_from_id(rfq_type_id) as rfq_type,
 		*
 	from	im_freelance_rfqs 
 	where	rfq_id = :rfq_id
 "
+
 
 set project_name [db_string project_name "select acs_object__name(:project_id)"]
 
@@ -84,20 +86,6 @@ foreach uid $user_ids {
     append export_vars "<input type=hidden name=user_ids value=$uid>\n"
 }
 
-db_1row current_user_info "
-select
-        im_name_from_user_id(person_id) as user_name,
-        first_names as first_names,
-        last_name as last_name,
-	email
-from
-	cc_users
-where
-	user_id = :current_user_id
-"
-
-
-
 set email_vars "
 	rfq_type \
 	rfq_name \
@@ -109,12 +97,13 @@ set email_vars "
 	email \
 	auto_login \
 	current_user_name \
+	current_user_email \
 	current_user_first_names \
 	current_user_last_name \
 "
 
-set rfq_url [export_vars -base "${system_url}/intranet-freelance-rfqs/new" {{form_mode display} {rfq_id $rfq_id}} ]
 set email_header [lang::message::lookup "" intranet-freelance-rfqs.${rfq_action_upper}_for_RFQ_of_Project_Header "intranet-freelance-rfqs.${rfq_action_upper}_for_RFQ_of_Project_Header Undefined" [list] 0]
+
 set email_body [lang::message::lookup "" intranet-freelance-rfqs.${rfq_action_upper}_for_RFQ_of_Project_Body "intranet-freelance-rfqs.${rfq_action_upper}_for_RFQ_of_Project_Body Undefined" [list] 0]
 
 

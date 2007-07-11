@@ -313,11 +313,13 @@ declare
 	v_senman		integer;
 	v_sales			integer;
 	v_proman		integer;
+	v_freelance		integer;
 begin
     select group_id into v_proman from groups where group_name = ''Project Managers'';
     select group_id into v_senman from groups where group_name = ''Senior Managers'';
     select group_id into v_sales from groups where group_name = ''Sales'';
     select group_id into v_accounting from groups where group_name = ''Accounting'';
+    select group_id into v_freelance from groups where group_name = ''Freelancers'';
 
     select menu_id
     into v_main_menu
@@ -344,6 +346,7 @@ begin
     PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
     PERFORM acs_permission__grant_permission(v_menu, v_sales, ''read'');
     PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_freelancers, ''read'');
 
     return 0;
 end;' language 'plpgsql';

@@ -145,8 +145,8 @@ set elements [concat $elements {
 if {$view_rfq_p} {
     set elements [concat $elements {
 	num_inv {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Invitations {# Inv}]"}
-	num_conf {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Conformations {# Conf}]"}
-	num_decl {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Decl {# Decl}]"}
+	num_conf {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Confirmations {# Conf}]"}
+	num_decl {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Declinations {# Decl}]"}
 	num_rem {label "[lang::message::lookup {} intranet-freelance-rfqs.Num_Remaining {# Rem}]"}
     }]
 }

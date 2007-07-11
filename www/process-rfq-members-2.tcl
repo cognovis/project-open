@@ -110,16 +110,13 @@ db_1row rfq_info "
 "
 
 db_1row current_user_info "
-        select  im_name_from_user_id(:current_user_id) as current_user_name,
+	select  im_name_from_user_id(:current_user_id) as current_user_name,
 		first_names as current_user_first_names,
 		last_name as current_user_last_name,
 		email as current_user_email
-        from    cc_users
-        where   user_id = :current_user_id
+	from    cc_users
+	where   user_id = :current_user_id
 "
-
-set rfq_url [export_vars -base "${system_url}/intranet-freelance-rfqs/new" {{form_mode display} {rfq_id $rfq_id}} ]
-
 
 # ---------------------------------------------------------------
 # Send out emails
@@ -132,13 +129,14 @@ foreach uid $user_ids {
 
     set user_id [lindex $user_ids 0]
     db_1row user_info "
-        select  user_id,
+	select  user_id,
 		first_names,
 		last_name,
 		email,
-		im_name_from_user_id(user_id) as user_name
-        from    cc_users
-        where   user_id = :uid
+		im_name_from_user_id(user_id) as user_name,
+		im_name_from_user_id(user_id) as name
+	from    cc_users
+	where   user_id = :uid
     "
 
     if {[regexp {\ } $email match]} {
@@ -196,6 +194,32 @@ foreach uid $user_ids {
 		where answer_id = :answer_id
     "
 
+
+    # ---------------------------------------------------------------
+    # Substitute variables
+    # ---------------------------------------------------------------
+
+    set auto_login [im_generate_auto_login -user_id $user_id]
+    set rfq_url [export_vars -base "${system_url}/intranet-freelance-rfqs/new-answer" {rfq_id user_id auto_login} ]
+
+    set substitution_list [list \
+	rfq_type $rfq_type \
+	rfq_name $rfq_name \
+	rfq_url $rfq_url \
+	project_name $project_name \
+	name $name \
+	first_names $first_names \
+	last_name $last_name \
+	email $email \
+	auto_login $auto_login \
+	current_user_name $current_user_name \
+	current_user_email $current_user_email \
+	current_user_first_names $current_user_first_names \
+	current_user_last_name $current_user_last_name \
+    ]
+
+    set email_header [lang::message::format $email_header $substitution_list]
+    set email_body [lang::message::format $email_body $substitution_list]
 
     if {"" != $email_send} {
 
