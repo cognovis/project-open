@@ -491,7 +491,11 @@ db_multirow -extend $extend_list candidate_list_lines candidates "
 	set exp [im_category_from_id $exp_id]
 
 	set weight [db_string confweight "select aux_int1 from im_categories where category_id = :exp_id" -default 1]
-	if {"" == $weight} { set weight 1 }
+	if {"" == $weight} { 
+	    ad_return_complaint 1 "Configuration Error:<br>
+	    The administrator needs to configure the category '$exp' and assign a 'weight' value (1-10) to 'aux_int1'"
+	    ad_script_abort
+	}
 
 	if {$exp_id >= $experience_id} { set add [expr $skill_weight * $weight] }
 	set score [expr $score + $add]
