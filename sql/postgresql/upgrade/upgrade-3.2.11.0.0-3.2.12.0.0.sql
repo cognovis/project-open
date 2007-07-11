@@ -62,3 +62,13 @@ VALUES (2406, 'No Importance', 'Intranet Skill Weight', 0);
 INSERT INTO im_categories (category_id, category, category_type, aux_int1) 
 VALUES (2408, 'Negative Importance (avoid)', 'Intranet Skill Weight', -10);
 
+
+
+
+-- Set weights for Languages experience
+
+update im_categories set aux_int1 = 1 where category_id = 2200;
+update im_categories set aux_int1 = 2 where category_id = 2201;
+update im_categories set aux_int1 = 10 where category_id = 2202;
+update im_categories set aux_int1 = 20 where category_id = 2203;
+
