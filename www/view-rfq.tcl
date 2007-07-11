@@ -194,10 +194,8 @@ if {"" == [template::element::get_value $form_id rfq_end_date]} {
 # Show skills
 # ------------------------------------------------------------------
 
-
 set actions_list [list]
 set bulk_actions_list [list]
-
 
 if {[im_permission $current_user_id "add_freelance_rfqs"]} {
     set delete_msg [lang::message::lookup "" intranet-freelance-rfqs.Delete_Skill "Delete"]
@@ -252,6 +250,9 @@ db_multirow -extend {skill_chk skill_new_url} skill_list_lines skills "
 " {
     set skill_chk "<input type=checkbox name=object_skill_map_ids value=$object_skill_map_id id='skills_list,$object_skill_map_id'>"
     set rfq_new_url [export_vars -base "/rfc-new-skill" {skill_id return_url}]
+
+    if {"" == $experience} { set experience [lang::message::lookup "" intranet-freelance-rfqs.Optional "Optional"] }
+
 }
 
 
@@ -273,6 +274,59 @@ foreach skill_type_id $active_skill_types {
     "
     incr ctr
 }
+
+
+
+# ------------------------------------------------------------------
+# Determine the price ranges per freelancer
+# ------------------------------------------------------------------
+
+set freelance_sql "
+        select distinct
+                u.user_id,
+                im_name_from_user_id(u.user_id) as user_name,
+                im_name_from_user_id(u.user_id) as name,
+                im_freelance_skill_list(u.user_id, :source_lang_skill_type) as source_langs,
+                im_freelance_skill_list(u.user_id, :target_lang_skill_type) as target_langs,
+                im_freelance_skill_list(u.user_id, :subject_area_skill_type) as subject_area
+        from
+                cc_users u
+        where	1=1
+"
+
+set price_sql "
+        select
+                f.user_id,
+                c.company_id,
+                p.uom_id,
+                min(p.price) as min_price,
+                max(p.price) as max_price
+        from
+                ($freelance_sql) f
+                LEFT OUTER JOIN acs_rels uc_rel
+                        ON (f.user_id = uc_rel.object_id_two)
+                LEFT OUTER JOIN im_trans_prices p
+                        ON (uc_rel.object_id_one = p.company_id),
+                im_companies c
+        where
+                p.company_id = c.company_id
+        group by
+                f.user_id,
+                c.company_id,
+                p.uom_id
+"
+
+db_foreach price_hash $price_sql {
+    set key "$user_id-$uom_id"
+    set price_hash($key) "$min_price - $max_price"
+    if {$min_price == $max_price} { set price_hash($key) "$min_price" }
+}
+
+set uom_listlist [db_list_of_lists uom_list "
+        select uom_id, im_category_from_id(uom_id)
+        from (select distinct uom_id from ($price_sql) t) t
+        order by uom_id
+"]
 
 
 # ------------------------------------------------------------------
@@ -337,7 +391,7 @@ set skill_sql "
 "
 db_multirow skills skills $skill_sql 
 
-set extend_list {candidate_chk user_url score note answer_accepted}
+set extend_list {candidate_chk user_url score note answer_accepted price}
 set skill_select_sql ""
 set skill_where_sql ""
 template::multirow foreach skills {
@@ -386,6 +440,12 @@ template::multirow foreach skills {
 
 lappend elements answer_accepted
 lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Answer_Accepted {Accepted?}]" }
+
+
+
+lappend elements price
+lappend elements { label "[lang::message::lookup {} intranet-freelance-rfqs.Price {Price}]" }
+
 
 
 # ------------------------------------------------------------
@@ -490,22 +550,35 @@ db_multirow -extend $extend_list candidate_list_lines candidates "
 
 	set exp [im_category_from_id $exp_id]
 
-	set weight [db_string confweight "select aux_int1 from im_categories where category_id = :exp_id" -default 1]
-	if {"" == $weight} { 
+	set exp_weight [db_string confweight "select aux_int1 from im_categories where category_id = :exp_id" -default 1]
+
+	if {"" != $exp} {
+#	    ad_return_complaint 1 "oskill_map_id=$object_skill_map_id, exp_id=$exp_id, exp_weight=$exp_weight, exp=$exp"
+	}
+
+	if {"" == $exp_weight} { 
 	    ad_return_complaint 1 "Configuration Error:<br>
-	    The administrator needs to configure the category '$exp' and assign a 'weight' value (1-10) to 'aux_int1'"
+	    The administrator needs to configure the category '$exp' and assign a 'exp_weight' value (1-10) to 'aux_int1'"
 	    ad_script_abort
 	}
 
-	if {$exp_id >= $experience_id} { set add [expr $skill_weight * $weight] }
-	set score [expr $score + $add]
+	if {$exp_id >= $experience_id} { set add [expr $skill_weight * $exp_weight] }
 
 	set skill_var "s$object_skill_map_id"
-	set $skill_var "$exp ($add)"
 	set $skill_var "$exp"
 
+	set price ""
+	foreach uom_entry $uom_listlist {
+	    set uom_id [lindex $uom_entry 0]
+	    set uom [lindex $uom_entry 1]
 
-#	append note "$skill_type: claim=$claimed_exp_id, conf=$confirmed_exp_id, \n"
+	    set key "$user_id-$uom_id"
+	    if {[info exists price_hash($key)]} {
+		append price $price_hash($key)
+	    }
+	}
+
+	set score [expr $score + $add]
 
     }
 }

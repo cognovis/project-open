@@ -21,7 +21,7 @@ ad_page_contract {
 }
 
 # ------------------------------------------------------
-# 
+# Auto-Login (for invited Freelancers)
 # ------------------------------------------------------
 
 if {"" != $auto_login} {
@@ -43,13 +43,66 @@ if {"" != $auto_login} {
             -message "Auto-Login attempt failed for user $user_id" \
 	    -severity "Bad Auto-Login Attempt:" \
             -value "
-user_id=$user_id
-auto_login=$auto_login
+		user_id=$user_id
+		auto_login=$auto_login
 	    "
     }
 }
 
+# ------------------------------------------------------
+# Security & Defaults
+# ------------------------------------------------------
+
 set current_user_id [ad_maybe_redirect_for_registration]
+
+db_1row answer_id "
+	select	a.answer_id,
+		r.rfq_name,
+		im_name_from_user_id(p.project_lead_id) as project_lead_name,
+		im_email_from_user_id(p.project_lead_id) as project_lead_email,
+		to_char(r.rfq_end_date, 'YYYY-MM-DD HH24:MI') as rfq_end_date_pretty,
+		(to_char(now(), 'J')::integer - to_char(r.rfq_end_date, 'J')::integer) as expiration_days,
+		(r.rfq_end_date > now()) as active_p
+	from	im_freelance_rfqs r
+		LEFT OUTER JOIN im_freelance_rfq_answers a ON (
+			r.rfq_id = a.answer_rfq_id 
+			and answer_user_id = :current_user_id
+		),
+		im_projects p
+	where
+		r.rfq_id = :rfq_id
+		and r.rfq_project_id = p.project_id
+"
+
+if {"" == $answer_id} {
+    ad_return_complaint 1 "
+	<b>[lang::message::lookup "" intranet-freelance-rfqs.Not_member_of_RFQ "You are not a member of this RFQ"]</b>:<br>
+	[lang::message::lookup "" intranet-freelance-rfqs.Not_member_of_RFQ_Explanation "
+		You have not been assigned to this RFQ or your have been deleted from this RFQ.
+	"]
+    "
+    ad_script_abort
+}
+
+if {"t" != $active_p} {
+    ad_return_complaint 1 "
+	<b>[lang::message::lookup "" intranet-freelance-rfqs.RFQ_Closed "RFQ '%rfq_name%' is closed already"]</b>:
+	<br><br>
+	[lang::message::lookup "" intranet-freelance-rfqs.Not_member_of_RFQ_Explanation "
+		This RFQ has been closed %expiration_days% day(s) ago on %rfq_end_date_pretty%.
+	"]
+	<br>
+	[lang::message::lookup "" intranet-freelance-rfqs.Please_contact_PM "
+		Please contact the project manager <a href=\"mailto:%project_lead_email%\">%project_lead_name%</a>
+		in case of doubt.
+	"]
+    "
+    ad_script_abort
+}
+
+
+
+
 set current_url [im_url_with_query]
 if {![exists_and_not_null return_url]} { set return_url [im_url_with_query] }
 set action_url "/intranet-freelance-rfqs/new-answer"
@@ -168,23 +221,6 @@ ad_form -extend -name "rfq-form" -select_query {
 # -----------------------------------------------------------
 # Create the Form with RFQ Answer Information
 # -----------------------------------------------------------
-
-set answer_id [db_string answer_id "
-	select	answer_id
-	from	im_freelance_rfq_answers a
-	where	answer_rfq_id = :rfq_id
-		and answer_user_id = :current_user_id
-" -default ""]
-
-
-if {"" == $answer_id} {
-	ad_return_complaint 1 "Internal error: answer_id=null:<br>
-	Please contact your system administrator:<br>
-	rfq_id=$rfq_id, current_user_id=$current_user_id"
-	ad_script_abort
-}
-
-
 
 ad_form \
     -name "rfq-answer-form" \
