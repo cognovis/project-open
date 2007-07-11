@@ -12,7 +12,8 @@
 &lt;tt&gt;%email_vars%&lt;/tt&gt;</msg>
   <msg key="Body">Body</msg>
   <msg key="Comment">Comment</msg>
-  <msg key="Confirm_for_RFQ_of_Project_Body">Dear %first_names%,
+  <msg key="Confirm_RFQ">Confirm RFQ</msg>
+  <msg key="Confirmed_for_RFQ_of_Project_Body">Dear %first_names%,
 
 We would confirm your participation in our %rfq_type% for project '%project_name%'.
 
@@ -20,12 +21,12 @@ I will soon contact you with more details.
 
 Best regards,
 %current_user_first_names%</msg>
-  <msg key="Confirm_for_RFQ_of_Project_Header">Confirmation for: %rfq_name%</msg>
-  <msg key="Confirm_RFQ">Confirm RFQ</msg>
+  <msg key="Confirmed_for_RFQ_of_Project_Header">Confirmation for: %rfq_name%</msg>
   <msg key="Create_a_new_RFQ">Create a new RFQ</msg>
   <msg key="Create_New_RFQ">Create New RFQ</msg>
   <msg key="Currency">Currency</msg>
-  <msg key="Decline_for_RFQ_of_Project_Body">Dear %first_names%,
+  <msg key="Decline_RFQ">Decline RFQ</msg>
+  <msg key="Declined_for_RFQ_of_Project_Body">Dear %first_names%,
 
 Unfortunately, you have not been selected to participate in this %rfq_type% for project '%project_name%'.
 
@@ -33,8 +34,7 @@ Please contact me for more details.
 
 Best regards,
 %current_user_first_names%</msg>
-  <msg key="Decline_for_RFQ_of_Project_Header">Declined: %rfq_name%</msg>
-  <msg key="Decline_RFQ">Decline RFQ</msg>
+  <msg key="Declined_for_RFQ_of_Project_Header">Declined: %rfq_name%</msg>
   <msg key="Delete">Delete</msg>
   <msg key="Delete_RFQ">Delete RFQ</msg>
   <msg key="Delete_Skill">Delete Skill</msg>
@@ -46,7 +46,9 @@ Best regards,
   <msg key="General_Outcome">General Outcome</msg>
   <msg key="Header">Header</msg>
   <msg key="Invite_Candidates">Invite Candidates</msg>
-  <msg key="Invite_for_RFQ_of_Project_Body">Dear %first_names%,
+  <msg key="Invite_Participants">Invite Participants</msg>
+  <msg key="Invite_Users">Invite Candidates</msg>
+  <msg key="Invited_for_RFQ_of_Project_Body">Dear %first_names%,
 
 We would invite you to participate in a %rfq_type% for project '%project_name%'.
 
@@ -56,9 +58,7 @@ Please click on the link below, follow the instructions on the page:
 
 Best regards,
 %current_user_first_names%</msg>
-  <msg key="Invite_for_RFQ_of_Project_Header">Invitation for: %rfq_name%</msg>
-  <msg key="Invite_Participants">Invite Participants</msg>
-  <msg key="Invite_Users">Invite Candidates</msg>
+  <msg key="Invited_for_RFQ_of_Project_Header">Invitation for: %rfq_name%</msg>
   <msg key="Minimum_Skill_Level">Minimum Skill Level</msg>
   <msg key="Name">Name</msg>
   <msg key="New_Trans_RFQ">New Trans RFQ</msg>
