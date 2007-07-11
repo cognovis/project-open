@@ -58,6 +58,7 @@ set current_user_id [ad_maybe_redirect_for_registration]
 db_1row answer_id "
 	select	a.answer_id,
 		r.rfq_name,
+		r.rfq_status_id,
 		im_name_from_user_id(p.project_lead_id) as project_lead_name,
 		im_email_from_user_id(p.project_lead_id) as project_lead_email,
 		to_char(r.rfq_end_date, 'YYYY-MM-DD HH24:MI') as rfq_end_date_pretty,
@@ -84,6 +85,37 @@ if {"" == $answer_id} {
     ad_script_abort
 }
 
+# 4420 | Open
+# 4422 | Closed
+# 4424 | Canceled
+# 4426 | Deleted
+
+set canceled_msg ""
+switch $rfq_status_id {
+    4420 { }
+    4422 { 
+	set canceled_msg [lang::message::lookup "" intranet-freelance-rfqs.RFQ_already_closed "The RFQ has already been closed"]
+    }
+    4424 { 
+	set canceled_msg [lang::message::lookup "" intranet-freelance-rfqs.RFQ_already_canceled "The RFQ has already been canceled"]
+    }
+    4426 { 
+	set canceled_msg [lang::message::lookup "" intranet-freelance-rfqs.RFQ_already_deleted "The RFQ has already been deleted"]
+    }
+}
+
+
+set please_contact_pm_message [lang::message::lookup "" intranet-freelance-rfqs.Please_contact_PM "
+		Please contact the project manager <a href=\"mailto:%project_lead_email%\">%project_lead_name%</a>
+		in case of doubt.
+"]
+
+if {"" != $canceled_msg} {
+    ad_return_complaint 1 "<b>$canceled_msg</b>:<br><br>$please_contact_pm_message"
+    ad_script_abort
+}
+
+
 if {"t" != $active_p} {
     ad_return_complaint 1 "
 	<b>[lang::message::lookup "" intranet-freelance-rfqs.RFQ_Closed "RFQ '%rfq_name%' is closed already"]</b>:
@@ -92,10 +124,8 @@ if {"t" != $active_p} {
 		This RFQ has been closed %expiration_days% day(s) ago on %rfq_end_date_pretty%.
 	"]
 	<br>
-	[lang::message::lookup "" intranet-freelance-rfqs.Please_contact_PM "
-		Please contact the project manager <a href=\"mailto:%project_lead_email%\">%project_lead_name%</a>
-		in case of doubt.
-	"]
+	$please_contact_pm_message
+
     "
     ad_script_abort
 }
