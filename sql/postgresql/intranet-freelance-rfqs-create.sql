@@ -467,6 +467,21 @@ where   category_type = 'Intranet Freelance RFQ Overall Status';
 
 
 
+-------------------------------------------------------------
+-- Set weights for language criteria
+
+
+delete from im_categories where category_type = 'Intranet Experience Level';
+INSERT INTO im_categories VALUES (2200, 'Unconfirmed','',
+'Intranet Experience Level','category','t','f');
+INSERT INTO im_categories VALUES (2201, 'Low','',
+'Intranet Experience Level','category','t','f');
+INSERT INTO im_categories VALUES (2202, 'Medium','',
+'Intranet Experience Level','category','t','f');
+INSERT INTO im_categories VALUES (2203, 'High','',
+'Intranet Experience Level','category','t','f');
+
+
 
 -------------------------------------------------------------
 -- Creator/Deletor functions
