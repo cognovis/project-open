@@ -266,7 +266,9 @@ function _Draw(theDrawColor, theTextColor, isScaleText, theTooltipText, theOnCli
     _DiagramTarget.document.writeln(divtext+"</div>");
 }
 
-function Bar(theLeft, theTop, theRight, theBottom, theDrawColor, theText, theTextColor, theTooltipText, theOnClickAction, theOnMouseoverAction, theOnMouseoutAction)
+
+
+function Bar(theLeft, theTop, theRight, theBottom, theDrawColor, theText, theTextColor, theTooltipText, theOnClickAction, theOnMouseoverAction, theOnMouseoutAction, theTextAlignment)
 { this.ID="Bar"+_N_Bar; _N_Bar++; _zIndex++;
   this.left=theLeft;
   this.top=theTop;
@@ -289,17 +291,23 @@ function Bar(theLeft, theTop, theRight, theBottom, theDrawColor, theText, theTex
   if (_nvl(theOnClickAction,"")!="") EventActions+="onClick='"+_nvl(theOnClickAction,"")+"' ";
   if (_nvl(theOnMouseoverAction,"")!="") EventActions+="onMouseover='"+_nvl(theOnMouseoverAction,"")+"' ";
   if (_nvl(theOnMouseoutAction,"")!="") EventActions+="onMouseout='"+_nvl(theOnMouseoutAction,"")+"' ";
-  if (_nvl(theText,"")!="")
-  { var tt=theText;
+  if (_nvl(theText,"")!="") { 
+
+    var tt=theText;
     if (_IsImage(theText)) tt="<img src='"+theText+"' width="+eval(theRight-theLeft-1)+" height="+eval(theBottom-theTop-1)+">";
-    _DiagramTarget.document.writeln("<div id='"+this.ID+"' "+EventActions+"style='"+_cursor(theOnClickAction)+"position:absolute;left:"+theLeft+"px;top:"+theTop+"px;width:"+eval(theRight-theLeft)+"px;height:"+eval(theBottom-theTop)+"px;background-color:"+theDrawColor+";color:"+theTextColor+";"+_BFont+"z-index:"+_zIndex+"'; title='"+_nvl(theTooltipText,"")+"' align=center>"+tt+"</div>");
-  }
-  else
-  { var vv=(this.height>0) ? "" : ";visibility:hidden";
+
+    _DiagramTarget.document.writeln("<div id='"+this.ID+"' "+EventActions+"style='"+_cursor(theOnClickAction)+"position:absolute;left:"+theLeft+"px;top:"+theTop+"px;width:"+eval(theRight-theLeft)+"px;height:"+eval(theBottom-theTop)+"px;background-color:"+theDrawColor+";color:"+theTextColor+";"+_BFont+"z-index:"+_zIndex+"'; title='"+_nvl(theTooltipText,"")+"' align="+theTextAlignment+">"+tt+"</div>");
+
+  } else { 
+
+    var vv=(this.height>0) ? "" : ";visibility:hidden";
     _DiagramTarget.document.writeln("<div id='"+this.ID+"' "+EventActions+"style='"+_cursor(theOnClickAction)+"position:absolute;left:"+theLeft+"px;top:"+theTop+"px;width:"+eval(theRight-theLeft)+"px;height:"+eval(theBottom-theTop)+"px;background-color:"+theDrawColor+";font-size:1pt;line-height:1pt;font-family:Verdana;font-weight:normal;z-index:"+_zIndex+vv+"'; title='"+_nvl(theTooltipText,"")+"'>&nbsp;</div>");
+
   }
   return(this);
 }
+
+
 function Box(theLeft, theTop, theRight, theBottom, theDrawColor, theText, theTextColor, theBorderWidth, theBorderColor, theTooltipText, theOnClickAction, theOnMouseoverAction, theOnMouseoutAction)
 { this.ID="Box"+_N_Box; _N_Box++; _zIndex++;
   this.left=theLeft;
@@ -339,6 +347,8 @@ function Box(theLeft, theTop, theRight, theBottom, theDrawColor, theText, theTex
   }
   return(this);
 }
+
+
 function _SetBarColor(theColor)
 { var id=this.ID, selObj;
   this.DrawColor=theColor;
