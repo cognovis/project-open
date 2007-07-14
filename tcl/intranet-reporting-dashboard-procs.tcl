@@ -128,7 +128,7 @@ ad_proc -public im_dashboard_active_projects_status_histogram {
 		project_status_id
     "
     set values [list]
-    db_foreach project_queue $sql2 {
+    db_foreach project_queue $sql {
 	lappend values [list $project_status $cnt]
     }
 
@@ -331,6 +331,7 @@ ad_proc im_dashboard_pie_chart {
 # ----------------------------------------------------------------------
 
 ad_proc im_dashboard_histogram {
+    { -name "" }
     { -values {} }
     { -bar_width 10 }
     { -bar_distance 5 }
@@ -414,7 +415,7 @@ ad_proc im_dashboard_histogram {
 	D1.SetBorder(0, $max_value*1.1, $value_total_items+1, 0);
 	D1.XScale=1;
 	D1.YScale=0;
-	D1.SetText(\"\",\"\", \"<B>Current Projects</B>\");
+	D1.SetText(\"\",\"\", \"<B>$name</B>\");
 	D1.Draw(\"#FFFFFF\", \"#004080\", false,\"Click on a bar to get the phone number\");
 	$status_html
 	</SCRIPT>
