@@ -54,6 +54,10 @@ ad_proc -public im_dashboard_all_time_top_customers_component {
 }
 
 
+# ----------------------------------------------------------------------
+# Generic Component
+# ---------------------------------------------------------------------
+
 ad_proc -public im_dashboard_generic_component {
     { -component "generic" }
     { -component_name "Unknown Component Name" }
@@ -90,6 +94,48 @@ ad_proc -public im_dashboard_generic_component {
     return $result
 }
 
+
+
+# ----------------------------------------------------------------------
+# Status of currently non-closed projects
+# ---------------------------------------------------------------------
+
+
+ad_proc -public im_dashboard_active_projects_status_histogram {
+} {
+    Returns a dashboard component for the home page
+} {
+    set menu_label "reporting-cubes-finance"
+    set current_user_id [ad_maybe_redirect_for_registration]
+    set read_p [db_string report_perms "
+        select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
+        from    im_menus m where m.label = :menu_label
+    " -default 'f']
+    if {![string equal "t" $read_p]} { return "" }
+
+    set sql "
+        select
+		count(*) as cnt,
+		project_status_id,
+                im_category_from_id(project_status_id) as project_status
+        from
+		im_projects p
+	where
+		p.parent_id is null
+        group by 
+		project_status_id
+	order by
+		project_status_id
+    "
+    set values [list]
+    db_foreach project_queue $sql2 {
+	lappend values [list $project_status $cnt]
+    }
+
+    set name [lang::message::lookup "" intranet-reporting-dashboard.Project_Queue "Project Queue"]
+    return [im_dashboard_histogram -name $name -values $values]
+
+}
 
 
 # ----------------------------------------------------------------------
@@ -277,5 +323,105 @@ ad_proc im_dashboard_pie_chart {
         </div>
     "
 }
+
+
+
+# ----------------------------------------------------------------------
+# Draw a reasonable Histogram chart
+# ----------------------------------------------------------------------
+
+ad_proc im_dashboard_histogram {
+    { -values {} }
+    { -bar_width 10 }
+    { -bar_distance 5 }
+    { -bar_color "0080FF" }
+    { -outer_distance 20 }
+    { -diagram_width 400 }
+    { -font_color "000000" }
+    { -font_size 8 }
+    { -font_style "font-family:Verdana;font-weight:normal;line-height:10pt;" }
+} {
+    Returns a formatted HTML text to display a histogram chart
+    based on Lutz Tautenhahn' "Javascript Diagram Builder", v3.3.
+
+    Short example:
+	<pre>set histogram_chart [im_dashboard_histogram \
+        -values {{Potential 10} {Quoting 5} {Open 5} {Invoicing 6}} \
+        -bar_color "0080FF" \
+	]</pre>
+} {
+    # The total number of data items (both header and values)
+    set value_total_items 0
+
+    # The number of data set (each consisting of one header and several values)
+    set value_data_sets 0
+    
+    # The biggest individual value
+    set max_value 0
+
+    foreach v $values {
+	incr value_data_sets
+	set value_total_items [expr $value_total_items + [llength $v]]
+	set v_vals [lrange $v 1 end]
+	foreach v_val $v_vals {
+	    if {$v_val > $max_value} { set max_value $v_val}
+	}
+    }
+    set value_data_len [expr $value_total_items - $value_data_sets]
+
+    set diagram_x_size $diagram_width
+    set diagram_y_size [expr 2*$outer_distance + $value_total_items*($bar_width + $bar_distance)]
+
+    set count 1
+    foreach v $values {
+
+	set bar_title [lindex $v 0]
+	set vals [lrange $v 1 end]
+
+	append status_html "
+		new Bar(
+			1+D1.ScreenX(0), D1.ScreenY($count), 
+			1+D1.ScreenX($max_value), $bar_width + D1.ScreenY($count),
+			\"\", \"$bar_title\", \"#000000\", \"$bar_title\",
+			\"\", \"\", \"\", \"left\"
+		);
+	"
+	incr count
+
+	foreach cnt $vals {
+	    append status_html "
+		new Bar(
+			1+D1.ScreenX(0), D1.ScreenY($count), 
+			1+D1.ScreenX($cnt), $bar_width + D1.ScreenY($count),
+			\"#0080FF\", \"&nbsp;\", \"#000000\", \"&nbsp;\", \"\"
+		);
+            "
+	    incr count
+	}
+    }
+
+    set border "border:1px solid blue; "
+    set border ""
+
+    set histogram_html "
+	<SCRIPT Language=JavaScript src=/resources/diagram/diagram/diagram.js></SCRIPT>
+        <div style='$border position:relative;top:0px;height:[expr $diagram_y_size+40]px;width:${diagram_x_size}px;'>
+	<SCRIPT Language=JavaScript>
+	document.open();
+	var D1=new Diagram();
+	_BFont=\"font-family:Verdana;font-weight:normal;font-size:8pt;line-height:10pt;\";
+	D1.SetFrame(0, 25, $diagram_x_size, $diagram_y_size);
+	D1.SetBorder(0, $max_value*1.1, $value_total_items+1, 0);
+	D1.XScale=1;
+	D1.YScale=0;
+	D1.SetText(\"\",\"\", \"<B>Current Projects</B>\");
+	D1.Draw(\"#FFFFFF\", \"#004080\", false,\"Click on a bar to get the phone number\");
+	$status_html
+	</SCRIPT>
+	</div>
+    "
+}
+
+
 
 
