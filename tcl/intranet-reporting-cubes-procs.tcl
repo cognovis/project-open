@@ -40,6 +40,7 @@ ad_proc im_reporting_cubes_cube {
     { -top_vars "" }
     { -cost_type_id {3700} }
     { -customer_type_id 0 }
+    { -project_type_id 0 }
     { -customer_id 0 }
     { -cache_days 1 }
     { -no_cache_p 0 }
@@ -50,10 +51,12 @@ ad_proc im_reporting_cubes_cube {
     - An array for the top dimension
 } {
     if {"" == $top_vars} { set top_vars "year" }
+
     set params(start_date) $start_date
     set params(end_date) $end_date
     set params(cost_type_id) $cost_type_id
     set params(customer_type_id) $customer_type_id
+    set params(project_type_id) $project_type_id
     set params(customer_id) $customer_id
     set params_hash [array get params]
 
@@ -87,9 +90,9 @@ ad_proc im_reporting_cubes_cube {
 		evaluation_date $evaluation_date \
 		top_vars $cube_top_vars \
 		left_vars $cube_left_vars \
-        	top_scale $value_top_scale \
-        	left_scale $value_left_scale \
-        	hash_array $value_hash_array \
+      	top_scale $value_top_scale \
+      	left_scale $value_left_scale \
+      	hash_array $value_hash_array \
             ]
         }
 	if {"" != $cached_result} { 
@@ -108,6 +111,17 @@ ad_proc im_reporting_cubes_cube {
     switch $cube_name {
 	finance {
 	    set cube_array [im_reporting_cubes_finance \
+		-start_date $start_date \
+		-end_date "2099-12-31" \
+		-left_vars $left_vars \
+		-top_vars $top_vars \
+		-cost_type_id $cost_type_id \
+		-customer_type_id $customer_type_id \
+		-customer_id $customer_id \
+            ]
+	}
+	price {
+	    set cube_array [im_reporting_cubes_price \
 		-start_date $start_date \
 		-end_date "2099-12-31" \
 		-left_vars $left_vars \
@@ -137,7 +151,7 @@ ad_proc im_reporting_cubes_cube {
 			cube_update_interval
 		) values (
 			:base_cube_id,
-			'finance',
+			:cube_name,
 			:params_hash,
 			:top_vars,
 			:left_vars,
@@ -175,7 +189,7 @@ ad_proc im_reporting_cubes_cube {
 
 
 # ----------------------------------------------------------------------
-# Uncached version of cube
+# Uncached version of Finance cube
 # ----------------------------------------------------------------------
 
 ad_proc im_reporting_cubes_finance {
@@ -230,86 +244,86 @@ ad_proc im_reporting_cubes_finance {
     # Inner - Try to be as selective as possible and select
     # the relevant data from the fact table.
     set inner_sql "
-    		select
-    			p.project_name as sub_project_name,
-    			p.project_nr as sub_project_nr,
-    			p.project_type_id as sub_project_type_id,
-    			p.project_status_id as sub_project_status_id,
-    			tree_ancestor_key(p.tree_sortkey, 1) as main_project_sortkey,
-    			trunc((c.paid_amount * 
-    			  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
-    			  , 2) as paid_amount_converted,
-    			trunc((c.amount * 
-    			  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
-    			  , 2) as amount_converted,
-    			c.*
-    		from
-    			im_costs c
-    			LEFT OUTER JOIN im_projects p ON (c.project_id = p.project_id)
-    		where
-    			1=1
-    			and c.cost_type_id in ([join $cost_type_id ", "])
-    			and c.effective_date::date >= to_date(:start_date, 'YYYY-MM-DD')
-    			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
-    			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
+  		select
+  			p.project_name as sub_project_name,
+  			p.project_nr as sub_project_nr,
+  			p.project_type_id as sub_project_type_id,
+  			p.project_status_id as sub_project_status_id,
+  			tree_ancestor_key(p.tree_sortkey, 1) as main_project_sortkey,
+  			trunc((c.paid_amount * 
+  			  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+  			  , 2) as paid_amount_converted,
+  			trunc((c.amount * 
+  			  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+  			  , 2) as amount_converted,
+  			c.*
+  		from
+  			im_costs c
+  			LEFT OUTER JOIN im_projects p ON (c.project_id = p.project_id)
+  		where
+  			1=1
+  			and c.cost_type_id in ([join $cost_type_id ", "])
+  			and c.effective_date::date >= to_date(:start_date, 'YYYY-MM-DD')
+  			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
+  			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
     "
     
     # Aggregate additional/important fields to the fact table.
     set middle_sql "
-    	select
-    		c.*,
-    		im_category_from_id(c.cost_type_id) as cost_type,
-    		im_category_from_id(c.cost_status_id) as cost_status,
-    		to_char(c.effective_date, 'YYYY') as year,
-    		to_char(c.effective_date, 'MM') as month_of_year,
-    		to_char(c.effective_date, 'Q') as quarter_of_year,
-    		to_char(c.effective_date, 'IW') as week_of_year,
-    		to_char(c.effective_date, 'DD') as day_of_month,
-    		substring(c.cost_name, 1, 14) as cost_name_cut,
+  	select
+  		c.*,
+  		im_category_from_id(c.cost_type_id) as cost_type,
+  		im_category_from_id(c.cost_status_id) as cost_status,
+  		to_char(c.effective_date, 'YYYY') as year,
+  		to_char(c.effective_date, 'MM') as month_of_year,
+  		to_char(c.effective_date, 'Q') as quarter_of_year,
+  		to_char(c.effective_date, 'IW') as week_of_year,
+  		to_char(c.effective_date, 'DD') as day_of_month,
+  		substring(c.cost_name, 1, 14) as cost_name_cut,
     
-    		im_category_from_id(c.sub_project_type_id) as sub_project_type,
-    		im_category_from_id(c.sub_project_status_id) as sub_project_status,
+  		im_category_from_id(c.sub_project_type_id) as sub_project_type,
+  		im_category_from_id(c.sub_project_status_id) as sub_project_status,
     
-    		mainp.project_name as main_project_name,
-    		mainp.project_nr as main_project_nr,
-    		mainp.project_type_id as main_project_type_id,
-    		im_category_from_id(mainp.project_type_id) as main_project_type,
-    		mainp.project_status_id as main_project_status_id,
-    		im_category_from_id(mainp.project_status_id) as main_project_status,
+  		mainp.project_name as main_project_name,
+  		mainp.project_nr as main_project_nr,
+  		mainp.project_type_id as main_project_type_id,
+  		im_category_from_id(mainp.project_type_id) as main_project_type,
+  		mainp.project_status_id as main_project_status_id,
+  		im_category_from_id(mainp.project_status_id) as main_project_status,
     
-    		cust.company_name as customer_name,
-    		cust.company_path as customer_path,
-    		cust.company_type_id as customer_type_id,
-    		im_category_from_id(cust.company_type_id) as customer_type,
-    		cust.company_status_id as customer_status_id,
-    		im_category_from_id(cust.company_status_id) as customer_status,
+  		cust.company_name as customer_name,
+  		cust.company_path as customer_path,
+  		cust.company_type_id as customer_type_id,
+  		im_category_from_id(cust.company_type_id) as customer_type,
+  		cust.company_status_id as customer_status_id,
+  		im_category_from_id(cust.company_status_id) as customer_status,
     
-    		prov.company_name as provider_name,
-    		prov.company_path as provider_path,
-    		prov.company_type_id as provider_type_id,
-    		im_category_from_id(prov.company_type_id) as provider_type,
-    		prov.company_status_id as provider_status_id,
-    		im_category_from_id(prov.company_status_id) as provider_status
+  		prov.company_name as provider_name,
+  		prov.company_path as provider_path,
+  		prov.company_type_id as provider_type_id,
+  		im_category_from_id(prov.company_type_id) as provider_type,
+  		prov.company_status_id as provider_status_id,
+  		im_category_from_id(prov.company_status_id) as provider_status
     
-    	from
-    		($inner_sql) c
-    		LEFT OUTER JOIN im_projects mainp ON (c.main_project_sortkey = mainp.tree_sortkey)
-    		LEFT OUTER JOIN im_companies cust ON (c.customer_id = cust.company_id)
-    		LEFT OUTER JOIN im_companies prov ON (c.provider_id = prov.company_id)
-    	where
-    		1 = 1
-    		$where_clause
+  	from
+  		($inner_sql) c
+  		LEFT OUTER JOIN im_projects mainp ON (c.main_project_sortkey = mainp.tree_sortkey)
+  		LEFT OUTER JOIN im_companies cust ON (c.customer_id = cust.company_id)
+  		LEFT OUTER JOIN im_companies prov ON (c.provider_id = prov.company_id)
+  	where
+  		1 = 1
+  		$where_clause
     "
     
     set sql "
     select
-    	sum(c.amount_converted) as amount_converted,
-    	sum(c.paid_amount) as paid_amount,
-    	[join $dimension_vars ",\n\t"]
+  	sum(c.amount_converted) as amount_converted,
+  	sum(c.paid_amount) as paid_amount,
+  	[join $dimension_vars ",\n\t"]
     from
-    	($middle_sql) c
+  	($middle_sql) c
     group by
-    	[join $dimension_vars ",\n\t"]
+  	[join $dimension_vars ",\n\t"]
     "
 
     # ------------------------------------------------------------
@@ -322,9 +336,9 @@ ad_proc im_reporting_cubes_finance {
     if {![llength $top_vars]} { set top_vars [list year] }
     
     set top_scale [db_list_of_lists top_scale "
-    	select distinct	[join $top_vars ", "]
-    	from		($middle_sql) c
-    	order by	[join $top_vars ", "]
+  	select distinct	[join $top_vars ", "]
+  	from		($middle_sql) c
+  	order by	[join $top_vars ", "]
     "]
     lappend top_scale [list $sigma $sigma $sigma $sigma $sigma $sigma]
 
@@ -334,12 +348,12 @@ ad_proc im_reporting_cubes_finance {
     # No top dimension at all gives an error...
     if {![llength $left_vars]} {
         ns_write "
-    	<p>&nbsp;<p>&nbsp;<p>&nbsp;<p><blockquote>
-    	[lang::message::lookup "" intranet-reporting.No_left_dimension "No 'Left' Dimension Specified"]:<p>
-    	[lang::message::lookup "" intranet-reporting.No_left_dimension_message "
-    		You need to specify atleast one variable for the left dimension.
-    	"]
-    	</blockquote><p>&nbsp;<p>&nbsp;<p>&nbsp;
+  	<p>&nbsp;<p>&nbsp;<p>&nbsp;<p><blockquote>
+  	[lang::message::lookup "" intranet-reporting.No_left_dimension "No 'Left' Dimension Specified"]:<p>
+  	[lang::message::lookup "" intranet-reporting.No_left_dimension_message "
+  		You need to specify atleast one variable for the left dimension.
+  	"]
+  	</blockquote><p>&nbsp;<p>&nbsp;<p>&nbsp;
         "
         ns_write "</table>\n"
         return ""
@@ -348,9 +362,9 @@ ad_proc im_reporting_cubes_finance {
     # Scale is a list of lists. Example: {{2006 01} {2006 02} ...}
     # The last element is the grand total.
     set left_scale [db_list_of_lists left_scale "
-    	select distinct	[join $left_vars ", "]
-    	from		($middle_sql) c
-    	order by	[join $left_vars ", "]
+  	select distinct	[join $left_vars ", "]
+  	from		($middle_sql) c
+  	order by	[join $left_vars ", "]
     "]
     set last_sigma [list]
     foreach t [lindex $left_scale 0] {
@@ -396,11 +410,273 @@ ad_proc im_reporting_cubes_finance {
 	evaluation_date [db_string now "select now()"] \
 	top_vars $top_vars \
 	left_vars $left_vars \
-       	top_scale $top_scale \
-       	left_scale $left_scale \
-       	hash_array [array get hash] \
+     	top_scale $top_scale \
+     	left_scale $left_scale \
+     	hash_array [array get hash] \
     ]
 }
+
+
+
+
+
+# ----------------------------------------------------------------------
+# Uncached version of Price cube
+# ----------------------------------------------------------------------
+
+ad_proc im_reporting_cubes_price {
+    { -start_date "1900-01-01" }
+    { -end_date "2099-12-31" }
+    { -left_vars "uom" }
+    { -top_vars "" }
+    { -cost_type_id {3700} }
+    { -customer_type_id 0 }
+    { -customer_id 0 }
+    { -uom_id 0 }
+} {
+    Returns a DW cube as a list containing:
+    - An array with the cube data
+    - An array for the left dimension
+    - An array for the top dimension
+} {
+    # ------------------------------------------------------------
+    # Defaults
+    
+    set sigma "&Sigma;"
+    
+    # The complete set of dimensions - used as the key for
+    # the "cell" hash. Subtotals are calculated by dropping on
+    # or more of these dimensions
+    set dimension_vars [concat $top_vars $left_vars]
+    
+    # ------------------------------------------------------------
+    # Conditional SQL Where-Clause
+    #
+    
+    set criteria [list]
+    
+    if {"" != $uom_id && 0 != $uom_id} {
+	lappend criteria "ii.item_uom_id = :uom_id"
+    }
+    if {"" != $customer_id && 0 != $customer_id} {
+	lappend criteria "c.customer_id = :customer_id"
+    }
+    if {1} {
+	lappend criteria "c.cost_type_id in ([join [im_sub_categories $cost_type_id] ", "])"
+    }
+    if {"" != $customer_type_id && 0 != $customer_type_id} {
+	lappend criteria "pcust.company_type_id in ([join [im_sub_categories $customer_type_id] ", "])"
+    }
+    set where_clause [join $criteria " and\n\t\t\t"]
+    if { ![empty_string_p $where_clause] } {
+	set where_clause " and $where_clause"
+    }
+    
+    
+    # ------------------------------------------------------------
+    # Define the report - SQL
+    #
+    
+    # Inner - Try to be as selective as possible and select
+    # the relevant data from the fact table.
+    set inner_sql "
+		select
+			p.project_name as sub_project_name,
+			p.project_nr as sub_project_nr,
+			p.project_type_id as sub_project_type_id,
+			p.project_status_id as sub_project_status_id,
+			tree_ancestor_key(p.tree_sortkey, 1) as main_project_sortkey,
+			trunc((
+				ii.price_per_unit * 
+				im_exchange_rate(c.effective_date::date, c.currency, 'EUR') *
+				(1.0 + i.surcharge_perc/100.0) *
+				(1.0 - i.discount_perc/100.0)
+			) :: numeric, 2) as price_per_unit_converted,
+			c.*,
+			i.*,
+			ii.item_name,
+			ii.item_units,
+			ii.item_uom_id,
+			ii.price_per_unit,
+			ii.item_type_id
+		from
+			im_costs c
+			LEFT OUTER JOIN im_projects p ON (c.project_id = p.project_id),
+			im_invoices i,
+			im_invoice_items ii
+		where
+			c.cost_id = i.invoice_id
+			and i.invoice_id = ii.invoice_id
+			and c.effective_date::date >= to_date(:start_date, 'YYYY-MM-DD')
+			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
+			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
+    "
+    
+    # Aggregate additional/important fields to the fact table.
+    set middle_sql "
+	select
+		im_category_from_id(item_type_id) as item_type,
+		im_category_from_id(item_uom_id) as item_uom,
+		c.*,
+
+		im_category_from_id(c.cost_type_id) as cost_type,
+		im_category_from_id(c.cost_status_id) as cost_status,
+		to_char(c.effective_date, 'YYYY') as year,
+		to_char(c.effective_date, 'MM') as month_of_year,
+		to_char(c.effective_date, 'Q') as quarter_of_year,
+		to_char(c.effective_date, 'IW') as week_of_year,
+		to_char(c.effective_date, 'DD') as day_of_month,
+    
+		im_category_from_id(c.sub_project_type_id) as sub_project_type,
+		im_category_from_id(c.sub_project_status_id) as sub_project_status,
+    
+		mainp.project_name as main_project_name,
+		mainp.project_type_id as main_project_type_id,
+		im_category_from_id(mainp.project_type_id) as main_project_type,
+		mainp.project_status_id as main_project_status_id,
+		im_category_from_id(mainp.project_status_id) as main_project_status,
+    
+		cust.company_name as customer_name,
+		cust.company_type_id as customer_type_id,
+		im_category_from_id(cust.company_type_id) as customer_type,
+		cust.company_status_id as customer_status_id,
+    
+		prov.company_name as provider_name,
+		prov.company_type_id as provider_type_id,
+		im_category_from_id(prov.company_type_id) as provider_type,
+		prov.company_status_id as provider_status_id
+  	from
+		($inner_sql) c
+		LEFT OUTER JOIN im_projects mainp ON (c.main_project_sortkey = mainp.tree_sortkey)
+		LEFT OUTER JOIN im_companies cust ON (c.customer_id = cust.company_id)
+		LEFT OUTER JOIN im_companies prov ON (c.provider_id = prov.company_id)
+	where
+		1 = 1
+		$where_clause
+    "
+    
+    set sql "
+    select
+	avg(c.price_per_unit_converted) as price_per_unit_converted,
+	[join $dimension_vars ",\n\t"]
+    from
+	($middle_sql) c
+    group by
+	[join $dimension_vars ",\n\t"]
+    "
+
+    # ------------------------------------------------------------
+    # Create upper date dimension
+    
+    # Top scale is a list of lists such as {{2006 01} {2006 02} ...}
+    # The last element of the list the grand total sum.
+    
+    # No top dimension at all gives an error...
+    if {![llength $top_vars]} { set top_vars [list year] }
+    
+    set top_scale [db_list_of_lists top_scale "
+	select distinct	[join $top_vars ", "]
+	from		($middle_sql) c
+	order by	[join $top_vars ", "]
+    "]
+    lappend top_scale [list $sigma $sigma $sigma $sigma $sigma $sigma]
+
+    # ------------------------------------------------------------
+    # Create a sorted left dimension
+    
+    # No top dimension at all gives an error...
+    if {![llength $left_vars]} {
+	ns_write "
+	<p>&nbsp;<p>&nbsp;<p>&nbsp;<p><blockquote>
+	[lang::message::lookup "" intranet-reporting.No_left_dimension "No 'Left' Dimension Specified"]:<p>
+	[lang::message::lookup "" intranet-reporting.No_left_dimension_message "
+		You need to specify atleast one variable for the left dimension.
+	"]
+	</blockquote><p>&nbsp;<p>&nbsp;<p>&nbsp;
+	"
+	ns_write "</table>\n"
+	return ""
+    }
+    
+    # Scale is a list of lists. Example: {{2006 01} {2006 02} ...}
+    # The last element is the grand total.
+    set left_scale [db_list_of_lists left_scale "
+	select distinct	[join $left_vars ", "]
+	from		($middle_sql) c
+	order by	[join $left_vars ", "]
+    "]
+    set last_sigma [list]
+    foreach t [lindex $left_scale 0] {
+	lappend last_sigma $sigma
+    }
+    lappend left_scale $last_sigma
+    
+    # ------------------------------------------------------------
+    # Execute query and aggregate values into a Hash array
+    
+    db_foreach query $sql {
+    
+	# Get all possible permutations (N out of M) from the dimension_vars
+	set perms [im_report_take_all_ordered_permutations $dimension_vars]
+    
+	# Add the price to ALL of the variable permutations.
+	# The "full permutation" (all elements of the list) corresponds
+	# to the individual cell entries.
+	# The "empty permutation" (no variable) corresponds to the
+	# gross total of all values.
+	# Permutations with less elements correspond to subtotals
+	# of the values along the missing dimension. Clear?
+	#
+	foreach perm $perms {
+    
+	    # Calculate the key for this permutation
+	    # something like "$year-$month-$customer_id"
+	    set key_expr "\$[join $perm "-\$"]"
+	    set key [eval "set a \"$key_expr\""]
+    
+	    # Sum up the values for the matrix cells
+	    set sum 0
+	    set count 0
+	    if {[info exists hash_sum($key)]} { 
+		set sum $hash_sum($key) 
+		set count $hash_count($key) 
+	    }
+	    
+	    if {"" != $price_per_unit_converted} { 
+		set sum [expr $sum + $price_per_unit_converted]
+		set count [expr $count + 1]
+
+		set hash_sum($key) $sum
+		set hash_count($key) $count
+	    }
+	}
+    }
+
+#	ad_return_complaint 1 "[array get hash_sum]<br>[array get hash_count]"
+
+
+    # Calculate average hash
+    foreach key [array names has_sum] {
+	set sum $hash_sum($key)
+        set count $hash_count($key)
+	set avg [expr $sum / $count]
+	set hash($key) $avg
+    }
+
+
+    return [list \
+	cube "price" \
+	evaluation_date [db_string now "select now()"] \
+	top_vars $top_vars \
+	left_vars $left_vars \
+   	top_scale $top_scale \
+   	left_scale $left_scale \
+   	hash_array [array get hash_count] \
+    ]
+}
+
+
+
 
 
 
@@ -505,10 +781,10 @@ ad_proc im_reporting_cubes_display {
     set header ""
     for {set row 0} {$row < $top_scale_pretty_rows} { incr row } {
     
-        append header "<tr class=rowtitle>\n"
-        append header "<td colspan=$left_scale_pretty_size></td>\n"
+	append header "<tr class=rowtitle>\n"
+	append header "<td colspan=$left_scale_pretty_size></td>\n"
     
-        for {set col 0} {$col <= [expr [llength $top_scale_pretty]-1]} { incr col } {
+	for {set col 0} {$col <= [expr [llength $top_scale_pretty]-1]} { incr col } {
     
 	    set scale_pretty_entry [lindex $top_scale_pretty $col]
 	    set scale_pretty_item [lindex $scale_pretty_entry $row]
@@ -539,7 +815,7 @@ ad_proc im_reporting_cubes_display {
 	    append header "\t<td class=rowtitle colspan=$colspan>$scale_pretty_item</td>\n"	    
 	    
 	}
-        append header "</tr>\n"
+	append header "</tr>\n"
     }
     
     
@@ -550,23 +826,23 @@ ad_proc im_reporting_cubes_display {
     set body ""
     foreach left_entry $left_scale_pretty {
     
-        set class $rowclass([expr $ctr % 2])
-        incr ctr
+	set class $rowclass([expr $ctr % 2])
+	incr ctr
     
-        # Start the row and show the left_scale_pretty values at the left
-        append body "<tr class=$class>\n"
-        foreach val $left_entry { append body "<td>$val</td>\n" }
+	# Start the row and show the left_scale_pretty values at the left
+	append body "<tr class=$class>\n"
+	foreach val $left_entry { append body "<td>$val</td>\n" }
     
-        # Write the left_scale_pretty values to their corresponding local 
-        # variables so that we can access them easily when calculating
-        # the "key".
-        for {set i 0} {$i < [llength $left_vars]} {incr i} {
+	# Write the left_scale_pretty values to their corresponding local 
+	# variables so that we can access them easily when calculating
+	# the "key".
+	for {set i 0} {$i < [llength $left_vars]} {incr i} {
 	    set var_name [lindex $left_vars $i]
 	    set var_value [lindex $left_entry $i]
 	    set $var_name $var_value
-        }
-        
-        foreach top_entry $top_scale_pretty {
+	}
+	
+	foreach top_entry $top_scale_pretty {
     
 	    # Write the top_scale_pretty values to their corresponding local 
 	    # variables so that we can access them easily for $key
@@ -591,8 +867,8 @@ ad_proc im_reporting_cubes_display {
 	    
 	    append body "<td>$val</td>\n"
 	    
-        }
-        append body "</tr>\n"
+	}
+	append body "</tr>\n"
     }
     
     return "
