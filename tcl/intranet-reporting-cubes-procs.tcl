@@ -652,17 +652,13 @@ ad_proc im_reporting_cubes_price {
 	}
     }
 
-#	ad_return_complaint 1 "[array get hash_sum]<br>[array get hash_count]"
-
-
     # Calculate average hash
-    foreach key [array names has_sum] {
+    foreach key [array names hash_sum] {
 	set sum $hash_sum($key)
         set count $hash_count($key)
 	set avg [expr $sum / $count]
 	set hash($key) $avg
     }
-
 
     return [list \
 	cube "price" \
@@ -671,7 +667,7 @@ ad_proc im_reporting_cubes_price {
 	left_vars $left_vars \
    	top_scale $top_scale \
    	left_scale $left_scale \
-   	hash_array [array get hash_count] \
+   	hash_array [array get hash] \
     ]
 }
 
