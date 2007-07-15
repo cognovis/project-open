@@ -116,11 +116,9 @@ set context_bar [im_context_bar $page_title]
 set context ""
 set help_text "<strong>$page_title</strong><br>
 
-This Pivot Table ('cube') is a kind of report that shows Invoice,
-Quote or Delivery Note amounts according to a a number of variables
-that you can specify.
-This cube effectively replaces a dozen of specific reports and allows
-you to 'drill down' into results.
+This Pivot Table ('cube') is a kind of report that shows the prices
+for each line of each quote, invoice, bill order purchase order
+in the specified interval.
 <p>
 "
 
