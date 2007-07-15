@@ -20,6 +20,7 @@
         </description>
 
         <provides url="intranet-reporting-dashboard" version="3.2.7.0.0"/>
+        <requires url="intranet-reporting-cubes" version="3.2"/>
         <requires url="intranet-reporting" version="3.2"/>
         <requires url="intranet-core" version="3.2"/>
         <requires url="intranet-cost" version="3.2"/>
