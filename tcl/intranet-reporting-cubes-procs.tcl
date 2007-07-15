@@ -432,6 +432,7 @@ ad_proc im_reporting_cubes_price {
     { -cost_type_id {3700} }
     { -customer_type_id 0 }
     { -customer_id 0 }
+    { -provider_id 0 }
     { -uom_id 0 }
 } {
     Returns a DW cube as a list containing:
@@ -454,12 +455,16 @@ ad_proc im_reporting_cubes_price {
     #
     
     set criteria [list]
+    set inner_criteria [list]
     
     if {"" != $uom_id && 0 != $uom_id} {
-	lappend criteria "ii.item_uom_id = :uom_id"
+	lappend inner_criteria "ii.item_uom_id = :uom_id"
     }
     if {"" != $customer_id && 0 != $customer_id} {
 	lappend criteria "c.customer_id = :customer_id"
+    }
+    if {"" != $provider_id && 0 != $provider_id} {
+	lappend criteria "c.provider_id = :provider_id"
     }
     if {1} {
 	lappend criteria "c.cost_type_id in ([join [im_sub_categories $cost_type_id] ", "])"
@@ -467,10 +472,12 @@ ad_proc im_reporting_cubes_price {
     if {"" != $customer_type_id && 0 != $customer_type_id} {
 	lappend criteria "pcust.company_type_id in ([join [im_sub_categories $customer_type_id] ", "])"
     }
+
     set where_clause [join $criteria " and\n\t\t\t"]
-    if { ![empty_string_p $where_clause] } {
-	set where_clause " and $where_clause"
-    }
+    set inner_where_clause [join $inner_criteria " and\n\t\t\t"]
+
+    if { ![empty_string_p $where_clause] } { set where_clause " and $where_clause" }
+    if { ![empty_string_p $inner_where_clause] } { set inner_where_clause " and $inner_where_clause" }
     
     
     # ------------------------------------------------------------
@@ -510,6 +517,7 @@ ad_proc im_reporting_cubes_price {
 			and c.effective_date::date >= to_date(:start_date, 'YYYY-MM-DD')
 			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
 			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
+			$inner_where_clause
     "
     
     # Aggregate additional/important fields to the fact table.
@@ -535,6 +543,7 @@ ad_proc im_reporting_cubes_price {
 		im_category_from_id(mainp.project_type_id) as main_project_type,
 		mainp.project_status_id as main_project_status_id,
 		im_category_from_id(mainp.project_status_id) as main_project_status,
+		im_name_from_user_id(mainp.project_lead_id) as main_project_manager,
     
 		cust.company_name as customer_name,
 		cust.company_type_id as customer_type_id,
@@ -615,7 +624,7 @@ ad_proc im_reporting_cubes_price {
     # Execute query and aggregate values into a Hash array
     
     db_foreach query $sql {
-    
+
 	# Get all possible permutations (N out of M) from the dimension_vars
 	set perms [im_report_take_all_ordered_permutations $dimension_vars]
     
@@ -627,6 +636,7 @@ ad_proc im_reporting_cubes_price {
 	# Permutations with less elements correspond to subtotals
 	# of the values along the missing dimension. Clear?
 	#
+
 	foreach perm $perms {
     
 	    # Calculate the key for this permutation
@@ -652,11 +662,12 @@ ad_proc im_reporting_cubes_price {
 	}
     }
 
+    
     # Calculate average hash
     foreach key [array names hash_sum] {
 	set sum $hash_sum($key)
         set count $hash_count($key)
-	set avg [expr $sum / $count]
+	set avg [expr round($sum * 1000.0 / $count) / 1000.0]
 	set hash($key) $avg
     }
 

@@ -20,6 +20,8 @@ ad_page_contract {
     { cost_type_id:multiple "3700" }
     { customer_type_id:integer 0 }
     { customer_id:integer 0 }
+    { provider_id:integer 0 }
+    { uom_id:integer 0 }
     { left_vars "" }
     { top_vars "" }
 }
@@ -208,6 +210,7 @@ set left_scale_options {
 	"main_project_nr" "Main Project Nr"
 	"main_project_type" "Main Project Type"
 	"main_project_status" "Main Project Status"
+	"main_project_manager" "Main Project Manager"
 
 	"sub_project_name" "Sub Project Name"
 	"sub_project_nr" "Sub Project Nr"
@@ -262,6 +265,12 @@ ns_write "
 	  </td>
 	</tr>
 	<tr>
+	  <td class=form-label>Unit of Measure</td>
+	  <td class=form-widget colspan=3>
+	    [im_category_select -include_empty_p 1 "Intranet UoM" uom_id $uom_id]
+	  </td>
+	</tr>
+	<tr>
 	  <td class=form-label>Customer Type</td>
 	  <td class=form-widget colspan=3>
 	    [im_category_select -include_empty_p 1 "Intranet Company Type" customer_type_id $customer_type_id]
@@ -270,7 +279,13 @@ ns_write "
 	<tr>
 	  <td class=form-label>Customer</td>
 	  <td class=form-widget colspan=3>
-	    [im_company_select customer_id $customer_id]
+	    [im_company_select customer_id $customer_id "" "Customer"]
+	  </td>
+	</tr>
+	<tr>
+	  <td class=form-label>Provider</td>
+	  <td class=form-widget colspan=3>
+	    [im_company_select provider_id $provider_id "" "Provider"]
 	  </td>
 	</tr>
 	<tr>
@@ -354,6 +369,8 @@ set cube_array [im_reporting_cubes_price \
     -cost_type_id $cost_type_id \
     -customer_type_id $customer_type_id \
     -customer_id $customer_id \
+    -provider_id $provider_id \
+    -uom_id $uom_id \
 ]
 
 if {"" != $cube_array} {
