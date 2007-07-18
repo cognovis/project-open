@@ -265,8 +265,8 @@ foreach var $dimension_vars {
 	project_type { lappend derefs "im_category_from_id(h.project_type_id) as project_type" }
 	project_status { lappend derefs "im_category_from_id(h.project_status_id) as project_status" }
 
-	customer_type { lappend derefs "im_category_from_id(p.company_type_id) as customer_type" }
-	customer_status { lappend derefs "im_category_from_id(p.company_status_id) as customer_status" }
+	customer_type { lappend derefs "im_category_from_id(h.company_type_id) as customer_type" }
+	customer_status { lappend derefs "im_category_from_id(h.company_status_id) as customer_status" }
 
     }
 }
@@ -407,6 +407,7 @@ set inner_sql "
 			p.*,
 			im_name_from_user_id(p.project_lead_id) as project_manager_name,
 			c.*,
+			c.company_name as customer_name,
 			u.*,
 			e.*,
 			im_cost_center_name_from_id(e.department_id) as department,
