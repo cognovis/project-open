@@ -106,6 +106,7 @@ ad_form \
 	{subject_area_id:text(select),optional {label "[_ intranet-trans-invoices.Subject_Area]"} {options $subject_area_options} }
 	{file_type_id:text(select),optional {label "[_ intranet-trans-invoices.File_Type]" } {options $file_type_options} }
 	{amount:float(text) {label "[_ intranet-trans-invoices.Amount]"} {html {size 10}}}
+	{min_price:float(text),optional {label "[lang::message::lookup {} intranet-trans-invoices.Minimum_Amount {Minimum Amount}]"} {html {size 10}}}
 	{currency:text(select) {label "[_ intranet-trans-invoices.Currency]"} {options $currency_options} }
 	{note:text(textarea),optional {label "[_ intranet-core.Note]"} {html {cols 50}}}
     }
@@ -135,6 +136,7 @@ insert into im_trans_prices (
 	file_type_id,
 	currency,
 	price,
+	min_price,
 	note
 ) values (
 	:price_id,
@@ -147,6 +149,7 @@ insert into im_trans_prices (
 	:file_type_id,
 	:currency,
 	:amount,
+	:min_price,
 	:note
 )"
 
@@ -162,6 +165,7 @@ insert into im_trans_prices (
 	file_type_id = :file_type_id,
 	currency = :currency,
 	price = :amount,
+	min_price = :min_price,
 	note = :note
 	where price_id = :price_id
     "

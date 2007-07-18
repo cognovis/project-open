@@ -51,6 +51,8 @@ set price_url_base "/intranet-trans-invoices/price-lists/new"
 
 set number_format [im_l10n_sql_currency_format]
 
+# set number_format "000000.0000"
+
 if {![im_permission $user_id add_invoices]} {
     ad_return_complaint "[_ intranet-trans-invoices.lt_Insufficient_Privileg]" "
     <li>[_ intranet-trans-invoices.lt_You_dont_have_suffici]"    
@@ -336,7 +338,7 @@ if {1} {
     # Start formatting the "reference price list" as well, even though it's going
     # to be shown at the very bottom of the page.
     #
-    set price_colspan 11
+    set price_colspan 12
     if {$enable_file_type_p} { incr price_colspan}
 
     set file_type_html "<td class=rowtitle>[lang::message::lookup "" intranet-trans-invoices.File_Type "File Type"]</td>"
@@ -357,6 +359,7 @@ if {1} {
 <!--          <td class=rowtitle>[_ intranet-trans-invoices.Valid_Through]</td>	-->
           <td class=rowtitle>[_ intranet-core.Note]</td>
           <td class=rowtitle>[_ intranet-trans-invoices.Price]</td>
+          <td class=rowtitle>[lang::message::lookup "" intranet-trans-invoices.Min_Price "Min Price"]</td>
         </tr>\n"
 
 
@@ -474,7 +477,10 @@ if {1} {
 select 
 	p.price_id,
 	p.relevancy as price_relevancy,
-	trim(' ' from to_char(p.price,:number_format)) as price,
+	p.price,
+	trim(' ' from to_char(p.price,:number_format)) as price_formatted,
+	p.min_price,
+	trim(' ' from to_char(p.min_price,:number_format)) as min_price_formatted,
 	p.company_id as price_company_id,
 	p.uom_id as uom_id,
 	p.task_type_id as task_type_id,
@@ -505,6 +511,7 @@ from
 			) as relevancy,
 			p.price_id,
 			p.price,
+			p.min_price,
 			p.company_id,
 			p.uom_id,
 			p.task_type_id,
@@ -571,14 +578,17 @@ order by
 	set best_match_price 0
 	db_foreach references_prices $reference_price_sql {
 
-	    ns_log Notice "new-3: company_id=$company_id, uom_id=$uom_id => price=$price, relevancy=$price_relevancy"
+	    ns_log Notice "new-3: company_id=$company_id, uom_id=$uom_id => price=$price_formatted, relevancy=$price_relevancy"
 	    # Take the first line of the result list (=best score) as a price proposal:
-	    if {$price_list_ctr == 1} {set best_match_price $price}
+	    if {$price_list_ctr == 1} {set best_match_price $price_formatted}
 
 	    set price_url [export_vars -base $price_url_base { company_id price_id return_url }]
 
 	    set file_type_html "<td class=$bgcolor([expr $price_list_ctr % 2])>$price_file_type</td>"
 	    if {!$enable_file_type_p} { set file_type_html "" }
+
+	    set min_price_formatted "$min_price_formatted $invoice_currency"
+	    if {"" == $min_price} { set min_price_formatted "" }
 
 	    append reference_price_html "
         <tr>
@@ -596,12 +606,24 @@ order by
 <!--          <td class=$bgcolor([expr $price_list_ctr % 2])>$valid_through</td> 	-->
           <td class=$bgcolor([expr $price_list_ctr % 2])>[string_truncate -len 30 $price_note]</td>
           <td class=$bgcolor([expr $price_list_ctr % 2])>
-		<a href=\"$price_url\">$price $invoice_currency</a>
+		<a href=\"$price_url\">$price_formatted $invoice_currency</a>
 	  </td>
+          <td class=$bgcolor([expr $price_list_ctr % 2])>$min_price_formatted</td>
         </tr>\n"
 	
 	    incr price_list_ctr
 	}
+
+
+	# Minimum Price Logic
+	if {[expr $price * $task_sum] < $min_price} {
+	    set task_sum 1
+	    set task_title "$task_title [lang::message::lookup "" intranet-trans-invoices.Min_Price_Min "(min.)"]"
+	    set task_uom_id [im_uom_unit]
+	    set task_uom [im_category_from_id $task_uom_id]
+	    set best_match_price $min_price
+	}
+
 
 	# Add an empty line to the price list to separate prices form item to item
 	append reference_price_html "<tr><td colspan=$price_colspan>&nbsp;</td></tr>\n"

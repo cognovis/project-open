@@ -238,6 +238,7 @@ create table im_trans_prices (
 	price			numeric(12,4)
 				constraint im_trans_prices_price_nn
 				not null,
+	min_price		numeric(12,4),
 	note			varchar(1000)
 );
 

@@ -27,7 +27,7 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
     set price_format "000.000"
     set price_url_base "/intranet-trans-invoices/price-lists/new"
 
-    set colspan 8
+    set colspan 9
     if {$enable_file_type_p} { incr colspan}
 
     set file_type_html "<td class=rowtitle>[lang::message::lookup "" intranet-trans-invoices.File_Type "File Type"]</td>"
@@ -46,6 +46,7 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
 	  <td class=rowtitle>[_ intranet-trans-invoices.Subject]</td>
 	  $file_type_html
 	  <td class=rowtitle>[_ intranet-trans-invoices.Rate]</td>
+	  <td class=rowtitle>[lang::message::lookup "" intranet-trans-invoices.Minimum_Rate "Min Rate"]</td>
 	  <td class=rowtitle>[_ intranet-core.Note]</td>
 	  <td class=rowtitle>[im_gif del "Delete"]</td>
 </tr>"
@@ -57,7 +58,10 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
 
         # There can be errors when formatting an empty string...
         set price_formatted ""
-        catch { set price_formatted [format "%0.3f" $price] } errmsg
+        catch { set price_formatted "[format "%0.3f" $price] $currency" } errmsg
+        set min_price_formatted ""
+        catch { set min_price_formatted "[format "%0.0f" $min_price] $currency" } errmsg
+	if {"" == $min_price} { set min_price_formatted "" }
 
 	if {"" != $old_currency && ![string equal $old_currency $currency]} {
 	    append price_rows_html "<tr><td colspan=$colspan>&nbsp;</td></tr>\n"
@@ -76,7 +80,8 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
           <td>$target_language</td>
 	  <td>$subject_area</td>
 	  $file_type_html
-          <td><a href=\"$price_url\">$price_formatted $currency</a></td>
+          <td><a href=\"$price_url\">$price_formatted</a></td>
+          <td>$min_price_formatted</td>
           <td>[string_truncate -len 15 $note]</td>
           <td><input type=checkbox name=price_id.$price_id></td>
 	</tr>"
