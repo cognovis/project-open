@@ -39,7 +39,9 @@ Best regards,
   <msg key="Delete_RFQ">Delete RFQ</msg>
   <msg key="Delete_Skill">Delete Skill</msg>
   <msg key="Description">Description</msg>
+  <msg key="Dont_Send_Invitations">Don't Send Invitations</msg>
   <msg key="End">End</msg>
+  <msg key="End_Date">Ends</msg>
   <msg key="End_date">End Date</msg>
   <msg key="Experience">Experience</msg>
   <msg key="Filter_RFQs">Filter RFQs</msg>
@@ -65,9 +67,16 @@ Best regards,
   <msg key="No_decline">No, I decline</msg>
   <msg key="No_I_decline">No, I decline.</msg>
   <msg key="Note">Note</msg>
+  <msg key="Num_Conf_Explanation">The number of declined candidates</msg>
+  <msg key="Num_Confirmations">#Conf</msg>
   <msg key="Num_Conformations">#Conf</msg>
   <msg key="Num_Decl">#Decl</msg>
+  <msg key="Num_Decl_Explanation">The number of declined candidates</msg>
+  <msg key="Num_Declinations">#Decl</msg>
+  <msg key="Num_Inv_Explanation">The total number of invitations</msg>
   <msg key="Num_Invitations">#Inv</msg>
+  <msg key="Num_Rem_Explanation">The number of remaining candidates that either need to be declined or confirmed</msg>
+  <msg key="Num_Remaining">#Rem</msg>
   <msg key="Overall_Status">Overall Status</msg>
   <msg key="Project">Project</msg>
   <msg key="Required_RFQ_Skills">Required RFQ Skills</msg>
@@ -88,6 +97,7 @@ Best regards,
   <msg key="Skill_Weight">Skill Weight</msg>
   <msg key="Source">Source</msg>
   <msg key="Start">Start</msg>
+  <msg key="Start_Date">Starts</msg>
   <msg key="Start_date">Start Date</msg>
   <msg key="Subject_Areas">Subject Areas</msg>
   <msg key="Target">Target</msg>
