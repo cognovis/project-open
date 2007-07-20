@@ -93,7 +93,7 @@ ad_proc -public bug_tracker::bug::insert {
     {-content_type "bt_bug_revision"}
     {-fix_for_version ""}
     {-assign_to ""}
-    {-bug_container_project_id 0}
+    {-bug_container_project_id ""}
 } {
     Inserts a new bug into the content repository.
     You probably don't want to run this yourself - to create a new bug, use bug_tracker::bug::new

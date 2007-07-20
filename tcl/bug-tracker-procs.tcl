@@ -891,7 +891,6 @@ ad_proc bug_tracker::components_get_options {
     }
 
     set components_list [util_memoize [list bug_tracker::components_get_options_not_cached $package_id]]
-
     if { $include_unknown_p } {
         set components_list [concat { { "Unknown" "" } } $components_list]
     } 
@@ -926,6 +925,7 @@ ad_proc bug_tracker::component_get_name {
             return [lindex $elm 0]
         }
     }
+
     error "Component_id $component_id not found"
 }
 
