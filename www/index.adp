@@ -52,6 +52,7 @@
 </table>
 
 
+<if @view_rfq_p@>
 <p>
 Explanation:
 </p>
@@ -62,3 +63,6 @@ Explanation:
 <li>#intranet-freelance-rfqs.Num_Declinations# - #intranet-freelance-rfqs.Num_Decl_Explanation#
 <li>#intranet-freelance-rfqs.Num_Remaining# - #intranet-freelance-rfqs.Num_Rem_Explanation#
 </ul>
+</if>
+
+
