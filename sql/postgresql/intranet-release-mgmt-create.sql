@@ -161,17 +161,38 @@ SELECT im_component_plugin__new (
 );
 
 
+-- Show referencing projects (BaselKB only, requires field im_projects.release_project_id)
+--
+-- SELECT im_component_plugin__new (
+--         null,                           -- plugin_id
+--         'acs_object',                   -- object_type
+--         now(),                          -- creation_date
+--         null,                           -- creation_user
+--         null,                           -- creation_ip
+--         null,                           -- context_id
+--         'Referencing Projects',      -- plugin_name
+--         'intranet-release-mgmt',        -- package_name
+--         'right',                       -- location
+--         '/intranet/projects/view',      -- page_url
+--         null,                           -- view_name
+--         900,                             -- sort_order
+--         'im_release_mgmt_referencing_projects_component -project_id $project_id -return_url $return_url',
+--         'lang::message::lookup "" intranet-release-mgmt.Referencing_Projects "Referencing Projects"'
+-- );
+
+
+
 ---------------------------------------------------------
 -- Add category types
 ---------------------------------------------------------
 
 INSERT INTO im_categories VALUES (4500,'0 - Developing','','Intranet Release Status',null);
-INSERT INTO im_categories VALUES (4540,'1 - Ready to be build','','Intranet Release Status',null);
-INSERT INTO im_categories VALUES (4550,'2 - Build','','Intranet Release Status',null);
+INSERT INTO im_categories VALUES (4540,'1 - Ready for Review','','Intranet Release Status',null);
+INSERT INTO im_categories VALUES (4550,'2 - Ready for Integration','','Intranet Release Status',null);
 INSERT INTO im_categories VALUES (4560,'3 - Ready for Integration Test','','Intranet Release Status',null);
 INSERT INTO im_categories VALUES (4570,'4 - Ready for Acceptance Test','','Intranet Release Status',null);
-INSERT INTO im_categories VALUES (4585,'5 - Approved','','Intranet Release Status',null);
-INSERT INTO im_categories VALUES (4590,'6 - Accepted','','Intranet Release Status',null);
+INSERT INTO im_categories VALUES (4585,'5 - Ready for Production','','Intranet Release Status',null);
+INSERT INTO im_categories VALUES (4590,'6 - Ready to be closed','','Intranet Release Status',null);
 INSERT INTO im_categories VALUES (4595,'7 - Closed','','Intranet Release Status',null);
 
 
@@ -185,7 +206,15 @@ where category_type = 'Intranet Release Status';
 -- New Object Type for Releases
 ---------------------------------------------------------
 
-INSERT INTO im_categories VALUES (4599,'Software Release','','Intranet Project Type');
+INSERT INTO im_categories (category_id, category, category_type, enabled_p) 
+VALUES (4599,'Software Release','Intranet Project Type', 't');
+
+INSERT INTO im_categories (category_id, category, category_type, enabled_p) 
+VALUES (4597,'Software Release Item','Intranet Project Type', 'f');
+
+-- Add a first release item as an example, so the list isn't empty
+INSERT INTO im_category_hierarchy(parent_id, child_id)
+VALUES (4597, 85);
 
 ---------------------------------------------------------
 -- DynField to mark release items

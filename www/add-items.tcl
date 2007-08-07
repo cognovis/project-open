@@ -71,11 +71,11 @@ list::create \
     -elements $elements
 
 db_multirow -extend { release_project_url release_status_template project_chk } release_items select_release_items "
-	select
-		p.*
- 	from
-		im_projects p
-	LIMIT 20
+	select	p.*
+ 	from	im_projects p
+	where	project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
+		and project_type_id in ([join [im_sub_categories 4597] ","])
+	order by project_name
 " {
     set release_project_url [export_vars -base "/intranet/projects/view?" {project_id return_url}]
 

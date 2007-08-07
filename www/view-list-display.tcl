@@ -135,6 +135,7 @@ db_multirow -extend {
 		p.project_id as item_id,
 		im_name_from_user_id(p.project_lead_id) as project_lead_name,
 		p.*,
+		i.sort_order,
 		$extra_select
  	from
 		im_projects p
@@ -173,10 +174,14 @@ db_multirow -extend {
 	id=\"item_list,$item_id\">
     "
 
+#    set sort_order_template "
+#	<nobr>
+#	<a href=\"[export_vars -base "/intranet-release-mgmt/order-item" {{dir up} release_project_id project_id return_url} ]\">[im_gif arrow_comp_up]</a>
+#	<a href=\"[export_vars -base "/intranet-release-mgmt/order-item" {{dir down} release_project_id project_id return_url} ]\">[im_gif arrow_comp_down]</a>
+#	</nobr>
+#    "
+
     set sort_order_template "
-	<nobr>
-	<a href=\"[export_vars -base "/intranet-release-mgmt/order-item" {{dir up} release_project_id project_id return_url} ]\">[im_gif arrow_comp_up]</a>
-	<a href=\"[export_vars -base "/intranet-release-mgmt/order-item" {{dir down} release_project_id project_id return_url} ]\">[im_gif arrow_comp_down]</a>
-	</nobr>
+	<input type=text name=\"release_sort_order.$item_id\" size=5 value=\"$sort_order\">
     "
 }

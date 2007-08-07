@@ -15,6 +15,10 @@ ad_library {
 # 
 # ----------------------------------------------------------------------
 
+ad_proc -public im_project_type_software_release {} { return 4599 }
+ad_proc -public im_project_type_software_release_item {} { return 4597 }
+
+
 ad_proc -public im_package_release_mgmt_id {} {
     Returns the package id of the intranet-release-mgmt module
 } {
@@ -67,6 +71,30 @@ ad_proc -public im_release_mgmt_project_component {
 	[list return_url [im_url_with_query]] \
     ]
     set result [ad_parse_template -params $params "/packages/intranet-release-mgmt/www/view-list-display"]
+    return $result
+}
+
+
+
+# ----------------------------------------------------------------------
+# Projects with reference to this release
+# ---------------------------------------------------------------------
+
+ad_proc -public im_release_mgmt_referencing_projects_component {
+    -project_id
+    -return_url
+} {
+    Returns a list of projects referencing to this release
+} {
+    # Is this a "Software Release" Project
+    set release_category [parameter::get -package_id [im_package_ganttproject_id] -parameter "ReleaseProjectType" -default "Software Release"]
+    if {![im_project_has_type $project_id $release_category]} { return "" }
+    
+    set params [list \
+		    [list project_id $project_id] \
+		    [list return_url [im_url_with_query]] \
+    ]
+    set result [ad_parse_template -params $params "/packages/intranet-release-mgmt/www/referencing-projects"]
     return $result
 }
 
