@@ -42,7 +42,7 @@ insert into im_categories ( CATEGORY_DESCRIPTION, ENABLED_P, CATEGORY_ID, CATEGO
 --
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2000,20,NULL,'Ok',
-'<center>[in_project_on_track_bb $on_track_status_id]</center>',
+'<center>[im_project_on_track_bb $on_track_status_id]</center>',
 '','',0,'');
 
 
