@@ -48,7 +48,6 @@ db_multirow journal journal_select "
            wf_attribute_value_audit v, acs_attributes a
     where  j.object_id = :case_id
       and  o.object_id = j.journal_id
-      and  p.party_id (+) =  o.creation_user
       and  v.journal_id (+) = j.journal_id
       and  a.attribute_id (+) = v.attribute_id
     order  by o.creation_date $sql_order, j.journal_id $sql_order
