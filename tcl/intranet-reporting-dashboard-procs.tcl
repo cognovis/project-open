@@ -122,6 +122,12 @@ ad_proc -public im_dashboard_active_projects_status_histogram {
 		im_projects p
 	where
 		p.parent_id is null
+		and p.project_status_id not in (
+			[im_project_status_deleted],
+			[im_project_status_canceled],
+			[im_project_status_invoiced],
+			[im_project_status_closed]
+		)
         group by 
 		project_status_id
 	order by
