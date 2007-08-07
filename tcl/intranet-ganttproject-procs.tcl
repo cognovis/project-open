@@ -747,7 +747,7 @@ ad_proc -public im_gp_find_person_for_name {
 } {
     # Check for an exact match with the User Name
     set person_id [db_string resource_id "
-			select	person_id
+			select	min(person_id)
 			from	persons
 			where	:name = lower(im_name_from_user_id(person_id))
     " -default 0]
@@ -755,7 +755,7 @@ ad_proc -public im_gp_find_person_for_name {
     # Check for an exact match with Email
     if {0 == $person_id} {
 		    set person_id [db_string email_check "
-			select	party_id
+			select	min(party_id)
 			from	parties
 			where	lower(trim(email)) = lower(trim(:email))
     " -default 0]
