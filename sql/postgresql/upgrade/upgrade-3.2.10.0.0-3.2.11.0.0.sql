@@ -49,3 +49,9 @@ create table im_reporting_cube_values (
 	value_hash_array	text
 );
 
+
+-- ------------------------------------------------
+-- Add a ? to the end of the reports to pass-on parameters
+update im_menus set url = url || '?'
+where url = '/intranet-reporting-cubes/timesheet-cube';
+
