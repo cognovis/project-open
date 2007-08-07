@@ -99,9 +99,9 @@ while {[regexp {(.[^\n]+)} $userlist match_fodder row] } {
 	regsub -all "<$key>" $sub_message $value sub_message
     }
     
-    if {[catch {ns_sendmail "$email" "$from" "$subject" "$sub_message"} errmsg]} {
-
-    }
+#    if {[catch {ns_sendmail "$email" "$from" "$subject" "$sub_message"} errmsg]} {
+#
+#    }
 
 }
 
