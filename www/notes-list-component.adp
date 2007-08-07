@@ -13,7 +13,6 @@
 	    </tr>
 	  </multiple>
 	</table>
-	</if>
 <!--	
 	<if @object_write@>
 	<li><a href="@new_note_url;noquote@">Create a new Note</a>

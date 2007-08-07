@@ -52,5 +52,5 @@ ad_proc -public im_notes_project_component {
 		    ]
 
     set result [ad_parse_template -params $params "/packages/intranet-notes/www/notes-list-component"]
-    return $result
+    return [string trim $result]
 }
