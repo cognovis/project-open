@@ -24,6 +24,7 @@
         <requires url="intranet-reporting" version="3.2"/>
         <requires url="intranet-core" version="3.2"/>
         <requires url="intranet-cost" version="3.2"/>
+        <requires url="diagram" version="0.2"/>
 
         <callbacks>
         </callbacks>
