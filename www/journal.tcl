@@ -38,14 +38,13 @@ db_multirow journal journal_select "
            to_char(o.creation_date, :date_format) as creation_date_pretty,
            o.creation_user,
            acs_object.name(o.creation_user) as creation_user_name,
-	   p.email as creation_user_email, 
 	   o.creation_ip,
            j.msg,
            a.attribute_name as attribute_name, 
 	   a.pretty_name as attribute_pretty_name,
 	   a.datatype as attribute_datatype, 
 	   v.attr_value as attribute_value
-    from   journal_entries j, acs_objects o, parties p,
+    from   journal_entries j, acs_objects o,
            wf_attribute_value_audit v, acs_attributes a
     where  j.object_id = :case_id
       and  o.object_id = j.journal_id

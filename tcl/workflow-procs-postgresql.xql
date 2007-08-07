@@ -26,6 +26,7 @@
                acs_object__name(c.object_id) as object_name,
                ot.pretty_name as object_type_pretty,
                c.workflow_key,
+	       tr.transition_key,
                tr.transition_name as task_name, 
                tr.instructions,
                t.state, 
