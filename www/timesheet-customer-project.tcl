@@ -35,6 +35,10 @@ set menu_label "reporting-timesheet-customer-project"
 
 set current_user_id [ad_maybe_redirect_for_registration]
 
+# Default User = Current User, to reduce performance overhead
+if {0 == $user_id} { set user_id $current_user_id }
+
+
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
 	from	im_menus m

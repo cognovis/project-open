@@ -45,7 +45,7 @@ BEGIN
                 ''intranet-reporting'',         -- package_name
                 ''reporting-timesheet-finance'', -- label
                 ''Timesheet Project Hierarchy & Finance'', -- name
-                ''/intranet-reporting/timesheet-finance'', -- url
+                ''/intranet-reporting/timesheet-finance?'', -- url
                 5,                                      -- sort_order
                 v_main_menu,                            -- parent_menu_id
                 null                                    -- p_visible_tcl

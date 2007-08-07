@@ -36,7 +36,7 @@ begin
         ''intranet-reporting'',      -- package_name
         ''reporting-finance-cube'',   -- label
         ''Finance Cube'',            -- name
-        ''/intranet-reporting/finance-cube'', -- url
+        ''/intranet-reporting/finance-cube?'', -- url
         110,                     -- sort_order
         v_admin_menu,         -- parent_menu_id
         null                    -- p_visible_tcl
@@ -91,7 +91,7 @@ begin
         ''intranet-reporting'',      -- package_name
         ''reporting-timesheet-cube'',   -- label
         ''Timesheet Cube'',            -- name
-        ''/intranet-reporting/timesheet-cube'', -- url
+        ''/intranet-reporting/timesheet-cube?'', -- url
         110,                     -- sort_order
         v_admin_menu,         -- parent_menu_id
         null                    -- p_visible_tcl

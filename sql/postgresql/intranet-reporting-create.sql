@@ -260,7 +260,7 @@ BEGIN
         ''intranet-reporting'', -- package_name
         ''reporting-timesheet-productivity'',          -- label
         ''Timesheet Productivity'',          -- name
-        ''/intranet-reporting/timesheet-productivity'', -- url
+        ''/intranet-reporting/timesheet-productivity?'', -- url
         50,                    -- sort_order
         v_main_menu,            -- parent_menu_id
         null                    -- p_visible_tcl
