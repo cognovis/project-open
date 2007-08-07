@@ -28,6 +28,8 @@ Do not add the .adp extension to the filename"/>
 Do not add the .adp extension to the filename"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="relative_template"  default="default-absolute" description="This is the default file we use to render form templates that use relative template. This file has to work like the grid tag in the templating system.
 Do not add the .adp extension to the filename"/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="GenericSQLWidgetMemoizeMaxAgeDefault"  default="600" description="Default cache timeout for generic_sql widgets. Can be overwritten by individual widgets using the parameter 'memoize_max_age'"/>
+
         </parameters>
 
     </version>

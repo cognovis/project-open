@@ -2192,7 +2192,23 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		aw.storage_type_id,
 		im_category_from_id(aw.storage_type_id) as storage_type
 	from
-		im_dynfield_attributes aa
+		(select	*
+		 from	im_dynfield_attributes aa
+		 where	exists (
+			select	1
+			from	acs_permissions p,
+				party_approved_member_map m,
+				acs_object_context_index c, 
+				acs_privilege_descendant_map h
+			where
+				p.object_id = c.ancestor_id
+				and h.descendant = 'read'
+				and c.object_id = aa.attribute_id
+				and m.member_id = 624
+				and p.privilege = h.privilege
+				and p.grantee_id = m.party_id
+			)
+		) aa
 		LEFT OUTER JOIN
 			(select * from im_dynfield_layout where page_url = '') dl
 			ON (aa.attribute_id = dl.attribute_id),
@@ -2205,7 +2221,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		a.object_type = :object_type
 		and a.attribute_id = aa.acs_attribute_id
 		and aa.widget_name = aw.widget_name
-		and im_object_permission_p(aa.attribute_id, :user_id, 'read') = 't'
 		and $extra_where
 	order by
 		dl.pos_y,

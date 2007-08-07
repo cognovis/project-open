@@ -36,6 +36,13 @@ ad_proc -public template::widget::generic_sql { element_reference tag_attributes
 	return "Generic SQL Widget: Error: Didn't find 'sql' parameter"
     }
 
+    # The "memoize_max_age" adds an empty line
+    set memoize_max_age [parameter::get_from_package_key -package_key intranet-dynfield -parameter GenericSQLWidgetMemoizeMaxAgeDefault -default 600]
+    set memoize_max_age_pos [lsearch $params "memoize_max_age"]
+    if { $memoize_max_age_pos >= 0 } {
+        set memoize_max_age [lindex $params [expr $memoize_max_age_pos + 1]]
+    }
+
     # The "include_empty_p" adds an empty line
     set include_empty_p 1
     set include_empty_p_pos [lsearch $params include_empty_p]
@@ -54,7 +61,7 @@ ad_proc -public template::widget::generic_sql { element_reference tag_attributes
     array set attributes $tag_attributes
 
     set key_value_list [list]
-    if {[catch {set key_value_list [db_list_of_lists sql_statement $sql_statement]} errmsg]} {
+    if {[catch {set key_value_list [util_memoize [list db_list_of_lists sql_statement $sql_statement] $memoize_max_age]} errmsg]} {
 	return "Generic SQL Widget: Error executing SQL statment <pre>'$sql_statement'</pre>: <br>
 	<pre>$errmsg</pre>"
     }

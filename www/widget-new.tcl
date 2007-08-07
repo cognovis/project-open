@@ -78,6 +78,7 @@ set deref_options [list \
 	[list "Integer (im_integer_from_id)" "im_integer_from_id"] \
 	[list "User Name (im_name_from_user_id)" "im_name_from_user_id"] \
 	[list "User Email (im_email_from_user_id)" "im_email_from_user_id"] \
+	[list "Traffic Light (im_traffic_light_from_id)" "im_traffic_light_from_id"] \
 	[list "Cost Center Name (im_cost_center_name_from_id)" "im_cost_center_name_from_id"] \
 ]
 #	[list "" ""] \
