@@ -41,15 +41,15 @@ if {"" == $return_url} {
 
 set table_header "
 <tr>
-  <td width=20></td>
-  <td width=20></td>
-  <td width=20></td>
-  <td width=20></td>
-  <td width=20></td>
-  <td width=20></td>
-  <td width=20></td>
-  <td width=20></td>
-  <td width=150></td>
+  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td width=150>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 "
 
 append table_header "
@@ -95,7 +95,7 @@ db_foreach cost_centers $main_sql {
 	append table "\n<td colspan=$indent_level>&nbsp;</td>"
     }
 
-    if {$last_id!=$cost_center_id} {
+    if {$last_id != $cost_center_id} {
 	append table "
 	  <td colspan=$colspan_level>
 	    <nobr>
@@ -108,12 +108,14 @@ db_foreach cost_centers $main_sql {
 	"
     } else {
 	append table "
-	  <td colspan=9></td>
+	  <td colspan=[expr 9+2-$indent_level]></td>
 	"
     }
 
     append table "
-	  <td><a href=[export_vars -base "/intranet/users/view" -override {{user_id $employee_id}}]>$employee_name</a></td>
+	  <td>
+	      <nobr><a href=[export_vars -base "/intranet/users/view" -override {{user_id $employee_id}}]>$employee_name</a></nobr>
+	  </td>
 	  <td>
        "
     
