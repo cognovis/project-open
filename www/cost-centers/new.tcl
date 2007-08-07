@@ -75,7 +75,7 @@ ad_form \
 	{cost_center_status_id:text(select) {label "Status"} {options $cost_center_status_options} }
 	{department_p:text(radio) {label Department} {options {{True t} {False f}}} }
 	{parent_id:text(select) {label "Parent Cost Center"} {options $cost_center_parent_options} }
-	{manager_id:text(select) {label Manager} {options $manager_options }}
+	{manager_id:text(select),optional {label Manager} {options $manager_options }}
 	{description:text(textarea),optional {label Description} {html {cols 40}}}
 	{note:text(hidden),optional}
     }
