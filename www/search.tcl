@@ -570,6 +570,11 @@ db_foreach full_text_query $sql {
 				)::integer\n"
 	    if {$user_is_admin_p} { set object_admin_sql "1::integer\n" }
 
+	    # 070802 fraber: This line fixes a rare situation where
+	    # the im_search_objects contains a forum line that doesn't exist.
+	    # However, I couldn't reproduce how the line got there.
+	    set forum_permission_p 0
+
 	    # Determine the permissions for the forum item
 	    db_0or1row forum_perm "
 		select
