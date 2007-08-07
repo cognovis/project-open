@@ -84,7 +84,6 @@ if {"" == $update_xml} {
 # Check whether it's a HTML or an XML
 #
 
-# ad_return_complaint 1 "<pre>$update_xml</pre>"
 if {![regexp {<([^>]*)>\s*<([^>]*)>\s*<([^>]*)>} $update_xml match tag1 tag2 tag3]} {
     ad_return_complaint 1 "Error while retreiving update information from
     URL '$service_url'.<br>The retreived files doesn't seem to be a XML or HTML file:<br>
@@ -93,7 +92,6 @@ if {![regexp {<([^>]*)>\s*<([^>]*)>\s*<([^>]*)>} $update_xml match tag1 tag2 tag
 }
 
 if {[string tolower $tag1] == "html" || [string tolower $tag2] == "html" || [string tolower $tag3] == "html"} {
-    
     ad_return_complaint 1 "Error while retreiving update information from  URL<br>
     '$service_url'.<br>
     The retreived result seems to be a HTML document and not an XML document.<br>
@@ -216,8 +214,6 @@ foreach root_node $root_nodes {
 		    set whats_new [apm_tag_value -default "" $version_node whats_new]
 		    set cvs_action [apm_tag_value -default "" $version_node cvs_action]
 		    set cvs_server [apm_tag_value -default "" $version_node cvs_server]
-#		    set cvs_user [apm_tag_value -default "" $version_node cvs_user]
-#		    set cvs_password [apm_tag_value -default "" $version_node cvs_password]
 		    set cvs_root [apm_tag_value -default "" $version_node cvs_root]
 		    set cvs_command [apm_tag_value -default "" $version_node cvs_command]
 		    set update_urgency [apm_tag_value -default "" $version_node update_urgency]
@@ -235,6 +231,9 @@ foreach root_node $root_nodes {
 		    if {$show_only_new_p} {
 			if {![string equal $is_new "t"]} { continue }
 		    }
+
+#		    set higher_version_p [apm_higher_version_installed_p "intranet-core" $package_version]
+#		    ns_log Notice "load-update-xml-2: higher: $higher_version_p, v=$package_version"
 		    
 		    append version_html "
 <tr $bgcolor([expr $ctr % 2])>
