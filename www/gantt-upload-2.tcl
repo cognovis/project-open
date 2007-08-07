@@ -33,10 +33,11 @@ if {"" == $upload_gan && "" == $upload_gif} {
     ad_return_complaint 1 "You need to specify a file to upload"
 }
 
-
 #ToDo: Security
 set today [db_string today "select to_char(now(), 'YYYY-MM-DD')"]
 #ad_return_top_of_page "[im_header]\n[im_navbar]"
+
+set page_title [lang::message::lookup "" intranet-ganttproject.Delete_Gantt_Tasks "Reassign Resources of Removed Tasks"]
 
 
 # -------------------------------------------------------------------
@@ -58,23 +59,13 @@ if { $max_n_bytes && ($file_size > $max_n_bytes) } {
 
 if {[catch {
     set fl [open $tmp_filename]
-    fconfigure $fl -encoding binary
+    fconfigure $fl -encoding "utf-8"
     set binary_content [read $fl]
     close $fl
 } err]} {
     ad_return_complaint 1 "Unable to open file $tmp_filename:
     <br><pre>\n$err</pre>"
     return
-}
-
-
-# -------------------------------------------------------------------
-# Get a list of tasks from db (needed for deletion later)
-# -------------------------------------------------------------------
-
-array set db_task_ids {} 
-foreach i [im_gp_extract_db_tree $project_id] {
-    set db_task_ids($i) 1
 }
 
 # -------------------------------------------------------------------
@@ -159,36 +150,55 @@ if {[set allocations_node [$root_node selectNodes /project/allocations]] != ""} 
 }
 
 # -------------------------------------------------------------------
-# find tasks to delete
+# Check if we have to delete some tasks
 # -------------------------------------------------------------------
+
+# Get all the tasks about the current project
+array set db_task_ids {} 
+foreach i [im_gp_extract_db_tree $project_id] {
+    set db_task_ids($i) 1
+}
 
 # we don't want to delete the project (which never is in the xml)
 unset db_task_ids($project_id)
-foreach i $task_hash_array {
-    if [info exists db_task_ids($i)] {
-	unset db_task_ids($i)
+
+# Remove all tasks from the GanttProject .gan file
+array set task_hash $task_hash_array
+
+set task_hash_tasks [list 0]
+foreach task_hash_key [array names task_hash] {
+    set task_hash_value $task_hash($task_hash_key)
+    if [info exists db_task_ids($task_hash_value)] {
+	unset db_task_ids($task_hash_value)
     }
+    lappend task_hash_tasks $task_hash_value
 }
 
-# return if we don't have to delete anything
-if {[set ids [array names db_task_ids]]==""} {
+# We are finished if there are no tasks to delete...
+if {"" == [set ids [array names db_task_ids]]} {
     ad_returnredirect $return_url
 }
 
-set keep_tasks ""
-db_foreach keep_tasks "
-  SELECT
-    project_id as task_id,
-    project_name,
-    project_nr
-  FROM
-    im_projects
-  WHERE 
-    project_id IN ([join $task_hash_array ,])
-  ORDER BY 
-    project_nr
+# -------------------------------------------------------------------
+# Create task reassignation screen
+# -------------------------------------------------------------------
+
+# Create the list of candidate project to which we could reasonably reassign the resources:
+set reassign_tasks ""
+db_foreach reassign_tasks "
+	SELECT	project_id as task_id,
+		project_name,
+		project_nr,
+		tree_level(tree_sortkey)-1 as level
+	FROM	im_projects
+	WHERE	project_id IN (:project_id, [join $task_hash_tasks ","])
+	ORDER BY tree_sortkey
 " {
-    append keep_tasks "<option value=\"$task_id\">$project_nr : $project_name</option>"
+    set indent ""
+    for {set i 0} {$i < $level} { incr i} { append indent "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" }
+    set selected ""
+    if {$task_id == $project_id} { set selected "selected" }
+    append reassign_tasks "<option value=\"$task_id\" $selected>$indent $project_nr : $project_name</option>"
 }
 
 db_multirow delete_tasks delete_tasks "
@@ -203,29 +213,26 @@ db_multirow delete_tasks delete_tasks "
 "
 
 template::list::create \
-    -pass_properties {
-	keep_tasks
-    } \
+    -pass_properties { reassign_tasks } \
+    -bulk_actions [list \
+	[lang::message::lookup {} intranet-ganttproject.Delete_and_Reassign {Delete Tasks and Reassign Resources}] \
+	"/intranet-timesheet2-tasks/task-delete" \
+	[lang::message::lookup {} intranet-ganttproject.Delete_selected_tasks {Delete the selected tasks and reassign their resources to the choosen task/project}] \
+    ] \
+    -bulk_action_export_vars { return_url project_id } \
+    -bulk_action_method post \
     -name delete_tasks \
     -key task_id \
     -elements {
-	task_id {
-            label "task id"
-        } 
         project_nr {
-            label "Task NR"
+            label "[lang::message::lookup {} intranet-ganttproject.Task_Nr {Task Nr.}]"
         } 
         project_name {
-            label "Task Name"
+            label "[lang::message::lookup {} intranet-ganttproject.Task_Name {Task Name}]"
         }
 	assign_to {
-	    label "Assign to"
-	    display_template { <select name=\"assign_to.@delete_tasks.task_id@\">$keep_tasks</select> }
+	    label "[lang::message::lookup {} intranet-ganttproject.Reassign_Resources_To {Reassign Resources To}]"
+	    display_template { <select name=\"assign_to.@delete_tasks.task_id@\">$reassign_tasks</select> }
 	}
-    } \
-    -bulk_actions {
-        "Delete" "/intranet-timesheet2-tasks/task-delete" "Delete selected tasks"
-    } \
-    -bulk_action_export_vars { return_url project_id } \
-    -bulk_action_method post
+    }
 
