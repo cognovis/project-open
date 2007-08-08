@@ -53,3 +53,16 @@ BEGIN
 END;' language 'plpgsql';
 
 
+-- ------------------------------------------------------------------
+-- Increase ns_cache Memoize cache size
+-- ------------------------------------------------------------------
+
+update apm_parameter_values set
+	attr_value = '5000000'
+where parameter_id in (
+	select	parameter_id
+	from	apm_parameters
+	where	package_key = 'acs-kernel'
+		and parameter_name = 'MaxSize'
+);
+
