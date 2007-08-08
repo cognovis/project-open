@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-confdb</auto-mount>
 
-    <version name="0.1d" url="http://openacs.org/repository/download/apm/intranet-confdb-0.1d.apm">
+    <version name="3.3.0.0.0" url="http://projop.dnsalias.com/download/apm/intranet-confdb-3.3.0.0.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <release-date>2007-07-28</release-date>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
