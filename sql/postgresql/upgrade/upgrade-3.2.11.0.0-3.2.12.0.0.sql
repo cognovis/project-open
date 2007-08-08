@@ -1,9 +1,25 @@
 -- upgrade-3.2.11.0.0-3.2.12.0.0.sql
 
 
-alter table im_categories add sort_order integer;
-alter table im_categories alter column sort_order set default 0;
-update im_categories set sort_order = category_id;
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+        v_count                 integer;
+BEGIN
+        select count(*) into v_count
+        from user_tab_columns
+        where   lower(table_name) = ''im_categories''
+                and lower(column_name) = ''sort_order'';
+        IF v_count > 0 THEN return 0; END IF;
+
+	alter table im_categories add sort_order integer;
+	alter table im_categories alter column sort_order set default 0;
+	update im_categories set sort_order = category_id;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
 
 
 
