@@ -9,7 +9,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-trans-quality</auto-mount>
 
-    <version name="3.2.11.0.0" url="http://projop.dnsalias.com/download/apm/intranet-trans-quality-3.2.11.0.0.apm">
+    <version name="3.3.0.0.0" url="http://projop.dnsalias.com/download/apm/intranet-trans-quality-3.3.0.0.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <owner url="mailto:guillermo.belcic@project-open.com">Guillermo Belcic</owner>
         <summary>Statistical Process Control for Translation Companies</summary>
