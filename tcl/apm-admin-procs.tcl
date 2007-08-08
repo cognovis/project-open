@@ -88,6 +88,7 @@ proc_doc apm_shell_wrap { cmd } { Returns a command string, wrapped it shell-sty
 
 ad_proc -private apm_package_selection_widget {
     -install_enable:boolean
+    { -update_only_p 0 }
     pkg_info_list
     {to_install ""} 
     {to_enable ""}
@@ -104,7 +105,7 @@ ad_proc -private apm_package_selection_widget {
     }
     
     set checkbox_count 0
-    set counter 0
+    set counter 1
     set band_colors { white "#ececec" }
     set widget "<blockquote><table cellpadding=5 cellspacing=5>
 <tr bgcolor=\"\#f8f8f8\"><th>Install</th>[ad_decode $install_enable_p 1 "<th>Enable</th>" ""]<th>Package</th><th>Directory</th><th>Comment</th></tr>
@@ -112,7 +113,6 @@ ad_proc -private apm_package_selection_widget {
 
     foreach pkg_info $pkg_info_list {
         
-        incr counter
         set package_key [pkg_info_key $pkg_info]
         set package_path [pkg_info_path $pkg_info]
         set package_rel_path [string range $package_path [string length [acs_root_dir]] end]
@@ -120,13 +120,12 @@ ad_proc -private apm_package_selection_widget {
         array set package [apm_read_package_info_file $spec_file]
         set version_name $package(name)
         ns_log Debug "Selection widget: $package_key, Dependency: [pkg_info_dependency_p $pkg_info]"
-
-
-        append widget "  <tr valign=baseline bgcolor=[lindex $band_colors \
-                [expr { $counter % [llength $band_colors] }]]>"
+	
         if { ![string compare [pkg_info_dependency_p $pkg_info] "t"]} {
-            # Dependency passed.
 
+            # Dependency passed.
+	    append widget "  <tr valign=baseline bgcolor=[lindex $band_colors  [expr { $counter % [llength $band_colors] }]]>"
+	    
             if { $install_enable_p } {
                 if { ([lsearch -exact $to_install $package_key] != -1) } {
                     append widget "  <td align=center><input type=checkbox checked 
@@ -152,29 +151,33 @@ ad_proc -private apm_package_selection_widget {
                 append widget "
                 onclick=\"if (checked) document.forms\[0\].elements\[$checkbox_count\].checked=true\""
             }
-
+	    
             append widget "></td>
             <td>$package(package-name) $package(name)</td>
             <td>$package_rel_path</td>
             <td><font color=green>Dependencies satisfied.</font></td>
             </tr> "
+
         } elseif { ![string compare [pkg_info_dependency_p $pkg_info] "f"] } {
-            #Dependency failed.
+
+            # Dependency failed.
+
+	    append widget "  <tr valign=baseline bgcolor=[lindex $band_colors  [expr { $counter % [llength $band_colors] }]]>"
+
             if { $install_enable_p } {
                 append widget "  <td align=center><input type=checkbox name=install value=\"$package_key\"
                 onclick=\"if (!checked) document.forms\[0\].elements\[$checkbox_count+1\].checked=false\"></td>"
             }
             append widget "
             <td align=center><input type=checkbox name=enable value=\"$package_key\" "
-
+	    
             if { $install_enable_p } {
                 append widget "onclick=\"if (checked) document.forms\[0\].elements\[$checkbox_count\].checked=true\""
             }
-
+	    
             append widget "></td>
             <td>$package(package-name) $package(name)</td>
-            <td>$package_rel_path</td>
-    <td><font color=red>
+            <td>$package_rel_path</td><td><font color=red>
             "
             foreach comment [pkg_info_comment $pkg_info] {
                 append widget "$comment<br>"
@@ -184,24 +187,29 @@ ad_proc -private apm_package_selection_widget {
             </tr>
             "
         } else {
+	    
             # No dependency information.           
             # See if the install is already installed with a higher version number.
             if {[apm_package_registered_p $package_key]} {
                 set higher_version_p [apm_higher_version_installed_p $package_key $version_name]
-                } else {
-                    set higher_version_p 2
-                }
-                if {$higher_version_p == 2 } {
-                    set comment "New install."
-                } elseif {$higher_version_p == 1 } {
-                    set comment "Upgrade."
-                } elseif {$higher_version_p == 0} {
-                    set comment "Package version already installed."
-                } else {
-                    set comment "Installing older version of package."
-                }
+	    } else {
+		set higher_version_p 2
+	    }
+	    if {$higher_version_p == 2 } {
+		set comment "New install."
+
+		# Skip this if it's update only
+		if {$update_only_p} { continue }
+
+	    } elseif {$higher_version_p == 1 } {
+		set comment "Upgrade."
+	    } elseif {$higher_version_p == 0} {
+		set comment "Package version already installed."
+	    } else {
+		set comment "Installing older version of package."
+	    }
             
-            append widget "  <tr valign=baseline bgcolor=[lindex $band_colors [expr { $counter % [llength $band_colors] }]]>"
+	    append widget "  <tr valign=baseline bgcolor=[lindex $band_colors [expr { $counter % [llength $band_colors] }]]>"
 
             if { ([lsearch -exact $to_install $package_key] != -1) } {
                 set install_checked "checked"
@@ -231,6 +239,9 @@ ad_proc -private apm_package_selection_widget {
            </tr>"
         }
         incr checkbox_count 2
+
+        incr counter
+	
     }
     append widget "</table></blockquote>"
     return $widget
