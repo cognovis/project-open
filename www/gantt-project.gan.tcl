@@ -183,8 +183,6 @@ set allocations_node [$doc createElement allocations]
 $project_node appendChild $allocations_node
 
 set project_allocations_sql "
-
-
 	select	
                 object_id_one AS task_id,
                 object_id_two AS user_id,
