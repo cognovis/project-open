@@ -35,6 +35,53 @@ ad_proc -private im_package_ganttproject_id_helper {} {
 # Recursively write out task structure
 # ----------------------------------------------------------------------
 
+ad_proc -public im_ganttproject_write_subtasks { 
+    { -default_start_date "" }
+    { -default_duration "" }
+    project_id
+    doc
+    tree_node 
+} {
+    Write out all the specific subtasks of a task or project.
+    This procedure asumes that the current task has already 
+    been written out and now deals with the subtasks.
+} {
+    ns_log Notice "im_ganttproject_write_subtasks: doc=$doc, tree_node=$tree_node, project_id=$project_id, default_start_date=$default_start_date, default_duration=$default_duration"
+
+    # Get sub-tasks in the right sort_order
+    # Don't include projects, they are handled differently.
+    set object_list_list [db_list_of_lists sorted_query "
+	select
+		p.project_id as object_id,
+		o.object_type,
+		p.sort_order
+	from	
+		im_projects p,
+		acs_objects o
+	where
+		p.project_id = o.object_id
+		and parent_id = :project_id
+                and p.project_type_id = [im_project_type_task]
+                and p.project_status_id not in (
+			[im_project_status_deleted], 
+			[im_project_status_closed]
+		)
+	order by sort_order
+    "]
+
+    foreach object_record $object_list_list {
+	set object_id [lindex $object_record 0]
+
+	im_ganttproject_write_task \
+	    -default_start_date $default_start_date \
+	    -default_duration $default_duration \
+	    $object_id \
+	    $doc \
+	    $tree_node
+    }
+}
+
+
 ad_proc -public im_ganttproject_write_task { 
     { -default_start_date "" }
     { -default_duration "" }
@@ -42,8 +89,8 @@ ad_proc -public im_ganttproject_write_task {
     doc
     tree_node 
 } {
-    Recursively write out the information about projects and tasks
-    below a specific project
+    Write out the information about one specific task and then call
+    a recursive routine to write out the stuff below the task.
 } {
     ns_log Notice "im_ganttproject_write_task: doc=$doc, tree_node=$tree_node, project_id=$project_id, default_start_date=$default_start_date, default_duration=$default_duration"
     if { [security::secure_conn_p] } {
@@ -140,47 +187,6 @@ ad_proc -public im_ganttproject_write_task {
 	$project_id \
 	$doc \
 	$project_node
-}
-
-ad_proc -public im_ganttproject_write_subtasks { 
-    { -default_start_date "" }
-    { -default_duration "" }
-    project_id
-    doc
-    tree_node 
-} {
-    
-    # ------------ Get Sub-Projects and Tasks -------------
-    # ... in the right sort_order
-
-    set object_list_list [db_list_of_lists sorted_query "
-	select
-		p.project_id as object_id,
-		o.object_type,
-		p.sort_order
-	from	
-		im_projects p,
-		acs_objects o
-	where
-		p.project_id = o.object_id
-		and parent_id = :project_id
-                and p.project_status_id not in (
-			[im_project_status_deleted], 
-			[im_project_status_closed]
-		)
-	order by sort_order
-    "]
-
-    foreach object_record $object_list_list {
-	set object_id [lindex $object_record 0]
-
-	im_ganttproject_write_task \
-	    -default_start_date $default_start_date \
-	    -default_duration $default_duration \
-	    $object_id \
-	    $doc \
-	    $tree_node
-    }
 }
 
 # ----------------------------------------------------------------------
@@ -302,26 +308,29 @@ ad_proc -public im_ganttproject_component {
 # Get a list of Database task_ids (recursively)
 # ---------------------------------------------------------------
 
-ad_proc -public im_gp_extract_db_tree { project_id } {
+ad_proc -public im_gp_extract_db_tree { 
+    project_id 
+} {
+    Returns a list of all task_ids below a top project.
+} {
+    # We can't use the tree_sortkey query here because we need
+    # to deal with sub-projects somewhere in the middel of the
+    # structure.
 
-    # I do the sql query here first and then the recursion, otherwise there
-    # will be to many open db connections
-    set task_list [list]
-    set subproject_sql "
-	select	project_id as sub_project_id
+    # We can't leave the DB connection "open" during a recursion,
+    # because otherwise the DB connections would get exhausted.
+    set task_list [db_list subproject_sql "
+	select	project_id
 	from	im_projects
 	where	parent_id = :project_id
-    "
-    db_foreach sub_projects $subproject_sql {
-	# ToDo: Check infinite loop!!!
-	lappend task_list $sub_project_id
+		and project_type_id = [im_project_type_task]
+    "]
+
+    set result $project_id
+    foreach tid $task_list {
+	set result [concat $result [im_gp_extract_db_tree $tid]]
     }
-    
-    set r $project_id
-    foreach i $task_list {
-	set r "$r [im_gp_extract_db_tree $i]"
-    }
-    return $r
+    return $result
 }
 
 # ---------------------------------------------------------------
@@ -508,13 +517,13 @@ ad_proc -public im_gp_save_tasks2 {
         switch [$taskchild nodeName] {
             task { set has_subobjects_p 1 }
             customproperty {
-                # task_nr and task_id are stored as custprops
-                set cust_key [$taskchild getAttribute taskproperty-id ""]
-                set cust_value [$taskchild getAttribute value ""]
-                switch $cust_key {
-                    tpc0 { set task_nr $cust_value}
-                    tpc1 { set task_id $cust_value}
-                }
+		# task_nr and task_id are stored as custprops
+		set cust_key [$taskchild getAttribute taskproperty-id ""]
+		set cust_value [$taskchild getAttribute value ""]
+		switch $cust_key {
+		    tpc0 { set task_nr $cust_value}
+		    tpc1 { set task_id $cust_value}
+		}
             }
         }
     }
