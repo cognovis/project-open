@@ -12,8 +12,12 @@ ad_library {
 
 # Default interval is 15 minutes.
 
-# ad_schedule_proc -thread t 900 acs_mail_process_queue
-ad_schedule_proc -thread t 58 acs_mail_process_queue
+
+set interval [parameter::get \
+		       -package_id [apm_package_id_from_key "acs-mail"] \
+		       -parameter ProcessMailQueueInterval -default 901]
+
+ad_schedule_proc -thread t $interval acs_mail_process_queue
 
 
 ad_proc -private acs_mail_check_uuencode { } {
