@@ -45,7 +45,6 @@ regsub -all {\{} $employee_id "" employee_id
 regsub -all {\}} $employee_id "" employee_id
 
 
-
 # Check security. opened_projects should only contain integers.
 if {[regexp {[^0-9\ ]} $opened_projects match]} {
     catch {im_security_alert \
@@ -154,6 +153,9 @@ set current_url [im_url_with_query]
 # ------------------------------------------------------------
 
 set criteria [list]
+if {"" != $project_id && 0 != $project_id} {
+    lappend criteria "p.project_id = :project_id"
+}
 if {"" != $customer_id && 0 != $customer_id} {
     lappend criteria "p.company_id = :customer_id"
 }
@@ -169,7 +171,7 @@ if {"" != $where_clause} { set where_clause "and $where_clause" }
 
 set project_superprojs_sql "
 	select
-		p.project_id,
+		p.project_id as child_id,
 		p.parent_id
 	from
 		im_projects p
@@ -181,7 +183,7 @@ array set project_direct_children {}
 
 db_foreach project_superprojs $project_superprojs_sql {
     # Setup the project->parent relation
-    set project_parent($project_id) $parent_id
+    set project_parent($child_id) $parent_id
 
     # Determine if a project has children
     set project_has_children_p($parent_id) 1
@@ -190,7 +192,7 @@ db_foreach project_superprojs $project_superprojs_sql {
     if {"" != $parent_id} { 
 	set l [list]
 	if {[info exists project_direct_children($parent_id)] } { set l $project_direct_children($parent_id) }
-	lappend l $project_id
+	lappend l $child_id
 	set project_direct_children($parent_id) $l
     }
 }
@@ -271,7 +273,7 @@ set hours_where [join $hours_criteria "\n\tand "]
 if {"" != $hours_where} { set hours_where "and $hours_where" }
 
 set hours_sql "
-	SELECT 	h.project_id,
+	SELECT 	h.project_id as hours_project_id,
 		h.user_id,
 		SUM(hours) AS logged_hours,
 		im_name_from_user_id(h.user_id) AS name
@@ -294,12 +296,12 @@ array set project_hours {}
 db_foreach hours $hours_sql {
     set users($user_id) $name
 
-    if { ![info exists projects($project_id,$user_id)] } {
-	set projects($project_id,$user_id) 0
+    if { ![info exists projects($hours_project_id,$user_id)] } {
+	set projects($hours_project_id,$user_id) 0
     }
-    set projects($project_id,$user_id) [expr $projects($project_id,$user_id) + $logged_hours]
+    set projects($hours_project_id,$user_id) [expr $projects($hours_project_id,$user_id) + $logged_hours]
 
-    foreach parent_id $project_parents($project_id) {
+    foreach parent_id $project_parents($hours_project_id) {
 	if { ![info exists projects($parent_id,$user_id)] } {
 	    set projects($parent_id,$user_id) 0
 	}
@@ -331,7 +333,7 @@ if {[lsearch $display_fields "project_nr"] >= 0} {
     lappend elements {
 	label "Project Nr"
 	display_template { 
-	    <a href="/intranet/projects/view?project_id=@project_list.project_id@"
+	    <a href="/intranet/projects/view?project_id=@project_list.child_id@"
 	    >@project_list.project_nr@
 	    </a>
 	}
@@ -343,7 +345,7 @@ lappend elements {
     display_template { 
 		<nobr>@project_list.level_spacer;noquote@ 
 		@project_list.open_gif;noquote@
-		<a href="/intranet/projects/view?project_id=@project_list.project_id@"
+		<a href="/intranet/projects/view?project_id=@project_list.child_id@"
 			>@project_list.project_name@
 		</a>
 		</nobr> 
@@ -439,7 +441,7 @@ foreach user_id [array names users] {
 db_multirow -extend {level_spacer open_gif} project_list project_list "
 
 	select	
-		child.project_id,
+		child.project_id as child_id,
 		child.project_name,
 		child.project_nr,
 		child.parent_id,
@@ -490,32 +492,32 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
     for {set i 0} {$i < $tree_level} {incr i} { append level_spacer "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" }
 
     # Open/Close Logic
-    set open_p [expr [lsearch $opened_projects $project_id] >= 0]
+    set open_p [expr [lsearch $opened_projects $child_id] >= 0]
     if {$open_p} {
 	set opened $opened_projects
 	
-	if {[info exists project_children($project_id)]} {
-	    set rem_from_list $project_children($project_id)
-	    lappend rem_from_list $project_id
+	if {[info exists project_children($child_id)]} {
+	    set rem_from_list $project_children($child_id)
+	    lappend rem_from_list $child_id
 	} else {
-	    set rem_from_list [list $project_id]
+	    set rem_from_list [list $child_id]
 	}
 	set opened [set_difference $opened_projects $rem_from_list]
 	set url [export_vars -base $this_url {level_of_detail project_id customer_id employee_id {opened_projects $opened}}]
 	set gif [im_gif "minus_9"]
     } else {
 	set opened $opened_projects
-	lappend opened $project_id
+	lappend opened $child_id
 	set url [export_vars -base $this_url {level_of_detail project_id customer_id employee_id {opened_projects $opened}}]
 	set gif [im_gif "plus_9"]
     }
 
     set open_gif "<a href=\"$url\">$gif</a>"
-    if {![info exists project_has_children_p($project_id)]} { set open_gif [im_gif empty21 "" 0 9 9] }
+    if {![info exists project_has_children_p($child_id)]} { set open_gif [im_gif empty21 "" 0 9 9] }
 
 }
 
-multirow_sort_tree project_list project_id parent_id project_name
+multirow_sort_tree project_list child_id parent_id project_name
 
 
 
@@ -526,8 +528,8 @@ set i 1
 template::multirow foreach project_list {
 
     foreach user_id [array names users] {
-	if { [info exists projects($project_id,$user_id)] } {
-	    set hours $projects($project_id,$user_id)
+	if { [info exists projects($child_id,$user_id)] } {
+	    set hours $projects($child_id,$user_id)
 	} else {
 	    set hours ""
 	}
