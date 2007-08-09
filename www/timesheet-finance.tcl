@@ -9,7 +9,6 @@ ad_page_contract {
     Report showing the project hierarchy, together with financial information
     and timesheet hours
 } {
-    { level_of_detail 2 }
     { start_date "" }
     { end_date "" }
     { output_format "html" }
@@ -17,7 +16,7 @@ ad_page_contract {
     { customer_id:integer 0}
     { employee_id:multiple 0}
     { opened_projects:multiple "" }
-    { display_fields:multiple "cost_invoices_cache cost_quotes_cache cost_bills_cache cost_expense_logged_cache cost_timesheet_logged_cache reported_hours_cache" }
+    { display_fields:multiple "cost_invoices_cache cost_quotes_cache cost_bills_cache cost_expense_logged_cache cost_timesheet_logged_cache direct_hours reported_hours_cache" }
 }
 
 # ------------------------------------------------------------
@@ -71,8 +70,6 @@ if {[regexp {[^0-9\ ]} $employee_id match]} {
 # ------------------------------------------------------------
 # Constants & Options
 
-set level_options {1 "Main Project" 2 "Main &amp; Subprojects" 3 "All Details"}
-
 set display_field_options { \
 	"customer_name" "Customer Name" \
 	"start_date" "Start Date" \
@@ -88,6 +85,7 @@ set display_field_options { \
 	"cost_expense_logged_cache" "Expenses" \
 	"cost_timesheet_logged_cache" "Timesheet" \
 	"cost_purchase_orders_cache" "Purchase Orders" \
+	"direct_hours" "Direct Hours" \
 	"reported_hours_cache" "Total Timesheet" \
 }
 
@@ -124,10 +122,6 @@ from dual
 if {"" == $start_date} {
     set start_date "$todays_year-$todays_month-01"
 }
-
-# Maxlevel is 4. Normalize in order to show the right drop-down element
-if {$level_of_detail > 4} { set level_of_detail 4 }
-
 
 db_1row end_date "
 select
@@ -373,57 +367,64 @@ if {[lsearch $display_fields "cost_invoices_cache"] >= 0} {
     lappend elements {
 	label "Invoice"
 	html "align right"
-}
+    }
 }
 
 if {[lsearch $display_fields "cost_delivery_notes_cache"] >= 0} {
-lappend elements cost_delivery_notes_cache
-lappend elements {
+    lappend elements cost_delivery_notes_cache
+    lappend elements {
 	label "DelNote" 
 	html "align right"
-}
+    }
 }
 if {[lsearch $display_fields "cost_quotes_cache"] >= 0} {
-lappend elements cost_quotes_cache
-lappend elements {
+    lappend elements cost_quotes_cache
+    lappend elements {
 	label "Quote" 
 	html "align right"
-}
+    }
 }
 if {[lsearch $display_fields "cost_bills_cache"] >= 0} {
-lappend elements cost_bills_cache
-lappend elements {
+    lappend elements cost_bills_cache
+    lappend elements {
 	label "Bill" 
 	html "align right"
-}
+    }
 }
 if {[lsearch $display_fields "cost_expense_logged_cache"] >= 0} {
-lappend elements cost_expense_logged_cache
-lappend elements {
+    lappend elements cost_expense_logged_cache
+    lappend elements {
 	label "Expense"
 	html "align right"
-}
+    }
 }
 if {[lsearch $display_fields "cost_timesheet_logged_cache"] >= 0} {
 lappend elements cost_timesheet_logged_cache
-lappend elements {
+    lappend elements {
 	label "TimeS" 
 	html "align right"
-}
+    }
 }
 if {[lsearch $display_fields "cost_purchase_orders_cache"] >= 0} {
-lappend elements cost_purchase_orders_cache
-lappend elements {
+    lappend elements cost_purchase_orders_cache
+    lappend elements {
 	label "POs" 
 	html "align right"
+    }
 }
+if {[lsearch $display_fields "direct_hours"] >= 0} {
+    lappend elements direct_hours
+    lappend elements {
+	label "Direct<br>Hours" 
+	display_template { <b><div align=right>@project_list.direct_hours@</div></b> }
+    }
 }
 if {[lsearch $display_fields "reported_hours_cache"] >= 0} {
-lappend elements reported_hours_cache
-lappend elements {
+    lappend elements reported_hours_cache
+    lappend elements {
 	label "Total <br>Hours" 
 	display_template { <b><div align=right>@project_list.reported_hours_cache@</div></b> }
-}
+    }
 }
 
 
@@ -458,11 +459,17 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		tree_level(child.tree_sortkey) - tree_level(p.tree_sortkey) as tree_level,
 		c.company_id,
 		c.company_name,
-		c.company_path as company_nr
+		c.company_path as company_nr,
+		h.hours as direct_hours
 	from	
 		im_projects p,
-		im_projects child,
-		im_companies c
+		im_companies c,
+		im_projects child
+		LEFT OUTER JOIN (
+			select sum(hours) as hours, project_id 
+			from im_hours 
+			group by project_id
+		) h ON (child.project_id = h.project_id)
 	where
 		p.parent_id is null
 		and p.end_date >= to_date(:start_date, 'YYYY-MM-DD')
@@ -487,6 +494,7 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
     if {0 == $cost_timesheet_logged_cache} { set cost_timesheet_logged_cache ""}
     if {0 == $cost_purchase_orders_cache} { set cost_purchase_orders_cache ""}
     if {0 == $reported_hours_cache} { set reported_hours_cache ""}
+    if {0 == $direct_hours} { set direct_hours ""}
 
     set level_spacer ""
     for {set i 0} {$i < $tree_level} {incr i} { append level_spacer "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" }
@@ -503,12 +511,12 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 	    set rem_from_list [list $child_id]
 	}
 	set opened [set_difference $opened_projects $rem_from_list]
-	set url [export_vars -base $this_url {level_of_detail project_id customer_id employee_id {opened_projects $opened}}]
+	set url [export_vars -base $this_url {project_id customer_id employee_id {opened_projects $opened}}]
 	set gif [im_gif "minus_9"]
     } else {
 	set opened $opened_projects
 	lappend opened $child_id
-	set url [export_vars -base $this_url {level_of_detail project_id customer_id employee_id {opened_projects $opened}}]
+	set url [export_vars -base $this_url {project_id customer_id employee_id {opened_projects $opened}}]
 	set gif [im_gif "plus_9"]
     }
 

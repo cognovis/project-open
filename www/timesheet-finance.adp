@@ -8,18 +8,12 @@
 
 
 <form>
-<%= [export_form_vars opened_projects] %>
+<%= [export_form_vars opened_projects project_id] %>
 
 <table border=0 cellspacing=1 cellpadding=1>
 <tr valign=top><td>
 
 	<table border=0 cellspacing=1 cellpadding=1>
-	<tr>
-	  <td class=form-label>Level of Details</td>
-	  <td class=form-widget>
-	    <%= [im_select -translate_p 0 level_of_detail $level_options $level_of_detail] %>
-	  </td>
-	</tr>
 	<tr>
 	  <td class=form-label>Start Date</td>
 	  <td class=form-widget>
@@ -56,7 +50,7 @@
 	<tr>
 	  <td class=form-label>Show<br>Fields</td>
 	  <td class=form-widget>
-	    <%= [im_select -translate_p 0 -multiple_p 1 -size 14 display_fields $display_field_options $display_fields] %>
+	    <%= [im_select -translate_p 0 -multiple_p 1 -size 15 display_fields $display_field_options $display_fields] %>
 	  </td>
 	</tr>
 	</table>
