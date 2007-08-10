@@ -1485,7 +1485,7 @@ ad_proc -public im_ganttproject_gantt_component {
     { -export_var_list "" }
     { -zoom "" }
     { -auto_open 0 }
-    { -max_col 12 }
+    { -max_col 10 }
     { -max_row 20 }
 } {
     Gantt View
@@ -1594,7 +1594,7 @@ ad_proc -public im_ganttproject_gantt_component {
     # -----------------------------------------------------------------
     # Adaptive behaviour - limit the size of the component to a summary
     # suitable for the left/right columns of a project.
-    if {$auto_open | "" == $top_vars} {
+    if {$auto_open || "" == $top_vars} {
 
 	set duration_days [db_string dur "
 		select to_date(:end_date, 'YYYY-MM-DD') - to_date(:start_date, 'YYYY-MM-DD')
