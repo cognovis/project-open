@@ -158,7 +158,7 @@ BEGIN
 				match_value := match_value + 1;
 			end if;
 		else
-			match_value := match_value - 10;
+			match_value := match_value - 20;
 		end if;
 	end if;
 
@@ -184,7 +184,7 @@ BEGIN
 				match_value := match_value + 1;
 			end if;
 		else
-			match_value := match_value - 10;
+			match_value := match_value - 20;
 		end if;
 	end if;
 
@@ -193,7 +193,7 @@ BEGIN
 		match_value := match_value + 1;
 	end if;
 	if not(v_price_subject_area_id is null) and v_price_subject_area_id != v_item_subject_area_id then
-		match_value := match_value - 10;
+		match_value := match_value - 20;
 	end if;
 
 	-- Company logic - "Internal" doesnt give a penalty 

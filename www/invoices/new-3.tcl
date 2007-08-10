@@ -576,11 +576,15 @@ order by
 	# and render the "reference price list"
 	set price_list_ctr 1
 	set best_match_price 0
+	set best_match_min_price 0
 	db_foreach references_prices $reference_price_sql {
 
 	    ns_log Notice "new-3: company_id=$company_id, uom_id=$uom_id => price=$price_formatted, relevancy=$price_relevancy"
 	    # Take the first line of the result list (=best score) as a price proposal:
-	    if {$price_list_ctr == 1} {set best_match_price $price_formatted}
+	    if {$price_list_ctr == 1} {
+		set best_match_price $price_formatted
+		set best_match_min_price $min_price
+	    }
 
 	    set price_url [export_vars -base $price_url_base { company_id price_id return_url }]
 
@@ -590,40 +594,40 @@ order by
 	    set min_price_formatted "$min_price_formatted $invoice_currency"
 	    if {"" == $min_price} { set min_price_formatted "" }
 
+	    set company_price_url [export_vars -base "/intranet/companies/view" { {company_id $price_company_id} return_url }]
 	    append reference_price_html "
-        <tr>
-          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_relevancy</td>
-          <td class=$bgcolor([expr $price_list_ctr % 2])>
-		<a href=\"[export_vars -base "/intranet/companies/view" { {company_id $price_company_id} return_url }]\">$price_company_name</a>
-	  </td>
-          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_uom</td>
-          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_task_type</td>
-          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_target_language</td>
-          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_source_language</td>
-          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_subject_area</td>
-	  $file_type_html
-<!--          <td class=$bgcolor([expr $price_list_ctr % 2])>$valid_from</td>		-->
-<!--          <td class=$bgcolor([expr $price_list_ctr % 2])>$valid_through</td> 	-->
-          <td class=$bgcolor([expr $price_list_ctr % 2])>[string_truncate -len 30 $price_note]</td>
-          <td class=$bgcolor([expr $price_list_ctr % 2])>
-		<a href=\"$price_url\">$price_formatted $invoice_currency</a>
-	  </td>
-          <td class=$bgcolor([expr $price_list_ctr % 2])>$min_price_formatted</td>
-        </tr>\n"
+	        <tr>
+	          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_relevancy</td>
+	          <td class=$bgcolor([expr $price_list_ctr % 2])>
+			<a href=\"$company_price_url\">$price_company_name</a>
+		  </td>
+	          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_uom</td>
+	          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_task_type</td>
+	          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_target_language</td>
+	          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_source_language</td>
+	          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_subject_area</td>
+		  $file_type_html
+<!--  	        <td class=$bgcolor([expr $price_list_ctr % 2])>$valid_from</td>		-->
+<!--  	        <td class=$bgcolor([expr $price_list_ctr % 2])>$valid_through</td> 	-->
+	          <td class=$bgcolor([expr $price_list_ctr % 2])>[string_truncate -len 30 $price_note]</td>
+	          <td class=$bgcolor([expr $price_list_ctr % 2])>
+			<a href=\"$price_url\">$price_formatted $invoice_currency</a>
+		  </td>
+	          <td class=$bgcolor([expr $price_list_ctr % 2])>$min_price_formatted</td>
+	        </tr>
+	    "
 	
 	    incr price_list_ctr
 	}
 
-
 	# Minimum Price Logic
-	if {[expr $price * $task_sum] < $min_price} {
+	if {[expr $best_match_price * $task_sum] < $best_match_min_price} {
 	    set task_sum 1
 	    set task_title "$task_title [lang::message::lookup "" intranet-trans-invoices.Min_Price_Min "(min.)"]"
 	    set task_uom_id [im_uom_unit]
 	    set task_uom [im_category_from_id $task_uom_id]
-	    set best_match_price $min_price
+	    set best_match_price $best_match_min_price
 	}
-
 
 	# Add an empty line to the price list to separate prices form item to item
 	append reference_price_html "<tr><td colspan=$price_colspan>&nbsp;</td></tr>\n"
