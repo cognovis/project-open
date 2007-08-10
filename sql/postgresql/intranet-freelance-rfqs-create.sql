@@ -82,7 +82,7 @@ INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE, AUX_STRING1)
 VALUES (4400,'Request for Availability','Intranet Freelance RFQ Type', 'request_for_availability_wf');
 INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE, AUX_STRING1)
 VALUES (4402,'Request for Quotation','Intranet Freelance RFQ Type', 'request_for_quotation_wf');
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
+INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE, AUX_STRING1)
 VALUES (4404,'Reverse Auction','Intranet Freelance RFQ Type', 'reverse_auction_wf');
 
 
@@ -346,7 +346,7 @@ begin
     PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
     PERFORM acs_permission__grant_permission(v_menu, v_sales, ''read'');
     PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_freelancers, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_freelance, ''read'');
 
     return 0;
 end;' language 'plpgsql';
