@@ -90,6 +90,10 @@ set display_field_options { \
 }
 
 
+set page_title [lang::message::lookup "" intranet-reporting.Timesheet_Finance_Report "Timesheet Finance Report"]
+set context_bar [im_context_bar $page_title]
+set context ""
+
 
 if {0 == $employee_id} { set employee_id [db_list emp_list "select employee_id from im_employees"] }
 

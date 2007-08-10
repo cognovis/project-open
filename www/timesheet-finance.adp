@@ -3,7 +3,7 @@
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <master src="../../intranet-core/www/master">
-<property name="title">project employee report</property>
+<property name="title">@page_title@</property>
 <property name="main_navbar_label">reporting</property>
 
 
