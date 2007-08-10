@@ -444,7 +444,6 @@ foreach user_id [array names users] {
 # ------------------------------------------------------------
 
 db_multirow -extend {level_spacer open_gif} project_list project_list "
-
 	select	
 		child.project_id as child_id,
 		child.project_name,
@@ -485,8 +484,6 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		)
 		and p.company_id = c.company_id
 		$where_clause
-
-
 " {
     set project_name "	 $project_name"
 
@@ -536,7 +533,6 @@ multirow_sort_tree project_list child_id parent_id project_name
 # ------------------------------------------------------------
 
 set i 1
-
 template::multirow foreach project_list {
 
     foreach user_id [array names users] {
