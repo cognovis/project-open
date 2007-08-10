@@ -163,9 +163,17 @@ multirow append call_to_quote \
 
 set quotes [db_string quotes "
         select  count(*)
-        from    im_costs
-        where   project_id = :project_id
-		and cost_type_id = [im_cost_type_quote]
+        from    im_costs c
+        where   c.cost_type_id = [im_cost_type_quote]
+		and (
+			c.project_id = :project_id
+		    OR
+			c.cost_id in (
+				select	object_id_two
+				from	acs_rels
+				where	object_id_one = :project_id
+			)
+		)
 "]
 if {$quotes > 0} { set quotes_status 10} else { set quotes_status 0}
 
