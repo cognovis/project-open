@@ -680,7 +680,7 @@ ad_proc -public im_gp_save_tasks2 {
 # Allocations
 #
 # Assigns users with a percentage to a task.
-# Also addes the user to sub-projects if they are assigned to
+# Also adds the user to sub-projects if they are assigned to
 # sub-tasks of a sub-project.
 # ----------------------------------------------------------------------
 
@@ -712,6 +712,7 @@ ad_proc -public im_gp_save_allocations {
 		    continue
 		}
 		set resource_id $resource_hash($resource_id)
+		if {![string is integer $resource_id]} { continue }
 
 		set function [$child getAttribute function ""]
 		set responsible [$child getAttribute responsible ""]
@@ -753,26 +754,40 @@ ad_proc -public im_gp_find_person_for_name {
 } {
     Tries to determine the person_id for a name string.
     Uses all kind of fuzzy matching trying to be intuitive...
+    Returns "" if it didn't find the name.
 } {
-    # Check for an exact match with the User Name
-    set person_id [db_string resource_id "
-			select	min(person_id)
-			from	persons
-			where	:name = lower(im_name_from_user_id(person_id))
-    " -default 0]
-		
+    set person_id ""
+
     # Check for an exact match with Email
-    if {0 == $person_id} {
-		    set person_id [db_string email_check "
-			select	min(party_id)
-			from	parties
-			where	lower(trim(email)) = lower(trim(:email))
-    " -default 0]
+    if {"" == $person_id} {
+	set person_id [db_string email_check "
+		select	min(party_id)
+		from	parties
+		where	lower(trim(email)) = lower(trim(:email))
+        " -default ""]
+    }
+
+    # Check for an exact match with username (abbreviation?)
+    if {"" == $person_id} {
+	set person_id [db_string email_check "
+		select	min(user_id)
+		from	users
+		where	lower(trim(username)) = lower(trim(:name))
+        " -default ""]
+    }
+
+    # Check for an exact match with the User Name
+    if {"" == $person_id} {
+        set person_id [db_string resource_id "
+		select	min(person_id)
+		from	persons
+		where	:name = lower(im_name_from_user_id(person_id))
+        " -default ""]		
     }
 
     # Check if we get a single match looking for the pieces of the
     # resources name
-    if {0 == $person_id} {
+    if {"" == $person_id} {
 	set name_pieces [split $name " "]
 	# Initialize result to the list of all persons
 	set result [db_list all_resources "
@@ -822,7 +837,7 @@ ad_proc -public im_gp_save_resources {
 		# Do all kinds of fuzzy searching
 		set person_id [im_gp_find_person_for_name -name $name -email $email]
 
-		if {0 != $person_id} {
+		if {"" != $person_id} {
 		    if {$debug} { ns_write "<li>Resource: $name as $function\n" }
 		    set resource_hash($resource_id) $person_id
 
@@ -830,7 +845,18 @@ ad_proc -public im_gp_save_resources {
 		    im_biz_object_add_role $person_id $project_id [im_biz_object_role_full_member]
 
 		} else {
+
 		    if {$debug} { ns_write "<li>Resource: $name - <font color=red>Unknown Resource</font>\n" }
+		    set name_frags [split $name " "]
+		    set first_names [join [lrange $name_frags 0 end-1] ""]
+		    set last_name [join [lrange $name_frags end end] ""]
+		    set url [export_vars -base "/intranet/users/new" {email first_names last_name {username $name}}]
+		    set resource_hash($resource_id) "
+			<li>[lang::message::lookup "" intranet-ganttproject.Resource_not_found "Resource %name% (%email%) not found"]:
+			<br><a href=\"$url\" target=\"_\">
+			[lang::message::lookup "" intranet-ganttproject.Create_Resource "Create %name% (%email%)"]:<br>
+			</a><br>
+		    "
 		}
 
 		if {$debug} { ns_write "<li>Resource: ($resource_id) -&gt; $person_id\n" }
