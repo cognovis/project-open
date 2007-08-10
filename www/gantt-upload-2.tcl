@@ -37,7 +37,10 @@ if {"" == $upload_gan && "" == $upload_gif} {
 set today [db_string today "select to_char(now(), 'YYYY-MM-DD')"]
 #ad_return_top_of_page "[im_header]\n[im_navbar]"
 
-set page_title [lang::message::lookup "" intranet-ganttproject.Delete_Gantt_Tasks "Reassign Resources of Removed Tasks"]
+set page_title [lang::message::lookup "" intranet-ganttproject.Import_Gantt_Tasks "Import Gantt Tasks"]
+
+set reassign_title [lang::message::lookup "" intranet-ganttproject.Delete_Gantt_Tasks "Reassign Resources of Removed Tasks"]
+set resource_title [lang::message::lookup "" intranet-ganttproject.Resource_Title "Resources not Found"]
 
 
 # -------------------------------------------------------------------
@@ -126,8 +129,18 @@ if {[set resource_node [$root_node selectNodes /project/resources]] != ""} {
     #ns_write "<ul>\n"
 
     set resource_hash_array [im_gp_save_resources -debug $debug $resource_node]
-    
+    array set resource_hash $resource_hash_array
     #ns_write "</ul>\n"
+}
+
+set resources_to_assign_p 0
+set resource_html ""
+foreach rid [array names resource_hash] {
+    set v $resource_hash($rid)
+    if {[string is integer $v]} { continue }
+
+    set resources_to_assign_p 1
+    append resource_html "$v\n"
 }
 
 # -------------------------------------------------------------------
@@ -174,10 +187,20 @@ foreach task_hash_key [array names task_hash] {
     lappend task_hash_tasks $task_hash_value
 }
 
-# We are finished if there are no tasks to delete...
-if {"" == [set ids [array names db_task_ids]]} {
+# Check if there are tasks to delete...
+set tasks_to_delete_p 1
+if {"" == [set ids [array names db_task_ids]]} { set tasks_to_delete_p 0}
+
+
+# -------------------------------------------------------------------
+# Check if there were no errors/decisions to take
+# -------------------------------------------------------------------
+
+if {!$tasks_to_delete_p && !$resources_to_assign_p} {
     ad_returnredirect $return_url
 }
+
+
 
 # -------------------------------------------------------------------
 # Create task reassignation screen
@@ -201,6 +224,7 @@ db_foreach reassign_tasks "
     append reassign_tasks "<option value=\"$task_id\" $selected>$indent $project_nr : $project_name</option>"
 }
 
+lappend ids 0
 db_multirow delete_tasks delete_tasks "
   SELECT
     project_id as task_id,
