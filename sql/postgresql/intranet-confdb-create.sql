@@ -343,7 +343,7 @@ where category_type = 'Intranet Conf Item Type';
 -----------------------------------------------------------
 
 select acs_privilege__create_privilege('view_conf_items','View Conf Items','');
-select acs_privilege__view_child('admin', 'view_conf_items');
+select acs_privilege__add_child('admin', 'view_conf_items');
 
 select acs_privilege__create_privilege('view_conf_items_all','View all Conf Items','');
 select acs_privilege__add_child('admin', 'view_conf_items_all');
