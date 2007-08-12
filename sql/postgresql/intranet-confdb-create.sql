@@ -62,7 +62,33 @@ create table im_conf_items (
 				references im_categories,
 	sort_order		integer,
 	description		text,
-	note			text
+	note			text,
+
+	-- OCS Inventory NG fields
+	ip_address		varchar(50),
+
+	ocs_id			varchar(255),
+	ocs_deviceid		varchar(255),
+	ocs_username		varchar(255),
+	ocs_last_update		timestamptz,
+
+	os_name			varchar(255),
+	os_version		varchar(255),
+	os_comments		varchar(255),
+
+	win_workgroup		varchar(255),
+	win_userdomain		varchar(255),
+	win_company		varchar(255),
+	win_owner		varchar(255),
+	win_product_id		varchar(255),
+	win_product_key		varchar(255),
+
+	processor_text		varchar(255),
+	processor_speed		integer,
+	processor_num		integer,
+
+	sys_memory		integer,
+	sys_swap		integer
 );
 
 
@@ -326,7 +352,7 @@ insert into im_categories(category_id, category, category_type, enabled_p)
 
 
 -- OCS Hardware Types
-insert into im_categories(category_id, category, category_type, description)
+insert into im_categories(category_id, category, category_type, category_description)
 values (11850, 'Personal Computer', 'Intranet Conf Item Type', 'Includes workstations, laptops etc.'); 
 insert into im_categories(category_id, category, category_type)
 values (11852, 'Workstation', 'Intranet Conf Item Type'); 
@@ -398,43 +424,19 @@ values (12102, 'Network Switch', 'Intranet Conf Item Type');
 
 -- IPs & Network
 insert into im_categories(category_id, category, category_type)
-values (, 'netmap', 'Intranet Conf Item Type'); 
+values (12200, 'Netmap', 'Intranet Conf Item Type'); 
 insert into im_categories(category_id, category, category_type)
-values (, 'subnet', 'Intranet Conf Item Type'); 
+values (12202, 'Subnet', 'Intranet Conf Item Type'); 
 insert into im_categories(category_id, category, category_type)
-values (, 'networks', 'Intranet Conf Item Type'); 
-
-insert into im_categories(category_id, category, category_type)
-values (, 'regconfig', 'Intranet Conf Item Type'); 
-insert into im_categories(category_id, category, category_type)
-values (, 'registry', 'Intranet Conf Item Type'); 
-
-values (, 'operators', 'Intranet Conf Item Type'); 
-insert into im_categories(category_id, category, category_type)
-
-insert into im_categories(category_id, category, category_type)
-values (, 'devicetype', 'Intranet Conf Item Type'); 
+values (12204, 'Network', 'Intranet Conf Item Type'); 
 
 
-
-
+- Host stuff
 values (11980, 'Host Table', 'Intranet Conf Item Type', 't');
 insert into im_categories(category_id, category, category_type, enabled_p)
 values (11982, 'Host Program', 'Intranet Conf Item Type', 't');
 insert into im_categories(category_id, category, category_type, enabled_p)
 values (11984, 'Host Screen', 'Intranet Conf Item Type', 't');
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -622,7 +624,7 @@ SELECT im_component_plugin__new (
 	null,				-- creation_ip
 	null,				-- context_id
 	'Project Configuration Items',	-- plugin_name
-	'intranet-confdb',	-- package_name
+	'intranet-confdb',		-- package_name
 	'right',			-- location
 	'/intranet/projects/view',	-- page_url
 	null,				-- view_name
@@ -638,7 +640,7 @@ SELECT im_component_plugin__new (
 	null,				-- creation_ip
 	null,				-- context_id
 	'User Configuration Items',	-- plugin_name
-	'intranet-confdb',	-- package_name
+	'intranet-confdb',		-- package_name
 	'right',			-- location
 	'/intranet/users/view',		-- page_url
 	null,				-- view_name
@@ -733,7 +735,7 @@ SELECT  im_component_plugin__new (
 	'Conf Item Members',		-- plugin_name
 	'intranet',			-- package_name
 	'right',			-- location
-	'/intranet-confdb/new',	-- page_url
+	'/intranet-confdb/new',		-- page_url
 	null,				-- view_name	
 	20,				-- sort_order
 	'im_group_member_component $conf_item_id $current_user_id $user_admin_p $return_url "" "" 1'

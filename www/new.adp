@@ -56,4 +56,14 @@
     </td>
   </tr>
 </table>
+
+<table width="100%">
+  <tr valign="top">
+  <td>
+	@result;noquote@
+  </td>
+  </tr>
+</table>
+
+
 </if>

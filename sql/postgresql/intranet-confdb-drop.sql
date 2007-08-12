@@ -7,6 +7,7 @@
 
 -- Drop plugins and menus for the module
 --
+
 select  im_component_plugin__del_module('intranet-confdb');
 select  im_menu__del_module('intranet-confdb');
 
@@ -32,4 +33,11 @@ drop function im_conf_item_nr_from_id (integer);
 
 drop table im_conf_items CASCADE;
 
+
+
+select acs_rel_type__drop_role ('im_conf_item_project_rel');
+delete from acs_rel_types where rel_type = 'im_conf_item_project_rel';
+
+
+# delete from acs_object_types where object_type = 'im_conf_item';
 select acs_object_type__drop_type ('im_conf_item', 'f');
