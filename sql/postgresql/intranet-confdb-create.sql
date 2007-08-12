@@ -322,7 +322,100 @@ values (11806, 'License', 'Intranet Conf Item Type', 'f');
 insert into im_categories(category_id, category, category_type, enabled_p)
 values (11808, 'Specs', 'Intranet Conf Item Type', 'f');
 insert into im_categories(category_id, category, category_type, enabled_p)
--- reserved to 11819
+-- reserved to 11849
+
+
+-- OCS Hardware Types
+insert into im_categories(category_id, category, category_type, description)
+values (11850, 'Personal Computer', 'Intranet Conf Item Type', 'Includes workstations, laptops etc.'); 
+insert into im_categories(category_id, category, category_type)
+values (11852, 'Workstation', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11854, 'Laptop', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11856, 'Server', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11858, 'Host', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11860, 'Mainframe', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11862, 'Network Device', 'Intranet Conf Item Type'); 
+-- reserved to 11899
+
+-- Personal Computer Hardware Components
+insert into im_categories(category_id, category, category_type)
+values (11900, 'Personal Computer Hardware Component', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11902, 'Computer Bios', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11904, 'Computer Controller', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11906, 'Computer Drive', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11908, 'Computer File', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11910, 'Computer Input Device', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11912, 'Computer Lock', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11914, 'Computer Memory', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11916, 'Computer Modem', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11918, 'Computer Monitor', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11920, 'Computer Network Device', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11922, 'Computer Port', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11924, 'Printer', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11926, 'Computer Slot', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11928, 'Computer Sound Device', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11930, 'Computer Storage Device', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (11932, 'Computer Video Device', 'Intranet Conf Item Type'); 
+-- reserved to 11999
+
+
+-- Personal Computer Software
+insert into im_categories(category_id, category, category_type)
+values (12000, 'Personal Computer Software Component', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (12002, 'Computer Software Package', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (12004, 'Computer Driver', 'Intranet Conf Item Type'); 
+-- reserved to 12099
+
+-- Network Hardware
+insert into im_categories(category_id, category, category_type)
+values (12100, 'Network Router', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (12102, 'Network Switch', 'Intranet Conf Item Type'); 
+-- reserved to 12199
+
+-- IPs & Network
+insert into im_categories(category_id, category, category_type)
+values (, 'netmap', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (, 'subnet', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (, 'networks', 'Intranet Conf Item Type'); 
+
+insert into im_categories(category_id, category, category_type)
+values (, 'regconfig', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+values (, 'registry', 'Intranet Conf Item Type'); 
+
+values (, 'operators', 'Intranet Conf Item Type'); 
+insert into im_categories(category_id, category, category_type)
+
+insert into im_categories(category_id, category, category_type)
+values (, 'devicetype', 'Intranet Conf Item Type'); 
+
+
 
 
 values (11980, 'Host Table', 'Intranet Conf Item Type', 't');
@@ -330,6 +423,19 @@ insert into im_categories(category_id, category, category_type, enabled_p)
 values (11982, 'Host Program', 'Intranet Conf Item Type', 't');
 insert into im_categories(category_id, category, category_type, enabled_p)
 values (11984, 'Host Screen', 'Intranet Conf Item Type', 't');
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 create or replace view im_conf_item_type as
