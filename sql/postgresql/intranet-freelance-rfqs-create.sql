@@ -74,9 +74,9 @@ create index im_freelance_rfqs_project_idx on im_freelance_rfqs (rfq_project_id)
 
 -- 4400-4449    Intranet Freelance RFQ
 
--- delete from im_categories where category_type = 'Intranet Trans RFQ Overall Status';
--- delete from im_categories where category_type = 'Intranet Trans RFQ Type';
--- delete from im_categories where category_type = 'Intranet Trans RFQ Status';
+delete from im_categories where category_type = 'Intranet Trans RFQ Overall Status';
+delete from im_categories where category_type = 'Intranet Trans RFQ Type';
+delete from im_categories where category_type = 'Intranet Trans RFQ Status';
 
 -- Intranet Freelance RFQ Type
 delete from im_categories where category_type = 'Intranet Freelance RFQ Type';
