@@ -9,7 +9,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>diagram</auto-mount>
     
-    <version name="0.2b" url="http://openacs.org/repository/download/apm/diagram-0.2b.apm">
+    <version name="0.2" url="http://openacs.org/repository/download/apm/diagram-0.2.apm">
         <owner url="mailto:mazloumi@uni-mannheim.de">Nima Mazloumi</owner>
         <summary>Extension to acs-templating package to give support for diagrams.</summary>
         <release-date>2005-11-25</release-date>
@@ -17,7 +17,7 @@
         <description format="text/html">This package gives support to multirow based diagrams. Like template::list::create you can easily define your diagram and pass the multirow to be used. Currently it has only support for Javascript based diagrams. The underlying library used is JavaScript Diagram Builder v3.3 from Lutz Tautenhahn. The rendering is encapsulated though. This allows future version to give support for different engines like GNUPlot.</description>
         <maturity>0</maturity>
 
-        <provides url="diagram" version="0.2b"/>
+        <provides url="diagram" version="0.2"/>
         <requires url="acs-lang" version="5.2.0a1"/>
 
         <callbacks>
