@@ -91,6 +91,7 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
     set valid_from ""
     set valid_through ""
     set price ""
+    set min_price ""
     set currency ""
 
     for {set j 0} {$j < $header_len} {incr j} {
@@ -185,12 +186,12 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
 	price_id, uom_id, company_id, task_type_id,
 	target_language_id, source_language_id, subject_area_id,
 	file_type_id,
-       valid_from, valid_through, currency, price
+       valid_from, valid_through, currency, price, min_price
     ) VALUES (
 	:price_id, :uom_id, :company_id, :task_type_id,
 	:target_language_id, :source_language_id, :subject_area_id,
 	:file_type_id,
-	:valid_from, :valid_through, :currency, :price
+	:valid_from, :valid_through, :currency, :price, :min_price
     )"
 
     if {[string equal "" $errmsg]} {
