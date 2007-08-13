@@ -76,6 +76,7 @@ ad_form \
 
 if {![info exists conf_item_type_id]} { set conf_item_type_id ""}
 set field_cnt [im_dynfield::append_attributes_to_form \
+    -form_display_mode $form_mode \
     -object_subtype_id $conf_item_type_id \
     -object_type "im_conf_item" \
     -form_id $form_id \

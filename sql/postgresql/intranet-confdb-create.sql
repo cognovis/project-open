@@ -394,7 +394,7 @@ values (11920, 'Computer Network Device', 'Intranet Conf Item Type');
 insert into im_categories(category_id, category, category_type)
 values (11922, 'Computer Port', 'Intranet Conf Item Type'); 
 insert into im_categories(category_id, category, category_type)
-values (11924, 'Printer', 'Intranet Conf Item Type'); 
+values (11924, 'Computer Printer Driver', 'Intranet Conf Item Type'); 
 insert into im_categories(category_id, category, category_type)
 values (11926, 'Computer Slot', 'Intranet Conf Item Type'); 
 insert into im_categories(category_id, category, category_type)

@@ -140,17 +140,44 @@ template::list::create \
 	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Name Name]"
 	    link_url_eval {[export_vars -base new {conf_item_id {form_mode "display"}}]}
 	}
-	conf_item_nr {
-	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Nr {Nr.}]"
+        ip_address {
+	    label "[lang::message::lookup {} intranet-confdb.IP_Address IP-Address]"
 	}
-	conf_item_code {
-	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Code Code]"
+        win_workgroup {
+	    label "[lang::message::lookup {} intranet-confdb.Workgroup Workgroup]"
+	}
+        win_userdomain {
+	    label "[lang::message::lookup {} intranet-confdb.Domain Domain]"
 	}
         conf_item_type {
 	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Type Type]"
 	}
         conf_item_status {
 	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Status Status]"
+	}
+        processor_speed {
+	    label "[lang::message::lookup {} intranet-confdb.Processor Processor]"
+	    display_template {
+		@conf_item_lines.processor;noquote@
+	    }
+	}
+        sys_memory {
+	    label "[lang::message::lookup {} intranet-confdb.Memory Memory]"
+	}
+        os_name {
+	    label "[lang::message::lookup {} intranet-confdb.OS OS]"
+	}
+        os_version {
+	    label "[lang::message::lookup {} intranet-confdb.OS_Version Version]"
+	}
+    }
+
+set ttt {
+	conf_item_code {
+	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Code Code]"
+	}
+	conf_item_nr {
+	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Nr {Nr.}]"
 	}
         conf_item_owner {
 	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Cost_Owner Owner]"
@@ -159,8 +186,7 @@ template::list::create \
         conf_item_cost_center {
 	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Cost_Center {Cost Center}]"
 	}
-    }
-
+}
 
 
 # ---------------------------------------------------------------
@@ -186,11 +212,12 @@ set sql "
 
 
 
-db_multirow -extend {conf_item_chk return_url} conf_item_lines conf_items_lines $conf_item_sql {
-	set conf_item_chk "<input type=\"checkbox\" 
+db_multirow -extend {conf_item_chk return_url processor} conf_item_lines conf_items_lines $conf_item_sql {
+    set conf_item_chk "<input type=\"checkbox\" 
 				name=\"conf_item_id\" 
 				value=\"$conf_item_id\" 
 				id=\"conf_items_list,$conf_item_id\">"
-        set return_url [im_url_with_query]
+    set processor "${processor_num}x$processor_speed"
+    set return_url [im_url_with_query]
 }
 
