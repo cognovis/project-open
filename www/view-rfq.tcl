@@ -295,6 +295,8 @@ set freelance_sql "
         where	1=1
 "
 
+# 070812 fraber: replaced "($freelance_sql) f" by "users f"
+
 set price_sql "
         select
                 f.user_id,
@@ -303,7 +305,7 @@ set price_sql "
                 min(p.price) as min_price,
                 max(p.price) as max_price
         from
-                ($freelance_sql) f
+                users f
                 LEFT OUTER JOIN acs_rels uc_rel
                         ON (f.user_id = uc_rel.object_id_two)
                 LEFT OUTER JOIN im_trans_prices p
