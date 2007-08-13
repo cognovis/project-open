@@ -44,7 +44,6 @@ set todays_time [lindex [split [ns_localsqltimestamp] " "] 1]
 # Form Options
 # ------------------------------------------------------------------
 
-
 set freelance_rfq_type_options [db_list_of_lists freelance_rfq_type "
 	select	freelance_rfq_type, 
 		freelance_rfq_type_id 

@@ -10,9 +10,8 @@
 # ---------------------------------------------------------------
 ad_page_contract { 
     Add / edit freelance-rfqs in project
-    @param project_id
 } {
-    rfq_id:integer,optional
+    rfq_id:integer
     return_url
 }
 
@@ -41,6 +40,8 @@ set page_title [lang::message::lookup "" intranet-freelance-rfqs.RFQ_Base_Data "
 set context_bar [im_context_bar $page_title]
 set action_url "/intranet-freelance-rfqs/new-rfq"
 set user_url_base "/intranet/users/view"
+
+set rfq_project_id [db_string pid "select rfq_project_id from im_freelance_rfqs where rfq_id = :rfq_id" -default 0]
 
 set todays_date [lindex [split [ns_localsqltimestamp] " "] 0]
 set todays_time [lindex [split [ns_localsqltimestamp] " "] 1]
@@ -108,7 +109,7 @@ ad_form \
     -cancel_url $return_url \
     -action $action_url \
     -mode $form_mode \
-    -export {project_id return_url} \
+    -export {rfq_project_id return_url} \
     -form {
 	rfq_id:key
 	{rfq_name:text(text) {label "[_ intranet-freelance-rfqs.Name]"} {html {size 40}}}
