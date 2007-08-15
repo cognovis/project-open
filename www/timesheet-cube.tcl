@@ -171,10 +171,10 @@ set left_scale_options {
 	"main_project_type" "Main Project Type"
 	"main_project_status" "Main Project Status"
 
-	"project_name" "SubProject Name"
-	"project_nr" "SubProject Nr"
-	"project_type" "SubProject Type"
-	"project_status" "SubProject Status"
+	"sub_project_name" "SubProject Name"
+	"sub_project_nr" "SubProject Nr"
+	"sub_project_type" "SubProject Type"
+	"sub_project_status" "SubProject Status"
 
 	"user_name" "User Name"
 	"department" "User Department"
@@ -404,7 +404,13 @@ if { ![empty_string_p $where_clause] } {
 set inner_sql "
 		select	
 			h.*, 
-			p.*,
+			p.project_id as sub_project_id,
+			p.project_nr as sub_project_nr,
+			p.project_name as sub_project_name,
+			p.project_status_id as sub_project_status_id,
+			im_category_from_id(p.project_status_id) as sub_project_status,
+			p.project_type_id as sub_project_type_id,
+			im_category_from_id(p.project_type_id)  as sub_project_type,
 			im_name_from_user_id(p.project_lead_id) as project_manager_name,
 			c.*,
 			c.company_name as customer_name,
