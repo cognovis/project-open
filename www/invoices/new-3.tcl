@@ -42,7 +42,8 @@ set org_company_id $company_id
 set number_format "99990.099"
 set date_format "YYYY-MM-DD"
 set cost_type_invoice [im_cost_type_invoice]
-
+set target_cost_type [im_category_from_id $target_cost_type_id]
+set target_cost_type_mangle [lang::util::suggest_key $target_cost_type]
 
 
 if {"" == $return_url} {set return_url [im_url_with_query] }
@@ -134,8 +135,9 @@ set invoice_office_id [db_string company_main_office_info "select main_office_id
 # Calculate the next invoice number by calculating the maximum of
 # the "reasonably build numbers" currently available
 
-set button_text "[_ intranet-timesheet2-invoices.Create_Invoice]"
-set page_title "[_ intranet-timesheet2-invoices.New_Invoice]"
+set button_text [lang::message::lookup "" intranet-timesheet2-invoices.Create_$target_cost_type_mangle "Create $target_cost_type"]
+set page_title [lang::message::lookup "" intranet-timesheet2-invoices.New_$target_cost_type_mangle "New $target_cost_type"]
+
 set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-timesheet2-invoices.Invoices]"] $page_title]
 set invoice_id [im_new_object_id]
 set invoice_nr [im_next_invoice_nr -invoice_type_id $target_cost_type_id]
