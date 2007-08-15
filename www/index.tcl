@@ -137,8 +137,14 @@ set elements [concat $elements {
 	    link_url_eval $rfq_project_url
 	}
 	rfq_type {label "[lang::message::lookup {} intranet-freelance-rfqs.RFQ_Type {RFQ Type}]"}
-	rfq_start_date_pretty {label "[lang::message::lookup {} intranet-freelance-rfqs.Start_Date {Starts}]"}
-	rfq_end_date_pretty {label "[lang::message::lookup {} intranet-freelance-rfqs.End_Date {Ends}]"}
+	rfq_start_date_pretty {
+	    label "[lang::message::lookup {} intranet-freelance-rfqs.Start_Date {Starts}]"
+	    display_template { <nobr>@rfq_lines.rfq_start_date_pretty;noquote@</nobr> }
+	}
+	rfq_end_date_pretty {
+	    label "[lang::message::lookup {} intranet-freelance-rfqs.End_Date {Ends}]"
+	    display_template { <nobr>@rfq_lines.rfq_end_date_pretty;noquote@</nobr> }
+	}
 	rfq_status {label "[lang::message::lookup {} intranet-freelance-rfqs.RFQ_Status {RFQ Status}]"}
 }]
 	
@@ -195,6 +201,7 @@ if {[im_permission $current_user_id "view_freelance_rfqs_all"]} {
 db_multirow -extend {rfq_chk rfq_new_url rfq_view_url rfq_project_url num_rem} rfq_lines rfqs_lines "
     select
 		*,
+		(r.rfq_end_date > now()) as rfq_active_p,
 		im_category_from_id(rfq_type_id) as rfq_type,
 		im_category_from_id(rfq_status_id) as rfq_status,
 		to_char(rfq_start_date, :date_format) as rfq_start_date_pretty,
@@ -226,6 +233,10 @@ db_multirow -extend {rfq_chk rfq_new_url rfq_view_url rfq_project_url num_rem} r
     set rfq_project_url [export_vars -base "/intranet/projects/view" {project_id return_url}]
     set num_rem [expr $num_inv - $num_conf - $num_decl]
     if {!$view_rfq_p} { set rfq_project_url "" }
+
+    if {"t" != $rfq_active_p} {
+	set rfq_end_date_pretty "<font color=red>$rfq_end_date_pretty</font>"
+    }
 }
 
 
