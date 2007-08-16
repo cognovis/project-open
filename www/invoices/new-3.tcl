@@ -211,36 +211,25 @@ if {[string equal "" $task_table_rows]} {
 
 
 # ---------------------------------------------------------------
-# 7. Select and format the sum of the invoicable items
+# Select and format the sum of the invoicable items
 # for a new invoice
 # ---------------------------------------------------------------
 
-    # start formatting the list of sums with the header...
-    set task_sum_html "
-        <tr align=center> 
-          <td class=rowtitle>[_ intranet-trans-invoices.Order]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Description]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.UOM]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Rate]</td>
-        </tr>
-    "
+# Start formatting the "reference price list" as well, even though it's going
+# to be shown at the very bottom of the page.
+#
+set price_colspan 12
+if {$enable_file_type_p} { incr price_colspan}
 
-    # Start formatting the "reference price list" as well, even though it's going
-    # to be shown at the very bottom of the page.
-    #
-    set price_colspan 12
-    if {$enable_file_type_p} { incr price_colspan}
+set file_type_html "<td class=rowtitle>[lang::message::lookup "" intranet-trans-invoices.File_Type "File Type"]</td>"
+if {!$enable_file_type_p} { set file_type_html "" }
 
-    set file_type_html "<td class=rowtitle>[lang::message::lookup "" intranet-trans-invoices.File_Type "File Type"]</td>"
-    if {!$enable_file_type_p} { set file_type_html "" }
-
-    if {$aggregate_tasks_p} {
-
-	# Calculate the sum of tasks (distinct by TaskType and UnitOfMeasure)
-	# and determine the price of each line using a custom definable
-	# function.
-	set task_sum_inner_sql "
+if {$aggregate_tasks_p} {
+    
+    # Calculate the sum of tasks (distinct by TaskType and UnitOfMeasure)
+    # and determine the price of each line using a custom definable
+    # function.
+    set task_sum_inner_sql "
 	select
 		sum(t.billable_units) as task_sum,
 	        '' as task_title,
@@ -269,9 +258,9 @@ if {[string equal "" $task_table_rows]} {
 		file_type_id
 	        "
 	
-		# Take the "Inner Query" with the data (above) and add some "long names" 
-		# (categories, client names, ...) for pretty output
-		set task_sum_sql "
+    # Take the "Inner Query" with the data (above) and add some "long names" 
+    # (categories, client names, ...) for pretty output
+    set task_sum_sql "
 		select
 			trim(both ' ' from to_char(s.task_sum, :number_format)) as task_sum,
 			s.task_type_id,
@@ -301,12 +290,12 @@ if {[string equal "" $task_table_rows]} {
 			im_projects p ON s.project_id=p.project_id
 		order by
 			p.project_id
-	"
+    "
 	
-    } else {
+} else {
 
-	# Don't aggregate Tasks - Just create a list of the tasks
-        set task_sum_sql "
+    # Don't aggregate Tasks - Just create a list of the tasks
+    set task_sum_sql "
 	select
 		t.source_language_id,
 		t.target_language_id,
@@ -318,6 +307,7 @@ if {[string equal "" $task_table_rows]} {
 			')'
 			as task_title,
 		t.billable_units as task_sum,
+		t.task_uom_id,
 		im_file_type_from_trans_task(t.task_id) as file_type_id,
 	        im_category_from_id(t.task_type_id) as task_type,
 	        im_category_from_id(t.task_uom_id) as task_uom,
@@ -337,15 +327,24 @@ if {[string equal "" $task_table_rows]} {
 	order by
 	        p.project_id
         "
-    }
+}
 
-    # Calculate the price for the specific service.
-    # Complicated undertaking, because the price depends on a number of variables,
-    # depending on client etc. As a solution, we act like a search engine, return 
-    # all prices and rank them according to relevancy. We take only the first 
-    # (=highest rank) line for the actual price proposal.
-    #
-    set reference_price_sql "
+
+# db_foreach task_sum_query $task_sum_sql { ad_return_complaint 1 "uom=[im_category_from_id $task_uom_id], title=$task_title" }
+
+
+# ---------------------------------------------------------------
+# 
+# ---------------------------------------------------------------
+
+
+# Calculate the price for the specific service.
+# Complicated undertaking, because the price depends on a number of variables,
+# depending on client etc. As a solution, we act like a search engine, return 
+# all prices and rank them according to relevancy. We take only the first 
+# (=highest rank) line for the actual price proposal.
+#
+set reference_price_sql "
 select 
 	p.price_id,
 	p.relevancy as price_relevancy,
@@ -408,80 +407,82 @@ order by
 	p.relevancy desc,
 	p.company_id,
 	p.uom_id
-    "
+"
 
 
-    set ctr 1
-    set old_project_id 0
-    set colspan 6
-    set target_language_id ""
-    set task_title ""
-    set reference_price_html ""
-    db_foreach task_sum_query $task_sum_sql {
+set ctr 1
+set old_project_id 0
+set colspan 6
+set target_language_id ""
+set task_title ""
+set reference_price_html ""
+set task_sum_html ""
 
-	# insert intermediate headers for every project
-	if {$old_project_id != $project_id} {
-	    append task_sum_html "
-		<tr><td class=rowtitle colspan=$price_colspan>
+db_foreach task_sum_query $task_sum_sql {
+
+    # insert intermediate headers for every project
+    if {$old_project_id != $project_id} {
+	append task_sum_html "
+		<tr class=rowtitle><td class=rowtitle colspan=$price_colspan>
 	          <A href=/intranet/projects/view?project_id=$project_id>$project_short_name</A>:
 	          $company_project_nr
 	        </td></tr>\n"
 
-	    # Also add an intermediate header to the price list
-	    append reference_price_html "
-		<tr><td class=rowtitle colspan=$price_colspan>
+	# Also add an intermediate header to the price list
+	append reference_price_html "
+		<tr class=rowtitle><td class=rowtitle colspan=$price_colspan>
 	          <A href=/intranet/projects/view?project_id=$project_id>$project_short_name</A>:
 	          $company_project_nr
 	        </td></tr>\n"
 	
-	    set old_project_id $project_id
+	set old_project_id $project_id
+    }
+    
+    if {"" == $task_title} {
+	set msg_key [lang::util::suggest_key $task_type]
+	set task_type_l10n [lang::message::lookup "" intranet-core.$msg_key $task_type]
+	set msg_key [lang::util::suggest_key $target_language]
+	set target_language_l10n [lang::message::lookup "" intranet-core.$msg_key $target_language]
+	set task_title [lang::message::lookup "" intranet-trans-invoices.Task_Title_Format "%task_type_l10n% (%target_language_l10n%)"]
+    }
+    
+    # Determine the price from a ranked list of "price list hits"
+    # and render the "reference price list"
+    set price_list_ctr 1
+    set best_match_price 0
+    set best_match_min_price 0
+
+    db_foreach references_prices $reference_price_sql {
+	
+	ns_log Notice "new-3: company_id=$company_id, uom_id=$uom_id => price=$price_formatted, relevancy=$price_relevancy"
+	# Take the first line of the result list (=best score) as a price proposal:
+	if {$price_list_ctr == 1} {
+	    set best_match_price $price_formatted
+	    set best_match_min_price $min_price
 	}
+	
+	set price_url [export_vars -base $price_url_base { company_id price_id return_url }]
+	
+	set file_type_html "<td class=$bgcolor([expr $price_list_ctr % 2])>$price_file_type</td>"
+	if {!$enable_file_type_p} { set file_type_html "" }
+	
+	set min_price_formatted "$min_price_formatted $invoice_currency"
+	if {"" == $min_price} { set min_price_formatted "" }
 
-	if {"" == $task_title} {
-	    set msg_key [lang::util::suggest_key $task_type]
-	    set task_type_l10n [lang::message::lookup "" intranet-core.$msg_key $task_type]
-	    set msg_key [lang::util::suggest_key $target_language]
-	    set target_language_l10n [lang::message::lookup "" intranet-core.$msg_key $target_language]
-	    set task_title [lang::message::lookup "" intranet-trans-invoices.Task_Title_Format "%task_type_l10n% (%target_language_l10n%)"]
-	}
+	set price_relevancy "r=$price_relevancy, c=$company_id, u=$uom_id, t=$task_type_id, s=$subject_area_id, s=$source_language_id, t=$target_language_id, f=$file_type_id"
 
-	# Determine the price from a ranked list of "price list hits"
-	# and render the "reference price list"
-	set price_list_ctr 1
-	set best_match_price 0
-	set best_match_min_price 0
-	db_foreach references_prices $reference_price_sql {
-
-	    ns_log Notice "new-3: company_id=$company_id, uom_id=$uom_id => price=$price_formatted, relevancy=$price_relevancy"
-	    # Take the first line of the result list (=best score) as a price proposal:
-	    if {$price_list_ctr == 1} {
-		set best_match_price $price_formatted
-		set best_match_min_price $min_price
-	    }
-
-	    set price_url [export_vars -base $price_url_base { company_id price_id return_url }]
-
-	    set file_type_html "<td class=$bgcolor([expr $price_list_ctr % 2])>$price_file_type</td>"
-	    if {!$enable_file_type_p} { set file_type_html "" }
-
-	    set min_price_formatted "$min_price_formatted $invoice_currency"
-	    if {"" == $min_price} { set min_price_formatted "" }
-
-	    set company_price_url [export_vars -base "/intranet/companies/view" { {company_id $price_company_id} return_url }]
-	    append reference_price_html "
+	set company_price_url [export_vars -base "/intranet/companies/view" { {company_id $price_company_id} return_url }]
+	set company_html "<a href=\"$company_price_url\">$price_company_name</a>"
+	append reference_price_html "
 	        <tr>
 	          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_relevancy</td>
-	          <td class=$bgcolor([expr $price_list_ctr % 2])>
-			<a href=\"$company_price_url\">$price_company_name</a>
-		  </td>
+	          <td class=$bgcolor([expr $price_list_ctr % 2])>$company_html</td>
 	          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_uom</td>
 	          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_task_type</td>
 	          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_target_language</td>
 	          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_source_language</td>
 	          <td class=$bgcolor([expr $price_list_ctr % 2])>$price_subject_area</td>
 		  $file_type_html
-<!--  	        <td class=$bgcolor([expr $price_list_ctr % 2])>$valid_from</td>		-->
-<!--  	        <td class=$bgcolor([expr $price_list_ctr % 2])>$valid_through</td> 	-->
 	          <td class=$bgcolor([expr $price_list_ctr % 2])>[string_truncate -len 30 $price_note]</td>
 	          <td class=$bgcolor([expr $price_list_ctr % 2])>
 			<a href=\"$price_url\">$price_formatted $invoice_currency</a>
@@ -490,22 +491,22 @@ order by
 	        </tr>
 	    "
 	
-	    incr price_list_ctr
-	}
+	incr price_list_ctr
+    }
 
-	# Minimum Price Logic
-	if {[expr $best_match_price * $task_sum] < $best_match_min_price} {
-	    set task_sum 1
-	    set task_title "$task_title [lang::message::lookup "" intranet-trans-invoices.Min_Price_Min "(min.)"]"
-	    set task_uom_id [im_uom_unit]
-	    set task_uom [im_category_from_id $task_uom_id]
-	    set best_match_price $best_match_min_price
-	}
-
-	# Add an empty line to the price list to separate prices form item to item
-	append reference_price_html "<tr><td colspan=$price_colspan>&nbsp;</td></tr>\n"
-
-	append task_sum_html "
+    # Minimum Price Logic
+    if {[expr $best_match_price * $task_sum] < $best_match_min_price} {
+	set task_sum 1
+	set task_title "$task_title [lang::message::lookup "" intranet-trans-invoices.Min_Price_Min "(min.)"]"
+	set task_uom_id [im_uom_unit]
+	set task_uom [im_category_from_id $task_uom_id]
+	set best_match_price $best_match_min_price
+    }
+    
+    # Add an empty line to the price list to separate prices form item to item
+    append reference_price_html "<tr><td colspan=$price_colspan>&nbsp;</td></tr>\n"
+    
+    append task_sum_html "
 	<tr $bgcolor([expr $ctr % 2])> 
           <td>
 	    <input type=text name=item_sort_order.$ctr size=2 value='$ctr'>
@@ -529,30 +530,7 @@ order by
 	<input type=hidden name=item_project_id.$ctr value='$project_id'>
 	<input type=hidden name=item_type_id.$ctr value='$task_type_id'>\n"
 
-	incr ctr
-	set task_title ""
-    }
-
-
-# ---------------------------------------------------------------
-# Join all parts together
-# ---------------------------------------------------------------
-
-ns_log Notice "new-3: before joining the parts together"
-
-set page_body "
-[im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
-
-<form action=new-4 method=POST>
-[export_form_vars customer_id provider_id invoice_id cost_status_id return_url]
-
-"
-
-foreach task_id $in_clause_list {
-    append page_body "<input type=hidden name=include_task value=$task_id>\n"
+    incr ctr
+    set task_title ""
 }
 
-
-db_release_unused_handles
-
-ad_return_template

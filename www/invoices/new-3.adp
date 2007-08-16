@@ -8,6 +8,20 @@
 <property name="main_navbar_label">finance</property>
 
 
+<%= [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]] %>
+
+<form action=new-4 method=POST>
+<%= [export_form_vars customer_id provider_id invoice_id cost_status_id return_url] %>
+
+<%
+set include_task_html ""
+foreach task_id $in_clause_list {
+    append include_task_html "<input type=hidden name=include_task value=$task_id>\n"
+}
+%>
+@include_task_html;noquote@
+
+
   <table cellpadding=0 cellspacing=0 bordercolor=#6699CC border=0 width=100%>
     <tr valign=top> 
       <td>
@@ -34,7 +48,7 @@
           </td>
         </tr>
 
-<if @cost_type_id@ == @cost_type_invoice_id@>
+<if @cost_type_id@ eq @cost_type_invoice_id@>
         <tr> 
           <td class=roweven><%= [_ intranet-trans-invoices.Payment_terms] %></td>
           <td class=roweven> 
@@ -44,7 +58,7 @@
         <tr> 
           <td class=rowodd><%= [_ intranet-trans-invoices.Payment_Method] %></td>
           <td class=rowodd><%= [im_invoice_payment_method_select payment_method_id $default_payment_method_id] %></td>
-        </tr>\n"
+        </tr>
 </if>
 
 
