@@ -42,16 +42,11 @@ if {"" == $return_url} {set return_url [im_url_with_query] }
 set todays_date [db_string get_today "select now()::date"]
 set page_focus "im_header_form.keywords"
 set view_name "invoice_tasks"
-
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 set required_field "<font color=red size=+1><B>*</B></font>"
-
 set price_url_base "/intranet-trans-invoices/price-lists/new"
-
 set number_format [im_l10n_sql_currency_format]
-
-# set number_format "000000.0000"
 
 if {![im_permission $user_id add_invoices]} {
     ad_return_complaint "[_ intranet-trans-invoices.lt_Insufficient_Privileg]" "
@@ -86,17 +81,9 @@ foreach selected_task $include_task {
 }
 set tasks_where_clause "task_id in ([join $in_clause_list ","])"
 
-# We already know that all tasks are from the same company,
-# and we asume that the company_id is set from new-2.tcl.
-
-# Create the default values for a new invoice.
-#
-# Calculate the next invoice number by calculating the maximum of
-# the "reasonably build numbers" currently available
-
+set cost_type_invoice_id [im_cost_type_invoice]
 set cost_type_id $target_cost_type_id
 set type_name [db_string type_name "select im_category_from_id(:target_cost_type_id)"]
-
 set button_text "[_ intranet-trans-invoices.Create_Invoice]"
 set page_title "[_ intranet-trans-invoices.New_Invoice]"
 set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-trans-invoices.Finance]"] $page_title]
@@ -108,7 +95,6 @@ set enable_file_type_p [parameter::get_from_package_key -package_key intranet-tr
 set due_date [db_string get_due_date "select to_date(to_char(sysdate,'YYYY-MM-DD'),'YYYY-MM-DD') + $default_payment_days from dual"]
 set provider_id [im_company_internal]
 set customer_id $company_id
-
 set cost_status_id [im_cost_status_created]
 set tax 0
 set note ""
@@ -122,7 +108,6 @@ set default_invoice_template_id ""
 # ---------------------------------------------------------------
 
 db_1row invoices_info_query ""
-
 
 # Logic to determine the default contact for this invoice.
 # This logic only makes sense if there is exactly one
@@ -139,7 +124,6 @@ if {1 == [llength $project_ids]} {
     set company_contact_id [im_invoices_default_company_contact $customer_id $project_id]
 }
 
-
 db_1row accounting_contact_info "
     select
         im_name_from_user_id(:company_contact_id) as company_contact_name,
@@ -149,94 +133,15 @@ db_1row accounting_contact_info "
 set invoice_office_id [db_string company_main_office_info "select main_office_id from im_companies where company_id = :org_company_id" -default ""]
 
 
-
-# ---------------------------------------------------------------
-# Render the "Invoice Data" and "Receipient" blocks
-# ---------------------------------------------------------------
-set invoice_data_html "
-        <tr><td align=middle class=rowtitle colspan=2>[_ intranet-trans-invoices.Invoice_Data]</td></tr>
-        <tr>
-          <td  class=rowodd>[_ intranet-trans-invoices.Invoice_nr]:</td>
-          <td  class=rowodd> 
-            <input type=text name=invoice_nr size=15 value='$invoice_nr'>
-          </td>
-        </tr>
-        <tr> 
-          <td  class=roweven>[_ intranet-trans-invoices.Invoice_date]:</td>
-          <td  class=roweven> 
-            <input type=text name=invoice_date size=15 value='$invoice_date'>
-          </td>
-        </tr>
-        <tr>
-          <td  class=roweven>$cost_center_label</td>
-          <td  class=roweven>
-          $cost_center_select
-          </td>
-        </tr>
-"
-
-if {$cost_type_id == [im_cost_type_invoice]} {
-    append invoice_data_html "
-        <tr> 
-          <td class=roweven>[_ intranet-trans-invoices.Payment_terms]</td>
-          <td class=roweven> 
-            <input type=text name=payment_days size=5 value='$default_payment_days'>
-            days date of invoice</td>
-        </tr>
-        <tr> 
-          <td class=rowodd>[_ intranet-trans-invoices.Payment_Method]</td>
-          <td class=rowodd>[im_invoice_payment_method_select payment_method_id $default_payment_method_id]</td>
-        </tr>\n"
-}
-
-append invoice_data_html "
-        <tr> 
-          <td class=roweven>[_ intranet-trans-invoices.Invoice_template]:</td>
-          <td class=roweven>[im_cost_template_select template_id $default_invoice_template_id]</td>
-        </tr>
-        <tr> 
-          <td class=rowodd>[_ intranet-trans-invoices.Type]</td>
-          <td class=rowodd>$type_name <input type=hidden name=cost_type_id value=$target_cost_type_id></td>
-        </tr>
-"
-
-set receipient_html "
-        <tr><td align=center valign=top class=rowtitle colspan=2>[_ intranet-trans-invoices.Recipient]</td></tr>
-        <tr> 
-          <td  class=rowodd>[_ intranet-trans-invoices.Company_name]</td>
-          <td  class=rowodd>
-            <A href=/intranet/companies/view?company_id=$company_id>$company_name</A>
-          </td>
-        </tr>
-        <tr> 
-          <td  class=roweven>[_ intranet-trans-invoices.VAT]</td>
-          <td  class=roweven>$vat_number</td>
-        </tr>
-        <tr> 
-          <td  class=rowodd>[lang::message::lookup "" intranet-invoices.Invoice_Address "Address"]</td>
-          <td  class=rowodd>[im_company_office_select invoice_office_id $invoice_office_id $company_id]</td>
-        </tr>
-        <tr> 
-          <td  class=rowodd>[_ intranet-core.Contact]</td>
-          <td  class=rowodd>
-	    [im_company_contact_select company_contact_id $company_contact_id $company_id]
-          </td>
-        </tr>
-"
-
 # ---------------------------------------------------------------
 # 6. Select and render invoicable items 
 # ---------------------------------------------------------------
 
-set task_table "" 
-
-# Always generae the tasks table because:
+# Always generaet the tasks table because:
 # - Show the same screen - make it easier for the user
-# - It includes the hidden variables "im_trans_task" necessary
-#   for new-4
+# - It includes the hidden variables "im_trans_task" necessary for new-4
 #
-if {1} {
-    set sql "
+set sql "
 	select
 		t.task_id,
 		t.task_units,
@@ -255,36 +160,24 @@ if {1} {
 	from 
 		im_trans_tasks t,
 		im_projects p
-	where 
+	where
 		$tasks_where_clause
 		and t.project_id = p.project_id
 	order by
 		project_id, task_id
-    "
+"
 
-    set task_table "
-	<tr> 
-	  <td class=rowtitle>[_ intranet-trans-invoices.Task_Name]</td>
-	  <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
-	  <td class=rowtitle>[_ intranet-trans-invoices.Billable_Units]</td>
-	  <td class=rowtitle>[_ intranet-trans-invoices.Target]</td>
-	  <td class=rowtitle>[_ intranet-trans-invoices.UoM] [im_gif help "Unit of Measure"]</td>
-	  <td class=rowtitle>[_ intranet-trans-invoices.Type]</td>
-	  <td class=rowtitle>[_ intranet-trans-invoices.Status]</td>
-	</tr>
-    "
+ns_log Notice "before rendering the task list $invoice_id"
 
-    ns_log Notice "before rendering the task list $invoice_id"
+set task_table_rows ""
+set ctr 0
+set colspan 7
+set old_project_id 0
+db_foreach select_tasks $sql {
 
-    set task_table_rows ""
-    set ctr 0
-    set colspan 7
-    set old_project_id 0
-    db_foreach select_tasks $sql {
-
-	# insert intermediate headers for every project
-	if {$old_project_id != $project_id} {
-	    append task_table_rows "
+    # insert intermediate headers for every project
+    if {$old_project_id != $project_id} {
+	append task_table_rows "
 		<tr><td colspan=$colspan>&nbsp;</td></tr>
 		<tr>
 		  <td class=rowtitle colspan=$colspan>
@@ -294,10 +187,10 @@ if {1} {
 	          </td>
 		  <input type=hidden name=select_project value=$project_id>
 		</tr>\n"
-	    set old_project_id $project_id
-	}
+	set old_project_id $project_id
+    }
 
-	append task_table_rows "
+    append task_table_rows "
         <input type=hidden name=im_trans_task value=$task_id>
 	<tr $bgcolor([expr $ctr % 2])> 
 	  <td align=left>$task_name</td>
@@ -308,15 +201,13 @@ if {1} {
 	  <td>$type_name</td>
 	  <td>$task_status</td>
 	</tr>"
-	incr ctr
-    }
-
-    if {![string equal "" $task_table_rows]} {
-	append task_table $task_table_rows
-    } else {
-	append task_table "<tr><td colspan=$colspan align=center>[_ intranet-trans-invoices.No_tasks_found]</td></tr>"
-    }
+    incr ctr
 }
+
+if {[string equal "" $task_table_rows]} {
+    append task_table_rows "<tr><td colspan=$colspan align=center>[_ intranet-trans-invoices.No_tasks_found]</td></tr>"
+}
+
 
 
 # ---------------------------------------------------------------
@@ -343,25 +234,6 @@ if {1} {
 
     set file_type_html "<td class=rowtitle>[lang::message::lookup "" intranet-trans-invoices.File_Type "File Type"]</td>"
     if {!$enable_file_type_p} { set file_type_html "" }
-
-    set reference_price_html "
-        <tr><td align=middle class=rowtitle colspan=$price_colspan>[_ intranet-trans-invoices.Reference_Prices]</td></tr>
-        <tr>
-          <td class=rowtitle>[lang::message::lookup "" intranet-trans-invoices.Score "Score"]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Company]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.UoM]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Task_Type]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Target]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Source]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Subject_Area]</td>
-	  $file_type_html
-<!--          <td class=rowtitle>[_ intranet-trans-invoices.Valid_From]</td>	-->
-<!--          <td class=rowtitle>[_ intranet-trans-invoices.Valid_Through]</td>	-->
-          <td class=rowtitle>[_ intranet-core.Note]</td>
-          <td class=rowtitle>[_ intranet-trans-invoices.Price]</td>
-          <td class=rowtitle>[lang::message::lookup "" intranet-trans-invoices.Min_Price "Min Price"]</td>
-        </tr>\n"
-
 
     if {$aggregate_tasks_p} {
 
@@ -544,6 +416,7 @@ order by
     set colspan 6
     set target_language_id ""
     set task_title ""
+    set reference_price_html ""
     db_foreach task_sum_query $task_sum_sql {
 
 	# insert intermediate headers for every project
@@ -660,45 +533,9 @@ order by
 	set task_title ""
     }
 
-# ---------------------------------------------------------------
-# 9. Render VAT and TAX
-# ---------------------------------------------------------------
-
-set grand_total_html "
-        <tr>
-          <td> 
-          </td>
-          <td colspan=4 align=right> 
-            <table border=0 cellspacing=1 cellpadding=0>
-              <tr> 
-                <td>[_ intranet-trans-invoices.VAT]</td>
-                <td><input type=text name=vat value='$default_vat' size=4> % &nbsp;</td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <tr> 
-          <td> 
-          </td>
-          <td colspan=4 align=right> 
-            <table border=0 cellspacing=1 cellpadding=0>
-              <tr> 
-                <td>[_ intranet-trans-invoices.TAX]</td>
-                <td><input type=text name=tax value='$default_tax' size=4> % &nbsp;</td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <tr> 
-          <td>&nbsp; </td>
-          <td colspan=6 align=right> 
-              <input type=submit name=submit value='$button_text'>
-          </td>
-        </tr>
-"
 
 # ---------------------------------------------------------------
-# 10. Join all parts together
+# Join all parts together
 # ---------------------------------------------------------------
 
 ns_log Notice "new-3: before joining the parts together"
@@ -715,48 +552,6 @@ foreach task_id $in_clause_list {
     append page_body "<input type=hidden name=include_task value=$task_id>\n"
 }
 
-append page_body "
-  <!-- Invoice Data and Receipient Tables -->
-  <table cellpadding=0 cellspacing=0 bordercolor=#6699CC border=0 width=100%>
-    <tr valign=top> 
-      <td>
-
-        <table border=0 cellPadding=0 cellspacing=2>
-	  $invoice_data_html
-<!--	  <tr><td colspan=2 align=right><input type=submit value='Update'></td></tr> -->
-        </table>
-
-      </td>
-      <td></td>
-      <td align=right>
-        <table border=0 cellspacing=2 cellpadding=0 >
-          $receipient_html</td>
-        </table>
-    </tr>
-  </table>
-
-  <!-- the list of tasks (invoicable items) -->
-  <table cellpadding=2 cellspacing=2 border=0 width='100%'>
-    $task_table
-  </table>
-
-  <!-- the list of task sums, distinguised by type and UOM -->
-  <table width=100%>
-    <tr>
-      <td align=right><table border=0 cellspacing=2 cellpadding=1>
-        $task_sum_html
-        $grand_total_html
-      </td>
-    </tr>
-  </table>
-
-</form>
-
-<!-- the list of reference prices -->
-<table>
-  $reference_price_html
-</table>
-"
 
 db_release_unused_handles
 
