@@ -63,6 +63,9 @@ if {"" != $button_confirm} {
 		set project_status_id = [im_project_status_open]
 		where project_id = :project_id
         "
+	
+	im_project_audit $project_id
+
 }
 
     ns_log Notice "new-rfc: case_id=$case_id"
