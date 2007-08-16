@@ -6,6 +6,6 @@ extra_select, extra_where, sort_order, visible_for) values (
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (
-2413,24,NULL,'Customer Key Account','$keyacc_name','','',13,'');
+2413,24,NULL,'Key Account','$keyacc_name','','',13,'');
 
 
