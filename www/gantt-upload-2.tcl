@@ -42,6 +42,8 @@ set page_title [lang::message::lookup "" intranet-ganttproject.Import_Gantt_Task
 set reassign_title [lang::message::lookup "" intranet-ganttproject.Delete_Gantt_Tasks "Reassign Resources of Removed Tasks"]
 set resource_title [lang::message::lookup "" intranet-ganttproject.Resource_Title "Resources not Found"]
 
+# Write audit trail
+im_project_audit $project_id
 
 # -------------------------------------------------------------------
 # Get the file from the user.

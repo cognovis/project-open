@@ -618,6 +618,10 @@ ad_proc -public im_gp_save_tasks2 {
 			:note
 		)"
 	    ]
+
+	    # Write Audit Trail
+	    im_project_audit -action create $task_id
+
 	    set task_hash($gantt_project_id) $task_id
 	}
 
@@ -671,6 +675,9 @@ ad_proc -public im_gp_save_tasks2 {
 	    where
 		project_id = :task_id
     "
+
+    # Write audit trail
+    im_project_audit $task_id
 
     return [array get task_hash]
 }
