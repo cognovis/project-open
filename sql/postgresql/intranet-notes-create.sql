@@ -190,14 +190,16 @@ values (11514, 'Other', 'Intranet Notes Type');
 --
 
 create or replace view im_note_status as
-select category_id as note_status_id, category as note_status
-from im_categories
-where category_type = 'Intranet Notes Status';
+select	category_id as note_status_id, category as note_status
+from	im_categories
+where	category_type = 'Intranet Notes Status'
+	and (enabled_p is null or enabled_p = 't');
 
 create or replace view im_note_types as
-select category_id as note_type_id, category as note_type
-from im_categories
-where category_type = 'Intranet Notes Type';
+select	category_id as note_type_id, category as note_type
+from	im_categories
+where	category_type = 'Intranet Notes Type'
+	and (enabled_p is null or enabled_p = 't');
 
 
 
