@@ -1,9 +1,7 @@
-<if @notes:rowcount@ ne 0>
-
 	<table cellspacing="1" cellpadding="3">
 	  <tr class="rowtitle">
-	    <th>Type</th>
-	    <th>Note</th>
+	    <th><%= [lang::message::lookup "" intranet-notes.Notes_Type "Type"] %></th>
+	    <th><%= [lang::message::lookup "" intranet-notes.Notes_Note "Note"] %></th>
 	  </tr>
 	  <multiple name="notes">
 	    <if @notes.rownum@ odd><tr class="roweven"></if>
@@ -12,10 +10,20 @@
 		<td>@notes.note_formatted;noquote@</td>
 	    </tr>
 	  </multiple>
-	</table>
-<!--	
-	<if @object_write@>
-	<li><a href="@new_note_url;noquote@">Create a new Note</a>
-	</if>
--->
+
+<if @notes:rowcount@ eq 0>
+	<tr class="rowodd">
+	    <td colspan=2>
+		<%= [lang::message::lookup "" intranet-notes.No_Notes_Available "No Notes Available"] %>
+	    </td>
+	</tr>
 </if>
+
+
+	</table>
+	
+<if @object_write@>
+	<li><a href="@new_note_url;noquote@">
+	<%= [lang::message::lookup "" intranet-notes.Create_new_Note "Create a new Note"] %></a>
+</if>
+

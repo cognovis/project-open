@@ -225,6 +225,10 @@ SELECT im_component_plugin__new (
 	'im_notes_project_component -object_id $project_id'	-- component_tcl
 );
 
+update im_component_plugins 
+set title_tcl = 'lang::message::lookup "" intranet-notes.Project_Notes "Project Notes"'
+where plugin_name = 'Project Notes';
+
 
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
@@ -242,6 +246,12 @@ SELECT im_component_plugin__new (
 	'im_notes_project_component -object_id $company_id'	-- component_tcl
 );
 
+update im_component_plugins 
+set title_tcl = 'lang::message::lookup "" intranet-notes.Company_Notes "Company Notes"'
+where plugin_name = 'Company Notes';
+
+
+
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
 	'acs_object',			-- object_type
@@ -257,6 +267,11 @@ SELECT im_component_plugin__new (
 	90,				-- sort_order
 	'im_notes_project_component -object_id $user_id'	-- component_tcl
 );
+
+update im_component_plugins 
+set title_tcl = 'lang::message::lookup "" intranet-notes.User_Notes "User Notes"'
+where plugin_name = 'User Notes';
+
 
 
 

@@ -43,8 +43,8 @@ ad_form \
     -export "object_id return_url" \
     -form {
 	note_id:key
-	{note_type_id:text(select) {label "[_ intranet-core.Type]"} {options $note_type_options} }
-	{note:text(textarea) {label Note} {html {cols 40} {rows 8} }}
+	{note_type_id:text(select) {label "[lang::message::lookup {} intranet-notes.Notes_Type Type]"} {options $note_type_options} }
+	{note:text(textarea) {label "[lang::message::lookup {} intranet-notes.Notes_Note Note]"} {html {cols 40} {rows 8} }}
     }
 
 ad_form -extend -name $form_id \
