@@ -15,7 +15,7 @@ ad_page_contract {
     @author all@devcon.project-open.com
 } {
     note_id:integer,optional
-    object_id:integer
+    {object_id:integer "" }
     {note ""}
     {return_url "/intranet-notes/index"}
     {form_mode "edit"}
@@ -26,6 +26,10 @@ if {[info exists var_name]} { ad_return_complaint 1 "var_name = $var_name" }
 set user_id [ad_maybe_redirect_for_registration]
 set page_title [_ intranet-notes.Notes_creation]
 set context_bar [im_context_bar $page_title]
+
+if {"" == $object_id} {
+    set object_id [db_string oid "select object_id from im_notes where note_id = :note_id" -default ""]
+}
 
 set project_options [im_project_options]
 

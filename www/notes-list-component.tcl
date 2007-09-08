@@ -43,9 +43,8 @@ multirow create notes note_type note note_formatted
 if {$object_read} {
 
     set notes_sql "
-	select	im_category_from_id(n.note_type_id) as note_type,
-		n.note,
-		n.note_type_id
+	select	n.*,
+		im_category_from_id(n.note_type_id) as note_type
 	from	im_notes n
 	where	n.object_id = :object_id
     "
@@ -55,6 +54,8 @@ if {$object_read} {
 	set note_pieces [split $note " "]
 	set first_note [lindex $note_pieces 0]
 	set rest_note [join [lrange $note_pieces 1 end] " "]
+
+	set notes_edit_url [export_vars -base "/intranet-notes/new" {note_id return_url}]
 
 	switch $note_type_id {
 	    11502 {
