@@ -323,6 +323,33 @@ set inner_sql "
 		)
 "
 
+# Deal with invoices related to multiple 
+set multiples_sql "
+	select
+		count(*) as cnt,
+		cost_id,
+		cost_name
+	from
+		($inner_sql) i
+	group by
+		cost_id, cost_name
+	having
+		count(*) > 1
+"
+
+set errors ""
+db_foreach multiples $multiples_sql {
+    append errors "<li>Financial document <a href=[export_vars -base "/intranet-invoices/view" {{invoice_id $cost_id}}]>$cost_name</a> is associated with more then one project.\n"
+}
+
+if {"" != $errors} {
+    ad_return_complaint 1 "<p>Financial documents related to multiple projects currently cause errors in this report.</p>
+	<ul>$errors</ul><p>
+	Please assign every financial document to a single project (usually the main project).</p>\n"
+    return
+}
+
+
 
 set sql "
 select
