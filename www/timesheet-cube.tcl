@@ -14,8 +14,8 @@ ad_page_contract {
     { top_vars "year month_of_year" }
     { top_scale1 "" }
     { top_scale2 "" }
-    { left_scale1 "project_type" }
-    { left_scale2 "project_name" }
+    { left_scale1 "main_project_type" }
+    { left_scale2 "main_project_name" }
     { left_scale3 "" }
     { customer_type_id:integer 0 }
     { project_type_id:integer 0 }
@@ -262,8 +262,8 @@ foreach var $dimension_vars {
 	main_project_type { lappend derefs "im_category_from_id(p.project_type_id) as main_project_type" }
 	main_project_status { lappend derefs "im_category_from_id(p.project_status_id) as main_project_status" }
 
-	project_type { lappend derefs "im_category_from_id(h.project_type_id) as project_type" }
-	project_status { lappend derefs "im_category_from_id(h.project_status_id) as project_status" }
+	project_type { lappend derefs "im_category_from_id(h.sub_project_type_id) as project_type" }
+	project_status { lappend derefs "im_category_from_id(h.sub_project_status_id) as project_status" }
 
 	customer_type { lappend derefs "im_category_from_id(h.company_type_id) as customer_type" }
 	customer_status { lappend derefs "im_category_from_id(h.company_status_id) as customer_status" }
