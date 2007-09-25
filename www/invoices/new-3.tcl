@@ -469,7 +469,7 @@ db_foreach task_sum_query $task_sum_sql {
 	set min_price_formatted "$min_price_formatted $invoice_currency"
 	if {"" == $min_price} { set min_price_formatted "" }
 
-	set price_relevancy "r=$price_relevancy, c=$company_id, u=$uom_id, t=$task_type_id, s=$subject_area_id, s=$source_language_id, t=$target_language_id, f=$file_type_id"
+#	set price_relevancy "r=$price_relevancy, c=$company_id, u=$uom_id, t=$task_type_id, s=$subject_area_id, s=$source_language_id, t=$target_language_id, f=$file_type_id"
 
 	set company_price_url [export_vars -base "/intranet/companies/view" { {company_id $price_company_id} return_url }]
 	set company_html "<a href=\"$company_price_url\">$price_company_name</a>"
