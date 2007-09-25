@@ -30,12 +30,18 @@
 
 set page_title "Forum-AdHoc-01 Tutorial Report"
 set context_bar [im_context_bar $page_title]
+set help "
+	<b>Forum-AdHoc-01 Tutorial Report</b>:<br>
+	Shows the contents of all forum topics in the system.<br>
+	Does not include the replies to forum entries.
+"
+
 
 
 # ------------------------------------------------------------
 # Define the report
 
-set content [im_ad_hoc_query "
+set content [im_ad_hoc_query -format html "
 
 	select
 		to_char(posting_date, 'YYYY-MM-DD') as posting_date,
