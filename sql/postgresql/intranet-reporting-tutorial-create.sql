@@ -34,13 +34,13 @@ declare
 	v_count			integer;
 
 	-- Groups
-        v_employees             integer;
-        v_accounting            integer;
-        v_senman                integer;
-        v_customers             integer;
-        v_freelancers           integer;
-        v_proman                integer;
-        v_admins                integer;
+	v_employees		integer;
+	v_accounting		integer;
+	v_senman		integer;
+	v_customers		integer;
+	v_freelancers		integer;
+	v_proman		integer;
+	v_admins		integer;
 	v_reg_users		integer;
 BEGIN
 
@@ -61,19 +61,19 @@ BEGIN
     IF v_count > 0 THEN return 0; END IF;
 
     v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting-tutorial'', -- package_name
-        ''reporting_tutorial'',          -- label
-        ''Reporting Tutorial'',          -- name
-        ''/intranet-reporting-tutorial/'', -- url
-        250,                    -- sort_order
-        v_reporting_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
+	null,				-- p_menu_id
+	''acs_object'',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	''intranet-reporting-tutorial'', -- package_name
+	''reporting_tutorial'',		-- label
+	''Reporting Tutorial'',		-- name
+	''/intranet-reporting-tutorial/'', -- url
+	250,				-- sort_order
+	v_reporting_menu,		-- parent_menu_id
+	null				-- p_visible_tcl
     );
 
     PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
@@ -101,13 +101,13 @@ declare
 	v_main_menu 		integer;
 
 	-- Groups
-        v_employees             integer;
-        v_accounting            integer;
-        v_senman                integer;
-        v_customers             integer;
-        v_freelancers           integer;
-        v_proman                integer;
-        v_admins                integer;
+	v_employees		integer;
+	v_accounting		integer;
+	v_senman		integer;
+	v_customers		integer;
+	v_freelancers		integer;
+	v_proman		integer;
+	v_admins		integer;
 	v_reg_users		integer;
 BEGIN
 
@@ -124,19 +124,19 @@ BEGIN
     from im_menus where label=''reporting_tutorial'';
 
     v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting-tutorial'', -- package_name
-        ''reporting-tutorial-projects01'',          -- label
-        ''Project Report 01'',          -- name
-        ''/intranet-reporting-tutorial/projects-01-commented'', -- url
-        10,                    -- sort_order
-        v_main_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
+	null,				-- p_menu_id
+	''acs_object'',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	''intranet-reporting-tutorial'', -- package_name
+	''reporting-tutorial-projects01'', -- label
+	''Project Report 01'',		-- name
+	''/intranet-reporting-tutorial/projects-01-commented'', -- url
+	10,				-- sort_order
+	v_main_menu,			-- parent_menu_id
+	null				-- p_visible_tcl
     );
 
     PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
@@ -145,19 +145,19 @@ BEGIN
 
 
     v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting-tutorial'', -- package_name
-        ''reporting-tutorial-projects02'',          -- label
-        ''Project Report 02'',          -- name
-        ''/intranet-reporting-tutorial/projects-02'', -- url
-        20,                    -- sort_order
-        v_main_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
+	null,				-- p_menu_id
+	''acs_object'',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	''intranet-reporting-tutorial'', -- package_name
+	''reporting-tutorial-projects02'', -- label
+	''Project Report 02'',		-- name
+	''/intranet-reporting-tutorial/projects-02'', -- url
+	20,				-- sort_order
+	v_main_menu,			-- parent_menu_id
+	null				-- p_visible_tcl
     );
 
     PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
@@ -165,19 +165,19 @@ BEGIN
     PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
 
     v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting-tutorial'', -- package_name
-        ''reporting-tutorial-projects03'',          -- label
-        ''Project Report 03'',          -- name
-        ''/intranet-reporting-tutorial/projects-03'', -- url
-        30,                    -- sort_order
-        v_main_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
+	null,				-- p_menu_id
+	''acs_object'',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	''intranet-reporting-tutorial'', -- package_name
+	''reporting-tutorial-projects03'', -- label
+	''Project Report 03'',		-- name
+	''/intranet-reporting-tutorial/projects-03'', -- url
+	30,				-- sort_order
+	v_main_menu,			-- parent_menu_id
+	null				-- p_visible_tcl
     );
 
     PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
@@ -185,19 +185,19 @@ BEGIN
     PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
 
     v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting-tutorial'', -- package_name
-        ''reporting-tutorial-projects04'',          -- label
-        ''Project Report 04'',          -- name
-        ''/intranet-reporting-tutorial/projects-04'', -- url
-        40,                    -- sort_order
-        v_main_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
+	null,				-- p_menu_id
+	''acs_object'',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	''intranet-reporting-tutorial'', -- package_name
+	''reporting-tutorial-projects04'',	-- label
+	''Project Report 04'',		-- name
+	''/intranet-reporting-tutorial/projects-04'', -- url
+	40,				-- sort_order
+	v_main_menu,			-- parent_menu_id
+	null				-- p_visible_tcl
     );
 
     PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
@@ -205,19 +205,41 @@ BEGIN
     PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
 
     v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting-tutorial'', -- package_name
-        ''reporting-tutorial-projects05'',          -- label
-        ''Project Report 05'',          -- name
-        ''/intranet-reporting-tutorial/projects-05'', -- url
-        50,                    -- sort_order
-        v_main_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
+	null,				-- p_menu_id
+	''acs_object'',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	''intranet-reporting-tutorial'', -- package_name
+	''reporting-tutorial-projects05'',	-- label
+	''Project Report 05'',		-- name
+	''/intranet-reporting-tutorial/projects-05'', -- url
+	50,				-- sort_order
+	v_main_menu,			-- parent_menu_id
+	null				-- p_visible_tcl
+    );
+
+    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+
+
+
+    v_menu := im_menu__new (
+	null,				-- p_menu_id
+	''acs_object'',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	''intranet-reporting-tutorial'',	-- package_name
+	''reporting-tutorial-forum01'',		-- label
+	''Forum AdHoc Report 01'',	-- name
+	''/intranet-reporting-tutorial/forum-adhoc-01'', -- url
+	50,				-- sort_order
+	v_main_menu,			-- parent_menu_id
+	null				-- p_visible_tcl
     );
 
     PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
