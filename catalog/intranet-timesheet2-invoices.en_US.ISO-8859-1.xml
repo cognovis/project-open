@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.2.7.0.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.3.0.0.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Accounting_Contact">Accounting Contact</msg>
   <msg key="Add_New">Add New</msg>
@@ -14,6 +14,7 @@
   <msg key="context">context</msg>
   <msg key="Country">Country</msg>
   <msg key="Create_Invoice">Create Invoice</msg>
+  <msg key="Create_lt_Quoteintranet-coreQuo">Create Quote</msg>
   <msg key="Currency">Currency</msg>
   <msg key="Del">Del</msg>
   <msg key="Delete">Delete</msg>
@@ -70,6 +71,7 @@
   <msg key="New_cost_type">New %cost_type%</msg>
   <msg key="New_Customer_Invoice_from_Timesheet_Tasks">New Customer Invoice from Timesheet Tasks</msg>
   <msg key="New_Invoice">New Invoice</msg>
+  <msg key="New_lt_Quoteintranet-coreQuo">New Quote</msg>
   <msg key="New_Price">New Price</msg>
   <msg key="New_Purchase_Order">New Purchase Order</msg>
   <msg key="New_Quote_from_Timesheet_Tasks">New Quote from Timesheet Tasks</msg>
