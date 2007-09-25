@@ -51,7 +51,8 @@ if {[lsearch -exact $allowed_cost_type $target_cost_type_id] == -1} {
     ad_script_abort
 }
 
-
+# Should the "Aggregate Tasks" checkbox be "checked" or "disabled" by default?
+set aggregate_tasks_checkbox_enabled [parameter::get_from_package_key -package_key intranet-trans-invoices -parameter "AggregateTasksCheckboxEnabled" -default "checked"]
 
 
 if {[info exists select_project]} {
@@ -228,7 +229,7 @@ if {![string equal "" $task_table_rows]} {
 set deselect_button_html "
     <tr><td colspan=7 align=right>
 
-      <input type=checkbox name=aggregate_tasks_p value=1 disabled>
+      <input type=checkbox name=aggregate_tasks_p value=1 $aggregate_tasks_checkbox_enabled>
       [lang::message::lookup "" intranet-trans-invoices.Aggregate_tasks_of_the_same_type "Aggregate tasks of the same type"]
 
       <input type=submit name=submit value='[_ intranet-trans-invoices.lt_Select_Tasks_for_Invo]'>
