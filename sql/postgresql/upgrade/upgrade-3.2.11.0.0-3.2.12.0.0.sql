@@ -1,7 +1,35 @@
 -- upgrade-3.2.11.0.0-3.2.12.0.0.sql
 
 -- Category for canned note
-alter table im_invoices add canned_note_id integer;
+-- alter table im_invoices add canned_note_id integer;
+
+
+
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_invoice', 'im_invoices', 'invoice_id');
+
+
+
+select im_dynfield_attribute__new (
+        null,                   -- widget_id
+        'im_dynfield_attribute', -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+
+        'im_invoice',           -- attribute_object_type
+        'canned_note_id',       -- attribute name
+        0,
+        0,
+        null,
+        'integer',
+        '#intranet-invoices.Canned_Note#',    -- pretty name
+        '#intranet-invoices.Canned_Note#',    -- pretty plural
+        'integer',              -- Widget (dummy)
+        'f',
+        'f'
+);
 
 
 
