@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-freelance-rfqs" package_version="3.2.11.0.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-freelance-rfqs" package_version="3.3.0.0.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="--Select--">-- Select --</msg>
   <msg key="Add_a_new_RFQ">Add a new RFQ</msg>
@@ -8,6 +8,8 @@
   <msg key="All_Source_Languages">All Source Languages</msg>
   <msg key="All_Target_Languages">All Target Languages</msg>
   <msg key="Amount">Amount</msg>
+  <msg key="Answer_Accepted">Answer Accepted?</msg>
+  <msg key="Answer_Status">Answer Status</msg>
   <msg key="Available_Variables">The following variables are available within you message:&lt;br&gt;
 &lt;tt&gt;%email_vars%&lt;/tt&gt;</msg>
   <msg key="Body">Body</msg>
@@ -63,6 +65,7 @@ Best regards,
   <msg key="Invited_for_RFQ_of_Project_Header">Invitation for: %rfq_name%</msg>
   <msg key="Minimum_Skill_Level">Minimum Skill Level</msg>
   <msg key="Name">Name</msg>
+  <msg key="New_Freelance_RFQ">New RFQ</msg>
   <msg key="New_Trans_RFQ">New Trans RFQ</msg>
   <msg key="No_decline">No, I decline</msg>
   <msg key="No_I_decline">No, I decline.</msg>
@@ -73,6 +76,7 @@ Best regards,
   <msg key="Num_Decl">#Decl</msg>
   <msg key="Num_Decl_Explanation">The number of declined candidates</msg>
   <msg key="Num_Declinations">#Decl</msg>
+  <msg key="Num_Inv">#Inv</msg>
   <msg key="Num_Inv_Explanation">The total number of invitations</msg>
   <msg key="Num_Invitations">#Inv</msg>
   <msg key="Num_Rem_Explanation">The number of remaining candidates that either need to be declined or confirmed</msg>
