@@ -228,7 +228,7 @@ if {![string equal "" $task_table_rows]} {
 set deselect_button_html "
     <tr><td colspan=7 align=right>
 
-      <input type=checkbox name=aggregate_tasks_p value=1 checked>
+      <input type=checkbox name=aggregate_tasks_p value=1 disabled>
       [lang::message::lookup "" intranet-trans-invoices.Aggregate_tasks_of_the_same_type "Aggregate tasks of the same type"]
 
       <input type=submit name=submit value='[_ intranet-trans-invoices.lt_Select_Tasks_for_Invo]'>

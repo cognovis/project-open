@@ -512,7 +512,7 @@ db_foreach task_sum_query $task_sum_sql {
 	    <input type=text name=item_sort_order.$ctr size=2 value='$ctr'>
 	  </td>
           <td>
-	    <input type=text name=item_name.$ctr size=40 value='$task_title'>
+	    <input type=text name=item_name.$ctr size=40 value='[ns_quotehtml $task_title]'>
 	  </td>
           <td align=right>
 	    <input type=text name=item_units.$ctr size=4 value='$task_sum'>
