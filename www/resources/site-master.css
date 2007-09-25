@@ -15,7 +15,8 @@ body {
 /* Site Header */
 
 #site-header {
-  background-color: #313063; 
+  /*background-color: #313063;*/ 
+  background-color: #FFFFFF; 
   color: white;
   font-family: tahoma, verdana, helvetica, sans-serif;
   font-size: 85%;
