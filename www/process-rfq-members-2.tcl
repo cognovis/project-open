@@ -22,7 +22,8 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     { user_ids:integer,multiple "" }
-    { send_me_a_copy 1 }
+    { send_me_a_copy_p 1 }
+    { add_to_project_p 0 }
     { email_send "" }
     { email_nosend "" }
     rfq_action_id
@@ -31,6 +32,7 @@ ad_page_contract {
     rfq_id:integer
     return_url
 }
+
 
 # --------------------------------------------------------
 # 
@@ -195,6 +197,12 @@ foreach uid $user_ids {
     "
 
 
+    # add the user to the current project?
+    if {$add_to_project_p} {
+	im_biz_object_add_role $uid $project_id [im_biz_object_role_full_member]
+    }
+
+
     # ---------------------------------------------------------------
     # Substitute variables
     # ---------------------------------------------------------------
@@ -237,7 +245,7 @@ foreach uid $user_ids {
 }
 
 
-if {$send_me_a_copy} {
+if {$send_me_a_copy_p} {
 
     # send out the email
     if [catch {

@@ -54,6 +54,15 @@ if {[string equal "/" $last_char]} {
     set system_url "[string range $system_url 0 [expr $sysurl_len-2]]"
 }
 
+set add_to_project_checked ""
+switch $rfq_action_id {
+    4472 {
+	# Confirm - add to project by default
+	set add_to_project_checked "checked"
+    }
+}
+
+
 set rfq_action [im_category_from_id $rfq_action_id]
 set rfq_action_upper "[string toupper [string range $rfq_action 0 0]][string range $rfq_action 1 end]"
 set rfq_action_upper_l10n [lang::message::lookup "" intranet-freelance-rfqs.$rfq_action $rfq_action_upper]
