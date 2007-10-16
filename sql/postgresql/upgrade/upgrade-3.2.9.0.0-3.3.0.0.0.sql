@@ -105,9 +105,9 @@ BEGIN
 		report_type_id, report_status_id,
 		report_menu_id, report_sql
 	) values (
-		v_report_id, v_report_name,
-		v_report_type_id, v_report_status_id,
-		v_report_menu_id, v_report_sql
+		v_report_id, p_report_name,
+		p_report_type_id, p_report_status_id,
+		p_report_menu_id, p_report_sql
 	);
 
 	return v_report_id;
