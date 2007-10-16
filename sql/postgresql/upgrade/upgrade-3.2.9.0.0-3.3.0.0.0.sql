@@ -83,10 +83,10 @@ DECLARE
 	p_context_id		alias for $6;		-- context_id default null
 
 	p_report_name		alias for $7;		-- report_name
-	p_report_type_id	alias for $9;		
-	p_report_status_id	alias for $10;
-	p_report_menu_id	alias for $11;
-	p_report_sql		alias for $12;
+	p_report_type_id	alias for $8;		
+	p_report_status_id	alias for $9;
+	p_report_menu_id	alias for $10;
+	p_report_sql		alias for $11;
 
 	v_report_id	integer;
 BEGIN
