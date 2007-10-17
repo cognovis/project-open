@@ -2192,23 +2192,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		aw.storage_type_id,
 		im_category_from_id(aw.storage_type_id) as storage_type
 	from
-		(select	*
-		 from	im_dynfield_attributes aa
-		 where	exists (
-			select	1
-			from	acs_permissions p,
-				party_approved_member_map m,
-				acs_object_context_index c, 
-				acs_privilege_descendant_map h
-			where
-				p.object_id = c.ancestor_id
-				and h.descendant = 'read'
-				and c.object_id = aa.attribute_id
-				and m.member_id = 624
-				and p.privilege = h.privilege
-				and p.grantee_id = m.party_id
-			)
-		) aa
+		im_dynfield_attributes aa
 		LEFT OUTER JOIN
 			(select * from im_dynfield_layout where page_url = '') dl
 			ON (aa.attribute_id = dl.attribute_id),
@@ -2229,7 +2213,10 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
     set field_cnt 0
     db_foreach attributes $attributes_sql {
-    
+
+	# Check if the current user has the right to read the dynfield
+	if {![im_object_permission -object_id $dynfield_attribute_id -user_id $user_id]} { continue }
+
 	set display_mode $default_display_mode
 	set key "$dynfield_attribute_id.$object_subtype_id"
 	if {[info exists display_mode_hash($key)]} { 
@@ -2332,6 +2319,9 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
     # Same loop as before...
     db_foreach attributes $attributes_sql {
+
+	# Check if the current user has the right to read the dynfield
+	if {![im_object_permission -object_id $dynfield_attribute_id -user_id $user_id]} { continue }
 
 	set display_mode $default_display_mode
 	set key "$dynfield_attribute_id.$object_subtype_id"
