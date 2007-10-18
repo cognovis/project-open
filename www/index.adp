@@ -28,7 +28,6 @@
 	    <td class=form-label><%= [lang::message::lookup "" intranet-expenses.Unassigned_items "Unassigned:"] %></td>
 	    <td class=form-widget><%= [im_select -translate_p 0 unassigned $unassigned_p_options $unassigned] %></td>
 	</tr>
-
 <!--
 	<tr>
 	  <td class=form-label>Start Date</td>

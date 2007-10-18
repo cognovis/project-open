@@ -263,7 +263,8 @@ ad_form -extend -name $form_id -on_request {
 	        receipt_reference = :receipt_reference,
 	        billable_p = :billable_p,
 	        reimbursable = :reimbursable,
-	        expense_payment_type_id = :expense_payment_type_id
+	        expense_payment_type_id = :expense_payment_type_id,
+		expense_type_id = :expense_type_id
 	where
 		expense_id = :expense_id
     "

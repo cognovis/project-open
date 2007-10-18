@@ -13,6 +13,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     { project_id:integer ""}
+    { expense_type_id:integer ""}
     { start_date ""}
     { end_date ""}
     { provider_id 0}
@@ -37,7 +38,7 @@ set page_title "$project_nr - [_ intranet-expenses.Unassigned_Expenses]"
 set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
 
 set org_project_id $project_id
-if {"" == $org_project_id} { set unassigned "unassigned" }
+# if {"" == $org_project_id} { set unassigned "unassigned" }
 
 
 # Check that Start & End-Date have correct format
@@ -77,8 +78,10 @@ if {"" == $project_id | 0 == $project_id} { set main_navbar_label "expenses" }
 
 
 set unassigned_p_options [list \
-        "all" [lang::message::lookup "" intranet-expenses.All "All"] \
-        "unassigned" [lang::message::lookup "" intranet-expenses.Unassigned_items "Unassigned"] \
+        "unassigned" [lang::message::lookup "" intranet-expenses.Unassigned "Expenses without Projects"] \
+        "assigned" [lang::message::lookup "" intranet-expenses.Assigned "Expenses assigned to a Projects"] \
+        "both" [lang::message::lookup "" intranet-expenses.Assig_Unassig "Expenses with or without Project"] \
+        "all" [lang::message::lookup "" intranet-expenses.All "All Expenses"] \
 ]
 
 
@@ -137,6 +140,7 @@ template::list::create \
 	effective_date {
 	    label "[_ intranet-expenses.Expense_Date]"
 	    link_url_eval $expense_new_url
+	    display_template { <nobr>@expense_lines.effective_date;noquote@</nobr> }
 	    orderby "c.effective_date"
 	}
 	amount {
@@ -148,6 +152,7 @@ template::list::create \
 	provider_name {
 	    label "[lang::message::lookup {} intranet-expenses.Submitter Submitter]"
 	    link_url_eval $provider_url
+	    display_template { <nobr>@expense_lines.provider_name;noquote@</nobr> }
 	    orderby provider_name
 	}
 	vat {
@@ -189,6 +194,7 @@ template::list::create \
  	start_date {}
         end_date {}
         project_id {}
+	expense_type_id {}
 	unassigned {}
     }
 
@@ -196,6 +202,15 @@ set project_where ""
 if {"" != $project_id & 0 != $project_id} { 
     set project_where "\tand c.project_id = :project_id\n" 
 }
+
+set expense_where ""
+if {"" != $expense_type_id  & 0 != $expense_type_id} { 
+    set expense_where "\tand e.expense_type_id = :expense_type_id\n" 
+}
+
+
+
+
 
 # Allow accounting guys to see all expense items,
 # not just their own ones...
@@ -223,6 +238,7 @@ db_multirow -extend {expense_chk project_url expense_new_url provider_url} expen
 	$unassigned_sql
 	$personal_only_sql
 	$project_where
+	$expense_where
   [template::list::orderby_clause -name $list_id -orderby]
 " {
     set amount "[format %.2f [expr $amount * [expr 1 + [expr $vat / 100]]]] $currency"
