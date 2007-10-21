@@ -1,7 +1,7 @@
 ad_page_contract {
     @author Neophytos Demetriou <k2pts@cytanet.com.cy>
     @creation-date September 01, 2001
-    @cvs-id $Id: search.tcl,v 1.28 2007/09/25 15:22:41 donb Exp $
+    @cvs-id $Id: search.tcl,v 1.29 2007/10/21 12:28:43 gustafn Exp $
 } {
     q:trim
     {t:trim ""}
@@ -42,7 +42,7 @@ if {[callback::impl_exists -impl $driver -callback search::driver_info]} {
     array set info [acs_sc_call FtsEngineDriver info [list] $driver]
 }
 
-if { [array get info] == "" } {
+if { [array get info] eq "" } {
     ReturnHeaders
     ns_write "[_ search.lt_FtsEngineDriver_not_a]"
     ad_script_abort
@@ -201,7 +201,7 @@ if { $num > 0 } {
     append url_previous "&num=$num"
     append url_next "&num=$num"
 }
-set ol_start [expr $offset + 1]
+set ol_start [expr {$offset + 1}]
 
 template::multirow create results_paginator item link
 for { set __i $from_result_page } { $__i <= $to_result_page} { incr __i } {
