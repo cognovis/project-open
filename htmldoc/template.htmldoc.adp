@@ -315,44 +315,57 @@
 
 
 <!-- -------------------------------------------------------------------------- -->
-<!-- Footer							-->
+<!-- Footer									-->
 <!-- -------------------------------------------------------------------------- -->
 
 <font color="#606060" size="-1">
 <table width="100%">
 <tr valign="top">
-    <td class="cominfo">
-	<%= $internal_name %><br>
-	<%= $internal_address_line1 %> <%= $internal_address_line2 %><br>
-	<%= $internal_postal_code %> <%= $internal_city %><br>
-	<%= $internal_country_name %>
-    </td>
-    <td>
-	<table cellspacing="1" cellpadding="0">
-	<tr>
-	  <td class="cominfo"><%= [lang::message::lookup $locale intranet-core.Phone "Phone"] %></td>
-	  <td class="cominfo"><%= $internal_phone %></td>
-	</tr>
-	<tr>
-	  <td class="cominfo"><%= [lang::message::lookup $locale intranet-core.Fax "Fax"] %></td>
-	  <td class="cominfo"><%= $internal_fax %></td>
-	</tr>
-	<tr>
-	  <td class="cominfo" colspan="2"><%= $internal_accounting_contact_email %> </td>
-	</tr>
-	<tr>
-	  <td class="cominfo" colspan="2"><%= $internal_web_site %></td>
-	</tr>
-	</table>
-    </td>
-    <td class="cominfo">
-	<%= $invoice_payment_method_desc %><br>
-    </td>
-    <td class="cominfo">
-	<%= [lang::message::lookup $locale intranet-invoices.General_Manager "General Manager"] %>:<br>
-	<%= $internal_primary_contact_name %>,<br>
-	<%= $internal_primary_contact_email %>
-    </td>
+
+	<!-- -------------------------------------------------------------------------- -->
+	<!-- 1/4 Col: Company Name & City						-->
+	<td class="cominfo">
+	    <%= $internal_name %><br>
+	    <%= $internal_address_line1 %> <%= $internal_address_line2 %><br>
+	    <%= $internal_postal_code %> <%= $internal_city %><br>
+	    <%= $internal_country_name %>
+	</td>
+
+	<!-- -------------------------------------------------------------------------- -->
+	<!-- 2/4 Col: Company Phone & Fax						-->
+	<td>
+	    <table cellspacing="1" cellpadding="0">
+		<tr>
+		  <td class="cominfo"><%= [lang::message::lookup $locale intranet-core.Phone "Phone"] %></td>
+		  <td class="cominfo"><%= $internal_phone %></td>
+		</tr>
+		<tr>
+		  <td class="cominfo"><%= [lang::message::lookup $locale intranet-core.Fax "Fax"] %></td>
+		  <td class="cominfo"><%= $internal_fax %></td>
+		</tr>
+		<tr>
+		  <td class="cominfo" colspan="2"><%= $internal_accounting_contact_email %> </td>
+		</tr>
+		<tr>
+		  <td class="cominfo" colspan="2"><%= $internal_web_site %></td>
+		</tr>
+	    </table>
+	</td>
+
+	<!-- -------------------------------------------------------------------------- -->
+	<!-- 3/4 Col: Payment Method							-->
+	<td class="cominfo">
+	    <%= $invoice_payment_method_desc %><br>
+	</td>
+
+	<!-- -------------------------------------------------------------------------- -->
+	<!-- 4/4 Col: General Manager (Primary Contact) Contact & Email			-->
+
+	<td class="cominfo">
+	    <%= [lang::message::lookup $locale intranet-invoices.General_Manager "General Manager"] %>:<br>
+	    <%= $internal_primary_contact_name %>,<br>
+	    <%= $internal_primary_contact_email %>
+	</td>
 </tr>
 </table>
 </font>
