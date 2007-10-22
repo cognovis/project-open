@@ -39,7 +39,7 @@
 <table width="100%" border="<%=$debug%>" cellspacing="0" cellpadding="0">
 
   <!-- Maring above the logo -->
-  <tr height="00"><td>&nbsp;</td></td>
+  <tr height="0"><td>&nbsp;</td></td>
 
   <!-- The logo -->
   <tr><td align="right"><img src="/web/pcdemo/www/project_open.38.10frame.jpg"></td></tr>
@@ -196,10 +196,19 @@
 	}
 
 	set items $invoice_item_html
+
+	regsub -all {<td class=rowtitle(.*?)>(.*?)</td>} $items "<td align=right bgcolor='FFFFFF'><b>\\2</b></td>" items
+	regsub -all {<td class=invoiceroweven(.*?)>(.*?)</td>} $items "<td align=right bgcolor='FFFFFF'>\\2</td>" items
+	regsub -all {<td class=invoicerowodd(.*?)>(.*?)</td>} $items "<td align=right bgcolor='FFFFFF'>\\2</td>" items
+	regsub -all {<td class=roweven(.*?)>(.*?)</td>} $items "<td align=right bgcolor='FFFFFF'>\\2</td>" items
+	regsub -all {<td class=rowodd(.*?)>(.*?)</td>} $items "<td align=right bgcolor='FFFFFF'>\\2</td>" items
+
+	set total_colspan [expr 1 + $show_qty_rate_p*3 + $show_company_project_nr + $show_our_project_nr]
+
 	set sub_total "
 	    <tr>
-		<td class=roweven colspan=1 align=right><B>[lang::message::lookup $locale intranet-invoices.Total "Total"]</B></td>
-		<td class=roweven align=right><B><nobr>$subtotal_pretty $currency</nobr></B></td>
+		<td align=right colspan=$total_colspan><B>[lang::message::lookup $locale intranet-invoices.Total "Total"]</B></td>
+		<td align=right bgcolor='FFFFFF'><B><nobr>$subtotal_pretty $currency</nobr></B></td>
 	    </tr>
 	"
 	if { $cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_po] } { set items "$item_list_html" }
@@ -244,8 +253,10 @@
 	<!-- -------------------------------------------------------------------------- -->
 	<!-- Show the main invoice elements						-->
 
-	<table border="<%=$debug%>">
+	<table border="<%=$debug%>" width="100%">
+		<tr><td colspan=<%=[expr 1+$total_colspan]%>><hr size="0.5"></td></tr>
 		<%=$items %>
+		<tr><td colspan=<%=[expr 1+$total_colspan]%>><hr size="0.5"></td></tr>
 		<%=$sub_total %>
 	</table>
 	<p>
