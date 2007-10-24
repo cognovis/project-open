@@ -81,6 +81,17 @@ create index im_freelance_rfqs_project_idx on im_freelance_rfqs (rfq_project_id)
 
 
 
+
+-------------------------------------------------------------
+-- Set skill weights
+
+update im_categories set aux_int1 = 20 where category_type = 'Intranet Experience Level' and category = 'High';
+update im_categories set aux_int1 = 10 where category_type = 'Intranet Experience Level' and category = 'Medium';
+update im_categories set aux_int1 = 2 where category_type = 'Intranet Experience Level' and category = 'Low';
+update im_categories set aux_int1 = 1 where category_type = 'Intranet Experience Level' and category = 'Unconfirmed';
+
+
+
 -------------------------------------------------------------
 -- Status & Type Categories
 
