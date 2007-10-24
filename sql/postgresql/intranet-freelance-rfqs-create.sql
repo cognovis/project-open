@@ -26,6 +26,18 @@ SELECT acs_object_type__create_type (
 );
 
 
+-- Associate table with object - not handled in OpenACS core
+insert into acs_object_type_tables (
+	object_type,
+	table_name,
+	id_column
+) values (
+	'im_freelance_rfq',
+	'im_freelance_rfqs',
+	'rfq_id'
+);
+
+
 create table im_freelance_rfqs (
 	rfq_id			integer
 				constraint im_freelance_rfq_id_pk
