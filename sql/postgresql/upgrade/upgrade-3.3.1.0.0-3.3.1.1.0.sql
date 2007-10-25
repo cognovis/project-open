@@ -147,6 +147,10 @@ insert into im_categories(category_id, category, category_type)
 values (16000, 'Active', 'Intranet Absence Status');
 insert into im_categories(category_id, category, category_type) 
 values (16002, 'Deleted', 'Intranet Absence Status');
+insert into im_categories(category_id, category, category_type) 
+values (16004, 'Requested', 'Intranet Absence Status');
+insert into im_categories(category_id, category, category_type) 
+values (16006, 'Rejected', 'Intranet Absence Status');
 
 
 
@@ -165,4 +169,14 @@ select	category_id as absence_type_id, category as absence_type
 from	im_categories
 where	category_type = 'Intranet Absence Type'
 	and (enabled_p is null or enabled_p = 't');
+
+
+
+
+
+-----------------------------------------------------------
+-- Workflow Callbacks to reset an absence status etc.
+--
+
+
 
