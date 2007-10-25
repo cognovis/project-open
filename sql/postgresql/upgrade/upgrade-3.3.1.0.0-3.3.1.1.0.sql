@@ -1,7 +1,7 @@
 -- upgrade-3.3.1.0.0-3.3.1.1.0.sql
 
 alter table im_user_absences
-add absense_status_id integer
+add absence_status_id integer
 constraint im_user_absences_status_fk
 references im_categories;
 
@@ -138,15 +138,15 @@ end;' language 'plpgsql';
 -- Please contact support@project-open.com if you need to
 -- reserve a range of constants for a new module.
 --
--- 16000-16999  Intranet Absences (1000)
+-- 16000-16999  Intranet Absence (1000)
 -- 16000-16099	Intranet Absence Status
 -- 16100-16999	reserved
 
 
 insert into im_categories(category_id, category, category_type) 
-values (16000, 'Active', 'Intranet Absences Status');
+values (16000, 'Active', 'Intranet Absence Status');
 insert into im_categories(category_id, category, category_type) 
-values (16002, 'Deleted', 'Intranet Absences Status');
+values (16002, 'Deleted', 'Intranet Absence Status');
 
 
 
@@ -157,12 +157,12 @@ values (16002, 'Deleted', 'Intranet Absences Status');
 create or replace view im_user_absence_status as
 select	category_id as absence_status_id, category as absence_status
 from	im_categories
-where	category_type = 'Intranet Absences Status'
+where	category_type = 'Intranet Absence Status'
 	and (enabled_p is null or enabled_p = 't');
 
 create or replace view im_user_absence_types as
 select	category_id as absence_type_id, category as absence_type
 from	im_categories
-where	category_type = 'Intranet Absences Type'
+where	category_type = 'Intranet Absence Type'
 	and (enabled_p is null or enabled_p = 't');
 
