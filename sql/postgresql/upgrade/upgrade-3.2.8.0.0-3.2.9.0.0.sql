@@ -43,7 +43,7 @@ begin
         where lower(plugin_name) = lower(''User Notifications'');
         IF v_count > 0 THEN return 0; END IF;
 
-	SELECT  im_component_plugin__new (
+	PERFORM im_component_plugin__new (
 	        null,                           -- plugin_id
 	        ''acs_object'',                   -- object_type
 	        now(),                          -- creation_date
