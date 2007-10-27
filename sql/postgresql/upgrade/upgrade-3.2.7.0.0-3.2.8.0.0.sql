@@ -97,7 +97,7 @@ begin
         where lower(plugin_name) = lower(''Task Members'');
         IF 0 != v_count THEN return 0; END IF;
 
-	SELECT  im_component_plugin__new (
+	PERFORM im_component_plugin__new (
 		null,				-- plugin_id
 		''acs_object'',			-- object_type
 		now(),				-- creation_date
