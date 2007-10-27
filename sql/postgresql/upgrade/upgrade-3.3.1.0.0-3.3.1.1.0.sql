@@ -8,7 +8,15 @@ DECLARE
 	v_count		integer;
 	v_plugin_id	integer;
         row		RECORD;
+
+	v_emp_id	integer;
+	v_freel_id	integer;
+	v_cust_id	integer;
 BEGIN
+	select group_id into v_emp_id from groups where group_name = 'Employees';
+	select group_id into v_freel_id from groups where group_name = 'Freelancers';
+	select group_id into v_freel_id from groups where group_name = 'Customers';
+
 	-- Check if permissions were already configured
 	-- Stop if there is just a single configured plugin.
 	select	count(*) into v_count
@@ -22,9 +30,9 @@ BEGIN
 		select	plugin_id
 		from	im_component_plugins pl
         LOOP
-		PERFORM im_grant_permission(row.plugin_id, 463, ''read'');
-		PERFORM im_grant_permission(row.plugin_id, 465, ''read'');
-		PERFORM im_grant_permission(row.plugin_id, 461, ''read'');
+		PERFORM im_grant_permission(row.plugin_id, v_emp_id, ''read'');
+		PERFORM im_grant_permission(row.plugin_id, v_freel_id, ''read'');
+		PERFORM im_grant_permission(row.plugin_id, v_cust_id, ''read'');
         END LOOP;
 
         return 0;
