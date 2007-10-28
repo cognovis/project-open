@@ -1,6 +1,30 @@
 -- upgrade-3.3.1.0.0-3.3.1.1.0.sql
 
 
+-- Fix issue with im_costs__name -> im_cost__name
+
+update acs_object_types set name_method = 'im_cost__name' where object_type = 'im_cost';
+
+
+
+create or replace function im_cost__name (integer)
+returns varchar as '
+DECLARE
+        p_cost_id  alias for $1;        -- cost_id
+        v_name  varchar;
+    begin
+        select  cost_name
+        into    v_name
+        from    im_costs
+        where   cost_id = p_cost_id;
+
+        return v_name;
+end;' language 'plpgsql';
+
+
+
+
+
 -- Set permissions on all Plugin Components for Employees, Freelancers and Customers.
 create or replace function inline_0 ()
 returns varchar as '
