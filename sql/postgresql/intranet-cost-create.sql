@@ -513,7 +513,7 @@ begin
 	''im_costs'',		-- package_name
 	''f'',			-- abstract_p
 	null,			-- type_extension_table
-	''im_costs__name''	-- name_method
+	''im_cost__name''	-- name_method
     );
     return 0;
 end;' language 'plpgsql';
@@ -775,7 +775,7 @@ create or replace function im_cost__name (integer)
 returns varchar as '
 DECLARE
 	p_cost_id  alias for $1;	-- cost_id
-	v_name  varchar(40);
+	v_name  varchar;
     begin
 	select  cost_name
 	into    v_name
