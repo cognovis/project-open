@@ -4,7 +4,20 @@
 <if @notification_link@ not nil><property name="notification_link">@notification_link;noquote@</property></if>
 
 <p>
-  <formtemplate id="bug"></formtemplate>
+
+    <formtemplate id="bug"></formtemplate>
+
+<!--
+<table cellspacing=1 cellpadding=1>
+<tr valign=top>
+  <td width="50%">
+  </td>
+  <td width="50%">
+	Add here call to intranet-filestorage-openacs.related_files_list -object_id $bug(bug_id) -return_url $return_url
+  </td>
+</tr>
+</table>
+-->
 </p>
 
 <if @user_id@ eq 0>
