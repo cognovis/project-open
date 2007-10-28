@@ -177,12 +177,15 @@ ad_proc -public cr_import_content {
         set item_id [db_nextval acs_object_id_seq]
     }
 
+    # 071028 fraber: the cr_item's content_type is "content_item" not "image"...
     # use content_type of existing item
-    if $old_item_p {
-	set content_type [db_string get_content_type ""]
-    } else {
-	set content_type [cr_registered_type_for_mime_type $mime_type]
-    }
+#    if $old_item_p {
+#	set cr_content_type [db_string get_content_type ""]
+#    } else {
+#    }
+
+    set cr_content_type [cr_registered_type_for_mime_type $mime_type]
+
     set revision_id [db_nextval acs_object_id_seq]
 
     db_transaction {
@@ -192,7 +195,7 @@ ad_proc -public cr_import_content {
             db_exec_plsql mime_type_register ""
         }
 
-        switch $content_type {
+        switch $cr_content_type {
             image {
 
                 if { [db_string image_subclass ""] == "f" } {
