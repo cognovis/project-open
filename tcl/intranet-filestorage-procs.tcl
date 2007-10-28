@@ -1774,39 +1774,7 @@ ad_proc im_filestorage_file_row { file_body base_path folder_type rel_path objec
 	#append component_html "<img src=/intranet/images/adots_T.gif width=21>"
     } 
     
-    # Choose a suitable icon
-     
-    set icon [im_gif exp-unknown]
-    switch $file_extension {
-	".arj" { set icon [im_gif exp-arj] }
-	".book" { set icon [im_gif exp-book] }
-	".bz" { set icon [im_gif exp-bz] }
-	".bz2" { set icon [im_gif exp-bz2] }
-	".chm" { set icon [im_gif exp-chm] }
-	".cross" { set icon [im_gif exp-cross] }
-	".doc" { set icon [im_gif exp-word] }
-	".excel" { set icon [im_gif exp-excel] }
-	".gif" { set icon [im_gif exp-gif] }
-	".jpg" { set icon [im_gif exp-jpg] }
-	".mp3" { set icon [im_gif exp-mp3] }
-	".pdf" { set icon [im_gif exp-pdf] }
-	".ppt" { set icon [im_gif exp-ppt] }
-	".rar" { set icon [im_gif exp-rar] }
-	".rtf" { set icon [im_gif exp-word] }
-	".sit" { set icon [im_gif exp-sit] }
-	".text" { set icon [im_gif exp-text] }
-	".tgz" { set icon [im_gif exp-tgz] }
-	".txt" { set icon [im_gif exp-text] }
-	".wav" { set icon [im_gif exp-wav] }
-	".xls" { set icon [im_gif exp-excel] }
-	".zip" { set icon [im_gif exp-zip] }
-	"" { set icon [im_gif exp-unknown] }
-	default {
-#	    set ext [string range $file_extension 1 end]
-#	    set icon [im_gif "exp-$ext"]
-	    set icon [im_gif exp-unknown]
-	}
-    }
+    set icon [im_filestorage_file_type_icon $file_extension]
 
     if {$read_p} {
 	append component_html "<A href=\"/intranet/download/$folder_type/$object_id/$rel_path\" target=_blank>$icon</A></td>"
@@ -1822,6 +1790,55 @@ ad_proc im_filestorage_file_row { file_body base_path folder_type rel_path objec
 
     return "$component_html"
 }
+
+
+
+
+ad_proc im_filestorage_file_type_icon {ext} {
+    Returns a suitable icon for the specified file extension
+} {
+    # Remove any "." charaters 
+    regsub -all {\.} $ext "" ext
+
+    # Start with a default icon
+    set icon [im_gif exp-unknown]
+
+    # Check for more specific stuff
+    switch $ext {
+	"arj" { set icon [im_gif exp-arj] }
+	"book" { set icon [im_gif exp-book] }
+	"bz" { set icon [im_gif exp-bz] }
+	"bz2" { set icon [im_gif exp-bz2] }
+	"chm" { set icon [im_gif exp-chm] }
+	"cross" { set icon [im_gif exp-cross] }
+	"doc" { set icon [im_gif exp-word] }
+	"excel" { set icon [im_gif exp-excel] }
+	"gif" { set icon [im_gif exp-gif] }
+	"jpg" { set icon [im_gif exp-jpg] }
+	"jpeg" { set icon [im_gif exp-jpg] }
+	"mp3" { set icon [im_gif exp-mp3] }
+	"pdf" { set icon [im_gif exp-pdf] }
+	"ppt" { set icon [im_gif exp-ppt] }
+	"rar" { set icon [im_gif exp-rar] }
+	"rtf" { set icon [im_gif exp-word] }
+	"sit" { set icon [im_gif exp-sit] }
+	"text" { set icon [im_gif exp-text] }
+	"tgz" { set icon [im_gif exp-tgz] }
+	"txt" { set icon [im_gif exp-text] }
+	"wav" { set icon [im_gif exp-wav] }
+	"xls" { set icon [im_gif exp-excel] }
+	"zip" { set icon [im_gif exp-zip] }
+	"" { set icon [im_gif exp-unknown] }
+	default {
+#	    set ext [string range $ext 1 end]
+#	    set icon [im_gif "exp-$ext"]
+	    set icon [im_gif exp-unknown]
+	}
+    }
+
+    return $icon
+}
+
 
 ad_proc im_filestorage_create_folder {folder folder_name} {
     Create a new folder
