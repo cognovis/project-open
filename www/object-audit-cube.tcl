@@ -168,6 +168,7 @@ set top_vars_options {
 set left_scale_options {
 	"" ""
 	"creation_user_name" "Creation User"
+	"creation_user_dept" "Creation User Department"
 	"object_type" "Object Type"
 	"biz_object_type" "Business Object Type"
 	"biz_object_status" "Business Object Status"
@@ -304,6 +305,7 @@ foreach var $dimension_vars {
         object_name { lappend derefs "acs_object__name(o.object_id) as object_name" }
 	biz_object_type { lappend derefs "im_category_from_id(im_biz_object__get_type_id(o.object_id)) as biz_object_type" }
 	biz_object_status { lappend derefs "im_category_from_id(im_biz_object__get_status_id(o.object_id)) as biz_object_status" }
+	creation_user_dept { lappend derefs "im_dept_from_user_id(o.creation_user) as creation_user_dept" }
     }
 }
 
