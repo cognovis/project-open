@@ -714,6 +714,7 @@ ad_proc -private bug_tracker::bug::notification_info::get_notification_info {
 
 ad_proc bug_tracker::bug::get_list {
     {-ulevel 1}
+    {-page_size 25}
 } {
     set package_id [ad_conn package_id]
     set workflow_id [bug_tracker::bug::get_instance_workflow_id]
@@ -885,7 +886,7 @@ ad_proc bug_tracker::bug::get_list {
         -elements $elements \
         -filters $filters \
         -orderby $orderbys \
-        -page_size 25 \
+        -page_size $page_size \
         -page_flush_p 0 \
         -page_query {[bug_tracker::bug::get_query -query_name bugs_pagination]} \
         -formats {
@@ -946,6 +947,8 @@ ad_proc bug_tracker::bug::get_query {
         set more_columns ""
     }
 
+#    ad_return_complaint 1 [db_map $query_name]
+
     return [db_map $query_name]
 }
 
@@ -956,7 +959,6 @@ ad_proc bug_tracker::bug::get_multirow {} {
     }
 
     set current_user_id [ad_maybe_redirect_for_registration]
-
     set workflow_id [bug_tracker::bug::get_instance_workflow_id]
     set truncate_len [parameter::get -parameter "TruncateDescriptionLength" -default 200]
 
@@ -1001,7 +1003,6 @@ ad_proc bug_tracker::bug::get_multirow {} {
             set assignee_url [acs_community_member_url -user_id $assigned_user_id]
             set resolution_pretty [bug_tracker::resolution_pretty $resolution]
 
-
             # Hide fields in this state
             foreach element $hide_fields {
                 set $element {}
@@ -1017,7 +1018,6 @@ ad_proc bug_tracker::bug::get_multirow {} {
                 }
             }
 
-
             unset row_category
             unset row_category_name
             array set row_category $category_defaults
@@ -1026,7 +1026,6 @@ ad_proc bug_tracker::bug::get_multirow {} {
             continue
         }
     }
-
 }
 
 ad_proc bug_tracker::bug::get_bug_numbers {} {
