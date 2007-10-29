@@ -196,3 +196,28 @@ drop function inline_0();
 update im_menus set url = url || '?'
 where url = '/intranet-reporting-cubes/timesheet-cube';
 
+
+
+
+-- ------------------------------------------------
+-- Return the Cost Center code
+
+create or replace function im_dept_from_user_id(integer)
+returns varchar as '
+DECLARE
+        v_user_id       alias for $1;
+        v_dept          varchar;
+BEGIN
+        select  cost_center_code into v_dept
+        from    im_employees e,
+                im_cost_centers cc
+        where   e.employee_id = v_user_id
+                and e.department_id = cc.cost_center_id;
+
+        return v_dept;
+END;' language 'plpgsql';
+select im_dept_from_user_id(624);
+
+
+
+
