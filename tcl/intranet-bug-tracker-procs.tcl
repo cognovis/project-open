@@ -199,9 +199,9 @@ ad_proc -public im_bug_tracker_container_component {
     }
 
     set html "
-	<table cellspacing=1 cellpadding=1>
 	<form action=\"$action_url\" method=GET>
         [export_form_vars return_url]
+	<table cellspacing=1 cellpadding=1>
 	<tr class=rowtitle>
 	  <td class=rowtitle colspan=2>
 	    [lang::message::lookup "" intranet-bug-tracker.Create_a_New_Issue "Create a New Issue"]
@@ -219,8 +219,8 @@ ad_proc -public im_bug_tracker_container_component {
 	  <td class=form-label></td>
 	  <td class=form-widget>$button_html</td>
 	</tr>
-	</form>
 	</table>
+	</form>
     "
     return $html
 }
