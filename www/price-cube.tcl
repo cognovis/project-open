@@ -17,7 +17,7 @@ ad_page_contract {
     { left_var1 "item_uom" }
     { left_var2 "" }
     { left_var3 "" }
-    { cost_type_id:multiple "3700" }
+    { cost_type_id "3700" }
     { customer_type_id:integer 0 }
     { customer_id:integer 0 }
     { provider_id:integer 0 }
@@ -151,16 +151,15 @@ if {"" == $start_date} {
 
 db_1row end_date "
 select
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer, 'YYYY') as end_year,
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer, 'MM') as end_month,
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer, 'DD') as end_day
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer + 31, 'YYYY') as end_year,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer + 31, 'MM') as end_month,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer + 31, 'DD') as end_day
 from dual
 "
 
 if {"" == $end_date} { 
     set end_date "$end_year-$end_month-01"
 }
-
 
 set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
@@ -259,7 +258,7 @@ ns_write "
 	<tr>
 	  <td class=form-label>Cost Type</td>
 	  <td class=form-widget colspan=3>
-	    [im_select -translate_p 1 -multiple_p 1 -size 7 cost_type_id $cost_type_options $cost_type_id]
+	    [im_select -translate_p 1 -size 7 cost_type_id $cost_type_options $cost_type_id]
 	  </td>
 	</tr>
 	<tr>
@@ -346,21 +345,6 @@ ns_write "
 # ------------------------------------------------------------
 # Get the cube data
 #
-
-# set cube_array [im_reporting_cubes_cube \
-#     -cube_name "price" \
-#     -start_date $start_date \
-#     -end_date $end_date \
-#     -left_vars $left \
-#     -top_vars $top \
-#     -cost_type_id $cost_type_id \
-#     -customer_type_id $customer_type_id \
-#     -customer_id $customer_id \
-# ]
-
-
-    ad_return_complaint 1 $cost_type_id
-
 
 set cube_array [im_reporting_cubes_price \
     -start_date $start_date \
