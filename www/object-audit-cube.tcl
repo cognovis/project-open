@@ -20,6 +20,8 @@ ad_page_contract {
     { object_type "" }
     { user_id:integer 0 }
     { object_id:integer 0 }
+    { enable_all_object_type_p 0 }
+
 }
 
 
@@ -175,9 +177,36 @@ set left_scale_options {
 	"object_name" "Object Name"
 }
 
+# "Interesting" ]po[ object types
+set po_object_type {
+	user
+	person
+	party
+	bt_bug
+	im_company
+	im_project
+	im_office
+	im_timesheet_task
+	im_trans_task
+	im_cost
+	im_invoice
+	im_expense
+	im_trans_invoice
+	im_timesheet_invoice
+}
+
+if {"1" != $enable_all_object_type_p} {
+    set enable_all_object_type_p 0
+}
+
+set intersting_objects_sql ""
+if {!$enable_all_object_type_p} {
+    set intersting_objects_sql "and object_type in ('[join $po_object_type "', '"]')"
+}
 set object_type_options [db_list_of_lists otypes "
 	select pretty_name, object_type
 	from acs_object_types
+	where 1=1 $intersting_objects_sql
 	order by pretty_name
 "]
 set object_type_options [linsert $object_type_options 0 {"" ""}]
@@ -188,6 +217,9 @@ set object_type_options [linsert $object_type_options 0 {"" ""}]
 
 # Write out HTTP header, considering CSV/MS-Excel formatting
 im_report_write_http_headers -output_format "html"
+
+set enable_all_object_type_p_checked ""
+if {$enable_all_object_type_p} { set enable_all_object_type_p_checked "checked" }
 
 ns_write "
 [im_header]
@@ -213,6 +245,12 @@ ns_write "
 	  <td class=form-label>Object Type</td>
 	  <td class=form-widget colspan=3>
 	    [im_select -ad_form_option_list_style_p 1 -translate_p 0 object_type $object_type_options $object_type]
+	  </td>
+	</tr>
+	<tr>
+	  <td class=form-label><nobr>Show Advanced</nobr><br>Object Types</td>
+	  <td class=form-widget colspan=3>
+	    <input type=checkbox name=enable_all_object_type_p value=1 $enable_all_object_type_p_checked>
 	  </td>
 	</tr>
 	<tr>
@@ -281,6 +319,10 @@ set criteria [list]
 
 if {"" != $object_type} {
     lappend criteria "o.object_type = :object_type"
+}
+
+if {!$enable_all_object_type_p} {
+    lappend criteria "o.object_type in ('[join $po_object_type "', '"]')" 
 }
 
 set where_clause [join $criteria " and\n\t\t\t"]
