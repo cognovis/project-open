@@ -7,6 +7,9 @@
 
     <formtemplate id="bug"></formtemplate>
 
+
+
+
 <!--
 <table cellspacing=1 cellpadding=1>
 <tr valign=top>
