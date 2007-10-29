@@ -229,7 +229,7 @@ ad_proc im_reporting_cubes_finance {
         lappend criteria "c.cost_type_id in ([join [im_sub_categories $cost_type_id] ", "])"
     }
     if {"" != $customer_type_id && 0 != $customer_type_id} {
-        lappend criteria "pcust.company_type_id in ([join [im_sub_categories $customer_type_id] ", "])"
+        lappend criteria "cust.company_type_id in ([join [im_sub_categories $customer_type_id] ", "])"
     }
     set where_clause [join $criteria " and\n\t\t\t"]
     if { ![empty_string_p $where_clause] } {
