@@ -179,7 +179,7 @@ set object_type_options [db_list_of_lists otypes "
 	from acs_object_types
 	order by pretty_name
 "]
-# set object_type_options [linsert $object_type_options 0 "" ""]
+set object_type_options [linsert $object_type_options 0 {"" ""}]
 
 # ------------------------------------------------------------
 # Start formatting the page
