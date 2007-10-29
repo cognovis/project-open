@@ -50,6 +50,35 @@ ad_proc -private im_package_bug_tracker_id_helper {} {
 
 
 # ----------------------------------------------------------------------
+# Permission routines
+# ----------------------------------------------------------------------
+
+
+ad_proc -public bt_bug_permissions {user_id bug_id view_var read_var write_var admin_var} {
+    Fill the "by-reference" variables read, write and admin
+    with the permissions of $user_id on $bug_id
+} {
+    upvar $view_var view
+    upvar $read_var read
+    upvar $write_var write
+    upvar $admin_var admin
+
+    set view 1
+    set read 1
+    set write 1
+    set admin 1
+
+    # No read - no write...
+    if {!$read} {
+        set write 0
+        set admin 0
+    }
+}
+
+
+
+
+# ----------------------------------------------------------------------
 # Options & Selects
 # ----------------------------------------------------------------------
 
