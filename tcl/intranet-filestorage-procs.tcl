@@ -301,6 +301,7 @@ ad_proc -private im_filestorage_base_path { folder_type object_id } {
 	user {return [im_filestorage_user_path $object_id]}
 	home {return [im_filestorage_home_path]}
 	zip {return [im_filestorage_zip_path]}
+	bt_fs {return [im_filestorage_bug_path $object_id]}
     }
     return ""
 }
@@ -380,6 +381,16 @@ ad_proc im_filestorage_user_component { user_id user_to_show_id user_name return
     set user_path [im_filestorage_user_path $user_to_show_id]
     set folder_type "user"
     return [im_filestorage_base_component $user_id $user_to_show_id $user_name $user_path $folder_type]
+}
+
+
+ad_proc im_filestorage_bug_component { user_id bug_id user_name return_url} {
+    Filestorage for Bug-Tracker
+} {
+    set bug_number [db_string bug_num "select bug_number from bt_bugs where bug_id = :bug_id" -default "999999"]
+    set bug_path [im_filestorage_bug_path $bug_id]
+    set folder_type "bt_fs"
+    return [im_filestorage_base_component $user_id $bug_id "Bug \#$bug_number" $bug_path $folder_type]
 }
 
 
@@ -617,6 +628,28 @@ ad_proc im_filestorage_company_path_helper { company_id } {
 
     return "$base_path_unix/$company_path"
 }
+
+
+ad_proc im_filestorage_bug_path { bug_id } {
+    Determine the location where the bug files
+    are stored on the hard disk
+} {
+    set package_key "intranet-filestorage"
+    set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
+    set base_path_unix [parameter::get -package_id $package_id -parameter "BugBasePathUnix" -default "/tmp/bugs"]
+
+    # Return a demo path for all project, clients etc.
+    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
+	set path [ad_parameter "TestDemoDevUserPath" "" "users"]
+	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
+	return "$base_path_unix/$path"
+    }
+    
+    return "$base_path_unix/$bug_id"
+}
+
+
+
 
 
 
