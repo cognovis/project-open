@@ -429,7 +429,7 @@ ad_proc im_reporting_cubes_price {
     { -end_date "2099-12-31" }
     { -left_vars "uom" }
     { -top_vars "" }
-    { -cost_type_id {3700} }
+    { -cost_type_id "" }
     { -customer_type_id 0 }
     { -customer_id 0 }
     { -provider_id 0 }
@@ -443,6 +443,8 @@ ad_proc im_reporting_cubes_price {
     # ------------------------------------------------------------
     # Defaults
     
+    ad_return_complaint 1 $cost_type_id
+
     set sigma "&Sigma;"
     
     # The complete set of dimensions - used as the key for
@@ -466,7 +468,7 @@ ad_proc im_reporting_cubes_price {
     if {"" != $provider_id && 0 != $provider_id} {
 	lappend criteria "c.provider_id = :provider_id"
     }
-    if {1} {
+    if {"" != $cost_type_id} {
 	lappend criteria "c.cost_type_id in ([join [im_sub_categories $cost_type_id] ", "])"
     }
     if {"" != $customer_type_id && 0 != $customer_type_id} {

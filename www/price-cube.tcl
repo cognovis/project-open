@@ -359,6 +359,9 @@ ns_write "
 # ]
 
 
+    ad_return_complaint 1 $cost_type_id
+
+
 set cube_array [im_reporting_cubes_price \
     -start_date $start_date \
     -end_date $end_date \
