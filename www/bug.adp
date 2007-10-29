@@ -5,22 +5,22 @@
 
 <p>
 
-    <formtemplate id="bug"></formtemplate>
 
 
-
-
-<!--
 <table cellspacing=1 cellpadding=1>
 <tr valign=top>
   <td width="50%">
+	<formtemplate id="bug"></formtemplate>
   </td>
   <td width="50%">
-	Add here call to intranet-filestorage-openacs.related_files_list -object_id $bug(bug_id) -return_url $return_url
+
+	<%= [im_table_with_title $fs_title [im_filestorage_bug_component $user_id $bug(bug_id) $bug_number $return_url]] %>
+
   </td>
 </tr>
 </table>
--->
+
+
 </p>
 
 <if @user_id@ eq 0>

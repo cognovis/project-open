@@ -23,14 +23,14 @@ set return_url [export_vars -base [ad_conn url] [bug_tracker::get_export_variabl
 set project_name [bug_tracker::conn project_name]
 set package_id [ad_conn package_id]
 set package_key [ad_conn package_key]
-
 set user_id [ad_conn user_id]
 
 permission::require_permission -object_id $package_id -privilege read
 
 set page_title "[bug_tracker::conn Bug] #$bug_number" 
-
+set fs_title [lang::message::lookup "" bug-tracker.Related_Files "Related Files"]
 set context [list [ad_quotehtml $page_title]]
+
 
 # Is this project using multiple versions?
 set versions_p [bug_tracker::versions_p]
