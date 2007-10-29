@@ -443,8 +443,6 @@ ad_proc im_reporting_cubes_price {
     # ------------------------------------------------------------
     # Defaults
     
-    ad_return_complaint 1 $cost_type_id
-
     set sigma "&Sigma;"
     
     # The complete set of dimensions - used as the key for

@@ -151,14 +151,14 @@ if {"" == $start_date} {
 
 db_1row end_date "
 select
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer + 31, 'YYYY') as end_year,
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer + 31, 'MM') as end_month,
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer + 31, 'DD') as end_day
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer, 'YYYY') as end_year,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer, 'MM') as end_month,
+	to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_past::integer, 'DD') as end_day
 from dual
 "
 
 if {"" == $end_date} { 
-    set end_date "$end_year-$end_month-01"
+    set end_date "2099-12-31"
 }
 
 set company_url "/intranet/companies/view?company_id="
