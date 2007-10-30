@@ -39,7 +39,7 @@ DECLARE
 BEGIN
 	select group_id into v_emp_id from groups where group_name = ''Employees'';
 	select group_id into v_freel_id from groups where group_name = ''Freelancers'';
-	select group_id into v_freel_id from groups where group_name = ''Customers'';
+	select group_id into v_cust_id from groups where group_name = ''Customers'';
 
 	-- Check if permissions were already configured
 	-- Stop if there is just a single configured plugin.
