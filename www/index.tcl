@@ -42,6 +42,7 @@ set wikis_sql "
                 and ci.name = 'index'
                 and cr.revision_id = ci.live_revision
                 and sn.object_id = ap.package_id
+		and 't' = acs_permission__permission_p(ap.package_id, :user_id, 'read')
 "
 
 set ctr 0
