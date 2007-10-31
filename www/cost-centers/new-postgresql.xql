@@ -32,4 +32,17 @@
 	</querytext>
 </fullquery>
 
+<fullquery name="cost_center_context_update">
+	<querytext>
+
+	update acs_objects set 
+		context_id = :parent_id
+	where	object_id = :cost_center_id;
+
+	</querytext>
+</fullquery>
+
+
+
+
 </queryset>
