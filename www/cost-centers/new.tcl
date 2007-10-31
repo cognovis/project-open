@@ -93,6 +93,7 @@ ad_form -extend -name cost_center -on_request {
 } -new_data {
 
     db_exec_plsql cost_center_insert {}
+    db_dml cost_center_context_update {}
 
 } -edit_data {
 
@@ -109,7 +110,10 @@ ad_form -extend -name cost_center -on_request {
 		description		= :description
 	where
 		cost_center_id = :cost_center_id
-"
+    "
+
+    db_dml cost_center_context_update {}
+
 } -on_submit {
 
 	ns_log Notice "new1: on_submit"
