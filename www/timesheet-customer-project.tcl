@@ -36,8 +36,9 @@ set menu_label "reporting-timesheet-customer-project"
 set current_user_id [ad_maybe_redirect_for_registration]
 
 # Default User = Current User, to reduce performance overhead
-if {0 == $user_id} { set user_id $current_user_id }
-
+if {"" == $start_date && "" == $end_date && 0 == $user_id} { 
+    set user_id $current_user_id 
+}
 
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
@@ -391,7 +392,7 @@ switch $output_format {
 		<tr>
 		  <td class=form-label>User</td>
 		  <td class=form-widget>
-		    [im_user_select -include_empty_p 1 user_id $user_id]
+		    [im_user_select -include_empty_p 1 -include_empty_name "-- Please select --" user_id $user_id]
 		  </td>
 		</tr>
                 <tr>
