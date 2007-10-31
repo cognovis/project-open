@@ -20,42 +20,6 @@ set return_url "[ad_conn url]?[ad_conn query]"
 set parent_var :folder_id
 set page_title "Active Wikis"
 
-
-# ----------------------------------------------------
-# Redirect to admin if there is exactly one wiki...
-set wikis_sql "
-        select
-                ap.package_id,
-                cf.folder_id,
-                cr.title as wiki_title,
-                sn.name as wiki_mount
-        from
-                apm_packages ap,
-                cr_folders cf,
-                cr_items ci,
-                cr_revisions cr,
-                site_nodes sn
-        where
-                ap.package_key = 'wiki'
-                and cf.package_id = ap.package_id
-                and ci.parent_id = cf.folder_id
-                and ci.name = 'index'
-                and cr.revision_id = ci.live_revision
-                and sn.object_id = ap.package_id
-		and 't' = acs_permission__permission_p(ap.package_id, :user_id, 'read')
-"
-
-set ctr 0
-db_foreach wikis $wikis_sql {
-    incr ctr
-}
-
-# if {1 == $ctr} {
-#     ad_returnredirect [export_vars -base "/$wiki_mount/admin/index?" {folder_id}]
-#     ad_script_abort
-# }
-
-
 # ----------------------------------------------------
 # Show pages
 
@@ -80,6 +44,7 @@ set wikis_sql "
                 and ci.parent_id = cf.folder_id
                 and cr.revision_id = ci.live_revision
                 and sn.object_id = ap.package_id
+		and 't' = acs_permission__permission_p(ap.package_id, :user_id, 'read')
 	order by lower(ci.name)
 "
 

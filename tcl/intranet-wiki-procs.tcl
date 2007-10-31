@@ -44,6 +44,7 @@ ad_proc im_wiki_base_component { object_type object_id } {
     Wiki component to be shown at the system home page
 } {
     set folder_id [wiki::get_folder_id]
+    set user_id [ad_get_user_id]
     set colspan 1
 	
     # Get the list of currently existing Wiki installations
@@ -51,21 +52,17 @@ ad_proc im_wiki_base_component { object_type object_id } {
 	select
 		ap.package_id,
 		cf.folder_id,
-		cr.title as wiki_title,
+		ap.instance_name as wiki_title,
 		sn.name as wiki_mount
 	from
 		apm_packages ap,
 		cr_folders cf,
-		cr_items ci,
-		cr_revisions cr,
 		site_nodes sn
 	where
 		ap.package_key = 'wiki'
 		and cf.package_id = ap.package_id
-		and ci.parent_id = cf.folder_id
-		and ci.name = 'index'
-		and cr.revision_id = ci.live_revision
 		and sn.object_id = ap.package_id
+		and 't' = acs_permission__permission_p(ap.package_id, :user_id, 'read')
     "
 
     set object_name [db_string object_name_for_one_object_id "" -default ""]
@@ -76,16 +73,16 @@ ad_proc im_wiki_base_component { object_type object_id } {
     db_foreach wikis $wikis_sql {
 
 	incr ctr
-	append wikis_html "<b>$wiki_title Wiki</b><br>\n"
+	append wikis_html "<b>$wiki_title</b><br>\n"
 
 	if {0 != $object_id} {
 	    append wikis_html "<li><A href=\"/$wiki_mount/$object_name_mangled\">$object_name</A>\n"
 	}
 
 	append wikis_html "
-<li><A href=\"/$wiki_mount/index\">Main Index</A>
-<li><A href=\"/$wiki_mount/Category\">Categories</A>
-"
+		<li><A href=\"/$wiki_mount/index\">Main Index</A>
+		<li><A href=\"/$wiki_mount/Category\">Categories</A>
+	"
 
 	set admin_p [permission::permission_p \
                 -object_id $package_id \
@@ -94,11 +91,12 @@ ad_proc im_wiki_base_component { object_type object_id } {
 	]
 
 	if {$admin_p} {
-	    append wikis_html "<li><A href=\"/intranet/admin/permissions/one?object_id=$package_id\">Admin Wiki Permissions</A>\n"
-	    append wikis_html "<li><A href=\"/$wiki_mount/admin/index?folder_id=$folder_id&modified_only=1\">Admin Wiki Changes</A>\n"
-	    append wikis_html "<li><A href=\"/$wiki_mount/admin/index?folder_id=$folder_id\">Admin All Pages</A>\n"
+	    append wikis_html "
+		<li><A href=\"/intranet/admin/permissions/one?object_id=$package_id\">Admin Wiki Permissions</A>
+		<li><A href=\"/$wiki_mount/admin/index?folder_id=$folder_id&modified_only=1\">Admin Wiki Changes</A>
+		<li><A href=\"/$wiki_mount/admin/index?folder_id=$folder_id\">Admin All Pages</A>
+	    "
 	}
-
 	append wikis_html "<p>\n"
     }
 
