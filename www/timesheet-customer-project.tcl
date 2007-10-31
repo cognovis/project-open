@@ -36,7 +36,7 @@ set menu_label "reporting-timesheet-customer-project"
 set current_user_id [ad_maybe_redirect_for_registration]
 
 # Default User = Current User, to reduce performance overhead
-if {"" == $start_date && "" == $end_date && 0 == $user_id} { 
+if {"" == $start_date && "" == $end_date && 0 == $project_id && 0 == $company_id && 0 == $user_id} { 
     set user_id $current_user_id 
 }
 
