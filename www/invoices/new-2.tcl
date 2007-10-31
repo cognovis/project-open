@@ -20,6 +20,8 @@ ad_page_contract {
     invoice_currency
     target_cost_type_id:integer
     { return_url ""}
+    { start_date "" }
+    { end_date "" }
 }
 
 # ---------------------------------------------------------------
@@ -44,15 +46,14 @@ if {![im_permission $user_id add_invoices]} {
     <li>[_ intranet-timesheet2-invoices.lt_You_dont_have_suffici]"    
 }
 
+set target_cost_type [im_category_from_id $target_cost_type_id]
+
 set allowed_cost_type [im_cost_type_write_permissions $current_user_id]
 if {[lsearch -exact $allowed_cost_type $target_cost_type_id] == -1} {
     ad_return_complaint "Insufficient Privileges" "
         <li>You can't create documents of type \#$target_cost_type_id."
     ad_script_abort
 }
-
-
-
 
 if {[info exists select_project]} {
     set project_id $select_project
@@ -65,224 +66,102 @@ if {[info exists select_project]} {
     }
 }
 
+
+# ---------------------------------------------------------------
+# Check start- and end_date
+# ---------------------------------------------------------------
+
+# Check that Start & End-Date have correct format
+if {"" != $start_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $start_date]} {
+    ad_return_complaint 1 "Start Date doesn't have the right format.<br>
+    Current value: '$start_date'<br>
+    Expected format: 'YYYY-MM-DD'"
+}
+
+if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $end_date]} {
+    ad_return_complaint 1 "End Date doesn't have the right format.<br>
+    Current value: '$end_date'<br>
+    Expected format: 'YYYY-MM-DD'"
+}
+
+set days_in_past 0
+db_1row todays_date "
+    select
+        to_char(sysdate::date - :days_in_past::integer, 'YYYY') as start_year,
+        to_char(sysdate::date - :days_in_past::integer, 'MM') as start_month,
+        to_char(sysdate::date - :days_in_past::integer, 'DD') as start_day
+    from dual
+"
+if {"" == $start_date} {
+    set start_date "$start_year-$start_month-01"
+}
+
+set days_in_future "1 month"
+db_1row end_date "
+    select
+        to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_future::interval, 'YYYY') as end_year,
+        to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_future::interval, 'MM') as end_month,
+        to_char(to_date(:start_date, 'YYYY-MM-DD') + :days_in_future::interval, 'DD') as end_day
+    from dual
+"
+if {"" == $end_date} {
+    set end_date "$end_year-$end_month-01"
+}
+
 # ---------------------------------------------------------------
 # 3. Check the consistency of the select project and get client_id
 # ---------------------------------------------------------------
 
-# select tasks only from the selected projects ...
-# and form a $projects_where_clause that allows to select
-# only from these projects.
-set in_clause_list [list]
-foreach selected_project $select_project {
-        lappend in_clause_list $selected_project
-}
-
-set projects_where_clause "
-    and p.project_id in (
-	select
-	        children.project_id
-	from
-	        im_projects parent,
-	        im_projects children
-	where
-	        children.project_status_id not in (
-			[im_project_status_deleted],
-			[im_project_status_canceled]
-		)
-	        and children.tree_sortkey 
-			between parent.tree_sortkey 
-			and tree_right(parent.tree_sortkey)
-	        and parent.project_id in ([join $in_clause_list ","])
-	order by
-	        children.tree_sortkey
-    )
-"
-
-
 # check that all projects are from the same client
-set num_clients [db_string select_num_clients "
-select
-        count(*)
-from
-        (select distinct company_id
-        from im_projects
-        where project_id in ([join $in_clause_list ","])
-        ) s
+set clients [db_list clients "
+	select	distinct company_id
+	from	im_projects
+	where	project_id in ([join $select_project ","])
 "]
 
-if {$num_clients > 1} {
+if {[llength $clients] > 1} {
     ad_return_complaint "[_ intranet-timesheet2-invoices.lt_You_have_selected_mul]" "
         <li>[_ intranet-timesheet2-invoices.lt_You_have_selected_mul_1]<BR>
             [_ intranet-timesheet2-invoices.lt_Please_backup_and_res]"
     return
 }
 
-
 # now we know that all projects are from a single company:
-set company_id [db_string select_num_clients "select distinct company_id from im_projects where project_id in ([join $in_clause_list ","])"]
+set company_id [lindex $clients 0]
 
 
 # ---------------------------------------------------------------
-# Generate SQL Query for the list of tasks (invoicable items)
+# Format the Filter
 # ---------------------------------------------------------------
 
+set form_id "filter"
+set object_type "im_project"
+set action_url [export_vars -base [ns_conn url] {}]
+set form_mode "edit"
 
-# Invoices: We're only looking for projects with non-invoiced tasks.
-# Quotes: We're looking basicly for all projects that satisfy the
-# filter conditions
-if {$target_cost_type_id == [im_cost_type_invoice]} {
-    set task_invoice_id_null "and t.invoice_id is null\n"
-} else {
-    set task_invoice_id_null ""
-}
-
-set sql "
-select 
-	p.project_name,
-	p.project_path,
-	p.project_path as project_short_name,
-	t.task_id,
-	t.task_name,
-	t.planned_units,
-	t.billable_units,
-	t.reported_hours_cache,
-	t.uom_id,
-	t.task_type_id,
-	t.project_id,
-	im_material_name_from_id(t.material_id) as material_name,
-	im_category_from_id(t.uom_id) as uom_name,
-	im_category_from_id(t.task_type_id) as type_name,
-	im_category_from_id(t.task_status_id) as task_status
-from 
-	im_timesheet_tasks_view t,
-	im_projects p
-where 
-	t.project_id = p.project_id
-	$task_invoice_id_null
-        $projects_where_clause
-order by
-	project_id, task_id
-"
-
-set disabled_task_status_where "
-        and t.task_status_id in (
-                select	category_id
-                from	im_categories
-                where	category_type = 'Intranet Timesheet Task Status'
-			and upper(category) not in (
-                        'CLOSED','INVOICED','PARTIALLY PAID',
-                        'DECLINED','PAID','DELETED','CANCELED'
-                )
-        )
-"
-
-
-set task_table "
-<tr> 
-  <td class=rowtitle align=middle>[im_gif help "Include in Invoice"]</td>
-  <td class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Task_Name "Task Name"]</td>
-  <td class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Material "Material"]</td>
-  <td class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Planned_Units "Planned Units"]</td>
-  <td class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Billable_Units "Billable Units"]</td>
-  <td class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Reported_Units "Reported Units"]</td>
-  <td class=rowtitle>  
-    [lang::message::lookup ""  intranet-timesheet2-invoices.UoM "UoM"] [im_gif help "Unit of Measure"]
-  </td>
-  <td class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Type Type]</td>
-  <td class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Status Status]</td>
-</tr>
-<tr>
-  <td></td>
-  <td colspan=2>Please select the type of hours to use:</td>
-  <td align=center><input type=radio name=invoice_hour_type value=planned></td>
-  <td align=center><input type=radio name=invoice_hour_type value=billable checked></td>
-  <td align=center><input type=radio name=invoice_hour_type value=reported></td>
-  <td></td>
-  <td></td>
-  <td></td>
-</tr>\n"
-
-set task_table_rows ""
-set ctr 0
-set colspan 11
-set old_project_id 0
-db_foreach select_tasks $sql {
-
-    # insert intermediate headers for every project
-    if {$old_project_id != $project_id} {
-	append task_table_rows "
-		<tr><td colspan=$colspan>&nbsp;</td></tr>
-		<tr>
-		  <td class=rowtitle colspan=$colspan>
-	            <A href=/intranet/projects/view?project_id=$project_id>
-		      $project_short_name
-		    </A>: 
-		    $project_name
-		    <input type=hidden name=select_project value=$project_id>
-	          </td>
-		</tr>\n"
-	set old_project_id $project_id
+ad_form \
+    -name $form_id \
+    -action $action_url \
+    -mode $form_mode \
+    -method GET \
+    -export {select_project target_cost_type_id invoice_currency}\
+    -form {
+        {start_date:text(text),optional {label "Start Date"}}
+        {end_date:text(text),optional {label "Start Date"}}
     }
 
-    append task_table_rows "
-	<tr $bgcolor([expr $ctr % 2])> 
-          <td align=middle>
-            <input type=checkbox name=include_task value=$task_id checked>
-          </td>
-	  <td align=left>$task_name</td>
-	  <td align=right>$material_name</td>
-	  <td align=right>$planned_units</td>
-	  <td align=right>$billable_units</td>
-	  <td align=right>$reported_hours_cache</td>
-	  <td align=right>$uom_name</td>
-	  <td>$type_name</td>
-	  <td>$task_status</td>
-	</tr>"
-    incr ctr
-}
-
-if {![string equal "" $task_table_rows]} {
-    append task_table $task_table_rows
-} else {
-    append task_table "<tr><td colspan=$colspan align=center>[lang::message::lookup "" intranet-timesheet2-invoices.No_tasks_found "No tasks found"]</td></tr>"
-}
-
-# ---------------------------------------------------------------
-# Aggregate or not?
-# ---------------------------------------------------------------
-
-set aggregate_html "
-    <tr><td colspan=7 align=right>
-
-      <input type=checkbox name=aggregate_tasks_p value=1 checked>
-      [lang::message::lookup "" intranet-timesheet2-invoices.Aggregate_tasks_of_the_same_material "Aggregate tasks of the same Material"]
-
-      <input type=submit name=submit value='[lang::message::lookup "" intranet-timesheet2-invoices.lt_Select_Tasks_for_Invo "Select Tasks for Invoicing"]'>
-
-    </td></tr>
-    <tr><td>&nbsp;</td></tr>
-"
+template::element::set_value $form_id start_date $start_date
+template::element::set_value $form_id end_date $end_date
 
 
 # ---------------------------------------------------------------
-# Join all parts together
+# Get the list of tasks
 # ---------------------------------------------------------------
 
-set page_body "
-[im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
+set task_table_rows [im_timesheet_invoicing_project_hierarchy \
+			 -select_project $select_project \
+			 -start_date $start_date \
+			 -end_date $end_date \
+			 -invoice_hour_type "" \
+]
 
-<form action=new-3 method=POST>
-[export_form_vars company_id invoice_currency target_cost_type_id return_url]
-
-  <!-- the list of tasks (invoicable items) -->
-  <table cellpadding=2 cellspacing=2 border=0>
-    $task_table
-    $aggregate_html
-  </table>
-
-</form>
-"
-
-db_release_unused_handles
-
-ad_return_template

@@ -110,3 +110,165 @@ order by
     return $price_list_html
 }
 
+
+
+# ------------------------------------------------------
+# The list of hours per project
+# ------------------------------------------------------
+
+ad_proc im_timesheet_invoicing_project_hierarchy { 
+    { -include_task "" }
+    -select_project:required
+    -start_date:required
+    -end_date:required
+    -invoice_hour_type:required
+} {
+    Returns a formatted HTML table representing the list of subprojects
+    and their logged hours.
+} {
+    set bgcolor(0) " class=roweven"
+    set bgcolor(1) " class=rowodd"
+
+    set default_material_id [im_material_default_material_id]
+    set default_material_name [db_string matname "select acs_object__name(:default_material_id)"]
+
+    set task_table_rows "
+    <tr> 
+	<td class=rowtitle align=middle>[im_gif help "Include in Invoice"] </td>
+	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Task_Name "Task Name"]</td>
+	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Material "Material"]</td>
+	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Planned_br_Units "Planned<br>Units"]</td>
+	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Billable_br_Units "Billable<br>Units"]</td>
+	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.All_br_Reported_br_Units "All<br>Reported<br>Units"]</td>
+	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Reported_br_Units_in_br_Interval "Reported<br>Units in<br>Interval"]</td>
+	<td align=center class=rowtitle>[lang::message::lookup ""  intranet-timesheet2-invoices.UoM "UoM"] [im_gif help "Unit of Measure"]</td>
+	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Type Type]</td>
+	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Status Status]</td>
+    </tr>
+    "
+
+    set planned_checked ""
+    set billable_checked ""
+    set reported_checked ""
+    set interval_checked ""
+    set new_checked ""
+    switch $invoice_hour_type {
+	planned { set planned_checked " checked" }
+	billable { set billable_checked " checked" }
+	reported { set reported_checked " checked" }
+	interval { set interval_checked " checked" }
+	new { set new_checked " checked" }
+    }
+
+    set invoice_radio_disabled ""
+    if {"" != $invoice_hour_type} {
+	set invoice_radio_disabled "disabled"
+    }
+
+    # Show a line with with the selected invoicing type
+    append task_table_rows "
+	<tr>
+	  <td colspan=3>Please select the type of hours to use:</td>
+	  <td align=center><input type=radio name=invoice_hour_type value=planned $invoice_radio_disabled $planned_checked></td>
+	  <td align=center><input type=radio name=invoice_hour_type value=billable $invoice_radio_disabled $billable_checked></td>
+	  <td align=center><input type=radio name=invoice_hour_type value=reported $invoice_radio_disabled $reported_checked></td>
+	  <td align=center><input type=radio name=invoice_hour_type value=interval $invoice_radio_disabled $interval_checked></td>
+	  <td></td>
+	  <td></td>
+	  <td></td>
+	</tr>
+    "
+
+    set sql "
+	select
+		parent.project_id as parent_id,
+		parent.project_nr as parent_nr,
+		parent.project_name as parent_name,
+		children.project_id,
+		children.project_name,
+		children.project_nr,
+		im_category_from_id(children.project_status_id) as project_status,
+		im_category_from_id(children.project_type_id) as project_type,
+		tree_level(children.tree_sortkey) - tree_level(parent.tree_sortkey) as level,
+		t.task_id,
+		t.planned_units,
+		t.billable_units,
+		t.uom_id,
+		im_material_name_from_id(t.material_id) as material_name,
+		im_category_from_id(t.uom_id) as uom_name,
+		(select sum(h.hours) from im_hours h where h.project_id = children.project_id) as all_reported_hours,
+		(select sum(h.hours) from im_hours h where 
+			h.project_id = children.project_id
+			and h.day >= to_timestamp(:start_date, 'YYYY-MM-DD')
+			and h.day < to_timestamp(:end_date, 'YYYY-MM-DD')
+		) as hours_in_interval
+	from
+		im_projects parent,
+		im_projects children
+		LEFT OUTER JOIN im_timesheet_tasks t ON (children.project_id = t.task_id)
+	where
+		children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+		and parent.project_id in ([join $select_project ","])
+	order by 
+		parent.project_name, 
+		children.tree_sortkey
+    "
+
+    set ctr 0
+    set colspan 11
+    set old_parent_id 0
+    db_foreach select_tasks $sql {
+
+	if {"" == $material_name} { set material_name $default_material_name }
+
+	# insert intermediate headers for every project
+	if {$old_parent_id != $parent_id} {
+	    append task_table_rows "
+		<tr><td colspan=$colspan>&nbsp;</td></tr>
+		<tr>
+		  <td class=rowtitle colspan=$colspan>
+		    $parent_nr: $parent_name
+		  </td>
+		</tr>\n"
+	    set old_parent_id $parent_id
+	}
+	
+	set indent ""
+	for {set i 0} {$i < $level} {incr i} { 
+	    append indent "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" 
+	}
+
+	set task_checked ""
+	set task_disabled ""
+	if {0 == [llength $include_task]} {
+	    set task_checked "checked"
+	} else {
+	    if {[lsearch $include_task $project_id] > -1} {
+		set task_checked "checked"
+	    }
+	    set task_disabled "disabled"
+	}
+
+	append task_table_rows "
+	<tr $bgcolor([expr $ctr % 2])> 
+	  <td align=middle><input type=checkbox name=include_task value=$project_id $task_disabled $task_checked></td>
+	  <td align=left><nobr>$indent <A href=/intranet/projects/view?project_id=$project_id>$project_name</a></nobr></td>
+	  <td align=right>$material_name</td>
+	  <td align=right>$planned_units</td>
+	  <td align=right>$billable_units</td>
+	  <td align=right>$all_reported_hours</td>
+	  <td align=right>$hours_in_interval</td>
+	  <td align=right>$uom_name</td>
+	  <td>$project_type</td>
+	  <td>$project_status</td>
+	</tr>
+	"
+	incr ctr
+    }
+
+    if {[string equal "" $task_table_rows]} {
+	set task_table_rows "<tr><td colspan=$colspan align=center>[lang::message::lookup "" intranet-timesheet2-invoices.No_tasks_found "No tasks found"]</td></tr>"
+    }
+
+    return $task_table_rows
+}

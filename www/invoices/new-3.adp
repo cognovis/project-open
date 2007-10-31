@@ -114,9 +114,19 @@
   </table>
 
   <!-- the list of tasks (invoicable items) -->
-  <table cellpadding=2 cellspacing=2 border=0 width='100%'>
-    @task_table;noquote@
+  <div align=right>
+  <table cellpadding=2 cellspacing=2 border=0>
+    <%= [im_timesheet_invoicing_project_hierarchy \
+			 -select_project $select_project \
+			 -start_date $invoicing_start_date \
+			 -end_date $invoicing_end_date \
+			 -invoice_hour_type $invoice_hour_type \
+			 -include_task $include_task \
+	]
+    %>
+
   </table>
+  </div>
 
   <!-- the list of task sums, distinguised by type and UOM -->
   <table width=100%>

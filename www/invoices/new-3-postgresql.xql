@@ -39,37 +39,4 @@ where
   </fullquery>
 
 
-  <fullquery name="task_sum">
-    <querytext>
-
-select
-	trim(both ' ' from to_char(s.planned_sum, :number_format)) as planned_sum,
-	trim(both ' ' from to_char(s.billable_sum, :number_format)) as billable_sum,
-	trim(both ' ' from to_char(s.reported_sum, :number_format)) as reported_sum,
-	s.task_type_id,
-	s.material_id,
-	s.task_name,
-	s.uom_id,
-	c_type.category as task_type,
-	c_uom.category as task_uom,
-	s.company_id,
-	s.project_id,
-	p.project_name,
-	p.project_path,
-	p.project_path as project_short_name,
-	p.project_nr
-from
-	($task_sum_inner_sql) s
-      LEFT JOIN
-	im_categories c_uom ON s.uom_id=c_uom.category_id
-      LEFT JOIN
-	im_categories c_type ON s.task_type_id=c_type.category_id
-      LEFT JOIN
-	im_projects p ON s.project_id=p.project_id
-order by
-	p.project_id
-
-    </querytext>
-  </fullquery>
-
 </queryset>
