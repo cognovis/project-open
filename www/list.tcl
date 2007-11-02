@@ -261,19 +261,9 @@ if {"" != $parent_menu_label} {
 # return a table with a form in it (if there are too many
 # options
 set filter_html "
-
-<table>
-<tr valign=top>
-  <td valign=top>
-
-	<form method=get action='/intranet-cost/list'>
+	<form method=get action=\"/intranet-cost/list\">
 	[export_form_vars start_idx order_by how_many view_name view_mode include_subcosts_p customer_id provider_id company_id project_id letter]
 	<table border=0 cellpadding=1 cellspacing=1>
-	  <tr> 
-	    <td colspan='2' class=rowtitle align=center>
-	      [_ intranet-cost.Filter_Documents]
-	    </td>
-	  </tr>
 	  <tr>
 	    <td>[_ intranet-cost.Document_Status]:</td>
 	    <td>
@@ -284,34 +274,11 @@ set filter_html "
 	    <td>[_ intranet-cost.Document_Type]:</td>
 	    <td>
 	      [im_category_select -include_empty_p 1 "Intranet Cost Type" cost_type_id $cost_type_id]
-	      <input type=submit value='[_ intranet-cost.Go]' name=submit>
+	      <input type=submit value=\"[_ intranet-cost.Go]\" name=submit>
 	    </td>
 	  </tr>
 	</table>
 	</form>
-
-  </td>
-  <td valign=top>&nbsp;</td>
-  <td valign=top>
-
-	<table border=0 cellpadding=1 cellspacing=1>
-	  <tr> 
-	    <td colspan='2' class=rowtitle align=center>
-	      [_ intranet-cost.lt_Cost_Item_Administrat]
-	    </td>
-	  </tr>
-	  <tr>
-	    <td colspan=2 valign=top>
-	      <ul>
-		$new_document_menu
-	      </ul>
-	    </td>
-	  </tr>
-	</table>
-	
-  </td>
-</tr>
-</table>
 "
 
 # ---------------------------------------------------------------
@@ -460,21 +427,7 @@ set button_html "
 # 10. Join all parts together
 # ---------------------------------------------------------------
 
-set page_body "
-$filter_html
-[im_costs_navbar $letter "/intranet-cost/list" $next_page_url $previous_page_url [list cost_status_id cost_type_id company_id start_idx order_by how_many view_name letter] "<#_ costs#>"]
-
-<form action=/intranet-cost/costs/cost-action method=POST>
-[export_form_vars company_id cost_id return_url]
-  <table width=100% cellpadding=2 cellspacing=2 border=0>
-    $table_header_html
-    $table_body_html
-    $table_continuation_html
-    $button_html
-  </table>
-</form>
-
-"
+set sub_navbar [im_costs_navbar "none" "/intranet-cost/list" $next_page_url $previous_page_url [list cost_status_id cost_type_id company_id start_idx order_by how_many view_name letter] ""] 
 
 db_release_unused_handles
 

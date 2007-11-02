@@ -1,9 +1,7 @@
 <master src="../../intranet-core/www/master">
 <property name="title">@page_title;noquote@</property>
 <property name="main_navbar_label">finance</property>
-
-<br>
-<%= [im_costs_navbar "none" "/intranet/invoices/index" "" "" [list] "costs_home"] %>
+<property name="sub_navbar">@sub_navbar;noquote@</property>
 
 <H2>@page_title;noquote@</H2>
 <p>
@@ -14,27 +12,31 @@
 <tr>
   <td valign=top>
 
-    <h3>#intranet-cost.Documentation#</h3>
+    <%= [im_box_header [_ intranet-cost.Documentation]] %>
     <ul>
-	<li><a href="http://www.project-open.com/">#intranet-cost.lt_Finance_high-level_de#</a>
+	<li><a href="http://www.project-open.com/">#intranet-cost.lt_Finance_high-level_de#</a></li>
     </ul>
+    <%= [im_box_footer] %>
 
 
-    <h3>#intranet-cost.Options#</h3>
+    <%= [im_box_header [_ intranet-cost.Options]] %>
     <ul>
 	@new_list_html;noquote@
     </ul>
+    <%= [im_box_footer] %>
 
     <%= [im_component_bay left] %>
   </td>
   <td valign=top>
 
 
-    <h3>#intranet-cost.New_Customer_Docs#</h3>
+    <%= [im_box_header [_ intranet-cost.New_Customer_Docs]] %>
     @customers_menu;noquote@
+    <%= [im_box_footer] %>
 
-    <h3>#intranet-cost.New_Provider_Docs#</h3>
+    <%= [im_box_header [_ intranet-cost.New_Provider_Docs]] %>
     @provider_menu;noquote@
+    <%= [im_box_footer] %>
 
     <%= [im_component_bay right] %>
   </td>

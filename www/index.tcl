@@ -69,7 +69,7 @@ db_foreach menu_select $menu_select_sql {
         order by sort_order"
 
     # Start formatting the menu bar
-    set provider_menu ""
+    set provider_menu "<ul>"
     set ctr 0
     db_foreach menu_select $menu_select_sql {
 	
@@ -77,7 +77,7 @@ db_foreach menu_select $menu_select_sql {
 	regsub -all " " $name "_" name_key
 	append provider_menu "<li><a href=\"$url\">[_ intranet-invoices.$name_key]</a></li>\n"
     }
-
+    append provider_menu "</ul>"
 
 
     set parent_menu_sql "select menu_id from im_menus where label= 'invoices_customers'"
@@ -92,7 +92,7 @@ db_foreach menu_select $menu_select_sql {
         order by sort_order"
 
     # Start formatting the menu bar
-    set customers_menu ""
+    set customers_menu "<ul>"
     set ctr 0
     db_foreach menu_select $menu_select_sql {
 	
@@ -100,5 +100,10 @@ db_foreach menu_select $menu_select_sql {
 	regsub -all " " $name "_" name_key
 	append customers_menu "<li><a href=\"$url\">[_ intranet-invoices.$name_key]</a></li>\n"
     }
+    append customers_menu "</ul>"
+
+set sub_navbar [im_costs_navbar "none" "/intranet/invoices/index" "" "" [list] "costs_home"] 
+
+
 
 
