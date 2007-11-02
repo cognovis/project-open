@@ -247,7 +247,8 @@ ad_proc -deprecated ad_header_with_extra_stuff {
 } {
     This is the version of the ad_header that accepts extra stuff for the document head and pre-page content html
 } {
-    set html "<html>
+    set html "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">
+<html>
 <head>
 $extra_stuff_for_document_head
 <title>$page_title</title>
