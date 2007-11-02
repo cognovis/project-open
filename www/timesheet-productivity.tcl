@@ -280,7 +280,7 @@ switch $output_format {
     html {
         ns_write "
 	[im_header]
-	[im_navbar]
+	[im_navbar reporting]
         <div id=\"slave\">
         <div id=\"slave_content\">
         <div class=\"filter-list\">
@@ -388,6 +388,6 @@ im_report_render_row \
     -cell_class $class
 
 
-switch $output_format {    
+switch $output_format {
     html { ns_write "</table>[im_box_footer]</div></div></div>\n[im_footer]\n" }
 }
