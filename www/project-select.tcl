@@ -40,5 +40,7 @@ set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-invoices.
 set customer_select [im_company_select company_id 0 "" "Customer"]
 set provider_select [im_company_select company_id 0 "" "Provider"]
 
+set sub_navbar [im_costs_navbar "none" "/intranet/invoices/index" "" "" [list]] 
+
 
 db_release_unused_handles
