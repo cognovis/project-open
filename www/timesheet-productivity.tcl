@@ -281,6 +281,14 @@ switch $output_format {
         ns_write "
 	[im_header]
 	[im_navbar]
+        <div id=\"slave\">
+        <div id=\"slave_content\">
+        <div class=\"filter-list\">
+
+        <div class=\"filter\">
+        <div class=\"filter-block\">
+
+
 	<form>
 		<table border=0 cellspacing=1 cellpadding=1>
 		<tr>
@@ -313,6 +321,10 @@ switch $output_format {
 		</tr>
 		</table>
 	</form>
+        </div>
+        </div>
+        <div class=\"fullwidth-list\">
+        [im_box_header $page_title]
 	<table border=0 cellspacing=1 cellpadding=1>\n"
     }
 }
@@ -376,6 +388,6 @@ im_report_render_row \
     -cell_class $class
 
 
-switch $output_format {
-    html { ns_write "</table>\n[im_footer]\n" }
+switch $output_format {    
+    html { ns_write "</table>[im_box_footer]</div></div></div>\n[im_footer]\n" }
 }

@@ -361,6 +361,14 @@ switch $output_format {
 	ns_write "
 	[im_header $page_title]
 	[im_navbar]
+        <div id=\"slave\">
+        <div id=\"slave-content\">
+
+        <div class=\"filter-list\">
+
+        <div class=\"filter\">
+        <div class=\"filter-block\">
+
 	<form>
 	<table border=0 cellspacing=1 cellpadding=1>
 	<tr valign=top><td>
@@ -413,6 +421,12 @@ switch $output_format {
 	</td></tr>
 	</table>
 	</form>
+
+        </div>
+        </div>
+        <div class=\"fullwidth-list\">
+        [im_box_header $page_title]
+
 	<table border=0 cellspacing=1 cellpadding=1>\n"
     }
 }
@@ -489,5 +503,5 @@ im_report_render_row \
 # and write out the page footer.
 #
 switch $output_format {
-    html { ns_write "</table>\n[im_footer]\n"}
+    html { ns_write "</table>[im_box_footer]</div></div></div>\n</div></div>[im_footer]\n"}
 }
