@@ -86,7 +86,7 @@ ad_proc im_security_update_client_component { } {
     }
 
     set sec_html "
-<iframe src=\"$sec_url\" width=\"90%\" height=\"100\" name=\"$security_update_l10n\">
+<iframe src=\"$sec_url\" frameborder=0 width=\"338\" height=\"100\" name=\"$security_update_l10n\">
   <p>$no_iframes_l10n</p>
 </iframe>
 
