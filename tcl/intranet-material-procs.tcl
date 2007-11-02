@@ -35,7 +35,24 @@ ad_proc -private im_package_material_id_helper {} {
 }
 
 ad_proc -private im_material_default_material_id {} {
-    return  [util_memoize {db_string default_material "select material_id from im_materials where material_nr='default'" -default 0}]
+    set material_id [util_memoize {db_string default_material "select material_id from im_materials where material_nr='default'" -default 0}]
+    if {0 == $material_id} {
+	ad_return_complaint 1 "<b>[lang::message::lookup "" intranet-material.Bad_Config_title "Bad 'Material' Configuration"]</b>:
+		<br>[lang::message::lookup "" intranet-material.Bad_Config_msg "
+		Unable to find any 'material' with name 'default'.<br>
+		We need this 'default material' in order to assign a type of service
+		to objects that otherwise don't have service information, such as projects etc.<br>
+		Please inform your System Administrator and tell him to create a 'default' 
+		material in the <a href='/intranet-material/'>Material Administration Page</a>.
+				  "]
+	"
+
+	# Un'cache' the value for the material just reported missing...
+	im_permission_flush
+
+	ad_script_abort
+    }
+    return $material_id
 }
 
 
