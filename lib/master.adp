@@ -3,6 +3,7 @@
   <property name="header_stuff">
     <link rel="stylesheet" type="text/css" href="/resources/bug-tracker/bug-tracker.css" media="all">
   </property>
+  <property name="main_navbar_label">bug_tracker</property>
   <if @signatory@ not nil><property name="signatory">@signatory;noquote@</property></if>
   <if @focus@ not nil><property name="focus">@focus;noquote@</property></if>
   <property name="body_start_include">/packages/bug-tracker/lib/version-bar</property>
