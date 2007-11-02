@@ -337,11 +337,6 @@ set filter_html "
 <form method=get action='/intranet-trans-invoices/invoices/new'>
 [export_form_vars start_idx project_id order_by how_many target_cost_type_id view_name include_subprojects_p letter]
 <table border=0 cellpadding=0 cellspacing=0>
-  <tr>
-    <td colspan='2' class=rowtitle align=center>
-      [_ intranet-core.Filter_Projects]
-    </td>
-  </tr>
 "
 
 if {[im_permission $current_user_id "view_projects_all"]} {
