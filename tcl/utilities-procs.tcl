@@ -2181,7 +2181,7 @@ ad_proc -public ad_return_top_of_page {first_part_of_page {content_type text/htm
     Returns HTTP headers plus the top of the user-visible page.  
 } {
     ReturnHeaders $content_type
-    if { $first_part_of_page ne "" } {
+    if { $first_part_of_page != "" } {
 	ns_write $first_part_of_page
     }
 }
