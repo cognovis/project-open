@@ -1,18 +1,11 @@
 <property name="focus">@focus;noquote@</property>
 
 
-<table>
-<tr>
-  <td>
-	<div id="register-login">
-	<formtemplate id="login"></formtemplate>
-	</div>
-  </td>
-</tr>
-<tr>
-  <td>
+<%= [im_box_header "Log In"] %>
 
-	<table cellspacing=0 cellpadding=0 border=0 width="100%">
+	<formtemplate id="login"></formtemplate>
+
+	<table cellspacing=0 cellpadding=0 border=0>
 	<tr valign=center>
 	<td>
 		<if @forgotten_pwd_url@ not nil>
@@ -50,6 +43,4 @@
 	</tr>
 	</table>
 
-  </td>
-</tr>
-</table>
+<%= [im_box_footer] %>
