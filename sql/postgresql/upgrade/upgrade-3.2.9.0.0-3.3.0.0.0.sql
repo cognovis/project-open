@@ -7,44 +7,58 @@
 --	- ... (more types of reports possibly in the future).
 
 
-SELECT acs_object_type__create_type (
-	'im_report',			-- object_type
-	'Report',			-- pretty_name
-	'Reports',			-- pretty_plural
-	'acs_object',			-- supertype
-	'im_reports',			-- table_name
-	'report_id',			-- id_column
-	'im_reports',			-- package_name
-	'f',				-- abstract_p
-	null,				-- type_extension_table
-	'im_report__name'		-- name_method
-);
+create or replace function inline_1 ()
+returns integer as '
+declare
+	v_count			   integer;
+begin
+	select count(*) into v_count
+	from acs_object_types where object_type = ''im_report'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	SELECT acs_object_type__create_type (
+		''im_report'',			-- object_type
+		''Report'',			-- pretty_name
+		''Reports'',			-- pretty_plural
+		''acs_object'',			-- supertype
+		''im_reports'',			-- table_name
+		''report_id'',			-- id_column
+		''im_reports'',			-- package_name
+		''f'',				-- abstract_p
+		null,				-- type_extension_table
+		''im_report__name''		-- name_method
+	);
 
 
-create table im_reports (
-	report_id		integer
-				constraint im_report_id_pk
-				primary key
-				constraint im_report_id_fk
-				references acs_objects,
-	report_name		varchar(1000),
-	report_status_id	integer 
-				constraint im_report_status_nn
-				not null
-				constraint im_report_status_fk
-				references im_categories,
-	report_type_id		integer 
-				constraint im_report_type_nn
-				not null
-				constraint im_report_type_fk
-				references im_categories,
-	report_menu_id		integer
-				constraint im_report_menu_id_fk
-				references im_menus,
-	report_sql		text
-				constraint im_report_report_nn
-				not null
-);
+	create table im_reports (
+		report_id		integer
+					constraint im_report_id_pk
+					primary key
+					constraint im_report_id_fk
+					references acs_objects,
+		report_name		varchar(1000),
+		report_status_id	integer 
+					constraint im_report_status_nn
+					not null
+					constraint im_report_status_fk
+					references im_categories,
+		report_type_id		integer 
+					constraint im_report_type_nn
+					not null
+					constraint im_report_type_fk
+					references im_categories,
+		report_menu_id		integer
+					constraint im_report_menu_id_fk
+					references im_menus,
+		report_sql		text
+					constraint im_report_report_nn
+					not null
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_1 ();
+drop function inline_1();
 
 
 
@@ -149,14 +163,27 @@ end;' language 'plpgsql';
 -- 15200-15999	Reserved for Reporting
 
 
-insert into im_categories(category_id, category, category_type) 
-values (15000, 'Active', 'Intranet Report Status');
-insert into im_categories(category_id, category, category_type) 
-values (15002, 'Deleted', 'Intranet Report Status');
+create or replace function inline_1 ()
+returns integer as '
+declare
+        v_count                    integer;
+begin
+        select count(*) into v_count
+        from im_categories where category_id = 15000;
+        IF v_count > 0 THEN return 0; END IF;
 
+	insert into im_categories(category_id, category, category_type) 
+	values (15000, ''Active'', ''Intranet Report Status'');
+	insert into im_categories(category_id, category, category_type) 
+	values (15002, ''Deleted'', ''Intranet Report Status'');
 
-insert into im_categories(category_id, category, category_type) 
-values (15100, 'Simple SQL Report', 'Intranet Report Type');
+	insert into im_categories(category_id, category, category_type) 
+	values (15100, ''Simple SQL Report'', ''Intranet Report Type'');
+
+end;' language 'plpgsql';
+select inline_1 ();
+drop function inline_1();
+
 
 
 -----------------------------------------------------------
