@@ -69,7 +69,7 @@ ad_proc im_wiki_base_component { object_type object_id } {
     set object_name_mangled [ns_urlencode $object_name]
 
     set ctr 0
-    set wikis_html ""
+    set wikis_html "<ul>"
     db_foreach wikis $wikis_sql {
 
 	incr ctr
@@ -80,9 +80,9 @@ ad_proc im_wiki_base_component { object_type object_id } {
 	}
 
 	append wikis_html "
-		<li><A href=\"/$wiki_mount/index\">Main Index</A>
-		<li><A href=\"/$wiki_mount/Category\">Categories</A>
-	"
+		<li><A href=\"/$wiki_mount/index\">Main Index</A></li>
+		<li><A href=\"/$wiki_mount/Category\">Categories</A></li>
+        "
 
 	set admin_p [permission::permission_p \
                 -object_id $package_id \
@@ -91,14 +91,14 @@ ad_proc im_wiki_base_component { object_type object_id } {
 	]
 
 	if {$admin_p} {
-	    append wikis_html "
-		<li><A href=\"/intranet/admin/permissions/one?object_id=$package_id\">Admin Wiki Permissions</A>
-		<li><A href=\"/$wiki_mount/admin/index?folder_id=$folder_id&modified_only=1\">Admin Wiki Changes</A>
-		<li><A href=\"/$wiki_mount/admin/index?folder_id=$folder_id\">Admin All Pages</A>
-	    "
+	    append wikis_html "<li><A href=\"/intranet/admin/permissions/one?object_id=$package_id\">Admin Wiki Permissions</A></li>\n"
+	    append wikis_html "<li><A href=\"/$wiki_mount/admin/index?folder_id=$folder_id&modified_only=1\">Admin Wiki Changes</A></li>\n"
+	    append wikis_html "<li><A href=\"/$wiki_mount/admin/index?folder_id=$folder_id\">Admin All Pages</A></li>\n"
 	}
-	append wikis_html "<p>\n"
+	append wikis_html "<p></p>\n"
     }
+
+    append wikis_html "</ul>"
 
     # Skip the component if there is no Wiki
     if {0 == $ctr} { return "" }
