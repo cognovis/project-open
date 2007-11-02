@@ -1,29 +1,22 @@
-<!-- packages/intranet-forum/www/index.adp -->
-<!-- @author Frank Bergmann (frank.bergmann@project-open.com) -->
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <master src="../../intranet-core/www/master">
 <property name="title">@page_title@</property>
 <property name="context">@context_bar@</property>
 <property name="main_navbar_label">@main_navbar_label@</property>
+<property name="sub_navbar">@sub_navbar;noquote@</property>
 
-<br>
-@project_menu;noquote@
 
-<table border=0 cellpadding=0 cellspacing=0>
-<tr>
-  <td> <!-- TD for the left hand filter HTML -->
+<div class="filter-list">
+   <div class="filter">
+      <div class="filter-block">
+         <div class="filter-title">
+            #intranet-expenses.Filter_Expenses#
+         </div>
+
 
 	<form method=get action='index'>
 	<%= [export_form_vars orderby] %>
 
 	<table>
-	<tr>
-	    <td colspan='2' class=rowtitle align=center>
-	      <%= [lang::message::lookup "" intranet-expenses.Filter_Expenses "Filter Expenses"] %>
-	    </td>
-	</tr>
-
 	<tr>
 	    <td class=form-label><%= [lang::message::lookup "" intranet-expenses.Unassigned_items "Unassigned:"] %></td>
 	    <td class=form-widget><%= [im_select -translate_p 0 unassigned $unassigned_p_options $unassigned] %></td>
@@ -62,31 +55,35 @@
 	</table>
 	</form>
 
-  </td> <!-- end of left hand filter TD -->
-  <td>&nbsp;</td>
-  <td valign=top width='30%'>
-    <table border=0 cellpadding=0 cellspacing=0>
-    <tr>
-      <td class=rowtitle align=center>
-	#intranet-core.Admin_Links#
-      </td>
-    </tr>
-    <tr>
-      <td>
-	@admin_links;noquote@
-      </td>
-    </tr>
-    </table>
-  </td>
-</tr>
-</table>
+      </div>
+      <if @admin_links@ ne "">
 
-<br>
+         <hr/>
+         <div class="filter-block">
+            <div class="filter-title">
+       	       #intranet-core.Admin_Links#
+            </div>
+            <ul>
+               @admin_links;noquote@
+            </ul>
+         </div>
 
-<h2>@page_title;noquote@</h2>
-<listtemplate name="@list_id@"></listtemplate>
+      </if>
+   </div>
+
+   <div class="fullwidth-list">
+      <%= [im_box_header $page_title] %>
+         <listtemplate name="@list_id@"></listtemplate>
+      <%= [im_box_footer] %>
+
+      <%= [im_box_header [_ intranet-expenses.Expense_Invoices]] %>
+         <listtemplate name="@list2_id@"></listtemplate>
+      <%= [im_box_footer] %>
+   </div>
+   <div class="filter-list-footer"></div>
+
+</div>
 
 
-<h2>#intranet-expenses.Expense_Invoices#</h2>
-<listtemplate name="@list2_id@"></listtemplate>
+
 

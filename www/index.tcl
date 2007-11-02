@@ -96,7 +96,7 @@ set admin_links ""
 set bulk_actions_list "[list]"
 
 if {$add_expense_p} {
-    append admin_links "<li><a href=\"new?[export_url_vars project_id return_url]\">[_ intranet-expenses.Add_a_new_Expense]</a>\n"
+    append admin_links "<li><a href=\"new?[export_url_vars project_id return_url]\">[_ intranet-expenses.Add_a_new_Expense]</a></li>\n"
     lappend bulk_actions_list "[_ intranet-expenses.Delete]" "expense-del" "[_ intranet-expenses.Delete_Expenses]"
 }
 
@@ -335,8 +335,20 @@ db_multirow -extend {invoice_chk project_url} invoice_lines "get invoices" "
 set bind_vars [ns_set create]
 ns_set put $bind_vars project_id $project_id
 set project_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
-set project_menu [im_sub_navbar $project_menu_id $bind_vars "" "pagedesriptionbar" "project_expenses"]
+
+set sub_navbar [im_sub_navbar \
+    -components \
+    -base_url "/intranet/projects/view?project_id=$project_id" \
+    $project_menu_id \
+    $bind_vars "" "pagedesriptionbar" "project_expenses"] 
 
 if {0 == $org_project_id | "" == $org_project_id} {
     set project_menu ""
 }
+
+
+
+
+
+
+
