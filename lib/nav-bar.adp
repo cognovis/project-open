@@ -1,4 +1,4 @@
-<table border=0" cellspacing="0" cellpadding="2" bgcolor="#41329c" width="100%">
+<table class="bug-tracker-navbar" border=0" cellspacing="0" cellpadding="2" bgcolor="#41329c" width="100%">
   <form action="@form_action_url@" method="get" name="navbar_form_@bt_nav_bar_count@">
     <tr>
       <td align="left">

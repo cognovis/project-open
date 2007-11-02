@@ -62,12 +62,29 @@ ad_form -name bug -cancel_url $return_url -form {
 	{label "Summary"} 
 	{html {size 50}}
     }
-    {bug_container_project_id:integer(select)
-	{label "Project"}
-	{options {[im_bt_project_options_form]}}
-	{values $bug_container_project_id}
-    }
+}
 
+
+set tmp [im_bt_project_options_form]
+
+if {$tmp == ""} {
+    ad_form -extend -name bug -form {
+	{dummy:text(inform)
+	    {label "Project"}
+	    {value "bug without container project"}
+	}
+    }
+} else {
+    ad_form -extend -name bug -form {
+	{bug_container_project_id:integer(select)
+	    {label "Project"}
+	    {options {[im_bt_project_options_form]}}
+	    {values $bug_container_project_id}
+	}
+    }
+} 
+
+ad_form -extend -name bug -form {
     {found_in_version:text(select),optional 
         {label "Found in Version"}  
         {options {[bug_tracker::version_get_options -include_unknown]}} 
@@ -86,6 +103,9 @@ ad_form -name bug -cancel_url $return_url -form {
 
     {return_url:text(hidden) {value $return_url}}
 }
+
+
+
 foreach {category_id category_name} [bug_tracker::category_types] {
     ad_form -extend -name bug -form [list \
         [list "${category_id}:integer(select)" \

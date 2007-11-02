@@ -2,23 +2,21 @@
 <property name="title">@page_title;noquote@</property>
 <property name="context">@context;noquote@</property>
 
-<table cellpadding="3" cellspacing="3">
 
-  <tr>
+<div class="filter-list">
+   <div class="filter">
+      <div class="filter-block">
+         <listfilters name="bugs"></listfilters>
+      </div>
+   </div>
 
-    <td class="list-filter-pane" valign="top" width="200">
-
-      <listfilters name="bugs"></listfilters>
-
-    </td>
-
-    <td class="list-list-pane" valign="top">
-
+   <div class="fullwidth-list" style="min-height: 800px;">
+      <%= [im_box_header $page_title] %>
       <listtemplate name="bugs"></listtemplate>
+      <%= [im_box_footer] %>
+   </div>
+   <div class="filter-list-footer"></div>
 
-    </td>
+</div>
 
-  </tr>
-
-</table>
 
