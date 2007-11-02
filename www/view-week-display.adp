@@ -1,11 +1,9 @@
 <table class="cal-table-display" cellpadding="0" cellspacing="0" border="0" width="99%">
 <tr>
-    <td class="cal-month-title-text">
-	<nobr>
+    <td class="cal-month-title-text nobr">
 	<a href="@previous_week_url@" title="#calendar.prev_week#"><img border=0 src="<%=[dt_left_arrow]%>" alt="#calendar.prev_week#"></a>
 	@dates@
 	<a href="@next_week_url@" title="#calendar.next_week#"><img border=0 src="<%=[dt_right_arrow]%>" alt="#calendar.next_week#"></a>
-	</nobr>
     </td>
 </tr>
 <tr>
