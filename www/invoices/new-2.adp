@@ -4,10 +4,7 @@
 <master src="../../../intranet-core/www/master">
 <property name="title"></property>
 <property name="main_navbar_label">finance</property>
-
-<%= [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]] %>
-
-<!-- Filter for invoicing period -->
+<property name="sub_navbar">@sub_navbar;noquote@</property>
 
 <table cellspacing=5 cellpadding=0>
 <tr valign=top>

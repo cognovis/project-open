@@ -74,7 +74,7 @@ if {[info exists select_project]} {
 # Choose the right subnavigation bar
 #
 if {[llength $select_project] != 1} {
-    set sub_navbar [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list] "project_finance"]
+    set sub_navbar [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
 } else {
     # Setup the subnavbar
     set bind_vars [ns_set create]

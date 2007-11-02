@@ -147,6 +147,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
     </tr>
     "
 
+
     set planned_checked ""
     set billable_checked ""
     set reported_checked ""
@@ -163,6 +164,8 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
     set invoice_radio_disabled ""
     if {"" != $invoice_hour_type} {
 	set invoice_radio_disabled "disabled"
+    } else {
+	set planned_checked " checked"
     }
 
     # Show a line with with the selected invoicing type

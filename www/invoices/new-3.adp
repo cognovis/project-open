@@ -6,11 +6,10 @@
 <property name="title">@page_title@</property>
 <property name="context">@context_bar@</property>
 <property name="main_navbar_label">finance</property>
-
-<%= [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]] %>
+<property name="sub_navbar">@sub_navbar;noquote@</property>
 
 <form action=new-4 method=POST>
-<%= [export_form_vars customer_id provider_id invoice_id cost_status_id return_url] %>
+<%= [export_form_vars customer_id provider_id invoice_id cost_status_id select_project return_url] %>
 
 @include_task_html;noquote@
 

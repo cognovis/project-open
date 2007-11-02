@@ -37,7 +37,7 @@ ad_page_contract {
     item_project_id:integer,array
     item_rate:float,array
     item_currency:array
-    im_timesheet_task:multiple
+    {include_task:multiple {} }
     { return_url "/intranet-invoices/" }
 }
 
@@ -202,19 +202,7 @@ db_dml update_invoice_amount $update_invoice_amount_sql
 # Add a relationship to all related projects
 # ---------------------------------------------------------------
 
-foreach project_id $select_project {
-
-    catch {db_exec_plsql insert_acs_rels "
-	DECLARE
-		v_rel_id	integer;
-	BEGIN
-		v_rel_id := acs_rel.new(
-			object_id_one => :project_id,
-			object_id_two => :invoice_id
-		);
-	END;
-    "} err_msg
-}
+foreach project_id $select_project { db_exec_plsql insert_acs_rels "" }
 
 
 # ---------------------------------------------------------------
@@ -230,7 +218,7 @@ if {$cost_type_id == [im_cost_type_invoice]} {
     db_dml update_timesheet_tasks "
 	update	im_timesheet_tasks
 	set	invoice_id = :invoice_id
-	where	task_id in ([join $im_timesheet_task ","])
+	where	task_id in ([join $include_task ","])
     "
 }
 
