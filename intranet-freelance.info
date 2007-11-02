@@ -9,7 +9,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-freelance</auto-mount>
 
-    <version name="3.3.1.0.0" url="http://projop.dnsalias.com/download/apm/intranet-freelance-3.3.1.0.0.apm">
+    <version name="3.4.0.0.0" url="http://projop.dnsalias.com/download/apm/intranet-freelance-3.4.0.0.0.apm">
 
         <owner url="mailto:guillermo.belcic@project-open.com">Guillermo Belcic</owner>
         <summary>Freelance Skills, &quot;Marketplace&quot; workflow to ask freelancers by mail whether they want to participate in a project</summary>
