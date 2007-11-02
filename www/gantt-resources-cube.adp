@@ -1,10 +1,7 @@
 <master src="../../intranet-core/www/master">
 <property name="title">@page_title@</property>
 <property name="main_navbar_label">@main_navbar_label@</property>
-
-<br>
-@project_menu;noquote@
-
+<property name="sub_navbar">@sub_navbar;noquote@</property>
 
 <form>
 <table border=0 cellspacing=1 cellpadding=1>

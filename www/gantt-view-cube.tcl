@@ -35,7 +35,6 @@ ad_page_contract {
 
 set main_navbar_label "reporting"
 
-set project_menu_html ""
 if {[llength $project_id] == 1} {
     # Exactly one project - quite a frequent case.
     # Show a ProjectMenu so that it looks like we've gone to a different tab.
@@ -43,7 +42,14 @@ if {[llength $project_id] == 1} {
     set bind_vars [ns_set create]
     ns_set put $bind_vars project_id $project_id
     set project_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
-    set project_menu [im_sub_navbar $project_menu_id $bind_vars "" "pagedesriptionbar" "project_gantt"]
+
+    set sub_navbar [im_sub_navbar \
+       -components \
+       -base_url "/intranet/projects/view?project_id=$project_id" \
+       $project_menu_id \
+       $bind_vars "" "pagedesriptionbar" "project_gantt"] 
+
+
 
     set main_navbar_label "projects"
 
