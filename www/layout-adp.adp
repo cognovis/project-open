@@ -2,7 +2,7 @@
   # /packages/intranet-dynfield/www/layout-adp.adp
   # $Workfile: layout-adp.adp $ $Revision$ $Date$
 %>
-<master src="master">
+<master src="../../intranet-core/www/admin/master">
 
 <property name="title">@title@</property>
 <property name="context">@context@</property>

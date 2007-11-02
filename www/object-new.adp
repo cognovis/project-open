@@ -1,4 +1,4 @@
-<master src="master">
+<master src="../../intranet-core/www/admin/master">
 <property name="title">@title@</property>
 <property name="context">@context@</property>
 

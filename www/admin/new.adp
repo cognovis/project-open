@@ -1,4 +1,4 @@
-<master src="../master">
+<master src="../../../intranet-core/www/admin/master">
 <property name="title">@page_title@</property>
 <property name="context">@context;noquote@</property>
 <property name="admin_navbar_label">admin_menus</property>
