@@ -4,14 +4,17 @@
 <property name="main_navbar_label">reporting</property>
 
 
+<SCRIPT Language=JavaScript src=/resources/diagram/diagram/diagram.js></SCRIPT>
+
+
 <table cellspacing=0 cellpadding=0 width="100%">
     <tr valign=top>
 	<td width="50%">
-	<listtemplate name="report_list"></listtemplate>
+
 	</td>
 
 <if @user_admin_p@>
-	<td width="50%">
+	<td width="60%">
 
 	<table>
 	<tr class=rowtitle>
@@ -34,3 +37,5 @@
 </table>
 
 
+
+<listtemplate name="report_list"></listtemplate>
