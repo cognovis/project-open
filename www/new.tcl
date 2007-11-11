@@ -1,4 +1,4 @@
-# /packages/intranet-reporting/www/new.tcl
+# /packages/intranet-reporting-indicators/www/new.tcl
 #
 # Copyright (c) 2003-2007 ]project-open[
 # all@devcon.project-open.com
@@ -14,40 +14,20 @@ ad_page_contract {
     New page is basic...
     @author frank.bergmann@project-open.com
 } {
-    report_id:integer,optional
+    indicator_id:integer,optional
     {return_url "/intranet-reporting-indicators/index"}
     {form_mode "edit"}
 }
 
-if {[info exists var_name]} { ad_return_complaint 1 "var_name = $var_name" }
-
 set user_id [ad_maybe_redirect_for_registration]
-set page_title [lang::message::lookup "" intranet-reporting.New_Report "New Report"]
+set page_title [lang::message::lookup "" intranet-reporting.New_Indicator "New Indicator"]
 set context [im_context_bar $page_title]
 
-set action_url "/intranet-reporting/new"
+set action_url "/intranet-reporting-indicators/new"
 
 
 # ---------------------------------------------------------------
 # Options
-
-set project_options [im_project_options]
-
-set report_type_options [db_list_of_lists report_type_options "
-	select	report_type, report_type_id
-	from	im_report_types
-	order by report_type_id
-"]
-
-set parent_menu_options [db_list_of_lists parent_menu_options "
-	select	m.name, m.menu_id
-	from	im_menus m
-	where	parent_menu_id in (
-			select	menu_id
-			from	im_menus
-			where 	label = 'reporting'
-		)
-"]
 
 
 # ---------------------------------------------------------------
@@ -69,72 +49,57 @@ ad_form \
     -mode $form_mode \
     -export {return_url} \
     -form {
-	report_id:key
-	{report_name:text(text) {label "[lang::message::lookup {} intranet-reporting.Report_Name {Report Name}]"} {html {size 60}}}
-	{parent_menu_id:text(select) {label "[lang::message::lookup {} intranet-reporting.Report_Group {Report Group}]"} {options $parent_menu_options} }
-	{report_type_id:text(select) {label "[lang::message::lookup {} intranet-reporting.Reports_Type Type]"} {options $report_type_options} }
-	{sort_order:integer(text),optional {label "[lang::message::lookup {} intranet-reporting.Report_Sort_Order {Sort Order}]"}}
+	indicator_id:key
+	{report_name:text(text) {label "[lang::message::lookup {} intranet-reporting.Indicator_Name {Indicator Name}]"} {html {size 60}}}
+	{report_code:text(text) {label "[lang::message::lookup {} intranet-reporting.Indicator_Code {Indicator Code}]"} {html {size 10}}}
+
+	{indicator_widget_min:text(text) {label "[lang::message::lookup {} intranet-reporting.Indicator_Widget_Min {Widget Min}]"} {html {size 10}}}
+	{indicator_widget_max:text(text) {label "[lang::message::lookup {} intranet-reporting.Indicator_Widget_Max {Widget Max}]"} {html {size 10}}}
+	{indicator_widget_bins:integer(text) {label "[lang::message::lookup {} intranet-reporting.Indicator_Widget_Bins {Widget Bins}]"} {html {size 10}}}
+
 	{report_sql:text(textarea) {label "[lang::message::lookup {} intranet-reporting.Reports_SQL {Report SQL}]"} {html {cols 60 rows 10} }}
 	{report_description:text(textarea),optional {label "[lang::message::lookup {} intranet-reporting.Reports_Description {Description}]"} {html {cols 60 rows 4} }}
     }
 
 ad_form -extend -name $form_id \
     -select_query {
-	select	*
-	from	im_reports
-	where	report_id = :report_id
+
+	select	r.*,
+		i.*
+	from	im_reports r,
+		im_indicators i
+	where	i.indicator_id = :indicator_id
+		and i.indicator_id = r.report_id
+
     } -new_data {
 
-	set report_id [db_nextval "acs_object_id_seq"]
-	set package_name "intranet-reporting"
-	set label [im_mangle_user_group_name $report_name]
-	set name $report_name
-	set url "/intranet-reporting/view?report_id=$report_id"
-	if {![info exists sort_order] || "" == $sort_order} { set sort_order 100 }
-
-	set report_menu_id [db_exec_plsql menu_new "
-        	SELECT im_menu__new (
-        	        null,                   -- p_menu_id
-        	        'im_menu',              -- object_type
-        	        now(),                  -- creation_date
-        	        null,                   -- creation_user
-        	        null,                   -- creation_ip
-        	        null,                   -- context_id
-
-        	        :package_name,          -- package_name
-        	        :label,                 -- label
-        	        :name,                  -- name
-        	        :url,                   -- url
-        	        :sort_order,            -- sort_order
-        	        :parent_menu_id,	-- parent_menu_id
-        	        null                    -- p_visible_tcl
-        	)
-	"]
-
-	# Recalculate the menu hierarchy
-	im_menu_update_hierarchy
+	set indicator_id [db_nextval "acs_object_id_seq"]
 
 	db_exec_plsql create_report "
-		SELECT im_report__new(
-			:report_id,
+		SELECT im_indicator__new(
+			:indicator_id,
 			'im_report',
 			now(),
 			:user_id,
 			'[ad_conn peeraddr]',
 			null,
 
-			:report_name,
-			:report_type_id,
+			:indicator_name,
+			:indicator_code,
+			[im_report_type_indicator],
 			[im_report_status_active],
-			:report_menu_id,
-			:report_sql::text
+			:report_sql::text,
+
+			:indicator_min::double precision,
+			:indicator_max::double precision,
+			:indicator_bins::integer
 		)
         "
 
 	db_dml edit_report "
 		update im_reports set 
-			report_description = :report_description
-		where report_id = :report_id
+			report_description = :indicator_description
+		where report_id = :indicator_id
 	"
 
     } -edit_data {
@@ -142,12 +107,21 @@ ad_form -extend -name $form_id \
 	db_dml edit_report "
 		update im_reports set 
 			report_name = :report_name,
+			report_code = :report_code,
 			report_status_id = [im_report_status_active],
-			report_type_id = :report_type_id,
-			report_menu_id = :parent_menu_id,
+			report_type_id = [im_report_type_indicator],
+			report_menu_id = null,
 			report_sql = :report_sql,
 			report_description = :report_description
-		where report_id = :report_id
+		where report_id = :indicator_id
+	"
+
+	db_dml edit_indicator "
+		update im_indicators set 
+			indicator_widget_min = :indicator_widget_min::double precision,
+			indicator_widget_max = :indicator_widget_max::double precision,
+			indicator_widget_bins = :indicator_widget_bins::integer
+		where indicator_id = :indicator_id
 	"
 
     } -after_submit {
