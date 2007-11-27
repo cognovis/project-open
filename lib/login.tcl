@@ -45,6 +45,13 @@ set otp_installed_p [db_string otp_installed "
 	where package_key = 'intranet-otp'
 " -default 0]
 
+# Check if there is an LDAP support module installed
+set ldap_installed_p [db_string otp_installed "
+	select count(*) 
+	from apm_enabled_package_versions 
+	where package_key = 'intranet-ldap'
+" -default 0]
+
 set self_registration [parameter::get_from_package_key \
                                   -package_key acs-authentication \
 			          -parameter AllowSelfRegister \
@@ -264,20 +271,38 @@ ad_form -extend -name login -on_request {
     }
 
     if {1 != $otp_enabled_p} {
+	array set auth_info {}
+	set auth_info(auth_status) ""
+	set auth_info(auth_message) "undefined login error"
 
-	# Authenticate.
-	# But don't set the auth-cookie yet, we first have to
-	# make sure that the person has the right to autenticate
-	# from the intranet/intranet:
-	array set auth_info [auth::authenticate \
-                             -return_url $return_url \
+	if {$ldap_installed_p} {
+	
+
+	   if {[im_ldap_check_user -email $email -username $username -password $password]} {
+	       
+	       # login, maybe create user
+
+	   } else {
+		set auth_info(auth_status) "ldaperror"
+		set auth_info(auth_message) "ldap login error"
+	    }
+	}
+	if {[string equal $auth_info(auth_status) ""]} {
+
+	    # Authenticate.
+	    # But don't set the auth-cookie yet, we first have to
+	    # make sure that the person has the right to autenticate
+	    # from the intranet/intranet:
+	    array set auth_info [auth::authenticate \
+			     -return_url $return_url \
                              -authority_id $authority_id \
                              -email [string trim $email] \
                              -username [string trim $username] \
                              -password $password \
                              -persistent=[expr $allow_persistent_login_p && [template::util::is_true $persistent_p]] \
 			     -no_cookie=1 \
-        ]
+				    ]
+	}
 
 	# Handle authentication errors
 	switch $auth_info(auth_status) {
