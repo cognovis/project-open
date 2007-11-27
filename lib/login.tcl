@@ -46,7 +46,7 @@ set otp_installed_p [db_string otp_installed "
 " -default 0]
 
 # Check if there is an LDAP support module installed
-set ldap_installed_p [db_string otp_installed "
+set ldap_installed_p [db_string ldap_installed "
 	select count(*) 
 	from apm_enabled_package_versions 
 	where package_key = 'intranet-ldap'
