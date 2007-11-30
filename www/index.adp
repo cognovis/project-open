@@ -7,8 +7,6 @@
 <property name="context">@context_bar@</property>
 <property name="main_navbar_label">notes</property>
 
-<br>
-@project_menu;noquote@
 
 <table border=0 cellpadding=0 cellspacing=0>
 <tr>

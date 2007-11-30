@@ -1,6 +1,6 @@
-# /packages/intranet-notes/www/index.tcl
+# /packages/intranet-timesheet2-workflow/www/index.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (C) 2003-2007 Project/Open
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -27,22 +27,15 @@ set page_focus "im_header_form.keywords"
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set date_format "YYYY-MM-DD"
 
-
-#set parent_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
-#set project_menu [im_sub_navbar $parent_menu_id $bind_vars "" "pagedesriptionbar" $menu_label]
-
-
-
 set object_name [db_string object_name "select acs_object__name(:object_id)" -default [lang::message::lookup "" intranet-expenes.Unassigned "Unassigned"]]
 
-set page_title "$object_name [_ intranet-notes.Notes]"
+set page_title [_ intranet-timesheet2-workflow.Timesheet_Approval]
 
 if {[im_permission $user_id view_projects_all]} {
     set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
 } else {
     set context_bar [im_context_bar $page_title]
 }
-
 
 set return_url [im_url_with_query]
 set current_url [ns_conn url]
@@ -51,24 +44,17 @@ set current_url [ns_conn url]
 # ---------------------------------------------------------------
 # Admin Links
 # ---------------------------------------------------------------
-set add_expense_p [im_permission $user_id "add_expense"]
-
-# ToDo: Add Security
-set add_expense_p 1
-
-
 
 set admin_links ""
 
-if {$add_expense_p} {
-    append admin_links " <li><a href=\"new?[export_url_vars object_id return_url]\">[_ intranet-notes.Add_a_new_Note]</a>\n"
-}
+append admin_links " <li><a href=\"new?[export_url_vars object_id return_url]\">[_ intranet-timesheet2-workflow.Add_a_new_Conf]</a>\n"
+
 
 set bulk_actions_list "[list]"
 #[im_permission $user_id "delete_expense"]
 set delete_expense_p 1 
 if {$delete_expense_p} {
-    lappend bulk_actions_list "[_ intranet-notes.Delete]" "notes-del" "[_ intranet-notes.Remove_checked_items]"
+    lappend bulk_actions_list "[_ intranet-timesheet2-workflow.Delete]" "confs-del" "[_ intranet-timesheet2-workflow.Remove_checked_items]"
 }
 #[im_permission $user_id "add_expense_invoice"]
 set create_invoice_p 1
@@ -84,36 +70,36 @@ if {$create_invoice_p} {
 set export_var_list [list]
 
 # define list object
-set list_id "notes_list"
+set list_id "confs_list"
 
 
 template::list::create \
     -name $list_id \
-    -multirow note_lines \
-    -key note_id \
+    -multirow conf_lines \
+    -key conf_id \
     -has_checkboxes \
     -bulk_actions $bulk_actions_list \
     -bulk_action_export_vars  {
 	object_id
     } \
-    -row_pretty_plural "[_ intranet-notes.Notes_Items]" \
+    -row_pretty_plural "[_ intranet-timesheet2-workflow.Confs_Items]" \
     -elements {
-	note_chk {
+	conf_chk {
 	    label "<input type=\"checkbox\" 
                           name=\"_dummy\" 
-                          onclick=\"acs_ListCheckAll('notes_list', this.checked)\" 
+                          onclick=\"acs_ListCheckAll('confs_list', this.checked)\" 
                           title=\"Check/uncheck all rows\">"
 	    display_template {
-		@note_lines.note_chk;noquote@
+		@conf_lines.conf_chk;noquote@
 	    }
 	}
-	creation_date {
-	    label "[_ intranet-notes.Note_Date]"
-	    link_url_eval {[export_vars -base new {note_id object_id return_url}]}
+	project_name {
+	    label "[_ intranet-timesheet2-workflow.Project]"
+	    link_url_eval {[export_vars -base "/intranet/projects/view" {project_id}]}
 	}
-        user_name {
-	    label "[_ intranet-notes.Note_CreationUser]"
-	    link_url_eval "/intranet/users/view?user_id=$creation_user"
+        conf_user_name {
+	    label "[_ intranet-timesheet2-workflow.Conf_User]"
+	    link_url_eval "/intranet/users/view?user_id=$conf_user_id"
 	}
     }
 
@@ -133,40 +119,14 @@ if {0 == $object_id} {
 
 
 
-db_multirow -extend {note_chk return_url} note_lines notes_lines "
-  select
-	note_id,  
-	n.object_id,  
-	note, 
-	creation_date,
-	to_char(creation_date, :date_format) as creation_date,
-	im_name_from_user_id(o.creation_user) as user_name,
-	o.creation_user
-  from
-	im_notes n
-	inner join acs_objects o on n.note_id = o.object_id
-	$project_where
+db_multirow -extend {conf_chk return_url} conf_lines confs_lines "
+	select	co.*,
+		p.project_name,
+		im_name_from_user_id(co.conf_user_id) as conf_user_name
+	from	im_timesheet_conf_objects co
+		LEFT OUTER JOIN im_projects p ON (co.conf_project_id = p.project_id)
 " {
-	set note_chk "<input type=\"checkbox\" 
-				name=\"note_id\" 
-				value=\"$note_id\" 
-				id=\"notes_list,$note_id\">"
         set return_url [im_url_with_query]
-    }
-
-# ---------------------------------------------------------------
-# Project Menu
-# ---------------------------------------------------------------
-
-# Setup the subnavbar
-set bind_vars [ns_set create]
-ns_set put $bind_vars object_id $object_id
-set project_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
-set project_menu [im_sub_navbar $project_menu_id $bind_vars "" "pagedesriptionbar" "project_expenses"]
-
-
-# ---------------------------------------------------------------
-# dyn wf 
-# ---------------------------------------------------------------
-
+	set conf_chk "<input type=\"checkbox\" name=\"conf_id\" value=\"$conf_id\" id=\"confs_list,$conf_id\">"
+}
 
