@@ -36,6 +36,7 @@ ad_page_contract {
 # Project Menu
 # ---------------------------------------------------------------
 
+set sub_navbar ""
 set main_navbar_label "reporting"
 
 set project_menu ""
