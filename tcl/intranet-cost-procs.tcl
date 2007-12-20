@@ -1406,7 +1406,7 @@ ad_proc im_costs_project_finance_component {
 	    set company_name $provider_name
 	}
 	
-	set cost_url "<A href=\"$url$cost_id&return_url=[ns_urlencode $return_url]\">"
+	set cost_url "<A title=\"$cost_name\" href=\"$url$cost_id&return_url=[ns_urlencode $return_url]\">"
 	set cost_url_end "</A>"
 
 	set amount_unconverted "<nobr>([string trim $amount] $currency)</nobr>"
@@ -1427,7 +1427,7 @@ ad_proc im_costs_project_finance_component {
 
 	append cost_html "
 	<tr $bgcolor([expr $ctr % 2])>
-	  <td><nobr>$cost_url[string range $cost_name 0 20]</A></nobr></td>
+	  <td><nobr>$cost_url[string range $cost_name 0 30]</A></nobr></td>
 	  <td>$cost_center_code</td>
 	  <td>$company_name</td>
 	  <td>$calculated_due_date</td>
