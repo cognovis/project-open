@@ -40,6 +40,7 @@ set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Proj
 set org_project_id $project_id
 # if {"" == $org_project_id} { set unassigned "unassigned" }
 
+set expense_type_id_default $expense_type_id
 
 # Check that Start & End-Date have correct format
 #if {"" != $start_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $start_date]} {
@@ -207,8 +208,6 @@ set expense_where ""
 if {"" != $expense_type_id  & 0 != $expense_type_id} { 
     set expense_where "\tand e.expense_type_id = :expense_type_id\n" 
 }
-
-
 
 
 

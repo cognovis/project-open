@@ -51,7 +51,6 @@ db_dml update_items "
 	update	im_costs
 	set	project_id = :project_id
 	where	cost_id in ([join $expense_ids ", "])
-		and project_id is null
 "
 
 

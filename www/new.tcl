@@ -225,6 +225,14 @@ ad_form -extend -name $form_id -on_request {
 		and c.cost_id = :expense_id
 
 } -new_data {
+    if { $expense_type_id == 0 } {
+	ad_return_complaint 1 \
+	    [lang::message::lookup "" \
+	     intranet-expenses.Expense_type_is_required \
+	     "You have to selectect an expense type"]
+  
+    }
+
 
     set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
     set expense_name $expense_id
