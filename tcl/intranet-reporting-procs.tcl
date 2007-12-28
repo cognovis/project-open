@@ -18,6 +18,7 @@ ad_proc -public im_report_status_active {} { return 15000 }
 ad_proc -public im_report_status_deleted {} { return 15002 }
 
 ad_proc -public im_report_type_simple_sql {} { return 15100 }
+ad_proc -public im_report_type_indicator {} { return 15110 }
 
 
 # -------------------------------------------------------
