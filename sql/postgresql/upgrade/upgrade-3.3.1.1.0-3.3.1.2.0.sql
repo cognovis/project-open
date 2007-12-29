@@ -1,6 +1,29 @@
 -- upgrade-3.3.1.1..0-3.3.1.2.0.sql
 
 
+
+
+-- Home Inbox Component
+SELECT  im_component_plugin__new (
+	null,					-- plugin_id
+	'acs_object',				-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+	'Home Workflow Inbox',			-- plugin_name
+	'intranet-workflow',			-- package_name
+	'right',				-- location
+	'/intranet/index',			-- page_url
+	null,					-- view_name
+	150,					-- sort_order
+	'im_workflow_home_inbox_component'	-- component_tcl
+);
+
+
+
+
+
 -- Compatibility proc - to maintain API
 create or replace function workflow_case__notify_assignee (integer,integer,varchar,varchar)
 returns integer as '

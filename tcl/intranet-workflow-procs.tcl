@@ -469,7 +469,8 @@ ad_proc -public im_workflow_graph_component {
     set assignee_html "
 		<table>
 		<tr class=rowtitle>
-		  <td colspan=2 align=center class=rowtitle>[lang::message::lookup "" intranet-workflow.Currrent_assignees "Current Assignees"]</td>
+		  <td colspan=2 align=center class=rowtitle
+		  >[lang::message::lookup "" intranet-workflow.Currrent_assignees "Current Assignees"]</td>
 		</tr>
 		<tr class=rowtitle>
 			<td class=rowtitle>[lang::message::lookup "" intranet-workflow.What "What"]</td>
@@ -571,4 +572,210 @@ ad_proc -public im_workflow_task_action {
     db_string cancel_action "select workflow_case__end_task_action (:journal_id, :action, :task_id)"
 
     return $journal_id
+}
+
+
+
+# ----------------------------------------------------------------------
+# Inbox for "Business Objects"
+# ----------------------------------------------------------------------
+
+ad_proc -public im_workflow_home_inbox_component {
+    {-view_name "workflow_home_inbox" }
+    {-order_by_clause ""}
+    {-relationship "assignment_group" }
+    {-relationships {holding_user assignment_group none} }
+    {-object_type ""}
+    {-subtype_id ""}
+    {-status_id ""}
+} {
+    Returns a HTML table with the list of workflow tasks for the
+    current user.
+    Assumes that all shown objects are ]po[ "Business Objects", so 
+    we can show sub-type and status of the objects.
+    @param show_relationships Determines which relationships to show.
+           Showing more general relationship implies showing more
+	   specific ones:<ul>
+	   <li>holding_user:	User has started the task. Nobody else
+	   			can execute the task, unless an admin
+				"steals" the task.
+	   <li>specific_assignment: User has specifically been assigned
+				to be the one to execute the task
+	   <li>assignment_group:User belongs to the group of users 
+				assigned to the task.
+	   <li>vacation_group:	User belongs to the vacation replacements
+	   <li>object_owner:	Users owns the underyling biz object.
+	   <li>object_write:	User has the right to modify the
+				underlying business object.
+	   <li>object_read:	User has the right to read the 
+				underlying business object.
+	   <li>none:		The user has no relationship at all
+				with the task to complete.
+    @paramm relationship Determines a single relationship 
+} {
+    set bgcolor(0) " class=roweven "
+    set bgcolor(1) " class=rowodd "
+
+    set sql_date_format "YYYY-MM-DD"
+    set current_user_id [ad_get_user_id]
+
+    if {"" == $order_by_clause} {
+	set order_by_clause [parameter::get_from_package_key -package_key "intranet-workflow" -parameter "HomeInboxOrderByClause" -default "project_nr DESC"]
+    }
+
+    # Let Admins see everything
+    if {[im_is_user_site_wide_or_intranet_admin $current_user_id]} { set relationship "none" }
+
+    # Set relationships based on a single variable
+    case $relationship {
+	holding_user { set relationships {holding_user}}
+	specific_assignment { set relationships {holding_user specific_assigment}}
+	assignment_group { set relationships {holding_user specific_assigment assignment_group}}
+	object_owner { set relationships {holding_user specific_assigment assignment_group object_owner}}
+	object_write { set relationships {holding_user specific_assigment assignment_group object_owner object_write}}
+	object_read { set relationships {holding_user specific_assigment assignment_group object_owner object_write object_read}}
+	none { set relationships {holding_user specific_assigment assignment_group object_owner object_write object_read none}}
+    }
+
+    # ---------------------------------------------------------------
+    # Columns to show
+
+    set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name"]
+    set column_headers [list]
+    set column_vars [list]
+    
+    set column_sql "
+	select	column_name, column_render_tcl, visible_for
+	from	im_view_columns
+	where	view_id = :view_id
+	order by sort_order, column_id
+    "
+    db_foreach column_list_sql $column_sql {
+	if {"" == $visible_for || [eval $visible_for]} {
+	    lappend column_headers "$column_name"
+	    lappend column_vars "$column_render_tcl"
+	}
+    }
+
+    # Set up colspan to be the number of headers + 1 for the # column
+    set colspan [expr [llength $column_headers] + 1]
+
+    set table_header_html "<tr>\n"
+    foreach col $column_headers {
+	regsub -all " " $col "_" col_txt
+	set col_txt [lang::message::lookup "" intranet-cust-baselkb.$col_txt $col]
+	append table_header_html "  <td class=rowtitle>$col_txt</td>\n"
+    }
+    append table_header_html "</tr>\n"
+
+
+    # ---------------------------------------------------------------
+    # SQL Query
+
+    # Get the list of all "open" (=enabled or started) tasks, together
+    # with their assigned users
+    set tasks_sql "
+	select
+		ot.pretty_name as object_type_pretty,
+		o.object_id,
+		acs_object__name(o.object_id) as object_name,
+		im_biz_object__get_type_id(o.object_id) as type_id,
+		im_biz_object__get_status_id(o.object_id) as status_id,
+		tr.transition_name,
+		m.member_id as assigned_user_id,
+		t.holding_user,
+		t.task_id
+	from
+		acs_object_types ot,
+		acs_objects o,
+		wf_cases ca,
+		wf_transitions tr,
+		wf_tasks t
+		LEFT OUTER JOIN (
+			select distinct
+				m.member_id,
+				ta.task_id
+			from	wf_task_assignments ta,
+				party_approved_member_map m
+			where	m.party_id = ta.party_id
+		) m ON t.task_id = m.task_id
+	where
+		ot.object_type = o.object_type
+		and o.object_id = ca.object_id
+		and ca.case_id = t.case_id
+		and t.state in ('enabled', 'started')
+		and t.transition_key = tr.transition_key
+		and t.workflow_key = tr.workflow_key
+    "
+
+    # ---------------------------------------------------------------
+    # Format the Result Data
+
+    set ctr 0
+    set table_body_html ""
+    db_foreach tasks $tasks_sql {
+
+	# Determine the type of relationship to the object - why is the task listed here?
+	set rel "none"
+	if {$current_user_id == $assigned_user_id} { set rel "assignment_group" }
+	if {$current_user_id == $holding_user} { set rel "holding_user" }
+
+	if {[lsearch $relationships $rel] == -1} { continue }
+
+	set object_subtype [im_category_from_id $type_id]
+	set status [im_category_from_id $status_id]
+	set action_url [export_vars -base "/workflow/task" {return_url task_id}]
+	
+	# L10ned version of next action
+	regsub -all " " $transition_name "_" next_action_key
+	set next_action_l10n [lang::message::lookup "" intranet-workflow.$next_action_key $transition_name]
+
+	# L10ned version of the relationship of the user to the object
+	set relationship_l10n [lang::message::lookup "" intranet-workflow.$rel $rel]
+
+	set row_html "<tr$bgcolor([expr $ctr % 2])>\n"
+	foreach column_var $column_vars {
+	    append row_html "\t<td valign=top>"
+	    set cmd "append row_html $column_var"
+	    eval "$cmd"
+	    append row_html "</td>\n"
+	}
+	append row_html "</tr>\n"
+	append table_body_html $row_html
+	incr ctr
+    }
+
+    # Show a reasonable message when there are no result rows:
+    if { [empty_string_p $table_body_html] } {
+	set table_body_html "
+        <tr><td colspan=$colspan><ul><li><b> 
+        There are currently no projects matching the selected criteria
+        </b></ul></td></tr>"
+    }
+
+    # ---------------------------------------------------------------
+    # Return results
+    
+    set table_action_html "
+	<tr class=rowplain>
+	<td colspan=99 class=rowplain align=right>
+	    <select name=\"operation\">
+	    <option value=\"delete_membership\">[lang::message::lookup "" intranet-workflow.Remove_From_Inbox "Remove from Inbox"]</option>
+	    </select>
+	    <input type=submit name=submit value='[lang::message::lookup "" intranet-workflow.Submit "Submit"]'>
+	</td>
+	</tr>
+    "
+
+    set return_url [ad_conn url]?[ad_conn query]
+    return "
+        <form action=\"/intranet-workflow/inbox-action\" method=POST>
+	[export_form_vars return_url]
+	<table width=100% cellpadding=2 cellspacing=2 border=0>
+	  $table_header_html
+	  $table_body_html
+          $table_action_html
+	</table>
+        </form>
+    "
 }
