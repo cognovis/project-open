@@ -28,6 +28,15 @@ SELECT acs_object_type__create_type (
 );
 
 
+-- Setup status and type columns for im_user_confs
+update acs_object_types set
+        status_column = 'conf_status_id',
+        type_column='conf_type_id',
+        status_type_table='im_timesheet_conf_objects'
+where object_type = 'im_timesheet_conf_object';
+
+
+
 create table im_timesheet_conf_objects (
 	conf_id		integer
 			constraint im_timesheet_conf_id_pk
