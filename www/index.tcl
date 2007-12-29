@@ -1,11 +1,17 @@
 ad_page_contract {
+    Index page for a workflow.
 
+    @author Frank Bergmann <frank.bergmann@project-open.com>
+    @creation-date November 28th, 2007
+    @cvs-id $Id$
 } {
 
 }
 
 set user_id [ad_maybe_redirect_for_registration]
-set content [im_workflow_home_component]
+set page_title [lang::message::lookup "" intranet-workflow.Workflow_Home "Workflow Home"]
+set workflow_home_inbox [im_workflow_home_inbox_component -relationship "assignment_group"]
+set workflow_home_component [im_workflow_home_component]
 set return_url [im_url_with_query]
 
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
