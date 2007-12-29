@@ -1,5 +1,14 @@
 -- upgrade-3.3.1.1.0-3.3.1.2.0.sql
 
+-- Setup status and type columns for im_user_absences
+update acs_object_types set 
+	status_column = 'absence_status_id', 
+	type_column='absence_type_id', 
+	status_type_table='im_user_absences' 
+where object_type = 'im_user_absence';
+
+
+
 -- Change the way the absence_url is shown
 
 delete from im_view_columns where view_id = 200;
@@ -32,9 +41,9 @@ extra_select, extra_where, sort_order, visible_for) values (20009,200,NULL,'Stat
 -- extra_select, extra_where, sort_order, visible_for) values (20009,200,NULL,'Description',
 -- '"$description_pretty"', '','',9,'');
 
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (20011,200,NULL,'Contact',
-'"$contact_info_pretty"','','',11,'');
+-- insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+-- extra_select, extra_where, sort_order, visible_for) values (20011,200,NULL,'Contact',
+-- '"$contact_info_pretty"','','',11,'');
 
 
 
