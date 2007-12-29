@@ -53,35 +53,34 @@ end;' language 'plpgsql';
 create or replace function workflow_case__add_manual_assignment (integer,varchar,integer)
 returns integer as '
 declare
-	add_manual_assignment__case_id                alias for $1;  
+	add_manual_assignment__case_id		alias for $1;  
 	add_manual_assignment__role_key		alias for $2;  
-	add_manual_assignment__party_id               alias for $3;  
-	v_workflow_key                                varchar;  
-	v_num_rows					integer;
+	add_manual_assignment__party_id		alias for $3;  
+
+	v_workflow_key				varchar;  
+	v_num_rows				integer;
 begin
-	select count(*)
-	  into v_num_rows
-	  from wf_case_assignments
-	 where case_id = add_manual_assignment__case_id
-	   and role_key = add_manual_assignment__role_key
-	   and party_id = add_manual_assignment__party_id;
+	select	count(*) into v_num_rows
+	from	wf_case_assignments
+	where	case_id = add_manual_assignment__case_id
+		and role_key = add_manual_assignment__role_key
+		and party_id = add_manual_assignment__party_id;
 
 	if v_num_rows = 0 then
-		select workflow_key 
-		  into v_workflow_key 
-		  from wf_cases 
-		 where case_id = add_manual_assignment__case_id;
-	
+		select	workflow_key into v_workflow_key 
+		from	wf_cases 
+		where	case_id = add_manual_assignment__case_id;
+
 		insert into wf_case_assignments (
-		case_id, 
-		workflow_key, 
-		role_key, 
-		party_id
+			case_id, 
+			workflow_key, 
+			role_key, 
+			party_id
 		) values (
-		add_manual_assignment__case_id, 
-		v_workflow_key, 
-		add_manual_assignment__role_key, 
-		add_manual_assignment__party_id
+			add_manual_assignment__case_id, 
+			v_workflow_key, 
+			add_manual_assignment__role_key, 
+			add_manual_assignment__party_id
 		);
 	end if;
 
@@ -93,9 +92,9 @@ end;' language 'plpgsql';
 create or replace function workflow_case__remove_manual_assignment (integer,varchar,integer)
 returns integer as '
 declare
-	remove_manual_assignment__case_id                alias for $1;  
+	remove_manual_assignment__case_id				alias for $1;  
 	remove_manual_assignment__role_key		   alias for $2;  
-	remove_manual_assignment__party_id               alias for $3;  
+	remove_manual_assignment__party_id			   alias for $3;  
 	v_workflow_key				   varchar;
 begin
 	select workflow_key 
@@ -118,7 +117,7 @@ end;' language 'plpgsql';
 create or replace function workflow_case__clear_manual_assignments (integer,varchar)
 returns integer as '
 declare
-	clear_manual_assignments__case_id                alias for $1;  
+	clear_manual_assignments__case_id				alias for $1;  
 	clear_manual_assignments__role_key		   alias for $2;  
 	v_workflow_key				   varchar;
 begin
@@ -140,11 +139,11 @@ end;' language 'plpgsql';
 create or replace function workflow_case__start_case (integer,integer,varchar,varchar)
 returns integer as '
 declare
-	start_case__case_id                alias for $1;  
-	start_case__creation_user          alias for $2;  -- default null  
-	start_case__creation_ip            alias for $3;  -- default null
-	start_case__msg                    alias for $4;  -- default null
-	v_journal_id                       integer;        
+	start_case__case_id				alias for $1;  
+	start_case__creation_user		  alias for $2;  -- default null  
+	start_case__creation_ip			alias for $3;  -- default null
+	start_case__msg					alias for $4;  -- default null
+	v_journal_id					   integer;		
 begin
 	/* Add an entry to the journal */
 	v_journal_id := journal_entry__new(
@@ -182,29 +181,31 @@ end;' language 'plpgsql';
 create or replace function workflow_case__delete (integer)
 returns integer as '
 declare
-	delete__case_id                alias for $1;  
-	v_workflow_case_table          varchar;   
+	delete__case_id				alias for $1;  
+	v_workflow_case_table		  varchar;   
 begin
 	/* delete attribute_value_audit, tokens, tasks  */
 	delete from wf_attribute_value_audit 
-	 where case_id = delete__case_id;
+	where case_id = delete__case_id;
 
 	delete from wf_case_assignments 
-	 where case_id = delete__case_id;
+	where case_id = delete__case_id;
 
 	delete from wf_case_deadlines 
-	 where case_id = delete__case_id;
+	where case_id = delete__case_id;
 
 	delete from wf_tokens 
-	 where case_id = delete__case_id;
+	where case_id = delete__case_id;
 
 	delete from wf_task_assignments 
-	 where task_id in (select task_id 
-		             from wf_tasks 
-		            where case_id = delete__case_id);
+	where task_id in (
+		select task_id 
+		from wf_tasks 
+		where case_id = delete__case_id
+	);
 
 	delete from wf_tasks 
-	 where case_id = delete__case_id;
+	where case_id = delete__case_id;
 
 	/* delete the journal */
 	PERFORM journal_entry__delete_for_object(delete__case_id);
@@ -213,7 +214,7 @@ begin
 	select table_name into v_workflow_case_table
 	from   acs_object_types ot, wf_cases c
 	where  c.case_id = delete__case_id
-	and    object_type = c.workflow_key;
+	and	object_type = c.workflow_key;
 	
 	execute ''delete from '' || v_workflow_case_table || '' where case_id = '' || delete__case_id;
 
@@ -231,12 +232,12 @@ end;' language 'plpgsql';
 create or replace function workflow_case__suspend (integer,integer,varchar,varchar)
 returns integer as '
 declare
-	suspend__case_id                alias for $1;  
-	suspend__user_id                alias for $2;  -- default null  
-	suspend__ip_address             alias for $3;  -- default null
-	suspend__msg                    alias for $4;  -- default null
-	v_state                         varchar;   
-	v_journal_id                    integer;        
+	suspend__case_id				alias for $1;  
+	suspend__user_id				alias for $2;  -- default null  
+	suspend__ip_address			 alias for $3;  -- default null
+	suspend__msg					alias for $4;  -- default null
+	v_state						 varchar;   
+	v_journal_id					integer;		
 begin
 	select state into v_state
 	from   wf_cases
@@ -259,7 +260,7 @@ begin
 	);
 
 	update wf_cases
-	set    state = ''suspended''
+	set	state = ''suspended''
 	where  case_id = suspend__case_id;
 
 	return 0; 
@@ -270,12 +271,12 @@ end;' language 'plpgsql';
 create or replace function workflow_case__resume (integer,integer,varchar,varchar)
 returns integer as '
 declare
-	resume__case_id                alias for $1;  
-	resume__user_id                alias for $2;  -- default null  
-	resume__ip_address             alias for $3;  -- default null
-	resume__msg                    alias for $4;  -- default null
-	v_state                        varchar;   
-	v_journal_id                   integer;        
+	resume__case_id				alias for $1;  
+	resume__user_id				alias for $2;  -- default null  
+	resume__ip_address			 alias for $3;  -- default null
+	resume__msg					alias for $4;  -- default null
+	v_state						varchar;   
+	v_journal_id				   integer;		
 begin
 	select state into v_state
 	from   wf_cases
@@ -298,7 +299,7 @@ begin
 	);
 
 	update wf_cases
-	set    state = ''active''
+	set	state = ''active''
 	where  case_id = resume__case_id;
 
 	return 0; 
@@ -309,12 +310,12 @@ end;' language 'plpgsql';
 create or replace function workflow_case__cancel (integer,integer,varchar,varchar)
 returns integer as '
 declare
-	cancel__case_id                alias for $1;  
-	cancel__user_id                alias for $2;  -- default null  
-	cancel__ip_address             alias for $3;  -- default null
-	cancel__msg                    alias for $4;  -- default null
-	v_state                        varchar;   
-	v_journal_id                   integer;        
+	cancel__case_id				alias for $1;  
+	cancel__user_id				alias for $2;  -- default null  
+	cancel__ip_address			 alias for $3;  -- default null
+	cancel__msg					alias for $4;  -- default null
+	v_state						varchar;   
+	v_journal_id				   integer;		
 begin
 	select state into v_state
 	from   wf_cases
@@ -337,7 +338,7 @@ begin
 	);
 
 	update wf_cases
-	set    state = ''canceled''
+	set	state = ''canceled''
 	where  case_id = cancel__case_id;
 
 	return 0; 
@@ -348,18 +349,18 @@ end;' language 'plpgsql';
 create or replace function workflow_case__fire_message_transition (integer)
 returns integer as '
 declare
-	fire_message_transition__task_id               alias for $1;  
-	v_case_id                                      integer;        
-	v_transition_name                              varchar;  
-	v_trigger_type                                 varchar;   
-	v_journal_id                                   integer;        
+	fire_message_transition__task_id			   alias for $1;  
+	v_case_id									  integer;		
+	v_transition_name							  varchar;  
+	v_trigger_type								 varchar;   
+	v_journal_id								   integer;		
 begin
 	select t.case_id, tr.transition_name, tr.trigger_type 
 	into   v_case_id, v_transition_name, v_trigger_type
 	from   wf_tasks t, wf_transitions tr
 	where  t.task_id = fire_message_transition__task_id
-	and    tr.workflow_key = t.workflow_key
-	and    tr.transition_key = t.transition_key;
+	and	tr.workflow_key = t.workflow_key
+	and	tr.transition_key = t.transition_key;
 
 	if v_trigger_type != ''message'' then
 		raise EXCEPTION ''-20000: Transition "%" is not message triggered'',  v_transition_name;
@@ -399,16 +400,16 @@ end;' language 'plpgsql';
 create or replace function workflow_case__begin_task_action (integer,varchar,varchar,integer,varchar)
 returns integer as '
 declare
-	begin_task_action__task_id                alias for $1;  
-	begin_task_action__action                 alias for $2;  
-	begin_task_action__action_ip              alias for $3;  
-	begin_task_action__user_id                alias for $4;  
-	begin_task_action__msg                    alias for $5;  -- default null  
-	v_state                                   varchar;
-	v_journal_id                              integer;
-	v_case_id                                 integer;
-	v_transition_name                         varchar;
-	v_num_rows                                integer;
+	begin_task_action__task_id				alias for $1;  
+	begin_task_action__action				 alias for $2;  
+	begin_task_action__action_ip			  alias for $3;  
+	begin_task_action__user_id				alias for $4;  
+	begin_task_action__msg					alias for $5;  -- default null  
+	v_state								   varchar;
+	v_journal_id							  integer;
+	v_case_id								 integer;
+	v_transition_name						 varchar;
+	v_num_rows								integer;
 begin
 	select state into v_state
 	from   wf_tasks
@@ -614,48 +615,49 @@ end;' language 'plpgsql';
 create or replace function workflow_case__add_task_assignment (integer,integer,boolean)
 returns integer as '
 declare
-	add_task_assignment__task_id                alias for $1;  
-	add_task_assignment__party_id               alias for $2;  
-	add_task_assignment__permanent_p	      alias for $3;
-	v_count                                    integer;       
-	v_workflow_key                             wf_workflows.workflow_key%TYPE;
-	v_context_key                              wf_contexts.context_key%TYPE;
-	v_case_id                                  wf_cases.case_id%TYPE;
-	v_role_key				     wf_roles.role_key%TYPE;
-	v_transition_key                           wf_transitions.transition_key%TYPE;
-	v_notification_callback     wf_context_transition_info.notification_callback%TYPE;
-	v_notification_custom_arg   wf_context_transition_info.notification_custom_arg%TYPE;
-	callback_rec                record;
-	v_assigned_user             record;
+	add_task_assignment__task_id		alias for $1;  
+	add_task_assignment__party_id		alias for $2;  
+	add_task_assignment__permanent_p	alias for $3;
+
+	v_count					integer;	   
+	v_workflow_key				wf_workflows.workflow_key%TYPE;
+	v_context_key				wf_contexts.context_key%TYPE;
+	v_case_id				wf_cases.case_id%TYPE;
+	v_role_key				wf_roles.role_key%TYPE;
+	v_transition_key			wf_transitions.transition_key%TYPE;
+	v_notification_callback			wf_context_transition_info.notification_callback%TYPE;
+	v_notification_custom_arg		wf_context_transition_info.notification_custom_arg%TYPE;
+
+	callback_rec				record;
+	v_assigned_user				record;
 begin
 	IF add_task_assignment__party_id is null THEN return 0; END IF;
 
 	-- get some needed information
-
-	select ta.case_id, ta.workflow_key, ta.transition_key, tr.role_key, c.context_key
-	into   v_case_id, v_workflow_key, v_transition_key, v_role_key, v_context_key
-	from   wf_tasks ta, wf_transitions tr, wf_cases c
-	where  ta.task_id = add_task_assignment__task_id
-	  and  tr.workflow_key = ta.workflow_key
-	  and  tr.transition_key = ta.transition_key
-	  and  c.case_id = ta.case_id;
+	select	ta.case_id, ta.workflow_key, ta.transition_key, tr.role_key, c.context_key
+	into	v_case_id, v_workflow_key, v_transition_key, v_role_key, v_context_key
+	from	wf_tasks ta, 
+		wf_transitions tr, 
+		wf_cases c
+	where	ta.task_id = add_task_assignment__task_id
+		and tr.workflow_key = ta.workflow_key
+		and tr.transition_key = ta.transition_key
+		and c.case_id = ta.case_id;
 
 	-- make the same assignment as a manual assignment
-
 	IF add_task_assignment__permanent_p = ''t'' and v_role_key is not null THEN
 		/* We do this up-front, because 
 		 * even though the user already had a task assignment, 
 		 * he might not have a case assignment.
 		 */
 		perform workflow_case__add_manual_assignment (
-		v_case_id,
-		v_role_key,
-		add_task_assignment__party_id
+			v_case_id,
+			v_role_key,
+			add_task_assignment__party_id
 		);
 	end if;
 
 	-- check that we do not hit the unique constraint
-
 	select count(*) into v_count
 	from   wf_task_assignments
 	where  task_id = add_task_assignment__task_id
@@ -666,14 +668,11 @@ begin
 	end if;
 
 	-- get callback information
-
-	select notification_callback,
-		   notification_custom_arg into callback_rec
-		from   wf_context_transition_info
-		where  context_key = v_context_key
-		and    workflow_key = v_workflow_key
-		and    transition_key = v_transition_key;
-
+	select	notification_callback, notification_custom_arg into callback_rec
+	from	wf_context_transition_info
+	where	context_key = v_context_key
+		and workflow_key = v_workflow_key
+		and transition_key = v_transition_key;
 		
 	if FOUND then
 		v_notification_callback := callback_rec.notification_callback;
@@ -684,7 +683,6 @@ begin
 	end if;
 
 	-- notify any new assignees
-
 	for v_assigned_user in  
 		select distinct u.user_id
 		from   users u
