@@ -61,7 +61,12 @@ ad_proc -public template::widget::generic_sql { element_reference tag_attributes
     array set attributes $tag_attributes
 
     set key_value_list [list]
-    if {[catch {set key_value_list [util_memoize [list db_list_of_lists sql_statement $sql_statement] $memoize_max_age]} errmsg]} {
+    if {[catch {
+	# evaluate TCL commands embedded into the SQL, such as [ad_get_user_id] etc.
+	eval "set sql_statement \"$sql_statement\""
+	# Execute the SQL and cache the result
+	set key_value_list [util_memoize [list db_list_of_lists sql_statement $sql_statement] $memoize_max_age]
+    } errmsg]} {
 	return "Generic SQL Widget: Error executing SQL statment <pre>'$sql_statement'</pre>: <br>
 	<pre>$errmsg</pre>"
     }
