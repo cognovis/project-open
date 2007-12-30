@@ -199,34 +199,90 @@ if {[string equal $action "already_existing"]} {
 
 } else {
 
-    lappend form_fields {attribute_name:text {label {Attribute Name}} {html {size 30 maxlength 100}} {mode $element_mode}}
+    lappend form_fields {
+	attribute_name:text 
+	{label {<nobr>Attribute Name</nobr>}} 
+	{html {size 30 maxlength 100}} 
+	{mode $element_mode} 
+	{help_text "
+		This name becomes a column name in the database and a local variable. 
+		Please only choose lower case characters and use underscore ('_') instead of spaces.
+		Please use the suffix '_id' (for example: 'project_id') if the field references another table
+		and stick to the general conventions for variable names.
+	"}
+    }
 
-    lappend form_fields {table_name:text(select) {label {Table Name}} {options $extension_table_options } {mode $element_mode}}
+    lappend form_fields {
+	table_name:text(select) 
+	{label {Table Name}} 
+	{options $extension_table_options } 
+	{mode $element_mode} 
+	{help_text "
+		Select the database table where to add the new column.
+		Usually there is only a single table per object, so there isn't much choice.
+	"}
+    }
 
-    #append form_fields {modify_sql_p:text(radio) {label {Modify the<br>SQL Table?}} {options {{Yes t} {No f}}} {value $modify_sql_p} {help_text {Please choose 'No' if you are unsure.<br>The system will try to add a new column to the database schema if you choose 'Yes'.}} }
     set modify_sql_p "t"
     lappend form_fields {modify_sql_p:text(hidden) {value $modify_sql_p}}
 
 }
 
-foreach field {
-    {action:text(hidden),optional {}}
-    {pretty_name:text {label {Pretty Name}} {html {size 30 maxlength 100}}}
-    {pretty_plural:text {label {Pretty Plural}} {html {size 30 maxlength 100}}}
-    {required_p:text(radio) {label {Required}} {options {{Yes t} {No f}}} {value $required_p}}
-    {object_type:text(hidden) {label {Object Type}} {} {html {size 30 maxlength 100}}  }
-    {widget_name:text(select) {label Widget} {options $widget_options } {help_text {<a href=widgets>Widgets descriptions</a> are available}}}
-
-    {pos_x:text(hidden),optional {label {Pos-X}} {html {size 5 maxlength 4}}}
-    {pos_y:text,optional {label {Pos-Y}} {html {size 5 maxlength 4}}}
-    {size_x:text(hidden),optional {label {Size-X}} {html {size 5 maxlength 4}}}
-    {size_y:text(hidden),optional {label {Size-Y}} {html {size 5 maxlength 4}}}
-    {label_style:text(hidden) {label {Label Style}} {options {{Plain plain} {{No Label} no_label} }} {value $required_p}}
-    {include_in_search_p:text(checkbox) {label {Include in Search?}} {options {{Yes t}}} {value $required_p}}
-} {
-    lappend form_fields $field
+lappend form_fields {
+	action:text(hidden),optional 
+	{}
 }
 
+lappend form_fields {
+	pretty_name:text 
+	{label {Pretty Name}} 
+	{html {size 30 maxlength 100}}
+	{help_text "This is the default name that will appear as a label for the new field in forms."}
+}
+
+lappend form_fields {
+	pretty_plural:text 
+	{label {Pretty Plural}} 
+	{html {size 30 maxlength 100}}
+	{help_text "Just put the same as Pretty Name"}
+}
+lappend form_fields {
+	required_p:text(radio) 
+	{label {Required}} 
+	{options {{Yes t} {No f}}} 
+	{value $required_p}
+	{help_text "Should the user be required to specifiy this field?"}
+}
+lappend form_fields {object_type:text(hidden) {label {Object Type}} {} {html {size 30 maxlength 100}}  }
+lappend form_fields {
+	widget_name:text(select) 
+	{label Widget} 
+	{options $widget_options } 
+	{help_text "
+		Specify the value range of the attribute. There is a <a href=widgets>widgets gallery</a> 
+		available to show the available widgets.
+	"}
+}
+lappend form_fields {pos_x:text(hidden),optional {label {Pos-X}} {html {size 5 maxlength 4}}}
+lappend form_fields {
+	pos_y:text,optional 
+	{label {Pos-Y}} 
+	{html {size 5 maxlength 4}}
+	{help_text "
+		Give a value for the Y-position, ranging from '0' (top)	to '100' (bottom). 
+		Currently, DynFields are appended at the end of any form in the order given
+		by this variable.
+	"}
+}
+lappend form_fields {size_x:text(hidden),optional {label {Size-X}} {html {size 5 maxlength 4}}}
+lappend form_fields {size_y:text(hidden),optional {label {Size-Y}} {html {size 5 maxlength 4}}}
+lappend form_fields {label_style:text(hidden) {label {Label Style}} {options {{Plain plain} {{No Label} no_label} }} {value $required_p}}
+lappend form_fields {
+	include_in_search_p:text(checkbox) 
+	{label {<nobr>Include in Search?</nobr>}} 
+	{options {{Yes t}}} 
+	{value $required_p}
+}
 
 
 # ******************************************************
