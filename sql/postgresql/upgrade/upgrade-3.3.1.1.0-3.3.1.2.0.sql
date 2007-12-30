@@ -268,3 +268,329 @@ end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
+
+-- -------------------------------------------------------
+-- Developer
+-- -------------------------------------------------------
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_admin_menu		integer;
+	v_main_menu		integer;
+BEGIN
+	select menu_id into v_main_menu
+	from im_menus where label = ''main'';
+
+	-- Main admin menu - just an invisible top-menu
+	-- for all admin entries links under Projects
+	v_admin_menu := im_menu__new (
+		null,				-- p_menu_id
+		''acs_object'',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		''intranet-core'',		-- package_name
+		''openacs'',			-- label
+		''OpenACS'',			-- name
+		''/acs-admin/'',		-- url
+		1000,				-- sort_order
+		v_main_menu,			-- parent_menu_id
+		''''				-- p_visible_tcl
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+-- -------------------------------------------------------
+-- API-Doc
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_admin_menu		integer;
+	v_main_menu		integer;
+BEGIN
+	select menu_id into v_main_menu
+	from im_menus where label = ''openacs'';
+
+	-- Main admin menu - just an invisible top-menu
+	-- for all admin entries links under Projects
+	v_admin_menu := im_menu__new (
+		null,				-- p_menu_id
+		''acs_object'',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		''intranet-core'',		-- package_name
+		''openacs_api_doc'',		-- label
+		''API Doc'',			-- name
+		''/api-doc/'',			-- url
+		10,				-- sort_order
+		v_main_menu,			-- parent_menu_id
+		''''				-- p_visible_tcl
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+-- -------------------------------------------------------
+-- API-Doc
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_admin_menu		integer;
+	v_main_menu		integer;
+BEGIN
+	select menu_id into v_main_menu
+	from im_menus where label = ''openacs'';
+
+	-- Main admin menu - just an invisible top-menu
+	-- for all admin entries links under Projects
+	v_admin_menu := im_menu__new (
+		null,				-- p_menu_id
+		''acs_object'',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		''intranet-core'',		-- package_name
+		''openacs_developer'',		-- label
+		''Developer'',			-- name
+		''/acs-admin/developer'',	-- url
+		20,				-- sort_order
+		v_main_menu,			-- parent_menu_id
+		''''				-- p_visible_tcl
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_admin_menu		integer;
+	v_main_menu		integer;
+BEGIN
+	select menu_id into v_main_menu
+	from im_menus where label = ''openacs'';
+
+	-- Main admin menu - just an invisible top-menu
+	-- for all admin entries links under Projects
+	v_admin_menu := im_menu__new (
+		null,				-- p_menu_id
+		''acs_object'',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		''intranet-core'',		-- package_name
+		''openacs_l10n'',		-- label
+		''Localization Home'',		-- name
+		''/acs-lang/admin'',		-- url
+		20,				-- sort_order
+		v_main_menu,			-- parent_menu_id
+		''''				-- p_visible_tcl
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_admin_menu		integer;
+	v_main_menu		integer;
+BEGIN
+	select menu_id into v_main_menu
+	from im_menus where label = ''openacs'';
+
+	-- Main admin menu - just an invisible top-menu
+	-- for all admin entries links under Projects
+	v_admin_menu := im_menu__new (
+		null,				-- p_menu_id
+		''acs_object'',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		''intranet-core'',		-- package_name
+		''openacs_package_manager'',	-- label
+		''Package Manager'',		-- name
+		''/acs-admin/apm/'',		-- url
+		30,				-- sort_order
+		v_main_menu,			-- parent_menu_id
+		''''				-- p_visible_tcl
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_admin_menu		integer;
+	v_main_menu		integer;
+BEGIN
+	select menu_id into v_main_menu
+	from im_menus where label = ''openacs'';
+
+	-- Main admin menu - just an invisible top-menu
+	-- for all admin entries links under Projects
+	v_admin_menu := im_menu__new (
+		null,				-- p_menu_id
+		''acs_object'',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		''intranet-core'',		-- package_name
+		''openacs_sitemap'',		-- label
+		''Sitemap'',			-- name
+		''/admin/site-map/'',			-- url
+		40,				-- sort_order
+		v_main_menu,			-- parent_menu_id
+		''''				-- p_visible_tcl
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_admin_menu		integer;
+	v_main_menu		integer;
+BEGIN
+	select menu_id into v_main_menu
+	from im_menus where label = ''openacs'';
+
+	-- Main admin menu - just an invisible top-menu
+	-- for all admin entries links under Projects
+	v_admin_menu := im_menu__new (
+		null,				-- p_menu_id
+		''acs_object'',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		''intranet-core'',		-- package_name
+		''openacs_ds'',			-- label
+		''Developer Support'',		-- name
+		''/ds/'',			-- url
+		50,				-- sort_order
+		v_main_menu,			-- parent_menu_id
+		''''				-- p_visible_tcl
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_admin_menu		integer;
+	v_main_menu		integer;
+BEGIN
+	select menu_id into v_main_menu
+	from im_menus where label = ''openacs'';
+
+	-- Main admin menu - just an invisible top-menu
+	-- for all admin entries links under Projects
+	v_admin_menu := im_menu__new (
+		null,				-- p_menu_id
+		''acs_object'',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		''intranet-core'',		-- package_name
+		''openacs_cache'',		-- label
+		''Cache Status'',		-- name
+		''/acs-admin/cache/'',		-- url
+		60,				-- sort_order
+		v_main_menu,			-- parent_menu_id
+		''''				-- p_visible_tcl
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_admin_menu		integer;
+	v_main_menu		integer;
+BEGIN
+	select menu_id into v_main_menu
+	from im_menus where label = ''openacs'';
+
+	-- Main admin menu - just an invisible top-menu
+	-- for all admin entries links under Projects
+	v_admin_menu := im_menu__new (
+		null,				-- p_menu_id
+		''acs_object'',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		''intranet-core'',		-- package_name
+		''openacs_auth'',		-- label
+		''Authentication'',		-- name
+		''/acs-admin/auth/'',			-- url
+		80,				-- sort_order
+		v_main_menu,			-- parent_menu_id
+		''''				-- p_visible_tcl
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
