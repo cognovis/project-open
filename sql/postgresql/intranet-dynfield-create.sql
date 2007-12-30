@@ -129,9 +129,9 @@ create table im_dynfield_layout (
 	sort_key		integer
 );
 
-alter table im_dynfield_layout add
-  constraint im_dynfield_layout_pk primary key (attribute_id, page_url, object_type)
-;
+alter table im_dynfield_layout 
+add constraint im_dynfield_layout_pk 
+primary key (attribute_id, page_url, object_type);
 
 -- Skip the foreign key meanwhile so that we dont have to add the 
 -- page_layout for the beginning. By default, a "table" layout will
@@ -199,19 +199,19 @@ create table im_dynfield_attributes (
 --
 
 create table im_dynfield_type_attribute_map (
-        attribute_id            integer
-                                constraint im_dynfield_type_attr_map_attr_fk
-                                references acs_objects,
+	attribute_id		integer
+				constraint im_dynfield_type_attr_map_attr_fk
+				references acs_objects,
 	object_type_id		integer 
 				constraint im_dynfield_type_attr_map_otype_nn
 				not null
 				constraint im_dynfield_type_attr_map_otype_fk
 				references im_categories,
 	display_mode		varchar(10)
-                                constraint im_dynfield_type_attr_map_dmode_nn
-                                not null
-                                constraint im_dynfield_type_attr_map_dmode_ck
-                                check (display_mode in ('edit', 'display', 'none')),
+				constraint im_dynfield_type_attr_map_dmode_nn
+				not null
+				constraint im_dynfield_type_attr_map_dmode_ck
+				check (display_mode in ('edit', 'display', 'none')),
 	unique (attribute_id, object_type_id)
 );
 
@@ -279,44 +279,40 @@ select im_menu__del_module('intranet-dynfield');
 create or replace function inline_0 ()
 returns integer as '
 declare
-        v_menu                  integer;
-        v_admin_menu             integer;
-        v_admins                integer;
+	v_menu			integer;
+	v_admin_menu		integer;
+	v_admins		integer;
 BEGIN
-    select group_id into v_admins from groups where group_name = ''P/O Admins'';
+	select group_id into v_admins from groups where group_name = ''P/O Admins'';
 
-    select menu_id
-    into v_admin_menu
-    from im_menus
-    where label=''admin'';
+	select menu_id
+	into v_admin_menu
+	from im_menus
+	where label=''admin'';
 
-    v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-dynfield'',  -- package_name
-        ''dynfield_admin'',     -- label
-        ''DynField'',           -- name
-        ''/intranet-dynfield/'',-- url
-        750,                     -- sort_order
-        v_admin_menu,           -- parent_menu_id
-        null                    -- p_visible_tcl
-    );
+	v_menu := im_menu__new (
+		null,			-- p_menu_id
+		''acs_object'',		-- object_type
+		now(),			-- creation_date
+		null,			-- creation_user
+		null,			-- creation_ip
+		null,			-- context_id
+		''intranet-dynfield'',  -- package_name
+		''dynfield_admin'',	-- label
+		''DynField'',		-- name
+		''/intranet-dynfield/'',-- url
+		750,			-- sort_order
+		v_admin_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
 
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
 
-    return 0;
+	return 0;
 end;' language 'plpgsql';
 
 select inline_0 ();
 drop function inline_0 ();
-
-
-
-
 
 
 
@@ -370,7 +366,7 @@ end;' language 'plpgsql';
 
 create or replace function im_dynfield_widget__del (integer) returns integer as '
 DECLARE
-        p_widget_id             alias for $1;
+	p_widget_id		alias for $1;
 BEGIN
 	-- Erase the im_dynfield_widgets item associated with the id
 	delete from im_dynfield_widgets
@@ -381,7 +377,7 @@ BEGIN
 	where object_id = p_widget_id;
 
 	PERFORM acs_object__del(v_widget_id);
-        return 0;
+	return 0;
 end;' language 'plpgsql';
 
 
@@ -391,8 +387,8 @@ DECLARE
 	v_name		varchar;
 BEGIN
 	select  widget_name
-	into    v_name
-	from    im_dynfield_widgets
+	into	v_name
+	from	im_dynfield_widgets
 	where   widget_id = p_widget_id;
 
 	return v_name;
@@ -475,7 +471,7 @@ end;' language 'plpgsql';
 -- Delete a single attribute (if we know its ID...)
 create or replace function im_dynfield_attribute__del (integer) returns integer as '
 DECLARE
-        p_attribute_id             alias for $1;
+	p_attribute_id		alias for $1;
 
 	v_acs_attribute_id	integer;
 	v_acs_attribute_name	varchar;
@@ -509,7 +505,7 @@ BEGIN
 	where attribute_id = p_attribute_id;
 
 	PERFORM acs_attribute__drop_attribute(v_object_type, v_acs_attribute_name);
-        return 0;
+	return 0;
 end;' language 'plpgsql';
 
 
@@ -560,20 +556,20 @@ BEGIN
 		EXIT WHEN csr_flex_multi_attr_value%NOTFOUND;						
 
 		if v_ret_string is not null then 
-		 v_ret_string := v_ret_string || '', '';
+		v_ret_string := v_ret_string || '', '';
 		end if; 
 	
 		if widget_type = ''category_tree'' then
-		 select category.name(v_value) into v_cat_name from dual;
-	 
-		 v_ret_string := v_ret_string || v_cat_name;
-			 
+		select category.name(v_value) into v_cat_name from dual;
+	
+		v_ret_string := v_ret_string || v_cat_name;
+			
 		else
-		 v_ret_string := v_ret_string || v_value;
+		v_ret_string := v_ret_string || v_value;
 		end if;
 	END LOOP;
 	CLOSE csr_flex_multi_attr_value;
-		 
+		
 	return v_ret_string;
 
 end;' language 'plpgsql';
@@ -635,141 +631,141 @@ select im_dynfield_widget__new (
 
 
 select im_dynfield_widget__new (
-        null,                   -- widget_id
-        'im_dynfield_widget',   -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        'integer',        -- widget_name
-        '#intranet-dynfield.Integer#',    -- pretty_name
-        '#intranet-dynfield.Integer#',    -- pretty_plural
-        10007,                  -- storage_type_id
-        'integer',               -- acs_datatype
-        'text',               -- widget
-        'integer',               -- sql_datatype
-        '{html {size 6 maxlength 100}}' -- parameters
+	null,			-- widget_id
+	'im_dynfield_widget',   -- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'integer',		-- widget_name
+	'#intranet-dynfield.Integer#',	-- pretty_name
+	'#intranet-dynfield.Integer#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'text',			-- widget
+	'integer',		-- sql_datatype
+	'{html {size 6 maxlength 100}}' -- parameters
 );
 
 
 select im_dynfield_widget__new (
-        null,                   -- widget_id
-        'im_dynfield_widget',   -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        'textbox_small',        -- widget_name
-        '#intranet-dynfield.Textbox# #intranet-dynfield.Small#',    -- pretty_name
-        '#intranet-dynfield.Textboxes# #intranet-dynfield.Small#',    -- pretty_plural
-        10007,                  -- storage_type_id
-        'string',               -- acs_datatype
-        'text',               -- widget
-        'text',               -- sql_datatype
-        '{html {size 18 maxlength 30}}' -- parameters
+	null,			-- widget_id
+	'im_dynfield_widget',   -- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'textbox_small',	-- widget_name
+	'#intranet-dynfield.Textbox# #intranet-dynfield.Small#',	-- pretty_name
+	'#intranet-dynfield.Textboxes# #intranet-dynfield.Small#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'string',		-- acs_datatype
+	'text',			-- widget
+	'text',			-- sql_datatype
+	'{html {size 18 maxlength 30}}' -- parameters
 );
 
 select im_dynfield_widget__new (
-        null,                   -- widget_id
-        'im_dynfield_widget',   -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        'textbox_medium',        -- widget_name
-        '#intranet-dynfield.Textbox# #intranet-dynfield.Medium#',    -- pretty_name
-        '#intranet-dynfield.Textboxes# #intranet-dynfield.Medium#',    -- pretty_plural
-        10007,                  -- storage_type_id
-        'string',               -- acs_datatype
-        'text',               -- widget
-        'text',               -- sql_datatype
-        '{html {size 30 maxlength 100}}' -- parameters
+	null,			-- widget_id
+	'im_dynfield_widget',   -- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'textbox_medium',	-- widget_name
+	'#intranet-dynfield.Textbox# #intranet-dynfield.Medium#',	-- pretty_name
+	'#intranet-dynfield.Textboxes# #intranet-dynfield.Medium#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'string',		-- acs_datatype
+	'text',			-- widget
+	'text',			-- sql_datatype
+	'{html {size 30 maxlength 100}}' -- parameters
 );
 
 select im_dynfield_widget__new (
-        null,                   -- widget_id
-        'im_dynfield_widget',   -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        'textbox_large',        -- widget_name
-        '#intranet-dynfield.Textbox# #intranet-dynfield.Large#',    -- pretty_name
-        '#intranet-dynfield.Textboxes# #intranet-dynfield.Large#',    -- pretty_plural
-        10007,                  -- storage_type_id
-        'string',               -- acs_datatype
-        'text',               -- widget
-        'text',               -- sql_datatype
-        '{html {size 50 maxlength 400}}' -- parameters
+	null,			-- widget_id
+	'im_dynfield_widget',   -- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'textbox_large',	-- widget_name
+	'#intranet-dynfield.Textbox# #intranet-dynfield.Large#',	-- pretty_name
+	'#intranet-dynfield.Textboxes# #intranet-dynfield.Large#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'string',		-- acs_datatype
+	'text',			-- widget
+	'text',			-- sql_datatype
+	'{html {size 50 maxlength 400}}' -- parameters
 );
 
 select im_dynfield_widget__new (
-        null,                   -- widget_id
-        'im_dynfield_widget',   -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        'textarea_small',        -- widget_name
-        '#intranet-dynfield.Textarea# #intranet-dynfield.Small#',    -- pretty_name
-        '#intranet-dynfield.Textarea# #intranet-dynfield.Small#',    -- pretty_plural
-        10007,                  -- storage_type_id
-        'string',               -- acs_datatype
-        'textarea',               -- widget
-        'text',               -- sql_datatype
-        '{html {cols 60 rows 4} validate {check_area}}' -- parameters
+	null,			-- widget_id
+	'im_dynfield_widget',   -- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'textarea_small',	-- widget_name
+	'#intranet-dynfield.Textarea# #intranet-dynfield.Small#',	-- pretty_name
+	'#intranet-dynfield.Textarea# #intranet-dynfield.Small#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'string',		-- acs_datatype
+	'textarea',		-- widget
+	'text',			-- sql_datatype
+	'{html {cols 60 rows 4} validate {check_area}}' -- parameters
 );
 
 select im_dynfield_widget__new (
-        null,                   -- widget_id
-        'im_dynfield_widget',   -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        'textarea_small_nospell',        -- widget_name
-        '#intranet-dynfield.Textarea# #intranet-dynfield.Small#',    -- pretty_name
-        '#intranet-dynfield.Textarea# #intranet-dynfield.Small#',    -- pretty_plural
-        10007,                  -- storage_type_id
-        'string',               -- acs_datatype
-        'textarea',               -- widget
-        'text',               -- sql_datatype
-        '{html {cols 60 rows 4} {nospell}}' -- parameters
-);
-
-
-select im_dynfield_widget__new (
-        null,                   -- widget_id
-        'im_dynfield_widget',   -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        'checkbox',        -- widget_name
-        '#intranet-dynfield.Checkbox#',    -- pretty_name
-        '#intranet-dynfield.Checkboxes#',    -- pretty_plural
-        10007,                  -- storage_type_id
-        'boolean',               -- acs_datatype
-        'checkbox',               -- widget
-        'char(1)',               -- sql_datatype
-        '{options {{"" t}}}' -- parameters
+	null,			-- widget_id
+	'im_dynfield_widget',   -- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'textarea_small_nospell',	-- widget_name
+	'#intranet-dynfield.Textarea# #intranet-dynfield.Small#',	-- pretty_name
+	'#intranet-dynfield.Textarea# #intranet-dynfield.Small#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'string',		-- acs_datatype
+	'textarea',		-- widget
+	'text',			-- sql_datatype
+	'{html {cols 60 rows 4} {nospell}}' -- parameters
 );
 
 
 select im_dynfield_widget__new (
-        null,                   -- widget_id
-        'im_dynfield_widget',   -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        'category_company_type',        -- widget_name
-        '#intranet-core.Company_Type#',    -- pretty_name
-        '#intranet-core.Company_Types#',    -- pretty_plural
-        10007,                  -- storage_type_id
-        'integer',               -- acs_datatype
-        'im_category_tree',               -- widget
-        'integer',               -- sql_datatype
-        '{custom {category_type "Intranet Company Type"}}' -- parameters
+	null,			-- widget_id
+	'im_dynfield_widget',   -- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'checkbox',		-- widget_name
+	'#intranet-dynfield.Checkbox#',	-- pretty_name
+	'#intranet-dynfield.Checkboxes#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'boolean',		-- acs_datatype
+	'checkbox',		-- widget
+	'char(1)',		-- sql_datatype
+	'{options {{"" t}}}'	-- parameters
+);
+
+
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',   -- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'category_company_type',	-- widget_name
+	'#intranet-core.Company_Type#',	-- pretty_name
+	'#intranet-core.Company_Types#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_category_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{custom {category_type "Intranet Company Type"}}' -- parameters
 );
 
