@@ -223,16 +223,16 @@ DECLARE
 	p_obj_id		alias for $2;
 	p_widget_type		alias for $3;
 
-	v_ret_string varchar2(400);
-	v_value im_dynfield_attr_multi_value.value%TYPE;
-	v_cat_name category_translations.name%TYPE;
+	v_ret_string		varchar(400);
+	v_value			varchar;
+	v_cat_name		varchar;
 		
 	CURSOR csr_flex_multi_attr_value (attr integer, obj integer) IS
-	SELECT value
-	FROM im_dynfield_attr_multi_value
-	WHERE attribute_id = attr
-	AND object_id = obj
-	AND value is not null;
+	SELECT	value
+	FROM	im_dynfield_attr_multi_value
+	WHERE	attribute_id = attr
+		AND object_id = obj
+		AND value is not null;
 BEGIN
 	v_ret_string := null;
 	OPEN csr_flex_multi_attr_value (attr_id,obj_id);
