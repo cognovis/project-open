@@ -35,16 +35,7 @@ set acs_object_type $object_type
 # while we haven't integrated this into the Metadata model.
 # ToDo: Integrate type and status into metadata model.
 
-switch $acs_object_type {
-    im_project { set category_type "Intranet Project Type" }
-    im_company { set category_type "Intranet Project Type" }
-    im_office { set category_type "Intranet Office Type" }
-    user { set category_type "Intranet Project Type" }
-    im_freelance_rfq { set category_type "Intranet Freelance RFQ Type" }
-    im_freelance_rfq_answer { set category_type "Intranet Freelance RFQ Answer Type" }
-    default { set category_type "" }
-}
-
+set category_type [im_dynfield::type_category_for_object_type -object_type $acs_object_type]
 
 set object_subtype_sql ""
 if {$object_subtype_id} {

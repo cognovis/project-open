@@ -34,6 +34,49 @@ ad_proc -private template::element::render_label { form_id element_id tag_attrib
 }
 
 
+
+
+
+ad_proc -public im_dynfield::type_category_for_object_type {
+    -object_type:required
+} {
+    Get the category for the type_id of a given object_type
+} {
+    switch $object_type {
+	im_project		{ set category_type "Intranet Project Type" }
+	im_company		{ set category_type "Intranet Project Type" }
+	im_office		{ set category_type "Intranet Office Type" }
+	user			{ set category_type "Intranet Project Type" }
+	im_freelance_rfq	{ set category_type "Intranet Freelance RFQ Type" }
+	im_freelance_rfq_answer	{ set category_type "Intranet Freelance RFQ Answer Type" }
+	im_user_absence		{ set category_type "Intranet Absence Type" }
+	default			{ set category_type "" }
+    }
+    return $category_type
+}
+
+
+ad_proc -public im_dynfield::status_category_for_object_type {
+    -object_type:required
+} {
+    Get the category for the status_id of a given object_type
+} {
+    switch $object_type {
+	im_project		{ set category_status "Intranet Project Status" }
+	im_company		{ set category_status "Intranet Project Status" }
+	im_office		{ set category_status "Intranet Office Status" }
+	user			{ set category_status "Intranet Project Status" }
+	im_freelance_rfq	{ set category_status "Intranet Freelance RFQ Status" }
+	im_freelance_rfq_answer	{ set category_status "Intranet Freelance RFQ Answer Status" }
+	im_user_absence		{ set category_status "Intranet Absence Status" }
+	default			{ set category_status "" }
+    }
+    return $category_status
+}
+
+
+
+
 namespace eval im_dynfield::attribute {}
 
 ad_proc -public im_dynfield::attribute::get {

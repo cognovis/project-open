@@ -165,11 +165,53 @@ db_transaction {
         "
 	
     } else {
-    
     	
     }
 }
 
+# ------------------------------------------------------------------
+# Set permissions for the dynfield so that it is visible by default
+# ------------------------------------------------------------------
+
+db_string emp_perms "select acs_permission__grant_permission(:attribute_id, [im_employee_group_id], 'read')"
+db_string cust_perms "select acs_permission__grant_permission(:attribute_id, [im_customer_group_id], 'read')"
+db_string freel_perms "select acs_permission__grant_permission(:attribute_id, [im_freelance_group_id], 'read')"
+
+db_string emp_perms "select acs_permission__grant_permission(:attribute_id, [im_employee_group_id], 'write')"
+db_string cust_perms "select acs_permission__grant_permission(:attribute_id, [im_customer_group_id], 'write')"
+db_string freel_perms "select acs_permission__grant_permission(:attribute_id, [im_freelance_group_id], 'write')"
+
+
+
+# ------------------------------------------------------------------
+# Set all values of the object_type_map to "edit", so that the
+# DynField is visible by default
+# ------------------------------------------------------------------
+
+set type_category [im_dynfield::type_category_for_object_type -object_type $object_type]
+set cats_sql "
+	select	category_id as object_type_id
+	from	im_categories
+	where	category_type = :type_category
+"
+db_foreach cats $cats_sql {
+    db_dml insert "
+	insert into im_dynfield_type_attribute_map (
+		attribute_id,
+		object_type_id,
+		display_mode
+	) values (
+		:attribute_id,
+		:object_type_id,
+		'edit'
+	)
+    "
+}
+
+
+# ------------------------------------------------------------------
+#
+# ------------------------------------------------------------------
 
 # If we're an enumeration, redirect to start adding possible values.
 if { [string equal $datatype "enumeration"] } {

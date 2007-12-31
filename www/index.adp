@@ -29,6 +29,7 @@
 
 </ul>
 
+<!--
 <H2>Soon Available</H2>
 
 <ul>
@@ -44,9 +45,8 @@
 	
   <li><a hhref="upload"><b>Import</b></a>:<br>
 	Imports a DynField configuration from an XML file
-
-	
 </ul>
+-->
 
 </td>
 </tr>
