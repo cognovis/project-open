@@ -128,6 +128,8 @@ if { [empty_string_p $how_many] || $how_many < 1 } {
 }
 set end_idx [expr $start_idx + $how_many - 1]
 
+set admin_html ""
+
 # ---------------------------------------------------------------
 # 3. Define Table Columns
 # ---------------------------------------------------------------
@@ -352,7 +354,6 @@ set skill_sql "
 "
 
 set skill_filter_html ""
-
 db_foreach skills $skill_sql {
 
     set default ""
@@ -360,10 +361,12 @@ db_foreach skills $skill_sql {
 	set default $skill_type_filter($skill_type_id)
     }
 
+    regsub { } $skill_type "<br>" skill_type
+
     append skill_filter_html "
 	<tr>
-	<td>$skill_type</td>
-	<td>
+	<td class='form-label'>$skill_type&nbsp;</td>
+	<td class='form-widget'>
 	[im_category_select \
 	     -include_empty_p 1 \
 	     -plain_p 1 \
@@ -377,52 +380,6 @@ db_foreach skills $skill_sql {
     "
 }
 
-
-
-# ---------------------------------------------------------------
-# 6. Format the Filter
-# ---------------------------------------------------------------
-
-set filter_html "
-<form method=get action='/intranet-freelance/index'>
-[export_form_vars user_group_name start_idx order_by how_many view_name letter]
-
-<table border=0 cellpadding=1 cellspacing=1>
-  <tr>
-    <td colspan='2' class=rowtitle align=center>
-      [_ intranet-freelance.Filter_Freelancers]
-    </td>
-  </tr>
-
-  $skill_filter_html
-
-  <tr>
-    <td valign=top>[_ intranet-freelance.Recruiting_Status]:</td>
-    <td valign=top>
-      [im_select rec_status_id $rec_stati $rec_status_id]
-    </td>
-  </tr>
-  <tr>
-    <td valign=top>[_ intranet-freelance.lt_Recruiting_Test_Resul]:</td>
-    <td valign=top>
-      [im_select rec_test_result_id $rec_test_results $rec_test_result_id]
-    </td>
-  </tr>
-  <tr>
-    <td valign=top>[lang::message::lookup "" intranet-freelance.Worked_with_customer "Has already worked<br>with customer"]:</td>
-    <td valign=top>
-      [im_company_select worked_with_company_id $worked_with_company_id "" "Customer"]
-    </td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>
-      <input type=submit value=\"[_ intranet-freelance.Go]\" name=submit>
-    </td>
-  </tr>
-</table>
-</form>
-"
 
 # ---------------------------------------------------------------
 # 7. Format the List Table Header
