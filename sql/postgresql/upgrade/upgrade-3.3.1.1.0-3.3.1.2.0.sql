@@ -369,7 +369,7 @@ BEGIN
 		null,				-- context_id
 		''intranet-core'',		-- package_name
 		''openacs_developer'',		-- label
-		''Developer'',			-- name
+		''Developer Home'',		-- name
 		''/acs-admin/developer'',	-- url
 		20,				-- sort_order
 		v_main_menu,			-- parent_menu_id
@@ -511,7 +511,7 @@ BEGIN
 		null,				-- context_id
 		''intranet-core'',		-- package_name
 		''openacs_ds'',			-- label
-		''Developer Support'',		-- name
+		''SQL Profiling'',		-- name
 		''/ds/'',			-- url
 		50,				-- sort_order
 		v_main_menu,			-- parent_menu_id
@@ -522,6 +522,44 @@ BEGIN
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_admin_menu		integer;
+	v_main_menu		integer;
+BEGIN
+	select menu_id into v_main_menu
+	from im_menus where label = ''openacs'';
+
+	-- Main admin menu - just an invisible top-menu
+	-- for all admin entries links under Projects
+	v_admin_menu := im_menu__new (
+		null,				-- p_menu_id
+		''acs_object'',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		''intranet-core'',		-- package_name
+		''openacs_shell'',		-- label
+		''Interactive Shell'',		-- name
+		''/ds/'',			-- url
+		55,				-- sort_order
+		v_main_menu,			-- parent_menu_id
+		''''				-- p_visible_tcl
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 
 create or replace function inline_0 ()
