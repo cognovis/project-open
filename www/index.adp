@@ -70,6 +70,8 @@
             </ul>
          </div>
 
+         <%= [im_navbar_tree -label "main"] %>
+
       </if>
    </div>
 
