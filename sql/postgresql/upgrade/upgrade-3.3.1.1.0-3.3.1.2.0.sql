@@ -1,6 +1,10 @@
 -- upgrade-3.3.1.1.0-3.3.1.2.0.sql
 
+
+-- ------------------------------------------------------
 -- Setup status and type columns for im_user_absences
+-- ------------------------------------------------------
+
 update acs_object_types set 
 	status_column = 'absence_status_id', 
 	type_column='absence_type_id', 
@@ -9,7 +13,53 @@ where object_type = 'im_user_absence';
 
 
 
--- Change the way the absence_url is shown
+
+
+-- ------------------------------------------------------
+-- Relax unique constraint
+-- ------------------------------------------------------
+
+alter table im_user_absences
+drop constraint owner_and_start_date_unique;
+
+alter table im_user_absences 
+add constraint owner_and_start_date_unique unique (owner_id,absence_type_id,start_date);
+
+-- ------------------------------------------------------
+-- New privilege for those privileged users who can set an 
+-- absence status manually (and thus override WF results).
+-- ------------------------------------------------------
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count
+        from acs_privileges where privilege = ''edit_absence_status'';
+        if v_count > 0 then return 0; end if;
+
+        PERFORM acs_privilege__create_privilege(''edit_absence_status'',''Edit Absence Status'',''Edit Absence Status'');
+        PERFORM acs_privilege__add_child(''admin'', ''edit_absence_status'');
+
+        PERFORM im_priv_create(''edit_absence_status'', ''Accounting'');
+        PERFORM im_priv_create(''edit_absence_status'', ''P/O Admins'');
+        PERFORM im_priv_create(''edit_absence_status'', ''Project Managers'');
+        PERFORM im_priv_create(''edit_absence_status'', ''Senior Managers'');
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+
+
+-- ------------------------------------------------------
+-- Absence View Definition
+-- ------------------------------------------------------
 
 delete from im_view_columns where view_id = 200;
 
@@ -48,8 +98,10 @@ extra_select, extra_where, sort_order, visible_for) values (20009,200,NULL,'Stat
 
 
 
-
+-- ------------------------------------------------------
 -- Set the default WF for each absence type
+-- ------------------------------------------------------
+
 update im_categories
 set aux_string1 = 'vacation_approval_wf'
 where category_id = 5000;
@@ -69,7 +121,10 @@ where category_id = 5003;
 
 
 
+-- ------------------------------------------------------
 -- Workflow graph on Absence View Page
+-- ------------------------------------------------------
+
 SELECT  im_component_plugin__new (
 	null,					-- plugin_id
 	'acs_object',				-- object_type
@@ -88,7 +143,10 @@ SELECT  im_component_plugin__new (
 );
 
 
+-- ------------------------------------------------------
 -- Journal on Absence View Page
+-- ------------------------------------------------------
+
 SELECT  im_component_plugin__new (
 	null,					-- plugin_id
 	'acs_object',				-- object_type
@@ -107,10 +165,66 @@ SELECT  im_component_plugin__new (
 );
 
 
+-- ------------------------------------------------------
+-- Menus
+-- ------------------------------------------------------
+
+SELECT im_new_menu(
+	'intranet-timesheet2',
+	'timesheet2_absences_vacation',
+	'New Vacation',
+	'/intranet-timesheet2/absences/new?absence_type_id=5000',
+	10,
+	'timesheet2_absences', 
+	null
+);
+
+SELECT im_new_menu(
+	'intranet-timesheet2',
+	'timesheet2_absences_personal',
+	'New Personal Absence',
+	'/intranet-timesheet2/absences/new?absence_type_id=5001',
+	20,
+	'timesheet2_absences', 
+	null
+);
+
+SELECT im_new_menu(
+	'intranet-timesheet2',
+	'timesheet2_absences_sick',
+	'New Sick Leave',
+	'/intranet-timesheet2/absences/new?absence_type_id=5002',
+	30,
+	'timesheet2_absences', 
+	null
+);
+
+SELECT im_new_menu(
+	'intranet-timesheet2',
+	'timesheet2_absences_travel',
+	'New Travel Absence',
+	'/intranet-timesheet2/absences/new?absence_type_id=5003',
+	40,
+	'timesheet2_absences', 
+	null
+);
+
+SELECT im_new_menu(
+	'intranet-timesheet2',
+	'timesheet2_absences_bankholiday',
+	'New Bank Holiday',
+	'/intranet-timesheet2/absences/new?absence_type_id=5004',
+	50,
+	'timesheet2_absences', 
+	null
+);
 
 
 
+
+-- ------------------------------------------------------
 -- Add DynFields
+-- ------------------------------------------------------
 --
 -- select im_dynfield_attribute__new (
 -- 	null,				-- widget_id
