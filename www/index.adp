@@ -13,9 +13,6 @@
 <tr>
   <td valign="top" width="50%">
 
-    @workflow_home_inbox;noquote@
-<!--	@workflow_home_component;noquote@ -->
-
     <%= [im_component_bay left] %>
 
   </td>
@@ -79,6 +76,11 @@
 </tr>
 <tr>
   <td colspan=3>
+
+    @workflow_home_inbox;noquote@
+<!--	@workflow_home_component;noquote@ -->
+
+
     <%= [im_component_bay bottom] %>
   </td>
 </tr>
