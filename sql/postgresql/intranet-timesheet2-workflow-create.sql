@@ -102,13 +102,15 @@ DECLARE
 	p_conf_id		alias for $1;
 	v_name			varchar(2000);
 BEGIN
-	select	''Timesheet '' || 
-		im_name_from_user_id(conf_user_id) || '' '' || 
-		to_char(start_date, ''YYYY-MM-DD'') || '' - '' ||
-		to_char(end_date, ''YYYY-MM-DD'') || '' ''
+	select	im_name_from_user_id(conf_user_id) || '' @ '' || 
+		p.project_name || '' ('' ||
+		to_char(co.start_date, ''YYYY-MM-DD'') || ''-'' ||
+		to_char(co.end_date, ''YYYY-MM-DD'') || '') ''
 	into	v_name
-	from	im_timesheet_conf_objects
-	where	conf_id = p_conf_id;
+	from	im_timesheet_conf_objects co,
+		im_projects p
+	where	conf_id = p_conf_id
+		and co.conf_project_id = p.project_id;
 
 	return v_name;
 end;' language 'plpgsql';
@@ -198,13 +200,13 @@ end;' language 'plpgsql';
 
 
 insert into im_categories(category_id, category, category_type) 
-values (17000, 'Created', 'Intranet Timesheet Conf Status');
+values (17000, 'Requested', 'Intranet Timesheet2 Conf Status');
 insert into im_categories(category_id, category, category_type) 
-values (17010, 'Unconfirmed', 'Intranet Timesheet Conf Status');
+values (17010, 'Active', 'Intranet Timesheet2 Conf Status');
 insert into im_categories(category_id, category, category_type) 
-values (17080, 'Confirmed', 'Intranet Timesheet Conf Status');
+values (17020, 'Rejected', 'Intranet Timesheet2 Conf Status');
 insert into im_categories(category_id, category, category_type) 
-values (17090, 'Deleted', 'Intranet Timesheet Conf Status');
+values (17090, 'Deleted', 'Intranet Timesheet2 Conf Status');
 
 
 insert into im_categories(category_id, category, category_type) 

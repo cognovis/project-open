@@ -14,10 +14,143 @@ ad_library {
 
 ad_proc -public im_timesheet_conf_obj_type_default {} { return 17100 }
 
-ad_proc -public im_timesheet_conf_obj_status_created {} { return 17000 }
-ad_proc -public im_timesheet_conf_obj_status_unconfirmed {} { return 17010 }
-ad_proc -public im_timesheet_conf_obj_status_confirmed {} { return 17080 }
+ad_proc -public im_timesheet_conf_obj_status_requested {} { return 17000 }
+ad_proc -public im_timesheet_conf_obj_status_active {} { return 17010 }
+ad_proc -public im_timesheet_conf_obj_status_rejected {} { return 17020 }
 ad_proc -public im_timesheet_conf_obj_status_deleted {} { return 17090 }
+
+
+
+# ---------------------------------------------------------------------
+# Create a new workflow after logging hours
+# ---------------------------------------------------------------------
+
+ad_proc -public im_timesheet_workflow_spawn_update_workflow {
+    -project_id:required
+    -user_id:required
+    -start_date:required
+    -end_date:required
+    {-workflow_key "timesheet_approval_workflow_wf" }
+} {
+    Check if there is already a WF running for that project/user/date
+    and either reset this WF or create a new one if there wasn't one before.
+    @return case_id
+    @param julian_date: The date of hour logging (single day) or the 
+           start date of the hour logging (should be the Monday of the week)
+
+    @author frank.bergmann@project-open.com
+} {
+    # ---------------------------------------------------------------
+    # Setup & Defaults
+
+    set wf_user_id $user_id
+    set user_id [ad_maybe_redirect_for_registration]
+
+    # ---------------------------------------------------------------
+    # Check if the conf_object already exists
+
+    set conf_object_ids [db_list conf_objects "
+	select	co.conf_id
+	from	im_timesheet_conf_objects co
+	where	conf_project_id = :project_id and
+		conf_user_id = :wf_user_id and
+		start_date = :start_date
+    "]
+    ns_log Notice "spawn_update_workflow: conf_object_ids = $conf_object_ids"
+
+    # ---------------------------------------------------------------
+    # Create a new Timesheet Confirmation Object if not there
+
+    switch [llength $conf_object_ids] {
+	0 {	   
+	    ns_log Notice "spawn_update_workflow: creating new conf_obj: im_timesheet_conf_object_new -project_id $project_id -user_id $wf_user_id -start_date $start_date -end_date $end_date"
+	    set conf_object_id [im_timesheet_conf_object_new \
+		  -project_id $project_id \
+		  -user_id $wf_user_id \
+		  -start_date $start_date \
+		  -end_date $end_date \
+            ]
+	}
+	1 {
+	    set conf_object_id [lindex $conf_object_ids 0]
+	}
+	default {
+	    ad_return_complaint 1 "<b>Internal Error: Too many confirmation objects</b>:
+	    	We have found more the one confirmation object ($conf_object_ids)
+		for the given project_id=$project_id, user_id=$user_id and start_date=$start_date.
+		Please inform your System Administrator.
+	    "
+	    ad_script_abort
+	}
+    }
+
+    # ---------------------------------------------------------------
+    # Check if the WF-Key is valid
+
+    set wf_valid_p [db_string wf_valid_check "
+	select count(*)
+	from acs_object_types
+	where object_type = :workflow_key
+    "]
+    if {!$wf_valid_p} {
+	ad_return_complaint 1 "Workflow '$workflow_key' does not exist"
+	ad_script_abort
+    }
+
+    # ---------------------------------------------------------------
+    # Determine the case for the conf_object or create it.
+
+    set context_key ""
+    set case_ids [db_list case "
+    	select	case_id
+	from	wf_cases
+	where	object_id = :conf_object_id
+    "]
+    ns_log Notice "spawn_update_workflow: case_ids = $case_ids"
+
+    if {[llength $case_ids] == 0} {
+        ns_log Notice "spawn_update_workflow: creating new case: wf_case_new $workflow_key $context_key $conf_object_id"
+	set case_id [wf_case_new \
+		$workflow_key \
+		$context_key \
+		$conf_object_id
+        ]
+	ns_log Notice "spawn_update_workflow: case_id = $case_id"
+
+	# ---------------------------------------------------------------
+	# Determine the first task in the case to be executed and start+finisch the task.
+	# There can be potentially more then one of such tasks..
+
+	# Get the first "enabled" task of the new case_id:
+	set enabled_tasks [db_list enabled_tasks "
+		select	task_id
+		from	wf_tasks
+		where	case_id = :case_id
+			and state = 'enabled'	
+        "]
+	set task_id [lindex $enabled_tasks 0]
+	ns_log Notice "spawn_update_workflow: enabled_task = $task_id"
+
+	# Assign the first task to the user himself and start the task
+	set wf_case_assig [db_string wf_assig "select workflow_case__add_task_assignment (:task_id, :user_id, 'f')"]
+
+	# Start the task. Saves the user the work to press the "Start Task" button.
+	set journal_id [db_string wf_action "select workflow_case__begin_task_action (:task_id,'start','[ad_conn peeraddr]',:user_id,'')"]
+	set journal_id [db_string wf_start "select workflow_case__start_task (:task_id,:user_id,:journal_id)"]
+	# Finish the task. That forwards the token to the next transition.
+	set journal_id [db_string wf_finish "select workflow_case__finish_task(:task_id, :journal_id)"]
+
+	# Set the default value for "sign_off_ok" to "t"
+	set attrib "confirm_hours_are_the_logged_hours_ok_p"
+	db_string set_attribute_value "select acs_object__set_attribute (:case_id,:attrib,'t')"
+
+    } else {
+        set case_id [lindex $case_ids 0]
+    }
+
+    return $case_id
+}
+
 
 
 # ---------------------------------------------------------------------
@@ -41,10 +174,8 @@ ad_proc -public im_timesheet_conf_object_new {
 	set project_list [db_list projects "
 		select distinct
 			project_id
-		from
-			im_hours
-		where
-			user_id = :user_id and
+		from	im_hours
+		where	user_id = :user_id and
 			day >= :start_date and
 			day < :end_date
 	"]
