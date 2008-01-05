@@ -40,6 +40,12 @@ select inline_0 ();
 drop function inline_0 ();
 
 
+update acs_object_types set
+        status_type_table = 'im_costs',
+        status_column = 'cost_status_id',
+        type_column = 'cost_type_id'
+where object_type = 'im_expense';
+
 -- prompt *** intranet-expenses: Creating im_expenses
 create table im_expenses (
 	expense_id		integer
@@ -204,7 +210,7 @@ end;' language 'plpgsql';
 
 
 -------------------------------------------------------------
--- Expense Invoice 
+-- Expense Bundle 
 
 SELECT acs_object_type__create_type (
 	'im_expense_invoice',		-- object_type
@@ -218,6 +224,12 @@ SELECT acs_object_type__create_type (
 	null,				-- type_extension_table
 	'im_expense_invoice__name'	-- name_method
 );
+
+
+update acs_object_types set status_column = 'cost_status_id' where object_type = 'im_expense_invoice';
+update acs_object_types set type_column = 'cost_type_id' where object_type = 'im_expense_invoice';
+update acs_object_types set status_type_table = 'im_costs' where object_type = 'im_expense_invoice';
+
 
 
 create table im_expense_invoices (

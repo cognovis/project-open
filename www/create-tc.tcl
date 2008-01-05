@@ -70,7 +70,7 @@ db_foreach expenses $expense_sql {
     if {0 == $common_project_id & $project_id != ""} { set common_project_id $project_id }
     if {0 != $common_project_id & $project_id != "" & $common_project_id != $project_id} {
 	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_projects "
-		You can't included expense items from several project in one expense invoice.
+		You can't included expense items from several project in one expense bundle.
 	"]
 	ad_script_abort
     }
@@ -78,7 +78,7 @@ db_foreach expenses $expense_sql {
     if {0 == $common_customer_id & $customer_id != ""} { set common_customer_id $customer_id }
     if {0 != $common_customer_id & $customer_id != "" & $common_customer_id != $customer_id} {
 	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_customers "
-		You can't included expense items from several 'customer' in one expense invoice.
+		You can't included expense items from several 'customer' in one expense bundle.
 	"]
 	ad_script_abort
     }
@@ -86,7 +86,7 @@ db_foreach expenses $expense_sql {
     if {0 == $common_provider_id & $provider_id != ""} { set common_provider_id $provider_id }
     if {0 != $common_provider_id & $provider_id != "" & $common_provider_id != $provider_id} {
 	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_projects "
-		You can't included expense items from several 'providers' in one expense invoice.
+		You can't included expense items from several 'providers' in one expense bundle.
 	"]
 	ad_script_abort
     }
@@ -108,7 +108,7 @@ if {0 == $common_project_id} {
 # --------------------------------------
 
 set project_nr [db_string project_nr "select project_nr from im_projects where project_id = :common_project_id" -default ""]
-set cost_name [lang::message::lookup "" intranet-expenses.Expense_Invoice "Expense Invoice"]
+set cost_name [lang::message::lookup "" intranet-expenses.Expense_Bundle "Expense Bundle"]
 set cost_name "$cost_name - $project_nr"
 
 set customer_id "[im_company_internal]"
@@ -138,7 +138,7 @@ db_transaction {
 
 # Spawn a workflow for confirmation by the superior
 # Only spawn the WF if the user DOESN't have the right to 
-# create expense invoices anyway...
+# create expense bundles anyway...
 
 set wf_installed_p 0
 catch {set wf_installed_p [im_expenses_workflow_installed_p] }

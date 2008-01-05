@@ -1,5 +1,10 @@
 -- upgrade-3.3.1.1.0-3.3.1.2.0.sql
 
+
+update im_categories set category = 'Expense Bundle' where category_id = 3722;
+
+
+
 update acs_object_types set status_column = 'cost_status_id' where object_type = 'im_expense';
 update acs_object_types set type_column = 'cost_type_id' where object_type = 'im_expense';
 update acs_object_types set status_type_table = 'im_costs' where object_type = 'im_expense';
