@@ -75,7 +75,13 @@ select acs_object_type__create_type (
 	'f',			-- abstract_p
 	null,			-- type_extension_table
 	'im_material.name'	-- name_method
-    );
+);
+
+update acs_object_types set
+        status_type_table = 'im_materials',
+        status_column = 'material_status_id',
+        type_column = 'material_type_id'
+where object_type = 'im_material';
 
 
 
