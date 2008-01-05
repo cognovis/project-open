@@ -49,6 +49,13 @@ select acs_object_type__create_type (
 );
 
 
+update acs_object_types set
+        status_type_table = 'im_costs',
+        status_column = 'cost_status_id',
+        type_column = 'cost_type_id'
+where object_type = 'im_timesheet_invoice';
+
+
 create or replace function im_timesheet_invoice__new (
 	integer,	--  default null
 	varchar,	-- default im_timesheet_invoice
