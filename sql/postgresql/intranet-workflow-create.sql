@@ -22,8 +22,6 @@ select im_priv_create('wf_reassign_tasks','P/O Admins');
 select im_priv_create('wf_reassign_tasks','Senior Managers');
 
 
-
-
 -- ------------------------------------------------------
 -- Update Project/Task types with Workflow types
 -- ------------------------------------------------------
@@ -77,7 +75,6 @@ where category_id = 96;
 -- ------------------------------------------------------
 -- Components
 -- ------------------------------------------------------
-
 
 -- Show the workflow component in project page
 --
