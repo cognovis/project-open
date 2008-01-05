@@ -97,10 +97,6 @@ SELECT im_component_plugin__new (
 	'im_workflow_home_component'
 );
 
-
-
-
-
 -- Project WF Display
 --
 SELECT im_component_plugin__new (
@@ -136,6 +132,24 @@ SELECT im_component_plugin__new (
         null,                           -- view_name
         60,                             -- sort_order
         'im_workflow_journal_component -object_id $project_id'
+);
+
+
+-- Home Inbox Component
+SELECT  im_component_plugin__new (
+	null,					-- plugin_id
+	'acs_object',				-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+	'Home Workflow Inbox',			-- plugin_name
+	'intranet-workflow',			-- package_name
+	'right',				-- location
+	'/intranet/index',			-- page_url
+	null,					-- view_name
+	150,					-- sort_order
+	'im_workflow_home_inbox_component'	-- component_tcl
 );
 
 
@@ -270,9 +284,9 @@ values (260, 'workflow_home_inbox', '');
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
 values (26000,260,'Action','"<a href=$action_url>$next_action_l10n</a>"',0);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
-values (26010,260,'Type','"$object_type_pretty"',10);
-insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
-values (26020,260,'Subtype','"$object_subtype"',20);
+-- values (26010,260,'Object Type','"$object_type_pretty"',10);
+-- insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
+values (26020,260,'Type','"$object_subtype"',20);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
 values (26030,260,'Status','"$status"',30);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 

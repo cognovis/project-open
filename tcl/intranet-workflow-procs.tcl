@@ -775,7 +775,7 @@ ad_proc -public im_workflow_home_inbox_component {
     if { [empty_string_p $table_body_html] } {
 	set table_body_html "
         <tr><td colspan=$colspan><ul><li><b> 
-        There are currently no projects matching the selected criteria
+        There are currently no objects matching the selected criteria
         </b></ul></td></tr>"
     }
 
@@ -804,4 +804,38 @@ ad_proc -public im_workflow_home_inbox_component {
 	</table>
         </form>
     "
+}
+
+
+# ---------------------------------------------------------------
+# Skip the first tasks of the workflow.
+# This is useful for the very first transition of an approval WF
+
+ad_proc -public im_workflow_skip_first_transition {
+    -case_id:required
+} {
+    Skip the first tasks of the workflow.
+    This is useful for the very first transition of an approval WF
+    There can be potentially more then one of such tasks..
+} {
+    set user_id [ad_get_user_id]
+
+    # Get the first "enabled" task of the new case_id:
+    set enabled_tasks [db_list enabled_tasks "
+		select	task_id
+		from	wf_tasks
+		where	case_id = :case_id
+			and state = 'enabled'	
+    "]
+
+    foreach task_id $enabled_tasks {
+	# Assign the first task to the user himself and start the task
+	set wf_case_assig [db_string wf_assig "select workflow_case__add_task_assignment (:task_id, :user_id, 'f')"]
+
+	# Start the task. Saves the user the work to press the "Start Task" button.
+	set journal_id [db_string wf_action "select workflow_case__begin_task_action (:task_id,'start','[ad_conn peeraddr]',:user_id,'')"]
+	set journal_id2 [db_string wf_start "select workflow_case__start_task (:task_id,:user_id,:journal_id)"]
+	# Finish the task. That forwards the token to the next transition.
+	set journal_id3 [db_string wf_finish "select workflow_case__finish_task(:task_id, :journal_id)"]
+    }
 }
