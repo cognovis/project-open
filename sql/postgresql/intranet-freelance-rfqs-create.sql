@@ -25,6 +25,12 @@ SELECT acs_object_type__create_type (
 	'im_freelance_rfq__name'	-- name_method
 );
 
+update acs_object_types set
+        status_type_table = 'im_freelance_rfqs',
+        status_column = 'rfq_status_id',
+        type_column = 'rfq_type_id'
+where object_type = 'im_freelance_rfq';
+
 
 -- Associate table with object - not handled in OpenACS core
 insert into acs_object_type_tables (
