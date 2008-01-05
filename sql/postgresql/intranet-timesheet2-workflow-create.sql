@@ -36,6 +36,12 @@ update acs_object_types set
 where object_type = 'im_timesheet_conf_object';
 
 
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_timesheet_conf_object','view','/intranet-timesheet2-workflow/new?display_mode=display&conf_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_timesheet_conf_object','edit','/intranet-timesheet2-workflow/new?display_mode=edit&conf_id=');
+
+
 
 create table im_timesheet_conf_objects (
 	conf_id		integer
