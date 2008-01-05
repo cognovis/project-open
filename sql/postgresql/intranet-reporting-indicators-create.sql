@@ -46,6 +46,9 @@ create table im_indicators (
 				primary key
 				constraint im_indicator_id_fk
 				references im_reports,
+	indicator_section_id	integer
+				constraint im_indicator_section_fk
+				references im_categories,
 	-- Lower widget scale
 	indicator_widget_min	double precision,
 	-- Upper widget scale
@@ -122,7 +125,7 @@ end;' language 'plpgsql';
 
 create or replace function im_indicator__new (
 	integer, varchar, timestamptz, integer, varchar, integer,
-	varchar, varchar, integer, integer, integer, text,
+	varchar, varchar, integer, integer, text,
 	double precision, double precision, integer
 ) returns integer as '
 DECLARE
@@ -156,11 +159,11 @@ BEGIN
 	);
 
 	insert into im_reports (
-		indicator_id, indicator_name,
-		indicator_type_id, indicator_status_id,
-		indicator_menu_id, indicator_sql
+		report_id, report_name, report_code,
+		report_type_id, report_status_id,
+		report_menu_id, report_sql
 	) values (
-		v_indicator_id, p_indicator_name,
+		v_indicator_id, p_indicator_name, p_indicator_code,
 		p_indicator_type_id, p_indicator_status_id,
 		null, p_indicator_sql
 	);
@@ -180,6 +183,10 @@ returns integer as '
 DECLARE
 	p_indicator_id	alias for $1;
 BEGIN
+	-- Delete any results for this indicator
+	delete from im_indicator_results
+	where	result_indicator_id = p_indicator_id;
+
 	-- Delete any data related to the object
 	delete from im_indicators
 	where	indicator_id = p_indicator_id;
@@ -193,4 +200,98 @@ BEGIN
 
 	return 0;
 end;' language 'plpgsql';
+
+
+
+----------------------------------------------------------
+-- Indicator Sections
+--
+-- These are a hierarchical list of areas in the company
+
+-- 15200-15299  Intranet Indicator Section
+
+select im_category_new (15200, 'Financial Management', 'Intranet Indicator Section');
+select im_category_new (15205, 'Customer Management', 'Intranet Indicator Section');
+select im_category_new (15210, 'Project Management', 'Intranet Indicator Section');
+select im_category_new (15215, 'Timesheet Management', 'Intranet Indicator Section');
+select im_category_new (15220, 'Translation Provider Management', 'Intranet Indicator Section');
+select im_category_new (15225, 'Translation Project Management', 'Intranet Indicator Section');
+select im_category_new (15230, 'Knowledge Management', 'Intranet Indicator Section');
+select im_category_new (15235, 'Human Resources Management', 'Intranet Indicator Section');
+select im_category_new (15240, 'Other', 'Intranet Indicator Section');
+select im_category_new (15245, 'System Usage', 'Intranet Indicator Section');
+
+
+create or replace view im_indicator_sections as
+select  category_id as section_id, category as section
+from    im_categories
+where   category_type = 'Intranet Indicator Section'
+        and (enabled_p is null or enabled_p = 't');
+
+
+
+
+
+
+---------------------------------------------------------
+-- Indicators Menus
+--
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_main_menu 		integer;
+	v_reporting_menu 	integer;
+
+	-- Groups
+        v_employees             integer;
+        v_accounting            integer;
+        v_senman                integer;
+        v_customers             integer;
+        v_freelancers           integer;
+        v_proman                integer;
+        v_admins                integer;
+	v_reg_users		integer;
+BEGIN
+    select group_id into v_admins from groups where group_name = ''P/O Admins'';
+    select group_id into v_senman from groups where group_name = ''Senior Managers'';
+    select group_id into v_proman from groups where group_name = ''Project Managers'';
+    select group_id into v_accounting from groups where group_name = ''Accounting'';
+    select group_id into v_employees from groups where group_name = ''Employees'';
+    select group_id into v_customers from groups where group_name = ''Customers'';
+    select group_id into v_freelancers from groups where group_name = ''Freelancers'';
+    select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+
+    select menu_id into v_main_menu
+    from im_menus where label=''main'';
+
+    v_reporting_menu := im_menu__new (
+        null,                   -- p_menu_id
+        ''acs_object'',         -- object_type
+        now(),                  -- creation_date
+        null,                   -- creation_user
+        null,                   -- creation_ip
+        null,                   -- context_id
+        ''intranet-reporting-indicators'', -- package_name
+        ''indicators'',          -- label
+        ''Indicators'',          -- name
+        ''/intranet-reporting-indicators/'', -- url
+        151,                    -- sort_order
+        v_main_menu,            -- parent_menu_id
+        null                    -- p_visible_tcl
+    );
+
+    PERFORM acs_permission__grant_permission(v_reporting_menu, v_admins, ''read'');
+    PERFORM acs_permission__grant_permission(v_reporting_menu, v_senman, ''read'');
+    PERFORM acs_permission__grant_permission(v_reporting_menu, v_proman, ''read'');
+    PERFORM acs_permission__grant_permission(v_reporting_menu, v_accounting, ''read'');
+
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
