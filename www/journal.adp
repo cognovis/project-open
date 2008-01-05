@@ -25,18 +25,29 @@
         </if>
         <if @journal:rowcount@ ne 0>
           <tr bgcolor="#ffffe4">
+<if @show_action_p@>
             <th align="left">Action</th>
+</if>
             <th align="left">Date</th>
             <th align="left">User</th>
-            <th align="left">Output</th>
             <th align="left">Comment</th>
+            <th align="left">Output</th>
           </tr>
         </if>
         <multiple name="journal">
           <tr bgcolor="#eeeeee">
+<if @show_action_p@>
             <td>@journal.action_pretty@</td>
+</if>
             <td>@journal.creation_date_pretty@</td>
+
             <td><a href="/shared/community-member?user_id=@journal.creation_user@">@journal.creation_user_name@</a></td>
+
+            <td>
+              <if @journal.msg@ nil>&nbsp;</if>
+              <if @journal.msg@ not nil>@journal.msg@</if>
+            </td>
+
             <td>
               <if @journal.attribute_pretty_name@ nil>&nbsp;</if>
               <if @journal.attribute_pretty_name@ not nil>
@@ -45,10 +56,7 @@
                 </group>
               </if>
             </td>
-            <td>
-              <if @journal.msg@ nil>&nbsp;</if>
-              <if @journal.msg@ not nil>@journal.msg@</if>
-            </td>
+
           </tr>
         </multiple>
       </table>

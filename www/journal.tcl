@@ -5,6 +5,8 @@
 set workflow_url [apm_package_url_from_key "acs-workflow"]
 set return_url [ns_urlencode "[ad_conn url]?[ad_conn query]"]
 
+set show_action_p 0
+
 if { ![info exists date_format] || [empty_string_p $date_format] } {
     set date_format "Mon fmDDfm, YYYY HH24:MI:SS"
 }
@@ -51,7 +53,11 @@ db_multirow journal journal_select "
       and  v.journal_id (+) = j.journal_id
       and  a.attribute_id (+) = v.attribute_id
     order  by o.creation_date $sql_order, j.journal_id $sql_order
-"
+" {
+
+    if {"" == $msg} { set msg $action_pretty }
+
+}
 
 # lars, 1/23/01:
 # We include journal_id in the sort order under the assumption that journal entries will get
