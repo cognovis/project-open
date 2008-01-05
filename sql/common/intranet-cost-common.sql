@@ -159,7 +159,6 @@ INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
 VALUES (3724,'Delivery Note','Intranet Cost Type');
 
 
--- commit;
 -- reserved until 3799
 
 -- Establish the super-categories "Provider Documents" and "Customer Documents"
@@ -187,7 +186,11 @@ INSERT INTO im_categories (category_id, category, category_type)
 VALUES (3812,'Deleted','Intranet Cost Status');
 INSERT INTO im_categories (category_id, category, category_type)
 VALUES (3814,'Filed','Intranet Cost Status');
--- commit;
+
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3816,'Requested','Intranet Cost Status');
+INSERT INTO im_categories (category_id, category, category_type)
+VALUES (3818,'Rejected','Intranet Cost Status');
 -- reserved until 3899
 
 
