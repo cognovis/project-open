@@ -29,7 +29,7 @@ BEGIN
 	where indicator_id = v_id;
 
 	update im_reports set
-		report_description = ''Actually counts the number of main projects (no subprojects) starting in the last 30 days.''
+		report_description = ''Counts the main projects (no subprojects) starting in the last 30 days.''
 	where report_id = v_id;
 
         return 0;
