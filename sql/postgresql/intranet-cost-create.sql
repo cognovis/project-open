@@ -96,10 +96,16 @@ begin
     );
     return 0;
 end;' language 'plpgsql';
-
 select inline_0 ();
-
 drop function inline_0 ();
+
+
+update acs_object_types set
+        status_type_table = 'im_cost_centers',
+        status_column = 'cost_center_status_id',
+        type_column = 'cost_center_type_id'
+where object_type = 'im_cost_center';
+
 
 
 create table im_cost_centers (
@@ -517,9 +523,16 @@ begin
     );
     return 0;
 end;' language 'plpgsql';
-
 select inline_0 ();
 drop function inline_0 ();
+
+
+update acs_object_types set
+        status_type_table = 'im_costs',
+        status_column = 'cost_status_id',
+        type_column = 'cost_type_id'
+where object_type = 'im_cost';
+
 
 
 -- prompt *** intranet-costs: Creating im_costs
@@ -1051,10 +1064,17 @@ begin
     );
     return 0;
 end;' language 'plpgsql';
-
 select inline_0 ();
-
 drop function inline_0 ();
+
+
+update acs_object_types set
+        status_type_table = 'im_costs',
+        status_column = 'cost_status_id',
+        type_column = 'cost_type_id'
+where object_type = 'im_repeating_cost';
+
+
 
 -- prompt *** intranet-costs: Creating im_repeating_costs
 create table im_repeating_costs (
@@ -1158,10 +1178,15 @@ begin
     );
     return 0;
 end;' language 'plpgsql';
-
 select inline_0 ();
-
 drop function inline_0 ();
+
+update acs_object_types set
+        status_type_table = 'im_costs',
+        status_column = 'cost_status_id',
+        type_column = 'cost_type_id'
+where object_type = 'im_investment';
+
 
 
 -------------------------------------------------------------
