@@ -1,7 +1,6 @@
 # /packages/intranet-expenses/www/create-tc.tcl
 #
 # Copyright (C) 2003-2004 Project/Open
-# 060427 avila@digiteix.com
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -9,12 +8,10 @@
 # ---------------------------------------------------------------
 # 1. Page Contract
 # ---------------------------------------------------------------
+
 ad_page_contract { 
-    create trabel cost (invoice) from expenses
-
-    @param project_id
-           project on expense is going to create
-
+    Create expense bundle from variousl expenses
+    @param project_id project on expense is going to create
     @author avila@digiteix.com
 } {
     { cost_type_id:integer "[im_cost_type_invoice]" }
@@ -34,10 +31,10 @@ if {![info exists expense_id]} { ad_returnredirect $return_url }
 set current_user_id [ad_maybe_redirect_for_registration]
 set add_expense_invoices_p [im_permission $current_user_id "add_expense_invoice"]
 
-if {!$add_expense_invoices_p} {
-    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_perms "You don't have permission to see this page:"]
-    ad_script_abort
-}
+# if {!$add_expense_invoices_p} {
+#    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_perms "You don't have permission to see this page:"]
+#    ad_script_abort
+# }
 
 # Add a "0" expense to avoid syntax error if the list was empty.
 lappend epense_id 0
@@ -57,14 +54,11 @@ set common_customer_id 0
 set common_provider_id 0
 
 set expense_sql "
-	select
-		c.*,
+	select	c.*,
 		e.*
-	from
-		im_costs c, 
+	from	im_costs c, 
 		im_expenses e
-	where
-		c.cost_id in ([join $expense_ids ", "])
+	where	c.cost_id in ([join $expense_ids ", "])
 		and c.cost_id = e.expense_id
         	and e.invoice_id is null
 "
@@ -99,8 +93,10 @@ db_foreach expenses $expense_sql {
 
 }
 
-set invoice_vat [expr [expr [expr $total_amount - $amount_before_vat] / $amount_before_vat] * 100.0]
-
+set invoice_vat 0
+catch {
+     set invoice_vat [expr [expr [expr $total_amount - $amount_before_vat] / $amount_before_vat] * 100.0]
+}
 
 if {0 == $common_project_id} {
     ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_project_specified "No project specified"]
@@ -140,5 +136,24 @@ db_transaction {
 
 }
 
+# Spawn a workflow for confirmation by the superior
+# Only spawn the WF if the user DOESN't have the right to 
+# create expense invoices anyway...
+
+set wf_installed_p 0
+catch {set wf_installed_p [im_expenses_workflow_installed_p] }
+if {$wf_installed_p && !$add_expense_invoices_p} {
+
+    im_expenses_workflow_spawn_workflow \
+	-expense_invoice_id $expense_invoice_id \
+	-user_id $current_user_id
+
+    set page_title [lang::message::lookup "" intranet-expenses.Workflow_Created "Workflow Created"]
+    set message [lang::message::lookup "" intranet-expenses.Workflow_Created_msg "
+    	A new workflow has been created for your request.
+    "]
+    ad_return_template
+    
+}
 
 ad_returnredirect $return_url

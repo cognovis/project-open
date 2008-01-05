@@ -94,18 +94,31 @@ set add_expense_p [im_permission $user_id "add_expenses"]
 set create_invoice_p [im_permission $user_id "add_expense_invoice"]
 
 set admin_links ""
-set bulk_actions_list "[list]"
+set action_list [list]
+set bulk_action_list [list]
 
 if {$add_expense_p} {
     append admin_links "<li><a href=\"new?[export_url_vars project_id return_url]\">[_ intranet-expenses.Add_a_new_Expense]</a></li>\n"
-    lappend bulk_actions_list "[_ intranet-expenses.Delete]" "expense-del" "[_ intranet-expenses.Delete_Expenses]"
+
+    lappend action_list [_ intranet-expenses.Add_a_new_Expense]
+    lappend action_list [export_vars -base "/intranet-expenses/new" {return_url project_id}]
+    lappend action_list [_ intranet-expenses.Add_a_new_Expense]
+
+    lappend bulk_action_list "[_ intranet-expenses.Delete]" "expense-del" "[_ intranet-expenses.Delete_Expenses]"
 }
 
 if {$create_invoice_p} {
-    lappend bulk_actions_list "[_ intranet-expenses.Create_Invoice]" "[export_vars -base "create-tc" {project_id}]" "[_ intranet-expenses.create_invoice_help]"
+    lappend bulk_action_list "[_ intranet-expenses.Create_Invoice]" "[export_vars -base "create-tc" {project_id}]" "[_ intranet-expenses.create_invoice_help]"
 
-    lappend bulk_actions_list "[lang::message::lookup "" intranet-expenses.Assign_to_a_project {Assign to a Project}]" "[export_vars -base "classify-costs" {project_id}]" "[lang::message::lookup "" intranet-expenses.Assign_to_a_project_help {Assign several expenses to a project}]"
+    lappend bulk_action_list "[lang::message::lookup "" intranet-expenses.Assign_to_a_project {Assign to a Project}]" "[export_vars -base "classify-costs" {project_id}]" "[lang::message::lookup "" intranet-expenses.Assign_to_a_project_help {Assign several expenses to a project}]"
+}
 
+set wf_installed_p 0
+catch {set wf_installed_p [im_expenses_workflow_installed_p] }
+# Only show this button if the user doesn't have the right to create bundles anyway
+if {$wf_installed_p && !$create_invoice_p} {
+
+    lappend bulk_action_list "[lang::message::lookup {} intranet-expenses-workflow.Request_Expense_Bundle "Request Expense Bundle"]" "[export_vars -base "create-tc" {project_id}]" "[lang::message::lookup "" intranet-expenses.Request_Expense_Bundle_Help "Request Expense Bundle"]"
 
 }
 
@@ -125,7 +138,8 @@ template::list::create \
     -multirow expense_lines \
     -key expense_id \
     -has_checkboxes \
-    -bulk_actions $bulk_actions_list \
+    -actions $action_list \
+    -bulk_actions $bulk_action_list \
     -bulk_action_export_vars { start_date end_date return_url } \
     -row_pretty_plural "[_ intranet-expenses.Expenses_Items]" \
     -elements {
@@ -265,9 +279,9 @@ db_multirow -extend {expense_chk project_url expense_new_url provider_url} expen
 set list2_id "invoices_list"
 
 set delete_invoice_p [im_permission $user_id "add_expense_invoice"]
-set bulk2_actions_list [list]
+set bulk2_action_list [list]
 if {$delete_invoice_p} {
-    lappend bulk2_actions_list "[_ intranet-expenses.Delete]" "invoice-del" "[_ intranet-expenses.Remove_checked_items]"
+    lappend bulk2_action_list "[_ intranet-expenses.Delete]" "invoice-del" "[_ intranet-expenses.Remove_checked_items]"
 }
 
 template::list::create \
@@ -275,7 +289,7 @@ template::list::create \
     -multirow invoice_lines \
     -key cost_id \
     -has_checkboxes \
-    -bulk_actions  $bulk2_actions_list \
+    -bulk_actions  $bulk2_action_list \
     -bulk_action_export_vars { project_id } \
     -row_pretty_plural "[_ intranet-expenses.Invoice_Items]" \
     -elements {

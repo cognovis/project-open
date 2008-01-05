@@ -25,7 +25,6 @@ ad_page_contract {
 # Defaults & Security
 # ---------------------------------------------------------------
 
-# User id already verified by filters
 set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]

@@ -18,7 +18,7 @@
     <querytext>
       select im_cost__new (
 		null,			-- cost_id
-		'im_invoice',   	-- object_type
+		'im_expense_invoice',	-- object_type
 		now(),			-- creation_date
 		:current_user_id,	-- creation_user
 		'[ad_conn peeraddr]',	-- creation_ip
