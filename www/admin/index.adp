@@ -8,20 +8,22 @@
     <em>no business processes installed</em>
 </if>
 <else>
-    <table cellspacing="0" cellpadding="0" border="0">
-    <tr><td bgcolor="#cccccc">
     
-    <table width="100%" cellspacing="1" cellpadding="4" border="0">
-    <tr valign=middle bgcolor="#ffffe4">
-	<th>Name</th>
-	<th>Description</th>
-	<th>Cases</th>
+    <table width="100%" cellspacing="2" cellpadding="2" border="0">
+    <tr valign=middle class=rowtitle>
+	<th width=150 class=rowtitle>Name</th>
+	<th width=130 class=rowtitle>Cases</th>
+	<th class=rowtitle>Description</th>
     </tr>
     
     <multiple name="workflows">
-	<tr bgcolor="#eeeeee">
+<if @workflows.row_even_p@>
+	<tr class=roweven>
+</if>
+<else>
+	<tr class=rowodd>
+</else>
 	    <td><a href="workflow?workflow_key=@workflows.workflow_key@">@workflows.pretty_name@</a></td>
-	    <td>@workflows.description@</td>
 	    <td align="center">
 		<if @workflows.num_cases@ eq 0>No active cases</if>
 		<if @workflows.num_cases@ eq 1><a href="workflow-summary?workflow_key=@workflows.workflow_key@">1 active case</a></if>
@@ -31,12 +33,12 @@
 		    <br />(<strong><a href="unassigned-tasks?workflow_key=@workflows.workflow_key@">@workflows.num_unassigned_tasks@ unassigned task<if @workflows.num_unassigned_tasks@ gt 1>s</if></a></strong>)
 		</if>
 	    </td>
+	    <td>@workflows.description@</td>
 	</tr>
     </multiple>
     
     </table>
-    </td></tr>
-    </table>
+
 </else>
 
 <p>

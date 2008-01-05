@@ -11,8 +11,9 @@ ad_page_contract {
 }
 
 set context [list]
-
-db_multirow workflows all_workflows {
+set max_description 200
+set ctr 1
+db_multirow  -extend {row_even_p} workflows all_workflows {
     select w.workflow_key, 
            t.pretty_name,
            w.description,
@@ -27,6 +28,8 @@ db_multirow workflows all_workflows {
     group  by w.workflow_key, t.pretty_name, w.description
     order  by t.pretty_name
 } {
+    set description [string range $description 0 [expr $max_description-1]]
+    if {$max_description == [string length $description]} { append description "..." }
     set num_unassigned_tasks [db_string num_unassigned_tasks {
 	select count(*) 
 	from   wf_tasks t, wf_cases c
@@ -38,6 +41,9 @@ db_multirow workflows all_workflows {
     }]
     set workflow_key [ns_urlencode $workflow_key]
     set pretty_name [ad_quotehtml $pretty_name]
+
+    set row_even_p [expr $ctr % 2]
+    incr ctr
 }
 
 template::multirow create actions url title
