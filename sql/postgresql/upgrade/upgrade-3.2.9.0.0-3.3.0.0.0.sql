@@ -1,4 +1,3 @@
-
 -----------------------------------------------------------
 -- Reports
 --
@@ -29,36 +28,15 @@ begin
 		''im_report__name''		-- name_method
 	);
 
-
-	create table im_reports (
-		report_id		integer
-					constraint im_report_id_pk
-					primary key
-					constraint im_report_id_fk
-					references acs_objects,
-		report_name		varchar(1000),
-		report_status_id	integer 
-					constraint im_report_status_nn
-					not null
-					constraint im_report_status_fk
-					references im_categories,
-		report_type_id		integer 
-					constraint im_report_type_nn
-					not null
-					constraint im_report_type_fk
-					references im_categories,
-		report_menu_id		integer
-					constraint im_report_menu_id_fk
-					references im_menus,
-		report_sql		text
-					constraint im_report_report_nn
-					not null
-	);
-
 	return 0;
 end;' language 'plpgsql';
 select inline_1 ();
 drop function inline_1();
+
+
+
+alter table im_reports
+add column report_sort_order integer;
 
 
 

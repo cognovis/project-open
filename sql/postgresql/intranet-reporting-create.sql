@@ -57,6 +57,7 @@ create table im_reports (
 				primary key
 				constraint im_report_id_fk
 				references acs_objects,
+	report_code		varchar(100),
 	report_name		varchar(1000),
 	report_status_id	integer 
 				constraint im_report_status_nn
@@ -73,7 +74,9 @@ create table im_reports (
 				references im_menus,
 	report_sql		text
 				constraint im_report_report_nn
-				not null
+				not null,
+	report_sort_order	integer,
+	report_description	text
 );
 
 
@@ -187,6 +190,8 @@ values (15002, 'Deleted', 'Intranet Report Status');
 
 insert into im_categories(category_id, category, category_type) 
 values (15100, 'Simple SQL Report', 'Intranet Report Type');
+insert into im_categories(category_id, category, category_type) 
+values (15110, 'Indicator', 'Intranet Report Type');
 
 
 -----------------------------------------------------------
