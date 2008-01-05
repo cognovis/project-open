@@ -749,6 +749,8 @@ ad_proc -public im_workflow_home_inbox_component {
 	set object_subtype [im_category_from_id $type_id]
 	set status [im_category_from_id $status_id]
 	set action_url [export_vars -base "/workflow/task" {return_url task_id}]
+	set object_url [im_biz_object_url $object_id "view"]
+
 	
 	# L10ned version of next action
 	regsub -all " " $transition_name "_" next_action_key
