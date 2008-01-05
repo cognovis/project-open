@@ -93,6 +93,10 @@ template::list::create \
 		@conf_lines.conf_chk;noquote@
 	    }
 	}
+	period {
+	    label "[lang::message::lookup {} intranet-timesheet2-workflow.Period Period]"
+	    link_url_eval {[export_vars -base "/intranet-timesheet2-workflow/new" {conf_id {form_mode display}}]}
+	}
 	project_name {
 	    label "[_ intranet-timesheet2-workflow.Project]"
 	    link_url_eval {[export_vars -base "/intranet/projects/view" {project_id}]}
@@ -119,14 +123,15 @@ if {0 == $object_id} {
 
 
 
-db_multirow -extend {conf_chk return_url} conf_lines confs_lines "
+db_multirow -extend {conf_chk return_url period} conf_lines confs_lines "
 	select	co.*,
 		p.project_name,
 		im_name_from_user_id(co.conf_user_id) as conf_user_name
 	from	im_timesheet_conf_objects co
 		LEFT OUTER JOIN im_projects p ON (co.conf_project_id = p.project_id)
 " {
-        set return_url [im_url_with_query]
-	set conf_chk "<input type=\"checkbox\" name=\"conf_id\" value=\"$conf_id\" id=\"confs_list,$conf_id\">"
+    set return_url [im_url_with_query]
+    set conf_chk "<input type=\"checkbox\" name=\"conf_id\" value=\"$conf_id\" id=\"confs_list,$conf_id\">"
+    set period "$start_date - $end_date"
 }
 

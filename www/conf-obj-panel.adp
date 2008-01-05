@@ -1,1 +1,1 @@
-@object_name@
+@html;noquote@

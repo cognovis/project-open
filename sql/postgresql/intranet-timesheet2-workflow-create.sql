@@ -200,17 +200,17 @@ end;' language 'plpgsql';
 
 
 insert into im_categories(category_id, category, category_type) 
-values (17000, 'Requested', 'Intranet Timesheet2 Conf Status');
+values (17000, 'Requested', 'Intranet Timesheet Conf Status');
 insert into im_categories(category_id, category, category_type) 
-values (17010, 'Active', 'Intranet Timesheet2 Conf Status');
+values (17010, 'Active', 'Intranet Timesheet Conf Status');
 insert into im_categories(category_id, category, category_type) 
-values (17020, 'Rejected', 'Intranet Timesheet2 Conf Status');
+values (17020, 'Rejected', 'Intranet Timesheet Conf Status');
 insert into im_categories(category_id, category, category_type) 
-values (17090, 'Deleted', 'Intranet Timesheet2 Conf Status');
+values (17090, 'Deleted', 'Intranet Timesheet Conf Status');
 
 
 insert into im_categories(category_id, category, category_type) 
-values (17100, 'Default', 'Intranet Timesheet Conf Type');
+values (17100, 'Timesheet', 'Intranet Timesheet Conf Type');
 
 
 -----------------------------------------------------------
