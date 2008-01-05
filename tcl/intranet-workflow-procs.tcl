@@ -618,6 +618,7 @@ ad_proc -public im_workflow_home_inbox_component {
 
     set sql_date_format "YYYY-MM-DD"
     set current_user_id [ad_get_user_id]
+    set return_url [im_url_with_query]
 
     if {"" == $order_by_clause} {
 	set order_by_clause [parameter::get_from_package_key -package_key "intranet-workflow" -parameter "HomeInboxOrderByClause" -default "project_nr DESC"]
@@ -672,8 +673,7 @@ ad_proc -public im_workflow_home_inbox_component {
     # ---------------------------------------------------------------
     # SQL Query
 
-    # Get the list of all "open" (=enabled or started) tasks, together
-    # with their assigned users
+    # Get the list of all "open" (=enabled or started) tasks with their assigned users
     set tasks_sql "
 	select
 		ot.pretty_name as object_type_pretty,
@@ -682,7 +682,6 @@ ad_proc -public im_workflow_home_inbox_component {
 		im_biz_object__get_type_id(o.object_id) as type_id,
 		im_biz_object__get_status_id(o.object_id) as status_id,
 		tr.transition_name,
-		m.member_id as assigned_user_id,
 		t.holding_user,
 		t.task_id
 	from
@@ -691,14 +690,6 @@ ad_proc -public im_workflow_home_inbox_component {
 		wf_cases ca,
 		wf_transitions tr,
 		wf_tasks t
-		LEFT OUTER JOIN (
-			select distinct
-				m.member_id,
-				ta.task_id
-			from	wf_task_assignments ta,
-				party_approved_member_map m
-			where	m.party_id = ta.party_id
-		) m ON t.task_id = m.task_id
 	where
 		ot.object_type = o.object_type
 		and o.object_id = ca.object_id
@@ -709,16 +700,49 @@ ad_proc -public im_workflow_home_inbox_component {
     "
 
     # ---------------------------------------------------------------
+    # Store the conf_object_id -> assigned_user relationship in a Hash array
+    set tasks_assignment_sql "
+    	select
+		t.*,
+		m.member_id as assigned_user_id
+	from
+		($tasks_sql) t
+		LEFT OUTER JOIN (
+			select distinct
+				m.member_id,
+				ta.task_id
+			from	wf_task_assignments ta,
+				party_approved_member_map m
+			where	m.party_id = ta.party_id
+		) m ON t.task_id = m.task_id
+    "
+    db_foreach assigs $tasks_assignment_sql {
+        set assigs ""
+    	if {[info exists assignment_hash($object_id)]} { set assigs $assignment_hash($object_id) }
+	lappend assigs $assigned_user_id
+	set assignment_hash($object_id) $assigs
+    }
+
+    # ---------------------------------------------------------------
     # Format the Result Data
 
     set ctr 0
     set table_body_html ""
     db_foreach tasks $tasks_sql {
 
+        set assigned_users ""
+    	if {[info exists assignment_hash($object_id)]} { set assigned_users $assignment_hash($object_id) }
+
 	# Determine the type of relationship to the object - why is the task listed here?
 	set rel "none"
-	if {$current_user_id == $assigned_user_id} { set rel "assignment_group" }
-	if {$current_user_id == $holding_user} { set rel "holding_user" }
+	foreach assigned_user_id $assigned_users {
+	    if {$current_user_id == $assigned_user_id && $rel != "holding_user"} { 
+		set rel "assignment_group" 
+	    }
+	    if {$current_user_id == $holding_user} { 
+		set rel "holding_user" 
+	    }
+	}
 
 	if {[lsearch $relationships $rel] == -1} { continue }
 
