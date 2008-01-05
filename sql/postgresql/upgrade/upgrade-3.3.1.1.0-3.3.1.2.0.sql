@@ -548,7 +548,7 @@ BEGIN
 		''intranet-core'',		-- package_name
 		''openacs_shell'',		-- label
 		''Interactive Shell'',		-- name
-		''/ds/'',			-- url
+		''/ds/shell'',			-- url
 		55,				-- sort_order
 		v_main_menu,			-- parent_menu_id
 		''''				-- p_visible_tcl
