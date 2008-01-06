@@ -1,15 +1,15 @@
+<if @enable_master_p@>
 <master>
 <property name="title">@page_title@</property>
-<property name="context_bar">@context_bar;noquote@</property>
-<property name="main_navbar_label">projects</property>
-<!-- <property name="focus">@focus;noquote@</property> -->
-
-<h2>@page_title@</h2>
-
-<if @message@ not nil>
-  <div class="general-message">@message@</div>
+<property name="main_navbar_label">timesheet</property>
 </if>
 
-<formtemplate id="@form_id@"></formtemplate>
+<h2>@page_title@</h2>
+<formtemplate id=form></formtemplate>
 
+<br>
+<h2>@included_expenses_msg@</h2>
 
+@modify_bundle_link;noquote@
+
+<listtemplate name=@list_id@></listtemplate>

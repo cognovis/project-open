@@ -1,310 +1,241 @@
 # /packages/intranet-expenses/www/bundle-new.tcl
 #
 # Copyright (C) 2003-2008 ]project-open[
+# all@devcon.project-open.com
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
 
 # ---------------------------------------------------------------
-# 1. Page Contract
+# Page Contract
 # ---------------------------------------------------------------
-ad_page_contract { 
-    Add / modify expense bundle
 
-    @author avila@digiteix.com
-} {
-    { cost_type_id:integer "[im_cost_type_expense_bundle]" }
-    { project_id:integer "" }
-    { return_url "/intranet-expenses/"}
-    expense_id:integer,optional
-    expense_amount:float,optional
-    expense_date:optional
-    {form_mode "edit"}
+# Use the page contract only if called as a normal page...
+# As a panel, the calling script needs to provide the necessary
+# variables.
+if {![info exists panel_p]} {
+
+    ad_page_contract {
+	New page is basic...
+	@author all@devcon.project-open.com
+    } {
+	bundle_id:integer,optional
+	{return_url "/intranet-expenses/index"}
+	form_mode:optional
+	enable_master_p:integer,optional
+    }
 }
-
-# ------------------------------------------------------------------
-# Default & Security
-# ------------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
-if {![im_permission $user_id "add_expenses"]} {
-    ad_return_complaint 1 "[_ intranet-timesheet2-invoices.lt_You_have_insufficient_1]"
-    return
-}
-
-set today [lindex [split [ns_localsqltimestamp] " "] 0]
-set page_title [lang::message::lookup "" intranet-expenses.New_Expense "New Expense Item"]
+set page_title [lang::message::lookup "" intranet-expenses.Expense_Bundle "Expense Bundle"]
 set context_bar [im_context_bar $page_title]
 
-set currency_format [im_l10n_sql_currency_format]
-set date_format [im_l10n_sql_date_format]
-set percent_format "FM999"
-set action_url "/intranet-expenses/new"
+if {![info exists enable_master_p]} { set enable_master_p 1}
+if {![info exists form_mode]} { set form_mode "edit" }
 
+set form_mode "edit"
 
-# ------------------------------------------------------------------
-# Form Options
-# ------------------------------------------------------------------
+set delete_bundle_p [im_permission $user_id "add_expense_bundle"]
 
-set expense_payment_type_options [db_list_of_lists payment_options "
-	select	expense_payment_type,
-		expense_payment_type_id
-	from	im_expense_payment_type
-	order by
-		expense_payment_type_id
-"]
+# ---------------------------------------------------------------
+# Options
+# ---------------------------------------------------------------
 
+set project_options [im_project_options]
+set customer_options [im_company_options]
+set provider_options [im_provider_options]
+set cost_type_options [im_cost_type_options]
+set cost_status_options [im_cost_status_options]
+set investment_options [im_investment_options]
+set template_options [im_cost_template_options]
+set currency_options [im_currency_options]
+set cost_center_options [im_cost_center_options -include_empty 1 -department_only_p 0]
 
-# Get the list of active projects (both main and subprojects)
-# where the current user is a direct member
-# ToDo: This could give problems with Tasks. Maybe exclude
-# tasks in the future?
-#
+# ---------------------------------------------------------------
+# The Form
+# ---------------------------------------------------------------
 
-if {[info exists expense_id]} {
-    set project_id [db_string expense_project "select project_id from im_costs where cost_id = :expense_id" -default ""]
-}
+set form_id form
 
-set project_options [im_project_options \
-	-exclude_subprojects_p 0 \
-	-member_user_id $user_id \
-	-project_id $project_id \
-	-exclude_status_id [im_project_status_closed] \
-]
-
-set include_empty 0
-set currency_options [im_currency_options $include_empty]
-
-set expense_type_options [db_list_of_lists expense_types "
-	select	expense_type,
-		expense_type_id
-	from im_expense_type
-"]
-
-
-set include_empty 0
-set currency_options [im_currency_options $include_empty]
-
-
-set expense_type_options [db_list_of_lists expense_types "select expense_type, expense_type_id from im_expense_type"]
-set expense_type_options [linsert $expense_type_options 0 [list [lang::message::lookup "" "intranet-expenses.--Select--" "-- Please Select --"] 0]]
-
-
-
-set expense_payment_type_options [db_list_of_lists expense_payment_type "
-	select	expense_payment_type,
-		expense_payment_type_id
-        from
-		im_expense_payment_type
-"]
-set expense_payment_type_options [linsert $expense_payment_type_options 0 [list [lang::message::lookup "" "intranet-expenses.--Select--" "-- Please Select --"] 0]]
-
-
-
-
-# ------------------------------------------------------------------
-# Form defaults
-# ------------------------------------------------------------------
-
-# Default variables for "costs" (not really applicable)
-set customer_id [im_company_internal]
-set provider_id $user_id
-set template_id ""
-set payment_days "30"
-set cost_status [im_cost_status_created]
-set cost_type_id [im_cost_type_expense_item]
-set tax "0"
-
-if {![info exists reimbursable]} { set reimbursable 100 }
-if {![info exists expense_date]} { set expense_date $today }
-if {![info exists billable_p]} { set billable_p "f" }
-
-if {![info exists expense_payment_type_id]} { 
-    set expense_payment_type_id [im_expense_payment_type_cash]
-}
-
-if {![info exists currency]} { 
-    set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"] 
-}
-
-# Don't allow the user to modify an "bundled" item
-set has_edit 0
-set expense_bundle_id ""
-if {[info exists expense_id]} {
-    set expense_bundle_id [db_string expense_bundle "select bundle_id from im_expenses where expense_id = :expense_id" -default ""]
-}
-if {"" != $expense_bundle_id} { 
-    set form_mode "display"
-    set has_edit 1
-}
-
-# ------------------------------------------------------------------
-# Build the form
-# ------------------------------------------------------------------
-
-set form_id "expense_ae"
-set focus "$form_id\.var_name"
+set cost_name_label "[_ intranet-cost.Name]"
+set project_label "[_ intranet-cost.Project]"
+set customer_label "[_ intranet-cost.Customer]"
+set wp_label "[_ intranet-cost.Who_pays]"
+set provider_label "[_ intranet-cost.Provider]"
+set wg_label "[_ intranet-cost.Who_gets_the_money]"
+set type_label "[_ intranet-cost.Type]"
+set cost_status_label "[_ intranet-cost.Status]"
+set template_label "[_ intranet-cost.Print_Template]"
+set investment_label "[_ intranet-cost.Investment]"
+set effective_date_label "[_ intranet-cost.Effective_Date]"
+set payment_days_label "[_ intranet-cost.Payment_Days]"
+set amount_label "[_ intranet-cost.Amount]"
+set paid_amount_label [lang::message::lookup "" intranet-cost.Paid_Amount "Paid Amount"]
+set currency_label "[_ intranet-cost.Currency]"
+set paid_currency_label [lang::message::lookup "" intranet-cost.Paid_Currency "Paid Currency"]
+set vat_label "[_ intranet-cost.VAT]"
+set tax_label "[_ intranet-cost.TAX]"
+set desc_label "[_ intranet-cost.Description]"
+set note_label "[_ intranet-cost.Note]"
 
 ad_form \
     -name $form_id \
-    -cancel_url $return_url \
-    -action $action_url \
-    -has_edit $has_edit \
     -mode $form_mode \
-    -export {customer_id provider_id template_id payment_days cost_status cost_type_id tax return_url} \
+    -export "object_id return_url" \
+    -actions {} \
+    -has_edit 1 \
+    -action "/intranet-expenses/new" \
     -form {
-        expense_id:key
-        {project_id:text(select),optional
-	    {label "[lang::message::lookup {} intranet-expenses.Project Project]" } 
-	    {options $project_options}
-	}
-	{expense_amount:text(text) {label "[_ intranet-expenses.Amount]"} {html {size 10}}}
-	{currency:text(select) 
-	    {label "[_ intranet-expenses.Currency]"}
-	    {options $currency_options} 
-	}
-	{vat:text(text) {label "[_ intranet-expenses.Vat_Included]"} {html {size 6}}}
-	{expense_date:text(text) {label "[_ intranet-expenses.Expense_Date]"} {html {size 10}}}
-	{external_company_name:text(text) {label "[_ intranet-expenses.External_company_name]"} {html {size 40}}}
-	{external_company_vat_number:text(text),optional {label "[lang::message::lookup {} intranet-expenses.External_Company_VatNr {External Company Vat Nr.}]"} {html {size 20}}}
-	{receipt_reference:text(text),optional {label "[_ intranet-expenses.Receipt_reference]"} {html {size 40}}}
-	{expense_type_id:text(select) 
-	    {label "[_ intranet-expenses.Expense_Type]"}
-	    {options $expense_type_options} 
-	}
-        {billable_p:text(radio) {label "[_ intranet-expenses.Billable_p]"} {options {{[_ intranet-core.Yes] t} {[_ intranet-core.No] f}}} }
-	{reimbursable:text(text) {label "[_ intranet-expenses.reimbursable]"} { html {size 10}}}
-	{expense_payment_type_id:text(select) 
-	    {label "[_ intranet-expenses.Expense_Payment_Type]"}
-	    {options $expense_payment_type_options} 
-	}
-        {note:text(textarea),optional {label "[lang::message::lookup {} intranet-expenses.Note Note]"} {html {cols 40}}}
+	cost_id:key
+	{cost_name:text(text) {label $cost_name_label} {html {size 40}}}
+	{project_id:text(select),optional {label $project_label} {options $project_options} }
+	{customer_id:text(select) {label "$customer_label <br><small>($wp_label)</small>"} {options $customer_options} }
+	{provider_id:text(select) {label "$provider_label <br><small>($wg_label)</small>"} {options $provider_options} }
+	{cost_type_id:text(select) {label $type_label} {options $cost_type_options} }
+	{cost_status_id:text(select) {label $cost_status_label} {options $cost_status_options} }
+	{effective_date:text(text) {label $effective_date_label} {html {size 20}} }
+	{amount:text(text) {label $amount_label} {html {size 20}} }
+	{currency:text(select) {label $currency_label} {options $currency_options} }
+	{vat:text(text) {label $vat_label} {html {size 20}} }
+	{tax:text(text) {label $tax_label} {html {size 20}} }
+	{description:text(textarea),nospell,optional {label $desc_label} {html {rows 5 cols 40}}}
+	{note:text(textarea),nospell,optional {label $note_label} {html {rows 5 cols 40}}}
     }
 
 
-#    check conditions
-#    if {![empty_string_p $vat]} {
-#        if {0>$vat || 100<$vat} {
-#            template::element::set_error $form_id vat "[_ intranet-expenses.vat_not_valid]"
-#            incr n_errors
-#        }
-#    }
-
-#    if {![empty_string_p $reimbursable]} {
-#        if {0>$reimbursable || 100<$reimbursable} {
-#            template::element::set_error $form_id reimbursable "[_ intranet-expenses.reimbursable_not_valid]"
-#            incr n_errors
-#        }
-#    }
-
-
-# ------------------------------------------------------------------
-# Form Actions
-# ------------------------------------------------------------------
-
-ad_form -extend -name $form_id -on_request {
-
-    # Populate elements from local variables
-
-} -select_query {
-    
-	select	*,
-		trim(both from to_char(c.amount * (1 + c.vat / 100), :currency_format)) as expense_amount,
-		to_char(c.effective_date, :date_format) as expense_date,
-		to_char(c.vat, :percent_format) as vat,
-		to_char(e.reimbursable, :percent_format) as reimbursable
-	from
-		im_costs c,
-		im_expenses e
-	where
-		c.cost_id = e.expense_id
-		and c.cost_id = :expense_id
-
-} -new_data {
-    if { $expense_type_id == 0 } {
-	ad_return_complaint 1 \
-	    [lang::message::lookup "" \
-	     intranet-expenses.Expense_type_is_required \
-	     "You have to selectect an expense type"]
-  
+ad_form -extend -name $form_id \
+    -select_query {
+	select	c.*
+	from	im_costs
+	where	cost_id = :bundle_id
+    } -new_data {
+	db_exec_plsql create_conf "
+		SELECT im_bundle__new(
+			:bundle_id,
+			'im_conf',
+			now(),
+			:user_id,
+			'[ad_conn peeraddr]',
+			null,
+			:conf,
+			:object_id,
+			:bundle_type_id,
+			[im_bundle_status_active]
+		)
+        "
+    } -edit_data {
+	db_dml edit_conf "
+		update im_confs
+		set conf = :conf
+		where bundle_id = :bundle_id
+	"
+    } -after_submit {
+	ad_returnredirect $return_url
+	ad_script_abort
     }
 
 
-    set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
-    set expense_name $expense_id
 
-    # Get the user's department as default CC
-    set cost_center_id [db_string user_cc "
-	select	department_id
-	from	im_employees
-	where	employee_id = :user_id
-    " -default ""]
-    
-    db_exec_plsql create_expense {}
-    
-    db_dml update_costs "
-	update im_costs set
-	cost_center_id = :cost_center_id
-	where cost_id = :expense_id
-    "
+# ---------------------------------------------------------------
+# Format the link to modify hours
+# ---------------------------------------------------------------
 
-} -edit_data {
 
-    # Security Check: Don't allow to change an "bundled" expense
-    set expense_bundle_id [db_string expense_bundle "select bundle_id from im_expenses where expense_id = :expense_id" -default ""]
-    if {"" != $expense_bundle_id} {
-	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Cant_change_bundled_item "You can't change an already bundled expense"]
-    }
-    set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
-    set expense_name $expense_id
+if {[info exists bundle_id]} {
 
-    # Update the bundle itself
-    db_dml update_expense "
-	update im_expenses 
-	set 
-	        external_company_name = :external_company_name,
-	        external_company_vat_number = :external_company_vat_number,
-	        receipt_reference = :receipt_reference,
-	        billable_p = :billable_p,
-	        reimbursable = :reimbursable,
-	        expense_payment_type_id = :expense_payment_type_id,
-		expense_type_id = :expense_type_id
-	where
-		expense_id = :expense_id
-    "
+       set modify_bundle_msg [lang::message::lookup "" intranet-expenses.Modify_Included_Expenses "Modify Included Expenses"]
+       set modify_bundle_url [export_vars -base "/intranet-timesheet2/hours/new" {julian_date}]
+       set modify_bundle_link "<a href='$modify_bundle_url'>$modify_bundle_msg</a>"
+       set modify_bundle_link "<ul>\n<li>$modify_bundle_link</li>\n</ul><br>\n"
 
-    db_dml update_costs "
-	update im_costs
-	set
-		project_id	= :project_id,
-		cost_name	= :expense_name,
-		customer_id	= :customer_id,
-		cost_nr		= :expense_id,
-	        cost_type_id    = :cost_type_id,
-		provider_id	= :provider_id,
-		template_id	= :template_id,
-		effective_date	= to_timestamp(:expense_date, 'YYYY-MM-DD'),
-		payment_days	= :payment_days,
-		vat		= :vat,
-		tax		= :tax,
-		variable_cost_p = 't',
-		amount		= :amount,
-		currency	= :currency,
-		note		= :note
-	where
-		cost_id = :expense_id
-    "
+} else {
 
-} -on_submit {
-    
-    ns_log Notice "new1: on_submit"
-    
-} -after_submit {
+  set modify_bundle_link ""
 
-    ad_returnredirect $return_url
-    ad_script_abort
 }
 
+
+# ---------------------------------------------------------------
+# Show the included expenses
+# ---------------------------------------------------------------
+
+set included_expenses_msg [lang::message::lookup "" intranet-expenses.Included_Expenses "Included Expenses"]
+
+set export_var_list [list]
+set bulk_actions_list [list]
+set list_id "included_expenses"
+
+template::list::create \
+    -name $list_id \
+    -multirow multirow \
+    -key bundle_id \
+    -has_checkboxes \
+    -bulk_actions $bulk_actions_list \
+    -bulk_action_export_vars  {	object_id } \
+    -row_pretty_plural "[_ intranet-expenses.Included_Expenses]" \
+    -elements {
+	cost_id {
+	    label "[_ intranet-expenses.ID]"
+	}
+	amount {
+	    label "[_ intranet-expenses.Amount]"
+	}
+	vat {
+	    label "[_ intranet-expenses.Vat_Included]"
+	}
+	effective_date {
+	    label "[_ intranet-expenses.Expense_Date]"
+	}
+	project_name {
+	    label "[lang::message::lookup {} intranet-expenses.Project Project]"
+	    link_url_eval $project_url
+	}
+	cost_status {
+	    label "[lang::message::lookup {} intranet-expenses.Status Status]"
+	}
+	owner_name {
+	    label "[lang::message::lookup {} intranet-expenses.Owner Owner]"
+	    link_url_eval $owner_url
+	}
+	bundle_chk {
+	    label "<input type=\"checkbox\" name=\"_dummy\" onclick=\"acs_ListCheckAll('bundles_list', this.checked)\" title=\"Check/uncheck all rows\">"
+	    display_template {
+		@multirow.bundle_chk;noquote@
+	    }
+	}
+    }
+
+db_multirow -extend {bundle_chk project_url owner_url} multirow multirow "
+	select	c.*,
+		to_char(c.effective_date,'DD/MM/YYYY') as effective_date,
+		acs_object__name(c.project_id) as project_name,
+		im_category_from_id(c.cost_status_id) as cost_status,
+		o.creation_user as owner_id,
+		im_name_from_user_id(o.creation_user) as owner_name
+	from 
+		im_costs c,
+		acs_objects o
+	where
+		c.cost_id = o.object_id
+		and c.cost_type_id = [im_cost_type_expense_bundle]
+	order by
+		cost_id
+" {
+    set return_url [im_url_with_query]
+    set amount "[format %.2f [expr $amount * [expr 1 + [expr $vat / 100]]]] $currency"
+    set vat "[format %.1f $vat] %"
+    if {$delete_bundle_p || $owner_id == $current_user_id} {
+        set bundle_chk "<input type=\"checkbox\" 
+				name=\"bundle_id\" 
+				value=\"$cost_id\" 
+				id=\"bundles_list,$cost_id\">"
+    } else {
+	set bundle_chk ""
+    }
+
+    set project_url [export_vars -base "/intranet/projects/view" {{project_id $project_id} return_url}]
+    set owner_url [export_vars -base "/intranet/users/view" {{user_id $owner_id} return_url}]
+}
 
 
 

@@ -112,7 +112,11 @@ set cost_name "$cost_name - $project_nr"
 
 set customer_id "[im_company_internal]"
 set provider_id $current_user_id
-set cost_status_id [im_cost_status_created]
+
+# Status: normal users can only create "requested" bundles
+set cost_status_id [im_cost_status_requested]
+if {$add_expense_bundles_p] { set cost_status_id [im_cost_status_created] }
+
 set cost_type_id [im_cost_type_expense_bundle]
 set template_id ""
 set payment_days "30"
