@@ -678,6 +678,8 @@ ad_proc -public im_workflow_home_inbox_component {
 	select
 		ot.pretty_name as object_type_pretty,
 		o.object_id,
+		o.creation_user as owner_id,
+		im_name_from_user_id(o.creation_user) as owner_name,
 		acs_object__name(o.object_id) as object_name,
 		im_biz_object__get_type_id(o.object_id) as type_id,
 		im_biz_object__get_status_id(o.object_id) as status_id,
@@ -750,7 +752,7 @@ ad_proc -public im_workflow_home_inbox_component {
 	set status [im_category_from_id $status_id]
 	set action_url [export_vars -base "/workflow/task" {return_url task_id}]
 	set object_url [im_biz_object_url $object_id "view"]
-
+	set owner_url [export_vars -base "/intranet/users/view" {return_url {user_id $owner_id}}]
 	
 	# L10ned version of next action
 	regsub -all " " $transition_name "_" next_action_key
