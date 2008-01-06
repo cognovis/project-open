@@ -39,7 +39,7 @@ ad_proc -public im_cost_type_employee {} { return 3714 }
 ad_proc -public im_cost_type_repeating {} { return 3716 }
 ad_proc -public im_cost_type_timesheet {} { return 3718 }
 ad_proc -public im_cost_type_expense_item {} { return 3720 }
-ad_proc -public im_cost_type_expense_report {} { return 3722 }
+ad_proc -public im_cost_type_expense_bundle {} { return 3722 }
 ad_proc -public im_cost_type_delivery_note {} { return 3724 }
 
 
@@ -56,7 +56,7 @@ ad_proc -public im_cost_type_short_name { cost_type_id } {
 	3716 { return "repeating" }
 	3718 { return "timesheet" }
 	3720 { return "expense" }
-	3722 { return "expense_report" }
+	3722 { return "expense_bundle" }
 	3724 { return "delivery_note" }
 	default { return "unknown" }
     }
@@ -1498,7 +1498,7 @@ ad_proc im_costs_project_finance_component {
     set grand_total [expr $grand_total - $subtotal]
 
     append hard_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Expenses "Expenses"]</td>\n"
-    set subtotal $subtotals([im_cost_type_expense_report])
+    set subtotal $subtotals([im_cost_type_expense_bundle])
     append hard_cost_html "<td align=right>- $subtotal $default_currency</td>\n"
     set grand_total [expr $grand_total - $subtotal]
 
@@ -1535,7 +1535,7 @@ ad_proc im_costs_project_finance_component {
 
     append prelim_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Expenses "Expenses"]</td>\n"
     append prelim_cost_html "<td align=right>
-<!--	  $subtotals([im_cost_type_expense_report]) $default_currency -->
+<!--	  $subtotals([im_cost_type_expense_bundle]) $default_currency -->
 	</td>\n"
 
     append prelim_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-cost.Grand_Total]</b></td>\n"
@@ -1966,7 +1966,7 @@ ad_proc -public im_cost_update_project_cost_cache {
 			cost_invoices_cache = $subtotals([im_cost_type_invoice]),
 			cost_bills_cache = $subtotals([im_cost_type_bill]),
 			cost_timesheet_logged_cache = $subtotals([im_cost_type_timesheet]),
-			cost_expense_logged_cache = $subtotals([im_cost_type_expense_report]),
+			cost_expense_logged_cache = $subtotals([im_cost_type_expense_bundle]),
 			cost_quotes_cache = $subtotals([im_cost_type_quote]),
 			cost_purchase_orders_cache = $subtotals([im_cost_type_po]),
 			cost_delivery_notes_cache = $subtotals([im_cost_type_delivery_note]),
