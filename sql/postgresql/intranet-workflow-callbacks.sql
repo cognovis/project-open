@@ -69,23 +69,17 @@ declare
 	p_case_id		alias for $1;
 	p_transition_key	alias for $2;
 	p_custom_arg		alias for $3;
-
-	v_task_id		integer;
-	v_case_id		integer;
-	v_object_id		integer;
-	v_creation_user		integer;
-	v_creation_ip		varchar;
-	v_journal_id		integer;
-	v_transition_key	varchar;
-	v_workflow_key		varchar;
-
+	v_task_id		integer;	v_case_id		integer;
+	v_object_id		integer;	v_creation_user		integer;
+	v_creation_ip		varchar;	v_journal_id		integer;
+	v_transition_key	varchar;	v_workflow_key		varchar;
 	v_status		varchar;
 	v_str			text;
 	row			RECORD;
 begin
 	-- Select out some frequently used variables of the environment
-	select	c.object_id, c.workflow_key, task_id
-	into	v_object_id, v_workflow_key, v_task_id
+	select	c.object_id, c.workflow_key, task_id, c.case_id
+	into	v_object_id, v_workflow_key, v_task_id, v_case_id
 	from	wf_tasks t, wf_cases c
 	where	c.case_id = p_case_id
 		and t.case_id = c.case_id
