@@ -41,7 +41,7 @@ if {"" == $return_url} {
     set return_url [ad_conn url]
 }
 
-set privs [list invoices quotes delivery_notes bills pos timesheets expense_reports]
+set privs [list invoices quotes delivery_notes bills pos timesheets expense_bundles]
 
 # ------------------------------------------------------
 # Get the list of all relevant groups and users who
