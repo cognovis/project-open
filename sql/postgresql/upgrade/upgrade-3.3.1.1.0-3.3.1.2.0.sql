@@ -178,6 +178,7 @@ SELECT im_new_menu(
 	'timesheet2_absences', 
 	null
 );
+SELECT im_new_menu_perms('timesheet2_absences_vacation', 'Employees');
 
 SELECT im_new_menu(
 	'intranet-timesheet2',
@@ -188,6 +189,7 @@ SELECT im_new_menu(
 	'timesheet2_absences', 
 	null
 );
+SELECT im_new_menu_perms('timesheet2_absences_personal', 'Employees');
 
 SELECT im_new_menu(
 	'intranet-timesheet2',
@@ -198,6 +200,7 @@ SELECT im_new_menu(
 	'timesheet2_absences', 
 	null
 );
+SELECT im_new_menu_perms('timesheet2_absences_sick', 'Employees');
 
 SELECT im_new_menu(
 	'intranet-timesheet2',
@@ -208,6 +211,7 @@ SELECT im_new_menu(
 	'timesheet2_absences', 
 	null
 );
+SELECT im_new_menu_perms('timesheet2_absences_travel', 'Employees');
 
 SELECT im_new_menu(
 	'intranet-timesheet2',
@@ -218,6 +222,7 @@ SELECT im_new_menu(
 	'timesheet2_absences', 
 	null
 );
+SELECT im_new_menu_perms('timesheet2_absences_bankholiday', 'Employees');
 
 
 
