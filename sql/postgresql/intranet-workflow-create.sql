@@ -286,10 +286,16 @@ insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 values (26020,260,'Type','"$object_subtype"',20);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
 values (26030,260,'Status','"$status"',30);
+
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
-values (26040,260,'Object Name','"<a href=$object_url>$object_name</a>"',40);
+values (26050,260,'Owner','"<a href=$owner_url>$owner_name</a>"',45);
+
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
+values (26060,260,'Object Name','"<a href=$object_url>$object_name</a>"',60);
+
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
 values (26070,260,'Relationship','"$relationship_l10n"',70);
+
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
 values (26090,260,
 	'<input type=checkbox onclick="acs_ListCheckAll(''action'',this.checked)">',
