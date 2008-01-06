@@ -92,6 +92,15 @@ begin
 		and t.workflow_key = c.workflow_key
 		and t.transition_key = p_transition_key;
 
+	v_journal_id := journal_entry__new(
+	    null, v_case_id,
+	    v_transition_key || '' set_object_status_id '' || im_category_from_id(p_custom_arg::integer),
+	    v_transition_key || '' set_object_status_id '' || im_category_from_id(p_custom_arg::integer),
+	    now(), v_creation_user, v_creation_ip,
+	    ''Setting the status of "'' || acs_object__name(v_object_id) || ''" to "'' || 
+	    im_category_from_id(p_custom_arg::integer) || ''".''
+	);
+
 	PERFORM im_biz_object__set_status_id(v_object_id, p_custom_arg::integer);
 	return 0;
 end;' language 'plpgsql';
