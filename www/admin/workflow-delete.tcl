@@ -23,6 +23,16 @@ set cases_table [db_string cases_table { select table_name from acs_object_types
 # If the table does not exist, it's probably because it was already deleted in a faulty attempt to delete the process.
 # At least, let us not prevent the guy from trying to delete the process again.
 
+# Reset the context ID from objects in the context of the WF (which one? Cases?)
+db_dml reset_context "
+       update acs_objects set context_id = null 
+       where context_id in (
+       	     select object_id 
+	     from acs_objects 
+	     where object_type = :workflow_key
+       )
+"
+
 if { [db_table_exists $cases_table] } {
    db_exec_plsql delete_cases {
 	begin 
