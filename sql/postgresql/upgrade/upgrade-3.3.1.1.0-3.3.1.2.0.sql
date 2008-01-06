@@ -172,7 +172,7 @@ SELECT  im_component_plugin__new (
 SELECT im_new_menu(
 	'intranet-timesheet2',
 	'timesheet2_absences_vacation',
-	'New Vacation',
+	'New Vacation Absence',
 	'/intranet-timesheet2/absences/new?absence_type_id=5000',
 	10,
 	'timesheet2_absences', 
