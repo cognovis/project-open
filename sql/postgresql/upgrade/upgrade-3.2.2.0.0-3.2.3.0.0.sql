@@ -25,7 +25,7 @@ select  category_id as cost_type_id,
             WHEN category_id = 3716 THEN 'fi_read_repeatings'
             WHEN category_id = 3718 THEN 'fi_read_timesheets'
             WHEN category_id = 3720 THEN 'fi_read_expense_items'
-            WHEN category_id = 3722 THEN 'fi_read_expense_reports'
+            WHEN category_id = 3722 THEN 'fi_read_expense_bundles'
             WHEN category_id = 3724 THEN 'fi_read_delivery_notes'
             ELSE 'fi_read_all'
         END as read_privilege,
@@ -37,7 +37,7 @@ select  category_id as cost_type_id,
             WHEN category_id = 3716 THEN 'fi_write_repeatings'
             WHEN category_id = 3718 THEN 'fi_write_timesheets'
             WHEN category_id = 3720 THEN 'fi_write_expense_items'
-            WHEN category_id = 3722 THEN 'fi_write_expense_reports'
+            WHEN category_id = 3722 THEN 'fi_write_expense_bundles'
             WHEN category_id = 3724 THEN 'fi_write_delivery_notes'
             ELSE 'fi_write_all'
         END as write_privilege,
@@ -49,7 +49,7 @@ select  category_id as cost_type_id,
             WHEN category_id = 3716 THEN 'repcost'
             WHEN category_id = 3718 THEN 'timesheet'
             WHEN category_id = 3720 THEN 'expitem'
-            WHEN category_id = 3722 THEN 'expreport'
+            WHEN category_id = 3722 THEN 'expbundle'
             WHEN category_id = 3724 THEN 'delnote'
             ELSE 'unknown'
         END as short_name

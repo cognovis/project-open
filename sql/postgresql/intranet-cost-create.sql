@@ -1793,10 +1793,10 @@ select acs_privilege__create_privilege('fi_write_expense_items','Write Expense I
 select acs_privilege__add_child('fi_read_all', 'fi_read_expense_items');
 select acs_privilege__add_child('fi_write_all', 'fi_write_expense_items');
 
-select acs_privilege__create_privilege('fi_read_expense_reports','Read Expense Reports','Read Expense Reports');
-select acs_privilege__create_privilege('fi_write_expense_reports','Write Expense Reports','Write Expense Reports');
-select acs_privilege__add_child('fi_read_all', 'fi_read_expense_reports');
-select acs_privilege__add_child('fi_write_all', 'fi_write_expense_reports');
+select acs_privilege__create_privilege('fi_read_expense_bundles','Read Expense Bundles','Read Expense Bundles');
+select acs_privilege__create_privilege('fi_write_expense_bundles','Write Expense Bundles','Write Expense Bundles');
+select acs_privilege__add_child('fi_read_all', 'fi_read_expense_bundles');
+select acs_privilege__add_child('fi_write_all', 'fi_write_expense_bundles');
 
 select acs_privilege__create_privilege('fi_read_repeatings','Read Repeatings','Read Repeatings');
 select acs_privilege__create_privilege('fi_write_repeatings','Write Repeatings','Write Repeatings');
