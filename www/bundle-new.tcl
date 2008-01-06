@@ -33,7 +33,7 @@ set context_bar [im_context_bar $page_title]
 if {![info exists enable_master_p]} { set enable_master_p 1}
 if {![info exists form_mode]} { set form_mode "edit" }
 
-set form_mode "edit"
+set cost_id $bundle_id
 
 set delete_bundle_p [im_permission $user_id "add_expense_bundle"]
 
@@ -89,25 +89,18 @@ ad_form \
 	cost_id:key
 	{cost_name:text(text) {label $cost_name_label} {html {size 40}}}
 	{project_id:text(select),optional {label $project_label} {options $project_options} }
-	{customer_id:text(select) {label "$customer_label <br><small>($wp_label)</small>"} {options $customer_options} }
-	{provider_id:text(select) {label "$provider_label <br><small>($wg_label)</small>"} {options $provider_options} }
 	{cost_type_id:text(select) {label $type_label} {options $cost_type_options} }
 	{cost_status_id:text(select) {label $cost_status_label} {options $cost_status_options} }
-	{effective_date:text(text) {label $effective_date_label} {html {size 20}} }
 	{amount:text(text) {label $amount_label} {html {size 20}} }
 	{currency:text(select) {label $currency_label} {options $currency_options} }
 	{vat:text(text) {label $vat_label} {html {size 20}} }
-	{tax:text(text) {label $tax_label} {html {size 20}} }
-	{description:text(textarea),nospell,optional {label $desc_label} {html {rows 5 cols 40}}}
-	{note:text(textarea),nospell,optional {label $note_label} {html {rows 5 cols 40}}}
     }
-
 
 ad_form -extend -name $form_id \
     -select_query {
 	select	c.*
-	from	im_costs
-	where	cost_id = :bundle_id
+	from	im_costs c
+	where	cost_id = :cost_id
     } -new_data {
 	db_exec_plsql create_conf "
 		SELECT im_bundle__new(
@@ -144,7 +137,7 @@ ad_form -extend -name $form_id \
 if {[info exists bundle_id]} {
 
        set modify_bundle_msg [lang::message::lookup "" intranet-expenses.Modify_Included_Expenses "Modify Included Expenses"]
-       set modify_bundle_url [export_vars -base "/intranet-timesheet2/hours/new" {julian_date}]
+       set modify_bundle_url [export_vars -base "/intranet-expenses/index" {project_id}]
        set modify_bundle_link "<a href='$modify_bundle_url'>$modify_bundle_msg</a>"
        set modify_bundle_link "<ul>\n<li>$modify_bundle_link</li>\n</ul><br>\n"
 
@@ -196,12 +189,6 @@ template::list::create \
 	owner_name {
 	    label "[lang::message::lookup {} intranet-expenses.Owner Owner]"
 	    link_url_eval $owner_url
-	}
-	bundle_chk {
-	    label "<input type=\"checkbox\" name=\"_dummy\" onclick=\"acs_ListCheckAll('bundles_list', this.checked)\" title=\"Check/uncheck all rows\">"
-	    display_template {
-		@multirow.bundle_chk;noquote@
-	    }
 	}
     }
 

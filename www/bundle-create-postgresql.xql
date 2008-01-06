@@ -20,7 +20,7 @@
 		null,			-- cost_id
 		'im_expense_bundle',	-- object_type
 		now(),			-- creation_date
-		:current_user_id,	-- creation_user
+		:common_provider_id,	-- creation_user
 		'[ad_conn peeraddr]',	-- creation_ip
 		null,			-- context_id
       

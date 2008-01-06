@@ -18,8 +18,6 @@ ad_page_contract {
     expense_id:integer,multiple,optional
 }
 
-
-
 # ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
@@ -101,9 +99,6 @@ if {0 == $common_project_id} {
     ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_project_specified "No project specified"]
     ad_abort_script
 }
-
-
-
 
 # --------------------------------------
 # create bundle for these expenses
