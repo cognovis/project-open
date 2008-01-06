@@ -1,5 +1,5 @@
 <master>
-<property name="title">@workflow.pretty_name;noquote@ Process Builder</property>
+<property name="title">@workflow.pretty_name;noquote@ - Process Builder</property>
 <property name="context">@context;noquote@</property>
 
 <table width="100%">

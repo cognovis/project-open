@@ -1,5 +1,5 @@
 <master>
-<property name="title">Task Actions</property>
+<property name="title">@workflow_name@ - @transition_name@ - Task Actions</property>
 <property name="context">@context;noquote@</property>
 <property name="focus">actions.enable_callback</property>
 
