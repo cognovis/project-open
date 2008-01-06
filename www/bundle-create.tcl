@@ -1,4 +1,4 @@
-# /packages/intranet-expenses/www/create-tc.tcl
+# /packages/intranet-expenses/www/bundle-create.tcl
 #
 # Copyright (C) 2003-2004 Project/Open
 #

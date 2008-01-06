@@ -1,6 +1,6 @@
 # /packages/intranet-expenses/www/index.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (C) 2003-2008 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -108,7 +108,7 @@ if {$add_expense_p} {
 }
 
 if {$create_invoice_p} {
-    lappend bulk_action_list "[_ intranet-expenses.Create_Invoice]" "[export_vars -base "create-tc" {project_id}]" "[_ intranet-expenses.create_invoice_help]"
+    lappend bulk_action_list "[_ intranet-expenses.Create_Invoice]" "[export_vars -base "bundle-create" {project_id}]" "[_ intranet-expenses.create_invoice_help]"
 
     lappend bulk_action_list "[lang::message::lookup "" intranet-expenses.Assign_to_a_project {Assign to a Project}]" "[export_vars -base "classify-costs" {project_id}]" "[lang::message::lookup "" intranet-expenses.Assign_to_a_project_help {Assign several expenses to a project}]"
 }
@@ -118,7 +118,7 @@ catch {set wf_installed_p [im_expenses_workflow_installed_p] }
 # Only show this button if the user doesn't have the right to create bundles anyway
 if {$wf_installed_p && !$create_invoice_p} {
 
-    lappend bulk_action_list "[lang::message::lookup {} intranet-expenses-workflow.Request_Expense_Bundle "Request Expense Bundle"]" "[export_vars -base "create-tc" {project_id}]" "[lang::message::lookup "" intranet-expenses.Request_Expense_Bundle_Help "Request Expense Bundle"]"
+    lappend bulk_action_list "[lang::message::lookup {} intranet-expenses-workflow.Request_Expense_Bundle "Request Expense Bundle"]" "[export_vars -base "bundle-create" {project_id}]" "[lang::message::lookup "" intranet-expenses.Request_Expense_Bundle_Help "Request Expense Bundle"]"
 
 }
 
@@ -283,7 +283,7 @@ set bulk2_action_list [list]
 
 # Unconditionally allow to "Delete".
 # Security is handled on a per expense_bundle level
-lappend bulk2_action_list "[_ intranet-expenses.Delete]" "invoice-del" "[_ intranet-expenses.Remove_checked_items]"
+lappend bulk2_action_list "[_ intranet-expenses.Delete]" "bundle-del" "[_ intranet-expenses.Remove_checked_items]"
 if {$delete_invoice_p} { }
 
 template::list::create \

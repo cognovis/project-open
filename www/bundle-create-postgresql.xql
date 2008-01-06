@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE queryset PUBLIC "-//OpenACS//DTD XQL 1.0//EN" "/usr/share/emacs/DTDs/xql.dtd">
-<!-- packages/intranet-expense/www/create-tc-postgresql.xql -->
+<!-- packages/intranet-expense/www/bundle-create-postgresql.xql -->
 <!-- @author  (avila@digiteix.com) -->
 <!-- @creation-date 2006-04-27 -->
 <!-- @arch-tag 7410be05-735d-4f4d-b0e5-6252f93a9d29 -->
