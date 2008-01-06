@@ -19,6 +19,7 @@ ad_page_contract {
 }
 
 
+
 # ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
@@ -89,7 +90,6 @@ db_foreach expenses $expense_sql {
 	"]
 	ad_script_abort
     }
-
 }
 
 set bundle_vat 0
@@ -101,6 +101,9 @@ if {0 == $common_project_id} {
     ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_project_specified "No project specified"]
     ad_abort_script
 }
+
+
+
 
 # --------------------------------------
 # create bundle for these expenses
@@ -115,7 +118,7 @@ set provider_id $current_user_id
 
 # Status: normal users can only create "requested" bundles
 set cost_status_id [im_cost_status_requested]
-if {$add_expense_bundles_p] { set cost_status_id [im_cost_status_created] }
+if {$add_expense_bundles_p} { set cost_status_id [im_cost_status_created] }
 
 set cost_type_id [im_cost_type_expense_bundle]
 set template_id ""
@@ -124,10 +127,8 @@ set tax "0"
 set description ""
 set note ""
 
-# create bundle as a cost
-# Let's create the new expense
+# Create Expense Bundle, basicly as a cost item with type "im_expense_bundle".
 db_transaction {
-
     set expense_bundle_id [db_exec_plsql create_expense_bundle ""] 
     set expenses_list_sql [join $expenses_list ","]
 
@@ -136,12 +137,14 @@ db_transaction {
 	set bundle_id = :expense_bundle_id 
 	where expense_id in ([join $expense_ids ", "])
     "
-
 }
 
+
+# ---------------------------------------------------------------
 # Spawn a workflow for confirmation by the superior
 # Only spawn the WF if the user DOESN't have the right to 
 # create expense bundles anyway...
+# ---------------------------------------------------------------
 
 set wf_installed_p 0
 catch {set wf_installed_p [im_expenses_workflow_installed_p] }
@@ -158,5 +161,10 @@ if {$wf_installed_p && !$add_expense_bundles_p} {
     ad_return_template
     
 }
+
+
+# ---------------------------------------------------------------
+# Where to go now?
+# ---------------------------------------------------------------
 
 ad_returnredirect $return_url
