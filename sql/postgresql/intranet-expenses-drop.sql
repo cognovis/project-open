@@ -11,7 +11,33 @@
 
 delete from im_expenses;
 delete from im_costs where cost_id in (select object_id from acs_objects where object_type = 'im_expenses');
-delete from acs_objects where object_type = 'im_expenses';
+delete from im_costs where cost_type_id = 3720;
+delete from acs_objects where object_type = 'im_expense';
+
+
+delete from im_expense_bundles;
+delete from im_expense_invoices;
+
+delete from im_costs where cost_id in (select object_id from acs_objects where object_type = 'im_expense_invoice');
+delete from im_costs where cost_id in (select object_id from acs_objects where object_type = 'im_expense_bundle');
+delete from im_costs where cost_type_id = 3720;
+delete from im_costs where cost_type_id = 3722;
+
+delete from wf_tokens where case_id in (
+       select case_id
+       from wf_cases
+       where object_id in (
+       	     select object_id
+	     from acs_objects
+	     where object_type in ('im_expense_invoice', 'im_expense_bundle')
+       )
+);
+
+delete from acs_objects where object_type = 'im_expense_invoice';
+delete from acs_objects where object_type = 'im_expense_bundle';
+
+drop table im_expense_bundes;
+drop table im_expense_invoices;
 
 
 -------------------------------------------------------------
@@ -60,28 +86,21 @@ BEGIN
 
 end;' language 'plpgsql';
 
--- begin
-   select inline_revoke_permission ('view_expenses_all');
-   select acs_privilege__drop_privilege ('view_expenses_all');
 
-   select inline_revoke_permission ('view_expenses');
-   select acs_privilege__drop_privilege ('view_expenses');
+select inline_revoke_permission ('view_expenses_all');
+select acs_privilege__drop_privilege ('view_expenses_all');
 
-   select inline_revoke_permission ('add_expense_invoice');
-   select acs_privilege__drop_privilege ('add_expense_invoice');
+select inline_revoke_permission ('view_expenses');
+select acs_privilege__drop_privilege ('view_expenses');
 
-   select inline_revoke_permission ('add_expenses');
-   select acs_privilege__drop_privilege ('add_expenses');
+select inline_revoke_permission ('add_expense_invoice');
+select acs_privilege__drop_privilege ('add_expense_invoice');
 
--- end;
+select inline_revoke_permission ('add_expenses');
+select acs_privilege__drop_privilege ('add_expenses');
 
+drop table im_expenses;
 
--- Drop tables
-
-   drop table im_expenses;
-
--- Drop object types
-
--- begin
-   select acs_object_type__drop_type('im_expense', 'f');
--- end;
+select acs_object_type__drop_type('im_expense', 'f');
+select acs_object_type__drop_type('im_expense_invoice', 'f');
+select acs_object_type__drop_type('im_expense_bundle', 'f');
