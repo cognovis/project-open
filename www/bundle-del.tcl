@@ -9,13 +9,13 @@
 # 1. Page Contract
 # ---------------------------------------------------------------
 ad_page_contract { 
-    Delete expense invoice 
+    Delete expense bundle 
     @param project_id project on expense is going to create
     @author avila@digiteix.com
 } {
     project_id:integer
     { return_url "/intranet-expenses/"}
-    invoice_id:multiple
+    bundle_id:multiple
 }
 
 # ---------------------------------------------------------------
@@ -26,15 +26,15 @@ set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 
-foreach id $invoice_id {
+foreach id $bundle_id {
 
-    # delete invoice as a cost
+    # delete bundle as a cost
     # 
     db_transaction {
 	db_dml reset_expense_items "
 		update im_expenses set 
-		       	invoice_id = null 
-		where invoice_id = :id
+		       	bundle_id = null 
+		where bundle_id = :id
 	"
 	db_dml del_tokens "
 	        delete	from wf_tokens wft
@@ -49,7 +49,7 @@ foreach id $invoice_id {
 		where wfc.object_id = :id
 	"
 
-	db_string del_expense_invoice {}
+	db_string del_expense_bundle {}
     }
 }
 

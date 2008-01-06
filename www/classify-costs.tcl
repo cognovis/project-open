@@ -22,7 +22,7 @@ ad_page_contract {
 # ------------------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
-if {![im_permission $current_user_id "add_expense_invoice"]} {
+if {![im_permission $current_user_id "add_expense_bundle"]} {
     ad_return_complaint 1 "[_ intranet-timesheet2-invoices.lt_You_have_insufficient_1]"
     return
 }

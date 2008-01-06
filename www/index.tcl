@@ -91,7 +91,7 @@ set unassigned_p_options [list \
 # ---------------------------------------------------------------
 
 set add_expense_p [im_permission $user_id "add_expenses"]
-set create_invoice_p [im_permission $user_id "add_expense_invoice"]
+set create_bundle_p [im_permission $user_id "add_expense_bundle"]
 
 set admin_links ""
 set action_list [list]
@@ -107,8 +107,8 @@ if {$add_expense_p} {
     lappend bulk_action_list "[_ intranet-expenses.Delete]" "expense-del" "[_ intranet-expenses.Delete_Expenses]"
 }
 
-if {$create_invoice_p} {
-    lappend bulk_action_list "[_ intranet-expenses.Create_Invoice]" "[export_vars -base "bundle-create" {project_id}]" "[_ intranet-expenses.create_invoice_help]"
+if {$create_bundle_p} {
+    lappend bulk_action_list "[lang::message::lookup "" intranet-expenses.Create_Bundle "Create Bundle"]" "[export_vars -base "bundle-create" {project_id}]" "[lang::message::lookup "" intranet-expenses.create_bundle_help "Create Bundle"]"
 
     lappend bulk_action_list "[lang::message::lookup "" intranet-expenses.Assign_to_a_project {Assign to a Project}]" "[export_vars -base "classify-costs" {project_id}]" "[lang::message::lookup "" intranet-expenses.Assign_to_a_project_help {Assign several expenses to a project}]"
 }
@@ -116,7 +116,7 @@ if {$create_invoice_p} {
 set wf_installed_p 0
 catch {set wf_installed_p [im_expenses_workflow_installed_p] }
 # Only show this button if the user doesn't have the right to create bundles anyway
-if {$wf_installed_p && !$create_invoice_p} {
+if {$wf_installed_p && !$create_bundle_p} {
 
     lappend bulk_action_list "[lang::message::lookup {} intranet-expenses-workflow.Request_Expense_Bundle "Request Expense Bundle"]" "[export_vars -base "bundle-create" {project_id}]" "[lang::message::lookup "" intranet-expenses.Request_Expense_Bundle_Help "Request Expense Bundle"]"
 
@@ -228,9 +228,9 @@ if {"" != $expense_type_id  & 0 != $expense_type_id} {
 # Allow accounting guys to see all expense items,
 # not just their own ones...
 set personal_only_sql "and provider_id = :user_id"
-if {$create_invoice_p} { set personal_only_sql "" }
+if {$create_bundle_p} { set personal_only_sql "" }
 
-set unassigned_sql "and e.invoice_id is null"
+set unassigned_sql "and e.bundle_id is null"
 if {"all" == $unassigned} { set unassigned_sql "" }
 
 db_multirow -extend {expense_chk project_url expense_new_url provider_url} expense_lines expenses_lines "
@@ -257,7 +257,7 @@ db_multirow -extend {expense_chk project_url expense_new_url provider_url} expen
     set amount "[format %.2f [expr $amount * [expr 1 + [expr $vat / 100]]]] $currency"
     set vat "[format %.1f $vat] %"
     set reimbursable "[format %.1f $reimbursable] %"
-    if {![exists_and_not_null invoice_id]} {
+    if {![exists_and_not_null bundle_id]} {
 	set expense_chk "<input type=\"checkbox\" 
 				name=\"expense_id\" 
 				value=\"$expense_id\" 
@@ -278,22 +278,22 @@ db_multirow -extend {expense_chk project_url expense_new_url provider_url} expen
 
 set list2_id "bundles_list"
 
-set delete_invoice_p [im_permission $user_id "add_expense_invoice"]
+set delete_bundle_p [im_permission $user_id "add_expense_bundle"]
 set bulk2_action_list [list]
 
 # Unconditionally allow to "Delete".
 # Security is handled on a per expense_bundle level
 lappend bulk2_action_list "[_ intranet-expenses.Delete]" "bundle-del" "[_ intranet-expenses.Remove_checked_items]"
-if {$delete_invoice_p} { }
+if {$delete_bundle_p} { }
 
 template::list::create \
     -name $list2_id \
-    -multirow invoice_lines \
+    -multirow bundle_lines \
     -key cost_id \
     -has_checkboxes \
     -bulk_actions $bulk2_action_list \
     -bulk_action_export_vars { project_id } \
-    -row_pretty_plural "[_ intranet-expenses.Invoice_Items]" \
+    -row_pretty_plural "[lang::message::lookup "" intranet-expenses.Bundle_Items "Bundle Items"]" \
     -elements {
 	cost_id {
 	    label "[_ intranet-expenses.ID]"
@@ -318,16 +318,16 @@ template::list::create \
 	    label "[lang::message::lookup {} intranet-expenses.Owner Owner]"
 	    link_url_eval $owner_url
 	}
-	invoice_chk {
+	bundle_chk {
 	    label "<input type=\"checkbox\" name=\"_dummy\" onclick=\"acs_ListCheckAll('bundles_list', this.checked)\" title=\"Check/uncheck all rows\">"
 	    display_template {
-		@invoice_lines.invoice_chk;noquote@
+		@bundle_lines.bundle_chk;noquote@
 	    }
 	}
     }
 
 
-db_multirow -extend {invoice_chk project_url owner_url} invoice_lines invoice_lines "
+db_multirow -extend {bundle_chk project_url owner_url} bundle_lines bundle_lines "
 	select	c.*,
 		to_char(c.effective_date,'DD/MM/YYYY') as effective_date,
 		acs_object__name(c.project_id) as project_name,
@@ -344,13 +344,13 @@ db_multirow -extend {invoice_chk project_url owner_url} invoice_lines invoice_li
 " {
     set amount "[format %.2f [expr $amount * [expr 1 + [expr $vat / 100]]]] $currency"
     set vat "[format %.1f $vat] %"
-    if {$delete_invoice_p || $owner_id == $current_user_id} {
-        set invoice_chk "<input type=\"checkbox\" 
-				name=\"invoice_id\" 
+    if {$delete_bundle_p || $owner_id == $current_user_id} {
+        set bundle_chk "<input type=\"checkbox\" 
+				name=\"bundle_id\" 
 				value=\"$cost_id\" 
 				id=\"bundles_list,$cost_id\">"
     } else {
-	set invoice_chk ""
+	set bundle_chk ""
     }
 
     set project_url [export_vars -base "/intranet/projects/view" {{project_id $project_id} return_url}]

@@ -133,11 +133,11 @@ if {![info exists currency]} {
 
 # Don't allow the user to modify an "invoiced" item
 set has_edit 0
-set expense_invoice_id ""
+set expense_bundle_id ""
 if {[info exists expense_id]} {
-    set expense_invoice_id [db_string expense_invoice "select invoice_id from im_expenses where expense_id = :expense_id" -default ""]
+    set expense_bundle_id [db_string expense_bundle "select bundle_id from im_expenses where expense_id = :expense_id" -default ""]
 }
-if {"" != $expense_invoice_id} { 
+if {"" != $expense_bundle_id} { 
     set form_mode "display"
     set has_edit 1
 }
@@ -255,8 +255,8 @@ ad_form -extend -name $form_id -on_request {
 } -edit_data {
 
     # Security Check: Don't allow to change an "invoiced" expense
-    set expense_invoice_id [db_string expense_invoice "select invoice_id from im_expenses where expense_id = :expense_id" -default ""]
-    if {"" != $expense_invoice_id} {
+    set expense_bundle_id [db_string expense_bundle "select bundle_id from im_expenses where expense_id = :expense_id" -default ""]
+    if {"" != $expense_bundle_id} {
 	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Cant_change_invoiced_item "You can't change an already invoiced expense"]
     }
     set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]

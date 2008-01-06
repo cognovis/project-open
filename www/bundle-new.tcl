@@ -1,7 +1,6 @@
-# /packages/intranet-expenses/www/new.tcl
+# /packages/intranet-expenses/www/bundle-new.tcl
 #
-# Copyright (C) 2003-2006 Project/Open
-# 060421 avila@digiteix.com
+# Copyright (C) 2003-2008 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -10,14 +9,11 @@
 # 1. Page Contract
 # ---------------------------------------------------------------
 ad_page_contract { 
-    add / edit expense in project
-
-    @param project_id
-           project on expense is going to create
+    Add / modify expense bundle
 
     @author avila@digiteix.com
 } {
-    { cost_type_id:integer "[im_cost_type_invoice]" }
+    { cost_type_id:integer "[im_cost_type_expense_bundle]" }
     { project_id:integer "" }
     { return_url "/intranet-expenses/"}
     expense_id:integer,optional
@@ -131,13 +127,13 @@ if {![info exists currency]} {
     set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"] 
 }
 
-# Don't allow the user to modify an "invoiced" item
+# Don't allow the user to modify an "bundled" item
 set has_edit 0
-set expense_invoice_id ""
+set expense_bundle_id ""
 if {[info exists expense_id]} {
-    set expense_invoice_id [db_string expense_invoice "select invoice_id from im_expenses where expense_id = :expense_id" -default ""]
+    set expense_bundle_id [db_string expense_bundle "select bundle_id from im_expenses where expense_id = :expense_id" -default ""]
 }
-if {"" != $expense_invoice_id} { 
+if {"" != $expense_bundle_id} { 
     set form_mode "display"
     set has_edit 1
 }
@@ -254,15 +250,15 @@ ad_form -extend -name $form_id -on_request {
 
 } -edit_data {
 
-    # Security Check: Don't allow to change an "invoiced" expense
-    set expense_invoice_id [db_string expense_invoice "select invoice_id from im_expenses where expense_id = :expense_id" -default ""]
-    if {"" != $expense_invoice_id} {
-	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Cant_change_invoiced_item "You can't change an already invoiced expense"]
+    # Security Check: Don't allow to change an "bundled" expense
+    set expense_bundle_id [db_string expense_bundle "select bundle_id from im_expenses where expense_id = :expense_id" -default ""]
+    if {"" != $expense_bundle_id} {
+	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Cant_change_bundled_item "You can't change an already bundled expense"]
     }
     set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
     set expense_name $expense_id
 
-    # Update the invoice itself
+    # Update the bundle itself
     db_dml update_expense "
 	update im_expenses 
 	set 

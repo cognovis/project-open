@@ -30,9 +30,9 @@ if {![info exists expense_ids]} { ad_returnredirect $return_url }
 
 # User id already verified by filters
 set current_user_id [ad_maybe_redirect_for_registration]
-set add_expense_invoices_p [im_permission $current_user_id "add_expense_invoice"]
+set add_expense_bundles_p [im_permission $current_user_id "add_expense_bundle"]
 
-if {!$add_expense_invoices_p} {
+if {!$add_expense_bundles_p} {
     ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_perms "You don't have permission to see this page:"]
     ad_script_abort
 }

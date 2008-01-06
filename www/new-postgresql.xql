@@ -45,7 +45,7 @@
              null,             -- rel_id
              'relationship',   -- rel_type
              :project_id,      -- object_id_one
-             :invoice_id,      -- object_id_two
+             :bundle_id,      -- object_id_two
              null,             -- context_id
              null,             -- creation_user
              null             -- creation_ip

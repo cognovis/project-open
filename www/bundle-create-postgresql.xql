@@ -14,11 +14,11 @@
     <version>7.2</version>
   </rdbms>
   
-  <fullquery name="create_expense_invoice">
+  <fullquery name="create_expense_bundle">
     <querytext>
       select im_cost__new (
 		null,			-- cost_id
-		'im_expense_invoice',	-- object_type
+		'im_expense_bundle',	-- object_type
 		now(),			-- creation_date
 		:current_user_id,	-- creation_user
 		'[ad_conn peeraddr]',	-- creation_ip
@@ -39,7 +39,7 @@
 		:payment_days,  	-- payment_days
 		:amount_before_vat,	-- amount
 		:currency,      	-- currency
-		:invoice_vat,		-- vat
+		:bundle_vat,		-- vat
 		:tax,			-- tax
 
 		'f',			-- variable_cost_p

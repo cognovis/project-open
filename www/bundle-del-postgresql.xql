@@ -14,7 +14,7 @@
     <version>7.2</version>
   </rdbms>
   
-  <fullquery name="del_expense_invoice">
+  <fullquery name="del_expense_bundle">
     <querytext>
         select im_cost__delete(:id);
     </querytext>

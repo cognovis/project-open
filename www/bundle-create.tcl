@@ -14,7 +14,6 @@ ad_page_contract {
     @param project_id project on expense is going to create
     @author avila@digiteix.com
 } {
-    { cost_type_id:integer "[im_cost_type_invoice]" }
     return_url
     expense_id:integer,multiple,optional
 }
@@ -29,9 +28,9 @@ if {![info exists expense_id]} { ad_returnredirect $return_url }
 
 # User id already verified by filters
 set current_user_id [ad_maybe_redirect_for_registration]
-set add_expense_invoices_p [im_permission $current_user_id "add_expense_invoice"]
+set add_expense_bundles_p [im_permission $current_user_id "add_expense_bundle"]
 
-# if {!$add_expense_invoices_p} {
+# if {!$add_expense_bundles_p} {
 #    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_perms "You don't have permission to see this page:"]
 #    ad_script_abort
 # }
@@ -60,7 +59,7 @@ set expense_sql "
 		im_expenses e
 	where	c.cost_id in ([join $expense_ids ", "])
 		and c.cost_id = e.expense_id
-        	and e.invoice_id is null
+        	and e.bundle_id is null
 "
 db_foreach expenses $expense_sql {
 
@@ -93,9 +92,9 @@ db_foreach expenses $expense_sql {
 
 }
 
-set invoice_vat 0
+set bundle_vat 0
 catch {
-     set invoice_vat [expr [expr [expr $total_amount - $amount_before_vat] / $amount_before_vat] * 100.0]
+     set bundle_vat [expr [expr [expr $total_amount - $amount_before_vat] / $amount_before_vat] * 100.0]
 }
 
 if {0 == $common_project_id} {
@@ -104,7 +103,7 @@ if {0 == $common_project_id} {
 }
 
 # --------------------------------------
-# create invoice for these expenses
+# create bundle for these expenses
 # --------------------------------------
 
 set project_nr [db_string project_nr "select project_nr from im_projects where project_id = :common_project_id" -default ""]
@@ -121,16 +120,16 @@ set tax "0"
 set description ""
 set note ""
 
-# create invoice as a cost
+# create bundle as a cost
 # Let's create the new expense
 db_transaction {
 
-    set expense_invoice_id [db_exec_plsql create_expense_invoice ""] 
+    set expense_bundle_id [db_exec_plsql create_expense_bundle ""] 
     set expenses_list_sql [join $expenses_list ","]
 
     db_dml update_expense_items "
 	update im_expenses 
-	set invoice_id = :expense_invoice_id 
+	set bundle_id = :expense_bundle_id 
 	where expense_id in ([join $expense_ids ", "])
     "
 
@@ -142,10 +141,10 @@ db_transaction {
 
 set wf_installed_p 0
 catch {set wf_installed_p [im_expenses_workflow_installed_p] }
-if {$wf_installed_p && !$add_expense_invoices_p} {
+if {$wf_installed_p && !$add_expense_bundles_p} {
 
     im_expenses_workflow_spawn_workflow \
-	-expense_invoice_id $expense_invoice_id \
+	-expense_bundle_id $expense_bundle_id \
 	-user_id $current_user_id
 
     set page_title [lang::message::lookup "" intranet-expenses.Workflow_Created "Workflow Created"]

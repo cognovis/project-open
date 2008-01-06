@@ -59,8 +59,8 @@ create table im_expenses (
 	expense_type_id		integer
 				constraint im_expense_type_fk
 				references im_categories,
-	invoice_id		integer
-				constraint im_expenses_invoice_fk
+	bundle_id		integer
+				constraint im_expenses_bundle_fk
 				references im_costs,
 	billable_p		char(1)
 				constraint im_expenses_billable_ck
@@ -213,51 +213,51 @@ end;' language 'plpgsql';
 -- Expense Bundle 
 
 SELECT acs_object_type__create_type (
-	'im_expense_invoice',		-- object_type
+	'im_expense_bundle',		-- object_type
 	'Expense Bundle',		-- pretty_name
 	'Expense Bundles',		-- pretty_plural
 	'im_cost',			-- supertype
-	'im_expense_invoices',		-- table_name
-	'invoice_id',			-- id_column
-	'intranet-expenses',		-- package_name
+	'im_expense_bundles',		-- table_name
+	'bundle_id',			-- id_column
+	'intranet-expense-bundles',	-- package_name
 	'f',				-- abstract_p
 	null,				-- type_extension_table
-	'im_expense_invoice__name'	-- name_method
+	'im_expense_bundle__name'	-- name_method
 );
 
 
-update acs_object_types set status_column = 'cost_status_id' where object_type = 'im_expense_invoice';
-update acs_object_types set type_column = 'cost_type_id' where object_type = 'im_expense_invoice';
-update acs_object_types set status_type_table = 'im_costs' where object_type = 'im_expense_invoice';
+update acs_object_types set status_column = 'cost_status_id' where object_type = 'im_expense_bundle';
+update acs_object_types set type_column = 'cost_type_id' where object_type = 'im_expense_bundle';
+update acs_object_types set status_type_table = 'im_costs' where object_type = 'im_expense_bundle';
 
 
 
-create table im_expense_invoices (
-	invoice_id		 integer
-				constraint im_expense_invoice_id_pk
+create table im_expense_bundles (
+	bundle_id		integer
+				constraint im_expense_bundle_id_pk
 				primary key
-				constraint im_expense_invoice_id_fk
+				constraint im_expense_bundle_id_fk
 				references im_costs
 );
 
 
--- Delete a single expense_invoice by ID
-create or replace function im_expense_invoice__delete (integer)
+-- Delete a single expense_bundle by ID
+create or replace function im_expense_bundle__delete (integer)
 returns integer as '
 DECLARE
-	p_invoice_id		alias for $1;
+	p_bundle_id		alias for $1;
 begin
-	-- Erase the im_expense_invoices entry
-	delete from im_expense_invoices
-	where invoice_id = p_invoice_id;
+	-- Erase the im_expense_bundles entry
+	delete from im_expense_bundles
+	where bundle_id = p_bundle_id;
 
 	-- Erase the object
-	PERFORM im_cost__delete(p_invoice_id);
+	PERFORM im_cost__delete(p_bundle_id);
 	return 0;
 end' language 'plpgsql';
 
 
-create or replace function im_expense_invoice__name (integer)
+create or replace function im_expense_bundle__name (integer)
 returns varchar as '
 DECLARE
 	p_expenses_id		alias for $1;
@@ -271,10 +271,10 @@ begin
 end;' language 'plpgsql';
 
 -- No create script yet - Just create a cost itema and add an 
--- entry into im_expense_invoices. No idea yet what additional
+-- entry into im_expense_bundles. No idea yet what additional
 -- fields we'll need soon...
 --
--- create or replace function im_expense_invoice__new (
+-- create or replace function im_expense_bundle__new (
 
 
 -------------------------------------------------------------
@@ -283,8 +283,8 @@ end;' language 'plpgsql';
 select acs_privilege__create_privilege('add_expenses','Add Expenses','Add Expenses');
 select acs_privilege__add_child('admin', 'add_expenses');
 
-select acs_privilege__create_privilege('add_expense_invoice','Add Expense Invoice','Add Expense Invoice');
-select acs_privilege__add_child('admin', 'add_expense_invoice');
+select acs_privilege__create_privilege('add_expense_bundle','Add Expense Bundle','Add Expense Bundle');
+select acs_privilege__add_child('admin', 'add_expense_bundle');
 
 select acs_privilege__create_privilege('view_expenses','View Expenses','View Expenses');
 select acs_privilege__add_child('admin', 'view_expenses');
@@ -298,11 +298,12 @@ select im_priv_create('add_expenses','Project Managers');
 select im_priv_create('add_expenses','Senior Managers');
 select im_priv_create('add_expenses','Sales');
 select im_priv_create('add_expenses','Accounting');
+select im_priv_create('add_expenses','Employees');
 
-select im_priv_create('add_expense_invoice','Project Managers');
-select im_priv_create('add_expense_invoice','Senior Managers');
-select im_priv_create('add_expense_invoice','Sales');
-select im_priv_create('add_expense_invoice','Accounting');
+select im_priv_create('add_expense_bundle','Project Managers');
+select im_priv_create('add_expense_bundle','Senior Managers');
+select im_priv_create('add_expense_bundle','Sales');
+select im_priv_create('add_expense_bundle','Accounting');
 
 select im_priv_create('view_expenses','Project Managers');
 select im_priv_create('view_expenses','Senior Managers');
@@ -425,9 +426,87 @@ drop function inline_0 ();
 
 
 
-
 -------------------------------------------------------------
--- Import common functionality
+-- Setup the status and type im_categories
 
-\i ../common/intranet-expenses-common.sql
+-- 4000-4099	Intranet Expense Type
+-- 4100-4199	Intranet Expense Payment Type
+-- 4200-4599    (reserved)
+
+-- prompt *** intranet-expenses: Creating URLs for viewing/editing expenses
+delete from im_biz_object_urls where object_type='im_expense';
+insert into im_biz_object_urls (
+	object_type, 
+	url_type, 
+	url
+) values (
+	'im_expense',
+	'view',
+	'/intranet-expenses/new?form_mode=display\&expense_id='
+);
+
+insert into im_biz_object_urls (
+	object_type, 
+	url_type, 
+	url
+) values (
+	'im_expense',
+	'edit',
+	'/intranet-expenses/new?form_mode=edit\&expense_id='
+);
+
+
+-- delete from im_categories where category_id in (3720, 3722);
+--
+-- INSERT INTO im_categories (category_id, category, category_type)
+-- VALUES (3720,'Expense Item','Intranet Cost Type');
+--
+-- INSERT INTO im_categories (category_id, category, category_type)
+-- VALUES (3722,'Expense Report','Intranet Cost Type');
+
+
+
+-- Intranet Expense Type
+-- delete from im_categories where category_id >= 4000 and category_id < 4100;
+
+SELECT im_category_new(4000,'Meals','Intranet Expense Type');
+SELECT im_category_new(4001,'Fuel','Intranet Expense Type');
+SELECT im_category_new(4002,'Tolls','Intranet Expense Type');
+SELECT im_category_new(4003,'Km own car','Intranet Expense Type');
+SELECT im_category_new(4004,'Parking','Intranet Expense Type');
+SELECT im_category_new(4005,'Taxi','Intranet Expense Type');
+SELECT im_category_new(4006,'Hotel','Intranet Expense Type');
+SELECT im_category_new(4007,'Airfare','Intranet Expense Type');
+SELECT im_category_new(4008,'Train','Intranet Expense Type');
+SELECT im_category_new(4009,'Copies','Intranet Expense Type');
+SELECT im_category_new(4010,'Office Material','Intranet Expense Type');
+SELECT im_category_new(4011,'Telephone','Intranet Expense Type');
+SELECT im_category_new(4012,'Other','Intranet Expense Type');
+
+-- reserved until 4099
+
+
+-- Intranet Expense Payment Type
+-- delete from im_categories where category_id >= 4100 and category_id < 4200;
+
+SELECT im_category_new(4100, 'Cash','Intranet Expense Payment Type');
+SELECT im_category_new(4105, 'Company Visa 1','Intranet Expense Payment Type');
+SELECT im_category_new(4110, 'Company Visa 2','Intranet Expense Payment Type');
+SELECT im_category_new(4115, 'PayPal tigerpond@tigerpond.com','Intranet Expense Payment Type');
+
+
+create or replace view im_expense_type as
+select
+	category_id as expense_type_id,
+	category as expense_type
+from 	im_categories
+where	category_type = 'Intranet Expense Type';
+
+create or replace view im_expense_payment_type as
+select	category_id as expense_payment_type_id, 
+	category as expense_payment_type
+from 	im_categories
+where 	category_type = 'Intranet Expense Payment Type';
+
+
 

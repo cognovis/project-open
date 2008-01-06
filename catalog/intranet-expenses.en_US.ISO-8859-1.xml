@@ -12,7 +12,7 @@
   <msg key="Delete">Delete</msg>
   <msg key="Delete_Expenses">Borrar Gastos</msg>
   <msg key="Expense_Date">Expense Date</msg>
-  <msg key="Expense_Invoices">Expense Invoices</msg>
+  <msg key="Expense_Bundles">Expense Bundles</msg>
   <msg key="Expense_Payment_Type">Payment</msg>
   <msg key="Expense_Type">Expense Type</msg>
   <msg key="Expenses">Expenses</msg>

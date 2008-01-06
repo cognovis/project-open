@@ -49,76 +49,36 @@ insert into im_biz_object_urls (
 -- VALUES (3722,'Expense Report','Intranet Cost Type');
 
 
--- prompt *** intranet-expenses: Creating Expense categories
+
 -- Intranet Expense Type
-delete from im_categories where category_id >= 4000 and category_id < 4100;
+-- delete from im_categories where category_id >= 4000 and category_id < 4100;
 
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4000,'Meals','Intranet Expense Type');
+SELECT im_category_new(4000,'Meals','Intranet Expense Type');
+SELECT im_category_new(4001,'Fuel','Intranet Expense Type');
+SELECT im_category_new(4002,'Tolls','Intranet Expense Type');
+SELECT im_category_new(4003,'Km own car','Intranet Expense Type');
+SELECT im_category_new(4004,'Parking','Intranet Expense Type');
+SELECT im_category_new(4005,'Taxi','Intranet Expense Type');
+SELECT im_category_new(4006,'Hotel','Intranet Expense Type');
+SELECT im_category_new(4007,'Airfare','Intranet Expense Type');
+SELECT im_category_new(4008,'Train','Intranet Expense Type');
+SELECT im_category_new(4009,'Copies','Intranet Expense Type');
+SELECT im_category_new(4010,'Office Material','Intranet Expense Type');
+SELECT im_category_new(4011,'Telephone','Intranet Expense Type');
+SELECT im_category_new(4012,'Other','Intranet Expense Type');
 
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4001,'Fuel','Intranet Expense Type');
-
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4002,'Tolls','Intranet Expense Type');
-
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4003,'Km own car','Intranet Expense Type');
-
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4004,'Parking','Intranet Expense Type');
-
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4005,'Taxi','Intranet Expense Type');
-
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4006,'Hotel','Intranet Expense Type');
-
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4007,'Airfare','Intranet Expense Type');
-
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4008,'Train','Intranet Expense Type');
-
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4009,'Copies','Intranet Expense Type');
-
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4010,'Office Material','Intranet Expense Type');
-
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4011,'Telephone','Intranet Expense Type');
-
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4012,'Other','Intranet Expense Type');
-
-
-
--- commit;
 -- reserved until 4099
 
 
 -- Intranet Expense Payment Type
-delete from im_categories where category_id >= 4100 and category_id < 4200;
+-- delete from im_categories where category_id >= 4100 and category_id < 4200;
 
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4100,'Cash','Intranet Expense Payment Type');
-
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4105,'Company Visa 1','Intranet Expense Payment Type');
-
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4110,'Company Visa 2','Intranet Expense Payment Type');
-
-INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-VALUES (4115,'PayPal tigerpond@tigerpond.com','Intranet Expense Payment Type');
+SELECT im_category_new(4100, 'Cash','Intranet Expense Payment Type');
+SELECT im_category_new(4105, 'Company Visa 1','Intranet Expense Payment Type');
+SELECT im_category_new(4110, 'Company Visa 2','Intranet Expense Payment Type');
+SELECT im_category_new(4115, 'PayPal tigerpond@tigerpond.com','Intranet Expense Payment Type');
 
 
--- commit;
--- reserved until 4199
-
-
--- prompt *** intranet-expenses: Creating status and type views
 create or replace view im_expense_type as
 select
 	category_id as expense_type_id,
