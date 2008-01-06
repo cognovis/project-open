@@ -114,7 +114,7 @@ set cost_name "$cost_name - $project_nr"
 set customer_id "[im_company_internal]"
 set provider_id $current_user_id
 set cost_status_id [im_cost_status_created]
-set cost_type_id [im_cost_type_expense_report]
+set cost_type_id [im_cost_type_expense_bundle]
 set template_id ""
 set payment_days "30"
 set tax "0"

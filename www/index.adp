@@ -80,7 +80,7 @@
          <listtemplate name="@list_id@"></listtemplate>
       <%= [im_box_footer] %>
 
-      <%= [im_box_header [_ intranet-expenses.Expense_Invoices]] %>
+      <%= [im_box_header [lang::message::lookup "" intranet-expenses.Expense_Bundles "Expense Bundles"]] %>
          <listtemplate name="@list2_id@"></listtemplate>
       <%= [im_box_footer] %>
    </div>

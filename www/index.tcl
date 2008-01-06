@@ -273,23 +273,25 @@ db_multirow -extend {expense_chk project_url expense_new_url provider_url} expen
 #	and c.effective_date < to_date(:end_date, 'YYYY-MM-DD')
 
 # ----------------------------------------------
-# invoices part
+# bundles part
 # ----------------------------------------------
 
-set list2_id "invoices_list"
+set list2_id "bundles_list"
 
 set delete_invoice_p [im_permission $user_id "add_expense_invoice"]
 set bulk2_action_list [list]
-if {$delete_invoice_p} {
-    lappend bulk2_action_list "[_ intranet-expenses.Delete]" "invoice-del" "[_ intranet-expenses.Remove_checked_items]"
-}
+
+# Unconditionally allow to "Delete".
+# Security is handled on a per expense_bundle level
+lappend bulk2_action_list "[_ intranet-expenses.Delete]" "invoice-del" "[_ intranet-expenses.Remove_checked_items]"
+if {$delete_invoice_p} { }
 
 template::list::create \
     -name $list2_id \
     -multirow invoice_lines \
     -key cost_id \
     -has_checkboxes \
-    -bulk_actions  $bulk2_action_list \
+    -bulk_actions $bulk2_action_list \
     -bulk_action_export_vars { project_id } \
     -row_pretty_plural "[_ intranet-expenses.Invoice_Items]" \
     -elements {
@@ -309,8 +311,15 @@ template::list::create \
 	    label "[lang::message::lookup {} intranet-expenses.Project Project]"
 	    link_url_eval $project_url
 	}
+	cost_status {
+	    label "[lang::message::lookup {} intranet-expenses.Status Status]"
+	}
+	owner_name {
+	    label "[lang::message::lookup {} intranet-expenses.Owner Owner]"
+	    link_url_eval $owner_url
+	}
 	invoice_chk {
-	    label "<input type=\"checkbox\" name=\"_dummy\" onclick=\"acs_ListCheckAll('invoices_list', this.checked)\" title=\"Check/uncheck all rows\">"
+	    label "<input type=\"checkbox\" name=\"_dummy\" onclick=\"acs_ListCheckAll('bundles_list', this.checked)\" title=\"Check/uncheck all rows\">"
 	    display_template {
 		@invoice_lines.invoice_chk;noquote@
 	    }
@@ -318,25 +327,34 @@ template::list::create \
     }
 
 
-
-db_multirow -extend {invoice_chk project_url} invoice_lines "get invoices" "
+db_multirow -extend {invoice_chk project_url owner_url} invoice_lines invoice_lines "
 	select	c.*,
 		to_char(c.effective_date,'DD/MM/YYYY') as effective_date,
-		acs_object__name(c.project_id) as project_name
+		acs_object__name(c.project_id) as project_name,
+		im_category_from_id(c.cost_status_id) as cost_status,
+		o.creation_user as owner_id,
+		im_name_from_user_id(o.creation_user) as owner_name
 	from 
-		im_costs c
+		im_costs c,
+		acs_objects o
 	where
-		c.cost_type_id = [im_cost_type_expense_report]
+		c.cost_id = o.object_id
+		and c.cost_type_id = [im_cost_type_expense_bundle]
 		$project_where
 " {
-
     set amount "[format %.2f [expr $amount * [expr 1 + [expr $vat / 100]]]] $currency"
     set vat "[format %.1f $vat] %"
-    set invoice_chk "<input type=\"checkbox\" 
+    if {$delete_invoice_p || $owner_id == $current_user_id} {
+        set invoice_chk "<input type=\"checkbox\" 
 				name=\"invoice_id\" 
 				value=\"$cost_id\" 
-				id=\"invoices_list,$cost_id\">"
+				id=\"bundles_list,$cost_id\">"
+    } else {
+	set invoice_chk ""
+    }
+
     set project_url [export_vars -base "/intranet/projects/view" {{project_id $project_id} return_url}]
+    set owner_url [export_vars -base "/intranet/users/view" {{user_id $owner_id} return_url}]
 }
 
 
@@ -358,10 +376,4 @@ set sub_navbar [im_sub_navbar \
 if {0 == $org_project_id | "" == $org_project_id} {
     set project_menu ""
 }
-
-
-
-
-
-
 
