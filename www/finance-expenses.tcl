@@ -187,13 +187,13 @@ set inner_sql "
 			from	im_costs c
 			where	c.cost_type_id in (
 					[im_cost_type_expense_item],
-					[im_cost_type_expense_report]
+					[im_cost_type_expense_bundle]
 				)
 		) r on (c.cost_id = r.cost_id)
 	where
 	        c.cost_type_id in (
 			[im_cost_type_expense_item],
-			[im_cost_type_expense_report]
+			[im_cost_type_expense_bundle]
 		)
 	        and c.effective_date >= to_date(:start_date, 'YYYY-MM-DD')
 	        and c.effective_date < to_date(:end_date, 'YYYY-MM-DD')
