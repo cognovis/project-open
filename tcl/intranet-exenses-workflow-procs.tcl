@@ -69,7 +69,7 @@ ad_proc -public im_expenses_workflow_spawn_workflow {
 	ns_log Notice "spawn_update_workflow: case_id = $case_id"
 
 	# Determine the first task in the case to be executed and start+finisch the task.
-	im_workflow_skip_first_transition -case_id $case_id
+	iim_workflow_skip_first_transition -case_id $case_id
 
 	# Set the default value for "sign_off_ok" to "t"
 	set attrib "approve_approve_this_expense_bundle_p"
