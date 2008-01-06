@@ -827,7 +827,7 @@ ad_proc -public im_workflow_skip_first_transition {
 		select	task_id
 		from	wf_tasks
 		where	case_id = :case_id
-			and state = 'enabled'	
+			and state = 'enabled'
     "]
 
     foreach task_id $enabled_tasks {
