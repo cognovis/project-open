@@ -45,6 +45,9 @@ set date_format [im_l10n_sql_date_format]
 set percent_format "FM999"
 set action_url "/intranet-expenses/new"
 
+# Should we calculate VAT automatically from the expense type?
+set auto_vat_p [ad_parameter -package_id [im_package_expenses_id] "CalculateVATPerExpenseTypeP" "" 1]
+
 
 # ------------------------------------------------------------------
 # Form Options
@@ -167,7 +170,15 @@ ad_form \
 	    {label "[_ intranet-expenses.Currency]"}
 	    {options $currency_options} 
 	}
+    }
+
+if {!$auto_vat_p} {
+    ad_form -extend -name $form_id -form {
 	{vat:text(text) {label "[_ intranet-expenses.Vat_Included]"} {html {size 6}}}
+    }
+}
+
+ad_form -extend -name $form_id -form {
 	{expense_date:text(text) {label "[_ intranet-expenses.Expense_Date]"} {html {size 10}}}
 	{external_company_name:text(text) {label "[_ intranet-expenses.External_company_name]"} {html {size 40}}}
 	{external_company_vat_number:text(text),optional {label "[lang::message::lookup {} intranet-expenses.External_Company_VatNr {External Company Vat Nr.}]"} {html {size 20}}}
@@ -230,9 +241,12 @@ ad_form -extend -name $form_id -on_request {
 	    [lang::message::lookup "" \
 	     intranet-expenses.Expense_type_is_required \
 	     "You have to selectect an expense type"]
-  
     }
 
+    if {$auto_vat_p} {
+	set vat [db_string vat "select aux_int1 from im_categories where category_id = :expense_type_id" -default ""]
+	if {"" == $vat} { set vat 0.0 }
+    }
 
     set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
     set expense_name $expense_id
@@ -259,6 +273,12 @@ ad_form -extend -name $form_id -on_request {
     if {"" != $expense_bundle_id} {
 	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Cant_change_invoiced_item "You can't change an already invoiced expense"]
     }
+
+    if {$auto_vat_p} {
+	set vat [db_string vat "select aux_int1 from im_categories where category_id = :expense_type_id" -default ""]
+	if {"" == $vat} { set vat 0.0 }
+    }
+
     set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
     set expense_name $expense_id
 
