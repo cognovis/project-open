@@ -106,24 +106,17 @@ end;' language 'plpgsql';
 create or replace function im_workflow__assign_to_owner (integer,text)
 returns integer as '
 declare
-	p_task_id		alias for $1;
-	p_custom_arg		alias for $2;
-
-	v_case_id		integer;
-	v_object_id		integer;
-	v_creation_user		integer;
-	v_creation_ip		varchar;
-	v_journal_id		integer;
-	v_object_type		varchar;
-
-	v_owner_id		integer;
-	v_owner_name		varchar;
-	v_str			text;
-	row			RECORD;
+	p_task_id		alias for $1;	p_custom_arg		alias for $2;
+	v_case_id		integer;	v_object_id		integer;
+	v_creation_user		integer;	v_creation_ip		varchar;
+	v_journal_id		integer;	v_object_type		varchar;
+	v_transition_key	varchar;
+	v_owner_id		integer;	v_owner_name		varchar;
+	v_str			text;		row			RECORD;
 begin
 	-- Get information about the transition and the "environment"
-	select	t.case_id, c.object_id, o.creation_user, o.creation_ip, o.object_type
-	into	v_case_id, v_object_id, v_creation_user, v_creation_ip, v_object_type
+	select	t.case_id, c.object_id, o.creation_user, o.creation_ip, o.object_type, tr.transition_key
+	into	v_case_id, v_object_id, v_creation_user, v_creation_ip, v_object_type, v_transition_key
 	from	wf_tasks t, wf_cases c, wf_transitions tr, acs_objects o
 	where	t.task_id = p_task_id
 		and t.case_id = c.case_id
@@ -145,7 +138,7 @@ begin
 		);
 		PERFORM workflow_case__add_task_assignment(p_task_id, v_owner_id, ''f'');
 		PERFORM workflow_case__notify_assignee (p_task_id, v_owner_id, null, null, 
-			''wf_'' || v_object_type || || ''_assignment_notif'');
+			''wf_'' || v_object_type || ''_assignment_notif'');
 	END IF;
 	return 0;
 end;' language 'plpgsql';
