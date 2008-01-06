@@ -56,7 +56,7 @@ set delete_expense_p 1
 if {$delete_expense_p} {
     lappend bulk_actions_list "[_ intranet-timesheet2-workflow.Delete]" "confs-del" "[_ intranet-timesheet2-workflow.Remove_checked_items]"
 }
-#[im_permission $user_id "add_expense_invoice"]
+#[im_permission $user_id "add_expense_bundle"]
 set create_invoice_p 1
 if {$create_invoice_p} {
 }
