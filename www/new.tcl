@@ -186,14 +186,17 @@ db_multirow -extend {conf_chk return_url period} multirow multirow "
 		to_char(h.day, 'YYYY-MM-DD') as date_pretty
 	from
 		im_hours h,
+		im_projects p,
 		im_timesheet_conf_objects co,
-		im_projects p
+		im_projects main_p
 	where	
-		h.project_id = co.conf_project_id
+		h.project_id = p.project_id
+		and tree_root_key(p.tree_sortkey) = main_p.tree_sortkey
+		and main_p.project_id = co.conf_project_id
 		and h.user_id = co.conf_user_id
 		and h.day >= co.start_date
 		and h.day <= co.end_date
-		and h.project_id = p.project_id
+		and co.conf_id = :conf_id
 	order by
 		h.day,
 		lower(p.project_name)
