@@ -596,9 +596,12 @@ ad_proc -public im_workflow_home_inbox_component {
     @param show_relationships Determines which relationships to show.
            Showing more general relationship implies showing more
 	   specific ones:<ul>
-	   <li>holding_user:	User has started the task. Nobody else
-	   			can execute the task, unless an admin
-				"steals" the task.
+	   <li>holding_user:	The current iser has started the WF task. 
+				Nobody else can execute the task, unless an 
+				admin "steals" the task.
+	   <li>my_object:	The current user initially created the 
+				underlying object. So he can follow-up on
+				the status of his expenses, vacations etc.
 	   <li>specific_assignment: User has specifically been assigned
 				to be the one to execute the task
 	   <li>assignment_group:User belongs to the group of users 
@@ -629,13 +632,14 @@ ad_proc -public im_workflow_home_inbox_component {
 
     # Set relationships based on a single variable
     case $relationship {
-	holding_user { set relationships {holding_user}}
-	specific_assignment { set relationships {holding_user specific_assigment}}
-	assignment_group { set relationships {holding_user specific_assigment assignment_group}}
-	object_owner { set relationships {holding_user specific_assigment assignment_group object_owner}}
-	object_write { set relationships {holding_user specific_assigment assignment_group object_owner object_write}}
-	object_read { set relationships {holding_user specific_assigment assignment_group object_owner object_write object_read}}
-	none { set relationships {holding_user specific_assigment assignment_group object_owner object_write object_read none}}
+	holding_user { set relationships {my_object holding_user}}
+	my_object { set relationships {my_object holding_user}}
+	specific_assignment { set relationships {my_object holding_user specific_assigment}}
+	assignment_group { set relationships {my_object holding_user specific_assigment assignment_group}}
+	object_owner { set relationships {my_object holding_user specific_assigment assignment_group object_owner}}
+	object_write { set relationships {my_object holding_user specific_assigment assignment_group object_owner object_write}}
+	object_read { set relationships {my_object holding_user specific_assigment assignment_group object_owner object_write object_read}}
+	none { set relationships {my_object holding_user specific_assigment assignment_group object_owner object_write object_read none}}
     }
 
     # ---------------------------------------------------------------
@@ -736,7 +740,11 @@ ad_proc -public im_workflow_home_inbox_component {
     	if {[info exists assignment_hash($object_id)]} { set assigned_users $assignment_hash($object_id) }
 
 	# Determine the type of relationship to the object - why is the task listed here?
+	# The problem: There may be more then one relationship, so we need to pull out the
+	# most relevant one. Maybe reorganize the code later to enable all rels as a bitmap
+	# and the all of the rels in the inbox...
 	set rel "none"
+	if {$current_user_id == $owner_id} { set rel "my_object" }
 	foreach assigned_user_id $assigned_users {
 	    if {$current_user_id == $assigned_user_id && $rel != "holding_user"} { 
 		set rel "assignment_group" 
