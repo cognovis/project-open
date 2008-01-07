@@ -24,35 +24,63 @@ set cases_table [db_string cases_table { select table_name from acs_object_types
 # At least, let us not prevent the guy from trying to delete the process again.
 
 
-# Delete workflow cases
-db_dml del_objes "delete from acs_objects where object_type = :workflow_key"
+db_transaction {
 
-# Reset the context ID from objects in the context of the WF (which one? Cases?)
-db_dml reset_context "
+    db_dml del_index "
+    	   delete from acs_object_context_index 
+    	   where 
+	   	 object_id in (
+	   	 	select object_id 
+		 	from acs_objects 
+		 	where object_type = :workflow_key
+	    	 ) OR
+	   	 ancestor_id in (
+	   	 	select object_id 
+		 	from acs_objects 
+		 	where object_type = :workflow_key
+	    	 )
+    "
+
+    db_dml context "
+	update acs_objects
+	set context_id = null
+	where context_id in (
+		select object_id 
+		from acs_objects 
+		where object_type = :workflow_key
+	)
+    "
+
+    # Delete workflow cases
+    db_dml del_objes "delete from acs_objects where object_type = :workflow_key"
+
+    # Reset the context ID from objects in the context of the WF (which one? Cases?)
+    db_dml reset_context "
        update acs_objects set context_id = null 
        where context_id in (
        	     select object_id 
 	     from acs_objects 
 	     where object_type = :workflow_key
        )
-"
+   "
 
-if { [db_table_exists $cases_table] } {
-   db_exec_plsql delete_cases {
+    if { [db_table_exists $cases_table] } {
+	db_exec_plsql delete_cases {
 	begin 
 	    workflow.delete_cases(workflow_key => :workflow_key);
 	end;
-    }
+	}
     
-    db_dml drop_cases_table "
+	db_dml drop_cases_table "
 	drop table $cases_table
-    "   
-}
+        "   
+    }
 
-db_exec_plsql delete_workflow {
-    begin
+    db_exec_plsql delete_workflow {
+	begin
         workflow.drop_workflow(workflow_key => :workflow_key);
-    end;
+	end;
+    }
 }
 
 ad_returnredirect ""
