@@ -1573,15 +1573,17 @@ declare
 	v_subject                               text; 
 	v_body                                  text; 
 	v_request_id                            integer; 
-	v_workflow_url			  text;
-	v_acs_lang_package_id			  integer;
+	v_workflow_url				text;
+	v_acs_lang_package_id			integer;
 
-	v_notification_type			  varchar;
-	v_notification_type_id		  integer;
-	v_workflow_package_id			  integer;
-	v_notification_n_seconds		  integer;
-	v_locale				  text;
-	v_count				  integer;
+	v_custom_arg				varchar;
+	v_notification_type			varchar;
+	v_notification_type_id			integer;
+	v_workflow_package_id			integer;
+	v_notification_n_seconds		integer;
+	v_locale				text;
+	v_count					integer;
+	v_str					varchar;
 begin
 		-- Default notification type
 		v_notification_type := notify_assignee__notification_type;
@@ -1687,11 +1689,14 @@ begin
 
 	RAISE NOTICE ''workflow_case__notify_assignee: Subject=%, Body=%'', v_subject, v_body;
 
+	v_custom_arg := notify_assignee__custom_arg;
+	IF v_custom_arg is null THEN v_custom_arg := ''null''; END IF;
+
 	if notify_assignee__callback != '''' and notify_assignee__callback is not null then
+
 		v_str :=  ''select '' || notify_assignee__callback || '' ('' ||
 		      notify_assignee__task_id || '','' ||
-		      coalesce(quote_literal(notify_assignee__custom_arg),''null'') ||
-		      '','' ||
+		      quote_literal(v_custom_arg) || '','' ||
 		      notify_assignee__user_id || '','' ||
 		      v_party_from || '','' ||
 		      quote_literal(v_subject) || '','' ||
@@ -2120,9 +2125,10 @@ begin
 	select task_id into v_task_id
 	from wf_tasks
 	where case_id = get_task_id__case_id and
-	  transition_key = get_task_id__transition_key;
+	      transition_key = get_task_id__transition_key;
 
-	if not found then
-	  raise error ''Case % has no transition with key %'', get_task_id__case_id, get_task_id__transition_key;
-
-return v_task_id;end;' language 'plpgsql';
+	IF not found THEN
+	   raise EXCEPTION ''Case % has no transition with key %'', get_task_id__case_id, get_task_id__transition_key;
+	END IF;
+	return v_task_id;
+end;' language 'plpgsql';
