@@ -1,9 +1,6 @@
 -- /packages/intranet-expenses/sql/postgresql/intranet-expenses-create.sql
 --
--- Project/Open Expenses Core
--- 060419 avila@digiteix.com 
---
--- Copyright (C) 2004 Project/Open
+-- Copyright (c) 2004-2008 ]project-open[
 --
 -- All rights including reserved. To inquire license terms please 
 -- refer to http://www.project-open.com/modules/<module-key>
@@ -39,12 +36,18 @@ end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
-
 update acs_object_types set
         status_type_table = 'im_costs',
         status_column = 'cost_status_id',
         type_column = 'cost_type_id'
 where object_type = 'im_expense';
+
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_expense','view','/intranet-expenses/new?display_mode=display&expense_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_expense','edit','/intranet-expenses/new?expense_id=');
+
+
 
 -- prompt *** intranet-expenses: Creating im_expenses
 create table im_expenses (
@@ -229,6 +232,11 @@ SELECT acs_object_type__create_type (
 update acs_object_types set status_column = 'cost_status_id' where object_type = 'im_expense_bundle';
 update acs_object_types set type_column = 'cost_type_id' where object_type = 'im_expense_bundle';
 update acs_object_types set status_type_table = 'im_costs' where object_type = 'im_expense_bundle';
+
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_expense_bundle','view','/intranet-expenses/bundle-new?display_mode=display&bundle_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_expense_bundle','edit','/intranet-expenses/bundle-new?bundle_id=');
 
 
 
