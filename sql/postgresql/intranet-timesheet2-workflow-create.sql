@@ -184,6 +184,11 @@ returns integer as '
 DECLARE
 	p_conf_id	alias for $1;
 BEGIN
+	-- remove pointers to this object from im_hours
+	update	im_hours
+	set	conf_object_id = null
+	where	conf_object_id = p_conf_id;
+
 	-- Delete any data related to the object
 	delete	from im_timesheet_conf_objects
 	where	conf_id = p_conf_id;
