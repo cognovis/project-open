@@ -12,6 +12,10 @@
 -- ------------------------------------------------------------------
 
 
+-- ------------------------------------------------------
+-- Callback functions for Workflow
+-- ------------------------------------------------------
+
 -- Enable callback that skips (fires) the transition if the underlying WF object 
 -- has the specified status.
 -- This callback is used for example to bypass a workflow if the object is already

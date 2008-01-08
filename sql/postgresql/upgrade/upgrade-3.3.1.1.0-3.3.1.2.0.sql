@@ -1,8 +1,6 @@
 -- upgrade-3.3.1.1..0-3.3.1.2.0.sql
 
 
-
-
 -- Home Inbox Component
 SELECT  im_component_plugin__new (
 	null,					-- plugin_id
@@ -19,9 +17,6 @@ SELECT  im_component_plugin__new (
 	150,					-- sort_order
 	'im_workflow_home_inbox_component'	-- component_tcl
 );
-
-
-
 
 
 -- Compatibility proc - to maintain API
