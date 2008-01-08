@@ -7,6 +7,15 @@
 --
 -- @author frank.bergmann@project-open.com
 
+
+-----------------------------------------------------------
+-- Add confirmation object to hours to keep status
+--
+alter table im_hours 
+add conf_object_id integer references im_timesheet_conf_objects;
+
+
+
 -----------------------------------------------------------
 -- Workflow Confirmation Object
 --
