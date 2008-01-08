@@ -8,6 +8,13 @@ update acs_object_types set type_column = 'cost_type_id' where object_type = 'im
 update acs_object_types set status_type_table = 'im_costs' where object_type = 'im_expense';
 
 
+-------------------------------------------------------------
+
+alter table im_expenses add bundle_id integer references im_costs;
+update im_expenses set bundle_id = invoice_id;
+alter table im_expenses drop column invoice_id;
+
+
 
 
 -------------------------------------------------------------

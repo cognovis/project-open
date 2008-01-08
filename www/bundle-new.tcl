@@ -26,7 +26,7 @@ if {![info exists panel_p]} {
     }
 }
 
-set user_id [ad_maybe_redirect_for_registration]
+set current_user_id [ad_maybe_redirect_for_registration]
 set page_title [lang::message::lookup "" intranet-expenses.Expense_Bundle "Expense Bundle"]
 set context_bar [im_context_bar $page_title]
 
@@ -35,7 +35,7 @@ if {![info exists form_mode]} { set form_mode "edit" }
 
 set cost_id $bundle_id
 
-set delete_bundle_p [im_permission $user_id "add_expense_bundle"]
+set delete_bundle_p [im_permission $current_user_id "add_expense_bundle"]
 
 # ---------------------------------------------------------------
 # Options
@@ -107,7 +107,7 @@ ad_form -extend -name $form_id \
 			:bundle_id,
 			'im_conf',
 			now(),
-			:user_id,
+			:current_user_id,
 			'[ad_conn peeraddr]',
 			null,
 			:conf,
