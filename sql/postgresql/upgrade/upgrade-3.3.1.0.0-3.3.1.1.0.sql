@@ -1,6 +1,97 @@
 -- upgrade-3.3.1.0.0-3.3.1.1.0.sql
 
 
+
+
+create or replace function im_component_plugin__new (
+	integer, varchar, timestamptz, integer, varchar, integer, 
+	varchar, varchar, varchar, varchar, varchar, integer, varchar
+) returns integer as '
+declare
+	p_plugin_id	alias for $1;	-- default null
+	p_object_type	alias for $2;	-- default ''acs_object''
+	p_creation_date	alias for $3;	-- default now()
+	p_creation_user	alias for $4;	-- default null
+	p_creation_ip	alias for $5;	-- default null
+	p_context_id	alias for $6;	-- default null
+	p_plugin_name	alias for $7;
+	p_package_name	alias for $8;
+	p_location	alias for $9;
+	p_page_url	alias for $10;
+	p_view_name	alias for $11;
+	p_sort_order	alias for $12;
+	p_component_tcl	alias for $13;
+	v_plugin_id	integer;
+begin
+	v_plugin_id := im_component_plugin__new (
+		p_plugin_id, p_object_type, p_creation_date,
+		p_creation_user, p_creation_ip, p_context_id,
+		p_plugin_name, p_package_name,
+		p_location, p_page_url,
+		p_view_name, p_sort_order,
+		p_component_tcl, null
+	);
+	return v_plugin_id;
+end;' language 'plpgsql';
+
+
+
+
+create or replace function im_component_plugin__new (
+	integer, varchar, timestamptz, integer, varchar, integer, 
+	varchar, varchar, varchar, varchar, varchar, integer, 
+	varchar, varchar
+) returns integer as '
+declare
+	p_plugin_id	alias for $1;	-- default null
+	p_object_type	alias for $2;	-- default ''acs_object''
+	p_creation_date	alias for $3;	-- default now()
+	p_creation_user	alias for $4;	-- default null
+	p_creation_ip	alias for $5;	-- default null
+	p_context_id	alias for $6;	-- default null
+
+	p_plugin_name	alias for $7;
+	p_package_name	alias for $8;
+	p_location	alias for $9;
+	p_page_url	alias for $10;
+	p_view_name	alias for $11;	-- default null
+	p_sort_order	alias for $12;
+	p_component_tcl	alias for $13;
+	p_title_tcl	alias for $14;
+
+	v_plugin_id	im_component_plugins.plugin_id%TYPE;
+	v_count		integer;
+begin
+	select count(*) into v_count
+	from im_component_plugins
+	where plugin_name = p_plugin_name;
+
+	IF v_count > 0 THEN return 0; END IF;
+
+	v_plugin_id := acs_object__new (
+		p_plugin_id,	-- object_id
+		p_object_type,	-- object_type
+		p_creation_date,	-- creation_date
+		p_creation_user,	-- creation_user
+		p_creation_ip,	-- creation_ip
+		p_context_id	-- context_id
+	);
+
+	insert into im_component_plugins (
+		plugin_id, plugin_name, package_name, sort_order, 
+		view_name, page_url, location, 
+		component_tcl, title_tcl
+	) values (
+		v_plugin_id, p_plugin_name, p_package_name, p_sort_order, 
+		p_view_name, p_page_url, p_location, 
+		p_component_tcl, p_title_tcl
+	);
+
+	return v_plugin_id;
+end;' language 'plpgsql';
+
+
+
 -- Fix issue with im_costs__name -> im_cost__name
 
 update acs_object_types set name_method = 'im_cost__name' where object_type = 'im_cost';
@@ -213,6 +304,7 @@ where object_type = 'im_investment';
 
 
 -- ---------------------------------------------------------------
+-- Find out the status and type of business objects in a generic way
 
 CREATE OR REPLACE FUNCTION im_biz_object__get_type_id (integer)
 RETURNS integer AS '
@@ -319,25 +411,44 @@ BEGIN
 END;' language 'plpgsql';
 
 
--- Test the routines
---
--- select 
--- 	project_id, 
--- 	im_category_from_id(im_biz_object__get_type_id(project_id)), 
--- 	im_category_from_id(im_biz_object__get_status_id(project_id)) 
--- from im_projects;
--- 
--- 
--- select 
--- 	object_id, 
--- 	im_category_from_id(im_biz_object__get_type_id(object_id)),
--- 	im_category_from_id(im_biz_object__get_status_id(object_id)) 
--- from	acs_objects
--- where	object_id > 30000;
+
+-----------------------------------------------------------------------
+-- Set the status of Biz Objects in a generic way
 
 
+CREATE OR REPLACE FUNCTION im_biz_object__set_status_id (integer, integer) RETURNS integer AS '
+DECLARE
+	p_object_id		alias for $1;
+	p_status_id		alias for $2;
+	v_object_type		varchar;
+	v_supertype		varchar;	v_table			varchar;
+	v_id_column		varchar;	v_column		varchar;
+	row			RECORD;
+BEGIN
+	-- Get information from SQL metadata system
+	select	ot.object_type, ot.supertype, ot.table_name, ot.id_column, ot.status_column
+	into	v_object_type, v_supertype, v_table, v_id_column, v_column
+	from	acs_objects o, acs_object_types ot
+	where	o.object_id = p_object_id
+		and o.object_type = ot.object_type;
 
+	-- Check if the object has a supertype and update table and id_column if necessary
+	WHILE ''acs_object'' != v_supertype AND ''im_biz_object'' != v_supertype LOOP
+		select	ot.supertype, ot.table_name, ot.id_column
+		into	v_supertype, v_table, v_id_column
+		from	acs_object_types ot
+		where	ot.object_type = v_supertype;
+	END LOOP;
 
+	IF v_table is null OR v_id_column is null OR v_column is null THEN
+		RAISE NOTICE ''im_biz_object__set_status_id: Bad metadata: Null value for %'',v_object_type;
+		return 0;
+	END IF;
+
+	EXECUTE ''update ''||v_table||'' set ''||v_column||''=''||p_status_id||\
+		'' where ''||v_id_column||''=''||p_object_id;
+	return 0;
+END;' language 'plpgsql';
 
 
 
