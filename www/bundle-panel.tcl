@@ -67,11 +67,9 @@ if {[info exists task]} {
     if {[catch {
 	array set task [wf_task_info $task_id]
     } err_msg]} {
-                ad_return_complaint 1 "<li><b>Task \#$task_id nicht gefunden</b>:<p>
-			Dieser Fehler kann auftreten, wenn ein Administrator einen RFC
-			'hart' gel&ouml;scht hat. Im normalen Betrieb sollte das nicht
-			passieren.<p>
-			Bitte kontaktieren Sie Ihren System Administrator.<p>
+                ad_return_complaint 1 "<li><b>Task \#$task_id not found</b>:<p>
+			This error may occur if the underlying object has been deleted.
+			Please check and otherwise contact your System Administrator.
 		"
 		return
     }

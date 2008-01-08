@@ -422,7 +422,7 @@ values
  '',
  '',
  '',
- 'im_workflow__assign_to_object_owner',
+ 'im_workflow__assign_to_owner',
  '');
 
 insert into wf_context_transition_info
