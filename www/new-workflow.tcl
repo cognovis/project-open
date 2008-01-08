@@ -17,7 +17,7 @@ ad_page_contract {
     { return_url "/intranet-timesheet2-workflow/index" }
     { julian_date "" }
     { project_id 0}
-    { workflow_key "timesheet_approval_workflow_wf" }
+    { workflow_key "timesheet_approval_wf" }
     { show_week_p "" }
 }
 
@@ -90,7 +90,7 @@ foreach project_id $project_list {
 	-user_id $wf_user_id \
 	-start_date $start_date \
 	-end_date $end_date \
-	-workflow_key "timesheet_approval_workflow_wf" \
+	-workflow_key "timesheet_approval_wf" \
     ]
     append li_html "<ul>\n$debug_html\n</ul>\n"
 
