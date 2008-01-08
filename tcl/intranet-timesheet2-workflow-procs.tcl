@@ -72,6 +72,30 @@ ad_proc -public im_timesheet_workflow_spawn_update_workflow {
 		  -start_date $start_date \
 		  -end_date $end_date \
             ]
+
+	    # Mark all hours in the included conf_obj as included
+	    db_dml update_hours "
+		update	im_hours hh
+		set	conf_object_id = :conf_object_id
+		from	(
+		    	select	h.*
+			from	im_hours h,
+				im_projects p,
+				im_projects main_p
+			where
+				h.project_id = p.project_id and
+				main_p.project_id = :project_id and
+				p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
+				h.day >= :start_date and
+				h.day <= :end_date and
+				h.user_id = :wf_user_id
+			) h
+		where
+			hh.day = h.day and
+			hh.user_id = h.user_id and
+			hh.project_id = h.project_id
+	    "
+
 	}
 	1 {
 	    set conf_object_id [lindex $conf_object_ids 0]

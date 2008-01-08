@@ -31,7 +31,7 @@ set page_title [lang::message::lookup "" intranet-timesheet2-workflow.Timesheet_
 set context_bar [im_context_bar $page_title]
 
 if {![info exists enable_master_p]} { set enable_master_p 1}
-if {![info exists form_mode]} { set form_mode "edit" }
+if {![info exists form_mode]} { set form_mode "display" }
 
 # ---------------------------------------------------------------
 # Options
@@ -55,6 +55,30 @@ set conf_user_options [db_list_of_lists conf_user_options "
 "]
 
 
+
+# ------------------------------------------------------------------
+# Delete pressed?
+# ------------------------------------------------------------------
+
+set actions [list [list [lang::message::lookup {} intranet-timesheet2.Edit Edit] edit] ]
+
+# You need to be the owner of the conf in order to delete it.
+if {[info exists conf_id]} {
+    set owner_id [db_string owner "select creation_user from acs_objects where object_id = :conf_id" -default 0]
+    if {$user_id == $owner_id} {
+        lappend actions {"Delete" delete}
+    }
+}
+
+set button_pressed [template::form get_action form]
+if {"delete" == $button_pressed} {
+    db_dml del_tokens "delete from wf_tokens where case_id in (select case_id from wf_cases where object_id = :conf_id)"
+    db_dml del_case "delete from wf_cases where object_id = :conf_id"
+    db_string conf_delete "select im_timesheet_conf_object__delete(:conf_id)"
+    ad_returnredirect $return_url
+}
+
+
 # ---------------------------------------------------------------
 # The Form
 # ---------------------------------------------------------------
@@ -64,8 +88,7 @@ ad_form \
     -name $form_id \
     -mode $form_mode \
     -export "object_id return_url" \
-    -actions {} \
-    -has_edit 1 \
+    -actions $actions \
     -action "/intranet-timesheet2-workflow/new" \
     -form {
 	conf_id:key
@@ -150,7 +173,7 @@ template::list::create \
 	    label "[lang::message::lookup {} intranet-timesheet2-workflow.Date Date]"
 	}
 	project_name {
-	    label "[_ intranet-timesheet2-workflow.Project]"
+	    label "[_ intranet-timesheet2.Project]"
 	    link_url_eval {[export_vars -base "/intranet/projects/view" {project_id}]}
 	}
         conf_user_name {
@@ -187,16 +210,11 @@ db_multirow -extend {conf_chk return_url period} multirow multirow "
 	from
 		im_hours h,
 		im_projects p,
-		im_timesheet_conf_objects co,
-		im_projects main_p
-	where	
+		im_timesheet_conf_objects co
+	where
 		h.project_id = p.project_id
-		and tree_root_key(p.tree_sortkey) = main_p.tree_sortkey
-		and main_p.project_id = co.conf_project_id
-		and h.user_id = co.conf_user_id
-		and h.day >= co.start_date
-		and h.day <= co.end_date
 		and co.conf_id = :conf_id
+		and h.conf_object_id = co.conf_id
 	order by
 		h.day,
 		lower(p.project_name)
