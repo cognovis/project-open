@@ -30,7 +30,7 @@ SELECT acs_object_type__create_type (
 	'acs_object',			-- supertype
 	'im_timesheet_conf_objects',	-- table_name
 	'conf_id',			-- id_column
-	'intranet-timesheet-workflow',	-- package_name
+	'intranet-timesheet2-workflow',	-- package_name
 	'f',				-- abstract_p
 	null,				-- type_extension_table
 	'im_timesheet_conf_object__name' -- name_method
@@ -46,9 +46,11 @@ where object_type = 'im_timesheet_conf_object';
 
 
 insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_timesheet_conf_object','view','/intranet-timesheet2-workflow/new?display_mode=display&conf_id=');
+'im_timesheet_conf_object','view',
+'/intranet-timesheet2-workflow/conf-objects/new?display_mode=display&conf_id=');
 insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_timesheet_conf_object','edit','/intranet-timesheet2-workflow/new?display_mode=edit&conf_id=');
+'im_timesheet_conf_object','edit',
+'/intranet-timesheet2-workflow/conf-objects/new?display_mode=edit&conf_id=');
 
 
 
@@ -89,8 +91,8 @@ create table im_timesheet_conf_objects (
 );
 
 
--- avoid duplicate entries
-create unique index im_timesheet_conf_un_idxx on im_timesheet_conf_objects(conf_project_id, conf_user_id, start_date);
+-- Allow duplicate entries - meanwhile
+# create unique index im_timesheet_conf_un_idx on im_timesheet_conf_objects(conf_project_id, conf_user_id, start_date);
 
 
 
@@ -189,6 +191,13 @@ BEGIN
 	set	conf_object_id = null
 	where	conf_object_id = p_conf_id;
 
+	-- Delete workflow tokens for cases around this object
+	delete from wf_tokens 
+	where case_id in (select case_id from wf_cases where object_id = p_conf_id);
+
+	-- Delete workflow cases of this object.
+	delete from wf_cases where object_id = p_conf_id;
+
 	-- Delete any data related to the object
 	delete	from im_timesheet_conf_objects
 	where	conf_id = p_conf_id;
@@ -198,8 +207,6 @@ BEGIN
 
 	return 0;
 end;' language 'plpgsql';
-
-
 
 
 -----------------------------------------------------------
@@ -339,7 +346,7 @@ BEGIN
 		''intranet-timesheet2-workflow'',	-- package_name
 		''timesheet_hours_new_start_workflow'',	-- label
 		''Start Confirmation Workflow'',		-- name
-		''/intranet-timesheet2-workflow/new-workflow?'',	-- url
+		''/intranet-timesheet2-workflow/conf-objects/new-workflow?'',	-- url
 		15,					-- sort_order
 		v_main_menu,				-- parent_menu_id
 		null					-- p_visible_tcl

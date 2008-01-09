@@ -541,7 +541,7 @@ values
  'confirm_hours',
  1,
  'Review Hours',
- '/packages/intranet-timesheet2-workflow/www/conf-obj-panel',
+ '/packages/intranet-timesheet2-workflow/www/conf-objects/conf-obj-panel',
  'f',
  'f',
  'f');
@@ -562,7 +562,7 @@ values
  'enter_hours',
  1,
  'Modify Logged Hours',
- '/packages/intranet-timesheet2-workflow/www/conf-obj-panel',
+ '/packages/intranet-timesheet2-workflow/www/conf-objects/conf-obj-panel',
  'f',
  'f',
  'f');

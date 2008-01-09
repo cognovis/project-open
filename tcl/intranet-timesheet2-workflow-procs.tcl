@@ -63,9 +63,6 @@ ad_proc -public im_timesheet_workflow_spawn_update_workflow {
     # ---------------------------------------------------------------
     # Create a new Timesheet Confirmation Object if not there
 
-    switch [llength $conf_object_ids] {
-	0 {	   
-	    append result_html "<li>No previous confirmation object found - Creating new confirmation object.\n"
 	    set conf_object_id [im_timesheet_conf_object_new \
 		  -project_id $project_id \
 		  -user_id $wf_user_id \
@@ -96,6 +93,11 @@ ad_proc -public im_timesheet_workflow_spawn_update_workflow {
 			hh.project_id = h.project_id
 	    "
 
+
+set ttt {
+    switch [llength $conf_object_ids] {
+	0 {	   
+	    append result_html "<li>No previous confirmation object found - Creating new confirmation object.\n"
 	}
 	1 {
 	    set conf_object_id [lindex $conf_object_ids 0]
@@ -110,6 +112,7 @@ ad_proc -public im_timesheet_workflow_spawn_update_workflow {
 	    ad_script_abort
 	}
     }
+}
 
     # ---------------------------------------------------------------
     # Check if the WF-Key is valid
@@ -143,7 +146,7 @@ ad_proc -public im_timesheet_workflow_spawn_update_workflow {
 		$conf_object_id
         ]
 	ns_log Notice "spawn_update_workflow: case_id = $case_id"
-	append result_html "<li>No workflow found - creating new one #$case_id\n"
+#	append result_html "<li>No workflow found - creating new one #$case_id\n"
 
 	# Skip the first transition of the WF - "Modify"
 	im_workflow_skip_first_transition -case_id $case_id

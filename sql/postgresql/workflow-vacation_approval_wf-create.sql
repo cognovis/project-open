@@ -542,7 +542,7 @@ values
  'enter',
  1,
  'Modify Absence',
- '/packages/intranet-timesheet2-workflow/www/absence-panel',
+ '/packages/intranet-timesheet2-workflow/www/absences/absence-panel',
  'f',
  'f',
  'f');
@@ -563,7 +563,7 @@ values
  'review',
  1,
  'Approve Absence',
- '/packages/intranet-timesheet2-workflow/www/absence-panel',
+ '/packages/intranet-timesheet2-workflow/www/absences/absence-panel',
  'f',
  'f',
  'f');
