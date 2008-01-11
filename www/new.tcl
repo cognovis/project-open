@@ -46,7 +46,7 @@ set percent_format "FM999"
 set action_url "/intranet-expenses/new"
 
 # Should we calculate VAT automatically from the expense type?
-set auto_vat_p [ad_parameter -package_id [im_package_expenses_id] "CalculateVATPerExpenseTypeP" "" 1]
+set auto_vat_p [ad_parameter -package_id [im_package_expenses_id] "CalculateVATPerExpenseTypeP" "" 0]
 
 
 # ------------------------------------------------------------------
