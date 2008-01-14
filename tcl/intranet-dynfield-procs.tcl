@@ -1489,7 +1489,7 @@ ad_proc -public im_dynfield::attribute_store {
 			from	$table_n
 			where	$column_i =:object_id_param
 	    "]} {
-		
+
 		# intranet-dynfield is not a method to create new objects
 		# only is able to insert new rows in extensions tables.
 		# In general, insert a row in a table is not enought 
@@ -1499,10 +1499,11 @@ ad_proc -public im_dynfield::attribute_store {
 		if {$table_n == $main_table_name} {
 		    # We would have to insert a new object - 
 		    # not implmeneted yet
-		    ad_return_error "ERROR - Object does not exists" "
-	            Creating new objects not implmented yet<br>
+		    ad_return_error 1 "
+	            Creating new objects not implmented yet:<br>
 		    Please create the object first via an existing maintenance screen
-		    before using the Intranet-Dynfield generic architecture to modify its fields"
+		    before using the Intranet-Dynfield generic architecture to modify its fields
+		    "
 		    return
 		}
 			
