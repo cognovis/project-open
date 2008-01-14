@@ -234,7 +234,7 @@ update acs_object_types set type_column = 'cost_type_id' where object_type = 'im
 update acs_object_types set status_type_table = 'im_costs' where object_type = 'im_expense_bundle';
 
 insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_expense_bundle','view','/intranet-expenses/bundle-new?display_mode=display&bundle_id=');
+'im_expense_bundle','view','/intranet-expenses/bundle-new?form_mode=display&bundle_id=');
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_expense_bundle','edit','/intranet-expenses/bundle-new?bundle_id=');
 

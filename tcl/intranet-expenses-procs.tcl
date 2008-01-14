@@ -35,7 +35,59 @@ ad_proc -private im_package_expenses_id_helper {} {
 
 
 # ----------------------------------------------------------------------
-# 
+# Workflow Permissions
 # ----------------------------------------------------------------------
 
 
+ad_proc im_expense_bundle_new_page_wf_perm_modify_included_expenses {
+    -bundle_id:required
+} {
+    Should we show the "Modify Included Expenses" link in the
+    ExpenseBundleNewPage?
+    The link is visible only for the Owner of the bundle
+    and the Admin.
+
+    Also, the included expenses can't be change anymore once the 
+    Expense Bundle has been approved.
+} {
+    set current_user_id [ad_get_user_id]
+    set current_user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+    set owner_id [util_memoize "db_string owner \"select creation_user from acs_objects where object_id = $bundle_id\" -default 0"]
+
+    # The standard case: Only the owner should edit his own bundles.
+    set perm_p 0
+    if {$owner_id == $current_user_id} { set perm_p 1 }
+
+    # The owner can edit the bundle only in status requested and rejected
+    set already_approved_p 1
+    set bundle_status_id [db_string start "select cost_status_id from im_costs where cost_id = :bundle_id" -default 0]
+    if {$bundle_status_id == [im_cost_status_requested]} { set already_approved_p 0}
+    if {$bundle_status_id == [im_cost_status_rejected]} { set already_approved_p 0}
+    if {$already_approved_p} { set perm_p 0 }
+
+    # Admins & HR can do everything anytime.
+    if {[im_user_is_hr_p $current_user_id]} { set perm_p 1 }
+    if {$current_user_is_admin_p} { set perm_p 1 }
+
+    return $perm_p
+}
+
+
+
+ad_proc im_expense_bundle_new_page_wf_perm_edit_button {
+    -bundle_id:required
+} {
+    Should we show the "Edit" button in the ExpenseBundleNewPage?
+} {
+    return 0
+}
+
+ad_proc im_expense_bundle_new_page_wf_perm_delete_button {
+    -bundle_id:required
+} {
+    Should we show the "Delete" button in the ExpenseBundleNewPage?
+    Only the owner himself is allowed to delete a bundle, while it
+    is in status "Requrested" or "Rejected".
+} {
+    im_expense_bundle_new_page_wf_perm_modify_included_expenses -bundle_id $bundle_id
+}

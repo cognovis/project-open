@@ -283,7 +283,7 @@ set bulk2_action_list [list]
 
 # Unconditionally allow to "Delete".
 # Security is handled on a per expense_bundle level
-lappend bulk2_action_list "[_ intranet-expenses.Delete]" "bundle-del" "[_ intranet-expenses.Remove_checked_items]"
+# lappend bulk2_action_list "[_ intranet-expenses.Delete]" "bundle-del" "[_ intranet-expenses.Remove_checked_items]"
 if {$delete_bundle_p} { }
 
 template::list::create \
@@ -295,11 +295,9 @@ template::list::create \
     -bulk_action_export_vars { project_id } \
     -row_pretty_plural "[lang::message::lookup "" intranet-expenses.Bundle_Items "Bundle Items"]" \
     -elements {
-	cost_id {
-	    label "[_ intranet-expenses.ID]"
-	}
 	amount {
 	    label "[_ intranet-expenses.Amount]"
+	    link_url_eval $bundle_url
 	}
 	vat {
 	    label "[_ intranet-expenses.Vat_Included]"
@@ -318,16 +316,21 @@ template::list::create \
 	    label "[lang::message::lookup {} intranet-expenses.Owner Owner]"
 	    link_url_eval $owner_url
 	}
+    }
+
+set ttt {
+	cost_id {
+	    label "[_ intranet-expenses.ID]"
+	}
 	bundle_chk {
 	    label "<input type=\"checkbox\" name=\"_dummy\" onclick=\"acs_ListCheckAll('bundles_list', this.checked)\" title=\"Check/uncheck all rows\">"
 	    display_template {
 		@bundle_lines.bundle_chk;noquote@
 	    }
 	}
-    }
+}
 
-
-db_multirow -extend {bundle_chk project_url owner_url} bundle_lines bundle_lines "
+db_multirow -extend {bundle_chk project_url owner_url bundle_url} bundle_lines bundle_lines "
 	select	c.*,
 		to_char(c.effective_date,'DD/MM/YYYY') as effective_date,
 		acs_object__name(c.project_id) as project_name,
@@ -355,6 +358,7 @@ db_multirow -extend {bundle_chk project_url owner_url} bundle_lines bundle_lines
 
     set project_url [export_vars -base "/intranet/projects/view" {{project_id $project_id} return_url}]
     set owner_url [export_vars -base "/intranet/users/view" {{user_id $owner_id} return_url}]
+    set bundle_url [export_vars -base "/intranet-expenses/bundle-new" {{bundle_id $cost_id} {form_mode display} return_url}]
 }
 
 

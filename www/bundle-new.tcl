@@ -20,6 +20,7 @@ if {![info exists panel_p]} {
 	@author all@devcon.project-open.com
     } {
 	bundle_id:integer,optional
+	cost_id:integer,optional
 	{return_url "/intranet-expenses/index"}
 	form_mode:optional
 	enable_master_p:integer,optional
@@ -33,7 +34,8 @@ set context_bar [im_context_bar $page_title]
 if {![info exists enable_master_p]} { set enable_master_p 1}
 if {![info exists form_mode]} { set form_mode "edit" }
 
-set cost_id $bundle_id
+if {[info exists cost_id]} { set bundle_id $cost_id}
+if {[info exists bundle_id]} { set cost_id $bundle_id }
 
 set delete_bundle_p [im_permission $current_user_id "add_expense_bundle"]
 
@@ -50,6 +52,39 @@ set investment_options [im_investment_options]
 set template_options [im_cost_template_options]
 set currency_options [im_currency_options]
 set cost_center_options [im_cost_center_options -include_empty 1 -department_only_p 0]
+
+
+
+# ---------------------------------------------------------------
+# Action Links and their permissions
+# ---------------------------------------------------------------
+
+set actions [list]
+
+if {[info exists bundle_id]} {
+
+    set edit_perm_func [parameter::get_from_package_key -package_key intranet-timesheet2 -parameter ExpenseBundleNewPageWfEditButtonPerm -default "im_expense_bundle_new_page_wf_perm_edit_button"]
+    set delete_perm_func [parameter::get_from_package_key -package_key intranet-timesheet2 -parameter ExpenseBundleNewPageWfDeleteButtonPerm -default "im_expense_bundle_new_page_wf_perm_delete_button"]
+
+    if {[eval [list $edit_perm_func -bundle_id $bundle_id]]} {
+	lappend actions [list [lang::message::lookup {} intranet-timesheet2.Edit Edit] edit]
+    }
+    if {[eval [list $delete_perm_func -bundle_id $bundle_id]]} {
+	lappend actions [list [lang::message::lookup {} intranet-timesheet2.Delete Delete] Delete]
+    }
+}
+
+
+# ------------------------------------------------------------------
+# Delete pressed?
+# ------------------------------------------------------------------
+
+set button_pressed [template::form get_action form]
+if {"delete" == $button_pressed} {
+   ad_return_complaint 1 Del_pressed
+   ad_returnredirect $cancel_url
+}
+
 
 # ---------------------------------------------------------------
 # The Form
@@ -82,9 +117,9 @@ ad_form \
     -name $form_id \
     -mode $form_mode \
     -export "object_id return_url" \
-    -actions {} \
+    -actions $actions \
     -has_edit 1 \
-    -action "/intranet-expenses/new" \
+    -action "/intranet-expenses/bundle-new" \
     -form {
 	cost_id:key
 	{cost_name:text(text) {label $cost_name_label} {html {size 40}}}
@@ -133,18 +168,20 @@ ad_form -extend -name $form_id \
 # Format the link to modify hours
 # ---------------------------------------------------------------
 
+set modify_bundle_link ""
 
 if {[info exists bundle_id]} {
+    
+    set link_perm_func [parameter::get_from_package_key -package_key intranet-expenses -parameter ExpenseBundleNewPageWfModifyIncludedExpensesPerm -default "im_expense_bundle_new_page_wf_perm_modify_included_expenses"]
+
+    if {[eval [list $link_perm_func -bundle_id $bundle_id]]} {
 
        set modify_bundle_msg [lang::message::lookup "" intranet-expenses.Modify_Included_Expenses "Modify Included Expenses"]
        set modify_bundle_url [export_vars -base "/intranet-expenses/index" {project_id}]
        set modify_bundle_link "<a href='$modify_bundle_url'>$modify_bundle_msg</a>"
        set modify_bundle_link "<ul>\n<li>$modify_bundle_link</li>\n</ul><br>\n"
 
-} else {
-
-  set modify_bundle_link ""
-
+   }
 }
 
 
@@ -154,75 +191,75 @@ if {[info exists bundle_id]} {
 
 set included_expenses_msg [lang::message::lookup "" intranet-expenses.Included_Expenses "Included Expenses"]
 
-set export_var_list [list]
-set bulk_actions_list [list]
-set list_id "included_expenses"
+set date_format "YYYY-MM-DD"
+set bulk_action_list [list]
+set list_id "expenses_list"
+set action_list [list]
 
 template::list::create \
     -name $list_id \
-    -multirow multirow \
-    -key bundle_id \
+    -multirow expense_lines \
+    -key expense_id \
     -has_checkboxes \
-    -bulk_actions $bulk_actions_list \
-    -bulk_action_export_vars  {	object_id } \
-    -row_pretty_plural "[_ intranet-expenses.Included_Expenses]" \
+    -actions $action_list \
+    -bulk_actions $bulk_action_list \
+    -bulk_action_export_vars { task_id bundle_id return_url } \
+    -row_pretty_plural "[_ intranet-expenses.Expenses_Items]" \
     -elements {
-	cost_id {
-	    label "[_ intranet-expenses.ID]"
+	effective_date {
+	    label "[_ intranet-expenses.Expense_Date]"
+	    link_url_eval $expense_new_url
+	    display_template { <nobr>@expense_lines.effective_date;noquote@</nobr> }
 	}
 	amount {
 	    label "[_ intranet-expenses.Amount]"
+	    display_template { <nobr>@expense_lines.amount;noquote@</nobr> }
+	    link_url_eval $expense_new_url
 	}
 	vat {
-	    label "[_ intranet-expenses.Vat_Included]"
+	    label "[lang::message::lookup {} intranet-expenses.Vat VAT]"
 	}
-	effective_date {
-	    label "[_ intranet-expenses.Expense_Date]"
+	external_company_name {
+	    label "[_ intranet-expenses.External_company_name]"
 	}
-	project_name {
-	    label "[lang::message::lookup {} intranet-expenses.Project Project]"
-	    link_url_eval $project_url
+	expense_type {
+	    label "[_ intranet-expenses.Expense_Type]"
 	}
-	cost_status {
-	    label "[lang::message::lookup {} intranet-expenses.Status Status]"
-	}
-	owner_name {
-	    label "[lang::message::lookup {} intranet-expenses.Owner Owner]"
-	    link_url_eval $owner_url
+	expense_payment_type {
+	    label "[_ intranet-expenses.Expense_Payment_Type]"
 	}
     }
 
-db_multirow -extend {bundle_chk project_url owner_url} multirow multirow "
-	select	c.*,
-		to_char(c.effective_date,'DD/MM/YYYY') as effective_date,
-		acs_object__name(c.project_id) as project_name,
-		im_category_from_id(c.cost_status_id) as cost_status,
-		o.creation_user as owner_id,
-		im_name_from_user_id(o.creation_user) as owner_name
-	from 
-		im_costs c,
-		acs_objects o
+db_multirow -extend {project_url expense_new_url provider_url} expense_lines expenses_lines "
+	select
+		c.*,
+		e.*,
+		acs_object__name(provider_id) as provider_name,
+		to_char(effective_date, :date_format) as effective_date,
+		im_category_from_id(expense_type_id) as expense_type,
+		im_category_from_id(expense_payment_type_id) as expense_payment_type,
+		p.project_name
+	from
+		im_expenses e,
+		im_costs c
+		LEFT OUTER JOIN im_projects p on (c.project_id = p.project_id)
 	where
-		c.cost_id = o.object_id
-		and c.cost_type_id = [im_cost_type_expense_bundle]
+		e.expense_id = c.cost_id and
+		e.bundle_id = :bundle_id
 	order by
-		cost_id
+		c.effective_date
 " {
-    set return_url [im_url_with_query]
     set amount "[format %.2f [expr $amount * [expr 1 + [expr $vat / 100]]]] $currency"
     set vat "[format %.1f $vat] %"
-    if {$delete_bundle_p || $owner_id == $current_user_id} {
-        set bundle_chk "<input type=\"checkbox\" 
-				name=\"bundle_id\" 
-				value=\"$cost_id\" 
-				id=\"bundles_list,$cost_id\">"
-    } else {
-	set bundle_chk ""
+    set reimbursable "[format %.1f $reimbursable] %"
+    if {![exists_and_not_null bundle_id]} {
+	set expense_chk "<input type=\"checkbox\" 
+				name=\"expense_id\" 
+				value=\"$expense_id\" 
+				id=\"expenses_list,$expense_id\">"
     }
-
+    set expense_new_url [export_vars -base "/intranet-expenses/new" {expense_id return_url}]
+    set provider_url [export_vars -base "/intranet/companies/view" {{company_id $provider_id} return_url}]
     set project_url [export_vars -base "/intranet/projects/view" {{project_id $project_id} return_url}]
-    set owner_url [export_vars -base "/intranet/users/view" {{user_id $owner_id} return_url}]
 }
-
-
 
