@@ -47,6 +47,8 @@ ad_proc -public im_dynfield::type_category_for_object_type {
 	im_freelance_rfq	{ set category_type "Intranet Freelance RFQ Type" }
 	im_freelance_rfq_answer	{ set category_type "Intranet Freelance RFQ Answer Type" }
 	im_user_absence		{ set category_type "Intranet Absence Type" }
+	im_expense		{ set category_type "Intranet Cost Type" }
+	im_expense_bundle	{ set category_type "Intranet Cost Type" }
 	default			{ set category_type "" }
     }
     return $category_type
@@ -66,6 +68,8 @@ ad_proc -public im_dynfield::status_category_for_object_type {
 	im_freelance_rfq	{ set category_status "Intranet Freelance RFQ Status" }
 	im_freelance_rfq_answer	{ set category_status "Intranet Freelance RFQ Answer Status" }
 	im_user_absence		{ set category_status "Intranet Absence Status" }
+	im_expense		{ set category_status "Intranet Cost Status" }
+	im_expense_bundle	{ set category_status "Intranet Cost Status" }
 	default			{ set category_status "" }
     }
     return $category_status
@@ -1505,10 +1509,11 @@ ad_proc -public im_dynfield::attribute_store {
 			
 		set cols_list [list]
 		set values_list [list]
-			
-		# get table columns
+
+		# Get table columns. We can iterate through columns because they
+		# must have the same names as the form variables and be unique.
 		set table_columns [db_columns $table_n]
-			
+
 		foreach c $table_columns {
 
 		    # get attribute value from form
