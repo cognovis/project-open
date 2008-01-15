@@ -34,9 +34,6 @@ ad_proc -private template::element::render_label { form_id element_id tag_attrib
 }
 
 
-
-
-
 ad_proc -public im_dynfield::type_category_for_object_type {
     -object_type:required
 } {
@@ -73,7 +70,6 @@ ad_proc -public im_dynfield::status_category_for_object_type {
     }
     return $category_status
 }
-
 
 
 
@@ -2108,6 +2104,75 @@ ad_proc -public im_dynfield::search_query {
     return [list [list "select" "[join $query_select_list ","]"] [list "from" "[join $query_from_tables ", \n"]"] \
 	 [list "where" "$where_clause"] [list "list_elements" "$elements_list"] [list "list_orderby" "$orderby_list"]]
     
+}
+
+
+
+
+# ------------------------------------------------------------------
+# DynFields per Subtype
+# ------------------------------------------------------------------
+
+ad_proc -public im_dynfield::dynfields_per_object_subtype {
+    -object_type:required
+} {
+    Returns the list of dynfield_attributes for each subtype
+} {
+    return [util_memoize [list im_dynfield::dynfields_per_object_subtype_helper -object_type $object_type]]
+}
+
+ad_proc -public im_dynfield::dynfields_per_object_subtype_helper {
+    -object_type:required
+} {
+    Returns the list of dynfield_attributes that are common to all 
+    object subtypes
+} {
+    set type_category [im_dynfield::type_category_for_object_type -object_type $object_type]
+
+    set mapping_sql "
+	select distinct
+		cat.category_id as type_id,
+		m.attribute_id
+	from	
+		(select	category_id
+		 from	im_categories
+		 where	category_type = :type_category
+		 	and enabled_p = 't'
+		) cat
+		LEFT OUTER JOIN (
+			select	*
+			from	im_dynfield_type_attribute_map
+			where	display_mode in ('edit','display')
+		) m on (cat.category_id = m.object_type_id)
+    "
+    db_foreach dynfield_mapping $mapping_sql {
+        if {0 == $attribute_id} { continue }
+    	set attribs [list]
+	if {[info exists attrib_hash($type_id)]} { set attribs $attrib_hash($type_id) }
+	lappend attribs $attribute_id
+	set attrib_hash($type_id) $attribs
+    }
+    return [array get attrib_hash]
+}
+
+
+ad_proc -public im_dynfield::subtype_have_same_attributes_p {
+    -object_type:required
+} {
+    Returns "1" if all object subtypes have the same list of dynfields.
+    This routine is useful if we want to know if we have to redirect
+    to the big-object-type-select page to select an object's subtype.
+} {
+    array set attrib_hash [im_dynfield::dynfields_per_object_subtype -object_type $object_type]
+    set first_array_name [lindex [array names attrib_hash] 0]
+    set first_array_name_attribs $attrib_hash($first_array_name)
+
+    set same_p 1
+    foreach name [array names attrib_hash] {
+	set attribs $attrib_hash($name)
+	if {$attribs != $first_array_name_attribs} { set same_p 0 }
+    }
+    return $same_p
 }
 
 
