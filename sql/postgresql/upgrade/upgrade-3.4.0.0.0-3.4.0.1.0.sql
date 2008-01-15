@@ -13,6 +13,13 @@ add absence_name varchar(1000);
 
 update im_user_absences set absence_name = substring(description for 990);
 
+
+-- Add a duration field to specify how many days the absence will take.
+alter table im_user_absences
+add duration_days numeric(12,1);
+
+
+
 -----------------------------------------------------------
 
 SELECT acs_object_type__create_type (
