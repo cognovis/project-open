@@ -49,6 +49,20 @@ set action_url "/intranet-expenses/new"
 set auto_vat_p [ad_parameter -package_id [im_package_expenses_id] "CalculateVATPerExpenseTypeP" "" 0]
 
 
+
+
+# Redirect if the type of the object hasn't been defined and
+# if there are DynFields specific for subtypes.
+if {0 == $cost_type_id && ![info exists expense_id]} {
+
+    set all_same_p [im_dynfield::subtype_have_same_attributes_p -object_type "im_expense"]
+    set all_same_p 0
+    if {!$all_same_p} {
+        ad_returnredirect [export_vars -base "/intranet/biz-object-type-select" {{object_type "im_expense"} {return_url $current_url} {type_id_var "cost_type_id"}}]
+    }
+}
+
+
 # ------------------------------------------------------------------
 # Form Options
 # ------------------------------------------------------------------
@@ -197,6 +211,25 @@ ad_form -extend -name $form_id -form {
     }
 
 
+
+
+# Add the right dynfields for the given type
+if {[info exists expense_id]} {
+    set cost_type_id [db_string ptype "select cost_type_id from im_costs where cost_id  = :expense_id" -default 0]
+}
+set my_expense_id 0
+if {[info exists expense_id]} { set my_expense_id $expense_id }
+
+set field_cnt [im_dynfield::append_attributes_to_form \
+    -object_subtype_id $cost_type_id \
+    -object_type "im_expense" \
+    -form_id $form_id \
+    -object_id $my_expense_id \
+    -form_display_mode $form_mode \
+]
+
+
+
 #    check conditions
 #    if {![empty_string_p $vat]} {
 #        if {0>$vat || 100<$vat} {
@@ -258,13 +291,20 @@ ad_form -extend -name $form_id -on_request {
 	where	employee_id = :user_id
     " -default ""]
     
-    db_exec_plsql create_expense {}
+    db_transaction {
+	db_exec_plsql create_expense {}
     
-    db_dml update_costs "
-	update im_costs set
-	cost_center_id = :cost_center_id
-	where cost_id = :expense_id
-    "
+	db_dml update_costs "
+		update im_costs set
+			cost_center_id = :cost_center_id
+		where cost_id = :expense_id
+        "
+
+	im_dynfield::attribute_store \
+	    -object_type "im_expense" \
+	    -object_id $expense_id \
+	    -form_id $form_id
+    }
 
 } -edit_data {
 
@@ -318,6 +358,12 @@ ad_form -extend -name $form_id -on_request {
 	where
 		cost_id = :expense_id
     "
+
+    im_dynfield::attribute_store \
+	    -object_type "im_expense" \
+	    -object_id $expense_id \
+	    -form_id $form_id
+
 
 } -on_submit {
     

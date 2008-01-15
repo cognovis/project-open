@@ -1,6 +1,39 @@
 -- upgrade-3.3.1.1.0-3.3.1.2.0.sql
 
 
+create or replace function im_expense__name (integer)
+returns varchar as '
+DECLARE
+        p_expenses_id  alias for $1;    -- expense_id
+        v_name  varchar;
+begin
+        select  cost_name
+        into    v_name
+        from    im_costs
+        where   cost_id = p_expenses_id;
+
+        return v_name;
+end;' language 'plpgsql';
+
+
+
+create or replace function im_expense_bundle__name (integer)
+returns varchar as '
+DECLARE
+        p_expenses_id           alias for $1;
+        v_name                  varchar;
+begin
+        select  cost_name into v_name
+        from    im_costs
+        where   cost_id = p_expenses_id;
+
+        return v_name;
+end;' language 'plpgsql';
+
+
+
+
+
 update im_categories set category = 'Expense Bundle' where category_id = 3722;
 
 update acs_object_types set status_column = 'cost_status_id' where object_type = 'im_expense';

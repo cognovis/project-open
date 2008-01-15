@@ -45,6 +45,7 @@ set delete_bundle_p [im_permission $current_user_id "add_expense_bundle"]
 
 set project_options [im_project_options]
 set customer_options [im_company_options]
+set creation_user_options [im_employee_options]
 set provider_options [im_provider_options]
 set cost_type_options [im_cost_type_options]
 set cost_status_options [im_cost_status_options]
@@ -93,6 +94,7 @@ set form_id form
 
 set cost_name_label "[_ intranet-cost.Name]"
 set project_label "[_ intranet-cost.Project]"
+set creation_user_label "[lang::message::lookup {} intranet-core.Creation_User {Creation User}]"
 set customer_label "[_ intranet-cost.Customer]"
 set wp_label "[_ intranet-cost.Who_pays]"
 set provider_label "[_ intranet-cost.Provider]"
@@ -122,6 +124,7 @@ ad_form \
     -form {
 	cost_id:key
 	{cost_name:text(text) {label $cost_name_label} {html {size 40}}}
+	{creation_user:text(select) {label $creation_user_label} {options $creation_user_options} }
 	{project_id:text(select),optional {label $project_label} {options $project_options} }
 	{cost_type_id:text(select) {label $type_label} {options $cost_type_options} }
 	{cost_status_id:text(select) {label $cost_status_label} {options $cost_status_options} }
@@ -130,11 +133,17 @@ ad_form \
 	{vat:text(text) {label $vat_label} {html {size 20}} }
     }
 
+
 ad_form -extend -name $form_id \
     -select_query {
-	select	c.*
-	from	im_costs c
-	where	cost_id = :cost_id
+
+	select	c.*,
+		o.creation_user
+	from	im_costs c,
+		acs_objects o
+	where	c.cost_id = :cost_id
+		and c.cost_id = o.object_id
+
     } -new_data {
 	db_exec_plsql create_conf "
 		SELECT im_bundle__new(

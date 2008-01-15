@@ -28,6 +28,7 @@ if {![info exists expense_id]} { ad_returnredirect $return_url }
 # User id already verified by filters
 set current_user_id [ad_maybe_redirect_for_registration]
 set add_expense_bundles_p [im_permission $current_user_id "add_expense_bundle"]
+set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 
 # if {!$add_expense_bundles_p} {
 #    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_perms "You don't have permission to see this page:"]
@@ -105,8 +106,9 @@ if {0 == $common_project_id} {
 # --------------------------------------
 
 set project_nr [db_string project_nr "select project_nr from im_projects where project_id = :common_project_id" -default ""]
+set project_name [db_string project_nr "select project_name from im_projects where project_id = :common_project_id" -default ""]
 set cost_name [lang::message::lookup "" intranet-expenses.Expense_Bundle "Expense Bundle"]
-set cost_name "$cost_name - $project_nr"
+set cost_name "$cost_name - $default_currency $total_amount in $project_name"
 
 set customer_id "[im_company_internal]"
 set provider_id $current_user_id

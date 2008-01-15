@@ -53,4 +53,4 @@ foreach id $bundle_id {
     }
 }
 
-template::forward "$return_url?[export_vars -url project_id]"
+template::forward $return_url

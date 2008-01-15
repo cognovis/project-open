@@ -18,7 +18,7 @@ ad_page_contract {
     { end_date ""}
     { provider_id 0}
     { orderby "effective_date,desc" }
-    { unassigned "all"}
+    { unassigned "unassigned"}
 }
 
 # ---------------------------------------------------------------
@@ -33,8 +33,8 @@ set date_format "YYYY-MM-DD"
 set cur_format [im_l10n_sql_currency_format]
 set return_url [im_url_with_query]
 set current_url [ns_conn url]
-set project_nr [db_string project_nr "select project_nr from im_projects where project_id=:project_id" -default "Unassigned"]
-set page_title "$project_nr - [_ intranet-expenses.Unassigned_Expenses]"
+set project_nr [db_string project_nr "select project_nr from im_projects where project_id=:project_id" -default ""]
+set page_title "$project_nr [_ intranet-expenses.Unassigned_Expenses]"
 set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
 
 set org_project_id $project_id
@@ -98,13 +98,13 @@ set action_list [list]
 set bulk_action_list [list]
 
 if {$add_expense_p} {
-    append admin_links "<li><a href=\"new?[export_url_vars project_id return_url]\">[_ intranet-expenses.Add_a_new_Expense]</a></li>\n"
+    append admin_links "<li><a href=\"new?[export_url_vars project_id return_url]\">[lang::message::lookup "" intranet-expenses.Add_a_new_Expense_Item "Add new Expense Item"]</a></li>\n"
 
-    lappend action_list [_ intranet-expenses.Add_a_new_Expense]
+    lappend action_list [lang::message::lookup "" intranet-expenses.Add_a_new_Expense_Item "Add new Expense Item"]
     lappend action_list [export_vars -base "/intranet-expenses/new" {return_url project_id}]
-    lappend action_list [_ intranet-expenses.Add_a_new_Expense]
+    lappend action_list [lang::message::lookup "" intranet-expenses.Add_a_new_Expense_Item "Add new Expense Item"]
 
-    lappend bulk_action_list "[_ intranet-expenses.Delete]" "expense-del" "[_ intranet-expenses.Delete_Expenses]"
+    lappend bulk_action_list "[_ intranet-expenses.Delete]" "expense-del" "[_ intranet-expenses.Delete]"
 }
 
 if {$create_bundle_p} {
@@ -299,9 +299,6 @@ template::list::create \
 	    label "[_ intranet-expenses.Amount]"
 	    link_url_eval $bundle_url
 	}
-	vat {
-	    label "[_ intranet-expenses.Vat_Included]"
-	}
 	effective_date {
 	    label "[_ intranet-expenses.Expense_Date]"
 	}
@@ -319,6 +316,9 @@ template::list::create \
     }
 
 set ttt {
+	vat {
+	    label "[_ intranet-expenses.Vat_Included]"
+	}
 	cost_id {
 	    label "[_ intranet-expenses.ID]"
 	}
@@ -355,6 +355,9 @@ db_multirow -extend {bundle_chk project_url owner_url bundle_url} bundle_lines b
     } else {
 	set bundle_chk ""
     }
+
+    regsub -all " " $cost_status "_" cost_status_key
+    set cost_status [lang::message::lookup "" intranet-core.$cost_status_key $cost_status]
 
     set project_url [export_vars -base "/intranet/projects/view" {{project_id $project_id} return_url}]
     set owner_url [export_vars -base "/intranet/users/view" {{user_id $owner_id} return_url}]
