@@ -70,7 +70,7 @@ if {[info exists bundle_id]} {
 	lappend actions [list [lang::message::lookup {} intranet-timesheet2.Edit Edit] edit]
     }
     if {[eval [list $delete_perm_func -bundle_id $bundle_id]]} {
-	lappend actions [list [lang::message::lookup {} intranet-timesheet2.Delete Delete] Delete]
+	lappend actions [list [lang::message::lookup {} intranet-timesheet2.Delete Delete] delete]
     }
 }
 
@@ -81,8 +81,7 @@ if {[info exists bundle_id]} {
 
 set button_pressed [template::form get_action form]
 if {"delete" == $button_pressed} {
-   ad_return_complaint 1 Del_pressed
-   ad_returnredirect $cancel_url
+    ad_returnredirect [export_vars -base "/intranet-expenses/bundle-del" {bundle_id return_url}]
 }
 
 

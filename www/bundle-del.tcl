@@ -13,9 +13,9 @@ ad_page_contract {
     @param project_id project on expense is going to create
     @author avila@digiteix.com
 } {
-    project_id:integer
-    { return_url "/intranet-expenses/"}
     bundle_id:multiple
+    project_id:integer,optional
+    { return_url "/intranet-expenses/"}
 }
 
 # ---------------------------------------------------------------
