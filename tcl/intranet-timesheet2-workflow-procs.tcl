@@ -219,3 +219,46 @@ ad_proc -public im_timesheet_conf_object_new {
     return $conf_oid
 }
 
+
+# ---------------------------------------------------------------------
+# Absence Workflow Permissions
+#
+# You can replace these functions with custom functions by modifying parameters.
+# ---------------------------------------------------------------------
+
+
+ad_proc im_timesheet_conf_new_page_wf_perm_delete_button {
+    -conf_id:required
+} {
+    Should we show the "Delete" button in the TimesheetConfNewPage?
+    The button is visible only for the Owner of the timesheet
+    and the Admin, but nobody else during the course of the WF.
+} {
+    set current_user_id [ad_get_user_id]
+    set current_user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+    set current_usre_is_hr_p [im_user_is_hr_p $current_user_id]
+
+    set owner_id [util_memoize "db_string owner \"select creation_user from acs_objects where object_id = $conf_id\" -default 0"]
+
+    # The standard case: Only the owner should delete his own timesheet entries - to be reapproved then.
+    set perm_p 0
+    if {$owner_id == $current_user_id} { set perm_p 1 }
+
+    # There is NO restriction on deleting timesheet objects. 
+    # The included hours will simply appear as unconfirmed again.
+
+    # Admins & HR can do everything anytime.
+    if {$current_usre_is_hr_p} { set perm_p 1 }
+    if {$current_user_is_admin_p} { set perm_p 1 }
+
+    return $perm_p
+}
+
+ad_proc im_timesheet_conf_new_page_wf_perm_edit_button {
+    -conf_id:required
+} {
+    Should we show the "Edit" button in the TimesheetConfNewPage?
+    Currently, nobody should ever edit a timesheet conf object (just delete).
+} {
+    return 0
+}

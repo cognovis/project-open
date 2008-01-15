@@ -57,18 +57,27 @@ set conf_user_options [db_list_of_lists conf_user_options "
 
 
 # ------------------------------------------------------------------
-# Delete pressed?
+# Actions & Their Permissions
 # ------------------------------------------------------------------
 
-set actions [list [list [lang::message::lookup {} intranet-timesheet2.Edit Edit] edit] ]
+set actions [list]
 
-# You need to be the owner of the conf in order to delete it.
 if {[info exists conf_id]} {
-    set owner_id [db_string owner "select creation_user from acs_objects where object_id = :conf_id" -default 0]
-    if {$user_id == $owner_id} {
-        lappend actions {"Delete" delete}
+
+    set edit_perm_func [parameter::get_from_package_key -package_key intranet-timesheet2-workflow -parameter TimesheetConfNewPageWfEditButtonPerm -default "im_timesheet_conf_new_page_wf_perm_edit_button"]
+    set delete_perm_func [parameter::get_from_package_key -package_key intranet-timesheet2 -parameter TimesheetConfNewPageWfDeleteButtonPerm -default "im_timesheet_conf_new_page_wf_perm_delete_button"]
+
+    if {[eval [list $edit_perm_func -conf_id $conf_id]]} {
+        lappend actions [list [lang::message::lookup {} intranet-timesheet2.Edit Edit] edit]
+    }
+    if {[eval [list $delete_perm_func -conf_id $conf_id]]} {
+        lappend actions [list [lang::message::lookup {} intranet-timesheet2.Delete Delete] delete]
     }
 }
+
+# ------------------------------------------------------------------
+# Delete pressed?
+# ------------------------------------------------------------------
 
 set button_pressed [template::form get_action form]
 if {"delete" == $button_pressed} {
@@ -89,6 +98,7 @@ ad_form \
     -mode $form_mode \
     -export "object_id return_url" \
     -actions $actions \
+    -has_edit 1 \
     -action "/intranet-timesheet2-workflow/conf-objects/new" \
     -form {
 	conf_id:key
