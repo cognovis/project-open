@@ -270,40 +270,67 @@ ad_form -extend -name login -on_request {
         set persistent_p "f"
     }
 
-    if {1 != $otp_enabled_p} {
+    if {$ldap_installed_p} {
+	# auth_info(auth_status) in: {ok, bad_password,not_ldap}
+	array set auth_info [im_ldap_check_user \
+				 -email $email \
+				 -username $username \
+				 -password $password
+	]
+	
+	# Handle authentication errors
+	switch $auth_info(auth_status) {
+	    ok { 
+		auth::issue_login \
+		    -user_id $auth_info(user_id) \
+		    -persistent=[expr $allow_persistent_login_p && [template::util::is_true $persistent_p]] \
+		    -account_status $auth_info(account_status)
+		set login_done_p 1
+	    }
+	    bad_password {
+		form set_error login password $auth_info(auth_message)
+		break
+	    }
+	    no_local_user {
+		form set_error login $user_id_widget_name $auth_info(auth_message)
+		break
+	    }
+	    ldap_error {
+		form set_error login $user_id_widget_name $auth_info(auth_message)
+		break
+	    }
+	    not_ldap {
+		# Nothing, continue below with normal authentication
+	    }
+	    default {
+		form set_error login $user_id_widget_name $auth_info(auth_message)
+		break
+	    }
+	}
+    }
+
+
+    if {1 != $otp_enabled_p && ![info exists login_done_p]} {
 	array set auth_info {}
 	set auth_info(auth_status) ""
 	set auth_info(auth_message) "undefined login error"
-
-	if {$ldap_installed_p} {
 	
-
-	   if {[im_ldap_check_user -email $email -username $username -password $password]} {
-	       
-	       # login, maybe create user
-
-	   } else {
-		set auth_info(auth_status) "ldaperror"
-		set auth_info(auth_message) "ldap login error"
-	    }
-	}
 	if {[string equal $auth_info(auth_status) ""]} {
-
 	    # Authenticate.
 	    # But don't set the auth-cookie yet, we first have to
 	    # make sure that the person has the right to autenticate
 	    # from the intranet/intranet:
 	    array set auth_info [auth::authenticate \
-			     -return_url $return_url \
-                             -authority_id $authority_id \
-                             -email [string trim $email] \
-                             -username [string trim $username] \
-                             -password $password \
-                             -persistent=[expr $allow_persistent_login_p && [template::util::is_true $persistent_p]] \
-			     -no_cookie=1 \
-				    ]
+				     -return_url $return_url \
+				     -authority_id $authority_id \
+				     -email [string trim $email] \
+				     -username [string trim $username] \
+				     -password $password \
+				     -persistent=[expr $allow_persistent_login_p && [template::util::is_true $persistent_p]] \
+				     -no_cookie=1 \
+	    ]
 	}
-
+	
 	# Handle authentication errors
 	switch $auth_info(auth_status) {
 	    ok { }
