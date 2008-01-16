@@ -220,6 +220,78 @@ ad_proc -public im_timesheet_conf_object_new {
 }
 
 
+
+ad_proc -public im_timesheet_conf_object_delete {
+    -project_id
+    -user_id
+    -day_julian
+} {
+    Delete a confirmation object for the specified (main-) project
+    that covers the specified day.
+} {
+    # Check for ConfirmationObjects matching the conditions
+    set conf_ids [db_list main_pids "
+		select distinct
+			c.conf_id
+		from
+			im_hours h,
+			im_projects p,
+			im_projects main_p,
+			im_timesheet_conf_objects c
+		where
+			h.day = to_date(:day_julian, 'J') and
+			h.user_id = :user_id and
+			h.project_id = :project_id and
+			h.project_id = p.project_id and
+			tree_ancestor_key(p.tree_sortkey, 1) = main_p.tree_sortkey and
+			c.conf_project_id = main_p.project_id and
+			c.conf_user_id = :user_id and
+			to_date(:day_julian, 'J') between c.start_date and c.end_date
+    "]
+
+    # Delete the conf_objects
+    set ctr 0
+    foreach conf_id $conf_ids {
+	db_string conf_delete "select im_timesheet_conf_object__delete(:conf_id)"
+	incr ctr
+    }
+    return $ctr
+}
+
+
+ad_proc -public im_timesheet_costs_delete {
+    -project_id
+    -user_id
+    -day_julian
+} {
+    Delete any cost items related to hours logged for the specified project
+    and day.
+} {
+    set del_cost_ids [db_list del_cost_ids "
+		select	h.cost_id
+		from	im_hours h
+		where	h.project_id = :project_id
+			and h.user_id = :user_id
+			and h.day = to_date(:day_julian, 'J')
+    "]
+
+    set ctr 0
+    foreach cost_id $del_cost_ids {
+	db_dml update_hours "
+		    	update im_hours
+			set cost_id = null
+			where cost_id = :cost_id
+	"
+	db_string del_ts_costs "select im_cost__delete(:cost_id)"
+	incr ctr
+    }
+    return $ctr
+}
+
+
+
+
+
 # ---------------------------------------------------------------------
 # Absence Workflow Permissions
 #
