@@ -270,47 +270,9 @@ ad_form -extend -name login -on_request {
         set persistent_p "f"
     }
 
-    if {$ldap_installed_p} {
-	# auth_info(auth_status) in: {ok, bad_password,not_ldap}
-	array set auth_info [im_ldap_check_user \
-				 -email $email \
-				 -username $username \
-				 -password $password
-	]
-	
-	# Handle authentication errors
-	switch $auth_info(auth_status) {
-	    ok { 
-		auth::issue_login \
-		    -user_id $auth_info(user_id) \
-		    -persistent=[expr $allow_persistent_login_p && [template::util::is_true $persistent_p]] \
-		    -account_status $auth_info(account_status)
-		set login_done_p 1
-	    }
-	    bad_password {
-		form set_error login password $auth_info(auth_message)
-		break
-	    }
-	    no_local_user {
-		form set_error login $user_id_widget_name $auth_info(auth_message)
-		break
-	    }
-	    ldap_error {
-		form set_error login $user_id_widget_name $auth_info(auth_message)
-		break
-	    }
-	    not_ldap {
-		# Nothing, continue below with normal authentication
-	    }
-	    default {
-		form set_error login $user_id_widget_name $auth_info(auth_message)
-		break
-	    }
-	}
-    }
-
-
-    if {1 != $otp_enabled_p && ![info exists login_done_p]} {
+    # --------------------------------------------------------
+    # OTP login procedure
+    if {1 != $otp_enabled_p} {
 	array set auth_info {}
 	set auth_info(auth_status) ""
 	set auth_info(auth_message) "undefined login error"
@@ -332,15 +294,17 @@ ad_form -extend -name login -on_request {
 	}
 	
 	# Handle authentication errors
-	switch $auth_info(auth_status) {
-	    ok { }
-	    bad_password {
-		form set_error login password $auth_info(auth_message)
-		break
-	    }
-	    default {
-		form set_error login $user_id_widget_name $auth_info(auth_message)
-		break
+	if {!$ldap_installed_p} {
+	    switch $auth_info(auth_status) {
+		ok { }
+		bad_password {
+		    form set_error login password $auth_info(auth_message)
+		    break
+		}
+		default {
+		    form set_error login $user_id_widget_name $auth_info(auth_message)
+		    break
+		}
 	    }
 	}
 
@@ -348,6 +312,43 @@ ad_form -extend -name login -on_request {
 	if {[exists_and_not_null auth_info(user_id)]} { set otp_user_id $auth_info(user_id) }
     }
 
+
+    # --------------------------------------------------------
+    # Additional login option if the "local" login wasn't successful...
+    set auth_status ""
+    if {[info exists auth_info(auth_status)]} { set auth_status $auth_info(auth_status)}
+    if {$ldap_installed_p && "ok" != $auth_status} {
+	# auth_info(auth_status) in: {ok, bad_password,not_ldap}
+	array set auth_info [im_ldap_check_user \
+				 -email $email \
+				 -username $username \
+				 -password $password
+	]
+	
+	# Handle authentication errors
+	switch $auth_info(auth_status) {
+	    ok { 
+		auth::issue_login \
+		    -user_id $auth_info(user_id) \
+		    -persistent=[expr $allow_persistent_login_p && [template::util::is_true $persistent_p]] \
+		    -account_status $auth_info(account_status)
+	    }
+	    bad_password {
+		form set_error login password $auth_info(auth_message)
+		break
+	    }
+	    not_ldap {
+		# Nothing, continue below with normal authentication
+	    }
+	    default {
+		form set_error login $user_id_widget_name $auth_info(auth_message)
+		break
+	    }
+	}
+    }
+
+
+    # --------------------------------------------------------
     # Check if there is a secure login module installed
     # and redirect if the user requires extra auth.
     if {$otp_installed_p} {
