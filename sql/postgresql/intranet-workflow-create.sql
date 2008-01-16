@@ -235,7 +235,7 @@ insert into im_views (view_id, view_name, visible_for)
 values (260, 'workflow_home_inbox', '');
 
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
-values (26000,260,'Action','"<a href=$action_url>$next_action_l10n</a>"',0);
+values (26000,260,'Action','"$action_link"',0);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
 -- values (26010,260,'Object Type','"$object_type_pretty"',10);
 -- insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
