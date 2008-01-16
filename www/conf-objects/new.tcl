@@ -150,8 +150,15 @@ set modify_hours_link ""
 if {[info exists conf_id]} {
    set conf_user_id [db_string conf_user "select conf_user_id from im_timesheet_conf_objects where conf_id = :conf_id" -default 0]
    if {$conf_user_id == $user_id} {
+
+       set julian_date [db_string ts_date "
+		select	to_char(co.start_date, 'J')
+		from	im_timesheet_conf_objects co
+		where	conf_id = :conf_id
+       " -default ""]
+
        set modify_hours_msg [lang::message::lookup "" intranet-timesheet2-workflow.Modify_Included_Hours "Modify Included Hours"]
-       set modify_hours_url [export_vars -base "/intranet-timesheet2/hours/new" {julian_date}]
+       set modify_hours_url [export_vars -base "/intranet-timesheet2/hours/new" {julian_date {show_week_p 1}}]
        set modify_hours_link "<a href='$modify_hours_url'>$modify_hours_msg</a>"
        set modify_hours_link "<ul>\n<li>$modify_hours_link</li>\n</ul><br>\n"
    }
