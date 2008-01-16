@@ -81,8 +81,6 @@ if {[info exists conf_id]} {
 
 set button_pressed [template::form get_action form]
 if {"delete" == $button_pressed} {
-    db_dml del_tokens "delete from wf_tokens where case_id in (select case_id from wf_cases where object_id = :conf_id)"
-    db_dml del_case "delete from wf_cases where object_id = :conf_id"
     db_string conf_delete "select im_timesheet_conf_object__delete(:conf_id)"
     ad_returnredirect $return_url
 }
