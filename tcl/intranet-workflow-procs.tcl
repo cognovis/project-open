@@ -756,15 +756,22 @@ ad_proc -public im_workflow_home_inbox_component {
 
 	if {[lsearch $relationships $rel] == -1} { continue }
 
-	set object_subtype [im_category_from_id $type_id]
-	set status [im_category_from_id $status_id]
-	set action_url [export_vars -base "/workflow/task" {return_url task_id}]
-	set object_url "[im_biz_object_url $object_id "view"]&return_url=[ns_urlencode $return_url]"
-	set owner_url [export_vars -base "/intranet/users/view" {return_url {user_id $owner_id}}]
-	
 	# L10ned version of next action
 	regsub -all " " $transition_name "_" next_action_key
 	set next_action_l10n [lang::message::lookup "" intranet-workflow.$next_action_key $transition_name]
+
+	set object_subtype [im_category_from_id $type_id]
+	set status [im_category_from_id $status_id]
+	set object_url "[im_biz_object_url $object_id "view"]&return_url=[ns_urlencode $return_url]"
+	set owner_url [export_vars -base "/intranet/users/view" {return_url {user_id $owner_id}}]
+	
+	set action_url [export_vars -base "/workflow/task" {return_url task_id}]
+	set action_link "<a href=$action_url>$next_action_l10n</a>"
+
+	# Don't show the "Action" link if the object is mine...
+	if {"my_object" == $rel} {
+	    set action_link $next_action_l10n
+	} 
 
 	# L10ned version of the relationship of the user to the object
 	set relationship_l10n [lang::message::lookup "" intranet-workflow.$rel $rel]
