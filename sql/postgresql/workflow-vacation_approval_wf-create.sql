@@ -100,24 +100,6 @@ drop function inline_0 ();
 
 	select workflow__add_role (
          'vacation_approval_wf',
-         'enter',
-         'Enter',
-         1
-    );
-
-        
-
-	select workflow__add_role (
-         'vacation_approval_wf',
-         'review',
-         'Review',
-         2
-    );
-
-        
-
-	select workflow__add_role (
-         'vacation_approval_wf',
          'approved',
          'Approved',
          3
@@ -134,6 +116,24 @@ drop function inline_0 ();
 
         
 
+	select workflow__add_role (
+         'vacation_approval_wf',
+         'approve',
+         'Approve',
+         2
+    );
+
+        
+
+	select workflow__add_role (
+         'vacation_approval_wf',
+         'modify',
+         'Modify',
+         1
+    );
+
+        
+
 /*****
  * Transitions
  *****/
@@ -142,9 +142,9 @@ drop function inline_0 ();
 
 	select workflow__add_transition (
          'vacation_approval_wf',
-         'enter',
+         'modify',
          'Modify',
-         'enter',
+         'modify',
          1,
          'user'
 	);
@@ -153,9 +153,9 @@ drop function inline_0 ();
 
 	select workflow__add_transition (
          'vacation_approval_wf',
-         'review',
+         'approve',
          'Approve',
-         'review',
+         'approve',
          2,
          'user'
 	);
@@ -192,6 +192,42 @@ drop function inline_0 ();
 
 	select workflow__add_arc (
          'vacation_approval_wf',
+         'approve',
+         'start',
+         'out',
+         '#',
+         '',
+         'Rejected'
+	);
+
+        
+
+	select workflow__add_arc (
+         'vacation_approval_wf',
+         'approve',
+         'before_review',
+         'in',
+         '',
+         '',
+         ''
+	);
+
+        
+
+	select workflow__add_arc (
+         'vacation_approval_wf',
+         'approve',
+         'before_approved',
+         'out',
+         'wf_callback__guard_attribute_true',
+         'review_reject_p',
+         'Approved'
+	);
+
+        
+
+	select workflow__add_arc (
+         'vacation_approval_wf',
          'approved',
          'end',
          'out',
@@ -207,6 +243,18 @@ drop function inline_0 ();
          'approved',
          'before_approved',
          'in',
+         '',
+         '',
+         ''
+	);
+
+        
+
+	select workflow__add_arc (
+         'vacation_approval_wf',
+         'deleted',
+         'end',
+         'out',
          '',
          '',
          ''
@@ -228,19 +276,7 @@ drop function inline_0 ();
 
 	select workflow__add_arc (
          'vacation_approval_wf',
-         'deleted',
-         'end',
-         'out',
-         '',
-         '',
-         ''
-	);
-
-        
-
-	select workflow__add_arc (
-         'vacation_approval_wf',
-         'enter',
+         'modify',
          'start',
          'in',
          '',
@@ -252,48 +288,12 @@ drop function inline_0 ();
 
 	select workflow__add_arc (
          'vacation_approval_wf',
-         'enter',
+         'modify',
          'before_review',
          'out',
          '',
          '',
          ''
-	);
-
-        
-
-	select workflow__add_arc (
-         'vacation_approval_wf',
-         'review',
-         'before_review',
-         'in',
-         '',
-         '',
-         ''
-	);
-
-        
-
-	select workflow__add_arc (
-         'vacation_approval_wf',
-         'review',
-         'start',
-         'out',
-         '#',
-         '',
-         'Rejected'
-	);
-
-        
-
-	select workflow__add_arc (
-         'vacation_approval_wf',
-         'review',
-         'before_approved',
-         'out',
-         'wf_callback__guard_attribute_true',
-         'review_reject_p',
-         'Approved'
 	);
 
         
@@ -323,7 +323,7 @@ drop function inline_0 ();
 
 	select workflow__add_trans_attribute_map(
         	'vacation_approval_wf', 
-        	'review',
+        	'approve',
         	'review_reject_p',
         	1
     );
@@ -339,49 +339,6 @@ drop function inline_0 ();
  * Context/Transition info
  * (for context = default)
  */
-
-insert into wf_context_transition_info
-(context_key,
- workflow_key,
- transition_key,
- estimated_minutes,
- instructions,
- enable_callback,
- enable_custom_arg,
- fire_callback,
- fire_custom_arg,
- time_callback,
- time_custom_arg,
- deadline_callback,
- deadline_custom_arg,
- deadline_attribute_name,
- hold_timeout_callback,
- hold_timeout_custom_arg,
- notification_callback,
- notification_custom_arg,
- unassigned_callback,
- unassigned_custom_arg)
-values
-('default',
- 'vacation_approval_wf',
- 'review',
- 5,
- '',
- '',
- '',
- 'im_workflow__set_object_status_id',
- '16006',
- '',
- '',
- '',
- '',
- '',
- '',
- '',
- '',
- '',
- 'im_workflow__assign_to_supervisor',
- '');
 
 insert into wf_context_transition_info
 (context_key,
@@ -493,11 +450,11 @@ insert into wf_context_transition_info
 values
 ('default',
  'vacation_approval_wf',
- 'enter',
+ 'modify',
  5,
  '',
- '',
- '',
+ 'im_workflow__set_object_status_id',
+ '16006',
  'im_workflow__set_object_status_id',
  '16004',
  '',
@@ -510,6 +467,49 @@ values
  '',
  '',
  'im_workflow__assign_to_owner',
+ '');
+
+insert into wf_context_transition_info
+(context_key,
+ workflow_key,
+ transition_key,
+ estimated_minutes,
+ instructions,
+ enable_callback,
+ enable_custom_arg,
+ fire_callback,
+ fire_custom_arg,
+ time_callback,
+ time_custom_arg,
+ deadline_callback,
+ deadline_custom_arg,
+ deadline_attribute_name,
+ hold_timeout_callback,
+ hold_timeout_custom_arg,
+ notification_callback,
+ notification_custom_arg,
+ unassigned_callback,
+ unassigned_custom_arg)
+values
+('default',
+ 'vacation_approval_wf',
+ 'approve',
+ 5,
+ '',
+ '',
+ '',
+ '',
+ '',
+ '',
+ '',
+ '',
+ '',
+ '',
+ '',
+ '',
+ '',
+ '',
+ 'im_workflow__assign_to_supervisor',
  '');
 
 
@@ -539,9 +539,9 @@ insert into wf_context_task_panels
 values
 ('default',
  'vacation_approval_wf',
- 'enter',
+ 'approve',
  1,
- 'Modify Absence',
+ 'Approve Absence',
  '/packages/intranet-timesheet2-workflow/www/absences/absence-panel',
  'f',
  'f',
@@ -560,9 +560,9 @@ insert into wf_context_task_panels
 values
 ('default',
  'vacation_approval_wf',
- 'review',
+ 'modify',
  1,
- 'Approve Absence',
+ 'Modify Absence',
  '/packages/intranet-timesheet2-workflow/www/absences/absence-panel',
  'f',
  'f',
