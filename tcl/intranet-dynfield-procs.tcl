@@ -1443,7 +1443,7 @@ ad_proc -public im_dynfield::attribute_store {
 } {
     store intranet-dynfield attributes 
 } {
-    ns_log Notice "attributes_store: object_type=$object_type, object_id=$object_id, form_id=$form_id"
+    ns_log Notice "im_dynfield::attribute_store: object_type=$object_type, object_id=$object_id, form_id=$form_id"
 
     # object_id may get destroyed with strange forms
     set object_id_param $object_id
@@ -1472,12 +1472,9 @@ ad_proc -public im_dynfield::attribute_store {
                 from    acs_object_type_tables
                 where   object_type = :object_type
     "]
-    
-    # for all tables related to object_type
-    # create new row if not exists
+    ns_log Notice "im_dynfield::attribute_store: main_table=$main_table_name, object_type_tables=$object_type_tables"
 
-    ns_log Notice "attributes_store: object_type_tables=$object_type_tables"
-
+    # The Insert piece: Check if values need to be inserted into extension tables.
     db_transaction {
     	foreach table_pair $object_type_tables {
 	    set table_n [lindex $table_pair 0]
@@ -1521,12 +1518,12 @@ ad_proc -public im_dynfield::attribute_store {
 
 			# this attribute exits in form
 			if {[template::element::exists $form_id $c]} {  
+
+			    ns_log Notice "im_dynfield::attribute_store: insert-logic: found column in form: table=$table_n, column=$c, widget=$widget_element"
 			    set widget_element [template::element::get_property $form_id $c widget]
 			    switch $widget_element {
 
 				"checkbox" - "multiselect" - "category_tree" - "im_category_tree" {
-
-				    #ns_log notice "$widget_element -----> values [set $c]"
 				    set multiple_p [template::element::get_property $form_id $c multiple_p]
 				    if {[empty_string_p $multiple_p]} {
 					set multiple_p 0
@@ -1611,26 +1608,20 @@ ad_proc -public im_dynfield::attribute_store {
 			}
 		    }
 
-		    # create a lists in order to generate
-		    # insert query dynamicaly
-
-		    #if {[exists_and_not_null $c]} {
-		    #	lappend cols_list $c	
-		    #	lappend values_list :$c
-		    #}
 		}
 		
-
 		# build insert query for current table
+		# fraber080116: is this ever executed?
 		if {[llength $cols_list] > 0} {
-		    set insert_query "insert into $table_n 
-					([join $cols_list ","]) values ([join $values_list ","])"
-		    db_dml "insert row" $insert_query
+		    set insert_query "insert into $table_n ([join $cols_list ","]) values ([join $values_list ","])"
+		    ns_log Notice "im_dynfield::attribute_store: insert-logic: insert_query=$insert_query"
+		    db_dml insert_row $insert_query
 		}
 		
 	    }
 		
 	    # create update query for every table
+	    # fraber 080116: does this make sense?
 	    set update_sql($table_n) "update $table_n set"
 	    set first($table_n) 1
 	    set pk($table_n) "$column_i"
@@ -1638,6 +1629,9 @@ ad_proc -public im_dynfield::attribute_store {
 	}
 	
     }	
+
+    
+    ns_log Notice "im_dynfield::attribute_store: between loops: update_sql=[array get update_sql]"
 
     set attrib_list [db_list_of_lists get_page_attributes {
 	select	attr.attribute_id,
@@ -1755,7 +1749,8 @@ ad_proc -public im_dynfield::attribute_store {
 	}
 	
     }
-    
+
+    ns_log Notice "im_dynfield::attribute_store: update_sql=[array get update_sql]"
 
     # execute update query for all tables
     db_transaction {
@@ -1768,9 +1763,7 @@ ad_proc -public im_dynfield::attribute_store {
 	    # only if there is attributes to update 
 	    # in current table
 	    if {$first($table_n) == 0} {
-		#ns_log notice "$table_n ----> $update_sql($table_n)"
-#		ad_return_complaint 1 "<pre>$update_sql($table_n)</pre>"
-
+		ns_log Notice "im_dynfield::attribute_store: update_query: $update_sql($table_n)"
 		db_dml update_object $update_sql($table_n)
 	    }
 	}
