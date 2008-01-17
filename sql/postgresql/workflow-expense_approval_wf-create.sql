@@ -406,6 +406,49 @@ insert into wf_context_transition_info
 values
 ('default',
  'expense_approval_wf',
+ 'approved',
+ 0,
+ '',
+ '',
+ '',
+ 'im_workflow__set_object_status_id',
+ '3802',
+ '',
+ '',
+ '',
+ '',
+ '',
+ '',
+ '',
+ '',
+ '',
+ '',
+ '');
+
+insert into wf_context_transition_info
+(context_key,
+ workflow_key,
+ transition_key,
+ estimated_minutes,
+ instructions,
+ enable_callback,
+ enable_custom_arg,
+ fire_callback,
+ fire_custom_arg,
+ time_callback,
+ time_custom_arg,
+ deadline_callback,
+ deadline_custom_arg,
+ deadline_attribute_name,
+ hold_timeout_callback,
+ hold_timeout_custom_arg,
+ notification_callback,
+ notification_custom_arg,
+ unassigned_callback,
+ unassigned_custom_arg)
+values
+('default',
+ 'expense_approval_wf',
  'modify',
  5,
  '',
@@ -468,49 +511,6 @@ values
  'im_workflow__assign_to_supervisor',
  '');
 
-insert into wf_context_transition_info
-(context_key,
- workflow_key,
- transition_key,
- estimated_minutes,
- instructions,
- enable_callback,
- enable_custom_arg,
- fire_callback,
- fire_custom_arg,
- time_callback,
- time_custom_arg,
- deadline_callback,
- deadline_custom_arg,
- deadline_attribute_name,
- hold_timeout_callback,
- hold_timeout_custom_arg,
- notification_callback,
- notification_custom_arg,
- unassigned_callback,
- unassigned_custom_arg)
-values
-('default',
- 'expense_approval_wf',
- 'approved',
- 0,
- '',
- '',
- '',
- 'im_workflow__set_object_status_id',
- '3802',
- '',
- '',
- '',
- '',
- '',
- '',
- '',
- '',
- '',
- '',
- '');
-
 
 
 /*
@@ -564,7 +564,7 @@ values
  'Modify Expense Bundle',
  '/packages/intranet-expenses-workflow/www/bundle-panel',
  'f',
- 'f',
+ 't',
  'f');
 
 
