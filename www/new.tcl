@@ -17,7 +17,7 @@ ad_page_contract {
 
     @author avila@digiteix.com
 } {
-    { cost_type_id:integer "[im_cost_type_invoice]" }
+    { cost_type_id:integer "[im_cost_type_expense_item]" }
     { project_id:integer "" }
     { return_url "/intranet-expenses/"}
     expense_id:integer,optional
