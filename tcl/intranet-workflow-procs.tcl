@@ -809,6 +809,8 @@ ad_proc -public im_workflow_home_inbox_component {
 	</td>
 	</tr>
     "
+    set enable_bulk_action_p [parameter::get_from_package_key -package_key "intranet-workflow" -parameter "EnableWorkflowInboxBulkActionsP" -default 0]
+    if {!$enable_bulk_action_p} { set table_action_html "" }
 
     set return_url [ad_conn url]?[ad_conn query]
     return "
