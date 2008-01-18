@@ -210,16 +210,9 @@ ad_form -extend -name $form_id -form {
         {note:text(textarea),optional {label "[lang::message::lookup {} intranet-expenses.Note Note]"} {html {cols 40}}}
     }
 
-
-
-
-# Add the right dynfields for the given type
-if {[info exists expense_id]} {
-    set cost_type_id [db_string ptype "select cost_type_id from im_costs where cost_id  = :expense_id" -default 0]
-}
+# Add DynFields
 set my_expense_id 0
 if {[info exists expense_id]} { set my_expense_id $expense_id }
-
 set field_cnt [im_dynfield::append_attributes_to_form \
     -object_subtype_id $cost_type_id \
     -object_type "im_expense" \
