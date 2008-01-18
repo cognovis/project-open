@@ -105,9 +105,13 @@ ad_proc im_expense_calculate_vat_from_expense_type {
     in im_categories for 'Intranet Expense Type'.
 } {
     set vat [db_string vat "
-	    select aux_string 
-	    from im_categories 
-	    where category_id = :expense_type_id
+	select	c.aux_string1 
+	from	im_categories c,
+		im_expenses e
+	where	e.expense_id = :expense_id and
+		expense_type_id = c.category_id
     " -default ""]
     if {"" == $vat} { set vat 0.0 }
+
+    return $vat
 }

@@ -21,6 +21,8 @@
         <callbacks>
         </callbacks>
         <parameters>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="CalculateVATPerExpenseTypeFunction"  default="im_expense_calculate_vat_from_expense_type" description="&quot;User Exit&quot; to determine the function to implement business logic to calculate the VAT for the expense item. The function needs to take a single &quot;-expense_id&quot; argument."/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="CalculateVATPerExpenseTypeP"  default="0" description="Should we try to calculate the vat automatically based on the expense type?"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ExpenseBundleNewPageWfModifyIncludedExpensesPerm"  default="im_expense_bundle_new_page_wf_perm_modify_included_expenses" description="The name of the procedure that should return &quot;1&quot; if the &quot;Modify Included Expenses&quot; link of the ExpenseBundleNewPage should be visible. The procedure should accept a single &quot;-bundle_id&quot; parameter."/>
         </parameters>
 

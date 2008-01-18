@@ -47,8 +47,7 @@ set action_url "/intranet-expenses/new"
 
 # Should we calculate VAT automatically from the expense type?
 set auto_vat_p [ad_parameter -package_id [im_package_expenses_id] "CalculateVATPerExpenseTypeP" "" 0]
-
-
+set auto_vat_function [ad_parameter -package_id [im_package_expenses_id] "CalculateVATPerExpenseTypeFunction" "" "im_expense_calculate_vat_from_expense_type"]
 
 
 # Redirect if the type of the object hasn't been defined and
@@ -269,11 +268,7 @@ ad_form -extend -name $form_id -on_request {
 	     "You have to selectect an expense type"]
     }
 
-    if {$auto_vat_p} {
-	set vat [db_string vat "select aux_int1 from im_categories where category_id = :expense_type_id" -default ""]
-	if {"" == $vat} { set vat 0.0 }
-    }
-
+    if {![info exists vat] || "" == $vat} { set vat 0 }
     set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
     set expense_name $expense_id
 
@@ -299,6 +294,20 @@ ad_form -extend -name $form_id -on_request {
 	    -form_id $form_id
     }
 
+    # Calculate VAT automatically?
+    # We need this function at the very end because is access the newly
+    # saved absence values.
+    if {$auto_vat_p} { 
+	set vat [$auto_vat_function -expense_id $expense_id] 
+	set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
+	db_dml update_costs "
+		update	im_costs set
+			vat = :vat,
+			amount = :amount
+		where	cost_id = :expense_id
+        "
+    }
+
 } -edit_data {
 
     # Security Check: Don't allow to change an "invoiced" expense
@@ -307,11 +316,7 @@ ad_form -extend -name $form_id -on_request {
 	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Cant_change_invoiced_item "You can't change an already invoiced expense"]
     }
 
-    if {$auto_vat_p} {
-	set vat [db_string vat "select aux_int1 from im_categories where category_id = :expense_type_id" -default ""]
-	if {"" == $vat} { set vat 0.0 }
-    }
-
+    if {![info exists vat] || "" == $vat} { set vat 0 }
     set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
     set expense_name $expense_id
 
@@ -357,6 +362,20 @@ ad_form -extend -name $form_id -on_request {
 	    -object_id $expense_id \
 	    -form_id $form_id
 
+
+    # Calculate VAT automatically?
+    # We need this function at the very end because is access the newly
+    # saved absence values.
+    if {$auto_vat_p} { 
+	set vat [$auto_vat_function -expense_id $expense_id] 
+	set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
+	db_dml update_costs "
+		update	im_costs set
+			vat = :vat,
+			amount = :amount
+		where	cost_id = :expense_id
+        "
+    }
 
 } -on_submit {
     
