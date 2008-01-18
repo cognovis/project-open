@@ -91,3 +91,23 @@ ad_proc im_expense_bundle_new_page_wf_perm_delete_button {
 } {
     im_expense_bundle_new_page_wf_perm_modify_included_expenses -bundle_id $bundle_id
 }
+
+
+
+# ----------------------------------------------------------------------
+# Automatically calculate VAT
+# ----------------------------------------------------------------------
+
+ad_proc im_expense_calculate_vat_from_expense_type {
+    -expense_id:required
+} {
+    Calculates the VAT % as a function of the "aux_string" field
+    in im_categories for 'Intranet Expense Type'.
+} {
+    set vat [db_string vat "
+	    select aux_string 
+	    from im_categories 
+	    where category_id = :expense_type_id
+    " -default ""]
+    if {"" == $vat} { set vat 0.0 }
+}
