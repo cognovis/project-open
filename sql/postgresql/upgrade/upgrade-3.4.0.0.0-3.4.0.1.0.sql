@@ -18,6 +18,10 @@ update im_user_absences set absence_name = substring(description for 990);
 alter table im_user_absences
 add duration_days numeric(12,1);
 
+-- Add a NOT NULL constraint to im_hours:
+update im_hours set hours=0 where hours is null;
+ALTER TABLE im_hours ALTER COLUMN hours SET NOT NULL;
+
 
 
 -----------------------------------------------------------
