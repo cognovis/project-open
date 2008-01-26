@@ -403,6 +403,9 @@ switch $output_format {
 		    [im_user_select -include_empty_p 1 -include_empty_name "-- Please select --" user_id $user_id]
 		  </td>
 		</tr>
+
+	        $report_options_html
+
                 <tr>
                   <td class=form-label>Format</td>
                   <td class=form-widget>
@@ -414,10 +417,7 @@ switch $output_format {
 		  <td class=form-widget><input type=submit value=Submit></td>
 		</tr>
 		</table>
-	</td><td>
-		<table border=0 cellspacing=1 cellpadding=1>
-	        $report_options_html
-		</table>
+
 	</td></tr>
 	</table>
 	</form>
