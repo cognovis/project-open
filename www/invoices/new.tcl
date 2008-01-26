@@ -162,7 +162,7 @@ if { ![empty_string_p $project_status_id] && $project_status_id > 0 } {
 }
 if { ![empty_string_p $project_type_id] && $project_type_id != 0 } {
     # Select the specified project type and its subtypes
-    llappend criteria "p.project_type_id in ([join [im_sub_categories $project_type_id] ","])"
+    lappend criteria "p.project_type_id in ([join [im_sub_categories $project_type_id] ","])"
 }
 
 
