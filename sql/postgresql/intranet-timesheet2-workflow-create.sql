@@ -264,6 +264,48 @@ where	category_type = 'Intranet Timesheet Conf Type'
 -- Create a Timesheet Conf plugin for the ProjectViewPage.
 
 
+
+
+-- ------------------------------------------------------
+-- Workflow Graph & Journal on Absence View Page
+-- ------------------------------------------------------
+
+SELECT  im_component_plugin__new (
+	null,					-- plugin_id
+	'acs_object',				-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+
+	'Timesheet Confirmation Workflow',	-- component_name
+	'intranet-timesheet2-workflow',		-- package_name
+	'right',				-- location
+	'/intranet-timesheet2-workflow/conf-objects/new',	-- page_url
+	null,					-- view_name
+	10,					-- sort_order
+	'im_workflow_graph_component -object_id $conf_id'
+);
+
+SELECT  im_component_plugin__new (
+	null,					-- plugin_id
+	'acs_object',				-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+
+	'Timesheet Confirmation Journal',			-- component_name
+	'intranet-timesheet2-workflow',		-- package_name
+	'bottom',				-- location
+	'/intranet-timesheet2-workflow/conf-objects/new',	-- page_url
+	null,					-- view_name
+	100,					-- sort_order
+	'im_workflow_journal_component -object_id $conf_id'
+);
+
+
+
 -- SELECT im_component_plugin__new (
 -- 	null,				-- plugin_id
 -- 	'acs_object',			-- object_type

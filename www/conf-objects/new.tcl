@@ -32,6 +32,7 @@ set context_bar [im_context_bar $page_title]
 
 if {![info exists enable_master_p]} { set enable_master_p 1}
 if {![info exists form_mode]} { set form_mode "display" }
+if {![info exists message]} { set message "" }
 
 # ---------------------------------------------------------------
 # Options
