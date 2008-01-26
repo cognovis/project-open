@@ -65,6 +65,14 @@ set actions [list]
 
 if {[info exists conf_id]} {
 
+    # 080126 fraber: We need the existence-check apparently
+    set conf_exists_p [db_string count "select count(*) from im_timesheet_conf_objects where conf_id=:conf_id"]
+    if {!$conf_exists_p} {
+        ad_return_complaint 1 "<b>Error: The selected Confirmation Object (#$conf_id) does not exist</b>:<br>
+	The object has probably been deleted by its owner recently."
+        ad_script_abort
+    }
+
     set edit_perm_func [parameter::get_from_package_key -package_key intranet-timesheet2-workflow -parameter TimesheetConfNewPageWfEditButtonPerm -default "im_timesheet_conf_new_page_wf_perm_edit_button"]
     set delete_perm_func [parameter::get_from_package_key -package_key intranet-timesheet2 -parameter TimesheetConfNewPageWfDeleteButtonPerm -default "im_timesheet_conf_new_page_wf_perm_delete_button"]
 
