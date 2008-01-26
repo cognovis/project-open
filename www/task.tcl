@@ -76,7 +76,10 @@ set task(cancel_url) "task?[export_vars -url {task_id return_url {action.cancel 
 set task(action_url) "task"
 set task(return_url) $return_url
 
-set context [list [list "case?case_id=$task(case_id)" "$task(object_name) case"] "$task(task_name)"]
+set task_name "undefined"
+if {[info exists task(task_name)]} { set task_name $task(task_name)}
+
+set context [list [list "case?case_id=$task(case_id)" "$task(object_name) case"] $task_name]
 set panel_color "#dddddd"
 
 set show_action_panel_p 1
