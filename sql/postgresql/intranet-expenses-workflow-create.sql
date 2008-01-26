@@ -14,25 +14,45 @@ select im_category_new(3816, 'Requested', 'Intranet Cost Status');
 select im_category_new(3818, 'Rejected', 'Intranet Cost Status');
 
 
------------------------------------------------------------
--- Component Plugin
---
 
--- SELECT im_component_plugin__new (
--- 	null,				-- plugin_id
--- 	'acs_object',			-- object_type
--- 	now(),				-- creation_date
--- 	null,				-- creation_user
--- 	null,				-- creation_ip
--- 	null,				-- context_id
--- 	'Project Timesheet Conf',		-- plugin_name
--- 	'intranet-expenses-workflow',		-- package_name
--- 	'right',			-- location
--- 	'/intranet/projects/view',	-- page_url
--- 	null,				-- view_name
--- 	90,				-- sort_order
--- 	'im_timesheet_conf_objects_project_component -object_id $project_id'	-- component_tcl
--- );
+
+-- ------------------------------------------------------
+-- Workflow Graph & Journal on Absence View Page
+-- ------------------------------------------------------
+
+SELECT  im_component_plugin__new (
+	null,					-- plugin_id
+	'acs_object',				-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+
+	'Expense Bundle Confirmation Workflow',	-- component_name
+	'intranet-expenses-workflow',		-- package_name
+	'right',				-- location
+	'/intranet-expenses/bundle-new',	-- page_url
+	null,					-- view_name
+	10,					-- sort_order
+	'im_workflow_graph_component -object_id $bundle_id'
+);
+
+SELECT  im_component_plugin__new (
+	null,					-- plugin_id
+	'acs_object',				-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+
+	'Expense Bundle Confirmation Journal',			-- component_name
+	'intranet-timesheet2-workflow',		-- package_name
+	'bottom',				-- location
+	'/intranet-expenses/bundle-new',	-- page_url
+	null,					-- view_name
+	100,					-- sort_order
+	'im_workflow_journal_component -object_id $bundle_id'
+);
 
 
 -----------------------------------------------------------
