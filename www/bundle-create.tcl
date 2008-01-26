@@ -152,6 +152,7 @@ if {$wf_installed_p && !$add_expense_bundles_p} {
 	-user_id $current_user_id
 
     set page_title [lang::message::lookup "" intranet-expenses.Workflow_Created "Workflow Created"]
+    set context_bar [im_context_bar $page_title]
     set message [lang::message::lookup "" intranet-expenses.Workflow_Created_msg "
     	A new workflow has been created for your request.
     "]
