@@ -22,7 +22,7 @@ if {![exists_and_not_null time]} { set time ""}
 if {![info exists username]} { set username "" }
 if {![info exists email]} { set email "" }
 
-set no_otp_message [lang::message::lookup "" intranet-otp.No_OTP_defined_yet "
+set no_otp_message [lang::message::lookup "" intranet-core.No_OTP_defined_yet "
 You need a One Time Password (OTP) for login from your current location.<br>
 However, there is no OTP set up for you yet.<br>
 Please logon via VPN or Intranet and setup an OTP.
