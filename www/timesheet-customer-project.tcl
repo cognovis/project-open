@@ -174,7 +174,7 @@ if { ![empty_string_p $where_clause] } {
 set sql "
 select
 	h.note,
-	h.hours,
+	coalesce(h.hours,0) as hours,
 	h.billing_rate,
 	to_char(h.day, 'YYYY-MM-DD') as date,
 	to_char(h.day, 'J') as julian_date,
@@ -362,7 +362,7 @@ switch $output_format {
 	[im_header $page_title]
 	[im_navbar reporting]
         <div id=\"slave\">
-        <div id=\"slave-content\">
+        <div id=\"slave_content\">
 
         <div class=\"filter-list\">
 
