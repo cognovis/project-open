@@ -28,6 +28,12 @@ ad_proc -public im_reporting_dashboard_sweeper {
     db_dml del_values "delete from im_reporting_cube_values"
 }
 
+ad_proc -public im_reporting_dashboard_sweeper { } {
+    Same procedure without argument
+} {
+    im_reporting_dashboard_sweeper 0
+}
+
 
 # ----------------------------------------------------------------------
 # All Time Top Customers
