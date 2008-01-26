@@ -4,12 +4,37 @@
 <property name="main_navbar_label">timesheet</property>
 </if>
 
-<h2>@page_title@</h2>
-<formtemplate id=form></formtemplate>
+<if @message@ not nil>
+  <div class="general-message">@message@</div>
+</if>
 
-<br>
-<h2>@included_expenses_msg@</h2>
+<table width="100%">
+  <tr valign="top">
+    <td width="50%">
 
-@modify_bundle_link;noquote@
+	<h2>@page_title@</h2>
+	<formtemplate id=form></formtemplate>
+	<br>
+	<h2>@included_expenses_msg@</h2>
+	@modify_bundle_link;noquote@
+	<listtemplate name=@list_id@></listtemplate>
 
-<listtemplate name=@list_id@></listtemplate>
+<if @form_mode@ eq "display" >
+      <%= [im_component_bay left] %>
+</if>
+
+    </td>
+    <td width="50%">
+
+<if @form_mode@ eq "display" >
+      <%= [im_component_bay right] %>
+</if>
+
+
+    </td>
+  </tr>
+</table>
+
+<if @form_mode@ eq "display" >
+      <%= [im_component_bay bottom] %>
+</if>
