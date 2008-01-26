@@ -9,6 +9,12 @@
 
 -- Sets up an interface to show Security Server messages
 
+
+
+drop table im_survsimp_user_schedule_map;
+drop table im_survsimp_schedules CASCADE;
+
+
 ---------------------------------------------------------
 -- delete menus and plugins 
 

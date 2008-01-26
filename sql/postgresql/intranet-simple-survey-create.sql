@@ -1,6 +1,6 @@
 -- /packages/intranet-simple-survey/sql/postgres/intranet-simple-survey-create.sql
 --
--- Copyright (c) 2003-2004 Project/Open
+-- Copyright (c) 2003-2008 ]project-open[
 --
 -- All rights reserved. Please check
 -- http://www.project-open.com/license/ for details.
@@ -9,69 +9,105 @@
 
 
 -----------------------------------------------------------
--- Simple Surveys - Object Linking Map
+-- Simple Surveys - Schedules
 --
--- This map links "Business Object Types" (users, projects and 
--- companies) and it's Type (provider, customer, internal, ...)
--- to Simple Surveys.
--- In the future we will also include there information about:
---	- Who whould fill out the survey
---	- When a person should fill out a survey
---
--- The problem with survey is not that much "restriction"
--- (make sure only the right persons fill out a survey)
--- but "enforcemente" (make sure the survey is filled out 
--- when necessary, such as a PM report).
---
--- Permissions are being set at the survey level, not at
--- this mapping level.
+-- This object represents the rules about who should fill out a survey
+-- about whom in a project.
 
-create table im_survsimp_object_map (
-	acs_object_type		varchar(1000)
-				constraint im_survsimp_omap_object_type_nn
+
+create table im_survsimp_schedules (
+	schedule_id		integer
+				constraint im_survsimp_schedules_pk
+				primary key
+				constraint im_survsimp_schedules_schedule_fk
+				references acs_objects,
+
+	-- The name of a scheduled survey, i.e. "Customer Satisfaction"
+	schedule_name		text,
+	-- What event should trigger the schedule? Available schedules:
+	--	daily(XthDay, HourOfDay)
+	--	weekly(XthWeek, DayOfWeek),
+	--	monthly_day(XthMonth, DayOfMonth)
+	--	monthly_week(XthMonth, XthWeek, DayOfWeek)
+	--	yearly_month_daily(XthYear, MonthOfYear, DayOfMonth)
+	--	yearly_month_weekly(XthYear, MonthOfYer, XthWeek, DayOfWeek)
+	schedule_event		varchar(30),
+
+	-- A TCL expression that needs to evaluate to 1.
+	-- To restrict weekly PM report to active projects: "im_project_has_status $project_id 76"
+	schedule_condition_tcl	text,
+
+	-- The survey to be filled out.
+	schedule_survey_id	integer
+				constraint im_survsimp_schedules_survey_id_nn
 				not null
-				constraint im_survsimp_omap_object_type_fk
-				references acs_object_types,
-	biz_object_type_id	integer
-				constraint im_survsimp_omap_biz_object_type_id_fk
-				references im_categories,
-	survey_id		integer
-				constraint im_survsimp_omap_survey_id_nn
-				not null
-				constraint im_survsimp_omap_survey_id_fk
+				constraint im_survsimp_schedules_survey_id_fk
 				references survsimp_surveys,
-	name			varchar(1000),
-	obligatory_p		char(1) default 'f'
-				constraint im_survsimp_omap_obligatory_p_ck
-				check(obligatory_p in ('t','f')),
-	recurrence_tcl		varchar(4000),
-	interviewee_profile_id	integer
-				constraint im_survsimp_omap_interv_id_fk
-				references groups,
-	note			varchar(4000)
-);
-create index im_survsimp_object_map_acs_object_type_idx on im_survsimp_object_map (acs_object_type);
-create index im_survsimp_object_map_biz_object_type_idx on im_survsimp_object_map (biz_object_type_id);
-create index im_survsimp_object_map_survey_idx on im_survsimp_object_map (survey_id);
 
-insert into im_survsimp_object_map (
-	acs_object_type,
-	biz_object_type_id,
-	survey_id,
-	name,
-	obligatory_p,
-	recurrence_tcl,
-	interviewee_profile_id,
-	note			
-) values (
-	'im_project',
-	null,		-- all project subtypes
-	(select survey_id from survsimp_surveys where short_name = 'pm_weekly'),
-	'Weekly Project Report',
-	't',
-	'',		-- Recurrence
-	467,		-- Project Managers
-	'Please deliver weekly until Friday 11am'
+	-- On what type of object?
+	schedule_context_object_type	varchar(100),
+
+	-- The context of the survey. Typically this is a project.
+	schedule_context_object_id	integer
+				constraint im_survsimp_schedules_context_fk
+				references acs_objects,
+	-- Who should fill out the survey? The group is interpreted depending on the context_object
+	schedule_subject_group	varchar(20)
+				constraint im_survsimp_schedules_group_ck
+				check(schedule_subject_group in (
+					'owner', 'pm', 
+					'employees', 'customers', 'providers'
+				)),
+	-- Who or what should be evaulated? The group is interpreted depending on the context_object.
+	schedule_object_group	varchar(20)
+				constraint im_survsimp_object_group_ck
+				check(schedule_object_group in (
+					'owner', 'pm', 
+					'employees', 'customers', 'providers'
+				)),
+
+	schedule_obligatory_p	char(1) default 'f'
+				constraint im_survsimp_schedules_obligatory_p_ck
+				check(schedule_obligatory_p in ('t','f')),
+
+	schedule_status_id	integer not null
+				constraint im_survsimp_schedules_status_fk
+				references im_categories,
+	schedule_type_id		integer not null
+				constraint im_survsimp_schedules_type_fk
+				references im_categories,
+
+	description		text,
+	note			text
+);
+
+-- Avoid duplicate entries.
+create unique index im_survsimp_schedule_un 
+on im_survsimp_schedules (
+	schedule_subject_group, 
+	schedule_object_group, 
+	schedule_survey_id, 
+	schedule_context_id
+);
+
+
+
+-----------------------------------------------------------
+-- Simple Surveys - Requests
+--
+-- This object represents the need that one specific person should
+-- fill out a survey about a certain object. 
+
+create table im_survsimp_user_schedule_map (
+	request_user_id		integer
+				constraint im_survsimp_requests_user_fk
+				references persons,
+	request_object_id	integer
+				constraint im_survsimp_requests_object_fk
+				references acs_objects,
+	request_schedule_id	integer
+				constraint im_survsimp_requests_schedule_fk
+				references im_survsimp_schedules
 );
 
 
@@ -89,17 +125,8 @@ insert into im_survsimp_object_map (
 
 
 select acs_privilege__remove_child('read','survsimp_take_survey');
+select acs_privilege__remove_child('write','survsimp_take_survey');
 select acs_privilege__add_child('write','survsimp_take_survey');
-
-
-
----------------------------------------------------------
--- delete potentially existing menus and plugins if this 
--- file is sourced multiple times during development...
-
-select im_component_plugin__del_module('intranet-simple-survey');
-select im_menu__del_module('intranet-simple-survey');
-
 
 
 ---------------------------------------------------------
