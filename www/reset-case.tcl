@@ -1,4 +1,4 @@
-# /packages/intranet-cust-baselkb/www/projects/rfc-delete.tcl
+# /packages/intranet-workflow/www/projects/reset-case.tcl
 #
 
 ad_page_contract {

@@ -1,4 +1,4 @@
-# /packages/intranet-cust-baselkb/www/projects/rfc-delete-2.tcl
+# /packages/intranet-workflow/www/projects/rfc-delete-2.tcl
 #
 
 ad_page_contract {
