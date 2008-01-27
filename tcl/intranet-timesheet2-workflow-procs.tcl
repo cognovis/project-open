@@ -229,17 +229,26 @@ ad_proc -public im_timesheet_conf_object_delete {
     Delete a confirmation object for the specified (main-) project
     that covers the specified day.
 } {
-    # Get the main project - the base where to search for the ConfObj
-    set main_project_id [db_string main_project "
-		select
-			main_p.project_id as main_project_id
-		from
-			im_projects p,
-			im_projects main_p
-		where
-			p.project_id = :project_id and
-			tree_ancestor_key(p.tree_sortkey, 1) = main_p.tree_sortkey
-    " -default 0]
+    # Get the main project - the first project above or equal to project_id that is not a task.
+    db_1row parent "
+                select  project_id,
+                        parent_id,
+                        project_type_id
+                from    im_projects
+                where   project_id = :project_id
+    "
+    # Go up the hierarchy only if there is a parent_id != null...
+    while {"" != $parent_id && $project_type_id == [im_project_type_task]} {
+       db_1row parent "
+                select  project_id,
+                        parent_id,
+                        project_type_id
+                from    im_projects
+                where   project_id = :parent_id
+       "
+    }
+    set main_project_id $project_id
+
 
     # Check for ConfirmationObjects matching the conditions
     set conf_ids [db_list conf_ids "
