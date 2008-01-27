@@ -23,6 +23,9 @@ update im_hours set hours=0 where hours is null;
 ALTER TABLE im_hours ALTER COLUMN hours SET NOT NULL;
 
 
+update im_component_plugins
+set title_tcl = 'lang::message::lookup "" intranet-timesheet2.Timesheet "Timesheet"'
+where title_tcl = 'lang::message::lookup "" intranet-timesheet.Timesheet "Timesheet"';
 
 -----------------------------------------------------------
 
