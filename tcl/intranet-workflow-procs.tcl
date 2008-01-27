@@ -668,7 +668,7 @@ ad_proc -public im_workflow_home_inbox_component {
     set table_header_html "<tr>\n"
     foreach col $column_headers {
 	regsub -all " " $col "_" col_txt
-	set col_txt [lang::message::lookup "" intranet-cust-baselkb.$col_txt $col]
+	set col_txt [lang::message::lookup "" intranet-workflow.$col_txt $col]
 	append table_header_html "  <td class=rowtitle>$col_txt</td>\n"
     }
     append table_header_html "</tr>\n"
