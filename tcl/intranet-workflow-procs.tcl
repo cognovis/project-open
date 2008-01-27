@@ -858,3 +858,89 @@ ad_proc -public im_workflow_skip_first_transition {
 	set journal_id3 [db_string wf_finish "select workflow_case__finish_task(:task_id, :journal_id)"]
     }
 }
+
+
+
+# ----------------------------------------------------------------------
+# Workflow Permissions
+#
+# Check permissions represented as a list of letters {r w d a}
+# per business object based on role, object type and object status.
+#
+# There is a default logic:
+# 	1. (role, status, type) is checked.
+# 	2. (role, type) is checked.
+#	3. (role, status) is checked.
+#	4. (role) is checked.
+#
+# 2.) and 3.) are OK, because type and status are disjoint.
+# ----------------------------------------------------------------------
+
+ad_proc im_workflow_object_permissions {
+    -object_id:required
+    -perm_table:required
+} {
+    Determines whether a user can execute the specified
+    "perm_letter" (i.e. r=read, w=write, d=delete) operation
+    on the object.
+    Returns the list of permissions.
+} {
+    # stuff permission from table into hash
+    array set perm_hash $perm_table
+
+    # ------------------------------------------------------
+    # Pull out the relevant variables
+    set user_id [ad_get_user_id]
+    set owner_id [db_string owner "select creation_user from acs_objects where object_id = $object_id" -default 0]
+    set status_id [db_string status "select im_biz_object__get_status_id (:object_id)" -default 0]
+    set type_id [db_string status "select im_biz_object__get_type_id (:object_id)" -default 0]
+    set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+    set user_is_hr_p [im_user_is_hr_p $user_id]
+    set user_is_owner_p [expr $owner_id == $user_id]
+    set user_is_assignee_p [db_string assignee_p "
+	select	count(*)
+	from	(select	pamm.member_id
+		from	wf_cases wfc,
+			wf_tasks wft,
+			wf_task_assignments wfta,
+			party_approved_member_map pamm
+		where	wfc.object_id = :object_id
+			and wft.case_id = wfc.case_id
+			and wft.state in ('enabled', 'started')
+			and wft.task_id = wfta.task_id
+			and wfta.party_id = pamm.party_id
+			and pamm.party_id = :user_id
+		) t
+    "]
+    
+    ns_log Notice "im_workflow_object_permissions: status_id=$status_id, user_id=$user_id, owner_id=$owner_id"
+    ns_log Notice "im_workflow_object_permissions: user_is_owner_p=$user_is_owner_p, user_is_assignee_p=$user_is_assignee_p, user_is_hr_p=$user_is_hr_p, user_is_admin_p=$user_is_admin_p"
+    ns_log Notice "im_workflow_object_permissions: hash=[array get perm_hash]"
+
+    # ------------------------------------------------------
+    # Calculate permissions
+    set perm_set {}
+
+    if {$user_is_owner_p} { 
+	set perm_letters {}
+	if {[info exists perm_hash(owner-$status_id)]} { set perm_letters $perm_hash(owner-$status_id)}
+	set perm_set [set_union $perm_set $perm_letters]
+    }
+ 
+    if {$user_is_assignee_p} { 
+	set perm_letters {}
+	if {[info exists perm_hash(assignee-$status_id)]} { set perm_letters $perm_hash(assignee-$status_id)}
+	set perm_set [set_union $perm_set $perm_letters]
+    }
+
+    if {$user_is_hr_p} { 
+	set perm_letters {}
+	if {[info exists perm_hash(hr-$status_id)]} { set perm_letters $perm_hash(hr-$status_id)}
+	set perm_set [set_union $perm_set $perm_letters]
+    }
+
+    # Admins can do everything anytime.
+    if {$user_is_admin_p} { set perm_p {r w d a } }
+
+    return $perm_set
+}
