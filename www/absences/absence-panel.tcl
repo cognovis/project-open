@@ -77,8 +77,8 @@ if {[info exists task]} {
     }
 
 
-    set page_title [lang::message::lookup "" intranet-cust-baselkb.Edit_RFC "Edit RFC"]
-    set context_bar [im_context_bar [list /intranet-rfc/projects/ "[lang::message::lookup "" intranet-cust-baselkb.RFCs "RFCs"]"] $page_title]
+    set page_title [lang::message::lookup "" intranet-timesheet2-workflow.Absence "Absence"]
+    set context_bar [im_context_bar [list /intranet-rfc/projects/ "[lang::message::lookup "" intranet-timesheet2-workflow.Absences "Absences"]"] $page_title]
 }
 
 # ---------------------------------------------------------------
