@@ -106,6 +106,24 @@ create index im_hours_conf_obj_idx on im_hours(conf_object_id);
 
 
 
+
+
+-----------------------------------------------------------
+-- Privileges
+--
+
+-- view_timesheet_conf_objects_all restricts possibility to see timesheet_conf_objects of others
+SELECT acs_privilege__create_privilege(
+	'view_timesheet_conf_all',
+	'View Timesheet Conf Objects All',
+	'View Timesheet Conf Objects All'
+);
+SELECT acs_privilege__add_child('admin', 'view_timesheet_conf_all');
+
+
+
+
+
 -----------------------------------------------------------
 -- Create, Drop and Name Plpg/SQL functions
 --

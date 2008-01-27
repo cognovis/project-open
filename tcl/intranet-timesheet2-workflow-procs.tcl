@@ -229,22 +229,26 @@ ad_proc -public im_timesheet_conf_object_delete {
     Delete a confirmation object for the specified (main-) project
     that covers the specified day.
 } {
+    # Get the main project - the base where to search for the ConfObj
+    set main_project_id [db_string main_project "
+		select
+			main_p.project_id as main_project_id
+		from
+			im_projects p,
+			im_projects main_p
+		where
+			p.project_id = :project_id and
+			tree_ancestor_key(p.tree_sortkey, 1) = main_p.tree_sortkey
+    " -default 0]
+
     # Check for ConfirmationObjects matching the conditions
-    set conf_ids [db_list main_pids "
+    set conf_ids [db_list conf_ids "
 		select distinct
 			c.conf_id
 		from
-			im_hours h,
-			im_projects p,
-			im_projects main_p,
 			im_timesheet_conf_objects c
 		where
-			h.day = to_date(:day_julian, 'J') and
-			h.user_id = :user_id and
-			h.project_id = :project_id and
-			h.project_id = p.project_id and
-			tree_ancestor_key(p.tree_sortkey, 1) = main_p.tree_sortkey and
-			c.conf_project_id = main_p.project_id and
+			c.conf_project_id = :main_project_id and
 			c.conf_user_id = :user_id and
 			to_date(:day_julian, 'J') between c.start_date and c.end_date
     "]
@@ -293,10 +297,38 @@ ad_proc -public im_timesheet_costs_delete {
 
 
 # ---------------------------------------------------------------------
-# Absence Workflow Permissions
+# Timesheet Confirmation Object - Workflow Permissions
 #
-# You can replace these functions with custom functions by modifying parameters.
 # ---------------------------------------------------------------------
+
+ad_proc im_timesheet_conf_new_page_wf_perm_table { } {
+    Returns a hash array representing (role x status) -> (v r d w a),
+    controlling the read and write permissions on the Timesheet Conf 
+    Object's new page, depending on the users's role and the WF status.
+} {
+    set req [im_timesheet_conf_obj_status_requested]
+    set rej [im_timesheet_conf_obj_status_rejected]
+    set act [im_timesheet_conf_obj_status_active]
+    set del [im_timesheet_conf_obj_status_deleted]
+
+    set perm_hash(owner-$rej) {v r d w}
+    set perm_hash(owner-$req) {v r d}
+    set perm_hash(owner-$act) {v r d}
+    set perm_hash(owner-$del) {v r d}
+
+    set perm_hash(assignee-$rej) {v r d}
+    set perm_hash(assignee-$req) {v r d}
+    set perm_hash(assignee-$act) {v r d}
+    set perm_hash(assignee-$del) {v r d}
+
+    set perm_hash(hr-$rej) {v r d w a}
+    set perm_hash(hr-$req) {v r d w a}
+    set perm_hash(hr-$act) {v r d w a}
+    set perm_hash(hr-$del) {v r d w a}
+
+    return [array get perm_hash]
+}
+
 
 
 ad_proc im_timesheet_conf_new_page_wf_perm_delete_button {
@@ -306,30 +338,28 @@ ad_proc im_timesheet_conf_new_page_wf_perm_delete_button {
     The button is visible only for the Owner of the timesheet
     and the Admin, but nobody else during the course of the WF.
 } {
-    set current_user_id [ad_get_user_id]
-    set current_user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
-    set current_user_is_hr_p [im_user_is_hr_p $current_user_id]
-    set owner_id [db_string owner "select creation_user from acs_objects where object_id = $conf_id" -default 0]
+    set perm_table [im_timesheet_conf_new_page_wf_perm_table]
+    set perm_set [im_workflow_object_permissions \
+		    -object_id $conf_id \
+		    -perm_table $perm_table
+    ]
 
-    # The standard case: Only the owner should delete his own timesheet entries - to be reapproved then.
-    set perm_p 0
-    if {$owner_id == $current_user_id} { set perm_p 1 }
-
-    # There is NO restriction on deleting timesheet objects. 
-    # The included hours will simply appear as unconfirmed again.
-
-    # Admins & HR can do everything anytime.
-    if {$current_user_is_hr_p} { set perm_p 1 }
-    if {$current_user_is_admin_p} { set perm_p 1 }
-
-    return $perm_p
+    ns_log Notice "im_timesheet_conf_new_page_wf_perm_delete_button conf_id=$conf_id => $perm_set"
+    return [expr [lsearch $perm_set "d"] > -1]
 }
 
 ad_proc im_timesheet_conf_new_page_wf_perm_edit_button {
     -conf_id:required
 } {
     Should we show the "Edit" button in the TimesheetConfNewPage?
-    Currently, nobody should ever edit a timesheet conf object (just delete).
 } {
-    return 0
+    set perm_table [im_timesheet_conf_new_page_wf_perm_table]
+    set perm_set [im_workflow_object_permissions \
+		    -object_id $conf_id \
+		    -perm_table $perm_table
+    ]
+
+    ns_log Notice "im_timesheet_conf_new_page_wf_perm_edit_button conf_id=$conf_id => $perm_set"
+    return [expr [lsearch $perm_set "w"] > -1]
 }
+

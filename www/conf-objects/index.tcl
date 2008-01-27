@@ -26,19 +26,13 @@ set current_user_id $user_id
 set page_focus "im_header_form.keywords"
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set date_format "YYYY-MM-DD"
-
 set object_name [db_string object_name "select acs_object__name(:object_id)" -default [lang::message::lookup "" intranet-expenes.Unassigned "Unassigned"]]
-
 set page_title [_ intranet-timesheet2-workflow.Timesheet_Approval]
-
-if {[im_permission $user_id view_projects_all]} {
-    set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
-} else {
-    set context_bar [im_context_bar $page_title]
-}
+set context_bar [im_context_bar $page_title]
 
 set return_url [im_url_with_query]
 set current_url [ns_conn url]
+
 
 
 # ---------------------------------------------------------------
@@ -46,9 +40,8 @@ set current_url [ns_conn url]
 # ---------------------------------------------------------------
 
 set admin_links ""
-
 append admin_links " <li><a href=\"new?[export_url_vars object_id return_url]\">[_ intranet-timesheet2-workflow.Add_a_new_Conf]</a>\n"
-
+if {"" != $admin_links} { set admin_links "<ul>\n$admin_links</ul>\n" }
 
 set bulk_actions_list "[list]"
 #[im_permission $user_id "delete_expense"]
@@ -107,21 +100,9 @@ template::list::create \
 	}
     }
 
-set project_where ""
-if {0 == $object_id} { 
-    set project_where "\tand c.object_id is null\n" 
-} else {
-    set project_where "\tand c.object_id = :object_id\n" 
-}
 
-set project_where ""
-if {0 == $object_id} { 
-    set project_where "\tand n.object_id is null\n" 
-} else {
-    set project_where "\tand n.object_id = :object_id\n" 
-}
-
-
+set owner_where "and co.conf_user_id = :user_id"
+if {[im_permission $user_id "view_timesheet_conf_all"]} { set owner_where ""}
 
 db_multirow -extend {conf_chk return_url period} conf_lines confs_lines "
 	select	co.*,
@@ -129,6 +110,9 @@ db_multirow -extend {conf_chk return_url period} conf_lines confs_lines "
 		im_name_from_user_id(co.conf_user_id) as conf_user_name
 	from	im_timesheet_conf_objects co
 		LEFT OUTER JOIN im_projects p ON (co.conf_project_id = p.project_id)
+	where
+		1=1
+		$owner_where
 " {
     set return_url [im_url_with_query]
     set conf_chk "<input type=\"checkbox\" name=\"conf_id\" value=\"$conf_id\" id=\"confs_list,$conf_id\">"
