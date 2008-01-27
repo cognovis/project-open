@@ -81,10 +81,12 @@ if {"" == $project_id | 0 == $project_id} { set main_navbar_label "expenses" }
 set unassigned_p_options [list \
         "unassigned" [lang::message::lookup "" intranet-expenses.Unassigned "Expenses without Projects"] \
         "assigned" [lang::message::lookup "" intranet-expenses.Assigned "Expenses assigned to a Projects"] \
-        "both" [lang::message::lookup "" intranet-expenses.Assig_Unassig "Expenses with or without Project"] \
         "all" [lang::message::lookup "" intranet-expenses.All "All Expenses"] \
 ]
 
+set ttt {
+        "both" [lang::message::lookup "" intranet-expenses.Assig_Unassig "Expenses with or without Project"] \
+}
 
 # ---------------------------------------------------------------
 # Admin Links
@@ -330,6 +332,15 @@ set ttt {
 	}
 }
 
+
+# Allow accounting guys to see all expense items,
+# not just their own ones...
+set personal_only_sql "and provider_id = :user_id"
+if {$create_bundle_p} { set personal_only_sql "" }
+
+
+
+
 db_multirow -extend {bundle_chk project_url owner_url bundle_url} bundle_lines bundle_lines "
 	select	c.*,
 		to_char(c.effective_date,'DD/MM/YYYY') as effective_date,
@@ -344,6 +355,7 @@ db_multirow -extend {bundle_chk project_url owner_url bundle_url} bundle_lines b
 		c.cost_id = o.object_id
 		and c.cost_type_id = [im_cost_type_expense_bundle]
 		$project_where
+		$personal_only_sql
 " {
     set amount "[format %.2f [expr $amount * [expr 1 + [expr $vat / 100]]]] $currency"
     set vat "[format %.1f $vat] %"

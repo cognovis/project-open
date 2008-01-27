@@ -38,7 +38,7 @@
 		now(),			-- effective_date
 		:payment_days,  	-- payment_days
 		:amount_before_vat,	-- amount
-		:currency,      	-- currency
+		:default_currency,	-- currency
 		:bundle_vat,		-- vat
 		:tax,			-- tax
 

@@ -51,10 +51,13 @@ set expenses_list [list]
 set common_project_id 0
 set common_customer_id 0
 set common_provider_id 0
+set common_currrency ""
 
 set expense_sql "
 	select	c.*,
-		e.*
+		e.*,
+		im_exchange_rate(c.effective_date::date, c.currency, :default_currency) 
+			* c.amount as amount_converted
 	from	im_costs c, 
 		im_expenses e
 	where	c.cost_id in ([join $expense_ids ", "])
@@ -63,8 +66,8 @@ set expense_sql "
 "
 db_foreach expenses $expense_sql {
 
-    set amount_before_vat [expr $amount_before_vat + $amount]
-    set total_amount [expr $total_amount + [expr $amount * [expr 1 + [expr $vat / 100.0]]]]
+    set amount_before_vat [expr $amount_before_vat + $amount_converted]
+    set total_amount [expr $total_amount + [expr $amount_converted * [expr 1 + [expr $vat / 100.0]]]]
 
     if {0 == $common_project_id & $project_id != ""} { set common_project_id $project_id }
     if {0 != $common_project_id & $project_id != "" & $common_project_id != $project_id} {
