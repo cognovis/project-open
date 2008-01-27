@@ -308,9 +308,8 @@ ad_proc im_timesheet_conf_new_page_wf_perm_delete_button {
 } {
     set current_user_id [ad_get_user_id]
     set current_user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
-    set current_usre_is_hr_p [im_user_is_hr_p $current_user_id]
-
-    set owner_id [util_memoize "db_string owner \"select creation_user from acs_objects where object_id = $conf_id\" -default 0"]
+    set current_user_is_hr_p [im_user_is_hr_p $current_user_id]
+    set owner_id [db_string owner "select creation_user from acs_objects where object_id = $conf_id" -default 0]
 
     # The standard case: Only the owner should delete his own timesheet entries - to be reapproved then.
     set perm_p 0
@@ -320,7 +319,7 @@ ad_proc im_timesheet_conf_new_page_wf_perm_delete_button {
     # The included hours will simply appear as unconfirmed again.
 
     # Admins & HR can do everything anytime.
-    if {$current_usre_is_hr_p} { set perm_p 1 }
+    if {$current_user_is_hr_p} { set perm_p 1 }
     if {$current_user_is_admin_p} { set perm_p 1 }
 
     return $perm_p
