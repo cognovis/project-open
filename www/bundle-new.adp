@@ -16,7 +16,9 @@
 	<formtemplate id=form></formtemplate>
 	<br>
 	<h2>@included_expenses_msg@</h2>
+<!--
 	@modify_bundle_link;noquote@
+-->
 	<listtemplate name=@list_id@></listtemplate>
 
 <if @form_mode@ eq "display" >
