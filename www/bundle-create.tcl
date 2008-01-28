@@ -110,8 +110,10 @@ if {0 == $common_project_id} {
 
 set project_nr [db_string project_nr "select project_nr from im_projects where project_id = :common_project_id" -default ""]
 set project_name [db_string project_nr "select project_name from im_projects where project_id = :common_project_id" -default ""]
+
+set total_amount_rounded [expr round($total_amount*100) / 100]
 set cost_name [lang::message::lookup "" intranet-expenses.Expense_Bundle "Expense Bundle"]
-set cost_name "$cost_name - $default_currency $total_amount in $project_name"
+set cost_name "$cost_name - $default_currency $total_amount_rounded in $project_name"
 
 set customer_id "[im_company_internal]"
 set provider_id $current_user_id
