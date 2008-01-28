@@ -170,4 +170,7 @@ if {$wf_installed_p && !$add_expense_bundles_p} {
 # Where to go now?
 # ---------------------------------------------------------------
 
-ad_returnredirect $return_url
+ad_returnredirect [export_vars -base "bundle-new" {{bundle_id $expense_bundle_id} {form_mode "edit"}}]
+
+# ad_returnredirect $return_url
+

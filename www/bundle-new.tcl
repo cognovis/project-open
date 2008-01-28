@@ -22,9 +22,14 @@ if {![info exists panel_p]} {
 	bundle_id:integer,optional
 	cost_id:integer,optional
 	{return_url "/intranet-expenses/index"}
-	form_mode:optional
+	{ form_mode "display" }
 	enable_master_p:integer,optional
+	{ printer_friendly_p 0 }
     }
+}
+
+if {$printer_friendly_p} {
+   set enable_master_p 0
 }
 
 set current_user_id [ad_maybe_redirect_for_registration]
@@ -39,12 +44,18 @@ if {[info exists cost_id]} { set bundle_id $cost_id}
 if {[info exists bundle_id]} { set cost_id $bundle_id }
 
 set delete_bundle_p [im_permission $current_user_id "add_expense_bundle"]
+set edit_bundle_p $delete_bundle_p
 
 # ---------------------------------------------------------------
 # Options
 # ---------------------------------------------------------------
 
-set project_options [im_project_options]
+set bundle_project_id 0
+if {[info exists bundle_id]} {
+    set bundle_project_id [db_string bpid "select project_id from im_costs where cost_id = :bundle_id" -default 0]
+}
+set project_options [im_project_options -include_project_ids $bundle_project_id]
+
 set customer_options [im_company_options]
 set creation_user_options [im_employee_options]
 set provider_options [im_provider_options]
@@ -74,16 +85,22 @@ if {[info exists bundle_id]} {
     if {[eval [list $delete_perm_func -bundle_id $bundle_id]]} {
 	lappend actions [list [lang::message::lookup {} intranet-timesheet2.Delete Delete] delete]
     }
+
+    lappend actions [list [lang::message::lookup {} intranet-timesheet2.Printer_Friendly {Printer Friendly}] printer_friendly]
 }
 
 
 # ------------------------------------------------------------------
-# Delete pressed?
+# Special Buttons Pressed?
 # ------------------------------------------------------------------
 
 set button_pressed [template::form get_action form]
 if {"delete" == $button_pressed} {
     ad_returnredirect [export_vars -base "/intranet-expenses/bundle-del" {bundle_id return_url}]
+}
+
+if {"printer_friendly" == $button_pressed} {
+   ad_returnredirect [export_vars -base "bundle-new" {bundle_id return_url {printer_friendly_p 1}}]
 }
 
 
@@ -106,7 +123,7 @@ set template_label "[_ intranet-cost.Print_Template]"
 set investment_label "[_ intranet-cost.Investment]"
 set effective_date_label "[_ intranet-cost.Effective_Date]"
 set payment_days_label "[_ intranet-cost.Payment_Days]"
-set amount_label "[_ intranet-cost.Amount]"
+set amount_label "[lang::message::lookup "" intranet-cost.Amount_without_VAT "Amount<br>(without VAT)"]"
 set paid_amount_label [lang::message::lookup "" intranet-cost.Paid_Amount "Paid Amount"]
 set currency_label "[_ intranet-cost.Currency]"
 set paid_currency_label [lang::message::lookup "" intranet-cost.Paid_Currency "Paid Currency"]
@@ -115,6 +132,33 @@ set tax_label "[_ intranet-cost.TAX]"
 set desc_label "[_ intranet-cost.Description]"
 set note_label "[_ intranet-cost.Note]"
 
+    set elements {
+	cost_id:key
+	{cost_name:text(text) {label $cost_name_label} {html {size 50}}}
+	{project_id:text(hidden),optional}
+	{cost_type_id:text(hidden)}
+	{cost_status_id:text(hidden)}
+	{amount:text(hidden)}
+	{currency:text(hidden) }
+	{vat:text(hidden) }
+        {note:text(textarea),optional {label $note_label} {html {cols 50 rows 4}}}
+    }
+
+if {$edit_bundle_p || "display" == $form_mode} {
+    set elements {
+	cost_id:key
+	{cost_name:text(text) {label $cost_name_label} {html {size 50}}}
+	{project_id:text(select),optional {label $project_label} {options $project_options} }
+	{creation_user:text(select),optional {label $creation_user_label} {options $creation_user_options} }
+        {cost_type_id:text(select) {label $type_label} {options $cost_type_options} }
+        {cost_status_id:text(select) {label $cost_status_label} {options $cost_status_options} }
+        {amount:text(text) {label $amount_label} {html {size 20}} }
+        {currency:text(select) {label $currency_label} {options $currency_options} }
+        {vat:text(text) {label $vat_label} {html {size 20}} }
+        {note:text(textarea),optional {label $note_label} {html {cols 50 rows 4}}}
+    }
+}
+
 ad_form \
     -name $form_id \
     -mode $form_mode \
@@ -122,17 +166,8 @@ ad_form \
     -actions $actions \
     -has_edit 1 \
     -action "/intranet-expenses/bundle-new" \
-    -form {
-	cost_id:key
-	{cost_name:text(text) {label $cost_name_label} {html {size 40}}}
-	{creation_user:text(select) {label $creation_user_label} {options $creation_user_options} }
-	{project_id:text(select),optional {label $project_label} {options $project_options} }
-	{cost_type_id:text(select) {label $type_label} {options $cost_type_options} }
-	{cost_status_id:text(select) {label $cost_status_label} {options $cost_status_options} }
-	{amount:text(text) {label $amount_label} {html {size 20}} }
-	{currency:text(select) {label $currency_label} {options $currency_options} }
-	{vat:text(text) {label $vat_label} {html {size 20}} }
-    }
+    -form $elements
+
 
 
 ad_form -extend -name $form_id \
@@ -146,7 +181,9 @@ ad_form -extend -name $form_id \
 		and c.cost_id = o.object_id
 
     } -new_data {
-	db_exec_plsql create_conf "
+
+	if {$edit_bundle_p} {	
+	    db_exec_plsql create_conf "
 		SELECT im_bundle__new(
 			:bundle_id,
 			'im_conf',
@@ -159,13 +196,33 @@ ad_form -extend -name $form_id \
 			:bundle_type_id,
 			[im_bundle_status_active]
 		)
-        "
+            "
+	} else {
+	    im_security_alert \
+		-location "intranet-expenses/www/bundle-new" \
+		-message "Somebody tried to create an Expense Bundle without permissions" \
+		-severity "Severe"
+	}
+
     } -edit_data {
-	db_dml edit_conf "
-		update im_confs
-		set conf = :conf
-		where bundle_id = :bundle_id
-	"
+
+	if {$edit_bundle_p} {	
+	    db_dml update_consts "
+		update im_costs set
+			cost_name = :cost_name,
+			project_id = :project_id,
+			cost_type_id = :cost_type_id,
+			cost_status_id = :cost_status_id,
+			note = :note
+		where cost_id = :bundle_id
+	    "
+	} else {
+	    im_security_alert \
+		-location "intranet-expenses/www/bundle-new" \
+		-message "Somebody tried to confirm an Expense Bundle without permissions" \
+		-severity "Severe"
+	}
+
     } -after_submit {
 	ad_returnredirect $return_url
 	ad_script_abort
