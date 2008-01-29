@@ -39,6 +39,7 @@ set context_bar [im_context_bar $page_title]
 if {![info exists enable_master_p]} { set enable_master_p 1}
 if {![info exists form_mode]} { set form_mode "edit" }
 if {![info exists message]} { set message "" }
+if {![info exists printer_friendly_p]} { set printer_friendly_p 0" }
 
 if {[info exists cost_id]} { set bundle_id $cost_id}
 if {[info exists bundle_id]} { set cost_id $bundle_id }
