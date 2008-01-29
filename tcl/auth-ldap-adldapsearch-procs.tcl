@@ -98,17 +98,24 @@ ad_proc -private auth::ldap::get_user {
     # Parameters
     array set params $parameters
 
-    set lh [ns_ldap gethandle ldap]
-    set search_result [ns_ldap search $lh -scope subtree $params(BaseDN) "($params(UsernameAttribute)=$username)"]
-    ns_ldap releasehandle $lh
+    set uri $params(LdapURI)
+    set base_dn $params(BaseDN)
+    set bind_dn $params(BaseDN)
 
-    if { [llength $search_result] != 1 } {
-        return [list]
+    foreach var { username } {
+        regsub -all "{$var}" $base_dn [set $var] base_dn
+        regsub -all "{$var}" $bind_dn [set $var] bind_dn
     }
-    
-    if { [empty_string_p $element] } {
-        return $search_result
-    }
+
+    set return_code [catch {
+        ns_log Notice "auth::ldap::get_user: ldapsearch -x -H $uri -b $base_dn (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))"
+        exec ldapsearch -x -H $uri -b $base_dn (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))
+    } msg]
+
+    set search_result [auth::ldap::parse_ldap_reply $msg]
+
+    if { [llength $search_result] != 1 } { return [list] }
+    if { [empty_string_p $element] } { return $search_result }
 
     foreach { attribute value } [lindex $search_result 0] {
         if { [string equal $attribute $element] } {
@@ -123,6 +130,14 @@ ad_proc -private auth::ldap::get_user {
     }
     
     return {}
+}
+
+
+
+ad_proc -private auth::ldap::parse_ldap_reply { ldap_reply } {
+	Returns a list of elements for each ldap reply
+} {
+  return [list]
 }
 
 
@@ -244,32 +259,29 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 
     set uri $params(LdapURI)
     set base_dn $params(BaseDN)
-    set uid_attribute $params(UsernameAttribute)
-    set dn_pattern $params(DNPattern)
-    set dn "$uid_attribute=$dn_pattern,$base_dn"
+    set bind_dn $params(BindDN)
 
     foreach var { username } {
-        regsub -all "{$var}" $dn [set $var] dn
+        regsub -all "{$var}" $base_dn [set $var] base_dn
+        regsub -all "{$var}" $bind_dn [set $var] bind_dn
     }
 
     set return_code [catch {
-        exec ldapsearch -n -x -H $uri -D $dn -w $password
+        ns_log Notice "auth::ldap::authentication::Authenticate: ldapsearch -n -x -H $uri -D $bind_dn -w $password"
+        exec ldapsearch -n -x -H $uri -D $bind_dn -w $password
     } msg]
 
-    if {0 != $return_code} {
-
-    ad_return_complaint 1 "Authenticate:
-<pre>
-uri=$uri
-base_dn=$base_dn
-uid_attribute=$uid_attribute
-dn_pattern=$dn_pattern
-dn=$dn
-
-return_code=$return_code
-msg=$msg
-parameters=$parameters
-</pre>"
+    if {0 && 0 != $return_code} {
+        ad_return_complaint 1 "Authenticate:
+		<pre>
+		uri=$uri
+		base_dn=$base_dn
+		cmd=ldapsearch -n -x -H $uri -D $base_dn -w $password
+		return_code=$return_code
+		msg=$msg
+		parameters=$parameters
+		</pre>
+	"
 	ad_script_abort
     }
 
@@ -279,7 +291,13 @@ parameters=$parameters
     if {"" == $msg_first_line} { regexp {^(.*\))} $msg match msg_first_line }
 
     if {0 == $return_code} {
-	set uid [db_string uid "select party_id from parties where lower(email) = lower(:binddn)" -default 0]
+	set uid [db_string uid "
+		select	party_id 
+		from   	cc_users
+		where	lower(email) = lower(:base_dn)
+			OR lower(username) = lower(:username)
+	" -default 0]
+
 	if {0 != $uid} {
 	    set auth_info(auth_status) "ok"
 	    set auth_info(user_id) $uid
@@ -288,9 +306,9 @@ parameters=$parameters
 	    set auth_info(account_message) ""
 	    return [array get auth_info]
 	} else {
-	    set auth_info(auth_status) "no_local_user"
+	    set auth_info(auth_status) "bad_password"
 	    set auth_info(user_id) 0
-	    set auth_info(auth_message) "User and password OK, but no local user exists"
+	    set auth_info(auth_message) "User and password OK, but there is no &#93;po&#91; user with this name."
 	    set auth_info(account_status) "ok"
 	    set auth_info(account_message) ""
 	    return [array get auth_info]
@@ -331,9 +349,8 @@ ad_proc -private auth::ldap::authentication::GetParameters {} {
     return {
         LdapURI "URI of the host to access. Something like ldap://ldap.project-open.com/"
         BaseDN "Base DN when searching for users. Typically something like 'o=Your Org Name', or 'dc=yourdomain,dc=com'"
+        BindDN "How to form the user DN? Active Directory accepts emails like {username}@project-open.com"
         UsernameAttribute "LDAP attribute to match username against, typically uid"
-        DNPattern "Pattern for contructing the first part of the DN for new accounts. Will automatically get ',BaseDN' appended. {username}, {first_names}, {last_name}, {email}, {screen_name}, {url} will be expanded with their respective values. Example: 'uid={username}'."
-
     }
 }
 
@@ -462,7 +479,9 @@ ad_proc -private auth::ldap::password::GetParameters {} {
     service contract for LDAP.
 } {
     return {
+        LdapURI "URI of the host to access. Something like ldap://ldap.project-open.com/"
         BaseDN "Base DN when searching for users. Typically something like 'o=Your Org Name', or 'dc=yourdomain,dc=com'"
+        BindDN "How to form the user DN? Active Directory accepts emails like {username}@project-open.com"
         UsernameAttribute "LDAP attribute to match username against, typically uid"
         PasswordHash "The hash to use when storing passwords. Supported values are MD5, SMD5, SHA, SSHA, and CRYPT."
     }
@@ -558,7 +577,9 @@ ad_proc -private auth::ldap::registration::GetParameters {} {
     service contract.
 } {
     return {
+        LdapURI "URI of the host to access. Something like ldap://ldap.project-open.com/"
         BaseDN "Base DN when searching for users. Typically something like 'o=Your Org Name', or 'dc=yourdomain,dc=com'"
+        BindDN "How to form the user DN? Active Directory accepts emails like {username}@project-open.com"
         UsernameAttribute "LDAP attribute to match username against, typically uid"
         PasswordHash "The hash to use when storing passwords. Supported values are MD5, SMD5, SHA, SSHA, and CRYPT."
         DNPattern "Pattern for contructing the first part of the DN for new accounts. Will automatically get ',BaseDN' appended. {username}, {first_names}, {last_name}, {email}, {screen_name}, {url} will be expanded with their respective values. Example: 'uid={username}'."
@@ -632,7 +653,9 @@ ad_proc -private auth::ldap::user_info::GetParameters {} {
     Delete service contract for account registration.
 } {
     return {
+        LdapURI "URI of the host to access. Something like ldap://ldap.project-open.com/"
         BaseDN "Base DN when searching for users. Typically something like 'o=Your Org Name', or 'dc=yourdomain,dc=com'"
+        BindDN "How to form the user DN? Active Directory accepts emails like {username}@project-open.com"
         UsernameAttribute "LDAP attribute to match username against, typically uid"
         InfoAttributeMap "Mapping attributes from the LDAP entry to OpenACS user information in the format 'element=attrkbute;element=attribute'. Example: first_names=givenName;last_name=sn;email=mail"
     }
