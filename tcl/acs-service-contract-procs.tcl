@@ -258,7 +258,7 @@ ad_proc -private -deprecated acs_sc_call {
 	return [apply $proc_name $arguments]
     } else {
         if { $error_p } {
-            error "Operation $operation is not implemented in '$impl' implementation of contract '$contract'"
+            error "Operation $operation is not implemented in '$impl' implementation of contract '$contract'<br><pre>$proc_name $arguments</pre>"
         } else {
             ns_log warning "ACS-SC: Function Not Found: $proc_name [info procs $proc_name]"
         }
