@@ -143,21 +143,22 @@ if { [auth::UseEmailForLoginP] } {
 	ad_form -extend -name login -form [list [list email:text($username_widget),nospell [list label [_ acs-subsite.Email]]]]
     }
 
+    if {1 != $otp_enabled_p} {
+	ad_form -extend -name login -form {
+	    {password:text(password),optional
+		{label "[_ acs-subsite.Password]"}
+	    }
+	}
+    }
+
     set user_id_widget_name email
     if { ![empty_string_p $email] } {
         set focus "password"
     } else {
         set focus "email"
     }
+
 } else {
-    if { [llength $authority_options] > 1 } {
-        ad_form -extend -name login -form {
-            {authority_id:integer(select) 
-                {label "[_ acs-subsite.Authority]"} 
-                {options $authority_options}
-            }
-        }
-    }
 
     ad_form -extend -name login -form [list [list username:text($username_widget),nospell [list label [_ acs-subsite.Username]]]]
     set user_id_widget_name username
@@ -166,16 +167,28 @@ if { [auth::UseEmailForLoginP] } {
     } else {
         set focus "username"
     }
-}
-set focus "login.$focus"
 
-if {1 != $otp_enabled_p} {
-    ad_form -extend -name login -form {
-	{password:text(password),optional
-	    {label "[_ acs-subsite.Password]"}
+    if {1 != $otp_enabled_p} {
+	ad_form -extend -name login -form {
+	    {password:text(password),optional
+		{label "[_ acs-subsite.Password]"}
+	    }
 	}
     }
+
+    if { [llength $authority_options] > 1 } {
+        ad_form -extend -name login -form {
+            {authority_id:integer(select) 
+                {label "[lang::message::lookup {} acs-subsite.Domain Domain]"} 
+                {options $authority_options}
+            }
+        }
+    }
+
+
+
 }
+set focus "login.$focus"
 
 # One-Time-Password Enabled - show form element
 if {$otp_installed_p && [exists_and_not_null otp_enabled_p]} {
