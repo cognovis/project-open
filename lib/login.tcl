@@ -45,13 +45,6 @@ set otp_installed_p [db_string otp_installed "
 	where package_key = 'intranet-otp'
 " -default 0]
 
-# Check if there is an LDAP support module installed
-set ldap_installed_p [db_string ldap_installed "
-	select count(*) 
-	from apm_enabled_package_versions 
-	where package_key = 'intranet-ldap'
-" -default 0]
-
 set self_registration [parameter::get_from_package_key \
                                   -package_key acs-authentication \
 			          -parameter AllowSelfRegister \
@@ -293,60 +286,21 @@ ad_form -extend -name login -on_request {
 	    ]
 	}
 	
-	# Handle authentication errors
-	if {!$ldap_installed_p} {
-	    switch $auth_info(auth_status) {
-		ok { }
-		bad_password {
-		    form set_error login password $auth_info(auth_message)
-		    break
-		}
-		default {
-		    form set_error login $user_id_widget_name $auth_info(auth_message)
-		    break
-		}
-	    }
-	}
-
-	set otp_user_id 0
-	if {[exists_and_not_null auth_info(user_id)]} { set otp_user_id $auth_info(user_id) }
-    }
-
-
-    # --------------------------------------------------------
-    # Additional login option if the "local" login wasn't successful...
-    set auth_status ""
-    if {[info exists auth_info(auth_status)]} { set auth_status $auth_info(auth_status)}
-    if {$ldap_installed_p && "ok" != $auth_status} {
-	# auth_info(auth_status) in: {ok, bad_password,not_ldap}
-	array set auth_info [im_ldap_check_user \
-				 -email $email \
-				 -username $username \
-				 -password $password
-	]
-	
-	# Handle authentication errors
 	switch $auth_info(auth_status) {
-	    ok { 
-		auth::issue_login \
-		    -user_id $auth_info(user_id) \
-		    -persistent=[expr $allow_persistent_login_p && [template::util::is_true $persistent_p]] \
-		    -account_status $auth_info(account_status)
-	    }
+	    ok { }
 	    bad_password {
 		form set_error login password $auth_info(auth_message)
 		break
-	    }
-	    not_ldap {
-		# Nothing, continue below with normal authentication
 	    }
 	    default {
 		form set_error login $user_id_widget_name $auth_info(auth_message)
 		break
 	    }
 	}
+	
+	set otp_user_id 0
+	if {[exists_and_not_null auth_info(user_id)]} { set otp_user_id $auth_info(user_id) }
     }
-
 
     # --------------------------------------------------------
     # Check if there is a secure login module installed
