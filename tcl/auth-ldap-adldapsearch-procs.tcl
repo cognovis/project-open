@@ -108,8 +108,8 @@ ad_proc -private auth::ldap::get_user {
     }
 
     set return_code [catch {
-        ns_log Notice "auth::ldap::get_user: ldapsearch -x -H $uri -b $base_dn (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))"
         exec ldapsearch -x -H $uri -b $base_dn (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))
+        ns_log Notice "auth::ldap::get_user: ldapsearch -x -H $uri -b $base_dn (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))"
     } msg]
 
     set search_result [auth::ldap::parse_ldap_reply $msg]
@@ -267,23 +267,9 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     }
 
     set return_code [catch {
-        ns_log Notice "auth::ldap::authentication::Authenticate: ldapsearch -n -x -H $uri -D $bind_dn -w $password"
+        ns_log Notice "auth::ldap::authentication::Authenticate: ldapsearch -n -x -H $uri -D $bind_dn -w xxxxxxxxx"
         exec ldapsearch -n -x -H $uri -D $bind_dn -w $password
     } msg]
-
-    if {0 && 0 != $return_code} {
-        ad_return_complaint 1 "Authenticate:
-		<pre>
-		uri=$uri
-		base_dn=$base_dn
-		cmd=ldapsearch -n -x -H $uri -D $base_dn -w $password
-		return_code=$return_code
-		msg=$msg
-		parameters=$parameters
-		</pre>
-	"
-	ad_script_abort
-    }
 
     # Extract the first line - it contains the error message if there is an issue.
     set msg_first_line ""
