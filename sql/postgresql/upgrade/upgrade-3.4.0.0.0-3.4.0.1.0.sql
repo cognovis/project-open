@@ -451,12 +451,18 @@ values (260, 'workflow_home_inbox', '');
 
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
 values (26000,260,'Action','"<a href=$action_url>$next_action_l10n</a>"',0);
-insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
--- values (26010,260,'Object Type','"$object_type_pretty"',10);
+
 -- insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
+-- values (26010,260,'Object Type','"$object_type_pretty"',10);
+
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
 values (26020,260,'Type','"$object_subtype"',20);
+
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
 values (26030,260,'Status','"$status"',30);
+
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
+values (26040,260,'Assignee','"$assignee_pretty"',40);
 
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl, sort_order) 
 values (26050,260,'Owner','"<a href=$owner_url>$owner_name</a>"',45);
@@ -472,3 +478,25 @@ values (26090,260,
 	'<input type=checkbox onclick="acs_ListCheckAll(''action'',this.checked)">',
 	'"<input type=checkbox name=task_id value=$task_id id=action,$task_id>"',
 90);
+
+
+create or replace function im_workflow_task_assignee_names (integer)
+returns varchar as '
+DECLARE
+        p_task_id       alias for $1;
+        row             RECORD;
+        v_result        varchar;
+BEGIN
+     v_result := '''';
+
+     FOR row IN
+        select  acs_object__name(wta.party_id) as party_name
+        from    wf_task_assignments wta
+        where   wta.task_id = p_task_id
+     loop
+        v_result := v_result || '' '' || row.party_name;
+     end loop;
+
+     return v_result;
+end;' language 'plpgsql';
+
