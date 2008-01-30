@@ -1,4 +1,4 @@
-# /packages/intranet-timesheet2-workflow/www/new.tcl
+# /packages/intranet-timesheet2-workflow/www/conf-objects/new.tcl
 #
 # Copyright (C) 2003-2006 ]project-open[
 # all@devcon.project-open.com
