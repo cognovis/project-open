@@ -689,7 +689,8 @@ ad_proc -public im_workflow_home_inbox_component {
 		im_biz_object__get_status_id(o.object_id) as status_id,
 		tr.transition_name,
 		t.holding_user,
-		t.task_id
+		t.task_id,
+		im_workflow_task_assignee_names(t.task_id) as assignees_pretty
 	from
 		acs_object_types ot,
 		acs_objects o,

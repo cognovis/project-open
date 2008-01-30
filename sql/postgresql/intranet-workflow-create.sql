@@ -23,6 +23,32 @@ select im_priv_create('wf_reassign_tasks','Senior Managers');
 
 
 -- ------------------------------------------------------
+-- Returns a string with comma separated names of users/parties
+-- assigned to the current task
+-- ------------------------------------------------------
+
+create or replace function im_workflow_task_assignee_names (integer)
+returns varchar as '
+DECLARE
+	p_task_id	alias for $1;
+        row             RECORD;
+        v_result	varchar;
+BEGIN
+     v_result := '''';
+
+     FOR row IN
+	select	acs_object__name(wta.party_id) as party_name
+	from	wf_task_assignments wta
+	where	wta.task_id = p_task_id
+     loop
+        v_result := v_result || '' '' || row.party_name;
+     end loop;
+
+     return v_result;
+end;' language 'plpgsql';
+
+
+-- ------------------------------------------------------
 -- Update Project/Task types with Workflow types
 -- ------------------------------------------------------
 
