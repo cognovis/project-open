@@ -52,6 +52,15 @@ if {$printer_friendly_p} { set enable_master_p 0 }
 
 set bundle_project_id 0
 if {[info exists bundle_id]} {
+
+    set exists_p [db_string exists "select count(*) from im_costs where cost_id = :bundle_id"]
+    if {!$exists_p} {
+	ad_return_complaint 1 "<b>[lang::message::lookup "" intranet-expenses.Expense_Bundle_not_found "Expense Bundle not found"]</b>:<br>
+	[lang::message::lookup "" intranet-expenses.Expense_Bundle_not_found "
+		This bundle has probably been deleted by another user.
+	"]"
+	ad_script_abort
+    }
     set bundle_project_id [db_string bpid "select project_id from im_costs where cost_id = :bundle_id" -default 0]
 }
 set project_options [im_project_options -include_project_ids $bundle_project_id]
