@@ -51,15 +51,16 @@ declare
 	v_subject                               text; 
 	v_body                                  text; 
 	v_request_id                            integer; 
-	v_workflow_url			  text;
-	v_acs_lang_package_id			  integer;
+	v_workflow_url				text;
+	v_acs_lang_package_id			integer;
 
-	v_notification_type			  varchar;
-	v_notification_type_id		  integer;
-	v_workflow_package_id			  integer;
-	v_notification_n_seconds		  integer;
-	v_locale				  text;
-	v_count				  integer;
+	v_notification_type			varchar;
+	v_notification_type_id			integer;
+	v_workflow_package_id			integer;
+	v_notification_n_seconds		integer;
+	v_locale				text;
+	v_str					text;
+	v_count					integer;
 begin
 		-- Default notification type
 		v_notification_type := notify_assignee__notification_type;
@@ -165,7 +166,8 @@ begin
 
 	RAISE NOTICE ''workflow_case__notify_assignee: Subject=%, Body=%'', v_subject, v_body;
 
-	if notify_assignee__callback != '''' and notify_assignee__callback is not null then
+	IF notify_assignee__callback != '''' AND notify_assignee__callback is not null THEN
+
 		v_str :=  ''select '' || notify_assignee__callback || '' ('' ||
 		      notify_assignee__task_id || '','' ||
 		      coalesce(quote_literal(notify_assignee__custom_arg),''null'') ||
@@ -176,17 +178,18 @@ begin
 		      quote_literal(v_body) || '')'';
 
 		execute v_str;
+
 	else
 		v_request_id := acs_mail_nt__post_request (
-		v_party_from,                 -- party_from
-		notify_assignee__user_id,     -- party_to
-		''f'',                        -- expand_group
-		v_subject,                    -- subject
-		v_body,                       -- message
-		0                             -- max_retries
+			v_party_from,                 -- party_from
+			notify_assignee__user_id,     -- party_to
+			''f'',                        -- expand_group
+			v_subject,                    -- subject
+			v_body,                       -- message
+			0                             -- max_retries
 		);
 	end if;
 
-	  return 0; 
+	return 0; 
 end;' language 'plpgsql';
 
