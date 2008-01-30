@@ -325,10 +325,10 @@ ad_proc im_timesheet_conf_new_page_wf_perm_table { } {
     set perm_hash(owner-$act) {v r d}
     set perm_hash(owner-$del) {v r d}
 
-    set perm_hash(assignee-$rej) {v r d}
-    set perm_hash(assignee-$req) {v r d}
-    set perm_hash(assignee-$act) {v r d}
-    set perm_hash(assignee-$del) {v r d}
+    set perm_hash(assignee-$rej) {v r}
+    set perm_hash(assignee-$req) {v r}
+    set perm_hash(assignee-$act) {v r}
+    set perm_hash(assignee-$del) {v r}
 
     set perm_hash(hr-$rej) {v r d w a}
     set perm_hash(hr-$req) {v r d w a}
