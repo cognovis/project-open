@@ -15,7 +15,7 @@ begin
 	from acs_object_types where object_type = ''im_report'';
 	IF v_count > 0 THEN return 0; END IF;
 
-	SELECT acs_object_type__create_type (
+	PERFORM acs_object_type__create_type (
 		''im_report'',			-- object_type
 		''Report'',			-- pretty_name
 		''Reports'',			-- pretty_plural
@@ -28,15 +28,39 @@ begin
 		''im_report__name''		-- name_method
 	);
 
+	create table im_reports (
+		report_id		integer
+					constraint im_report_id_pk
+					primary key
+					constraint im_report_id_fk
+					references acs_objects,
+		report_code		varchar(100),
+		report_name		varchar(1000),
+		report_status_id	integer 
+					constraint im_report_status_nn
+					not null
+					constraint im_report_status_fk
+					references im_categories,
+		report_type_id		integer 
+					constraint im_report_type_nn
+					not null
+					constraint im_report_type_fk
+					references im_categories,
+		report_menu_id		integer
+					constraint im_report_menu_id_fk
+					references im_menus,
+		report_sql		text
+					constraint im_report_report_nn
+					not null,
+		report_sort_order	integer,
+		report_description	text
+	);
+
+
 	return 0;
 end;' language 'plpgsql';
 select inline_1 ();
 drop function inline_1();
-
-
-
-alter table im_reports
-add column report_sort_order integer;
 
 
 
@@ -158,6 +182,7 @@ begin
 	insert into im_categories(category_id, category, category_type) 
 	values (15100, ''Simple SQL Report'', ''Intranet Report Type'');
 
+	return 0;
 end;' language 'plpgsql';
 select inline_1 ();
 drop function inline_1();
