@@ -38,48 +38,56 @@ ad_proc -private im_package_expenses_id_helper {} {
 # Workflow Permissions
 # ----------------------------------------------------------------------
 
+ad_proc im_expense_bundle_new_page_wf_perm_table { } {
+    Returns a hash array representing (role x status) -> (v r d w a),
+    controlling the read and write permissions on expenses,
+    depending on the users's role and the WF status.
+} {
+    set req [im_cost_status_requested]
+    set rej [im_cost_status_rejected]
+    set act [im_cost_status_created]
+    set del [im_cost_status_deleted]
+
+    set perm_hash(owner-$rej) {v r d w}
+    set perm_hash(owner-$req) {v r d w}
+    set perm_hash(owner-$act) {v r}
+    set perm_hash(owner-$del) {v r}
+
+    set perm_hash(assignee-$rej) {v r}
+    set perm_hash(assignee-$req) {v r}
+    set perm_hash(assignee-$act) {v r}
+    set perm_hash(assignee-$del) {v r}
+
+    set perm_hash(hr-$rej) {v r d w a}
+    set perm_hash(hr-$req) {v r d w a}
+    set perm_hash(hr-$act) {v r d w a}
+    set perm_hash(hr-$del) {v r d w a}
+
+    return [array get perm_hash]
+}
+
 
 ad_proc im_expense_bundle_new_page_wf_perm_modify_included_expenses {
     -bundle_id:required
 } {
-    Should we show the "Modify Included Expenses" link in the
-    ExpenseBundleNewPage?
-    The link is visible only for the Owner of the bundle
-    and the Admin.
+    Should we show the "Modify Included Expenses" link in the ExpenseBundleNewPage?
+    The link is visible only for users with "w" permission on the bundle
 
     Also, the included expenses can't be change anymore once the 
     Expense Bundle has been approved.
 } {
-    set current_user_id [ad_get_user_id]
-    set current_user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
-    set owner_id [util_memoize "db_string owner \"select creation_user from acs_objects where object_id = $bundle_id\" -default 0"]
-
-    # The standard case: Only the owner should edit his own bundles.
-    set perm_p 0
-    if {$owner_id == $current_user_id} { set perm_p 1 }
-
-    # The owner can edit the bundle only in status requested and rejected
-    set already_approved_p 1
-    set bundle_status_id [db_string start "select cost_status_id from im_costs where cost_id = :bundle_id" -default 0]
-    if {$bundle_status_id == [im_cost_status_requested]} { set already_approved_p 0}
-    if {$bundle_status_id == [im_cost_status_rejected]} { set already_approved_p 0}
-    if {$already_approved_p} { set perm_p 0 }
-
-    # Admins & HR can do everything anytime.
-    if {[im_user_is_hr_p $current_user_id]} { set perm_p 1 }
-    if {$current_user_is_admin_p} { set perm_p 1 }
-
-    return $perm_p
+    set perm_table [im_expense_bundle_new_page_wf_perm_table]
+    set perm_set [im_workflow_object_permissions -object_id $bundle_id -perm_table $perm_table]
+    return [expr [lsearch $perm_set "w"] > -1]
 }
-
-
-
 ad_proc im_expense_bundle_new_page_wf_perm_edit_button {
     -bundle_id:required
 } {
     Should we show the "Edit" button in the ExpenseBundleNewPage?
 } {
-    return 0
+    set perm_table [im_expense_bundle_new_page_wf_perm_table]
+    set perm_set [im_workflow_object_permissions -object_id $bundle_id -perm_table $perm_table]
+    return [expr [lsearch $perm_set "a"] > -1]
 }
 
 ad_proc im_expense_bundle_new_page_wf_perm_delete_button {
@@ -89,7 +97,9 @@ ad_proc im_expense_bundle_new_page_wf_perm_delete_button {
     Only the owner himself is allowed to delete a bundle, while it
     is in status "Requrested" or "Rejected".
 } {
-    im_expense_bundle_new_page_wf_perm_modify_included_expenses -bundle_id $bundle_id
+    set perm_table [im_expense_bundle_new_page_wf_perm_table]
+    set perm_set [im_workflow_object_permissions -object_id $bundle_id -perm_table $perm_table]
+    return [expr [lsearch $perm_set "d"] > -1]
 }
 
 
@@ -115,3 +125,4 @@ ad_proc im_expense_calculate_vat_from_expense_type {
 
     return $vat
 }
+
