@@ -2321,17 +2321,29 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     set field_cnt 0
     db_foreach attributes $attributes_sql {
 
-	# Check if the current user has the right to read the dynfield
-	if {![im_object_permission -object_id $dynfield_attribute_id -user_id $user_id]} { continue }
+	# Check if the current user has the right to read and write on the dynfield
+	set read_p [im_object_permission \
+			-object_id $dynfield_attribute_id \
+			-user_id $user_id \
+			-privilege "read" \
+	]
+	set write_p [im_object_permission \
+			-object_id $dynfield_attribute_id \
+			-user_id $user_id \
+			-privilege "write" \
+	]
+	if {!$read_p} { continue }
 
 	set display_mode $default_display_mode
 	set key "$dynfield_attribute_id.$object_subtype_id"
 	if {[info exists display_mode_hash($key)]} { 
 	    set display_mode $display_mode_hash($key) 
 	}
-
 	if {"edit" == $display_mode && "display" == $form_display_mode}  {
             set display_mode $form_display_mode
+        }
+	if {"edit" == $display_mode && !$write_p}  {
+            set display_mode "display"
         }
 	if {"none" == $display_mode} { continue }
 
