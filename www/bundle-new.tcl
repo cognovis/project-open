@@ -43,6 +43,12 @@ if {[info exists bundle_id]} { set cost_id $bundle_id }
 set delete_bundle_p [im_permission $current_user_id "add_expense_bundle"]
 set edit_bundle_p $delete_bundle_p
 
+set owner_p 0
+if {[info exists bundle_id]} {
+    set owner_id [db_string owner "select creation_user from acs_objects where object_id = :bundle_id" -default 0]
+    set owner_p [expr $owner_id == $current_user_id]
+}
+
 if {$printer_friendly_p} { set enable_master_p 0 }
 
 
@@ -215,6 +221,15 @@ ad_form -extend -name $form_id \
 
     } -edit_data {
 
+	if {$owner_p} {	
+	    db_dml update_consts "
+		update im_costs set
+			cost_name = :cost_name,
+			note = :note
+		where cost_id = :bundle_id
+	    "
+	}
+
 	if {$edit_bundle_p} {	
 	    db_dml update_consts "
 		update im_costs set
@@ -225,7 +240,8 @@ ad_form -extend -name $form_id \
 			note = :note
 		where cost_id = :bundle_id
 	    "
-	} else {
+	}
+        if {!$edit_bundle_p && !$owner_p} {
 	    im_security_alert \
 		-location "intranet-expenses/www/bundle-new" \
 		-message "Somebody tried to confirm an Expense Bundle without permissions" \

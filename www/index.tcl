@@ -297,9 +297,12 @@ template::list::create \
     -bulk_action_export_vars { project_id } \
     -row_pretty_plural "[lang::message::lookup "" intranet-expenses.Bundle_Items "Bundle Items"]" \
     -elements {
+	cost_name {
+	    label "[lang::message::lookup {} intranet-expenses.Name Name]"
+	    link_url_eval $bundle_url
+	}
 	amount {
 	    label "[_ intranet-expenses.Amount]"
-	    link_url_eval $bundle_url
 	}
 	effective_date {
 	    label "[_ intranet-expenses.Expense_Date]"
