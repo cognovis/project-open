@@ -49,7 +49,6 @@ order by
                    and    ca.context_key = :context_key 
                    and    ca.role_key = :role_key
 	           )
-		   and p.party_id in (select group_id from groups)
 
       </querytext>
 </fullquery>
