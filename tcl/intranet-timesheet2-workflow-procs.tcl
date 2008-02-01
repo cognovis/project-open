@@ -320,7 +320,7 @@ ad_proc im_timesheet_conf_new_page_wf_perm_table { } {
     set act [im_timesheet_conf_obj_status_active]
     set del [im_timesheet_conf_obj_status_deleted]
 
-    set perm_hash(owner-$rej) {v r d w}
+    set perm_hash(owner-$rej) {v r d}
     set perm_hash(owner-$req) {v r d}
     set perm_hash(owner-$act) {v r d}
     set perm_hash(owner-$del) {v r d}
