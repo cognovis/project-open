@@ -154,4 +154,10 @@ where 	category_type = 'Intranet Expense Payment Type'
 	and (enabled_p is null OR enabled_p = 't');
 
 
+-- Really ugly stuff. But Accounting needs to be able to fix stuff.
+select acs_privilege__create_privilege('edit_bundled_expense_items','Edit Bundled Expenses','Edit Bundled Expenses');
+select acs_privilege__add_child('admin', 'edit_bundled_expense_items');
+
+select im_priv_create('edit_bundled_expense_items','Accounting');
+
 

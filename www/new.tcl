@@ -61,7 +61,7 @@ if {0 == $cost_type_id && ![info exists expense_id]} {
     }
 }
 
-set write_bundled_expenses [im_permission $user_id "fi_write_expense_bundles"]
+set write_bundled_expenses [im_permission $user_id "edit_bundled_expense_items"]
 
 # ------------------------------------------------------------------
 # Form Options
