@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="faq" package_version="4.7" locale="ru_RU" charset="utf-8">
+
+  <msg key="A">О:</msg>
+  <msg key="Add_QA_for_faq_name">Добавить Q&amp;A к %faq_name%</msg>
+  <msg key="administer">администрировать</msg>
+  <msg key="Answer">Ответ</msg>
+  <msg key="Back_to_FAQs">Вернуться в ЧаВо</msg>
+  <msg key="Create_a_new_FAQ">Создать новое ЧаВо</msg>
+  <msg key="Create_an_FAQ">Сочинить ЧаВо</msg>
+  <msg key="Create_FAQ">Создать ЧаВо</msg>
+  <msg key="Create_New_QA">Создать новую пару вопросов и ответов (Q&amp;A)</msg>
+  <msg key="Create_new_QA">Создать новую пару вопросов и ответов (Q&amp;A)</msg>
+  <msg key="Create_QA">Создать Q&amp;A</msg>
+  <msg key="Delete">Удалить</msg>
+  <msg key="delete">удалить</msg>
+  <msg key="Delete_This_QA">Удалить этот Q&amp;A</msg>
+  <msg key="Edit">Редактировать</msg>
+  <msg key="edit">редактировать</msg>
+  <msg key="Edit_an_FAQ">Редактировать ЧаВо</msg>
+  <msg key="FAQ_Admin">Администрация ЧаВо</msg>
+  <msg key="faq_name_Admin">Администрация %faq_name%</msg>
+  <msg key="FAQs">ЧаВы</msg>
+  <msg key="HTML">HTML</msg>
+  <msg key="insert_after">добавить после</msg>
+  <msg key="lt_Are_you_sure_you_want">Вы уверены что вы хотите удалить это ЧаВо?</msg>
+  <msg key="lt_Are_you_sure_you_want_1">Вы уверены что вы хотите удалить этот вопрос?</msg>
+  <msg key="lt_no_FAQs">ЧаВо отсутствует.</msg>
+  <msg key="lt_no_questions">Нет вопросов.</msg>
+  <msg key="Name">Имя:</msg>
+  <msg key="New">Новое</msg>
+  <msg key="No">Нет</msg>
+  <msg key="One_Question">Один Вопрос</msg>
+  <msg key="Plain">Просто текст</msg>
+  <msg key="Preformatted">Форматированный текст</msg>
+  <msg key="preview">показать</msg>
+  <msg key="Q">В:</msg>
+  <msg key="QA_On_Separate_Pages">Вопросы и Ответы на разных страницах?</msg>
+  <msg key="QA_on_Separate_Pages">Вопросы и Ответы на разных страницах?</msg>
+  <msg key="Question">Вопрос</msg>
+  <msg key="swap_with_next">поменять местами со следующим</msg>
+  <msg key="Text_type">Текст...</msg>
+  <msg key="Title">Название:</msg>
+  <msg key="Update_FAQ">Обновить ЧаВо</msg>
+  <msg key="Update_This_QA">Обновить этот Q&amp;A</msg>
+  <msg key="View_All_FAQs">Показать все ЧаВы</msg>
+  <msg key="Yes">Да</msg>
+</message_catalog>
