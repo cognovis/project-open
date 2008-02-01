@@ -61,6 +61,7 @@ if {0 == $cost_type_id && ![info exists expense_id]} {
     }
 }
 
+set write_bundled_expenses [im_permission $user_id "fi_write_expense_bundles"]
 
 # ------------------------------------------------------------------
 # Form Options
@@ -147,15 +148,37 @@ if {![info exists currency]} {
     set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"] 
 }
 
+
+
+
+# ---------------------------------------------------------------
+# Action Links and their permissions
+# ---------------------------------------------------------------
+
 # Don't allow the user to modify an "invoiced" item
-set has_edit 0
+set edit_p 0
+set delete_p 0
+
 set expense_bundle_id ""
 if {[info exists expense_id]} {
     set expense_bundle_id [db_string expense_bundle "select bundle_id from im_expenses where expense_id = :expense_id" -default ""]
 }
 if {"" != $expense_bundle_id} { 
     set form_mode "display"
-    set has_edit 1
+    set edit_p 0
+    set delete_p 0
+}
+
+if {$write_bundled_expenses} {
+    set edit_p 1
+    # No delete for the financial guys... (?)
+    set form_mode "edit"
+}
+
+set actions [list]
+if {[info exists bundle_id]} {
+    if {$edit_p} { lappend actions [list [lang::message::lookup {} intranet-timesheet2.Edit Edit] edit] }
+    if {$delete_p} { lappend actions [list [lang::message::lookup {} intranet-timesheet2.Delete Delete] delete] }
 }
 
 # ------------------------------------------------------------------
@@ -169,7 +192,8 @@ ad_form \
     -name $form_id \
     -cancel_url $return_url \
     -action $action_url \
-    -has_edit $has_edit \
+    -has_edit 1 \
+    -actions $actions \
     -mode $form_mode \
     -export {customer_id provider_id template_id payment_days cost_status cost_type_id tax return_url} \
     -form {
@@ -312,8 +336,8 @@ ad_form -extend -name $form_id -on_request {
 
     # Security Check: Don't allow to change an "invoiced" expense
     set expense_bundle_id [db_string expense_bundle "select bundle_id from im_expenses where expense_id = :expense_id" -default ""]
-    if {"" != $expense_bundle_id} {
-	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Cant_change_invoiced_item "You can't change an already invoiced expense"]
+    if {"" != $expense_bundle_id && !$write_bundled_expenses} {
+	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Cant_change_bundled_expense_item "You can't change an already bundled expense item"]
     }
 
     if {![info exists vat] || "" == $vat} { set vat 0 }

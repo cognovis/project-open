@@ -508,13 +508,15 @@ select
 	category_id as expense_type_id,
 	category as expense_type
 from 	im_categories
-where	category_type = 'Intranet Expense Type';
+where	category_type = 'Intranet Expense Type'
+	and (enabled_p is null OR enabled_p = 't');
 
 create or replace view im_expense_payment_type as
 select	category_id as expense_payment_type_id, 
 	category as expense_payment_type
 from 	im_categories
-where 	category_type = 'Intranet Expense Payment Type';
+where 	category_type = 'Intranet Expense Payment Type'
+	and (enabled_p is null OR enabled_p = 't');
 
 
 
