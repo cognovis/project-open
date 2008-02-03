@@ -227,6 +227,45 @@ select im_component_plugin__new (
 	'im_freelance_object_skill_component -object_id $user_id -return_url $return_url'
 );
 
+
+-- Show the freelance skills in users view page
+--
+select im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Project Skills',		-- plugin_name
+	'intranet-freelance',		-- package_name
+	'right',			-- location
+	'/intranet/projects/view',	-- page_url
+	null,				-- view_name
+	190,				-- sort_order
+	'im_object_skill_component -object_id $project_id -return_url $return_url'
+);
+
+
+-- Show the freelance skills in users view page
+--
+select im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Users Skills Component',	-- plugin_name
+	'intranet-freelance',		-- package_name
+	'bottom',			-- location
+	'/intranet/users/view',		-- page_url
+	null,				-- view_name
+	80,				-- sort_order
+	'im_freelance_skill_component $current_user_id $user_id $return_url'
+);
+
+
 -- Show the freelance skills in users view page
 --
 select im_component_plugin__new (

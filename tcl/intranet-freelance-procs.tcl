@@ -393,10 +393,9 @@ ad_proc im_object_skill_component {
 	select
 		c.skill_type_id,
 		c.skill_type,
-		sk.*,
-		im_category_from_id(sk.skill_id) as skill,
-		im_category_from_id(sk.confirmed_experience_id) as confirmed,
-		im_category_from_id(sk.claimed_experience_id) as claimed
+		ofsm.*,
+		im_category_from_id(ofsm.skill_id) as skill,
+		im_category_from_id(ofsm.experience_id) as experience
 	from
 		im_freelance_skill_types c,
 		im_object_freelance_skill_map ofsm
@@ -413,21 +412,13 @@ ad_proc im_object_skill_component {
 	set skills ""
 	if {[info exists skill_type_hash($skill_type_id)]} { set skills $skill_type_hash($skill_type_id) }
 
-        set conf_gif ""
-	if {"" != $confirmed && ![string equal "Unconfirmed" $confirmed]} {
-	    if {$claimed_experience_id <= $confirmed_experience_id } {
-		set conf_gif [im_gif tick]
-	    } else {
-		set conf_gif [im_gif wrong]
-	    }
-	}
-
 	if {"" != $skill} {
-	    append skills "<li>$skill ($claimed $conf_gif)\n"
+	    append skills "<li>$skillx\n"
 	}
 	set skill_type_hash($skill_type_id) $skills
     }
 
+    set skill_html ""
     foreach skill_type_id [array name skill_type_hash] {
 
 	    append skill_html "
@@ -436,19 +427,34 @@ ad_proc im_object_skill_component {
 		$skill_type_hash($skill_type_id)
 		</ul>
 	    "
-
-set ttt {
-	if {"" != $skill_type_hash($skill_type_id)} {
-	} else {
-	    append skill_html "<li class='liOpen'>$skill_type_name_hash($skill_type_id)"
-	}
     }
 
-}
+    if {"" == $skill_html} { 
+	set skill_html "<li>[lang::message::lookup "" intranet-freelance.No_skills_found "
+		No skills found.
+        "]\n"
+    }
+
+    set add_skill_msg [lang::message::lookup "" intranet-freelance.Add_required_skill "Add Required Skill"]
+
     return "
-	        <ul class='mktree'>
-		$skill_html
-		</ul>
+        <ul class='mktree'>
+	$skill_html
+	</ul>
+	<br>
+	<table>
+	<form action=/intranet-freelance/object-skill-add method=POST>
+	[export_form_vars return_url object_id]
+	<tr>
+		<td>
+		[im_category_select "Intranet Skill Type" skill_type_id]
+		</td>
+		<td
+		<input type=submit value='$add_skill_msg'>
+		</td>
+	</tr>
+	</form>
+	</table>
     "    
 }
 
