@@ -161,5 +161,17 @@ You can now return to the project page.
 
 "
 
+set page_content "
+<div id=\"slave\">
+<div id=\"slave_content\">
+<!-- intranet/www/po-master.adp before slave -->
+$page_content
+<!-- intranet/www/po-master.adp after slave -->
+</div>
+</div>
+"
+
+
+
 db_release_unused_handles
 doc_return  200 text/html [im_return_template]
