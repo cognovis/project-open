@@ -1,6 +1,6 @@
 -- /packages/intranet-freelance/sql/postgres/intranet-freelance-create.sql
 --
--- Copyright (c) 2003-2004 Project/Open
+-- Copyright (c) 2003-2008 ]project-open[
 --
 -- All rights reserved. Please check
 -- http://www.project-open.com/license/ for details.
@@ -35,15 +35,15 @@ create table im_freelancers (
 				references im_categories,
 	note			varchar(4000),
 	private_note		varchar(4000),
-        -- Freelance Recruiting
-        rec_source              varchar(400),
-        rec_status_id           integer
-                                constraint im_freelancers_rec_stat_fk
-                                references im_categories,
-        rec_test_type           varchar(400),
-        rec_test_result_id      integer
-                                constraint im_freelancers_rec_test_fk
-                                references im_categories
+	-- Freelance Recruiting
+	rec_source		varchar(400),
+	rec_status_id		integer
+				constraint im_freelancers_rec_stat_fk
+				references im_categories,
+	rec_test_type		varchar(400),
+	rec_test_result_id	integer
+				constraint im_freelancers_rec_test_fk
+				references im_categories
 );
 
 -----------------------------------------------------------
@@ -79,9 +79,9 @@ create table im_freelance_skills (
 				constraint im_fl_skills_conf_user_fk
 				references users,
 	confirmation_date	date,
-	-- "map" type of table
-	constraint im_fl_skills_pk
-	primary key (user_id, skill_id, skill_type_id)
+		-- "map" type of table
+		constraint im_fl_skills_pk
+		primary key (user_id, skill_id, skill_type_id)
 );
 
 create index im_freelance_skills_user_idx on im_freelance_skills(user_id);
@@ -126,8 +126,8 @@ create table im_object_freelance_skill_map (
 				constraint im_o_skills_claimed_ck
 				check (skill_weight > 0 and skill_weight <= 100),
 	skill_required_p	char(1) default('f')
-                                constraint im_o_skills_required_p
-                                check (skill_required_p in ('t','f'))
+				constraint im_o_skills_required_p
+				check (skill_required_p in ('t','f'))
 );
 
 -- Avoid duplicate entries
@@ -175,14 +175,14 @@ BEGIN
 	v_skills := '''';
 
 	FOR c_user_skills IN	
-		select  c.category
-		from    im_freelance_skills s,
-		        im_categories c
-		where   s.user_id=p_user_id
+		select	c.category
+		from	im_freelance_skills s,
+			im_categories c
+		where	s.user_id=p_user_id
 			and s.skill_type_id=p_skill_type_id
 			and s.skill_id=c.category_id
 		order by c.category 
-        LOOP
+	LOOP
 		v_skills := v_skills || '' '' || c_user_skills.category;
 	END LOOP;
 	RETURN v_skills;
@@ -192,58 +192,77 @@ end;' language 'plpgsql';
 -- Show the freelance information in users view page
 --
 select im_component_plugin__new (
-	null,			   -- plugin_id
-	'acs_object',		   -- object_type
-	now(),			  -- creation_date
-	null,			   -- creation_user
-	null,			   -- creation_ip
-	null,			   -- context_id
-	'Users Freelance Component',    -- plugin_name
-	'intranet-freelance',	   -- package_name
-	'left',		       -- location
-	'/intranet/users/view',	 -- page_url
-	null,			   -- view_name
-	90,			     -- sort_order
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Users Freelance Component',	-- plugin_name
+	'intranet-freelance',		-- package_name
+	'left',				-- location
+	'/intranet/users/view',		-- page_url
+	null,				-- view_name
+	90,				-- sort_order
 	'im_freelance_info_component $current_user_id $user_id $return_url [im_opt_val freelance_view_name]'
-    );
+);
+
 
 
 -- Show the freelance skills in users view page
 --
 select im_component_plugin__new (
-	null,			   -- plugin_id
-	'acs_object',		   -- object_type
-	now(),			  -- creation_date
-	null,			   -- creation_user
-	null,			   -- creation_ip
-	null,			   -- context_id
-	'Users Skills Component',       -- plugin_name
-	'intranet-freelance',	   -- package_name
-	'bottom',		       -- location
-	'/intranet/users/view',	 -- page_url
-	null,			   -- view_name
-	80,			     -- sort_order
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'User Skills',			-- plugin_name
+	'intranet-freelance',		-- package_name
+	'right',			-- location
+	'/intranet/users/view',		-- page_url
+	null,				-- view_name
+	190,				-- sort_order
+	'im_freelance_object_skill_component -object_id $user_id -return_url $return_url'
+);
+
+-- Show the freelance skills in users view page
+--
+select im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Users Skills Component',	-- plugin_name
+	'intranet-freelance',		-- package_name
+	'bottom',			-- location
+	'/intranet/users/view',		-- page_url
+	null,				-- view_name
+	80,				-- sort_order
 	'im_freelance_skill_component $current_user_id $user_id $return_url'
-    );
+);
 
 
 -- Show the freelance list in member-add page
 --
 select im_component_plugin__new (
-	null,			   -- plugin_id
-	'acs_object',		   -- object_type
-	now(),			  -- creation_date
-	null,			   -- creation_user
-	null,			   -- creation_ip
-	null,			   -- context_id
-	'freelance list Component',     -- plugin_name
-	'intranet-freelance',	   -- package_name
-	'bottom',		       -- location
-	'/intranet/member-add',	 -- page_url
-	null,			   -- view_name
-	10,			     -- sort_order
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'freelance list Component',	-- plugin_name
+	'intranet-freelance',		-- package_name
+	'bottom',			-- location
+	'/intranet/member-add',		-- page_url
+	null,				-- view_name
+	10,				-- sort_order
 	'im_freelance_member_select_component $object_id $return_url'
-    );
+);
 
 
 
@@ -256,12 +275,11 @@ select im_component_plugin__new (
 create or replace function inline_0 ()
 returns integer as '
 declare
-        v_count                 integer;
+	v_count		integer;
 begin
-        select  count(*) into v_count
-        from    acs_privileges
+	select	count(*) into v_count from acs_privileges
 	where	privilege = ''add_freelance_skills'';
-        IF v_count > 0 THEN return 0; END IF;
+	IF v_count > 0 THEN return 0; END IF;
 
 	select acs_privilege__create_privilege(''add_freelance_skills'',''Add Freelance Skills'',''Add Freelance Skills'');
 	select acs_privilege__add_child(''admin'', ''add_freelance_skills'');
@@ -304,7 +322,7 @@ begin
 	select im_priv_create(''add_freelance_skillconfs'',''Project Managers'');
 	select im_priv_create(''add_freelance_skillconfs'',''Freelance Managers'');
 
-        return 0;
+	return 0;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
