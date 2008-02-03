@@ -44,6 +44,30 @@ ad_proc -public im_freelance_rfq_answer_status_deleted {} { return 4499 }
 
 
 # ---------------------------------------------------------------
+# Freelance Permissions
+# ---------------------------------------------------------------
+
+
+ad_proc -public im_freelance_rfq_permissions {user_id rfq_id view_var read_var write_var admin_var} {
+    Fill the "by-reference" variables read, write and admin
+    with the permissions of $user_id on $rfq_id
+} {
+    upvar $view_var view
+    upvar $read_var read
+    upvar $write_var write
+    upvar $admin_var admin
+
+    set view 0
+    set read 0
+    set write 0
+    set admin 0
+
+    set project_id [db_string pid "select rfq_project_id from im_freelance_rfqs where rfq_id = :rfq_id" -default 0]
+    im_project_permissions $user_id $project_id view read write admin
+}
+
+
+# ---------------------------------------------------------------
 # Freelance Member Select Component
 # ---------------------------------------------------------------
 

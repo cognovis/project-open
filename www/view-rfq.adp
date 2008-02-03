@@ -89,3 +89,6 @@
 <h2><%= [lang::message::lookup "" intranet-freelance-rfqs.RFQ_Candidates "RFQ Candidates"] %></h2>
 <listtemplate name="candidate_list"></listtemplate>
 
+
+
+<%= [im_object_skill_component -object_id $rfq_id -return_url $return_url] %>
