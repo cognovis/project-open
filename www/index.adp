@@ -1,6 +1,6 @@
-<master src="../../intranet-core/www/admin/master">
 <property name="title">@page_title@</property>
-<property name="context">@context_bar@</property>
+<property name="context">@context_bar;noquote@</property>
+<master src="../../intranet-core/www/admin/master">
 
 
 <table width="70%">
