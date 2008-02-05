@@ -890,6 +890,7 @@ ad_proc -public im_ganttproject_resource_component {
     { -top_vars "" }
     { -left_vars "user_name_link project_name_link" }
     { -project_id "" }
+    { -user_id "" }
     { -customer_id 0 }
     { -user_name_link_opened "" }
     { -return_url "" }
@@ -1033,12 +1034,10 @@ ad_proc -public im_ganttproject_resource_component {
     #
     
     set criteria [list]
-    if {"" != $customer_id && 0 != $customer_id} {
-	lappend criteria "parent.company_id = :customer_id"
-    }
-    if {"" != $project_id && 0 != $project_id} {
-	lappend criteria "parent.project_id in ([join $project_id ", "])"
-    }
+    if {"" != $customer_id && 0 != $customer_id} { lappend criteria "parent.company_id = :customer_id" }
+    if {"" != $project_id && 0 != $project_id} { lappend criteria "parent.project_id in ([join $project_id ", "])" }
+    if {"" != $user_id && 0 != $user_id} { lappend criteria "u.user_id in ([join $user_id ","])" }
+
     set where_clause [join $criteria " and\n\t\t\t"]
     if { ![empty_string_p $where_clause] } {
 	set where_clause " and $where_clause"
@@ -1061,7 +1060,7 @@ ad_proc -public im_ganttproject_resource_component {
 		        im_projects child,
 		        acs_rels r
 		        LEFT OUTER JOIN im_biz_object_members m on (r.rel_id = m.rel_id),
-		        cc_users u,
+		        users u,
 		        ( select im_day_enumerator_weekdays as d
 		          from im_day_enumerator_weekdays(
 				to_date(:start_date, 'YYYY-MM-DD'), 
