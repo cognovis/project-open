@@ -103,6 +103,7 @@ INSERT INTO im_categories VALUES (2006,'TM Tools','Intranet TM Tool','Intranet S
 INSERT INTO im_categories VALUES (2008,'LOC Tools','Intranet LOC Tool','Intranet Skill Type','category','t','f');
 INSERT INTO im_categories VALUES (2010,'Operating System','Intranet Operating System','Intranet Skill Type','category','t','f');
 INSERT INTO im_categories VALUES (2014,'Subjects','Intranet Translation Subject Area','Intranet Skill Type','category','t','f');
+INSERT INTO im_categories VALUES (2016,'Expected Quality','Intranet Quality','Intranet Skill Type','category','t','f');
 
 
 -- Freelance TM Tools
