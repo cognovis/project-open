@@ -44,6 +44,7 @@ ad_proc -public im_freelance_skill_type_tm_tool {} { return 2006 }
 ad_proc -public im_freelance_skill_type_loc_tool {} { return 2008 }
 ad_proc -public im_freelance_skill_type_operating_system {} { return 2010 }
 ad_proc -public im_freelance_skill_type_subject_area {} { return 2014 }
+ad_proc -public im_freelance_skill_type_expected_quality {} { return 2016 }
 
 
 # ----------------------------------------------------------------------
@@ -380,14 +381,17 @@ ad_proc im_object_skill_component {
     }
 
     set current_user_id [ad_get_user_id]
-    set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id"]
+    db_1row otype "
+	select	ot.object_type,
+		ot.pretty_name as object_type_pretty
+	from	acs_objects o, acs_object_types ot
+	where	object_id = :object_id
+		and o.object_type = ot.object_type
+    "
     set perm_cmd "${object_type}_permissions \$current_user_id \$object_id object_view object_read object_write object_admin"
     eval $perm_cmd
 
-    if {!$object_read} { 
-	ns_log Notice "im_freelance_object_skill_component: not allowed to read - exiting"
-	return ""
-    }
+    if {!$object_read} { return "" }
 
     set skill_sql "
 	select
@@ -395,10 +399,10 @@ ad_proc im_object_skill_component {
 		c.skill_type,
 		ofsm.*,
 		im_category_from_id(ofsm.skill_id) as skill,
-		im_category_from_id(ofsm.experience_id) as experience
+		im_category_from_id(ofsm.required_experience_id) as experience
 	from
 		im_freelance_skill_types c,
-		im_object_freelance_skill_map ofsm
+		im_freelance_object_skill_map ofsm
 	where
 		ofsm.object_id = :object_id
 		and c.skill_type_id = ofsm.skill_type_id
@@ -412,17 +416,27 @@ ad_proc im_object_skill_component {
 	set skills ""
 	if {[info exists skill_type_hash($skill_type_id)]} { set skills $skill_type_hash($skill_type_id) }
 
+	set skill_type_list {}
+	if {[info exists skill_type_list_hash($skill_type_id)]} { set skill_type_list $skill_type_list_hash($skill_type_id) }
+	
 	if {"" != $skill} {
-	    append skills "<li>$skillx\n"
+	    set del_link ""
+	    if {$object_write} {
+		set del_url [export_vars -base "/intranet-freelance/skill-del" {return_url object_id skill_type_id skill_id}]
+		set del_link "<a href='$del_url'>[im_gif delete]</a>"
+	    }
+	    append skills "<li>$skill $del_link\n"
+	    lappend skill_type_list $skill
 	}
 	set skill_type_hash($skill_type_id) $skills
+	set skill_type_list_hash($skill_type_id) $skill_type_list
     }
 
     set skill_html ""
     foreach skill_type_id [array name skill_type_hash] {
 
 	    append skill_html "
-		<li class='liOpen'>$skill_type_name_hash($skill_type_id)
+		<li class='liClosed'>$skill_type_name_hash($skill_type_id): [join $skill_type_list_hash($skill_type_id) ", "]
 		<ul>
 		$skill_type_hash($skill_type_id)
 		</ul>
@@ -435,7 +449,7 @@ ad_proc im_object_skill_component {
         "]\n"
     }
 
-    set add_skill_msg [lang::message::lookup "" intranet-freelance.Add_required_skill "Add Required Skill"]
+    set add_skill_msg [lang::message::lookup "" intranet-freelance.Add_otype_skill "Add %object_type_pretty% Skill"]
 
     return "
         <ul class='mktree'>
@@ -443,7 +457,7 @@ ad_proc im_object_skill_component {
 	</ul>
 	<br>
 	<table>
-	<form action=/intranet-freelance/object-skill-add method=POST>
+	<form action=/intranet-freelance/required-skill-add method=GET>
 	[export_form_vars return_url object_id]
 	<tr>
 		<td>
@@ -457,10 +471,6 @@ ad_proc im_object_skill_component {
 	</table>
     "    
 }
-
-
-
-
 
 
 
@@ -781,6 +791,393 @@ order by
 		      <input type=submit name=submit_add value=\"[_ intranet-core.Add]\">
 		      <input type=checkbox name=notify_asignee value=1 checked>[_ intranet-freelance.Notify]<br>
 	"
+    }
+
+    append select_freelance "
+		</td>
+		</tr>
+		</table>
+
+	    </td>
+	  </tr>
+	</table>
+	</form>
+    "
+    return $select_freelance
+}
+
+
+ad_proc im_freelance_gantt_resource_select_component {
+    -object_id:required
+    -return_url:required
+} {
+    Component that returns a formatted HTML table that allows
+    to select freelancers according to skill and to current
+    resource assignments.
+} {
+    set current_url [im_url_with_query]
+    set skill_component [im_object_skill_component -object_id $object_id -return_url $current_url]
+
+    set skill_sql "
+	select	*
+	from	im_freelance_object_skill_map fosm
+	where	fosm.object_id = :object_id
+    "
+
+    set user_ids [im_freelance_find_matching_users -object_id $object_id]
+
+    set start_date [db_string today "select to_char(now(), 'YYYY-MM-01')"]
+    # Use the end_date of the current project
+    set end_date [db_string today "select end_date::date from im_projects where project_id = :object_id" -default ""]
+    if {"" == $end_date} { set end_date [db_string today "select to_char(now()::date + 365, 'YYYY-01-01')"] }
+
+
+    set skill_select [im_freelance_consulting_member_select_component -object_id $object_id -return_url $return_url]
+
+
+    return "
+	<table width='100%'>
+	<tr>
+	$skill_component
+	</tr>
+	<tr>
+	$skill_select
+	</tr>
+	</table>
+    "
+}
+
+
+
+
+
+# ---------------------------------------------------------------
+# Find matching users
+# ---------------------------------------------------------------
+
+ad_proc im_freelance_find_matching_users {
+    -object_id:required
+} {
+    Returns a sorted list of {user_id score} elements for all
+    users that match object's skill criteria
+} {
+    # -----------------------------------------------------
+    # Get the object's required skills
+
+    set oskill_sql "
+	select	*
+	from	im_freelance_object_skill_map fosm
+	where	fosm.object_id = :object_id
+
+    "    
+    set skill_select_sql ""
+    set skill_where_sql ""
+    db_foreach oskills $oskill_sql {
+
+	if {"" == $skill_weight} { set skill_weight 1 }
+	append skill_select_sql "
+	,(	select	s.confirmed_experience_id
+		from	im_freelance_object_skill_map s
+		where   s.object_id = fosm.object_id
+			and s.skill_type_id = $skill_type_id
+			and s.skill_id = $skill_id
+	) as c$object_skill_map_id
+	"
+
+	if {"" != $required_experience_id} {
+	    append skill_where_sql "
+		and fosm.object_id in (
+			select  object_id
+			from	im_freelance_object_skill_map s
+			where   s.skill_type_id = $skill_type_id
+				and s.skill_id = $skill_id
+				and confirmed_experience_id >= $required_experience_id
+		)"
+	}
+
+	# Setup a list of criteria for scoring
+	set oskill_hash($object_skill_map_id) [list $skill_type_id $skill_id $required_experience_id $skill_weight]
+    }
+
+
+    # -----------------------------------------------------
+    # Get the skills of candidate objects
+
+    set skill_sql "
+	select distinct 
+		fosm.object_id,
+		o.object_type,
+		acs_object__name(fosm.object_id) as object_name
+		$skill_select_sql
+	from	im_freelance_object_skill_map fosm,
+		acs_objects o
+	where	fosm.object_id = o.object_id
+		$skill_where_sql
+	order by fosm.object_id
+    "
+
+    db_foreach oskills $skill_sql {
+        set score 0
+	foreach map_id [array names oskill_hash] {
+	    set {skill_type_id skill_id required_experience_id skill_weight} $oskill_hash($map_id)
+	    set confirmed_experience_id [expr "\$c$map_id"]
+
+	    if {"" == $confirmed_experience_id} { set confirmed_experience_id 0}
+	    set exp_weight [util_memoize "db_string exp_weight \"select aux_int1 from im_categories where category_id = $confirmed_experience_id\" -default 0"]
+	    set score [expr $score + $exp_weight]
+	}
+	set score_hash($object_id) [list $object_id $object_type $object_name $score]
+    }
+
+    return [array get score_hash]
+}
+
+
+
+# ---------------------------------------------------------------
+# Adding skills
+# ---------------------------------------------------------------
+
+
+ad_proc im_freelance_add_required_skills {
+	-object_id:required
+	-skill_type_id:required
+	-skill_ids:required
+	{ -weight_id_hash {} }
+	{ -experience_id_hash {} }
+} {
+    Add reqired skills to a project, RFQ or similar.
+} {
+    array set weight_ids $weight_id_hash
+    array set experience_ids $experience_id_hash
+    
+    foreach sid $skill_ids {
+	
+	set exp_id ""
+	set weight_id 0
+	if {[info exists experience_ids($sid)]} { set exp_id $experience_ids($sid) }
+	if {[info exists weight_ids($sid)]} { set weight_id $weight_ids($sid) }
+	
+	set weight [util_memoize "db_string weight \"select aux_int1 from im_categories where category_id = $weight_id\" -default {}"]
+	if {"" == $weight} { set weight 1 }
+
+	set exists_p [db_string count "
+	select  count(*)
+	from	im_freelance_object_skill_map
+	where   object_id = :object_id
+		and skill_id = :sid
+		and skill_type_id = :skill_type_id
+	"]
+
+	if {$exists_p} {
+		db_dml delete "
+		delete from im_freelance_object_skill_map
+		where
+			object_id = :object_id
+			and skill_type_id = :skill_type_id
+			and skill_id = :sid
+		"
+	}
+
+	db_dml insert "
+	insert into im_freelance_object_skill_map (
+		object_skill_map_id,
+		object_id,
+		skill_type_id,
+		skill_id,
+		required_experience_id,
+		skill_weight,
+		skill_required_p
+	) values (
+		nextval('im_freelance_object_skill_seq'),
+		:object_id,
+		:skill_type_id,
+		:sid,
+		:exp_id,
+		:weight,
+		't'
+	)"
+    }
+}
+
+
+
+
+# ---------------------------------------------------------------
+# Consulting Select Box
+# ---------------------------------------------------------------
+
+ad_proc im_freelance_consulting_member_select_component { 
+    -object_id:required
+    -return_url:required
+} {
+    Component that returns a formatted HTML table that allows 
+    to select freelancers according to the characteristics of
+    the current project.
+} {
+    set user_id [ad_get_user_id]
+    if {![im_project_has_type $object_id "Translation Project"] || ![im_permission $user_id view_trans_proj_detail]} {
+        return ""
+    }
+
+    # ------------------------------------------------
+    # Constants
+
+    set default_role_id 1300
+    set colspan 5
+    set bgcolor(0) " class=roweven "
+    set bgcolor(1) " class=rowodd "
+
+    # ------------------------------
+    # Parameter Logic
+    # Get the parameters from the http header because we can't trust 
+    # that the embedding page will pass this param into this component.
+    set current_url [ad_conn url]
+    set header_vars [ns_conn form]
+    set var_list [ad_ns_set_keys $header_vars]
+    ad_ns_set_to_tcl_vars $header_vars
+    set order_by_pos [lsearch $var_list "freel_order_by"]
+    if {$order_by_pos > -1} { set var_list [lreplace $var_list $order_by_pos $order_by_pos] }
+
+    if {![info exists freel_order_by]} {
+	set freel_order_by [parameter::get_from_package_key -package_key intranet-freelance-translation -parameter FreelanceListSortOder -default "S-Word"]
+    }
+    set freel_order_by [string tolower $freel_order_by]
+
+
+    # --------------------------------------------------
+    # Get the sorted list of resources
+    array set user_score_hash [im_freelance_find_matching_users -object_id $object_id]
+    set user_score_list [list]
+
+    foreach oid [array names user_score_hash] {
+	set oinfo $user_score_hash($oid)
+	set object_type [lindex $oinfo 1]
+	set object_name [lindex $oinfo 2]
+	set score  [lindex $oinfo 3]
+
+	lappend user_score_list [list $oid $score]
+	lappend object_ids $oid
+    }
+    lappend object_ids 0
+
+    # Sort the keys according to sort_val (6th element)
+    set sorted_user_score_list [reverse [qsort $user_score_list [lambda {s} { lindex $s 1 }]]]
+
+    # --------------------------------------------------
+    # Get the information about the Requested Skills
+    set oskill_sql "
+        select  *
+        from    im_freelance_object_skill_map fosm,
+		im_categories c
+        where   fosm.object_id = $object_id
+		and fosm.skill_type_id = c.category_id
+	order by c.sort_order
+    "
+    set extra_select_sql ""
+    set skill_types [list]
+    db_foreach oskills $oskill_sql {
+	append extra_select_sql "\t\t,im_freelance_skill_list(u.user_id, $skill_type_id) as s$skill_type_id\n"
+	lappend skill_types $skill_type_id
+    }
+
+    # ad_return_complaint 1 "$object_id - <pre>[im_ad_hoc_query $oskill_sql]</pre>"
+
+    # --------------------------------------------------
+    # Extract the list of skills for each user and stuff into hash
+    set freelance_sql "
+	select distinct
+		u.user_id,
+		im_name_from_user_id(u.user_id) as user_name,
+		im_name_from_user_id(u.user_id) as name
+		$extra_select_sql
+	from	users u
+	where	u.user_id in ([join $object_ids ","])
+	order by user_name
+    "
+    db_foreach freelance $freelance_sql {
+	foreach stid $skill_types {
+	    set key "$user_id-$stid"
+            set skill_string [expr "\$s$stid"]
+	    set skill_hash($key) $skill_string
+	}
+    }
+
+    # ------------------------------------------------
+    # Format the table header
+
+    set freelance_header_html "
+	<tr class=rowtitle>
+	  <td class=rowtitle>[_ intranet-freelance.Freelance]</td>
+	  <td class=rowtitle>[lang::message::lookup "" intranet-freelance.Score "Score"]</td>
+    "
+    foreach stid $skill_types {
+	append freelance_header_html "<td class=rowtitle>[im_category_from_id $stid]</td>\n"
+	incr colspan
+    }
+    append freelance_header_html "
+	  <td class=rowtitle>[lang::message::lookup "" intranet-freelance.Sel "Sel"]</td>
+	</tr>
+    "
+
+    # ------------------------------------------------
+    # Format the table body
+
+    set ctr 0
+    set freelance_body_html ""
+
+    foreach o_record $sorted_user_score_list {
+	set oid [lindex $o_record 0]
+	set oinfo $user_score_hash($oid)
+	set object_id [lindex $oinfo 0]
+	set object_type [lindex $oinfo 1]
+	set object_name [lindex $oinfo 2]
+	set score [lindex $oinfo 3]
+
+	append freelance_body_html "\t<tr$bgcolor([expr $ctr % 2])>\n"
+	append freelance_body_html "<td><a href='[export_vars -base "users/view" {{object_id $oid}}]'><nobr>$object_name</nobr></a></td>\n"
+	append freelance_body_html "<td>$score</td>\n"
+
+	foreach stid $skill_types {
+            set key "$oid-$stid"
+	    set skill_string ""
+            if {[info exists skill_hash($key)]} { set skill_string $skill_hash($key) }
+	    append freelance_body_html "<td>$skill_string</td>\n"
+	}
+
+	append freelance_body_html "<td><input type=radio name=user_id_from_search value=$user_id></td>\n"
+	append freelance_body_html "</tr>\n"
+        incr ctr
+    }
+
+    if { $freelance_body_html == "" } {
+	set freelance_body_html "<tr><td colspan=$colspan align=center><b>[_ intranet-freelance.no_freelancers]</b></td>"
+    }
+
+    set select_freelance "
+	<form method=POST action=/intranet/member-add-2>
+	[export_entire_form]
+	<input type=hidden name=target value=[im_url_stub]/member-add-2>
+	<input type=hidden name=passthrough value='object_id role return_url also_add_to_group_id'>
+	<table cellpadding=0 cellspacing=2 border=0>
+	$freelance_header_html
+	$freelance_body_html
+	  <tr> 
+	    <td colspan=$colspan>
+
+		<table cellspacing=0 cellpadding=0 width=\"100%\">
+		<tr valign=top>
+		<td width=\"50%\"></td>
+		<td width=\"50%\" align=right>
+    "
+
+    if {$ctr > 0} {
+	append select_freelance "
+		      [_ intranet-core.add_as]
+		      [im_biz_object_roles_select role_id $object_id $default_role_id]<br>
+		      <input type=submit name=submit_add value=\"[_ intranet-core.Add]\">
+		      <input type=checkbox name=notify_asignee value=1 checked>[_ intranet-freelance.Notify]<br>
+        "
     }
 
     append select_freelance "

@@ -46,52 +46,7 @@ create table im_freelancers (
 				references im_categories
 );
 
------------------------------------------------------------
--- Freelance Skills
---
--- We want to say something like: This user claims he is excellent 
--- at translating into Spanish, but we haven't checked it yet.
--- So what we do is define a mapping between user_ids and 
--- skill_ids. Plus we need to reuse categories such as "Languages"
--- so that we need a "skill type".
--- So we define a "skill type", for example "target languages",
--- or "operating systems". And we define individual skills such
--- as "Castillian Spanish" or "Linux 2.4.x".
---
 
-create table im_freelance_skills (
-	user_id			integer not null 
-				constraint im_fl_skills_user_fk
-				references users,
-	skill_id		integer not null 
-				constraint im_fl_skills_skill_fk
-				references im_categories,
-	skill_type_id		integer not null 
-				constraint im_fl_skills_skill_type_fk
-				references im_categories,
-	claimed_experience_id	integer
-				constraint im_fl_skills_claimed_fk
-				references im_categories,
-	confirmed_experience_id	integer
-				constraint im_fl_skills_conf_fk
-				references im_categories,
-	confirmation_user_id	integer
-				constraint im_fl_skills_conf_user_fk
-				references users,
-	confirmation_date	date,
-		-- "map" type of table
-		constraint im_fl_skills_pk
-		primary key (user_id, skill_id, skill_type_id)
-);
-
-create index im_freelance_skills_user_idx on im_freelance_skills(user_id);
-create index im_freelance_skills_skill_idx on im_freelance_skills(skill_type_id, skill_id);
-
-
-create or replace view im_freelance_skill_types as 
-select category_id as skill_type_id, category as skill_type
-from im_categories 
-where category_type = 'Intranet Skill Type';
 
 
 
@@ -104,9 +59,9 @@ where category_type = 'Intranet Skill Type';
 -- from English into Spanish (required condition) and be 
 -- preferably specialized in "Legal" or "Business".
 
-create sequence im_object_freelance_skill_seq;
+create sequence im_freelance_object_skill_seq;
 
-create table im_object_freelance_skill_map (
+create table im_freelance_object_skill_map (
 	object_skill_map_id	integer
 				constraint im_o_skills_pk
 				primary key,
@@ -119,7 +74,9 @@ create table im_object_freelance_skill_map (
 	skill_type_id		integer not null 
 				constraint im_o_skills_skill_type_fk
 				references im_categories,
-	experience_id		integer
+
+	-- For objects that require skills:
+	required_experience_id	integer
 				constraint im_o_skills_skill_exp_fk
 				references im_categories,
 	skill_weight		integer
@@ -127,17 +84,30 @@ create table im_object_freelance_skill_map (
 				check (skill_weight > 0 and skill_weight <= 100),
 	skill_required_p	char(1) default('f')
 				constraint im_o_skills_required_p
-				check (skill_required_p in ('t','f'))
+				check (skill_required_p in ('t','f')),
+
+	-- For objects with these skills:
+	claimed_experience_id	integer
+				constraint im_fl_skills_claimed_fk
+				references im_categories,
+	confirmed_experience_id	integer
+				constraint im_fl_skills_conf_fk
+				references im_categories
 );
 
 -- Avoid duplicate entries
-create unique index im_object_freelance_skill_map_un_idx 
-on im_object_freelance_skill_map(object_id, skill_type_id, skill_id);
+create unique index im_freelance_object_skill_map_un_idx 
+on im_freelance_object_skill_map(object_id, skill_type_id, skill_id);
 
 -- Frequent queries per object expected...
-create index im_object_freelance_skillsmap_idx 
-on im_object_freelance_skill_map(object_id);
+create index im_freelance_object_skillsmap_idx 
+on im_freelance_object_skill_map(object_id);
 
+
+create or replace view im_freelance_skill_types as 
+select category_id as skill_type_id, category as skill_type
+from im_categories 
+where category_type = 'Intranet Skill Type';
 
 
 -----------------------------------------------------------
@@ -206,7 +176,6 @@ select im_component_plugin__new (
 	90,				-- sort_order
 	'im_freelance_info_component $current_user_id $user_id $return_url [im_opt_val freelance_view_name]'
 );
-
 
 
 -- Show the freelance skills in users view page
@@ -301,6 +270,26 @@ select im_component_plugin__new (
 	null,				-- view_name
 	10,				-- sort_order
 	'im_freelance_member_select_component $object_id $return_url'
+);
+
+
+
+-- Show the freelance list in member-add page
+--
+select im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Freelance Gantt Resource Select Component',	-- plugin_name
+	'intranet-freelance',		-- package_name
+	'bottom',			-- location
+	'/intranet/member-add',		-- page_url
+	null,				-- view_name
+	20,				-- sort_order
+	'im_freelance_gantt_resource_select_component -object_id $object_id -return_url $return_url'
 );
 
 
