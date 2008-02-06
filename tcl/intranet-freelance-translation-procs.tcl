@@ -71,25 +71,10 @@ ad_proc im_freelance_trans_member_select_component {
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
 
+    set source_lang_skill_type [im_freelance_skill_type_source_language]
+    set target_lang_skill_type [im_freelance_skill_type_target_language]
+    set subject_area_skill_type [im_freelance_skill_type_subject_area]
 
-    set source_lang_skill_type [db_string source_lang "
-		select	category_id 
-		from	im_categories 
-		where	category = 'Source Language' 
-			and category_type = 'Intranet Skill Type'" \
-    -default 0]
-    set target_lang_skill_type [db_string target_lang "
-		select	category_id	
-		from	im_categories	
-		where	category = 'Target Language'
-			and category_type = 'Intranet Skill Type'" \
-    -default 0]
-    set subject_area_skill_type [db_string target_lang "
-		select	category_id	
-		from	im_categories	
-		where	category = 'Subjects' 
-			and category_type = 'Intranet Skill Type'" \
-    -default 0]
     set project_source_lang [db_string source_lang "
 		select	substr(im_category_from_id(source_language_id), 1, 2) 
 		from	im_projects 
@@ -103,7 +88,6 @@ ad_proc im_freelance_trans_member_select_component {
     "]
     if {0 == [llength $project_target_langs]} { set project_target_langs [list "'none'"]}
 
-#    ad_return_complaint 1 "$source_lang_skill_type $target_lang_skill_type $subject_area_skill_type $project_source_lang '$project_target_langs'"
 
     # ------------------------------------------------
     # Put together the main SQL
