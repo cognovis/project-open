@@ -37,7 +37,7 @@ foreach map_id $object_skill_map_ids {
     if {"" == $map_id} { continue }
 
     db_dml del_map "
-	delete from im_object_freelance_skill_map
+	delete from im_freelance_object_skill_map
 	where	object_skill_map_id = :map_id
     "
 

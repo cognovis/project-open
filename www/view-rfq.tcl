@@ -244,8 +244,8 @@ db_multirow -extend {skill_chk skill_new_url} skill_list_lines skills "
 	select	*,
 		im_category_from_id(skill_id) as skill,
 		im_category_from_id(skill_type_id) as skill_type,
-		im_category_from_id(experience_id) as experience
-	from	im_object_freelance_skill_map m
+		im_category_from_id(required_experience_id) as experience
+	from	im_freelance_object_skill_map m
 	where	m.object_id = :rfq_id
 	order by skill_type_id,	skill_id
 " {
@@ -389,7 +389,7 @@ set skill_sql "
 	select	*,
 		im_category_from_id(skill_id) as skill,
 		im_category_from_id(skill_type_id) as skill_type
-	from	im_object_freelance_skill_map m
+	from	im_freelance_object_skill_map m
 	where	m.object_id = :rfq_id
 "
 db_multirow skills skills $skill_sql 
@@ -415,14 +415,14 @@ template::multirow foreach skills {
 	) as c$object_skill_map_id
     "
 
-    if {"" != $experience_id} {
+    if {"" != $required_experience_id} {
         append skill_where_sql "
 		and u.user_id in (
 			select	user_id
 			from	im_freelance_skills s
 			where	s.skill_type_id = $skill_type_id
 				and s.skill_id = $skill_id
-				and confirmed_experience_id >= $experience_id
+				and confirmed_experience_id >= $required_experience_id
 		)
         "
     }
@@ -565,7 +565,7 @@ db_multirow -extend $extend_list candidate_list_lines candidates "
 	    ad_script_abort
 	}
 
-	if {$exp_id >= $experience_id} { set add [expr $skill_weight * $exp_weight] }
+	if {$exp_id >= $required_experience_id} { set add [expr $skill_weight * $exp_weight] }
 
 	set skill_var "s$object_skill_map_id"
 	set $skill_var "$exp"

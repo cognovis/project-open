@@ -51,7 +51,7 @@ foreach skill_type_id [array names skill_ids] {
 
     set exists_p [db_string count "
 	select	count(*) 
-	from	im_object_freelance_skill_map 
+	from	im_freelance_object_skill_map 
 	where	object_id = :rfq_id
 		and skill_type_id = :skill_type_id
 		and skill_id = :skill_id
@@ -59,7 +59,7 @@ foreach skill_type_id [array names skill_ids] {
 
     if {$exists_p} {
 	db_dml delete "
-		delete from im_object_freelance_skill_map
+		delete from im_freelance_object_skill_map
 		where
 			object_id = :rfq_id
 			and skill_type_id = :skill_type_id
@@ -69,16 +69,16 @@ foreach skill_type_id [array names skill_ids] {
 
 
 	db_dml insert "
-	insert into im_object_freelance_skill_map (
+	insert into im_freelance_object_skill_map (
 		object_skill_map_id,
 		object_id,
 		skill_type_id,
 		skill_id,
-		experience_id,
+		required_experience_id,
 		skill_weight,
 		skill_required_p
 	) values (
-		nextval('im_object_freelance_skill_seq'),
+		nextval('im_freelance_object_skill_seq'),
 		:rfq_id,
 		:skill_type_id,
 		:skill_id,
