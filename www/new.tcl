@@ -61,6 +61,8 @@ ad_form \
 	{conf_item_name:text(text),optional {label "[lang::message::lookup {} intranet-core.Conf_Item_Name {Conf Item Name}]"} {html {size 60}}}
 	{conf_item_nr:text(text) {label "[lang::message::lookup {} intranet-core.Conf_Item_Nr {Conf Item Nr.}]"} {html {size 40}}}
 	{conf_item_code:text(text),optional {label "[lang::message::lookup {} intranet-core.Conf_Item_Code {Conf Item Code}]"} {html {size 40}}}
+	{conf_item_version:text(text),optional {label "[lang::message::lookup {} intranet-core.Conf_Item_Version {Version}]"} {html {size 40}}}
+
 	{conf_item_parent_id:text(select),optional {label "[lang::message::lookup {} intranet-core.Conf_Item_Parent {Parent}]"} {options $conf_item_parent_options} }
 	{conf_item_type_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-core.Conf_Item_Type {Type}]"} {custom {category_type "Intranet Conf Item Type" translate_p 1 include_empty_p 0} } }
 	{conf_item_status_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-core.Conf_Item_Status {Status}]"} {custom {category_type "Intranet Conf Item Status" translate_p 1 include_empty_p 0}} }
@@ -75,13 +77,15 @@ ad_form \
 
 
 if {![info exists conf_item_type_id]} { set conf_item_type_id ""}
-set field_cnt [im_dynfield::append_attributes_to_form \
-    -form_display_mode $form_mode \
-    -object_subtype_id $conf_item_type_id \
-    -object_type "im_conf_item" \
-    -form_id $form_id \
-    -object_id $conf_item_id \
-]
+if {[info exists conf_item_id]} { 
+    set field_cnt [im_dynfield::append_attributes_to_form \
+		       -form_display_mode $form_mode \
+		       -object_subtype_id $conf_item_type_id \
+		       -object_type "im_conf_item" \
+		       -form_id $form_id \
+		       -object_id $conf_item_id \
+    ]
+}
 
 
 ad_form -extend -name $form_id \
@@ -109,7 +113,7 @@ ad_form -extend -name $form_id \
 		)
 	"
 	set exists_p [db_string exists "select count(*) from im_conf_items where conf_item_id = :conf_item_id"]
-	if {!$exists_p} { db_string new $conf_item_new_sql }
+	if {!$exists_p} { set conf_item_id [db_string new $conf_item_new_sql] }
 	db_dml update [im_conf_item_update_sql -include_dynfields_p 1]
 	if {"" != $conf_item_project_id} {
 	    im_conf_item_new_project_rel -project_id $conf_item_project_id -conf_item_id $conf_item_id
@@ -198,6 +202,11 @@ set hardware_id [db_string hardware_id "select ocs_id from im_conf_items where c
 set result ""
 
 if {[db_table_exists "ocs_hardware"]} {
+
+	if {"" == $conf_item_type_id} { set conf_item_type_id [db_string type "select conf_item_type_id from im_conf_items where conf_item_id = :conf_item_id" -default 0]}
+
+    if {[im_category_is_a $conf_item_type_id 11850]} {
+
 append result [im_generic_table_component -table_name "ocs_drives" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
 append result [im_generic_table_component -table_name "ocs_monitors" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
 append result [im_generic_table_component -table_name "ocs_inputs" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
@@ -218,6 +227,7 @@ append result [im_generic_table_component -table_name "ocs_softwares" -select_co
 # append result [im_generic_table_component -table_name "ocs_locks" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
 # append result [im_generic_table_component -table_name "ocs_network_devices" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
 
+    }
 }
 
 

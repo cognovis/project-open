@@ -131,6 +131,7 @@ ad_proc -public im_conf_item_update_sql {
 		conf_item_name =	:conf_item_name,
 		conf_item_nr =		:conf_item_nr,
 		conf_item_code =	:conf_item_code,
+		conf_item_version =	:conf_item_version,
 		conf_item_parent_id =	:conf_item_parent_id,
 		conf_item_type_id =	:conf_item_type_id,
 		conf_item_status_id =	:conf_item_status_id,

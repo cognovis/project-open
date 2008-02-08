@@ -30,6 +30,7 @@ create table im_conf_items (
 				references acs_objects,
 	conf_item_name		varchar(1000) not null,
 	conf_item_nr		varchar(500) not null,
+	conf_item_version	varchar(500),
 
 	-- Unique code for label
 	conf_item_code		varchar(500),
@@ -334,7 +335,7 @@ SELECT im_category_new(11802, 'Software', 'Intranet Conf Item Type');
 SELECT im_category_new(11804, 'Process', 'Intranet Conf Item Type');
 SELECT im_category_new(11806, 'License', 'Intranet Conf Item Type');
 SELECT im_category_new(11808, 'Specs', 'Intranet Conf Item Type');
-update im_categories set enabled_p = 'f' where category_id in (11800, 11804, 11808);
+update im_categories set enabled_p = 'f' where category_id in (11804, 11808);
 -- reserved to 11849
 
 
@@ -346,10 +347,18 @@ SELECT im_category_new(11856, 'Server', 'Intranet Conf Item Type');
 SELECT im_category_new(11858, 'Host', 'Intranet Conf Item Type'); 
 SELECT im_category_new(11860, 'Mainframe', 'Intranet Conf Item Type'); 
 SELECT im_category_new(11862, 'Network Device', 'Intranet Conf Item Type'); 
+
+SELECT im_category_hierarchy_new('Personal Computer','Hardware','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Workstation','Hardware','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Laptop','Hardware','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Server','Hardware','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Host','Hardware','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Mainframe','Hardware','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Network Device','Hardware','Intranet Conf Item Type');
 -- reserved to 11899
 
--- Personal Computer Hardware Components
-SELECT im_category_new(11900, 'Personal Computer Hardware Component', 'Intranet Conf Item Type'); 
+-- Hardware Components
+SELECT im_category_new(11900, 'Hardware Component', 'Intranet Conf Item Type'); 
 SELECT im_category_new(11902, 'Computer Bios', 'Intranet Conf Item Type'); 
 SELECT im_category_new(11904, 'Computer Controller', 'Intranet Conf Item Type'); 
 SELECT im_category_new(11906, 'Computer Drive', 'Intranet Conf Item Type'); 
@@ -366,18 +375,47 @@ SELECT im_category_new(11926, 'Computer Slot', 'Intranet Conf Item Type');
 SELECT im_category_new(11928, 'Computer Sound Device', 'Intranet Conf Item Type'); 
 SELECT im_category_new(11930, 'Computer Storage Device', 'Intranet Conf Item Type'); 
 SELECT im_category_new(11932, 'Computer Video Device', 'Intranet Conf Item Type'); 
+
+SELECT im_category_hierarchy_new('Hardware Component','Hardware','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Bios','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Controller','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Drive','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer File','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Input Device','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Lock','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Memory','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Modem','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Monitor','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Network Device','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Port','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Printer Driver','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Slot','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Sound Device','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Storage Device','Hardware Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Video Device','Hardware Component','Intranet Conf Item Type');
 -- reserved to 11999
 
 
--- Personal Computer Software
-SELECT im_category_new(12000, 'Personal Computer Software Component', 'Intranet Conf Item Type'); 
+-- Software
+SELECT im_category_new(12000, 'Software Component', 'Intranet Conf Item Type'); 
 SELECT im_category_new(12002, 'Computer Software Package', 'Intranet Conf Item Type'); 
 SELECT im_category_new(12004, 'Computer Driver', 'Intranet Conf Item Type'); 
+
+SELECT im_category_new(12006, 'Software Application', 'Intranet Conf Item Type'); 
+
+SELECT im_category_hierarchy_new('Software Component','Software','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Software Package','Software Component','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Computer Driver','Software Component','Intranet Conf Item Type');
+
+SELECT im_category_hierarchy_new('Software Application','Software','Intranet Conf Item Type');
+
 -- reserved to 12099
 
 -- Network Hardware
 SELECT im_category_new(12100, 'Network Router', 'Intranet Conf Item Type'); 
 SELECT im_category_new(12102, 'Network Switch', 'Intranet Conf Item Type'); 
+SELECT im_category_hierarchy_new('Network Router','Hardware','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Network Switch','Hardware','Intranet Conf Item Type');
 -- reserved to 12199
 
 -- IPs & Network
@@ -390,6 +428,9 @@ SELECT im_category_new(12204, 'Network', 'Intranet Conf Item Type');
 SELECT im_category_new(11980, 'Host Table', 'Intranet Conf Item Type');
 SELECT im_category_new(11982, 'Host Program', 'Intranet Conf Item Type');
 SELECT im_category_new(11984, 'Host Screen', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Host Table','Software','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Host Program','Software','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Host Screen','Software','Intranet Conf Item Type');
 
 
 
