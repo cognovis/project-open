@@ -31,24 +31,49 @@ create table im_tickets (
 				primary key
 				constraint im_ticket_id_fk
 				references im_projects,
+	ticket_name		varchar(200),
+	ticket_nr		varchar(50),
 	ticket_status_id	integer 
 				constraint im_ticket_status_nn
 				not null
 				constraint im_ticket_status_fk
 				references im_categories,
-	ticket_type_id		integer 
+	ticket_type_id		integer
 				constraint im_ticket_type_nn
 				not null
 				constraint im_ticket_type_fk
 				references im_categories,
-	note			text
-				constraint im_ticket_ticket_nn
-				not null,
-	object_id		integer
-				constraint im_ticket_oid_nn
+	ticket_biz_user_id	integer
+				constraint im_ticket_biz_user_fk
+				references persons,
+	ticket_sla_id		integer
+				constraint im_ticket_sla_fk
+				references acs_objects,
+	ticket_dept_id		integer
+				constraint im_ticket_dept_fk
+				references im_cost_centers,
+	ticket_primary_class_id	integer
+				constraint im_ticket_primary_class_nn
 				not null
-				constraint im_object_id_fk
-				references acs_objects
+				constraint im_ticket_primary_class_fk
+				references im_categories,
+	ticket_service_id	integer
+				constraint im_ticket_service_fk
+				references im_categories,
+	ticket_hardware_id	integer
+				constraint im_ticket_hardware_fk
+				references acs_objects,
+	ticket_application_id	integer
+				constraint im_ticket_application_fk
+				references acs_objects,
+	ticket_queue_id		integer
+				constraint im_ticket_queue_fk
+				references im_categories,
+	ticket_alarm_date	timestamptz,
+	ticket_alarm_action	text,
+	ticket_note		text
+				constraint im_ticket_ticket_nn
+				not null
 );
 
 
@@ -161,12 +186,58 @@ end;' language 'plpgsql';
 -- 35000-39999  reserved (5000)
 
 
+-- 30100-30199	Intranet Ticket Type
+--
+SELECT im_category_new(30102, 'Purchasing request', 'Intranet Ticket Type');
+SELECT im_category_new(30104, 'Workplace move request', 'Intranet Ticket Type');
+SELECT im_category_new(30106, 'Telephony request', 'Intranet Ticket Type');
+SELECT im_category_new(30108, 'Project request', 'Intranet Ticket Type');
+SELECT im_category_new(30110, 'Bug request', 'Intranet Ticket Type');
+SELECT im_category_new(30112, 'Report request', 'Intranet Ticket Type');
+SELECT im_category_new(30114, 'Permission request', 'Intranet Ticket Type');
+SELECT im_category_new(30116, 'Feature request', 'Intranet Ticket Type');
+SELECT im_category_new(30118, 'Training request', 'Intranet Ticket Type');
+
+
+
+-- 30000-30099	Intranet Ticket Status
+--
+-- High-Level States
+SELECT im_category_new(30000, 'Open', 'Intranet Ticket Status');
+SELECT im_category_new(30001, 'Closed', 'Intranet Ticket Status');
+-- Wtates
+SELECT im_category_new(30010, 'In review', 'Intranet Ticket Status');
+SELECT im_category_new(30011, 'Assigned', 'Intranet Ticket Status');
+SELECT im_category_new(30012, 'Customer review', 'Intranet Ticket Status');
+SELECT im_category_hierarchy_new(30010, 30000);
+SELECT im_category_hierarchy_new(30011, 30000);
+SELECT im_category_hierarchy_new(30012, 30000);
+-- Closed States
+SELECT im_category_new(30090, 'Duplicate', 'Intranet Ticket Status');
+SELECT im_category_new(30091, 'Invalid', 'Intranet Ticket Status');
+SELECT im_category_new(30092, 'Outdated', 'Intranet Ticket Status');
+SELECT im_category_new(30093, 'Rejected', 'Intranet Ticket Status');
+SELECT im_category_new(30094, 'Won''t fix', 'Intranet Ticket Status');
+SELECT im_category_new(30095, 'Can''t reproduce', 'Intranet Ticket Status');
+SELECT im_category_new(30096, 'Resolved', 'Intranet Ticket Status');
+SELECT im_category_new(30097, 'Deleted', 'Intranet Ticket Status');
+SELECT im_category_new(30098, 'Canceled', 'Intranet Ticket Status');
+SELECT im_category_hierarchy_new(30090, 30001);
+SELECT im_category_hierarchy_new(30091, 30001);
+SELECT im_category_hierarchy_new(30092, 30001);
+SELECT im_category_hierarchy_new(30093, 30001);
+SELECT im_category_hierarchy_new(30094, 30001);
+SELECT im_category_hierarchy_new(30095, 30001);
+SELECT im_category_hierarchy_new(30096, 30001);
+SELECT im_category_hierarchy_new(30097, 30001);
+SELECT im_category_hierarchy_new(30098, 30001);
+
 
 -- 30400-30499	Intranet Service Catalog
 SELECT im_category_new(30400, 'End user support', 'Intranet Service Catalog');
 SELECT im_category_new(30420, 'System administrator support', 'Intranet Service Catalog');
 SELECT im_category_new(30410, 'Hosting service', 'Intranet Service Catalog');
-SELECT im_category_new(30420, 'Software update service', 'Intranet Service Catalog');
+SELECT im_category_new(30430, 'Software update service', 'Intranet Service Catalog');
 
 
 
@@ -176,26 +247,22 @@ SELECT im_category_new(31000, 'Broken system or configuration', 'Intranet Ticket
 	SELECT im_category_new(31001, 'Bug/error in application', 'Intranet Ticket Class');
 	SELECT im_category_new(31002, 'Network access to application unavailable or slow', 'Intranet Ticket Class');
 	SELECT im_category_new(31003, 'Performance issues with application', 'Intranet Ticket Class');
-	SELECT im_category_new(31004, 'Issues with backup & recovery', 'Intranet Ticket Class');
 	SELECT im_category_new(31005, 'Browser issue: Information is rendered incorrectly', 'Intranet Ticket Class');
 	SELECT im_category_new(31006, 'Report does not show expected data', 'Intranet Ticket Class');
-	SELECT im_category_new(31007, 'Request for code update', 'Intranet Ticket Class');
 	SELECT im_category_new(31008, 'Security issue', 'Intranet Ticket Class');
-	SELECT im_category_hierarchynew(31001, 31000);
-	SELECT im_category_hierarchynew(31002, 31000);
-	SELECT im_category_hierarchynew(31003, 31000);
-	SELECT im_category_hierarchynew(31004, 31000);
-	SELECT im_category_hierarchynew(31005, 31000);
-	SELECT im_category_hierarchynew(31006, 31000);
-	SELECT im_category_hierarchynew(31007, 31000);
-	SELECT im_category_hierarchynew(31008, 31000);
+	SELECT im_category_new(31009, 'Issues with backup & recovery', 'Intranet Ticket Class');
+	SELECT im_category_hierarchy_new(31001, 31000);
+	SELECT im_category_hierarchy_new(31002, 31000);
+	SELECT im_category_hierarchy_new(31003, 31000);
+	SELECT im_category_hierarchy_new(31005, 31000);
+	SELECT im_category_hierarchy_new(31006, 31000);
+	SELECT im_category_hierarchy_new(31008, 31000);
+	SELECT im_category_hierarchy_new(31009, 31000);
 
 SELECT im_category_new(31100, 'Invalid data in system', 'Intranet Ticket Class');
 
 	SELECT im_category_new(31101, 'Missing or bad master data', 'Intranet Ticket Class');
-	SELECT im_category_new(31102, 'Report does not show expected data', 'Intranet Ticket Class');
-	SELECT im_category_hierarchynew(31101, 31100);
-	SELECT im_category_hierarchynew(31102, 31100);
+	SELECT im_category_hierarchy_new(31101, 31100);
 
 SELECT im_category_new(31200, 'Lack of user competency, ability or knowledge', 'Intranet Ticket Class');
 
@@ -204,43 +271,13 @@ SELECT im_category_new(31200, 'Lack of user competency, ability or knowledge', '
 	SELECT im_category_new(31203, 'Training request', 'Intranet Ticket Class');
 	SELECT im_category_new(31204, 'Incorrect or incomplete documentation', 'Intranet Ticket Class');
 	SELECT im_category_new(31205, 'Issue to export data', 'Intranet Ticket Class');
-	SELECT im_category_hierarchynew(31201, 31200);
-	SELECT im_category_hierarchynew(31202, 31200);
-	SELECT im_category_hierarchynew(31203, 31200);
-	SELECT im_category_hierarchynew(31204, 31200);
-	SELECT im_category_hierarchynew(31205, 31200);
 
 SELECT im_category_new(31300, 'Requests for new/additional services', 'Intranet Ticket Class');
 
 	SELECT im_category_new(31301, 'New feature request', 'Intranet Ticket Class');
-	SELECT im_category_hierarchynew(31301, 31300);
+	SELECT im_category_hierarchy_new(31301, 31300);
 
 
-
-
-
-insert into im_categories(category_id, category, category_type) 
-values (11400, 'Active', 'Intranet Helpdesk Status');
-insert into im_categories(category_id, category, category_type) 
-values (11402, 'Deleted', 'Intranet Helpdesk Status');
-
-
-insert into im_categories(category_id, category, category_type) 
-values (11500, 'Address', 'Intranet Helpdesk Type');
-insert into im_categories(category_id, category, category_type) 
-values (11502, 'Email', 'Intranet Helpdesk Type');
-insert into im_categories(category_id, category, category_type) 
-values (11504, 'Http', 'Intranet Helpdesk Type');
-insert into im_categories(category_id, category, category_type) 
-values (11506, 'Ftp', 'Intranet Helpdesk Type');
-insert into im_categories(category_id, category, category_type) 
-values (11508, 'Phone', 'Intranet Helpdesk Type');
-insert into im_categories(category_id, category, category_type) 
-values (11510, 'Fax', 'Intranet Helpdesk Type');
-insert into im_categories(category_id, category, category_type) 
-values (11512, 'Mobile', 'Intranet Helpdesk Type');
-insert into im_categories(category_id, category, category_type) 
-values (11514, 'Other', 'Intranet Helpdesk Type');
 
 
 -----------------------------------------------------------
@@ -250,13 +287,13 @@ values (11514, 'Other', 'Intranet Helpdesk Type');
 create or replace view im_ticket_status as
 select	category_id as ticket_status_id, category as ticket_status
 from	im_categories
-where	category_type = 'Intranet Helpdesk Status'
+where	category_type = 'Intranet Ticket Status'
 	and (enabled_p is null or enabled_p = 't');
 
 create or replace view im_ticket_types as
 select	category_id as ticket_type_id, category as ticket_type
 from	im_categories
-where	category_type = 'Intranet Helpdesk Type'
+where	category_type = 'Intranet Ticket Type'
 	and (enabled_p is null or enabled_p = 't');
 
 
@@ -274,63 +311,14 @@ SELECT im_component_plugin__new (
 	null,				-- creation_user
 	null,				-- creation_ip
 	null,				-- context_id
-	'Project Helpdesk',		-- plugin_name
+	'Ticket Discussion',		-- plugin_name
 	'intranet-helpdesk',		-- package_name
-	'right',			-- location
-	'/intranet/projects/view',	-- page_url
+	'bottom',			-- location
+	'/intranet-helpdesk/new',	-- page_url
 	null,				-- view_name
-	90,				-- sort_order
-	'im_helpdesk_project_component -object_id $project_id'	-- component_tcl
+	10,				-- sort_order
+	'im_forum_full_screen_component -object_id $ticket_id'	-- component_tcl
 );
-
-update im_component_plugins 
-set title_tcl = 'lang::message::lookup "" intranet-helpdesk.Project_Helpdesk "Project Helpdesk"'
-where plugin_name = 'Project Helpdesk';
-
-
-SELECT im_component_plugin__new (
-	null,				-- plugin_id
-	'acs_object',			-- object_type
-	now(),				-- creation_date
-	null,				-- creation_user
-	null,				-- creation_ip
-	null,				-- context_id
-	'Company Helpdesk',		-- plugin_name
-	'intranet-helpdesk',		-- package_name
-	'right',			-- location
-	'/intranet/companies/view',	-- page_url
-	null,				-- view_name
-	90,				-- sort_order
-	'im_helpdesk_project_component -object_id $company_id'	-- component_tcl
-);
-
-update im_component_plugins 
-set title_tcl = 'lang::message::lookup "" intranet-helpdesk.Company_Helpdesk "Company Helpdesk"'
-where plugin_name = 'Company Helpdesk';
-
-
-
-SELECT im_component_plugin__new (
-	null,				-- plugin_id
-	'acs_object',			-- object_type
-	now(),				-- creation_date
-	null,				-- creation_user
-	null,				-- creation_ip
-	null,				-- context_id
-	'User Helpdesk',			-- plugin_name
-	'intranet-helpdesk',		-- package_name
-	'right',			-- location
-	'/intranet/users/view',		-- page_url
-	null,				-- view_name
-	90,				-- sort_order
-	'im_helpdesk_project_component -object_id $user_id'	-- component_tcl
-);
-
-update im_component_plugins 
-set title_tcl = 'lang::message::lookup "" intranet-helpdesk.User_Helpdesk "User Helpdesk"'
-where plugin_name = 'User Helpdesk';
-
-
 
 
 -----------------------------------------------------------
