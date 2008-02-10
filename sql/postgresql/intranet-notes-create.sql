@@ -20,7 +20,7 @@ SELECT acs_object_type__create_type (
 	'acs_object',			-- supertype
 	'im_notes',			-- table_name
 	'note_id',			-- id_column
-	'im_notes',			-- package_name
+	'intranet-notes',		-- package_name
 	'f',				-- abstract_p
 	null,				-- type_extension_table
 	'im_note__name'			-- name_method
