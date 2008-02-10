@@ -331,6 +331,38 @@ end;' language 'plpgsql';
 
 
 
+CREATE OR REPLACE FUNCTION im_category_hierarchy_new (
+	varchar, varchar, varchar
+) RETURNS integer as '
+DECLARE
+	p_child			alias for $1;
+	p_parent		alias for $2;
+	p_cat_type		alias for $3;
+
+	v_child_id		integer;
+	v_parent_id		integer;
+	v_count			integer;
+BEGIN
+	select	category_id into v_child_id from im_categories
+	where	category = p_child and category_type = p_cat_type;
+	IF v_child_id is null THEN RAISE NOTICE ''im_category_hierarchy_new: bad category 1: "%" '',p_child; END IF;
+
+	select	category_id into v_parent_id from im_categories
+	where	category = p_parent and category_type = p_cat_type;
+	IF v_parent_id is null THEN RAISE NOTICE ''im_category_hierarchy_new: bad category 2: "%" '',p_parent; END IF;
+
+	select	count(*) into v_count from im_category_hierarchy
+	where	child_id = v_child_id and parent_id = v_parent_id;
+	IF v_count > 0 THEN return 0; END IF;
+
+	insert into im_category_hierarchy(child_id, parent_id)
+	values (v_child_id, v_parent_id);
+
+	RETURN 0;
+end;' language 'plpgsql';
+
+
+
 
 -- -------------------------------------------------------
 -- Setup "components" menu 
