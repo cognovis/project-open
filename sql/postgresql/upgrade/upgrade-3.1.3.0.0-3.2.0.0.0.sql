@@ -4,16 +4,8 @@
 -- Task is a subclass of Project.
 -------------------------------------------------------------
 
--- Drop the generic uniquentess constraint on project_nr.
+-- Drop the generic uniqueness constraint on project_nr.
 alter table im_projects drop constraint im_projects_nr_un;
-
--- Create a new constraing that makes sure that the project_nr
--- are unique per parent-project.
--- Project with parent_id != null don't have a filestorage...
---
-
-
--- alter table im_projects drop constraint im_projects_nr_un;
 
 -- Dont allow the same project_nr  for the same company+level
 alter table im_projects add
@@ -25,21 +17,53 @@ alter table im_projects add
 -- Puff, difficult to find one while maintaining compatible
 -- the the fixed IDs from ACS 3.4 Intranet...
 --
-insert into im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE) 
-values ('100', 'Task', 'Intranet Project Type');
+im_category_new(100, 'Task', 'Intranet Project Type');
 
 
 -------------------------------------------------------------
 -- Add a "sort order" field to Projects
 --
-alter table im_projects add sort_order integer;
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select count(*)	into v_count from user_tab_columns
+	where table_name = ''IM_PROJECTS'' and column_name = ''SORT_ORDER'';
+	if v_count > 0 then return 0; end if;
+
+	alter table im_projects add sort_order integer;
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
 
 -------------------------------------------------------------
 -- Add a "title_tcl" field to Components
 --
-alter table im_component_plugins add title_tcl varchar(4000);
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select count(*)	into v_count from user_tab_columns
+	where table_name = ''IM_COMPONENT_PLUGINS'' and column_name = ''TITLE_TCL'';
+	if v_count > 0 then return 0; end if;
 
+	alter table im_component_plugins add title_tcl varchar(4000);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+-------------------------------------------------------------
 -- Set the default value for title_tcl as the localization
 -- of the package name
 update im_component_plugins 
@@ -49,10 +73,8 @@ set title_tcl =
 where title_tcl is null;
 
 
+-------------------------------------------------------------
 -- Manually set some components title_tcl
-
-
-
 
 update im_component_plugins 
 set title_tcl = 'lang::message::lookup "" intranet-core.Offices "Offices"' 
@@ -268,7 +290,12 @@ declare
         p_title_tcl     alias for $14;
 
         v_plugin_id     im_component_plugins.plugin_id%TYPE;
+	v_count		integer;
 begin
+	select count(*)	into v_count from im_component_plugins
+	where plugin_name = p_plugin_name;
+	if v_count > 0 then return 0; end if;
+
         v_plugin_id := acs_object__new (
                 p_plugin_id,    -- object_id
                 p_object_type,  -- object_type
@@ -304,22 +331,38 @@ comment on table im_component_plugins is '
 ';
 
 
-create table im_component_plugin_user_map (
-        plugin_id               integer
-                                constraint im_comp_plugin_user_map_plugin_fk
-                                references im_component_plugins,
-        user_id                 integer
-                                constraint im_comp_plugin_user_map_user_fk
-                                references users,
-        sort_order              integer not null,
-        minimized_p             char(1)
-                                constraint im_comp_plugin_user_map_min_p_ck
-                                check(minimized_p in ('t','f'))
-                                default 'f',
-        location                varchar(100) not null,
-                constraint im_comp_plugin_user_map_plugin_pk
-                primary key (plugin_id, user_id)
-);
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select into v_count count(*) from pg_proc where lower(proname) = ''im_component_plugin_user_map'';
+
+	select count(*)	into v_count from user_tab_columns
+	where table_name = ''IM_COMPONENT_PLUGIN_USER_MAP'';
+	if v_count > 0 then return 0; end if;
+
+	create table im_component_plugin_user_map (
+	        plugin_id               integer
+	                                constraint im_comp_plugin_user_map_plugin_fk
+	                                references im_component_plugins,
+	        user_id                 integer
+	                                constraint im_comp_plugin_user_map_user_fk
+	                                references users,
+	        sort_order              integer not null,
+	        minimized_p             char(1)
+	                                constraint im_comp_plugin_user_map_min_p_ck
+	                                check(minimized_p in (''t'',''f''))
+	                                default ''f'',
+	        location                varchar(100) not null,
+	                constraint im_comp_plugin_user_map_plugin_pk
+	                primary key (plugin_id, user_id)
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 
@@ -357,6 +400,48 @@ create or replace view im_component_plugin_user_map_all as (
 
 
 
+create or replace function im_menu__new (integer, varchar, timestamptz, integer, varchar, integer, varchar, varchar, varchar, varchar, integer, integer, varchar) returns integer as '
+declare
+        p_menu_id         alias for $1;   -- default null
+        p_object_type     alias for $2;   -- default ''acs_object''
+        p_creation_date   alias for $3;   -- default now()
+        p_creation_user   alias for $4;   -- default null
+        p_creation_ip     alias for $5;   -- default null
+        p_context_id      alias for $6;   -- default null
+        p_package_name    alias for $7;
+        p_label           alias for $8;
+        p_name            alias for $9;
+        p_url             alias for $10;
+        p_sort_order      alias for $11;
+        p_parent_menu_id  alias for $12;
+        p_visible_tcl     alias for $13;  -- default null
+
+        v_menu_id         im_menus.menu_id%TYPE;
+begin
+        select  menu_id into    v_menu_id
+        from    im_menus m where   m.label = p_label;
+        IF v_menu_id is not null THEN return v_menu_id; END IF;
+
+        v_menu_id := acs_object__new (
+                p_menu_id,    -- object_id
+                p_object_type,  -- object_type
+                p_creation_date,        -- creation_date
+                p_creation_user,        -- creation_user
+                p_creation_ip,  -- creation_ip
+                p_context_id    -- context_id
+        );
+        insert into im_menus (
+                menu_id, package_name, label, name,
+                url, sort_order, parent_menu_id, visible_tcl
+        ) values (
+                v_menu_id, p_package_name, p_label, p_name, p_url,
+                p_sort_order, p_parent_menu_id, p_visible_tcl
+        );
+        return v_menu_id;
+end;' language 'plpgsql';
+
+
+
 
 -- -----------------------------------------------------
 -- User Exits Menu (Admin Page)
@@ -365,18 +450,14 @@ create or replace view im_component_plugin_user_map_all as (
 create or replace function inline_1 ()
 returns integer as '
 declare
-      -- Menu IDs
       v_menu                  integer;
       v_admin_menu            integer;
-      -- Groups
       v_admins                integer;
 begin
     select group_id into v_admins from groups where group_name = ''P/O Admins'';
 
-    select menu_id
-    into v_admin_menu
-    from im_menus
-    where label=''admin'';
+    select menu_id into v_admin_menu
+    from im_menus where label=''admin'';
 
     v_menu := im_menu__new (
         null,                   -- p_menu_id
@@ -405,11 +486,9 @@ drop function inline_1();
 
 
 
--- 060714 fraber: Function changes its type, so we have to
--- delete first.
--- However, there is no dependency on the function by any
--- other PlPg/SQL function, so that should be OK without
--- recompilation.
+-- 060714 fraber: Function changes its type, so we have to delete first.
+-- However, there is no dependency on the function by any other PlPg/SQL 
+-- function, so that should be OK without recompilation.
 drop function im_menu__name(integer);
 
 -- Returns the name of the menu
@@ -425,15 +504,5 @@ BEGIN
 
         return v_name;
 end;' language 'plpgsql';
-
-
-
-
-
-
--- ToDo: Change the "GifPath" parameter to "navbar_default" only
-
-
-
 
 

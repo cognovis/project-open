@@ -1,8 +1,6 @@
 -- upgrade-3.3.1.0.0-3.3.1.1.0.sql
 
 
-
-
 create or replace function im_component_plugin__new (
 	integer, varchar, timestamptz, integer, varchar, integer, 
 	varchar, varchar, varchar, varchar, varchar, integer, varchar
@@ -62,10 +60,8 @@ declare
 	v_plugin_id	im_component_plugins.plugin_id%TYPE;
 	v_count		integer;
 begin
-	select count(*) into v_count
-	from im_component_plugins
+	select count(*) into v_count from im_component_plugins
 	where plugin_name = p_plugin_name;
-
 	IF v_count > 0 THEN return 0; END IF;
 
 	v_plugin_id := acs_object__new (
@@ -103,7 +99,7 @@ returns varchar as '
 DECLARE
         p_cost_id  alias for $1;        -- cost_id
         v_name  varchar;
-    begin
+begin
         select  cost_name
         into    v_name
         from    im_costs
@@ -165,14 +161,29 @@ drop function inline_0();
 update acs_object_types set supertype = 'im_project' where object_type = 'im_timesheet_task';
 update acs_object_types set supertype = 'im_cost' where object_type = 'im_invoice';
 
-alter table acs_object_types
-add status_column character varying(30);
 
-alter table acs_object_types
-add type_column character varying(30);
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+        v_count                 integer;
+BEGIN
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''acs_object_types'' and lower(column_name) = ''status_column'';
+	IF v_count > 0 THEN return 0; END IF;
 
-alter table acs_object_types
-add status_type_table character varying(30);
+	alter table acs_object_types
+	add status_column character varying(30);
+	
+	alter table acs_object_types
+	add type_column character varying(30);
+	
+	alter table acs_object_types
+	add status_type_table character varying(30);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
 
 
 update acs_object_types set 

@@ -23,12 +23,8 @@ declare
 
         v_menu_id         im_menus.menu_id%TYPE;
 begin
-
-        select  menu_id
-        into    v_menu_id
-        from    im_menus m
+        select  menu_id into v_menu_id from im_menus m
         where   m.label = p_label;
-
         IF v_menu_id is not null THEN return v_menu_id; END IF;
 
         v_menu_id := acs_object__new (
@@ -53,9 +49,6 @@ end;' language 'plpgsql';
 
 
 
-
-
-
 -------------------------------------------------------------
 -- Slow query for Employees (the most frequent one...)
 -- because of missing outer-join reordering in PG 7.4...
@@ -69,8 +62,6 @@ update im_view_columns set extra_from = null, extra_where = null where column_id
 
 -------------------------------------------------------------
 -- Allow to make quotes for both active and potential companies
-
-
 
 create or replace function inline_0 ()
 returns integer as '

@@ -1,7 +1,6 @@
 -- upgrade-3.2.8.0.0-3.2.9.0.0.sql
 
 
-
 create or replace function inline_0 ()
 returns integer as '
 DECLARE
@@ -67,7 +66,6 @@ drop function inline_0 ();
 
 
 
-
 create or replace function im_priv_create (varchar, varchar)
 returns integer as '
 DECLARE
@@ -89,7 +87,6 @@ BEGIN
      into v_object_id
      from apm_packages
      where package_key=''acs-subsite'';
-
 
      select count(*) into v_count
      from acs_permissions

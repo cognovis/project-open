@@ -2,27 +2,17 @@
 -- upgrade-3.2.0.0.0-3.2.1.0.0.sql
 -------------------------------------------------------------
 
-
-
 -------------------------------------------------------------
 -- Portrait Fields
 --
-
-
 create or replace function inline_0 ()
 returns integer as '
 declare
         v_count                 integer;
 begin
-        select  count(*)
-        into    v_count
-        from    user_tab_columns
-        where   lower(table_name) = ''persons''
-                and lower(column_name) = ''portrait_checkdate'';
-
-        if v_count = 1 then
-            return 0;
-        end if;
+        select  count(*) into v_count from user_tab_columns
+        where   lower(table_name) = ''persons'' and lower(column_name) = ''portrait_checkdate'';
+        if v_count = 1 then return 0; end if;
 
 	alter table persons add portrait_checkdate date;
 	alter table persons add portrait_file varchar(400);
@@ -60,23 +50,17 @@ returns integer as '
 declare
         v_count                 integer;
 begin
-        select  count(*)
-        into    v_count
-        from    user_tab_columns
+        select  count(*) into v_count from user_tab_columns
         where   lower(table_name) = ''im_categories''
                 and lower(column_name) = ''aux_int1'';
-
-        if v_count = 1 then
-            return 0;
-        end if;
+        if v_count = 1 then return 0; end if;
 
 	alter table im_categories add aux_int1 integer;
 	alter table im_categories add aux_int2 integer;
 	alter table im_categories add aux_string1 varchar(1000);
 	alter table im_categories add aux_string2 varchar(1000);
 
-	update im_categories
-	set aux_string1 = category_description;
+	update im_categories set aux_string1 = category_description;
 
         return 0;
 end;' language 'plpgsql';
@@ -100,10 +84,7 @@ begin
         from    user_tab_columns
         where   lower(table_name) = ''im_projects''
 		and lower(column_name) = ''company_project_nr'';
-
-        if v_count = 1 then
-            return 0;
-        end if;
+        if v_count = 1 then return 0; end if;
 
         alter table im_projects
         add company_project_nr varchar(200);
@@ -126,15 +107,10 @@ returns integer as '
 declare
         v_count                 integer;
 begin
-        select  count(*)
-        into    v_count
-        from    user_tab_columns
+        select  count(*) into v_count from user_tab_columns
         where   upper(table_name) = upper(''im_projects'')
                 and upper(column_name) = upper(''company_contact_id'');
-
-        if v_count > 0 then
-            return 0;
-        end if;
+        if v_count > 0 then return 0; end if;
 
         alter table im_projects
         add company_contact_id integer;
@@ -155,15 +131,10 @@ returns integer as '
 declare
         v_count                 integer;
 begin
-        select  count(*)
-        into    v_count
-        from    user_tab_columns
+        select  count(*) into v_count from user_tab_columns
         where   lower(table_name) = ''im_projects''
 		and lower(column_name) = ''final_company'';
-
-        if v_count = 1 then
-            return 0;
-        end if;
+        if v_count = 1 then return 0; end if;
 
         alter table im_projects
         add final_company varchar(200);

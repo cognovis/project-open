@@ -5,7 +5,6 @@
 ----------------------------------------------------------------
 -- percentage column for im_biz_object_members
 
-
 create or replace function inline_0 ()
 returns integer as '
 declare
@@ -22,8 +21,6 @@ begin
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
-
-
 
 
 
@@ -45,9 +42,6 @@ end;' language 'plpgsql';
 
 
 
-
-
-
 create or replace function im_day_enumerator_weekdays (
         date, date
 ) returns setof date as '
@@ -59,7 +53,6 @@ declare
 BEGIN
         v_date := p_start_date;
         WHILE (v_date < p_end_date) LOOP
-
                 v_weekday := to_char(v_date, ''D'');
                 IF v_weekday != 1 AND v_weekday != 7 THEN
                         RETURN NEXT v_date;

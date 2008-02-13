@@ -13,7 +13,7 @@ extra_select, extra_where, sort_order, visible_for) values (1107,11,NULL,'Userna
 
 -- Make all Categories "enabled", after introducing an enabled_p
 -- sensitive CategoryWidget
-update im_categories set enabled_p = 't';
+update im_categories set enabled_p = 't' where enabled_p is null;
 
 
 

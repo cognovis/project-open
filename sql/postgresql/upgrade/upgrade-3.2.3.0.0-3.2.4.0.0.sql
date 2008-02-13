@@ -2,8 +2,6 @@
 
 ------------------------------------------------------
 -- del_module didnt delete GUI user mapping
-
-
 create or replace function im_component_plugin__del_module (varchar) returns integer as '
 DECLARE
         p_module_name   alias for $1;
