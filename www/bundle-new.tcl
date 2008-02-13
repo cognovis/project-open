@@ -25,6 +25,7 @@ if {![info exists panel_p]} {
 	{ form_mode "display" }
 	enable_master_p:integer,optional
 	{ printer_friendly_p 0 }
+	{ render_template_id:integer 0 }
     }
 }
 
@@ -32,10 +33,16 @@ set current_user_id [ad_maybe_redirect_for_registration]
 set page_title [lang::message::lookup "" intranet-expenses.Expense_Bundle "Expense Bundle"]
 set context_bar [im_context_bar $page_title]
 
+# Get the default locale for this current user
+set user_locale [lang::user::locale]
+set locale $user_locale
+
+
 if {![info exists enable_master_p]} { set enable_master_p 1}
 if {![info exists form_mode]} { set form_mode "edit" }
 if {![info exists message]} { set message "" }
 if {![info exists printer_friendly_p]} { set printer_friendly_p 0 }
+if {![info exists render_template_id]} { set render_template_id 0 }
 
 if {[info exists cost_id]} { set bundle_id $cost_id}
 if {[info exists bundle_id]} { set cost_id $bundle_id }
@@ -44,6 +51,7 @@ set delete_bundle_p [im_permission $current_user_id "add_expense_bundle"]
 set edit_bundle_p $delete_bundle_p
 
 set owner_p 0
+set owner_id 0
 if {[info exists bundle_id]} {
     set owner_id [db_string owner "select creation_user from acs_objects where object_id = :bundle_id" -default 0]
     set owner_p [expr $owner_id == $current_user_id]
@@ -77,11 +85,46 @@ set provider_options [im_provider_options]
 set cost_type_options [im_cost_type_options]
 set cost_status_options [im_cost_status_options]
 set investment_options [im_investment_options]
-set template_options [im_cost_template_options]
 set currency_options [im_currency_options]
 set cost_center_options [im_cost_center_options -include_empty 1 -department_only_p 0]
 
 
+# ---------------------------------------------------------------
+# Determine the locale
+# ---------------------------------------------------------------
+
+
+if {0 != $render_template_id} {
+
+    if {1 == $render_template_id} { 
+	# special template - the default template
+	set template_from_param [ad_parameter -package_id [im_package_expenses_id] DefaultExpenseTemplate "" ""]
+	if {"" == $template_from_param} {
+	    # Use the default template that comes as part of the module
+	    set template_body "default.adp"
+	    set template_path "[acs_root_dir]/packages/intranet-expenses/templates/"
+	} else {
+	    # Use the user's template in the template path
+	    set template_body $template_from_param
+	    set template_path [ad_parameter -package_id [im_package_invoices_id] InvoiceTemplatePathUnix "" "/tmp/templates/"]
+	}
+    } else {
+	set template_body [im_category_from_id $render_template_id]
+	set template_path [ad_parameter -package_id [im_package_invoices_id] InvoiceTemplatePathUnix "" "/tmp/templates/"]
+    }
+
+    append template_path "/$template_body"
+    if {[regexp {(.*)\.([_a-zA-Z]*)\.adp} $template_body match body loc]} {
+	set locale $loc
+    }
+}
+
+# Check if the given locale throws an error and reset
+if {[catch {
+    lang::message::lookup $locale "dummy_text"
+} errmsg]} {
+    set locale $user_locale
+}
 
 # ---------------------------------------------------------------
 # Action Links and their permissions
@@ -101,7 +144,9 @@ if {[info exists bundle_id]} {
 	lappend actions [list [lang::message::lookup {} intranet-timesheet2.Delete Delete] delete]
     }
 
-    lappend actions [list [lang::message::lookup {} intranet-timesheet2.Printer_Friendly {Printer Friendly}] printer_friendly]
+    if {0 == $render_template_id} {
+	lappend actions [list [lang::message::lookup {} intranet-timesheet2.Printer_Friendly {Printer Friendly}] printer_friendly]
+    }
 }
 
 
@@ -115,7 +160,7 @@ if {"delete" == $button_pressed} {
 }
 
 if {"printer_friendly" == $button_pressed} {
-   ad_returnredirect [export_vars -base "bundle-new" {bundle_id return_url {printer_friendly_p 1}}]
+   ad_returnredirect [export_vars -base "bundle-new" {bundle_id return_url {render_template_id 1}}]
 }
 
 
@@ -319,9 +364,13 @@ template::list::create \
 	expense_payment_type {
 	    label "[_ intranet-expenses.Expense_Payment_Type]"
 	}
+	billable_p {
+	    label "[lang::message::lookup {} intranet-expenses.Billable {Bill-<br>able?}]"
+	}
     }
 
-db_multirow -extend {project_url expense_new_url provider_url} expense_lines expenses_lines "
+
+set expense_lines_sql "
 	select
 		c.*,
 		e.*,
@@ -339,7 +388,9 @@ db_multirow -extend {project_url expense_new_url provider_url} expense_lines exp
 		e.bundle_id = :bundle_id
 	order by
 		c.effective_date
-" {
+"
+
+db_multirow -extend {project_url expense_new_url provider_url} expense_lines expenses_lines $expense_lines_sql {
     set amount "[format %.2f [expr $amount * [expr 1 + [expr $vat / 100]]]] $currency"
     set vat "[format %.1f $vat] %"
     set reimbursable "[format %.1f $reimbursable] %"
@@ -354,3 +405,34 @@ db_multirow -extend {project_url expense_new_url provider_url} expense_lines exp
     set project_url [export_vars -base "/intranet/projects/view" {{project_id $project_id} return_url}]
 }
 
+
+
+
+# ---------------------------------------------------------------
+# Special Output: Format using a template
+# ---------------------------------------------------------------
+
+# Use a specific template ("render_template_id") to render the "preview"
+if {0 != $render_template_id} {
+
+    set cost_type "Expense Bundle"
+
+    if {"" == $template_body} {
+	ad_return_complaint 1 "<li>You haven't specified a template for your $cost_type."
+	ad_script_abort
+    }
+
+    if {![file isfile $template_path] || ![file readable $template_path]} {
+	ad_return_complaint "Unknown $cost_type Template" "
+	<li>$cost_type template '$template_path' doesn't exist or is not readable
+	for the web server. Please notify your system administrator."
+	ad_script_abort
+    }
+
+    # Render the page using the template
+    set invoices_as_html [ns_adp_parse -file $template_path]
+
+    # Show invoice using template
+    ns_return 200 text/html $invoices_as_html
+    ad_script_abort
+} 
