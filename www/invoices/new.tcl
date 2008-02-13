@@ -170,7 +170,14 @@ if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string
     lappend criteria "im_first_letter_default_to_a(p.project_name)=:letter"
 }
 if { $include_subprojects_p == "f" } {
-    lappend criteria "p.parent_id is null"
+
+    set main_projects_maxdepth [parameter::get_from_package_key -package_key "intranet-core" -parameter "MainProjectSelectMaxdepth" -default 2]
+    if {1 == $main_projects_maxdepth} {
+	lappend criteria "p.parent_id is null"
+    } else {
+	lappend criteria "tree_level(p.tree_sortkey) <= :main_projects_maxdepth"
+    }
+
 }
 
 
