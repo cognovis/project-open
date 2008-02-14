@@ -103,7 +103,7 @@ if {"" == $target_cost_type_id} {
 }
 
 if { [empty_string_p $how_many] || $how_many < 1 } {
-    set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50]
+    set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 100]
 }
 set end_idx [expr $start_idx + $how_many - 1]
 
@@ -167,7 +167,7 @@ if { ![empty_string_p $project_type_id] && $project_type_id != 0 } {
 
 
 if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string compare $letter "SCROLL"] != 0 } {
-    lappend criteria "im_first_letter_default_to_a(p.project_name)=:letter"
+    lappend criteria "upper(im_first_letter_default_to_a(p.project_name))=:letter"
 }
 if { $include_subprojects_p == "f" } {
 
@@ -230,7 +230,6 @@ select
         p.project_lead_id,
         p.company_id,
         c.company_name,
-        p.project_status_id,
 	im_name_from_user_id(p.project_lead_id) as lead_name,
         im_category_from_id(p.project_type_id) as project_type, 
         im_category_from_id(p.project_status_id) as project_status,
@@ -282,52 +281,6 @@ if {[string compare $letter "ALL"]} {
 }	
 
 # ---------------------------------------------------------------
-# 6. Format the Filter
-# ---------------------------------------------------------------
-
-# Note that we use a nested table because im_slider might
-# return a table with a form in it (if there are too many
-# options
-set filter_html "
-
-<table><tr>
-  <td>
-	<form method=POST action='/intranet-timesheet2-invoices/invoices/new'>
-	[export_form_vars start_idx order_by how_many target_cost_type_id view_name include_subprojects_p letter]
-	<table border=0 cellpadding=0 cellspacing=0>
-	<tr> 
-	  <td colspan='2' class=rowtitle align=center>
-	    [_ intranet-timesheet2-invoices.Filter_Projects] [im_new_project_html $user_id]
-	  </td>
-	</tr>
-	<tr>
-	  <td valign=top>[_ intranet-timesheet2-invoices.Project_Status]:</td>
-	  <td valign=top>[im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id $project_status_id]</td>
-	</tr>
-	<tr>
-	  <td valign=top>[_ intranet-timesheet2-invoices.Project_Type]:</td>
-	  <td valign=top>
-	    [im_category_select -include_empty_p 1 "Intranet Project Type" project_type_id $project_type_id]
-		  <input type=submit value=Go name=submit>
-	  </td>
-	</tr>
-	</table>
-	</form>
-  </td>
-  <td>
-	<table><tr>
-	  <td>
-	    <blockquote>
-		[_ intranet-timesheet2-invoices.lt_To_create_a_new_invoi]
-	    <blockquote>
-	  </td>
-	</tr></table>
-	
-  </td>
-</tr></table>
-"
-
-# ---------------------------------------------------------------
 # 7. Format the List Table Header
 # ---------------------------------------------------------------
 
@@ -364,7 +317,7 @@ append table_header_html "</tr>\n"
 set table_body_html ""
 set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
-set ctr 0
+set ctr 1
 set idx $start_idx
 set old_company_name ""
 db_foreach projects_info_query $selection {
@@ -400,6 +353,7 @@ if { [empty_string_p $table_body_html] } {
         </b></ul></td></tr>"
 }
 
+
 if { $ctr == $how_many && $end_idx < $total_in_limited } {
     # This means that there are rows that we decided not to return
     # Include a link to go to the next page
@@ -408,6 +362,7 @@ if { $ctr == $how_many && $end_idx < $total_in_limited } {
 } else {
     set next_page_url ""
 }
+
 
 if { $start_idx > 0 } {
     # This means we didn't start with the first row - there is
@@ -466,21 +421,7 @@ set submit_button "
 # 10. Join all parts together
 # ---------------------------------------------------------------
 
-set page_body "
-$filter_html
-[im_costs_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list project_status_id target_cost_type_id project_type_id start_idx order_by how_many mine_p view_name letter include_subprojects_p] ""]
 
-<form method=POST action='new-2'>
-[export_form_vars target_cost_type_id]
-  <table width=100% cellpadding=2 cellspacing=2 border=0>
-    $table_header_html
-    $table_body_html
-    $table_continuation_html
-    $submit_button
-  </table>
-</form>
-"
+set costs_navbar_html [im_costs_navbar $letter "/intranet-timesheet2-invoices/invoices/new" $next_page_url $previous_page_url [list project_status_id target_cost_type_id project_type_id start_idx order_by how_many mine_p view_name letter include_subprojects_p] ""]
 
-db_release_unused_handles
-
-ad_return_template
+set admin_html ""
