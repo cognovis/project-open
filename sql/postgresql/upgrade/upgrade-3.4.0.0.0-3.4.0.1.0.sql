@@ -1,6 +1,32 @@
 -- upgrade-3.3.1.1.0-3.3.1.2.0.sql
 
 
+CREATE OR REPLACE FUNCTION ad_group_member_p(integer, integer)
+RETURNS character AS '
+DECLARE
+	p_user_id		alias for $1;
+	p_group_id		alias for $2;
+
+	ad_group_member_count	integer;
+BEGIN
+	select count(*)	into ad_group_member_count
+	from	acs_rels r,
+		membership_rels mr
+	where
+		r.rel_id = mr.rel_id
+		and object_id_one = p_group_id
+		and object_id_two = p_user_id
+		and mr.member_state = ''approved''
+	;
+
+	if ad_group_member_count = 0 then
+		return ''f'';
+	else
+		return ''t'';
+	end if;
+END;' LANGUAGE 'plpgsql';
+
+
 -- ---------------------------------------------------------------
 -- Find out the status and type of business objects in a generic way
 
@@ -47,7 +73,7 @@ BEGIN
 
 	-- Funny way, but this is the only option to get a value from an EXECUTE in PG 8.0 and below.
 	FOR row IN EXECUTE v_query
-        LOOP
+	LOOP
 		v_result_id := row.result_id;
 		EXIT;
 	END LOOP;
@@ -100,7 +126,7 @@ BEGIN
 
 	-- Funny way, but this is the only option to get a value from an EXECUTE in PG 8.0 and below.
 	FOR row IN EXECUTE v_query
-        LOOP
+	LOOP
 		v_result_id := row.result_id;
 		EXIT;
 	END LOOP;
@@ -284,44 +310,44 @@ end;' language 'plpgsql';
 create or replace function im_new_menu_perms (varchar, varchar)
 returns integer as '
 declare
-        p_label                 alias for $1;
-        p_group                 alias for $2;
-        v_menu_id               integer;
-        v_group_id              integer;
+	p_label		alias for $1;
+	p_group		alias for $2;
+	v_menu_id		integer;
+	v_group_id		integer;
 begin
-        select  menu_id into v_menu_id
-        from    im_menus where label = p_label;
+	select	menu_id into v_menu_id
+	from	im_menus where label = p_label;
 
-        select  group_id into v_group_id
-        from    groups where lower(group_name) = lower(p_group);
+	select	group_id into v_group_id
+	from	groups where lower(group_name) = lower(p_group);
 
-        PERFORM acs_permission__grant_permission(v_menu_id, v_group_id, ''read'');
-        return v_menu_id;
+	PERFORM acs_permission__grant_permission(v_menu_id, v_group_id, ''read'');
+	return v_menu_id;
 end;' language 'plpgsql';
 
 
 
 
 CREATE OR REPLACE FUNCTION im_category_new (
-        integer, varchar, varchar
+	integer, varchar, varchar
 ) RETURNS integer as '
 DECLARE
-        p_category_id           alias for $1;
-        p_category              alias for $2;
-        p_category_type         alias for $3;
-        v_count                 integer;
+	p_category_id	alias for $1;
+	p_category		alias for $2;
+	p_category_type	alias for $3;
+	v_count		integer;
 BEGIN
-        select  count(*) into v_count
-        from    im_categories
-        where   category = p_category and
-                category_type = p_category_type;
+	select	count(*) into v_count
+	from	im_categories
+	where	category = p_category and
+		category_type = p_category_type;
 
-        IF v_count > 0 THEN return 0; END IF;
+	IF v_count > 0 THEN return 0; END IF;
 
-        insert into im_categories(category_id, category, category_type)
-        values (p_category_id, p_category, p_category_type);
+	insert into im_categories(category_id, category, category_type)
+	values (p_category_id, p_category, p_category_type);
 
-        RETURN 0;
+	RETURN 0;
 end;' language 'plpgsql';
 
 
