@@ -867,15 +867,7 @@ ad_proc -public im_costs_navbar { default_letter base_url next_page_url prev_pag
             ns_log Notice "im_costs_navbar: $var <- $value"
         }
     }
-    set alpha_bar [im_alpha_bar $base_url $default_letter $bind_vars]
-    if {[string equal "none" $default_letter]} { set alpha_bar "&nbsp;" }
-    if {![string equal "" $prev_page_url]} {
-        set alpha_bar "<A HREF=$prev_page_url>&lt;&lt;</A>\n$alpha_bar"
-    }
-
-    if {![string equal "" $next_page_url]} {
-        set alpha_bar "$alpha_bar\n<A HREF=$next_page_url>&gt;&gt;</A>\n"
-    }
+    set alpha_bar [im_alpha_bar -prev_page_url $prev_page_url -next_page_url $next_page_url $base_url $default_letter $bind_vars]
 
     # Get the Subnavbar
     set parent_menu_sql "select menu_id from im_menus where label='finance'"
