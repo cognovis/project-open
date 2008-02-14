@@ -33,7 +33,17 @@ set date_format "YYYY-MM-DD"
 set cur_format [im_l10n_sql_currency_format]
 set return_url [im_url_with_query]
 set current_url [ns_conn url]
-set project_nr [db_string project_nr "select project_nr from im_projects where project_id=:project_id" -default ""]
+
+set project_nr ""
+set user_is_pm_p 0
+db_0or1row project_info "
+	select	(select project_nr from im_projects where project_id = :project_id) as project_nr,
+		(select	count(*) from persons
+		 where	person_id in (select * from im_project_managers_enumerator(:project_id))
+	       ) as user_is_pm_p
+	from dual
+"
+
 set page_title "$project_nr [_ intranet-expenses.Unassigned_Expenses]"
 set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
 
@@ -340,6 +350,9 @@ set ttt {
 # not just their own ones...
 set personal_only_sql "and provider_id = :user_id"
 if {$create_bundle_p} { set personal_only_sql "" }
+
+# Allow the project manager to see all expense bundles
+if {1 == $user_is_pm_p} { set personal_only_sql "" }
 
 
 
