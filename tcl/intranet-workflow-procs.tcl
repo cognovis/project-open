@@ -897,6 +897,7 @@ ad_proc im_workflow_object_permissions {
     set type_id [db_string status "select im_biz_object__get_type_id (:object_id)" -default 0]
     set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
     set user_is_hr_p [im_user_is_hr_p $user_id]
+    set user_is_accounting_p [im_user_is_accounting_p $user_id]
     set user_is_owner_p [expr $owner_id == $user_id]
     set user_is_assignee_p [db_string assignee_p "
 	select	count(*)
@@ -937,6 +938,12 @@ ad_proc im_workflow_object_permissions {
     if {$user_is_hr_p} { 
 	set perm_letters {}
 	if {[info exists perm_hash(hr-$status_id)]} { set perm_letters $perm_hash(hr-$status_id)}
+	set perm_set [set_union $perm_set $perm_letters]
+    }
+
+    if {$user_is_accounting_p} { 
+	set perm_letters {}
+	if {[info exists perm_hash(accounting-$status_id)]} { set perm_letters $perm_hash(accounting-$status_id)}
 	set perm_set [set_union $perm_set $perm_letters]
     }
 
