@@ -63,6 +63,11 @@ ad_proc im_expense_bundle_new_page_wf_perm_table { } {
     set perm_hash(hr-$act) {v r d w a}
     set perm_hash(hr-$del) {v r d w a}
 
+    set perm_hash(accounting-$rej) {v r}
+    set perm_hash(accounting-$req) {v r}
+    set perm_hash(accounting-$act) {v r}
+    set perm_hash(accounting-$del) {v r}
+
     return [array get perm_hash]
 }
 
