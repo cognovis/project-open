@@ -10,7 +10,7 @@
 
 <table width="100%">
   <tr valign="top">
-    <td width="50%">
+    <td>
 
 	<h2>@page_title@</h2>
 	<formtemplate id=form></formtemplate>
@@ -26,7 +26,7 @@
 </if>
 
     </td>
-    <td width="50%">
+    <td>
 
 <if @form_mode@ eq "display" >
       <%= [im_component_bay right] %>
