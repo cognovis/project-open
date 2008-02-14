@@ -1,6 +1,33 @@
 -- upgrade-3.4.0.0.0-3.4.0.1.0.sql
 
 
+
+create or replace function im_project_managers_enumerator (integer) 
+returns setof integer as '
+declare
+	p_project_id		alias for $1;
+
+	v_project_id		integer;
+	v_parent_id		integer;
+	v_project_lead_id	integer;
+	v_count			integer;
+BEGIN
+	v_project_id := p_project_id;
+	v_count := 100;
+
+	WHILE (v_project_id is not null AND v_count > 0) LOOP
+		select	parent_id, project_lead_id into v_parent_id, v_project_lead_id
+		from	im_projects where project_id = v_project_id;
+
+		IF v_project_lead_id is not null THEN RETURN NEXT v_project_lead_id; END IF;
+		v_project_id := v_parent_id;
+		v_count := v_count - 1;
+	END LOOP;
+
+	RETURN;
+end;' language 'plpgsql';
+
+
 CREATE OR REPLACE FUNCTION ad_group_member_p(integer, integer)
 RETURNS character AS '
 DECLARE
