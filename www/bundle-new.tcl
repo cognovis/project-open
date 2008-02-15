@@ -137,9 +137,10 @@ if {[info exists bundle_id]} {
     set edit_perm_func [parameter::get_from_package_key -package_key intranet-timesheet2 -parameter ExpenseBundleNewPageWfEditButtonPerm -default "im_expense_bundle_new_page_wf_perm_edit_button"]
     set delete_perm_func [parameter::get_from_package_key -package_key intranet-timesheet2 -parameter ExpenseBundleNewPageWfDeleteButtonPerm -default "im_expense_bundle_new_page_wf_perm_delete_button"]
 
-    if {[eval [list $edit_perm_func -bundle_id $bundle_id]]} {
-	lappend actions [list [lang::message::lookup {} intranet-timesheet2.Edit Edit] edit]
-    }
+#    if {[eval [list $edit_perm_func -bundle_id $bundle_id]]} {
+#	lappend actions [list [lang::message::lookup {} intranet-timesheet2.Edit Edit] edit]
+#    }
+
     if {[eval [list $delete_perm_func -bundle_id $bundle_id]]} {
 	lappend actions [list [lang::message::lookup {} intranet-timesheet2.Delete Delete] delete]
     }
@@ -192,7 +193,9 @@ set tax_label "[_ intranet-cost.TAX]"
 set desc_label "[_ intranet-cost.Description]"
 set note_label "[_ intranet-cost.Note]"
 
-    set elements {
+# Set of elements to allow the owner to edit his own 
+# Expense Bundle after "create-bundle.tcl".
+set elements {
 	cost_id:key
 	{cost_name:text(text) {label $cost_name_label} {html {size 50}}}
 	{project_id:text(hidden),optional}
@@ -202,9 +205,11 @@ set note_label "[_ intranet-cost.Note]"
 	{currency:text(hidden) }
 	{vat:text(hidden) }
         {note:text(textarea),optional {label $note_label} {html {cols 50 rows 4}}}
-    }
+}
+
 
 if {$edit_bundle_p || "display" == $form_mode} {
+
     set elements {
 	cost_id:key
 	{cost_name:text(text) {label $cost_name_label} {html {size 50}}}
@@ -212,11 +217,27 @@ if {$edit_bundle_p || "display" == $form_mode} {
 	{creation_user:text(select),optional {label $creation_user_label} {options $creation_user_options} }
         {cost_type_id:text(select) {label $type_label} {options $cost_type_options} }
         {cost_status_id:text(select) {label $cost_status_label} {options $cost_status_options} }
-        {amount:text(text) {label $amount_label} {html {size 20}} }
+    }
+    
+    if {"edit" == $button_pressed} {
+	set amount_elems {
+	    {amount:text(text) {label $amount_label} {html {size 20}} }
+	}
+    } else {
+	set amount_elems {
+	    {amount:text(hidden)}
+	    {amount_with_vat:text(calculated_sql),optional {label {Amount<br>(inc. VAT)}} {custom {sql {select trim(to_char(amount * (1 + vat / 100), '99999999999.99')) from im_costs where cost_id = $bundle_id}}} }
+	}
+    }
+    
+    set elements1 {
         {currency:text(select) {label $currency_label} {options $currency_options} }
         {vat:text(text) {label $vat_label} {html {size 20}} }
         {note:text(textarea),optional {label $note_label} {html {cols 50 rows 4}}}
     }
+
+    set elements [concat $elements $amount_elems $elements1]
+
 }
 
 ad_form \
@@ -227,7 +248,6 @@ ad_form \
     -has_edit 1 \
     -action "/intranet-expenses/bundle-new" \
     -form $elements
-
 
 
 ad_form -extend -name $form_id \
