@@ -93,6 +93,7 @@ db_transaction {
 	update im_expenses 
 	set bundle_id = :expense_bundle_id 
 	where expense_id in ([join $expense_id ", "])
+	      and bundle_id is null
     "
 }
 
