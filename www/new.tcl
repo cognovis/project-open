@@ -388,9 +388,9 @@ ad_form -extend -name $form_id -on_request {
 
 
     # Calculate VAT automatically?
-    # We need this function at the very end because is access the newly
+    # We need this function at the very end because it accesses the newly
     # saved absence values.
-    if {$auto_vat_p} { 
+    if {$auto_vat_p} {
 	set vat [$auto_vat_function -expense_id $expense_id] 
 	set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
 	db_dml update_costs "
@@ -399,6 +399,33 @@ ad_form -extend -name $form_id -on_request {
 			amount = :amount
 		where	cost_id = :expense_id
         "
+    }
+
+
+    # ---------------------------------------------------------------
+    # Re-calculate the expense bundle if exists
+    # ---------------------------------------------------------------
+
+    if {"" != $expense_bundle_id && 0 != $expense_bundle_id} {
+	
+	# Get the list of expense items contained in the bundle and recalculate
+	set expense_ids [db_list expense_ids "
+		select	expense_id
+		from	im_expenses
+		where	bundle_id = :expense_bundle_id
+	"]
+	array set hash [im_expense_bundle_item_sum -expense_ids $expense_ids]
+
+	db_dml update_costs "
+	update im_costs
+	set
+		vat		= $hash(bundle_vat),
+		tax		= $hash(tax),
+		amount		= $hash(amount_before_vat),
+		currency	= '$hash(default_currency)'
+	where
+		cost_id = :expense_bundle_id
+         "
     }
 
 } -on_submit {

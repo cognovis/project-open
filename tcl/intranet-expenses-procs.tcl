@@ -35,6 +35,113 @@ ad_proc -private im_package_expenses_id_helper {} {
 
 
 # ----------------------------------------------------------------------
+# Sum up multiple Expense Items for a single Bundle
+# ----------------------------------------------------------------------
+
+
+ad_proc im_expense_bundle_item_sum {
+    -expense_ids:required
+} {
+    Sums up a list of expense items.
+    Returns a hash array with the resulting amount sum etc.
+} {
+    set current_user_id [ad_get_user_id]
+    set amount_before_vat 0
+    set total_amount 0
+    set common_project_id 0
+    set common_customer_id 0
+    set common_provider_id 0
+    set common_currrency ""
+    set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+
+    set expense_sql "
+	select	c.*,
+		e.*,
+		im_exchange_rate(c.effective_date::date, c.currency, :default_currency) 
+			* c.amount as amount_converted
+	from	im_costs c, 
+		im_expenses e
+	where	c.cost_id in ([join $expense_ids ", "])
+		and c.cost_id = e.expense_id
+    "
+    db_foreach expenses $expense_sql {
+
+	set amount_before_vat [expr $amount_before_vat + $amount_converted]
+	set total_amount [expr $total_amount + [expr $amount_converted * [expr 1 + [expr $vat / 100.0]]]]
+
+	if {0 == $common_project_id & $project_id != ""} { set common_project_id $project_id }
+	if {0 != $common_project_id & $project_id != "" & $common_project_id != $project_id} {
+	    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_projects "
+		You can't included expense items from several project in one expense bundle.
+	    "]
+	    ad_script_abort
+	}
+
+	if {0 == $common_customer_id & $customer_id != ""} { set common_customer_id $customer_id }
+	if {0 != $common_customer_id & $customer_id != "" & $common_customer_id != $customer_id} {
+	    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_customers "
+		You can't included expense items from several 'customer' in one expense bundle.
+	    "]
+	    ad_script_abort
+	}
+
+	if {0 == $common_provider_id & $provider_id != ""} { set common_provider_id $provider_id }
+	if {0 != $common_provider_id & $provider_id != "" & $common_provider_id != $provider_id} {
+	    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_projects "
+		You can't included expense items from several 'providers' in one expense bundle.
+	    "]
+	    ad_script_abort
+	}
+    }
+
+    set bundle_vat 0
+    catch {
+	set bundle_vat [expr [expr [expr $total_amount - $amount_before_vat] / $amount_before_vat] * 100.0]
+    }
+
+    if {0 == $common_project_id} {
+	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_project_specified "No (common) project specified"]
+	ad_abort_script
+    }
+
+    # --------------------------------------
+    # create bundle for these expenses
+    # --------------------------------------
+    
+    set common_project_nr [db_string project_nr "select project_nr from im_projects where project_id = :common_project_id" -default ""]
+    set common_project_name [db_string project_nr "select project_name from im_projects where project_id = :common_project_id" -default ""]
+    
+    set total_amount_rounded [expr round($total_amount*100) / 100]
+    set cost_name [lang::message::lookup "" intranet-expenses.Expense_Bundle "Expense Bundle"]
+    set cost_name "$cost_name - $default_currency $total_amount_rounded in $common_project_name"
+    
+    # --------------------------------------
+    # Package variables in a hash for return
+    # --------------------------------------
+
+    set hash(common_project_id) $common_project_id
+    set hash(common_project_nr) $common_project_nr
+    set hash(common_project_name) $common_project_name
+    set hash(total_amount_rounded) $total_amount_rounded
+    set hash(cost_name) $cost_name
+    set hash(amount_before_vat) $amount_before_vat
+    set hash(total_amount) $total_amount
+    set hash(bundle_vat) $bundle_vat
+    set hash(customer_id) [im_company_internal]
+    set hash(provider_id) $current_user_id
+    set hash(cost_type_id) [im_cost_type_expense_bundle]
+    set hash(cost_status_id) [im_cost_status_requested]
+    set hash(template_id) ""
+    set hash(payment_days) 0
+    set hash(tax) 0
+    set hash(description) ""
+    set hash(note) ""
+    set hash(default_currency) $default_currency
+
+    return [array get hash]
+}
+
+# ----------------------------------------------------------------------
 # Workflow Permissions
 # ----------------------------------------------------------------------
 

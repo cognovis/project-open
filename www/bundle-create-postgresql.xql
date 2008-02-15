@@ -20,15 +20,15 @@
 		null,			-- cost_id
 		'im_expense_bundle',	-- object_type
 		now(),			-- creation_date
-		:common_provider_id,	-- creation_user
+		:provider_id,		-- creation_user
 		'[ad_conn peeraddr]',	-- creation_ip
 		null,			-- context_id
       
 		:cost_name,     	-- cost_name
 		null,			-- parent_id
 		:common_project_id,    	-- project_id
-		:common_customer_id,	-- customer_id
-		:common_provider_id,	-- provider_id
+		:customer_id,		-- customer_id
+		:provider_id,		-- provider_id
 		null,			-- investment_id
 
 		:cost_status_id,	-- cost_status_id

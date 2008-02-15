@@ -28,7 +28,6 @@ if {![info exists expense_id]} { ad_returnredirect $return_url }
 # User id already verified by filters
 set current_user_id [ad_maybe_redirect_for_registration]
 set add_expense_bundles_p [im_permission $current_user_id "add_expense_bundle"]
-set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 
 # if {!$add_expense_bundles_p} {
 #    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_perms "You don't have permission to see this page:"]
@@ -38,106 +37,62 @@ set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurr
 # Add a "0" expense to avoid syntax error if the list was empty.
 lappend epense_id 0
 
-set expense_ids $expense_id
-
 
 # ---------------------------------------------------------------
 # Sum up the expenses
 # ---------------------------------------------------------------
 
-set amount_before_vat 0
-set total_amount 0
-set expenses_list [list]
-set common_project_id 0
-set common_customer_id 0
-set common_provider_id 0
-set common_currrency ""
+array set hash [im_expense_bundle_item_sum -expense_ids $expense_id]
 
-set expense_sql "
-	select	c.*,
-		e.*,
-		im_exchange_rate(c.effective_date::date, c.currency, :default_currency) 
-			* c.amount as amount_converted
-	from	im_costs c, 
-		im_expenses e
-	where	c.cost_id in ([join $expense_ids ", "])
-		and c.cost_id = e.expense_id
-        	and e.bundle_id is null
-"
-db_foreach expenses $expense_sql {
+set common_project_id $hash(common_project_id)
+set common_project_nr $hash(common_project_nr)
+set common_project_name $hash(common_project_name)
+set total_amount_rounded $hash(total_amount_rounded)
+set cost_name $hash(cost_name)
+set amount_before_vat $hash(amount_before_vat)
+set total_amount $hash(total_amount)
+set bundle_vat $hash(bundle_vat)
+set customer_id $hash(customer_id)
+set provider_id $hash(provider_id)
+set cost_type_id $hash(cost_type_id)
+set cost_status_id $hash(cost_status_id)
+set template_id $hash(template_id)
+set payment_days $hash(payment_days)
+set tax $hash(tax)
+set description $hash(description)
+set note $hash(note)
+set default_currency $hash(default_currency)
 
-    set amount_before_vat [expr $amount_before_vat + $amount_converted]
-    set total_amount [expr $total_amount + [expr $amount_converted * [expr 1 + [expr $vat / 100.0]]]]
-
-    if {0 == $common_project_id & $project_id != ""} { set common_project_id $project_id }
-    if {0 != $common_project_id & $project_id != "" & $common_project_id != $project_id} {
-	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_projects "
-		You can't included expense items from several project in one expense bundle.
-	"]
-	ad_script_abort
-    }
-
-    if {0 == $common_customer_id & $customer_id != ""} { set common_customer_id $customer_id }
-    if {0 != $common_customer_id & $customer_id != "" & $common_customer_id != $customer_id} {
-	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_customers "
-		You can't included expense items from several 'customer' in one expense bundle.
-	"]
-	ad_script_abort
-    }
-
-    if {0 == $common_provider_id & $provider_id != ""} { set common_provider_id $provider_id }
-    if {0 != $common_provider_id & $provider_id != "" & $common_provider_id != $provider_id} {
-	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_projects "
-		You can't included expense items from several 'providers' in one expense bundle.
-	"]
-	ad_script_abort
-    }
-}
-
-set bundle_vat 0
-catch {
-     set bundle_vat [expr [expr [expr $total_amount - $amount_before_vat] / $amount_before_vat] * 100.0]
-}
-
-if {0 == $common_project_id} {
-    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_project_specified "No project specified"]
-    ad_abort_script
-}
-
-# --------------------------------------
-# create bundle for these expenses
-# --------------------------------------
-
-set project_nr [db_string project_nr "select project_nr from im_projects where project_id = :common_project_id" -default ""]
-set project_name [db_string project_nr "select project_name from im_projects where project_id = :common_project_id" -default ""]
-
-set total_amount_rounded [expr round($total_amount*100) / 100]
-set cost_name [lang::message::lookup "" intranet-expenses.Expense_Bundle "Expense Bundle"]
-set cost_name "$cost_name - $default_currency $total_amount_rounded in $project_name"
-
-set customer_id "[im_company_internal]"
-set provider_id $current_user_id
+# ---------------------------------------------------------------
+# Create the bundle
+# ---------------------------------------------------------------
 
 # Status: normal users can only create "requested" bundles
-set cost_status_id [im_cost_status_requested]
 if {$add_expense_bundles_p} { set cost_status_id [im_cost_status_created] }
 
-set cost_type_id [im_cost_type_expense_bundle]
-set template_id ""
-set payment_days "30"
-set tax "0"
-set description ""
-set note ""
+# Check that we don't try to update any items that are already
+# part of a bunlde
+set bundled_items_p [db_string bundled_items "
+	select	count(*)
+	from	im_expenses
+	where	expense_id in ([join $expense_id ", "])
+		and bundle_id is not null
+
+"]
+if {$bundled_items_p} {
+   ad_return_complaint 1 "You are trying to re-bundle already bundled items"
+   ad_script_abort
+}
+
 
 # Create Expense Bundle, basicly as a cost item with type "im_expense_bundle".
 db_transaction {
     set expense_bundle_id [db_exec_plsql create_expense_bundle ""] 
-    set expenses_list_sql [join $expenses_list ","]
 
     db_dml update_expense_items "
 	update im_expenses 
 	set bundle_id = :expense_bundle_id 
-	where expense_id in ([join $expense_ids ", "])
+	where expense_id in ([join $expense_id ", "])
     "
 }
 
@@ -171,6 +126,3 @@ if {$wf_installed_p && !$add_expense_bundles_p} {
 # ---------------------------------------------------------------
 
 ad_returnredirect [export_vars -base "bundle-new" {{bundle_id $expense_bundle_id} {form_mode "edit"}}]
-
-# ad_returnredirect $return_url
-
