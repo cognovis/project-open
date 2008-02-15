@@ -39,7 +39,8 @@ set user_is_pm_p 0
 db_0or1row project_info "
 	select	(select project_nr from im_projects where project_id = :project_id) as project_nr,
 		(select	count(*) from persons
-		 where	person_id in (select * from im_project_managers_enumerator(:project_id))
+		 where	person_id = :current_user_id and
+		 	person_id in (select * from im_project_managers_enumerator(:project_id))
 	       ) as user_is_pm_p
 	from dual
 "
@@ -353,8 +354,6 @@ if {$create_bundle_p} { set personal_only_sql "" }
 
 # Allow the project manager to see all expense bundles
 if {1 == $user_is_pm_p} { set personal_only_sql "" }
-
-
 
 
 db_multirow -extend {bundle_chk project_url owner_url bundle_url} bundle_lines bundle_lines "
