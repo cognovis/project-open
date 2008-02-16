@@ -1,6 +1,6 @@
 # /packages/intranet-timesheet2-invoices/www/new-2.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (c) 2003-2008 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -168,7 +168,7 @@ ad_form \
     -export {select_project target_cost_type_id invoice_currency}\
     -form {
         {start_date:text(text),optional {label "Start Date"}}
-        {end_date:text(text),optional {label "Start Date"}}
+        {end_date:text(text),optional {label "End Date"}}
     }
 
 template::element::set_value $form_id start_date $start_date

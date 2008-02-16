@@ -1,6 +1,6 @@
 # /packages/intranet-timesheet2-invoices/www/invoices/new-4.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (c) 2003-2008 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -26,6 +26,11 @@ ad_page_contract {
     { invoice_office_id "" }
     { payment_days:integer 0 }
     { payment_method_id:integer "" }
+    { invoice_hour_type "" }
+
+    { start_date "" }
+    { end_date "" }
+
     template_id:integer
     vat:float
     tax:float
@@ -46,6 +51,7 @@ ad_page_contract {
 # ---------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
+set current_user_id $user_id
 
 if {![im_permission $user_id add_invoices]} {
     ad_return_complaint 1 "<li>[_ intranet-timesheet2-invoices.lt_You_dont_have_suffici]"
@@ -65,6 +71,7 @@ set project_id ""
 if {1 == [llength $select_project]} {
     set project_id [lindex $select_project 0]
 }
+
 
 # ---------------------------------------------------------------
 # Update invoice base data
@@ -204,7 +211,19 @@ db_dml update_invoice_amount $update_invoice_amount_sql
 # Add a relationship to all related projects
 # ---------------------------------------------------------------
 
-foreach project_id $select_project { db_exec_plsql insert_acs_rels "" }
+foreach project_id $select_project { 
+
+    set rel_exists_p [db_string rel_exists "
+	select	count(*)
+	from	acs_rels r
+	where	object_id_one = :project_id
+		and object_id_two = :invoice_id
+    "]
+
+    if {!$rel_exists_p} {
+        db_exec_plsql insert_acs_rels "" 
+    }
+}
 
 
 # ---------------------------------------------------------------
@@ -224,5 +243,72 @@ if {$cost_type_id == [im_cost_type_invoice]} {
     "
 }
 
-db_release_unused_handles
+
+# ---------------------------------------------------------------
+# Update invoiced hours
+# ---------------------------------------------------------------
+
+# Update all unbilled cost items of the included tasks as
+# included in this invoice.
+# Note: There is a raise condition here, if somebody logs
+# his hours right between the last page (new-3) and this page
+# (new-4). Ugly. And likely, if you've got 200 users online...
+#
+# But it's very difficult to get a list of all
+# logged hours, because hours don't contain an object_id...
+#
+# Also dangerous: This update statement is not "directly synchronized"
+# with the previous select statement. So it's very likely that there
+# are error, also considering the different cases. Testing nightmare!
+# Let's see if somebody comes up with a bright idea...
+
+if {$cost_type_id == [im_cost_type_invoice]} {
+
+    switch $invoice_hour_type {
+	planned { 
+	    # Do nothing. This are not effort-based invoicing
+	}
+	billable {
+	    # Do nothing. This are not effort-based invoicing
+	}
+	reported {
+	    # Just mark everything as invoiced.
+	    # However, we don't "overwrite" hours assigned to another invoice.
+	    db_dml update_included_hours "
+		update im_hours set
+			cost_id = :invoice_id
+		where	project_id in ([join $include_task ","])
+			and cost_id is null
+	    "    
+	}
+	interval {
+	    db_dml update_included_hours "
+		update im_hours set
+			cost_id = :invoice_id
+		where	project_id in ([join $include_task ","])
+			and cost_id is null
+			and day >= :start_date::date
+			and day < :end_date::date
+	    "
+	}
+	unbilled {
+	    db_dml update_included_hours "
+		update im_hours set
+			cost_id = :invoice_id
+		where	project_id in ([join $include_task ","])
+			and cost_id is null
+	    "
+	}
+	default {
+	    ad_return_complaint 1 "<b>Internal Error</b>:<br>Unknown invoice_hour_type='$invoice_hour_type'"
+	}
+    }
+
+
+}
+
+# ---------------------------------------------------------------
+# Where do you want to go now?
+# ---------------------------------------------------------------
+
 ad_returnredirect "/intranet-invoices/view?invoice_id=$invoice_id"

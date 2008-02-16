@@ -141,7 +141,8 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Billable_br_Units "Billable<br>Units"]</td>
 	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.All_br_Reported_br_Units "All<br>Reported<br>Units"]</td>
 	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Reported_br_Units_in_br_Interval "Reported<br>Units in<br>Interval"]</td>
-	<td align=center class=rowtitle>[lang::message::lookup ""  intranet-timesheet2-invoices.UoM "UoM"] [im_gif help "Unit of Measure"]</td>
+	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.All_Unbilled_Units "All<br>Unbilled<br>Units"]</td>
+	<td align=center class=rowtitle>[lang::message::lookup ""  intranet-timesheet2-invoices.UoM "UoM"]<br>[im_gif help "Unit of Measure"]</td>
 	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Type Type]</td>
 	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Status Status]</td>
     </tr>
@@ -153,12 +154,14 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
     set reported_checked ""
     set interval_checked ""
     set new_checked ""
+    set unbilled_checked ""
     switch $invoice_hour_type {
 	planned { set planned_checked " checked" }
 	billable { set billable_checked " checked" }
 	reported { set reported_checked " checked" }
 	interval { set interval_checked " checked" }
 	new { set new_checked " checked" }
+	unbilled { set unbilled_checked " checked" }
     }
 
     set invoice_radio_disabled ""
@@ -176,6 +179,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	  <td align=center><input type=radio name=invoice_hour_type value=billable $invoice_radio_disabled $billable_checked></td>
 	  <td align=center><input type=radio name=invoice_hour_type value=reported $invoice_radio_disabled $reported_checked></td>
 	  <td align=center><input type=radio name=invoice_hour_type value=interval $invoice_radio_disabled $interval_checked></td>
+	  <td align=center><input type=radio name=invoice_hour_type value=unbilled $invoice_radio_disabled $unbilled_checked></td>
 	  <td></td>
 	  <td></td>
 	  <td></td>
@@ -204,7 +208,11 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 			h.project_id = children.project_id
 			and h.day >= to_timestamp(:start_date, 'YYYY-MM-DD')
 			and h.day < to_timestamp(:end_date, 'YYYY-MM-DD')
-		) as hours_in_interval
+		) as hours_in_interval,
+		(select sum(h.hours) from im_hours h where 
+			h.project_id = children.project_id
+			and h.cost_id is null
+		) as unbilled_hours
 	from
 		im_projects parent,
 		im_projects children
@@ -261,6 +269,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	  <td align=right>$billable_units</td>
 	  <td align=right>$all_reported_hours</td>
 	  <td align=right>$hours_in_interval</td>
+	  <td align=right>$unbilled_hours</td>
 	  <td align=right>$uom_name</td>
 	  <td>$project_type</td>
 	  <td>$project_status</td>

@@ -1,6 +1,6 @@
 # /packages/intranet-timesheet2-invoices/www/new-3.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (c) 2003-2008 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -232,6 +232,7 @@ if {$aggregate_tasks_p} {
 			sum(t.billable_units) as billable_sum,
 			sum(t.reported_units) as reported_sum,
 			sum(t.hours_in_interval) as interval_sum,
+			sum(t.unbilled_units) as unbilled_sum,
 			parent.project_id as project_id,	
 			im_material_name_from_id(t.task_material_id) as task_name,
 			t.task_type_id,
@@ -242,12 +243,18 @@ if {$aggregate_tasks_p} {
 			(select
 				t.planned_units,
 				t.billable_units,
-				(select sum(h.hours) from im_hours h where h.project_id = p.project_id) as reported_units,
+				(select sum(h.hours) from im_hours h where 
+					h.project_id = p.project_id
+				) as reported_units,
 				(select sum(h.hours) from im_hours h where
 					h.project_id = p.project_id
 					and h.day >= to_timestamp(:invoicing_start_date, 'YYYY-MM-DD')
 					and h.day < to_timestamp(:invoicing_end_date, 'YYYY-MM-DD')
 				) as hours_in_interval,
+				(select sum(h.hours) from im_hours h where 
+					h.project_id = p.project_id
+					and h.cost_id is null
+				) as unbilled_units,
 				parent.project_id as project_id,	
 				coalesce(t.material_id, :default_material_id) as task_material_id,
 				coalesce(t.uom_id, :default_uom_id) as uom_id,
@@ -287,6 +294,10 @@ if {$aggregate_tasks_p} {
 			and h.day >= to_timestamp(:invoicing_start_date, 'YYYY-MM-DD')
 			and h.day < to_timestamp(:invoicing_end_date, 'YYYY-MM-DD')
 		) as interval_sum,
+		(select sum(h.hours) from im_hours h where 
+			h.project_id = p.project_id
+			and h.cost_id is null
+		) as unbilled_sum,
 
 		p.company_id,
 		parent.project_id,
@@ -363,6 +374,7 @@ order by
 		trim(both ' ' from to_char(s.billable_sum, :number_format)) as billable_sum,
 		trim(both ' ' from to_char(s.reported_sum, :number_format)) as reported_sum,
 		trim(both ' ' from to_char(s.interval_sum, :number_format)) as interval_sum,
+		trim(both ' ' from to_char(s.unbilled_sum, :number_format)) as unbilled_sum,
 		s.task_type_id,
 		s.material_id,
 		s.task_name,
@@ -393,6 +405,10 @@ order by
 	    billable { set task_sum $billable_sum }
 	    reported { set task_sum $reported_sum }
 	    interval { set task_sum $interval_sum }
+	    unbilled { set task_sum $unbilled_sum }
+	    default {
+		ad_return_complaint 1 "<b>Internal Error</b>:<br>Unknown invoice_hour_type='$invoice_hour_type'"
+	    }
 	}
 
 	if {"" == $task_sum} { continue }
@@ -472,7 +488,7 @@ order by
 
 
 # ---------------------------------------------------------------
-# 10. Join all parts together
+# Join all parts together
 # ---------------------------------------------------------------
 
 set include_task_html ""
@@ -480,4 +496,8 @@ foreach task_id $in_clause_list {
     append include_task_html "<input type=hidden name=include_task value=$task_id>\n"
 }
 
+set start_date $invoicing_start_date
+set end_date $invoicing_end_date
+
+ad_return_template
 
