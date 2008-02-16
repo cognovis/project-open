@@ -148,10 +148,15 @@ returns integer as '
 DECLARE
 	p_invoice_id	alias for $1;
 BEGIN
-	-- Reset the status of all invoiced tasks to delivered.
+	-- Reset the invoiced-flag of all invoiced tasks
 	update	im_timesheet_tasks
 	set	invoice_id = null
 	where	invoice_id = p_invoice_id;
+
+	-- Reset the invoiced-flag of all included hours
+	update	im_hours
+	set	cost_id = null
+	where	cost_id = p_invoice_id;
 
 	-- Erase the invoice itself
 	delete from	im_timesheet_invoices

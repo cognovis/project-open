@@ -173,19 +173,39 @@ set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-timesheet
 set invoice_id [im_new_object_id]
 set invoice_nr [im_next_invoice_nr -invoice_type_id $target_cost_type_id]
 set invoice_date $todays_date
-set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCompanyInvoicePaymentDays" "" 30] 
-set due_date [db_string get_due_date "select to_date(to_char(sysdate,'YYYY-MM-DD'),'YYYY-MM-DD') + $payment_days from dual"]
 set provider_id [im_company_internal]
 set customer_id $company_id
-
 set cost_type_id $target_cost_type_id
-
 set cost_status_id [im_cost_status_created]
-set vat 0
-set tax 0
+
 set note ""
-set payment_method_id ""
-set template_id ""
+set default_vat 0
+set default_tax 0
+set default_payment_method_id ""
+set default_template_id ""
+set default_payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCompanyInvoicePaymentDays" "" 30] 
+
+if {[info exists customer_id]} {
+    db_0or1row customer_info "
+    	select	default_vat,
+		default_payment_method_id,
+		default_payment_days,
+		default_invoice_template_id,
+		default_bill_template_id,
+		default_po_template_id,
+		default_delnote_template_id
+	from	im_companies where company_id = :customer_id
+    "
+}
+
+switch $target_cost_type_id {
+    3700 { set default_template_id $default_invoice_template_id }
+    3704 { set default_template_id $default_bill_template_id }
+    3706 { set default_template_id $default_po_template_id }
+    3724 { set default_template_id $default_delnote_template_id }
+}
+
+set due_date [db_string get_due_date "select to_date(to_char(sysdate,'YYYY-MM-DD'),'YYYY-MM-DD') + $default_payment_days from dual"]
 
 
 # ---------------------------------------------------------------

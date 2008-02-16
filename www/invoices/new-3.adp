@@ -56,7 +56,7 @@
         <tr> 
           <td class=roweven>#intranet-timesheet2-invoices.Payment_terms#</td>
           <td class=roweven> 
-            <input type=text name=payment_days size=5 value='@payment_days@'>
+            <input type=text name=payment_days size=5 value='@default_payment_days@'>
             days date of invoice</td>
         </tr>
         <tr> 
@@ -64,7 +64,7 @@
 	    #intranet-timesheet2-invoices.Payment_Method#
 	  </td>
           <td class=rowodd>
-	    <%= [im_invoice_payment_method_select payment_method_id $payment_method_id] %>
+	    <%= [im_invoice_payment_method_select payment_method_id $default_payment_method_id] %>
 	  </td>
         </tr>
 </if>
@@ -72,7 +72,7 @@
         <tr> 
           <td class=roweven>#intranet-timesheet2-invoices.Invoice_template#:</td>
           <td class=roweven>
-	    <%= [im_cost_template_select template_id $template_id] %>
+	    <%= [im_cost_template_select template_id $default_template_id] %>
 	  </td>
         </tr>
         </table>
@@ -142,7 +142,7 @@
             <table border=0 cellspacing=1 cellpadding=0>
               <tr> 
                 <td>#intranet-timesheet2-invoices.VAT#</td>
-                <td><input type=text name=vat value='@vat@' size=4> % &nbsp;</td>
+                <td><input type=text name=vat value='@default_vat@' size=4> % &nbsp;</td>
               </tr>
             </table>
           </td>
@@ -154,7 +154,7 @@
             <table border=0 cellspacing=1 cellpadding=0>
               <tr> 
                 <td>#intranet-timesheet2-invoices.TAX#</td>
-                <td><input type=text name=tax value='@tax@' size=4> % &nbsp;</td>
+                <td><input type=text name=tax value='@default_tax@' size=4> % &nbsp;</td>
               </tr>
             </table>
           </td>
