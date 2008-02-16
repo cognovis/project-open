@@ -34,6 +34,7 @@ ad_page_contract {
     { project_status_id "" } 
     { project_type_id:integer "0" } 
     { project_id "" }
+    { company_id "" }
     { target_cost_type_id "" }
     { letter:trim "all" }
     { start_idx:integer 0 }
@@ -82,6 +83,9 @@ set subproject_types [list "t" "[_ intranet-timesheet2-invoices.Yes]" "f" "[_ in
 set page_title "[_ intranet-timesheet2-invoices.Invoices]"
 set context_bar [im_context_bar $page_title]
 set page_focus "im_header_form.keywords"
+set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+
+set filter_company_id $company_id
 
 if {![im_permission $user_id add_invoices]} {
     ad_return_complaint "[_ intranet-timesheet2-invoices.lt_Insufficient_Privileg]" "
@@ -112,7 +116,7 @@ set end_idx [expr $start_idx + $how_many - 1]
 # has been selected...
 if { ![empty_string_p $project_id] && $project_id != 0 } {
 
-    set invoice_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+    set invoice_currency $default_currency
     ad_returnredirect "/intranet-timesheet2-invoices/invoices/new-2?select_project=$project_id&[export_url_vars target_cost_type_id invoice_currency]"
     set page_body ""
     return
@@ -163,6 +167,10 @@ if { ![empty_string_p $project_status_id] && $project_status_id > 0 } {
 if { ![empty_string_p $project_type_id] && $project_type_id != 0 } {
     # Select the specified project type and its subtypes
     lappend criteria "p.project_type_id in ([join [im_sub_categories $project_type_id] ","])"
+}
+
+if { ![empty_string_p $filter_company_id] && $filter_company_id != 0 } {
+    lappend criteria "p.company_id = :filter_company_id"
 }
 
 
@@ -410,7 +418,7 @@ set table_continuation_html "
 set submit_button "
       <tr>
         <td colspan=$colspan align=right>
-	   [_ intranet-timesheet2-invoices.Invoice_Currency]: [im_currency_select invoice_currency "EUR"]
+	   [_ intranet-timesheet2-invoices.Invoice_Currency]: [im_currency_select invoice_currency $default_currency]
 	   <input type=submit value='[_ intranet-timesheet2-invoices.lt_Select_Projects_for_I]'> 
         </td>
       </tr>
@@ -421,7 +429,8 @@ set submit_button "
 # 10. Join all parts together
 # ---------------------------------------------------------------
 
+set company_id $filter_company_id
 
-set costs_navbar_html [im_costs_navbar $letter "/intranet-timesheet2-invoices/invoices/new" $next_page_url $previous_page_url [list project_status_id target_cost_type_id project_type_id start_idx order_by how_many mine_p view_name letter include_subprojects_p] ""]
+set costs_navbar_html [im_costs_navbar $letter "/intranet-timesheet2-invoices/invoices/new" $next_page_url $previous_page_url [list project_status_id target_cost_type_id project_type_id company_id start_idx order_by how_many mine_p view_name letter include_subprojects_p] ""]
 
 set admin_html ""

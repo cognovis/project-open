@@ -16,20 +16,41 @@
 	<table>
 	<tr>
 	  <td>
-		<form method=POST action='/intranet-timesheet2-invoices/invoices/new'>
+		<form method=GET action='/intranet-timesheet2-invoices/invoices/new'>
 		<%= [export_form_vars start_idx order_by how_many target_cost_type_id view_name include_subprojects_p letter] %>
 		<table border=0 cellpadding=0 cellspacing=0>
 		<tr>
-		  <td valign=top>#intranet-timesheet2-invoices.Project_Status#:</td>
+		  <td valign=top>
+<%= [lang::message::lookup "" intranet-timesheet2-invoices.Project_br_Status "Project<br>Status"] %>:
+    		  </td>
 		  <td valign=top><%= [im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id $project_status_id] %></td>
 		</tr>
+
 		<tr>
-		  <td valign=top>#intranet-timesheet2-invoices.Project_Type#:</td>
+		  <td valign=top>
+		  <%= [lang::message::lookup "" intranet-timesheet2-invoices.Project_br_Type "Project<br>Type"] %>:
+		  </td>
 		  <td valign=top>
 		    <%= [im_category_select -include_empty_p 1 "Intranet Project Type" project_type_id $project_type_id] %>
+		  </td>
+		</tr>
+
+		<tr>
+		  <td valign=top>
+		      <%= [lang::message::lookup "" intranet-core.Customer "Customer"] %>:
+		  </td>
+		  <td valign=top>
+		      <%= [im_company_select -include_empty_name "All" company_id $filter_company_id "" "CustOrIntl"] %>
+		  </td>
+		</tr>
+
+		<tr>
+		  <td valign=top>&nbsp;</td>
+		  <td valign=top>
 			  <input type=submit value=Go name=submit>
 		  </td>
 		</tr>
+
 		</table>
 		</form>
 	  </td>

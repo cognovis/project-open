@@ -16,7 +16,7 @@ ad_page_contract {
     invoice_id:integer
     customer_id:integer
     provider_id:integer
-    { select_project:integer,multiple {} }
+    { select_project:multiple {} }
     invoice_nr
     invoice_date
     cost_status_id:integer 
@@ -58,6 +58,8 @@ if {!$write_p} {
         <li>You can't create documents of type \#$cost_type_id in CostCenter \#$cost_center_id."
     ad_script_abort
 }
+
+regsub -all {[\{\}]} $select_project "" select_project
 
 set project_id ""
 if {1 == [llength $select_project]} {
