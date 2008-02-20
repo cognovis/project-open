@@ -2742,6 +2742,7 @@ ad_proc -public util_current_location {{}} {
         nssock {
             set proto http
             set port [ns_config -int "ns/server/[ns_info server]/module/nssock" Port]
+	    set port ""
         }
         nsunix {
             set proto http
