@@ -41,6 +41,7 @@ ad_proc -public im_dynfield::type_category_for_object_type {
 } {
     switch $object_type {
 	im_project		{ set category_type "Intranet Project Type" }
+	im_ticket		{ set category_type "Intranet Ticket Type" }
 	im_company		{ set category_type "Intranet Project Type" }
 	im_office		{ set category_type "Intranet Office Type" }
 	user			{ set category_type "Intranet Project Type" }
@@ -62,6 +63,7 @@ ad_proc -public im_dynfield::status_category_for_object_type {
 } {
     switch $object_type {
 	im_project		{ set category_status "Intranet Project Status" }
+	im_ticket		{ set category_status "Intranet Ticket Status" }
 	im_company		{ set category_status "Intranet Project Status" }
 	im_office		{ set category_status "Intranet Office Status" }
 	user			{ set category_status "Intranet Project Status" }
