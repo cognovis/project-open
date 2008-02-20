@@ -1,0 +1,52 @@
+   1.  Objectives
+         1. This procedure defines the steps involved in responding to customer contacts through the Help Desk.
+   2. Scope
+         1. This procedure applies to all contacts received by the Help Desk.
+   3. Responsibilities
+         1. Help Desk staff are responsible for recording all contacts received and for deciding on the action to be taken on each contact .
+         2. Help Desk staff provides technical support to the campus community. Help Desk staff diagnoses hardware and software problems, resolves when possible, escalates to higher level support as necessary.
+         3. All requests for computer maintenance, problem resolution, web support, networking problems, or related questions should be directed to the Help Desk.
+   4. Inputs
+         1. Calls from customers.
+         2. Emails from customers.
+         3. Walk in customers.
+   5. Outputs
+         1. Help Desk call records.
+         2. Help Desk call metrics.
+   6. General Procedure
+         1. The customer calls the Help Desk. If the call can be resolved immediately by the Help Desk, the customer is given the solution and the call is closed. Emails to helpdesk@tigerpond.com are treated as if the sender called the Help Desk.
+         2. If the Help Desk cannot resolve the problem immediately, the call is changed to an incident and the customer is given an incident management (IM) reference number.
+   7. Email Procedure
+         1. Electronic mail is checked regularly between 8:00 AM and 5:00 PM, Monday through Friday, to ensure a timely response to these requests.
+         2. All e-mail will be addressed within 24 hours of the day it was received. If necessary the HelpDesk staff is authorized overtime to stay after 5:00pm or come in prior to 8:00am in order to process all incoming HelpDesk e-mails.
+         3. All users will be notified of the job status through e-mail as soon as it has been processed. If an incident was created the IM number will be included with the return e-mail.
+         4. HelpDesk E-Mail Process:
+               1. Reply to the users e-mail notifying them of the status of the call
+               2. File the e-mail in the Resolved Calls folder
+               3. Create a call in Service Center, resolve and close the call
+         5. If you CANNOT resolve and close the call
+               1. Convert the Call to an Incident
+               2. Assign the Incident to the HelpDesk queue
+               3. Reply to the users e-mail notifying them of the status of their call including the IM number of the Incident
+               4. File the e-mail in the Assigned Incidents folder
+         6. Only e-mails that have not been read should be in the inbox. 
+   8. Response to Helpdesk Telephone and Walk-in Customers Procedure
+         1. Helpdesk technician(s) greets customer, determines what they need, enters problem into Service Center as a call, resolves problem, or elevates to a service ticket, if the problem is resolved the Helpdesk technician closes Service Center call.
+         2. If the helpdesk technician(s) is (are) on the phone then the next call in queue will go to the CSS technician on call. The CSS technician is then be responsible for creating the call log, resolving the issue and closing the call.
+         3. If the call requires more in-depth consultation (i.e. calls that cannot be resolved in 5 minutes or less), the call is transferred to the CSS technician on call. The CSS technician then creates the call log, elevates to service ticket if necessary, resolves and closes the call/ticket.
+         4. If the call obviously cannot be resolved on the phone (e.g. blue screen of death or no power), the helpdesk technician creates an incident and enters it into the helpdesk queue in Service Center.
+         5. If the problem cannot be resolved on the phone or by remote control by the CSS technician, he/she will create an incident and assign it to the helpdesk queue for assignment to a CSS technician for on-site or in-shop repair.
+         6. If a walk-in customer needs assistance from CSS, ITCS staff calls or intercoms the on-call technician to come to BU 112. If there is no response from the technician, ITCS staff then contacts the CSS supervisor to appoint another technician to assist.
+   9. Customer Call-backs Procedure
+         1. This procedure applies to IT Helpdesk staff and to the CSS technician(s).
+         2. The helpdesk technician transfers the customer's call to the incident assignee. If he/she is not available, the call will go to the assignee's voice mail. There are no exceptions.
+         3. The helpdesk technician updates the comments field on the Service Center incident to indicate that the user called, including any specific questions/concerns they may have. There are no exceptions.
+         4. The CSS technician is responsible for apprising the user of the incident status. There are no exceptions.
+  10. Service Center Incident Routing Procedure
+         1. This procedure applies to IT Helpdesk staff and to the CSS technician(s).
+         2. The helpdesk technician assigns a preliminary severity level to each incident based on the CSS Best Practices. If the incident is assigned as Critical, send an email to Lynn and Steve letting them know about it. There are no exceptions.
+         3. The helpdesk technician routes the incident to the Service Center helpdesk queue. If the incident involves a LaserJet printer that requires service from LaserLite, then the incident is assigned to the Helpdesk Manager.
+         4. The CSS technician assigned to monitor the Service Center helpdesk queue reviews the incident to verify the severity level assignment, then routes the incident to the appropriate technician. There are no exceptions.
+  11. Routing To Other ITS Areas Procedure
+         1. Student name changes must be emailed to helpdesk@tigerpond.com by the student.
+         2. Faculty/staff name changes should be referred to helpdesk@tigerpond.com.
