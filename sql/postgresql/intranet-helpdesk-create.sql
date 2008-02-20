@@ -12,7 +12,7 @@
 
 
 SELECT acs_object_type__create_type (
-	'im_note',			-- object_type
+	'im_ticket',			-- object_type
 	'Ticket',			-- pretty_name
 	'Ticket',			-- pretty_plural
 	'im_project',			-- supertype
@@ -25,56 +25,87 @@ SELECT acs_object_type__create_type (
 );
 
 
+create sequence im_ticket_seq;
+
 create table im_tickets (
-	ticket_id		integer
-				constraint im_ticket_id_pk
-				primary key
-				constraint im_ticket_id_fk
-				references im_projects,
-	ticket_name		varchar(200),
-	ticket_nr		varchar(50),
-	ticket_status_id	integer 
-				constraint im_ticket_status_nn
-				not null
-				constraint im_ticket_status_fk
-				references im_categories,
-	ticket_type_id		integer
-				constraint im_ticket_type_nn
-				not null
-				constraint im_ticket_type_fk
-				references im_categories,
-	ticket_biz_user_id	integer
-				constraint im_ticket_biz_user_fk
-				references persons,
-	ticket_sla_id		integer
-				constraint im_ticket_sla_fk
-				references acs_objects,
-	ticket_dept_id		integer
-				constraint im_ticket_dept_fk
-				references im_cost_centers,
-	ticket_primary_class_id	integer
-				constraint im_ticket_primary_class_nn
-				not null
-				constraint im_ticket_primary_class_fk
-				references im_categories,
-	ticket_service_id	integer
-				constraint im_ticket_service_fk
-				references im_categories,
-	ticket_hardware_id	integer
-				constraint im_ticket_hardware_fk
-				references acs_objects,
-	ticket_application_id	integer
-				constraint im_ticket_application_fk
-				references acs_objects,
-	ticket_queue_id		integer
-				constraint im_ticket_queue_fk
-				references im_categories,
-	ticket_alarm_date	timestamptz,
-	ticket_alarm_action	text,
-	ticket_note		text
-				constraint im_ticket_ticket_nn
-				not null
+	ticket_id			integer
+					constraint im_ticket_id_pk
+					primary key
+					constraint im_ticket_id_fk
+					references im_projects,
+	ticket_name			varchar(200),
+	ticket_nr			integer,
+	ticket_status_id		integer 
+					constraint im_ticket_status_nn
+					not null
+					constraint im_ticket_status_fk
+					references im_categories,
+	ticket_type_id			integer
+					constraint im_ticket_type_nn
+					not null
+					constraint im_ticket_type_fk
+					references im_categories,
+	ticket_prio_id			integer
+					constraint im_ticket_biz_user_fk
+					references persons,
+	ticket_customer_contact_id	integer
+					constraint im_ticket_biz_user_fk
+					references persons,
+	ticket_assignee_id		integer
+					constraint im_ticket_assignee_fk
+					references persons,
+	ticket_sla_id			integer
+					constraint im_ticket_sla_fk
+					references acs_objects,
+	ticket_dept_id			integer
+					constraint im_ticket_dept_fk
+					references im_cost_centers,
+	ticket_primary_class_id		integer
+					constraint im_ticket_primary_class_nn
+					not null
+					constraint im_ticket_primary_class_fk
+					references im_categories,
+	ticket_service_id		integer
+					constraint im_ticket_service_fk
+					references im_categories,
+	ticket_hardware_id		integer
+					constraint im_ticket_hardware_fk
+					references acs_objects,
+	ticket_application_id		integer
+					constraint im_ticket_application_fk
+					references acs_objects,
+	ticket_queue_id			integer
+					constraint im_ticket_queue_fk
+					references im_categories,
+	ticket_alarm_date		timestamptz,
+	ticket_alarm_action		text,
+	ticket_note			text
+					constraint im_ticket_ticket_nn
+					not null
 );
+
+
+-----------------------------------------------------------
+-- Permissions & Privileges
+-----------------------------------------------------------
+
+select acs_privilege__create_privilege('view_tickets_all','View all Conf Items','');
+select acs_privilege__add_child('admin', 'view_tickets_all');
+
+select acs_privilege__create_privilege('add_tickets','Add new Conf Items','');
+select acs_privilege__add_child('admin', 'add_tickets');
+
+select im_priv_create('view_tickets_all', 'P/O Admins');
+select im_priv_create('view_tickets_all', 'Senior Managers');
+select im_priv_create('view_tickets_all', 'Project Managers');
+select im_priv_create('view_tickets_all', 'Employees');
+
+select im_priv_create('add_tickets', 'P/O Admins');
+select im_priv_create('add_tickets', 'Senior Managers');
+select im_priv_create('add_tickets', 'Project Managers');
+select im_priv_create('add_tickets', 'Employees');
+
+
 
 
 -----------------------------------------------------------
@@ -184,6 +215,12 @@ end;' language 'plpgsql';
 -- 33000-33999	reserved (1000)
 -- 34000-34999	reserved (1000)
 -- 35000-39999  reserved (5000)
+
+
+-- new ticket type for helpdesk
+im_category_new(101, 'Ticket', 'Intranet Project Type');
+
+
 
 
 -- 30100-30199	Intranet Ticket Type
@@ -393,4 +430,45 @@ end;' language 'plpgsql';
 -- Execute and drop the function
 select inline_0 ();
 drop function inline_0 ();
+
+
+
+
+
+delete from im_views where view_id = 270;
+delete from im_view_columns where view_id = 270;
+
+insert into im_views (view_id, view_name, visible_for, view_type_id)
+values (270, 'ticket_list', 'view_tickets', 1400);
+
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27000,20,0, 'Ok','<center>[im_ticket_on_track_bb $on_track_status_id]</center>');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27002,20,10, 'Per','[im_date_format_locale $percent_completed 2 1] %');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27005,20,20, 'Ticket nr','"<A HREF=/intranet/tickets/view?ticket_id=$ticket_id>$ticket_nr</A>"');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27010,20,30,'Ticket Name','"<A HREF=/intranet/tickets/view?ticket_id=$ticket_id>$ticket_name</A>"');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27015,20,40,'Client','"<A HREF=/intranet/companies/view?company_id=$company_id>$company_name</A>"');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27020,20,50,'Type','$ticket_type');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27025,20,60,'Ticket Manager','"<A HREF=/intranet/users/view?user_id=$ticket_lead_id>$lead_name</A>"');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27030,20,70,'Start Date','$start_date_formatted');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27035,20,80,'Delivery Date','$end_date_formatted');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27040,20,90,'Status','$ticket_status');
 
