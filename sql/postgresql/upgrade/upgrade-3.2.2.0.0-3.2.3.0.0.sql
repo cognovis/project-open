@@ -40,7 +40,7 @@ drop function inline_0 ();
 -- publicly known (from the default installation)
 
 delete from secret_tokens;
-SELECT pg_catalog.setval('t_sec_security_token_id_seq', 0, true);
+SELECT pg_catalog.setval('t_sec_security_token_id_seq', 1, true);
 
 
 -- -------------------------------------------------------------

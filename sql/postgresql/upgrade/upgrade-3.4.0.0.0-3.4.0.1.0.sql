@@ -1056,3 +1056,6 @@ end;' language 'plpgsql';
 select inline_1 ();
 drop function inline_1();
 
+-- new ticket type for helpdesk
+im_category_new(101, 'Ticket', 'Intranet Project Type');
+

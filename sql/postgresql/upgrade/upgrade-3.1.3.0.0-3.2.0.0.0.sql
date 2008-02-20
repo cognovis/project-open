@@ -17,7 +17,7 @@ alter table im_projects add
 -- Puff, difficult to find one while maintaining compatible
 -- the the fixed IDs from ACS 3.4 Intranet...
 --
-im_category_new(100, 'Task', 'Intranet Project Type');
+SELECT im_category_new(100, 'Task', 'Intranet Project Type');
 
 
 -------------------------------------------------------------
