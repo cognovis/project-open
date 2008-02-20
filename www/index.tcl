@@ -1,6 +1,6 @@
-# /packages/intranet-core/www/tickets/index.tcl
+# /packages/intranet-helpdesk/www/index.tcl
 #
-# Copyright (c) 1998-2007 ]ticket-open[
+# Copyright (c) 1998-2008 ]project-open[
 # All rights reserved
 
 # ---------------------------------------------------------------

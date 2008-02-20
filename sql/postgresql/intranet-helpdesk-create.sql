@@ -24,6 +24,14 @@ SELECT acs_object_type__create_type (
 	'im_ticket__name'		-- name_method
 );
 
+insert into acs_object_type_tables VALUES ('im_ticket', 'im_tickets', 'ticket_id');
+
+update acs_object_types set
+        status_type_table = 'im_tickets',
+        status_column = 'ticket_status_id',
+        type_column = 'ticket_type_id'
+where object_type = 'im_ticket';
+
 
 create sequence im_ticket_seq;
 
@@ -46,10 +54,10 @@ create table im_tickets (
 					constraint im_ticket_type_fk
 					references im_categories,
 	ticket_prio_id			integer
-					constraint im_ticket_biz_user_fk
+					constraint im_ticket_prio_fk
 					references persons,
 	ticket_customer_contact_id	integer
-					constraint im_ticket_biz_user_fk
+					constraint im_ticket_customr_contact_fk
 					references persons,
 	ticket_assignee_id		integer
 					constraint im_ticket_assignee_fk
@@ -317,6 +325,20 @@ SELECT im_category_new(31300, 'Requests for new/additional services', 'Intranet 
 
 
 
+-- 30200-30299 - Intranet Ticket User Priority
+SELECT im_category_new(30201, '1 - Highest', 'Intranet Ticket Priority');
+SELECT im_category_new(30202, '2', 'Intranet Ticket Priority');
+SELECT im_category_new(30203, '3', 'Intranet Ticket Priority');
+SELECT im_category_new(30204, '4', 'Intranet Ticket Priority');
+SELECT im_category_new(30205, '5', 'Intranet Ticket Priority');
+SELECT im_category_new(30206, '6', 'Intranet Ticket Priority');
+SELECT im_category_new(30207, '7', 'Intranet Ticket Priority');
+SELECT im_category_new(30208, '8', 'Intranet Ticket Priority');
+SELECT im_category_new(30209, '9 - Lowest', 'Intranet Ticket Priority');
+
+
+
+
 -----------------------------------------------------------
 -- Create views for shortcut
 --
@@ -472,3 +494,66 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (27040,20,90,'Status','$ticket_status');
 
+
+
+
+-----------------------------------------------------------
+-- DynFields
+--
+
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'ticket_type', 'Ticket Type', 'Ticket Type',
+	10007, 'integer', 'im_category_tree', 'integer',
+	'{custom {category_type "Intranet Ticket Type"}}'
+);
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_status_id', 'Status', 'ticket_type', 'integer', 'f');
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'ticket_status', 'Ticket Status', 'Ticket Status',
+	10007, 'integer', 'im_category_tree', 'integer',
+	'{custom {category_type "Intranet Ticket Status"}}'
+);
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_type_id', 'Type', 'ticket_type', 'integer', 'f');
+
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'ticket_priority', 'Ticket Priority', 'Ticket Priority',
+	10007, 'integer', 'im_category_tree', 'integer',
+	'{custom {category_type "Intranet Ticket Priority"}}'
+);
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_prio_id', 'Priority', 'ticket_priority', 'integer', 'f');
+
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'customer_contact', 'Customer Contact', 'Customer Contacts',
+	10007, 'integer', 'generic_sql', 'integer',
+	'{custom {sql {select u.user_id, im_name_from_user_id(u.user_id) from registered_users u, group_distinct_member_map gm where u.user_id = gm.member_id and gm.group_id = 461 order by lower(im_name_from_user_id(u.user_id)) }}}'
+);
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_customer_contact_id', 'Customer Contact', 'customer_contact', 'integer', 'f');
+
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'ticket_assignees', 'Ticket Assignees', 'Ticket Assignees',
+	10007, 'integer', 'generic_sql', 'integer',
+	'{custom {sql {select u.user_id, im_name_from_user_id(u.user_id) from registered_users u, group_distinct_member_map gm where u.user_id = gm.member_id and gm.group_id = 463 order by lower(im_name_from_user_id(u.user_id)) }}}'
+);
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_assignee_id', 'Assignee', 'ticket_assignees', 'integer', 'f');
+
+
+
+--	ticket_sla_id                   integer
+--	ticket_dept_id                  integer
+--	ticket_primary_class_id         integer
+--	ticket_service_id               integer
+--	ticket_hardware_id              integer
+--	ticket_application_id           integer
+--	ticket_queue_id                 integer
+--	ticket_alarm_date               timestamptz,
+--	ticket_alarm_action             text,
+--	ticket_note                     text
