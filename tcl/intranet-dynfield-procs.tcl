@@ -1501,18 +1501,18 @@ ad_proc -public im_dynfield::attribute_store {
 	if {[empty_string_p $multiple_p]} { set multiple_p 0 }	
 	if {$storage_type_id == [im_dynfield_storage_type_id_multimap]} { set multiple_p 1 }
 
-	# Special treatment for certain types of widgets
-	set widget_element [template::element::get_property $form_id $attribute_name widget]
-	switch $widget_element {
-	    "date" {
-		set $attribute_name [template::util::date::get_property sql_date [set $attribute_name]]
-	    }
-	}
-
 	if {!$multiple_p} {
 
-	    # The normal case - just create a line of an update statement
-	    lappend update_lines "\n\t\t\t$attribute_name = :$attribute_name"
+	    # Special treatment for certain types of widgets
+	    set widget_element [template::element::get_property $form_id $attribute_name widget]
+	    switch $widget_element {
+		date {
+		    lappend update_lines "\n\t\t\t$attribute_name = [template::util::date::get_property sql_date [set $attribute_name]]"
+		}
+		default {
+		    lappend update_lines "\n\t\t\t$attribute_name = :$attribute_name"
+		}
+	    }
 
 	} else {
 
