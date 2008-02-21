@@ -1442,9 +1442,123 @@ ad_proc -public im_dynfield::attribute_store {
     -object_type:required
     -object_id:required
     -form_id:required
+    {-user_id 624}
+} {
+    Store intranet-dynfield attributes.
+    Basicly, the procedure copies all values of the form into
+    local variables and then builds an update statement to update
+    the object's main table with the local variables.
+
+    Doesn't support "extension tables" yet (storing attributes in
+    tables different from the main object's table).
+} {
+    # -------------------------------------------------
+    # Defaults and setup
+    # -------------------------------------------------
+
+    if {"" == $user_id} { set user_id [ad_get_user_id] }
+    set object_id_org $object_id
+    ns_log Notice "im_dynfield::attribute_store: object_type=$object_type, object_id=$object_id_org, form_id=$form_id"
+
+    # Get the list of all variables of the last form
+    template::form get_values $form_id
+
+    # Get object_type main table and column id
+    db_1row get_main_table "
+	select	table_name as main_table,
+		id_column as main_table_id_column
+	from	acs_object_types
+	where 	object_type = :object_type
+    "
+
+    # -------------------------------------------------
+    # Create the update SQL statement
+    # -------------------------------------------------
+
+    set attribute_sql "
+	select	da.attribute_id as dynfield_attribute_id,
+		*
+	from	im_dynfield_attributes da,
+		acs_attributes aa,
+		im_dynfield_widgets dw
+	where
+		da.acs_attribute_id = aa.attribute_id
+		and aa.object_type = :object_type
+		and da.widget_name = dw.widget_name
+		and 't' = acs_permission__permission_p(da.attribute_id, :user_id, 'write')
+    "
+    set update_lines [list]
+    db_foreach attributes $attribute_sql {
+
+	# Skip attributes that do not exists in (the partial) form.
+	if {![template::element::exists $form_id $attribute_name]} { continue }
+
+	# Empty table name? Ugly, but that's the main table then...
+	if {[empty_string_p $table_name]} { set table_name $main_table }
+
+	# Is this a multi-value field?
+	set multiple_p [template::element::get_property $form_id $attribute_name multiple_p]
+	if {[empty_string_p $multiple_p]} { set multiple_p 0 }	
+	if {$storage_type_id == [im_dynfield_storage_type_id_multimap]} { set multiple_p 1 }
+
+	# Special treatment for certain types of widgets
+	set widget_element [template::element::get_property $form_id $attribute_name widget]
+	switch $widget_element {
+	    "date" {
+		set $attribute_name [template::util::date::get_property sql_date [set $attribute_name]]
+	    }
+	}
+
+	if {!$multiple_p} {
+
+	    # The normal case - just create a line of an update statement
+	    lappend update_lines "\n\t\t\t$attribute_name = :$attribute_name"
+
+	} else {
+
+	    # Multi-value field...
+	    ad_return_complaint 1 "Storing multiple values not tested yet: $attribute_name"
+	    db_transaction {
+		db_dml "delete previous values" "
+			delete from im_dynfield_attr_multi_value
+			where object_id = :object_id_org 
+			and attribute_id = :attribute_id
+		"
+		foreach val [template::element::get_values $form_id $attribute_name] {
+		    db_dml "create multi value" "
+			insert into im_dynfield_attr_multi_value (attribute_id,object_id,value) 
+			values (:attribute_id,:object_id_org,:val)"
+		}
+	    }
+	}
+    }
+
+    # Execute the update statement, assuming that all
+    # variables will be available as local variables.
+    if {[llength $update_lines] > 0} {
+	set sql "
+		update $main_table set[join $update_lines ","]
+		where $main_table_id_column = :object_id_org
+	"
+	db_dml update_object $sql
+    }
+}
+
+
+
+
+
+
+
+ad_proc -public im_dynfield::attribute_store_badbug {
+    -object_type:required
+    -object_id:required
+    -form_id:required
+    {-user_id ""}
 } {
     store intranet-dynfield attributes 
 } {
+    if {"" == $user_id} { set user_id [ad_get_user_id] }
     ns_log Notice "im_dynfield::attribute_store: object_type=$object_type, object_id=$object_id, form_id=$form_id"
 
     # object_id may get destroyed with strange forms
@@ -1457,11 +1571,10 @@ ad_proc -public im_dynfield::attribute_store {
     db_1row get_main_table "
 	select	table_name as main_table_name,
 		id_column as main_id_column
-	from
-		acs_object_types
-	where 
-		object_type = :object_type
+	from	acs_object_types
+	where 	object_type = :object_type
     "
+
     # get object_type extension tables
     set object_type_tables [db_list_of_lists ext_tables "
                 select  table_name,
@@ -1702,7 +1815,6 @@ ad_proc -public im_dynfield::attribute_store {
 				where object_id = :object_id_param 
 				and attribute_id = :attribute_id
 			"
-			#ns_log notice "before multi values [set $attribute_name]"
 			foreach val [template::element::get_values $form_id $attribute_name] {
 			    db_dml "create multi value" "
 				insert into im_dynfield_attr_multi_value (
@@ -1735,7 +1847,6 @@ ad_proc -public im_dynfield::attribute_store {
 		if {!$first($attribute_table)} { append update_sql($attribute_table) "," }
 
 		# Get the value of the form variable from the HTTP form
-		#set value [ns_set get $form_vars $attribute_name]
 		set value [set $attribute_name]
 
 		# Store the attribute into the local variable frame
@@ -1744,7 +1855,8 @@ ad_proc -public im_dynfield::attribute_store {
 		# in order to be able to use the ":var_name" notation
 		# in the dynamically created SQL update statement.
 		set $attribute_name $value
-		#ns_log notice "DEFAULT $attribute_name value:[template::element::get_value $form_id $attribute_name]"
+
+		# im_object_permission -object_id 624
 		append update_sql($attribute_table) "\n\t$attribute_name = :$attribute_name"
 		set first($attribute_table) 0
 	    } 	
@@ -1772,6 +1884,11 @@ ad_proc -public im_dynfield::attribute_store {
     }
     
 }
+
+
+
+
+
 
 
 
