@@ -176,7 +176,7 @@ if {![im_permission $current_user_id "view_tickets_all"] | [string equal $mine_p
 }
 
 
-set order_by_clause "order by lower(t.ticket_nr) DESC"
+set order_by_clause "order by lower(t.ticket_id) DESC"
 switch [string tolower $order_by] {
     "creation date" { set order_by_clause "order by p.start_date DESC" }
     "type" { set order_by_clause "order by ticket_type" }

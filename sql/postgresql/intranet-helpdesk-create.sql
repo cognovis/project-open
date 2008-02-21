@@ -41,8 +41,6 @@ create table im_tickets (
 					primary key
 					constraint im_ticket_id_fk
 					references im_projects,
-	ticket_name			varchar(200),
-	ticket_nr			integer,
 	ticket_status_id		integer 
 					constraint im_ticket_status_nn
 					not null
@@ -68,11 +66,6 @@ create table im_tickets (
 	ticket_dept_id			integer
 					constraint im_ticket_dept_fk
 					references im_cost_centers,
-	ticket_primary_class_id		integer
-					constraint im_ticket_primary_class_nn
-					not null
-					constraint im_ticket_primary_class_fk
-					references im_categories,
 	ticket_service_id		integer
 					constraint im_ticket_service_fk
 					references im_categories,
@@ -88,8 +81,6 @@ create table im_tickets (
 	ticket_alarm_date		timestamptz,
 	ticket_alarm_action		text,
 	ticket_note			text
-					constraint im_ticket_ticket_nn
-					not null
 );
 
 
@@ -127,12 +118,10 @@ create or replace function im_ticket__name(integer)
 returns varchar as '
 DECLARE
 	p_ticket_id		alias for $1;
-	v_name			varchar(2000);
+	v_name			varchar;
 BEGIN
-	select	note
-	into	v_name
-	from	im_helpdesk
-	where	ticket_id = p_ticket_id;
+	select	project_name into v_name from im_projects
+	where	project_id = p_ticket_id;
 
 	return v_name;
 end;' language 'plpgsql';
@@ -145,36 +134,44 @@ create or replace function im_ticket__new (
 	integer, integer 
 ) returns integer as '
 DECLARE
-	p_ticket_id	alias for $1;		-- ticket_id  default null
-	p_object_type   alias for $2;		-- object_type default ''im_ticket''
-	p_creation_date alias for $3;		-- creation_date default now()
-	p_creation_user alias for $4;		-- creation_user default null
-	p_creation_ip   alias for $5;		-- creation_ip default null
-	p_context_id	alias for $6;		-- context_id default null
+	p_ticket_id		alias for $1;		-- ticket_id  default null
+	p_object_type   	alias for $2;		-- object_type default ''im_ticket''
+	p_creation_date 	alias for $3;		-- creation_date default now()
+	p_creation_user 	alias for $4;		-- creation_user default null
+	p_creation_ip   	alias for $5;		-- creation_ip default null
+	p_context_id		alias for $6;		-- context_id default null
 
-	p_note		alias for $7;		-- ticket_name
-	p_object_id	alias for $8;		-- object_id
+	p_ticket_name		alias for $7;		-- ticket_name
+	p_ticket_customer_id	alias for $8;
 	p_ticket_type_id	alias for $9;		
-	p_ticket_status_id alias for $10;
+	p_ticket_status_id	alias for $10;
 
-	v_ticket_id	integer;
+	v_ticket_id		integer;
+	v_ticket_nr		integer;
 BEGIN
-	v_ticket_id := acs_object__new (
+	select nextval(''im_ticket_seq'') into v_ticket_nr;
+
+	v_ticket_id := im_project__new (
 		p_ticket_id,		-- object_id
 		p_object_type,		-- object_type
 		p_creation_date,	-- creation_date
 		p_creation_user,	-- creation_user
 		p_creation_ip,		-- creation_ip
 		p_context_id,		-- context_id
-		''t''			-- security_inherit_p
+
+		p_ticket_name,
+		v_ticket_nr::varchar,
+		v_ticket_nr::varchar,
+		null,			-- parent_id
+		p_ticket_customer_id,
+		p_ticket_type_id,
+		p_ticket_status_id	
 	);
 
-	insert into im_helpdesk (
-		ticket_id, note, object_id,
-		ticket_type_id, ticket_status_id
+	insert into im_tickets (
+		ticket_id, ticket_status_id, ticket_type_id
 	) values (
-		v_ticket_id, p_note, p_object_id,
-		p_ticket_type_id, p_ticket_status_id
+		v_ticket_id, p_ticket_status_id, p_ticket_type_id
 	);
 
 	return v_ticket_id;
@@ -187,11 +184,11 @@ DECLARE
 	p_ticket_id	alias for $1;
 BEGIN
 	-- Delete any data related to the object
-	delete from im_helpdesk
+	delete from im_tickets
 	where	ticket_id = p_ticket_id;
 
 	-- Finally delete the object iself
-	PERFORM acs_object__delete(p_ticket_id);
+	PERFORM im_project__delete(p_ticket_id);
 
 	return 0;
 end;' language 'plpgsql';
@@ -502,21 +499,21 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 --
 
 
-SELECT im_dynfield_widget__new (
-	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
-	'ticket_type', 'Ticket Type', 'Ticket Type',
-	10007, 'integer', 'im_category_tree', 'integer',
-	'{custom {category_type "Intranet Ticket Type"}}'
-);
-SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_status_id', 'Status', 'ticket_type', 'integer', 'f');
-
-SELECT im_dynfield_widget__new (
-	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
-	'ticket_status', 'Ticket Status', 'Ticket Status',
-	10007, 'integer', 'im_category_tree', 'integer',
-	'{custom {category_type "Intranet Ticket Status"}}'
-);
-SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_type_id', 'Type', 'ticket_type', 'integer', 'f');
+-- SELECT im_dynfield_widget__new (
+-- 	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+-- 	'ticket_type', 'Ticket Type', 'Ticket Type',
+-- 	10007, 'integer', 'im_category_tree', 'integer',
+-- 	'{custom {category_type "Intranet Ticket Type"}}'
+-- );
+-- SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_status_id', 'Status', 'ticket_type', 'integer', 'f');
+ 
+-- SELECT im_dynfield_widget__new (
+-- 	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+-- 	'ticket_status', 'Ticket Status', 'Ticket Status',
+-- 	10007, 'integer', 'im_category_tree', 'integer',
+-- 	'{custom {category_type "Intranet Ticket Status"}}'
+-- );
+-- SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_type_id', 'Type', 'ticket_type', 'integer', 'f');
 
 
 SELECT im_dynfield_widget__new (
