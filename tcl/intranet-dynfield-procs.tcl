@@ -1516,7 +1516,7 @@ ad_proc -public im_dynfield::attribute_store {
 
 	} else {
 
-	    # Multi-value field...
+	    # Multi-value field. This must be a field with widget multi-select...
 	    ad_return_complaint 1 "Storing multiple values not tested yet: $attribute_name"
 	    db_transaction {
 		db_dml "delete previous values" "
