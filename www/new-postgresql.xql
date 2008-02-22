@@ -48,9 +48,7 @@
     <querytext>
 	update im_projects set
 		project_name		= :ticket_name,
-		project_nr		= :ticket_nr,
-		project_type_id		= :ticket_type_id,
-		project_status_id	= :ticket_status_id
+		project_nr		= :ticket_nr
 	where
 		project_id = :ticket_id;
     </querytext>

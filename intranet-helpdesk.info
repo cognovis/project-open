@@ -14,7 +14,8 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Helpdesk Management is similar to Change Management. However, Helpdesk tickets have different characteristics then RFC tickets and require special functionality such as queue management etc.</description>
 
-        <!-- No dependency information -->
+	<provides url="intranet-helpdesk" version="3.4.0.0.0"/>
+        <requires url="intranet-confdb" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>

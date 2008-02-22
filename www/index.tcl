@@ -246,15 +246,25 @@ if {"" != $dynfield_extra_where} {
 
 set sql "
 	        SELECT
-	                p.*,
-	                c.company_name as customer_name,
+			t.*,
 	                im_category_from_id(t.ticket_type_id) as ticket_type,
 	                im_category_from_id(t.ticket_status_id) as ticket_status,
-	                to_char(p.start_date, 'YYYY-MM-DD') as start_date_formatted
+	                im_category_from_id(t.ticket_prio_id) as ticket_prio,
+	                im_category_from_id(t.ticket_queue_id) as ticket_queue_name,
+			im_name_from_user_id(t.ticket_customer_contact_id) as ticket_customer_contact,
+			im_name_from_user_id(t.ticket_assignee_id) as ticket_assignee,
+	                p.*,
+	                to_char(p.start_date, 'YYYY-MM-DD') as start_date_formatted,
+			ci.*,
+			c.company_name,
+			sla.project_id as sla_id,
+			sla.project_name as sla_name
 			$extra_select
 	        FROM
 			im_projects p,
-			im_tickets t,
+			im_tickets t
+			LEFT OUTER JOIN im_projects sla ON (t.ticket_sla_id = sla.project_id)
+			LEFT OUTER JOIN im_conf_items ci ON (t.ticket_hardware_id = ci.conf_item_id),
 	                im_companies c
 			$extra_from
 	        WHERE

@@ -7,9 +7,9 @@
 --
 -- @author frank.bergmann@project-open.com
 
------------------------------------------------------------
--- Helpdesk
 
+-----------------------------------------------------------
+-- Helpdesk Ticket
 
 SELECT acs_object_type__create_type (
 	'im_ticket',			-- object_type
@@ -31,6 +31,8 @@ update acs_object_types set
         status_column = 'ticket_status_id',
         type_column = 'ticket_type_id'
 where object_type = 'im_ticket';
+
+SELECT im_category_new(101, 'Ticket', 'Intranet Project Type');
 
 
 create sequence im_ticket_seq;
@@ -62,10 +64,7 @@ create table im_tickets (
 					references persons,
 	ticket_sla_id			integer
 					constraint im_ticket_sla_fk
-					references acs_objects,
-	ticket_dept_id			integer
-					constraint im_ticket_dept_fk
-					references im_cost_centers,
+					references im_projects,
 	ticket_service_id		integer
 					constraint im_ticket_service_fk
 					references im_categories,
@@ -158,14 +157,13 @@ BEGIN
 		p_creation_user,	-- creation_user
 		p_creation_ip,		-- creation_ip
 		p_context_id,		-- context_id
-
 		p_ticket_name,
 		v_ticket_nr::varchar,
 		v_ticket_nr::varchar,
 		null,			-- parent_id
 		p_ticket_customer_id,
-		p_ticket_type_id,
-		p_ticket_status_id	
+		101,			-- p_ticket_type_id
+		76			-- p_ticket_status_id	
 	);
 
 	insert into im_tickets (
@@ -456,40 +454,88 @@ drop function inline_0 ();
 
 delete from im_views where view_id = 270;
 delete from im_view_columns where view_id = 270;
-
 insert into im_views (view_id, view_name, visible_for, view_type_id)
 values (270, 'ticket_list', 'view_tickets', 1400);
 
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27000,270,00, 'Prio','"$ticket_prio"');
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27010,270,10, 'Nr','"<a href=/intranet-helpdesk/new?ticket_id=$ticket_id>$project_nr</a>"');
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27020,270,20,'Name','"<href=/intranet-helpdesk/new?ticket_id=$ticket_id>$project_name</A>"');
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27025,270,25,'Queue','"<href=/intranet-helpdesk/queue/?queue_id=$ticket_queue_id>$ticket_queue_name</A>"');
 
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27000,20,0, 'Ok','<center>[im_ticket_on_track_bb $on_track_status_id]</center>');
+(27030,270,30,'Type','$ticket_type');
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27040,270,40,'Status','$ticket_status');
 
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27002,20,10, 'Per','[im_date_format_locale $percent_completed 2 1] %');
+(27050,270,50,'Customer','"<A href=/intranet/companies/view?company_id=$company_id>$company_name</A>"');
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27060,270,60,'Contact','"<A href=/intranet/users/view?user_id=$ticket_customer_contact_id>$ticket_customer_contact</a>"');
 
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27005,20,20, 'Ticket nr','"<A HREF=/intranet/tickets/view?ticket_id=$ticket_id>$ticket_nr</A>"');
+(27070,270,70,'Assignee','"<A href=/intranet/users/view?user_id=$ticket_assignee_id>$ticket_assignee</a>"');
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27080,270,80,'SLA','"<A href=/intranet/projects/view?project_id=$sla_id>$sla_name</a>"');
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27090,270,90,'Hardware','"<A href=/intranet-confdb/new?conf_item_id=$conf_item_id>$conf_item_name</a>"');
+
 
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27010,20,30,'Ticket Name','"<A HREF=/intranet/tickets/view?ticket_id=$ticket_id>$ticket_name</A>"');
-
+(27030,270,70,'Start Date','$start_date_formatted');
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27015,20,40,'Client','"<A HREF=/intranet/companies/view?company_id=$company_id>$company_name</A>"');
+(27035,270,80,'Delivery Date','$end_date_formatted');
 
-insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27020,20,50,'Type','$ticket_type');
 
-insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27025,20,60,'Ticket Manager','"<A HREF=/intranet/users/view?user_id=$ticket_lead_id>$lead_name</A>"');
-
-insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27030,20,70,'Start Date','$start_date_formatted');
-
-insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27035,20,80,'Delivery Date','$end_date_formatted');
-
-insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27040,20,90,'Status','$ticket_status');
+ ticket_alarm_date          | timestamp with time zone |
+ ticket_alarm_action        | text                     |
+ ticket_note                | text                     |
+ description                  | character varying(4000)  |
+ billing_type_id              | integer                  |
+ note                         | character varying(4000)  |
+ project_lead_id              | integer                  |
+ supervisor_id                | integer                  |
+ requires_report_p            | character(1)             | default 't'::bpchar
+ project_budget               | double precision         |
+ project_risk                 | character varying(1000)  |
+ corporate_sponsor            | integer                  |
+ team_size                    | integer                  |
+ percent_completed            | double precision         |
+ on_track_status_id           | integer                  |
+ project_budget_currency      | character(3)             |
+ project_budget_hours         | double precision         |
+ cost_quotes_cache            | numeric(12,2)            |
+ cost_invoices_cache          | numeric(12,2)            |
+ cost_timesheet_planned_cache | numeric(12,2)            |
+ cost_purchase_orders_cache   | numeric(12,2)            |
+ cost_bills_cache             | numeric(12,2)            |
+ cost_timesheet_logged_cache  | numeric(12,2)            |
+ end_date                     | timestamp with time zone |
+ start_date                   | timestamp with time zone |
+ template_p                   | character(1)             | default 't'::bpchar
+ company_contact_id           | integer                  |
+ sort_order                   | integer                  |
+ company_project_nr           | character varying(50)    |
+ source_language_id           | integer                  |
+ subject_area_id              | integer                  |
+ expected_quality_id          | integer                  |
+ final_company                | character varying(50)    |
+ trans_project_words          | numeric(12,0)            |
+ trans_project_hours          | numeric(12,0)            |
+ trans_size                   | character varying(200)   |
+ reported_hours_cache         | double precision         |
+ cost_expense_planned_cache   | numeric(12,2)            | default 0
+ cost_expense_logged_cache    | numeric(12,2)            | default 0
+ confirm_date                 | date                     |
+ cost_delivery_notes_cache    | numeric(12,2)            | default 0
+ bt_project_id                | integer                  |
+ bt_found_in_version_id       | integer                  |
+ bt_fix_for_version_id        | integer                  |
+ cost_cache_dirty             | timestamp with time zone |
+ release_item_p               | character varying(1)     |
 
 
 
@@ -545,7 +591,6 @@ SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_assignee_id', 'Assignee',
 
 
 --	ticket_sla_id                   integer
---	ticket_dept_id                  integer
 --	ticket_primary_class_id         integer
 --	ticket_service_id               integer
 --	ticket_hardware_id              integer

@@ -14,7 +14,7 @@ ad_page_contract {
     message:optional
     { form_mode "display" }
     { ticket_status_id "[im_ticket_status_open]" }
-    { return_url "[im_url_with_query]" }
+    { return_url "/intranet-helpdesk/" }
 }
 
 
@@ -114,13 +114,15 @@ ad_form -extend -name ticket -on_request {
     set start_date_sql [template::util::date get_property sql_date $start_date]
     set end_date_sql [template::util::date get_property sql_timestamp $end_date]
 
-    db_transaction {
 	db_string ticket_insert {}
 	db_dml ticket_update {}
 	db_dml project_update {}
 
 	# Write Audit Trail
 	im_project_audit $ticket_id
+
+
+    db_transaction {
     } on_error {
 	ad_return_complaint 1 "<b>Error inserting new ticket</b>:
 	<pre>$errmsg</pre>"
@@ -128,7 +130,7 @@ ad_form -extend -name ticket -on_request {
 
 } -edit_data {
 
-    set ticket_nr [string tolower $ticket_nr]
+    edit_set ticket_nr [string tolower $ticket_nr]
     set start_date_sql [template::util::date get_property sql_date $start_date]
     set end_date_sql [template::util::date get_property sql_timestamp $end_date]
 
