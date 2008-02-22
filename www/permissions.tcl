@@ -179,7 +179,7 @@ db_foreach attributes $attributes_sql {
 	    set action "remove_readable"
 	    set letter "<b>R</b>"
         }
-	set read "<A href=$toggle_url?[export_url_vars horiz_group_id object_id action return_url]>$letter</A>\n"
+	set read "<A href=$toggle_url?[export_url_vars horiz_group_id object_id action return_url]>$letter</A>"
 
 	set action "add_writable"
 	set letter "w"
@@ -187,7 +187,7 @@ db_foreach attributes $attributes_sql {
 	    set action "remove_writable"
 	    set letter "<b>W</b>"
         }
-	set write "<A href=$toggle_url?[export_url_vars horiz_group_id object_id action return_url]>$letter</A>\n"
+	set write "<A href=$toggle_url?[export_url_vars horiz_group_id object_id action return_url]>$letter</A>"
 
         append table "
   <td align=center>
