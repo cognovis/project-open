@@ -1442,7 +1442,7 @@ ad_proc -public im_dynfield::attribute_store {
     -object_type:required
     -object_id:required
     -form_id:required
-    {-user_id 624}
+    {-user_id ""}
 } {
     Store intranet-dynfield attributes.
     Basicly, the procedure copies all values of the form into
