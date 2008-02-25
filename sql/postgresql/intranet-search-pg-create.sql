@@ -766,3 +766,11 @@ update cr_items set name=name;
 
 
 
+-- Set the default language to the current system languages
+-- fraber 080225
+update pg_ts_cfg set 
+	locale = (select setting from pg_settings where name = 'lc_messages') 
+where ts_name='default';
+
+
+
