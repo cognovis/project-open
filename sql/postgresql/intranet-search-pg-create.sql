@@ -1,6 +1,6 @@
--- /packages/intranet-search-pg/sql/oracle/intranet-search-pg-create.sql
+-- /packages/intranet-search-pg/sql/postgresql/intranet-search-pg-create.sql
 --
--- Copyright (c) 2003-2005 Project/Open
+-- Copyright (c) 2003-2008 ]project-open[
 --
 -- All rights reserved. Please check
 -- http://www.project-open.com/license/ for details.
@@ -367,9 +367,6 @@ begin
 	return 0;
 end;' language 'plpgsql';
 
---	RAISE EXCEPTION ''im_search_update(oid=%, type=%): exists=%'', 
---	p_object_id, p_object_type, v_exists_p;
-
 
 
 -----------------------------------------------------------
@@ -583,39 +580,6 @@ EXECUTE PROCEDURE persons_tsearch();
 
 -----------------------------------------------------------
 -- im_forum_topics
-
-create or replace function inline_0 () 
-returns integer as '
-declare
-	v_exists_p	varchar;
-begin
-	select	count(*)
-	into	v_exists_p
-	from	acs_object_types
-	where	object_type = ''im_forum_topic'';
-
-	if 0 = v_exists_p then
-
-	    perform acs_object_type__create_type (
-		''im_forum_topic'',	-- object_type
-		''Forum Topic'',	-- pretty_name
-		''Forum Topics'',	-- pretty_plural
-		''acs_object'',   	-- supertype
-		''im_forum_topics'',	-- table_name
-		''material_id'',	-- id_column
-		''intranet-forum'',	-- package_name
-		''f'',			-- abstract_p
-		null,			-- type_extension_table
-		''im_forum_topic.name''	-- name_method
-	    );
-
-	end if;
-
-	return 0;
-end;' language 'plpgsql';
-
-select inline_0();
-drop function inline_0();
 
 insert into im_search_object_types values (2,'im_forum_topic',0.5);
 
