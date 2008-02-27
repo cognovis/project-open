@@ -14,32 +14,26 @@
 -- task (visit a customer, ...). An employee rents a beamer and buys 
 -- some cookies for a special meeting with a customer
 
-create or replace function inline_0 ()
-returns integer as '
-declare
-	v_object_type	integer;
-begin
-    v_object_type := acs_object_type__create_type (
-	''im_expense'',			-- object_type
-	''Expense'',			-- pretty_name
-	''Expenses'',			-- pretty_plural
-	''im_cost'',			-- supertype
-	''im_expenses'',		-- table_name
-	''expense_id'',			-- id_column
-	''intranet-expenses'',		-- package_name
-	''f'',				-- abstract_p
+SELECT acs_object_type__create_type (
+	'im_expense',			-- object_type
+	'Expense',			-- pretty_name
+	'Expenses',			-- pretty_plural
+	'im_cost',			-- supertype
+	'im_expenses',			-- table_name
+	'expense_id',			-- id_column
+	'intranet-expenses',		-- package_name
+	'f',				-- abstract_p
 	null,				-- type_extension_table
-	''im_expense__name''		-- name_method
-    );
-    return 0;
-end;' language 'plpgsql';
-select inline_0 ();
-drop function inline_0 ();
+	'im_expense__name'		-- name_method
+);
+
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_expense', 'im_expenses', 'expense_id');
 
 update acs_object_types set
-        status_type_table = 'im_costs',
-        status_column = 'cost_status_id',
-        type_column = 'cost_type_id'
+	status_type_table = 'im_costs',
+	status_column = 'cost_status_id',
+	type_column = 'cost_type_id'
 where object_type = 'im_expense';
 
 insert into im_biz_object_urls (object_type, url_type, url) values (
@@ -48,32 +42,30 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_expense','edit','/intranet-expenses/new?expense_id=');
 
 
-
--- prompt *** intranet-expenses: Creating im_expenses
 create table im_expenses (
-	expense_id		integer
-				constraint im_expense_id_pk
-				primary key
-				constraint im_expense_id_fk
-				references im_costs,
-	external_company_name	varchar(400),
+	expense_id			integer
+					constraint im_expense_id_pk
+					primary key
+					constraint im_expense_id_fk
+					references im_costs,
+	external_company_name		varchar(400),
 	external_company_vat_number	varchar(50),
-	receipt_reference	varchar(100),
-	expense_type_id		integer
-				constraint im_expense_type_fk
-				references im_categories,
-	bundle_id		integer
-				constraint im_expenses_bundle_fk
-				references im_costs,
-	billable_p		char(1)
-				constraint im_expenses_billable_ck
-				check (billable_p in ('t','f')),
-	reimbursable		numeric(6,3) default 100
-				constraint im_expenses_reibursable_ck
-				check (reimbursable >=0 and reimbursable <= 100),
-	expense_payment_type_id	integer
-				constraint im_expense_payment_type_fk
-				references im_categories
+	receipt_reference		varchar(100),
+	expense_type_id			integer
+					constraint im_expense_type_fk
+					references im_categories,
+	bundle_id			integer
+					constraint im_expenses_bundle_fk
+					references im_costs,
+	billable_p			char(1)
+					constraint im_expenses_billable_ck
+					check (billable_p in ('t','f')),
+	reimbursable			numeric(6,3) default 100
+					constraint im_expenses_reibursable_ck
+					check (reimbursable >=0 and reimbursable <= 100),
+	expense_payment_type_id		integer
+					constraint im_expense_payment_type_fk
+					references im_categories
 );
 
 
@@ -81,7 +73,7 @@ create table im_expenses (
 create or replace function im_expense__delete (integer)
 returns integer as '
 DECLARE
-	p_expense_id alias for $1;		 -- expense_id
+	p_expense_id alias for $1;		-- expense_id
 begin
 	-- Erase the im_expenses entry
 	delete from	im_expenses
@@ -96,12 +88,10 @@ end' language 'plpgsql';
 create or replace function im_expense__name (integer)
 returns varchar as '
 DECLARE
-	p_expenses_id  alias for $1;	-- expense_id
+	p_expenses_id		alias for $1;	-- expense_id
 	v_name  varchar;
 begin
-	select	cost_name
-	into	v_name
-	from	im_costs
+	select	cost_name into v_name from im_costs
 	where	cost_id = p_expenses_id;
 
 	return v_name;
@@ -131,7 +121,7 @@ declare
 	p_expense_date		alias for $9;	-- expense_date now()
 	p_expense_currency	alias for $10;	-- expense_currency default ''EUR''
 	p_expense_template_id   alias for $11;	-- expense_template_id default null
-	p_expense_status_id     alias for $12;	-- expense_status_id default 602
+	p_expense_status_id	alias for $12;	-- expense_status_id default 602
 	p_cost_type_id		alias for $13;	-- expense_type_id default 700
 	p_payment_days		alias for $14;	-- payment_days default 30
 	p_amount		alias for $15;	-- amount
@@ -150,7 +140,7 @@ declare
 	p_provider_id 		alias for $27;	-- provider_id
 	
 	v_expense_id		integer;
-    begin
+begin
 	v_expense_id := im_cost__new (
 		p_expense_id,		-- cost_id
 		p_object_type,		-- object_type
@@ -173,7 +163,7 @@ declare
 		p_expense_date,		-- effective_date
 		p_payment_days,		-- payment_days
 		p_amount,		-- amount
-		p_expense_currency,     -- currency
+		p_expense_currency,	-- currency
 		p_vat,			-- v
 		p_tax,			-- tax
 
@@ -335,6 +325,8 @@ select im_priv_create('edit_bundled_expense_items','Accounting');
 -- Expenses Menu System
 --
 
+SELECT im_new_menu ('intranet-expenses', 'expenses', 'Expenses', '/intranet-expenses/', 200, 'main', '');
+
 create or replace function inline_0 ()
 returns integer as'
 declare
@@ -349,38 +341,38 @@ declare
 	v_proman		integer;
 
 begin
-    select group_id into v_proman from groups where group_name = ''Project Managers'';
-    select group_id into v_senman from groups where group_name = ''Senior Managers'';
-    select group_id into v_sales from groups where group_name = ''Sales'';
-    select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select group_id into v_proman from groups where group_name = ''Project Managers'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_sales from groups where group_name = ''Sales'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
 
-    select menu_id
-    into v_project_menu
-    from im_menus
-    where label=''project'';
+	select menu_id
+	into v_project_menu
+	from im_menus
+	where label=''project'';
 
-    v_menu := im_menu__new (
-	null,			-- p_menu_id
-	''acs_object'',		-- object_type
-	now(),			-- creation_date
-	null,			-- creation_user
-	null,			-- creation_ip
-	null,			-- context_id
-	''intranet-expenses'',	-- package_name
-	''project_expenses'',	-- label
-	''Expenses'',		-- name
-	''/intranet-expenses/index?view_name=not_used'',  -- url
-	90,			-- sort_order
-	v_project_menu,	-- parent_menu_id
-	null			-- p_visible_tcl
-    );
+	v_menu := im_menu__new (
+		null,			-- p_menu_id
+		''acs_object'',		-- object_type
+		now(),			-- creation_date
+		null,			-- creation_user
+		null,			-- creation_ip
+		null,			-- context_id
+		''intranet-expenses'',	-- package_name
+		''project_expenses'',	-- label
+		''Expenses'',		-- name
+		''/intranet-expenses/index?view_name=not_used'',  -- url
+		90,			-- sort_order
+		v_project_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
 
-    PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_sales, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_sales, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
 
-    return 0;
+	return 0;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
@@ -403,38 +395,36 @@ declare
 	v_sales			integer;
 	v_proman		integer;
 begin
-    select group_id into v_proman from groups where group_name = ''Project Managers'';
-    select group_id into v_senman from groups where group_name = ''Senior Managers'';
-    select group_id into v_sales from groups where group_name = ''Sales'';
-    select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select group_id into v_proman from groups where group_name = ''Project Managers'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_sales from groups where group_name = ''Sales'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
 
-    select menu_id
-    into v_finance_menu
-    from im_menus
-    where label=''finance'';
+	select menu_id into v_finance_menu from im_menus
+	where label=''finance'';
 
-    v_menu := im_menu__new (
-	null,			-- p_menu_id
-	''acs_object'',		-- object_type
-	now(),			-- creation_date
-	null,			-- creation_user
-	null,			-- creation_ip
-	null,			-- context_id
-	''intranet-expenses'',	-- package_name
-	''finance_expenses'',	-- label
-	''Expenses'',		-- name
-	''/intranet-expenses/index'',  -- url
-	90,			-- sort_order
-	v_finance_menu,	-- parent_menu_id
-	null			-- p_visible_tcl
-    );
+	v_menu := im_menu__new (
+		null,			-- p_menu_id
+		''acs_object'',		-- object_type
+		now(),			-- creation_date
+		null,			-- creation_user
+		null,			-- creation_ip
+		null,			-- context_id
+		''intranet-expenses'',	-- package_name
+		''finance_expenses'',	-- label
+		''Expenses'',		-- name
+		''/intranet-expenses/index'',  -- url
+		90,			-- sort_order
+		v_finance_menu,	-- parent_menu_id
+		null			-- p_visible_tcl
+	);
 
-    PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_sales, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_sales, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
 
-    return 0;
+	return 0;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
@@ -446,7 +436,7 @@ drop function inline_0 ();
 
 -- 4000-4099	Intranet Expense Type
 -- 4100-4199	Intranet Expense Payment Type
--- 4200-4599    (reserved)
+-- 4200-4599	(reserved)
 
 -- prompt *** intranet-expenses: Creating URLs for viewing/editing expenses
 delete from im_biz_object_urls where object_type='im_expense';
@@ -469,16 +459,6 @@ insert into im_biz_object_urls (
 	'edit',
 	'/intranet-expenses/new?form_mode=edit\&expense_id='
 );
-
-
--- delete from im_categories where category_id in (3720, 3722);
---
--- INSERT INTO im_categories (category_id, category, category_type)
--- VALUES (3720,'Expense Item','Intranet Cost Type');
---
--- INSERT INTO im_categories (category_id, category, category_type)
--- VALUES (3722,'Expense Report','Intranet Cost Type');
-
 
 
 -- Intranet Expense Type
@@ -524,6 +504,4 @@ select	category_id as expense_payment_type_id,
 from 	im_categories
 where 	category_type = 'Intranet Expense Payment Type'
 	and (enabled_p is null OR enabled_p = 't');
-
-
 
