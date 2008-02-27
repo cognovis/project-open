@@ -25,16 +25,6 @@
 -- affected (set back to the status "delivered") when a 
 -- timesheet2-invoice is deleted.
 
-
-create table im_timesheet_invoices (
-	invoice_id		integer
-				constraint im_timesheet_invoices_pk
-				primary key
-				constraint im_timesheet_invoices_fk
-				references im_invoices
-);
-
-
 select acs_object_type__create_type (
 	'im_timesheet_invoice',		-- object_type
 	'Timesheet Invoice',		-- pretty_name
@@ -48,12 +38,32 @@ select acs_object_type__create_type (
 	'im_timesheet_invoice__name'	-- name_method
 );
 
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_timesheet_invoice', 'im_timesheet_invoices', 'invoice_id');
 
 update acs_object_types set
         status_type_table = 'im_costs',
         status_column = 'cost_status_id',
         type_column = 'cost_type_id'
 where object_type = 'im_timesheet_invoice';
+
+-- Add links to edit im_timesheet_invoices objects...
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_timesheet_invoice','view','/intranet-invoices/view?invoice_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_timesheet_invoice','edit','/intranet-invoices/new?invoice_id=');
+
+
+
+
+
+create table im_timesheet_invoices (
+	invoice_id		integer
+				constraint im_timesheet_invoices_pk
+				primary key
+				constraint im_timesheet_invoices_fk
+				references im_invoices
+);
 
 
 create or replace function im_timesheet_invoice__new (
@@ -436,7 +446,7 @@ begin
 	''/intranet-timesheet2-invoices/invoices/new?target_cost_type_id=3702'',   -- url
 	130,					-- sort_order
 	v_invoices_new_menu,			-- parent_menu_id
-	null					-- visible_tcl
+	''[im_cost_type_write_p $user_id 3702]'' -- visible_tcl
     );
 
     PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
@@ -456,7 +466,7 @@ begin
 	''/intranet-timesheet2-invoices/invoices/new?target_cost_type_id=3700'',     -- url
 	330,					-- sort_order
 	v_invoices_new_menu,			-- parent_menu_id
-	null					-- visible_tcl
+	''[im_cost_type_write_p $user_id 3700]'' -- visible_tcl
     );
 
     PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
