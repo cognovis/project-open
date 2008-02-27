@@ -173,21 +173,11 @@ create trigger im_projects_calendar_update_tr after insert or update
 on im_projects for each row
 execute procedure im_projects_calendar_update_tr ();
 
--- update im_projects set start_date = start_date::date where project_nr like '2005_0134';
--- update im_projects set start_date = start_date::date where project_nr like '2006%';
-
-
-
-
-
 
 
 -- --------------------------------------------------------
 -- Translation Tasks Trigger
 -- --------------------------------------------------------
-
--- drop trigger im_trans_tasks_calendar_update_tr on im_trans_tasks;
--- drop function im_trans_tasks_calendar_update_tr();
 
 create or replace function im_trans_tasks_calendar_update_tr () returns trigger as '
 declare
