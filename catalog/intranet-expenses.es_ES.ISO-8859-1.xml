@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-expenses" package_version="3.2.7.0.0" locale="es_ES" charset="ISO-8859-1">
+<message_catalog package_key="intranet-expenses" package_version="3.4.0.0.0" locale="es_ES" charset="ISO-8859-1">
 
   <msg key="Add_a_new_Expense">Añadir un nuevo Gasto</msg>
   <msg key="Amount">Importe</msg>
@@ -9,8 +9,8 @@
   <msg key="Create_Travel_Cost">Crear gasto de viaje</msg>
   <msg key="Delete">Borrar</msg>
   <msg key="Delete_Expenses">Borrar Gastos</msg>
-  <msg key="Expense_Date">Fecha</msg>
   <msg key="Expense_Bundles">Facturas de Gastos</msg>
+  <msg key="Expense_Date">Fecha</msg>
   <msg key="Expense_Payment_Type">Tipo de Pago</msg>
   <msg key="Expense_Type">Tipo de Gasto</msg>
   <msg key="Expenses">Gastos</msg>
