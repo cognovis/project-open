@@ -25,6 +25,9 @@ select acs_object_type__create_type (
 		'im_dynfield_widget__name' -- name_method
 );
 
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_dynfield_widget', 'im_dynfield_widgets', 'widget_id');
+
 create table im_dynfield_widgets (
 	widget_id		integer
 				constraint im_dynfield_widgets_fk
@@ -58,90 +61,13 @@ create table im_dynfield_widgets (
 	sql_datatype		varchar(200) 
 				constraint im_dynfield_widgets_datatype_nn 
 				not null,
-	parameters		varchar(4000),
+	parameters		text,
 				-- Name of a PlPg/SQL function to convert a 
 				-- reference (integer, timestamptz) into a
 				-- printable value. Example: im_name_from_user_id,
 				-- im_cost_center_name_from_id
 	deref_plpgsql_function	varchar(100) default 'im_name_from_id'
 );
-
-
--- ------------------------------------------------------------------
--- Layout
--- ------------------------------------------------------------------
-
-
-create table im_dynfield_layout_pages (
-	page_url		varchar(1000)
-				constraint im_dynfield_layout_page_nn
-				not null,
-	object_type		varchar(1000)
-				constraint im_dynfield_ly_page_object_nn
-				not null
-				constraint im_dynfield_ly_page_object_fk
-				references acs_object_types,
-	layout_type		varchar(15)
-				constraint im_dynfield_layout_type_nn
-				not null
-				constraint im_dynfield_layout_type_ck
-				check (layout_type in ('table', 'div_absolute', 'div_relative', 'adp')),
-	table_height		integer,
-	table_width		integer,
-	adp_file		varchar(400),
-	default_p		char(1) default 'f'
-				constraint im_dynfield_layout_default_nn
-				not null
-				constraint im_dynfield_layout_default_ck
-				check (default_p in ( 't','f' ))
-);
-
-alter table im_dynfield_layout_pages add 
-  constraint im_dynfield_layout_pages_pk primary key (page_url, object_type)
-;
-
-
-create table im_dynfield_layout (
-	attribute_id		integer
-				constraint im_dynfield_layout_attribute_nn
-				not null
-				constraint im_dynfield_layout_attribute_fk
-				references im_dynfield_attributes,
-	page_url		varchar(1000),
-	object_type		varchar(1000)
-				constraint im_dynfield_layout_object_type_nn
-				not null,
-	-- Pos + size is interpreted according to layout type.
-	-- Default is a table layout with col/row and colspan/rowspan.
-	pos_x			integer,
-	pos_y			integer,
-	size_x			integer,
-	size_y			integer,
-	-- How to display the label? "no_label" is useful for combined
-	-- fields (currency_code field of a monetary amount), "plain"
-	-- just shows the label in the column before the widget.
-	label_style		varchar(15) default 'table'
-				constraint im_dynfield_label_style_nn
-				not null
-				constraint im_dynfield_label_style_ck
-				check (label_style in ('table', 'div_absolute', 'div_relative', 'div', 'adp')),
-	div_class		varchar(400),
-	sort_key		integer
-);
-
-alter table im_dynfield_layout 
-add constraint im_dynfield_layout_pk 
-primary key (attribute_id, page_url, object_type);
-
--- Skip the foreign key meanwhile so that we dont have to add the 
--- page_layout for the beginning. By default, a "table" layout will
--- be used.
---
--- alter table im_dynfield_layout add
---   constraint im_dynfield_layout_fk foreign key (page_url, object_type) 
---   references im_dynfield_layout_pages(page_url, object_type)
--- ;
-
 
 
 
@@ -188,7 +114,7 @@ create table im_dynfield_attributes (
 				not null,	
 	deprecated_p		char default 'f'
 				constraint im_dynfield_attr_deprecated_nn 
-				not null
+				not null,
 				-- Should the field be included in intranet-search-pg?
 	include_in_search_p	char(1) default 'f'
 				constraint im_dynfield_attributes_search_ch
@@ -215,18 +141,14 @@ create table im_dynfield_type_attribute_map (
 	unique (attribute_id, object_type_id)
 );
 
-
 comment on table im_dynfield_type_attribute_map is '
-This map allows us to specify whether a DynField attribute should 
+This map allows us to specify whether a DynField attribute should
 appear in a Edit/NewPage of an object, and whether it should appear
 in edit or display mode.
 The table maps the objects type_id (such as project_type_id, company_type_id
 etc.) to the "display_mode" for the DynField attribute.
 The display mode is "edit" if there is no entry in this map table.
 ';
-
-
-
 
 
 -- ------------------------------------------------------------------
@@ -249,6 +171,88 @@ create table im_dynfield_attr_multi_value (
 
 
 -- ToDo: Add indices
+
+
+
+
+-- ------------------------------------------------------------------
+-- Layout
+-- ------------------------------------------------------------------
+
+
+create table im_dynfield_layout_pages (
+	page_url		varchar(1000)
+				constraint im_dynfield_layout_page_nn
+				not null,
+	object_type		varchar(100)
+				constraint im_dynfield_ly_page_object_nn
+				not null
+				constraint im_dynfield_ly_page_object_fk
+				references acs_object_types,
+	layout_type		varchar(15)
+				constraint im_dynfield_layout_type_nn
+				not null
+				constraint im_dynfield_layout_type_ck
+				check (layout_type in ('absolute', 'relative',
+					'table', 'div_absolute', 'div_relative', 'adp')),
+	table_height		integer,
+	table_width		integer,
+	adp_file		varchar(400),
+	default_p		char(1) default 'f'
+				constraint im_dynfield_layout_default_nn
+				not null
+				constraint im_dynfield_layout_default_ck
+				check (default_p in ( 't','f' ))
+);
+
+alter table im_dynfield_layout_pages add 
+  constraint im_dynfield_layout_pages_pk primary key (page_url, object_type)
+;
+
+
+create table im_dynfield_layout (
+	attribute_id		integer
+				constraint im_dynfield_layout_attribute_nn
+				not null
+				constraint im_dynfield_layout_attribute_fk
+				references im_dynfield_attributes,
+	page_url		varchar(1000),
+	object_type		varchar(100)
+				constraint im_dynfield_layout_object_type_nn
+				not null,
+	-- Pos + size is interpreted according to layout type.
+	-- Default is a table layout with col/row and colspan/rowspan.
+	pos_x			integer,
+	pos_y			integer,
+	size_x			integer,
+	size_y			integer,
+	-- How to display the label? "no_label" is useful for combined
+	-- fields (currency_code field of a monetary amount), "plain"
+	-- just shows the label in the column before the widget.
+	label_style		varchar(15) default 'table'
+				constraint im_dynfield_label_style_nn
+				not null
+				constraint im_dynfield_label_style_ck
+				check (label_style in ('table', 'div_absolute', 'div_relative', 'div', 'adp')),
+	div_class		varchar(400),
+	sort_key		integer
+);
+
+alter table im_dynfield_layout 
+add constraint im_dynfield_layout_pk 
+primary key (attribute_id, page_url, object_type);
+
+-- Skip the foreign key meanwhile so that we dont have to add the 
+-- page_layout for the beginning. By default, a "table" layout will
+-- be used.
+--
+-- alter table im_dynfield_layout add
+--   constraint im_dynfield_layout_fk foreign key (page_url, object_type) 
+--   references im_dynfield_layout_pages(page_url, object_type)
+-- ;
+
+
+
 
 
 ---------------------------------------------------------
@@ -618,17 +622,12 @@ end;' language 'plpgsql';
 
 -- 10000-10999  Intranet DynField
 
-insert into im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE, ENABLED_P) values
-('10001', 'time', 'Intranet DynField Storage Type', 'f');
-insert into im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE, ENABLED_P) values
-('10003', 'date', 'Intranet DynField Storage Type', 'f');
-insert into im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE, ENABLED_P) values
-('10005', 'multimap', 'Intranet DynField Storage Type', 'f');
-insert into im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE, ENABLED_P) values
-('10007', 'value', 'Intranet DynField Storage Type', 'f');
-insert into im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE, ENABLED_P) values
-('10009', 'value_with_mime_type', 'Intranet DynField Storage Type', 'f');
 
+SELECT im_category_new ('10001', 'time', 'Intranet DynField Storage Type');
+SELECT im_category_new ('10003', 'date', 'Intranet DynField Storage Type');
+SELECT im_category_new ('10005', 'multimap', 'Intranet DynField Storage Type');
+SELECT im_category_new ('10007', 'value', 'Intranet DynField Storage Type');
+SELECT im_category_new ('10009', 'value_with_mime_type', 'Intranet DynField Storage Type');
 
 
 select im_dynfield_widget__new (
@@ -805,4 +804,589 @@ select im_dynfield_widget__new (
 	'integer',		-- sql_datatype
 	'{custom {category_type "Intranet Company Type"}}' -- parameters
 );
+
+select im_dynfield_widget__new (
+	null,				-- widget_id
+	'im_dynfield_widget',   	-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'category_invoice_template',	-- widget_name
+	'#intranet-core.Template#',	-- pretty_name
+	'#intranet-core.Template#',	-- pretty_plural
+	10007,				-- storage_type_id
+	'integer',			-- acs_datatype
+	'im_category_tree',		-- widget
+	'integer',			-- sql_datatype
+	'{custom {category_type "Intranet Cost Template"}}' -- parameters
+);
+
+select im_dynfield_widget__new (
+	null,				-- widget_id
+	'im_dynfield_widget',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'cost_centers',			-- widget_name
+	'#intranet-core.Cost_Center#',	-- pretty_name
+	'#intranet-core.Cost_Centers#', -- pretty_plural
+	10007,				-- storage_type_id
+	'integer',			-- acs_datatype
+	'im_cost_center_tree',		-- widget
+	'integer',			-- sql_datatype
+	'{custom {start_cc_id ""} {department_only_p 0} {include_empty_p 1} {translate_p 0}}'
+);
+
+
+select im_dynfield_widget__new (
+	null,				-- widget_id
+	'im_dynfield_widget',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'departments',			-- widget_name
+	'#intranet-core.Departments#',	-- pretty_name
+	'#intranet-core.Departments#',	-- pretty_plural
+	10007,				-- storage_type_id
+	'integer',			-- acs_datatype
+	'im_cost_center_tree',		-- widget
+	'integer',			-- sql_datatype
+	'{custom {start_cc_id ""} {department_only_p 1} {include_empty_p 1} {translate_p 0}}'
+);
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count
+	from im_dynfield_widgets where widget_name = ''currencies'';
+        IF 0 != v_count THEN return 0; END IF;
+
+	PERFORM im_dynfield_widget__new (
+		null,			-- widget_id
+		''im_dynfield_widget'',	-- object_type
+		now(),			-- creation_date
+		null,			-- creation_user
+		null,			-- creation_ip
+		null,			-- context_id
+	
+		''currencies'',		-- widget_name
+		''#intranet-core.Currency#'',	-- pretty_name
+		''#intranet-core.Currencies#'',	-- pretty_plural
+		10007,			-- storage_type_id
+		''string'',		-- acs_datatype
+		''generic_sql'',		-- widget
+		''char(3)'',		-- sql_datatype
+		''{custom {sql {select iso, iso from currency_codes where supported_p = ''''t'''' }}}''
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count
+	from im_dynfield_widgets where widget_name = ''category_payment_method'';
+        IF 0 != v_count THEN return 0; END IF;
+
+	PERFORM im_dynfield_widget__new (
+		null,			-- widget_id
+		''im_dynfield_widget'',	-- object_type
+		now(),			-- creation_date
+		null,			-- creation_user
+		null,			-- creation_ip
+		null,			-- context_id
+	
+		''category_payment_method'',		-- widget_name
+		''#intranet-core.Payment_Method#'',	-- pretty_name
+		''#intranet-core.Payment_Methods#'',	-- pretty_plural
+		10007,			-- storage_type_id
+		''integer'',		-- acs_datatype
+		''im_category_tree'',	-- widget
+		''integer'',		-- sql_datatype
+		''{custom {category_type "Intranet Invoice Payment Method"}}'' -- parameters
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+-------------------------------------------------------------
+-- DynField Fields
+--
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_attrib_name           varchar;        
+	v_attrib_pretty         varchar;
+	v_object_name		varchar;
+	v_table_name		varchar;
+        v_acs_attrib_id         integer;        
+	v_attrib_id             integer;
+        v_count                 integer;
+begin
+        v_attrib_name := ''default_vat'';
+        v_attrib_pretty := ''Default VAT'';
+	v_object_name = ''im_company'';
+	v_table_name = ''im_companies'';
+
+        select count(*) into v_count
+        from acs_attributes
+        where attribute_name = v_attrib_name;
+        IF 0 != v_count THEN return 0; END IF;
+
+        v_acs_attrib_id := acs_attribute__create_attribute (
+                v_object_name,
+                v_attrib_name,
+                ''integer'',
+                v_attrib_pretty,
+                v_attrib_pretty,
+                v_table_name,
+                NULL, NULL, ''0'', ''1'',
+                NULL, NULL, NULL
+        );
+        v_attrib_id := acs_object__new (
+                null,
+                ''im_dynfield_attribute'',
+                now(),
+                null, null, null
+        );
+        insert into im_dynfield_attributes (
+                attribute_id, acs_attribute_id, widget_name, deprecated_p
+        ) values (
+                v_attrib_id, v_acs_attrib_id, ''textbox_small'', ''f''
+        );
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_attrib_name           varchar;        v_attrib_pretty         varchar;
+	v_object_name		varchar;	v_table_name		varchar;
+	v_widget_name		varchar;	v_data_type		varchar;
+
+        v_acs_attrib_id         integer;        
+	v_attrib_id             integer;
+        v_count                 integer;
+begin
+        v_attrib_name := ''default_invoice_template_id'';
+        v_attrib_pretty := ''Default Invoice Template'';
+	v_object_name = ''im_company'';
+	v_table_name = ''im_companies'';
+	v_data_type = ''integer'';
+	v_widget_name = ''category_invoice_template'';
+
+        select count(*) into v_count
+        from acs_attributes
+        where attribute_name = v_attrib_name;
+        IF 0 != v_count THEN return 0; END IF;
+
+        v_acs_attrib_id := acs_attribute__create_attribute (
+                v_object_name,
+                v_attrib_name,
+                v_data_type,
+                v_attrib_pretty,
+                v_attrib_pretty,
+                v_table_name,
+                NULL, NULL, ''0'', ''1'',
+                NULL, NULL, NULL
+        );
+        v_attrib_id := acs_object__new (
+                null,
+                ''im_dynfield_attribute'',
+                now(),
+                null, null, null
+        );
+        insert into im_dynfield_attributes (
+                attribute_id, acs_attribute_id, widget_name, deprecated_p
+        ) values (
+                v_attrib_id, v_acs_attrib_id, v_widget_name, ''f''
+        );
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_attrib_name           varchar;        v_attrib_pretty         varchar;
+	v_object_name		varchar;	v_table_name		varchar;
+	v_widget_name		varchar;	v_data_type		varchar;
+
+        v_acs_attrib_id         integer;        
+	v_attrib_id             integer;
+        v_count                 integer;
+begin
+        v_attrib_name := ''default_payment_method_id'';
+        v_attrib_pretty := ''Default Payment Method'';
+	v_object_name = ''im_company'';
+	v_table_name = ''im_companies'';
+	v_data_type = ''integer'';
+	v_widget_name = ''category_payment_method'';
+
+        select count(*) into v_count
+        from acs_attributes
+        where attribute_name = v_attrib_name;
+        IF 0 != v_count THEN return 0; END IF;
+
+        v_acs_attrib_id := acs_attribute__create_attribute (
+                v_object_name,
+                v_attrib_name,
+                v_data_type,
+                v_attrib_pretty,
+                v_attrib_pretty,
+                v_table_name,
+                NULL, NULL, ''0'', ''1'',
+                NULL, NULL, NULL
+        );
+        v_attrib_id := acs_object__new (
+                null,
+                ''im_dynfield_attribute'',
+                now(),
+                null, null, null
+        );
+        insert into im_dynfield_attributes (attribute_id, acs_attribute_id, widget_name, deprecated_p
+        ) values (v_attrib_id, v_acs_attrib_id, v_widget_name, ''f'');
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_attrib_name           varchar;        v_attrib_pretty         varchar;
+	v_object_name		varchar;	v_table_name		varchar;
+	v_widget_name		varchar;	v_data_type		varchar;
+
+        v_acs_attrib_id         integer;        
+	v_attrib_id             integer;
+        v_count                 integer;
+begin
+        v_attrib_name := ''default_payment_days'';
+        v_attrib_pretty := ''Default Payment Days'';
+	v_object_name = ''im_company'';
+	v_table_name = ''im_companies'';
+	v_data_type = ''integer'';
+	v_widget_name = ''textbox_small'';
+
+        select count(*) into v_count
+        from acs_attributes
+        where attribute_name = v_attrib_name;
+        IF 0 != v_count THEN return 0; END IF;
+
+        v_acs_attrib_id := acs_attribute__create_attribute (
+                v_object_name,
+                v_attrib_name,
+                v_data_type,
+                v_attrib_pretty,
+                v_attrib_pretty,
+                v_table_name,
+                NULL, NULL, ''0'', ''1'',
+                NULL, NULL, NULL
+        );
+        v_attrib_id := acs_object__new (
+                null,
+                ''im_dynfield_attribute'',
+                now(),
+                null, null, null
+        );
+        insert into im_dynfield_attributes (attribute_id, acs_attribute_id, widget_name, deprecated_p
+        ) values (v_attrib_id, v_acs_attrib_id, v_widget_name, ''f'');
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_attrib_name           varchar;        v_attrib_pretty         varchar;
+	v_object_name		varchar;	v_table_name		varchar;
+	v_widget_name		varchar;	v_data_type		varchar;
+
+        v_acs_attrib_id         integer;        
+	v_attrib_id             integer;
+        v_count                 integer;
+begin
+        v_attrib_name := ''default_bill_template_id'';
+        v_attrib_pretty := ''Default Bill Template'';
+	v_object_name = ''im_company'';
+	v_table_name = ''im_companies'';
+	v_data_type = ''integer'';
+	v_widget_name = ''category_invoice_template'';
+
+        select count(*) into v_count
+        from acs_attributes
+        where attribute_name = v_attrib_name;
+        IF 0 != v_count THEN return 0; END IF;
+
+        v_acs_attrib_id := acs_attribute__create_attribute (
+                v_object_name,
+                v_attrib_name,
+                v_data_type,
+                v_attrib_pretty,
+                v_attrib_pretty,
+                v_table_name,
+                NULL, NULL, ''0'', ''1'',
+                NULL, NULL, NULL
+        );
+        v_attrib_id := acs_object__new (
+                null,
+                ''im_dynfield_attribute'',
+                now(),
+                null, null, null
+        );
+        insert into im_dynfield_attributes (attribute_id, acs_attribute_id, widget_name, deprecated_p
+        ) values (v_attrib_id, v_acs_attrib_id, v_widget_name, ''f'');
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_attrib_name           varchar;        v_attrib_pretty         varchar;
+	v_object_name		varchar;	v_table_name		varchar;
+	v_widget_name		varchar;	v_data_type		varchar;
+
+        v_acs_attrib_id         integer;        
+	v_attrib_id             integer;
+        v_count                 integer;
+begin
+        v_attrib_name := ''default_po_template_id'';
+        v_attrib_pretty := ''Default Purchase Order Template'';
+	v_object_name = ''im_company'';
+	v_table_name = ''im_companies'';
+	v_data_type = ''integer'';
+	v_widget_name = ''category_invoice_template'';
+
+        select count(*) into v_count
+        from acs_attributes
+        where attribute_name = v_attrib_name;
+        IF 0 != v_count THEN return 0; END IF;
+
+        v_acs_attrib_id := acs_attribute__create_attribute (
+                v_object_name,
+                v_attrib_name,
+                v_data_type,
+                v_attrib_pretty,
+                v_attrib_pretty,
+                v_table_name,
+                NULL, NULL, ''0'', ''1'',
+                NULL, NULL, NULL
+        );
+        v_attrib_id := acs_object__new (
+                null,
+                ''im_dynfield_attribute'',
+                now(),
+                null, null, null
+        );
+        insert into im_dynfield_attributes (attribute_id, acs_attribute_id, widget_name, deprecated_p
+        ) values (v_attrib_id, v_acs_attrib_id, v_widget_name, ''f'');
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_attrib_name           varchar;        v_attrib_pretty         varchar;
+	v_object_name		varchar;	v_table_name		varchar;
+	v_widget_name		varchar;	v_data_type		varchar;
+
+        v_acs_attrib_id         integer;        
+	v_attrib_id             integer;
+        v_count                 integer;
+begin
+        v_attrib_name := ''default_delnote_template_id'';
+        v_attrib_pretty := ''Default Delivery Note Template'';
+	v_object_name = ''im_company'';
+	v_table_name = ''im_companies'';
+	v_data_type = ''integer'';
+	v_widget_name = ''category_invoice_template'';
+
+        select count(*) into v_count
+        from acs_attributes
+        where attribute_name = v_attrib_name;
+        IF 0 != v_count THEN return 0; END IF;
+
+        v_acs_attrib_id := acs_attribute__create_attribute (
+                v_object_name,
+                v_attrib_name,
+                v_data_type,
+                v_attrib_pretty,
+                v_attrib_pretty,
+                v_table_name,
+                NULL, NULL, ''0'', ''1'',
+                NULL, NULL, NULL
+        );
+        v_attrib_id := acs_object__new (
+                null,
+                ''im_dynfield_attribute'',
+                now(),
+                null, null, null
+        );
+        insert into im_dynfield_attributes (attribute_id, acs_attribute_id, widget_name, deprecated_p
+        ) values (v_attrib_id, v_acs_attrib_id, v_widget_name, ''f'');
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_attrib_name		varchar;
+	v_attrib_pretty		varchar;
+	v_table			varchar;
+	v_object		varchar;
+
+	v_acs_attrib_id		integer;
+	v_attrib_id		integer;
+	v_count			integer;
+begin
+	v_attrib_name := ''company_project_nr'';
+	v_attrib_pretty := ''Customer Project Nr'';
+	v_object := ''im_project'';
+	v_table := ''im_projects'';
+
+	select count(*) into v_count from acs_attributes
+	where attribute_name = v_attrib_name;
+	IF 0 != v_count THEN return 0; END IF;
+
+	select count(*) into v_count from acs_object_type_tables
+	where object_type = ''im_project'' and table_name = ''im_projects'';
+	IF v_count = 0 THEN
+		insert into acs_object_type_tables (object_type, table_name, id_column)
+		values (''im_project'', ''im_projects'', ''project_id'');
+	END IF;
+
+	select	count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''im_projects'' and lower(column_name) = ''company_project_nr'';
+	IF v_count = 0 THEN
+		alter table im_projects add company_project_nr varchar(50);
+	END IF;
+
+	v_acs_attrib_id := acs_attribute__create_attribute (
+		v_object,
+		v_attrib_name,
+		''string'',
+		v_attrib_pretty,
+		v_attrib_pretty,
+		v_table,
+		NULL, NULL, ''0'', ''1'',
+		NULL, NULL, NULL
+	);
+	v_attrib_id := acs_object__new (
+		null,
+		''im_dynfield_attribute'',
+		now(),
+		null, null, null
+	);
+	insert into im_dynfield_attributes (
+		attribute_id, acs_attribute_id, widget_name, deprecated_p
+	) values (
+		v_attrib_id, v_acs_attrib_id, ''textbox_medium'', ''f''
+	);
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_attrib_name		varchar;
+	v_attrib_pretty		varchar;
+	v_table			varchar;
+	v_object		varchar;
+
+	v_acs_attrib_id		integer;
+	v_attrib_id		integer;
+	v_count			integer;
+begin
+	v_attrib_name := ''final_company'';
+	v_attrib_pretty := ''Final Customer'';
+	v_object := ''im_project'';
+	v_table := ''im_projects'';
+
+	select count(*) into v_count from acs_attributes
+	where attribute_name = v_attrib_name;
+	IF 0 != v_count THEN return 0; END IF;
+
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''im_projects'' and lower(column_name) = ''final_company'';
+	IF v_count = 0 THEN
+		alter table im_projects add final_company varchar(200);
+	END IF;
+
+	v_acs_attrib_id := acs_attribute__create_attribute (
+		v_object,
+		v_attrib_name,
+		''string'',
+		v_attrib_pretty,
+		v_attrib_pretty,
+		v_table,
+		NULL, NULL, ''0'', ''1'',
+		NULL, NULL, NULL
+	);
+	v_attrib_id := acs_object__new (
+		null,
+		''im_dynfield_attribute'',
+		now(),
+		null, null, null
+	);
+	insert into im_dynfield_attributes (
+		attribute_id, acs_attribute_id, widget_name, deprecated_p
+	) values (
+		v_attrib_id, v_acs_attrib_id, ''textbox_medium'', ''f''
+	);
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
