@@ -70,7 +70,7 @@ insert into im_views (view_id, view_name, visible_for) values (56, 'employees_vi
 
 
 -- prompt *** Creating im_view_columns for employees_list
-delete from im_view_columns where column_id >= 5500 and column_id < 5599;
+delete from im_view_columns where view_id = 55;
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, 
 column_render_tcl, extra_select, extra_from, extra_where, sort_order, visible_for
@@ -82,32 +82,23 @@ column_render_tcl, extra_select, extra_from, extra_where, sort_order, visible_fo
 	0,
 	''
 );
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5501,55,'Email','"<a href=mailto:$email>$email</a>"',3);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5502,55,'Supervisor',
 '"<a href=/intranet/users/view?user_id=$supervisor_id>$supervisor_name</a>"',3);
-
 -- insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 -- sort_order)values (5502,55,'Status','$status','','',4,'');
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5504,55,'Work Phone','$work_phone',6);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5505,55,'Cell Phone','$cell_phone',7);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5506,55,'Home Phone','$home_phone',8);
---
--- commit;
 
 
 
-
--- prompt *** Creating im_view_columns for employees_view
+-- Employee View
 delete from im_view_columns where column_id >= 5600 and column_id < 5699;
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5600,56,'Department',
@@ -147,5 +138,3 @@ insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5626,56,'Start Date','$start_date_formatted',26);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5628,56,'Termination_Date','$end_date_formatted',28);
--- commit;
-

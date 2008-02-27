@@ -34,9 +34,9 @@ create table im_employees (
 				references parties,
 	department_id		integer 
 				constraint im_employees_department_fk
-				references im_cost_centers,
-	job_title		varchar(200),
-	job_description		varchar(4000),
+				references acs_objects,
+	job_title		text,
+	job_description		text,
 				-- part_time = 50% availability
 	availability		integer,
 	supervisor_id		integer 
@@ -70,16 +70,16 @@ create table im_employees (
 				constraint im_employees_head_of_house_con 
 				check (head_of_household_p in ('t','f')),
 	birthdate		timestamptz,
-	skills			varchar(2000),
+	skills			text,
 	first_experience	timestamptz,	
 	years_experience	numeric(5,2),
-	educational_history	varchar(4000),
-	last_degree_completed	varchar(100),
+	educational_history	text,
+	last_degree_completed	text,
 				-- employee lifecycle management
 	employee_status_id	integer
 				constraint im_employees_rec_state_fk
 				references im_categories,
-	termination_reason	varchar(4000),
+	termination_reason	text,
 	voluntary_termination_p	char(1) default 'f'
 				constraint im_employees_vol_term_ck
 				check (voluntary_termination_p in ('t','f')),
@@ -180,7 +180,7 @@ create table im_employee_checkpoints (
 				constraint im_emp_checkp_pk
 				primary key,
 	stage			varchar(100) not null,
-	checkpoint		varchar(500) not null
+	checkpoint		text not null
 );
 
 create table im_emp_checkpoint_checkoffs (
@@ -194,7 +194,7 @@ create table im_emp_checkpoint_checkoffs (
 				constraint im_emp_checkpoff_checker_fk
 				references parties,
 	check_date		timestamptz,
-	check_note		varchar(1000),
+	check_note		text,
 		constraint im_emp_checkpoff_pk
 		primary key (checkee, checkpoint_id)
 );
@@ -216,7 +216,7 @@ select im_component_plugin__new (
         '/intranet/users/view',			-- page_url
 	null,					-- view_name
         60,					-- sort_order
-        'im_employee_info_component $user_id $return_url [im_opt_val employee_view_name]'
+	'im_employee_info_component $user_id_from_search $return_url [im_opt_val employee_view_name]'
     );
 
 -- prompt *** Creating OrgChart menu entry
@@ -298,4 +298,7 @@ select im_priv_create('view_hr',	'Accounting');
 
 \i ../common/intranet-hr-common.sql
 \i ../common/intranet-hr-backup.sql
+
+
+
 
