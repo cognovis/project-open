@@ -16,6 +16,29 @@
 -- However, the material_type_id links them into a Material
 -- Type which forms a hierarchy.
 
+select acs_object_type__create_type (
+	'im_material',		-- object_type
+	'Material',		-- pretty_name
+	'Materials',		-- pretty_plural
+	'acs_object',		-- supertype
+	'im_materials',		-- table_name
+	'material_id',		-- id_column
+	'intranet-material',	-- package_name
+	'f',			-- abstract_p
+	null,			-- type_extension_table
+	'im_material.name'	-- name_method
+);
+
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_material', 'im_materials', 'material_id');
+
+update acs_object_types set
+        status_type_table = 'im_materials',
+        status_column = 'material_status_id',
+        type_column = 'material_type_id'
+where object_type = 'im_material';
+
+
 create table im_materials (
 	material_id		integer
 				constraint im_material_pk 
@@ -33,7 +56,7 @@ create table im_materials (
 	material_uom_id		integer
 				constraint im_materials_material_uom_fk
 				references im_categories,
-	description		varchar(4000)
+	description		text
 );
 create unique index im_material_material_nr_idx on im_materials (material_nr);
 create index im_material_material_type_id_idx on im_materials (material_type_id);
@@ -63,27 +86,6 @@ select im_priv_create('add_materials','Senior Managers');
 
 ---------------------------------------------------------
 -- Material Object Type
-
-select acs_object_type__create_type (
-	'im_material',		-- object_type
-	'Material',		-- pretty_name
-	'Materials',		-- pretty_plural
-	'acs_object',		-- supertype
-	'im_materials',		-- table_name
-	'material_id',		-- id_column
-	'intranet-material',	-- package_name
-	'f',			-- abstract_p
-	null,			-- type_extension_table
-	'im_material.name'	-- name_method
-);
-
-update acs_object_types set
-        status_type_table = 'im_materials',
-        status_column = 'material_status_id',
-        type_column = 'material_type_id'
-where object_type = 'im_material';
-
-
 
 create or replace function im_material__new (
 	integer,
