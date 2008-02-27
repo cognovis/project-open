@@ -44,7 +44,7 @@ create table im_payments (
 	currency		char(3) 
 				constraint im_payments_currency
 				references currency_codes(ISO),
-	note			varchar(4000),
+	note			text,
 	last_modified   	timestamptz not null,
  	last_modifying_user	integer not null 
 				constraint im_payments_mod_user
@@ -94,7 +94,7 @@ create table im_payments_audit (
 	payment_status_id	integer,
 	amount			numeric(12,2),
 	currency		char(3),
-	note			varchar(4000),
+	note			text,
 	last_modified   	timestamptz not null,
  	last_modifying_user	integer,
 	modified_ip_address	varchar(20) not null
