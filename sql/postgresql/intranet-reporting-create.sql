@@ -50,6 +50,15 @@ SELECT acs_object_type__create_type (
 	'im_report__name'		-- name_method
 );
 
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_report', 'im_reports', 'report_id');
+
+update acs_object_types set 
+	status_type_table = 'im_reports', 
+	status_column = 'report_status_id', 
+	type_column = 'report_type_id' 
+where object_type = 'im_report';
+
 
 create table im_reports (
 	report_id		integer
@@ -108,11 +117,11 @@ create or replace function im_report__new (
 	varchar, integer, integer, integer, text
 ) returns integer as '
 DECLARE
-	p_report_id		alias for $1;		-- report_id  default null
-	p_object_type   	alias for $2;		-- object_type default ''im_report''
+	p_report_id		alias for $1;		-- report_id default null
+	p_object_type		alias for $2;		-- object_type default ''im_report''
 	p_creation_date 	alias for $3;		-- creation_date default now()
 	p_creation_user 	alias for $4;		-- creation_user default null
-	p_creation_ip   	alias for $5;		-- creation_ip default null
+	p_creation_ip		alias for $5;		-- creation_ip default null
 	p_context_id		alias for $6;		-- context_id default null
 
 	p_report_name		alias for $7;		-- report_name
@@ -177,21 +186,17 @@ end;' language 'plpgsql';
 -- Please contact support@project-open.com if you need to
 -- reserve a range of constants for a new module.
 --
--- 15000-15099  Intranet Report Status
--- 15100-15199  Intranet Report Type
+-- 15000-15099	Intranet Report Status
+-- 15100-15199	Intranet Report Type
 -- 15200-15999	Reserved for Reporting
 
 
-insert into im_categories(category_id, category, category_type) 
-values (15000, 'Active', 'Intranet Report Status');
-insert into im_categories(category_id, category, category_type) 
-values (15002, 'Deleted', 'Intranet Report Status');
+SELECT im_category_new(15000, 'Active', 'Intranet Report Status');
+SELECT im_category_new(15002, 'Deleted', 'Intranet Report Status');
 
 
-insert into im_categories(category_id, category, category_type) 
-values (15100, 'Simple SQL Report', 'Intranet Report Type');
-insert into im_categories(category_id, category, category_type) 
-values (15110, 'Indicator', 'Intranet Report Type');
+SELECT im_category_new(15100, 'Simple SQL Report', 'Intranet Report Type');
+SELECT im_category_new(15110, 'Indicator', 'Intranet Report Type');
 
 
 -----------------------------------------------------------
@@ -211,10 +216,6 @@ where	category_type = 'Intranet Report Type'
 	and (enabled_p is null or enabled_p = 't');
 
 
-
-
-
-
 ---------------------------------------------------------
 -- Report Menus
 --
@@ -229,171 +230,170 @@ declare
 	v_reporting_menu 	integer;
 
 	-- Groups
-        v_employees             integer;
-        v_accounting            integer;
-        v_senman                integer;
-        v_customers             integer;
-        v_freelancers           integer;
-        v_proman                integer;
-        v_admins                integer;
+	v_employees		integer;
+	v_accounting		integer;
+	v_senman		integer;
+	v_customers		integer;
+	v_freelancers	integer;
+	v_proman		integer;
+	v_admins		integer;
 	v_reg_users		integer;
 BEGIN
 
-    select group_id into v_admins from groups where group_name = ''P/O Admins'';
-    select group_id into v_senman from groups where group_name = ''Senior Managers'';
-    select group_id into v_proman from groups where group_name = ''Project Managers'';
-    select group_id into v_accounting from groups where group_name = ''Accounting'';
-    select group_id into v_employees from groups where group_name = ''Employees'';
-    select group_id into v_customers from groups where group_name = ''Customers'';
-    select group_id into v_freelancers from groups where group_name = ''Freelancers'';
-    select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+	select group_id into v_admins from groups where group_name = ''P/O Admins'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_proman from groups where group_name = ''Project Managers'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select group_id into v_employees from groups where group_name = ''Employees'';
+	select group_id into v_customers from groups where group_name = ''Customers'';
+	select group_id into v_freelancers from groups where group_name = ''Freelancers'';
+	select group_id into v_reg_users from groups where group_name = ''Registered Users'';
 
 
-    select menu_id
-    into v_main_menu
-    from im_menus
-    where label=''main'';
+	select menu_id
+	into v_main_menu
+	from im_menus
+	where label=''main'';
 
-    v_reporting_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting'', -- package_name
-        ''reporting'',          -- label
-        ''Reporting'',          -- name
-        ''/intranet-reporting/'', -- url
-        150,                    -- sort_order
-        v_main_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
-    );
+	v_reporting_menu := im_menu__new (
+		null,		-- p_menu_id
+		''acs_object'',	-- object_type
+		now(),		-- creation_date
+		null,		-- creation_user
+		null,		-- creation_ip
+		null,		-- context_id
+		''intranet-reporting'', -- package_name
+		''reporting'',	-- label
+		''Reporting'',	-- name
+		''/intranet-reporting/'', -- url
+		150,			-- sort_order
+		v_main_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
 
-    PERFORM acs_permission__grant_permission(v_reporting_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_reporting_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_reporting_menu, v_proman, ''read'');
-    PERFORM acs_permission__grant_permission(v_reporting_menu, v_accounting, ''read'');
-    PERFORM acs_permission__grant_permission(v_reporting_menu, v_employees, ''read'');
+	PERFORM acs_permission__grant_permission(v_reporting_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_reporting_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_reporting_menu, v_proman, ''read'');
+	PERFORM acs_permission__grant_permission(v_reporting_menu, v_accounting, ''read'');
+	PERFORM acs_permission__grant_permission(v_reporting_menu, v_employees, ''read'');
 
-    v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting'', -- package_name
-        ''reporting-finance'', -- label
-        ''Finance'',          -- name
-        ''/intranet-reporting/'', -- url
-        50,                     -- sort_order
-        v_reporting_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
-    );
+	v_menu := im_menu__new (
+		null,		-- p_menu_id
+		''acs_object'',	-- object_type
+		now(),		-- creation_date
+		null,		-- creation_user
+		null,		-- creation_ip
+		null,		-- context_id
+		''intranet-reporting'', -- package_name
+		''reporting-finance'', -- label
+		''Finance'',	-- name
+		''/intranet-reporting/'', -- url
+		50,			-- sort_order
+		v_reporting_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
 
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
-
-
-
-    v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting'', -- package_name
-        ''reporting-timesheet'', -- label
-        ''Timesheet'',          -- name
-        ''/intranet-reporting/'', -- url
-        100,                     -- sort_order
-        v_reporting_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
-    );
-
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
-
-
-    v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting'', -- package_name
-        ''reporting-sales'', -- label
-        ''Sales'',          -- name
-        ''/intranet-reporting/'', -- url
-        150,                     -- sort_order
-        v_reporting_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
-    );
-
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
 
 
 
-    v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting'', -- package_name
-        ''reporting-forum'',    -- label
-        ''Forum'',              -- name
-        ''/intranet-reporting/'', -- url
-        200,                    -- sort_order
-        v_reporting_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
-    );
+	v_menu := im_menu__new (
+		null,		-- p_menu_id
+		''acs_object'',	-- object_type
+		now(),		-- creation_date
+		null,		-- creation_user
+		null,		-- creation_ip
+		null,		-- context_id
+		''intranet-reporting'', -- package_name
+		''reporting-timesheet'', -- label
+		''Timesheet'',	-- name
+		''/intranet-reporting/'', -- url
+		100,			-- sort_order
+		v_reporting_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
 
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
-
-
-    v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting'', -- package_name
-        ''reporting-other'', -- label
-        ''Other'',          -- name
-        ''/intranet-reporting/'', -- url
-        250,                     -- sort_order
-        v_reporting_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
-    );
-
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
 
 
-    return 0;
+	v_menu := im_menu__new (
+		null,		-- p_menu_id
+		''acs_object'',	-- object_type
+		now(),		-- creation_date
+		null,		-- creation_user
+		null,		-- creation_ip
+		null,		-- context_id
+		''intranet-reporting'', -- package_name
+		''reporting-sales'', -- label
+		''Sales'',	-- name
+		''/intranet-reporting/'', -- url
+		150,			-- sort_order
+		v_reporting_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
+
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
+
+
+
+	v_menu := im_menu__new (
+		null,		-- p_menu_id
+		''acs_object'',	-- object_type
+		now(),		-- creation_date
+		null,		-- creation_user
+		null,		-- creation_ip
+		null,		-- context_id
+		''intranet-reporting'', -- package_name
+		''reporting-forum'',	-- label
+		''Forum'',		-- name
+		''/intranet-reporting/'', -- url
+		200,			-- sort_order
+		v_reporting_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
+
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
+
+
+	v_menu := im_menu__new (
+		null,		-- p_menu_id
+		''acs_object'',	-- object_type
+		now(),		-- creation_date
+		null,		-- creation_user
+		null,		-- creation_ip
+		null,		-- context_id
+		''intranet-reporting'', -- package_name
+		''reporting-other'', -- label
+		''Other'',	-- name
+		''/intranet-reporting/'', -- url
+		250,			-- sort_order
+		v_reporting_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
+
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
+
+	return 0;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
@@ -414,75 +414,72 @@ declare
 	v_main_menu 		integer;
 
 	-- Groups
-        v_employees             integer;
-        v_accounting            integer;
-        v_senman                integer;
-        v_customers             integer;
-        v_freelancers           integer;
-        v_proman                integer;
-        v_admins                integer;
+	v_employees		integer;
+	v_accounting		integer;
+	v_senman		integer;
+	v_customers		integer;
+	v_freelancers	integer;
+	v_proman		integer;
+	v_admins		integer;
 	v_reg_users		integer;
 BEGIN
 
-    select group_id into v_admins from groups where group_name = ''P/O Admins'';
-    select group_id into v_senman from groups where group_name = ''Senior Managers'';
-    select group_id into v_proman from groups where group_name = ''Project Managers'';
-    select group_id into v_accounting from groups where group_name = ''Accounting'';
-    select group_id into v_employees from groups where group_name = ''Employees'';
-    select group_id into v_customers from groups where group_name = ''Customers'';
-    select group_id into v_freelancers from groups where group_name = ''Freelancers'';
-    select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+	select group_id into v_admins from groups where group_name = ''P/O Admins'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_proman from groups where group_name = ''Project Managers'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select group_id into v_employees from groups where group_name = ''Employees'';
+	select group_id into v_customers from groups where group_name = ''Customers'';
+	select group_id into v_freelancers from groups where group_name = ''Freelancers'';
+	select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+
+	select menu_id into v_main_menu	from im_menus
+	where label=''reporting-timesheet'';
+
+	v_menu := im_menu__new (
+		null,		-- p_menu_id
+		''acs_object'',	-- object_type
+		now(),		-- creation_date
+		null,		-- creation_user
+		null,		-- creation_ip
+		null,		-- context_id
+		''intranet-reporting'', -- package_name
+		''reporting-timesheet-productivity'',	-- label
+		''Timesheet Productivity'',	-- name
+		''/intranet-reporting/timesheet-productivity?'', -- url
+		50,			-- sort_order
+		v_main_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
+
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
 
 
-    select menu_id
-    into v_main_menu
-    from im_menus
-    where label=''reporting-timesheet'';
+	v_menu := im_menu__new (
+		null,		-- p_menu_id
+		''acs_object'',	-- object_type
+		now(),		-- creation_date
+		null,		-- creation_user
+		null,		-- creation_ip
+		null,		-- context_id
+		''intranet-reporting'', -- package_name
+		''reporting-timesheet-customer-project'', -- label
+		''Timesheet Customers and Projects'',	-- name
+		''/intranet-reporting/timesheet-customer-project?'', -- url
+		100,			-- sort_order
+		v_main_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
 
-    v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting'', -- package_name
-        ''reporting-timesheet-productivity'',          -- label
-        ''Timesheet Productivity'',          -- name
-        ''/intranet-reporting/timesheet-productivity?'', -- url
-        50,                    -- sort_order
-        v_main_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
-    );
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
 
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
-
-
-    v_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting'', -- package_name
-        ''reporting-timesheet-customer-project'', -- label
-        ''Timesheet Customers and Projects'',          -- name
-        ''/intranet-reporting/timesheet-customer-project?'', -- url
-        100,                     -- sort_order
-        v_main_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
-    );
-
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
-
-    return 0;
+	return 0;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
@@ -617,4 +614,320 @@ end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
+
+
+
+---------------------------------------------------------
+-- Finance - Projects and its Finanancial Documents
+--
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_main_menu 		integer;
+
+	-- Groups
+	v_employees		integer;
+	v_accounting		integer;
+	v_senman		integer;
+	v_customers		integer;
+	v_freelancers	integer;
+	v_proman		integer;
+	v_admins		integer;
+	v_reg_users		integer;
+BEGIN
+
+	select group_id into v_admins from groups where group_name = ''P/O Admins'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_proman from groups where group_name = ''Project Managers'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select group_id into v_employees from groups where group_name = ''Employees'';
+	select group_id into v_customers from groups where group_name = ''Customers'';
+	select group_id into v_freelancers from groups where group_name = ''Freelancers'';
+	select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+
+	select menu_id into v_main_menu from im_menus
+	where label=''reporting-finance'';
+
+	v_menu := im_menu__new (
+		null,		-- p_menu_id
+		''acs_object'',	-- object_type
+		now(),		-- creation_date
+		null,		-- creation_user
+		null,		-- creation_ip
+		null,		-- context_id
+		''intranet-reporting'', -- package_name
+		''reporting-finance-projects-documents'',	-- label
+		''Finance Projects & Documents'',	-- name
+		''/intranet-reporting/finance-projects-documents'', -- url
+		50,			-- sort_order
+		v_main_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
+
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+---------------------------------------------------------
+-- Finance - Income Statement
+--
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_main_menu 		integer;
+
+	-- Groups
+	v_employees		integer;
+	v_accounting		integer;
+	v_senman		integer;
+	v_customers		integer;
+	v_freelancers	integer;
+	v_proman		integer;
+	v_admins		integer;
+	v_reg_users		integer;
+
+	v_count			integer;
+BEGIN
+	select group_id into v_admins from groups where group_name = ''P/O Admins'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_proman from groups where group_name = ''Project Managers'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select group_id into v_employees from groups where group_name = ''Employees'';
+	select group_id into v_customers from groups where group_name = ''Customers'';
+	select group_id into v_freelancers from groups where group_name = ''Freelancers'';
+	select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+
+	select menu_id into v_main_menu
+	from im_menus where label=''reporting-finance'';
+
+	select menu_id into v_count from im_menus
+	where label = ''reporting-finance-income-statement'';
+	IF v_count != 0 THEN return 0; END IF;
+
+	v_menu := im_menu__new (
+		null,		-- p_menu_id
+		''acs_object'',	-- object_type
+		now(),		-- creation_date
+		null,		-- creation_user
+		null,		-- creation_ip
+		null,		-- context_id
+		''intranet-reporting'', -- package_name
+		''reporting-finance-income-statement'',	-- label
+		''Finance Income Statement'',			-- name
+		''/intranet-reporting/finance-income-statement'', -- url
+		60,			-- sort_order
+		v_main_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+---------------------------------------------------------
+-- Finance - Expenses
+--
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_main_menu 		integer;
+
+	-- Groups
+	v_employees		integer;
+	v_accounting		integer;
+	v_senman		integer;
+	v_customers		integer;
+	v_freelancers	integer;
+	v_proman		integer;
+	v_admins		integer;
+	v_reg_users		integer;
+
+	v_count			integer;
+BEGIN
+	select group_id into v_admins from groups where group_name = ''P/O Admins'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_proman from groups where group_name = ''Project Managers'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select group_id into v_employees from groups where group_name = ''Employees'';
+	select group_id into v_customers from groups where group_name = ''Customers'';
+	select group_id into v_freelancers from groups where group_name = ''Freelancers'';
+	select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+
+	select menu_id into v_main_menu from im_menus
+	where label=''reporting-finance'';
+
+	select menu_id into v_count from im_menus
+	where label = ''reporting-finance-expenses'';
+	IF v_count != 0 THEN return 0; END IF;
+
+	v_menu := im_menu__new (
+		null,		-- p_menu_id
+		''acs_object'',	-- object_type
+		now(),		-- creation_date
+		null,		-- creation_user
+		null,		-- creation_ip
+		null,		-- context_id
+		''intranet-reporting'', -- package_name
+		''reporting-finance-expenses'',	-- label
+		''Finance Expenses'',			-- name
+		''/intranet-reporting/finance-expenses'', -- url
+		70,			-- sort_order
+		v_main_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+---------------------------------------------------------
+-- Finance - Trans PM Productivity
+--
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_main_menu 		integer;
+
+	-- Groups
+	v_employees		integer;
+	v_accounting		integer;
+	v_senman		integer;
+	v_customers		integer;
+	v_freelancers	integer;
+	v_proman		integer;
+	v_admins		integer;
+	v_reg_users		integer;
+
+	v_count			integer;
+BEGIN
+	select group_id into v_admins from groups where group_name = ''P/O Admins'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_proman from groups where group_name = ''Project Managers'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select group_id into v_employees from groups where group_name = ''Employees'';
+	select group_id into v_customers from groups where group_name = ''Customers'';
+	select group_id into v_freelancers from groups where group_name = ''Freelancers'';
+	select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+
+	select menu_id into v_main_menu from im_menus
+	where label=''reporting-finance'';
+
+	select menu_id into v_count from im_menus
+	where label = ''reporting-finance-trans-pm-productivity'';
+	IF v_count != 0 THEN return 0; END IF;
+
+	v_menu := im_menu__new (
+		null,		-- p_menu_id
+		''acs_object'',	-- object_type
+		now(),		-- creation_date
+		null,		-- creation_user
+		null,		-- creation_ip
+		null,		-- context_id
+		''intranet-reporting'', -- package_name
+		''reporting-finance-trans-pm-productivity'',	-- label
+		''Translation Project Manager Productivity'',			-- name
+		''/intranet-reporting/finance-trans-pm-productivity'', -- url
+		80,			-- sort_order
+		v_main_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+---------------------------------------------------------
+-- Users - Contact Report
+--
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_main_menu 		integer;
+
+	-- Groups
+	v_employees		integer;
+	v_accounting		integer;
+	v_senman		integer;
+	v_customers		integer;
+	v_freelancers	integer;
+	v_proman		integer;
+	v_admins		integer;
+	v_reg_users		integer;
+
+	v_count			integer;
+BEGIN
+	select group_id into v_admins from groups where group_name = ''P/O Admins'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_proman from groups where group_name = ''Project Managers'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select group_id into v_employees from groups where group_name = ''Employees'';
+	select group_id into v_customers from groups where group_name = ''Customers'';
+	select group_id into v_freelancers from groups where group_name = ''Freelancers'';
+	select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+
+	select menu_id into v_main_menu from im_menus
+	where label=''reporting-other'';
+
+	select menu_id into v_count from im_menus
+	where label = ''reporting-user-contacts'';
+	IF v_count != 0 THEN return 0; END IF;
+
+	v_menu := im_menu__new (
+		null,		-- p_menu_id
+		''acs_object'',	-- object_type
+		now(),		-- creation_date
+		null,		-- creation_user
+		null,		-- creation_ip
+		null,		-- context_id
+		''intranet-reporting'', -- package_name
+		''reporting-user-contacts'',	-- label
+		''Users and Contacts'',			-- name
+		''/intranet-reporting/user-contacts'', -- url
+		20,			-- sort_order
+		v_main_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
