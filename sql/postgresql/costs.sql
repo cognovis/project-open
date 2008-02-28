@@ -313,6 +313,6 @@ create table im_costs (
 	planning_type_id	integer
 				constraint im_costs_planning_type_fk
 				references im_categories,
-	description		varchar(4000),
-	note			varchar(4000)
+	description		text,
+	note			text
 );

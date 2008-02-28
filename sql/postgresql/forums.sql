@@ -291,8 +291,8 @@ create table im_forum_topics (
 			constraint im_forum_topics_scope_ck
 			check (scope in ('pm', 'group','public','client','staff','not_client')),
 	-- message content
-	subject		varchar(200) not null,
-	message		varchar(4000),
+	subject		text not null,
+	message		text,
 	-- task and incident specific fields
 	priority	numeric(1,0) default 5,
 	due_date	timestamptz default current_timestamp,

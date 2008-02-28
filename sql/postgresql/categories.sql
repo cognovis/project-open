@@ -110,7 +110,7 @@ create table im_categories (
 				constraint im_categories_pk
 				primary key,
 	category		varchar(50) not null,
-	category_description	varchar(4000),
+	category_description	text,
 	category_type		varchar(50),
 	category_gif		varchar(100) default 'category',
 	enabled_p		char(1) default 't'

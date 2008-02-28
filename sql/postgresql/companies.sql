@@ -194,8 +194,8 @@ create table im_companies (
 	accounting_contact_id   integer
 				constraint im_companies_acc_cont_fk
 				references users,
-	note			varchar(4000),
-	referral_source		varchar(1000),
+	note			text,
+	referral_source		text,
 	annual_revenue_id	integer
 				constraint im_companies_ann_rev_fk
 				references im_categories,
@@ -280,9 +280,9 @@ create table im_offices (
 	contact_person_id	integer 
 				constraint im_offices_cont_per_fk
 				references users,
-	landlord		varchar(4000),
+	landlord		text,
 	--- who supplies the security service, the code for
 	--- the door, etc.
-	security		varchar(4000),
-	note			varchar(4000)
+	security		text,
+	note			text
 );

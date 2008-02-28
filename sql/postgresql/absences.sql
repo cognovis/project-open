@@ -80,8 +80,8 @@ create table im_user_absences (
 				constraint im_user_absences_start_const not null,
 	end_date		timestamptz
 				constraint im_user_absences_end_const not null,
-	description		varchar(4000),
-	contact_info		varchar(4000),
+	description		text,
+	contact_info		text,
 	-- should this user receive email during the absence?
 	receive_email_p		char(1) default 't'
 				constraint im_user_absences_email_const

@@ -120,8 +120,8 @@ create table im_cost_centers (
 	manager_id		integer
 				constraint im_cost_centers_manager_fk
 				references users,
-	description		varchar(4000),
-	note			varchar(4000),
+	description		text,
+	note			text,
 		-- don't allow two cost centers under the same parent
 		constraint im_cost_centers_un
 		unique(cost_center_name, parent_id)
