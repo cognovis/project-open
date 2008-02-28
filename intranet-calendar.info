@@ -18,6 +18,7 @@
         <!-- No dependency information -->
         <provides url="intranet-calendar" version="3.2.7.0.0"/>
         <requires url="calendar" version="2.1.0b6"/>
+	<requires url="intranet-core" version="3.0.0"/>
 
         <callbacks>
         </callbacks>
