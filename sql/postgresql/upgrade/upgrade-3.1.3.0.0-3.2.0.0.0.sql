@@ -55,7 +55,7 @@ begin
 	where table_name = ''IM_COMPONENT_PLUGINS'' and column_name = ''TITLE_TCL'';
 	if v_count > 0 then return 0; end if;
 
-	alter table im_component_plugins add title_tcl varchar(4000);
+	alter table im_component_plugins add title_tcl text;
 
 	return 0;
 end;' language 'plpgsql';
