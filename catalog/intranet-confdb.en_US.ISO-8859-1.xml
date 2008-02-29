@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-confdb" package_version="3.3.0.0.0" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Assoc_Projects">Associated Projects</msg>
+  <msg key="Conf_Item">Conf Item</msg>
+  <msg key="Cost_Center">Cost Center</msg>
+  <msg key="Owner">Owner</msg>
+  <msg key="Project">Project</msg>
+  <msg key="Project_Name">Project Name</msg>
+</message_catalog>
