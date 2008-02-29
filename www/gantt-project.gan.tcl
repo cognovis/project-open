@@ -29,6 +29,15 @@ if {0 == $user_id} {
     set user_id [ad_maybe_redirect_for_registration]
 }
 
+# get the current users permissions for this project
+im_project_permissions $user_id $project_id view read write admin
+if {!$read} { 
+    ad_return_complaint 1 "You don't have permissions to see this page" 
+    ad_script_abort
+}
+
+
+
 # ---------------------------------------------------------------
 # Get information about the project
 # ---------------------------------------------------------------

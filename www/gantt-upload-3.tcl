@@ -14,7 +14,6 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-    { user_id:integer 0 }
     { expiry_date "" }
     { project_id:integer 9689 }
     { security_token "" }
@@ -26,10 +25,17 @@ ad_page_contract {
 # Defaults & Security
 # ---------------------------------------------------------------
 
-#ToDo: Security
-set today [db_string today "select to_char(now(), 'YYYY-MM-DD')"]
-ad_return_top_of_page "[im_header]\n[im_navbar]"
+set user_id [ad_maybe_redirect_for_registration]
+im_project_permissions $user_id $project_id view read write admin
+if {!$write} { 
+    ad_return_complaint 1 "You don't have permissions to see this page" 
+    ad_script_abort
+}
 
+set today [db_string today "select to_char(now(), 'YYYY-MM-DD')"]
+
+
+ad_return_top_of_page "[im_header]\n[im_navbar]"
 
 
 # -------------------------------------------------------------------
