@@ -28,16 +28,16 @@
 
 
 -- Intranet Cost Center Type
-SELECT im_category_new (3001,'Cost Center','','Intranet Cost Center Type');
-SELECT im_category_new (3002,'Profit Center','','Intranet Cost Center Type');
-SELECT im_category_new (3003,'Investment Center','','Intranet Cost Center Type');
-SELECT im_category_new (3004,'Subdepartment','Department without budget responsabilities','Intranet Cost Center Type');
+SELECT im_category_new (3001,'Cost Center','Intranet Cost Center Type');
+SELECT im_category_new (3002,'Profit Center','Intranet Cost Center Type');
+SELECT im_category_new (3003,'Investment Center','Intranet Cost Center Type');
+SELECT im_category_new (3004,'Subdepartment','Intranet Cost Center Type');
 -- reserved until 3099
 
 
 -- Intranet Cost Center Type
-SELECT im_category_new (3101,'Active','','Intranet Cost Center Status');
-SELECT im_category_new (3102,'Inactive','','Intranet Cost Center Status');
+SELECT im_category_new (3101,'Active','Intranet Cost Center Status');
+SELECT im_category_new (3102,'Inactive','Intranet Cost Center Status');
 -- reserved until 3099
 
 
@@ -82,11 +82,11 @@ SELECT im_category_new (3724,'Delivery Note','Intranet Cost Type');
 -- reserved until 3799
 
 -- Establish the super-categories "Provider Documents" and "Customer Documents"
-insert into im_category_hierarchy values (3710,3704);
-insert into im_category_hierarchy values (3710,3706);
-insert into im_category_hierarchy values (3708,3700);
-insert into im_category_hierarchy values (3708,3702);
-insert into im_category_hierarchy values (3708,3724);
+SELECT im_category_hierarchy_new(3704,3710);
+SELECT im_category_hierarchy_new(3706,3710);
+SELECT im_category_hierarchy_new(3700,3708);
+SELECT im_category_hierarchy_new(3702,3708);
+SELECT im_category_hierarchy_new(3724,3708);
 
 
 -- Creating category Cost Status
@@ -107,16 +107,22 @@ SELECT im_category_new (3818,'Rejected','Intranet Cost Status');
 -- Cost Views
 --
 
--- Cost List
---
-insert into im_views (view_id, view_name, visible_for)
-values (220, 'cost_list', 'view_finance');
+
+delete from im_views where view_id = 221;
+delete from im_view_columns where view_id = 221;
 insert into im_views (view_id, view_name, visible_for)
 values (221, 'cost_new', 'view_finance');
 
+-- Cost List
+--
+delete from im_views where view_id = 220;
+delete from im_view_columns where view_id = 220;
+
+insert into im_views (view_id, view_name, visible_for)
+values (220, 'cost_list', 'view_finance');
+
 -- Cost List Page
 --
-delete from im_view_columns where column_id > 22000 and column_id < 22099;
 --
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22001,220,'Name',
