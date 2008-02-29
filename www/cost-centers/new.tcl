@@ -55,7 +55,7 @@ if {![info exists cost_center_id]} { set form_mode "edit" }
 # Build the form
 # ------------------------------------------------------------------
 
-set cost_center_parent_options [im_cost_center_options]
+set cost_center_parent_options [im_cost_center_options -include_empty 1]
 set cost_center_type_options [im_cost_center_type_options]
 set cost_center_status_options [im_cost_center_status_options]
 set manager_options [im_employee_options]
@@ -74,7 +74,7 @@ ad_form \
 	{cost_center_type_id:text(select) {label "Type"} {options $cost_center_type_options} }
 	{cost_center_status_id:text(select) {label "Status"} {options $cost_center_status_options} }
 	{department_p:text(radio) {label Department} {options {{True t} {False f}}} }
-	{parent_id:text(select) {label "Parent Cost Center"} {options $cost_center_parent_options} }
+	{parent_id:text(select),optional {label "Parent Cost Center"} {options $cost_center_parent_options} }
 	{manager_id:text(select),optional {label Manager} {options $manager_options }}
 	{description:text(textarea),optional {label Description} {html {cols 40}}}
 	{note:text(hidden),optional}
