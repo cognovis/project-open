@@ -173,7 +173,12 @@ sort_order) values (22098,220,'Del',
 -- Project Profit & Loss List
 -- The "view_id = 21" entry has already been added in intranet_views.sql
 --
-delete from im_view_columns where column_id > 2100 and column_id < 2199;
+delete from im_view_columns where view_id = 21;
+delete from im_views where view_id = 21;
+
+insert into im_views (view_id, view_name, visible_for, view_type_id)
+values (21, 'project_costs', 'view_projects', 1400);
+
 --
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2101,21,NULL,'Project Nr',
