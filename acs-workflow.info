@@ -24,7 +24,6 @@
 
         <provides url="acs-workflow" version="4.5.3"/>
         <requires url="acs-kernel" version="4.6.2"/>
-        <requires url="acs-mail" version="4.1"/>
         <requires url="notifications" version="4.0"/>
 
         <parameters>
