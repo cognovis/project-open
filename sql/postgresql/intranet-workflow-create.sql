@@ -113,7 +113,7 @@ SELECT im_component_plugin__new (
         null,                           -- context_id
         'Home Workflow Component',      -- plugin_name
         'intranet-workflow',            -- package_name
-        'left',                         -- location
+        'none',                         -- location
         '/intranet/index',              -- page_url
         null,                           -- view_name
         1,                              -- sort_order
@@ -168,7 +168,7 @@ SELECT  im_component_plugin__new (
 	null,					-- context_id
 	'Home Workflow Inbox',			-- plugin_name
 	'intranet-workflow',			-- package_name
-	'right',				-- location
+	'bottom',				-- location
 	'/intranet/index',			-- page_url
 	null,					-- view_name
 	150,					-- sort_order
