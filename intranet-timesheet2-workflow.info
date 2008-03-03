@@ -14,7 +14,10 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Provides a default confirmation workflow for timesheet hours.</description>
 
-        <!-- No dependency information -->
+        <provides url="intranet-timesheet2-workflow" version="3.2.7.0.0"/>
+        <requires url="intranet-core" version="3.2"/>
+        <requires url="intranet-timesheet2" version="3.2"/>
+        <requires url="acs-workflow" version="3.2"/>
 
         <callbacks>
         </callbacks>
