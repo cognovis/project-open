@@ -173,7 +173,7 @@ create or replace function im_material__name (integer)
 returns varchar as '
 declare
 	p_material_id alias for $1;	-- material_id
-	v_name	varchar(40);
+	v_name	varchar;
 begin
 	select	material_nr
 	into	v_name
@@ -191,7 +191,7 @@ create or replace function im_material_nr_from_id (integer)
 returns varchar as '
 DECLARE
         p_id    alias for $1;
-        v_name  varchar(50);
+        v_name  varchar;
 BEGIN
         select m.material_nr
         into v_name
@@ -206,7 +206,7 @@ create or replace function im_material_name_from_id (integer)
 returns varchar as '
 DECLARE
         p_id    alias for $1;
-        v_name  varchar(2000);
+        v_name  varchar;
 BEGIN
         select m.material_name
         into v_name
