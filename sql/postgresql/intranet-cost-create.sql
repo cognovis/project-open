@@ -44,6 +44,7 @@
 \i ../common/intranet-cost-common.sql
 
 
+
 SELECT acs_object_type__create_type (
 		'im_cost_center',	-- object_type
 		'Cost Center',		-- pretty_name
