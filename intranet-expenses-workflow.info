@@ -14,7 +14,9 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Provides a default workflow, allowing the project manager to approve the employee's travel costs</description>
 
-        <!-- No dependency information -->
+        <provides url="intranet-expenses-workflow" version="3.4.0.0.0"/>
+        <requires url="intranet-core" version="3.2"/>
+        <requires url="intranet-expenses" version="3.2"/>
 
         <callbacks>
         </callbacks>
