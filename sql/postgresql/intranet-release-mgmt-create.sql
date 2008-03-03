@@ -212,9 +212,6 @@ VALUES (4599,'Software Release','Intranet Project Type', 't');
 INSERT INTO im_categories (category_id, category, category_type, enabled_p) 
 VALUES (4597,'Software Release Item','Intranet Project Type', 'f');
 
--- Add a first release item as an example, so the list isn't empty
-INSERT INTO im_category_hierarchy(parent_id, child_id)
-VALUES (4597, 85);
 
 ---------------------------------------------------------
 -- DynField to mark release items
