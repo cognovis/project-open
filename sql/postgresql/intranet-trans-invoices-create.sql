@@ -427,7 +427,7 @@ BEGIN
 		end if;
 	end if;
 
-	- Subject Area
+	-- Subject Area
 	if v_price_subject_area_id = v_item_subject_area_id then
 		match_value := match_value + 1;
 	end if;
