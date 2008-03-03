@@ -16,6 +16,8 @@
         <description format="text/plain">Allows a release manager to track the status of several projects or project tasks that make up the specific release.</description>
 
         <provides url="intranet-release-mgmt" version="3.2.11.0.0"/>
+        <requires url="intranet-core" version="3.2"/>
+        <requires url="intranet-dynfield" version="3.2"/>
 
         <callbacks>
         </callbacks>
