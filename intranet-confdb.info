@@ -13,7 +13,9 @@
         <release-date>2007-07-28</release-date>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
 
-        <!-- No dependency information -->
+        <provides url="intranet-confdb" version="3.3.0.0.0"/>
+	<requires url="intranet-core" version="3.0.0"/>
+	<requires url="intranet-cost" version="3.0.0"/>
 
         <callbacks>
         </callbacks>
