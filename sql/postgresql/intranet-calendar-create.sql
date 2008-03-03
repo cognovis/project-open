@@ -443,6 +443,11 @@ SELECT im_component_plugin__new (
 );
 
 
+-- Bug in OpenACS 5.3 calendar component(?)
+update im_component_plugins
+set location = 'none'
+where plugin_name = 'Home Calendar Component';
+
 
 
 ---------------------------------------------------------
