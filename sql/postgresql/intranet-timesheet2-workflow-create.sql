@@ -9,14 +9,6 @@
 
 
 -----------------------------------------------------------
--- Add confirmation object to hours to keep status
---
-alter table im_hours 
-add conf_object_id integer references im_timesheet_conf_objects;
-
-
-
------------------------------------------------------------
 -- Workflow Confirmation Object
 --
 -- Allows to use a workflow to confirm hours between start_date
@@ -107,6 +99,14 @@ create index im_hours_conf_obj_idx on im_hours(conf_object_id);
 
 
 
+-----------------------------------------------------------
+-- Add confirmation object to hours to keep status
+--
+alter table im_hours 
+add conf_object_id integer references im_timesheet_conf_objects;
+
+
+
 
 -----------------------------------------------------------
 -- Privileges
@@ -119,9 +119,6 @@ SELECT acs_privilege__create_privilege(
 	'View Timesheet Conf Objects All'
 );
 SELECT acs_privilege__add_child('admin', 'view_timesheet_conf_all');
-
-
-
 
 
 -----------------------------------------------------------
