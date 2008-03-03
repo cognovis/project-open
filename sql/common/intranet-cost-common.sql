@@ -108,16 +108,15 @@ SELECT im_category_new (3818,'Rejected','Intranet Cost Status');
 --
 
 
-delete from im_views where view_id = 221;
 delete from im_view_columns where view_id = 221;
+delete from im_views where view_id = 221;
 insert into im_views (view_id, view_name, visible_for)
 values (221, 'cost_new', 'view_finance');
 
 -- Cost List
 --
-delete from im_views where view_id = 220;
 delete from im_view_columns where view_id = 220;
-
+delete from im_views where view_id = 220;
 insert into im_views (view_id, view_name, visible_for)
 values (220, 'cost_list', 'view_finance');
 
@@ -166,7 +165,8 @@ insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (22098,220,'Del',
 '"<input type=hidden name=object_type.$cost_id value=$object_type>
 <input type=checkbox name=del_cost value=$cost_id>"',99);
--- commit;
+
+
 
 
 ---------------------------------------------------------
@@ -179,7 +179,9 @@ delete from im_views where view_id = 21;
 insert into im_views (view_id, view_name, visible_for, view_type_id)
 values (21, 'project_costs', 'view_projects', 1400);
 
---
+
+
+
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2101,21,NULL,'Project Nr',
 '"<A HREF=/intranet/projects/view?project_id=$project_id>$project_nr</A>"',
@@ -208,6 +210,25 @@ extra_select, extra_where, sort_order, visible_for) values (2109,21,NULL,'Projec
 '"<A HREF=/intranet/users/view?user_id=$project_lead_id>$lead_name</A>"',
 '','',9,'');
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2110,21,NULL,'Invalid Since',
 '"[string range $cost_cache_dirty 0 9]"','','',10,'');
@@ -216,7 +237,6 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 extra_select, extra_where, sort_order, visible_for) values (2111,21,NULL,'Budget',
 '"$project_budget $project_budget_currency"','','',11,'im_permission $user_id view_budget');
 
-
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2113,21,NULL,'Budget Hours',
 '$project_budget_hours','','',13,'im_permission $user_id view_budget_hours');
@@ -224,7 +244,6 @@ extra_select, extra_where, sort_order, visible_for) values (2113,21,NULL,'Budget
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2114,21,NULL,'Reported Hours',
 '$reported_hours_cache','','',14,'im_permission $user_id view_budget_hours');
-
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2115,21,NULL,'Perc Compl',
@@ -245,7 +264,6 @@ extra_select, extra_where, sort_order, visible_for) values (2134,21,NULL,'Expens
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2135,21,NULL,'Time sheet',
 '$cost_timesheet_logged_cache','','',35,'expr [im_permission $user_id view_finance] && [im_cc_read_p]');
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (2137,21,NULL,'Profit',
