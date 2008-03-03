@@ -115,6 +115,7 @@ if { ![empty_string_p $logo_file]
 	file rename -force [acs_root_dir]/www/sysconf-logo.tmp [acs_root_dir]/www/$logo_path
 	parameter::set_from_package_key -package_key "intranet-core" -parameter "SystemLogo" -value "/$logo_path"
 	parameter::set_from_package_key -package_key "intranet-core" -parameter "SystemLogoLink" -value $logo_url
+	parameter::set_from_package_key -package_key "intranet-core" -parameter "SystemCSS" -value ""
     } err_msg
     ns_write "done<br>\n"
 }
@@ -127,11 +128,11 @@ ns_write "<h2>Profiles</h2>\n";
 
 set subsite_id [ad_conn subsite_id]
 
-array set group_ids {
-    employees        463
-    project_managers 467
-    senior_managers  469
-}
+array set group_ids [list \
+		     employees        [db_string emp "select group_id from groups where group_name = 'Employees'"] \
+		     project_managers [db_string emp "select group_id from groups where group_name = 'Project Managers'"] \
+		     senior_managers  [db_string emp "select group_id from groups where group_name = 'Senior Managers'"] \
+]
 
 foreach i [array names group_ids] {
     ns_write "<li>"
@@ -176,11 +177,6 @@ switch $sector {
 	set install_pt 1
     }
 }
-
-
-set install_pc 1
-set install_pt 1
-
 
 # ---------------------------------------------------------------
 # Disable Consulting Stuff
@@ -454,7 +450,7 @@ if {!$search_pg_installed_p} {
     if {!$tsearch_installed_p} {
 
 	switch $psql_version {
-	    "8.0.1" - "8.0.8" - "8.1.5" - "8.1.8" {
+	    "8.0.1" - "8.0.8" - "8.0.12" - "8.1.5" - "8.1.8" - "8.1.9" - "8.1.11" - "8.2.4" - "8.2.5" {
 		set sql_file "$search_sql_dir/tsearch2.$psql_version.sql"
 		set result ""
 		ns_write "<li>Sourcing $sql_file ...\n"
