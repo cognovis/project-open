@@ -92,7 +92,7 @@ create table im_timesheet_conf_objects (
 
 
 -- Allow duplicate entries - meanwhile
-# create unique index im_timesheet_conf_un_idx on im_timesheet_conf_objects(conf_project_id, conf_user_id, start_date);
+-- create unique index im_timesheet_conf_un_idx on im_timesheet_conf_objects(conf_project_id, conf_user_id, start_date);
 
 
 
