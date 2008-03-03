@@ -6,7 +6,7 @@
 
 
 ---------------------------------------------------------------------------------
--- Confert "Hardware" into Conf Item
+-- Convert "Hardware" into Conf Item
 
 create or replace function inline_0 ()
 returns integer as '
@@ -35,7 +35,7 @@ BEGIN
 		null,			-- p_conf_item_id
 		''im_conf_item'',	-- p_object_type
 		now(),			-- p_creation_date
-		624,			-- p_creation_user
+		0,			-- p_creation_user
 		row.ipaddr,		-- p_creation_ip
 		null,			-- p_context_id
 	

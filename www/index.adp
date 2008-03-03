@@ -14,7 +14,7 @@
 	    <table border=0 cellpadding=0 cellspacing=0>
 	    <tr>
 	      <td class=rowtitle align=center>
-<%= [lang::message::lookup "" intranet-confdb.intranet-core.Filter_Conf_Items "Filter Conf Items"] %>
+<%= [lang::message::lookup "" intranet-confdb.Filter_Conf_Items "Filter Conf Items"] %>
 	      </td>
 	    </tr>
 	    <tr>

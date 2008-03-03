@@ -1,10 +1,25 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <message_catalog package_key="intranet-confdb" package_version="3.3.0.0.0" locale="en_US" charset="ISO-8859-1">
 
+  <msg key="Add_a_new_Conf_Item">Add a new Configuration Item</msg>
   <msg key="Assoc_Projects">Associated Projects</msg>
   <msg key="Conf_Item">Conf Item</msg>
+  <msg key="Conf_Item_Name">Name</msg>
+  <msg key="Conf_Item_Status">Status</msg>
+  <msg key="Conf_Item_Type">Type</msg>
+  <msg key="Conf_Items_Items">Conf Items</msg>
   <msg key="Cost_Center">Cost Center</msg>
+  <msg key="Delete">Delete</msg>
+  <msg key="Domain">Domain</msg>
+  <msg key="Filter_Conf_Items">Filter Configuration Items</msg>
+  <msg key="IP_Address">IP</msg>
+  <msg key="Memory">Memory</msg>
+  <msg key="OS">OS</msg>
+  <msg key="OS_Version">OS Version</msg>
   <msg key="Owner">Owner</msg>
+  <msg key="Processor">Processor</msg>
   <msg key="Project">Project</msg>
   <msg key="Project_Name">Project Name</msg>
+  <msg key="Remove_checked_items">Remove checked items</msg>
+  <msg key="Workgroup">Workgroup</msg>
 </message_catalog>
