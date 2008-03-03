@@ -31,11 +31,6 @@
   at http://sourceforge.net/projects/project-open/ with the name
   "project-open-OpenACS-3.4.0.1.test.tgz". 
 
-  We have choosen this hidden location because we still plan to add
-  functionality before officially releasing V3.4. However, the contained 
-  software has a status mature/production and is in production use at 
-  several customers.
-
   For discussion please see the "Open Discussions" forum at SourceForge.
 
   ______________________________________________________________________
@@ -91,6 +86,7 @@
 	intranet-release-mgmt		FL	ITSM software release mgmt.
 	intranet-reporting		FL	Reporting engine + some reports
 	intranet-reporting-tutorial	FL	Reporting engine tutorial
+	intranet-search-pg		FL	Full-Text search engine
 	intranet-sysconfig		FL	System Configuration Wizard
 	intranet-timesheet2		GPL	Timesheet mgmt.
 	intranet-timesheet2-invoices	FL	Timesheet invoicing wizard
@@ -128,8 +124,8 @@
   "packages" folder of this installer) into the /web/<server>/packages/
   directory of your OpenACS installation.
 
-  Then point your browser to the URL /acs-admin/apm/ and select all
-  "]project-open[ *" packages, except for:
+  Then point your browser to the URL /acs-admin/apm/, choose "Install
+  Packages" and select all "]project-open[ *" packages, except for:
 
   - IMPORTANT: Please don't install the package "intranet-search-pg".
     ]po[ will install this package later due to funky TSearch2 quirks.
@@ -140,21 +136,47 @@
     for IT Services Management (ITSM).
 
 
+  Then proceed as normal. The package manager will possibly select a 
+  number of additional OpenACS packages to install. All dependencies
+  should be satisfied.
+
   ______________________________________________________________________
 
   5. Post-Installation Activities
 
 
-  Then please read thought the "PO-Configuration-Guide" (search Google
-  for "PO-Configuration-Guide filetype:pdf". ]po[ is based on OpenACS, 
-  but we have decided to handle a lot of things differently from OpenACS, 
-  particularly in the are of permissions and GUI interface. The Config
-  guide will help you a lot to understand these differences.
+  Please read thought the "PO-Configuration-Guide" (contained in this
+  installer in the /manuals/ folder) for an overview on configuration
+  tasks.
+  ]po[ is based on OpenACS, but we have decided to handle a lot of things 
+  differently from OpenACS, particularly in the are of permissions and 
+  GUI interface. The config guide will help you a lot to understand these 
+  differences.
 
 
-  6.1. Patch OpenACS:
+  5.1. System Configuration Wizard
 
-  There is exactly one patch required for ]po[ to run on OpenACS 5.3.
+  This  is a wizard that allows you to disable unnecessary functionality
+  in order to get a useful system. To do so, please go to the /intranet/ 
+  URL and click on "Next >>" button in the "System Configuration Wizard" 
+  component. Then select (for an IT consulting company):
+
+	- Business Sector:		Information Technology
+	- Company or Department?:	"Other / Everything"
+	- Simplified or Complete Install?: Complete / Full Installation
+	- Size of your Organization:	Three hierarchical levels
+	- Name and Email:		<whatever you like>
+	- Logo:				<whatever you like>
+	- Trust Model:			<Keep default>
+
+  ]po[ will disable translation specific components and enable the full-text 
+  search engine.
+  Now please restart the server.
+
+
+  5.2. Patch OpenACS:
+
+  There is exactly one patch required for ]po[ to run on OpenACS 5.3.2.
   Please insert the following lines in /acs-templating/tcl/date-procs.tcl
   behind the equivalent "sql_date" and "ansi" sections (line 294).
 
@@ -176,25 +198,6 @@
 		}
 		return "to_timestamp('$value', '$format')"
 	}
-
-
-  6.2. System Configuration Wizard
-
-  There is a wizard that allows you to disable unnecessary functionality
-  in order to get a useful system. To do so, please go to the /intranet/ 
-  URL and click on "Next >>" button in the "System Configuration Wizard" 
-  component. Then select (for an IT consulting company):
-
-	- Business Sector: Information Technology
-	- Company or Department?: "Other / Everything"
-	- Simplified or Complete Install?: Complete / Full Installation
-	- Size of your Organization: Three hierarchical levels
-	- Name and Email: <whatever you like>
-	- Logo: <whatever you like>
-	- Trust Model: <Keep default>
-
-  ]po[ will disable translation specific components and enable the full-text 
-  search engine.
 
 
   5.3. Filestorage Integration
@@ -223,7 +226,7 @@
   ]po[ design suitable for an Intranet.
 
 
-  5.6. Reactivate the ]po[ Calendar:
+  5.6. Reactivate the ]po[ Calendar
 
   The basic OpenACS 5.3.2 installation contains an error in the calendar module.
   For this reason we have disabled the calendar for ]po[ by default.
