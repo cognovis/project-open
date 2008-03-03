@@ -3,13 +3,13 @@
 
 <package key="intranet-search-pg" url="http://openacs.org/repository/apm/packages/intranet-search-pg" type="apm_application">
     <license>]project-open[ Free License (FL)</license>
-    <package-name>]project-open[ PostgreSQL Search (Breaks Backup on PG 7.4.x!)</package-name>
-    <pretty-plural>]project-open[ PostgreSQL Search (Breaks Backup on PG 7.4.x!)</pretty-plural>
+    <package-name>]project-open[ Full-Text Search</package-name>
+    <pretty-plural>]project-open[ Full-Text Search</pretty-plural>
     <initial-install-p>f</initial-install-p>
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-search</auto-mount>
 
-    <version name="3.4.0.0.0" url="http://projop.dnsalias.com/download/apm/intranet-search-pg-3.4.0.0.0.apm">
+    <version name="3.4.0.1.0" url="http://projop.dnsalias.com/download/apm/intranet-search-pg-3.4.0.1.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Adapter for PostgreSQL TSearch2 to index ]project-open[ contents.</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
