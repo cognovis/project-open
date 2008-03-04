@@ -27,6 +27,14 @@ ad_proc -private im_package_workflow_id_helper {} {
     } -default 0]
 }
 
+ad_proc -private im_workflow_url {} {
+    returns "workflow" or "acs-workflow", depending where the
+    acs-workflow module has been mounted.
+} {
+    set urls [util_memoize "db_list urls {select n.name from site_nodes n, apm_packages p where n.object_id = p.package_id and package_key = 'acs-workflow'}"]
+    return [lindex $urls 0]
+}
+
 
 # ----------------------------------------------------------------------
 # Selects & Options
@@ -160,7 +168,7 @@ ad_proc -public im_workflow_home_component {
     set template_path [get_server_root]/$template_file
     set template_path [ns_normalizepath $template_path]
 
-    set package_url "/workflow/"
+    set package_url "/[im_workflow_url]/"
 
     set own_tasks [template::adp_parse $template_path [list package_url $package_url type own]]
     set own_tasks "<h3>[lang::message::lookup "" intranet-workflow.Your_Tasks "Your Tasks"]</h3>\n$own_tasks"
@@ -408,8 +416,8 @@ ad_proc -public im_workflow_graph_component {
 	if {$reassign_p} {
 	    append transition_html "
 		<tr class=rowplain><td colspan=2>
-		<li><a href=[export_vars -base "/workflow/assign-yourself" {task_id return_url}]>[lang::message::lookup "" intranet-workflow.Assign_yourself "Assign yourself"]</a>
-		<li><a href=[export_vars -base "/workflow/task-assignees" {task_id return_url}]>[lang::message::lookup "" intranet-workflow.Assign_somebody_else "Assign somebody else"]</a>
+		<li><a href=[export_vars -base "/[im_workflow_url]/assign-yourself" {task_id return_url}]>[lang::message::lookup "" intranet-workflow.Assign_yourself "Assign yourself"]</a>
+		<li><a href=[export_vars -base "/[im_workflow_url]/task-assignees" {task_id return_url}]>[lang::message::lookup "" intranet-workflow.Assign_somebody_else "Assign somebody else"]</a>
 		</td></tr>
             "
 	}
@@ -482,7 +490,7 @@ ad_proc -public im_workflow_graph_component {
     if {$reassign_p} {
         append assignee_html "
 		<tr class=rowplain><td colspan=2>
-		<li><a href='[export_vars -base "/workflow/case?" {case_id}]'>Debug Case</a>
+		<li><a href='[export_vars -base "/[im_workflow_url]/case?" {case_id}]'>Debug Case</a>
 		<li><a href='[export_vars -base "/intranet-workflow/reset-case?" {return_url project_id {place_key "start"} {action_pretty "restart"}}]'>Reset Case</a>
 		</td></tr>
         "
@@ -766,12 +774,12 @@ ad_proc -public im_workflow_home_inbox_component {
 	set object_url "[im_biz_object_url $object_id "view"]&return_url=[ns_urlencode $return_url]"
 	set owner_url [export_vars -base "/intranet/users/view" {return_url {user_id $owner_id}}]
 	
-	set action_url [export_vars -base "/workflow/task" {return_url task_id}]
+	set action_url [export_vars -base "/[im_workflow_url]/task" {return_url task_id}]
 	set action_link "<a href=$action_url>$next_action_l10n</a>"
 
 	# Don't show the "Action" link if the object is mine...
 	if {"my_object" == $rel} {
-	    set action_link $next_action_l10n
+#	    set action_link $next_action_l10n
 	} 
 
 	# L10ned version of the relationship of the user to the object

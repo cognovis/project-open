@@ -64,7 +64,9 @@
 	    </tr>
 	    <tr>
 	      <td>
+		<ul>
 	        @admin_html;noquote@
+		</ul>
 	      </td>
 	    </tr>
 	    </table>
