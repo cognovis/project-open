@@ -51,10 +51,37 @@ ad_proc -private im_package_helpdesk_id_helper {} {
 
 
 # ----------------------------------------------------------------------
+# Permissions
+# ---------------------------------------------------------------------
+
+ad_proc -public im_ticket_permissions {
+    user_id 
+    ticket_id 
+    view_var 
+    read_var 
+    write_var 
+    admin_var
+} {
+    Fill the "by-reference" variables read, write and admin
+    with the permissions of $user_id on $ticket_id
+} {
+    upvar $view_var view
+    upvar $read_var read
+    upvar $write_var write
+    upvar $admin_var admin
+
+    set view 1
+    set read 1
+    set write 1
+    set admin 1
+}
+
+
+# ----------------------------------------------------------------------
 # Components
 # ---------------------------------------------------------------------
 
-ad_proc -public im_tickets_project_component {
+ad_proc -public im_ticket_project_component {
     -object_id
 } {
     Returns a HTML component to show all project tickets related to a project
