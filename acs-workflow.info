@@ -3,11 +3,11 @@
 
 <package key="acs-workflow" url="http://www.arsdigita.com/acs-repository/apm/packages/acs-workflow/" type="apm_application">
     <license>GPL V2.0 or any later version</license>
-    <package-name>Workflow Service (Petri Nets)</package-name>
-    <pretty-plural>Workflows Services (Petri Nets)</pretty-plural>
+    <package-name>Petri-Net Workflow</package-name>
+    <pretty-plural>Petri-Net Workflow</pretty-plural>
     <initial-install-p>f</initial-install-p>
     <singleton-p>t</singleton-p>
-    <auto-mount>workflow</auto-mount>
+    <auto-mount>acs-workflow</auto-mount>
 
     <version name="4.5.3" url="http://www.openacs.org/repository/download/apm/acs-workflow-4.5.3.apm">
     <database-support>
@@ -18,7 +18,7 @@
         <owner url="mailto:k2pts@yahoo.com">Neophytos Demetriou</owner>
         <owner url="mailto:danw@rtp.ericsson.se">Daniel Wickstrom</owner>
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
-        <summary>Provides generic workflow management features to all ACS objects.</summary>
+        <summary>Provides Petri-Net workflow management features to all ACS objects.</summary>
         <release-date>2002-05-15</release-date>
         <vendor url="http://www.openacs.org/">OpenACS</vendor>
 
