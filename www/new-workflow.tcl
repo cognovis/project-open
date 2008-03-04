@@ -139,7 +139,7 @@ if {self_assign_first_task_p} {
 
     # Where to go now?
     if {"" == $return_url} {
-	set return_url [export_vars -base "/workflow/task" {task_id}]
+	set return_url [export_vars -base "/[im_workflow_url]/task" {task_id}]
     }
 
 }
