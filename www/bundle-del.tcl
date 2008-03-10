@@ -45,8 +45,8 @@ foreach id $bundle_id {
 		)
 	"
 	db_dml del_workflows "
-	        delete from wf_cases wfc
-		where wfc.object_id = :id
+	        delete from wf_cases
+		where object_id = :id
 	"
 
 	db_string del_expense_bundle {}
