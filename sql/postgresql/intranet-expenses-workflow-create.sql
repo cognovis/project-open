@@ -8,11 +8,15 @@
 -- @author frank.bergmann@project-open.com
 
 
+-- Import default workflow for expense approval
+\i workflow-expense_approval_wf-create.sql
+
+
+
 -- Add new workflow states to costs.
 -- These may also be used outside of this module though...
 select im_category_new(3816, 'Requested', 'Intranet Cost Status');
 select im_category_new(3818, 'Rejected', 'Intranet Cost Status');
-
 
 
 
