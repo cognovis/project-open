@@ -72,7 +72,7 @@ ad_proc -public im_timesheet_workflow_spawn_update_workflow {
 
 	    # Mark all hours in the included conf_obj as included
 	    db_dml update_hours "
-		update	im_hours hh
+		update	im_hours
 		set	conf_object_id = :conf_object_id
 		from	(
 		    	select	h.*
@@ -88,9 +88,9 @@ ad_proc -public im_timesheet_workflow_spawn_update_workflow {
 				h.user_id = :wf_user_id
 			) h
 		where
-			hh.day = h.day and
-			hh.user_id = h.user_id and
-			hh.project_id = h.project_id
+			im_hours.day = h.day and
+			im_hours.user_id = h.user_id and
+			im_hours.project_id = h.project_id
 	    "
 
 
