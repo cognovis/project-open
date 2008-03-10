@@ -37,11 +37,11 @@ foreach id $bundle_id {
 		where bundle_id = :id
 	"
 	db_dml del_tokens "
-	        delete	from wf_tokens wft
-		where	wft.case_id in (
-			select	wfc.case_id
-			from 	wf_cases wfc
-		      	where	wfc.object_id = :id
+	        delete	from wf_tokens
+		where	case_id in (
+				select	wfc.case_id
+				from 	wf_cases wfc
+		      		where	wfc.object_id = :id
 		)
 	"
 	db_dml del_workflows "
