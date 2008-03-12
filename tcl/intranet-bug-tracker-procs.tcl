@@ -90,9 +90,14 @@ ad_proc -public im_bt_project_options {
     set user_id [ad_get_user_id]
     set options [db_list_of_lists project_options "
 	select
-		p.project_id,
-		p.project_name,
-                pp.project_name AS parent_name
+            case when pp.project_name is null
+                then
+                    p.project_name
+                else
+                    pp.project_name || ' : ' ||
+                    p.project_name
+                end  AS name,
+                p.project_id
 	from
 		im_projects p LEFT JOIN im_projects pp ON (
                   p.parent_id = pp.project_id
