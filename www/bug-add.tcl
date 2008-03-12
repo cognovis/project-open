@@ -65,7 +65,7 @@ ad_form -name bug -cancel_url $return_url -form {
 }
 
 
-set tmp [im_bt_project_options_form]
+set tmp [im_bt_project_options]
 
 if {$tmp == ""} {
     ad_form -extend -name bug -form {
@@ -78,7 +78,7 @@ if {$tmp == ""} {
     ad_form -extend -name bug -form {
 	{bug_container_project_id:integer(select)
 	    {label "Project"}
-	    {options {[im_bt_project_options_form]}}
+	    {options {[im_bt_project_options]}}
 	    {values $bug_container_project_id}
 	}
     }
