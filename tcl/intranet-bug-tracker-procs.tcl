@@ -99,7 +99,7 @@ ad_proc -public im_bt_project_options {
                 ),
 		acs_rels r
 	where
-		p.project_type_id = [im_project_type_bt_container]
+		p.project_type_id in ([join [im_sub_categories [im_project_type_bt_container]] ","])
 		and r.object_id_one = p.project_id
 		and r.object_id_two = :user_id
     "]
