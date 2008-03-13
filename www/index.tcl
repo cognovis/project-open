@@ -33,6 +33,76 @@ set context ""
 # Get the list and status of all indexed files 
 # ------------------------------------------------------
 
+set list_id "biz_objects"
+set export_var_list [list]
+set bulk_actions_list [list]
+
+template::list::create \
+    -name $list_id \
+    -multirow biz_objects_multirow \
+    -key object_id \
+    -bulk_actions $bulk_actions_list \
+    -bulk_action_export_vars { file_id } \
+    -row_pretty_plural "[_ intranet-core.File]" \
+    -elements {
+	object_type_pretty {
+	    label "Type"
+	}
+	object_name {
+	    label "Object"
+	    link_url_eval $object_url
+	}
+	indexed_objects {
+	    label "Indexed<br>Objects"
+	}
+	last_update_pretty {
+	    label "Last Indexed"
+	}
+	reindex {
+	    label "Reindex"
+	    link_url_eval $object_reindex_url
+	}
+    }
+
+db_multirow -extend { object_url object_reindex_url reindex } biz_objects_multirow biz_objects_query "
+	select	o.*,
+		ou.url as object_base_url,
+		ot.pretty_name as object_type_pretty,
+		acs_object__name(o.object_id) as object_name,
+		to_char(bo.last_update, 'YYYY-MM-DD HH24:MI') as last_update_pretty,
+		(
+			select	count(*) 
+			from	im_search_objects so
+			where	so.biz_object_id = bo.object_id
+				and so.object_type_id = 6
+		) as indexed_objects
+	from	im_search_pg_file_biz_objects bo,
+		acs_objects o,
+		acs_object_types ot
+		LEFT OUTER JOIN (
+			select	*
+			from	im_biz_object_urls
+			where	url_type = 'view'
+		) ou ON (ot.object_type = ou.object_type)
+	where
+		bo.object_id = o.object_id
+		and o.object_type = ot.object_type
+	order by
+		o.object_type
+" {
+	set object_url "$object_base_url$object_id"
+	if {"" == $object_base_url} { set object_url "" }
+
+	set reindex "Reindex"
+	set return_url [im_url_with_query]
+	set object_reindex_url [export_vars -base "/intranet-search-pg-files/reindex-biz-object" {object_id return_url}]
+}
+
+
+# ------------------------------------------------------
+# Get the list and status of all indexed files 
+# ------------------------------------------------------
+
 set list_id "file_list"
 set export_var_list [list]
 set bulk_actions_list [list]

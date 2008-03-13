@@ -130,15 +130,19 @@ ad_proc -public intranet_search_pg_files_fti_content {
 
 ad_proc -public intranet_search_pg_files_index_object {
     -object_id
+    {-debug 1}
 } {
     Index the files of a single object such as a project, company or user.
-    Returns the number of new files.
+    Returns the number of new files + a list of error messages as a list
 } {
-    # Disable Debugging
-    set debug 0
+    # List of errors to be returned
+    set error_list [list]
+    lappend error_list "intranet_search_pg_files_index_object: starting to index object_id=$object_id"
+    lappend error_list "intranet_search_pg_files_index_object: "
 
     # Should we index the contents of the files?
     set fti_contents_enabled_p [parameter::get_from_package_key -package_key intranet-search-pg-files -parameter IndexFileContentsP -default 0]
+    lappend error_list "intranet_search_pg_files_index_object: fti_contents_enabled_p=$fti_contents_enabled_p"
 
     set object_type [db_string otype "
 	select object_type 
@@ -146,7 +150,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 	where object_id = :object_id
     " -default ""]
 
-    ns_log Notice "im_ftio($object_type, $object_id)"
+    lappend error_list "im_ftio($object_type, $object_id)"
     if {"" == $object_type} { 
 	# It's possible that the object has been deleted,
 	# so delete the entry from the queue.
@@ -156,7 +160,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 		delete from im_search_pg_file_biz_objects 
 		where object_id = :object_id
 	"
-	return 0 
+	return [list 0 $error_list]
     }
 
     set admin_user_id [im_sysadmin_user_default]
@@ -169,10 +173,11 @@ ad_proc -public intranet_search_pg_files_index_object {
 	im_company { set home_path [im_filestorage_company_path $object_id] }
 	user { set home_path [im_filestorage_user_path $object_id] }
 	default { 
-	    ns_log Error "im_ftio($object_id): Unknown object type: '$object_type'" 
-	    return 0
+	    lappend error_list "im_ftio($object_id): Unknown object type: '$object_type'" 
+	    return [list 0 $error_list]
 	}
     }
+    lappend error_list "im_ftio: home_path=$home_path"
 
     # Read all files associated with the current objects
     # into an array for quick comparison:
@@ -188,11 +193,14 @@ ad_proc -public intranet_search_pg_files_index_object {
 		ff.object_id = :object_id
 		and ff.folder_id = f.folder_id
     "
+    set ofiles {}
     db_foreach all_files $all_files_sql {
 	set key "$folder_path/$filename"
 	set last_modified($key) $db_last_modified
-	ns_log Notice "im_ftio: db_last_modified = $db_last_modified, path='$folder_path/$filename'"
+	lappend error_list "im_ftio: file=$key, db_last_modified=$db_last_modified"
+	lappend ofiles $key
     }
+    lappend error_list "im_ftio: existing files: $ofiles"
 
 
     set home_path_len [expr [string length $home_path] + 1]
@@ -202,15 +210,15 @@ ad_proc -public intranet_search_pg_files_index_object {
 	set file_list [exec $find_cmd $home_path -type f -printf "%h/%f\t%T@\n"]
 	set files [lsort [split $file_list "\n"]]
     } errmsg]} {
-	ns_log Notice "Unable to get list of files for '$home_path':\n$errmsg"
-	return 0
+	lappend error_list "im_ftio: Unable to get list of files for '$home_path':\n$errmsg"
+	return [list 0 $error_list]
     }
 
     # Go through the list of all files on the hard disk:
     set file_ctr 0
     foreach file_entry $files {
 
-	ns_log Notice "im_ftio: $file_entry"
+	lappend error_list "im_ftio: $file_entry"
 	# Split the file_entry into file_path and file_last_modified
 	# Remove the "home_path" from the returned value
 	# Split the remaining path into folder path and file body
@@ -230,14 +238,14 @@ ad_proc -public intranet_search_pg_files_index_object {
 	}
 	
 	if {$debug} {
-	    ns_log Notice "im_ftio: filename=$filename"
-	    ns_log Notice "im_ftio: file_path=$file_path"
-	    ns_log Notice "im_ftio: pieces=$pieces"
-	    ns_log Notice "im_ftio: body=$body"
-	    ns_log Notice "im_ftio: folder_path=$folder_path"
-	    ns_log Notice "im_ftio: path_sql=$path_sql"
-	    ns_log Notice "im_ftio: file_last_modified=$file_last_modified"
-	    ns_log Notice "im_ftio: db_last_modified=$db_last_modified"
+	    lappend error_list "im_ftio: filename=$filename"
+	    lappend error_list "im_ftio: file_path=$file_path"
+	    lappend error_list "im_ftio: pieces=$pieces"
+	    lappend error_list "im_ftio: body=$body"
+	    lappend error_list "im_ftio: folder_path=$folder_path"
+	    lappend error_list "im_ftio: path_sql=$path_sql"
+	    lappend error_list "im_ftio: file_last_modified=$file_last_modified"
+	    lappend error_list "im_ftio: db_last_modified=$db_last_modified"
 	}
 
 	# Remember that the file exists, so that we can delete the
@@ -249,12 +257,12 @@ ad_proc -public intranet_search_pg_files_index_object {
 	# Skip adding the file to the database if the modified
 	# date is still the same...
 	if {$db_last_modified == $file_last_modified} { 
-	    ns_log Notice "im_ftio: last_modfied not changed: $db_last_modified"
+	    lappend error_list "im_ftio: last_modfied not changed: $db_last_modified"
 	    continue 
 	} 
 	
 	# ------------------ File has changed - Update DB ----------------------
-	ns_log Notice "im_ftio: last_modfied changed: db:$db_last_modified - file:$file_last_modified"
+	lappend error_list "im_ftio: last_modfied changed: db:$db_last_modified - file:$file_last_modified"
 
 	# Determine the file content. Not all companies need the contents
 	# indexed. In particular, translation companies only need the file
@@ -282,7 +290,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 	# Create the folder if it doesn't exist yet
 	if {!$folder_id} {
 	    set folder_id [db_nextval im_fs_folder_seq]
-	    ns_log Notice "im_ftio: new folder_id=$folder_id"
+	    lappend error_list "im_ftio: new folder_id=$folder_id"
 	    db_dml insert_folder_sql "
 		insert into im_fs_folders (
 			folder_id, object_id, path
@@ -291,7 +299,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 		)
 	    "
 	}
-	ns_log Notice "im_ftio: folder_id=$folder_id"
+	lappend error_list "im_ftio: folder_id=$folder_id"
 
 	# Check if file exists
 	set file_id [db_string file_id "
@@ -318,7 +326,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 			:fti_content
 		)
             "
-	    ns_log Notice "im_ftio: insert: file_id=$file_id"
+	    lappend error_list "im_ftio: insert: file_id=$file_id"
 
 	} else {
 
@@ -330,7 +338,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 			fti_content = :fti_content
 		where file_id = :file_id
 	    "
-	    ns_log Notice "im_ftio: update: file_id=$file_id, file_last_modified=$file_last_modified"
+	    lappend error_list "im_ftio: update: file_id=$file_id, file_last_modified=$file_last_modified"
 
 	}
 
@@ -344,14 +352,14 @@ ad_proc -public intranet_search_pg_files_index_object {
 
     # ------------------ Check if file have disappreared ----------------------
     # In this case we need to delete the entries from the DB...
-#   ns_log Notice "im_ftio: last_modified: '[array get file_exists]'"
+#   lappend error_list "im_ftio: last_modified: '[array get file_exists]'"
     foreach filename [array names last_modified] {
 
 	if {![info exists file_exists($filename)]} {
 
 	    # The filename is present in the DB, but not on disk anymore
 	    # => Delete the DB-entry
-	    ns_log Notice "im_ftio: del: doesn't exist in the FS: '$filename'"
+	    lappend error_list "im_ftio: del: doesn't exist in the FS: '$filename'"
 
 	    # Split the remaining path into folder path and file body
 	    set pieces [split $filename "/"]
@@ -381,7 +389,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 
     }
 
-    return $file_ctr
+    return [list $file_ctr $error_list]
 }
 
 
@@ -502,7 +510,8 @@ ad_proc intranet_search_pg_files_search_indexer {
 	    set ctr 0
 	    db_foreach oldest_objects $oldest_object_sql {
 	
-		set nfiles [intranet_search_pg_files_index_object -object_id $search_object_id]
+		set result [intranet_search_pg_files_index_object -object_id $search_object_id]
+		set nfiles [lindex $result 0]
 		
 		# Mark the last object as the last object...
 		db_dml update_oldest_object "

@@ -6,3 +6,6 @@
 
 <listtemplate name=file_list></listtemplate>
 
+
+<listtemplate name=biz_objects></listtemplate>
+
