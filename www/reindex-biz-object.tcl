@@ -29,7 +29,18 @@ if {!$user_is_admin_p} {
 
 set errors [list]
 foreach oid $object_id {
-    set result [intranet_search_pg_files_index_object -object_id $oid]
+
+    # Reset the "last_modified"
+    db_dml invalidate "
+	update	im_fs_files set last_modified = '0'
+	where	folder_id in (
+			select	folder_id
+			from	im_fs_folders
+			where	object_id = :oid
+		)
+    "
+
+    set result [intranet_search_pg_files_index_object -object_id $oid -debug 1]
     set err [lindex $result 1]
     foreach e $err { lappend errors $e}
 }

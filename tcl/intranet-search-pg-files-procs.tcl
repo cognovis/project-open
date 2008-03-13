@@ -51,7 +51,7 @@ ad_proc -public intranet_search_pg_files_fti_content {
     # the ending could be ".doc.bz2.LCK"
     set file_ext "unknown"
     if {[regexp {\.([a-z]+)$} $lower_filename match match_file_ext]} {
-	set file_ext $ match_file_ext
+	set file_ext $match_file_ext
     }
 
     # Fun with encoding - We may encounter files encoded using
@@ -214,6 +214,8 @@ ad_proc -public intranet_search_pg_files_index_object {
 	return [list 0 $error_list]
     }
 
+    lappend error_list "im_ftio: file_list=$file_list"
+
     # Go through the list of all files on the hard disk:
     set file_ctr 0
     foreach file_entry $files {
@@ -237,7 +239,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 	    set db_last_modified $last_modified($db_last_modified_key)
 	}
 	
-	if {$debug} {
+	if {0 && $debug} {
 	    lappend error_list "im_ftio: filename=$filename"
 	    lappend error_list "im_ftio: file_path=$file_path"
 	    lappend error_list "im_ftio: pieces=$pieces"
@@ -257,7 +259,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 	# Skip adding the file to the database if the modified
 	# date is still the same...
 	if {$db_last_modified == $file_last_modified} { 
-	    lappend error_list "im_ftio: last_modfied not changed: $db_last_modified"
+	    lappend error_list "im_ftio: last_modfied did not change - skipping: $db_last_modified"
 	    continue 
 	} 
 	
@@ -271,11 +273,19 @@ ad_proc -public intranet_search_pg_files_index_object {
 	set fti_content ""
 	if {$fti_contents_enabled_p} {
 
-	    if {[catch {
+	    if {$debug > 0} {
+
 		set fti_content [intranet_search_pg_files_fti_content $filename]
-	    } errmsg]} {
-		set fti_content "Error parsing '$filename': '$errmsg'"
+
+	    } else {
+
+		if {[catch {
+		    set fti_content [intranet_search_pg_files_fti_content $filename]
+		} errmsg]} {
+		    set fti_content "Error parsing '$filename': '$errmsg'"
+		}
 	    }
+	    lappend error_list "im_ftio: fti_content=$fti_content"
 
 	}
 

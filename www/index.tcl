@@ -29,20 +29,23 @@ set page_title "Full-Text Index Status"
 set context_bar [im_context_bar $page_title]
 set context ""
 
+set return_url [im_url_with_query]
+
 # ------------------------------------------------------
 # Get the list and status of all indexed files 
 # ------------------------------------------------------
 
 set list_id "biz_objects"
 set export_var_list [list]
-set bulk_actions_list [list]
+set bulk_actions_list [list Reindex reindex-biz-object]
 
 template::list::create \
     -name $list_id \
     -multirow biz_objects_multirow \
     -key object_id \
     -bulk_actions $bulk_actions_list \
-    -bulk_action_export_vars { file_id } \
+    -bulk_action_export_vars { return_url } \
+    -bulk_action_method POST \
     -row_pretty_plural "[_ intranet-core.File]" \
     -elements {
 	object_type_pretty {
@@ -57,10 +60,6 @@ template::list::create \
 	}
 	last_update_pretty {
 	    label "Last Indexed"
-	}
-	reindex {
-	    label "Reindex"
-	    link_url_eval $object_reindex_url
 	}
     }
 
