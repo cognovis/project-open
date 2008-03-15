@@ -34,6 +34,9 @@ where object_type = 'im_ticket';
 
 SELECT im_category_new(101, 'Ticket', 'Intranet Project Type');
 
+-- Create a new profile
+select im_create_profile ('Helpdesk','helpdesk');
+
 
 create sequence im_ticket_seq;
 
@@ -93,6 +96,11 @@ select acs_privilege__add_child('admin', 'view_tickets_all');
 select acs_privilege__create_privilege('add_tickets','Add new Conf Items','');
 select acs_privilege__add_child('admin', 'add_tickets');
 
+select acs_privilege__create_privilege('edit_ticket_status','Add new Conf Items','');
+select acs_privilege__add_child('admin', 'edit_ticket_status');
+
+
+
 select im_priv_create('view_tickets_all', 'P/O Admins');
 select im_priv_create('view_tickets_all', 'Senior Managers');
 select im_priv_create('view_tickets_all', 'Project Managers');
@@ -103,6 +111,8 @@ select im_priv_create('add_tickets', 'Senior Managers');
 select im_priv_create('add_tickets', 'Project Managers');
 select im_priv_create('add_tickets', 'Employees');
 
+select im_priv_create('edit_ticket_status', 'P/O Admins');
+select im_priv_create('edit_ticket_status', 'Senior Managers');
 
 
 
@@ -218,12 +228,6 @@ end;' language 'plpgsql';
 -- 33000-33999	reserved (1000)
 -- 34000-34999	reserved (1000)
 -- 35000-39999  reserved (5000)
-
-
--- new ticket type for helpdesk
-im_category_new(101, 'Ticket', 'Intranet Project Type');
-
-
 
 
 -- 30100-30199	Intranet Ticket Type
@@ -452,8 +456,8 @@ drop function inline_0 ();
 
 
 
-delete from im_views where view_id = 270;
 delete from im_view_columns where view_id = 270;
+delete from im_views where view_id = 270;
 insert into im_views (view_id, view_name, visible_for, view_type_id)
 values (270, 'ticket_list', 'view_tickets', 1400);
 
@@ -588,6 +592,15 @@ SELECT im_dynfield_widget__new (
 );
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_assignee_id', 'Assignee', 'ticket_assignees', 'integer', 'f');
 
+
+-- ticket_note
+--        p_object_type           alias for $1;
+--        p_column_name           alias for $2;
+--        p_pretty_name           alias for $3;
+--        p_widget_name           alias for $4;
+--        p_datatype              alias for $5;
+--        p_required_p            alias for $6;
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_note', 'Note', 'textarea_small', 'string', 'f');
 
 
 --	ticket_sla_id                   integer

@@ -9,7 +9,7 @@
   <div class="general-message">@message@</div>
 </if>
 
-<if @form_mode@ eq "display" >
+<if @show_components_p@>
       <%= [im_component_bay top] %>
 </if>
 <table width="100%">
@@ -18,18 +18,18 @@
       <%= [im_box_header $page_title] %>
       <formtemplate id="ticket"></formtemplate></font>
       <%= [im_box_footer] %>
-	<if @form_mode@ eq "display" >
+	<if @show_components_p@>
 	      <%= [im_component_bay left] %>
 	</if>
     </td>
     <td width="50%">
-	<if @form_mode@ eq "display" >
+	<if @show_components_p@>
 	      <%= [im_component_bay right] %>
 	</if>
     </td>
   </tr>
 </table>
 
-<if @form_mode@ eq "display" >
+<if @show_components_p@>
       <%= [im_component_bay bottom] %>
 </if>

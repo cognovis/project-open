@@ -255,6 +255,7 @@ set sql "
 			im_name_from_user_id(t.ticket_assignee_id) as ticket_assignee,
 	                p.*,
 	                to_char(p.start_date, 'YYYY-MM-DD') as start_date_formatted,
+	                to_char(p.end_date, 'YYYY-MM-DD') as end_date_formatted,
 			ci.*,
 			c.company_name,
 			sla.project_id as sla_id,
