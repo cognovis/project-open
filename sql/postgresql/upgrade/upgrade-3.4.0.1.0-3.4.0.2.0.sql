@@ -19,7 +19,10 @@ DECLARE
 BEGIN
 	select	widget_id into v_widget_id from im_dynfield_widgets
 	where	widget_name = p_widget_name;
-	IF v_widget_id is null THEN return 1; END IF;
+	IF v_widget_id is null THEN 
+		RAISE NOTICE ''im_dynfield_attribute_new: Did not find widget %s.'',p_widget_name;
+		return 1; 
+	END IF;
 
 -- fraber 080315: Disabled. The acs_attribute is generated later
 --	select	attribute_id into v_dynfield_id from acs_attributes
