@@ -58,7 +58,7 @@ create table im_tickets (
 					references im_categories,
 	ticket_prio_id			integer
 					constraint im_ticket_prio_fk
-					references persons,
+					references im_categories,
 	ticket_customer_contact_id	integer
 					constraint im_ticket_customr_contact_fk
 					references persons,
@@ -359,8 +359,7 @@ where	category_type = 'Intranet Ticket Type'
 -----------------------------------------------------------
 -- Component Plugin
 --
--- Create a Helpdesk plugin for the ProjectViewPage.
-
+-- Forum component on the ticket page itself
 
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
@@ -377,6 +376,50 @@ SELECT im_component_plugin__new (
 	10,				-- sort_order
 	'im_forum_full_screen_component -object_id $ticket_id'	-- component_tcl
 );
+
+
+
+-- ------------------------------------------------------
+-- Workflow graph on Absence View Page
+
+SELECT  im_component_plugin__new (
+	null,					-- plugin_id
+	'acs_object',				-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+
+	'Absence Workflow',			-- component_name
+	'intranet-timesheet2',			-- package_name
+	'right',				-- location
+	'/intranet-timesheet2/absences/new',	-- page_url
+	null,					-- view_name
+	10,					-- sort_order
+	'im_workflow_graph_component -object_id $absence_id'
+);
+
+
+-- ------------------------------------------------------
+-- Journal on Absence View Page
+
+SELECT  im_component_plugin__new (
+	null,					-- plugin_id
+	'acs_object',				-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+
+	'Absence Journal',			-- component_name
+	'intranet-timesheet2',			-- package_name
+	'bottom',				-- location
+	'/intranet-timesheet2/absences/new',	-- page_url
+	null,					-- view_name
+	100,					-- sort_order
+	'im_workflow_journal_component -object_id $absence_id'
+);
+
 
 
 -----------------------------------------------------------
@@ -464,9 +507,9 @@ values (270, 'ticket_list', 'view_tickets', 1400);
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (27000,270,00, 'Prio','"$ticket_prio"');
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27010,270,10, 'Nr','"<a href=/intranet-helpdesk/new?ticket_id=$ticket_id>$project_nr</a>"');
+(27010,270,10, 'Nr','"<a href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_nr</a>"');
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27020,270,20,'Name','"<href=/intranet-helpdesk/new?ticket_id=$ticket_id>$project_name</A>"');
+(27020,270,20,'Name','"<href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_name</A>"');
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (27025,270,25,'Queue','"<href=/intranet-helpdesk/queue/?queue_id=$ticket_queue_id>$ticket_queue_name</A>"');
 

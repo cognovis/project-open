@@ -37,7 +37,8 @@
     <querytext>
 	update im_tickets set
 		ticket_type_id		= :ticket_type_id,
-		ticket_status_id	= :ticket_status_id
+		ticket_status_id	= :ticket_status_id,
+		ticket_customer_contact_id = :ticket_customer_contact_id
 	where
 		ticket_id = :ticket_id;
     </querytext>

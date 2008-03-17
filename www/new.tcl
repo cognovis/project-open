@@ -15,6 +15,7 @@ ad_page_contract {
     { ticket_status_id "[im_ticket_status_open]" }
     { return_url "/intranet-helpdesk/" }
     { vars_from_url ""}
+    form_mode:optional
 }
 
 
@@ -28,13 +29,17 @@ set focus "ticket.var_name"
 set page_title [lang::message::lookup "" intranet-helpdesk.New_Ticket "New Ticket"]
 set context [list $page_title]
 
+if {"edit" == [template::form::get_action ticket]} { set form_mode "edit" }
+
+
 if {![info exists ticket_id]} { set form_mode "edit" }
-if {![info exists form_mode]} { set form_mode "" }
+if {![info exists form_mode]} { set form_mode "display" }
 
 set edit_ticket_status_p [im_permission $current_user_id edit_ticket_status]
 
 # Show the ADP component plugins?
-set show_components_p 0
+set show_components_p 1
+if {"edit" == $form_mode} { set show_components_p 0 }
 
 # Can the currrent user create new helpdesk customers?
 set user_can_create_new_customer_p 1
@@ -59,7 +64,7 @@ if {"delete" == $button_pressed} {
 # ------------------------------------------------------------------
 
 set actions [list]
-set actions [list {"Edit" edit} {"asdf" asdf} ]
+set actions [list {"Edit" edit}]
 
 if {[im_permission $current_user_id add_tickets]} {
     lappend actions {"Delete" delete}
@@ -73,6 +78,9 @@ if {[im_permission $current_user_id add_tickets]} {
 set elements [list]
 lappend elements ticket_id:key
 lappend elements {ticket_name:text(text) {label "[lang::message::lookup {} intranet-helpdesk.Name {Title}]"} {html {size 50}}}
+lappend elements {ticket_nr:text(hidden),optional }
+lappend elements {start_date:date(hidden),optional }
+lappend elements {end_date:date(hidden),optional }
 
 # ---------------------------------------------
 # Customer
@@ -233,7 +241,10 @@ ad_form -extend -name ticket -on_request {
 } -select_query {
 
 	select	t.*,
-		p.*
+		p.*,
+		p.project_name as ticket_name,
+		p.project_nr as ticket_nr,
+		p.company_id as ticket_customer_id
 	from	im_projects p,
 		im_tickets t
 	where	p.project_id = t.ticket_id and
@@ -247,6 +258,8 @@ ad_form -extend -name ticket -on_request {
     set start_date_sql [template::util::date get_property sql_date $start_date]
     set end_date_sql [template::util::date get_property sql_timestamp $end_date]
 
+    db_transaction {
+
 	db_string ticket_insert {}
 	db_dml ticket_update {}
 	db_dml project_update {}
@@ -254,8 +267,6 @@ ad_form -extend -name ticket -on_request {
 	# Write Audit Trail
 	im_project_audit $ticket_id
 
-
-    db_transaction {
     } on_error {
 	ad_return_complaint 1 "<b>Error inserting new ticket</b>:
 	<pre>$errmsg</pre>"
@@ -263,12 +274,18 @@ ad_form -extend -name ticket -on_request {
 
 } -edit_data {
 
-    edit_set ticket_nr [string tolower $ticket_nr]
+    set ticket_nr [string tolower $ticket_nr]
+    if {"" == $ticket_nr} { set ticket_nr [db_nextval im_ticket_seq] }
     set start_date_sql [template::util::date get_property sql_date $start_date]
     set end_date_sql [template::util::date get_property sql_timestamp $end_date]
 
     db_dml ticket_update {}
     db_dml project_update {}
+
+    im_dynfield::attribute_store \
+	-object_type "im_ticket" \
+	-object_id $ticket_id \
+	-form_id ticket
 
     # Write Audit Trail
     im_project_audit $ticket_id
@@ -290,7 +307,7 @@ ad_form -extend -name ticket -on_request {
 }
 
 # ---------------------------------------------------------------
-# Project Menu
+# Ticket Menu
 # ---------------------------------------------------------------
 
 # Setup the subnavbar
@@ -300,11 +317,10 @@ if {[info exists ticket_id]} {
     ns_set put $bind_vars ticket_id $ticket_id
 }
 
-set project_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
+set ticket_menu_id [db_string parent_menu "select menu_id from im_menus where label='ticket'" -default 0]
 set sub_navbar [im_sub_navbar \
     -components \
     -base_url "/intranet-helpdesk/" \
-    $project_menu_id \
-    $bind_vars "" "pagedesriptionbar" "project_timesheet_ticket"] 
-
+    $ticket_menu_id \
+    $bind_vars "" "pagedesriptionbar" "ticket_timesheet_ticket"] 
 
