@@ -9,7 +9,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-reporting-dashboard</auto-mount>
 
-    <version name="3.4.0.0.0" url="http://projop.dnsalias.com/download/apm/intranet-reporting-dashboard-3.4.0.0.0.apm">
+    <version name="3.4.0.1.0" url="http://projop.dnsalias.com/download/apm/intranet-reporting-dashboard-3.4.0.1.0.apm">
 
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Shows a number of indicators about the company</summary>
