@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-helpdesk</auto-mount>
 
-    <version name="3.4.0.0.0" url="http://openacs.org/repository/apm/packages/intranet-helpdesk">
+    <version name="3.4.0.1.0" url="http://projop.dnsalias.com/download/apm/intranet-helpdesk-3.4.0.1.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Helpdesk Management</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
