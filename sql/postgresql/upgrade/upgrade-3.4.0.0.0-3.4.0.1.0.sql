@@ -1,5 +1,14 @@
 -- upgrade-3.4.0.0.0-3.4.0.1.0.sql
 
+-- set the DefaultMaster parameter to "master"
+
+update apm_parameter_values 
+set attr_value = '/packages/intranet-core/www/master'
+where parameter_id in (
+	select parameter_id 
+	from apm_parameters 
+	where package_key = 'acs-subsite' and parameter_name = 'DefaultMaster'
+);
 
 
 create or replace function im_project_managers_enumerator (integer) 
