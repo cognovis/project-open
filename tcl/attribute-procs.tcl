@@ -53,8 +53,6 @@ ad_proc -public delete_xt { im_dynfield_attribute_id } {
 	set column_name $acs_attribute_name
     }
 
-#    ad_return_complaint 1 "table_name=$table_name, column_name=$column_name"
-
     if { [empty_string_p $table_name] || [empty_string_p $column_name] } {
         # We have to have both a non-empty table name and column name
         error "We do not have enough information to automatically remove this\
@@ -111,8 +109,10 @@ ad_proc -public add_xt {
 
     @return The <code>attribute_id</code> of the newly created attribute
 } {
-    set default_value $default
+    # -------------------------------------------------------
+    # Prepare variables
 
+    set default_value $default
     set column_name ""
     set sort_order ""
     set storage ""
@@ -120,56 +120,44 @@ ad_proc -public add_xt {
 
     # Grab the tablename from the object_type
     if {"" == $table_name} {
-	if { ![db_0or1row select_table {
-	        select	t.table_name
-		from	acs_object_types t
-         	where	t.object_type = :object_type
-        }] } {
+	set table_name [db_string tablename "select table_name from acs_object_types where object_type = :object_type" -default 0]
+	if {"" == $table_name} {
             error "Specified object type \"$object_type\" does not exist"
     	}
     }
 
     # Generate a default name if not specified    
     if {"" == $attribute_name} {
-        # Give the attribute an Oracle/PG friendly name
         set attribute_name [plsql_utility::generate_oracle_name $pretty_name]
     }
-    lappend plsql_drop [list "drop_attribute" "FOO" db_exec_plsql]
-    lappend plsql [list "create_attribute" "FOO" db_exec_plsql]
 
     # sql_datatype is used by the .xls files to add a new column to
     # database table
     if {"" == $sql_datatype} {
 	set sql_datatype [datatype_to_sql_type -default $default_value $table_name $attribute_name $datatype]
     }
-    
-    # Only add the column to the table if it doesn't already exist
-    # and if the attribut's storage type if "value" (not a multimap)
-    if {[string equal $modify_sql_p "t"] && ![db_column_exists $table_name $attribute_name] && $storage_type_id == [im_dynfield_storage_type_id_value] } {
-    	lappend plsql_drop [list "drop_attr_column" "FOO" db_dml]
-    	lappend plsql [list "add_column" "FOO" db_dml]
-    }
-    
-    for { set i 0 } { $i < [llength $plsql] } { incr i } {
-        set pair [lindex $plsql $i]
 
-	ns_log Notice "attribute::add_xt: pair=$pair"
+    # -------------------------------------------------------
+    # Create the acs_attribute if it doesn't exist yet
 
-        if { [catch {eval [lindex $pair 2] [lindex $pair 0] [lindex $pair 1]} err_msg] } {
-            # Rollback what we've done so far. The loop contitionals are:
-            #  start at the end of the plsql_drop list (Drop things in reverse order of creation)
-            # execute drop statements until we reach position $i+1
-            #  This position represents the operation on which we failed, and thus
-            #  is not executed
-            for { set inner [expr [llength $plsql_drop] - 1] } { $inner > [expr $i + 1] } { set inner [expr $inner - 1] } {
-                set drop_pair [lindex $plsql_drop $inner]
-                if { [catch {eval [lindex $drop_pair 2] [lindex $drop_pair 0] [lindex $drop_pair 1]} err_msg_2] } {
-                    append err_msg "\nAdditional error while trying to roll back: $err_msg_2"
-                    return -code error $err_msg
-                }
-            }
-            return -code error $err_msg
+    set attribute_exists_p [db_string exists_p "
+	select	count(*) 
+	from	acs_attributes
+	where	object_type = :object_type
+		and attribute_name = :attribute_name
+    "]
+
+    db_transaction {
+	if {!$attribute_exists_p} {
+	    db_exec_plsql create_attribute ""
         }
+
+	# Add the column to the table if it doesn't already exist
+	# and if the attribut's storage type if "value" (not a multimap)
+	if {[string equal $modify_sql_p "t"] && ![db_column_exists $table_name $attribute_name] && $storage_type_id == [im_dynfield_storage_type_id_value] } {
+
+	    db_dml add_column "alter table $table_name add column $attribute_name $sql_datatype"
+	}
     }
     
     return [db_string select_attribute_id {

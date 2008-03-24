@@ -1,24 +1,24 @@
 <?xml version="1.0"?>
 <queryset>
 
-<fullquery name="intranet-dynfield::ad_form::elements.select_elements">
+<fullquery name="im_dynfield::ad_form::elements.select_elements">
   <querytext>
-        select intranet-dynfield_attribute_id, required_p
-          from intranet-dynfield_list_attribute_map
+        select im_dynfield_attribute_id, required_p
+          from im_dynfield_list_attribute_map
          where list_id = :list_id
          order by sort_order
   </querytext>
 </fullquery>
 
-<fullquery name="intranet-dynfield_object_id_not_cached.select_intranet-dynfield_object_id">
+<fullquery name="im_dynfield_object_id_not_cached.select_im_dynfield_object_id">
   <querytext>
-        select intranet-dynfield_object_id(:object_id)
+        select im_dynfield_object_id(:object_id)
   </querytext>
 </fullquery>
 
-<fullquery name="intranet-dynfield_object_id_not_cached.create_and_select_intranet-dynfield_object_id">
+<fullquery name="im_dynfield_object_id_not_cached.create_and_select_im_dynfield_object_id">
   <querytext>
-        select intranet-dynfield_object__new(
+        select im_dynfield_object__new(
                 :object_id,
                 :package_id,
                 now(),
@@ -28,26 +28,26 @@
   </querytext>
 </fullquery>
 
-<fullquery name="intranet-dynfield::option::new.intranet-dynfield_option_new">
+<fullquery name="im_dynfield::option::new.im_dynfield_option_new">
   <querytext>
-        select intranet-dynfield_option__new (:intranet-dynfield_attribute_id,:option,:sort_order)
+        select im_dynfield_option__new (:im_dynfield_attribute_id,:option,:sort_order)
   </querytext>
 </fullquery>
 
-<fullquery name="intranet-dynfield::option::delete.intranet-dynfield_option_delete">
+<fullquery name="im_dynfield::option::delete.im_dynfield_option_delete">
   <querytext>
-        select intranet-dynfield_option__delete (:option_id)
+        select im_dynfield_option__delete (:option_id)
   </querytext>
 </fullquery>
 
 
-<fullquery name="intranet-dynfield::option::map.intranet-dynfield_option_map">
+<fullquery name="im_dynfield::option::map.im_dynfield_option_map">
   <querytext>
-        select intranet-dynfield_option__map (:option_map_id,:option_id)
+        select im_dynfield_option__map (:option_map_id,:option_id)
   </querytext>
 </fullquery>
 
-<fullquery name="intranet-dynfield::attribute::get.select_attribute_info">
+<fullquery name="im_dynfield::attribute::get.select_attribute_info">
   <querytext>
         select intranet-dynfield.*,
                acs.attribute_name,
@@ -56,102 +56,102 @@
                acs.object_type,
                aw.storage_type_id,
 		im_category_from_id(aw.storage_type_id) as storage_type
-          from intranet-dynfield_attributes intranet-dynfield,
+          from im_dynfield_attributes intranet-dynfield,
                acs_attributes acs,
-               intranet-dynfield_widgets aw
-         where intranet-dynfield.intranet-dynfield_attribute_id = :intranet-dynfield_attribute_id
+               im_dynfield_widgets aw
+         where intranet-dynfield.im_dynfield_attribute_id = :im_dynfield_attribute_id
            and intranet-dynfield.attribute_id = acs.attribute_id
            and intranet-dynfield.widget_name = aw.widget_name
   </querytext>
 </fullquery>
 
-<fullquery name="intranet-dynfield::attribute::widget_not_cached.select_attribute">
+<fullquery name="im_dynfield::attribute::widget_not_cached.select_attribute">
   <querytext>
         select ac.attribute_name, 
                ac.pretty_name,
                ac.object_type,
                aw.widget,
-               aw.datatype,
+               aw.acs_datatype as datatype,
                aw.parameters,
                aw.storage_type_id,
 		im_category_from_id(aw.storage_type_id) as storage_type
-          from intranet-dynfield_attributes aa,
+          from im_dynfield_attributes aa,
                acs_attributes ac,
-               intranet-dynfield_widgets aw
-         where aa.intranet-dynfield_attribute_id = :intranet-dynfield_attribute_id
-           and aa.attribute_id = ac.attribute_id
+               im_dynfield_widgets aw
+         where aa.attribute_id = :im_dynfield_attribute_id
+           and aa.acs_attribute_id = ac.attribute_id
            and aa.widget_name = aw.widget_name
   </querytext>
 </fullquery>
 
-<fullquery name="intranet-dynfield::attribute::widget_not_cached.select_options">
+<fullquery name="im_dynfield::attribute::widget_not_cached.select_options">
   <querytext>
         select option, option_id
-          from intranet-dynfield_options
-         where intranet-dynfield_attribute_id = :intranet-dynfield_attribute_id
+          from im_dynfield_options
+         where im_dynfield_attribute_id = :im_dynfield_attribute_id
          order by sort_order 
   </querytext>
 </fullquery>
 
-<fullquery name="intranet-dynfield::attribute::exists_p.attribute_exists_p">
+<fullquery name="im_dynfield::attribute::exists_p.attribute_exists_p">
   <querytext>
         select '1' from acs_attributes where object_type = :object_type and attribute_name = :attribute_name
   </querytext>
 </fullquery>
 
-<fullquery name="intranet-dynfield::attribute::get_intranet-dynfield_attribute_id_not_cached.get_intranet-dynfield_attribute_id">
+<fullquery name="im_dynfield::attribute::get_im_dynfield_attribute_id_not_cached.get_im_dynfield_attribute_id">
   <querytext>
-        select intranet-dynfield.intranet-dynfield_attribute_id
-          from intranet-dynfield_attributes intranet-dynfield, acs_attributes acs
+        select intranet-dynfield.im_dynfield_attribute_id
+          from im_dynfield_attributes intranet-dynfield, acs_attributes acs
          where acs.object_type = :object_type
            and acs.attribute_name = :attribute_name
            and acs.attribute_id = intranet-dynfield.attribute_id
   </querytext>
 </fullquery>
 
-<fullquery name="intranet-dynfield::attribute::name_not_cached.intranet-dynfield_attribute_name">
+<fullquery name="im_dynfield::attribute::name_not_cached.im_dynfield_attribute_name">
   <querytext>
-        select intranet-dynfield_attribute__name (:intranet-dynfield_attribute_id)
+        select im_dynfield_attribute__name (:im_dynfield_attribute_id)
   </querytext>
 </fullquery>
 
-<fullquery name="intranet-dynfield::attribute::storage_type_not_cached.intranet-dynfield_attribute_storage_type">
+<fullquery name="im_dynfield::attribute::storage_type_not_cached.im_dynfield_attribute_storage_type">
   <querytext>
         select aw.storage_type_id,
 		im_category_from_id(aw.storage_type_id) as storage_type
-          from intranet-dynfield_widgets aw, intranet-dynfield_attributes aa
-         where aa.intranet-dynfield_attribute_id = :intranet-dynfield_attribute_id
+          from im_dynfield_widgets aw, im_dynfield_attributes aa
+         where aa.im_dynfield_attribute_id = :im_dynfield_attribute_id
            and aw.widget_name = aa.widget_name
   </querytext>
 </fullquery>
 
-<fullquery name="intranet-dynfield::attribute::delete.intranet-dynfield_attribute_delete">
+<fullquery name="im_dynfield::attribute::delete.im_dynfield_attribute_delete">
   <querytext>
-        select intranet-dynfield_attribute__delete (:intranet-dynfield_attribute_id)
+        select im_dynfield_attribute__delete (:im_dynfield_attribute_id)
   </querytext>
 </fullquery>
 
-<fullquery name="intranet-dynfield::object::attribute::values_batch_process.get_attr_values">
+<fullquery name="im_dynfield::object::attribute::values_batch_process.get_attr_values">
   <querytext>
         select aav.*, 
                ao.object_id,
-               intranet-dynfield_attribute__options_string(option_map_id) as options_string,
-               intranet-dynfield_attribute__postal_address_string(address_id) as address_string,
-               intranet-dynfield_attribute__telecom_number_string(number_id) as telecom_number_string
-          from intranet-dynfield_attribute_values aav, cr_revisions cr, intranet-dynfield_objects ao
+               im_dynfield_attribute__options_string(option_map_id) as options_string,
+               im_dynfield_attribute__postal_address_string(address_id) as address_string,
+               im_dynfield_attribute__telecom_number_string(number_id) as telecom_number_string
+          from im_dynfield_attribute_values aav, cr_revisions cr, im_dynfield_objects ao
          where ao.object_id in ($sql_object_id_list)
-           and ao.intranet-dynfield_object_id = cr.item_id 
+           and ao.im_dynfield_object_id = cr.item_id 
            and cr.revision_id = aav.revision_id
            and aav.superseed_revision_id is null
-         order by ao.object_id, aav.intranet-dynfield_attribute_id
+         order by ao.object_id, aav.im_dynfield_attribute_id
   </querytext>
 </fullquery>
 
-<fullquery name="intranet-dynfield::attribute::value::save.intranet-dynfield_attribute_value_new">
+<fullquery name="im_dynfield::attribute::value::save.im_dynfield_attribute_value_new">
   <querytext>
-        select intranet-dynfield_attribute_value__new (
+        select im_dynfield_attribute_value__new (
                 :revision_id,
-                :intranet-dynfield_attribute_id,
+                :im_dynfield_attribute_id,
                 :option_map_id,
                 :address_id,
                 :number_id,
@@ -163,11 +163,11 @@
 </fullquery>
 
 
-<fullquery name="intranet-dynfield::attribute::value::save.intranet-dynfield_attribute_value_save">
+<fullquery name="im_dynfield::attribute::value::save.im_dynfield_attribute_value_save">
   <querytext>
-        select intranet-dynfield_attribute_value__save (
+        select im_dynfield_attribute_value__save (
                 :revision_id,
-                :intranet-dynfield_attribute_id,
+                :im_dynfield_attribute_id,
                 :option_map_id,
                 :address_id,
                 :number_id,
@@ -186,12 +186,12 @@
              contact_attribute_object_map caom,
              contact_attribute_names can
         where caom.object_id = :object_id
-              and ca.intranet-dynfield_attribute_id = can.intranet-dynfield_attribute_id
+              and ca.im_dynfield_attribute_id = can.im_dynfield_attribute_id
               and can.locale = :locale
-              and caom.intranet-dynfield_attribute_id = ca.intranet-dynfield_attribute_id
+              and caom.im_dynfield_attribute_id = ca.im_dynfield_attribute_id
               and ca.widget_id = cw.widget_id
               and not ca.depreciated_p
-              and acs_permission__permission_p(ca.intranet-dynfield_attribute_id,:user_id,'write')
+              and acs_permission__permission_p(ca.im_dynfield_attribute_id,:user_id,'write')
         order by caom.sort_order
   </querytext>
 </fullquery>
@@ -200,7 +200,7 @@
 <fullquery name="contacts::get::values::multirow.select_attribute_values">
 <querytext>
 
-       select ca.intranet-dynfield_attribute_id,
+       select ca.im_dynfield_attribute_id,
                  ca.attribute, 
                  cav.option_map_id,
                  cav.address_id,
@@ -216,9 +216,9 @@
                          from contact_attribute_values 
                         where party_id = :party_id
                           and not deleted_p ) cav
-                 on (caom.intranet-dynfield_attribute_id = cav.intranet-dynfield_attribute_id)
+                 on (caom.im_dynfield_attribute_id = cav.im_dynfield_attribute_id)
            where caom.object_id = '$object_id'
-             and caom.intranet-dynfield_attribute_id = ca.intranet-dynfield_attribute_id
+             and caom.im_dynfield_attribute_id = ca.im_dynfield_attribute_id
              and ca.widget_id = cw.widget_id
              and not ca.depreciated_p
              and (
@@ -229,7 +229,7 @@
                    or cav.time            is not null
                    or ca.attribute in ($custom_field_sql_list)
                  )
-             and acs_permission__permission_p(ca.intranet-dynfield_attribute_id,'$user_id','$permission')
+             and acs_permission__permission_p(ca.im_dynfield_attribute_id,'$user_id','$permission')
            order by caom.sort_order
 </querytext>
 </fullquery>
@@ -262,14 +262,14 @@
 </fullquery>
 
 
-<fullquery name="contacts::get::values::multirow.organization_types_from_party_and_intranet-dynfield_attribute_id">
+<fullquery name="contacts::get::values::multirow.organization_types_from_party_and_im_dynfield_attribute_id">
   <querytext>
         select cao.option_id, cao.option
         from contact_attribute_options cao,
                organization_types ot,
                organization_type_map otm
         where cao.option = ot.type
-           and cao.intranet-dynfield_attribute_id  = :intranet-dynfield_attribute_id
+           and cao.im_dynfield_attribute_id  = :im_dynfield_attribute_id
            and otm.organization_type_id = ot.organization_type_id
            and otm.organization_id = :party_id
   </querytext>
@@ -330,12 +330,12 @@
                   contact_attribute_object_map caom,
                   contact_attribute_names can
             where caom.object_id = :object_id
-              and ca.intranet-dynfield_attribute_id = can.intranet-dynfield_attribute_id
+              and ca.im_dynfield_attribute_id = can.im_dynfield_attribute_id
               and can.locale = :locale
-              and caom.intranet-dynfield_attribute_id = ca.intranet-dynfield_attribute_id
+              and caom.im_dynfield_attribute_id = ca.im_dynfield_attribute_id
               and ca.widget_id = cw.widget_id
               and not ca.depreciated_p
-              and acs_permission__permission_p(ca.intranet-dynfield_attribute_id,:user_id,'write')
+              and acs_permission__permission_p(ca.im_dynfield_attribute_id,:user_id,'write')
             order by caom.sort_order
   </querytext>
 </fullquery>
@@ -347,7 +347,7 @@
         from contact_attribute_values cav,
              postal_addresses pa
         where cav.party_id = :party_id
-           and cav.intranet-dynfield_attribute_id = :intranet-dynfield_attribute_id
+           and cav.im_dynfield_attribute_id = :im_dynfield_attribute_id
            and not cav.deleted_p
            and cav.address_id = pa.address_id
            and pa.delivery_address = :delivery_address
@@ -365,7 +365,7 @@
         from contact_attribute_values cav,
              telecom_numbers tn
         where cav.party_id = :party_id
-           and cav.intranet-dynfield_attribute_id = :intranet-dynfield_attribute_id
+           and cav.im_dynfield_attribute_id = :im_dynfield_attribute_id
            and not cav.deleted_p
            and cav.number_id = tn.number_id
            and tn.subscriber_number = :attribute_value_temp
@@ -378,7 +378,7 @@
         select option_map_id 
 	from contact_attribute_values
 	where party_id = :party_id
-	   and intranet-dynfield_attribute_id = :intranet-dynfield_attribute_id and not deleted_p
+	   and im_dynfield_attribute_id = :im_dynfield_attribute_id and not deleted_p
   </querytext>
 </fullquery>
 

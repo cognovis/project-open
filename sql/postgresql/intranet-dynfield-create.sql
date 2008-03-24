@@ -8,6 +8,190 @@
 --
 --
 
+
+alter table acs_object_types add column status_category_type varchar(50);
+alter table acs_object_types add column type_category_type varchar(50);
+
+update acs_object_types set type_category_type = 'Intranet Absence Type' where object_type = 'im_user_absence';
+update acs_object_types set type_category_type = 'Intranet Company Type' where object_type = 'im_company';
+update acs_object_types set type_category_type = 'Intranet Cost Center Type' where object_type = 'im_cost_center';
+update acs_object_types set type_category_type = 'Intranet Cost Type' where object_type = 'im_cost';
+update acs_object_types set type_category_type = 'Intranet Expense Type' where object_type = 'im_expense';
+update acs_object_types set type_category_type = 'Intranet Freelance RFQ Type' where object_type = 'im_freelance_rfq';
+update acs_object_types set type_category_type = 'Intranet Investment Type' where object_type = 'im_investment';
+update acs_object_types set type_category_type = 'Intranet Cost Type' where object_type = 'im_invoice';
+update acs_object_types set type_category_type = 'Intranet Material Type' where object_type = 'im_material';
+update acs_object_types set type_category_type = 'Intranet Office Type' where object_type = 'im_office';
+update acs_object_types set type_category_type = 'Intranet Payment Type' where object_type = 'im_payment';
+update acs_object_types set type_category_type = 'Intranet Project Type' where object_type = 'im_project';
+update acs_object_types set type_category_type = 'Intranet Report Type' where object_type = 'im_report';
+update acs_object_types set type_category_type = 'Intranet Timesheet2 Conf Type' where object_type = 'im_timesheet_conf_object';
+update acs_object_types set type_category_type = 'Intranet Timesheet Task Type' where object_type = 'im_timesheet_task';
+update acs_object_types set type_category_type = 'Intranet Topic Type' where object_type = 'im_forum_topic';
+update acs_object_types set type_category_type = 'Intranet User Type' where object_type = 'person';
+
+
+-- 22000-22999 Intranet User Type
+SELECT im_category_new(22000, 'Registered Users', 'Intranet User Type');
+SELECT im_category_new(22010, 'The Public', 'Intranet User Type');
+SELECT im_category_new(22020, 'P/O Admins', 'Intranet User Type');
+SELECT im_category_new(22030, 'Customers', 'Intranet User Type');
+SELECT im_category_new(22040, 'Employees', 'Intranet User Type');
+SELECT im_category_new(22050, 'Freelancers', 'Intranet User Type');
+SELECT im_category_new(22060, 'Project Managers', 'Intranet User Type');
+SELECT im_category_new(22070, 'Senior Managers', 'Intranet User Type');
+SELECT im_category_new(22080, 'Accounting', 'Intranet User Type');
+SELECT im_category_new(22090, 'Sales', 'Intranet User Type');
+SELECT im_category_new(22100, 'HR Managers', 'Intranet User Type');
+SELECT im_category_new(22110, 'Freelance Managers', 'Intranet User Type');
+
+
+
+-- Add dynfields for persons
+SELECT im_dynfield_attribute_new ('person','first_names','First Names', 'textbox_large','string','t',10);
+SELECT im_dynfield_attribute_new ('person','last_name','Last Names', 'textbox_large','string','t',20);
+SELECT im_dynfield_attribute_new ('party','email','Email', 'textbox_large','string','t',30);
+
+
+-- Add dynfields for companies
+SELECT im_dynfield_attribute_new ('im_company','company_name','Name', 'textbox_large','string','t',10,'t');
+SELECT im_dynfield_attribute_new ('im_company','company_path','Path', 'textbox_large','string','t',20,'t');
+SELECT im_dynfield_attribute_new ('im_company','company_status_id','Status','category_company_status','integer','t',30,'t');
+SELECT im_dynfield_attribute_new ('im_company','company_type_id','Type','category_company_type','integer','t',40,'t');
+SELECT im_dynfield_attribute_new ('im_company','referral_source','Referral','textbox_large','string','f',50,'t');
+SELECT im_dynfield_attribute_new ('im_company','vat_number','VAT Number','textbox_small','string','f',60,'t');
+SELECT im_dynfield_attribute_new ('im_company','default_vat','Default VAT','integer','string','f',100,'t');
+SELECT im_dynfield_attribute_new ('im_company','default_tax','Default TAX','integer','string','f',110,'t');
+SELECT im_dynfield_attribute_new ('im_company','note','Note', 'textarea_small','string','t',990,'t');
+
+
+-- annual_revenue_id           | integer                 |
+-- contract_value              | integer                 |
+-- main_office_id              | integer                 | not null
+-- primary_contact_id          | integer                 |
+-- accounting_contact_id       | integer                 |
+
+
+SELECT im_dynfield_attribute_new ('im_office','office_name','Office Name', 'textbox_large','string','t',10,'t');
+SELECT im_dynfield_attribute_new ('im_office','office_path','Office Path', 'textbox_large','string','t',20,'t');
+SELECT im_dynfield_attribute_new ('im_office','office_status_id','Office Status', 'category_office_status','integer','t',30,'t');
+SELECT im_dynfield_attribute_new ('im_office','office_type_id','Office Type', 'category_office_type','integer','t',40,'t');
+SELECT im_dynfield_attribute_new ('im_office','phone','Phone', 'textbox_medium','string','f',100,'t');
+SELECT im_dynfield_attribute_new ('im_office','fax','Fax', 'textbox_medium','string','f',110,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_line1','Address 1', 'textbox_medium','string','f',120,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_line2','Address 2', 'textbox_medium','string','f',130,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_city','City', 'textbox_medium','string','f',140,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_postal_code','ZIP', 'textbox_short','string','f',150,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_country_code','Country', 'country','string','f',160,'t');
+
+
+
+
+
+
+
+
+
+
+
+-- AMS Compatibility view
+create or replace view ams_lists as
+select 
+	c.category_id as list_id, 
+	'contacts'::varchar as package_key, 
+	aot.object_type, 
+	c.category as list_name, 
+	c.category as pretty_name, 
+	''::varchar as description, 
+	'text/plain'::varchar as description_mime_type 
+from 
+	acs_object_types aot, 
+	im_categories c 
+where 
+	aot.type_category_type is not null 
+	and aot.type_category_type = c.category_type;
+
+-- AMS Compatibility view
+create or replace view ams_list_attribute_map as
+select
+	tam.object_type_id as list_id,
+	da.acs_attribute_id as attribute_id,
+	0::integer as sort_order,
+	false::boolean as required_p,
+	''::varchar as section_heading,
+	''::varchar as html_options
+from
+	im_dynfield_type_attribute_map tam,
+	im_dynfield_attributes da
+where
+	tam.attribute_id = da.attribute_id
+;
+
+
+
+create table ams_attribute_items (
+        attribute_id            integer
+                                constraint ams_attribute_items_attribute_id_fk references acs_attributes(attribute_id)
+                                constraint ams_attribute_items_attribute_id_nn not null,
+        ams_attribute_id        integer
+                                constraint ams_attribute_items_ams_attribute_id_fk references acs_objects(object_id)
+                                constraint ams_attribute_items_ams_attribute_id_pk primary key,
+        widget                  varchar(100)
+                                constraint ams_attribute_items_widget_fk references ams_widgets(widget)
+                                constraint ams_attribute_items_widget_nn not null,
+        dynamic_p               boolean default 'f'
+                                constraint ams_attribute_items_dynamic_p_nn not null,
+        deprecated_p            boolean default 'f'
+                                constraint ams_attribute_items_deprecated_nn not null,
+        help_text               varchar(50),
+        UNIQUE(attribute_id)
+);
+
+create or replace view ams_attributes as
+select	aa.*,
+	da.attribute_id as ams_attribute_id,
+	da.widget_name as widget,
+	false::boolean as dynamic_p,
+	da.deprecated_p
+from
+	im_dynfield_attributes da,
+	acs_attributes aa
+where
+	da.acs_attribute_id = aa.attribute_id
+;
+
+
+
+
+create view ams_attributes as
+    select acs_attributes.*,
+           ams_attribute_items.ams_attribute_id,
+           ams_attribute_items.widget,
+           ams_attribute_items.dynamic_p,
+           ams_attribute_items.deprecated_p
+      from acs_attributes left join ams_attribute_items on ( acs_attributes.attribute_id = ams_attribute_items.attribute\
+_id );
+
+
+
+
+create table im_dynfield_type_attribute_map (
+        attribute_id            integer
+                                constraint im_dynfield_type_attr_map_attr_fk
+                                references acs_objects,
+        object_type_id          integer
+                                constraint im_dynfield_type_attr_map_otype_nn
+                                not null
+                                constraint im_dynfield_type_attr_map_otype_fk
+                                references im_categories,
+        display_mode            varchar(10)
+                                constraint im_dynfield_type_attr_map_dmode_nn
+                                not null
+                                constraint im_dynfield_type_attr_map_dmode_ck
+                                check (display_mode in ('edit', 'display', 'none')),
+        unique (attribute_id, object_type_id)
+);
+
 -- ------------------------------------------------------------------
 -- Widgets
 -- ------------------------------------------------------------------
@@ -118,8 +302,15 @@ create table im_dynfield_attributes (
 				-- Should the field be included in intranet-search-pg?
 	include_in_search_p	char(1) default 'f'
 				constraint im_dynfield_attributes_search_ch
-				check (include_in_search_p in ('t','f'))
+				check (include_in_search_p in ('t','f')),
+	also_hard_coded_p	char(1) default 'f'
+				constraint im_dynfield_attributes_also_hard_coded_ch
+				check (also_hard_coded_p in ('t','f'))
 );
+
+-- Make acs_attribute unique, so that no two dynfield_attributes can reference the same acs_attrib.
+alter table im_dynfield_attributes add constraint
+im_dynfield_attributes_acs_attribute_un UNIQUE (acs_attribute_id);
 
 
 --
@@ -296,7 +487,7 @@ BEGIN
 
 	v_menu := im_menu__new (
 		null,			-- p_menu_id
-		''acs_object'',		-- object_type
+		''im_menu'',		-- object_type
 		now(),			-- creation_date
 		null,			-- creation_user
 		null,			-- creation_ip
@@ -317,6 +508,194 @@ end;' language 'plpgsql';
 
 select inline_0 ();
 drop function inline_0 ();
+
+
+SELECT im_menu__new (
+	null,						-- p_menu_id
+	'im_menu',					-- object_type
+	now(),						-- creation_date
+	null,						-- creation_user
+	null,						-- creation_ip
+	null,						-- context_id
+	'intranet-dynfield',				-- package_name
+	'dynfield_otype',				-- label
+	'Object Types',					-- name
+	'/intranet-dynfield/object-types',		-- url
+	10,						-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_admin'),	-- parent_menu_id
+	null						-- p_visible_tcl
+);
+
+SELECT im_menu__new (
+	null,						-- p_menu_id
+	'im_menu',					-- object_type
+	now(),						-- creation_date
+	null,						-- creation_user
+	null,						-- creation_ip
+	null,						-- context_id
+	'intranet-dynfield',				-- package_name
+	'dynfield_widgets',				-- label
+	'Widgets',					-- name
+	'/intranet-dynfield/widgets',			-- url
+	100,						-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_admin'),	-- parent_menu_id
+	null						-- p_visible_tcl
+);
+
+SELECT im_menu__new (
+	null,						-- p_menu_id
+	'im_menu',					-- object_type
+	now(),						-- creation_date
+	null,						-- creation_user
+	null,						-- creation_ip
+	null,						-- context_id
+	'intranet-dynfield',				-- package_name
+	'dynfield_widget_examples',			-- label
+	'Widget Examples',				-- name
+	'/intranet-dynfield/widget-examples',		-- url
+	110,						-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_admin'),	-- parent_menu_id
+	null						-- p_visible_tcl
+);
+
+
+
+----------------------------------------------------------
+-- Object Types
+
+SELECT im_menu__new (
+	null,							-- p_menu_id
+	'im_menu',						-- object_type
+	now(),							-- creation_date
+	null,							-- creation_user
+	null,							-- creation_ip
+	null,							-- context_id
+	'intranet-dynfield',					-- package_name
+	'dynfield_otype_absences',				-- label
+	'Absence',						-- name
+	'/intranet-dynfield/object-type?object_type=im_user_absence', -- url
+	100,							-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_otype'),	-- parent_menu_id
+	null							-- p_visible_tcl
+);
+
+SELECT im_menu__new (
+	null,							-- p_menu_id
+	'im_menu',						-- object_type
+	now(),							-- creation_date
+	null,							-- creation_user
+	null,							-- creation_ip
+	null,							-- context_id
+	'intranet-dynfield',					-- package_name
+	'dynfield_otype_companies',				-- label
+	'Company',						-- name
+	'/intranet-dynfield/object-type?object_type=im_company', -- url
+	110,							-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_otype'),	-- parent_menu_id
+	null							-- p_visible_tcl
+);
+
+SELECT im_menu__new (
+	null,							-- p_menu_id
+	'im_menu',						-- object_type
+	now(),							-- creation_date
+	null,							-- creation_user
+	null,							-- creation_ip
+	null,							-- context_id
+	'intranet-dynfield',					-- package_name
+	'dynfield_otype_expenses',				-- label
+	'Expense',						-- name
+	'/intranet-dynfield/object-type?object_type=im_expense', -- url
+	120,							-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_otype'),	-- parent_menu_id
+	null							-- p_visible_tcl
+);
+
+SELECT im_menu__new (
+	null,							-- p_menu_id
+	'im_menu',						-- object_type
+	now(),							-- creation_date
+	null,							-- creation_user
+	null,							-- creation_ip
+	null,							-- context_id
+	'intranet-dynfield',					-- package_name
+	'dynfield_otype_freelance_rfqs',			-- label
+	'Freelance RFQ',					-- name
+	'/intranet-dynfield/object-type?object_type=im_freelance_rfq', -- url
+	130,							-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_otype'),	-- parent_menu_id
+	null							-- p_visible_tcl
+);
+SELECT im_menu__new (
+	null,							-- p_menu_id
+	'im_menu',						-- object_type
+	now(),							-- creation_date
+	null,							-- creation_user
+	null,							-- creation_ip
+	null,							-- context_id
+	'intranet-dynfield',					-- package_name
+	'dynfield_otype_freelance_rfq_answers',			-- label
+	'Freelance RFQ Answer',					-- name
+	'/intranet-dynfield/object-type?object_type=im_freelance_rfq_answer', -- url
+	140,							-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_otype'),	-- parent_menu_id
+	null							-- p_visible_tcl
+);
+
+SELECT im_menu__new (
+	null,							-- p_menu_id
+	'im_menu',						-- object_type
+	now(),							-- creation_date
+	null,							-- creation_user
+	null,							-- creation_ip
+	null,							-- context_id
+	'intranet-dynfield',					-- package_name
+	'dynfield_otype_offices',				-- label
+	'Offices',						-- name
+	'/intranet-dynfield/object-type?object_type=im_office', -- url
+	150,							-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_otype'),	-- parent_menu_id
+	null							-- p_visible_tcl
+);
+
+SELECT im_menu__new (
+	null,							-- p_menu_id
+	'im_menu',						-- object_type
+	now(),							-- creation_date
+	null,							-- creation_user
+	null,							-- creation_ip
+	null,							-- context_id
+	'intranet-dynfield',					-- package_name
+	'dynfield_otype_persons',				-- label
+	'Persons',						-- name
+	'/intranet-dynfield/object-type?object_type=person', -- url
+	160,							-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_otype'),	-- parent_menu_id
+	null							-- p_visible_tcl
+);
+
+SELECT im_menu__new (
+	null,							-- p_menu_id
+	'im_menu',						-- object_type
+	now(),							-- creation_date
+	null,							-- creation_user
+	null,							-- creation_ip
+	null,							-- context_id
+	'intranet-dynfield',					-- package_name
+	'dynfield_otype_projects',				-- label
+	'Projects',						-- name
+	'/intranet-dynfield/object-type?object_type=im_project', -- url
+	170,							-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_otype'),	-- parent_menu_id
+	null							-- p_visible_tcl
+);
+
+
+
+
+
+
+
 
 
 
@@ -403,6 +782,48 @@ end;' language 'plpgsql';
 -- Package
 -- ------------------------------------------------------------------
 
+
+create or replace function im_dynfield_attribute__new_only_dynfield (
+	integer, varchar, timestamptz, integer, varchar, integer,
+	integer, varchar, char(1), char(1)
+) returns integer as '
+DECLARE
+	p_attribute_id		alias for $1;
+	p_object_type		alias for $2;
+	p_creation_date 	alias for $3;
+	p_creation_user 	alias for $4;
+	p_creation_ip		alias for $5;
+	p_context_id		alias for $6;
+
+	p_acs_attribute_id	alias for $7;
+	p_widget_name		alias for $8;
+	p_deprecated_p		alias for $9;
+	p_already_existed_p	alias for $10;
+
+	v_attribute_id		integer;
+BEGIN
+	v_attribute_id := acs_object__new (
+		p_attribute_id,
+		p_object_type,
+		p_creation_date,
+		p_creation_user,
+		p_creation_ip,
+		p_context_id
+	);
+
+	insert into im_dynfield_attributes (
+		attribute_id, acs_attribute_id, widget_name,
+		deprecated_p, already_existed_p
+	) values (
+		v_attribute_id, p_acs_attribute_id, p_widget_name,
+		p_deprecated_p, p_already_existed_p
+	);
+	return v_attribute_id;
+end;' language 'plpgsql';
+
+
+
+
 create or replace function im_dynfield_attribute__new (
 	integer, varchar, timestamptz, integer, varchar, integer,
 	varchar, varchar, integer, integer, varchar, 
@@ -436,7 +857,11 @@ BEGIN
 	select table_name into v_table_name
 	from acs_object_types where object_type = p_attribute_object_type;
 
-	v_acs_attribute_id := acs_attribute__create_attribute (
+	select attribute_id into v_acs_attribute_id from acs_attributes
+	where object_type = p_attribute_object_type and attribute_name = p_attribute_name;
+
+	IF v_acs_attribute_id is null THEN
+	    v_acs_attribute_id := acs_attribute__create_attribute (
 		p_attribute_object_type,
 		p_attribute_name,
 		p_datatype,
@@ -450,7 +875,8 @@ BEGIN
 		null,			-- sort order
 		''type_specific'',	-- storage
 		''f''			-- static_p
-	);
+	    );
+	END IF;
 
 	v_attribute_id := acs_object__new (
 		p_attribute_id,
@@ -474,7 +900,7 @@ end;' language 'plpgsql';
 
 -- Shortcut function
 CREATE OR REPLACE FUNCTION im_dynfield_attribute_new (
-	varchar, varchar, varchar, char(1), varchar, varchar
+	varchar, varchar, varchar, varchar, varchar, char(1), integer, char(1)
 ) RETURNS integer as '
 DECLARE
 	p_object_type		alias for $1;
@@ -483,64 +909,68 @@ DECLARE
 	p_widget_name		alias for $4;
 	p_datatype		alias for $5;
 	p_required_p		alias for $6;
+	p_pos_y			alias for $7;
+	p_also_hard_coded_p	alias for $8;
 
 	v_dynfield_id		integer;
 	v_widget_id		integer;
+	v_type_category		varchar;
+	row			RECORD;
+	v_count			integer;
+	v_min_n_value		integer;
 BEGIN
 	select	widget_id into v_widget_id from im_dynfield_widgets
 	where	widget_name = p_widget_name;
 	IF v_widget_id is null THEN return 1; END IF;
 
--- fraber 080315: Disabled. The acs_attribute is generated later
---	select	attribute_id into v_dynfield_id from acs_attributes
---	where	attribute_name = p_column_name;
---	IF v_dynfield_id is not null THEN return 1; END IF;
+	v_min_n_value := 0;
+	IF p_required_p = ''t'' THEN  v_min_n_value := 1; END IF;
 
 	v_dynfield_id := im_dynfield_attribute__new (
 		null, ''im_dynfield_attribute'', now(), 0, ''0.0.0.0'', null,
-		p_object_type, p_column_name, 0, 1, null,
+		p_object_type, p_column_name, v_min_n_value, 1, null,
 		p_datatype, p_pretty_name, p_pretty_name, p_widget_name,
 		''f'', ''f''
 	);
 
+	update im_dynfield_attributes set also_hard_coded_p = p_also_hard_coded_p
+	where attribute_id = v_dynfield_id;
+
+	insert into im_dynfield_layout (
+		attribute_id, page_url, pos_y, label_style
+	) values (
+		v_dynfield_id, ''default'', p_pos_y, ''plain''
+	);
+
+	-- set all im_dynfield_type_attribute_map to "edit"
+	select type_category_type into v_type_category from acs_object_types
+	where object_type = p_object_type;
+	FOR row IN
+		select	category_id
+		from	im_categories
+		where	category_type = v_type_category
+	LOOP
+		select	count(*) into v_count from im_dynfield_type_attribute_map
+		where	object_type_id = row.category_id and attribute_id = v_dynfield_id;
+		IF 0 = v_count THEN
+			insert into im_dynfield_type_attribute_map (
+				attribute_id, object_type_id, display_mode
+			) values (
+				v_dynfield_id, row.category_id, ''edit''
+			);
+		END IF;
+	END LOOP;
+
 	RETURN v_dynfield_id;
 END;' language 'plpgsql';
-
 
 -- Shortcut function
 CREATE OR REPLACE FUNCTION im_dynfield_attribute_new (
-	varchar, varchar, varchar, char(1), varchar, varchar
+	varchar, varchar, varchar, varchar, varchar, char(1)
 ) RETURNS integer as '
-DECLARE
-	p_object_type		alias for $1;
-	p_column_name		alias for $2;
-	p_pretty_name		alias for $3;
-	p_widget_name		alias for $4;
-	p_datatype		alias for $5;
-	p_required_p		alias for $6;
-
-	v_dynfield_id		integer;
-	v_widget_id		integer;
 BEGIN
-	select	widget_id into v_widget_id from im_dynfield_widgets
-	where	widget_name = p_widget_name;
-	IF v_widget_id is null THEN return 1; END IF;
-
--- fraber 080315: Disabled. The acs_attribute is generated later
---	select	attribute_id into v_dynfield_id from acs_attributes
---	where	attribute_name = p_column_name;
---	IF v_dynfield_id is not null THEN return 1; END IF;
-
-	v_dynfield_id := im_dynfield_attribute__new (
-		null, ''im_dynfield_attribute'', now(), 0, ''0.0.0.0'', null,
-		p_object_type, p_column_name, 0, 1, null,
-		p_datatype, p_pretty_name, p_pretty_name, p_widget_name,
-		''f'', ''f''
-	);
-
-	RETURN v_dynfield_id;
+	RETURN im_dynfield_attribute_new($1,$2,$3,$4,$5,$6,null,''f'');
 END;' language 'plpgsql';
-
 
 
 
@@ -832,6 +1262,64 @@ select im_dynfield_widget__new (
 	'integer',		-- sql_datatype
 	'{custom {category_type "Intranet Company Type"}}' -- parameters
 );
+
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',   -- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'category_company_status',	-- widget_name
+	'#intranet-core.Company_Status#',	-- pretty_name
+	'#intranet-core.Company_Statuss#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_category_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{custom {category_type "Intranet Company Status"}}' -- parameters
+);
+
+
+
+
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',   -- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'category_office_type',	-- widget_name
+	'#intranet-core.Office_Type#',	-- pretty_name
+	'#intranet-core.Office_Types#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_category_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{custom {category_type "Intranet Office Type"}}' -- parameters
+);
+
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',   -- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'category_office_status',	-- widget_name
+	'#intranet-core.Office_Status#',	-- pretty_name
+	'#intranet-core.Office_Statuss#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_category_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{custom {category_type "Intranet Office Status"}}' -- parameters
+);
+
+
+
+
 
 select im_dynfield_widget__new (
 	null,				-- widget_id

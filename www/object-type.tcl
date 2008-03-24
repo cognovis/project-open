@@ -45,6 +45,8 @@ where
 "
 set main_table_name $table_name
 set main_id_column $id_column
+
+
 # ******************************************************
 # Create the list of all attributes of the current type
 # ******************************************************
@@ -52,14 +54,9 @@ set main_id_column $id_column
 set dbi_interfaces ""
 set dbi_inserts ""
 set dbi_procs ""
-# ------------------------------------------
-# check if this object type have interface
-# information to be generated
-# ------------------------------------------
 set generate_interfaces 0
 
 set show_hidde_link "<a href=\"?[export_vars -base {} -url -override {{show_interfaces_p 0}} {object_type orderby show_interfaces_p}]\"> [_ intranet-dynfield.Hide_interfaces]</a>"
-
 
 db_multirow attributes attributes_query {} {
     if {[empty_string_p $table_name]} {
@@ -76,18 +73,124 @@ db_multirow attributes attributes_query {} {
 
 
 # ******************************************************
+# Layouts Multirow
+# ******************************************************
+
+set exists_p [db_string default_layout_exists "
+	select	count(*)
+	from	im_dynfield_layout_pages lp
+	where	lp.object_type = :object_type
+		and lp.page_url = 'default';
+"]
+if {!$exists_p} {
+    db_dml insert_default_layout "
+	insert into im_dynfield_layout_pages (
+		page_url,
+		object_type,
+		layout_type,
+		default_p
+	) values (
+		'default',
+		:object_type,
+		'table',
+		't'
+	)
+    "
+}
+
+set layout_query "
+	select	lp.*
+	from	im_dynfield_layout_pages lp
+	where	lp.object_type = :object_type
+"
+db_multirow layout layout_query $layout_query
+
+
+
+# ******************************************************
+# Create the list of all attributes of the current type
+# ******************************************************
+
+lappend action_list "Add page" "[export_vars -base "layout-page" { object_type }]" "Add item to this order"
+
+list::create \
+    -name layout_list \
+    -multirow layout_pages \
+    -key page_url \
+    -actions $action_list \
+    -no_data "No layout pages" \
+    -elements {
+	page_url { 
+	    label "Page" 
+	    link_url_col details_url
+	}
+	layout_type { 
+	    label "Type" 
+	    display_template {
+		<if @layout_pages.layout_type@ eq "relative">
+		<a href="@layout_pages.edit_url@" class="button">@layout_pages.layout_type@</a>
+		</if>
+		<else>
+		@layout_pages.layout_type@
+		</else>
+	    }
+	}
+	default_p { 
+	    label "Default?"
+	    display_template {
+		<if @layout_pages.default_url@ not nil>
+		<a href="@layout_pages.default_url@" class="button">#intranet-dynfield.Set_as_the_default#</a>
+		</if>
+		<else>
+		#intranet-dynfield.Default_page#
+		</else>
+	    }
+	}
+	attrib_delete {
+	    label ""
+	    display_template {
+		<a href="@layout_pages.delete_url@" class="button">#acs-kernel.common_Delete#</a>
+	    }
+	}
+    } \
+    -orderby {
+	page_url {orderby page_url}
+	layout_type {orderby layout_type}
+	default_p {orderby default_p}
+    } \
+    -filters {
+	object_type {}
+    }
+
+
+db_multirow -extend {details_url edit_url delete_url default_url} layout_pages get_pages "
+    select page_url, layout_type, default_p
+    from im_dynfield_layout_pages
+    where object_type = :object_type
+    [template::list::orderby_clause -name layout_list -orderby]
+" {
+    if { $layout_type == "relative" } {
+    	set edit_url [export_vars -base "layout-page" { object_type page_url }] 
+    }
+    set details_url [export_vars -base "layout-position" { object_type page_url }]
+    set delete_url [export_vars -base "layout-del" { object_type page_url }]
+    if { $default_p == "f" } {
+	set default_url [export_vars -base "layout-default" { object_type page_url }]
+    }
+}
+
+
+# ******************************************************
 # Create the list of all attributes of the current type
 # ******************************************************
 
 set extension_tables_query "
-    select 
-	ott.*
-    from 
-	acs_object_type_tables ott
-    where 
-	ott.object_type = :object_type
+	select	ott.*
+	from	acs_object_type_tables ott
+	where	ott.object_type = :object_type
 "
-
 db_multirow extension_tables extension_tables_query $extension_tables_query
+
+
 
 ad_return_template

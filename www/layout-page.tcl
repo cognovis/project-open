@@ -38,7 +38,12 @@ set context [list [list "object-types" "Object Types"] [list "layout-manager?obj
 # Form definition
 # ******************************************************
 
-set type_list [list [list "[_ intranet-dynfield.absolute]" "absolute"] [list "[_ intranet-dynfield.relative]" "relative"] [list "[_ intranet-dynfield.adp]" "adp"] ]
+set type_list [list \
+	[list "[_ intranet-dynfield.Table]" "table"] \
+	[list "[_ intranet-dynfield.DIV_Absolute]" "div_absolute"] \
+	[list "[_ intranet-dynfield.DIV_Relative]" "div_relative"] \
+	[list "[_ intranet-dynfield.adp]" "adp"] \
+]
 
 form::create page_layout 
 
@@ -60,13 +65,14 @@ element::create page_layout table_width -datatype integer -label "Columns" -html
 
 if { [exists_and_not_null page_url] && [form is_request page_layout] } {
     db_1row get_page_values {
-	select page_url,
-	layout_type,
-	table_height,
-	table_width 
-	from dynfield_layout_pages
-	where object_type = :object_type
-	and page_url = :page_url
+	select	page_url,
+		layout_type,
+		table_height,
+		table_width 
+	from	im_dynfield_layout_pages
+	where
+		object_type = :object_type
+		and page_url = :page_url
     }
     element::set_value page_layout page_url $page_url
     element::set_value page_layout layout_type $layout_type
@@ -85,10 +91,11 @@ if { [form is_valid page_layout] } {
     if { $action != "update" } {
 	db_transaction {	
 	    db_dml insert_page {
-		insert into dynfield_layout_pages
-		(page_url, object_type, layout_type, table_width)
-		values
-		(:page_url, :object_type, :layout_type, :table_width)
+		insert into im_dynfield_layout_pages (
+			page_url, object_type, layout_type, table_width
+		) values (
+			:page_url, :object_type, :layout_type, :table_width
+		)
 	    }
 	} on_error {
 	    ad_return_complaint 1 "The page '$page_url' already contains the '$object_type' object type: <pre>$errmsg</pre>"

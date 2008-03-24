@@ -28,8 +28,10 @@ if {!$user_is_admin_p} {
 # ******************************************************
 
 db_dml remove_attribute {
-    delete from im_dynfield_layout 
-    where object_type = :object_type and page_url = :page_url and attribute_id = :attribute_id
+	delete from im_dynfield_layout 
+	where 
+		page_url = :page_url and 
+		attribute_id = :attribute_id
 }
 
 ad_returnredirect "[export_vars -base "layout-position" {page_url object_type}]"

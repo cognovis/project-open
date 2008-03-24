@@ -19,6 +19,7 @@
 	lower(c.data_type) as table_data_type,
         fa.attribute_id as im_dynfield_attribute_id,
         fa.widget_name,
+	fa.also_hard_coded_p,
 	w.widget_id,
 	w.widget,
 	w.parameters,
@@ -31,7 +32,7 @@
 		im_dynfield_attributes fa 
 		ON (aa.attribute_id = fa.acs_attribute_id)
 	LEFT OUTER join
-		(select	* from im_dynfield_layout where page_url = '') la
+		(select	* from im_dynfield_layout where page_url = 'default') la
 		ON (fa.attribute_id = la.attribute_id)
 	LEFT OUTER join
 		user_tab_columns c

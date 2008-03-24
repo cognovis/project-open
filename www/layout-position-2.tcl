@@ -64,20 +64,32 @@ set attribute_list [concat [list [list "-- Select one --" ""]] [db_list_of_lists
 
 form::create attrib_layout
 element::create attrib_layout action -datatype text -widget hidden
-
 element::create attrib_layout object_type -datatype text -widget hidden -value $object_type
 element::create attrib_layout page_url -datatype text -widget hidden -value $page_url
 element::create attrib_layout attribute_id -label "[_ intranet-dynfield.Attribute]" -datatype integer \
 	-widget select -options $attribute_list
-
 if { $page(layout_type) == "absolute" } {
     element::create attrib_layout class -label "[_ intranet-dynfield.Class]" -datatype text \
 	    -html {size 20 maxlength 200} -help_text "[_ intranet-dynfield.Enter_the_css_class_name]"
     element::create attrib_layout sort_key -datatype text -widget hidden -value ""
 } else {
     element::create attrib_layout class -datatype text -widget hidden -value ""
-    element::create attrib_layout sort_key -label "[_ intranet-dynfield.Sort_key]" -datatype integer -html {size 4 maxlength 20}
+    element::create attrib_layout sort_key -label "[_ intranet-dynfield.Sort_key]" -datatype integer -html {size 4 maxlength 20} -optional
 }
+element::create attrib_layout pos_y -label "[_ intranet-dynfield.Pos_Y]" -datatype integer -html {size 4 maxlength 20}
+element::create attrib_layout pos_x -label "[_ intranet-dynfield.Pos_X]" -datatype integer -html {size 4 maxlength 20} -optional
+element::create attrib_layout size_y -label "[_ intranet-dynfield.Size_Y]" -datatype integer -html {size 4 maxlength 20} -optional
+element::create attrib_layout size_x -label "[_ intranet-dynfield.Size_X]" -datatype integer -html {size 4 maxlength 20} -optional
+element::create attrib_layout label_style -label "[_ intranet-dynfield.Label_Style]" \
+	-datatype string \
+	-widget select \
+	-options {
+		{Plain plain}
+		{"No Label" no_label}
+	}
+element::create attrib_layout div_class -label "[_ intranet-dynfield.DIV_Class]" -datatype text -html {size 20 maxlength 400} -optional
+
+
 
 # -------------------------------------------
 # Prepopulate form
@@ -85,19 +97,33 @@ if { $page(layout_type) == "absolute" } {
 
 if { [form is_request attrib_layout] } {
     if { ![empty_string_p $attribute_id] } {
-	set sql_get_attribute "select fl.class, fl.sort_key, aa.attribute_name \
-		from IM_DYNFIELD_LAYOUT fl, ACS_ATTRIBUTES aa, IM_DYNFIELD_ATTRIBUTES fa \
-		where fa.attribute_id = :attribute_id \
-		and aa.attribute_id = fa.acs_attribute_id \
-		and fa.attribute_id = fl.attribute_id \
-		and fl.object_type = :object_type \
-		and fl.page_url = :page_url"
-
+	set sql_get_attribute "
+		select 
+			fl.*,
+			aa.attribute_name
+		from 
+			im_dynfield_layout fl, 
+			acs_attributes aa, 
+			im_dynfield_attributes fa
+		where 
+			fa.attribute_id = :attribute_id
+			and aa.attribute_id = fa.acs_attribute_id
+			and fa.attribute_id = fl.attribute_id
+			and fl.page_url = :page_url
+	"
 	if { [db_0or1row get_attribute $sql_get_attribute] } {
 	    set action update
 	    element::set_properties attrib_layout attribute_id -value $attribute_id -mode view
-	    element::set_value attrib_layout class $class
+
+            element::set_value attrib_layout pos_x $pos_x
+            element::set_value attrib_layout pos_y $pos_y
+            element::set_value attrib_layout size_x $size_x
+            element::set_value attrib_layout size_y $size_y
+
+            element::set_value attrib_layout label_style $label_style
+            element::set_value attrib_layout div_class $div_class
             element::set_value attrib_layout sort_key $sort_key
+
 	} else {
 	    set action add
 	}
@@ -129,15 +155,23 @@ if { [form is_valid attrib_layout] } {
     if { $action == "add" } {
 	db_dml insert_attribute {
 	    insert into im_dynfield_layout
-	    (attribute_id, page_url, object_type, sort_key, class)
+	    (attribute_id, page_url, pos_x, pos_y, size_x, size_y, label_style, div_class, sort_key)
             values
-            (:attribute_id, :page_url, :object_type, :sort_key, :class)
+            (:attribute_id, :page_url, :pos_x, :pos_y, :size_x, :size_y, :label_style, :div_class, :sort_key)
 	}
     } else {
 	db_dml update_attribute {
-	    update im_dynfield_layout
-	    set sort_key = :sort_key, class = :class
-	    where attribute_id = :attribute_id and page_url = :page_url and object_type = :object_type
+	    update im_dynfield_layout set 
+		pos_x = :pos_x,
+		pos_y = :pos_y,
+		size_x = :size_x,
+		size_y = :size_y,
+		label_style = :label_style,
+		div_class = :div_class,
+		sort_key = :sort_key
+	    where 
+		attribute_id = :attribute_id and 
+		page_url = :page_url
 	}
     }
 

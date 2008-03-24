@@ -34,25 +34,35 @@ ad_proc -private template::element::render_label { form_id element_id tag_attrib
 }
 
 
+
+ad_proc im_dynfield::type_categories_for_object_type {
+    -object_type:required
+} {
+    set sql "
+                select
+                        c.category_id,
+			c.category
+                from
+                        im_categories c,
+			acs_object_types ot
+                where
+                        (c.enabled_p = 't' OR c.enabled_p is NULL)
+                        and c.category_type = ot.type_category_type
+			and ot.object_type = :object_type
+		order by
+			lower(c.category)
+    "
+    return [db_list_of_lists cats $sql]
+}
+
+
+
 ad_proc -public im_dynfield::type_category_for_object_type {
     -object_type:required
 } {
     Get the category for the type_id of a given object_type
 } {
-    switch $object_type {
-	im_project		{ set category_type "Intranet Project Type" }
-	im_ticket		{ set category_type "Intranet Ticket Type" }
-	im_company		{ set category_type "Intranet Project Type" }
-	im_office		{ set category_type "Intranet Office Type" }
-	user			{ set category_type "Intranet Project Type" }
-	im_freelance_rfq	{ set category_type "Intranet Freelance RFQ Type" }
-	im_freelance_rfq_answer	{ set category_type "Intranet Freelance RFQ Answer Type" }
-	im_user_absence		{ set category_type "Intranet Absence Type" }
-	im_expense		{ set category_type "Intranet Cost Type" }
-	im_expense_bundle	{ set category_type "Intranet Cost Type" }
-	default			{ set category_type "" }
-    }
-    return $category_type
+    return [db_string ocat "select type_category_type from acs_object_types where object_type = :object_type" -default ""]
 }
 
 
@@ -61,20 +71,7 @@ ad_proc -public im_dynfield::status_category_for_object_type {
 } {
     Get the category for the status_id of a given object_type
 } {
-    switch $object_type {
-	im_project		{ set category_status "Intranet Project Status" }
-	im_ticket		{ set category_status "Intranet Ticket Status" }
-	im_company		{ set category_status "Intranet Project Status" }
-	im_office		{ set category_status "Intranet Office Status" }
-	user			{ set category_status "Intranet Project Status" }
-	im_freelance_rfq	{ set category_status "Intranet Freelance RFQ Status" }
-	im_freelance_rfq_answer	{ set category_status "Intranet Freelance RFQ Answer Status" }
-	im_user_absence		{ set category_status "Intranet Absence Status" }
-	im_expense		{ set category_status "Intranet Cost Status" }
-	im_expense_bundle	{ set category_status "Intranet Cost Status" }
-	default			{ set category_status "" }
-    }
-    return $category_status
+    return [db_string ocat "select status_category_type from acs_object_types where object_type = :object_type" -default ""]
 }
 
 
@@ -87,6 +84,7 @@ ad_proc -public im_dynfield::attribute::get {
 } {
     Get the info on an im_dynfield_attribute
 } {
+    eeerror
     upvar 1 $array row
     db_1row select_attribute_info {} -column_array row
 }
@@ -115,6 +113,8 @@ ad_proc -public im_dynfield::attribute::widget {
 } {
     @return an ad_form encoded attribute widget
 } {
+    eeerror
+
     set attribute_widget [im_dynfield::attribute::widget_cached -im_dynfield_attribute_id $im_dynfield_attribute_id]
 
     if { [string is false $required_p] } {
@@ -144,6 +144,7 @@ ad_proc -private im_dynfield::attribute::widget_not_cached {
     Returns an ad_form encoded attribute widget list, as used by other procs.
     @see im_dynfield::attribute::widget_cached
 } {
+    eeerror
     db_1row select_attribute {}
 
     set attribute_widget "${attribute_name}:${datatype}(${widget})"
@@ -172,6 +173,7 @@ ad_proc -private im_dynfield::attribute::widget_cached {
     Returns an ad_form encoded attribute widget list, as used by other procs. Cached.
     @see im_dynfield::attribute::widget_not_cached
 } {
+    eeerror
     return [util_memoize [list im_dynfield::attribute::widget_not_cached -im_dynfield_attribute_id $im_dynfield_attribute_id]]
 }
 
@@ -182,6 +184,7 @@ ad_proc -private im_dynfield::attribute::widget_flush {
     Returns an ad_form encoded attribute widget list, as used by other procs. Flush.
     @see im_dynfield::attribute::widget_not_cached
 } {
+    eeerror
     return [util_memoize_flush [list im_dynfield::attribute::widget_not_cached -im_dynfield_attribute_id $im_dynfield_attribute_id]]
 }
 
@@ -218,11 +221,10 @@ ad_proc -private im_dynfield::attribute::exists_p_flush {
     -object_type:required
     -attribute_name:required
 } {
-    
     does an attribute with this given attribute_name for this object type exists? Flush.
-
     @return im_dynfield_attribute_id if none exists then it returns blank
 } {
+    eeerror
     return [util_memoize_flush [list im_dynfield::attribute::get_im_dynfield_attribute_id_not_cached -object_type $object_type -attribute_name $attribute_name]]
 }
 
@@ -231,12 +233,10 @@ ad_proc -private im_dynfield::attribute::get_im_dynfield_attribute_id {
     -object_type:required
     -attribute_name:required
 } {
-    
     return the im_dynfield_attribute_id for the given im_dynfield_attriubte_name belonging to this object_type. Cached.
-
     @return im_dynfield_attribute_id if none exists then it returns blank
 } {
-
+    eeerror
     return [util_memoize [list im_dynfield::attribute::get_im_dynfield_attribute_id_not_cached -object_type $object_type -attribute_name $attribute_name]]
 }
 
@@ -244,12 +244,10 @@ ad_proc -private im_dynfield::attribute::get_im_dynfield_attribute_id_not_cached
     -object_type:required
     -attribute_name:required
 } {
-    
     return the im_dynfield_attribute_id for the given im_dynfield_attriubte_name belonging to this object_type.
-
     @return im_dynfield_attribute_id if none exists then it returns blank
 } {
-
+    eeerror
     return [db_string get_im_dynfield_attribute_id {} -default {}]
 }
 
@@ -257,12 +255,10 @@ ad_proc -private im_dynfield::attribute::get_im_dynfield_attribute_id_flush {
     -object_type:required
     -attribute_name:required
 } {
-    
     return the im_dynfield_attribute_id for the given im_dynfield_attriubte_name belonging to this object_type. Flush.
-
     @return im_dynfield_attribute_id if none exists then it returns blank
 } {
-
+    eeerror
     return [util_memoize_flush [list im_dynfield::attribute::get_im_dynfield_attribute_id_not_cached -object_type $object_type -attribute_name $attribute_name]]
 }
 
@@ -281,20 +277,17 @@ ad_proc -public im_dynfield::attribute::new {
     {-options}
 } {
     create a new im_dynfield_attribute
-
     <p><dt><b>widget_name</b></dt><p>
     <dd>
        This should be a widget_name used by intranet-dynfield. All available widgets can be found at <a href="/intranet-dynfield/widgets">/intranet-dynfield/widgets</a>.
     </dd>
     </dl>
-
-
     @param context_id defaults to package_id
     @param no_complain silently ignore attributes that already exist.
     @param options a list of options for an im_dynfield_object that has the im_dynfield_options storage type the options will be ordered in the order of the list
     @return im_dynfield_attribute_id
 } {
-
+    eeerror
     switch $widget_name {
 	textbox  { set widget_name "textbox_medium" }
 	textarea { set widget_name "textarea_medium" }
@@ -351,12 +344,11 @@ ad_proc -private im_dynfield::attribute::name_not_cached {
     -im_dynfield_attribute_id:required
 } {
     get the name of an im_dynfield_attribute
-
     @return attribute_name
-
     @see im_dynfield::attribute::name
     @see im_dynfield::attribute::name_flush
 } {
+    eeerror
     return [db_string im_dynfield_attribute_name {}]
 }
 
@@ -365,12 +357,11 @@ ad_proc -public im_dynfield::attribute::name {
     -im_dynfield_attribute_id:required
 } {
     get the name of an im_dynfield_attribute. Cached.
-
     @return attribute pretty_name
-
     @see im_dynfield::attribute::name_not_cached
     @see im_dynfield::attribute::name_flush
 } {
+    eeerror
     return [util_memoize [list im_dynfield::attribute::name_not_cached -im_dynfield_attribute_id $im_dynfield_attribute_id]]
 }
 
@@ -385,6 +376,7 @@ ad_proc -private im_dynfield::attribute::name_flush {
     @see im_dynfield::attribute::name_not_cached
     @see im_dynfield::attribute::name_flush
 } {
+    eeerror
     util_memoize_flush [list im_dynfield::attribute::name_not_cached -im_dynfield_attribute_id $im_dynfield_attribute_id]
 }
 
@@ -399,6 +391,7 @@ ad_proc -private im_dynfield::attribute::storage_type_not_cached {
     @see im_dynfield::attribute::storage_type
     @see im_dynfield::attribute::storage_type_flush
 } {
+    eeerror
     return [db_string im_dynfield_attribute_storage_type {}]
 }
 
@@ -413,6 +406,7 @@ ad_proc -public im_dynfield::attribute::storage_type {
     @see im_dynfield::attribute::storage_type_not_cached
     @see im_dynfield::attribute::storage_type_flush
 } {
+    eeerror
     return [util_memoize [list im_dynfield::attribute::storage_type_not_cached -im_dynfield_attribute_id $im_dynfield_attribute_id]]
 }
 
@@ -427,6 +421,7 @@ ad_proc -private im_dynfield::attribute::storage_type_flush {
     @see im_dynfield::attribute::storage_type_not_cached
     @see im_dynfield::attribute::storage_type_flush
 } {
+    eeerror
     util_memoize_flush [list im_dynfield::attribute::storage_type_not_cached -im_dynfield_attribute_id $im_dynfield_attribute_id]
 }
 
@@ -436,6 +431,7 @@ ad_proc -public im_dynfield::attribute::value {
 } {
     this code returns the cached attribute value for a specific im_dynfield_attribute
 } {
+    eeerror
     set attribute_values_and_ids [im_dynfield::object::attributes::list_format -object_id $object_id]
     set attribute_value ""
     foreach attribute_value_and_id $attribute_values_and_ids {
@@ -453,6 +449,7 @@ ad_proc -public im_dynfield::attribute::value_from_name {
 } {
     this code returns the cached attribute value for a specific im_dynfield_attribute
 } {
+    eeerror
     return [im_dynfield::attribute::value -object_id $object_id [im_dynfield::attribute::get_im_dynfield_attribute_id -object_type $object_type -attribute_name $attribute_name]]
 }
 
@@ -466,6 +463,7 @@ ad_proc -public im_dynfield::attribute::value::new {
 } {
     this code saves attributes input in a form
 } {
+    eeerror
     set storage_type [im_dynfield::attribute::storage_type -im_dynfield_attribute_id $im_dynfield_attribute_id]
     set option_map_id ""
     set address_id ""
@@ -510,6 +508,7 @@ ad_proc -public im_dynfield::attribute::value::superseed {
 } {
     superseed an attribute value
 } {
+    eeerror
     db_dml superseed_attribute_value {}
 }
 
@@ -518,16 +517,17 @@ namespace eval im_dynfield::multirow {}
 ad_proc -private im_dynfield::multirow::extend {
     -package_key:required
     -object_type:required
-    -list_name:required
+    -list_names:required
     -multirow:required
     -key:required
 } {
     append im_dynfield_attribute_values to a multirow
 } {
-    set list_id [im_dynfield::list::get_list_id \
+    eeerror
+    set list_id [ams::list::get_list_id \
 		     -package_key $package_key \
 		     -object_type $object_type \
-		     -list_name $list_name]
+		     -list_names $list_names]
 
 
     # first we make sure all the attribute_values are efficiently cached
@@ -542,7 +542,7 @@ ad_proc -private im_dynfield::multirow::extend {
     }
 
     # now we extend the multirow with the im_dynfield_attribute_names
-    set im_dynfield_attribute_ids [im_dynfield::list::im_dynfield_attribute_ids -list_id $list_id]
+    set im_dynfield_attribute_ids [ams::list::im_dynfield_attribute_ids -list_id $list_id]
     set im_dynfield_attribute_names {}
     foreach im_dynfield_attribute_id $im_dynfield_attribute_ids {
 	set im_dynfield_attribute_name [im_dynfield::attribute::name -im_dynfield_attribute_id $im_dynfield_attribute_id]
@@ -580,6 +580,7 @@ ad_proc -private im_dynfield::object::attribute::value_memoize {
 } {
     memoize an im_dynfield::object::attribute::value
 } {
+    eeerror
     if { [string is true [util_memoize_cached_p [list im_dynfield::object::attribute::values_not_cached -object_id $object_id]]] } {
 	array set $object_id [util_memoize [list im_dynfield::object::attribute::values_not_cached -object_id $object_id]]	
     }
@@ -593,6 +594,7 @@ ad_proc -public  im_dynfield::object::attribute::value {
     -im_dynfield_attribute_id:required
 } {
 } {
+    eeerror
     im_dynfield::object::attribute::values -array $object_id -object_id $object_id
     if { [info exists ${object_id}($im_dynfield_attribute_id)] } {
 	return ${object_id}($im_dynfield_attribute_id)
@@ -610,9 +612,9 @@ ad_proc -public  im_dynfield::object::attribute::values {
     @param ids - if specified we will return the im_dynfield_attribute_id instead of the attribute_name
     @param array - if specified the attribute values are returned in the given array
     @param vars - if sepecified the attribute values vars are returned to the calling environment
-
     if neither array nor vars are specified then a list is returned
 } {
+    eeerror
     set attribute_values_list [util_memoize [list im_dynfield::object::attribute::values_not_cached -object_id $object_id]]
     if { !$ids_p } {
 	set attribute_values_list_with_names ""
@@ -643,6 +645,7 @@ ad_proc -private im_dynfield::object::attribute::values_not_cached {
     -object_id:required
 } {
 } {
+    eeerror
     im_dynfield::object::attribute::values_batch_process -object_id_list $object_id
     if { [string is true [util_memoize_cached_p [list im_dynfield::object::attribute::values_not_cached -object_id $object_id]]] } {
 	return [util_memoize [list im_dynfield::object::attribute::values_not_cached -object_id $object_id]]	
@@ -656,6 +659,7 @@ ad_proc -private im_dynfield::object::attribute::values_flush {
     -object_id:required
 } {
 } {
+    eeerror
     return [util_memoize_flush [list im_dynfield::object::attribute::values_not_cached -object_id $object_id]]
 }
 
@@ -666,6 +670,7 @@ ad_proc -private im_dynfield::object::attribute::values_batch_process {
     @param object_ids a list of object_ids for which to save attributes in their respective caches.
     get these objects attribute values in a list format
 } {
+    eeerror
     set objects_to_cache ""
     foreach object_id_from_list $object_id_list {
 	if { [string is false [util_memoize_cached_p [list im_dynfield::object::attribute::values -object_id $object_id_from_list]]] } {
@@ -713,9 +718,9 @@ ad_proc -public im_dynfield::object::revision::new {
     -object_id:required
 } {
     create a new im_dynfield_object_revision
-
     @return revision_id
 } {
+    eeerror
     if { [empty_string_p $package_id] } {
 	set package_id [im_dynfield::package_id]
     }
@@ -729,218 +734,6 @@ ad_proc -public im_dynfield::object::revision::new {
 
 
 
-
-namespace eval im_dynfield::list {}
-
-ad_proc -public im_dynfield::list::get {
-    -list_id:required
-    -array:required
-} {
-    Get the info on an im_dynfield_attribute
-} {
-    upvar 1 $array row
-    db_1row select_list_info {} -column_array row
-}
-
-ad_proc -private im_dynfield::list::im_dynfield_attribute_ids_not_cached {
-    -list_id:required
-} {
-    Get a list of im_dynfield_attributes.
-
-    @return list of im_dynfield_attribute_ids, in the correct order
-
-    @see im_dynfield::list::im_dynfield_attribute_ids
-    @see im_dynfield::list::im_dynfield_attribute_ids_flush
-} {
-    return [db_list im_dynfield_attribute_ids {}]
-}
-
-ad_proc -private im_dynfield::list::im_dynfield_attribute_ids {
-    -list_id:required
-} {
-    get this lists im_dynfield_attribute_ids. Cached.
-
-    @return list of im_dynfield_attribute_ids, in the correct order
-
-    @see im_dynfield::list::im_dynfield_attribute_ids_not_cached
-    @see im_dynfield::list::im_dynfield_attribute_ids_flush
-} {
-    return [util_memoize [list im_dynfield::list::im_dynfield_attribute_ids_not_cached -list_id $list_id]]
-}
-
-ad_proc -private im_dynfield::list::im_dynfield_attribute_ids_flush {
-    -list_id:required
-} {
-    Flush this lists im_dynfield_attribute_ids cache.
-
-    @return list of im_dynfield_attribute_ids, in the correct order
-
-    @see im_dynfield::list::im_dynfield_attribute_ids_not_cached
-    @see im_dynfield::list::im_dynfield_attribute_ids
-} {
-    return [util_memoize_flush [list im_dynfield::list::im_dynfield_attribute_ids_not_cached -list_id $list_id]]
-}
-
-
-
-ad_proc -private im_dynfield::list::exists_p {
-    -package_key:required
-    -object_type:required
-    -list_name:required
-} {
-    does an intranet-dynfield list like this exist?
-
-    @return 1 if the list exists for this object_type and package_key and 0 if the does not exist
-} {
-    set list_id [im_dynfield::list::get_list_id_not_cached -package_key $package_key -object_type $object_type -list_name $list_name]
-    if { [exists_and_not_null list_id] } {
-	return 1
-    } else {
-	return 0
-    }
-}
-
-ad_proc -private im_dynfield::list::flush {
-    -package_key:required
-    -object_type:required
-    -list_name:required
-} {
-    flush all inte info we have on an im_dynfield_list
-
-    @return 1 if the list exists for this object_type and package_key and 0 if the does not exist
-} {
-    im_dynfield::list::im_dynfield_attribute_ids_flush -list_id [im_dynfield::list::get_list_id_not_cached -package_key $package_key -object_type $object_type -list_name $list_name]
-    im_dynfield::list::get_list_id_flush -package_key $package_key -object_type $object_type -list_name $list_name
-}
-
-ad_proc -private im_dynfield::list::get_list_id {
-    -package_key:required
-    -object_type:required
-    -list_name:required
-} {
-    
-    return the list_id for the given parameters. Chached.
-
-    @return list_id if none exists then it returns blank
-} {
-    return [util_memoize [list im_dynfield::list::get_list_id_not_cached -package_key $package_key -object_type $object_type -list_name $list_name]]
-}
-
-
-ad_proc -private im_dynfield::list::get_list_id_not_cached {
-    -package_key:required
-    -object_type:required
-    -list_name:required
-} {
-    return the list_id for the given parameters
-
-    @return list_id if none exists then it returns blank
-} {
-
-    return [db_string get_list_id {} -default {}]
-}
-
-ad_proc -private im_dynfield::list::get_list_id_flush {
-    -package_key:required
-    -object_type:required
-    -list_name:required
-} {
-    
-    flush the memorized list_id for the given parameters.
-
-    @return list_id if none exists then it returns blank
-} {
-    return [util_memoize_flush [list im_dynfield::list::get_list_id_not_cached -package_key $package_key -object_type $object_type -list_name $list_name]]
-}
-
-ad_proc -public im_dynfield::list::new {
-    {-list_id ""}
-    -package_key:required
-    -object_type:required
-    -list_name:required
-    -pretty_name:required
-    {-description ""}
-    {-description_mime_type "text/plain"}
-    {-context_id ""}
-} {
-    create a new im_dynfield_group
-
-    @return group_id
-} {
-    if { [empty_string_p $context_id] } {
-	set context_id [im_dynfield::package_id]
-    }
-    if { ![exists_and_not_null description] } {
-	set description_mime_type ""
-    }
-    set lang_key "intranet-dynfield.$package_key\:$object_type\:$list_name"
-    _mr en $lang_key $pretty_name
-    set pretty_name $lang_key
-
-    if { [exists_and_not_null description] } {
-	set lang_key "intranet-dynfield.$package_key\:$object_type\:$list_name\:description"
-	_mr en $lang_key $description
-	set description $lang_key
-    }
-
-    set extra_vars [ns_set create]
-    oacs_util::vars_to_ns_set -ns_set $extra_vars -var_list { list_id package_key object_type list_name pretty_name description description_mime_type }
-    set list_id [package_instantiate_object -extra_vars $extra_vars im_dynfield_list]
-
-    return $list_id
-}
-
-
-namespace eval im_dynfield::list::attribute {}
-
-ad_proc -public im_dynfield::list::attribute::map {
-    -list_id:required
-    -im_dynfield_attribute_id:required
-    {-sort_order ""}
-    {-required_p "f"}
-    {-section_heading ""}
-} {
-    Map an intranet-dynfield option for an attribute to an option_map_id, if no value is supplied for option_map_id a new option_map_id will be created.
-
-    @param sort_order if null then the attribute will be placed as the last attribute in this groups sort order
-
-    @return option_map_id
-} {
-    if { ![exists_and_not_null sort_order] } {
-	set sort_order [expr 1 + [db_string get_highest_sort_order {} -default "0"]]
-    }
-    return [db_exec_plsql im_dynfield_list_attribute_map {}]
-}
-
-ad_proc -public im_dynfield::list::attribute::unmap {
-    -list_id:required
-    -im_dynfield_attribute_id:required
-} {
-    Unmap an intranet-dynfield option from an intranet-dynfield list
-} {
-    db_dml im_dynfield_list_attribute_unmap {}
-}
-
-ad_proc -public im_dynfield::list::attribute::required {
-    -list_id:required
-    -im_dynfield_attribute_id:required
-} {
-    Specify and im_dynfield_attribute as required in an intranet-dynfield list
-} {
-    db_dml im_dynfield_list_attribute_required {}
-}
-
-ad_proc -public im_dynfield::list::attribute::optional {
-    -list_id:required
-    -im_dynfield_attribute_id:required
-} {
-    Specify and im_dynfield_attribute as optional in an intranet-dynfield list
-} {
-    db_dml im_dynfield_list_attribute_optional {}
-}
-
-
-
 namespace eval im_dynfield::util {}
 
 
@@ -948,6 +741,7 @@ namespace eval im_dynfield::util {}
 ad_proc -public im_dynfield::util::sqlify_list {
     -list:required
 } {
+    eeerror
     set output_list {}
     foreach item $list {
 	if { [exists_and_not_null output_list] } {
@@ -974,6 +768,7 @@ ad_proc -public im_dynfield::attribute_load {
 } {
     set intranet-dynfield attributes values
 } {
+    eeerror
     db_1row object_type_info "
 	select \
 		table_name,\
@@ -1039,7 +834,7 @@ ad_proc -public im_dynfield::attribute_show {
     @option style	     The adp file you want to use for the templating, full path '/web/server/package/...'.
 			      This overwrite the defaults explained in the 'positioning' cases.
 } {
-
+    eeerror
     if { [empty_string_p $page_url] } {
 	# get default page_url
 	set page_url [db_string get_default_page "
@@ -1369,7 +1164,6 @@ ad_proc -public im_dynfield::set_form_values_from_http {
     This procedure is usefule when using an ad_form as a "filter"
     selector in P/O index ("report") pages, to pass the URL
     parameters to the form.
-
     @param form_id:
 		search form id
     @return:
@@ -1458,9 +1252,10 @@ ad_proc -public im_dynfield::attribute_store {
 
     if {"" == $user_id} { set user_id [ad_get_user_id] }
     set object_id_org $object_id
-    ns_log Notice "im_dynfield::attribute_store: object_type=$object_type, object_id=$object_id_org, form_id=$form_id"
+    set object_type_org $object_type
+    ns_log Notice "im_dynfield::attribute_store: object_type=$object_type_org, object_id=$object_id_org, form_id=$form_id"
 
-    # Get the list of all variables of the last form
+    # Get the list of all variables of the form
     template::form get_values $form_id
 
     # Get object_type main table and column id
@@ -1468,7 +1263,7 @@ ad_proc -public im_dynfield::attribute_store {
 	select	table_name as main_table,
 		id_column as main_table_id_column
 	from	acs_object_types
-	where 	object_type = :object_type
+	where 	object_type = :object_type_org
     "
 
     # -------------------------------------------------
@@ -1483,11 +1278,12 @@ ad_proc -public im_dynfield::attribute_store {
 		im_dynfield_widgets dw
 	where
 		da.acs_attribute_id = aa.attribute_id
-		and aa.object_type = :object_type
+		and aa.object_type = :object_type_org
 		and da.widget_name = dw.widget_name
 		and 't' = acs_permission__permission_p(da.attribute_id, :user_id, 'write')
+	order by aa.attribute_name
     "
-    set update_lines [list]
+    array set update_lines {}
     db_foreach attributes $attribute_sql {
 
 	# Skip attributes that do not exists in (the partial) form.
@@ -1507,10 +1303,16 @@ ad_proc -public im_dynfield::attribute_store {
 	    set widget_element [template::element::get_property $form_id $attribute_name widget]
 	    switch $widget_element {
 		date {
-		    lappend update_lines "\n\t\t\t$attribute_name = [template::util::date::get_property sql_date [set $attribute_name]]"
+		    set ulines [list]
+		    if {[info exists update_lines($table_name)]} { set ulines $update_lines($table_name) }
+		    lappend ulines "\n\t\t\t$attribute_name = [template::util::date::get_property sql_date [set $attribute_name]]"
+		    set update_lines($table_name) $ulines
 		}
 		default {
-		    lappend update_lines "\n\t\t\t$attribute_name = :$attribute_name"
+		    set ulines [list]
+		    if {[info exists update_lines($table_name)]} { set ulines $update_lines($table_name) }
+		    lappend ulines "\n\t\t\t$attribute_name = :$attribute_name"
+		    set update_lines($table_name) $ulines
 		}
 	    }
 
@@ -1533,14 +1335,24 @@ ad_proc -public im_dynfield::attribute_store {
 	}
     }
 
-    # Execute the update statement, assuming that all
-    # variables will be available as local variables.
-    if {[llength $update_lines] > 0} {
-	set sql "
-		update $main_table set[join $update_lines ","]
-		where $main_table_id_column = :object_id_org
-	"
-	db_dml update_object $sql
+    foreach table_name [array names update_lines] {
+
+	# Get the index column for the table_name
+	set table_index_column [util_memoize "db_string icol \"select id_column from acs_object_type_tables where table_name = '$table_name'\" -default {}"]
+
+	# Get the update lines for each table
+	set ulines $update_lines($table_name)
+
+	# Execute the update statement, assuming that all
+	# variables will be available as local variables.
+	if {[llength $ulines] > 0} {
+	    set sql "
+		update $table_name set[join $ulines ","]
+		where $table_index_column = :object_id_org
+	    "
+	    db_dml update_object $sql
+	}
+	
     }
 }
 
@@ -1558,6 +1370,7 @@ ad_proc -public im_dynfield::attribute_store_badbug {
 } {
     store intranet-dynfield attributes 
 } {
+    eeerror
     if {"" == $user_id} { set user_id [ad_get_user_id] }
     ns_log Notice "im_dynfield::attribute_store: object_type=$object_type, object_id=$object_id, form_id=$form_id"
 
@@ -1887,11 +1700,6 @@ ad_proc -public im_dynfield::attribute_store_badbug {
 
 
 
-
-
-
-
-
 ad_proc -public im_dynfield::search_query {
     -object_type:required
     -form_id:required
@@ -1919,7 +1727,8 @@ ad_proc -public im_dynfield::search_query {
     	   <li><b>list_orderby</b>: intranet-dynfield attributes to append to orderby result elements </li>
     	</ul>
 } {
-	
+    eeerror
+
     # ------------------------------------------
     # Get the list of all variables of the last form
     # ------------------------------------------
@@ -2294,6 +2103,151 @@ ad_proc -public im_dynfield::subtype_have_same_attributes_p {
 
 
 
+
+
+
+ad_proc -public im_dynfield::widget_request {
+    -widget
+    -request 
+    -attribute_name 
+    -pretty_name 
+    -value 
+    -optional_p 
+    -form_name 
+    -attribute_id 
+    -html_options
+    { -display_mode "edit" }
+} {
+    Corresponds to ::ams::widget::${widget} functions to answer to "request".
+} {
+    set value [ams::util::text_value -value $value]
+    if { [llength $html_options] == 0 } { set html_options [list] }
+
+    set acs_datatype [db_string widget_datatype "select acs_datatype from im_dynfield_widgets where widget_name = :widget" -default "text"]
+    set custom_parameters [db_string widget_params "select parameters from im_dynfield_widgets where widget_name = :widget" -default ""]
+    set acs_widget [db_string widget_params "select widget from im_dynfield_widgets where widget_name = :widget" -default ""]
+
+    switch $request {
+
+        ad_form_widget  {
+
+	    set help_text [attribute::help_text -attribute_id $attribute_id] 
+
+	    set element [list]
+	    if { [string is true $optional_p] } {
+		lappend element ${attribute_name}:${acs_datatype}(${acs_widget}),optional 
+	    } else {
+		lappend element ${attribute_name}:text(text)
+	    }
+
+	    lappend element [list label ${pretty_name}]
+	    lappend element [list html $html_options]
+	    lappend element [list mode $display_mode]
+	    lappend element [list custom $custom_parameters]
+	    lappend element [list help_text $help_text]
+
+	    switch $widget {
+		checkbox - radio - select - multiselect - im_category_tree - category_tree {
+		    
+		    ns_log Notice "im_dynfield::widget_request: select-widgets: with options"
+		    set option_list ""
+		    set options_pos [lsearch $parameter_list "options"]
+		    if {$options_pos >= 0} {
+			set option_list [lindex $parameter_list [expr $options_pos + 1]]
+		    }
+		    
+		    if { [string eq $required_p "f"] && ![string eq $widget "checkbox"]} {
+			set option_list [linsert $option_list -1 [list " [_ intranet-dynfield.no_value] " ""]]
+		    }
+
+		    # Drop-down widgets need an options list
+		    lappend element [list options $option_list]
+
+		}
+		
+	    }
+	    return $element
+
+	}
+        template_form_widget  {
+	    if { [string is true $optional_p] } {
+		::template::element::create ${form_name} ${attribute_name} \
+		    -label ${pretty_name} \
+		    -datatype text \
+		    -widget text \
+		    -optional \
+		    -html $html_options
+	    } else {
+		::template::element::create ${form_name} ${attribute_name} \
+		    -label ${pretty_name} \
+		    -datatype text \
+		    -widget text \
+		    -html $html_options
+	    }
+	}
+        form_set_value {
+	    ::template::element::set_value ${form_name} ${attribute_name} $value
+	}
+        form_save_value {
+	    set value [::template::element::get_value ${form_name} ${attribute_name}]
+	    return [ams::util::text_save -text $value -text_format "text/plain"]
+	}
+        value_text {
+
+#	    set status [template::util::aim::status -username $value]
+#
+            # getting the status can take too long. so we return it for html views
+            # but do not return it for text. This is in part because text exports 
+            # are often used for csv export and the like.
+	    return $value
+	}
+        value_html {
+
+#	    switch $status {
+#		"online"  {set status_html "<img src=\"/resources/ams/aim_online.gif\" alt\"online\" />"}
+#		"offline" {set status_html "<img src=\"/resources/ams/aim_offline.gif\" alt=\"offline\" />"}
+#		default   {set status_html "Not A Valid ID"}
+#	    }
+	    return "$value [template::util::aim::status_img -username $value]"
+
+	}
+        csv_value {
+	    # not yet implemented
+	}
+        csv_headers {
+	    # not yet implemented
+	}
+        csv_save {
+	    # not yet implemented
+	}
+	widget_datatypes {
+	    return [list "string"]
+	}
+	widget_name {
+	    return $widget
+#	    return [_ "intranet-dynfield.AIM"]
+	}
+	value_method {
+	    set acs_widget [db_string widget_type "select widget from im_dynfield_widgets where widget_name = :widget" -default ""]
+	    switch $acs_widget {
+		checkbox - multiselect - category_tree - im_category_tree - radio - select - generic_sql - im_cost_center_tree {
+		    return "ams_value__options"
+		}
+		date {
+		    return "ams_value__time"
+		}
+		default {
+		    return "ams_value__text"
+		}
+	    }
+	}
+    }
+
+}
+
+
+
+
 ad_proc -public im_dynfield::append_attributes_to_form {
     {-object_subtype_id "" }
     -object_type:required
@@ -2302,6 +2256,8 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     {-search_p "0"}
     {-form_display_mode "edit" }
     {-advanced_filter_p 0}
+    {-include_also_hard_coded_p 0 }
+    {-page_url "default" }
 } {
     Append intranet-dynfield attributes for object_type to an existing form.<p>
     @option object_type The object_type attributes you want to add to the form
@@ -2309,6 +2265,13 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     @option advanced_filter_p Tells us that the dynfields are used for an 
             "advanced filter" as oposed to a data form. Text fields dont make
             much sense here, so we'll skip them.
+
+    @param include_also_hard_coded_p Should we include fields that are also hard
+            coded in ]po[ screens?
+
+    @param page_url
+		Serves to identify the page layout.
+
     @return Returns the number of added fields
 
     The code consists of two main parts:
@@ -2320,15 +2283,9 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 } {
     set debug 0
     if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: object_type=$object_type, object_id=$object_id" }
-
     set user_id [ad_get_user_id]
 
-    # ---------------------------- Create the Form --------------------------
-    if {![template::form exists $form_id]} {
-	if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: creating the form" }
-    	template::form create $form_id
-    }
-	
+    # Add a hidden "object_type" field to the form
     if {![template::element::exists $form_id "object_type"]} {
 	if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: creating object_type=$object_type" }
     	template::element create $form_id "object_type" \
@@ -2337,7 +2294,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     			    -value  $object_type
     }
     
-    # object_id only necessary in edit mode
+    # add a hidden object_id field to the form
     if {[exists_and_not_null object_id]} {
     	if {![template::element::exists $form_id "object_id"]} {
 	    if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: creating object_id=$object_id" }
@@ -2362,6 +2319,8 @@ ad_proc -public im_dynfield::append_attributes_to_form {
                 and a.acs_attribute_id = aa.attribute_id
                 and aa.object_type = :object_type
     "
+
+#    if {!$include_also_hard_coded_p} { append sql "\t\tand also_hard_coded_p = 'f'\n" } 
 
     # Default: Set all field to form's display mode
     set default_display_mode $form_display_mode
@@ -2403,42 +2362,57 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     }
     set extra_where [join $extra_wheres "\n\t\tand "]
 
+    # Does the specified layout page exist? Otherwise we'll use
+    # "default".
+    set page_url_exists_p [db_string exists "select count(*) from im_dynfield_layout_pages where object_type = :object_type and page_url = :page_url"]
+    if {!$page_url_exists_p} { set page_url "default" }
+
     set attributes_sql "
-	select a.attribute_id,
-		aa.attribute_id as dynfield_attribute_id,
-		a.table_name as attribute_table_name,
-		tt.id_column as attribute_id_column,
-		a.attribute_name,
-		a.pretty_name,
-		a.datatype, 
-		case when a.min_n_values = 0 then 'f' else 't' end as required_p, 
-		a.default_value, 
-		aw.widget,
-		aw.parameters,
-		aw.storage_type_id,
-		im_category_from_id(aw.storage_type_id) as storage_type
-	from
-		im_dynfield_attributes aa
-		LEFT OUTER JOIN
-			(select * from im_dynfield_layout where page_url = '') dl
-			ON (aa.attribute_id = dl.attribute_id),
-		im_dynfield_widgets aw,
-		acs_attributes a 
-		left outer join 
-			acs_object_type_tables tt 
-			on (tt.object_type = :object_type and tt.table_name = a.table_name)
-	where 
-		a.object_type = :object_type
-		and a.attribute_id = aa.acs_attribute_id
-		and aa.widget_name = aw.widget_name
-		and $extra_where
+	select *
+	from (
+		select
+			dl.*,
+			coalesce(dl.pos_y, 10000 + a.attribute_id) as pos_y_coalesce,
+			a.attribute_id,
+			aa.attribute_id as dynfield_attribute_id,
+			a.table_name as attribute_table_name,
+			tt.id_column as attribute_id_column,
+			a.attribute_name,
+			a.pretty_name,
+			a.datatype, 
+			case when a.min_n_values = 0 then 'f' else 't' end as required_p, 
+			a.default_value, 
+			aw.widget,
+			aw.parameters,
+			aw.storage_type_id,
+			im_category_from_id(aw.storage_type_id) as storage_type
+		from
+			im_dynfield_attributes aa
+			LEFT OUTER JOIN	(
+				select	* 
+				from	im_dynfield_layout 
+				where	page_url = :page_url
+			) dl ON (aa.attribute_id = dl.attribute_id),
+			im_dynfield_widgets aw,
+			acs_attributes a 
+			left outer join 
+				acs_object_type_tables tt 
+				on (tt.object_type = :object_type and tt.table_name = a.table_name)
+		where 
+			a.object_type = :object_type
+			and a.attribute_id = aa.acs_attribute_id
+			and aa.widget_name = aw.widget_name
+			and $extra_where
+		) t
 	order by
-		dl.pos_y,
-		aa.attribute_id
+		pos_y_coalesce
     "
 
     set field_cnt 0
     db_foreach attributes $attributes_sql {
+
+	# Check if the elements as disabled in the layout page
+	if {$page_url_exists_p && "" == $page_url} { continue }
 
 	# Check if the current user has the right to read and write on the dynfield
 	set read_p [im_object_permission \
@@ -2467,7 +2441,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	if {"none" == $display_mode} { continue }
 
 
-	if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: attribute_name=$attribute_name, datatype=$datatype, widget=$widget, storage_type_id=$storage_type_id" }
+	ns_log Notice "im_dynfield::append_attributes_to_form: attribute_name=$attribute_name, datatype=$datatype, widget=$widget, storage_type_id=$storage_type_id"
 
 	# set optional all attributes if search mode
 	if {$search_p} { set required_p "f" }
@@ -2475,78 +2449,20 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	# No help yet...
 	set help ""
 
-	# Might translate the datatype into one for which we have a
-	# validator (e.g. a string datatype would change into text).
-	set translated_datatype [attribute::translate_datatype $datatype]
-	if {$datatype == "number"} {
-	    set translated_datatype "float"
-	} elseif {$datatype == "date"} {
-	    set translated_datatype "date"
-	}
+	im_dynfield::append_attribute_to_form \
+	    -attribute_name $attribute_name \
+	    -widget $widget \
+	    -form_id $form_id \
+	    -datatype $datatype \
+	    -display_mode $display_mode \
+	    -parameters $parameters \
+	    -required_p $required_p \
+	    -pretty_name $pretty_name \
+	    -help $help
 
-	set parameter_list [lindex $parameters 0]
-
-	# Find out if there is a "custom" parameter and extract its value
-	# "Custom" is the parameter to pass-on widget parameters from the
-	# DynField Maintenance page to certain form Widgets.
-	# Example: "custom {sql {select ...}}" in the "generic_sql" widget.
-	set custom_parameters ""
-	set custom_pos [lsearch $parameter_list "custom"]
-	if {$custom_pos >= 0} {
-	    set custom_parameters [lindex $parameter_list [expr $custom_pos + 1]]
-	}
-	
-	set html_parameters ""
-	set html_pos [lsearch $parameter_list "html"]
-	if {$html_pos >= 0} {
-	    set html_parameters [lindex $parameter_list [expr $html_pos + 1]]
-	}
-
-        switch $widget {
-	    checkbox - radio - select - multiselect - im_category_tree - category_tree {
-
-		if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: select-widgets: with options" }
-		set option_list ""
-		set options_pos [lsearch $parameter_list "options"]
-		if {$options_pos >= 0} {
-		    set option_list [lindex $parameter_list [expr $options_pos + 1]]
-		}
-
-		if { [string eq $required_p "f"] && ![string eq $widget "checkbox"]} {
-		    set option_list [linsert $option_list -1 [list " [_ intranet-dynfield.no_value] " ""]]
-    		}
-
-    		if {![template::element::exists $form_id "$attribute_name"]} {
-		    template::element create $form_id "$attribute_name" \
-			-datatype "text" [ad_decode $required_p "f" "-optional" ""] \
-			-widget $widget \
-			-label "$pretty_name" \
-			-options $option_list \
-			-custom $custom_parameters \
-			-html $html_parameters \
-			-help $help \
-			-mode $display_mode
-		}
-	    }
-
-	    default {
-
-		if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: default: no options" }
-		if {![template::element::exists $form_id "$attribute_name"]} {
-		    template::element create $form_id "$attribute_name" \
-			-datatype $translated_datatype [ad_decode $required_p f "-optional" ""] \
-			-widget $widget \
-			-label $pretty_name \
-			-html $html_parameters \
-			-custom $custom_parameters\
-			-help $help \
-			-mode $display_mode
-		}
-	    }
-	}
 	incr field_cnt
-    }
-	
+
+    }	
 
     # That's all until here IF this is a new object. Otherwise, we'll need 
     # to retreive the object's values from several tables and from the multi-fields...
@@ -2557,6 +2473,9 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
     # Same loop as before...
     db_foreach attributes $attributes_sql {
+
+	# Check if the elements as disabled in the layout page
+	if {$page_url_exists_p && "" == $page_url} { continue }
 
 	# Check if the current user has the right to read the dynfield
 	if {![im_object_permission -object_id $dynfield_attribute_id -user_id $user_id]} { continue }
@@ -2616,6 +2535,93 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     }
     
     return $field_cnt
+}
+
+
+
+
+
+ad_proc -public im_dynfield::append_attribute_to_form {
+    -widget:required
+    -form_id:required
+    -datatype:required
+    -display_mode:required
+    -parameters:required
+    -required_p:required
+    -attribute_name:required
+    -pretty_name:required
+    -help:required
+} {
+    Append a single attribute to a form
+} {
+    # Might translate the datatype into one for which we have a
+    # validator (e.g. a string datatype would change into text).
+    set translated_datatype [attribute::translate_datatype $datatype]
+    if {$datatype == "number"} {
+	set translated_datatype "float"
+    } elseif {$datatype == "date"} {
+	set translated_datatype "date"
+    }
+    
+    set parameter_list [lindex $parameters 0]
+    
+    # Find out if there is a "custom" parameter and extract its value
+    # "Custom" is the parameter to pass-on widget parameters from the
+    # DynField Maintenance page to certain form Widgets.
+    # Example: "custom {sql {select ...}}" in the "generic_sql" widget.
+    set custom_parameters ""
+    set custom_pos [lsearch $parameter_list "custom"]
+    if {$custom_pos >= 0} {
+	set custom_parameters [lindex $parameter_list [expr $custom_pos + 1]]
+    }
+    
+    set html_parameters ""
+    set html_pos [lsearch $parameter_list "html"]
+    if {$html_pos >= 0} {
+	set html_parameters [lindex $parameter_list [expr $html_pos + 1]]
+    }
+    
+    switch $widget {
+	checkbox - radio - select - multiselect - im_category_tree - category_tree {
+	    
+	    ns_log Notice "im_dynfield::append_attribute_to_form: select-widgets: with options"
+	    set option_list ""
+	    set options_pos [lsearch $parameter_list "options"]
+	    if {$options_pos >= 0} {
+		set option_list [lindex $parameter_list [expr $options_pos + 1]]
+	    }
+	    
+	    if { [string eq $required_p "f"] && ![string eq $widget "checkbox"]} {
+		set option_list [linsert $option_list -1 [list " [_ intranet-dynfield.no_value] " ""]]
+	    }
+	    if {![template::element::exists $form_id "$attribute_name"]} {
+		template::element create $form_id "$attribute_name" \
+		    -datatype "text" [ad_decode $required_p "f" "-optional" ""] \
+		    -widget $widget \
+		    -label "$pretty_name" \
+		    -options $option_list \
+		    -custom $custom_parameters \
+		    -html $html_parameters \
+		    -help_text $help \
+		    -mode $display_mode
+	    }
+	}
+	
+	default {
+	    
+	    ns_log Notice "im_dynfield::append_attribute_to_form: default: no options"
+	    if {![template::element::exists $form_id "$attribute_name"]} {
+		template::element create $form_id "$attribute_name" \
+		    -datatype $translated_datatype [ad_decode $required_p f "-optional" ""] \
+		    -widget $widget \
+		    -label $pretty_name \
+		    -html $html_parameters \
+		    -custom $custom_parameters\
+		    -help_text $help \
+		    -mode $display_mode
+	    }
+	}
+    }
 }
 
 
@@ -2698,6 +2704,7 @@ ad_proc -public im_dynfield::form {
     in the intranet-dynfield database.
     Please see the Intranet-Dynfield documentation for more details.
 } {
+    eeerror
     if { [empty_string_p $page_url] } {
 	# get default page_url
 	set page_url [db_string get_default_page {
@@ -3045,6 +3052,7 @@ ad_proc -public im_dynfield::attribute::delete {
 
     @param option_id
 } {
+    eeerror
     db_exec_plsql im_dynfield_attribute_delete {}
 }
 
@@ -3055,6 +3063,7 @@ ad_proc -public im_dynfield::package_id {} {
 
     @return package_id
 } {
+    eeerror
     return [ad_conn package_id]
 }
 
@@ -3065,88 +3074,6 @@ ad_proc -public im_dynfield::package_id {} {
 # The following procedures are just copied from the
 # original AMS code and probably don't work.
 # ------------------------------------------------------
-
-
-
-namespace eval im_dynfield::ad_form {}
-
-ad_proc -public im_dynfield::ad_form::save { 
-    -package_key:required
-    -object_type:required
-    -list_name:required
-    -form_name:required
-    -object_id:required
-} {
-    this code saves attributes input in a form
-} {
-
-    set list_id [im_dynfield::list::get_list_id -package_key $package_key -object_type $object_type -list_name $list_name]
-
-    im_dynfield::object::attribute::values -ids -array "oldvalues" -object_id $object_id
-    set im_dynfield_attribute_ids [im_dynfield::list::im_dynfield_attribute_ids -list_id $list_id]
-    set variables {}
-
-    foreach im_dynfield_attribute_id $im_dynfield_attribute_ids {
-	set storage_type     [im_dynfield::attribute::storage_type -im_dynfield_attribute_id $im_dynfield_attribute_id]
-	set attribute_name   [im_dynfield::attribute::name -im_dynfield_attribute_id $im_dynfield_attribute_id]
-	set attribute_value  [template::element::get_value $form_name $attribute_name]
-	if { $storage_type == "im_dynfield_options" } {
-	    # we always order the options_string in the order of the option_id
-	    # when doing internal processing
-	    set attribute_value [lsort [template::element::get_values $form_name $attribute_name]]
-	}
-	if { [info exists oldvalues($im_dynfield_attribute_id)] } {
-	    if { $attribute_value != $oldvalues($im_dynfield_attribute_id) } {
-		lappend variables $im_dynfield_attribute_id $attribute_value
-	    }
-	} else {
-	    if { [exists_and_not_null attribute_value] } {
-		lappend variables $im_dynfield_attribute_id $attribute_value
-	    }
-	}
-    }
-    if { [exists_and_not_null variables] } {
-
-	db_transaction {
-	    im_dynfield::object::attribute::values_flush -object_id $object_id
-	    set revision_id   [im_dynfield::object::revision::new -object_id $object_id]
-	    set im_dynfield_object_id [im_dynfield_object_id -object_id $object_id]
-	    foreach { im_dynfield_attribute_id attribute_value } $variables {
-		im_dynfield::attribute::value::superseed -revision_id $revision_id -im_dynfield_attribute_id $im_dynfield_attribute_id -im_dynfield_object_id $im_dynfield_object_id
-		if { [exists_and_not_null attribute_value] } {
-		    im_dynfield::attribute::value::new -revision_id $revision_id -im_dynfield_attribute_id $im_dynfield_attribute_id -attribute_value $attribute_value
-		}
-	    }
-	}
-    }
-    im_dynfield::object::attribute::values -object_id $object_id
-    return 1
-}
-
-ad_proc -public im_dynfield::ad_form::elements { 
-    -package_key:required
-    -object_type:required
-    -list_name:required
-    {-key ""}
-} {
-    this code saves retrieves ad_form elements
-} {
-    set list_id [im_dynfield::list::get_list_id -package_key $package_key -object_type $object_type -list_name $list_name]
-
-    set element_list ""
-    if { [exists_and_not_null key] } {
-	lappend element_list "$key\:key"
-    }
-    db_foreach select_elements {} {
-	if { $required_p } {
-	    lappend element_list [im_dynfield::attribute::widget -im_dynfield_attribute_id $im_dynfield_attribute_id -required]
-	} else {
-	    lappend element_list [im_dynfield::attribute::widget -im_dynfield_attribute_id $im_dynfield_attribute_id]
-	}
-    }
-    return $element_list
-}
-
 
 
 namespace eval im_dynfield::option {}
@@ -3170,7 +3097,7 @@ ad_proc -public im_dynfield::option::new {
 
     @return option_id    
 } {
-
+    eeerror
     set lang_key "intranet-dynfield.option:[im_dynfield::lang_key_encode -string $option]"
     _mr en $lang_key $option
     set option $lang_key
@@ -3186,6 +3113,7 @@ ad_proc -public im_dynfield::option::delete {
 
     @param option_id
 } {
+    eeerror
     db_exec_plsql im_dynfield_option_delete {}
 }
 
@@ -3201,7 +3129,62 @@ ad_proc -public im_dynfield::option::map {
 
     @return option_map_id
 } {
+    eeerror
     return [db_exec_plsql im_dynfield_option_map {}]
 }
 
 
+
+
+
+# ------------------------------------------------------------------
+# Compose the Pl/SQL call to create a new object
+# ------------------------------------------------------------------
+
+namespace eval im_dynfield::plsql {}
+
+ad_proc -public im_dynfield::plsql::new_object_create_call {
+    -object_type:required
+} {
+    Returns the Pl/SQL call to create a new object of type object_type.
+    The call expects that all relevant variables are available in the
+    calling variable frame.
+    The call returns the object_id of the new object.
+    Example:
+    im_report__new(null, 
+} {
+    set plsql_function "${object_type}__new"
+    set vars [db_list vars "
+	select	':'||lower(arg_name) as arg_name
+	from	acs_function_args
+	where	function = upper(:plsql_function)
+	order by arg_seq
+    "]
+    return "${plsql_function}([join $vars ","])"
+}
+
+
+ad_proc -public im_dynfield::plsql::required_variables {
+    -object_type:required
+} {
+    Returns the list of variables that need to be present in order to
+    execute the new_object_create_call Pl/SQL call successfully.
+} {
+    set plsql_function "${object_type}__new"
+    set index_column [im_dynfield::plsql::index_column -object_type $object_type]
+
+    return [db_list required_vars "
+	select	lower(arg_name) as arg_name
+	from	acs_function_args
+	where	function = upper(:plsql_function)
+		and lower(arg_name) != :index_column
+    "]
+}
+
+ad_proc -public im_dynfield::plsql::index_column {
+    -object_type:required
+} {
+    Returns the index column for the object's main table
+} {
+    return [db_string oindex_column "select id_column from acs_object_types where object_type = :object_type" -default ""]
+}

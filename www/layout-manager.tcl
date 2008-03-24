@@ -90,13 +90,18 @@ list::create \
 
 
 db_multirow -extend {details_url edit_url delete_url default_url} layout_pages get_pages "
-    select page_url, layout_type, default_p
-    from im_dynfield_layout_pages
-    where object_type = :object_type
-    [template::list::orderby_clause -name layout_list -orderby]
+	select 
+		page_url, 
+		layout_type, 
+		default_p
+	from 
+		im_dynfield_layout_pages
+	where
+		object_type = :object_type
+	[template::list::orderby_clause -name layout_list -orderby]
 " {
     if { $layout_type == "relative" } {
-    	set edit_url [export_vars -base "layout-page" { object_type page_url }] 
+	set edit_url [export_vars -base "layout-page" { object_type page_url }] 
     }
     set details_url [export_vars -base "layout-position" { object_type page_url }]
     set delete_url [export_vars -base "layout-del" { object_type page_url }]

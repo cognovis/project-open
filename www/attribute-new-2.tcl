@@ -195,6 +195,13 @@ set cats_sql "
 	where	category_type = :type_category
 "
 db_foreach cats $cats_sql {
+   
+    set exists_p [db_string exists "
+	select count(*) from im_dynfield_type_attribute_map 
+	where attribute_id = :attribute_id and object_type_id = :object_type_id
+    "]
+
+    if {!$exists_p} {
     db_dml insert "
 	insert into im_dynfield_type_attribute_map (
 		attribute_id,
@@ -206,6 +213,7 @@ db_foreach cats $cats_sql {
 		'edit'
 	)
     "
+    }
 }
 
 

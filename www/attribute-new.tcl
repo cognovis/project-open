@@ -48,6 +48,7 @@ if {0 != $attribute_id} {
 	case when a.min_n_values = 0 then 'f' else 't' end as required_p,
     	fa.widget_name,
 	fa.include_in_search_p,
+	fa.also_hard_coded_p,
 	dl.pos_x, dl.pos_y,
 	dl.size_x, dl.size_y,
 	dl.label_style, dl.div_class
@@ -55,7 +56,7 @@ if {0 != $attribute_id} {
 	acs_attributes a,
     	im_dynfield_attributes fa
 	LEFT OUTER JOIN
-		(select * from im_dynfield_layout where page_url = '') dl
+		(select * from im_dynfield_layout where page_url = 'default') dl
 		ON (fa.attribute_id = dl.attribute_id)
     where
 	fa.attribute_id = :attribute_id
@@ -263,6 +264,15 @@ lappend form_fields {
 		available to show the available widgets.
 	"}
 }
+lappend form_fields {
+	also_hard_coded_p:text(radio)
+	{label {<nobr>Also Hard Coded?</nobr>}} 
+	{options {{Yes t} {No f}}} 
+        {help_text "
+		Does this field also exist hard coded in the PO-screens?
+		Set this field if it should not appear in PO screens.
+        "}
+}
 lappend form_fields {pos_x:text(hidden),optional {label {Pos-X}} {html {size 5 maxlength 4}}}
 lappend form_fields {
 	pos_y:text,optional 
@@ -345,19 +355,20 @@ ad_form -name attribute_form -form $form_fields -new_request {
 	db_dml "update im_dynfield_attributes" "
 		update im_dynfield_attributes set
 			widget_name = :widget_name,
-			include_in_search_p = :include_in_search_p
+			include_in_search_p = :include_in_search_p,
+			also_hard_coded_p = :also_hard_coded_p
 		where attribute_id = :attribute_id
 	"
     }
 
     # Make sure there is a layout entry for this DynField
-    set layout_exists_p [db_string layout_exists "select count(*) from im_dynfield_layout where attribute_id = :attribute_id and page_url = ''"]
+    set layout_exists_p [db_string layout_exists "select count(*) from im_dynfield_layout where attribute_id = :attribute_id and page_url = 'default'"]
     if {!$layout_exists_p && 0 != $attribute_id} {
 	    db_dml insert_layout "
 		insert into im_dynfield_layout (
 			attribute_id, page_url, label_style
 		) values (
-			:attribute_id, '', :label_style
+			:attribute_id, 'default', :label_style
 		)
 	    "
     }
@@ -371,7 +382,7 @@ ad_form -name attribute_form -form $form_fields -new_request {
 			label_style = :label_style
 		where
 			attribute_id = :attribute_id
-			and page_url = ''
+			and page_url = 'default'
     "
 
 } -after_submit {

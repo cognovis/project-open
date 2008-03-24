@@ -84,14 +84,4 @@
 </querytext>
 </fullquery>
 
-<fullquery name="attribute::add_xt.add_column">
-<querytext>
-
-	alter table $table_name 
-	add $attribute_name $sql_datatype
-
-</querytext>
-</fullquery>
-
-
 </queryset>
