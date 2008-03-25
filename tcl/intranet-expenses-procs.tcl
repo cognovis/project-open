@@ -66,6 +66,9 @@ ad_proc im_expense_bundle_item_sum {
     "
     db_foreach expenses $expense_sql {
 
+	# amount_converted can be NULL if exchange rates are not defined
+	if {"" == $amount_converted} { set amount_converted 0 }
+
 	set amount_before_vat [expr $amount_before_vat + $amount_converted]
 	set total_amount [expr $total_amount + [expr $amount_converted * [expr 1 + [expr $vat / 100.0]]]]
 
