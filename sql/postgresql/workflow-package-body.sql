@@ -505,7 +505,7 @@ end;' language 'plpgsql';
 
 
 -- procedure add_trans_attribute_map
-create function workflow__add_trans_attribute_map (varchar,varchar,integer,integer)
+create or replace function workflow__add_trans_attribute_map (varchar,varchar,integer,integer)
 returns integer as '
 declare
   p_workflow_key		alias for $1;
@@ -523,7 +523,7 @@ begin
 	   and attribute_id = p_attribute_id;
 
         if v_num_rows > 0 then
-            return;
+            return 0;
         end if;
         if p_sort_order is null then
             select coalesce(max(sort_order)+1, 1)
@@ -545,9 +545,7 @@ begin
             p_attribute_id,
             v_sort_order
        );
-
   return 0;
-
 end;' language 'plpgsql';
 
 
