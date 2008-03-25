@@ -207,8 +207,8 @@ ad_form \
 	{job_title:text(text),optional {label $job_title_label} {html {size 30}} }
 	{job_description:text(textarea),nospell,optional {label $job_description_label} {html {rows 5 cols 40}}}
 
-	{start_date:text(text) {label $start_date_label} {html {size 10}} }
-	{end_date:text(text) {label $end_date_label} {html {size 10}} }
+	{start_date:text(text),optional {label $start_date_label} {html {size 10}} }
+	{end_date:text(text),optional {label $end_date_label} {html {size 10}} }
 
 	{voluntary_termination_p:text(radio),optional {label $voluntary_termination_p_label} {options $voluntary_termination_options} }
 	{termination_reason:text(textarea),nospell,optional {label $termination_reason_label} {html {rows 5 cols 40}}}
