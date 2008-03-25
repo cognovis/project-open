@@ -303,7 +303,7 @@ drop function inline_0 ();
 
 
 
-    select workflow__create_attribute(
+select workflow__create_attribute(
         'expense_approval_wf',
         'approve_approve_this_expense_bundle_p',
         'boolean',
@@ -316,16 +316,16 @@ drop function inline_0 ();
 	1,
 	null,
 	'generic'
-    );
+);
 
         
 
-	select workflow__add_trans_attribute_map(
+select workflow__add_trans_attribute_map(
         	'expense_approval_wf', 
         	'approve',
         	'approve_approve_this_expense_bundle_p',
         	1
-    );
+);
 
         
 /*****
