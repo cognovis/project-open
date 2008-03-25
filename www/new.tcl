@@ -64,7 +64,8 @@ set context [im_context_bar $page_title]
 
 set availability "100"
 set birthdate $today
-set currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+set currency $default_currency
 
 set exists_p [db_string exists_employee "select count(*) from im_employees where employee_id=:employee_id"]
 if {!$exists_p} {
@@ -200,7 +201,7 @@ ad_form \
 	{social_security:text(text),optional {label $social_security_label} {html {size 10}} }
 	{insurance:text(text),optional {label $insurance_label} {html {size 10}} }
 	{other_costs:text(text),optional {label $other_cost_label} {html {size 10}} }
-	{currency:text(select) {label $currency_label} {options $currency_options} }
+	{currency:text(select),optional {label $currency_label} {options $currency_options} }
 	{salary_payments_per_year:text(text),optional {label $salary_payments_per_year_label} {html {size 10}} }
 
 	{birthdate:text(text),optional {label $birthdate_label} {html {size 10}} }
@@ -279,6 +280,9 @@ ad_form -extend -name cost -on_request {
 } -after_submit {
 
     set cost_name $employee_name
+    if {"" == $start_date} { set start_date [db_string now "select now()::date"]}
+    if {"" == $end_date} { set end_date "2099-12-31" }
+    if {"" == $currency} { set currency $default_currency }
 
     # im_repeating_costs (and it's im_costs superclass) superclass
     # im_costs contains a "cause_object_id" field pointing to employee_id.
