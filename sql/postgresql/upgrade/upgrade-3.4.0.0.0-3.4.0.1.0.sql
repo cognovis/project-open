@@ -1148,3 +1148,48 @@ select define_function_args('im_trans_task__name','task_id');
 select define_function_args('im_trans_task__new','task_id,object_type,creation_date,creation_user,creation_ip,context_id,project_id,task_type_id,task_status_id,source_language_id,target_language_id,task_uom_id');
 select define_function_args('im_trans_task__project_clone','parent_project_id,clone_project_id');
 
+
+
+create or replace function workflow__add_trans_attribute_map (varchar,varchar,integer,integer)
+returns integer as '
+declare
+  p_workflow_key                alias for $1;
+  p_transition_key              alias for $2;
+  p_attribute_id                alias for $3;
+  p_sort_order                  alias for $4;
+  v_num_rows                    integer;
+  v_sort_order                  integer;
+begin
+        select count(*)
+          into v_num_rows
+          from wf_transition_attribute_map
+         where workflow_key = p_workflow_key
+           and transition_key = p_transition_key
+           and attribute_id = p_attribute_id;
+
+        if v_num_rows > 0 then
+            return 0;
+        end if;
+        if p_sort_order is null then
+            select coalesce(max(sort_order)+1, 1)
+              into v_sort_order
+              from wf_transition_attribute_map
+             where workflow_key = p_workflow_key
+               and transition_key = p_transition_key;
+        else
+            v_sort_order := p_sort_order;
+        end if;
+        insert into wf_transition_attribute_map (
+            workflow_key,
+            transition_key,
+            attribute_id,
+            sort_order
+        ) values (
+            p_workflow_key,
+            p_transition_key,
+            p_attribute_id,
+            v_sort_order
+       );
+  return 0;
+end;' language 'plpgsql';
+
