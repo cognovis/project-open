@@ -459,6 +459,7 @@ ad_proc -public im_currency_options { {include_empty 1} } {
 	select iso, iso
 	from currency_codes
 	where supported_p = 't'
+	order by iso
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
