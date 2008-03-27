@@ -35,121 +35,26 @@ ns_write "<ul>\n"
 ns_write "<li>Nagios Configuration File: $main_config_file\n"
 ns_write "</ul>\n"
 
+array set hosts_hash [im_nagios_read_config -main_config_file $main_config_file -debug 0]
 
-# ------------------------------------------------------------
-# Read the main config file
-#
+foreach host_name [array names hosts_hash] {
 
-set encoding "utf-8"
+    # Get the list of all services defined for host.
+    # The special "host" service contains the host definition
 
-if {[catch {
-    set fl [open $main_config_file]
-    fconfigure $fl -encoding $encoding
-    set content [read $fl]
-    close $fl
-} err]} {
-    ns_write "<li>Unable to open file $main_config_file:<br><pre>\n$err</pre>"
-    ns_write [im_footer]
-    ad_script_abort
+    ad_return_complaint 1 $hosts_hash($host_name)
+
+    array unset host_services
+    array set host_services_hash $hosts_hash($host_name)
+
+    set host_def $host_services_hash(host)
+
+    ns_write "<ul>\n"
+    ns_write "<li>Host: $host_name\n"
+    ns_write "<li>$host_def\n"
+    ns_write "</ul>\n"
+        
 }
-
-
-set config_files [list]
-foreach line [split $content "\n"] {
-    set line [string trim $line]
-    if {"" == $line} { continue}
-    if {[regexp {^\#} $line]} { continue}
-    if {[regexp {cfg_file=(.*)} $line match config_file]} { lappend config_files $config_file }
-}
-
-ns_write "<h2>Config Files</h2>\n"
-ns_write [join $config_files "<br>"]
-
-# ------------------------------------------------------------
-# Read and parse the object files
-#
-
-set lines [list]
-foreach config_file $config_files {
-
-    ns_write "<h3>Parsing file: $config_file</h3>\n"
-    if {[catch {
-	set fl [open $config_file]
-	fconfigure $fl -encoding $encoding
-	set content [read $fl]
-	close $fl
-    } err]} {
-	ns_write "<li>Unable to open file $config_file:<br><pre>\n$err</pre>"
-	ns_write [im_footer]
-	ad_script_abort
-    }
-
-    set lines [split $content "\n"]
-    set defs [im_nagios_parse_config_file -lines $lines]
-
-    array unset file_defs
-    array set file_defs $defs
-    foreach def_id [array names file_defs] {
-
-	# Read the definition into a hash in order to make processing easier.
-	# "defs" come in the form: {{type host} {use template} {host_name router123} {pretty_name {Disk Service 123}} ...}
-	set defs $file_defs($def_id)
-	array unset def_hash
-	foreach def $defs {
-	    set key [lindex $def 0]
-	    set value [lindex $def 1]
-	    set def_hash($key) $value
-	}
-
-	# Get the type of definition and extract values
-	if {![info exists def_hash(type)]} { continue }
-	set def_type $def_hash(type)
-	switch $def_type {
-	    command - timeperiod - contact - contactgroup - hostgroup - {
-		# No action required.
-	    }
-	    host {
-		# define host {use linux-server host_name storage02 alias {Storage 02} address 172.26.2.7}
-		if {[catch {
-		    set name "unknown"
-		    if {[info exists def_hash(name)]} { set name $def_hash(name) }
-		    if {[info exists def_hash(host_name)]} { set name $def_hash(host_name) }
-		    set hosts_hash($name) [array get def_hash]
-		    ns_write "<li>Found host=$name\n"
-		} err_msg]} {
-		    ns_write "<p class=error>
-			Error parsing '$def_type' definition in file '$config_file':
-			<pre>$err_msg</pre><br>[array get def_hash]</p>\n
-		    "
-		}
-	    }
-	    service {
-		# define service {use generic-service host_name storage02 service_description {Current Load} ...}
-		if {[catch {
-		    set host_name "unknown"
-		    if {[info exists def_hash(host_name)]} { set host_name $def_hash(host_name) }
-		    set service_description "unknown"
-		    if {[info exists def_hash(service_description)]} { 
-			set service_description $def_hash(service_description) 
-		    }
-		    set name "$host_name-$service_description"	    
-		    set services_hash($name) [array get def_hash]
-		    ns_write "<li>Found service=$name\n"
-		} err_msg]} {
-		    ns_write "<p class=error>
-			Error parsing '$def_type' definition in file '$config_file':
-			<pre>$err_msg</pre><br>[array get def_hash]</p>\n
-		    "
-		}
-	    }
-	    default {
-		ns_write "<p class=error>Unknown definition '$def_type'</p>\n"
-	    }
-	}
-    }
-
-}
-
 
 ns_write [im_footer]
 
