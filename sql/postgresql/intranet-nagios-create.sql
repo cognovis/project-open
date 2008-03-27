@@ -8,13 +8,28 @@
 -- @author frank.bergmann@project-open.com
 
 
+-----------------------------------------------------------
+-- Nagios Categories
+--
+
+-- 23000-23999  Intranet Conf Item Type (1000 for intranet-nagios)
+
+SELECT im_category_new(23001, 'Linux-Server', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Linux-Server', 'Server', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Linux-Server', 'Hardware', 'Intranet Conf Item Type');
+
+
+SELECT im_category_new(23003, 'Generic-Router', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Generic-Router', 'Network Router', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Generic-Router', 'Hardware', 'Intranet Conf Item Type');
+
+
 
 -----------------------------------------------------------
 -- Menu for Nagios
 --
 -- Create a menu item and set some default permissions
 -- for various groups who whould be able to see the menu.
-
 
 create or replace function inline_0 ()
 returns integer as '

@@ -34,27 +34,15 @@ ns_write "<h2>Configuration</h2>\n"
 ns_write "<ul>\n"
 ns_write "<li>Nagios Configuration File: $main_config_file\n"
 ns_write "</ul>\n"
+ns_write "<p>\n"
 
-array set hosts_hash [im_nagios_read_config -main_config_file $main_config_file -debug 0]
+set hosts_hash [im_nagios_read_config -main_config_file $main_config_file -debug 0]
 
-foreach host_name [array names hosts_hash] {
+im_nagios_create_confdb -hosts_hash $hosts_hash -debug 1
 
-    # Get the list of all services defined for host.
-    # The special "host" service contains the host definition
 
-    ad_return_complaint 1 $hosts_hash($host_name)
+ns_write [im_nagios_display_config -hosts_hash $hosts_hash]
 
-    array unset host_services
-    array set host_services_hash $hosts_hash($host_name)
-
-    set host_def $host_services_hash(host)
-
-    ns_write "<ul>\n"
-    ns_write "<li>Host: $host_name\n"
-    ns_write "<li>$host_def\n"
-    ns_write "</ul>\n"
-        
-}
 
 ns_write [im_footer]
 
