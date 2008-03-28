@@ -17,11 +17,11 @@ ad_library {
 ad_proc -public im_conf_item_status_active {} { return 11700 }
 ad_proc -public im_conf_item_status_deleted {} { return 11702 }
 
-ad_proc -public im_conf_item_status_hardware {} { return 11800 }
-ad_proc -public im_conf_item_status_software {} { return 11802 }
-ad_proc -public im_conf_item_status_process {} { return 11804 }
-ad_proc -public im_conf_item_status_license {} { return 11806 }
-ad_proc -public im_conf_item_status_specs {} { return 11808 }
+ad_proc -public im_conf_item_type_hardware {} { return 11800 }
+ad_proc -public im_conf_item_type_software {} { return 11802 }
+ad_proc -public im_conf_item_type_process {} { return 11804 }
+ad_proc -public im_conf_item_type_license {} { return 11806 }
+ad_proc -public im_conf_item_type_specs {} { return 11808 }
 
 
 

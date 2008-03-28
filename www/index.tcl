@@ -48,6 +48,9 @@ if {$add_conf_item_p} {
     append admin_links " <li><a href=\"[export_vars -base /intranet-confdb/new {return_url {form_mode "edit"}}]\">[lang::message::lookup "" intranet-confdb.Add_a_new_Conf_Item "Add a new Configuration Item"]</a>\n"
 }
 
+set bind_vars [ad_tcl_vars_to_ns_set]
+append admin_links [im_menu_ul_list -no_uls 1 "conf_items" $bind_vars]
+
 if {"" != $admin_links} {
     set admin_links "<ul>\n$admin_links\n</ul>\n"
 }
@@ -82,7 +85,6 @@ ad_form \
 	{status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-core.Conf_Item_Status {Status}]"} {custom {category_type "Intranet Conf Item Status" translate_p 1}} }
     	{cost_center_id:text(select),optional {label "[lang::message::lookup {} intranet-confdb.Cost_Center {Cost Center}]"} {options $cost_center_options }}
     	{owner_id:text(select),optional {label "[lang::message::lookup {} intranet-confdb.Owner {Owner}]"} {options $owner_options }}
-
     }
 
     im_dynfield::append_attributes_to_form \
