@@ -1,5 +1,119 @@
 -- upgrade-3.4.0.0.0-3.4.0.1.0.sql
 
+
+-------------------------------------------------------------
+-- Insert a category for upgrade scripts - gracefully
+-------------------------------------------------------------
+
+
+CREATE OR REPLACE FUNCTION im_category_new (
+	integer, varchar, varchar, varchar
+) RETURNS integer as '
+DECLARE
+	p_category_id		alias for $1;
+	p_category		alias for $2;
+	p_category_type		alias for $3;
+	p_description		alias for $4;
+
+	v_count			integer;
+BEGIN
+	select	count(*) into v_count from im_categories
+	where	category = p_category and category_type = p_category_type;
+	IF v_count > 0 THEN return 0; END IF;
+
+	insert into im_categories(category_id, category, category_type, category_description)
+	values (p_category_id, p_category, p_category_type, p_description);
+
+	RETURN 0;
+end;' language 'plpgsql';
+
+CREATE OR REPLACE FUNCTION im_category_new (
+	integer, varchar, varchar
+) RETURNS integer as '
+DECLARE
+	p_category_id		alias for $1;
+	p_category		alias for $2;
+	p_category_type		alias for $3;
+BEGIN
+	RETURN im_category_new(p_category_id, p_category, p_category_type, NULL);
+end;' language 'plpgsql';
+
+
+CREATE OR REPLACE FUNCTION im_category_hierarchy_new (
+	integer, integer
+) RETURNS integer as '
+DECLARE
+	p_child_id		alias for $1;
+	p_parent_id		alias for $2;
+
+	row			RECORD;
+	v_count			integer;
+BEGIN
+	IF p_child_id is null THEN 
+		RAISE NOTICE ''im_category_hierarchy_new: bad category 1: "%" '',p_child_id;
+		return 0;
+	END IF;
+
+	IF p_parent_id is null THEN 
+		RAISE NOTICE ''im_category_hierarchy_new: bad category 2: "%" '',p_parent_id; 
+		return 0;
+	END IF;
+	IF p_child_id = p_parent_id THEN return 0; END IF;
+
+	select	count(*) into v_count from im_category_hierarchy
+	where	child_id = p_child_id and parent_id = p_parent_id;
+	IF v_count = 0 THEN
+		insert into im_category_hierarchy(child_id, parent_id)
+		values (p_child_id, p_parent_id);
+	END IF;
+
+	-- Loop through the parents of the parent
+	FOR row IN
+		select	parent_id
+		from	im_category_hierarchy
+		where	child_id = p_parent_id
+	LOOP
+		PERFORM im_category_hierarchy_new (p_child_id, row.parent_id);
+	END LOOP;
+
+	RETURN 0;
+end;' language 'plpgsql';
+
+
+CREATE OR REPLACE FUNCTION im_category_hierarchy_new (
+	varchar, varchar, varchar
+) RETURNS integer as '
+DECLARE
+	p_child			alias for $1;
+	p_parent		alias for $2;
+	p_cat_type		alias for $3;
+
+	v_child_id		integer;
+	v_parent_id		integer;
+BEGIN
+	select	category_id into v_child_id from im_categories
+	where	category = p_child and category_type = p_cat_type;
+	IF v_child_id is null THEN 
+		RAISE NOTICE ''im_category_hierarchy_new: bad category 1: "%" '',p_child; 
+		return 0;
+	END IF;
+
+	select	category_id into v_parent_id from im_categories
+	where	category = p_parent and category_type = p_cat_type;
+	IF v_parent_id is null THEN 
+		RAISE NOTICE ''im_category_hierarchy_new: bad category 2: "%" '',p_parent; 
+		return 0;
+	END IF;
+
+	return im_category_hierarchy_new (v_child_id, v_parent_id);
+
+	RETURN 0;
+end;' language 'plpgsql';
+
+
+
+
+
 -- set the DefaultMaster parameter to "master"
 
 update apm_parameter_values 
