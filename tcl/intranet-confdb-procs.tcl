@@ -56,6 +56,7 @@ ad_proc -public im_conf_item_select_sql {
     {-owner_id ""} 
     {-cost_center_id ""} 
     {-var_list "" }
+    {-treelevel 0}
 } {
     Returns an SQL statement that allows you to select a range of
     configuration items, given a number of conditions.
@@ -92,6 +93,9 @@ ad_proc -public im_conf_item_select_sql {
     }
     if {"" != $type_id} { 
 	lappend extra_wheres "i.conf_item_type_id in ([im_sub_categories $type_id])" 
+    }
+    if {"" != $treelevel} { 
+	lappend extra_wheres "tree_level(i.tree_sortkey) <= 1+$treelevel" 
     }
 
     set extra_from [join $extra_froms "\n\t\t,"]

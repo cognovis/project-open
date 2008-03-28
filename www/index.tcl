@@ -17,6 +17,7 @@ ad_page_contract {
     { status_id ""}
     { type_id ""}
     { owner_id ""}
+    { treelevel "0" }
 }
 
 # ---------------------------------------------------------------
@@ -65,9 +66,12 @@ if {"" != $admin_links} {
 
 
 set owner_options [util_memoize "im_employee_options" 3600]
-
-
 set cost_center_options [im_cost_center_options -include_empty 1]
+set treelevel_options [list \
+	[list [lang::message::lookup "" intranet-confdb.Top_Items "Only Top Items"] 0] \
+	[list [lang::message::lookup "" intranet-confdb.2nd_Level_Items "2nd Level Items"] 1] \
+	[list [lang::message::lookup "" intranet-confdb.All_Items "All Items"] ""] \
+]
 
 set form_id "conf_item_filter"
 set object_type "im_conf_item"
@@ -81,6 +85,7 @@ ad_form \
     -method GET \
     -export {start_idx order_by how_many view_name} \
     -form {
+	{treelevel:text(select),optional {label "[lang::message::lookup {} intranet-core.Treelevel {Treelevel}]"} {options $treelevel_options } }
 	{type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-core.Conf_Item_Type {Type}]"} {custom {category_type "Intranet Conf Item Type" translate_p 1} } }
 	{status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-core.Conf_Item_Status {Status}]"} {custom {category_type "Intranet Conf Item Status" translate_p 1}} }
     	{cost_center_id:text(select),optional {label "[lang::message::lookup {} intranet-confdb.Cost_Center {Cost Center}]"} {options $cost_center_options }}
@@ -206,6 +211,7 @@ set conf_item_sql [im_conf_item_select_sql \
 	-status_id $status_id \
 	-owner_id $owner_id \
 	-cost_center_id $cost_center_id \
+	-treelevel $treelevel \
 ]
 
 set sql "
