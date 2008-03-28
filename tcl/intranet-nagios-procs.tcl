@@ -14,7 +14,9 @@ ad_library {
 # Constants
 # ----------------------------------------------------------------------
 
-ad_proc -public im_nagios_xxx {} { return 0 }
+ad_proc -public im_nagios_conf_item_type_linux_server {} { return 23001 }
+ad_proc -public im_nagios_conf_item_type_generic_router {} { return 23003 }
+ad_proc -public im_nagios_conf_item_type_http_service {} { return 23005 }
 
 
 # ----------------------------------------------------------------------
@@ -38,13 +40,55 @@ ad_proc -public im_nagios_process_alert {
     - Create a new ticket if there wasn't one before
     - Append the new message to the ticket.
 } {
+    ns_log Notice "im_nagios_process_alert: from=$from, to=$to, host=$host, service=$service"
+
+
     # Try to find out the environment for the ticket
-    set host_conf_item_id [im_nagios_find_host -host $host]
-    set service_conf_item_id [im_nagios_find_service -host $host -service $service]
+    set host_conf_item_id [im_nagios_get_host_by_name -host_name $host]
+    set service_conf_item_id [im_nagios_get_service_by_name -host_name $host -service_name $service]
+
+    ns_log Notice "im_nagios_process_alert: host_id=$host_conf_item_id, service_id=$service_conf_item_id"
 
     # Check if there is already a ticket
-    set open_nagios_ticket_id [im_nagios_find_open_ticket -host_id $host_conf_item_id -service_id $service_conf_item_id]
+    set open_nagios_ticket_id [im_nagios_find_open_ticket -host_name $host -service_name $service]
 
+    if {0 == $open_nagios_ticket_id} {
+
+	set ticket_id [db_nextval "acs_object_id_seq"]
+	set ticket_name "Nagios $alert_type $host/$service is $status"
+	set ticket_customer_id [im_company_internal]
+	set ticket_customer_contact_id 0
+	set ticket_type_id [im_project_type_ticket]
+	set ticket_status_id [im_ticket_status_open]
+	set ticket_nr [db_nextval im_ticket_seq]
+	set start_date [db_string now "select now()::date from dual"]
+	set end_date [db_string now "select (now()::date) from dual"]
+	set start_date_sql [template::util::date get_property sql_date $start_date]
+	set end_date_sql [template::util::date get_property sql_timestamp $end_date]
+	
+	db_transaction {
+	    
+	    db_string ticket_insert {}
+	    db_dml ticket_update {}
+	    db_dml project_update {}
+	    
+	    # Write Audit Trail
+	    im_project_audit $ticket_id
+	    
+	} on_error {
+	    ad_return_complaint 1 "<b>Error inserting new ticket</b>:
+	<pre>$errmsg</pre>"
+	}
+
+	db_dml host_service "
+		update im_tickets set
+			ticket_hardware_id = :host_conf_item_id,
+			ticket_service_id = :service_conf_item_id
+		where ticket_id = :ticket_id
+        "
+
+
+    }
     
 
 }
@@ -68,6 +112,7 @@ ad_proc -public im_nagios_parse_config_file {
     }
     The numeration is arbitrary and kept just for convenience reasons.
 } {
+    array unset services_hash
     array set services_hash [list]
     set service_cnt 1
     set cur_service 0
@@ -300,15 +345,24 @@ ad_proc -public im_nagios_display_config {
     -hosts_hash:required
 } {
     Creates a UL-LI list structure from a nagios config.
+    hosts_hash -> List of Host entries
+    Host Entries -> List of Host Services
+    Host Services -> {host_info service1 service2 ...}
+    host_info -> List of host key-value pairs
+    serviceX -> List of service key-value pairs
 } {
+    array unset hosts
     array set hosts $hosts_hash
     set html ""
     foreach host_name [array names hosts] {
 	
 	# Get the list of all services defined for host.
 	# The special "host" service contains the host definition
-	array unset host_services
+	array unset host_services_hash
 	array set host_services_hash $hosts($host_name)
+
+	# An "unknown" host may not hava a "host" info section...
+	if {![info exists host_services_hash(host)]} { continue }
 
 	# Get the definition of the host
 	set host_def $host_services_hash(host)
@@ -356,7 +410,7 @@ ad_proc -public im_nagios_display_config {
 
 
 # ----------------------------------------------------------------------
-# Write Nagios configuration into the configuration database
+# Determine a suitable type of the item, depending on the host info
 # ----------------------------------------------------------------------
 
 ad_proc -public im_nagios_get_type_id_from_host_info {
@@ -365,6 +419,7 @@ ad_proc -public im_nagios_get_type_id_from_host_info {
     Tries to determine a suitable "Intranet Conf Item Type" for the
     given Nagios host.
 } {
+    array unset host_info
     array set host_info $host_info_hash
 
     # The Nagios "use" statement refers to a type of template
@@ -401,6 +456,63 @@ ad_proc -public im_nagios_get_type_id_from_host_info {
 
 
 
+# ----------------------------------------------------------------------
+# Find a toplevel host
+# ----------------------------------------------------------------------
+
+ad_proc -public im_nagios_get_host_by_name {
+    -host_name:required
+} {
+    Returns the conf_id of the host with the given name
+} {
+    set host_ids [db_list hosts "
+	select	conf_item_id
+	from	im_conf_items
+	where	conf_item_parent_id is null and
+		conf_item_nr = :host_name
+    "]
+
+    # There may be more then one host_id, so just return the first.
+    return [lindex $host_ids 0]
+}
+
+
+ad_proc -public im_nagios_get_service_by_name {
+    -host_name:required
+    -service_name:required
+} {
+    Returns the conf_id of the service with the given name
+} {
+    set host_id [im_nagios_get_host_by_name -host_name $host_name]
+    set compound_name "$host_name - $service_name"
+
+    set service_ids [db_list hosts "
+	select	conf_item_id
+	from	im_conf_items
+	where	conf_item_parent_id = :host_id and
+		conf_item_nr = :compound_name
+    "]
+
+    # There may be more then one service_id, so just return the first.
+    return [lindex $service_ids 0]
+}
+
+ad_proc -public im_nagios_find_open_ticket {
+    -host_name:required
+    -service_name:required
+} {
+    Checks whether there is a ticket open for the given host+service
+    and returns 0 otherwise.
+} {
+    set host_id [im_nagios_get_host_by_name -host_name $host_name]
+    set service_id [im_nagios_get_service_by_name -host_name $host_name -service_name $service_name]
+
+    set ticket_ids [db_list tickets "
+	select	0
+    "]
+
+    return [lindex $ticket_ids 0]
+}
 
 
 
@@ -414,6 +526,7 @@ ad_proc -public im_nagios_create_confdb {
 } {
     Creates configuration items from a Nagios configuration
 } {
+    array unset hosts
     array set hosts $hosts_hash
 
     foreach host_name [array names hosts] {
@@ -423,7 +536,7 @@ ad_proc -public im_nagios_create_confdb {
 
 	# Get the list of all services defined for host.
 	# The special "host" service contains the host definition
-	array unset host_services
+	array unset host_services_hash
 	array set host_services_hash $hosts($host_name)
 
 	# Get the definition of the host
@@ -468,6 +581,9 @@ ad_proc -public im_nagios_create_confdb {
         if {!$conf_item_id} { set conf_item_id [db_string new $conf_item_new_sql] }
         db_dml update [im_conf_item_update_sql -include_dynfields_p 1]       
 
+	# Store the host for the services section below.
+	set host_conf_item_id $conf_item_id
+
 
 	# Update IP-Address
 	set ip_address ""
@@ -480,8 +596,65 @@ ad_proc -public im_nagios_create_confdb {
 	    if {"host" == $service_name} { continue }
 	    if {"unknown" == $service_name} { continue }
 	    set service_list $host_services_hash($service_name)
-	    array unset serivce_hash
+	    array unset service_hash
 	    array set service_hash $service_list
+
+	    set service_description ""
+	    set check_command ""
+	    if {[info exists service_hash(service_description)]} { set service_description $service_hash(service_description) }
+	    if {[info exists service_hash(check_command)]} { set check_command $service_hash(check_command) }
+
+	    # Try to determine a suitable ]po[ service type.
+	    # Example:
+	    #	service_description {HTTP PcDemo} check_command {check_http!-p 30028} use local-service
+	    set service_type ""
+	    if {[regexp {check_http} $check_command match]} { set service_type "http" }
+
+	    switch $service_type {
+		http {
+			set conf_item_new_sql "
+				select im_conf_item__new(
+					null,
+					'im_conf_item',
+					now(),
+					[ad_get_user_id],
+					'[ad_conn peeraddr]',
+					null,
+					:conf_item_name,
+					:conf_item_nr,
+					:conf_item_parent_id,
+					:conf_item_type_id,
+					:conf_item_status_id
+				)
+			"
+		
+			set conf_item_name "$host_name - $service_name"
+			set conf_item_nr $conf_item_name
+			set conf_item_code $conf_item_name
+			set conf_item_parent_id $host_conf_item_id
+			set conf_item_status_id [im_conf_item_status_active]
+			set conf_item_type_id [im_nagios_conf_item_type_http_service]
+			set conf_item_version ""
+			set conf_item_owner_id [ad_get_user_id]
+			set description $service_name
+			set note ""
+		
+		        set conf_item_id [db_string exists "
+				select	conf_item_id
+				from	im_conf_items
+				where	conf_item_parent_id = :host_conf_item_id and
+					conf_item_nr = :conf_item_nr
+			" -default 0]
+		        if {!$conf_item_id} { set conf_item_id [db_string new $conf_item_new_sql] }
+		        db_dml update [im_conf_item_update_sql -include_dynfields_p 1]       
+		
+			
+		}
+		default {
+#		    ad_return_complaint 1 "$service_type - service_name=$service_name - check_command=$check_command"
+		}
+	    }
+
 	    
 	}
     }

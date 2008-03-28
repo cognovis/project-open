@@ -24,6 +24,10 @@ SELECT im_category_hierarchy_new('Generic-Router', 'Network Router', 'Intranet C
 SELECT im_category_hierarchy_new('Generic-Router', 'Hardware', 'Intranet Conf Item Type');
 
 
+SELECT im_category_new(23005, 'HTTP-Server', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('HTTP-Server', 'Process', 'Intranet Conf Item Type');
+
+
 
 -----------------------------------------------------------
 -- Menu for Nagios
@@ -151,3 +155,6 @@ BEGIN
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
+
+
