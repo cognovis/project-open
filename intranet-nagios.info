@@ -15,7 +15,9 @@
         <description format="text/plain">1) Imports the Nagios configuration file and creates ]po[ ConfItems, 2) imports Nagios event emails and 3) (possibly) write Nagios configuration based on ]po[ ConfItems</description>
         <maturity>0</maturity>
 
-        <provides url="intranet-nagios" version="0.1d"/>
+        <provides url="intranet-nagios" version="3.4.0.0.0"/>
+        <requires url="intranet-core" version="3.4.0.0.0"/>
+        <requires url="notifications" version="5.4.0"/>
 
         <callbacks>
         </callbacks>

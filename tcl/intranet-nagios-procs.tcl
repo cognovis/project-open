@@ -18,6 +18,38 @@ ad_proc -public im_nagios_xxx {} { return 0 }
 
 
 # ----------------------------------------------------------------------
+# Process Nagios alert emails
+# ----------------------------------------------------------------------
+
+ad_proc -public im_nagios_process_alert {
+    -from:required
+    -to:required
+    -alert_type:required
+    -host:required
+    -service:required
+    -status:required
+    -bodies:required
+} {
+    This procedure is called from the callback acs_mail_lite::incoming_email
+    every time there is an email with a suitable Nagios header.
+
+    - Determine the related ConfItem in our database.
+    - Check if there is already an open ticket for the ConfItem.
+    - Create a new ticket if there wasn't one before
+    - Append the new message to the ticket.
+} {
+    # Try to find out the environment for the ticket
+    set host_conf_item_id [im_nagios_find_host -host $host]
+    set service_conf_item_id [im_nagios_find_service -host $host -service $service]
+
+    # Check if there is already a ticket
+    set open_nagios_ticket_id [im_nagios_find_open_ticket -host_id $host_conf_item_id -service_id $service_conf_item_id]
+
+    
+
+}
+
+# ----------------------------------------------------------------------
 # Parse a single Nagios configuration file
 # and return the definitions
 # ----------------------------------------------------------------------
@@ -443,9 +475,15 @@ ad_proc -public im_nagios_create_confdb {
 	db_dml ip_address "update im_conf_items set ip_address = :ip_address where conf_item_id = :conf_item_id"
 
 	# Deal with services
+	foreach service_name [array names host_services_hash] {
 
-
+	    if {"host" == $service_name} { continue }
+	    if {"unknown" == $service_name} { continue }
+	    set service_list $host_services_hash($service_name)
+	    array unset serivce_hash
+	    array set service_hash $service_list
+	    
+	}
     }
-
 }
 

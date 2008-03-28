@@ -40,7 +40,6 @@ set hosts_hash [im_nagios_read_config -main_config_file $main_config_file -debug
 
 im_nagios_create_confdb -hosts_hash $hosts_hash -debug 1
 
-
 ns_write [im_nagios_display_config -hosts_hash $hosts_hash]
 
 
