@@ -537,52 +537,52 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 (27035,270,80,'Delivery Date','$end_date_formatted');
 
 
- ticket_alarm_date          | timestamp with time zone |
- ticket_alarm_action        | text                     |
- ticket_note                | text                     |
- description                  | character varying(4000)  |
- billing_type_id              | integer                  |
- note                         | character varying(4000)  |
- project_lead_id              | integer                  |
- supervisor_id                | integer                  |
- requires_report_p            | character(1)             | default 't'::bpchar
- project_budget               | double precision         |
- project_risk                 | character varying(1000)  |
- corporate_sponsor            | integer                  |
- team_size                    | integer                  |
- percent_completed            | double precision         |
- on_track_status_id           | integer                  |
- project_budget_currency      | character(3)             |
- project_budget_hours         | double precision         |
- cost_quotes_cache            | numeric(12,2)            |
- cost_invoices_cache          | numeric(12,2)            |
- cost_timesheet_planned_cache | numeric(12,2)            |
- cost_purchase_orders_cache   | numeric(12,2)            |
- cost_bills_cache             | numeric(12,2)            |
- cost_timesheet_logged_cache  | numeric(12,2)            |
- end_date                     | timestamp with time zone |
- start_date                   | timestamp with time zone |
- template_p                   | character(1)             | default 't'::bpchar
- company_contact_id           | integer                  |
- sort_order                   | integer                  |
- company_project_nr           | character varying(50)    |
- source_language_id           | integer                  |
- subject_area_id              | integer                  |
- expected_quality_id          | integer                  |
- final_company                | character varying(50)    |
- trans_project_words          | numeric(12,0)            |
- trans_project_hours          | numeric(12,0)            |
- trans_size                   | character varying(200)   |
- reported_hours_cache         | double precision         |
- cost_expense_planned_cache   | numeric(12,2)            | default 0
- cost_expense_logged_cache    | numeric(12,2)            | default 0
- confirm_date                 | date                     |
- cost_delivery_notes_cache    | numeric(12,2)            | default 0
- bt_project_id                | integer                  |
- bt_found_in_version_id       | integer                  |
- bt_fix_for_version_id        | integer                  |
- cost_cache_dirty             | timestamp with time zone |
- release_item_p               | character varying(1)     |
+-- ticket_alarm_date          | timestamp with time zone |
+-- ticket_alarm_action        | text                     |
+-- ticket_note                | text                     |
+-- description                  | character varying(4000)  |
+-- billing_type_id              | integer                  |
+-- note                         | character varying(4000)  |
+-- project_lead_id              | integer                  |
+-- supervisor_id                | integer                  |
+-- requires_report_p            | character(1)             | default 't'::bpchar
+-- project_budget               | double precision         |
+-- project_risk                 | character varying(1000)  |
+-- corporate_sponsor            | integer                  |
+-- team_size                    | integer                  |
+-- percent_completed            | double precision         |
+-- on_track_status_id           | integer                  |
+-- project_budget_currency      | character(3)             |
+-- project_budget_hours         | double precision         |
+-- cost_quotes_cache            | numeric(12,2)            |
+-- cost_invoices_cache          | numeric(12,2)            |
+-- cost_timesheet_planned_cache | numeric(12,2)            |
+-- cost_purchase_orders_cache   | numeric(12,2)            |
+-- cost_bills_cache             | numeric(12,2)            |
+-- cost_timesheet_logged_cache  | numeric(12,2)            |
+-- end_date                     | timestamp with time zone |
+-- start_date                   | timestamp with time zone |
+-- template_p                   | character(1)             | default 't'::bpchar
+-- company_contact_id           | integer                  |
+-- sort_order                   | integer                  |
+-- company_project_nr           | character varying(50)    |
+-- source_language_id           | integer                  |
+-- subject_area_id              | integer                  |
+-- expected_quality_id          | integer                  |
+-- final_company                | character varying(50)    |
+-- trans_project_words          | numeric(12,0)            |
+-- trans_project_hours          | numeric(12,0)            |
+-- trans_size                   | character varying(200)   |
+-- reported_hours_cache         | double precision         |
+-- cost_expense_planned_cache   | numeric(12,2)            | default 0
+-- cost_expense_logged_cache    | numeric(12,2)            | default 0
+-- confirm_date                 | date                     |
+-- cost_delivery_notes_cache    | numeric(12,2)            | default 0
+-- bt_project_id                | integer                  |
+-- bt_found_in_version_id       | integer                  |
+-- bt_fix_for_version_id        | integer                  |
+-- cost_cache_dirty             | timestamp with time zone |
+-- release_item_p               | character varying(1)     |
 
 
 
