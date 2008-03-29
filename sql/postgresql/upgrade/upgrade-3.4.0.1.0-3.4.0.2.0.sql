@@ -35,3 +35,13 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 extra_select, extra_where, sort_order, visible_for) values (91012,910,NULL,'Bill',
 '"<input type=textbox size=6 name=billable_units.$task_id value=$billable_units>"','','',12,'');
 
+
+
+-- Make Status editable
+
+delete from im_view_columns where column_id = 91018;
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (91018,910,NULL,'Status',
+'"[im_category_select {Intranet Project Status} task_status_id.$task_id $task_status_id]"','','',12,'');
+
