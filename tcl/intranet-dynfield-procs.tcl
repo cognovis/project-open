@@ -1319,17 +1319,16 @@ ad_proc -public im_dynfield::attribute_store {
 	} else {
 
 	    # Multi-value field. This must be a field with widget multi-select...
-	    ad_return_complaint 1 "Storing multiple values not tested yet: $attribute_name"
 	    db_transaction {
 		db_dml "delete previous values" "
 			delete from im_dynfield_attr_multi_value
 			where object_id = :object_id_org 
-			and attribute_id = :attribute_id
+			and attribute_id = :dynfield_attribute_id
 		"
 		foreach val [template::element::get_values $form_id $attribute_name] {
 		    db_dml "create multi value" "
 			insert into im_dynfield_attr_multi_value (attribute_id,object_id,value) 
-			values (:attribute_id,:object_id_org,:val)"
+			values (:dynfield_attribute_id,:object_id_org,:val)"
 		}
 	    }
 	}
@@ -2044,7 +2043,9 @@ ad_proc -public im_dynfield::dynfields_per_object_subtype {
 } {
     Returns the list of dynfield_attributes for each subtype
 } {
-    return [util_memoize [list im_dynfield::dynfields_per_object_subtype_helper -object_type $object_type]]
+    set hash [im_dynfield::dynfields_per_object_subtype_helper -object_type $object_type]
+    return $hash
+#    return [util_memoize [list im_dynfield::dynfields_per_object_subtype_helper -object_type $object_type]]
 }
 
 ad_proc -public im_dynfield::dynfields_per_object_subtype_helper {
@@ -2054,7 +2055,14 @@ ad_proc -public im_dynfield::dynfields_per_object_subtype_helper {
     object subtypes
 } {
     set type_category [im_dynfield::type_category_for_object_type -object_type $object_type]
-
+    if {"" == $type_category} {
+	ad_return_complaint 1 "Configuration Error:<br>
+		You haven't yet defined a 'type_category' for object type '$object_type'.<br>
+		Please tell your SysAdmin to update the system, and in particular the file
+		/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.0.0-3.4.0.1.0.sql.
+        "
+	ad_script_abort
+    }
     set mapping_sql "
 	select distinct
 		cat.category_id as type_id,
@@ -2100,9 +2108,6 @@ ad_proc -public im_dynfield::subtype_have_same_attributes_p {
     }
     return $same_p
 }
-
-
-
 
 
 
@@ -2245,9 +2250,6 @@ ad_proc -public im_dynfield::widget_request {
 
 }
 
-
-
-
 ad_proc -public im_dynfield::append_attributes_to_form {
     {-object_subtype_id "" }
     -object_type:required
@@ -2284,6 +2286,13 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     set debug 0
     if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: object_type=$object_type, object_id=$object_id" }
     set user_id [ad_get_user_id]
+
+    # ---------------------------- Create the Form --------------------------
+    if {![template::form exists $form_id]} {
+	if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: creating the form" }
+	template::form create $form_id
+    }
+
 
     # Add a hidden "object_type" field to the form
     if {![template::element::exists $form_id "object_type"]} {
@@ -2364,7 +2373,21 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
     # Does the specified layout page exist? Otherwise we'll use
     # "default".
-    set page_url_exists_p [db_string exists "select count(*) from im_dynfield_layout_pages where object_type = :object_type and page_url = :page_url"]
+    set page_url_exists_p [db_string exists "
+		select	count(*) 
+		from
+			im_dynfield_layout_pages dlp,
+			im_dynfield_layout dl,
+			im_dynfield_attributes da,
+			acs_attributes aa
+		where
+			dl.page_url = dlp.page_url and
+			dl.attribute_id = da.attribute_id and
+			da.acs_attribute_id = aa.attribute_id and
+			aa.object_type = :object_type and
+			dl.page_url = :page_url and
+			dlp.object_type = :object_type
+    "]
     if {!$page_url_exists_p} { set page_url "default" }
 
     set attributes_sql "
