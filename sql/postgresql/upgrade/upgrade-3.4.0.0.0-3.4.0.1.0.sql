@@ -2,6 +2,48 @@
 
 
 -------------------------------------------------------------
+-- 
+-------------------------------------------------------------
+
+
+alter table acs_object_types
+add type_category_type char varying(50);
+
+update acs_object_types
+set type_category_type = 'Intranet Company Type'
+where object_type = 'im_company';
+
+update acs_object_types
+set type_category_type = 'Intranet Absence Type'
+where object_type = 'im_user_absence';
+
+update acs_object_types
+set type_category_type = 'Intranet Project Type'
+where object_type = 'im_project';
+
+update acs_object_types
+set type_category_type = 'Intranet Cost Type'
+where object_type = 'im_expense';
+
+update acs_object_types
+set type_category_type = 'Intranet Cost Type'
+where object_type = 'im_expense_bundle';
+
+update acs_object_types
+set type_category_type = 'Intranet Office Type'
+where object_type = 'im_office';
+
+update acs_object_types
+set type_category_type = 'Intranet Person Type'
+where object_type = 'person';
+
+update acs_object_types
+set type_category_type = 'Intranet Ticket Type'
+where object_type = 'im_ticket';
+
+
+
+-------------------------------------------------------------
 -- Insert a category for upgrade scripts - gracefully
 -------------------------------------------------------------
 
