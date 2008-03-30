@@ -37,9 +37,7 @@ SELECT im_category_new(101, 'Ticket', 'Intranet Project Type');
 -- Create a new profile
 select im_create_profile ('Helpdesk','helpdesk');
 
-
 create sequence im_ticket_seq;
-
 create table im_tickets (
 	ticket_id			integer
 					constraint im_ticket_id_pk
@@ -68,18 +66,19 @@ create table im_tickets (
 	ticket_sla_id			integer
 					constraint im_ticket_sla_fk
 					references im_projects,
+
 	ticket_service_id		integer
 					constraint im_ticket_service_fk
 					references im_categories,
-	ticket_hardware_id		integer
-					constraint im_ticket_hardware_fk
+
+	ticket_conf_item_id		integer
+					constraint im_ticket_conf_item_fk
 					references acs_objects,
-	ticket_application_id		integer
-					constraint im_ticket_application_fk
-					references acs_objects,
+
 	ticket_queue_id			integer
 					constraint im_ticket_queue_fk
 					references im_categories,
+
 	ticket_alarm_date		timestamptz,
 	ticket_alarm_action		text,
 	ticket_note			text
@@ -510,6 +509,10 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 (27010,270,10, 'Nr','"<a href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_nr</a>"');
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (27020,270,20,'Name','"<href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_name</A>"');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(270220,270,22,'Conf Item','"<A href=/intranet-confdb/new?conf_item_id=$conf_item_id>$conf_item_name</a>"');
+
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (27025,270,25,'Queue','"<href=/intranet-helpdesk/queue/?queue_id=$ticket_queue_id>$ticket_queue_name</A>"');
 
@@ -527,14 +530,13 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 (27070,270,70,'Assignee','"<A href=/intranet/users/view?user_id=$ticket_assignee_id>$ticket_assignee</a>"');
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (27080,270,80,'SLA','"<A href=/intranet/projects/view?project_id=$sla_id>$sla_name</a>"');
-insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27090,270,90,'Hardware','"<A href=/intranet-confdb/new?conf_item_id=$conf_item_id>$conf_item_name</a>"');
 
 
-insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27030,270,70,'Start Date','$start_date_formatted');
-insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27035,270,80,'Delivery Date','$end_date_formatted');
+-- insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+-- (27030,270,70,'Start Date','$start_date_formatted');
+
+-- insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+-- (27035,270,80,'Delivery Date','$end_date_formatted');
 
 
 -- ticket_alarm_date          | timestamp with time zone |

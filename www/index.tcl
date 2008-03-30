@@ -93,7 +93,7 @@ db_foreach column_list_sql $column_sql {
 set dynamic_fields_p 1
 set form_id "ticket_filter"
 set object_type "im_ticket"
-set action_url "/intranet/tickets/index"
+set action_url "/intranet-helpdesk/index"
 set form_mode "edit"
 set mine_p_options [list \
 	[list [lang::message::lookup "" intranet-helpdesk.All "All"] "f" ] \
@@ -266,7 +266,7 @@ set sql "
 			im_projects p,
 			im_tickets t
 			LEFT OUTER JOIN im_projects sla ON (t.ticket_sla_id = sla.project_id)
-			LEFT OUTER JOIN im_conf_items ci ON (t.ticket_hardware_id = ci.conf_item_id),
+			LEFT OUTER JOIN im_conf_items ci ON (t.ticket_conf_item_id = ci.conf_item_id),
 	                im_companies c
 			$extra_from
 	        WHERE
