@@ -335,6 +335,7 @@ SELECT im_category_new(11802, 'Software', 'Intranet Conf Item Type');
 SELECT im_category_new(11804, 'Process', 'Intranet Conf Item Type');
 SELECT im_category_new(11806, 'License', 'Intranet Conf Item Type');
 SELECT im_category_new(11808, 'Specs', 'Intranet Conf Item Type');
+SELECT im_category_new(11810, 'Service', 'Intranet Conf Item Type');
 update im_categories set enabled_p = 'f' where category_id in (11804, 11808);
 -- reserved to 11849
 

@@ -22,7 +22,7 @@ ad_proc -public im_conf_item_type_software {} { return 11802 }
 ad_proc -public im_conf_item_type_process {} { return 11804 }
 ad_proc -public im_conf_item_type_license {} { return 11806 }
 ad_proc -public im_conf_item_type_specs {} { return 11808 }
-
+ad_proc -public im_conf_item_type_service {} { return 11810 }
 
 
 # ----------------------------------------------------------------------
@@ -41,6 +41,96 @@ ad_proc -private im_package_conf_items_id_helper {} {
         where package_key = 'intranet-confdb'
     } -default 0]
 }
+
+
+
+
+
+
+
+namespace eval im_conf_item {
+
+    ad_proc -public new {
+        { -var_hash "" }
+    } {
+        Create a new configuration item.
+	There are only few required field.
+	Primary key is conf_item_nr which defaults to conf_item_name.
+
+        @author frank.bergmann@project-open.com
+	@return The object_id of the new (or existing) Conf Item.
+    } {
+	array set vars $var_hash
+	set conf_item_new_sql "
+		select im_conf_item__new(
+			null,
+			'im_conf_item',
+			now(),
+			[ad_get_user_id],
+			'[ad_conn peeraddr]',
+			null,
+			:conf_item_name,
+			:conf_item_nr,
+			:conf_item_parent_id,
+			:conf_item_type_id,
+			:conf_item_status_id
+		)
+	"
+
+	# Set defaults.
+	set conf_item_name $vars(conf_item_name)
+	set conf_item_nr $conf_item_name
+	set conf_item_code $conf_item_name
+	set conf_item_parent_id ""
+	set conf_item_status_id [im_conf_item_status_active]
+	set conf_item_type_id [im_conf_item_type_hardware]
+	set conf_item_version ""
+	set conf_item_owner_id [ad_get_user_id]
+	set description ""
+	set note ""
+
+	# Override defaults
+	if {[info exists vars(conf_item_nr)]} { set conf_item_nr $vars(conf_item_nr) }
+	if {[info exists vars(conf_item_code)]} { set conf_item_code $vars(conf_item_nr) }
+	if {[info exists vars(conf_item_parent_id)]} { set conf_item_parent_id $vars(conf_item_parent_id) }
+	if {[info exists vars(conf_item_status_id)]} { set conf_item_status_id $vars(conf_item_status_id) }
+	if {[info exists vars(conf_item_type_id)]} { set conf_item_type_id $vars(conf_item_type_id) }
+	if {[info exists vars(conf_item_version)]} { set conf_item_version $vars(conf_item_version) }
+	if {[info exists vars(conf_item_owner_id)]} { set conf_item_owner_id $vars(conf_item_owner_id) }
+	if {[info exists vars(description)]} { set description $vars(description) }
+	if {[info exists vars(note)]} { set note $vars(note) }
+
+	# Check if the item already exists
+        set conf_item_id [db_string exists "
+		select	conf_item_id
+		from	im_conf_items
+		where
+			conf_item_parent_id = :conf_item_parent_id and
+			conf_item_nr = :conf_item_nr
+	" -default 0]
+
+	# Create a new item if necessary
+        if {!$conf_item_id} { set conf_item_id [db_string new $conf_item_new_sql] }
+
+	# Update the item with additional variables from the vars array
+	set sql_list [list]
+	foreach var [array names vars] {
+	    if {$var == "conf_item_id"} { continue }
+	    lappend sql_list "$var = :$var"
+	}
+	set sql "
+		update im_conf_items set
+		[join $sql_list ",\n"]
+		where conf_item_id = :conf_item_id
+	"
+        db_dml update_conf_item $sql
+	return $conf_item_id
+    }
+
+
+}
+
+
 
 
 # ----------------------------------------------------------------------

@@ -150,16 +150,12 @@ template::list::create \
 	}
 	conf_item_name {
 	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Name Name]"
-	    link_url_eval {[export_vars -base new {conf_item_id {form_mode "display"}}]}
+	    display_template {
+		@conf_item_lines.indent;noquote@<a href=@conf_item_lines.conf_item_url;noquote@>@conf_item_lines.conf_item_name;noquote@</a>
+	    }
 	}
         ip_address {
 	    label "[lang::message::lookup {} intranet-confdb.IP_Address IP-Address]"
-	}
-        win_workgroup {
-	    label "[lang::message::lookup {} intranet-confdb.Workgroup Workgroup]"
-	}
-        win_userdomain {
-	    label "[lang::message::lookup {} intranet-confdb.Domain Domain]"
 	}
         conf_item_type {
 	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Type Type]"
@@ -185,6 +181,12 @@ template::list::create \
     }
 
 set ttt {
+        win_workgroup {
+	    label "[lang::message::lookup {} intranet-confdb.Workgroup Workgroup]"
+	}
+        win_userdomain {
+	    label "[lang::message::lookup {} intranet-confdb.Domain Domain]"
+	}
 	conf_item_code {
 	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Code Code]"
 	}
@@ -216,21 +218,30 @@ set conf_item_sql [im_conf_item_select_sql \
 
 set sql "
 	select	i.*,
+		tree_level(i.tree_sortkey)-1 as indent_level,
 		p.project_id,
 		project_name
 	from	($conf_item_sql) i
 		LEFT OUTER JOIN acs_rels r ON (i.conf_item_id = r.object_id_two)
 		LEFT OUTER JOIN im_projects p ON (p.project_id = r.object_id_one)
+	order by
+		i.tree_sortkey
 "
 
 
 
-db_multirow -extend {conf_item_chk return_url processor} conf_item_lines conf_items_lines $conf_item_sql {
+db_multirow -extend {conf_item_chk conf_item_url indent return_url processor} conf_item_lines conf_items_lines $sql {
     set conf_item_chk "<input type=\"checkbox\" 
 				name=\"conf_item_id\" 
 				value=\"$conf_item_id\" 
 				id=\"conf_items_list,$conf_item_id\">"
     set processor "${processor_num}x$processor_speed"
     set return_url [im_url_with_query]
+    set conf_item_url [export_vars -base new {conf_item_id {form_mode "display"}}]
+
+    set indent ""
+    for {set i 0} {$i < $indent_level} {incr i} {
+	append indent "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+    }
 }
 
