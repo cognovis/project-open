@@ -52,10 +52,14 @@ ad_proc -public im_nagios_process_alert {
     # Check if there is already a ticket
     set open_nagios_ticket_id [im_nagios_find_open_ticket -host_name $host -service_name $service]
 
-    if {0 == $open_nagios_ticket_id} {
+
+    ns_log Notice "im_nagios_process_alert: host_id=$host_conf_item_id, service_id=$service_conf_item_id, ticket_id=$open_nagios_ticket_id, host=$host, service=$service"
+
+    set ticket_name "Nagios $alert_type $host/$service is $status"
+
+    if {"" == $open_nagios_ticket_id} {
 
 	set ticket_id [db_nextval "acs_object_id_seq"]
-	set ticket_name "Nagios $alert_type $host/$service is $status"
 	set ticket_customer_id [im_company_internal]
 	set ticket_customer_contact_id 0
 	set ticket_type_id [im_project_type_ticket]
@@ -66,15 +70,14 @@ ad_proc -public im_nagios_process_alert {
 	set start_date_sql [template::util::date get_property sql_date $start_date]
 	set end_date_sql [template::util::date get_property sql_timestamp $end_date]
 	
-	db_transaction {
-	    
-	    db_string ticket_insert {}
+	    set open_nagios_ticket_id [db_string ticket_insert {}]
 	    db_dml ticket_update {}
 	    db_dml project_update {}
 	    
 	    # Write Audit Trail
 	    im_project_audit $ticket_id
 	    
+	db_transaction {
 	} on_error {
 	    ad_return_complaint 1 "<b>Error inserting new ticket</b>:
 	<pre>$errmsg</pre>"
@@ -82,14 +85,60 @@ ad_proc -public im_nagios_process_alert {
 
 	db_dml host_service "
 		update im_tickets set
-			ticket_hardware_id = :host_conf_item_id,
-			ticket_service_id = :service_conf_item_id
+			ticket_conf_item_id = :service_conf_item_id
 		where ticket_id = :ticket_id
         "
-
-
     }
-    
+
+    # Add the ticket message to the forum tracker of the open ticket.
+    set forum_ids [db_list forum_ids "
+	select	ft.topic_id
+	from	im_forum_topics ft
+	where	ft.object_id = :open_nagios_ticket_id
+	order by ft.topic_id
+    "]
+
+    set parent_id [lindex $forum_ids 0]
+
+    # Create a new forum topic of type "Note"
+    set topic_id [db_nextval im_forum_topics_seq]
+    set topic_type_id [im_topic_type_id_task]
+    set topic_status_id [im_topic_status_id_open]
+    set owner_id [ad_get_user_id]
+    set subject $ticket_name
+
+    # "bodies" contains a Mime-Type - Content hash
+    set message ""
+    foreach body $bodies { 
+	append message $body 
+    }
+
+    db_dml topic_insert {
+		insert into im_forum_topics (
+			topic_id, object_id, parent_id,
+			topic_type_id, topic_status_id, owner_id, 
+			subject, message
+		) values (
+			:topic_id, :open_nagios_ticket_id, :parent_id,
+			:topic_type_id,	:topic_status_id, :owner_id, 
+			:subject, :message
+		)
+    }
+
+    switch [string tolower $status] {
+	ok {
+	    # Set the ticket to "resolved"
+	    db_dml update_closed "
+		update	im_tickets
+		set ticket_status_id = [im_ticket_status_closed]
+		where ticket_id = :ticket_id
+	    "
+	}
+	default - unknown {
+	    # nothing - keep the ticket open
+	}
+    }
+   
 
 }
 
@@ -182,8 +231,6 @@ ad_proc -public im_nagios_parse_config_file {
     }
 
     return [array get services_hash]
-#    ad_return_complaint 1 "<pre>[join [array get services_hash] "\n"]</pre>"
-
 }
 
 
@@ -399,10 +446,10 @@ ad_proc -public im_nagios_display_config {
 	
 	# Finish up the host definition
 	append html "</ul>\n"
-        
+	
 	# Finish the list of all hosts
 	append html "</ul>\n"
-        
+	
     }
     return $html
 }
@@ -450,7 +497,6 @@ ad_proc -public im_nagios_get_type_id_from_host_info {
     if {[llength $type_ids] > 0} { return [lindex $type_ids 0] }
 
     # Default type for confitem - hardware.
-    ad_return_complaint 1 "default - $host_template - $host_info_hash"
     return [im_conf_item_type_hardware]
 }
 
@@ -484,13 +530,12 @@ ad_proc -public im_nagios_get_service_by_name {
     Returns the conf_id of the service with the given name
 } {
     set host_id [im_nagios_get_host_by_name -host_name $host_name]
-    set compound_name "$host_name - $service_name"
 
     set service_ids [db_list hosts "
 	select	conf_item_id
 	from	im_conf_items
 	where	conf_item_parent_id = :host_id and
-		conf_item_nr = :compound_name
+		conf_item_nr = :service_name
     "]
 
     # There may be more then one service_id, so just return the first.
@@ -505,10 +550,29 @@ ad_proc -public im_nagios_find_open_ticket {
     and returns 0 otherwise.
 } {
     set host_id [im_nagios_get_host_by_name -host_name $host_name]
+    if {"" == $host_id} {
+	# Create a new host based on name only...
+	array unset host_vars
+	set host_vars(conf_item_name) $host_name
+	set host_vars(conf_item_type_id) [im_conf_item_type_hardware]
+	set host_id [im_conf_item::new -var_hash [array get host_vars]]
+    }
+
     set service_id [im_nagios_get_service_by_name -host_name $host_name -service_name $service_name]
+    if {"" == $service_id} {
+	# Create a new service based on name only...
+	array unset service_vars
+	set service_vars(conf_item_name) $service_name
+	set service_vars(conf_item_parent_id) $host_id
+	set host_vars(conf_item_type_id) [im_conf_item_type_service]
+	set service_id [im_conf_item::new -var_hash [array get service_vars]]
+    }
 
     set ticket_ids [db_list tickets "
-	select	0
+	select	ticket_id
+	from	im_tickets t
+	where	t.ticket_conf_item_id = :service_id
+		and t.ticket_status_id in ([join [im_sub_categories [im_ticket_status_open]] ","])
     "]
 
     return [lindex $ticket_ids 0]
