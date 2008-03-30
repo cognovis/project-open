@@ -5,7 +5,6 @@
 <property name="context">@context_bar@</property>
 <property name="main_navbar_label">conf_items</property>
 
-<br>
 <table border=0 cellpadding=0 cellspacing=0>
 <tr>
   <td>
