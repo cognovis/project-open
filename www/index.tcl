@@ -46,7 +46,7 @@ set delete_conf_item_p $add_conf_item_p
 set admin_links ""
 
 if {$add_conf_item_p} {
-    append admin_links " <li><a href=\"[export_vars -base /intranet-confdb/new {return_url {form_mode "edit"}}]\">[lang::message::lookup "" intranet-confdb.Add_a_new_Conf_Item "Add a new Configuration Item"]</a>\n"
+    append admin_links " <li><a href=\"[export_vars -base /intranet-confdb/new {return_url {form_mode "edit"}}]\">[lang::message::lookup "" intranet-confdb.Add_a_new_Conf_Item "Add a new Configuration Item"]</a></li>\n"
 }
 
 set bind_vars [ad_tcl_vars_to_ns_set]
