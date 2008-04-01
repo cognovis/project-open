@@ -17,7 +17,7 @@
 
         <provides url="intranet-nagios" version="3.4.0.0.0"/>
         <requires url="intranet-core" version="3.4.0.0.0"/>
-        <requires url="notifications" version="5.4.0"/>
+        <requires url="notifications" version="5.0.0"/>
 
         <callbacks>
         </callbacks>
