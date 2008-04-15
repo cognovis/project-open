@@ -746,6 +746,7 @@ ad_proc -public im_workflow_home_inbox_component {
     db_foreach tasks $tasks_sql {
 
         set assigned_users ""
+	set assignee_pretty $assignees_pretty
     	if {[info exists assignment_hash($object_id)]} { set assigned_users $assignment_hash($object_id) }
 
 	# Determine the type of relationship to the object - why is the task listed here?
