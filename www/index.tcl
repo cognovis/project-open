@@ -18,7 +18,7 @@ ad_page_contract {
     { end_date ""}
     { provider_id 0}
     { orderby "effective_date,desc" }
-    { unassigned "unassigned"}
+    { unassigned ""}
 }
 
 # ---------------------------------------------------------------
@@ -34,6 +34,24 @@ set cur_format [im_l10n_sql_currency_format]
 set return_url [im_url_with_query]
 set current_url [ns_conn url]
 
+
+# Unassigned Logic
+if {"" == $unassigned} {
+    
+    # If we are INSIDE a project, then by default show all expenses
+    if {"" != $project_id} { 
+
+	set unassigned "unbundled" 
+
+    } else {
+
+	# We are not inside a project
+	set unassigned "unassigned"
+	
+    }
+}
+
+
 set project_nr ""
 set user_is_pm_p 0
 db_0or1row project_info "
@@ -45,13 +63,11 @@ db_0or1row project_info "
 	from dual
 "
 
-set page_title "$project_nr [_ intranet-expenses.Unassigned_Expenses]"
+set page_title "$project_nr [lang::message::lookup "" intranet-expenses.Expenses_List "Expense List"]"
 set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
-
 set org_project_id $project_id
-# if {"" == $org_project_id} { set unassigned "unassigned" }
-
 set expense_type_id_default $expense_type_id
+
 
 # Check that Start & End-Date have correct format
 #if {"" != $start_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $start_date]} {
@@ -90,8 +106,10 @@ if {"" == $project_id | 0 == $project_id} { set main_navbar_label "expenses" }
 
 
 set unassigned_p_options [list \
-        "unassigned" [lang::message::lookup "" intranet-expenses.Unassigned "Expenses without Projects"] \
+        "unassigned" [lang::message::lookup "" intranet-expenses.Unassigned_Expenses "Unassigned Expenses"] \
         "assigned" [lang::message::lookup "" intranet-expenses.Assigned "Expenses assigned to a Projects"] \
+        "unbundeled" [lang::message::lookup "" intranet-expenses.Unbundeled "Unbundeled Expenses"] \
+        "bundeled" [lang::message::lookup "" intranet-expenses.Bundeled "Bundeled Expenses"] \
         "all" [lang::message::lookup "" intranet-expenses.All "All Expenses"] \
 ]
 
@@ -243,8 +261,16 @@ if {"" != $expense_type_id  & 0 != $expense_type_id} {
 set personal_only_sql "and provider_id = :user_id"
 if {$create_bundle_p} { set personal_only_sql "" }
 
-set unassigned_sql "and e.bundle_id is null"
-if {"all" == $unassigned} { set unassigned_sql "" }
+
+switch $unassigned {
+    "unassigned" { set unassigned_sql "and c.project_id is null" }
+    "assigned" { set unassigned_sql "and c.project_id is not null" }
+    "unbundeled" { set unassigned_sql "and e.bundle_id is null" }
+    "bundeled" { set unassigned_sql "and e.bundle_id is not null" }
+    "all" { set unassigned_sql "" }
+    default { set unassigned_sql "" }
+}
+
 
 db_multirow -extend {expense_chk project_url expense_new_url provider_url} expense_lines expenses_lines "
   select
