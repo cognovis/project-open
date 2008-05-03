@@ -1,4 +1,4 @@
--- /packages/intranet-hr/sql/oracle/intranet-hr-create.sql
+-- /packages/intranet-hr/sql/postgresql/intranet-hr-create.sql
 --
 -- Project/Open HR Module, frank.bergmann@project-open.com, 030828
 -- A complete revision of June 1999 by dvr@arsdigita.com
@@ -148,25 +148,30 @@ create index im_employees_idx1 on im_employees(employee_id, supervisor_id);
 create index im_employees_idx2 on im_employees(supervisor_id, employee_id);
 
 
--- prompt *** Creating im_supervises_p
-create or replace function im_supervises_p (
-	integer, 
-	integer
-)
+create or replace function im_supervises_p (integer, integer)
 returns char as '
 DECLARE
-	p_supervisor_id alias for $1;	-- supervisor_id 
-	p_user_id  alias for $2;	-- user_id
+	p_supervisor_id		alias for $1;
+	p_user_id		alias for $2;
 
-	v_exists_p char;
+	v_user_id		integer;
+	v_exists_p		char;
+	v_count			integer;
 BEGIN
-	select decode(count(1),0,''f'',''t'') into v_exists_p
-	from im_employees
-	where employee_id = v_user_id
-	and level > 1
-	start with employee_id = v_supervisor_id
-	connect by supervisor_id = PRIOR employee_id;
-	return v_exists_p;
+	v_count := 0;
+	v_user_id := p_user_id;
+
+	WHILE v_count < 100 and v_user_id is not null LOOP
+		IF v_user_id = p_supervisor_id THEN return ''t''; END IF;
+
+		select	e.supervisor_id into v_user_id
+		from	im_employees e
+		where	e.employee_id = v_user_id;
+
+		v_count := v_count + 1;
+	END LOOP;
+
+	return ''f'';
 END;' language 'plpgsql';
 
 
@@ -210,14 +215,14 @@ select im_component_plugin__new (
 	null,					-- creattion_ip
 	null,					-- context_id
 	
-        'User Employee Component',		-- plugin_name
-        'intranet-hr',				-- package_name
+	'User Employee Component',		-- plugin_name
+	'intranet-hr',				-- package_name
 	'left',					-- location
-        '/intranet/users/view',			-- page_url
+	'/intranet/users/view',			-- page_url
 	null,					-- view_name
-        60,					-- sort_order
+	60,					-- sort_order
 	'im_employee_info_component $user_id_from_search $return_url [im_opt_val employee_view_name]'
-    );
+);
 
 -- prompt *** Creating OrgChart menu entry
 -- Add OrgChart to Users menu
@@ -227,50 +232,50 @@ declare
 	v_user_orgchart_menu	integer;
 	v_user_menu		integer;
 
-        -- Groups
-        v_employees     	integer;
-        v_accounting    	integer;
-        v_senman                integer;
-        v_customers     	integer;
-        v_freelancers   	integer;
-        v_proman                integer;
-        v_admins                integer;
+	-- Groups
+	v_employees		integer;
+	v_accounting		integer;
+	v_senman		integer;
+	v_customers		integer;
+	v_freelancers   	integer;
+	v_proman		integer;
+	v_admins		integer;
 begin
-    select group_id into v_admins from groups where group_name = ''P/O Admins'';
-    select group_id into v_senman from groups where group_name = ''Senior Managers'';
-    select group_id into v_proman from groups where group_name = ''Project Managers'';
-    select group_id into v_accounting from groups where group_name = ''Accounting'';
-    select group_id into v_employees from groups where group_name = ''Employees'';
-    select group_id into v_customers from groups where group_name = ''Customers'';
-    select group_id into v_freelancers from groups where group_name = ''Freelancers'';
+	select group_id into v_admins from groups where group_name = ''P/O Admins'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_proman from groups where group_name = ''Project Managers'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select group_id into v_employees from groups where group_name = ''Employees'';
+	select group_id into v_customers from groups where group_name = ''Customers'';
+	select group_id into v_freelancers from groups where group_name = ''Freelancers'';
 
-    select menu_id
-    into v_user_menu
-    from im_menus
-    where label=''users'';
+	select menu_id
+	into v_user_menu
+	from im_menus
+	where label=''users'';
 
-    v_user_orgchart_menu := im_menu__new (
-	null,				-- menu_id
-        ''acs_object'',			-- object_type
-	now(),				-- creation_date
-        null,				-- creation_user
-        null,				-- creation_ip
-        null,				-- context_id
-	''intranet-hr'',		 -- package_name
-	''users_org_chart'',		 -- label
-	''Org Chart'',			 -- name
-	''/intranet-hr/org-chart?company_id=0'', -- url
-	5,					 -- sort_order
-	v_user_menu,				 -- parent_menu_id
-	null					 -- visible_tcl
-    );
+	v_user_orgchart_menu := im_menu__new (
+		null,					-- menu_id
+		''acs_object'',				-- object_type
+		now(),					-- creation_date
+		null,					-- creation_user
+		null,					-- creation_ip
+		null,					-- context_id
+		''intranet-hr'',			-- package_name
+		''users_org_chart'',			-- label
+		''Org Chart'',				-- name
+		''/intranet-hr/org-chart?company_id=0'', -- url
+		5,					-- sort_order
+		v_user_menu,				-- parent_menu_id
+		null					-- visible_tcl
+	);
 
-    PERFORM acs_permission__grant_permission(v_user_orgchart_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_user_orgchart_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_user_orgchart_menu, v_proman, ''read'');
-    PERFORM acs_permission__grant_permission(v_user_orgchart_menu, v_accounting, ''read'');
-    PERFORM acs_permission__grant_permission(v_user_orgchart_menu, v_employees, ''read'');
-    return 0;
+	PERFORM acs_permission__grant_permission(v_user_orgchart_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_user_orgchart_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_user_orgchart_menu, v_proman, ''read'');
+	PERFORM acs_permission__grant_permission(v_user_orgchart_menu, v_accounting, ''read'');
+	PERFORM acs_permission__grant_permission(v_user_orgchart_menu, v_employees, ''read'');
+	return 0;
 end;' language 'plpgsql';
 
 select inline_0 ();
@@ -286,10 +291,10 @@ select im_create_profile ('HR Managers','profile');
 select acs_privilege__create_privilege('view_hr','View HR','View HR');
 select acs_privilege__add_child('admin', 'view_hr');
 
-select im_priv_create('view_hr',	'HR Managers');
-select im_priv_create('view_hr',	'P/O Admins');
-select im_priv_create('view_hr',	'Senior Managers');
-select im_priv_create('view_hr',	'Accounting');
+select im_priv_create('view_hr', 'HR Managers');
+select im_priv_create('view_hr', 'P/O Admins');
+select im_priv_create('view_hr', 'Senior Managers');
+select im_priv_create('view_hr', 'Accounting');
 
 
 
@@ -298,7 +303,4 @@ select im_priv_create('view_hr',	'Accounting');
 
 \i ../common/intranet-hr-common.sql
 \i ../common/intranet-hr-backup.sql
-
-
-
 
