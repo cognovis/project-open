@@ -566,7 +566,3 @@ values
  'f',
  't',
  'f');
-
-
-commit;
-
