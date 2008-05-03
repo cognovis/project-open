@@ -39,7 +39,6 @@ drop table im_employee_checkpoints;
 drop sequence im_employee_checkpoint_id_seq;
 drop view im_employees_active;
 drop table im_employees;
-drop function im_supervises_p(integer, integer);
 
 -- before remove priviliges remove granted permissions
 create or replace function inline_revoke_permission (varchar)
