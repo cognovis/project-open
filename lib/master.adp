@@ -1,7 +1,9 @@
 <master>
   <property name="title">@title;noquote@</property>
   <property name="header_stuff">
+<!--
     <link rel="stylesheet" type="text/css" href="/resources/bug-tracker/bug-tracker.css" media="all">
+-->
   </property>
   <property name="main_navbar_label">bug_tracker</property>
   <if @signatory@ not nil><property name="signatory">@signatory;noquote@</property></if>
