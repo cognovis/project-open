@@ -1459,41 +1459,37 @@ declare
 	v_journal_id    integer;
 	trans_rec       record;
 begin
-	for trans_rec in select t.task_id, t.case_id, tr.transition_name
-		from   wf_tasks t, wf_transitions tr
-		where  trigger_time <= now()
-		and    state = ''enabled''
-		and    tr.workflow_key = t.workflow_key
-		and    tr.transition_key = t.transition_key 
+	for trans_rec in 
+		select	t.task_id, t.case_id, tr.transition_name
+		from	wf_tasks t, wf_transitions tr
+		where	trigger_time <= now()
+			and    state = ''enabled''
+			and    tr.workflow_key = t.workflow_key
+			and    tr.transition_key = t.transition_key 
 	LOOP
- 
 		/* Insert an entry to the journal so people will know it fired */
-
 		v_journal_id := journal_entry__new (
-		null,
-		trans_rec.case_id, 
-		''task '' || trans_rec.task_id || '' fire time'',
-		trans_rec.transition_name || '' automatically finished'',
-		now(),
-		null,
-		null,
-		''Timed transition fired.''
+			null,
+			trans_rec.case_id, 
+			''task '' || trans_rec.task_id || '' fire time'',
+			trans_rec.transition_name || '' automatically finished'',
+			now(),
+			null,
+			null,
+			''Timed transition fired.''
 		);
 	
 		/* Fire the transition */
-
 		PERFORM workflow_case__fire_transition_internal (
-		trans_rec.task_id,
-		v_journal_id
+			trans_rec.task_id,
+			v_journal_id
 		);
 
 		/* Update the workflow internal state */
-
 		PERFORM workflow_case__sweep_automatic_transitions(
-		trans_rec.case_id,
-		v_journal_id
+			trans_rec.case_id,
+			v_journal_id
 		);
-
 	end loop;
 
 	return 0;
@@ -1514,24 +1510,21 @@ begin
 	LOOP
  
 		/* Insert an entry to the journal so people will know it was canceled */
-
 		v_journal_id := journal_entry__new (
-		null,
-		task_rec.case_id, 
-		''task '' || task_rec.task_id || '' cancel timeout'',
-		task_rec.transition_name || '' timed out'', 
-		now(),
-		null,
-		null,
-		''The user''''s hold on the task timed out and the task was automatically canceled''
+			null,
+			task_rec.case_id, 
+			''task '' || task_rec.task_id || '' cancel timeout'',
+			task_rec.transition_name || '' timed out'', 
+			now(),
+			null,
+			null,
+			''The user''''s hold on the task timed out and the task was automatically canceled''
 		);
 
-
 		/* Cancel the task */
-
 		PERFORM workflow_case__cancel_task (
-		task_rec.task_id,
-		v_journal_id
+			task_rec.task_id,
+			v_journal_id
 		);
 
 	end loop;
@@ -1802,26 +1795,26 @@ begin
 		select wf_task_id_seq.nextval into v_task_id from dual;
 
 		insert into wf_tasks (
-		task_id, case_id, workflow_key, transition_key, 
-		deadline, trigger_time, estimated_minutes
+			task_id, case_id, workflow_key, transition_key, 
+			deadline, trigger_time, estimated_minutes
 		) values (
-		v_task_id, enable_transitions__case_id, v_workflow_key, 
-		trans_rec.transition_key,
-		v_deadline_date, v_trigger_time, trans_rec.estimated_minutes
+			v_task_id, enable_transitions__case_id, v_workflow_key, 
+			trans_rec.transition_key,
+			v_deadline_date, v_trigger_time, trans_rec.estimated_minutes
 		);
 		
 		PERFORM workflow_case__set_task_assignments (
 		v_task_id,
-		trans_rec.assignment_callback,
-		trans_rec.assignment_custom_arg
+			trans_rec.assignment_callback,
+			trans_rec.assignment_custom_arg
 		);
 
 		/* Execute the transition enabled callback */
 		PERFORM workflow_case__execute_transition_callback (
-		trans_rec.enable_callback, 
-		trans_rec.enable_custom_arg,
-		enable_transitions__case_id, 
-		trans_rec.transition_key
+			trans_rec.enable_callback, 
+			trans_rec.enable_custom_arg,
+			enable_transitions__case_id, 
+			trans_rec.transition_key
 		);
 
 		select count(*) into v_num_assigned

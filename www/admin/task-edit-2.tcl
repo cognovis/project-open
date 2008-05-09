@@ -8,7 +8,7 @@ ad_page_contract {
     role_key:allhtml,optional
     role_name:optional
     estimated_minutes:integer,optional
-    instructions:optional
+    instructions:allhtml,optional
     {return_url "define?[export_vars -url {workflow_key transition_key}]"}
     cancel:optional
     {context_key "default"}
