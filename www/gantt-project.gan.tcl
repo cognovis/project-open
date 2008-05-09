@@ -115,13 +115,6 @@ im_ganttproject_write_subtasks \
     $doc \
     $tasks_node
 
-
-# -------- Resources -------------
-#    <resources>
-#        <resource id="0" name="Frank Bergmann" function="Default:1" contacts="" phone="" />
-#        <resource id="1" name="Klaus Hofeditz" function="Default:0" contacts="" phone="" />
-#    </resources>
-
 set resources_node [$doc createElement resources]
 $project_node appendChild $resources_node
 
