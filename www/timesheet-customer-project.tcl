@@ -23,6 +23,7 @@ ad_page_contract {
     { task_id:integer 0}
     { company_id:integer 0}
     { user_id:integer 0}
+    { invoice_id:integer 0}
 }
 
 # ------------------------------------------------------------
@@ -146,6 +147,10 @@ if {0 != $task_id && "" != $task_id} {
     lappend criteria "h.project_id = :task_id"
 }
 
+if {0 != $invoice_id && "" != $invoice_id} {
+    lappend criteria "h.invoice_id = :invoice_id"
+}
+
 # Select project & subprojects
 if {0 != $project_id && "" != $project_id} {
     lappend criteria "p.project_id in (
@@ -174,56 +179,64 @@ if { ![empty_string_p $where_clause] } {
 set sql "
 select
 	h.note,
-	coalesce(h.hours,0) as hours,
 	h.billing_rate,
 	to_char(h.day, 'YYYY-MM-DD') as date,
 	to_char(h.day, 'J') as julian_date,
 	to_char(h.day, 'J')::integer - to_char(to_date(:start_date, 'YYYY-MM-DD'), 'J')::integer as date_diff,
-	to_char(h.hours, :number_format) as hours,
+	to_char(coalesce(h.hours,0), :number_format) as hours,
 	to_char(h.billing_rate, :number_format) as billing_rate,
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name,
-	p.project_id,
-	p.project_nr,
-	p.project_name,
+	im_initials_from_user_id(u.user_id) as user_initials,
+	main_p.project_id,
+	main_p.project_nr,
+	main_p.project_name,
+	p.project_id as sub_project_id,
+	p.project_nr as sub_project_nr,
+	p.project_name as sub_project_name,
 	c.company_id,
 	c.company_path as company_nr,
-	c.company_name
+	c.company_name,
+	c.company_id || '-' || main_p.project_id as company_project_id,
+	c.company_id || '-' || main_p.project_id || u.user_id as company_project_user_id
 from
 	im_hours h,
 	im_projects p,
+	im_projects main_p,
 	im_companies c,
 	users u
 where
 	h.project_id = p.project_id
-	and p.project_status_id not in ([im_project_status_deleted])
+	and main_p.project_status_id not in ([im_project_status_deleted])
 	and h.user_id = u.user_id
+	and main_p.tree_sortkey = tree_root_key(p.tree_sortkey)
 	and h.day >= to_timestamp(:start_date, 'YYYY-MM-DD')
 	and h.day < to_timestamp(:end_date, 'YYYY-MM-DD')
-	and p.company_id = c.company_id
+	and main_p.company_id = c.company_id
 	$where_clause
 order by
-	c.company_id,
-	p.project_id,
-	u.user_id,
+	c.company_path,
+	main_p.project_nr,
+	user_name,
+	p.project_nr,
 	h.day
 "
 
 set report_def [list \
-    group_by company_nr \
+    group_by company_id \
     header {
 	"\#colspan=99 <a href=$base_url&company_id=$company_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a> 
 	<b><a href=$company_url$company_id>$company_name</a></b>"
     } \
     content [list  \
-	group_by project_nr \
+	group_by company_project_id \
 	header {
 	    $company_nr 
 	    "\#colspan=99 <a href=$base_url&project_id=$project_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
 	    <b><a href=$project_url$project_id>$project_name</a></b>"
 	} \
 	content [list \
-	    group_by user_id \
+	    group_by company_project_user_id \
 	    header {
 		$company_nr 
 		$project_nr 
@@ -234,10 +247,11 @@ set report_def [list \
 		    header {
 			$company_nr
 			$project_nr
-			$user_name
+			$user_initials
 			$date
 			$hours_link
 			$billing_rate
+			$sub_project_nr
 			$note
 		    } \
 		    content {} \
@@ -245,9 +259,10 @@ set report_def [list \
 	    footer {
 		$company_nr 
 		$project_nr 
-		$user_name
+		$user_initials
 		""
 		"<i>$hours_user_subtotal</i>"
+		""
 		""
 		""
 	    } \
@@ -260,26 +275,27 @@ set report_def [list \
 	    "<b>$hours_project_subtotal</b>"
 	    ""
 	    ""
+	    ""
 	} \
     ] \
-    footer {"" "" "" "" "" "" ""} \
+    footer {"" "" "" "" "" "" "" ""} \
 ]
 
 # Global header/footer
-set header0 {"Customer" "Project" "User" "Date" Hours Rate Note}
-set footer0 {"" "" "" "" "" "" ""}
+set header0 {"Customer" "Project" "User" "Date" Hours Rate Task Note}
+set footer0 {"" "" "" "" "" "" "" ""}
 
 set hours_user_counter [list \
 	pretty_name Hours \
 	var hours_user_subtotal \
-	reset \$user_id \
+	reset \$company_project_user_id \
 	expr \$hours
 ]
 
 set hours_project_counter [list \
 	pretty_name Hours \
 	var hours_project_subtotal \
-	reset \$project_id \
+	reset \$company_project_id \
 	expr \$hours
 ]
 
@@ -370,6 +386,7 @@ switch $output_format {
         <div class=\"filter-block\">
 
 	<form>
+	[export_form_vars invoice_id]
 	<table border=0 cellspacing=1 cellpadding=1>
 	<tr valign=top><td>
 		<table border=0 cellspacing=1 cellpadding=1>
@@ -400,7 +417,7 @@ switch $output_format {
 		<tr>
 		  <td class=form-label>User</td>
 		  <td class=form-widget>
-		    [im_user_select -include_empty_p 1 -include_empty_name "-- Please select --" user_id $user_id]
+		    [im_user_select -include_empty_p 1 -group_id [list [im_employee_group_id] [im_freelance_group_id]] -include_empty_name "-- Please select --" user_id $user_id]
 		  </td>
 		</tr>
 
@@ -449,7 +466,7 @@ db_foreach sql $sql {
 	}
 	set hours_link $hours
 	if {$edit_timesheet_p} {
-	    set hours_link "<a href=\"[export_vars -base $hours_url {julian_date user_id project_id {return_url $this_url}}]\">$hours</a>\n"
+	    set hours_link "<a href=\"[export_vars -base $hours_url {julian_date user_id {project_id $sub_project_id} {return_url $this_url}}]\">$hours</a>\n"
 	}
 
 	im_report_display_footer \
