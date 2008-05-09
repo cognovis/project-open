@@ -107,40 +107,52 @@ if {!$invoice_exists_p} {
 	END;"
 }
 
+
+# Update the timesheeet invoice
+db_dml update_ts_invoice "
+	update im_timesheet_invoices 
+	set 
+		invoice_period_start = :start_date::timestamptz,
+		invoice_period_end = :end_date::timestamptz
+	where
+		invoice_id = :invoice_id
+"
+
+
 # Update the invoice itself
 db_dml update_invoice "
-update im_invoices 
-set 
-	invoice_nr	= :invoice_nr,
-        company_contact_id = :company_contact_id,
-	payment_method_id = :payment_method_id,
-        invoice_office_id = :invoice_office_id
-where
-	invoice_id = :invoice_id
+	update im_invoices 
+	set 
+		invoice_nr	= :invoice_nr,
+	        company_contact_id = :company_contact_id,
+		payment_method_id = :payment_method_id,
+	        invoice_office_id = :invoice_office_id
+	where
+		invoice_id = :invoice_id
 "
 
 db_dml update_costs "
-update im_costs
-set
-	project_id	= :project_id,
-	cost_name	= :invoice_nr,
-        cost_nr         = :invoice_id,
-	customer_id	= :customer_id,
-	provider_id	= :provider_id,
-	cost_status_id	= :cost_status_id,
-	cost_type_id	= :cost_type_id,
-        cost_center_id  = :cost_center_id,
-	template_id	= :template_id,
-	effective_date	= :invoice_date,
-	start_block	= ( select max(start_block) 
-			    from im_start_months 
-			    where start_block < :invoice_date),
-	payment_days	= :payment_days,
-	vat		= :vat,
-	tax		= :tax,
-	variable_cost_p = 't'
-where
-	cost_id = :invoice_id
+	update im_costs
+	set
+		project_id	= :project_id,
+		cost_name	= :invoice_nr,
+	        cost_nr         = :invoice_id,
+		customer_id	= :customer_id,
+		provider_id	= :provider_id,
+		cost_status_id	= :cost_status_id,
+		cost_type_id	= :cost_type_id,
+	        cost_center_id  = :cost_center_id,
+		template_id	= :template_id,
+		effective_date	= :invoice_date,
+		start_block	= ( select max(start_block) 
+				    from im_start_months 
+				    where start_block < :invoice_date),
+		payment_days	= :payment_days,
+		vat		= :vat,
+		tax		= :tax,
+		variable_cost_p = 't'
+	where
+		cost_id = :invoice_id
 "
 
 # ---------------------------------------------------------------
@@ -194,14 +206,14 @@ foreach nr $item_list {
 # ---------------------------------------------------------------
 
 set update_invoice_amount_sql "
-update im_costs
-set amount = (
-	select sum(price_per_unit * item_units)
-	from im_invoice_items
-	where invoice_id = :invoice_id
-	group by invoice_id
-)
-where cost_id = :invoice_id
+	update im_costs
+	set amount = (
+		select sum(price_per_unit * item_units)
+		from im_invoice_items
+		where invoice_id = :invoice_id
+		group by invoice_id
+	)
+	where cost_id = :invoice_id
 "
 
 db_dml update_invoice_amount $update_invoice_amount_sql
@@ -276,17 +288,17 @@ if {$cost_type_id == [im_cost_type_invoice]} {
 	    # However, we don't "overwrite" hours assigned to another invoice.
 	    db_dml update_included_hours "
 		update im_hours set
-			cost_id = :invoice_id
+			invoice_id = :invoice_id
 		where	project_id in ([join $include_task ","])
-			and cost_id is null
+			and invoice_id is null
 	    "    
 	}
 	interval {
 	    db_dml update_included_hours "
 		update im_hours set
-			cost_id = :invoice_id
+			invoice_id = :invoice_id
 		where	project_id in ([join $include_task ","])
-			and cost_id is null
+			and invoice_id is null
 			and day >= :start_date::date
 			and day < :end_date::date
 	    "
@@ -294,9 +306,9 @@ if {$cost_type_id == [im_cost_type_invoice]} {
 	unbilled {
 	    db_dml update_included_hours "
 		update im_hours set
-			cost_id = :invoice_id
+			invoice_id = :invoice_id
 		where	project_id in ([join $include_task ","])
-			and cost_id is null
+			and invoice_id is null
 	    "
 	}
 	default {

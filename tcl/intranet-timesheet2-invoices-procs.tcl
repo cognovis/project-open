@@ -211,7 +211,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 		) as hours_in_interval,
 		(select sum(h.hours) from im_hours h where 
 			h.project_id = children.project_id
-			and h.cost_id is null
+			and h.invoice_id is null
 		) as unbilled_hours
 	from
 		im_projects parent,

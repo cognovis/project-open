@@ -14,6 +14,29 @@
 --	im_timesheet_prices		List of prices with defaults
 --
 
+---------------------------------------------------------
+-- Create an "invoice_id" field in im_hours to keep track
+-- of invoice/non-invoice hours
+
+
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+        v_count                 integer;
+BEGIN
+	select count(*) into v_count from user_tab_columns
+	where	lower(table_name) = ''im_hours'' and lower(column_name) = ''invoice_id'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	alter table im_hours add invoice_id integer
+		constraint im_hours_invoice_fk references im_costs;
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
 
 ---------------------------------------------------------
 -- Timesheet Invoices
@@ -63,6 +86,9 @@ create table im_timesheet_invoices (
 				primary key
 				constraint im_timesheet_invoices_fk
 				references im_invoices
+	-- Start and end date of invoicing period
+	invoice_period_start	timestamptz,
+	invoice_period_end	timestamptz
 );
 
 
@@ -164,6 +190,12 @@ BEGIN
 	where	invoice_id = p_invoice_id;
 
 	-- Reset the invoiced-flag of all included hours
+	update	im_hours
+	set	invoice_id = null
+	where	invoice_id = p_invoice_id;
+
+	-- Compatibility for old invoices where cost_id
+	-- indicated that hours belong to invoice
 	update	im_hours
 	set	cost_id = null
 	where	cost_id = p_invoice_id;

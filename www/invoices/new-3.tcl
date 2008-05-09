@@ -189,7 +189,7 @@ if {[info exists customer_id]} {
     db_0or1row customer_info "
     	select	default_vat,
 		default_payment_method_id,
-		default_payment_days,
+		coalesce(default_payment_days, 0) as default_payment_days,
 		default_invoice_template_id,
 		default_bill_template_id,
 		default_po_template_id,
@@ -273,7 +273,7 @@ if {$aggregate_tasks_p} {
 				) as hours_in_interval,
 				(select sum(h.hours) from im_hours h where 
 					h.project_id = p.project_id
-					and h.cost_id is null
+					and h.invoice_id is null
 				) as unbilled_units,
 				parent.project_id as project_id,	
 				coalesce(t.material_id, :default_material_id) as task_material_id,
@@ -316,7 +316,7 @@ if {$aggregate_tasks_p} {
 		) as interval_sum,
 		(select sum(h.hours) from im_hours h where 
 			h.project_id = p.project_id
-			and h.cost_id is null
+			and h.invoice_id is null
 		) as unbilled_sum,
 
 		p.company_id,
@@ -505,6 +505,16 @@ order by
 
 	incr ctr
     }
+
+
+if {1 == $ctr} {
+    set no_invoice_lines_title [lang::message::lookup "" intranet-timesheet2-invoices.No_invoice_lines_selected "No Invoice Lines Selected"]
+    set no_invoice_lines_msg [lang::message::lookup "" intranet-timesheet2-invoices.No_invoice_lines_check_column "Please go back to the last page and make sure that you have selected the right column."]
+    ad_return_complaint 1 "<b>$no_invoice_lines_title</b>:<br>
+	$no_invoice_lines_msg
+    "
+    ad_script_abort
+}
 
 
 # ---------------------------------------------------------------
