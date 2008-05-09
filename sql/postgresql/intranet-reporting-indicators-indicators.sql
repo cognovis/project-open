@@ -18,18 +18,17 @@ BEGIN
 		''new_project_per_month'',
 		15110,
 		15000,
-		''select count(*) from im_projects where start_date > now()::date-30 and start_date <= now()::date'',
+''select count(*) from im_projects where start_date > now()::date-30 and start_date <= now()::date'',
 		0,
 		300,
 		5
 	);
 
-	update im_indicators set
-		indicator_section_id = 15205
+	update im_indicators set indicator_section_id = 15205
 	where indicator_id = v_id;
 
-	update im_reports set
-		report_description = ''Counts the main projects (no subprojects) starting in the last 30 days.''
+	update im_reports set report_description = 
+''Main projects (no subprojects) started in the last 30 days.''
 	where report_id = v_id;
 
         return 0;

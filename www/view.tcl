@@ -1,6 +1,6 @@
-# /packages/intranet-reporting/www/view.tcl
+# /packages/intranet-reporting-indicators/www/view.tcl
 #
-# Copyright (c) 2003-2007 ]project-open[
+# Copyright (c) 2003-2008 ]project-open[
 # frank.bergmann@project-open.com
 #
 # All rights reserved. Please check
@@ -15,7 +15,13 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     report_id:integer,optional
+    indicator_id:integer,optional
     {return_url "/intranet-reporting/index"}
+}
+
+if {[info exists indicator_id]} { set report_id $indicator_id }
+if {![info exists report_id]} { 
+    ad_return_complaint 1 "You need to specify 'report_id' or 'indicator_id'."
 }
 
 
@@ -24,16 +30,21 @@ ad_page_contract {
 
 set current_user_id [ad_maybe_redirect_for_registration]
 set menu_id [db_string menu "select report_menu_id from im_reports where report_id = :report_id" -default 0]
-set read_p [db_string report_perms "
+
+if {"" != $menu_id} {
+
+    set read_p [db_string report_perms "
         select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
         from    im_menus m
         where   m.menu_id = :menu_id
-" -default 'f']
-if {![string equal "t" $read_p]} {
-    ad_return_complaint 1 "<li>
+    " -default 'f']
+    if {![string equal "t" $read_p]} {
+	ad_return_complaint 1 "<li>
     [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
-    return
+	return
+    }
 }
+
 
 # ---------------------------------------------------------------
 # Get Report Info

@@ -294,4 +294,6 @@ select inline_0 ();
 drop function inline_0 ();
 
 
+\i intranet-reporting-indicators-indicators.sql
+
 
