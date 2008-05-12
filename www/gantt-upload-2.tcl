@@ -133,12 +133,14 @@ if {[set node [$root_node selectNodes /project/description]] != ""} {
 # -------------------------------------------------------------------
 
 if {[set resource_node [$root_node selectNodes /project/resources]] != ""} {
-    #ns_write "<h2>Saving Resources</h2>\n"
-    #ns_write "<ul>\n"
+    if {$debug} { ns_write "<h2>Saving Resources</h2>\n" }
+    if {$debug} { ns_write "<ul>\n" }
 
     set resource_hash_array [im_gp_save_resources -debug $debug $resource_node]
     array set resource_hash $resource_hash_array
-    #ns_write "</ul>\n"
+    if {$debug} { ns_write "<li>\n<pre>resource_hash_array=$resource_hash_array</pre>" }
+    if {$debug} { ns_write "</ul>\n" }
+
 }
 
 set resources_to_assign_p 0
