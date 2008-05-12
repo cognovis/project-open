@@ -223,41 +223,31 @@ DECLARE
 	p_obj_id		alias for $2;
 	p_widget_type		alias for $3;
 
-	v_ret_string		varchar(400);
-	v_value			varchar;
+	v_ret_string		varchar;
+	v_value			im_dynfield_attr_multi_value.value%TYPE;
 	v_cat_name		varchar;
-		
-	CURSOR csr_flex_multi_attr_value (attr integer, obj integer) IS
-	SELECT	value
-	FROM	im_dynfield_attr_multi_value
-	WHERE	attribute_id = attr
-		AND object_id = obj
-		AND value is not null;
+	row			RECORD;
 BEGIN
 	v_ret_string := null;
-	OPEN csr_flex_multi_attr_value (attr_id,obj_id);
+	FOR row IN
+		SELECT	v_value
+		FROM	im_dynfield_attr_multi_value
+		WHERE	attribute_id = p_attr_id
+			AND object_id = p_obj_id
+			AND value is not null
 	LOOP 
-		FETCH csr_flex_multi_attr_value INTO v_value;
-		EXIT WHEN csr_flex_multi_attr_value%NOTFOUND;						
-
 		if v_ret_string is not null then 
-		 v_ret_string := v_ret_string || '', '';
+			v_ret_string := v_ret_string || '', '';
 		end if; 
 	
 		if widget_type = ''category_tree'' then
-		 select category.name(v_value) into v_cat_name from dual;
-	 
-		 v_ret_string := v_ret_string || v_cat_name;
-			 
+			select category.name(row.v_value) into v_cat_name from dual;
+			v_ret_string := v_ret_string || v_cat_name;
 		else
-		 v_ret_string := v_ret_string || v_value;
+			v_ret_string := v_ret_string || row.v_value;
 		end if;
 	END LOOP;
-	CLOSE csr_flex_multi_attr_value;
-		 
+		
 	return v_ret_string;
-
 end;' language 'plpgsql';
-
-
 
