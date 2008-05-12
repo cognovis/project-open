@@ -68,6 +68,7 @@ declare
 	notify_assignee__custom_arg             alias for $4;
 	notify_assignee__notification_type      alias for $5;
 
+	v_str					varchar;
 	v_custom_arg				varchar;
 	v_deadline_pretty                       varchar;  
 	v_object_name                           text; 
