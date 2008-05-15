@@ -40,8 +40,12 @@ if { [llength $the_action] > 1 } {
     
     set journal_id [wf_task_action -user_id $user_id -msg $msg -attributes [array get attributes] -assignments [array get assignments] $task_id $the_action]
 
+    # After a "finish" actioin we can go back to return_url directly.
+    if {"finish" == $the_action} { ad_returnredirect $return_url }
+    # Otherwise go back to the tasks's page
     ad_returnredirect "task?[export_url_vars task_id return_url]"
-    return
+
+    ad_script_abort
 }
 
 
