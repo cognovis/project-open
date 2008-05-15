@@ -26,10 +26,11 @@ ad_page_contract {
 # ---------------------------------------------------------
 # Defaults & Security
 
+# ToDo: NOTE! We need to add some double-click protection here.
+
 # We don't force the user to authentify, is that right?
 set user_id [ad_get_user_id]
-
-# ToDo: NOTE! We need to add some double-click protection here.
+set current_url [im_url_with_query]
 
 set the_action [array names action]
 if { [llength $the_action] > 1 } {
@@ -70,8 +71,8 @@ if {[catch {
 }
 
 set task(add_assignee_url) "assignee-add?[export_url_vars task_id]"
-set task(assign_yourself_url) "assign-yourself?[export_vars -url {task_id return_url}]"
-set task(manage_assignments_url) "task-assignees?[export_vars -url {task_id return_url}]"
+set task(assign_yourself_url) "assign-yourself?[export_vars -url {task_id {return_url $current_url}}]"
+set task(manage_assignments_url) "task-assignees?[export_vars -url {task_id {return_url $current_url}}]"
 set task(cancel_url) "task?[export_vars -url {task_id return_url {action.cancel Cancel}}]"
 set task(action_url) "task"
 set task(return_url) $return_url
