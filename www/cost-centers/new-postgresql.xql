@@ -5,9 +5,7 @@
 
 <fullquery name="cost_center_insert">
 	<querytext>
-
-    BEGIN
-	PERFORM im_cost_center__new (
+	SELECT im_cost_center__new (
 		null,			-- cost_center_id
 		'im_cost_center',	-- object_type
 		now(),			-- creation_date
@@ -26,8 +24,6 @@
 		:description,
 		:note
 	);
-	return 0;
-    END;
 
 	</querytext>
 </fullquery>
