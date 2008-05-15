@@ -244,6 +244,9 @@ set ttt {
 	}
 }
 
+
+if {![info exists conf_id]} { ad_return_complaint 1 "Error: conf_id doesn't exist" }
+
 db_multirow -extend {conf_chk return_url period} multirow multirow "
 	select
 		h.*,
