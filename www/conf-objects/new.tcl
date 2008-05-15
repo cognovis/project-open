@@ -39,6 +39,24 @@ if {![info exists message]} { set message "" }
 # ---------------------------------------------------------------
 
 set conf_project_options [im_project_options]
+if {[info exists conf_id]} {
+    # Add the conf_item's project to the options, if not already there
+    # Otherwise the component can't show the project's name
+    set conf_project_id [db_string conf_pid "select conf_project_id from im_timesheet_conf_objects where conf_id = :conf_id" -default ""]
+
+    set found_p 0
+    foreach ptuple $conf_project_options {
+	set pname [lindex $ptuple 0]
+	set pid [lindex $ptuple 1]
+	if {$pid == $conf_project_id} { set found_p 1 }
+    }
+    if {!$found_p} {
+	set conf_project_name [db_string conf_pid "select project_name from im_projects where project_id = :conf_project_id" -default ""]
+	lappend conf_project_options [list $conf_project_name $conf_project_id]
+    }
+}
+
+
 set conf_type_options [db_list_of_lists conf_type_options "
 	select	conf_type, conf_type_id
 	from	im_timesheet_conf_object_types
@@ -95,7 +113,6 @@ if {"delete" == $button_pressed} {
     ad_returnredirect $return_url
 }
 
-
 # ---------------------------------------------------------------
 # The Form
 # ---------------------------------------------------------------
@@ -120,9 +137,11 @@ ad_form \
 
 ad_form -extend -name $form_id \
     -select_query {
+
 	select	*
 	from	im_timesheet_conf_objects
 	where	conf_id = :conf_id
+
     } -new_data {
 	db_exec_plsql create_conf "
 		SELECT im_conf__new(
