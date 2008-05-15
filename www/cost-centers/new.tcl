@@ -92,7 +92,7 @@ ad_form -extend -name cost_center -on_request {
 
 } -new_data {
 
-    db_exec_plsql cost_center_insert {}
+    set cost_center_id [db_string cost_center_insert {}]
     db_dml cost_center_context_update {}
 
 } -edit_data {
