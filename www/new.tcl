@@ -49,6 +49,12 @@ set action_url "/intranet-expenses/new"
 set auto_vat_p [ad_parameter -package_id [im_package_expenses_id] "CalculateVATPerExpenseTypeP" "" 0]
 set auto_vat_function [ad_parameter -package_id [im_package_expenses_id] "CalculateVATPerExpenseTypeFunction" "" "im_expense_calculate_vat_from_expense_type"]
 
+# Check the format of the expense date
+if {[info exists expense_date] && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $expense_date]} {
+    ad_return_complaint 1 "Expense Date doesn't have the right format.<br>
+    Current value: '$expense_date'<br>
+    Expected format: 'YYYY-MM-DD'"
+}
 
 # Redirect if the type of the object hasn't been defined and
 # if there are DynFields specific for subtypes.
