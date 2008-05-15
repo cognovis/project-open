@@ -246,6 +246,11 @@ set field_cnt [im_dynfield::append_attributes_to_form \
 
 
 
+# Don't allow negative expense_amounts
+if {[info exists expense_amount] && $expense_amount < 0} {
+    template::element::set_error $form_id expense_amount [lang::message::lookup "" intranet-expenses.Negative_amount_not_allowed "Negative amounts are not allowed." ]
+}
+
 #    check conditions
 #    if {![empty_string_p $vat]} {
 #        if {0>$vat || 100<$vat} {
