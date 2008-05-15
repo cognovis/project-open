@@ -303,7 +303,7 @@ db_multirow -extend {expense_chk project_url expense_new_url provider_url} expen
 				id=\"expenses_list,$expense_id\">"
     }
     set expense_new_url [export_vars -base "/intranet-expenses/new" {expense_id return_url}]
-    set provider_url [export_vars -base "/intranet/companies/view" {{company_id $provider_id} return_url}]
+    set provider_url [export_vars -base "/intranet/users/view" {{user_id $provider_id} return_url}]
     set project_url [export_vars -base "/intranet/projects/view" {{project_id $project_id} return_url}]
 }
 
