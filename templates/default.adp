@@ -51,6 +51,17 @@ im_costs where cost_id = :bundle_id" -default ""]%></td>
 im_costs where cost_id = :bundle_id" -default ""]%></td>
 </tr>
 <tr>
+<td>Customer:</td>
+<td><%=[db_string empname "
+	select	acs_object__name(p.company_id) 
+	from	im_costs c,
+		im_projects p
+	where
+		c.cost_id = :bundle_id and
+		c.project_id = p.project_id
+" -default ""]%></td>
+</tr>
+<tr>
 <td>Amount Due Employee:</td>
 <td><%=$amount%></td>
 </tr>
