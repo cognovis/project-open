@@ -996,7 +996,7 @@ ad_proc im_workflow_object_permissions {
     }
 
     # Admins can do everything anytime.
-    if {$user_is_admin_p} { set perm_p {r w d a } }
+    if {$user_is_admin_p} { set perm_p {v r w d a } }
 
     return $perm_set
 }
