@@ -630,9 +630,38 @@ ad_proc -public im_workflow_home_inbox_component {
     set sql_date_format "YYYY-MM-DD"
     set current_user_id [ad_get_user_id]
     set return_url [im_url_with_query]
+    set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name"]
+    set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+
+    set form_vars [ns_conn form]
+    if {"" == $form_vars} { set form_vars [ns_set create] }
+
+    # Order_by logic: Get form HTTP session or use default
+    if {"" == $order_by_clause} {
+	set order_by [ns_set get $form_vars "wf_inbox_order_by"]
+	set order_by_clause [db_string order_by "
+		select	order_by_clause
+		from	im_view_columns
+		where	view_id = :view_id and
+			column_name = :order_by
+	" -default ""]
+    }
+
+    # Calculate the current_url without "wf_inbox_order_by" variable
+    set current_url "[ns_conn url]?"
+    ns_set delkey $form_vars wf_inbox_order_by
+    set form_vars_size [ns_set size $form_vars]
+    for { set i 0 } { $i < $form_vars_size } { incr i } {
+	set key [ns_set key $form_vars $i]
+	if {"" == $key} { continue }
+	set value [ns_set get $form_vars $key]
+	append current_url "$key=[ns_urlencode $value]"
+	ns_log Notice "im_workflow_home_inbox_component: i=$i, key=$key, value=$value"
+	if { $i < [expr $form_vars_size-1] } { append url_vars "&" }
+    }
 
     if {"" == $order_by_clause} {
-	set order_by_clause [parameter::get_from_package_key -package_key "intranet-workflow" -parameter "HomeInboxOrderByClause" -default "project_nr DESC"]
+	set order_by_clause [parameter::get_from_package_key -package_key "intranet-workflow" -parameter "HomeInboxOrderByClause" -default "creation_date"]
     }
 
     # Let Admins see everything
@@ -652,33 +681,39 @@ ad_proc -public im_workflow_home_inbox_component {
 
     # ---------------------------------------------------------------
     # Columns to show
-
-    set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name"]
-    set column_headers [list]
-    set column_vars [list]
-    
+  
     set column_sql "
-	select	column_name, column_render_tcl, visible_for
+	select	column_id,
+		column_name,
+		column_render_tcl,
+		visible_for,
+		(order_by_clause is not null) as order_by_clause_exists_p
 	from	im_view_columns
 	where	view_id = :view_id
 	order by sort_order, column_id
     "
+
+    set column_vars [list]
+    set colspan 1
+    set table_header_html "<tr>\n"
+
     db_foreach column_list_sql $column_sql {
 	if {"" == $visible_for || [eval $visible_for]} {
-	    lappend column_headers "$column_name"
 	    lappend column_vars "$column_render_tcl"
+	    regsub -all " " $column_name "_" col_txt
+	    set col_txt [lang::message::lookup "" intranet-workflow.$col_txt $column_name]
+	    set col_url [export_vars -base $current_url {{wf_inbox_order_by $column_name}}]
+	    set admin_link "<a href=[export_vars -base "/intranet/admin/views/new-column" {return_url column_id {form_mode edit}}]>[im_gif wrench]</a>"
+	    if {!$user_is_admin_p} { set admin_link "" }
+	    if {"f" == $order_by_clause_exists_p} {
+		append table_header_html "<td class=rowtitle>$col_txt$admin_link</td>\n"
+	    } else {
+		append table_header_html "<td class=rowtitle><a href=\"$col_url\">$col_txt</a>$admin_link</td>\n"
+	    }
+	    incr colspan
 	}
     }
 
-    # Set up colspan to be the number of headers + 1 for the # column
-    set colspan [expr [llength $column_headers] + 1]
-
-    set table_header_html "<tr>\n"
-    foreach col $column_headers {
-	regsub -all " " $col "_" col_txt
-	set col_txt [lang::message::lookup "" intranet-workflow.$col_txt $col]
-	append table_header_html "  <td class=rowtitle>$col_txt</td>\n"
-    }
     append table_header_html "</tr>\n"
 
 
@@ -691,6 +726,7 @@ ad_proc -public im_workflow_home_inbox_component {
 		ot.pretty_name as object_type_pretty,
 		o.object_id,
 		o.creation_user as owner_id,
+		o.creation_date,
 		im_name_from_user_id(o.creation_user) as owner_name,
 		acs_object__name(o.object_id) as object_name,
 		im_biz_object__get_type_id(o.object_id) as type_id,
@@ -713,6 +749,10 @@ ad_proc -public im_workflow_home_inbox_component {
 		and t.transition_key = tr.transition_key
 		and t.workflow_key = tr.workflow_key
     "
+
+    if {"" != $order_by_clause} {
+	append tasks_sql "\torder by $order_by_clause"
+    }
 
     # ---------------------------------------------------------------
     # Store the conf_object_id -> assigned_user relationship in a Hash array
@@ -769,7 +809,6 @@ ad_proc -public im_workflow_home_inbox_component {
 	# L10ned version of next action
 	regsub -all " " $transition_name "_" next_action_key
 	set next_action_l10n [lang::message::lookup "" intranet-workflow.$next_action_key $transition_name]
-
 	set object_subtype [im_category_from_id $type_id]
 	set status [im_category_from_id $status_id]
 	set object_url "[im_biz_object_url $object_id "view"]&return_url=[ns_urlencode $return_url]"
