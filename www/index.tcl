@@ -37,17 +37,12 @@ set current_url [ns_conn url]
 
 # Unassigned Logic
 if {"" == $unassigned} {
-    
-    # If we are INSIDE a project, then by default show all expenses
-    if {"" != $project_id} { 
-
-	set unassigned "unbundled" 
-
+    if {"" != $project_id} {
+	# We are inside a project: Show all expenses
+	set unassigned "todo"
     } else {
-
-	# We are not inside a project
-	set unassigned "unassigned"
-	
+	# We are not inside a project: Show only un
+	set unassigned "todo"
     }
 }
 
@@ -106,16 +101,17 @@ if {"" == $project_id | 0 == $project_id} { set main_navbar_label "expenses" }
 
 
 set unassigned_p_options [list \
-        "unassigned" [lang::message::lookup "" intranet-expenses.Unassigned_Expenses "Unassigned Expenses"] \
-        "assigned" [lang::message::lookup "" intranet-expenses.Assigned "Expenses assigned to a Projects"] \
-        "unbundeled" [lang::message::lookup "" intranet-expenses.Unbundeled "Unbundeled Expenses"] \
-        "bundeled" [lang::message::lookup "" intranet-expenses.Bundeled "Bundeled Expenses"] \
+        "todo" [lang::message::lookup "" intranet-expenses.ToDo "Without Bundle or Project"] \
+        "unassigned" [lang::message::lookup "" intranet-expenses.Without_Project "Without Project"] \
+        "unbundeled" [lang::message::lookup "" intranet-expenses.Unbundeled "Without Bundle"] \
         "all" [lang::message::lookup "" intranet-expenses.All "All Expenses"] \
 ]
 
 set ttt {
-        "both" [lang::message::lookup "" intranet-expenses.Assig_Unassig "Expenses with or without Project"] \
-}
+        "bundeled" [lang::message::lookup "" intranet-expenses.Bundeled "Bundeled Expenses"] \
+        "assigned" [lang::message::lookup "" intranet-expenses.With_Project "With Projects"] \
+	}
+
 
 # ---------------------------------------------------------------
 # Admin Links
@@ -263,6 +259,7 @@ if {$create_bundle_p} { set personal_only_sql "" }
 
 
 switch $unassigned {
+    "todo" { set unassigned_sql "and (c.project_id is null OR e.bundle_id is null)" }
     "unassigned" { set unassigned_sql "and c.project_id is null" }
     "assigned" { set unassigned_sql "and c.project_id is not null" }
     "unbundeled" { set unassigned_sql "and e.bundle_id is null" }
@@ -433,7 +430,7 @@ set sub_navbar [im_sub_navbar \
     $project_menu_id \
     $bind_vars "" "pagedesriptionbar" "project_expenses"] 
 
-if {0 == $org_project_id | "" == $org_project_id} {
-    set project_menu ""
+if {0 == $org_project_id || "" == $org_project_id} {
+    set sub_navbar ""
 }
 
