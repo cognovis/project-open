@@ -86,13 +86,23 @@ if {[catch {
 set doc [dom parse $binary_content]
 set root_node [$doc documentElement]
 
+set format "gantt"
+
+if {[string equal [$root_node nodeName] "Project"] 
+    && [string equal [$root_node getAttribute "xmlns" ""] \
+	"http://schemas.microsoft.com/project"]} {
+    set format "ms"
+}
+
 # Save the tasks.
 # The task_hash contains a mapping table from gantt_project_ids
 # to task_ids.
 
 #ns_write "<h2>Pass 1: Saving Tasks</h2>\n"
 set task_hash_array [list]
+
 set task_hash_array [im_gp_save_tasks \
+	-format $format \
 	-create_tasks 1 \
 	-save_dependencies 0 \
 	-task_hash_array $task_hash_array \
@@ -104,6 +114,7 @@ array set task_hash $task_hash_array
 
 #ns_write "<h2>Pass 2: Saving Dependencies</h2>\n"
 set task_hash_array [im_gp_save_tasks \
+	-format $format \
 	-create_tasks 0 \
 	-save_dependencies 1 \
 	-task_hash_array $task_hash_array \
@@ -111,6 +122,7 @@ set task_hash_array [im_gp_save_tasks \
 	$root_node \
 	$project_id \
 ]
+
 
 # -------------------------------------------------------------------
 # Description
@@ -132,7 +144,11 @@ if {[set node [$root_node selectNodes /project/description]] != ""} {
 # <allocation task-id="12391" resource-id="7" function="Default:0" responsible="true" load="100.0"/>
 # -------------------------------------------------------------------
 
-if {[set resource_node [$root_node selectNodes /project/resources]] != ""} {
+if {[set resource_node [$root_node selectNodes /project/resources]] == ""} {
+    set resource_node [$root_node selectNodes -namespace { "project" "http://schemas.microsoft.com/project" } "project:Resources" ]
+}
+
+if {$resource_node != ""} {
     if {$debug} { ns_write "<h2>Saving Resources</h2>\n" }
     if {$debug} { ns_write "<ul>\n" }
 
@@ -158,7 +174,11 @@ foreach rid [array names resource_hash] {
 # <allocation task-id="12391" resource-id="7" function="Default:0" responsible="true" load="100.0"/>
 # -------------------------------------------------------------------
 
-if {[set allocations_node [$root_node selectNodes /project/allocations]] != ""} {
+if {[set allocations_node [$root_node selectNodes /project/allocations]] == ""} {
+    set allocations_node [$root_node selectNodes -namespace { "project" "http://schemas.microsoft.com/project" } "project:Assignments" ]
+}
+
+if {$allocations_node != ""} {
 
     #ns_write "<h2>Saving Allocations</h2>\n"
     #ns_write "<ul>\n"
