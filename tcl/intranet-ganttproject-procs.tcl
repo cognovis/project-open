@@ -264,7 +264,9 @@ ad_proc -public im_ganttproject_component {
     set result "
 	$img<br>
 	<li><A href=\"[export_vars -base "/intranet-ganttproject/gantt-project.gan" {project_id}]\"
-	>[lang::message::lookup "" intranet-ganttproject.Download_Gantt_File "Download GanttProject.gan File"]</A>[im_gif help $help]
+	>[lang::message::lookup "" intranet-ganttproject.Download_Gantt_File "Download GanttProject.gan File"]</A></li>
+	<li><A href=\"[export_vars -base "/intranet-ganttproject/openproj-project.xml" {project_id}]\"
+	>[lang::message::lookup "" intranet-ganttproject.Download_OpenProj_File "Download OpenProj XML File"]</A></li>
     "
 
     set ok_string [lang::message::lookup "" intranet-ganttproject.OK "OK"]
@@ -337,7 +339,14 @@ ad_proc -public im_gp_extract_db_tree {
 # Procedure: Dependency
 # ---------------------------------------------------------------
 
-ad_proc -public im_ganttproject_create_dependency { depend_node task_node task_hash_array} {
+ad_proc -public im_project_create_dependency { 
+    -task_id_one 
+    -task_id_two 
+    {-depend_type "2"}
+    {-difference "0"}
+    {-hardness "Strong"}
+    -task_hash_array
+} {
     Stores a dependency between two tasks into the database
     Depend: <depend id="2" type="2" difference="0" hardness="Strong"/>
     Task: <task id="1" name="Linux Installation" ...>
@@ -347,12 +356,6 @@ ad_proc -public im_ganttproject_create_dependency { depend_node task_node task_h
           </task>
 } {
     array set task_hash $task_hash_array
-
-    set task_id_one [$task_node getAttribute id]
-    set task_id_two [$depend_node getAttribute id]
-    set depend_type [$depend_node getAttribute type]
-    set difference [$depend_node getAttribute difference]
-    set hardness [$depend_node getAttribute hardness]
 
     set org_task_id_one task_id_one
     set org_task_id_two task_id_two
@@ -368,27 +371,6 @@ ad_proc -public im_ganttproject_create_dependency { depend_node task_node task_h
     set task_objtype_one [db_string task_objtype_one "select object_type from acs_objects where object_id=:task_id_one" -default "unknown"]
     set task_objtype_two [db_string task_objtype_two "select object_type from acs_objects where object_id=:task_id_two" -default "unknown"]
     
-    if {![string equal $task_objtype_one "im_timesheet_task"]} {
-	# Search for a task in this project with the "gantt_task_id = task_id_one"
-	set task_id_one [db_string recover_task_id_one "
-		select	task_id
-		from	im_timesheet_tasks_view
-		where	gantt_project_id = :task_id_one
-        " -default 0]
-    }
-    if {!$task_id_one} {ad_return_complaint 1 "task_id_one is 0"} 
-
-    if {![string equal $task_objtype_two "im_timesheet_task"]} {
-	# Search for a task in this project with the "gantt_task_id = task_id_two"
-	set task_id_two [db_string recover_task_id_two "
-		select	task_id
-		from	im_timesheet_tasks_view
-		where	gantt_project_id = :task_id_two
-        " -default 0]
-    }
-    if {!$task_id_two} {ad_return_complaint 1 "task_id_two is 0"} 
-
-
     # ----------------------------------------------------------
     #
     set map_exists_p [db_string map_exists "select count(*) from im_timesheet_task_dependencies where task_id_one = :task_id_one and task_id_two = :task_id_two"]
@@ -400,8 +382,9 @@ ad_proc -public im_ganttproject_create_dependency { depend_node task_node task_h
  	"
     }
 
-    set dependency_type_id [db_string dependency_type "select category_id from im_categories where category = :depend_type and category_type = 'Intranet Timesheet Task Dependency Type'" -default ""]
+    set dependency_type_id [db_string dependency_type "select category_id from im_categories where category = :depend_type and category_type = 'Intranet Timesheet Task Dependency Type'" -default "9650"]
     set hardness_type_id [db_string dependency_type "select category_id from im_categories where category = :hardness and category_type = 'Intranet Timesheet Task Dependency Hardness Type'" -default ""]
+    
 
     db_dml update_dependency "
 	update im_timesheet_task_dependencies set
@@ -421,6 +404,7 @@ ad_proc -public im_ganttproject_create_dependency { depend_node task_node task_h
 # -------------------------------------------------------------------
 
 ad_proc -public im_gp_save_tasks { 
+    {-format "gantt" }
     {-create_tasks 1}
     {-save_dependencies 1}
     {-task_hash_array ""}
@@ -432,6 +416,12 @@ ad_proc -public im_gp_save_tasks {
     we return an "incorrect structure" error.
 } {
     set tasks_node [$root_node selectNodes /project/tasks]
+
+    if {$tasks_node==""} {
+	# probably ms project format
+	set tasks_node [$root_node selectNodes -namespace { "project" "http://schemas.microsoft.com/project" } "project:Tasks"]
+    }
+    
     set super_task_node ""
 
     set sort_order 0
@@ -445,7 +435,7 @@ ad_proc -public im_gp_save_tasks {
 	if {$debug} { ns_write "<li>Child: [$child nodeName]\n<ul>\n" }
 
 	switch [$child nodeName] {
-	    "task" {
+	    "task" - "Task" {
 		set task_hash_array [im_gp_save_tasks2 \
 			-create_tasks $create_tasks \
 			-save_dependencies $save_dependencies \
@@ -509,6 +499,76 @@ ad_proc -public im_gp_save_tasks2 {
     set task_nr ""
     set task_id 0
     set has_subobjects_p 0
+
+    set duration ""
+    set remaining_duration ""
+    set outline-number ""
+
+    # ms format uses tags instead of attributes
+    foreach taskchild [$task_node childNodes] {
+        switch [$taskchild nodeName] {
+            "Name"              { set task_name [$taskchild text] }
+	    "UID"               { set gantt_project_id [$taskchild text] }
+	    "Duration"          { set duration [$taskchild text]     }
+	    "RemainingDuration" { set remaining_duration [$taskchild text] }
+	    "Start"             { set start_date [$taskchild text] }
+	    "Finish"            { set end_date [$taskchild text] }
+	    "Priority"          { set priority [$taskchild text] }
+	    "Notes"             { set note [$taskchild text] }
+	    "OutlineNumber"     { 
+		set outline_number [$taskchild text] 
+	    }
+	    "ExtendedAttribute" {
+		set fieldid ""
+		set fieldvalue ""
+		foreach attrtag [$taskchild childNodes] {
+		    switch [$attrtag nodeName] {
+			"FieldID" { set fieldid [$attrtag text] }
+			"Value"   { set fieldvalue [$attrtag text] }
+		    }
+		}
+		# the following numbers are set by the ms proj format
+		# 188743750 : Note
+		# 188744006 : Text20 (used for task_nr)
+		# 188744007 : Text21 (used for task_id)
+		switch $fieldid {
+		    "188743750" { set note $fieldvalue }
+		    "188744006" { set task_nr $fieldvalue } 
+		    "188744007" { set task_id $fieldvalue }
+		}
+	    }
+	    "PredecessorLink" {
+		if {$save_dependencies} {
+
+		    set linkid ""
+		    set linktype ""
+		    foreach attrtag [$taskchild childNodes] {
+			switch [$attrtag nodeName] {
+			    "PredecessorUID" { set linkid [$attrtag text] }
+			    # TODO: the next one should obviously not be fixed
+			    "Type"           { set linktype 2 }
+			}
+		    }
+		    
+		    im_project_create_dependency \
+			-task_id_one $gantt_project_id \
+			-task_id_two $linkid \
+			-depend_type $linktype \
+			-task_hash_array [array get task_hash]
+		}
+	    }
+        }
+    }
+
+    if {$remaining_duration!="" && $duration!=""} {
+	set duration_seconds [ms_project_time_to_seconds $duration]
+	set remaining_seconds [ms_project_time_to_seconds $remaining_duration]
+	if {$duration_seconds==0} {
+	    set percent_completed 100.0
+	} else {
+	    set percent_completed [expr round(100.0-(100.0/$duration_seconds)*$remaining_seconds)]
+	}
+    }
 
     # -----------------------------------------------------
     # Extract the custom properties tpc0 (task_nr) and tpc1 (task_id)
@@ -585,6 +645,7 @@ ad_proc -public im_gp_save_tasks2 {
 
     if {0 != $existing_task_id} {
 	set task_hash($gantt_project_id) $existing_task_id
+	set task_hash("o$outline_number") $existing_task_id
 	set task_id $existing_task_id
 	set task_exists_p 1
         if {$debug} { ns_write "<li>GanttProject: found task_id=$existing_task_id for task with task_nr=$task_nr" }
@@ -623,6 +684,7 @@ ad_proc -public im_gp_save_tasks2 {
 	    im_project_audit -action create $task_id
 
 	    set task_hash($gantt_project_id) $task_id
+	    set task_hash("o$outline_number") $task_id
 	}
 
     } else {
@@ -641,7 +703,14 @@ ad_proc -public im_gp_save_tasks2 {
 		if {$save_dependencies} {
 
 		    if {$debug} { ns_write "<li>Creating dependency relationship\n" }
-		    im_ganttproject_create_dependency $taskchild $task_node [array get task_hash]
+
+		    im_project_create_dependency \
+			-task_id_one [$task_node getAttribute id] \
+			-task_id_two [$task_child getAttribute id] \
+			-depend_type [$task_child getAttribute type] \
+			-difference [$task_child getAttribute difference] \
+			-hardness [$task_child getAttribute hardness] \
+			-task_hash_array [array get task_hash]
 
 		}
 	    }
@@ -662,6 +731,15 @@ ad_proc -public im_gp_save_tasks2 {
     }
     if {$debug} { ns_write "</ul>\n" }
 
+    set outline_number_dot [string last "." $outline_number]
+    if {$save_dependencies && $outline_number_dot>=0} {
+	set parent_outline_number [string range $outline_number 0 [expr $outline_number_dot-1]]
+
+	if {[info exists task_hash("o$parent_outline_number")]} {
+	    set super_project_id $task_hash("o$parent_outline_number")
+	}
+    }
+
     db_dml project_update "
 	    update im_projects set
 		project_name	= :task_name,
@@ -680,6 +758,16 @@ ad_proc -public im_gp_save_tasks2 {
     im_project_audit $task_id
 
     return [array get task_hash]
+}
+
+ad_proc -public ms_project_time_to_seconds {
+    time 
+} {
+    converts the ms project time string to seconds
+} {
+    regexp {PT([0-9]+)H([0-9]+)M([0-9]+)S} $time all days hours minutes 
+
+    return [expr 60*$minutes+60*60*$hours+60*60*24*$days]
 }
 
 
@@ -704,16 +792,28 @@ ad_proc -public im_gp_save_allocations {
 
     foreach child [$allocations_node childNodes] {
 	switch [$child nodeName] {
-	    "allocation" {
+	    "allocation" - "Assignment" {
 
 		set task_id [$child getAttribute task-id ""]
+		set resource_id [$child getAttribute resource-id ""]
+		set function [$child getAttribute function ""]
+		set responsible [$child getAttribute responsible ""]
+		set percentage [$child getAttribute load "0"]
+				
+		foreach attr [$child childNodes] {
+		    switch [$attr nodeName] {
+			"TaskUID" { set task_id [$attr text] }
+			"ResourceUID" { set resource_id [$attr text] }
+			"Units" { set percentage [expr round(100.0*[$attr text])] }
+		    }
+		}
+
 		if {![info exists task_hash($task_id)]} {
 		    if {$debug} { ns_write "<li>Allocation: <font color=red>Didn't find task \#$task_id</font>. Skipping... \n" }
 		    continue
 		}
 		set task_id $task_hash($task_id)
 
-		set resource_id [$child getAttribute resource-id ""]
 		if {![info exists resource_hash($resource_id)]} {
 		    if {$debug} { ns_write "<li>Allocation: <font color=red>Didn't find user \#$resource_id</font>. Skipping... \n" }
 		    continue
@@ -721,10 +821,6 @@ ad_proc -public im_gp_save_allocations {
 		set resource_id $resource_hash($resource_id)
 		if {![string is integer $resource_id]} { continue }
 
-		set function [$child getAttribute function ""]
-		set responsible [$child getAttribute responsible ""]
-		set percentage [$child getAttribute load "0"]
-		
 		set role_id [im_biz_object_role_full_member]
 		if {[string equal "Default:1" $function]} { 
 		    set role_id [im_biz_object_role_project_manager]
@@ -835,40 +931,53 @@ ad_proc -public im_gp_save_resources {
 
     foreach child [$resources_node childNodes] {
 	switch [$child nodeName] {
-	    "resource" {
+	    "resource" - "Resource" {
 		set resource_id [$child getAttribute id ""]
-		set name [string tolower [string trim [$child getAttribute name ""]]]
+		set name [$child getAttribute name ""]
 		set function [$child getAttribute function ""]
 		set email [$child getAttribute contacts ""]
 
-		# Do all kinds of fuzzy searching
-		set person_id [im_gp_find_person_for_name -name $name -email $email]
+		foreach attr [$child childNodes] {
+		    switch [$attr nodeName] {
+			"UID" { set resource_id [$attr text] }
+			"Name" { set name [$attr text] }
+			"EmailAddress" { set email [$attr text] } 
+		    }
+		}
+		
+		if {$resource_id != "" && $resource_id != 0} {
 
-		if {"" != $person_id} {
-		    if {$debug} { ns_write "<li>Resource: $name as $function\n" }
-		    set resource_hash($resource_id) $person_id
-
-		    # make the resource a member of the project
-		    im_biz_object_add_role $person_id $project_id [im_biz_object_role_full_member]
-
-		} else {
-
-		    if {$debug} { ns_write "<li>Resource: $name - <font color=red>Unknown Resource</font>\n" }
-		    set name_frags [split $name " "]
-		    set first_names [join [lrange $name_frags 0 end-1] ""]
-		    set last_name [join [lrange $name_frags end end] ""]
-		    set url [export_vars -base "/intranet/users/new" {email first_names last_name {username $name}}]
-		    set resource_hash($resource_id) "
+		    set name [string tolower [string trim $name]]
+		    
+		    # Do all kinds of fuzzy searching
+		    set person_id [im_gp_find_person_for_name -name $name -email $email]
+		    
+		    if {"" != $person_id} {
+			if {$debug} { ns_write "<li>Resource: $name as $function\n" }
+			set resource_hash($resource_id) $person_id
+			
+			# make the resource a member of the project
+			im_biz_object_add_role $person_id $project_id [im_biz_object_role_full_member]
+			
+		    } else {
+			
+			if {$debug} { ns_write "<li>Resource: $name - <font color=red>Unknown Resource</font>\n" }
+			set name_frags [split $name " "]
+			set first_names [join [lrange $name_frags 0 end-1] ""]
+			set last_name [join [lrange $name_frags end end] ""]
+			set url [export_vars -base "/intranet/users/new" {email first_names last_name {username $name}}]
+			set resource_hash($resource_id) "
 			<li>[lang::message::lookup "" intranet-ganttproject.Resource_not_found "Resource %name% (%email%) not found"]:
 			<br><a href=\"$url\" target=\"_\">
 			[lang::message::lookup "" intranet-ganttproject.Create_Resource "Create %name% (%email%)"]:<br>
 			</a><br>
 		    "
+		    }
+		    
+		    if {$debug} { ns_write "<li>Resource: ($resource_id) -&gt; $person_id\n" }
+		    
+		    ns_log Notice "im_gp_save_resources: [$child asXML]"
 		}
-
-		if {$debug} { ns_write "<li>Resource: ($resource_id) -&gt; $person_id\n" }
-
-		ns_log Notice "im_gp_save_resources: [$child asXML]"
 	    }
 	    default { }
 	}
