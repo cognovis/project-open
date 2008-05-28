@@ -59,8 +59,7 @@ set project_resources_sql "
                 uc.work_phone,
                 uc.cell_phone,
                 uc.user_id AS user_id,
-		im_name_from_user_id(p.person_id) as user_name,
-                substr(first_names,1,1) || substr(last_name,1,1) AS initials
+		im_name_from_user_id(p.person_id) as user_name
 	from 	users_contact uc,
 		acs_rels r,
 		im_biz_object_members bom,
@@ -464,7 +463,9 @@ db_foreach project_resources $project_resources_sql {
     if {"" != $home_phone} { lappend phone "home: $home_phone" }
     if {"" != $work_phone} { lappend phone "work: $work_phone" }
     if {"" != $cell_phone} { lappend phone "cell: $cell_phone" }
-    
+
+    set initials [regsub -all {(^|\W)([\w])\S*} $user_name {\2}]
+
     incr id
     
     set resource_node [$doc createElement Resource]
@@ -486,9 +487,9 @@ db_foreach project_resources $project_resources_sql {
 	    "StandardRate" - "Cost" -
 	    "OvertimeRate" - "CostPerUse" { set value 0 }
 	    "CalendarUID"           { set value 5 }
+	    "Initials"              { set value $initials }
 	    "MaxUnits" - "OverAllocated" - 
-	    "CanLevel" - "PeakUnits" - 
-	    "Initials"             { continue }
+	    "CanLevel" - "PeakUnits" { continue }
 	    default {
 		set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
 		set value [expr $$attribute_name]

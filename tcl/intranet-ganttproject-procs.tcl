@@ -862,11 +862,12 @@ ad_proc -public im_gp_save_allocations {
 		set percentage [$child getAttribute load "0"]
 				
 		foreach attr [$child childNodes] {
-		    switch [$attr nodeName] {
-			"TaskUID" { set task_id [$attr text] }
-			"ResourceUID" { set resource_id [$attr text] }
-			"Units" { set percentage [expr round(100.0*[$attr text])] }
-		    }
+		    set nodeName [$attr nodeName]
+		    set nodeText [$attr text]
+    		    switch $nodeName {
+			"TaskUID" { set task_id $nodeText }
+			"ResourceUID" { set resource_id $nodeText }
+			"Units" { set percentage [expr round(100.0*$nodeText)] }
 		}
 
 		if {![info exists task_hash($task_id)]} {
@@ -1029,7 +1030,7 @@ ad_proc -public im_gp_save_resources {
 
 			    switch $nodeName {
 				"UID" - "Name" - "EmailAddress" - "ID" - 
-				"IsNull" - "Initials" - "MaxUnits" - 
+				"IsNull" - "MaxUnits" - 
 				"PeakUnits" - "OverAllocated" - "CanLevel" -
 				"AccrueAt" { }
 				default {
