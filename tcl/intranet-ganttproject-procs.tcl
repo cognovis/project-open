@@ -419,6 +419,40 @@ ad_proc -public im_gp_save_tasks {
 
     if {$tasks_node==""} {
 	# probably ms project format
+
+	set xml_elements {}
+	foreach child [$root_node childNodes] {
+	    set nodeName [$child nodeName]
+	    set nodeText [$child text]
+
+	    lappend xml_elements $nodeName
+
+	    switch $nodeName {
+		"Name" - "Title" - "Manager" - "StartDate" - 
+		"FinishDate" - "CalendarUID" - "Calendars" - 
+		"Tasks" - "Resources" - "Assignments" - "ScheduleFromStart" {
+		    # ignore these
+		}
+		default {
+		    im_ganttproject_add_import "im_project" $nodeName
+		    set column_name "xml_$nodeName"
+		    db_dml update_import_field "
+                       UPDATE im_projects 
+                       SET [plsql_utility::generate_oracle_name $column_name]=:nodeText
+                       WHERE project_id=:super_project_id
+                    "
+		}
+	    }
+
+	    im_ganttproject_add_import "im_project" "elements"
+	    db_dml update_import_field "
+               UPDATE im_projects 
+               SET xml_elements=:xml_elements
+               WHERE project_id=:super_project_id
+                    "
+	    
+	}
+
 	set tasks_node [$root_node selectNodes -namespace { "project" "http://schemas.microsoft.com/project" } "project:Tasks"]
     }
     
@@ -504,9 +538,18 @@ ad_proc -public im_gp_save_tasks2 {
     set remaining_duration ""
     set outline-number ""
 
+    set extra_field_update ""
+
+    set xml_elements {}
+
     # ms format uses tags instead of attributes
     foreach taskchild [$task_node childNodes] {
-        switch [$taskchild nodeName] {
+	set nodeName [$taskchild nodeName]
+	set nodeText [$taskchild text]
+
+	lappend xml_elements $nodeName
+
+        switch $nodeName {
             "Name"              { set task_name [$taskchild text] }
 	    "UID"               { set gantt_project_id [$taskchild text] }
 	    "Duration"          { set duration [$taskchild text]     }
@@ -556,6 +599,14 @@ ad_proc -public im_gp_save_tasks2 {
 			-depend_type $linktype \
 			-task_hash_array [array get task_hash]
 		}
+	    }
+	    "OutlineLevel" - "ID" - "Type" - "CalendarUID" {
+		# ignored 
+	    }
+	    default {
+		im_ganttproject_add_import "im_project" $nodeName
+		set column_name "[plsql_utility::generate_oracle_name xml_$nodeName]"
+		append extra_field_update "$column_name = '$nodeText',"
 	    }
         }
     }
@@ -740,8 +791,18 @@ ad_proc -public im_gp_save_tasks2 {
 	}
     }
 
+    if {[llength $xml_elements]>0} {
+	im_ganttproject_add_import "im_project" "elements"
+	db_dml update_import_field "
+               UPDATE im_projects 
+               SET xml_elements=:xml_elements
+               WHERE project_id=:task_id
+               "
+    }
+
     db_dml project_update "
 	    update im_projects set
+                $extra_field_update
 		project_name	= :task_name,
 		project_nr	= :task_nr,
 		parent_id	= :super_project_id,
@@ -959,8 +1020,38 @@ ad_proc -public im_gp_save_resources {
 			# make the resource a member of the project
 			im_biz_object_add_role $person_id $project_id [im_biz_object_role_full_member]
 			
+			set xml_elements {} 
+			foreach attr [$child childNodes] {
+			    set nodeName [$attr nodeName]
+			    set nodeText [$attr text]
+			    
+			    lappend xml_elements $nodeName
+
+			    switch $nodeName {
+				"UID" - "Name" - "EmailAddress" - "ID" - 
+				"IsNull" - "Initials" - "MaxUnits" - 
+				"PeakUnits" - "OverAllocated" - "CanLevel" -
+				"AccrueAt" { }
+				default {
+				    im_ganttproject_add_import "person" $nodeName
+				    set column_name "[plsql_utility::generate_oracle_name xml_$nodeName]"
+
+				    db_dml update_import_field "UPDATE persons
+                                       SET $column_name=:nodeText
+                                       WHERE person_id=:person_id
+                                       "
+				}
+			    }
+			}
+
+			if {[llength $xml_elements]>0} {
+			    im_ganttproject_add_import "person" "elements"
+			    db_dml update_import_field "
+                               UPDATE persons
+                               SET xml_elements=:xml_elements
+                               WHERE person_id=:person_id"
+			}
 		    } else {
-			
 			if {$debug} { ns_write "<li>Resource: $name - <font color=red>Unknown Resource</font>\n" }
 			set name_frags [split $name " "]
 			set first_names [join [lrange $name_frags 0 end-1] ""]
@@ -2260,4 +2351,17 @@ ad_proc -public im_ganttproject_zoom_top_vars {
     }
 
     return $top_vars
+}
+
+ad_proc -public im_ganttproject_add_import {
+    object_type
+    name
+} {
+    set column_name "xml_$name"
+    set field_present_command "attribute::exists_p $object_type $column_name"
+    set field_present [util_memoize $field_present_command]
+    if {!$field_present} {
+	attribute::add  -min_n_values 0 -max_n_values 1 "$object_type" "string" $column_name $column_name
+	ns_write [ns_cache flush util_memoize $field_present_command]
+    }		
 }
