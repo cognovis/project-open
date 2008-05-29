@@ -585,25 +585,9 @@ ad_proc -public im_gp_save_tasks2 {
 		    "188744007" { set task_id $fieldvalue }
 		}
 	    }
-	    "PredecessorLink" {
-		if {$save_dependencies} {
-
-		    set linkid ""
-		    set linktype ""
-		    foreach attrtag [$taskchild childNodes] {
-			switch [$attrtag nodeName] {
-			    "PredecessorUID" { set linkid [$attrtag text] }
-			    # TODO: the next one should obviously not be fixed
-			    "Type"           { set linktype 2 }
-			}
-		    }
-		    
-		    im_project_create_dependency \
-			-task_id_one $gantt_project_id \
-			-task_id_two $linkid \
-			-depend_type $linktype \
-			-task_hash_array [array get task_hash]
-		}
+	    "PredecessorLink" { 
+		# this is handled below, because we don't know our task id yet
+		continue 
 	    }
 	    "OutlineLevel" - "ID" - "CalendarUID" {
 		# ignored 
@@ -745,6 +729,35 @@ ad_proc -public im_gp_save_tasks2 {
 
     } else {
 	if {$create_tasks && $debug} { ns_write "Updating existing task\n" }
+    }
+
+    # we have the proper task_id now, we can do the dependencies
+    foreach taskchild [$task_node childNodes] {
+	set nodeName [$taskchild nodeName]
+	set nodeText [$taskchild text]
+
+        switch $nodeName {
+	    "PredecessorLink" {
+		if {$save_dependencies} {
+
+		    set linkid ""
+		    set linktype ""
+		    foreach attrtag [$taskchild childNodes] {
+			switch [$attrtag nodeName] {
+			    "PredecessorUID" { set linkid [$attrtag text] }
+			    # TODO: the next one should obviously not be fixed
+			    "Type"           { set linktype 2 }
+			}
+		    }
+		    
+		    im_project_create_dependency \
+			-task_id_one $task_id \
+			-task_id_two $linkid \
+			-depend_type $linktype \
+			-task_hash_array [array get task_hash]
+		}
+	    }
+        }
     }
 
     # ---------------------------------------------------------------
