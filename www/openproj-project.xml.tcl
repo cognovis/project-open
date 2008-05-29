@@ -244,12 +244,14 @@ ad_proc -public im_openproj_write_subtasks {
     tree_node 
     outline_level
     outline_number
-    id
+    id_name
 } {
     Write out all the specific subtasks of a task or project.
     This procedure asumes that the current task has already 
     been written out and now deals with the subtasks.
 } {
+    upvar 1 $id_name id
+
     # Get sub-tasks in the right sort_order
     set object_list_list [db_list_of_lists sorted_query "
 	select
@@ -274,6 +276,7 @@ ad_proc -public im_openproj_write_subtasks {
     incr outline_level
     set outline_sub 0
     foreach object_record $object_list_list {
+	incr outline_sub
 	set object_id [lindex $object_record 0]
 
 	if {$outline_level==1} {
@@ -292,7 +295,7 @@ ad_proc -public im_openproj_write_subtasks {
 	    $tree_node \
 	    $outline_level \
 	    $oln \
-	    $id
+	    id
     }
 }
 
@@ -304,11 +307,12 @@ ad_proc -public im_openproj_write_task {
     tree_node 
     outline_level
     outline_number
-    id
+    id_name
 } {
     Write out the information about one specific task and then call
     a recursive routine to write out the stuff below the task.
 } {
+    upvar 1 $id_name id
 
     ns_log Notice "xxx: write task $project_id"
 
@@ -325,8 +329,8 @@ ad_proc -public im_openproj_write_task {
         select  p.*,
 		t.*,
 		o.object_type,
-                p.start_date::date as start_date,
-                p.end_date::date as end_date,
+                p.start_date::date || 'T' || p.start_date::time as start_date,
+                p.end_date::date || 'T' || p.end_date::time as end_date,
 		p.end_date::date - p.start_date::date as duration,
                 c.company_name
         from    im_projects p
@@ -351,10 +355,11 @@ ad_proc -public im_openproj_write_task {
     if {"" == $duration} { 
 	set duration $default_duration 
     } else {
-	set duration [expr $duration*8]
+	set duration [expr $duration*8+8]
     }
-    if {"" == $duration} { set duration 1 }
-    if {"0" == $duration} { set duration 1 }
+    if {"" == $duration || [string equal $start_date $end_date] } { 
+	set duration 0 
+    }
 
     set task_node [$doc createElement Task]
     $tree_node appendChild $task_node
@@ -362,8 +367,10 @@ ad_proc -public im_openproj_write_task {
     # minimal set of elements in case this hasn't been imported before
     if {[llength $xml_elements]==0} {
 	set xml_elements {UID ID Name Type OutlineNumber OutlineLevel Priority 
-	    Start Finish Duration RemainingDuration CalendarUID}
+	    Start Finish Duration RemainingDuration CalendarUID PredecessorLink}
     }
+
+    set predecessors_done 0
 
     foreach element $xml_elements { 
 	switch $element {
@@ -374,13 +381,38 @@ ad_proc -public im_openproj_write_task {
 	    "OutlineNumber"             { set value $outline_number }
 	    "OutlineLevel"              { set value $outline_level }
             "Priority"                  { set value 500 }
-	    "Start"                     { set value "$start_date\T00:00:00" }
-	    "Finish"                    { set value "$end_date\T23:59:59" }
+	    "Start"                     { set value $start_date }
+	    "Finish"                    { set value $end_date }
 	    "Duration"                  { set value "PT$duration\H0M0S" }
 	    "RemainingDuration"         { set value "PT$duration\H0M0S" }
 	    "CalendarUID"               { set value -1 }
 	    "Notes"                     { set value $note }
-	    "PredecessorLink"           { continue }
+	    "PredecessorLink"           { 
+		if {$predecessors_done} {
+		    continue
+		}
+		set predecessors_done 1
+
+		# Add dependencies to predecessors 
+		# 9650 == 'Intranet Timesheet Task Dependency Type'
+		set dependency_sql "
+	    	   SELECT DISTINCT task_id_two
+		   FROM	im_timesheet_task_dependencies 
+	    	   WHERE	
+                      task_id_one = :task_id 
+                      AND dependency_type_id=9650
+                      AND task_id_two<>:task_id
+                "
+		db_foreach dependency $dependency_sql {
+		    $task_node appendXML "
+                       <PredecessorLink>
+                         <PredecessorUID>$task_id_two</PredecessorUID>
+                         <Type>1</Type>
+                       </PredecessorLink>
+                    "
+		}
+		continue
+	    }
 	    default {
 		set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
 		set value [expr $$attribute_name]
@@ -390,22 +422,6 @@ ad_proc -public im_openproj_write_task {
 	$task_node appendFromList [list $element {} [list [list \#text $value]]]
     }
     
-    # Add dependencies to predecessors 
-    # 9650 == 'Intranet Timesheet Task Dependency Type'
-    set dependency_sql "
-	    	select	* 
-		from	im_timesheet_task_dependencies 
-	    	where	task_id_one = :task_id AND dependency_type_id=9650
-    "
-    db_foreach dependency $dependency_sql {
-	$task_node appendXML "
-            <PredecessorLink>
-                <PredecessorUID>$task_id_two</PredecessorUID>
-                <Type>1</Type>
-            </PredecessorLink>
-        "
-    }
-
     im_openproj_write_subtasks \
 	-default_start_date $start_date \
 	-default_duration $duration \
@@ -414,7 +430,7 @@ ad_proc -public im_openproj_write_task {
 	$tree_node \
 	$outline_level \
 	$outline_number \
-	$id
+	id
 }
 
 
@@ -422,13 +438,14 @@ ad_proc -public im_openproj_write_task {
 set tasks_node [$doc createElement Tasks]
 $project_node appendChild $tasks_node
 
+set id 0
 im_openproj_write_subtasks \
     -default_start_date $project_start_date \
    -default_duration $project_duration \
     $project_id \
     $doc \
     $tasks_node \
-    "0" "1" "0"
+    "0" "1" id
 
 
 # -------- Resources -------------
