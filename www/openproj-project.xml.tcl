@@ -331,7 +331,11 @@ ad_proc -public im_openproj_write_task {
 		o.object_type,
                 p.start_date::date || 'T' || p.start_date::time as start_date,
                 p.end_date::date || 'T' || p.end_date::time as end_date,
-		p.end_date::date - p.start_date::date as duration,
+                (
+                   p.end_date::date - p.start_date::date 
+                   - 2*(next_day(p.end_date::date-1,'FRI') - next_day(p.start_date::date-1,'FRI'))/7
+                   + ROUND((extract(hour from p.end_date)-extract(hour from p.start_date))/8.0)
+                )*8 AS duration,
                 c.company_name
         from    im_projects p
 		LEFT OUTER JOIN im_timesheet_tasks t on (p.project_id = t.task_id),
@@ -354,9 +358,7 @@ ad_proc -public im_openproj_write_task {
     if {"" == $start_date} { set start_date [db_string today "select to_char(now(), 'YYYY-MM-DD')"] }
     if {"" == $duration} { 
 	set duration $default_duration 
-    } else {
-	set duration [expr $duration*8+8]
-    }
+    } 
     if {"" == $duration || [string equal $start_date $end_date] } { 
 	set duration 0 
     }
@@ -383,8 +385,9 @@ ad_proc -public im_openproj_write_task {
             "Priority"                  { set value 500 }
 	    "Start"                     { set value $start_date }
 	    "Finish"                    { set value $end_date }
-	    "Duration"                  { set value "PT$duration\H0M0S" }
-	    "RemainingDuration"         { set value "PT$duration\H0M0S" }
+	    "Duration" - "RemainingDuration" { 
+		set value "PT$duration\H0M0S" 
+	    }
 	    "CalendarUID"               { set value -1 }
 	    "Notes"                     { set value $note }
 	    "PredecessorLink"           { 
