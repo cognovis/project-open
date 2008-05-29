@@ -607,7 +607,7 @@ ad_proc -public im_gp_save_tasks2 {
 			-task_hash_array [array get task_hash]
 		}
 	    }
-	    "OutlineLevel" - "ID" - "Type" - "CalendarUID" {
+	    "OutlineLevel" - "ID" - "CalendarUID" {
 		# ignored 
 	    }
 	    default {
@@ -861,13 +861,13 @@ ad_proc -public im_gp_save_allocations {
     foreach child [$allocations_node childNodes] {
 	switch [$child nodeName] {
 	    "allocation" - "Assignment" {
-
+		
 		set task_id [$child getAttribute task-id ""]
 		set resource_id [$child getAttribute resource-id ""]
 		set function [$child getAttribute function ""]
 		set responsible [$child getAttribute responsible ""]
 		set percentage [$child getAttribute load "0"]
-				
+		
 		foreach attr [$child childNodes] {
 		    set nodeName [$attr nodeName]
 		    set nodeText [$attr text]
@@ -875,6 +875,7 @@ ad_proc -public im_gp_save_allocations {
 			"TaskUID" { set task_id $nodeText }
 			"ResourceUID" { set resource_id $nodeText }
 			"Units" { set percentage [expr round(100.0*$nodeText)] }
+		    }
 		}
 
 		if {![info exists task_hash($task_id)]} {
