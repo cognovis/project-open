@@ -428,10 +428,17 @@ ad_proc -public im_gp_save_tasks {
 	    lappend xml_elements $nodeName
 
 	    switch $nodeName {
-		"Name" - "Title" - "Manager" - "StartDate" - 
-		"FinishDate" - "CalendarUID" - "Calendars" - 
+		"Name" - "Title" - "Manager" - "CalendarUID" - "Calendars" - 
 		"Tasks" - "Resources" - "Assignments" - "ScheduleFromStart" {
 		    # ignore these
+		}
+		"StartDate" {
+		    db_dml project_start_date "
+                       UPDATE im_projects SET start_date=:nodeText WHERE project_id=:super_project_id"
+		}
+		"FinishDate" {		    
+		    db_dml project_end_date "
+                       UPDATE im_projects SET end_date=:nodeText WHERE project_id=:super_project_id"
 		}
 		default {
 		    im_ganttproject_add_import "im_project" $nodeName
