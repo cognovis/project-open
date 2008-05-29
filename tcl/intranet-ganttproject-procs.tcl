@@ -578,11 +578,9 @@ ad_proc -public im_gp_save_tasks2 {
 		    }
 		}
 		# the following numbers are set by the ms proj format
-		# 188743750 : Note
 		# 188744006 : Text20 (used for task_nr)
 		# 188744007 : Text21 (used for task_id)
 		switch $fieldid {
-		    "188743750" { set note $fieldvalue }
 		    "188744006" { set task_nr $fieldvalue } 
 		    "188744007" { set task_id $fieldvalue }
 		}
