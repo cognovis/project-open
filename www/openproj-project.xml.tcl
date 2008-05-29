@@ -379,7 +379,13 @@ ad_proc -public im_openproj_write_task {
 	    "UID"                       { set value $project_id }
 	    "ID"                        { set value $id }
 	    "Name"                      { set value $project_name }
-	    "Type"                      { set value 0 }
+	    "Type"                      { 
+		if {[info exists xml_type] && $xml_type!=""} {
+		    set value $xml_type
+		} else {
+		    set value 0 
+		}
+	    }
 	    "OutlineNumber"             { set value $outline_number }
 	    "OutlineLevel"              { set value $outline_level }
             "Priority"                  { set value 500 }
