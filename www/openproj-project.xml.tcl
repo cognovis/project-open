@@ -35,10 +35,11 @@ if {0 == $user_id} {
 
 if {![db_0or1row project_info "
 	select	p.*,
-		p.start_date::date as project_start_date,
-		p.end_date::date as project_end_date,
+                p.start_date::date || 'T' || p.start_date::time as project_start_date,
+                p.end_date::date || 'T' || p.end_date::time as project_end_date,
 		p.end_date::date - p.start_date::date as project_duration,
-		c.company_name
+		c.company_name,
+                im_name_from_user_id(p.project_lead_id) as project_lead_name
 	from	im_projects p,
 		im_companies c
 	where	project_id = :project_id
@@ -112,10 +113,10 @@ if {![info exists xml_elements] || [llength $xml_elements]==0} {
 foreach element $xml_elements { 
     switch $element {
 	"Name" - "Title"            { set value $project_name }
-	"Manager"                   { set value "test" }
+	"Manager"                   { set value $project_lead_name }
 	"ScheduleFromStart"         { set value 1 }
-	"StartDate"                 { set value "$project_start_date\T00:00:00" }
-	"FinishDate"                { set value "$project_end_date\T23:59:59" }
+	"StartDate"                 { set value $project_start_date }
+	"FinishDate"                { set value $project_end_date }
 	"CalendarUID"               { set value 1 }
 	"Calendars" 
 	- "Tasks" - "Resources" 
