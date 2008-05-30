@@ -9,21 +9,26 @@
 
 <%= [im_box_header [lang::message::lookup "" intranet-ganttproject.Upload "Upload"]] %>
 
-<p><br/>Upload GanttProject .gan or OpenProj XML File<br/></p>
+<p>
+  <br/>
+  <%= [lang::message::lookup "" intranet-ganttproject.Upload_Gantt_File \
+      "Upload GanttProject .gan or OpenProj XML File"] %>
+  <br/>
+</p>
 
 <form enctype="multipart/form-data" method="POST" action="gantt-upload-2.tcl">
 <%= [export_form_vars project_id return_url] %>
 <table border=0>
   <tr>
-    <td align=right>File</td>
+    <td align="right"><%= [lang::message::lookup "" intranet-core.File "File"] %></td>
     <td>
-      <input type=file name=upload_gan size=30>
+      <input type="file" name="upload_gan" size="30">
     </td>
   </tr>
   <tr>
     <td></td>
     <td>
-      <input type=submit name=button_gan value='Submit'>
+      <input type="submit" name="button_gan" value="Submit">
     </td>
   </tr>
 </table>
