@@ -20,7 +20,7 @@
 	    </table>
   </td>
   <td>&nbsp;</td>
-  <td valign=top width='30%'>
+  <td valign=top>
 
 	    <table border=0 cellpadding=0 cellspacing=0>
 	    <tr>
