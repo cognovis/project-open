@@ -423,6 +423,9 @@ ad_proc -public im_openproj_write_task {
 		}
 		continue
 	    }
+	    "customproperty" - "task" - "depend" { 
+		continue
+	    }
 	    default {
 		set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
 		set value [expr $$attribute_name]
@@ -584,6 +587,6 @@ db_foreach project_allocations $project_allocations_sql {
     "
 }
 
-ns_return 200 text/xml "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>[$doc asXML -indent 2 -escapeNonASCII]"
+ns_return 200 application/octet-stream "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>[$doc asXML -indent 2 -escapeNonASCII]"
 
 
