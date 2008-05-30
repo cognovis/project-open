@@ -168,14 +168,14 @@ ad_proc -public im_ganttproject_write_task {
     # Add dependencies to predecessors 
     # 9650 == 'Intranet Timesheet Task Dependency Type'
     set dependency_sql "
-	    	select	* 
-		from	im_timesheet_task_dependencies 
-	    	where	task_id_one = :task_id AND dependency_type_id=9650
+       SELECT	task_id_one AS other_task_id
+       FROM	im_timesheet_task_dependencies 
+       WHERE    task_id_two = :task_id AND dependency_type_id=9650
     "
     db_foreach dependency $dependency_sql {
 	set depend_node [$doc createElement depend]
 	$project_node appendChild $depend_node
-	$depend_node setAttribute id $task_id_two
+	$depend_node setAttribute id $other_task_id
 	$depend_node setAttribute type 2
 	$depend_node setAttribute difference 0
 	$depend_node setAttribute hardness "Strong"
