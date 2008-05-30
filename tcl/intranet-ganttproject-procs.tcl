@@ -554,8 +554,6 @@ ad_proc -public im_gp_save_tasks2 {
 	set nodeName [$taskchild nodeName]
 	set nodeText [$taskchild text]
 
-	lappend xml_elements $nodeName
-
         switch $nodeName {
             "Name"              { set task_name [$taskchild text] }
 	    "UID"               { set gantt_project_id [$taskchild text] }
@@ -587,20 +585,23 @@ ad_proc -public im_gp_save_tasks2 {
 	    }
 	    "PredecessorLink" { 
 		# this is handled below, because we don't know our task id yet
-		continue 
 	    }
 	    "OutlineLevel" - "ID" - "CalendarUID" {
 		# ignored 
 	    }
-	    "customproperty" - "task" {
-		# this is from ganttproject. see below
+	    "customproperty" - "task" - "depend" {
+		# these are from ganttproject. see below
+		continue 
 	    }
 	    default {
 		im_ganttproject_add_import "im_project" $nodeName
 		set column_name "[plsql_utility::generate_oracle_name xml_$nodeName]"
 		append extra_field_update "$column_name = '$nodeText',"
+		
 	    }
         }
+	    
+	lappend xml_elements $nodeName
     }
 
     if {![info exists outline_number]} {
