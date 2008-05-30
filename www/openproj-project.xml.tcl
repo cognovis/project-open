@@ -432,6 +432,21 @@ ad_proc -public im_openproj_write_task {
 	$task_node appendFromList [list $element {} [list [list \#text $value]]]
     }
     
+    $task_node appendXML "
+            <ExtendedAttribute>
+                <UID>$project_id</UID>
+                <FieldID>188744006</FieldID>
+                <Value>$project_nr</Value>
+            </ExtendedAttribute>
+        "
+    $task_node appendXML "
+            <ExtendedAttribute>
+                <UID>$project_id</UID>
+                <FieldID>188744007</FieldID>
+                <Value>$project_id</Value>
+            </ExtendedAttribute>
+        "
+
     im_openproj_write_subtasks \
 	-default_start_date $start_date \
 	-default_duration $duration \
