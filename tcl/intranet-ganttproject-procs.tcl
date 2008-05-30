@@ -592,12 +592,19 @@ ad_proc -public im_gp_save_tasks2 {
 	    "OutlineLevel" - "ID" - "CalendarUID" {
 		# ignored 
 	    }
+	    "customproperty" - "task" {
+		# this is from ganttproject. see below
+	    }
 	    default {
 		im_ganttproject_add_import "im_project" $nodeName
 		set column_name "[plsql_utility::generate_oracle_name xml_$nodeName]"
 		append extra_field_update "$column_name = '$nodeText',"
 	    }
         }
+    }
+
+    if {![info exists outline_number]} {
+	set outline_number 0
     }
 
     if {$remaining_duration!="" && $duration!=""} {
@@ -774,11 +781,11 @@ ad_proc -public im_gp_save_tasks2 {
 		    if {$debug} { ns_write "<li>Creating dependency relationship\n" }
 
 		    im_project_create_dependency \
-			-task_id_one [$task_node getAttribute id] \
-			-task_id_two [$task_child getAttribute id] \
-			-depend_type [$task_child getAttribute type] \
-			-difference [$task_child getAttribute difference] \
-			-hardness [$task_child getAttribute hardness] \
+			-task_id_one [$taskchild getAttribute id] \
+			-task_id_two [$task_node getAttribute id] \
+			-depend_type [$taskchild getAttribute type] \
+			-difference [$taskchild getAttribute difference] \
+			-hardness [$taskchild getAttribute hardness] \
 			-task_hash_array [array get task_hash]
 
 		}
