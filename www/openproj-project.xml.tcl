@@ -34,15 +34,16 @@ if {0 == $user_id} {
 # ---------------------------------------------------------------
 
 if {![db_0or1row project_info "
-	select	p.*,
+	select	g.*,
+                p.*,
                 p.start_date::date || 'T' || p.start_date::time as project_start_date,
                 p.end_date::date || 'T' || p.end_date::time as project_end_date,
 		p.end_date::date - p.start_date::date as project_duration,
 		c.company_name,
                 im_name_from_user_id(p.project_lead_id) as project_lead_name
-	from	im_projects p,
+	from	im_projects p left join im_gantt_projects g on (g.project_id=p.project_id),
 		im_companies c
-	where	project_id = :project_id
+	where	p.project_id = :project_id
 		and p.company_id = c.company_id
 "]} {
     ad_return_complaint 1 [lang::message::lookup "" intranet-ganttproject.Project_Not_Found "Didn't find project \#%project_id%"]
@@ -53,7 +54,8 @@ set project_url "/intranet/projects/view?project_id=$project_id"
 
 
 set project_resources_sql "
-	select	distinct
+	select distinct
+                gp.*,
                 p.*,
 		pa.email,
                 uc.home_phone,
@@ -64,7 +66,8 @@ set project_resources_sql "
 	from 	users_contact uc,
 		acs_rels r,
 		im_biz_object_members bom,
-		persons p,
+		persons p 
+                left join im_gantt_persons gp on (p.person_id=gp.person_id),
 		parties pa
 	where
 		r.rel_id = bom.rel_id
@@ -315,8 +318,6 @@ ad_proc -public im_openproj_write_task {
 } {
     upvar 1 $id_name id
 
-    ns_log Notice "xxx: write task $project_id"
-
     if { [security::secure_conn_p] } {
 	set base_url "https://[ad_host][ad_port]"
     } else {
@@ -337,9 +338,11 @@ ad_proc -public im_openproj_write_task {
                    - 2*(next_day(p.end_date::date-1,'FRI') - next_day(p.start_date::date-1,'FRI'))/7
                    + ROUND((extract(hour from p.end_date)-extract(hour from p.start_date))/8.0)
                 )*8 AS duration,
-                c.company_name
+                c.company_name,
+                g.*
         from    im_projects p
-		LEFT OUTER JOIN im_timesheet_tasks t on (p.project_id = t.task_id),
+		LEFT OUTER JOIN im_timesheet_tasks t on (p.project_id = t.task_id)
+                left join im_gantt_projects g on (p.project_id = g.project_id),
 		acs_objects o,
                 im_companies c
         where   p.project_id = :project_id
