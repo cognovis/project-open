@@ -545,7 +545,7 @@ ad_proc -public im_gp_save_tasks2 {
     set remaining_duration ""
     set outline-number ""
 
-    set extra_field_update ""
+    set extra_field_update {}
 
     set xml_elements {}
 
@@ -614,7 +614,7 @@ ad_proc -public im_gp_save_tasks2 {
 	    default {
 		im_ganttproject_add_import "im_project" $nodeName
 		set column_name "[plsql_utility::generate_oracle_name xml_$nodeName]"
-		append extra_field_update "$column_name = '$nodeText',"
+		lappend extra_field_update "$column_name = '[db_quote $nodeText]'"
 		
 	    }
         }
@@ -809,14 +809,15 @@ ad_proc -public im_gp_save_tasks2 {
     if {[llength $xml_elements]>0} {
 	db_dml update_import_field "
                UPDATE im_gantt_projects 
-               SET xml_elements=:xml_elements
+               SET 
+                  xml_elements=:xml_elements,
+                  [join $extra_field_update ,]
                WHERE project_id=:task_id
                "
     }
 
     db_dml project_update "
 	    update im_projects set
-                $extra_field_update
 		project_name	= :task_name,
 		project_nr	= :task_nr,
 		parent_id	= :super_project_id,
