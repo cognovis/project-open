@@ -227,15 +227,14 @@ $calendars_node appendXML "
 
 
 db_foreach project_resources $project_resources_sql {
-    $calendars_node appendXML "
-        <Calendar>
-            <UID>$user_id</UID>
-            <Name>$user_name</Name>
-            <BaseCalendarUID>4</BaseCalendarUID>
-	    <IsBaseCalendar>0</IsBaseCalendar>
-            <WeekDays/>
-        </Calendar>
-    "
+    set calendar_node [$doc createElement Calendar]
+    $calendars_node appendChild $calendar_node
+
+    $calendar_node appendXML "<UID>$user_id</UID>"
+    $calendar_node appendXML "<Name>$user_name</Name>"
+    $calendar_node appendXML "<BaseCalendarUID>4</BaseCalendarUID>"
+    $calendar_node appendXML "<IsBaseCalendar>0</IsBaseCalendar>"
+    $calendar_node appendXML "<WeekDays/>"
 }
  
 # -------- Tasks -------------
@@ -426,7 +425,7 @@ ad_proc -public im_openproj_write_task {
 		}
 		continue
 	    }
-	    "customproperty" - "task" - "depend" { 
+	    "customproperty" - "task" - "depend" - "ExtendedAttribute" { 
 		continue
 	    }
 	    default {
