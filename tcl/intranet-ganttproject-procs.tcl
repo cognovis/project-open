@@ -420,6 +420,14 @@ ad_proc -public im_gp_save_tasks {
     if {$tasks_node==""} {
 	# probably ms project format
 
+	if {[db_string check_gantt_project_entry "
+           select count(*)=0 
+           from im_gantt_projects 
+           where project_id=:super_project_id
+        "]} {
+	    db_dml add_gantt_project_entry "insert into im_gantt_projects (project_id,xml_elements) values (:super_project_id,'')"
+	}
+
 	set xml_elements {}
 	foreach child [$root_node childNodes] {
 	    set nodeName [$child nodeName]
@@ -441,19 +449,18 @@ ad_proc -public im_gp_save_tasks {
                        UPDATE im_projects SET end_date=:nodeText WHERE project_id=:super_project_id"
 		}
 		default {
-		    im_ganttproject_add_import "im_project" $nodeName
+		    im_ganttproject_add_import "im_gantt_project" $nodeName
 		    set column_name "xml_$nodeName"
 		    db_dml update_import_field "
-                       UPDATE im_projects 
+                       UPDATE im_gantt_projects 
                        SET [plsql_utility::generate_oracle_name $column_name]=:nodeText
                        WHERE project_id=:super_project_id
                     "
 		}
 	    }
 
-	    im_ganttproject_add_import "im_project" "elements"
 	    db_dml update_import_field "
-               UPDATE im_projects 
+               UPDATE im_gantt_projects 
                SET xml_elements=:xml_elements
                WHERE project_id=:super_project_id
                     "
@@ -545,7 +552,7 @@ ad_proc -public im_gp_save_tasks2 {
     set remaining_duration ""
     set outline-number ""
 
-    set extra_field_update {}
+    set gantt_field_update {}
 
     set xml_elements {}
 
@@ -589,33 +596,14 @@ ad_proc -public im_gp_save_tasks2 {
 	    "OutlineLevel" - "ID" - "CalendarUID" {
 		# ignored 
 	    }
-	    "depend" {
+	    "customproperty" - "task" - "depend" {
 		# these are from ganttproject. see below
 		continue 
 	    }
-            "task" { 
-		set has_subobjects_p 1 
-		continue
-	    }
-            "customproperty" {
-		# task_nr and task_id are stored as custprops
-		set cust_key [$taskchild getAttribute taskproperty-id ""]
-		set cust_value [$taskchild getAttribute value ""]
-		switch $cust_key {
-		    tpc0 { set task_nr $cust_value}
-		    tpc1 { set task_id $cust_value}
-		}
-		continue
-            }
-	    "notes" { 
-		set note [$taskchild text] 
-		continue
-	    }
 	    default {
-		im_ganttproject_add_import "im_project" $nodeName
+		im_ganttproject_add_import "im_gantt_project" $nodeName
 		set column_name "[plsql_utility::generate_oracle_name xml_$nodeName]"
-		lappend extra_field_update "$column_name = '[db_quote $nodeText]'"
-		
+		lappend gantt_field_update "$column_name = '[db_quote $nodeText]'"
 	    }
         }
 	    
@@ -634,6 +622,24 @@ ad_proc -public im_gp_save_tasks2 {
 	} else {
 	    set percent_completed [expr round(100.0-(100.0/$duration_seconds)*$remaining_seconds)]
 	}
+    }
+
+    # -----------------------------------------------------
+    # Extract the custom properties tpc0 (task_nr) and tpc1 (task_id)
+    # for tasks that have been exported out of ]project-open[
+    foreach taskchild [$task_node childNodes] {
+        switch [$taskchild nodeName] {
+            task { set has_subobjects_p 1 }
+            customproperty {
+		# task_nr and task_id are stored as custprops
+		set cust_key [$taskchild getAttribute taskproperty-id ""]
+		set cust_value [$taskchild getAttribute value ""]
+		switch $cust_key {
+		    tpc0 { set task_nr $cust_value}
+		    tpc1 { set task_id $cust_value}
+		}
+            }
+        }
     }
 
     # Normalize task_id from "" to 0
@@ -739,7 +745,6 @@ ad_proc -public im_gp_save_tasks2 {
 	if {$create_tasks && $debug} { ns_write "Updating existing task\n" }
     }
 
-    if {$debug} { ns_write "<ul>\n" }
     # we have the proper task_id now, we can do the dependencies
     foreach taskchild [$task_node childNodes] {
 	set nodeName [$taskchild nodeName]
@@ -748,7 +753,6 @@ ad_proc -public im_gp_save_tasks2 {
         switch $nodeName {
 	    "PredecessorLink" {
 		if {$save_dependencies} {
-		    if {$debug} { ns_write "<li>Creating dependency relationship\n" }
 
 		    set linkid ""
 		    set linktype ""
@@ -767,8 +771,20 @@ ad_proc -public im_gp_save_tasks2 {
 			-task_hash_array [array get task_hash]
 		}
 	    }
-	    "depend" { 
+        }
+    }
+
+    # ---------------------------------------------------------------
+    # Process task sub-nodes
+    if {$debug} { ns_write "<ul>\n" }
+    foreach taskchild [$task_node childNodes] {
+	switch [$taskchild nodeName] {
+	    notes { 
+		set note [$taskchild text] 
+	    }
+	    depend { 
 		if {$save_dependencies} {
+
 		    if {$debug} { ns_write "<li>Creating dependency relationship\n" }
 
 		    im_project_create_dependency \
@@ -781,7 +797,8 @@ ad_proc -public im_gp_save_tasks2 {
 
 		}
 	    }
-	    "task" {
+	    customproperty { }
+	    task {
 		# Recursive sub-tasks
 		set task_hash_array [im_gp_save_tasks2 \
 			-create_tasks $create_tasks \
@@ -806,16 +823,6 @@ ad_proc -public im_gp_save_tasks2 {
 	}
     }
 
-    if {[llength $xml_elements]>0} {
-	db_dml update_import_field "
-               UPDATE im_gantt_projects 
-               SET 
-                  xml_elements=:xml_elements,
-                  [join $extra_field_update ,]
-               WHERE project_id=:task_id
-               "
-    }
-
     db_dml project_update "
 	    update im_projects set
 		project_name	= :task_name,
@@ -829,6 +836,28 @@ ad_proc -public im_gp_save_tasks2 {
 	    where
 		project_id = :task_id
     "
+
+    if {[llength $xml_elements]>0} {
+	lappend gantt_field_update "xml_elements='[db_quote $xml_elements]'"
+
+	if {[db_string check_gantt_project_entry "
+           select count(*)=0 
+           from im_gantt_projects 
+           where project_id=:task_id
+        "]} {
+	    db_dml add_gantt_project_entry "
+               insert into im_gantt_projects 
+                  (project_id,xml_elements) 
+                  values (:task_id,'')"
+	}
+	
+	db_dml gantt_project_update "
+	    update im_gantt_projects set
+                [join $gantt_field_update ,]
+	    where
+		project_id = :task_id
+        " 
+    }
 
     # Write audit trail
     im_project_audit $task_id
@@ -1050,10 +1079,20 @@ ad_proc -public im_gp_save_resources {
 				"PeakUnits" - "OverAllocated" - "CanLevel" -
 				"AccrueAt" { }
 				default {
-				    im_ganttproject_add_import "person" $nodeName
+				    if {[db_string check_gantt_person_entry "
+                                       select count(*)=0 
+                                       from im_gantt_persons 
+                                       where person_id=:person_id
+                                    "]} {
+					db_dml add_gantt_person_entry "
+                                           insert into im_gantt_persons 
+                                           (person_id,xml_elements) values (:person_id,'')"
+                                    }
+
+				    im_ganttproject_add_import "im_gantt_person" $nodeName
 				    set column_name "[plsql_utility::generate_oracle_name xml_$nodeName]"
 
-				    db_dml update_import_field "UPDATE persons
+				    db_dml update_import_field "UPDATE im_gantt_persons
                                        SET $column_name=:nodeText
                                        WHERE person_id=:person_id
                                        "
@@ -1062,9 +1101,8 @@ ad_proc -public im_gp_save_resources {
 			}
 
 			if {[llength $xml_elements]>0} {
-			    im_ganttproject_add_import "person" "elements"
 			    db_dml update_import_field "
-                               UPDATE persons
+                               UPDATE im_gantt_persons
                                SET xml_elements=:xml_elements
                                WHERE person_id=:person_id"
 			}
