@@ -232,9 +232,31 @@ db_foreach project_resources $project_resources_sql {
 
     $calendar_node appendXML "<UID>$user_id</UID>"
     $calendar_node appendXML "<Name>$user_name</Name>"
-    $calendar_node appendXML "<BaseCalendarUID>4</BaseCalendarUID>"
     $calendar_node appendXML "<IsBaseCalendar>0</IsBaseCalendar>"
-    $calendar_node appendXML "<WeekDays/>"
+    $calendar_node appendXML "<BaseCalendarUID>4</BaseCalendarUID>"
+
+    set weekdays_node [$doc createElement Weekdays]
+    $calendar_node appendChild $weekdays_node
+
+    db_foreach resource_absences "
+       select 
+          start_date::date || 'T00:00:00' as start_date,
+          end_date::date || 'T23:59:00' as end_date 
+       from im_user_absences
+       where owner_id=:user_id
+       order by start_date
+    " {
+	$weekdays_node appendXML "
+           <WeekDay>
+              <DayType>0</DayType>
+              <DayWorking>0</DayWorking>
+              <TimePeriod>
+                 <FromDate>$start_date</FromDate>
+                 <ToDate>$end_date</ToDate>
+              </TimePeriod>
+           </WeekDay>
+        "
+    }
 }
  
 # -------- Tasks -------------
