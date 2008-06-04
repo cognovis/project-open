@@ -145,20 +145,6 @@ ad_proc -public im_ganttproject_write_task {
     $project_node setAttribute webLink "$project_view_url$project_id"
     $project_node setAttribute expand "true"
 
-    # Custom Property "task_nr"
-    # <customproperty taskproperty-id="tpc0" value="linux_install" />
-    set task_nr_node [$doc createElement customproperty]
-    $project_node appendChild $task_nr_node
-    $task_nr_node setAttribute taskproperty-id tpc0
-    $task_nr_node setAttribute value $project_nr
-   
-    # Custom Property "task_id"
-    # <customproperty taskproperty-id="tpc1" value="12345" />
-    set task_id_node [$doc createElement customproperty]
-    $project_node appendChild $task_id_node
-    $task_id_node setAttribute taskproperty-id tpc1
-    $task_id_node setAttribute value $project_id
-
     if {$note != ""} {
 	set note_node [$doc createElement "notes"]
 	$note_node appendChild [$doc createTextNode $note]
@@ -180,6 +166,20 @@ ad_proc -public im_ganttproject_write_task {
 	$depend_node setAttribute difference 0
 	$depend_node setAttribute hardness "Strong"
     }
+
+    # Custom Property "task_nr"
+    # <customproperty taskproperty-id="tpc0" value="linux_install" />
+    set task_nr_node [$doc createElement customproperty]
+    $project_node appendChild $task_nr_node
+    $task_nr_node setAttribute taskproperty-id tpc0
+    $task_nr_node setAttribute value $project_nr
+   
+    # Custom Property "task_id"
+    # <customproperty taskproperty-id="tpc1" value="12345" />
+    set task_id_node [$doc createElement customproperty]
+    $project_node appendChild $task_id_node
+    $task_id_node setAttribute taskproperty-id tpc1
+    $task_id_node setAttribute value $project_id
 
     im_ganttproject_write_subtasks \
 	-default_start_date $start_date \
