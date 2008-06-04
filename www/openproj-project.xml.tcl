@@ -526,15 +526,10 @@ $resources_node appendXML "
 set id 0
 set xml_elements {}
 db_foreach project_resources $project_resources_sql {
-    set phone [list]
-    if {"" != $home_phone} { lappend phone "home: $home_phone" }
-    if {"" != $work_phone} { lappend phone "work: $work_phone" }
-    if {"" != $cell_phone} { lappend phone "cell: $cell_phone" }
-
-    set initials [regsub -all {(^|\W)([\w])\S*} $user_name {\2}]
-
     incr id
     
+    set initials [regsub -all {(^|\W)([\w])\S*} $user_name {\2}]
+
     set resource_node [$doc createElement Resource]
     $resources_node appendChild $resource_node
     
