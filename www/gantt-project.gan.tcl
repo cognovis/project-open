@@ -152,6 +152,8 @@ set project_resources_sql "
 		)
 "
 
+set resource_ids {}
+
 db_foreach project_resources $project_resources_sql {
 
     set phone [list]
@@ -170,6 +172,8 @@ db_foreach project_resources $project_resources_sql {
     $resource_node setAttribute function [ns_quotehtml $function]
     $resource_node setAttribute contacts [ns_quotehtml $email]
     $resource_node setAttribute phone [ns_quotehtml [join $phone ", "]]
+
+    lappend resource_ids $user_id
 }
 
 
@@ -254,6 +258,29 @@ $project_node appendXML "
 $project_node appendXML "<description>[ns_quotehtml $description]</description>"
 
 
+# -------- vacations / abscenses ----------------------
+# <vacations>
+# <vacation start="2008-06-18" end="2008-06-18" resourceid="624"/>
+# <vacation start="2008-06-11" end="2008-06-12" resourceid="624"/>
+# </vacations>
+
+set vacations_node [$doc createElement vacations]
+$project_node appendChild $vacations_node
+
+db_foreach abscenses "
+       select 
+          owner_id,
+          start_date::date as start_date,
+          end_date::date as end_date 
+       from im_user_absences
+       where owner_id in ([join $resource_ids ,])
+   " {
+       set vacation_node [$doc createElement vacation]
+       $vacation_node setAttribute start $start_date
+       $vacation_node setAttribute end $end_date
+       $vacation_node setAttribute resourceid $owner_id
+       $vacations_node appendChild $vacation_node
+}
 
 # -------- Task Display Columns -------------
 $project_node appendXML "
