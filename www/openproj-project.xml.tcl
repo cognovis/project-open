@@ -235,7 +235,7 @@ db_foreach project_resources $project_resources_sql {
     $calendar_node appendXML "<IsBaseCalendar>0</IsBaseCalendar>"
     $calendar_node appendXML "<BaseCalendarUID>4</BaseCalendarUID>"
 
-    set weekdays_node [$doc createElement Weekdays]
+    set weekdays_node [$doc createElement WeekDays]
     $calendar_node appendChild $weekdays_node
 
     db_foreach resource_absences "
@@ -555,7 +555,7 @@ db_foreach project_resources $project_resources_sql {
 	    "AccrueAt"              { set value 3 }
 	    "StandardRate" - "Cost" -
 	    "OvertimeRate" - "CostPerUse" { set value 0 }
-	    "CalendarUID"           { set value 5 }
+	    "CalendarUID"           { set value $user_id }
 	    "Initials"              { set value $initials }
 	    "MaxUnits" - "OverAllocated" - 
 	    "CanLevel" - "PeakUnits" { continue }
