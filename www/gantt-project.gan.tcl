@@ -264,22 +264,24 @@ $project_node appendXML "<description>[ns_quotehtml $description]</description>"
 # <vacation start="2008-06-11" end="2008-06-12" resourceid="624"/>
 # </vacations>
 
-set vacations_node [$doc createElement vacations]
-$project_node appendChild $vacations_node
+if {[llength $resource_ids] > 0} {
+    set vacations_node [$doc createElement vacations]
+    $project_node appendChild $vacations_node
 
-db_foreach abscenses "
+    db_foreach abscenses "
        select 
           owner_id,
           start_date::date as start_date,
           end_date::date as end_date 
        from im_user_absences
        where owner_id in ([join $resource_ids ,])
-   " {
-       set vacation_node [$doc createElement vacation]
-       $vacation_node setAttribute start $start_date
-       $vacation_node setAttribute end $end_date
-       $vacation_node setAttribute resourceid $owner_id
-       $vacations_node appendChild $vacation_node
+  " {
+      set vacation_node [$doc createElement vacation]
+      $vacation_node setAttribute start $start_date
+      $vacation_node setAttribute end $end_date
+      $vacation_node setAttribute resourceid $owner_id
+      $vacations_node appendChild $vacation_node
+   }
 }
 
 # -------- Task Display Columns -------------
