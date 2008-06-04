@@ -230,8 +230,9 @@ db_foreach project_resources $project_resources_sql {
     set calendar_node [$doc createElement Calendar]
     $calendars_node appendChild $calendar_node
 
-    $calendar_node appendXML "<UID>$user_id</UID>"
-    $calendar_node appendXML "<Name>$user_name</Name>"
+    $calendar_node appendFromList [list UID {} [list [list \#text $user_id]]]
+    $calendar_node appendFromList [list Name {} [list [list \#text $user_name]]]
+
     $calendar_node appendXML "<IsBaseCalendar>0</IsBaseCalendar>"
     $calendar_node appendXML "<BaseCalendarUID>4</BaseCalendarUID>"
 
