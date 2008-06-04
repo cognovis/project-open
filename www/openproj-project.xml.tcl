@@ -95,11 +95,6 @@ set project_resources_sql "
 # Create the XML
 # ---------------------------------------------------------------
 
-set view_index 0
-set gantt_divider_location 300
-set resource_divider_location 300
-set zooming_state 6
-
 # ---------------------------------------------------------------
 # Project node
 
@@ -129,7 +124,8 @@ foreach element $xml_elements {
 	    set value [expr $$attribute_name]
 	}
     }
-	    
+
+    # the following does "<$element>$value</$element>"
     $project_node appendFromList [list $element {} [list [list \#text $value]]]
 }
 
@@ -223,7 +219,8 @@ $calendars_node appendXML "
                     <DayWorking>0</DayWorking>
                 </WeekDay>
             </WeekDays>
-        </Calendar>"
+        </Calendar>
+    "
 
 
 db_foreach project_resources $project_resources_sql {
