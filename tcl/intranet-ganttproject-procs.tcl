@@ -705,7 +705,7 @@ ad_proc -public im_gp_save_tasks2 {
         if {$debug} { ns_write "<li>GanttProject: found task_id=$existing_task_id for task with task_nr=$task_nr" }
     }
 
-    if {[db_string check_for_existing_task_name "
+    if {$create_tasks && [db_string check_for_existing_task_name "
        select count(*) 
        from im_projects
        where 
