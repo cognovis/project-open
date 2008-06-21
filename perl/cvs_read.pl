@@ -34,7 +34,7 @@ $debug = 0;
 $cvs_global_args = "";
 
 # The start date in which to gather statistics.
-$start_date = "";
+$start_date = "2008-01-01";
 
 # The final date in which to gather statistics.
 $end_date = "";
@@ -53,7 +53,8 @@ $rlog_module = "";
 
 
 # Database Connection Parameters
-$db_datasource = "dbi:Pg:dbname=projop";
+# $db_datasource = "DBI:Pg:dbname=projop;host=localhost;port=5432";
+$db_datasource = "DBI:Pg:dbname=projop;port=5432";
 $db_username = "projop";
 $db_pwd = "";
 
@@ -66,13 +67,11 @@ $windows = (defined $osname && $osname eq "MSWin32") ? 1 : 0;
 # --------------------------------------------------------
 
 # Establish the database connection
-# The parameters are defined in common_constants.pm
 $dbh = DBI->connect($db_datasource, $db_username, $db_pwd) ||
-    die "cvs_read: Unable to connect to database.\n";
+    die "cvs_read: Unable to connect to database with datasouce='$db_datasource', username='$db_username', password='$db_pwd'.\n";
 
 
 # Prepare Activitiy
-check_missing_modules();
 process_command_line_arguments();
 
 
@@ -110,65 +109,6 @@ sub quote
         String::ShellQuote::shell_quote($arg);
     }
 }
-
-###############################################################################
-# Method for writing out help if modules are missing.
-sub check_missing_modules
-{
-    my @missing = ();
-
-    # Load the Date::Manip module.
-    eval
-    {
-	require Date::Manip;
-    };
-    if ($@)
-    {
-	push @missing, 'Date::Manip';
-    }
-
-    # Load the String::ShellQuote module for UNIX platforms.
-    eval
-    {
-	if (! $windows)
-	{
-	    require String::ShellQuote;
-	}
-    };
-    if ($@)
-    {
-	push @missing, 'String::ShellQuote';
-    }
-    
-    # Check if there are any missing modules.
-    return if $#missing == -1;
-
-    # First, output the generic "missing module" message.
-    print "\n";
-    print "Cvsplot requires some Perl modules which are missing " .
-	  "from your system.\n";
-
-    if ($windows) {
-	print "These can be installed by issuing the following commands:\n\n";
-	foreach my $module (@missing) {
-	    $module =~ s/:://g;
-	    print 'C:\> ' . "ppm install $module\n";
-	}
-	print "\n";
-    }
-    else
-    {
-	print "They can be installed by running (as root) the following:\n";
-	foreach my $module (@missing) {
-	    print "   perl -MCPAN -e 'install \"$module\"'\n";
-	}
-	print "\n";
-	print "Modules can also be downloaded from http://www.cpan.org.\n\n";
-    }
-    exit;
-}
-
-
 
 ###############################################################################
 # Using "cvs log" and a few other commands, gather all of the necessary

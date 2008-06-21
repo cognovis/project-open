@@ -9,7 +9,7 @@
 # This program is free software; you can redistribute it and modify it under
 # the terms of the GPL.
 
-$cvs_root = "/home/cvsroot";
+$cvs_root = "/mnt/web/projop/packages/";
 
 $read_all_file = "cvs_read_all.bash";
 

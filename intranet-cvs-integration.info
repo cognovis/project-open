@@ -7,7 +7,7 @@
     <pretty-plural>]project-open[ CVS Integration</pretty-plural>
     <initial-install-p>f</initial-install-p>
     <singleton-p>t</singleton-p>
-    <auto-mount>intranet-cvs-statistics</auto-mount>
+    <auto-mount>intranet-cvs-integration</auto-mount>
 
     <version name="3.4.0.2.0" url="http://projop.dnsalias.com/download/apm/intranet-cvs-integration-3.4.0.2.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
