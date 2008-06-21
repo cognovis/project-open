@@ -20,8 +20,8 @@ ad_page_contract {
     { project_id:integer 0}
     { task_id:integer 0}
     { user_id:integer 0}
-    { printer_friendly_p:integer 0}
-    company_id:integer
+    { printer_friendly_p:integer 1}
+    { company_id:integer 0}
     invoice_id:integer
 }
 
@@ -322,7 +322,7 @@ switch $output_template {
 		 <head>
 		  <meta http-equiv='content-type' content='text/html;charset=UTF-8'>
 		  <title>$company_name Timesheet</title>
-		  <link rel='stylesheet' type='text/css' href='template.css'>
+		  <link rel='stylesheet' type='text/css' href='/intranet-timesheet2-invoices/reporting/timesheet-included-hours.style.css'>
 		 </head>
 		 <body>
 		  <div id=header>
