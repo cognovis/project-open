@@ -1,6 +1,6 @@
-# /packages/intranet-reporting/www/timesheet-companies-projects.tcl
+# /packages/intranet-reporting/www/timesheet-invoice-hours.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (C) 2003-2008 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/ for licensing details.
@@ -14,17 +14,18 @@ ad_page_contract {
            to the given number of characters. 0 indicates no
            truncation.
 } {
-    { start_date "" }
-    { end_date "" }
     { level_of_detail 2 }
     { truncate_note_length 4000}
     { output_format "html" }
     { project_id:integer 0}
     { task_id:integer 0}
-    { company_id:integer 0}
     { user_id:integer 0}
-    { invoice_id:integer 0}
+    { printer_friendly_p:integer 0}
+    company_id:integer
+    invoice_id:integer
 }
+
+# ad_return_complaint 1 $printer_friendly_p
 
 # ------------------------------------------------------------
 # Security
@@ -32,14 +33,10 @@ ad_page_contract {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
+# Uses the same label as the timesheet report.
 set menu_label "reporting-timesheet-customer-project"
 
 set current_user_id [ad_maybe_redirect_for_registration]
-
-# Default User = Current User, to reduce performance overhead
-if {"" == $start_date && "" == $end_date && 0 == $project_id && 0 == $company_id && 0 == $user_id} { 
-    set user_id $current_user_id 
-}
 
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
@@ -53,6 +50,7 @@ set edit_timesheet_p [im_permission $current_user_id "edit_hours_all"]
 # ------------------------------------------------------------
 # Constants
 
+set date_format "YYYY-MM-DD"
 set number_format "999,999.99"
 
 
@@ -64,20 +62,14 @@ if {![string equal "t" $read_p]} {
     return
 }
 
-# Check that Start & End-Date have correct format
-if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $start_date]} {
-    ad_return_complaint 1 "Start Date doesn't have the right format.<br>
-    Current value: '$start_date'<br>
-    Expected format: 'YYYY-MM-DD'"
-}
+db_1row invoice_details "
+	select	c.cost_name as invoice_name,
+		c.cost_nr as invoice_nr
+	from	im_costs c
+	where	c.cost_id = :invoice_id
+"
 
-if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $end_date]} {
-    ad_return_complaint 1 "End Date doesn't have the right format.<br>
-    Current value: '$end_date'<br>
-    Expected format: 'YYYY-MM-DD'"
-}
-
-set page_title "Timesheet Report"
+set page_title [lang::message::lookup "" intranet-reporting.Invoice_details "Details for Invoice %invoice_name%"]
 set context_bar [im_context_bar $page_title]
 set context ""
 
@@ -88,45 +80,18 @@ set context ""
 set rowclass(0) "roweven"
 set rowclass(1) "rowodd"
 
-set days_in_past 7
-
-db_1row todays_date "
-select
-	to_char(sysdate::date - :days_in_past::integer, 'YYYY') as todays_year,
-	to_char(sysdate::date - :days_in_past::integer, 'MM') as todays_month,
-	to_char(sysdate::date - :days_in_past::integer, 'DD') as todays_day
-from dual
-"
-
-if {"" == $start_date} { 
-    set start_date "$todays_year-$todays_month-01"
-}
-
 # Maxlevel is 4. Normalize in order to show the right drop-down element
 if {$level_of_detail > 4} { set level_of_detail 4 }
-
-
-db_1row end_date "
-select
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'YYYY') as end_year,
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'MM') as end_month,
-	to_char(to_date(:start_date, 'YYYY-MM-DD') + 31::integer, 'DD') as end_day
-from dual
-"
-
-if {"" == $end_date} { 
-    set end_date "$end_year-$end_month-01"
-}
 
 
 set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set user_url "/intranet/users/view?user_id="
 set hours_url "/intranet-timesheet2/hours/one"
-set this_url [export_vars -base "/intranet-reporting/timesheet-customer-project" {start_date end_date level_of_detail project_id task_id company_id user_id} ]
+set this_url [export_vars -base "/intranet-reporting/timesheet-customer-project" {level_of_detail project_id task_id company_id user_id} ]
 
 # BaseURL for drill-down. Needs company_id, project_id, user_id, level_of_detail
-set base_url [export_vars -base "/intranet-reporting/timesheet-customer-project" {start_date end_date task_id} ]
+set base_url [export_vars -base "/intranet-reporting/timesheet-customer-project" {task_id} ]
 
 
 # ------------------------------------------------------------
@@ -179,21 +144,15 @@ if { ![empty_string_p $where_clause] } {
 set sql "
 select
 	h.note,
-	h.billing_rate,
-	to_char(h.day, 'YYYY-MM-DD') as date,
+	to_char(h.day, :date_format) as date,
 	to_char(h.day, 'J') as julian_date,
-	to_char(h.day, 'J')::integer - to_char(to_date(:start_date, 'YYYY-MM-DD'), 'J')::integer as date_diff,
 	to_char(coalesce(h.hours,0), :number_format) as hours,
-	to_char(h.billing_rate, :number_format) as billing_rate,
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name,
 	im_initials_from_user_id(u.user_id) as user_initials,
 	main_p.project_id,
 	main_p.project_nr,
 	main_p.project_name,
-	p.project_id as sub_project_id,
-	p.project_nr as sub_project_nr,
-	p.project_name as sub_project_name,
 	c.company_id,
 	c.company_path as company_nr,
 	c.company_name,
@@ -210,57 +169,38 @@ where
 	and main_p.project_status_id not in ([im_project_status_deleted])
 	and h.user_id = u.user_id
 	and main_p.tree_sortkey = tree_root_key(p.tree_sortkey)
-	and h.day >= to_timestamp(:start_date, 'YYYY-MM-DD')
-	and h.day < to_timestamp(:end_date, 'YYYY-MM-DD')
 	and main_p.company_id = c.company_id
 	$where_clause
 order by
 	c.company_path,
 	main_p.project_nr,
 	user_name,
-	p.project_nr,
 	h.day
 "
 
+# We skip the customer grouping because we asume that there is exactly
+# one customer.
+
 set report_def [list \
-    group_by company_id \
-    header {
-	"\#colspan=99 <a href=$base_url&company_id=$company_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a> 
-	<b><a href=$company_url$company_id>$company_name</a></b>"
-    } \
-    content [list  \
 	group_by company_project_id \
 	header {
-	    $company_nr 
-	    "\#colspan=99 <a href=$base_url&project_id=$project_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
-	    <b><a href=$project_url$project_id>$project_name</a></b>"
+	    "\#colspan=99 <br>&nbsp;<br><h1>$project_nr - $project_name</h1>"
 	} \
 	content [list \
 	    group_by company_project_user_id \
 	    header {
-		$company_nr 
-		$project_nr 
-		"\#colspan=99 <a href=$base_url&project_id=$project_id&user_id=$user_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
-		<b><a href=$user_url$user_id>$user_name</a></b>"
+		"\#colspan=99 <br><b>$user_name</b>"
 	    } \
 	    content [list \
 		    header {
-			$company_nr
-			$project_nr
-			$user_initials
 			$date
-			$hours_link
-			$billing_rate
-			$sub_project_nr
+			$hours
 			$note
 		    } \
 		    content {} \
 	    ] \
 	    footer {
-		$company_nr 
-		$project_nr 
-		$user_initials
-		""
+		"Sum"
 		"<i>$hours_user_subtotal</i>"
 		""
 		""
@@ -268,22 +208,15 @@ set report_def [list \
 	    } \
 	] \
 	footer {
-    	    $company_nr 
-	    $project_nr 
-	    ""
-	    ""
-	    "<b>$hours_project_subtotal</b>"
+	    "<br>Grand Total"
+	    "<br><b>$hours_project_subtotal</b>"
 	    ""
 	    ""
 	    ""
 	} \
-    ] \
-    footer {"" "" "" "" "" "" "" ""} \
 ]
 
 # Global header/footer
-set header0 {"Customer" "Project" "User" "Date" Hours Rate Task Note}
-set footer0 {"" "" "" "" "" "" "" ""}
 
 set hours_user_counter [list \
 	pretty_name Hours \
@@ -317,10 +250,6 @@ set counters [list \
 # Constants
 #
 
-set start_years {2000 2000 2001 2001 2002 2002 2003 2003 2004 2004 2005 2005 2006 2006}
-set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep 10 Oct 11 Nov 12 Dec}
-set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
-set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
 set levels {1 "Customer Only" 2 "Customer+Project" 3 "Customer+Project+User" 4 "All Details"} 
 set truncate_note_options {4000 "Full Length" 80 "Standard (80)" 20 "Short (20)"} 
 
@@ -364,6 +293,17 @@ if {[info exists task_id]} {
     "
 }
 
+# ------------------------------------------------------------
+# Get useful information about the invoice
+
+
+set company_name [db_string company_name "select company_name from im_companies where company_path = 'internal'" -default "Unable to get company_name"]
+set customer_name [db_string company_name "select company_name from im_companies where company_id in (select customer_id from im_costs where cost_id = :invoice_id)" -default "Unable to get customer_name"]
+set project_names [db_list project_name "select project_name from im_projects where project_id in (select object_id_one from acs_rels where object_id_two = :invoice_id)"]
+set project_name [join $project_names ", "]
+set project_nrs [db_list project_nr "select project_nr from im_projects where project_id in (select object_id_one from acs_rels where object_id_two = :invoice_id)"]
+set project_nr [join $project_nrs ", "]
+
 
 
 # ------------------------------------------------------------
@@ -372,52 +312,67 @@ if {[info exists task_id]} {
 # Write out HTTP header, considering CSV/MS-Excel formatting
 im_report_write_http_headers -output_format $output_format
 
-switch $output_format {
+set output_template $output_format
+if {$printer_friendly_p} { set output_template "template" }
+
+switch $output_template {
+    template {
+	ns_write "
+		<html>
+		 <head>
+		  <meta http-equiv='content-type' content='text/html;charset=UTF-8'>
+		  <title>$company_name Timesheet</title>
+		  <link rel='stylesheet' type='text/css' href='template.css'>
+		 </head>
+		 <body>
+		  <div id=header>
+		   <p style='text-align:right'>[im_logo]</p>
+		  </div>
+		  <div id=main>
+			<div id=title>Timesheet</div>
+			<div id=subtitle>Period: 2008-01-01 to 2008-01-07</div>
+			
+			<table id=headertable cellpadding=0 border=0 rules=all>
+			 <tbody>
+			  <tr>
+			   <td id=head>Customer:</td>
+			   <td id=head>Project:</td>
+			   <td id=head>Project Number:</td>
+			   <td id=head>Customer PO:</td>
+			  </tr>
+			  
+			  <tr>
+			   <td id=content>$customer_name</td>
+			  <td id=content>$project_name</td>
+			   <td id=content>$project_nr</td>
+			   <td id=content></td>
+			  </tr>
+			  
+			 </tbody>
+			</table>
+	
+	
+	"
+    }
     html {
 	ns_write "
 	[im_header $page_title]
 	[im_navbar reporting]
         <div id=\"slave\">
         <div id=\"slave_content\">
-
         <div class=\"filter-list\">
-
         <div class=\"filter\">
         <div class=\"filter-block\">
 
 	<form>
-	[export_form_vars invoice_id]
 	<table border=0 cellspacing=1 cellpadding=1>
+	[export_form_vars company_id invoice_id]
 	<tr valign=top><td>
 		<table border=0 cellspacing=1 cellpadding=1>
 		<tr>
 	          <td class=form-label>Level of Details</td>
 		  <td class=form-widget>
 		    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
-		  </td>
-		</tr>
-		<tr>
-		  <td class=form-label>Start Date</td>
-		  <td class=form-widget>
-		    <input type=textfield name=start_date value=$start_date>
-		  </td>
-		</tr>
-		<tr>
-		  <td class=form-label>End Date</td>
-		  <td class=form-widget>
-		    <input type=textfield name=end_date value=$end_date>
-		  </td>
-		</tr>
-		<tr>
-		  <td class=form-label>Customer</td>
-		  <td class=form-widget>
-		    [im_company_select company_id $company_id]
-		  </td>
-		</tr>
-		<tr>
-		  <td class=form-label>User</td>
-		  <td class=form-widget>
-		    [im_user_select -include_empty_p 1 -group_id [list [im_employee_group_id] [im_freelance_group_id]] -include_empty_name "-- Please select --" user_id $user_id]
 		  </td>
 		</tr>
 
@@ -427,6 +382,12 @@ switch $output_format {
                   <td class=form-label>Format</td>
                   <td class=form-widget>
                     [im_report_output_format_select output_format "" $output_format]
+                  </td>
+                </tr>
+                <tr>
+                  <td class=form-label>Printer Friendly</td>
+                  <td class=form-widget>
+			<input type=checkbox name=printer_friendly_p value=1>
                   </td>
                 </tr>
 		<tr>
@@ -442,83 +403,173 @@ switch $output_format {
         </div>
         </div>
         <div class=\"fullwidth-list\">
-        [im_box_header $page_title]
-
 	<table border=0 cellspacing=1 cellpadding=1>\n"
     }
 }
 
 
-im_report_render_row \
-    -output_format $output_format \
-    -row $header0 \
-    -row_class "rowtitle" \
-    -cell_class "rowtitle"
 
+switch $output_template {
+    html {
 
-set footer_array_list [list]
-set last_value_list [list]
-set class "rowodd"
-db_foreach sql $sql {
-
-	if {[string length $note] > $truncate_note_length} {
-	    set note "[string range $note 0 $truncate_note_length] ..."
+	# Global header/footer
+	set header0 {"Date" Hours Note}
+	set footer0 {"" "" ""}
+	
+	set footer_array_list [list]
+	set last_value_list [list]
+	set class "rowodd"
+	db_foreach sql $sql {
+	    
+	    
+	    if {[string length $note] > $truncate_note_length} {
+		set note "[string range $note 0 $truncate_note_length] ..."
+	    }
+	    set hours_link $hours
+	    if {$edit_timesheet_p} {
+		set hours_link "<a href=\"[export_vars -base $hours_url {julian_date user_id project_id {return_url $this_url}}]\">$hours</a>\n"
+	    }
+		    
+		
+	    im_report_display_footer \
+		-output_format $output_format \
+		-group_def $report_def \
+		-footer_array_list $footer_array_list \
+		-last_value_array_list $last_value_list \
+		-level_of_detail $level_of_detail \
+		-row_class $class \
+		-cell_class $class
+	    
+	    im_report_update_counters -counters $counters
+	    
+	    set last_value_list [im_report_render_header \
+				     -output_format $output_format \
+				     -group_def $report_def \
+				     -last_value_array_list $last_value_list \
+				     -level_of_detail $level_of_detail \
+				     -row_class $class \
+				     -cell_class $class
+				]
+	    
+	    set footer_array_list [im_report_render_footer \
+				       -output_format $output_format \
+				       -group_def $report_def \
+				       -last_value_array_list $last_value_list \
+				       -level_of_detail $level_of_detail \
+				       -row_class $class \
+				       -cell_class $class
+				  ]
+	    
 	}
-	set hours_link $hours
-	if {$edit_timesheet_p} {
-	    set hours_link "<a href=\"[export_vars -base $hours_url {julian_date user_id {project_id $sub_project_id} {return_url $this_url}}]\">$hours</a>\n"
-	}
-
+		
 	im_report_display_footer \
 	    -output_format $output_format \
 	    -group_def $report_def \
 	    -footer_array_list $footer_array_list \
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
+	    -display_all_footers_p 1 \
 	    -row_class $class \
 	    -cell_class $class
-	
-	im_report_update_counters -counters $counters
-	
-	set last_value_list [im_report_render_header \
-	    -output_format $output_format \
-	    -group_def $report_def \
-	    -last_value_array_list $last_value_list \
-	    -level_of_detail $level_of_detail \
-	    -row_class $class \
-	    -cell_class $class
-        ]
 
-        set footer_array_list [im_report_render_footer \
-	    -output_format $output_format \
-	    -group_def $report_def \
-	    -last_value_array_list $last_value_list \
-	    -level_of_detail $level_of_detail \
-	    -row_class $class \
-	    -cell_class $class
-        ]
+    }
+    template {
+
+	set user_sql "select distinct user_id, user_name from ($sql) s order by user_name"
+	set user_list [db_list_of_lists users $user_sql]
+
+	set grand_total 0
+	foreach user_tuple $user_list {
+	    set user_id [lindex $user_tuple 0]
+	    set user_name [lindex $user_tuple 1]
+
+
+	    ns_write "
+                        <table id=timetable cellpadding=0 border=0 rules=all>
+                        <colgroup>
+                                <col id=datecol>
+                                <col id=hourcol>
+                                <col id=textcol>
+                        </colgroup>
+                        <tbody>
+                        <tr>
+				<td id=timetitle colspan=3>$user_name</td>
+                        </tr>
+	    "
+
+	    set hours_sql "select * from ($sql) s where s.user_id = :user_id"
+	    set sub_total 0
+	    db_foreach hours $hours_sql {
+		ns_write "
+	                <tr id=time>
+                           <td id=time>$date</td>
+                           <td id=time>$hours</td>
+                           <td id=time>$note</td>
+                        </tr>
+		"
+		set sub_total [expr $sub_total + $hours]
+		set grand_total [expr $grand_total + $hours]
+
+	    }
+
+	    ns_write "
+                        <tr>
+                           <td id=timesum>Sum</td>
+                           <td id=timesum>$sub_total</td>
+                           <td id=timesum></td>
+                        </tr>
+                        </tbody>
+                        </table>
+              "
+
+
+	}
+
+
+    }
+
 }
-
-im_report_display_footer \
-    -output_format $output_format \
-    -group_def $report_def \
-    -footer_array_list $footer_array_list \
-    -last_value_array_list $last_value_list \
-    -level_of_detail $level_of_detail \
-    -display_all_footers_p 1 \
-    -row_class $class \
-    -cell_class $class
-
-im_report_render_row \
-    -output_format $output_format \
-    -row $footer0 \
-    -row_class $class \
-    -cell_class $class
 
 
 # Write out the HTMl to close the main report table
 # and write out the page footer.
 #
-switch $output_format {
-    html { ns_write "</table>[im_box_footer]</div></div></div>\n</div></div>[im_footer]\n"}
+switch $output_template {
+    template { 
+	ns_write "
+        
+			<table id=timetable cellpadding=0 border=0 rules=all>
+			<colgroup>
+				<col id='datecol'>
+				<col id='hourcol'>
+				<col id='textcol'>
+			</colgroup>
+			 <tbody>
+			 <tr>
+					<td id=totalsum>Grand Total</td>
+					<td id=totalsum>$grand_total</td>
+					<td id=totalsum>X</td>
+				</tr>
+			<tr>
+					<td id=totalsum style='border:0px'></td>
+					<td id=totalsum style='border:0px'></td>
+					<td id=totalsum style='border:0px;font-weight:normal;'>&nbsp;&nbsp;Date, Signature</td>
+				</tr>
+			</table>
+		  </div>
+		 </body>
+		</html>
+	"
+    }
+    html { 
+	ns_write "
+	</table>
+	</div>
+	</div>
+	</div>
+	</div>
+	</div>
+	[im_footer]
+	"
+    }
 }
