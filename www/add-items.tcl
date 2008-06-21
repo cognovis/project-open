@@ -74,7 +74,7 @@ db_multirow -extend { release_project_url release_status_template project_chk } 
 	select	p.*
  	from	im_projects p
 	where	project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
-		and project_type_id in ([join [im_sub_categories 4597] ","])
+		and project_type_id in ([join [im_sub_categories 10054] ","])
 	order by project_name
 " {
     set release_project_url [export_vars -base "/intranet/projects/view?" {project_id return_url}]
