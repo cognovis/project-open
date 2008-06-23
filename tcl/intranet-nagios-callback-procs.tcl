@@ -19,7 +19,7 @@ ad_proc -public -callback acs_mail_lite::incoming_email -impl nagios {
     Third, we check if there is already an open ticket for the ConfItem.
     Fourth, we create a new ticket (if there wasn't one before) and append the new message to the ticket.
 
-    @author frank.begmann@project-open.com
+    @author frank.bergmann@project-open.com
     @creation-date 2008-03-27
 
     @param array        An array with mail headers, files and bodies.
