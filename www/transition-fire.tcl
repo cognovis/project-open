@@ -1,4 +1,4 @@
-# packages/workflow/www/transition-fire.tcl
+# packages /packages/acs-workflow/www/transition-fire.tcl
 
 ad_page_contract {
   Fire a transition.

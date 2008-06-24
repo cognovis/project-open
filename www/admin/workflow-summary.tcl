@@ -1,4 +1,4 @@
-# /admin/workflow/workflow-summary.tcl
+# /packages/acs-workflow/www/admin/workflow-summary.tcl
 
 ad_page_contract {
     Displays basic aggregate statistics on a workflow
