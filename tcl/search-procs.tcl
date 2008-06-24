@@ -2,7 +2,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.43 2008/06/07 20:29:01 donb Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.44 2008/06/24 19:09:25 ryang Exp $
 }
 
 namespace eval search {}
@@ -351,6 +351,13 @@ ad_proc -callback search::driver_info {
 } {
     This callback returns information about the search engine implementation
 } -
+
+ad_proc -public search::driver_name {
+} {
+    Return the name of the current search driver.
+} {
+    return [parameter::get -package_id [apm_package_id_from_key search] -parameter FtsEngineDriver]
+}
 
 # dotlrn specific procs
 
