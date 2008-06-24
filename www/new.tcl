@@ -13,6 +13,7 @@ ad_page_contract {
     edit_p:optional
     message:optional
     { ticket_status_id "[im_ticket_status_open]" }
+    { ticket_type_id 0 }
     { return_url "/intranet-helpdesk/" }
     { vars_from_url ""}
     form_mode:optional
@@ -24,6 +25,7 @@ ad_page_contract {
 # ------------------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
+set current_url [im_url_with_query]
 set action_url "/intranet-helpdesk/new"
 set focus "ticket.var_name"
 set page_title [lang::message::lookup "" intranet-helpdesk.New_Ticket "New Ticket"]
@@ -44,6 +46,29 @@ if {"edit" == $form_mode} { set show_components_p 0 }
 # Can the currrent user create new helpdesk customers?
 set user_can_create_new_customer_p 1
 set user_can_create_new_customer_contact_p 1
+
+
+# ------------------------------------------------------------------
+# Redirect to get the type
+# ------------------------------------------------------------------
+
+# Get the ticket type when showing an already existing object
+# We'll need this information in order to show the right DynField fields below.
+if {[info exists ticket_id]} { 
+    set ticket_type_id [db_string ttype_id "select ticket_type_id from im_tickets where ticket_id = :ticket_id" -default 0]
+}
+
+# Redirect if the type of the object hasn't been defined and
+# if there are DynFields specific for subtypes.
+if {0 == $ticket_type_id && ![info exists ticket_id]} {
+    set all_same_p [im_dynfield::subtype_have_same_attributes_p -object_type "im_ticket"]
+    set all_same_p 0
+    if {!$all_same_p} {
+        ad_returnredirect [export_vars -base "/intranet/biz-object-type-select" {{object_type "im_ticket"} {return_url $current_url} {type_id_var ticket_type_id}}]
+    }
+}
+
+
 
 # ------------------------------------------------------------------
 # Delete?

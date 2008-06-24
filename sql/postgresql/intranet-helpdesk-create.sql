@@ -27,9 +27,9 @@ SELECT acs_object_type__create_type (
 insert into acs_object_type_tables VALUES ('im_ticket', 'im_tickets', 'ticket_id');
 
 update acs_object_types set
-        status_type_table = 'im_tickets',
-        status_column = 'ticket_status_id',
-        type_column = 'ticket_type_id'
+		status_type_table = 'im_tickets',
+		status_column = 'ticket_status_id',
+		type_column = 'ticket_type_id'
 where object_type = 'im_ticket';
 
 SELECT im_category_new(101, 'Ticket', 'Intranet Project Type');
@@ -142,11 +142,11 @@ create or replace function im_ticket__new (
 	integer, integer 
 ) returns integer as '
 DECLARE
-	p_ticket_id		alias for $1;		-- ticket_id  default null
-	p_object_type   	alias for $2;		-- object_type default ''im_ticket''
+	p_ticket_id		alias for $1;		-- ticket_id default null
+	p_object_type		alias for $2;		-- object_type default 'im_ticket'
 	p_creation_date 	alias for $3;		-- creation_date default now()
 	p_creation_user 	alias for $4;		-- creation_user default null
-	p_creation_ip   	alias for $5;		-- creation_ip default null
+	p_creation_ip		alias for $5;		-- creation_ip default null
 	p_context_id		alias for $6;		-- context_id default null
 
 	p_ticket_name		alias for $7;		-- ticket_name
@@ -201,6 +201,105 @@ BEGIN
 end;' language 'plpgsql';
 
 
+-----------------------------------------------------------
+-- Create Ticket Queue datatype as a dynamically managed group
+
+select acs_object_type__create_type (
+	'im_ticket_queue',
+	'Ticket Queue',
+	'Ticket Queues',
+	'group',
+	'IM_TICKET_QUEUE_EXT',
+	'GROUP_ID',
+	'im_ticket_queue',
+	'f',
+	null,
+	null
+);
+
+
+insert into acs_object_type_tables VALUES ('im_ticket_queue', 'im_ticket_queue_ext', 'group_id');
+
+-- update acs_object_types set
+-- 		status_type_table = 'im_tickets',
+-- 		status_column = 'ticket_status_id',
+-- 		type_column = 'ticket_type_id'
+-- where object_type = 'im_ticket';
+
+-- Mark ticket_queue as a dynamically managed object type
+update acs_object_types 
+set dynamic_p='t' 
+where object_type = 'im_ticket_queue';
+
+
+-- Copy group type_rels to queues
+insert into group_type_rels (group_rel_type_id, rel_type, group_type)
+select
+	nextval('t_acs_object_id_seq'), 
+	r.rel_type, 
+	'im_ticket_queue'
+from
+	group_type_rels r
+where
+	r.group_type = 'group';
+
+
+create table im_ticket_queue_ext (
+	group_id	integer
+			constraint ITQE_GROUP_ID_PK primary key
+			constraint ITQE_GROUP_ID_FK
+			references groups (group_id)
+);
+
+
+select define_function_args('im_ticket_queue__new','GROUP_ID,GROUP_NAME,EMAIL,URL,LAST_MODIFIED;now(),MODIFYING_IP,OBJECT_TYPE;im_ticket_queue,CONTEXT_ID,CREATION_USER,CREATION_DATE;now(),CREATION_IP,JOIN_POLICY');
+
+create function im_ticket_queue__new(INT4,VARCHAR,VARCHAR,VARCHAR,TIMESTAMPTZ,VARCHAR,VARCHAR,INT4,INT4,TIMESTAMPTZ,VARCHAR,VARCHAR)
+returns INT4 as '
+declare
+	p_GROUP_ID		alias for $1;
+	p_GROUP_NAME		alias for $2;
+	p_EMAIL			alias for $3;
+	p_URL			alias for $4;
+	p_LAST_MODIFIED		alias for $5;
+	p_MODIFYING_IP		alias for $6;
+
+	p_OBJECT_TYPE		alias for $7;
+	p_CONTEXT_ID		alias for $8;
+	p_CREATION_USER		alias for $9;
+	p_CREATION_DATE		alias for $10;
+	p_CREATION_IP		alias for $11;
+	p_JOIN_POLICY		alias for $12;
+
+	v_GROUP_ID 		IM_TICKET_QUEUE_EXT.GROUP_ID%TYPE;
+begin
+	v_GROUP_ID := acs_group__new (
+		p_group_id,p_OBJECT_TYPE,
+		p_CREATION_DATE,p_CREATION_USER,
+		p_CREATION_IP,p_EMAIL,
+		p_URL,p_GROUP_NAME,
+		p_JOIN_POLICY,p_CONTEXT_ID
+	);
+	insert into IM_TICKET_QUEUE_EXT (GROUP_ID) values (v_GROUP_ID);
+	return v_GROUP_ID;
+end;' language 'plpgsql';
+
+create function im_ticket_queue__delete (INT4)
+returns integer as '
+declare
+	p_GROUP_ID	alias for $1;
+begin
+	perform acs_group__delete( p_GROUP_ID );
+	return 1;
+end;' language 'plpgsql';
+
+
+-- Create a first group
+select im_ticket_queue__new(
+	null, 'Linux Admins', NULL, NULL, now(), NULL, 
+	'im_ticket_queue', null, 0, now(), '0.0.0.0', 
+	NULL
+);
 
 
 -----------------------------------------------------------
@@ -215,18 +314,18 @@ end;' language 'plpgsql';
 -- Please contact support@project-open.com if you need to
 -- reserve a range of constants for a new module.
 --
--- 30000-39999  Intranet Helpdesk (10000)
+-- 30000-39999	Intranet Helpdesk (10000)
 --
--- 30000-30099  Intranet Ticket Status (100)
--- 30100-30199  Intranet Ticket Type (100)
--- 30200-30299  Intranet Ticket User Priority (100)
--- 30300-30399  Intranet Ticket Technical Priority (100)
+-- 30000-30099	Intranet Ticket Status (100)
+-- 30100-30199	Intranet Ticket Type (100)
+-- 30200-30299	Intranet Ticket User Priority (100)
+-- 30300-30399	Intranet Ticket Technical Priority (100)
 -- 30400-30499	Intranet Service Catalog
 -- 31000-31999	Intranet Ticket Class (1000)
 -- 32000-32999	reserved (1000)
 -- 33000-33999	reserved (1000)
 -- 34000-34999	reserved (1000)
--- 35000-39999  reserved (5000)
+-- 35000-39999	reserved (5000)
 
 
 -- 30100-30199	Intranet Ticket Type
@@ -241,6 +340,9 @@ SELECT im_category_new(30114, 'Permission request', 'Intranet Ticket Type');
 SELECT im_category_new(30116, 'Feature request', 'Intranet Ticket Type');
 SELECT im_category_new(30118, 'Training request', 'Intranet Ticket Type');
 
+update im_categories
+set aux_string1 = 'ticket_workflow_generic_wf'
+where category_type = 'Intranet Ticket Type';
 
 
 -- 30000-30099	Intranet Ticket Status
@@ -381,7 +483,7 @@ SELECT im_component_plugin__new (
 -- ------------------------------------------------------
 -- Workflow graph on Absence View Page
 
-SELECT  im_component_plugin__new (
+SELECT	im_component_plugin__new (
 	null,					-- plugin_id
 	'acs_object',				-- object_type
 	now(),					-- creation_date
@@ -389,20 +491,20 @@ SELECT  im_component_plugin__new (
 	null,					-- creation_ip
 	null,					-- context_id
 
-	'Absence Workflow',			-- component_name
-	'intranet-timesheet2',			-- package_name
+	'Ticket Workflow',			-- component_name
+	'intranet-helpdesk',			-- package_name
 	'right',				-- location
-	'/intranet-timesheet2/absences/new',	-- page_url
+	'/intranet-helpdesk/new',		-- page_url
 	null,					-- view_name
 	10,					-- sort_order
-	'im_workflow_graph_component -object_id $absence_id'
+	'im_workflow_graph_component -object_id $ticket_id'
 );
 
 
 -- ------------------------------------------------------
 -- Journal on Absence View Page
 
-SELECT  im_component_plugin__new (
+SELECT	im_component_plugin__new (
 	null,					-- plugin_id
 	'acs_object',				-- object_type
 	now(),					-- creation_date
@@ -410,13 +512,13 @@ SELECT  im_component_plugin__new (
 	null,					-- creation_ip
 	null,					-- context_id
 
-	'Absence Journal',			-- component_name
-	'intranet-timesheet2',			-- package_name
+	'Ticket Journal',			-- component_name
+	'intranet-helpdesk',			-- package_name
 	'bottom',				-- location
-	'/intranet-timesheet2/absences/new',	-- page_url
+	'/intranet-helpdesk/new',		-- page_url
 	null,					-- view_name
 	100,					-- sort_order
-	'im_workflow_journal_component -object_id $absence_id'
+	'im_workflow_journal_component -object_id $ticket_id'
 );
 
 
@@ -471,7 +573,7 @@ BEGIN
 		''intranet-helpdesk'',	-- package_name
 		''helpdesk'',		-- label
 		''Helpdesk'',		-- name
-		''/intranet-helpdesk/'',   -- url
+		''/intranet-helpdesk/'',	-- url
 		75,			-- sort_order
 		v_main_menu,		-- parent_menu_id
 		null			-- p_visible_tcl
@@ -539,52 +641,52 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 -- (27035,270,80,'Delivery Date','$end_date_formatted');
 
 
--- ticket_alarm_date          | timestamp with time zone |
--- ticket_alarm_action        | text                     |
--- ticket_note                | text                     |
--- description                  | character varying(4000)  |
--- billing_type_id              | integer                  |
--- note                         | character varying(4000)  |
--- project_lead_id              | integer                  |
--- supervisor_id                | integer                  |
--- requires_report_p            | character(1)             | default 't'::bpchar
--- project_budget               | double precision         |
--- project_risk                 | character varying(1000)  |
--- corporate_sponsor            | integer                  |
--- team_size                    | integer                  |
--- percent_completed            | double precision         |
--- on_track_status_id           | integer                  |
--- project_budget_currency      | character(3)             |
--- project_budget_hours         | double precision         |
--- cost_quotes_cache            | numeric(12,2)            |
--- cost_invoices_cache          | numeric(12,2)            |
--- cost_timesheet_planned_cache | numeric(12,2)            |
--- cost_purchase_orders_cache   | numeric(12,2)            |
--- cost_bills_cache             | numeric(12,2)            |
--- cost_timesheet_logged_cache  | numeric(12,2)            |
--- end_date                     | timestamp with time zone |
--- start_date                   | timestamp with time zone |
--- template_p                   | character(1)             | default 't'::bpchar
--- company_contact_id           | integer                  |
--- sort_order                   | integer                  |
--- company_project_nr           | character varying(50)    |
--- source_language_id           | integer                  |
--- subject_area_id              | integer                  |
--- expected_quality_id          | integer                  |
--- final_company                | character varying(50)    |
--- trans_project_words          | numeric(12,0)            |
--- trans_project_hours          | numeric(12,0)            |
--- trans_size                   | character varying(200)   |
--- reported_hours_cache         | double precision         |
--- cost_expense_planned_cache   | numeric(12,2)            | default 0
--- cost_expense_logged_cache    | numeric(12,2)            | default 0
--- confirm_date                 | date                     |
--- cost_delivery_notes_cache    | numeric(12,2)            | default 0
--- bt_project_id                | integer                  |
--- bt_found_in_version_id       | integer                  |
--- bt_fix_for_version_id        | integer                  |
--- cost_cache_dirty             | timestamp with time zone |
--- release_item_p               | character varying(1)     |
+-- ticket_alarm_date		| timestamp with time zone |
+-- ticket_alarm_action	| text			|
+-- ticket_note		| text			|
+-- description			| character varying(4000)	|
+-- billing_type_id			| integer			|
+-- note			| character varying(4000)	|
+-- project_lead_id			| integer			|
+-- supervisor_id		| integer			|
+-- requires_report_p		| character(1)		| default 't'::bpchar
+-- project_budget			| double precision	|
+-- project_risk		| character varying(1000)	|
+-- corporate_sponsor		| integer			|
+-- team_size			| integer			|
+-- percent_completed		| double precision	|
+-- on_track_status_id		| integer			|
+-- project_budget_currency		| character(3)		|
+-- project_budget_hours	| double precision	|
+-- cost_quotes_cache		| numeric(12,2)		|
+-- cost_invoices_cache		| numeric(12,2)		|
+-- cost_timesheet_planned_cache | numeric(12,2)		|
+-- cost_purchase_orders_cache	| numeric(12,2)		|
+-- cost_bills_cache		| numeric(12,2)		|
+-- cost_timesheet_logged_cache	| numeric(12,2)		|
+-- end_date			| timestamp with time zone |
+-- start_date			| timestamp with time zone |
+-- template_p			| character(1)		| default 't'::bpchar
+-- company_contact_id		| integer			|
+-- sort_order			| integer			|
+-- company_project_nr		| character varying(50)	|
+-- source_language_id		| integer			|
+-- subject_area_id			| integer			|
+-- expected_quality_id		| integer			|
+-- final_company		| character varying(50)	|
+-- trans_project_words		| numeric(12,0)		|
+-- trans_project_hours		| numeric(12,0)		|
+-- trans_size			| character varying(200)	|
+-- reported_hours_cache	| double precision	|
+-- cost_expense_planned_cache	| numeric(12,2)		| default 0
+-- cost_expense_logged_cache	| numeric(12,2)		| default 0
+-- confirm_date		| date			|
+-- cost_delivery_notes_cache	| numeric(12,2)		| default 0
+-- bt_project_id		| integer			|
+-- bt_found_in_version_id		| integer			|
+-- bt_fix_for_version_id	| integer			|
+-- cost_cache_dirty		| timestamp with time zone |
+-- release_item_p			| character varying(1)	|
 
 
 
@@ -639,21 +741,21 @@ SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_assignee_id', 'Assignee',
 
 
 -- ticket_note
---        p_object_type           alias for $1;
---        p_column_name           alias for $2;
---        p_pretty_name           alias for $3;
---        p_widget_name           alias for $4;
---        p_datatype              alias for $5;
---        p_required_p            alias for $6;
+--	p_object_type		alias for $1;
+--	p_column_name		alias for $2;
+--	p_pretty_name		alias for $3;
+--	p_widget_name		alias for $4;
+--	p_datatype			alias for $5;
+--	p_required_p		alias for $6;
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_note', 'Note', 'textarea_small', 'string', 'f');
 
 
---	ticket_sla_id                   integer
---	ticket_primary_class_id         integer
---	ticket_service_id               integer
---	ticket_hardware_id              integer
---	ticket_application_id           integer
---	ticket_queue_id                 integer
---	ticket_alarm_date               timestamptz,
---	ticket_alarm_action             text,
---	ticket_note                     text
+--	ticket_sla_id			integer
+--	ticket_primary_class_id	integer
+--	ticket_service_id			integer
+--	ticket_hardware_id			integer
+--	ticket_application_id		integer
+--	ticket_queue_id		integer
+--	ticket_alarm_date			timestamptz,
+--	ticket_alarm_action		text,
+--	ticket_note			text
