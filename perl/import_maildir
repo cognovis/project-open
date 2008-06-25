@@ -244,10 +244,24 @@ while (my $mail_filename=<MAILS>) {
 			now(),
 			0,
 			'0.0.0.0'
+		) as case_id
+	    ";
+	    $sth = $dbh->prepare($sql) || die "import_maildir: Unable to prepare SQL statement: \n$sql\n";
+	    $sth->execute() || die "import_maildir: Unable to execute SQL statement: \n$sql\n";
+	    my $row = $sth->fetchrow_hashref;
+	    my $case_id = $row->{case_id};
+
+	    my $sql = "
+		select workflow_case__start_case (
+			'$case_id',
+			'$ticket_customer_contact_id',
+			'0.0.0.0',
+			null
 		)
 	    ";
 	    $sth = $dbh->prepare($sql) || die "import_maildir: Unable to prepare SQL statement: \n$sql\n";
 	    $sth->execute() || die "import_maildir: Unable to execute SQL statement: \n$sql\n";
+
 	}
 
 }
