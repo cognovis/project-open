@@ -77,7 +77,7 @@ create table im_tickets (
 
 	ticket_queue_id			integer
 					constraint im_ticket_queue_fk
-					references im_categories,
+					references groups,
 
 	ticket_alarm_date		timestamptz,
 	ticket_alarm_action		text,

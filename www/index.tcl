@@ -11,7 +11,7 @@ ad_page_contract {
     @author frank.bergmann@ticket-open.com
 } {
     { order_by "Createion Date" }
-    { mine_p "f" }
+    { mine_p "queue" }
     { ticket_status_id:integer "[im_ticket_status_open]" } 
     { ticket_type_id:integer 0 } 
     { ticket_queue_id:integer 0 } 
@@ -36,7 +36,7 @@ set letter [string toupper $letter]
 
 # Unprivileged users can only see their own tickets
 if {![im_permission $current_user_id "view_tickets_all"]} {
-    set mine_p "t"
+    set mine_p "queue"
 }
 
 if { [empty_string_p $how_many] || $how_many < 1 } {
@@ -112,6 +112,8 @@ set ticket_member_options [util_memoize "db_list_of_lists ticket_members {
 }" 300]
 set ticket_member_options [linsert $ticket_member_options 0 [list [_ intranet-core.All] ""]]
 
+set ticket_queue_options [im_helpdesk_ticket_queue_options]
+
 ad_form \
     -name $form_id \
     -action $action_url \
@@ -126,10 +128,13 @@ if {[im_permission $current_user_id "view_tickets_all"]} {
     ad_form -extend -name $form_id -form {
 	{ticket_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status" translate_p 1}} }
 	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1} } }
+	{ticket_queue_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.Queue Queue]"} {options $ticket_queue_options}}
     }
-		
+
+    template::element::set_value $form_id mine_p $mine_p
     template::element::set_value $form_id ticket_status_id $ticket_status_id
     template::element::set_value $form_id ticket_type_id $ticket_type_id
+    template::element::set_value $form_id ticket_queue_id $ticket_queue_id
 }
 
 im_dynfield::append_attributes_to_form \
@@ -159,6 +164,9 @@ if { ![empty_string_p $ticket_status_id] && $ticket_status_id > 0 } {
 }
 if { ![empty_string_p $ticket_type_id] && $ticket_type_id != 0 } {
     lappend criteria "t.ticket_type_id in ([join [im_sub_categories $ticket_type_id] ","])"
+}
+if { ![empty_string_p $ticket_queue_id] && $ticket_queue_id != 0 } {
+    lappend criteria "t.ticket_queue_id = :ticket_queue_id"
 }
 if {0 != $assignee_id && "" != $assignee_id} {
     lappend criteria "t.ticket_assignee_id = :assignee_id"
@@ -251,9 +259,9 @@ set sql "
 	                im_category_from_id(t.ticket_type_id) as ticket_type,
 	                im_category_from_id(t.ticket_status_id) as ticket_status,
 	                im_category_from_id(t.ticket_prio_id) as ticket_prio,
-	                im_category_from_id(t.ticket_queue_id) as ticket_queue_name,
 			im_name_from_user_id(t.ticket_customer_contact_id) as ticket_customer_contact,
 			im_name_from_user_id(t.ticket_assignee_id) as ticket_assignee,
+			(select group_name from groups where group_id = ticket_queue_id) as ticket_queue_name,
 	                p.*,
 	                to_char(p.start_date, 'YYYY-MM-DD') as start_date_formatted,
 	                to_char(p.end_date, 'YYYY-MM-DD') as end_date_formatted,

@@ -177,9 +177,39 @@ namespace eval im_ticket {
         db_dml update_ticket $sql
 	return $ticket_id
     }
-
-
 }
 
 
+ad_proc -public im_helpdesk_ticket_queue_options {
+    {-mine_p 0}
+    {-include_empty_p 1}
+} {
+    Returns a list of Ticket Queue tuples suitable for ad_form
+} {
+    set user_id [ad_get_user_id]
 
+    set sql "
+	select
+		g.group_name,
+		g.group_id
+	from
+		groups g,
+		im_ticket_queue_ext q
+	where
+		g.group_id = q.group_id
+	order by
+		g.group_name
+    "
+
+    set options [list]
+    db_foreach groups $sql {
+	regsub -all " " $group_name "_" group_key
+	set name [lang::message::lookup "" intranet-helpdesk.group_key $group_name]
+	lappend options [list $name $group_id]
+    }
+
+    set options [db_list_of_lists company_options $sql]
+    if {$include_empty_p} { set options [linsert $options 0 { "" "" }] }
+
+    return $options
+}
