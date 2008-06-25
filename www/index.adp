@@ -3,10 +3,6 @@
 <master src="master">
 
 
-<table width="70%">
-<tr>
-<td>
-
 <h2>DynField Administration Pages</h2>
 <ul>
   <li><a href="object-types"><b>Object Types</b></a>:<br>
@@ -47,6 +43,10 @@
 	Imports a DynField configuration from an XML file
 </ul>
 -->
+
+<table width="100%">
+<tr>
+<td>
 
 </td>
 </tr>
