@@ -36,6 +36,38 @@ ad_proc -private im_workflow_url {} {
 }
 
 
+
+# ----------------------------------------------------------------------
+# Start a WF for an object
+# ---------------------------------------------------------------------
+
+ad_proc -public im_workflow_start_wf {
+    -object_id
+    -object_type_id
+    {-skip_first_transition_p 0}
+} {
+    Start a new WF for an object.
+} {
+    set wf_key [db_string wf "select aux_string1 from im_categories where category_id = :object_type_id" -default ""]
+    set wf_exists_p [db_string wf_exists "select count(*) from wf_workflows where workflow_key = :wf_key"]
+    set case_id 0
+
+    if {$wf_exists_p} {
+	set context_key ""
+	set case_id [wf_case_new \
+			 $wf_key \
+			 $context_key \
+			 $object_id
+		    ]
+	
+	# Determine the first task in the case to be executed and start+finisch the task.
+	if {1 == $skip_first_transition_p} {
+	    im_workflow_skip_first_transition -case_id $case_id
+	}
+    }
+    return $case_id
+}
+
 # ----------------------------------------------------------------------
 # Selects & Options
 # ---------------------------------------------------------------------
