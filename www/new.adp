@@ -16,7 +16,7 @@
   <tr valign="top">
     <td width="50%">
       <%= [im_box_header $page_title] %>
-      <formtemplate id="ticket"></formtemplate></font>
+      <formtemplate id="ticket"></formtemplate>
       <%= [im_box_footer] %>
 	<if @show_components_p@>
 	      <%= [im_component_bay left] %>
@@ -24,8 +24,17 @@
     </td>
     <td width="50%">
 	<if @show_components_p@>
-	      <%= [im_component_bay right] %>
+		<%= [im_component_bay right] %>
 	</if>
+	<else>
+	      <%= [im_box_header "Basic Information About You"] %>
+	      <formtemplate id="userinfo"></formtemplate>
+	      <%= [im_box_footer] %>
+
+	      <%= [im_box_header "Your Complete Contact Information"] %>
+	      <%= $contact_html %>
+	      <%= [im_box_footer] %>
+	</else>
     </td>
   </tr>
 </table>

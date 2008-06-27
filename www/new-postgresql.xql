@@ -23,22 +23,12 @@
 </fullquery>
 
 
-<fullquery name="ticket_delete">
-    <querytext>
-    BEGIN
-	PERFORM im_ticket__delete (:ticket_id);
-	return 0;
-    END;
-    </querytext>
-</fullquery>
-
-
 <fullquery name="ticket_update">
     <querytext>
 	update im_tickets set
-		ticket_type_id		= :ticket_type_id,
-		ticket_status_id	= :ticket_status_id,
-		ticket_customer_contact_id = :ticket_customer_contact_id
+		ticket_type_id			= :ticket_type_id,
+		ticket_status_id		= :ticket_status_id,
+		ticket_customer_contact_id	= :ticket_customer_contact_id
 	where
 		ticket_id = :ticket_id;
     </querytext>
@@ -52,6 +42,16 @@
 		project_nr		= :ticket_nr
 	where
 		project_id = :ticket_id;
+    </querytext>
+</fullquery>
+
+
+<fullquery name="ticket_delete">
+    <querytext>
+    BEGIN
+	PERFORM im_ticket__delete (:ticket_id);
+	return 0;
+    END;
     </querytext>
 </fullquery>
 

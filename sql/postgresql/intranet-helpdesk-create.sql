@@ -89,14 +89,17 @@ create table im_tickets (
 -- Permissions & Privileges
 -----------------------------------------------------------
 
-select acs_privilege__create_privilege('view_tickets_all','View all Conf Items','');
+select acs_privilege__create_privilege('view_tickets_all','View all Tickets','');
 select acs_privilege__add_child('admin', 'view_tickets_all');
 
-select acs_privilege__create_privilege('add_tickets','Add new Conf Items','');
+select acs_privilege__create_privilege('add_tickets','Add new Tickets','');
 select acs_privilege__add_child('admin', 'add_tickets');
 
-select acs_privilege__create_privilege('edit_ticket_status','Add new Conf Items','');
+select acs_privilege__create_privilege('edit_ticket_status','Add new Tickets','');
 select acs_privilege__add_child('admin', 'edit_ticket_status');
+
+select acs_privilege__create_privilege('add_tickets_for_customers','Add new Tickets for customers','');
+select acs_privilege__add_child('admin', 'add_tickets_for_customers');
 
 
 
@@ -112,6 +115,11 @@ select im_priv_create('add_tickets', 'Employees');
 
 select im_priv_create('edit_ticket_status', 'P/O Admins');
 select im_priv_create('edit_ticket_status', 'Senior Managers');
+
+select im_priv_create('add_tickets_for_customers', 'P/O Admins');
+select im_priv_create('add_tickets_for_customers', 'Senior Managers');
+select im_priv_create('add_tickets_for_customers', 'Project Managers');
+select im_priv_create('add_tickets_for_customers', 'Employees');
 
 
 
@@ -143,7 +151,7 @@ create or replace function im_ticket__new (
 ) returns integer as '
 DECLARE
 	p_ticket_id		alias for $1;		-- ticket_id default null
-	p_object_type		alias for $2;		-- object_type default 'im_ticket'
+	p_object_type		alias for $2;		-- object_type default im_ticket
 	p_creation_date 	alias for $3;		-- creation_date default now()
 	p_creation_user 	alias for $4;		-- creation_user default null
 	p_creation_ip		alias for $5;		-- creation_ip default null
@@ -330,15 +338,16 @@ select im_ticket_queue__new(
 
 -- 30100-30199	Intranet Ticket Type
 --
-SELECT im_category_new(30102, 'Purchasing request', 'Intranet Ticket Type');
-SELECT im_category_new(30104, 'Workplace move request', 'Intranet Ticket Type');
-SELECT im_category_new(30106, 'Telephony request', 'Intranet Ticket Type');
-SELECT im_category_new(30108, 'Project request', 'Intranet Ticket Type');
-SELECT im_category_new(30110, 'Bug request', 'Intranet Ticket Type');
-SELECT im_category_new(30112, 'Report request', 'Intranet Ticket Type');
-SELECT im_category_new(30114, 'Permission request', 'Intranet Ticket Type');
-SELECT im_category_new(30116, 'Feature request', 'Intranet Ticket Type');
-SELECT im_category_new(30118, 'Training request', 'Intranet Ticket Type');
+SELECT im_category_new(30102, 'Purchasing Request', 'Intranet Ticket Type');
+SELECT im_category_new(30104, 'Workplace move Request', 'Intranet Ticket Type');
+SELECT im_category_new(30106, 'Telephony Request', 'Intranet Ticket Type');
+SELECT im_category_new(30108, 'Project Request', 'Intranet Ticket Type');
+SELECT im_category_new(30110, 'Bug Request', 'Intranet Ticket Type');
+SELECT im_category_new(30112, 'Report Request', 'Intranet Ticket Type');
+SELECT im_category_new(30114, 'Permission Request', 'Intranet Ticket Type');
+SELECT im_category_new(30116, 'Feature Request', 'Intranet Ticket Type');
+SELECT im_category_new(30118, 'Training Request', 'Intranet Ticket Type');
+
 
 update im_categories
 set aux_string1 = 'ticket_workflow_generic_wf'
@@ -413,15 +422,11 @@ SELECT im_category_new(31200, 'Lack of user competency, ability or knowledge', '
 
 	SELECT im_category_new(31201, 'New user creation', 'Intranet Ticket Class');
 	SELECT im_category_new(31202, 'Extension/reduction of user permissions', 'Intranet Ticket Class');
-	SELECT im_category_new(31203, 'Training request', 'Intranet Ticket Class');
+	SELECT im_category_new(31203, 'Training Request', 'Intranet Ticket Class');
 	SELECT im_category_new(31204, 'Incorrect or incomplete documentation', 'Intranet Ticket Class');
 	SELECT im_category_new(31205, 'Issue to export data', 'Intranet Ticket Class');
 
 SELECT im_category_new(31300, 'Requests for new/additional services', 'Intranet Ticket Class');
-
-	SELECT im_category_new(31301, 'New feature request', 'Intranet Ticket Class');
-	SELECT im_category_hierarchy_new(31301, 31300);
-
 
 
 
@@ -641,76 +646,10 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 -- (27035,270,80,'Delivery Date','$end_date_formatted');
 
 
--- ticket_alarm_date		| timestamp with time zone |
--- ticket_alarm_action	| text			|
--- ticket_note		| text			|
--- description			| character varying(4000)	|
--- billing_type_id			| integer			|
--- note			| character varying(4000)	|
--- project_lead_id			| integer			|
--- supervisor_id		| integer			|
--- requires_report_p		| character(1)		| default 't'::bpchar
--- project_budget			| double precision	|
--- project_risk		| character varying(1000)	|
--- corporate_sponsor		| integer			|
--- team_size			| integer			|
--- percent_completed		| double precision	|
--- on_track_status_id		| integer			|
--- project_budget_currency		| character(3)		|
--- project_budget_hours	| double precision	|
--- cost_quotes_cache		| numeric(12,2)		|
--- cost_invoices_cache		| numeric(12,2)		|
--- cost_timesheet_planned_cache | numeric(12,2)		|
--- cost_purchase_orders_cache	| numeric(12,2)		|
--- cost_bills_cache		| numeric(12,2)		|
--- cost_timesheet_logged_cache	| numeric(12,2)		|
--- end_date			| timestamp with time zone |
--- start_date			| timestamp with time zone |
--- template_p			| character(1)		| default 't'::bpchar
--- company_contact_id		| integer			|
--- sort_order			| integer			|
--- company_project_nr		| character varying(50)	|
--- source_language_id		| integer			|
--- subject_area_id			| integer			|
--- expected_quality_id		| integer			|
--- final_company		| character varying(50)	|
--- trans_project_words		| numeric(12,0)		|
--- trans_project_hours		| numeric(12,0)		|
--- trans_size			| character varying(200)	|
--- reported_hours_cache	| double precision	|
--- cost_expense_planned_cache	| numeric(12,2)		| default 0
--- cost_expense_logged_cache	| numeric(12,2)		| default 0
--- confirm_date		| date			|
--- cost_delivery_notes_cache	| numeric(12,2)		| default 0
--- bt_project_id		| integer			|
--- bt_found_in_version_id		| integer			|
--- bt_fix_for_version_id	| integer			|
--- cost_cache_dirty		| timestamp with time zone |
--- release_item_p			| character varying(1)	|
-
-
-
 
 -----------------------------------------------------------
--- DynFields
+-- DynField Widgets
 --
-
-
--- SELECT im_dynfield_widget__new (
--- 	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
--- 	'ticket_type', 'Ticket Type', 'Ticket Type',
--- 	10007, 'integer', 'im_category_tree', 'integer',
--- 	'{custom {category_type "Intranet Ticket Type"}}'
--- );
--- SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_status_id', 'Status', 'ticket_type', 'integer', 'f');
- 
--- SELECT im_dynfield_widget__new (
--- 	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
--- 	'ticket_status', 'Ticket Status', 'Ticket Status',
--- 	10007, 'integer', 'im_category_tree', 'integer',
--- 	'{custom {category_type "Intranet Ticket Status"}}'
--- );
--- SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_type_id', 'Type', 'ticket_type', 'integer', 'f');
 
 
 SELECT im_dynfield_widget__new (
@@ -719,7 +658,6 @@ SELECT im_dynfield_widget__new (
 	10007, 'integer', 'im_category_tree', 'integer',
 	'{custom {category_type "Intranet Ticket Priority"}}'
 );
-SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_prio_id', 'Priority', 'ticket_priority', 'integer', 'f');
 
 
 SELECT im_dynfield_widget__new (
@@ -728,7 +666,6 @@ SELECT im_dynfield_widget__new (
 	10007, 'integer', 'generic_sql', 'integer',
 	'{custom {sql {select u.user_id, im_name_from_user_id(u.user_id) from registered_users u, group_distinct_member_map gm where u.user_id = gm.member_id and gm.group_id = 461 order by lower(im_name_from_user_id(u.user_id)) }}}'
 );
-SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_customer_contact_id', 'Customer Contact', 'customer_contact', 'integer', 'f');
 
 
 SELECT im_dynfield_widget__new (
@@ -737,25 +674,207 @@ SELECT im_dynfield_widget__new (
 	10007, 'integer', 'generic_sql', 'integer',
 	'{custom {sql {select u.user_id, im_name_from_user_id(u.user_id) from registered_users u, group_distinct_member_map gm where u.user_id = gm.member_id and gm.group_id = 463 order by lower(im_name_from_user_id(u.user_id)) }}}'
 );
+
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'ticket_po_components', 'Ticket &#93;po&#91; Components', 'Ticket &#93;po&#91; Components',
+	10007, 'integer', 'generic_sql', 'integer',
+	'{custom {sql {
+select
+        (select package_id from apm_packages where package_key = v.package_key) as package_id,
+        substring(v.package_key ||'' - ''||coalesce(v.summary, v.package_key) for 40)
+from
+        apm_package_versions v,
+        (select package_key, max(version_name) as version_name from apm_package_versions group by package_key) g
+where
+        v.package_key = g.package_key and
+        v.version_name = g.version_name
+order by
+        v.package_key
+}}}');
+
+
+
+
+-----------------------------------------------------------
+-- DynField Fields
+--
+
+
+-----------------------------------------------------------
+-- Priority
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_prio_id', 'Priority', 'ticket_priority', 'integer', 'f');
+
+delete from im_dynfield_type_attribute_map
+where attribute_id in (
+	select distinct
+		ida.attribute_id
+	from
+		im_dynfield_attributes ida,
+		acs_attributes aa,
+		acs_object_types aot
+	where
+		ida.acs_attribute_id = aa.attribute_id and
+		aa.object_type = aot.object_type and
+		aot.object_type = 'im_ticket' and
+		aa.attribute_name = 'ticket_prio_id'
+);
+
+insert into im_dynfield_type_attribute_map (attribute_id, object_type_id, display_mode)
+select
+	ida.attribute_id,
+	c.category_id,
+	'edit'
+from
+	im_dynfield_attributes ida,
+	acs_attributes aa,
+	acs_object_types aot,
+	im_categories c
+where
+	ida.acs_attribute_id = aa.attribute_id and
+	aa.object_type = aot.object_type and
+	aot.type_category_type = c.category_type and
+	aot.object_type = 'im_ticket' and
+	aa.attribute_name = 'ticket_prio_id'
+;
+
+-----------------------------------------------------------
+-- Assignee
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_assignee_id', 'Assignee', 'ticket_assignees', 'integer', 'f');
 
+delete from im_dynfield_type_attribute_map
+where attribute_id in (
+	select distinct
+		ida.attribute_id
+	from
+		im_dynfield_attributes ida,
+		acs_attributes aa,
+		acs_object_types aot
+	where
+		ida.acs_attribute_id = aa.attribute_id and
+		aa.object_type = aot.object_type and
+		aot.object_type = 'im_ticket' and
+		aa.attribute_name = 'ticket_assignee_id'
+);
 
--- ticket_note
---	p_object_type		alias for $1;
---	p_column_name		alias for $2;
---	p_pretty_name		alias for $3;
---	p_widget_name		alias for $4;
---	p_datatype			alias for $5;
---	p_required_p		alias for $6;
+insert into im_dynfield_type_attribute_map (attribute_id, object_type_id, display_mode)
+select
+	ida.attribute_id,
+	c.category_id,
+	'edit'
+from
+	im_dynfield_attributes ida,
+	acs_attributes aa,
+	acs_object_types aot,
+	im_categories c
+where
+	ida.acs_attribute_id = aa.attribute_id and
+	aa.object_type = aot.object_type and
+	aot.type_category_type = c.category_type and
+	aot.object_type = 'im_ticket' and
+	aa.attribute_name = 'ticket_assignee_id'
+;
+
+
+-----------------------------------------------------------
+-- Note
+
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_note', 'Note', 'textarea_small', 'string', 'f');
 
+delete from im_dynfield_type_attribute_map
+where attribute_id in (
+	select distinct
+		ida.attribute_id
+	from
+		im_dynfield_attributes ida,
+		acs_attributes aa,
+		acs_object_types aot
+	where
+		ida.acs_attribute_id = aa.attribute_id and
+		aa.object_type = aot.object_type and
+		aot.object_type = 'im_ticket' and
+		aa.attribute_name = 'ticket_note'
+);
 
---	ticket_sla_id			integer
---	ticket_primary_class_id	integer
---	ticket_service_id			integer
---	ticket_hardware_id			integer
---	ticket_application_id		integer
---	ticket_queue_id		integer
---	ticket_alarm_date			timestamptz,
---	ticket_alarm_action		text,
---	ticket_note			text
+insert into im_dynfield_type_attribute_map (attribute_id, object_type_id, display_mode)
+select
+	ida.attribute_id,
+	c.category_id,
+	'edit'
+from
+	im_dynfield_attributes ida,
+	acs_attributes aa,
+	acs_object_types aot,
+	im_categories c
+where
+	ida.acs_attribute_id = aa.attribute_id and
+	aa.object_type = aot.object_type and
+	aot.type_category_type = c.category_type and
+	aot.object_type = 'im_ticket' and
+	aa.attribute_name = 'ticket_note'
+;
+
+
+-----------------------------------------------------------
+-- ]po[ Component
+
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_component_id', 'Component', 'ticket_po_components', 'integer', 'f');
+
+delete from im_dynfield_type_attribute_map
+where attribute_id in (
+	select distinct
+		ida.attribute_id
+	from
+		im_dynfield_attributes ida,
+		acs_attributes aa,
+		acs_object_types aot
+	where
+		ida.acs_attribute_id = aa.attribute_id and
+		aa.object_type = aot.object_type and
+		aot.object_type = 'im_ticket' and
+		aa.attribute_name = 'ticket_component_id'
+);
+
+insert into im_dynfield_type_attribute_map (attribute_id, object_type_id, display_mode)
+select
+	ida.attribute_id,
+	c.category_id,
+	'edit'
+from
+	im_dynfield_attributes ida,
+	acs_attributes aa,
+	acs_object_types aot,
+	im_categories c
+where
+	ida.acs_attribute_id = aa.attribute_id and
+	aa.object_type = aot.object_type and
+	aot.type_category_type = c.category_type and
+	aot.object_type = 'im_ticket' and
+	aa.attribute_name = 'ticket_component_id'
+;
+
+
+
+
+
+
+
+-----------------------------------------------------------
+-- Description
+
+alter table im_tickets add ticket_description text;
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_description', 'Description', 'textarea_small', 'string', 'f');
+
+-----------------------------------------------------------
+-- Desired Date
+
+alter table im_tickets add ticket_customer_deadline timestamptz;
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_customer_deadline', 'Desired Customer End Date', 'date', 'date', 'f');
+
+-----------------------------------------------------------
+-- 
+
+-- alter table im_tickets add 
+-- SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_customer_telnote', 'Note', 'textarea_small', 'string', 'f');
+

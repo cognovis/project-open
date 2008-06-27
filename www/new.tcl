@@ -28,12 +28,26 @@ set current_user_id [ad_maybe_redirect_for_registration]
 set current_url [im_url_with_query]
 set action_url "/intranet-helpdesk/new"
 set focus "ticket.var_name"
-set page_title [lang::message::lookup "" intranet-helpdesk.New_Ticket "New Ticket"]
+set td_class(0) "class=roweven"
+set td_class(1) "class=rowodd"
+
+if {[info exists ticket_id]} { 
+    set ticket_type_id [db_string ttype_id "select ticket_type_id from im_tickets where ticket_id = :ticket_id" -default 0]
+}
+if {0 != $ticket_type_id} { 
+    set ticket_type [im_category_from_id $ticket_type_id]
+    set page_title [lang::message::lookup "" intranet-helpdesk.New_TicketType "New %ticket_type%"]
+} else {
+    set page_title [lang::message::lookup "" intranet-helpdesk.New_Ticket "New Ticket"]
+}
 set context [list $page_title]
 
+
+# ------------------------------------------------------------------
+# 
+# ------------------------------------------------------------------
+
 if {"edit" == [template::form::get_action ticket]} { set form_mode "edit" }
-
-
 if {![info exists ticket_id]} { set form_mode "edit" }
 if {![info exists form_mode]} { set form_mode "display" }
 
@@ -51,12 +65,6 @@ set user_can_create_new_customer_contact_p 1
 # ------------------------------------------------------------------
 # Redirect to get the type
 # ------------------------------------------------------------------
-
-# Get the ticket type when showing an already existing object
-# We'll need this information in order to show the right DynField fields below.
-if {[info exists ticket_id]} { 
-    set ticket_type_id [db_string ttype_id "select ticket_type_id from im_tickets where ticket_id = :ticket_id" -default 0]
-}
 
 # Redirect if the type of the object hasn't been defined and
 # if there are DynFields specific for subtypes.
@@ -88,9 +96,7 @@ if {"delete" == $button_pressed} {
 # Action - Who is allowed to do what?
 # ------------------------------------------------------------------
 
-set actions [list]
 set actions [list {"Edit" edit}]
-
 if {[im_permission $current_user_id add_tickets]} {
     lappend actions {"Delete" delete}
 }
@@ -100,41 +106,65 @@ if {[im_permission $current_user_id add_tickets]} {
 # Build the form
 # ------------------------------------------------------------------
 
-set elements [list]
-lappend elements ticket_id:key
-lappend elements {ticket_name:text(text) {label "[lang::message::lookup {} intranet-helpdesk.Name {Title}]"} {html {size 50}}}
-lappend elements {ticket_nr:text(hidden),optional }
-lappend elements {start_date:date(hidden),optional }
-lappend elements {end_date:date(hidden),optional }
+set title_label [lang::message::lookup {} intranet-helpdesk.Name {Title}]
+set title_help [lang::message::lookup {} intranet-helpdesk.Title_Help {Please enter a descriptive name for the new ticket.}]
+
+set ticket_elements [list]
+lappend ticket_elements ticket_id:key
+lappend ticket_elements {ticket_name:text(text) {label $title_label} {html {size 50}} {help_text $title_help} }
+lappend ticket_elements {ticket_nr:text(hidden),optional }
+lappend ticket_elements {start_date:date(hidden),optional }
+lappend ticket_elements {end_date:date(hidden),optional }
 
 # ---------------------------------------------
-# Customer
+# Customer & Contact
 set customer_options [im_company_options -type "Customer" -include_empty 0]
 if {$user_can_create_new_customer_p} {
     set customer_options [linsert $customer_options 0 [list "Create New Customer" "new"]]
 }
 set customer_options [linsert $customer_options 0 [list "" ""]]
-lappend elements {ticket_customer_id:text(select) {label "[lang::message::lookup {} intranet-helpdesk.Customer Customer]"} {options $customer_options}}
 
-
-# ---------------------------------------------
-# Customer Contact
 set customer_contact_options [im_user_options -group_id [im_customer_group_id] -include_empty_p 0]
 if {$user_can_create_new_customer_p} {
     set customer_contact_options [linsert $customer_contact_options 0 [list "Create New Customer Contact" "new"]]
 }
 set customer_contact_options [linsert $customer_contact_options 0 [list "" ""]]
-lappend elements {ticket_customer_contact_id:text(select) {label "[lang::message::lookup {} intranet-helpdesk.Customer_Contact {<nobr>Customer Contact</nobr>}]"} {options $customer_contact_options}}
 
-# ---------------------------------------------
-# Status
-if {$edit_ticket_status_p} {
-    lappend elements {ticket_status_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status"}} }
+# Check permission if the user is allowed to create a ticket for
+# somebody else
+if {[im_permission $current_user_id add_ticket_for_customers]} {
+
+    lappend ticket_elements {ticket_customer_id:text(select) {label "[lang::message::lookup {} intranet-helpdesk.Customer Customer]"} {options $customer_options}}
+    lappend ticket_elements {ticket_customer_contact_id:text(select) {label "[lang::message::lookup {} intranet-helpdesk.Customer_Contact {<nobr>Customer Contact</nobr>}]"} {options $customer_contact_options}}
+
+} else {
+
+    set ticket_customer_contact_id $current_user_id
+    set ticket_customer_id [db_string ticket_customer "
+	select	min(company_id)
+	from	im_companies c,
+		acs_rels r
+	where	c.company_type_id in ([join [im_sub_categories [im_company_type_customer]] ","]) and
+		c.company_id = r.object_id_one and
+		:current_user_id = r.object_id_two
+    " -default ""]
+
+    lappend ticket_elements {ticket_customer_id:text(hidden) {label "[lang::message::lookup {} intranet-helpdesk.Customer Customer]"} {options $customer_options}}
+    lappend ticket_elements {ticket_customer_contact_id:text(hidden) {label "[lang::message::lookup {} intranet-helpdesk.Customer_Contact {<nobr>Customer Contact</nobr>}]"} {options $customer_contact_options}}
+
 }
 
 # ---------------------------------------------
-# Type
-lappend elements {ticket_type_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type"}}}
+# Status & Type
+if {$edit_ticket_status_p} {
+    lappend ticket_elements {ticket_status_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status"}} }
+}
+
+lappend ticket_elements {ticket_type_id:text(hidden) {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type"}}}
+
+
+# ---------------------------------------------
+# The form
 
 
 ad_form \
@@ -145,7 +175,7 @@ ad_form \
     -has_edit 1 \
     -mode $form_mode \
     -export {next_url return_url} \
-    -form $elements
+    -form $ticket_elements
 
 
 
@@ -283,15 +313,16 @@ ad_form -extend -name ticket -on_request {
     set start_date_sql [template::util::date get_property sql_date $start_date]
     set end_date_sql [template::util::date get_property sql_timestamp $end_date]
 
-    db_transaction {
-
-	db_string ticket_insert {}
+	set ticket_id [db_string ticket_insert {}]
 	db_dml ticket_update {}
 	db_dml project_update {}
+
+	im_workflow_start_wf -object_id $ticket_id -object_type_id $ticket_type_id
 
 	# Write Audit Trail
 	im_project_audit $ticket_id
 
+    db_transaction {
     } on_error {
 	ad_return_complaint 1 "<b>Error inserting new ticket</b>:
 	<pre>$errmsg</pre>"
@@ -299,7 +330,7 @@ ad_form -extend -name ticket -on_request {
 
 } -edit_data {
 
-    set ticket_nr [string tolower $ticket_nr]
+    sset ticket_nr [string tolower $ticket_nr]
     if {"" == $ticket_nr} { set ticket_nr [db_nextval im_ticket_seq] }
     set start_date_sql [template::util::date get_property sql_date $start_date]
     set end_date_sql [template::util::date get_property sql_timestamp $end_date]
@@ -330,6 +361,92 @@ ad_form -extend -name ticket -on_request {
 	"[lang::message::lookup {} intranet-helpdesk.Ticket_name_too_long {Ticket Name too long (max 1000 characters).}]" 
     }
 }
+
+
+
+# ------------------------------------------------------------------
+# 
+# ------------------------------------------------------------------
+
+set user_id $current_user_id
+
+set info_actions [list {"Edit" edit}]
+set info_action_url "/intranet/users/view"
+ad_form \
+    -name userinfo \
+    -action $info_action_url \
+    -actions $info_actions \
+    -mode "display" \
+    -export {next_url return_url} \
+    -form {
+	{user_id:key}
+	{email:text(text) {label "[_ intranet-core.Email]"} {html {size 30}}}
+	{first_names:text(text) {label "[_ intranet-core.First_names]"} {html {size 30}}}
+	{last_name:text(text) {label "[_ intranet-core.Last_name]"} {html {size 30}}}
+    } -select_query {
+	select	u.*
+	from	cc_users u
+	where	u.user_id = :user_id
+    }
+
+
+# ------------------------------------------------------------------
+# Contact information
+# ------------------------------------------------------------------
+
+# ToDo: Convert into component and use component for /users/view
+
+set read 1
+set write 1
+
+db_1row user_info "
+	select	u.*,
+		uc.*,
+		(select country_name from country_codes where iso = uc.ha_country_code) as ha_country_name,
+		(select country_name from country_codes where iso = uc.wa_country_code) as wa_country_name
+	from	cc_users u
+		LEFT OUTER JOIN users_contact uc ON (u.user_id = uc.user_id)
+	where	u.user_id = :user_id
+"
+
+set view_id [db_string get_view_id "select view_id from im_views where view_name='user_contact'"]
+
+set column_sql "
+	select	column_name,
+		column_render_tcl,
+		visible_for
+	from	im_view_columns
+	where	view_id=:view_id
+		and group_id is null
+	order by sort_order
+"
+
+set contact_html "
+<form method=POST action=/intranet/users/contact-edit>
+[export_form_vars user_id return_url]
+<table cellpadding=0 cellspacing=2 border=0>
+  <tr> 
+    <td colspan=2 class=rowtitle align=center>[_ intranet-core.Contact_Information]</td>
+  </tr>
+"
+
+set ctr 1
+db_foreach column_list_sql $column_sql {
+        if {"" == $visible_for || [eval $visible_for]} {
+	    append contact_html "
+            <tr $td_class([expr $ctr % 2])>
+            <td>"
+            set cmd0 "append contact_html $column_name"
+            eval "$cmd0"
+            append contact_html " &nbsp;</td><td>"
+	    set cmd "append contact_html $column_render_tcl"
+	    eval $cmd
+	    append contact_html "</td></tr>\n"
+            incr ctr
+        }
+}    
+append contact_html "</table>\n</form>\n"
+
 
 # ---------------------------------------------------------------
 # Ticket Menu

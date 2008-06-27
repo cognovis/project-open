@@ -35,9 +35,9 @@ set page_focus "im_header_form.keywords"
 set letter [string toupper $letter]
 
 # Unprivileged users can only see their own tickets
-if {![im_permission $current_user_id "view_tickets_all"]} {
-    set mine_p "queue"
-}
+#if {"all" == $mine_p && ![im_permission $current_user_id "view_tickets_all"]} {
+#    set mine_p "queue"
+#}
 
 if { [empty_string_p $how_many] || $how_many < 1 } {
     set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage  "" 50]
@@ -96,9 +96,9 @@ set object_type "im_ticket"
 set action_url "/intranet-helpdesk/index"
 set form_mode "edit"
 set mine_p_options [list \
-	[list [lang::message::lookup "" intranet-helpdesk.All "All"] "f" ] \
+	[list [lang::message::lookup "" intranet-helpdesk.All "All"] "all" ] \
 	[list [lang::message::lookup "" intranet-helpdesk.My_queues "My Queues"] "queue"] \
-	[list [lang::message::lookup "" intranet-helpdesk.Mine "Mine"] "t"] \
+	[list [lang::message::lookup "" intranet-helpdesk.Mine "Mine"] "mine"] \
 ]
 
 set ticket_member_options [util_memoize "db_list_of_lists ticket_members {
@@ -131,11 +131,13 @@ if {[im_permission $current_user_id "view_tickets_all"]} {
 	{ticket_queue_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.Queue Queue]"} {options $ticket_queue_options}}
     }
 
-    template::element::set_value $form_id mine_p $mine_p
     template::element::set_value $form_id ticket_status_id $ticket_status_id
     template::element::set_value $form_id ticket_type_id $ticket_type_id
     template::element::set_value $form_id ticket_queue_id $ticket_queue_id
 }
+
+template::element::set_value $form_id mine_p $mine_p
+
 
 im_dynfield::append_attributes_to_form \
     -object_type $object_type \
@@ -180,9 +182,30 @@ if { ![empty_string_p $customer_contact_id] && $customer_contact_id != 0 } {
 if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string compare $letter "SCROLL"] != 0 } {
     lappend criteria "im_first_letter_default_to_a(t.ticket_name)=:letter"
 }
-if {![im_permission $current_user_id "view_tickets_all"] | [string equal $mine_p "t"]} {
-    lappend criteria "t.ticket_assignee_id = :current_user_id"
+
+switch $mine_p {
+    "all" { }
+    "queue" {
+	lappend criteria "(
+		t.ticket_assignee_id = :current_user_id 
+		OR t.ticket_customer_contact_id = :current_user_id
+		OR t.ticket_queue_id in (
+			select distinct
+				g.group_id
+			from	acs_rels r, groups g 
+			where	r.object_id_one = g.group_id and
+				r.object_id_two = :current_user_id
+		)
+	)"
+    }
+    "mine" {
+	lappend criteria "(t.ticket_assignee_id = :current_user_id OR t.ticket_customer_contact_id = :current_user_id)"
+    }
+    "default" { ad_return_complaint 1 "Error:<br>Invalid variable mine_p = '$mine_p'" }
 }
+
+
+
 
 
 set order_by_clause "order by lower(t.ticket_id) DESC"
@@ -265,6 +288,7 @@ set sql "
 	                p.*,
 	                to_char(p.start_date, 'YYYY-MM-DD') as start_date_formatted,
 	                to_char(p.end_date, 'YYYY-MM-DD') as end_date_formatted,
+	                to_char(t.ticket_alarm_date, 'YYYY-MM-DD') as ticket_alarm_date_formatted,
 			ci.*,
 			c.company_name,
 			sla.project_id as sla_id,
