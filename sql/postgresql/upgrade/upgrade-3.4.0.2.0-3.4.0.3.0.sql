@@ -26,3 +26,8 @@ BEGIN
 END;' LANGUAGE 'plpgsql';
 
 
+-- Fix component packages
+update im_component_plugins 
+set package_name = 'intranet-core' 
+where package_name = 'intranet';
+
