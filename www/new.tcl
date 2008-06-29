@@ -5,20 +5,53 @@
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
 
-ad_page_contract {
-    @author frank.bergmann@project-open.com
-} {
-    ticket_id:integer,optional
-    { return_url "" }
-    edit_p:optional
-    message:optional
-    { ticket_status_id "[im_ticket_status_open]" }
-    { ticket_type_id 0 }
-    { return_url "/intranet-helpdesk/" }
-    { vars_from_url ""}
-    form_mode:optional
-}
 
+# -----------------------------------------------------------
+# Page Head
+#
+# There are two different heads, depending whether it's called
+# "standalone" (TCL-page) or as a Workflow Panel.
+# -----------------------------------------------------------
+
+
+# Skip if this page is called as part of a Workflow panel
+if {![info exists task]} {
+
+    ad_page_contract {
+	@author frank.bergmann@project-open.com
+    } {
+	ticket_id:integer,optional
+	{ task_id "" }
+	{ return_url "" }
+	edit_p:optional
+	message:optional
+	{ ticket_status_id "[im_ticket_status_open]" }
+	{ ticket_type_id 0 }
+	{ return_url "/intranet-helpdesk/" }
+	{ vars_from_url ""}
+	form_mode:optional
+    }
+
+    set show_components_p 1
+    set enable_master_p 1
+    set show_user_info_p 1
+
+} else {
+    
+    set task_id $task(task_id)
+    set case_id $task(case_id)
+
+    set vars_from_url ""
+    set return_url [im_url_with_query]
+
+    set ticket_id [db_string pid "select object_id from wf_cases where case_id = :case_id" -default ""]
+    set transition_key [db_string transition_key "select transition_key from wf_tasks where task_id = :task_id"]
+    set task_page_url [export_vars -base [ns_conn url] { ticket_id task_id return_url}]
+
+    set show_components_p 0
+    set enable_master_p 0
+    set show_user_info_p 0
+}
 
 # ------------------------------------------------------------------
 # Default & Security
@@ -54,7 +87,6 @@ if {![info exists form_mode]} { set form_mode "display" }
 set edit_ticket_status_p [im_permission $current_user_id edit_ticket_status]
 
 # Show the ADP component plugins?
-set show_components_p 1
 if {"edit" == $form_mode} { set show_components_p 0 }
 
 # Can the currrent user create new helpdesk customers?
@@ -313,24 +345,50 @@ ad_form -extend -name ticket -on_request {
     set start_date_sql [template::util::date get_property sql_date $start_date]
     set end_date_sql [template::util::date get_property sql_timestamp $end_date]
 
-	set ticket_id [db_string ticket_insert {}]
-	db_dml ticket_update {}
-	db_dml project_update {}
+    set ticket_id [db_string ticket_insert {}]
+    db_dml ticket_update {}
+    db_dml project_update {}
+    
+    # Start a new workflow case
+    im_workflow_start_wf -object_id $ticket_id -object_type_id $ticket_type_id -skip_first_transition_p 1
 
-	im_workflow_start_wf -object_id $ticket_id -object_type_id $ticket_type_id
+    # Write Audit Trail
+    im_project_audit $ticket_id
 
-	# Write Audit Trail
-	im_project_audit $ticket_id
-
+    # Error handling. Doesn't work yet for some unknown reason
     db_transaction {
     } on_error {
 	ad_return_complaint 1 "<b>Error inserting new ticket</b>:
 	<pre>$errmsg</pre>"
     }
 
+
+    # Create a new forum topic of type "Note"
+    set topic_id [db_nextval im_forum_topics_seq]
+    set topic_type_id [im_topic_type_id_task]
+    set topic_status_id [im_topic_status_id_open]
+    set message ""
+
+    if {[info exists ticket_note]} { append message $ticket_note }
+    if {[info exists ticket_description]} { append message $ticket_description }
+
+    db_dml topic_insert {
+                insert into im_forum_topics (
+                        topic_id, object_id, parent_id,
+                        topic_type_id, topic_status_id, owner_id,
+                        subject, message
+                ) values (
+                        :topic_id, :ticket_id, null,
+                        :topic_type_id, :topic_status_id, :current_user_id,
+                        :ticket_name, :message
+                )
+    }
+
+
+
 } -edit_data {
 
-    sset ticket_nr [string tolower $ticket_nr]
+    set ticket_nr [string tolower $ticket_nr]
     if {"" == $ticket_nr} { set ticket_nr [db_nextval im_ticket_seq] }
     set start_date_sql [template::util::date get_property sql_date $start_date]
     set end_date_sql [template::util::date get_property sql_timestamp $end_date]

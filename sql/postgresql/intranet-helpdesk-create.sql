@@ -361,6 +361,12 @@ update im_categories
 set aux_string1 = 'ticket_workflow_generic_wf'
 where category_type = 'Intranet Ticket Type';
 
+update im_categories set aux_string1 = 'feature_request_wf'
+where	lower(category) = 'feature request' and
+	category_type = 'Intranet Ticket Type';
+
+
+
 
 -- 30000-30099	Intranet Ticket Status
 --
@@ -490,6 +496,29 @@ SELECT im_component_plugin__new (
 	10,				-- sort_order
 	'im_forum_full_screen_component -object_id $ticket_id'	-- component_tcl
 );
+
+
+-- Timesheet plugin
+select im_component_plugin__new (
+	null,					-- plugin_id
+	'acs_object',				-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creattion_ip
+	null,					-- context_id
+
+	'Ticket Timesheet Component',		-- plugin_name
+	'intranet-helpdesk',			-- package_name
+	'right',				-- location
+	'/intranet-helpdesk/new',		-- page_url
+	null,					-- view_name
+	50,					-- sort_order
+	'im_timesheet_project_component $current_user_id $ticket_id ',
+	'lang::message::lookup "" intranet-timesheet2.Timesheet "Timesheet"'
+);
+update im_component_plugins
+set title_tcl = 'lang::message::lookup "" intranet-timesheet2.Timesheet "Timesheet"'
+where plugin_name = 'Ticket Timesheet Component';
 
 
 

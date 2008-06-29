@@ -338,6 +338,11 @@ if {[string equal $letter "ALL"]} {
 ns_log Notice "/intranet/ticket/index: Before admin links"
 set admin_html "<ul>"
 
+if {[im_is_user_site_wide_or_intranet_admin $current_user_id]} {
+    append admin_html "<li><a href=\"/intranet-helpdesk/admin/\">[lang::message::lookup "" intranet-helpdesk.Admin_Helpdesk "Admin Helpdesk"]</a>\n"
+    append admin_html "<li><a href=\"/admin/group-types/one?group_type=im_ticket_queue\">[lang::message::lookup "" intranet-helpdesk.Admin_Helpdesk_Queues "Admin Helpdesk Queues"]</a>\n"
+}
+
 if {[im_permission $current_user_id "add_tickets"]} {
     append admin_html "<li><a href=\"/intranet-helpdesk/new\">[lang::message::lookup "" intranet-helpdesk.Add_a_new_ticket "New Ticket"]</a>\n"
 

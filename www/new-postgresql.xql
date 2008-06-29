@@ -9,7 +9,7 @@
 		:ticket_id,		-- p_ticket_id
 		'im_ticket',		-- object_type
 		now(),			-- creation_date
-		0,			-- creation_user
+		:current_user_id,	-- creation_user
 		'0.0.0.0',		-- creation_ip
 		null,			-- context_id
 
