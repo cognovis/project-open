@@ -26,6 +26,14 @@ SELECT acs_object_type__create_type (
 
 insert into acs_object_type_tables VALUES ('im_ticket', 'im_tickets', 'ticket_id');
 
+
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_ticket','view','/intranet-helpdesk/new?ticket_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_ticket','edit','/intranet-helpdesk/new?ticket_id=');
+
+
+
 update acs_object_types set
 		status_type_table = 'im_tickets',
 		status_column = 'ticket_status_id',
