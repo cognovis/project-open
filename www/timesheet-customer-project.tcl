@@ -178,6 +178,9 @@ order by
 	h.day
 "
 
+# ad_return_complaint 1 $sql
+
+
 # We skip the customer grouping because we asume that there is exactly
 # one customer.
 
