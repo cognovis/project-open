@@ -1251,6 +1251,8 @@ ad_proc -public im_dynfield::attribute_store {
     # -------------------------------------------------
 
     if {"" == $user_id} { set user_id [ad_get_user_id] }
+    set current_user_id $user_id
+
     set object_id_org $object_id
     set object_type_org $object_type
     ns_log Notice "im_dynfield::attribute_store: object_type=$object_type_org, object_id=$object_id_org, form_id=$form_id"
@@ -1280,7 +1282,7 @@ ad_proc -public im_dynfield::attribute_store {
 		da.acs_attribute_id = aa.attribute_id
 		and aa.object_type = :object_type_org
 		and da.widget_name = dw.widget_name
-		and 't' = acs_permission__permission_p(da.attribute_id, :user_id, 'write')
+		and 't' = acs_permission__permission_p(da.attribute_id, :current_user_id, 'write')
 	order by aa.attribute_name
     "
     array set update_lines {}
