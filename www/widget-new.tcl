@@ -116,7 +116,7 @@ ad_form -extend -name widget -on_request {
 
 } -new_data {
 
-    db_exec_plsql create_widget ""
+    db_string create_widget ""
 
 # } -validate {
 #

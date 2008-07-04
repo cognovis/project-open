@@ -9,8 +9,7 @@
 <fullquery name="create_widget">
   <querytext>
 
-    BEGIN
-	PERFORM im_dynfield_widget__new (
+	SELECT im_dynfield_widget__new (
 		null,			-- widget_id
 		'im_dynfield_widget',   -- object_type
 		now(),			-- creation_date
@@ -26,8 +25,6 @@
 		:sql_datatype,		-- sql_datatype
 		:parameters		-- parameters
 	);
-	return 0;
-    END;
 
   </querytext>
 </fullquery>
