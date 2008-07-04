@@ -372,6 +372,39 @@ SELECT im_category_new(30116, 'Feature Request', 'Intranet Ticket Type');
 SELECT im_category_new(30118, 'Training Request', 'Intranet Ticket Type');
 
 
+update im_categories set category = 'Purchasing Request' where category = 'Purchasing request';
+update im_categories set category = 'Workplace Move Request' where category = 'Workplace move request';
+update im_categories set category = 'Telephony Request' where category = 'Telephony request';
+update im_categories set category = 'Project Request' where category = 'Project request';
+update im_categories set category = 'Bug Request' where category = 'Bug request';
+update im_categories set category = 'Report Request' where category = 'Report request';
+update im_categories set category = 'Permission Request' where category = 'Permission request';
+update im_categories set category = 'Feature Request' where category = 'Feature request';
+update im_categories set category = 'Training Request' where category = 'Training request';
+
+
+update im_categories set category_description = 'Request to buy a new IT hardware or software item.' 
+where category = 'Purchasing Request' and category_type = 'Intranet Ticket Type';
+update im_categories set category_description = 'Request to move a user to a different work place.' 
+where category = 'Workplace Move Request' and category_type = 'Intranet Ticket Type';
+update im_categories set category_description = 'Request new telephone equipment or a modified telephone number.' 
+where category = 'Telephony Request' and category_type = 'Intranet Ticket Type';
+update im_categories set category_description = 'Request a new project (> 5 days of work).' 
+where category = 'Project Request' and category_type = 'Intranet Ticket Type';
+update im_categories set category_description = 'Report a bug. Please use this category only for clearly faulty system behaviour. Otherwise please use a "Feature Request".'
+where category = 'Bug Request' and category_type = 'Intranet Ticket Type';
+update im_categories set category_description = 'Request a new report.' 
+where category = 'Report Request' and category_type = 'Intranet Ticket Type';
+update im_categories set category_description = 'Request to grant or remove permissions for a user and a particular system.' 
+where category = 'Permission Request' and category_type = 'Intranet Ticket Type';
+update im_categories set category_description = 'Request to implement a new features for a system.' 
+where category = 'Feature Request' and category_type = 'Intranet Ticket Type';
+update im_categories set category_description = 'Request training time or training material.' 
+where category = 'Training Request' and category_type = 'Intranet Ticket Type';
+
+
+
+
 update im_categories
 set aux_string1 = 'ticket_workflow_generic_wf'
 where category_type = 'Intranet Ticket Type';
@@ -724,7 +757,7 @@ SELECT im_dynfield_widget__new (
 	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
 	'ticket_assignees', 'Ticket Assignees', 'Ticket Assignees',
 	10007, 'integer', 'generic_sql', 'integer',
-	'{custom {sql {select u.user_id, im_name_from_user_id(u.user_id) from registered_users u, group_distinct_member_map gm where u.user_id = gm.member_id and gm.group_id = 463 order by lower(im_name_from_user_id(u.user_id)) }}}'
+	'{custom {sql {select u.user_id, im_name_from_user_id(u.user_id) from registered_users u, group_distinct_member_map gm where u.user_id = gm.member_id and gm.group_id in (select group_id from groups where group_name = 'Helpdesk') order by lower(im_name_from_user_id(u.user_id)) }}}'
 );
 
 
@@ -743,7 +776,8 @@ from
 where
         p.package_key = v.package_key and
         v.package_key = g.package_key and
-        v.version_name = g.version_name
+        v.version_name = g.version_name and
+	v.package_key like 'intranet%'
 order by
         v.package_key
 }}}');
@@ -759,123 +793,20 @@ order by
 -- Priority
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_prio_id', 'Priority', 'ticket_priority', 'integer', 'f');
 
-delete from im_dynfield_type_attribute_map
-where attribute_id in (
-	select distinct
-		ida.attribute_id
-	from
-		im_dynfield_attributes ida,
-		acs_attributes aa,
-		acs_object_types aot
-	where
-		ida.acs_attribute_id = aa.attribute_id and
-		aa.object_type = aot.object_type and
-		aot.object_type = 'im_ticket' and
-		aa.attribute_name = 'ticket_prio_id'
-);
-
-insert into im_dynfield_type_attribute_map (attribute_id, object_type_id, display_mode)
-select
-	ida.attribute_id,
-	c.category_id,
-	'edit'
-from
-	im_dynfield_attributes ida,
-	acs_attributes aa,
-	acs_object_types aot,
-	im_categories c
-where
-	ida.acs_attribute_id = aa.attribute_id and
-	aa.object_type = aot.object_type and
-	aot.type_category_type = c.category_type and
-	aot.object_type = 'im_ticket' and
-	aa.attribute_name = 'ticket_prio_id'
-;
-
 -----------------------------------------------------------
 -- Assignee
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_assignee_id', 'Assignee', 'ticket_assignees', 'integer', 'f');
-
-delete from im_dynfield_type_attribute_map
-where attribute_id in (
-	select distinct
-		ida.attribute_id
-	from
-		im_dynfield_attributes ida,
-		acs_attributes aa,
-		acs_object_types aot
-	where
-		ida.acs_attribute_id = aa.attribute_id and
-		aa.object_type = aot.object_type and
-		aot.object_type = 'im_ticket' and
-		aa.attribute_name = 'ticket_assignee_id'
-);
-
-insert into im_dynfield_type_attribute_map (attribute_id, object_type_id, display_mode)
-select
-	ida.attribute_id,
-	c.category_id,
-	'edit'
-from
-	im_dynfield_attributes ida,
-	acs_attributes aa,
-	acs_object_types aot,
-	im_categories c
-where
-	ida.acs_attribute_id = aa.attribute_id and
-	aa.object_type = aot.object_type and
-	aot.type_category_type = c.category_type and
-	aot.object_type = 'im_ticket' and
-	aa.attribute_name = 'ticket_assignee_id'
-;
-
 
 -----------------------------------------------------------
 -- Note
 
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_note', 'Note', 'textarea_small', 'string', 'f');
 
-delete from im_dynfield_type_attribute_map
-where attribute_id in (
-	select distinct
-		ida.attribute_id
-	from
-		im_dynfield_attributes ida,
-		acs_attributes aa,
-		acs_object_types aot
-	where
-		ida.acs_attribute_id = aa.attribute_id and
-		aa.object_type = aot.object_type and
-		aot.object_type = 'im_ticket' and
-		aa.attribute_name = 'ticket_note'
-);
-
-insert into im_dynfield_type_attribute_map (attribute_id, object_type_id, display_mode)
-select
-	ida.attribute_id,
-	c.category_id,
-	'edit'
-from
-	im_dynfield_attributes ida,
-	acs_attributes aa,
-	acs_object_types aot,
-	im_categories c
-where
-	ida.acs_attribute_id = aa.attribute_id and
-	aa.object_type = aot.object_type and
-	aot.type_category_type = c.category_type and
-	aot.object_type = 'im_ticket' and
-	aa.attribute_name = 'ticket_note'
-;
-
-
 -----------------------------------------------------------
 -- ]po[ Component
 
 alter table im_tickets add ticket_component_id integer;
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_component_id', 'Component', 'ticket_po_components', 'integer', 'f');
-
-
 
 -----------------------------------------------------------
 -- Description

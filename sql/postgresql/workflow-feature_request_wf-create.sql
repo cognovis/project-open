@@ -838,19 +838,3 @@ values
  '');
 
 
-
-/*
- * Context/Role info
- * (for context = default)
- */
-
-
-
-/*
- * Context Task Panels
- * (for context = default)
- */
-
-
-commit;
-
