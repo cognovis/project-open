@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-cost" package_version="3.2.10.1.0" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="Absences">Absences</msg>
+  <msg key="Administration">Administration</msg>
+  <msg key="All_Costs">Tous les coûts</msg>
+  <msg key="Amount">Montant</msg>
+  <msg key="Centres_de_coûts">Centres de coûts</msg>
+  <msg key="Client">Client</msg>
+  <msg key="Companies">Sociétés</msg>
+  <msg key="Company">Société</msg>
+  <msg key="context">contexte</msg>
+  <msg key="Cost_Center">Centre de coût</msg>
+  <msg key="Cost_Center_permissions_help">Aide sur les Centres de Coûts</msg>
+  <msg key="Cost_Centers">Centres de coût</msg>
+  <msg key="Cost_Items">Eléments de coût</msg>
+  <msg key="create">créer</msg>
+  <msg key="Currency">Devise</msg>
+  <msg key="Customer">Client</msg>
+  <msg key="Customer_Invoices">Factures Client</msg>
+  <msg key="Customers">Clients</msg>
+  <msg key="Del">Suppr</msg>
+  <msg key="DeptQuest">Département</msg>
+  <msg key="Description">Description</msg>
+  <msg key="Document">Document</msg>
+  <msg key="Document_Status">Statut du document</msg>
+  <msg key="Document_Type">Type de document</msg>
+  <msg key="Documentation">Documentation:</msg>
+  <msg key="Due">Echéance</msg>
+  <msg key="Due_Date">Date échéance</msg>
+  <msg key="Edit_Cost">Modifier coût</msg>
+  <msg key="Effective_Date">Date d'effet</msg>
+  <msg key="Employees">Employés</msg>
+  <msg key="Expenses">Frais</msg>
+  <msg key="Filter_Documents">Filtrer les Documents</msg>
+  <msg key="finance">finance</msg>
+  <msg key="Finance_Home">Finance - Accueil</msg>
+  <msg key="Finance_Summary">Résumé Finance</msg>
+  <msg key="Financial_Documents">Documents financiers</msg>
+  <msg key="Financial_Summary">Récapitulatif financier</msg>
+  <msg key="Go">Go</msg>
+  <msg key="Grand_Total">Total Général</msg>
+  <msg key="Investment">Investissement</msg>
+  <msg key="lt_Cost_Item_Administrat">Administration Elément de coût</msg>
+  <msg key="lt_Create_a_new_purchase">Créer un nouveau bon de commande</msg>
+  <msg key="lt_Didnt_find_the_the_vi">Vue '%$view_name%' non trouvée</msg>
+  <msg key="lt_Distribute_costs_acco">Répartir les coûts en tenant compte des heures consommées</msg>
+  <msg key="lt_Finance_high-level_de">Description générale de la finance</msg>
+  <msg key="lt_No_financial_document">Aucun document financier pour ce projet</msg>
+  <msg key="lt_There_are_currently_n">Aucun coût ne correspond aux critères de recherche</msg>
+  <msg key="lt_This_is_the_homepage_">Vous êtes sur la page d'accueil de la &amp;quot;partie finance&amp;quot;. Vous trouverez ici toutes les informations concenant les sociétés, projets et utilisateurs.</msg>
+  <msg key="Menu_Finance">Menu Finance</msg>
+  <msg key="more_costs">Plus de coûts...</msg>
+  <msg key="Multiple_Currency_Warning">&amp;lt;h2&amp;gt;Attention, devises multiples&amp;lt;/h2&amp;gt;
+&amp;lt;p&amp;gt;
+Ce projet comprend des documents financiers utilisant plusieurs devises
+&amp;lt;br&amp;gt;
+Bien que cela ne pose généralement aucun problème, cela génera dans le calcul des profits et pertes pour ce projet ainsi que pour le calcul de la marge du projet.&amp;lt;/p&amp;gt;</msg>
+  <msg key="Name">Nom</msg>
+  <msg key="New_Cost">Nouveau coût</msg>
+  <msg key="New_Cost_Item">Nouvel élément de coût</msg>
+  <msg key="New_Customer_Docs">Créer un nouveau document Client</msg>
+  <msg key="New_Provider_Docs">Créer un nouveau document Fournisseur</msg>
+  <msg key="New_Timesheet_Invoice">Nouvelle Facture selon heures consommées</msg>
+  <msg key="New_Trans_Invoice">Nouvelle facture de traduction</msg>
+  <msg key="Next_Page">Page suivante</msg>
+  <msg key="Note">Note</msg>
+  <msg key="Nouveau_coût">Créer un nouveau document de coût</msg>
+  <msg key="Options">Options:</msg>
+  <msg key="Paid">Payé</msg>
+  <msg key="Payment_Days">Jours de paie</msg>
+  <msg key="Payments">Réglements</msg>
+  <msg key="Please_Select">Veuillez choisir</msg>
+  <msg key="Preliminary_Costs">Coûts estimatifs</msg>
+  <msg key="Previous_Page">Page précédente</msg>
+  <msg key="Print_Template">Modèle d'impression</msg>
+  <msg key="Project">Projet</msg>
+  <msg key="Provider">Fournisseur</msg>
+  <msg key="Provider_Bills">Factures Fournisseur</msg>
+  <msg key="Providers">Fournisseurs</msg>
+  <msg key="Purchase_Orders">Commandes</msg>
+  <msg key="Quotes">Devis</msg>
+  <msg key="Real_Costs">Coûts réels</msg>
+  <msg key="Repeating_Costs">Coûts récurrents</msg>
+  <msg key="Save">Enregistrer</msg>
+  <msg key="Start_Block">Début Bloc</msg>
+  <msg key="Status">Statut</msg>
+  <msg key="TAX">Taxe</msg>
+  <msg key="Timesheet_Costs">Coûts liés aux heures consommées</msg>
+  <msg key="Tous_coûts">Tous coûts</msg>
+  <msg key="Type">Type</msg>
+  <msg key="VAT">TVA</msg>
+  <msg key="Who_gets_the_money">Qui récupère l'argent ?</msg>
+  <msg key="Who_pays">Qui paie ?</msg>
+</message_catalog>
