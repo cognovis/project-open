@@ -16,11 +16,27 @@ select acs_object_type__create_type (
 	'im_biz_object',		-- supertype
 	'im_conf_items',		-- table_name
 	'conf_item_id',			-- id_column
-	'intranet-confdb',	-- package_name
+	'intranet-confdb',		-- package_name
 	'f',				-- abstract_p
 	null,				-- type_extension_table
 	'im_conf_item__name'		-- name_method
 );
+
+
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_conf_item', 'im_conf_items', 'conf_item_id');
+
+update acs_object_types set
+	status_type_table = 'im_conf_items',
+	status_column = 'conf_item_status_id',
+	type_column = 'conf_item_type_id'
+where object_type = 'im_conf_item';
+
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_conf_item','view','/intranet-confdb/new?form_fmode=display&conf_item_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_conf_item','edit','/intranet-confdb/new?conf_item_id=');
+
 
 create table im_conf_items (
 	conf_item_id		integer
@@ -735,4 +751,18 @@ SELECT  im_component_plugin__new (
 	20,				-- sort_order
 	'im_group_member_component $conf_item_id $current_user_id $user_admin_p $return_url "" "" 1'
 );
+
+
+
+
+-----------------------------------------------------------
+-- DynFields
+-----------------------------------------------------------
+
+
+-----------------------------------------------------------
+-- ]po[ Component
+
+alter table im_conf_items add conf_item_customer_id integer;
+SELECT im_dynfield_attribute_new ('im_conf_item', 'conf_item_customer_id', 'Customer', 'customers_active', 'integer', 'f');
 
