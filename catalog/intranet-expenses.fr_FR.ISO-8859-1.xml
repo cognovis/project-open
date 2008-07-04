@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-expenses" package_version="3.2.10.1.0" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="--Select--">- Veuillez sélectionner -</msg>
+  <msg key="Add_a_new_Expense">Ajouter une nouvelle Note de Frais</msg>
+  <msg key="All">Tous</msg>
+  <msg key="Amount">Montant</msg>
+  <msg key="Assign_to_a_project">Affecter à un projet</msg>
+  <msg key="Billable_p">Facturable ?</msg>
+  <msg key="Create_Invoice">Créer une Note de Frais</msg>
+  <msg key="create_invoice_help">Les &quot;Notes de Frais&quot; peuvent être associées à un projet.</msg>
+  <msg key="create_trabel_cost_help">Créer des factures de déplacement</msg>
+  <msg key="Create_Travel_Cost">Créer une Note de Déplacement</msg>
+  <msg key="Currency">Monnaie</msg>
+  <msg key="Delete">Supprimer</msg>
+  <msg key="Delete_Expenses">Supprimer Frais</msg>
+  <msg key="Expense_Date">Date</msg>
+  <msg key="Expense_Invoices">Notes de frais</msg>
+  <msg key="Expense_Payment_Type">Paiement</msg>
+  <msg key="Expense_Type">Type de frais</msg>
+  <msg key="Expenses">Frais</msg>
+  <msg key="Expenses_Items">Frais</msg>
+  <msg key="External_company_name">Nom Société Externe</msg>
+  <msg key="External_Company_VatNr">N° TVA intracommunautaire</msg>
+  <msg key="Filter_Expenses">Filtre des Frais</msg>
+  <msg key="ID">ID</msg>
+  <msg key="Invoice">Facture</msg>
+  <msg key="Invoice_Items">Frais de déplacement</msg>
+  <msg key="New_Expense">Nouvelle Note de frais</msg>
+  <msg key="Note">Note</msg>
+  <msg key="Project">Projet</msg>
+  <msg key="Project_Name">Nom projet</msg>
+  <msg key="Receip_reference">Référence reçu</msg>
+  <msg key="Receipt_reference">Réf. reçu</msg>
+  <msg key="reibursable">Remboursable %</msg>
+  <msg key="reimbursable">Remboursable %%</msg>
+  <msg key="Remove_checked_items">Supprimer les éléments cochés</msg>
+  <msg key="Submitter">Collaborateur</msg>
+  <msg key="Travel_cost_invoices">Notes de Frais de déplacement</msg>
+  <msg key="Unassigned">Non affecté</msg>
+  <msg key="Unassigned_Expenses">Frais non affectés</msg>
+  <msg key="Unassigned_items">Non affecté</msg>
+  <msg key="Vat_Included">TVA % Incl.</msg>
+</message_catalog>
