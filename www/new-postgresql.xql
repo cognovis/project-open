@@ -45,15 +45,4 @@
     </querytext>
 </fullquery>
 
-
-<fullquery name="ticket_delete">
-    <querytext>
-    BEGIN
-	PERFORM im_ticket__delete (:ticket_id);
-	return 0;
-    END;
-    </querytext>
-</fullquery>
-
-
 </queryset>

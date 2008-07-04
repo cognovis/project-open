@@ -119,7 +119,19 @@ set button_pressed [template::form get_action ticket]
 
 
 if {"delete" == $button_pressed} {
-    db_exec_plsql ticket_delete {}
+
+     db_dml mark_ticket_deleted "
+	update	im_tickets
+	set	ticket_status_id = [im_ticket_status_deleted]
+	where	ticket_id = :ticket_id
+     "
+
+#    db_dml update_project "
+#	update im_projects
+#	set project_status_id = [im_project_status_deleted]
+#	where project_id = :ticket_id
+#    "
+
     ad_returnredirect $return_url
 }
 

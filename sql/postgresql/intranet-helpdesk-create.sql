@@ -821,8 +821,12 @@ alter table im_tickets add ticket_customer_deadline timestamptz;
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_customer_deadline', 'Desired Customer End Date', 'date', 'date', 'f');
 
 -----------------------------------------------------------
--- 
+-- Quote results
 
--- alter table im_tickets add 
--- SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_customer_telnote', 'Note', 'textarea_small', 'string', 'f');
+alter table im_tickets add ticket_quoted_days numeric(12,2);
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_quoted_days', 'Quoted Days', 'numeric', 'integer', 'f');
+
+
+alter table im_tickets add ticket_quote_comment text;
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_quote_comment', 'Quote Comment', 'textarea_small_nospell', 'string', 'f');
 
