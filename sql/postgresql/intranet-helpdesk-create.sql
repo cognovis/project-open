@@ -120,6 +120,7 @@ select im_priv_create('add_tickets', 'P/O Admins');
 select im_priv_create('add_tickets', 'Senior Managers');
 select im_priv_create('add_tickets', 'Project Managers');
 select im_priv_create('add_tickets', 'Employees');
+select im_priv_create('add_tickets', 'Customers');
 
 select im_priv_create('edit_ticket_status', 'P/O Admins');
 select im_priv_create('edit_ticket_status', 'Senior Managers');
@@ -311,11 +312,25 @@ end;' language 'plpgsql';
 
 
 -- Create a first group
-select im_ticket_queue__new(
-	null, 'Linux Admins', NULL, NULL, now(), NULL, 
-	'im_ticket_queue', null, 0, now(), '0.0.0.0', 
-	NULL
-);
+--
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count			integer;
+BEGIN
+	select count(*) into v_count from groups
+	where group_name = ''Linux Admins'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	select im_ticket_queue__new(
+		null, ''Linux Admins'', NULL, NULL, now(), NULL, 
+		''im_ticket_queue'', null, 0, now(), ''0.0.0.0'', 
+		NULL
+	);
+	return 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
 
 
 -----------------------------------------------------------
@@ -719,18 +734,19 @@ SELECT im_dynfield_widget__new (
 	10007, 'integer', 'generic_sql', 'integer',
 	'{custom {sql {
 select
-        (select package_id from apm_packages where package_key = v.package_key) as package_id,
-        substring(v.package_key ||'' - ''||coalesce(v.summary, v.package_key) for 40)
+        p.package_id,
+        substring(v.package_key ||' - '||coalesce(v.summary, '') for 40)
 from
+        apm_packages p,
         apm_package_versions v,
         (select package_key, max(version_name) as version_name from apm_package_versions group by package_key) g
 where
+        p.package_key = v.package_key and
         v.package_key = g.package_key and
         v.version_name = g.version_name
 order by
         v.package_key
 }}}');
-
 
 
 
@@ -856,44 +872,8 @@ where
 -----------------------------------------------------------
 -- ]po[ Component
 
+alter table im_tickets add ticket_component_id integer;
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_component_id', 'Component', 'ticket_po_components', 'integer', 'f');
-
-delete from im_dynfield_type_attribute_map
-where attribute_id in (
-	select distinct
-		ida.attribute_id
-	from
-		im_dynfield_attributes ida,
-		acs_attributes aa,
-		acs_object_types aot
-	where
-		ida.acs_attribute_id = aa.attribute_id and
-		aa.object_type = aot.object_type and
-		aot.object_type = 'im_ticket' and
-		aa.attribute_name = 'ticket_component_id'
-);
-
-insert into im_dynfield_type_attribute_map (attribute_id, object_type_id, display_mode)
-select
-	ida.attribute_id,
-	c.category_id,
-	'edit'
-from
-	im_dynfield_attributes ida,
-	acs_attributes aa,
-	acs_object_types aot,
-	im_categories c
-where
-	ida.acs_attribute_id = aa.attribute_id and
-	aa.object_type = aot.object_type and
-	aot.type_category_type = c.category_type and
-	aot.object_type = 'im_ticket' and
-	aa.attribute_name = 'ticket_component_id'
-;
-
-
-
-
 
 
 
