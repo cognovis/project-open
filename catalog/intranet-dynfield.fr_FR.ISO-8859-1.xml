@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-dynfield" package_version="3.2.10.1.0" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="Default_page">Page par défaut</msg>
+  <msg key="Del">Suppr</msg>
+  <msg key="Delete">Supprimer</msg>
+  <msg key="Edit_the_form_adp_file">Modifier le fichier adp</msg>
+  <msg key="Email_Address">Adresse Email</msg>
+  <msg key="examples">exemples</msg>
+  <msg key="Export">Exporter les informations Intranet-Dynfield</msg>
+  <msg key="Import">Importer les informations Intranet-Dynfield</msg>
+  <msg key="in_Table">dans Table</msg>
+  <msg key="Located">Situé</msg>
+  <msg key="lt_Add_a_new_extension_t">Ajouter une nouvelle table d&amp;quot;extension</msg>
+  <msg key="No_items">Aucun élément</msg>
+  <msg key="no_value">Aucune valeur</msg>
+  <msg key="One_Option_Allowed">Une option autorisée</msg>
+  <msg key="Parameters">Paramètres</msg>
+  <msg key="Permissions">Autorisations</msg>
+  <msg key="Sort_key">Clé de tri</msg>
+  <msg key="This_file_is_located_in">Ce fichier est situé dans</msg>
+  <msg key="This_file_will_be_placed_in">Ce fichier sera placé dans</msg>
+  <msg key="User">Utilisateur</msg>
+</message_catalog>
