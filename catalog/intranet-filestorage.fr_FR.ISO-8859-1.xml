@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-filestorage" package_version="3.2.10.1.0" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="Add_Permissions">Ajouter des Autorisations</msg>
+  <msg key="Admin">Administrateur</msg>
+  <msg key="Create_a_new_folder">Créer un nouveau dossier</msg>
+  <msg key="create_folder">Créer un dossier</msg>
+  <msg key="Customers">Clients</msg>
+  <msg key="Del_Permissions">Suppr Autorisations</msg>
+  <msg key="Delete">Supprimer</msg>
+  <msg key="Delete_Files">Supprimer des Fichiers</msg>
+  <msg key="Delete_Permissions">Supprimer des Autorisations</msg>
+  <msg key="Directories">Répertoires</msg>
+  <msg key="Employees">Employés</msg>
+  <msg key="Filename">Nom de fichier</msg>
+  <msg key="Filestorage">Fichiers</msg>
+  <msg key="Folder_up">Dossier de niveau supérieur</msg>
+  <msg key="Full_Member">Membre à part entière</msg>
+  <msg key="Internal_Error">Erreur interne</msg>
+  <msg key="Key_Account">Gestionnaire du compte</msg>
+  <msg key="lt_Add_permissions_to_fo">Ajouter des autorisations aux dossiers</msg>
+  <msg key="lt_Add_the_permissions_a">Ajouter des autorisations supérieures aux répertoires suivants:</msg>
+  <msg key="lt_by_marking_the_checkb">en sélectionnant la case à gauche.</msg>
+  <msg key="lt_Create_a_new_document">Créer un nouveau document</msg>
+  <msg key="lt_Delete_files_and_fold">Supprimer fichiers et dossiers</msg>
+  <msg key="lt_Delete_the_permission">Supprimer les autorisations supérieures pour les répertoires suivants:</msg>
+  <msg key="lt_Did_not_find_the_spec">Le fichier précisé est introuvable</msg>
+  <msg key="lt_Directory_is_not_empt">Le répertoire n'est pas vide</msg>
+  <msg key="lt_Download_all_files_as">Télécharger les fichiers en tant que ZIP</msg>
+  <msg key="lt_If_you_want_to_upload">Si vous souhaitez uploader un fichier dans un sous-répertoire</msg>
+  <msg key="lt_Internal_Error____Una">Erreur interne#_: &lt;#_ Impossible de trouver le chemin du fichier pour la société \#%company_id%</msg>
+  <msg key="lt_No_Directories_Select">Aucun répertoire sélectionné</msg>
+  <msg key="lt_Please_back_up_and_se">Veuillez effectuer une sauvegarde et sélectionner les fichiers et répertoires à supprimer.</msg>
+  <msg key="lt_Please_backup_select_">Veuillez sauvegarder, puis sélectionner un répertoire et appuyer de nouveau sur le bouton %im_gif_plus_9%.</msg>
+  <msg key="lt_please_backup_up_and_">Veuillez effectuer une sauvegarde et sélectionner un sous-répertoire en cliquant sur son nom.</msg>
+  <msg key="lt_Please_enter_the_name">Veuillez saisir le nom du nouveau dossier</msg>
+  <msg key="lt_Remove_permissions_fr">Supprimer des autorisations aux dossiers</msg>
+  <msg key="lt_This_issue_is_most_li">Ce problème est lié à certains caractères attribués au nom du fichier. Veuillez supprimer tout accent et recommencer.</msg>
+  <msg key="lt_Unable_to_compress_th">Impossible de compresser le dossier.</msg>
+  <msg key="lt_Unable_to_get_file_li">Impossible d'obtenir la liste des fichiers de '%find_path%' </msg>
+  <msg key="lt_Unknown_folder_type_f">Type de dossier inconnu \&quot;%folder_type%\&quot;. </msg>
+  <msg key="lt_Unknown_folder_type_f_1">Type de dossier inconnu \&quot;%folder_type%\&quot;.</msg>
+  <msg key="lt_Upload_into_my_folder">Uploader dans '%my_folder%'</msg>
+  <msg key="lt_Use_the_Browse_button">Utiliser le bouton 'Parcourir...' pour localiser votre fichier puis cliquer sur 'Ouvrir'.</msg>
+  <msg key="lt_You_have_not_selected">Vous n'avez pas sélectionné de répertoire.</msg>
+  <msg key="New_Folder">Nouveau dossier</msg>
+  <msg key="No_files_found">Aucun fichier n'a été trouvé</msg>
+  <msg key="Nothing_Selected">Rien n'a été sélectionné</msg>
+  <msg key="Project_Manager">Chef de projet</msg>
+  <msg key="Read">Lire</msg>
+  <msg key="Senior_Managers">Directeurs Sénior</msg>
+  <msg key="Submit_and_Upload">Soumettre et Uploader</msg>
+  <msg key="Upload_a_file">Uploader un fichier</msg>
+  <msg key="Upload_File">Uploader un fichier</msg>
+  <msg key="View">Visualiser</msg>
+  <msg key="Write">Ecrire</msg>
+</message_catalog>
