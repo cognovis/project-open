@@ -47,36 +47,6 @@ SELECT im_category_new(22110, 'Freelance Managers', 'Intranet User Type');
 
 
 
--- Add dynfields for persons
-SELECT im_dynfield_attribute_new ('person','first_names','First Names', 'textbox_large','string','t',10);
-SELECT im_dynfield_attribute_new ('person','last_name','Last Names', 'textbox_large','string','t',20);
-SELECT im_dynfield_attribute_new ('party','email','Email', 'textbox_large','string','t',30);
-
-
--- Add dynfields for companies
-SELECT im_dynfield_attribute_new ('im_company','company_name','Name', 'textbox_large','string','t',10,'t');
-SELECT im_dynfield_attribute_new ('im_company','company_path','Path', 'textbox_large','string','t',20,'t');
-SELECT im_dynfield_attribute_new ('im_company','company_status_id','Status','category_company_status','integer','t',30,'t');
-SELECT im_dynfield_attribute_new ('im_company','company_type_id','Type','category_company_type','integer','t',40,'t');
-SELECT im_dynfield_attribute_new ('im_company','referral_source','Referral','textbox_large','string','f',50,'t');
-SELECT im_dynfield_attribute_new ('im_company','vat_number','VAT Number','textbox_small','string','f',60,'t');
-SELECT im_dynfield_attribute_new ('im_company','default_vat','Default VAT','integer','string','f',100,'t');
-SELECT im_dynfield_attribute_new ('im_company','default_tax','Default TAX','integer','string','f',110,'t');
-SELECT im_dynfield_attribute_new ('im_company','note','Note', 'textarea_small','string','t',990,'t');
-
-SELECT im_dynfield_attribute_new ('im_office','office_name','Office Name', 'textbox_large','string','t',10,'t');
-SELECT im_dynfield_attribute_new ('im_office','office_path','Office Path', 'textbox_large','string','t',20,'t');
-SELECT im_dynfield_attribute_new ('im_office','office_status_id','Office Status', 'category_office_status','integer','t',30,'t');
-SELECT im_dynfield_attribute_new ('im_office','office_type_id','Office Type', 'category_office_type','integer','t',40,'t');
-SELECT im_dynfield_attribute_new ('im_office','phone','Phone', 'textbox_medium','string','f',100,'t');
-SELECT im_dynfield_attribute_new ('im_office','fax','Fax', 'textbox_medium','string','f',110,'t');
-SELECT im_dynfield_attribute_new ('im_office','address_line1','Address 1', 'textbox_medium','string','f',120,'t');
-SELECT im_dynfield_attribute_new ('im_office','address_line2','Address 2', 'textbox_medium','string','f',130,'t');
-SELECT im_dynfield_attribute_new ('im_office','address_city','City', 'textbox_medium','string','f',140,'t');
-SELECT im_dynfield_attribute_new ('im_office','address_postal_code','ZIP', 'textbox_short','string','f',150,'t');
-SELECT im_dynfield_attribute_new ('im_office','address_country_code','Country', 'country','string','f',160,'t');
-
-
 
 -- AMS Compatibility view
 create or replace view ams_lists as
@@ -938,6 +908,13 @@ BEGIN
 		END IF;
 	END LOOP;
 
+	PERFORM acs_permission__grant_permission(v_dynfield_id, (select group_id from groups where group_name=''Employees''), ''read'');
+	PERFORM acs_permission__grant_permission(v_dynfield_id, (select group_id from groups where group_name=''Employees''), ''write'');
+	PERFORM acs_permission__grant_permission(v_dynfield_id, (select group_id from groups where group_name=''Customers''), ''read'');
+	PERFORM acs_permission__grant_permission(v_dynfield_id, (select group_id from groups where group_name=''Customers''), ''write'');
+	PERFORM acs_permission__grant_permission(v_dynfield_id, (select group_id from groups where group_name=''Freelancers''), ''read'');
+	PERFORM acs_permission__grant_permission(v_dynfield_id, (select group_id from groups where group_name=''Freelancers''), ''write'');
+
 	RETURN v_dynfield_id;
 END;' language 'plpgsql';
 
@@ -1408,6 +1385,95 @@ begin
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
+
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select count(*) into v_count
+	from im_dynfield_widgets where widget_name = ''customers_active'';
+	IF 0 != v_count THEN return 0; END IF;
+
+	PERFORM im_dynfield_widget__new (
+		null,			-- widget_id
+		''im_dynfield_widget'',	-- object_type
+		now(),			-- creation_date
+		null,			-- creation_user
+		null,			-- creation_ip
+		null,			-- context_id
+	
+		''customers_active'',		-- widget_name
+		''#intranet-core.Customers#'',	-- pretty_name
+		''#intranet-core.Customers'',	-- pretty_plural
+		10007,			-- storage_type_id
+		''integer'',		-- acs_datatype
+		''generic_sql'',	-- widget
+		''integer'',		-- sql_datatype
+		''{custom {sql {
+select
+	c.company_id,
+	c.company_name
+from
+	im_companies c
+where
+	c.company_type_id in (select 57 union select child_id from im_category_hierarchy where parent_id = 57)
+	and c.company_status_id in (select 46 union select child_id from im_category_hierarchy where parent_id = 46)
+order by
+	c.company_name
+		}}}''
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+
+
+
+-------------------------------------------------------------
+-- Define some DynFields
+--
+
+
+-- Add dynfields for persons
+SELECT im_dynfield_attribute_new ('person','first_names','First Names', 'textbox_large','string','t',10);
+SELECT im_dynfield_attribute_new ('person','last_name','Last Names', 'textbox_large','string','t',20);
+SELECT im_dynfield_attribute_new ('party','email','Email', 'textbox_large','string','t',30);
+
+
+-- Add dynfields for companies
+SELECT im_dynfield_attribute_new ('im_company','company_name','Name', 'textbox_large','string','t',10,'t');
+SELECT im_dynfield_attribute_new ('im_company','company_path','Path', 'textbox_large','string','t',20,'t');
+SELECT im_dynfield_attribute_new ('im_company','company_status_id','Status','category_company_status','integer','t',30,'t');
+SELECT im_dynfield_attribute_new ('im_company','company_type_id','Type','category_company_type','integer','t',40,'t');
+SELECT im_dynfield_attribute_new ('im_company','referral_source','Referral','textbox_large','string','f',50,'t');
+SELECT im_dynfield_attribute_new ('im_company','vat_number','VAT Number','textbox_small','string','f',60,'t');
+SELECT im_dynfield_attribute_new ('im_company','default_vat','Default VAT','integer','string','f',100,'t');
+SELECT im_dynfield_attribute_new ('im_company','default_tax','Default TAX','integer','string','f',110,'t');
+SELECT im_dynfield_attribute_new ('im_company','note','Note', 'textarea_small','string','t',990,'t');
+
+SELECT im_dynfield_attribute_new ('im_office','office_name','Office Name', 'textbox_large','string','t',10,'t');
+SELECT im_dynfield_attribute_new ('im_office','office_path','Office Path', 'textbox_large','string','t',20,'t');
+SELECT im_dynfield_attribute_new ('im_office','office_status_id','Office Status', 'category_office_status','integer','t',30,'t');
+SELECT im_dynfield_attribute_new ('im_office','office_type_id','Office Type', 'category_office_type','integer','t',40,'t');
+SELECT im_dynfield_attribute_new ('im_office','phone','Phone', 'textbox_medium','string','f',100,'t');
+SELECT im_dynfield_attribute_new ('im_office','fax','Fax', 'textbox_medium','string','f',110,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_line1','Address 1', 'textbox_medium','string','f',120,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_line2','Address 2', 'textbox_medium','string','f',130,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_city','City', 'textbox_medium','string','f',140,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_postal_code','ZIP', 'textbox_short','string','f',150,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_country_code','Country', 'country','string','f',160,'t');
+
+
 
 
 
