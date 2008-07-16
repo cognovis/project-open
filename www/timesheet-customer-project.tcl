@@ -25,8 +25,6 @@ ad_page_contract {
     invoice_id:integer
 }
 
-# ad_return_complaint 1 $printer_friendly_p
-
 # ------------------------------------------------------------
 # Security
 
@@ -320,6 +318,7 @@ if {$printer_friendly_p} { set output_template "template" }
 switch $output_template {
     template {
 	ns_write "
+		[ad_header $page_title]
 		<html>
 		 <head>
 		  <meta http-equiv='content-type' content='text/html;charset=UTF-8'>
