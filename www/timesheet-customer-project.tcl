@@ -21,7 +21,7 @@ ad_page_contract {
     { task_id:integer 0}
     { user_id:integer 0}
     { printer_friendly_p:integer 0}
-    company_id:integer
+    { company_id:integer 0 }
     invoice_id:integer
 }
 
@@ -35,9 +35,7 @@ ad_page_contract {
 # its permissions.
 # Uses the same label as the timesheet report.
 set menu_label "reporting-timesheet-customer-project"
-
 set current_user_id [ad_maybe_redirect_for_registration]
-
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
 	from	im_menus m
@@ -61,6 +59,7 @@ if {![string equal "t" $read_p]} {
     [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
     return
 }
+
 
 db_1row invoice_details "
 	select	c.cost_name as invoice_name,
