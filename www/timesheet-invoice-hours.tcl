@@ -25,8 +25,6 @@ ad_page_contract {
     invoice_id:integer
 }
 
-# ad_return_complaint 1 $printer_friendly_p
-
 # ------------------------------------------------------------
 # Security
 
@@ -52,6 +50,16 @@ set edit_timesheet_p [im_permission $current_user_id "edit_hours_all"]
 
 set date_format "YYYY-MM-DD"
 set number_format "999,999.99"
+
+# ------------------------------------------------------------
+
+set undefined_l10n [lang::message::lookup "" intranet-reporting.undefined "&lt;undefined&gt;"]
+set grand_total_l10n [lang::message::lookup "" intranet-reporting.Grand_Total "Grand Total"]
+set customer_l10n [lang::message::lookup "" intranet-core.Customer "Customer"]
+set project_l10n [lang::message::lookup "" intranet-core.Project "Project"]
+set project_number_l10n [lang::message::lookup "" intranet-core.Project_Number "Project Number"]
+set customer_po_l10n [lang::message::lookup "" intranet-reporting.Customer_PO "Customer PO"]
+set date_signature_l10n [lang::message::lookup "" intranet-reporting.Date_Signature "&nbsp;&nbsp;Date, Signature"]
 
 
 # ------------------------------------------------------------
@@ -146,6 +154,7 @@ select
 	h.note,
 	to_char(h.day, :date_format) as date,
 	to_char(h.day, 'J') as julian_date,
+	h.day,
 	to_char(coalesce(h.hours,0), :number_format) as hours,
 	u.user_id,
 	im_name_from_user_id(u.user_id) as user_name,
@@ -178,6 +187,18 @@ order by
 	h.day
 "
 
+
+db_1row start_end_date "
+	select	to_char(min(h.day), :date_format) as hours_start_date,
+		to_char(max(h.day), :date_format) as hours_end_date
+	from
+		($sql) h
+"
+
+
+if {"" == $hours_start_date} { set hours_start_date $undefined_l10n }
+if {"" == $hours_end_date} { set hours_end_date $undefined_l10n }
+
 # We skip the customer grouping because we asume that there is exactly
 # one customer.
 
@@ -208,7 +229,7 @@ set report_def [list \
 	    } \
 	] \
 	footer {
-	    "<br>Grand Total"
+	    "<br>$grand_total_l10n"
 	    "<br><b>$hours_project_subtotal</b>"
 	    ""
 	    ""
@@ -304,6 +325,7 @@ set project_name [join $project_names ", "]
 set project_nrs [db_list project_nr "select project_nr from im_projects where project_id in (select object_id_one from acs_rels where object_id_two = :invoice_id)"]
 set project_nr [join $project_nrs ", "]
 
+set timesheet_customer_l10n [lang::message::lookup "" intranet-reporting.Timesheet_Customer "%customer_name% Timesheet"]
 
 
 # ------------------------------------------------------------
@@ -321,7 +343,7 @@ switch $output_template {
 		<html>
 		 <head>
 		  <meta http-equiv='content-type' content='text/html;charset=UTF-8'>
-		  <title>$company_name Timesheet</title>
+		  <title>$timesheet_customer_l10n</title>
 		  <link rel='stylesheet' type='text/css' href='/intranet-reporting/timesheet-invoice-hours.css'>
 		 </head>
 		 <body>
@@ -329,16 +351,16 @@ switch $output_template {
 		   <p style='text-align:right'>[im_logo]</p>
 		  </div>
 		  <div id=main>
-			<div id=title>Timesheet</div>
-			<div id=subtitle>Period: 2008-01-01 to 2008-01-07</div>
+			<div id=title>$timesheet_customer_l10n</div>
+			<div id=subtitle>Period: $hours_start_date to $hours_end_date</div>
 			
 			<table id=headertable cellpadding=0 border=0 rules=all>
 			 <tbody>
 			  <tr>
-			   <td id=head>Customer:</td>
-			   <td id=head>Project:</td>
-			   <td id=head>Project Number:</td>
-			   <td id=head>Customer PO:</td>
+			   <td id=head>$customer_l10n:</td>
+			   <td id=head>$project_l10n:</td>
+			   <td id=head>$project_number_l10n:</td>
+			   <td id=head>$customer_po_l10n:</td>
 			  </tr>
 			  
 			  <tr>
@@ -553,7 +575,7 @@ switch $output_template {
 			<tr>
 					<td id=totalsum style='border:0px'></td>
 					<td id=totalsum style='border:0px'></td>
-					<td id=totalsum style='border:0px;font-weight:normal;'>&nbsp;&nbsp;Date, Signature</td>
+					<td id=totalsum style='border:0px;font-weight:normal;'>$date_signature_l10n</td>
 				</tr>
 			</table>
 		  </div>
