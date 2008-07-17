@@ -29,8 +29,8 @@ ad_proc -public im_package_material_id {} {
 
 ad_proc -private im_package_material_id_helper {} {
     return [db_string im_package_core_id {
-        select package_id from apm_packages
-        where package_key = 'intranet-material'
+	select package_id from apm_packages
+	where package_key = 'intranet-material'
     } -default 0]
 }
 
@@ -64,9 +64,9 @@ ad_proc -private im_material_default_material_id {} {
 ad_proc -private im_material_type_options { {-include_empty 1} } {
 
     set options [db_list_of_lists material_type_options "
-        select category, category_id
-        from im_categories
-        where category_type = 'Intranet Material Type'
+	select category, category_id
+	from im_categories
+	where category_type = 'Intranet Material Type'
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
@@ -75,9 +75,9 @@ ad_proc -private im_material_type_options { {-include_empty 1} } {
 ad_proc -private im_material_status_options { {-include_empty 1} } {
 
     set options [db_list_of_lists material_status_options "
-        select category, category_id
-        from im_categories
-        where category_type = 'Intranet Material Status'
+	select category, category_id
+	from im_categories
+	where category_type = 'Intranet Material Status'
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
@@ -85,25 +85,44 @@ ad_proc -private im_material_status_options { {-include_empty 1} } {
 
 
 # Get a list of available materials
-ad_proc -private im_material_options { {-restrict_to_status_id 0} {-restrict_to_type_id 0} {-include_empty 1} } {
-
+ad_proc -private im_material_options { 
+    {-restrict_to_status_id 0} 
+    {-restrict_to_type_id 0} 
+    {-include_empty 1}
+    {-show_material_codes_p 0}
+    {-max_option_len 25 }
+} {
     set where_clause ""
     if {0 != $restrict_to_status_id} {
-	append where_clause "material_status_id = :-restrict_to_status_id\n"
+	append where_clause "material_status_id = :restrict_to_status_id\n"
     }
     if {0 != $restrict_to_type_id} {
-	append where_clause "material_type_id = :-restrict_to_type_id\n"
+	append where_clause "material_type_id = :restrict_to_type_id\n"
     }
 
-    set options [db_list_of_lists material_options "
-        select material_nr, material_id
-        from im_materials
-        where 
-		1=1
-		$where_clause
-	order by
-		material_nr
-    "]
+    if {$show_material_codes_p} {
+	    set sql "
+		select	substring(material_nr for :max_option_len) as material_nr,
+			material_id
+		from	im_materials
+		where 	1=1
+			$where_clause
+		order by
+			material_nr
+	    "
+    } else {
+	    set sql "
+		select	substring(material_name for :max_option_len) as material_name,
+			material_id
+		from	im_materials
+		where 	1=1
+			$where_clause
+		order by
+			material_name
+	    "
+    }
+
+    set options [db_list_of_lists material_options $sql]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
 }
@@ -155,22 +174,22 @@ ad_proc -public im_material_list_component {
 
     set column_sql "
 	select
-	        column_name,
-	        column_render_tcl,
-	        visible_for
+		column_name,
+		column_render_tcl,
+		visible_for
 	from
-	        im_view_columns
+		im_view_columns
 	where
-	        view_id=:view_id
-	        and group_id is null
+		view_id=:view_id
+		and group_id is null
 	order by
-	        sort_order
+		sort_order
     "
 
     db_foreach column_list_sql $column_sql {
 	if {"" == $visible_for || [eval $visible_for]} {
-        lappend column_headers "$column_name"
-        lappend column_vars "$column_render_tcl"
+	lappend column_headers "$column_name"
+	lappend column_vars "$column_render_tcl"
 	}
     }
     ns_log Notice "im_material_component: column_headers=$column_headers"
@@ -182,19 +201,19 @@ ad_proc -public im_material_list_component {
 
     set bind_vars [ns_set create]
     foreach var $export_var_list {
-        upvar 1 $var value
-        if { [info exists value] } {
-            ns_set put $bind_vars $var $value
-            ns_log Notice "im_material_component: $var <- $value"
-        } else {
-        
-            set value [ns_set get $form_vars $var]
-            if {![string equal "" $value]} {
- 	        ns_set put $bind_vars $var $value
- 	        ns_log Notice "im_material_component: $var <- $value"
-            }
-            
-        }
+	upvar 1 $var value
+	if { [info exists value] } {
+	    ns_set put $bind_vars $var $value
+	    ns_log Notice "im_material_component: $var <- $value"
+	} else {
+	
+	    set value [ns_set get $form_vars $var]
+	    if {![string equal "" $value]} {
+ 		ns_set put $bind_vars $var $value
+ 		ns_log Notice "im_material_component: $var <- $value"
+	    }
+	    
+	}
     }
 
     ns_set delkey $bind_vars "order_by"
@@ -202,11 +221,11 @@ ad_proc -public im_material_list_component {
     set params [list]
     set len [ns_set size $bind_vars]
     for {set i 0} {$i < $len} {incr i} {
-        set key [ns_set key $bind_vars $i]
-        set value [ns_set value $bind_vars $i]
-        if {![string equal $value ""]} {
-            lappend params "$key=[ns_urlencode $value]"
-        }
+	set key [ns_set key $bind_vars $i]
+	set value [ns_set value $bind_vars $i]
+	if {![string equal $value ""]} {
+	    lappend params "$key=[ns_urlencode $value]"
+	}
     }
     set pass_through_vars_html [join $params "&"]
 
@@ -224,7 +243,7 @@ ad_proc -public im_material_list_component {
 	set cmd_eval ""
 	ns_log Notice "im_material_component: eval=$cmd_eval $col"
 	set cmd "set cmd_eval $col"
-        eval $cmd
+	eval $cmd
 	if { [regexp "im_gif" $col] } {
 	    set col_tr $cmd_eval
 	} else {
@@ -235,8 +254,8 @@ ad_proc -public im_material_list_component {
 	    append table_header_html "  <td class=rowtitle>$col_tr</td>\n"
 	} else {
 	    append table_header_html "  <td class=rowtitle>
-            <a href=$current_page_url?$pass_through_vars_html&order_by=[ns_urlencode $cmd_eval]>$col_tr</a>
-            </td>\n"
+	    <a href=$current_page_url?$pass_through_vars_html&order_by=[ns_urlencode $cmd_eval]>$col_tr</a>
+	    </td>\n"
 	}
     }
     append table_header_html "</tr>\n"
@@ -313,12 +332,12 @@ ad_proc -public im_material_list_component {
 	if {[string equal "Type" $order_by]} {
 	    if {$old_material_type_id != $material_type_id} {
 		append table_body_html "
-    	            <tr><td colspan=$colspan>&nbsp;</td></tr>
-    	            <tr><td class=rowtitle colspan=$colspan>
-    	              <A href=index?[export_url_vars material_type_id project_id]>
-    	                $material_type
-    	              </A>
-    	            </td></tr>\n"
+    		    <tr><td colspan=$colspan>&nbsp;</td></tr>
+    		    <tr><td class=rowtitle colspan=$colspan>
+    		      <A href=index?[export_url_vars material_type_id project_id]>
+    			$material_type
+    		      </A>
+    		    </td></tr>\n"
 		set old_material_type_id $material_type_id
 	    }
 	}
