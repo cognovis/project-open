@@ -11,8 +11,8 @@ ad_page_contract {
     @param start_year Year to start the report
     @param start_unit Month or week to start within the start_year
     @param truncate_note_length Truncate (ellipsis) the note field
-           to the given number of characters. 0 indicates no
-           truncation.
+	   to the given number of characters. 0 indicates no
+	   truncation.
 } {
     { start_date "" }
     { end_date "" }
@@ -103,7 +103,7 @@ if {"" == $start_date} {
 }
 
 # Maxlevel is 4. Normalize in order to show the right drop-down element
-if {$level_of_detail > 4} { set level_of_detail 4 }
+if {$level_of_detail > 5} { set level_of_detail 5 }
 
 
 db_1row end_date "
@@ -166,7 +166,7 @@ if {0 != $project_id && "" != $project_id} {
     )"
 }
 
-set where_clause [join $criteria " and\n            "]
+set where_clause [join $criteria " and\n	    "]
 if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
 }
@@ -180,7 +180,7 @@ set sql "
 select
 	h.note,
 	h.billing_rate,
-	to_char(h.day, 'YYYY-MM-DD') as date,
+	to_char(h.day, 'YYYY-MM-DD') as date_pretty,
 	to_char(h.day, 'J') as julian_date,
 	to_char(h.day, 'J')::integer - to_char(to_date(:start_date, 'YYYY-MM-DD'), 'J')::integer as date_diff,
 	to_char(coalesce(h.hours,0), :number_format) as hours,
@@ -198,7 +198,8 @@ select
 	c.company_path as company_nr,
 	c.company_name,
 	c.company_id || '-' || main_p.project_id as company_project_id,
-	c.company_id || '-' || main_p.project_id || u.user_id as company_project_user_id
+	c.company_id || '-' || main_p.project_id || '-' || p.project_id as company_project_sub_id,
+	c.company_id || '-' || main_p.project_id || '-' || p.project_id || '-' || u.user_id as company_project_sub_user_id
 from
 	im_hours h,
 	im_projects p,
@@ -217,78 +218,104 @@ where
 order by
 	c.company_path,
 	main_p.project_nr,
+	p.project_nr,
 	user_name,
 	p.project_nr,
 	h.day
 "
 
 set report_def [list \
-    group_by company_id \
-    header {
-	"\#colspan=99 <a href=$base_url&company_id=$company_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a> 
-	<b><a href=$company_url$company_id>$company_name</a></b>"
-    } \
-    content [list  \
-	group_by company_project_id \
+	group_by company_id \
 	header {
-	    $company_nr 
-	    "\#colspan=99 <a href=$base_url&project_id=$project_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
-	    <b><a href=$project_url$project_id>$project_name</a></b>"
+		"\#colspan=99 <a href=$base_url&company_id=$company_id&level_of_detail=4 
+		target=_blank><img src=/intranet/images/plus_9.gif border=0></a> 
+		<b><a href=$company_url$company_id>$company_name</a></b>"
 	} \
-	content [list \
-	    group_by company_project_user_id \
-	    header {
-		$company_nr 
-		$project_nr 
-		"\#colspan=99 <a href=$base_url&project_id=$project_id&user_id=$user_id&level_of_detail=4 target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
-		<b><a href=$user_url$user_id>$user_name</a></b>"
-	    } \
-	    content [list \
-		    header {
+	content [list  \
+		group_by company_project_id \
+		header {
+			$company_nr 
+			"\#colspan=99 <a href=$base_url&project_id=$project_id&level_of_detail=4 
+			target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
+			<b><a href=$project_url$project_id>$project_name</a></b>"
+		} \
+		content [list \
+			group_by company_project_sub_id \
+			header {
+				$company_nr 
+				$project_nr 
+				"\#colspan=99 <a href=$base_url&project_id=$project_id&user_id=$user_id&level_of_detail=4 
+				target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
+				<b><a href=$user_url$user_id>$sub_project_name</a></b>"
+			} \
+			content [list \
+				group_by company_project_sub_user_id \
+				header {
+					$company_nr 
+					$project_nr 
+					$sub_project_nr 
+					"\#colspan=99 <a href=$base_url&project_id=$project_id&user_id=$user_id&level_of_detail=4 
+					target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
+					<b><a href=$user_url$user_id>$user_name</a></b>"
+				} \
+				content [list \
+					header {
+						$company_nr
+						$project_nr
+						$sub_project_nr
+						$user_initials
+						"<nobr>$date_pretty</nobr>"
+						$hours_link
+						$billing_rate
+						"<nobr>$note</nobr>"
+					} \
+					content {} \
+				] \
+				footer {
+					$company_nr 
+					$project_nr 
+					$sub_project_nr 
+					$user_initials
+					""
+					"<i>$hours_user_subtotal</i>"
+					""
+					""
+				} \
+			] \
+			footer {
+				$company_nr
+				$project_nr
+				$sub_project_nr
+				$user_initials
+				""
+				"<i>$hours_user_subtotal</i>"
+				""
+				""
+			} \
+		] \
+		footer {
 			$company_nr
 			$project_nr
-			$user_initials
-			$date
-			$hours_link
-			$billing_rate
 			$sub_project_nr
-			$note
-		    } \
-		    content {} \
-	    ] \
-	    footer {
-		$company_nr 
-		$project_nr 
-		$user_initials
-		""
-		"<i>$hours_user_subtotal</i>"
-		""
-		""
-		""
-	    } \
+			""
+			""
+			"<b>$hours_project_subtotal</b>"
+			""
+			""
+			""
+		} \
 	] \
-	footer {
-    	    $company_nr 
-	    $project_nr 
-	    ""
-	    ""
-	    "<b>$hours_project_subtotal</b>"
-	    ""
-	    ""
-	    ""
-	} \
-    ] \
-    footer {"" "" "" "" "" "" "" ""} \
+	footer {"" "" "" "" "" "" "" "" ""} \
 ]
 
 # Global header/footer
-set header0 {"Customer" "Project" "User" "Date" Hours Rate Task Note}
+set header0 {"Customer" "Project" "Subproject" "User" "Date" Hours Rate Note}
 set footer0 {"" "" "" "" "" "" "" ""}
 
 set hours_user_counter [list \
 	pretty_name Hours \
 	var hours_user_subtotal \
-	reset \$company_project_user_id \
+	reset \$company_project_sub_user_id \
 	expr \$hours
 ]
 
@@ -321,7 +348,7 @@ set start_years {2000 2000 2001 2001 2002 2002 2003 2003 2004 2004 2005 2005 200
 set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep 10 Oct 11 Nov 12 Dec}
 set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
 set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
-set levels {1 "Customer Only" 2 "Customer+Project" 3 "Customer+Project+User" 4 "All Details"} 
+set levels {1 "Customer Only" 2 "Customer+Project" 3 "Customer+Project+Sub" 4 "Customer+Project+Sub+User" 5 "All Details"} 
 set truncate_note_options {4000 "Full Length" 80 "Standard (80)" 20 "Short (20)"} 
 
 # ------------------------------------------------------------
@@ -340,25 +367,12 @@ if {$level_of_detail > 3} {
     "
 }
 
-
-if {[info exists project_id]} {
-    append report_options_html "
-	<tr>
-	  <td class=form-label></td>
-	  <td class=form-widget>
-            <input type=hidden name=project_id value=\"$project_id\">
-	  </td>
-	</tr>
-    "
-}
-
-
 if {[info exists task_id]} {
     append report_options_html "
 	<tr>
 	  <td class=form-label></td>
 	  <td class=form-widget>
-            <input type=hidden name=task_id value=\"$task_id\">
+	    <input type=hidden name=task_id value=\"$task_id\">
 	  </td>
 	</tr>
     "
@@ -377,13 +391,13 @@ switch $output_format {
 	ns_write "
 	[im_header $page_title]
 	[im_navbar reporting]
-        <div id=\"slave\">
-        <div id=\"slave_content\">
+	<div id=\"slave\">
+	<div id=\"slave_content\">
 
-        <div class=\"filter-list\">
+	<div class=\"filter-list\">
 
-        <div class=\"filter\">
-        <div class=\"filter-block\">
+	<div class=\"filter\">
+	<div class=\"filter-block\">
 
 	<form>
 	[export_form_vars invoice_id]
@@ -391,7 +405,7 @@ switch $output_format {
 	<tr valign=top><td>
 		<table border=0 cellspacing=1 cellpadding=1>
 		<tr>
-	          <td class=form-label>Level of Details</td>
+		  <td class=form-label>Level of Details</td>
 		  <td class=form-widget>
 		    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
 		  </td>
@@ -415,20 +429,26 @@ switch $output_format {
 		  </td>
 		</tr>
 		<tr>
+		  <td class=form-label>project</td>
+		  <td class=form-widget>
+		    [im_project_select project_id $project_id]
+		  </td>
+		</tr>
+		<tr>
 		  <td class=form-label>User</td>
 		  <td class=form-widget>
 		    [im_user_select -include_empty_p 1 -group_id [list [im_employee_group_id] [im_freelance_group_id]] -include_empty_name "-- Please select --" user_id $user_id]
 		  </td>
 		</tr>
 
-	        $report_options_html
+		$report_options_html
 
-                <tr>
-                  <td class=form-label>Format</td>
-                  <td class=form-widget>
-                    [im_report_output_format_select output_format "" $output_format]
-                  </td>
-                </tr>
+		<tr>
+		  <td class=form-label>Format</td>
+		  <td class=form-widget>
+		    [im_report_output_format_select output_format "" $output_format]
+		  </td>
+		</tr>
 		<tr>
 		  <td class=form-label></td>
 		  <td class=form-widget><input type=submit value=Submit></td>
@@ -439,10 +459,10 @@ switch $output_format {
 	</table>
 	</form>
 
-        </div>
-        </div>
-        <div class=\"fullwidth-list\">
-        [im_box_header $page_title]
+	</div>
+	</div>
+	<div class=\"fullwidth-list\">
+	[im_box_header $page_title]
 
 	<table border=0 cellspacing=1 cellpadding=1>\n"
     }
@@ -487,16 +507,16 @@ db_foreach sql $sql {
 	    -level_of_detail $level_of_detail \
 	    -row_class $class \
 	    -cell_class $class
-        ]
+	]
 
-        set footer_array_list [im_report_render_footer \
+	set footer_array_list [im_report_render_footer \
 	    -output_format $output_format \
 	    -group_def $report_def \
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
 	    -row_class $class \
 	    -cell_class $class
-        ]
+	]
 }
 
 im_report_display_footer \
