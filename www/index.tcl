@@ -127,9 +127,13 @@ set bulk_action_list [list]
 if {$add_expense_p} {
     append admin_links "<li><a href=\"new?[export_url_vars project_id return_url]\">[lang::message::lookup "" intranet-expenses.Add_a_new_Expense_Item "Add new Expense Item"]</a></li>\n"
 
-    lappend action_list [lang::message::lookup "" intranet-expenses.Add_a_new_Expense_Item "Add new Expense Item"]
+    lappend action_list [lang::message::lookup "" intranet-expenses.Add_one_new_Expense_Item "Add one new Expense Item"]
     lappend action_list [export_vars -base "/intranet-expenses/new" {return_url project_id}]
-    lappend action_list [lang::message::lookup "" intranet-expenses.Add_a_new_Expense_Item "Add new Expense Item"]
+    lappend action_list [lang::message::lookup "" intranet-expenses.Add_one_new_Expense_Item "Add one new Expense Item"]
+
+    lappend action_list [lang::message::lookup "" intranet-expenses.Add_multiple_new_Expense_Items "Add multiple new Expense Items"]
+    lappend action_list [export_vars -base "/intranet-expenses/new-multiple" {return_url project_id}]
+    lappend action_list [lang::message::lookup "" intranet-expenses.Add_multiple_new_Expense_Items "Add multiplen new Expense Item"]
 
     lappend bulk_action_list "[_ intranet-expenses.Delete]" "expense-del" "[_ intranet-expenses.Delete]"
 }
