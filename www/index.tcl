@@ -372,6 +372,45 @@ append admin_html [im_menu_ul_list -no_uls 1 "tickets_admin" $bind_vars]
 append admin_html "</ul>"
 
 
+
+# ---------------------------------------------------------------
+# Quickly create a new Ticket
+# ---------------------------------------------------------------
+
+set edit_ticket_status_p [im_permission $current_user_id edit_ticket_status]
+set title_label [lang::message::lookup {} intranet-helpdesk.Name {Title}]
+set action_url "/intranet-helpdesk/new"
+
+set form_id "ticket_new"
+
+set ticket_elements {
+	{ticket_id:key}
+	{ticket_name:text(text) {label $title_label} {html {size 20}} }
+	{ticket_nr:text(hidden),optional }
+	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1} } }
+}
+
+if {$edit_ticket_status_p} {
+    lappend ticket_elements {ticket_status_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status"}} }
+}
+
+
+ad_form \
+    -name $form_id \
+    -action $action_url \
+    -mode $form_mode \
+    -method GET \
+    -export {start_idx order_by how_many view_name letter } \
+    -form $ticket_elements
+
+
+template::element::set_value $form_id ticket_nr [im_ticket::next_ticket_nr]
+
+
+
+
+
+
 # ---------------------------------------------------------------
 # 7. Format the List Table Header
 # ---------------------------------------------------------------

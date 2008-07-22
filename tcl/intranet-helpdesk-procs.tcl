@@ -103,6 +103,29 @@ ad_proc -public im_ticket_project_component {
 
 namespace eval im_ticket {
 
+    ad_proc -public next_ticket_nr {
+    } {
+        Create a new ticket_nr. Calculates the max() of current
+	ticket_nrs and add +1
+
+        @author frank.bergmann@project-open.com
+	@return ticket_nr +1
+    } {
+	set last_ticket_nr [db_string last_pnr "
+		select	max(project_nr)
+		from	im_projects
+		where	project_type_id = [im_project_type_ticket]
+			and project_nr ~ '^\[0-9\]+$'
+	" -default 0]
+
+	# Make sure the counter is not behind the current value
+	while {[db_string lv "select im_ticket_seq.last_value"] < $last_ticket_nr} {
+	    set ttt [db_string update "select nextval('im_ticket_seq')"]
+	}
+	return [expr $last_ticket_nr + 1]
+    }
+
+
     ad_proc -public new {
         { -var_hash "" }
     } {
@@ -213,3 +236,193 @@ ad_proc -public im_helpdesk_ticket_queue_options {
 
     return $options
 }
+
+
+
+
+
+ad_proc -public im_helpdesk_home_component {
+    {-show_empty_ticket_list_p 1}
+    {-view_name "ticket_personal_list" }
+    {-order_by_clause ""}
+    {-ticket_type_id 0}
+    {-ticket_status_id 0}
+} {
+    Returns a HTML table with the list of tickets of the
+    current user. Don't do any fancy sorting and pagination, 
+    because a single user won't be a member of many active tickets.
+
+    @param show_empty_ticket_list_p Should we show an empty ticket list?
+           Setting this parameter to 0 the component will just disappear
+           if there are no tickets.
+} {
+    set current_user_id [ad_get_user_id]
+
+    if {"" == $order_by_clause} {
+	set order_by_clause  [parameter::get_from_package_key -package_key "intranet-helpdesk" -parameter "HomeTicketListSortClause" -default "p.project_nr DESC"]
+    }
+    set org_order_by_clause $order_by_clause
+
+
+    # ---------------------------------------------------------------
+    # Columns to show:
+
+    set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name"]
+    set column_headers [list]
+    set column_vars [list]
+    set extra_selects [list]
+    set extra_froms [list]
+    set extra_wheres [list]
+
+    set column_sql "
+	select	*
+	from	im_view_columns
+	where	view_id = :view_id and group_id is null
+	order by sort_order
+    "
+
+    db_foreach column_list_sql $column_sql {
+	if {"" == $visible_for || [eval $visible_for]} {
+	    lappend column_headers "$column_name"
+	    lappend column_vars "$column_render_tcl"
+	}
+	if {"" != $extra_select} { lappend extra_selects $extra_select }
+	if {"" != $extra_from} { lappend extra_froms $extra_from }
+	if {"" != $extra_where} { lappend extra_wheres $extra_where }
+    }
+
+    # ---------------------------------------------------------------
+    # Generate SQL Query
+
+    set extra_select [join $extra_selects ",\n\t"]
+    set extra_from [join $extra_froms ",\n\t"]
+    set extra_where [join $extra_wheres "and\n\t"]
+    if { ![empty_string_p $extra_select] } { set extra_select ",\n\t$extra_select" }
+    if { ![empty_string_p $extra_from] } { set extra_from ",\n\t$extra_from" }
+    if { ![empty_string_p $extra_where] } { set extra_where "and\n\t$extra_where" }
+
+    if {0 == $ticket_status_id} { set ticket_status_id [im_ticket_status_open] }
+
+
+    set ticket_status_restriction ""
+    if {0 != $ticket_status_id} { set ticket_status_restriction "and t.ticket_status_id in ([join [im_sub_categories $ticket_status_id] ","])" }
+
+    set ticket_type_restriction ""
+    if {0 != $ticket_type_id} { set ticket_type_restriction "and t.ticket_type_id in ([join [im_sub_categories $ticket_type_id] ","])" }
+
+    set perm_sql "
+	(select
+		p.*
+	from
+	        im_tickets t,
+		im_projects p
+	where
+		t.ticket_id = p.project_id
+		and (
+			t.ticket_assignee_id = :current_user_id 
+			OR t.ticket_customer_contact_id = :current_user_id
+			OR t.ticket_queue_id in (
+				select distinct
+					g.group_id
+				from	acs_rels r, groups g 
+				where	r.object_id_one = g.group_id and
+					r.object_id_two = :current_user_id
+			)
+		)
+		and t.ticket_status_id not in ([im_ticket_status_deleted], [im_ticket_status_closed])
+		$ticket_status_restriction
+		$ticket_type_restriction
+	)"
+
+    set personal_ticket_query "
+	SELECT
+		p.*,
+		t.*,
+		to_char(p.end_date, 'YYYY-MM-DD HH24:MI') as end_date_formatted,
+	        c.company_name,
+	        im_category_from_id(t.ticket_type_id) as ticket_type,
+	        im_category_from_id(t.ticket_status_id) as ticket_status,
+	        im_category_from_id(t.ticket_prio_id) as ticket_prio,
+	        to_char(end_date, 'HH24:MI') as end_date_time
+                $extra_select
+	FROM
+		$perm_sql p,
+		im_tickets t,
+		im_companies c
+                $extra_from
+	WHERE
+		p.project_id = t.ticket_id and
+		p.company_id = c.company_id
+		$ticket_status_restriction
+		$ticket_type_restriction
+                $extra_where
+	order by $org_order_by_clause
+    "
+
+    
+    # ---------------------------------------------------------------
+    # Format the List Table Header
+
+    # Set up colspan to be the number of headers + 1 for the # column
+    set colspan [expr [llength $column_headers] + 1]
+
+    set table_header_html "<tr>\n"
+    foreach col $column_headers {
+	regsub -all " " $col "_" col_txt
+	set col_txt [lang::message::lookup "" intranet-core.$col_txt $col]
+	append table_header_html "  <td class=rowtitle>$col_txt</td>\n"
+    }
+    append table_header_html "</tr>\n"
+
+
+    # ---------------------------------------------------------------
+    # Format the Result Data
+
+    set url "index?"
+    set table_body_html ""
+    set bgcolor(0) " class=roweven "
+    set bgcolor(1) " class=rowodd "
+    set ctr 0
+    db_foreach personal_ticket_query $personal_ticket_query {
+
+	set url [im_maybe_prepend_http $url]
+	if { [empty_string_p $url] } {
+	    set url_string "&nbsp;"
+	} else {
+	    set url_string "<a href=\"$url\">$url</a>"
+	}
+	
+	# Append together a line of data based on the "column_vars" parameter list
+	set row_html "<tr$bgcolor([expr $ctr % 2])>\n"
+	foreach column_var $column_vars {
+	    append row_html "\t<td valign=top>"
+	    set cmd "append row_html $column_var"
+	    eval "$cmd"
+	    append row_html "</td>\n"
+	}
+	append row_html "</tr>\n"
+	append table_body_html $row_html
+	
+	incr ctr
+    }
+
+    # Show a reasonable message when there are no result rows:
+    if { [empty_string_p $table_body_html] } {
+
+	# Let the component disappear if there are no tickets...
+	if {!$show_empty_ticket_list_p} { return "" }
+
+	set table_body_html "
+	    <tr><td colspan=\"$colspan\"><ul><li><b> 
+	    There are currently no tickets matching the selected criteria
+	    </b></ul></td></tr>
+	"
+    }
+    return "
+	<table width=\"100%\" cellpadding=2 cellspacing=2 border=0>
+	  $table_header_html
+	  $table_body_html
+	</table>
+    "
+}
+

@@ -6,20 +6,31 @@
 
 <div class="filter-list">
    <div class="filter">
+
       <div class="filter-block">
          <div class="filter-title">
             <%= [lang::message::lookup "" intranet-core.Filter_Tickets "Filter Tickets"] %>
          </div>
-         <formtemplate id=@form_id@></formtemplate>
+         <formtemplate id="ticket_filter"></formtemplate>
       </div>
-
       <hr/>
+
+      <div class="filter-block">
+         <div class="filter-title">
+            <%= [lang::message::lookup "" intranet-core.New_Ticket "New Ticket"] %>
+         </div>
+         <formtemplate id="ticket_new"></formtemplate>
+      </div>
+      <hr/>
+
       <div class="filter-block">
          <div class="filter-title">
             <%= [lang::message::lookup "" intranet-core.Admin_Tickets "Admin Tickets"] %>
          </div>
          @admin_html;noquote@
       </div>
+      <hr/>
+
 
       <%= [im_navbar_tree -label "main"] %>
 

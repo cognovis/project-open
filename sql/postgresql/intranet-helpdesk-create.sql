@@ -416,40 +416,77 @@ where	lower(category) = 'feature request' and
 
 
 
+----------------------------------------------------------
 -- 30000-30099	Intranet Ticket Status
+----------------------------------------------------------
+
 --
 -- High-Level States
+--
 SELECT im_category_new(30000, 'Open', 'Intranet Ticket Status');
 SELECT im_category_new(30001, 'Closed', 'Intranet Ticket Status');
--- Wtates
+
+--
+-- Open States
+--
+SELECT im_category_new(30009, 'Modifying', 'Intranet Ticket Status');
+SELECT im_category_hierarchy_new(30009, 30000);
+
 SELECT im_category_new(30010, 'In review', 'Intranet Ticket Status');
-SELECT im_category_new(30011, 'Assigned', 'Intranet Ticket Status');
-SELECT im_category_new(30012, 'Customer review', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30010, 30000);
+
+SELECT im_category_new(30011, 'Assigned', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30011, 30000);
+
+SELECT im_category_new(30012, 'Customer review', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30012, 30000);
+
+SELECT im_category_new(30014, 'Quoting', 'Intranet Ticket Status');
+SELECT im_category_hierarchy_new(30014, 30000);
+
+SELECT im_category_new(30016, 'Quote Sign-off', 'Intranet Ticket Status');
+SELECT im_category_hierarchy_new(30016, 30000);
+
+SELECT im_category_new(30018, 'Assigning', 'Intranet Ticket Status');
+SELECT im_category_hierarchy_new(30018, 30000);
+
+SELECT im_category_new(30020, 'Executing', 'Intranet Ticket Status');
+SELECT im_category_hierarchy_new(30020, 30000);
+
+SELECT im_category_new(30022, 'Sign-off', 'Intranet Ticket Status');
+SELECT im_category_hierarchy_new(30022, 30000);
+
+SELECT im_category_new(30024, 'Invoicing', 'Intranet Ticket Status');
+SELECT im_category_hierarchy_new(30024, 30000);
+
+--
 -- Closed States
+--
 SELECT im_category_new(30090, 'Duplicate', 'Intranet Ticket Status');
-SELECT im_category_new(30091, 'Invalid', 'Intranet Ticket Status');
-SELECT im_category_new(30092, 'Outdated', 'Intranet Ticket Status');
-SELECT im_category_new(30093, 'Rejected', 'Intranet Ticket Status');
-SELECT im_category_new(30094, 'Won''t fix', 'Intranet Ticket Status');
-SELECT im_category_new(30095, 'Can''t reproduce', 'Intranet Ticket Status');
-SELECT im_category_new(30096, 'Resolved', 'Intranet Ticket Status');
-SELECT im_category_new(30097, 'Deleted', 'Intranet Ticket Status');
-SELECT im_category_new(30098, 'Canceled', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30090, 30001);
+SELECT im_category_new(30091, 'Invalid', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30091, 30001);
+SELECT im_category_new(30092, 'Outdated', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30092, 30001);
+SELECT im_category_new(30093, 'Rejected', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30093, 30001);
+SELECT im_category_new(30094, 'Won''t fix', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30094, 30001);
+SELECT im_category_new(30095, 'Can''t reproduce', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30095, 30001);
+SELECT im_category_new(30096, 'Resolved', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30096, 30001);
+SELECT im_category_new(30097, 'Deleted', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30097, 30001);
+SELECT im_category_new(30098, 'Canceled', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30098, 30001);
 
 
+
+----------------------------------------------------------
 -- 30400-30499	Intranet Service Catalog
+----------------------------------------------------------
+
 SELECT im_category_new(30400, 'End user support', 'Intranet Service Catalog');
 SELECT im_category_new(30420, 'System administrator support', 'Intranet Service Catalog');
 SELECT im_category_new(30410, 'Hosting service', 'Intranet Service Catalog');
@@ -612,6 +649,25 @@ SELECT	im_component_plugin__new (
 );
 
 
+-- ------------------------------------------------------
+-- List of Tickets at the home page
+SELECT	im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Home Ticket Component',	-- plugin_name
+	'intranet-helpdesk',		-- package_name
+	'left',				-- location
+	'/intranet/index',		-- page_url
+	null,				-- view_name
+	20,				-- sort_order
+	'im_helpdesk_home_component'
+);
+
+
 
 -----------------------------------------------------------
 -- Menu for Helpdesk
@@ -732,6 +788,40 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 
 
 
+
+
+
+
+-- Home Personal Tickets
+
+delete from im_view_columns where view_id = 271;
+delete from im_views where view_id = 271;
+insert into im_views (view_id, view_name, visible_for, view_type_id)
+values (271, 'ticket_personal_list', 'view_tickets', 1400);
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27100,271,00, 'Prio','"$ticket_prio"');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27110,271,10, 'Nr','"<a href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_nr</a>"');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27120,271,20,'Name','"<href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_name</A>"');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27130,271,30,'Type','$ticket_type');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27140,271,40,'Status','$ticket_status');
+
+
+
+
+
+
+
+
+
 -----------------------------------------------------------
 -- DynField Widgets
 --
@@ -806,7 +896,14 @@ SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_note', 'Note', 'textarea_
 -- ]po[ Component
 
 alter table im_tickets add ticket_component_id integer;
-SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_component_id', 'Component', 'ticket_po_components', 'integer', 'f');
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_component_id', 'Software Component', 'ticket_po_components', 'integer', 'f');
+
+
+-----------------------------------------------------------
+-- Hardware Item
+
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_conf_item_id', 'Hardware Component', 'conf_items_servers', 'integer', 'f');
+
 
 -----------------------------------------------------------
 -- Description
@@ -829,4 +926,8 @@ SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_quoted_days', 'Quoted Day
 
 alter table im_tickets add ticket_quote_comment text;
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_quote_comment', 'Quote Comment', 'textarea_small_nospell', 'string', 'f');
+
+
+
+
 
