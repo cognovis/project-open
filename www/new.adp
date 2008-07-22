@@ -50,6 +50,21 @@
 	        </tr>
 	      </table>
 
+	<br>
+
+	      <table cellpadding=2 cellspacing=0 border=1 frame=void width='100%'>
+	        <tr>
+	         <td class=tableheader align=left width='99%'>
+	<%= [lang::message::lookup "" intranet-confdb.Associated_Tickets "Associated Tickets"] %>
+	         </td>
+	        </tr>
+	        <tr>
+	          <td class=tablebody>
+		    <listtemplate name="assoc_tickets"></listtemplate>
+	          </td>
+	        </tr>
+	      </table>
+
 
 	<br>
       <%= [im_component_bay right] %>

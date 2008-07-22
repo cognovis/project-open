@@ -43,11 +43,6 @@ ad_proc -private im_package_conf_items_id_helper {} {
 }
 
 
-
-
-
-
-
 namespace eval im_conf_item {
 
     ad_proc -public new {
@@ -157,6 +152,7 @@ ad_proc -public im_conf_item_select_sql {
 	- im_conf_items.*, (all fields from the base table)
 	- conf_item_status, conf_item_type, (status and type human readable)
 } {
+    set current_user_id [ad_get_user_id]
     # Deal with generically passed variables as replacement of parameters.
     array set var_hash $var_list
     foreach var_name [array names var_hash] { set $var_name $var_hash($var_name) }
@@ -175,18 +171,53 @@ ad_proc -public im_conf_item_select_sql {
 	lappend extra_froms "acs_rels project_rel"
     }
 
-    if {"" != $cost_center_id} { 
-	lappend extra_wheres "i.conf_item_cost_center_id = :cost_center_id" 
-    }
-    if {"" != $status_id} { 
-	lappend extra_wheres "i.conf_item_status_id in ([im_sub_categories $status_id])" 
-    }
-    if {"" != $type_id} { 
-	lappend extra_wheres "i.conf_item_type_id in ([im_sub_categories $type_id])" 
-    }
-    if {"" != $treelevel} { 
-	lappend extra_wheres "tree_level(i.tree_sortkey) <= 1+$treelevel" 
-    }
+    # -----------------------------------------------
+    # Permissions
+
+    set perm_where "
+	('t' = acs_permission__permission_p([subsite::main_site_id], [ad_get_user_id], 'view_conf_items_all') OR
+	conf_item_id in (
+		-- User is explicit member of conf item
+		select	ci.conf_item_id
+		from	im_conf_items ci,
+			acs_rels r
+		where	r.object_id_two = [ad_get_user_id] and
+			r.object_id_one = ci.conf_item_id
+	UNION
+		-- User belongs to project that belongs to conf item
+		select	ci.conf_item_id
+		from	im_conf_items ci,
+			im_projects p,
+			acs_rels r1,
+			acs_rels r2
+		where	r1.object_id_two = [ad_get_user_id] and
+			r1.object_id_one = p.project_id and
+			r2.object_id_two = ci.conf_item_id and
+			r2.object_id_one = p.project_id
+	UNION
+		-- User belongs to a company which is the customer of project that belongs to conf item
+		select	ci.conf_item_id
+		from	im_companies c,
+			im_conf_items ci,
+			im_projects p,
+			acs_rels r1,
+			acs_rels r2
+		where	r1.object_id_two = [ad_get_user_id] and
+			r1.object_id_one = c.company_id and
+			p.company_id = c.company_id and
+			r2.object_id_two = ci.conf_item_id and
+			r2.object_id_one = p.project_id
+	))
+    "
+
+    # -----------------------------------------------
+    # Join the query parts
+
+    if {"" != $cost_center_id} { lappend extra_wheres "i.conf_item_cost_center_id = :cost_center_id" }
+    if {"" != $status_id} { lappend extra_wheres "i.conf_item_status_id in ([im_sub_categories $status_id])" }
+    if {"" != $type_id} { lappend extra_wheres "i.conf_item_type_id in ([im_sub_categories $type_id])" }
+    if {"" != $treelevel} { lappend extra_wheres "tree_level(i.tree_sortkey) <= 1+$treelevel" }
+    if {"" != $perm_where} { lappend extra_wheres $perm_where }
 
     set extra_from [join $extra_froms "\n\t\t,"]
     set extra_where [join $extra_wheres "\n\t\tand "]

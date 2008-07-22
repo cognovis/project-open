@@ -119,6 +119,12 @@ ad_form -extend -name $form_id \
 	    im_conf_item_new_project_rel -project_id $conf_item_project_id -conf_item_id $conf_item_id
 	}
 
+	im_dynfield::attribute_store \
+	    -object_type "im_conf_item" \
+	    -object_id $conf_item_id \
+	    -form_id $form_id
+
+
     } -edit_data {
 
 	if {![info exists conf_item_name] || "" == $conf_item_name} {
@@ -128,6 +134,11 @@ ad_form -extend -name $form_id \
 	if {"" != $conf_item_project_id} {
 	    im_conf_item_new_project_rel -project_id $conf_item_project_id -conf_item_id $conf_item_id
 	}
+
+	im_dynfield::attribute_store \
+	    -object_type "im_conf_item" \
+	    -object_id $conf_item_id \
+	    -form_id $form_id
 
     } -after_submit {
 	ad_returnredirect $return_url
@@ -192,6 +203,52 @@ db_multirow -extend { conf_item_chk project_url } assoc_projects_lines assoc_pro
 				value=\"$conf_item_id\" 
 				id=\"conf_items_list,$conf_item_id\">"
 }
+
+
+
+# ---------------------------------------------------------------
+# Associated Tickets
+# ---------------------------------------------------------------
+
+set bulk_action_list ""
+# lappend bulk_actions_list "[lang::message::lookup "" intranet-confdb.Delete "Delete"]" "conf-item-del" "[lang::message::lookup "" intranet-confdb.Remove_checked_items "Remove Checked Items"]"
+
+list::create \
+    -name assoc_tickets \
+    -multirow assoc_tickets_lines \
+    -key ticket_id \
+    -row_pretty_plural "[lang::message::lookup {} intranet-confdb.Assoc_Tickets "Associated Tickets"]" \
+    -has_checkboxes \
+    -bulk_actions $bulk_actions_list \
+    -bulk_action_export_vars { object_id } \
+    -actions [list] \
+    -elements {
+	ticket_name {
+	    label "[lang::message::lookup {} intranet-confdb.Ticket_Name {Ticket Name}]"
+	    link_url_eval {[export_vars -base "/intranet/tickets/view" {ticket_id}]}
+	}
+    }
+
+
+set assoc_tickets_sql "
+	select
+		p.*
+	from
+		im_tickets t,
+		im_projects p
+	where
+		t.ticket_id = p.project_id and
+		t.ticket_conf_item_id = :conf_item_id
+"
+
+db_multirow -extend { conf_item_chk ticket_url } assoc_tickets_lines assoc_tickets $assoc_tickets_sql {
+    set ticket_url ""
+    set conf_item_chk "<input type=\"checkbox\" 
+				name=\"conf_item_id\" 
+				value=\"$conf_item_id\" 
+				id=\"conf_items_list,$conf_item_id\">"
+}
+
 
 
 # ---------------------------------------------------------------
