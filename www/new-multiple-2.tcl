@@ -171,99 +171,100 @@ for {set i 0} {$i < 20} {incr i} {
 # This should(!) not give any errors anymore.
 # ------------------------------------------------------------------
 
-for {set i 0} {$i < 20} {incr i} {
+db_transaction {
 
-    set set_p 0
+    for {set i 0} {$i < 20} {incr i} {
 
-    set item_customer_id [im_company_internal]
-    set item_provider_id $user_id
-    set item_template_id ""
-    set item_payment_days "30"
-    set item_cost_status [im_cost_status_created]
-    set item_cost_type_id [im_cost_type_expense_item]
-    set item_project_id ""
-    set item_expense_amount ""
-    set item_currency $default_currency
-    set item_vat 0
-    set item_tax 0
-    set item_expense_date $today
-    set item_external_company_name ""
-    set item_expense_type_id ""
-    set item_billable_p "f"
-    set item_reimbursable 100
-    set item_expense_payment_type_id [im_expense_payment_type_cash]
-    set item_note ""
+	set set_p 0
 
-    set item_external_company_vat_number ""
-    set item_receipt_reference ""
-
-    if {[info exists project_id($i)] && "" != $project_id($i)} { 
-	set item_project_id $project_id($i)
-	set set_p 1
-    }
-
-    if {[info exists expense_amount($i)] && "" != $expense_amount($i)} {
-	set item_expense_amount $expense_amount($i)
-	set set_p 1
-    }
-
-    if {[info exists currency($i)] && "" != $currency($i)} { 
-	set item_currency $currency($i)
-    }
-
-    if {[info exists vat($i)] && "" != $vat($i)} { 
-	set item_vat $vat($i)
-	set set_p 1
-    }
-
-    if {[info exists expense_date($i)] && "" != $expense_date($i)} { 
-	set item_expense_date $expense_date($i)
-    }
-
-    if {[info exists external_company_name($i)] && "" != $external_company_name($i)} { 
-	set item_external_company_name $external_company_name($i)
-	set set_p 1
-    }
-
-    if {[info exists expense_type_id($i)] && "" != $expense_type_id($i) && 0 != $expense_type_id($i)} { 
-	set item_expense_type_id $expense_type_id($i)
-	set set_p 1
-    }
-
-    if {[info exists billable_p($i)] && "" != $billable_p($i)} { 
-	set item_billable_p $billable_p($i)
-    }
-
-    if {[info exists reimbursable($i)] && "" != $reimbursable($i)} { 
-	set item_reimbursable $reimbursable($i)
-	set set_p 1
-    }
-
-    if {[info exists expense_payment_type_id($i)] && "" != $expense_payment_type_id($i)} { 
-	set item_expense_payment_type_id $expense_payment_type_id($i)
-	set set_p 1
-    }
-
-    if {[info exists note($i)] && "" != $note($i)} { 
-	set item_note $note($i)
-	set set_p 1
-    }
-
-    if {$set_p} {
-
-	# Calculate VAT automatically?
-	if {$auto_vat_p} { 
-	    set item_vat [$auto_vat_function -expense_id $expense_id] 
-	} 
-
-	set item_amount [expr $item_expense_amount / [expr 1 + [expr $item_vat / 100.0]]]
-	set item_expense_name [expr [db_string expname "select t_acs_object_id_seq.last_value"] +1]
+	set item_customer_id [im_company_internal]
+	set item_provider_id $user_id
+	set item_template_id ""
+	set item_payment_days "30"
+	set item_cost_status [im_cost_status_created]
+	set item_cost_type_id [im_cost_type_expense_item]
+	set item_project_id ""
+	set item_expense_amount ""
+	set item_currency $default_currency
+	set item_vat 0
+	set item_tax 0
+	set item_expense_date $today
+	set item_external_company_name ""
+	set item_expense_type_id ""
+	set item_billable_p "f"
+	set item_reimbursable 100
+	set item_expense_payment_type_id [im_expense_payment_type_cash]
+	set item_note ""
 	
-	# Get the user's department as default CC
-	set cost_center_id [db_string user_cc "select department_id from im_employees where employee_id = :user_id" -default ""]
-    
-	db_transaction {
-		set expense_id [db_string create_expense "
+	set item_external_company_vat_number ""
+	set item_receipt_reference ""
+	
+	if {[info exists project_id($i)] && "" != $project_id($i)} { 
+	    set item_project_id $project_id($i)
+	    set set_p 1
+	}
+	
+	if {[info exists expense_amount($i)] && "" != $expense_amount($i)} {
+	    set item_expense_amount $expense_amount($i)
+	    set set_p 1
+	}
+
+	if {[info exists currency($i)] && "" != $currency($i)} { 
+	    set item_currency $currency($i)
+	}
+	
+	if {[info exists vat($i)] && "" != $vat($i)} { 
+	    set item_vat $vat($i)
+	    set set_p 1
+	}
+	
+	if {[info exists expense_date($i)] && "" != $expense_date($i)} { 
+	    set item_expense_date $expense_date($i)
+	}
+	
+	if {[info exists external_company_name($i)] && "" != $external_company_name($i)} { 
+	    set item_external_company_name $external_company_name($i)
+	    set set_p 1
+	}
+	
+	if {[info exists expense_type_id($i)] && "" != $expense_type_id($i) && 0 != $expense_type_id($i)} { 
+	    set item_expense_type_id $expense_type_id($i)
+	    set set_p 1
+	}
+	
+	if {[info exists billable_p($i)] && "" != $billable_p($i)} { 
+	    set item_billable_p $billable_p($i)
+	}
+	
+	if {[info exists reimbursable($i)] && "" != $reimbursable($i)} { 
+	    set item_reimbursable $reimbursable($i)
+	    set set_p 1
+	}
+	
+	if {[info exists expense_payment_type_id($i)] && "" != $expense_payment_type_id($i)} { 
+	    set item_expense_payment_type_id $expense_payment_type_id($i)
+	    set set_p 1
+	}
+
+	if {[info exists note($i)] && "" != $note($i)} { 
+	    set item_note $note($i)
+	    set set_p 1
+	}
+	
+	if {$set_p} {
+	    
+	    # Calculate VAT automatically?
+	    if {$auto_vat_p} { 
+		set item_vat [$auto_vat_function -expense_id $expense_id] 
+	    } 
+	    
+	    set item_amount [expr $item_expense_amount / [expr 1 + [expr $item_vat / 100.0]]]
+	    set item_expense_name [expr [db_string expname "select t_acs_object_id_seq.last_value"] +1]
+	    
+	    # Get the user's department as default CC
+	    set cost_center_id [db_string user_cc "select department_id from im_employees where employee_id = :user_id" -default ""]
+	    
+	    set expense_id [db_string create_expense "
 			select im_expense__new (
 				null,				-- expense_id
 				'im_expense',			-- object_type
@@ -293,9 +294,9 @@ for {set i 0} {$i < 20} {incr i} {
 				:item_customer_id,		-- customer
 				:item_provider_id		-- provider
 			)
-		"]
+	    "]
 
-		db_dml update_costs "
+	    db_dml update_costs "
 			update im_costs set
 				cost_center_id = :cost_center_id,
 				vat = :item_vat,
@@ -303,10 +304,10 @@ for {set i 0} {$i < 20} {incr i} {
 				amount = :item_amount,
 				note = :item_note
 			where cost_id = :expense_id
-		"
-
+	    "
+	    
 	}
-
+	
     }
 }
 
