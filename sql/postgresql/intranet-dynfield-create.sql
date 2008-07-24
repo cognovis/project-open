@@ -417,11 +417,7 @@ declare
 	v_admins		integer;
 BEGIN
 	select group_id into v_admins from groups where group_name = ''P/O Admins'';
-
-	select menu_id
-	into v_admin_menu
-	from im_menus
-	where label=''admin'';
+	select menu_id into v_admin_menu from im_menus where label=''admin'';
 
 	v_menu := im_menu__new (
 		null,			-- p_menu_id
@@ -440,10 +436,8 @@ BEGIN
 	);
 
 	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-
 	return 0;
 end;' language 'plpgsql';
-
 select inline_0 ();
 drop function inline_0 ();
 
@@ -460,6 +454,22 @@ SELECT im_menu__new (
 	'Object Types',					-- name
 	'/intranet-dynfield/object-types',		-- url
 	10,						-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_admin'),	-- parent_menu_id
+	null						-- p_visible_tcl
+);
+
+SELECT im_menu__new (
+	null,						-- p_menu_id
+	'im_menu',					-- object_type
+	now(),						-- creation_date
+	null,						-- creation_user
+	null,						-- creation_ip
+	null,						-- context_id
+	'intranet-dynfield',				-- package_name
+	'dynfield_permission',				-- label
+	'Permissions',					-- name
+	'/intranet-dynfield/permissions',		-- url
+	20,						-- sort_order
 	(select menu_id from im_menus where label = 'dynfield_admin'),	-- parent_menu_id
 	null						-- p_visible_tcl
 );
@@ -492,6 +502,22 @@ SELECT im_menu__new (
 	'Widget Examples',				-- name
 	'/intranet-dynfield/widget-examples',		-- url
 	110,						-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_admin'),	-- parent_menu_id
+	null						-- p_visible_tcl
+);
+
+SELECT im_menu__new (
+	null,						-- p_menu_id
+	'im_menu',					-- object_type
+	now(),						-- creation_date
+	null,						-- creation_user
+	null,						-- creation_ip
+	null,						-- context_id
+	'intranet-dynfield',				-- package_name
+	'dynfield_doc',					-- label
+	'Documentation',				-- name
+	'/doc/intranet-dynfield/',			-- url
+	900,						-- sort_order
 	(select menu_id from im_menus where label = 'dynfield_admin'),	-- parent_menu_id
 	null						-- p_visible_tcl
 );
