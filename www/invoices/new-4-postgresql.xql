@@ -30,7 +30,7 @@
                 :provider_id,
                 null,
                 :invoice_date,
-                'EUR',
+                :invoice_currency,
                 :template_id,
                 :cost_status_id,
                 :cost_type_id,

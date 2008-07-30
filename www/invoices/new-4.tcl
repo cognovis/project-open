@@ -74,6 +74,29 @@ if {1 == [llength $select_project]} {
 
 
 # ---------------------------------------------------------------
+# Determine and check invoice currency
+# ---------------------------------------------------------------
+
+set default_currency "EUR"
+set invoice_currency ""
+set item_list [array names item_currency]
+foreach nr $item_list {
+    set currency $item_currency($nr)
+    if {"" == $invoice_currency} { set invoice_currency $currency }
+    if {$invoice_currency != $currency} {
+	ad_return_complaint 1 "
+	    <b>[lang::message::lookup "" intranet-timesheet2-invoices.Bad_Currencies "Bad Currencies"]</b>:<br>
+	    [lang::message::lookup "" intranet-timesheet2-invoices.Bad_Currencies_Message "
+		The currencies of the invoice items differ.<br>
+		We can't create an invoice with more then one currency.	   
+	    "]
+        "
+	ad_script_abort
+    }
+}
+if {"" == $invoice_currency} { set invoice_currency $default_currency }
+
+# ---------------------------------------------------------------
 # Update invoice base data
 # ---------------------------------------------------------------
 
