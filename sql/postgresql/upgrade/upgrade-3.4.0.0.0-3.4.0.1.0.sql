@@ -1,22 +1,69 @@
 -- upgrade-3.4.0.0.0-3.4.0.1.0.sql
 
 
+-- ------------------------------------------------------
+-- 
+-- ------------------------------------------------------
 
-alter table im_user_absences
-add absence_status_id integer
-constraint im_user_absences_status_fk
-references im_categories;
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from user_tab_columns
+	where table_name = ''IM_USER_ABSENCES'' and column_name = ''ABSENCE_STATUS_ID'';
+        if v_count > 0 then return 0; end if;
+
+	alter table im_user_absences
+	add absence_status_id integer
+	constraint im_user_absences_status_fk
+	references im_categories;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
-alter table im_user_absences
-add absence_name varchar(1000);
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from user_tab_columns
+	where table_name = ''IM_USER_ABSENCES'' and column_name = ''ABSENCE_NAME'';
+        if v_count > 0 then return 0; end if;
 
-update im_user_absences set absence_name = substring(description for 990);
+	alter table im_user_absences
+	add absence_name varchar(1000);
+
+    	update im_user_absences 
+	set absence_name = substring(description for 990);
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
--- Add a duration field to specify how many days the absence will take.
-alter table im_user_absences
-add duration_days numeric(12,1);
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from user_tab_columns
+	where table_name = ''IM_USER_ABSENCES'' and column_name = ''DURATION_DAYS'';
+        if v_count > 0 then return 0; end if;
+
+	-- Add a duration field to specify how many days the absence will take.
+	alter table im_user_absences
+	add duration_days numeric(12,1);
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
 -- Add a NOT NULL constraint to im_hours:
 update im_hours set hours=0 where hours is null;
@@ -29,19 +76,33 @@ where title_tcl = 'lang::message::lookup "" intranet-timesheet.Timesheet "Timesh
 
 -----------------------------------------------------------
 
-SELECT acs_object_type__create_type (
-	'im_user_absence',		-- object_type
-	'Absence',			-- pretty_name
-	'Absences',			-- pretty_plural
-	'acs_object',			-- supertype
-	'im_user_absences',		-- table_name
-	'absence_id',			-- id_column
-	'intranet-timesheet2',		-- package_name
-	'f',				-- abstract_p
-	null,				-- type_extension_table
-	'im_user_absence__name'		-- name_method
-);
 
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+	select count(*) into v_count from acs_object_types 
+	where object_type = ''im_user_absence'';
+        if v_count > 0 then return 0; end if;
+
+	PERFORM acs_object_type__create_type (
+		''im_user_absence'',		-- object_type
+		''Absence'',			-- pretty_name
+		''Absences'',			-- pretty_plural
+		''acs_object'',			-- supertype
+		''im_user_absences'',		-- table_name
+		''absence_id'',			-- id_column
+		''intranet-timesheet2'',	-- package_name
+		''f'',				-- abstract_p
+		null,				-- type_extension_table
+		''im_user_absence__name''	-- name_method
+	);
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 -----------------------------------------------------------
@@ -159,14 +220,10 @@ end;' language 'plpgsql';
 -- 16100-16999	reserved
 
 
-insert into im_categories(category_id, category, category_type) 
-values (16000, 'Active', 'Intranet Absence Status');
-insert into im_categories(category_id, category, category_type) 
-values (16002, 'Deleted', 'Intranet Absence Status');
-insert into im_categories(category_id, category, category_type) 
-values (16004, 'Requested', 'Intranet Absence Status');
-insert into im_categories(category_id, category, category_type) 
-values (16006, 'Rejected', 'Intranet Absence Status');
+SELECT im_category_new (16000, 'Active', 'Intranet Absence Status');
+SELECT im_category_new (16002, 'Deleted', 'Intranet Absence Status');
+SELECT im_category_new (16004, 'Requested', 'Intranet Absence Status');
+SELECT im_category_new (16006, 'Rejected', 'Intranet Absence Status');
 
 
 
@@ -300,19 +357,19 @@ extra_select, extra_where, sort_order, visible_for) values (20009,200,NULL,'Stat
 
 update im_categories
 set aux_string1 = 'vacation_approval_wf'
-where category_id = 5000;
+where category_id = 5000 and aux_string1 is null;
 
 update im_categories
 set aux_string1 = 'personal_approval_wf'
-where category_id = 5001;
+where category_id = 5001 and aux_string1 is null;
 
 update im_categories
 set aux_string1 = 'sick_approval_wf'
-where category_id = 5002;
+where category_id = 5002 and aux_string1 is null;
 
 update im_categories
 set aux_string1 = 'travel_approval_wf'
-where category_id = 5003;
+where category_id = 5003 and aux_string1 is null;
 
 
 
