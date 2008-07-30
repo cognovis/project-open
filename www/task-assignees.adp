@@ -25,7 +25,9 @@
 
 </ul>
 
-(<a href="@task.add_assignee_url@">add assignee</a>)
+(<a href="@task.add_group_url@">add group</a>)
+(<a href="@task.add_person_url@">add person</a>)
+
 <if @task.this_user_is_assigned_p@ eq 0>
     (<a href="@task.assign_yourself_url@">assign yourself</a>)
 </if>

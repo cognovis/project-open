@@ -10,9 +10,9 @@
            acs_object__name(p.party_id) as name,
            p.email
       from parties p,
-           groups g
+           ($group_user_select_sql) pp
      where 
-	   p.party_id = g.group_id
+	   p.party_id = pp.party_id
  	   and not exists (
 		select 1 
 		from wf_task_assignments ta 
@@ -22,7 +22,7 @@
                 from   users u, party_approved_member_map m
                 where  m.party_id = p.party_id
                 and    u.user_id = m.member_id)
-
+  order by name, email
 
       </querytext>
 </fullquery>
