@@ -1,6 +1,6 @@
 # /packages/intranet-workflow/tcl/intranet-workflow-procs.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (C) 2003-2008 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -851,7 +851,7 @@ ad_proc -public im_workflow_home_inbox_component {
 
 	# Don't show the "Action" link if the object is mine...
 	if {"my_object" == $rel} {
-#	    set action_link $next_action_l10n
+	    set action_link $next_action_l10n
 	} 
 
 	# L10ned version of the relationship of the user to the object
@@ -973,6 +973,7 @@ ad_proc im_workflow_object_permissions {
     # Pull out the relevant variables
     set user_id [ad_get_user_id]
     set owner_id [db_string owner "select creation_user from acs_objects where object_id = $object_id" -default 0]
+    if {"" == $owner_id} { set owner_id 0 }
     set status_id [db_string status "select im_biz_object__get_status_id (:object_id)" -default 0]
     set type_id [db_string status "select im_biz_object__get_type_id (:object_id)" -default 0]
     set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
