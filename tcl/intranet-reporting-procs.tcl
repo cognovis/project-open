@@ -76,7 +76,7 @@ ad_proc im_report_quote_cell {
     <li> Quote double quotes for CSV
 } {
     switch $output_format {
-	html { 
+	html - printer { 
 	    if {"" != $encoding} {
 		set cell [encoding convertto $encoding $cell]
 	    }
@@ -143,7 +143,7 @@ ad_proc im_report_render_cell {
     set quoted_cell [im_report_quote_cell -encoding $encoding -output_format $output_format $cell]
 
     switch $output_format {
-	html { ns_write "<td $td_fields>$quoted_cell</td>\n" }
+	html - printer { ns_write "<td $td_fields>$quoted_cell</td>\n" }
 	csv { ns_write "\"$quoted_cell\";" }
    }
 }
@@ -160,7 +160,7 @@ ad_proc im_report_render_row {
     into a report HTTP session
 } {
     switch $output_format {
-        html { ns_write "<tr class=$row_class>\n" }
+        html - printer { ns_write "<tr class=$row_class>\n" }
         csv { }
     }
 
@@ -174,7 +174,7 @@ ad_proc im_report_render_row {
     }
 
     switch $output_format {
-        html { ns_write "</tr>\n" }
+        html - printer { ns_write "</tr>\n" }
         csv { ns_write "\n" }
     }
 }
@@ -234,7 +234,7 @@ ad_proc im_report_render_header {
 
 	if { ($content == "" || $new_value != $last_value) && ($group_level <= $level_of_detail) && [llength $header] > 0} {
 	    switch $output_format {
-		html { ns_write "<tr>\n" }
+		html - printer { ns_write "<tr>\n" }
 		csv { }
 	    }
 
@@ -248,7 +248,7 @@ ad_proc im_report_render_header {
 	    }
 	    
 	    switch $output_format {
-		html { ns_write "</tr>\n" }
+		html - printer { ns_write "</tr>\n" }
 		csv { ns_write "\n" }
 	    }
 	}
@@ -483,7 +483,7 @@ ad_proc im_report_display_footer {
 	ns_log Notice "display_footer: writing footer for group_level=$group_level"
 
 	switch $output_format {
-	    html { ns_write "<tr>\n" }
+	    html - printer { ns_write "<tr>\n" }
 	    csv {  }
 	}
 
@@ -492,7 +492,7 @@ ad_proc im_report_display_footer {
 	}
 
 	switch $output_format {
-	    html { ns_write "</tr>\n" }
+	    html - printer { ns_write "</tr>\n" }
 	    csv { ns_write "\n" }
 	}
 
@@ -595,14 +595,15 @@ ad_proc im_report_output_format_select {
     set excel_checked ""
     set csv_checked ""
     switch $output_format {
-	html { set html_checked "checked" }
+	html - printer { set html_checked "checked" }
 	excel { set excel_checked "checked" }
 	csv { set csv_checked "checked" }
     }
     return "
 	<nobr>
-        <input name=$name type=radio value='html' $html_checked>HTML &nbsp;
+        <input name=$name type=radio value='html' $html_checked>HTML
  	<input name=$name type=radio value='csv' $csv_checked>CSV
+<!-- 	<input name=$name type=radio value='printer' $csv_checked>Printer -->
         </nobr>
     "
 }
@@ -665,7 +666,7 @@ ad_proc im_report_content_type {
     # return "text/html"
 
     switch $output_format {
-        html { return "text/html" }
+        html - printer { return "text/html" }
         csv { 
 	    return [parameter::get_from_package_key \
 			-package_key intranet-dw-light \
@@ -688,7 +689,7 @@ ad_proc im_report_tcl_encoding {
     but not identical.
 } {
     switch $output_format {
-        html { return "" }
+        html - printer { return "" }
         csv { 
 	    return [parameter::get_from_package_key \
 			-package_key intranet-dw-light \
@@ -709,7 +710,7 @@ ad_proc im_report_http_encoding {
     but not identical.
 } {
     switch $output_format {
-        html { return "utf-8" }
+        html - printer { return "utf-8" }
         csv { 
 	    return [parameter::get_from_package_key \
 			-package_key intranet-dw-light \

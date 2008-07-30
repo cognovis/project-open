@@ -466,6 +466,23 @@ switch $output_format {
 
 	<table border=0 cellspacing=1 cellpadding=1>\n"
     }
+
+    printer {
+	ns_write "
+	<link rel=StyleSheet type='text/css' href='/intranet-reporting/printer-friendly.css' media=all>
+        <div class=\"fullwidth-list\">
+	<table border=0 cellspacing=1 cellpadding=1 rules=all>
+	<colgroup>
+		<col id=datecol>
+		<col id=hourcol>
+		<col id=datecol>
+		<col id=datecol>
+		<col id=hourcol>
+		<col id=hourcol>
+		<col id=hourcol>
+	</colgroup>
+	"
+    }
 }
 
 
@@ -541,4 +558,6 @@ im_report_render_row \
 #
 switch $output_format {
     html { ns_write "</table>[im_box_footer]</div></div></div>\n</div></div>[im_footer]\n"}
+    printer { ns_write "</table>\n</div>\n"}
+    cvs { }
 }
