@@ -48,7 +48,10 @@ set read_p [db_string report_perms "
 " -default 'f']
 
 # Has the current user the right to edit all timesheet information?
-set edit_timesheet_p [im_permission $current_user_id "edit_hours_all"]
+set edit_timesheet_p [im_permission $current_user_id "add_hours_all"]
+
+# ToDo: remove after V3.5: compatibility with old privilege
+if {[im_permission $current_user_id "edit_hours_all"]} {set edit_timesheet_p 1 }
 
 # ------------------------------------------------------------
 # Constants
