@@ -911,6 +911,13 @@ SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_conf_item_id', 'Hardware 
 alter table im_tickets add ticket_description text;
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_description', 'Description', 'textarea_small', 'string', 'f');
 
+update acs_attributes
+set min_n_values=1
+where	object_type = 'im_ticket' and
+	attribute_name = 'ticket_description'
+;
+
+
 -----------------------------------------------------------
 -- Desired Date
 
