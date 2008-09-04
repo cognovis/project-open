@@ -21,6 +21,8 @@ if {![info exists task]} {
 	@author frank.bergmann@project-open.com
     } {
 	ticket_id:integer,optional
+	{ ticket_name "" }
+	{ ticket_nr "" }
 	{ task_id "" }
 	{ return_url "" }
 	edit_p:optional
@@ -29,6 +31,8 @@ if {![info exists task]} {
 	{ ticket_type_id 0 }
 	{ return_url "/intranet-helpdesk/" }
 	{ vars_from_url ""}
+	{ plugin_id:integer 0 }
+	{ view_name "standard"}
 	form_mode:optional
     }
 
@@ -51,6 +55,10 @@ if {![info exists task]} {
     set show_components_p 0
     set enable_master_p 0
     set show_user_info_p 0
+
+    set plugin_id 0
+    set view_name "standard"
+
 }
 
 # ------------------------------------------------------------------
@@ -64,8 +72,12 @@ set focus "ticket.var_name"
 set td_class(0) "class=roweven"
 set td_class(1) "class=rowodd"
 
-if {[info exists ticket_id]} { 
-    set ticket_type_id [db_string ttype_id "select ticket_type_id from im_tickets where ticket_id = :ticket_id" -default 0]
+if {[info exists ticket_id] && "" == $ticket_id} { unset ticket_id }
+
+if {0 == $ticket_type_id || "" == $ticket_type_id} {
+    if {[exists_and_not_null ticket_id]} { 
+	set ticket_type_id [db_string ttype_id "select ticket_type_id from im_tickets where ticket_id = :ticket_id" -default 0]
+    }
 }
 if {0 != $ticket_type_id} { 
     set ticket_type [im_category_from_id $ticket_type_id]
@@ -74,7 +86,6 @@ if {0 != $ticket_type_id} {
     set page_title [lang::message::lookup "" intranet-helpdesk.New_Ticket "New Ticket"]
 }
 set context [list $page_title]
-
 
 # ------------------------------------------------------------------
 # 
@@ -100,11 +111,11 @@ set user_can_create_new_customer_contact_p 1
 
 # Redirect if the type of the object hasn't been defined and
 # if there are DynFields specific for subtypes.
-if {0 == $ticket_type_id && ![info exists ticket_id]} {
+if {("" == $ticket_type_id || 0 == $ticket_type_id) && ![exists_and_not_null ticket_id]} {
     set all_same_p [im_dynfield::subtype_have_same_attributes_p -object_type "im_ticket"]
     set all_same_p 0
     if {!$all_same_p} {
-        ad_returnredirect [export_vars -base "/intranet/biz-object-type-select" {{object_type "im_ticket"} {return_url $current_url} {type_id_var ticket_type_id}}]
+        ad_returnredirect [export_vars -base "/intranet/biz-object-type-select" {{object_type "im_ticket"} {return_url $current_url} {type_id_var ticket_type_id} ticket_name ticket_nr {pass_through_variables {ticket_nr ticket_name}}}]
     }
 }
 
@@ -329,7 +340,6 @@ if {"new" == $ticket_customer_contact_id_value && $user_can_create_new_customer_
 # 
 # ------------------------------------------------------------------
 
-
 # Fix for problem changing to "edit" form_mode
 set form_action [template::form::get_action "ticket"]
 if {"" != $form_action} { set form_mode "edit" }
@@ -383,6 +393,7 @@ ad_form -extend -name ticket -on_request {
 
     if {[info exists ticket_note]} { append message $ticket_note }
     if {[info exists ticket_description]} { append message $ticket_description }
+    if {"" == $message} { set message [lang::message::lookup "" intranet-helpdesk.Empty_Forum_Message "No message specified"]}
 
     db_dml topic_insert {
                 insert into im_forum_topics (
@@ -524,15 +535,15 @@ append contact_html "</table>\n</form>\n"
 
 # Setup the subnavbar
 set bind_vars [ns_set create]
+if {[info exists ticket_id]} { ns_set put $bind_vars ticket_id $ticket_id }
 
-if {[info exists ticket_id]} {
-    ns_set put $bind_vars ticket_id $ticket_id
-}
 
-set ticket_menu_id [db_string parent_menu "select menu_id from im_menus where label='ticket'" -default 0]
+set ticket_menu_id [db_string parent_menu "select menu_id from im_menus where label='helpdesk'" -default 0]
 set sub_navbar [im_sub_navbar \
     -components \
-    -base_url "/intranet-helpdesk/" \
+    -current_plugin_id $plugin_id \
+    -base_url "/intranet-helpdesk/new?ticket_id=$ticket_id" \
+    -plugin_url "/intranet-helpdesk/new" \
     $ticket_menu_id \
-    $bind_vars "" "pagedesriptionbar" "ticket_timesheet_ticket"] 
+    $bind_vars "" "pagedesriptionbar" "helpdesk_summary"] 
 

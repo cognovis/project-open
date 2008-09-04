@@ -400,15 +400,12 @@ ad_form \
     -action $action_url \
     -mode $form_mode \
     -method GET \
-    -export {start_idx order_by how_many view_name letter } \
+    -export { } \
     -form $ticket_elements
 
 
 template::element::set_value $form_id ticket_nr [im_ticket::next_ticket_nr]
-
-
-
-
+template::element::set_value $form_id ticket_status_id [im_ticket_status_open]
 
 
 # ---------------------------------------------------------------

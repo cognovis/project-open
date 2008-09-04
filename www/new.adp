@@ -14,39 +14,47 @@
 
 
 
+<if @view_name@ eq "component">
 
+   <%= [im_component_page -plugin_id $plugin_id -return_url "/intranet-helpdesk/new?ticket_id=$ticket_id"] %>
 
-<if @show_components_p@>
-
-<%= [im_component_bay top] %>
-<table width="100%">
-  <tr valign="top">
-    <td width="50%">
-      <%= [im_box_header $page_title] %>
-      <formtemplate id="ticket"></formtemplate>
-      <%= [im_box_footer] %>
-      <%= [im_component_bay left] %>
-    </td>
-    <td width="50%">
-	<%= [im_component_bay right] %>
-	<if @show_user_info_p@>
-	      <%= [im_box_header "Basic Information About You"] %>
-	      <formtemplate id="userinfo"></formtemplate>
-	      <%= [im_box_footer] %>
-
-	      <%= [im_box_header "Your Complete Contact Information"] %>
-	      <%= $contact_html %>
-	      <%= [im_box_footer] %>
-	</if>
-    </td>
-  </tr>
-</table>
-<%= [im_component_bay bottom] %>
 </if>
 <else>
 
-      <%= [im_box_header $page_title] %>
-      <formtemplate id="ticket"></formtemplate>
-      <%= [im_box_footer] %>
+	
+	<if @show_components_p@>
+	
+	<%= [im_component_bay top] %>
+	<table width="100%">
+	  <tr valign="top">
+	    <td width="50%">
+	      <%= [im_box_header $page_title] %>
+	      <formtemplate id="ticket"></formtemplate>
+	      <%= [im_box_footer] %>
+	      <%= [im_component_bay left] %>
+	    </td>
+	    <td width="50%">
+		<%= [im_component_bay right] %>
+		<if @show_user_info_p@>
+		      <%= [im_box_header "Basic Information About You"] %>
+		      <formtemplate id="userinfo"></formtemplate>
+		      <%= [im_box_footer] %>
+	
+		      <%= [im_box_header "Your Complete Contact Information"] %>
+		      <%= $contact_html %>
+		      <%= [im_box_footer] %>
+		</if>
+	    </td>
+	  </tr>
+	</table>
+	<%= [im_component_bay bottom] %>
+	</if>
+	<else>
+	
+	      <%= [im_box_header $page_title] %>
+	      <formtemplate id="ticket"></formtemplate>
+	      <%= [im_box_footer] %>
+	
+	</else>
 
 </else>

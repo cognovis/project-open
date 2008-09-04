@@ -573,14 +573,24 @@ SELECT im_component_plugin__new (
 	null,				-- creation_user
 	null,				-- creation_ip
 	null,				-- context_id
-	'Ticket Discussion',		-- plugin_name
+	'Forum',			-- plugin_name - shown in menu
 	'intranet-helpdesk',		-- package_name
 	'bottom',			-- location
 	'/intranet-helpdesk/new',	-- page_url
 	null,				-- view_name
 	10,				-- sort_order
-	'im_forum_full_screen_component -object_id $ticket_id'	-- component_tcl
+	'im_forum_full_screen_component -object_id $ticket_id',	-- component_tcl
+	'lang::message::lookup "" "intranet-helpdesk.Ticket_Discussion" "Ticket Discussion"'
 );
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Forum' and package_name = 'intranet-helpdesk'), 
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+-- Dont hide this component like the other ones below,
+-- it should appear by default on the "summary" page
 
 
 -- Timesheet plugin
@@ -592,23 +602,51 @@ select im_component_plugin__new (
 	null,					-- creattion_ip
 	null,					-- context_id
 
-	'Ticket Timesheet Component',		-- plugin_name
+	'Timesheet',				-- plugin_name - shown in menu
 	'intranet-helpdesk',			-- package_name
 	'right',				-- location
 	'/intranet-helpdesk/new',		-- page_url
 	null,					-- view_name
 	50,					-- sort_order
-	'im_timesheet_project_component $current_user_id $ticket_id ',
-	'lang::message::lookup "" intranet-timesheet2.Timesheet "Timesheet"'
+	'im_timesheet_project_component $current_user_id $ticket_id',
+	'lang::message::lookup "" intranet-helpdesk.Ticket_Timesheet "Ticket Timesheet"'
 );
-update im_component_plugins
-set title_tcl = 'lang::message::lookup "" intranet-timesheet2.Timesheet "Timesheet"'
-where plugin_name = 'Ticket Timesheet Component';
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Timesheet' and package_name = 'intranet-helpdesk'), 
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	row			RECORD;
+	v_plugin_id		integer;
+	v_sort_order		integer;
+BEGIN
+	select plugin_id, sort_order into v_plugin_id, v_sort_order from im_component_plugins
+	where package_name = ''intranet-helpdesk'' and plugin_name = ''Timesheet'';
+	FOR row IN
+		select user_id from users_active au
+		where 0 = (
+			select count(*) from im_component_plugin_user_map cpum
+			where cpum.user_id = au.user_id and cpum.plugin_id = v_plugin_id
+		)
+	LOOP
+		insert into im_component_plugin_user_map (plugin_id, user_id, sort_order, minimized_p, location)
+		values (v_plugin_id, row.user_id, v_sort_order, ''f'', ''none'');
+	END LOOP;
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 
 -- ------------------------------------------------------
--- Workflow graph on Absence View Page
+-- Workflow Graph
 
 SELECT	im_component_plugin__new (
 	null,					-- plugin_id
@@ -618,14 +656,51 @@ SELECT	im_component_plugin__new (
 	null,					-- creation_ip
 	null,					-- context_id
 
-	'Ticket Workflow',			-- component_name
+	'Workflow',				-- component_name - shown in menu
 	'intranet-helpdesk',			-- package_name
 	'right',				-- location
 	'/intranet-helpdesk/new',		-- page_url
 	null,					-- view_name
 	10,					-- sort_order
-	'im_workflow_graph_component -object_id $ticket_id'
+	'im_workflow_graph_component -object_id $ticket_id',
+	'lang::message::lookup "" intranet-helpdesk.Ticket_Workflow "Ticket Workflow"'
 );
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Workflow' and package_name = 'intranet-helpdesk'), 
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+
+
+
+
+-- move component to Ticket Menu Tab for all users
+create or replace function inline_0 ()
+returns integer as '
+declare
+	row			RECORD;
+	v_plugin_id		integer;
+	v_sort_order		integer;
+BEGIN
+	select plugin_id, sort_order into v_plugin_id, v_sort_order from im_component_plugins 
+	where package_name = ''intranet-helpdesk'' and plugin_name = ''Workflow'';
+	FOR row IN 
+		select user_id from users_active au
+		where 0 = (
+			select count(*) from im_component_plugin_user_map cpum
+			where cpum.user_id = au.user_id and cpum.plugin_id = v_plugin_id
+		)
+	LOOP
+		insert into im_component_plugin_user_map (plugin_id, user_id, sort_order, minimized_p, location)
+		values (v_plugin_id, row.user_id, v_sort_order, ''f'', ''none'');
+	END LOOP;
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
 
 -- ------------------------------------------------------
@@ -639,14 +714,103 @@ SELECT	im_component_plugin__new (
 	null,					-- creation_ip
 	null,					-- context_id
 
-	'Ticket Journal',			-- component_name
+	'Journal',				-- component_name - shown in menu
 	'intranet-helpdesk',			-- package_name
 	'bottom',				-- location
 	'/intranet-helpdesk/new',		-- page_url
 	null,					-- view_name
 	100,					-- sort_order
-	'im_workflow_journal_component -object_id $ticket_id'
+	'im_workflow_journal_component -object_id $ticket_id',
+	'lang::message::lookup "" intranet-helpdesk.Ticket_Journal "Ticket Journal"'
 );
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Journal' and package_name = 'intranet-helpdesk'), 
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+
+-- move component to Ticket Menu Tab for all users
+create or replace function inline_0 ()
+returns integer as '
+declare
+	row			RECORD;
+	v_plugin_id		integer;
+	v_sort_order		integer;
+BEGIN
+	select plugin_id, sort_order into v_plugin_id, v_sort_order from im_component_plugins 
+	where package_name = ''intranet-helpdesk'' and plugin_name = ''Journal'';
+	FOR row IN 
+		select user_id from users_active au
+		where 0 = (
+			select count(*) from im_component_plugin_user_map cpum
+			where cpum.user_id = au.user_id and cpum.plugin_id = v_plugin_id
+		)
+	LOOP
+		insert into im_component_plugin_user_map (plugin_id, user_id, sort_order, minimized_p, location)
+		values (v_plugin_id, row.user_id, v_sort_order, ''f'', ''none'');
+	END LOOP;
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+-- ------------------------------------------------------
+-- Filestorage on Absence View Page
+
+SELECT	im_component_plugin__new (
+	null,					-- plugin_id
+	'acs_object',				-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+
+	'Filestorage',				-- component_name - shown in menu
+	'intranet-helpdesk',			-- package_name
+	'bottom',				-- location
+	'/intranet-helpdesk/new',		-- page_url
+	null,					-- view_name
+	110,					-- sort_order
+	'im_filestorage_ticket_component $user_id $ticket_id $ticket_name $return_url', -- component_tcl
+	'lang::message::lookup "" intranet-helpdesk.Ticket_Filestorage "Ticket Filestorage"'
+);
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Filestorage' and package_name = 'intranet-helpdesk'), 
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+-- move component to Ticket Menu Tab for all users
+create or replace function inline_0 ()
+returns integer as '
+declare
+	row			RECORD;
+	v_plugin_id		integer;
+	v_sort_order		integer;
+BEGIN
+	select plugin_id, sort_order into v_plugin_id, v_sort_order from im_component_plugins 
+	where package_name = ''intranet-helpdesk'' and plugin_name = ''Filestorage'';
+	FOR row IN 
+		select user_id from users_active au
+		where 0 = (
+			select count(*) from im_component_plugin_user_map cpum
+			where cpum.user_id = au.user_id and cpum.plugin_id = v_plugin_id
+		)
+	LOOP
+		insert into im_component_plugin_user_map (plugin_id, user_id, sort_order, minimized_p, location)
+		values (v_plugin_id, row.user_id, v_sort_order, ''f'', ''none'');
+	END LOOP;
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 
 -- ------------------------------------------------------
@@ -664,8 +828,17 @@ SELECT	im_component_plugin__new (
 	'/intranet/index',		-- page_url
 	null,				-- view_name
 	20,				-- sort_order
-	'im_helpdesk_home_component'
+	'im_helpdesk_home_component',
+	'lang::message::lookup "" intranet-helpdesk.Home_Ticket_Component "Home Ticket Component"'
 );
+
+SELECT acs_permission__grant_permission(
+        (select plugin_id from im_component_plugins where plugin_name = 'Home Ticket Component' and package_name = 'intranet-helpdesk'),
+        (select group_id from groups where group_name = 'Employees'),
+        'read'
+);
+
+
 
 
 
@@ -737,12 +910,35 @@ BEGIN
 
 	return 0;
 end;' language 'plpgsql';
-
--- Execute and drop the function
 select inline_0 ();
 drop function inline_0 ();
 
 
+-----------------------------------------------------------
+-- "Summary" Tab for ticket submenu
+--
+
+SELECT im_menu__new (
+	null,				-- p_menu_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'intranet-helpdesk',		-- package_name
+	'helpdesk_summary',		-- label
+	'Summary',			-- name
+	'/intranet-helpdesk/new',	-- url
+	10,				-- sort_order
+	(select menu_id from im_menus where label = 'helpdesk'),
+	null				-- p_visible_tcl
+);
+
+SELECT acs_permission__grant_permission(
+	(select menu_id from im_menus where label = 'helpdesk_summary'), 
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
 
 
 
@@ -857,19 +1053,19 @@ SELECT im_dynfield_widget__new (
 	10007, 'integer', 'generic_sql', 'integer',
 	'{custom {sql {
 select
-        p.package_id,
-        substring(v.package_key ||' - '||coalesce(v.summary, '') for 40)
+	p.package_id,
+	substring(v.package_key ||' - '||coalesce(v.summary, '') for 40)
 from
-        apm_packages p,
-        apm_package_versions v,
-        (select package_key, max(version_name) as version_name from apm_package_versions group by package_key) g
+	apm_packages p,
+	apm_package_versions v,
+	(select package_key, max(version_name) as version_name from apm_package_versions group by package_key) g
 where
-        p.package_key = v.package_key and
-        v.package_key = g.package_key and
-        v.version_name = g.version_name and
+	p.package_key = v.package_key and
+	v.package_key = g.package_key and
+	v.version_name = g.version_name and
 	v.package_key like 'intranet%'
 order by
-        v.package_key
+	v.package_key
 }}}');
 
 
