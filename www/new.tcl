@@ -538,6 +538,8 @@ set bind_vars [ns_set create]
 if {[info exists ticket_id]} { ns_set put $bind_vars ticket_id $ticket_id }
 
 
+if {![info exists ticket_id]} { set ticket_id "" }
+
 set ticket_menu_id [db_string parent_menu "select menu_id from im_menus where label='helpdesk'" -default 0]
 set sub_navbar [im_sub_navbar \
     -components \

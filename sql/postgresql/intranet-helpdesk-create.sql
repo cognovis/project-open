@@ -8,6 +8,12 @@
 -- @author frank.bergmann@project-open.com
 
 
+-- Define default ticket workflows
+\i workflow-feature_request_wf-create.sql
+\i workflow-ticket_generic_wf-create.sql
+
+
+
 -----------------------------------------------------------
 -- Helpdesk Ticket
 
@@ -406,7 +412,7 @@ where category = 'Training Request' and category_type = 'Intranet Ticket Type';
 
 
 update im_categories
-set aux_string1 = 'ticket_workflow_generic_wf'
+set aux_string1 = 'ticket_generic_wf'
 where category_type = 'Intranet Ticket Type';
 
 update im_categories set aux_string1 = 'feature_request_wf'
