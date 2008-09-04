@@ -190,7 +190,11 @@ db_foreach spam_full_sql "" {
     # send mail quest
     # --------------------------------------------------------
 
-    set storage_type lob
+     
+
+    # [kh] Quickfix - attachement will not be used anyway ...
+    # set storage_type lob
+    set storage_type "lob"
     db_transaction {
 
 	if {1} {
@@ -220,7 +224,6 @@ db_foreach spam_full_sql "" {
 	}]
 	ns_log Notice "spam-send: content_item_id=$content_item_id"
 
-
 	# add the content_item to the multipart email
 	set sequence_num [acs_mail_multipart_add_content \
 		-multipart_id $multipart_id \
@@ -228,7 +231,6 @@ db_foreach spam_full_sql "" {
 
 	# Attach the $upload_file if there was a file attached...
 	if {![empty_string_p $upload_file]} {
-
 		set subject "$subject_subs-2"
 
 		ns_log Notice "spam-send: Setting up the attachment content_item"
@@ -317,6 +319,7 @@ db_foreach spam_full_sql "" {
 		 ( :mail_link_id, :from_addr, :to_addr )"
 
 	
+        # works until here
 	if {![empty_string_p $to_addr]} {
 		ns_log notice "spam-send: Mailing contact '$to_addr' Begin "
 
@@ -341,7 +344,6 @@ db_foreach spam_full_sql "" {
 
 	        # Add a link from the users's business object to the mail link:
 	        im_biz_object_add_role $party_id $mail_link_id [im_biz_object_role_email]
-
 	}
 
    } on_error {
