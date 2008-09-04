@@ -33,19 +33,19 @@
 
 create sequence im_fs_folder_seq start 1;
 create table im_fs_folders (
-	folder_id	integer 
-			constraint im_fs_folders_pk
-			primary key,
-	object_id	integer
-			constraint im_fs_folder_object_fk
-			references acs_objects,
-	path		varchar(500)
-			constraint im_fs_folder_status_path_nn 
-			not null,
-	folder_type_id	integer
-			constraint im_fs_folder_type_fk
-			references im_categories,
-	description	varchar(500),
+	folder_id		integer 
+				constraint im_fs_folders_pk
+				primary key,
+	object_id		integer
+				constraint im_fs_folder_object_fk
+				references acs_objects,
+	path			varchar(500)
+				constraint im_fs_folder_status_path_nn 
+				not null,
+	folder_type_id		integer
+				constraint im_fs_folder_type_fk
+				references im_categories,
+	description		varchar(500),
 		constraint im_fs_folders_un
 		unique (object_id, path)
 );
@@ -186,11 +186,11 @@ create table im_fs_folder_perms (
 -- to see in which documents a user was interested.
 
 create table im_fs_actions (
-        action_type_id          integer references im_categories,
-        user_id                 integer not null references persons,
-        action_date             timestamptz,
-        file_name               varchar(1000),
-                primary key (user_id, action_date, file_name)
+	action_type_id		integer references im_categories,
+	user_id			integer not null references persons,
+	action_date		timestamptz,
+	file_name		varchar(1000),
+		primary key (user_id, action_date, file_name)
 );
 
 
@@ -202,7 +202,7 @@ create table im_fs_actions (
 create or replace function im_company_normalize_path (varchar) 
 returns varchar as '
 DECLARE
-        v_path		alias for $1;
+	v_path		alias for $1;
 	path		varchar;
 	i		integer;
 	pos		integer;
@@ -216,31 +216,31 @@ BEGIN
 	pathlen = char_length(v_path);
 	spacing = 0;
 	FOR i IN 1 .. pathlen LOOP
-	    char = substring(v_path, i, 1);
---	    char = convert(char, ''UNICODE'', ''LATIN1'');
-	    asc = ascii(char);
-	    pos = position(char in ''abcdefghijklmnopqrstuvwxyz'' || 
+		char = substring(v_path, i, 1);
+--		char = convert(char, ''UNICODE'', ''LATIN1'');
+		asc = ascii(char);
+		pos = position(char in ''abcdefghijklmnopqrstuvwxyz'' || 
 			''ABCDEFGHIJKLMNOPQRSTUVWXYZ'' || 
 			''0123456789_'');
---	    IF char = ''ö'' THEN  pos=1; char = ''oe'' END IF;
-	    IF asc > 127 THEN
-	        RAISE NOTICE ''path=%, i=%, char=%, pos=%, asc=%'', 
+--		IF char = ''ö'' THEN  pos=1; char = ''oe'' END IF;
+		IF asc > 127 THEN
+		RAISE NOTICE ''path=%, i=%, char=%, pos=%, asc=%'', 
 			v_path, i, char, pos, asc;
-	    END IF;
-	    IF pos < 1 THEN
+		END IF;
+		IF pos < 1 THEN
 		-- Add new char only if it is not another underscore
 		IF 0 = spacing THEN
-		    path = path || ''_'';
-		    spacing = 1;
+			path = path || ''_'';
+			spacing = 1;
 		END IF;
-	    ELSE
+		ELSE
 		path = path || char;
 		spacing = 0;
-	    END IF;
+		END IF;
 	END LOOP;
 	path = lower(path);
 	path = trim(both ''_'' from path);
-        return path;
+	return path;
 end;' language 'plpgsql';
 select im_company_normalize_path ('Profilex +newtec GmbH/');
 
@@ -263,52 +263,52 @@ select	im_menu__del_module('intranet-filestorage');
 -- create components
 
 SELECT im_component_plugin__new (
-        null,                           -- plugin_id
-        'acs_object',                   -- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-        'Home Filestorage Component',   -- plugin_name
-        'intranet-filestorage',         -- package_name
-        'bottom',                       -- location
-        '/intranet/index',              -- page_url
-        null,                           -- view_name
-        90,                             -- sort_order
-        'im_filestorage_home_component $user_id' -- component_tcl
-    );
+	null,			-- plugin_id
+	'acs_object',		-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'Home Filestorage Component',   -- plugin_name
+	'intranet-filestorage',	-- package_name
+	'bottom',			-- location
+	'/intranet/index',		-- page_url
+	null,			-- view_name
+	90,				-- sort_order
+	'im_filestorage_home_component $user_id' -- component_tcl
+);
 
 SELECT im_component_plugin__new (
-        null,                           -- plugin_id
-        'acs_object',                   -- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-        'Users Filestorage Component',  -- plugin_name
-        'intranet-filestorage',         -- package_name
-        'right',                        -- location
-        '/intranet/users/view',         -- page_url
-        null,                           -- view_name
-        90,                             -- sort_order
-        'im_filestorage_user_component $current_user_id $user_id $name $return_url' -- component_tcl
-    );
+	null,			-- plugin_id
+	'acs_object',		-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'Users Filestorage Component',  -- plugin_name
+	'intranet-filestorage',	-- package_name
+	'right',			-- location
+	'/intranet/users/view',	-- page_url
+	null,			-- view_name
+	90,				-- sort_order
+	'im_filestorage_user_component $current_user_id $user_id $name $return_url' -- component_tcl
+);
 
 SELECT im_component_plugin__new (
-        null,                           -- plugin_id
-        'acs_object',                   -- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-        'Companies Filestorage Component',  -- plugin_name
-        'intranet-filestorage',         -- package_name
-        'right',                        -- location
-        '/intranet/companies/view',     -- page_url
-        null,                           -- view_name
-        50,                             -- sort_order
-        'im_filestorage_company_component $user_id $company_id $company_name $return_url' -- component_tcl
-    );
+	null,			-- plugin_id
+	'acs_object',		-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'Companies Filestorage Component',  -- plugin_name
+	'intranet-filestorage',	-- package_name
+	'right',			-- location
+	'/intranet/companies/view',     -- page_url
+	null,			-- view_name
+	50,				-- sort_order
+	'im_filestorage_company_component $user_id $company_id $company_name $return_url' -- component_tcl
+);
 
 
 --  Create a special privilege to control the "Sales" Filestorage 
@@ -320,39 +320,37 @@ select acs_privilege__add_child('admin', 'view_filestorage_sales');
 
 
 SELECT im_component_plugin__new (
-        null,                           -- plugin_id
-        'acs_object',                   -- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-        'Project Sales Filestorage Component',  -- plugin_name
-        'intranet-filestorage',         -- package_name
-        'files',                        -- location
-        '/intranet/projects/view',         -- page_url
-        null,                           -- view_name
-        89,                             -- sort_order
-        'im_filestorage_project_sales_component $user_id $project_id $project_name $return_url' -- component_tcl
-    );
+	null,			-- plugin_id
+	'acs_object',		-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'Project Sales Filestorage Component',  -- plugin_name
+	'intranet-filestorage',	-- package_name
+	'files',			-- location
+	'/intranet/projects/view',	-- page_url
+	null,			-- view_name
+	89,				-- sort_order
+	'im_filestorage_project_sales_component $user_id $project_id $project_name $return_url' -- component_tcl
+);
 
 
 SELECT im_component_plugin__new (
-        null,                           -- plugin_id
-        'acs_object',                   -- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-        'Project Filestorage Component',  -- plugin_name
-        'intranet-filestorage',         -- package_name
-        'files',                        -- location
-        '/intranet/projects/view',         -- page_url
-        null,                           -- view_name
-        90,                             -- sort_order
-        'im_filestorage_project_component $user_id $project_id $project_name $return_url' -- component_tcl
-    );
-
-
+	null,			-- plugin_id
+	'acs_object',		-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip
+	null,			-- context_id
+	'Project Filestorage Component',  -- plugin_name
+	'intranet-filestorage',	-- package_name
+	'files',			-- location
+	'/intranet/projects/view',	-- page_url
+	null,			-- view_name
+	90,				-- sort_order
+	'im_filestorage_project_component $user_id $project_id $project_name $return_url' -- component_tcl
+);
 
 
 
@@ -375,36 +373,36 @@ select acs_privilege__add_child('admin', 'fs_root_admin');
 
 -- View Privileges
 --
-select im_priv_create('fs_root_view',        'Employees');
-select im_priv_create('fs_root_view',        'Accounting');
-select im_priv_create('fs_root_view',        'P/O Admins');
-select im_priv_create('fs_root_view',        'Project Managers');
-select im_priv_create('fs_root_view',        'Senior Managers');
+select im_priv_create('fs_root_view',	'Employees');
+select im_priv_create('fs_root_view',	'Accounting');
+select im_priv_create('fs_root_view',	'P/O Admins');
+select im_priv_create('fs_root_view',	'Project Managers');
+select im_priv_create('fs_root_view',	'Senior Managers');
 
 
 -- Read Privileges
 --
-select im_priv_create('fs_root_read',        'Employees');
-select im_priv_create('fs_root_read',        'Accounting');
-select im_priv_create('fs_root_read',        'P/O Admins');
-select im_priv_create('fs_root_read',        'Project Managers');
-select im_priv_create('fs_root_read',        'Senior Managers');
+select im_priv_create('fs_root_read',	'Employees');
+select im_priv_create('fs_root_read',	'Accounting');
+select im_priv_create('fs_root_read',	'P/O Admins');
+select im_priv_create('fs_root_read',	'Project Managers');
+select im_priv_create('fs_root_read',	'Senior Managers');
 
 
 -- Write Privileges
 --
-select im_priv_create('fs_root_write',        'Employees');
-select im_priv_create('fs_root_write',        'Accounting');
-select im_priv_create('fs_root_write',        'P/O Admins');
-select im_priv_create('fs_root_write',        'Project Managers');
-select im_priv_create('fs_root_write',        'Senior Managers');
+select im_priv_create('fs_root_write',	'Employees');
+select im_priv_create('fs_root_write',	'Accounting');
+select im_priv_create('fs_root_write',	'P/O Admins');
+select im_priv_create('fs_root_write',	'Project Managers');
+select im_priv_create('fs_root_write',	'Senior Managers');
 
 
 -- Admin Privileges
 --
-select im_priv_create('fs_root_admin',        'Employees');
-select im_priv_create('fs_root_admin',        'Accounting');
-select im_priv_create('fs_root_admin',        'P/O Admins');
-select im_priv_create('fs_root_admin',        'Project Managers');
-select im_priv_create('fs_root_admin',        'Senior Managers');
+select im_priv_create('fs_root_admin',	'Employees');
+select im_priv_create('fs_root_admin',	'Accounting');
+select im_priv_create('fs_root_admin',	'P/O Admins');
+select im_priv_create('fs_root_admin',	'Project Managers');
+select im_priv_create('fs_root_admin',	'Senior Managers');
 

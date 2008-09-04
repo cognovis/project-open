@@ -81,6 +81,24 @@ where
   </fullquery>
 
 
+  <fullquery name="im_filestorage_ticket_path_helper.tickets_info_query">
+    <querytext>
+select
+	p.project_nr,
+	p.project_path,
+	p.project_name,
+	c.company_path
+from
+	im_projects p
+      LEFT JOIN
+	im_companies c USING (company_id)
+where
+	p.project_id = :ticket_id
+
+    </querytext>
+  </fullquery>
+
+
   <fullquery name="im_filestorage_project_sales_path_helper.projects_info_query">
     <querytext>
 select
@@ -97,5 +115,6 @@ where
 
     </querytext>
   </fullquery>
+
 
 </queryset>
