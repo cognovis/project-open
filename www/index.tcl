@@ -8,6 +8,7 @@ ad_page_contract {
 } {
     {rss_feeds:multiple "" }
     {max_news_per_feed ""}
+    {format ""}
 }
 
 if {"" == $rss_feeds} {
