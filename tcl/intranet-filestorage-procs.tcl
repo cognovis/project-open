@@ -22,6 +22,7 @@ ad_library {
 }
 
 ad_register_proc GET /intranet/download/project/* intranet_project_download
+ad_register_proc GET /intranet/download/ticket/* intranet_ticket_download
 ad_register_proc GET /intranet/download/project_sales/* intranet_project_sales_download
 ad_register_proc GET /intranet/download/company/* intranet_company_download
 ad_register_proc GET /intranet/download/user/* intranet_user_download
@@ -33,6 +34,7 @@ ad_proc im_file_action_upload {} { return 2420 }
 ad_proc im_file_action_download {} { return 2421 }
 
 ad_proc intranet_project_download {} { intranet_download "project" }
+ad_proc intranet_ticket_download {} { intranet_download "ticket" }
 ad_proc intranet_project_sales_download {} { intranet_download "project_sales" }
 ad_proc intranet_company_download {} { intranet_download "company" }
 ad_proc intranet_user_download {} { intranet_download "user" }
@@ -290,12 +292,16 @@ ad_proc -private im_package_filestorage_id_helper {} {
 
 
 
-ad_proc -private im_filestorage_base_path { folder_type object_id } {
+ad_proc -private im_filestorage_base_path { 
+    folder_type 
+    object_id 
+} {
     Returns the base_path for the determined object or ""
     to indicate an error.
 } {
     switch $folder_type {
 	project {return [im_filestorage_project_path $object_id]}
+	ticket {return [im_filestorage_ticket_path $object_id]}
 	project_sales {return [im_filestorage_project_sales_path $object_id]}
 	company {return [im_filestorage_company_path $object_id]}
 	user {return [im_filestorage_user_path $object_id]}
@@ -352,6 +358,15 @@ ad_proc im_filestorage_project_component { user_id project_id project_name retur
     set folder_type "project"
     set object_name "Project"
     return [im_filestorage_base_component $user_id $project_id $object_name $project_path $folder_type]
+}
+
+ad_proc im_filestorage_ticket_component { user_id ticket_id ticket_name return_url} {
+    Filestorage for tickets
+} {
+    set ticket_path [im_filestorage_ticket_path $ticket_id]
+    set folder_type "ticket"
+    set object_name "Ticket"
+    return [im_filestorage_base_component $user_id $ticket_id $object_name $ticket_path $folder_type]
 }
 
 ad_proc im_filestorage_project_sales_component { user_id project_id project_name return_url} {
@@ -498,6 +513,48 @@ where
     if { ![db_0or1row projects_info_query $query] } {
 	ad_return_complaint 1 "Can't find the project with group 
 	id of $project_id"
+	return
+    }
+
+    return "$base_path_unix/$company_path/$project_path"
+}
+
+
+
+ad_proc im_filestorage_ticket_path { ticket_id } {
+    Determine the location where the ticket files
+    are stored on the hard disk for this ticket
+} {
+#    return [util_memoize "im_filestorage_ticket_path_helper $ticket_id"]
+    return [im_filestorage_ticket_path_helper $ticket_id]
+}
+
+ad_proc im_filestorage_ticket_path_helper { ticket_id } {
+    Determine the location where the ticket files
+    are stored on the hard disk for this ticket
+} {
+    set base_path_unix [parameter::get -package_id [im_package_filestorage_id] -parameter "TicketBasePathUnix" -default "/tmp/tickets"]
+
+    # Check if the base_path has a trailing "/" and produce an error:
+    if {[regexp {.\/$} $base_path_unix]} {
+	ad_return_complaint 1 "<br><blockquote>
+             The '$base_path_unix' path for this filestorage contains a trailing slash ('/') at the end.
+             Please notify your system administrator and ask him or her to remove any trailing
+             slashes in the Admin -&gt; Parameters -&gt; 'intranet-filestorage' section.
+        </blockquote><br>
+        "
+	return
+    }
+
+    # Return a demo path for all ticket, clients etc.
+    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
+	set path [ad_parameter "TestDemoDevPath" intranet "internal/demo"]
+	ns_log Notice "im_filestorage_ticket_path: TestDemoDevServer: $path"
+	return "$base_path_unix/$path"
+    }
+
+    if {![db_0or1row tickets_info_query ""]} {
+	ad_return_complaint 1 "Can't find the ticket with ticket_id = $ticket_id"
 	return
     }
 
