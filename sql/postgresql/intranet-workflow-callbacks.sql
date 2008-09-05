@@ -21,7 +21,7 @@
 -- This callback is used for example to bypass a workflow if the object is already
 -- approved.
 --
-create or replace function im_workflow__skip_on_status_id (integer,text,text)
+create or replace function im_workflow__skip_on_status_id (integer, text, text)
 returns integer as '
 declare
 	p_case_id		alias for $1;
@@ -67,7 +67,7 @@ end;' language 'plpgsql';
 
 -- Enable callback that sets the status of the underlying object
 --
-create or replace function im_workflow__set_object_status_id (integer,text,text)
+create or replace function im_workflow__set_object_status_id (integer, text, text)
 returns integer as '
 declare
 	p_case_id		alias for $1;
@@ -107,7 +107,7 @@ end;' language 'plpgsql';
 
 -- Unassigned callback that assigns the transition to the owner of the underlying object.
 --
-create or replace function im_workflow__assign_to_owner (integer,text)
+create or replace function im_workflow__assign_to_owner (integer, text)
 returns integer as '
 declare
 	p_task_id		alias for $1;	p_custom_arg		alias for $2;
@@ -151,7 +151,7 @@ end;' language 'plpgsql';
 -- Unassigned callback that assigns the transition to the supervisor of the owner
 -- of the underlying object
 --
-create or replace function im_workflow__assign_to_supervisor (integer,text)
+create or replace function im_workflow__assign_to_supervisor (integer, text)
 returns integer as '
 declare
 	p_task_id		alias for $1;
@@ -201,7 +201,7 @@ end;' language 'plpgsql';
 
 -- Unassigned callback that assigns the transition to the group in the custom_arg
 --
-create or replace function im_workflow__assign_to_group (integer,text)
+create or replace function im_workflow__assign_to_group (integer, text)
 returns integer as '
 declare
 	p_task_id		alias for $1;
@@ -246,3 +246,45 @@ begin
 end;' language 'plpgsql';
 
 
+create or replace function im_workflow__assign_to_group (integer, text, text)
+returns integer as '
+declare
+        p_case_id               alias for $1;
+        p_transition_key        alias for $2;
+        p_custom_arg            alias for $3;
+
+	v_task_id		integer;	v_case_id		integer;
+	v_creation_ip		varchar; 	v_creation_user		integer;
+	v_object_id		integer;	v_object_type		varchar;
+	v_journal_id		integer;
+	v_transition_key	varchar;	v_workflow_key		varchar;
+
+	v_group_id		integer;	v_group_name		varchar;
+begin
+	-- Select out some frequently used variables of the environment
+	select	c.object_id, c.workflow_key, task_id, c.case_id, co.object_type, co.creation_ip
+	into	v_object_id, v_workflow_key, v_task_id, v_case_id, v_object_type, v_creation_ip
+	from	wf_tasks t, wf_cases c, acs_objects co
+	where	c.case_id = p_case_id
+		and c.case_id = co.object_id
+		and t.case_id = c.case_id
+		and t.workflow_key = c.workflow_key
+		and t.transition_key = p_transition_key;
+
+	select	group_id, group_name into v_group_id, v_group_name from groups
+	where	trim(lower(group_name)) = trim(lower(p_custom_arg));
+
+	IF v_group_id is not null THEN
+		v_journal_id := journal_entry__new(
+		    null, v_case_id,
+		    v_transition_key || '' assign_to_group '' || v_group_name,
+		    v_transition_key || '' assign_to_group '' || v_group_name,
+		    now(), v_creation_user, v_creation_ip,
+		    ''Assigning to specified group '' || v_group_name
+		);
+		PERFORM workflow_case__add_task_assignment(v_task_id, v_group_id, ''f'');
+		PERFORM workflow_case__notify_assignee (v_task_id, v_group_id, null, null, 
+			''wf_'' || v_object_type || ''_assignment_notif'');
+	END IF;
+	return 0;
+end;' language 'plpgsql';
