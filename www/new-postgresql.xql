@@ -38,6 +38,8 @@
 <fullquery name="project_update">
     <querytext>
 	update im_projects set
+		parent_id		= :ticket_sla_id,
+		company_id		= (select company_id from im_projects where project_id = :ticket_sla_id),
 		project_name		= :ticket_name,
 		project_nr		= :ticket_nr
 	where

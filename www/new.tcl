@@ -13,7 +13,6 @@
 # "standalone" (TCL-page) or as a Workflow Panel.
 # -----------------------------------------------------------
 
-
 # Skip if this page is called as part of a Workflow panel
 if {![info exists task]} {
 
@@ -23,6 +22,7 @@ if {![info exists task]} {
 	ticket_id:integer,optional
 	{ ticket_name "" }
 	{ ticket_nr "" }
+	{ ticket_sla_id "" }
 	{ task_id "" }
 	{ return_url "" }
 	edit_p:optional
@@ -55,6 +55,7 @@ if {![info exists task]} {
     set show_components_p 0
     set enable_master_p 0
     set show_user_info_p 0
+    set ticket_sla_id ""
 
     set plugin_id 0
     set view_name "standard"
@@ -87,9 +88,8 @@ if {0 != $ticket_type_id} {
 }
 set context [list $page_title]
 
-# ------------------------------------------------------------------
-# 
-# ------------------------------------------------------------------
+# ----------------------------------------------
+# Calculate form_mode
 
 if {"edit" == [template::form::get_action ticket]} { set form_mode "edit" }
 if {![info exists ticket_id]} { set form_mode "edit" }
@@ -104,21 +104,27 @@ if {"edit" == $form_mode} { set show_components_p 0 }
 set user_can_create_new_customer_p 1
 set user_can_create_new_customer_contact_p 1
 
-
-# ------------------------------------------------------------------
-# Redirect to get the type
-# ------------------------------------------------------------------
-
-# Redirect if the type of the object hasn't been defined and
-# if there are DynFields specific for subtypes.
-if {("" == $ticket_type_id || 0 == $ticket_type_id) && ![exists_and_not_null ticket_id]} {
-    set all_same_p [im_dynfield::subtype_have_same_attributes_p -object_type "im_ticket"]
-    set all_same_p 0
-    if {!$all_same_p} {
-        ad_returnredirect [export_vars -base "/intranet/biz-object-type-select" {{object_type "im_ticket"} {return_url $current_url} {type_id_var ticket_type_id} ticket_name ticket_nr {pass_through_variables {ticket_nr ticket_name}}}]
-    }
+set ticket_exists_p 0
+if {[exists_and_not_null ticket_id]} {
+    set ticket_exists_p [db_string ticket_exists_p "select count(*) from im_tickets where ticket_id = :ticket_id"]
 }
 
+# ---------------------------------------------
+# The base form.
+# Define this in the beginning, so we can check the form state
+# ---------------------------------------------
+
+set actions [list {"Edit" edit}]
+if {[im_permission $current_user_id add_tickets]} { lappend actions {"Delete" delete} }
+
+ad_form \
+    -name ticket \
+    -cancel_url $return_url \
+    -action $action_url \
+    -actions $actions \
+    -has_edit 1 \
+    -mode $form_mode \
+    -export {next_url return_url}
 
 
 # ------------------------------------------------------------------
@@ -126,34 +132,70 @@ if {("" == $ticket_type_id || 0 == $ticket_type_id) && ![exists_and_not_null tic
 # ------------------------------------------------------------------
 
 set button_pressed [template::form get_action ticket]
-# ad_return_complaint 1 '$button_pressed'
-
-
 if {"delete" == $button_pressed} {
-
      db_dml mark_ticket_deleted "
 	update	im_tickets
 	set	ticket_status_id = [im_ticket_status_deleted]
 	where	ticket_id = :ticket_id
      "
-
-#    db_dml update_project "
-#	update im_projects
-#	set project_status_id = [im_project_status_deleted]
-#	where project_id = :ticket_id
-#    "
-
     ad_returnredirect $return_url
 }
 
 
 # ------------------------------------------------------------------
-# Action - Who is allowed to do what?
+# Form_mode == Edit 
+# Make sure everything's there for creating a ticket
 # ------------------------------------------------------------------
 
-set actions [list {"Edit" edit}]
-if {[im_permission $current_user_id add_tickets]} {
-    lappend actions {"Delete" delete}
+if {"edit" == $form_mode} {
+
+    # ------------------------------------------------------------------
+    # Redirect if the type of the object hasn't been defined and
+    # if there are DynFields specific for subtypes.
+    if {("" == $ticket_type_id || 0 == $ticket_type_id) && ![exists_and_not_null ticket_id]} {
+	set all_same_p [im_dynfield::subtype_have_same_attributes_p -object_type "im_ticket"]
+	set all_same_p 0
+	if {!$all_same_p} {
+	    ad_returnredirect [export_vars -base "/intranet/biz-object-type-select" {{object_type "im_ticket"} {return_url $current_url} {type_id_var ticket_type_id} ticket_name ticket_nr ticket_sla_id {pass_through_variables {ticket_nr ticket_name ticket_sla_id}}}]
+	}
+    }
+
+
+    # ------------------------------------------------------------------
+    # Redirect if the SLA hasn't been defined yet
+
+    if {("" == $ticket_sla_id || 0 == $ticket_sla_id) && ![exists_and_not_null ticket_id]} {
+	ad_returnredirect [export_vars -base "select-sla" {{return_url $current_url} ticket_name ticket_status_id ticket_type_id ticket_nr {pass_through_variables {ticket_nr ticket_name ticket_status_id ticket_type_id}}}]
+    }
+
+}
+
+
+# ------------------------------------------------------------------
+# Get information about the ticket
+# in order to set options right
+# ------------------------------------------------------------------
+
+if {$ticket_exists_p} {
+
+    db_1row ticket_info "
+	select
+		t.*, p.*,
+		p.company_id as ticket_customer_id
+	from
+		im_projects p,
+		im_tickets t
+	where
+		p.project_id = t.ticket_id
+		and p.project_id = :ticket_id
+    "
+
+}
+
+# Check if we can get the ticket_customer_id.
+# We need this field in order to limit the customer contacts to show.
+if {![exists_and_not_null ticket_customer_id] && [exists_and_not_null ticket_sla_id]} {
+    set ticket_customer_id [db_string cid "select company_id from im_projects where project_id = :ticket_sla_id" -default ""]
 }
 
 
@@ -171,43 +213,54 @@ lappend ticket_elements {ticket_nr:text(hidden),optional }
 lappend ticket_elements {start_date:date(hidden),optional }
 lappend ticket_elements {end_date:date(hidden),optional }
 
-# ---------------------------------------------
-# Customer & Contact
+
+# ------------------------------------------------------------------
+# Form options
+# ------------------------------------------------------------------
+
+# customer_options
+#
 set customer_options [im_company_options -type "Customer" -include_empty 0]
 if {$user_can_create_new_customer_p} {
     set customer_options [linsert $customer_options 0 [list "Create New Customer" "new"]]
 }
 set customer_options [linsert $customer_options 0 [list "" ""]]
 
-set customer_contact_options [im_user_options -group_id [im_customer_group_id] -include_empty_p 0]
+if {[exists_and_not_null ticket_customer_id]} {
+    set customer_sla_options [im_helpdesk_ticket_sla_options -customer_id $ticket_customer_id -include_create_sla_p 1]
+    set customer_contact_options [im_user_options -biz_object_id $ticket_customer_id -include_empty_p 0]
+} else {
+    set customer_sla_options [im_helpdesk_ticket_sla_options -include_create_sla_p 1]
+    set customer_contact_options [im_user_options -include_empty_p 0]
+}
+
+# customer_contact_options
+#
 if {$user_can_create_new_customer_p} {
     set customer_contact_options [linsert $customer_contact_options 0 [list "Create New Customer Contact" "new"]]
 }
 set customer_contact_options [linsert $customer_contact_options 0 [list "" ""]]
 
-# Check permission if the user is allowed to create a ticket for
-# somebody else
-if {[im_permission $current_user_id add_ticket_for_customers]} {
 
-    lappend ticket_elements {ticket_customer_id:text(select) {label "[lang::message::lookup {} intranet-helpdesk.Customer Customer]"} {options $customer_options}}
+# ------------------------------------------------------------------
+# Check permission if the user is allowed to create a ticket for somebody else
+# ------------------------------------------------------------------
+
+if {[im_permission $current_user_id add_tickets_for_customers]} {
+
+    lappend ticket_elements {ticket_sla_id:text(select) {label "[lang::message::lookup {} intranet-helpdesk.SLA SLA]"} {options $customer_sla_options}}
     lappend ticket_elements {ticket_customer_contact_id:text(select) {label "[lang::message::lookup {} intranet-helpdesk.Customer_Contact {<nobr>Customer Contact</nobr>}]"} {options $customer_contact_options}}
 
 } else {
 
+    lappend ticket_elements {ticket_sla_id:text(hidden) {options $customer_sla_options}}
     set ticket_customer_contact_id $current_user_id
-    set ticket_customer_id [db_string ticket_customer "
-	select	min(company_id)
-	from	im_companies c,
-		acs_rels r
-	where	c.company_type_id in ([join [im_sub_categories [im_company_type_customer]] ","]) and
-		c.company_id = r.object_id_one and
-		:current_user_id = r.object_id_two
-    " -default ""]
+    set ticket_sla_id "error"
 
-    lappend ticket_elements {ticket_customer_id:text(hidden) {label "[lang::message::lookup {} intranet-helpdesk.Customer Customer]"} {options $customer_options}}
     lappend ticket_elements {ticket_customer_contact_id:text(hidden) {label "[lang::message::lookup {} intranet-helpdesk.Customer_Contact {<nobr>Customer Contact</nobr>}]"} {options $customer_contact_options}}
-
 }
+
+
 
 # ---------------------------------------------
 # Status & Type
@@ -219,18 +272,10 @@ lappend ticket_elements {ticket_type_id:text(hidden) {label "[lang::message::loo
 
 
 # ---------------------------------------------
-# The form
+# Extend the form with new fields
+# ---------------------------------------------
 
-
-ad_form \
-    -name ticket \
-    -cancel_url $return_url \
-    -action $action_url \
-    -actions $actions \
-    -has_edit 1 \
-    -mode $form_mode \
-    -export {next_url return_url} \
-    -form $ticket_elements
+ad_form -extend -name ticket -form $ticket_elements
 
 
 
@@ -259,9 +304,9 @@ foreach var_from_url $vars_from_url {
     ad_set_element_value -element $var_from_url [im_opt_val $var_from_url]
 }
 
-# Rediret to CompanyNewPage if the ticket_customer_id was set to "new"
-set ticket_customer_id_value [template::element get_value ticket ticket_customer_id]
-if {"new" == $ticket_customer_id_value && $user_can_create_new_customer_p} {
+# Rediret to SLANewPage if the ticket_sla_id was set to "new"
+set ticket_sla_id_value [template::element get_value ticket ticket_sla_id]
+if {"new" == $ticket_sla_id_value && $user_can_create_new_customer_p} {
 
     # Copy all ticket form values to local variables
     template::form::get_values ticket
@@ -345,12 +390,14 @@ set form_action [template::form::get_action "ticket"]
 if {"" != $form_action} { set form_mode "edit" }
 
 ad_form -extend -name ticket -on_request {
+
     # Populate elements from local variables
 
 } -select_query {
 
 	select	t.*,
 		p.*,
+		p.parent_id as ticket_sla_id,
 		p.project_name as ticket_name,
 		p.project_nr as ticket_nr,
 		p.company_id as ticket_customer_id
@@ -361,41 +408,40 @@ ad_form -extend -name ticket -on_request {
 
 } -new_data {
 
-    set ticket_nr [db_nextval im_ticket_seq]
-    set start_date [db_string now "select now()::date from dual"]
-    set end_date [db_string now "select (now()::date)+1 from dual"]
-    set start_date_sql [template::util::date get_property sql_date $start_date]
-    set end_date_sql [template::util::date get_property sql_timestamp $end_date]
-
-    set ticket_id [db_string ticket_insert {}]
-    db_dml ticket_update {}
-    db_dml project_update {}
-    
-    # Start a new workflow case
-    im_workflow_start_wf -object_id $ticket_id -object_type_id $ticket_type_id -skip_first_transition_p 1
-
-    # Write Audit Trail
-    im_project_audit $ticket_id
-
-    # Error handling. Doesn't work yet for some unknown reason
-    db_transaction {
-    } on_error {
-	ad_return_complaint 1 "<b>Error inserting new ticket</b>:
-	<pre>$errmsg</pre>"
-    }
-
-
     # Create a new forum topic of type "Note"
     set topic_id [db_nextval im_forum_topics_seq]
-    set topic_type_id [im_topic_type_id_task]
-    set topic_status_id [im_topic_status_id_open]
-    set message ""
 
-    if {[info exists ticket_note]} { append message $ticket_note }
-    if {[info exists ticket_description]} { append message $ticket_description }
-    if {"" == $message} { set message [lang::message::lookup "" intranet-helpdesk.Empty_Forum_Message "No message specified"]}
+    db_transaction {
+	set ticket_nr [db_nextval im_ticket_seq]
+	set start_date [db_string now "select now()::date from dual"]
+	set end_date [db_string now "select (now()::date)+1 from dual"]
+	set start_date_sql [template::util::date get_property sql_date $start_date]
+	set end_date_sql [template::util::date get_property sql_timestamp $end_date]
+	
+	set ticket_id [db_string ticket_insert {}]
+	db_dml ticket_update {}
+	db_dml project_update {}
 
-    db_dml topic_insert {
+	# Add the current user to the project
+        im_biz_object_add_role $current_user_id $ticket_id [im_biz_object_role_project_manager]
+	
+	# Start a new workflow case
+	im_workflow_start_wf -object_id $ticket_id -object_type_id $ticket_type_id -skip_first_transition_p 1
+	
+	# Write Audit Trail
+	im_project_audit $ticket_id
+	
+
+	# Create a new forum topic of type "Note"
+	set topic_type_id [im_topic_type_id_task]
+	set topic_status_id [im_topic_status_id_open]
+	set message ""
+
+	if {[info exists ticket_note]} { append message $ticket_note }
+	if {[info exists ticket_description]} { append message $ticket_description }
+	if {"" == $message} { set message [lang::message::lookup "" intranet-helpdesk.Empty_Forum_Message "No message specified"]}
+
+	db_dml topic_insert {
                 insert into im_forum_topics (
                         topic_id, object_id, parent_id,
                         topic_type_id, topic_status_id, owner_id,
@@ -405,8 +451,14 @@ ad_form -extend -name ticket -on_request {
                         :topic_type_id, :topic_status_id, :current_user_id,
                         :ticket_name, :message
                 )
-    }
+	}
 
+	
+	# Error handling. Doesn't work yet for some unknown reason
+    } on_error {
+	ad_return_complaint 1 "<b>Error inserting new ticket</b>:<br>&nbsp;<br>
+	<pre>$errmsg</pre>"
+    }
 
 
 } -edit_data {

@@ -113,6 +113,7 @@ set ticket_member_options [util_memoize "db_list_of_lists ticket_members {
 set ticket_member_options [linsert $ticket_member_options 0 [list [_ intranet-core.All] ""]]
 
 set ticket_queue_options [im_helpdesk_ticket_queue_options]
+set ticket_sla_options [im_helpdesk_ticket_sla_options -include_create_sla_p 1]
 
 ad_form \
     -name $form_id \
@@ -129,6 +130,7 @@ if {[im_permission $current_user_id "view_tickets_all"]} {
 	{ticket_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status" translate_p 1}} }
 	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1} } }
 	{ticket_queue_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.Queue Queue]"} {options $ticket_queue_options}}
+	{ticket_sla_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.SLA SLA]"} {options $ticket_sla_options}}
     }
 
     template::element::set_value $form_id ticket_status_id $ticket_status_id
@@ -386,6 +388,7 @@ set form_id "ticket_new"
 set ticket_elements {
 	{ticket_id:key}
 	{ticket_name:text(text) {label $title_label} {html {size 20}} }
+	{ticket_sla_id:text(select) {label "[lang::message::lookup {} intranet-helpdesk.SLA SLA]"} {options $ticket_sla_options}}
 	{ticket_nr:text(hidden),optional }
 	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1} } }
 }
@@ -393,7 +396,6 @@ set ticket_elements {
 if {$edit_ticket_status_p} {
     lappend ticket_elements {ticket_status_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status"}} }
 }
-
 
 ad_form \
     -name $form_id \

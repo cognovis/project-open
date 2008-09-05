@@ -238,7 +238,47 @@ ad_proc -public im_helpdesk_ticket_queue_options {
 }
 
 
+ad_proc -public im_helpdesk_ticket_sla_options {
+    {-mine_p 0}
+    {-customer_id 0}
+    {-include_empty_p 1}
+    {-include_create_sla_p 0}
+} {
+    Returns a list of SLA tuples suitable for ad_form
+} {
+    set user_id [ad_get_user_id]
 
+    # Can the user see all projects?
+    set permission_sql ""
+    if {![im_permission $user_id "view_project_all"]} {
+	set permission_sql "and p.project_id in (select object_id_one from acs_rels where object_id_two = :user_id)"
+    }
+
+    set sql "
+	select
+		c.company_name || ' (' || p.project_name || ')' as sla_name,
+		p.project_id
+	from
+		im_projects p,
+		im_companies c
+	where
+		p.company_id = c.company_id and
+		p.project_type_id = [im_project_type_sla]
+		$permission_sql
+	order by
+		sla_name
+    "
+
+    set options [list]
+    db_foreach slas $sql {
+	lappend options [list $sla_name $project_id]
+    }
+
+    if {$include_create_sla_p} { set options [linsert $options 0 [list [lang::message::lookup "" intranet-helpdesk.Create_New_SLA "Create New SLA"] "new"]] }
+    if {$include_empty_p} { set options [linsert $options 0 { "" "" }] }
+
+    return $options
+}
 
 
 ad_proc -public im_helpdesk_home_component {

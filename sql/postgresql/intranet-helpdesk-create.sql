@@ -340,6 +340,13 @@ drop function inline_0();
 
 
 -----------------------------------------------------------
+-- New "SLA" Project Type
+--
+
+SELECT im_category_new (2502, 'Service Level Agreement', 'Intranet Project Type');
+
+
+-----------------------------------------------------------
 -- Type and Status
 --
 -- Create categories for Helpdesk type and status.
