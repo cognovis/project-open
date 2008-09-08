@@ -23,15 +23,16 @@ if {![info exists task]} {
 	{ ticket_name "" }
 	{ ticket_nr "" }
 	{ ticket_sla_id "" }
+	{ ticket_customer_contact_id "" }
 	{ task_id "" }
 	{ return_url "" }
 	edit_p:optional
 	message:optional
 	{ ticket_status_id "[im_ticket_status_open]" }
-	{ ticket_type_id 0 }
+	{ ticket_type_id "" }
 	{ return_url "/intranet-helpdesk/" }
 	{ vars_from_url ""}
-	{ plugin_id:integer 0 }
+	{ plugin_id:integer "" }
 	{ view_name "standard"}
 	form_mode:optional
     }
@@ -56,8 +57,9 @@ if {![info exists task]} {
     set enable_master_p 0
     set show_user_info_p 0
     set ticket_sla_id ""
+    set ticket_customer_contact_id ""
 
-    set plugin_id 0
+    set plugin_id ""
     set view_name "standard"
 
 }
@@ -75,6 +77,17 @@ set td_class(1) "class=rowodd"
 
 if {[info exists ticket_id] && "" == $ticket_id} { unset ticket_id }
 
+# Can the currrent user create new helpdesk customers?
+set user_can_create_new_customer_p 1
+set user_can_create_new_customer_sla_p 1
+set user_can_create_new_customer_contact_p 1
+
+
+# ----------------------------------------------
+# Determine ticket type
+
+# We need the ticket_type_id for page title, dynfields etc.
+# Check if we can deduce the ticket_type_id from ticket_id
 if {0 == $ticket_type_id || "" == $ticket_type_id} {
     if {[exists_and_not_null ticket_id]} { 
 	set ticket_type_id [db_string ttype_id "select ticket_type_id from im_tickets where ticket_id = :ticket_id" -default 0]
@@ -88,6 +101,7 @@ if {0 != $ticket_type_id} {
 }
 set context [list $page_title]
 
+
 # ----------------------------------------------
 # Calculate form_mode
 
@@ -100,18 +114,13 @@ set edit_ticket_status_p [im_permission $current_user_id edit_ticket_status]
 # Show the ADP component plugins?
 if {"edit" == $form_mode} { set show_components_p 0 }
 
-# Can the currrent user create new helpdesk customers?
-set user_can_create_new_customer_p 1
-set user_can_create_new_customer_contact_p 1
-
 set ticket_exists_p 0
 if {[exists_and_not_null ticket_id]} {
     set ticket_exists_p [db_string ticket_exists_p "select count(*) from im_tickets where ticket_id = :ticket_id"]
 }
 
 # ---------------------------------------------
-# The base form.
-# Define this in the beginning, so we can check the form state
+# The base form. Define this early so we can extract the form status
 # ---------------------------------------------
 
 set actions [list {"Edit" edit}]
@@ -128,7 +137,7 @@ ad_form \
 
 
 # ------------------------------------------------------------------
-# Delete?
+# Delete pressed?
 # ------------------------------------------------------------------
 
 set button_pressed [template::form get_action ticket]
@@ -143,37 +152,31 @@ if {"delete" == $button_pressed} {
 
 
 # ------------------------------------------------------------------
-# Form_mode == Edit 
-# Make sure everything's there for creating a ticket
+# Redirect if ticket_type_id or ticket_sla_id are missing
 # ------------------------------------------------------------------
 
 if {"edit" == $form_mode} {
 
-    # ------------------------------------------------------------------
-    # Redirect if the type of the object hasn't been defined and
-    # if there are DynFields specific for subtypes.
+    set redirect_p 0
+    # redirect if ticket_type_id is not defined
     if {("" == $ticket_type_id || 0 == $ticket_type_id) && ![exists_and_not_null ticket_id]} {
 	set all_same_p [im_dynfield::subtype_have_same_attributes_p -object_type "im_ticket"]
 	set all_same_p 0
-	if {!$all_same_p} {
-	    ad_returnredirect [export_vars -base "/intranet/biz-object-type-select" {{object_type "im_ticket"} {return_url $current_url} {type_id_var ticket_type_id} ticket_name ticket_nr ticket_sla_id {pass_through_variables {ticket_nr ticket_name ticket_sla_id}}}]
-	}
+	if {!$all_same_p} { set redirect_p 1 }
     }
 
-
-    # ------------------------------------------------------------------
     # Redirect if the SLA hasn't been defined yet
+    if {("" == $ticket_sla_id || 0 == $ticket_sla_id) && ![exists_and_not_null ticket_id]} { set redirect_p 1 }
 
-    if {("" == $ticket_sla_id || 0 == $ticket_sla_id) && ![exists_and_not_null ticket_id]} {
-	ad_returnredirect [export_vars -base "select-sla" {{return_url $current_url} ticket_name ticket_status_id ticket_type_id ticket_nr {pass_through_variables {ticket_nr ticket_name ticket_status_id ticket_type_id}}}]
+    if {$redirect_p} {
+	ad_returnredirect [export_vars -base "new-typeselect" {{return_url $current_url} ticket_id ticket_type_id ticket_name ticket_nr ticket_nr ticket_sla_id}]
     }
 
 }
 
 
 # ------------------------------------------------------------------
-# Get information about the ticket
-# in order to set options right
+# Get ticket_customer_id from information available in order to set options right
 # ------------------------------------------------------------------
 
 if {$ticket_exists_p} {
@@ -194,10 +197,101 @@ if {$ticket_exists_p} {
 
 # Check if we can get the ticket_customer_id.
 # We need this field in order to limit the customer contacts to show.
-if {![exists_and_not_null ticket_customer_id] && [exists_and_not_null ticket_sla_id]} {
+if {![exists_and_not_null ticket_customer_id] && [exists_and_not_null ticket_sla_id] && "new" != $ticket_sla_id} {
     set ticket_customer_id [db_string cid "select company_id from im_projects where project_id = :ticket_sla_id" -default ""]
 }
 
+
+# ------------------------------------------------------------------
+# Redirect for "New SLA" option
+# ------------------------------------------------------------------
+
+# Fetch variable values from the HTTP session and write to local variables
+set url_vars_set [ns_conn form]
+foreach var_from_url $vars_from_url {
+    ad_set_element_value -element $var_from_url [im_opt_val $var_from_url]
+}
+
+if {"new" == $ticket_sla_id && $user_can_create_new_customer_sla_p} {
+
+    # Copy all ticket form values to local variables
+    template::form::get_values ticket
+
+    # Get the list of all variables in the form
+    set form_vars [template::form::get_elements ticket]
+
+    # Remove the "ticket_id" field, because we want ad_form in edit mode.
+    set ticket_id_pos [lsearch $form_vars "ticket_id"]
+    set form_vars [lreplace $form_vars $ticket_id_pos $ticket_id_pos]
+
+    # Remove the "ticket_sla_id" field to allow the user to select the new sla.
+    set ticket_sla_id_pos [lsearch $form_vars "ticket_sla_id"]
+    set form_vars [lreplace $form_vars $ticket_sla_id_pos $ticket_sla_id_pos]
+
+    # calculate the vars for _this_ form
+    set export_vars_varlist [list]
+    foreach form_var $form_vars {
+	lappend export_vars_varlist [list $form_var [im_opt_val $form_var]]
+    }
+
+    # Add the "vars_from_url" to tell this form to set from values for these vars when we're back again.
+    lappend export_vars_varlist [list vars_from_url $form_vars]
+
+    # Determine the current_url so that we can come back here:
+    set current_url [export_vars -base [ad_conn url] $export_vars_varlist]
+
+    # Prepare the URL to create a new customer. 
+    set new_sla_url [export_vars -base "/intranet/projects/new" {
+	{project_type_id [im_project_type_sla]} 
+	{project_name "SLA"} 
+	{start_date "2000-01-01"} 
+	{end_date "2099-12-31"} 
+	{return_url $current_url}
+    }]
+    ad_returnredirect $new_sla_url
+}
+
+
+# ------------------------------------------------------------------
+# Redirect for "New Customer Contact" option
+# ------------------------------------------------------------------
+
+if {"new" == $ticket_customer_contact_id && $user_can_create_new_customer_contact_p} {
+
+    # Copy all ticket form values to local variables
+    template::form::get_values ticket
+
+    # Get the list of all variables in the form
+    set form_vars [template::form::get_elements ticket]
+
+    # Remove the "ticket_id" field, because we want ad_form in edit mode.
+    set ticket_id_pos [lsearch $form_vars "ticket_id"]
+    set form_vars [lreplace $form_vars $ticket_id_pos $ticket_id_pos]
+
+    # Remove the "ticket_customer_contact_id" field to allow the user to select the new customer_contact.
+    set ticket_customer_contact_id_pos [lsearch $form_vars "ticket_customer_contact_id"]
+    set form_vars [lreplace $form_vars $ticket_customer_contact_id_pos $ticket_customer_contact_id_pos]
+
+    # calculate the vars for _this_ form
+    set export_vars_varlist [list]
+    foreach form_var $form_vars {
+	lappend export_vars_varlist [list $form_var [im_opt_val $form_var]]
+    }
+
+    # Add the "vars_from_url" to tell this form to set from values for these vars when we're back again.
+    lappend export_vars_varlist [list vars_from_url $form_vars]
+
+    # Determine the current_url where we have to come back to.
+    set current_url [export_vars -base [ad_conn url] $export_vars_varlist]
+
+    # Prepare the URL to create a new customer_contact. 
+    set new_customer_contact_url [export_vars -base "/intranet/users/new" {
+	{profile [im_customer_group_id]} 
+	{return_url $current_url}
+	{also_add_to_biz_object {$ticket_customer_id 1300}}
+    }]
+    ad_returnredirect $new_customer_contact_url
+}
 
 # ------------------------------------------------------------------
 # Build the form
@@ -217,14 +311,6 @@ lappend ticket_elements {end_date:date(hidden),optional }
 # ------------------------------------------------------------------
 # Form options
 # ------------------------------------------------------------------
-
-# customer_options
-#
-set customer_options [im_company_options -type "Customer" -include_empty 0]
-if {$user_can_create_new_customer_p} {
-    set customer_options [linsert $customer_options 0 [list "Create New Customer" "new"]]
-}
-set customer_options [linsert $customer_options 0 [list "" ""]]
 
 if {[exists_and_not_null ticket_customer_id]} {
     set customer_sla_options [im_helpdesk_ticket_sla_options -customer_id $ticket_customer_id -include_create_sla_p 1]
@@ -264,20 +350,22 @@ if {[im_permission $current_user_id add_tickets_for_customers]} {
 
 # ---------------------------------------------
 # Status & Type
+
+lappend ticket_elements {ticket_type_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type"}}}
+
 if {$edit_ticket_status_p} {
     lappend ticket_elements {ticket_status_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status"}} }
 }
 
-lappend ticket_elements {ticket_type_id:text(hidden) {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type"}}}
 
-
-# ---------------------------------------------
 # Extend the form with new fields
-# ---------------------------------------------
-
 ad_form -extend -name ticket -form $ticket_elements
 
 
+
+# ---------------------------------------------
+# Add DynFields to the form
+# ---------------------------------------------
 
 set dynfield_ticket_type_id ""
 if {[info exists ticket_type_id]} { set dynfield_ticket_type_id $ticket_type_id}
@@ -292,93 +380,6 @@ set field_cnt [im_dynfield::append_attributes_to_form \
                        -form_id "ticket" \
                        -object_id $dynfield_ticket_id \
 ]
-
-
-# ------------------------------------------------------------------
-# Search 
-# ------------------------------------------------------------------
-
-# Set the form variables if we have been redirected from a "new" page.
-set url_vars_set [ns_conn form]
-foreach var_from_url $vars_from_url {
-    ad_set_element_value -element $var_from_url [im_opt_val $var_from_url]
-}
-
-# Rediret to SLANewPage if the ticket_sla_id was set to "new"
-set ticket_sla_id_value [template::element get_value ticket ticket_sla_id]
-if {"new" == $ticket_sla_id_value && $user_can_create_new_customer_p} {
-
-    # Copy all ticket form values to local variables
-    template::form::get_values ticket
-
-    # Get the list of all variables in the form
-    set form_vars [template::form::get_elements ticket]
-
-    # Remove the "ticket_id" field, because we want ad_form in edit mode.
-    set ticket_id_pos [lsearch $form_vars "ticket_id"]
-    set form_vars [lreplace $form_vars $ticket_id_pos $ticket_id_pos]
-
-    # Remove the "ticket_customer_id" field to allow the user to select the new customer.
-    set ticket_customer_id_pos [lsearch $form_vars "ticket_customer_id"]
-    set form_vars [lreplace $form_vars $ticket_customer_id_pos $ticket_customer_id_pos]
-
-    # calculate the vars for _this_ form
-    set export_vars_varlist [list]
-    foreach form_var $form_vars {
-	lappend export_vars_varlist [list $form_var [im_opt_val $form_var]]
-    }
-
-    # Add the "vars_from_url" to tell this form to set from values for these vars when we're back again.
-    lappend export_vars_varlist [list vars_from_url $form_vars]
-
-    # Determine the current_url where we have to come back to.
-    set current_url [export_vars -base [ad_conn url] $export_vars_varlist]
-
-    # Prepare the URL to create a new customer. 
-    set new_customer_url [export_vars -base "/intranet/companies/new" {{company_type_id [im_company_type_customer]} {return_url $current_url}}]
-    ad_returnredirect $new_customer_url
-}
-
-
-
-# Rediret to UserNewPage if the ticket_customer_contact_id was set to "new"
-set ticket_customer_contact_id_value [template::element get_value ticket ticket_customer_contact_id]
-if {"new" == $ticket_customer_contact_id_value && $user_can_create_new_customer_contact_p} {
-
-    # Copy all ticket form values to local variables
-    template::form::get_values ticket
-
-    # Get the list of all variables in the form
-    set form_vars [template::form::get_elements ticket]
-
-    # Remove the "ticket_id" field, because we want ad_form in edit mode.
-    set ticket_id_pos [lsearch $form_vars "ticket_id"]
-    set form_vars [lreplace $form_vars $ticket_id_pos $ticket_id_pos]
-
-    # Remove the "ticket_customer_contact_id" field to allow the user to select the new customer_contact.
-    set ticket_customer_contact_id_pos [lsearch $form_vars "ticket_customer_contact_id"]
-    set form_vars [lreplace $form_vars $ticket_customer_contact_id_pos $ticket_customer_contact_id_pos]
-
-    # calculate the vars for _this_ form
-    set export_vars_varlist [list]
-    foreach form_var $form_vars {
-	lappend export_vars_varlist [list $form_var [im_opt_val $form_var]]
-    }
-
-    # Add the "vars_from_url" to tell this form to set from values for these vars when we're back again.
-    lappend export_vars_varlist [list vars_from_url $form_vars]
-
-    # Determine the current_url where we have to come back to.
-    set current_url [export_vars -base [ad_conn url] $export_vars_varlist]
-
-    # Prepare the URL to create a new customer_contact. 
-    set new_customer_contact_url [export_vars -base "/intranet/users/new" {
-	{profile [im_customer_group_id]} 
-	{return_url $current_url}
-	{also_add_to_biz_object {$ticket_customer_id_value 1300}}
-    }]
-    ad_returnredirect $new_customer_contact_url
-}
 
 
 # ------------------------------------------------------------------
