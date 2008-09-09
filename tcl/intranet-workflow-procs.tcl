@@ -342,7 +342,7 @@ ad_proc -public im_workflow_graph_component {
 	1 {
 	    # Exactly one case found (default situation).
 	    # Return the WF graph component
-	    set size "5,5"
+	    set size [parameter::get_from_package_key -package_key "intranet-workflow" -parameter "WorkflowComponentWFGraphSize" -default "5,5"]
 	    set case_id [lindex $cases 0]
 	    set params [list [list case_id $case_id] [list size $size]]
 	    set graph_html [ad_parse_template -params $params "/packages/acs-workflow/www/case-state-graph"]
@@ -457,8 +457,6 @@ ad_proc -public im_workflow_graph_component {
 	append transition_html "</table>\n"
     }
 
-
-
     # ---------------------------------------------------------------------
     # Who is assigned to the current transition?
     set assignee_html ""
@@ -545,6 +543,256 @@ ad_proc -public im_workflow_graph_component {
 }
 
 
+ad_proc -public im_workflow_action_component {
+    -object_id:required
+} {
+    Shows WF default actions for the specified object, 
+    or a user-defined action panel if configured in the WF.
+} {
+    set user_id [ad_get_user_id]
+    set return_url [im_url_with_query]
+
+    # Get all "enabled" task for this object:
+    set enabled_tasks [db_list enabled_tasks "
+		select
+			wft.task_id
+		from    wf_tasks wft,
+			wf_cases wfc
+		where
+			wfc.object_id = :object_id
+			and wfc.case_id = wft.case_id
+			and wft.state in ('enabled', 'started')
+    "]
+
+    template::multirow create panels header template_url bgcolor
+    foreach task_id $enabled_tasks {
+
+	# Clean the array for the next task
+	array unset task
+
+	set export_form_vars [export_vars -form {task_id return_url}]
+
+	# ---------------------------------------------------------
+	# Get everything about the task
+
+	if {[catch {
+	    array set task [wf_task_info $task_id]
+	} err_msg]} {
+	    ad_return_complaint 1 "<li><b>[lang::message::lookup "" acs-workflow.Task_not_found "Task not found:"]</b><p>
+	        [lang::message::lookup "" acs-workflow.Task_not_found_message "
+                This error can occur if a system administrator has deleted a workflow.<br>
+                This situation should not occur during normal operations.<p>
+                Please contact your System Administrator"]
+            "
+	    return
+	}
+
+	set task(add_assignee_url) "/[im_workflow_url]/assignee-add?[export_url_vars task_id]"
+	set task(assign_yourself_url) "/[im_workflow_url]/assign-yourself?[export_vars -url {task_id return_url}]"
+	set task(manage_assignments_url) "/[im_workflow_url]/task-assignees?[export_vars -url {task_id return_url}]"
+	set task(cancel_url) "/[im_workflow_url]/task?[export_vars -url {task_id return_url {action.cancel Cancel}}]"
+	set task(action_url) "/[im_workflow_url]/task"
+	set task(return_url) $return_url
+
+	set context [list [list "/[im_workflow_url]/case?case_id=$task(case_id)" "$task(object_name) case"] "$task(task_name)"]
+	set panel_color "#dddddd"
+	set show_action_panel_p 1
+
+	# ---------------------------------------------------------
+	# Graph component
+	set size [parameter::get_from_package_key -package_key "intranet-workflow" -parameter "ActionComponentWFGraphSize" -default "3,3"]
+	set params [list [list case_id $task(case_id)] [list size $size]]
+	set graph_html [ad_parse_template -params $params "/packages/acs-workflow/www/case-state-graph"]
+
+	# ---------------------------------------------------------
+	# Get action panel(s) for the task
+
+	set override_action 0
+	set this_user_is_assigned_p 1
+	set action_panels_sql "
+		select
+			tp.header, 
+			tp.template_url
+		from
+			wf_context_task_panels tp, 
+			wf_cases c,
+			wf_tasks t
+		where
+			t.task_id = :task_id
+			and c.case_id = t.case_id
+			and tp.context_key = c.context_key
+			and tp.workflow_key = c.workflow_key
+			and tp.transition_key = t.transition_key
+			and (tp.only_display_when_started_p = 'f' or (t.state = 'started' and :this_user_is_assigned_p = 1))
+			and tp.overrides_action_p = 't'
+		order by tp.sort_order
+        "
+	set action_panel_count [db_string action_panel_count "select count(*) from ($action_panels_sql) t"]
+	if {0 == $action_panel_count} {
+	    set action_panels_sql "
+		select	'Action' as header,
+			'task-action' as template_url
+	    "
+	}
+
+#	return "<pre>[join [array get task] "\n"]</pre>"
+
+	set result ""
+	db_foreach action_panels $action_panels_sql {
+
+
+	    # --------------------------------------------------------------------
+	    set timeout_html ""
+	    if {"" != $task(hold_timeout_pretty)} {
+		set timeout_html "<td>Timeout</td><td>$task(hold_timeout_pretty)</td>\n"
+	    }
+
+	    set deadline_html ""
+	    if {"" != [string trim $task(deadline_pretty)]} {
+		if {$task(days_till_deadline) < 1} {
+		    set deadline_html "<td>Deadline</td><td><font color='red'><strong>Deadline is $task(deadline_pretty)</strong></font></td>\n"
+		} else {
+		    set deadline_html "<td>Deadline</td><td>Deadline is $task(deadline_pretty)</td>\n"
+		}
+	    }
+
+	    switch $task(state) {
+
+		started {
+		    # --------------------------------------------------------------------
+		    if {$task(this_user_is_assigned_p)} { 
+			append result "
+				<form action='/[im_workflow_url]/task' method='post'>
+			        $export_form_vars
+				<table>
+		        	<tr class=rowodd>
+		        	    <td>Task Name</td>
+		        	    <td>$task(task_name)</td>
+		        	</tr>
+        		"
+
+			template::multirow foreach task_roles_to_assign {
+			    append result "
+		                <tr class=roweven>
+		                    <td>Assign $role_name</td>
+		                    <td>$assignment_widget</td>
+		                </tr>
+			    "
+			}
+
+			template::multirow foreach task_attributes_to_set {
+			    append result "
+		                <tr class=rowodd>
+		                    <td>$pretty_name</td>
+		                    <td>$attribute_widget</td>
+		                </tr>
+			    "
+			}
+			append result "
+		             <tr class=rowodd>
+		                 <td>Comment</td>
+		                 <td><textarea name='msg' cols=20 rows=4></textarea></td>
+		             </tr>
+		             <tr class=roweven>
+		                 <td>Action</td>
+		                 <td>
+		                     <input type='submit' name='action.finish' value='Task done' />
+		                 </td>
+		             </tr>
+			"
+
+			append result "
+				<tr class=roweven>
+					<td>Started</td>
+					<td>$task(started_date_pretty)&nbsp; &nbsp; </td>
+				</tr>
+				<tr class=rowodd>$timeout_html</tr>
+				<tr class=roweven>$deadline_html</tr>
+				<tr class=rowodd>
+					<td>Extreme Actions</td>
+					<td<a href='$task(cancel_url)'>cancel task</a></td>
+				</tr>
+				</table>
+				</form>
+			"
+
+		    } else {
+
+			append result "
+				<table>
+				    <tr><td>Held by</td><td><a href='/intranet/users/view?user_id=$task(holding_user)'>$task(holding_user_name)</a></td></tr>
+				    <tr><td>Since</td><td>$task(started_date_pretty)</td></tr>
+				    <tr><td>Timeout</td><td>$task(hold_timeout_pretty)</td></tr>
+				</table>
+			"
+
+		    }
+		    
+		}
+
+		enabled {
+		    # --------------------------------------------------------------------
+		    if {$task(this_user_is_assigned_p)} {
+			append result "
+				<form action='$task(action_url)' method='post'>
+				$export_form_vars
+				<table>
+					<tr><th align='right'>Action:</th>
+					<td><input type='submit' name='action.start' value='Start task' /></td>
+					</tr>
+				</table>
+				</form>
+			"
+		    } else {
+			append result "This task has not been started yet.\n"
+		    }
+		    if {$task(this_user_is_assigned_p)} {
+			append result "<p>(<a href='$task(assign_yourself_url)'>assign yourself</a>)\n"
+
+		    }
+		    append result "(<a href='$task(manage_assignments_url)'>reassign</a>)"
+		    append result $deadline_html
+		}
+
+
+		canceled {
+		    if {$task(this_user_is_assigned_p)} { 
+append result "You canceled this task on $task(canceled_date_pretty).<p><a href='$return_url'>Go back</a>" 
+		    } else {
+append result "This task has been canceled by <a href='/intranet/users/view?user_id=$task(holding_user)'>$task(holding_user_name)</a> on $task(canceled_date_pretty)"
+		    }
+		    
+		}
+		finished {
+		    if {$task(this_user_is_assigned_p)} { 
+append result "You finished this task on $task(finished_date_pretty).<p><a href='$return_url'>Go back</a>"
+		    } else {
+append result "This task was completed by <a href='/shared/community-member?user_id=$task(holding_user)'>$task(holding_user_name)</a>at $task(finished_date_pretty)"
+
+		    }
+		    
+		}
+	
+		default {
+		    append result "<p><font=red>Found task with invalid state '$task(state)'</font></p>"
+		}
+	
+	    }
+	    # end of switch
+	    
+	}
+    }
+    return "
+	<table width='100%'>
+	<tr valign=top>
+	<td>$result</td>
+	<td>$graph_html</td>
+	</tr>
+	</table>
+    "
+}
+
+
 ad_proc -public im_workflow_journal_component {
     -object_id:required
 } {
@@ -581,7 +829,7 @@ ad_proc -public im_workflow_new_journal {
 		:user_id,
 		:peer_ip,
 		:message
-        )
+	)
     "]
     return $jid
 }
@@ -634,7 +882,7 @@ ad_proc -public im_workflow_home_inbox_component {
     Assumes that all shown objects are ]po[ "Business Objects", so 
     we can show sub-type and status of the objects.
     @param show_relationships Determines which relationships to show.
-           Showing more general relationship implies showing more
+	   Showing more general relationship implies showing more
 	   specific ones:<ul>
 	   <li>holding_user:	The current iser has started the WF task. 
 				Nobody else can execute the task, unless an 
@@ -804,7 +1052,7 @@ ad_proc -public im_workflow_home_inbox_component {
 		) m ON t.task_id = m.task_id
     "
     db_foreach assigs $tasks_assignment_sql {
-        set assigs ""
+	set assigs ""
     	if {[info exists assignment_hash($object_id)]} { set assigs $assignment_hash($object_id) }
 	lappend assigs $assigned_user_id
 	set assignment_hash($object_id) $assigs
@@ -817,7 +1065,7 @@ ad_proc -public im_workflow_home_inbox_component {
     set table_body_html ""
     db_foreach tasks $tasks_sql {
 
-        set assigned_users ""
+	set assigned_users ""
 	set assignee_pretty $assignees_pretty
     	if {[info exists assignment_hash($object_id)]} { set assigned_users $assignment_hash($object_id) }
 
@@ -872,9 +1120,9 @@ ad_proc -public im_workflow_home_inbox_component {
     # Show a reasonable message when there are no result rows:
     if { [empty_string_p $table_body_html] } {
 	set table_body_html "
-        <tr><td colspan=$colspan><ul><li><b> 
-        There are currently no objects matching the selected criteria
-        </b></ul></td></tr>"
+	<tr><td colspan=$colspan><ul><li><b> 
+	There are currently no objects matching the selected criteria
+	</b></ul></td></tr>"
     }
 
     # ---------------------------------------------------------------
@@ -895,14 +1143,14 @@ ad_proc -public im_workflow_home_inbox_component {
 
     set return_url [ad_conn url]?[ad_conn query]
     return "
-        <form action=\"/intranet-workflow/inbox-action\" method=POST>
+	<form action=\"/intranet-workflow/inbox-action\" method=POST>
 	[export_form_vars return_url]
 	<table width=100% cellpadding=2 cellspacing=2 border=0>
 	  $table_header_html
 	  $table_body_html
-          $table_action_html
+	  $table_action_html
 	</table>
-        </form>
+	</form>
     "
 }
 
