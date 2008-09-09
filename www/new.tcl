@@ -63,6 +63,10 @@ if {![info exists task]} {
     set plugin_id ""
     set view_name "standard"
 
+    # Don't show this page in WF panel.
+    # Instead, redirect to this same page, but in TaskViewPage mode.
+    ad_returnredirect "/intranet-helpdesk/new?ticket_id=$task(object_id)"
+
 }
 
 # ------------------------------------------------------------------
@@ -85,6 +89,20 @@ set user_can_create_new_customer_contact_p 1
 
 
 # ----------------------------------------------
+# Page Title
+
+set page_title [lang::message::lookup "" intranet-helpdesk.New_Ticket "New Ticket"]
+if {[exists_and_not_null ticket_id]} {
+    set page_title [db_string title "select project_name from im_projects where project_id = :ticket_id" -default ""]
+}
+if {"" == $page_title && 0 != $ticket_type_id} { 
+    set ticket_type [im_category_from_id $ticket_type_id]
+    set page_title [lang::message::lookup "" intranet-helpdesk.New_TicketType "New %ticket_type%"]
+} 
+set context [list $page_title]
+
+
+# ----------------------------------------------
 # Determine ticket type
 
 # We need the ticket_type_id for page title, dynfields etc.
@@ -94,14 +112,6 @@ if {0 == $ticket_type_id || "" == $ticket_type_id} {
 	set ticket_type_id [db_string ttype_id "select ticket_type_id from im_tickets where ticket_id = :ticket_id" -default 0]
     }
 }
-if {0 != $ticket_type_id} { 
-    set ticket_type [im_category_from_id $ticket_type_id]
-    set page_title [lang::message::lookup "" intranet-helpdesk.New_TicketType "New %ticket_type%"]
-} else {
-    set page_title [lang::message::lookup "" intranet-helpdesk.New_Ticket "New Ticket"]
-}
-set context [list $page_title]
-
 
 # ----------------------------------------------
 # Calculate form_mode
@@ -342,7 +352,6 @@ if {[im_permission $current_user_id add_tickets_for_customers]} {
 
     lappend ticket_elements {ticket_sla_id:text(hidden) {options $customer_sla_options}}
     set ticket_customer_contact_id $current_user_id
-    set ticket_sla_id "error"
 
     lappend ticket_elements {ticket_customer_contact_id:text(hidden) {label "[lang::message::lookup {} intranet-helpdesk.Customer_Contact {<nobr>Customer Contact</nobr>}]"} {options $customer_contact_options}}
 }

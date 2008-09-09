@@ -95,11 +95,13 @@ set form_id "ticket_filter"
 set object_type "im_ticket"
 set action_url "/intranet-helpdesk/index"
 set form_mode "edit"
-set mine_p_options [list \
-	[list [lang::message::lookup "" intranet-helpdesk.All "All"] "all" ] \
-	[list [lang::message::lookup "" intranet-helpdesk.My_queues "My Queues"] "queue"] \
-	[list [lang::message::lookup "" intranet-helpdesk.Mine "Mine"] "mine"] \
-]
+
+set mine_p_options {}
+if {[im_permission $current_user_id "view_tickets_all"]} { 
+    lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.All "All"] "all" ] 
+}
+lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.My_queues "My Queues"] "queue"]
+lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.Mine "Mine"] "mine"]
 
 set ticket_member_options [util_memoize "db_list_of_lists ticket_members {
 	select  distinct
@@ -443,8 +445,10 @@ ad_form \
 
 
 template::element::set_value $form_id ticket_nr [im_ticket::next_ticket_nr]
-template::element::set_value $form_id ticket_status_id [im_ticket_status_open]
 
+if {$edit_ticket_status_p} {
+    template::element::set_value $form_id ticket_status_id [im_ticket_status_open]
+}
 
 # ---------------------------------------------------------------
 # 7. Format the List Table Header

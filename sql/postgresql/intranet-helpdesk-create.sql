@@ -586,14 +586,14 @@ SELECT im_component_plugin__new (
 	null,				-- creation_user
 	null,				-- creation_ip
 	null,				-- context_id
-	'Forum',			-- plugin_name - shown in menu
+	'Discussions',			-- plugin_name - shown in menu
 	'intranet-helpdesk',		-- package_name
 	'bottom',			-- location
 	'/intranet-helpdesk/new',	-- page_url
 	null,				-- view_name
 	10,				-- sort_order
 	'im_forum_full_screen_component -object_id $ticket_id',	-- component_tcl
-	'lang::message::lookup "" "intranet-helpdesk.Ticket_Discussion" "Ticket Discussion"'
+	'lang::message::lookup "" "intranet-helpdesk.Ticket_Discussions" "Ticket Discussions"'
 );
 
 SELECT acs_permission__grant_permission(
@@ -862,7 +862,7 @@ SELECT	im_component_plugin__new (
 	null,				-- creation_user
 	null,				-- creation_ip
 	null,				-- context_id
-	'Workflow Actions',		-- plugin_name
+	'Actions',			-- plugin_name
 	'intranet-helpdesk',		-- package_name
 	'left',				-- location
 	'/intranet-helpdesk/new',	-- page_url
