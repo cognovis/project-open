@@ -561,6 +561,7 @@ ad_proc -public im_workflow_action_component {
 	- Finished
 } {
     set current_user_id [ad_get_user_id]
+    set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
     set return_url [im_url_with_query]
 
     set bgcolor(0) " class=roweven "
@@ -667,13 +668,28 @@ ad_proc -public im_workflow_action_component {
 		        	    <td>Task Name</td>
 		        	    <td>$task(task_name)</td>
 		        	</tr>
+	    "
+	    incr ctr
+
+	    if {"" != [string trim $task(instructions)]} {
+		append result "
+		        	<tr $bgcolor([expr $ctr%2])>
+		        	    <td>Task Description</td>
+		        	    <td>$task(instructions)</td>
+		        	</tr>
+		"
+		incr ctr
+	    }
+
+	    if {$user_is_admin_p} {
+		append result "
 		        	<tr $bgcolor([expr ($ctr+1)%2])>
 		        	    <td>Task Status</td>
 		        	    <td>$task(state)</td>
 		        	</tr>
-	    "
-	    incr ctr
-	    incr ctr
+	        "
+		incr ctr
+	    }
 
 	    switch $task(state) {
 
@@ -689,9 +705,10 @@ ad_proc -public im_workflow_action_component {
 		    } else {
 			append result "
 				<tr $bgcolor([expr $ctr%2])>
-					<td>&nbsp;</td>
-					<td>This task has not been started yet<br>
-					    and you are not assgined to this task.
+					<td>Action</td>
+					<td>
+					    This task has been assigned to somebody else.<br>
+					    There is nothing to do for you right now.
 					</td>
 				</tr>				
 			"
@@ -812,8 +829,8 @@ append result "This task was completed by <a href='/shared/community-member?user
 
 	    # --------------------------------------------------------------------
 	    # Assigned users
+	    set assigned_users {}
 	    if {[im_permission $current_user_id "wf_reassign_tasks"]} {
-		set assigned_users {}
 		template::multirow foreach task_assigned_users { 
 		    set user_url [export_vars -base "/intranet/users/view" {user_id}]
 		    lappend assigned_users "<a href='$user_url'>$name ($email)</a>\n"
