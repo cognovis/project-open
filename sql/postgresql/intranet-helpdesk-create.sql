@@ -878,6 +878,47 @@ SELECT acs_permission__grant_permission(
         'read'
 );
 
+SELECT acs_permission__grant_permission(
+        (select plugin_id from im_component_plugins where plugin_name = 'Workflow Actions' and package_name = 'intranet-helpdesk'),
+        (select group_id from groups where group_name = 'Customers'),
+        'read'
+);
+
+SELECT acs_permission__grant_permission(
+        (select plugin_id from im_component_plugins where plugin_name = 'Workflow Actions' and package_name = 'intranet-helpdesk'),
+        (select group_id from groups where group_name = 'Freelancers'),
+        'read'
+);
+
+
+
+-- ------------------------------------------------------
+-- Show the customer contacts information
+-- to allow the helpdesk to contact the customer
+--
+SELECT	im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Customer Info',		-- plugin_name
+	'intranet-helpdesk',		-- package_name
+	'right',			-- location
+	'/intranet-helpdesk/new',	-- page_url
+	null,				-- view_name
+	10,				-- sort_order
+	'im_user_base_info_component -user_id $ticket_customer_contact_id',
+	'lang::message::lookup "" intranet-helpdesk.Customer_Info "Customer Info"'
+);
+
+SELECT acs_permission__grant_permission(
+        (select plugin_id from im_component_plugins where plugin_name = 'Customer Info' and package_name = 'intranet-helpdesk'),
+        (select group_id from groups where group_name = 'Employees'),
+        'read'
+);
+
 
 
 -----------------------------------------------------------

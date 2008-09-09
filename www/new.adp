@@ -35,15 +35,6 @@
 		    </td>
 		    <td width="50%">
 			<%= [im_component_bay right] %>
-			<if @show_user_info_p@>
-			      <%= [im_box_header "Basic Information About You"] %>
-			      <formtemplate id="userinfo"></formtemplate>
-			      <%= [im_box_footer] %>
-		
-			      <%= [im_box_header "Your Complete Contact Information"] %>
-			      <%= $contact_html %>
-			      <%= [im_box_footer] %>
-			</if>
 		    </td>
 		  </tr>
 		</table>

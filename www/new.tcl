@@ -39,7 +39,6 @@ if {![info exists task]} {
 
     set show_components_p 1
     set enable_master_p 1
-    set show_user_info_p 1
 
 } else {
     
@@ -55,7 +54,6 @@ if {![info exists task]} {
 
     set show_components_p 0
     set enable_master_p 0
-    set show_user_info_p 0
     set ticket_type_id ""
     set ticket_sla_id ""
     set ticket_customer_contact_id ""
@@ -77,8 +75,6 @@ set current_user_id [ad_maybe_redirect_for_registration]
 set current_url [im_url_with_query]
 set action_url "/intranet-helpdesk/new"
 set focus "ticket.var_name"
-set td_class(0) "class=roweven"
-set td_class(1) "class=rowodd"
 
 if {[info exists ticket_id] && "" == $ticket_id} { unset ticket_id }
 
@@ -134,8 +130,9 @@ if {[exists_and_not_null ticket_id]} {
 # The base form. Define this early so we can extract the form status
 # ---------------------------------------------
 
-set actions [list {"Edit" edit}]
-if {[im_permission $current_user_id add_tickets]} { lappend actions {"Delete" delete} }
+set actions {}
+if {[im_permission $current_user_id add_tickets_for_customer]} { lappend actions {"Edit" edit} }
+if {[im_permission $current_user_id add_tickets_for_customer]} { lappend actions {"Delete" delete} }
 
 ad_form \
     -name ticket \
@@ -505,92 +502,6 @@ ad_form -extend -name ticket -on_request {
 	"[lang::message::lookup {} intranet-helpdesk.Ticket_name_too_long {Ticket Name too long (max 1000 characters).}]" 
     }
 }
-
-
-
-# ------------------------------------------------------------------
-# 
-# ------------------------------------------------------------------
-
-set user_id $current_user_id
-
-set info_actions [list {"Edit" edit}]
-set info_action_url "/intranet/users/view"
-ad_form \
-    -name userinfo \
-    -action $info_action_url \
-    -actions $info_actions \
-    -mode "display" \
-    -export {next_url return_url} \
-    -form {
-	{user_id:key}
-	{email:text(text) {label "[_ intranet-core.Email]"} {html {size 30}}}
-	{first_names:text(text) {label "[_ intranet-core.First_names]"} {html {size 30}}}
-	{last_name:text(text) {label "[_ intranet-core.Last_name]"} {html {size 30}}}
-    } -select_query {
-	select	u.*
-	from	cc_users u
-	where	u.user_id = :user_id
-    }
-
-
-# ------------------------------------------------------------------
-# Contact information
-# ------------------------------------------------------------------
-
-# ToDo: Convert into component and use component for /users/view
-
-set read 1
-set write 1
-
-db_1row user_info "
-	select	u.*,
-		uc.*,
-		(select country_name from country_codes where iso = uc.ha_country_code) as ha_country_name,
-		(select country_name from country_codes where iso = uc.wa_country_code) as wa_country_name
-	from	cc_users u
-		LEFT OUTER JOIN users_contact uc ON (u.user_id = uc.user_id)
-	where	u.user_id = :user_id
-"
-
-set view_id [db_string get_view_id "select view_id from im_views where view_name='user_contact'"]
-
-set column_sql "
-	select	column_name,
-		column_render_tcl,
-		visible_for
-	from	im_view_columns
-	where	view_id=:view_id
-		and group_id is null
-	order by sort_order
-"
-
-set contact_html "
-<form method=POST action=/intranet/users/contact-edit>
-[export_form_vars user_id return_url]
-<table cellpadding=0 cellspacing=2 border=0>
-  <tr> 
-    <td colspan=2 class=rowtitle align=center>[_ intranet-core.Contact_Information]</td>
-  </tr>
-"
-
-set ctr 1
-db_foreach column_list_sql $column_sql {
-        if {"" == $visible_for || [eval $visible_for]} {
-	    append contact_html "
-            <tr $td_class([expr $ctr % 2])>
-            <td>"
-            set cmd0 "append contact_html $column_name"
-            eval "$cmd0"
-            append contact_html " &nbsp;</td><td>"
-	    set cmd "append contact_html $column_render_tcl"
-	    eval $cmd
-	    append contact_html "</td></tr>\n"
-            incr ctr
-        }
-}    
-append contact_html "</table>\n</form>\n"
-
 
 # ---------------------------------------------------------------
 # Ticket Menu
