@@ -326,7 +326,7 @@ ad_proc -public im_workflow_graph_component {
     set bgcolor(1) " class=rowodd "
     set date_format "YYYY-MM-DD"
     set project_id $object_id
-    set return_url [ad_conn url]?[export_url_vars project_id]
+    set return_url [im_url_with_query]
 
     # ---------------------------------------------------------------------
     # Check if there is a WF case with object_id as reference object
@@ -547,10 +547,24 @@ ad_proc -public im_workflow_action_component {
     -object_id:required
 } {
     Shows WF default actions for the specified object, 
-    or a user-defined action panel if configured in the WF.
+    or a user-defined action panel if configured in the WF.<p>
+
+    There are 5 different cases to deal with:
+	- Enable: The user needs to press the "Start" button to
+	  take ownership of that task.
+		a: The current user is in the assignee list
+		b: The current user is not assigned to the task
+	- Started: The task has been started:
+		a: This is the user who started the case
+		b: This is not the user who started the case
+	- Canceled
+	- Finished
 } {
-    set user_id [ad_get_user_id]
+    set current_user_id [ad_get_user_id]
     set return_url [im_url_with_query]
+
+    set bgcolor(0) " class=roweven "
+    set bgcolor(1) " class=rowodd "
 
     # Get all "enabled" task for this object:
     set enabled_tasks [db_list enabled_tasks "
@@ -563,6 +577,9 @@ ad_proc -public im_workflow_action_component {
 			and wfc.case_id = wft.case_id
 			and wft.state in ('enabled', 'started')
     "]
+
+    set result ""
+    set graph_html ""
 
     template::multirow create panels header template_url bgcolor
     foreach task_id $enabled_tasks {
@@ -635,41 +652,60 @@ ad_proc -public im_workflow_action_component {
 	    "
 	}
 
-#	return "<pre>[join [array get task] "\n"]</pre>"
-
-	set result ""
+	set ctr 0
 	db_foreach action_panels $action_panels_sql {
 
+	    set task_actions {}
 
 	    # --------------------------------------------------------------------
-	    set timeout_html ""
-	    if {"" != $task(hold_timeout_pretty)} {
-		set timeout_html "<td>Timeout</td><td>$task(hold_timeout_pretty)</td>\n"
-	    }
-
-	    set deadline_html ""
-	    if {"" != [string trim $task(deadline_pretty)]} {
-		if {$task(days_till_deadline) < 1} {
-		    set deadline_html "<td>Deadline</td><td><font color='red'><strong>Deadline is $task(deadline_pretty)</strong></font></td>\n"
-		} else {
-		    set deadline_html "<td>Deadline</td><td>Deadline is $task(deadline_pretty)</td>\n"
-		}
-	    }
-
-	    switch $task(state) {
-
-		started {
-		    # --------------------------------------------------------------------
-		    if {$task(this_user_is_assigned_p)} { 
-			append result "
+	    # Table header common to all states
+	    append result "
 				<form action='/[im_workflow_url]/task' method='post'>
-			        $export_form_vars
+				$export_form_vars
 				<table>
-		        	<tr class=rowodd>
+		        	<tr $bgcolor([expr $ctr%2])>
 		        	    <td>Task Name</td>
 		        	    <td>$task(task_name)</td>
 		        	</tr>
-        		"
+		        	<tr $bgcolor([expr ($ctr+1)%2])>
+		        	    <td>Task Status</td>
+		        	    <td>$task(state)</td>
+		        	</tr>
+	    "
+	    incr ctr
+	    incr ctr
+
+	    switch $task(state) {
+
+		enabled {
+		    # --------------------------------------------------------------------
+		    if {$task(this_user_is_assigned_p)} {
+			append result "
+				<tr class=rowodd>
+					<td>Action</th>
+					<td><input type='submit' name='action.start' value='Start task' /></td>
+				</tr>
+			"
+		    } else {
+			append result "
+				<tr $bgcolor([expr $ctr%2])>
+					<td>&nbsp;</td>
+					<td>This task has not been started yet<br>
+					    and you are not assgined to this task.
+					</td>
+				</tr>				
+			"
+			incr ctr
+		    }
+		}
+
+
+		started {
+		    # --------------------------------------------------------------------
+
+		    lappend task_actions "(<a href='$task(cancel_url)'>cancel task</a>)"
+
+		    if {$task(this_user_is_assigned_p)} { 
 
 			template::multirow foreach task_roles_to_assign {
 			    append result "
@@ -706,54 +742,19 @@ ad_proc -public im_workflow_action_component {
 					<td>Started</td>
 					<td>$task(started_date_pretty)&nbsp; &nbsp; </td>
 				</tr>
-				<tr class=rowodd>$timeout_html</tr>
-				<tr class=roweven>$deadline_html</tr>
-				<tr class=rowodd>
-					<td>Extreme Actions</td>
-					<td<a href='$task(cancel_url)'>cancel task</a></td>
-				</tr>
-				</table>
-				</form>
 			"
 
 		    } else {
 
 			append result "
-				<table>
 				    <tr><td>Held by</td><td><a href='/intranet/users/view?user_id=$task(holding_user)'>$task(holding_user_name)</a></td></tr>
 				    <tr><td>Since</td><td>$task(started_date_pretty)</td></tr>
 				    <tr><td>Timeout</td><td>$task(hold_timeout_pretty)</td></tr>
-				</table>
 			"
 
 		    }
 		    
 		}
-
-		enabled {
-		    # --------------------------------------------------------------------
-		    if {$task(this_user_is_assigned_p)} {
-			append result "
-				<form action='$task(action_url)' method='post'>
-				$export_form_vars
-				<table>
-					<tr><th align='right'>Action:</th>
-					<td><input type='submit' name='action.start' value='Start task' /></td>
-					</tr>
-				</table>
-				</form>
-			"
-		    } else {
-			append result "This task has not been started yet.\n"
-		    }
-		    if {$task(this_user_is_assigned_p)} {
-			append result "<p>(<a href='$task(assign_yourself_url)'>assign yourself</a>)\n"
-
-		    }
-		    append result "(<a href='$task(manage_assignments_url)'>reassign</a>)"
-		    append result $deadline_html
-		}
-
 
 		canceled {
 		    if {$task(this_user_is_assigned_p)} { 
@@ -779,9 +780,99 @@ append result "This task was completed by <a href='/shared/community-member?user
 	
 	    }
 	    # end of switch
+
+
+	    # --------------------------------------------------------------------
+	    # Timeout
+	    if {"" != $task(hold_timeout_pretty)} {
+		set timeout_html "<td>Timeout</td><td>$task(hold_timeout_pretty)</td>\n"
+		append result "
+				<tr $bgcolor([expr $ctr%2])>
+					$timeout_html
+				</tr>
+		"
+		incr ctr
+	    }
+
+	    # --------------------------------------------------------------------
+	    # Deadline
+	    if {"" != [string trim $task(deadline_pretty)]} {
+		if {$task(days_till_deadline) < 1} {
+		    set deadline_html "<td>Deadline</td><td><font color='red'><strong>Deadline is $task(deadline_pretty)</strong></font></td>\n"
+		} else {
+		    set deadline_html "<td>Deadline</td><td>Deadline is $task(deadline_pretty)</td>\n"
+		}
+		append result "
+				<tr $bgcolor([expr $ctr%2])>
+					$deadline_html
+				</tr>
+		"
+		incr ctr
+	    }
+
+	    # --------------------------------------------------------------------
+	    # Assigned users
+	    if {[im_permission $current_user_id "wf_reassign_tasks"]} {
+		set assigned_users {}
+		template::multirow foreach task_assigned_users { 
+		    set user_url [export_vars -base "/intranet/users/view" {user_id}]
+		    lappend assigned_users "<a href='$user_url'>$name ($email)</a>\n"
+		}
+	    }
+	    if {[llength $assigned_users] > 0} {
+		append result "
+				<tr $bgcolor([expr $ctr%2])>
+					<td>Assigned Users</td>
+					<td>[join $assigned_users "<br>\n"]</td>
+				</tr>
+		"
+		incr ctr
+	    }
+
+	    # --------------------------------------------------------------------
+	    # Extreme Actions
+	    if {[im_permission $current_user_id "wf_reassign_tasks"]} {
+		if {!$task(this_user_is_assigned_p)} {
+		    lappend task_actions "(<a href='$task(assign_yourself_url)'>assign yourself</a>)"
+		}
+		lappend task_actions "(<a href='$task(manage_assignments_url)'>reassign task</a>)"
+	    }
+
+	    if {[llength $task_actions] > 0} {
+		append result "
+				<tr $bgcolor([expr $ctr%2])>
+					<td>Extreme Actions</td>
+					<td>[join $task_actions "&nbsp; \n"]</td>
+				</tr>
+		"
+		incr ctr
+	    }
+
+	    # --------------------------------------------------------------------
+	    # Close the table
+	    append result "
+			</table>
+			</form>
+	    "
 	    
 	}
     }
+    if {"" == $result} {
+	return "
+		<table width='100%'>
+		<tr valign=top>
+		<td>
+			<b>[lang::message::lookup "" intranet-helpdesk.Workflow_Finished "Workflow Finished"]</b><br>
+			[lang::message::lookup "" intranet-helpdesk.Workflow_Finished_msg "
+				The workflow has finished and there are no more actions to take.
+			"]
+		</td>
+		<td>$graph_html</td>
+		</tr>
+		</table>
+	"
+    }
+
     return "
 	<table width='100%'>
 	<tr valign=top>
