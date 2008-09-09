@@ -92,7 +92,7 @@ if {"" != $button_confirm} {
     ns_log Notice "new-rfc: adding a token to place=$place_key"
     im_exec_dml add_token "workflow_case__add_token (:case_id, :place_key, :journal_id)"
 
-    # enable the next (cancel) transition
+    # enable the very first transition
     im_exec_dml sweep "workflow_case__sweep_automatic_transitions (:case_id, :journal_id)"
 }
 
