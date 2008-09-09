@@ -22,6 +22,8 @@
         </callbacks>
         <parameters>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="EnableWorkflowInboxBulkActionsP"  default="0" description="Should we show a &quot;Bulk Action&quot; widget at the end of the Inbox? Bulk actions allow the current user to delete himself from the list of WF assignees. This is important in organizations with WF vacation logic and &quot;pull&quot; workflows, but not in organizations with &quot;push&quot; WFs."/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="WorkflowComponentWFGraphSize"  default="5,5" description="Size of the WF graph inside the default 'Workflow Component'. Default is '5,5', which should be some 400x400 pt."/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ActionWorkflowComponentWFGraphSize"  default="3,3" description="Size of the WF graph inside the 'Action Component'. Default is '3,3', which should be some 200x200 pt."/>
         </parameters>
 
     </version>
