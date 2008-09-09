@@ -853,6 +853,31 @@ SELECT acs_permission__grant_permission(
 
 
 
+-- ------------------------------------------------------
+-- Workflow Actions in the object's View Page
+SELECT	im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Workflow Actions',		-- plugin_name
+	'intranet-helpdesk',		-- package_name
+	'left',				-- location
+	'/intranet-helpdesk/new',	-- page_url
+	null,				-- view_name
+	0,				-- sort_order
+	'im_workflow_action_component -object_id $ticket_id',
+	'lang::message::lookup "" intranet-helpdesk.Ticket_Workflow_Actions "Ticket Workflow Actions"'
+);
+
+SELECT acs_permission__grant_permission(
+        (select plugin_id from im_component_plugins where plugin_name = 'Workflow Actions' and package_name = 'intranet-helpdesk'),
+        (select group_id from groups where group_name = 'Employees'),
+        'read'
+);
+
 
 
 -----------------------------------------------------------

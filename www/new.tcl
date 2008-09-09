@@ -56,6 +56,7 @@ if {![info exists task]} {
     set show_components_p 0
     set enable_master_p 0
     set show_user_info_p 0
+    set ticket_type_id ""
     set ticket_sla_id ""
     set ticket_customer_contact_id ""
 

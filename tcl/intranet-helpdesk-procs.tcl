@@ -368,6 +368,31 @@ ad_proc -public im_helpdesk_home_component {
 				where	r.object_id_one = g.group_id and
 					r.object_id_two = :current_user_id
 			)
+			OR p.project_id in (	
+				-- cases with user as task holding_user
+				select distinct wfc.object_id
+				from	wf_tasks wft,
+					wf_cases wfc
+				where	wft.state in ('enabled', 'started') and
+					wft.case_id = wfc.case_id and
+					wft.holding_user = :current_user_id
+			) OR p.project_id in (
+				-- cases with user as task_assignee
+				select distinct wfc.object_id
+				from	wf_task_assignments wfta,
+					wf_tasks wft,
+					wf_cases wfc
+				where	wft.state in ('enabled', 'started') and
+					wft.case_id = wfc.case_id and
+					wfta.task_id = wft.task_id and
+					wfta.party_id in (
+						select	group_id
+						from	group_distinct_member_map
+						where	member_id = :current_user_id
+					    UNION
+						select	:current_user_id
+					)
+			)
 		)
 		and t.ticket_status_id not in ([im_ticket_status_deleted], [im_ticket_status_closed])
 		$ticket_status_restriction

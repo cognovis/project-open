@@ -102,13 +102,13 @@ set mine_p_options [list \
 ]
 
 set ticket_member_options [util_memoize "db_list_of_lists ticket_members {
-        select  distinct
-                im_name_from_user_id(object_id_two) as user_name,
-                object_id_two as user_id
-        from    acs_rels r,
-                im_tickets p
-        where   r.object_id_one = p.ticket_id
-        order by user_name
+	select  distinct
+		im_name_from_user_id(object_id_two) as user_name,
+		object_id_two as user_id
+	from    acs_rels r,
+		im_tickets p
+	where   r.object_id_one = p.ticket_id
+	order by user_name
 }" 300]
 set ticket_member_options [linsert $ticket_member_options 0 [list [_ intranet-core.All] ""]]
 
@@ -197,11 +197,47 @@ switch $mine_p {
 			from	acs_rels r, groups g 
 			where	r.object_id_one = g.group_id and
 				r.object_id_two = :current_user_id
+		) OR p.project_id in (
+			-- cases with user as task_assignee
+			select distinct wfc.object_id
+			from	wf_task_assignments wfta,
+				wf_tasks wft,
+				wf_cases wfc
+			where	wft.state in ('enabled', 'started') and
+				wft.case_id = wfc.case_id and
+				wfta.task_id = wft.task_id and
+				wfta.party_id in (
+					select	group_id
+					from	group_distinct_member_map
+					where	member_id = :current_user_id
+				    UNION
+					select	:current_user_id
+				)
+		) OR p.project_id in (	
+			-- cases with user as task holding_user
+			select distinct wfc.object_id
+			from	wf_tasks wft,
+				wf_cases wfc
+			where	wft.holding_user = :current_user_id and
+				wft.state in ('enabled', 'started') and
+				wft.case_id = wfc.case_id
 		)
 	)"
     }
     "mine" {
-	lappend criteria "(t.ticket_assignee_id = :current_user_id OR t.ticket_customer_contact_id = :current_user_id)"
+	lappend criteria "(
+		t.ticket_assignee_id = :current_user_id 
+		OR t.ticket_customer_contact_id = :current_user_id
+		OR p.project_id in (	
+			-- cases with user as task holding_user
+			select distinct wfc.object_id
+			from	wf_tasks wft,
+				wf_cases wfc
+			where	wft.state in ('enabled', 'started') and
+				wft.case_id = wfc.case_id and
+				wft.holding_user = :current_user_id
+		)
+	)"
     }
     "default" { ad_return_complaint 1 "Error:<br>Invalid variable mine_p = '$mine_p'" }
 }
@@ -222,7 +258,7 @@ switch [string tolower $order_by] {
 #
 # ---------------------------------------------------------------
 
-set where_clause [join $criteria " and\n            "]
+set where_clause [join $criteria " and\n	    "]
 set extra_select [join $extra_selects ",\n\t"]
 set extra_from [join $extra_froms ",\n\t"]
 set extra_where [join $extra_wheres "and\n\t"]
@@ -279,36 +315,36 @@ if {"" != $dynfield_extra_where} {
 # ---------------------------------------------------------------
 
 set sql "
-	        SELECT
+		SELECT
 			t.*,
-	                im_category_from_id(t.ticket_type_id) as ticket_type,
-	                im_category_from_id(t.ticket_status_id) as ticket_status,
-	                im_category_from_id(t.ticket_prio_id) as ticket_prio,
+			im_category_from_id(t.ticket_type_id) as ticket_type,
+			im_category_from_id(t.ticket_status_id) as ticket_status,
+			im_category_from_id(t.ticket_prio_id) as ticket_prio,
 			im_name_from_user_id(t.ticket_customer_contact_id) as ticket_customer_contact,
 			im_name_from_user_id(t.ticket_assignee_id) as ticket_assignee,
 			(select group_name from groups where group_id = ticket_queue_id) as ticket_queue_name,
-	                p.*,
-	                to_char(p.start_date, 'YYYY-MM-DD') as start_date_formatted,
-	                to_char(p.end_date, 'YYYY-MM-DD') as end_date_formatted,
-	                to_char(t.ticket_alarm_date, 'YYYY-MM-DD') as ticket_alarm_date_formatted,
+			p.*,
+			to_char(p.start_date, 'YYYY-MM-DD') as start_date_formatted,
+			to_char(p.end_date, 'YYYY-MM-DD') as end_date_formatted,
+			to_char(t.ticket_alarm_date, 'YYYY-MM-DD') as ticket_alarm_date_formatted,
 			ci.*,
 			c.company_name,
 			sla.project_id as sla_id,
 			sla.project_name as sla_name
 			$extra_select
-	        FROM
+		FROM
 			im_projects p,
 			im_tickets t
 			LEFT OUTER JOIN im_projects sla ON (t.ticket_sla_id = sla.project_id)
 			LEFT OUTER JOIN im_conf_items ci ON (t.ticket_conf_item_id = ci.conf_item_id),
-	                im_companies c
+			im_companies c
 			$extra_from
-	        WHERE
-	                p.company_id = c.company_id
+		WHERE
+			p.company_id = c.company_id
 			and t.ticket_id = p.project_id
 			and p.project_type_id = [im_project_type_ticket]
 			and p.project_status_id not in ([join [im_sub_categories [im_project_status_deleted]] ","])
-	                $where_clause
+			$where_clause
 			$extra_where
 		$order_by_clause
 "
@@ -328,8 +364,8 @@ if {[string equal $letter "ALL"]} {
     # sort inside the table on the page for only those users in the
     # query results
     set total_in_limited [db_string total_in_limited "
-        select count(*)
-        from ($sql) s
+	select count(*)
+	from ($sql) s
     "]
     set selection [im_select_row_range $sql $start_idx $end_idx]
 }	
@@ -486,7 +522,7 @@ db_foreach tickets_info_query $selection -bind $form_vars {
 # Show a reasonable message when there are no result rows:
 if { [empty_string_p $table_body_html] } {
     set table_body_html "
-        <tr><td colspan=$colspan><ul><li><b>There are currently no tickets matching the selected criteria</b></ul></td></tr>"
+	<tr><td colspan=$colspan><ul><li><b>There are currently no tickets matching the selected criteria</b></ul></td></tr>"
 }
 
 if { $end_idx < $total_in_limited } {
