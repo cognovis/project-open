@@ -662,11 +662,7 @@ create table im_costs (
 	last_modifying_user	integer
 				constraint im_costs_last_mod_user
 				references users,
-	last_modifying_ip 	varchar(20),
-
-	-- temporary field to identify cloned costs.
-	clone_original_cost_id	integer;
-
+	last_modifying_ip 	varchar(20)
 );
 create index im_costs_cause_object_idx on im_costs(cause_object_id);
 create index im_costs_start_block_idx on im_costs(start_block);
