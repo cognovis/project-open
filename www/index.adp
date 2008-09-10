@@ -38,7 +38,7 @@
 
 	<tr>
 	    <td class=form-label><%= [lang::message::lookup "" intranet-expenses.Project "Project"] %></td>
-	    <td class=form-widget><%= [im_project_select -include_all 1 -exclude_status_id [im_project_status_closed] project_id $org_project_id] %></td>
+	    <td class=form-widget><%= [im_project_select -include_empty_p 1 -exclude_status_id [im_project_status_closed] project_id $org_project_id] %></td>
 	</tr>
 
 	<tr>
