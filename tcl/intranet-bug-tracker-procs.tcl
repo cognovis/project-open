@@ -43,8 +43,8 @@ ad_proc -public im_package_bug_tracker_id {} {
 
 ad_proc -private im_package_bug_tracker_id_helper {} {
     return [db_string im_package_core_id {
-        select package_id from apm_packages
-        where package_key = 'intranet-bug-tracker'
+	select package_id from apm_packages
+	where package_key = 'intranet-bug-tracker'
     } -default 0]
 }
 
@@ -70,8 +70,8 @@ ad_proc -public bt_bug_permissions {user_id bug_id view_var read_var write_var a
 
     # No read - no write...
     if {!$read} {
-        set write 0
-        set admin 0
+	set write 0
+	set admin 0
     }
 }
 
@@ -90,18 +90,16 @@ ad_proc -public im_bt_project_options {
     set user_id [ad_get_user_id]
     set options [db_list_of_lists project_options "
 	select
-            case when pp.project_name is null
-                then
-                    p.project_name
-                else
-                    pp.project_name || ' : ' ||
-                    p.project_name
-                end  AS name,
-                p.project_id
+		case when pp.project_name is null then
+		    p.project_name
+		else
+		    pp.project_name || ' : ' ||
+		    p.project_name
+		end AS name,
+		p.project_id
 	from
-		im_projects p LEFT JOIN im_projects pp ON (
-                  p.parent_id = pp.project_id
-                ),
+		im_projects p
+		LEFT JOIN im_projects pp ON (p.parent_id = pp.project_id),
 		acs_rels r
 	where
 		p.project_type_id in ([join [im_sub_categories [im_project_type_bt_container]] ","])
@@ -122,8 +120,8 @@ ad_proc -public im_bt_generic_select {
 } {
     set result "<select name=\"$name\">\n"
     foreach option $options {
-	set id [lindex $option 0]
-	set name [lindex $option 1]
+	set name [lindex $option 0]
+	set id [lindex $option 1]
 	set parent_name [lindex $option 2]
 	if {$default == $id} { set selected "" } else { set selected "selected" }
 	append result "<option value=\"$id\" $selected>$parent_name : $name</option>\n"
@@ -173,7 +171,7 @@ ad_proc -public im_bug_tracker_container_component {
 
     set html "
 	<form action=\"$action_url\" method=GET>
-        [export_form_vars return_url]
+	[export_form_vars return_url]
 	<table cellspacing=1 cellpadding=1>
 	<tr class=rowtitle>
 	  <td class=rowtitle colspan=2>
@@ -205,7 +203,7 @@ ad_proc -public im_bug_tracker_list_component {
     shows a list of bugs in the current project
 } {
     if {![im_project_has_type $project_id "Bug Tracker Container"]} {
-        return ""
+	return ""
     }
 
     set html ""
@@ -216,14 +214,14 @@ ad_proc -public im_bug_tracker_list_component {
 	from
 		im_projects parent,
 		im_projects children,
-                bt_bugs
+		bt_bugs
 	where
 		children.project_type_id not in ([im_project_type_task])
 		and children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
 		and parent.project_id = [im_project_super_project_id $project_id]
-                and bug_container_project_id=children.project_id
+		and bug_container_project_id=children.project_id
 	order by bug_number desc
-            "
+    "
     
    template::list::create \
 	-name bug_list \
