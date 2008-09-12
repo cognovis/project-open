@@ -27,14 +27,7 @@ set page_focus "im_header_form.keywords"
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set date_format "YYYY-MM-DD"
 
-
-#set parent_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
-#set project_menu [im_sub_navbar $parent_menu_id $bind_vars "" "pagedesriptionbar" $menu_label]
-
-
-
 set object_name [db_string object_name "select acs_object__name(:object_id)" -default [lang::message::lookup "" intranet-expenes.Unassigned "Unassigned"]]
-
 set page_title "$object_name [_ intranet-notes.Notes]"
 
 if {[im_permission $user_id view_projects_all]} {
@@ -43,7 +36,6 @@ if {[im_permission $user_id view_projects_all]} {
     set context_bar [im_context_bar $page_title]
 }
 
-
 set return_url [im_url_with_query]
 set current_url [ns_conn url]
 
@@ -51,42 +43,30 @@ set current_url [ns_conn url]
 # ---------------------------------------------------------------
 # Admin Links
 # ---------------------------------------------------------------
-set add_expense_p [im_permission $user_id "add_expense"]
 
+set add_expense_p [im_permission $user_id "add_expense"]
 # ToDo: Add Security
 set add_expense_p 1
 
 
-
 set admin_links ""
-
 if {$add_expense_p} {
     append admin_links " <li><a href=\"new?[export_url_vars object_id return_url]\">[_ intranet-notes.Add_a_new_Note]</a>\n"
 }
 
 set bulk_actions_list "[list]"
-#[im_permission $user_id "delete_expense"]
 set delete_expense_p 1 
 if {$delete_expense_p} {
     lappend bulk_actions_list "[_ intranet-notes.Delete]" "notes-del" "[_ intranet-notes.Remove_checked_items]"
-}
-#[im_permission $user_id "add_expense_bundle"]
-set create_invoice_p 1
-if {$create_invoice_p} {
 }
 
 # ---------------------------------------------------------------
 # Expenses info
 # ---------------------------------------------------------------
 
-# Variables of this page to pass through the expenses_page
-
 set export_var_list [list]
 
-# define list object
 set list_id "notes_list"
-
-
 template::list::create \
     -name $list_id \
     -multirow note_lines \
@@ -124,15 +104,6 @@ if {0 == $object_id} {
     set project_where "\tand c.object_id = :object_id\n" 
 }
 
-set project_where ""
-if {0 == $object_id} { 
-    set project_where "\tand n.object_id is null\n" 
-} else {
-    set project_where "\tand n.object_id = :object_id\n" 
-}
-
-
-
 db_multirow -extend {note_chk return_url} note_lines notes_lines "
   select
 	note_id,  
@@ -163,10 +134,4 @@ set bind_vars [ns_set create]
 ns_set put $bind_vars object_id $object_id
 set project_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
 set project_menu [im_sub_navbar $project_menu_id $bind_vars "" "pagedesriptionbar" "project_expenses"]
-
-
-# ---------------------------------------------------------------
-# dyn wf 
-# ---------------------------------------------------------------
-
 

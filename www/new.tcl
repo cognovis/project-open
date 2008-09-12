@@ -21,18 +21,27 @@ ad_page_contract {
     {form_mode "edit"}
 }
 
-if {[info exists var_name]} { ad_return_complaint 1 "var_name = $var_name" }
+# ---------------------------------------------------------------
+# Defaults & Security
+# ---------------------------------------------------------------
 
 set user_id [ad_maybe_redirect_for_registration]
 set page_title [_ intranet-notes.Notes_creation]
 set context_bar [im_context_bar $page_title]
 
+# We can determine the ID of the "container object" from the
+# note data, if the note_id is there (viewing an existing note).
 if {"" == $object_id} {
     set object_id [db_string oid "select object_id from im_notes where note_id = :note_id" -default ""]
 }
 
-set project_options [im_project_options]
 
+# ---------------------------------------------------------------
+# Create the Form
+# ---------------------------------------------------------------
+
+# Get the list of note types. This list is used in the ad_form below 
+# to create the drop-down component for the list type
 set note_type_options [db_list_of_lists note_type_options "
 	select	note_type, note_type_id
 	from	im_note_types
@@ -40,7 +49,6 @@ set note_type_options [db_list_of_lists note_type_options "
 "]
 
 set form_id "form"
-
 ad_form \
     -name $form_id \
     -mode $form_mode \
@@ -50,6 +58,11 @@ ad_form \
 	{note_type_id:text(select) {label "[lang::message::lookup {} intranet-notes.Notes_Type Type]"} {options $note_type_options} }
 	{note:text(textarea) {label "[lang::message::lookup {} intranet-notes.Notes_Note Note]"} {html {cols 40} {rows 8} }}
     }
+
+
+# ---------------------------------------------------------------
+# Define Form Actions
+# ---------------------------------------------------------------
 
 ad_form -extend -name $form_id \
     -select_query {
