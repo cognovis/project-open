@@ -2,7 +2,7 @@ ad_library {
     Syndication callback and support routines.
 
     @author Jeff Davis (davis@xarg.net)
-    @cvs-id $Id: syndicate-procs.tcl,v 1.2 2007/01/10 21:22:14 gustafn Exp $
+    @cvs-id $Id: syndicate-procs.tcl,v 1.3 2008/10/02 05:05:11 ryang Exp $
 }
 
 ad_proc -public -callback search::action -impl syndicate {} {
@@ -42,14 +42,15 @@ ad_proc -public -callback search::action -impl syndicate {} {
 
         set published [lc_time_fmt $syn(pubDate) "%a, %d %b %Y %H:%M:%S GMT"]
 
+   set xmlMap [list & "&amp;" < "&lt;" > "&gt;" \" "&quot;" ' "&apos;"]
         set rss_xml_frag " <item>
-  <title>$d(title)</title>
-  <link>$url</link>
-  <guid isPermaLink=\"true\">$syn(guid)</guid>
-  <description>$syn(description)</description>
-  <author>$syn(author)</author>
+  <title>[string map $xmlMap $d(title)]</title>
+  <link>[string map $xmlMap $url]</link>
+  <guid isPermaLink=\"true\">[string map $xmlMap $syn(guid)]</guid>
+  <description>[string map $xmlMap $syn(description)]</description>
+  <author>[string map $xmlMap $syn(author)]</author>
   <content:encoded><!\[CDATA\[$body]]></content:encoded>
-  <category>$syn(category)</category>
+  <category>[string map $xmlMap $syn(category)]</category>
   <pubDate>$published</pubDate>
  </item>"
 
