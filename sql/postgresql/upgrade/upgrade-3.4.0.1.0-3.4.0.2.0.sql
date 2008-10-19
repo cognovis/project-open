@@ -125,11 +125,30 @@ BEGIN
 end;' language 'plpgsql';
 
 
-alter table im_dynfield_attributes
-add column also_hard_coded_p	char(1) default 'f'
-				constraint im_dynfield_attributes_also_hard_coded_ch
-				check (also_hard_coded_p in ('t','f'))
-;
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select count(*) into v_count
+	from user_tab_columns 
+	where table_name = ''IM_DYNFIELD_ATTRIBUTES'' and column_name = ''ALSO_HARD_CODED_P'';
+	IF 0 != v_count THEN return 0; END IF;
+
+	alter table im_dynfield_attributes
+	add column also_hard_coded_p	char(1) default 'f'
+					constraint im_dynfield_attributes_also_hard_coded_ch
+					check (also_hard_coded_p in ('t','f'))
+	;
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 
 
