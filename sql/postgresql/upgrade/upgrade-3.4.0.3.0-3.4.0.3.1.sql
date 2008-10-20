@@ -10,3 +10,17 @@ BEGIN
 	return im_biz_object__set_status_id (p_object_id, p_status_id::integer);
 END;' language 'plpgsql';
 
+
+-- Milestone project type.
+SELECT im_category_new (2504, 'Milestone', 'Intranet Project Type');
+update im_categories set enabled_p = 'f' 
+where	category = 'Milestone' and
+	category_type = 'Intranet Project Type';
+
+
+-- Fix DynField issue with database "float"
+insert into acs_datatypes (datatype) values ('float');
+
+
+
+
