@@ -1,5 +1,29 @@
 -- upgrade-3.4.0.2.0-3.4.0.3.0.sql
 
+-- Include im_component_plugin_user_map in deletion
+create or replace function im_component_plugin__delete (integer) returns integer as '
+DECLARE
+        p_plugin_id     alias for $1;
+BEGIN
+        -- Delete references to object per user
+        delete from     im_component_plugin_user_map
+        where           plugin_id = p_plugin_id;
+
+        -- Erase the im_component_plugins item associated with the id
+        delete from     im_component_plugins
+        where           plugin_id = p_plugin_id;
+
+        -- Erase all the priviledges
+        delete from     acs_permissions
+        where           object_id = p_plugin_id;
+
+        PERFORM acs_object__delete(p_plugin_id);
+
+        return 0;
+end;' language 'plpgsql';
+
+
+
 CREATE OR REPLACE FUNCTION ad_group_member_p(integer, integer)
 RETURNS character AS '
 DECLARE
@@ -58,7 +82,7 @@ values (25,2530,30,'Name','"$subproject_indent<a href=$subproject_url>$subprojec
 insert into im_view_columns (view_id, column_id, sort_order, column_name, column_render_tcl)
 values (25,2540,40,'Status','$subproject_status');
 
-insert into im_view_columns (view_id, column_id, sort_order, column_name, column_render_tcl)
-values (25,2590,90,'Empty','$arrow_left_html');
+-- insert into im_view_columns (view_id, column_id, sort_order, column_name, column_render_tcl)
+-- values (25,2590,90,'Empty','$arrow_left_html');
 
 
