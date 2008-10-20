@@ -28,7 +28,7 @@
 		<table width="100%">
 		  <tr valign="top">
 		    <td width="50%">
-		      <%= [im_box_header $page_title] %>
+		      <%= [im_box_header [lang::message::lookup "" intranet-helpdesk.Ticket_Details "Ticket Details"]] %>
 		      <formtemplate id="ticket"></formtemplate>
 		      <%= [im_box_footer] %>
 		      <%= [im_component_bay left] %>

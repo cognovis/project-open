@@ -72,6 +72,7 @@ if {![info exists task]} {
 # ------------------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
+set user_id $current_user_id
 set current_url [im_url_with_query]
 set action_url "/intranet-helpdesk/new"
 set focus "ticket.var_name"
@@ -130,6 +131,9 @@ if {[exists_and_not_null ticket_id]} {
 # The base form. Define this early so we can extract the form status
 # ---------------------------------------------
 
+set title_label [lang::message::lookup {} intranet-helpdesk.Name {Title}]
+set title_help [lang::message::lookup {} intranet-helpdesk.Title_Help {Please enter a descriptive name for the new ticket.}]
+
 set actions {}
 if {[im_permission $current_user_id add_tickets_for_customer]} { lappend actions {"Edit" edit} }
 if {[im_permission $current_user_id add_tickets_for_customer]} { lappend actions {"Delete" delete} }
@@ -141,7 +145,14 @@ ad_form \
     -actions $actions \
     -has_edit 1 \
     -mode $form_mode \
-    -export {next_url return_url}
+    -export {next_url return_url} \
+    -form {
+	ticket_id:key
+	{ticket_name:text(text) {label $title_label} {html {size 50}} {help_text $title_help} }
+	{ticket_nr:text(hidden),optional }
+	{start_date:date(hidden),optional }
+	{end_date:date(hidden),optional }
+    }
 
 
 # ------------------------------------------------------------------
@@ -302,21 +313,6 @@ if {"new" == $ticket_customer_contact_id && $user_can_create_new_customer_contac
 }
 
 # ------------------------------------------------------------------
-# Build the form
-# ------------------------------------------------------------------
-
-set title_label [lang::message::lookup {} intranet-helpdesk.Name {Title}]
-set title_help [lang::message::lookup {} intranet-helpdesk.Title_Help {Please enter a descriptive name for the new ticket.}]
-
-set ticket_elements [list]
-lappend ticket_elements ticket_id:key
-lappend ticket_elements {ticket_name:text(text) {label $title_label} {html {size 50}} {help_text $title_help} }
-lappend ticket_elements {ticket_nr:text(hidden),optional }
-lappend ticket_elements {start_date:date(hidden),optional }
-lappend ticket_elements {end_date:date(hidden),optional }
-
-
-# ------------------------------------------------------------------
 # Form options
 # ------------------------------------------------------------------
 
@@ -339,6 +335,8 @@ set customer_contact_options [linsert $customer_contact_options 0 [list "" ""]]
 # ------------------------------------------------------------------
 # Check permission if the user is allowed to create a ticket for somebody else
 # ------------------------------------------------------------------
+
+set ticket_elements [list]
 
 if {[im_permission $current_user_id add_tickets_for_customers]} {
 
