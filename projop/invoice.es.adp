@@ -21,21 +21,22 @@
   </tr>
 </table>
 <hr>
+
 <table border="0" cellspacing="1" cellpadding="1" width="100%">
   <tr> 
     <td valign="top"> 
-
+      <br><br>
       <table border="0" cellspacing="1" cellpadding="1">
         <tr class=rowtitle> 
-          <td colspan="2" class=rowtitle>Detalles de Cliente</td>
+          <td colspan="2" class=rowtitle><!--Detalles de Cliente--></td>
         </tr>
         <tr> 
-          <td class="roweven">Empresa</td>
+          <td class="roweven"><!--Empresa-->&nbsp;</td>
           <td class="roweven"><%=$company_name %></td>
         </tr>
         <tr>
-          <td class=roweven>NIF</td>
-          <td class=roweven><%=$vat_number %></td>
+          <td class=roweven><!--NIF-->&nbsp;</td>
+          <td class=roweven>NIF: <%=$vat_number %></td>
         </tr>
 
 <%
@@ -43,7 +44,7 @@
     if {![string equal "" $address_line1]} {
 	set address1 "
         <tr> 
-          <td class=roweven>Direcci&oacute;n</td>
+          <td class=roweven><!--Direcci&oacute;n-->&nbsp;</td>
           <td class=roweven>$address_line1</td>
         </tr>"
     }
@@ -61,13 +62,14 @@
 %>
 	<%=$address2 %>
         <tr> 
-          <td class="roweven">Ciudad</td>
+          <td class="roweven"><!--Ciudad-->&nbsp;</td>
           <td class="roweven"><%=$address_postal_code %> <%=$address_city %> </td>
         </tr>
         <tr> 
-          <td class="rowodd">Pa&iacute;s</td>
+          <td class="rowodd"><!--Pa&iacute;s-->&nbsp;</td>
           <td class="rowodd"><%=$country_name %></td>
         </tr>
+<!--
         <tr> 
           <td class="roweven">Tel</td>
           <td class="roweven"><%=$phone %></td>
@@ -76,6 +78,7 @@
           <td class="rowodd">Fax</td>
           <td class="rowodd"><%=$fax %></td>
         </tr>
+-->
         <tr> 
           <td class="rowodd">&nbsp;</td>
           <td class="rowodd">&nbsp;</td>
