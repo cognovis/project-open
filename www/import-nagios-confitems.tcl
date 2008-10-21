@@ -28,7 +28,7 @@ set main_config_file [parameter::get_from_package_key -package_key "intranet-nag
 # Return the page header.
 #
 
-ad_return_top_of_page "[im_header]\n[im_navbar]"
+ad_return_top_of_page "[im_header]\n[im_navbar "conf_items"]"
 ns_write "<H1>$page_title</H1>\n"
 ns_write "<h2>Configuration</h2>\n"
 ns_write "<ul>\n"
