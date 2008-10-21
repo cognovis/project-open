@@ -26,6 +26,7 @@ ad_page_contract {
     { invoice_id:integer 0}
 }
 
+
 # ------------------------------------------------------------
 # Security
 
