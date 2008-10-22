@@ -500,3 +500,51 @@ ad_proc -public im_helpdesk_home_component {
     "
 }
 
+
+
+# ----------------------------------------------------------------------
+# Navigation Bar Tree
+# ---------------------------------------------------------------------
+
+ad_proc -public im_navbar_tree_helpdesk {
+
+} {
+    Creates an <ul> ...</ul> collapsable menu for the
+    system's main NavBar.
+} {
+    set html "
+	<li><a href=/intranet-helpdesk/index>Helpdesk</a>
+	<ul>
+    "
+
+    # Add list of SLAs
+    set url [export_vars -base "/intranet-projects/index" {{project_type_id [im_project_type_sla]}}]
+    set name [lang::message::lookup "" intranet-helpdesk.Service_Level_Agreements "Service Level Agreements"]
+    append html "<li><a href=\"$url\">$name</a></li>\n"
+
+
+
+    # Add sub-menu with types of tickets
+    append html "
+	<li><a href=/intranet-helpdesk/index>Ticket Types</a>
+	<ul>
+    "
+    set ticket_type_sql "select * from im_ticket_types order by ticket_type"
+    db_foreach ticket_types $ticket_type_sql {
+	set url [export_vars -base "/intranet-helpdesk/index" {ticket_type_id}]
+        regsub -all " " $ticket_type "_" ticket_type_subst
+	set name [lang::message::lookup "" intranet-helpdesk.Ticket_type_$ticket_type_subst "${ticket_type}s"]
+	append html "<li><a href=\"$url\">$name</a></li>\n"
+    }
+    append html "
+	</ul>
+	</li>
+    "
+
+
+    append html "
+	</ul>
+	</li>
+    "
+    return $html
+}
