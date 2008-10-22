@@ -5,38 +5,41 @@
 <property name="context">@context_bar@</property>
 <property name="main_navbar_label">conf_items</property>
 
-<table border=0 cellpadding=0 cellspacing=0>
-<tr>
-  <td>
-	    <table border=0 cellpadding=0 cellspacing=0>
-	    <tr>
-	      <td class=rowtitle align=center>
-<%= [lang::message::lookup "" intranet-confdb.Filter_Conf_Items "Filter Conf Items"] %>
-	      </td>
-	    </tr>
-	    <tr>
-	      <td><formtemplate id=@form_id@></formtemplate></td>
-	    </tr>
-	    </table>
-  </td>
-  <td>&nbsp;</td>
-  <td valign=top>
 
-	    <table border=0 cellpadding=0 cellspacing=0>
-	    <tr>
-	      <td class=rowtitle align=center>
-	        #intranet-core.Admin_Links#
-	      </td>
-	    </tr>
-	    <tr>
-	      <td>
-		@admin_links;noquote@
-	      </td>
-	    </tr>
-	    </table>
-  </td>
-</tr>
-</table>
+<div class="filter-list">
+  <div class="filter">
 
-<listtemplate name="@list_id@"></listtemplate>
+    <div class="filter-block">
+      <div class="filter-title">
+	<%= [lang::message::lookup "" intranet-confdb.Filter_Items "Filter Items"] %>
+      </div>
+
+      <formtemplate id=@form_id@></formtemplate>
+    </div>
+    <hr>
+
+    <div class="filter-block">
+      <div class="filter-title">
+        #intranet-core.Admin_Links#
+      </div>
+      @admin_links;noquote@
+    </div>
+
+    <div class="filter-block">
+      <%= [im_navbar_tree -label "main"] %>
+    </div>
+
+  </div>
+
+  <div class="fullwidth-list">
+    <%= [im_box_header $page_title] %>
+    <listtemplate name="@list_id@"></listtemplate>
+    <%= [im_box_footer] %>
+  </div>
+
+</div>
+
+
+
+
 

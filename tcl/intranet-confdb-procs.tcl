@@ -214,8 +214,8 @@ ad_proc -public im_conf_item_select_sql {
     # Join the query parts
 
     if {"" != $cost_center_id} { lappend extra_wheres "i.conf_item_cost_center_id = :cost_center_id" }
-    if {"" != $status_id} { lappend extra_wheres "i.conf_item_status_id in ([im_sub_categories $status_id])" }
-    if {"" != $type_id} { lappend extra_wheres "i.conf_item_type_id in ([im_sub_categories $type_id])" }
+    if {"" != $status_id} { lappend extra_wheres "i.conf_item_status_id in ([join [im_sub_categories $status_id] ","])" }
+    if {"" != $type_id} { lappend extra_wheres "i.conf_item_type_id in ([join [im_sub_categories $type_id] ","])" }
     if {"" != $treelevel} { lappend extra_wheres "tree_level(i.tree_sortkey) <= 1+$treelevel" }
     if {"" != $perm_where} { lappend extra_wheres $perm_where }
 
@@ -453,5 +453,46 @@ ad_proc -public im_conf_item_new_project_rel {
 
 
 
+# ----------------------------------------------------------------------
+# Navigation Bar Tree
+# ---------------------------------------------------------------------
+
+ad_proc -public im_navbar_tree_confdb { } {
+    Creates an <ul> ...</ul> collapsable menu for the
+    system's main NavBar.
+} {
+    set html "
+	<li><a href=/intranet-confdb/index>[lang::message::lookup "" intranet-confdb.Conf_Items "Conf Items"]</a>
+	<ul>
+    "
+
+    # Add sub-menu with types of conf_items
+    append html "
+	<li><a href=/intranet-confdb/index>[lang::message::lookup "" intranet-confdb.Conf_Item_Types "Conf Items Types"]</a>
+	<ul>
+    "
+    set conf_item_type_sql "
+	select	t.*
+	from	im_conf_item_type t 
+	where not exists (select * from im_category_hierarchy h where h.child_id = t.conf_item_type_id)
+    "
+    db_foreach conf_item_types $conf_item_type_sql {
+	set url [export_vars -base "/intranet-confdb/index" {{type_id $conf_item_type_id}}]
+        regsub -all " " $conf_item_type "_" conf_item_type_subst
+	set name [lang::message::lookup "" intranet-helpdesk.Conf_Item_type_$conf_item_type_subst "$conf_item_type"]
+	append html "<li><a href=\"$url\">$name</a></li>\n"
+    }
+    append html "
+	</ul>
+	</li>
+    "
+
+
+    append html "
+	</ul>
+	</li>
+    "
+    return $html
+}
 
 
