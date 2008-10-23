@@ -462,15 +462,19 @@ ad_proc -public im_navbar_tree_confdb { } {
     system's main NavBar.
 } {
     set html "
-	<li><a href=/intranet-confdb/index>[lang::message::lookup "" intranet-confdb.Conf_Items "Conf Items"]</a>
+	<li><a href=/intranet-confdb/index>[lang::message::lookup "" intranet-confdb.Conf_Mgmt "Configuration Management"]</a>
 	<ul>
     "
 
+    # Create new Conf Item
+    append html "<li><a href=\"/intranet-confdb/new\">[lang::message::lookup "" intranet-confdb.New_Conf_Item "Create a new Conf Item"]</a>\n"
+
     # Add sub-menu with types of conf_items
     append html "
-	<li><a href=/intranet-confdb/index>[lang::message::lookup "" intranet-confdb.Conf_Item_Types "Conf Items Types"]</a>
+	<li><a href=\"/intranet-confdb/index\">[lang::message::lookup "" intranet-confdb.Conf_Item_Types "Conf Items Types"]</a>
 	<ul>
     "
+
     set conf_item_type_sql "
 	select	t.*
 	from	im_conf_item_type t 
