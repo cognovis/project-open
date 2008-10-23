@@ -1974,3 +1974,45 @@ ad_proc -public im_cost_update_project_cost_cache {
 
     return [array get subtotals]
 }
+
+
+
+# -----------------------------------------------------------
+# NavBar tree for finance
+# -----------------------------------------------------------
+
+ad_proc -public im_navbar_tree_finance { } { Finance Navbar } {
+    return "
+	<li><a href=/intranet/>[lang::message::lookup "" intranet-cost.Finance "Finance"]</a>
+	<ul>
+		<li><a href=/intranet-invoices/list?cost_type_id=3708>New Cust. Invoices &amp; Quotes</a>
+		<ul>
+			[im_navbar_write_tree -label "invoices_customers" -maxlevel 0]
+		</ul>
+		<li><a href=/intranet-invoices/list?cost_type_id=3710>New Prov. Bills &amp; POs</a>
+		<ul>
+			[im_navbar_write_tree -label "invoices_providers" -maxlevel 0]
+		</ul>
+		<li><a href=/intranet-invoices/list?cost_status_id=3802&cost_type_id=3700>Accounts Receivable</a></li>
+		<li><a href=/intranet-invoices/list?cost_status_id=3802&cost_type_id=3704>Accounts Payable</a></li>
+		<li><a href=/intranet-payments/index>Payments</a></li>
+		<li><a href=/intranet-dw-light/invoices.csv>Export Finance to CSV/Excel</a></li>
+
+		<li><a href=/intranet-reporting/>Reporting</a>
+                <ul>
+                [im_navbar_write_tree -label "reporting-finance" -maxlevel 1]
+                [im_navbar_write_tree -label "reporting-timesheet" -maxlevel 1]
+                </ul>
+
+		<li><a href=/intranet/admin/>Admin</a>
+		<ul>
+			<li><a href=/intranet-cost/cost-centers/index>Cost Centers &amp Departments</a>
+			<li><a href=/intranet-exchange-rate/index>Exchange Rates</a>
+			<li><a href=/intranet-material/>Materials (Service Types)</a>
+		</ul>
+	</ul>
+    "
+}
+
+
+
