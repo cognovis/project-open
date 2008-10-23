@@ -59,20 +59,23 @@ set context ""
 set action_list [list "[_ intranet-reporting.Add_new_Report]" "[export_vars -base "new" {return_url}]" "[_ intranet-reporting.Add_new_Report]"]
 
 set elements_list {
-  name {
-    label $page_title
-    display_template {
-	<if @reports.indent_level@ gt 4>
-	    @reports.indent_spaces;noquote@ 
-	    <a href="@reports.url@">@reports.name@</a>
-	</if>
-	<else>
-	    <b>@reports.name@</b>
-	</else>
+    name {
+	label $page_title
+	display_template {
+	    <if @reports.indent_level@ gt 4>
+		@reports.indent_spaces;noquote@ 
+		<a href="@reports.url@">@reports.name@</a>
+	    </if>
+	    <else>
+		<b>@reports.name@</b>
+	    </else>
+	}
     }
-  }
 }
 
+set ttt {
+    report_description { label "Description" }
+}
 
 set top_menu_sortkey [db_string top_menu_sortkey "
 	select tree_sortkey 
@@ -92,12 +95,14 @@ list::create \
 db_multirow -extend {report_url indent_spaces} reports get_reports "
 	select
 		m.*,
+		r.*,
 	        length(tree_sortkey) as indent_level,
 	        (9-length(tree_sortkey)) as colspan_level
 	from
 	        im_menus m
+		LEFT OUTER JOIN im_reports r ON (m.menu_id = r.report_id)
 	where
-	        tree_sortkey like '$top_menu_sortkey%'
+		tree_sortkey like '$top_menu_sortkey%'
 		and 't' = im_object_permission_p(m.menu_id, :current_user_id, 'read')
 	order by tree_sortkey
 " {
