@@ -146,3 +146,33 @@ ad_proc -public im_release_mgmt_new_journal {
     "]
     return $jid
 }
+
+
+
+
+# ----------------------------------------------------------------------
+# Navigation Bar Tree
+# ---------------------------------------------------------------------
+
+ad_proc -public im_navbar_tree_release_mgmt { } {
+    Creates an <ul> ...</ul> collapsable menu for the
+    system's main NavBar.
+} {
+    set release_url [export_vars -base "/intranet/projects/index" {{project_type_id [im_project_type_software_release]}}]
+
+    set html "
+	<li><a href=\"$release_url\">[lang::message::lookup "" intranet-release-mgmt.Release_Mgmt "Release Management"]</a>
+	<ul>
+    "
+
+    append html "<li><a href=\"$release_url\">[lang::message::lookup "" intranet-release-mgmt.Release_Projects "Release Projects"]</a></li>\n"
+
+
+    append html "
+	</ul>
+	</li>
+    "
+    return $html
+}
+
+
