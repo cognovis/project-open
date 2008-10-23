@@ -374,15 +374,39 @@ SELECT im_category_new (2502, 'Service Level Agreement', 'Intranet Project Type'
 
 -- 30100-30199	Intranet Ticket Type
 --
+
+-- Ticket types for ITIL management categories
+SELECT im_category_new(30150, 'Incident Ticket', 'Intranet Ticket Type');
+SELECT im_category_new(30152, 'Problem Ticket', 'Intranet Ticket Type');
+SELECT im_category_new(30154, 'Change Ticket', 'Intranet Ticket Type');
+
+-- Disable meta-categories for normal use
+update im_categories set
+	enabled_p = 'f'
+where	category_id in (30150, 30152, 30154);
+
+
+-- Specific ticket types
 SELECT im_category_new(30102, 'Purchasing Request', 'Intranet Ticket Type');
+SELECT im_category_hierarchy_new(30102, 30154);
 SELECT im_category_new(30104, 'Workplace move Request', 'Intranet Ticket Type');
+SELECT im_category_hierarchy_new(30104, 30154);
 SELECT im_category_new(30106, 'Telephony Request', 'Intranet Ticket Type');
+SELECT im_category_hierarchy_new(30106, 30154);
 SELECT im_category_new(30108, 'Project Request', 'Intranet Ticket Type');
+SELECT im_category_hierarchy_new(30108, 30154);
 SELECT im_category_new(30110, 'Bug Request', 'Intranet Ticket Type');
+SELECT im_category_hierarchy_new(30110, 30150);
 SELECT im_category_new(30112, 'Report Request', 'Intranet Ticket Type');
+SELECT im_category_hierarchy_new(30112, 30154);
 SELECT im_category_new(30114, 'Permission Request', 'Intranet Ticket Type');
+SELECT im_category_hierarchy_new(30114, 30154);
 SELECT im_category_new(30116, 'Feature Request', 'Intranet Ticket Type');
+SELECT im_category_hierarchy_new(30116, 30154);
 SELECT im_category_new(30118, 'Training Request', 'Intranet Ticket Type');
+SELECT im_category_hierarchy_new(30118, 30154);
+
+
 
 
 update im_categories set category = 'Purchasing Request' where category = 'Purchasing request';

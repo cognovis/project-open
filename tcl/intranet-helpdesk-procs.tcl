@@ -32,6 +32,24 @@ ad_proc -public im_ticket_status_deleted {} { return 30097 }
 ad_proc -public im_ticket_status_canceled {} { return 30098 }
 
 
+
+ad_proc -public im_ticket_type_purchase_request {} { return 30102 }
+ad_proc -public im_ticket_type_workplace_move_request {} { return 30104 }
+ad_proc -public im_ticket_type_telephony_request {} { return 30006 }
+ad_proc -public im_ticket_type_project_request {} { return 30008 }
+ad_proc -public im_ticket_type_bug_request {} { return 30100 }
+ad_proc -public im_ticket_type_report_request {} { return 30112 }
+ad_proc -public im_ticket_type_permission_request {} { return 30114 }
+ad_proc -public im_ticket_type_feature_request {} { return 30116 }
+ad_proc -public im_ticket_type_training_request {} { return 30118 }
+
+ad_proc -public im_ticket_type_incident_ticket {} { return 30150 }
+ad_proc -public im_ticket_type_problem_ticket {} { return 30152 }
+ad_proc -public im_ticket_type_change_ticket {} { return 30154 }
+
+
+
+
 # ----------------------------------------------------------------------
 # PackageID
 # ----------------------------------------------------------------------
@@ -512,17 +530,20 @@ ad_proc -public im_navbar_tree_helpdesk {
     Creates an <ul> ...</ul> collapsable menu for the
     system's main NavBar.
 } {
-    set html "
+    set html [im_navbar_tree_helpdesk_indicent_mgmt]
+
+    append html "
 	<li><a href=/intranet-helpdesk/index>Helpdesk</a>
 	<ul>
     "
 
+    # Create new Ticket
+    append html "<li><a href=\"/intranet-helpdesk/new\">[lang::message::lookup "" intranet-helpdesk.New_Ticket "Create a new Ticket"]</a>\n"
+
     # Add list of SLAs
-    set url [export_vars -base "/intranet-projects/index" {{project_type_id [im_project_type_sla]}}]
+    set url [export_vars -base "/intranet/projects/index" {{project_type_id [im_project_type_sla]}}]
     set name [lang::message::lookup "" intranet-helpdesk.Service_Level_Agreements "Service Level Agreements"]
     append html "<li><a href=\"$url\">$name</a></li>\n"
-
-
 
     # Add sub-menu with types of tickets
     append html "
@@ -541,10 +562,52 @@ ad_proc -public im_navbar_tree_helpdesk {
 	</li>
     "
 
+    append html "
+	</ul>
+	</li>
+    "
+    return $html
+}
+
+
+ad_proc -public im_navbar_tree_helpdesk_incident_mgmt { } { Incident Management} {
+
+    set html "
+	<li><a href=/intranet-helpdesk/index>[lang::message::lookup "" intranet-helpdesk.Incident_Management "Incident Management"]</a>
+	<ul>
+    "
+
+    # Create a new Problem Ticket
+    set url [export_vars -base "/intranet-helpdesk/new" {{ticket_type_id [im_ticket_type_problem_ticket]}}]
+    set name [lang::message::lookup "" intranet-helpdesk.New_Ticket "Create a new Ticket"]
+    append html "<li><a href=\"$url\">$name</a>\n"
+
+    # Add list of SLAs
+    set url [export_vars -base "/intranet/projects/index" {{project_type_id [im_project_type_sla]}}]
+    set name [lang::message::lookup "" intranet-helpdesk.Service_Level_Agreements "Service Level Agreements"]
+    append html "<li><a href=\"$url\">$name</a></li>\n"
+
+    # Add sub-menu with types of tickets
+    append html "
+	<li><a href=/intranet-helpdesk/index>Ticket Types</a>
+	<ul>
+    "
+    set ticket_type_sql "select * from im_ticket_types order by ticket_type"
+    db_foreach ticket_types $ticket_type_sql {
+	set url [export_vars -base "/intranet-helpdesk/index" {ticket_type_id}]
+        regsub -all " " $ticket_type "_" ticket_type_subst
+	set name [lang::message::lookup "" intranet-helpdesk.Ticket_type_$ticket_type_subst "${ticket_type}s"]
+	append html "<li><a href=\"$url\">$name</a></li>\n"
+    }
+    append html "
+	</ul>
+	</li>
+    "
 
     append html "
 	</ul>
 	</li>
     "
     return $html
+
 }
