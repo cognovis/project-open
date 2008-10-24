@@ -3,8 +3,10 @@
 <property name="main_navbar_label"></property>
 
 <%= [im_box_header $page_title] %>
+
 <form action='@return_url;noquote@' method=POST>
 <%= [export_form_vars ticket_id ticket_nr ticket_name] %>
+
 <table cellspacing=2 cellpadding=2>
 
 
@@ -34,17 +36,15 @@
 			</table>
 		</td>
 		</tr>
-
-		<tr>
-		    <td></td>
-		    <td><input type=submit value='<%= [lang::message::lookup "" intranet-core.Continue "Continue"] %>'></td>
-		</tr>
 </if>
 <else>
 	<%= [export_form_vars ticket_type_id] %>
 </else>
 
-
+<tr class=roweven>
+    <td></td>
+    <td><input type=submit value='<%= [lang::message::lookup "" intranet-core.Continue "Continue"] %>'></td>
+</tr>
 
 </table>
 </form>

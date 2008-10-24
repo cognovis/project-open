@@ -530,7 +530,7 @@ ad_proc -public im_navbar_tree_helpdesk {
     Creates an <ul> ...</ul> collapsable menu for the
     system's main NavBar.
 } {
-    set html [im_navbar_tree_helpdesk_indicent_mgmt]
+    set html [im_navbar_tree_helpdesk_incident_mgmt]
 
     append html "
 	<li><a href=/intranet-helpdesk/index>Helpdesk</a>
@@ -578,14 +578,9 @@ ad_proc -public im_navbar_tree_helpdesk_incident_mgmt { } { Incident Management}
     "
 
     # Create a new Problem Ticket
-    set url [export_vars -base "/intranet-helpdesk/new" {{ticket_type_id [im_ticket_type_problem_ticket]}}]
-    set name [lang::message::lookup "" intranet-helpdesk.New_Ticket "Create a new Ticket"]
+    set url [export_vars -base "/intranet-helpdesk/new" {{ticket_type_id [im_ticket_type_incident_ticket]}}]
+    set name [lang::message::lookup "" intranet-helpdesk.New_Incident_Ticket "Create a new Incident Ticket"]
     append html "<li><a href=\"$url\">$name</a>\n"
-
-    # Add list of SLAs
-    set url [export_vars -base "/intranet/projects/index" {{project_type_id [im_project_type_sla]}}]
-    set name [lang::message::lookup "" intranet-helpdesk.Service_Level_Agreements "Service Level Agreements"]
-    append html "<li><a href=\"$url\">$name</a></li>\n"
 
     # Add sub-menu with types of tickets
     append html "
