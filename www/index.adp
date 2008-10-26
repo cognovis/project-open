@@ -5,8 +5,9 @@
 <property name="sub_navbar">@ticket_navbar_html;noquote@</property>
 
 <div class="filter-list">
-   <div class="filter">
-
+<a id="sideBarTab" href="#"><img id="sideBarTabImage" border="0" title="sideBar" alt="sideBar" src="/intranet/images/navbar_saltnpepper/slide-button-active.gif"/></a>
+   <div class="filter" id="sidebar">
+   <div id="sideBarContentsInner"> 
       <div class="filter-block">
          <div class="filter-title">
             <%= [lang::message::lookup "" intranet-core.Filter_Tickets "Filter Tickets"] %>
@@ -35,8 +36,8 @@
       <%= [im_navbar_tree -label "main"] %>
 
    </div>
-
-   <div class="fullwidth-list">
+   </div>
+   <div class="fullwidth-list" id="fullwidth-list">
       <%= [im_box_header $page_title] %>
          <table>
             <%= $table_header_html %>
