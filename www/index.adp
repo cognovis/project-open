@@ -6,7 +6,9 @@
 
 
 <div class="filter-list">
-   <div class="filter">
+<a id="sideBarTab" href="#"><img id="sideBarTabImage" border="0" title="sideBar" alt="sideBar" src="/intranet/images/navbar_saltnpepper/slide-button-active.gif"/></a>
+   <div class="filter" id="sidebar" >
+<div id="sideBarContentsInner"> 
       <div class="filter-block">
          <div class="filter-title">
             #intranet-expenses.Filter_Expenses#
@@ -74,8 +76,8 @@
 
       </if>
    </div>
-
-   <div class="fullwidth-list">
+</div>
+   <div class="fullwidth-list" id="fullwidth-list">
       <%= [im_box_header $page_title] %>
          <listtemplate name="@list_id@"></listtemplate>
       <%= [im_box_footer] %>
