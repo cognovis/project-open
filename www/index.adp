@@ -8,13 +8,13 @@
 
    <include src="../lib/nav-bar" notification_link="">
 
-   <div class="filter">
+   <div class="filter" id="sidebar">
       <div class="filter-block">
          <listfilters name="bugs"></listfilters>
       </div>
    </div>
 
-   <div class="fullwidth-list" style="min-height: 800px;">
+   <div class="fullwidth-list" style="min-height: 800px;" id="fullwidth-list">
       <%= [im_box_header $page_title] %>
       <listtemplate name="bugs"></listtemplate>
       <%= [im_box_footer] %>
