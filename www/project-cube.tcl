@@ -1,4 +1,4 @@
-# /packages/intranet-reporting-cubes/www/finance-cube.tcl
+# /packages/intranet-reporting-cubes/www/project-cube.tcl
 #
 # Copyright (c) 2003-2008 ]project-open[
 #
@@ -17,9 +17,11 @@ ad_page_contract {
     { left_var1 "customer_name" }
     { left_var2 "" }
     { left_var3 "" }
-    { cost_type_id:multiple "3700 3704 3722 3718" }
-    { customer_type_id:integer 0 }
-    { customer_id:integer 0 }
+    { project_status_id:multiple "" }
+    { project_type_id "" }
+    { customer_type_id:integer "" }
+    { customer_id:integer "" }
+    { aggregate "one" }
 
     { left_vars "" }
     { top_vars "" }
@@ -120,6 +122,8 @@ set read_p [db_string report_perms "
 	where	m.label = :menu_label
 " -default 'f']
 
+set read_p "t"
+
 if {![string equal "t" $read_p]} {
     ad_return_complaint 1 "<li>
 [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
@@ -147,13 +151,7 @@ if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$}
 # ------------------------------------------------------------
 # Page Title & Help Text
 
-set cost_type [db_list cost_type "
-	select	im_category_from_id(category_id)
-	from	im_categories
-	where	category_id in ([join $cost_type_id ", "])
-"]
-
-set page_title [lang::message::lookup "" intranet-reporting.Financial_Cube "Financial Cube"]
+set page_title [lang::message::lookup "" intranet-reporting.Project_Cube "Project Cube"]
 set context_bar [im_context_bar $page_title]
 set context ""
 set help_text "<strong>$page_title</strong><br>
@@ -219,14 +217,25 @@ set this_url [export_vars -base "/intranet-reporting/finance-cube" {start_date e
 # ------------------------------------------------------------
 # Options
 
-set cost_type_options {
-	3700 "Customer Invoice"
-	3702 "Quote"
-	3724 "Delivery Note"
-	3704 "Provider Bill"
-	3706 "Purchase Order"
-	3722 "Expense Report"
-	3718 "Timesheet Cost"
+set aggregate_options {
+	"one"				"Number of Projects"
+	"project_budget_converted"	"Budget"
+	"project_budget_hours"		"Budget Hours"
+	"reported_hours_cache"		"Logged Hours"
+
+	"cost_timesheet_logged_cache"	"Cost Timesheet"
+	"cost_expense_logged_cache"	"Cost Expenses"
+	"cost_invoices_cache"		"Cost Invoices"
+	"cost_quotes_cache"		"Cost Quotes"
+	"cost_delivery_notes_cache"	"Cost Delivery Notes"
+	"cost_bills_cache"		"Cost Bills"
+	"cost_purchase_orders_cache"	"Cost Purchase Orders"
+}
+
+set ttt {
+	"confirm_date"
+	"cost_timesheet_planned_cache"	
+	"cost_expense_planned_cache"	
 }
 
 set non_active_cost_type_options {
@@ -248,29 +257,109 @@ set top_vars_options {
 
 set left_scale_options {
 	"" ""
-	"main_project_name" "Main Project Name"
-	"main_project_nr" "Main Project Nr"
-	"main_project_type" "Main Project Type"
-	"main_project_status" "Main Project Status"
+	"project_name" "Project Name"
+	"project_nr" "Project Nr"
+	"project_type" "Project Type"
+	"project_status" "Project Status"
 
-	"sub_project_name" "Sub Project Name"
-	"sub_project_nr" "Sub Project Nr"
-	"sub_project_type" "Sub Project Type"
-	"sub_project_status" "Sub Project Status"
+	"project_lead" "Project Manager"
+	"project_lead_dept" "Project Manager's Department"
 
 	"customer_name" "Customer Name"
 	"customer_path" "Customer Nr"
 	"customer_type" "Customer Type"
 	"customer_status" "Customer Status"
-
-	"provider_name" "Provider Name"
-	"provider_path" "Provider Nr"
-	"provider_type" "Provider Type"
-	"provider_status" "Provider Status"
-
-	"cost_type" "Cost Type"
-	"cost_status" "Cost Status"
 }
+
+
+# ------------------------------------------------------------
+# add all DynField attributes from Projects with datatype integer and a
+# CategoryWidget for display. This widget shows distinct values suitable
+# as dimension.
+
+set dynfield_sql "
+	select	aa.attribute_name,
+		aa.pretty_name,
+		w.widget as tcl_widget,
+		w.widget_name as dynfield_widget
+	from
+		im_dynfield_attributes a,
+		im_dynfield_widgets w,
+		acs_attributes aa
+	where
+		a.widget_name = w.widget_name
+		and a.acs_attribute_id = aa.attribute_id
+		and w.widget in ('select', 'generic_sql', 'im_category_tree', 'im_cost_center_tree', 'checkbox')
+		and aa.object_type in ('im_project','im_company')
+		and aa.attribute_name not like 'default%'
+" 
+
+set derefs [list]
+db_foreach dynfield_attributes $dynfield_sql {
+
+    lappend left_scale_options ${attribute_name}_deref
+    lappend left_scale_options $pretty_name
+
+    # How to dereferentiate the attribute_name to attribute_name_deref?
+    # The code is going to be executed as part of an SQL
+
+    # Skip adding "deref" stuff if the variable is not looked at...
+    if {[lsearch $dimension_vars ${attribute_name}_deref] < 0} { 
+	continue 
+    }
+
+    # Catch the generic ones - We know how to dereferentiate integer references of these fields.
+    set deref ""
+    switch $tcl_widget {
+	im_category_tree {
+	    set deref "im_category_from_id($attribute_name) as ${attribute_name}_deref"
+	}
+	im_cost_center_tree {
+	    set deref "im_cost_center_name_from_id($attribute_name) as ${attribute_name}_deref"
+	}
+    }
+
+    switch $dynfield_widget {
+	gender_select { set deref "im_category_from_id($attribute_name) as ${attribute_name}_deref" }
+	employees { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	employees_and_customers { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	customers { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	bit_member { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	active_projects { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	cost_centers { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	project_account_manager { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	pl_fachbereich { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+    }
+	
+    if {"" == $deref} { set deref "$attribute_name as ${attribute_name}_deref" }
+    lappend derefs $deref
+}
+
+# ------------------------------------------------------------
+# Determine which "dereferenciations" we need (pulling out nice value for integer reference)
+foreach var $dimension_vars {
+    switch $var {
+	company_type { lappend derefs "im_category_from_id(h.company_type_id) as company_type" }
+	year { lappend derefs "to_char(p.start_date, 'YYYY') as year" }
+	month_of_year { lappend derefs "to_char(p.start_date, 'MM') as month_of_year" }
+	quarter_of_year { lappend derefs "to_char(p.start_date, 'Q') as quarter_of_year" }
+	week_of_year { lappend derefs "to_char(p.start_date, 'IW') as week_of_year" }
+	day_of_month { lappend derefs "to_char(p.start_date, 'DD') as day_of_month" }
+
+	main_project_type { lappend derefs "im_category_from_id(p.project_type_id) as main_project_type" }
+	main_project_status { lappend derefs "im_category_from_id(p.project_status_id) as main_project_status" }
+
+	project_type { lappend derefs "im_category_from_id(h.sub_project_type_id) as project_type" }
+	project_status { lappend derefs "im_category_from_id(h.sub_project_status_id) as project_status" }
+
+	customer_type { lappend derefs "im_category_from_id(h.company_type_id) as customer_type" }
+	customer_status { lappend derefs "im_category_from_id(h.company_status_id) as customer_status" }
+
+    }
+}
+
+if {[llength $derefs] == 0} { lappend derefs "1 as dummy"}
+
 
 # ------------------------------------------------------------
 # Start formatting the page
@@ -288,6 +377,9 @@ ns_write "
 <tr valign=top><td>
 	<table border=0 cellspacing=1 cellpadding=1>
 	<tr>
+	  <td class=form-widget colspan=4 align=center>Constraints</td>
+	</tr>
+	<tr>
 	  <td class=form-label>Start Date</td>
 	  <td class=form-widget colspan=3>
 	    <input type=textfield name=start_date value=$start_date>
@@ -300,9 +392,15 @@ ns_write "
 	  </td>
 	</tr>
 	<tr>
-	  <td class=form-label>Cost Type</td>
+	  <td class=form-label>Project Type</td>
 	  <td class=form-widget colspan=3>
-	    [im_select -translate_p 1 -multiple_p 1 -size 7 cost_type_id $cost_type_options $cost_type_id]
+	    [im_category_select -include_empty_p 1 "Intranet Project Type" project_type_id $project_type_id]
+	  </td>
+	</tr>
+	<tr>
+	  <td class=form-label>Project Status</td>
+	  <td class=form-widget colspan=3>
+	    [im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id $project_status_id]
 	  </td>
 	</tr>
 	<tr>
@@ -314,12 +412,20 @@ ns_write "
 	<tr>
 	  <td class=form-label>Customer</td>
 	  <td class=form-widget colspan=3>
-	    [im_company_select customer_id $customer_id]
+	    [im_company_select -include_empty_name "All" customer_id $customer_id]
 	  </td>
 	</tr>
 	<tr>
-	  <td class=form-widget colspan=2 align=center>Left-Dimension</td>
-	  <td class=form-widget colspan=2 align=center>Top-Dimension</td>
+	  <td class=form-widget colspan=4 align=center>&nbsp;<br>Aggregate</td>
+	</tr>
+	<tr>
+	  <td class=form-label>Show:</td>
+	  <td class=form-widget colspan=3>
+	    [im_select -translate_p 1 aggregate $aggregate_options $aggregate]
+	</td>
+	<tr>
+	  <td class=form-widget colspan=2 align=center>&nbsp;<br>Left-Dimension</td>
+	  <td class=form-widget colspan=2 align=center>&nbsp;<br>Top-Dimension</td>
 	</tr>
 	<tr>
 	  <td class=form-label>Left 1</td>
@@ -379,14 +485,18 @@ ns_write "
 #
 
 set cube_array [im_reporting_cubes_cube \
-    -cube_name "finance" \
+    -cube_name "project" \
     -start_date $start_date \
     -end_date $end_date \
     -left_vars $left \
     -top_vars $top \
-    -cost_type_id $cost_type_id \
+    -project_type_id $project_type_id \
+    -project_status_id $project_status_id \
     -customer_type_id $customer_type_id \
     -customer_id $customer_id \
+    -aggregate $aggregate \
+    -derefs $derefs \
+    -no_cache_p 1 \
 ]
 
 if {"" != $cube_array} {

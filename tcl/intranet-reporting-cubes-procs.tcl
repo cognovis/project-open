@@ -38,10 +38,14 @@ ad_proc im_reporting_cubes_cube {
     { -end_date "2099-12-31" }
     { -left_vars "customer_name" }
     { -top_vars "" }
-    { -cost_type_id {3700} }
-    { -customer_type_id 0 }
-    { -project_type_id 0 }
-    { -customer_id 0 }
+    { -cost_type_id "" }
+    { -customer_type_id "" }
+    { -customer_status_id "" }
+    { -project_type_id "" }
+    { -project_status_id "" }
+    { -customer_id "" }
+    { -aggregate "" }
+    { -derefs "" }
     { -cache_days 1 }
     { -no_cache_p 0 }
 } {
@@ -90,11 +94,11 @@ ad_proc im_reporting_cubes_cube {
 		evaluation_date $evaluation_date \
 		top_vars $cube_top_vars \
 		left_vars $cube_left_vars \
-      	top_scale $value_top_scale \
-      	left_scale $value_left_scale \
-      	hash_array $value_hash_array \
+      		top_scale $value_top_scale \
+      		left_scale $value_left_scale \
+      		hash_array $value_hash_array \
             ]
-        }
+	}
 	if {"" != $cached_result} { 
 	    db_dml update_counter "
 		update im_reporting_cubes set
@@ -129,6 +133,20 @@ ad_proc im_reporting_cubes_cube {
 		-cost_type_id $cost_type_id \
 		-customer_type_id $customer_type_id \
 		-customer_id $customer_id \
+            ]
+	}
+	project {
+	    set cube_array [im_reporting_cubes_project \
+		-start_date $start_date \
+		-end_date "2099-12-31" \
+		-left_vars $left_vars \
+		-top_vars $top_vars \
+		-project_type_id $project_type_id \
+		-project_status_id $project_status_id \
+		-customer_type_id $customer_type_id \
+		-customer_id $customer_id \
+		-aggregate $aggregate \
+		-derefs $derefs \
             ]
 	}
 	default {
@@ -415,8 +433,6 @@ ad_proc im_reporting_cubes_finance {
      	hash_array [array get hash] \
     ]
 }
-
-
 
 
 
@@ -884,4 +900,238 @@ ad_proc im_reporting_cubes_display {
 	$body
 	</table>
     "
+}
+
+
+
+
+
+
+
+
+
+# ----------------------------------------------------------------------
+# Uncached version of Projects Cube
+# ----------------------------------------------------------------------
+
+ad_proc im_reporting_cubes_project {
+    { -start_date "1900-01-01" }
+    { -end_date "2099-12-31" }
+    { -left_vars "customer_name" }
+    { -top_vars "" }
+    { -project_type_id "" }
+    { -project_status_id "" }
+    { -customer_type_id 0 }
+    { -customer_id 0 }
+    { -constraints {} }
+    { -aggregate "one" }
+    { -derefs "" }
+} {
+    Returns a DW cube as a list containing:
+    - An array with the cube data
+    - An array for the left dimension
+    - An array for the top dimension
+} {
+    # ------------------------------------------------------------
+    # Defaults
+    
+    set sigma "&Sigma;"
+    
+    # The complete set of dimensions - used as the key for
+    # the "cell" hash. Subtotals are calculated by dropping on
+    # or more of these dimensions
+    set dimension_vars [concat $top_vars $left_vars]
+
+    set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+    
+    # ------------------------------------------------------------
+    # Conditional SQL Where-Clause
+    #
+
+    set criteria [list]
+    
+    if {"" != $customer_id && 0 != $customer_id} {
+        lappend criteria "p.customer_id = :customer_id"
+    }
+    if {"" != $project_type_id && 0 != $project_type_id} {
+        lappend criteria "p.project_type_id in ([join [im_sub_categories $project_type_id] ", "])"
+    }
+    if {"" != $project_status_id && 0 != $project_status_id} {
+        lappend criteria "p.project_status_id in ([join [im_sub_categories $project_status_id] ", "])"
+    }
+    if {"" != $customer_type_id && 0 != $customer_type_id} {
+        lappend criteria "cust.company_type_id in ([join [im_sub_categories $customer_type_id] ", "])"
+    }
+
+    set constraint_hash [array get $constraints]
+    foreach key [array names constraint_hash] {
+	set value $constraint_hash($key)
+	lappend criteria "$key in ([join $value ","])"
+    }
+
+    set where_clause [join $criteria " and\n\t\t\t"]
+    if { ![empty_string_p $where_clause] } {
+        set where_clause " and $where_clause"
+    }
+    
+    
+    # ------------------------------------------------------------
+    # Define the report - SQL, counters, headers and footers 
+    #
+    
+    # Inner - Try to be as selective as possible and select
+    # the relevant data from the fact table.
+    set inner_sql "
+  		select
+			p.*,
+			1 as one
+  		from
+  			im_projects p
+  		where
+			p.parent_id is null
+  			and p.start_date::date >= to_date(:start_date, 'YYYY-MM-DD')
+  			and p.start_date::date < to_date(:end_date, 'YYYY-MM-DD')
+  			and p.start_date::date < to_date(:end_date, 'YYYY-MM-DD')
+			$where_clause
+    "
+
+    # Aggregate additional/important fields to the fact table.
+    set middle_sql "
+  	select
+  		p.*,
+  		im_category_from_id(p.project_type_id) as project_type,
+  		im_category_from_id(p.project_status_id) as project_status,
+
+
+		trunc((
+			im_exchange_rate(p.start_date::date, p.project_budget_currency, :default_currency) *
+			p.project_budget
+                ) :: numeric, 2) as project_budget_converted,
+
+  		to_char(p.end_date, 'YYYY') as end_year,
+  		to_char(p.end_date, 'MM') as end_month_of_year,
+  		to_char(p.end_date, 'Q') as end_quarter_of_year,
+  		to_char(p.end_date, 'IW') as end_week_of_year,
+  		to_char(p.end_date, 'DD') as end_day_of_month,
+
+  		substring(p.project_name, 1, 14) as project_name_cut,
+		im_name_from_user_id(p.project_lead_id) as project_lead,
+
+  		cust.company_name as customer_name,
+  		cust.company_path as customer_path,
+  		cust.company_type_id as customer_type_id,
+  		im_category_from_id(cust.company_type_id) as customer_type,
+  		cust.company_status_id as customer_status_id,
+  		im_category_from_id(cust.company_status_id) as customer_status,
+
+                [join $derefs ",\n\t\t"]
+
+  	from
+  		($inner_sql) p
+  		LEFT OUTER JOIN im_companies cust ON (p.company_id = cust.company_id)
+  	where
+  		1 = 1
+  		$where_clause
+    "
+    
+    set sql "
+    select
+  	sum($aggregate) as aggregate,
+  	[join $dimension_vars ",\n\t"]
+    from
+  	($middle_sql) p
+    group by
+  	[join $dimension_vars ",\n\t"]
+    "
+
+    # ------------------------------------------------------------
+    # Create upper date dimension
+    
+    # Top scale is a list of lists such as {{2006 01} {2006 02} ...}
+    # The last element of the list the grand total sum.
+    
+    # No top dimension at all gives an error...
+    if {![llength $top_vars]} { set top_vars [list year] }
+    
+    set top_scale [db_list_of_lists top_scale "
+  	select distinct	[join $top_vars ", "]
+  	from		($middle_sql) c
+  	order by	[join $top_vars ", "]
+    "]
+    lappend top_scale [list $sigma $sigma $sigma $sigma $sigma $sigma]
+
+
+    # ------------------------------------------------------------
+    # Create a sorted left dimension
+    
+    # No top dimension at all gives an error...
+    if {![llength $left_vars]} {
+        ns_write "
+  	<p>&nbsp;<p>&nbsp;<p>&nbsp;<p><blockquote>
+  	[lang::message::lookup "" intranet-reporting.No_left_dimension "No 'Left' Dimension Specified"]:<p>
+  	[lang::message::lookup "" intranet-reporting.No_left_dimension_message "
+  		You need to specify atleast one variable for the left dimension.
+  	"]
+  	</blockquote><p>&nbsp;<p>&nbsp;<p>&nbsp;
+        "
+        ns_write "</table>\n"
+        return ""
+    }
+
+    
+    # Scale is a list of lists. Example: {{2006 01} {2006 02} ...}
+    # The last element is the grand total.
+    set left_scale [db_list_of_lists left_scale "
+  	select distinct	[join $left_vars ", "]
+  	from		($middle_sql) c
+  	order by	[join $left_vars ", "]
+    "]
+    set last_sigma [list]
+    foreach t [lindex $left_scale 0] {
+        lappend last_sigma $sigma
+    }
+    lappend left_scale $last_sigma
+
+    
+    # ------------------------------------------------------------
+    # Execute query and aggregate values into a Hash array
+    
+    db_foreach query $sql {
+    
+        # Get all possible permutations (N out of M) from the dimension_vars
+        set perms [im_report_take_all_ordered_permutations $dimension_vars]
+    
+        # Add the invoice amount to ALL of the variable permutations.
+        # The "full permutation" (all elements of the list) corresponds
+        # to the individual cell entries.
+        # The "empty permutation" (no variable) corresponds to the
+        # gross total of all values.
+        # Permutations with less elements correspond to subtotals
+        # of the values along the missing dimension. Clear?
+        #
+        foreach perm $perms {
+    
+	    # Calculate the key for this permutation
+	    # something like "$year-$month-$customer_id"
+	    set key_expr "\$[join $perm "-\$"]"
+	    set key [eval "set a \"$key_expr\""]
+    
+	    # Sum up the values for the matrix cells
+	    set sum 0
+	    if {[info exists hash($key)]} { set sum $hash($key) }
+	    if {"" == $aggregate} { set aggregate 0 }
+	    set sum [expr $sum + $aggregate]
+	    set hash($key) $sum
+        }
+    }
+
+    return [list \
+	cube "finance" \
+	evaluation_date [db_string now "select now()"] \
+	top_vars $top_vars \
+	left_vars $left_vars \
+     	top_scale $top_scale \
+     	left_scale $left_scale \
+     	hash_array [array get hash] \
+    ]
 }
