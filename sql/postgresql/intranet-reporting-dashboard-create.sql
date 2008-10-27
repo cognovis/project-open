@@ -177,7 +177,7 @@ SELECT im_component_plugin__new (
 	'/intranet-reporting-dashboard/index',		-- page_url
 	null,				-- view_name
 	120,				-- sort_order
-	'im_dashboard_histogram -name "Tickets per Ticket Type" -sql "
+	'im_dashboard_histogram_sql -name "Tickets per Ticket Type" -sql "
 		select	im_category_from_id(ticket_type_id) as ticket_type,
 		        count(*) as cnt
 		from	im_tickets t
