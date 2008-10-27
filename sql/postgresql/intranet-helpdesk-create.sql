@@ -48,6 +48,12 @@ where object_type = 'im_ticket';
 
 SELECT im_category_new(101, 'Ticket', 'Intranet Project Type');
 
+-- Disable "Ticket" so that it doesn't appear in the list of project types
+update im_categories
+set enabled_p = 'f'
+where category = 'Ticket' and category_type = 'Intranet Project Type';
+
+
 -- Create a new profile
 select im_create_profile ('Helpdesk','helpdesk');
 
