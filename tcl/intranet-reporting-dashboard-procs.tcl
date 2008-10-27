@@ -189,14 +189,85 @@ ad_proc -public im_dashboard_active_projects_status_histogram {
 # Define a color bar from red to blue or similar...
 # ----------------------------------------------------------------------
 
+ad_proc im_dashboard_color { 
+    { -type "" }
+} {
+    Returns suitable colors, depending on the respective skin
+} {
+    set user_id [ad_get_user_id]
+    set skin_key [im_user_skin $user_id]
+    set skin_name [im_skin_name $skin_key]
+
+    if {[catch {
+        set procname "im_dashboard_color_$skin_name"
+	set color [$procname -type $type]
+    } err_msg]} {
+	set color [im_dashboard_color_default -type $type]
+    }
+
+    return $color
+}
+
+
+ad_proc im_dashboard_color_saltnpepper { 
+    { -type "" }
+} {
+    Returns suitable colors
+} {
+    switch $type {
+
+	start_color { return "A0A0A0" }
+	end_color { return "808080" }
+	bar_color { return "808080" }
+	bar_text_color { return "404040" }
+	pie_text_color { return "404040" }
+	bar_bg_color { return "FFFFFF" }
+	default {
+	    ad_return_complaint 1 "<br>im_dashboard_color: Unknown color type: '$type'</b>"
+	}
+    }
+}
+
+
+ad_proc im_dashboard_color_default { 
+    { -type "" }
+} {
+    Returns suitable colors, depending on the respective skin
+	start_color { return "0080FF" }
+	end_color { return "FF8000" }
+	bar_color { return "0080FF" }
+} {
+    switch $type {
+
+	start_color { return "0080FF" }
+	end_color { return "80FF80" }
+	bar_color { return "0080FF" }
+	bar_text_color { return "000000" }
+	bar_bg_color { 
+	    # Background of bar chart
+	    return "FFFFFF" 
+	}
+	pie_text_color { return "000000" }
+
+	default {
+	    ad_return_complaint 1 "<br>im_dashboard_color_default: Unknown color type: '$type'</b>"
+	}
+    }
+}
+
+
+
 ad_proc im_dashboard_pie_colors { 
     { -max_entries 8 }
-    { -start_color "0080FF" }
-    { -end_color "FF8000" }
+    { -start_color "" }
+    { -end_color "" }
 } {
     Returns an array with color codes from 0.. $max_entries
     (max_entries+1 in total)
 } {
+    if {"" == $start_color} { set start_color [im_dashboard_color -type "start_color"] }
+    if {"" == $end_color} { set end_color [im_dashboard_color -type "end_color"] }
+
     # Aux string for hex conversions
     set h "0123456789ABCDEF"
 
@@ -257,9 +328,9 @@ ad_proc im_dashboard_pie_chart {
     { -bar_distance 5 }
     { -bar_text_limit "" }
     { -outer_distance 20 }
-    { -start_color "0080FF" }
-    { -end_color "FF8000" }
-    { -font_color "000000" }
+    { -start_color "" }
+    { -end_color "" }
+    { -font_color "" }
     { -font_size 8 }
     { -font_style "font-family:Verdana;font-weight:normal;line-height:10pt;" }
 } {
@@ -273,12 +344,10 @@ ad_proc im_dashboard_pie_chart {
     Short example:
 	<pre>set pie_chart [im_dashboard_pie_chart \
         -max_entries 3 \
-	-values {{Abc 10} {Bcde 20} {Cdefg 30} {Defg 25}} \
-        -start_color "0080FF" \
-	-end_color "80FF80"]</pre>
-
-			       
+	-values {{Abc 10} {Bcde 20} {Cdefg 30} {Defg 25}}
+	</pre>		       
 } {
+    if {"" == $font_color} { set font_color [im_dashboard_color -type "pie_text_color"] }
     if {[llength $values] < $max_entries} { set max_entries [llength $values] }
 
     set perc_x_start [expr $outer_distance + 2 * $radius + $outer_distance]
@@ -381,10 +450,11 @@ ad_proc im_dashboard_histogram {
     { -values {} }
     { -bar_width 10 }
     { -bar_distance 5 }
-    { -bar_color "0080FF" }
+    { -bar_color "" }
+    { -bar_bg_color "" }
+    { -bar_text_color "" }
     { -outer_distance 20 }
     { -diagram_width 400 }
-    { -font_color "000000" }
     { -font_size 8 }
     { -font_style "font-family:Verdana;font-weight:normal;line-height:10pt;" }
 } {
@@ -394,9 +464,12 @@ ad_proc im_dashboard_histogram {
     Short example:
 	<pre>set histogram_chart [im_dashboard_histogram \
         -values {{Potential 10} {Quoting 5} {Open 5} {Invoicing 6}} \
-        -bar_color "0080FF" \
 	]</pre>
 } {
+    if {"" == $bar_color} { set bar_color [im_dashboard_color -type bar_color] }
+    if {"" == $bar_text_color} { set bar_text_color [im_dashboard_color -type bar_text_color] }
+    if {"" == $bar_bg_color} { set bar_bg_color [im_dashboard_color -type bar_bg_color] }
+
     # The total number of data items (both header and values)
     set value_total_items 0
 
@@ -433,7 +506,7 @@ ad_proc im_dashboard_histogram {
 		new Bar(
 			1+$diag.ScreenX(0), $diag.ScreenY($count), 
 			1+$diag.ScreenX($max_value), $bar_width + $diag.ScreenY($count),
-			\"\", \"$bar_title\", \"#000000\", \"$bar_title\",
+			\"\", \"$bar_title\", \"#$bar_text_color\", \"$bar_title\",
 			\"\", \"\", \"\", \"left\"
 		);
 	"
@@ -444,7 +517,7 @@ ad_proc im_dashboard_histogram {
 		new Bar(
 			1+$diag.ScreenX(0), $diag.ScreenY($count), 
 			1+$diag.ScreenX($cnt), $bar_width + $diag.ScreenY($count),
-			\"#0080FF\", \"&nbsp;\", \"#000000\", \"&nbsp;\", \"\"
+			\"#$bar_color\", \"&nbsp;\", \"#$bar_text_color\", \"&nbsp;\", \"\"
 		);
             "
 	    incr count
@@ -468,7 +541,7 @@ ad_proc im_dashboard_histogram {
 	$diag.XScale=1;
 	$diag.YScale=0;
 	$diag.SetText(\"\",\"\", \"<B>$name</B>\");
-	$diag.Draw(\"#FFFFFF\", \"#004080\", false,\"Click on a bar to get the phone number\");
+	$diag.Draw(\"#$bar_bg_color\", \"#$bar_text_color\", false,\"Click on a bar to get the phone number\");
 	$status_html
 	delete $diag;
 

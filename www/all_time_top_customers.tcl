@@ -38,8 +38,6 @@ foreach left_scale_line $left_scale {
 
 set pie_chart [im_dashboard_pie_chart \
 	-values $pie_values \
-	-start_color "0080FF" \
-	-end_color "80FF80" \
 	-radius 70 \
 	-outer_distance 10 \
 ]
