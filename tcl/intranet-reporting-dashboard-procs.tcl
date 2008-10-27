@@ -103,6 +103,40 @@ ad_proc -public im_dashboard_generic_component {
 
 
 
+
+# ----------------------------------------------------------------------
+# Generic Histogram
+# ---------------------------------------------------------------------
+
+ad_proc -public im_dashboard_histogram_sql {
+    -sql:required
+    { -menu_label "" }
+    { -name "" }
+} {
+    Returns a dashboard component.
+    Requires a SQL statement like 
+    "select im_category_from_id(project_type_id), count(*) from im_projects group by project_type_id"
+} {
+    if {"" == $menu_label} { 
+	set read_p "t" 
+    } else {
+
+	set current_user_id [ad_maybe_redirect_for_registration]
+	set read_p [db_string report_perms "
+	        select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
+	        from    im_menus m where m.label = :menu_label
+        " -default 'f']
+	if {![string equal "t" $read_p]} { return "" }
+    }
+
+    set values [db_list_of_lists dashboard_historgram $sql]
+
+    regsub -all " " $name "_" name_subs
+    set widget_name [lang::message::lookup "" intranet-reporting-dashboard.$name_subs $name]
+    return [im_dashboard_histogram -name $widget_name -values $values]
+}
+
+
 # ----------------------------------------------------------------------
 # Status of currently non-closed projects
 # ---------------------------------------------------------------------
@@ -338,16 +372,6 @@ ad_proc im_dashboard_pie_chart {
 }
 
 
-
-
-
-
-
-
-
-
-
-
 # ----------------------------------------------------------------------
 # Draw a reasonable Histogram chart
 # ----------------------------------------------------------------------
@@ -382,6 +406,10 @@ ad_proc im_dashboard_histogram {
     # The biggest individual value
     set max_value 0
 
+    # Generate a random name for the diagram. Cut off ".0" float extension.
+    regexp {([0-9]*)} [expr 1E12 * rand()] match diag
+    set diag "D$diag"
+
     foreach v $values {
 	incr value_data_sets
 	set value_total_items [expr $value_total_items + [llength $v]]
@@ -403,8 +431,8 @@ ad_proc im_dashboard_histogram {
 
 	append status_html "
 		new Bar(
-			1+D1.ScreenX(0), D1.ScreenY($count), 
-			1+D1.ScreenX($max_value), $bar_width + D1.ScreenY($count),
+			1+$diag.ScreenX(0), $diag.ScreenY($count), 
+			1+$diag.ScreenX($max_value), $bar_width + $diag.ScreenY($count),
 			\"\", \"$bar_title\", \"#000000\", \"$bar_title\",
 			\"\", \"\", \"\", \"left\"
 		);
@@ -414,8 +442,8 @@ ad_proc im_dashboard_histogram {
 	foreach cnt $vals {
 	    append status_html "
 		new Bar(
-			1+D1.ScreenX(0), D1.ScreenY($count), 
-			1+D1.ScreenX($cnt), $bar_width + D1.ScreenY($count),
+			1+$diag.ScreenX(0), $diag.ScreenY($count), 
+			1+$diag.ScreenX($cnt), $bar_width + $diag.ScreenY($count),
 			\"#0080FF\", \"&nbsp;\", \"#000000\", \"&nbsp;\", \"\"
 		);
             "
@@ -428,18 +456,24 @@ ad_proc im_dashboard_histogram {
 
     set histogram_html "
 	<SCRIPT Language=JavaScript src=/resources/diagram/diagram/diagram.js></SCRIPT>
-        <div style='$border position:relative;top:0px;height:[expr $diagram_y_size+40]px;width:${diagram_x_size}px;'>
+        <div style='$border position:relative;top:0px;height:[expr $diagram_y_size+50]px;width:${diagram_x_size}px;'>
 	<SCRIPT Language=JavaScript>
+
 	document.open();
-	var D1=new Diagram();
+
+	var $diag=new Diagram();
 	_BFont=\"font-family:Verdana;font-weight:normal;font-size:8pt;line-height:10pt;\";
-	D1.SetFrame(0, 25, $diagram_x_size, $diagram_y_size);
-	D1.SetBorder(0, $max_value*1.1, $value_total_items+1, 0);
-	D1.XScale=1;
-	D1.YScale=0;
-	D1.SetText(\"\",\"\", \"<B>$name</B>\");
-	D1.Draw(\"#FFFFFF\", \"#004080\", false,\"Click on a bar to get the phone number\");
+	$diag.SetFrame(0, 25, $diagram_x_size, $diagram_y_size);
+	$diag.SetBorder(0, $max_value*1.1, $value_total_items+1, 0);
+	$diag.XScale=1;
+	$diag.YScale=0;
+	$diag.SetText(\"\",\"\", \"<B>$name</B>\");
+	$diag.Draw(\"#FFFFFF\", \"#004080\", false,\"Click on a bar to get the phone number\");
 	$status_html
+	delete $diag;
+
+        document.close();
+
 	</SCRIPT>
 	</div>
     "

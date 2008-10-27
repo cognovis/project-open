@@ -162,5 +162,30 @@ SELECT im_component_plugin__new (
 );
 
 
+-- Tickets Histogram
+--
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Tickets per Ticket Type',	-- plugin_name
+	'intranet-reporting-dashboard',	-- package_name
+	'left',				-- location
+	'/intranet-reporting-dashboard/index',		-- page_url
+	null,				-- view_name
+	120,				-- sort_order
+	'im_dashboard_histogram -name "Tickets per Ticket Type" -sql "
+		select	im_category_from_id(ticket_type_id) as ticket_type,
+		        count(*) as cnt
+		from	im_tickets t
+		where	t.ticket_status_id in (select * from im_sub_categories(30000))
+		group by ticket_type_id
+		order by ticket_type
+	"',
+	'lang::message::lookup "" intranet-reporting-dashboard.Tickets_per_Ticket_Type "Tickets per Ticket Type"'
+);
 
 
