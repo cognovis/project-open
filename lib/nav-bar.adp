@@ -1,3 +1,4 @@
+<div id="bug-tracker-navbar">
 <table class="bug-tracker-navbar" border=0" cellspacing="0" cellpadding="2" bgcolor="#6FA2D4" width="100%">
   <form action="@form_action_url@" method="get" name="navbar_form_@bt_nav_bar_count@">
     <tr>
@@ -27,3 +28,4 @@
     </tr>
   </form>
 </table>
+</div>
