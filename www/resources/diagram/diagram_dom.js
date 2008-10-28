@@ -14,17 +14,20 @@ function _Draw(theDrawColor, theTextColor, isScaleText, theTooltipText, theOnCli
   if (_nvl(theOnMouseoverAction,"")!="") EventActions+="onMouseover='"+_nvl(theOnMouseoverAction,"")+"' ";
   if (_nvl(theOnMouseoutAction,"")!="") EventActions+="onMouseout='"+_nvl(theOnMouseoutAction,"")+"' ";
   lay--; 
-  if (document.all) selObj=eval("_DiagramTarget.document.all."+id);
-  else selObj=_DiagramTarget.document.getElementById(id);
+
+  if (document.all) 
+       selObj=eval("_DiagramTarget.document.all."+id);
+  else 
+       selObj=_DiagramTarget.document.getElementById(id);
   if (selObj) lay--;
   if (lay<-1)
     selObj.title=_nvl(theTooltipText,"");
   else
     _DiagramTarget.document.writeln("<div id='"+this.ID+"' title='"+_nvl(theTooltipText,"")+"'>"); 
-  if (_IsImage(theDrawColor))
+  if (_IsImage(theDrawColor)){
     divtext="<div id='"+this.ID+"i"+eval(ii++)+"' "+EventActions+"style='"+_cursor(theOnClickAction)+"position:absolute; left:"+eval(this.left)+"px; width:"+eval(this.right-this.left+_dSize)+"px; top:"+eval(this.top)+"px; height:"+eval(this.bottom-this.top+_dSize)+"px; color:"+theTextColor+"; border-style:solid; border-width:1px; z-index:"+this.zIndex+"'><img src='"+theDrawColor+"' width="+eval(this.right-this.left-1)+" height="+eval(this.bottom-this.top-1)+"></div>";
-  else
-    divtext="<div id='"+this.ID+"i"+eval(ii++)+"' "+EventActions+"style='"+_cursor(theOnClickAction)+"position:absolute; left:"+eval(this.left)+"px; width:"+eval(this.right-this.left+_dSize)+"px; top:"+eval(this.top)+"px; height:"+eval(this.bottom-this.top+_dSize)+"px; background-color:"+theDrawColor+"; color:"+theTextColor+"; border-style:solid; border-width:1px; z-index:"+this.zIndex+"'>&nbsp;</div>";  
+}  else{
+    divtext="<div id='"+this.ID+"i"+eval(ii++)+"' "+EventActions+"style='"+_cursor(theOnClickAction)+"position:absolute; left:"+eval(this.left)+"px; width:"+eval(this.right-this.left+_dSize)+"px; top:"+eval(this.top)+"px; height:"+eval(this.bottom-this.top+_dSize)+"px; background-color:"+theDrawColor+"; color:"+theTextColor+"; border-style:solid; border-width:1px; z-index:"+this.zIndex+"'>&nbsp;</div>";}  
   if ((this.XScale==1)||(isNaN(this.XScale)))
   { u="";
     fn="";
@@ -260,10 +263,12 @@ function _Draw(theDrawColor, theTextColor, isScaleText, theTooltipText, theOnCli
     divtext+="<div id='"+this.ID+"i"+eval(ii++)+"' align=center style='position:absolute; left:"+this.left+"px; width:"+eval(this.right-this.left)+"px; top:"+eval(this.top-20)+"px; color:"+theTextColor+";"+this.Font+" z-index:"+this.zIndex+"'>"+this.title+"</div>";
   else
     divtext+="<div id='"+this.ID+"i"+eval(ii++)+"' align=center style='position:absolute; left:"+this.left+"px; width:"+eval(this.right-this.left)+"px; top:"+eval(this.bottom+4)+"px; color:"+theTextColor+";"+this.Font+" z-index:"+this.zIndex+"'>"+this.title+"</div>";  
-  if (lay<-1)
+
+  if (lay<-1){
     selObj.innerHTML=divtext;
-  else
+  }else{
     _DiagramTarget.document.writeln(divtext+"</div>");
+  }
 }
 
 
