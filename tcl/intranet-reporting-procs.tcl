@@ -144,7 +144,7 @@ ad_proc im_report_render_cell {
 
     switch $output_format {
 	html - printer { ns_write "<td $td_fields>$quoted_cell</td>\n" }
-	csv { ns_write "\"$quoted_cell\";" }
+	csv { ns_write "\"$quoted_cell\"\t" }
    }
 }
 
@@ -188,6 +188,7 @@ ad_proc im_report_render_header {
     {-level_of_detail 999}
     {-row_class ""}
     {-cell_class ""}
+    {-debug 0}
 } {
     Renders a single row in a project-open report. 
     The procedure takes a report definition, an array of the
@@ -196,8 +197,7 @@ ad_proc im_report_render_header {
     Returns an array of the new values for the current row.
 } {
     set group_level 1
-    ns_log Notice "render_header:"
-    ns_log Notice "render_header: last_value_array_list=$last_value_array_list"
+    if {$debug} { ns_log Notice "render_header: last_value_array_list=$last_value_array_list" }
     array set last_value_array $last_value_array_list
 
     # Walk through the levels of the report definition
@@ -209,7 +209,7 @@ ad_proc im_report_render_header {
 	set group_var $group_array(group_by)
 	set header $group_array(header)
 	set content $group_array(content)
-	ns_log Notice "render_header: level=$group_level, group_var=$group_var"
+	if {$debug} { ns_log Notice "render_header: level=$group_level, group_var=$group_var" }
 
 	# -------------------------------------------------------
 	# Determine last and new value for the current group group_level
@@ -226,7 +226,7 @@ ad_proc im_report_render_header {
 	    }
 	    set cmd "set new_value \"\$$group_var\""
 	    eval $cmd
-	    ns_log Notice "render_header: level=$group_level, last_value='$last_value', new_value='$new_value'"
+	    if {$debug} { ns_log Notice "render_header: level=$group_level, last_value='$last_value', new_value='$new_value'" }
 	}
 
 	# -------------------------------------------------------
@@ -267,7 +267,7 @@ ad_proc im_report_render_header {
 	incr group_level
 
     }
-    ns_log Notice "render_header: after group_by headers"
+    if {$debug} { ns_log Notice "render_header: after group_by headers" }
 
     return [array get last_value_array]
 }
@@ -283,6 +283,7 @@ ad_proc im_report_render_footer {
     {-row_class ""}
     {-cell_class ""}
     {-level_of_detail 999}
+    {-debug 0}
 } {
     Renders the footer stack of a single row in a project-open report. 
     The procedure acts similar to im_report_render_header,
@@ -294,14 +295,14 @@ ad_proc im_report_render_footer {
     A group_var with a value different from the current one is the
     trigger to display the footer line.
 } {
-    ns_log Notice "render_footer:"
+    if {$debug} { ns_log Notice "render_footer:" }
     array set last_value_array $last_value_array_list
 
     # Split group_def and assign to an array for reverse access
     set group_level 1
     while {[llength $group_def] > 0} {
 	set group_def_array($group_level) $group_def
-	ns_log Notice "render_footer: group_def_array($group_level) = ..."
+	if {$debug} { ns_log Notice "render_footer: group_def_array($group_level) = ..." }
 	array set group_array $group_def
         set group_def {}
         if {[info exists group_array(content)]} {
@@ -312,7 +313,7 @@ ad_proc im_report_render_footer {
     set group_level [expr $group_level - 1]
 
     while {$group_level > 0} {
-	ns_log Notice "render_footer: level=$group_level"
+	if {$debug} { ns_log Notice "render_footer: level=$group_level" }
 
 	# -------------------------------------------------------
 	# Extract the definition of the current level from the definition
@@ -331,7 +332,7 @@ ad_proc im_report_render_footer {
             }
             set cmd "set new_value \"\$$group_var\""
             eval $cmd
-            ns_log Notice "render_footer: level=$group_level, new_value='$new_value'"
+            if {$debug} { ns_log Notice "render_footer: level=$group_level, new_value='$new_value'" }
         }
 
 	# -------------------------------------------------------
@@ -354,7 +355,7 @@ ad_proc im_report_render_footer {
 
 	set group_level [expr $group_level - 1]
     }
-    ns_log Notice "render_footer: after group_by footers"
+    if {$debug} { ns_log Notice "render_footer: after group_by footers" }
 
     return [array get footer_array]
 }
@@ -372,10 +373,11 @@ ad_proc im_report_display_footer {
     {-level_of_detail 999}
     {-cell_class ""}
     {-row_class ""}
+    {-debug 0}
 } {
     Display the footer stack of a single row in a project-open report. 
 } {
-    ns_log Notice "display_footer:"
+    if {$debug} { ns_log Notice "display_footer:" }
     array set last_value_array $last_value_array_list
     array set footer_array $footer_array_list
 
@@ -401,7 +403,7 @@ ad_proc im_report_display_footer {
 	set group_var $group_array(group_by)
 	set header $group_array(header)
 	set content $group_array(content)
-	ns_log Notice "display_footer: level=$return_group_level, group_var=$group_var"
+	if {$debug} { ns_log Notice "display_footer: level=$return_group_level, group_var=$group_var" }
 
 	# -------------------------------------------------------
 	# 
@@ -422,7 +424,7 @@ ad_proc im_report_display_footer {
 	# Check if new_value != new_record_value.
 	# In this case we have found the first level in which the
 	# results differ. This is the level where we have to return.
-	ns_log Notice "display_footer: level=$return_group_level, group_var=$group_var, new_record_value=$new_record_value, new_value=$new_value"
+	if {$debug} { ns_log Notice "display_footer: level=$return_group_level, group_var=$group_var, new_record_value=$new_record_value, new_value=$new_value" }
 	if {![string equal $new_value $new_record_value]} {
 	    # leave the while loop
 	    break
@@ -448,7 +450,7 @@ ad_proc im_report_display_footer {
     set max_group_level 1
     while {[llength $group_def] > 0} {
 	set group_def_array($max_group_level) $group_def
-	ns_log Notice "display_footer: group_def_array($max_group_level) = ..."
+	if {$debug} { ns_log Notice "display_footer: group_def_array($max_group_level) = ..." }
 	array set group_array $group_def
         set group_def {}
         if {[info exists group_array(content)]} {
@@ -466,7 +468,7 @@ ad_proc im_report_display_footer {
     # Now let's display all footers between max_group_level and
     # return_group_level.
     #
-    ns_log Notice "display_footer: max_group_level=$max_group_level, return_group_level=$return_group_level"
+    if {$debug} { ns_log Notice "display_footer: max_group_level=$max_group_level, return_group_level=$return_group_level" }
     for {set group_level $max_group_level} { $group_level >= $return_group_level} { set group_level [expr $group_level-1]} {
 
 	# -------------------------------------------------------
@@ -480,7 +482,7 @@ ad_proc im_report_display_footer {
 	# -------------------------------------------------------
 	# Write out the header if last_value != new_value
 
-	ns_log Notice "display_footer: writing footer for group_level=$group_level"
+	if {$debug} { ns_log Notice "display_footer: writing footer for group_level=$group_level" }
 
 	switch $output_format {
 	    html - printer { ns_write "<tr>\n" }
@@ -601,9 +603,8 @@ ad_proc im_report_output_format_select {
     }
     return "
 	<nobr>
-        <input name=$name type=radio value='html' $html_checked>HTML
+        <input name=$name type=radio value='html' $html_checked>HTML &nbsp;
  	<input name=$name type=radio value='csv' $csv_checked>CSV
-<!-- 	<input name=$name type=radio value='printer' $csv_checked>Printer -->
         </nobr>
     "
 }
