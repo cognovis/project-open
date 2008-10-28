@@ -312,13 +312,43 @@ ad_proc im_dashboard_pie_colors {
     return [array get pie_colors]
 }
 
+ad_proc im_dashboard_pie_chart {
+    { -max_entries 8 }
+    { -values {} }
+    { -bar_y_size 15 }
+    { -bar_x_size 100 }
+    { -perc_x_size 50 }
+    { -radius 90 }
+    { -bar_distance 5 }
+    { -bar_text_limit "" }
+    { -outer_distance 20 }
+    { -start_color "" }
+    { -end_color "" }
+    { -font_color "" }
+    { -font_size 8 }
+    { -font_style "font-family:Verdana;font-weight:normal;line-height:10pt;" }
+} {
+    Returns a formatted HTML text to display a piechart
+    based on Lutz Tautenhahn' "Javascript Diagram Builder", v3.3.
+    @param max_entries Determines the max. number of entries
+           in the pie chart. It also determines the Y-size of the diagram.
+    @param values A list of {name value} pairs to be displayed.
+           Values must be numeric (comparable using the "<" operator).
 
+    Short example:
+    <pre>set pie_chart [im_dashboard_pie_chart \
+        -max_entries 3 \
+			    -values {{Abc 10} {Bcde 20} {Cdefg 30} {Defg 25}}
+        </pre>
+		    } {
+return test
+		    }
 
 # ----------------------------------------------------------------------
 # Draw a reasonable Pie chart
 # ----------------------------------------------------------------------
 
-ad_proc im_dashboard_pie_chart { 
+ad_proc im_dashboard_pie_chart_ { 
     { -max_entries 8 }
     { -values {} }
     { -bar_y_size 15 }
@@ -424,7 +454,6 @@ ad_proc im_dashboard_pie_chart {
     set border ""
 
     return "
-        <SCRIPT Language=JavaScript src=/resources/diagram/diagram/diagram.js></SCRIPT> 
         <div style='$border position:relative;top:0px;height:${diagram_y_size}px;width:${diagram_x_size}px;'>
         <SCRIPT Language=JavaScript>
         P=new Array();
@@ -528,12 +557,9 @@ ad_proc im_dashboard_histogram {
     set border ""
 
     set histogram_html "
-	<SCRIPT Language=JavaScript src=/resources/diagram/diagram/diagram.js></SCRIPT>
         <div style='$border position:relative;top:0px;height:[expr $diagram_y_size+50]px;width:${diagram_x_size}px;'>
-	<SCRIPT Language=JavaScript>
-
+	<SCRIPT Language=JavaScript type='text/javascript'>
 	document.open();
-
 	var $diag=new Diagram();
 	_BFont=\"font-family:Verdana;font-weight:normal;font-size:8pt;line-height:10pt;\";
 	$diag.SetFrame(0, 25, $diagram_x_size, $diagram_y_size);
@@ -541,12 +567,10 @@ ad_proc im_dashboard_histogram {
 	$diag.XScale=1;
 	$diag.YScale=0;
 	$diag.SetText(\"\",\"\", \"<B>$name</B>\");
-	$diag.Draw(\"#$bar_bg_color\", \"#$bar_text_color\", false,\"Click on a bar to get the phone number\");
+	$diag.Draw(\"#$bar_bg_color\", \"#$bar_text_color\", false,\"\");
 	$status_html
 	delete $diag;
-
         document.close();
-
 	</SCRIPT>
 	</div>
     "

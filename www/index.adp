@@ -5,7 +5,7 @@
 <property name="focus">@page_focus;noquote@</property>
 
 <h2>@page_title@</h2>
-
+<SCRIPT Language=JavaScript src=/resources/diagram/diagram/diagram.js></SCRIPT>
 <table cellpadding=0 cellspacing=0 border=0 width="100%">
 <tr>
   <td valign=top width='50%'>
