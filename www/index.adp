@@ -24,12 +24,14 @@
       </div>
       <hr/>
 
+<!--
       <div class="filter-block">
          <div class="filter-title">
             <%= [lang::message::lookup "" intranet-core.Admin_Tickets "Admin Tickets"] %>
          </div>
          @admin_html;noquote@
       </div>
+-->
       <hr/>
 
 
@@ -37,7 +39,10 @@
 
    </div>
    </div>
+
    <div class="fullwidth-list" id="fullwidth-list">
+      <div id=fullwidth-main>
+
       <%= [im_box_header $page_title] %>
          <table>
             <%= $table_header_html %>
@@ -45,8 +50,13 @@
             <%= $table_continuation_html %>
          </table>
      <%= [im_box_footer] %>
+     </div>
+
+     <div id=fullwidth-components>
+	<%= [im_component_bay "right"] %>
+     </div>
+
    </div>
-   <div class="filter-list-footer"></div>
 
 </div>
 
