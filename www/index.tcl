@@ -115,7 +115,7 @@ set ticket_member_options [util_memoize "db_list_of_lists ticket_members {
 set ticket_member_options [linsert $ticket_member_options 0 [list [_ intranet-core.All] ""]]
 
 set ticket_queue_options [im_helpdesk_ticket_queue_options]
-set ticket_sla_options [im_helpdesk_ticket_sla_options -include_create_sla_p 1 -include_empty_p 0]
+set ticket_sla_options [im_helpdesk_ticket_sla_options -include_create_sla_p 1 -include_empty_p 1]
 
 ad_form \
     -name $form_id \
