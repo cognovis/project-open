@@ -1,9 +1,9 @@
-# /packages/intranet-reporting-cubes/www/project-cube.tcl
+# /packages/intranet-reporting-cubes/www/ticket-cube.tcl
 #
-# Copyright (c) 2003-2008 ]project-open[
+# Copyright (c) 2003-2008 ]ticket-open[
 #
 # All rights reserved. Please check
-# http://www.project-open.com/ for licensing details.
+# http://www.ticket-open.com/ for licensing details.
 
 
 ad_page_contract {
@@ -17,8 +17,8 @@ ad_page_contract {
     { left_var1 "customer_name" }
     { left_var2 "" }
     { left_var3 "" }
-    { project_status_id:multiple "" }
-    { project_type_id "" }
+    { ticket_status_id:multiple "" }
+    { ticket_type_id "" }
     { customer_type_id:integer "" }
     { customer_id:integer "" }
     { aggregate "one" }
@@ -114,7 +114,7 @@ if {[llength $dimension_vars] != [llength $unique_dimension_vars]} {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
-set menu_label "reporting-cubes-project"
+set menu_label "reporting-cubes-ticket"
 set current_user_id [ad_maybe_redirect_for_registration]
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
@@ -149,14 +149,13 @@ if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$}
 # ------------------------------------------------------------
 # Page Title & Help Text
 
-set page_title [lang::message::lookup "" intranet-reporting.Project_Cube "Project Cube"]
+set page_title [lang::message::lookup "" intranet-reporting.Ticket_Cube "Ticket Cube"]
 set context_bar [im_context_bar $page_title]
 set context ""
 set help_text "<strong>$page_title</strong><br>
 
-This Pivot Table ('cube') is a kind of report that shows Invoice,
-Quote or Delivery Note amounts according to a a number of variables
-that you can specify.
+This Pivot Table ('cube') is a kind of report that shows 
+a number of characteristics of helpdesk tickets.
 This cube effectively replaces a dozen of specific reports and allows
 you to 'drill down' into results.
 "
@@ -202,7 +201,7 @@ if {"" == $end_date} {
 
 
 set company_url "/intranet/companies/view?company_id="
-set project_url "/intranet/projects/view?project_id="
+set ticket_url "/intranet/tickets/view?ticket_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 set user_url "/intranet/users/view?user_id="
 set this_url [export_vars -base "/intranet-reporting/finance-cube" {start_date end_date} ]
@@ -212,9 +211,9 @@ set this_url [export_vars -base "/intranet-reporting/finance-cube" {start_date e
 # Options
 
 set aggregate_options {
-	"one"				"Number of Projects"
-	"project_budget_converted"	"Budget"
-	"project_budget_hours"		"Budget Hours"
+	"one"				"Number of Tickets"
+	"ticket_budget_converted"	"Budget"
+	"ticket_budget_hours"		"Budget Hours"
 	"reported_hours_cache"		"Logged Hours"
 
 	"cost_timesheet_logged_cache"	"Cost Timesheet"
@@ -251,13 +250,13 @@ set top_vars_options {
 
 set left_scale_options {
 	"" ""
-	"project_name" "Project Name"
-	"project_nr" "Project Nr"
-	"project_type" "Project Type"
-	"project_status" "Project Status"
+	"ticket_name" "Ticket Name"
+	"ticket_nr" "Ticket Nr"
+	"ticket_type" "Ticket Type"
+	"ticket_status" "Ticket Status"
 
-	"project_lead" "Project Manager"
-	"project_lead_dept" "Project Manager's Department"
+	"ticket_lead" "Ticket Manager"
+	"ticket_lead_dept" "Ticket Manager's Department"
 
 	"customer_name" "Customer Name"
 	"customer_path" "Customer Nr"
@@ -267,7 +266,7 @@ set left_scale_options {
 
 
 # ------------------------------------------------------------
-# add all DynField attributes from Projects with datatype integer and a
+# add all DynField attributes from Tickets with datatype integer and a
 # CategoryWidget for display. This widget shows distinct values suitable
 # as dimension.
 
@@ -284,7 +283,7 @@ set dynfield_sql "
 		a.widget_name = w.widget_name
 		and a.acs_attribute_id = aa.attribute_id
 		and w.widget in ('select', 'generic_sql', 'im_category_tree', 'im_cost_center_tree', 'checkbox')
-		and aa.object_type in ('im_project','im_company')
+		and aa.object_type in ('im_ticket','im_company')
 		and aa.attribute_name not like 'default%'
 " 
 
@@ -319,9 +318,9 @@ db_foreach dynfield_attributes $dynfield_sql {
 	employees_and_customers { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
 	customers { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
 	bit_member { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
-	active_projects { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	active_tickets { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
 	cost_centers { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
-	project_account_manager { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
+	ticket_account_manager { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
 	pl_fachbereich { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
     }
 	
@@ -340,11 +339,11 @@ foreach var $dimension_vars {
 	week_of_year { lappend derefs "to_char(p.start_date, 'IW') as week_of_year" }
 	day_of_month { lappend derefs "to_char(p.start_date, 'DD') as day_of_month" }
 
-	main_project_type { lappend derefs "im_category_from_id(p.project_type_id) as main_project_type" }
-	main_project_status { lappend derefs "im_category_from_id(p.project_status_id) as main_project_status" }
+	main_ticket_type { lappend derefs "im_category_from_id(p.ticket_type_id) as main_ticket_type" }
+	main_ticket_status { lappend derefs "im_category_from_id(p.ticket_status_id) as main_ticket_status" }
 
-	project_type { lappend derefs "im_category_from_id(h.sub_project_type_id) as project_type" }
-	project_status { lappend derefs "im_category_from_id(h.sub_project_status_id) as project_status" }
+	ticket_type { lappend derefs "im_category_from_id(h.sub_ticket_type_id) as ticket_type" }
+	ticket_status { lappend derefs "im_category_from_id(h.sub_ticket_status_id) as ticket_status" }
 
 	customer_type { lappend derefs "im_category_from_id(h.company_type_id) as customer_type" }
 	customer_status { lappend derefs "im_category_from_id(h.company_status_id) as customer_status" }
@@ -367,7 +366,7 @@ ns_write "
 [im_navbar]
 <table cellspacing=0 cellpadding=0 border=0>
 <form>
-[export_form_vars project_id]
+[export_form_vars ticket_id]
 <tr valign=top><td>
 	<table border=0 cellspacing=1 cellpadding=1>
 	<tr>
@@ -386,15 +385,15 @@ ns_write "
 	  </td>
 	</tr>
 	<tr>
-	  <td class=form-label>Project Type</td>
+	  <td class=form-label>Ticket Type</td>
 	  <td class=form-widget colspan=3>
-	    [im_category_select -include_empty_p 1 "Intranet Project Type" project_type_id $project_type_id]
+	    [im_category_select -include_empty_p 1 "Intranet Ticket Type" ticket_type_id $ticket_type_id]
 	  </td>
 	</tr>
 	<tr>
-	  <td class=form-label>Project Status</td>
+	  <td class=form-label>Ticket Status</td>
 	  <td class=form-widget colspan=3>
-	    [im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id $project_status_id]
+	    [im_category_select -include_empty_p 1 "Intranet Ticket Status" ticket_status_id $ticket_status_id]
 	  </td>
 	</tr>
 	<tr>
@@ -479,13 +478,13 @@ ns_write "
 #
 
 set cube_array [im_reporting_cubes_cube \
-    -cube_name "project" \
+    -cube_name "ticket" \
     -start_date $start_date \
     -end_date $end_date \
     -left_vars $left \
     -top_vars $top \
-    -project_type_id $project_type_id \
-    -project_status_id $project_status_id \
+    -ticket_type_id $ticket_type_id \
+    -ticket_status_id $ticket_status_id \
     -customer_type_id $customer_type_id \
     -customer_id $customer_id \
     -aggregate $aggregate \

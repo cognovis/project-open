@@ -99,7 +99,7 @@ BEGIN
 
 	v_menu := im_menu__new (
 		null,					-- p_menu_id
-		''acs_object'',				-- object_type
+		''im_menu'',				-- object_type
 		now(),					-- creation_date
 		null,					-- creation_user
 		null,					-- creation_ip
@@ -162,7 +162,7 @@ BEGIN
 
 	v_menu := im_menu__new (
 		null,					-- p_menu_id
-		''acs_object'',				-- object_type
+		''im_menu'',				-- object_type
 		now(),					-- creation_date
 		null,					-- creation_user
 		null,					-- creation_ip
@@ -224,7 +224,7 @@ BEGIN
 
 	v_menu := im_menu__new (
 		null,					-- p_menu_id
-		''acs_object'',				-- object_type
+		''im_menu'',				-- object_type
 		now(),					-- creation_date
 		null,					-- creation_user
 		null,					-- creation_ip
@@ -288,7 +288,7 @@ BEGIN
 
 	v_menu := im_menu__new (
 		null,					-- p_menu_id
-		''acs_object'',				-- object_type
+		''im_menu'',				-- object_type
 		now(),					-- creation_date
 		null,					-- creation_user
 		null,					-- creation_ip
@@ -310,4 +310,45 @@ BEGIN
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
+
+
+
+
+select im_menu__new (
+	null,						-- p_menu_id
+	'im_menu',					-- object_type
+	now(),						-- creation_date
+	null,						-- creation_user
+	null,						-- creation_ip
+	null,						-- context_id
+	'intranet-reporting-cubes',			-- package_name
+	'reporting-cubes-project',			-- label
+	'Project Cube',					-- name
+	'/intranet-reporting-cubes/project-cube?',	-- url
+	200,						-- sort_order
+	(select menu_id from im_menus where label = 'reporting-other'),
+	null						-- p_visible_tcl
+);
+
+
+
+
+select im_menu__new (
+	null,						-- p_menu_id
+	'im_menu',					-- object_type
+	now(),						-- creation_date
+	null,						-- creation_user
+	null,						-- creation_ip
+	null,						-- context_id
+	'intranet-reporting-cubes',			-- package_name
+	'reporting-cubes-ticket',			-- label
+	'Ticket Cube',					-- name
+	'/intranet-reporting-cubes/ticket-cube?',	-- url
+	200,						-- sort_order
+	(select menu_id from im_menus where label = 'reporting-other'),
+	null						-- p_visible_tcl
+);
+
+
 
