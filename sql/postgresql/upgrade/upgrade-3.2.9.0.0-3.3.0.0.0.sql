@@ -1,20 +1,24 @@
+-- upgrade-3.2.9.0.0-3.3.0.0.0.sql
+
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.2.9.0.0-3.3.0.0.0.sql','');
+
 -----------------------------------------------------------
 -- Reports
 --
 -- Table for user-defined reports. Types:
 --	- SQL Report - Simply show the result of an SQL statement via im_ad_hoc_query
 --	- ... (more types of reports possibly in the future).
-
-
-create or replace function inline_1 ()
+--
+create or replace function inline_0 ()
 returns integer as '
 declare
-	v_count			   integer;
+	v_count			integer;
+	v_menu_id		integer;
 begin
-	select count(*) into v_count
-	from acs_object_types where object_type = ''im_report'';
+	select  count(*) into v_count from acs_object_types
+	where   object_type = ''im_report'';
 	IF v_count > 0 THEN return 0; END IF;
-
+	
 	PERFORM acs_object_type__create_type (
 		''im_report'',			-- object_type
 		''Report'',			-- pretty_name
@@ -22,11 +26,12 @@ begin
 		''acs_object'',			-- supertype
 		''im_reports'',			-- table_name
 		''report_id'',			-- id_column
-		''im_reports'',			-- package_name
+		''intranet-reporting'',		-- package_name
 		''f'',				-- abstract_p
 		null,				-- type_extension_table
 		''im_report__name''		-- name_method
 	);
+	
 
 	create table im_reports (
 		report_id		integer
@@ -34,7 +39,6 @@ begin
 					primary key
 					constraint im_report_id_fk
 					references acs_objects,
-		report_code		varchar(100),
 		report_name		varchar(1000),
 		report_status_id	integer 
 					constraint im_report_status_nn
@@ -46,21 +50,24 @@ begin
 					not null
 					constraint im_report_type_fk
 					references im_categories,
+		report_sort_order	integer,
 		report_menu_id		integer
 					constraint im_report_menu_id_fk
 					references im_menus,
 		report_sql		text
 					constraint im_report_report_nn
 					not null,
-		report_sort_order	integer,
 		report_description	text
 	);
-
-
-	return 0;
+	
+	alter table im_reports add
+		constraint im_reports_name_un
+		unique(report_name);
+	
+    return 0;
 end;' language 'plpgsql';
-select inline_1 ();
-drop function inline_1();
+select inline_0 ();
+drop function inline_0();
 
 
 
@@ -77,11 +84,8 @@ DECLARE
 	p_report_id		alias for $1;
 	v_name			varchar(2000);
 BEGIN
-	select	report_name
-	into	v_name
-	from	im_reports
+	select	report_name into v_name from im_reports
 	where	report_id = p_report_id;
-
 	return v_name;
 end;' language 'plpgsql';
 
@@ -104,8 +108,13 @@ DECLARE
 	p_report_menu_id	alias for $10;
 	p_report_sql		alias for $11;
 
-	v_report_id	integer;
+	v_report_id		integer;
+	v_count			integer;
 BEGIN
+	select count(*) into v_count from im_reports
+	where report_name = p_report_name;
+	if v_count > 0 then return 0; end if;
+
 	v_report_id := acs_object__new (
 		p_report_id,		-- object_id
 		p_object_type,		-- object_type
@@ -165,28 +174,11 @@ end;' language 'plpgsql';
 -- 15200-15999	Reserved for Reporting
 
 
-create or replace function inline_1 ()
-returns integer as '
-declare
-        v_count                    integer;
-begin
-        select count(*) into v_count
-        from im_categories where category_id = 15000;
-        IF v_count > 0 THEN return 0; END IF;
+SELECT im_category_new(15000, 'Active', 'Intranet Report Status');
+SELECT im_category_new(15002, 'Deleted', 'Intranet Report Status');
 
-	insert into im_categories(category_id, category, category_type) 
-	values (15000, ''Active'', ''Intranet Report Status'');
-	insert into im_categories(category_id, category, category_type) 
-	values (15002, ''Deleted'', ''Intranet Report Status'');
-
-	insert into im_categories(category_id, category, category_type) 
-	values (15100, ''Simple SQL Report'', ''Intranet Report Type'');
-
-	return 0;
-end;' language 'plpgsql';
-select inline_1 ();
-drop function inline_1();
-
+SELECT im_category_new(15100, 'Simple SQL Report', 'Intranet Report Type');
+SELECT im_category_new(15110, 'Indicator', 'Intranet Report Type');
 
 
 -----------------------------------------------------------
@@ -206,4 +198,63 @@ where	category_type = 'Intranet Report Type'
 	and (enabled_p is null or enabled_p = 't');
 
 
+------------------------------------------------------------------------------
+--
+------------------------------------------------------------------------------
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_main_menu		integer;
+
+	-- Groups
+	v_employees		integer;
+	v_accounting		integer;
+	v_senman		integer;
+	v_customers		integer;
+	v_freelancers		integer;
+	v_proman		integer;
+	v_admins		integer;
+	v_reg_users		integer;
+BEGIN
+	select group_id into v_admins from groups where group_name = ''P/O Admins'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_proman from groups where group_name = ''Project Managers'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select group_id into v_employees from groups where group_name = ''Employees'';
+	select group_id into v_customers from groups where group_name = ''Customers'';
+	select group_id into v_freelancers from groups where group_name = ''Freelancers'';
+	select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+
+	select menu_id into v_main_menu from im_menus
+	where label=''reporting-timesheet'';
+
+	v_menu := im_menu__new (
+		null,					-- p_menu_id
+		''acs_object'',				-- object_type
+		now(),					-- creation_date
+		null,					-- creation_user
+		null,					-- creation_ip
+		null,					-- context_id
+		''intranet-reporting'',			-- package_name
+		''reporting-timesheet-finance'',	-- label
+		''Timesheet Project Hierarchy & Finance'', -- name
+		''/intranet-reporting/timesheet-finance?'', -- url
+		5,					-- sort_order
+		v_main_menu,				-- parent_menu_id
+		null					-- p_visible_tcl
+	);
+
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 

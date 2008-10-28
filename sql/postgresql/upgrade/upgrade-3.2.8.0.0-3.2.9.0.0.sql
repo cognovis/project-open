@@ -1,13 +1,15 @@
 -- upgrade-3.2.8.0.0-3.2.9.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.2.8.0.0-3.2.9.0.0.sql','');
+
+
 create or replace function inline_1 ()
 returns integer as '
 declare
         v_count                 integer;
 	v_menu_id		integer;
 begin
-	select	menu_id into v_menu_id
-	from	im_menus
+	select	menu_id into v_menu_id from im_menus
 	where	label = ''reporting-timesheet-cube''
 		and package_name = ''intranet-reporting'';
 
@@ -116,10 +118,7 @@ BEGIN
         select group_id into v_freelancers from groups where group_name = ''Freelancers'';
         select group_id into v_reg_users from groups where group_name = ''Registered Users'';
 
-        select menu_id
-        into v_main_menu
-        from im_menus
-        where label=''reporting-other'';
+        select menu_id into v_main_menu from im_menus where label=''reporting-other'';
 
         v_menu := im_menu__new (
                 null,                                   -- p_menu_id

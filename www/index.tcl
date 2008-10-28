@@ -26,7 +26,8 @@ ad_page_contract {
 # ------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
-
+set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+set reports_exist_p [db_table_exists "im_reports"]
 
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
@@ -63,19 +64,28 @@ set elements_list {
 	label $page_title
 	display_template {
 	    <if @reports.indent_level@ gt 4>
-		@reports.indent_spaces;noquote@ 
-		<a href="@reports.url@">@reports.name@</a>
+	    @reports.indent_spaces;noquote@ 
+	    <a href="@reports.url@">@reports.name@</a>
 	    </if>
 	    <else>
-		<b>@reports.name@</b>
+	    <b>@reports.name@</b>
 	    </else>
 	}
     }
 }
 
-set ttt {
-    report_description { label "Description" }
+
+if {$reports_exist_p && $user_admin_p} {
+    lappend elements_list \
+        edit {
+            label "[im_gif wrench]"
+            display_template {
+                @reports.edit_html;noquote@
+            }
+        }
 }
+
+
 
 set top_menu_sortkey [db_string top_menu_sortkey "
 	select tree_sortkey 
@@ -92,26 +102,45 @@ list::create \
         	return_url
         }
         
-db_multirow -extend {report_url indent_spaces} reports get_reports "
+
+if {$reports_exist_p} {
+
+    set report_sql "
+	select	report_id,
+		report_menu_id
+	from	im_reports
+	where	report_type_id = [im_report_type_simple_sql]
+    "
+    db_foreach reports $report_sql {
+	set report($report_menu_id) $report_id
+    }
+
+}
+
+
+db_multirow -extend {report_url indent_spaces edit_html} reports get_reports "
 	select
 		m.*,
-		r.*,
 	        length(tree_sortkey) as indent_level,
 	        (9-length(tree_sortkey)) as colspan_level
 	from
 	        im_menus m
-		LEFT OUTER JOIN im_reports r ON (m.menu_id = r.report_id)
 	where
-		tree_sortkey like '$top_menu_sortkey%'
+	        tree_sortkey like '$top_menu_sortkey%'
 		and 't' = im_object_permission_p(m.menu_id, :current_user_id, 'read')
 	order by tree_sortkey
 " {
-	set report_url [export_vars -base "new" {menu_id return_url}]
-
-	set indent_spaces ""
-	for {set i 0} {$i < $indent_level} {incr i} {
-	    append indent_spaces "&nbsp;"
-	}
+    set report_url [export_vars -base "new" {menu_id return_url}]
+    
+    set indent_spaces ""
+    for {set i 0} {$i < $indent_level} {incr i} {
+	append indent_spaces "&nbsp;"
+    }
+    
+    set report_id 0
+    if {[info exists report($menu_id)]} { set report_id $report($menu_id) }
+    set edit_html "<a href='[export_vars -base "new" {report_id}]'>[im_gif "wrench"]</a>"
+    if {0 == $report_id} { set edit_html "" }
 }
 
 
