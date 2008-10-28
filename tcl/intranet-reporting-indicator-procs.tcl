@@ -67,20 +67,6 @@ ad_proc im_indicator_timeline_widget {
 } {
     set oname "D[expr round(rand()*10000000)]"
 
-    set year0 0
-    set month0 0
-    set day0 0
-    set hour0 0
-    set min0 0
-    set sec0 0
-    set year9 0
-    set month9 0
-    set day9 0
-    set hour9 0
-    set min9 0
-    set sec9 0
-    set diagram_html ""
-
     # Extract first and last date as {YYYY MM DD}
     set first_date [lindex [lindex $values 0] 0]
     regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $first_date match year0 month0 day0 hour0 min0 sec0
@@ -191,3 +177,118 @@ ad_proc im_indicator_timeline_widget {
     return $histogram_html
 }
 
+
+
+
+
+
+# ----------------------------------------------------------------------
+# Horizontal Bar with yellow-green-red display
+# ---------------------------------------------------------------------
+
+
+ad_proc im_indicator_horizontal_bar {
+    -name
+    -value
+    -widget_min
+    -widget_max
+    { -widget_min_red "" }
+    { -widget_min_yellow "" }
+    { -widget_max_yellow "" }
+    { -widget_max_red "" }
+    { -font_style "font-family:Verdana;font-weight:normal;line-height:6pt;font-size:7pt;" }   
+    { -widget_bar_size "4" }
+    { -widget_value_bar_size "6" }
+    { -widget_color "0080FF" }
+    { -value_color "000000" }
+    { -red_color "FF0000" }
+    { -yellow_color "FFD000" }
+    { -green_color "00D000" }
+    { -white_color "FFFFFF" }
+    { -widget_width 200 }
+    { -widget_height 30 }
+    { -bottom_distance 12 }
+    { -outer_distance 2 }
+    { -left_distance 5 }
+} {
+    Returns a formatted HTML text to display a timeline of dots
+    based on Lutz Tautenhahn' "Javascript Diagram Builder", v3.3.
+    @param value Value of the indicator
+} {
+    # Sanity checks
+    if {"" == $value} { return "" }
+
+    if {"" == $widget_min} { set widget_min 0 }
+    if {"" == $widget_max} { set widget_max 10 }
+
+    if {[string is double $value]} {
+	if {$value < $widget_min} { set widget_min $value }
+	if {$value > $widget_max} { set widget_max $value }
+    }
+
+    # Create a "unique" diagram name for each diagram, in order to display
+    # several diagrams on the same page.
+    set o "D[expr round(rand()*10000000)]"
+
+    # Default values
+    set dist [expr ($widget_max - $widget_min) / 50]
+    set dist 0
+    if {"" == $widget_min_red} { set widget_min_red [expr $widget_min+$dist] }
+    if {"" == $widget_min_yellow} { set widget_min_yellow [expr $widget_min_red+$dist] }
+    if {"" == $widget_max_red} { set widget_max_red [expr $widget_max-$dist] }
+    if {"" == $widget_max_yellow} { set widget_max_yellow [expr $widget_max_red-$dist] }
+
+    set border "border:1px solid blue; "
+    set border ""
+
+    set histogram_html "
+	<div style='$border position:relative;top:0px;height:${widget_height}px;width:${widget_width}px;'>
+	<SCRIPT Language='JavaScript'>
+	document.open();
+	var $o = new Diagram();
+	$o.Font = \"$font_style\";
+	$o.SetFrame(
+		$outer_distance + $left_distance, $outer_distance, 
+		$widget_width - $outer_distance, $widget_height - $outer_distance - $bottom_distance
+	);
+	$o.SetBorder($widget_min, $widget_max, 0, 2);
+	$o.XScale = 1;
+	$o.YScale = 0;
+	var v = $o.ScreenY(1);
+	$o.Draw(\"#$white_color\", \"$widget_color\", false);
+	$o.SetText(\"\",\"\", \"<B>$name</B>\");
+	
+	new Bar($o.ScreenX($widget_min), v-$widget_bar_size, $o.ScreenX($widget_min_red), v+$widget_bar_size, \"#$red_color\", \"\", \"#$white_color\", \"Red\");
+	new Bar($o.ScreenX($widget_min_red), v-$widget_bar_size, $o.ScreenX($widget_min_yellow), v+$widget_bar_size, \"#$yellow_color\", \"\", \"#$white_color\", \"Yellow\");
+	new Bar($o.ScreenX($widget_min_yellow), v-$widget_bar_size, $o.ScreenX($widget_max_yellow), v+$widget_bar_size, \"#$green_color\", \"\", \"#$white_color\", \"Green\");
+	new Bar($o.ScreenX($widget_max_yellow), v-$widget_bar_size, $o.ScreenX($widget_max_red), v+$widget_bar_size, \"#$yellow_color\", \"\", \"#$white_color\", \"Yellow\");
+	new Bar($o.ScreenX($widget_max_red), v-$widget_bar_size, $o.ScreenX($widget_max), v+$widget_bar_size, \"#$red_color\", \"\", \"#$white_color\", \"Red\");
+
+	new Bar($o.ScreenX($value)-1, v-$widget_value_bar_size, $o.ScreenX($value)+1, v+$widget_value_bar_size, \"#$value_color\", \"\", \"#$white_color\", \"Black\");
+
+	document.close();
+	</SCRIPT> 
+	</div>
+    "
+
+    return $histogram_html
+}
+
+
+
+# ----------------------------------------------------------------------
+# Components
+# ---------------------------------------------------------------------
+
+ad_proc -public im_indicator_home_page_component { } {
+    Returns a HTML component with the list 
+    of all indicators that the user can see
+} {
+    set params [list \
+	[list user_id [ad_get_user_id]] \
+	[list return_url [im_url_with_query]] \
+    ]
+
+    set result [ad_parse_template -params $params "/packages/intranet-reporting-indicators/www/indicator-home-component"]
+    return [string trim $result]
+}

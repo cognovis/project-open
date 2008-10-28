@@ -197,12 +197,6 @@ db_multirow -extend {report_view_url edit_html value_html history_html} reports 
 	}
 	
 	set history_html ""
-	set history_html [im_indicator_timeline_widget \
-			  -name $report_name \
-			  -values $values \
-			  -widget_min $min \
-			  -widget_max $max \
-        ]
     }
 
 }
