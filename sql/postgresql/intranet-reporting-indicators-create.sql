@@ -282,10 +282,7 @@ BEGIN
 	select group_id into v_freelancers from groups where group_name = ''Freelancers'';
 	select group_id into v_reg_users from groups where group_name = ''Registered Users'';
 
-	select menu_id
-	into v_main_menu
-	from im_menus
-	where label=''main'';
+	select menu_id into v_main_menu from im_menus where label=''reporting-other'';
 
 	v_menu := im_menu__new (
 		null,					-- p_menu_id
@@ -345,6 +342,6 @@ select im_grant_permission (
 
 
 -- Import some sample indicators
-\i intranet-reporting-indicators-sample-indicators.sql
+\i intranet-reporting-indicators-indicators.sql
 
 

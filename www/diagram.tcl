@@ -27,5 +27,15 @@ set hist_values {
     { 80 10 }
 }
 
+set hist_values {
+    { 0 5 }
+    { 25 15 }
+    { 50 50 }
+    { 75 20 }
+}
+
+
+
+
 set histogram_html [im_indicator_timeline_widget -name "Test" -values $values -histogram_values $hist_values]
 
