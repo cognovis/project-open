@@ -6,7 +6,8 @@
 <property name="main_navbar_label">milestones</property>
 
 <div class="filter-list">
-   <div class="filter">
+<a id="sideBarTab" href="#"><img id="sideBarTabImage" border="0" title="sideBar" alt="sideBar" src="/intranet/images/navbar_saltnpepper/slide-button-active.gif"/></a>
+   <div class="filter" id="sidebar">
       <div class="filter-block">
          <div class="filter-title">
 	    <%= [lang::message::lookup "" intranet-milestone.Filter_Milestones "Filter Milestones"] %>
@@ -25,8 +26,8 @@
       <%= [im_navbar_tree -label "main"] %>
 
    </div>
-
-   <div class="fullwidth-list">
+</div>
+   <div class="fullwidth-list" id="fullwidth-list">
 	 @page_html;noquote@
    </div>
    <div class="filter-list-footer"></div>
