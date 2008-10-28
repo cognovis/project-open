@@ -41,21 +41,21 @@
    </div>
 
    <div class="fullwidth-list" id="fullwidth-list">
-      <div id=fullwidth-main>
-
+      <div id="fullwidth-main">
       <%= [im_box_header $page_title] %>
-         <table>
+            <table>
             <%= $table_header_html %>
             <%= $table_body_html %>
             <%= $table_continuation_html %>
          </table>
-     <%= [im_box_footer] %>
+    
+         <%= [im_box_footer] %>
      </div>
 
-     <div id=fullwidth-components>
+     <div id="fullwidth-components">
 	<%= [im_component_bay "right"] %>
      </div>
-
+     <div style="clear: left;">
    </div>
 
 </div>
