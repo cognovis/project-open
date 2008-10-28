@@ -49,12 +49,24 @@ create table im_indicators (
 	indicator_section_id	integer
 				constraint im_indicator_section_fk
 				references im_categories,
+	-- Restrict the indicator to a specific object type?
+	-- For example, a holiday_days indicator might be only for users.
+	indicator_object_type	varchar(100)
+				constraint im_indicator_otype_fk
+				references acs_object_types,
+
 	-- Lower widget scale
 	indicator_widget_min	double precision,
 	-- Upper widget scale
 	indicator_widget_max	double precision,
 	-- Number of histogram bins between min and max
-	indicator_widget_bins	integer
+	indicator_widget_bins	integer,
+
+	-- Indicator colour. Leave empty to disable
+	indicator_low_warn	double precision,
+	indicator_low_critical	double precision,
+	indicator_high_warn	double precision,
+	indicator_high_critical	double precision
 );
 
 
@@ -83,6 +95,12 @@ create table im_indicator_results (
 	result			double precision
 				constraint im_indicator_results_result_nn
 				not null,
+				-- Associate a result with a particular object,
+				-- for example a user.
+	result_object_id	integer
+				constraint im_indicator_result_object_fk
+				references acs_objects,
+
 				-- How many companies with this result? 
 				-- 1 for individual results.
 	result_count		integer default 1,
@@ -203,6 +221,7 @@ end;' language 'plpgsql';
 
 
 
+
 ----------------------------------------------------------
 -- Indicator Sections
 --
@@ -234,7 +253,7 @@ where   category_type = 'Intranet Indicator Section'
 
 
 ---------------------------------------------------------
--- Indicators Menus
+-- Indicators Menu
 --
 
 create or replace function inline_0 ()
@@ -243,57 +262,89 @@ declare
 	-- Menu IDs
 	v_menu			integer;
 	v_main_menu 		integer;
-	v_reporting_menu 	integer;
 
 	-- Groups
-        v_employees             integer;
-        v_accounting            integer;
-        v_senman                integer;
-        v_customers             integer;
-        v_freelancers           integer;
-        v_proman                integer;
-        v_admins                integer;
+	v_employees		integer;
+	v_accounting		integer;
+	v_senman		integer;
+	v_customers		integer;
+	v_freelancers		integer;
+	v_proman		integer;
+	v_admins		integer;
 	v_reg_users		integer;
 BEGIN
-    select group_id into v_admins from groups where group_name = ''P/O Admins'';
-    select group_id into v_senman from groups where group_name = ''Senior Managers'';
-    select group_id into v_proman from groups where group_name = ''Project Managers'';
-    select group_id into v_accounting from groups where group_name = ''Accounting'';
-    select group_id into v_employees from groups where group_name = ''Employees'';
-    select group_id into v_customers from groups where group_name = ''Customers'';
-    select group_id into v_freelancers from groups where group_name = ''Freelancers'';
-    select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+	select group_id into v_admins from groups where group_name = ''P/O Admins'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_proman from groups where group_name = ''Project Managers'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select group_id into v_employees from groups where group_name = ''Employees'';
+	select group_id into v_customers from groups where group_name = ''Customers'';
+	select group_id into v_freelancers from groups where group_name = ''Freelancers'';
+	select group_id into v_reg_users from groups where group_name = ''Registered Users'';
 
-    select menu_id into v_main_menu
-    from im_menus where label=''main'';
+	select menu_id
+	into v_main_menu
+	from im_menus
+	where label=''main'';
 
-    v_reporting_menu := im_menu__new (
-        null,                   -- p_menu_id
-        ''acs_object'',         -- object_type
-        now(),                  -- creation_date
-        null,                   -- creation_user
-        null,                   -- creation_ip
-        null,                   -- context_id
-        ''intranet-reporting-indicators'', -- package_name
-        ''indicators'',          -- label
-        ''Indicators'',          -- name
-        ''/intranet-reporting-indicators/'', -- url
-        151,                    -- sort_order
-        v_main_menu,            -- parent_menu_id
-        null                    -- p_visible_tcl
-    );
+	v_menu := im_menu__new (
+		null,					-- p_menu_id
+		''acs_object'',				-- object_type
+		now(),					-- creation_date
+		null,					-- creation_user
+		null,					-- creation_ip
+		null,					-- context_id
+		''intranet-reporting-indicators'',	-- package_name
+		''indicators'',				-- label
+		''Indicators'',				-- name
+		''/intranet-reporting-indicators/index?'', -- url
+		160,					-- sort_order
+		v_main_menu,				-- parent_menu_id
+		null					-- p_visible_tcl
+	);
 
-    PERFORM acs_permission__grant_permission(v_reporting_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_reporting_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_reporting_menu, v_proman, ''read'');
-    PERFORM acs_permission__grant_permission(v_reporting_menu, v_accounting, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
 
-    return 0;
+	return 0;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
 
-\i intranet-reporting-indicators-indicators.sql
+
+---------------------------------------------------------
+-- Home Page Indicator Component
+--
+
+select im_component_plugin__new (
+		null,					-- plugin_id
+		'acs_object',				-- object_type
+		now(),					-- creation_date
+		null,					-- creation_user
+		null,					-- creattion_ip
+		null,					-- context_id
+	
+		'Home Indicator Component',		-- plugin_name
+		'intranet-reporting-indicators',	-- package_name
+		'right',				-- location
+		'/intranet/index',			-- page_url
+		null,					-- view_name
+		50,					-- sort_order
+		'im_indicator_home_page_component',
+		'lang::message::lookup {} intranet-reporting-indicators.Home_Indicator_Component {Home Indicator Component}'
+);
+
+select im_grant_permission (
+	(select plugin_id from im_component_plugins where plugin_name = 'Home Indicator Component'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+
+
+-- Import some sample indicators
+\i intranet-reporting-indicators-sample-indicators.sql
 
 
