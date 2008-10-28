@@ -101,7 +101,18 @@ create table im_tickets (
 
 	ticket_alarm_date		timestamptz,
 	ticket_alarm_action		text,
-	ticket_note			text
+	ticket_note			text,
+
+	-- Creation
+	ticket_creation_date		timestamptz,
+	-- First human reaction from provider side
+	ticket_reaction_date		timestamptz,
+	-- Confirmation that this is an issue
+	ticket_confirmation_date	timestamptz,
+	-- Provider says ticket is done
+	ticket_done_date		timestamptz,
+	-- Customer confirms ticket is done
+	ticket_signoff_date		timestamptz
 );
 
 
@@ -165,10 +176,8 @@ end;' language 'plpgsql';
 
 
 create or replace function im_ticket__new (
-	integer, varchar, timestamptz,
-	integer, varchar, integer,
-	varchar, integer,
-	integer, integer 
+	integer, varchar, timestamptz, integer, varchar, integer,
+	varchar, integer, integer, integer 
 ) returns integer as '
 DECLARE
 	p_ticket_id		alias for $1;		-- ticket_id default null
@@ -177,12 +186,10 @@ DECLARE
 	p_creation_user 	alias for $4;		-- creation_user default null
 	p_creation_ip		alias for $5;		-- creation_ip default null
 	p_context_id		alias for $6;		-- context_id default null
-
 	p_ticket_name		alias for $7;		-- ticket_name
 	p_ticket_customer_id	alias for $8;
 	p_ticket_type_id	alias for $9;		
 	p_ticket_status_id	alias for $10;
-
 	v_ticket_id		integer;
 	v_ticket_nr		integer;
 BEGIN
@@ -204,10 +211,14 @@ BEGIN
 		76			-- p_ticket_status_id	
 	);
 
+	update im_projects set
+		start_date = now()
+	where project_id = v_ticket_id;
+
 	insert into im_tickets (
-		ticket_id, ticket_status_id, ticket_type_id
+		ticket_id, ticket_status_id, ticket_type_id, ticket_creation_date
 	) values (
-		v_ticket_id, p_ticket_status_id, p_ticket_type_id
+		v_ticket_id, p_ticket_status_id, p_ticket_type_id, now()
 	);
 
 	return v_ticket_id;
