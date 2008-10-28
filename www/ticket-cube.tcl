@@ -332,22 +332,14 @@ db_foreach dynfield_attributes $dynfield_sql {
 # Determine which "dereferenciations" we need (pulling out nice value for integer reference)
 foreach var $dimension_vars {
     switch $var {
-	company_type { lappend derefs "im_category_from_id(h.company_type_id) as company_type" }
 	year { lappend derefs "to_char(p.start_date, 'YYYY') as year" }
 	month_of_year { lappend derefs "to_char(p.start_date, 'MM') as month_of_year" }
 	quarter_of_year { lappend derefs "to_char(p.start_date, 'Q') as quarter_of_year" }
 	week_of_year { lappend derefs "to_char(p.start_date, 'IW') as week_of_year" }
 	day_of_month { lappend derefs "to_char(p.start_date, 'DD') as day_of_month" }
 
-	main_ticket_type { lappend derefs "im_category_from_id(p.ticket_type_id) as main_ticket_type" }
-	main_ticket_status { lappend derefs "im_category_from_id(p.ticket_status_id) as main_ticket_status" }
-
-	ticket_type { lappend derefs "im_category_from_id(h.sub_ticket_type_id) as ticket_type" }
-	ticket_status { lappend derefs "im_category_from_id(h.sub_ticket_status_id) as ticket_status" }
-
-	customer_type { lappend derefs "im_category_from_id(h.company_type_id) as customer_type" }
-	customer_status { lappend derefs "im_category_from_id(h.company_status_id) as customer_status" }
-
+	ticket_type { lappend derefs "im_category_from_id(p.ticket_type_id) as ticket_type" }
+	ticket_status { lappend derefs "im_category_from_id(p.ticket_status_id) as ticket_status" }
     }
 }
 

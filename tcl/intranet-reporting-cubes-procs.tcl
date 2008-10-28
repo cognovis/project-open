@@ -1218,6 +1218,7 @@ ad_proc im_reporting_cubes_ticket {
     set inner_sql "
   		select
 			t.*,
+			p.project_name as ticket_name,
 			p.company_id,
 			p.start_date,
 			p.end_date,
@@ -1227,40 +1228,28 @@ ad_proc im_reporting_cubes_ticket {
 			im_projects p
   		where
 			t.ticket_id = p.project_id
-  			and t.start_date::date >= to_date(:start_date, 'YYYY-MM-DD')
-  			and t.start_date::date < to_date(:end_date, 'YYYY-MM-DD')
-  			and t.start_date::date < to_date(:end_date, 'YYYY-MM-DD')
+  			and p.start_date::date >= to_date(:start_date, 'YYYY-MM-DD')
+  			and p.start_date::date < to_date(:end_date, 'YYYY-MM-DD')
+  			and p.start_date::date < to_date(:end_date, 'YYYY-MM-DD')
 			$where_clause
     "
 
     # Aggregate additional/important fields to the fact table.
     set middle_sql "
   	select
-  		t.*,
-  		im_category_from_id(t.ticket_type_id) as ticket_type,
-  		im_category_from_id(t.ticket_status_id) as ticket_status,
-
-  		to_char(t.end_date, 'YYYY') as end_year,
-  		to_char(t.end_date, 'MM') as end_month_of_year,
-  		to_char(t.end_date, 'Q') as end_quarter_of_year,
-  		to_char(t.end_date, 'IW') as end_week_of_year,
-  		to_char(t.end_date, 'DD') as end_day_of_month,
-
-  		substring(t.ticket_name, 1, 14) as ticket_name_cut,
-		im_name_from_user_id(t.ticket_lead_id) as ticket_lead,
-
+  		p.*,
+  		substring(p.ticket_name, 1, 14) as ticket_name_cut,
+  		to_char(p.end_date, 'YYYY') as end_year,
+  		to_char(p.end_date, 'MM') as end_month_of_year,
+  		to_char(p.end_date, 'Q') as end_quarter_of_year,
+  		to_char(p.end_date, 'IW') as end_week_of_year,
+  		to_char(p.end_date, 'DD') as end_day_of_month,
   		cust.company_name as customer_name,
   		cust.company_path as customer_path,
-  		cust.company_type_id as customer_type_id,
-  		im_category_from_id(cust.company_type_id) as customer_type,
-  		cust.company_status_id as customer_status_id,
-  		im_category_from_id(cust.company_status_id) as customer_status,
-
                 [join $derefs ",\n\t\t"]
-
   	from
-  		($inner_sql) t
-  		LEFT OUTER JOIN im_companies cust ON (t.company_id = cust.company_id)
+  		($inner_sql) p
+  		LEFT OUTER JOIN im_companies cust ON (p.company_id = cust.company_id)
   	where
   		1 = 1
   		$where_clause
