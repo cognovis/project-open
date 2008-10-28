@@ -10,7 +10,7 @@
 	<listtemplate name="report_list"></listtemplate>
 	</td>
 
-<if @user_admin_p@ and @reports_exist_p@>
+<if @user_admin_p@>
 	<td width="50%">
 
 	<table>
