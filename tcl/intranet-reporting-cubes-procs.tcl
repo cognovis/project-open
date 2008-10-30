@@ -1219,15 +1219,19 @@ ad_proc im_reporting_cubes_ticket {
   		select
 			t.*,
 			p.project_name as ticket_name,
+			p.project_nr as ticket_nr,
 			p.company_id,
 			p.start_date,
 			p.end_date,
+			o.creation_user as creation_user_id,
 			1 as one
   		from
   			im_tickets t,
-			im_projects p
+			im_projects p,
+			acs_objects o
   		where
 			t.ticket_id = p.project_id
+			and t.ticket_id = o.object_id
   			and p.start_date::date >= to_date(:start_date, 'YYYY-MM-DD')
   			and p.start_date::date < to_date(:end_date, 'YYYY-MM-DD')
   			and p.start_date::date < to_date(:end_date, 'YYYY-MM-DD')

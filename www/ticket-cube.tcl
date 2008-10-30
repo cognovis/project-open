@@ -212,28 +212,8 @@ set this_url [export_vars -base "/intranet-reporting/finance-cube" {start_date e
 
 set aggregate_options {
 	"one"				"Number of Tickets"
-	"ticket_budget_converted"	"Budget"
-	"ticket_budget_hours"		"Budget Hours"
-	"reported_hours_cache"		"Logged Hours"
-
-	"cost_timesheet_logged_cache"	"Cost Timesheet"
-	"cost_expense_logged_cache"	"Cost Expenses"
-	"cost_invoices_cache"		"Cost Invoices"
-	"cost_quotes_cache"		"Cost Quotes"
-	"cost_delivery_notes_cache"	"Cost Delivery Notes"
-	"cost_bills_cache"		"Cost Bills"
-	"cost_purchase_orders_cache"	"Cost Purchase Orders"
-}
-
-set ttt {
-	"confirm_date"
-	"cost_timesheet_planned_cache"	
-	"cost_expense_planned_cache"	
-}
-
-set non_active_cost_type_options {
-	3714 "Employee Salary"
-	3720 "Expense Item"
+	"reaction_time"			"Reaction Time"
+	"solution_time"			"Solution Time"
 }
 
 set top_vars_options {
@@ -255,11 +235,10 @@ set left_scale_options {
 	"ticket_type" "Ticket Type"
 	"ticket_status" "Ticket Status"
 
-	"ticket_lead" "Ticket Manager"
-	"ticket_lead_dept" "Ticket Manager's Department"
+	"ticket_creation_user" "Ticket Creator"
+	"ticket_creation_user_dept" "Ticket Creator's Department"
 
 	"customer_name" "Customer Name"
-	"customer_path" "Customer Nr"
 	"customer_type" "Customer Type"
 	"customer_status" "Customer Status"
 }
@@ -340,6 +319,9 @@ foreach var $dimension_vars {
 
 	ticket_type { lappend derefs "im_category_from_id(p.ticket_type_id) as ticket_type" }
 	ticket_status { lappend derefs "im_category_from_id(p.ticket_status_id) as ticket_status" }
+
+	ticket_creation_user { lappend derefs "im_name_from_user_id(p.creation_user_id) as ticket_creation_user" }
+	ticket_creation_user_dept { lappend derefs "im_dept_from_user_id(p.creation_user_id) as ticket_creation_user_dept" }
     }
 }
 
