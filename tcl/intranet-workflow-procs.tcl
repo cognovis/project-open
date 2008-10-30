@@ -388,7 +388,7 @@ ad_proc -public im_workflow_graph_component {
     }
 
     set history_html "
-		<table>
+		<table class=\"list\">
 		<tr class=rowtitle>
 		  <td colspan=3 align=center class=rowtitle>[lang::message::lookup "" intranet-workflow.Past_actions "Past Actions"]</td>
 		</tr>
@@ -424,7 +424,7 @@ ad_proc -public im_workflow_graph_component {
     "
     set cnt 0
     db_foreach transition $transition_sql {
-	append transition_html "<table>\n"
+	append transition_html "<table class=\"list\">\n"
 	append transition_html "<tr class=rowtitle><td colspan=2 class=rowtitle align=center>
 		[lang::message::lookup "" intranet-workflow.Next_step_details "Next Step: Details"]
 	</td></tr>\n"
@@ -505,7 +505,7 @@ ad_proc -public im_workflow_graph_component {
     }
 
     set assignee_html "
-		<table>
+		<table class=\"list\">
 		<tr class=rowtitle>
 		  <td colspan=2 align=center class=rowtitle
 		  >[lang::message::lookup "" intranet-workflow.Currrent_assignees "Current Assignees"]</td>
@@ -529,7 +529,7 @@ ad_proc -public im_workflow_graph_component {
     append assignee_html "</table>\n"
 
     return "
-	<table>
+	<table class=\"list\">
 	<tr valign=top>
 	<td>$graph_html</td>
 	<td>
@@ -663,7 +663,7 @@ ad_proc -public im_workflow_action_component {
 	    append result "
 				<form action='/[im_workflow_url]/task' method='post'>
 				$export_form_vars
-				<table>
+				<table class=\"list\">
 		        	<tr $bgcolor([expr $ctr%2])>
 		        	    <td>Task Name</td>
 		        	    <td>$task(task_name)</td>
@@ -876,7 +876,7 @@ append result "This task was completed by <a href='/shared/community-member?user
     }
     if {"" == $result} {
 	return "
-		<table width='100%'>
+		<table class=\"list\"> width=\"100%\">
 		<tr valign=top>
 		<td>
 			<b>[lang::message::lookup "" intranet-helpdesk.Workflow_Finished "Workflow Finished"]</b><br>
@@ -891,7 +891,7 @@ append result "This task was completed by <a href='/shared/community-member?user
     }
 
     return "
-	<table width='100%'>
+	<table width='100%' >
 	<tr valign=top>
 	<td>$result</td>
 	<td>$graph_html</td>
@@ -1083,7 +1083,7 @@ ad_proc -public im_workflow_home_inbox_component {
 
     set column_vars [list]
     set colspan 1
-    set table_header_html "<tr>\n"
+    set table_header_html "<tr class=\"list-header\">\n"
 
     db_foreach column_list_sql $column_sql {
 	if {"" == $visible_for || [eval $visible_for]} {
@@ -1094,9 +1094,9 @@ ad_proc -public im_workflow_home_inbox_component {
 	    set admin_link "<a href=[export_vars -base "/intranet/admin/views/new-column" {return_url column_id {form_mode edit}}]>[im_gif wrench]</a>"
 	    if {!$user_is_admin_p} { set admin_link "" }
 	    if {"f" == $order_by_clause_exists_p} {
-		append table_header_html "<td class=rowtitle>$col_txt$admin_link</td>\n"
+		append table_header_html "<th class=\"list\">$col_txt$admin_link</td>\n"
 	    } else {
-		append table_header_html "<td class=rowtitle><a href=\"$col_url\">$col_txt</a>$admin_link</td>\n"
+		append table_header_html "<th class=\"list\"><a href=\"$col_url\">$col_txt</a>$admin_link</td>\n"
 	    }
 	    incr colspan
 	}
@@ -1253,7 +1253,7 @@ ad_proc -public im_workflow_home_inbox_component {
     return "
 	<form action=\"/intranet-workflow/inbox-action\" method=POST>
 	[export_form_vars return_url]
-	<table width=100% cellpadding=2 cellspacing=2 border=0>
+	<table class=\"list\" width=100%>
 	  $table_header_html
 	  $table_body_html
 	  $table_action_html
