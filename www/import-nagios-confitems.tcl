@@ -12,7 +12,7 @@ ad_page_contract {
 #
 
 set user_id [ad_maybe_redirect_for_registration]
-set page_title [_ intranet-nagios.Import_Nagios_Configuration]
+set page_title [lang::message::lookup "" intranet-nagios.Import_Nagios_Configuration "Import Nagios Configuration"]
 set context_bar [im_context_bar $page_title]
 set context ""
 

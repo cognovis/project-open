@@ -675,7 +675,7 @@ ad_proc -public im_nagios_create_confdb {
 	    if {[regexp {check_http} $check_command match]} { set service_type "http" }
 
 	    switch $service_type {
-		http {
+		http_xxxx {
 			set conf_item_new_sql "
 				select im_conf_item__new(
 					null,
