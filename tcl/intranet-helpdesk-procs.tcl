@@ -458,14 +458,13 @@ ad_proc -public im_helpdesk_home_component {
     # Set up colspan to be the number of headers + 1 for the # column
     set colspan [expr [llength $column_headers] + 1]
 
-    set table_header_html "<th class=\"list-header\">\n"
+    set table_header_html "<tr>\n"
     foreach col $column_headers {
 	regsub -all " " $col "_" col_txt
 	set col_txt [lang::message::lookup "" intranet-core.$col_txt $col]
-	append table_header_html "  <td class=\"list\">$col_txt</td>\n"
+	append table_header_html "  <td class=\"rowtitle\">$col_txt</td>\n"
     }
     append table_header_html "</tr>\n"
-
 
     # ---------------------------------------------------------------
     # Format the Result Data
@@ -511,7 +510,7 @@ ad_proc -public im_helpdesk_home_component {
 	"
     }
     return "
-	<table class=\"list\" width=\"100%\">
+	<table class=\"table_component_hover\" width=\"100%\">
 	  $table_header_html
 	  $table_body_html
 	</table>
