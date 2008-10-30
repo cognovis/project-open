@@ -217,7 +217,7 @@ ad_proc -public im_workflow_home_component {
     }
 
     set component_html "
-<table class=\"list\" cellspacing=1 cellpadding=0>
+<table class=\"table_list_page\">
 <tr><td>
 $own_tasks
 $all_tasks
@@ -388,7 +388,7 @@ ad_proc -public im_workflow_graph_component {
     }
 
     set history_html "
-		<table class=\"list\">
+		<table class=\"table_list_page\">
 		<tr class=rowtitle>
 		  <td colspan=3 align=center class=rowtitle>[lang::message::lookup "" intranet-workflow.Past_actions "Past Actions"]</td>
 		</tr>
@@ -424,7 +424,7 @@ ad_proc -public im_workflow_graph_component {
     "
     set cnt 0
     db_foreach transition $transition_sql {
-	append transition_html "<table class=\"list\">\n"
+	append transition_html "<table class=\"table_list_page\">\n"
 	append transition_html "<tr class=rowtitle><td colspan=2 class=rowtitle align=center>
 		[lang::message::lookup "" intranet-workflow.Next_step_details "Next Step: Details"]
 	</td></tr>\n"
@@ -505,7 +505,7 @@ ad_proc -public im_workflow_graph_component {
     }
 
     set assignee_html "
-		<table class=\"list\">
+		<table class=\"table_list_page\">
 		<tr class=rowtitle>
 		  <td colspan=2 align=center class=rowtitle
 		  >[lang::message::lookup "" intranet-workflow.Currrent_assignees "Current Assignees"]</td>
@@ -529,7 +529,7 @@ ad_proc -public im_workflow_graph_component {
     append assignee_html "</table>\n"
 
     return "
-	<table class=\"list\">
+	<table class=\"table_list_page\">
 	<tr valign=top>
 	<td>$graph_html</td>
 	<td>
@@ -663,7 +663,7 @@ ad_proc -public im_workflow_action_component {
 	    append result "
 				<form action='/[im_workflow_url]/task' method='post'>
 				$export_form_vars
-				<table class=\"list\">
+				<table class=\"table_list_page\">
 		        	<tr $bgcolor([expr $ctr%2])>
 		        	    <td>Task Name</td>
 		        	    <td>$task(task_name)</td>
@@ -876,7 +876,7 @@ append result "This task was completed by <a href='/shared/community-member?user
     }
     if {"" == $result} {
 	return "
-		<table class=\"list\"> width=\"100%\">
+		<table class=\"table_list_page\"> width=\"100%\">
 		<tr valign=top>
 		<td>
 			<b>[lang::message::lookup "" intranet-helpdesk.Workflow_Finished "Workflow Finished"]</b><br>
@@ -1253,7 +1253,7 @@ ad_proc -public im_workflow_home_inbox_component {
     return "
 	<form action=\"/intranet-workflow/inbox-action\" method=POST>
 	[export_form_vars return_url]
-	<table class=\"list\" width=100%>
+	<table class=\"table_list_page\" width=100%>
 	  $table_header_html
 	  $table_body_html
 	  $table_action_html
