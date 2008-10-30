@@ -24,14 +24,12 @@
       </div>
       <hr/>
 
-<!--
       <div class="filter-block">
          <div class="filter-title">
             <%= [lang::message::lookup "" intranet-core.Admin_Tickets "Admin Tickets"] %>
          </div>
          @admin_html;noquote@
       </div>
--->
       <hr/>
 
 
