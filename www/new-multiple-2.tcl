@@ -14,7 +14,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     project_id:array,integer,optional
-    expense_amount:array,integer,optional
+    expense_amount:array,float,optional
     currency:array,optional
     vat:array,float,optional
     expense_date:array,optional
@@ -92,7 +92,7 @@ for {set i 0} {$i < 20} {incr i} {
 	set item_currency $currency($i)
     }
 
-    if {[info exists vat($i)] && "" != $var($i)} { 
+    if {[info exists vat($i)] && "" != $vat($i)} { 
 	set item_vat $vat($i)
 	set set_p 1
     }

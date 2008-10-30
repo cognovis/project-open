@@ -148,7 +148,7 @@ for {set i 0} {$i < 20} {incr i} {
 	<td>[im_select -ad_form_option_list_style_p 1 -translate_p 1 currency.$i $currency_options $default_currency]</td>
     "
 
-    if {$auto_vat_p} {	
+    if {!$auto_vat_p} {	
 	append form_html "<td><input type=input name=vat.$i size=5></td>\n"
     }
 

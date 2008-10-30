@@ -17,7 +17,7 @@
 <td class=rowtitle>#intranet-expenses.Project#</td>
 <td class=rowtitle>#intranet-expenses.Amount#</td>
 <td class=rowtitle>#intranet-expenses.Currency#</td>
-<if 0 ne @auto_vat_p@>
+<if 1 ne @auto_vat_p@>
 <td class=rowtitle>#intranet-expenses.Vat_Included#</td>
 </if>
 <td class=rowtitle>#intranet-expenses.Expense_Date#</td>
