@@ -43,7 +43,7 @@
    <div class="fullwidth-list" id="fullwidth-list">
       <div id="fullwidth-main">
       <%= [im_box_header $page_title] %>
-            <table>
+            <table class=\"list\">
             <%= $table_header_html %>
             <%= $table_body_html %>
             <%= $table_continuation_html %>

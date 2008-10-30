@@ -458,11 +458,11 @@ ad_proc -public im_helpdesk_home_component {
     # Set up colspan to be the number of headers + 1 for the # column
     set colspan [expr [llength $column_headers] + 1]
 
-    set table_header_html "<tr>\n"
+    set table_header_html "<th class=\"list-header\">\n"
     foreach col $column_headers {
 	regsub -all " " $col "_" col_txt
 	set col_txt [lang::message::lookup "" intranet-core.$col_txt $col]
-	append table_header_html "  <td class=rowtitle>$col_txt</td>\n"
+	append table_header_html "  <td class=\"list\">$col_txt</td>\n"
     }
     append table_header_html "</tr>\n"
 
@@ -487,7 +487,7 @@ ad_proc -public im_helpdesk_home_component {
 	# Append together a line of data based on the "column_vars" parameter list
 	set row_html "<tr$bgcolor([expr $ctr % 2])>\n"
 	foreach column_var $column_vars {
-	    append row_html "\t<td valign=top>"
+	    append row_html "\t<td class=\"list\">"
 	    set cmd "append row_html $column_var"
 	    eval "$cmd"
 	    append row_html "</td>\n"
@@ -511,7 +511,7 @@ ad_proc -public im_helpdesk_home_component {
 	"
     }
     return "
-	<table width=\"100%\" cellpadding=2 cellspacing=2 border=0>
+	<table class=\"list\" width=\"100%\">
 	  $table_header_html
 	  $table_body_html
 	</table>
