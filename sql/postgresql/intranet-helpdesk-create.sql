@@ -8,11 +8,6 @@
 -- @author frank.bergmann@project-open.com
 
 
--- Define default ticket workflows
-\i workflow-feature_request_wf-create.sql
-\i workflow-ticket_generic_wf-create.sql
-
-
 
 -----------------------------------------------------------
 -- Helpdesk Ticket
@@ -1163,7 +1158,12 @@ SELECT im_dynfield_widget__new (
 	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
 	'ticket_assignees', 'Ticket Assignees', 'Ticket Assignees',
 	10007, 'integer', 'generic_sql', 'integer',
-	'{custom {sql {select u.user_id, im_name_from_user_id(u.user_id) from registered_users u, group_distinct_member_map gm where u.user_id = gm.member_id and gm.group_id in (select group_id from groups where group_name = 'Helpdesk') order by lower(im_name_from_user_id(u.user_id)) }}}'
+	'{custom {sql {
+		select u.user_id, im_name_from_user_id(u.user_id) from registered_users u, 
+		group_distinct_member_map gm where u.user_id = gm.member_id and gm.group_id in (
+			select group_id from groups where group_name = ''Helpdesk''
+		) order by lower(im_name_from_user_id(u.user_id)) 
+	}}}'
 );
 
 
@@ -1254,3 +1254,11 @@ SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_quote_comment', 'Quote Co
 
 
 
+
+-----------------------------------------------------------
+-- Workflows
+-----------------------------------------------------------
+
+-- Define default ticket workflows
+\i workflow-feature_request_wf-create.sql
+\i workflow-ticket_generic_wf-create.sql
