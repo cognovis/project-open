@@ -547,7 +547,7 @@ ad_proc -public im_workflow_graph_component {
     append assignee_html "</table>\n"
 
     return "
-	<table class=\"table_list_page\">
+	<table>
 	<tr valign=top>
 	<td>$graph_html</td>
 	<td>
