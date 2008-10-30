@@ -27,6 +27,9 @@ drop function im_ticket__new (
 drop function im_ticket__delete(integer);
 
 
+drop sequence im_ticket_seq;
+
+
 -- Drop the main table
 drop table im_tickets;
 
@@ -98,6 +101,10 @@ delete from acs_attributes
 where object_type = 'im_ticket';
 
 delete from acs_object_type_tables
+where object_type = 'im_ticket';
+
+
+delete from im_biz_object_urls
 where object_type = 'im_ticket';
 
 -- Completely delete the object type from the

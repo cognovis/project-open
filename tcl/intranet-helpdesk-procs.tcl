@@ -536,13 +536,12 @@ ad_proc -public im_navbar_tree_helpdesk {
 	<ul>
     "
 
+    # --------------------------------------------------------------
+    # Tickets
+    # --------------------------------------------------------------
+
     # Create new Ticket
     append html "<li><a href=\"/intranet-helpdesk/new\">[lang::message::lookup "" intranet-helpdesk.New_Ticket "Create a new Ticket"]</a>\n"
-
-    # Add list of SLAs
-    set url [export_vars -base "/intranet/projects/index" {{project_type_id [im_project_type_sla]}}]
-    set name [lang::message::lookup "" intranet-helpdesk.Service_Level_Agreements "Service Level Agreements"]
-    append html "<li><a href=\"$url\">$name</a></li>\n"
 
     # Add sub-menu with types of tickets
     append html "
@@ -560,6 +559,20 @@ ad_proc -public im_navbar_tree_helpdesk {
 	</ul>
 	</li>
     "
+
+
+    # --------------------------------------------------------------
+    # SLAs
+    # --------------------------------------------------------------
+
+    # Add list of SLAs
+    set url [export_vars -base "/intranet/projects/new" {{project_type_id [im_project_type_sla]}}]
+    set name [lang::message::lookup "" intranet-helpdesk.New_Service_Level_Agreement "Create a new Service Level Agreement"]
+    append html "<li><a href=\"$url\">$name</a></li>\n"
+
+    set url [export_vars -base "/intranet/projects/index" {{project_type_id [im_project_type_sla]}}]
+    set name [lang::message::lookup "" intranet-helpdesk.Service_Level_Agreements "Service Level Agreements"]
+    append html "<li><a href=\"$url\">$name</a></li>\n"
 
     append html "
 	</ul>

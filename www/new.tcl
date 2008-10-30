@@ -430,6 +430,15 @@ ad_form -extend -name ticket -on_request {
 	db_dml ticket_update {}
 	db_dml project_update {}
 
+	if {[util_memoize "db_column_exist acs_objects title"]} {
+	    db_dml object_update "update acs_objects set title = null where object_id = :ticket_id"
+	}
+
+	im_dynfield::attribute_store \
+	    -object_type "im_ticket" \
+	    -object_id $ticket_id \
+	    -form_id ticket
+
 	# Add the current user to the project
         im_biz_object_add_role $current_user_id $ticket_id [im_biz_object_role_project_manager]
 	
@@ -438,7 +447,6 @@ ad_form -extend -name ticket -on_request {
 	
 	# Write Audit Trail
 	im_project_audit $ticket_id
-	
 
 	# Create a new forum topic of type "Note"
 	set topic_type_id [im_topic_type_id_task]
@@ -460,13 +468,17 @@ ad_form -extend -name ticket -on_request {
                         :ticket_name, :message
                 )
 	}
-
 	
 	# Error handling. Doesn't work yet for some unknown reason
     } on_error {
 	ad_return_complaint 1 "<b>Error inserting new ticket</b>:<br>&nbsp;<br>
 	<pre>$errmsg</pre>"
     }
+
+    # Send to page to show the new ticket, instead of returning to return_url
+    ad_returnredirect [export_vars "/intranet-helpdesk/new" {ticket_id}]
+    ad_script_abort
+
 
 
 } -edit_data {
