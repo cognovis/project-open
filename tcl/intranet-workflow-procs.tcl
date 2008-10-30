@@ -217,7 +217,7 @@ ad_proc -public im_workflow_home_component {
     }
 
     set component_html "
-<table class="list" cellspacing=1 cellpadding=0>
+<table class=\"list\" cellspacing=1 cellpadding=0>
 <tr><td>
 $own_tasks
 $all_tasks
