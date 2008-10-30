@@ -31,6 +31,7 @@ if {![im_permission $user_id "add_expenses"]} {
 }
 
 set today [lindex [split [ns_localsqltimestamp] " "] 0]
+set this_year [string range [ns_localsqltimestamp] 0 4]
 set page_title [lang::message::lookup "" intranet-expenses.New_Expense_Items "New Expense Items"]
 set context_bar [im_context_bar $page_title]
 
@@ -134,9 +135,26 @@ if {![info exists currency]} { set currency [ad_parameter -package_id [im_packag
 # 
 # ---------------------------------------------------------------
 
+# Default project_id
+if {"" == $project_id} {
+    set project_id [db_string pid "
+	select project_id from (
+		select	count(*) as cnt,
+			project_id
+		from	im_costs c,
+			im_expenses e,
+			acs_objects o
+		where	c.cost_id = e.expense_id and
+			c.cost_id = o.object_id and
+			ocreation_date > now()::date -15
+		group by project_id
+		order by cnt DESC
+	) c
+	LIMIT 1
+    " -default ""]
+}
 
 set form_html ""
-
 
 for {set i 0} {$i < 20} {incr i} {
 
@@ -153,7 +171,7 @@ for {set i 0} {$i < 20} {incr i} {
     }
 
     append form_html "
-	<td><input type=input name=expense_date.$i size=10 value=$today></td>
+	<td><input type=input name=expense_date.$i size=10 value=$this_year></td>
 	<td><input type=input name=external_company_name.$i size=20 value=''></td>
 	<td>[im_select -ad_form_option_list_style_p 1 -translate_p 1 expense_type_id.$i $expense_type_options ""]</td>
 	<td>[im_select -ad_form_option_list_style_p 1 -translate_p 1 billable_p.$i $expense_billable_options "f"]</td>
