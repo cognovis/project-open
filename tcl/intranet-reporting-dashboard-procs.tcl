@@ -112,6 +112,7 @@ ad_proc -public im_dashboard_histogram_sql {
     -sql:required
     { -menu_label "" }
     { -name "" }
+    { -diagram_width 400 }
 } {
     Returns a dashboard component.
     Requires a SQL statement like 
@@ -133,7 +134,11 @@ ad_proc -public im_dashboard_histogram_sql {
 
     regsub -all " " $name "_" name_subs
     set widget_name [lang::message::lookup "" intranet-reporting-dashboard.$name_subs $name]
-    return [im_dashboard_histogram -name $widget_name -values $values]
+    return [im_dashboard_histogram \
+		-name $widget_name \
+		-values $values \
+		-diagram_width $diagram_width \
+    ]
 }
 
 
@@ -180,7 +185,10 @@ ad_proc -public im_dashboard_active_projects_status_histogram {
     }
 
     set name [lang::message::lookup "" intranet-reporting-dashboard.Project_Queue "Project Queue"]
-    return [im_dashboard_histogram -name $name -values $values]
+    return [im_dashboard_histogram \
+		-name $name \
+		-values $values \
+    ]
 
 }
 
@@ -216,11 +224,11 @@ ad_proc im_dashboard_color_saltnpepper {
 } {
     switch $type {
 
-	start_color { return "A0A0A0" }
-	end_color { return "808080" }
-	bar_color { return "808080" }
-	bar_text_color { return "404040" }
-	pie_text_color { return "404040" }
+	start_color { return "216594" }
+	end_color { return "08456B" }
+	bar_color { return "216594" }
+	bar_text_color { return "08456B" }
+	pie_text_color { return "08456B" }
 	bar_bg_color { return "FFFFFF" }
 	default {
 	    ad_return_complaint 1 "<br>im_dashboard_color: Unknown color type: '$type'</b>"
