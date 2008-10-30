@@ -223,7 +223,7 @@ switch $mine_p {
 			where	wft.holding_user = :current_user_id and
 				wft.state in ('enabled', 'started') and
 				wft.case_id = wfc.case_id
-		)
+		) 
 	)"
     }
     "mine" {
@@ -582,6 +582,17 @@ set table_continuation_html "
   </td>
 </tr>"
 
+
+# ---------------------------------------------------------------
+# Dashboard column
+# ---------------------------------------------------------------
+
+set dashboard_column_html [string trim [im_component_bay "right"]]
+if {"" == $dashboard_column_html} {
+    set dashboard_column_width "0"
+} else {
+    set dashboard_column_width "250"
+}
 
 # ---------------------------------------------------------------
 # Navbar

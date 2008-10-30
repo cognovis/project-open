@@ -26,7 +26,6 @@ if {![info exists task]} {
 	{ ticket_customer_contact_id "" }
 	{ task_id "" }
 	{ return_url "" }
-	edit_p:optional
 	message:optional
 	{ ticket_status_id "[im_ticket_status_open]" }
 	{ ticket_type_id "" }
@@ -134,9 +133,12 @@ if {[exists_and_not_null ticket_id]} {
 set title_label [lang::message::lookup {} intranet-helpdesk.Name {Title}]
 set title_help [lang::message::lookup {} intranet-helpdesk.Title_Help {Please enter a descriptive name for the new ticket.}]
 
+set edit_p [im_permission $current_user_id add_tickets_for_customers]
+set delete_p $edit_p
+
 set actions {}
-if {[im_permission $current_user_id add_tickets_for_customer]} { lappend actions {"Edit" edit} }
-if {[im_permission $current_user_id add_tickets_for_customer]} { lappend actions {"Delete" delete} }
+if {$edit_p} { lappend actions {"Edit" edit} }
+if {$delete_p} { lappend actions {"Delete" delete} }
 
 ad_form \
     -name ticket \

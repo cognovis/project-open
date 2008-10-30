@@ -4,6 +4,8 @@
 <property name="main_navbar_label">helpdesk</property>
 <property name="sub_navbar">@ticket_navbar_html;noquote@</property>
 
+<SCRIPT Language=JavaScript src=/resources/diagram/diagram/diagram.js></SCRIPT>
+
 <div class="filter-list">
 <a id="sideBarTab" href="#"><img id="sideBarTabImage" border="0" title="sideBar" alt="sideBar" src="/intranet/images/navbar_saltnpepper/slide-button-active.gif"/></a>
    <div class="filter" id="sidebar">
@@ -39,23 +41,29 @@
    </div>
 
    <div class="fullwidth-list" id="fullwidth-list">
-      <div id="fullwidth-main">
-      <%= [im_box_header $page_title] %>
+
+   <table cellspacing=0 cellpadding=0 border=0 width="100%">
+   <tr valign=top>
+   <td>
+	<%= [im_box_header $page_title] %>
             <table class=\"list\">
             <%= $table_header_html %>
             <%= $table_body_html %>
             <%= $table_continuation_html %>
-         </table>
-    
-         <%= [im_box_footer] %>
-     </div>
+        </table>
+	<%= [im_box_footer] %>
+   </td>
+   <td width="<%= $dashboard_column_width %>">
+	<%= $dashboard_column_html %>
+   </td>
+   </tr>
+   </table>
 
-     <div id="fullwidth-components">
-	<%= [im_component_bay "right"] %>
-     </div>
-     <div style="clear: left;">
    </div>
 
-</div>
 
+
+   <div style="clear: left;"></div>
+   <div id="fullwidth-main"></div>
+   <div id="fullwidth-components"></div>
 
