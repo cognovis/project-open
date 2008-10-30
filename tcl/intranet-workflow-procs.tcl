@@ -36,6 +36,24 @@ ad_proc -private im_workflow_url {} {
 }
 
 
+# ----------------------------------------------------------------------
+# Aux
+# ---------------------------------------------------------------------
+
+ad_proc -public im_workflow_replace_translations_in_string { str } {
+    return [util_memoize [list im_workflow_replace_translations_in_string_helper $str]]
+}
+
+ad_proc -public im_workflow_replace_translations_in_string_helper { str } {
+    # Replace #...# expressions in assignees_pretty with translated version
+    set cnt 0
+    while {$cnt < 100 && [regexp {^(.*?)#([a-zA-Z0-9_\.\-]*?)#(.*)$} $str match pre trans post]} {
+	set str "$pre[lang::message::lookup "" $trans "'$trans'"]$post"
+	incr cnt
+    }
+    return $str
+}
+
 
 # ----------------------------------------------------------------------
 # Start a WF for an object
@@ -1174,7 +1192,11 @@ ad_proc -public im_workflow_home_inbox_component {
     db_foreach tasks $tasks_sql {
 
 	set assigned_users ""
+	set assignees_pretty [im_workflow_replace_translations_in_string $assignees_pretty]
 	set assignee_pretty $assignees_pretty
+
+#	ad_return_complaint 1 $assignee_pretty
+
     	if {[info exists assignment_hash($object_id)]} { set assigned_users $assignment_hash($object_id) }
 
 	# Determine the type of relationship to the object - why is the task listed here?
