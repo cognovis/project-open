@@ -2373,8 +2373,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     }
     set extra_where [join $extra_wheres "\n\t\tand "]
 
-    # Does the specified layout page exist? Otherwise we'll use
-    # "default".
+    # Does the specified layout page exist? Otherwise we'll use "default".
     set page_url_exists_p [db_string exists "
 		select	count(*) 
 		from
@@ -2436,8 +2435,13 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     set field_cnt 0
     db_foreach attributes $attributes_sql {
 
+	ns_log Notice "im_dynfield::append_attributes_to_form: Adding name='$attribute_name', widget='$widget', page_url='$page_url'"
+
 	# Check if the elements as disabled in the layout page
-	if {$page_url_exists_p && "" == $page_url} { continue }
+	if {$page_url_exists_p && "" == $page_url} { 
+	    ns_log Notice "im_dynfield::append_attributes_to_form: name='$attribute_name': disabled in page layout"
+	    continue 
+	}
 
 	# Check if the current user has the right to read and write on the dynfield
 	set read_p [im_object_permission \
@@ -2450,7 +2454,10 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 			-user_id $user_id \
 			-privilege "write" \
 	]
-	if {!$read_p} { continue }
+	if {!$read_p} { 
+	    ns_log Notice "im_dynfield::append_attributes_to_form: name='$attribute_name': no read permission"
+	    continue 
+	}
 
 	set display_mode $default_display_mode
 	set key "$dynfield_attribute_id.$object_subtype_id"
@@ -2463,7 +2470,10 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	if {"edit" == $display_mode && !$write_p}  {
             set display_mode "display"
         }
-	if {"none" == $display_mode} { continue }
+	if {"none" == $display_mode} { 
+	    ns_log Notice "im_dynfield::append_attributes_to_form: name='$attribute_name': display set to none"
+	    continue 
+	}
 
 
 	ns_log Notice "im_dynfield::append_attributes_to_form: attribute_name=$attribute_name, datatype=$datatype, widget=$widget, storage_type_id=$storage_type_id"
