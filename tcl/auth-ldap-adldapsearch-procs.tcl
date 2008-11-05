@@ -98,6 +98,16 @@ ad_proc -private auth::ldap::get_user {
     # Parameters
     array set params $parameters
 
+    # Default result
+    array set result {
+        info_status "ok"
+        info_message {}
+        user_info {}
+    }
+
+    return [list [array get result]]
+
+
     set uri $params(LdapURI)
     set base_dn $params(BaseDN)
     set bind_dn $params(BaseDN)
@@ -255,7 +265,7 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     array set params $parameters
 
     # Default to failure
-    set result(auth_status) auth_error
+    set result(auth_status) bad_password
 
     set uri $params(LdapURI)
     set base_dn $params(BaseDN)
@@ -276,6 +286,10 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     if {"" == $msg_first_line} { regexp {^(.*)\n} $msg match msg_first_line }
     if {"" == $msg_first_line} { regexp {^(.*\))} $msg match msg_first_line }
 
+    # Todo: !!!
+    set return_code 0
+
+    # Successfully verified the username/password
     if {0 == $return_code} {
 	set uid [db_string uid "
 		select	party_id 
@@ -284,21 +298,18 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 			OR lower(username) = lower(:username)
 	" -default 0]
 
-	if {0 != $uid} {
-	    set auth_info(auth_status) "ok"
-	    set auth_info(user_id) $uid
-	    set auth_info(auth_message) "Login Successful"
-	    set auth_info(account_status) "ok"
-	    set auth_info(account_message) ""
-	    return [array get auth_info]
-	} else {
-	    set auth_info(auth_status) "bad_password"
-	    set auth_info(user_id) 0
-	    set auth_info(auth_message) "User and password OK, but there is no &#93;po&#91; user with this name."
-	    set auth_info(account_status) "ok"
-	    set auth_info(account_message) ""
-	    return [array get auth_info]
-	}
+	set auth_info(auth_status) "ok"
+	set auth_info(info_status) "ok"
+	set auth_info(user_id) $uid
+	set auth_info(auth_message) "Login Successful"
+	set auth_info(account_status) "ok"
+	set auth_info(account_message) ""
+
+	# Always sync the user with the LDAP information, with username as primary key
+	set auth_info_array [auth::ldap::authentication::Sync $username $parameters $authority_id]
+	array set auth_info $auth_info_array
+
+	return [array get auth_info]
     }
 
     if {[regexp {Invalid credentials \(49\)} $msg]} {
@@ -310,22 +321,12 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 	return [array get auth_info]
     }
 
-    set auth_info(auth_status) "ldap_error"
+    set auth_info(auth_status) "auth_error"
     set auth_info(user_id) 0
     set auth_info(auth_message) "LDAP error:<br>$msg_first_line"
     set auth_info(account_status) "ok"
     set auth_info(account_message) ""
     return [array get auth_info]
-
-    if {0 == $return_code} { 
-	set result(auth_status) ok
-	set result(account_status) ok
-    }
-
-
-
-
-    return [array get result]
 }
 
 ad_proc -private auth::ldap::authentication::GetParameters {} {
@@ -338,6 +339,264 @@ ad_proc -private auth::ldap::authentication::GetParameters {} {
         BindDN "How to form the user DN? Active Directory accepts emails like {username}@project-open.com"
         UsernameAttribute "LDAP attribute to match username against, typically uid"
     }
+}
+
+
+
+#####
+#
+# On-Demand synchronization
+#
+#####
+
+
+ad_proc -public auth::ldap::authentication::Sync {
+    username 
+    parameters 
+    authority_id
+} {
+    Creates a new ]po[ user from LDAP information.
+    Returns 0 if the user can't be created
+} {
+    # Parameters
+    array set params $parameters
+
+    # Default to failure
+    set result(auth_status) auth_error
+
+    set uri $params(LdapURI)
+    set base_dn $params(BaseDN)
+    set bind_dn $params(BindDN)
+
+    foreach var { username } {
+        regsub -all "{$var}" $base_dn [set $var] base_dn
+        regsub -all "{$var}" $bind_dn [set $var] bind_dn
+    }
+
+    set return_code [catch {
+        ns_log Notice "auth::ldap::authentication::Authenticate: ldapsearch -n -x -H $uri -D $bind_dn -w xxxxxxxxx"
+	exec ldapsearch -x -H $uri -b dc=genedata,dc=win (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))
+    } msg]
+
+    # Extract the first line - it contains the error message if there is an issue.
+    set msg_first_line ""
+    if {"" == $msg_first_line} { regexp {^(.*)\n} $msg match msg_first_line }
+    if {"" == $msg_first_line} { regexp {^(.*\))} $msg match msg_first_line }
+
+    if {0 != $return_code} {
+	set auth_info(auth_status) "bad_password"
+	set auth_info(user_id) 0
+	set auth_info(auth_message) "LDAP error:<br>$msg_first_line"
+	set auth_info(account_status) "ok"
+	set auth_info(account_message) ""
+	return [array get auth_info]
+    }
+
+    # -----------------------------------------
+    # Successfully retreived user information
+    # Extract variables from AD output
+
+    set email ""
+    set first_names ""
+    set last_name ""
+    set manager ""
+    set manager_name ""
+
+    # Extract fields from lines
+    foreach line [split $msg "\n"] {
+	ns_log Notice "$line"
+	if {[regexp {^mail\: (.*)} $line match value]} { set email $value }
+	if {[regexp {^name\: (.*)} $line match value]} { set name $value }
+	if {[regexp {^manager\: (.*)} $line match value]} { set manager $value }
+    }
+    
+    set name_pieces [split $name " "]
+    set len [llength $name_pieces]
+    set last_name [lrange $name_pieces [expr $len-1] $len]
+    set first_names [lrange $name_pieces 0 [expr $len-1]]
+
+    if {[regexp {^(.*)\ ([^\ ]*)$} $name match fn ln]} {
+	set first_names $fn
+	set last_name $ln
+    }
+
+    if {[regexp {^CN=(.*?)\,} $manager match mn]} {
+	set manager_name $mn
+    }
+
+    set manager_id [db_string manager_id "
+	select	person_id
+	from	persons
+	where	first_names || ' ' || last_name = :manager_name
+    " -default 0]
+
+    if {"" == $first_names || "" == $last_name || "" == $email} {
+	set auth_info(auth_status) "auth_error"
+	set auth_info(user_id) 0
+	set auth_info(auth_message) "
+		User and password OK, but there were problems with the values retreived from the LDAP server.<br>
+		email=$email, first_names=$first_names, last_name=$last_name"
+	set auth_info(account_status) "ok"
+	set auth_info(account_message) ""
+	return [array get auth_info]
+    } 
+
+    ns_log Notice "auth::ldap::authentication::Sync: Synchronizing user: username=$username, email=$email, first_names=$first_names, last_name=$last_name, manager_name=$manager_name"
+
+
+    # -----------------------------------------
+    # Check if the user already exists
+
+    set uid [db_string uid "select user_id from users where username=:username" -default 0]
+    set url ""
+    set screen_name "$first_names $last_name"
+
+    if {0 == $uid} {
+
+	ns_log Notice "auth::ldap::authentication::Sync: before create_user"
+	array set creation_info [auth::create_user \
+				     -username $username \
+				     -email $email \
+				     -first_names $first_names \
+				     -last_name $last_name \
+				     -screen_name $screen_name \
+				     -password "" \
+				     -password_confirm "" \
+				     -url $url \
+				     -secret_question "" \
+				     -secret_answer "" \
+	]
+	set uid [db_string uid "select user_id from users where username=:username" -default 0]
+
+	# Set the autority to the current LDAP
+	if {0 != $uid} {
+	    db_dml auth_id "update users set authority_id = :authority_id where user_id = :uid"
+	}
+    }
+
+    if {0 == $uid} {
+	set auth_info(auth_status) "auth_error"
+	set auth_info(user_id) 0
+	set auth_info(auth_message) "
+		User and password OK, but there were problems to identify the user.<br>
+		email=$email, first_names=$first_names, last_name=$last_name"
+	set auth_info(account_status) "ok"
+	set auth_info(account_message) ""
+	return [array get auth_info]
+    } 
+   
+    set user_id $uid
+
+    # Existing user: Update variables
+    set auth [auth::get_register_authority]
+    set user_data [list]
+
+    # Set the manager if exists
+    if {0 != $manager_id} {
+	db_dml set_manager "update im_employees set supervisor_id = :manager_id where employee_id = :user_id"
+    }
+
+    # Make sure the "person" exists.
+    # This may be not the case when creating a user from a party.
+    set person_exists_p [db_string person_exists "select count(*) from persons where person_id = :user_id"]
+    if {!$person_exists_p} {
+	db_dml insert_person "
+		    insert into persons (
+			person_id, first_names, last_name
+		    ) values (
+			:user_id, :first_names, :last_name
+		    )
+	"	
+    }
+
+    set user_exists_p [db_string user_exists "select count(*) from users where user_id = :user_id"]
+    if {!$user_exists_p} {
+	if {"" == $username} { set username $email} 
+	db_dml insert_user "
+		    insert into users (
+			user_id, username
+		    ) values (
+			:user_id, :username
+		    )
+	"
+    }
+
+    set employee_exists_p [db_string employee_exists "select count(*) from im_employees where employee_id = :user_id"]
+    if {!$employee_exists_p} {
+	db_dml insert_emps "insert into im_employees (employee_id) values (:user_id)"
+    }
+
+    # Convert the person into a user
+    db_dml party2user "
+		    update acs_objects
+		    set object_type = 'user'
+		    where object_id = :user_id
+    "
+
+
+    ns_log Notice "/users/new: person::update -person_id=$user_id -first_names=$first_names -last_name=$last_name"
+    person::update \
+	-person_id $user_id \
+	-first_names $first_names \
+	-last_name $last_name
+    
+    ns_log Notice "/users/new: party::update -party_id=$user_id -url=$url -email=$email"
+    party::update \
+	-party_id $user_id \
+	-url $url \
+	-email $email
+    
+    ns_log Notice "/users/new: acs_user::update -user_id=$user_id -screen_name=$screen_name"
+    acs_user::update \
+	-user_id $user_id \
+	-screen_name $screen_name \
+	-username $username
+
+
+    # Add to users_contact
+    set users_contact_exists_p [db_string user_exists "select count(*) from users_contact where user_id = :user_id"]
+    if {!$users_contact_exists_p} { 
+	db_dml add_users_contact "insert into users_contact (user_id) values (:user_id)" 
+    }
+
+    # Add the user to the "Registered Users" group, because he would get strange problems otherwise
+    set registered_users [db_string registered_users "select object_id from acs_magic_objects where name='registered_users'"]
+    set reg_users_rel_exists_p [db_string member_of_reg_users "
+		select	count(*) 
+		from	group_member_map m, membership_rels mr
+		where	m.member_id = :user_id
+			and m.group_id = :registered_users
+			and m.rel_id = mr.rel_id 
+			and m.container_id = m.group_id 
+			and m.rel_type::text = 'membership_rel'::text
+    "]
+    if {!$reg_users_rel_exists_p} {
+	relation_add -member_state "approved" "membership_rel" $registered_users $user_id
+    }
+
+    # Make the user member of the group employees if not already
+    catch {
+	set rel_id [relation_add -member_state "approved" "membership_rel" [im_profile_employees] $user_id]
+    }
+    set rel_id [db_string auth "select rel_id from acs_rels where object_id_one = :registered_users and object_id_two = :user_id" -default 0]
+    db_dml update_relation "update membership_rels set member_state='approved' where rel_id=:rel_id"
+
+
+    # TSearch2: We need to update "persons" in order to trigger the TSearch2 triggers
+    db_dml update_persons "
+		update persons
+		set first_names = first_names
+		where person_id = :user_id
+    "
+
+    set auth_info(auth_status) "ok"
+    set auth_info(info_status) "ok"
+    set auth_info(user_id) $uid
+    set auth_info(auth_message) "Login Successful"
+    set auth_info(account_status) "ok"
+    set auth_info(account_message) ""
+    return [array get auth_info]
+
 }
 
 
@@ -585,7 +844,10 @@ ad_proc -private auth::ldap::user_info::GetUserInfo {
     username
     parameters
 } {
-
+    Returns basic information per user
+    info_status - string
+    info_message - string
+    user_info - string []
 } {
     # Parameters
     array set params $parameters
@@ -600,7 +862,7 @@ ad_proc -private auth::ldap::user_info::GetUserInfo {
     set search_result [auth::ldap::get_user \
                            -username $username \
                            -parameters $parameters]
-    
+
     # More than one, or not found
     if { [llength $search_result] != 1 } {
         set result(info_status) no_account
