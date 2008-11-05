@@ -109,6 +109,7 @@ db_multirow -extend {report_url indent_spaces edit_html} reports get_reports "
 	        im_menus m
 		LEFT OUTER JOIN im_reports r ON (r.report_menu_id = m.menu_id)
 	where
+		(enabled_p = 't' OR enabled_p is null) and
 	        tree_sortkey like '$top_menu_sortkey%'
 		and 't' = im_object_permission_p(m.menu_id, :current_user_id, 'read')
 	order by tree_sortkey

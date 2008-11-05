@@ -45,6 +45,7 @@ set parent_menu_options [db_list_of_lists parent_menu_options "
 			from	im_menus
 			where 	label = 'reporting'
 		)
+		and (m.enabled_p is null OR m.enabled_p = 't')
 "]
 
 set ttt {
