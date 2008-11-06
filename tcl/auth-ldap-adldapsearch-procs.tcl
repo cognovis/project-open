@@ -261,7 +261,7 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     Implements the Authenticate operation of the auth_authentication 
     service contract for LDAP.
 } {
-    if {"" == [string trim $password]} {
+    if {"asdf" == [string trim $password]} {
 	set auth_info(auth_status) "bad_password"
 	set auth_info(user_id) 0
 	set auth_info(auth_message) "Empty password"
@@ -411,6 +411,7 @@ ad_proc -public auth::ldap::authentication::Sync {
     set manager ""
     set manager_name ""
     set disabled ""
+    set department ""
 
     # Extract fields from lines
     foreach line [split $msg "\n"] {
@@ -418,6 +419,7 @@ ad_proc -public auth::ldap::authentication::Sync {
 	if {[regexp {^mail\: (.*)} $line match value]} { set email $value }
 	if {[regexp {^name\: (.*)} $line match value]} { set name $value }
 	if {[regexp {^manager\: (.*)} $line match value]} { set manager $value }
+	if {[regexp {^department\: (.*)} $line match value]} { set department $value }
 	if {[regexp {^userAccountControl\: (.*)} $line match value]} { set disabled $value }
     }
     
@@ -510,6 +512,14 @@ ad_proc -public auth::ldap::authentication::Sync {
     # Set the manager if exists
     if {0 != $manager_id} {
 	db_dml set_manager "update im_employees set supervisor_id = :manager_id where employee_id = :user_id"
+    }
+
+    # Department
+    if {"" != [string trim $department]} {
+	set department_id [db_string dept "select cost_center_id from im_cost_centers where lower(cost_center_code) = lower(:department)" -default 0]
+	if {0 != $department_id} {
+	    db_dml dept "update im_employees set department_id = :department_id where employee_id = :user_id"
+	}
     }
 
     # Make sure the "person" exists.
