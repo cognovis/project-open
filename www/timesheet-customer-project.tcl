@@ -55,6 +55,10 @@ set edit_timesheet_p [im_permission $current_user_id "add_hours_all"]
 # ToDo: remove after V3.5: compatibility with old privilege
 if {[im_permission $current_user_id "edit_hours_all"]} {set edit_timesheet_p 1 }
 
+set view_hours_all_p [im_permission $current_user_id "view_hours_all"]
+
+if {!$view_hours_all_p} { set user_id $current_user_id }
+
 # ------------------------------------------------------------
 # Constants
 
@@ -439,13 +443,20 @@ switch $output_format {
 		    [im_project_select -include_empty_p 1 -include_empty_name "-- Please Select --" project_id $project_id]
 		  </td>
 		</tr>
+	"
+
+	if {$view_hours_all_p} {
+	    ns_write "
 		<tr>
 		  <td class=form-label>User</td>
 		  <td class=form-widget>
 		    [im_user_select -include_empty_p 1 -group_id [list [im_employee_group_id] [im_freelance_group_id]] -include_empty_name "-- Please select --" user_id $user_id]
 		  </td>
 		</tr>
+	    "
+	}
 
+	ns_write "
 		$report_options_html
 
 		<tr>
