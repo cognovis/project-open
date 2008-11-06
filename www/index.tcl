@@ -134,10 +134,10 @@ db_multirow -extend {report_view_url edit_html value_html history_html} reports 
     set report_view_url [export_vars -base "view" {indicator_id return_url}]
     set report_edit_url [export_vars -base "new" {indicator_id}]
     set perms_url [export_vars -base "perms" {{object_id $indicator_id}}]
-    set delete_url [export_vars -base "delete" {{object_id $indicator_id}}]
+    set delete_url [export_vars -base "delete" {indicator_id return_url}]
     set edit_html "
-	<a href='$report_edit_url'>[im_gif "wrench"]</a>
-	<a href='$perms_url'>[im_gif "lock"]</a>
+	<a href='$report_edit_url'>[im_gif "wrench"]</a><br>
+	<a href='$perms_url'>[im_gif "lock"]</a><br>
 	<a href='$delete_url'>[im_gif "cancel"]</a>
     "
     
