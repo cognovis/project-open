@@ -514,6 +514,9 @@ set last_value_list [list]
 set class "rowodd"
 db_foreach sql $sql {
 
+	if {"" != $internal_note} {
+	    set note "$note / $internal_note"
+	}
 	if {[string length $note] > $truncate_note_length} {
 	    set note "[string range $note 0 $truncate_note_length] ..."
 	}
