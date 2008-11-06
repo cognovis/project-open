@@ -76,6 +76,7 @@ if { [security::RestrictLoginToSSLP] } {
 # email and username are empty, but we still remember the dude.
 if { [empty_string_p $email] && [empty_string_p $username] && [ad_conn untrusted_user_id] != 0 } {
     acs_user::get -user_id [ad_conn untrusted_user_id] -array untrusted_user
+
     if { [auth::UseEmailForLoginP] } {
         set email $untrusted_user(email)
     } else {
@@ -183,12 +184,12 @@ if { [auth::UseEmailForLoginP] } {
                 {options $authority_options}
             }
         }
+	template::element::set_value login authority_id $authority_id
     }
-
-
 
 }
 set focus "login.$focus"
+
 
 # One-Time-Password Enabled - show form element
 if {$otp_installed_p && [exists_and_not_null otp_enabled_p]} {
