@@ -267,9 +267,10 @@ ad_proc -public im_cost_center_status_options { {include_empty 1} } {
     Cost Center status options
 } {
     set options [db_list_of_lists cost_center_status_options "
-	select category, category_id 
-	from im_categories
-	where category_type = 'Intranet Cost Center Status'
+	select	category, category_id 
+	from	im_categories
+	where	category_type = 'Intranet Cost Center Status' and
+		(enabled_p is null OR enabled_p = 't')
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
@@ -280,9 +281,10 @@ ad_proc -public im_cost_center_type_options { {include_empty 1} } {
     Cost Center type options
 } {
     set options [db_list_of_lists cost_center_type_options "
-	select category, category_id 
-	from im_categories
-	where category_type = 'Intranet Cost Center Type'
+	select	category, category_id 
+	from	im_categories
+	where	category_type = 'Intranet Cost Center Type' and
+		(enabled_p is null OR enabled_p = 't')
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
@@ -293,9 +295,10 @@ ad_proc -public im_cost_uom_options { {include_empty 1} } {
     Cost UoM (Unit of Measure) options
 } {
     set options [db_list_of_lists cost_type_options "
-        select category, category_id
-        from im_categories
-	where category_type = 'Intranet UoM'
+        select	category, category_id
+        from	im_categories
+	where	category_type = 'Intranet UoM' and
+		(enabled_p is null OR enabled_p = 't')
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
@@ -435,7 +438,8 @@ ad_proc -public im_cost_template_options { {include_empty 1} } {
     set options [db_list_of_lists template_options "
 	select category, category_id
 	from im_categories
-	where category_type = 'Intranet Cost Template'
+	where category_type = 'Intranet Cost Template' and
+		(enabled_p is null OR enabled_p = 't')
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
@@ -1701,7 +1705,9 @@ ad_proc -public im_cost_type_select {
 	select	c.category_id,
 		c.category
 	from	im_categories c
-	where	c.category_type = :category_type"
+	where	c.category_type = :category_type and
+		(enabled_p is null OR enabled_p = 't')
+    "
 
     # Restrict to specific subtypes of FinDocs
     switch [string tolower $cost_item_group] {
@@ -1944,7 +1950,7 @@ ad_proc -public im_cost_update_project_cost_cache {
 		cat.cost_type_id
     "
 
-    set cost_type_sql "select category_id from im_categories where category_type='Intranet Cost Type'"
+    set cost_type_sql "select category_id from im_categories where category_type='Intranet Cost Type' and (enabled_p is null OR enabled_p = 't') "
     db_foreach subtotal_init $cost_type_sql {
 	set subtotals($category_id) 0
     }
