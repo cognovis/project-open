@@ -261,6 +261,15 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     Implements the Authenticate operation of the auth_authentication 
     service contract for LDAP.
 } {
+    if {"" == [string trim $password]} {
+	set auth_info(auth_status) "bad_password"
+	set auth_info(user_id) 0
+	set auth_info(auth_message) "Empty password"
+	set auth_info(account_status) "ok"
+	set auth_info(account_message) ""
+	return [array get auth_info]
+    }
+
     # Parameters
     array set params $parameters
 
@@ -276,8 +285,8 @@ ad_proc -private auth::ldap::authentication::Authenticate {
         regsub -all "{$var}" $bind_dn [set $var] bind_dn
     }
 
+    ns_log Notice "auth::ldap::authentication::Authenticate: ldapsearch -n -x -H $uri -D $bind_dn -w xxxxxxxxx"
     set return_code [catch {
-        ns_log Notice "auth::ldap::authentication::Authenticate: ldapsearch -n -x -H $uri -D $bind_dn -w xxxxxxxxx"
         exec ldapsearch -n -x -H $uri -D $bind_dn -w $password
     } msg]
 
@@ -286,9 +295,7 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     if {"" == $msg_first_line} { regexp {^(.*)\n} $msg match msg_first_line }
     if {"" == $msg_first_line} { regexp {^(.*\))} $msg match msg_first_line }
 
-    # Todo: !!!
-    set return_code 0
-
+    # ----------------------------------------------------
     # Successfully verified the username/password
     if {0 == $return_code} {
 	set uid [db_string uid "
@@ -305,13 +312,14 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 	set auth_info(account_status) "ok"
 	set auth_info(account_message) ""
 
-	# Always sync the user with the LDAP information, with username as primary key
+	# Sync the user with the LDAP information, with username as primary key
 	set auth_info_array [auth::ldap::authentication::Sync $username $parameters $authority_id]
 	array set auth_info $auth_info_array
-
 	return [array get auth_info]
     }
 
+    # ----------------------------------------------------
+    # We had an issue with the LDAP
     if {[regexp {Invalid credentials \(49\)} $msg]} {
 	set auth_info(auth_status) "bad_password"
 	set auth_info(user_id) 0
@@ -397,10 +405,12 @@ ad_proc -public auth::ldap::authentication::Sync {
     # Extract variables from AD output
 
     set email ""
+    set name ""
     set first_names ""
     set last_name ""
     set manager ""
     set manager_name ""
+    set disabled ""
 
     # Extract fields from lines
     foreach line [split $msg "\n"] {
@@ -408,6 +418,7 @@ ad_proc -public auth::ldap::authentication::Sync {
 	if {[regexp {^mail\: (.*)} $line match value]} { set email $value }
 	if {[regexp {^name\: (.*)} $line match value]} { set name $value }
 	if {[regexp {^manager\: (.*)} $line match value]} { set manager $value }
+	if {[regexp {^userAccountControl\: (.*)} $line match value]} { set disabled $value }
     }
     
     set name_pieces [split $name " "]
@@ -420,8 +431,13 @@ ad_proc -public auth::ldap::authentication::Sync {
 	set last_name $ln
     }
 
-    if {[regexp {^CN=(.*?)\,} $manager match mn]} {
-	set manager_name $mn
+    if {[regexp {^CN=(.*?)\,} $manager match mn]} { set manager_name $mn }
+
+    if {514 == [string trim $disabled]} {
+	# Windows hardcoded status "disabled"
+	set member_state "banned"
+    } else {
+	set member_state "approved"
     }
 
     set manager_id [db_string manager_id "
@@ -571,15 +587,15 @@ ad_proc -public auth::ldap::authentication::Sync {
 			and m.rel_type::text = 'membership_rel'::text
     "]
     if {!$reg_users_rel_exists_p} {
-	relation_add -member_state "approved" "membership_rel" $registered_users $user_id
+	relation_add -member_state $member_state "membership_rel" $registered_users $user_id
     }
 
     # Make the user member of the group employees if not already
     catch {
-	set rel_id [relation_add -member_state "approved" "membership_rel" [im_profile_employees] $user_id]
+	set rel_id [relation_add -member_state $member_state "membership_rel" [im_profile_employees] $user_id]
     }
     set rel_id [db_string auth "select rel_id from acs_rels where object_id_one = :registered_users and object_id_two = :user_id" -default 0]
-    db_dml update_relation "update membership_rels set member_state='approved' where rel_id=:rel_id"
+    db_dml update_relation "update membership_rels set member_state= :member_state where rel_id=:rel_id"
 
 
     # TSearch2: We need to update "persons" in order to trigger the TSearch2 triggers
