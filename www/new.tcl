@@ -126,12 +126,12 @@ ad_form -extend -name $form_id \
 
 	db_dml edit_indicator "
 		update im_indicators set 
-			indicator_section_id = :indicator_section_id,
-			indicator_object_type   =: indicator_object_type,
-			indicator_low_warn      =: indicator_low_warn,
-			indicator_low_critical  =: indicator_low_critical,
-			indicator_high_warn     =: indicator_high_warn,
-			indicator_high_critical =: indicator_high_critical
+			indicator_section_id	= :indicator_section_id,
+			indicator_object_type   = :indicator_object_type,
+			indicator_low_warn      = :indicator_low_warn,
+			indicator_low_critical  = :indicator_low_critical,
+			indicator_high_warn     = :indicator_high_warn,
+			indicator_high_critical = :indicator_high_critical
 		where indicator_id = :indicator_id
 	"
 
