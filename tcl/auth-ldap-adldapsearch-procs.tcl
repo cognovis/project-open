@@ -261,7 +261,7 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     Implements the Authenticate operation of the auth_authentication 
     service contract for LDAP.
 } {
-    if {"asdf" == [string trim $password]} {
+    if {"" == [string trim $password]} {
 	set auth_info(auth_status) "bad_password"
 	set auth_info(user_id) 0
 	set auth_info(auth_message) "Empty password"
@@ -516,9 +516,14 @@ ad_proc -public auth::ldap::authentication::Sync {
 
     # Department
     if {"" != [string trim $department]} {
+
+	# Check if we find the department in the cost centers
 	set department_id [db_string dept "select cost_center_id from im_cost_centers where lower(cost_center_code) = lower(:department)" -default 0]
-	if {0 != $department_id} {
-	    db_dml dept "update im_employees set department_id = :department_id where employee_id = :user_id"
+	if {0 == $department_id} { set department_id [db_string dept "select cost_center_id from im_cost_centers where lower(cost_center_label) = lower(:department)" -default 0] }
+	if {0 == $department_id} { set department_id [db_string dept "select cost_center_id from im_cost_centers where lower(cost_center_name) = lower(:department)" -default 0] }
+
+	if {0 != $department_id} { 
+	    db_dml dept "update im_employees set department_id = :department_id where employee_id = :user_id" 
 	}
     }
 
