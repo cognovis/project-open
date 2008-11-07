@@ -188,6 +188,7 @@ if { ![empty_string_p $where_clause] } {
 set sql "
 select
 	h.note,
+	h.internal_note,
 	h.billing_rate,
 	to_char(h.day, 'YYYY-MM-DD') as date_pretty,
 	to_char(h.day, 'J') as julian_date,
