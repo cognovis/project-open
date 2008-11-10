@@ -132,6 +132,7 @@ ad_proc -public im_ganttproject_write_task {
     if {"" == $duration} { set duration $default_duration }
     if {"" == $duration} { set duration 1 }
     if {"0" == $duration} { set duration 1 }
+    if {$duration < 0} { set duration 1 }
 
     set project_node [$doc createElement task]
     $tree_node appendChild $project_node
@@ -1258,6 +1259,7 @@ ad_proc -public im_ganttproject_resource_component {
     if {$auto_open | "" == $top_vars} {
 	set duration_days [db_string dur "select to_date(:end_date, 'YYYY-MM-DD') - to_date(:start_date, 'YYYY-MM-DD')"]
 	if {"" == $duration_days} { set duration_days 0 }
+	if {$duration_days < 0} { set duration_days 0 }
 
 	set duration_weeks [expr $duration_days / 7]
 	set duration_months [expr $duration_days / 30]
@@ -1873,6 +1875,7 @@ ad_proc -public im_ganttproject_gantt_component {
 		select to_date(:end_date, 'YYYY-MM-DD') - to_date(:start_date, 'YYYY-MM-DD')
 	"]
 	if {"" == $duration_days} { set duration_days 0 }
+	if {$duration_days < 0} { set duration_days 0 }
 
 	set duration_weeks [expr $duration_days / 7]
 	set duration_months [expr $duration_days / 30]
