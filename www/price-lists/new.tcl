@@ -47,11 +47,7 @@ if {"" == $currency} {
 # Build the form
 # ------------------------------------------------------------------
 
-set uom_options [db_list_of_lists uom_options "
-select category, category_id
-from im_categories
-where category_type = 'Intranet UoM'
-"]
+set uom_options [im_cost_uom_options]
 
 set task_type_options [db_list_of_lists uom_options "
 select category, category_id
@@ -74,7 +70,7 @@ ad_form \
 	price_id:key(im_timesheet_prices_seq)
 	{company_id:text(hidden)}
 	{uom_id:text(select) {label "[_ intranet-timesheet2-invoices.Unit_of_Measure]"} {options $uom_options} }
-	{task_type_id:text(select),optional {label "[_ intranet-timesheet2-invoices.Task_Type]"} {options $task_type_options} }
+	{task_type_id:text(im_category_tree),optional {label "[_ intranet-timesheet2-invoices.Task_Type]"} {custom {category_type "Intranet Project Type" translate_p 1 include_empty_p 1}} }
 	{material_id:text(select),optional {label "[_ intranet-timesheet2-invoices.Material]"} {options $material_options} }
 	{amount:text(text) {label "[_ intranet-timesheet2-invoices.Amount]"} {html {size 10}}}
 	{currency:text(select) {label "[_ intranet-timesheet2-invoices.Currency]"} {options $currency_options} }
