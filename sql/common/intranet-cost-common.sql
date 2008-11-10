@@ -79,6 +79,9 @@ SELECT im_category_new (3718,'Timesheet Cost','Intranet Cost Type');
 SELECT im_category_new (3720,'Expense Item','Intranet Cost Type');
 SELECT im_category_new (3722,'Expense Bundle','Intranet Cost Type');
 SELECT im_category_new (3724,'Delivery Note','Intranet Cost Type');
+SELECT im_category_new (3726,'Timesheet Planned Cost','Intranet Cost Type');
+SELECT im_category_new (3728,'Expense Planned Cost','Intranet Cost Type');
+
 -- reserved until 3799
 
 -- Establish the super-categories "Provider Documents" and "Customer Documents"

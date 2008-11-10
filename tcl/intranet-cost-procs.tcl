@@ -43,6 +43,8 @@ ad_proc -public im_cost_type_timesheet {} { return 3718 }
 ad_proc -public im_cost_type_expense_item {} { return 3720 }
 ad_proc -public im_cost_type_expense_bundle {} { return 3722 }
 ad_proc -public im_cost_type_delivery_note {} { return 3724 }
+ad_proc -public im_cost_type_timesheet_planned {} { return 3726 }
+ad_proc -public im_cost_type_expense_planned {} { return 3728 }
 
 
 ad_proc -public im_cost_type_short_name { cost_type_id } { 
@@ -460,9 +462,9 @@ ad_proc -public im_currency_options { {include_empty 1} } {
     Cost currency options
 } {
     set options [db_list_of_lists currency_options "
-	select iso, iso
-	from currency_codes
-	where supported_p = 't'
+	select	iso, iso
+	from	currency_codes
+	where	supported_p = 't'
 	order by iso
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
@@ -1526,18 +1528,15 @@ ad_proc im_costs_project_finance_component {
     append prelim_cost_html "<td align=right>- $subtotal $default_currency</td>\n"
     set grand_total [expr $grand_total - $subtotal]
 
-    append prelim_cost_html "</tr>\n<tr>\n<td>[_ intranet-cost.Timesheet_Costs]</td>\n"
-    
+    append prelim_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Timesheet_Planned_Costs "Timesheet Planned"]</td>\n"
+    append prelim_cost_html "<td align=right>- $subtotals([im_cost_type_timesheet_planned]) $default_currency</td>\n"
+
+    append prelim_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Expenses_Planned_Costs "Expenses Planned"]</td>\n"
     append prelim_cost_html "<td align=right>
-<!--	  $subtotals([im_cost_type_timesheet]) $default_currency -->
+	  $subtotals([im_cost_type_expense_planned]) $default_currency
 	</td>\n"
 
-    append prelim_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Expenses "Expenses"]</td>\n"
-    append prelim_cost_html "<td align=right>
-<!--	  $subtotals([im_cost_type_expense_bundle]) $default_currency -->
-	</td>\n"
-
-    append prelim_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-cost.Grand_Total]</b></td>\n"
+    append prelim_cost_html "</tr>\n<tr>\n<td><b>[lang::message::lookup "" intranet-cost.Preliminary_Total "Preliminary Total"]</b></td>\n"
     append prelim_cost_html "<td align=right><b>$grand_total $default_currency</b></td>\n"
     append prelim_cost_html "</tr>\n</table>\n"
 
@@ -1889,6 +1888,7 @@ ad_proc -public im_cost_update_project_cost_cache {
     Returns the "subtotals" array.
 } {
     set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+    set default_hourly_cost [ad_parameter -package_id [im_package_cost_id] "DefaultHourlyCost" "" 30]
 
     # Update the logged hours cache
     im_timesheet_update_timesheet_cache -project_id $project_id
@@ -1960,6 +1960,16 @@ ad_proc -public im_cost_update_project_cost_cache {
         set subtotals($cost_type_id) $amount_converted
     }
 
+    # Special treatment for timesheet hours budget - multiply with default hourly rate
+    set budget_hours [db_string budget_hours "select project_budget_hours from im_projects where project_id = :project_id" -default ""]
+    if {"" == $budget_hours} { set budget_hours 0 }
+    set cost_timesheet_planned [expr $budget_hours * $default_hourly_cost]
+    set subtotals([im_cost_type_timesheet_planned]) $cost_timesheet_planned
+
+    # Expense Planned
+    set subtotals([im_cost_type_expense_planned]) 0
+    
+
     # We can update the profit & loss because all financial documents
     # have been converted to default_currency
     db_dml update_projects "
@@ -1971,7 +1981,7 @@ ad_proc -public im_cost_update_project_cost_cache {
 			cost_quotes_cache = $subtotals([im_cost_type_quote]),
 			cost_purchase_orders_cache = $subtotals([im_cost_type_po]),
 			cost_delivery_notes_cache = $subtotals([im_cost_type_delivery_note]),
-			cost_timesheet_planned_cache = 0,
+			cost_timesheet_planned_cache = :cost_timesheet_planned,
 			cost_expense_planned_cache = 0,
 			cost_cache_dirty = null
 		where
