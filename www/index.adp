@@ -2,7 +2,6 @@
 <property name="context">@context_bar;noquote@</property>
 <master src="master">
 
-<div class="fullwidth-list" id="fullwidth-list">
 <h2>DynField Administration Pages</h2>
 <ul>
   <li><a href="object-types"><b>Object Types</b></a>:<br>
@@ -43,7 +42,7 @@
 	Imports a DynField configuration from an XML file
 </ul>
 -->
-</div>
+
 
 <table width="100%">
 <tr>
