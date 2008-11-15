@@ -347,10 +347,13 @@ if {[im_permission $current_user_id add_tickets_for_customers]} {
 
 } else {
 
-    lappend ticket_elements {ticket_sla_id:text(hidden) {options $customer_sla_options}}
-    set ticket_customer_contact_id $current_user_id
+#    lappend ticket_elements {ticket_sla_id:text(hidden) {options $customer_sla_options}}
+#    lappend ticket_elements {ticket_customer_contact_id:text(hidden) {label "[lang::message::lookup {} intranet-helpdesk.Customer_Contact {<nobr>Customer Contact</nobr>}]"} {options $customer_contact_options}}
 
-    lappend ticket_elements {ticket_customer_contact_id:text(hidden) {label "[lang::message::lookup {} intranet-helpdesk.Customer_Contact {<nobr>Customer Contact</nobr>}]"} {options $customer_contact_options}}
+    lappend ticket_elements {ticket_sla_id:text(select) {mode display} {label "[lang::message::lookup {} intranet-helpdesk.SLA SLA]"} {options $customer_sla_options}}
+    set ticket_customer_contact_id $current_user_id
+    lappend ticket_elements {ticket_customer_contact_id:text(select) {mode display} {label "[lang::message::lookup {} intranet-helpdesk.Customer_Contact {<nobr>Customer Contact</nobr>}]"} {options $customer_contact_options}}
+
 }
 
 
@@ -380,6 +383,7 @@ if {[info exists ticket_type_id]} { set dynfield_ticket_type_id $ticket_type_id}
 set dynfield_ticket_id ""
 if {[info exists ticket_id]} { set dynfield_ticket_id $ticket_id }
 
+
 set field_cnt [im_dynfield::append_attributes_to_form \
                        -form_display_mode $form_mode \
                        -object_subtype_id $dynfield_ticket_type_id \
@@ -387,7 +391,6 @@ set field_cnt [im_dynfield::append_attributes_to_form \
                        -form_id "ticket" \
                        -object_id $dynfield_ticket_id \
 ]
-
 
 # ------------------------------------------------------------------
 # 
@@ -430,7 +433,7 @@ ad_form -extend -name ticket -on_request {
 	db_dml ticket_update {}
 	db_dml project_update {}
 
-	if {[util_memoize "db_column_exist acs_objects title"]} {
+	if {[util_memoize "db_column_exists acs_objects title"]} {
 	    db_dml object_update "update acs_objects set title = null where object_id = :ticket_id"
 	}
 
@@ -476,7 +479,7 @@ ad_form -extend -name ticket -on_request {
     }
 
     # Send to page to show the new ticket, instead of returning to return_url
-    ad_returnredirect [export_vars "/intranet-helpdesk/new" {ticket_id}]
+    ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {ticket_id}]
     ad_script_abort
 
 
