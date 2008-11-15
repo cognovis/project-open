@@ -26,3 +26,7 @@ select im_menu__new (
 );
 
 
+update im_menus
+set name = 'Portlet Components'
+where url = '/intranet/admin/components/';
+
