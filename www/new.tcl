@@ -50,7 +50,10 @@ set button_pressed [template::form get_action material]
 if {"delete" == $button_pressed} {
 
     if {[catch {
-	db_exec_plsql material_delete {}
+	db_transaction {
+	    db_dml del_prices "delete from im_timesheet_prices where material_id=:material_id"
+	    db_exec_plsql material_delete {}
+	}
     } err_msg]} {
 
 	set task_names [db_list mat_tasks "select acs_object__name(task_id) from im_timesheet_tasks where material_id = :material_id"]
@@ -58,7 +61,7 @@ if {"delete" == $button_pressed} {
 
 	ad_return_complaint 1 "<b>Error deleting Material</b>:<p>
 	This error is probably due to the fact there there are still 
-	'Timesheet Tasks' or 'Timesheet Prices' referencing this material:<p>
+	'Timesheet Tasks' referencing this material:<p>
 	Timesheet Tasks:<br>
 	<pre>[join $task_names "\n>"]</pre><p>
 	Timesheet Prices:<br>
