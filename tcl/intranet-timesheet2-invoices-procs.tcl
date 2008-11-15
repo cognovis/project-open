@@ -134,7 +134,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 
     set task_table_rows "
     <tr> 
-	<td class=rowtitle align=middle>[im_gif help "Include in Invoice"] </td>
+	<td class=rowtitle align=middle>[im_gif help "Include in Invoice"]</td>
 	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Task_Name "Task Name"]</td>
 	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Material "Material"]</td>
 	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Planned_br_Units "Planned<br>Units"]</td>
@@ -143,7 +143,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Reported_br_Units_in_br_Interval "Reported<br>Units in<br>Interval"]</td>
 	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.All_Unbilled_Units "All<br>Unbilled<br>Units"]</td>
 	<td align=center class=rowtitle>[lang::message::lookup ""  intranet-timesheet2-invoices.UoM "UoM"]<br>[im_gif help "Unit of Measure"]</td>
-	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Type Type]</td>
+<!--	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Type Type]</td> -->
 	<td align=center class=rowtitle>[lang::message::lookup "" intranet-timesheet2-invoices.Status Status]</td>
     </tr>
     "
@@ -181,7 +181,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	  <td align=center><input type=radio name=invoice_hour_type value=interval $invoice_radio_disabled $interval_checked></td>
 	  <td align=center><input type=radio name=invoice_hour_type value=unbilled $invoice_radio_disabled $unbilled_checked></td>
 	  <td></td>
-	  <td></td>
+<!--	  <td></td> -->
 	  <td></td>
 	</tr>
     "
@@ -246,7 +246,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	
 	set indent ""
 	for {set i 0} {$i < $level} {incr i} { 
-	    append indent "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" 
+	    append indent "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" 
 	}
 
 	set task_checked ""
@@ -271,7 +271,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	  <td align=right>$hours_in_interval</td>
 	  <td align=right>$unbilled_hours</td>
 	  <td align=right>$uom_name</td>
-	  <td>$project_type</td>
+<!--	  <td>$project_type</td> -->
 	  <td>$project_status</td>
 	</tr>
 	"

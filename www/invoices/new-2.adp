@@ -44,7 +44,7 @@
 <form action=new-3 method=POST>
 <%= [export_form_vars company_id invoice_currency target_cost_type_id return_url select_project start_date end_date] %>
 
-<table cellpadding=2 cellspacing=2 border=0>
+<table cellpadding=1 cellspacing=1 border=0>
     @task_table_rows;noquote@
 
     <tr>
