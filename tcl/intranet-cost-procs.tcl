@@ -471,6 +471,25 @@ ad_proc -public im_currency_options { {include_empty 1} } {
     return $options
 }
 
+ad_proc im_currency_select {
+    {-translate_p 0}
+    {-include_empty_p 1}
+    {-include_empty_name ""}
+    select_name 
+    {default ""}
+} {
+    Return a HTML widget that selects a currency code from
+    the list of global countries.
+} {
+    set bind_vars [ns_set create]
+    set statement_name "currency_code_select"
+    set sql "select iso, iso
+	     from currency_codes
+	     where supported_p='t'
+	     order by lower(currency_name)"
+
+    return [im_selection_to_select_box -translate_p 0 -include_empty_p $include_empty_p -include_empty_name $include_empty_name $bind_vars $statement_name $sql $select_name $default]
+}
 
 ad_proc im_supported_currencies { } {
     Returns the list of supported currencies
@@ -1240,11 +1259,8 @@ ad_proc im_costs_project_finance_component {
     </ul>
 
 } {
-#    ad_return_complaint 1 "details=$show_details_p, summary=$show_summary_p, admin=$show_admin_links_p"
-
-    if {$show_details_p} { set show_admin_links_p 1 }
-
     if {![im_permission $user_id view_costs]} {	return "" }
+    if {$show_details_p} { set show_admin_links_p 1 }
 
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
@@ -1607,11 +1623,13 @@ ad_proc im_costs_project_finance_component {
 	    set customer_id [db_string project_customer "select company_id from im_projects where project_id = :org_project_id" -default ""]
 	    set provider_id [im_company_internal]
 	    set bind_vars [ad_tcl_vars_to_ns_set project_id customer_id provider_id]
+	    append admin_html [lang::message::lookup "" intranet-cost.Customer_Links "Customer Actions"]
       	    append admin_html [im_menu_ul_list "invoices_customers" $bind_vars]
 
 	    # Provider invoices: customer = Internal, no provider yet defined
 	    set customer_id [im_company_internal]
 	    set bind_vars [ad_tcl_vars_to_ns_set customer_id project_id]
+	    append admin_html [lang::message::lookup "" intranet-cost.Provider_Links "Provider Actions"]
 	    append admin_html [im_menu_ul_list "invoices_providers" $bind_vars]
 
 	    append admin_html "	
