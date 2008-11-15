@@ -681,7 +681,7 @@ ad_proc -public im_workflow_action_component {
 	    append result "
 				<form action='/[im_workflow_url]/task' method='post'>
 				$export_form_vars
-				<table class=\"table_list_page\">
+				<table>
 		        	<tr $bgcolor([expr $ctr%2])>
 		        	    <td>Task Name</td>
 		        	    <td>$task(task_name)</td>
@@ -851,7 +851,7 @@ append result "This task was completed by <a href='/shared/community-member?user
 	    if {[im_permission $current_user_id "wf_reassign_tasks"]} {
 		template::multirow foreach task_assigned_users { 
 		    set user_url [export_vars -base "/intranet/users/view" {user_id}]
-		    lappend assigned_users "<a href='$user_url'>$name ($email)</a>\n"
+		    lappend assigned_users "<a href='$user_url'><nobr>$name</nobr></a>\n"
 		}
 	    }
 	    if {[llength $assigned_users] > 0} {
