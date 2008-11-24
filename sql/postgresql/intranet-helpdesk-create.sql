@@ -236,8 +236,117 @@ BEGIN
 end;' language 'plpgsql';
 
 
+
+
+-----------------------------------------------------------
+-- Relationship between Tickets
+-----------------------------------------------------------
+--
+-- Implements "This ticket has been already solved in THAT other ticket"
+
+create table im_ticket_ticket_rels (
+	rel_id			integer
+				constraint im_ticket_ticket_rels_rel_fk
+				references acs_rels (rel_id)
+				constraint im_ticket_ticket_rels_rel_pk
+				primary key,
+	sort_order		integer
+);
+
+select acs_rel_type__create_type (
+   'im_ticket_ticket_rel',	-- relationship (object) name
+   'Ticket Ticket Rel',		-- pretty name
+   'Ticket Ticket Rels',	-- pretty plural
+   'relationship',		-- supertype
+   'im_ticket_ticket_rels',	-- table_name
+   'rel_id',			-- id_column
+   'intranet-helpdesk-tt-rel',	-- package_name
+   'im_project',		-- object_type_one
+   'member',			-- role_one
+    0,				-- min_n_rels_one
+    null,			-- max_n_rels_one
+   'im_ticket',			-- object_type_two
+   'member',			-- role_two
+   0,				-- min_n_rels_two
+   null				-- max_n_rels_two
+);
+
+
+create or replace function im_ticket_ticket_rel__new (
+integer, varchar, integer, integer, integer, integer, varchar, integer)
+returns integer as '
+DECLARE
+	p_rel_id		alias for $1;	-- null
+	p_rel_type		alias for $2;	-- im_ticket_ticket_rel
+	p_object_id_one		alias for $3;
+	p_object_id_two		alias for $4;
+	p_context_id		alias for $5;
+	p_creation_user		alias for $6;	-- null
+	p_creation_ip		alias for $7;	-- null
+	p_sort_order		alias for $8;
+
+	v_rel_id	integer;
+BEGIN
+	IF p_object_id_one = p_object_id_two THEN return 0; END IF;
+
+	v_rel_id := acs_rel__new (
+		p_rel_id,
+		p_rel_type,
+		p_object_id_one,
+		p_object_id_two,
+		p_context_id,
+		p_creation_user,
+		p_creation_ip
+	);
+
+	insert into im_ticket_ticket_rels (
+	       rel_id, sort_order
+	) values (
+	       v_rel_id, p_sort_order
+	);
+
+	return v_rel_id;
+end;' language 'plpgsql';
+
+
+create or replace function im_ticket_ticket_rel__delete (integer)
+returns integer as '
+DECLARE
+	p_rel_id	alias for $1;
+BEGIN
+	delete	from im_ticket_ticket_rels
+	where	rel_id = p_rel_id;
+
+	PERFORM acs_rel__delete(p_rel_id);
+	return 0;
+end;' language 'plpgsql';
+
+
+create or replace function im_ticket_ticket_rel__delete (integer, integer)
+returns integer as '
+DECLARE
+        p_ticket_id_one		alias for $1;
+	p_ticket_id_two		alias for $2;
+
+	v_rel_id	integer;
+BEGIN
+	select	rel_id into v_rel_id
+	from	acs_rels
+	where	object_id_one = p_ticket_id_one
+		and object_id_two = p_ticket_id_two;
+
+	PERFORM im_ticket_ticket_rel__delete(v_rel_id);
+	return 0;
+end;' language 'plpgsql';
+
+
+
+
+
+
 -----------------------------------------------------------
 -- Create Ticket Queue datatype as a dynamically managed group
+-----------------------------------------------------------
 
 select acs_object_type__create_type (
 	'im_ticket_queue',
@@ -376,7 +485,8 @@ SELECT im_category_new (2502, 'Service Level Agreement', 'Intranet Project Type'
 -- 30100-30199	Intranet Ticket Type (100)
 -- 30200-30299	Intranet Ticket User Priority (100)
 -- 30300-30399	Intranet Ticket Technical Priority (100)
--- 30400-30499	Intranet Service Catalog
+-- 30400-30499	Intranet Service Catalog (100)
+-- 30500-30599	Intranet Ticket Action (100)
 -- 31000-31999	Intranet Ticket Class (1000)
 -- 32000-32999	reserved (1000)
 -- 33000-33999	reserved (1000)
@@ -546,33 +656,33 @@ SELECT im_category_new(30430, 'Software update service', 'Intranet Service Catal
 -- 35000-35099	1st level of Intranet Ticket Class
 SELECT im_category_new(31000, 'Broken system or configuration', 'Intranet Ticket Class');
 
-	SELECT im_category_new(31001, 'Bug/error in application', 'Intranet Ticket Class');
-	SELECT im_category_new(31002, 'Network access to application unavailable or slow', 'Intranet Ticket Class');
-	SELECT im_category_new(31003, 'Performance issues with application', 'Intranet Ticket Class');
-	SELECT im_category_new(31005, 'Browser issue: Information is rendered incorrectly', 'Intranet Ticket Class');
-	SELECT im_category_new(31006, 'Report does not show expected data', 'Intranet Ticket Class');
-	SELECT im_category_new(31008, 'Security issue', 'Intranet Ticket Class');
-	SELECT im_category_new(31009, 'Issues with backup & recovery', 'Intranet Ticket Class');
-	SELECT im_category_hierarchy_new(31001, 31000);
-	SELECT im_category_hierarchy_new(31002, 31000);
-	SELECT im_category_hierarchy_new(31003, 31000);
-	SELECT im_category_hierarchy_new(31005, 31000);
-	SELECT im_category_hierarchy_new(31006, 31000);
-	SELECT im_category_hierarchy_new(31008, 31000);
-	SELECT im_category_hierarchy_new(31009, 31000);
+SELECT im_category_new(31001, 'Bug/error in application', 'Intranet Ticket Class');
+SELECT im_category_new(31002, 'Network access to application unavailable or slow', 'Intranet Ticket Class');
+SELECT im_category_new(31003, 'Performance issues with application', 'Intranet Ticket Class');
+SELECT im_category_new(31005, 'Browser issue: Information is rendered incorrectly', 'Intranet Ticket Class');
+SELECT im_category_new(31006, 'Report does not show expected data', 'Intranet Ticket Class');
+SELECT im_category_new(31008, 'Security issue', 'Intranet Ticket Class');
+SELECT im_category_new(31009, 'Issues with backup & recovery', 'Intranet Ticket Class');
+SELECT im_category_hierarchy_new(31001, 31000);
+SELECT im_category_hierarchy_new(31002, 31000);
+SELECT im_category_hierarchy_new(31003, 31000);
+SELECT im_category_hierarchy_new(31005, 31000);
+SELECT im_category_hierarchy_new(31006, 31000);
+SELECT im_category_hierarchy_new(31008, 31000);
+SELECT im_category_hierarchy_new(31009, 31000);
 
 SELECT im_category_new(31100, 'Invalid data in system', 'Intranet Ticket Class');
 
-	SELECT im_category_new(31101, 'Missing or bad master data', 'Intranet Ticket Class');
-	SELECT im_category_hierarchy_new(31101, 31100);
+SELECT im_category_new(31101, 'Missing or bad master data', 'Intranet Ticket Class');
+SELECT im_category_hierarchy_new(31101, 31100);
 
 SELECT im_category_new(31200, 'Lack of user competency, ability or knowledge', 'Intranet Ticket Class');
 
-	SELECT im_category_new(31201, 'New user creation', 'Intranet Ticket Class');
-	SELECT im_category_new(31202, 'Extension/reduction of user permissions', 'Intranet Ticket Class');
-	SELECT im_category_new(31203, 'Training Request', 'Intranet Ticket Class');
-	SELECT im_category_new(31204, 'Incorrect or incomplete documentation', 'Intranet Ticket Class');
-	SELECT im_category_new(31205, 'Issue to export data', 'Intranet Ticket Class');
+SELECT im_category_new(31201, 'New user creation', 'Intranet Ticket Class');
+SELECT im_category_new(31202, 'Extension/reduction of user permissions', 'Intranet Ticket Class');
+SELECT im_category_new(31203, 'Training Request', 'Intranet Ticket Class');
+SELECT im_category_new(31204, 'Incorrect or incomplete documentation', 'Intranet Ticket Class');
+SELECT im_category_new(31205, 'Issue to export data', 'Intranet Ticket Class');
 
 SELECT im_category_new(31300, 'Requests for new/additional services', 'Intranet Ticket Class');
 
@@ -588,6 +698,18 @@ SELECT im_category_new(30206, '6', 'Intranet Ticket Priority');
 SELECT im_category_new(30207, '7', 'Intranet Ticket Priority');
 SELECT im_category_new(30208, '8', 'Intranet Ticket Priority');
 SELECT im_category_new(30209, '9 - Lowest', 'Intranet Ticket Priority');
+
+
+-- 30500-30599 - Intranet Ticket Action
+delete from im_categories where category_type = 'Intranet Ticket Action';
+SELECT im_category_new(30500, 'Close', 'Intranet Ticket Action');
+SELECT im_category_new(30510, 'Close &amp; notify', 'Intranet Ticket Action');
+SELECT im_category_new(30590, 'Delete', 'Intranet Ticket Action');
+
+-- Custom screen for duplicate action to select base
+SELECT im_category_new(30520, 'Duplicated', 'Intranet Ticket Action');
+update im_categories set aux_string1 = '/intranet-helpdesk/action-duplicated' 
+where category_id = 30520;
 
 
 
@@ -1056,6 +1178,9 @@ SELECT acs_permission__grant_permission(
 );
 
 
+-----------------------------------------------------------
+-- TicketListPage Main View
+-----------------------------------------------------------
 
 delete from im_view_columns where view_id = 270;
 delete from im_views where view_id = 270;
@@ -1087,9 +1212,23 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (27070,270,70,'Assignee','"<A href=/intranet/users/view?user_id=$ticket_assignee_id>$ticket_assignee</a>"');
+
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (27080,270,80,'SLA','"<A href=/intranet/projects/view?project_id=$sla_id>$sla_name</a>"');
 
+-- Add a "select all" checkbox to select all tickets in the list
+delete from im_view_columns where column_id = 27099;
+insert into im_view_columns (
+        column_id, view_id, sort_order,
+	column_name,
+	column_render_tcl,
+        visible_for
+) values (
+        27099,270,99,
+        '<input type=checkbox name=_dummy onclick=\"acs_ListCheckAll(''ticket'',this.checked)\">',
+        '$action_checkbox',
+        ''
+);
 
 -- insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 -- (27030,270,70,'Start Date','$start_date_formatted');
@@ -1099,11 +1238,9 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 
 
 
-
-
-
-
+-----------------------------------------------------------
 -- Home Personal Tickets
+-----------------------------------------------------------
 
 delete from im_view_columns where view_id = 271;
 delete from im_views where view_id = 271;
@@ -1127,6 +1264,39 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 
 
 
+
+-----------------------------------------------------------
+-- Duplicate Ticket select view
+-----------------------------------------------------------
+
+
+delete from im_view_columns where view_id = 272;
+delete from im_views where view_id = 272;
+insert into im_views (view_id, view_name, visible_for, view_type_id)
+values (272, 'ticket_list_duplicates', '', 1400);
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27210,272,10, 'Nr','"<a href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_nr</a>"');
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27220,272,20,'Name','"<href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_name</A>"');
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27230,272,30,'Type','$ticket_type');
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27240,272,40,'Status','$ticket_status');
+
+-- Add a "select" radio button to select one of the tickets from the list
+delete from im_view_columns where column_id = 27299;
+insert into im_view_columns (
+        column_id, view_id, sort_order,
+	column_name,
+	column_render_tcl,
+        visible_for
+) values (
+        27299,272,99,
+        'Sel',
+        '"<input type=radio name=ticket_id_from_search value=$ticket_id>"',
+        ''
+);
 
 
 

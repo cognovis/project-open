@@ -31,8 +31,6 @@ ad_proc -public im_ticket_status_fixed {} { return 30096 }
 ad_proc -public im_ticket_status_deleted {} { return 30097 }
 ad_proc -public im_ticket_status_canceled {} { return 30098 }
 
-
-
 ad_proc -public im_ticket_type_purchase_request {} { return 30102 }
 ad_proc -public im_ticket_type_workplace_move_request {} { return 30104 }
 ad_proc -public im_ticket_type_telephony_request {} { return 30006 }
@@ -47,7 +45,10 @@ ad_proc -public im_ticket_type_incident_ticket {} { return 30150 }
 ad_proc -public im_ticket_type_problem_ticket {} { return 30152 }
 ad_proc -public im_ticket_type_change_ticket {} { return 30154 }
 
-
+ad_proc -public im_ticket_action_close {} { return 30500 }
+ad_proc -public im_ticket_action_close_notify {} { return 30510 }
+ad_proc -public im_ticket_action_duplicated {} { return 30520 }
+ad_proc -public im_ticket_action_close_delete {} { return 30590 }
 
 
 # ----------------------------------------------------------------------
@@ -220,6 +221,48 @@ namespace eval im_ticket {
     }
 }
 
+
+
+# ----------------------------------------------------------------------
+# Ticket - Project Relationship
+# ---------------------------------------------------------------------
+
+ad_proc -public im_helpdesk_new_ticket_ticket_rel {
+    -ticket_id_from_search:required
+    -ticket_id:required
+    {-sort_order 0}
+} {
+    Marks ticket_id as a duplicate of ticket_id_from_search
+} {
+    if {"" == $ticket_id_from_search} { ad_return_complaint 1 "Internal Error - ticket_id_from_search is NULL" }
+    if {"" == $ticket_id} { ad_return_complaint 1 "Internal Error - ticket_id is NULL" }
+
+    set rel_id [db_string rel_exists "
+	select	rel_id
+	from	acs_rels
+	where	object_id_one = :ticket_id_from_search
+		and object_id_two = :ticket_id
+    " -default 0]
+    if {0 != $rel_id} { return $rel_id }
+
+    return [db_string new_ticket_ticket_rel "
+		select im_ticket_ticket_rel__new (
+			null,			-- rel_id
+			'im_ticket_ticket_rel',	-- rel_type
+			:ticket_id,		-- object_id_one
+			:ticket_id_from_search,	-- object_id_two
+			null,			-- context_id
+			[ad_get_user_id],	-- creation_user
+			'[ns_conn peeraddr]',	-- creation_ip
+			:sort_order		-- sort_order
+		)
+    "]
+}
+
+
+# ----------------------------------------------------------------------
+# Selects & Options
+# ---------------------------------------------------------------------
 
 ad_proc -public im_helpdesk_ticket_queue_options {
     {-mine_p 0}
