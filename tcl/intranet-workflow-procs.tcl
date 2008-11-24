@@ -894,7 +894,7 @@ append result "This task was completed by <a href='/shared/community-member?user
     }
     if {"" == $result} {
 	return "
-		<table class=\"table_list_page\"> width=\"100%\">
+		<table class=\"table_list_page\">
 		<tr valign=top>
 		<td>
 			<b>[lang::message::lookup "" intranet-helpdesk.Workflow_Finished "Workflow Finished"]</b><br>
@@ -1275,7 +1275,7 @@ ad_proc -public im_workflow_home_inbox_component {
     return "
 	<form action=\"/intranet-workflow/inbox-action\" method=POST>
 	[export_form_vars return_url]
-	<table class=\"table_list_page\" width=100%>
+	<table class=\"table_list_page\">
 	  $table_header_html
 	  $table_body_html
 	  $table_action_html
