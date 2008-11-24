@@ -160,7 +160,7 @@ ad_form \
 # Ticket Action
 # ------------------------------------------------------------------
 
-set tid $ticket_id
+set tid [value_if_exists ticket_id]
 set ticket_action_html "
 <form action=/intranet-helpdesk/action>
 [export_form_vars return_url tid]
