@@ -1,0 +1,2 @@
+
+<listtemplate name="tickets"></listtemplate>

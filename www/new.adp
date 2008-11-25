@@ -36,14 +36,6 @@
 		    </td>
 		    <td width="50%">
 
-			<%= [im_box_header [lang::message::lookup "" intranet-helpdesk.Referencing_Tickets "Issues Referencing This Ticket"]] %>
-			<listtemplate name="referencing_tickets"></listtemplate>
-			<%= [im_box_footer] %>
-
-			<%= [im_box_header [lang::message::lookup "" intranet-helpdesk.Referenced_Tickets "Problem Referenced by This Ticket"]] %>
-			<listtemplate name="referenced_tickets"></listtemplate>
-			<%= [im_box_footer] %>
-
 			<%= [im_component_bay right] %>
 		    </td>
 		  </tr>
