@@ -661,3 +661,25 @@ ad_proc -public im_navbar_tree_helpdesk_incident_mgmt { } { Incident Management}
     return $html
 
 }
+
+
+# ---------------------------------------------------------------
+# Component showing referenced tickets
+# ---------------------------------------------------------------
+
+
+ad_proc -public im_helpdesk_related_tickets_component {
+    -ticket_id:required
+} {
+    Returns a HTML component with the list of related tickets.
+} {
+    set params [list \
+                    [list base_url "/intranet-helpdesk/"] \
+                    [list ticket_id $ticket_id] \
+                    [list return_url [im_url_with_query]] \
+    ]
+
+    set result [ad_parse_template -params $params "/packages/intranet-helpdesk/www/related-tickets-component"]
+    return [string trim $result]
+}
+

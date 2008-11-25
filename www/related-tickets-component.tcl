@@ -27,7 +27,10 @@ set current_user_id [ad_maybe_redirect_for_registration]
 set bulk_action_list {}
 lappend bulk_actions_list "[lang::message::lookup "" intranet-helpdesk.Delete "Delete"]" "ticket-ticket-rel-del" "[lang::message::lookup "" intranet-helpdesk.Remove_checked_items "Remove Checked Items"]"
 
-set assoc_incident_ticket [lang::message::lookup {} intranet-helpdesk.Assoc_to_new_incident_ticket {Associate with a new incident ticket}]
+set assoc_msg [lang::message::lookup {} intranet-helpdesk.Assoc_to_new_incident_ticket {Associate with a new incident ticket}]
+set actions [list $assoc_msg "/intranet-helpdesk/new?ticket_id=$ticket_id" ""]
+set actions [list]
+
 
 list::create \
     -name tickets \
@@ -37,11 +40,7 @@ list::create \
     -has_checkboxes \
     -bulk_actions $bulk_actions_list \
     -bulk_action_export_vars { return_url } \
-    -actions [list \
-	"$assoc_incident_ticket" \
-	"/intranet-helpdesk/new?ticket_id=$ticket_id" \
-	"" \
-    ] \
+    -actions $actions \
     -elements {
 	ticket_chk {
 	    label "<input type=\"checkbox\" 
@@ -52,6 +51,9 @@ list::create \
 		@tickets_multirow.ticket_chk;noquote@
 	    }
 	}
+	direction_pretty {
+	    label "[lang::message::lookup {} intranet-helpdesk.Dir { }]"
+	}
 	project_nr {
 	    label "[lang::message::lookup {} intranet-helpdesk.Ticket_Nr {Nr}]"
 	    link_url_eval {[export_vars -base "/intranet-helpdesk/new" {ticket_id}]}
@@ -60,15 +62,24 @@ list::create \
 	    label "[lang::message::lookup {} intranet-helpdesk.Ticket_Name {Ticket Name}]"
 	    link_url_eval {[export_vars -base "/intranet-helpdesk/new" {ticket_id}]}
 	}
+	ticket_type {
+	    label "[lang::message::lookup {} intranet-helpdesk.Type {Type}]"
+	}
     }
 
 
 set tickets_sql "
 	select
 		t.*,
+		im_category_from_id(t.ticket_type_id) as ticket_type,
 		p.*,
-		r.rel_id
-	from	im_tickets t,
+		r.rel_id,
+		CASE	WHEN r.object_id_one = :ticket_id THEN 'incoming'
+			WHEN r.object_id_two = :ticket_id THEN 'outgoing'
+			ELSE ''
+		END as direction
+	from
+		im_tickets t,
 		im_projects p,
 		acs_rels r
 	where
@@ -80,14 +91,22 @@ set tickets_sql "
 			r.object_id_one = t.ticket_id and
 			r.object_id_two = :ticket_id
 		)
-		
+	order by
+		direction
 "
 
-db_multirow -extend { ticket_chk ticket_url } tickets_multirow tickets $tickets_sql {
+db_multirow -extend { ticket_chk ticket_url direction_pretty } tickets_multirow tickets $tickets_sql {
     set ticket_url ""
     set ticket_chk "<input type=\"checkbox\" 
 				name=\"rel_id\" 
 				value=\"$rel_id\" 
-				id=\"tickets_list,$rel_id\">"
+				id=\"tickets_list,$rel_id\">
+    "
+
+    switch $direction {
+	incoming { set direction_pretty " -> " }
+	outgoing { set direction_pretty " <- " }
+	default  { set direction_pretty "" }
+    }
 }
 
