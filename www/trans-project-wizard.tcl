@@ -52,6 +52,8 @@ set status_display(8) "<img src=$progress_url.8.gif>"
 set status_display(9) "<img src=$progress_url.9.gif>"
 set status_display(10) "<img src=$progress_url.10.gif>"
 
+set freelance_invoices_installed_p [util_memoize "db_string freelance_inv_exists \"select count(*) from apm_packages where package_key = 'intranet-freelance-invoices'\""]
+
 
 # ---------------------------------------------------------------------
 # Setup Multirow to store data
@@ -311,32 +313,35 @@ multirow append execution \
 # POs written
 # ---------------------------------------------------------------------
 
-set pos [db_string pos "
+if {$freelance_invoices_installed_p} {
+
+    set pos [db_string pos "
         select  count(*)
         from    im_costs
         where   project_id = :project_id
                 and cost_type_id = [im_cost_type_po]
-"]
+    "]
 
-if {$freelancers > 0} {
-    set pos_status [expr 10 * $pos / $freelancers]
-} else {
-    set pos_status 0
-}
-if {$pos_status > 10} { set pos_status 10 }
-
-set write_po_url "/intranet-freelance-invoices/index?target_cost_type_id=3706"
-
-incr multi_row_count
-multirow append execution \
-    $status_display($pos_status) \
-    "$pos [lang::message::lookup "" intranet-trans-project-wizard.POs "PO(s)"]" \
-    [export_vars -base $write_po_url {project_id return_url}] \
-    [lang::message::lookup "" intranet-trans-project-wizard.POs_name "Write Purchase Orders"] \
-    [lang::message::lookup "" intranet-trans-project-wizard.POs_descr "
+    if {$freelancers > 0} {
+	set pos_status [expr 10 * $pos / $freelancers]
+    } else {
+	set pos_status 0
+    }
+    if {$pos_status > 10} { set pos_status 10 }
+    
+    set write_po_url "/intranet-freelance-invoices/index?target_cost_type_id=3706"
+    
+    incr multi_row_count
+    multirow append execution \
+	$status_display($pos_status) \
+	"$pos [lang::message::lookup "" intranet-trans-project-wizard.POs "PO(s)"]" \
+	[export_vars -base $write_po_url {project_id return_url}] \
+	[lang::message::lookup "" intranet-trans-project-wizard.POs_name "Write Purchase Orders"] \
+	[lang::message::lookup "" intranet-trans-project-wizard.POs_descr "
 	Apply the translator's price list to project tasks to generate purchase orders."] \
-    $bgcolor([expr $multi_row_count % 2])
+	$bgcolor([expr $multi_row_count % 2])
 
+}
 
 
 # ---------------------------------------------------------------------
