@@ -99,9 +99,9 @@ template::list::create \
 
 set project_where ""
 if {0 == $object_id} { 
-    set project_where "\tand c.object_id is null\n" 
+    set project_where "\tand n.object_id is null\n" 
 } else {
-    set project_where "\tand c.object_id = :object_id\n" 
+    set project_where "\tand n.object_id = :object_id\n" 
 }
 
 db_multirow -extend {note_chk return_url} note_lines notes_lines "
