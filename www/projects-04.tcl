@@ -504,6 +504,7 @@ im_report_render_row \
     -cell_class "rowtitle"
 
 set counter 0
+set class ""
 db_foreach sql $report_sql {
 
 	# Select either "roweven" or "rowodd" from
