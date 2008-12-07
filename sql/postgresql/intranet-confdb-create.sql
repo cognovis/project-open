@@ -773,7 +773,7 @@ from
 where
 	ci.conf_item_parent_id is null and
 
-	('t' = acs_permission__permission_p([subsite::main_site_id], [ad_get_user_id], 'view_conf_items_all') OR
+	(''t'' = acs_permission__permission_p([subsite::main_site_id], [ad_get_user_id], ''view_conf_items_all'') OR
 	conf_item_id in (
 		-- User is explicit member of conf item
 		select  ci.conf_item_id
