@@ -37,7 +37,8 @@ set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set return_url [im_url_with_query]
 
 # Unprivileged users can only see their own tickets
-if {"all" == $mine_p && ![im_permission $current_user_id "view_tickets_all"]} {
+set view_tickets_all_p [im_permission $current_user_id "view_tickets_all"]
+if {"all" == $mine_p && !$view_tickets_all_p} {
     set mine_p "queue"
 }
 
@@ -146,6 +147,9 @@ set ticket_member_options [linsert $ticket_member_options 0 [list [_ intranet-co
 
 set ticket_queue_options [im_helpdesk_ticket_queue_options]
 set ticket_sla_options [im_helpdesk_ticket_sla_options -include_create_sla_p 1 -include_empty_p 1]
+if {1 <= [llength $ticket_sla_options] && !$view_tickets_all_p} {
+    ad_returnredirect request-sla
+}
 
 ad_form \
     -name $form_id \
@@ -472,7 +476,6 @@ ad_form \
     -method GET \
     -export { } \
     -form $ticket_elements
-
 
 template::element::set_value $form_id ticket_nr [im_ticket::next_ticket_nr]
 

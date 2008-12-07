@@ -528,6 +528,9 @@ SELECT im_category_hierarchy_new(30116, 30154);
 SELECT im_category_new(30118, 'Training Request', 'Intranet Ticket Type');
 SELECT im_category_hierarchy_new(30118, 30154);
 
+SELECT im_category_new(30120, 'SLA Request', 'Intranet Ticket Type');
+SELECT im_category_hierarchy_new(30120, 30150);
+
 
 
 
@@ -563,14 +566,21 @@ where category = 'Training Request' and category_type = 'Intranet Ticket Type';
 
 
 
+----------------------------------------------------------
+-- Define workflows per ticket type
+----------------------------------------------------------
 
-update im_categories
-set aux_string1 = 'ticket_generic_wf'
-where category_type = 'Intranet Ticket Type';
+-- by default use "ticket_generic_wf" for all ticket types
+update im_categories set aux_string1 = 'ticket_generic_wf'
+where	category_type = 'Intranet Ticket Type';
 
+-- special feature_request WF: includes quoting
 update im_categories set aux_string1 = 'feature_request_wf'
-where	lower(category) = 'feature request' and
-	category_type = 'Intranet Ticket Type';
+where	category_id = 30116;
+
+-- SLA requests are meta-tickets for users without SLAs
+update im_categories set aux_string1 = 'sla_request_wf'
+where	category_id = 30120;
 
 
 

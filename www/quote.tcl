@@ -153,7 +153,7 @@ ad_form -extend -name ticket -on_request {
     set topic_id [db_nextval im_forum_topics_seq]
 
     db_transaction {
-	set ticket_nr [db_nextval im_ticket_seq]
+	set ticket_nr [im_ticket::next_ticket_nr]
 	set start_date [db_string now "select now()::date from dual"]
 	set end_date [db_string now "select (now()::date)+1 from dual"]
 	set start_date_sql [template::util::date get_property sql_date $start_date]
@@ -205,7 +205,7 @@ ad_form -extend -name ticket -on_request {
 } -edit_data {
 
     set ticket_nr [string tolower $ticket_nr]
-    if {"" == $ticket_nr} { set ticket_nr [db_nextval im_ticket_seq] }
+    if {"" == $ticket_nr} { set ticket_nr [im_ticket::next_ticket_nr] }
     set start_date_sql [template::util::date get_property sql_date $start_date]
     set end_date_sql [template::util::date get_property sql_timestamp $end_date]
 

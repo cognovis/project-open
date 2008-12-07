@@ -440,75 +440,36 @@ ad_form -extend -name ticket -on_request {
 
 } -new_data {
 
-    # Create a new forum topic of type "Note"
-    set topic_id [db_nextval im_forum_topics_seq]
+    set message ""
+    if {[info exists ticket_note]} { append message $ticket_note }
+    if {[info exists ticket_description]} { append message $ticket_description }
 
-    db_transaction {
-	set ticket_nr [db_nextval im_ticket_seq]
-	set start_date [db_string now "select now()::date from dual"]
-	set end_date [db_string now "select (now()::date)+1 from dual"]
-	set start_date_sql [template::util::date get_property sql_date $start_date]
-	set end_date_sql [template::util::date get_property sql_timestamp $end_date]
-	
-	set ticket_id [db_string ticket_insert {}]
-	db_dml ticket_update {}
-	db_dml project_update {}
+    set ticket_id [im_ticket::new \
+	-ticket_sla_id $ticket_sla_id \
+        -ticket_name $ticket_name \
+        -ticket_nr $ticket_nr \
+	-ticket_customer_contact_id $ticket_customer_contact_id \
+        -ticket_type_id $ticket_type_id \
+        -ticket_status_id $ticket_status_id \
+        -ticket_start_date $start_date \
+        -ticket_end_date $end_date \
+        -ticket_note $message \
+    ]
 
-	if {[util_memoize "db_column_exists acs_objects title"]} {
-	    db_dml object_update "update acs_objects set title = null where object_id = :ticket_id"
-	}
-
-	im_dynfield::attribute_store \
-	    -object_type "im_ticket" \
-	    -object_id $ticket_id \
-	    -form_id ticket
-
-	# Add the current user to the project
-        im_biz_object_add_role $current_user_id $ticket_id [im_biz_object_role_project_manager]
-	
-	# Start a new workflow case
-	im_workflow_start_wf -object_id $ticket_id -object_type_id $ticket_type_id -skip_first_transition_p 1
-	
-	# Write Audit Trail
-	im_project_audit $ticket_id
-
-	# Create a new forum topic of type "Note"
-	set topic_type_id [im_topic_type_id_task]
-	set topic_status_id [im_topic_status_id_open]
-	set message ""
-
-	if {[info exists ticket_note]} { append message $ticket_note }
-	if {[info exists ticket_description]} { append message $ticket_description }
-	if {"" == $message} { set message [lang::message::lookup "" intranet-helpdesk.Empty_Forum_Message "No message specified"]}
-
-	db_dml topic_insert {
-                insert into im_forum_topics (
-                        topic_id, object_id, parent_id,
-                        topic_type_id, topic_status_id, owner_id,
-                        subject, message
-                ) values (
-                        :topic_id, :ticket_id, null,
-                        :topic_type_id, :topic_status_id, :current_user_id,
-                        :ticket_name, :message
-                )
-	}
-	
-	# Error handling. Doesn't work yet for some unknown reason
-    } on_error {
-	ad_return_complaint 1 "<b>Error inserting new ticket</b>:<br>&nbsp;<br>
-	<pre>$errmsg</pre>"
-    }
+    im_dynfield::attribute_store \
+	-object_type "im_ticket" \
+	-object_id $ticket_id \
+	-form_id ticket
 
     # Send to page to show the new ticket, instead of returning to return_url
     ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {ticket_id}]
     ad_script_abort
 
 
-
 } -edit_data {
 
-    set ticket_nr [string tolower $ticket_nr]
-    if {"" == $ticket_nr} { set ticket_nr [db_nextval im_ticket_seq] }
+    set ticket_nr [string trim [string tolower $ticket_nr]]
+    if {"" == $ticket_nr} { set ticket_nr [im_ticket::next_ticket_nr] }
     set start_date_sql [template::util::date get_property sql_date $start_date]
     set end_date_sql [template::util::date get_property sql_timestamp $end_date]
 

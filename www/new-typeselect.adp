@@ -14,7 +14,7 @@
 
 <if "" eq @ticket_sla_id@>
 	<tr class=roweven>
-	    <td><%= [lang::message::lookup "" intranet-helpdesk.SLA_long "Customer<br>Service<br>Level<br>Agreement"] %></td>
+	    <td><%= [lang::message::lookup "" intranet-helpdesk.SLA_long "Service<br>Level<br>Agreement"] %></td>
 	    <td>
 		<%= [im_select ticket_sla_id $ticket_sla_options $ticket_sla_id] %>
 	    </td>
