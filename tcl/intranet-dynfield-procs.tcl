@@ -2438,10 +2438,10 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	ns_log Notice "im_dynfield::append_attributes_to_form: Adding name='$attribute_name', widget='$widget', page_url='$page_url'"
 
 	# Check if the elements as disabled in the layout page
-	if {$page_url_exists_p && "" == $page_url} { 
-	    ns_log Notice "im_dynfield::append_attributes_to_form: name='$attribute_name': disabled in page layout"
-	    continue 
-	}
+#	if {$page_url_exists_p && "" == $page_url} { 
+#	    ns_log Notice "im_dynfield::append_attributes_to_form: name='$attribute_name': disabled in page layout"
+#	    continue 
+#	}
 
 	# Check if the current user has the right to read and write on the dynfield
 	set read_p [im_object_permission \

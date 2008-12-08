@@ -110,6 +110,7 @@ create table im_dynfield_type_attribute_map (
 	unique (attribute_id, object_type_id)
 );
 
+# alter table im_dynfield_type_attribute_map add FOREIGN KEY (attribute_id) references acs_objects;
 
 
 -- ------------------------------------------------------------------
