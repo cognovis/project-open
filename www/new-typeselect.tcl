@@ -44,14 +44,31 @@ if {0 == [llength $ticket_sla_options]} {
 # ad_return_complaint 1 "sla=$ticket_sla_id, type=$ticket_type_id"
 
 set sql "
-	select	c.*
+	select	c.category_id,
+		c.category,
+		c.category_description,
+		(select parent_id from im_category_hierarchy where child_id = c.category_id) as parent_id
 	from	im_categories c
-	where	c.category_type = 'Intranet Ticket Type'
-		and (c.enabled_p is null or c.enabled_p = 't')
+	where	c.category_type = 'Intranet Ticket Type' and
+		(c.enabled_p is null or c.enabled_p = 't') and
+		exists (
+			select	*
+			from	im_category_hierarchy
+			where	child_id = c.category_id
+		)
 	order by
+		parent_id,
 		category
 "
+
+set category_select_html ""
+set old_parent_id ""
 db_foreach cats $sql {
+
+    if {$old_parent_id != $parent_id} {
+	append category_select_html "<tr><td colspan=2><b>[im_category_from_id $parent_id]</b><br></td></tr>\n"
+	set old_parent_id $parent_id
+    }
 
     regsub -all " " $category "_" category_key
     set category_l10n [lang::message::lookup "" intranet-core.category_key $category]
@@ -63,6 +80,7 @@ db_foreach cats $sql {
 
     append category_select_html "
 	<tr>
+		<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 		<td>
 		<nobr>
 		<input type=radio name=ticket_type_id value=$category_id>$category_l10n</input>

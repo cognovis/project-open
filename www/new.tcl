@@ -404,7 +404,6 @@ if {[info exists ticket_type_id]} { set dynfield_ticket_type_id $ticket_type_id}
 set dynfield_ticket_id ""
 if {[info exists ticket_id]} { set dynfield_ticket_id $ticket_id }
 
-
 set field_cnt [im_dynfield::append_attributes_to_form \
                        -form_display_mode $form_mode \
                        -object_subtype_id $dynfield_ticket_type_id \

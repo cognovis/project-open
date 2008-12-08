@@ -487,6 +487,7 @@ SELECT im_category_new (2502, 'Service Level Agreement', 'Intranet Project Type'
 -- 30300-30399	Intranet Ticket Technical Priority (100)
 -- 30400-30499	Intranet Service Catalog (100)
 -- 30500-30599	Intranet Ticket Action (100)
+-- 30600-30699	Intranet Ticket Telephony Request Type
 -- 31000-31999	Intranet Ticket Class (1000)
 -- 32000-32999	reserved (1000)
 -- 33000-33999	reserved (1000)
@@ -1355,6 +1356,20 @@ SELECT im_dynfield_widget__new (
 
 SELECT im_dynfield_widget__new (
 	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'telephony_request_type', 'Telephony Request Type', 'Telephony Request Type',
+	10007, 'integer', 'im_category_tree', 'integer',
+	'{custom {category_type "Intranet Ticket Telephony Request Type"}}'
+);
+
+-- 30600-30699
+SELECT im_category_new (30600, 'New Telephony Line', 'Intranet Ticket Telephony Request Type');
+SELECT im_category_new (30605, 'Additional Line', 'Intranet Ticket Telephony Request Type');
+SELECT im_category_new (30610, 'Restriction Settings', 'Intranet Ticket Telephony Request Type');
+SELECT im_category_new (30690, 'Other', 'Intranet Ticket Telephony Request Type');
+
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
 	'customer_contact', 'Customer Contact', 'Customer Contacts',
 	10007, 'integer', 'generic_sql', 'integer',
 	'{custom {sql {select u.user_id, im_name_from_user_id(u.user_id) from registered_users u, group_distinct_member_map gm where u.user_id = gm.member_id and gm.group_id = 461 order by lower(im_name_from_user_id(u.user_id)) }}}'
@@ -1444,7 +1459,7 @@ where	object_type = 'im_ticket' and
 -----------------------------------------------------------
 -- Desired Date
 
-alter table im_tickets add ticket_customer_deadline timestamptz;
+alter table im_tickets add ticket_customer_deadline date;
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_customer_deadline', 'Desired Customer End Date', 'date', 'date', 'f');
 
 -----------------------------------------------------------
@@ -1456,6 +1471,70 @@ SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_quoted_days', 'Quoted Day
 
 alter table im_tickets add ticket_quote_comment text;
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_quote_comment', 'Quote Comment', 'textarea_small_nospell', 'string', 'f');
+
+
+-----------------------------------------------------------
+-- Telephony Request special fields
+-----------------------------------------------------------
+
+-- Type of telephony request
+alter table im_tickets add ticket_telephony_request_type_id integer;
+# im_dynfield_attribute_new(object_type, column_name, pretty_name, widget_name, datatype, required_p, pos_y, also_hard_coded_p);
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_telephony_request_type_id', 'Telephony Request Type', 'telephony_request_type', 'integer', 'f');
+
+insert into im_dynfield_type_attribute_map (
+	attribute_id, object_type_id, display_mode
+) values (
+	(
+		select attribute_id 
+		from im_dynfield_attributes 
+		where acs_attribute_id = (
+			select attribute_id 
+			from acs_attributes 
+			where attribute_name = 'ticket_telephony_request_type_id'
+		)
+	),
+	30106,
+	'edit'
+);
+
+-- Old and new telephone number
+alter table im_tickets add ticket_telephony_old_number text;
+alter table im_tickets add ticket_telephony_new_number text;
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_telephony_old_number', 'Old Number/ Location', 'textbox_medium', 'string', 'f');
+SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_telephony_new_number', 'New Number/ Location', 'textbox_medium', 'string', 'f');
+
+insert into im_dynfield_type_attribute_map (
+	attribute_id, object_type_id, display_mode
+) values (
+	(
+		select attribute_id 
+		from im_dynfield_attributes 
+		where acs_attribute_id = (
+			select attribute_id 
+			from acs_attributes 
+			where attribute_name = 'ticket_telephony_old_number'
+		)
+	),
+	30106,
+	'edit'
+);
+
+insert into im_dynfield_type_attribute_map (
+	attribute_id, object_type_id, display_mode
+) values (
+	(
+		select attribute_id 
+		from im_dynfield_attributes 
+		where acs_attribute_id = (
+			select attribute_id 
+			from acs_attributes 
+			where attribute_name = 'ticket_telephony_new_number'
+		)
+	),
+	30106,
+	'edit'
+);
 
 
 
