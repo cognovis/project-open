@@ -147,7 +147,7 @@ create table survsimp_surveys (
 				constraint survsimp_surveys_name_nn
 				not null,
 	-- short, non-editable name we can identify this survey by
-	short_name		varchar(20)
+	short_name		varchar(100)
 				constraint survsimp_surveys_short_name_u
 				unique
 				constraint survsimp_surveys_short_name_nn
