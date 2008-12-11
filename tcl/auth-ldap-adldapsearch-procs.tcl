@@ -383,7 +383,7 @@ ad_proc -public auth::ldap::authentication::Sync {
 
     set return_code [catch {
         ns_log Notice "auth::ldap::authentication::Authenticate: ldapsearch -n -x -H $uri -D $bind_dn -w xxxxxxxxx"
-	exec ldapsearch -x -H $uri -b dc=genedata,dc=win (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))
+	exec ldapsearch -x -H $uri -b $base_dn (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))
     } msg]
 
     # Extract the first line - it contains the error message if there is an issue.
