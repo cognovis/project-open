@@ -352,3 +352,12 @@ begin
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
+
+
+-------------------------------------------------------------
+-- Skip executing upgrade scripts...
+--
+
+SELECT acs_log__debug('/packages/intranet-simple-survey/sql/postgresql/upgrade/upgrade-3.3.1.1.0-3.3.1.2.0.sql','');
+

@@ -8,10 +8,10 @@
 <ul>
 <li><a href="/intranet/admin/permissions/one?object_id=@survsimp_package_id@">Modify global survey permissions</a>
 </ul>
-<br>
 
 <h3>Detailed Survey Permissions</h3>
-<listtemplate name="@list_id@"></listtemplate>
+
+@table;noquote@
 
 
 

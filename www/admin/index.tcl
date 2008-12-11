@@ -28,131 +28,164 @@ if {!$user_is_admin_p} {
 
 if {"" == $return_url} { set return_url [ad_conn url] }
 
-set page_title [lang::message::lookup "" intranet-simple-survey.Survey_Schedules "Survey Schedules"]
+set page_title "Simple Survey Permissions"
 set context_bar [im_context_bar [list /intranet-simple-survey/ "Simple Surveys"] $page_title]
 
 set survsimp_url "/intranet-simple-survey/admin/new"
+set survsimp_admin_url "/simple-survey/admin/one"
 set toggle_url "/intranet/admin/toggle"
 set group_url "/admin/groups/one"
 
 set bgcolor(0) " class=rowodd"
 set bgcolor(1) " class=roweven"
 
-set survsimp_package_id [im_package_survsimp_id]
+
+set survsimp_package_id [db_string sursimp_package "
+	select	package_id
+	from	apm_packages
+	where	package_key = 'simple-survey'
+"]
+
 
 # ------------------------------------------------------
-#
+# Get the list of all dynfields
+# and generate the dynamic part of the SQL
 # ------------------------------------------------------
 
-set bulk_actions_list "[list]"
-#[im_permission $user_id "delete_expense"]
-set delete_expense_p 1 
-if {$delete_expense_p} {
-    lappend bulk_actions_list "[_ intranet-simple-survey.Delete]" "confs-del" "[_ intranet-simple-survey.Remove_checked_items]"
-}
-#[im_permission $user_id "add_expense_bundle"]
-set create_invoice_p 1
-if {$create_invoice_p} {
-}
+set table_header "
+<tr>
+  <td class=rowtitle>Survey</td>
+\n"
 
-lappend action_list "[lang::message::lookup {} intranet-simple-survey.Create_New_Schedule {Create New Schedule}]" "new" "[lang::message::lookup {} intranet-simple-survey.New_Schedule_Help {New Schedule Help}]"
-
-
-# ---------------------------------------------------------------
-# 
-# ---------------------------------------------------------------
-
-set export_var_list [list]
-set list_id "confs_list"
-
-set elements {
-	conf_chk {
-	    label "<input type=\"checkbox\" 
-                          name=\"_dummy\" 
-                          onclick=\"acs_ListCheckAll('confs_list', this.checked)\" 
-                          title=\"Check/uncheck all rows\">"
-	    display_template {
-		@conf_lines.conf_chk;noquote@
-	    }
-	}
-	object_type {
-	    label "[lang::message::lookup {} intranet-simple-survey.Object_Type {Object Type}]"
-	}
-	survey_name {
-	    label "[lang::message::lookup {} intranet-simple-survey.Survey_Name {Survey Name}]"
-	    link_url_eval {[export_vars -base "/simple-survey/one" {survey_id}]}
-	}
-        conf_user_name {
-	    label "[_ intranet-simple-survey.Conf_User]"
-	    link_url_eval "/intranet/users/view?user_id=$conf_user_id"
-	}
-}
-
-# ---------------------------------------------------------------
-# Extend the "elements" list by profiles
-# ---------------------------------------------------------------
 
 set group_list_sql {
-	select DISTINCT
-		g.group_name,
-		g.group_id,
-		p.profile_gif
-	from
-		acs_objects o,
-		groups g,
-		im_profiles p
-	where
-		g.group_id = o.object_id
-		and g.group_id = p.profile_id
-		and o.object_type = 'im_profile'
+select DISTINCT
+	g.group_name,
+	g.group_id,
+	p.profile_gif
+from
+	acs_objects o,
+	groups g,
+	im_profiles p
+where
+	g.group_id = o.object_id
+	and g.group_id = p.profile_id
+	and o.object_type = 'im_profile'
 }
+
+set main_sql_select ""
+set num_groups 0
+
+set group_ids [list]
+set group_names [list]
 
 db_foreach group_list $group_list_sql {
 
-    # Select out an additional permission
+    lappend group_ids $group_id
+    lappend group_names $group_name
+
     append main_sql_select "\tim_object_permission_p(ss.survey_id, $group_id, 'read') as p${group_id}_read_p,\n"
 
-    # Add the colum to the list
-    regsub { } $group_name "_" group_name_key
-    set group_name_l10n [lang::message::lookup {} intranet-simple-survey.$group_name_key $group_name]
-    lappend elements p${group_id}_read_p
-    lappend elements [list \
-		      label [im_gif $profile_gif $group_name_l10n] \
-		      link_url_eval {[export_vars -base "/simple-survey/one" {survey_id}]} \
-    ]
-    
+    append table_header "
+      <td class=rowtitle><A href=$group_url?group_id=$group_id>
+      [im_gif $profile_gif $group_name]
+    </A></td>\n"
+    incr num_groups
 }
+append table_header "
+  <td class=rowtitle>[im_gif del "Delete Simple Survey"]</td>
+</tr>
+"
 
 
-template::list::create \
-    -name $list_id \
-    -multirow conf_lines \
-    -key conf_id \
-    -has_checkboxes \
-    -actions $action_list \
-    -bulk_actions $bulk_actions_list \
-    -bulk_action_export_vars  {
-	object_id
-    } \
-    -row_pretty_plural "[_ intranet-simple-survey.Confs_Items]" \
-    -elements $elements
+# ------------------------------------------------------
+# Main SQL: Extract permissions
+# ------------------------------------------------------
 
+set table "
+<form action=dynfield-action method=post>
+[export_form_vars return_url]
+<table>
+$table_header\n"
 
-db_multirow -extend {conf_chk return_url period} conf_lines confs_lines "
+set ttt {
+set survsimp_sql "
 	select
 		${main_sql_select}
-		s.*,
+		som.*,
+		som.name as som_name,
+		som.note as som_note,
 		ss.*,
+		aot.*,
 		aot.pretty_name as object_type_pretty_name
 	from
-		im_survsimp_schedules s,
+		im_survsimp_object_map som,
 		survsimp_surveys ss,
 		acs_object_types aot
 	where
-		s.schedule_survey_id = ss.survey_id
-		and s.schedule_context_object_type = aot.object_type
-" {
-    set return_url [im_url_with_query]
-    set conf_chk "<input type=\"checkbox\" name=\"conf_id\" value=\"$conf_id\" id=\"confs_list,$conf_id\">"
-    set period "$start_date - $end_date"
+		som.survey_id = ss.survey_id
+		and som.acs_object_type = aot.object_type
+"
 }
+
+
+set survsimp_sql "
+	select
+		${main_sql_select}
+		ss.*,
+		ss.name as survey_name
+	from
+		survsimp_surveys ss
+	where
+		1=1
+	order by
+		ss.name
+"
+
+
+set ctr 0
+set old_package_name ""
+db_foreach survsimp_query $survsimp_sql {
+    incr ctr
+    append table "\n<tr$bgcolor([expr $ctr % 2])>\n"
+    append table "
+  <td>
+    <A href=[export_vars -base $survsimp_admin_url {survey_id return_url}]>
+      $survey_name
+    </A>
+  </td>
+"
+
+    foreach horiz_group_id $group_ids {
+
+	set object_id $survey_id
+
+	set read_p [expr "\$p${horiz_group_id}_read_p"]
+	set action "add_readable"
+	set letter "r"
+	if {$read_p == "t"} {
+	    set read "<A href=$toggle_url?object_id=$survey_id&action=remove_readable&[export_url_vars horiz_group_id return_url]><b>R</b></A>\n"
+	    set action "remove_readable"
+	    set letter "<b>R</b>"
+	}
+	set read "<A href=$toggle_url?[export_url_vars horiz_group_id object_id action return_url]>$letter</A>\n"
+
+	append table "
+  <td align=center>
+    $read
+  </td>
+"
+    }
+
+    append table "
+  <td>
+    <input type=checkbox name=survey_id.$survey_id>
+  </td>
+</tr>
+"
+}
+
+append table "
+</table>
+</form>
+"
