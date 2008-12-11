@@ -10,9 +10,12 @@ ad_page_contract {
     @cvs-id $Id$
 
 } {
-    
     survey_id:integer,notnull
+    { related_object_id:integer "" }
+    { related_context_id:integer "" }
     return_url:optional
+    { message "" }
+    { project_id 0 }
 
 } -validate {
     survey_exists -requires {survey_id} {
@@ -23,7 +26,6 @@ ad_page_contract {
 	}
     }
 } -properties {
-
     name:onerow
     survey_id:onerow
     button_label:onerow
@@ -99,7 +101,13 @@ if ![info exists return_url] {
     set return_url {}
 }
 
-db_release_unused_handles
+set project_menu ""
 
-ad_return_template
+if {0 != $project_id} {
+    set menu_label "project_summary"
+    set bind_vars [ns_set create]
+    ns_set put $bind_vars project_id $project_id
+    set parent_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
+    set project_menu [im_sub_navbar $parent_menu_id $bind_vars "" "pagedesriptionbar" $menu_label]
+}
 

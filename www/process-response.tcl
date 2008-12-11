@@ -16,6 +16,8 @@ ad_page_contract {
 } {
 
   survey_id:integer,notnull
+  { related_object_id:integer "" }
+  { related_context_id:integer "" }
   return_url:optional
   response_to_question:array,optional,multiple,html
 
@@ -127,6 +129,7 @@ ad_require_permission $survey_id survsimp_take_survey
 
 set user_id [ad_verify_and_get_user_id]
 
+
 # Do the inserts.
 
 set response_id [db_nextval acs_object_id_seq]
@@ -144,12 +147,19 @@ db_transaction {
 	    );
 	end;
     }
+   
+    db_dml update_oid "
+	update survsimp_responses set
+		related_object_id = :related_object_id,
+		related_context_id = :related_context_id
+	where response_id = :response_id
+    "
 
     set question_info_list [db_list_of_lists survsimp_question_info_list {
-        select question_id, question_text, abstract_data_type, presentation_type, required_p
-	from survsimp_questions
-	where survey_id = :survey_id
-	and active_p = 't'
+        select	question_id, question_text, abstract_data_type, presentation_type, required_p
+	from	survsimp_questions
+	where	survey_id = :survey_id
+		and active_p = 't'
 	order by sort_key }]
 
 

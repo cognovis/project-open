@@ -15,7 +15,7 @@ ad_page_contract {
 } {
     survey_id:integer
     desc_html:notnull
-    description:html
+    description:allhtml
     {checked_p "f"}
 }
 

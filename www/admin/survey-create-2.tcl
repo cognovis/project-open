@@ -18,7 +18,7 @@ ad_page_contract {
 
   survey_id:integer,optional
   name
-  description:html
+  description:allhtml
   desc_html
   {checked_p "f"}
   type:notnull
@@ -35,7 +35,7 @@ ad_require_permission $package_id survsimp_create_survey
 
 set user_id [ad_get_user_id]
 
-set short_name [string range $name 0 19]
+set short_name [string range $name 0 99]
 
 set exception_count 0
 set exception_text ""
