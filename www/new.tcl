@@ -460,10 +460,16 @@ ad_form -extend -name ticket -on_request {
 	-object_id $ticket_id \
 	-form_id ticket
 
+    notification::new \
+        -type_id [notification::type::get_type_id -short_name ticket_notif] \
+        -object_id $ticket_id \
+        -response_id "" \
+        -notif_subject "New: Subject" \
+        -notif_text "Text"
+
     # Send to page to show the new ticket, instead of returning to return_url
     ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {ticket_id}]
     ad_script_abort
-
 
 } -edit_data {
 
@@ -482,6 +488,13 @@ ad_form -extend -name ticket -on_request {
 
     # Write Audit Trail
     im_project_audit $ticket_id
+
+    notification::new \
+        -type_id [notification::type::get_type_id -short_name ticket_notif] \
+        -object_id $ticket_id \
+        -response_id "" \
+        -notif_subject "Edit: Subject" \
+        -notif_text "Text"
 
 } -on_submit {
 
@@ -518,4 +531,53 @@ set sub_navbar [im_sub_navbar \
     -plugin_url "/intranet-helpdesk/new" \
     $ticket_menu_id \
     $bind_vars "" "pagedesriptionbar" "helpdesk_summary"] 
+
+
+# ---------------------------------------------------------------
+# Notifications
+# ---------------------------------------------------------------
+
+set notification_html ""
+
+if {$show_components_p} {
+
+    set notification_object_id $ticket_id
+    set notification_delivery_method_id [notification::get_delivery_method_id -name "email"]
+    set notification_interval_id [notification::get_interval_id -name "instant"]
+    set notification_type_short_name "ticket_notif"
+    set notification_type_pretty_name "Ticket Notification"
+    set notification_title [string totitle $notification_type_pretty_name]
+    set notification_type_id [notification::type::get_type_id -short_name $notification_type_short_name]
+    set notification_current_url [im_url_with_query]
+    
+    # Check if subscribed
+    set notification_request_id [notification::request::get_request_id \
+				     -type_id $notification_type_id \
+				     -object_id $notification_object_id \
+				     -user_id $user_id]
+    
+    set notification_subscribed_p [expr ![empty_string_p $notification_request_id]]
+    
+    if { $notification_subscribed_p } {
+	set notification_url [notification::display::unsubscribe_url -request_id $notification_request_id -url $notification_current_url]
+    } else {
+	set notification_url [export_vars -base "/notifications/request-new?" {
+	    {object_id $notification_object_id} 
+	    {type_id $notification_type_id}
+	    {delivery_method_id $notification_delivery_method_id}
+	    {interval_id $notification_interval_id}
+	    {"form\:id" "subscribe"}
+	    {formbutton\:ok "OK"}
+	    {return_url $notification_current_url}
+	}]
+    }
+    
+    set notification_message [ad_decode $notification_subscribed_p 1 "Unsubscribe from $notification_type_pretty_name" "Subscribe to $notification_type_pretty_name"] \
+	
+    set notification_html "
+	<ul>
+	<li><a href=\"$notification_url\">$notification_message</a>
+	</ul>
+    "
+}
 

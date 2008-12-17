@@ -31,6 +31,7 @@
 			<%= [im_box_header [lang::message::lookup "" intranet-helpdesk.Ticket_Details "Ticket Details"]] %>
 			<formtemplate id="ticket"></formtemplate>
 			@ticket_action_html;noquote@
+			@notification_html;noquote@
 			<%= [im_box_footer] %>
 			<%= [im_component_bay left] %>
 		    </td>
