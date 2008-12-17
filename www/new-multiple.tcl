@@ -146,7 +146,7 @@ if {"" == $project_id} {
 			acs_objects o
 		where	c.cost_id = e.expense_id and
 			c.cost_id = o.object_id and
-			ocreation_date > now()::date -15
+			o.creation_date > now()::date -15
 		group by project_id
 		order by cnt DESC
 	) c

@@ -78,9 +78,9 @@ for {set i 0} {$i < 20} {incr i} {
     set item_expense_payment_type_id [im_expense_payment_type_cash]
     set item_note ""
 
+
     if {[info exists project_id($i)] && "" != $project_id($i)} { 
 	set item_project_id $project_id($i)
-	set set_p 1
     }
 
     if {[info exists expense_amount($i)] && "" != $expense_amount($i)} {
@@ -201,7 +201,6 @@ db_transaction {
 	
 	if {[info exists project_id($i)] && "" != $project_id($i)} { 
 	    set item_project_id $project_id($i)
-	    set set_p 1
 	}
 	
 	if {[info exists expense_amount($i)] && "" != $expense_amount($i)} {
@@ -256,7 +255,7 @@ db_transaction {
 	    # Calculate VAT automatically?
 	    if {$auto_vat_p} { 
 		set item_vat [$auto_vat_function -expense_id $expense_id] 
-	    } 
+	    }
 	    
 	    set item_amount [expr $item_expense_amount / [expr 1 + [expr $item_vat / 100.0]]]
 	    set item_expense_name [expr [db_string expname "select t_acs_object_id_seq.last_value"] +1]
