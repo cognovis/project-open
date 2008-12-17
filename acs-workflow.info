@@ -25,6 +25,7 @@
         <provides url="acs-workflow" version="4.5.3"/>
         <requires url="acs-kernel" version="4.6.2"/>
         <requires url="notifications" version="4.0"/>
+	<requires url="acs-mail" version="4.1"/>
 
         <parameters>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="guard_font_size"  default="10" description="The size of the font to use for guards when displaying a process graph." section_name="fonts"/>

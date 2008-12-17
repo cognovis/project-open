@@ -12,6 +12,7 @@ ad_page_contract {
     {msg:html {}}
     {vertical:integer 0}
     {return_url ""}
+    {force_return_url 0}
 } -properties {
     case_id
     context
@@ -26,11 +27,11 @@ ad_page_contract {
 # ---------------------------------------------------------
 # Defaults & Security
 
-# ToDo: NOTE! We need to add some double-click protection here.
-
 # We don't force the user to authentify, is that right?
 set user_id [ad_get_user_id]
 set current_url [im_url_with_query]
+
+# ToDo: NOTE! We need to add some double-click protection here.
 
 set the_action [array names action]
 if { [llength $the_action] > 1 } {
@@ -40,8 +41,9 @@ if { [llength $the_action] > 1 } {
     
     set journal_id [wf_task_action -user_id $user_id -msg $msg -attributes [array get attributes] -assignments [array get assignments] $task_id $the_action]
 
-    # After a "finish" actioin we can go back to return_url directly.
+    # After a "finish" action we can go back to return_url directly.
     if {"finish" == $the_action} { ad_returnredirect $return_url }
+
     # Otherwise go back to the tasks's page
     ad_returnredirect "task?[export_url_vars task_id return_url]"
 
