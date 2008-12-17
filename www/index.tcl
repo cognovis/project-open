@@ -117,6 +117,7 @@ append table_header_html "</tr>\n"
 # Set up colspan to be the number of headers + 1 for the # column
 set colspan [expr [llength $column_headers] + 1]
 
+
 # ---------------------------------------------------------------
 # Filter with Dynamic Fields
 # ---------------------------------------------------------------
@@ -147,8 +148,28 @@ set ticket_member_options [linsert $ticket_member_options 0 [list [_ intranet-co
 
 set ticket_queue_options [im_helpdesk_ticket_queue_options]
 set ticket_sla_options [im_helpdesk_ticket_sla_options -include_create_sla_p 1 -include_empty_p 1]
-if {1 <= [llength $ticket_sla_options] && !$view_tickets_all_p} {
-    ad_returnredirect request-sla
+set sla_exists_p 1
+if {1 <= [llength $ticket_sla_options] && !$view_tickets_all_p} { set sla_exists_p 0}
+
+# No SLA defined for this user?
+# Allow the user to request a new SLA
+if {!$sla_exists_p} {
+
+    # Check if there is already an SLA request
+    set sla_requested_p [db_string sla_requested_p "
+	select	count(*)
+	from	im_tickets t,
+		acs_objects o
+	where	t.ticket_id = o.object_id and
+		t.ticket_type_id = [im_ticket_type_sla_request] and
+		o.creation_user = :current_user_id and
+		t.ticket_status_id in (select * from im_sub_categories([im_ticket_status_open]))
+    "]
+
+    # Allow the user to request a new SLA if there isn't any yet.
+    if {!$sla_requested_p} {
+	ad_returnredirect request-sla
+    }
 }
 
 ad_form \
@@ -176,7 +197,6 @@ if {[im_permission $current_user_id "view_tickets_all"]} {
 
 template::element::set_value $form_id mine_p $mine_p
 
-
 im_dynfield::append_attributes_to_form \
     -object_type $object_type \
     -form_id $form_id \
@@ -185,14 +205,18 @@ im_dynfield::append_attributes_to_form \
     -search_p 1
 
 # Set the form values from the HTTP form variable frame
+set org_mine_p $mine_p
 im_dynfield::set_form_values_from_http -form_id $form_id
 im_dynfield::set_local_form_vars_from_http -form_id $form_id
+set mine_p $org_mine_p
+
 array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 			       -form_id $form_id \
 			       -object_type $object_type
 ]
 
 #ToDo: Export the extra DynField variables into form's "export" variable list
+
 
 # ---------------------------------------------------------------
 # Generate SQL Query
@@ -369,9 +393,9 @@ set sql "
 			sla.project_name as sla_name
 			$extra_select
 		FROM
-			im_projects p,
+			im_projects p
+			LEFT OUTER JOIN im_projects sla ON (p.parent_id = sla.project_id),
 			im_tickets t
-			LEFT OUTER JOIN im_projects sla ON (t.ticket_sla_id = sla.project_id)
 			LEFT OUTER JOIN im_conf_items ci ON (t.ticket_conf_item_id = ci.conf_item_id),
 			im_companies c
 			$extra_from

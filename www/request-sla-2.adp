@@ -7,16 +7,14 @@
 <h1>@page_title@</h1>
 
 <p>
-You have successfully requested to be included in a 
-Service Level Agreement (SLA).
+<%= [lang::message::lookup "" intranet-helpdesk.Successfully_requested "You have successfully requested a new Service Level Agreement (SLA)."] %>
 </p>
 <p>&nbsp;</p>
 <p>
-Please check your Inbox for a confirmation email.
+<%= [lang::message::lookup "" intranet-helpdesk.Check_Inbox_for_email "Please check your Inbox for a confirmation email."] %>
 </p>
 <p>
-You will receive another email once the support team has
-processed your request.
+<%= [lang::message::lookup "" intranet-helpdesk.Confirm_mail "You will receive another email once the support team has processed your request."] %>
 </p>
 
 

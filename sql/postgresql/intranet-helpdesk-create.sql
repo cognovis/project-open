@@ -78,10 +78,6 @@ create table im_tickets (
 	ticket_assignee_id		integer
 					constraint im_ticket_assignee_fk
 					references persons,
-	ticket_sla_id			integer
-					constraint im_ticket_sla_fk
-					references im_projects,
-
 	ticket_service_id		integer
 					constraint im_ticket_service_fk
 					references im_categories,
@@ -1235,8 +1231,8 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (270220,270,22,'Conf Item','"<A href=/intranet-confdb/new?conf_item_id=$conf_item_id>$conf_item_name</a>"');
 
-insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27025,270,25,'Queue','"<href=/intranet-helpdesk/queue/?queue_id=$ticket_queue_id>$ticket_queue_name</A>"');
+-- insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+-- (27025,270,25,'Queue','"<href=/intranet-helpdesk/queue/?queue_id=$ticket_queue_id>$ticket_queue_name</A>"');
 
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (27030,270,30,'Type','$ticket_type');
@@ -1248,11 +1244,14 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (27060,270,60,'Contact','"<A href=/intranet/users/view?user_id=$ticket_customer_contact_id>$ticket_customer_contact</a>"');
 
-insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27070,270,70,'Assignee','"<A href=/intranet/users/view?user_id=$ticket_assignee_id>$ticket_assignee</a>"');
+-- insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+-- (27070,270,70,'Assignee','"<A href=/intranet/users/view?user_id=$ticket_assignee_id>$ticket_assignee</a>"');
 
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (27080,270,80,'SLA','"<A href=/intranet/projects/view?project_id=$sla_id>$sla_name</a>"');
+
+update im_view_columns set visible_for = 'im_permission $current_user_id "view_tickets_all"'
+where column_id = 27080;
 
 -- Add a "select all" checkbox to select all tickets in the list
 delete from im_view_columns where column_id = 27099;

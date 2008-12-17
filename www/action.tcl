@@ -34,31 +34,40 @@ if {"" == $action_id} { ad_returnredirect $return_url }
 if {![info exists tid]} { set tid {} }
 if {0 == [llength $tid]} { ad_returnredirect $return_url }
 
+set action_name [im_category_from_id $action_id]
+set action_forbidden_msg [lang::message::lookup "" intranet-helpdesk.Action_Forbidden "<b>Unable to execute action</b>:<br>You don't have the permissions to execute the action '%action_name%' on this ticket."]
+
 switch $action_id {
 	30500 {
 	    # Close
 	    foreach ticket_id $tid {
+		im_ticket_permissions $user_id $ticket_id view read write admin
+		if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
 		db_dml close_ticket "
-		update im_tickets set ticket_status_id = [im_ticket_status_closed]
-		where ticket_id = :ticket_id
+			update im_tickets set ticket_status_id = [im_ticket_status_closed]
+			where ticket_id = :ticket_id
 	        "
 	    }
 	}
 	30510 {
 	    # Close & notify
 	    foreach ticket_id $tid {
+		im_ticket_permissions $user_id $ticket_id view read write admin
+		if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
 		db_dml close_ticket "
-		update im_tickets set ticket_status_id = [im_ticket_status_closed]
-		where ticket_id = :ticket_id
+			update im_tickets set ticket_status_id = [im_ticket_status_closed]
+			where ticket_id = :ticket_id
 	        "
 	    }
 	}
 	30590 {
 	    # Delete
 	    foreach ticket_id $tid {
+		im_ticket_permissions $user_id $ticket_id view read write admin
+		if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
 		db_dml close_ticket "
-		update im_tickets set ticket_status_id = [im_ticket_status_deleted]
-		where ticket_id = :ticket_id
+			update im_tickets set ticket_status_id = [im_ticket_status_deleted]
+			where ticket_id = :ticket_id
 	        "
 	    }
 	}

@@ -176,6 +176,7 @@ set ticket_action_html "
 </form>
 "
 
+if {!$edit_ticket_status_p} { set ticket_action_html "" }
 
 
 # ------------------------------------------------------------------

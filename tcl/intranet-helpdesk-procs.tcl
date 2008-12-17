@@ -90,10 +90,72 @@ ad_proc -public im_ticket_permissions {
     upvar $write_var write
     upvar $admin_var admin
 
-    set view 1
-    set read 1
-    set write 1
-    set admin 1
+    set admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+    set edit_ticket_status_p [im_permission $user_id edit_ticket_status]
+    set add_tickets_for_customers_p [im_permission $user_id add_tickets_for_customers]
+    set add_tickets_p [im_permission $user_id "add_tickets"]
+    set view_tickets_all_p [im_permission $user_id "view_tickets_all"]
+
+    db_0or1row ticket_info "
+	select	coalesce(t.ticket_assignee_id, 0) as ticket_assignee_id,
+		coalesce(t.ticket_customer_contact_id,0) as ticket_customer_contact_id,
+		coalesce(o.creation_user,0) as creation_user_id,
+		(select count(*) from (
+			-- member of an explicitely assigned ticket_queue
+			select	distinct g.group_id
+			from	acs_rels r, groups g 
+			where	r.object_id_one = g.group_id and
+				r.object_id_two = :user_id and
+				g.group_id = t.ticket_queue_id
+		) t) as queue_member_p,
+		(select count(*) from (
+			-- cases with user as task_assignee
+			select distinct wfc.object_id
+			from	wf_task_assignments wfta,
+				wf_tasks wft,
+				wf_cases wfc
+			where	t.ticket_id = wfc.object_id and
+				wft.state in ('enabled', 'started') and
+				wft.case_id = wfc.case_id and
+				wfta.task_id = wft.task_id and
+				wfta.party_id in (
+					select	group_id
+					from	group_distinct_member_map
+					where	member_id = :user_id
+				    UNION
+					select	:user_id
+				)
+		) t) as case_assignee_p,
+		(select count(*) from (
+			-- cases with user as task holding_user
+			select	distinct wfc.object_id
+			from	wf_tasks wft,
+				wf_cases wfc
+			where	t.ticket_id = wfc.object_id and
+				wft.holding_user = :user_id and
+				wft.state in ('enabled', 'started') and
+				wft.case_id = wfc.case_id
+		) t) as holding_user_p
+	from	im_tickets t,
+		im_projects p,
+		acs_objects o
+	where	t.ticket_id = :ticket_id and
+		t.ticket_id = p.project_id and
+		t.ticket_id = o.object_id
+    "
+
+    set owner_p [expr $user_id == $creation_user_id]
+    set assignee_p [expr $user_id == $ticket_assignee_id]
+    set customer_p [expr $user_id == $ticket_customer_contact_id]
+
+#    ad_return_complaint 1 "<pre>\nowner_p=$owner_p\nassignee_p=$assignee_p\ncustomer_p=$customer_p\ncase_assignee_p=$case_assignee_p\nholding_user_p=$holding_user_p\nqueue_member_p=$queue_member_p\n</pre>"
+
+    set read [expr $admin_p || $owner_p || $assignee_p || $customer_p || $holding_user_p || $case_assignee_p || $queue_member_p || $view_tickets_all_p || $add_tickets_for_customers_p || $edit_ticket_status_p]
+    set write [expr $read && $edit_ticket_status_p]
+
+    set view $read
+    set admin $write
+
 }
 
 # ----------------------------------------------------------------------
@@ -295,6 +357,13 @@ namespace eval im_ticket {
 	    set topic_status_id [im_topic_status_id_open]
 	    set message ""
 
+	    # The owner of a topic can edit its content.
+	    # But we don't want customers to edit their stuff here...
+	    set topic_owner_id $current_user_id
+	    if {[im_user_is_customer_p $current_user_id]} { 
+		set topic_owner_id [db_string admin "select min(user_id) from users where user_id > 0" -default 0]
+	    }
+
 	    if {"" == $ticket_note} { set ticket_note [lang::message::lookup "" intranet-helpdesk.Empty_Forum_Message "No message specified"]}
 
 	    db_dml topic_insert {
@@ -304,11 +373,14 @@ namespace eval im_ticket {
                         subject, message
                 ) values (
                         :topic_id, :ticket_id, null,
-                        :topic_type_id, :topic_status_id, :current_user_id,
+                        :topic_type_id, :topic_status_id, :topic_owner_id,
                         :ticket_name, :ticket_note
                 )
 	    }
-	    
+
+	    # Subscribe owner to Notifications	    
+	    im_ticket::notification_subscribe -ticket_id $ticket_id -user_id $current_user_id
+
 	} on_error {
 	    ad_return_complaint 1 "<b>Error inserting new ticket</b>:<br>&nbsp;<br>
 	    <pre>$errmsg</pre>"
@@ -360,6 +432,54 @@ namespace eval im_ticket {
 	return $sla_id
     }
 
+
+    ad_proc -public notification_subscribe {
+        -ticket_id:required
+	{ -user_id "" }
+    } {
+	Subscribe a user to notifications on a specific	ticket.
+        @author frank.bergmann@project-open.com
+    } {
+	if {"" == $user_id} { set user_id [ad_get_user_id] }
+	set type_id [notification::type::get_type_id -short_name "ticket_notif"]
+	set interval_id [notification::get_interval_id -name "instant"]
+	set delivery_method_id [notification::get_delivery_method_id -name "email"]
+
+	notification::request::new \
+	    -type_id $type_id \
+	    -user_id $user_id \
+	    -object_id $ticket_id \
+	    -interval_id $interval_id \
+	    -delivery_method_id $delivery_method_id
+    }
+
+    ad_proc -public notification_unsubscribe {
+        -ticket_id:required
+	{ -user_id "" }
+    } {
+	Unsubscribe a user to notifications on a specific ticket.
+        @author frank.bergmann@project-open.com
+    } {
+	if {"" == $user_id} { set user_id [ad_get_user_id] }
+
+	# Get list of requests. We don't want to use a db_foreach
+	# because we don't know how many database connections the unsubscribe
+	# action needs...
+	set request_ids [db_list requests "
+		select	request_id
+		from	notification_requests
+		where	object_id = :ticket_id and
+			user_id = :user_id
+	"]
+
+	foreach request_id $request_ids {
+	    # Security Check
+	    notification::security::require_admin_request -request_id $request_id
+
+	    # Actually Delete
+	    notification::request::delete -request_id $request_id
+	}
+    }
 }
 
 

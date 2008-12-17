@@ -19,6 +19,7 @@
       </div>
       <hr/>
 
+<if @sla_exists_p@>
       <div class="filter-block">
          <div class="filter-title">
             <%= [lang::message::lookup "" intranet-core.New_Ticket "New Ticket"] %>
@@ -34,6 +35,7 @@
          @admin_html;noquote@
       </div>
       <hr/>
+</if>
 
 
       <%= [im_navbar_tree -label "main"] %>
