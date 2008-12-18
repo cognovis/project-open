@@ -282,6 +282,8 @@ set hours_sql "
 			from	group_distinct_member_map
 			where	group_id = [im_employee_group_id]
 		)
+		and h.day >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
+		and h.day < to_date(:end_date::timestamptz, 'YYYY-MM-DD')
 		$hours_where
 	GROUP BY 
 		h.project_id, h.user_id
@@ -475,8 +477,6 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
 		) h ON (child.project_id = h.project_id)
 	where
 		p.parent_id is null
-		and p.end_date >= to_date(:start_date, 'YYYY-MM-DD')
-		and p.start_date < to_date(:end_date, 'YYYY-MM-DD')
 		and child.tree_sortkey between p.tree_sortkey and tree_right(p.tree_sortkey)
 		and (
 			child.project_id = p.project_id

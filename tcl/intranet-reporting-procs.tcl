@@ -769,7 +769,20 @@ ad_proc -public im_report_take_all_ordered_permutations { list } {
 # Helpers
 # -------------------------------------------------------
 
-ad_proc -public im_reporting_sub_project_name_path { sub_project_id } {
+ad_proc -public im_reporting_sub_project_name_path { 
+    {-exlude_main_project_p 1}
+    sub_project_id 
+} {
+    Returns a subproject name composed by all superior project in the hierarchy
+} {
+    return [im_reporting_sub_project_name_path_helper -exlude_main_project_p $exlude_main_project_p $sub_project_id]
+#    return [util_memoize [list im_reporting_sub_project_name_path_helper -exlude_main_project_p $exlude_main_project_p $sub_project_id] 3600]
+}
+
+ad_proc -public im_reporting_sub_project_name_path_helper { 
+    {-exlude_main_project_p 1}
+    sub_project_id 
+} {
     Returns a subproject name composed by all superior project in the hierarchy
 } {
     set name ""
@@ -784,7 +797,7 @@ ad_proc -public im_reporting_sub_project_name_path { sub_project_id } {
 		from	im_projects
 		where	project_id = :sub_project_id
 	"
-	if {"" != $parent_id} {
+	if {"" != $parent_id || !$exlude_main_project_p} {
 	    set slash "/"
 	    if {"" == $name} { set slash "" }
 	    set name "$project_name $slash $name"

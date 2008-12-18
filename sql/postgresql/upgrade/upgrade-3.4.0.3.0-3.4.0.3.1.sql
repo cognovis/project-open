@@ -1,5 +1,10 @@
 -- upgrade-3.4.0.3.0-3.4.0.3.1.sql
 
+-- add a "?" at the end of the productivity report to avoid a bad URL error
+update im_menus
+set url = '/intranet-reporting/timesheet-productivity?'
+where url = '/intranet-reporting/timesheet-productivity';
+
 
 create or replace function im_report__new (
 	integer, varchar, timestamptz, integer, varchar, integer,

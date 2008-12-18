@@ -25,8 +25,8 @@ ad_page_contract {
 # because it identifies unquely the report's Menu and
 # its permissions.
 set menu_label "reporting-timesheet-productivity"
-
 set current_user_id [ad_maybe_redirect_for_registration]
+set use_project_name_p [parameter::get_from_package_key -package_key intranet-reporting -parameter "UseProjectNameInsteadOfProjectNr" -default 0]
 
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
@@ -128,9 +128,7 @@ from
 	im_hours h,
 	im_projects p,
 	users u
-	LEFT OUTER JOIN
-		im_employees e
-		on (u.user_id = e.employee_id)
+	LEFT OUTER JOIN im_employees e ON (u.user_id = e.employee_id)
 where
 	h.project_id = p.project_id
 	and p.project_status_id not in ([im_project_status_deleted])
@@ -168,7 +166,7 @@ where
 	and s.company_id = c.company_id
 	and s.project_id = p.project_id
 order by
-	u.user_id,
+	user_name,
 	s.company_id,
 	p.project_id,
 	s.date
@@ -210,11 +208,20 @@ set report_def [list \
 		$user_name
 		$company_nr 
 		$project_nr 
-		"#colspan=99"
+		"" "" "" "" "" "" "" "" "" ""
+		"<small>$hours_project_intl_subtotal</small>" 
+		"<small>$hours_project_extl_subtotal</small>" 
+		"" 
+		"<small>$hours_project_subtotal</small>" 
 	    } \
 	] \
 	footer {
-	    "#colspan=99"
+	    $user_name 
+	    "" "" "" "" "" "" "" "" "" "" "" ""
+	    "<i>$hours_company_intl_subtotal</i>" 
+	    "<i>$hours_company_extl_subtotal</i>" 
+	    "" 
+	    "<i>$hours_company_subtotal</i>" 
 	} \
     ] \
     footer {
@@ -261,10 +268,58 @@ set hours_user_extl_counter [list \
 	expr \$hours_extl
 ]
 
+set hours_company_counter [list \
+	pretty_name Hours \
+	var hours_company_subtotal \
+	reset \$company_id \
+	expr \$hours
+]
+
+set hours_company_intl_counter [list \
+	pretty_name HoursIntl \
+	var hours_company_intl_subtotal \
+	reset \$company_id \
+	expr \$hours_intl
+]
+
+set hours_company_extl_counter [list \
+	pretty_name HoursExtl \
+	var hours_company_extl_subtotal \
+	reset \$company_id \
+	expr \$hours_extl
+]
+
+set hours_project_counter [list \
+	pretty_name Hours \
+	var hours_project_subtotal \
+	reset \$project_id \
+	expr \$hours
+]
+
+set hours_project_intl_counter [list \
+	pretty_name HoursIntl \
+	var hours_project_intl_subtotal \
+	reset \$project_id \
+	expr \$hours_intl
+]
+
+set hours_project_extl_counter [list \
+	pretty_name HoursExtl \
+	var hours_project_extl_subtotal \
+	reset \$project_id \
+	expr \$hours_extl
+]
+
 set counters [list \
 	$hours_user_counter \
 	$hours_user_intl_counter \
 	$hours_user_extl_counter \
+	$hours_company_counter \
+	$hours_company_intl_counter \
+	$hours_company_extl_counter \
+	$hours_project_counter \
+	$hours_project_intl_counter \
+	$hours_project_extl_counter \
 ]
 
 
@@ -328,35 +383,44 @@ set footer_array_list [list]
 set last_value_list [list]
 set class "rowodd"
 db_foreach sql $sql {
+    
+    # Does the user prefer to read project_name instead of project_nr? (Genedata...)
+    if {$use_project_name_p} {
+	set project_nr $project_name
+	set project_name [im_reporting_sub_project_name_path -exlude_main_project_p 0 $project_id]
+	set user_initials $user_name
+	set company_nr $company_name
+    }
 
-	im_report_display_footer \
-	    -output_format $output_format \
-	    -group_def $report_def \
-	    -footer_array_list $footer_array_list \
-	    -last_value_array_list $last_value_list \
-	    -level_of_detail $level_of_detail \
-	    -row_class $class \
-	    -cell_class $class
-	
-	im_report_update_counters -counters $counters
-	
-	set last_value_list [im_report_render_header \
-	    -output_format $output_format \
-	    -group_def $report_def \
-	    -last_value_array_list $last_value_list \
-	    -level_of_detail $level_of_detail \
-	    -row_class $class \
-	    -cell_class $class
-        ]
 
-        set footer_array_list [im_report_render_footer \
-	    -output_format $output_format \
-	    -group_def $report_def \
-	    -last_value_array_list $last_value_list \
-	    -level_of_detail $level_of_detail \
-	    -row_class $class \
-	    -cell_class $class
-        ]
+    im_report_display_footer \
+	-output_format $output_format \
+	-group_def $report_def \
+	-footer_array_list $footer_array_list \
+	-last_value_array_list $last_value_list \
+	-level_of_detail $level_of_detail \
+	-row_class $class \
+	-cell_class $class
+    
+    im_report_update_counters -counters $counters
+    
+    set last_value_list [im_report_render_header \
+			     -output_format $output_format \
+			     -group_def $report_def \
+			     -last_value_array_list $last_value_list \
+			     -level_of_detail $level_of_detail \
+			     -row_class $class \
+			     -cell_class $class
+			]
+    
+    set footer_array_list [im_report_render_footer \
+			       -output_format $output_format \
+			       -group_def $report_def \
+			       -last_value_array_list $last_value_list \
+			       -level_of_detail $level_of_detail \
+			       -row_class $class \
+			       -cell_class $class
+			  ]
 }
 
 im_report_display_footer \

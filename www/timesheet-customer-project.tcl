@@ -551,6 +551,9 @@ db_foreach sql $sql {
 	if {$use_project_name_p} { 
 	    set project_nr $project_name
 	    set sub_project_name [im_reporting_sub_project_name_path $sub_project_id]
+	    set sub_project_nr $sub_project_name
+	    set user_initials $user_name
+	    set company_nr $company_name
 	}
 
 	if {"" != $internal_note} {
