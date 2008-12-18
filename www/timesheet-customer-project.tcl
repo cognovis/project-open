@@ -548,9 +548,10 @@ set class "rowodd"
 db_foreach sql $sql {
 
 	# Does the user prefer to read project_name instead of project_nr? (Genedata...)
-	if {$use_project_name_p} { set project_nr $project_name }
-
-	set sub_project_name [im_reporting_sub_project_name_path $sub_project_id]
+	if {$use_project_name_p} { 
+	    set project_nr $project_name
+	    set sub_project_name [im_reporting_sub_project_name_path $sub_project_id]
+	}
 
 	if {"" != $internal_note} {
 	    set note "$note / $internal_note"
