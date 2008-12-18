@@ -23,6 +23,7 @@ ad_page_contract {
     { task_id:integer 0}
     { company_id:integer 0}
     { user_id:integer 0}
+    { cost_center_id:integer 0}
     { invoice_id:integer 0}
 }
 
@@ -34,9 +35,9 @@ ad_page_contract {
 # because it identifies unquely the report's Menu and
 # its permissions.
 set menu_label "reporting-timesheet-customer-project"
-
 set current_user_id [ad_maybe_redirect_for_registration]
 
+set use_project_name_p [parameter::get_from_package_key -package_key intranet-reporting -parameter "UseProjectNameInsteadOfProjectNr" -default 0]
 
 # Default User = Current User, to reduce performance overhead
 if {"" == $start_date && "" == $end_date && 0 == $project_id && 0 == $company_id && 0 == $user_id} { 
@@ -62,7 +63,7 @@ if {!$view_hours_all_p} { set user_id $current_user_id }
 # ------------------------------------------------------------
 # Constants
 
-set number_format "999,999.99"
+set number_format "999,990.99"
 
 
 # ------------------------------------------------------------
@@ -152,6 +153,21 @@ if {0 != $user_id && "" != $user_id} {
     lappend criteria "h.user_id = :user_id"
 }
 
+if {0 != $cost_center_id && "" != $cost_center_id} {
+    set cc_code [db_string cc_code "select cost_center_code from im_cost_centers where cost_center_id = :cost_center_id" -default "Co"]
+    set cc_code_len [string length $cc_code]
+
+    lappend criteria "h.user_id in (
+		select	e.employee_id
+		from	im_employees e
+		where	e.department_id in (
+			select	cost_center_id
+			from	im_cost_centers
+			where	substring(cost_center_code, 1, :cc_code_len) = :cc_code
+		)
+    )"
+}
+
 if {0 != $task_id && "" != $task_id} {
     lappend criteria "h.project_id = :task_id"
 }
@@ -180,7 +196,6 @@ set where_clause [join $criteria " and\n	    "]
 if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
 }
-
 
 # ------------------------------------------------------------
 # Define the report - SQL, counters, headers and footers 
@@ -255,9 +270,9 @@ set report_def [list \
 			header {
 				$company_nr 
 				$project_nr 
-				"\#colspan=99 <a href=$base_url&project_id=$project_id&user_id=$user_id&level_of_detail=4 
+				"\#colspan=99 <a href=$base_url&project_id=$sub_project_id&level_of_detail=5
 				target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
-				<b><a href=$user_url$user_id>$sub_project_name</a></b>"
+				<b><a href=$project_url$sub_project_id>$sub_project_name</a></b>"
 			} \
 			content [list \
 				group_by company_project_sub_user_id \
@@ -265,7 +280,7 @@ set report_def [list \
 					$company_nr 
 					$project_nr 
 					$sub_project_nr 
-					"\#colspan=99 <a href=$base_url&project_id=$project_id&user_id=$user_id&level_of_detail=4 
+					"\#colspan=99 <a href=$base_url&project_id=$sub_project_id&user_id=$user_id&level_of_detail=5
 					target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
 					<b><a href=$user_url$user_id>$user_name</a></b>"
 				} \
@@ -297,9 +312,9 @@ set report_def [list \
 				$company_nr
 				$project_nr
 				$sub_project_nr
-				$user_initials
 				""
-				"<i>$hours_user_subtotal</i>"
+				""
+				"<i>$hours_project_sub_subtotal</i>"
 				""
 				""
 			} \
@@ -330,6 +345,13 @@ set hours_user_counter [list \
 	expr \$hours
 ]
 
+set hours_project_sub_counter [list \
+	pretty_name Hours \
+	var hours_project_sub_subtotal \
+	reset \$company_project_sub_id \
+	expr \$hours
+]
+
 set hours_project_counter [list \
 	pretty_name Hours \
 	var hours_project_subtotal \
@@ -346,6 +368,7 @@ set hours_customer_counter [list \
 
 set counters [list \
 	$hours_user_counter \
+	$hours_project_sub_counter \
 	$hours_project_counter \
 	$hours_customer_counter \
 ]
@@ -452,6 +475,12 @@ switch $output_format {
 	if {$view_hours_all_p} {
 	    ns_write "
 		<tr>
+		  <td class=form-label>User's Department</td>
+		  <td class=form-widget>
+		    [im_cost_center_select -include_empty 1 -department_only_p 1 cost_center_id $cost_center_id]
+		  </td>
+		</tr>
+		<tr>
 		  <td class=form-label>User</td>
 		  <td class=form-widget>
 		    [im_user_select -include_empty_p 1 -group_id [list [im_employee_group_id] [im_freelance_group_id]] -include_empty_name "-- Please select --" user_id $user_id]
@@ -484,7 +513,7 @@ switch $output_format {
 	<div class=\"fullwidth-list\">
 	[im_box_header $page_title]
 
-	<table border=0 cellspacing=1 cellpadding=1>\n"
+	<table border=0 cellspacing=2 cellpadding=2>\n"
     }
 
     printer {
@@ -518,6 +547,11 @@ set last_value_list [list]
 set class "rowodd"
 db_foreach sql $sql {
 
+	# Does the user prefer to read project_name instead of project_nr? (Genedata...)
+	if {$use_project_name_p} { set project_nr $project_name }
+
+	set sub_project_name [im_reporting_sub_project_name_path $sub_project_id]
+
 	if {"" != $internal_note} {
 	    set note "$note / $internal_note"
 	}
@@ -526,7 +560,7 @@ db_foreach sql $sql {
 	}
 	set hours_link $hours
 	if {$edit_timesheet_p} {
-	    set hours_link "<a href=\"[export_vars -base $hours_url {julian_date user_id {project_id $sub_project_id} {return_url $this_url}}]\">$hours</a>\n"
+	    set hours_link " <a href=\"[export_vars -base $hours_url {julian_date user_id {project_id $sub_project_id} {return_url $this_url}}]\">$hours</a>\n"
 	}
 
 	im_report_display_footer \

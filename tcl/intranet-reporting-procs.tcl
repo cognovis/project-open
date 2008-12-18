@@ -765,3 +765,32 @@ ad_proc -public im_report_take_all_ordered_permutations { list } {
 }
 
 
+# -------------------------------------------------------
+# Helpers
+# -------------------------------------------------------
+
+ad_proc -public im_reporting_sub_project_name_path { sub_project_id } {
+    Returns a subproject name composed by all superior project in the hierarchy
+} {
+    set name ""
+    set cnt 0
+    while {$cnt < 10 && "" != $sub_project_id} {
+
+	set parent_id ""
+	set project_name "undefined"
+	db_0or1row pinfo "
+		select	project_name,
+			parent_id
+		from	im_projects
+		where	project_id = :sub_project_id
+	"
+	if {"xxx" != $parent_id} {
+	    set slash "/"
+	    if {"" == $name} { set slash "" }
+	    set name "$project_name $slash $name"
+	}
+	set sub_project_id $parent_id
+	incr cnt
+    }
+    return $name
+}
