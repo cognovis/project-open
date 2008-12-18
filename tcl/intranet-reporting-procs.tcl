@@ -784,7 +784,7 @@ ad_proc -public im_reporting_sub_project_name_path { sub_project_id } {
 		from	im_projects
 		where	project_id = :sub_project_id
 	"
-	if {"xxx" != $parent_id} {
+	if {"" != $parent_id} {
 	    set slash "/"
 	    if {"" == $name} { set slash "" }
 	    set name "$project_name $slash $name"
