@@ -161,6 +161,7 @@ if {0 != $invoice_id && "" != $invoice_id} {
 }
 
 # Select project & subprojects
+set org_project_id $project_id
 if {0 != $project_id && "" != $project_id} {
     lappend criteria "p.project_id in (
 	select
@@ -396,6 +397,8 @@ if {[info exists task_id]} {
 # Write out HTTP header, considering CSV/MS-Excel formatting
 im_report_write_http_headers -output_format $output_format
 
+set project_id $org_project_id
+
 switch $output_format {
     html {
 	ns_write "
@@ -441,7 +444,7 @@ switch $output_format {
 		<tr>
 		  <td class=form-label>Project</td>
 		  <td class=form-widget>
-		    [im_project_select -include_empty_p 1 -include_empty_name "-- Please Select --" project_id $project_id]
+		    [im_project_select -include_empty_p 1 -exclude_subprojects_p 0 -include_empty_name "-- Please Select --" project_id $project_id]
 		  </td>
 		</tr>
 	"
