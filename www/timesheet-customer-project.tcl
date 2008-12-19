@@ -321,8 +321,8 @@ set report_def [list \
 		] \
 		footer {
 			$company_nr
-			$project_nr
-			$sub_project_nr
+			""
+			""
 			""
 			""
 			"<b>$hours_project_subtotal</b>"
