@@ -321,7 +321,7 @@ set report_def [list \
 		] \
 		footer {
 			$company_nr
-			""
+			$project_nr
 			""
 			""
 			""
