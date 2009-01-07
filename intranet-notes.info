@@ -16,8 +16,8 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Provides List, New and Edit pages for simple text strings ('Notes').</description>
 
-        <provides url="intranet-notes" version="3.2.2.0.0"/>
-        <requires url="intranet-core" version="3.0.0"/>
+        <provides url="intranet-notes" version="3.4.0.2.0"/>
+        <requires url="intranet-core" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>
