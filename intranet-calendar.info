@@ -15,9 +15,9 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">The package maps ]project-open[ object types such as im_project, im_trans_task and im_forum_topic to acs_event objects that can be displayed by the calendar package. The integration between the two packages is implemented via trigger propagation, rather then through a &quot;view&quot;.</description>
 
-        <provides url="intranet-calendar" version="3.2.7.0.0"/>
+        <provides url="intranet-calendar" version="3.4.0.2.0"/>
         <requires url="calendar" version="2.1.0b6"/>
-	<requires url="intranet-core" version="3.0.0"/>
+	<requires url="intranet-core" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>
