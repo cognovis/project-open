@@ -14,9 +14,9 @@
         <vendor url="http://www.project-open.com">]project-open[</vendor>
         <description format="text/html">Scenario: An employee or freelancer travels for the company to perform some task (visit a customer, ...)</description>
 
-        <provides url="intranet-expenses" version="3.4.0.0.0"/>
-        <requires url="intranet-core" version="3.2"/>
-        <requires url="intranet-cost" version="3.2"/>
+        <provides url="intranet-expenses" version="3.4.0.2.0"/>
+        <requires url="intranet-core" version="3.4.0.0.0"/>
+        <requires url="intranet-cost" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>
