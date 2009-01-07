@@ -14,9 +14,9 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Provides integration of the Petri-Net ACS-Workflow into ]project-open[. </description>
 
-        <provides url="intranet-workflow" version="3.4.0.0.0"/>
+        <provides url="intranet-workflow" version="3.4.0.2.0"/>
         <requires url="acs-workflow" version="4.5"/>
-        <requires url="intranet-core" version="3.0.0.0.0"/>
+        <requires url="intranet-core" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>
