@@ -16,8 +16,8 @@
         <description format="text/plain">This modules provides pages to generate and read GanttProject XML data. This allows a user to view projects in a Gantt view.</description>
 
         <provides url="intranet-ganttproject" version="3.4.0.3.0"/>
-        <requires url="intranet-core" version="3.2"/>
-	<requires url="intranet-timesheet2" version="3.2"/>
+        <requires url="intranet-core" version="3.4.0.0.0"/>
+	<requires url="intranet-timesheet2" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>
