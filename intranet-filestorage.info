@@ -15,8 +15,8 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Allows access to filesystem documents and folders for various types of business objects.</description>
 
-        <provides url="intranet-filestorage" version="3.3.0.0.0"/>
-        <requires url="intranet-core" version="3.0.0"/>
+        <provides url="intranet-filestorage" version="3.4.0.0.0"/>
+        <requires url="intranet-core" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>
