@@ -15,10 +15,10 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Provides full-text indexing for files and filenames in the ]po[ filestorages. Uses a number of external filters to periodically scan the ]po[ storages for new files, builds up a  Full Text Index and allows the user to retreive the files using the normal search interface.</description>
 
-        <provides url="intranet-search-pg-files" version="3.2.7.0.0"/>
-        <requires url="intranet-search-pg" version="3.2"/>
-        <requires url="intranet-core" version="3.2"/>
-        <requires url="intranet-filestorage" version="3.2"/>
+        <provides url="intranet-search-pg-files" version="3.4.0.2.0"/>
+        <requires url="intranet-search-pg" version="3.4.0.0.0"/>
+        <requires url="intranet-core" version="3.4.0.0.0"/>
+        <requires url="intranet-filestorage" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>
