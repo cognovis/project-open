@@ -287,7 +287,7 @@ begin
 
 	if not found then
 		/* already at top of sort order */
-		return;
+		return 0;
 	end if;
 
 	/* switch the sort orders around */
@@ -323,7 +323,7 @@ begin
 
 	if not found then
 		/* already at bottom of sort order */
-	return;
+		return 0;
 	end if;
 
 	/* switch the sort orders around */
