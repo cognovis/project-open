@@ -15,13 +15,13 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">The package provides a GUI component with a list of all steps to create a new translation project, together with status information that determines if a step has already completed.</description>
 
-        <provides url="intranet-trans-project-wizard" version="3.2.10"/>
-        <requires url="intranet-core" version="3.0"/>
-        <requires url="intranet-translation" version="3.0"/>
-        <requires url="intranet-trans-invoices" version="3.0"/>
-        <requires url="intranet-freelance-invoices" version="3.0"/>
-        <requires url="intranet-freelance" version="3.0"/>
-        <requires url="intranet-freelance-translation" version="3.0"/>
+        <provides url="intranet-trans-project-wizard" version="3.4.0.2.0"/>
+        <requires url="intranet-core" version="3.4.0.0.0"/>
+        <requires url="intranet-translation" version="3.4.0.0.0"/>
+        <requires url="intranet-trans-invoices" version="3.4.0.0.0"/>
+        <requires url="intranet-freelance-invoices" version="3.4.0.0.0"/>
+        <requires url="intranet-freelance" version="3.4.0.0.0"/>
+        <requires url="intranet-freelance-translation" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>
