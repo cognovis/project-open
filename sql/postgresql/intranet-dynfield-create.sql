@@ -47,57 +47,11 @@ SELECT im_category_new(22110, 'Freelance Managers', 'Intranet User Type');
 
 
 
-
-create table ams_attribute_items (
-	attribute_id		integer
-				constraint ams_attribute_items_attribute_id_fk references acs_attributes(attribute_id)
-				constraint ams_attribute_items_attribute_id_nn not null,
-	ams_attribute_id	integer
-				constraint ams_attribute_items_ams_attribute_id_fk references acs_objects(object_id)
-				constraint ams_attribute_items_ams_attribute_id_pk primary key,
-	widget		varchar(100)
-				constraint ams_attribute_items_widget_fk references ams_widgets(widget)
-				constraint ams_attribute_items_widget_nn not null,
-	dynamic_p		boolean default 'f'
-				constraint ams_attribute_items_dynamic_p_nn not null,
-	deprecated_p		boolean default 'f'
-				constraint ams_attribute_items_deprecated_nn not null,
-	help_text		varchar(50),
-	UNIQUE(attribute_id)
-);
-
-create or replace view ams_attributes as
-select	aa.*,
-	da.attribute_id as ams_attribute_id,
-	da.widget_name as widget,
-	false::boolean as dynamic_p,
-	da.deprecated_p
-from
-	im_dynfield_attributes da,
-	acs_attributes aa
-where
-	da.acs_attribute_id = aa.attribute_id;
-
-
-create view ams_attributes as
-select
-	acs_attributes.*,
-	ams_attribute_items.ams_attribute_id,
-	ams_attribute_items.widget,
-	ams_attribute_items.dynamic_p,
-	ams_attribute_items.deprecated_p
-from 
-	acs_attributes 
-	left join ams_attribute_items on (acs_attributes.attribute_id = ams_attribute_items.attribute_id)
-;
-
-
-
 create table im_dynfield_type_attribute_map (
 	attribute_id		integer
 				constraint im_dynfield_type_attr_map_attr_fk
 				references acs_objects,
-	object_type_id	integer
+	object_type_id		integer
 				constraint im_dynfield_type_attr_map_otype_nn
 				not null
 				constraint im_dynfield_type_attr_map_otype_fk
@@ -110,7 +64,7 @@ create table im_dynfield_type_attribute_map (
 	unique (attribute_id, object_type_id)
 );
 
-# alter table im_dynfield_type_attribute_map add FOREIGN KEY (attribute_id) references acs_objects;
+-- alter table im_dynfield_type_attribute_map add FOREIGN KEY (attribute_id) references acs_objects;
 
 
 -- ------------------------------------------------------------------
@@ -906,6 +860,10 @@ BEGIN
 	where	widget_name = p_widget_name;
 	IF v_widget_id is null THEN return 1; END IF;
 
+	select	count(*) from im_dynfield_attributes into v_count
+	where	acs_attribute_id in (select attribute_id from acs_attributes where attribute_name = p_column_name);
+	IF v_count > 0 THEN return 1; END IF;
+
 	v_min_n_value := 0;
 	IF p_required_p = ''t'' THEN  v_min_n_value := 1; END IF;
 
@@ -920,9 +878,9 @@ BEGIN
 	where attribute_id = v_dynfield_id;
 
 	insert into im_dynfield_layout (
-		attribute_id, page_url, pos_y, label_style
+		object_type, attribute_id, page_url, pos_y, label_style
 	) values (
-		v_dynfield_id, ''default'', p_pos_y, ''plain''
+		p_object_type, v_dynfield_id, ''default'', p_pos_y, ''table''
 	);
 
 	-- set all im_dynfield_type_attribute_map to "edit"
@@ -1479,6 +1437,15 @@ drop function inline_0 ();
 -- Define some DynFields
 --
 
+--	im_dynfield_attribute_new:
+--	p_object_type           alias for $1;
+--	p_column_name           alias for $2;
+--	p_pretty_name           alias for $3;
+--	p_widget_name           alias for $4;
+--	p_datatype              alias for $5;
+--	p_required_p            alias for $6;
+--	p_pos_y                 alias for $7;
+--	p_also_hard_coded_p     alias for $8;
 
 -- Add dynfields for persons
 SELECT im_dynfield_attribute_new ('person','first_names','First Names', 'textbox_large','string','t',10,'f');
@@ -1487,27 +1454,27 @@ SELECT im_dynfield_attribute_new ('party','email','Email', 'textbox_large','stri
 
 
 -- Add dynfields for companies
-SELECT im_dynfield_attribute_new ('im_company','company_name','Name', 'textbox_large','string','t',10,'t','f');
-SELECT im_dynfield_attribute_new ('im_company','company_path','Path', 'textbox_large','string','t',20,'t','f');
-SELECT im_dynfield_attribute_new ('im_company','company_status_id','Status','category_company_status','integer','t',30,'t','f');
-SELECT im_dynfield_attribute_new ('im_company','company_type_id','Type','category_company_type','integer','t',40,'t','f');
-SELECT im_dynfield_attribute_new ('im_company','referral_source','Referral','textbox_large','string','f',50,'t','f');
-SELECT im_dynfield_attribute_new ('im_company','vat_number','VAT Number','textbox_small','string','f',60,'t','f');
-SELECT im_dynfield_attribute_new ('im_company','default_vat','Default VAT','integer','string','f',100,'t','f');
-SELECT im_dynfield_attribute_new ('im_company','default_tax','Default TAX','integer','string','f',110,'t','f');
-SELECT im_dynfield_attribute_new ('im_company','note','Note', 'textarea_small','string','t',990,'t','f');
+SELECT im_dynfield_attribute_new ('im_company','company_name','Name', 'textbox_large','string','t',10,'t');
+SELECT im_dynfield_attribute_new ('im_company','company_path','Path', 'textbox_large','string','t',20,'t');
+SELECT im_dynfield_attribute_new ('im_company','company_status_id','Status','category_company_status','integer','t',30,'t');
+SELECT im_dynfield_attribute_new ('im_company','company_type_id','Type','category_company_type','integer','t',40,'t');
+SELECT im_dynfield_attribute_new ('im_company','referral_source','Referral','textbox_large','string','f',50,'t');
+SELECT im_dynfield_attribute_new ('im_company','vat_number','VAT Number','textbox_small','string','f',60,'t');
+SELECT im_dynfield_attribute_new ('im_company','default_vat','Default VAT','integer','string','f',100,'t');
+SELECT im_dynfield_attribute_new ('im_company','default_tax','Default TAX','integer','string','f',110,'t');
+SELECT im_dynfield_attribute_new ('im_company','note','Note', 'textarea_small','string','t',990,'t');
 
-SELECT im_dynfield_attribute_new ('im_office','office_name','Office Name', 'textbox_large','string','t',10,'t','f');
-SELECT im_dynfield_attribute_new ('im_office','office_path','Office Path', 'textbox_large','string','t',20,'t','f');
-SELECT im_dynfield_attribute_new ('im_office','office_status_id','Office Status', 'category_office_status','integer','t',30,'t','f');
-SELECT im_dynfield_attribute_new ('im_office','office_type_id','Office Type', 'category_office_type','integer','t',40,'t','f');
-SELECT im_dynfield_attribute_new ('im_office','phone','Phone', 'textbox_medium','string','f',100,'t','f');
-SELECT im_dynfield_attribute_new ('im_office','fax','Fax', 'textbox_medium','string','f',110,'t','f');
-SELECT im_dynfield_attribute_new ('im_office','address_line1','Address 1', 'textbox_medium','string','f',120,'t','f');
-SELECT im_dynfield_attribute_new ('im_office','address_line2','Address 2', 'textbox_medium','string','f',130,'t','f');
-SELECT im_dynfield_attribute_new ('im_office','address_city','City', 'textbox_medium','string','f',140,'t','f');
-SELECT im_dynfield_attribute_new ('im_office','address_postal_code','ZIP', 'textbox_short','string','f',150,'t','f');
-SELECT im_dynfield_attribute_new ('im_office','address_country_code','Country', 'country','string','f',160,'t','f');
+SELECT im_dynfield_attribute_new ('im_office','office_name','Office Name', 'textbox_large','string','t',10,'t');
+SELECT im_dynfield_attribute_new ('im_office','office_path','Office Path', 'textbox_large','string','t',20,'t');
+SELECT im_dynfield_attribute_new ('im_office','office_status_id','Office Status', 'category_office_status','integer','t',30,'t');
+SELECT im_dynfield_attribute_new ('im_office','office_type_id','Office Type', 'category_office_type','integer','t',40,'t');
+SELECT im_dynfield_attribute_new ('im_office','phone','Phone', 'textbox_medium','string','f',100,'t');
+SELECT im_dynfield_attribute_new ('im_office','fax','Fax', 'textbox_medium','string','f',110,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_line1','Address 1', 'textbox_medium','string','f',120,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_line2','Address 2', 'textbox_medium','string','f',130,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_city','City', 'textbox_medium','string','f',140,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_postal_code','ZIP', 'textbox_short','string','f',150,'t');
+SELECT im_dynfield_attribute_new ('im_office','address_country_code','Country', 'country','string','f',160,'t');
 
 
 
@@ -2036,7 +2003,7 @@ create table im_dynfield_pages (
 	workflow_key		varchar(100)
 				constraint im_dynfield_pages_workflow_key_fk
 				references wf_workflows,
-	transition_key		varchar(100),
+	transition_key		varchar(100)
 				constraint im_dynfield_pages_transition_key_fk
 				references wf_transitions,
 
