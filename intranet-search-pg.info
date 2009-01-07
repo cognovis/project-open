@@ -15,9 +15,9 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">This module uses the PostgreSQL TSearch2 module to provide search functionality for project, users, forums, files.</description>
 
-        <provides url="intranet-search-pg" version="3.2.7.0.0"/>
-        <requires url="intranet-core" version="3.0.0"/>
+        <provides url="intranet-search-pg" version="3.4.0.2.0"/>
         <requires url="search" version="5.1.3"/>
+        <requires url="intranet-core" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>
