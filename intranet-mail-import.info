@@ -19,8 +19,8 @@
 	  Reads emails from QMail Maildir and integrates with ]project-open[
         </description>
 
-        <provides url="intranet-mail-import" version="3.0.0"/>
-        <requires url="intranet-core" version="3.0.0"/>
+        <provides url="intranet-mail-import" version="3.4.0.2.0"/>
+        <requires url="intranet-core" version="3.4.0.0.0"/>
 
         <callbacks>
             <callback type="before-uninstall"  proc="im_mail_import::before_uninstall"/>
