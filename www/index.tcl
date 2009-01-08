@@ -11,7 +11,7 @@ ad_page_contract {
     @author frank.bergmann@ticket-open.com
 } {
     { order_by "Creation Date" }
-    { mine_p "queue" }
+    { mine_p "all" }
     { ticket_status_id:integer "[im_ticket_status_open]" } 
     { ticket_type_id:integer 0 } 
     { ticket_queue_id:integer 0 } 
