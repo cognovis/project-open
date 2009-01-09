@@ -55,14 +55,19 @@ namespace eval im_conf_item {
         @author frank.bergmann@project-open.com
 	@return The object_id of the new (or existing) Conf Item.
     } {
+	catch { set current_user_id [ad_get_user_id] }
+	catch { set peeraddr [ad_conn peeraddr] }
+	if {![info exists current_user_id]} { set current_user_id [util_memoize [list db_string first_user {select min(person_id) from persons where person_id > 0}]] }
+	if {![info exists peeraddr]} { set peeraddr "0.0.0.0" }
+
 	array set vars $var_hash
 	set conf_item_new_sql "
 		select im_conf_item__new(
 			null,
 			'im_conf_item',
 			now(),
-			[ad_get_user_id],
-			'[ad_conn peeraddr]',
+			:current_user_id,
+			:peeraddr,
 			null,
 			:conf_item_name,
 			:conf_item_nr,
