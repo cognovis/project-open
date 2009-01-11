@@ -2557,12 +2557,19 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 		# a single SQL and issuing it once. Causes performance problems at BaselKB
 		# for example.
 		ns_log Notice "im_dynfield::append_attributes_to_form: value - default storage"
-		set value [db_string get_single_value "
-		    select	$attribute_name
-		    from	$attribute_table_name
-		    where	$attribute_id_column = :object_id
-		" -default ""]
-		template::element::set_value $form_id $attribute_name $value
+
+		if {"" != $attribute_table_name} {
+
+		    set value [db_string get_single_value "
+			    select	$attribute_name
+			    from	$attribute_table_name
+			    where	$attribute_id_column = :object_id
+		    " -default ""]
+		    template::element::set_value $form_id $attribute_name $value
+
+		} else {
+		    ns_log Error "im_dynfield::append_attributes_to_form: Attribute '$object_type.$attribute_name' doesn't have table information - please fix information in 'acs_attributes' for this object type."
+		}
 
 	    }
 
