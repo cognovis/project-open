@@ -16,6 +16,7 @@
 
 	<provides url="intranet-helpdesk" version="3.4.0.0.0"/>
         <requires url="intranet-confdb" version="3.4.0.0.0"/>
+        <requires url="intranet-core" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>

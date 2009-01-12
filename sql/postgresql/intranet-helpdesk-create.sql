@@ -762,7 +762,7 @@ SELECT im_component_plugin__new (
 );
 
 SELECT acs_permission__grant_permission(
-	(select plugin_id from im_component_plugins where plugin_name = 'Forum' and package_name = 'intranet-helpdesk'), 
+	(select plugin_id from im_component_plugins where plugin_name = 'Discussions' and package_name = 'intranet-helpdesk'), 
 	(select group_id from groups where group_name = 'Employees'),
 	'read'
 );
