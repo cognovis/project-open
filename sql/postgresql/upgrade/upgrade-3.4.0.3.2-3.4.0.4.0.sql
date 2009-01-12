@@ -4,13 +4,6 @@
 
 alter table users add skin_id integer references im_categories;
 
-update users set skin_id = 40010 where skin = 2;
-update users set skin_id = 40015 where skin = 0;
-update users set skin_id = 40020 where skin = 4;
-update users set skin_id = 40025 where skin = 2;
-
-update users set skin_id = 40015 where skin_id is null;
-
 --        { 0  "left"          "Default" }
 --        { 1  "opus5"         "Light Green" }
 --        { 2  "default"       "Right Blue" }
@@ -26,4 +19,10 @@ update im_categories set sort_order = 2 where category = 'default' and category_
 update im_categories set sort_order = 3 where category = 'saltnpepper' and category_type = 'Intranet Skin';
 update im_categories set sort_order = 4 where category = 'lightgreen' and category_type = 'Intranet Skin';
 
+-- update users set skin_id = 40010 where skin = 2;
+update users set skin_id = 40015 where skin = 0;
+update users set skin_id = 40020 where skin = 4;
+update users set skin_id = 40025 where skin = 2;
+
+update users set skin_id = 40015 where skin_id is null;
 
