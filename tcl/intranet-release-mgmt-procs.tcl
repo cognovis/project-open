@@ -37,19 +37,20 @@ ad_proc -private im_package_release_mgmt_id_helper {} {
 # Release Stati
 # ---------------------------------------------------------------------
 
-# 4500-4599    (reserved)
+# 27000-27999 reserved for Intranet Release Management
+# 27000-27099  Intranet Release Status (100)
+# 27100-27999  still free
 
-ad_proc -public im_release_mgmt_status_developing {} { return 4500 }
-ad_proc -public im_release_mgmt_status_read_to_build {} { return 4540 }
-ad_proc -public im_release_mgmt_status_build {} { return 4550 }
-ad_proc -public im_release_mgmt_status_ready_for_integration_test { } { return 4560 }
-ad_proc -public im_release_mgmt_status_ready_for_acceptance_test { } { return 4570 }
-ad_proc -public im_release_mgmt_status_approved {} { return 4585 }
-ad_proc -public im_release_mgmt_status_accepted {} { return 4590 }
-ad_proc -public im_release_mgmt_status_closed {} { return 4595 }
+ad_proc -public im_release_mgmt_status_developing {} { return 27000 }
+ad_proc -public im_release_mgmt_status_read_to_build {} { return 27040 }
+ad_proc -public im_release_mgmt_status_build {} { return 27050 }
+ad_proc -public im_release_mgmt_status_ready_for_integration_test { } { return 27060 }
+ad_proc -public im_release_mgmt_status_ready_for_acceptance_test { } { return 27070 }
+ad_proc -public im_release_mgmt_status_approved {} { return 27085 }
+ad_proc -public im_release_mgmt_status_accepted {} { return 27090 }
+ad_proc -public im_release_mgmt_status_closed {} { return 27095 }
 
-
-ad_proc -public im_release_mgmt_status_default {} { return 4500 }
+ad_proc -public im_release_mgmt_status_default {} { return 27000 }
 
 
 # ----------------------------------------------------------------------

@@ -186,14 +186,18 @@ SELECT im_component_plugin__new (
 -- Add category types
 ---------------------------------------------------------
 
-INSERT INTO im_categories VALUES (4500,'0 - Developing','','Intranet Release Status',null);
-INSERT INTO im_categories VALUES (4540,'1 - Ready for Review','','Intranet Release Status',null);
-INSERT INTO im_categories VALUES (4550,'2 - Ready for Integration','','Intranet Release Status',null);
-INSERT INTO im_categories VALUES (4560,'3 - Ready for Integration Test','','Intranet Release Status',null);
-INSERT INTO im_categories VALUES (4570,'4 - Ready for Acceptance Test','','Intranet Release Status',null);
-INSERT INTO im_categories VALUES (4585,'5 - Ready for Production','','Intranet Release Status',null);
-INSERT INTO im_categories VALUES (4590,'6 - Ready to be closed','','Intranet Release Status',null);
-INSERT INTO im_categories VALUES (4595,'7 - Closed','','Intranet Release Status',null);
+-- 27000-27999  Intranet Release Management (1000)
+-- 27000-27099	Intranet Release Status (100)
+-- 27100-27999	still free
+
+INSERT INTO im_categories VALUES (27000,'0 - Developing','','Intranet Release Status',null);
+INSERT INTO im_categories VALUES (27040,'1 - Ready for Review','','Intranet Release Status',null);
+INSERT INTO im_categories VALUES (27050,'2 - Ready for Integration','','Intranet Release Status',null);
+INSERT INTO im_categories VALUES (27060,'3 - Ready for Integration Test','','Intranet Release Status',null);
+INSERT INTO im_categories VALUES (27070,'4 - Ready for Acceptance Test','','Intranet Release Status',null);
+INSERT INTO im_categories VALUES (27085,'5 - Ready for Production','','Intranet Release Status',null);
+INSERT INTO im_categories VALUES (27090,'6 - Ready to be closed','','Intranet Release Status',null);
+INSERT INTO im_categories VALUES (27095,'7 - Closed','','Intranet Release Status',null);
 
 
 create or replace view im_release_status as
