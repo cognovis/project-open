@@ -1258,11 +1258,17 @@ ad_proc -public im_workflow_home_inbox_component {
     # ---------------------------------------------------------------
     # Return results
     
+    set admin_action_options ""
+    if {$user_is_admin_p} {
+	set admin_action_options "<option value=\"nuke\">[lang::message::lookup "" intranet-workflow.Nuke_Object "Nuke Object (Admin only)"]</option>"
+    }
+
     set table_action_html "
 	<tr class=rowplain>
 	<td colspan=99 class=rowplain align=right>
 	    <select name=\"operation\">
 	    <option value=\"delete_membership\">[lang::message::lookup "" intranet-workflow.Remove_From_Inbox "Remove from Inbox"]</option>
+	    $admin_action_options
 	    </select>
 	    <input type=submit name=submit value='[lang::message::lookup "" intranet-workflow.Submit "Submit"]'>
 	</td>
