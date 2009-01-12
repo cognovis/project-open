@@ -227,6 +227,7 @@ if {$ticket_exists_p} {
     db_1row ticket_info "
 	select
 		t.*, p.*,
+		t.ticket_customer_deadline::date as ticket_customer_deadline,
 		p.company_id as ticket_customer_id
 	from
 		im_projects p,
@@ -428,6 +429,7 @@ ad_form -extend -name ticket -on_request {
 } -select_query {
 
 	select	t.*,
+		t.ticket_customer_deadline::date as ticket_customer_deadline,
 		p.*,
 		p.parent_id as ticket_sla_id,
 		p.project_name as ticket_name,
