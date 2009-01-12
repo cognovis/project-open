@@ -16,6 +16,8 @@
         <maturity>0</maturity>
 
         <provides url="intranet-nagios" version="3.4.0.0.0"/>
+        <requires url="intranet-confdb" version="3.4.0.0.0"/>
+        <requires url="intranet-helpdesk" version="3.4.0.0.0"/>
         <requires url="intranet-core" version="3.4.0.0.0"/>
         <requires url="notifications" version="5.0.0"/>
 

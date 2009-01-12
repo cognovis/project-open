@@ -42,7 +42,6 @@ ad_proc -public im_nagios_process_alert {
 } {
     ns_log Notice "im_nagios_process_alert: from=$from, to=$to, host=$host, service=$service"
 
-
     # Try to find out the environment for the ticket
     set host_conf_item_id [im_nagios_get_host_by_name -host_name $host]
     set service_conf_item_id [im_nagios_get_service_by_name -host_name $host -service_name $service]
@@ -54,11 +53,11 @@ ad_proc -public im_nagios_process_alert {
 
 
     ns_log Notice "im_nagios_process_alert: host_id=$host_conf_item_id, service_id=$service_conf_item_id, ticket_id=$open_nagios_ticket_id, host=$host, service=$service"
-
+    
     set ticket_name "Nagios $alert_type $host/$service is $status"
-
+    
     if {"" == $open_nagios_ticket_id} {
-
+	
 	set ticket_id [db_nextval "acs_object_id_seq"]
 	set ticket_customer_id [im_company_internal]
 	set ticket_customer_contact_id 0
@@ -70,17 +69,16 @@ ad_proc -public im_nagios_process_alert {
 	set start_date_sql [template::util::date get_property sql_date $start_date]
 	set end_date_sql [template::util::date get_property sql_timestamp $end_date]
 	
-	    set open_nagios_ticket_id [db_string ticket_insert {}]
-	    db_dml ticket_update {}
-	    db_dml project_update {}
-	    
-	    # Write Audit Trail
-	    im_project_audit $ticket_id
-	    
+	set open_nagios_ticket_id [db_string ticket_insert {}]
+	db_dml ticket_update {}
+	db_dml project_update {}
+	
+	# Write Audit Trail
+	im_project_audit $ticket_id
+	
 	db_transaction {
 	} on_error {
-	    ad_return_complaint 1 "<b>Error inserting new ticket</b>:
-	<pre>$errmsg</pre>"
+	    ad_return_complaint 1 "<b>Error inserting new ticket</b>:<pre>$errmsg</pre>"
 	}
 
 	db_dml host_service "
@@ -98,6 +96,7 @@ ad_proc -public im_nagios_process_alert {
 	order by ft.topic_id
     "]
 
+    # Get the first forum topic associated with the ticket and use as parent
     set parent_id [lindex $forum_ids 0]
 
     # Create a new forum topic of type "Note"
@@ -109,7 +108,7 @@ ad_proc -public im_nagios_process_alert {
 
     # "bodies" contains a Mime-Type - Content hash
     set message ""
-    foreach body $bodies { 
+    foreach {mime_type body} $bodies { 
 	append message $body 
     }
 
@@ -125,16 +124,22 @@ ad_proc -public im_nagios_process_alert {
 		)
     }
 
+    ns_log Notice "im_nagios_process_alert: Processing Nagios alert status='$status'"
     switch [string tolower $status] {
 	ok {
-	    # Set the ticket to "resolved"
+	    ns_log Notice "im_nagios_process_alert: Set the ticket to 'resolved'"
 	    db_dml update_closed "
-		update	im_tickets
-		set ticket_status_id = [im_ticket_status_closed]
-		where ticket_id = :ticket_id
+		update	im_tickets set 
+			ticket_status_id = [im_ticket_status_closed]
+		where ticket_id = :open_nagios_ticket_id
 	    "
 	}
+	critical { 
+	    ns_log Notice "im_nagios_process_alert: Nothing to do - ticket status='$status'"
+	    # nothing - keep the ticket open
+	}
 	default - unknown {
+	    ns_log Notice "im_nagios_process_alert: Unkown ticket status='$status'"
 	    # nothing - keep the ticket open
 	}
     }
