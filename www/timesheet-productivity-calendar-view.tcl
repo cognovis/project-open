@@ -337,7 +337,7 @@ set report_def [list \
             } \
 	] \
     footer {
-            "#colspan=99"
+            "#colspan=99 Summary"
     } \
 ]
 
