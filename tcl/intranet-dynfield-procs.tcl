@@ -1239,7 +1239,7 @@ ad_proc -public im_dynfield::attribute_store {
     {-user_id ""}
 } {
     Store intranet-dynfield attributes.
-    Basicly, the procedure copies all values of the form into
+    Basically, the procedure copies all values of the form into
     local variables and then builds an update statement to update
     the object's main table with the local variables.
 
