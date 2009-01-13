@@ -18,7 +18,7 @@ ad_page_contract {
 # ---------------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
-set page_title [lang::message::lookup "" intranet-helpdesk.Request_SLA "Request a new SLA"]
+set page_title [lang::message::lookup "" intranet-helpdesk.Request_SLA "Request a Service Contract"]
 set context_bar [im_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 

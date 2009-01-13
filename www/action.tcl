@@ -23,11 +23,13 @@ ad_page_contract {
 }
 
 set user_id [ad_maybe_redirect_for_registration]
+set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 
 # 30500, 'Close'
 # 30510, 'Close &amp; notify'
 # 30520, 'Duplicated'
 # 30590, 'Delete'
+# 30599, 'Nuke'
 
 # Deal with funky input parameter combinations
 if {"" == $action_id} { ad_returnredirect $return_url }
@@ -69,6 +71,15 @@ switch $action_id {
 			update im_tickets set ticket_status_id = [im_ticket_status_deleted]
 			where ticket_id = :ticket_id
 	        "
+	    }
+	}
+	30599 {
+	    # Nuke
+	    if {!$user_is_admin_p} { ad_return_complaint 1 "User needs to be SysAdmin in order to 'Nuke' tickets.<br>Please use 'Delete' otherwise." }
+	    foreach ticket_id $tid {
+		im_ticket_permissions $user_id $ticket_id view read write admin
+		if {!$admin} { ad_return_complaint 1 $action_forbidden_msg }
+		im_project_nuke $ticket_id
 	    }
 	}
 	default {
