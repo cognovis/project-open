@@ -54,7 +54,7 @@ create index im_fs_folders_object_idx on im_fs_folders(object_id);
 ---------------------------------------------------------
 -- Folder Status
 --
--- Basicly, a folder can be opened ("+" - showing all files 
+-- Basically, a folder can be opened ("+" - showing all files 
 -- and subfolders) or closed ("-" - reduced to a single line).
 -- This information depends on the users (this is why we
 -- need to put it into a separate table).
