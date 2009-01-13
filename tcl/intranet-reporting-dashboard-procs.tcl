@@ -202,9 +202,7 @@ ad_proc im_dashboard_color {
 } {
     Returns suitable colors, depending on the respective skin
 } {
-    set user_id [ad_get_user_id]
-    set skin_key [im_user_skin $user_id]
-    set skin_name [im_skin_name $skin_key]
+    set skin_name [im_user_skin [ad_get_user_id]]
 
     if {[catch {
         set procname "im_dashboard_color_$skin_name"
