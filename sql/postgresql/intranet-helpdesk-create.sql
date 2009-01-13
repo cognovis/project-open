@@ -38,7 +38,8 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 update acs_object_types set
 		status_type_table = 'im_tickets',
 		status_column = 'ticket_status_id',
-		type_column = 'ticket_type_id'
+		type_column = 'ticket_type_id',
+		type_category_type = 'Intranet Ticket Type'
 where object_type = 'im_ticket';
 
 SELECT im_category_new(101, 'Ticket', 'Intranet Project Type');
@@ -712,6 +713,8 @@ delete from im_categories where category_type = 'Intranet Ticket Action';
 SELECT im_category_new(30500, 'Close', 'Intranet Ticket Action');
 SELECT im_category_new(30510, 'Close &amp; notify', 'Intranet Ticket Action');
 SELECT im_category_new(30590, 'Delete', 'Intranet Ticket Action');
+SELECT im_category_new(30599, 'Nuke', 'Intranet Ticket Action');
+
 
 -- Custom screen for duplicate action to select base
 SELECT im_category_new(30520, 'Duplicated', 'Intranet Ticket Action');
@@ -1393,21 +1396,41 @@ SELECT im_dynfield_widget__new (
 	'ticket_po_components', 'Ticket &#93;po&#91; Components', 'Ticket &#93;po&#91; Components',
 	10007, 'integer', 'generic_sql', 'integer',
 	'{custom {sql {
-select
-	p.package_id,
-	substring(v.package_key ||' - '||coalesce(v.summary, '') for 40)
-from
-	apm_packages p,
-	apm_package_versions v,
-	(select package_key, max(version_name) as version_name from apm_package_versions group by package_key) g
-where
-	p.package_key = v.package_key and
-	v.package_key = g.package_key and
-	v.version_name = g.version_name and
-	v.package_key like 'intranet%'
+
+select	ci.conf_item_id,
+	ci.conf_item_name
+from	im_conf_items ci
+where	ci.conf_item_parent_id in (
+		select	conf_item_id
+		from	im_conf_items
+		where	conf_item_parent_id is null and
+			conf_item_nr = 'po'
+	)
 order by
-	v.package_key
+	ci.conf_item_nr
+
 }}}');
+
+
+
+
+
+-- select
+-- 	p.package_id,
+-- 	substring(v.package_key ||' - '||coalesce(v.summary, '') for 40)
+-- from
+-- 	apm_packages p,
+-- 	apm_package_versions v,
+-- 	(select package_key, max(version_name) as version_name from apm_package_versions group by package_key) g
+-- where
+-- 	p.package_key = v.package_key and
+-- 	v.package_key = g.package_key and
+-- 	v.version_name = g.version_name and
+-- 	v.package_key like 'intranet%'
+-- order by
+-- 	v.package_key
+-- 
+
 
 
 
