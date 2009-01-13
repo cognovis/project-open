@@ -85,7 +85,7 @@ if {$bundled_items_p} {
 }
 
 
-# Create Expense Bundle, basicly as a cost item with type "im_expense_bundle".
+# Create Expense Bundle, basically as a cost item with type "im_expense_bundle".
 db_transaction {
     set expense_bundle_id [db_exec_plsql create_expense_bundle ""] 
 
