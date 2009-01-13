@@ -24,7 +24,7 @@
         <parameters>
 
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="SearchResultsPerPage"  default="20" description="Default search results per page"/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="SearchTheWeb"  default="http://av.com/sites/search/web?q=%s AltaVista http://search.excite.com/search.gw?s=%s Excite http://www.google.com/search?q=%s Google http://hotbot.com/?MT=%s HotBot http://lycos.com/cgi-bin/pursuit?query=%s Lycos http://search.yahoo.com/search?p=%s Yahoo!" description="Search the Web (e.g. Google)"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="SearchTheWeb"  default="http://www.google.com/search?q=%s Google http://search.yahoo.com/search?p=%s Yahoo!" description="Search the Web (e.g. Google)"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="Symbol2Interval"  default="m3 {3 month ago} m6 {6 month ago} y1 {1 year ago}" description="Translate symbol to date interval."/>
 
         </parameters>
