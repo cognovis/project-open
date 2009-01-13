@@ -77,7 +77,7 @@ drop function inline_1();
 -- that core would need know about these extensions in
 -- advance.
 --
--- Menus entries are basicly mappings from a Name into a URL.
+-- Menus entries are basically mappings from a Name into a URL.
 --
 -- In addition, menu entries contain a parent_menu_id,
 -- allowing for a tree view of all menus (to build a left-
