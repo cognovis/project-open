@@ -103,7 +103,8 @@ ad_proc -public im_nagios_process_alert {
     set topic_id [db_nextval im_forum_topics_seq]
     set topic_type_id [im_topic_type_id_task]
     set topic_status_id [im_topic_status_id_open]
-    set owner_id [ad_get_user_id]
+    set owner_id 0
+    if {[ad_conn isconnected]} { set owner_id [ad_get_user_id] }
     set subject $ticket_name
 
     # "bodies" contains a Mime-Type - Content hash
