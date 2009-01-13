@@ -127,7 +127,7 @@ set company_id [db_string select_num_clients "select distinct company_id from im
 
 
 # Invoices: We're only looking for projects with non-invoiced tasks.
-# Quotes: We're looking basicly for all projects that satisfy the
+# Quotes: We're looking basically for all projects that satisfy the
 # filter conditions
 if {$target_cost_type_id == [im_cost_type_invoice]} {
     set task_invoice_id_null "and t.invoice_id is null\n"

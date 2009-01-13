@@ -254,7 +254,7 @@ if { ![empty_string_p $where_clause] } {
 
 
 # Invoices: We're only looking for projects with non-invoiced tasks.
-# Quotes: We're looking basicly for all projects that satisfy the 
+# Quotes: We're looking basically for all projects that satisfy the 
 # filter conditions
 if {$target_cost_type_id == [im_cost_type_invoice]} {
     set task_invoice_id_null "and invoice_id is null"
