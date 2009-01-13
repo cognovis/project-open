@@ -232,7 +232,10 @@ list::create \
 
 set assoc_tickets_sql "
 	select
-		p.*
+		t.*,
+		p.*,
+		p.project_name as ticket_name,
+		p.project_nr as ticket_nr
 	from
 		im_tickets t,
 		im_projects p

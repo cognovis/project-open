@@ -417,14 +417,15 @@ SELECT im_category_hierarchy_new('Computer Video Device','Hardware Component','I
 SELECT im_category_new(12000, 'Software Component', 'Intranet Conf Item Type'); 
 SELECT im_category_new(12002, 'Computer Software Package', 'Intranet Conf Item Type'); 
 SELECT im_category_new(12004, 'Computer Driver', 'Intranet Conf Item Type'); 
-
 SELECT im_category_new(12006, 'Software Application', 'Intranet Conf Item Type'); 
+SELECT im_category_new(12008, 'Project Open Package', 'Intranet Conf Item Type'); 
+
 
 SELECT im_category_hierarchy_new('Software Component','Software','Intranet Conf Item Type');
 SELECT im_category_hierarchy_new('Computer Software Package','Software Component','Intranet Conf Item Type');
 SELECT im_category_hierarchy_new('Computer Driver','Software Component','Intranet Conf Item Type');
-
 SELECT im_category_hierarchy_new('Software Application','Software','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Project Open Package','Software','Intranet Conf Item Type');
 
 -- reserved to 12099
 

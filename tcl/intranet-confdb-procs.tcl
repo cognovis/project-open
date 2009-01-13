@@ -25,6 +25,9 @@ ad_proc -public im_conf_item_type_specs {} { return 11808 }
 ad_proc -public im_conf_item_type_service {} { return 11810 }
 
 
+ad_proc -public im_conf_item_type_po_package {} { return 12008 }
+
+
 # ----------------------------------------------------------------------
 # PackageID
 # ----------------------------------------------------------------------
