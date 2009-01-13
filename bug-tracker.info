@@ -41,7 +41,7 @@
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="PatchesP"  default="1" description="Enable patch submissions for this project"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="TicketPrettyName"  default="bug" description="Pretty name of a ticket, e.g. 'ticket'. Use the capitalization that you would use in the middle of a sentence."/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="TicketPrettyPlural"  default="bugs" description="Plural pretty name of a ticket , e.g. 'tickets'. Use the capitalization that you would use in the middle of a sentence."/>
-            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="TruncateDescriptionLength"  default="200" description="At what length should bug descriptions be truncated on the bug list pgae."/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="TruncateDescriptionLength"  default="200" description="At what length should bug descriptions be truncated on the bug list page."/>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="VersionsP"  default="1" description="Enable versions for this project"/>
         </parameters>
 
