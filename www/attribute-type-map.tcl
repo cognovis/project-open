@@ -36,6 +36,14 @@ set acs_object_type $object_type
 # ToDo: Integrate type and status into metadata model.
 
 set category_type [im_dynfield::type_category_for_object_type -object_type $acs_object_type]
+if {"" == $category_type} { 
+    ad_return_complaint 1 "
+	No 'Type Category Type' defined for type '$object_type'<br>
+	The field 'acs_object_types.type_category_type' is empty for object type '$object_type'.<br>
+	This probably means that the SQL creation or upgrade scripts have not run for this object type.
+    "
+}
+
 
 set object_subtype_sql ""
 if {$object_subtype_id} {
