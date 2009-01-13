@@ -1,76 +1,76 @@
 <!-- packages/intranet-confdb/www/new.adp -->
 <!-- @author Frank Bergmann (frank.bergmann@project-open.com) -->
-
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<if @enable_master_p@>
 <master src="../../intranet-core/www/master">
+</if>
+
 <property name="title">@page_title@</property>
 <property name="context">@context_bar@</property>
 <property name="main_navbar_label">conf_items</property>
-
-<h2>@page_title@</h2>
+<property name="focus">@focus;noquote@</property>
+<property name="sub_navbar">@sub_navbar;noquote@</property>
 
 <if @message@ not nil>
   <div class="general-message">@message@</div>
 </if>
 
-<if @form_mode@ eq "display" >
-<table width="100%">
-  <tr valign="top">
-    <td width="50%">
 
-	      <table cellpadding=2 cellspacing=0 border=1 frame=void width='100%'>
-	        <tr>
-	         <td class=tableheader align=left width='99%'>
-		   <%= [lang::message::lookup "" intranet-confdb.Conf_Item "Configuration Item"] %>
-		 </td>
-	        </tr>
-	        <tr>
-	          <td class=tablebody>
+<if @view_name@ eq "component">
+
+   <%= [im_component_page -plugin_id $plugin_id -return_url "/intranet-helpdesk/new?ticket_id=$ticket_id"] %>
+
 </if>
-	    <formtemplate id=form></formtemplate>
-<if @form_mode@ eq "display" >
-		  </td>
-	        </tr>
-	      </table>
-      <br>
-      <%= [im_component_bay left] %>
-    </td>
-    <td width="50%">
+<else>
 
-	      <table cellpadding=2 cellspacing=0 border=1 frame=void width='100%'>
-	        <tr>
-	         <td class=tableheader align=left width='99%'>
-	<%= [lang::message::lookup "" intranet-confdb.Assoc_Projects "Associated Projects"] %>
-	         </td>
-	        </tr>
-	        <tr>
-	          <td class=tablebody>
-		    <listtemplate name="assoc_projects"></listtemplate>
-	          </td>
-	        </tr>
-	      </table>
+	
+	<if @show_components_p@>
+	
+		<%= [im_component_bay top] %>
+		<table width="100%">
+		  <tr valign="top">
+		    <td width="50%">
+			<%= [im_box_header [lang::message::lookup "" intranet-confdb.Conf_Item "Configuration Item"]] %>
+			<formtemplate id="conf_item"></formtemplate>
+			<%= [im_box_footer] %>
+			<%= [im_component_bay left] %>
+		    </td>
+		    <td width="50%">
 
-	<br>
+			<if $sub_item_count>
+			<%= [im_box_header [lang::message::lookup "" intranet-confdb.Sub_Items "Sub-Items"]] %>
+			<listtemplate name="@list_id@"></listtemplate>
+			<%= [im_box_footer] %>
+			</if>
 
-	      <table cellpadding=2 cellspacing=0 border=1 frame=void width='100%'>
-	        <tr>
-	         <td class=tableheader align=left width='99%'>
-	<%= [lang::message::lookup "" intranet-confdb.Associated_Tickets "Associated Tickets"] %>
-	         </td>
-	        </tr>
-	        <tr>
-	          <td class=tablebody>
-		    <listtemplate name="assoc_tickets"></listtemplate>
-	          </td>
-	        </tr>
-	      </table>
+			<%= [im_box_header [lang::message::lookup "" intranet-confdb.Assoc_Projects "Associated Projects"]] %>
+			<listtemplate name="assoc_projects"></listtemplate>
+			<%= [im_box_footer] %>
+			<br>
 
+			<%= [im_box_header [lang::message::lookup "" intranet-confdb.Associated_Tickets "Associated Tickets"]] %>
+			<listtemplate name="assoc_tickets"></listtemplate>
+			<%= [im_box_footer] %>
 
-	<br>
-      <%= [im_component_bay right] %>
-    </td>
-  </tr>
-</table>
+			<%= [im_component_bay right] %>
+
+		    </td>
+		  </tr>
+		</table>
+		<%= [im_component_bay bottom] %>
+
+	</if>
+	<else>
+	
+		<%= [im_box_header $page_title] %>
+		<formtemplate id="ticket"></formtemplate>
+		<%= [im_box_footer] %>
+	
+	</else>
+
+</else>
+
 
 <table width="100%">
   <tr valign="top">
@@ -79,6 +79,3 @@
   </td>
   </tr>
 </table>
-
-
-</if>

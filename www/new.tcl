@@ -1,7 +1,6 @@
 # /packages/intranet-confdb/www/new.tcl
 #
 # Copyright (c) 2003-2007 ]project-open[
-# all@devcon.project-open.com
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -13,19 +12,26 @@
 ad_page_contract {
     Show or create a new configuration item
     @author frank.bergmann@project-open.com
+    @parameter view_name Set to "component" in order to show a specific component
 } {
     conf_item_id:integer,optional
     {return_url ""}
     {form_mode "edit"}
+    {view_name ""}
 }
 
 set current_user_id [ad_maybe_redirect_for_registration]
 set user_admin_p 1
+set enable_master_p 1
+set focus ""
+set sub_navbar ""
 
 if {"display" == $form_mode} {
     set page_title [lang::message::lookup "" intranet-confdb.Conf_Item "Configuration Item"]
+    set show_components_p 1
 } else {
     set page_title [lang::message::lookup "" intranet-confdb.New_Conf_Item "New Configuration Item"]
+    set show_components_p 0
 }
 set context_bar [im_context_bar $page_title]
 
@@ -49,7 +55,7 @@ set cost_center_options [util_memoize "im_cost_center_options -include_empty 0" 
 set action_url "/intranet-confdb/new"
 
 
-set form_id "form"
+set form_id "conf_item"
 
 ad_form \
     -name $form_id \
@@ -146,6 +152,87 @@ ad_form -extend -name $form_id \
     }
 
 
+# ---------------------------------------------------------------
+# List of Sub-Items
+# ---------------------------------------------------------------
+
+set export_var_list [list]
+set list_id "conf_items_list"
+set bulk_actions_list [list]
+set delete_conf_item_p 0
+if {$delete_conf_item_p} {
+    lappend bulk_actions_list "[lang::message::lookup "" intranet-confdb.Delete "Delete"]" "conf-item-del" "[lang::message::lookup "" intranet-confdb.Remove_checked_items "Remove Checked Items"]"
+}
+
+template::list::create \
+    -name $list_id \
+    -multirow conf_item_lines \
+    -key conf_item_id \
+    -has_checkboxes \
+    -bulk_actions $bulk_actions_list \
+    -bulk_action_export_vars { return_url} \
+    -row_pretty_plural "[lang::message::lookup "" intranet-confdb.Conf_Items_Items {Conf Items}]" \
+    -elements {
+	conf_item_chk {
+	    label "<input type=\"checkbox\" 
+			  name=\"_dummy\" 
+			  onclick=\"acs_ListCheckAll('conf_items_list', this.checked)\" 
+			  title=\"Check/uncheck all rows\">"
+	    display_template {
+		@conf_item_lines.conf_item_chk;noquote@
+	    }
+	}
+	conf_item_name {
+	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Name Name]"
+	    display_template {
+		@conf_item_lines.indent;noquote@<a href=@conf_item_lines.conf_item_url;noquote@>@conf_item_lines.conf_item_name;noquote@</a>
+	    }
+	}
+	conf_item_status {
+	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Status Status]"
+	}
+    }
+
+set conf_item_sql [im_conf_item_select_sql \
+	-project_id "" \
+	-type_id "" \
+	-status_id "" \
+	-owner_id "" \
+	-cost_center_id "" \
+	-treelevel "" \
+	-parent_id $conf_item_id \
+]
+
+set sql "
+	select	i.*,
+		tree_level(i.tree_sortkey)-1 as indent_level,
+		p.project_id,
+		project_name
+	from	($conf_item_sql) i
+		LEFT OUTER JOIN acs_rels r ON (i.conf_item_id = r.object_id_two)
+		LEFT OUTER JOIN im_projects p ON (p.project_id = r.object_id_one)
+	order by
+		i.tree_sortkey
+"
+
+set sub_item_count 0
+db_multirow -extend {conf_item_chk conf_item_url indent return_url processor} conf_item_lines conf_items_lines $sql {
+    incr sub_item_count
+    set conf_item_chk "<input type=\"checkbox\" 
+				name=\"conf_item_id\" 
+				value=\"$conf_item_id\" 
+				id=\"conf_items_list,$conf_item_id\">"
+    set processor "${processor_num}x$processor_speed"
+    set return_url [im_url_with_query]
+    set conf_item_url [export_vars -base new {conf_item_id {form_mode "display"}}]
+
+    set indent ""
+    for {set i 0} {$i < $indent_level} {incr i} {
+	append indent "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+    }
+}
+
+
 
 # ---------------------------------------------------------------
 # Associated Projects
@@ -174,9 +261,9 @@ list::create \
     -elements {
 	conf_item_chk {
 	    label "<input type=\"checkbox\" 
-                          name=\"_dummy\" 
-                          onclick=\"acs_ListCheckAll('conf_items_list', this.checked)\" 
-                          title=\"Check/uncheck all rows\">"
+			name=\"_dummy\" 
+			onclick=\"acs_ListCheckAll('conf_items_list', this.checked)\" 
+			title=\"Check/uncheck all rows\">"
 	    display_template {
 		@assoc_projects_lines.conf_item_chk;noquote@
 	    }

@@ -149,6 +149,7 @@ ad_proc -public im_conf_item_select_sql {
     {-owner_id ""} 
     {-cost_center_id ""} 
     {-var_list "" }
+    {-parent_id ""}
     {-treelevel 0}
 } {
     Returns an SQL statement that allows you to select a range of
@@ -184,7 +185,7 @@ ad_proc -public im_conf_item_select_sql {
 
     set perm_where "
 	('t' = acs_permission__permission_p([subsite::main_site_id], [ad_get_user_id], 'view_conf_items_all') OR
-	conf_item_id in (
+	i.conf_item_id in (
 		-- User is explicit member of conf item
 		select	ci.conf_item_id
 		from	im_conf_items ci,
@@ -226,6 +227,12 @@ ad_proc -public im_conf_item_select_sql {
     if {"" != $type_id} { lappend extra_wheres "i.conf_item_type_id in ([join [im_sub_categories $type_id] ","])" }
     if {"" != $treelevel} { lappend extra_wheres "tree_level(i.tree_sortkey) <= 1+$treelevel" }
     if {"" != $perm_where} { lappend extra_wheres $perm_where }
+    if {"" != $parent_id} { 
+	lappend extra_wheres "parent.conf_item_id = $parent_id" 
+	lappend extra_wheres "i.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)" 
+	lappend extra_wheres "i.conf_item_id != parent.conf_item_id" 
+	lappend extra_froms "im_conf_items parent"
+    }
 
     set extra_from [join $extra_froms "\n\t\t,"]
     set extra_where [join $extra_wheres "\n\t\tand "]
@@ -237,11 +244,11 @@ ad_proc -public im_conf_item_select_sql {
         select distinct
 		i.*,
 		tree_level(i.tree_sortkey)-1 as conf_item_level,
-		im_category_from_id(conf_item_status_id) as conf_item_status,
-		im_category_from_id(conf_item_type_id) as conf_item_type,
-		im_conf_item_name_from_id(conf_item_parent_id) as conf_item_parent,
-		im_cost_center_code_from_id(conf_item_cost_center_id) as conf_item_cost_center,
-		im_name_from_user_id(conf_item_owner_id) as conf_item_owner
+		im_category_from_id(i.conf_item_status_id) as conf_item_status,
+		im_category_from_id(i.conf_item_type_id) as conf_item_type,
+		im_conf_item_name_from_id(i.conf_item_parent_id) as conf_item_parent,
+		im_cost_center_code_from_id(i.conf_item_cost_center_id) as conf_item_cost_center,
+		im_name_from_user_id(i.conf_item_owner_id) as conf_item_owner
         from	im_conf_items i	
 		$extra_from
 	where	1=1 
