@@ -1,8 +1,9 @@
 -- upgrade-3.4.0.3.2-3.4.0.4.0.sql
-
 -- Fix implementation for user skins
 
+
 alter table users add skin_id integer references im_categories;
+
 
 --        { 0  "left"          "Default" }
 --        { 1  "opus5"         "Light Green" }
