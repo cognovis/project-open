@@ -8,6 +8,9 @@
 <property name="focus">@focus;noquote@</property>
 <property name="sub_navbar">@sub_navbar;noquote@</property>
 
+
+<div id="fullwidth-list" class="fullwidth-list-no-side-bar">
+
 <if @message@ not nil>
   <div class="general-message">@message@</div>
 </if>
@@ -53,3 +56,4 @@
 	</else>
 
 </else>
+</div>
