@@ -1,6 +1,28 @@
 <?xml version="1.0"?>
 <queryset>
 
+<fullquery name="im_dynfield::elements.select_elements">
+  <querytext>
+        select ida.attribute_id as dynfield_attribute_id,
+               tam.required_p,
+               tam.section_heading,
+               aa.attribute_id,
+               aa.attribute_name,
+               aa.pretty_name,
+               pos_y as sort_order,
+               ida.widget_name as widget
+       	  from im_dynfield_attributes ida,
+               acs_attributes aa,
+               im_dynfield_type_attribute_map tam,
+               im_dynfield_layout idl
+         where ida.acs_attribute_id = aa.attribute_id
+               and tam.attribute_id = ida.attribute_id
+               and ida.attribute_id = idl.attribute_id
+               and tam.object_type_id in ($list_ids)
+               order by sort_order
+  </querytext>
+</fullquery>
+
 <fullquery name="im_dynfield::ad_form::elements.select_elements">
   <querytext>
         select im_dynfield_attribute_id, required_p

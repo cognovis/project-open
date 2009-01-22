@@ -227,17 +227,9 @@
                alam.section_heading,
                aa.attribute_name,
                aa.pretty_name,
-               aa.widget,
-               av.value
-        from ams_list_attribute_map alam,
-               ams_attributes aa left join (
-                  select 
-			ams_attribute_values.attribute_id,
-                        ams_attribute_value__value(ams_attribute_values.attribute_id,ams_attribute_values.value_id) as value
-                  from 
-			ams_attribute_values
-                  where 
-			ams_attribute_values.object_id = :object_id ) av on ( aa.attribute_id = av.attribute_id )
+               aa.widget
+          from ams_list_attribute_map alam,
+               ams_attributes aa
         where 
 		alam.attribute_id = aa.attribute_id
          	and alam.list_id in ($list_ids)

@@ -11,7 +11,13 @@ ad_library {
 
 namespace eval attribute { 
 
-
+ad_proc -public name {
+    attribute_id
+} {
+    this code returns the name of an attribute
+} {
+    return [db_string get_attribute_name {} -default ""]
+}
 
 ad_proc -public delete_xt { im_dynfield_attribute_id } {
     Intranet-Dynfield extended version of deleting the specified attribute id 
@@ -147,14 +153,24 @@ ad_proc -public add_xt {
 		and attribute_name = :attribute_name
     "]
 
+    # Deal with multimaps and the fact that they are stored in a different table
+    if {[lsearch [im_dynfield_multimap_ids] $storage_type_id] < 0} {
+        set multimap_p 0
+    } else {
+        set multimap_p 1
+        set table_name ""
+    }
+    
     db_transaction {
 	if {!$attribute_exists_p} {
 	    db_exec_plsql create_attribute ""
         }
 
+
+
 	# Add the column to the table if it doesn't already exist
 	# and if the attribut's storage type if "value" (not a multimap)
-	if {[string equal $modify_sql_p "t"] && ![db_column_exists $table_name $attribute_name] && $storage_type_id == [im_dynfield_storage_type_id_value] } {
+	if {[string equal $modify_sql_p "t"] && ![db_column_exists $table_name $attribute_name] && !$multimap_p } {
 
 	    db_dml add_column "alter table $table_name add column $attribute_name $sql_datatype"
 	}
@@ -169,7 +185,4 @@ ad_proc -public add_xt {
 
 }
 
-
-# end of namespace attribute
 }
-

@@ -71,8 +71,7 @@ ad_proc -public template::widget::generic_sql { element_reference tag_attributes
 	<pre>$errmsg</pre>"
     }
     set sql_html ""
-    set default_value ""
-    if {[info exists element(value)]} { set default_value $element(value) }
+    set default_value $element(value)
     if { "edit" != $element(mode) } {
     	foreach sql $key_value_list {
 		set key [lindex $sql 0]

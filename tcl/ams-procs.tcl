@@ -692,6 +692,9 @@ ad_proc -public ams::values_not_cached {
 	}
     }
 
+    # Get the party information
+    set party [::im::dynfield::Class get_instance_from_db -id $object_id]
+
     # To use in the query
     set orderby_clause [ams::util::orderby_clause -list_ids $list_ids]
     set list_ids [template::util::tcl_to_sql_list $list_ids]
@@ -706,7 +709,7 @@ ad_proc -public ams::values_not_cached {
 	
 	set all_attributes [db_list_of_lists select_values {}]
 	
-        foreach attribute $all_attributes {
+    foreach attribute $all_attributes {
 	    set attribute_id [lindex $attribute 0]
 	    if { [string equal [lsearch $control_list $attribute_id] "-1"] } {
 		lappend control_list $attribute_id
@@ -714,8 +717,9 @@ ad_proc -public ams::values_not_cached {
 		set attribute_name  [lindex $attribute 2]
 		set pretty_name     [lindex $attribute 3]
 		set widget          [lindex $attribute 4]
-		set value           [lindex $attribute 5]
+		set value           [$party set $attribute_name]
 		
+		# Deal with richtext values
 		set val [list]
 		if { [regexp "\{text/.*\}" $value value_format] } {
 		    lappend val [lindex $value_format 0]
@@ -727,6 +731,7 @@ ad_proc -public ams::values_not_cached {
 		if { [exists_and_not_null section_heading] } {
 		    set heading $section_heading
 		}
+		
 		if { [exists_and_not_null value] } {
 		    lappend values $heading $attribute_name $pretty_name [ams::widget \
 									      -widget $widget \
@@ -798,16 +803,14 @@ ad_proc -public ams::value_not_cached {
     
     @error
 } {
-    if {[exists_and_not_null attribute_id]} {
-	set where_clause "and aa.attribute_id = :attribute_id"
-    } else {
-	set where_clause "and aa.attribute_name = :attribute_name"
-    }
+    if {![exists_and_not_null attribute_name]} {
+	    set attribute_name [attribute::name -attribute_id $attribute_id]
+	}
     
-    if {[db_0or1row select_value {}]} {
-	return [ams::widget -widget $widget -request "value_${format}" -attribute_name $attribute_name -attribute_id $attribute_id -value $value -locale $locale]
-    } else {
-	return ""
-    }
+    set object [::im::dynfield::Class get_instance_from_db -id $object_id]
+    
+    set value [$object $attribute_name]
+
+	return [ams::widget -widget $widget -request "value_${format}" -attribute_name $attribute_name -value $value -locale $locale]
 }
 

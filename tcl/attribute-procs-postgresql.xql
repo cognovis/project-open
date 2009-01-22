@@ -24,6 +24,11 @@
 	</querytext>
 </fullquery>
 
+<fullquery name="attribute::name.get_attribute_name">
+  <querytext>
+        select attribute_name from acs_attributes where attribute_id = :attribute_id
+  </querytext>
+</fullquery>
 
 <fullquery name="attribute::delete_xt.drop_attribute">
 <querytext>
