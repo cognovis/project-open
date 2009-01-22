@@ -64,8 +64,6 @@ create table im_dynfield_type_attribute_map (
 	unique (attribute_id, object_type_id)
 );
 
--- alter table im_dynfield_type_attribute_map add FOREIGN KEY (attribute_id) references acs_objects;
-
 
 -- ------------------------------------------------------------------
 -- AMS Compatibility
@@ -276,6 +274,26 @@ create table im_dynfield_attr_multi_value (
 
 
 
+-- ------------------------------------------------------------------
+-- dynfield_cat_multi_value
+-- ------------------------------------------------------------------
+
+-- Allows to store multi-value category values that dont fit in the
+-- objects table such as a multiple select box or category based checkbox
+
+create table im_dynfield_cat_multi_value (
+	attribute_id		integer not null
+				constraint cat_multi_val_attr_id_fk
+				references im_dynfield_attributes,
+	object_id		 integer not null
+				constraint cat_multi_val_obj_id_fk
+				references acs_objects,
+	category_id		integer not null
+				constraint cat_multi_val_cat_id_fk
+				references im_categories
+);
+
+
 
 -- ------------------------------------------------------------------
 -- Layout
@@ -343,6 +361,7 @@ create table im_dynfield_layout (
 alter table im_dynfield_layout 
 add constraint im_dynfield_layout_pk 
 primary key (attribute_id, page_url, object_type);
+
 
 -- Skip the foreign key meanwhile so that we dont have to add the 
 -- page_layout for the beginning. By default, a "table" layout will
@@ -687,13 +706,13 @@ end;' language 'plpgsql';
 
 create or replace function im_dynfield_widget__name (integer) returns varchar as '
 DECLARE
-	p_widget_id	alias for $1;
-	v_name		varchar;
+	p_widget_id		alias for $1;
+	v_name			varchar;
 BEGIN
-	select  widget_name
+	select	widget_name
 	into	v_name
 	from	im_dynfield_widgets
-	where   widget_id = p_widget_id;
+	where	widget_id = p_widget_id;
 
 	return v_name;
 end;' language 'plpgsql';
@@ -861,7 +880,11 @@ BEGIN
 	IF v_widget_id is null THEN return 1; END IF;
 
 	select	count(*) from im_dynfield_attributes into v_count
-	where	acs_attribute_id in (select attribute_id from acs_attributes where attribute_name = p_column_name);
+	where	acs_attribute_id in (
+			select attribute_id 
+			from acs_attributes 
+			where attribute_name = p_column_name
+		);
 	IF v_count > 0 THEN return 1; END IF;
 
 	v_min_n_value := 0;
@@ -878,9 +901,9 @@ BEGIN
 	where attribute_id = v_dynfield_id;
 
 	insert into im_dynfield_layout (
-		object_type, attribute_id, page_url, pos_y, label_style
+		attribute_id, page_url, pos_y, label_style
 	) values (
-		p_object_type, v_dynfield_id, ''default'', p_pos_y, ''table''
+		v_dynfield_id, ''default'', p_pos_y, ''table''
 	);
 
 	-- set all im_dynfield_type_attribute_map to "edit"
@@ -966,8 +989,8 @@ end;' language 'plpgsql';
 
 create or replace function im_dynfield_attribute__name (integer) returns varchar as '
 DECLARE
-	p_attribute_id	alias for $1;
-	v_name		varchar;
+	p_attribute_id		alias for $1;
+	v_name			varchar;
 	v_acs_attribute_id	integer;
 BEGIN
 	-- get the acs_attribute_id
@@ -1313,102 +1336,76 @@ select im_dynfield_widget__new (
 	'{custom {start_cc_id ""} {department_only_p 1} {include_empty_p 1} {translate_p 0}}'
 );
 
+select im_dynfield_widget__new(
+	NULL,
+	'im_dynfield_widget',
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	'biz_object_member_type',
+	'#intranet-core.Biz_Object_Role#',
+	'#intranet-core.Biz_Object_Role#',
+	10007,
+	'integer',
+	'im_category_tree',
+	'integer',
+	'{{custom {category_type "Intranet Biz Object Role"}}}'
+);
 
-create or replace function inline_0 ()
-returns integer as '
-declare
-	v_count		integer;
-begin
-	select count(*) into v_count
-	from im_dynfield_widgets where widget_name = ''currencies'';
-	IF 0 != v_count THEN return 0; END IF;
 
-	PERFORM im_dynfield_widget__new (
+SELECT im_dynfield_widget__new (
 		null,			-- widget_id
-		''im_dynfield_widget'',	-- object_type
+		'im_dynfield_widget',	-- object_type
 		now(),			-- creation_date
 		null,			-- creation_user
 		null,			-- creation_ip
 		null,			-- context_id
 	
-		''currencies'',		-- widget_name
-		''#intranet-core.Currency#'',	-- pretty_name
-		''#intranet-core.Currencies#'',	-- pretty_plural
+		'currencies',		-- widget_name
+		'#intranet-core.Currency#',	-- pretty_name
+		'#intranet-core.Currencies#',	-- pretty_plural
 		10007,			-- storage_type_id
-		''string'',		-- acs_datatype
-		''generic_sql'',		-- widget
-		''char(3)'',		-- sql_datatype
-		''{custom {sql {select iso, iso from currency_codes where supported_p = ''''t'''' }}}''
-	);
+		'string',		-- acs_datatype
+		'generic_sql',		-- widget
+		'char(3)',		-- sql_datatype
+		'{custom {sql {select iso, iso from currency_codes where supported_p = ''t''}}}'
+);
 
-	return 0;
-end;' language 'plpgsql';
-select inline_0 ();
-drop function inline_0 ();
-
-
-
-create or replace function inline_0 ()
-returns integer as '
-declare
-	v_count		integer;
-begin
-	select count(*) into v_count
-	from im_dynfield_widgets where widget_name = ''category_payment_method'';
-	IF 0 != v_count THEN return 0; END IF;
-
-	PERFORM im_dynfield_widget__new (
+SELECT im_dynfield_widget__new (
 		null,			-- widget_id
-		''im_dynfield_widget'',	-- object_type
+		'im_dynfield_widget',	-- object_type
 		now(),			-- creation_date
 		null,			-- creation_user
 		null,			-- creation_ip
 		null,			-- context_id
 	
-		''category_payment_method'',		-- widget_name
-		''#intranet-core.Payment_Method#'',	-- pretty_name
-		''#intranet-core.Payment_Methods#'',	-- pretty_plural
+		'category_payment_method',		-- widget_name
+		'#intranet-core.Payment_Method#',	-- pretty_name
+		'#intranet-core.Payment_Methods#',	-- pretty_plural
 		10007,			-- storage_type_id
-		''integer'',		-- acs_datatype
-		''im_category_tree'',	-- widget
-		''integer'',		-- sql_datatype
-		''{custom {category_type "Intranet Invoice Payment Method"}}'' -- parameters
-	);
+		'integer',		-- acs_datatype
+		'im_category_tree',	-- widget
+		'integer',		-- sql_datatype
+		'{custom {category_type "Intranet Invoice Payment Method"}}' -- parameters
+);
 
-	return 0;
-end;' language 'plpgsql';
-select inline_0 ();
-drop function inline_0 ();
-
-
-
-
-
-create or replace function inline_0 ()
-returns integer as '
-declare
-	v_count		integer;
-begin
-	select count(*) into v_count
-	from im_dynfield_widgets where widget_name = ''customers_active'';
-	IF 0 != v_count THEN return 0; END IF;
-
-	PERFORM im_dynfield_widget__new (
+SELECT im_dynfield_widget__new (
 		null,			-- widget_id
-		''im_dynfield_widget'',	-- object_type
+		'im_dynfield_widget',	-- object_type
 		now(),			-- creation_date
 		null,			-- creation_user
 		null,			-- creation_ip
 		null,			-- context_id
 	
-		''customers_active'',		-- widget_name
-		''#intranet-core.Customers#'',	-- pretty_name
-		''#intranet-core.Customers'',	-- pretty_plural
+		'customers_active',		-- widget_name
+		'#intranet-core.Customers#',	-- pretty_name
+		'#intranet-core.Customers',	-- pretty_plural
 		10007,			-- storage_type_id
-		''integer'',		-- acs_datatype
-		''generic_sql'',	-- widget
-		''integer'',		-- sql_datatype
-		''{custom {sql {
+		'integer',		-- acs_datatype
+		'generic_sql',	-- widget
+		'integer',		-- sql_datatype
+		'{custom {sql {
 select
 	c.company_id,
 	c.company_name
@@ -1419,15 +1416,8 @@ where
 	and c.company_status_id in (select 46 union select child_id from im_category_hierarchy where parent_id = 46)
 order by
 	c.company_name
-		}}}''
-	);
-
-	return 0;
-end;' language 'plpgsql';
-select inline_0 ();
-drop function inline_0 ();
-
-
+		}}}'
+);
 
 
 
@@ -1438,13 +1428,13 @@ drop function inline_0 ();
 --
 
 --	im_dynfield_attribute_new:
---	p_object_type           alias for $1;
---	p_column_name           alias for $2;
---	p_pretty_name           alias for $3;
---	p_widget_name           alias for $4;
---	p_datatype              alias for $5;
---	p_required_p            alias for $6;
---	p_pos_y                 alias for $7;
+--	p_object_type		alias for $1;
+--	p_column_name		alias for $2;
+--	p_pretty_name		alias for $3;
+--	p_widget_name		alias for $4;
+--	p_datatype		alias for $5;
+--	p_required_p		alias for $6;
+--	p_pos_y			alias for $7;
 --	p_also_hard_coded_p     alias for $8;
 
 -- Add dynfields for persons
@@ -1487,13 +1477,13 @@ SELECT im_dynfield_attribute_new ('im_office','address_country_code','Country', 
 create or replace function inline_0 ()
 returns integer as '
 declare
-	v_attrib_name	varchar;	
-	v_attrib_pretty	varchar;
+	v_attrib_name		varchar;	
+	v_attrib_pretty		varchar;
 	v_object_name		varchar;
 	v_table_name		varchar;
-	v_acs_attrib_id	integer;	
+	v_acs_attrib_id		integer;	
 	v_attrib_id		integer;
-	v_count		integer;
+	v_count			integer;
 begin
 	v_attrib_name := ''default_vat'';
 	v_attrib_pretty := ''Default VAT'';
@@ -1537,7 +1527,7 @@ drop function inline_0 ();
 create or replace function inline_0 ()
 returns integer as '
 declare
-	v_attrib_name	varchar;	v_attrib_pretty	varchar;
+	v_attrib_name		varchar;	v_attrib_pretty	varchar;
 	v_object_name		varchar;	v_table_name		varchar;
 	v_widget_name		varchar;	v_data_type		varchar;
 
@@ -2085,6 +2075,3 @@ create table im_dynfield_page_fields (
 	sort_key		integer
 );
 
-alter table im_dynfield_layout 
-add constraint im_dynfield_layout_pk 
-primary key (attribute_id, page_url, object_type);
