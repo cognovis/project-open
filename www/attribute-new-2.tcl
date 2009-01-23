@@ -15,9 +15,15 @@ ad_page_contract {
     {required_p:notnull}
     {modify_sql_p:notnull}
     {deprecated_p "f"}
+    {include_in_search_p "f"}
+    {also_hard_coded_p "f"}
     {datatype ""}
     {default_value ""}
     {description ""}
+    {label_style ""}
+    {pos_y "0"}
+    {list_id ""}
+    {return_url ""}
 }
 
 # ------------------------------------------------------------------
@@ -50,7 +56,6 @@ db_1row select_widget_pretty_and_storage_type {
 	where	widget_name = :widget_name 
 }
 
-set return_url "object-type?[export_vars -url {object_type}]"
 set user_message "Attribute <a href=\"attribute?[export_vars -url {attribute_id}]\">$pretty_name</a> Created."
 
 
@@ -63,20 +68,9 @@ if {"" == $datatype} {
     " -default "string"]
 }
 
-
-# Right now, we do not support number restrictions for attributes
-set max_n_values 1
-if { [string eq $required_p "t"] } {
-    set min_n_values 1
-} else {
-    set min_n_values 0
-}
-
 set attribute_name [string tolower $attribute_name]
 set acs_attribute_exists [attribute::exists_p $object_type $attribute_name]
 set im_dynfield_attribute_exists [im_dynfield::attribute::exists_p -object_type $object_type -attribute_name $attribute_name]
-
-# ad_return_complaint 1 "acs_attribute_exists=$acs_attribute_exists, im_dynfield_attribute_exists=$im_dynfield_attribute_exists"
 
 # Make sure there is an entry in acs_object_type_tables for the
 # object type's main table. This table is needed by a RI constraint
@@ -102,72 +96,40 @@ if {!$extension_table_exists_p} {
 }
 
 
-# Add the attributes to the specified object_type
-db_transaction {
+# ------------------------------------------------------------------
+# Create the attribute
+# ------------------------------------------------------------------
 
-    if {!$acs_attribute_exists} {
+set dynfield_attribute_id [im_dynfield::attribute::add \
+			       -object_type $object_type \
+			       -widget_name $widget_name \
+			       -attribute_id $attribute_id \
+			       -attribute_name $attribute_name \
+			       -pretty_name $pretty_name \
+			       -pretty_plural $pretty_plural \
+			       -table_name $table_name \
+			       -required_p $required_p \
+			       -modify_sql_p $modify_sql_p \
+			       -deprecated_p $deprecated_p \
+			       -datatype $datatype \
+			       -default_value $default_value \
+			       -include_in_search_p $include_in_search_p \
+			       -also_hard_coded_p $also_hard_coded_p \
+			       -label_style $label_style \
+			       -pos_y $pos_y \
+]
 
-	    set acs_attribute_id [attribute::add_xt \
-	    	-min_n_values $min_n_values \
-	    	-max_n_values $max_n_values \
-	    	-default $default_value \
-	    	-modify_sql_p $modify_sql_p \
-	    	-table_name $table_name \
-	    	-attribute_name $attribute_name \
-		-storage_type_id $storage_type_id \
-	    	$object_type $datatype \
-	    	$pretty_name $pretty_plural \
-	    ]
 
-	    # Distinguish between the table_name from acs_attributes
-	    # and the table name in acs_objects.
-	    # Only set the table_name in acs_attributes if it's different
-	    # from the table in acs_objects.
-	    if {$object_info(table_name) != $table_name} {
-	    	db_dml "update acs_attribute table_name" "
-	    		update acs_attributes 
-	    		       set table_name = :table_name 
-	    		where attribute_id = :acs_attribute_id"
-	    }
+# ------------------------------------------------------------------
+# Map to the list
+# ------------------------------------------------------------------
 
-    } else {
-
-	set acs_attribute_id [db_string acs_attribute_id "
-		select attribute_id 
-		from acs_attributes 
-		where 
-			object_type = :object_type
-			and attribute_name = :attribute_name"
-	]
-    }
-
-    if {!$im_dynfield_attribute_exists} {
-
-	# Let's create the new intranet-dynfield attribute
-	# We're using exclusively TCL code here (not PL/PG/SQL
-	# API).
-	set attribute_id [db_exec_plsql create_object "
-	    select acs_object__new (
-                null,
-                'im_dynfield_attribute',
-                now(),
-                '[ad_get_user_id]',
-                null,
-                null
-	    );
-        "]
-
-	db_dml insert_im_dynfield_attributes "
-            insert into im_dynfield_attributes
-                (attribute_id, acs_attribute_id, widget_name, deprecated_p)
-            values
-                (:attribute_id, :acs_attribute_id, :widget_name, :deprecated_p)
-        "
-	
-    } else {
-    	
-    }
+set list_id_sql "select distinct object_type_id from im_dynfield_type_attribute_map where attribute_id = :dynfield_attribute_id"
+foreach list [db_list list_ids $list_id_sql] {
+    im_dynfield::attribute::map -list_id $list_id -attribute_id $dynfield_attribute_id
+    ::im::dynfield::Element flush -id $dynfield_attribute_id -list_id $list_id
 }
+
 
 # ------------------------------------------------------------------
 # Set permissions for the dynfield so that it is visible by default
@@ -188,38 +150,62 @@ db_string freel_perms "select acs_permission__grant_permission(:attribute_id, [i
 # DynField is visible by default
 # ------------------------------------------------------------------
 
-set type_category [im_dynfield::type_category_for_object_type -object_type $object_type]
-set cats_sql "
+set exists_p [db_string exists "
+	select count(*) from im_dynfield_type_attribute_map 
+	where attribute_id = :attribute_id and object_type_id = :object_type_id
+"]
+if {!$exists_p} {
+
+    set type_category [im_dynfield::type_category_for_object_type -object_type $object_type]
+
+    set cats_sql "
 	select	category_id as object_type_id
 	from	im_categories
 	where	category_type = :type_category
-"
-db_foreach cats $cats_sql {
-   
-    set exists_p [db_string exists "
-	select count(*) from im_dynfield_type_attribute_map 
-	where attribute_id = :attribute_id and object_type_id = :object_type_id
-    "]
-
-    if {!$exists_p} {
-    db_dml insert "
-	insert into im_dynfield_type_attribute_map (
-		attribute_id,
-		object_type_id,
-		display_mode
-	) values (
-		:attribute_id,
-		:object_type_id,
-		'edit'
-	)
     "
+    db_foreach cats $cats_sql {
+   
+	db_dml insert "
+		insert into im_dynfield_type_attribute_map (
+			attribute_id,
+			object_type_id,
+			display_mode
+		) values (
+			:attribute_id,
+			:object_type_id,
+			'edit'
+		)
+	"
     }
+}
+
+
+# ------------------------------------------------------------------
+# Reload the class
+# ------------------------------------------------------------------
+
+upvar #0 object_type object_type2
+set object_type2 $object_type
+uplevel #0 {
+    set class [::im::dynfield::Class object_type_to_class $object_type]
+    $class destroy
+    ::im::dynfield::Class get_class_from_db -object_type $object_type
 }
 
 
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
+
+# set return_url "object-type?[export_vars -url {object_type}]"
+
+if {$return_url eq ""} {
+    if {$list_id ne ""} {
+        set return_url [export_vars -base "list" -url {list_id}]
+    } else {
+        set return_url "object-type?[export_vars -url {object_type}]"
+    }
+}
 
 # If we're an enumeration, redirect to start adding possible values.
 if { [string equal $datatype "enumeration"] } {
@@ -229,6 +215,3 @@ if { [string equal $datatype "enumeration"] } {
 } else {
     ad_returnredirect $return_url
 }
-
-
-#ad_return_template
