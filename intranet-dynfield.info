@@ -19,6 +19,8 @@
         <requires url="intranet-core" version="3.4.0.0.0"/>
 
         <callbacks>
+	    <callback type="after-install"  proc="im_dynfield::package_install"/>
+            <callback type="after-upgrade"  proc="im_dynfield::after_upgrade"/>
         </callbacks>
         <parameters>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="form_style"  default="aims-form" description="This is the default file we use to render form templates that do not use layout manager. Do not add the .adp extension to the filename."/>
@@ -29,7 +31,7 @@ Do not add the .adp extension to the filename"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="relative_template"  default="default-absolute" description="This is the default file we use to render form templates that use relative template. This file has to work like the grid tag in the templating system.
 Do not add the .adp extension to the filename"/>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="GenericSQLWidgetMemoizeMaxAgeDefault"  default="600" description="Default cache timeout for generic_sql widgets. Can be overwritten by individual widgets using the parameter 'memoize_max_age'"/>
-
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="object_types"  default="im_company,im_office,im_project,im_ticket,person,im_freelance_rfq,im_freelance_rfq_answer,im_conf_item,im_user_absence,im_expense,im_expense_bundle" description="Comma seperated list of object types that are dynfieldified."/>
         </parameters>
 
     </version>

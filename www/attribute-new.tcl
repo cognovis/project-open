@@ -12,6 +12,8 @@ ad_page_contract {
     {modify_sql_p "f"}
     {action ""}
     {label_style "plain" }
+    {list_id ""}
+    {return_url ""}
 }
 
 # ******************************************************
@@ -254,7 +256,13 @@ lappend form_fields {
 	{value $required_p}
 	{help_text "Should the user be required to specifiy this field?"}
 }
-lappend form_fields {object_type:text(hidden) {label {Object Type}} {} {html {size 30 maxlength 100}}  }
+
+lappend form_fields {object_type:text(hidden)}
+
+lappend form_fields {list_id:text(hidden),optional}
+
+lappend form_fields {return_url:text(hidden),optional}
+
 lappend form_fields {
 	widget_name:text(select) 
 	{label Widget} 
@@ -392,9 +400,11 @@ ad_form -name attribute_form -form $form_fields -new_request {
     	set attribute_name $a_name
     }
 
-    ad_returnredirect "attribute-new-2?[export_vars -url {object_type widget_name attribute_name pretty_name table_name required_p modify_sql_p pretty_plural description}]"
+    if {$return_url eq ""} {
+        set return_url [ad_return_url]
+    }
+    ad_returnredirect "attribute-new-2?[export_vars -url {object_type widget_name attribute_name pretty_name table_name required_p modify_sql_p pretty_plural description also_hard_coded_p pos_y label_style list_id return_url attribute_id}]"
     ad_script_abort
-
 }
 
 ad_return_template

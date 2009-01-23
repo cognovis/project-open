@@ -10,6 +10,8 @@
 	
   <li><a href="permissions"><b>Permissions</b></a>:<br>
 	Defines who can read or write a DynField.
+
+  <li><a href="@param_url;noquote@"><b>Parameters</b></a><br>
 	
   <li><a href="widgets"><b>Widgets</b></a><br>
 	DynField-Widgets are pieces of HTML code to display the value of
