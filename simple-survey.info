@@ -8,7 +8,7 @@
     <initial-install-p>f</initial-install-p>
     <singleton-p>f</singleton-p>
 
-    <version name="0.2d" url="http://openacs.org/repository/download/apm/simple-survey-0.2d.apm">
+    <version name="0.2" url="http://openacs.org/repository/download/apm/simple-survey-0.2.apm">
     <database-support>
         <database>oracle</database>
         <database>postgresql</database>
