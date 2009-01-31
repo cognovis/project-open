@@ -697,7 +697,7 @@ SELECT im_category_new(31300, 'Requests for new/additional services', 'Intranet 
 
 
 -- 30200-30299 - Intranet Ticket User Priority
-SELECT im_category_new(30201, '1 - Highest', 'Intranet Ticket Priority');
+SELECT im_category_new(30201, '1', 'Intranet Ticket Priority');
 SELECT im_category_new(30202, '2', 'Intranet Ticket Priority');
 SELECT im_category_new(30203, '3', 'Intranet Ticket Priority');
 SELECT im_category_new(30204, '4', 'Intranet Ticket Priority');
@@ -705,7 +705,7 @@ SELECT im_category_new(30205, '5', 'Intranet Ticket Priority');
 SELECT im_category_new(30206, '6', 'Intranet Ticket Priority');
 SELECT im_category_new(30207, '7', 'Intranet Ticket Priority');
 SELECT im_category_new(30208, '8', 'Intranet Ticket Priority');
-SELECT im_category_new(30209, '9 - Lowest', 'Intranet Ticket Priority');
+SELECT im_category_new(30209, '9', 'Intranet Ticket Priority');
 
 
 -- 30500-30599 - Intranet Ticket Action
