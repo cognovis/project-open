@@ -22,6 +22,7 @@ a lot of different options in the past in order to tackle this issue and to
 make open-source ERPs work. We even have designed a new type of open-source 
 software license. However, all this hasn't worked out.
 
+
 "Mixed Source" Model
 
 So we have come up with a "mixed source" model for ]project-open[ that is 
@@ -53,9 +54,13 @@ Free for IT	yes		no		no
 consulting 
 companies?
 
+
+To determine the license of a given package please check the <package>.info 
+file in the top directory of every package and check the "License" field.
+
 Our hope is that these conditions are interesting for small and medium 
-companies and that it will finally lead to an "Open-Source Marketplace" 
-(see below). We hope that the combination of these licenses allow all of it:
+companies and that it will finally lead to an "Open-Source Marketplace".
+We hope that the combination of these licenses allow all of it:
 
     * A sprawling open-source software project,
     * Maximum value and freedom for customer,
