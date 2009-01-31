@@ -16,6 +16,7 @@
         <description format="text/plain">Retreives security update messages from the security update server</description>
 
         <provides url="intranet-security-update-client" version="3.2.7.0.0"/>
+        <requires url="intranet-core" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>
