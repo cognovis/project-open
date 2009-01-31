@@ -9,3 +9,9 @@
 
 
 select im_menu__del_module('intranet-reporting-cubes');
+select im_component_plugin__del_module('intranet-reporting-cubes');
+
+drop table im_reporting_cube_values;
+drop sequence im_reporting_cube_values_seq;
+drop table im_reporting_cubes;
+drop sequence im_reporting_cubes_seq;
