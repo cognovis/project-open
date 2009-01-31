@@ -19,10 +19,8 @@
 -----------------------------------------------------
 -- Drop menus and components defined by the module
 
--- BEGIN
-    select im_menu__del_module('intranet-hr');
-    select im_component_plugin__del_module('intranet-hr');
--- END;
+select im_menu__del_module('intranet-reporting-dashboard');
+select im_component_plugin__del_module('intranet-reporting-dashboard');
 
 -- show errors;
 
