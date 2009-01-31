@@ -9,3 +9,5 @@
 
 
 select im_menu__del_module('intranet-reporting-finance');
+select im_component_plugin__del_module('intranet-reporting-finance');
+
