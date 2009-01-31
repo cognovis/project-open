@@ -8,13 +8,14 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-milestone</auto-mount>
 
-    <version name="0.1d" url="http://openacs.org/repository/download/apm/intranet-milestone-0.1d.apm">
+    <version name="3.4.0.2.0" url="http://openacs.org/repository/download/apm/intranet-milestone-3.4.0.2.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Defines project milestones</summary>
         <vendor url="http://www.project-open.com/">]project--open[</vendor>
         <description format="text/plain">Adds a milestone_p field to im_projects to identify milestones. The status of these milestones is shown in the Milestone page.</description>
 
-        <!-- No dependency information -->
+	<provides url="intranet-milestone" version="3.4.0.2.0"/>
+        <requires url="intranet-core" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>
