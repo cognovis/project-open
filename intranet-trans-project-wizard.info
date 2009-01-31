@@ -19,9 +19,6 @@
         <requires url="intranet-core" version="3.4.0.0.0"/>
         <requires url="intranet-translation" version="3.4.0.0.0"/>
         <requires url="intranet-trans-invoices" version="3.4.0.0.0"/>
-        <requires url="intranet-freelance-invoices" version="3.4.0.0.0"/>
-        <requires url="intranet-freelance" version="3.4.0.0.0"/>
-        <requires url="intranet-freelance-translation" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>
