@@ -676,7 +676,7 @@ begin
        from  acs_events e
        left join acs_activities a
        on (e.activity_id = a.activity_id)
-       where e.event_id = get_html_p__event_id
+       where e.event_id = get_html_p__event_id;
 
        return v_html_p;
 
@@ -704,7 +704,7 @@ begin
        from  acs_events e
        left join acs_activities a
        on (e.activity_id = a.activity_id)
-       where e.event_id = get_status_summary__event_id
+       where e.event_id = get_status_summary__event_id;
 
        return v_status_summary;
 
