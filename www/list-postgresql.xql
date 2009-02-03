@@ -19,8 +19,7 @@ select
 	c.*,
 	to_char(c.amount * (1 + coalesce(c.vat,0)/100 + coalesce(c.tax,0)/100), :cur_format) as amount_formatted,
 	to_date(c.start_block, :date_format) as start_block_formatted,
-	to_date(to_char(c.effective_date,'YYYY-MM-DD'),'YYYY-MM-DD') + c.payment_days 
-		as due_date_calculated,
+	c.effective_date::date + c.payment_days as due_date_calculated,
 	o.object_type,
 	url.url as cost_url,
 	ot.pretty_name as object_type_pretty_name,
@@ -33,14 +32,13 @@ select
 	im_category_from_id(c.cost_type_id) as cost_type,
 	now()::date - c.effective_date::date + c.payment_days::integer as overdue
 	$extra_select
-      from
+from
 	im_costs c 
-	LEFT JOIN
-	   im_projects proj ON c.project_id=proj.project_id,
+	LEFT OUTER JOIN im_projects proj ON c.project_id=proj.project_id
+	LEFT OUTER JOIN im_companies cust ON c.customer_id = cust.company_id
+	LEFT OUTER JOIN im_companies prov ON c.provider_id = prov.company_id,
 	acs_objects o,
 	acs_object_types ot,
-	im_companies cust,
-	im_companies prov,
 	(select * from im_biz_object_urls where url_type=:view_mode) url,
 	(       select distinct
 			cc.cost_center_id,
@@ -61,9 +59,7 @@ select
 	) cc
 	$extra_from
 where
-	c.customer_id=cust.company_id
-	and c.provider_id=prov.company_id
-	and c.cost_id = o.object_id
+	c.cost_id = o.object_id
 	and o.object_type = url.object_type
 	and o.object_type = ot.object_type
 	and c.cost_center_id = cc.cost_center_id
@@ -71,7 +67,7 @@ where
 	$company_where
 	$where_clause
 	$extra_where
-      $order_by_clause
+$order_by_clause
 
          </querytext>
     </fullquery>
