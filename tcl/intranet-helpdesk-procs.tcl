@@ -561,6 +561,7 @@ ad_proc -public im_helpdesk_ticket_queue_options {
 
 
 ad_proc -public im_helpdesk_ticket_sla_options {
+    {-user_id 0 }
     {-mine_p 0}
     {-customer_id 0}
     {-include_empty_p 1}
@@ -568,7 +569,7 @@ ad_proc -public im_helpdesk_ticket_sla_options {
 } {
     Returns a list of SLA tuples suitable for ad_form
 } {
-    set user_id [ad_get_user_id]
+    if {0 == $user_id} { set user_id [ad_get_user_id] }
 
     # Can the user see all projects?
     set permission_sql ""
