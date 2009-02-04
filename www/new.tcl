@@ -33,6 +33,7 @@ if {![info exists task]} {
 	{ vars_from_url ""}
 	{ plugin_id:integer "" }
 	{ view_name "standard"}
+	{ mine_p "all" }
 	form_mode:optional
     }
 
@@ -59,6 +60,7 @@ if {![info exists task]} {
 
     set plugin_id ""
     set view_name "standard"
+    set mine_p "all"
 
     # Don't show this page in WF panel.
     # Instead, redirect to this same page, but in TaskViewPage mode.
@@ -583,4 +585,148 @@ if {$show_components_p} {
 	</ul>
     "
 }
+
+
+
+
+# ---------------------------------------------------------------
+# Filter with Dynamic Fields
+# ---------------------------------------------------------------
+
+set dynamic_fields_p 1
+set form_id "ticket_filter"
+set object_type "im_ticket"
+set action_url "/intranet-helpdesk/index"
+set form_mode "edit"
+
+set mine_p_options {}
+if {[im_permission $current_user_id "view_tickets_all"]} { 
+    lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.All "All"] "all" ] 
+}
+lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.My_queues "My Queues"] "queue"]
+lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.Mine "Mine"] "mine"]
+
+set ticket_member_options [util_memoize "db_list_of_lists ticket_members {
+	select  distinct
+		im_name_from_user_id(object_id_two) as user_name,
+		object_id_two as user_id
+	from    acs_rels r,
+		im_tickets p
+	where   r.object_id_one = p.ticket_id
+	order by user_name
+}" 300]
+set ticket_member_options [linsert $ticket_member_options 0 [list [_ intranet-core.All] ""]]
+
+set ticket_queue_options [im_helpdesk_ticket_queue_options]
+set ticket_sla_options [im_helpdesk_ticket_sla_options -include_create_sla_p 1 -include_empty_p 1]
+set sla_exists_p 1
+if {[llength $ticket_sla_options] < 2 && !$view_tickets_all_p} { set sla_exists_p 0}
+
+# No SLA defined for this user?
+# Allow the user to request a new SLA
+if {!$sla_exists_p} {
+
+    # Check if there is already an SLA request
+    set sla_requested_p [db_string sla_requested_p "
+	select	count(*)
+	from	im_tickets t,
+		acs_objects o
+	where	t.ticket_id = o.object_id and
+		t.ticket_type_id = [im_ticket_type_sla_request] and
+		o.creation_user = :current_user_id and
+		t.ticket_status_id in (select * from im_sub_categories([im_ticket_status_open]))
+    "]
+
+    # Allow the user to request a new SLA if there isn't any yet.
+    if {!$sla_requested_p} {
+	ad_returnredirect request-sla
+    }
+}
+
+ad_form \
+    -name $form_id \
+    -action $action_url \
+    -mode $form_mode \
+    -method GET \
+    -export {start_idx order_by how_many view_name letter } \
+    -form {
+    	{mine_p:text(select),optional {label "Mine/All"} {options $mine_p_options }}
+    }
+
+if {[im_permission $current_user_id "view_tickets_all"]} {  
+    ad_form -extend -name $form_id -form {
+	{ticket_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status" translate_p 1}} }
+	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1} } }
+	{ticket_queue_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.Queue Queue]"} {options $ticket_queue_options}}
+	{ticket_sla_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.SLA SLA]"} {options $ticket_sla_options}}
+    }
+
+    template::element::set_value $form_id ticket_status_id [im_opt_val ticket_status_id]
+    template::element::set_value $form_id ticket_type_id [im_opt_val ticket_type_id]
+    template::element::set_value $form_id ticket_queue_id [im_opt_val ticket_queue_id]
+}
+
+template::element::set_value $form_id mine_p $mine_p
+
+im_dynfield::append_attributes_to_form \
+    -object_type $object_type \
+    -form_id $form_id \
+    -object_id 0 \
+    -advanced_filter_p 1 \
+    -search_p 1
+
+# Set the form values from the HTTP form variable frame
+set org_mine_p $mine_p
+im_dynfield::set_form_values_from_http -form_id $form_id
+im_dynfield::set_local_form_vars_from_http -form_id $form_id
+set mine_p $org_mine_p
+
+array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
+			       -form_id $form_id \
+			       -object_type $object_type
+]
+
+#ToDo: Export the extra DynField variables into form's "export" variable list
+
+
+
+# ----------------------------------------------------------
+# Do we have to show administration links?
+# ----------------------------------------------------------
+
+ns_log Notice "/intranet/ticket/index: Before admin links"
+set admin_html "<ul>"
+
+if {[im_is_user_site_wide_or_intranet_admin $current_user_id]} {
+    append admin_html "<li><a href=\"/intranet-helpdesk/admin/\">[lang::message::lookup "" intranet-helpdesk.Admin_Helpdesk "Admin Helpdesk"]</a>\n"
+    append admin_html "<li><a href=\"/admin/group-types/one?group_type=im_ticket_queue\">[lang::message::lookup "" intranet-helpdesk.Admin_Helpdesk_Queues "Admin Helpdesk Queues"]</a>\n"
+}
+
+if {[im_permission $current_user_id "add_tickets"]} {
+    append admin_html "<li><a href=\"/intranet-helpdesk/new\">[lang::message::lookup "" intranet-helpdesk.Add_a_new_ticket "New Ticket"]</a>\n"
+
+    set wf_oid_col_exists_p [util_memoize "db_column_exists wf_workflows object_type"]
+    if {$wf_oid_col_exists_p} {
+	set wf_sql "
+		select	t.pretty_name as wf_name,
+			w.*
+		from	wf_workflows w,
+			acs_object_types t
+		where	w.workflow_key = t.object_type
+			and w.object_type = 'im_ticket'
+	"
+	db_foreach wfs $wf_sql {
+	    set new_from_wf_url [export_vars -base "/intranet/tickets/new" {workflow_key}]
+	    append admin_html "<li><a href=\"$new_from_wf_url\">[lang::message::lookup "" intranet-helpdesk.New_workflow "New %wf_name%"]</a>\n"
+	}
+    }
+}
+
+# Append user-defined menus
+set bind_vars [ad_tcl_vars_to_ns_set]
+append admin_html [im_menu_ul_list -no_uls 1 "tickets_admin" $bind_vars]
+
+# Close the admin_html section
+append admin_html "</ul>"
+
 
