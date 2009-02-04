@@ -33,9 +33,9 @@ ad_proc -public im_ticket_status_canceled {} { return 30098 }
 
 ad_proc -public im_ticket_type_purchase_request {} { return 30102 }
 ad_proc -public im_ticket_type_workplace_move_request {} { return 30104 }
-ad_proc -public im_ticket_type_telephony_request {} { return 30006 }
-ad_proc -public im_ticket_type_project_request {} { return 30008 }
-ad_proc -public im_ticket_type_bug_request {} { return 30100 }
+ad_proc -public im_ticket_type_telephony_request {} { return 30106 }
+ad_proc -public im_ticket_type_project_request {} { return 30108 }
+ad_proc -public im_ticket_type_bug_request {} { return 30110 }
 ad_proc -public im_ticket_type_report_request {} { return 30112 }
 ad_proc -public im_ticket_type_permission_request {} { return 30114 }
 ad_proc -public im_ticket_type_feature_request {} { return 30116 }
