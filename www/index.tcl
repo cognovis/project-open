@@ -15,6 +15,7 @@ ad_page_contract {
     { ticket_status_id:integer "[im_ticket_status_open]" } 
     { ticket_type_id:integer 0 } 
     { ticket_queue_id:integer 0 } 
+    { ticket_sla_id:integer 0 } 
     { customer_id:integer 0 } 
     { customer_contact_id:integer 0 } 
     { assignee_id:integer 0 } 
@@ -231,6 +232,9 @@ if { ![empty_string_p $ticket_type_id] && $ticket_type_id != 0 } {
 }
 if { ![empty_string_p $ticket_queue_id] && $ticket_queue_id != 0 } {
     lappend criteria "t.ticket_queue_id = :ticket_queue_id"
+}
+if { ![empty_string_p $ticket_sla_id] && $ticket_sla_id != 0 } {
+    lappend criteria "p.parent_id = :ticket_sla_id"
 }
 if {0 != $assignee_id && "" != $assignee_id} {
     lappend criteria "t.ticket_assignee_id = :assignee_id"
