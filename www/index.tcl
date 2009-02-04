@@ -149,7 +149,7 @@ set ticket_member_options [linsert $ticket_member_options 0 [list [_ intranet-co
 set ticket_queue_options [im_helpdesk_ticket_queue_options]
 set ticket_sla_options [im_helpdesk_ticket_sla_options -include_create_sla_p 1 -include_empty_p 1]
 set sla_exists_p 1
-if {1 <= [llength $ticket_sla_options] && !$view_tickets_all_p} { set sla_exists_p 0}
+if {[llength $ticket_sla_options] < 2 && !$view_tickets_all_p} { set sla_exists_p 0}
 
 # No SLA defined for this user?
 # Allow the user to request a new SLA

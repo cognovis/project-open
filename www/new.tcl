@@ -526,13 +526,13 @@ if {[info exists ticket_id]} { ns_set put $bind_vars ticket_id $ticket_id }
 
 if {![info exists ticket_id]} { set ticket_id "" }
 
-set ticket_menu_id [db_string parent_menu "select menu_id from im_menus where label='helpdesk'" -default 0]
+set ticket_parent_menu_id [db_string parent_menu "select menu_id from im_menus where label='helpdesk'" -default 0]
 set sub_navbar [im_sub_navbar \
     -components \
     -current_plugin_id $plugin_id \
     -base_url "/intranet-helpdesk/new?ticket_id=$ticket_id" \
     -plugin_url "/intranet-helpdesk/new" \
-    $ticket_menu_id \
+    $ticket_parent_menu_id \
     $bind_vars "" "pagedesriptionbar" "helpdesk_summary"] 
 
 
