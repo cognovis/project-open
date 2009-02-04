@@ -94,10 +94,11 @@ if {[info exists expense_id]} {
 
 set project_options [im_project_options \
 	-exclude_subprojects_p 0 \
-	-member_user_id $user_id \
 	-project_id $project_id \
 	-exclude_status_id [im_project_status_closed] \
 ]
+
+#	-member_user_id $user_id \
 
 set include_empty 0
 set currency_options [im_currency_options $include_empty]
