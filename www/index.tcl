@@ -130,7 +130,7 @@ set action_url "/intranet-helpdesk/index"
 set form_mode "edit"
 
 set mine_p_options {}
-if {[im_permission $current_user_id "view_tickets_all"]} { 
+if {$view_tickets_all_p} { 
     lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.All "All"] "all" ] 
 }
 lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.My_queues "My Queues"] "queue"]
@@ -183,7 +183,7 @@ ad_form \
     	{mine_p:text(select),optional {label "Mine/All"} {options $mine_p_options }}
     }
 
-if {[im_permission $current_user_id "view_tickets_all"]} {  
+if {$view_tickets_all_p} {  
     ad_form -extend -name $form_id -form {
 	{ticket_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status" translate_p 1}} }
 	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1} } }
@@ -604,22 +604,35 @@ set table_continuation_html "
 "
 
 set table_submit_html "
-	<tr>
-	  <td align=right colspan=$colspan>
-		[lang::message::lookup "" intranet-helpdesk.Action "Action:"]
-		[im_category_select \
-		     -translate_p 1 \
-		     -plain_p 1 \
-		     -include_empty_p 1 \
-		     -include_empty_name "" \
-		     "Intranet Ticket Action" \
-		     action_id \
-		]
-		<input type=submit value='[lang::message::lookup "" intranet-helpdesk.Update_Tickets "Update"]'>
+	<tr valign=top>
+	  <td align=right colspan=[expr $colspan-1] valign=top>
+		[im_gif cleardot]
+		<table cellspacing=1 cellpadding=1 border=0>
+		<tr valign=top>
+		<td>
+			[lang::message::lookup "" intranet-helpdesk.Action "Action:"]
+		</td>
+		<td>
+			[im_category_select \
+			     -translate_p 1 \
+			     -plain_p 1 \
+			     -include_empty_p 1 \
+			     -include_empty_name "" \
+			     "Intranet Ticket Action" \
+			     action_id \
+			]
+		</td>
+		<td>
+			<input type=submit value='[lang::message::lookup "" intranet-helpdesk.Update_Tickets "Update"]'>
+		</td>
+		</tr>
+		</table>
+
 	  </td>
 	</tr>
 "
 
+if {!$view_tickets_all_p} { set table_submit_html "" }
 
 # ---------------------------------------------------------------
 # Dashboard column
