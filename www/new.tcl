@@ -16,7 +16,7 @@ ad_page_contract {
 } {
     conf_item_id:integer,optional
     {return_url ""}
-    {form_mode "edit"}
+    {form_mode "display"}
     {view_name ""}
 }
 
