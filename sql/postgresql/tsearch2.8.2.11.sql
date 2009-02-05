@@ -1,8 +1,6 @@
 -- Adjust this setting to control where the objects get CREATEd.
 SET search_path = public;
 
-BEGIN;
-
 --dict conf
 CREATE TABLE pg_ts_dict (
 	dict_name	text not null primary key,
@@ -1240,4 +1238,3 @@ AS
 --example of thesaurus dict
 --update pg_ts_dict set dict_initoption='DictFile="contrib/thesaurus", Dictionary="en_stem"' where dict_name='thesaurus_template';
 --update pg_ts_cfgmap set dict_name = '{thesaurus_template,en_stem}' where dict_name = '{en_stem}';
-END;
