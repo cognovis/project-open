@@ -1,0 +1,367 @@
+/* Comments Style Sheet
+
+    @author Matthew Geddert openacs@geddert.com
+    @creation-date 2005-05-15
+    @cvs-id $Id$
+
+----------------------------------------------- */
+
+/* For Portlets */
+
+td.highlighted {
+  background-color:#ddddff;
+}
+
+td.highlight {
+  background-color:#ffffdd;
+  border-bottom: 1px dotted #A0BDEB;
+}
+
+td.subheader {
+  background-color:#ffffdd;
+  border-top: 1px dotted #e6e6fa;
+  border-bottom: 1px dotted #e6e6fa;
+  border-left: 1px solid #e6e6fa;
+}
+
+td.list-bg {
+  border-left: 1px solid #e6e6fa;
+}
+
+td.list-bottom-bg {
+  border-bottom: 1px solid #e6e6fa;
+  border-left: 1px solid #e6e6fa;
+}
+
+td.list-right-bg {
+  border-bottom: 1px solid #e6e6fa;
+  border-right: 1px solid #e6e6fa;
+}
+
+th.project {
+        background-color:#9999cc;
+}
+
+td.project-filter-pane {
+        background-color: #bbbbee;
+        vertical-align: top;
+}
+
+.shaded {
+        background-color: #dddddd;
+}
+
+.selected {
+        background-color: #eeccdd;
+}
+
+th { 
+     font-size: 9pt;
+     text-align: left;
+     background-color:dfdfff;
+}
+
+
+/* From logger */
+
+table.logger_navbar {
+  background-color: #41329c;
+  clear: both;
+}
+a.logger_navbar { 
+    color: white; 
+    text-decoration: none;
+}
+a.logger_navbar:visited { 
+  color: white; 
+}
+a.logger_navbar:hover { 
+    color: white; 
+    text-decoration: underline;
+}
+td.logger_navbar {
+  font-family: tahoma,verdana,arial,helvetica; 
+  font-size: 70%; 
+  font-weight: bold; 
+  color: #ccccff; 
+  text-decoration: none; 
+}
+
+td.fill-list-right {
+  border-bottom: 3px solid #A0BDEB;
+  border-right: 1px solid #A0BDEB;
+  background-color: #eaf2ff;
+}
+
+td.fill-list-right2 {
+  border-right: 1px solid #A0BDEB;
+  background-color: #eaf2ff;
+}
+
+td.fill-list-bottom {
+  border-bottom: 3px solid #A0BDEB;
+  border-left: 1px solid #A0BDEB;
+  background-color: #eaf2ff;
+}
+
+td.fill-list-middle {
+  border-left: 1px solid #A0BDEB;
+  background-color: #eaf2ff;
+}
+
+td.fill-list-bg {
+  background-color: #eaf2ff;
+}
+
+#search-block { 
+  border:1px solid #000; 
+  background-color: #EAF2FF;
+  padding:5px; 
+  width:70%;
+}
+
+/* End of Portlets*/
+
+div#contact-info {
+  clear: both;	
+}
+#contact-info h3 {
+	clear: both;
+}
+#contact-info div.primary {
+  width: 48%;
+  float: left;
+}
+#contact-info div.secondary {
+  width: 48%;
+  float: right;
+}
+p.last-updated {
+  clear: both;
+  font-size: small;
+  text-align: right;
+}
+dl.comments {
+  font-size: 100%;
+  margin: 0px;
+  padding: 0px;
+  }
+dl.comments dt {
+  margin: 5px 0px 0px 0px;
+  background: #EEE;
+  font-weight: normal;
+  font-size: 100%;
+  }
+dl.comments dd {
+  padding: 5px;
+  margin: 0 0px 0px 0px;
+  background: #EEE;
+  }
+dl.comments dt.odd, dl.comments dd.odd {
+  background: #DDD;
+  }
+dl.comments dt.mine-odd, dl.comments dd.mine-odd {
+  background: #FFFFFF;
+  }
+dl.comments dt.mine-even, dl.comments dd.mine-even {
+  background: #FFFFFF;
+  }
+dl.comments .number {
+  padding: 0px 5px 0px 0px;
+  margin: 0px 2px 0px 0px;
+  border-style: solid;
+  border-width: 0px 1px 0px 0px;
+  border-color: #CCC;
+  font: 160% Georgia,Serif;
+  }
+
+#contacts-sortbars {
+	font:70% verdana,sans-serif;
+}
+#contacts-sortbars a {
+  font-weight:bold;
+  text-decoration: none;
+}
+#contacts-sortbars a:hover {
+  text-decoration: underline;
+}
+
+div.letter {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #AAA;
+}
+.address-widget {
+     width: 300px;
+}    
+.address-widget-country-code {
+     width: 100%;
+}
+
+
+.hidden {
+        display: none;
+}
+
+span.overdue {
+	color: red;
+}
+
+#section {
+  margin: 0px 0px 0px 0px;
+}
+
+#section ul {
+  border-left: 1px solid #333;
+  margin: 0px 0px 10px 0px;
+  padding: 0px;
+  background: #CCC;
+}
+
+#section ul li {
+  display:inline;
+  margin:0;
+  padding:0;
+  background-image:none;
+}
+
+#section ul a {
+  float:left;
+  display:block;
+  padding: 0px 5px 2px 5px;
+  border-width:0;
+  border-style:none;
+  border-top: 4px solid #CCC;
+  border-right: 1px solid #000;
+  border-bottom: 1px solid #CCC;
+  text-decoration:none;
+  color:#000;
+}
+#section ul a:hover {
+  border-top: 4px solid #000;
+}
+#section ul strong {
+  border-top: 4px solid #000; 
+  margin: 0px -5px 0px -5px;
+  padding: 0px 5px 2px 5px;
+  background-color: #FFF;
+  border-bottom: 1px solid #FFF;
+}
+
+#section ul a:hover {
+  color: red;
+}
+
+
+
+#section ul em {
+  float:none;
+  display:block;
+  padding: 4px 5px 2px 5px;
+  border-right-width:0;
+  border-bottom: 1px solid #CCC;
+  }
+
+h3.contact-title {
+  margin: 0;
+  padding: 0;
+  clear: both;
+  line-height: 2em;
+}
+
+dt.attribute-name {
+  margin: 0;
+  padding: 0;
+  font: 90% Verdana,Georgia,Serif;
+  text-align: right;
+  line-height: 1.5em;
+  border-width: 0;
+  width: 33%;
+  float: left;
+  clear: both;
+}
+
+dd.attribute-value {
+  margin: 0;
+  padding: 0 0 .5em 0;
+  text-align: left;
+  line-height: 1.2em;
+  border-width: 0;
+  width: 65%;
+  float: right;
+  font: 90% Verdana,Georgia,Serif;
+}
+dl.attribute-values {
+  margin: 0;
+  padding: 0;
+}
+
+
+
+
+/* Tasks */
+div.tasks * {
+	margin: 0;
+	padding: 0;
+}
+div.tasks h3 {
+	padding-bottom: 5px;
+}
+div.tasks ul {
+	padding-left: 1em;
+	list-style: square;
+}
+div.tasks li {
+	padding-bottom: .5em;
+}
+div.tasks dt {
+	clear: both;
+	float: left;
+	width: 25%;
+}
+div.tasks dd {
+	float: right;
+	width: 73%;
+	padding-bottom: .75em;
+}
+
+#tasks dt {
+        display: block;
+        float: left;	
+	margin: 0px;
+        width: 120px;
+        padding-top: 2px;
+}
+#tasks dl {
+	margin: 5px 0px 0px 0px;
+}
+#tasks ul {
+        margin: 0px 0px 0px -10px;
+        clear: both;
+}
+#tasks li {
+        margin: 0px;
+}
+.done {
+	color: #BBB;
+}
+.contact-editlink {
+	padding-left: 1em;
+	font: 100% Verdana,Georgia,Serif;
+}
+.contact-attributes {
+	clear:both;
+	display: block;
+	margin-left: 10px;
+	font: 90% Verdana,Georgia,Serif;
+}
+.contact-attributes a {
+	text-decoration: none;
+	color: #000;
+}
+.contact-attributes a:hover {
+	text-decoration: underline;
+}
+h3.contact-privacy {
+	color: #F00;
+}

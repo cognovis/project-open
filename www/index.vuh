@@ -1,0 +1,109 @@
+# 
+# Provide pretty urls for the contacts package
+# 
+# @author Matthew Geddert (openacs@geddert.com)
+# @creation-date 2005-05-24
+# @cvs-id $Id$
+
+
+set package_url [ad_conn package_url]
+set file_url   [ad_conn path_info]
+set file_list  [split $file_url "/"]
+
+set party_id [lindex $file_list 0]
+if { [string is integer $party_id] } {
+   set party_is_contact_p [contact::exists_p -party_id $party_id]
+} else {
+   set party_is_contact_p 0
+}
+
+set action [lindex $file_list 1]
+callback contacts::redirect -party_id $party_id -action $action
+if { $party_is_contact_p } {
+
+    if { [llength $file_list] == "1" } {
+        
+        # we need to redirect the user to their "correct" summary page otherwise
+        # sub links will not work correctly
+        ad_returnredirect "[ad_conn package_url]${party_id}/"
+        ad_script_abort
+    }
+
+
+        set valid_pages [list "" edit files groups relationships comments message merge spouse-sync history changes mail-tracking create-club]
+
+        if { [lsearch $valid_pages $action] >= 0 && [llength $file_list] == "2" } {
+           switch $action {
+               edit          { set file "contact-add" }
+               files         { set file "files" }
+               groups        { set file "contact-groups" }
+               relationships { set file "contact-rels" }
+               comments      { set file "comments" }
+               message       { set file "message" }
+               merge         { set file "/packages/intranet-contacts/lib/merge" }
+	       spouse-sync   { set file "/packages/intranet-contacts/lib/spouse-sync" }
+	       letter        { set file "letter" }
+	       email         { set file "email" }
+	       complaint     { set file "complaint" }
+	       history       { set file "history" }
+	       changes       { set file "changes" }
+	       mail-tracking { set file "mail-tracking" }
+	       create-club   { set file "create-club" }
+               default       { set file [parameter::get -parameter "ContactSummaryViewTemplate" -default "/packages/intranet-contacts/www/contact"] }
+           }
+
+           set form_supplied_party_id [ns_queryget party_id] 
+           if { [exists_and_not_null form_supplied_party_id] } {
+                if { $form_supplied_party_id != $party_id } {
+                     ns_returnnotfound
+                     ad_script_abort
+                }
+           } else {
+               rp_form_put party_id $party_id
+           }
+           rp_internal_redirect $file
+        } elseif { $action == "files" && [llength $file_list] == "3" } {
+	   # we may have a valid file request
+	   set item_id [content::item::get_id -root_folder_id $party_id -item_path [lindex $file_list 2]]
+	   set revision_id [content::item::get_live_revision -item_id $item_id]
+           if { [exists_and_not_null revision_id] } {
+                cr_write_content -revision_id $revision_id
+           } else {
+              ns_returnnotfound
+              ad_script_abort
+           }
+	} else {
+           ns_returnnotfound
+       	   ad_script_abort
+        }
+} else {
+
+      if {[lindex $file_list 0] eq "add"} {
+        # This is an adding
+        set object_type [lindex $file_list 1]
+        if { ![ns_queryexists object_type]  } {
+            rp_form_put object_type "$object_type"
+        }
+        rp_internal_redirect contact-add
+      } else {
+        switch $file_url {
+           lists {
+               rp_internal_redirect /packages/intranet-contacts/lib/lists
+           }
+           list-parties-add {
+               rp_internal_redirect /packages/intranet-contacts/lib/list-parties-add
+           }
+           list-parties-remove {
+               rp_internal_redirect /packages/intranet-contacts/lib/list-parties-remove
+           }
+           sharing {
+               rp_internal_redirect /packages/intranet-contacts/lib/sharing
+           }
+           default {
+               ns_returnnotfound
+               ad_script_abort
+           }
+        }
+     }
+}
+

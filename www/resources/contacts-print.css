@@ -1,0 +1,127 @@
+/* Comments Print Style Sheet
+
+    @author Matthew Geddert openacs@geddert.com
+    @creation-date 2005-05-15
+    @cvs-id $Id$
+
+----------------------------------------------- */
+
+body {
+  background-color: #FFF;
+  font-size: 10pt;
+  line-height: 14pt;
+  font-family: Times, Times New Roman, Garamond, Bodoni, Minion Web, ITC Stone Serif, MS Georgia, Bitstream Cyberbit,serif;
+  padding: 0;
+  margin: 0;
+}
+a {
+  text-decoration: none;
+  color: #000;
+}
+
+@media screen {
+	#header {
+	  background-color: #DDD;
+	  border-bottom: 1px solid #AAA;
+	  padding: 1em;
+	  font-weight: bolder;
+	}
+	#header p {
+	  padding: 0;
+	  margin: 0;
+	}
+        #header a {
+	  text-decoration: underline;
+          color: #F00;
+        }
+	.message {
+          clear: both;
+	  padding: 5px;
+	  margin: 20px 10px 20px 10px;
+	  border: 3px outset #666;
+	  max-width: 50em;
+	}
+	.date {
+          text-align: right;
+	}
+	.mailing-address {
+          font-family: courier, MS Courier New, Prestige, Everson Mono, monospace;
+          font-size: 80%;
+          padding: 0;
+          margin: 2em 0 0 0;
+	}
+        .content {
+          padding: 0;
+          margin: 2em 0 0 0;
+        }
+        #letterhead .content,
+        #letterhead .mailing-address {
+          margin-left: 50px;
+        }
+}
+
+@media print {
+
+	body {
+	  font-size: 11pt;
+          line-height: 14pt;
+          padding: 0;
+          margin: 0;
+   	}
+
+        /* The header is a set of links that lets the user continue */
+        /* to browse the site once they have printed letters. We do not */
+        /* want any of it printed */
+	#header {
+	  display: none;
+	}
+
+        /* The user included the date in their letter creation */
+        /* Our school operates out of the US and canada where */
+        /* it is supposed to be on the top right of the page. You */
+        /* can change this here for your insitituion */
+	.date {
+          float: right;
+	}
+
+
+        /* mailing-address goes in the correct position to work */
+        /* with windowed envelopes */
+	.mailing-address {
+	  position: relative;
+          top: 3.6cm;
+          left: 0cm;
+          font-family: courier, MS Courier New, Prestige, Everson Mono, monospace;
+          font-size: 80%;
+          padding: 0;
+          margin: 0;
+	}
+
+
+        /* Padding on top is needed to clear the */
+        /* address which is positioned for windowed envelopes */
+        .content {
+	  clear: both;
+          padding-top: 5cm;
+        }
+
+
+	/* The user is printing the content without an address */
+        /* and probably printing off labels and or envelopes so */
+        /* we remove the padding */
+	.noaddress {
+          padding-top: 0cm;
+	}
+
+        /* Every companies letter head is different. My schools */
+        /* fills up the left margin of our page. You can adjust */
+        /* this to work with your institution if it has a top logo */
+        /* by changing this to padding-top: 2cm; or something like that */
+        #letterhead .content,
+        #letterhead .mailing-address {
+          padding-left: 2.9cm;
+        }
+}
+@page {
+  margin: 2.6cm;
+}
