@@ -184,3 +184,29 @@ BEGIN
 
 	return 0;
 end;' language 'plpgsql';
+
+
+
+
+-- Make sure users_contact has a valid foreign key with
+-- persons.
+
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer as '
+DECLARE
+	v_count			integer;
+BEGIN
+	select	count(*) into v_count
+	from	pg_constraint 
+	where	conname = ''users_contact_user_id_fk'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	alter table users_contact 
+	add constraint users_contact_user_id_fk foreign key (user_id) references persons(person_id);
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
