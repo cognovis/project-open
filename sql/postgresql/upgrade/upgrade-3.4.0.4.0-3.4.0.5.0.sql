@@ -2,6 +2,38 @@
 -- Changes from Malte to make ]po[ run with OpenACs 5.4 and Contacts
 
 
+
+-- Fix the syntax error in acs_rel_type__drop_type
+--
+create or replace function acs_rel_type__drop_type (varchar,boolean)
+returns integer as '
+declare
+  drop_type__rel_type               alias for $1;  
+  drop_type__cascade_p              alias for $2;  -- default ''f''  
+  v_cascade_p                       boolean;
+begin
+    -- XXX do cascade_p.
+    -- JCD: cascade_p seems to be ignored in acs_o_type__drop_type anyway...
+
+    if drop_type__cascade_p is null then 
+	v_cascade_p := ''f'';
+    else 
+	v_cascade_p := drop_type__cascade_p;
+    end if;
+
+    delete from acs_rel_types
+	  where rel_type = drop_type__rel_type;
+
+    PERFORM acs_object_type__drop_type(drop_type__rel_type, 
+                                       v_cascade_p);
+
+    return 0; 
+end;' language 'plpgsql';
+
+
+
+
+
 insert into parties (party_id)
 select office_id from im_offices;
 
