@@ -21,6 +21,9 @@
         <callbacks>
         </callbacks>
         <parameters>
+             <parameter datatype="number"  min_n_values="1"  max_n_values="1" name="IndicatorEvaluationIntervalHours" default="24" description="Please specify the length of the interval for evaluation indicators in hours. Shorter intervals will result in more precise information, but may also result in large amounts of unnecessary data. Reasonable intervals are '6' (6 hours, quite short), '24' (1 day, medium) or '168' (one week, quite slow)."/>
+
+             <parameter datatype="string"  min_n_values="1"  max_n_values="1" name="CompanySector"  description="Company's sector. Must be one of: &quot;it_consulting&quot; (IT Consulting), &quot;biz_consulting&quot; (Business Consulting), &quot;translation&quot; (Translation, Localization or Technical documentation), &quot;advertizing&quot; (Advertizing agency or department), &quot;engineering&quot; (Engineering and product lifecycle) or &quot;other&quot;."/>
         </parameters>
 
     </version>
