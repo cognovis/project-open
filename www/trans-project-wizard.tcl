@@ -195,6 +195,50 @@ multirow append call_to_quote \
 
 
 
+# ---------------------------------------------------------------------
+# Hours Logged?
+# ---------------------------------------------------------------------
+
+set first_invoice_date [db_string first_invoice "
+	select	min(creation_date)
+	from	(
+			select	o.creation_date + '30 minutes'::interval as creation_date
+			from	im_costs c,
+				acs_objects o
+			where	c.cost_id = o.object_id and
+				c.project_id = :project_id and
+				cost_type_id in ([im_cost_type_invoice], [im_cost_type_quote])
+		    UNION
+			select	now() as creation_date
+		) t
+"]
+
+set hours1 [db_string hours1 "
+        select  sum(h.hours)
+        from    im_hours h
+        where   h.project_id = :project_id and
+		h.user_id = :user_id and
+		h.day < :first_invoice_date
+"]
+
+if {"" == $hours1} { set hours1 0 }
+if {$hours1 > 0} { set hours1_status 10} else { set hours1_status 0}
+
+set hours1_url "/intranet-timesheet2/hours/new"
+
+incr multi_row_count
+multirow append call_to_quote \
+    $status_display($hours1_status) \
+    "$hours1 [lang::message::lookup "" intranet-trans-project-wizard.Hours "Hours(s)"]" \
+    [export_vars -base $hours1_url {project_id return_url}] \
+    [lang::message::lookup "" intranet-trans-project-wizard.Hours1_name "Log Your Hours for Creating This Quote"] \
+    [lang::message::lookup "" intranet-trans-project-wizard.Hours1_descr "
+	Please log your hours that you've spend to create the quote.
+	This display only counts hours that you have logged until 30 minutes after creating
+        your first quote for this project.
+    "] \
+    $bgcolor([expr $multi_row_count % 2])
+
 
 
 # ------------------------------------------------------------------------------------------------
@@ -206,6 +250,36 @@ set execution_description [lang::message::lookup "" intranet-trans-project-wizar
 The 'Quote to Deliverable' process covers the staffing, assignation and execution of project tasks.
 The execution itself is driven by translators down- and uploading translation files.
 "]
+
+
+
+
+# ---------------------------------------------------------------------
+# All files uploaded?
+# ---------------------------------------------------------------------
+
+set file_upload_status 0
+set missing_task_list {}
+set upload_files_url ""
+if {$trans_tasks > 0} {
+
+    set missing_task_list [im_task_missing_file_list -no_complain 1 $project_id]
+    set task_id [lindex $missing_task_list 0]
+    set upload_files_url [export_vars -base "/intranet-translation/trans-tasks/upload-task" {project_id task_id return_url}]
+    set file_upload_status [expr round(10.0 * ($trans_tasks - [llength $missing_task_list]) / $trans_tasks)]
+
+}
+
+
+incr multi_row_count
+multirow append execution \
+    $status_display($file_upload_status) \
+    "[llength $missing_task_list] [lang::message::lookup "" intranet-trans-project-wizard.Missing_Files "Missing File(s)"]" \
+    $upload_files_url \
+    [lang::message::lookup "" intranet-trans-project-wizard.Upload_Missing_Files "Upload Missing File(s)"] \
+    [lang::message::lookup "" intranet-trans-project-wizard.Upload_Missing_Files_descr "
+        Make sure all task files have been uploaded."] \
+    $bgcolor([expr $multi_row_count % 2])
 
 
 # ---------------------------------------------------------------------
