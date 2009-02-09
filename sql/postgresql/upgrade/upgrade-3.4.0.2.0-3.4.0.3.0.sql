@@ -23,7 +23,7 @@ begin
 		add constraint im_gantt_projects_project_id_fk 
 		foreign key (project_id) references im_projects(project_id);
 
-	select acs_object_type__create_type (
+	PERFORM acs_object_type__create_type (
 	        ''im_gantt_project'',	-- object_type
         	''GanttProject'',         -- pretty_name
 	        ''GanttProjects'',        -- pretty_plural
@@ -67,7 +67,7 @@ begin
 		add constraint im_gantt_persons_person_id_fk 
 		foreign key (person_id) references persons(person_id);
 
-	select acs_object_type__create_type (
+	PERFORM acs_object_type__create_type (
         	''im_gantt_person'',	-- object_type
 	        ''GanttPerson'',          -- pretty_name
 	        ''GanttPersons'',         -- pretty_plural
