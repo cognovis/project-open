@@ -6,6 +6,22 @@
 --
 --
 
+-- Drop Service Contracts
+delete from acs_sc_impl_aliases
+where impl_name = 'contacts_group_notif_type';
+
+
+select	notification_type__delete(type_id)
+from	notification_types 
+where	short_name = 'contacts_group_notif';
+
+select acs_sc_impl__delete(impl_name, impl_contract_name) 
+from acs_sc_impls 
+where impl_name in (
+		'contacts_group_notif_type'
+);
+
+
 drop view contact_owners;
 drop table contact_owner_rels;
 drop table contact_list_members;
@@ -16,6 +32,8 @@ drop table contact_privacy;
 drop table contact_message_log;
 drop table contact_message_items;
 drop table contact_message_types;
+select acs_rel_type__drop_type('contact_message_log','t');
+
 
 
 -- Searches
