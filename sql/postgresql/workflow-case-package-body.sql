@@ -1578,11 +1578,11 @@ declare
 	v_count					integer;
 	v_str					varchar;
 begin
-		-- Default notification type
-		v_notification_type := notify_assignee__notification_type;
-		IF v_notification_type is null THEN
-		  v_notification_type := ''wf_assignment_notif'';
-		END IF;
+	-- Default notification type
+	v_notification_type := notify_assignee__notification_type;
+	IF v_notification_type is null THEN
+	  v_notification_type := ''wf_assignment_notif'';
+	END IF;
 
 	select to_char(ta.deadline,''Mon fmDDfm, YYYY HH24:MI:SS''),
 		   acs_object__name(c.object_id), tr.transition_key, tr.transition_name
@@ -1698,12 +1698,12 @@ begin
 		execute v_str;
 	else
 		v_request_id := acs_mail_nt__post_request (
-		v_party_from,                 -- party_from
-		notify_assignee__user_id,     -- party_to
-		''f'',                        -- expand_group
-		v_subject,                    -- subject
-		v_body,                       -- message
-		0                             -- max_retries
+			v_party_from,                 -- party_from
+			notify_assignee__user_id,     -- party_to
+			''f'',                        -- expand_group
+			v_subject,                    -- subject
+			v_body,                       -- message
+			0                             -- max_retries
 		);
 	end if;
 

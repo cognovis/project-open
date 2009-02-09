@@ -49,9 +49,7 @@ order by
 				and	ca.context_key = :context_key 
 				and	ca.role_key = :role_key
 	           )
-
       </querytext>
 </fullquery>
-
  
 </queryset>
