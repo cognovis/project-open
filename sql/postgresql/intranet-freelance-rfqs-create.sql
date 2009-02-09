@@ -443,6 +443,23 @@ SELECT acs_object_type__create_type (
 	'im_freelance_rfq_answer__name'	-- name_method
 );
 
+update acs_object_types set
+        status_type_table = 'im_freelance_rfq_answers',
+        status_column = 'answer_status_id',
+        type_column = 'answer_type_id'
+where object_type = 'im_freelance_rfq_answer';
+
+
+-- Associate table with object - not handled in OpenACS core
+insert into acs_object_type_tables (
+	object_type,
+	table_name,
+	id_column
+) values (
+	'im_freelance_rfq_answer',
+	'im_freelance_rfq_answers',
+	'answer_id'
+);
 
 create table im_freelance_rfq_answers (
 	answer_id		integer
