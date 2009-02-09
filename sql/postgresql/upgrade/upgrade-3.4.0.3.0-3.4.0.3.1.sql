@@ -30,9 +30,22 @@ where	category = 'Milestone' and
 	category_type = 'Intranet Project Type';
 
 
+
+
+
 -- Fix DynField issue with database "float"
-insert into acs_datatypes (datatype) values ('float');
+CREATE OR REPLACE Function inline_0()
+RETURNS character AS '
+DECLARE
+	v_count		integer;
+BEGIN
+	select count(*)	into v_count from acs_datatypes where datatype = ''float'';
+	IF v_count > 0 THEN return 1; END IF;
 
-
+	insert into acs_datatypes (datatype) values (''float'');
+	return 0;
+END;' LANGUAGE 'plpgsql';
+select inline_0();
+drop function inline_0();
 
 
