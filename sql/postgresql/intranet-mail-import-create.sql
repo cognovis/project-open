@@ -5,6 +5,74 @@
 -- @version $Id$
 --
 
+---------------------------------------------------------------------------
+--
+---------------------------------------------------------------------------
+
+create sequence im_mail_import_email_stats_seq start with 1;
+create table im_mail_import_email_stats (
+      stat_id                 integer,
+      stat_email              varchar(100),
+      stat_day                timestamptz,
+      stat_subject            text
+);
+
+
+create sequence im_mail_import_blacklist_seq start with 1;
+create table im_mail_import_blacklist (
+      blacklist_id            integer,
+      blacklist_email         varchar(100),
+      blacklist_day           timestamptz
+);
+
+
+
+
+
+---------------------------------------------------------------------------
+--
+---------------------------------------------------------------------------
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_menu                  integer;
+        v_admin_menu             integer;
+        v_admins                integer;
+BEGIN
+    select group_id into v_admins from groups where group_name = ''P/O Admins'';
+    select menu_id into v_admin_menu from im_menus where label=''admin'';
+
+    v_menu := im_menu__new (
+        null,			-- p_menu_id
+        ''acs_object'',		-- object_type
+        now(),			-- creation_date
+        null,			-- creation_user
+        null,			-- creation_ip
+        null,			-- context_id
+        ''intranet-mail-import'',  -- package_name
+        ''mail_import'',	-- label
+        ''Mail Import'',	-- name
+        ''/intranet-mail-import/'',-- url
+        350,			-- sort_order
+        v_admin_menu,		-- parent_menu_id
+        null			-- p_visible_tcl
+    );
+
+    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+---------------------------------------------------------------------------
+--
+---------------------------------------------------------------------------
+
+
 
 -- create dummy relationship -
 -- we don't want to create the specified table
@@ -48,12 +116,36 @@ select acs_rel_type__create_type (
 );
 
 
+
+-- create dummy relationship -
+-- we don't want to create the specified table
+select acs_rel_type__create_type (
+   'im_mail_related_to',        -- relationship (object) name
+   'Mail Related To',           -- pretty name
+   'Mail Related To',           -- pretty plural
+   'relationship',              -- supertype
+   'im_mail_import_related_to', -- table_name
+   'rel_id',                    -- id_column
+   'im_mail_import_related_to', -- package_name
+   'acs_object',                -- object_type_one
+   'member',                    -- role_one
+    0,                          -- min_n_rels_one
+    null,                       -- max_n_rels_one
+   'acs_object',                -- object_type_two
+   'member',                    -- role_two
+   0,                           -- min_n_rels_two
+   null                         -- max_n_rels_two
+);
+
+
+
+
 -------------------------------------------
 -- create components
 
 -- Delete components and menus
-select  im_component_plugin__del_module('intranet-mail-import');
-select  im_menu__del_module('intranet-mail-import');
+-- select  im_component_plugin__del_module('intranet-mail-import');
+-- select  im_menu__del_module('intranet-mail-import');
 
 
 SELECT im_component_plugin__new (
@@ -71,6 +163,25 @@ SELECT im_component_plugin__new (
         90,                             -- sort_order
         'im_mail_import_user_component -rel_user_id $user_id' -- component_tcl
     );
+
+
+SELECT im_component_plugin__new (
+        null,                           -- plugin_id
+        'acs_object',                   -- object_type
+        now(),                          -- creation_date
+        null,                           -- creation_user
+        null,                           -- creation_ip
+        null,                           -- context_id
+        'Project Mail Component',          -- plugin_name
+        'intranet-mail-import',         -- package_name
+        'left',                         -- location
+        '/intranet/projects/view',         -- page_url
+        null,                           -- view_name
+        120,                             -- sort_order
+        'im_mail_import_project_component -project_id $project_id' -- component_tcl
+    );
+
+
 
 
 --	 select im_mail_import_new_message (
