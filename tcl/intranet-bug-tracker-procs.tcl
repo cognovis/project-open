@@ -112,7 +112,7 @@ ad_proc -public im_bt_project_options {
 
 ad_proc -public im_bt_generic_select { 
     {-include_empty_p 0}
-    { -options ""}
+    {-options ""}
     name
     default
 } {
