@@ -48,7 +48,52 @@ create table im_freelancers (
 
 
 
+-----------------------------------------------------------
+-- Freelance Skills
+--
+-- We want to say something like: This user claims he is excellent
+-- at translating into Spanish, but we haven't checked it yet.
+-- So what we do is define a mapping between user_ids and
+-- skill_ids. Plus we need to reuse categories such as "Languages"
+-- so that we need a "skill type".
+-- So we define a "skill type", for example "target languages",
+-- or "operating systems". And we define individual skills such
+-- as "Castillian Spanish" or "Linux 2.4.x".
+--
 
+create table im_freelance_skills (
+	user_id			integer not null
+				constraint im_fl_skills_user_fk
+				references users,
+	skill_id		integer not null
+				constraint im_fl_skills_skill_fk
+				references im_categories,
+	skill_type_id		integer not null
+				constraint im_fl_skills_skill_type_fk
+				references im_categories,
+	claimed_experience_id   integer
+				constraint im_fl_skills_claimed_fk
+				references im_categories,
+	confirmed_experience_id integer
+				constraint im_fl_skills_conf_fk
+				references im_categories,
+	confirmation_user_id    integer
+				constraint im_fl_skills_conf_user_fk
+				references users,
+	confirmation_date       date,
+	-- "map" type of table
+	constraint im_fl_skills_pk
+	primary key (user_id, skill_id, skill_type_id)
+);
+
+create index im_freelance_skills_user_idx on im_freelance_skills(user_id);
+create index im_freelance_skills_skill_idx on im_freelance_skills(skill_type_id, skill_id);
+
+
+create or replace view im_freelance_skill_types as
+select category_id as skill_type_id, category as skill_type
+from im_categories
+where category_type = 'Intranet Skill Type';
 
 
 

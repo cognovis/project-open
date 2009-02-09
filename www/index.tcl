@@ -272,7 +272,7 @@ db_foreach skills $skill_sql {
 
 if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string compare $letter "SCROLL"] != 0 } {
     set letter [string toupper $letter]
-    lappend extra_wheres "im_first_letter_default_to_a(p.last_name)=:letter"
+    lappend extra_wheres "im_first_letter_default_to_a(pe.last_name)=:letter"
 }
 
 # Check for some default order_by fields.
