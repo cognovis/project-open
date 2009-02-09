@@ -6,7 +6,7 @@ ad_page_contract {
     @author Bruno Mattarollo <bruno.mattarollo@ams.greenpeace.org>
     @author Christian Hvid
     @creation-date 30 October 2001
-    @cvs-id $Id: edit-localized-message.tcl,v 1.1 2005/04/18 19:25:53 cvs Exp $
+    @cvs-id $Id: edit-localized-message.tcl,v 1.2 2009/02/09 16:40:19 cvs Exp $
 
 } {
     locale
@@ -15,6 +15,7 @@ ad_page_contract {
     show:optional
     {usage_p "f"}
     {return_url {}}
+    {submit_remote_p "1" }
 }
 
 # We rename to avoid conflict in queries
@@ -65,6 +66,8 @@ if { ![string equal $default_locale $current_locale] } {
         }
     }
 }
+
+set submit_remote_options_list [list [list "Submit to translation server" 1]]
     
 ad_form -extend -name message -form {
     {message:text(textarea)
@@ -74,6 +77,10 @@ ad_form -extend -name message -form {
     {comment:text(textarea),optional
         {label "Comment"}
         {html { rows 6 cols 40 }}
+    }
+    {submit_remote_p:text(checkbox),optional
+        {label "" }
+        {options $submit_remote_options_list}
     }
     {submit:text(submit)
         {label "     Update     "}
@@ -160,6 +167,11 @@ ad_form -extend -name message -form {
 
     # Register message via acs-lang
     lang::message::register -comment $comment $locale $package_key $message_key $message
+
+    # Register on remote server
+    if {1 == $submit_remote_p} {
+        lang::message::register_remote -comment $comment $locale $package_key $message_key $message
+    }
 
     if { [empty_string_p $return_url] } {
         set return_url "[ad_conn url]?[export_vars { locale package_key message_key show }]"

@@ -6,13 +6,14 @@ ad_page_contract {
     @author Bruno Mattarollo <bruno.mattarollo@ams.greenpeace.org>
     @author Christian Hvid
     @creation-date 15 April 2002
-    @cvs-id $Id: localized-message-new.tcl,v 1.2 2006/04/28 18:23:33 cvs Exp $
+    @cvs-id $Id: localized-message-new.tcl,v 1.3 2009/02/09 16:40:19 cvs Exp $
 
 } {
     locale
     package_key
     {message_key ""}
     {return_url {[export_vars -base message-list { locale package_key }]}}
+    {submit_remote_p "1" }
 }
 
 
@@ -60,12 +61,18 @@ element create message_new return_url -datatype text -widget hidden -optional
 # processing of the form
 element create message_new locale -label "locale" -datatype text -widget hidden
 
+set submit_remote_options_list [list [list "Submit to translation server" 1]]
+element create message_new submit_remote_p -label "" -datatype text \
+    -widget checkbox -options $submit_remote_options_list
+
+
 if { [form is_request message_new] } {
 
     element set_value message_new package_key $package_key
     element set_value message_new locale $current_locale
     element set_value message_new message_key $message_key
     element set_value message_new return_url $return_url
+    element set_value message_new submit_remote_p $submit_remote_p
     if { [empty_string_p $message_key] } {
         set focus message_new.message_key
     } else {
@@ -106,6 +113,11 @@ if { [form is_valid message_new] } {
     # We use the acs-lang registration of a translation. Simple, eh?
 
     lang::message::register $locale $package_key $message_key $message
+
+    # Register on translation server
+    if {1 == $submit_remote_p} {
+        lang::message::register_remote $locale $package_key $message_key $message
+    }
 
     set escaped_locale [ns_urlencode $locale]
 

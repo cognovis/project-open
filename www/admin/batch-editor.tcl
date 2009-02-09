@@ -7,6 +7,7 @@ ad_page_contract {
     package_key
     {show "all"}
     {page_start 0}
+    { submit_remote_p 1}
 }
 
 # We rename to avoid conflict in queries
@@ -198,6 +199,14 @@ db_foreach get_messages {} {
     incr count
 }
 
+set submit_remote_options_list [list [list "Submit to translation server" 1]]
+ad_form -extend -name batch_editor -form {
+    {submit_remote_p:text(checkbox),optional
+        {label "" }
+        {options $submit_remote_options_list}
+    }
+}
+
 
 ad_form -extend -name batch_editor -on_request {
     # Set from local vars
@@ -209,7 +218,13 @@ ad_form -extend -name batch_editor -on_request {
             lang::message::register $current_locale $package_key \
                 [set message_key_$i] \
                 [set message_$i]
-        }
+
+	    if {1 == $submit_remote_p} {
+                lang::message::register_remote $current_locale $package_key \
+                    [set message_key_$i] \
+                    [set message_$i]
+	    }
+	}
     }
 
     set button [form::get_button batch_editor]
