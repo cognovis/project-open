@@ -40,37 +40,40 @@ ad_proc im_security_update_client_component { } {
     set sec_url "$sec_url_base?"
 
     set package_sql "
-	select
-	        v.package_key,
+	select	v.package_key,
 	        v.version_name
-	from (
-	        select
-	                max(version_id) as version_id,
-	                package_key
-	        from
-	                apm_package_versions
-	        group by
-	                package_key
+	from	(        select	max(version_id) as version_id,
+		                package_key
+		        from	apm_package_versions
+		        group by package_key
 	        ) m,
 	        apm_package_versions v
-	where
-	        m.version_id = v.version_id
+	where	m.version_id = v.version_id
     "
 
     db_foreach package_versions $package_sql {
-	append sec_url "p.[ns_urlencode $package_key]=[ns_urlencode $version_name]&"
+
+	regsub -all {\.} $version_name "" version_name
+
+	# shorten the "intranet-" and "acs-" prefix from packages to save space
+	if {[regexp {^intranet\-(.*)} $package_key match key]} { set package_key "i-$key"}
+	if {[regexp {^acs\-(.*)} $package_key match key]} { set package_key "a-$key"}
+
+	append sec_url "p.[string trim $package_key]=[string trim $version_name]&"
     }
 
-
     if {0 != $sec_verbosity} {
-	append sec_url "email=[ns_urlencode [db_string email "select im_email_from_user_id(:current_user_id)"]]&"
-	append sec_url "os_platform=[ns_urlencode $os_platform]&"
-	append sec_url "os_version=[ns_urlencode $os_version]&"
-	append sec_url "os_machine=[ns_urlencode $os_machine]&"
+	append sec_url "email=[string trim [db_string email "select im_email_from_user_id(:current_user_id)"]]&"
+	append sec_url "os_platform=[string trim $os_platform]&"
+	append sec_url "os_version=[string trim $os_version]&"
+	append sec_url "os_machine=[string trim $os_machine]&"
 
+	# extract the PostgreSQL version
+	# psql (PostgreSQL) 8.0.8 \ncontains support for command-line editing
 	set postgres_version "undefined"
-	catch {set postgres_version [exec ppsql --version]} errmsg
-	append sec_url "pg_version=[ns_urlencode $postgres_version]&"
+	catch {set postgres_version [exec psql --version]} errmsg
+	if {[regexp {([0-9]+\.[0-9]+\.[0-9])} $postgres_version match v]} { set postgres_version $v}
+	append sec_url "pg_version=[string trim $postgres_version]"
     }
 
 
@@ -85,8 +88,13 @@ ad_proc im_security_update_client_component { } {
 	set verbose_selected "checked"
     }
 
+set ttt {
+	<pre>$sec_url</pre>
+	<pre>[string length $sec_url]</pre>
+}
+
     set sec_html "
-<iframe src=\"$sec_url\" frameborder=0 width=\"338\" height=\"100\" name=\"$security_update_l10n\">
+<iframe src=\"$sec_url\" width=\"90%\" height=\"100\" name=\"$security_update_l10n\">
   <p>$no_iframes_l10n</p>
 </iframe>
 
