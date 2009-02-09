@@ -560,13 +560,11 @@ drop function inline_01 ();
 create or replace function inline_0 ()
 returns integer as '
 declare
-	-- Menu IDs
-	v_menu		integer;
+	v_menu			integer;
 	v_invoices_new_menu	integer;
 	v_new_trans_invoice_menu integer;
 	v_new_trans_quote_menu	integer;
 
-	-- Groups
 	v_accounting		integer;
 	v_senman		integer;
 	v_admins		integer;

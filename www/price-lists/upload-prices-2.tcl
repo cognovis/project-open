@@ -55,13 +55,14 @@ if {![file readable $tmp_filename]} {
     
 set csv_files_content [exec /bin/cat $tmp_filename]
 set csv_files [split $csv_files_content "\n"]
+set separator [im_csv_guess_separator $csv_files]
 set csv_files_len [llength $csv_files]
 set csv_header [lindex $csv_files 1]
-set csv_headers [split $csv_header ";"]
+set csv_headers [split $csv_header $separator]
 
 # Check the length of the title line 
 set header [string trim [lindex $csv_files 0]]
-set header_csv_fields [split $header ";"]
+set header_csv_fields [split $header $separator]
 set header_len [llength $header_csv_fields]
 
 append page_body "Title-Length=$header_len\n"
@@ -71,7 +72,7 @@ db_dml delete_old_prices "delete from im_trans_prices where company_id=:company_
 
 for {set i 1} {$i < $csv_files_len} {incr i} {
     set csv_line [string trim [lindex $csv_files $i]]
-    set csv_fields [split $csv_line ";"]
+    set csv_fields [split $csv_line $separator]
 
     append page_body "Line #%i%: $csv_line\n"
 

@@ -59,9 +59,34 @@ if {!$write_p} {
     ad_script_abort
 }
 
+
+# ---------------------------------------------------------------
+# Check if there is a single project to which this document refers.
+# ---------------------------------------------------------------
+
+
+# Look for common super-projects for multi-project documents
+set select_project [im_invoices_unify_select_projects $select_project]
+
 set project_id ""
 if {1 == [llength $select_project]} {
     set project_id [lindex $select_project 0]
+}
+
+# ---------------------------------------------------------------
+# Check Currency Consistency
+# ---------------------------------------------------------------
+
+set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+set invoice_currency [lindex [array get item_currency] 1]
+if {"" == $invoice_currency} { set invoice_currency $default_currency }
+
+foreach item_nr [array names item_currency] {
+    if {$item_currency($item_nr) != $invoice_currency} {
+        ad_return_complaint 1 "<b>[_ intranet-invoices.Error_multiple_currencies]:</b><br>
+        [_ intranet-invoices.Blurb_multiple_currencies]"
+        ad_script_abort
+    }
 }
 
 # ---------------------------------------------------------------
@@ -127,6 +152,7 @@ set
 			    from im_start_months 
 			    where start_block < :invoice_date),
 	payment_days	= :payment_days,
+	currency	= :invoice_currency,
 	vat		= :vat,
 	tax		= :tax,
 	variable_cost_p = 't'
@@ -184,18 +210,8 @@ foreach nr $item_list {
 # Update the invoice amount based on the invoice items
 # ---------------------------------------------------------------
 
-set update_invoice_amount_sql "
-update im_costs
-set amount = (
-	select sum(price_per_unit * item_units)
-	from im_invoice_items
-	where invoice_id = :invoice_id
-	group by invoice_id
-)
-where cost_id = :invoice_id
-"
+im_invoice_update_rounded_amount -invoice_id $invoice_id
 
-db_dml update_invoice_amount $update_invoice_amount_sql
 
 
 # ---------------------------------------------------------------

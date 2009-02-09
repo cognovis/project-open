@@ -55,32 +55,37 @@ set uom_options [db_list_of_lists uom_options "
 "]
 
 set task_type_options [db_list_of_lists uom_options "
-	select category, category_id
-	from im_categories
-	where category_type = 'Intranet Project Type'
+	select	category, category_id
+	from	im_categories
+	where	category_type = 'Intranet Project Type'
+		and (enabled_p = 't' OR enabled_p is null)
 	order by category
 "]
 set task_type_options [linsert $task_type_options 0 [list "" ""]]
 
 set language_options [db_list_of_lists language_options "
-	select category, category_id
-	from im_categories
-	where category_type = 'Intranet Translation Language'
+	select	category, category_id
+	from	im_categories
+	where	category_type = 'Intranet Translation Language'
+		and (enabled_p = 't' OR enabled_p is null)
 	order by category
 "]
 set language_options [linsert $language_options 0 [list "" ""]]
 
 set subject_area_options [db_list_of_lists subject_area_options "
-	select category, category_id
-	from im_categories
-	where category_type = 'Intranet Translation Subject Area'
+	select	category, category_id
+	from	im_categories
+	where	category_type = 'Intranet Translation Subject Area'
+		and (enabled_p = 't' OR enabled_p is null)
 	order by category
 "]
 set subject_area_options [linsert $subject_area_options 0 [list "" ""]]
 
 set file_type_options [db_list_of_lists file_type_options "
-	select category, category_id from im_categories
-	where category_type = 'Intranet Translation File Type'
+	select	category, category_id 
+	from	im_categories
+	where	category_type = 'Intranet Translation File Type'
+		and (enabled_p = 't' OR enabled_p is null)
 	order by category
 "]
 set file_type_options [linsert $file_type_options 0 [list "" ""]]

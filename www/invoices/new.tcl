@@ -83,6 +83,8 @@ set page_title "[_ intranet-trans-invoices.Invoices]"
 set context_bar [im_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 
+set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+
 if {![im_permission $user_id add_invoices]} {
     ad_return_complaint "[_ intranet-trans-invoices.lt_Insufficient_Privileg]" "
     <li>[_ intranet-trans-invoices.lt_You_dont_have_suffici]"    
@@ -192,7 +194,7 @@ if {$project_id != 0} {
     } else {
 	
 	# Just one project and no subproject - just go forward
-	set invoice_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+	set invoice_currency $default_currency
 	ad_returnredirect "/intranet-trans-invoices/invoices/new-2?select_project=$project_id&[export_url_vars target_cost_type_id invoice_currency]"
 	set page_body ""
 	return
@@ -504,7 +506,7 @@ set table_continuation_html "
 set submit_button "
       <tr>
         <td colspan=$colspan align=right>
-	   [_ intranet-trans-invoices.Invoice_Currency]: [im_currency_select invoice_currency "EUR"]
+	   [_ intranet-trans-invoices.Invoice_Currency]: [im_currency_select invoice_currency $default_currency]
 	   <input type=submit value='[_ intranet-trans-invoices.lt_Select_Projects_for_I]'> 
         </td>
       </tr>
