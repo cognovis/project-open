@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-ganttproject" package_version="3.2.5.0.0" locale="es_ES" charset="ISO-8859-1">
+
+  <msg key="Download_Gantt_File">Descargar el fichero GanttProject.gan</msg>
+  <msg key="No_Gantt_preview_available">Gantt no disponible.</msg>
+  <msg key="OK">OK</msg>
+  <msg key="ProjectComponentHelp">GanttProject es un visualizador gratuito de diagramas de Gantt (http://sourceforge.net/project/ganttproject/)</msg>
+  <msg key="Scheduling">Planificación</msg>
+  <msg key="warning">Advertencia: No modificar la estructura del proyecto mientras este en ejecución. Los cambios pueden borrar las horas de la hoja de control de tiempos, costes y otros items. Leer por favor el manual y/o solicitar más información.&lt;br&gt; necesitas instalar &lt;a href='http://prdownloads.sourceforge.net/ganttproject/ganttproject-2.0.exe?download'&gt;GanttProject&lt;/a&gt; en tu ordenador.</msg>
+</message_catalog>
