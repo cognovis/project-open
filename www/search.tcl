@@ -352,7 +352,7 @@ set deleted_users_sql "
 		  	AND m.rel_id = mr.rel_id 
 		  	AND m.container_id = m.group_id 
 		  	AND m.rel_type::text = 'membership_rel'
-			AND mr.member_state = 'banned'
+			AND mr.member_state != 'approved'
 	)
 "
 if {1 == $include_deleted_p} {
