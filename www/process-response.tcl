@@ -14,13 +14,11 @@ ad_page_contract {
     @creation-date    28th September 2000
     @cvs-id $Id$
 } {
-
   survey_id:integer,notnull
   { related_object_id:integer "" }
   { related_context_id:integer "" }
   return_url:optional
   response_to_question:array,optional,multiple,html
-
 } -validate {
 	
     survey_exists -requires { survey_id } {
