@@ -223,19 +223,19 @@ BEGIN
 
 	-- Create a "Export Projects CSV" link under "Projects"
 	v_menu := im_menu__new (
-		null,			-- p_menu_id
-		''acs_object'',		-- object_type
-		now(),			-- creation_date
-		null,			-- creation_user
-		null,			-- creation_ip
-		null,			-- context_id
+		null,				-- p_menu_id
+		''acs_object'',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
 		''intranet-ganttproject'',	-- package_name
 		''projects_admin_gantt_resources'',	-- label
 		''Resource Planning Report'',	-- name
 		''/intranet-ganttproject/gantt-resources-cube?config=resource_planning_report'', -- url
-		60,			-- sort_order
-		v_admin_menu,		-- parent_menu_id
-		null			-- p_visible_tcl
+		60,				-- sort_order
+		v_admin_menu,			-- parent_menu_id
+		null				-- p_visible_tcl
 	);
 
 	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');

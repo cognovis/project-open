@@ -15,7 +15,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     { expiry_date "" }
-    { project_id:integer 9689 }
+    { project_id:integer 0 }
     { security_token "" }
     upload_file
 }
