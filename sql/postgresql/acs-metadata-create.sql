@@ -533,7 +533,12 @@ declare
   v_supertype						  acs_object_types.supertype%TYPE;
   v_name_method                       varchar;
   v_idx                               integer;
+  v_count			      integer;
 begin
+    select count(*) into v_count from acs_object_types
+    where object_type = create_type__object_type;
+    if v_count > 0 then return 0; end if;
+
     v_idx := position(''.'' in create_type__name_method);
     if v_idx <> 0 then
          v_name_method := substr(create_type__name_method,1,v_idx - 1) || 

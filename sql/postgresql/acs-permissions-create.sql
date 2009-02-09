@@ -270,7 +270,13 @@ declare
   create_privilege__privilege              alias for $1;  
   create_privilege__pretty_name            alias for $2;  -- default null  
   create_privilege__pretty_plural          alias for $3;  -- default null
+
+  v_count				   integer;
 begin
+    select count(*) into v_count from acs_privileges
+    where privilege = create_privilege__privilege;
+    IF v_count > 0 THEN return 0; END IF;
+
     insert into acs_privileges
      (privilege, pretty_name, pretty_plural)
     values
@@ -306,7 +312,12 @@ returns integer as '
 declare
   add_child__privilege              alias for $1;  
   add_child__child_privilege        alias for $2;  
+  v_count                           integer;
 begin
+    select count(*) into v_count from acs_privilege_hierarchy
+    where privilege = add_child__privilege and child_privilege = add_child__child_privilege;
+    IF v_count > 0 THEN return 0; END IF;
+
     insert into acs_privilege_hierarchy
      (privilege, child_privilege)
     values
