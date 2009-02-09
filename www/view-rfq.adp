@@ -92,3 +92,5 @@
 
 
 <%= [im_object_skill_component -object_id $rfq_id -return_url $return_url] %>
+
+

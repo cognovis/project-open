@@ -12,7 +12,7 @@
 ad_page_contract { 
     @author frank.bergmann@project-open.com
 } {
-    rfq_id:integer
+    rfq_id:multiple,integer
     return_url
 }
 
@@ -28,9 +28,11 @@ set user_id [ad_maybe_redirect_for_registration]
 # Delete
 # ---------------------------------------------------------------
 
-
-db_string delete_freelance_rfq "select im_freelance_rfq__delete(:rfq_id)"
-
+db_dml close_rfqs "
+	update	im_freelance_rfqs
+	set	rfq_status_id = [im_freelance_rfq_status_closed]
+	where	rfq_id in ([join [lappend rfq_id 0] ","])
+"
 
 ad_returnredirect $return_url
 

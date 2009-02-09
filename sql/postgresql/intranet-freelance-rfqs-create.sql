@@ -629,7 +629,7 @@ select im_dynfield_widget__new (
 
 
 
-alter table im_freelance_rfqs add general_outcome varchar;
+alter table im_freelance_rfq_answers add general_outcome varchar;
 
 select im_dynfield_attribute__new (
 	null,			-- widget_id
@@ -639,7 +639,7 @@ select im_dynfield_attribute__new (
 	null,			-- creation_ip	
 	null,			-- context_id
 
-	'im_freelance_rfq',	-- attribute_object_type
+	'im_freelance_rfq_answer',	-- attribute_object_type
 	'general_outcome',	-- attribute name
 	1,
 	1,

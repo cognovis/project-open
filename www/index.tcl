@@ -14,7 +14,7 @@ ad_page_contract {
 } {
     { project_id:integer "" }
     { rfq_type_id:integer "" }
-    { rfq_status_id:integer "" }
+    { rfq_status_id:integer 4420 }
 }
 
 # ---------------------------------------------------------------
@@ -36,7 +36,6 @@ set org_project_id $project_id
 set date_format "YYYY-MM-DD"
 set date_time_format "YYYY-MM-DD HH24:MI"
 
-
 # ---------------------------------------------------------------
 # Admin Links
 # ---------------------------------------------------------------
@@ -47,8 +46,10 @@ set view_rfq_p [im_permission $user_id "view_freelance_rfqs"]
 set admin_links ""
 set bulk_actions_list "[list]"
 
+set close_msg [lang::message::lookup "" intranet-freelance-rfqs.Close "Close"]
+
 if {$add_rfq_p} {
-    lappend bulk_actions_list "[_ intranet-freelance-rfqs.Delete]" "del-rfq" "[_ intranet-freelance-rfqs.Delete_RFQ]"
+    lappend bulk_actions_list $close_msg "del-rfq" $close_msg
 }
 
 
@@ -95,6 +96,9 @@ ad_form \
 	    {options $freelance_rfq_status_options} 
 	}
     }
+
+template::element::set_value $form_id rfq_status_id $rfq_status_id
+template::element::set_value $form_id rfq_type_id $rfq_type_id
 
 # ---------------------------------------------------------------
 # List RFQs according to filters
