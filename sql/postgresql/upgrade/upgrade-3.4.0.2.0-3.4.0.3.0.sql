@@ -59,6 +59,10 @@ where package_name = 'intranet';
 -----------------------------------------------------
 -- Create Project Hierarchy View
 
+
+delete from im_view_columns where view_id = 25;
+delete from im_views where view_id = 25;
+
 insert into im_views (view_id, view_name, visible_for, view_type_id)
 values (25, 'project_hierarchy', 'view_projects', 1400);
 
