@@ -33,7 +33,7 @@ ad_proc -private im_package_survsimp_id_helper {} {
 
 
 # -----------------------------------------------------------
-# Standard procedures
+# Component showing a) survey to fill out and b) surveys related to this object
 # -----------------------------------------------------------
 
 ad_proc im_survsimp_component { object_id } {
