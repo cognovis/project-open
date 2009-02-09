@@ -64,9 +64,10 @@ ad_proc -private im_material_default_material_id {} {
 ad_proc -private im_material_type_options { {-include_empty 1} } {
 
     set options [db_list_of_lists material_type_options "
-	select category, category_id
-	from im_categories
-	where category_type = 'Intranet Material Type'
+	select	category, category_id
+	from	im_categories
+	where	category_type = 'Intranet Material Type'
+		and (enabled_p = 't' OR enabled_p is null)
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
@@ -75,9 +76,10 @@ ad_proc -private im_material_type_options { {-include_empty 1} } {
 ad_proc -private im_material_status_options { {-include_empty 1} } {
 
     set options [db_list_of_lists material_status_options "
-	select category, category_id
-	from im_categories
-	where category_type = 'Intranet Material Status'
+	select	category, category_id
+	from	im_categories
+	where	category_type = 'Intranet Material Status'
+		and (enabled_p = 't' OR enabled_p is null)
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
     return $options
