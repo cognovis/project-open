@@ -1,6 +1,6 @@
-# /packages/intranet-reporting-translation/www/project-trans-tasks.tcl
+# /packages/intranet-reporting-translation/www/finance-quotes-pos.tcl
 #
-# Copyright (C) 2003-2008 ]project-open[
+# Copyright (C) 2003-2006 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/ for licensing details.
@@ -42,13 +42,13 @@ if {![string equal "t" $read_p]} {
 }
 
 # Check that Start & End-Date have correct format
-if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $start_date]} {
+if {"" != $start_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $start_date]} {
     ad_return_complaint 1 "Start Date doesn't have the right format.<br>
     Current value: '$start_date'<br>
     Expected format: 'YYYY-MM-DD'"
 }
 
-if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $end_date]} {
+if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $end_date]} {
     ad_return_complaint 1 "End Date doesn't have the right format.<br>
     Current value: '$end_date'<br>
     Expected format: 'YYYY-MM-DD'"
@@ -78,8 +78,7 @@ set rowclass(1) "rowodd"
 
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 set cur_format [im_l10n_sql_currency_format]
-
-set date_format [parameter::get_from_package_key -package_key intranet-translation -parameter "TaskListEndDateFormat" -default [im_l10n_sql_date_format]]
+set date_format [im_l10n_sql_date_format]
 
 set days_in_past 30
 db_1row todays_date "
@@ -270,33 +269,25 @@ set sql "
 		and children.project_id = t.project_id
 		$where_clause
 	order by
-		cust.company_name,
 		p.project_nr,
+		cust.company_name,
 		children.tree_sortkey
 "
 
 set report_def [list \
-    group_by customer_id \
-    header {
-	"\#colspan=17 <a href=$this_url&customer_id=$customer_id&level_of_detail=4 
-	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
-	<b><a href=$company_url$customer_id>$customer_name</a></b>"
+    group_by project_id \
+    header { 
+                "<a href=$project_url$project_id>$project_nr</a>"
+                "\\#colspan=2 <a href=$this_url&project_id=$project_id&level_of_detail=4
+                target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a>
+                <b><a href=$project_url$project_id>$project_nr $project_name</a></b>"
+                "<nobr><a href=$user_url$main_project_manager_id>$main_project_manager_name</a></nobr>"
+                "$project_end_date_formatted</a>"
+                ""
+                ""
+                "$main_project_type</a>"
+                "\\#colspan=8 $main_project_status</a>"
     } \
-        content [list \
-            group_by project_id \
-            header { 
-		""
-		"<a href=$project_url$project_id>$project_nr</a>"
-		"\#colspan=2 <a href=$this_url&project_id=$project_id&level_of_detail=4 
-		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
-		<b><a href=$project_url$project_id>$project_nr $project_name</a></b>"
-		"<nobr><a href=$user_url$main_project_manager_id>$main_project_manager_name</a></nobr>"
-		"$project_end_date_formatted</a>"
-		""
-		""
-		"$main_project_type</a>"
-		"\#colspan=8 $main_project_status</a>"
-	    } \
 	    content [list \
 		    header {
 			""
@@ -322,16 +313,15 @@ set report_def [list \
 	    footer {
 		"&nbsp;" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" ""
             } \
-    ] \
-    footer {  
-	"&nbsp;"  ""  ""  ""  ""  ""  ""  ""  ""  ""  "" "" "" "" "" "" ""
-    } \
 ]
 
+# ad_return_complaint 1 $report_def
+
+
 # Global header/footer
-set header0 {"Cus" "Nr" "Project" "Task Name" "PM" "Deadl." "Sr" "Tg" "Type" "Status" "Units" "Bill" "Unit" Trans Edit Proof Other}
+set header0 {"Project" "Task Name" "PM" "Deadl." "Sr" "Tg" "Type" "Status" "Units" "Bill" "Unit" Trans Edit Proof Other}
 set footer0 {
-	"&nbsp;"  ""  ""  ""  ""  ""  ""  ""  ""  ""  "" "" "" "" "" "" ""
+	""  ""  ""  ""  ""  ""  ""  "" "" "" "" "" "" ""
 }
 
 set counters [list ]
@@ -432,7 +422,9 @@ set footer_array_list [list]
 set last_value_list [list]
 set class "rowodd"
 
-ns_log Notice "intranet-reporting-translation/finance-quotes-pos: sql=\n$sql"
+ns_log Notice "intranet-reporting-translation/project-trans-task-advanced: sql=\n$sql"
+
+# ad_return_complaint 1 $sql
 
 db_foreach sql $sql {
 

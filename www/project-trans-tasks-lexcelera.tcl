@@ -1,6 +1,6 @@
-# /packages/intranet-reporting-translation/www/project-trans-tasks.tcl
+# /packages/intranet-cust-lexcelera/www/project-trans-tasks.tcl
 #
-# Copyright (C) 2003-2008 ]project-open[
+# Copyright (C) 2003-2006 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/ for licensing details.
@@ -42,13 +42,13 @@ if {![string equal "t" $read_p]} {
 }
 
 # Check that Start & End-Date have correct format
-if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $start_date]} {
+if {"" != $start_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $start_date]} {
     ad_return_complaint 1 "Start Date doesn't have the right format.<br>
     Current value: '$start_date'<br>
     Expected format: 'YYYY-MM-DD'"
 }
 
-if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $end_date]} {
+if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $end_date]} {
     ad_return_complaint 1 "End Date doesn't have the right format.<br>
     Current value: '$end_date'<br>
     Expected format: 'YYYY-MM-DD'"
@@ -78,8 +78,7 @@ set rowclass(1) "rowodd"
 
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 set cur_format [im_l10n_sql_currency_format]
-
-set date_format [parameter::get_from_package_key -package_key intranet-translation -parameter "TaskListEndDateFormat" -default [im_l10n_sql_date_format]]
+set date_format [parameter::get_from_package_key -package_key intranet-translation -parameter "TaskListEndDateFormat" -default "YYYY-MM-DD"]
 
 set days_in_past 30
 db_1row todays_date "
@@ -189,6 +188,7 @@ set sql "
 		cust.company_name as customer_name,
 		t.task_id,
 		t.task_name,
+		t.task_filename,
 		t.task_units,
 		t.billable_units,
 		t.end_date,
@@ -223,6 +223,7 @@ set sql "
 			select	task_id,
 				project_id,
 				task_name,
+				task_filename,
 				task_type_id,
 				task_status_id,
 				source_language_id,
@@ -241,6 +242,7 @@ set sql "
 			select	task_id,
 				p.parent_id as project_id,
 				p.project_name as task_name,
+				null as task_filename,
 				p.project_type_id as task_type_id,
 				p.project_status_id as task_status_id,
 				null as source_language_id,
@@ -303,6 +305,7 @@ set report_def [list \
 			"<a href=$project_url$children_id>$children_nr</a>"
 			""
 			"$task_name"
+			"$task_filename"
 			"<nobr><a href=$user_url$project_manager_id>$project_manager_name</a></nobr>"
 			"<font color='$warn_color'>$task_end_date_formatted</font>"
 			"$source_language"
@@ -329,7 +332,7 @@ set report_def [list \
 ]
 
 # Global header/footer
-set header0 {"Cus" "Nr" "Project" "Task Name" "PM" "Deadl." "Sr" "Tg" "Type" "Status" "Units" "Bill" "Unit" Trans Edit Proof Other}
+set header0 {"Cus" "Nr" "Project" "Task Name" "Task File Name" "PM" "Deadl." "Sr" "Tg" "Type" "Status" "Units" "Bill" "Unit" Trans Edit Proof Other}
 set footer0 {
 	"&nbsp;"  ""  ""  ""  ""  ""  ""  ""  ""  ""  "" "" "" "" "" "" ""
 }
