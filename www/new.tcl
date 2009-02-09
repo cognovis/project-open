@@ -59,6 +59,15 @@ ad_form \
 	{note:text(textarea) {label "[lang::message::lookup {} intranet-notes.Notes_Note Note]"} {html {cols 40} {rows 8} }}
     }
 
+# Add DynFields to the form
+set my_note_id 0
+if {[info exists note_id]} { set my_note_id $note_id }
+im_dynfield::append_attributes_to_form \
+    -object_type "im_note" \
+    -form_id $form_id \
+    -object_id $my_note_id
+
+
 
 # ---------------------------------------------------------------
 # Define Form Actions
@@ -70,7 +79,21 @@ ad_form -extend -name $form_id \
 	from	im_notes
 	where	note_id = :note_id
     } -new_data {
-	db_exec_plsql create_note "
+
+        set note [string trim $note]
+
+        set duplicate_note_sql "
+                select  count(*)
+                from    im_notes
+                where   object_id = :object_id and note = :note
+        "
+        if {[db_string dup $duplicate_note_sql]} {
+            ad_return_complaint 1 "<b>Duplicate note</b>:<br>
+            There is already the same note available for the specified object.
+            "
+        }
+
+	set note_id [db_exec_plsql create_note "
 		SELECT im_note__new(
 			:note_id,
 			'im_note',
@@ -83,13 +106,26 @@ ad_form -extend -name $form_id \
 			:note_type_id,
 			[im_note_status_active]
 		)
-        "
+        "]
+
+        im_dynfield::attribute_store \
+            -object_type "im_note" \
+            -object_id $note_id \
+            -form_id $form_id
+
     } -edit_data {
+
+        set note [string trim $note]
 	db_dml edit_note "
 		update im_notes
 		set note = :note
 		where note_id = :note_id
 	"
+        im_dynfield::attribute_store \
+            -object_type "im_note" \
+            -object_id $note_id \
+            -form_id $form_id
+
     } -after_submit {
 	ad_returnredirect $return_url
 	ad_script_abort
