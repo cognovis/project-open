@@ -35,7 +35,7 @@ set sector [ns_set iget [ad_conn form] "sector"]
 
 
 # ---------------------------------------------------------------
-# Check if everything is togehter
+# Check if everything is together
 # ---------------------------------------------------------------
 
 set pages [list sector deptcomp features orgsize]
@@ -44,5 +44,57 @@ set ready 1
 foreach v $pages {
     set $v [ns_set iget [ad_conn form] $v]
     if {![exists_and_not_null $v]} { set ready 0 }
+}
+
+
+# ---------------------------------------------------------------
+# Write variables to parameters
+# ---------------------------------------------------------------
+
+
+set package_key "intranet-sysconfig"
+set default_value ""
+set datatype "string"
+set section_name ""
+set min_n_values 1
+set max_n_values 1
+
+
+foreach param {Sector DeptComp OrgSize Features} {
+
+    set lower_param [string tolower $param]
+    set parameter_name "Company${param}"
+    set parameter_description $parameter_name
+
+    set parameter_id [db_string param "
+        select  parameter_id
+        from    apm_parameters
+        where   package_key = :package_key
+                and parameter_name = :parameter_name
+    " -default ""]
+
+    if {"" == $parameter_id} {
+        catch {
+            set parameter_id [apm_parameter_register \
+                                  -parameter_id $parameter_id \
+                                  $parameter_name \
+                                  $parameter_description \
+                                  $package_key \
+                                  "" \
+                                  "string" \
+                                  "" \
+                                  1 \
+                                  1 \
+	     ]
+        } err_msg
+    }
+
+    set value [ns_set iget [ad_conn form] $lower_param]
+    set package_id [apm_package_id_from_key $package_key]
+    parameter::set_value \
+        -package_id $package_id \
+        -parameter $parameter_name \
+        -value $value
+
 }
 
