@@ -735,6 +735,11 @@ ad_proc im_filestorage_project_workflow_dirs { project_type_id } {
     set deliv [lang::message::lookup $locale intranet-translation.Workflow_deliv_directory "deliv"]
     set other [lang::message::lookup $locale intranet-translation.Workflow_other_directory "other"]
 
+    
+    # Check if the task_type was set in categories
+    set aux_task_type_id [db_string aux_task_type "select aux_int1 from im_categories where category_id = :project_type_id" -default ""]
+    if {"" != $aux_task_type_id} { set project_type_id $aux_task_type_id }
+
     switch $project_type_id {
 	
 	87 { 

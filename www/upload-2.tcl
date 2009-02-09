@@ -145,7 +145,7 @@ insert into im_fs_actions (
         [im_file_action_upload],
         :user_id,
         now(),
-        '$dest_path/$client_filename'
+        :dest_path || '/' || :client_filename
 )"
 
 
@@ -170,7 +170,6 @@ $page_content
 </div>
 </div>
 "
-
 
 
 db_release_unused_handles
