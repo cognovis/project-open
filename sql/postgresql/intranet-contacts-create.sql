@@ -230,3 +230,44 @@ delete from users_contact where user_id not in (select person_id from persons);
 \i contacts-messages-create.sql
 \i contacts-list-create.sql
 \i groups-notifications-init.sql
+
+
+
+
+-------------------------------------------------------------------
+-- Compatibility
+-------------------------------------------------------------------
+
+-- AMS Compatibility view
+create or replace view ams_lists as
+select
+	c.category_id as list_id,
+	'contacts'::varchar as package_key,
+	aot.object_type,
+	c.category as list_name,
+	c.category as pretty_name,
+	''::varchar as description,
+	'text/plain'::varchar as description_mime_type
+from
+	acs_object_types aot,
+	im_categories c
+where
+	aot.type_category_type is not null
+	and aot.type_category_type = c.category_type;
+
+-- AMS Compatibility view
+create or replace view ams_list_attribute_map as
+select
+	tam.object_type_id as list_id,
+	da.acs_attribute_id as attribute_id,
+	0::integer as sort_order,
+	false::boolean as required_p,
+	''::varchar as section_heading,
+	''::varchar as html_options
+from
+	im_dynfield_type_attribute_map tam,
+	im_dynfield_attributes da
+where
+	tam.attribute_id = da.attribute_id;
+
+
