@@ -24,12 +24,8 @@ ad_proc -public contact::search::new {
 } {
     create a contact search
 } {
-    if { ![exists_and_not_null owner_id] } {
-        set owner_id [ad_conn user_id]
-    }
-    if { ![exists_and_not_null package_id] } {
-        set package_id [ad_conn package_id]
-    }
+    if { ![exists_and_not_null owner_id] } { set owner_id [ad_conn user_id] }
+    if { ![exists_and_not_null package_id] } { set package_id [ad_conn package_id] }
     set var_list [list \
                       [list search_id $search_id] \
                       [list title $title] \
@@ -38,7 +34,7 @@ ad_proc -public contact::search::new {
                       [list object_type $object_type] \
                       [list deleted_p $deleted_p] \
                       [list package_id $package_id] \
-                      ]
+    ]
 
     return [package_instantiate_object -var_list $var_list contact_search]
 }

@@ -1,7 +1,6 @@
 ad_library {
 
     Contacts install library
-
     Procedures that deal with installing, instantiating, mounting.
 
     @creation-date 2005-05-26
@@ -24,7 +23,6 @@ ad_proc -public contacts::install::package_install {
 } {
 
     # Register Relationships
-
     set contact [::im::dynfield::Rel_Types create contact_rel -object_type "contact_rel" -table_name im_contacts -supertype "relationship" -role_one "" -role_two "" -object_type_one "party" -object_type_two "party" -min_n_rels_one 0 -min_n_rels_two 0 -pretty_name "#intranet-contacts.contact_rel#" -pretty_plural "#intranet-contacts.contact_rels#" -sql_package_name "contact_rel"]
     $contact save_new
     
@@ -33,7 +31,6 @@ ad_proc -public contacts::install::package_install {
     rel_types::create_role -role "employer" -pretty_name "Employer" -pretty_plural "Employers"
     set employee [::im::dynfield::Rel_Types create employment_rel -object_type "employment_rel" -table_name im_employee_rels -supertype "im_biz_object_member" -role_one "employer" -role_two "employee" -object_type_one "im_company" -object_type_two "person" -min_n_rels_one 1 -min_n_rels_two 1 -pretty_name "#intranet-contacts.employment_rel#" -pretty_plural "#intranet-contacts.employement_rels#" -sql_package_name "employee"]
     $employee save_new
-
 	
     # Office member
     rel_types::create_role -role "office_member" -pretty_name "Office member" -pretty_plural "Office members"
@@ -63,15 +60,13 @@ ad_proc -public contacts::install::package_instantiate {
 } {
     Instantiate the package and install the searches
 } {
+
     # Default searches
-contact::search::new -title "#intranet-contacts.search_person#" -object_type "person" -package_id $package_id -all_or_any all -owner_id $package_id
-contact::search::new -title "#intranet-contacts.search_im_company#" -object_type "im_company" -package_id $package_id -all_or_any all -owner_id $package_id
-contact::search::new -title "#intranet-contacts.search_im_office#" -object_type "im_office" -package_id $package_id -all_or_any all -owner_id $package_id
-contact::search::new -title "#intranet-contacts.search_user#" -object_type "user" -package_id $package_id -all_or_any all -owner_id $package_id
-
-    set ttt {
-
-
+    contact::search::new -title "#intranet-contacts.search_person#" -object_type "person" -package_id $package_id -all_or_any all -owner_id $package_id
+    contact::search::new -title "#intranet-contacts.search_im_company#" -object_type "im_company" -package_id $package_id -all_or_any all -owner_id $package_id
+    contact::search::new -title "#intranet-contacts.search_im_office#" -object_type "im_office" -package_id $package_id -all_or_any all -owner_id $package_id
+    contact::search::new -title "#intranet-contacts.search_user#" -object_type "user" -package_id $package_id -all_or_any all -owner_id $package_id
+    
     # We need to fill acs_object_type_tables with the correct values
     # As the automated class generation cannot deal with this
     catch { db_dml insert "insert into acs_object_type_tables values ('person','users_contact','user_id')" }
@@ -106,7 +101,6 @@ contact::search::new -title "#intranet-contacts.search_user#" -object_type "user
     db_dml insert "alter table im_employees add column start_date date"
     db_dml alter "alter table im_employees add column end_date date"
 
-}
 }
 
 ad_proc -public contacts::install::update_data {

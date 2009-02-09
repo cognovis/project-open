@@ -8,10 +8,12 @@
 
 create table contact_searches (
         search_id               integer
-                                constraint contact_searches_id_fk references acs_objects(object_id) on delete cascade
+                                constraint contact_searches_id_fk 
+				references acs_objects(object_id) on delete cascade
                                 constraint contact_searches_id_pk primary key,
         owner_id                integer
-                                constraint contact_searches_owner_id_fk references acs_objects(object_id) on delete cascade
+                                constraint contact_searches_owner_id_fk 
+				references acs_objects(object_id) on delete cascade
                                 constraint contact_searches_owner_id_nn not null,
         all_or_any              varchar(20)
                                 constraint contact_searches_and_or_all_nn not null,
@@ -40,7 +42,8 @@ create table contact_search_conditions (
         condition_id            integer
                                 constraint contact_search_conditions_id_pk primary key,
         search_id               integer
-                                constraint contact_search_conditions_search_id_fk references contact_searches(search_id) on delete cascade
+                                constraint contact_search_conditions_search_id_fk 
+				references contact_searches(search_id) on delete cascade
                                 constraint contact_search_conditions_search_id_nn not null,
         type                    varchar(255)
                                 constraint contact_search_conditions_type_nn not null,
@@ -50,10 +53,12 @@ create table contact_search_conditions (
 
 create table contact_search_log (
         search_id               integer
-                                constraint contact_search_log_search_id_fk references contact_searches(search_id) on delete cascade
+                                constraint contact_search_log_search_id_fk 
+				references contact_searches(search_id) on delete cascade
                                 constraint contact_search_logs_search_id_nn not null,
         user_id                 integer
-                                constraint contact_search_log_user_id_fk references users(user_id) on delete cascade
+                                constraint contact_search_log_user_id_fk 
+				references users(user_id) on delete cascade
                                 constraint contact_search_log_user_id_nn not null,
         n_searches              integer
                                 constraint contact_search_log_n_searches_nn not null,
@@ -64,8 +69,9 @@ create table contact_search_log (
 
 select define_function_args ('contact_search__new', 'search_id,title,owner_id,all_or_any,object_type,deleted_p;f,creation_date,creation_user,creation_ip,context_id,package_id');
 
-create or replace function contact_search__new (integer,varchar,integer,varchar,varchar,boolean,timestamptz,integer,varchar,integer,integer)
-returns integer as '
+create or replace function contact_search__new (
+	integer,varchar,integer,varchar,varchar,boolean,timestamptz,integer,varchar,integer,integer
+) returns integer as '
 declare
     p_search_id                     alias for $1;
     p_title                         alias for $2;

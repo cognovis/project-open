@@ -8,16 +8,19 @@
 
 create table contact_lists (
         list_id         integer primary key
-                        constraint contact_lists_list_id_fk references acs_objects(object_id) on delete cascade
+                        constraint contact_lists_list_id_fk 
+			references acs_objects(object_id) on delete cascade
 );
 
 -- a list can have many owners to allow collaboration
 
 create table contact_list_members (
         list_id         integer not null
-                        constraint contact_list_members_list_id_fk references contact_lists(list_id) on delete cascade,
+                        constraint contact_list_members_list_id_fk 
+			references contact_lists(list_id) on delete cascade,
         party_id        integer not null
-                        constraint contact_list_members_party_id_fk references parties(party_id) on delete cascade,
+                        constraint contact_list_members_party_id_fk 
+			references parties(party_id) on delete cascade,
         unique(list_id,party_id)
 );
 
@@ -96,7 +99,8 @@ end;' language 'plpgsql';
 
 create table contact_owner_rels (
 	rel_id		integer primary key
-			constraint contact_owner_rels_rel_id_fk references acs_rels(rel_id) on delete cascade
+			constraint contact_owner_rels_rel_id_fk 
+			references acs_rels(rel_id) on delete cascade
 );
 
 create view contact_owners as
