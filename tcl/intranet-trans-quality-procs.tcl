@@ -66,7 +66,11 @@ ad_proc -public im_transq_error_percentage { expected_quality_id } {
     return $allowed_error_percentage
 }
 
-ad_proc -public im_transq_rel_quality { allowed_error_percentage  sample_size  total_errors } {
+ad_proc -public im_transq_rel_quality { 
+    allowed_error_percentage  
+    sample_size  
+    total_errors 
+} {
     Returns -4 to +4 on a logaritmic scale.
     <li>0 means that the translation meets the allowed error points
     <li>-1 means that the translation has twice as many errors as allowed
@@ -75,8 +79,19 @@ ad_proc -public im_transq_rel_quality { allowed_error_percentage  sample_size  t
     # How many errors should have been in the translation?
     set allowed_errors [expr $allowed_error_percentage * $sample_size / 100]
     if {0 == $total_errors} { set total_errors "1" }
-
-    set dif [expr log($allowed_errors / $total_errors) / log(2)]
+    if {$total_errors < 1} { set total_errors "1" }
+    if {$allowed_errors < 0.001} { set allowed_errors 0.001 }
+    
+    set dif 0
+    if {[catch {
+	set dif [expr log($allowed_errors / $total_errors) / log(2)]
+    } err_msg]} {
+	ad_return_complaint 1 "Division by zero error:<br>
+	<pre>
+	allowed_errors=$allowed_errors
+	total_errors=$total_errors
+	</pre>"
+    }
     
     if { $dif <= -3.5 } { return -4 }
     if { $dif <= -2.5 && $dif > -3.5 } { return -3 }
@@ -458,14 +473,9 @@ ad_proc -public im_quality_list_component {
     if {![im_permission $user_id view_trans_quality]} { return "" }
 
     set local_url "list"
-
     if {"" == $return_url } { set return_url [im_url_with_query] }
-
-    if { "" == $how_many} {
-	set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50]
-    }
+    if { "" == $how_many} { set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50] }
     set end_idx [expr $start_idx + $how_many - 1]
-
 
     # ---------------------------------------------------------------
     # Defined Table Fields
@@ -480,19 +490,14 @@ ad_proc -public im_quality_list_component {
     set column_vars [list]
 
     set column_sql "
-	select
-		column_name,
+	select	column_name,
 		column_render_tcl,
 		visible_for
-	from
-		im_view_columns
-	where
-		view_id=:view_id
+	from	im_view_columns
+	where	view_id = :view_id
 		and group_id is null
-	order by
-		sort_order
+	order by sort_order
     "
-    
     db_foreach column_list_sql $column_sql {
 	if {"" == $visible_for || [eval $visible_for]} {
 	    regsub -all " " $column_name "_" column_key
@@ -517,15 +522,15 @@ ad_proc -public im_quality_list_component {
 	lappend criteria "(p.trans_id = :person_id OR p.edit_id = :person_id OR p.proof_id = :person_id OR p.other_id = :person_id)"
     }
 
-
     set order_by_clause ""
     switch $order_by {
-	"Task Name" { set order_by_clause "order by task_name DESC" }
-	"Source" { set order_by_clause "order source_language_id" }
-	"Target" { set order_by_clause "order by target_language_id" }
-	"Units" { set order_by_clause "order by task_units" }
+	"Task Name" { set order_by_clause "order by t.task_name DESC" }
+	"Source" { set order_by_clause "order by t.source_language_id" }
+	"Target" { set order_by_clause "order by t.target_language_id" }
+	"Units" { set order_by_clause "order by t.task_units" }
 	"Quality" { set order_by_clause "order by expected_quality_id" }
 	"Due Date" { set order_by_clause "order by total_errors / allowed_errors DESC" }
+	default { set order_by_clause "order by t.task_name DESC" }
     }
     
     set where_clause [join $criteria " and\n            "]
@@ -542,13 +547,10 @@ ad_proc -public im_quality_list_component {
     # of projects where he as been directly assigned to.
     #
     set perm_sql "
-        (select
-                p.*
-        from
-                im_projects p,
-                acs_rels r
-        where
-                r.object_id_one = p.project_id
+        (select	p.*
+        from	im_projects p,
+		acs_rels r
+        where	r.object_id_one = p.project_id
                 and r.object_id_two = :user_id
                 $where_clause
         )
@@ -597,21 +599,12 @@ ad_proc -public im_quality_list_component {
     # to be able to manage large sites
     #
     
-    ###########
-    # todo: PAGINATION
-    #       this part is not executed
-    ###########
     set limited_query [im_select_row_range $sql $start_idx $end_idx]
-    # We can't get around counting in advance if we want to be able to 
-    # sort inside the table on the page for only those users in the 
-    # query results
-    set total_in_limited [db_string costs_total_in_limited "
-	select count(*) 
-        from im_costs p, im_companies cust
-        where 1=1 $where_clause"]
-    
+    set total_in_limited [db_string total_in_limited "
+        select count(*)
+        from ($sql) s
+    "]
     set selection "select z.* from ($limited_query) z $order_by_clause"
-    
 
     # ---------------------------------------------------------------
     # Format the List Table Header
