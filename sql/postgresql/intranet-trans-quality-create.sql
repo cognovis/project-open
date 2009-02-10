@@ -41,7 +41,7 @@ create table im_trans_quality_reports (
 				references users,
 	sample_size		integer,
 	allowed_error_percentage numeric(6,3),
-	comments		varchar(2000),
+	comments		text,
 				-- redundant fields storing the 
 				-- evaluation result so that we can
 				-- report on error report rapidly
