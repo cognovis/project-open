@@ -82,7 +82,7 @@ create table im_cost_centers (
 				primary key
 				constraint im_cost_centers_id_fk
 				references acs_objects,
-	cost_center_name	varchar(100) 
+	cost_center_name	text
 				constraint im_cost_centers_name_nn
 				not null,
 	cost_center_label	varchar(100)
@@ -475,7 +475,7 @@ create table im_prices (
 	object_id		integer
 				constraint im_prices_object_fk
 				references acs_objects,
-	attribute		varchar(100)
+	attribute		text
 				constraint im_prices_attribute_nn
 				not null,
 	start_date		timestamptz,
@@ -662,7 +662,7 @@ create table im_costs (
 	last_modifying_user	integer
 				constraint im_costs_last_mod_user
 				references users,
-	last_modifying_ip 	varchar(20)
+	last_modifying_ip 	varchar(50)
 );
 create index im_costs_cause_object_idx on im_costs(cause_object_id);
 create index im_costs_start_block_idx on im_costs(start_block);
@@ -1094,7 +1094,7 @@ create or replace function im_repeating_cost__name (integer)
 returns varchar as '
 DECLARE
 	p_cost_id	alias for $1;	-- cost_id
-	v_name		varchar(40);
+	v_name		varchar;
 begin
 	select	cost_name into v_name from im_costs
 	where	cost_id = p_cost_id;
@@ -1126,7 +1126,7 @@ create table im_investments (
 				primary key
 				constraint im_investments_fk
 				references im_repeating_costs,
-	name			varchar(400),
+	name			text,
 	investment_status_id	integer
 				constraint im_investments_status_fk
 				references im_categories,
@@ -1626,7 +1626,7 @@ create or replace function im_cost_center_label_from_id (integer)
 returns varchar as '
 DECLARE
 	p_id	alias for $1;
-	v_name	varchar(50);
+	v_name	varchar;
 BEGIN
 	select	cc.cost_center_label into v_name from im_cost_centers cc
 	where	cost_center_id = p_id;
@@ -1679,7 +1679,7 @@ create or replace function im_investment_name_from_id (integer)
 returns varchar as '
 DECLARE
 	p_id	alias for $1;
-	v_name	varchar(50);
+	v_name	varchar;
 BEGIN
 	select i.name
 	into v_name
