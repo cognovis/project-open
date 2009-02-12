@@ -44,12 +44,12 @@ create table im_conf_items (
 				primary key
 				constraint im_conf_item_prj_fk
 				references acs_objects,
-	conf_item_name		varchar(1000) not null,
-	conf_item_nr		varchar(500) not null,
-	conf_item_version	varchar(500),
+	conf_item_name		text not null,
+	conf_item_nr		text not null,
+	conf_item_version	text,
 
 	-- Unique code for label
-	conf_item_code		varchar(500),
+	conf_item_code		text,
 
 	-- Single "main" parent.
 	conf_item_parent_id	integer
@@ -84,23 +84,23 @@ create table im_conf_items (
 	-- OCS Inventory NG fields
 	ip_address		varchar(50),
 
-	ocs_id			varchar(255),
-	ocs_deviceid		varchar(255),
-	ocs_username		varchar(255),
+	ocs_id			text,
+	ocs_deviceid		text,
+	ocs_username		text,
 	ocs_last_update		timestamptz,
 
-	os_name			varchar(255),
-	os_version		varchar(255),
-	os_comments		varchar(255),
+	os_name			text,
+	os_version		text,
+	os_comments		text,
 
-	win_workgroup		varchar(255),
-	win_userdomain		varchar(255),
-	win_company		varchar(255),
-	win_owner		varchar(255),
-	win_product_id		varchar(255),
-	win_product_key		varchar(255),
+	win_workgroup		text,
+	win_userdomain		text,
+	win_company		text,
+	win_owner		text,
+	win_product_id		text,
+	win_product_key		text,
 
-	processor_text		varchar(255),
+	processor_text		text,
 	processor_speed		integer,
 	processor_num		integer,
 
