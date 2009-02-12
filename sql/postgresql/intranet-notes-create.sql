@@ -73,7 +73,7 @@ create or replace function im_note__name(integer)
 returns varchar as '
 DECLARE
 	p_note_id		alias for $1;
-	v_name			varchar(2000);
+	v_name			varchar;
 BEGIN
 	select	note
 	into	v_name
