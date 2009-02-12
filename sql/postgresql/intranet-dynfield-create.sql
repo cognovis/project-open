@@ -130,15 +130,15 @@ create table im_dynfield_widgets (
 				references acs_objects
 				constraint im_dynfield_widgets_pk
 				primary key,
-	widget_name		varchar(100)
+	widget_name		text
 				constraint im_dynfield_widgets_name_nn
 				not null
 				constraint im_dynfield_widgets_name_un
 				unique,
-	pretty_name		varchar(100)
+	pretty_name		text
 				constraint im_dynfield_widgets_pretty_n_nn 
 				not null,
-	pretty_plural		varchar(100)
+	pretty_plural		text
 				constraint im_dynfield_widgets_pretty_pl_nn 
 				not null,
 	storage_type_id		integer
@@ -154,7 +154,7 @@ create table im_dynfield_widgets (
 	widget			varchar(20) 
 				constraint im_dynfield_widgets_widget_nn 
 				not null,
-	sql_datatype		varchar(200) 
+	sql_datatype		text
 				constraint im_dynfield_widgets_datatype_nn 
 				not null,
 	parameters		text,
@@ -162,7 +162,7 @@ create table im_dynfield_widgets (
 				-- reference (integer, timestamptz) into a
 				-- printable value. Example: im_name_from_user_id,
 				-- im_cost_center_name_from_id
-	deref_plpgsql_function	varchar(100) default 'im_name_from_id'
+	deref_plpgsql_function	text default 'im_name_from_id'
 );
 
 
@@ -197,7 +197,7 @@ create table im_dynfield_attributes (
 				references acs_attributes
 				constraint im_dynfield_attr_attribute_id_nn 
 				not null,
-	widget_name		varchar(100)
+	widget_name		text
 				constraint im_dynfield_attr_widget_name_fk 
 				references im_dynfield_widgets(widget_name)
 				constraint im_dynfield_attr_widget_name_nn 
@@ -266,7 +266,7 @@ create table im_dynfield_attr_multi_value (
 	object_id		integer not null
 				constraint flex_attr_multi_val_obj_id_fk 
 				references acs_objects,
-	value			varchar(400),
+	value			text,
 	sort_order		integer				
 );
 
@@ -302,7 +302,7 @@ create table im_dynfield_cat_multi_value (
 
 
 create table im_dynfield_layout_pages (
-	page_url		varchar(1000)
+	page_url		text
 				constraint im_dynfield_layout_page_nn
 				not null,
 	object_type		varchar(100)
@@ -318,7 +318,7 @@ create table im_dynfield_layout_pages (
 					'table', 'div_absolute', 'div_relative', 'adp')),
 	table_height		integer,
 	table_width		integer,
-	adp_file		varchar(400),
+	adp_file		text,
 	default_p		char(1) default 'f'
 				constraint im_dynfield_layout_default_nn
 				not null
@@ -337,7 +337,7 @@ create table im_dynfield_layout (
 				not null
 				constraint im_dynfield_layout_attribute_fk
 				references im_dynfield_attributes,
-	page_url		varchar(1000),
+	page_url		text,
 	object_type		varchar(100)
 				constraint im_dynfield_layout_object_type_nn
 				not null,
@@ -355,7 +355,7 @@ create table im_dynfield_layout (
 				not null
 				constraint im_dynfield_label_style_ck
 				check (label_style in ('table', 'div_absolute', 'div_relative', 'div', 'adp')),
-	div_class		varchar(400),
+	div_class		text,
 	sort_key		integer
 );
 
@@ -373,6 +373,136 @@ primary key (attribute_id, page_url, object_type);
 --   references im_dynfield_layout_pages(page_url, object_type)
 -- ;
 
+
+
+
+
+
+-- ------------------------------------------------------------------
+-- Next Generation Layout
+-- NOT used yet!
+-- ------------------------------------------------------------------
+
+select acs_object_type__create_type (
+	'im_dynfield_page',		-- object_type
+	'Dynfield Page',		-- pretty_name
+	'Dynfield Pages',		-- pretty_plural
+	'acs_object',			-- supertype
+	'im_dynfield_pages',		-- table_name
+	'page_id',			-- id_column
+	'intranet-dynfield',		-- package_name
+	'f',				-- abstract_p
+	null,				-- type_extension_table
+	'im_dynfield_page__name'	-- name_method
+);
+
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_dynfield_page', 'im_dynfield_pages', 'page_id');
+
+
+create table im_dynfield_pages (
+	page_id			integer
+				constraint im_dynfield_pages_pk
+				primary key,
+	object_type		varchar(100)
+				constraint im_dynfield_ly_page_object_nn 
+				not null
+				constraint im_dynfield_ly_page_object_fk
+				references acs_object_types,
+	page_status_id		integer
+				constraint im_dynfield_pages_status_fk
+				references im_categories,
+	page_type_id		integer
+				constraint im_dynfield_pages_type_fk
+				references im_categories,
+
+	page_url		varchar(1000)
+				constraint im_dynfield_pages_nn
+				not null,
+	workflow_key		varchar(100)
+				constraint im_dynfield_pages_workflow_key_fk
+				references wf_workflows,
+	transition_key		varchar(100)
+				constraint im_dynfield_pages_transition_key_fk
+				references wf_transitions,
+
+	layout_type		varchar(15)
+				constraint im_dynfield_layout_type_nn
+				not null
+				constraint im_dynfield_layout_type_ck
+				check (layout_type in ('absolute', 'relative',
+				'table', 'div_absolute', 'div_relative', 'adp')),
+	table_height		integer,
+	table_width		integer,
+	adp_file		varchar(400),
+	default_p		char(1) default 'f'
+				constraint im_dynfield_layout_default_nn
+				not null
+				constraint im_dynfield_layout_default_ck
+				check (default_p in ( 't','f' ))
+);
+
+alter table im_dynfield_pages add constraint
+im_dynfield_layout_pages_un UNIQUE (object_type, page_url, workflow_key, transition_key);
+
+
+
+select acs_object_type__create_type (
+	'im_dynfield_page_attribute',		-- object_type
+	'Dynfield Page Attribute',		-- pretty_name
+	'Dynfield Page Attributes',		-- pretty_plural
+	'acs_object',				-- supertype
+	'im_dynfield_page_attributes',		-- table_name
+	'attribute_id',				-- id_column
+	'intranet-dynfield',			-- package_name
+	'f',					-- abstract_p
+	null,					-- type_extension_table
+	'im_dynfield_page_attribute__name'	-- name_method
+);
+
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_dynfield_page_attribute', 'im_dynfield_page_attributes', 'attribute_id');
+
+create table im_dynfield_page_fields (
+	field_id		integer
+				constraint im_dynfield_page_fields_pk
+				primary key,
+	page_id			integer
+				constraint im_dynfield_page_attributes_page_nn
+				not null
+				constraint im_dynfield_page_attributes_page_fk
+				references im_dynfield_pages,
+	attribute_id		integer
+				constraint im_dynfield_page_attributes_nn
+				not null
+				constraint im_dynfield_page_attributes_fk
+				references im_dynfield_attributes,
+
+	field_status_id		integer
+				constraint im_dynfield_fields_status_fk
+				references im_categories,
+	field_type_id		integer
+				constraint im_dynfield_fields_type_fk
+				references im_categories,
+
+	-- Pos + size is interpreted according to layout type.
+	-- Default is a table layout with col/row and colspan/rowspan.
+	pos_x			integer,
+	pos_y			integer,
+	size_x			integer,
+	size_y			integer,
+
+	-- How to display the label? "no_label" is useful for combined
+	-- fields (currency_code field of a monetary amount), "plain"
+	-- just shows the label in the column before the widget.
+	label_style		varchar(15) default 'table'
+				constraint im_dynfield_label_style_nn
+				not null
+				constraint im_dynfield_label_style_ck
+				check (label_style in ('table', 'div_absolute', 'div_relative', 'div', 'adp')),
+	div_class		varchar(400),
+	sort_key		integer
+);
 
 
 
@@ -1943,136 +2073,4 @@ end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
-
-
-
-
-
-
-
-
--- ------------------------------------------------------------------
--- Next Generation Layout
--- ------------------------------------------------------------------
-
-select acs_object_type__create_type (
-	'im_dynfield_page',		-- object_type
-	'Dynfield Page',		-- pretty_name
-	'Dynfield Pages',		-- pretty_plural
-	'acs_object',			-- supertype
-	'im_dynfield_pages',		-- table_name
-	'page_id',			-- id_column
-	'intranet-dynfield',		-- package_name
-	'f',				-- abstract_p
-	null,				-- type_extension_table
-	'im_dynfield_page__name'	-- name_method
-);
-
-insert into acs_object_type_tables (object_type,table_name,id_column)
-values ('im_dynfield_page', 'im_dynfield_pages', 'page_id');
-
-
-create table im_dynfield_pages (
-	page_id			integer
-				constraint im_dynfield_pages_pk
-				primary key,
-	object_type		varchar(100)
-				constraint im_dynfield_ly_page_object_nn 
-				not null
-				constraint im_dynfield_ly_page_object_fk
-				references acs_object_types,
-	page_status_id		integer
-				constraint im_dynfield_pages_status_fk
-				references im_categories,
-	page_type_id		integer
-				constraint im_dynfield_pages_type_fk
-				references im_categories,
-
-	page_url		varchar(1000)
-				constraint im_dynfield_pages_nn
-				not null,
-	workflow_key		varchar(100)
-				constraint im_dynfield_pages_workflow_key_fk
-				references wf_workflows,
-	transition_key		varchar(100)
-				constraint im_dynfield_pages_transition_key_fk
-				references wf_transitions,
-
-	layout_type		varchar(15)
-				constraint im_dynfield_layout_type_nn
-				not null
-				constraint im_dynfield_layout_type_ck
-				check (layout_type in ('absolute', 'relative',
-				'table', 'div_absolute', 'div_relative', 'adp')),
-	table_height		integer,
-	table_width		integer,
-	adp_file		varchar(400),
-	default_p		char(1) default 'f'
-				constraint im_dynfield_layout_default_nn
-				not null
-				constraint im_dynfield_layout_default_ck
-				check (default_p in ( 't','f' ))
-);
-
-alter table im_dynfield_pages add constraint
-im_dynfield_layout_pages_un UNIQUE (object_type, page_url, workflow_key, transition_key);
-
-
-
-select acs_object_type__create_type (
-	'im_dynfield_page_attribute',		-- object_type
-	'Dynfield Page Attribute',		-- pretty_name
-	'Dynfield Page Attributes',		-- pretty_plural
-	'acs_object',				-- supertype
-	'im_dynfield_page_attributes',		-- table_name
-	'attribute_id',				-- id_column
-	'intranet-dynfield',			-- package_name
-	'f',					-- abstract_p
-	null,					-- type_extension_table
-	'im_dynfield_page_attribute__name'	-- name_method
-);
-
-insert into acs_object_type_tables (object_type,table_name,id_column)
-values ('im_dynfield_page_attribute', 'im_dynfield_page_attributes', 'attribute_id');
-
-create table im_dynfield_page_fields (
-	field_id		integer
-				constraint im_dynfield_page_fields_pk
-				primary key,
-	page_id			integer
-				constraint im_dynfield_page_attributes_page_nn
-				not null
-				constraint im_dynfield_page_attributes_page_fk
-				references im_dynfield_pages,
-	attribute_id		integer
-				constraint im_dynfield_page_attributes_nn
-				not null
-				constraint im_dynfield_page_attributes_fk
-				references im_dynfield_attributes,
-
-	field_status_id		integer
-				constraint im_dynfield_fields_status_fk
-				references im_categories,
-	field_type_id		integer
-				constraint im_dynfield_fields_type_fk
-				references im_categories,
-
-	-- Pos + size is interpreted according to layout type.
-	-- Default is a table layout with col/row and colspan/rowspan.
-	pos_x			integer,
-	pos_y			integer,
-	size_x			integer,
-	size_y			integer,
-
-	-- How to display the label? "no_label" is useful for combined
-	-- fields (currency_code field of a monetary amount), "plain"
-	-- just shows the label in the column before the widget.
-	label_style		varchar(15) default 'table'
-				constraint im_dynfield_label_style_nn
-				not null
-				constraint im_dynfield_label_style_ck
-				check (label_style in ('table', 'div_absolute', 'div_relative', 'div', 'adp')),
-	div_class		varchar(400),
-	sort_key		integer
-);
 
