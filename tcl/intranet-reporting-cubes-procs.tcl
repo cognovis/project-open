@@ -38,15 +38,15 @@ ad_proc im_reporting_cubes_cube {
     { -end_date "2099-12-31" }
     { -left_vars "customer_name" }
     { -top_vars "" }
-    { -cost_type_id "" }
-    { -customer_type_id "" }
-    { -customer_status_id "" }
-    { -project_type_id "" }
-    { -project_status_id "" }
-    { -ticket_type_id "" }
-    { -ticket_status_id "" }
-    { -customer_id "" }
-    { -aggregate "" }
+    { -cost_type_id {3700} }
+    { -customer_type_id 0 }
+    { -customer_status_id 0 }
+    { -project_type_id 0 }
+    { -project_status_id 0 }
+    { -ticket_type_id 0 }
+    { -ticket_status_id 0 }
+    { -customer_id 0 }
+    { -aggregate 0 }
     { -derefs "" }
     { -cache_days 1 }
     { -no_cache_p 0 }
@@ -122,6 +122,7 @@ ad_proc im_reporting_cubes_cube {
 		-left_vars $left_vars \
 		-top_vars $top_vars \
 		-cost_type_id $cost_type_id \
+                -project_status_id $project_status_id \
 		-customer_type_id $customer_type_id \
 		-customer_id $customer_id \
             ]
@@ -137,6 +138,18 @@ ad_proc im_reporting_cubes_cube {
 		-customer_id $customer_id \
             ]
 	}
+        survsimp {
+            set cube_array [im_reporting_cubes_survsimp \
+                -start_date $start_date \
+                -end_date "2099-12-31" \
+                -left_vars $left_vars \
+                -top_vars $top_vars \
+                -survey_id $survey_id \
+                -creation_user_id $creation_user_id \
+                -related_object_id $related_object_id \
+                -related_context_id $related_context_id \
+	    ]
+        }
 	project {
 	    set cube_array [im_reporting_cubes_project \
 		-start_date $start_date \
@@ -231,6 +244,7 @@ ad_proc im_reporting_cubes_finance {
     { -left_vars "customer_name" }
     { -top_vars "" }
     { -cost_type_id {3700} }
+    { -project_status_id 0 }
     { -customer_type_id 0 }
     { -customer_id 0 }
 } {
@@ -264,6 +278,11 @@ ad_proc im_reporting_cubes_finance {
     if {"" != $customer_type_id && 0 != $customer_type_id} {
         lappend criteria "cust.company_type_id in ([join [im_sub_categories $customer_type_id] ", "])"
     }
+    if {"" != $project_status_id && 0 != $project_status_id} {
+	lappend criteria "mainp.project_status_id in ([join [im_sub_categories $project_status_id] ", "])"
+    }
+
+
     set where_clause [join $criteria " and\n\t\t\t"]
     if { ![empty_string_p $where_clause] } {
         set where_clause " and $where_clause"
@@ -305,6 +324,7 @@ ad_proc im_reporting_cubes_finance {
     set middle_sql "
   	select
   		c.*,
+		im_cost_get_final_customer_name(c.cost_id) as final_customer_name,
   		im_category_from_id(c.cost_type_id) as cost_type,
   		im_category_from_id(c.cost_status_id) as cost_status,
   		to_char(c.effective_date, 'YYYY') as year,
@@ -717,6 +737,203 @@ ad_proc im_reporting_cubes_price {
 
 
 
+# ----------------------------------------------------------------------
+# Uncached version of Survey
+# ----------------------------------------------------------------------
+
+ad_proc im_reporting_cubes_survsimp {
+    { -start_date "1900-01-01" }
+    { -end_date "2099-12-31" }
+    { -left_vars "survey" }
+    { -top_vars "" }
+    { -survey_id 0 }
+    { -creation_user_id 0 }
+    { -related_object_id 0 }
+    { -related_context_id 0 }
+} {
+    Returns a DW cube as a list containing:
+    - An array with the cube data
+    - An array for the left dimension
+    - An array for the top dimension
+} {
+    # ------------------------------------------------------------
+    # Defaults
+
+    set sigma "&Sigma;"
+
+    # The complete set of dimensions - used as the key for
+    # the "cell" hash. Subtotals are calculated by dropping on
+    # or more of these dimensions
+    set dimension_vars [concat $top_vars $left_vars]
+
+    # ------------------------------------------------------------
+    # Conditional SQL Where-Clause
+    #
+
+    set criteria [list]
+
+    if {"" != $survey_id && 0 != $survey_id} {
+        lappend criteria "ss.survey_id = :survey_id"
+    }
+    if {"" != $creation_user_id && 0 != $creation_user_id} {
+        lappend criteria "srot.creation_user = :creation_user_id"
+    }
+    if {"" != $related_object_id && 0 != $related_object_id} {
+        lappend criteria "sr.related_object_id = :related_object_id"
+    }
+    if {"" != $related_context_id && 0 != $related_context_id} {
+        lappend criteria "sr.related_context_id = :related_context_id"
+    }
+    set where_clause [join $criteria " and\n\t\t\t"]
+    if { ![empty_string_p $where_clause] } {
+        set where_clause " and $where_clause"
+    }
+
+    # ------------------------------------------------------------
+    # Define the report - SQL, counters, headers and footers
+    # Inner - Try to be as selective as possible and select
+    # the relevant data from the fact table.
+    set inner_sql "
+        select
+                1 as unit,
+                sqc.label as answer,
+                ss.name as survey,
+                sq.question_text as question,
+                srot.creation_user as creation_user_id,
+                srot.creation_date as response_date,
+                im_name_from_user_id(srot.creation_user) as creation_user,
+                acs_object__name(related_object_id) as object,
+                acs_object__name(related_context_id) as context
+        from
+                survsimp_surveys ss,
+                survsimp_questions sq,
+                survsimp_responses sr,
+                acs_objects srot,
+                survsimp_question_responses sqr
+                LEFT OUTER JOIN survsimp_question_choices sqc ON (sqr.choice_id = sqc.choice_id)
+        where
+                ss.survey_id = sq.survey_id and
+                sq.survey_id = sr.survey_id and
+                sqr.response_id = sr.response_id and
+                sqr.question_id = sq.question_id and
+                sr.response_id = srot.object_id
+                $where_clause
+    "
+
+    # Aggregate additional/important fields to the fact table.
+    set middle_sql "
+        select
+                s.*,
+                to_char(s.response_date, 'YYYY') as year,
+                to_char(s.response_date, 'MM') as month_of_year,
+                to_char(s.response_date, 'Q') as quarter_of_year,
+                to_char(s.response_date, 'IW') as week_of_year,
+                to_char(s.response_date, 'DD') as day_of_month
+        from
+                ($inner_sql) s
+    "
+
+    set sql "
+        select
+                sum(s.unit) as units,
+                [join $dimension_vars ",\n\t"]
+        from
+                ($middle_sql) s
+        group by
+                [join $dimension_vars ",\n\t"]
+    "
+
+
+    # ------------------------------------------------------------
+    # Create upper date dimension
+
+    # Top scale is a list of lists such as {{2006 01} {2006 02} ...}
+    # The last element of the list the grand total sum.
+
+    # No top dimension at all gives an error...
+    if {![llength $top_vars]} { set top_vars [list creation_user] }
+
+    set top_scale [db_list_of_lists top_scale "
+        select distinct [join $top_vars ", "]
+        from            ($middle_sql) c
+        order by        [join $top_vars ", "]
+    "]
+    lappend top_scale [list $sigma $sigma $sigma $sigma $sigma $sigma]
+
+    # ------------------------------------------------------------
+    # Create a sorted left dimension
+
+    # No top dimension at all gives an error...
+    if {![llength $left_vars]} {
+        ns_write "
+        <p>&nbsp;<p>&nbsp;<p>&nbsp;<p><blockquote>
+        [lang::message::lookup "" intranet-reporting.No_left_dimension "No 'Left' Dimension Specified"]:<p>
+        [lang::message::lookup "" intranet-reporting.No_left_dimension_message "
+                You need to specify atleast one variable for the left dimension.
+        "]
+        </blockquote><p>&nbsp;<p>&nbsp;<p>&nbsp;
+        "
+        ns_write "</table>\n"
+        return ""
+    }
+
+    # Scale is a list of lists. Example: {{2006 01} {2006 02} ...}
+    # The last element is the grand total.
+    set left_scale [db_list_of_lists left_scale "
+        select distinct [join $left_vars ", "]
+        from            ($middle_sql) c
+        order by        [join $left_vars ", "]
+    "]
+    set last_sigma [list]
+    foreach t [lindex $left_scale 0] {
+        lappend last_sigma $sigma
+    }
+    lappend left_scale $last_sigma
+
+
+    # ------------------------------------------------------------
+    # Execute query and aggregate values into a Hash array
+
+    db_foreach query $sql {
+
+        # Get all possible permutations (N out of M) from the dimension_vars
+        set perms [im_report_take_all_ordered_permutations $dimension_vars]
+
+        # Add the invoice amount to ALL of the variable permutations.
+        # The "full permutation" (all elements of the list) corresponds
+        # to the individual cell entries.
+        # The "empty permutation" (no variable) corresponds to the
+        # gross total of all values.
+        # Permutations with less elements correspond to subtotals
+        # of the values along the missing dimension. Clear?
+        #
+        foreach perm $perms {
+
+            # Calculate the key for this permutation
+            # something like "$year-$month-$customer_id"
+            set key_expr "\$[join $perm "-\$"]"
+            set key [eval "set a \"$key_expr\""]
+
+            # Sum up the values for the matrix cells
+            set sum 0
+            if {[info exists hash($key)]} { set sum $hash($key) }
+
+            if {"" == $units} { set units 0 }
+            set sum [expr $sum + $units]
+            set hash($key) $sum
+        }
+    }
+
+    return [list \
+        cube "survsimp" \
+        evaluation_date [db_string now "select now()"] \
+        top_vars $top_vars \
+        left_vars $left_vars \
+        top_scale $top_scale \
+        left_scale $left_scale \
+        hash_array [array get hash] \
+    ]
+}
 
 
 

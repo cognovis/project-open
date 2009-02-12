@@ -22,9 +22,9 @@ create table im_reporting_cubes (
 				primary key,
 
 	cube_name		varchar(1000) not null,
-	cube_params		varchar(4000),
-	cube_top_vars		varchar(4000),
-	cube_left_vars		varchar(4000),
+	cube_params		text,
+	cube_top_vars		text,
+	cube_left_vars		text,
 
 	-- How frequently should the cube be updated?
 	cube_update_interval	interval default '1 day',
