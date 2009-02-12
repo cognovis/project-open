@@ -25,15 +25,15 @@ create table im_cvs_activity (
 	line_id			integer
 				constraint im_cvs_activity_pk
 				primary key,
-	cvs_project		varchar(500),
-	filename		varchar(500),
-	revision		varchar(50),
+	cvs_project		text,
+	filename		text,
+	revision		text,
 	date			timestamptz,
-	author			varchar(50),
-	state			varchar(50),
+	author			text,
+	state			text,
 	lines_add		integer,
 	lines_del		integer,
-	note			varchar(4000),
+	note			text,
 		constraint im_cvs_activity_filname_un
 		unique (filename, date, revision)
 );
