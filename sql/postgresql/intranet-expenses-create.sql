@@ -48,9 +48,9 @@ create table im_expenses (
 					primary key
 					constraint im_expense_id_fk
 					references im_costs,
-	external_company_name		varchar(400),
-	external_company_vat_number	varchar(50),
-	receipt_reference		varchar(100),
+	external_company_name		text,
+	external_company_vat_number	text,
+	receipt_reference		text,
 	expense_type_id			integer
 					constraint im_expense_type_fk
 					references im_categories,
