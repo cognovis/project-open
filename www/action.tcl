@@ -65,7 +65,7 @@ switch $action_id {
 		# Unify this functionality with the Forum-Notify and/or Core member-notify?
 	    }
 	}
-	30520 {
+	30530 {
 	    # Reopen
 	    foreach ticket_id $tid {
 		im_ticket_permissions $user_id $ticket_id view read write admin
