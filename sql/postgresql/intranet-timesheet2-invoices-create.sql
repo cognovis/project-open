@@ -215,7 +215,7 @@ create or replace function im_timesheet_invoice__name (integer)
 returns varchar as '
 DECLARE
 	p_invoice_id alias for $1;
-	v_name	varchar(40);
+	v_name	varchar;
 BEGIN
 	select	invoice_nr
 	into	v_name
