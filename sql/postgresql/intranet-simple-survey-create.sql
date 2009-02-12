@@ -45,11 +45,11 @@ create table im_survsimp_object_map (
 		obligatory_p			char(1) default 'f'
 						constraint im_survsimp_omap_obligatory_p_ck
 						check(obligatory_p in ('t','f')),
-		recurrence_tcl			varchar(4000),
+		recurrence_tcl			text,
 		interviewee_profile_id  	integer
 						constraint im_survsimp_omap_interv_id_fk
 						references groups,
-		note				varchar(4000)
+		note				text
 );
 
 create index im_survsimp_object_map_acs_object_type_idx on im_survsimp_object_map (acs_object_type);
