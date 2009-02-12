@@ -169,7 +169,7 @@ is
 
     function name (invoice_id in integer) return varchar
     is
-	v_name	varchar(40);
+	v_name	varchar;
     begin
 	select	invoice_nr
 	into	v_name
@@ -266,10 +266,10 @@ create or replace function im_trans_prices_calc_relevancy (
 RETURN number IS
 	match_value			number;
 	v_internal_company_id		integer;
-	v_price_target_language		varchar(100);
-	v_item_target_language		varchar(100);
-	v_price_source_language		varchar(100);
-	v_item_source_language		varchar(100);
+	v_price_target_language		varchar;
+	v_item_target_language		varchar;
+	v_price_source_language		varchar;
+	v_item_source_language		varchar;
 BEGIN
 	match_value := 0;
 

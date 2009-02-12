@@ -172,7 +172,7 @@ create or replace function im_trans_invoice__name (integer)
 returns varchar as '
 DECLARE
 	p_invoice_id		alias for $1;
-	v_name			varchar(40);
+	v_name			varchar;
 BEGIN
 	select	invoice_nr
 	into	v_name
@@ -353,10 +353,10 @@ DECLARE
 
 	match_value			numeric;
 	v_internal_company_id		integer;
-	v_price_target_language		varchar(100);
-	v_item_target_language		varchar(100);
-	v_price_source_language		varchar(100);
-	v_item_source_language		varchar(100);
+	v_price_target_language		varchar;
+	v_item_target_language		varchar;
+	v_price_source_language		varchar;
+	v_item_source_language		varchar;
 BEGIN
 	match_value := 0;
 
