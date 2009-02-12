@@ -132,7 +132,7 @@ create or replace function im_indicator__name(integer)
 returns varchar as '
 DECLARE
 	p_indicator_id		alias for $1;
-	v_name			varchar(2000);
+	v_name			varchar;
 BEGIN
 	select	report_name into v_name
 	from	im_reports
