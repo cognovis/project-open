@@ -39,13 +39,13 @@ create table im_fs_folders (
 	object_id		integer
 				constraint im_fs_folder_object_fk
 				references acs_objects,
-	path			varchar(500)
+	path			text
 				constraint im_fs_folder_status_path_nn 
 				not null,
 	folder_type_id		integer
 				constraint im_fs_folder_type_fk
 				references im_categories,
-	description		varchar(500),
+	description		text,
 		constraint im_fs_folders_un
 		unique (object_id, path)
 );
@@ -189,7 +189,7 @@ create table im_fs_actions (
 	action_type_id		integer references im_categories,
 	user_id			integer not null references persons,
 	action_date		timestamptz,
-	file_name		varchar(1000),
+	file_name		text,
 		primary key (user_id, action_date, file_name)
 );
 
