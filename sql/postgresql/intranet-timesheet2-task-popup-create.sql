@@ -31,7 +31,7 @@ create table im_timesheet_popups (
 				references im_timesheet_tasks,
 	log_time		timestamptz,
 	log_duration		interval,
-	note			varchar(400)
+	note			text
 );
 create index im_timesheet_popups_time_idx on im_timesheet_popups  (log_time);
 create index im_timesheet_popups_user_idx on im_timesheet_popups  (user_id);
