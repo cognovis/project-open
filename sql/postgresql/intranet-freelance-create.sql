@@ -28,19 +28,19 @@ create table im_freelancers (
 	translation_rate	numeric(6,2),
 	editing_rate		numeric(6,2),
 	hourly_rate		numeric(6,2),
-	bank_account		varchar(200),
-	bank			varchar(100),
+	bank_account		text,
+	bank			text,
 	payment_method_id	integer
 				constraint im_freelancers_payment_fk
 				references im_categories,
-	note			varchar(4000),
-	private_note		varchar(4000),
+	note			text,
+	private_note		text,
 	-- Freelance Recruiting
-	rec_source		varchar(400),
+	rec_source		text,
 	rec_status_id		integer
 				constraint im_freelancers_rec_stat_fk
 				references im_categories,
-	rec_test_type		varchar(400),
+	rec_test_type		text,
 	rec_test_result_id	integer
 				constraint im_freelancers_rec_test_fk
 				references im_categories
@@ -184,7 +184,7 @@ declare
 	p_user_id			alias for $1;
 	p_skill_type_id			alias for $2; 
 
-	v_skills			varchar(4000);
+	v_skills			varchar;
 	c_user_skills			RECORD;
 BEGIN
 	v_skills := '''';
