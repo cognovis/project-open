@@ -224,6 +224,11 @@ set sales_rep_options [db_list_of_lists sales_reps "
 "]
 set sales_rep_options [linsert $sales_rep_options 0 [list "" 0]]
 
+# ------------------------------------------------------------
+# Deal with invoices related to multiple projects
+
+im_invoices_check_for_multi_project_invoices
+
 
 # ------------------------------------------------------------
 # Conditional SQL Where-Clause
@@ -299,21 +304,31 @@ set inner_sql "
 		o.creation_user
 	from
 		acs_objects o,
-		(select distinct
+		(select	distinct
 			p.project_id as project_project_id,
 			c.*
-		 from
-			(select	project_id
-			 from	im_projects p
-			 where	p.end_date >= to_date(:start_date, 'YYYY-MM-DD')
-				and p.end_date < to_date(:end_date, 'YYYY-MM-DD')
-				and p.end_date::date < to_date(:end_date, 'YYYY-MM-DD')
-				and p.project_status_id not in ([im_project_status_deleted])
-			) p	 
-			LEFT OUTER JOIN acs_rels r 
-				ON (p.project_id = r.object_id_one)
-			LEFT OUTER JOIN im_costs c 
-				ON (c.cost_id = r.object_id_two OR c.project_id = p.project_id)
+		from	(
+				select	c.project_id,
+					c.cost_id
+				from	im_costs c
+			    UNION
+				select	r.object_id_one as project_id,
+					c.cost_id
+				from	im_projects p,
+					im_costs c,
+					acs_rels r
+				where	c.cost_id = r.object_id_two and
+					p.project_id = r.object_id_one
+			) pc,
+			im_costs c,
+			im_projects p
+		where
+			pc.project_id = p.project_id
+			and pc.cost_id = c.cost_id
+			and p.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+			and p.end_date < to_date(:end_date, 'YYYY-MM-DD')
+			and p.end_date::date < to_date(:end_date, 'YYYY-MM-DD')
+			and p.project_status_id not in ([im_project_status_deleted])
 		) c
 	where
 		c.cost_id = o.object_id
@@ -632,8 +647,8 @@ set field_options [concat $field_options {
 	project_budget_formatted "Project - Project Budget"
 	project_budget_hours "Project - Project Budget Hours"
 	percent_completed_formatted "Project - Percent Completed"
-	end_date_formatted "Project - Start Date"
-	start_date_formatted "Project - End Date"
+	start_date_formatted "Project - Start Date"
+	end_date_formatted "Project - End Date"
 	company_contact_link "Project - Customer Contact"
 	company_project_nr "Project - Customer's Project Nr"
 	source_language "Project - Source Language"

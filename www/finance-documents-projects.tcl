@@ -17,6 +17,12 @@ ad_page_contract {
     { output_format "html" }
     project_id:integer,optional
     customer_id:integer,optional
+
+    location:array,optional
+    field:array,optional
+    {custom_fields_p 0}
+    {max_col 3}
+    {max_fields 3}
 }
 
 # ------------------------------------------------------------
@@ -42,16 +48,24 @@ if {![string equal "t" $read_p]} {
 }
 
 # Check that Start & End-Date have correct format
-if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $start_date]} {
+if {"" != $start_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $start_date]} {
     ad_return_complaint 1 "Start Date doesn't have the right format.<br>
     Current value: '$start_date'<br>
     Expected format: 'YYYY-MM-DD'"
 }
 
-if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $end_date]} {
+if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $end_date]} {
     ad_return_complaint 1 "End Date doesn't have the right format.<br>
     Current value: '$end_date'<br>
     Expected format: 'YYYY-MM-DD'"
+}
+
+if {!$custom_fields_p} {
+    set max_col 0
+    set max_fields 0
+    set custom_fields_checked ""
+} else {
+    set custom_fields_checked "checked"
 }
 
 
@@ -64,25 +78,19 @@ set context ""
 
 set help_text "
 <strong>Financial Documents and Their Projects:</strong><br>
-
 The purpose of this report is to show how much money has been
-earned / spend
-by listing all financial documents with the effective date 
-between Start Date and End Date.
+earned / spend by listing all financial documents with the 
+effective date between Start Date and End Date.
 <br>
 Start Date is inclusive (document with effective date = Start Date
 or later), while End Date is exclusive (documents earlier then 
 End Date, exclucing End Date).
 <br>
-
-
 The report lists all financial documents with an effective date
 in the period, grouped by their projects. 
 Effective date is due date - payment days of the document,
 representing the date when the inflow/outflow of the money is 
 registered for accounting purposes.<br>
-
-
 "
 
 
@@ -136,6 +144,12 @@ set this_url [export_vars -base "/intranet-reporting-finance/finance-documents-p
 
 
 # ------------------------------------------------------------
+# Deal with invoices related to multiple projects
+
+im_invoices_check_for_multi_project_invoices
+
+
+# ------------------------------------------------------------
 # Conditional SQL Where-Clause
 #
 
@@ -166,10 +180,26 @@ if { ![empty_string_p $where_clause] } {
 }
 
 
+
+
+# ------------------------------------------------------------
+# Deal with invoices related to multiple projects
+
+im_invoices_check_for_multi_project_invoices
+
+
+# ------------------------------------------------------------
+
+set deref_list [im_dynfield_object_attributes_derefs -object_type "im_company" -prefix "cust."]
+set deref_list [concat $deref_list [im_dynfield_object_attributes_derefs -object_type "im_project" -prefix "p."]]
+set deref_extra_select [join $deref_list ",\n\t"]
+if {"" != $deref_extra_select} { set deref_extra_select ",\n\t$deref_extra_select" }
+
+# ad_return_complaint 1 "<pre>$deref_extra_select</pre>"
+
 # ------------------------------------------------------------
 # Define the report - SQL, counters, headers and footers 
 #
-
 
 set inner_sql "
 select
@@ -191,52 +221,27 @@ select
 	  , 2) as amount_converted,
 	c.amount,
 	c.currency,
-	r.object_id_one as project_id
+	r.project_id
 from
-	im_costs c
-	LEFT OUTER JOIN acs_rels r on (c.cost_id = r.object_id_two)
+	im_costs c,
+	(
+		select	c.cost_id, c.project_id
+		from	im_costs c
+	    UNION
+		select	c.cost_id, p.project_id
+		from	im_costs c,
+			acs_rels r,
+			im_projects p
+		where	r.object_id_two = c.cost_id and
+			r.object_id_one = p.project_id
+	) r
 where
-	c.cost_type_id in (3700, 3702, 3704, 3706)
+	c.cost_id = r.cost_id 
+	and c.cost_type_id in (3700, 3702, 3704, 3706)
 	and c.effective_date >= to_date(:start_date, 'YYYY-MM-DD')
 	and c.effective_date < to_date(:end_date, 'YYYY-MM-DD')
 	and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
 "
-
-
-
-# Deal with invoices related to multiple 
-set multiples_sql "
-	select
-		count(*) as cnt,
-		cost_id,
-		cost_name
-	from
-		($inner_sql) i,
-		im_projects p
-	where
-		i.project_id = p.project_id
-	group by
-		cost_id, cost_name
-	having
-		count(*) > 1
-"
-
-set errors ""
-db_foreach multiples $multiples_sql {
-    append errors "<li>Financial document <a href=[export_vars -base "/intranet-invoices/view" {{invoice_id $cost_id}}]>$cost_name</a> is associated with more then one project.\n"
-}
-
-if {"" != $errors} {
-    ad_return_complaint 1 "<p>Financial documents related to multiple projects currently cause errors in this report.</p>
-	<ul>$errors</ul><p>
-	Please assign every financial document to a single project (usually the main project).</p>\n"
-    return
-}
-
-
-
-
-
 
 
 set sql "
@@ -246,6 +251,8 @@ select
 	to_char(c.effective_date, 'YYMM')::integer * customer_id as effective_month,
 	cust.company_path as customer_nr,
 	cust.company_name as customer_name,
+	cust.company_status_id as customer_status_id,
+	im_category_from_id(cust.company_status_id) as customer_status,
 	prov.company_path as provider_nr,
 	prov.company_name as provider_name,
 	CASE WHEN c.cost_type_id = 3700 THEN c.amount_converted END as invoice_amount,
@@ -263,8 +270,32 @@ select
 	to_char(c.paid_amount, :cur_format) || ' ' || c.paid_currency as paid_amount_pretty,
 	p.project_name,
 	p.project_nr,
+	p.project_status_id,
+	p.project_type_id,
+	im_category_from_id(p.project_status_id) as project_status,
+	im_category_from_id(p.project_type_id) as project_type,
 	pcust.company_id as project_customer_id,
-	pcust.company_name as project_customer_name
+	pcust.company_name as project_customer_name,
+	pcust.company_status_id as project_customer_status_id,
+	im_category_from_id(pcust.company_status_id) as project_customer_status,
+	pcust.company_type_id as project_customer_type_id,
+	im_category_from_id(pcust.company_type_id) as project_customer_type,
+
+	'<a href=/intranet/users/view?user_id=' || pcust.manager_id || '>' || 
+		im_name_from_user_id(pcust.manager_id) || '</a>' as project_customer_manager_link,
+	trunc(p.percent_completed::numeric, 2) as percent_completed_formatted,
+	'<a href=/intranet/users/view?user_id=' || p.project_lead_id || '>' || 
+		im_name_from_user_id(p.project_lead_id) || '</a>' as project_lead_link,
+	to_char(p.project_budget, :cur_format) || ' ' || p.project_budget_currency as project_budget_formatted,
+	to_char(p.end_date, :date_format) as end_date_formatted,
+	to_char(p.start_date, :date_format) as start_date_formatted,
+	'<a href=/intranet/users/view?user_id=' || p.company_contact_id || '>' || 
+		im_name_from_user_id(p.company_contact_id) || '</a>' as company_contact_link,
+	im_category_from_id(p.source_language_id) as source_language,
+	im_category_from_id(p.subject_area_id) as subject_area
+
+	$deref_extra_select
+
 from
 	($inner_sql) c
 	LEFT OUTER JOIN im_projects p on (c.project_id = p.project_id)
@@ -280,47 +311,118 @@ order by
 "
 
 
-set report_def [list \
-    group_by project_customer_id \
-    header {
+
+
+
+
+
+# -----------------------------------------------------
+# Cost-Header - The most detailed structure
+
+set cost_header [list "" ""]
+
+# Lookup the position and add the field for the given position
+for {set i 1} {$i <= $max_col} {incr i} {
+    set cont ""
+    set pos [lsearch [array get location] "cost$i"]
+    if {$pos > -1} {
+        set row [lindex [array get location] [expr $pos-1]]
+        set cont "<nobr>\$$field($row)</nobr>"
+    }
+    lappend cost_header $cont
+}
+
+set cost_header [concat $cost_header [list \
+			"<nobr>\$effective_date_formatted</nobr>" \
+			"<nobr>\$paid_amount \$paid_currency</nobr>" \
+			"<nobr><a href=\$invoice_url\$cost_id>\$cost_name</a></nobr>" \
+			"<nobr>\$invoice_amount_pretty</nobr>" \
+			"<nobr>\$quote_amount_pretty</nobr>" \
+			"<nobr>\$bill_amount_pretty</nobr>" \
+			"<nobr>\$po_amount_pretty</nobr>" \
+			"" \
+]]
+
+
+# -----------------------------------------------------
+# Project-Footer - The middle structure
+
+set project_header {
+	"" 
+	"\#colspan=9 <a href=\$this_url&project_id=\$project_id&level_of_detail=4 \
+	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> \
+	<b><a href=\$project_url\$project_id>\$project_nr - \$project_name</a></b>" \
+}
+
+set project_footer {
+	"" 
+	""
+}
+
+# Lookup the position and add the field for the given position
+for {set i 1} {$i <= $max_col} {incr i} {
+
+    lappend project_header ""
+
+    set cont ""
+    set pos [lsearch [array get location] "proj$i"]
+    if {$pos > -1} {
+	set row [lindex [array get location] [expr $pos-1]]
+	set cont "<nobr>\$$field($row)</nobr>"
+    }
+    lappend project_footer $cont
+}
+
+set project_footer [concat $project_footer [list \
+		"" \
+		"" \
+		"" \
+		"<i>\$invoice_subtotal \$default_currency</i>" \
+		"<i>\$quote_subtotal \$default_currency</i>" \
+		"<i>\$bill_subtotal \$default_currency</i>" \
+		"<i>\$po_subtotal \$default_currency</i>" \
+		\$po_per_quote_perc \
+]]
+
+set customer_header {
 	"\#colspan=10 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4 
 	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 	<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
-    } \
-        content [list \
-            group_by project_id \
-            header { } \
-	    content [list \
-		    header {
-			""
-			""
-			"<nobr>$effective_date_formatted</nobr>"
-			"<nobr>$paid_amount $paid_currency</nobr>"
-			"<nobr><a href=$invoice_url$cost_id>$cost_name</a></nobr>"
-			"<nobr>$invoice_amount_pretty</nobr>"
-			"<nobr>$quote_amount_pretty</nobr>"
-			"<nobr>$bill_amount_pretty</nobr>"
-			"<nobr>$po_amount_pretty</nobr>"
-			""
-		    } \
-		    content {} \
-	    ] \
-            footer {
-		"" 
-		"<a href=$this_url&project_id=$project_id&level_of_detail=4 
-		target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
-		<b><a href=$project_url$project_id>$project_name</a></b>"
-		"" 
-		""
-		""
-		"<i>$invoice_subtotal $default_currency</i>" 
-		"<i>$quote_subtotal $default_currency</i>" 
-		"<i>$bill_subtotal $default_currency</i>" 
-		"<i>$po_subtotal $default_currency</i>"
-		$po_per_quote_perc
-            } \
+}
+
+set customer_footer { "" "" }
+
+# Lookup the position and add the field for the given position
+for {set i 1} {$i <= $max_col} {incr i} {
+
+    lappend customer_header ""
+
+    set cont ""
+    set pos [lsearch [array get location] "cust$i"]
+    if {$pos > -1} {
+	set row [lindex [array get location] [expr $pos-1]]
+	set cont "<nobr>\$$field($row)</nobr>"
+    }
+    lappend customer_footer $cont
+}
+
+set customer_footer [concat $customer_footer {"" "" "" "" "" "" "" ""}]
+
+
+
+set report_def [list \
+    group_by project_customer_id \
+    header $customer_header \
+    content [list \
+	group_by project_id \
+	header $project_header \
+	content [list \
+                header $cost_header \
+		content {} \
+	] \
+        footer $project_footer \
     ] \
-    footer {  } \
+    footer $customer_footer \
 ]
 
 set invoice_total 0
@@ -333,9 +435,22 @@ set quote_subtotal 0
 set bill_subtotal 0
 set po_subtotal 0
 
-# Global header/footer
-set header0 {"Cust" "Project" "Effective Date" "Paid" "Name" "Invoice" "Quote" "Bill" "PO" "PO/Quote"}
+# ---------------------------------------------------
+# Global header
+set header0 [list "Cust" "Project"]
+for {set i 1} {$i <= $max_col} {incr i} { lappend header0 "<nobr>Col #$i</nobr>" }
+set header0 [concat $header0 [list "Effective Date" "Paid" "Name" "Invoice" "Quote" "Bill" "PO" "PO/Quote"]]
+
+# ---------------------------------------------------
+# Global footer
 set footer0 {
+        ""
+        ""
+        ""
+}
+# Add empty cols spacers
+for {set i 1} {$i <= $max_col} {incr i} { lappend footer0 "" }
+set footer0 [concat $footer0 {
 	"" 
 	"" 
 	"" 
@@ -346,8 +461,9 @@ set footer0 {
 	"<br><b>$bill_total $default_currency</b>" 
 	"<br><b>$po_total $default_currency</b>"
 	"<br><b>$po_per_quote_perc %</b>"
-}
+}]
 
+# ---------------------------------------------------
 #
 # Subtotal Counters (per project)
 #
@@ -435,6 +551,108 @@ set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 
 set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
 set levels {1 "Customer Only" 2 "Customer+Project" 3 "All Details"} 
 
+
+# ------------------------------------------------------------
+# Render Custom Fields
+# ------------------------------------------------------------
+
+# ------------------------------------------------------------
+# Field Table - Allow to add fields
+
+set field_options {
+	"" ""
+	project_customer_status "Company - Company Status"
+	project_customer_type "Company - Company Type"
+	project_customer_manager_link "Company - Key Account"
+}
+set field_options [concat $field_options [im_dynfield_object_attributes_for_select -object_type "im_company"]]
+
+set field_options [concat $field_options {
+	project_status "Project - Project Status"
+	project_type "Project - Project Type"
+	project_lead_link "Project - Project Manager"
+	project_budget_formatted "Project - Project Budget"
+	project_budget_hours "Project - Project Budget Hours"
+	percent_completed_formatted "Project - Percent Completed"
+	start_date_formatted "Project - Start Date"
+	end_date_formatted "Project - End Date"
+	company_contact_link "Project - Customer Contact"
+	company_project_nr "Project - Customer's Project Nr"
+	source_language "Project - Source Language"
+	subject_area "Project - Subject Area"	
+	final_company "Project - Final Company"
+	reported_hours_cache "Project - Reported Hours"
+	cost_quotes_cache "Project - Quotes"
+	cost_invoices_cache "Project - Invoices"
+	cost_purchase_orders_cache "Project - Purchase Orders"
+	cost_bills_cache "Project - Provider Bills"
+	cost_timesheet_logged_cache "Project - Timesheet Costs"
+	cost_expense_logged_cache "Project - Exenses"
+	cost_delivery_notes_cache "Project - Delivery Notes"
+}]
+set field_options [concat $field_options [im_dynfield_object_attributes_for_select -object_type "im_project"]]
+
+
+set location_options {"" ""}
+for {set col 1} {$col <= $max_col} {incr col} {
+	lappend location_options "cust$col"
+	lappend location_options "Customer Group - Col \#$col"
+}
+for {set col 1} {$col <= $max_col} {incr col} {
+	lappend location_options "proj$col"
+	lappend location_options "Project Group - Col \#$col"
+}
+for {set col 1} {$col <= $max_col} {incr col} {
+	lappend location_options "cost$col"
+	lappend location_options "Cost Group - Col \#$col"
+}
+
+set field_table "<table cellspacing=1 cellpadding=1>"
+append field_table "
+        <tr class=rowtitle><td class=rowtitle colspan=2 align=center>Additional Custom Fields</td></tr>
+        <tr class=rowtitle>
+	    <td class=rowtitle align=center>Field</td>
+	    <td class=rowtitle align=center>Location</td>
+	</tr>
+"
+
+for {set row 1} {$row <= $max_fields} {incr row} {
+    if {![info exists field($row)]} { set field($row) "" }
+    if {![info exists location($row)]} { set location($row) ""}
+    append field_table "
+	<tr>
+	<td class=form-label>[im_select -translate_p 0 field.$row $field_options $field($row)]</td>
+	<td class=form-widget>[im_select -translate_p 0 location.$row $location_options $location($row)]</td>
+	</tr>
+    "
+}
+
+append field_table "
+    <tr>
+	<td class=form-label>&nbsp;</td>
+	<td class=form-widget><input type=submit value=Submit></td>
+    </tr>
+"
+
+append field_table "
+    <tr>
+	<td class=form-label>Max Custom Fields</td>
+	<td class=form-widget><input type=text name=max_fields value=$max_fields size=3></td>
+    </tr>
+"
+append field_table "
+    <tr>
+	<td class=form-label>Additional Columns</td>
+	<td class=form-widget><input type=text name=max_col value=$max_col size=3></td>
+    </tr>
+"
+
+append field_table "</table>\n"
+
+
+if {!$custom_fields_p} { set field_table "" }
+
+
 # ------------------------------------------------------------
 # Start formatting the page
 #
@@ -448,10 +666,12 @@ switch $output_format {
 	ns_write "
 	[im_header]
 	[im_navbar]
+
+	<form>
+
 	<table cellspacing=0 cellpadding=0 border=0>
 	<tr valign=top>
 	<td>
-	<form>
                 [export_form_vars customer_id project_id]
 		<table border=0 cellspacing=1 cellpadding=1>
 		<tr>
@@ -478,13 +698,25 @@ switch $output_format {
                     [im_report_output_format_select output_format "" $output_format]
                   </td>
                 </tr>
+
+                <tr>
+                  <td class=form-label><nobr>Custom Fields?</nobr></td>
+                  <td class=form-widget>
+                        <input type=checkbox name=custom_fields_p value=1 $custom_fields_checked>
+                  </td>
+                </tr>
+
 		<tr>
 		  <td class=form-label></td>
 		  <td class=form-widget><input type=submit value=Submit></td>
 		</tr>
 		</table>
-	</form>
 	</td>
+
+        <td align=center>
+                $field_table
+        </td>
+
 	<td>
 		<table cellspacing=2 width=90%>
 		<tr><td>$help_text</td></tr>
@@ -492,6 +724,9 @@ switch $output_format {
 	</td>
 	</tr>
 	</table>
+
+	</form>
+
 	<table border=0 cellspacing=1 cellpadding=1>\n"
     }
 }

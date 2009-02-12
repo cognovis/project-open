@@ -60,6 +60,12 @@ if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$}
 
 
 # ------------------------------------------------------------
+# Deal with invoices related to multiple projects
+
+im_invoices_check_for_multi_project_invoices
+
+
+# ------------------------------------------------------------
 # Page Settings
 
 set page_title "ContaWin Export"
@@ -202,6 +208,7 @@ select
 
 	c.amount_converted as amount,
 	round(c.amount * c.vat) / 100 as vat_amount,
+	c.amount_converted + round(c.amount * c.vat) / 100 as total,
 
 	im_cost_center_code_from_id(cust.sales_office) as sales_cc,
 	im_cost_center_code_from_id(cust.production_hub) as production_cc,
@@ -219,7 +226,7 @@ order by
 "
 
 # Global header/footer
-set header0 {"Cust" "Sales" "Prod" "Inv." "Effective Date" "Name" "Amount" "VAT" "Curr"}
+set header0 {"Cust" "Sales" "Prod" "Inv." "Effective Date" "Name" "Amount" "VAT" "Total" "Curr"}
 
 set report_def [list \
     group_by customer_id \
@@ -238,6 +245,7 @@ set report_def [list \
 		"<nobr><a href=$invoice_url$cost_id>$cost_name</a></nobr>"
 		"<nobr>$amount_pretty</nobr>"
 		"<nobr>$vat_amount_pretty</nobr>"
+                "<nobr>$total_pretty</nobr>"
 		"<nobr>$default_currency</nobr>"
 		""
 	    } \
@@ -252,6 +260,7 @@ set report_def [list \
 	""
 	"<b>$amount_subtotal_pretty</b>" 
 	"<b>$vat_subtotal_pretty</b>" 
+	""
 	"$default_currency"
     } \
 ]
@@ -410,6 +419,7 @@ ns_log Notice "intranet-reporting-finance/finance-contawin: sql=\n$sql"
 db_foreach sql $sql {
 
 	set amount_pretty [im_report_format_number $amount $output_format $number_locale]
+	set total_pretty [im_report_format_number $total $output_format $number_locale]
 	set vat_amount_pretty [im_report_format_number $vat_amount $output_format $number_locale]
 
 	im_report_display_footer \

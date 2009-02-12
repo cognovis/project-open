@@ -323,31 +323,19 @@ set inner_sql "
 		)
 "
 
-# Deal with invoices related to multiple 
-set multiples_sql "
-	select
-		count(*) as cnt,
-		cost_id,
-		cost_name
-	from
-		($inner_sql) i
-	group by
-		cost_id, cost_name
-	having
-		count(*) > 1
-"
+# ------------------------------------------------------------
+# Deal with invoices related to multiple projects
 
-set errors ""
-db_foreach multiples $multiples_sql {
-    append errors "<li>Financial document <a href=[export_vars -base "/intranet-invoices/view" {{invoice_id $cost_id}}]>$cost_name</a> is associated with more then one project.\n"
-}
+im_invoices_check_for_multi_project_invoices
 
-if {"" != $errors} {
-    ad_return_complaint 1 "<p>Financial documents related to multiple projects currently cause errors in this report.</p>
-	<ul>$errors</ul><p>
-	Please assign every financial document to a single project (usually the main project).</p>\n"
-    return
-}
+
+
+# ------------------------------------------------------------
+#
+set deref_list [im_dynfield_object_attributes_derefs -object_type "im_company" -prefix "cust."]
+set deref_list [concat $deref_list [im_dynfield_object_attributes_derefs -object_type "im_project" -prefix "p."]]
+set deref_extra_select [join $deref_list ",\n\t"]
+if {"" != $deref_extra_select} { set deref_extra_select ",\n\t$deref_extra_select" }
 
 
 
@@ -411,6 +399,8 @@ select
 		im_name_from_user_id(p.company_contact_id) || '</a>' as company_contact_link,
 	im_category_from_id(p.source_language_id) as source_language,
 	im_category_from_id(p.subject_area_id) as subject_area
+
+        $deref_extra_select
 from
 	($inner_sql) c
 	LEFT OUTER JOIN im_projects p on (c.project_project_id = p.project_id)
@@ -441,7 +431,9 @@ for {set i 1} {$i <= $max_col} {incr i} {
     set pos [lsearch [array get location] "cost$i"]
     if {$pos > -1} {
 	set row [lindex [array get location] [expr $pos-1]]
-	set cont "<nobr>\$$field($row)</nobr>"
+        if {"" != $field($row)} {
+	    set cont "<nobr>\$$field($row)</nobr>"
+	}
     }
     lappend cost_header $cont
 }

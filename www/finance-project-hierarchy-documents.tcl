@@ -71,6 +71,8 @@ if {!$custom_fields_p} {
     set custom_fields_checked "checked"
 }
 
+# Deal with multiple projects per invoice
+im_invoices_check_for_multi_project_invoices
 
 
 # ------------------------------------------------------------

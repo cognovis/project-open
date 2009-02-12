@@ -60,6 +60,10 @@ set user_url "/intranet/users/view?user_id="
 set this_url [export_vars -base "/intranet-reporting-finance/finance-income-statement" {start_date end_date} ]
 
 
+# Deal with invoices related to multiple projects
+im_invoices_check_for_multi_project_invoices
+
+
 # ------------------------------------------------------------
 # Constants
 #
@@ -291,15 +295,15 @@ set report_def [list \
 	    ] \
             footer {
 		"&nbsp;"
-		""
-		""
-		""
-		""
-		""
-		""
-		""
-		""
-		""
+                "<nobr>$company_html</nobr>"
+                ""
+                "<i>$paid_custsubtotal_pretty</i>"
+                ""
+                "<i>$invoice_custsubtotal_pretty</i>"
+                "<i>$bill_custsubtotal_pretty</i>"
+                "<i>$expense_custsubtotal_pretty</i>"
+                "<i>$vat_custsubtotal_pretty</i>"
+                "<i>$tax_custsubtotal_pretty</i>"
             } \
     ] \
     footer {  
@@ -323,7 +327,7 @@ set vat_total_pretty 0
 set tax_total_pretty 0
 
 # Global header/footer
-set header0 {"Cust" "Project" "Effective Date" "Paid" "Name" "Invoice" "Bill" "Expenses" "Vat" "Tax"}
+set header0 {"Cost" "Customer" "Effective Date" "Paid" "Name" "Invoice" "Bill" "Expenses" "Vat" "Tax"}
 set footer0 {
 	"" 
 	"" 
@@ -337,8 +341,55 @@ set footer0 {
 	"<br><b>$tax_total_pretty</b>"
 }
 
+
+
 #
-# Subtotal Counters (per project)
+# Customer Counters (per customer)
+#
+set paid_custsubtotal_counter [list \
+        pretty_name "Paid Amount" \
+        var paid_custsubtotal \
+        reset \$customer_id \
+        expr "\$paid_amount+0" \
+				   ]
+
+set invoice_custsubtotal_counter [list \
+        pretty_name "Invoice Amount" \
+        var invoice_custsubtotal \
+        reset \$customer_id \
+        expr "\$invoice_amount+0" \
+				      ]
+
+set bill_custsubtotal_counter [list \
+        pretty_name "Bill Amount" \
+        var bill_custsubtotal \
+        reset \$customer_id \
+        expr "\$bill_amount+0" \
+				   ]
+
+set expense_custsubtotal_counter [list \
+        pretty_name "Expence Amount" \
+        var expense_custsubtotal \
+        reset \$customer_id \
+        expr "\$expense_amount+0" \
+				      ]
+
+set vat_custsubtotal_counter [list \
+        pretty_name "VAT Amount" \
+        var vat_custsubtotal \
+        reset \$customer_id \
+        expr "\$vat_amount+0" \
+				  ]
+
+set tax_custsubtotal_counter [list \
+        pretty_name "Tax Amount" \
+        var tax_custsubtotal \
+        reset \$customer_id \
+        expr "\$tax_amount+0" \
+				  ]
+
+#
+# Subtotal Counters
 #
 set paid_subtotal_counter [list \
         pretty_name "Paid Amount" \
@@ -431,6 +482,12 @@ set tax_grand_total_counter [list \
 
 
 set counters [list \
+	$paid_custsubtotal_counter \
+	$invoice_custsubtotal_counter \
+	$bill_custsubtotal_counter \
+	$expense_custsubtotal_counter \
+	$vat_custsubtotal_counter \
+	$tax_custsubtotal_counter \
 	$paid_subtotal_counter \
 	$invoice_subtotal_counter \
 	$bill_subtotal_counter \
@@ -564,6 +621,13 @@ db_foreach sql $sql {
 
     # Update Counters and calculate pretty counter values
     im_report_update_counters -counters $counters
+
+    set paid_custsubtotal_pretty [im_report_format_number $paid_custsubtotal $output_format $number_locale]
+    set invoice_custsubtotal_pretty [im_report_format_number $invoice_custsubtotal $output_format $number_locale]
+    set bill_custsubtotal_pretty [im_report_format_number $bill_custsubtotal $output_format $number_locale]
+    set expense_custsubtotal_pretty [im_report_format_number $expense_custsubtotal $output_format $number_locale]
+    set tax_custsubtotal_pretty [im_report_format_number $tax_custsubtotal $output_format $number_locale]
+    set vat_custsubtotal_pretty [im_report_format_number $vat_custsubtotal $output_format $number_locale]
 
     set paid_subtotal_pretty [im_report_format_number $paid_subtotal $output_format $number_locale]
     set invoice_subtotal_pretty [im_report_format_number $invoice_subtotal $output_format $number_locale]
