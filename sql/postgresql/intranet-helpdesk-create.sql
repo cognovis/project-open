@@ -33,6 +33,8 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_ticket','edit','/intranet-helpdesk/new?ticket_id=');
 
+-- Create "Full Member" role for tickets
+insert into im_biz_object_role_map values ('im_ticket',null,1300);
 
 
 update acs_object_types set
@@ -721,6 +723,7 @@ SELECT im_category_new(30520, 'Duplicated', 'Intranet Ticket Action');
 update im_categories set aux_string1 = '/intranet-helpdesk/action-duplicated' 
 where category_id = 30520;
 
+SELECT im_category_new(30530, 'Re-Open', 'Intranet Ticket Action');
 
 
 
@@ -1112,6 +1115,44 @@ SELECT	im_component_plugin__new (
 SELECT acs_permission__grant_permission(
         (select plugin_id from im_component_plugins where plugin_name = 'Related Tickets' and package_name = 'intranet-helpdesk'),
         (select group_id from groups where group_name = 'Employees'),
+        'read'
+);
+
+
+
+
+
+-- ------------------------------------------------------
+-- Show users associated with ticket
+--
+SELECT	im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Ticket Members',		-- plugin_name
+	'intranet-helpdesk',		-- package_name
+	'right',			-- location
+	'/intranet-helpdesk/new',	-- page_url
+	null,				-- view_name
+	80,				-- sort_order
+        'im_group_member_component $ticket_id $current_user_id $user_admin_p $return_url "" "" 1',
+	'lang::message::lookup "" intranet-helpdesk.Ticket_Members "Ticket Members"'
+);
+
+SELECT acs_permission__grant_permission(
+        (
+		select plugin_id
+		from im_component_plugins 
+		where plugin_name = 'Ticket Members' and package_name = 'intranet-helpdesk'
+	),
+        (
+		select group_id 
+		from groups 
+		where group_name = 'Employees'
+	),
         'read'
 );
 
