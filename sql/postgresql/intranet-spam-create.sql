@@ -9,7 +9,7 @@ create table spam_messages (
 	send_date	timestamptz not null,
 	-- the sql query for selecting users.
 	-- must be of the form "select party_id from ... where ..."
-	sql_query	varchar(4000) not null,
+	sql_query	text not null,
 	-- has it been approved yet?  spam won't go in queue until 
 	-- approved.
 	approved_p	boolean,
