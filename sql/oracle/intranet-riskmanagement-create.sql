@@ -37,8 +37,8 @@ create table im_risks (
 				references users,
         probability             number(5,2),
         impact	                number(7,0),
-        title                   varchar(100),
-        description             varchar(4000),
+        title                   varchar(1000),
+        description             text,
 	type                    integer
 				references im_categories
 				constraint im_risks_risk_type_const not null
