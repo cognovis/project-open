@@ -50,7 +50,7 @@ create table im_freelance_rfqs (
 				primary key
 				constraint im_freelance_rfq_id_fk
 				references acs_objects,
-	rfq_name		varchar(400),
+	rfq_name		varchar(1000),
 	rfq_project_id		integer
 				constraint im_freelance_rfq_project_fk
 				references im_projects,
@@ -219,7 +219,7 @@ create or replace function im_freelance_rfq__name (integer)
 returns varchar as '
 DECLARE
 	p_freelance_rfqs_id		alias for $1;
-	v_name  varchar(40);
+	v_name  varchar;
 begin
 	select	rfq_name
 	into	v_name
@@ -556,7 +556,7 @@ create or replace function im_freelance_rfq_answer__name (integer)
 returns varchar as '
 DECLARE
 	p_freelance_rfq_answers_id		alias for $1;
-	v_name  varchar(1000);
+	v_name  varchar;
 begin
 	select	r.rfq_name 
 			|| '' on "'' || p.project_name 
