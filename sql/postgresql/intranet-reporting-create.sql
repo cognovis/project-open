@@ -154,7 +154,7 @@ create or replace function im_report__name(integer)
 returns varchar as '
 DECLARE
 	p_report_id		alias for $1;
-	v_name			varchar(2000);
+	v_name			varchar;
 BEGIN
 	select	report_name
 	into	v_name
