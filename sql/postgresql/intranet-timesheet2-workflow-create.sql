@@ -132,7 +132,7 @@ create or replace function im_timesheet_conf_object__name(integer)
 returns varchar as '
 DECLARE
 	p_conf_id		alias for $1;
-	v_name			varchar(2000);
+	v_name			varchar;
 BEGIN
 	select	im_name_from_user_id(conf_user_id) || '' @ '' || 
 		p.project_name || '' ('' ||
