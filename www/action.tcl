@@ -60,6 +60,20 @@ switch $action_id {
 			update im_tickets set ticket_status_id = [im_ticket_status_closed]
 			where ticket_id = :ticket_id
 	        "
+
+		# ToDo: Notifiy "stakeholders" that the ticket has been re-opened.
+		# Unify this functionality with the Forum-Notify and/or Core member-notify?
+	    }
+	}
+	30520 {
+	    # Reopen
+	    foreach ticket_id $tid {
+		im_ticket_permissions $user_id $ticket_id view read write admin
+		if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
+		db_dml reopen_ticket "
+			update im_tickets set ticket_status_id = [im_ticket_status_open]
+			where ticket_id = :ticket_id
+	        "
 	    }
 	}
 	30590 {

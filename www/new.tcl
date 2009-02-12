@@ -697,7 +697,8 @@ array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 ns_log Notice "/intranet/ticket/index: Before admin links"
 set admin_html "<ul>"
 
-if {[im_is_user_site_wide_or_intranet_admin $current_user_id]} {
+set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+if {$user_admin_p} {
     append admin_html "<li><a href=\"/intranet-helpdesk/admin/\">[lang::message::lookup "" intranet-helpdesk.Admin_Helpdesk "Admin Helpdesk"]</a>\n"
     append admin_html "<li><a href=\"/admin/group-types/one?group_type=im_ticket_queue\">[lang::message::lookup "" intranet-helpdesk.Admin_Helpdesk_Queues "Admin Helpdesk Queues"]</a>\n"
 }
