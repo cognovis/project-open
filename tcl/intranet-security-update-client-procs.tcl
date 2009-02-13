@@ -42,9 +42,9 @@ ad_proc im_security_update_client_component { } {
     set package_sql "
 	select	v.package_key,
 	        v.version_name
-	from	(        select	max(version_id) as version_id,
-		                package_key
-		        from	apm_package_versions
+	from	(	select	max(version_id) as version_id,
+				package_key
+			from	apm_package_versions
 		        group by package_key
 	        ) m,
 	        apm_package_versions v
