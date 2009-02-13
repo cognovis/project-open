@@ -798,6 +798,10 @@ DECLARE
 
 	v_widget_id		integer;
 BEGIN
+	select widget_id into v_widget_id from im_dynfield_widgets
+	where widget_name = p_widget_name;
+	if v_widget_id is not null then return v_widget_id; end if;
+
 	v_widget_id := acs_object__new (
 		p_widget_id,
 		p_object_type,
