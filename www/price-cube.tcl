@@ -102,6 +102,13 @@ if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$}
 }
 
 
+
+# ------------------------------------------------------------
+# Deal with invoices related to multiple projects
+
+im_invoices_check_for_multi_project_invoices
+
+
 # ------------------------------------------------------------
 # Page Title & Help Text
 
@@ -258,7 +265,7 @@ ns_write "
 	<tr>
 	  <td class=form-label>Cost Type</td>
 	  <td class=form-widget colspan=3>
-	    [im_select -translate_p 1 -size 7 cost_type_id $cost_type_options $cost_type_id]
+	    [im_select -translate_p 1 -multiple_p 1 -size 7 cost_type_id $cost_type_options $cost_type_id]
 	  </td>
 	</tr>
 	<tr>

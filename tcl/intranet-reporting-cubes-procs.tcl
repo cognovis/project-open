@@ -8,6 +8,7 @@
 ad_library {
     Cubes Data-Warehouse Reporting Component Library
     @author frank.bergmann@project-open.com
+    @author klaus.hofeditz@project-open.com
 }
 
 # -------------------------------------------------------
@@ -46,6 +47,10 @@ ad_proc im_reporting_cubes_cube {
     { -ticket_type_id 0 }
     { -ticket_status_id 0 }
     { -customer_id 0 }
+    { -survey_id 0 }
+    { -creation_user_id 0 }
+    { -related_object_id 0 }
+    { -related_context_id 0 }
     { -aggregate 0 }
     { -derefs "" }
     { -cache_days 1 }
