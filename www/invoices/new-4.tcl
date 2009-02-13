@@ -65,7 +65,8 @@ if {!$write_p} {
     ad_script_abort
 }
 
-regsub -all {[\{\}]} $select_project "" select_project
+# Look for common super-projects for multi-project documents
+set select_project [im_invoices_unify_select_projects $select_project]
 
 set project_id ""
 if {1 == [llength $select_project]} {

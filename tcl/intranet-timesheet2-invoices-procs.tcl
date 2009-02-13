@@ -5,6 +5,7 @@ ad_library {
     related to Timesheet Invoices
 
     @author frank.bergmann@project-open.com
+    @author koen.vanwinckel@dotprojects.be
     @creation-date  May 2005
 }
 
@@ -100,7 +101,7 @@ order by
 </form>
 <ul>
   <li>
-    <a href=/intranet-timesheet2-invoices/upload-prices?[export_url_vars company_id return_url]>
+    <a href=/intranet-timesheet2-invoices/price-lists/upload-prices?[export_url_vars company_id return_url]>
       [_ intranet-timesheet2-invoices.Upload_prices]</A>
     [_ intranet-timesheet2-invoices.lt_for_this_company_via_]
   <li>
