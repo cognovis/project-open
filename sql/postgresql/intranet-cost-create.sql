@@ -655,6 +655,9 @@ create table im_costs (
 	planning_type_id	integer
 				constraint im_costs_planning_type_fk
 				references im_categories,
+	read_only_p		char(1) default 'f'
+				constraint im_costs_read_only_ck
+				check (read_only_p in ('t','f')),
 	description		text,
 	note			text,
 	-- Audit fields
@@ -763,6 +766,11 @@ returns integer as '
 DECLARE
 	p_cost_id alias for $1;
 begin
+	-- Update im_hours relationship
+	update	im_hours
+	set	cost_id = null
+	where	cost_id = p_cost_id;
+
 	-- Erase the im_cost
 	delete from im_costs
 	where cost_id = p_cost_id;
