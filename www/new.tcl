@@ -135,23 +135,7 @@ set end_date $end_century
 set availability "100"
 set hourly_cost 0
 
-set supervisor_options [db_list_of_lists supervisor_options "
-	select 
-		'No Supervisor (CEO)' as user_name, 
-		0 as user_id 
-	from dual
-    UNION
-	select 
-		im_name_from_user_id(u.user_id) as user_name,
-		u.user_id
-	from 
-		users u,
-		group_distinct_member_map m
-	where 
-		m.member_id = u.user_id
-		and m.group_id = [im_employee_group_id]
-"]
-
+set supervisor_options [im_employee_options 1]
 set salary_interval_options {{Month month} {Day day} {Week week} {Year year}}
 
 set employee_status_options [db_list_of_lists employee_status_options "
@@ -192,7 +176,7 @@ ad_form \
     -form {
 	employee_id:key
 	{department_id:text(select) {label $department_label} {options $department_options} }
-	{supervisor_id:text(select) {label $supervisor_label} {options $supervisor_options} }
+	{supervisor_id:text(select),optional {label $supervisor_label} {options $supervisor_options} }
 	{availability:text(text) {label $availability_label} {html {size 6}} }
 	{hourly_cost:text(text),optional {label $hourly_cost_label} {html {size 10}} }
 	{employee_status_id:text(select) {label $employee_status_label} {options $employee_status_options} }
@@ -201,7 +185,6 @@ ad_form \
 	{social_security:text(text),optional {label $social_security_label} {html {size 10}} }
 	{insurance:text(text),optional {label $insurance_label} {html {size 10}} }
 	{other_costs:text(text),optional {label $other_cost_label} {html {size 10}} }
-	{currency:text(select),optional {label $currency_label} {options $currency_options} }
 	{salary_payments_per_year:text(text),optional {label $salary_payments_per_year_label} {html {size 10}} }
 
 	{birthdate:text(text),optional {label $birthdate_label} {html {size 10}} }
