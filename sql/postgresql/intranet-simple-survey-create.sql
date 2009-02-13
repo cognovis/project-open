@@ -57,6 +57,28 @@ create index im_survsimp_object_map_biz_object_type_idx on im_survsimp_object_ma
 create index im_survsimp_object_map_survey_idx on im_survsimp_object_map (survey_id);
 
 
+-- insert into im_survsimp_object_map (
+--       acs_object_type,
+--       biz_object_type_id,
+--       survey_id,
+--       name,
+--       obligatory_p,
+--       recurrence_tcl,
+--       interviewee_profile_id,
+--       note
+-- ) values (
+--       'im_project',
+--       null,           -- all project subtypes
+--       (select survey_id from survsimp_surveys where short_name = 'pm_weekly'),
+--       'Weekly Project Report',
+--       't',
+--       '',             -- Recurrence
+--       467,            -- Project Managers
+--       'Please deliver weekly until Friday 11am'
+-- );
+
+
+
 ---------------------------------------------------------
 -- Object - SurvSimp relationship
 --
