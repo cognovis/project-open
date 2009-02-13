@@ -2190,8 +2190,10 @@ ad_proc -public im_ganttproject_gantt_component {
 	set project_path [list]
 	set open_p 1
 	for {set i 0} {$i < $level} {incr i} { 
-	    lappend project_path $project_hierarchy($i) 
-	    if {[lsearch $opened_projects $project_hierarchy($i)] < 0} { set open_p 0 }
+	    if {[info exists project_hierarchy($i)]} {
+		lappend project_path $project_hierarchy($i) 
+		if {[lsearch $opened_projects $project_hierarchy($i)] < 0} { set open_p 0 }
+	    }
 	}
 	if {!$open_p} { continue }
 	lappend project_path $project_id
