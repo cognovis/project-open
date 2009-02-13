@@ -95,32 +95,9 @@ foreach item_nr [array names item_currency] {
 
 set invoice_exists_p [db_string invoice_count "select count(*) from im_invoices where invoice_id=:invoice_id"]
 
-# Just update the invoice if it already exists:
+# Let's create the new invoice
 if {!$invoice_exists_p} {
-
-    # Let's create the new invoice
-    db_exec_plsql create_invoice "
-	DECLARE
-	    v_invoice_id        integer;
-	BEGIN
-	    v_invoice_id := im_trans_invoice.new (
-	        invoice_id              => :invoice_id,
-	        creation_user           => :user_id,
-	        creation_ip             => '[ad_conn peeraddr]',
-	        invoice_nr              => :invoice_nr,
-	        customer_id             => :customer_id,
-	        provider_id             => :provider_id,
-	        invoice_date            => :invoice_date,
-	        invoice_template_id     => :template_id,
-	        invoice_status_id	=> :cost_status_id,
-	        invoice_type_id		=> :cost_type_id,
-	        payment_method_id       => :payment_method_id,
-	        payment_days            => :payment_days,
-		amount			=> 0,
-	        vat                     => :vat,
-	        tax                     => :tax
-	    );
-	END;"
+    db_exec_plsql create_invoice ""
 }
 
 # Update the invoice itself

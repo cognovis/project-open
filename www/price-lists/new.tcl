@@ -48,9 +48,10 @@ if {"" == $currency} {
 # ------------------------------------------------------------------
 
 set uom_options [db_list_of_lists uom_options "
-	select category, category_id
-	from im_categories
-	where category_type = 'Intranet UoM'
+	select	category, category_id
+	from	im_categories
+	where	category_type = 'Intranet UoM'
+		and (enabled_p = 't' OR enabled_p is null)
 	order by category
 "]
 
