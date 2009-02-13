@@ -58,7 +58,7 @@ if {$add_expense_p} {
 set bulk_actions_list "[list]"
 set delete_expense_p 1 
 if {$delete_expense_p} {
-    lappend bulk_actions_list "[_ intranet-notes.Delete]" "notes-del" "[_ intranet-notes.Remove_checked_items]"
+    lappend bulk_actions_list [lang::message::lookup {} intranet-notes.Delete Delete] "notes-del" [lang::message::lookup {} intranet-notes.Remove_checked_items "Remove checked items"]
 }
 
 # ---------------------------------------------------------------
