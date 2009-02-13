@@ -44,7 +44,9 @@ ad_proc -public im_cost_type_expense_item {} { return 3720 }
 ad_proc -public im_cost_type_expense_bundle {} { return 3722 }
 ad_proc -public im_cost_type_delivery_note {} { return 3724 }
 ad_proc -public im_cost_type_timesheet_planned {} { return 3726 }
+ad_proc -public im_cost_type_timesheet_budget {} { return 3726 }
 ad_proc -public im_cost_type_expense_planned {} { return 3728 }
+
 
 
 ad_proc -public im_cost_type_short_name { cost_type_id } { 
@@ -720,7 +722,10 @@ ad_proc -public template::widget::im_cost_center_tree { element_reference tag_at
     } else {
 
 	if {"" != $default_value && "\{\}" != $default_value} {
-	    return [db_string cat "select im_category_from_id($default_value)"]
+	    return [db_string cat "select acs_object__name($default_value)"]
+
+	    # This is an object, not a category...
+	    # return [db_string cat "select im_category_from_id($default_value)"]
 	}
 	return ""
     }
@@ -1544,10 +1549,12 @@ ad_proc im_costs_project_finance_component {
     append prelim_cost_html "<td align=right>- $subtotal $default_currency</td>\n"
     set grand_total [expr $grand_total - $subtotal]
 
-    append prelim_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Timesheet_Planned_Costs "Timesheet Planned"]</td>\n"
-    append prelim_cost_html "<td align=right>- $subtotals([im_cost_type_timesheet_planned]) $default_currency</td>\n"
+    append prelim_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Timesheet_Budget "Timesheet Budget"]</td>\n"
+    set subtotal $subtotals([im_cost_type_timesheet_budget])
+    append prelim_cost_html "<td align=right>- $subtotal $default_currency</td>\n"
+    set grand_total [expr $grand_total - $subtotal]
 
-    append prelim_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Expenses_Planned_Costs "Expenses Planned"]</td>\n"
+    append prelim_cost_html "</tr>\n<tr>\n<td>[lang::message::lookup "" intranet-cost.Expenses "Expenses"]</td>\n"
     append prelim_cost_html "<td align=right>
 	  $subtotals([im_cost_type_expense_planned]) $default_currency
 	</td>\n"
