@@ -1279,6 +1279,9 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     # Same loop as before...
     db_foreach attributes $attributes_sql {
 
+	# Check if the current user has the right to read the dynfield
+        if {![im_object_permission -object_id $dynfield_attribute_id -user_id $user_id]} { continue }
+
 	# Check if the elements as disabled in the layout page
 	if {$page_url_exists_p && "" == $page_url} { continue }
 

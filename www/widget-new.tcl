@@ -59,6 +59,7 @@ set acs_datatype_options [list \
 
 set widget_options [list \
 	[list "Checkbox" checkbox] \
+	[list "Cost Center Tree" im_cost_center_tree] \
 	[list "Date" date] \
 	[list "Multiselect" multiselect] \
 	[list "Radio" radio] \
