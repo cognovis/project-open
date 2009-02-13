@@ -153,12 +153,15 @@ if {!$view_id} {
 }
 
 set column_sql "
-select	c.*
-from	im_view_columns c
-where	view_id=:view_id
-	and group_id is null
-order by
-	sort_order"
+	select	c.*
+	from	im_view_columns c
+	where	view_id=:view_id
+		and group_id is null
+	order by sort_order
+"
+
+set s_word_price ""
+set hour_price ""
 
 db_foreach column_list_sql $column_sql {
     if {"" == $visible_for || [eval $visible_for]} {
