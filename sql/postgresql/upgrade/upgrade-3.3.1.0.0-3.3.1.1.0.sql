@@ -1,5 +1,6 @@
 -- upgrade-3.3.1.0.0-3.3.1.1.0.sql
 
+SELECT acs_log__debug('/packages/intranet-reporting-cubes/sql/postgresql/upgrade/upgrade-3.3.1.0.0-3.3.1.1.0.sql','');
 
 
 ---------------------------------------------------------
