@@ -1,10 +1,13 @@
 -- upgrade-3.2.4.0.0-3.2.5.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.2.4.0.0-3.2.5.0.0.sql','');
+
+\i upgrade-3.0.0.0.first.sql
+
+
 -- Add a "Username" field to the users view page
-
-
+--
 delete from im_view_columns where column_id=1107;
-
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (1107,11,NULL,'Username',
 '$username','','',4,

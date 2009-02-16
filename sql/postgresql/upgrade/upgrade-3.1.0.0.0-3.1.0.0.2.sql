@@ -1,3 +1,9 @@
+-- upgrade-3.1.0.0.0-3.1.0.0.2.sql
+
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.1.0.0.0-3.1.0.0.2.sql','');
+
+
+\i upgrade-3.0.0.0.first.sql
 
 create or replace function inline_0 ()
 returns integer as '

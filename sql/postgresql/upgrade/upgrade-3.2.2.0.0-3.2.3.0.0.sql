@@ -1,5 +1,10 @@
 -- upgrade-3.2.3.0.0-3.2.3.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.2.2.0.0-3.2.3.0.0.sql','');
+
+
+\i upgrade-3.0.0.0.first.sql
+
 
 create or replace function im_country_from_code (varchar)
 returns varchar as '
@@ -7,40 +12,28 @@ DECLARE
 	p_cc		alias for $1;
 	v_country	varchar;
 BEGIN
-	select country_name
-	into v_country
-	from country_codes
-	where iso = p_cc;
-
+	select country_name into v_country
+	from country_codes where iso = p_cc;
 	return v_country;
 END;' language 'plpgsql';
 
 
--- Increase the category counter to a really high values so that
--- there is margin for the future...
+-- Make sure the categories counter is high enough
+-- The space below 1000000 is reserved for constants now.
 create or replace function inline_0 ()
 returns integer as '
 declare
-        v_count                 integer;
+	v_max		integer;
 begin
-	select nextval(''im_categories_seq'') into v_count;
-        if v_count >= 10000000 then return 0; end if;
-
-	SELECT pg_catalog.setval(''im_categories_seq'', 10000000, true);
-
-        return 0;
+	select nextval(''im_categories_seq'') into v_max;
+	IF v_max < 10000000 THEN
+		PERFORM pg_catalog.setval(''im_categories_seq'', 10000000, true);
+	END IF;
+	return 0;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
-
-
--- Update the security tokensof the local server 
--- Users might be a way to gain access if the tokens are
--- publicly known (from the default installation)
-
-delete from secret_tokens;
-SELECT pg_catalog.setval('t_sec_security_token_id_seq', 1, true);
 
 
 -- -------------------------------------------------------------
@@ -55,7 +48,7 @@ declare
 	v_table			varchar;
 	v_object		varchar;
 
-	v_acs_attrib_id		integer;
+	v_acs_attrib_id	integer;
 	v_attrib_id		integer;
 	v_count			integer;
 begin
@@ -75,7 +68,7 @@ begin
 		values (''im_project'', ''im_projects'', ''project_id'');
 	END IF;
 
-	select	count(*) into v_count from user_tab_columns
+	select  count(*) into v_count from user_tab_columns
 	where lower(table_name) = ''im_projects'' and lower(column_name) = ''company_project_nr'';
 	IF v_count = 0 THEN
 		alter table im_projects add company_project_nr varchar(50);

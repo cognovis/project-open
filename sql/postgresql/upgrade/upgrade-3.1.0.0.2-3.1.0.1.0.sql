@@ -1,3 +1,9 @@
+-- upgrade-3.1.0.0.2-3.1.0.1.0.sql
+
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.1.0.0.2-3.1.0.1.0.sql','');
+
+\i upgrade-3.0.0.0.first.sql
+
 
 -- Add a function to determine the type_id of a "im_biz_object"
 -- It's a bit ugly to do this via SWITCH, but there aren't many
