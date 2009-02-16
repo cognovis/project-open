@@ -1,17 +1,26 @@
 -- upgrade-3.2.7.0.0-3.2.8.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-hr/sql/postgresql/upgrade/upgrade-3.2.7.0.0-3.2.8.0.0.sql','');
+
+
+-- Remove the "im_employees e" extra select from employees view
+update im_view_columns set
+	extra_from = ''
+where	extra_from = 'im_employees e'
+	and column_id = 5500;
+
 
 create or replace function inline_0 ()
 returns integer as '
 DECLARE
-    row                         RECORD;
+    row			RECORD;
 BEGIN
     FOR row IN
 	select	cost_id
 	from	im_costs c
 	where	c.cost_type_id = 3714
 		and cause_object_id in (
-		        select  cause_object_id
+			select  cause_object_id
 			from	im_repeating_costs r,
 				im_costs c
 			where

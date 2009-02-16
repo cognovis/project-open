@@ -1,5 +1,7 @@
 -- /packages/intranet-hr/sql/postgresql/upgrade/upgrade-3.2.3.0.0-3.2.4.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-hr/sql/postgresql/upgrade/upgrade-3.2.3.0.0-3.2.4.0.0.sql','');
+
 
 delete from im_view_columns where view_id = 55;
 delete from im_view_columns where view_id = 56;
@@ -9,7 +11,6 @@ delete from im_views where view_id = 56;
 
 insert into im_views (view_id, view_name, visible_for) values (55, 'employees_list', 'view_users');
 insert into im_views (view_id, view_name, visible_for) values (56, 'employees_view', 'view_users');
-
 
 
 
