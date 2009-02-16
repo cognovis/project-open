@@ -1,5 +1,6 @@
 -- upgrade-3.2.1.0.0-3.2.2.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-trans-invoices/sql/postgresql/upgrade/upgrade-3.2.1.0.0-3.2.2.0.0.sql','');
 
 
 update im_menus 

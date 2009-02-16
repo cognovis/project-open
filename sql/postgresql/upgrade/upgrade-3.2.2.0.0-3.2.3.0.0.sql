@@ -1,5 +1,8 @@
 -- upgrade-3.2.2.0.0-3.2.3.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-trans-invoices/sql/postgresql/upgrade/upgrade-3.2.2.0.0-3.2.3.0.0.sql','');
+
+
 create or replace function im_trans_prices_calc_relevancy ( 
        integer, integer, integer, integer, integer, integer, integer, integer, integer, integer
 ) returns numeric as '
