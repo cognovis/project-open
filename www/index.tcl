@@ -1,6 +1,7 @@
 # /packages/intranet-reporting/www/index.tcl
 #
-# Copyright (C) 2004 Project/Open
+# Copyright (C) 2004 - 2009 ]project-open[
+#
 # The code is based on ArsDigita ACS 3.4
 #
 # This program is free software. You can redistribute it
