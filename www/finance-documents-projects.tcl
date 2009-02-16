@@ -1,6 +1,6 @@
 # /packages/intranet-reporting-finance/www/finance-documents-projects.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (C) 2003 - 2009 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/ for licensing details.
