@@ -64,7 +64,7 @@
 	<else>
 	
 		<%= [im_box_header $page_title] %>
-		<formtemplate id="ticket"></formtemplate>
+		<formtemplate id="conf_item"></formtemplate>
 		<%= [im_box_footer] %>
 	
 	</else>
