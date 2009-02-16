@@ -599,6 +599,13 @@ ad_proc -public im_nagios_create_confdb {
     array unset hosts
     array set hosts $hosts_hash
 
+    set peeraddr "0.0.0.0"
+    set current_user_id 0
+    if {[ad_conn isconnected]} { 
+	set current_user_id [ad_get_user_id]
+	set peeraddr [ad_conn peeraddr]
+    }
+
     foreach host_name [array names hosts] {
 	
 	# ignore "unknown"
@@ -625,8 +632,8 @@ ad_proc -public im_nagios_create_confdb {
 			null,
 			'im_conf_item',
 			now(),
-			[ad_get_user_id],
-			'[ad_conn peeraddr]',
+			:current_user_id,
+			:peeraddr,
 			null,
 			:conf_item_name,
 			:conf_item_nr,
@@ -643,7 +650,7 @@ ad_proc -public im_nagios_create_confdb {
 	set conf_item_status_id [im_conf_item_status_active]
 	set conf_item_type_id [im_nagios_get_type_id_from_host_info -host_info_hash $host_info]
 	set conf_item_version ""
-	set conf_item_owner_id [ad_get_user_id]
+	set conf_item_owner_id $current_user_id
 	set description ""
 	set note ""
 
@@ -687,8 +694,8 @@ ad_proc -public im_nagios_create_confdb {
 					null,
 					'im_conf_item',
 					now(),
-					[ad_get_user_id],
-					'[ad_conn peeraddr]',
+					:current_user_id,
+				        :peeraddr,
 					null,
 					:conf_item_name,
 					:conf_item_nr,
@@ -705,7 +712,7 @@ ad_proc -public im_nagios_create_confdb {
 			set conf_item_status_id [im_conf_item_status_active]
 			set conf_item_type_id [im_nagios_conf_item_type_http_service]
 			set conf_item_version ""
-			set conf_item_owner_id [ad_get_user_id]
+			set conf_item_owner_id $current_user_id
 			set description $service_name
 			set note ""
 		
