@@ -1,5 +1,6 @@
 -- upgrade-3.2.3.0.0-3.2.4.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-forum/sql/postgresql/upgrade/upgrade-3.2.3.0.0-3.2.4.0.0.sql','');
 
 
 create or replace function inline_0 ()
@@ -7,10 +8,7 @@ returns integer as '
 declare
         v_count                 integer;
 begin
-	select count(*)
-	into v_count
-	from im_forum_folders;
-
+	select count(*) into v_count from im_forum_folders;
 	IF v_count > 0 THEN return 0; END IF;
 
 	insert into im_forum_folders values (0, null, null, ''Inbox'');
