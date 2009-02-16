@@ -1,5 +1,9 @@
 -- upgrade-3.2.6.0.0-3.2.7.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-workflow/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
+
+\i ../../../../intranet-core/sql/postgresql/upgrade/upgrade-3.0.0.0.first.sql
+
 
 -- ------------------------------------------------------
 -- Privileges
