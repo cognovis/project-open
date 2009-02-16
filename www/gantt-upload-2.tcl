@@ -1,6 +1,6 @@
 # /packages/intranet-ganttproject/www/gantt-upload-2.tcl
 #
-# Copyright (C) 2003-2006 Project/Open
+# Copyright (C) 2003 - 2009 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
