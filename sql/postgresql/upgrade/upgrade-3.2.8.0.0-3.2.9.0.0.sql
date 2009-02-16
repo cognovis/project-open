@@ -1,3 +1,8 @@
+-- upgrade-3.2.8.0.0-3.2.9.0.0.sql
+
+SELECT acs_log__debug('/packages/intranet-reporting-translation/sql/postgresql/upgrade/upgrade-3.2.8.0.0-3.2.9.0.0.sql','');
+
+
 
 create or replace function inline_0 ()
 returns integer as '
