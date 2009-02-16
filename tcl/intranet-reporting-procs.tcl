@@ -609,6 +609,31 @@ ad_proc im_report_output_format_select {
     "
 }
 
+ad_proc im_report_accuracy_select {
+    name
+    { locale ""}
+    { accuracy  ""}
+} {
+    Returns a formatted select widget (radio buttons)
+    to allow a user to select accuracy
+} {
+    if {"" == $locale} { set locale [lang::user::locale] }
+    
+    set regular_checked ""
+    set rounded_checked ""
+    
+    switch $accuracy {
+	regular { set regular_checked "checked" }
+	rounded { set rounded_checked "checked" }
+    }
+    return "
+         <nobr>
+         <input name=$name type=radio value='regular' $regular_checked>Regular&nbsp;
+         <input name=$name type=radio value='rounded' $rounded_checked>Rounded
+         </nobr>
+     "
+}
+
 
 ad_proc im_report_number_locale_select {
     name

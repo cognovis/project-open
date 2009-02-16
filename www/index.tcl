@@ -27,6 +27,8 @@ ad_page_contract {
 
 set current_user_id [ad_maybe_redirect_for_registration]
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+set reports_exist_p [db_table_exists "im_reports"]
+
 
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
@@ -74,7 +76,7 @@ set elements_list {
 }
 
 
-if {$user_admin_p} {
+if {$reports_exist_p && $user_admin_p} {
     lappend elements_list \
         edit {
             label "[im_gif wrench]"
@@ -83,6 +85,7 @@ if {$user_admin_p} {
             }
         }
 }
+
 
 set top_menu_sortkey [db_string top_menu_sortkey "
 	select tree_sortkey 
