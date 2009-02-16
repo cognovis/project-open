@@ -1,3 +1,7 @@
+-- upgrade-3.2.7.0.0-3.2.8.0.0.sql
+
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-3.2.7.0.0-3.2.8.0.0.sql','');
+
 
 select im_component_plugin__del_module('intranet-timesheet2-tasks-info');
 select im_component_plugin__new (
@@ -35,4 +39,9 @@ select im_component_plugin__new (
 	50,					-- sort_order
 	'im_timesheet_task_members_component $project_id $task_id $return_url'
 );
+
+
+update im_view_columns
+set column_render_tcl = '"<a href=/intranet-cost/cost-centers/new?[export_url_vars cost_center_id return_url]>$cost_center_name</a>"'
+where column_id = 91006;
 

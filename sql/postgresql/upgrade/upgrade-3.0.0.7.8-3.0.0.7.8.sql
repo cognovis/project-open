@@ -1,3 +1,7 @@
+-- upgrade-3.0.0.7.8-3.0.0.7.8.sql
+
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-3.0.0.7.8-3.0.0.7.8.sql','');
+
 
 alter table im_timesheet_tasks add
         percent_completed       numeric(6,2)

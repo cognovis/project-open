@@ -1,6 +1,6 @@
---------------------------------------------------------
--- 
---------------------------------------------------------
+-- upgrade-3.2.2.0.0-3.2.3.0.0.sql
+
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-3.2.2.0.0-3.2.3.0.0.sql','');
 
 -- Fix Biz-Obj URLs
 

@@ -1,5 +1,7 @@
 -- upgrade-3.2.6.0.0-3.2.7.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
+
 
 -- Replaced by im_biz_object_member relationship "pecentage" column
 

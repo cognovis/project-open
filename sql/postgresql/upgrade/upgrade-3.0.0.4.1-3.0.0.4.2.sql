@@ -1,3 +1,6 @@
+-- upgrade-3.0.0.4.1-3.0.0.4.2.sql
+
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-3.0.0.4.1-3.0.0.4.2.sql','');
 
 
 -- Add a "Del" column for tasks

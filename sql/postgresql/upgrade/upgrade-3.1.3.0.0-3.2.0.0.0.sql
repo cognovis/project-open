@@ -1,3 +1,10 @@
+-- upgrade-3.1.3.0.0-3.2.0.0.0.sql
+
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-3.1.3.0.0-3.2.0.0.0.sql','');
+
+
+-- Source important duplicate-tollerant pl/sql routines
+\i ../../../../intranet-core/sql/postgresql/upgrade/upgrade-3.0.0.0.first.sql
 
 
 --------------------------------------------------------
@@ -33,9 +40,8 @@ BEGIN
 
         -- Make project_name unique in case of duplicates
         v_name := row.task_name;
-        select  count(*) into v_count from im_projects p
-        where   p.project_name = v_name and p.company_id = row.company_id;
-
+	select	count(*) into v_count from im_projects p
+	where	p.project_name = v_name and p.company_id = row.company_id;
         IF v_count > 0 THEN v_name := v_name || '' '' || row.task_id; END IF;
 
 	insert into im_projects (
@@ -45,7 +51,7 @@ BEGIN
 		description,
 		percent_completed
 	) values (
-		row.task_id, row.task_name, substring(row.task_nr from 1 for 80) || row.project_id::varchar,
+		row.task_id, v_name, substring(row.task_nr from 1 for 80) || row.project_id::varchar,
 		substring(row.task_nr from 1 for 80) || row.project_id::varchar, row.project_id, row.company_id,
 		100, 76,
 		row.description,
@@ -238,32 +244,7 @@ DROP FUNCTION inline_0();
 
 
 
-
-
-create or replace view im_timesheet_tasks_view as
-select  t.*,
-        p.parent_id as project_id,
-        p.project_name as task_name,
-        p.project_nr as task_nr,
-        p.percent_completed,
-        p.project_type_id as task_type_id,
-        p.project_status_id as task_status_id,
-        p.start_date,
-        p.end_date,
-        p.reported_hours_cache,
-        p.reported_hours_cache as reported_units_cache
-from
-        im_projects p,
-        im_timesheet_tasks t
-where
-        t.task_id = p.project_id
-;
-
-
-
-
 delete from im_view_columns where column_id = 91014;
-
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (91014,910,NULL,'Log',
 '"<a href=[export_vars -base $timesheet_report_url { task_id { project_id $project_id } return_url}]>
@@ -271,7 +252,6 @@ $reported_hours_cache</a>"','','',14,'');
 
 
 delete from im_view_columns where column_id = 91108;
-
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (91108,911,NULL,'Log',
 '"<a href=[export_vars -base $timesheet_report_url { task_id { project_id $project_id } return_url}]>
@@ -282,72 +262,100 @@ $reported_hours_cache</a>"','','',8,'');
 -- Defines the relationship between two tasks, based on
 -- the data model of GanttProject.
 -- <depend id="5" type="2" difference="0" hardness="Strong"/>
-create table im_timesheet_task_dependencies (
-	task_id_one		integer
-				constraint im_timesheet_task_map_one_nn
-				not null
-				constraint im_timesheet_task_map_one_fk
-				references acs_objects,
-	task_id_two		integer
-				constraint im_timesheet_task_map_two_nn
-				not null
-				constraint im_timesheet_task_map_two_fk
-				references acs_objects,
-	dependency_type_id	integer
-				constraint im_timesheet_task_map_dep_type_fk
-				references im_categories,
-	difference		numeric(12,2),
-	hardness_type_id	integer
-				constraint im_timesheet_task_map_hardness_fk
-				references im_categories,
 
-	primary key (task_id_one, task_id_two)
-);
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_timesheet_task_dependencies'';
+        IF v_count > 0 THEN return 0; END IF;
 
-create index im_timesheet_tasks_dep_task_one_idx 
-on im_timesheet_task_dependencies (task_id_one);
+		create table im_timesheet_task_dependencies (
+			task_id_one		integer
+						constraint im_timesheet_task_map_one_nn
+						not null
+						constraint im_timesheet_task_map_one_fk
+						references acs_objects,
+			task_id_two		integer
+						constraint im_timesheet_task_map_two_nn
+						not null
+						constraint im_timesheet_task_map_two_fk
+						references acs_objects,
+			dependency_type_id	integer
+						constraint im_timesheet_task_map_dep_type_fk
+						references im_categories,
+			difference		numeric(12,2),
+			hardness_type_id	integer
+						constraint im_timesheet_task_map_hardness_fk
+						references im_categories,
+		
+			primary key (task_id_one, task_id_two)
+		);
+		
+		create index im_timesheet_tasks_dep_task_one_idx 
+		on im_timesheet_task_dependencies (task_id_one);
+		
+		create index im_timesheet_tasks_dep_task_two_idx 
+		on im_timesheet_task_dependencies (task_id_two);
 
-create index im_timesheet_tasks_dep_task_two_idx 
-on im_timesheet_task_dependencies (task_id_two);
 
-
-
-
--- Allocate a user to a specific task 
--- with a certain percentage of his time
---
-create table im_timesheet_task_allocations (
-	task_id			integer
-				constraint im_timesheet_task_alloc_task_nn
-				not null
-				constraint im_timesheet_task_alloc_task_fk
-				references acs_objects,
-        user_id			integer
-				constraint im_timesheet_task_alloc_user_fk
-				references users,
-	role_id			integer
-				constraint im_timesheet_task_alloc_role_fk
-				references im_categories,
-	percentage		numeric(6,2),
---				-- No check anymore - might want to alloc 120%...
---				constraint im_timesheet_task_alloc_perc_ck
---				check (percentage >= 0 and percentage <= 200),
-	task_manager_p		char(1)
-				constraint im_timesheet_task_resp_ck
-				check (task_manager_p in ('t','f')),
-	note			varchar(1000),
-
-	primary key (task_id, user_id)
-);
-
-create index im_timesheet_tasks_dep_alloc_task_idx 
-on im_timesheet_task_allocations (task_id);
-
-create index im_timesheet_tasks_dep_alloc_user_idx 
-on im_timesheet_task_allocations (user_id);
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
 
 
 
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_timesheet_task_allocations'';
+        IF v_count = 0 THEN return 0; END IF;
+
+		-- Allocate a user to a specific task 
+		-- with a certain percentage of his time
+		--
+		create table im_timesheet_task_allocations (
+			task_id			integer
+						constraint im_timesheet_task_alloc_task_nn
+						not null
+						constraint im_timesheet_task_alloc_task_fk
+						references acs_objects,
+		        user_id			integer
+						constraint im_timesheet_task_alloc_user_fk
+						references users,
+			role_id			integer
+						constraint im_timesheet_task_alloc_role_fk
+						references im_categories,
+			percentage		numeric(6,2),
+		--				-- No check anymore - might want to alloc 120%...
+		--				constraint im_timesheet_task_alloc_perc_ck
+		--				check (percentage >= 0 and percentage <= 200),
+			task_manager_p		char(1)
+						constraint im_timesheet_task_resp_ck
+						check (task_manager_p in (''t'',''f'')),
+			note			varchar(1000),
+		
+			primary key (task_id, user_id)
+		);
+
+		create index im_timesheet_tasks_dep_alloc_task_idx 
+		on im_timesheet_task_allocations (task_id);
+
+		create index im_timesheet_tasks_dep_alloc_user_idx 
+		on im_timesheet_task_allocations (user_id);
+
+
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
 
 
 
@@ -447,30 +455,35 @@ declare
 end;' language 'plpgsql';
 
 
+SELECT im_category_new(100, 'Task', 'Intranet Project Type');
 
 
 
-create or replace function inline_0 ()
-returns integer as '
-declare
-        v_count         integer;
-begin
-        select count(*) into v_count from im_categories
-        where category_id = 100;
-        IF v_count > 0 THEN return 0; END IF;
-
-	insert into im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-	values (100, ''Task'', ''Intranet Project Type'');
-
-        return v_count;
-end;' language 'plpgsql';
-SELECT inline_0();
-DROP FUNCTION inline_0();
-
-
-
-
-
-
-
+create or replace view im_timesheet_tasks_view as
+select
+	t.task_id,
+	t.material_id,
+	t.uom_id,
+	t.planned_units,
+	t.billable_units,
+	t.cost_center_id,
+	t.invoice_id,
+	t.priority,
+	t.sort_order,
+        p.parent_id as project_id,
+        p.project_name as task_name,
+        p.project_nr as task_nr,
+        p.percent_completed,
+        p.project_type_id as task_type_id,
+        p.project_status_id as task_status_id,
+        p.start_date,
+        p.end_date,
+        p.reported_hours_cache,
+        p.reported_hours_cache as reported_units_cache
+from
+        im_projects p,
+        im_timesheet_tasks t
+where
+        t.task_id = p.project_id
+;
 
