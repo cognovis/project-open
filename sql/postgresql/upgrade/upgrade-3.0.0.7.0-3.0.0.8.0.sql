@@ -1,7 +1,12 @@
+-- upgrade-3.0.0.7.0-3.0.0.8.0.sql
+
+SELECT acs_log__debug('/packages/intranet-dw-light/sql/postgresql/upgrade/upgrade-3.0.0.7.0-3.0.0.8.0.sql','');
 
 -- -------------------------------------------------------------------
 -- Create new view for timesheet
 
+delete from im_view_columns where view_id = 205;
+delete from im_views where view_id = 205;
 
 insert into im_views (view_id, view_name, visible_for, view_type_id)
 values (205, 'timesheet_csv', 'view_timesheet', 1400);

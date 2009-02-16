@@ -1,5 +1,7 @@
 -- intranet-dw-light/upgrade-3.2.5.0.0-3.2.6.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-dw-light/sql/postgresql/upgrade/upgrade-3.2.5.0.0-3.2.6.0.0.sql','');
+
 
 -------------------------------------------------------------
 -- Users Admin Menu
@@ -29,10 +31,7 @@ begin
     select group_id into v_freelancers from groups where group_name = ''Freelancers'';
     select group_id into v_reg_users from groups where group_name = ''Registered Users'';
 
-    select menu_id
-    into v_users_admin_menu
-    from im_menus
-    where label=''users_admin'';
+    select menu_id into v_users_admin_menu from im_menus where label=''users_admin'';
 
     v_menu := im_menu__new (
         null,                   -- p_menu_id
@@ -67,10 +66,6 @@ values (14, 'user_csv', 'view_users', 1400);
 
 ---------------------------------------------------------
 -- Users CSV
-
---
-delete from im_view_columns where view_id=14;
---
 
 -- parties, persons and users
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
