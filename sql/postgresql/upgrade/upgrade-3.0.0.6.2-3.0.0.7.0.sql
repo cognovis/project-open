@@ -1,5 +1,7 @@
 -- upgrade-3.0.0.6.2-3.0.0.7.0.sql
 
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.0.0.6.2-3.0.0.7.0.sql','');
+
 
 --
 -- Fix the ID column of the im_repeating_cost

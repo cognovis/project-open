@@ -1,5 +1,7 @@
 -- /packages/intranet-cost/sql/postgres/upgrade/upgrade-3.2.4.0.0-3.2.5.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.2.4.0.0-3.2.5.0.0.sql','');
+
 
 -- Delete a single cost_center (if we know its ID...)
 create or replace function im_cost_center__delete (integer)

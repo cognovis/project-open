@@ -1,24 +1,25 @@
 -- upgrade-3.3.1.0.0-3.3.1.1.0.sql
 
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.3.1.0.0-3.3.1.1.0.sql','');
+
+
 
 create or replace function im_cost__name (integer)
 returns varchar as '
 DECLARE
-        p_cost_id  alias for $1;        -- cost_id
-        v_name  varchar;
-    begin
-        select  cost_name
-        into    v_name
-        from    im_costs
-        where   cost_id = p_cost_id;
+	p_cost_id  alias for $1;	-- cost_id
+	v_name  varchar;
+begin
+	select  cost_name into v_name from im_costs
+	where   cost_id = p_cost_id;
 
-        return v_name;
+	return v_name;
 end;' language 'plpgsql';
 
 
 update acs_object_types set name_method = 'im_cost__name' where object_type = 'im_cost';
 
--- /packages/intranet-cost/sql/postgres/upgrade/upgrade-3.2.7.0.0-3.2.8.0.0.sql
+SELECT im_category_new(3726, 'Timesheet Budget', 'Intranet Cost Type');
 
 
 -- Dirty field with date when the cache became "dirty"
@@ -26,15 +27,15 @@ update acs_object_types set name_method = 'im_cost__name' where object_type = 'i
 create or replace function inline_0 ()
 returns integer as '
 declare
-        v_count         integer;
+	v_count	integer;
 begin
-        select count(*) into v_count from user_tab_columns
-        where lower(table_name) = ''im_projects'' and lower(column_name) = ''cost_cache_dirty'';
-        IF v_count > 0 THEN return 0; END IF;
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''im_projects'' and lower(column_name) = ''cost_cache_dirty'';
+	IF v_count > 0 THEN return 0; END IF;
 
 	ALTER TABLE im_projects ADD cost_cache_dirty timestamptz;
 
-        return v_count;
+	return v_count;
 end;' language 'plpgsql';
 SELECT inline_0();
 DROP FUNCTION inline_0();
@@ -47,18 +48,18 @@ DROP FUNCTION inline_0();
 create or replace function inline_0 ()
 returns integer as '
 declare
-        v_count         integer;
+	v_count	integer;
 begin
-        select count(*) into v_count from user_tab_columns
-        where lower(table_name) = ''im_costs'' and lower(column_name) = ''last_modified'';
-        IF v_count > 0 THEN return 0; END IF;
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''im_costs'' and lower(column_name) = ''last_modified'';
+	IF v_count > 0 THEN return 0; END IF;
 
-	ALTER TABLE im_costs add last_modified           timestamptz;
-	ALTER TABLE im_costs add last_modifying_user     integer;
+	ALTER TABLE im_costs add last_modified	timestamptz;
+	ALTER TABLE im_costs add last_modifying_user	integer;
 	ALTER TABLE im_costs add constraint im_costs_last_mod_user foreign key (last_modifying_user) references users;
-	ALTER TABLE im_costs add last_modifying_ip 	 varchar(20);
+	ALTER TABLE im_costs add last_modifying_ip 	varchar(20);
 
-        return v_count;
+	return v_count;
 end;' language 'plpgsql';
 SELECT inline_0();
 DROP FUNCTION inline_0();
@@ -123,7 +124,7 @@ begin
 		IF v_last_dirty is not null THEN return v_count; END IF;
 
 		-- Set the "dirty"-flag. There is a sweeper to cleanup afterwards.
-	        RAISE NOTICE ''im_cost_project_cache_invalidator: invalidating cost cache of project %'', p_project_id;
+		RAISE NOTICE ''im_cost_project_cache_invalidator: invalidating cost cache of project %'', p_project_id;
 		update im_projects
 		set cost_cache_dirty = now()
 		where project_id = v_project_id;
@@ -135,7 +136,7 @@ begin
 		v_count := v_count-1;
 	END LOOP;
 
-        return v_count;
+	return v_count;
 end;' language 'plpgsql';
 
 
@@ -155,13 +156,13 @@ end;' language 'plpgsql';
 create or replace function inline_0 () 
 returns integer as '
 declare
-        v_count         integer;
+	v_count	integer;
 begin
 	select count(*) into v_count from pg_trigger
 	where lower(tgname) = ''im_costs_project_cache_up_tr'';
 	IF v_count = 0 THEN return 0; END IF;
 	DROP TRIGGER im_costs_project_cache_up_tr ON im_costs;
-        return v_count;
+	return v_count;
 end;' language 'plpgsql';
 SELECT inline_0();
 DROP FUNCTION inline_0();
@@ -169,10 +170,10 @@ DROP FUNCTION inline_0();
 create or replace function im_cost_project_cache_up_tr ()
 returns trigger as '
 begin
-        RAISE NOTICE ''im_cost_project_cache_up_tr: %'', new.cost_id;
+	RAISE NOTICE ''im_cost_project_cache_up_tr: %'', new.cost_id;
 	PERFORM im_cost_project_cache_invalidator (old.project_id);
 	PERFORM im_cost_project_cache_invalidator (new.project_id);
-        return new;
+	return new;
 end;' language 'plpgsql';
 
 CREATE TRIGGER im_costs_project_cache_up_tr
@@ -189,13 +190,13 @@ EXECUTE PROCEDURE im_cost_project_cache_up_tr();
 create or replace function inline_0 () 
 returns integer as '
 declare
-        v_count         integer;
+	v_count	integer;
 begin
 	select count(*) into v_count from pg_trigger
 	where lower(tgname) = ''im_costs_project_cache_ins_tr'';
 	IF v_count = 0 THEN return 0; END IF;
 	DROP TRIGGER im_costs_project_cache_ins_tr ON im_costs;
-        return v_count;
+	return v_count;
 end;' language 'plpgsql';
 SELECT inline_0();
 DROP FUNCTION inline_0();
@@ -204,9 +205,9 @@ DROP FUNCTION inline_0();
 create or replace function im_cost_project_cache_ins_tr ()
 returns trigger as '
 begin
-        RAISE NOTICE ''im_cost_project_cache_ins_tr: %'', new.cost_id;
+	RAISE NOTICE ''im_cost_project_cache_ins_tr: %'', new.cost_id;
 	PERFORM im_cost_project_cache_invalidator (new.project_id);
-        return new;
+	return new;
 end;' language 'plpgsql';
 
 CREATE TRIGGER im_costs_project_cache_ins_tr
@@ -222,13 +223,13 @@ EXECUTE PROCEDURE im_cost_project_cache_ins_tr();
 create or replace function inline_0 () 
 returns integer as '
 declare
-        v_count         integer;
+	v_count	integer;
 begin
 	select count(*) into v_count from pg_trigger
 	where lower(tgname) = ''im_costs_project_cache_del_tr'';
 	IF v_count = 0 THEN return 0; END IF;
 	DROP TRIGGER im_costs_project_cache_del_tr ON im_costs;
-        return v_count;
+	return v_count;
 end;' language 'plpgsql';
 SELECT inline_0();
 DROP FUNCTION inline_0();
@@ -237,9 +238,9 @@ DROP FUNCTION inline_0();
 create or replace function im_cost_project_cache_del_tr ()
 returns trigger as '
 begin
-        RAISE NOTICE ''im_cost_project_cache_del_tr: %'', old.cost_id;
+	RAISE NOTICE ''im_cost_project_cache_del_tr: %'', old.cost_id;
 	PERFORM im_cost_project_cache_invalidator (old.project_id);
-        return new;
+	return new;
 end;' language 'plpgsql';
 
 CREATE TRIGGER im_costs_project_cache_del_tr
@@ -264,13 +265,13 @@ EXECUTE PROCEDURE im_cost_project_cache_del_tr();
 create or replace function inline_0 () 
 returns integer as '
 declare
-        v_count         integer;
+	v_count	integer;
 begin
 	select count(*) into v_count from pg_trigger
 	where lower(tgname) = ''im_projects_project_cache_up_tr'';
 	IF v_count = 0 THEN return 0; END IF;
 	DROP TRIGGER im_projects_project_cache_up_tr ON im_projects;
-        return v_count;
+	return v_count;
 end;' language 'plpgsql';
 SELECT inline_0();
 DROP FUNCTION inline_0();
@@ -278,7 +279,7 @@ DROP FUNCTION inline_0();
 create or replace function im_project_project_cache_up_tr ()
 returns trigger as '
 begin
-        RAISE NOTICE ''im_project_project_cache_up_tr: %'', new.project_id;
+	RAISE NOTICE ''im_project_project_cache_up_tr: %'', new.project_id;
 
 	IF new.parent_id != old.parent_id THEN
 		PERFORM im_cost_project_cache_invalidator (old.parent_id);
@@ -292,7 +293,7 @@ begin
 	IF new.parent_id is not null AND old.parent_id is null THEN
 		PERFORM im_cost_project_cache_invalidator (new.parent_id);
 	END IF;
-        return new;
+	return new;
 end;' language 'plpgsql';
 
 CREATE TRIGGER im_projects_project_cache_up_tr

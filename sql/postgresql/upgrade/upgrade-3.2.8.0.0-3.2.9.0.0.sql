@@ -1,5 +1,7 @@
 -- upgrade-3.2.8.0.0-3.2.9.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.2.8.0.0-3.2.9.0.0.sql','');
+
 
 
 -------------------------------------------------------------

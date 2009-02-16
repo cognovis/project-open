@@ -1,5 +1,7 @@
 -- upgrade-3.0.0.7.0-3.0.0.8.0.sql
 
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.0.0.7.0-3.0.0.8.0.sql','');
+
 
 -- Show the finance component (summary view) in a projects "Summary" page
 --

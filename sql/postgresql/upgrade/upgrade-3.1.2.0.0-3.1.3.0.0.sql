@@ -8,6 +8,10 @@
 -- All rights including reserved. To inquire license terms please 
 -- refer to http://www.project-open.com/modules/<module-key>
 
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.1.2.0.0-3.1.3.0.0.sql','');
+
+
+
 -------------------------------------------------------------
 -- 
 ---------------------------------------------------------

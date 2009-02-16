@@ -1,6 +1,6 @@
 -- /packages/intranet-cost/sql/postgres/upgrade/upgrade-3.2.0.0.0-3.2.2.0.0.sql
 --
--- Project/Open Cost Core
+-- ]project-open[ Cost Core
 -- 040207 frank.bergmann@project-open.com
 --
 -- Copyright (C) 2006 Project/Open
@@ -8,35 +8,32 @@
 -- All rights including reserved. To inquire license terms please 
 -- refer to http://www.project-open.com/modules/<module-key>
 
--------------------------------------------------------------
--- 
----------------------------------------------------------
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.2.0.0.0-3.2.2.0.0.sql','');
+
+
+-- Source new __new duplicate tollerant scripts
+\i ../../../../intranet-core/sql/postgresql/upgrade/upgrade-3.0.0.0.first.sql
+
+
 
 -- Add cache fields for Delivery Notes
-
 create or replace function inline_0 ()
 returns integer as '
 declare
-        v_count                 integer;
+	v_count		integer;
 begin
-        select  count(*)
-        into    v_count
-        from    user_tab_columns
-        where   lower(table_name) = ''im_projects''
-                and lower(column_name) = ''cost_delivery_notes_cache'';
-
-        if v_count = 1 then
-            return 0;
-        end if;
+	select  count(*) into v_count from user_tab_columns
+	where   lower(table_name) = ''im_projects''
+		and lower(column_name) = ''cost_delivery_notes_cache'';
+	if v_count = 1 then return 0; end if;
 
 	alter table im_projects add cost_delivery_notes_cache numeric(12,2);
 	alter table im_projects alter cost_delivery_notes_cache set default 0;
 
-        return 0;
+	return 0;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
-
 
 
 
@@ -45,30 +42,10 @@ delete from im_categories where category_id = 3712;
 
 
 -- Add a new category "Delivery Note" if not already there...
-create or replace function inline_0 ()
-returns integer as '
-declare
-        v_count                 integer;
-begin
-        select  count(*)
-        into    v_count
-        from    im_categories
-        where   category_id = 3724;
+SELECT im_category_new(3724, 'Delivery Note', 'Intranet Cost Type');
 
-        if v_count = 1 then
-            return 0;
-        end if;
-
-	INSERT INTO im_categories (CATEGORY_ID, CATEGORY, CATEGORY_TYPE)
-	VALUES (3724,''Delivery Note'',''Intranet Cost Type'');
-
-	-- Establish that a Delivery Note is a "Customer Documents"
-	insert into im_category_hierarchy values (3708,3724);
-
-        return 0;
-end;' language 'plpgsql';
-select inline_0 ();
-drop function inline_0 ();
+-- Establish that a Delivery Note is a "Customer Documents"
+SELECT im_category_hierarchy_new (3724, 3708);
 
 
 -------------------------------------------------------------
@@ -78,15 +55,13 @@ drop function inline_0 ();
 create or replace function im_cost_center_code_from_id (integer)
 returns varchar as '
 DECLARE
-        p_id    alias for $1;
-        v_name  varchar(400);
+	p_id	alias for $1;
+	v_name  varchar(400);
 BEGIN
-        select  cc.cost_center_code
-        into    v_name
-        from    im_cost_centers cc
-        where   cost_center_id = p_id;
+	select  cc.cost_center_code into v_name from im_cost_centers cc
+	where   cost_center_id = p_id;
 
-        return v_name;
+	return v_name;
 end;' language 'plpgsql';
 
 
@@ -108,47 +83,39 @@ declare
 	v_senman	integer;
 	v_admins	integer;
 
-        v_count                 integer;
+	v_count		integer;
 BEGIN
-    select  count(*)
-    into    v_count
-    from    im_menus
-    where   label = ''admin_cost_centers'';
+	select  count(*) into v_count from im_menus
+	where   label = ''admin_cost_centers'';
+	if v_count = 1 then return 0; end if;
 
-    if v_count = 1 then
-            return 0;
-    end if;
+	select group_id into v_admins from groups where group_name = ''P/O Admins'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
 
-    select group_id into v_admins from groups where group_name = ''P/O Admins'';
-    select group_id into v_senman from groups where group_name = ''Senior Managers'';
-    select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select menu_id into v_admin_menu from im_menus where label=''admin'';
 
-    select menu_id
-    into v_admin_menu
-    from im_menus
-    where label=''admin'';
+	v_menu := im_menu__new (
+		null,			-- p_menu_id
+		''acs_object'',		-- object_type
+		now(),			-- creation_date
+		null,			-- creation_user
+		null,			-- creation_ip
+		null,			-- context_id
+		''intranet-cost'',  -- package_name
+		''admin_cost_centers'',	-- label
+		''Cost Centers'',	-- name
+		''/intranet-cost/cost-centers/index'',   -- url
+		85,			-- sort_order
+		v_admin_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
 
-    v_menu := im_menu__new (
-	null,			-- p_menu_id
-	''acs_object'',		-- object_type
-	now(),			-- creation_date
-	null,			-- creation_user
-	null,			-- creation_ip
-	null,			-- context_id
-	''intranet-cost'',  -- package_name
-	''admin_cost_centers'',    -- label
-	''Cost Centers'',	-- name
-	''/intranet-cost/cost-centers/index'',   -- url
-	85,			-- sort_order
-	v_admin_menu,		-- parent_menu_id
-	null			-- p_visible_tcl
-    );
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
 
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
-
-    return 0;
+	return 0;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
@@ -169,16 +136,11 @@ drop function inline_0 ();
 create or replace function inline_0 ()
 returns integer as '
 declare
-        v_count                 integer;
+	v_count		integer;
 begin
-        select  count(*)
-        into    v_count
-        from    acs_privileges
-        where   privilege = ''fi_read_all'';
-
-        if v_count = 1 then
-            return 0;
-        end if;
+	select  count(*) into v_count from acs_privileges
+	where   privilege = ''fi_read_all'';
+	if v_count = 1 then return 0; end if;
 
 	PERFORM acs_privilege__create_privilege(''fi_read_all'',''Read All'',''Read All'');
 	PERFORM acs_privilege__create_privilege(''fi_write_all'',''Write All'',''Write All'');
@@ -222,8 +184,8 @@ begin
 	PERFORM acs_privilege__add_child(''fi_read_all'', ''fi_read_expense_items'');
 	PERFORM acs_privilege__add_child(''fi_write_all'', ''fi_write_expense_items'');
 	
-	PERFORM acs_privilege__create_privilege(''fi_read_expense_bundles'',''Read Expense Bundles'',''Read Expense Bundles'');
-	PERFORM acs_privilege__create_privilege(''fi_write_expense_bundles'',''Write Expense Bundles'',''Write Expense Bundles'');
+	PERFORM acs_privilege__create_privilege(''fi_read_expense_bundles'',''Read Expense Reports'',''Read Expense Reports'');
+	PERFORM acs_privilege__create_privilege(''fi_write_expense_bundles'',''Write Expense Reports'',''Write Expense Reports'');
 	PERFORM acs_privilege__add_child(''fi_read_all'', ''fi_read_expense_bundles'');
 	PERFORM acs_privilege__add_child(''fi_write_all'', ''fi_write_expense_bundles'');
 	
@@ -232,7 +194,7 @@ begin
 	PERFORM acs_privilege__add_child(''fi_read_all'', ''fi_read_repeatings'');
 	PERFORM acs_privilege__add_child(''fi_write_all'', ''fi_write_repeatings'');
 
-        return 0;
+	return 0;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
@@ -257,23 +219,22 @@ select im_priv_create('fi_write_all','Accounting');
 create or replace function inline_0 ()
 returns integer as '
 DECLARE
-        v_subsite_id             integer;
+	v_subsite_id		integer;
 BEGIN
-     -- Get the Main Site id, used as the global identified for permissions
-     select package_id
-     into v_subsite_id
-     from apm_packages
-     where package_key=''acs-subsite'';
+	-- Get the Main Site id, used as the global identified for permissions
+	select package_id into v_subsite_id
+	from apm_packages where package_key=''acs-subsite'';
 
-     update acs_objects
-     set context_id = v_subsite_id
-     where object_id in (
-	select cost_center_id
-	from im_cost_centers
-	where cost_center_label=''company''
-     );
+	update acs_objects
+		set context_id = v_subsite_id
+	where
+		object_id in (
+			select	cost_center_id
+			from	im_cost_centers
+		) and
+		context_id is null;
 
-     return 0;
+	return 0;
 end;' language 'plpgsql';
 select inline_0();
 drop function inline_0();
@@ -291,41 +252,6 @@ set cost_center_id = (
 )
 where cost_center_id is null;
 
-
-
-
--------------------------------------------------------------
--- New view to im_cost_type(s). The (s) is new, corrected.
---
-create or replace view im_cost_types as
-select	category_id as cost_type_id, 
-	category as cost_type,
-	CASE 
-	    WHEN category_id = 3700 THEN 'fi_read_invoices'
-	    WHEN category_id = 3702 THEN 'fi_read_quotes'
-	    WHEN category_id = 3704 THEN 'fi_read_bills'
-	    WHEN category_id = 3706 THEN 'fi_read_pos'
-	    WHEN category_id = 3716 THEN 'fi_read_repeatings'
-	    WHEN category_id = 3718 THEN 'fi_read_timesheets'
-	    WHEN category_id = 3720 THEN 'fi_read_expense_items'
-	    WHEN category_id = 3722 THEN 'fi_read_expense_bundles'
-	    WHEN category_id = 3724 THEN 'fi_read_delivery_notes'
-	    ELSE 'fi_read_all'
-	END as read_privilege,
-	CASE 
-	    WHEN category_id = 3700 THEN 'fi_write_invoices'
-	    WHEN category_id = 3702 THEN 'fi_write_quotes'
-	    WHEN category_id = 3704 THEN 'fi_write_bills'
-	    WHEN category_id = 3706 THEN 'fi_write_pos'
-	    WHEN category_id = 3716 THEN 'fi_write_repeatings'
-	    WHEN category_id = 3718 THEN 'fi_write_timesheets'
-	    WHEN category_id = 3720 THEN 'fi_write_expense_items'
-	    WHEN category_id = 3722 THEN 'fi_write_expense_bundles'
-	    WHEN category_id = 3724 THEN 'fi_write_delivery_notes'
-	    ELSE 'fi_write_all'
-	END as write_privilege
-from 	im_categories
-where 	category_type = 'Intranet Cost Type';
 
 
 -- Add a Project Manager field to Profit & Loss Analysis
@@ -364,20 +290,21 @@ where	column_id = 2113
 create or replace function inline_0 ()
 returns integer as '
 DECLARE
-    row                         RECORD;
+	row			RECORD;
 BEGIN
-    FOR row IN
-        select  *
-        from    im_cost_centers
-    LOOP
-        RAISE NOTICE ''inline_0: cc_id=%'', row.cost_center_id;
+	FOR row IN
+		select  *
+		from	im_cost_centers
+	LOOP
+		if row.cost_center_id != row.parent_id then
+			RAISE NOTICE ''inline_0: cc_id=%'', row.cost_center_id;
+			update acs_objects
+			set context_id = row.parent_id
+			where object_id = row.cost_center_id;
+		end if;
 
-        update acs_objects
-        set context_id = row.parent_id
-        where object_id = row.cost_center_id;
-
-    END LOOP;
-    return 0;
+	END LOOP;
+	return 0;
 
 END;' language 'plpgsql';
 select inline_0 ();
