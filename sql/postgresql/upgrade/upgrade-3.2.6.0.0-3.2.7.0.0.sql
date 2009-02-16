@@ -1,5 +1,7 @@
 -- upgrade-3.2.6.0.0-3.2.7.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-timesheet2/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
+
 
 -- After upgrade V3.1.2 -> V3.2:
 -- Make sure that there are no "intranet-timesheet" stuff left in the
