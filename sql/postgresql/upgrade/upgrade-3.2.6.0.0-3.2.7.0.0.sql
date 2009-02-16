@@ -1,7 +1,6 @@
 -- upgrade-3.2.3.0.0-3.2.4.0.0.sql
 
-
-
+SELECT acs_log__debug('/packages/intranet-forum/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
 
 
 -----------------------------------------------------------
