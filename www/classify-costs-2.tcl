@@ -1,6 +1,6 @@
 # /packages/intranet-expenses/www/classify-costs-2.tcl
 #
-# Copyright (C) 2003-2007 Project/Open
+# Copyright (C) 2003 - 2009 ]project-open[
 # 060427 avila@digiteix.com
 #
 # All rights reserved. Please check

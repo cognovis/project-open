@@ -1,6 +1,6 @@
 # /packages/intranet-expenses/www/new.tcl
 #
-# Copyright (C) 2003-2006 Project/Open
+# Copyright (C) 2003 - 2009 ]project-open[
 # 060421 avila@digiteix.com
 #
 # All rights reserved. Please check
