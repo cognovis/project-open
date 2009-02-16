@@ -1,6 +1,6 @@
 # /packages/intranet-notes/www/notes-del.tcl
 #
-# Copyright (C) 2003-2004 Project/Open
+# Copyright (C) 2003 - 2009 ]project-open[
 # 060427 avila@digiteix.com
 #
 # All rights reserved. Please check
