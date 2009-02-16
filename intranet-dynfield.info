@@ -9,13 +9,13 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-dynfield</auto-mount>
 
-    <version name="3.4.0.2.0" url="http://projop.dnsalias.com/download/apm/intranet-dynfield-3.4.0.2.0.apm">
+    <version name="3.4.0.5.0" url="http://projop.dnsalias.com/download/apm/intranet-dynfield-3.4.0.5.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Allows to add new fields to business objects during system runtime.</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Extends the OpenACS kernel SQL metadata functionality with &quot;widgets&quot; and maintenance screens in order to allow administrators to dynamically add new fields to business objects.</description>
 
-        <provides url="intranet-dynfield" version="3.4.0.2.0"/>
+        <provides url="intranet-dynfield" version="3.4.0.5.0"/>
         <requires url="intranet-core" version="3.4.0.0.0"/>
 
         <callbacks>

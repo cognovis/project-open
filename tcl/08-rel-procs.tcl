@@ -56,9 +56,25 @@ ad_library {
     foreach attribute [list object_type object_type_one role_one min_n_rels_one max_n_rels_one object_type_two role_two min_n_rels_two max_n_rels_two] {
         set $attribute [my $attribute]
     }
-    db_dml insert "insert into acs_rel_types (rel_type,object_type_one, role_one,min_n_rels_one, max_n_rels_one, object_type_two, role_two,min_n_rels_two, max_n_rels_two) values (:object_type,:object_type_one,:role_one, :min_n_rels_one,:max_n_rels_one,:object_type_two,:role_two,:min_n_rels_two,:max_n_rels_two)"
-    
-    set pretty_name [db_string pretty "select pretty_name from acs_object_types where object_type = :object_type" -default $object_type]
+    set exists_p [db_string exists "select count(*) from acs_rel_types where rel_type = :object_type"]
+    if {!$exists_p} {
+	    db_dml insert "
+		insert into acs_rel_types (
+			rel_type, object_type_one, role_one, 
+			min_n_rels_one, max_n_rels_one, 
+			object_type_two, role_two,min_n_rels_two, max_n_rels_two
+		) values (
+			:object_type, :object_type_one, :role_one, 
+			:min_n_rels_one, :max_n_rels_one,
+			:object_type_two, :role_two, :min_n_rels_two, :max_n_rels_two
+	    )"
+    }
+ 
+    set pretty_name [db_string pretty "
+	select pretty_name 
+	from acs_object_types 
+	where object_type = :object_type
+    " -default $object_type]
     
     set object_type_category "$pretty_name"
     ns_log Notice "OBJECT:: $object_type_category"

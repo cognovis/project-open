@@ -388,8 +388,26 @@ ad_proc -private im_dynfield::attribute::exists_p_not_cached {
     " -default 0]
     return $attribute_exists_p
 
-#    set im_dynfield_attribute_id [im_dynfield::attribute::get_im_dynfield_attribute_id -object_type $object_type -attribute_name $attrib
-ute_name]
+}
+
+ad_proc -private im_dynfield::attribute::get {
+    -object_type:required
+    -attribute_name:required
+} {
+    Returns the im_dynfield_attribute_id, or 0 if there is none.
+} {
+    set attribute_id [db_string attribute_id "
+        select	fa.attribute_id
+        from
+                acs_attributes a,
+                im_dynfield_attributes fa
+        where
+                a.attribute_id = fa.acs_attribute_id
+                and a.object_type = :object_type
+                and a.attribute_name = :attribute_name
+    " -default 0]
+    return $attribute_id
+
 }
 
 
@@ -652,4 +670,6 @@ ad_proc im_dynfield::attribute::optional {
         and attribute_id = :attribute_id
     }
 }
+
+
 

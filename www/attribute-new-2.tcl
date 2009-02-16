@@ -78,7 +78,7 @@ if { [string eq $required_p "t"] } {
 
 set attribute_name [string tolower $attribute_name]
 set acs_attribute_exists [attribute::exists_p $object_type $attribute_name]
-set im_dynfield_attribute_exists [im_dynfield::attribute::exists_p -object_type $object_type -attribute_name $attribute_name]
+set im_dynfield_attribute_exists [im_dynfield::attribute::exists_p_not_cached -object_type $object_type -attribute_name $attribute_name]
 
 # Make sure there is an entry in acs_object_type_tables for the
 # object type's main table. This table is needed by a RI constraint
@@ -112,8 +112,6 @@ if {!$extension_table_exists_p} {
 db_transaction {
 
     if {!$acs_attribute_exists} {
-
-
 
 	set dynfield_attribute_id [im_dynfield::attribute::add \
 			       -object_type $object_type \
@@ -161,7 +159,7 @@ db_transaction {
 
         # Let's create the new intranet-dynfield attribute
         # We're using exclusively TCL code here (not PL/PG/SQL API).
-        set attribute_id [db_exec_plsql create_object "
+        set dynfield_attribute_id [db_exec_plsql create_object "
             select acs_object__new (
                 null,
                 'im_dynfield_attribute',
@@ -176,13 +174,14 @@ db_transaction {
             insert into im_dynfield_attributes
                 (attribute_id, acs_attribute_id, widget_name, deprecated_p)
             values
-                (:attribute_id, :acs_attribute_id, :widget_name, :deprecated_p)
+                (:dynfield_attribute_id, :acs_attribute_id, :widget_name, :deprecated_p)
         "
 
     }
-
 }
 
+set dynfield_attribute_id [im_dynfield::attribute::get -object_type $object_type -attribute_name $attribute_name]
+if {0 == $dynfield_attribute_id} { ad_return_complaint 1 "Error: Didn't find attribute='$attribute_name' for object_type='$object_type'" }
 
 
 # ------------------------------------------------------------------
@@ -204,48 +203,15 @@ foreach list [db_list list_ids $list_id_sql] {
 # Set permissions for the dynfield so that it is visible by default
 # ------------------------------------------------------------------
 
-db_string emp_perms "select acs_permission__grant_permission(:attribute_id, [im_employee_group_id], 'read')"
-db_string cust_perms "select acs_permission__grant_permission(:attribute_id, [im_customer_group_id], 'read')"
-db_string freel_perms "select acs_permission__grant_permission(:attribute_id, [im_freelance_group_id], 'read')"
-
-db_string emp_perms "select acs_permission__grant_permission(:attribute_id, [im_employee_group_id], 'write')"
-db_string cust_perms "select acs_permission__grant_permission(:attribute_id, [im_customer_group_id], 'write')"
-db_string freel_perms "select acs_permission__grant_permission(:attribute_id, [im_freelance_group_id], 'write')"
-
+im_dynfield::attribute::make_visible -attribute_id $attribute_id -object_type $object_type
 
 
 # ------------------------------------------------------------------
-# Set all values of the object_type_map to "edit", so that the
-# DynField is visible by default
+# Flush permissions
 # ------------------------------------------------------------------
 
-set type_category [im_dynfield::type_category_for_object_type -object_type $object_type]
-set cats_sql "
-	select	category_id as object_type_id
-	from	im_categories
-	where	category_type = :type_category
-"
-db_foreach cats $cats_sql {
-
-    set exists_p [db_string exists "
-	select count(*) from im_dynfield_type_attribute_map
-	where attribute_id = :attribute_id and object_type_id = :object_type_id
-    "]
-
-    if {!$exists_p} {
-    db_dml insert "
-	insert into im_dynfield_type_attribute_map (
-		attribute_id,
-		object_type_id,
-		display_mode
-	) values (
-		:attribute_id,
-		:object_type_id,
-		'edit'
-	)
-    "
-    }
-}
+# Remove all permission related entries in the system cache
+im_permission_flush
 
 
 
@@ -253,6 +219,7 @@ db_foreach cats $cats_sql {
 # Reload the class
 # ------------------------------------------------------------------
 
+set ttt {
 upvar #0 object_type object_type2
 set object_type2 $object_type
 uplevel #0 {
@@ -261,10 +228,13 @@ uplevel #0 {
     ::im::dynfield::Class get_class_from_db -object_type $object_type
 }
 
+}
 
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
+
+set return_url "object-type?[export_vars -url {object_type}]"
 
 if {$return_url eq ""} {
     if {$list_id ne ""} {
@@ -273,6 +243,7 @@ if {$return_url eq ""} {
         set return_url "object-type?[export_vars -url {object_type}]"
     }
 }
+
 
 # If we're an enumeration, redirect to start adding possible values.
 if { [string equal $datatype "enumeration"] } {
