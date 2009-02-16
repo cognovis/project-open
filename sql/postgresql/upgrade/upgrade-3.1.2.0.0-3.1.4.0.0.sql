@@ -1,3 +1,7 @@
+-- upgrade-3.1.2.0.0-3.1.4.0.0.sql
+
+SELECT acs_log__debug('/packages/intranet-search-pg/sql/postgresql/upgrade/upgrade-3.1.2.0.0-3.1.4.0.0.sql','');
+
 
 -----------------------------------------------------------
 -- invoices & costs(?)
@@ -6,7 +10,26 @@
 -- performance reasons. There many be many cost items, but
 -- they don't usually interest us very much.
 
-insert into im_search_object_types values (4,'im_invoice');
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count			integer;
+begin
+	select	count(*) into v_count from im_search_object_types
+	where	object_type = ''im_invoice'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	insert into im_search_object_types values (4,''im_invoice'');
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0();
+
+
+
 
 create or replace function im_invoice_tsearch ()
 returns trigger as '
@@ -31,17 +54,31 @@ begin
 	return new;
 end;' language 'plpgsql';
 
-CREATE TRIGGER im_invoices_tsearch_tr
-BEFORE INSERT or UPDATE
-ON im_invoices
-FOR EACH ROW
-EXECUTE PROCEDURE im_invoice_tsearch();
 
 
 
-update im_invoices
-set invoice_nr = invoice_nr;
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count			integer;
+begin
+	select count(*) into v_count from pg_trigger 
+	where lower(tgname) = ''im_invoices_tsearch_tr'';
+	IF v_count > 0 THEN return 0; END IF;
 
+	CREATE TRIGGER im_invoices_tsearch_tr
+	BEFORE INSERT or UPDATE
+	ON im_invoices
+	FOR EACH ROW
+	EXECUTE PROCEDURE im_invoice_tsearch();
+
+	-- Update all invoices
+	update im_invoices set invoice_nr = invoice_nr;
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0();
 
 
 

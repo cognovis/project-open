@@ -1,3 +1,6 @@
+-- upgrade-3.0.0.2.4-3.0.0.2.5.sql
+
+SELECT acs_log__debug('/packages/intranet-search-pg/sql/postgresql/upgrade/upgrade-3.0.0.2.4-3.0.0.2.5.sql','');
 
 
 -- Remove the existing triggers on "users"
