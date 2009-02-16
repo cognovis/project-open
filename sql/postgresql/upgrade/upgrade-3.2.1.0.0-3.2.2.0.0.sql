@@ -1,25 +1,21 @@
 -- /packages/intranet-expenses/sql/postgresql/upgrade/upgrade-3.2.1.0.0-3.2.2.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-expenses/sql/postgresql/upgrade/upgrade-3.2.1.0.0-3.2.2.0.0.sql','');
+
 
 create or replace function inline_0 ()
 returns integer as '
 declare
-        v_count                 integer;
+	v_count		integer;
 begin
-        select  count(*)
-        into    v_count
-        from    user_tab_columns
-        where   lower(table_name) = ''im_expenses''
-                and lower(column_name) = ''external_company_vat_number'';
-
-        if v_count = 1 then
-            return 0;
-        end if;
+	select  count(*) into v_count from user_tab_columns
+	where   lower(table_name) = ''im_expenses'' and lower(column_name) = ''external_company_vat_number'';
+	if v_count = 1 then return 0; end if;
 
 	alter table im_expenses
 	add external_company_vat_number varchar(50);
 
-        return 0;
+	return 0;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
