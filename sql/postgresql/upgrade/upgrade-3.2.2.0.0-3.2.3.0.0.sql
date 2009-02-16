@@ -1,5 +1,9 @@
 -- upgrade-3.2.2.0.0-3.2.3.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrade-3.2.2.0.0-3.2.3.0.0.sql','');
+
+
+
 -- Add a "CostCenter" column to the main Inovice list
 delete from im_view_columns where column_id=3002;
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
@@ -45,14 +49,10 @@ begin
     select group_id into v_customers from groups where group_name = ''Customers'';
     select group_id into v_freelancers from groups where group_name = ''Freelancers'';
 
-    select menu_id
-    into v_invoices_customers
-    from im_menus
+    select menu_id into v_invoices_customers from im_menus
     where label=''invoices_customers'';
 
-    select menu_id
-    into v_invoices_providers
-    from im_menus
+    select menu_id into v_invoices_providers from im_menus
     where label=''invoices_providers'';
 
     select count(*) into v_count from im_menus 
@@ -302,13 +302,8 @@ begin
 
     return 0;
 end;' language 'plpgsql';
-
 select inline_0 ();
-
 drop function inline_0 ();
-
-
-
 
 
 

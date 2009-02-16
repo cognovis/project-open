@@ -1,11 +1,31 @@
+-- upgrade-3.1.0.0.0-3.1.1.0.0.sql
 
--- Add an "office_id" field to the Invoice to allow
--- to select different delivery addresses 
-alter table im_invoices
-add invoice_office_id integer
-	constraint im_invoices_office_fk
-	references im_offices
-;
+SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrade-3.1.0.0.0-3.1.1.0.0.sql','');
+
+
+-- Add new fields to files for Files FTS
+--
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		 integer;
+begin
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''im_invoices'' and lower(column_name) = ''invoice_office_id'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	-- Add an "office_id" field to the Invoice to allow
+	-- to select different delivery addresses 
+	alter table im_invoices
+	add invoice_office_id integer
+		constraint im_invoices_office_fk
+		references im_offices;
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
 
 

@@ -1,5 +1,6 @@
 -- upgrade-3.2.6.0.0-3.2.7.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
 
 
 -- -------------------------------------------------------------
@@ -20,8 +21,7 @@ begin
 	v_attrib_name := ''default_bill_template_id'';
 	v_attrib_pretty := ''Default Provider Bill Template'';
 
-	select count(*)	into v_count
-	from acs_attributes
+	select count(*)	into v_count from acs_attributes
 	where attribute_name = v_attrib_name;
 	IF 0 != v_count THEN return 0; END IF;
 
@@ -57,15 +57,15 @@ drop function inline_0 ();
 create or replace function inline_0 ()
 returns integer as '
 declare
-        v_count                 integer;
+	v_count		 integer;
 begin
-        select count(*) into v_count from user_tab_columns
-        where lower(table_name) = ''im_companies'' and lower(column_name) = ''default_bill_template_id'';
-        IF 0 != v_count THEN return 0; END IF;
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''im_companies'' and lower(column_name) = ''default_bill_template_id'';
+	IF 0 != v_count THEN return 0; END IF;
 
 	alter table im_companies add default_bill_template_id integer;
 
-        return 1;
+	return 1;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
@@ -86,8 +86,7 @@ begin
 	v_attrib_name := ''default_po_template_id'';
 	v_attrib_pretty := ''Default PO Template'';
 
-	select count(*)	into v_count
-	from acs_attributes
+	select count(*)	into v_count from acs_attributes
 	where attribute_name = v_attrib_name;
 	IF 0 != v_count THEN return 0; END IF;
 
@@ -132,15 +131,15 @@ drop function inline_0 ();
 create or replace function inline_0 ()
 returns integer as '
 declare
-        v_count                 integer;
+	v_count		 integer;
 begin
-        select count(*) into v_count from user_tab_columns
-        where lower(table_name) = ''im_companies'' and lower(column_name) = ''default_po_template_id'';
-        IF 0 != v_count THEN return 0; END IF;
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''im_companies'' and lower(column_name) = ''default_po_template_id'';
+	IF 0 != v_count THEN return 0; END IF;
 
 	alter table im_companies add default_po_template_id integer;
 
-        return 1;
+	return 1;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
@@ -210,15 +209,15 @@ drop function inline_0 ();
 create or replace function inline_0 ()
 returns integer as '
 declare
-        v_count                 integer;
+	v_count		 integer;
 begin
-        select count(*) into v_count from user_tab_columns
-        where lower(table_name) = ''im_companies'' and lower(column_name) = ''default_delnote_template_id'';
-        IF 0 != v_count THEN return 0; END IF;
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''im_companies'' and lower(column_name) = ''default_delnote_template_id'';
+	IF 0 != v_count THEN return 0; END IF;
 
 	alter table im_companies add default_delnote_template_id integer;
 
-        return 1;
+	return 1;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();

@@ -1,5 +1,7 @@
 --  upgrade-3.2.3.0.0-3.2.4.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrade-3.2.3.0.0-3.2.4.0.0.sql','');
+
 
 -- New Quote from Quote
 --
@@ -28,9 +30,7 @@ begin
     select group_id into v_customers from groups where group_name = ''Customers'';
     select group_id into v_freelancers from groups where group_name = ''Freelancers'';
 
-    select menu_id
-    into v_invoices_new_menu
-    from im_menus
+    select menu_id into v_invoices_new_menu from im_menus
     where label=''invoices_customers'';
 
     select count(*) into v_count from im_menus 
