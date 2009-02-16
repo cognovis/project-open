@@ -1,5 +1,25 @@
 -- upgrade-3.2.1.0.0-3.2.2.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-exchange-rate/sql/postgresql/upgrade/upgrade-3.2.1.0.0-3.2.2.0.0.sql','');
+
+
+create or replace function im_day_enumerator (
+	date, date
+) returns setof date as '
+declare
+	p_start_date		alias for $1;
+	p_end_date		alias for $2;
+	v_date			date;
+BEGIN
+	v_date := p_start_date;
+	WHILE (v_date < p_end_date) LOOP
+		RETURN NEXT v_date;
+		v_date := v_date + 1;
+	END LOOP;
+	RETURN;
+end;' language 'plpgsql';
+
+
 create or replace function inline_0 ()
 returns integer as '
 declare
@@ -12,47 +32,39 @@ declare
 	v_senman	integer;
 	v_admins	integer;
 
-        v_count                 integer;
+	v_count				integer;
 BEGIN
-    select  count(*)
-    into    v_count
-    from    im_menus
-    where   label = ''admin_exchange_rates'';
+	select  count(*) into v_count from im_menus
+	where   label = ''admin_exchange_rates'';
+	if v_count = 1 then return 0; end if;
 
-    if v_count = 1 then
-            return 0;
-    end if;
+	select group_id into v_admins from groups where group_name = ''P/O Admins'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
 
-    select group_id into v_admins from groups where group_name = ''P/O Admins'';
-    select group_id into v_senman from groups where group_name = ''Senior Managers'';
-    select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select menu_id into v_admin_menu from im_menus where label=''admin'';
 
-    select menu_id
-    into v_admin_menu
-    from im_menus
-    where label=''admin'';
+	v_menu := im_menu__new (
+		null,			-- p_menu_id
+		''acs_object'',		-- object_type
+		now(),			-- creation_date
+		null,			-- creation_user
+		null,			-- creation_ip
+		null,			-- context_id
+		''intranet-exchange-rate'',  -- package_name
+		''admin_exchange_rates'',	-- label
+		''Exchange Rates'',	-- name
+		''/intranet-exchange-rate/index'',   -- url
+		80,			-- sort_order
+		v_admin_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
 
-    v_menu := im_menu__new (
-	null,			-- p_menu_id
-	''acs_object'',		-- object_type
-	now(),			-- creation_date
-	null,			-- creation_user
-	null,			-- creation_ip
-	null,			-- context_id
-	''intranet-exchange-rate'',  -- package_name
-	''admin_exchange_rates'',    -- label
-	''Exchange Rates'',	-- name
-	''/intranet-exchange-rate/index'',   -- url
-	80,			-- sort_order
-	v_admin_menu,		-- parent_menu_id
-	null			-- p_visible_tcl
-    );
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
 
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
-
-    return 0;
+	return 0;
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
@@ -71,56 +83,42 @@ declare
 	v_senman	integer;
 	v_admins	integer;
 
-        v_count                 integer;
+	v_count				integer;
 BEGIN
-    select  count(*)
-    into    v_count
-    from    im_menus
-    where   label = ''finance_exchange_rates'';
+	select  count(*) into v_count from im_menus
+	where   label = ''finance_exchange_rates'';
+	if v_count = 1 then return 0; end if;
 
-    if v_count = 1 then
-            return 0;
-    end if;
+	select group_id into v_admins from groups where group_name = ''P/O Admins'';
+	select group_id into v_senman from groups where group_name = ''Senior Managers'';
+	select group_id into v_accounting from groups where group_name = ''Accounting'';
 
-    select group_id into v_admins from groups where group_name = ''P/O Admins'';
-    select group_id into v_senman from groups where group_name = ''Senior Managers'';
-    select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select menu_id into v_finance_menu from im_menus where label=''finance'';
 
-    select menu_id
-    into v_finance_menu
-    from im_menus
-    where label=''finance'';
+	v_menu := im_menu__new (
+		null,			-- p_menu_id
+		''acs_object'',		-- object_type
+		now(),			-- creation_date
+		null,			-- creation_user
+		null,			-- creation_ip
+		null,			-- context_id
+		''intranet-exchange-rate'',  -- package_name
+		''finance_exchange_rates'',	-- label
+		''Exchange Rates'',	-- name
+		''/intranet-exchange-rate/index'',   -- url
+		80,			-- sort_order
+		v_finance_menu,		-- parent_menu_id
+		null			-- p_visible_tcl
+	);
 
-    v_menu := im_menu__new (
-	null,			-- p_menu_id
-	''acs_object'',		-- object_type
-	now(),			-- creation_date
-	null,			-- creation_user
-	null,			-- creation_ip
-	null,			-- context_id
-	''intranet-exchange-rate'',  -- package_name
-	''finance_exchange_rates'',    -- label
-	''Exchange Rates'',	-- name
-	''/intranet-exchange-rate/index'',   -- url
-	80,			-- sort_order
-	v_finance_menu,		-- parent_menu_id
-	null			-- p_visible_tcl
-    );
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
 
-    PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-    PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
-
-    return 0;
+	return 0;
 end;' language 'plpgsql';
-
--- Disabled - Manage Exchange Rates only in Admin (?)
--- select inline_0 ();
-
+select inline_0();
 drop function inline_0 ();
-
-
-
 
 
 
@@ -130,24 +128,24 @@ drop function inline_0 ();
 create or replace function im_exchange_rate_fill_holes ()
 returns integer as '
 DECLARE
-    v_max			integer;
-    v_start_date		date;
-    v_rate			numeric;
-    row				RECORD;
-    row2			RECORD;
+	v_max			integer;
+	v_start_date		date;
+	v_rate			numeric;
+	row				RECORD;
+	row2			RECORD;
 BEGIN
-    v_start_date := to_date(''1999-01-01'', ''YYYY-MM-DD'');
-    v_max := 365 * 10;
-    -- Loop for all currencies. Well need the currency later fixed.
-    FOR row IN
-        select	iso as currency
+	v_start_date := to_date(''1999-01-01'', ''YYYY-MM-DD'');
+	v_max := 365 * 10;
+	-- Loop for all currencies. Well need the currency later fixed.
+	FOR row IN
+		select	iso as currency
 	from	currency_codes
 	where	supported_p = ''t''
-    LOOP
-	    RAISE NOTICE ''im_exchange_rate_fill_holes: cur=%'', row.currency;
-	    -- Loop through all dates and check if there
-	    -- is a hole (no entry for a date)
-	    FOR row2 IN
+	LOOP
+		RAISE NOTICE ''im_exchange_rate_fill_holes: cur=%'', row.currency;
+		-- Loop through all dates and check if there
+		-- is a hole (no entry for a date)
+		FOR row2 IN
 		select	im_day_enumerator as day
 		from	im_day_enumerator(v_start_date, v_start_date + v_max)
 			LEFT OUTER JOIN (
@@ -156,7 +154,7 @@ BEGIN
 				where	currency = row.currency
 			) ex on (im_day_enumerator = ex.day)
 		where	ex.rate is null
-	    LOOP
+		LOOP
 		-- RAISE NOTICE ''im_exchange_rate_fill_holes: day=%'', row2.day;
 		-- get the latest manually entered exchange rate
 		select	rate
@@ -168,7 +166,7 @@ BEGIN
 				where	day < row2.day
 					and currency = row.currency
 					and manual_p = ''t''
-			      )
+				)
 			and currency = row.currency;
 		-- RAISE NOTICE ''im_exchange_rate_fill_holes: rate=%'', v_rate;
 		-- use the latest exchange rate for the next few years...
@@ -177,9 +175,9 @@ BEGIN
 		) values (
 			row2.day, v_rate, row.currency, ''f''		
 		);
-	    END LOOP;	
-    END LOOP;
-    return 0;
+		END LOOP;	
+	END LOOP;
+	return 0;
 end;' language 'plpgsql';
 
 
@@ -197,39 +195,39 @@ select im_exchange_rate_fill_holes ();
 create or replace function im_exchange_rate_invalidate_entries (date, char(3))
 returns integer as '
 DECLARE
-    p_date			alias for $1;
-    p_currency			alias for $2;
+	p_date			alias for $1;
+	p_currency			alias for $2;
 
-    v_next_entry_date		date;
-    v_max			integer;
-    v_start_date		date;
-    v_rate			numeric;
-    row				RECORD;
-    row2			RECORD;
+	v_next_entry_date		date;
+	v_max			integer;
+	v_start_date		date;
+	v_rate			numeric;
+	row				RECORD;
+	row2			RECORD;
 BEGIN
-    v_start_date := to_date(''1999-01-01'', ''YYYY-MM-DD'');
-    v_max := 365 * 10;
+	v_start_date := to_date(''1999-01-01'', ''YYYY-MM-DD'');
+	v_max := 365 * 10;
 
-    select	min(day)
-    into	v_next_entry_date
-    from	im_exchange_rates
-    where	day > p_date
+	select	min(day)
+	into	v_next_entry_date
+	from	im_exchange_rates
+	where	day > p_date
 		and manual_p = ''t''
 		and currency = p_currency;
 
-    IF v_next_entry_date is NULL THEN
+	IF v_next_entry_date is NULL THEN
 	v_next_entry_date := v_start_date + v_max;
-    END IF;
+	END IF;
 
-    -- Delete entries between current date and v_next_entry_date-1
-    delete
-    from	im_exchange_rates
-    where	currency = p_currency
+	-- Delete entries between current date and v_next_entry_date-1
+	delete
+	from	im_exchange_rates
+	where	currency = p_currency
 		and day < v_next_entry_date
 		and day > p_date
 		and manual_p = ''f'';
 
-    return 0;
+	return 0;
 end;' language 'plpgsql';
 -- select im_exchange_rate_invalidate_entries ('2005-07-02'::date, 'EUR');
 
