@@ -1,6 +1,6 @@
 # /packages/intranet-helpdesk/www/ticket-ticket-rel-del.tcl
 #
-# Copyright (c) 2003-2008 Project/Open
+# Copyright (c) 2003 - 2009 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
