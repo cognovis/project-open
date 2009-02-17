@@ -1,7 +1,7 @@
 -- /packages/intranet-hr/sql/oracle/intranet-hr-create.sql
 --
 -- ]project[ Dashboard Module
--- Copyright (c) 2003-2004 Project/Open
+-- Copyright (c) 2003 - 2009 ]project-open[
 --
 -- All rights reserved. Please check
 -- http://www.project-open.com/license/ for details.
