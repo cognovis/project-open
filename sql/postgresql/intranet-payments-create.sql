@@ -1,6 +1,6 @@
 -- /package/intranet-payments/sql/oracle/intranet-payments-create.sql
 --
--- Payments module for Project/Open
+-- Payments module for ]project-open[
 --
 -- (c) 2003 Frank Bergmann (frank.bergmann@project-open.com)
 --
