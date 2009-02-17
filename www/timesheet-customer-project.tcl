@@ -510,7 +510,7 @@ switch $output_format {
 
 	</div>
 	</div>
-	<div class=\"fullwidth-list\">
+	<div id=\"fullwidth-list\" class=\"fullwidth-list\">
 	[im_box_header $page_title]
 
 	<table border=0 cellspacing=2 cellpadding=2>\n"
