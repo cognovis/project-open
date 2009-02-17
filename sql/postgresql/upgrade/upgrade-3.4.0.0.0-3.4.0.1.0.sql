@@ -90,10 +90,28 @@ update acs_object_types set status_column = 'cost_status_id' where object_type =
 update acs_object_types set type_column = 'cost_type_id' where object_type = 'im_expense_bundle';
 update acs_object_types set status_type_table = 'im_costs' where object_type = 'im_expense_bundle';
 
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_expense_bundle','view','/intranet-expenses/bundle-new?form_mode=display&bundle_id=');
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_expense_bundle','edit','/intranet-expenses/bundle-new?bundle_id=');
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from im_biz_object_urls
+	where object_type = ''im_expense_bundle'';
+        if v_count > 0 then return 0; end if;
+
+	insert into im_biz_object_urls (object_type, url_type, url) values (
+	''im_expense_bundle'',''view'',''/intranet-expenses/bundle-new?form_mode=display&bundle_id='');
+	insert into im_biz_object_urls (object_type, url_type, url) values (
+	''im_expense_bundle'',''edit'',''/intranet-expenses/bundle-new?bundle_id='');
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
 
 
