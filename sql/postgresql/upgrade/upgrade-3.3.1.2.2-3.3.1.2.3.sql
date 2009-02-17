@@ -24,10 +24,10 @@ BEGIN
         return v_company_id;
 END;' language 'plpgsql';
 
+
 -- ------------------------------------------------
 -- Return the final customer name for a cost item
 --
-
 
 create or replace function im_cost_get_final_customer_name(integer)
 returns varchar as '
