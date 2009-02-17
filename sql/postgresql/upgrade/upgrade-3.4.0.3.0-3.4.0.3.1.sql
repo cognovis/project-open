@@ -1,5 +1,9 @@
 -- upgrade-3.4.0.3.0-3.4.0.3.1.sql
 
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.4.0.3.0-3.4.0.3.1.sql','');
+
+
+
 -- add a "?" at the end of the productivity report to avoid a bad URL error
 update im_menus
 set url = '/intranet-reporting/timesheet-productivity?'

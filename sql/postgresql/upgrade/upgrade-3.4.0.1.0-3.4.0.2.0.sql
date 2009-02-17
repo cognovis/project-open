@@ -1,9 +1,12 @@
 -- upgrade-3.4.0.1.0-3.4.0.2.0.sql
 
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.4.0.1.0-3.4.0.2.0.sql','');
+
+
+
 
 SELECT im_category_new(15000, 'Active', 'Intranet Report Status');
 SELECT im_category_new(15002, 'Deleted', 'Intranet Report Status');
-
 SELECT im_category_new(15100, 'Simple SQL Report', 'Intranet Report Type');
 SELECT im_category_new(15110, 'Indicator', 'Intranet Report Type');
 
