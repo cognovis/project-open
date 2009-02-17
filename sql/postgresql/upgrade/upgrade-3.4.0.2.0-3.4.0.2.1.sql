@@ -12,8 +12,8 @@ returns integer as '
 declare
         v_count                 integer;
 begin
-        select count(*) into v_count
-	pg_constraint where lower(conname) = ''im_invoice_items_un'';
+        select count(*) into v_count 
+	from pg_constraint where lower(conname) = ''im_invoice_items_un'';
         if v_count = 0 then return 0; end if;
 
 	alter table im_invoice_items 
