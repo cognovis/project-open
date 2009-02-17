@@ -141,9 +141,9 @@ begin
 	IF 0 != v_count THEN return 0; END IF;
 
 	alter table im_dynfield_attributes
-	add column also_hard_coded_p	char(1) default 'f'
+	add column also_hard_coded_p	char(1) default ''f''
 					constraint im_dynfield_attributes_also_hard_coded_ch
-					check (also_hard_coded_p in ('t','f'))
+					check (also_hard_coded_p in (''t'',''f''))
 	;
 
 	return 0;
