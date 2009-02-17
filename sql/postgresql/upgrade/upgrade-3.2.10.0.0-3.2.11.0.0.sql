@@ -1,5 +1,8 @@
 -- upgrade-3.2.10.0.0-3.2.11.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrade-3.2.10.0.0-3.2.11.0.0.sql','');
+
+
 create or replace function inline_0 ()
 returns integer as '
 declare
