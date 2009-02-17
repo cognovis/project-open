@@ -245,7 +245,7 @@ db_multirow -extend {skill_chk skill_new_url} skill_list_lines skills "
 		im_category_from_id(skill_id) as skill,
 		im_category_from_id(skill_type_id) as skill_type,
 		im_category_from_id(required_experience_id) as experience
-	from	im_freelance_object_skill_map m
+	from	im_object_freelance_skill_map m
 	where	m.object_id = :rfq_id
 	order by skill_type_id,	skill_id
 " {
@@ -389,7 +389,7 @@ set skill_sql "
 	select	*,
 		im_category_from_id(skill_id) as skill,
 		im_category_from_id(skill_type_id) as skill_type
-	from	im_freelance_object_skill_map m
+	from	im_object_freelance_skill_map m
 	where	m.object_id = :rfq_id
 "
 db_multirow skills skills $skill_sql 

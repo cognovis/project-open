@@ -179,14 +179,14 @@ ad_form -extend -name $form_id -on_request {
     if {"" != $source_language_id} {
 	set exists_p [db_string count "
 	        select  count(*)
-	        from    im_freelance_object_skill_map
+	        from    im_object_freelance_skill_map
 	        where   object_id = :rfq_id
 	                and skill_type_id = [im_freelance_skill_type_source_language]
 	                and skill_id = :source_language_id
 	"]
 	if {!$exists_p} {
 	    db_dml insert "
-	        insert into im_freelance_object_skill_map (
+	        insert into im_object_freelance_skill_map (
 	                object_skill_map_id, 
 			object_id, skill_type_id, skill_id,
 	                required_experience_id, skill_weight, skill_required_p
@@ -205,14 +205,14 @@ ad_form -extend -name $form_id -on_request {
     if {"" != $subject_area_id} {
 	set exists_p [db_string count "
 	        select  count(*)
-	        from    im_freelance_object_skill_map
+	        from    im_object_freelance_skill_map
 	        where   object_id = :rfq_id
 	                and skill_type_id = [im_freelance_skill_type_subject_area]
 	                and skill_id = :subject_area_id
 	"]
 	if {!$exists_p} {
 	    db_dml insert "
-	        insert into im_freelance_object_skill_map (
+	        insert into im_object_freelance_skill_map (
 	                object_skill_map_id, 
 			object_id, skill_type_id, skill_id,
 	                required_experience_id, skill_weight, skill_required_p
@@ -236,14 +236,14 @@ ad_form -extend -name $form_id -on_request {
 
 	set exists_p [db_string count "
 	        select  count(*)
-	        from    im_freelance_object_skill_map
+	        from    im_object_freelance_skill_map
 	        where   object_id = :rfq_id
 	                and skill_type_id = [im_freelance_skill_type_target_language]
 	                and skill_id = :target_language_id
 	"]
 	if {!$exists_p} {
 	    db_dml insert "
-	        insert into im_freelance_object_skill_map (
+	        insert into im_object_freelance_skill_map (
 	                object_skill_map_id, 
 			object_id, skill_type_id, skill_id,
 	                required_experience_id, skill_weight, skill_required_p
