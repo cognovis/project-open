@@ -722,40 +722,40 @@ create table acs_function_args (
 -- Add entries to acs_function_args for one function
 -- Usage: select define_function_args('function_name','arg1,arg2;default,arg3,arg4;default')
 
-create function define_function_args(varchar,varchar)
+create or replace function define_function_args(varchar,varchar)
 returns integer as '
 declare
-  p_function		alias for $1;
-  p_arg_list		alias for $2;
+	p_function		alias for $1;
+	p_arg_list		alias for $2;
 
-  v_arg_seq		integer default 1;
-  v_arg_name		varchar;
-  v_arg_default		varchar;
-  v_elem		varchar;
-  v_pos			integer;
+	v_arg_seq		integer default 1;
+	v_arg_name		varchar;
+	v_arg_default		varchar;
+	v_elem			varchar;
+	v_pos			integer;
 begin
-  delete from acs_function_args where function = upper(p_function);
+	delete from acs_function_args where upper(function) = upper(p_function);
 
-  v_elem = split(p_arg_list, '','', v_arg_seq);
-  while v_elem is not null loop
-    
-    v_pos = instr(v_elem, '';'', 1, 1);
-    if v_pos > 0 then
-      v_arg_name := substr(v_elem, 1, v_pos-1);
-      v_arg_default := substr(v_elem, v_pos+1, length(v_elem) - v_pos);
-    else
-      v_arg_name := v_elem;
-      v_arg_default := NULL;
-    end if;
+	v_elem = split(p_arg_list, '','', v_arg_seq);
+	while v_elem is not null loop
+		
+		v_pos = instr(v_elem, '';'', 1, 1);
+		if v_pos > 0 then
+			v_arg_name := substr(v_elem, 1, v_pos-1);
+			v_arg_default := substr(v_elem, v_pos+1, length(v_elem) - v_pos);
+		else
+			v_arg_name := v_elem;
+			v_arg_default := NULL;
+		end if;
 
-    insert into acs_function_args (function, arg_seq, arg_name, arg_default)
-	   values (upper(p_function), v_arg_seq, upper(v_arg_name), v_arg_default);
+		insert into acs_function_args (function, arg_seq, arg_name, arg_default)
+		values (upper(p_function), v_arg_seq, upper(v_arg_name), v_arg_default);
 
-    v_arg_seq := v_arg_seq + 1;
-    v_elem = split(p_arg_list, '','', v_arg_seq);
-  end loop;
-    
-  return 1;
+		v_arg_seq := v_arg_seq + 1;
+		v_elem = split(p_arg_list, '','', v_arg_seq);
+	end loop;
+		
+	return 1;
 end;' language 'plpgsql';
 
 -- Returns an english-language description of the trigger type.  Used by the
