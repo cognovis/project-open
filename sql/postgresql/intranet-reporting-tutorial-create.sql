@@ -5,7 +5,7 @@
 -- All rights reserved. Please check
 -- http://www.project-open.com/license/ for details.
 
--- Reporting Tutorial for Project/Open
+-- Reporting Tutorial
 
 ---------------------------------------------------------
 -- Reports
