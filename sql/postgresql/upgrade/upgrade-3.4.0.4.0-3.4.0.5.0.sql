@@ -37,11 +37,14 @@ end;' language 'plpgsql';
 
 
 insert into parties (party_id)
-select office_id from im_offices;
+select	office_id 
+from	im_offices
+where	office_id not in (select party_id from parties);
 
 insert into parties (party_id)
-select company_id from im_companies;
-
+select	company_id
+from	im_companies
+where	company_id not in (select party_id from parties);
 
 
 create or replace function im_office__new (
@@ -202,6 +205,10 @@ BEGIN
 	from	pg_constraint 
 	where	conname = ''users_contact_user_id_fk'';
 	IF v_count > 0 THEN return 0; END IF;
+
+	-- delete "ruins" from delete users?
+	delete from users_contact
+	where user_id not in (select person_id from persons);
 
 	alter table users_contact 
 	add constraint users_contact_user_id_fk foreign key (user_id) references persons(person_id);
