@@ -1,7 +1,7 @@
 -- /packages/intranet-exchange-rate/sql/postgresql/update/upgrade-3.3.0.0.0-3.3.0.0.1.sql
 --
--- ]project[ Exchange Rate Module
--- Copyright (c) 2003-2009 Project/Open
+-- ]project-open[ Exchange Rate Module
+-- Copyright (c) 2003 - 2009 ]project-open[
 --
 -- All rights reserved. Please check
 -- http://www.project-open.com/license/ for details.

@@ -1,5 +1,8 @@
 -- upgrade-3.4.0.2.0-3.4.0.2.1.sql
 
+SELECT acs_log__debug('/packages/intranet-exchange-rate/sql/postgresql/upgrade/upgrade-3.4.0.2.0-3.4.0.2.1.sql','');
+
+
 
 -- Extended to 10 years (2014)
 
