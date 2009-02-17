@@ -1,4 +1,16 @@
--- upgrade-3.3.1.1.0-3.3.1.2.0.sql
+-- /packages/intranet-cost/sql/postgres/upgrade/upgrade-3.4.0.0.0-3.4.0.1.0.sql
+--
+-- ]project-open[ Cost Core Upgrade
+-- 040207 frank.bergmann@project-open.com
+--
+-- Copyright (C) 2004 - 2009 ]project-open[
+--
+-- All rights including reserved. To inquire license terms please
+-- refer to http://www.project-open.com/modules/<module-key>
+
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.4.0.0.0-3.4.0.1.0.sql','');
+
+
 
 update im_categories 
 set category = 'Expense Bundle'

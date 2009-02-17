@@ -1,9 +1,9 @@
 -- /packages/intranet-cost/sql/postgres/upgrade/upgrade-3.1.2.0.0-3.1.3.0.0.sql
 --
--- Project/Open Cost Core
+-- Cost Core
 -- 040207 frank.bergmann@project-open.com
 --
--- Copyright (C) 2004 Project/Open
+-- Copyright (C) 2004 - 2009 ]project-open[
 --
 -- All rights including reserved. To inquire license terms please 
 -- refer to http://www.project-open.com/modules/<module-key>

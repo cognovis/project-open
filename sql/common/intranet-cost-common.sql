@@ -1,9 +1,9 @@
 -- /packages/intranet-cost/sql/common/intranet-cost-create.sql
 --
--- Project/Open Cost Core
+-- Cost Core
 -- 040207 frank.bergmann@project-open.com
 --
--- Copyright (C) 2004 Project/Open
+-- Copyright (C) 2004 - 2009 ]project-open[
 --
 -- All rights including reserved. To inquire license terms please 
 -- refer to http://www.project-open.com/modules/<module-key>
