@@ -61,6 +61,26 @@ select inline_0 ();
 drop function inline_0 ();
 
 
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select	count(*) into v_count
+	from	user_tab_columns 
+	where	lower(table_name) = ''im_dynfield_type_attribute_map'' and 
+		lower(column_name) = ''required_p'';
+	IF 0 != v_count THEN return 0; END IF;
+
+	alter table im_dynfield_type_attribute_map
+	add column required_p char(1) default ''f'';
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 -- 22000-22999 Intranet User Type
 SELECT im_category_new(22000, 'Registered Users', 'Intranet User Type');
 SELECT im_category_new(22010, 'The Public', 'Intranet User Type');
