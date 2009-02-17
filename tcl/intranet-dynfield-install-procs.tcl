@@ -29,6 +29,8 @@ ad_proc -private im_dynfield::after_upgrade {
     After upgrade callback for acs-subsite.
 } {
    
+    # 090217 fraber: Disabled and moved to upgrade-3.4.0.4.0-3.4.0.5.0.sql
+    set ttt {
    apm_upgrade_logic \
          -from_version_name $from_version_name \
          -to_version_name $to_version_name \
@@ -46,4 +48,5 @@ ad_proc -private im_dynfield::after_upgrade {
                 im_dynfield::attribute::add -attribute_name "percentage" -object_type im_biz_object_member -datatype integer -pretty_name "Percentage" -pretty_plural "Percentage" -widget_name "integer" -table_name "im_biz_object_members" -required_p "f"
              }     
          }
+    }
 }

@@ -4,6 +4,77 @@ SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrad
 
 
 
+
+
+
+-- Make sure acs_rels is correctly entered in acs_attributes 
+-- so the relationship Classes can work
+
+------------------------------------------------------
+-- Make acs_rels a proper object for XoTCL
+------------------------------------------------------
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select	count(*) into v_count from acs_object_type_tables
+	where	object_type = ''relationship'' and table_name = ''acs_rels'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	insert into acs_object_type_tables (
+		object_type,table_name,id_column
+	) values (
+		''relationship'',''acs_rels'',''rel_id''
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+SELECT im_dynfield_attribute_new ('relationship', 'object_id_one', 'Object ID One', 'integer', 'integer', 't');
+SELECT im_dynfield_attribute_new ('relationship', 'object_id_two', 'Object ID Two', 'integer', 'integer', 't');
+SELECT im_dynfield_attribute_new ('relationship', 'rel_type', 'Relationship Type', 'textbox_medium', 'string', 't');
+
+
+
+------------------------------------------------------
+-- Make im_biz_object_members a proper object for XoTCL
+------------------------------------------------------
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select	count(*) into v_count from acs_object_type_tables
+	where	object_type = ''im_biz_object_member'' and table_name = ''im_biz_object_members'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	insert into acs_object_type_tables (
+		object_type,table_name,id_column
+	) values (
+		''im_biz_object_member'',''im_biz_object_members'',''rel_id''
+	);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+SELECT im_dynfield_attribute_new ('im_biz_object_member', 'object_role_id', 'Biz Object Role', 'biz_object_member_type', 'integer', 't');
+SELECT im_dynfield_attribute_new ('im_biz_object_member', 'percentage', 'Assignment Percentage', 'integer', 'integer', 'f');
+
+
+
+
+------------------------------------------------------
+--
+------------------------------------------------------
+
 create or replace function inline_0 ()
 returns integer as '
 declare
