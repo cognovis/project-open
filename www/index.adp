@@ -23,7 +23,7 @@
 </tr>
 <tr>
   <td colspan=1 align=center>
-    <input type=submit value="Search Project/Open" name=t>
+    <input type=submit value="Search" name=t>
   </td>
 </tr>
 </table>
