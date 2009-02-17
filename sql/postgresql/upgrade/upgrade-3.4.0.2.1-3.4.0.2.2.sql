@@ -1,7 +1,7 @@
 -- /packages/intranet-exchange-rate/sql/postgresql/update/upgrade-3.4.0.2.1-3.4.0.2.2.sql
 --
--- ]project[ Exchange Rate Module
--- Copyright (c) 2003-2009 Project/Open
+-- ]project-open[ Exchange Rate Module
+-- Copyright (c) 2003 - 2009 ]project-open[
 --
 -- All rights reserved. Please check
 -- http://www.project-open.com/license/ for details.
@@ -10,6 +10,8 @@
 ----------------------------------------------------
 
 SELECT acs_log__debug('/packages/intranet-exchange-rate/sql/postgresql/upgrade/upgrade-3.4.0.2.1-3.4.0.2.2.sql','');
+
+
 
 -- Updated "fill_holes" updating until 2015
 -- Still ugly somehow...

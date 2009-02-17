@@ -1,5 +1,7 @@
 -- upgrade-3.2.10.0.0-3.2.11.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-exchange-rate/sql/postgresql/upgrade/upgrade-3.2.10.0.0-3.2.11.0.0.sql','');
+
 -- Fills ALL "holes" in the im_exchange_rates table.
 -- Populate im_exchange_rates for the next 5 years
 create or replace function im_exchange_rate_fill_holes (varchar)
