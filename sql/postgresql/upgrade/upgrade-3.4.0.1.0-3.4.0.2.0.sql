@@ -1,5 +1,7 @@
 -- upgrade-3.4.0.1.0-3.4.0.2.0.sql
 
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-3.4.0.1.0-3.4.0.2.0.sql','');
+
 
 -- Add start- and enddate to Tasks main view
 --
