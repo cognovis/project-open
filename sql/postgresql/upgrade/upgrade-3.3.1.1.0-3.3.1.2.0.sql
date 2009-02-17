@@ -1,5 +1,7 @@
 -- upgrade-3.3.1.1.0-3.3.1.2.0.sql
 
+SELECT acs_log__debug('/packages/intranet-hr/sql/postgresql/upgrade/upgrade-3.3.1.1.0-3.3.1.2.0.sql','');
+
 create or replace function im_supervises_p (integer, integer)
 returns char as '
 DECLARE

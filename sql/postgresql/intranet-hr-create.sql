@@ -1,6 +1,8 @@
 -- /packages/intranet-hr/sql/postgresql/intranet-hr-create.sql
 --
--- Project/Open HR Module, frank.bergmann@project-open.com, 030828
+-- ]project-open[ HR Module
+--
+-- frank.bergmann@project-open.com, 030828
 -- A complete revision of June 1999 by dvr@arsdigita.com
 --
 -- Copyright (C) 1999-2004 ArsDigita, Frank Bergmann and others
