@@ -1,5 +1,7 @@
 -- upgrade-3.4.0.1.0-3.4.0.2.0.sql
 
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.1.0-3.4.0.2.0.sql','');
+
 
 
 select acs_privilege__create_privilege('edit_project_status','Edit Project Status','Edit Project Status');

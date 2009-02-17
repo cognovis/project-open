@@ -1,8 +1,32 @@
 -- upgrade-3.4.0.3.2-3.4.0.4.0.sql
+
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.3.2-3.4.0.4.0.sql','');
+
+
+
+----------------------------------------------------------
 -- Fix implementation for user skins
+----------------------------------------------------------
+
+-- Fix DynField issue with database "float"
+CREATE OR REPLACE Function inline_0()
+RETURNS character AS '
+DECLARE
+	v_count		integer;
+BEGIN
+	select count(*)	into v_count 
+	from user_tab_columns
+	where lower(table_name) = ''users'' and lower(column_name) = ''skin_id'';
+	IF v_count > 0 THEN return 1; END IF;
+
+	alter table users add skin_id integer references im_categories;
+
+	return 0;
+END;' LANGUAGE 'plpgsql';
+select inline_0();
+drop function inline_0();
 
 
-alter table users add skin_id integer references im_categories;
 
 
 --        { 0  "left"          "Default" }

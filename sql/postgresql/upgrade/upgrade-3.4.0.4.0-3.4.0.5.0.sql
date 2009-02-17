@@ -1,7 +1,9 @@
 -- upgrade-3.4.0.4.0-3.4.0.5.0.sql
--- Changes from Malte to make ]po[ run with OpenACs 5.4 and Contacts
+
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.4.0-3.4.0.5.0.sql','');
 
 
+-- Changes from Malte to make ]po[ run with OpenACS 5.4 and Contacts
 
 -- Fix the syntax error in acs_rel_type__drop_type
 --

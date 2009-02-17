@@ -1,5 +1,7 @@
 -- upgrade-3.4.0.2.0-3.4.0.3.0.sql
 
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.2.0-3.4.0.3.0.sql','');
+
 -- Include im_component_plugin_user_map in deletion
 create or replace function im_component_plugin__delete (integer) returns integer as '
 DECLARE
