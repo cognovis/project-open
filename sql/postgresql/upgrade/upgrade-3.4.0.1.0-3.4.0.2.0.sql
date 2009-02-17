@@ -1,5 +1,8 @@
 -- upgrade-3.4.0.1.0-3.4.0.2.0.sql
 
+SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrade-3.4.0.1.0-3.4.0.2.0.sql','');
+
+
 
 
 -- Shortcut function
@@ -151,10 +154,23 @@ drop function inline_0 ();
 
 
 
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select count(*) into v_count 
+	from pg_constraint where lower(conname) = ''im_dynfield_attributes_acs_attribute_un'';
+	IF 0 != v_count THEN return 0; END IF;
 
--- Make acs_attribute unique, so that no two dynfield_attributes can reference the same acs_attrib.
-alter table im_dynfield_attributes add constraint
-im_dynfield_attributes_acs_attribute_un UNIQUE (acs_attribute_id);
+	-- Make acs_attribute unique, so that no two dynfield_attributes can reference the same acs_attrib.
+	alter table im_dynfield_attributes add constraint
+	im_dynfield_attributes_acs_attribute_un UNIQUE (acs_attribute_id);
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 

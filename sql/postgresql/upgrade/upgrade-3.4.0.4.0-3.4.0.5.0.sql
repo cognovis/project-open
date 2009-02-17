@@ -1,4 +1,7 @@
--- upgrade-3.4.0.4.0-3.4.0.4.0.sql
+-- upgrade-3.4.0.4.0-3.4.0.5.0.sql
+
+SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrade-3.4.0.4.0-3.4.0.5.0.sql','');
+
 
 
 create or replace function inline_0 ()

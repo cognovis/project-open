@@ -510,9 +510,8 @@ create table im_dynfield_page_fields (
 ---------------------------------------------------------
 -- Register the component in the core TCL pages
 --
--- These DB-entries allow the pages of Project/Open Core
--- to render the forum components in the Home, Users, Projects
--- and Company pages.
+-- These DB-entries allow the pages of Core to render the 
+-- forum components in the Home, Users, Projects and Company pages.
 --
 -- The TCL code in the "component_tcl" field is executed
 -- via "im_component_bay" in an "uplevel" statemente, exactly
