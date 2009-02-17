@@ -1,4 +1,7 @@
--- upgrade-3.3.1.1.0-3.3.1.2.0.sql
+-- upgrade-3.4.0.0.0-3.4.0.1.0.sql
+
+SELECT acs_log__debug('/packages/intranet-expenses/sql/postgresql/upgrade/upgrade-3.4.0.0.0-3.4.0.1.0.sql','');
+
 
 
 create or replace function im_expense__name (integer)
@@ -43,9 +46,25 @@ update acs_object_types set status_type_table = 'im_costs' where object_type = '
 
 -------------------------------------------------------------
 
-alter table im_expenses add bundle_id integer references im_costs;
-update im_expenses set bundle_id = invoice_id;
-alter table im_expenses drop column invoice_id;
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from user_tab_columns
+	where table_name = ''IM_EXPENSES'' and column_name = ''BUNDLE_ID'';
+        if v_count > 0 then return 0; end if;
+
+	alter table im_expenses add bundle_id integer references im_costs;
+	update im_expenses set bundle_id = invoice_id;
+	alter table im_expenses drop column invoice_id;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 
@@ -79,13 +98,28 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 
 
 
-create table im_expense_bundles (
-	bundle_id		 integer
-				constraint im_expense_bundle_id_pk
-				primary key
-				constraint im_expense_bundle_id_fk
-				references im_costs
-);
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from user_tab_columns
+	where table_name = ''IM_EXPENSE_BUNDLES'';
+        if v_count > 0 then return 0; end if;
+
+	create table im_expense_bundles (
+		bundle_id		 integer
+					constraint im_expense_bundle_id_pk
+					primary key
+					constraint im_expense_bundle_id_fk
+					references im_costs
+	);
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
 
 -- Delete a single expense_bundle by ID

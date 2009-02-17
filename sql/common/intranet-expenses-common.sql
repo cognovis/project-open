@@ -1,9 +1,9 @@
 -- /packages/intranet-expenses/sql/common/intranet-expenses-create.sql
 --
--- Project/Open Expenses Core
+-- ]project-open[ Expenses
 -- 060419 avila@digiteix.com
 --
--- Copyright (C) 2004 Project/Open
+-- Copyright (C) 2004 - 2009 ]project-open[
 --
 -- All rights including reserved. To inquire license terms please 
 -- refer to http://www.project-open.com/modules/<module-key>
