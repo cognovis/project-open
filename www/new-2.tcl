@@ -55,7 +55,7 @@ if {"" == $timesheet_task_id || 0 == $timesheet_task_id} {
     set task_name "Default Task"
     set material_id [db_string default_material "select material_id from im_materials where material_nr='default'" -default 0]
     if {!$material_id} {
-	ad_return_complaint 1 "Configuration Error:<br>Error during the creation of a default timesheet task for project \#$project_id: We couldn't find any default material with the material_nr 'default'. <br>Please inform your system administrator or contact Project/Open."
+	ad_return_complaint 1 "Configuration Error:<br>Error during the creation of a default timesheet task for project \#$project_id: We couldn't find any default material with the material_nr 'default'. <br>Please inform your system administrator."
     }
     set cost_center_id ""
     set uom_id [im_uom_hour]

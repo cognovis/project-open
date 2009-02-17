@@ -1,7 +1,7 @@
 -- /packages/intranet-timesheet2-task-popup/sql/postgresql/intranet-timesheet2-task-popup-create.sql
 --
 --
--- Copyright (c) 2003-2004 Project/Open
+-- Copyright (c) 2003 - 2009 ]project-open[
 --
 -- All rights reserved. Please check
 -- http://www.project-open.com/license/ for details.
