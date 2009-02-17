@@ -4,7 +4,7 @@
 <package key="intranet-notes" url="http://openacs.org/repository/apm/packages/intranet-notes" type="apm_application">
     <license>]project-open[ Free License (FL)</license>
     <package-name>]project-open[ Notes</package-name>
-    <pretty-plural>Project/Open Notess</pretty-plural>
+    <pretty-plural>]project-open[ Notes</pretty-plural>
     <initial-install-p>f</initial-install-p>
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-notes</auto-mount>
