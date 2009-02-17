@@ -231,6 +231,10 @@ where object_type = 'im_investment';
 
 -- ---------------------------------------------------------------
 
+
+-- ---------------------------------------------------------------
+-- Find out the status and type of business objects in a generic way
+
 CREATE OR REPLACE FUNCTION im_biz_object__get_type_id (integer)
 RETURNS integer AS '
 DECLARE
@@ -241,40 +245,39 @@ DECLARE
 	v_supertype		varchar;
 	v_table			varchar;
 	v_id_column		varchar;
-	v_column		varchar;
+	v_type_column		varchar;
 
 	row			RECORD;
 	v_result_id		integer;
 BEGIN
 	-- Get information from SQL metadata system
-	select	ot.object_type, ot.supertype, ot.table_name, ot.id_column, ot.type_column
-	into	v_object_type, v_supertype, v_table, v_id_column, v_column
+	select	ot.object_type, ot.supertype, ot.status_type_table, ot.type_column
+	into	v_object_type, v_supertype, v_table, v_type_column
 	from	acs_objects o, acs_object_types ot
 	where	o.object_id = p_object_id
 		and o.object_type = ot.object_type;
 
-	-- Check if the object has a supertype and update table and id_column if necessary
-	WHILE ''acs_object'' != v_supertype AND ''im_biz_object'' != v_supertype LOOP
-	--	RAISE NOTICE ''im_biz_object__get_type_id: % has supertype %: '', v_object_type, v_supertype;
-		select	ot.supertype, ot.table_name, ot.id_column
-		into	v_supertype, v_table, v_id_column
+	-- Check if the object has a supertype and update table necessary
+	WHILE v_table is null AND ''acs_object'' != v_supertype AND ''im_biz_object'' != v_supertype LOOP
+		select	ot.supertype, ot.table_name
+		into	v_supertype, v_table
 		from	acs_object_types ot
 		where	ot.object_type = v_supertype;
 	END LOOP;
 
+	-- Get the id_column for v_table
+	select	aott.id_column into v_id_column from acs_object_type_tables aott
+	where	aott.object_type = v_object_type and aott.table_name = v_table;
 
-	IF v_table is null OR v_id_column is null OR v_column is null THEN
-	--	RAISE NOTICE ''im_biz_object__get_type_id: Found null value for %: v_table=%, v_id_column=%, v_column=%'', 
-	--	v_object_type, v_table, v_id_column, v_column;
+	IF v_table is null OR v_id_column is null OR v_type_column is null THEN
 		return 0;
 	END IF;
 
-	v_query := '' select '' || v_column || '' as result_id '' || '' from '' || v_table || 
+	-- Funny way, but this is the only option to EXECUTE in PG 8.0 and below.
+	v_query := '' select '' || v_type_column || '' as result_id '' || '' from '' || v_table || 
 		'' where '' || v_id_column || '' = '' || p_object_id;
-
-	-- Funny way, but this is the only option to get a value from an EXECUTE in PG 8.0 and below.
 	FOR row IN EXECUTE v_query
-	LOOP
+        LOOP
 		v_result_id := row.result_id;
 		EXIT;
 	END LOOP;
@@ -300,34 +303,33 @@ DECLARE
 	v_result_id		integer;
 BEGIN
 	-- Get information from SQL metadata system
-	select	ot.object_type, ot.supertype, ot.table_name, ot.id_column, ot.status_column
-	into	v_object_type, v_supertype, v_table, v_id_column, v_column
+	select	ot.object_type, ot.supertype, ot.table_name, ot.status_column
+	into	v_object_type, v_supertype, v_table, v_column
 	from	acs_objects o, acs_object_types ot
 	where	o.object_id = p_object_id
 		and o.object_type = ot.object_type;
 
 	-- Check if the object has a supertype and update table and id_column if necessary
-	WHILE ''acs_object'' != v_supertype AND ''im_biz_object'' != v_supertype LOOP
-	--	RAISE NOTICE ''im_biz_object__get_status_id: % has supertype %: '', v_object_type, v_supertype;
+	WHILE v_table is null AND ''acs_object'' != v_supertype AND ''im_biz_object'' != v_supertype LOOP
 		select	ot.supertype, ot.table_name, ot.id_column
 		into	v_supertype, v_table, v_id_column
 		from	acs_object_types ot
 		where	ot.object_type = v_supertype;
 	END LOOP;
 
+	-- Get the id_column for v_table
+	select	aott.id_column into v_id_column from acs_object_type_tables aott
+	where	aott.object_type = v_object_type and aott.table_name = v_table;
 
 	IF v_table is null OR v_id_column is null OR v_column is null THEN
-	--	RAISE NOTICE ''im_biz_object__get_status_id: Found null value for %: v_table=%, v_id_column=%, v_column=%'', 
-	--	v_object_type, v_table, v_id_column, v_column;
 		return 0;
 	END IF;
 
+	-- Funny way, but this is the only option to get a value from an EXECUTE in PG 8.0 and below.
 	v_query := '' select '' || v_column || '' as result_id '' || '' from '' || v_table || 
 		'' where '' || v_id_column || '' = '' || p_object_id;
-
-	-- Funny way, but this is the only option to get a value from an EXECUTE in PG 8.0 and below.
 	FOR row IN EXECUTE v_query
-	LOOP
+        LOOP
 		v_result_id := row.result_id;
 		EXIT;
 	END LOOP;
@@ -337,42 +339,60 @@ END;' language 'plpgsql';
 
 
 
+-----------------------------------------------------------------------
+-- Set the status of Biz Objects in a generic way
+
 
 CREATE OR REPLACE FUNCTION im_biz_object__set_status_id (integer, integer) RETURNS integer AS '
 DECLARE
-        p_object_id             alias for $1;
-        p_status_id             alias for $2;
-        v_object_type           varchar;
-        v_supertype             varchar;        v_table                 varchar;
-        v_id_column             varchar;        v_column                varchar;
-        row                     RECORD;
+	p_object_id		alias for $1;
+	p_status_id		alias for $2;
+	v_object_type		varchar;
+	v_supertype		varchar;	v_table			varchar;
+	v_id_column		varchar;	v_column		varchar;
+	row			RECORD;
 BEGIN
-        -- Get information from SQL metadata system
-        select  ot.object_type, ot.supertype, ot.table_name, ot.id_column, ot.status_column
-        into    v_object_type, v_supertype, v_table, v_id_column, v_column
-        from    acs_objects o, acs_object_types ot
-        where   o.object_id = p_object_id
-                and o.object_type = ot.object_type;
+	-- Get information from SQL metadata system
+	select	ot.object_type, ot.supertype, ot.table_name, ot.id_column, ot.status_column
+	into	v_object_type, v_supertype, v_table, v_id_column, v_column
+	from	acs_objects o, acs_object_types ot
+	where	o.object_id = p_object_id
+		and o.object_type = ot.object_type;
 
-        -- Check if the object has a supertype and update table and id_column if necessary
-        WHILE ''acs_object'' != v_supertype AND ''im_biz_object'' != v_supertype LOOP
-                select  ot.supertype, ot.table_name, ot.id_column
-                into    v_supertype, v_table, v_id_column
-                from    acs_object_types ot
-                where   ot.object_type = v_supertype;
-        END LOOP;
+	-- Check if the object has a supertype and update table and id_column if necessary
+	WHILE ''acs_object'' != v_supertype AND ''im_biz_object'' != v_supertype LOOP
+		select	ot.supertype, ot.table_name, ot.id_column
+		into	v_supertype, v_table, v_id_column
+		from	acs_object_types ot
+		where	ot.object_type = v_supertype;
+	END LOOP;
 
-        IF v_table is null OR v_id_column is null OR v_column is null THEN
-                RAISE NOTICE ''im_biz_object__set_status_id: Bad metadata: Null value for %'',v_object_type;
-                return 0;
-        END IF;
+	IF v_table is null OR v_id_column is null OR v_column is null THEN
+		RAISE NOTICE ''im_biz_object__set_status_id: Bad metadata: Null value for %'',v_object_type;
+		return 0;
+	END IF;
 
-        EXECUTE ''update ''||v_table||'' set ''||v_column||''=''||p_status_id||\
-                '' where ''||v_id_column||''=''||p_object_id;
-        return 0;
+	update	acs_objects
+	set	last_modified = now()
+	where	object_id = p_object_id;
+
+	EXECUTE ''update ''||v_table||'' set ''||v_column||''=''||p_status_id||
+		'' where ''||v_id_column||''=''||p_object_id;
+
+	return 0;
 END;' language 'plpgsql';
 
 
+
+-- compatibility for WF calls
+CREATE OR REPLACE FUNCTION im_biz_object__set_status_id (integer, varchar, integer) RETURNS integer AS '
+DECLARE
+	p_object_id		alias for $1;
+	p_dummy			alias for $2;
+	p_status_id		alias for $3;
+BEGIN
+	return im_biz_object__set_status_id (p_object_id, p_status_id::integer);
+END;' language 'plpgsql';
 
 
 
