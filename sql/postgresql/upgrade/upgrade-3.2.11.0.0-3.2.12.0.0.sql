@@ -1,3 +1,6 @@
+-- upgrade-3.2.11.0.0-3.2.12.0.0.sql
+
+SELECT acs_log__debug('/packages/intranet-freelance-rfqs/sql/postgresql/upgrade/upgrade-3.2.11.0.0-3.2.12.0.0.sql','');
 
 
 select im_dynfield_widget__new (

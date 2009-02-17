@@ -1,9 +1,9 @@
 
 -- /packages/intranet-freelance-rfqs/sql/postgresql/intranet-freelance-rfqs-drop.sql
 --
--- Project/Open Freelance RFQ
+-- ]project-open[ Freelance RFQ
 --
--- Copyright (C) 2004 Project/Open
+-- Copyright (C) 2004 - 2009 ]project-open[
 --
 -- All rights including reserved. To inquire license terms please 
 -- refer to http://www.project-open.com/modules/<module-key>
