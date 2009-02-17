@@ -1,6 +1,6 @@
 -- /packages/intranet-freelance-invoices/sql/oracle/intranet-freelance-invoices-create.sql
 --
--- Copyright (c) 2003-2004 Project/Open
+-- Copyright (c) 2003 - 2009 ]project-open[
 --
 -- All rights reserved. Please check
 -- http://www.project-open.com/license/ for details.
@@ -8,7 +8,7 @@
 -- @author frank.bergmann@project-open.com
 -- @author juanjoruizx@yahoo.es
 
--- Translation Invoicing for Project/Open
+-- Translation Invoicing
 --
 -- Defines:
 --	im_trans_prices			List of prices with defaults
