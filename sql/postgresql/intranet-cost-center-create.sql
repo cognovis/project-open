@@ -1,6 +1,6 @@
 -- /packages/intranet-cost-center/sql/postgresql/intranet-cost-center-create.sql
 --
--- Project/Open Profit Center Management Extension
+-- Profit Center Management Extension
 --
 -- Copyright (c) 2004-2006 ]project-open[
 --
