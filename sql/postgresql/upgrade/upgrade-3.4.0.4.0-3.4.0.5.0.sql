@@ -210,3 +210,26 @@ select inline_0();
 drop function inline_0();
 
 
+
+
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer as '
+DECLARE
+	v_count			integer;
+BEGIN
+	select	count(*) into v_count from user_tab_columns
+	where	lower(table_name) = ''im_companies'' and lower(column_name) = ''default_quote_template_id'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	alter table im_companies
+	add default_quote_template_id integer;
+
+	alter table im_companies
+	add constraint im_companies_default_quote_fk foreign key (default_quote_template_id) references im_categories;
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
