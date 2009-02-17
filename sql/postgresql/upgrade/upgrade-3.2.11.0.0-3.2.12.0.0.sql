@@ -1,5 +1,7 @@
 -- upgrade-3.2.11.0.0-3.2.12.0.0.sql
 
+SELECT acs_log__debug('/packages/intranet-freelance/sql/postgresql/upgrade/upgrade-3.2.11.0.0-3.2.12.0.0.sql','');
+
 -----------------------------------------------------------
 -- Skills Associated with other Objects
 --

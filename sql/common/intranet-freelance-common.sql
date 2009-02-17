@@ -1,6 +1,6 @@
 -- /packages/intranet-freelance/sql/common/intranet-freelance-create.sql
 --
--- Copyright (c) 2003-2004 Project/Open
+-- Copyright (c) 2003 - 2009 ]project-open[
 --
 -- All rights reserved. Please check
 -- http://www.project-open.com/license/ for details.
