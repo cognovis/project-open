@@ -1,18 +1,39 @@
 -- upgrade-3.4.0.2.0-3.4.0.3.0.sql
 
+SELECT acs_log__debug('/packages/intranet-timesheet2/sql/postgresql/upgrade/upgrade-3.4.0.2.0-3.4.0.3.0.sql','');
+
+
+
 -- Add an "internal_note" field to hours
 -- to allow to distinguish ugly+real vs. clean+artificial comments
-alter table im_hours
-add internal_note text;
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from user_tab_columns
+	where table_name = ''IM_HOURS'' and column_name = ''INTERNAL_NOTE'';
+        if v_count > 0 then return 0; end if;
+
+	alter table im_hours
+	add internal_note text;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 
 -- Add a localized short status to absences
-update lang_messages set message = 'Absent (%absence_status_3letter_l10n%):' where package_key = 'intranet-timesheet2' and message_key = 'Absent_1' and locale like 'en_%';
+update lang_messages 
+set message = 'Absent (%absence_status_3letter_l10n%):' 
+where package_key = 'intranet-timesheet2' and message_key = 'Absent_1' and locale like 'en_%';
 
 
 
 -- add material_id to im_hours
-
 create or replace function inline_0 ()
 returns integer as '
 declare

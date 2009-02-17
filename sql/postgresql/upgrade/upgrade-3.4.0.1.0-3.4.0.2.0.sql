@@ -1,5 +1,8 @@
 -- upgrade-3.4.0.1.0-3.4.0.2.0.sql
 
+SELECT acs_log__debug('/packages/intranet-timesheet2/sql/postgresql/upgrade/upgrade-3.4.0.1.0-3.4.0.2.0.sql','');
+
+
 -- ------------------------------------------------------
 -- Add new field to im_hours to record in which invoice contained
 -- ------------------------------------------------------

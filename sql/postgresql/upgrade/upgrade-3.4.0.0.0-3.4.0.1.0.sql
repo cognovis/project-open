@@ -1,5 +1,7 @@
 -- upgrade-3.4.0.0.0-3.4.0.1.0.sql
 
+SELECT acs_log__debug('/packages/intranet-timesheet2/sql/postgresql/upgrade/upgrade-3.4.0.0.0-3.4.0.1.0.sql','');
+
 
 -- ------------------------------------------------------
 -- 
@@ -67,6 +69,9 @@ drop function inline_0 ();
 
 -- Add a NOT NULL constraint to im_hours:
 update im_hours set hours=0 where hours is null;
+
+-- Never NULL again...
+-- Its OK to run this command multiple times...
 ALTER TABLE im_hours ALTER COLUMN hours SET NOT NULL;
 
 
@@ -274,11 +279,31 @@ where object_type = 'im_user_absence';
 -- Relax unique constraint
 -- ------------------------------------------------------
 
-alter table im_user_absences
-drop constraint owner_and_start_date_unique;
+
+
+-- Drop old constraint if there
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count 
+	from pg_constraint 
+	where lower(conname) = ''owner_and_start_date_unique'';
+        if v_count = 0 then return 0; end if;
+
+	alter table im_user_absences
+	drop constraint owner_and_start_date_unique;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 alter table im_user_absences 
 add constraint owner_and_start_date_unique unique (owner_id,absence_type_id,start_date);
+
+
 
 -- ------------------------------------------------------
 -- New privilege for those privileged users who can set an 
