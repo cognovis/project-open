@@ -1,4 +1,6 @@
--- upgrade-3.3.1.1..0-3.3.1.2.0.sql
+-- upgrade-3.3.1.1.0-3.3.1.2.0.sql
+
+SELECT acs_log__debug('/packages/intranet-workflow/sql/postgresql/upgrade/upgrade-3.3.1.1.0-3.3.1.2.0.sql','');
 
 
 -- Home Inbox Component

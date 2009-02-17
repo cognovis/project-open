@@ -1,5 +1,7 @@
 -- upgrade-3.3.1.1..0-3.3.1.2.0.sql
 
+SELECT acs_log__debug('/packages/intranet-workflow/sql/postgresql/upgrade/upgrade-3.4.0.0.0-3.4.0.1.0.sql','');
+
 
 
 
@@ -271,19 +273,6 @@ where category_id = 95;
 update im_categories
 set category_description = 'glossary_compilation_wf'
 where category_id = 96;
-
-
-
--- ------------------------------------------------------
--- Cleanup
--- ------------------------------------------------------
-
--- delete potentially existing menus and plugins if this
--- file is sourced multiple times during development...
-
--- select im_component_plugin__del_module('intranet-workflow');
--- select im_menu__del_module('intranet-workflow');
-
 
 
 -- ------------------------------------------------------

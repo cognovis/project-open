@@ -1,6 +1,6 @@
 -- /packages/intranet-workflow/sql/postgres/intranet-workflow-callbacks.sql
 --
--- Copyright (c) 2003-2008 Project/Open
+-- Copyright (c) 2003 - 2009 ]project-open[
 --
 -- All rights reserved. Please check
 -- http://www.project-open.com/license/ for details.
