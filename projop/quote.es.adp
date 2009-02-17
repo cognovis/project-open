@@ -12,7 +12,7 @@
     <td> <img src="http://www.project-open.com/images/logos/logo.project-open.horiz.tra.gif" width=230 height=52><br>
       <P><b><font size="5">PRESUPUESTO</font></b></P>
     </td>
-    <td align="right"> <p><font size="6"><b>Project/Open</b></font><br>
+    <td align="right"> <p><font size="6">]project-open[</b></font><br>
         <font size="4"><b>Gestiona tus proyectos online-<br>
         cuando sea, y donde sea</b></font></p>
       <b><font size="3">www.project-open.com</font></b> </td>
@@ -81,7 +81,7 @@
         </tr>
         <tr> 
           <td class=roweven>Company</td>
-          <td class=roweven>Project/Open S.L.N.E</td>
+          <td class=roweven>]project-open[</td>
         </tr>
         <tr> 
           <td class=roweven>Address</td>
