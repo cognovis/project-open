@@ -26,25 +26,25 @@ begin
 	create sequence im_object_freelance_skill_seq;
 	create table im_object_freelance_skill_map (
 	        object_skill_map_id     integer
-	                                constraint im_o_skills_pk
+	                                constraint im_object_freelance_skills_pk
 	                                primary key,
 	        object_id               integer not null
-	                                constraint im_o_skills_user_fk
+	                                constraint im_object_freelance_skills_user_fk
 	                                references acs_objects,
 	        skill_id                integer not null
-	                                constraint im_o_skills_skill_fk
+	                                constraint im_object_freelance_skills_skill_fk
 	                                references im_categories,
 	        skill_type_id           integer not null
-	                                constraint im_o_skills_skill_type_fk
+	                                constraint im_object_freelance_skills_skill_type_fk
 	                                references im_categories,
 	        experience_id           integer
-	                                constraint im_o_skills_skill_exp_fk
+	                                constraint im_object_freelance_skills_skill_exp_fk
 	                                references im_categories,
 	        skill_weight            integer
-	                                constraint im_o_skills_claimed_ck
+	                                constraint im_object_freelance_skills_claimed_ck
 	                                check (skill_weight > 0 and skill_weight <= 100),
 	        skill_required_p        char(1) default(''f'')
-	                                constraint im_o_skills_required_p
+	                                constraint im_object_freelance_skills_required_p
 	                                check (skill_required_p in (''t'',''f''))
 	);
 	
@@ -99,30 +99,32 @@ update im_categories set aux_int1 = 20 where category_id = 2203;
 -- from English into Spanish (required condition) and be 
 -- preferably specialized in "Legal" or "Business".
 
+!!!
+
 create sequence im_freelance_object_skill_seq;
-create table im_freelance_object_skill_map (
+create table im_object_freelance_skill_map (
 	object_skill_map_id	integer
-				constraint im_o_skills_pk
+				constraint im_freelance_object_skills_pk
 				primary key,
 	object_id		integer not null 
-				constraint im_o_skills_user_fk
+				constraint im_freelance_object_skills_user_fk
 				references acs_objects,
 	skill_id		integer not null 
-				constraint im_o_skills_skill_fk
+				constraint im_freelance_object_skills_skill_fk
 				references im_categories,
 	skill_type_id		integer not null 
-				constraint im_o_skills_skill_type_fk
+				constraint im_freelance_object_skills_skill_type_fk
 				references im_categories,
 
 	-- For objects that require skills:
 	required_experience_id	integer
-				constraint im_o_skills_skill_exp_fk
+				constraint im_freelance_object_skills_skill_exp_fk
 				references im_categories,
 	skill_weight		integer
-				constraint im_o_skills_claimed_ck
+				constraint im_freelance_object_skills_claimed_ck
 				check (skill_weight > 0 and skill_weight <= 100),
 	skill_required_p	char(1) default('f')
-				constraint im_o_skills_required_p
+				constraint im_freelance_object_skills_required_p
 				check (skill_required_p in ('t','f')),
 
 	-- For objects with these skills:
@@ -135,12 +137,12 @@ create table im_freelance_object_skill_map (
 );
 
 -- Avoid duplicate entries
-create unique index im_freelance_object_skill_map_un_idx
-on im_freelance_object_skill_map(object_id, skill_type_id, skill_id);
+create unique index im_object_freelance_skill_map_un_idx
+on im_object_freelance_skill_map(object_id, skill_type_id, skill_id);
 
 -- Frequent queries per object expected...
 create index im_freelance_object_skillsmap_idx
-on im_freelance_object_skill_map(object_id);
+on im_object_freelance_skill_map(object_id);
 
 
 

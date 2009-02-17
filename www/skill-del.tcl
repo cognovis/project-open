@@ -37,7 +37,7 @@ if {!$object_write} {
 lappend skill_id 0
 
 db_dml delete "
-                delete from im_freelance_object_skill_map
+                delete from im_object_freelance_skill_map
                 where
                         object_id = :object_id
                         and skill_type_id = :skill_type_id

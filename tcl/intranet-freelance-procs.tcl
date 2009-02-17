@@ -402,7 +402,7 @@ ad_proc im_object_skill_component {
 		im_category_from_id(ofsm.required_experience_id) as experience
 	from
 		im_freelance_skill_types c,
-		im_freelance_object_skill_map ofsm
+		im_object_freelance_skill_map ofsm
 	where
 		ofsm.object_id = :object_id
 		and c.skill_type_id = ofsm.skill_type_id
@@ -820,7 +820,7 @@ ad_proc im_freelance_gantt_resource_select_component {
 
     set skill_sql "
 	select	*
-	from	im_freelance_object_skill_map fosm
+	from	im_object_freelance_skill_map fosm
 	where	fosm.object_id = :object_id
     "
 
@@ -866,7 +866,7 @@ ad_proc im_freelance_find_matching_users {
 
     set oskill_sql "
 	select	*
-	from	im_freelance_object_skill_map fosm
+	from	im_object_freelance_skill_map fosm
 	where	fosm.object_id = :object_id
 
     "    
@@ -877,7 +877,7 @@ ad_proc im_freelance_find_matching_users {
 	if {"" == $skill_weight} { set skill_weight 1 }
 	append skill_select_sql "
 	,(	select	s.confirmed_experience_id
-		from	im_freelance_object_skill_map s
+		from	im_object_freelance_skill_map s
 		where   s.object_id = fosm.object_id
 			and s.skill_type_id = $skill_type_id
 			and s.skill_id = $skill_id
@@ -888,7 +888,7 @@ ad_proc im_freelance_find_matching_users {
 	    append skill_where_sql "
 		and fosm.object_id in (
 			select  object_id
-			from	im_freelance_object_skill_map s
+			from	im_object_freelance_skill_map s
 			where   s.skill_type_id = $skill_type_id
 				and s.skill_id = $skill_id
 				and confirmed_experience_id >= $required_experience_id
@@ -909,7 +909,7 @@ ad_proc im_freelance_find_matching_users {
 		o.object_type,
 		acs_object__name(fosm.object_id) as object_name
 		$skill_select_sql
-	from	im_freelance_object_skill_map fosm,
+	from	im_object_freelance_skill_map fosm,
 		acs_objects o
 	where	fosm.object_id = o.object_id
 		$skill_where_sql
@@ -963,7 +963,7 @@ ad_proc im_freelance_add_required_skills {
 
 	set exists_p [db_string count "
 	select  count(*)
-	from	im_freelance_object_skill_map
+	from	im_object_freelance_skill_map
 	where   object_id = :object_id
 		and skill_id = :sid
 		and skill_type_id = :skill_type_id
@@ -971,7 +971,7 @@ ad_proc im_freelance_add_required_skills {
 
 	if {$exists_p} {
 		db_dml delete "
-		delete from im_freelance_object_skill_map
+		delete from im_object_freelance_skill_map
 		where
 			object_id = :object_id
 			and skill_type_id = :skill_type_id
@@ -980,7 +980,7 @@ ad_proc im_freelance_add_required_skills {
 	}
 
 	db_dml insert "
-	insert into im_freelance_object_skill_map (
+	insert into im_object_freelance_skill_map (
 		object_skill_map_id,
 		object_id,
 		skill_type_id,
@@ -1068,7 +1068,7 @@ ad_proc im_freelance_consulting_member_select_component {
     # Get the information about the Requested Skills
     set oskill_sql "
         select  *
-        from    im_freelance_object_skill_map fosm,
+        from    im_object_freelance_skill_map fosm,
 		im_categories c
         where   fosm.object_id = $object_id
 		and fosm.skill_type_id = c.category_id

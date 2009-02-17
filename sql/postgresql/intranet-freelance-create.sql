@@ -106,7 +106,7 @@ where category_type = 'Intranet Skill Type';
 
 create sequence im_freelance_object_skill_seq;
 
-create table im_freelance_object_skill_map (
+create table im_object_freelance_skill_map (
 	object_skill_map_id	integer
 				constraint im_o_skills_pk
 				primary key,
@@ -141,12 +141,12 @@ create table im_freelance_object_skill_map (
 );
 
 -- Avoid duplicate entries
-create unique index im_freelance_object_skill_map_un_idx 
-on im_freelance_object_skill_map(object_id, skill_type_id, skill_id);
+create unique index im_object_freelance_skill_map_un_idx 
+on im_object_freelance_skill_map(object_id, skill_type_id, skill_id);
 
 -- Frequent queries per object expected...
 create index im_freelance_object_skillsmap_idx 
-on im_freelance_object_skill_map(object_id);
+on im_object_freelance_skill_map(object_id);
 
 
 create or replace view im_freelance_skill_types as 
