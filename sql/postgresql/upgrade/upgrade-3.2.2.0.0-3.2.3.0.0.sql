@@ -1,10 +1,9 @@
 -- /packages/intranet-cost/sql/postgres/upgrade/upgrade-3.2.2.0.0-3.2.3.0.0.sql
 --
--- Copyright (C) 2006 Project/Open
+-- Copyright (C) 2006 - 2009 ]project-open[
 --
 -- All rights including reserved. To inquire license terms please
 -- refer to http://www.project-open.com/modules/<module-key>
-
 
 SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.2.2.0.0-3.2.3.0.0.sql','');
 
