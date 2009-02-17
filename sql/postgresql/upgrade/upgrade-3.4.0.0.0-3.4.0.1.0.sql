@@ -383,8 +383,8 @@ BEGIN
 		return 0;
 	END IF;
 
-	EXECUTE ''update ''||v_table||'' set ''||v_column||''=''||p_status_id||\
-		'' where ''||v_id_column||''=''||p_object_id;
+	EXECUTE ''update '' || v_table || '' set '' || v_column || ''='' || p_status_id || 
+		'' where '' || v_id_column || ''='' || p_object_id;
 	return 0;
 END;' language 'plpgsql';
 
@@ -397,7 +397,7 @@ create or replace function im_component_plugin__new (
 ) returns integer as '
 declare
 	p_plugin_id	alias for $1;	-- default null
-	p_object_type	alias for $2;	-- default ''acs_object''
+	p_object_type	alias for $2;	-- default acs_object
 	p_creation_date	alias for $3;	-- default now()
 	p_creation_user	alias for $4;	-- default null
 	p_creation_ip	alias for $5;	-- default null
@@ -1246,14 +1246,32 @@ drop function inline_1();
 -- new ticket type for helpdesk
 SELECT im_category_new(101, 'Ticket', 'Intranet Project Type');
 
-insert into acs_object_type_tables (object_type,table_name,id_column)
-values ('im_office', 'im_offices', 'office_id');
+
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer as '
+DECLARE
+	v_count			integer;
+BEGIN
+	select	count(*) into v_count from acs_object_type_tables
+	where	object_type = ''im_office'' and table_name = ''im_offices'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	insert into acs_object_type_tables (object_type,table_name,id_column)
+	values (''im_office'', ''im_offices'', ''office_id'');
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
+
 
 
 
 select define_function_args('im_biz_object__delete','id');
 select define_function_args('im_biz_object__name','id');
-select define_function_args('im_biz_object__new','id,type,date,user,ip,id');
+select define_function_args('im_biz_object__new','biz_object_id,object_type,creation_date,creation_user,creation_ip,context_id');
 select define_function_args('im_biz_object__type','object_id');
 select define_function_args('im_biz_object_member__delete','object_id,user_id');
 select define_function_args('im_biz_object_member__new','rel_id,rel_type,object_id,user_id,object_role_id,percentage,creation_user,creation_ip');
