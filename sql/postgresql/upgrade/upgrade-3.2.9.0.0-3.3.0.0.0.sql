@@ -23,30 +23,30 @@ begin
 	where lower(table_name) = ''im_object_freelance_skill_map'';
 	IF v_count > 0 THEN return 0; END IF;
 
-	create sequence im_freelance_object_skill_seq;
+	create sequence im_object_freelance_skill_seq;
 	create table im_object_freelance_skill_map (
 		object_skill_map_id	integer
-					constraint im_freelance_object_skills_pk
+					constraint im_object_freelance_skills_pk
 					primary key,
 		object_id		integer not null 
-					constraint im_freelance_object_skills_user_fk
+					constraint im_object_freelance_skills_user_fk
 					references acs_objects,
 		skill_id		integer not null 
-					constraint im_freelance_object_skills_skill_fk
+					constraint im_object_freelance_skills_skill_fk
 					references im_categories,
 		skill_type_id		integer not null 
-					constraint im_freelance_object_skills_skill_type_fk
+					constraint im_object_freelance_skills_skill_type_fk
 					references im_categories,
 	
 		-- For objects that require skills:
 		required_experience_id	integer
-					constraint im_freelance_object_skills_skill_exp_fk
+					constraint im_object_freelance_skills_skill_exp_fk
 					references im_categories,
 		skill_weight		integer
-					constraint im_freelance_object_skills_claimed_ck
+					constraint im_object_freelance_skills_claimed_ck
 					check (skill_weight > 0 and skill_weight <= 100),
 		skill_required_p	char(1) default(''f'')
-					constraint im_freelance_object_skills_required_p
+					constraint im_object_freelance_skills_required_p
 					check (skill_required_p in (''t'',''f'')),
 	
 		-- For objects with these skills:
@@ -63,7 +63,7 @@ begin
 	on im_object_freelance_skill_map(object_id, skill_type_id, skill_id);
 	
 	-- Frequent queries per object expected...
-	create index im_freelance_object_skillsmap_idx
+	create index im_object_freelance_skillsmap_idx
 	on im_object_freelance_skill_map(object_id);
 
 	return 1;
@@ -71,6 +71,50 @@ begin
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
+
+
+
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_object_freelance_skill_map'' and lower(column_name) = ''claimed_experience_id'';
+        if v_count > 0 then return 0; end if;
+
+        alter table im_object_freelance_skill_map
+        add claimed_experience_id integer
+        constraint im_fl_skills_claimed_fk references im_categories;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_object_freelance_skill_map'' and lower(column_name) = ''confirmed_experience_id'';
+        if v_count > 0 then return 0; end if;
+
+        alter table im_object_freelance_skill_map
+        add confirmed_experience_id integer
+        constraint im_fl_skills_conf_fk references im_categories;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
 
 
