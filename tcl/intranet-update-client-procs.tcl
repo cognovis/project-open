@@ -7,7 +7,7 @@
 
 
 ad_library {
-    Project/Open Automatic Software Updates
+    Automatic Software Updates
     @author frank.bergmann@project-open.com
     @creation-date 27 April 2005
 }

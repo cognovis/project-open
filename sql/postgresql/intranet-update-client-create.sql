@@ -1,14 +1,13 @@
 -- /packages/intranet-update-client/sql/postgresql/intranet-update-client-create.sql
 --
--- Copyright (c) 2003-2004 Project/Open
+-- Copyright (c) 2003 - 2009 ]project-open[
 --
 -- All rights reserved. Please check
 -- http://www.project-open.com/license/ for details.
 --
 -- @author frank.bergmann@project-open.com
 
--- Client side of the Project/Open Automatic Software Update
--- Service
+-- Client side of the Automatic Software Update Service
 
 ---------------------------------------------------------
 -- Delete potentially existing menus and plugins if this 
