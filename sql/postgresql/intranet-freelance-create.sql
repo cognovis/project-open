@@ -121,9 +121,6 @@ create table im_object_freelance_skill_map (
 				references im_categories,
 
 	-- For objects that require skills:
-	required_experience_id	integer
-				constraint im_o_skills_skill_exp_fk
-				references im_categories,
 	skill_weight		integer
 				constraint im_o_skills_claimed_ck
 				check (skill_weight > 0 and skill_weight <= 100),
@@ -132,6 +129,9 @@ create table im_object_freelance_skill_map (
 				check (skill_required_p in ('t','f')),
 
 	-- For objects with these skills:
+	required_experience_id	integer
+				constraint im_o_skills_skill_exp_fk
+				references im_categories,
 	claimed_experience_id	integer
 				constraint im_fl_skills_claimed_fk
 				references im_categories,
