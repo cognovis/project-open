@@ -8,7 +8,7 @@
     <singleton-p>f</singleton-p>
     <auto-mount>intranet-contacts</auto-mount>
     
-    <version name="1.2b31" url="http://openacs.org/repository/download/apm/intranet-contacts-1.2b31.apm">
+    <version name="3.4.0.5.0" url="http://projop.dnsalias.com/download/apm/intranet-contacts-3.4.0.5.0.apm">
         <owner url="mailto:malte.sussdorff@cognovis.de">Malte Sussdorff</owner>
         <summary>This application lets you collaboratively view, edit and categorize contacts.</summary>
         <release-date>2006-06-25</release-date>
