@@ -48,7 +48,7 @@ create or replace function im_expense__name (integer)
 returns varchar as '
 DECLARE
 	p_expenses_id  alias for $1;	-- expense_id
-	v_name  varchar(40);
+	v_name  varchar;
 begin
 	select	cost_name
 	into	v_name

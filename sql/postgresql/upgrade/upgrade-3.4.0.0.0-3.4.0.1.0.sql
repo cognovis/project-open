@@ -160,7 +160,7 @@ create or replace function im_expense_bundle__name (integer)
 returns varchar as '
 DECLARE
 	p_expenses_id		alias for $1;
-	v_name			varchar(40);
+	v_name			varchar;
 begin
 	select	cost_name into v_name
 	from	im_costs
