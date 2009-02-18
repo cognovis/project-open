@@ -200,7 +200,7 @@ set conf_item_sql [im_conf_item_select_sql \
 	-owner_id "" \
 	-cost_center_id "" \
 	-treelevel "" \
-	-parent_id $conf_item_id \
+	-parent_id [im_opt_val conf_item_id] \
 ]
 
 set sql "
