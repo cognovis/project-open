@@ -1,5 +1,8 @@
 -- upgrade-3.4.0.2.1-3.4.0.5.0.sql
 
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.4.0.2.1-3.4.0.5.0.sql','');
+
+
 -- ------------------------------------------------
 -- Return the final customer name for a cost item
 --
