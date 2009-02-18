@@ -3,11 +3,7 @@
 <property name="main_navbar_label">finance</property>
 <property name="sub_navbar">@sub_navbar;noquote@</property>
 
-<H2>@page_title;noquote@</H2>
-<p>
-#intranet-cost.lt_This_is_the_homepage_#
-</p>
-
+<div id="fullwidth-list" class="fullwidth-list-no-side-bar" style="visibility: visible;">
 <table cellpadding=0 cellspacing=0 border=0 width=100%>
 <tr>
   <td valign=top>
@@ -48,5 +44,7 @@
   <%= [im_component_bay bottom] %>
 </td></tr>
 </table>
+</div>
+
 
 
