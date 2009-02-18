@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-rss-reader</auto-mount>
 
-    <version name="3.4.0.2.0" url="http://openacs.org/repository/download/apm/intranet-rss-reader-3.4.0.2.0.apm">
+    <version name="3.4.0.5.0" url="http://projop.dnsalias.com/download/apm/intranet-rss-reader-3.4.0.5.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Displays the contents of a number of rss feeds as an HTML page</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
