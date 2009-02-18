@@ -9,7 +9,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-filestorage</auto-mount>
 
-    <version name="3.4.0.2.1" url="http://projop.dnsalias.com/download/apm/intranet-filestorage-3.4.0.2.1.apm">
+    <version name="3.4.0.5.0" url="http://projop.dnsalias.com/download/apm/intranet-filestorage-3.4.0.5.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Filesystem folders for business objects</summary>
         <release-date>2004-01-29</release-date>
