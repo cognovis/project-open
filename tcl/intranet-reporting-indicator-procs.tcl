@@ -66,15 +66,19 @@ ad_proc im_indicator_timeline_widget {
 			...
 } {
     set oname "D[expr round(rand()*10000000)]"
+    set today [db_string today "select to_char(now(), 'YYYY-MM-DD HH:MI:SS')"]
 
     # Extract first and last date as {YYYY MM DD}
     set first_date [lindex [lindex $values 0] 0]
+    if {"" == $first_date} { set first_date $today }
     regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $first_date match year0 month0 day0 hour0 min0 sec0
     set last_date [lindex [lindex $values end] 0]
+    if {"" == $last_date} { set last_date $today }
     regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $last_date match year9 month9 day9 hour9 min9 sec9
 
     # Draw dots and lines from point to point.
     set last_v [lindex $values 0]
+    set diagram_html ""
     foreach v $values {
 
 	set date [lindex $v 0]
