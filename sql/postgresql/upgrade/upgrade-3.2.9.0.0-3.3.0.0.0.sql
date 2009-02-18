@@ -20,6 +20,24 @@ SELECT inline_0();
 DROP FUNCTION inline_0();
 
 
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_timesheet_tasks'' and lower(column_name) = ''start_date'';
+        IF v_count = 0 THEN return 0; END IF;
+
+	alter table im_timesheet_tasks drop column start_date;
+	alter table im_timesheet_tasks drop column end_date;
+
+        return v_count;
+end;' language 'plpgsql';
+SELECT inline_0();
+DROP FUNCTION inline_0();
+
+
 create or replace view im_timesheet_tasks_view as
 select  t.*,
         p.parent_id as project_id,
