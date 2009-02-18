@@ -326,6 +326,29 @@ set expense_total_pretty 0
 set vat_total_pretty 0
 set tax_total_pretty 0
 
+
+set expense_custsubtotal 0
+set invoice_custsubtotal 0
+set paid_custsubtotal 0
+set bill_custsubtotal 0
+set tax_custsubtotal 0
+set vat_custsubtotal 0
+
+set expense_subtotal 0
+set invoice_subtotal 0
+set paid_subtotal 0
+set bill_subtotal 0
+set tax_subtotal 0
+set vat_subtotal 0
+
+set expense_total 0
+set invoice_total 0
+set paid_total 0
+set bill_total 0
+set tax_total 0
+set vat_total 0
+
+
 # Global header/footer
 set header0 {"Cost" "Customer" "Effective Date" "Paid" "Name" "Invoice" "Bill" "Expenses" "Vat" "Tax"}
 set footer0 {
