@@ -495,7 +495,7 @@ db_foreach task_sum_query $task_sum_sql {
     # Minimum Price Logic
     if {[expr $best_match_price * $task_sum] < $best_match_min_price} {
 	set task_sum 1
-	set task_title "$task_title [lang::message::lookup "" intranet-trans-invoices.Min_Price_Min "(min.)"]"
+	set task_title "$task_title [lang::message::lookup "" intranet-trans-invoices.Min_Price_Min "(Minimum Fee)"]"
 	set task_uom_id [im_uom_unit]
 	set task_uom [im_category_from_id $task_uom_id]
 	set best_match_price $best_match_min_price
