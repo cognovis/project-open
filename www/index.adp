@@ -1,14 +1,9 @@
-<!-- packages/intranet-freelance-rfqs/www/index.adp -->
-<!-- @author Frank Bergmann (frank.bergmann@project-open.com) -->
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
-<master src="../../intranet-core/www/master">
+<master>
 <property name="title">@page_title@</property>
 <property name="context">@context_bar@</property>
 <property name="main_navbar_label">freelance_rfqs</property>
-
-<br>
-@project_menu;noquote@
+<property name="sub_navbar">@project_navbar_html;noquote@</property>
+<property name="left_navbar">@left_navbar_html;noquote@</property>
 
 <h2>Available RFQs</h2>
 

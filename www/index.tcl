@@ -248,13 +248,16 @@ db_multirow -extend {rfq_chk rfq_new_url rfq_view_url rfq_project_url num_rem} r
 # Project Menu
 # ---------------------------------------------------------------
 
-set project_menu ""
+set project_navbar_html ""
 set project_id $org_project_id
 
 if {"" != $project_id} {
     # Setup the subnavbar
     set bind_vars [ns_set create]
     ns_set put $bind_vars project_id $project_id
-    set project_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
-    set project_menu [im_sub_navbar $project_menu_id $bind_vars "" "pagedesriptionbar" "project_freelance_rfqs"]
+    set project_navbar_html_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
+    set project_navbar_html [im_sub_navbar $project_navbar_html_id $bind_vars "" "pagedesriptionbar" "project_freelance_rfqs"]
 }
+
+
+set left_navbar_html ""
