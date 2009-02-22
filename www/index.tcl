@@ -132,3 +132,23 @@ db_multirow -extend {report_url indent_spaces edit_html} reports get_reports "
 }
 
 
+
+
+# ------------------------------------------------------
+# Left Menu
+# ------------------------------------------------------
+
+set left_menu_html ""
+
+# Left Navbar is the filter/select part of the left bar
+set left_navbar_html "
+        <div class='filter-block'>
+                <div class='filter-title'>
+                   [lang::message::lookup "" intranet-reporting.Admin_Reports "Admin Reports"]
+                </div>
+		<ul>
+		<li><a href=new>Add a new Report</a>
+		</ul>
+        </div>
+      <hr/>
+"
