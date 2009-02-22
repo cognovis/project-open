@@ -137,3 +137,29 @@ set page_html "
 [im_box_footer]
 
 "
+
+
+
+# Compile and execute the formtemplate if advanced filtering is enabled.
+eval [template::adp_compile -string {<formtemplate id="milestone_filter"></formtemplate>}]
+set filter_html $__adp_output
+
+
+set left_navbar_html "
+      <div class='filter-block'>
+         <div class='filter-title'>
+	    [lang::message::lookup "" intranet-milestone.Filter_Milestones "Filter Milestones"]
+         </div>
+         $filter_html
+      </div>
+      <hr/>
+
+      <div class='filter-block'>
+         <div class='filter-title'>
+	        #intranet-core.Admin_Links#
+         </div>
+         $admin_links
+      </div>
+"
+
+
