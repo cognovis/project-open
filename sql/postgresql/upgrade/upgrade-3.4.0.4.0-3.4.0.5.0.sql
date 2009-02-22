@@ -242,3 +242,12 @@ select inline_0();
 drop function inline_0();
 
 
+
+
+
+-- Disable the "active or potential" category, if not already disabled...
+update im_categories
+set enabled_p = 'f'
+where category_id = 40;
+
+
