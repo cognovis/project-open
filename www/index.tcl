@@ -245,3 +245,25 @@ db_multirow -extend {conf_item_chk conf_item_url indent return_url processor} co
     }
 }
 
+
+
+
+eval [template::adp_compile -string {<formtemplate id="conf_item_filter"></formtemplate>}]
+set filter_html $__adp_output
+
+set left_navbar_html "
+    <div class='filter-block'>
+      <div class='filter-title'>
+	[lang::message::lookup "" intranet-confdb.Filter_Items "Filter Items"]
+      </div>
+      $filter_html
+    </div>
+    <hr>
+
+    <div class='filter-block'>
+      <div class='filter-title'>
+        #intranet-core.Admin_Links#
+      </div>
+      $admin_links
+    </div>
+"
