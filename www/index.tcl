@@ -50,11 +50,14 @@ set wikis_sql "
 
 set ctr 0
 set page_list "
-<table>
+<table class='table_list_page'>
+<thead>
 <tr class=rowtitle>
   <td class=rowtitle>Wiki</td>
   <td class=rowtitle>Page</td>
 </tr>
+</thead>
+<tbody>
 "
 db_foreach wikis $wikis_sql {
 
@@ -74,6 +77,7 @@ if {0 == $ctr} {
 
 
 append page_list "
+</tbody>
 </table>
 "
 
