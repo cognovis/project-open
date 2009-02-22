@@ -20,3 +20,18 @@ select im_dynfield_widget__new (
         '{custom {category_type "Intranet Translation Language"}}' -- parameters
 );
 
+
+
+
+SELECT im_dynfield_attribute_new (
+	'im_project',
+	'source_language_id',
+	'Source Lang',
+	'translation_languages',
+	'integer',
+	'f',
+	'99',
+	't'
+);
+
+
