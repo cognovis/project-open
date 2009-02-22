@@ -731,3 +731,34 @@ append admin_html [im_menu_ul_list -no_uls 1 "tickets_admin" $bind_vars]
 append admin_html "</ul>"
 
 
+
+
+# ----------------------------------------------------------
+# Navbars
+# ----------------------------------------------------------
+
+# Compile and execute the formtemplate if advanced filtering is enabled.
+eval [template::adp_compile -string {<formtemplate id="ticket_filter"></formtemplate>}]
+set form_html $__adp_output
+
+set left_navbar_html "
+	    <div class='filter-block'>
+		<div class='filter-title'>
+		    [lang::message::lookup "" intranet-core.Filter_Tickets "Filter Tickets"]
+		</div>
+		$form_html
+	    </div>
+	    <hr/>
+"
+
+if {$sla_exists_p} {
+    append left_navbar_html "
+	    <div class='filter-block'>
+		<div class='filter-title'>
+		    [lang::message::lookup "" intranet-core.Admin_Tickets "Admin Tickets"]
+		</div>
+		$admin_html
+	    </div>
+	    <hr/>
+    "
+}

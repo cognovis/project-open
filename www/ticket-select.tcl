@@ -570,8 +570,22 @@ db_multirow -extend { ticket_chk ticket_url } duplicated_tickets_multirow duplic
 }
 
 # ---------------------------------------------------------------
-# Navbar
+# Navbars
 # ---------------------------------------------------------------
 
 set menu_select_label ""
 set ticket_navbar_html [im_project_navbar $letter "/intranet/tickets/index" $next_page_url $previous_page_url [list start_idx order_by how_many view_name letter ticket_status_id] $menu_select_label]
+
+eval [template::adp_compile -string {<formtemplate id="ticket_filter"></formtemplate>}]
+set filter_html $__adp_output
+
+set left_navbar_html "
+      <div class='filter-block'>
+         <div class='filter-title'>
+            [lang::message::lookup "" intranet-core.Filter_Base_Tickets "Filter Base Tickets"]
+         </div>
+         $filter_html
+      </div>
+      <hr/>
+
+"

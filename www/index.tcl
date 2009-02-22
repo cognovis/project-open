@@ -74,7 +74,7 @@ set extra_froms [list]
 set extra_wheres [list]
 set view_order_by_clause ""
 
-set table_header_html "<tr>\n"
+set table_header_html ""
 
 set column_sql "
 	select	vc.*
@@ -112,7 +112,13 @@ db_foreach column_list_sql $column_sql {
 	}
     }
 }
-append table_header_html "</tr>\n"
+set table_header_html "
+	<thead>
+	<tr>
+	$table_header_html
+	</tr>
+	</thead>
+"
 
 
 # Set up colspan to be the number of headers + 1 for the # column
@@ -604,6 +610,7 @@ set table_continuation_html "
 "
 
 set table_submit_html "
+  <tfoot>
 	<tr valign=top>
 	  <td align=right colspan=[expr $colspan-1] valign=top>
 		[im_gif cleardot]
@@ -630,6 +637,7 @@ set table_submit_html "
 
 	  </td>
 	</tr>
+  </tfoot>
 "
 
 if {!$view_tickets_all_p} { set table_submit_html "" }
@@ -646,8 +654,58 @@ if {"" == $dashboard_column_html} {
 }
 
 # ---------------------------------------------------------------
-# Navbar
+# Sub-Navbar
 # ---------------------------------------------------------------
 
 set menu_select_label ""
 set ticket_navbar_html [im_project_navbar $letter "/intranet/tickets/index" $next_page_url $previous_page_url [list start_idx order_by how_many view_name letter ticket_status_id] $menu_select_label]
+
+
+
+# ---------------------------------------------------------------
+# Left-Navbar
+# ---------------------------------------------------------------
+
+
+# Compile and execute the formtemplate if advanced filtering is enabled.
+eval [template::adp_compile -string {<formtemplate id="ticket_filter"></formtemplate>}]
+set filter_html $__adp_output
+
+
+set left_navbar_html "
+	    <div class=\"filter-block\">
+		<div class=\"filter-title\">
+		    [lang::message::lookup "" intranet-core.Filter_Tickets "Filter Tickets"]
+		</div>
+		$filter_html
+	    </div>
+	    <hr/>
+"
+
+if {$sla_exists_p} {
+
+    # Compile and execute the formtemplate if advanced filtering is enabled.
+    eval [template::adp_compile -string {<formtemplate id="ticket_new"></formtemplate>}]
+    set form_html $__adp_output
+
+    append left_navbar_html "
+	    <div class=\"filter-block\">
+		<div class=\"filter-title\">
+		    [lang::message::lookup "" intranet-core.New_Ticket "New Ticket"]
+		</div>
+		$form_html
+	    </div>
+	    <hr/>
+    "
+}
+
+    append left_navbar_html "
+	    <div class=\"filter-block\">
+		<div class=\"filter-title\">
+		    [lang::message::lookup "" intranet-core.Admin_Filters "Admin Filters"]
+		</div>
+		$admin_html
+	    </div>
+	    <hr/>
+"
+
