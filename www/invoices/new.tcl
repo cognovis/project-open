@@ -31,10 +31,12 @@ ad_page_contract {
 } {
     { order_by "Client" }
     { include_subprojects_p 1 }
-    { project_status_id "" } 
+    { project_status_id 0 } 
     { project_type_id:integer "0" } 
     { project_id:integer 0 }
     { target_cost_type_id "" }
+    { start_date "" }
+    { end_date "" }
     { letter:trim "all" }
     { start_idx:integer 0 }
     { how_many "" }
@@ -97,6 +99,10 @@ if {[lsearch -exact $allowed_cost_type $target_cost_type_id] == -1} {
     ad_script_abort
 }
 
+if {"" == $start_date} { set start_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultStartDate -default "2000-01-01"] }
+if {"" == $end_date} { set end_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultEndDate -default "2100-01-01"] }
+
+
 
 # ---------------------------------------------------------------
 # 
@@ -109,7 +115,7 @@ if {"" == $target_cost_type_id} {
 }
 
 # Determine the default status if not set
-if { [empty_string_p $project_status_id] } {
+if {0 == $project_status_id} {
 
     if {$target_cost_type_id == [im_cost_type_quote]} {
 	set project_status_id [im_project_status_potential]
@@ -214,13 +220,16 @@ if { ![empty_string_p $project_status_id] && $project_status_id > 0 } {
 if { ![empty_string_p $project_type_id] && $project_type_id != 0 } {
     lappend criteria "p.project_type_id in ([join [im_sub_categories $project_type_id] ","])"
 }
-
-
 if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string compare $letter "SCROLL"] != 0 } {
     lappend criteria "im_first_letter_default_to_a(p.project_name)=:letter"
 }
+if {"" != $start_date} {
+    lappend criteria "p.end_date >= :start_date::timestamptz"
+}
+if {"" != $end_date} {
+    lappend criteria "p.start_date < :end_date::timestamptz"
+}
 if { !$include_subprojects_p } {
-
     ad_return_complaint 1 asdf
     lappend criteria "p.parent_id is null"
 }
@@ -370,6 +379,18 @@ if {0 != $project_id} {
 
 append filter_html "
   <tr>
+<td class=form-label>[_ intranet-core.Start_Date]</td>
+            <td class=form-widget>
+              <input type=textfield name=start_date value=$start_date>
+            </td>
+  </tr>
+  <tr>
+<td class=form-label>[lang::message::lookup "" intranet-core.End_Date "End Date"]</td>
+            <td class=form-widget>
+              <input type=textfield name=end_date value=$end_date>
+            </td>
+  </tr>
+  <tr>
     <td valign=top></td>
     <td valign=top><input type=submit value=Go name=submit></td>
   </tr>
@@ -514,11 +535,18 @@ set submit_button "
 
 
 # ---------------------------------------------------------------
-# 
+# NavBars
 # ---------------------------------------------------------------
 
 set cost_navbar [im_costs_navbar $letter "/intranet-trans-invoices/invoices/new" $next_page_url $previous_page_url [list project_status_id target_cost_type_id project_type_id start_idx order_by how_many mine_p view_name letter include_subprojects_p] ""]
 
 
-db_release_unused_handles
-ad_return_template
+set left_navbar_html "
+      <div class='filter-block'>
+         <div class='filter-title'>
+            #intranet-core.Filter_Projects#
+         </div>
+         $filter_html
+      </div>
+"
+
