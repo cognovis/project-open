@@ -21,6 +21,8 @@ ad_page_contract {
     { project_id:integer 0 }
     { company_id:integer 0 } 
     { letter:trim "" }
+    { start_date "" }
+    { end_date "" }
     { start_idx:integer 0 }
     { how_many "" }
     { view_name "cost_list" }
@@ -86,6 +88,9 @@ if {0 != $project_id && "" != $project_id} {
     set company_id [db_string company_from_project "select company_id from im_projects where project_id = :project_id" -default 0]
 }
 
+if {"" == $start_date} { set start_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultStartDate -default "2000-01-01"] }
+if {"" == $end_date} { set end_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultEndDate -default "2100-01-01"] }
+
 
 # ---------------------------------------------------------------
 # 3. Defined Table Fields
@@ -139,6 +144,12 @@ if {$provider_id} {
 }
 if {$company_id} {
     lappend criteria "(c.provider_id = :company_id OR c.customer_id = :company_id)"
+}
+if {"" != $start_date} {
+    lappend criteria "c.effective_date >= :start_date::timestamptz"
+}
+if {"" != $end_date} {
+    lappend criteria "c.effective_date < :end_date::timestamptz"
 }
 if {"" != $project_id && 0 != $project_id} {
     lappend criteria "c.cost_id in (
@@ -274,6 +285,23 @@ set filter_html "
 	    <td>[_ intranet-cost.Document_Type]:</td>
 	    <td>
 	      [im_category_select -include_empty_p 1 "Intranet Cost Type" cost_type_id $cost_type_id]
+	    </td>
+	  </tr>
+	  <tr>
+	    <td class=form-label>[_ intranet-core.Start_Date]</td>
+	    <td class=form-widget>
+	      <input type=textfield name=start_date value=$start_date>
+	    </td>
+	  </tr>
+	  <tr>
+	    <td class=form-label>[lang::message::lookup "" intranet-core.End_Date "End Date"]</td>
+	    <td class=form-widget>
+	      <input type=textfield name=end_date value=$end_date>
+	    </td>
+	  </tr>
+	  <tr>
+	    <td>&nbsp;</td>
+	    <td>
 	      <input type=submit value=\"[_ intranet-cost.Go]\" name=submit>
 	    </td>
 	  </tr>
@@ -427,8 +455,27 @@ set button_html "
 # 10. Join all parts together
 # ---------------------------------------------------------------
 
-set sub_navbar [im_costs_navbar "none" "/intranet-cost/list" $next_page_url $previous_page_url [list cost_status_id cost_type_id company_id start_idx order_by how_many view_name letter] ""] 
+set sub_navbar [im_costs_navbar "none" "/intranet-cost/list" $next_page_url $previous_page_url [list cost_status_id cost_type_id company_id start_idx order_by how_many view_name letter start_date end_date] ""] 
 
-db_release_unused_handles
 
-#doc_return  200 text/html [im_return_template]
+set left_navbar_html "
+      <div class='filter-block'>
+         <div class='filter-title'>
+	    #intranet-cost.Filter_Documents#
+         </div>
+	 $filter_html
+      </div>
+"
+
+if {"" != $new_document_menu} { 
+    append left_navbar_html "
+         <div class='filter-block'>
+            <div class='filter-title'>
+               #intranet-cost.lt_Cost_Item_Administrat#
+            </div>
+            <ul>
+               $new_document_menu
+           </ul>
+         </div>
+    "
+}

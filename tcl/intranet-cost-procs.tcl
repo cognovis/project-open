@@ -1356,7 +1356,7 @@ ad_proc im_costs_project_finance_component {
 
 
     set cost_html "
-	<table border=0>
+	<table border=0 class='table_list_page'>
 	  <tr>
 	    <td colspan=$colspan class=rowtitle align=center>
 	      [_ intranet-cost.Financial_Documents]
@@ -1391,7 +1391,7 @@ ad_proc im_costs_project_finance_component {
 		if {!$atleast_one_unreadable_p} {
 		    append cost_html "
 			<tr class=rowplain>
-			  <td colspan=[expr $colspan-3]>&nbsp;</td>
+			  <td colspan=[expr $colspan-2]>&nbsp;</td>
 			  <td colspan=2>
 			    <b>$subtotals($old_cost_type_id) $default_currency</b>
 			  </td>
