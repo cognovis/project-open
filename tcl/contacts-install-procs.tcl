@@ -86,12 +86,17 @@ ad_proc -public contacts::install::package_install {
         [list birthdate "#intranet-hr.Birthdate#" 13 "textbox_small" ""] \
         [list job_title "#intranet-hr.Job_Title#" 14 "textbox_medium" ""] \
         [list job_description "#intranet-hr.Job_Description#" 15 "textarea_small_nospell" ""] \
-        [list start_date "#intranet-hr.Start_date#" 16 "date" ""] \
-        [list end_date "#intranet-hr.End_date#" 17 "date" ""] \
         [list voluntary_termination_p "#intranet-hr.lt_Voluntary_Termination#" 18 "checkbox" ""] \
         [list termination_reason "#intranet-hr.Termination_Reason#" 19 "textarea_small_nospell" ""] \
         [list signed_nda_p "#intranet-hr.NDA_Signed#" 20 "checkbox" ""] \
     ]
+
+    # fraber 090305 start_date and end_date are characteristics of repeating_cost
+    # associated with the emplolyee's contract, not the im_employees table itself.
+    set ttt {
+        [list start_date "#intranet-hr.Start_date#" 16 "date" ""] \
+        [list end_date "#intranet-hr.End_date#" 17 "date" ""] \
+    }
     
     # create the lists
     foreach type_list [list [list im_company_list im_company im_companies] [list im_office_list im_office im_offices] [list person_list person users_contact] [list im_employee_list person im_employees]] {
@@ -118,15 +123,6 @@ ad_proc -public contacts::install::package_install {
 		}	        
 	    }
 	}
-
-    # Standard person
-    im_dynfield::attribute::add -object_type person -pos_y 1 -widget_name textbox_medium -attribute_name first_names -pretty_name "#acs-subsite.first_names#" -pretty_plural "#acs-subsite.first_names#" -table_name persons -required_p "1"
-    im_dynfield::attribute::add -object_type person -pos_y 2 -widget_name textbox_medium -attribute_name last_name -pretty_name "#acs-subsite.last_name#" -pretty_plural "#acs-subsite.last_name#" -table_name persons -required_p 1
-    im_dynfield::attribute::add -object_type party -pos_y 3 -widget_name textbox_medium -attribute_name email -pretty_name "#acs-subsite.Email#" -pretty_plural "#acs-subsite.Email#" -table_name parties -required_p 0
-    im_dynfield::attribute::add -object_type party -pos_y 3 -widget_name textbox_medium -attribute_name url -pretty_name "#acs-subsite.URL#" -pretty_plural "#acs-subsite.URL#" -table_name parties -required_p 0
-
-    im_dynfield::attribute::add -object_type person -pos_y 4 -widget_name salutation -attribute_name salutation_id -pretty_name "#intranet-contacts.Salutation#" -pretty_plural "#intranet-contacts.Salutation#" -table_name persons -required_p 0
-
 
     # Default searches
     contact::search::new -title "#intranet-contacts.search_person#" -object_type "person" -all_or_any all

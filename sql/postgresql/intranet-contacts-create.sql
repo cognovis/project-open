@@ -356,7 +356,7 @@ select im_dynfield_widget__new (
 	'{{custom {category_type "Intranet Salutation"}}}'			-- Parameters
 );
 
-	
+
 select im_dynfield_widget__new (
 	null,			-- widget_id
 	'im_dynfield_widget',	-- object_type
@@ -388,10 +388,53 @@ select im_dynfield_widget__new (
 );
 
 
+
+
+
+-------------------------------------------------------------------
+-- Create DynFields
+-------------------------------------------------------------------
+
+
+
+-- im_dynfield_attribute_new (o_type, column, pretty_name, widget_name, data_type, required_p, pos, also_hard_coded_p)
+
+SELECT im_dynfield_attribute_new ('person', 'first_names', '#acs-subsite.first_names#', 'textbox_medium', 'string', 't', 0, 't');
+SELECT im_dynfield_attribute_new ('person', 'last_name', '#acs-subsite.last_name#', 'textbox_medium', 'string', 't', 1, 't');
+SELECT im_dynfield_attribute_new ('party', 'email', '#acs-subsite.Email#', 'textbox_medium', 'string', 't', 2, 't');
+SELECT im_dynfield_attribute_new ('party', 'url', '#acs-subsite.URL#', 'textbox_medium', 'string', 't', 3, 't');
+
+
+
+-- Salutation
+SELECT im_dynfield_attribute_new ('person', 'salutation_id', '#intranet-contacts.Salutation#', 'salutation', 'integer', 'f', 4, 'f');
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select	count(*) into v_count from user_tab_columns 
+	where	lower(table_name) = ''persons'' and lower(column_name) = ''salutation_id'';
+	IF 0 != v_count THEN return 0; END IF;
+
+	alter table persons 
+	add column salutation_id integer
+	constraint persons_salutation_fk
+	references im_categories;
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+
 -------------------------------------------------------------------
 -- Create relationships between BizObject and Persons
 -------------------------------------------------------------------
-
 
 
 -------------------------------------------------------------------
