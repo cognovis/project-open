@@ -54,7 +54,7 @@ select rel_id, im_name_from_id(other_party_id) as other_name, other_party_id, ro
 
 <fullquery name="contacts_select">      
       <querytext>
-select $object_deref as name,object_id from acs_objects where object_type = :role_two_type and $object_deref is not null and lower($object_deref) like lower('%$query%')
+select $object_deref as name,object_id from acs_objects where object_type in ([template::util::tcl_to_sql_list $role_two_types]) and $object_deref is not null and lower($object_deref) like lower('%$query%')
  order by upper($object_deref)
  limit 100
       </querytext>

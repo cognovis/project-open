@@ -41,9 +41,15 @@ set package_url [ad_conn package_url]
 
 set pretty_plural_list_name "contacts"
 if { [exists_and_not_null role_two] } {
-    set role_two_type [db_string get_valid_object_types {}]  
+    set role_two_type [db_list get_valid_object_types {}]  
+    if {$role_two_type eq "person"} {
+	set role_two_types [list person user]
+    } else {
+	set role_two_types $role_two_type
+    }
     set pretty_plural_list_name "[_ intranet-contacts.${role_two_type}]"
 }
+
 
 
 set name_order 0

@@ -61,5 +61,46 @@ db_foreach get_relationships {} {
 	}
 }
 
+switch [acs_object_type $party_id] {
+    im_office {
+	# Now deal with offices
+	# First get the companies where it is a main office
+	set main_office_companies [db_list main_offices "select company_id from im_companies where main_office_id = :party_id"]
+	foreach main_office_company $main_office_companies {
+	    set contact_url [contact::url -party_id $main_office_company]
+	    set other_name [contact::name -party_id $main_office_company -reverse_order]	    
+	    multirow append rels "Company (Main Office)" "" "$main_office_company"  $other_name $contact_url {} {} {} "Main Office"
+	}
+	if {$main_office_companies eq ""} {
+	    set main_office_companies 0
+	}
+	set office_companies [db_list offices "select company_id from im_offices
+             where office_id = :party_id and 
+                   company_id not in ([template::util::tcl_to_sql_list $main_office_companies])"]
+	foreach office_company $office_companies {
+	    set contact_url [contact::url -party_id $office_company]
+	    set other_name [contact::name -party_id $office_company -reverse_order]	    
+	    multirow append rels "Company" "" "$office_company"  $other_name $contact_url {} {} {} "Office"
+	}
+    }
 
+    im_company {
+	# First get the main office
+	set main_office_id [db_list main_office "select main_office_id from im_companies where company_id = :party_id"]
+	set contact_url [contact::url -party_id $main_office_id]
+	set other_name [contact::name -party_id $main_office_id -reverse_order]	    
+	multirow append rels "Main Office" "" "$main_office_id"  $other_name $contact_url {} {} {} "Main Office"
+
+	set office_ids [db_list offices "select office_id from im_offices
+             where company_id = :party_id and 
+                   office_id not in (:main_office_id)"]
+	foreach office_id $office_ids {
+	    set contact_url [contact::url -party_id $office_id]
+	    set other_name [contact::name -party_id $office_id -reverse_order]	    
+	    multirow append rels "Office" "" "$office_id"  $other_name $contact_url {} {} {} "Company"
+	}
+    }
+
+}
+	    
 template::multirow sort rels role contact

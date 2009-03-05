@@ -469,7 +469,7 @@ SELECT acs_object_type__create_type(
 );
 
 create table im_company_employee_rels (
-	employee_rel_id		integer
+	company_employee_rel_id	integer
 				REFERENCES acs_objects(object_id)
 				ON DELETE CASCADE
 	CONSTRAINT im_company_employee_rel_id_pk PRIMARY KEY
@@ -502,7 +502,7 @@ where
 		where group_id = (select group_id from groups where group_name = 'Employees')
 	) and 
 	r.object_id_one in (select company_id from im_companies where company_path = 'internal') and
-	r.rel_id not in (select employee_rel_id from im_company_employee_rels)
+	r.rel_id not in (select company_employee_rel_id from im_company_employee_rels)
 ;
 
 -- Insert any employee of any other commpany into that relationship
@@ -520,12 +520,12 @@ where
 		where group_id not in (select group_id from groups where group_name = 'Employees')
 	) and 
 	r.object_id_one in (select company_id from im_companies where company_path != 'internal') and
-	r.rel_id not in (select employee_rel_id from im_company_employee_rels)
+	r.rel_id not in (select company_employee_rel_id from im_company_employee_rels)
 ;
 
 
 -- Update the type of the relationship
-update acs_rels set rel_type = 'im_company_employee_rel' where rel_id in (select employee_rel_id from im_company_employee_rels);
+update acs_rels set rel_type = 'im_company_employee_rel' where rel_id in (select company_employee_rel_id from im_company_employee_rels);
 
 
 

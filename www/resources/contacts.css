@@ -264,7 +264,7 @@ span.overdue {
 
 h3.contact-title {
   margin: 0;
-  padding: 0;
+  padding: 5px 0px 0px 5px;
   clear: both;
   line-height: 2em;
 }

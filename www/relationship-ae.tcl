@@ -50,9 +50,11 @@ set form_class [::im::dynfield::Form object_type_to_class $rel_type]
 set form_exists 0
 
 set list_ids [$relation list_ids]
-
+if {$list_ids ne ""} {
 set num_form_attr [db_string attributes "select count(*) from im_dynfield_type_attribute_map where object_type_id in ([template::util::tcl_to_sql_list $list_ids])" -default 0]
-
+} else {
+set num_form_attr 0
+}
 
 if {[$relation isclass $form_class] && $num_form_attr >0} {
     # A Form exists and we need to generate it.
