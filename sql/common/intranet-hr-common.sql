@@ -64,6 +64,15 @@ where category_type = 'Intranet Employee Pipeline State';
 
 
 
+-- 41000-41099  Intranet Salutation (100)
+
+SELECT im_category_new(41000, 'Dear Mr.', 'Intranet Salutation');
+SELECT im_category_new(41001, 'Dear Mrs.', 'Intranet Salutation');
+SELECT im_category_new(41002, 'Dear Ladies and Gentlemen', 'Intranet Salutation');
+SELECT im_category_new(41003, 'Hey Dude', 'Intranet Salutation');
+
+
+
 -- prompt *** Creating im_views
 insert into im_views (view_id, view_name, visible_for) values (55, 'employees_list', 'view_users');
 insert into im_views (view_id, view_name, visible_for) values (56, 'employees_view', 'view_users');
