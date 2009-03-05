@@ -1233,10 +1233,23 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	if {!$read_p} { continue }
 
 	set display_mode $default_display_mode
-	set key "$dynfield_attribute_id.$object_subtype_id"
-	if {[info exists display_mode_hash($key)]} { 
-	    set display_mode $display_mode_hash($key) 
+
+	# object_subtype_id can be a list, so go through the list
+	# and take the highest one (none - display - edit).
+	foreach subtype_id $object_subtype_id {
+	    set key "$dynfield_attribute_id.$subtype_id"
+	    if {[info exists display_mode_hash($key)]} { 
+		switch $display_mode_hash($key) {
+		    edit { set display_mode "edit" }
+		    display { if {$display_mode == "none"} { set display_mode "display" } }
+		}
+	    }
 	}
+
+#        set key "$dynfield_attribute_id.$object_subtype_id"
+#        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
+
+
 	if {"edit" == $display_mode && "display" == $form_display_mode}  {
             set display_mode $form_display_mode
         }
@@ -1284,10 +1297,26 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
 	# Check if the current user has the right to read the dynfield
 	if {![im_object_permission -object_id $dynfield_attribute_id -user_id $user_id]} { continue }
-
+	
+	# Default display mode
 	set display_mode $default_display_mode
-	set key "$dynfield_attribute_id.$object_subtype_id"
-	if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
+
+	# object_subtype_id can be a list, so go through the list
+	# and take the highest one (none - display - edit).
+	foreach subtype_id $object_subtype_id {
+	    set key "$dynfield_attribute_id.$subtype_id"
+	    if {[info exists display_mode_hash($key)]} { 
+		switch $display_mode_hash($key) {
+		    edit { set display_mode "edit" }
+		    display { if {$display_mode == "none"} { set display_mode "display" } }
+		}
+	    }
+	}
+
+#        set key "$dynfield_attribute_id.$object_subtype_id"
+#        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
+
+	# Don't show "none" fields...
 	if {"none" == $display_mode} { continue }
 
 
