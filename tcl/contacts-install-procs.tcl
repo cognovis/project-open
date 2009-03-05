@@ -72,7 +72,7 @@ ad_proc -public contacts::install::package_install {
 			 [list security "#intranet-core.Security#" 14 textarea_small_nospell ""] \
 			 [list note "#intranet-core.Note#" 15 textarea_small_nospell ""]]
 
-    set im_employee_list [list [list department_id "#intranet-cost.Deparment" 1 "departments" "1"] \
+    set im_employee_list [list [list department_id "#intranet-cost.Department#" 1 "departments" "1"] \
         [list supervisor_id "#intranet-hr.Supervisor#" 2 "supervisors" "1"] \
         [list availability "#intranet-hr.Availability_#" 3 "textbox_small" "1"] \
         [list hourly_cost "#intranet-hr.Hourly_Cost#" 4 "textbox_small" ""] \
@@ -128,8 +128,6 @@ ad_proc -public contacts::install::package_install {
     contact::search::new -title "#intranet-contacts.search_person#" -object_type "person" -all_or_any all
     contact::search::new -title "#intranet-contacts.search_im_company#" -object_type "im_company" -all_or_any all
     contact::search::new -title "#intranet-contacts.search_im_office#" -object_type "im_office" -all_or_any all
-    contact::search::new -title "#intranet-contacts.search_user#" -object_type "user" -all_or_any all
-
 
 }
 
