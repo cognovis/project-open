@@ -80,19 +80,21 @@ foreach {url label id} $link_list {
     lappend navbar [list [subst $url] $label]
 
     if {$selected_p} {
-	append navbar_ul "<li class=selected><a href=$url title=\"Go to $label\" class=navbar_selected>$label</a></li>\n"
+	append navbar_ul "<li class='selected'><div class='navbar_selected'><a href='$url'><span>$label</span></a></div></li>\n"
     } else {
-	append navbar_ul "<li class=unselected><a href=$url title=\"Go to $label\" class=navbar_unselected>$label</a></li>\n"
+	append navbar_ul "<li class='unselected'><div class='navbar_unselected'><a href='$url'><span>$label</span></a></div></li>\n"
     }
 
 }
 
-set contacts_navbar_html "
-  <div id=navbar_sub_wrapper>
-    <ul id=navbar_sub>
-    $navbar_ul
-    </ul>
-  </div>
+set subnavbar_title ""
+set contacts_navbar_html "  
+        <div id='navbar_sub_wrapper'>
+	    $subnavbar_title
+            <ul id='navbar_sub'>
+              $navbar_ul
+            </ul>
+         </div>
 "
 
 if { [parameter::get -boolean -parameter "ForceSearchBeforeAdd" -default "0"] } {
