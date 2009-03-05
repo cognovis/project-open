@@ -354,7 +354,7 @@ create table im_dynfield_layout (
 				constraint im_dynfield_label_style_nn
 				not null
 				constraint im_dynfield_label_style_ck
-				check (label_style in ('table', 'div_absolute', 'div_relative', 'div', 'adp')),
+				check (label_style in ('plain', 'table', 'div_absolute', 'div_relative', 'div', 'adp')),
 	div_class		text,
 	sort_key		integer
 );
