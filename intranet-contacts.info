@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+
 <package key="intranet-contacts" url="http://openacs.org/repository/apm/packages/intranet-contacts" type="apm_application">
     <package-name>]project-open[ Contacts</package-name>
     <pretty-plural>]project-open[ Contacts</pretty-plural>
