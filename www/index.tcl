@@ -94,6 +94,8 @@ if { [exists_and_not_null search_id] } {
 }
 
 
+# ad_return_complaint 1 $search_options
+
 lang::util::localize_list_of_lists -list $search_options
 
 set package_url [ad_conn package_url]

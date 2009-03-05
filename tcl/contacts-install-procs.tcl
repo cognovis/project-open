@@ -43,7 +43,8 @@ ad_proc -public contacts::install::package_install {
         [list wa_postal_code "Work Address Postal Code" 22 textbox_medium ""] \
         [list wa_country_code "Work Address Country Code" 23 country_codes ""] \
         [list note "Note" 24 textarea_small_nospell ""] \
-        [list current_information "Current Information" 25 textarea_small_nospell ""]]
+        [list current_information "Current Information" 25 textarea_small_nospell ""] \
+    ]
     
     set im_company_list [list [list company_name "#intranet-core.Company_Name#" 1 textbox_large "1"] \
         [list company_path "#intranet-core.Company_Short_Name#" 2 textbox_medium "1"] \
@@ -54,7 +55,8 @@ ad_proc -public contacts::install::package_install {
         [list site_concept "#intranet-core.Web_Site#" 15 textbox_large ""] \
         [list vat_number "#intranet-core.VAT_Number#" 16 textbox_large ""] \
         [list annual_revenue_id "#intranet-core.Annual_Revenue#" 17 annual_revenue ""] \
-        [list note "#intranet-core.Note#" 18 textarea_small_nospell ""]]
+        [list note "#intranet-core.Note#" 18 textarea_small_nospell ""] \
+    ]
     
     set im_office_list [list [list office_name "#intranet-core.Office_Name#" 1 textbox_large "1"] \
 			 [list office_path "#intranet-core.lt_Office_Directory_Path#" 2 textbox_medium "1"] \
@@ -68,9 +70,14 @@ ad_proc -public contacts::install::package_install {
 			 [list address_state "#intranet-core.State#" 10 textbox_medium ""] \
 			 [list address_postal_code "#intranet-core.ZIP#" 11 textbox_small ""] \
 			 [list address_country_code "#intranet-core.Country#" 12 country_codes ""] \
+			 [list note "#intranet-core.Note#" 15 textarea_small_nospell ""] \
+    ]
+
+    set ttt {
 			 [list landlord "#intranet-core.Landlord#" 13 textarea_small_nospell ""] \
 			 [list security "#intranet-core.Security#" 14 textarea_small_nospell ""] \
-			 [list note "#intranet-core.Note#" 15 textarea_small_nospell ""]]
+
+    }
 
     set im_employee_list [list [list department_id "#intranet-cost.Department#" 1 "departments" "1"] \
         [list supervisor_id "#intranet-hr.Supervisor#" 2 "supervisors" "1"] \
