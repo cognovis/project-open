@@ -188,3 +188,104 @@ update acs_object_types set type_category_type = 'Intranet Timesheet Task Type' 
 update acs_object_types set type_category_type = 'Intranet Topic Type' where object_type = 'im_forum_topic';
 update acs_object_types set type_category_type = 'Intranet User Type' where object_type = 'person';
 
+
+
+
+
+
+
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip	
+	null,			-- context_id
+	'category_office_status',			-- widget_name
+	'#intranet-core.Office_Status#',	-- pretty_name
+	'#intranet-core.Office_Status#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_category_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{{custom {category_type "Intranet Office Status"}}}'			-- Parameters
+);
+
+	
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip	
+	null,			-- context_id
+	'category_office_type',			-- widget_name
+	'#intranet-core.Office_Type#',	-- pretty_name
+	'#intranet-core.Office_Type#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_category_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{{custom {category_type "Intranet Office Type"}}}'			-- Parameters
+);
+
+
+
+
+
+
+
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip	
+	null,			-- context_id
+	'category_company_status',			-- widget_name
+	'#intranet-core.Company_Status#',	-- pretty_name
+	'#intranet-core.Company_Status#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_category_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{{custom {category_type "Intranet Company Status"}}}'			-- Parameters
+);
+
+
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip	
+	null,			-- context_id
+	'annual_revenue',			-- widget_name
+	'#intranet-core.Annual_Revenue#',	-- pretty_name
+	'#intranet-core.Annual_Revenue#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_category_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{{custom {category_type "Intranet Annual Revenue"}}}'			-- Parameters
+);
+
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip	
+	null,			-- context_id
+ 	'country_codes',			-- widget_name
+	'#intranet-core.Country#',	-- pretty_name
+	'#intranet-core.Country#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'string',		-- acs_datatype
+	'generic_sql',	-- widget
+	'char(3)',		-- sql_datatype
+	'{{custom {sql "select iso,country_name from country_codes order by country_name"}}}'			-- Parameters
+);
+
+update im_dynfield_widgets set deref_plpgsql_function = 'im_country_from_code' where widget_name =  'country_codes';
+

@@ -1555,6 +1555,99 @@ order by
 
 
 
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip	
+	null,			-- context_id
+	'category_office_status',			-- widget_name
+	'#intranet-core.Office_Status#',	-- pretty_name
+	'#intranet-core.Office_Status#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_category_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{{custom {category_type "Intranet Office Status"}}}'			-- Parameters
+);
+
+	
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip	
+	null,			-- context_id
+	'category_office_type',			-- widget_name
+	'#intranet-core.Office_Type#',	-- pretty_name
+	'#intranet-core.Office_Type#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_category_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{{custom {category_type "Intranet Office Type"}}}'			-- Parameters
+);
+
+
+
+
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip	
+	null,			-- context_id
+	'category_company_status',			-- widget_name
+	'#intranet-core.Company_Status#',	-- pretty_name
+	'#intranet-core.Company_Status#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_category_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{{custom {category_type "Intranet Company Status"}}}'			-- Parameters
+);
+
+
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip	
+	null,			-- context_id
+	'annual_revenue',			-- widget_name
+	'#intranet-core.Annual_Revenue#',	-- pretty_name
+	'#intranet-core.Annual_Revenue#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_category_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{{custom {category_type "Intranet Annual Revenue"}}}'			-- Parameters
+);
+
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip	
+	null,			-- context_id
+ 	'country_codes',			-- widget_name
+	'#intranet-core.Country#',	-- pretty_name
+	'#intranet-core.Country#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'string',		-- acs_datatype
+	'generic_sql',	-- widget
+	'char(3)',		-- sql_datatype
+	'{{custom {sql "select iso,country_name from country_codes order by country_name"}}}'			-- Parameters
+);
+
+update im_dynfield_widgets set deref_plpgsql_function = 'im_country_from_code' where widget_name =  'country_codes';
+
+
 
 
 -------------------------------------------------------------
@@ -2077,3 +2170,57 @@ select inline_0 ();
 drop function inline_0 ();
 
 
+
+
+
+-------------------------------------------------------------
+-- Make all DynField "required" that are required by the DB
+-- Should be executed at the very end of this dynfield-create.sql file
+-------------------------------------------------------------
+
+
+
+
+-- return a string coma separated with multimap values
+create or replace function inline_0()
+returns varchar as '
+DECLARE
+	row			RECORD;
+BEGIN
+	FOR row IN
+		select
+			ida.attribute_id
+		from
+			acs_attributes aa, 
+			im_dynfield_attributes ida, 
+			pg_catalog.pg_attribute pga, 
+			pg_catalog.pg_class pgc
+		where
+			aa.attribute_id = ida.acs_attribute_id and 
+			pgc.relname = aa.table_name and 
+			pga.attname = attribute_name and
+			pga.attrelid = pgc.oid and 
+			pga.attnotnull = ''t''
+	LOOP
+		update im_dynfield_type_attribute_map 
+			set required_p = ''t'' 
+		where attribute_id = row.attribute_id;
+		
+		update acs_attributes 
+			set min_n_values = 1 
+		where attribute_id in (
+			select acs_attribute_id 
+			from im_dynfield_attributes 
+			where attribute_id = row.attribute_id
+			);
+
+	END LOOP;
+		
+	return 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
+
+    
