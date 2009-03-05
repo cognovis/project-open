@@ -34,17 +34,111 @@ end;' language 'plpgsql';
 
 
 
-
+---------------------------------------------------
+-- Insert offices to parties and biz_objects
+--
 
 insert into parties (party_id)
 select	office_id 
 from	im_offices
 where	office_id not in (select party_id from parties);
 
+insert into im_biz_objects (object_id)
+select	office_id
+from	im_offices
+where	office_id not in (select object_id from im_biz_objects);
+
+
+---------------------------------------------------
+-- Insert companies to parties and biz_objects
+--
 insert into parties (party_id)
 select	company_id
 from	im_companies
 where	company_id not in (select party_id from parties);
+
+insert into im_biz_objects (object_id)
+select	company_id
+from	im_companies
+where	company_id not in (select object_id from im_biz_objects);
+
+
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------------------
+-- !!!
+-------------------------------------------------------------------
+
+
+-- We need to fill acs_object_type_tables with the correct values
+-- As the automated class generation cannot deal with this
+
+
+
+
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer as '
+DECLARE
+	v_count			integer;
+BEGIN
+	select	count(*) into v_count from acs_object_type_tables
+	where	object_type = ''person'' and table_name = ''users_contact'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	insert into acs_object_type_tables values ('person','users_contact','user_id');
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
+
+
+
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer as '
+DECLARE
+	v_count			integer;
+BEGIN
+	select	count(*) into v_count from acs_object_type_tables
+	where	object_type = ''person'' and table_name = ''parties'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	insert into acs_object_type_tables values ('person','parties','party_id');
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
+-- Fix bad entry
+update acs_attributes set table_name = 'persons' where object_type = 'person' and table_name is null;
+
+
+
+
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('person','im_employees','employee_id');
+
+
+
+
+insert into im_employees (employee_id)
+select person_id
+from persons
+where person_id not in (select employee_id from im_employees);
+
+
+
 
 
 create or replace function im_office__new (
@@ -85,6 +179,7 @@ begin
 
 	-- make a party - required by contacts
 	insert into parties (party_id) values (v_object_id);
+	insert into im_biz_objects (object_id) values (v_object_id);
 
 	return v_object_id;
 end;' language 'plpgsql';
@@ -129,6 +224,7 @@ BEGIN
 
 	-- Make a party - required for contacts
 	insert into parties (party_id) values (v_company_id);
+	insert into im_biz_objects (object_id) values (v_company_id);
 
 	-- Set the link back from the office to the company
 	update	im_offices
