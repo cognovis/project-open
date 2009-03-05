@@ -24,8 +24,7 @@ ad_proc -public contact::search::new {
 } {
     create a contact search
 } {
-    if { ![exists_and_not_null owner_id] } { set owner_id [ad_conn user_id] }
-    if { ![exists_and_not_null package_id] } { set package_id [ad_conn package_id] }
+    if { ![exists_and_not_null owner_id] } { set owner_id [db_string sysadmin "select min(user_id) from cc_users where user_id > 0"] }
     set var_list [list \
                       [list search_id $search_id] \
                       [list title $title] \

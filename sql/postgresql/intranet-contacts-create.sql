@@ -271,3 +271,287 @@ where
 	tam.attribute_id = da.attribute_id;
 
 
+
+
+-------------------------------------------------------------------
+-- Menus
+-------------------------------------------------------------------
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_main_menu		integer;
+
+	-- Groups
+	v_employees		integer;
+BEGIN
+	select group_id into v_employees from groups where group_name = ''Employees'';
+	select menu_id into v_main_menu	from im_menus where label=''main'';
+
+	-- Create the menu.
+	v_menu := im_menu__new (
+		null,				-- p_menu_id
+		''acs_object'',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		''intranet-contacts'',		-- package_name
+		''contacts'',			-- label
+		''CRM'',			-- name
+		''/intranet-contacts/'',	-- url
+		20,				-- sort_order
+		v_main_menu,			-- parent_menu_id
+		null				-- p_visible_tcl
+	);
+
+	PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+-------------------------------------------------------------------
+-- DynField Widgets
+-------------------------------------------------------------------
+
+
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip	
+	null,			-- context_id
+	'employee_status',			-- widget_name
+	'#intranet-hr.Employee_Status#',	-- pretty_name
+	'#intranet-hr.Employee_Status#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_category_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{{custom {category_type "Intranet Employee Pipeline State"}}}'			-- Parameters
+);
+
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip	
+	null,			-- context_id
+	'salutation',			-- widget_name
+	'#intranet-contacts.Salutation#',	-- pretty_name
+	'#intranet-contacts.Salutation#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'im_category_tree',	-- widget
+	'integer',		-- sql_datatype
+	'{{custom {category_type "Intranet Salutation"}}}'			-- Parameters
+);
+
+	
+select im_dynfield_widget__new (
+	null,			-- widget_id
+	'im_dynfield_widget',	-- object_type
+	now(),			-- creation_date
+	null,			-- creation_user
+	null,			-- creation_ip	
+	null,			-- context_id
+	'supervisors',			-- widget_name
+	'#intranet-hr.Supervisor#',	-- pretty_name
+	'#intranet-hr.Supervisor#',	-- pretty_plural
+	10007,			-- storage_type_id
+	'integer',		-- acs_datatype
+	'generic_sql',	-- widget
+	'integer',		-- sql_datatype
+	'{{custom {sql "select 
+                0 as user_id,
+                ''No Supervisor (CEO)'' as user_name
+        from dual
+    UNION
+        select 
+                u.user_id,
+                im_name_from_user_id(u.user_id) as user_name
+        from 
+                users u,
+                group_distinct_member_map m
+        where 
+                m.member_id = u.user_id
+                and m.group_id = (select group_id from groups where group_name = ''Employee'')"}}}'			-- Parameters
+);
+
+
+-------------------------------------------------------------------
+-- Create relationships between BizObject and Persons
+-------------------------------------------------------------------
+
+
+
+-------------------------------------------------------------------
+-- "Employee of a Company" relationship
+-- It doesn't matter if it's the "internal" company, a customer
+-- company or a provider company.
+-- Instances of this relationship are created whenever ...??? ToDo
+-- Usually included DynFields:
+--	- Position
+--
+-- ]po[ HR information is actually attached to a specific subtype
+-- of this rel "internal employee"
+-- In ]po[ we will create a "im_company_employee_rel" IF:
+--	- The user is an "Employee" and its the "internal" company.
+--	- The user is a "Customer" and the company is a "customer".
+--	- The user is a "Freelancer" and the company is a "provider".
+
+SELECT acs_rel_type__create_role('employee', '#acs-translations.role_employee#', '#acs-translations.role_employee_plural#');
+SELECT acs_rel_type__create_role('employer', '#acs-translations.role_employer#', '#acs-translations.role_employer_plural#');
+
+SELECT acs_object_type__create_type(
+	'im_company_employee_rel',
+	'#intranet-contacts.company_employee_rel#',
+	'#intranet-contacts.company_employee_rels#',
+	'im_biz_object_member',
+	'im_company_employee_rels',
+	'company_employee_rel_id',
+	'intranet-contacts.comp_emp', 
+	'f',
+	null,
+	NULL
+);
+
+create table im_company_employee_rels (
+	employee_rel_id		integer
+				REFERENCES acs_objects(object_id)
+				ON DELETE CASCADE
+	CONSTRAINT im_company_employee_rel_id_pk PRIMARY KEY
+);
+
+
+insert into acs_rel_types (
+	rel_type, object_type_one, role_one,
+	min_n_rels_one, max_n_rels_one,
+	object_type_two, role_two,min_n_rels_two, max_n_rels_two
+) values (
+	'im_company_employee_rel', 'im_company', 'employer', 
+	'1', NULL,
+	'person', 'employee', '1', NULL
+);
+
+
+-- Insert our own employees into that relationship
+insert into im_company_employee_rels
+select 
+	r.rel_id 
+from
+	acs_rels r,
+	im_biz_object_members bom
+where
+	r.rel_id = bom.rel_id and
+	r.object_id_two in (
+		select member_id 
+		from group_approved_member_map 
+		where group_id = (select group_id from groups where group_name = 'Employees')
+	) and 
+	r.object_id_one in (select company_id from im_companies where company_path = 'internal') and
+	r.rel_id not in (select employee_rel_id from im_company_employee_rels)
+;
+
+-- Insert any employee of any other commpany into that relationship
+insert into im_company_employee_rels
+select 
+	r.rel_id 
+from
+	acs_rels r,
+	im_biz_object_members bom
+where
+	r.rel_id = bom.rel_id and
+	r.object_id_two in (
+		select member_id 
+		from group_approved_member_map 
+		where group_id not in (select group_id from groups where group_name = 'Employees')
+	) and 
+	r.object_id_one in (select company_id from im_companies where company_path != 'internal') and
+	r.rel_id not in (select employee_rel_id from im_company_employee_rels)
+;
+
+
+-- Update the type of the relationship
+update acs_rels set rel_type = 'im_company_employee_rel' where rel_id in (select employee_rel_id from im_company_employee_rels);
+
+
+
+
+-------------------------------------------------------------------
+-- "Key Account Manager" relationship
+--
+-- A "key account" is a member of group "Employees" who is entitled
+-- to manage a customer or provider company.
+--
+-- Typical extension field for this relationship:
+--	- Contract Value (to be signed by this key account)
+--
+-- Instances of this rel are created by ]po[ if and only if we
+-- create a im_biz_object_membership rel with type "Key Account".
+
+SELECT acs_rel_type__create_role('key_account', '#acs-translations.role_key_account#', '#acs-translations.role_key_account_plural#');
+SELECT acs_rel_type__create_role('company', '#acs-translations.role_company#', '#acs-translations.role_company_plural#');
+
+SELECT acs_object_type__create_type(
+	'im_key_account_rel',
+	'#intranet-contacts.key_account_rel#',
+	'#intranet-contacts.key_account_rels#',
+	'im_biz_object_member',
+	'im_key_account_rels',
+	'key_account_rel_id',
+	'intranet-contacts.key_account', 
+	'f',
+	null,
+	NULL
+);
+
+create table im_key_account_rels (
+	key_account_rel_id	integer
+				REFERENCES acs_objects(object_id)
+				ON DELETE CASCADE
+	CONSTRAINT im_key_account_rel_id_pk PRIMARY KEY
+);
+
+
+insert into acs_rel_types (
+	rel_type, object_type_one, role_one,
+	min_n_rels_one, max_n_rels_one,
+	object_type_two, role_two,min_n_rels_two, max_n_rels_two
+) values (
+	'im_key_account_rel', 'im_company', 'company',
+	'1', NULL,
+	'person', 'key_account', '1', NULL
+);
+
+
+-- Insert our employees that manage customers or providers
+insert into im_key_account_rels
+select
+	r.rel_id 
+from
+	acs_rels r,
+	im_biz_object_members bom
+where
+	r.rel_id = bom.rel_id and
+	r.object_id_two in (
+		select member_id 
+		from group_approved_member_map 
+		where group_id in (select group_id from groups where group_name = 'Employees')
+	) and 
+	r.object_id_one in (select company_id from im_companies where company_path != 'internal') and
+	r.rel_id not in (select key_account_rel_id from im_key_account_rels)
+;
+
+
+update acs_rels set rel_type = 'im_key_account_rel' where rel_id in (select key_account_rel_id from im_key_account_rels);
+
