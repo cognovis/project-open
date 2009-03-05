@@ -1015,9 +1015,10 @@ BEGIN
 
 	select	count(*) from im_dynfield_attributes into v_count
 	where	acs_attribute_id in (
-			select attribute_id 
-			from acs_attributes 
-			where attribute_name = p_column_name
+			select	attribute_id 
+			from	acs_attributes 
+			where	attribute_name = p_column_name and
+				object_type = p_object_type
 		);
 	IF v_count > 0 THEN return 1; END IF;
 
