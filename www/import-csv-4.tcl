@@ -232,7 +232,7 @@ while {1} {
 			if {[exists_and_not_null country]} {
 			    # We do have the country, so let's figure
 			    # out the code for it.
-			    set country_code [ref_countries::get_country_code -country $country]
+			    set country_code [db_string country_code "select iso from country_codes where country_name = :country"]
 			} elseif {$save_p} {
 			    set country_code [lindex [parameter::get_from_package_key -parameter "DefaultISOCountryCode" -package_key "ams" -default ""] 0]
 			}

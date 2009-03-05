@@ -56,10 +56,10 @@
 <fullquery name="get_countries_options">
     <querytext>
 	select 
-	        c.default_name as option,
+	        c.country_name as option,
 		c.iso
 	from 
-		countries c
+		country_codes c
     </querytext>
 </fullquery>
 

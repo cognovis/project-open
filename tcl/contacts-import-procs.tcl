@@ -359,10 +359,6 @@ ad_proc -public contacts::import::csv {
 		    set Land "DE"
 		}
 		
-		if {[string length $Land]>2} {
-		    set Land [ref_countries::get_country_code -country $Land]
-		}
-
 		if {$Land == "DE" || $Land == "AT"} {
 		    set locale "de_DE"
 		} elseif {$Land == "CH"} {
@@ -548,10 +544,6 @@ ad_proc -public contacts::import::csv {
 	    set bundesland $values(Pbundesland)
 	    if {$Land == "D"} {
 		set Land "DE"
-	    }
-	    
-	    if {[string length $Land]>2} {
-		set Land [ref_countries::get_country_code -country $Land]
 	    }
 	    
 	    if {$Land == "DE" || $Land == "AT"} {
