@@ -192,11 +192,16 @@ ad_proc -private contacts::search::condition_type::attribute {
                 # We might change this to list style later on.
                 # And then we would get all elements in the supplied list_ids
 		        set attribute_options [db_list_of_lists get_all_attributes "
-                        select aa.pretty_name,da.attribute_id
-                          from ams_attributes aa, im_dynfield_attributes da
-                         where object_type = :object_type
-                           and da.deprecated_p = 'f'
-                           and da.acs_attribute_id = aa.attribute_id
+				select 
+					aa.pretty_name,
+					da.attribute_id
+				from
+					acs_attributes aa, 
+					im_dynfield_attributes da
+				where
+					object_type = :object_type
+					and da.deprecated_p = 'f'
+					and da.acs_attribute_id = aa.attribute_id
                 "]
 	            
 	        } else {
