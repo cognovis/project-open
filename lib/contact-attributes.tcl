@@ -23,7 +23,6 @@ if {[empty_string_p $package_id]} {
 }
 
 set party [::im::dynfield::Class get_instance_from_db -id $party_id]
-ds_comment [$party class]
 multirow create attributes section attribute value
 
 set list_ids [$party list_ids]

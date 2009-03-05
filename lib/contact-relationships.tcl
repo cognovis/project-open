@@ -99,6 +99,19 @@ switch [acs_object_type $party_id] {
 	    set other_name [contact::name -party_id $office_id -reverse_order]	    
 	    multirow append rels "Office" "" "$office_id"  $other_name $contact_url {} {} {} "Company"
 	}
+
+	# Primary Contact
+	set primary_contact_id [db_list primary_contact "select primary_contact_id from im_companies where company_id = :party_id"]
+	set contact_url [contact::url -party_id $primary_contact_id]
+	set other_name [contact::name -party_id $primary_contact_id -reverse_order]	    
+	multirow append rels "Primary Contact" "" "$primary_contact_id"  $other_name $contact_url {} {} {} "Primary Contact"
+	
+	# Primary Contact
+	set accounting_contact_id [db_list accounting_contact_id "select accounting_contact_id from im_companies where company_id = :party_id"]
+	set contact_url [contact::url -party_id $accounting_contact_id]
+	set other_name [contact::name -party_id $accounting_contact_id -reverse_order]	    
+	multirow append rels "Accounting Contact" "" "$accounting_contact_id"  $other_name $contact_url {} {} {} "Accounting Contact"
+	
     }
 
 }
