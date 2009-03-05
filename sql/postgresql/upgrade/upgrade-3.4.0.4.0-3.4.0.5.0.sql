@@ -100,6 +100,19 @@ select inline_0();
 drop function inline_0();
 
 
+-- users_contact has "user_id" as index column
+update acs_object_type_tables set
+	id_column = 'user_id'
+where	object_type = 'person' and
+	table_name = 'users_contact';
+
+
+-- im_employees has "employee_id" as index column
+update acs_object_type_tables set
+	id_column = 'employee_id'
+where	object_type = 'person' and
+	table_name = 'im_employees';
+
 
 
 
