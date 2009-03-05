@@ -73,7 +73,7 @@ ad_proc -public contact::search::get {
     -search_id:required
     -array:required
 } {
-    Get the info on an ams_attribute
+    Get the info on an attribute
 } {
     upvar 1 $array row
     db_1row select_search_info {} -column_array row

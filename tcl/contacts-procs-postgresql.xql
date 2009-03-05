@@ -97,24 +97,6 @@
 </fullquery>
 
 
-<fullquery name="contacts::spouse_sync_attribute_ids.get_valid_attribute_ids">
-  <querytext>
-    select attribute_id
-      from ams_attributes
-     where object_type in ( 'party', 'person' )
-       and attribute_id in ([template::util::tcl_to_sql_list $attribute_ids])
-       and widget is not null
-  </querytext>
-</fullquery>
-
-<fullquery name="contacts::spouse_rel_type_enabled_p.rel_type_enabled_p">
-  <querytext>
-    select 1
-      from acs_rel_types
-     where rel_type = 'contact_rels_spouse'
-  </querytext>
-</fullquery>
-
 <fullquery name="contact::privacy_allows_p.is_type_allowed_p">
   <querytext>
     select ${type}_p
@@ -167,31 +149,6 @@
        and group_id in ([template::util::tcl_to_sql_list [contacts::default_groups -package_id $package_id]])
      limit 1
   </querytext>
-</fullquery>
-
-<fullquery name="contact::spouse_id_not_cached.get_spouse_id">
-    <querytext>
-        select CASE WHEN object_id_one = :party_id THEN object_id_two ELSE object_id_one END
-          from acs_rels,
-               acs_objects
-         where rel_type = 'contact_rels_spouse'
-           and ( object_id_one = :party_id or object_id_two = :party_id )
-           and rel_id = object_id
-         order by creation_date
-    </querytext>
-</fullquery>
-
-<fullquery name="contact::spouse_id_not_cached.delete_rel">
-    <querytext>
-        select acs_object__delete(rel_id)
-          from acs_rels
-         where (
-                 ( object_id_one = :party_id and object_id_two = :spouse )
-               or
-                 ( object_id_one = :spouse and object_id_two = :party_id )
-               )
-           and rel_type = 'contact_rels_spouse'
-      </querytext>
 </fullquery>
 
 <fullquery name="contact::groups_list_not_cached.get_groups">

@@ -1067,58 +1067,6 @@ ad_proc -public -callback contacts::redirect -impl contactspdfs {
 
 }
 
-
-ad_proc -public -callback contact::contact_form_after_submit -impl spouse_sync {
-    -party_id:required
-    -package_id:required
-    -object_type:required
-    -form:required
-} {
-    Sync information from a spousal relationship (if such a relationship exists)
-} {
-    if { [contacts::spouse_enabled_p -package_id $package_id] } {
-	# the special spousal relationship exists
-	set spouse_id [contact::spouse_id_not_cached -party_id $party_id]
-	if { $spouse_id ne "" } {
-	    # this party has a spouse, the edit form has already save
-            # all of the attributes for the party so we only need to save
-            # attributes for the spouse
-
-	    set party_revision_id [contact::live_revision -party_id $party_id]
-
-	    set spouse_revision_id [contact::live_revision -party_id $spouse_id]
-	    set new_spouse_revision_id [contact::revision::new -party_id $spouse_id]
-	    ams::object_copy -from $spouse_revision_id -to $new_spouse_revision_id
-
-	    set attribute_ids [contacts::spouse_sync_attribute_ids -package_id [ad_conn package_id]]
-	    foreach attribute_id $attribute_ids {
-		set value_id [db_string get_value_id { select value_id from ams_attribute_values where attribute_id = :attribute_id and object_id = :party_revision_id } -default {}]
-		ams::attribute::value_save -object_id $new_spouse_revision_id -attribute_id $attribute_id -value_id $value_id
-	    }
-
-	    set spouse_link [contact::link -party_id $spouse_id]
-	    util_user_message -html -message [_ contacts.lt_spouse_spouse_link_was_updated]
-
-	    if { [parameter::get -boolean -package_id $package_id -parameter "ContactPrivacyEnabledP" -default "0"] } {
-		# we copy privacy settings from the most recently edited contact, i.e. party_id
-                # UNLESS this person is deceased
-		if { [db_0or1row get_info { select * from contact_privacy where party_id = :party_id and gone_p is false }] } {
-		    db_dml update_privacy { update contact_privacy
-                                               set email_p = :email_p,
-                                                   mail_p = :mail_p,
-                                                   phone_p = :phone_p
-                                             where party_id = :party_id
-                                               and gone_p is false }
-		}
-	    }
-
-	    contact::flush -party_id $spouse_id
-	    contact::search::flush_results_counts
-
-	}
-    }
-}
-
 #
 # This is an example of how you can extend the entry forms.
 #
