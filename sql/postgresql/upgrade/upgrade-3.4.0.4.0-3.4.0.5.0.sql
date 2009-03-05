@@ -3,6 +3,43 @@
 SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.4.0-3.4.0.5.0.sql','');
 
 
+
+
+
+
+
+
+
+-- Map "Intranet User Type" categories to groups
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        row             RECORD;
+        v_category_id   integer;
+begin
+        FOR row IN
+                select  g.*
+                from    groups g,
+                        im_profiles p
+                where   p.profile_id = g.group_id
+        LOOP
+                PERFORM im_category_new(nextval(''im_categories_seq'')::integer, row.group_name, ''Intranet User Type'');
+                update im_categories set aux_int1 = row.group_id where category = row.group_name and category_type = ''Intranet User Type'';
+        END LOOP;
+
+        RETURN 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
+
+
+
+
+
+
 -- Changes from Malte to make ]po[ run with OpenACS 5.4 and Contacts
 
 -- Fix the syntax error in acs_rel_type__drop_type
