@@ -13,43 +13,43 @@ CREATE TABLE pg_ts_dict (
 --dict interface
 CREATE FUNCTION lexize(oid, text) 
 	RETURNS _text
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION lexize(text, text)
         RETURNS _text
-        as 'MODULE_PATHNAME', 'lexize_byname'
+        as '$libdir/tsearch2', 'lexize_byname'
         LANGUAGE C
         RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION lexize(text)
         RETURNS _text
-        as 'MODULE_PATHNAME', 'lexize_bycurrent'
+        as '$libdir/tsearch2', 'lexize_bycurrent'
         LANGUAGE C
         RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION set_curdict(int)
 	RETURNS void
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION set_curdict(text)
 	RETURNS void
-	as 'MODULE_PATHNAME', 'set_curdict_byname'
+	as '$libdir/tsearch2', 'set_curdict_byname'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
 --built-in dictionaries
 CREATE FUNCTION dex_init(internal)
 	RETURNS internal
-	as 'MODULE_PATHNAME' 
+	as '$libdir/tsearch2' 
 	LANGUAGE C;
 
 CREATE FUNCTION dex_lexize(internal,internal,int4)
 	RETURNS internal
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
@@ -63,12 +63,12 @@ insert into pg_ts_dict select
 	 
 CREATE FUNCTION snb_en_init(internal)
 	RETURNS internal
-	as 'MODULE_PATHNAME' 
+	as '$libdir/tsearch2' 
 	LANGUAGE C;
 
 CREATE FUNCTION snb_lexize(internal,internal,int4)
 	RETURNS internal
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
@@ -82,7 +82,7 @@ insert into pg_ts_dict select
 
 CREATE FUNCTION snb_ru_init_koi8(internal)
 	RETURNS internal
-	as 'MODULE_PATHNAME' 
+	as '$libdir/tsearch2' 
 	LANGUAGE C;
 
 insert into pg_ts_dict select 
@@ -95,7 +95,7 @@ insert into pg_ts_dict select
 	 
 CREATE FUNCTION snb_ru_init_utf8(internal)
 	RETURNS internal
-	as 'MODULE_PATHNAME' 
+	as '$libdir/tsearch2' 
 	LANGUAGE C;
 
 insert into pg_ts_dict select 
@@ -108,12 +108,12 @@ insert into pg_ts_dict select
 	 
 CREATE FUNCTION spell_init(internal)
 	RETURNS internal
-	as 'MODULE_PATHNAME' 
+	as '$libdir/tsearch2' 
 	LANGUAGE C;
 
 CREATE FUNCTION spell_lexize(internal,internal,int4)
 	RETURNS internal
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
@@ -127,12 +127,12 @@ insert into pg_ts_dict select
 
 CREATE FUNCTION syn_init(internal)
 	RETURNS internal
-	as 'MODULE_PATHNAME' 
+	as '$libdir/tsearch2' 
 	LANGUAGE C;
 
 CREATE FUNCTION syn_lexize(internal,internal,int4)
 	RETURNS internal
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
@@ -146,12 +146,12 @@ insert into pg_ts_dict select
 
 CREATE FUNCTION thesaurus_init(internal)
 	RETURNS internal
-	as 'MODULE_PATHNAME' 
+	as '$libdir/tsearch2' 
 	LANGUAGE C;
 
 CREATE FUNCTION thesaurus_lexize(internal,internal,int4,internal)
 	RETURNS internal
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
@@ -180,31 +180,31 @@ CREATE TYPE tokentype
 
 CREATE FUNCTION token_type(int4)
 	RETURNS setof tokentype
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION token_type(text)
 	RETURNS setof tokentype
-	as 'MODULE_PATHNAME', 'token_type_byname'
+	as '$libdir/tsearch2', 'token_type_byname'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION token_type()
 	RETURNS setof tokentype
-	as 'MODULE_PATHNAME', 'token_type_current'
+	as '$libdir/tsearch2', 'token_type_current'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION set_curprs(int)
 	RETURNS void
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION set_curprs(text)
 	RETURNS void
-	as 'MODULE_PATHNAME', 'set_curprs_byname'
+	as '$libdir/tsearch2', 'set_curprs_byname'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
@@ -213,46 +213,46 @@ CREATE TYPE tokenout
 
 CREATE FUNCTION parse(oid,text)
 	RETURNS setof tokenout
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
  
 CREATE FUNCTION parse(text,text)
 	RETURNS setof tokenout
-	as 'MODULE_PATHNAME', 'parse_byname'
+	as '$libdir/tsearch2', 'parse_byname'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
  
 CREATE FUNCTION parse(text)
 	RETURNS setof tokenout
-	as 'MODULE_PATHNAME', 'parse_current'
+	as '$libdir/tsearch2', 'parse_current'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
  
 --default parser
 CREATE FUNCTION prsd_start(internal,int4)
 	RETURNS internal
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C;
 
 CREATE FUNCTION prsd_getlexeme(internal,internal,internal)
 	RETURNS int4
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C;
 
 CREATE FUNCTION prsd_end(internal)
 	RETURNS void
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C;
 
 CREATE FUNCTION prsd_lextype(internal)
 	RETURNS internal
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C;
 
 CREATE FUNCTION prsd_headline(internal,internal,internal)
 	RETURNS internal
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C;
 
 insert into pg_ts_parser select
@@ -282,19 +282,19 @@ CREATE TABLE pg_ts_cfgmap (
 
 CREATE FUNCTION set_curcfg(int)
 	RETURNS void
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION set_curcfg(text)
 	RETURNS void
-	as 'MODULE_PATHNAME', 'set_curcfg_byname'
+	as '$libdir/tsearch2', 'set_curcfg_byname'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION show_curcfg()
 	RETURNS oid
-	as 'MODULE_PATHNAME'
+	as '$libdir/tsearch2'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
@@ -383,12 +383,12 @@ insert into pg_ts_cfgmap values ('simple', 'uint', '{simple}');
 --tsvector type
 CREATE FUNCTION tsvector_in(cstring)
 RETURNS tsvector
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION tsvector_out(tsvector)
 RETURNS cstring
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT;
 
 CREATE TYPE tsvector (
@@ -400,37 +400,37 @@ CREATE TYPE tsvector (
 
 CREATE FUNCTION length(tsvector)
 RETURNS int4
-AS 'MODULE_PATHNAME', 'tsvector_length'
+AS '$libdir/tsearch2', 'tsvector_length'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION to_tsvector(oid, text)
 RETURNS tsvector
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION to_tsvector(text, text)
 RETURNS tsvector
-AS 'MODULE_PATHNAME', 'to_tsvector_name'
+AS '$libdir/tsearch2', 'to_tsvector_name'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION to_tsvector(text)
 RETURNS tsvector
-AS 'MODULE_PATHNAME', 'to_tsvector_current'
+AS '$libdir/tsearch2', 'to_tsvector_current'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION strip(tsvector)
 RETURNS tsvector
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION setweight(tsvector,"char")
 RETURNS tsvector
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION concat(tsvector,tsvector)
 RETURNS tsvector
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE OPERATOR || (
@@ -442,12 +442,12 @@ CREATE OPERATOR || (
 --query type
 CREATE FUNCTION tsquery_in(cstring)
 RETURNS tsquery
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION tsquery_out(tsquery)
 RETURNS cstring
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT;
 
 CREATE TYPE tsquery (
@@ -459,50 +459,50 @@ CREATE TYPE tsquery (
 
 CREATE FUNCTION querytree(tsquery)
 RETURNS text
-AS 'MODULE_PATHNAME', 'tsquerytree'
+AS '$libdir/tsearch2', 'tsquerytree'
 LANGUAGE C RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION to_tsquery(oid, text)
 RETURNS tsquery
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION to_tsquery(text, text)
 RETURNS tsquery
-AS 'MODULE_PATHNAME','to_tsquery_name'
+AS '$libdir/tsearch2','to_tsquery_name'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION to_tsquery(text)
 RETURNS tsquery
-AS 'MODULE_PATHNAME','to_tsquery_current'
+AS '$libdir/tsearch2','to_tsquery_current'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION plainto_tsquery(oid, text)
 RETURNS tsquery
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION plainto_tsquery(text, text)
 RETURNS tsquery
-AS 'MODULE_PATHNAME','plainto_tsquery_name'
+AS '$libdir/tsearch2','plainto_tsquery_name'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION plainto_tsquery(text)
 RETURNS tsquery
-AS 'MODULE_PATHNAME','plainto_tsquery_current'
+AS '$libdir/tsearch2','plainto_tsquery_current'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 --operations
 CREATE FUNCTION exectsq(tsvector, tsquery)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
   
 COMMENT ON FUNCTION exectsq(tsvector, tsquery) IS 'boolean operation with text index';
 
 CREATE FUNCTION rexectsq(tsquery, tsvector)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 COMMENT ON FUNCTION rexectsq(tsquery, tsvector) IS 'boolean operation with text index';
@@ -527,90 +527,90 @@ CREATE OPERATOR @@ (
 --Trigger
 CREATE FUNCTION tsearch2()
 RETURNS trigger
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C;
 
 --Relevation
 CREATE FUNCTION rank(float4[], tsvector, tsquery)
 RETURNS float4
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION rank(float4[], tsvector, tsquery, int4)
 RETURNS float4
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION rank(tsvector, tsquery)
 RETURNS float4
-AS 'MODULE_PATHNAME', 'rank_def'
+AS '$libdir/tsearch2', 'rank_def'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION rank(tsvector, tsquery, int4)
 RETURNS float4
-AS 'MODULE_PATHNAME', 'rank_def'
+AS '$libdir/tsearch2', 'rank_def'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION rank_cd(float4[], tsvector, tsquery)
 RETURNS float4
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION rank_cd(float4[], tsvector, tsquery, int4)
 RETURNS float4
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION rank_cd(tsvector, tsquery)
 RETURNS float4
-AS 'MODULE_PATHNAME', 'rank_cd_def'
+AS '$libdir/tsearch2', 'rank_cd_def'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION rank_cd(tsvector, tsquery, int4)
 RETURNS float4
-AS 'MODULE_PATHNAME', 'rank_cd_def'
+AS '$libdir/tsearch2', 'rank_cd_def'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION headline(oid, text, tsquery, text)
 RETURNS text
-AS 'MODULE_PATHNAME', 'headline'
+AS '$libdir/tsearch2', 'headline'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION headline(oid, text, tsquery)
 RETURNS text
-AS 'MODULE_PATHNAME', 'headline'
+AS '$libdir/tsearch2', 'headline'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION headline(text, text, tsquery, text)
 RETURNS text
-AS 'MODULE_PATHNAME', 'headline_byname'
+AS '$libdir/tsearch2', 'headline_byname'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION headline(text, text, tsquery)
 RETURNS text
-AS 'MODULE_PATHNAME', 'headline_byname'
+AS '$libdir/tsearch2', 'headline_byname'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION headline(text, tsquery, text)
 RETURNS text
-AS 'MODULE_PATHNAME', 'headline_current'
+AS '$libdir/tsearch2', 'headline_current'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION headline(text, tsquery)
 RETURNS text
-AS 'MODULE_PATHNAME', 'headline_current'
+AS '$libdir/tsearch2', 'headline_current'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 --GiST
 --GiST key type 
 CREATE FUNCTION gtsvector_in(cstring)
 RETURNS gtsvector
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION gtsvector_out(gtsvector)
 RETURNS cstring
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT;
 
 CREATE TYPE gtsvector (
@@ -622,37 +622,37 @@ CREATE TYPE gtsvector (
 -- support FUNCTIONs
 CREATE FUNCTION gtsvector_consistent(gtsvector,internal,int4)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C;
   
 CREATE FUNCTION gtsvector_compress(internal)
 RETURNS internal
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C;
 
 CREATE FUNCTION gtsvector_decompress(internal)
 RETURNS internal
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C;
 
 CREATE FUNCTION gtsvector_penalty(internal,internal,internal)
 RETURNS internal
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION gtsvector_picksplit(internal, internal)
 RETURNS internal
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C;
 
 CREATE FUNCTION gtsvector_union(internal, internal)
 RETURNS _int4
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C;
 
 CREATE FUNCTION gtsvector_same(gtsvector, gtsvector, internal)
 RETURNS internal
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C;
 
 -- CREATE the OPERATOR class
@@ -676,12 +676,12 @@ CREATE TYPE statinfo
 
 --CREATE FUNCTION tsstat_in(cstring)
 --RETURNS tsstat
---AS 'MODULE_PATHNAME'
+--AS '$libdir/tsearch2'
 --LANGUAGE C RETURNS NULL ON NULL INPUT;
 --
 --CREATE FUNCTION tsstat_out(tsstat)
 --RETURNS cstring
---AS 'MODULE_PATHNAME'
+--AS '$libdir/tsearch2'
 --LANGUAGE C RETURNS NULL ON NULL INPUT;
 --
 --CREATE TYPE tsstat (
@@ -693,12 +693,12 @@ CREATE TYPE statinfo
 --
 --CREATE FUNCTION ts_accum(tsstat,tsvector)
 --RETURNS tsstat
---AS 'MODULE_PATHNAME'
+--AS '$libdir/tsearch2'
 --LANGUAGE C RETURNS NULL ON NULL INPUT;
 --
 --CREATE FUNCTION ts_accum_finish(tsstat)
 --	RETURNS setof statinfo
---	as 'MODULE_PATHNAME'
+--	as '$libdir/tsearch2'
 --	LANGUAGE C
 --	RETURNS NULL ON NULL INPUT;
 --
@@ -712,27 +712,27 @@ CREATE TYPE statinfo
 
 CREATE FUNCTION stat(text)
 	RETURNS setof statinfo
-	as 'MODULE_PATHNAME', 'ts_stat'
+	as '$libdir/tsearch2', 'ts_stat'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION stat(text,text)
 	RETURNS setof statinfo
-	as 'MODULE_PATHNAME', 'ts_stat'
+	as '$libdir/tsearch2', 'ts_stat'
 	LANGUAGE C
 	RETURNS NULL ON NULL INPUT;
 
 --reset - just for debuging
 CREATE FUNCTION reset_tsearch()
         RETURNS void
-        as 'MODULE_PATHNAME'
+        as '$libdir/tsearch2'
         LANGUAGE C
         RETURNS NULL ON NULL INPUT;
 
 --get cover (debug for rank_cd)
 CREATE FUNCTION get_covers(tsvector,tsquery)
         RETURNS text
-        as 'MODULE_PATHNAME'
+        as '$libdir/tsearch2'
         LANGUAGE C
         RETURNS NULL ON NULL INPUT;
 
@@ -775,37 +775,37 @@ where
 --compare functions
 CREATE FUNCTION tsvector_cmp(tsvector,tsvector)
 RETURNS int4
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION tsvector_lt(tsvector,tsvector)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION tsvector_le(tsvector,tsvector)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
         
 CREATE FUNCTION tsvector_eq(tsvector,tsvector)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION tsvector_ge(tsvector,tsvector)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
         
 CREATE FUNCTION tsvector_gt(tsvector,tsvector)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE FUNCTION tsvector_ne(tsvector,tsvector)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE OPERATOR < (
@@ -882,37 +882,37 @@ CREATE OPERATOR CLASS tsvector_ops
 ----------------Compare functions and operators for tsquery
 CREATE OR REPLACE FUNCTION tsquery_cmp(tsquery,tsquery)
 RETURNS int4
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION tsquery_lt(tsquery,tsquery)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION tsquery_le(tsquery,tsquery)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION tsquery_eq(tsquery,tsquery)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION tsquery_ge(tsquery,tsquery)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION tsquery_gt(tsquery,tsquery)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION tsquery_ne(tsquery,tsquery)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 
@@ -990,13 +990,13 @@ CREATE OPERATOR CLASS tsquery_ops
 
 CREATE OR REPLACE FUNCTION numnode(tsquery)
         RETURNS int4
-        as 'MODULE_PATHNAME', 'tsquery_numnode'
+        as '$libdir/tsearch2', 'tsquery_numnode'
         LANGUAGE C
         RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION tsquery_and(tsquery,tsquery)
         RETURNS tsquery
-        as 'MODULE_PATHNAME', 'tsquery_and'
+        as '$libdir/tsearch2', 'tsquery_and'
         LANGUAGE C
         RETURNS NULL ON NULL INPUT IMMUTABLE;
 
@@ -1011,7 +1011,7 @@ CREATE OPERATOR && (
 
 CREATE OR REPLACE FUNCTION tsquery_or(tsquery,tsquery)
         RETURNS tsquery
-        as 'MODULE_PATHNAME', 'tsquery_or'
+        as '$libdir/tsearch2', 'tsquery_or'
         LANGUAGE C
         RETURNS NULL ON NULL INPUT IMMUTABLE;
 
@@ -1026,7 +1026,7 @@ CREATE OPERATOR || (
 
 CREATE OR REPLACE FUNCTION tsquery_not(tsquery)
         RETURNS tsquery
-        as 'MODULE_PATHNAME', 'tsquery_not'
+        as '$libdir/tsearch2', 'tsquery_not'
         LANGUAGE C
         RETURNS NULL ON NULL INPUT IMMUTABLE;
 
@@ -1039,24 +1039,24 @@ CREATE OPERATOR !! (
 
 CREATE OR REPLACE FUNCTION rewrite(tsquery, text)
         RETURNS tsquery
-        as 'MODULE_PATHNAME', 'tsquery_rewrite'
+        as '$libdir/tsearch2', 'tsquery_rewrite'
         LANGUAGE C
         RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION rewrite(tsquery, tsquery, tsquery)
         RETURNS tsquery
-        as 'MODULE_PATHNAME', 'tsquery_rewrite_query'
+        as '$libdir/tsearch2', 'tsquery_rewrite_query'
         LANGUAGE C
         RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION rewrite_accum(tsquery,tsquery[])
         RETURNS tsquery
-        AS 'MODULE_PATHNAME'
+        AS '$libdir/tsearch2'
         LANGUAGE C;
 
 CREATE OR REPLACE FUNCTION rewrite_finish(tsquery)
       RETURNS tsquery
-      as 'MODULE_PATHNAME'
+      as '$libdir/tsearch2'
       LANGUAGE C;
 
 CREATE AGGREGATE rewrite (
@@ -1068,13 +1068,13 @@ CREATE AGGREGATE rewrite (
 
 CREATE OR REPLACE FUNCTION tsq_mcontains(tsquery, tsquery)
         RETURNS bool
-        as 'MODULE_PATHNAME'
+        as '$libdir/tsearch2'
         LANGUAGE C
         RETURNS NULL ON NULL INPUT IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION tsq_mcontained(tsquery, tsquery)
         RETURNS bool
-        as 'MODULE_PATHNAME'
+        as '$libdir/tsearch2'
         LANGUAGE C
         RETURNS NULL ON NULL INPUT IMMUTABLE;
 
@@ -1119,12 +1119,12 @@ CREATE OPERATOR ~ (
 
 CREATE FUNCTION gtsq_in(cstring)
 RETURNS gtsq
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION gtsq_out(gtsq)
 RETURNS cstring
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT;
 
 CREATE TYPE gtsq (
@@ -1135,37 +1135,37 @@ CREATE TYPE gtsq (
 
 CREATE FUNCTION gtsq_consistent(gtsq,internal,int4)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C;
 
 CREATE FUNCTION gtsq_compress(internal)
 RETURNS internal
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C;
 
 CREATE FUNCTION gtsq_decompress(internal)
 RETURNS internal
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C;
 
 CREATE FUNCTION gtsq_penalty(internal,internal,internal)
 RETURNS internal
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION gtsq_picksplit(internal, internal)
 RETURNS internal
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C;
 
 CREATE FUNCTION gtsq_union(bytea, internal)
 RETURNS _int4
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C;
 
 CREATE FUNCTION gtsq_same(gtsq, gtsq, internal)
 RETURNS internal
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C;
 
 CREATE OPERATOR CLASS gist_tp_tsquery_ops
@@ -1187,17 +1187,17 @@ AS
 --GIN support function
 CREATE FUNCTION gin_extract_tsvector(tsvector,internal)
 RETURNS internal
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION gin_extract_tsquery(tsquery,internal,internal)
 RETURNS internal
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT;
 
 CREATE FUNCTION gin_ts_consistent(internal,internal,tsquery)
 RETURNS bool
-AS 'MODULE_PATHNAME'
+AS '$libdir/tsearch2'
 LANGUAGE C RETURNS NULL ON NULL INPUT;
 
 CREATE OPERATOR @@@ (
