@@ -94,7 +94,9 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
     set price ""
     set min_price ""
     set currency ""
+    set note ""
 
+    # Read one line of values and write values into local variables
     for {set j 0} {$j < $header_len} {incr j} {
 	set var_name [lindex $header_csv_fields $j]
 	set var_value [lindex $csv_fields $j]
@@ -187,12 +189,12 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
 	price_id, uom_id, company_id, task_type_id,
 	target_language_id, source_language_id, subject_area_id,
 	file_type_id,
-       valid_from, valid_through, currency, price, min_price
+       valid_from, valid_through, currency, price, min_price, note
     ) VALUES (
 	:price_id, :uom_id, :company_id, :task_type_id,
 	:target_language_id, :source_language_id, :subject_area_id,
 	:file_type_id,
-	:valid_from, :valid_through, :currency, :price, :min_price
+	:valid_from, :valid_through, :currency, :price, :min_price, :note
     )"
 
     if {[string equal "" $errmsg]} {
