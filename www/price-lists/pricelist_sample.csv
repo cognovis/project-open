@@ -1,5 +1,7 @@
 uom;company;task_type;target_language;source_language;subject_area;valid_from;valid_through;price;currency
 
+# Additional (optional) fields: min_price;note
+
 # The system ignores empty lines and lines starting with a '#' (comments);;;;;;;;;
 # Please save this file to your local disc an replace 'company_path' by the...;;;;;;;;;
 # ... path of your company;;;;;;;;;
