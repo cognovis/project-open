@@ -2,6 +2,38 @@
 
 SELECT acs_log__debug('/packages/intranet-translation/sql/postgresql/upgrade/upgrade-3.3.1.1.0-3.4.0.5.0.sql','');
 
+- move 13 to 12
+update im_view_columns set
+	column_id = 9012,
+	sort_order = 12
+where	column_id = 9013;
+
+
+-- free 15
+update im_view_columns set
+	column_id = 9013,
+	sort_order = 13
+where	column_id = 9015;
+
+
+update im_view_columns set
+	column_id = 9015,
+	sort_order = 15
+where	column_id = 9014;
+
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (9014,90,NULL,'Bill. Units Interco','$billable_items_input_interco',
+'','',14,'expr $project_write');
+
+
+update im_view_columns set visible_for = 'expr $project_write && $interco_p' 
+where column_id = 9014;
+
+
+
+
+
 
 -- Add an "InterCo" billable units fields for different invoicing
 -- towards an internal customer
