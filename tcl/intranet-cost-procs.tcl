@@ -46,6 +46,8 @@ ad_proc -public im_cost_type_delivery_note {} { return 3724 }
 ad_proc -public im_cost_type_timesheet_planned {} { return 3726 }
 ad_proc -public im_cost_type_timesheet_budget {} { return 3726 }
 ad_proc -public im_cost_type_expense_planned {} { return 3728 }
+ad_proc -public im_cost_type_interco_invoice {} { return 3730 }
+ad_proc -public im_cost_type_interco_quote {} { return 3732 }
 
 
 
@@ -64,6 +66,10 @@ ad_proc -public im_cost_type_short_name { cost_type_id } {
 	3720 { return "expense" }
 	3722 { return "expense_bundle" }
 	3724 { return "delivery_note" }
+	3726 { return "timesheet_budget" }
+	3728 { return "expense_planned" }
+	3730 { return "interco_invoice" }
+	3732 { return "interco_quote" }
 	default { return "unknown" }
     }
 }
@@ -97,7 +103,7 @@ ad_proc -public im_cost_type_is_invoice_or_quote_p { cost_type_id } {
     Invoices and Quotes have a "Company" fields,
     so we need to identify them:
 } {
-    set invoice_or_quote_p [expr $cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_quote] || $cost_type_id == [im_cost_type_delivery_note]]
+    set invoice_or_quote_p [expr $cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_quote] || $cost_type_id == [im_cost_type_delivery_note] || $cost_type_id == [im_cost_type_interco_invoice] || $cost_type_id == [im_cost_type_interco_quote]]
     return $invoice_or_quote_p
 }
 
@@ -1422,7 +1428,7 @@ ad_proc im_costs_project_finance_component {
 	}
 
 	set company_name ""
-	if {$cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_quote] || $cost_type_id == [im_cost_type_delivery_note]} {
+	if {$cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_quote] || $cost_type_id == [im_cost_type_delivery_note] || $cost_type_id == [im_cost_type_interco_invoice] || $cost_type_id == [im_cost_type_interco_quote]} {
 	    set company_name $customer_name
 	} else {
 	    set company_name $provider_name
@@ -1741,8 +1747,10 @@ ad_proc -public im_cost_type_select {
 		[im_cost_type_quote],
 		[im_cost_type_bill],
 		[im_cost_type_po],
-		[im_cost_type_delivery_note]
-		)"
+		[im_cost_type_delivery_note],
+		[im_cost_type_interco_invoice],
+		[im_cost_type_interco_quote],
+	    )"
 	}
     }
 

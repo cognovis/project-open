@@ -824,6 +824,8 @@ select	category_id as cost_type_id,
 	    WHEN category_id = 3720 THEN 'fi_read_expense_items'
 	    WHEN category_id = 3722 THEN 'fi_read_expense_bundles'
 	    WHEN category_id = 3724 THEN 'fi_read_delivery_notes'
+	    WHEN category_id = 3730 THEN 'fi_read_interco_invoices'
+            WHEN category_id = 3732 THEN 'fi_read_interco_quotes'
 	    ELSE 'fi_read_all'
 	END as read_privilege,
 	CASE 
@@ -836,6 +838,8 @@ select	category_id as cost_type_id,
 	    WHEN category_id = 3720 THEN 'fi_write_expense_items'
 	    WHEN category_id = 3722 THEN 'fi_write_expense_bundles'
 	    WHEN category_id = 3724 THEN 'fi_write_delivery_notes'
+	    WHEN category_id = 3730 THEN 'fi_write_interco_invoices'
+	    WHEN category_id = 3732 THEN 'fi_write_interco_quotes'
 	    ELSE 'fi_write_all'
 	END as write_privilege,
 	CASE 
@@ -848,6 +852,8 @@ select	category_id as cost_type_id,
 	    WHEN category_id = 3720 THEN 'expitem'
 	    WHEN category_id = 3722 THEN 'expbundle'
 	    WHEN category_id = 3724 THEN 'delnote'
+	    WHEN category_id = 3730 THEN 'interco_invoices'
+	    WHEN category_id = 3732 THEN 'interco_quotes'
 	    ELSE 'unknown'
 	END as short_name
 from 	im_categories
@@ -1791,6 +1797,21 @@ select acs_privilege__create_privilege('fi_read_repeatings','Read Repeatings','R
 select acs_privilege__create_privilege('fi_write_repeatings','Write Repeatings','Write Repeatings');
 select acs_privilege__add_child('fi_read_all', 'fi_read_repeatings');
 select acs_privilege__add_child('fi_write_all', 'fi_write_repeatings');
+
+
+
+select acs_privilege__create_privilege('fi_read_interco_invoices','Read Interco Invoices','Read Interco Invoices');
+select acs_privilege__create_privilege('fi_write_interco_invoices','Write Interco Invoices','Write Interco Invoices');
+select acs_privilege__add_child('fi_read_all', 'fi_read_interco_invoices');
+select acs_privilege__add_child('fi_write_all', 'fi_write_interco_invoices');
+
+select acs_privilege__create_privilege('fi_read_interco_quotes','Read Interco Quotes','Read Interco Quotes');
+select acs_privilege__create_privilege('fi_write_interco_quotes','Write Interco Quotes','Write Interco Quotes');
+select acs_privilege__add_child('fi_read_all', 'fi_read_interco_quotes');
+select acs_privilege__add_child('fi_write_all', 'fi_write_interco_quotes');
+
+
+
 
 
 select im_priv_create('fi_read_all','P/O Admins');
