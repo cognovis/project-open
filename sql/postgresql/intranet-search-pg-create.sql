@@ -308,7 +308,7 @@ declare
         p_str           alias for $1;
         v_str           varchar;
 begin
-        select translate(p_str, ''@\.-_'', ''    '')
+        select translate(p_str, ''@.-_'', ''    '')
         into v_str;
 
         return norm_text_utf8(v_str);
