@@ -3,14 +3,43 @@
 SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.4.0-3.4.0.5.0.sql','');
 
 
+-- 22000-22999 Intranet User Type
+SELECT im_category_new(22000, 'Registered Users', 'Intranet User Type');
+SELECT im_category_new(22010, 'The Public', 'Intranet User Type');
+SELECT im_category_new(22020, 'P/O Admins', 'Intranet User Type');
+SELECT im_category_new(22030, 'Customers', 'Intranet User Type');
+SELECT im_category_new(22040, 'Employees', 'Intranet User Type');
+SELECT im_category_new(22050, 'Freelancers', 'Intranet User Type');
+SELECT im_category_new(22060, 'Project Managers', 'Intranet User Type');
+SELECT im_category_new(22070, 'Senior Managers', 'Intranet User Type');
+SELECT im_category_new(22080, 'Accounting', 'Intranet User Type');
+SELECT im_category_new(22090, 'Sales', 'Intranet User Type');
+SELECT im_category_new(22100, 'HR Managers', 'Intranet User Type');
+SELECT im_category_new(22110, 'Freelance Managers', 'Intranet User Type');
+
+create or replace view im_user_type as
+select
+	category_id as user_type_id,
+	category as user_type
+from 	im_categories
+where	category_type = 'Intranet User Type'
+	and (enabled_p is null OR enabled_p = 't');
 
 
+create or replace view im_user_status as
+select
+	category_id as user_status_id,
+	category as user_status
+from 	im_categories
+where	category_type = 'Intranet User Status'
+	and (enabled_p is null OR enabled_p = 't');
 
 
+-- Update the category sequence in case there have been manual entries
+SELECT pg_catalog.setval('im_categories_seq', (select 1+max(category_id) from im_categories), true);
 
 
-
--- Map "Intranet User Type" categories to groups
+-- Map remaining "Intranet User Type" categories to groups
 
 create or replace function inline_0 ()
 returns integer as '
@@ -18,6 +47,7 @@ declare
         row             RECORD;
         v_category_id   integer;
 begin
+	-- Add a new category for User Types that havent been defined yet
         FOR row IN
                 select  g.*
                 from    groups g,
@@ -25,16 +55,15 @@ begin
                 where   p.profile_id = g.group_id
         LOOP
                 PERFORM im_category_new(nextval(''im_categories_seq'')::integer, row.group_name, ''Intranet User Type'');
-                update im_categories set aux_int1 = row.group_id where category = row.group_name and category_type = ''Intranet User Type'';
+                update im_categories set 
+			aux_int1 = row.group_id 
+		where category = row.group_name and category_type = ''Intranet User Type'';
         END LOOP;
 
         RETURN 0;
 end;' language 'plpgsql';
 select inline_0();
 drop function inline_0();
-
-
-
 
 
 
