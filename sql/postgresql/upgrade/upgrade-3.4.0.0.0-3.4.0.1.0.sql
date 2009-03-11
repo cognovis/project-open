@@ -13,6 +13,14 @@ declare
         v_count                 integer;
 begin
         select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''im_object_freelance_skill_map'' and lower(column_name) = ''required_experience_id'';
+        if v_count = 0 then 
+		alter table im_object_freelance_skill_map
+		add required_experience_id integer
+		constraint im_fl_skills_requ_fk references im_categories;
+	end if;
+
+        select count(*) into v_count from user_tab_columns
 	where lower(table_name) = ''im_object_freelance_skill_map'' and lower(column_name) = ''confirmed_experience_id'';
         if v_count = 0 then 
 		alter table im_object_freelance_skill_map
