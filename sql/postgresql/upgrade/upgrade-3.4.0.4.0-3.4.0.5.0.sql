@@ -3,6 +3,135 @@
 SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.4.0-3.4.0.5.0.sql','');
 
 
+
+
+
+
+
+CREATE OR REPLACE FUNCTION im_category_new (
+	integer, varchar, varchar, varchar
+) RETURNS integer as '
+DECLARE
+	p_category_id		alias for $1;
+	p_category		alias for $2;
+	p_category_type		alias for $3;
+	p_description		alias for $4;
+
+	v_count			integer;
+BEGIN
+	select	count(*) into v_count from im_categories
+	where	(category = p_category and category_type = p_category_type) OR
+		category_id = p_category_id;
+	IF v_count > 0 THEN return 0; END IF;
+
+	insert into im_categories(category_id, category, category_type, category_description)
+	values (p_category_id, p_category, p_category_type, p_description);
+
+	RETURN 0;
+end;' language 'plpgsql';
+
+CREATE OR REPLACE FUNCTION im_category_new (
+	integer, varchar, varchar
+) RETURNS integer as '
+DECLARE
+	p_category_id		alias for $1;
+	p_category		alias for $2;
+	p_category_type		alias for $3;
+BEGIN
+	RETURN im_category_new(p_category_id, p_category, p_category_type, NULL);
+end;' language 'plpgsql';
+
+
+-- Compatibility for Malte
+-- ToDo: Remove
+CREATE OR REPLACE FUNCTION im_category__new (
+        integer, varchar, varchar, varchar
+) RETURNS integer as '
+DECLARE
+        p_category_id           alias for $1;
+        p_category              alias for $2;
+        p_category_type         alias for $3;
+        p_description           alias for $4;
+BEGIN
+        RETURN im_category_new(p_category_id, p_category, p_category_type, p_description);
+end;' language 'plpgsql';
+
+
+CREATE OR REPLACE FUNCTION im_category_hierarchy_new (
+	integer, integer
+) RETURNS integer as '
+DECLARE
+	p_child_id		alias for $1;
+	p_parent_id		alias for $2;
+
+	row			RECORD;
+	v_count			integer;
+BEGIN
+	IF p_child_id is null THEN 
+		RAISE NOTICE ''im_category_hierarchy_new: bad category 1: "%" '',p_child_id;
+		return 0;
+	END IF;
+
+	IF p_parent_id is null THEN 
+		RAISE NOTICE ''im_category_hierarchy_new: bad category 2: "%" '',p_parent_id; 
+		return 0;
+	END IF;
+	IF p_child_id = p_parent_id THEN return 0; END IF;
+
+	select	count(*) into v_count from im_category_hierarchy
+	where	child_id = p_child_id and parent_id = p_parent_id;
+	IF v_count = 0 THEN
+		insert into im_category_hierarchy(child_id, parent_id)
+		values (p_child_id, p_parent_id);
+	END IF;
+
+	-- Loop through the parents of the parent
+	FOR row IN
+		select	parent_id
+		from	im_category_hierarchy
+		where	child_id = p_parent_id
+	LOOP
+		PERFORM im_category_hierarchy_new (p_child_id, row.parent_id);
+	END LOOP;
+
+	RETURN 0;
+end;' language 'plpgsql';
+
+
+CREATE OR REPLACE FUNCTION im_category_hierarchy_new (
+	varchar, varchar, varchar
+) RETURNS integer as '
+DECLARE
+	p_child			alias for $1;
+	p_parent		alias for $2;
+	p_cat_type		alias for $3;
+
+	v_child_id		integer;
+	v_parent_id		integer;
+BEGIN
+	select	category_id into v_child_id from im_categories
+	where	category = p_child and category_type = p_cat_type;
+	IF v_child_id is null THEN 
+		RAISE NOTICE ''im_category_hierarchy_new: bad category 1: "%" '',p_child; 
+		return 0;
+	END IF;
+
+	select	category_id into v_parent_id from im_categories
+	where	category = p_parent and category_type = p_cat_type;
+	IF v_parent_id is null THEN 
+		RAISE NOTICE ''im_category_hierarchy_new: bad category 2: "%" '',p_parent; 
+		return 0;
+	END IF;
+
+	return im_category_hierarchy_new (v_child_id, v_parent_id);
+
+	RETURN 0;
+end;' language 'plpgsql';
+
+
+
+
+
 -- 22000-22999 Intranet User Type
 SELECT im_category_new(22000, 'Registered Users', 'Intranet User Type');
 SELECT im_category_new(22010, 'The Public', 'Intranet User Type');
@@ -158,7 +287,7 @@ BEGIN
 	where	object_type = ''person'' and table_name = ''users_contact'';
 	IF v_count > 0 THEN return 0; END IF;
 
-	insert into acs_object_type_tables values ('person','users_contact','user_id');
+	insert into acs_object_type_tables values (''person'',''users_contact'',''user_id'');
 
 	RETURN 0;
 end;' language 'plpgsql';
@@ -191,7 +320,7 @@ BEGIN
 	where	object_type = ''person'' and table_name = ''parties'';
 	IF v_count > 0 THEN return 0; END IF;
 
-	insert into acs_object_type_tables values ('person','parties','party_id');
+	insert into acs_object_type_tables values (''person'',''parties'',''party_id'');
 
 	RETURN 0;
 end;' language 'plpgsql';
@@ -204,10 +333,21 @@ update acs_attributes set table_name = 'persons' where object_type = 'person' an
 
 
 
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer as '
+DECLARE
+	v_count			integer;
+BEGIN
+	select	count(*) into v_count from acs_object_type_tables
+	where	object_type = ''person'' and table_name = ''im_employees'';
+	IF v_count > 0 THEN return 0; END IF;
 
-insert into acs_object_type_tables (object_type,table_name,id_column)
-values ('person','im_employees','employee_id');
+	insert into acs_object_type_tables values (''person'',''im_employees'',''employee_id'');
 
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
 
 
 
@@ -418,19 +558,10 @@ drop function inline_0();
 
 
 
-
-
 -- Disable the "active or potential" category, if not already disabled...
 update im_categories
 set enabled_p = 'f'
 where category_id = 40;
-
-
-
-
-
-
-
 
 
 
@@ -454,39 +585,72 @@ where category_id = 40;
 --	- The user is a "Customer" and the company is a "customer".
 --	- The user is a "Freelancer" and the company is a "provider".
 
-SELECT acs_rel_type__create_role('employee', '#acs-translations.role_employee#', '#acs-translations.role_employee_plural#');
-SELECT acs_rel_type__create_role('employer', '#acs-translations.role_employer#', '#acs-translations.role_employer_plural#');
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer as '
+DECLARE
+	v_count			integer;
+BEGIN
+	select	count(*) into v_count from acs_rel_roles where role = ''employee'';
+	IF v_count = 0 THEN 
+		PERFORM acs_rel_type__create_role(''employee'', ''#acs-translations.role_employee#'', ''#acs-translations.role_employee_plural#'');
+	END IF;
 
-SELECT acs_object_type__create_type(
-	'im_company_employee_rel',
-	'#intranet-contacts.company_employee_rel#',
-	'#intranet-contacts.company_employee_rels#',
-	'im_biz_object_member',
-	'im_company_employee_rels',
-	'company_employee_rel_id',
-	'intranet-contacts.comp_emp', 
-	'f',
-	null,
-	NULL
-);
+	select	count(*) into v_count from acs_rel_roles where role = ''employer'';
+	IF v_count = 0 THEN 
+		PERFORM acs_rel_type__create_role(''employer'', ''#acs-translations.role_employer#'', ''#acs-translations.role_employer_plural#'');
+	END IF;
 
-create table im_company_employee_rels (
-	employee_rel_id		integer
-				REFERENCES acs_rels
-				ON DELETE CASCADE
-	CONSTRAINT im_company_employee_rel_id_pk PRIMARY KEY
-);
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
 
 
-insert into acs_rel_types (
-	rel_type, object_type_one, role_one,
-	min_n_rels_one, max_n_rels_one,
-	object_type_two, role_two,min_n_rels_two, max_n_rels_two
-) values (
-	'im_company_employee_rel', 'im_company', 'employer', 
-	'1', NULL,
-	'person', 'employee', '1', NULL
-);
+
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer as '
+DECLARE
+	v_count			integer;
+BEGIN
+	select count(*) into v_count from acs_object_types where object_type = ''im_company_employee_rel'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	SELECT acs_object_type__create_type(
+		''im_company_employee_rel'',
+		''#intranet-contacts.company_employee_rel#'',
+		''#intranet-contacts.company_employee_rels#'',
+		''im_biz_object_member'',
+		''im_company_employee_rels'',
+		''company_employee_rel_id'',
+		''intranet-contacts.comp_emp'', 
+		''f'',
+		null,
+		NULL
+	);
+
+	create table im_company_employee_rels (
+		employee_rel_id		integer
+					REFERENCES acs_rels
+					ON DELETE CASCADE
+		CONSTRAINT im_company_employee_rel_id_pk PRIMARY KEY
+	);
+
+	insert into acs_rel_types (
+		rel_type, object_type_one, role_one,
+		min_n_rels_one, max_n_rels_one,
+		object_type_two, role_two,min_n_rels_two, max_n_rels_two
+	) values (
+		''im_company_employee_rel'', ''im_company'', ''employer'', 
+		''1'', NULL,
+		''person'', ''employee'', ''1'', NULL
+	);
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
 
 
 -- Insert our own employees into that relationship
@@ -544,41 +708,77 @@ update acs_rels set rel_type = 'im_company_employee_rel' where rel_id in (select
 -- Instances of this rel are created by ]po[ if and only if we
 -- create a im_biz_object_membership rel with type "Key Account".
 
-SELECT acs_rel_type__create_role('key_account', '#acs-translations.role_key_account#', '#acs-translations.role_key_account_plural#');
-SELECT acs_rel_type__create_role('company', '#acs-translations.role_company#', '#acs-translations.role_company_plural#');
 
-SELECT acs_object_type__create_type(
-	'im_key_account_rel',
-	'#intranet-contacts.key_account_rel#',
-	'#intranet-contacts.key_account_rels#',
-	'im_biz_object_member',
-	'im_key_account_rels',
-	'key_account_rel_id',
-	'intranet-contacts.key_account', 
-	'f',
-	null,
-	NULL
-);
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer as '
+DECLARE
+	v_count			integer;
+BEGIN
+	select	count(*) into v_count from acs_rel_roles where role = ''key_account'';
+	IF v_count = 0 THEN 
+		SELECT acs_rel_type__create_role(''key_account'', ''#acs-translations.role_key_account#'', ''#acs-translations.role_key_account_plural#'');
+	END IF;
 
-create table im_key_account_rels (
-	key_account_rel_id	integer
-				REFERENCES acs_rels
-				ON DELETE CASCADE
-	CONSTRAINT im_key_account_rel_id_pk PRIMARY KEY
-);
+	select	count(*) into v_count from acs_rel_roles where role = ''company'';
+	IF v_count = 0 THEN 
+		SELECT acs_rel_type__create_role(''company'', ''#acs-translations.role_company#'', ''#acs-translations.role_company_plural#'');
+	END IF;
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
 
 
-insert into acs_rel_types (
-	rel_type, object_type_one, role_one,
-	min_n_rels_one, max_n_rels_one,
-	object_type_two, role_two,min_n_rels_two, max_n_rels_two
-) values (
-	'im_key_account_rel', 'im_company', 'company',
-	'1', NULL,
-	'person', 'key_account', '1', NULL
-);
 
 
+CREATE OR REPLACE FUNCTION inline_0 ()
+RETURNS integer as '
+DECLARE
+	v_count			integer;
+BEGIN
+	select count(*) into v_count from acs_object_types where object_type = ''im_company_employee_rel'';
+	IF v_count > 0 THEN return 0; END IF;
+
+	SELECT acs_object_type__create_type(
+		''im_key_account_rel'',
+		''#intranet-contacts.key_account_rel#'',
+		''#intranet-contacts.key_account_rels#'',
+		''im_biz_object_member'',
+		''im_key_account_rels'',
+		''key_account_rel_id'',
+		''intranet-contacts.key_account'', 
+		''f'',
+		null,
+		NULL
+	);
+	
+	create table im_key_account_rels (
+		key_account_rel_id	integer
+					REFERENCES acs_rels
+					ON DELETE CASCADE
+		CONSTRAINT im_key_account_rel_id_pk PRIMARY KEY
+	);
+	
+	
+	insert into acs_rel_types (
+		rel_type, object_type_one, role_one,
+		min_n_rels_one, max_n_rels_one,
+		object_type_two, role_two,min_n_rels_two, max_n_rels_two
+	) values (
+		''im_key_account_rel'', ''im_company'', ''company'',
+		''1'', NULL,
+		''person'', ''key_account'', ''1'', NULL
+	);
+	
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
+	
 -- Insert our employees that manage customers or providers
 insert into im_key_account_rels
 select
