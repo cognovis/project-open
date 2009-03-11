@@ -11,6 +11,7 @@ ad_page_contract {
     {force_p "f"}
 }
 
+
 # Install and enable are sets of keys; need to turn them back into spec files.
 set spec_files [ad_get_client_property apm spec_files]
 
@@ -20,6 +21,68 @@ set install $enable
 # Clear out previous client properties.
 ad_set_client_property -clob t apm pkg_install_list ""
 ad_set_client_property -clob t apm pkg_enable_list ""
+
+
+if {"" == $spec_files} {
+
+    ### Get all the spec files
+    # If a package is in the apm_workspace dir then we assume that that is the package that
+    # should be installed and we ignore any such package in the packages dir.
+    # TODO: make sure that it's a later version than that in the packages dir?
+    set packages_root_dir "[acs_root_dir]/packages"
+    set packages_spec_files [apm_scan_packages $packages_root_dir]
+    set workspace_spec_files [apm_scan_packages [apm_workspace_install_dir]]
+    set workspace_filenames [list]
+    foreach spec_path $workspace_spec_files {
+	lappend workspace_filenames [file tail $spec_path]
+    }
+    set all_spec_files $workspace_spec_files
+    foreach spec_path $packages_spec_files {
+	set spec_filename [file tail $spec_path]
+	if { [lsearch -exact $workspace_filenames $spec_filename] == -1 } {
+	    lappend all_spec_files $spec_path
+	}
+    }
+
+    # Determine which spec files are new installs; install all of the new items.
+    set spec_files [list]
+    set already_installed_list [list]
+    set not_compatible_list [list]
+    
+    foreach spec_file $all_spec_files {
+	array set version [apm_read_package_info_file $spec_file]
+	set version_name $version(name)
+	set package_name $version(package-name)
+	set package_key $version(package.key)
+	if { [apm_package_supports_rdbms_p -package_key $package_key] } {
+	    if { [apm_package_registered_p $package_key] } {
+		# This package is already on the system
+		if { [apm_higher_version_installed_p $package_key $version_name] } {
+		    ns_log Notice "higher version installed of $package_key $version_name"
+		    lappend spec_files $spec_file
+		} else {
+		    ns_log Notice "need upgrade of package $package_key $version_name"
+		    lappend already_installed_list "Package &quot;$package_name&quot; ($package_key) version $version_name or higher is already installed."
+		}
+	    } else {
+		lappend spec_files $spec_file
+	    }
+	} else {
+	    lappend not_compatible_list "Package &quot;$package_name&quot; ($package_key) doesn't support [db_type]."
+	}
+    }
+    
+}
+
+set ttt {
+ad_return_complaint 1 "
+<pre>
+enable=$enable
+install=$install
+spec_files=[join $spec_files "\n\t"]
+</pre>
+"
+}
 
 foreach spec_file $spec_files {
     # Get package info, and find out if this is a package we should install
