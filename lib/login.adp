@@ -1,8 +1,6 @@
 <property name="focus">@focus;noquote@</property>
 
 
-<%= [im_box_header "Log In"] %>
-
 	<formtemplate id="login"></formtemplate>
 
 	<table cellspacing=0 cellpadding=0 border=0>
@@ -43,4 +41,3 @@
 	</tr>
 	</table>
 
-<%= [im_box_footer] %>
