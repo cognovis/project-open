@@ -8,27 +8,6 @@ SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.
 -- Fix implementation for user skins
 ----------------------------------------------------------
 
--- Fix DynField issue with database "float"
-CREATE OR REPLACE Function inline_0()
-RETURNS character AS '
-DECLARE
-	v_count		integer;
-BEGIN
-	select count(*)	into v_count 
-	from user_tab_columns
-	where lower(table_name) = ''users'' and lower(column_name) = ''skin_id'';
-	IF v_count > 0 THEN return 1; END IF;
-
-	alter table users add skin_id integer references im_categories;
-
-	return 0;
-END;' LANGUAGE 'plpgsql';
-select inline_0();
-drop function inline_0();
-
-
-
-
 --        { 0  "left"          "Default" }
 --        { 1  "opus5"         "Light Green" }
 --        { 2  "default"       "Right Blue" }
@@ -44,10 +23,30 @@ update im_categories set sort_order = 2 where category = 'default' and category_
 update im_categories set sort_order = 3 where category = 'saltnpepper' and category_type = 'Intranet Skin';
 update im_categories set sort_order = 4 where category = 'lightgreen' and category_type = 'Intranet Skin';
 
--- update users set skin_id = 40010 where skin = 2;
-update users set skin_id = 40015 where skin = 0;
-update users set skin_id = 40020 where skin = 4;
-update users set skin_id = 40025 where skin = 2;
 
-update users set skin_id = 40015 where skin_id is null;
+-- Fix DynField issue with database "float"
+CREATE OR REPLACE Function inline_0()
+RETURNS character AS '
+DECLARE
+	v_count		integer;
+BEGIN
+	select count(*)	into v_count 
+	from user_tab_columns
+	where lower(table_name) = ''users'' and lower(column_name) = ''skin_id'';
+	IF v_count > 0 THEN return 1; END IF;
+
+	alter table users add skin_id integer references im_categories;
+
+	-- update users set skin_id = 40010 where skin = 2;
+	update users set skin_id = 40015 where skin = 0;
+	update users set skin_id = 40020 where skin = 4;
+	update users set skin_id = 40025 where skin = 2;
+
+	return 0;
+END;' LANGUAGE 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+-- Catchall - set skin to "saltnpepper" by default
+update users set skin_id = 40020 where skin_id is null;
 
