@@ -831,9 +831,7 @@ ad_proc im_freelance_gantt_resource_select_component {
     set end_date [db_string today "select end_date::date from im_projects where project_id = :object_id" -default ""]
     if {"" == $end_date} { set end_date [db_string today "select to_char(now()::date + 365, 'YYYY-01-01')"] }
 
-
     set skill_select [im_freelance_consulting_member_select_component -object_id $object_id -return_url $return_url]
-
 
     return "
 	<table width='100%'>
@@ -1019,6 +1017,8 @@ ad_proc im_freelance_consulting_member_select_component {
     if {![im_project_has_type $object_id "Translation Project"] || ![im_permission $user_id view_trans_proj_detail]} {
         return ""
     }
+
+    return "<font color=red>This component currently gives an error, please disable.</font>"
 
     # ------------------------------------------------
     # Constants
