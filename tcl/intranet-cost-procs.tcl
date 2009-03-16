@@ -1749,7 +1749,7 @@ ad_proc -public im_cost_type_select {
 		[im_cost_type_po],
 		[im_cost_type_delivery_note],
 		[im_cost_type_interco_invoice],
-		[im_cost_type_interco_quote],
+		[im_cost_type_interco_quote]
 	    )"
 	}
     }
