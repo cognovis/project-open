@@ -1,4 +1,4 @@
-<master src="/packages/intranet-contacts/lib/contact-master">
+<master src="/packages/intranet-contacts/lib/contacts-master">
 <property name="party_id">@supplier_id@</property>
 
 <include src="/packages/intranet-contacts/lib/contact-complaint-form"

@@ -1,5 +1,5 @@
 <if @display_contacts@ false>
-<master src="contact-master" />
+<master src="contacts-master" />
 <property name="party_id">@party_id@</property>
 </if>
 <else>

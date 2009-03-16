@@ -1,4 +1,4 @@
-<master src="/packages/intranet-contacts/lib/contact-master">
+<master src="/packages/intranet-contacts/lib/contacts-master" />
 <property name="party_id">@party_id@</property>
 
 <p>#intranet-contacts.lt_What_role_does_contac# </p>

@@ -1,5 +1,5 @@
 <if @message_type@ eq email>
-<master src="/packages/intranet-contacts/lib/contact-master" />
+<master src="/packages/intranet-contacts/lib/contacts-master" />
 <property name="party_id">@party_id@</property>
 <property name="header_stuff">
   <link rel="stylesheet" type="text/css" href="/resources/contacts/contacts-print.css">

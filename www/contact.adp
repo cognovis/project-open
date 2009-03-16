@@ -1,4 +1,5 @@
-<master src="@master_src@" />
+<master src="/packages/intranet-contacts/lib/contacts-master" />
+
 <property name="party_id">@party_id@</property>
 <div id="contact-info">
   <div class="primary">
