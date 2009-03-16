@@ -176,7 +176,10 @@ template::multirow create bulk_acts pretty link detailed
 template::multirow append bulk_acts "[_ intranet-contacts.Add_Relationship]" "${base_url}relationship-bulk-add" "[_ intranet-contacts.lt_Add_relationship_to_sel]"
 if { [permission::permission_p -object_id $package_id -privilege "admin"] || [acs_user::site_wide_admin_p]  } {
     set admin_p 1
-    template::multirow append bulk_acts "[_ intranet-contacts.Bulk_Update]" "${base_url}bulk-update" "[_ intranet-contacts.lt_Bulk_update_the_seclected_C]"
+
+# Malte & fraber 090306
+#    template::multirow append bulk_acts "[_ intranet-contacts.Bulk_Update]" "${base_url}bulk-update" "[_ intranet-contacts.lt_Bulk_update_the_seclected_C]"
+
 }
 callback contacts::bulk_actions -multirow "bulk_acts"
 

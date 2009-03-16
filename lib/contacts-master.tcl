@@ -19,13 +19,20 @@ lappend link_list "contacts"
 
 
 if { ![parameter::get -boolean -parameter "ForceSearchBeforeAdd" -default "0"] } {
-    lappend link_list "[export_vars -base "${package_url}/contact-add" -url {{object_type person}}]"
-    lappend link_list "[_ intranet-contacts.Add_Person]"
-    lappend link_list "add_person"
-    
-    lappend link_list "[export_vars -base "${package_url}/contact-add" -url {{object_type im_office}}]"
-    lappend link_list "[_ intranet-contacts.Add_Organization]"
-    lappend link_list "add_im_office"
+
+#    lappend link_list "[export_vars -base "${package_url}/contact-add" -url {{object_type person}}]"
+#    lappend link_list "[_ intranet-contacts.Add_Person]"
+#    lappend link_list "add_person"
+
+#    lappend link_list "[export_vars -base "${package_url}/contact-add" -url {{object_type im_office}}]"
+#    lappend link_list "[_ intranet-contacts.Add_Organization]"
+#    lappend link_list "add_im_office"
+
+
+    lappend link_list "[export_vars -base "${package_url}/biz-card-add" ]"
+    lappend link_list "[lang::message::lookup "" intranet-contacts.Add_Biz_Card "New Biz Card"]"
+    lappend link_list "add_biz_card"
+
 }
 
 lappend link_list "${package_url}search"
