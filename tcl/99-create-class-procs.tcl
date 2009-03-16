@@ -17,22 +17,19 @@ set object_types [db_list object_types "
 	from	acs_attributes aa, 
 		im_dynfield_attributes ida
 	where	aa.attribute_id = ida.acs_attribute_id
-UNION	select 'im_office'
-UNION	select 'im_company'
-UNION	select 'im_project'
-UNION	select 'im_conf_item'
-UNION	select 'im_timesheet_task'
-UNION	select 'im_ticket'
-UNION	select 'im_expense_bundle'
-UNION	select 'im_material'
-UNION	select 'im_report'
-UNION	select 'im_user_absence'
-UNION	select 'person'
+   UNION
+	select	object_type
+	from	acs_object_types
+	where	object_type in (
+			'im_office', 'im_company', 'im_project', 'im_conf_item', 'im_timesheet_task',
+			'im_ticket', 'im_expense_bundle', 'im_material', 'im_report', 'im_user_absence',
+			'person'
+		)
 "]
 
 # Now we need to go up for each of these and initialize the class
 
 foreach object_type $object_types {
+    ns_log Notice "intranet-dynfield/tcl/99-create-class-procs.tcl: ::im::dynfield::Class get_class_from_db -object_type $object_type"
     ::im::dynfield::Class get_class_from_db -object_type $object_type
 } 
- 
