@@ -716,12 +716,12 @@ DECLARE
 BEGIN
 	select	count(*) into v_count from acs_rel_roles where role = ''key_account'';
 	IF v_count = 0 THEN 
-		SELECT acs_rel_type__create_role(''key_account'', ''#acs-translations.role_key_account#'', ''#acs-translations.role_key_account_plural#'');
+		PERFORM acs_rel_type__create_role(''key_account'', ''#acs-translations.role_key_account#'', ''#acs-translations.role_key_account_plural#'');
 	END IF;
 
 	select	count(*) into v_count from acs_rel_roles where role = ''company'';
 	IF v_count = 0 THEN 
-		SELECT acs_rel_type__create_role(''company'', ''#acs-translations.role_company#'', ''#acs-translations.role_company_plural#'');
+		PERFORM acs_rel_type__create_role(''company'', ''#acs-translations.role_company#'', ''#acs-translations.role_company_plural#'');
 	END IF;
 
 	RETURN 0;
@@ -737,10 +737,10 @@ RETURNS integer as '
 DECLARE
 	v_count			integer;
 BEGIN
-	select count(*) into v_count from acs_object_types where object_type = ''im_company_employee_rel'';
+	select count(*) into v_count from acs_object_types where object_type = ''im_key_account_rel'';
 	IF v_count > 0 THEN return 0; END IF;
 
-	SELECT acs_object_type__create_type(
+	PERFORM acs_object_type__create_type(
 		''im_key_account_rel'',
 		''#intranet-contacts.key_account_rel#'',
 		''#intranet-contacts.key_account_rels#'',
