@@ -615,7 +615,7 @@ BEGIN
 	select count(*) into v_count from acs_object_types where object_type = ''im_company_employee_rel'';
 	IF v_count > 0 THEN return 0; END IF;
 
-	SELECT acs_object_type__create_type(
+	PERFORM acs_object_type__create_type(
 		''im_company_employee_rel'',
 		''#intranet-contacts.company_employee_rel#'',
 		''#intranet-contacts.company_employee_rels#'',
