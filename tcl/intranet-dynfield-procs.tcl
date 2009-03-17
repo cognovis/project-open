@@ -1089,6 +1089,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     set debug 0
     if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: object_type=$object_type, object_id=$object_id" }
     set user_id [ad_get_user_id]
+    set form_page_url $page_url
 
     # Add a hidden "object_type" field to the form
     if {![template::element::exists $form_id "object_type"]} {
@@ -1169,7 +1170,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
     # Does the specified layout page exist? Otherwise we'll use
     # "default".
-    set page_url_exists_p [db_string exists "select count(*) from im_dynfield_layout_pages where object_type = :object_type and page_url = :page_url"]
+    set page_url_exists_p [db_string exists "select count(*) from im_dynfield_layout_pages where object_type = :object_type and page_url = :form_page_url"]
     if {!$page_url_exists_p} { set page_url "default" }
 
     set attributes_sql "
@@ -1196,7 +1197,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 			LEFT OUTER JOIN	(
 				select	* 
 				from	im_dynfield_layout 
-				where	page_url = :page_url
+				where	page_url = :form_page_url
 			) dl ON (aa.attribute_id = dl.attribute_id),
 			im_dynfield_widgets aw,
 			acs_attributes a 
@@ -1292,7 +1293,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     # Same loop as before...
     db_foreach attributes $attributes_sql {
 
-	# Check if the elements as disabled in the layout page
+	# Check if the elements is disabled in the layout page
 	if {$page_url_exists_p && "" == $page_url} { continue }
 
 	# Check if the current user has the right to read the dynfield
@@ -1318,7 +1319,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
 	# Don't show "none" fields...
 	if {"none" == $display_mode} { continue }
-
 
 	switch $storage_type {
 	    multimap {

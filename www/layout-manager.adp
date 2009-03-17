@@ -1,7 +1,3 @@
-<%
-  # /packages/intranet-dynfield/www/layout-manager.adp
-  # $Workfile: layout-manager.adp $ $Revision$ $Date$
-%>
 <master src="master">
 
 <property name="title">@title@</property>
