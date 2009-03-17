@@ -56,7 +56,7 @@ set type_category_type = 'Intranet Office Type'
 where object_type = 'im_office';
 
 update acs_object_types
-set type_category_type = 'Intranet Person Type'
+set type_category_type = 'Intranet User Type'
 where object_type = 'person';
 
 update acs_object_types

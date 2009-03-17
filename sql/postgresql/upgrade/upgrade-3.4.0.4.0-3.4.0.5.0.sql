@@ -164,6 +164,10 @@ where	category_type = 'Intranet User Status'
 	and (enabled_p is null OR enabled_p = 't');
 
 
+
+-- ToDo: Fill the im_dynfield_type_attribute_map
+-- with entries so that Employees by default show all fields
+
 -- Update the category sequence in case there have been manual entries
 SELECT pg_catalog.setval('im_categories_seq', (select 1+max(category_id) from im_categories), true);
 
@@ -800,3 +804,14 @@ where
 
 update acs_rels set rel_type = 'im_key_account_rel' where rel_id in (select key_account_rel_id from im_key_account_rels);
 
+
+
+
+
+
+-- Fix "deparment" error in DynField naming
+update acs_attributes set
+	pretty_name = '#intranet-hr.Department#',
+	pretty_plural = '#intranet-hr.Department#'
+where
+	pretty_name = '#intranet-cost.Deparment';
