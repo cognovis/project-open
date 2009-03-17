@@ -95,16 +95,20 @@ set object_type "im_company"
 
 im_dynfield::append_attributes_to_form \
     -object_type "person" \
-    -form_id $form_id
+    -form_id $form_id \
+    -page_url "/intranet-contacts/biz-card-add" 
+
 
 im_dynfield::append_attributes_to_form \
     -object_type "im_company" \
-    -form_id $form_id
+    -form_id $form_id \
+    -page_url "/intranet-contacts/biz-card-add" 
 
 
 im_dynfield::append_attributes_to_form \
     -object_type "im_office" \
-    -form_id $form_id
+    -form_id $form_id \
+    -page_url "/intranet-contacts/biz-card-add" 
 
 
 ad_form -extend -name $form_id -new_request {
@@ -165,9 +169,9 @@ ad_form -extend -name $form_id -new_request {
     set company_exists_p 0
     if {[info exists company_id]} {
 	set company_exists_p [db_string company_exists "
-        select count(*)
-        from im_companies
-        where company_id = :company_id
+		select count(*)
+		from im_companies
+		where company_id = :company_id
         "]
     }
 
@@ -210,11 +214,11 @@ ad_form -extend -name $form_id -new_request {
 	    # First create a new main_office:
 	    set main_office_id [office::new \
 				    -office_name	$office_name \
-				    -company_id     $company_id \
-				    -office_type_id [im_office_type_main] \
-				    -office_status_id [im_office_status_active] \
+				    -company_id		$company_id \
+				    -office_type_id	[im_office_type_main] \
+				    -office_status_id	[im_office_status_active] \
 				    -office_path	$office_path]
-	    
+
 	    # add users to the office as 
 	    set role_id [im_biz_object_role_office_admin]
 	    im_biz_object_add_role $user_id $main_office_id $role_id
@@ -224,12 +228,12 @@ ad_form -extend -name $form_id -new_request {
 	    
 	    # Now create the company with the new main_office:
 	    set company_id [company::new \
-				-company_id $company_id \
-				-company_name	$company_name \
-				-company_path	$company_path \
-				-main_office_id	$main_office_id \
-				-company_type_id $company_type_id \
-				-company_status_id $company_status_id]
+				-company_id		$company_id \
+				-company_name		$company_name \
+				-company_path		$company_path \
+				-main_office_id		$main_office_id \
+				-company_type_id	$company_type_id \
+				-company_status_id	$company_status_id]
 	    
 	    # add users to the company as key account
 	    set role_id [im_biz_object_role_key_account]
@@ -243,18 +247,18 @@ ad_form -extend -name $form_id -new_request {
     # -----------------------------------------------------------------
     
     set update_sql "
-update im_offices set
-	office_name = :office_name,
-	phone = :phone,
-	fax = :fax,
-	address_line1 = :address_line1,
-	address_line2 = :address_line2,
-	address_city = :address_city,
-	address_state = :address_state,
-	address_postal_code = :address_postal_code,
-	address_country_code = :address_country_code
-where
-	office_id = :main_office_id
+		update im_offices set
+			office_name = :office_name,
+			phone = :phone,
+			fax = :fax,
+			address_line1 = :address_line1,
+			address_line2 = :address_line2,
+			address_city = :address_city,
+			address_state = :address_state,
+			address_postal_code = :address_postal_code,
+			address_country_code = :address_country_code
+		where
+			office_id = :main_office_id
     "
     db_dml update_offices $update_sql
 
@@ -262,25 +266,27 @@ where
     # -----------------------------------------------------------------
     # Update the Company
     # -----------------------------------------------------------------
+
+    if {![info exists contract_value]} { set contract_value "" }
+    if {![info exists billable_p]} { set billable_p "" }
     
     set update_sql "
-update im_companies set
-	company_name		= :company_name,
-	company_path		= :company_path,
-	vat_number		= :vat_number,
-	company_status_id	= :company_status_id,
-	old_company_status_id	= :old_company_status_id,
-	company_type_id	= :company_type_id,
-	referral_source		= :referral_source,
-	start_date		= :start_date,
-	annual_revenue_id	= :annual_revenue_id,
-	contract_value		= :contract_value,
-	site_concept		= :site_concept,
-	manager_id		= :manager_id,
-	billable_p		= :billable_p,
-	note			= :note
-where
-	company_id = :company_id
+		update im_companies set
+			company_name		= :company_name,
+			company_path		= :company_path,
+			vat_number		= :vat_number,
+			company_status_id	= :company_status_id,
+			company_type_id		= :company_type_id,
+			referral_source		= :referral_source,
+			start_date		= :start_date,
+			annual_revenue_id	= :annual_revenue_id,
+			contract_value		= :contract_value,
+			site_concept		= :site_concept,
+			manager_id		= :manager_id,
+			billable_p		= :billable_p,
+			note			= :note
+		where
+			company_id = :company_id
     "
     db_dml update_company $update_sql
 

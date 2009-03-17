@@ -173,7 +173,10 @@ set company_url  [export_vars -base $base_url -url {format search_id query page 
 set last_modified_url [export_vars -base $base_url -url {format search_id query page page_size extended_columns {orderby {last_modified,desc}}}]
 
 template::multirow create bulk_acts pretty link detailed
-template::multirow append bulk_acts "[_ intranet-contacts.Add_Relationship]" "${base_url}relationship-bulk-add" "[_ intranet-contacts.lt_Add_relationship_to_sel]"
+
+# fraber 090317: Disabled Add_Relationship - doesn't work
+# template::multirow append bulk_acts "[_ intranet-contacts.Add_Relationship]" "${base_url}relationship-bulk-add" "[_ intranet-contacts.lt_Add_relationship_to_sel]"
+
 if { [permission::permission_p -object_id $package_id -privilege "admin"] || [acs_user::site_wide_admin_p]  } {
     set admin_p 1
 

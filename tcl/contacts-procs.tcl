@@ -256,6 +256,8 @@ ad_proc -public contact::privacy_prevents_p {
     @param type either 'email', 'mail' or 'phone'
     @returns 1 or 0 if the specified type of communication is allowed
 } {
+    # ToDo: Enable permissions!
+    return 0
     if { [contact::privacy_allows_p -party_id $party_id -type $type -package_id $package_id] } {
 	return 0
     } else {
