@@ -135,8 +135,55 @@ ad_form -extend -name $form_id -new_request {
 
 } -on_submit {
 
+
     # ------------------------------------------------------------------
-    # Build the list
+    # Build conditional SQL
+    # ------------------------------------------------------------------
+
+    set org_first_names [string trim $first_names]
+    set org_last_name [string trim $last_name]
+    set org_email [string tolower [string trim $email]]
+    set org_company_name [string trim $company_name]
+
+    set first_names [string tolower [string trim $first_names]]
+    set last_name [string tolower [string trim $last_name]]
+    set email [string tolower [string trim $email]]
+    set company_name [string tolower [string trim $company_name]]
+
+
+
+    set q_list [list]
+    set contact_or_query [list]
+    set company_or_query [list]
+    if {"" != $first_names} { 
+	foreach t $first_names { lappend q_list $t }
+	lappend contact_or_query "lower(u.first_names) like '%$first_names%'"
+    }
+    if {"" != $last_name} { 
+	foreach t $last_name { lappend q_list $t }
+	lappend contact_or_query "lower(u.last_name) like '%$last_name%'"
+    }
+    if {"" != $email} { 
+	foreach t $email { lappend q_list $t }
+	lappend contact_or_query "lower(u.email) like '%$email%'"
+    }
+    if {"" != $company_name} { 
+	foreach t $company_name { lappend q_list $t }
+	lappend company_or_query "lower(c.company_name) like '%$company_name%'"
+    }
+    
+    set q [join $q_list " | "]
+
+    set contact_or_clause [join $contact_or_query "\n\t\t\tOR " ]
+    if {"" == $contact_or_clause} { set contact_or_clause "1=0" }
+
+    set company_or_clause [join $company_or_query "\n\t\t\tOR " ]
+    if {"" == $company_or_clause} { set company_or_clause "1=0" }
+
+
+
+    # ------------------------------------------------------------------
+    # Build the user list
     # ------------------------------------------------------------------
     
     lappend action_list "Add page" "[export_vars -base "layout-page" { object_type }]" "Add item to this order"
@@ -174,6 +221,12 @@ ad_form -extend -name $form_id -new_request {
 		    </else>
 		}
 	    }
+	    company_html { 
+		label "[lang::message::lookup {} intranet-core.Companies {Companies}]" 
+		display_template {
+			@contact_multirow.company_html;noquote@
+		}
+	    }
 	    action {
 		label ""
 		display_template {
@@ -187,35 +240,6 @@ ad_form -extend -name $form_id -new_request {
 	    contact_type {orderby contact_type}
 	}
 
-
-
-    set first_names [string tolower [string trim $first_names]]
-    set last_name [string tolower [string trim $last_name]]
-    set email [string tolower [string trim $email]]
-    set company_name [string tolower [string trim $company_name]]
-
-    set q_list [list]
-    set or_query [list]
-    if {"" != $first_names} { 
-	lappend q_list $first_names 
-	lappend or_query "lower(u.first_names) like '%$first_names%'"
-    }
-    if {"" != $last_name} { 
-	lappend q_list $last_name 
-	lappend or_query "lower(u.last_name) like '%$last_name%'"
-    }
-    if {"" != $email} { 
-	lappend q_list $email 
-	lappend or_query "lower(u.email) like '%$email%'"
-    }
-    if {"" != $company_name} { 
-	lappend q_list $company_name 
-    }
-    
-    set q [join $q_list " | "]
-    set or_clause [join $or_query "\n\t\t\tOR " ]
-    if {"" == $or_clause} { set or_clause "1=0" }
-    
     
     set inner_sql "
 			select
@@ -224,7 +248,7 @@ ad_form -extend -name $form_id -new_request {
 			from
 				cc_users u
 			where
-				$or_clause
+				$contact_or_clause
 		    UNION
 			select
 				so.object_id as user_id,
@@ -253,19 +277,38 @@ ad_form -extend -name $form_id -new_request {
 		u.*,
 		cust.group_id as cust_group_id,
 		prov.group_id as prov_group_id,
-		empl.group_id as empl_group_id
+		empl.group_id as empl_group_id,
+		im_company_list_for_user_html(u.user_id) as company_ids
 	from
 		($middle_sql) uu,
 		cc_users u
-		LEFT OUTER JOIN (select * from group_distinct_member_map where group_id = [im_customer_group_id]) cust ON cust.member_id = u.user_id
-		LEFT OUTER JOIN (select * from group_distinct_member_map where group_id = [im_freelance_group_id]) prov ON prov.member_id = u.user_id
-		LEFT OUTER JOIN (select * from group_distinct_member_map where group_id = [im_employee_group_id]) empl ON empl.member_id = u.user_id
+		LEFT OUTER JOIN (
+				select * from group_distinct_member_map 
+				where group_id = [im_customer_group_id]
+		) cust ON cust.member_id = u.user_id
+		LEFT OUTER JOIN (
+		     		select * from group_distinct_member_map 
+				where group_id = [im_freelance_group_id]
+		) prov ON prov.member_id = u.user_id
+		LEFT OUTER JOIN (
+		     	   	select * from group_distinct_member_map 
+				where group_id = [im_employee_group_id]
+		) empl ON empl.member_id = u.user_id
 	where
 		u.user_id = uu.user_id
 	[template::list::orderby_clause -name contact_list -orderby]
     "
+    
+    set company_hash_sql "
+	select	company_id,
+		company_name
+	from	im_companies	 		 
+    "
+    db_foreach company_hash $company_hash_sql {
+    	set company_name_hash($company_id) $company_name
+    }
 
-    db_multirow -extend {user_url delete_url contact_type action_html} contact_multirow get_similar_contacts $contact_sql {
+    db_multirow -extend {company_html user_url delete_url contact_type action_html} contact_multirow get_similar_contacts $contact_sql {
 
 	set user_url [export_vars -base "/intranet/users/new" { user_id return_url }]
 	set delete_url [export_vars -base "contact-del" { object_type page_url }]
@@ -276,9 +319,108 @@ ad_form -extend -name $form_id -new_request {
 	
 	set also_add_users [list $user_id [im_biz_object_role_full_member]]
 	set action_text [lang::message::lookup "" intranet-core.Create_new_company_for_this_user "Create new company for this user"]
-	set action_url [export_vars -base "/intranet/companies/new" {also_add_users}]
+	set action_url [export_vars -base "/intranet/companies/new" {{company_name $org_company_name} also_add_users}]
+	set action_html "<a href='$action_url' class=button>$action_text</a>"
+
+	set company_html ""
+	foreach company_id $company_ids {
+	    set company_name "<nobr>$company_name_hash($company_id)</nobr>"
+	    append company_html "<a href='[export_vars -base "/intranet/companies/view" {company_id}]'>$company_name</a><br>\n"
+	}
+#	append company_html "&nbsp;<br>"
+    }
+
+
+    # ------------------------------------------------------------------
+    # Build the company list
+    # ------------------------------------------------------------------
+    
+    lappend action_list "Add page" "[export_vars -base "layout-page" { object_type }]" "Add item to this order"
+    
+    list::create \
+	-name company_list \
+	-multirow company_multirow \
+	-key user_id \
+	-actions $action_list \
+	-no_data "[lang::message::lookup {} intranet-core.No_contacts_found {No companies found}]" \
+	-elements {
+	    rank { 
+		label "[lang::message::lookup {} intranet-core.Rank {Rank}]" 
+	    }
+	    company_name { 
+		label "[lang::message::lookup {} intranet-core.Company_name {Company Name}]" 
+		link_url_col company_url
+	    }
+	    company_type { 
+		label "Type" 
+	    }
+	    action {
+		label ""
+		display_template {
+		    @company_multirow.action_html;noquote@
+		}
+	    }
+	} \
+	-orderby {
+	    rank {orderby rank}
+	    company_name {orderby company_name}
+	    company_type {orderby company_type}
+	}
+
+    
+    set inner_sql "
+			select
+				c.company_id,
+				1 as rank
+			from
+				im_companies c
+			where
+				$company_or_clause
+		    UNION
+			select
+				so.object_id as company_id,
+		                (rank(so.fti, :q::tsquery) * sot.rel_weight)::numeric(12,2) as rank
+			from
+				im_search_objects so,
+				im_search_object_types sot
+			where
+				so.object_type_id = sot.object_type_id and
+				so.fti @@ to_tsquery('default',:q)
+    "
+
+    # Sum up the ranks of the two searches
+    set middle_sql "
+	select	sum(c.rank) as rank,
+		c.company_id
+	from
+		($inner_sql) c
+	group by
+	      c.company_id
+    "
+
+    set company_sql "
+	select
+		cc.rank,
+		c.*,
+		im_category_from_id(c.company_type_id) as company_type
+	from
+		($middle_sql) cc,
+		im_companies c
+	where
+		c.company_id = cc.company_id
+	[template::list::orderby_clause -name company_list -orderby]
+    "
+
+    db_multirow -extend {company_url action_html} company_multirow get_similar_companies $company_sql {
+
+	set company_url [export_vars -base "/intranet/companies/new" { company_id return_url }]
+	
+	set also_add_to_biz_object [list $company_id [im_biz_object_role_full_member]]
+	set action_text [lang::message::lookup "" intranet-core.Create_new_user_for_this_company "Create new user for this company"]
+	set action_url [export_vars -base "/intranet/users/new" {{first_names $org_first_names} {last_name $org_last_name} {email $org_email} profile also_add_to_biz_object}]
 	set action_html "<a href='$action_url' class=button>$action_text</a>"
     }
+
 
     set search_results_p 1
 

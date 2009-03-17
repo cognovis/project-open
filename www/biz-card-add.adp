@@ -15,7 +15,16 @@ We have found an exact match for user @found_user_name@ (@found_user_email@).
 
 
 <if @search_results_p@>
+    <h2>Users</h2>
     <p>
     <listtemplate name="contact_list"></listtemplate>
     </p>
+    <br>
+
+    <h2>Companies</h2>
+    <p>
+    <listtemplate name="company_list"></listtemplate>
+    </p>
+    <br>
+
 </if>
