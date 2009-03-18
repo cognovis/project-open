@@ -95,17 +95,10 @@ set contact_options [list \
 
 set form_id "contact"
 
-set actions [list]
-lappend actions [list [lang::message::lookup {} intranet-timesheet2.Edit Edit] edit]
-lappend actions [list [lang::message::lookup {} intranet-timesheet2.Delete Delete] delete]
-
-# ad_return_complaint 1 [template::form get_action $form_id]
-
 ad_form \
     -name $form_id \
     -cancel_url $return_url \
     -action "biz-card-add" \
-    -actions $actions \
     -has_edit 1 \
     -method GET \
     -mode $form_mode \
@@ -186,13 +179,10 @@ ad_form -extend -name $form_id -new_request {
     # Build the user list
     # ------------------------------------------------------------------
     
-    lappend action_list "Add page" "[export_vars -base "layout-page" { object_type }]" "Add item to this order"
-    
     list::create \
 	-name contact_list \
 	-multirow contact_multirow \
 	-key user_id \
-	-actions $action_list \
 	-no_data "[lang::message::lookup {} intranet-core.No_contacts_found {No contacts found}]" \
 	-elements {
 	    rank { 
@@ -335,13 +325,10 @@ ad_form -extend -name $form_id -new_request {
     # Build the company list
     # ------------------------------------------------------------------
     
-    lappend action_list "Add page" "[export_vars -base "layout-page" { object_type }]" "Add item to this order"
-    
     list::create \
 	-name company_list \
 	-multirow company_multirow \
 	-key user_id \
-	-actions $action_list \
 	-no_data "[lang::message::lookup {} intranet-core.No_contacts_found {No companies found}]" \
 	-elements {
 	    rank { 
