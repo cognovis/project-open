@@ -20,6 +20,9 @@ ad_page_contract {
 
 } -return_errors error_list
 
+
+ad_return_complaint 1 "This feature hasn't been tested after the modifications of DynFields due to CRM"
+
 # security check
 set user_id [ad_verify_and_get_user_id]
 

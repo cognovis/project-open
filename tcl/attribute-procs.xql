@@ -1,29 +1,6 @@
 <?xml version="1.0"?>
 <queryset>
 
-<fullquery name="attribute::add_xt.select_table">      
-      <querytext>
-      
-        select t.table_name
-          from acs_object_types t
-         where t.object_type = :object_type
-    
-      </querytext>
-</fullquery>
-
- 
-<fullquery name="attribute::add_xt.select_attribute_id">      
-      <querytext>
-      
-        select a.attribute_id
-          from acs_attributes a
-         where a.object_type = :object_type
-           and a.attribute_name = :attribute_name
-    
-      </querytext>
-</fullquery>
-
- 
 <fullquery name="attribute::delete.select_attr_info">      
       <querytext>
       
@@ -104,18 +81,4 @@
       </querytext>
 </fullquery>
 
-
-<fullquery name="attribute::value_add_xt.insert_enum_value">
-<querytext>
-	insert into acs_enum_values
-	(attribute_id, sort_order, enum_value, pretty_name)
-	select :attribute_id, :sort_order, :enum_value, :enum_value
-	from dual
-	where not exists (select 1 
-	from acs_enum_values v2
-	where v2.pretty_name = :enum_value
-	and v2.attribute_id = :attribute_id)
-</querytext>
-</fullquery>
- 
 </queryset>
