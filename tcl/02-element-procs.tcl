@@ -62,6 +62,7 @@ xotcl::Class create ::im::dynfield::Element \
     if {$list_id eq ""} {
         # Apparently the list is not important, might be the case if the help_text is not needed or the default value
         set list_id [ams::list::get_id -attribute_id $id]
+	if {"" == $list_id} { ad_return_complaint 1 "::im::dynfield::Element ad_proc get_instance_from_db: List_id is empty" }
     }
     set org_sql "
     select
@@ -144,18 +145,18 @@ xotcl::Class create ::im::dynfield::Element \
            and tam.attribute_id = ida.attribute_id
            and ida.widget_name = idw.widget_name
            and ida.attribute_id = $id
-           and tam.object_type_id = $list_id
-     "
-    
-     set r [::im::dynfield::Element create ::${id}__$list_id]
-     $r db_1row dbq..get_element $sql
-     if {[lsearch [im_dynfield_multimap_ids] [$r storage_type_id]] <0} {
-         $r set multiple_p 0
-     } else {
-         $r set multiple_p 1
-     }
-     $r destroy_on_cleanup
-     return $r
+	   and tam.object_type_id = $list_id
+    "
+
+    set r [::im::dynfield::Element create ::${id}__$list_id]
+    $r db_1row dbq..get_element $sql
+    if {[lsearch [im_dynfield_multimap_ids] [$r storage_type_id]] <0} {
+	$r set multiple_p 0
+    } else {
+	$r set multiple_p 1
+    }
+    $r destroy_on_cleanup
+    return $r
 }
 
 ::im::dynfield::Element ad_instproc save {} {
