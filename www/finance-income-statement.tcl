@@ -209,7 +209,7 @@ where
 set expense_select ", '' as external_company_name"
 set expense_from ""
 set expense_where ""
-if {[db_table_exists im_expenses]} {
+if {[im_table_exists im_expenses]} {
     set expense_select ", e.external_company_name"
     set expense_from "LEFT OUTER JOIN im_expenses e on (c.cost_id = e.expense_id)"
 }
