@@ -67,7 +67,7 @@ ad_proc -public delete_xt { im_dynfield_attribute_id } {
 
     set plsql [list]
     lappend plsql [list "drop_attribute" "FOO" "db_exec_plsql"]
-    if { [db_column_exists $table_name $column_name] } {
+    if { [im_column_exists $table_name $column_name] } {
         #lappend plsql [list "drop_attr_column" "FOO" "db_dml"]
     }
 
@@ -76,6 +76,4 @@ ad_proc -public delete_xt { im_dynfield_attribute_id } {
     }
 
     return 1
-}
-
 }

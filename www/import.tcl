@@ -258,7 +258,7 @@ foreach obj_type $object_types_list {
 	db_transaction {
 		if {!$acs_attribute_exists} {
 		    
-		    if { ! [db_column_exists $table_name $attribute_name]} {
+		    if { ![im_column_exists $table_name $attribute_name]} {
 		    	set modify_sql_p "t"
 		    } else {
 		    	set modify_sql_p "f"
