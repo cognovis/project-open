@@ -112,7 +112,7 @@ namespace eval im_mail_import {
 	"
 
 	# "Notes" support for multiple email addresses per user.
-	if {[db_table_exists "im_notes"]} {
+	if {[im_table_exists "im_notes"]} {
 	    append sql "
 	    UNION
 		select	object_id
