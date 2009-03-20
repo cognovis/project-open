@@ -49,8 +49,7 @@ if {$add_conf_item_p} {
     append admin_links " <li><a href=\"[export_vars -base /intranet-confdb/new {return_url {form_mode "edit"}}]\">[lang::message::lookup "" intranet-confdb.Add_a_new_Conf_Item "Add a new Configuration Item"]</a></li>\n"
 }
 
-set bind_vars [ad_tcl_vars_to_ns_set]
-append admin_links [im_menu_ul_list -no_uls 1 "conf_items" $bind_vars]
+append admin_links [im_menu_ul_list -no_uls 1 "conf_items" {}]
 
 if {"" != $admin_links} {
     set admin_links "<ul>\n$admin_links\n</ul>\n"
