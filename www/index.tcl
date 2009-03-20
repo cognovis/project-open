@@ -455,7 +455,7 @@ if {[im_is_user_site_wide_or_intranet_admin $current_user_id]} {
 if {[im_permission $current_user_id "add_tickets"]} {
     append admin_html "<li><a href=\"/intranet-helpdesk/new\">[lang::message::lookup "" intranet-helpdesk.Add_a_new_ticket "New Ticket"]</a>\n"
 
-    set wf_oid_col_exists_p [util_memoize "db_column_exists wf_workflows object_type"]
+    set wf_oid_col_exists_p [im_column_exists wf_workflows object_type]
     if {$wf_oid_col_exists_p} {
 	set wf_sql "
 		select	t.pretty_name as wf_name,

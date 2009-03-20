@@ -339,7 +339,7 @@ namespace eval im_ticket {
 	    db_dml project_update {}
 
 	    # Deal with OpenACS 5.4 "title" static title columm which is wrong:
-	    if {[util_memoize "db_column_exists acs_objects title"]} {
+	    if {[im_column_exists acs_objects title]} {
 		db_dml object_update "update acs_objects set title = null where object_id = :ticket_id"
 	    }
 
