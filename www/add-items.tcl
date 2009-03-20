@@ -72,7 +72,7 @@ list::create \
 
 
 set project_release_item_p_sql ""
-if {[db_column_exists im_projects release_item_p]} {
+if {[im_column_exists im_projects release_item_p]} {
     set project_release_item_p_sql "OR p.release_item_p = 't'"
 }
 
