@@ -106,6 +106,16 @@ This Pivot Table ('cube') is a kind of report that shows timesheet
 hours according to a number of 'dimensions' that you can specify.
 This cube effectively replaces a dozen of specific reports and allows
 you to 'drill down' into results.<p>
+
+Please take note about the display of the project hierarchy:
+<ul>
+<li>'Main Project' is the topmost project.
+<li>'Sub Project/Task' is the project or task below the main 
+    project. If the hours were logged on a main project, then
+    the main project name will appear again.
+<li>'Leaf Project/Task' refers to the sub project or task at
+    any level of depth where the hours have been logged.
+</ul>
 "
 
 
@@ -173,10 +183,15 @@ set left_scale_options {
 	"main_project_type" "Main Project Type"
 	"main_project_status" "Main Project Status"
 
-	"sub_project_name" "SubProject Name"
-	"sub_project_nr" "SubProject Nr"
-	"sub_project_type" "SubProject Type"
-	"sub_project_status" "SubProject Status"
+	"main2_project_name" "Sub Project/Task Name"
+	"main2_project_nr" "Sub Project/Task Nr"
+	"main2_project_type" "Sub Project/Task Type"
+	"main2_project_status" "Sub Project/Task Status"
+
+	"sub_project_name" "Leaf Project/Task Name"
+	"sub_project_nr" "Leaf Project/Task Nr"
+	"sub_project_type" "Leaf Project/Task Type"
+	"sub_project_status" "Leaf Project/Task Status"
 
 	"user_name" "User Name"
 	"department" "User Department"
@@ -420,7 +435,8 @@ set inner_sql "
 			e.*,
 			im_cost_center_name_from_id(e.department_id) as department,
 			im_name_from_user_id(u.user_id) as user_name,
-			tree_ancestor_key(p.tree_sortkey, 1) as main_project_sortkey
+			im_reporting_cube_tree_ancestor_key(p.tree_sortkey, 1) as main_project_sortkey,
+			im_reporting_cube_tree_ancestor_key(p.tree_sortkey, 2) as main2_project_sortkey
 		from
 			im_hours h,
 			im_projects p,
@@ -442,14 +458,22 @@ set inner_sql "
 set middle_sql "
 	select
 		h.*,
-		p.project_name as main_project_name,
-		p.project_nr as main_project_nr,
-		p.project_type_id as main_project_type_id,
-		p.project_status_id as main_project_status_id,
+		p1.project_name as main_project_name,
+		p1.project_nr as main_project_nr,
+		p1.project_type_id as main_project_type_id,
+		p1.project_status_id as main_project_status_id,
+
+		p2.project_name as main2_project_name,
+		p2.project_nr as main2_project_nr,
+		p2.project_type_id as main2_project_type_id,
+		p2.project_status_id as main2_project_status_id,
+
 		[join $derefs ",\n\t\t"]
 	from	($inner_sql) h,
-		im_projects p
-	where	h.main_project_sortkey = p.tree_sortkey
+		im_projects p1,
+		im_projects p2
+	where	h.main_project_sortkey = p1.tree_sortkey and
+		h.main2_project_sortkey = p2.tree_sortkey
 "
 
 set outer_sql "
