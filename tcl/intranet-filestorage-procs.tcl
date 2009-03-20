@@ -290,9 +290,18 @@ ad_proc -private im_package_filestorage_id_helper {} {
 }
 
 
-
-
 ad_proc -private im_filestorage_base_path { 
+    folder_type 
+    object_id 
+} {
+    Returns the base_path for the determined object or ""
+    to indicate an error.
+} {
+    return [util_memoize [list im_filestorage_base_path_helper $folder_type $object_id] 3600]
+}
+
+
+ad_proc -private im_filestorage_base_path_helper { 
     folder_type 
     object_id 
 } {
@@ -618,6 +627,7 @@ where
 
     return "$base_path_unix/$company_path/$project_path"
 }
+
 
 
 ad_proc im_filestorage_user_path { user_id } {
