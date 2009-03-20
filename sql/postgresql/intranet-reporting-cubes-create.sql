@@ -71,7 +71,7 @@ create table im_reporting_cube_values (
 -- but there is only a main project).
 
 
-create function im_reporting_cube_tree_ancestor_key(varbit, integer) returns varbit as '
+create or replace function im_reporting_cube_tree_ancestor_key(varbit, integer) returns varbit as '
 declare
 	p_tree_key		alias for $1;
 	p_level			alias for $2;
@@ -81,7 +81,7 @@ declare
 begin
 	if tree_level(p_tree_key) < p_level then
 		-- go up one level instead or reporting an error
-		return im_tree_ancestor_key(p_tree_key, p_level -1);
+		return im_reporting_cube_tree_ancestor_key(p_tree_key, p_level -1);
 	end if;
 
 	while v_level < p_level loop
