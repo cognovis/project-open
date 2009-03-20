@@ -28,7 +28,7 @@ ad_page_contract {
 
 set current_user_id [ad_maybe_redirect_for_registration]
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
-set reports_exist_p [db_table_exists "im_reports"]
+set reports_exist_p [im_table_exists "im_reports"]
 
 
 # Label: Provides the security context for this report
@@ -36,11 +36,11 @@ set reports_exist_p [db_table_exists "im_reports"]
 # its permissions.
 set menu_label "reporting"
 
-set read_p [db_string report_perms "
-        select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
+set read_p [util_memoize [list db_string report_perms "
+        select  im_object_permission_p(m.menu_id, $current_user_id, 'read')
         from    im_menus m
-        where   m.label = :menu_label
-" -default 'f']
+        where   m.label = '$menu_label'
+" -default 'f']]
 
 if {![string equal "t" $read_p]} {
     ad_return_complaint 1 "<li>[lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
@@ -88,11 +88,11 @@ if {$reports_exist_p && $user_admin_p} {
 }
 
 
-set top_menu_sortkey [db_string top_menu_sortkey "
+set top_menu_sortkey [util_memoize [list db_string top_menu_sortkey "
 	select tree_sortkey 
 	from im_menus 
 	where label = 'reporting'
-" -default ""]
+" -default ""]]
 
 list::create \
         -name report_list \
