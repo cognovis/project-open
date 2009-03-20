@@ -1050,7 +1050,11 @@ ad_proc im_costs_project_component { user_id project_id } {
 }
 
 
-ad_proc im_costs_base_component { user_id {company_id ""} {project_id ""} } {
+ad_proc im_costs_base_component { 
+    user_id 
+    {company_id ""} 
+    {project_id ""} 
+} {
     Returns a HTML table containing a list of costs for a particular
     company or project.
 } {
@@ -1217,14 +1221,14 @@ ad_proc im_costs_base_component { user_id {company_id ""} {project_id ""} } {
 
 
 	    # Customer invoices: customer = Project Customer, provider = Internal
-	    set customer_id [db_string project_customer "select company_id from im_projects where project_id=:project_id" -default ""]
+	    set customer_id [util_memoize [list db_string project_customer "select company_id from im_projects where project_id = $project_id" -default ""]]
 	    set provider_id [im_company_internal]
-	    set bind_vars [ad_tcl_vars_to_ns_set customer_id provider_id project_id]
+	    set bind_vars [list customer_id $customer_id provider_id $provider_id project_id $project_id]
       	    append cost_html [im_menu_ul_list "invoices_customers" $bind_vars]
 
 	    # Provider invoices: customer = Internal, no provider yet defined
 	    set customer_id [im_company_internal]
-	    set bind_vars [ad_tcl_vars_to_ns_set customer_id project_id]
+	    set bind_vars [list customer_id $customer_id project_id $project_id]
 	    append cost_html [im_menu_ul_list "invoices_providers" $bind_vars]
 
 	    append cost_html "	
@@ -1633,15 +1637,15 @@ ad_proc im_costs_project_finance_component {
 	  <td>\n"
 
 	    # Customer invoices: customer = Project Customer, provider = Internal
-	    set customer_id [db_string project_customer "select company_id from im_projects where project_id = :org_project_id" -default ""]
+	    set customer_id [util_memoize [list db_string project_customer "select company_id from im_projects where project_id = $org_project_id" -default ""]]
 	    set provider_id [im_company_internal]
-	    set bind_vars [ad_tcl_vars_to_ns_set project_id customer_id provider_id]
+	    set bind_vars [list project_id $project_id customer_id $customer_id provider_id $provider_id]
 	    append admin_html [lang::message::lookup "" intranet-cost.Customer_Links "Customer Actions"]
       	    append admin_html [im_menu_ul_list "invoices_customers" $bind_vars]
 
 	    # Provider invoices: customer = Internal, no provider yet defined
 	    set customer_id [im_company_internal]
-	    set bind_vars [ad_tcl_vars_to_ns_set customer_id project_id]
+	    set bind_vars [list customer_id $customer_id project_id $project_id]
 	    append admin_html [lang::message::lookup "" intranet-cost.Provider_Links "Provider Actions"]
 	    append admin_html [im_menu_ul_list "invoices_providers" $bind_vars]
 
@@ -1895,7 +1899,6 @@ ad_proc -public im_cost_cache_sweeper { } {
     deterministicly limit the average outdated time per cache.
 } {
     set max_projects [parameter::get_from_package_key -package_key intranet-cost -parameter "CostCacheSweeperMaxProjects" -default 50]
-
     set sql "
 	select	project_id
 	from	im_projects
@@ -1983,8 +1986,8 @@ ad_proc -public im_cost_update_project_cost_cache {
 		cat.cost_type_id
     "
 
-    set cost_type_sql "select category_id from im_categories where category_type='Intranet Cost Type' and (enabled_p is null OR enabled_p = 't') "
-    db_foreach subtotal_init $cost_type_sql {
+    set cost_type_list [util_memoize [list db_list cost_type_category_list "select category_id from im_categories where category_type='Intranet Cost Type' and (enabled_p is null OR enabled_p = 't')"]]
+    foreach category_id $cost_type_list {
 	set subtotals($category_id) 0
     }
 
