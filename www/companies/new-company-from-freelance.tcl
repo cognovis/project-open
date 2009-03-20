@@ -37,7 +37,7 @@ set freelance_from ""
 set freelance_where ""
 set freelance_pg_join ""
 
-if {[db_table_exists im_freelancers]} {
+if {[im_table_exists im_freelancers]} {
     set freelance_select "f.*,"
     set freelance_from "im_freelancers f,"
     set freelance_where ""
