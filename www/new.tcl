@@ -348,7 +348,7 @@ db_multirow -extend { conf_item_chk ticket_url } assoc_tickets_lines assoc_ticke
 set hardware_id [db_string hardware_id "select ocs_id from im_conf_items where conf_item_id = :conf_item_id" -default 0]
 set result ""
 
-if {[db_table_exists "ocs_hardware"]} {
+if {[im_table_exists "ocs_hardware"]} {
 
 	if {"" == $conf_item_type_id} { set conf_item_type_id [db_string type "select conf_item_type_id from im_conf_items where conf_item_id = :conf_item_id" -default 0]}
 
