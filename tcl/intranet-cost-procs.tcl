@@ -1206,7 +1206,7 @@ ad_proc im_costs_base_component { user_id {company_id ""} {project_id ""} } {
 
     # Add some links to create new financial documents
     # if the intranet-invoices module is installed
-    if {[db_table_exists im_invoices]} {
+    if {[im_table_exists im_invoices]} {
 
 	# Project Documents:
 	if {"" != $project_id} {
@@ -1620,7 +1620,7 @@ ad_proc im_costs_project_finance_component {
     # Add some links to create new financial documents
     # if the intranet-invoices module is installed
     set admin_html ""
-    if {$show_admin_links_p && [db_table_exists im_invoices]} {
+    if {$show_admin_links_p && [im_table_exists im_invoices]} {
 
 	set admin_html "
 	<table>
@@ -2055,8 +2055,8 @@ ad_proc -public im_navbar_tree_finance { } { Finance Navbar } {
 
 		<li><a href=/intranet/admin/>Admin</a>
 		<ul>
-			<li><a href=/intranet-cost/cost-centers/index>Cost Centers &amp Departments</a>
-			<li><a href=/intranet-exchange-rate/index>Exchange Rates</a>
+			[im_menu_li admin_cost_centers]
+			[im_menu_li finance_exchange_rates]
 			<li><a href=/intranet-material/>Materials (Service Types)</a>
 		</ul>
 	</ul>
