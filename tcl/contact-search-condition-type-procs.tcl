@@ -613,7 +613,7 @@ ad_proc -private contacts::search::condition_type::contact {
                     set output_code   "CASE WHEN creation_date > ( now() - '$interval'::interval ) THEN 'f'::boolean ELSE 't'::boolean END"
                 }
                 interacted - not_interacted - interacted_between - not_interacted_between {
-		    if { [util_memoize [list ::db_table_exists acs_mail_log]] } {
+		    if { [util_memoize [list im_table_exists acs_mail_log]] } {
 			# mail-tracking is installed so we use this table as well as the contact_message_log
 			set interacted_table "( select recipient_id, sent_date from acs_mail_log union select recipient_id, sent_date from contact_message_log ) as messages"
 		    } else {
