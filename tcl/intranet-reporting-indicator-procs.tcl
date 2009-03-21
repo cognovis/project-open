@@ -94,16 +94,19 @@ ad_proc im_indicator_timeline_widget {
 	    append diagram_html "
 		var x = $oname.ScreenX(Date.UTC($year, $month, $day, $hour, $min, $sec));
 		var y = $oname.ScreenY($val);
-		var last_x = $oname.ScreenX(Date.UTC($year, $last_month, $last_day, $last_hour, $last_min, $last_sec));
+		var last_x = $oname.ScreenX(Date.UTC($last_year, $last_month, $last_day, $last_hour, $last_min, $last_sec));
 		var last_y = $oname.ScreenY($last_val);
 
-		new Dot(x, y, 6, 1, \"$dot_color\", \"$val\");
 		new Line(last_x, last_y, x, y, \"$line_color\", 1, \"$name\");
+		new Dot(x, y, 6, 3, \"#$dot_color\", \"$val\");
 	    "
 	    incr val_count
 	}
 	set last_v $v
     }
+
+
+
 
     set hist_html ""
     if {[llength $histogram_values] > 0} {
