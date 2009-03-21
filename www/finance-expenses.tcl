@@ -248,7 +248,7 @@ select
 	p.project_nr,
 	p.project_id,
 	p.end_date::date as project_end_date,
-	p.project_id * u.user_id as pu_id
+	1.0 * p.project_id * u.user_id as pu_id
 from
 	im_costs c,
 	acs_objects o,
