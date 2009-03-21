@@ -17,7 +17,7 @@ ad_page_contract {
 	}
     }
     delete_requires_return_url -requires {delete_object_id} {
-	if { $delete_object_id ne "" && $return_url eq "" } {
+	if { $delete_object_id ne "" && $return_url == "" } {
 	    ad_complain "[_ intranet-contacts.lt_Delete_requires_return_url]"
 	}
     }
