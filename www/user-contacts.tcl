@@ -85,13 +85,16 @@ set report_sql "
 		c.*,
 		im_category_from_id(c.company_status_id) as company_status,
 		im_category_from_id(c.company_type_id) as company_type,
+		p.*,
 		u.*,
+		'unknown' as member_state,
 		im_name_from_user_id(u.user_id) as user_name,
 		uc.*,
 		im_country_from_code(uc.ha_country_code) as ha_country,
 		im_country_from_code(uc.wa_country_code) as wa_country
 	from
-		cc_users u
+		parties p,
+		users u
 		LEFT OUTER JOIN users_contact uc ON (u.user_id = uc.user_id)
 		LEFT OUTER JOIN (
 			select	r.object_id_two as user_id,
@@ -115,7 +118,8 @@ set report_sql "
 			from	group_distinct_member_map
 			where	group_id = 465
 		) free ON (u.user_id = free.member_id)
-	where	1=1
+	where
+		u.user_id = p.party_id
 		$company_sql
 	order by
 		c.company_type_id,
@@ -169,7 +173,7 @@ set report_def [list \
 	    content [list \
 		    header {
 			""
-			"$member_state"
+			"$company_path"
 			"$customer_p"
 			"$employee_p"
 			"$freelancer_p"
