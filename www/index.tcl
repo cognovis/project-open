@@ -20,4 +20,33 @@ if {!$user_is_admin_p} {
     return
 }
 
+# -----------------------------------------------------
+# Check for DynFields without entry in im_dynfield_layout
+
+set missing_dynfield_object_types ""
+set missing_sql "
+	select	da.attribute_id as dynfield_attribute_id,
+		aa.attribute_id as acs_attribute_id,
+		aa.attribute_name,
+		aa.object_type
+	from
+		im_dynfield_attributes da,
+		acs_attributes aa
+	where
+		da.acs_attribute_id = aa.attribute_id and
+		da.attribute_id not in (
+			select	attribute_id
+			from	im_dynfield_layout
+			where	page_url = 'default'
+		)
+	order by
+		aa.object_type,
+		aa.attribute_name
+"
+db_foreach missing_map_entries $missing_sql {
+    append missing_dynfield_object_types "<li>$object_type: $attribute_name\n"
+}
+
+
+
 ad_return_template

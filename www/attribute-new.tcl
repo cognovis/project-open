@@ -400,7 +400,7 @@ ad_form -name attribute_form -form $form_fields -new_request {
     	set attribute_name $a_name
     }
 
-    if {$return_url eq ""} {
+    if {$return_url == ""} {
         set return_url [ad_return_url]
     }
     ad_returnredirect "attribute-new-2?[export_vars -url {object_type widget_name attribute_name pretty_name table_name required_p modify_sql_p pretty_plural description also_hard_coded_p pos_y label_style list_id return_url attribute_id}]"

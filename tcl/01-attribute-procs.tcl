@@ -48,7 +48,7 @@ ad_proc -public im_dynfield_multimap_id {
     Return the storage type id of a table
 } {
     foreach multimap [im_dynfield_multimaps] {
-        if {[lindex $multimap 1] eq $table_name} {
+        if {[lindex $multimap 1] == $table_name} {
             return [lindex $multimap 0]
             break
         }
@@ -61,7 +61,7 @@ ad_proc -public im_dynfield_multimap_table {
     Return the table_name of a storage_type_id
 } {
     foreach multimap [im_dynfield_multimaps] {
-        if {[lindex $multimap 0] eq $storage_type_id} {
+        if {[lindex $multimap 0] == $storage_type_id} {
             return [lindex $multimap 1]
             break
         }
@@ -124,7 +124,7 @@ ad_proc -public im_dynfield::attribute::add {
 
     # massage parameters
     set attribute_name [string tolower $attribute_name]
-    if {$pretty_plural eq ""} { set pretty_plural $pretty_name }
+    if {$pretty_plural == ""} { set pretty_plural $pretty_name }
 
     # Get the storage type from the widget.
     db_1row select_widget_pretty_and_storage_type { 
@@ -328,7 +328,7 @@ ad_proc -private im_dynfield::attribute::get {
         $domain create_object_type
     }
 
-    if {$required eq "false"} {
+    if {$required == "false"} {
         set required_p 0
     } else {
         set required_p 1
@@ -381,7 +381,7 @@ ad_proc -private im_dynfield::attribute::get {
         set att_ref "$table_name.$name"
     }
     
-    if {$deref_plpgsql_function ne "" && $multivalued eq false} {
+    if {$deref_plpgsql_function ne "" && $multivalued == false} {
         set att_ref "${deref_plpgsql_function}(${att_ref}) as ${name}_deref, ${att_ref}"
     }
     return "$att_ref as $name"
@@ -412,7 +412,7 @@ ad_proc -private im_dynfield::attribute::get {
         } {
             if {[lsearch $attribute_ids $attribute_id] < 0} {
                 lappend attribute_ids $attribute_id
-                if {$privilege eq ""} {
+                if {$privilege == ""} {
                     lappend dynfield_attribute_ids [list $attribute_id $list_id]
                 } else {
                     if {[im_object_permission -object_id $attribute_id -user_id $user_id -privilege $privilege]} {
@@ -470,7 +470,7 @@ ad_proc im_dynfield::attribute::map {
 		    where attribute_id = :attribute_id and object_type_id = :list_id
 	    "
         
-        if {$required_p eq ""} {
+        if {$required_p == ""} {
             # Determine if an attribute should be required in this list by the default value for required.
             set required_p [db_string required "select case when aa.min_n_values = 0 then 'f' else 't' end as required_p from acs_attributes aa, im_dynfield_attributes ida where ida.acs_attribute_id = aa.attribute_id and ida.attribute_id = :attribute_id" -default "f"]
         }

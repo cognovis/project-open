@@ -732,7 +732,7 @@ ad_proc -private ams::widget::date {
 	    return [lc_time_fmt $value %q]
 	}
         value_list_text - value_list_html {
-	    if { $request eq "value_list_text" } {
+	    if { $request == "value_list_text" } {
 		set date [lc_time_fmt $value %x]
 	    } else {
 		set date [lc_time_fmt $value %q]
@@ -827,7 +827,7 @@ ad_proc -private ams::widget::textdate {
 	    return [lc_time_fmt $value %q]
 	}
         value_list_text - value_list_html {
-	    if { $request eq "value_list_text" } {
+	    if { $request == "value_list_text" } {
 		set date [lc_time_fmt $value %x]
 	    } else {
 		set date [lc_time_fmt $value %q]
@@ -1189,7 +1189,7 @@ ad_proc -private ams::widget::integer {
     @see ams::widget
 } {
 
-    if { $html_options eq "" } {
+    if { $html_options == "" } {
 	set html_options "size 6"
     }
     switch $request {
@@ -1269,7 +1269,7 @@ ad_proc -private ams::widget::textbox {
 } {
 
     set value [ams::util::text_value -value $value]
-    if { $html_options eq "" } {
+    if { $html_options == "" } {
 	set html_options "size 30"
     }
     switch $request {
@@ -1349,7 +1349,7 @@ ad_proc -private ams::widget::textarea {
     @see ams::widget
 } {
     set value [ams::util::text_value -value $value]
-    if { $html_options eq "" } {
+    if { $html_options == "" } {
 	set html_options "cols 60 rows 6"
     }
     switch $request {
@@ -1429,7 +1429,7 @@ ad_proc -private ams::widget::richtext {
 } {
     set value_format [ams::util::text_format -value $value]
     set value [ams::util::text_value -value $value]
-    if { $html_options eq "" } {
+    if { $html_options == "" } {
 	set html_options "cols 60 rows 14"
     }
     switch $request {
@@ -1519,7 +1519,7 @@ ad_proc -private ams::widget::email {
     @see ams::widget
 } {
     set value [ams::util::text_value -value $value]
-    if { $html_options eq "" } {
+    if { $html_options == "" } {
 	set html_options "size 30"
     }
     switch $request {
@@ -1598,7 +1598,7 @@ ad_proc -private ams::widget::url {
     @see ams::widget
 } {
     set value [ams::util::text_value -value $value]
-    if { $html_options eq "" } {
+    if { $html_options == "" } {
 	set html_options "size 30"
     }
     switch $request {
@@ -1743,7 +1743,7 @@ ad_proc -private ams::util::postal_address_save {
     set country_code [string trim $country_code]
     set additional_text [string trim $additional_text]
     set postal_type [string trim $postal_type]
-    if {$country_code eq ""} {
+    if {$country_code == ""} {
 	return ""
     } else {
 	return [db_string save_value {} -default {}]

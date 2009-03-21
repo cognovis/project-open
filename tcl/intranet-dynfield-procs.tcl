@@ -407,8 +407,13 @@ ad_proc -public im_dynfield::attribute_store {
     array set update_lines {}
     db_foreach attributes $attribute_sql {
 
+	ns_log Notice "im_dynfield::attribute_store: storing attribute '$attribute_name'"
+
 	# Skip attributes that do not exists in (the partial) form.
-	if {![template::element::exists $form_id $attribute_name]} { continue }
+	if {![template::element::exists $form_id $attribute_name]} { 
+	    ns_log Notice "im_dynfield::attribute_store: skipping attribute '$attribute_name' because it is not part of the form '$form_id'"
+	    continue 
+	}
 
 	# Empty table name? Ugly, but that's the main table then...
 	if {[empty_string_p $table_name]} { set table_name $main_table }
@@ -456,7 +461,10 @@ ad_proc -public im_dynfield::attribute_store {
 	}
     }
 
+    ns_log Notice "im_dynfield::attribute_store: before stoing values into the different object's tables"
     foreach table_name [array names update_lines] {
+
+	ns_log Notice "im_dynfield::attribute_store: storing values for table '$table_name'"
 
 	# Get the index column for the table_name
 	set table_index_column [util_memoize "db_string icol \"select id_column from acs_object_type_tables where table_name = '$table_name'\" -default {}"]
@@ -513,7 +521,7 @@ ad_proc -public im_dynfield::search_query {
     # ------------------------------------------
     # Get the list of all variables of the last form
     # ------------------------------------------
-    ns_log notice "************************************* start query search part **********************"    
+
     #set form_vars [ns_conn form]
     #template::form get_values $form_id
     
@@ -1039,7 +1047,7 @@ ad_proc -public im_dynfield::elements {
     <li>widget         
     <li>html_options</ol>
 } {
-    if {$user_id eq ""} {
+    if {$user_id == ""} {
         set user_id [ad_conn user_id]
     }
     set attributes [list]
@@ -1140,13 +1148,12 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	# except for the configured fields.
 	set default_display_mode "none"
 
-	ns_log Notice "append_attributes_to_form: display_mode($key) <= $dm"
+#	ns_log Notice "append_attributes_to_form: display_mode($key) <= $dm"
     }
 
     # Disable the mechanism if the object_type_id hasn't been specified
     # (compatibility mode)
     if {"" == $object_subtype_id} { set default_display_mode "edit" }
-
 
     db_1row object_type_info "
         select
@@ -1237,18 +1244,18 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
 	# object_subtype_id can be a list, so go through the list
 	# and take the highest one (none - display - edit).
-	foreach subtype_id $object_subtype_id {
-	    set key "$dynfield_attribute_id.$subtype_id"
-	    if {[info exists display_mode_hash($key)]} { 
-		switch $display_mode_hash($key) {
-		    edit { set display_mode "edit" }
-		    display { if {$display_mode == "none"} { set display_mode "display" } }
-		}
-	    }
-	}
+#	foreach subtype_id $object_subtype_id {
+#	    set key "$dynfield_attribute_id.$subtype_id"
+#	    if {[info exists display_mode_hash($key)]} { 
+#		switch $display_mode_hash($key) {
+#		    edit { set display_mode "edit" }
+#		    display { if {$display_mode == "none"} { set display_mode "display" } }
+#		}
+#	    }
+#	}
 
-#        set key "$dynfield_attribute_id.$object_subtype_id"
-#        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
+        set key "$dynfield_attribute_id.$object_subtype_id"
+        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
 
 
 	if {"edit" == $display_mode && "display" == $form_display_mode}  {
@@ -1304,18 +1311,18 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
 	# object_subtype_id can be a list, so go through the list
 	# and take the highest one (none - display - edit).
-	foreach subtype_id $object_subtype_id {
-	    set key "$dynfield_attribute_id.$subtype_id"
-	    if {[info exists display_mode_hash($key)]} { 
-		switch $display_mode_hash($key) {
-		    edit { set display_mode "edit" }
-		    display { if {$display_mode == "none"} { set display_mode "display" } }
-		}
-	    }
-	}
+#	foreach subtype_id $object_subtype_id {
+#	    set key "$dynfield_attribute_id.$subtype_id"
+#	    if {[info exists display_mode_hash($key)]} { 
+#		switch $display_mode_hash($key) {
+#		    edit { set display_mode "edit" }
+#		    display { if {$display_mode == "none"} { set display_mode "display" } }
+#		}
+#	    }
+#	}
 
-#        set key "$dynfield_attribute_id.$object_subtype_id"
-#        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
+        set key "$dynfield_attribute_id.$object_subtype_id"
+        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
 
 	# Don't show "none" fields...
 	if {"none" == $display_mode} { continue }

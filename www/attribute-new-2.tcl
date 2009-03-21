@@ -89,7 +89,7 @@ uplevel #0 {
 
 set return_url "object-type?[export_vars -url {object_type}]"
 
-if {$return_url eq ""} {
+if {$return_url == ""} {
     if {$list_id ne ""} {
         set return_url [export_vars -base "list" -url {list_id}]
     } else {

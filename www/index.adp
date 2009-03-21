@@ -3,6 +3,15 @@
 <property name="context">#intranet-core.context#</property>
 <property name="main_navbar_label">admin</property>
 
+<if @missing_dynfield_object_types@ ne "">
+<p><font color=red>
+There are invalid DynFields in the system for the following object types:
+<ul>@missing_dynfield_object_types;noquote@</ul>
+Please check these DynFields and make sure that every DynField has a "Pos-Y" value<br>
+by editing the DynField and specifying a value. You can use '0' as a default.
+</font></p><br>&nbsp;<br>
+</if>
+
 <ul>
   <li><a href="object-types"><b>Object Types</b></a>:<br>
 	The main DynField configuration page. Allows you to define DynFields

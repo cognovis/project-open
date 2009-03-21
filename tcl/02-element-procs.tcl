@@ -59,7 +59,7 @@ xotcl::Class create ::im::dynfield::Element \
     
     @param id Dynfield Attribute ID
 } {
-    if {$list_id eq ""} {
+    if {$list_id == ""} {
         # Apparently the list is not important, might be the case if the help_text is not needed or the default value
         set list_id [ams::list::get_id -attribute_id $id]
 	if {"" == $list_id} { ad_return_complaint 1 "::im::dynfield::Element ad_proc get_instance_from_db: List_id is empty" }
@@ -224,7 +224,7 @@ xotcl::Class create ::im::dynfield::Element \
     }
     
     # Deal with a different name of the attribute in this form
-    if {$form_element_name eq ""} {
+    if {$form_element_name == ""} {
         set form_element_name "${object_type}__$attribute_name"
     }
     
@@ -286,7 +286,7 @@ xotcl::Class create ::im::dynfield::Element \
 } {
     Return the URL for a widget
 } {
-    if {$widget_id eq ""} {
+    if {$widget_id == ""} {
         set widget_id [::im::dynfield::Widget widget_id -widget_name $widget_name]
     }
     return [export_vars -base "/intranet-dynfield/widget-new" -url {widget_id}]
@@ -348,11 +348,11 @@ xotcl::Class create ::im::dynfield::Element \
     my instvar parameters html_parameters custom_parameters widget option_list widget_name pretty_name pretty_plural \
         sql_datatype storage_type_id acs_datatype deref_plpgsql_function
     
-    if {$pretty_plural eq ""} {
+    if {$pretty_plural == ""} {
         set pretty_plural $pretty_name
     }    
     
-    if {$parameters eq ""} {
+    if {$parameters == ""} {
         set parameters [list]
     }
     # deal with the parameters
@@ -367,7 +367,7 @@ xotcl::Class create ::im::dynfield::Element \
     switch $widget {
         im_category_tree {
             # This is a category widget. Make sure to enter the categories
-            if {[lindex $custom_parameters 0] eq "category_type"} {
+            if {[lindex $custom_parameters 0] == "category_type"} {
                 set category_type [lindex $custom_parameters 1]
             }
             foreach option $option_list {
@@ -423,7 +423,7 @@ xotcl::Class create ::im::dynfield::Element \
     set widget [my widget]
     
     # Deal with number widgets
-    if {$widget eq "text"} {
+    if {$widget == "text"} {
         switch [my acs_datatype] {
             integer - number - float {
                 set widget "number"
@@ -489,7 +489,7 @@ xotcl::Class create ::im::dynfield::Element \
     -id:required
     {-list_id ""}
  } {
-     if {$list_id eq ""} {
+     if {$list_id == ""} {
          # Apparently the list is not important, might be the case if the help_text is not needed or the default value
          set list_id [ams::list::get_id -attribute_id $id]
      }

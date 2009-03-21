@@ -169,7 +169,7 @@ namespace eval ::im::dynfield {}
         }
         
         if {$column_name ne [my id_column]} {
-            if {$datatype eq "date"} {
+            if {$datatype == "date"} {
                 append date_statements "set $name \[template::util::date get_property ansi \[set $name\]\]
                 "
             }
@@ -216,7 +216,7 @@ namespace eval ::im::dynfield {}
             default {
                 # Get the id column for that table
                 set id_column [db_string id "select id_column from acs_object_type_tables where table_name = :table and object_type = '[my object_type]'" -default ""]
-                if {$id_column eq ""} {
+                if {$id_column == ""} {
                     set id_column [db_string id "select id_column from acs_object_types where object_type = '[my object_type]'"]
                 }
                 if {$updates($table) ne ""} {
@@ -230,11 +230,11 @@ namespace eval ::im::dynfield {}
         }
     }
     
-    if {$update_statements eq ""} return
+    if {$update_statements == ""} return
 
     set name_method [db_string name_method "select name_method from acs_object_types where object_type = '[my object_type]'"]
 
-    if {$name_method eq ""} {
+    if {$name_method == ""} {
 	set name_method "ACS_OBJECT__DEFAULT_NAME"
     }
     set documentation "This is the save procedure for <b>[my object_type]</b>. It updates the following attributes:<ul><li>[join "$attributes" "</li><li>"] </li></ul>"
@@ -321,7 +321,7 @@ namespace eval ::im::dynfield {}
           default {
               # Get the id column for that table
               set id_column [db_string id "select id_column from acs_object_type_tables where table_name = :table and object_type = '[my object_type]'" -default ""]
-              if {$id_column eq ""} {
+              if {$id_column == ""} {
                   set id_column [db_string id "select id_column from acs_object_types where table_name = :table"]
               }
               lappend columns($table) "$id_column"
@@ -349,7 +349,7 @@ namespace eval ::im::dynfield {}
 
     set name_method [db_string name_method "select name_method from acs_object_types where object_type = '[my object_type]'"]
 
-    if {$name_method eq ""} {
+    if {$name_method == ""} {
 	set name_method "ACS_OBJECT__DEFAULT_NAME"
     }
 
@@ -441,7 +441,7 @@ namespace eval ::im::dynfield {}
 
         # if the attribute does not have a table_name defined
         # Use the default one of the class
-        if {$table_name eq ""} {
+        if {$table_name == ""} {
             set table_name $class_table_name
         }
 
@@ -486,7 +486,7 @@ namespace eval ::im::dynfield {}
      
      
      append slots $cmd \n
-     if {$multivalued eq "false"} {
+     if {$multivalued == "false"} {
      #    $classname create ${attribute_name}_deref
      }
    }

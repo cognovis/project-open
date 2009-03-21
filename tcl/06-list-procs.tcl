@@ -29,7 +29,7 @@ ad_library {
 } {
     set r [::im::dynfield::List create ::$id]
     $r db_1row dbq..get_instance "select category as list_name, category_id as list_id, object_type, aux_string1 as pretty_name, category_description as description, category_type as list_type from im_categories, acs_object_types where category_type = type_category_type and category_id = '$id'"
-    if {[$r pretty_name] eq ""} {
+    if {[$r pretty_name] == ""} {
         $r set pretty_name [$r list_name]
     }
     $r destroy_on_cleanup
@@ -82,7 +82,7 @@ ad_proc -public ams::list::url {
     Get the URL for a list
 } {
     set list_id [ams::list::get_list_id -object_type $object_type -list_name $list_name]
-    if {$list_id eq ""} {
+    if {$list_id == ""} {
         return [export_vars -base "/intranet-dynfield/list" -url {list_name object_type}]        
     } else {
         return [export_vars -base "/intranet-dynfield/list" -url {list_id}]

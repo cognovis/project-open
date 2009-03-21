@@ -23,7 +23,7 @@ ad_page_contract {
 set provided_return_url $return_url
 set provided_return_url_label $return_url_label
 
-if {$list_id eq ""} {
+if {$list_id == ""} {
     if { ![ams::list::exists_p -object_type $object_type -list_name $list_name] } {
 
         # Create a new category for this list with the same name
@@ -141,7 +141,7 @@ template::multirow create mapped_attributes attribute_id attribute_name pretty_n
     required_p section_heading attribute_url unmap_url text_url \
     required_url optional_url object_type widget_name widget_url
    
-if {$return_url eq ""} {
+if {$return_url == ""} {
     set return_url [ad_return_url]
 }
 
