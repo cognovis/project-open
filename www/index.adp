@@ -5,7 +5,8 @@
 
 <if @missing_dynfield_object_types@ ne "">
 <p><font color=red>
-There are invalid DynFields in the system for the following object types:
+There are invalid DynFields in the system for the following object types.<br>
+These DynFields won't be shown.<br>
 <ul>@missing_dynfield_object_types;noquote@</ul>
 Please check these DynFields and make sure that every DynField has a "Pos-Y" value<br>
 by editing the DynField and specifying a value. You can use '0' as a default.
