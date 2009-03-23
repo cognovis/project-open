@@ -204,7 +204,7 @@ set company_url "/intranet/companies/view?company_id="
 set ticket_url "/intranet/tickets/view?ticket_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting/finance-cube" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-reporting/ticket-cube" {start_date end_date} ]
 
 
 # ------------------------------------------------------------
