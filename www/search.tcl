@@ -73,7 +73,7 @@ set context_base_url $package_url
 # Determine the user's group memberships
 set user_is_employee_p [im_user_is_employee_p $user_id]
 set user_is_customer_p [im_user_is_customer_p $user_id]
-set user_is_wheel_p [ad_user_group_member [im_wheel_group_id] $user_id]
+set user_is_wheel_p [im_profile::member_p -profile_id [im_wheel_group_id] -user_id $user_id]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 set user_is_admin_p [expr $user_is_admin_p || $user_is_wheel_p]
 
