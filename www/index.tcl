@@ -426,7 +426,7 @@ db_multirow -extend {bundle_chk project_url owner_url bundle_url} bundle_lines b
 # Setup the subnavbar
 set bind_vars [ns_set create]
 ns_set put $bind_vars project_id $project_id
-set project_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
+set project_menu_id [util_memoize [list db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]]
 
 set sub_navbar [im_sub_navbar \
     -components \
