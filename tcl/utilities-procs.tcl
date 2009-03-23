@@ -1213,7 +1213,6 @@ ad_proc -deprecated export_form_vars {
 }
 
 ad_proc -public export_entire_form {} {
-
     Exports everything in ns_getform to the ns_set.  This should 
     generally not be used. It's much better to explicitly name 
     the variables you want to export.  
