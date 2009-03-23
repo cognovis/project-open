@@ -66,15 +66,15 @@ ad_proc -public im_freelance_permissions { current_user_id user_id view_var read
     set admin 0
 
     set current_user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
-    set current_user_is_wheel_p [ad_user_group_member [im_wheel_group_id] $current_user_id]
+    set current_user_is_wheel_p [im_profile::member_p -profile_id [im_wheel_group_id] -user_id $current_user_id]
     set current_user_is_employee_p [im_user_is_employee_p $current_user_id]
     set current_user_admin_p [expr $current_user_is_admin_p || $current_user_is_wheel_p]
 
-    set user_is_customer_p [ad_user_group_member [im_customer_group_id] $user_id]
-    set user_is_freelance_p [ad_user_group_member [im_freelance_group_id] $user_id]
+    set user_is_customer_p [im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id]
+    set user_is_freelance_p [im_profile::member_p -profile_id [im_freelance_group_id] -user_id $user_id]
+    set user_is_wheel_p [im_profile::member_p -profile_id [im_wheel_group_id] -user_id $user_id]
+    set user_is_employee_p [im_profile::member_p -profile_id [im_employee_group_id] -user_id $user_id]
     set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
-    set user_is_wheel_p [ad_user_group_member [im_wheel_group_id] $user_id]
-    set user_is_employee_p [im_user_is_employee_p $user_id]
 
     # Determine the type of the user to view:
     set user_type "none"
@@ -489,7 +489,7 @@ ad_proc im_freelance_skill_component { current_user_id user_id  return_url} {
     }
 
     # Skip this component if the user is not a freelancer
-    if {![ad_user_group_name_member "Freelancers" $user_id]} { 
+    if {![im_profile::member_p -profile "Freelancers" -user_id $user_id]} { 
 	return "" 
     }
 
