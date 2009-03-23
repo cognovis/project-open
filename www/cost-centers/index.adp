@@ -1,6 +1,7 @@
-<master src="../../../intranet-core/www/master">
+<master src="/packages/intranet-core/www/admin/master">
 <property name="title">@page_title;noquote@</property>
 <property name="main_navbar_label">finance</property>
+<property name="admin_navbar_label">admin_cost_centers</property>
 
 <h1>@page_title@</h1>
 
