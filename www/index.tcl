@@ -28,7 +28,7 @@ if {"" == $company_id} { set company_id 0}
 
 # select the "Finance" Menu
 set parent_menu_sql "select menu_id from im_menus where label='finance'"
-set parent_menu_id [db_string parent_admin_menu $parent_menu_sql -default 0]
+set parent_menu_id [util_memoize [list db_string parent_admin_menu $parent_menu_sql -default 0]]
 
 set menu_select_sql "
         select  m.*
@@ -58,7 +58,7 @@ db_foreach menu_select $menu_select_sql {
 
 
     set parent_menu_sql "select menu_id from im_menus where label= 'invoices_providers'"
-    set parent_menu_id [db_string parent_admin_menu $parent_menu_sql -default ""]
+    set parent_menu_id [util_memoize [list db_string parent_admin_menu $parent_menu_sql -default ""]]
 
     set menu_select_sql "
         select  m.*
@@ -81,7 +81,7 @@ db_foreach menu_select $menu_select_sql {
 
 
     set parent_menu_sql "select menu_id from im_menus where label= 'invoices_customers'"
-    set parent_menu_id [db_string parent_admin_menu $parent_menu_sql -default ""]
+    set parent_menu_id [util_memoize [list db_string parent_admin_menu $parent_menu_sql -default ""]]
 
     set menu_select_sql "
         select  m.*
