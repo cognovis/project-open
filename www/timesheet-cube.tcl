@@ -276,8 +276,8 @@ foreach var $dimension_vars {
 	week_of_year { lappend derefs "to_char(h.day, 'IW') as week_of_year" }
 	day_of_month { lappend derefs "to_char(h.day, 'DD') as day_of_month" }
 
-	main_project_type { lappend derefs "im_category_from_id(p.project_type_id) as main_project_type" }
-	main_project_status { lappend derefs "im_category_from_id(p.project_status_id) as main_project_status" }
+	main_project_type { lappend derefs "im_category_from_id(p1.project_type_id) as main_project_type" }
+	main_project_status { lappend derefs "im_category_from_id(p1.project_status_id) as main_project_status" }
 
 	project_type { lappend derefs "im_category_from_id(h.sub_project_type_id) as project_type" }
 	project_status { lappend derefs "im_category_from_id(h.sub_project_status_id) as project_status" }
@@ -301,7 +301,7 @@ im_report_write_http_headers -output_format "html"
 ns_write "
 [im_header]
 [im_navbar]
-<table cellspacing=0 cellpadding=0 border=0>
+<table cellspacing=0 cellpadding=0 border=0 class=''>
 <form>
 [export_form_vars project_id]
 <tr valign=top><td>
@@ -377,14 +377,14 @@ ns_write "
 	</table>
 </td>
 <td>
-	<table cellspacing=2 width=90%>
+	<table cellspacing=2 cellpadding=2 width=90%>
 	<tr><td>$help_text</td></tr>
 	</table>
 </td>
 </tr>
 </form>
 </table>
-<table border=0 cellspacing=1 cellpadding=1>
+<table border=0 cellspacing=6 cellpadding=2>
 "
 
 
@@ -699,7 +699,7 @@ foreach left_entry $left_scale {
 	set val "&nbsp;"
 	if {[info exists hash($key)]} { set val $hash($key) }
 
-	ns_write "<td>$val</td>\n"
+	ns_write "<td align='right'>$val</td>\n"
 
     }
     ns_write "</tr>\n"
