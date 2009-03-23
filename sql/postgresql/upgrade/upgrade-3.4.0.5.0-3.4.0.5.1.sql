@@ -27,6 +27,9 @@ where
 select im_menu__delete((select menu_id from im_menus where label = 'openacs'));
 
 
+select im_menu__delete((select menu_id from im_menus where label = 'admin_auth_authorities'));
+
+
 -- Shorten a few menu names
 update im_menus set name = 'LDAP' where name = 'LDAP Authentication';
 
