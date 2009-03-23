@@ -36,11 +36,18 @@ BEGIN
 	IF v_count > 0 THEN return 1; END IF;
 
 	alter table users add skin_id integer references im_categories;
+	update users set skin_id = 40020;
 
-	-- update users set skin_id = 40010 where skin = 2;
-	update users set skin_id = 40015 where skin = 0;
-	update users set skin_id = 40020 where skin = 4;
-	update users set skin_id = 40025 where skin = 2;
+
+	select count(*)	into v_count 
+	from user_tab_columns
+	where lower(table_name) = ''users'' and lower(column_name) = ''skin'';
+	IF v_count > 0 THEN 
+		-- update users set skin_id = 40010 where skin = 2;
+		update users set skin_id = 40015 where skin = 0;
+		update users set skin_id = 40020 where skin = 4;
+		update users set skin_id = 40025 where skin = 2;
+	END IF;
 
 	return 0;
 END;' LANGUAGE 'plpgsql';
