@@ -107,3 +107,9 @@ Done installing packages.
 [ad_footer]
 "
 }
+
+
+# Remove all permission related entries in the system cache
+# Catch the call, becaus we are calling ]po[ from OpenACS.
+catch { im_permission_flush }
+
