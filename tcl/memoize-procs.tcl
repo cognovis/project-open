@@ -8,6 +8,14 @@ ad_library {
     @cvs-id memoize-procs.tcl,v 1.4.2.1 2003/03/05 14:40:42 lars Exp
 }
 
+ad_proc -public util_no_memoize {script {max_age ""}} {
+    Helper to un-cache certain calls for dev/debugging reasons
+} {
+    set result [eval $script]
+    return result
+}
+
+
 # Use shiny new ns_cache-based util_memoize.
 
 ad_proc -public util_memoize {script {max_age ""}} {
