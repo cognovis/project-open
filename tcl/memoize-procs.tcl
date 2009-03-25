@@ -12,7 +12,7 @@ ad_proc -public util_no_memoize {script {max_age ""}} {
     Helper to un-cache certain calls for dev/debugging reasons
 } {
     set result [eval $script]
-    return result
+    return $result
 }
 
 
