@@ -12,14 +12,14 @@
 <%= [export_form_vars return_url] %>
 <tr valign=top>
 <td>
-<%= [im_box_header $page_title] %>
+
 	<table class="table_list_page">
 	<%= $table_header_html %>
 	<%= $table_body_html %>
 	<%= $table_continuation_html %>
 	<%= $table_submit_html %>
 	</table>
-<%= [im_box_footer] %>
+
 </td>
 <td width="<%= $dashboard_column_width %>">
 <%= $dashboard_column_html %>
