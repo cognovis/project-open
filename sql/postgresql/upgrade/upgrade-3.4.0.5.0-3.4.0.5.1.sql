@@ -9,3 +9,10 @@ update im_view_columns set
 where
 	column_id = 22013;
 
+
+
+
+SELECT im_menu__delete((select menu_id from im_menus where label = 'costs'));
+SELECT im_menu__delete((select menu_id from im_menus where label = 'finance_exchange_rates'));
+SELECT im_menu__delete((select menu_id from im_menus where label = 'finance_expenses'));
+

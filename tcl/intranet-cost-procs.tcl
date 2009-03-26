@@ -879,7 +879,14 @@ ad_proc -public im_cost_center_write_p_helper {
 }
 
 
-ad_proc -public im_costs_navbar { default_letter base_url next_page_url prev_page_url export_var_list {select_label ""} } {
+ad_proc -public im_costs_navbar { 
+    default_letter 
+    base_url 
+    next_page_url 
+    prev_page_url 
+    export_var_list 
+    {select_label ""} 
+} {
     Returns rendered HTML code for a horizontal sub-navigation
     bar for /intranet-cost/.
     The lower part of the navbar also includes an Alpha bar.<br>
