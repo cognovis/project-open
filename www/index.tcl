@@ -505,7 +505,7 @@ set left_navbar_html "
 		  <tr>
 		    <td class='form-label'>[lang::message::lookup "" intranet-freelance.Worked_already_with_customer "Worked<br>with cust"]</td>
 		    <td class='form-widget'>
-		      [im_company_select -include_empty_name "All" worked_with_company_id $worked_with_company_id "" "Customer"]
+		      [im_company_select -include_empty_p 1 -include_empty_name "All" worked_with_company_id $worked_with_company_id "" "Customer"]
 		    </td>
 		  </tr>
 		  <tr>
