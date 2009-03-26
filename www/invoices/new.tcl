@@ -473,7 +473,7 @@ set left_navbar_html "
 		      [lang::message::lookup "" intranet-core.Customer "Customer"]:
 		  </td>
 		  <td valign=top>
-		      [im_company_select -include_empty_name "All" company_id $filter_company_id "" "CustOrIntl"]
+		      [im_company_select -include_empty_p 1 -include_empty_name "All" company_id $filter_company_id "" "CustOrIntl"]
 		  </td>
 		</tr>
 
