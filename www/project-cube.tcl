@@ -406,7 +406,7 @@ ns_write "
 	<tr>
 	  <td class=form-label>Customer</td>
 	  <td class=form-widget colspan=3>
-	    [im_company_select -include_empty_name "All" customer_id $customer_id]
+	    [im_company_select -include_empty_p 1 -include_empty_name "All" customer_id $customer_id]
 	  </td>
 	</tr>
 	<tr>
