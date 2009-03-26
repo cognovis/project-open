@@ -230,7 +230,6 @@ if {"" != $end_date} {
     lappend criteria "p.start_date < :end_date::timestamptz"
 }
 if { !$include_subprojects_p } {
-    ad_return_complaint 1 asdf
     lappend criteria "p.parent_id is null"
 }
 
