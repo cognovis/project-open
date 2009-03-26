@@ -77,8 +77,8 @@ if {![exists_and_not_null tax]} { set tax 0 }
 if {![exists_and_not_null vat]} { set vat 0 }
 
 set project_options [im_project_options]
-set customer_options [im_company_options -include_empty 0 -status "Active" -type "CustOrIntl"]
-set provider_options [im_company_options -include_empty 0 -status "Active" -type "Provider"]
+set customer_options [im_company_options -include_empty_p 0 -status "Active" -type "CustOrIntl"]
+set provider_options [im_company_options -include_empty_p 0 -status "Active" -type "Provider"]
 set cost_type_options [im_cost_type_options]
 set cost_status_options [im_cost_status_options]
 set investment_options [im_investment_options]
