@@ -11,9 +11,24 @@ where
 
 
 -- Add GIFs to menus
-alter table im_menus add menu_gif_small text;
-alter table im_menus add menu_gif_medium text;
-alter table im_menus add menu_gif_large text;
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from user_tab_columns
+	where table_name = ''IM_MENUS'' and column_name = ''MENU_GIF_SMALL'';
+        if v_count > 0 then return 0; end if;
+
+	alter table im_menus add menu_gif_small text;
+	alter table im_menus add menu_gif_medium text;
+	alter table im_menus add menu_gif_large text;
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 
