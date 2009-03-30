@@ -11,8 +11,7 @@ where
 
 
 
-
-SELECT im_menu__delete((select menu_id from im_menus where label = 'costs'));
-SELECT im_menu__delete((select menu_id from im_menus where label = 'finance_exchange_rates'));
-SELECT im_menu__delete((select menu_id from im_menus where label = 'finance_expenses'));
+update im_menus set enabled_p = 'f' where label = 'costs';
+update im_menus set enabled_p = 'f' where label = 'finance_exchange_rates';
+update im_menus set enabled_p = 'f' where label = 'finance_expenses';
 
