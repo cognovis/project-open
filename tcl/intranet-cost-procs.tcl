@@ -1374,12 +1374,12 @@ ad_proc im_costs_project_finance_component {
 
     set cost_html "
 	<table border=0 class='table_list_page'>
-	  <tr>
+	  <tr class='no_hover'>
 	    <td colspan=$colspan class=rowtitle align=center>
 	      [_ intranet-cost.Financial_Documents]
 	    </td>
 	  </tr>
-	  <tr class=rowtitle>
+	  <tr class='no_hover'>
 	    <td align=center class=rowtitle>[_ intranet-cost.Document]</td>
 	    <td align=center class=rowtitle>[lang::message::lookup "" intranet-cost.CostCenter_short "CC"]</td>
 	    <td align=center class=rowtitle>[_ intranet-cost.Company]</td>
@@ -1416,14 +1416,14 @@ ad_proc im_costs_project_finance_component {
 		    "
 		}
 		append cost_html "
-		<tr>
-		  <td colspan=99 class=rowplain>&nbsp;</td>
+		<tr class='rowwhite'>
+		  <td colspan=99>&nbsp;</td>
 		</tr>\n"
 	    }
 
 	    append cost_html "
-		<tr class=rowtitle>
-		  <td class=rowplain colspan=99>$cost_type</td>
+		<tr class='no_hover'>
+		  <td class=rowplain colspan=99><span class='table_interim_title'>$cost_type</span></td>
 		</tr>\n"
 
 	    set old_cost_type_id $cost_type_id
@@ -1483,15 +1483,15 @@ ad_proc im_costs_project_finance_component {
 	    append cost_html "
 		<tr class=rowplain>
 		  <td colspan=[expr $colspan-3]>&nbsp;</td>
-		  <td colspan=2>
+		  <td colspan=99>
 		    <b>$subtotals($old_cost_type_id) $default_currency</b>
 		  </td>
 		</tr>
             "
 	}
 	append cost_html "
-		<tr>
-		  <td colspan=99 class=rowplain>&nbsp;</td>
+		<tr class='rowwhite'>
+		  <td colspan=99>&nbsp;</td>
 		</tr>\n"
     }
 
@@ -1613,7 +1613,7 @@ ad_proc im_costs_project_finance_component {
 
 	set currency_outdated_warning "
 		<table>
-		<tr class=rowtitle><td class=rowtitle align=center>
+		<tr class=rowtitle><td class=rowtitle>
 		[lang::message::lookup "" intranet-cost.Outdated_Message "Outdated Exchange Rates Warning"]
 		</td></tr>
 		<tr><td>$currency_outdated_warning</td></tr>
@@ -1636,7 +1636,7 @@ ad_proc im_costs_project_finance_component {
 	set admin_html "
 	<table>
 	<tr>
-	  <td class=rowtitle align=center>
+	  <td class=rowtitle>
 	    [_ intranet-core.Admin_Links]
 	  </td>
 	</tr>
@@ -1672,7 +1672,7 @@ ad_proc im_costs_project_finance_component {
 	# Summary in broad format
 	set summary_html "
 	<table cellspacing=0 cellpadding=0>
-	<tr><td class=rowtitle colspan=3 align=center>[_ intranet-cost.Financial_Summary]</td></tr>
+	<tr><td class=rowtitle colspan=3>[_ intranet-cost.Financial_Summary]</td></tr>
 	<tr valign=top>
 	  <td>$hard_cost_html</td>
 	  <td>&nbsp &nbsp;</td>
@@ -1685,7 +1685,7 @@ ad_proc im_costs_project_finance_component {
 	# Summary in narrow format
 	set summary_html "
 	<table cellspacing=0 cellpadding=0 width=\"100%\">
-	<tr><td class=rowtitle align=center>[_ intranet-cost.Financial_Summary]</td></tr>
+	<tr><td class=rowtitle>[_ intranet-cost.Financial_Summary]</td></tr>
 	<tr valign=top><td>$hard_cost_html</td></tr>
 	<tr><td>$prelim_cost_html</td></tr>
 	</table>\n"
