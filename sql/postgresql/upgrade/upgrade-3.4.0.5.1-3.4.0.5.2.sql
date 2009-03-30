@@ -1,3 +1,7 @@
+
+
+SELECT acs_log__debug('/packages/intranet-reporting-cubes/sql/postgresql/upgrade/upgrade-3.4.0.5.1-3.4.0.5.2.sql','');
+
 ---------------------------------------------------------
 -- Modified tree_ancestor_key function that returns the
 -- next highest ancestor if the ancestor at the given
