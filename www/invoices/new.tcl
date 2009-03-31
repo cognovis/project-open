@@ -102,7 +102,7 @@ if {[lsearch -exact $allowed_cost_type $target_cost_type_id] == -1} {
 if {"" == $start_date} { set start_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultStartDate -default "2000-01-01"] }
 if {"" == $end_date} { set end_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultEndDate -default "2100-01-01"] }
 
-
+# ad_return_complaint 1 $start_date
 
 # ---------------------------------------------------------------
 # 
@@ -226,6 +226,7 @@ if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string
 if {"" != $start_date} {
     lappend criteria "p.end_date >= :start_date::timestamptz"
 }
+
 if {"" != $end_date} {
     lappend criteria "p.start_date < :end_date::timestamptz"
 }
@@ -438,6 +439,7 @@ set bgcolor(1) " class=rowodd "
 set ctr 0
 set idx $start_idx
 set old_company_name ""
+
 db_foreach projects_info_query $selection {
 
     # insert intermediate headers for every company if the list is sorted by company.

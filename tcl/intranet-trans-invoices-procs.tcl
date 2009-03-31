@@ -25,6 +25,7 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
     set price_format "000.000"
+    set min_price_format "000.00"
     set price_url_base "/intranet-trans-invoices/price-lists/new"
 
     set colspan 9
@@ -59,10 +60,6 @@ ad_proc im_trans_price_component { user_id company_id return_url} {
         # There can be errors when formatting an empty string...
         set price_formatted ""
         catch { set price_formatted "[format "%0.3f" $price] $currency" } errmsg
-        set min_price_formatted ""
-        catch { set min_price_formatted "[format "%0.0f" $min_price] $currency" } errmsg
-	if {"" == $min_price} { set min_price_formatted "" }
-
 	if {"" != $old_currency && ![string equal $old_currency $currency]} {
 	    append price_rows_html "<tr><td colspan=$colspan>&nbsp;</td></tr>\n"
 	}
