@@ -1035,7 +1035,7 @@ begin
 	SELECT
 		c.cost_type_id,
 		im_category_from_id(c.cost_type_id),
-		trim(to_char(c.vat, ''999.9''), ''0. ''),
+		trim(to_char(coalesce(c.vat,0), ''999.9''), ''0. ''),
 		(select o.address_country_code from im_offices o where o.office_id = cust.main_office_id),
 		(select o.address_country_code from im_offices o where o.office_id = prov.main_office_id)
 	INTO
@@ -1108,12 +1108,12 @@ begin
 	IF v_cost_is_invoice_or_quote_p > 0 THEN
 		v_vat_type := ''Intl'';
 		IF v_customer_eu_p THEN v_vat_type = ''EU''; END IF;
-		IF v_customer_spain_p THEN v_vat_type = ''Spain''; END IF;
+		IF v_customer_spain_p THEN v_vat_type = ''Domestic''; END IF;
 		v_vat_type := v_vat_type || '' '' || v_vat_string || ''%'';
 	ELSE
 		v_vat_type := ''Intl'';
 		IF v_provider_eu_p THEN v_vat_type = ''EU''; END IF;
-		IF v_provider_spain_p THEN v_vat_type = ''Spain''; END IF;
+		IF v_provider_spain_p THEN v_vat_type = ''Domestic''; END IF;
 		v_vat_type := v_vat_type || '' '' || v_vat_string || ''%'';
 	END IF;
 

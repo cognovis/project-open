@@ -14,4 +14,3 @@ where
 update im_menus set enabled_p = 'f' where label = 'costs';
 update im_menus set enabled_p = 'f' where label = 'finance_exchange_rates';
 update im_menus set enabled_p = 'f' where label = 'finance_expenses';
-
