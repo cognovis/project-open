@@ -13,7 +13,7 @@ ad_page_contract {
 } {
     { start_date "" }
     { end_date "" }
-    { level_of_detail 4 }
+    { level_of_detail 3 }
     { output_format "html" }
     { number_locale "" }
     { customer_id:integer 0}
@@ -76,7 +76,7 @@ set start_years {2000 2000 2001 2001 2002 2002 2003 2003 2004 2004 2005 2005 200
 set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep 10 Oct 11 Nov 12 Dec}
 set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
 set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
-set levels {2 "Quarter and Type" 3 "Quarter, Type and Customer" 4 "All Details"} 
+set levels {2 "Quarter and Cost Type" 3 "Quarter, Cost Type and VAT Type" 4 "All Details"} 
 
 
 
@@ -182,14 +182,15 @@ select distinct
 	c.effective_date,
 	c.customer_id,
 	c.provider_id,
-	c.vat,
+	coalesce(c.vat, 0) as vat,
 	to_char(c.vat, '00') as vat_pretty,
 	c.tax,
 	round((c.amount * 
 	  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
 	  , 2) as amount_conv,
 	c.amount,
-	c.currency
+	c.currency,
+	im_cost_vat_type_from_cost_id(c.cost_id) as vat_type
 from
 	im_costs c
 	LEFT OUTER JOIN acs_rels r on (c.cost_id = r.object_id_two)
@@ -212,7 +213,6 @@ if {[im_table_exists im_expenses]} {
 set sql "
 select
 	c.*,
-	im_cost_vat_type_from_cost_id(c.cost_id) as vat_type,
 	to_char(c.effective_date, :date_format) as effective_date_formatted,
 	to_char(c.effective_date, 'YYMM')::integer * customer_id as effective_month,
 	to_char(c.effective_date, 'Q')::integer as effective_quarter,
@@ -222,6 +222,11 @@ select
 	cust.company_name as customer_name,
 	prov.company_path as provider_nr,
 	prov.company_name as provider_name,
+	to_char(c.effective_date, 'YYYYQ')::numeric * 
+		(-3699+cost_type_id::numeric) * 
+		(1+c.vat::numeric) * 
+		ascii(vat_type)::numeric 
+	as quarter_cost_type_vat_type,
 	round(CASE
 		WHEN c.cost_type_id in (3700) THEN c.amount_conv * vat / 100
 		WHEN c.cost_type_id in (3704,3720,3720) THEN -c.amount_conv * vat / 100
@@ -292,9 +297,9 @@ set report_def [list \
 	                ""
 	                ""
 	                ""
-	                "<i>$invoice_custsubtotal_pretty</i>"
-	                "asdf<i>$vat_custsubtotal_pretty</i>"
-	                "<i>$tax_custsubtotal_pretty</i>"
+	                "<i>$cost_item_vattype_subtotal_pretty</i>"
+	                "<i>$vat_vattype_subtotal_pretty</i>"
+	                "<i>$tax_vattype_subtotal_pretty</i>"
 	            } \
 	    ] \
 	footer {} \
@@ -312,22 +317,9 @@ set report_def [list \
     } \
 ]
 
-set invoice_total_pretty 0
-set vat_total_pretty 0
-set tax_total_pretty 0
-
-set invoice_custsubtotal 0
-set tax_custsubtotal 0
-set vat_custsubtotal 0
-
-set invoice_subtotal 0
-set tax_subtotal 0
-set vat_subtotal 0
-
-set invoice_total 0
-set tax_total 0
-set vat_total 0
-
+set cost_item_vattype_subtotal 0
+set tax_vattype_subtotal 0
+set vat_vattype_subtotal 0
 
 # Global header/footer
 set header0 {"Q" "Cost<br>Type" "VAT<br>Type" "Customer" "Effective<br>Date" "Name" "Amount" "Vat" "Tax"}
@@ -349,88 +341,31 @@ set footer0 {
 # Customer Counters (per customer)
 #
 
-set invoice_custsubtotal_counter [list \
+set cost_item_vattype_subtotal_counter [list \
         pretty_name "Invoice Amount" \
-        var invoice_custsubtotal \
-        reset \$customer_id \
+        var cost_item_vattype_subtotal \
+        reset \$quarter_cost_type_vat_type \
         expr "\$cost_item_amount+0" \
 				      ]
 
-set vat_custsubtotal_counter [list \
+set vat_vattype_subtotal_counter [list \
         pretty_name "VAT Amount" \
-        var vat_custsubtotal \
-        reset \$customer_id \
+        var vat_vattype_subtotal \
+        reset \$quarter_cost_type_vat_type \
         expr "\$vat_amount+0" \
 				  ]
 
-set tax_custsubtotal_counter [list \
+set tax_vattype_subtotal_counter [list \
         pretty_name "Tax Amount" \
-        var tax_custsubtotal \
-        reset \$customer_id \
+        var tax_vattype_subtotal \
+        reset \$quarter_cost_type_vat_type \
         expr "\$tax_amount+0" \
 				  ]
-
-#
-# Subtotal Counters
-#
-set invoice_subtotal_counter [list \
-        pretty_name "Invoice Amount" \
-        var invoice_subtotal \
-        reset \$cost_type_id \
-        expr "\$cost_item_amount+0" \
-]
-
-set vat_subtotal_counter [list \
-        pretty_name "VAT Amount" \
-        var vat_subtotal \
-        reset \$cost_type_id \
-        expr "\$vat_amount+0" \
-]
-
-set tax_subtotal_counter [list \
-        pretty_name "Tax Amount" \
-        var tax_subtotal \
-        reset \$cost_type_id \
-        expr "\$tax_amount+0" \
-]
-
-#
-# Grand Total Counters
-#
-set invoice_grand_total_counter [list \
-        pretty_name "Invoice Amount" \
-        var invoice_total \
-        reset 0 \
-        expr "\$cost_item_amount+0" \
-]
-
-set vat_grand_total_counter [list \
-        pretty_name "Vat Amount" \
-        var vat_total \
-        reset 0 \
-        expr "\$vat_amount+0" \
-]
-
-set tax_grand_total_counter [list \
-        pretty_name "Tax Amount" \
-        var tax_total \
-        reset 0 \
-        expr "\$tax_amount+0" \
-]
-
-
-
 
 set counters [list \
-	$invoice_custsubtotal_counter \
-	$vat_custsubtotal_counter \
-	$tax_custsubtotal_counter \
-	$invoice_subtotal_counter \
-	$vat_subtotal_counter \
-	$tax_subtotal_counter \
-	$invoice_grand_total_counter \
-	$vat_grand_total_counter \
-	$tax_grand_total_counter \
+	$cost_item_vattype_subtotal_counter \
+	$vat_vattype_subtotal_counter \
+	$tax_vattype_subtotal_counter \
 ]
 
 
@@ -551,18 +486,9 @@ db_foreach sql $sql {
     # Update Counters and calculate pretty counter values
     im_report_update_counters -counters $counters
 
-    set invoice_custsubtotal_pretty [im_report_format_number $invoice_custsubtotal $output_format $number_locale]
-    set tax_custsubtotal_pretty [im_report_format_number $tax_custsubtotal $output_format $number_locale]
-    set vat_custsubtotal_pretty [im_report_format_number $vat_custsubtotal $output_format $number_locale]
-
-    set invoice_subtotal_pretty [im_report_format_number $invoice_subtotal $output_format $number_locale]
-    set tax_subtotal_pretty [im_report_format_number $tax_subtotal $output_format $number_locale]
-    set vat_subtotal_pretty [im_report_format_number $vat_subtotal $output_format $number_locale]
-
-    set invoice_total_pretty [im_report_format_number $invoice_total $output_format $number_locale]
-    set tax_total_pretty [im_report_format_number $tax_total $output_format $number_locale]
-    set vat_total_pretty [im_report_format_number $vat_total $output_format $number_locale]
-
+    set cost_item_vattype_subtotal_pretty [im_report_format_number $cost_item_vattype_subtotal $output_format $number_locale]
+    set tax_vattype_subtotal_pretty [im_report_format_number $tax_vattype_subtotal $output_format $number_locale]
+    set vat_vattype_subtotal_pretty [im_report_format_number $vat_vattype_subtotal $output_format $number_locale]
     
     set last_value_list [im_report_render_header \
 	    -output_format $output_format \
