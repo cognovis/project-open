@@ -1942,7 +1942,7 @@ ad_proc -public im_cost_update_project_cost_cache {
     Returns the "subtotals" array.
 } {
     set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
-    set default_hourly_cost [ad_parameter -package_id [im_package_cost_id] "DefaultHourlyCost" "" 30]
+    set default_hourly_cost [ad_parameter -package_id [im_package_cost_id] "DefaultTimesheetHourlyCost" "" 30]
 
     # Update the logged hours cache
     im_timesheet_update_timesheet_cache -project_id $project_id
