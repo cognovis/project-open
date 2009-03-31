@@ -1639,12 +1639,13 @@ ad_proc im_costs_project_finance_component {
     if {$show_admin_links_p && [im_table_exists im_invoices]} {
 
 	set admin_html "
+	<h1>[_ intranet-core.Admin_Links]</h1>
 	<table>
-	<tr>
+	<!--<tr>
 	  <td class=rowtitle>
 	    [_ intranet-core.Admin_Links]
 	  </td>
-	</tr>
+	</tr>-->
 	<tr class=rowplain>
 	  <td>\n"
 
@@ -1652,13 +1653,17 @@ ad_proc im_costs_project_finance_component {
 	    set customer_id [util_memoize [list db_string project_customer "select company_id from im_projects where project_id = $org_project_id" -default ""]]
 	    set provider_id [im_company_internal]
 	    set bind_vars [list project_id $project_id customer_id $customer_id provider_id $provider_id]
+	    append admin_html "<h2>"
 	    append admin_html [lang::message::lookup "" intranet-cost.Customer_Links "Customer Actions"]
+	    append admin_html "</h2>"	
       	    append admin_html [im_menu_ul_list "invoices_customers" $bind_vars]
 
 	    # Provider invoices: customer = Internal, no provider yet defined
 	    set customer_id [im_company_internal]
 	    set bind_vars [list customer_id $customer_id project_id $project_id]
+	    append admin_html "<br><h2>"			
 	    append admin_html [lang::message::lookup "" intranet-cost.Provider_Links "Provider Actions"]
+	    append admin_html "</h2>"	
 	    append admin_html [im_menu_ul_list "invoices_providers" $bind_vars]
 
 	    append admin_html "	
