@@ -1373,23 +1373,27 @@ ad_proc im_costs_project_finance_component {
 
 
     set cost_html "
+	<h1>[_ intranet-cost.Financial_Documents]</h1>
 	<table border=0 class='table_list_page'>
-	  <tr class='no_hover'>
-	    <td colspan=$colspan class=rowtitle align=center>
+	  <!-- <tr class='no_hover'>
+	    <td colspan=$colspan class=rowtitle>
 	      [_ intranet-cost.Financial_Documents]
 	    </td>
+	  </tr>-->
+	  <thead>
+	  <tr>
+	    <td>[_ intranet-cost.Document]</td>
+	    <td>[lang::message::lookup "" intranet-cost.CostCenter_short "CC"]</td>
+	    <td>[_ intranet-cost.Company]</td>
+	    <td>[_ intranet-cost.Due]</td>
+	    <td align='right'>[_ intranet-cost.Amount]</td>
+	    <td align='right'>[lang::message::lookup "" intranet-cost.Org_Amount "Org"]</td>
+	    <td align='right'>[_ intranet-cost.Paid]</td>
 	  </tr>
-	  <tr class='no_hover'>
-	    <td align=center class=rowtitle>[_ intranet-cost.Document]</td>
-	    <td align=center class=rowtitle>[lang::message::lookup "" intranet-cost.CostCenter_short "CC"]</td>
-	    <td align=center class=rowtitle>[_ intranet-cost.Company]</td>
-	    <td align=center class=rowtitle>[_ intranet-cost.Due]</td>
-	    <td align=center class=rowtitle>[_ intranet-cost.Amount]</td>
-	    <td align=center class=rowtitle>[lang::message::lookup "" intranet-cost.Org_Amount "Org"]</td>
-	    <td align=center class=rowtitle>[_ intranet-cost.Paid]</td>
-	  </tr>
-    "
-
+	  </thead>
+	  <tbody>
+	  <tr class='rowwhite'><td colspan='99'>&nbsp;</td></tr>
+   "
     set can_read_summary_p 1
 
     set ctr 1
@@ -1408,10 +1412,11 @@ ad_proc im_costs_project_finance_component {
 		if {!$atleast_one_unreadable_p} {
 		    append cost_html "
 			<tr class=rowplain>
-			  <td colspan=[expr $colspan-2]>&nbsp;</td>
-			  <td colspan=2>
+			  <td colspan=[expr $colspan-3]>&nbsp;</td>
+			  <td align='right'>
 			    <b>$subtotals($old_cost_type_id) $default_currency</b>
 			  </td>
+			  <td colspan='3'>&nbsp;</td>
 			</tr>
 		    "
 		}
@@ -1422,8 +1427,8 @@ ad_proc im_costs_project_finance_component {
 	    }
 
 	    append cost_html "
-		<tr class='no_hover'>
-		  <td class=rowplain colspan=99><span class='table_interim_title'>$cost_type</span></td>
+		<tr class='rowplain'>
+		  <td colspan=99><span class='table_interim_title'>$cost_type</span></td>
 		</tr>\n"
 
 	    set old_cost_type_id $cost_type_id
@@ -1470,9 +1475,9 @@ ad_proc im_costs_project_finance_component {
 	  <td>$cost_center_code</td>
 	  <td>$company_name</td>
 	  <td>$calculated_due_date</td>
-	  <td><nobr>$amount_converted $default_currency_read_p</nobr></td>
-	  <td><nobr>$amount_unconverted</td>
-	  <td><nobr>$amount_paid</nobr></td>
+	  <td align='right'><nobr>$amount_converted $default_currency_read_p</nobr></td>
+	  <td align='right'><nobr>$amount_unconverted</td>
+	  <td align='right'><nobr>$amount_paid</nobr></td>
 	</tr>\n"
 	incr ctr
     }
@@ -1483,7 +1488,7 @@ ad_proc im_costs_project_finance_component {
 	    append cost_html "
 		<tr class=rowplain>
 		  <td colspan=[expr $colspan-3]>&nbsp;</td>
-		  <td colspan=99>
+		  <td colspan='99'>
 		    <b>$subtotals($old_cost_type_id) $default_currency</b>
 		  </td>
 		</tr>
@@ -1507,7 +1512,7 @@ ad_proc im_costs_project_finance_component {
     }
 
     # Close the main table
-    append cost_html "</table>\n"
+    append cost_html "</tbody></table>\n"
 
     if {!$show_details_p} { set cost_html "" }
 
@@ -1671,8 +1676,9 @@ ad_proc im_costs_project_finance_component {
 
 	# Summary in broad format
 	set summary_html "
+	<h1>[_ intranet-cost.Financial_Summary]</h1>
 	<table cellspacing=0 cellpadding=0>
-	<tr><td class=rowtitle colspan=3>[_ intranet-cost.Financial_Summary]</td></tr>
+	<!--<tr><td class=rowtitle colspan=3>[_ intranet-cost.Financial_Summary]</td></tr>-->
 	<tr valign=top>
 	  <td>$hard_cost_html</td>
 	  <td>&nbsp &nbsp;</td>
