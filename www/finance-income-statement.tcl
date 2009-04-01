@@ -25,8 +25,7 @@ ad_page_contract {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
-# set current_user_id [ad_maybe_redirect_for_registration]
-set current_user_id [ad_get_user_id]
+set current_user_id [ad_maybe_redirect_for_registration]
 set menu_label "reporting-finance-income-statement"
 
 set read_p [db_string report_perms "

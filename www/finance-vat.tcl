@@ -25,8 +25,7 @@ ad_page_contract {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
-# set current_user_id [ad_maybe_redirect_for_registration]
-set current_user_id [ad_get_user_id]
+set current_user_id [ad_maybe_redirect_for_registration]
 
 # Same label as income statement...
 set menu_label "reporting-finance-vat"
@@ -190,7 +189,10 @@ select distinct
 	  , 2) as amount_conv,
 	c.amount,
 	c.currency,
-	im_cost_vat_type_from_cost_id(c.cost_id) as vat_type
+	im_cost_vat_type_from_cost_id(c.cost_id) as vat_type,
+	(select vat_number from im_companies cust where cust.company_id = c.customer_id) as customer_vat_number,
+	(select vat_number from im_companies prov where prov.company_id = c.provider_id) as provider_vat_number,
+	(select external_company_vat_number from im_expenses exp where exp.expense_id = c.cost_id) as expense_vat_number
 from
 	im_costs c
 	LEFT OUTER JOIN acs_rels r on (c.cost_id = r.object_id_two)
@@ -239,7 +241,8 @@ select
 	END,2) as tax_amount,
 	cust.company_id as customer_id,
 	cust.company_name as customer_name,
-	im_category_from_id(c.cost_type_id) as cost_type
+	im_category_from_id(c.cost_type_id) as cost_type,
+	vat_type || im_category_from_id(c.cost_type_id) as vat_type_cost_type
 	$expense_select
 from
 	($inner_sql) c
@@ -267,21 +270,22 @@ set report_def [list \
             group_by cost_type \
             header { 
 		""
-		"\#colspan=10 <b>$cost_type</b>"
+		"\#colspan=11 <b>$cost_type</b>"
 	    } \
 	    content [list \
-	            group_by vat_type \
+	            group_by vat_type_cost_type \
 	            header { 
 			""
 			""
-			"\#colspan=9 $vat_type"
+			"\#colspan=10 $vat_type"
 		    } \
 		    content [list \
 			    header {
 				""
-				""
+				"$quarter_cost_type_vat_type"
 				""
 				"<nobr>$company_html</nobr>"
+				"<nobr>$vat_number</nobr>"
 				"<nobr>$effective_date_formatted</nobr>"
 				"<nobr><a href=$invoice_url$cost_id>$cost_name</a></nobr>"
 				"<nobr>$cost_item_amount_pretty</nobr>"
@@ -292,8 +296,9 @@ set report_def [list \
 		    ] \
 	            footer {
 			""
+			"$quarter_cost_type_vat_type"
 			""
-			""
+	                ""
 	                ""
 	                ""
 	                ""
@@ -305,6 +310,7 @@ set report_def [list \
 	footer {} \
     ] \
     footer {  
+		""
 		""
 		""
 		""
@@ -322,8 +328,9 @@ set tax_vattype_subtotal 0
 set vat_vattype_subtotal 0
 
 # Global header/footer
-set header0 {"Q" "Cost<br>Type" "VAT<br>Type" "Customer" "Effective<br>Date" "Name" "Amount" "Vat" "Tax"}
+set header0 {"Q" "Cost<br>Type" "VAT<br>Type" "Customer" "VAT<br>Number" "Effective<br>Date" "Name" "Amount" "Vat" "Tax"}
 set footer0 {
+	"" 
 	"" 
 	"" 
 	"" 
@@ -455,6 +462,18 @@ set class "rowodd"
 ns_log Notice "intranet-reporting-finance/finance-income-statement: sql=\n$sql"
 
 db_foreach sql $sql {
+
+    if {"" == $quarter_cost_type_vat_type} { 
+	set quarter_cost_type_vat_type $cost_id
+    }
+
+    set invoice_or_quote_p [expr $cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_quote] || $cost_type_id == [im_cost_type_delivery_note] || $cost_type_id == [im_cost_type_interco_quote] || $cost_type_id == [im_cost_type_interco_invoice]]
+    if {$invoice_or_quote_p} {
+	set vat_number $customer_vat_number
+    } else {
+	set vat_number $provider_vat_number
+    }
+    if {"" != $expense_vat_number} { set vat_number $expense_vat_number }
 
     set cost_item_amount_pretty [im_report_format_number $cost_item_amount $output_format $number_locale]
     set vat_amount_pretty [im_report_format_number $vat_amount $output_format $number_locale]
