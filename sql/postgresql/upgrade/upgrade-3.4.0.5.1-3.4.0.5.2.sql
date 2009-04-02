@@ -127,5 +127,3 @@ begin
         return v_vat_type;
 end;' language 'plpgsql';
 
-
-select im_cost_vat_type_from_cost_id(200072);
