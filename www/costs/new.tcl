@@ -28,6 +28,37 @@ set user_id [ad_maybe_redirect_for_registration]
 set page_title "[_ intranet-cost.Edit_Cost]"
 set context [im_context_bar $page_title]
 
+
+
+# ------------------------------------------------------------------
+# Redirect to sub-type
+# ------------------------------------------------------------------
+
+if {[info exists cost_id] && $cost_id != "" && $cost_id != 0 && $form_mode == "display"} {
+    set subtype_sql "
+	select	bou.*
+	from	acs_objects o,
+		im_biz_object_urls bou
+	where	o.object_id = :cost_id and
+		o.object_type = bou.object_type and
+		bou.url_type='view'
+    "
+    db_0or1row object_info $subtype_sql
+
+    if {[info exists url] && "" != $url} {
+	switch $object_type {
+	    im_invoice { ad_returnredirect "${url}${cost_id}" }
+	    im_expense { ad_returnredirect "${url}${cost_id}" }
+	    default { }
+	}
+    }
+}
+
+
+# ------------------------------------------------------------------
+# Default & Security
+# ------------------------------------------------------------------
+
 if {![im_permission $user_id add_costs]} {
     ad_return_complaint 1 "You have insufficient privileges to use this page"
     return
