@@ -235,7 +235,7 @@ ad_proc -public im_workflow_home_component {
     }
 
     set component_html "
-<table class=\"table_list_page\">
+<table class=\"table_container\">
 <tr><td>
 $own_tasks
 $all_tasks
