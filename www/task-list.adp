@@ -6,7 +6,8 @@
     <table cellspacing="0" cellpadding="0" border="0">
     <tr><td>
     
-    <table width="100%" cellspacing="1" cellpadding="4" border="0">
+    <table width="100%" cellspacing="1" cellpadding="4" border="0" class="table_list_page">
+    <thead>	
     <tr class=rowtitle>
     <th><%= [lang::message::lookup "" acs-workflow.To_Do "To do"] %></th>	
     <th><%= [lang::message::lookup "" acs-workflow.On_what "On what?"] %></th>
@@ -19,9 +20,10 @@
     <th>Time Estimate</th>
     <th>Deadline</th>
     </tr>
-	    
+    </thead>
+    <tbody>
     <multiple name="task_list">
-	<tr valign="middle" bgcolor="#eeeeee">
+	<tr class="row_undefined">
 	    <td><a href="@package_url;noquote@@task_list.task_url@">@task_list.task_name@</a>
 		    
 	    <if @task_list.state@ eq "started">
@@ -64,7 +66,7 @@
 	    </td>
 	</tr>
     </multiple>
-    
+    </tbody>
     </table>
 	    
     </td></tr>
