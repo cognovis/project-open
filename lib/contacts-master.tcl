@@ -103,7 +103,6 @@ set contacts_navbar_html "
             </ul>
          </div>
 "
-
 if { [parameter::get -boolean -parameter "ForceSearchBeforeAdd" -default "0"] } {
     if { $page_url == "${package_url}add/person" } {
 	    set title [_ intranet-contacts.Add_Person]

@@ -11,7 +11,7 @@
 		<property name="focus">@focus@</property>
 	</if>
 	<property name="sub_navbar">@contacts_navbar_html;noquote@</property>
-
+	<property name="show_left_navbar_p">0</property>
 </if>
 <else>
 
@@ -21,7 +21,6 @@
 	<property name="header_stuff">
 		<link href="/resources/contacts/contacts.css" rel="stylesheet" type="text/css">
 	</property>
-
 </else>
 
 <slave>
