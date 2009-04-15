@@ -896,12 +896,10 @@ BEGIN
 end;' language 'plpgsql';
 
 
-
-
 create or replace function im_dynfield_attribute__new (
 	integer, varchar, timestamptz, integer, varchar, integer,
 	varchar, varchar, integer, integer, varchar, 
-	varchar, varchar, varchar, varchar, char, char
+	varchar, varchar, varchar, varchar, char, char, char
 ) returns integer as '
 DECLARE
 	p_attribute_id		alias for $1;
@@ -923,14 +921,11 @@ DECLARE
 	p_widget_name		alias for $15;
 	p_deprecated_p		alias for $16;
 	p_already_existed_p	alias for $17;
+	p_table_name		alias for $18;
 
 	v_acs_attribute_id	integer;
 	v_attribute_id		integer;
-	v_table_name		varchar;
 BEGIN
-	select table_name into v_table_name
-	from acs_object_types where object_type = p_attribute_object_type;
-
 	select attribute_id into v_acs_attribute_id from acs_attributes
 	where object_type = p_attribute_object_type and attribute_name = p_attribute_name;
 
@@ -941,7 +936,7 @@ BEGIN
 		p_datatype,
 		p_pretty_name,
 		p_pretty_plural,
-		v_table_name,		-- table_name
+		p_table_name,		-- table_name
 		null,			-- column_name
 		p_default_value,
 		p_min_n_values,
@@ -987,10 +982,9 @@ BEGIN
 	return v_attribute_id;
 end;' language 'plpgsql';
 
-
 -- Shortcut function
 CREATE OR REPLACE FUNCTION im_dynfield_attribute_new (
-	varchar, varchar, varchar, varchar, varchar, char(1), integer, char(1)
+	varchar, varchar, varchar, varchar, varchar, char(1), integer, char(1),varchar
 ) RETURNS integer as '
 DECLARE
 	p_object_type		alias for $1;
@@ -1001,6 +995,7 @@ DECLARE
 	p_required_p		alias for $6;
 	p_pos_y			alias for $7;
 	p_also_hard_coded_p	alias for $8;
+	p_table_name	 	alias for $9;
 
 	v_dynfield_id		integer;
 	v_widget_id		integer;
@@ -1029,7 +1024,7 @@ BEGIN
 		null, ''im_dynfield_attribute'', now(), 0, ''0.0.0.0'', null,
 		p_object_type, p_column_name, v_min_n_value, 1, null,
 		p_datatype, p_pretty_name, p_pretty_name, p_widget_name,
-		''f'', ''f''
+		''f'', ''f'', p_table_name
 	);
 
 	update im_dynfield_attributes set also_hard_coded_p = p_also_hard_coded_p
@@ -1068,6 +1063,28 @@ BEGIN
 	PERFORM acs_permission__grant_permission(v_dynfield_id, (select group_id from groups where group_name=''Freelancers''), ''write'');
 
 	RETURN v_dynfield_id;
+END;' language 'plpgsql';
+
+-- Shortcut function
+CREATE OR REPLACE FUNCTION im_dynfield_attribute_new (
+	varchar, varchar, varchar, varchar, varchar, char(1), integer, char(1)
+) RETURNS integer as '
+DECLARE
+	p_object_type		alias for $1;
+	p_column_name		alias for $2;
+	p_pretty_name		alias for $3;
+	p_widget_name		alias for $4;
+	p_datatype		alias for $5;
+	p_required_p		alias for $6;
+	p_pos_y			alias for $7;
+	p_also_hard_coded_p	alias for $8;
+
+	v_table_name		varchar;
+BEGIN
+	select table_name into v_table_name
+	from acs_object_types where object_type = p_object_type;
+
+	RETURN im_dynfield_attribute_new($1,$2,$3,$4,$5,$6,null,''f'',v_table_name);
 END;' language 'plpgsql';
 
 -- Shortcut function

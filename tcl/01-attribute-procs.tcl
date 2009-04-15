@@ -177,6 +177,7 @@ ad_proc -public im_dynfield::attribute::add {
     # Create the new DynField attribute.
     # The PL/SQL function takes care of setting base permissions
     # and setting up the im_dynfield_type_attribute_map.
+
     set attribute_id [db_string attrib_new "
 	select im_dynfield_attribute_new (
 		:object_type,
@@ -186,7 +187,8 @@ ad_proc -public im_dynfield::attribute::add {
 		:datatype,
 		:required_p,
 		:pos_y,
-		:also_hard_coded_p
+		:also_hard_coded_p,
+                :table_name
 	)
     "]
 
