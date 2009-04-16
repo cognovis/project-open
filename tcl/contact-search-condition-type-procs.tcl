@@ -428,455 +428,67 @@ ad_proc -private contacts::search::condition_type::attribute {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-ad_proc -private contacts::search::condition_type::contact {
+ad_proc -private contacts::search::condition_type::subtype {
     -request:required
     -package_id:required
     {-var_list ""}
     {-form_name ""}
     {-party_id ""}
     {-prefix "contact"}
-    {-object_type ""}
+    -object_type:required
 } {
-    Return all widget procs. Each list element is a list of the first then pretty_name then the widget
-} {
-    set operand [ns_queryget "${prefix}operand"]
-    set var1 "${prefix}${operand}var1"
-    set var2 "${prefix}${operand}var2"
-    set ${var1} [ns_queryget ${var1}]
-    set ${var2} [ns_queryget ${var2}]
-
-    switch $request {
-        ad_form_widgets {
-
-            set form_elements [list]
-
-            set contact_options [list]
-	    lappend contact_options [list "[_ intranet-contacts.in_the_search] ->" "in_search"]
-	    lappend contact_options [list "[_ intranet-contacts.not_in_the_search] ->" "not_in_search"]
-
-	    if { [parameter::get -boolean -package_id $package_id -parameter "ContactPrivacyEnabledP" -default "0"] } {
-		lappend contact_options [list "[_ intranet-contacts.has_closed_down_or_is_deceased]" "privacy_gone_true"]
-		lappend contact_options [list "[_ intranet-contacts.has_not_closed_down_and_is_not_deceased]" "privacy_gone_false"]
-		lappend contact_options [list "[_ intranet-contacts.emailing_not_allowed]" "privacy_email_false"]
-		lappend contact_options [list "[_ intranet-contacts.emailing_allowed]" "privacy_email_true"]
-		lappend contact_options [list "[_ intranet-contacts.mailing_not_allowed]" "privacy_mail_false"]
-		lappend contact_options [list "[_ intranet-contacts.mailing_allowed]" "privacy_mail_true"]
-		lappend contact_options [list "[_ intranet-contacts.phoning_not_allowed]" "privacy_phone_false"]
-		lappend contact_options [list "[_ intranet-contacts.phoning_allowed]" "privacy_phone_true"]
-
-	    }
-
-	    lappend contact_options [list "[_ intranet-contacts.lt_updated_in_the_last_-]" "update"]
-	    lappend contact_options [list "[_ intranet-contacts.lt_not_updated_in_the_la]" "not_update"]
-	    lappend contact_options [list "[_ intranet-contacts.lt_interacted_in_the_last_-]" "interacted"]
-	    lappend contact_options [list "[_ intranet-contacts.lt_not_interacted_in_the_la]" "not_interacted"]
-	    lappend contact_options [list "[_ intranet-contacts.lt_interacted_between_-]" "interacted_between"]
-	    lappend contact_options [list "[_ intranet-contacts.lt_not_interacted_betwe]" "not_interacted_between"]
-	    lappend contact_options [list "[_ intranet-contacts.lt_commented_on_in_last_]" "comment"]
-	    lappend contact_options [list "[_ intranet-contacts.lt_not_commented_on_in_l]" "not_comment"]
-	    lappend contact_options [list "[_ intranet-contacts.lt_created_in_the_last_-]" "created"]
-	    lappend contact_options [list "[_ intranet-contacts.lt_not_created_in_the_la]" "not_created"]
-
-            if { $object_type == "person" } {
-                lappend contact_options [list "[_ intranet-contacts.has_logged_in]" "login"]
-                lappend contact_options [list "[_ intranet-contacts.has_never_logged_in]" "not_login"]
-                lappend contact_options [list "[_ intranet-contacts.lt_has_logged_in_within_]" "login_time"]
-                lappend contact_options [list "[_ intranet-contacts.lt_has_not_logged_in_wit]" "not_login_time"]
-            }
-
-            lappend form_elements [list \
-                                       ${prefix}operand:text(select) \
-                                       [list label {}] \
-                                       [list options $contact_options] \
-                                       [list html [list onChange "javascript:acs_FormRefresh('$form_name')"]] \
-                                      ]
-
-            # login and not_login do not need special elements
-	    # the limitiation on contact_search_conditions is there to prevent infinit loops of search in another search
-            if { [lsearch [list in_search not_in_search] ${operand}] >= 0 } {
-                set user_id [ad_conn user_id]
-		set search_options [list [list "" "" ""]]
-                db_foreach get_my_searches {
-                        select acs_objects.title,
-                               contact_searches.search_id,
-                               contact_searches.owner_id
-                          from contact_searches,
-                               acs_objects
-                         where contact_searches.owner_id in ( :user_id, :package_id )
-                           and contact_searches.search_id = acs_objects.object_id
-                           and acs_objects.title is not null
-                           and not contact_searches.deleted_p
-                           and acs_objects.package_id = :package_id
-                           and contact_searches.search_id not in ( select search_id from contact_search_conditions where var_list like ('in_searc%') or var_list like ('not_in_searc%') )
-                         order by CASE WHEN contact_searches.owner_id = :package_id THEN '1'::integer ELSE '2' END, lower(acs_objects.title)
-		} {
-		    if { $owner_id eq $package_id } {
-			set section_title [_ intranet-contacts.Public_Searches]
-		    } else {
-			set section_title [_ intranet-contacts.My_Searches]
-		    }
-		    lappend search_options [list $title $search_id $section_title]
-		}
-                lappend form_elements [list \
-                                           ${var1}:integer(select_with_optgroup),optional \
-                                           [list label {}] \
-                                           [list options $search_options] \
-                                          ]
-            } elseif { [lsearch [list interacted_between not_interacted_between] ${operand}] >= 0 } {
-		lappend form_elements [list ${var1}:textdate [list label {}] [list after_html "and"]]
-		lappend form_elements [list ${var2}:textdate [list label {}]]
-	    } elseif { [lsearch [list privacy_gone_true privacy_gone_false privacy_email_true privacy_email_false privacy_mail_true privacy_mail_false privacy_phone_true privacy_phone_false] ${operand}] < 0 && $operand ne "" } {
-                set interval_options [list \
-                                          [list days days] \
-                                          [list months months] \
-                                          [list years years] \
-                                         ]
-                lappend form_elements [list ${var1}:integer(text) [list label {}] [list html [list size 3 maxlength 4]]]
-                lappend form_elements [list ${var2}:text(select) [list label {}] [list options $interval_options]]
-            }
-            return $form_elements
-        }
-        form_var_list {
-	    ns_log notice "$operand [set $var1] [set $var2]"
-            if { [exists_and_not_null operand] } {
-                switch ${operand} {
-                    login - not_login {
-                        return [set ${operand}]
-                    }
-		    privacy_gone_true - privacy_gone_false - privacy_email_true - privacy_email_false - privacy_mail_true - privacy_mail_false - privacy_phone_true - privacy_phone_false {
-                        return ${operand}
-                    }
-                    in_search - not_in_search {
-                        if { [string is integer [set ${var1}]] && [set ${var1}] ne "" } {
-                            return [list ${operand} [set ${var1}]]
-                        } else {
-			     template::element::set_error $form_name ${var1} [_ intranet-contacts.Required]
-			}
-                    }
-		    interacted_between - not_interacted_between {
-			if { [exists_and_not_null ${var1}] && [exists_and_not_null ${var2}] } {
-			    if { ![db_0or1row get_it " select 1 where '[set ${var1}]'::date <= '[set ${var2}]'::date "] } {
-				template::element::set_error $form_name $var1 [_ intranet-contacts.Start_must_be_before_end]
-			    }
-			    if { [template::form::is_valid $form_name] } {
-				return [list ${operand} [template::element::get_value $form_name $var1] [template::element::get_value $form_name $var2]]
-			    }
-			}
-		    }
-                    default {
-                        if { [exists_and_not_null ${var1}] && [exists_and_not_null ${var2}] } {
-                            return [list ${operand} [set ${var1}] [set ${var2}]]
-                        }
-                    }
-                }
-            }
-	    return {}
-        }
-        sql - pretty {
-            set operand [lindex $var_list 0]
-            set interval "[lindex $var_list 1] [lindex $var_list 2]"
-            set start_date [lindex $var_list 1]
-	    set end_date [lindex $var_list 2]
-            switch $operand {
-                in_search {
-                    set search_id [lindex $var_list 1]
-                    set search_link "<a href=\"[export_vars -base {./} -url {search_id}]\">[contact::search::title -search_id $search_id]</a>"
-                    set output_pretty "[_ intranet-contacts.lt_Contact_in_the_search_search_link]"
-                    set output_code   [contact::party_id_in_sub_search_clause -search_id $search_id -party_id acs_objects.object_id]
-                }
-                not_in_search {
-                    set search_id [lindex $var_list 1]
-                    set search_link "<a href=\"[export_vars -base {./} -url {search_id}]\">[contact::search::title -search_id $search_id]</a>"
-                    set output_pretty "[_ intranet-contacts.lt_Contact_not_in_the_search_search_link]"
-                    set output_code   [contact::party_id_in_sub_search_clause -search_id $search_id -not -party_id acs_objects.object_id]
-                }
-                update {
-                    set output_pretty "[_ intranet-contacts.lt_Contact_updated_in_th]"
-                    set output_code   "CASE WHEN acs_objects.creation_date > ( now() - '$interval'::interval ) THEN 't'::boolean ELSE 'f'::boolean END"
-                }
-                not_update {
-                    set output_pretty "[_ intranet-contacts.lt_Contact_not_updated_i]"
-                    set output_code   "CASE WHEN creation_date > ( now() - '$interval'::interval ) THEN 'f'::boolean ELSE 't'::boolean END"
-                }
-                interacted - not_interacted - interacted_between - not_interacted_between {
-		    if { [util_memoize [list im_table_exists acs_mail_log]] } {
-			# mail-tracking is installed so we use this table as well as the contact_message_log
-			set interacted_table "( select recipient_id, sent_date from acs_mail_log union select recipient_id, sent_date from contact_message_log ) as messages"
-		    } else {
-			set interacted_table "contact_message_log"
-		    }
-		    set start_date_pretty [lc_time_fmt $start_date %x]
-		    set end_date_pretty [lc_time_fmt $end_date %x]
-		    switch $operand {
-			interacted {
-			    set output_pretty "[_ intranet-contacts.lt_Contact_interacted_in_th]"
-			    set output_code   "acs_objects.object_id in ( select distinct on (recipient_id) recipient_id from $interacted_table where sent_date > ( now() - '$interval'::interval ) order by recipient_id, sent_date desc )"
-			}
-			not_interacted {
-			    set output_pretty "[_ intranet-contacts.lt_Contact_not_interacted_i]"
-			    set output_code   "acs_objects.object_id not in ( select distinct on (recipient_id) recipient_id from $interacted_table where sent_date > ( now() - '$interval'::interval ) order by recipient_id, sent_date desc )"
-			}
-			interacted_between {
-			    set output_pretty "[_ intranet-contacts.lt_Contact_interacted_between]"
-			    set output_code   "acs_objects.object_id in ( select distinct on (recipient_id) recipient_id from $interacted_table where sent_date BETWEEN '${start_date}' AND '${end_date}' )"
-			}
-			not_interacted_between {
-			    set output_pretty "[_ intranet-contacts.lt_Contact_not_interacted_bet]"
-			    set output_code   "acs_objects.object_id not in ( select distinct on (recipient_id) recipient_id from $interacted_table where sent_date BETWEEN '${start_date}' AND '${end_date}' )"
-			}
-		    }  
-		}
-                comment {
-                    set output_pretty "[_ intranet-contacts.lt_Contact_commented_on_]"
-                    set output_code   "CASE WHEN (select creation_date from acs_objects where object_id in ( select comment_id from general_comments where object_id = object_id ) order by creation_date desc limit 1 ) > ( now() - '$interval'::interval ) THEN 't'::boolean ELSE 'f'::boolean END"
-                }
-                not_comment {
-                    set output_pretty "[_ intranet-contacts.lt_Contact_not_commented]"
-                    set output_code   "CASE WHEN (select creation_date from acs_objects where object_id in ( select comment_id from general_comments where object_id = object_id ) order by creation_date desc limit 1 ) > ( now() - '$interval'::interval ) THEN 'f'::boolean ELSE 't'::boolean END"
-                }
-                created {
-                    set output_pretty "[_ intranet-contacts.lt_Contact_created_in_th]"
-                    set output_code   "CASE WHEN ( select acs_objects.creation_date from acs_objects where acs_objects.object_id = object_id ) > ( now() - '$interval'::interval ) THEN 't'::boolean ELSE 'f'::boolean END"
-                }
-                not_created {
-                    set output_pretty "[_ intranet-contacts.lt_Contact_not_created_i]"
-                    set output_code   "CASE WHEN ( select acs_objects.creation_date from acs_objects where acs_objects.object_id = object_id ) > ( now() - '$interval'::interval ) THEN 'f'::boolean ELSE 't'::boolean END"
-                }
-                login {
-                    set output_pretty "[_ intranet-contacts.lt_Contact_has_logged_in]"
-                    set output_code   "CASE WHEN ( select n_sessions from users where user_id = object_id ) > 1 or ( select last_visit from users where user_id = $party_id ) is not null THEN 't'::boolean ELSE 'f'::boolean END"
-                }
-                not_login {
-                    set output_pretty "[_ intranet-contacts.lt_Contact_has_never_log]"
-                    set output_code   "CASE WHEN ( select n_sessions from users where user_id = $party_id ) > 1 or ( select last_visit from users where user_id = $party_id ) is not null THEN 'f'::boolean ELSE 't'::boolean END"
-                }
-                login_time {
-                    set output_pretty "[_ intranet-contacts.lt_Contact_has_logged_in_1]"
-                    set output_code   "CASE WHEN ( select last_visit from users where user_id = $party_id ) > ( now() - '$interval'::interval ) THEN 't'::boolean ELSE 'f'::boolean END"
-                }
-                not_login_time {
-                    set output_pretty "[_ intranet-contacts.lt_Contact_has_not_logge]"
-                    set output_code   "CASE WHEN ( select last_visit from users where user_id = $party_id ) > ( now() - '$interval'::interval ) THEN 'f'::boolean ELSE 't'::boolean END"
-                }
-		privacy_gone_true - privacy_gone_false - privacy_email_true - privacy_email_false - privacy_mail_true - privacy_mail_false - privacy_phone_true - privacy_phone_false {
-		    switch ${operand} {
-			privacy_gone_true {
-			    set output_pretty [_ intranet-contacts.has_closed_down_or_is_deceased]
-			    set condition "gone_p is true"
-			}
-			privacy_gone_false {
-			    set output_pretty [_ intranet-contacts.has_not_closed_down_and_is_not_deceased]
-			    set condition "gone_p is false"
-			}
-			privacy_email_false {
-			    set output_pretty [_ intranet-contacts.emailing_not_allowed]
-			    set condition "email_p is false"
-			}
-			privacy_email_true {
-			    set output_pretty [_ intranet-contacts.emailing_allowed]
-			    set condition "email_p is true"
-			}
-			privacy_mail_false {
-			    set output_pretty [_ intranet-contacts.mailing_not_allowed]
-			    set condition "mail_p is false"
-			}
-			privacy_mail_true {
-			    set output_pretty [_ intranet-contacts.mailing_allowed]
-			    set condition "mail_p is true"
-			}
-			privacy_phone_false {
-			    set output_pretty [_ intranet-contacts.phoning_not_allowed]
-			    set condition "phone_p is false"
-			}
-			privacy_phone_true {
-			    set output_pretty [_ intranet-contacts.phoning_allowed]
-			    set condition "phone_p is true"
-			}
-		    }
-		    set output_code "${party_id} in ( select ${operand}${prefix}.party_id from contact_privacy ${operand}${prefix} where ${operand}${prefix}.$condition )"
-		}
-            }
-	    if { ![exists_and_not_null output_pretty] } {
-		set output_pretty "no pretty output"
-	    }
-	    if { ![exists_and_not_null output_code] } {
-		set output_code "1 = 1"
-	    }
-            if { $request == "pretty" } {
-                return $output_pretty
-            } else {
-                return $output_code
-            }
-        }
-        type_name {
-            return [_ intranet-contacts.Contact]
-        }
-    }
-}
-
-
-
-
-
-ad_proc -private contacts::search::condition_type::group {
-    -request:required
-    -package_id:required
-    {-var_list ""}
-    {-form_name ""}
-    {-party_id ""}
-    {-prefix "contact"}
-    {-object_type ""}
-} {
-    Return all widget procs. Each list element is a list of the first then pretty_name then the widget
-
-    @param party_id the sql column where a party id can be found (normally something like parties.party_id, but it might be persons.person_id, or organizations.organization_id)
-} {
-    set operand  [ns_queryget "${prefix}operand"]
-    set group_id [ns_queryget "${prefix}group_id"]
-
-    switch $request {
-        ad_form_widgets {
-            set form_elements [list]
-	    set operand_options [list \
-                                     [list "[_ intranet-contacts.contact_is_in_-]" "in"] \
-                                     [list "[_ intranet-contacts.contact_is_not_in_-]" "not_in"] \
-                                    ]
-
-            set group_options_old [contact::groups -expand "all" -privilege_required "read" -package_id $package_id -include_dotlrn_p "1"]
-	    set group_options [list]
-	    foreach group $group_options_old {
-		set group_name [lang::util::localize [lindex $group 0]]
-		set group_id [lindex $group 1]
-		set group_numbers [lindex $group 2]
-		lappend group_options [list "$group_name" $group_id $group_numbers]
-	    }
-
-            lappend form_elements [list ${prefix}operand:text(select) [list label {}] [list options $operand_options] [list value $operand]]
-            lappend form_elements [list ${prefix}group_id:integer(select) [list label {}] [list options $group_options] [list value $group_id]]
-            return $form_elements
-        }
-        form_var_list {
-            if { [exists_and_not_null operand] && [exists_and_not_null group_id] } {
-                return [list $operand $group_id]
-            } else {
-                return {}
-            }
-        }
-        sql - pretty {
-            set operand [lindex $var_list 0]
-            set group_id [lindex $var_list 1]
-            if { $request == "pretty" } {
-                set group_pretty [lang::util::localize [db_string select_group_name { select group_name from groups where group_id = :group_id } -default {}]]
-            } else {
-                set group_pretty ""
-            }
-
-            switch $operand {
-                in {
-                    set output_pretty "[_ intranet-contacts.lt_The_contact_is_in_the]"
-		    set output_code "${party_id} in ( select gamm${group_id}.member_id from group_approved_member_map gamm${group_id} where gamm${group_id}.group_id = $group_id )"
-                }
-                not_in {
-                    set output_pretty "[_ intranet-contacts.lt_The_contact_is_NOT_in]"
-		    set output_code "${party_id} not in ( select gamm${group_id}.member_id from group_approved_member_map gamm${group_id} where gamm${group_id}.group_id = $group_id )"
-                }
-            }
-            if { $request == "pretty" } {
-                return $output_pretty
-            } else {
-                return $output_code
-            }
-        }
-        type_name {
-            return [_ intranet-contacts.Group]
-        }
-    }
-}
-
-ad_proc -private contacts::search::condition_type::lists {
-    -request:required
-    -package_id:required
-    {-var_list ""}
-    {-form_name ""}
-    {-party_id ""}
-    {-prefix "contact"}
-    {-object_type ""}
-} {
-    This procedure cannot be name condition_type::list because it breaks the ::list command in 
-    other search condition types.
-
 
     Return all widget procs. Each list element is a list of the first then pretty_name then the widget
 
     @param party_id the sql column where a party id can be found (normally something like parties.party_id, but it might be persons.person_id, or organizations.organization_id)
 } {
     set operand  [ns_queryget "${prefix}operand"]
-    set list_id [ns_queryget "${prefix}list_id"]
-
+    set subtype_id [ns_queryget "${prefix}subtype_id"]
+    set subtype_category [im_dynfield::type_category_for_object_type -object_type $object_type]
+    
     switch $request {
         ad_form_widgets {
-	    set user_id [ad_conn user_id]
+            set user_id [ad_conn user_id]
             set form_elements [list]
-	    set operand_options [list \
+            set operand_options [list \
                                      [list "[_ intranet-contacts.contact_is_in_-]" "in"] \
                                      [list "[_ intranet-contacts.contact_is_not_in_-]" "not_in"] \
-                                    ]
+                            ]
 
-            set list_options [db_list_of_lists get_readable_lists {
-		select ao.title,
-                       cl.list_id
-                  from contact_lists cl,
-                       acs_objects ao
-                 where cl.list_id = ao.object_id
-                   and cl.list_id in ( select object_id from contact_owners where owner_id in ( :user_id, :package_id ))
-	    }]
+            set subtype_category [im_dynfield::type_category_for_object_type -object_type $object_type]
 
             lappend form_elements [list ${prefix}operand:text(select) [list label {}] [list options $operand_options] [list value $operand]]
-            lappend form_elements [list ${prefix}list_id:integer(select) [list label {}] [list options $list_options] [list value $list_id]]
+            lappend form_elements [list ${prefix}subtype_id:integer(im_category_tree) [list label {}] [list custom [list category_type $subtype_category]] [list value $subtype_id]]
             return $form_elements
         }
         form_var_list {
-            if { [exists_and_not_null operand] && [exists_and_not_null list_id] } {
-		if { [contact::owner_read_p -object_id $list_id -owner_id [ad_conn user_id]] } {
-		    return [list $operand $list_id]
-		}
+            if { [exists_and_not_null operand] && [exists_and_not_null subtype_id] } {
+		        if { [contact::owner_read_p -object_id $subtype_id -owner_id [ad_conn user_id]] } {
+		            return [list $operand $subtype_id]
+		        }
             }
-	    return {}
+            return {}
         }
         sql - pretty {
             set operand [lindex $var_list 0]
-            set list_id [lindex $var_list 1]
-	    set title [db_string get_title { select title from acs_objects where object_id = :list_id } -default {}]
-	    if { $title eq "" } {
-		# this list has been deleted or they don't have permission to read it any more
-		if { $request eq "pretty" } {
-		    return "[_ intranet-contacts.List] [_ intranet-contacts.Deleted]"
-		} else {
-		    return " t = f "
-		}
-	    }
+            set subtype_id [lindex $var_list 1]
+            set title [db_string get_title { select title from acs_objects where object_id = :subtype_id } -default {}]
+            if { $title eq "" } {
+                # this list has been deleted or they don't have permission to read it any more
+                if { $request eq "pretty" } {
+                    return "[_ intranet-contacts.List] [_ intranet-contacts.Deleted]"
+                } else {
+                    return " t = f "
+                }
+            }
             switch $operand {
                 in {
                     set output_pretty "[_ intranet-contacts.lt_The_contact_in_list]"
-		    set output_code "${party_id} in ( select clm${list_id}.party_id from contact_list_members clm${list_id} where clm${list_id}.list_id = $list_id )"
+                    set output_code "${party_id} in ( select clm${subtype_id}.party_id from contact_list_members clm${subtype_id} where clm${subtype_id}.subtype_id = $subtype_id )"
                 }
                 not_in {
                     set output_pretty "[_ intranet-contacts.lt_The_contact_NOT_in_li]"
-		    set output_code "${party_id} not in ( select clm${list_id}.party_id from contact_list_members clm${list_id} where clm${list_id}.list_id = $list_id )"
+                    set output_code "${party_id} not in ( select clm${subtype_id}.party_id from contact_list_members clm${subtype_id} where clm${subtype_id}.subtype_id = $subtype_id )"
                 }
             }
             if { $request == "pretty" } {
@@ -886,7 +498,7 @@ ad_proc -private contacts::search::condition_type::lists {
             }
         }
         type_name {
-            return [_ intranet-contacts.List]
+            return [_ intranet-contacts.Subtype]
         }
     }
 }
@@ -1184,6 +796,301 @@ $party_id not in ( select CASE WHEN acs_rel_types.role_two = '$role' THEN acs_re
 }
 
 
+
+
+###################
+
+
+
+# The contact conditions are disabled for the moment
+if {0} {
+ad_proc -private contacts::search::condition_type::contact {
+    -request:required
+    -package_id:required
+    {-var_list ""}
+    {-form_name ""}
+    {-party_id ""}
+    {-prefix "contact"}
+    {-object_type ""}
+} {
+    Return all widget procs. Each list element is a list of the first then pretty_name then the widget
+} {
+    set operand [ns_queryget "${prefix}operand"]
+    set var1 "${prefix}${operand}var1"
+    set var2 "${prefix}${operand}var2"
+    set ${var1} [ns_queryget ${var1}]
+    set ${var2} [ns_queryget ${var2}]
+
+    switch $request {
+        ad_form_widgets {
+
+            set form_elements [list]
+
+            set contact_options [list]
+	    lappend contact_options [list "[_ intranet-contacts.in_the_search] ->" "in_search"]
+	    lappend contact_options [list "[_ intranet-contacts.not_in_the_search] ->" "not_in_search"]
+
+	    if { [parameter::get -boolean -package_id $package_id -parameter "ContactPrivacyEnabledP" -default "0"] } {
+		lappend contact_options [list "[_ intranet-contacts.has_closed_down_or_is_deceased]" "privacy_gone_true"]
+		lappend contact_options [list "[_ intranet-contacts.has_not_closed_down_and_is_not_deceased]" "privacy_gone_false"]
+		lappend contact_options [list "[_ intranet-contacts.emailing_not_allowed]" "privacy_email_false"]
+		lappend contact_options [list "[_ intranet-contacts.emailing_allowed]" "privacy_email_true"]
+		lappend contact_options [list "[_ intranet-contacts.mailing_not_allowed]" "privacy_mail_false"]
+		lappend contact_options [list "[_ intranet-contacts.mailing_allowed]" "privacy_mail_true"]
+		lappend contact_options [list "[_ intranet-contacts.phoning_not_allowed]" "privacy_phone_false"]
+		lappend contact_options [list "[_ intranet-contacts.phoning_allowed]" "privacy_phone_true"]
+
+	    }
+
+	    lappend contact_options [list "[_ intranet-contacts.lt_updated_in_the_last_-]" "update"]
+	    lappend contact_options [list "[_ intranet-contacts.lt_not_updated_in_the_la]" "not_update"]
+	    lappend contact_options [list "[_ intranet-contacts.lt_interacted_in_the_last_-]" "interacted"]
+	    lappend contact_options [list "[_ intranet-contacts.lt_not_interacted_in_the_la]" "not_interacted"]
+	    lappend contact_options [list "[_ intranet-contacts.lt_interacted_between_-]" "interacted_between"]
+	    lappend contact_options [list "[_ intranet-contacts.lt_not_interacted_betwe]" "not_interacted_between"]
+	    lappend contact_options [list "[_ intranet-contacts.lt_commented_on_in_last_]" "comment"]
+	    lappend contact_options [list "[_ intranet-contacts.lt_not_commented_on_in_l]" "not_comment"]
+	    lappend contact_options [list "[_ intranet-contacts.lt_created_in_the_last_-]" "created"]
+	    lappend contact_options [list "[_ intranet-contacts.lt_not_created_in_the_la]" "not_created"]
+
+            if { $object_type == "person" } {
+                lappend contact_options [list "[_ intranet-contacts.has_logged_in]" "login"]
+                lappend contact_options [list "[_ intranet-contacts.has_never_logged_in]" "not_login"]
+                lappend contact_options [list "[_ intranet-contacts.lt_has_logged_in_within_]" "login_time"]
+                lappend contact_options [list "[_ intranet-contacts.lt_has_not_logged_in_wit]" "not_login_time"]
+            }
+
+            lappend form_elements [list \
+                                       ${prefix}operand:text(select) \
+                                       [list label {}] \
+                                       [list options $contact_options] \
+                                       [list html [list onChange "javascript:acs_FormRefresh('$form_name')"]] \
+                                      ]
+
+            # login and not_login do not need special elements
+	    # the limitiation on contact_search_conditions is there to prevent infinit loops of search in another search
+            if { [lsearch [list in_search not_in_search] ${operand}] >= 0 } {
+                set user_id [ad_conn user_id]
+		set search_options [list [list "" "" ""]]
+                db_foreach get_my_searches {
+                        select acs_objects.title,
+                               contact_searches.search_id,
+                               contact_searches.owner_id
+                          from contact_searches,
+                               acs_objects
+                         where contact_searches.owner_id in ( :user_id, :package_id )
+                           and contact_searches.search_id = acs_objects.object_id
+                           and acs_objects.title is not null
+                           and not contact_searches.deleted_p
+                           and acs_objects.package_id = :package_id
+                           and contact_searches.search_id not in ( select search_id from contact_search_conditions where var_list like ('in_searc%') or var_list like ('not_in_searc%') )
+                         order by CASE WHEN contact_searches.owner_id = :package_id THEN '1'::integer ELSE '2' END, lower(acs_objects.title)
+		} {
+		    if { $owner_id eq $package_id } {
+			set section_title [_ intranet-contacts.Public_Searches]
+		    } else {
+			set section_title [_ intranet-contacts.My_Searches]
+		    }
+		    lappend search_options [list $title $search_id $section_title]
+		}
+                lappend form_elements [list \
+                                           ${var1}:integer(select_with_optgroup),optional \
+                                           [list label {}] \
+                                           [list options $search_options] \
+                                          ]
+            } elseif { [lsearch [list interacted_between not_interacted_between] ${operand}] >= 0 } {
+		lappend form_elements [list ${var1}:textdate [list label {}] [list after_html "and"]]
+		lappend form_elements [list ${var2}:textdate [list label {}]]
+	    } elseif { [lsearch [list privacy_gone_true privacy_gone_false privacy_email_true privacy_email_false privacy_mail_true privacy_mail_false privacy_phone_true privacy_phone_false] ${operand}] < 0 && $operand ne "" } {
+                set interval_options [list \
+                                          [list days days] \
+                                          [list months months] \
+                                          [list years years] \
+                                         ]
+                lappend form_elements [list ${var1}:integer(text) [list label {}] [list html [list size 3 maxlength 4]]]
+                lappend form_elements [list ${var2}:text(select) [list label {}] [list options $interval_options]]
+            }
+            return $form_elements
+        }
+        form_var_list {
+	    ns_log notice "$operand [set $var1] [set $var2]"
+            if { [exists_and_not_null operand] } {
+                switch ${operand} {
+                    login - not_login {
+                        return [set ${operand}]
+                    }
+		    privacy_gone_true - privacy_gone_false - privacy_email_true - privacy_email_false - privacy_mail_true - privacy_mail_false - privacy_phone_true - privacy_phone_false {
+                        return ${operand}
+                    }
+                    in_search - not_in_search {
+                        if { [string is integer [set ${var1}]] && [set ${var1}] ne "" } {
+                            return [list ${operand} [set ${var1}]]
+                        } else {
+			     template::element::set_error $form_name ${var1} [_ intranet-contacts.Required]
+			}
+                    }
+		    interacted_between - not_interacted_between {
+			if { [exists_and_not_null ${var1}] && [exists_and_not_null ${var2}] } {
+			    if { ![db_0or1row get_it " select 1 where '[set ${var1}]'::date <= '[set ${var2}]'::date "] } {
+				template::element::set_error $form_name $var1 [_ intranet-contacts.Start_must_be_before_end]
+			    }
+			    if { [template::form::is_valid $form_name] } {
+				return [list ${operand} [template::element::get_value $form_name $var1] [template::element::get_value $form_name $var2]]
+			    }
+			}
+		    }
+                    default {
+                        if { [exists_and_not_null ${var1}] && [exists_and_not_null ${var2}] } {
+                            return [list ${operand} [set ${var1}] [set ${var2}]]
+                        }
+                    }
+                }
+            }
+	    return {}
+        }
+        sql - pretty {
+            set operand [lindex $var_list 0]
+            set interval "[lindex $var_list 1] [lindex $var_list 2]"
+            set start_date [lindex $var_list 1]
+	    set end_date [lindex $var_list 2]
+            switch $operand {
+                in_search {
+                    set search_id [lindex $var_list 1]
+                    set search_link "<a href=\"[export_vars -base {./} -url {search_id}]\">[contact::search::title -search_id $search_id]</a>"
+                    set output_pretty "[_ intranet-contacts.lt_Contact_in_the_search_search_link]"
+                    set output_code   [contact::party_id_in_sub_search_clause -search_id $search_id -party_id acs_objects.object_id]
+                }
+                not_in_search {
+                    set search_id [lindex $var_list 1]
+                    set search_link "<a href=\"[export_vars -base {./} -url {search_id}]\">[contact::search::title -search_id $search_id]</a>"
+                    set output_pretty "[_ intranet-contacts.lt_Contact_not_in_the_search_search_link]"
+                    set output_code   [contact::party_id_in_sub_search_clause -search_id $search_id -not -party_id acs_objects.object_id]
+                }
+                update {
+                    set output_pretty "[_ intranet-contacts.lt_Contact_updated_in_th]"
+                    set output_code   "CASE WHEN acs_objects.creation_date > ( now() - '$interval'::interval ) THEN 't'::boolean ELSE 'f'::boolean END"
+                }
+                not_update {
+                    set output_pretty "[_ intranet-contacts.lt_Contact_not_updated_i]"
+                    set output_code   "CASE WHEN creation_date > ( now() - '$interval'::interval ) THEN 'f'::boolean ELSE 't'::boolean END"
+                }
+                interacted - not_interacted - interacted_between - not_interacted_between {
+		    if { [util_memoize [list im_table_exists acs_mail_log]] } {
+			# mail-tracking is installed so we use this table as well as the contact_message_log
+			set interacted_table "( select recipient_id, sent_date from acs_mail_log union select recipient_id, sent_date from contact_message_log ) as messages"
+		    } else {
+			set interacted_table "contact_message_log"
+		    }
+		    set start_date_pretty [lc_time_fmt $start_date %x]
+		    set end_date_pretty [lc_time_fmt $end_date %x]
+		    switch $operand {
+			interacted {
+			    set output_pretty "[_ intranet-contacts.lt_Contact_interacted_in_th]"
+			    set output_code   "acs_objects.object_id in ( select distinct on (recipient_id) recipient_id from $interacted_table where sent_date > ( now() - '$interval'::interval ) order by recipient_id, sent_date desc )"
+			}
+			not_interacted {
+			    set output_pretty "[_ intranet-contacts.lt_Contact_not_interacted_i]"
+			    set output_code   "acs_objects.object_id not in ( select distinct on (recipient_id) recipient_id from $interacted_table where sent_date > ( now() - '$interval'::interval ) order by recipient_id, sent_date desc )"
+			}
+			interacted_between {
+			    set output_pretty "[_ intranet-contacts.lt_Contact_interacted_between]"
+			    set output_code   "acs_objects.object_id in ( select distinct on (recipient_id) recipient_id from $interacted_table where sent_date BETWEEN '${start_date}' AND '${end_date}' )"
+			}
+			not_interacted_between {
+			    set output_pretty "[_ intranet-contacts.lt_Contact_not_interacted_bet]"
+			    set output_code   "acs_objects.object_id not in ( select distinct on (recipient_id) recipient_id from $interacted_table where sent_date BETWEEN '${start_date}' AND '${end_date}' )"
+			}
+		    }  
+		}
+                comment {
+                    set output_pretty "[_ intranet-contacts.lt_Contact_commented_on_]"
+                    set output_code   "CASE WHEN (select creation_date from acs_objects where object_id in ( select comment_id from general_comments where object_id = object_id ) order by creation_date desc limit 1 ) > ( now() - '$interval'::interval ) THEN 't'::boolean ELSE 'f'::boolean END"
+                }
+                not_comment {
+                    set output_pretty "[_ intranet-contacts.lt_Contact_not_commented]"
+                    set output_code   "CASE WHEN (select creation_date from acs_objects where object_id in ( select comment_id from general_comments where object_id = object_id ) order by creation_date desc limit 1 ) > ( now() - '$interval'::interval ) THEN 'f'::boolean ELSE 't'::boolean END"
+                }
+                created {
+                    set output_pretty "[_ intranet-contacts.lt_Contact_created_in_th]"
+                    set output_code   "CASE WHEN ( select acs_objects.creation_date from acs_objects where acs_objects.object_id = object_id ) > ( now() - '$interval'::interval ) THEN 't'::boolean ELSE 'f'::boolean END"
+                }
+                not_created {
+                    set output_pretty "[_ intranet-contacts.lt_Contact_not_created_i]"
+                    set output_code   "CASE WHEN ( select acs_objects.creation_date from acs_objects where acs_objects.object_id = object_id ) > ( now() - '$interval'::interval ) THEN 'f'::boolean ELSE 't'::boolean END"
+                }
+                login {
+                    set output_pretty "[_ intranet-contacts.lt_Contact_has_logged_in]"
+                    set output_code   "CASE WHEN ( select n_sessions from users where user_id = object_id ) > 1 or ( select last_visit from users where user_id = $party_id ) is not null THEN 't'::boolean ELSE 'f'::boolean END"
+                }
+                not_login {
+                    set output_pretty "[_ intranet-contacts.lt_Contact_has_never_log]"
+                    set output_code   "CASE WHEN ( select n_sessions from users where user_id = $party_id ) > 1 or ( select last_visit from users where user_id = $party_id ) is not null THEN 'f'::boolean ELSE 't'::boolean END"
+                }
+                login_time {
+                    set output_pretty "[_ intranet-contacts.lt_Contact_has_logged_in_1]"
+                    set output_code   "CASE WHEN ( select last_visit from users where user_id = $party_id ) > ( now() - '$interval'::interval ) THEN 't'::boolean ELSE 'f'::boolean END"
+                }
+                not_login_time {
+                    set output_pretty "[_ intranet-contacts.lt_Contact_has_not_logge]"
+                    set output_code   "CASE WHEN ( select last_visit from users where user_id = $party_id ) > ( now() - '$interval'::interval ) THEN 'f'::boolean ELSE 't'::boolean END"
+                }
+		privacy_gone_true - privacy_gone_false - privacy_email_true - privacy_email_false - privacy_mail_true - privacy_mail_false - privacy_phone_true - privacy_phone_false {
+		    switch ${operand} {
+			privacy_gone_true {
+			    set output_pretty [_ intranet-contacts.has_closed_down_or_is_deceased]
+			    set condition "gone_p is true"
+			}
+			privacy_gone_false {
+			    set output_pretty [_ intranet-contacts.has_not_closed_down_and_is_not_deceased]
+			    set condition "gone_p is false"
+			}
+			privacy_email_false {
+			    set output_pretty [_ intranet-contacts.emailing_not_allowed]
+			    set condition "email_p is false"
+			}
+			privacy_email_true {
+			    set output_pretty [_ intranet-contacts.emailing_allowed]
+			    set condition "email_p is true"
+			}
+			privacy_mail_false {
+			    set output_pretty [_ intranet-contacts.mailing_not_allowed]
+			    set condition "mail_p is false"
+			}
+			privacy_mail_true {
+			    set output_pretty [_ intranet-contacts.mailing_allowed]
+			    set condition "mail_p is true"
+			}
+			privacy_phone_false {
+			    set output_pretty [_ intranet-contacts.phoning_not_allowed]
+			    set condition "phone_p is false"
+			}
+			privacy_phone_true {
+			    set output_pretty [_ intranet-contacts.phoning_allowed]
+			    set condition "phone_p is true"
+			}
+		    }
+		    set output_code "${party_id} in ( select ${operand}${prefix}.party_id from contact_privacy ${operand}${prefix} where ${operand}${prefix}.$condition )"
+		}
+            }
+	    if { ![exists_and_not_null output_pretty] } {
+		set output_pretty "no pretty output"
+	    }
+	    if { ![exists_and_not_null output_code] } {
+		set output_code "1 = 1"
+	    }
+            if { $request == "pretty" } {
+                return $output_pretty
+            } else {
+                return $output_code
+            }
+        }
+        type_name {
+            return [_ intranet-contacts.Contact]
+        }
+    }
+}
+
+}
 
 
 

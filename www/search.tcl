@@ -79,12 +79,6 @@ if { [exists_and_not_null search_id] } {
     }
 }
 
-if { $object_type eq "employee" } {
-    set actual_object_type "organization"
-} else {
-    set actual_object_type $object_type
-}
-
 if { $search_exists_p } {
 
     template::multirow create ext impl type_key type_pretty key key_pretty
@@ -97,7 +91,7 @@ if { $search_exists_p } {
 	-user_id [ad_conn user_id] \
 	-multirow ext \
 	-package_id [ad_conn package_id] \
-	-object_type $actual_object_type
+	-object_type $object_type
     
     set add_columns [list]
     set remove_columns [list]
@@ -182,10 +176,7 @@ if { ![exists_and_not_null owner_id] } {
 if { $search_exists_p } {
     set conditions [list]
     db_foreach selectqueries {} {
-	set condition_name [contacts::search::condition_type -type $query_type -request pretty -var_list $query_var_list]
-	if { [empty_string_p $condition_name] } {
-	    set condition_name  "[_ intranet-contacts.Employees]"
-	}
+	    set condition_name [contacts::search::condition_type -type $query_type -request pretty -var_list $query_var_list]
         lappend conditions "$condition_name <a href=\"[export_vars -base search-condition-delete -url {condition_id}]\"><img src=\"/resources/acs-subsite/Delete16.gif\" width=\"16\" height=\"16\" border=\"0\"></a>"
     }
     if { [llength $conditions] > 0 } {
@@ -197,7 +188,6 @@ if { $search_exists_p } {
     set query_pretty ""
 }
 
-set display_employers_p [parameter::get -boolean -parameter DisplayEmployersP -default "0"]
 # FORM HEADER
 set form_elements {
     {search_id:key}
@@ -219,72 +209,34 @@ if { [exists_and_not_null object_type] } {
         lappend object_type_options [list [intranet-contacts::object_type_pretty -object_type $object_type_temp] $object_type_temp]
     }
     
-    if { $display_employers_p } {
-	    lappend object_type_options [list "[_ intranet-contacts.Employee]" "employee"]
-    }
-    
     append form_elements {
         {object_type:text(select) {label {\#intranet-contacts.Search_for\#}} {options $object_type_options} {html {onChange "javascript:acs_FormRefresh('advanced_search')"}}}
     }
 }
 
-
-
-# The employee search only works without other attribute so 
-# we are going to remove the option "Employee" where is already
-# a condition_name and we are going to remove the attributes
-# where the condition_name equals employee
-set employee_p 0
 if { [exists_and_not_null object_type] } {
 
     # QUERY TYPE
-    set type_options_temp [contacts::search::condition_types]
-    set type_options ""
+    set type_options [contacts::search::condition_types]
     
-    # We are going to add one extra element to show all employees
-    # and its organization
-    foreach type_temp $type_options_temp {
-        if {[lindex $type_temp 1] eq "group" && $object_type ne "person"} {
-            # only persons can have groups
-        } elseif {[lindex $type_temp 1] eq "subtype" && $object_type eq "person"} {
-            # persons cannot have subtypes
-        } else {
-            lappend type_options $type_temp
-        }
-    }
-    
-    if { $object_type eq "person" && ![exists_and_not_null condition_name] } {
-	        lappend type_options [list "[_ intranet-contacts.Employees]" employees]
-	}
-    
-    if { [exists_and_not_null condition_name] && [string equal $condition_name [_ intranet-contacts.Employees]] } {
-	set employee_p 1
-    }
-
     if { $search_exists_p } {
-	# the search already exists so we put the option of not selecting
+	    # the search already exists so we put the option of not selecting
         # a new condition type, otherwise all form manipulations make
         # the assumption that a new type was selected
-	set type_options [concat [list [list "- - - -" ""]] $type_options]
+	    set type_options [concat [list [list "- - - -" ""]] $type_options]
     }
-    if { !$employee_p } {
-	# Show the attribute options of the search
-	append form_elements {
-	    {type:text(select),optional {label {}} {options $type_options} {html {onChange "javascript:acs_FormRefresh('advanced_search')"}}}
-	}
+    
+    # Show the attribute options of the search
+    append form_elements {
+        {type:text(select),optional {label {}} {options $type_options} {html {onChange "javascript:acs_FormRefresh('advanced_search')"}}}
     }
 }
 
 #get condition types widgets
 set form_elements [concat \
 		       $form_elements \
-               [contacts::search::condition_type -type $type -request ad_form_widgets -form_name advanced_search -object_type $actual_object_type]
+               [contacts::search::condition_type -type $type -request ad_form_widgets -form_name advanced_search -object_type $object_type]
                ]
-if { !$employee_p } {
-    # Show the Ok button
-    lappend form_elements  [list next:text(submit) [list label [_ acs-kernel.common_OK]] [list value "ok"]]
-}
-
 
 if { $search_exists_p } {
 
@@ -295,34 +247,13 @@ if { $search_exists_p } {
         {save:text(submit) {label "[_ intranet-contacts.Save]"} {value "save"}}
         {search:text(submit) {label "[_ intranet-contacts.Search]"} {value "search"}}
         {clear:text(submit) {label "[_ intranet-contacts.Clear]"} {value "clear"}}
+        {delete:text(submit) {label "[_ intranet-contacts.Delete]"} {value "delete"} \
+             {after_html "&nbsp;&nbsp;<span style=\"font-size: smaller;\">[_ intranet-contacts.Results]</span> <a href=\"[export_vars -base ./ -url {search_id}]\">$results_count</a>"}
+        }
+        aggregate:text(hidden),optional
     }
 
     
-    if { $display_employers_p } {
-
-	append form_elements {
-	    {delete:text(submit) {label "[_ intranet-contacts.Delete]"} {value "delete"} \
-		 {after_html "<br>[_ intranet-contacts.Aggregate_by]:<br>"}
-	    }
-	}
-	append form_elements [contacts::search::condition_type::attribute \
-				  -request ad_form_widgets \
-				  -prefix "aggregate_" \
-				  -without_arrow_p "t" \
-				  -only_multiple_p "t" \
-				  -package_id [ad_conn package_id]]
-
-	append form_elements {
-	    {aggregate:text(submit) {label "[_ intranet-contacts.Aggregate]"} {value "aggregate"} {after_html "&nbsp;&nbsp;<span style=\"font-size: smaller;\">[_ intranet-contacts.Results]</span> <a href=\"[export_vars -base ./ -url {search_id}]\">$results_count</a>"}}
-	}
-    } else {
-	append form_elements {
-	    {delete:text(submit) {label "[_ intranet-contacts.Delete]"} {value "delete"} \
-		 {after_html "&nbsp;&nbsp;<span style=\"font-size: smaller;\">[_ intranet-contacts.Results]</span> <a href=\"[export_vars -base ./ -url {search_id}]\">$results_count</a>"}
-	    }
-	    aggregate:text(hidden),optional
-	}
-    }
 }
 
 ad_form -name "advanced_search" -method "GET" -form $form_elements \
@@ -333,15 +264,11 @@ ad_form -name "advanced_search" -method "GET" -form $form_elements \
         if { [contact::search::exists_p -search_id $search_id] } {
             contact::search::update -search_id $search_id -title $title -owner_id $owner_id -all_or_any $all_or_any
         }
-
-	if { ![string equal $type "employees"] } {
-	    set form_var_list [contacts::search::condition_type \
+        
+        set form_var_list [contacts::search::condition_type \
 				   -type $type \
 				   -request form_var_list \
 				   -form_name advanced_search]
-	} else {
-	    set form_var_list "employees"
-	}
 
         if { $form_var_list != "" } {
             if { [string is false [contact::search::exists_p -search_id $search_id]] } {

@@ -14,7 +14,7 @@ ad_proc -public intranet-contacts::supported_object_types {
 } {
     Returns a list of object types which are supported by intranet-contacts
 } {
-    return [list person im_company im_office user]
+    return [list person im_company im_office]
 }
 
 ad_proc -public intranet-contacts::supported_rel_types {
