@@ -193,5 +193,27 @@ BEGIN
 	RETURN im_dynfield_attribute_new($1,$2,$3,$4,$5,$6,null,''f'',v_table_name);
 END;' language 'plpgsql';
 
-insert into acs_object_type_tables values ('party','parties','party_id');
+
+
+-- Fix bad attribute
 update acs_attributes set table_name = 'parties' where attribute_name = 'email';
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select count(*) into v_count
+	from acs_object_type_tables
+	where object_type = ''party'' and table_name = ''parties'';
+	IF 0 != v_count THEN return 0; END IF;
+
+	insert into acs_object_type_tables values (''party'',''parties'',''party_id'');
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
