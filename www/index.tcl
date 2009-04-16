@@ -132,14 +132,17 @@ if { $search_id ne "" && $contacts_total_count > 0 } {
     } else {
 	    set label [lang::util::localize [_ intranet-contacts.Mail_recipient]]
     }
-    if {$object_type eq "person" || $object_type eq "user"} {
-        append form_elements {
-	        {mail_merge_group:text(submit) {label $label} {value "1"}}
-        }
-    }
+
+# Enable this again if you run into the problem that you want to mail too many users of a search.
+#
+#    if {$object_type eq "person" || $object_type eq "user"} {
+#        append form_elements {
+#	        {mail_merge_group:text(submit) {label $label} {value "1"}}
+#        }
+#    }
 }
 
-ad_form -name "search" -method "GET" -export {orderby page_size format extended_columns return_url} -form $form_elements \
+ad_form -html {class inline-form} -name "search" -method "GET" -export {orderby page_size format extended_columns return_url} -form $form_elements \
     -on_request {
     } -edit_request {
     } -on_refresh {

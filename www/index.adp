@@ -6,8 +6,9 @@
  height: 300px; 
 }
 </style>
-<p>
-<formtemplate id="search" style="../../../contacts/resources/forms/inline"></formtemplate></p>
+<p />
+<br /
+<formtemplate id="search"></formtemplate></p>
 
 <if @aggregated_p@>
    <include src="../lib/contacts-aggregated" 
