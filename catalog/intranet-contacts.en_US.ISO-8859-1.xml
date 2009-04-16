@@ -18,6 +18,7 @@
   <msg key="Add_a_Group">Add a Group</msg>
   <msg key="Add_a_Person">Add a Person</msg>
   <msg key="Add_an_Organization">Add an Organization</msg>
+  <msg key="Add_Biz_Card">Add Biz Card</msg>
   <msg key="Add_Comment">Add Comment</msg>
   <msg key="Add_complaint_to">Add complaint to</msg>
   <msg key="Add_Condition">Add Condition</msg>
@@ -719,6 +720,7 @@
   <msg key="Subject_is_required">Subject is required</msg>
   <msg key="Subquery">Subquery</msg>
   <msg key="subquery_help">The subquery to be executed to grab the result.</msg>
+  <msg key="Subtype">Subtype</msg>
   <msg key="Summary">Summary</msg>
   <msg key="Summary_View">Summary View</msg>
   <msg key="Supplier">Supplier:</msg>

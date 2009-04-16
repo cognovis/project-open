@@ -56,13 +56,13 @@ template::list::create \
                 <a href="@messages.delete_url@" class="button">#acs-kernel.common_Delete#</a>
                 </if>
                 <if @messages.make_public_url@ not nil>
-                <a href="@messages.make_public_url@" class="button">#contacts.Make_Public#</a>
+                <a href="@messages.make_public_url@" class="button">#intranet-contacts.Make_Public#</a>
                 </if>
             }
         }
     } -filters {
         owner_id {
-            label "\#contacts.Owner\#"
+            label "\#intranet-contacts.Owner\#"
             values $owner_options
             where_clause ""
             default_value $user_id
