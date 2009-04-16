@@ -192,3 +192,6 @@ BEGIN
 
 	RETURN im_dynfield_attribute_new($1,$2,$3,$4,$5,$6,null,''f'',v_table_name);
 END;' language 'plpgsql';
+
+insert into acs_object_type_tables values ('party','parties','party_id');
+update acs_attributes set table_name = 'parties' where attribute_name = 'email';

@@ -60,7 +60,7 @@ foreach {attribute_id sort_order} $sort_key_list {
 }
 set ordered_list [lsort -integer $attribute_order]	
 
-set highest_sort [db_string get_highest_sort { select pos_y from im_dynfield_layout idl, im_dynfield_type_attribute_map tam where tam.object_type_id = :list_id and tam.attribute_id = idl.attribute_id and idl.label_style = 'plain' and pos_y is not null order by pos_y desc limit 1 }]
+set highest_sort [db_string get_highest_sort { select pos_y from im_dynfield_layout idl, im_dynfield_type_attribute_map tam where tam.object_type_id = :list_id and tam.attribute_id = idl.attribute_id and idl.label_style = 'plain' and pos_y is not null order by pos_y desc limit 1 } -default 0]
 incr highest_sort
 set sort_number 1
 db_transaction {

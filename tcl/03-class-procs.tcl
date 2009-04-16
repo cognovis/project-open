@@ -422,7 +422,7 @@ namespace eval ::im::dynfield {}
             -ad_doc "This is the specific Form class for the object type ${object_type} and allows manipulation of the on_submit etc. blocks for this object_type when ::im::dynfield::Form generate is called. Obviously if you know your      object_type you could just as well call this Class."
     }
     
-    set attributes [db_list_of_lists dbqd..get_atts {
+    set attributes [db_list_of_lists dbqd..get_atts "
         select attribute_name, aa.pretty_name, aa.pretty_plural, datatype, 
         default_value, min_n_values, max_n_values, table_name, ida.attribute_id,
         ida.widget_name, already_existed_p, deprecated_p, include_in_search_p, also_hard_coded_p,
@@ -430,8 +430,8 @@ namespace eval ::im::dynfield {}
         from acs_attributes aa, im_dynfield_attributes ida, im_dynfield_widgets idw        
         where aa.attribute_id = ida.acs_attribute_id
         and ida.widget_name = idw.widget_name
-        and aa.object_type = :object_type
-    }]
+        and aa.object_type = :object_type"
+    ]
    
    set slots ""
    set multival_attrs [list]
