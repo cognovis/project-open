@@ -62,7 +62,6 @@ xotcl::Class create ::im::dynfield::Element \
     if {$list_id == ""} {
         # Apparently the list is not important, might be the case if the help_text is not needed or the default value
         set list_id [ams::list::get_id -attribute_id $id]
-	if {"" == $list_id} { ad_return_complaint 1 "::im::dynfield::Element ad_proc get_instance_from_db: List_id is empty" }
     }
     set org_sql "
     select
