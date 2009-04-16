@@ -1,6 +1,6 @@
 -- upgrade-3.3.3.0.0-3.4.0.5.2.sql
 
-SELECT acs_log__debug('/packages/intranet-search-pg/sql/postgresql/upgrade/upgrade-3.3.3.0.0-3.4.0.5.2.sql','');
+SELECT acs_log__debug('/packages/intranet-search-pg/sql/postgresql/upgrade/upgrade-3.3.0.0.0-3.4.0.5.2.sql','');
 
 
 create or replace function inline_0 ()
