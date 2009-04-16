@@ -278,12 +278,18 @@ if { $format == "csv" } {
     
 } else {
 
-    set row_list [list \
+    if {$bulk_actions ne ""} {
+        set row_list [list \
 		  checkbox {
 		      html {style {width: 30px; text-align: center;}}
 		  } \
 		      contact {} \
 		 ] 
+	} else {
+        set row_list [list \
+  		      contact {} \
+  		 ]   
+	}
 }
 
 set row_list [concat $row_list $last_modified_rows]
