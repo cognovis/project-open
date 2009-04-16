@@ -91,6 +91,7 @@ ad_proc -private contacts::search::condition_type::attribute {
     {-party_id "acs_objects.object_id"}
     {-form_name ""}
     {-object_type}
+    {-subtype_id ""}
     {-prefix ""}
     {-without_arrow_p "f"}
     {-only_multiple_p "f"}
@@ -189,17 +190,24 @@ ad_proc -private contacts::search::condition_type::attribute {
             # Display the attribute options.
             if { !$only_multiple_p } {
                 
-                # We might change this to list style later on.
-                # And then we would get all elements in the supplied list_ids
+                
+                if {$subtype_id eq ""} {
+
+                    # Get the subtype_id for the object_type. Only the ones in this group might be searched
+                    set subtype_id [ams::list::get_list_id -object_type $object_type -list_name $object_type]
+                }
+		        
 		        set attribute_options [db_list_of_lists get_all_attributes "
 				select 
 					aa.pretty_name,
 					da.attribute_id
 				from
 					acs_attributes aa, 
-					im_dynfield_attributes da
+					im_dynfield_attributes da,
+					im_dynfield_type_attribute_map tam
 				where
-					object_type = :object_type
+					tam.attribute_id = da.attribute_id
+					and tam.object_type_id = :subtype_id
 					and da.deprecated_p = 'f'
 					and da.acs_attribute_id = aa.attribute_id
                 "]
