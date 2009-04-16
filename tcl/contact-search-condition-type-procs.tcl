@@ -463,20 +463,18 @@ ad_proc -private contacts::search::condition_type::subtype {
         }
         form_var_list {
             if { [exists_and_not_null operand] && [exists_and_not_null subtype_id] } {
-		        if { [contact::owner_read_p -object_id $subtype_id -owner_id [ad_conn user_id]] } {
-		            return [list $operand $subtype_id]
-		        }
+		        return [list $operand $subtype_id]
             }
             return {}
         }
         sql - pretty {
             set operand [lindex $var_list 0]
             set subtype_id [lindex $var_list 1]
-            set title [db_string get_title { select title from acs_objects where object_id = :subtype_id } -default {}]
+            set title [im_category_from_id $subtype_id]
             if { $title eq "" } {
                 # this list has been deleted or they don't have permission to read it any more
                 if { $request eq "pretty" } {
-                    return "[_ intranet-contacts.List] [_ intranet-contacts.Deleted]"
+                    return "[_ intranet-contacts.Subtype] [_ intranet-contacts.Deleted]"
                 } else {
                     return " t = f "
                 }
@@ -484,11 +482,24 @@ ad_proc -private contacts::search::condition_type::subtype {
             switch $operand {
                 in {
                     set output_pretty "[_ intranet-contacts.lt_The_contact_in_list]"
-                    set output_code "${party_id} in ( select clm${subtype_id}.party_id from contact_list_members clm${subtype_id} where clm${subtype_id}.subtype_id = $subtype_id )"
+                    if {$object_type eq "person"} {
+                        # work with groups
+                        set output_code "${party_id} in (select gdmm.member_id from group_distinct_member_map gdmm, im_categories c where c.aux_int1 = gdmm.group_id and category_id = $subtype_id)"
+                    } else {
+                        # Get the column and table
+                        db_1row type_tables "select id_column,type_column,status_type_table from acs_object_types where object_type = :object_type"
+                        set output_code "${party_id} in ( select ${status_type_table}.$id_column from $status_type_table where $type_column = $subtype_id )"                        
+                    }
                 }
                 not_in {
                     set output_pretty "[_ intranet-contacts.lt_The_contact_NOT_in_li]"
-                    set output_code "${party_id} not in ( select clm${subtype_id}.party_id from contact_list_members clm${subtype_id} where clm${subtype_id}.subtype_id = $subtype_id )"
+                    if {$object_type eq "person"} {
+                        # work with groups
+                        set output_code "${party_id} not in (select gdmm.member_id from group_distinct_member_map gdmm, im_categories c where c.aux_int1 = gdmm.group_id and category_id = $subtype_id)"
+                    } else {
+                        db_1row type_tables "select id_column,type_column,status_type_table from acs_object_types where object_type = :object_type"
+                        set output_code "${party_id} not in ( select ${status_type_table}.$id_column from $status_type_table where $type_column = $subtype_id )"                        
+                    }
                 }
             }
             if { $request == "pretty" } {
