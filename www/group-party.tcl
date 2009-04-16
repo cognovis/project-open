@@ -25,7 +25,6 @@ set context [list $title]
 set package_id [ad_conn package_id]
 set recipients [list]
 foreach party_id $party_ids {
-    contact::require_visiblity -party_id $party_id
     lappend recipients "<a href=\"[contact::url -party_id $party_id]\">[contact::name -party_id $party_id]</a>"
 }
 set recipients [join $recipients ", "]

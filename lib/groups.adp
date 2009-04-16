@@ -26,10 +26,9 @@
 </if>
 </else>
 
-<if @hide_form_p@ false and @delete_p@>
+<if @hide_form_p@ false>
 <h3>#intranet-contacts.Other_Options#</h3>
 <ul class="action-links">
-  <li><a href="@remove_url@">#intranet-contacts.lt_Delete_this_contact#</a>
 <if @upgrade_url@ not nil>
   <li><a href="@upgrade_url@">#intranet-contacts.lt_Upgrade_this_person_to_a_user#</a>
 </if>

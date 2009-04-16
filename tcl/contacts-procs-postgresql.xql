@@ -153,25 +153,19 @@
 
 <fullquery name="contact::groups_list_not_cached.get_groups">
   <querytext>
-    select groups2.group_id,
-           $name_field as group_name,
-           ( select count(distinct gamm.member_id) from group_approved_member_map gamm, persons where gamm.group_id = groups2.group_id and member_id = person_id  ) as member_count,
-           ( select count(distinct gcm.component_id) from group_component_map gcm where gcm.group_id = groups2.group_id) as component_count,
-           CASE WHEN contact_groups.package_id is not null THEN '1' ELSE '0' END as mapped_p,
-           CASE WHEN default_p THEN '1' ELSE '0' END as default_p,
-           CASE WHEN user_change_p THEN '1' ELSE '0' END as user_change_p,
+    select aux_int1 as group_id,
+           category as group_name,
+           ( select count(distinct gamm.member_id) from group_approved_member_map gamm, persons where gamm.group_id = aux_int1 and member_id = person_id  ) as member_count,
+           0 as component_count,
+           1 as mapped_p,
+           0 as default_p,
+           1 as user_change_p,
            $dotlrn_community_p as dotlrn_community_p,
-           CASE WHEN contact_groups.notifications_p THEN '1' ELSE '0' END as notifications_p
-      from ( select distinct g.*
-               from groups g left join contact_groups cg on (g.group_id = cg.group_id) left join application_groups ag on (ag.group_id = g.group_id)
-              where ag.package_id is null or cg.package_id is not null) groups2 
-           left join ( select * from contact_groups where package_id = :package_id ) as contact_groups on ( groups2.group_id = contact_groups.group_id ), 
-           acs_objects
-      $additional_from
-     where groups2.group_id not in ('-1','[contacts::default_group -package_id $package_id]')
-       and groups2.group_id = acs_objects.object_id
-      $additional_where
-     order by mapped_p desc, CASE WHEN contact_groups.default_p THEN '000000000' ELSE upper( $name_field ) END
+           0 as notifications_p
+      from im_categories
+     where category_type = 'Intranet User Type'
+       and aux_int1 is not null
+     order by category
   </querytext>
 </fullquery>
 

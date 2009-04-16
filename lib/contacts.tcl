@@ -221,8 +221,8 @@ switch $object_type {
         			      
     }
     im_company { 
-	    template::multirow append bulk_acts "[_ intranet-contacts.Add_to_List]" "${base_url}list-parties-add" "[_ intranet-contacts.Add_to_List]"
-        template::multirow append bulk_acts "[_ intranet-contacts.Remove_from_List]" "${base_url}list-parties-remove" "[_ intranet-contacts.Remove_from_List]"
+#	    template::multirow append bulk_acts "[_ intranet-contacts.Add_to_List]" "${base_url}list-parties-add" "[_ intranet-contacts.Add_to_List]"
+#        template::multirow append bulk_acts "[_ intranet-contacts.Remove_from_List]" "${base_url}list-parties-remove" "[_ intranet-contacts.Remove_from_List]"
 	    set orderby "company,asc"
 	    set name_label "[_ intranet-contacts.Sort_by] [_ intranet-contacts.Company]| <a href=\"${last_modified_url}\">[_ intranet-contacts.Last_Modified]</a>"
 	    lappend elements contact [list \
@@ -235,8 +235,8 @@ switch $object_type {
         			      }]
     }
     im_office { 
-	    template::multirow append bulk_acts "[_ intranet-contacts.Add_to_List]" "${base_url}list-parties-add" "[_ intranet-contacts.Add_to_List]"
-        template::multirow append bulk_acts "[_ intranet-contacts.Remove_from_List]" "${base_url}list-parties-remove" "[_ intranet-contacts.Remove_from_List]"
+#	    template::multirow append bulk_acts "[_ intranet-contacts.Add_to_List]" "${base_url}list-parties-add" "[_ intranet-contacts.Add_to_List]"
+#       template::multirow append bulk_acts "[_ intranet-contacts.Remove_from_List]" "${base_url}list-parties-remove" "[_ intranet-contacts.Remove_from_List]"
 	    set orderby "office,asc"
 	    set name_label "[_ intranet-contacts.Sort_by] [_ intranet-contacts.Office]| <a href=\"${last_modified_url}\">[_ intranet-contacts.Last_Modified]</a>"
 	    lappend elements contact [list \

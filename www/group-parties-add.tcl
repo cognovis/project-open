@@ -5,22 +5,29 @@ ad_page_contract {
     @creation-date 2004-07-28
     @cvs-id $Id$
 } {
-    {party_id:integer,multiple,optional}
-    {party_ids:optional}
+    {object_id:integer,multiple,optional}
+    {party_id:multiple,optional}
+    {party_ids ""}
     {return_url "./"}
-} -validate {
-    valid_party_submission {
-	if { ![exists_and_not_null party_id] && ![exists_and_not_null party_ids] } { 
-	    ad_complain "[_ intranet-contacts.lt_Your_need_to_provide_]"
-	}
-    }
 }
+
 if { [exists_and_not_null party_id] } {
-    set party_ids [list]
-    foreach party_id $party_id {
-	lappend party_ids $party_id
+    foreach p_id $party_id {
+        if {[lsearch $party_ids $p_id] < 0} {
+	        lappend party_ids $p_id
+        }
+    }
+} 
+
+# Deal with object_ids passed in
+if { [exists_and_not_null object_id] } {
+    foreach p_id $object_id {
+        if {[lsearch $party_ids $p_id] < 0} {
+	        lappend party_ids $p_id
+        }
     }
 }
+
 foreach id $party_ids {
     contact::require_visiblity -party_id $id
 }
@@ -49,7 +56,7 @@ if { [llength $group_options] == "0" } {
 }
 
 append form_elements {
-    {group_ids:text(checkbox),multiple {label "[_ intranet-contacts.Add_to_Groups]"} {options $group_options}}
+    {group_ids:text(checkbox),multiple {label "[_ intranet-contacts.Add_to_Groups]"} {options $group_options} {}}
 }
 set edit_buttons [list [list "[_ intranet-contacts.lt_Add_to_Selected_Group]" create]]
 
@@ -67,7 +74,8 @@ ad_form -action group-parties-add \
 	db_transaction {
             foreach group_id $group_ids {
                 foreach party_id $party_ids {
-		    contact::group::add_member -group_id $group_id -user_id $party_id -member_state "approved"
+                    ds_comment "groups: $group_id $party_id"
+		            group::add_member -group_id $group_id -user_id $party_id -member_state "approved"
                 }
             }
 	}
