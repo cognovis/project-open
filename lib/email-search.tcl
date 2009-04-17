@@ -387,8 +387,8 @@ ad_form -action $action \
 		ns_log Notice "Recipient: $name $party_id ( $counter / $member_size )"
 		incr counter
 		
-		acs_mail_lite::complex_send \
-		    -to_party_ids $party_id \
+		acs_mail_lite::send \
+			-to_addr [party::email -party_id $party_id] \
 		    -cc_addr $cc_list \
 		    -bcc_addr $bcc_list \
 		    -from_addr "$from_addr" \

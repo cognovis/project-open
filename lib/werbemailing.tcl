@@ -192,15 +192,14 @@ ad_form -action message \
 	    template::multirow foreach messages {
 
 		# Send the e-mail to each of the users
-		acs_mail_lite::complex_send \
+		acs_mail_lite::send \
 		    -to_addr $to_addr \
 		    -from_addr "$from_addr" \
 		    -subject "$subject" \
 		    -body "$content_body" \
 		    -package_id $package_id \
 		    -file_ids $revision_id \
-		    -mime_type "text/plain" \
-		    -object_id $item_id
+		    -mime_type "text/plain" 
 	    }
 	} else {
 	    

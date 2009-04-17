@@ -222,7 +222,7 @@ ad_form -action message \
 		set pdf_path [contact::oo::join_pdf -filenames $pdf_filenames -parent_id $user_id -title "mailing.pdf" -no_import] 
 		
 		# We are sending the mail from and to the same user. This is why from_addr = to_addr
-		acs_mail_lite::complex_send \
+		acs_mail_lite::send \
 		    -to_addr $from_addr \
 		    -from_addr "$from_addr" \
 		    -subject "Joined PDF attached" \

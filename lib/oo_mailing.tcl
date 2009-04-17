@@ -290,15 +290,14 @@ ad_form -action message \
 		}
 
 		# Send the e-mail to each of the users
-		acs_mail_lite::complex_send \
+		acs_mail_lite::send \
 		    -to_addr $to_addr \
 		    -from_addr "$from_addr" \
 		    -subject "[contact::message::interpolate -text $subject -values $values]" \
 		    -body "[contact::message::interpolate -text $email_content -values $values]" \
 		    -package_id $package_id \
 		    -file_ids $file_ids \
-		    -mime_type "text/plain" \
-		    -object_id $item_id
+		    -mime_type "text/plain"
 	    } else {
 		if {$num_of_users > 1} {
 		    set pdf_filename [contact::oo::import_oo_pdf -oo_file $odt_filename -parent_id $party_id -title "${title}.pdf" -return_pdf] 
@@ -331,13 +330,13 @@ ad_form -action message \
 		    set pdf_path [contact::oo::join_pdf -filenames $pdf_filenames -parent_id $user_id -title "mailing.pdf" -no_import] 
 		    
 		    # We are sending the mail from and to the same user. This is why from_addr = to_addr
-		    acs_mail_lite::complex_send \
+		    acs_mail_lite::send \
 			-to_addr $from_addr \
 			-from_addr "$from_addr" \
 			-subject "Joined PDF attached" \
 			-body "See attached file" \
 			-package_id $package_id \
-			-files [list [list "mailing.pdf" "[lindex $pdf_path 0]" "[lindex $pdf_path 1]"]] \
+			-file_ids $print_item_id \
 			-mime_type "text/plain"
 		} 
 	    } else {

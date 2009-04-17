@@ -1174,9 +1174,14 @@ ad_proc -public -callback acs_mail_lite::incoming_email -impl contacts_group_mai
 	    set body $email_body(text/plain)
 	}
 	
-	acs_mail_lite::complex_send \
+	set to_addr [list]
+	foreach party_id  [group::get_members -group_id $to_party_id] {
+	    lappend to_addr [party::email -party_id $party_id]
+	}
+
+	acs_mail_lite::send \
 	    -from_addr [lindex $email(from) 0] \
-	    -to_party_ids [group::get_members -group_id $to_party_id] \
+	    -to_addr $to_addr \
 	    -subject $email(subject) \
 	    -body $body \
 	    -single_email \
@@ -1252,37 +1257,32 @@ ad_proc -public -callback acs_mail_lite::incoming_email -impl contacts_mail_thro
 	    # Shall we import the file into the content repository ?
 	    set sender_id [party::get_by_email -email $from_addr]
 	    set package_id [acs_object::package_id -object_id $sender_id]
-	    if {$import_p && $sender_id ne ""} {
-		set existing_item_id [content::item::get_id_by_name -name $file_title -parent_id $sender_id]
-		if {$existing_item_id ne ""} {
-		    set item_id $existing_item_id
-		} else {
-		    set item_id [db_nextval "acs_object_id_seq"]
-		    content::item::new -name $file_title \
-			-parent_id $sender_id \
-			-item_id $item_id \
-			-package_id $package_id \
-			-creation_ip 127.0.0.1 \
-			-creation_user $sender_id \
-			-title $file_title
-		}
-
-	   	set revision_id [content::revision::new \
-				     -item_id $item_id \
-				     -tmp_filename $file_path\
-				     -creation_user $sender_id \
-				     -creation_ip 127.0.0.1 \
-				     -package_id $package_id \
-				     -title $file_title \
-				     -description "File send by e-mail from $email(from) to $email(to) on subject $email(subject)" \
-				     -mime_type $mime_type]
-		
-		file delete $file_path
-		lappend file_ids $revision_id
+	    set existing_item_id [content::item::get_id_by_name -name $file_title -parent_id $sender_id]
+	    if {$existing_item_id ne ""} {
+		set item_id $existing_item_id
 	    } else {
-		lappend files [list $file_title $mime_type $file_path]
-		lappend filenames $file_path
+		set item_id [db_nextval "acs_object_id_seq"]
+		content::item::new -name $file_title \
+		    -parent_id $sender_id \
+		    -item_id $item_id \
+		    -package_id $package_id \
+		    -creation_ip 127.0.0.1 \
+		    -creation_user $sender_id \
+		    -title $file_title
 	    }
+	    
+	    set revision_id [content::revision::new \
+				 -item_id $item_id \
+				 -tmp_filename $file_path\
+				 -creation_user $sender_id \
+				 -creation_ip 127.0.0.1 \
+				 -package_id $package_id \
+				 -title $file_title \
+				 -description "File send by e-mail from $email(from) to $email(to) on subject $email(subject)" \
+				 -mime_type $mime_type]
+	    
+	    file delete $file_path
+	    lappend file_ids $revision_id
 	}
 
 	# Figure out the object_id from the subject
@@ -1303,17 +1303,14 @@ ad_proc -public -callback acs_mail_lite::incoming_email -impl contacts_mail_thro
 	    set subject $email(subject)
 	} 
 
-	acs_mail_lite::complex_send \
+	acs_mail_lite::send \
 	    -from_addr $from_addr \
 	    -reply_to $reply_to_addr \
 	    -to_addr $to_addr \
 	    -subject $subject \
 	    -body $body \
 	    -mime_type $mime_type \
-	    -single_email \
-	    -files $files \
 	    -file_ids $file_ids \
-	    -object_id $object_id \
 	    -send_immediately
     }
 }    

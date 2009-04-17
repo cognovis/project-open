@@ -229,119 +229,117 @@ ad_form -action $action \
 	    if {[exists_and_not_null signature_id] } {
 	        set signature [contact::signature::get -signature_id $signature_id]
 	        if { [exists_and_not_null signature] } {
-		        append content_body "{<br><br> $signature } text/html"
+		    append content_body "{<br><br> $signature } text/html"
 	        }
 	    }
     } -edit_request {
-	    if {![exists_and_not_null mime_type]} {
-	        set mime_type "text/html"
-	    }
+	if {![exists_and_not_null mime_type]} {
+	    set mime_type "text/html"
+	}
 	
     } -on_submit {
 	
-	    # List to store know wich emails recieved the message
-	    set recipients_addr [list]
-
-	    set from [ad_conn user_id]
-	    set from_addr [contact::email -party_id $from]
-
-	    # Remove all spaces in cc and bcc
-	    regsub -all " " $cc "" cc
-	    regsub -all " " $bcc "" bcc
-
-	    set cc_list [split $cc ";"]
-	    set bcc_list [split $bcc ";"]
-
-	    set mime_type [template::util::richtext::get_property format $content_body]
-	    set content_body [template::util::richtext::get_property contents $content_body]
-
-
-	    # Insert the uploaded file linked under the package_id
-	    set package_id [ad_conn package_id]
+	# List to store know wich emails recieved the message
+	set recipients_addr [list]
 	
-	    if {![empty_string_p $upload_file] } {
-	        set revision_id [content::item::upload_file \
-				    -package_id $package_id \
-				    -upload_file $upload_file \
-				    -parent_id $party_id]
-
-	        lappend file_ids $revision_id
+	set from [ad_conn user_id]
+	set from_addr [contact::email -party_id $from]
+	
+	# Remove all spaces in cc and bcc
+	regsub -all " " $cc "" cc
+	regsub -all " " $bcc "" bcc
+	
+	set cc_list [split $cc ";"]
+	set bcc_list [split $bcc ";"]
+	
+	set mime_type [template::util::richtext::get_property format $content_body]
+	set content_body [template::util::richtext::get_property contents $content_body]
+	
+	
+	# Insert the uploaded file linked under the package_id
+	set package_id [ad_conn package_id]
+	
+	if {![empty_string_p $upload_file] } {
+	    set revision_id [content::item::upload_file \
+				 -package_id $package_id \
+				 -upload_file $upload_file \
+				 -parent_id $party_id]
+	    
+	    lappend file_ids $revision_id
+	}
+	
+	# Append the additional files
+	if {[exists_and_not_null files_extend]} {
+	    foreach file_id $files_extend {
+		lappend file_ids $file_id
 	    }
-	
-	    # Append the additional files
-	    if {[exists_and_not_null files_extend]} {
-	        foreach file_id $files_extend {
-		        lappend file_ids $file_id
-	        }
-	    }
+	}
 	
 	
-	    # Send the mail to all parties.
-
-	    foreach party_id $to {
+	# Send the mail to all parties.
+	
+	foreach party_id $to {
             # Get the party
             
-            set party [::im::dynfield::Class get_instance_from_db -id $party_id]
-
-	        set values [list]
-	        foreach element [list first_names last_name name] {
-		        lappend values [list "{$element}" [$party $element]]
-	        }
-            set name [$party name]
-	        lappend values [list "salutation" "[$party set salutation_id_deref]"]
-
-	        set interpol_subject [contact::message::interpolate -text $subject -values $values]
-
-	        set interpol_content_body [contact::message::interpolate -text $content_body -values $values]
+	    set party [::im::dynfield::Class get_instance_from_db -id $party_id]
 	    
-	        # If we are doing mail through for tracking purposes
-	        # Set the reply_to_addr accordingly
-	        if {$mail_through_p} {
-		        regsub -all {@} $from_addr {#} reply_to
-		        set reply_to_addr "${reply_to}@[acs_mail_lite::address_domain]"
-	        } else {
-		        set reply_to_addr $from_addr
-	        }
-
-	        ns_log Notice "SENDING Recipients: $party_id"
-
-	        acs_mail_lite::complex_send \
-		        -to_party_ids $party_id \
-		        -cc_addr $cc_list \
-		        -bcc_addr $bcc_list \
-		        -from_addr "$from_addr" \
-		        -reply_to "$reply_to_addr" \
-		        -subject "$interpol_subject" \
-		        -body "$interpol_content_body" \
-		        -package_id $package_id \
-		        -file_ids $file_ids \
-		        -mime_type $mime_type \
-		        -object_id $context_id \
-		        -single_email
+	    set values [list]
+	    foreach element [list first_names last_name name] {
+		lappend values [list "{$element}" [$party $element]]
+	    }
+	    set name [$party name]
+	    lappend values [list "salutation" "[$party set salutation_id_deref]"]
 	    
-	        # Link the files to all parties
-	        if {[exists_and_not_null revision_id]} {
-		        application_data_link::new -this_object_id $revision_id -target_object_id $party_id
-	        }
+	    set interpol_subject [contact::message::interpolate -text $subject -values $values]
+	    
+	    set interpol_content_body [contact::message::interpolate -text $content_body -values $values]
+	    
+	    # If we are doing mail through for tracking purposes
+	    # Set the reply_to_addr accordingly
+	    if {$mail_through_p} {
+		regsub -all {@} $from_addr {#} reply_to
+		    set reply_to_addr "${reply_to}@[acs_mail_lite::address_domain]"
+		} else {
+		    set reply_to_addr $from_addr
+		}
 		
-	        # Log the sending of the mail in contacts history
-	        if { ![empty_string_p $item_id]} {
+		ns_log Notice "SENDING Recipients: $party_id"
 		
-		        contact::message::log \
-		            -message_type "email" \
-		            -sender_id $from \
-		            -recipient_id $party_id \
-		            -title $title \
-		            -description $subject \
-		            -content $content_body \
-		            -content_format "text/plain" \
-		            -item_id "$item_id"
-	            } 
-	            lappend recipients "<a href=\"[contact::url -party_id $party_id]\">$name</a>"
-	        }
-
+		acs_mail_lite::send \
+		    -to_addr [$party email] \
+		    -cc_addr $cc_list \
+		    -bcc_addr $bcc_list \
+		    -from_addr "$from_addr" \
+		    -reply_to "$reply_to_addr" \
+		    -subject "$interpol_subject" \
+		    -body "$interpol_content_body" \
+		    -package_id $package_id \
+		    -file_ids $file_ids \
+		    -mime_type $mime_type
+		
+		# Link the files to all parties
+		if {[exists_and_not_null revision_id]} {
+		    application_data_link::new -this_object_id $revision_id -target_object_id $party_id
+		}
+		
+		# Log the sending of the mail in contacts history
+		if { ![empty_string_p $item_id]} {
+		    
+		    contact::message::log \
+			-message_type "email" \
+			-sender_id $from \
+			-recipient_id $party_id \
+			-title $title \
+			-description $subject \
+			-content $content_body \
+			-content_format "text/plain" \
+			-item_id "$item_id"
+		} 
+		lappend recipients "<a href=\"[contact::url -party_id $party_id]\">$name</a>"
+	    }
+	    
 	    if {$to eq ""} {
-	        acs_mail_lite::complex_send \
+		acs_mail_lite::send \
 		    -cc_addr $cc_list \
 		    -bcc_addr $bcc_list \
 		    -from_addr "$from_addr" \
@@ -349,25 +347,24 @@ ad_form -action $action \
 		    -body "$content_body" \
 		    -package_id $package_id \
 		    -file_ids $file_ids \
-		    -mime_type $mime_type \
-		    -object_id $context_id \
-		    -single_email
+		    -mime_type $mime_type
 	    }
-
+	    
 	    ad_returnredirect $return_url
-	
+	    
 	    # Prepare the user message
 	    foreach cc_addr [concat $cc_list $bcc_list] {
-	        set cc_id [party::get_by_email -email $cc_addr]
-	        if {$cc_id eq ""} {
-		        lappend recipients $cc_addr
-	        } else {
-		        lappend recipients "<a href=\"[contact::url -party_id $cc_id]\">[contact::name -party_id $cc_id]</a>"
-	        }
+		set cc_id [party::get_by_email -email $cc_addr]
+		if {$cc_id eq ""} {
+		    lappend recipients $cc_addr
+		} else {
+		    lappend recipients "<a href=\"[contact::url -party_id $cc_id]\">[contact::name -party_id $cc_id]</a>"
+		}
 	    }
-        util_user_message -html -message "[_ intranet-contacts.Your_message_was_sent_to_-recipients-]"
-
-    } -after_submit {
+	    util_user_message -html -message "[_ intranet-contacts.Your_message_was_sent_to_-recipients-]"
+	    
+	} -after_submit {
 	    ad_script_abort
-    }
-
+	}
+	
+	    
