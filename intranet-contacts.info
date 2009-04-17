@@ -7,7 +7,7 @@
     <singleton-p>f</singleton-p>
     <auto-mount>intranet-contacts</auto-mount>
     
-    <version name="3.4.0.5.1" url="http://projop.dnsalias.com/download/apm/intranet-contacts-3.4.0.5.1.apm">
+    <version name="3.4.0.5.0" url="http://projop.dnsalias.com/download/apm/intranet-contacts-3.4.0.5.0.apm">
         <owner url="mailto:malte.sussdorff@cognovis.de">Malte Sussdorff</owner>
         <summary>This application lets you collaboratively view, edit and categorize contacts.</summary>
         <release-date>2006-06-25</release-date>
@@ -28,6 +28,7 @@
 
         <callbacks>
             <callback type="after-install"  proc="contacts::install::package_install"/>
+            <callback type="after-mount"  proc="contacts::install::after_mount"/>
         </callbacks>
         <parameters>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="AcceptableFileUploadMIMETypes"  default="*" description="* for any. CSV of acceptable MIME Types for File Upload" section_name="File Upload"/>

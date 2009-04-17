@@ -131,10 +131,27 @@ ad_proc -public contacts::install::package_install {
 	    }
 	}
 
-    # Default searches
-    contact::search::new -title "#intranet-contacts.search_person#" -object_type "person" -all_or_any all
-    contact::search::new -title "#intranet-contacts.search_im_company#" -object_type "im_company" -all_or_any all
-    contact::search::new -title "#intranet-contacts.search_im_office#" -object_type "im_office" -all_or_any all
-
 }
 
+ad_proc -public contacts::install::after_mount {
+    {-package_id:required}
+    {-node_id:required}
+} {
+    This is the TCL proc that is called automatically by the APM
+    whenever a new instance of the subsites application is mounted.
+
+    Primarily it should add the public searches
+    
+    @author Malte Sussdorff (sussdorff@sussdorff.de)
+    @creation-date 2005-06-04
+
+    @return
+
+    @error
+} {
+    
+    # Default searches
+    contact::search::new -title "#intranet-contacts.search_person#" -object_type "person" -all_or_any all -owner_id $package_id -package_id $package_id
+    contact::search::new -title "#intranet-contacts.search_im_company#" -object_type "im_company" -all_or_any all -owner_id $package_id -package_id $package_id
+    contact::search::new -title "#intranet-contacts.search_im_office#" -object_type "im_office" -all_or_any all -owner_id $package_id -package_id $package_id
+}
