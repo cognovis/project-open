@@ -240,7 +240,6 @@ if {0} {
         @param element Element object we need the value for
 } {
     set attribute_name [$element attribute_name]
-    ds_comment "[$element serialize]"
     switch [$element widget_name] {
         date {
             set value [my set $attribute_name]
