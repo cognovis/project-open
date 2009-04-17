@@ -484,14 +484,10 @@ ad_proc -public contact::search_pretty_not_cached {
 
     contact::search::get -search_id $search_id -array "search_info"
     
-    if { $search_info(object_type) == "person" } {
-	set object_type [_ intranet-contacts.people]
-    } elseif { $search_info(object_type) == "organization" } {
-	set object_type [_ intranet-contacts.organizations]
-    } elseif { $search_info(object_type) == "employee" } {
-	set object_type [_ intranet-contacts.employees]
+    if { $search_info(object_type) == "organization" } {
+	    set object_type im_company
     } else {
-	set object_type [_ intranet-contacts.people_or_organizations]
+        set object_type $search_info(object_type)
     }
     
     # the reason we do not put this in the db_foreach statement is because we 

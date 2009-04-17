@@ -50,14 +50,14 @@ template::list::create \
             display_col query;noquote
         }
         results {
-	    label {#intranet-contacts.Results#}
-            display_col results
-            link_url_eval $search_url
+	        label {#intranet-contacts.Results#}
+            display_template {
+                <a href="@searches.search_url@">@searches.results@</a>
+            }
         }
         action {
             label ""
             display_template {
-                <a href="@searches.search_url@" class="button">#intranet-contacts.Search#</a>
                 <a href="@searches.copy_url@" class="button">#intranet-contacts.Copy#</a>
                 <if @searches.delete_url@ not nil>
                 <a href="@searches.delete_url@" class="button">#intranet-contacts.Delete#</a>
@@ -112,7 +112,6 @@ db_multirow -extend {query search_url make_public_url delete_url copy_url result
     }
     set search_url [export_vars -base ./ -url {search_id}]
     set copy_url        [export_vars -base search-action -url {search_id {owner_id $user_id} {action copy} return_url}]
-
     lappend search_ids $search_id
 }
 
@@ -120,8 +119,7 @@ db_multirow -extend {query search_url make_public_url delete_url copy_url result
 # when this is included in the multirow code block above it can hang due to a lack
 # of db pools. So it has to be done here.
 template::multirow foreach searches {
-#    set results [contact::search::results_count -search_id $search_id]
-    set results ""
+    set results [contact::search::results_count -search_id $search_id]
     set query   [contact::search_pretty -search_id $search_id]
 }
 

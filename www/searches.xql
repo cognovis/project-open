@@ -4,14 +4,13 @@
 <fullquery name="select_owner_options">
       <querytext>
       select CASE WHEN owner_id = :user_id
-                  THEN '\#contacts.My_Searches\#'
+                  THEN '\#intranet-contacts.My_Searches\#'
                   ELSE contact__name(owner_id) END,
              owner_id
         from ( select distinct cs.owner_id
                  from contact_searches cs, acs_objects ao
                 where cs.search_id = ao.object_id
                   and ( ao.title is not null or cs.owner_id = :user_id )
-                  and ao.package_id = :package_id
                   and cs.owner_id in ( select party_id from parties )) distinct_owners
         order by CASE WHEN owner_id = :user_id THEN '0000000000000000000' ELSE upper(contact__name(owner_id)) END
       </querytext>
@@ -28,7 +27,6 @@
       where cs.search_id = ao.object_id
         and cs.owner_id = :owner_id
         and ao.title is not null
-        and ao.package_id = :package_id
         and not cs.deleted_p
 ) union (
      select cs.search_id,
@@ -40,7 +38,6 @@
       where cs.owner_id = :owner_id
         and cs.search_id = ao.object_id
         and ao.title is null
-        and ao.package_id = :package_id
         and not cs.deleted_p
       limit 10
 )
