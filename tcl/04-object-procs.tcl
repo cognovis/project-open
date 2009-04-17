@@ -235,12 +235,13 @@ if {0} {
     return [db_list rel_types "select rel_type from acs_rel_types where object_type_one in ([template::util::tcl_to_sql_list [my object_types]]) or object_type_two in ([template::util::tcl_to_sql_list [my object_types]])"]
 }
 
-::im::dynfield::Object ad_instproc value {attribute_name} {
+::im::dynfield::Object ad_instproc value {element} {
         Returns the value of the attribute_name derefed
-        @param attribute_name Name of the attribute we need the value for
+        @param element Element object we need the value for
 } {
-    set slot "[my class]::slot::$attribute_name"
-    switch [$slot widget] {
+    set attribute_name [$element attribute_name]
+    ds_comment "[$element serialize]"
+    switch [$element widget_name] {
         date {
             set value [my set $attribute_name]
             if {$value ne ""} {
