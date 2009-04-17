@@ -67,7 +67,7 @@ if { $search_id ne "" } {
     # We do the check in the search template
     set valid_party_ids "0"
 } else {
-
+    set valid_party_ids ""
     if { [exists_and_not_null party_id] } {
 	    foreach p_id $party_id {
 	        if {[lsearch $party_ids $p_id] < 0} {

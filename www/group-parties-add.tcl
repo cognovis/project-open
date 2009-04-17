@@ -28,6 +28,11 @@ if { [exists_and_not_null object_id] } {
     }
 }
 
+if {![exists_and_not_null party_ids]} {
+    ad_return_error "[_ intranet-contacts.No_valid_parties]" "[_ intranet-contacts.No_valid_parties_lt]"
+    ad_script_abort
+}
+
 foreach id $party_ids {
     contact::require_visiblity -party_id $id
 }
