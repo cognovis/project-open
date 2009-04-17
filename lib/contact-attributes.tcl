@@ -26,11 +26,12 @@ set party [::im::dynfield::Class get_instance_from_db -id $party_id]
 multirow create attributes section attribute value
 
 set list_ids [$party list_ids]
+
 foreach dynfield_id [::im::dynfield::Attribute dynfield_attributes -list_ids $list_ids -privilege "read"] {
 
     # Initialize the Attribute
     set element [im::dynfield::Element get_instance_from_db -id [lindex $dynfield_id 0] -list_id [lindex $dynfield_id 1]]
-    set value [$party value [$element attribute_name]]
+    set value [$party value $element]
     if {[$element multiple_p] && $value ne ""} {
         set value "<ul><li>[join $value "</li><li>"]</li></ul>"
     }
