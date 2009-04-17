@@ -66,7 +66,23 @@ drop table im_freelance_rfqs;
 delete from im_categories where category_type = 'Intranet Trans RFQ Status';
 delete from im_categories where category_type = 'Intranet Trans RFQ Overall Status';
 
+delete from im_dynfield_attributes
+where acs_attribute_id in (
+        select  attribute_id from acs_attributes
+        where object_type = 'im_freelance_rfq'
+);
 
+delete from im_dynfield_attributes
+where acs_attribute_id in (
+        select  attribute_id from acs_attributes
+        where object_type = 'im_freelance_rfq_answer'
+);
+
+delete from acs_objects where object_type = 'im_freelance_rfq_answer';
+delete from acs_objects where object_type = 'im_freelance_rfqs';
+
+delete from acs_attributes where object_type = 'im_freelance_rfq';
+delete from acs_attributes where object_type = 'im_freelance_rfq_answer';
 
 delete from acs_objects where object_type = 'im_freelance_rfq_answer';
 delete from acs_objects where object_type = 'im_freelance_rfqs';
