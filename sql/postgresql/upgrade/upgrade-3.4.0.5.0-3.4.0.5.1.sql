@@ -195,10 +195,6 @@ END;' language 'plpgsql';
 
 
 
--- Fix bad attribute
-update acs_attributes set table_name = 'parties' where attribute_name = 'email';
-
-
 create or replace function inline_0 ()
 returns integer as '
 declare
@@ -215,5 +211,9 @@ begin
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
+
+-- Fix bad attribute
+update acs_attributes set table_name = 'parties' where attribute_name = 'email' and object_type = 'party';
 
 
