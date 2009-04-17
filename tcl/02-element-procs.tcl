@@ -54,16 +54,17 @@ xotcl::Class create ::im::dynfield::Element \
 ::im::dynfield::Element ad_proc get_instance_from_db {
     -id:required 
     {-list_id ""}
+    {-page_url "default"}
 } {
     Initialize a new Element object for an attribute. 
     
     @param id Dynfield Attribute ID
 } {
     if {$list_id == ""} {
-        # Apparently the list is not important, might be the case if the help_text is not needed or the default value
         set list_id [ams::list::get_id -attribute_id $id]
-    }
-    set org_sql "
+	}
+	
+    set sql "
     select
            ida.attribute_id as dynfield_attribute_id,
            tam.section_heading,
@@ -91,68 +92,24 @@ xotcl::Class create ::im::dynfield::Element \
            idw.widget_id,
            idw.storage_type_id
      from
-           im_dynfield_attributes ida,
            acs_attributes aa,
-           im_dynfield_type_attribute_map tam,
-           im_dynfield_layout idl,
-           im_dynfield_widgets idw
+           im_dynfield_widgets idw,
+           im_dynfield_attributes ida
+           left outer join (select * from im_dynfield_type_attribute_map where object_type_id = $list_id) tam on (tam.attribute_id = ida.attribute_id)
+           left outer join (select * from im_dynfield_layout where page_url = '$page_url') idl on (ida.attribute_id = idl.attribute_id)
      where
            ida.acs_attribute_id = aa.attribute_id
-           and tam.attribute_id = ida.attribute_id
-           and ida.attribute_id = idl.attribute_id
            and ida.widget_name = idw.widget_name
            and ida.attribute_id = $id
-           and tam.object_type_id = $list_id
      "
     
-    # SQL without im_dynfield_layout.
-    set sql "
-    select
-           ida.attribute_id as dynfield_attribute_id,
-           tam.section_heading,
-           aa.attribute_id,
-           aa.object_type,
-           aa.attribute_name,
-           aa.pretty_name,
-           aa.pretty_plural,
-           aa.datatype,
-           aa.default_value,
-           aa.min_n_values,
-           aa.max_n_values,
-           aa.column_name,
-           aa.table_name,
-           tam.required_p,
-           ida.include_in_search_p,
-           ida.also_hard_coded_p,
-           ida.deprecated_p,
-           ida.widget_name,
-           tam.help_text,
-           tam.object_type_id as list_id,
-           tam.default_value,
-           idw.widget_id,
-           idw.storage_type_id,
-	   -- removed im_dynfield_layout because of multiple URLs
-           'plain' as label_style,
-           0 as sort_order
-     from
-           im_dynfield_attributes ida,
-           acs_attributes aa,
-           im_dynfield_type_attribute_map tam,
-           im_dynfield_widgets idw
-     where
-           ida.acs_attribute_id = aa.attribute_id
-           and tam.attribute_id = ida.attribute_id
-           and ida.widget_name = idw.widget_name
-           and ida.attribute_id = $id
-	   and tam.object_type_id = $list_id
-    "
-
     set r [::im::dynfield::Element create ::${id}__$list_id]
     $r db_1row dbq..get_element $sql
+     
     if {[lsearch [im_dynfield_multimap_ids] [$r storage_type_id]] <0} {
-	$r set multiple_p 0
+        $r set multiple_p 0
     } else {
-	$r set multiple_p 1
+        $r set multiple_p 1
     }
     $r destroy_on_cleanup
     return $r

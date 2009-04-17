@@ -169,7 +169,7 @@ foreach mapped_dynfield_id [::im::dynfield::Attribute dynfield_attributes -list_
         $required_url $optional_url $object_type $widget_name $widget_url
 }
 
-template::multirow sort mapped_attributes pretty_name object_type
+template::multirow sort mapped_attributes sort_order_key pretty_name object_type
 
 list::create \
     -name unmapped_attributes \

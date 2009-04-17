@@ -10,6 +10,7 @@ ad_page_contract {
 } {
     sort_key:array
     list_id:integer,notnull
+    {page_url "default"}
 } -validate {
     ordering_is_valid -requires {sort_key} {
 	set no_value_supplied [list]
@@ -55,31 +56,35 @@ ad_page_contract {
 set attribute_order [list]
 set sort_key_list [array get sort_key]
 foreach {attribute_id sort_order} $sort_key_list {
+    #make sure the attribute exists
+    if {![db_string attribute "select 1 from im_dynfield_layout where attribute_id = :attribute_id and page_url = :page_url" -default 0]} {
+        db_dml insert_layout "insert into im_dynfield_layout (attribute_id,page_url) values (:attribute_id,:page_url)"
+    }
     set order($sort_order) $attribute_id
     lappend attribute_order $sort_order
 }
+
 set ordered_list [lsort -integer $attribute_order]	
 
-set highest_sort [db_string get_highest_sort { select pos_y from im_dynfield_layout idl, im_dynfield_type_attribute_map tam where tam.object_type_id = :list_id and tam.attribute_id = idl.attribute_id and idl.label_style = 'plain' and pos_y is not null order by pos_y desc limit 1 } -default 0]
+set highest_sort 1000000
 incr highest_sort
 set sort_number 1
-db_transaction {
-    foreach sort_order $ordered_list {
+foreach sort_order $ordered_list {
 	set attribute_id $order($sort_order)
-	
+    
 	# Move the current out of the way
-	db_dml update_sort_order { update im_dynfield_layout set pos_y = :highest_sort where pos_y = :sort_number and label_style = 'plain' and attribute_id in (select attribute_id from im_dynfield_type_attribute_map where object_type_id = :list_id) }
+	db_dml update_sort_order { update im_dynfield_layout set pos_y = :highest_sort where pos_y = :sort_number and page_url = :page_url}
 	
 	# Then update to the true sort value
-	db_dml update_sort_order { update im_dynfield_layout set pos_y = :sort_number where attribute_id = :attribute_id and label_style = 'plain' } 
+	db_dml update_sort_order { update im_dynfield_layout set pos_y = :sort_number where attribute_id = :attribute_id and page_url = :page_url } 
 
     ::im::dynfield::Element flush -id $attribute_id -list_id $list_id
 	incr highest_sort
 	incr sort_number
-    }
 }
 
 set list [::im::dynfield::List get_instance_from_db -id $list_id]
+
 
 ad_returnredirect "[$list url]"
 ad_script_abort
