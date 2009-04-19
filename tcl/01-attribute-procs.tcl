@@ -128,10 +128,16 @@ ad_proc -public im_dynfield::attribute::add {
 
     # Get the storage type from the widget.
     db_1row select_widget_pretty_and_storage_type { 
-	select	storage_type_id,
-	        im_category_from_id(storage_type_id) as storage_type
-	from	im_dynfield_widgets 
-	where	widget_name = :widget_name 
+	    select	storage_type_id,
+	            im_category_from_id(storage_type_id) as storage_type
+	      from	im_dynfield_widgets 
+	     where	widget_name = :widget_name 
+    }
+    
+    if {$storage_type_id eq [im_dynfield_storage_type_id_multimap]} {
+        set multimap_p 1
+    } else {
+        set multimap_p 0
     }
 
     # Get datatype from Widget or parameter if not explicitely given
@@ -192,11 +198,6 @@ ad_proc -public im_dynfield::attribute::add {
 	)
     "]
 
-    # Add the column to the table if it doesn't already exist
-    # and if the attribut's storage type if "value" (not a multimap)
-    if {[string equal $modify_sql_p "t"] && ![db_column_exists $table_name $attribute_name] && !$multimap_p } {
-	db_dml add_column "alter table $table_name add column $attribute_name $sql_datatype"
-    }
 
     # update im_dynfield_attributes table
     db_dml "update im_dynfield_attributes" "
@@ -222,7 +223,13 @@ ad_proc -public im_dynfield::attribute::add {
             default_value = :default_value
         where attribute_id = :attribute_id
     "
-    return $attribute_id
+
+    # Add the column to the table if it doesn't already exist
+    # and if the attribut's storage type if "value" (not a multimap)
+    if {[string equal $modify_sql_p "t"] && ![db_column_exists $table_name $attribute_name] && !$multimap_p } {
+        db_dml add_column "alter table $table_name add column $attribute_name $sql_datatype"
+    }
+   return $attribute_id
 
 }
 
