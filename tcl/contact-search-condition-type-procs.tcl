@@ -320,7 +320,7 @@ ad_proc -private contacts::search::condition_type::attribute {
             }
             
             set operand [lindex $var_list 1]
-            set value [string tolower [lindex $var_list 2]]
+            set value [lindex $var_list 2]
 
             switch $operand {
                 set {
@@ -361,6 +361,7 @@ ad_proc -private contacts::search::condition_type::attribute {
                             }
                         }
                         text {
+                            set value [string tolower [lindex $var_list 2]]
                             switch $operand  {
                                 contains {
                                     set output_pretty "[_ intranet-contacts.lt_attribute_pretty_cont]"
