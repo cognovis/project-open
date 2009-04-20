@@ -242,7 +242,6 @@ namespace eval ::im::dynfield {}
         db_transaction {
             # Create the elements in the superclass first
             next
-            ds_comment \[my serialize\]
             $instvar_statements
             $date_statements
             # Now run the updates
@@ -340,7 +339,6 @@ namespace eval ::im::dynfield {}
           }
       }
   }
-  ds_comment "Inserts $insert_statements"
   
     set documentation "This will help the save_new function to correctly insert the object
     

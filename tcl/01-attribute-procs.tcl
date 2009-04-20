@@ -129,7 +129,8 @@ ad_proc -public im_dynfield::attribute::add {
     # Get the storage type from the widget.
     db_1row select_widget_pretty_and_storage_type { 
 	    select	storage_type_id,
-	            im_category_from_id(storage_type_id) as storage_type
+	            im_category_from_id(storage_type_id) as storage_type,
+	            sql_datatype
 	      from	im_dynfield_widgets 
 	     where	widget_name = :widget_name 
     }
