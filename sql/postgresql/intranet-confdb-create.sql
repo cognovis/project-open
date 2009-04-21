@@ -32,10 +32,14 @@ update acs_object_types set
 	type_column = 'conf_item_type_id'
 where object_type = 'im_conf_item';
 
+
+-------------------------------------------------------------
+-- Business Object URLs
+
 insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_conf_item','view','/intranet-confdb/new?form_fmode=display&conf_item_id=');
+'im_conf_item','view','/intranet-confdb/new?form_mode=display&conf_item_id=');
 insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_conf_item','edit','/intranet-confdb/new?conf_item_id=');
+'im_conf_item','edit','/intranet-configuration_items/new?form_mode=edit&conf_item_id=');
 
 
 create table im_conf_items (
@@ -499,17 +503,6 @@ select im_priv_create('add_conf_items', 'Employees');
 --
 insert into im_biz_object_role_map values ('im_conf_item',85,1300);
 -- insert into im_biz_object_role_map values ('im_company',85,1302);
-
-
-
--------------------------------------------------------------
--- Business Object URLs
-
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_conf_item','view','/intranet-confdb/new?form_mode=display&conf_item_id=');
-insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_conf_item','edit','/intranet-configuration_items/new?form_mode=edit&conf_item_id=');
-
 
 
 
