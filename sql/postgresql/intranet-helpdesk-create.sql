@@ -1311,7 +1311,7 @@ insert into im_view_columns (
         visible_for
 ) values (
         27099,270,99,
-        '<input type=checkbox name=_dummy onclick=\"acs_ListCheckAll(''ticket'',this.checked)\">',
+        '<input type=checkbox name=_dummy onclick="acs_ListCheckAll(''ticket'',this.checked)">',
         '$action_checkbox',
         ''
 );
