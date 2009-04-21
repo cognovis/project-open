@@ -1450,7 +1450,7 @@ where	ci.conf_item_parent_id in (
 		select	conf_item_id
 		from	im_conf_items
 		where	conf_item_parent_id is null and
-			conf_item_nr = 'po'
+			conf_item_nr = ''po''
 	)
 order by
 	ci.conf_item_nr
@@ -1547,7 +1547,7 @@ SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_quote_comment', 'Quote Co
 
 -- Type of telephony request
 alter table im_tickets add ticket_telephony_request_type_id integer;
-# im_dynfield_attribute_new(object_type, column_name, pretty_name, widget_name, datatype, required_p, pos_y, also_hard_coded_p);
+-- im_dynfield_attribute_new(object_type, column_name, pretty_name, widget_name, datatype, required_p, pos_y, also_hard_coded_p);
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_telephony_request_type_id', 'Telephony Request Type', 'telephony_request_type', 'integer', 'f');
 
 insert into im_dynfield_type_attribute_map (
