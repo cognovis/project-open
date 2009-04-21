@@ -135,7 +135,7 @@ ad_proc -public im_dynfield::attribute::add {
 	     where	widget_name = :widget_name 
     }
     
-    if {$storage_type_id eq [im_dynfield_storage_type_id_multimap]} {
+    if {$storage_type_id == [im_dynfield_storage_type_id_multimap]} {
         set multimap_p 1
     } else {
         set multimap_p 0
