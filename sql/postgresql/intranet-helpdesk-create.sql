@@ -448,7 +448,7 @@ BEGIN
 	where group_name = ''Linux Admins'';
 	IF v_count > 0 THEN return 0; END IF;
 
-	select im_ticket_queue__new(
+	PERFORM im_ticket_queue__new(
 		null, ''Linux Admins'', NULL, NULL, now(), NULL, 
 		''im_ticket_queue'', null, 0, now(), ''0.0.0.0'', 
 		NULL
@@ -1044,19 +1044,24 @@ SELECT	im_component_plugin__new (
 );
 
 SELECT acs_permission__grant_permission(
-        (select plugin_id from im_component_plugins where plugin_name = 'Workflow Actions' and package_name = 'intranet-helpdesk'),
+        (select plugin_id from im_component_plugins 
+	 where plugin_name = 'Actions' and package_name = 'intranet-helpdesk'
+	),
         (select group_id from groups where group_name = 'Employees'),
         'read'
 );
 
 SELECT acs_permission__grant_permission(
-        (select plugin_id from im_component_plugins where plugin_name = 'Workflow Actions' and package_name = 'intranet-helpdesk'),
+        (select plugin_id from im_component_plugins 
+	 where plugin_name = 'Actions' and package_name = 'intranet-helpdesk'
+	),
         (select group_id from groups where group_name = 'Customers'),
         'read'
 );
 
 SELECT acs_permission__grant_permission(
-        (select plugin_id from im_component_plugins where plugin_name = 'Workflow Actions' and package_name = 'intranet-helpdesk'),
+        (select plugin_id from im_component_plugins 
+	 where plugin_name = 'Actions' and package_name = 'intranet-helpdesk'),
         (select group_id from groups where group_name = 'Freelancers'),
         'read'
 );
