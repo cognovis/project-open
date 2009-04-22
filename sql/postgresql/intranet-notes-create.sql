@@ -10,42 +10,65 @@
 -----------------------------------------------------------
 -- Notes
 --
--- A simple note for anything.
+-- A simple note for adding data to objects such as project, users etc.
 
+
+-- Create a new object type.
+-- This statement only creates an entry in acs_object_types with some
+-- meta-information (table name, ... as specified below) about the new 
+-- object. 
+-- Please note that this is quite different from creating a new object
+-- class in Java or other languages.
 
 SELECT acs_object_type__create_type (
-	'im_note',			-- object_type
-	'Note',				-- pretty_name
-	'Notes',			-- pretty_plural
-	'acs_object',			-- supertype
-	'im_notes',			-- table_name
-	'note_id',			-- id_column
-	'intranet-notes',		-- package_name
-	'f',				-- abstract_p
+	'im_note',			-- object_type - only lower case letters and "_"
+	'Note',				-- pretty_name - Human readable name
+	'Notes',			-- pretty_plural - Human readable plural
+	'acs_object',			-- supertype - "acs_object" is topmost object type.
+	'im_notes',			-- table_name - where to store data for this object?
+	'note_id',			-- id_column - where to store object_id in the table?
+	'intranet-notes',		-- package_name - name of this package
+	'f',				-- abstract_p - abstract class or not
 	null,				-- type_extension_table
-	'im_note__name'			-- name_method
+	'im_note__name'			-- name_method - a PL/SQL procedure that
+					-- returns the name of the object.
 );
 
-
+-- This table stores one object per row. Links to super-type "acs_object" 
+-- using the "note_id" field, which contains the same object_id as 
+-- acs_objects.object_id.
 create table im_notes (
+			-- The object_id: references acs_objects.object_id.
+			-- So we can lookup object metadata such as creation_date,
+			-- object_type etc in acs_objects.
 	note_id		integer
 			constraint im_note_id_pk
 			primary key
 			constraint im_note_id_fk
 			references acs_objects,
+			-- Every ]po[ object should have a "status_id" to control
+			-- its lifecycle. Status_id reference im_categories, where 
+			-- you can define the list of stati for this object type.
 	note_status_id	integer 
 			constraint im_note_status_nn
 			not null
 			constraint im_note_status_fk
 			references im_categories,
+			-- Every ]po[ object should have a "type_id" to allow creating
+			-- sub-types of the object. Type_id references im_categories
+			-- where you can define the list of subtypes per object type.
 	note_type_id	integer 
 			constraint im_note_type_nn
 			not null
 			constraint im_note_type_fk
 			references im_categories,
+			-- This is the main content of a "note". Just a piece of text.
 	note		text
 			constraint im_note_note_nn
 			not null,
+			-- Field to allow attaching the note to a project, user or
+			-- company. So object_id references acs_objects.object_id,
+			-- the supertype of all object types.
 	object_id	integer
 			constraint im_note_oid_nn
 			not null
@@ -53,29 +76,44 @@ create table im_notes (
 			references acs_objects
 );
 
--- allow for quick searching of all notes per object.
+-- Speed up (frequent) queries to find all notes for a specific object.
 create index im_notes_object_idx on im_notes(object_id);
 
--- avoid duplicate entries
+-- Avoid duplicate entries.
+-- Every ]po[ object should contain one such "unique" constraint in order
+-- to avoid creating duplicate entries during data import or if the user
+-- performs a "double-click" on the "Create New Note" button...
+-- (This makes a lot of sense in practice. Otherwise there would be loads
+-- of duplicated projects in the system and worse...)
 create unique index im_notes_object_note_idx on im_notes(object_id, note);
 
 
 
-
 -----------------------------------------------------------
--- Create, Drop and Name Plpg/SQL functions
+-- PL/SQL functions to Create and Delete notes and to get
+-- the name of a specific note.
 --
--- These functions represent crator/destructor
+-- These functions represent constructor/destructor
 -- functions for the OpenACS object system.
+-- The double underscore ("__") represents the dot ("."),
+-- which is not allowed in PostgreSQL.
 
 
+-- Get the name for a specific note.
+-- This function allows displaying object in generic contexts
+-- such as the Full-Text Search engine or the Workflow.
+--
+-- Input is the note_id, output is a string with the name.
+-- The function just pulls out the "note" text of the note
+-- as the name. Not pretty, but we don't have any other data,
+-- and every object needs this "__name" function.
 create or replace function im_note__name(integer)
 returns varchar as '
 DECLARE
 	p_note_id		alias for $1;
 	v_name			varchar;
 BEGIN
-	select	note
+	select	substring(note for 30)
 	into	v_name
 	from	im_notes
 	where	note_id = p_note_id;
@@ -84,6 +122,13 @@ BEGIN
 end;' language 'plpgsql';
 
 
+-- Create a new note.
+-- The first 6 parameters are common for all ]po[ business objects
+-- with metadata such as the creation_user etc. Context_id 
+-- is always disabled (NULL) for ]po[ objects (inherit permissions
+-- from a super object...).
+-- The following parameters specify the content of a note with
+-- the required fields of the im_notes table.
 create or replace function im_note__new (
 	integer, varchar, timestamptz,
 	integer, varchar, integer,
@@ -91,6 +136,7 @@ create or replace function im_note__new (
 	integer, integer 
 ) returns integer as '
 DECLARE
+	-- Default 6 parameters that go into the acs_objects table
 	p_note_id	alias for $1;		-- note_id  default null
 	p_object_type   alias for $2;		-- object_type default ''im_note''
 	p_creation_date alias for $3;		-- creation_date default now()
@@ -98,23 +144,30 @@ DECLARE
 	p_creation_ip   alias for $5;		-- creation_ip default null
 	p_context_id	alias for $6;		-- context_id default null
 
-	p_note		alias for $7;		-- note_name
-	p_object_id	alias for $8;		-- object_id
-	p_note_type_id	alias for $9;		
-	p_note_status_id alias for $10;
+	-- Specific parameters with data to go into the im_notes table
+	p_note		alias for $7;		-- im_notes.note - contents
+	p_object_id	alias for $8;		-- associated object (project, user, ...)
+	p_note_type_id	alias for $9;		-- type (email, http, text comment, ...)
+	p_note_status_id alias for $10;		-- status ("active" or "deleted").
 
+	-- This is a variable for the PL/SQL function
 	v_note_id	integer;
 BEGIN
+	-- Create an acs_object as the super-type of the note.
+	-- (Do you remember, im_note is a subtype of acs_object?)
+	-- acs_object__new returns the object_id of the new object.
 	v_note_id := acs_object__new (
-		p_note_id,		-- object_id
-		p_object_type,		-- object_type
-		p_creation_date,	-- creation_date
-		p_creation_user,	-- creation_user
-		p_creation_ip,		-- creation_ip
-		p_context_id,		-- context_id
-		''t''			-- security_inherit_p
+		p_note_id,		-- object_id - NULL to create a new id
+		p_object_type,		-- object_type - "im_note"
+		p_creation_date,	-- creation_date - now()
+		p_creation_user,	-- creation_user - Current user or "0" for guest
+		p_creation_ip,		-- creation_ip - IP from ns_conn, or "0.0.0.0"
+		p_context_id,		-- context_id - NULL, not used in ]po[
+		''t''			-- security_inherit_p - not used in ]po[
 	);
-
+	
+	-- Create an entry in the im_notes table with the same
+	-- v_note_id from acs_objects.object_id
 	insert into im_notes (
 		note_id, note, object_id,
 		note_type_id, note_status_id
@@ -127,13 +180,17 @@ BEGIN
 END;' language 'plpgsql';
 
 
+-- Delete a note from the system.
+-- Delete entries from both im_notes and acs_objects.
+-- Deleting only from im_notes would lead to an invalid
+-- entry in acs_objects, which is probably harmless, but innecessary.
 create or replace function im_note__delete(integer)
 returns integer as '
 DECLARE
 	p_note_id	alias for $1;
 BEGIN
 	-- Delete any data related to the object
-	delete from im_notes
+	delete	from im_notes
 	where	note_id = p_note_id;
 
 	-- Finally delete the object iself
