@@ -9,6 +9,7 @@ ad_page_contract {
     attribute_name:optional
     {acs_attribute_id 0}
     {required_p "f"}
+    {also_hard_coded_p "f"}
     {modify_sql_p "f"}
     {action ""}
     {label_style "plain" }
@@ -244,7 +245,7 @@ lappend form_fields {
 }
 
 lappend form_fields {
-	pretty_plural:text 
+	pretty_plural:text,optional 
 	{label {Pretty Plural}} 
 	{html {size 30 maxlength 100}}
 	{help_text "Just put the same as Pretty Name"}
@@ -273,9 +274,10 @@ lappend form_fields {
 	"}
 }
 lappend form_fields {
-	also_hard_coded_p:text(radio)
-	{label {<nobr>Also Hard Coded?</nobr>}} 
-	{options {{Yes t} {No f}}} 
+    also_hard_coded_p:text(radio)
+    {label {<nobr>Also Hard Coded?</nobr>}} 
+    {options {{Yes t} {No f}}} 
+    {value $also_hard_coded_p}
         {help_text "
 		Does this field also exist hard coded in the PO-screens?
 		Set this field if it should not appear in PO screens.
@@ -342,6 +344,10 @@ ad_form -name attribute_form -form $form_fields -new_request {
 	set min_n_values "0"
     } else {
 	set min_n_values "1"
+    }
+
+    if {$pretty_plural == ""} {
+	set pretty_plural $pretty_name
     }
 
     db_transaction {

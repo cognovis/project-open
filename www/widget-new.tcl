@@ -96,7 +96,7 @@ ad_form \
 	widget_id:key
 	{widget_name:text(text) {label "Widget Name"} {html {size 40}}}
 	{pretty_name:text(text) {label "Pretty Name"} {html {size 40}}}
-	{pretty_plural:text(text) {label "Pretty Plural"} {html {size 40}}}
+	{pretty_plural:text(text),optional {label "Pretty Plural"} {html {size 40}}}
 	{storage_type_id:text(select) {label "Storage Type"} {options $storage_options} }
 	{acs_datatype:text(select) {label "ACS Datatype"} {options $acs_datatype_options} }
 	{sql_datatype:text(text) {label "SQL Datatype"} {html {size 60}} {help_text {Please specify the datatype for this attribute when we generate a new SQL column. Examples: <table><tr><td><li>integer<li>varchar(200)</td><td><li>number(12,2)<li>clob</td></tr></table>}} }
@@ -117,6 +117,10 @@ ad_form -extend -name widget -on_request {
 
 } -new_data {
 
+    if {$pretty_plural == ""} {
+	set pretty_plural $pretty_name
+    }
+
     db_string create_widget ""
 
 # } -validate {
@@ -129,6 +133,10 @@ ad_form -extend -name widget -on_request {
 
 } -edit_data {
 
+    if {$pretty_plural == ""} {
+	set pretty_plural $pretty_name
+    }
+    
     db_dml widget_update "
 	update im_dynfield_widgets set
 		widget_name	= :widget_name,
