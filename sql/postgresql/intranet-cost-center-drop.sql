@@ -10,3 +10,4 @@
 
 
 select im_menu__del_module('intranet-cost-center');
+select im_component_plugin__del_module('intranet-cost-center');
