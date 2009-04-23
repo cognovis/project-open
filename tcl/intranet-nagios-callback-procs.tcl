@@ -7,6 +7,13 @@ ad_library {
     @cvs-id $Id$
 }
 
+# Get the OpenACS version
+set ver_sql "select substring(max(version_name),1,3) from apm_package_versions where package_key = 'acs-kernel'"
+set openacs54_p [string equal "5.4" [util_memoize [list db_string ver $ver_sql ]]]
+
+if {$openacs54_p} {
+
+
 ad_proc -public -callback acs_mail_lite::incoming_email -impl nagios {
     -array:required
     -package_id
@@ -76,4 +83,6 @@ ad_proc -public -callback acs_mail_lite::incoming_email -impl nagios {
 	    -status $status \
 	    -bodies $bodies
     }
+}
+
 }
