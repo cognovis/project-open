@@ -327,134 +327,136 @@ if {$openacs54_p} {
 	    {default_value ""}
 	    {dynfield_attribute_id ""}
 	}    
-}
 
     
-::im::dynfield::Attribute instproc create_attribute {} {
-    if {![my create_acs_attribute]} return
-
-    my instvar datatype pretty_name min_n_values max_n_values domain column_name table_name required name
-    my instvar widget_name already_existed_p deprecated_p include_in_search_p also_hard_coded_p default_value
-    my instvar storage_type_id widget widget_parameters sql_datatype deref_plpgsql_function pos_y label_style
-    
-    set object_type [$domain object_type]
-
-    # Create the class if it does not exist (albeit unlikely)
-    if {![::xo::db::Class object_type_exists_in_db -object_type $object_type]} {
-        $domain create_object_type
-    }
-
-    if {$required == "false"} {
-        set required_p 0
-    } else {
-        set required_p 1
-    }
-    
-    # Create the acs_attribute along with the im_dynfield one.
-    # If the acs_attribute already exists we just create the dynfield attribute
-
-    set im_dynfield_attribute_exists [im_dynfield::attribute::exists_p -object_type $object_type -attribute_name $name]
-    
-    if {!$im_dynfield_attribute_exists} {
-    ns_log Notice "WE HAVE TO CALL attribute::add ??????"
-    im_dynfield::attribute::add \
-        -object_type $object_type \
-        -widget_name $widget_name \
-        -attribute_name $name \
-        -pretty_name $pretty_name \
-        -pretty_plural $pretty_name \
-        -table_name $table_name \
-        -required_p $required_p \
-        -modify_sql_p "t" \
-        -deprecated_p $deprecated_p \
-        -datatype $datatype \
-        -default_value $default_value \
-        -include_in_search_p $include_in_search_p \
-        -also_hard_coded_p $also_hard_coded_p \
-        -label_style $label_style \
-        -pos_y $pos_y
-    }
-}
-
-::im::dynfield::Attribute ad_instproc attribute_reference {tn} {
-    Returns the column reference for retrieving the attribute value
-    
-    If there exists a deref function the value is derefed
-} {
-    my instvar column_name name table_name deref_plpgsql_function multivalued
-    
-    if {![info exists table_name]} {
-        set table_name $tn
-    }
-    if {$tn ne $table_name} {
-        ns_log Debug "Trying to access attribute $name with wrong table $tn instead of $table_name"
-    }
-
-
-    if {$column_name ne $name} {
-        set att_ref "$table_name.$column_name"
-    } else {
-        set att_ref "$table_name.$name"
+    ::im::dynfield::Attribute instproc create_attribute {} {
+	if {![my create_acs_attribute]} return
+	
+	my instvar datatype pretty_name min_n_values max_n_values domain column_name table_name required name
+	my instvar widget_name already_existed_p deprecated_p include_in_search_p also_hard_coded_p default_value
+	my instvar storage_type_id widget widget_parameters sql_datatype deref_plpgsql_function pos_y label_style
+	
+	set object_type [$domain object_type]
+	
+	# Create the class if it does not exist (albeit unlikely)
+	if {![::xo::db::Class object_type_exists_in_db -object_type $object_type]} {
+	    $domain create_object_type
+	}
+	
+	if {$required == "false"} {
+	    set required_p 0
+	} else {
+	    set required_p 1
+	}
+	
+	# Create the acs_attribute along with the im_dynfield one.
+	# If the acs_attribute already exists we just create the dynfield attribute
+	
+	set im_dynfield_attribute_exists [im_dynfield::attribute::exists_p -object_type $object_type -attribute_name $name]
+	
+	if {!$im_dynfield_attribute_exists} {
+	    ns_log Notice "WE HAVE TO CALL attribute::add ??????"
+	    im_dynfield::attribute::add \
+		-object_type $object_type \
+		-widget_name $widget_name \
+		-attribute_name $name \
+		-pretty_name $pretty_name \
+		-pretty_plural $pretty_name \
+		-table_name $table_name \
+		-required_p $required_p \
+		-modify_sql_p "t" \
+		-deprecated_p $deprecated_p \
+		-datatype $datatype \
+		-default_value $default_value \
+		-include_in_search_p $include_in_search_p \
+		-also_hard_coded_p $also_hard_coded_p \
+		-label_style $label_style \
+		-pos_y $pos_y
+	}
     }
     
-    if {$deref_plpgsql_function ne "" && $multivalued == false} {
-        set att_ref "${deref_plpgsql_function}(${att_ref}) as ${name}_deref, ${att_ref}"
+    ::im::dynfield::Attribute ad_instproc attribute_reference {tn} {
+	Returns the column reference for retrieving the attribute value
+	
+	If there exists a deref function the value is derefed
+    } {
+	my instvar column_name name table_name deref_plpgsql_function multivalued
+	
+	if {![info exists table_name]} {
+	    set table_name $tn
+	}
+	if {$tn ne $table_name} {
+	    ns_log Debug "Trying to access attribute $name with wrong table $tn instead of $table_name"
     }
-    return "$att_ref as $name"
-}
 
-::im::dynfield::Attribute ad_proc dynfield_attributes {
-    {-list_ids:required}
-    {-privilege ""}
-    {-user_id ""}
-} {
-    Returns a list of dynfield_attributes with list_id of the attributes to display. This means we return a list of (attribute_id list_id) pairs.
-    
-    The list is sorted in order of how the attributes should appear according to the list_id order
-    
-    @param list_ids This is a list of list_ids. Note that the order is important
-    @param user_id User ID for whom to check the privilege
-    @param privilege Check that the user has this privilege. Empty string does mean no permission check
-} {
-    set dynfield_attribute_ids [list]
-    set attribute_ids [list]
-    foreach list_id $list_ids {
-        db_foreach attributes {
-            select dl.attribute_id
-            from im_dynfield_type_attribute_map tam, im_dynfield_layout dl
-            where tam.attribute_id = dl.attribute_id
-            and object_type_id = :list_id
-            order by pos_y
-        } {
-            if {[lsearch $attribute_ids $attribute_id] < 0} {
-                lappend attribute_ids $attribute_id
-                if {$privilege == ""} {
-                    lappend dynfield_attribute_ids [list $attribute_id $list_id]
-                } else {
-                    if {[im_object_permission -object_id $attribute_id -user_id $user_id -privilege $privilege]} {
-                        lappend dynfield_attribute_ids [list $attribute_id $list_id]
-                    }
-                }
-            }
-        }
+	
+	if {$column_name ne $name} {
+	    set att_ref "$table_name.$column_name"
+	} else {
+	    set att_ref "$table_name.$name"
+	}
+	
+	if {$deref_plpgsql_function ne "" && $multivalued == false} {
+	    set att_ref "${deref_plpgsql_function}(${att_ref}) as ${name}_deref, ${att_ref}"
+	}
+	return "$att_ref as $name"
     }
     
-    return $dynfield_attribute_ids
-}
-
-::im::dynfield::Attribute ad_instproc save {} {
-    This will save a dynfield attribute in the respective tables
-} {
+    ::im::dynfield::Attribute ad_proc dynfield_attributes {
+	{-list_ids:required}
+	{-privilege ""}
+	{-user_id ""}
+    } {
+	Returns a list of dynfield_attributes with list_id of the attributes to display. This means we return a list of (attribute_id list_id) pairs.
+	
+	The list is sorted in order of how the attributes should appear according to the list_id order
+	
+	@param list_ids This is a list of list_ids. Note that the order is important
+	@param user_id User ID for whom to check the privilege
+	@param privilege Check that the user has this privilege. Empty string does mean no permission check
+    } {
+	set dynfield_attribute_ids [list]
+	set attribute_ids [list]
+	foreach list_id $list_ids {
+	    db_foreach attributes {
+		select dl.attribute_id
+		from im_dynfield_type_attribute_map tam, im_dynfield_layout dl
+		where tam.attribute_id = dl.attribute_id
+		and object_type_id = :list_id
+		order by pos_y
+	    } {
+		if {[lsearch $attribute_ids $attribute_id] < 0} {
+		    lappend attribute_ids $attribute_id
+		    if {$privilege == ""} {
+			lappend dynfield_attribute_ids [list $attribute_id $list_id]
+		    } else {
+			if {[im_object_permission -object_id $attribute_id -user_id $user_id -privilege $privilege]} {
+			    lappend dynfield_attribute_ids [list $attribute_id $list_id]
+			}
+		    }
+		}
+	    }
+	}
+	
+	return $dynfield_attribute_ids
+    }
     
-    my instvar attribute_id dynfield_attribute_id required_p section_heading pretty_name pretty_plural default_value 
-    my instvar max_n_values include_in_search_p also_hard_coded_p deprecated_p label_style sort_order widget
-    my instvar min_n_values
+    ::im::dynfield::Attribute ad_instproc save {} {
+	This will save a dynfield attribute in the respective tables
+    } {
+	
+	my instvar attribute_id dynfield_attribute_id required_p section_heading pretty_name pretty_plural default_value 
+	my instvar max_n_values include_in_search_p also_hard_coded_p deprecated_p label_style sort_order widget
+	my instvar min_n_values
+	
+	db_dml up_acs_attributes "update acs_attributes set pretty_name = :pretty_name, pretty_plural=:pretty_plural default_value = :default_value, min_n_values = :min_n_values, max_n_values = :max_n_values where attribute_id = :attribute_id"
+	
+	db_dml up_im_dynfield_att "update im_dynfield_attributes set include_in_search_p = :include_in_search_p, also_hard_coded_p = :also_hard_coded_p, deprecated_p = :deprecated_p, widget_name = :widget where attribute_id = :dynfield_attribute_id"
+	
+	db_dml up_idl "update im_dynfield_layout set label_style = :label_style, pos_y = :sort_order where attribute_id = :dynfield_attribute_id"
+    }
     
-    db_dml up_acs_attributes "update acs_attributes set pretty_name = :pretty_name, pretty_plural=:pretty_plural default_value = :default_value, min_n_values = :min_n_values, max_n_values = :max_n_values where attribute_id = :attribute_id"
     
-    db_dml up_im_dynfield_att "update im_dynfield_attributes set include_in_search_p = :include_in_search_p, also_hard_coded_p = :also_hard_coded_p, deprecated_p = :deprecated_p, widget_name = :widget where attribute_id = :dynfield_attribute_id"
-    
-    db_dml up_idl "update im_dynfield_layout set label_style = :label_style, pos_y = :sort_order where attribute_id = :dynfield_attribute_id"
 }
 
 
