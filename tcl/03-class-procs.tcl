@@ -7,7 +7,9 @@ ad_library {
     @cvs-id 
 }
 
-
+# Get the OpenACS version
+set ver_sql "select substring(max(version_name),1,3) from apm_package_versions where package_key = 'acs-kernel'"
+set openacs54_p [string equal "5.4" [util_memoize [list db_string ver $ver_sql ]]]
 
 
 namespace eval ::im {}
@@ -20,6 +22,8 @@ namespace eval ::im::dynfield {}
 # Of other classes
 # 
 ##############################
+
+if {$openacs54_p} {
 
 ::xotcl::Class create ::im::dynfield::Class \
     -superclass ::xo::db::Class \
@@ -40,7 +44,7 @@ namespace eval ::im::dynfield {}
         @param type_category_type Which is the defaul im_category_type for this object_type
         @param multival_attr_ids Storage slot for the list of multivalued attribute_ids so we can quickly access them
     }
-    
+}    
 
 ::im::dynfield::Class ad_instproc save_new {} {
     Save the new class
@@ -505,42 +509,47 @@ namespace eval ::im::dynfield {}
 # Kudos to Stefan Soberning
 ##############################
 
-::xotcl::Class create ObjectCache
- ObjectCache instproc get_instance_from_db {
-    -id:required
- } {
-     set object ::$id
-     set code [ns_cache eval xotcl_object_cache $object {
-          set created 1
-          set o [next]
-          return [::Serializer deepSerialize $o]
+if {$openacs54_p} {
+
+    ::xotcl::Class create ObjectCache
+
+    ObjectCache instproc get_instance_from_db {
+	-id:required
+    } {
+	set object ::$id
+	set code [ns_cache eval xotcl_object_cache $object {
+	    set created 1
+	    set o [next]
+	    return [::Serializer deepSerialize $o]
         }]
-    if {![info exists created]} {
-      if {[my isobject $object]} {
-      } else {
-            set o [eval $code]
-            $object initialize_loaded_object
-      }
+	if {![info exists created]} {
+	    if {[my isobject $object]} {
+	    } else {
+		set o [eval $code]
+		$object initialize_loaded_object
+	    }
+	}
+	
+	return $object
     }
     
-    return $object
-}
-
-ObjectCache instproc delete {-id:required} {
-      next
-      my flush -id $id
-}
-
-ObjectCache ad_proc flush {-id:required} {
-    Flush
-} {
-    ::xo::clusterwide ns_cache flush xotcl_object_cache ::$id
-    ds_comment "Flushing ::$id"
-}
-
-ObjectCache instproc flush {-id:required} {
-      ::xo::clusterwide ns_cache flush xotcl_object_cache ::$id
-      ds_comment "Flushing ::$id"
+    ObjectCache instproc delete {-id:required} {
+	next
+	my flush -id $id
+    }
+    
+    ObjectCache ad_proc flush {-id:required} {
+	Flush
+    } {
+	::xo::clusterwide ns_cache flush xotcl_object_cache ::$id
+	ds_comment "Flushing ::$id"
+    }
+    
+    ObjectCache instproc flush {-id:required} {
+	::xo::clusterwide ns_cache flush xotcl_object_cache ::$id
+	ds_comment "Flushing ::$id"
+    }
+    
 }
 
 # Here we do the mixins

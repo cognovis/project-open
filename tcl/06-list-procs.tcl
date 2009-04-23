@@ -9,18 +9,26 @@ ad_library {
     @cvs-id 
 }
 
-::xotcl::Class create ::im::dynfield::List \
-    -slots {
-        xo::Attribute create list_name
-        xo::Attribute create list_id
-        xo::Attribute create object_type
-        xo::Attribute create pretty_name
-        xo::Attribute create description
-        xo::Attribute create list_type
-    } -ad_doc {
-        ::im::dynfield::Lists is the class to handle the "ams" lists correctly. It is based on im_categories and 
-        special naming conventions there. Handle with care :-).
-    }
+# Get the OpenACS version
+set ver_sql "select substring(max(version_name),1,3) from apm_package_versions where package_key = 'acs-kernel'"
+set openacs54_p [string equal "5.4" [util_memoize [list db_string ver $ver_sql ]]]
+
+if {$openacs54_p} {
+
+    ::xotcl::Class create ::im::dynfield::List \
+	-slots {
+	    xo::Attribute create list_name
+	    xo::Attribute create list_id
+	    xo::Attribute create object_type
+	    xo::Attribute create pretty_name
+	    xo::Attribute create description
+	    xo::Attribute create list_type
+	} -ad_doc {
+	    ::im::dynfield::Lists is the class to handle the "ams" lists correctly. It is based on im_categories and 
+	    special naming conventions there. Handle with care ...
+	}
+}
+
 
 ::im::dynfield::List ad_proc get_instance_from_db {
     -id

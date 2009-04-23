@@ -7,6 +7,9 @@ ad_library {
     @cvs-id 
 }
 
+# Get the OpenACS version
+set ver_sql "select substring(max(version_name),1,3) from apm_package_versions where package_key = 'acs-kernel'"
+set openacs54_p [string equal "5.4" [util_memoize [list db_string ver $ver_sql ]]]
 
 
 ##############################
@@ -14,6 +17,8 @@ ad_library {
 # DynField Elements
 #
 ##############################
+
+if {$openacs54_p} {
 
 xotcl::Class create ::im::dynfield::Element \
     -slots {
@@ -50,6 +55,7 @@ xotcl::Class create ::im::dynfield::Element \
         along with the information about the widget. This is list specific. For list unspecific things look at ::im::dynfield::Attribute
     }
 
+}
 
 ::im::dynfield::Element ad_proc get_instance_from_db {
     -id:required 
@@ -211,6 +217,8 @@ xotcl::Class create ::im::dynfield::Element \
 #
 #############################
 
+if {$openacs54_p} {
+
 ::xotcl::Class create ::im::dynfield::Widget \
     -slots {
         xo::Attribute create widget_name
@@ -229,6 +237,9 @@ xotcl::Class create ::im::dynfield::Element \
     } -ad_doc {
         Class to handle the dynfield widgets.
     }
+
+}
+
     
 ::im::dynfield::Widget ad_proc widget_id {-widget_name} {
     Get the widget id for a widget, cached
@@ -440,8 +451,13 @@ xotcl::Class create ::im::dynfield::Element \
 # Kudos to Stefan Soberning
 ##############################
 
-::xotcl::Class create ::im::dynfield::ElementCache
- ::im::dynfield::ElementCache instproc get_instance_from_db {
+if {$openacs54_p} {
+
+    ::xotcl::Class create ::im::dynfield::ElementCache
+
+}
+
+::im::dynfield::ElementCache instproc get_instance_from_db {
     -id:required
     {-list_id ""}
  } {

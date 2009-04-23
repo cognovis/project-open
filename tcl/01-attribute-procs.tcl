@@ -7,6 +7,9 @@ ad_library {
 
 }
 
+# Get the OpenACS version
+set ver_sql "select substring(max(version_name),1,3) from apm_package_versions where package_key = 'acs-kernel'"
+set openacs54_p [string equal "5.4" [util_memoize [list db_string ver $ver_sql ]]]
 
 namespace eval im_dynfield::attribute {}
 namespace eval im::dynfield:: {}
@@ -302,26 +305,29 @@ ad_proc -private im_dynfield::attribute::get {
 #
 ############################
 
-::xotcl::Class create ::im::dynfield::Attribute \
-    -superclass ::xo::db::Attribute \
-    -parameter {
-        {widget_name}
-        {already_existed_p false}
-        {deprecated_p false}
-        {include_in_search_p true}
-        {also_hard_coded_p true}
-        {storage_type_id}
-        {widget}
-        {widget_parameters}
-        {sql_datatype}
-        {deref_plpgsql_function "im_name_from_id"}
-        {table_name}
-        {pos_y 0}
-        {label_style "plain"}
-        {default_value ""}
-        {dynfield_attribute_id ""}
-    }    
-    
+
+if {$openacs54_p} {
+
+    ::xotcl::Class create ::im::dynfield::Attribute \
+	-superclass ::xo::db::Attribute \
+	-parameter {
+	    {widget_name}
+	    {already_existed_p false}
+	    {deprecated_p false}
+	    {include_in_search_p true}
+	    {also_hard_coded_p true}
+	    {storage_type_id}
+	    {widget}
+	    {widget_parameters}
+	    {sql_datatype}
+	    {deref_plpgsql_function "im_name_from_id"}
+	    {table_name}
+	    {pos_y 0}
+	    {label_style "plain"}
+	    {default_value ""}
+	    {dynfield_attribute_id ""}
+	}    
+}
 
     
 ::im::dynfield::Attribute instproc create_attribute {} {
