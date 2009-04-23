@@ -55,7 +55,6 @@ xotcl::Class create ::im::dynfield::Element \
         along with the information about the widget. This is list specific. For list unspecific things look at ::im::dynfield::Attribute
     }
 
-}
 
 ::im::dynfield::Element ad_proc get_instance_from_db {
     -id:required 
@@ -210,6 +209,8 @@ xotcl::Class create ::im::dynfield::Element \
 	return $form_elements
 }
 
+}
+
 
 #############################
 # 
@@ -237,8 +238,6 @@ if {$openacs54_p} {
     } -ad_doc {
         Class to handle the dynfield widgets.
     }
-
-}
 
     
 ::im::dynfield::Widget ad_proc widget_id {-widget_name} {
@@ -445,6 +444,10 @@ if {$openacs54_p} {
 } {
 }
 
+
+}
+
+
 ##############################
 # Object Cache
 # 
@@ -455,7 +458,6 @@ if {$openacs54_p} {
 
     ::xotcl::Class create ::im::dynfield::ElementCache
 
-}
 
 ::im::dynfield::ElementCache instproc get_instance_from_db {
     -id:required
@@ -500,3 +502,5 @@ if {$openacs54_p} {
 }
 
 ::im::dynfield::Element mixin ::im::dynfield::ElementCache
+
+}
