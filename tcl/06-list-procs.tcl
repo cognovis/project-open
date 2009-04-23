@@ -27,7 +27,6 @@ if {$openacs54_p} {
 	    ::im::dynfield::Lists is the class to handle the "ams" lists correctly. It is based on im_categories and 
 	    special naming conventions there. Handle with care ...
 	}
-}
 
 
 ::im::dynfield::List ad_proc get_instance_from_db {
@@ -51,6 +50,9 @@ if {$openacs54_p} {
     set list_id [my set list_id]
     return [export_vars -base "/intranet-dynfield/list" -url {list_id}]
 }
+
+}
+
 
 namespace eval ams:: {}
 namespace eval ams::list:: {}
