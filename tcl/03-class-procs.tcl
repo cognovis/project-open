@@ -44,7 +44,7 @@ if {$openacs54_p} {
         @param type_category_type Which is the defaul im_category_type for this object_type
         @param multival_attr_ids Storage slot for the list of multivalued attribute_ids so we can quickly access them
     }
-}    
+
 
 ::im::dynfield::Class ad_instproc save_new {} {
     Save the new class
@@ -503,13 +503,12 @@ if {$openacs54_p} {
    return $classname
 }
 
+
 ##############################
 # Object Cache
 # 
 # Kudos to Stefan Soberning
 ##############################
-
-if {$openacs54_p} {
 
     ::xotcl::Class create ObjectCache
 
@@ -550,8 +549,10 @@ if {$openacs54_p} {
 	ds_comment "Flushing ::$id"
     }
     
-}
 
 # Here we do the mixins
 #::im::dynfield::Class mixin ObjectCache
     
+
+}
+
