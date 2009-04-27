@@ -226,14 +226,14 @@ foreach uid $user_ids {
 	current_user_last_name $current_user_last_name \
     ]
 
-    set email_header [lang::message::format $email_header $substitution_list]
-    set email_body [lang::message::format $email_body $substitution_list]
+    set email_header_subs [lang::message::format $email_header $substitution_list]
+    set email_body_subs [lang::message::format $email_body $substitution_list]
 
     if {"" != $email_send} {
 
 	# send out the email
 	if [catch {
-	    ns_sendmail $email $current_user_email $email_header $email_body
+	    ns_sendmail $email $current_user_email $email_header_subs $email_body_subs
 	} errmsg] {
 	    append result_html "<li><font color=red>$user_name: Problem sending email:<br><pre>$errmsg</pre></font>\n"
 	    incr error_count
