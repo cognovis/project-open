@@ -49,9 +49,20 @@ set todays_time [lindex [split [ns_localsqltimestamp] " "] 1]
 set add_freelance_rfqs_p [im_permission $current_user_id "add_freelance_rfqs"]
 
 # Display the list of following types to add to the RFQ
-set active_skill_types [list 2000 2002 2004 2014]
+# set active_skill_types [list 2000 2002 2004 2014]
 # 2000 = Source Language 2002 = Target Language 2014 = Subjects 
 # 2010 = OS 2004 = Sworn Language  2006 = TM Tools 2008 = LOC Tools
+
+# Update from Ben Taylor: Use all skills
+set active_skill_types [db_list skill_types "
+        select  category_id
+        from    im_categories
+        where   category_type = 'Intranet Skill Type'
+        order by category_id
+"]
+
+
+
 
 # Default level required
 set default_experience_level 2200
