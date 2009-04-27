@@ -238,7 +238,7 @@ foreach uid $user_ids {
 	    append result_html "<li><font color=red>$user_name: Problem sending email:<br><pre>$errmsg</pre></font>\n"
 	    incr error_count
 	} else {
-	    append result_html "<li>$user_name: Successfully sent out email:<br><pre>$email_header\n\n$email_body</pre>\n"
+	    append result_html "<li>$user_name: Successfully sent out email:<br><pre>$email_header_subs\n\n$email_body_subs</pre>\n"
 	}
 
     }
