@@ -179,6 +179,7 @@ ad_proc im_freelance_skill_select {
 		category
         from	im_categories
         where	category_type = :skill_type
+		and (enabled_p = 't' OR enabled_p is NULL)
         order by lower(category_id)
     "
 
