@@ -1,6 +1,6 @@
 -- upgrade-3.4.0.5.2-3.4.0.5.3.sql
 
-SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.5.2-3.4.0.5.3.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.5.3-3.4.0.5.4.sql','');
 
 create or replace function im_create_profile (varchar, varchar)
 returns integer as '
