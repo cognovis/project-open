@@ -181,6 +181,15 @@ ad_form -extend -name $form_id \
 
 
     } -after_submit {
+
+
+	# Remove all permission related entries in the system cache
+	im_permission_flush
+	
+	# Recalculate the menu hierarchy
+	# That's necessary because the reports list is implemented as menus.
+	im_menu_update_hierarchy
+
 	ad_returnredirect $return_url
 	ad_script_abort
     }
