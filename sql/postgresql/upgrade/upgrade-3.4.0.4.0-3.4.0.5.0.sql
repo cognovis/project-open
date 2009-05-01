@@ -13,6 +13,12 @@ add constraint im_dynfield_label_style_ck check (label_style in ('plain','no_lab
 
 
 
+-- ToDo: v_count around these function drop scripts
+
+drop function im_dynfield_attribute_new(character varying, character varying, character varying, character, character varying, character varying);
+
+drop function im_dynfield_attribute_new(character varying, character varying, character varying, character varying, character varying, character);
+
 
 -- Shortcut function
 CREATE OR REPLACE FUNCTION im_dynfield_attribute_new (
