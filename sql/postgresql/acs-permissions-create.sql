@@ -454,10 +454,6 @@ begin
 
     end if;
 
-    -- exception
-    --  when dup_val_on_index then
-    --    return;
-
     return 0; 
 end;' language 'plpgsql';
 
