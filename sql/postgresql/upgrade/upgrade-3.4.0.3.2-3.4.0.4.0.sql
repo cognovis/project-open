@@ -35,7 +35,7 @@ BEGIN
 	where lower(table_name) = ''users'' and lower(column_name) = ''skin_id'';
 	IF v_count > 0 THEN return 1; END IF;
 
-	alter table users add skin_id integer references im_categories;
+	alter table users add skin_id integer references im_categories(category_id);
 	update users set skin_id = 40020;
 
 

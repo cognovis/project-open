@@ -2,6 +2,111 @@
 
 SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.5.3-3.4.0.5.4.sql','');
 
+
+-- Disable older upgrade scripts
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.1.0.0.0-3.1.0.0.2.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.1.0.0.2-3.1.0.1.0.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.1.0.1.0-3.1.2.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.1.2.0.0-3.1.3.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.1.3.0.0-3.2.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.2.0.0.0-3.2.1.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.2.1.0.0-3.2.2.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.2.2.0.0-3.2.3.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.2.3.0.0-3.2.4.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.2.4.0.0-3.2.5.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.2.5.0.0-3.2.6.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.2.7.0.0-3.2.8.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.2.8.0.0-3.2.9.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.2.9.0.0-3.3.0.0.0.sql','');
+
+SELECT acs_log__debug('/packages/intranet-bug-tracker/sql/postgresql/upgrade/upgrade-3.2.7.0.0-3.2.8.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-bug-tracker/sql/postgresql/upgrade/upgrade-3.2.8.0.0-3.3.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-calendar/sql/postgresql/upgrade/upgrade-3.2.7.0.0-3.2.8.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.1.2.0.0-3.1.3.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.1.4.0.0-3.2.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.2.0.0.0-3.2.2.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.2.2.0.0-3.2.3.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.2.4.0.0-3.2.5.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.2.7.0.0-3.2.8.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-3.2.8.0.0-3.2.9.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-dw-light/sql/postgresql/upgrade/upgrade-3.2.1.0.0-3.2.2.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-dw-light/sql/postgresql/upgrade/upgrade-3.2.3.0.0-3.2.4.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-dw-light/sql/postgresql/upgrade/upgrade-3.2.5.0.0-3.2.6.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-dw-light/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-dw-light/sql/postgresql/upgrade/upgrade-3.2.7.0.0-3.2.8.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-dw-light/sql/postgresql/upgrade/upgrade-3.2.8.0.0-3.3.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrade-3.2.4.0.0-3.2.5.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrade-3.2.5.0.0-3.2.6.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-exchange-rate/sql/postgresql/upgrade/upgrade-3.2.1.0.0-3.2.2.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-exchange-rate/sql/postgresql/upgrade/upgrade-3.2.9.0.0-3.3.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-expenses/sql/postgresql/upgrade/upgrade-3.2.1.0.0-3.2.2.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-expenses/sql/postgresql/upgrade/upgrade-3.2.2.0.0-3.2.3.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-filestorage/sql/postgresql/upgrade/upgrade-3.1.1.0.0-3.1.2.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-filestorage/sql/postgresql/upgrade/upgrade-3.2.1.0.0-3.2.2.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-filestorage/sql/postgresql/upgrade/upgrade-3.2.3.0.0-3.2.4.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-filestorage/sql/postgresql/upgrade/upgrade-3.2.4.0.0-3.2.5.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-filestorage/sql/postgresql/upgrade/upgrade-3.2.8.0.0-3.2.9.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-forum/sql/postgresql/upgrade/upgrade-3.1.4.0.0-3.2.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-forum/sql/postgresql/upgrade/upgrade-3.2.3.0.0-3.2.4.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-forum/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-ganttproject/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-hr/sql/postgresql/upgrade/upgrade-3.2.3.0.0-3.2.4.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-hr/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-hr/sql/postgresql/upgrade/upgrade-3.2.7.0.0-3.2.8.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrade-3.1.0.0.0-3.1.1.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrade-3.1.1.0.0-3.1.2.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrade-3.1.3.0.0-3.2.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrade-3.2.1.0.0-3.2.2.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrade-3.2.2.0.0-3.2.3.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrade-3.2.3.0.0-3.2.4.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-reporting-cubes/sql/postgresql/upgrade/upgrade-3.2.9.0.0-3.3.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-reporting-tutorial/sql/postgresql/upgrade/upgrade-3.2.9.0.0-3.3.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.1.0.0.0-3.1.1.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.1.1.0.0-3.1.2.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.1.2.0.0-3.1.3.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.2.1.0.0-3.2.2.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.2.2.0.0-3.2.3.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.2.8.0.0-3.2.9.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.2.9.0.0-3.3.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-search-pg/sql/postgresql/upgrade/upgrade-3.1.2.0.0-3.1.4.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-search-pg/sql/postgresql/upgrade/upgrade-3.1.4.0.0-3.2.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-search-pg/sql/postgresql/upgrade/upgrade-3.2.2.0.0-3.2.3.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-search-pg/sql/postgresql/upgrade/upgrade-3.2.9.0.0-3.3.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2-invoices/sql/postgresql/upgrade/upgrade-3.1.3.0.0-3.2.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2-invoices/sql/postgresql/upgrade/upgrade-3.2.1.0.0-3.2.2.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2-invoices/sql/postgresql/upgrade/upgrade-3.2.8.0.0-3.2.9.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-3.1.2.0.0-3.1.3.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-3.1.3.0.0-3.2.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-3.2.2.0.0-3.2.3.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-3.2.3.0.0-3.2.4.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-3.2.7.0.0-3.2.8.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrade/upgrade-3.2.9.0.0-3.3.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2/sql/postgresql/upgrade/upgrade-3.1.3.0.0-3.2.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2/sql/postgresql/upgrade/upgrade-3.2.3.0.0-3.2.4.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2/sql/postgresql/upgrade/upgrade-3.2.7.0.0-3.2.8.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2/sql/postgresql/upgrade/upgrade-3.2.8.0.0-3.2.9.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-timesheet2/sql/postgresql/upgrade/upgrade-3.2.9.0.0-3.3.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-trans-invoices/sql/postgresql/upgrade/upgrade-3.1.0.0.0-3.1.0.1.0.sql','');
+SELECT acs_log__debug('/packages/intranet-trans-invoices/sql/postgresql/upgrade/upgrade-3.1.3.0.0-3.2.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-trans-invoices/sql/postgresql/upgrade/upgrade-3.2.1.0.0-3.2.2.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-trans-invoices/sql/postgresql/upgrade/upgrade-3.2.2.0.0-3.2.3.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-trans-invoices/sql/postgresql/upgrade/upgrade-3.2.8.0.0-3.2.9.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-trans-invoices/sql/postgresql/upgrade/upgrade-3.2.9.0.0-3.3.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-translation/sql/postgresql/upgrade/upgrade-3.1.0.1.0-3.1.1.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-translation/sql/postgresql/upgrade/upgrade-3.1.3.0.0-3.2.0.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-translation/sql/postgresql/upgrade/upgrade-3.2.0.0.0-3.2.1.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-workflow/sql/postgresql/upgrade/upgrade-3.2.5.0.0-3.2.6.0.0.sql','');
+SELECT acs_log__debug('/packages/intranet-workflow/sql/postgresql/upgrade/upgrade-3.2.6.0.0-3.2.7.0.0.sql','');
+
+
+
+
 create or replace function im_create_profile (varchar, varchar)
 returns integer as '
 DECLARE
