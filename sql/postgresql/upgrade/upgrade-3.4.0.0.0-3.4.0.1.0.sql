@@ -72,18 +72,36 @@ drop function inline_0 ();
 -------------------------------------------------------------
 -- Expense Bundle 
 
-SELECT acs_object_type__create_type (
-	'im_expense_bundle',		-- object_type
-	'Expense Bundle',		-- pretty_name
-	'Expense Bundles',		-- pretty_plural
-	'im_cost',			-- supertype
-	'im_expense_bundles',		-- table_name
-	'bundle_id',			-- id_column
-	'intranet-expenses-bundle',	-- package_name
-	'f',				-- abstract_p
-	null,				-- type_extension_table
-	'im_expense_bundle__name'	-- name_method
-);
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+        select count(*) into v_count from acs_object_types
+	where  object_type = ''im_expense_bundle'';
+        if v_count > 0 then return 0; end if;
+
+	SELECT acs_object_type__create_type (
+		''im_expense_bundle'',		-- object_type
+		''Expense Bundle'',		-- pretty_name
+		''Expense Bundles'',		-- pretty_plural
+		''im_cost'',			-- supertype
+		''im_expense_bundles'',		-- table_name
+		''bundle_id'',			-- id_column
+		''intranet-expenses-bundle'',	-- package_name
+		''f'',				-- abstract_p
+		null,				-- type_extension_table
+		''im_expense_bundle__name''	-- name_method
+	);
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 
 update acs_object_types set status_column = 'cost_status_id' where object_type = 'im_expense_bundle';
