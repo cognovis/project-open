@@ -4,20 +4,35 @@ SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrad
 
 
 
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select	count(*) into v_count from pg_constraint
+	where	conname = ''im_dynfield_label_style_ck'';
+	IF v_count = 0 THEN return 0; END IF;
 
-alter table im_dynfield_layout 
-drop constraint im_dynfield_label_style_ck;
+	alter table im_dynfield_layout 
+	drop constraint im_dynfield_label_style_ck;
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
 alter table im_dynfield_layout 
 add constraint im_dynfield_label_style_ck check (label_style in ('plain','no_label', 'table'));
 
 
 
--- ToDo: v_count around these function drop scripts
+-- drop function im_dynfield_attribute_new(character varying, character varying, character varying, character, character varying, character varying);
 
-drop function im_dynfield_attribute_new(character varying, character varying, character varying, character, character varying, character varying);
+-- drop function im_dynfield_attribute_new(character varying, character varying, character varying, character varying, character varying, character);
 
-drop function im_dynfield_attribute_new(character varying, character varying, character varying, character varying, character varying, character);
+-- do it the hard way (?!?)
+delete from pg_proc where proname = 'im_dynfield_attribute_new';
 
 
 -- Shortcut function
@@ -389,6 +404,59 @@ BEGIN
 
 	return v_attribute_id;
 end;' language 'plpgsql';
+
+
+
+
+
+create or replace function im_dynfield_widget__new (
+	integer, varchar, timestamptz, integer, varchar, integer,
+	varchar, varchar, varchar, integer, varchar, varchar, 
+	varchar, varchar
+) returns integer as '
+DECLARE
+	p_widget_id		alias for $1;
+	p_object_type		alias for $2;
+	p_creation_date 	alias for $3;
+	p_creation_user 	alias for $4;
+	p_creation_ip		alias for $5;
+	p_context_id		alias for $6;
+
+	p_widget_name		alias for $7;
+	p_pretty_name		alias for $8;
+	p_pretty_plural		alias for $9;
+	p_storage_type_id	alias for $10;
+	p_acs_datatype		alias for $11;
+	p_widget		alias for $12;
+	p_sql_datatype		alias for $13;
+	p_parameters		alias for $14;
+
+	v_widget_id		integer;
+BEGIN
+	select widget_id into v_widget_id from im_dynfield_widgets
+	where widget_name = p_widget_name;
+	if v_widget_id is not null then return v_widget_id; end if;
+
+	v_widget_id := acs_object__new (
+		p_widget_id,
+		p_object_type,
+		p_creation_date,
+		p_creation_user,
+		p_creation_ip,
+		p_context_id
+	);
+
+	insert into im_dynfield_widgets (
+		widget_id, widget_name, pretty_name, pretty_plural,
+		storage_type_id, acs_datatype, widget, sql_datatype, parameters
+	) values (
+		v_widget_id, p_widget_name, p_pretty_name, p_pretty_plural,
+		p_storage_type_id, p_acs_datatype, p_widget, p_sql_datatype, p_parameters
+	);
+	return v_widget_id;
+end;' language 'plpgsql';
+
+
 
 
 select im_dynfield_widget__new (
