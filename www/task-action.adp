@@ -1,5 +1,38 @@
 
-<if @task.state@ eq enabled>
+<!-- ----------------------------------------------------------------------
+     "Approval Tasks" - An ugly but useful logic:
+
+     Shows the action panels for "started" transitions already 
+     while the transition is still in status "enabed". 
+     This option saves users the click to "start task" for 
+     approval type of tasks. These tasks are normally very short
+     (just approve or not...), so the usual start-task logic
+     doesn't make much sense.
+---------------------------------------------------------------------- -->
+
+<%
+
+# "Approval Tasks" are identified by atleast one attribute
+# to be set during the transition
+set workflow_key $task(workflow_key)
+set transition_key $task(transition_key)
+set approval_attributes [db_list approval_attributes "
+	select	attribute_id
+	from	wf_transition_attribute_map tam
+	where	tam.workflow_key = :workflow_key and
+		tam.transition_key = :transition_key
+"]
+set approval_task_p 1
+if {[llength $approval_attributes] == 0} { set approval_task_p 0 }
+
+
+# Only use the approval_task logic if the current user
+# is assigned to the task.
+if {!$task(this_user_is_assigned_p)} { set approval_task_p 0 }
+
+%>
+
+<if @task.state@ eq enabled and @approval_task_p@ ne 1>
     <if @task.this_user_is_assigned_p@ eq 1>
         <form action="@task.action_url@" method="post">
 	@export_form_vars;noquote@
@@ -54,7 +87,8 @@
     </if>
 </if>
 
-<if @task.state@ eq started>
+
+<if @task.state@ eq started or @approval_task_p@>
     <if @task.this_user_is_assigned_p@ eq 1>
         <form action="task" method="post">
         @export_form_vars;noquote@
