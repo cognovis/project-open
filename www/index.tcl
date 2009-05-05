@@ -64,40 +64,25 @@ set org_project_id $project_id
 set expense_type_id_default $expense_type_id
 
 
-# Check that Start & End-Date have correct format
-#if {"" != $start_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $start_date]} {
-#    ad_return_complaint 1 "Start Date doesn't have the right format.<br>
-#    Current value: '$start_date'<br>
-#    Expected format: 'YYYY-MM-DD'"
-#}
+if {"" == $start_date} { set start_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultStartDate -default "2000-01-01"] }
+if {"" == $end_date} { set end_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultEndDate -default "2100-01-01"] }
 
-#if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $end_date]} {
-#    ad_return_complaint 1 "End Date doesn't have the right format.<br>
-#    Current value: '$end_date'<br>
-#    Expected format: 'YYYY-MM-DD'"
-#}
+# Check that Start & End-Date have correct format
+if {"" != $start_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $start_date]} {
+    ad_return_complaint 1 "Start Date doesn't have the right format.<br>
+    Current value: '$start_date'<br>
+    Expected format: 'YYYY-MM-DD'"
+}
+
+if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $end_date]} {
+    ad_return_complaint 1 "End Date doesn't have the right format.<br>
+    Current value: '$end_date'<br>
+    Expected format: 'YYYY-MM-DD'"
+}
 
 
 set main_navbar_label "projects"
 if {"" == $project_id | 0 == $project_id} { set main_navbar_label "expenses" }
-
-# ---------------------------------------------------------------
-# Default Start and End
-
-
-#db_1row todays_date "
-#select
-#        to_char(now()::date, 'YYYY') as todays_year,
-#        to_char(now()::date, 'MM') as todays_month
-#"
-#if {"" == $start_date} { set start_date "$todays_year-01-01" }
-#
-#db_1row end_date "
-#select
-#        to_char(to_date(:start_date, 'YYYY-MM-DD') + 365::integer, 'YYYY') as end_year,
-#        to_char(to_date(:start_date, 'YYYY-MM-DD') + 365::integer, 'MM') as end_month
-#"
-#if {"" == $end_date} { set end_date "$end_year-01-01" }
 
 
 set unassigned_p_options [list \
@@ -287,7 +272,9 @@ db_multirow -extend {expense_chk project_url expense_new_url provider_url} expen
 	LEFT OUTER JOIN im_projects p on (c.project_id = p.project_id),
 	im_expenses e
   where
-	cost_id = expense_id
+	c.cost_id = e.expense_id and 
+	c.effective_date >= to_date(:start_date, 'YYYY-MM-DD') and
+	c.effective_date < to_date(:end_date, 'YYYY-MM-DD')
 	$unassigned_sql
 	$personal_only_sql
 	$project_where
@@ -308,9 +295,6 @@ db_multirow -extend {expense_chk project_url expense_new_url provider_url} expen
     set project_url [export_vars -base "/intranet/projects/view" {{project_id $project_id} return_url}]
 }
 
-
-#	and c.effective_date >= to_date(:start_date, 'YYYY-MM-DD')
-#	and c.effective_date < to_date(:end_date, 'YYYY-MM-DD')
 
 # ----------------------------------------------
 # bundles part
@@ -451,20 +435,6 @@ set left_navbar_html "
 	    <td class=form-label>[lang::message::lookup "" intranet-expenses.Unassigned_items "Unassigned:"]</td>
 	    <td class=form-widget>[im_select -translate_p 0 unassigned $unassigned_p_options $unassigned]</td>
 	</tr>
-<!--
-	<tr>
-	  <td class=form-label>Start Date</td>
-	  <td class=form-widget>
-	    <input type=textfield name=start_date value=@start_date@>
-	  </td>
-	</tr>
-	<tr>
-	  <td class=form-label>End Date</td>
-	  <td class=form-widget>
-	    <input type=textfield name=end_date value=@end_date@>
-	  </td>
-	</tr>
--->
 	<tr>
 	    <td class=form-label>[lang::message::lookup "" intranet-expenses.Project "Project"]</td>
 	    <td class=form-widget>[im_project_select -include_empty_p 1 -exclude_status_id [im_project_status_closed] project_id $org_project_id]</td>
@@ -473,6 +443,20 @@ set left_navbar_html "
 	    <td class=form-label>[lang::message::lookup "" intranet-expenses.Expense_Type "Type"]</td>
 	    <td class=form-widget>[im_category_select -include_empty_p 1  "Intranet Expense Type" expense_type_id $expense_type_id_default]</td>
 	</tr>
+
+	<tr>
+	  <td class=form-label>Start Date</td>
+	  <td class=form-widget>
+	    <input type=textfield name=start_date value='$start_date'>
+	  </td>
+	</tr>
+	<tr>
+	  <td class=form-label>End Date</td>
+	  <td class=form-widget>
+	    <input type=textfield name=end_date value='$end_date'>
+	  </td>
+	</tr>
+
 	<tr>
 	    <td class=form-label></td>
 	    <td class=form-widget><input type=submit></td>
