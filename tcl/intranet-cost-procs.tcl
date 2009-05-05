@@ -481,6 +481,7 @@ ad_proc -public im_currency_options { {include_empty 1} } {
 
 ad_proc im_currency_select {
     {-enabled_only_p 1 }
+    {-currency_name "iso" }
     {-translate_p 0}
     {-include_empty_p 1}
     {-include_empty_name ""}
@@ -495,7 +496,7 @@ ad_proc im_currency_select {
 
     set bind_vars [ns_set create]
     set statement_name "currency_code_select"
-    set sql "select iso, iso
+    set sql "select iso, $currency_name
 	     from currency_codes
 	     where $enabled_sql
 	     order by lower(currency_name)"
