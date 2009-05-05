@@ -9,13 +9,6 @@
 	<tr bgcolor="#9bbad6">
 	    <th colspan="@panels:rowcount@"><big>Task: @task.task_name@</big></th>
 	</tr>
-<!--
-	<tr valign="middle">
-	    <multiple name="panels">
-	        <th bgcolor="#ffffe4" width="@panel_width@%">@panels.header@</th>
-	    </multiple>
-	</tr>
--->
 	<tr>
 
 	    <multiple name="panels">
