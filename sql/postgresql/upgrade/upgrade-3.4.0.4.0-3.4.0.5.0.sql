@@ -134,7 +134,10 @@ BEGIN
 		select	iso
 		from	currency_codes
 		where	supported_p = ''t''
+	    UNION
+		select	''USD''
 	LOOP
+		RAISE NOTICE ''inline_0: updating cur=%'', row.iso;
 		PERFORM im_exchange_rate_invalidate_entries (now()::date, row.iso);
 		PERFORM im_exchange_rate_fill_holes (row.iso);
 	END LOOP;
