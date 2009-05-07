@@ -105,7 +105,7 @@ if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $
     Expected format: 'YYYY-MM-DD'"
 }
 
-set days_in_past 0
+set days_in_past 30
 db_1row todays_date "
     select
         to_char(sysdate::date - :days_in_past::integer, 'YYYY') as start_year,

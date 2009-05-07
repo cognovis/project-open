@@ -202,7 +202,8 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 		t.planned_units,
 		t.billable_units,
 		t.uom_id,
-		im_material_name_from_id(t.material_id) as material_name,
+		m.material_name,
+		m.material_billable_p,
 		im_category_from_id(t.uom_id) as uom_name,
 		(select sum(h.hours) from im_hours h where h.project_id = children.project_id) as all_reported_hours,
 		(select sum(h.hours) from im_hours h where 
@@ -218,6 +219,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 		im_projects parent,
 		im_projects children
 		LEFT OUTER JOIN im_timesheet_tasks t ON (children.project_id = t.task_id)
+		LEFT OUTER JOIN im_materials m ON (t.material_id = m.material_id)
 	where
 		children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
 		and parent.project_id in ([join $select_project ","])
@@ -230,9 +232,9 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
     set colspan 11
     set old_parent_id 0
     db_foreach select_tasks $sql {
-
+	
 	if {"" == $material_name} { set material_name $default_material_name }
-
+	
 	# insert intermediate headers for every project
 	if {$old_parent_id != $parent_id} {
 	    append task_table_rows "
@@ -249,12 +251,21 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	for {set i 0} {$i < $level} {incr i} { 
 	    append indent "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" 
 	}
-
+	
 	set task_checked ""
-	set task_disabled ""
+	set task_disabled ""	
 	if {0 == [llength $include_task]} {
-	    set task_checked "checked"
+	    
+	    # Called from the Wizard Page - Enabled tasks
+	    # according to the task's material.
+	    if {"f" != $material_billable_p} {
+	        set task_checked "checked"
+	    }
+		
 	} else {
+
+	    # View from the Invoice page
+	    # disable the checkbox (because it is not editable anymore).
 	    if {[lsearch $include_task $project_id] > -1} {
 		set task_checked "checked"
 	    }
@@ -263,16 +274,15 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 
 	append task_table_rows "
 	<tr $bgcolor([expr $ctr % 2])> 
-	  <td align=middle><input type=checkbox name=include_task value=$project_id $task_disabled $task_checked></td>
+	  <td align=middle><input type=checkbox name=include_task value=$project_id $task_disabled $task_checked> $material_billable_p </td>
 	  <td align=left><nobr>$indent <A href=/intranet/projects/view?project_id=$project_id>$project_name</a></nobr></td>
-	  <td align=right>$material_name</td>
+	  <td align=left>$material_name</td>
 	  <td align=right>$planned_units</td>
 	  <td align=right>$billable_units</td>
 	  <td align=right>$all_reported_hours</td>
 	  <td align=right>$hours_in_interval</td>
 	  <td align=right>$unbilled_hours</td>
 	  <td align=right>$uom_name</td>
-<!--	  <td>$project_type</td> -->
 	  <td>$project_status</td>
 	</tr>
 	"

@@ -48,7 +48,7 @@
     @task_table_rows;noquote@
 
     <tr>
-	<td colspan=7 align=right>
+	<td colspan=10 align=right>
 		<input type=checkbox name=aggregate_tasks_p value=1 checked>
 		<%= [lang::message::lookup "" intranet-timesheet2-invoices.Aggregate_tasks_of_the_same_material "Aggregate tasks of the same Material"] %>
 
