@@ -94,6 +94,8 @@ BEGIN
 		select	iso
 		from	currency_codes
 		where	supported_p = ''t''
+	    UNION
+	        select	''USD''
 	LOOP
 		PERFORM im_exchange_rate_fill_holes (row.iso);
 	END LOOP;
