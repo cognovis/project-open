@@ -1097,6 +1097,10 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     set debug 0
     if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: object_type=$object_type, object_id=$object_id" }
     set user_id [ad_get_user_id]
+
+    # Does the specified layout page exist? Otherwise use "default".
+    set page_url_exists_p [db_string exists "select count(*) from im_dynfield_layout_pages where object_type = :object_type and page_url = :page_url"]
+    if {!$page_url_exists_p} { set page_url "default" }
     set form_page_url $page_url
 
     # Add a hidden "object_type" field to the form
@@ -1148,7 +1152,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	# except for the configured fields.
 	set default_display_mode "none"
 
-#	ns_log Notice "append_attributes_to_form: display_mode($key) <= $dm"
+	ns_log Notice "append_attributes_to_form: display_mode($key) <= $dm"
     }
 
     # Disable the mechanism if the object_type_id hasn't been specified
@@ -1174,11 +1178,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 	)"
     }
     set extra_where [join $extra_wheres "\n\t\tand "]
-
-    # Does the specified layout page exist? Otherwise we'll use
-    # "default".
-    set page_url_exists_p [db_string exists "select count(*) from im_dynfield_layout_pages where object_type = :object_type and page_url = :form_page_url"]
-    if {!$page_url_exists_p} { set page_url "default" }
 
     set attributes_sql "
 	select *
@@ -1244,18 +1243,18 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
 	# object_subtype_id can be a list, so go through the list
 	# and take the highest one (none - display - edit).
-#	foreach subtype_id $object_subtype_id {
-#	    set key "$dynfield_attribute_id.$subtype_id"
-#	    if {[info exists display_mode_hash($key)]} { 
-#		switch $display_mode_hash($key) {
-#		    edit { set display_mode "edit" }
-#		    display { if {$display_mode == "none"} { set display_mode "display" } }
-#		}
-#	    }
-#	}
+	foreach subtype_id $object_subtype_id {
+	    set key "$dynfield_attribute_id.$subtype_id"
+	    if {[info exists display_mode_hash($key)]} { 
+		switch $display_mode_hash($key) {
+		    edit { set display_mode "edit" }
+		    display { if {$display_mode == "none"} { set display_mode "display" } }
+		}
+	    }
+	}
 
-        set key "$dynfield_attribute_id.$object_subtype_id"
-        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
+#        set key "$dynfield_attribute_id.$object_subtype_id"
+#        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
 
 
 	if {"edit" == $display_mode && "display" == $form_display_mode}  {
@@ -1311,18 +1310,18 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 
 	# object_subtype_id can be a list, so go through the list
 	# and take the highest one (none - display - edit).
-#	foreach subtype_id $object_subtype_id {
-#	    set key "$dynfield_attribute_id.$subtype_id"
-#	    if {[info exists display_mode_hash($key)]} { 
-#		switch $display_mode_hash($key) {
-#		    edit { set display_mode "edit" }
-#		    display { if {$display_mode == "none"} { set display_mode "display" } }
-#		}
-#	    }
-#	}
+	foreach subtype_id $object_subtype_id {
+	    set key "$dynfield_attribute_id.$subtype_id"
+	    if {[info exists display_mode_hash($key)]} { 
+		switch $display_mode_hash($key) {
+		    edit { set display_mode "edit" }
+		    display { if {$display_mode == "none"} { set display_mode "display" } }
+		}
+	    }
+	}
 
-        set key "$dynfield_attribute_id.$object_subtype_id"
-        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
+#        set key "$dynfield_attribute_id.$object_subtype_id"
+#        if {[info exists display_mode_hash($key)]} { set display_mode $display_mode_hash($key) }
 
 	# Don't show "none" fields...
 	if {"none" == $display_mode} { continue }

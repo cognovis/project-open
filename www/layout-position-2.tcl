@@ -76,18 +76,19 @@ if { $page(layout_type) == "absolute" } {
     element::create attrib_layout class -datatype text -widget hidden -value ""
     element::create attrib_layout sort_key -label "[_ intranet-dynfield.Sort_key]" -datatype integer -html {size 4 maxlength 20} -optional
 }
-element::create attrib_layout pos_y -label "[_ intranet-dynfield.Pos_Y]" -datatype integer -html {size 4 maxlength 20}
-element::create attrib_layout pos_x -label "[_ intranet-dynfield.Pos_X]" -datatype integer -html {size 4 maxlength 20} -optional
-element::create attrib_layout size_y -label "[_ intranet-dynfield.Size_Y]" -datatype integer -html {size 4 maxlength 20} -optional
-element::create attrib_layout size_x -label "[_ intranet-dynfield.Size_X]" -datatype integer -html {size 4 maxlength 20} -optional
-element::create attrib_layout label_style -label "[_ intranet-dynfield.Label_Style]" \
+
+element::create attrib_layout pos_y -label "[lang::message::lookup "" intranet-dynfield.Pos_Y "Pos Y"]" -datatype integer -html {size 4 maxlength 20}
+element::create attrib_layout pos_x -label "[lang::message::lookup "" intranet-dynfield.Pos_X "Pos X"]" -datatype integer -html {size 4 maxlength 20} -optional
+element::create attrib_layout size_y -label "[lang::message::lookup "" intranet-dynfield.Size_Y "Size Y"]" -datatype integer -html {size 4 maxlength 20} -optional
+element::create attrib_layout size_x -label "[lang::message::lookup "" intranet-dynfield.Size_X "Size X"]" -datatype integer -html {size 4 maxlength 20} -optional
+element::create attrib_layout label_style -label "[lang::message::lookup "" intranet-dynfield.Label_Style "Label Style"]" \
 	-datatype string \
 	-widget select \
 	-options {
 		{Plain plain}
 		{"No Label" no_label}
 	}
-element::create attrib_layout div_class -label "[_ intranet-dynfield.DIV_Class]" -datatype text -html {size 20 maxlength 400} -optional
+element::create attrib_layout div_class -label "[lang::message::lookup "" intranet-dynfield.DIV_Class "DIV Class"]" -datatype text -html {size 20 maxlength 400} -optional
 
 
 
