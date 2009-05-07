@@ -1294,8 +1294,10 @@ ad_proc im_costs_project_finance_component {
     set colspan 7
     set date_format "YYYY-MM-DD"
     set num_format "9999999999.99"
-
     set return_url [im_url_with_query]
+
+    # Locale for rendering 
+    set locale "en"
 
     # Where to link when clicking on an object link? "edit" or "view"?
     set view_mode "view"
@@ -1552,7 +1554,7 @@ ad_proc im_costs_project_finance_component {
     set grand_total [expr $grand_total - $subtotal]
 
     append hard_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-cost.Grand_Total]</b></td>\n"
-    append hard_cost_html "<td align=right><b>$grand_total $default_currency</b></td>\n"
+    append hard_cost_html "<td align=right><b>[lc_numeric $grand_total "" $locale] $default_currency</b></td>\n"
     append hard_cost_html "</tr>\n</table>\n"
 
 
