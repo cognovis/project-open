@@ -466,13 +466,22 @@ ad_proc -public im_investment_options { {include_empty 1} } {
     return $options
 }
 
-ad_proc -public im_currency_options { {include_empty 1} } { 
+ad_proc -public im_currency_options { 
+    {-currency_list {} }
+    {include_empty 1} 
+} { 
     Cost currency options
 } {
+    set currency_where ""
+    set currency_list [string trim $currency_list]
+    if {[llength $currency_list] > 0} {
+        set currency_where "and iso in ('[join $currency_list "', '"]')"
+    }
     set options [db_list_of_lists currency_options "
 	select	iso, iso
 	from	currency_codes
 	where	supported_p = 't'
+		$currency_where
 	order by iso
     "]
     if {$include_empty} { set options [linsert $options 0 { "" "" }] }
