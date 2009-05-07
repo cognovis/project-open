@@ -56,6 +56,9 @@ create table im_materials (
 	material_uom_id		integer
 				constraint im_materials_material_uom_fk
 				references im_categories,
+	material_billable_p	char(1) default 't'
+				constraint im_materials_billable_ck
+				check (material_billable_p in ('t','f')),
 	description		text
 );
 create unique index im_material_material_nr_idx on im_materials (material_nr);
@@ -389,6 +392,10 @@ extra_select, extra_where, sort_order, visible_for) values (90006,900,NULL,'Stat
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (90008,900,NULL,'UoM',
 '$uom','','',8,'');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (90009,900,NULL,'Bill',
+'$material_billable_p','','',9,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (90010,900,NULL,
