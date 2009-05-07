@@ -9,7 +9,7 @@
     <singleton-p>f</singleton-p>
     <auto-mount>intranet-expenses</auto-mount>
 
-    <version name="3.4.0.5.0" url="http://projop.dnsalias.com/download/apm/intranet-expenses-3.4.0.5.0.apm">
+    <version name="3.4.0.6.0" url="http://projop.dnsalias.com/download/apm/intranet-expenses-3.4.0.6.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Expenses and Invoices system</summary>
         <vendor url="http://www.project-open.com">]project-open[</vendor>
@@ -29,8 +29,7 @@
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ExpenseBundleNewPageWfModifyIncludedExpensesPerm"  default="im_expense_bundle_new_page_wf_perm_modify_included_expenses" description="The name of the procedure that should return &quot;1&quot; if the &quot;Modify Included Expenses&quot; link of the ExpenseBundleNewPage should be visible. The procedure should accept a single &quot;-bundle_id&quot; parameter."/>
 	    <parameter datatype="number"  min_n_values="1"  max_n_values="1" name="EnabledInvoiceCannedNoteP"  default="0" description="Should we enabled canned notes on financial documents? Nice feature, but adds some extra complexity..."/>
 	    <parameter datatype="number"  min_n_values="1"  max_n_values="1" name="ShowInvoiceOurProjectNrFirstColumnP"  default="1" description="Show our &quot;Project Nr.&quot; field in the very first column of the invoice? This has now (V3.3) become the default."/>
-
-
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ExpenseCurrencies"  description="The list of currencies to be used in Expense Management. Some customers want to limit the currencies here to simplify expense management. Example: 'EUR CHF USD' - this would limit the expense currencies to the subset of these three currencies and the system's active currencies. Default is empty to disable this feature."/>
         </parameters>
 
     </version>
