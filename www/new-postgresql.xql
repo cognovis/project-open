@@ -20,6 +20,11 @@
 		:material_uom_id,
 		:description
 	);
+
+	update im_materials
+	set material_billable_p = :material_billable_p
+	where material_id = :material_id;
+
 	return 0;
     END;
     </querytext>
@@ -44,9 +49,10 @@
                 material_type_id= :material_type_id,
                 material_status_id = :material_status_id,
 		material_uom_id = :material_uom_id,
+		material_billable_p = :material_billable_p,
                 description	= :description
         where
-		material_id = :material_id;
+		material_id	= :material_id;
     </querytext>
 </fullquery>
 

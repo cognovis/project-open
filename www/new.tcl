@@ -81,6 +81,7 @@ if {"delete" == $button_pressed} {
 set type_options [im_material_type_options -include_empty 0]
 set status_options [im_material_status_options -include_empty 0]
 set uom_options [im_cost_uom_options 0]
+set billable_options [list [list [_ intranet-core.Yes] t] [list [_ intranet-core.No] f]]
 
 set actions [list {"Edit" edit} ]
 if {[im_permission $user_id add_materials]} {
@@ -101,6 +102,7 @@ ad_form \
 	{material_type_id:text(select) {label "Type"} {options $type_options} }
 	{material_status_id:text(select) {label "Status"} {options $status_options} }
 	{material_uom_id:text(select) {label "UoM<br>(Unit of Measure)"} {options $uom_options} }
+	{material_billable_p:text(radio) {label "Billable?"} {options $billable_options} }
 	{description:text(textarea),optional {label Description} {html {cols 40}}}
     }
 
