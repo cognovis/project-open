@@ -15,7 +15,7 @@ BEGIN
 	IF v_count > 0 THEN return 0; END IF;
 
 	alter table im_materials add
-	material_billable_p	char(1);
+	material_billable_p	char(1) default ''t'';
 
 	alter table im_materials add
 	constraint im_materials_billable_ck
@@ -25,4 +25,11 @@ BEGIN
 end;' language 'plpgsql';
 select inline_0();
 drop function inline_0();
+
+
+delete from im_view_columns where column_id = 90009;
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (90009,900,NULL,'Bill',
+'$material_billable_p','','',9,'');
 
