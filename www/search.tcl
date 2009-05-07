@@ -639,15 +639,45 @@ db_foreach full_text_query $sql {
 	}
     }
 
-    append result_html "
-      <tr>
-	<td>
-	  <font>$object_type_pretty_name: $name_link</font><br>
-	  $headline
-	  <br>&nbsp;
-	</td>
-      </tr>
-"
+    # Render the object.
+    # With some objects we want to show more information...
+    switch $object_type {
+	im_project - im_ticket - im_timesheet_task {
+	    set parent_name ""
+	    set parent_id ""
+	    db_0or1row parent_info "
+		select	parents.project_name as parent_name,
+			parents.project_id as parent_id
+		from	im_projects parents,
+			im_projects children
+		where	parents.project_id = children.parent_id and
+			children.project_id = :object_id
+	    "
+	    set parent_html "<font>[lang::message::lookup "" intranet-search-pg.Parent "Parent"]: <a href=\"[export_vars -base "/intranet/projects/view" {{project_id $parent_id}}]\">$parent_name</a></font><br>\n"
+	    if {"" == $parent_name} { set parent_html "" }
+	    append result_html "
+	      <tr>
+		<td>
+		  <font>$object_type_pretty_name: $name_link</font><br>
+		  $parent_html
+		  $headline
+		  <br>&nbsp;
+		</td>
+	      </tr>
+	    "
+	}
+	default {
+	    append result_html "
+	      <tr>
+		<td>
+		  <font>$object_type_pretty_name: $name_link</font><br>
+		  $headline
+		  <br>&nbsp;
+		</td>
+	      </tr>
+	    "
+	}
+    }
 }
 
 
