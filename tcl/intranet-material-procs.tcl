@@ -249,7 +249,7 @@ ad_proc -public im_material_list_component {
 	if { [regexp "im_gif" $col] } {
 	    set col_tr $cmd_eval
 	} else {
-	    set col_tr [_ intranet-material.[lang::util::suggest_key $cmd_eval]]
+	    set col_tr [lang::message::lookup "" intranet-material.[lang::util::suggest_key $cmd_eval] $cmd_eval]
 	}
 
 	if { [string compare $order_by $cmd_eval] == 0 } {
