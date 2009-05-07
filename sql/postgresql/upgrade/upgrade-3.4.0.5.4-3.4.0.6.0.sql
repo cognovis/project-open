@@ -3,6 +3,22 @@
 SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.5.0-3.4.0.6.0.sql','');
 
 
+
+-------------------------------------------------------------
+-- Fix parameters for cloning
+-------------------------------------------------------------
+
+
+update apm_parameters 
+set parameter_name = 'CloneProjectFsFilesP'
+where parameter_name = 'CloneProjectFsFiles';
+
+
+update apm_parameters 
+set parameter_name = 'CloneProjectFsFoldersP'
+where parameter_name = 'CloneProjectFsFolders';
+
+
 -------------------------------------------------------------
 -- Updated version of grant_permission that deals with the
 -- case that the grantee doesnt exist.
