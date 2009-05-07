@@ -1554,7 +1554,10 @@ ad_proc im_costs_project_finance_component {
     set grand_total [expr $grand_total - $subtotal]
 
     append hard_cost_html "</tr>\n<tr>\n<td><b>[_ intranet-cost.Grand_Total]</b></td>\n"
-    append hard_cost_html "<td align=right><b>[lc_numeric $grand_total "" $locale] $default_currency</b></td>\n"
+    append hard_cost_html "<td align=right><b>$grand_total $default_currency</b></td>\n"
+
+#    append hard_cost_html "<td align=right><b>[lc_numeric $grand_total "" $locale] $default_currency</b></td>\n"
+
     append hard_cost_html "</tr>\n</table>\n"
 
 
