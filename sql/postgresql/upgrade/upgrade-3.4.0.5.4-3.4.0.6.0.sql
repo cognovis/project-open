@@ -1,6 +1,6 @@
--- upgrade-3.4.0.5.0-3.4.0.6.0.sql
+-- upgrade-3.4.0.5.4-3.4.0.6.0.sql
 
-SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.5.0-3.4.0.6.0.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.5.4-3.4.0.6.0.sql','');
 
 
 
