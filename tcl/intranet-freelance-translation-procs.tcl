@@ -27,7 +27,7 @@ ad_proc im_freelance_trans_member_select_component {
 } {
     # ------------------------------------------------
     # Security
-
+  
     set user_id [ad_get_user_id]
     if {![im_project_has_type $object_id "Translation Project"] || ![im_permission $user_id view_trans_proj_detail]} {
         return ""
@@ -81,6 +81,7 @@ ad_proc im_freelance_trans_member_select_component {
 		and category_type = 'Intranet Skill Type'
 	order by category_id
     "
+
     set skill_type_list [list]
     db_foreach skill_type $skill_type_sql {
 	lappend skill_type_list $skill_type
