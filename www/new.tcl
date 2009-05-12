@@ -85,6 +85,8 @@ set user_can_create_new_customer_p 1
 set user_can_create_new_customer_sla_p 1
 set user_can_create_new_customer_contact_p 1
 
+set view_tickets_all_p [im_permission $current_user_id "view_tickets_all"]
+
 
 # ----------------------------------------------
 # Page Title
@@ -471,6 +473,7 @@ ad_form -extend -name ticket -on_request {
         -response_id "" \
         -notif_subject "New: Subject" \
         -notif_text "Text"
+
 
     # Send to page to show the new ticket, instead of returning to return_url
     ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {ticket_id}]

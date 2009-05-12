@@ -338,6 +338,7 @@ namespace eval im_ticket {
 	    db_dml ticket_update {}
 	    db_dml project_update {}
 
+
 	    # Deal with OpenACS 5.4 "title" static title columm which is wrong:
 	    if {[im_column_exists acs_objects title]} {
 		db_dml object_update "update acs_objects set title = null where object_id = :ticket_id"
@@ -348,14 +349,16 @@ namespace eval im_ticket {
 	
 	    # Start a new workflow case
 	    im_workflow_start_wf -object_id $ticket_id -object_type_id $ticket_type_id -skip_first_transition_p 1
+
 	
 	    # Write Audit Trail
-	    im_project_audit $ticket_id
+	    # im_project_audit $ticket_id
 
 	    # Create a new forum topic of type "Note"
 	    set topic_type_id [im_topic_type_id_task]
 	    set topic_status_id [im_topic_status_id_open]
 	    set message ""
+
 
 	    # The owner of a topic can edit its content.
 	    # But we don't want customers to edit their stuff here...
