@@ -87,6 +87,9 @@ delete from acs_attributes where object_type = 'im_freelance_rfq_answer';
 delete from acs_objects where object_type = 'im_freelance_rfq_answer';
 delete from acs_objects where object_type = 'im_freelance_rfqs';
 
+delete from acs_object_type_tables where object_type = 'im_freelance_rfq';
+delete from acs_object_type_tables where object_type = 'im_freelance_rfq_answer';
+
 SELECT acs_object_type__drop_type ('im_freelance_rfq', 'f');
 SELECT acs_object_type__drop_type ('im_freelance_rfq_answer', 'f');
 
