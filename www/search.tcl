@@ -601,10 +601,9 @@ db_foreach full_text_query $sql {
 	}
 	content_item {
 	    db_1row content_item_detail "
-               select
-                   name,content_type
-               from cr_items 
-               where item_id=:object_id
+               select	name, content_type
+               from	cr_items 
+               where	item_id = :object_id
             "
 	    switch $content_type {
 		"content_revision" {
@@ -615,9 +614,6 @@ db_foreach full_text_query $sql {
 				    -privilege "read" ]
 
 		    if {!$read_p} { continue }
-			
-		    
-		    
 		    set name_link "<a href=\"/wiki/$name\">wiki: $name</a>\n"
 		} 
 		"workflow_case_log_entry" {
@@ -625,12 +621,28 @@ db_foreach full_text_query $sql {
 		    set bug_number [db_string bug_from_cr_item "
                         select bug_number from bt_bugs,cr_items where item_id=:object_id and cr_items.parent_id=bug_id
                     "]
-		    
 		    if {!$bug_number} { continue }
-
 		    set name_link "<a href=\"/bug-tracker/bug?bug_number=$bug_number\">bug: $bug_number $name</a>"
-
-
+		}
+		"::xowiki::Page" {
+		    set page_name ""
+		    set package_mount ""
+		    db_0or1row page_info "
+			select  s.name as package_mount,
+				i.name as page_name
+			from
+			        cr_items i,
+			        cr_folders f,
+			        apm_packages p,
+			        site_nodes s
+			where
+			        i.item_id = :object_id and
+			        i.parent_id = f.folder_id and
+			        f.package_id = p.package_id and
+			        p.package_id = s.object_id
+		    "
+		    set name_link "<a href=\"/$package_mount/$page_name\">$page_name</a>"
+		    set object_type_pretty_name "XoWiki Page"
 		}
 		default {
 		    set name_link "unknown content_item type: $content_type"
