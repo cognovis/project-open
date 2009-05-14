@@ -65,6 +65,8 @@ drop table im_freelance_rfqs;
 
 delete from im_categories where category_type = 'Intranet Trans RFQ Status';
 delete from im_categories where category_type = 'Intranet Trans RFQ Overall Status';
+delete from im_categories where category_type = 'Intranet Freelance RFQ Overall Status';
+
 
 delete from im_dynfield_attributes
 where acs_attribute_id in (
