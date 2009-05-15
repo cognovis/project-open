@@ -19,17 +19,28 @@ ad_require_permission $survey_id survsimp_admin_survey
 set package_id [ad_conn package_id]
 
 # Get the survey information.
-db_1row survsimp_properties "select name as survey_name, 
-short_name, description as survey_description, 
-first_names || ' ' || last_name as creator_name, creation_user, 
-creation_date, decode(enabled_p, 't', 'Enabled', 'f', 'Disabled') as survey_status, enabled_p,
-decode(single_response_p, 't', 'One', 'f', 'Multiple') as survey_response_limit,
-decode(single_editable_p, 't', 'Editable', 'f', 'Non-editable') as survey_editable_single, type, display_type
-from survsimp_surveys, acs_objects, persons
-where object_id = survey_id
-and person_id = creation_user
-and survey_id = :survey_id
-and package_id= :package_id"
+db_1row survsimp_info "
+select
+	ss.name as survey_name, 
+	ss.short_name, 
+	ss.description as survey_description, 
+	im_name_from_user_id(o.creation_user) as creator_name, 
+	o.creation_user, 
+	o.creation_date, 
+	(case when enabled_p = 't' then 'Enabled' when enabled_p = 'f' then 'Disabled' end) as survey_status,
+	(case when single_response_p = 't' then 'One' when single_response_p = 'f' then 'Multiple' end) as survey_response_limit,
+	(case when single_editable_p = 't' then 'Editable' when single_editable_p = 'f' then 'Non-editable' end) as survey_editable_single, 
+	ss.enabled_p,
+	ss.type, 
+	ss.display_type
+from
+	survsimp_surveys ss, 
+	acs_objects o
+where
+	o.object_id = ss.survey_id
+	and ss.survey_id = :survey_id
+	and ss.package_id= :package_id
+"
 
 if {$survey_response_limit == "One"} {
     set response_limit_toggle "allow Multiple"
