@@ -3,6 +3,25 @@
 SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.5.4-3.4.0.6.0.sql','');
 
 
+update im_profiles set profile_gif = 'computer_key' 
+where profile_id in (select group_id from groups where group_name = 'Helpdesk');
+
+update im_profiles set profile_gif = 'server' 
+where profile_id in (select group_id from groups where group_name = 'ITSM Vertical');
+
+update im_profiles set profile_gif = 'chart_bar' 
+where profile_id in (select group_id from groups where group_name = 'Consulting Vertical');
+
+update im_profiles set profile_gif = 'text_allcaps' 
+where profile_id in (select group_id from groups where group_name = 'Translation Vertical');
+
+update im_profiles set profile_gif = 'house' 
+where profile_id in (select group_id from groups where group_name = 'Employees');
+
+update im_profiles set profile_gif = 'key' 
+where profile_id in (select group_id from groups where group_name = 'Senior Managers');
+
+
 
 -------------------------------------------------------------
 -- Fix parameters for cloning
