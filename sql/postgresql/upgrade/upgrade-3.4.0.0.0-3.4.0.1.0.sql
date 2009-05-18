@@ -83,7 +83,7 @@ begin
 	where  object_type = ''im_expense_bundle'';
         if v_count > 0 then return 0; end if;
 
-	SELECT acs_object_type__create_type (
+	PERFORM acs_object_type__create_type (
 		''im_expense_bundle'',		-- object_type
 		''Expense Bundle'',		-- pretty_name
 		''Expense Bundles'',		-- pretty_plural
