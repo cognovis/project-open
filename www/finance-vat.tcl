@@ -200,8 +200,6 @@ where
 	c.cost_type_id in (3700,3704,3720,3730,3732)
 	and c.effective_date >= to_date(:start_date, 'YYYY-MM-DD')
 	and c.effective_date < to_date(:end_date, 'YYYY-MM-DD')
-	and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
-	and c.cost_name like '%000%'
 "
 
 set expense_select ", '' as external_company_name"
