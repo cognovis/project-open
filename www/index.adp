@@ -8,13 +8,6 @@
 <tr>
   <td valign=top>
 
-    <%= [im_box_header [_ intranet-cost.Documentation]] %>
-    <ul>
-	<li><a href="http://www.project-open.com/">#intranet-cost.lt_Finance_high-level_de#</a></li>
-    </ul>
-    <%= [im_box_footer] %>
-
-
     <%= [im_box_header [_ intranet-cost.Options]] %>
     <ul>
 	@new_list_html;noquote@
