@@ -104,6 +104,8 @@ set ttt {
 
 set add_expense_p [im_permission $user_id "add_expenses"]
 set create_bundle_p [im_permission $user_id "add_expense_bundle"]
+set view_expenses_all_p [im_permission $user_id "view_expenses_all"]
+
 
 set admin_links ""
 set action_list [list]
@@ -239,13 +241,10 @@ if {"" != $expense_type_id  & 0 != $expense_type_id} {
     set expense_where "\tand e.expense_type_id = :expense_type_id\n" 
 }
 
-
-
 # Allow accounting guys to see all expense items,
 # not just their own ones...
 set personal_only_sql "and provider_id = :user_id"
-if {$create_bundle_p} { set personal_only_sql "" }
-
+if {$view_expenses_all_p} { set personal_only_sql "" }
 
 switch $unassigned {
     "todo" { set unassigned_sql "and (c.project_id is null OR e.bundle_id is null)" }
