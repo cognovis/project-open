@@ -78,6 +78,7 @@ list::create \
 set permission_sql "and 't' = im_object_permission_p(r.report_id, :current_user_id, 'read')"
 #if {$view_reports_all_p} { set permission_sql "" }
 
+set indicator_cnt 0
 db_multirow -extend {report_view_url edit_html value_html diagram_html help_gif indicator_color} reports get_reports "
 	select
 		r.report_id,
@@ -104,6 +105,8 @@ db_multirow -extend {report_view_url edit_html value_html diagram_html help_gif 
 	order by 
 		section
 " {
+    incr indicator_cnt
+
     set report_view_url [export_vars -base "/intranet-reporting-indicators/view" {indicator_id return_url}]
     set report_edit_url [export_vars -base "/intranet-reporting-indicators/new" {indicator_id return_url}]
     set perms_url [export_vars -base "/intranet-reporting-indicators/perms" {{object_id $indicator_id} return_url}]
