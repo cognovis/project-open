@@ -65,7 +65,7 @@ ns_write "[im_header] [im_navbar]"
 # Enabling everything
 # ---------------------------------------------------------------
 
-ns_write "<h2>Resetting System to Default</h2>\n"
+ns_write "<br>&nbsp;<h2>Resetting System to Default</h2>\n"
 
 ns_write "<li>Enabling menus ... "
 catch {db_dml enable_menus "update im_menus set enabled_p = 't'"}  err
@@ -87,7 +87,7 @@ ns_write "done<br><pre>$err</pre>\n"
 # Set Name, Email, Logo
 # ---------------------------------------------------------------
 
-ns_write "<h2>Setting Name='$name_name', Email='$name_email', Logo</h2>\n";
+ns_write "<br>&nbsp;<h2>Setting Name='$name_name', Email='$name_email', Logo</h2>\n";
 
 ns_write "<li>setting name ... "
 catch {db_dml set_name "update im_companies set company_name = :name_name where company_path='internal' "} err
@@ -124,7 +124,7 @@ if { ![empty_string_p $logo_file]
 # Profile Configuration
 # ---------------------------------------------------------------
 
-ns_write "<h2>Profiles</h2>\n";
+ns_write "<br>&nbsp;<h2>Profiles</h2>\n";
 
 set subsite_id [ad_conn subsite_id]
 
@@ -182,7 +182,7 @@ switch $sector {
 # Disable Consulting Stuff
 
 if {!$install_pc} {
-    ns_write "<h2>Disabling 'Consulting' Components</h2>"
+    ns_write "<br>&nbsp;<h2>Disabling 'Consulting' Components</h2>"
 
     # ToDo
     ns_write "<li>Disabling 'Consulting' Categories ... "
@@ -234,7 +234,7 @@ if {!$install_pc} {
 # Disable Translation Stuff
 
 if {!$install_pt} {
-    ns_write "<h2>Disabling 'Translation' Components</h2>\n"
+    ns_write "<br>&nbsp;<h2>Disabling 'Translation' Components</h2>\n"
 
     ns_write "<li>Disabling 'Translation' Categories ... "
     set project_type_translation_id [db_string t "select category_id from im_categories where category = 'Translation Project'"]
@@ -359,7 +359,7 @@ foreach package [array names disable] {
     
     set dis $disable($package)
     if {$dis} {
-	ns_write "<h2>Disabling '$package'</h2>\n"
+	ns_write "<br>&nbsp;<h2>Disabling '$package'</h2>\n"
 	
 	ns_write "<li>Disabling '$package' Menus ... "
 	catch {db_dml disable_trans_cats "
@@ -384,7 +384,7 @@ foreach package [array names disable] {
 # Disabling components
 # ---------------------------------------------------------------
 
-ns_write "<h2>Disabling 'intranet-sysconfig' Components</h2>\n"
+ns_write "<br>&nbsp;<h2>Disabling 'intranet-sysconfig' Components</h2>\n"
 
 ns_write "<li>Disabling 'intranet-sysconfig' Components ... "
 catch {db_dml disable_trans_cats "
@@ -424,7 +424,7 @@ set search_pg_installed_p [db_string search_pg "
 
 if {!$search_pg_installed_p} {
 
-    ns_write "<h2>Installing Full-Text Search</h2>\n"
+    ns_write "<br>&nbsp;<h2>Installing Full-Text Search</h2>\n"
  
 
     set psql_version "0.0.0"
@@ -517,7 +517,7 @@ if {!$search_pg_installed_p} {
 # Users might be a way to gain access if the tokens are
 # publicly known (from the default installation)
 
-ns_write "<h2>Deleting Security Tokens</h2>\n"
+ns_write "<br>&nbsp;<h2>Deleting Security Tokens</h2>\n"
 ns_write "<li>Deleting ...\n"
 
 db_dml del_sec_tokens "delete from secret_tokens"
