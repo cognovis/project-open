@@ -58,19 +58,22 @@ set table_header "
 
 
 set group_list_sql {
-select DISTINCT
-	g.group_name,
-	g.group_id,
-	p.profile_gif
-from
-	acs_objects o,
-	groups g,
-	im_profiles p
-where
-	g.group_id = o.object_id
-	and g.group_id = p.profile_id
-	and o.object_type = 'im_profile'
+	select DISTINCT
+		g.group_name,
+		g.group_id,
+		p.profile_gif
+	from
+		acs_objects o,
+		groups g,
+		im_profiles p
+	where
+		g.group_id = o.object_id
+		and g.group_id = p.profile_id
+		and o.object_type = 'im_profile'
+UNION
+	select	'Registered Users', -2,	''
 }
+
 
 set main_sql_select ""
 set num_groups 0
@@ -82,8 +85,8 @@ db_foreach group_list $group_list_sql {
 
     lappend group_ids $group_id
     lappend group_names $group_name
-
-    append main_sql_select "\tim_object_permission_p(ss.survey_id, $group_id, 'read') as p${group_id}_read_p,\n"
+    regsub -all {\-} $group_id "_" gid
+    append main_sql_select "\tim_object_permission_p(ss.survey_id, $group_id, 'read') as p${gid}_read_p,\n"
 
     append table_header "
       <td class=rowtitle><A href=$group_url?group_id=$group_id>
@@ -158,8 +161,9 @@ db_foreach survsimp_query $survsimp_sql {
     foreach horiz_group_id $group_ids {
 
 	set object_id $survey_id
+	regsub -all {\-} $horiz_group_id "_" horiz_gid
 
-	set read_p [expr "\$p${horiz_group_id}_read_p"]
+	set read_p [expr "\$p${horiz_gid}_read_p"]
 	set action "add_readable"
 	set letter "r"
 	if {$read_p == "t"} {
