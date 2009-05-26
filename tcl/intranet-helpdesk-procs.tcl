@@ -831,12 +831,11 @@ ad_proc -public im_helpdesk_home_component {
 # Navigation Bar Tree
 # ---------------------------------------------------------------------
 
-ad_proc -public im_navbar_tree_helpdesk {
-
-} {
+ad_proc -public im_navbar_tree_helpdesk { } {
     Creates an <ul> ...</ul> collapsable menu for the
     system's main NavBar.
 } {
+    set current_user_id [ad_get_user_id]
     set html [im_navbar_tree_helpdesk_incident_mgmt]
 
     append html "
@@ -849,38 +848,45 @@ ad_proc -public im_navbar_tree_helpdesk {
     # --------------------------------------------------------------
 
     # Create new Ticket
-    append html "<li><a href=\"/intranet-helpdesk/new\">[lang::message::lookup "" intranet-helpdesk.New_Ticket "Create a new Ticket"]</a>\n"
-
-    # Add sub-menu with types of tickets
-    append html "
-	<li><a href=/intranet-helpdesk/index>Ticket Types</a>
-	<ul>
-    "
-    set ticket_type_sql "select * from im_ticket_types order by ticket_type"
-    db_foreach ticket_types $ticket_type_sql {
-	set url [export_vars -base "/intranet-helpdesk/index" {ticket_type_id}]
-        regsub -all " " $ticket_type "_" ticket_type_subst
-	set name [lang::message::lookup "" intranet-helpdesk.Ticket_type_$ticket_type_subst "${ticket_type}s"]
-	append html "<li><a href=\"$url\">$name</a></li>\n"
+    if {[im_permission $current_user_id "add_tickets"]} {
+	append html "<li><a href=\"/intranet-helpdesk/new\">[lang::message::lookup "" intranet-helpdesk.New_Ticket "New Ticket"]</a>\n"
     }
-    append html "
-	</ul>
-	</li>
-    "
 
+    if {[im_permission $current_user_id "view_tickets_all"]} {
+	# Add sub-menu with types of tickets
+	append html "
+		<li><a href=/intranet-helpdesk/index>Ticket Types</a>
+		<ul>
+        "
+	set ticket_type_sql "select * from im_ticket_types order by ticket_type"
+	db_foreach ticket_types $ticket_type_sql {
+	    set url [export_vars -base "/intranet-helpdesk/index" {ticket_type_id}]
+	    regsub -all " " $ticket_type "_" ticket_type_subst
+	    set name [lang::message::lookup "" intranet-helpdesk.Ticket_type_$ticket_type_subst "${ticket_type}s"]
+	    append html "<li><a href=\"$url\">$name</a></li>\n"
+	}
+	append html "
+		</ul>
+		</li>
+        "
+    }
 
     # --------------------------------------------------------------
     # SLAs
     # --------------------------------------------------------------
 
     # Add list of SLAs
-    set url [export_vars -base "/intranet/projects/new" {{project_type_id [im_project_type_sla]}}]
-    set name [lang::message::lookup "" intranet-helpdesk.New_Service_Level_Agreement "Create a new Service Level Agreement"]
-    append html "<li><a href=\"$url\">$name</a></li>\n"
+    if {[im_permission $current_user_id "add_projects"]} {
+	set url [export_vars -base "/intranet/projects/new" {{project_type_id [im_project_type_sla]}}]
+	set name [lang::message::lookup "" intranet-helpdesk.New_SLA "New SLA"]
+	append html "<li><a href=\"$url\">$name</a></li>\n"
+    }
 
-    set url [export_vars -base "/intranet/projects/index" {{project_type_id [im_project_type_sla]}}]
-    set name [lang::message::lookup "" intranet-helpdesk.Service_Level_Agreements "Service Level Agreements"]
-    append html "<li><a href=\"$url\">$name</a></li>\n"
+    if {$current_user_id > 0} {
+	set url [export_vars -base "/intranet/projects/index" {{project_type_id [im_project_type_sla]}}]
+	set name [lang::message::lookup "" intranet-helpdesk.SLA_List "SLAs"]
+	append html "<li><a href=\"$url\">$name</a></li>\n"
+    }
 
     append html "
 	</ul>
