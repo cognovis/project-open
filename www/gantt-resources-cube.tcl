@@ -31,6 +31,16 @@ ad_page_contract {
 }
 
 
+# ---------------------------------------------------------------
+# Defaults & Security
+# ---------------------------------------------------------------
+
+set user_id [ad_maybe_redirect_for_registration]
+if {![im_permission $user_id "view_projects_all"]} {
+    ad_return_complaint 1 "You don't have permissions to see this page"
+    ad_script_abort
+}
+
 
 # ---------------------------------------------------------------
 # Project Menu
