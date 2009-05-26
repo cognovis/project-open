@@ -476,13 +476,16 @@ ad_proc -public im_navbar_tree_confdb { } {
     Creates an <ul> ...</ul> collapsable menu for the
     system's main NavBar.
 } {
+    set current_user_id [ad_get_user_id]
     set html "
-	<li><a href=/intranet-confdb/index>[lang::message::lookup "" intranet-confdb.Conf_Mgmt "Configuration Management"]</a>
+	<li><a href=/intranet-confdb/index>[lang::message::lookup "" intranet-confdb.Conf_Management "Config Management"]</a>
 	<ul>
     "
 
     # Create new Conf Item
-    append html "<li><a href=\"/intranet-confdb/new\">[lang::message::lookup "" intranet-confdb.New_Conf_Item "Create a new Conf Item"]</a>\n"
+    if {[im_permission $current_user_id add_conf_items]} {
+	append html "<li><a href=\"/intranet-confdb/new\">[lang::message::lookup "" intranet-confdb.New_Conf_Item "Create a new Conf Item"]</a>\n"
+    }
 
     # Add sub-menu with types of conf_items
     append html "
@@ -490,16 +493,18 @@ ad_proc -public im_navbar_tree_confdb { } {
 	<ul>
     "
 
-    set conf_item_type_sql "
-	select	t.*
-	from	im_conf_item_type t 
-	where not exists (select * from im_category_hierarchy h where h.child_id = t.conf_item_type_id)
-    "
-    db_foreach conf_item_types $conf_item_type_sql {
-	set url [export_vars -base "/intranet-confdb/index" {{type_id $conf_item_type_id}}]
-        regsub -all " " $conf_item_type "_" conf_item_type_subst
-	set name [lang::message::lookup "" intranet-helpdesk.Conf_Item_type_$conf_item_type_subst "$conf_item_type"]
-	append html "<li><a href=\"$url\">$name</a></li>\n"
+    if {$current_user_id > 0} {
+	set conf_item_type_sql "
+		select	t.*
+		from	im_conf_item_type t 
+		where not exists (select * from im_category_hierarchy h where h.child_id = t.conf_item_type_id)
+        "
+	db_foreach conf_item_types $conf_item_type_sql {
+	    set url [export_vars -base "/intranet-confdb/index" {{type_id $conf_item_type_id}}]
+	    regsub -all " " $conf_item_type "_" conf_item_type_subst
+	    set name [lang::message::lookup "" intranet-helpdesk.Conf_Item_type_$conf_item_type_subst "$conf_item_type"]
+	    append html "<li><a href=\"$url\">$name</a></li>\n"
+	}
     }
     append html "
 	</ul>
