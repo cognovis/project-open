@@ -159,6 +159,8 @@ ad_proc -public im_navbar_tree_release_mgmt { } {
     Creates an <ul> ...</ul> collapsable menu for the
     system's main NavBar.
 } {
+    set current_user_id [ad_get_user_id]
+
     set release_url [export_vars -base "/intranet/projects/index" {{project_type_id [im_project_type_software_release]}}]
 
     set html "
@@ -166,7 +168,9 @@ ad_proc -public im_navbar_tree_release_mgmt { } {
 	<ul>
     "
 
-    append html "<li><a href=\"$release_url\">[lang::message::lookup "" intranet-release-mgmt.Release_Projects "Release Projects"]</a></li>\n"
+    if {$current_user_id > 0} {
+	append html "<li><a href=\"$release_url\">[lang::message::lookup "" intranet-release-mgmt.Release_Projects "Release Projects"]</a></li>\n"
+    }
 
 
     append html "
