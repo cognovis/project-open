@@ -2070,10 +2070,18 @@ ad_proc -public im_cost_update_project_cost_cache {
 # NavBar tree for finance
 # -----------------------------------------------------------
 
-ad_proc -public im_navbar_tree_finance { } { Finance Navbar } {
-    return "
+ad_proc -public im_navbar_tree_finance { 
+} { 
+    Finance Navbar 
+} {
+    set wiki [im_navbar_doc_wiki]
+    set current_user_id [ad_get_user_id]
+
+    set html "
 	<li><a href=/intranet/>[lang::message::lookup "" intranet-cost.Finance "Finance"]</a>
 	<ul>
+	<li><a href=$wiki/module_finance>[lang::message::lookup "" intranet-core.Finance_Help "Finance Help"]</a>
+
 		<li><a href=/intranet-invoices/list?cost_type_id=3708>New Cust. Invoices &amp; Quotes</a>
 		<ul>
 			[im_navbar_write_tree -label "invoices_customers" -maxlevel 0]
@@ -2101,6 +2109,7 @@ ad_proc -public im_navbar_tree_finance { } { Finance Navbar } {
 		</ul>
 	</ul>
     "
+    return $html
 }
 
 
