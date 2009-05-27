@@ -836,11 +836,12 @@ ad_proc -public im_navbar_tree_helpdesk { } {
     system's main NavBar.
 } {
     set current_user_id [ad_get_user_id]
-    set html [im_navbar_tree_helpdesk_incident_mgmt]
+    set wiki [im_navbar_doc_wiki]
 
-    append html "
-	<li><a href=/intranet-helpdesk/index>Helpdesk</a>
+    set html "
+	<li><a href=/intranet-helpdesk/index>[lang::message::lookup "" intranet-helpdesk.Service_Mgmt "IT Service Management"]</a>
 	<ul>
+	<li><a href=$wiki/module_itsm>[lang::message::lookup "" intranet-core.ITSM_Help "ITSM Help"]</a>
     "
 
     # --------------------------------------------------------------
@@ -871,6 +872,19 @@ ad_proc -public im_navbar_tree_helpdesk { } {
         "
     }
 
+    append html "
+
+	[im_navbar_tree_helpdesk_ticket_type -base_ticket_type_id [im_ticket_type_incident_ticket] -base_ticket_type [lang::message::lookup "" intranet-helpdesk.Incident_ticket_type "Incident"]]
+	[im_navbar_tree_helpdesk_ticket_type -base_ticket_type_id [im_ticket_type_problem_ticket] -base_ticket_type [lang::message::lookup "" intranet-helpdesk.Problem_ticket_type "Problem"]]
+	[im_navbar_tree_helpdesk_ticket_type -base_ticket_type_id [im_ticket_type_change_ticket] -base_ticket_type [lang::message::lookup "" intranet-helpdesk.Change_ticket_type "Change"]]
+
+	[if {![catch {set ttt [im_navbar_tree_confdb]}]} {set ttt} else {set ttt ""}]
+	[if {![catch {set ttt [im_navbar_tree_release_mgmt]}]} {set ttt} else {set ttt ""}]
+	[if {![catch {set ttt [im_navbar_tree_bug_tracker]}]} {set ttt} else {set ttt ""}]
+    "
+
+
+
     # --------------------------------------------------------------
     # SLAs
     # --------------------------------------------------------------
@@ -896,24 +910,38 @@ ad_proc -public im_navbar_tree_helpdesk { } {
 }
 
 
-ad_proc -public im_navbar_tree_helpdesk_incident_mgmt { } { Incident Management} {
+ad_proc -public im_navbar_tree_helpdesk_ticket_type { 
+    -base_ticket_type_id:required
+    -base_ticket_type:required
+} { 
+    Show one of {Issue|Incident|Problem|Change} Management
+} {
+    set current_user_id [ad_get_user_id]
+    set wiki [im_navbar_doc_wiki]
 
     set html "
-	<li><a href=/intranet-helpdesk/index>[lang::message::lookup "" intranet-helpdesk.Incident_Management "Incident Management"]</a>
+	<li><a href=/intranet-helpdesk/index>[lang::message::lookup "" intranet-helpdesk.${base_ticket_type}_Management "$base_ticket_type Management"]</a>
 	<ul>
     "
 
-    # Create a new Problem Ticket
-    set url [export_vars -base "/intranet-helpdesk/new" {{ticket_type_id [im_ticket_type_incident_ticket]}}]
-    set name [lang::message::lookup "" intranet-helpdesk.New_Incident_Ticket "Create a new Incident Ticket"]
+    if {0 == $current_user_id} { return "$html</ul>\n" }
+
+    # Create a new Ticket
+    set url [export_vars -base "/intranet-helpdesk/new" {base_ticket_type_id}]
+    set name [lang::message::lookup "" intranet-helpdesk.New_${base_ticket_type}_Ticket "New $base_ticket_type Ticket"]
     append html "<li><a href=\"$url\">$name</a>\n"
 
     # Add sub-menu with types of tickets
     append html "
-	<li><a href=/intranet-helpdesk/index>Ticket Types</a>
+	<li><a href=[export_vars -base "/intranet-helpdesk/index" {base_ticket_type_id}]>$base_ticket_type Ticket Types</a>
 	<ul>
     "
-    set ticket_type_sql "select * from im_ticket_types order by ticket_type"
+    set ticket_type_sql "
+	select	*
+	from	im_ticket_types
+	where	ticket_type_id in ([join [im_sub_categories $base_ticket_type_id] ","])
+	order by ticket_type
+    "
     db_foreach ticket_types $ticket_type_sql {
 	set url [export_vars -base "/intranet-helpdesk/index" {ticket_type_id}]
         regsub -all " " $ticket_type "_" ticket_type_subst
@@ -930,9 +958,7 @@ ad_proc -public im_navbar_tree_helpdesk_incident_mgmt { } { Incident Management}
 	</li>
     "
     return $html
-
 }
-
 
 # ---------------------------------------------------------------
 # Component showing referenced tickets
