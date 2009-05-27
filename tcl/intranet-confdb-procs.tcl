@@ -476,6 +476,7 @@ ad_proc -public im_navbar_tree_confdb { } {
     Creates an <ul> ...</ul> collapsable menu for the
     system's main NavBar.
 } {
+    set wiki [im_navbar_doc_wiki]
     set current_user_id [ad_get_user_id]
     set html "
 	<li><a href=/intranet-confdb/index>[lang::message::lookup "" intranet-confdb.Conf_Management "Config Management"]</a>
@@ -484,7 +485,7 @@ ad_proc -public im_navbar_tree_confdb { } {
 
     # Create new Conf Item
     if {[im_permission $current_user_id add_conf_items]} {
-	append html "<li><a href=\"/intranet-confdb/new\">[lang::message::lookup "" intranet-confdb.New_Conf_Item "Create a new Conf Item"]</a>\n"
+	append html "<li><a href=\"/intranet-confdb/new\">[lang::message::lookup "" intranet-confdb.New_Conf_Item "New Conf Item"]</a>\n"
     }
 
     # Add sub-menu with types of conf_items
