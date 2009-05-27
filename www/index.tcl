@@ -40,3 +40,20 @@ bug_tracker::bug::get_list -page_size ""
 bug_tracker::bug::get_multirow
 
 
+# -------------------------------------------
+# Format the NavBar
+
+# Compile and execute the formtemplate if advanced filtering is enabled.
+eval [template::adp_compile -string {<listfilters name="bugs"></listfilters>}]
+set filter_html $__adp_output
+
+# Left Navbar is the filter/select part of the left bar
+set left_navbar_html "
+	<div class='filter-block'>
+        	<div class='filter-title'>
+	           #intranet-core.Filter_Projects#
+        	</div>
+            	$filter_html
+      	</div>
+      <hr/>
+"

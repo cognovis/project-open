@@ -150,9 +150,7 @@ ad_proc -public bug_tracker::bug::new {
     {-bug_container_project_id 0}
 } {
     Create a new bug, then send out notifications, starts workflow, etc.
-
     Calls bug_tracker::bug::insert.
-    
     @see bug_tracker::bug::insert.
     @return bug_id The same bug_id passed in, just for convenience.
 } {
@@ -722,7 +720,7 @@ ad_proc bug_tracker::bug::get_list {
 
     set elements {
         bug_number {
-            label "[bug_tracker::conn Bug] \#"
+            label "[bug_tracker::conn Bug]"
             display_template {\#@bugs.bug_number@}
             html { align right }
         }
