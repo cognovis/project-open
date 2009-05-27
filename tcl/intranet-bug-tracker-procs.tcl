@@ -244,3 +244,63 @@ ad_proc -public im_bug_tracker_list_component {
     return $html
 }
 
+
+
+
+
+# ----------------------------------------------------------------------
+# Navigation Bar Tree
+# ---------------------------------------------------------------------
+
+ad_proc -public im_navbar_tree_bug_tracker { } {
+    Creates an <ul> ...</ul> collapsable menu for the
+    system's main NavBar.
+} {
+    set wiki [im_navbar_doc_wiki]
+    set current_user_id [ad_get_user_id]
+    set package_id [ad_conn package_id]
+    set add_bugs_p [permission::permission_p -party_id $current_user_id -object_id $package_id -privilege "create"]
+
+    set html "
+	<li><a href=/bug-tracker/index>[lang::message::lookup "" intranet-bug-tracker.Bug_Tracker "Bug Management"]</a>
+	<ul>
+    "
+
+    # Create new Bug
+    if {$add_bugs_p} {
+	append html "<li><a href=\"/bug-tracker/bug-add\">[lang::message::lookup "" intranet-confdb.New_Bug "New Bug"]</a>\n"
+    }
+
+    # Add sub-menu with types of conf_items
+    append html "
+	<li><a href=\"/intranet-confdb/index\">[lang::message::lookup "" intranet-confdb.Conf_Item_Types "Bugs Types"]</a>
+	<ul>
+    "
+
+    if {$current_user_id > 0} {
+	set conf_item_type_sql "
+		select	t.*
+		from	im_conf_item_type t 
+		where not exists (select * from im_category_hierarchy h where h.child_id = t.conf_item_type_id)
+        "
+	db_foreach conf_item_types $conf_item_type_sql {
+	    set url [export_vars -base "/intranet-confdb/index" {{type_id $conf_item_type_id}}]
+	    regsub -all " " $conf_item_type "_" conf_item_type_subst
+	    set name [lang::message::lookup "" intranet-helpdesk.Conf_Item_type_$conf_item_type_subst "$conf_item_type"]
+	    append html "<li><a href=\"$url\">$name</a></li>\n"
+	}
+    }
+    append html "
+	</ul>
+	</li>
+    "
+
+
+    append html "
+	</ul>
+	</li>
+    "
+    return $html
+}
+
+
