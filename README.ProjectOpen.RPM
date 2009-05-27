@@ -92,7 +92,7 @@
 
   6. Upgrade and Removal
 
-  IMPORTANT: If you remove the project-open RPM the user, his directory and
+  IMPORTANT: If you remove the project-open RPM, the user, his directory and
   the database will be removed. So don't do that unless you want to LOSE ALL
   YOUR DATA.
 

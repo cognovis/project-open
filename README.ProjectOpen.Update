@@ -47,7 +47,7 @@
   3a. Upgrade Procedure on Linux/Unix
 
 
-  This upgrade procedure asumes that you have extracted this README
+  This upgrade procedure assumes that you have extracted this README
   file in /tmp/ and that ]po[ has been installed as user "projop" 
   in the folder /web/projop/. Please change the script below according
   to your actual installation.
@@ -67,7 +67,7 @@
   3b. Upgrade Procedure on Win32
 
 
-  This upgrade procedure asumes that you have extracted this README
+  This upgrade procedure assumes that you have extracted this README
   file in C:\temp\ and that ]po[ has been installed in the folder
   C:\project-open\. Please change the script below according to your 
   actual installation.
