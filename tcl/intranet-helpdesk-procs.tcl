@@ -609,7 +609,7 @@ ad_proc -public im_helpdesk_ticket_sla_options {
 	lappend options [list $sla_name $project_id]
     }
 
-    if {$include_create_sla_p} { set options [linsert $options 0 [list [lang::message::lookup "" intranet-helpdesk.Create_New_SLA "Create New SLA"] "new"]] }
+    if {$include_create_sla_p} { set options [linsert $options 0 [list [lang::message::lookup "" intranet-helpdesk.New_SLA "New SLA"] "new"]] }
     if {$include_empty_p} { set options [linsert $options 0 { "" "" }] }
 
     return $options
@@ -856,7 +856,7 @@ ad_proc -public im_navbar_tree_helpdesk { } {
     if {[im_permission $current_user_id "view_tickets_all"]} {
 	# Add sub-menu with types of tickets
 	append html "
-		<li><a href=/intranet-helpdesk/index>Ticket Types</a>
+		<li><a href=/intranet-helpdesk/index>[lang::message::lookup "" intranet-helpdesk.Ticket_Types "Ticket Types"]</a>
 		<ul>
         "
 	set ticket_type_sql "select * from im_ticket_types order by ticket_type"
@@ -873,14 +873,12 @@ ad_proc -public im_navbar_tree_helpdesk { } {
     }
 
     append html "
-
-	[im_navbar_tree_helpdesk_ticket_type -base_ticket_type_id [im_ticket_type_incident_ticket] -base_ticket_type [lang::message::lookup "" intranet-helpdesk.Incident_ticket_type "Incident"]]
-	[im_navbar_tree_helpdesk_ticket_type -base_ticket_type_id [im_ticket_type_problem_ticket] -base_ticket_type [lang::message::lookup "" intranet-helpdesk.Problem_ticket_type "Problem"]]
-	[im_navbar_tree_helpdesk_ticket_type -base_ticket_type_id [im_ticket_type_change_ticket] -base_ticket_type [lang::message::lookup "" intranet-helpdesk.Change_ticket_type "Change"]]
-
 	[if {![catch {set ttt [im_navbar_tree_confdb]}]} {set ttt} else {set ttt ""}]
 	[if {![catch {set ttt [im_navbar_tree_release_mgmt]}]} {set ttt} else {set ttt ""}]
 	[if {![catch {set ttt [im_navbar_tree_bug_tracker]}]} {set ttt} else {set ttt ""}]
+	[im_navbar_tree_helpdesk_ticket_type -base_ticket_type_id [im_ticket_type_incident_ticket] -base_ticket_type [lang::message::lookup "" intranet-helpdesk.Incident_ticket_type "Incident"]]
+	[im_navbar_tree_helpdesk_ticket_type -base_ticket_type_id [im_ticket_type_problem_ticket] -base_ticket_type [lang::message::lookup "" intranet-helpdesk.Problem_ticket_type "Problem"]]
+	[im_navbar_tree_helpdesk_ticket_type -base_ticket_type_id [im_ticket_type_change_ticket] -base_ticket_type [lang::message::lookup "" intranet-helpdesk.Change_ticket_type "Change"]]
     "
 
 
@@ -888,6 +886,12 @@ ad_proc -public im_navbar_tree_helpdesk { } {
     # --------------------------------------------------------------
     # SLAs
     # --------------------------------------------------------------
+
+    set sla_url [export_vars -base "/intranet/projects/index" {{project_type_id [im_project_type_sla]}}]
+    append html "
+	<li><a href=$sla_url>[lang::message::lookup "" intranet-helpdesk.SLA_Management "SLA Management"]</a>
+	<ul>
+    "
 
     # Add list of SLAs
     if {[im_permission $current_user_id "add_projects"]} {
@@ -901,6 +905,15 @@ ad_proc -public im_navbar_tree_helpdesk { } {
 	set name [lang::message::lookup "" intranet-helpdesk.SLA_List "SLAs"]
 	append html "<li><a href=\"$url\">$name</a></li>\n"
     }
+
+    append html "
+	</ul>
+	</li>
+    "
+
+    # --------------------------------------------------------------
+    # End of ITSM
+    # --------------------------------------------------------------
 
     append html "
 	</ul>
