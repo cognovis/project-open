@@ -33,6 +33,10 @@ SELECT acs_object_type__create_type (
 );
 
 
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_timesheet_conf_object', 'im_timesheet_conf_objects', 'conf_id');
+
+
 -- Setup status and type columns for im_user_confs
 update acs_object_types set
         status_column = 'conf_status_id',
