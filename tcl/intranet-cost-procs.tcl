@@ -1173,33 +1173,35 @@ ad_proc im_costs_base_component {
     "
 
     set cost_html "
-<table border=0>
-  <tr>
-    <td colspan=$colspan class=rowtitle align=center>
-      [_ intranet-cost.Financial_Documents]
-    </td>
-  </tr>
-  <tr class=rowtitle>
-    <td align=center class=rowtitle>[_ intranet-cost.Document]</td>
-    <td align=center class=rowtitle>[_ intranet-cost.Type]</td>
-    <td align=center class=rowtitle>[_ intranet-cost.Due]</td>
-    <td align=center class=rowtitle>[_ intranet-cost.Amount]</td>
-    <td align=center class=rowtitle>[_ intranet-cost.Paid]</td>
-  </tr>
-"
+	<table border=0>
+	  <tr>
+	    <td colspan=$colspan class=rowtitle align=center>
+	      [_ intranet-cost.Financial_Documents]
+	    </td>
+	  </tr>
+	  <tr class=rowtitle>
+	    <td align=center class=rowtitle>[_ intranet-cost.Document]</td>
+	    <td align=center class=rowtitle>[_ intranet-cost.Type]</td>
+	    <td align=center class=rowtitle>[_ intranet-cost.Due]</td>
+	    <td align=center class=rowtitle>[_ intranet-cost.Amount]</td>
+	    <td align=center class=rowtitle>[_ intranet-cost.Paid]</td>
+	  </tr>
+    "
     set ctr 1
     set payment_amount ""
     set payment_currency ""
 
     db_foreach recent_costs $costs_sql {
+
 	append cost_html "
-<tr$bgcolor([expr $ctr % 2])>
-  <td><A href=\"$url$cost_id\">[string range $cost_name 0 20]</A></td>
-  <td>$cost_type</td>
-  <td>$calculated_due_date</td>
-  <td>$amount $currency</td>
-  <td>$payment_amount $payment_currency</td>
-</tr>\n"
+		<tr$bgcolor([expr $ctr % 2])>
+		  <td><A href=\"$url$cost_id\">[string range $cost_name 0 20]</A></td>
+		  <td>$cost_type</td>
+		  <td>$calculated_due_date</td>
+		  <td>$amount $currency</td>
+		  <td>$payment_amount $payment_currency</td>
+		</tr>
+	"
 	incr ctr
 	if {$ctr > $max_costs} { break }
     }
@@ -1208,23 +1210,25 @@ ad_proc im_costs_base_component {
     set project_id $org_project_id
     set company_id $org_company_id
 
-	append cost_html "
-<tr$bgcolor([expr $ctr % 2])>
-  <td colspan=$colspan>
-    <A HREF=/intranet-cost/list?[export_url_vars status_id company_id project_id]>
-      [_ intranet-cost.more_costs]
-    </A>
-  </td>
-</tr>\n"
+    append cost_html "
+		<tr$bgcolor([expr $ctr % 2])>
+		  <td colspan=$colspan>
+		    <A HREF=/intranet-cost/list?[export_url_vars status_id company_id project_id]>
+		      [_ intranet-cost.more_costs]
+		    </A>
+		  </td>
+		</tr>
+    "
 
     # Add a reasonable message if there are no documents
     if {$ctr == 1} {
 	append cost_html "
-<tr$bgcolor([expr $ctr % 2])>
-  <td colspan=$colspan align=center>
-    <I>[_ intranet-cost.lt_No_financial_document]</I>
-  </td>
-</tr>\n"
+		<tr$bgcolor([expr $ctr % 2])>
+		  <td colspan=$colspan align=center>
+		    <I>[_ intranet-cost.lt_No_financial_document]</I>
+		  </td>
+		</tr>
+	"
 	incr ctr
     }
 
@@ -1428,9 +1432,9 @@ ad_proc im_costs_project_finance_component {
 		if {!$atleast_one_unreadable_p} {
 		    append cost_html "
 			<tr class=rowplain>
-			  <td colspan=[expr $colspan-3]>&nbsp;</td>
-			  <td align='right'>
-			    <b>$subtotals($old_cost_type_id) $default_currency</b>
+			  <td colspan=[expr $colspan-4]>&nbsp;</td>
+			  <td align='right' colspan=2>
+			    <b><nobr>$subtotals($old_cost_type_id) $default_currency</nobr></b>
 			  </td>
 			  <td colspan='3'>&nbsp;</td>
 			</tr>
@@ -1441,6 +1445,9 @@ ad_proc im_costs_project_finance_component {
 		  <td colspan=99>&nbsp;</td>
 		</tr>\n"
 	    }
+
+	    regsub -all " " $cost_type "_" cost_type_subs
+	    set cost_type [lang::message::lookup "" intranet-core.$cost_type_subs $cost_type]
 
 	    append cost_html "
 		<tr class='rowplain'>
@@ -2082,30 +2089,30 @@ ad_proc -public im_navbar_tree_finance {
 	<ul>
 	<li><a href=$wiki/module_finance>[lang::message::lookup "" intranet-core.Finance_Help "Finance Help"]</a>
 
-		<li><a href=/intranet-invoices/list?cost_type_id=3708>New Cust. Invoices &amp; Quotes</a>
+		<li><a href=/intranet-invoices/list?cost_type_id=3708>[lang::message::lookup "" intranet-cost.New_Customer_Invoices_Quotes "New Cust. Invoices &amp; Quotes"]</a>
 		<ul>
 			[im_navbar_write_tree -label "invoices_customers" -maxlevel 0]
 		</ul>
-		<li><a href=/intranet-invoices/list?cost_type_id=3710>New Prov. Bills &amp; POs</a>
+		<li><a href=/intranet-invoices/list?cost_type_id=3710>[lang::message::lookup "" intranet-cost.New_Provider_Bills_POs "New Prov. Bills &amp; POs"]</a>
 		<ul>
 			[im_navbar_write_tree -label "invoices_providers" -maxlevel 0]
 		</ul>
-		<li><a href=/intranet-invoices/list?cost_status_id=3802&cost_type_id=3700>Accounts Receivable</a></li>
-		<li><a href=/intranet-invoices/list?cost_status_id=3802&cost_type_id=3704>Accounts Payable</a></li>
-		<li><a href=/intranet-payments/index>Payments</a></li>
-		<li><a href=/intranet-dw-light/invoices.csv>Export Finance to CSV/Excel</a></li>
+		<li><a href=/intranet-invoices/list?cost_status_id=3802&cost_type_id=3700>[lang::message::lookup "" intranet-cost.Accounts_Receivable "Accounts Receivable"]</a></li>
+		<li><a href=/intranet-invoices/list?cost_status_id=3802&cost_type_id=3704>[lang::message::lookup "" intranet-cost.Accounts_Payable "Accounts Payable"]</a></li>
+		<li><a href=/intranet-payments/index>[lang::message::lookup "" intranet-cost.Payments Payments]</a></li>
+		<li><a href=/intranet-dw-light/invoices.csv>[lang::message::lookup "" intranet-cost.Export_Finance_to_CSV "Export Finance to CSV/Excel"]</a></li>
 
-		<li><a href=/intranet-reporting/>Reporting</a>
+		<li><a href=/intranet-reporting/>[lang::message::lookup "" intranet-core.Reporting Reporting]</a>
                 <ul>
                 [im_navbar_write_tree -label "reporting-finance" -maxlevel 1]
                 [im_navbar_write_tree -label "reporting-timesheet" -maxlevel 1]
                 </ul>
 
-		<li><a href=/intranet/admin/>Admin</a>
+		<li><a href=/intranet/admin/>[lang::message::lookup "" intranet-cost.Admin Admin]</a>
 		<ul>
 			[im_menu_li admin_cost_centers]
 			[im_menu_li finance_exchange_rates]
-			<li><a href=/intranet-material/>Materials (Service Types)</a>
+			<li><a href=/intranet-material/>[lang::message::lookup "" intranet-cost.Materials_Service_Types "Materials (Service Types)"]</a>
 		</ul>
 	</ul>
     "
