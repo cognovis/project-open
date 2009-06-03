@@ -39,6 +39,11 @@ SELECT acs_object_type__create_type (
 	'im_indicator__name'		-- name_method
 );
 
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_indicator', 'im_indicators', 'indicator_id');
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_indicator', 'im_reports', 'report_id');
+
 
 create table im_indicators (
 	indicator_id		integer
