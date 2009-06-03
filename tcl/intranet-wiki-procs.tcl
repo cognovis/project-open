@@ -80,8 +80,8 @@ ad_proc im_wiki_base_component { object_type object_id } {
 	}
 
 	append wikis_html "
-		<li><A href=\"/$wiki_mount/index\">Main Index</A></li>
-		<li><A href=\"/$wiki_mount/Category\">Categories</A></li>
+		<li><A href=\"/$wiki_mount/index\">[lang::message::lookup "" intranet-wiki.Main_Index "Main Index"]</A></li>
+		<li><A href=\"/$wiki_mount/Category\">[lang::message::lookup "" intranet-wiki.Categories Categories]</A></li>
         "
 
 	set admin_p [permission::permission_p \
@@ -91,9 +91,15 @@ ad_proc im_wiki_base_component { object_type object_id } {
 	]
 
 	if {$admin_p} {
-	    append wikis_html "<li><A href=\"/intranet/admin/permissions/one?object_id=$package_id\">Admin Wiki Permissions</A></li>\n"
-	    append wikis_html "<li><A href=\"/$wiki_mount/admin/index?folder_id=$folder_id&modified_only=1\">Admin Wiki Changes</A></li>\n"
-	    append wikis_html "<li><A href=\"/$wiki_mount/admin/index?folder_id=$folder_id\">Admin All Pages</A></li>\n"
+	    append wikis_html "<li><A href=\"/intranet/admin/permissions/one?object_id=$package_id\">
+		[lang::message::lookup "" intranet-wiki.Admin_Wiki_Permissions "Admin Wiki Permissions"]
+	    </A></li>\n"
+	    append wikis_html "<li><A href=\"/$wiki_mount/admin/index?folder_id=$folder_id&modified_only=1\">
+		[lang::message::lookup "" intranet-wiki.Admin_Wiki_Changes "Admin Wiki Changes"]
+	    </A></li>\n"
+	    append wikis_html "<li><A href=\"/$wiki_mount/admin/index?folder_id=$folder_id\">
+		[lang::message::lookup "" intranet-wiki.Admin_All_Pages "Admin All Pages"]
+	    </A></li>\n"
 	}
 	append wikis_html "<p></p>\n"
     }
