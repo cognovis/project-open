@@ -365,7 +365,7 @@ ad_proc im_filestorage_project_component { user_id project_id project_name retur
 } {
     set project_path [im_filestorage_project_path $project_id]
     set folder_type "project"
-    set object_name "Project"
+    set object_name [lang::message::lookup "" intranet-filestorage.Folder_type_Project "Project"]
     return [im_filestorage_base_component $user_id $project_id $object_name $project_path $folder_type]
 }
 
@@ -374,7 +374,7 @@ ad_proc im_filestorage_ticket_component { user_id ticket_id ticket_name return_u
 } {
     set ticket_path [im_filestorage_ticket_path $ticket_id]
     set folder_type "ticket"
-    set object_name "Ticket"
+    set object_name [lang::message::lookup "" intranet-filestorage.Folder_type_Ticket "Ticket"]
     return [im_filestorage_base_component $user_id $ticket_id $object_name $ticket_path $folder_type]
 }
 
@@ -386,7 +386,7 @@ ad_proc im_filestorage_project_sales_component { user_id project_id project_name
 
     set project_path [im_filestorage_project_sales_path $project_id]
     set folder_type "project_sales"
-    set object_name "Project Sales"
+    set object_name [lang::message::lookup "" intranet-filestorage.Folder_type_Project_Sales "Project Sales"]
     return [im_filestorage_base_component $user_id $project_id $object_name $project_path $folder_type]
 }
 
@@ -414,7 +414,8 @@ ad_proc im_filestorage_bug_component { user_id bug_id user_name return_url} {
     set bug_number [db_string bug_num "select bug_number from bt_bugs where bug_id = :bug_id" -default "999999"]
     set bug_path [im_filestorage_bug_path $bug_id]
     set folder_type "bt_fs"
-    return [im_filestorage_base_component $user_id $bug_id "Bug \#$bug_number" $bug_path $folder_type]
+    set folder_name "[lang::message::lookup "" intranet-filestorage.Bug_number "Bug \#"] %bug_number"
+    return [im_filestorage_base_component $user_id $bug_id $folder_name $bug_path $folder_type]
 }
 
 
