@@ -185,6 +185,8 @@ select acs_object_type__create_type (
 	'im_dynfield_attribute__name'
 );
 
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_dynfield_attribute', 'im_dynfield_attributes', 'attribute_id');
 
 create table im_dynfield_attributes (
 	attribute_id		integer
