@@ -551,7 +551,10 @@ db_foreach tickets_info_query $selection -bind $form_vars {
 # Show a reasonable message when there are no result rows:
 if { [empty_string_p $table_body_html] } {
     set table_body_html "
-	<tr><td colspan=$colspan><ul><li><b>There are currently no tickets matching the selected criteria</b></ul></td></tr>"
+	<tr><td colspan=$colspan><ul><li><b>
+	[lang::message::lookup "" intranet-core.lt_There_are_currently_n "There are currently no entries matching the selected criteria"]
+	</b></ul></td></tr>
+    "
 }
 
 if { $end_idx < $total_in_limited } {
