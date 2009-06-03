@@ -112,6 +112,9 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 		execute the script /packages/intranet-hr/sql/postgresql/update/upgrade-3.2.6.0.0-3.2.7.0.0.sql.
 		<p><pre>$err_msg</pre>"
     } 
+
+    regsub -all " " $salary_period "_" salary_period_key
+    set salary_period [lang::message::lookup "" intranet-hr.Salary_period_${salary_period_key} $salary_period]
 	
     set employee_info_exists 1
 
