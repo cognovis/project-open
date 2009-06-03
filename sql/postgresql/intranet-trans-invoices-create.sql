@@ -41,6 +41,10 @@ select acs_object_type__create_type (
 
 insert into acs_object_type_tables (object_type,table_name,id_column)
 values ('im_trans_invoice', 'im_trans_invoices', 'invoice_id');
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_trans_invoice', 'im_invoices', 'invoice_id');
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_trans_invoice', 'im_costs', 'cost_id');
 
 
 update acs_object_types set
