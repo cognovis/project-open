@@ -36,6 +36,29 @@ select acs_object_type__create_type (
 	'im_project__name'	-- name_method
 );
 
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_gantt_project', 'im_gantt_projects', 'project_id');
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_gantt_project', 'im_projects', 'project_id');
+
+
+-- Add additional meta information to allow DynFields to extend the im_note object.
+update acs_object_types set
+        status_type_table = 'im_projects',	-- which table contains the status_id field?
+        status_column = 'project_status_id',	-- which column contains the status_id field?
+        type_column = 'project_type_id'		-- which column contains the type_id field?
+where object_type = 'im_project';
+
+
+-- Generic URLs to link to an object of type "im_gantt_project"
+-- These URLs are used by the Full-Text Search Engine and the Workflow
+-- to show links to the object type.
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_gantt_project','view','/intranet/projects/view?project_id=');
+insert into im_biz_object_urls (object_type, url_type, url) values (
+'im_gantt_project','edit','/intranet/projects/new?project_id=');
+
+
 create table im_gantt_persons (
 	person_id		integer
 				constraint im_gantt_persons_person_pk
