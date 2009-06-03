@@ -1251,7 +1251,7 @@ ad_proc -public im_workflow_home_inbox_component {
     if { [empty_string_p $table_body_html] } {
 	set table_body_html "
 	<tr><td colspan=$colspan><ul><li><b> 
-	There are currently no objects matching the selected criteria
+	[lang::message::lookup "" intranet-core.lt_There_are_currently_n "There are currently no entries matching the selected criteria"]
 	</b></ul></td></tr>"
     }
 
