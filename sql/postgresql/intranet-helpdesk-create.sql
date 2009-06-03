@@ -25,7 +25,10 @@ SELECT acs_object_type__create_type (
 	'im_ticket__name'		-- name_method
 );
 
-insert into acs_object_type_tables VALUES ('im_ticket', 'im_tickets', 'ticket_id');
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_ticket', 'im_tickets', 'ticket_id');
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_ticket', 'im_projects', 'project_id');
 
 
 insert into im_biz_object_urls (object_type, url_type, url) values (
