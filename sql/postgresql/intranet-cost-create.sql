@@ -536,6 +536,9 @@ end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_cost', 'im_costs', 'cost_id');
+
 
 -- Create URLs for viewing/editing costs
 delete from im_biz_object_urls where object_type='im_cost';
@@ -1181,6 +1184,11 @@ end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_repeating_cost', 'im_repeating_costs', 'rep_cost_id');
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_cost', 'im_costs', 'cost_id');
+
 
 update acs_object_types set
 	status_type_table = 'im_costs',
@@ -1292,6 +1300,14 @@ begin
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_investment', 'im_investments', 'investment_id');
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_investment', 'im_repeating_costs', 'rep_cost_id');
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_investment', 'im_costs', 'cost_id');
+
 
 -- Creating URLs for viewing/editing investments
 delete from im_biz_object_urls where object_type='im_investment';
