@@ -252,16 +252,10 @@ db_transaction {
 	
 	if {$set_p} {
 	    
-	    # Calculate VAT automatically?
-	    if {$auto_vat_p} { 
-		set item_vat [$auto_vat_function -expense_id $expense_id] 
-	    }
-	    
-	    set item_amount [expr $item_expense_amount / [expr 1 + [expr $item_vat / 100.0]]]
-	    set item_expense_name [expr [db_string expname "select t_acs_object_id_seq.last_value"] +1]
-	    
 	    # Get the user's department as default CC
 	    set cost_center_id [db_string user_cc "select department_id from im_employees where employee_id = :user_id" -default ""]
+	    # Choose a name for the expense without incrementing the object pointer
+	    set item_expense_name [expr [db_string expname "select t_acs_object_id_seq.last_value"] +1]
 	    
 	    set expense_id [db_string create_expense "
 			select im_expense__new (
@@ -294,6 +288,13 @@ db_transaction {
 				:item_provider_id		-- provider
 			)
 	    "]
+
+	    # Calculate VAT automatically?
+	    if {$auto_vat_p} { 
+		set item_vat [$auto_vat_function -expense_id $expense_id] 
+	    }
+	    
+	    set item_amount [expr $item_expense_amount / [expr 1 + [expr $item_vat / 100.0]]]
 
 	    db_dml update_costs "
 			update im_costs set
