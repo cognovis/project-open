@@ -27,8 +27,14 @@ SELECT acs_object_type__create_type (
 	'im_expense__name'		-- name_method
 );
 
+
+-- im_expense is a sub-type of im_costs, so it needs to define both
+-- tables as "extension tables".
 insert into acs_object_type_tables (object_type,table_name,id_column)
 values ('im_expense', 'im_expenses', 'expense_id');
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_expense', 'im_costs', 'cost_id');
+
 
 update acs_object_types set
 	status_type_table = 'im_costs',
@@ -219,9 +225,20 @@ SELECT acs_object_type__create_type (
 );
 
 
-update acs_object_types set status_column = 'cost_status_id' where object_type = 'im_expense_bundle';
-update acs_object_types set type_column = 'cost_type_id' where object_type = 'im_expense_bundle';
-update acs_object_types set status_type_table = 'im_costs' where object_type = 'im_expense_bundle';
+update acs_object_types set
+	status_column = 'cost_status_id',
+	type_column = 'cost_type_id',
+	status_type_table = 'im_costs'
+where object_type = 'im_expense_bundle';
+
+
+-- im_expense_bundle is a sub-type of im_costs, so it needs to define
+-- both tables as "extension tables".
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_expense_bundle', 'im_expense_bundles', 'bundle_id');
+insert into acs_object_type_tables (object_type,table_name,id_column)
+values ('im_expense_bundle', 'im_costs', 'cost_id');
+
 
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_expense_bundle','view','/intranet-expenses/bundle-new?form_mode=display&bundle_id=');
