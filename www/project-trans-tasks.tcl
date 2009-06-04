@@ -63,7 +63,7 @@ set context ""
 
 set help_text "
 <strong>Projects and Translation Tasks:</strong><br>
-Shows translation tasks groupd by project and customer.<br>
+Shows translation tasks grouped by project and customer.<br>
 
 The report shows projects only if the project's end_date is greater
 or equal Start Date and less then End Date. 
