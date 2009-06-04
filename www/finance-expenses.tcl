@@ -73,7 +73,7 @@ set context ""
 set help_text "
 <strong>Expenses:</strong><br>
 
-This report shows all exenses in the system in a given period,
+This report shows all expenses in the system in a given period,
 grouped by Group Style.
 "
 
