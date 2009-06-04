@@ -26,6 +26,8 @@ set page_title [lang::message::lookup "" intranet-reporting.Indicators "Indicato
 set context_bar [im_context_bar $page_title]
 set context ""
 
+set wiki_url "http://www.project-open.org/documentation"
+
 # Evaluate indicators every X hours:
 set eval_interval_hours [parameter::get_from_package_key -package_key "intranet-reporting-indicators" -parameter "IndicatorEvaluationIntervalHours" -default 24]
 
@@ -77,6 +79,9 @@ lappend elements_list \
 lappend elements_list \
 	report_description {
 	    label "Description"
+	    display_template {
+		@reports.report_description;noquote@
+	    }
 	}
 
 
@@ -140,7 +145,14 @@ db_multirow -extend {report_view_url edit_html value_html history_html} reports 
 	<a href='$perms_url'>[im_gif "lock"]</a><br>
 	<a href='$delete_url'>[im_gif "cancel"]</a>
     "
-    
+
+    regsub -all " " $report_name "_" indicator_name_mangled
+    set help_url "$wiki_url/indicator_[string tolower $indicator_name_mangled]"
+    set report_description "
+	$report_description
+	<a href=\"$help_url\">[lang::message::lookup "" intranet-reporting-indicators.More_dots "more..."]</a><br>
+    "
+
     if {"" == $result} {
 	
 	set result "error"
