@@ -14,7 +14,7 @@ select im_component_plugin__new (
 		null,					-- context_id
 	
 		'Home Indicator Component',		-- plugin_name
-		'intranet-reporting-timesheet',		-- package_name
+		'intranet-reporting-indicators',	-- package_name
 		'right',				-- location
 		'/intranet/index',			-- page_url
 		null,					-- view_name
