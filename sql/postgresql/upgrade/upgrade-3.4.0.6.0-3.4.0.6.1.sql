@@ -14,6 +14,33 @@ where
 ;
 
 
+
+-------------------------------------------------------------------
+-- Activate links for email and URL in the UserViewPage
+--
+delete from im_view_columns where view_id = 11;
+--
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (1101,11,NULL,'Name','$name','','',1,
+'im_view_user_permission $user_id $current_user_id $name view_users');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (1103,11,NULL,'Email',
+'"<a href=mailto:$email>$email</a>"','','',2,
+'im_view_user_permission $user_id $current_user_id $email view_users');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (1105,11,NULL,'Home',
+'"<a href=$url>$url</a>"','','',3,
+'im_view_user_permission $user_id $current_user_id $url view_users');
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (1107,11,NULL,'Username',
+'$username','','',4,
+'parameter::get_from_package_key -package_key intranet-core -parameter EnableUsersUsernameP -default 0');
+
+
+
 -- Get the object status for generic objects
 -- This function relies on the information in the OpenACS SQL metadata
 -- system, so that errors in the OO configuration will give errors here.
