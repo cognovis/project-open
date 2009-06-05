@@ -12,3 +12,9 @@ where
 		where package_key = 'calendar'
 	)
 ;
+
+SELECT acs_permission__grant_permission(
+	(select package_id from apm_packages where package_key = 'calendar'),
+	(select group_id from groups where group_name = 'Senior Managers'),
+	'read'
+);
