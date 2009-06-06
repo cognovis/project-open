@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="acs-datetime" package_version="4.0" locale="it_IT" charset="ISO-8859-1">
+<message_catalog package_key="acs-datetime" package_version="4.1" locale="it_IT" charset="ISO-8859-1">
 
   <msg key="All_day">Tutta la giornata</msg>
   <msg key="back_one_day">Un giorno indietro</msg>
@@ -8,7 +8,7 @@
   <msg key="Date_as_YYYYMMDD">&lt;b&gt;Formato Data&lt;/b&gt;: AAAA-MM-GG&lt;br&gt;
 (es. 2002-05-05)</msg>
   <msg key="Day">Giorno</msg>
-  <msg key="Day_of_Week">Giorno della Settimana</msg>
+  <msg key="Day_of_Week">Giorno della settimana</msg>
   <msg key="days_of_week">Domenica Lunedì Martedì Mercoledì Giovedì Venerdì Sabato</msg>
   <msg key="forward_one_day">Un giorno avanti</msg>
   <msg key="is">è il</msg>

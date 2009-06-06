@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="acs-datetime" package_version="4.0" locale="ru_RU" charset="utf-8">
+<message_catalog package_key="acs-datetime" package_version="4.1" locale="ru_RU" charset="utf-8">
 
   <msg key="All_day">Целый день</msg>
+  <msg key="back_one_day">На день назад</msg>
   <msg key="Date">Дата</msg>
   <msg key="Date_as">Формат даты</msg>
   <msg key="Date_as_YYYYMMDD">Дата в формате ГГГГММДД</msg>
   <msg key="Day">День</msg>
   <msg key="Day_of_Week">День недели</msg>
   <msg key="days_of_week">Воскресенье Понедельник Вторник Среда Четверг Пятница Суббота</msg>
+  <msg key="forward_one_day">На день вперед</msg>
   <msg key="is">:</msg>
   <msg key="Items_from">События от</msg>
+  <msg key="Items_until">События до @pretty_end_date@</msg>
   <msg key="List">Списком</msg>
+  <msg key="lt_Width_must_be_">Должно быть от 1 до 12</msg>
   <msg key="Month">Месяц</msg>
+  <msg key="short_days_of_week">В П В С Ч П С</msg>
   <msg key="to">до</msg>
   <msg key="Today">Сегодня</msg>
   <msg key="Week">Неделя</msg>
