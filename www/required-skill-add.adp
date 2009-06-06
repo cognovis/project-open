@@ -12,7 +12,7 @@
   <tr class="list-header">
     <th class="list-narrow"><%= [lang::message::lookup "" intranet-freelance.Skills "Skills"] %></th>
     <th class="list-narrow">
-	<input type="checkbox" name="_dummy" onclick="acs_ListCheckAll('alerts', this.checked)" title="<%= [lang::message::lookup "" intranet-forum.Check_Uncheck_all_rows "Check/Uncheck all rows"] %>">
+	<input type="checkbox" name="_dummy" onclick="acs_ListCheckAll('alerts', this.checked)" title="<%= [lang::message::lookup "" intranet-freelance.Check_Uncheck_all_rows "Check/Uncheck all rows"] %>">
     </th>
   </tr>
 
@@ -35,7 +35,7 @@
 
   <tr>
     <td colspan=3 align=right>
-      <input type=submit value="<%= [lang::message::lookup "" intranet-forum.Add_Skills "Add Skills"] %>">
+      <input type=submit value="<%= [lang::message::lookup "" intranet-freelance.Add_Skills "Add Skills"] %>">
     </td>
   </tr>
 

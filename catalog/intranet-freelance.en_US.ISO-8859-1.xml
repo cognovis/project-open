@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-freelance" package_version="3.4.0.0.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-freelance" package_version="3.4.0.6.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Account_Unavailable">Account Unavailable</msg>
   <msg key="Add">Add</msg>
   <msg key="add_a_comment">add a comment</msg>
   <msg key="Add_new_skill_type">Add new %skill_type%</msg>
+  <msg key="Add_otype_skill">Add Skills</msg>
+  <msg key="Add_skill">Add Skill</msg>
+  <msg key="Add_Skills">Add Skills</msg>
   <msg key="Argument_Error">Argument Error</msg>
   <msg key="Bank">Bank</msg>
   <msg key="Bank_Account">Bank Account</msg>
   <msg key="Cell_Phone">Cell Phone</msg>
+  <msg key="Check_Uncheck_all_rows">Check/Uncheck all rows</msg>
   <msg key="Claim">Claim</msg>
   <msg key="Claimed">Claimed</msg>
   <msg key="Comment">Comment</msg>
@@ -54,6 +58,7 @@
   <msg key="modify_the_comment">modify the comment</msg>
   <msg key="Name">Name</msg>
   <msg key="no_freelancers">no freelancers</msg>
+  <msg key="No_skills_found">No skills found.</msg>
   <msg key="Note">Note</msg>
   <msg key="Notify">Notify</msg>
   <msg key="Original_Name">Original Name</msg>
