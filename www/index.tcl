@@ -191,8 +191,8 @@ ad_form \
 
 if {$view_tickets_all_p} {  
     ad_form -extend -name $form_id -form {
-	{ticket_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status" translate_p 1}} }
-	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1} } }
+	{ticket_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status" translate_p 1 package_key "intranet-helpdesk"}} }
+	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1 package_key "intranet-helpdesk"} } }
 	{ticket_queue_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.Queue Queue]"} {options $ticket_queue_options}}
 	{ticket_sla_id:text(select),optional {label "[lang::message::lookup {} intranet-helpdesk.SLA SLA]"} {options $ticket_sla_options}}
     }
@@ -495,11 +495,11 @@ set ticket_elements {
 	{ticket_name:text(text) {label $title_label} {html {size 20}} }
 	{ticket_sla_id:text(select) {label "[lang::message::lookup {} intranet-helpdesk.SLA SLA]"} {options $ticket_sla_options}}
 	{ticket_nr:text(hidden),optional }
-	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1} } }
+	{ticket_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-helpdesk.Type Type]"} {custom {category_type "Intranet Ticket Type" translate_p 1 package_key "intranet-helpdesk"} } }
 }
 
 if {$edit_ticket_status_p} {
-    lappend ticket_elements {ticket_status_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status"}} }
+    lappend ticket_elements {ticket_status_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-helpdesk.Status Status]"} {custom {category_type "Intranet Ticket Status" translate_p 1 package_key "intranet-helpdesk"}} }
 }
 
 ad_form \
@@ -624,6 +624,7 @@ set table_submit_html "
 		<td>
 			[im_category_select \
 			     -translate_p 1 \
+			     -package_key "intranet-helpdesk" \
 			     -plain_p 1 \
 			     -include_empty_p 1 \
 			     -include_empty_name "" \
@@ -677,7 +678,7 @@ set filter_html $__adp_output
 set left_navbar_html "
 	    <div class=\"filter-block\">
 		<div class=\"filter-title\">
-		    [lang::message::lookup "" intranet-core.Filter_Tickets "Filter Tickets"]
+		    [lang::message::lookup "" intranet-helpdesk.Filter_Tickets "Filter Tickets"]
 		</div>
 		$filter_html
 	    </div>
@@ -693,7 +694,7 @@ if {$sla_exists_p} {
     append left_navbar_html "
 	    <div class=\"filter-block\">
 		<div class=\"filter-title\">
-		    [lang::message::lookup "" intranet-core.New_Ticket "New Ticket"]
+		    [lang::message::lookup "" intranet-helpdesk.New_Ticket "New Ticket"]
 		</div>
 		$form_html
 	    </div>
@@ -704,7 +705,7 @@ if {$sla_exists_p} {
     append left_navbar_html "
 	    <div class=\"filter-block\">
 		<div class=\"filter-title\">
-		    [lang::message::lookup "" intranet-core.Admin_Filters "Admin Filters"]
+		    [lang::message::lookup "" intranet-helpdesk.Admin_Filters "Admin Filters"]
 		</div>
 		$admin_html
 	    </div>
