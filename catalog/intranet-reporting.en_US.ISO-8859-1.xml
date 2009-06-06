@@ -1,10 +1,59 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-reporting" package_version="3.4.0.0.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-reporting" package_version="3.4.0.6.0" locale="en_US" charset="ISO-8859-1">
 
+  <msg key="Ad_hoc_Fraber_Test_group_id">Group ID</msg>
+  <msg key="Ad_hoc_Fraber_Test_group_name">Group Name</msg>
+  <msg key="Ad_hoc_Fraber_Test_join_policy">Join Policy</msg>
   <msg key="Add_new_Report">Add a new Report</msg>
+  <msg key="Admin_Reports">Admin Reports</msg>
   <msg key="Available_Reports">Available Reports</msg>
+  <msg key="Dashboard">Dashboard</msg>
+  <msg key="Edit_Report">Edit Report</msg>
+  <msg key="Finance">Finance</msg>
+  <msg key="Finance_Cube">Finance Cube</msg>
+  <msg key="Finance_Data_Warehouse_Cube">Finance Data-Warehouse Cube</msg>
+  <msg key="Finance_Documents_and_their_Projects">Finance Documents &amp; Projects</msg>
+  <msg key="Finance_Expenses">Finance Expenses</msg>
+  <msg key="Finance_Income_Statement">Finance Income Statement</msg>
+  <msg key="Finance_Monthly_Summary">Finance Monthly Summary</msg>
+  <msg key="Finance_Payment_Balance">Finance Payment Balance</msg>
+  <msg key="Finance_Projects_and_their_Documents">Finance Projects &amp; Documents</msg>
+  <msg key="Finance_VAT_Report">Finance VAT Report</msg>
+  <msg key="Forum">Forum</msg>
+  <msg key="Gantt_Diagram">Gantt Diagram</msg>
+  <msg key="Gantt_Resources">Gantt Resources</msg>
+  <msg key="Indicators">Indicators</msg>
   <msg key="Manage_Reports">Manage Reports</msg>
+  <msg key="New_Report">New Report</msg>
+  <msg key="Object_Creation_Audit_Cube">Object Creation Audit Cube</msg>
+  <msg key="Other">Other</msg>
+  <msg key="Price_Data_Warehouse_Cube">Price Data-Warehouse Cube</msg>
+  <msg key="Project_Main_List">Project Main List</msg>
+  <msg key="Project_Manager_Salary_Comparision">Project Manager Salary Comparison</msg>
+  <msg key="Report_Code">Report Code</msg>
+  <msg key="Report_Group">Report Group</msg>
+  <msg key="Report_Groups">Groups</msg>
   <msg key="Report_Id">ID</msg>
   <msg key="Report_Name">Name</msg>
+  <msg key="Report_Sales">Sales</msg>
+  <msg key="Report_Sort_Order">Sort Order</msg>
+  <msg key="Report_Translation_Tasks">Translation Tasks</msg>
+  <msg key="Report_Users___Contact_Information">Users &amp; Contact Information</msg>
+  <msg key="Reporting_Tutorial">Reporting Tutorial</msg>
   <msg key="Reports">Reports</msg>
+  <msg key="Reports_Description">Description</msg>
+  <msg key="Reports_SQL">Report SQL</msg>
+  <msg key="Sales">Sales</msg>
+  <msg key="Simple_Survey_Cube">Simple Survey Cube</msg>
+  <msg key="Simple_Survey_Main_List">Simple Survey Main List</msg>
+  <msg key="Simple_Survey_Results">Simple Survey Results</msg>
+  <msg key="Timesheet">Timesheet</msg>
+  <msg key="Timesheet_Customers_and_Projects">Timesheet Customers &amp; Projects</msg>
+  <msg key="Timesheet_Data_Warehouse_Cube">Timesheet Data-Warehouse Cube</msg>
+  <msg key="Timesheet_Productivity">Timesheet Productivity</msg>
+  <msg key="Timesheet_Project_Hierarchy___Finance">Timesheet Project Hierarchy &amp; Finance</msg>
+  <msg key="Translation">Translation</msg>
+  <msg key="Translation_PM_Productivity">Timesheet PM Productivity</msg>
+  <msg key="Translation_Tasks">Translation Tasks</msg>
+  <msg key="Users___Contact_Information">Users &amp; Contact Information</msg>
 </message_catalog>
