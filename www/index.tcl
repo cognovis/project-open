@@ -120,7 +120,7 @@ db_multirow -extend {report_url indent_spaces edit_html} reports get_reports "
 " {
     # Pass the report name though the localization system
     regsub -all {[^0-9a-zA-Z]} $name "_" name_key
-    set name [lang::message::lookup "" "intranet-reporting.Report_$name_key" $name]
+    set name [lang::message::lookup "" "intranet-reporting.$name_key" $name]
 
     set indent_spaces ""
     for {set i 0} {$i < $indent_level} {incr i} {
