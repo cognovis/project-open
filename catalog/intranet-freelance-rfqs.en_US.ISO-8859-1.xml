@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-freelance-rfqs" package_version="3.3.0.0.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-freelance-rfqs" package_version="3.4.0.6.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="--Select--">-- Select --</msg>
   <msg key="Add_a_new_RFQ">Add a new RFQ</msg>
@@ -13,6 +13,7 @@
   <msg key="Available_Variables">The following variables are available within you message:&lt;br&gt;
 &lt;tt&gt;%email_vars%&lt;/tt&gt;</msg>
   <msg key="Body">Body</msg>
+  <msg key="Close">Close</msg>
   <msg key="Comment">Comment</msg>
   <msg key="Confirm_RFQ">Confirm RFQ</msg>
   <msg key="Confirmed_for_RFQ_of_Project_Body">Dear %first_names%,
@@ -48,6 +49,7 @@ Best regards,
   <msg key="Experience">Experience</msg>
   <msg key="Filter_RFQs">Filter RFQs</msg>
   <msg key="General_Outcome">General Outcome</msg>
+  <msg key="general_outcome">General Outcome</msg>
   <msg key="Header">Header</msg>
   <msg key="Invite_Candidates">Invite Candidates</msg>
   <msg key="Invite_Participants">Invite Participants</msg>
@@ -82,6 +84,7 @@ Best regards,
   <msg key="Num_Rem_Explanation">The number of remaining candidates that either need to be declined or confirmed</msg>
   <msg key="Num_Remaining">#Rem</msg>
   <msg key="Overall_Status">Overall Status</msg>
+  <msg key="Price">Price</msg>
   <msg key="Project">Project</msg>
   <msg key="Required_RFQ_Skills">Required RFQ Skills</msg>
   <msg key="RFQ">RFQ</msg>
