@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-expenses" package_version="3.2.9.0.0" locale="it_IT" charset="ISO-8859-1">
+
+  <msg key="Add_a_new_Expense">Nuova spesa</msg>
+  <msg key="All">Tutte</msg>
+  <msg key="Amount">Importo</msg>
+  <msg key="Billable_p">Fatturabile?</msg>
+  <msg key="Create_Invoice">Crea fattura per la spesa</msg>
+  <msg key="create_invoice_help">Le 'fatture per spese' sono riscossioni confermate che possono essere associate a un progetto</msg>
+  <msg key="create_trabel_cost_help">Crea fatture per spese di viaggio</msg>
+  <msg key="Create_Travel_Cost">Crea spesa di viaggio</msg>
+  <msg key="Currency">Valuta</msg>
+  <msg key="Delete">Elimina</msg>
+  <msg key="Delete_Expenses">Eliminare spese</msg>
+  <msg key="Expense_Date">Data della spesa</msg>
+  <msg key="Expense_Invoices">Fatture spese</msg>
+  <msg key="Expense_Payment_Type">Pagamento</msg>
+  <msg key="Expense_Type">Tipo di spesa</msg>
+  <msg key="Expenses">Spese</msg>
+  <msg key="Expenses_Items">Spese</msg>
+  <msg key="External_company_name">Nome dell'azienda esterna</msg>
+  <msg key="External_Company_VatNr">P. IVA dell'azienda esterna</msg>
+  <msg key="Filter_Expenses">Filtra spese</msg>
+  <msg key="ID">ID</msg>
+  <msg key="Invoice">Fattura</msg>
+  <msg key="Invoice_Items">Spese di viaggio</msg>
+  <msg key="New_Expense">Nuova spesa</msg>
+  <msg key="Note">Nota</msg>
+  <msg key="Project">Progetto</msg>
+  <msg key="Project_Name">Nome del progetto</msg>
+  <msg key="Receip_reference">Riferimento ricevuta</msg>
+  <msg key="Receipt_reference">Rif. ricevuta</msg>
+  <msg key="reibursable">% rimborsabile</msg>
+  <msg key="reimbursable">%% rimborsabile</msg>
+  <msg key="Remove_checked_items">Elimina elementi selezionati</msg>
+  <msg key="Submitter">Inviata da</msg>
+  <msg key="Travel_cost_invoices">Fatture per spese di viaggio</msg>
+  <msg key="Unassigned">Non assegnato</msg>
+  <msg key="Unassigned_Expenses">Spese non assegnate</msg>
+  <msg key="Unassigned_items">Non assegnate</msg>
+  <msg key="Vat_Included">% IVA compresa</msg>
+</message_catalog>
