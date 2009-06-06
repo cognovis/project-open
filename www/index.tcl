@@ -69,8 +69,8 @@ ad_form \
     -export {start_idx order_by how_many view_name} \
     -form {
 	{current_interval:text(select),optional {label "[lang::message::lookup {} intranet-milestone.Time_Interval {Time Interval}]"} {options $current_interval_options} }
-	{status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-core.Milestone_Status {Status}]"} {custom {category_type "Intranet Project Status" translate_p 1}} }
-	{type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-core.Milestone_Type {Type}]"} {custom {category_type "Intranet Project Type" translate_p 1} } }
+	{status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-milestone.Milestone_Status {Status}]"} {custom {category_type "Intranet Project Status" translate_p 1 package_key intranet-core}} }
+	{type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-milestone.Milestone_Type {Type}]"} {custom {category_type "Intranet Project Type" translate_p 1 package_key intranet-core} } }
     	{customer_id:text(hidden),optional {label "[lang::message::lookup {} intranet-milestone.Customer {Customer}]"} {options $customer_options }}
     	{member_id:text(select),optional {label "[lang::message::lookup {} intranet-milestone.Member {Member}]"} {options $member_options }}
     	{project_lead_id:text(hidden),optional {label "[lang::message::lookup {} intranet-milestone.Project_Manager {Project Manager}]"} {options $member_options }}
@@ -101,7 +101,7 @@ template::element::set_value $form_id project_lead_id $project_lead_id
 
 
 set page_html "
-[im_box_header [lang::message::lookup {} intranet-core.Late_Milestones "Late Milestones"]]
+[im_box_header [lang::message::lookup {} intranet-milestone.Late_Milestones "Late Milestones"]]
 <br>
 [im_milestone_list_component \
 		-status_id $status_id \
@@ -112,7 +112,7 @@ set page_html "
 ]
 [im_box_footer]
 
-[im_box_header [lang::message::lookup {} intranet-core.Current_Milestones "Milestones due in the next %current_interval% days"]]
+[im_box_header [lang::message::lookup {} intranet-milestone.Current_Milestones "Milestones due in the next %current_interval% days"]]
 <br>
 [im_milestone_list_component \
 		-status_id $status_id \
@@ -124,7 +124,7 @@ set page_html "
 ]
 [im_box_footer]
 
-[im_box_header [lang::message::lookup {} intranet-core.Future_Milestones "Milestones due after %current_interval% days"]]
+[im_box_header [lang::message::lookup {} intranet-milestone.Future_Milestones "Milestones due after %current_interval% days"]]
 <br>
 [im_milestone_list_component \
 		-status_id $status_id \
