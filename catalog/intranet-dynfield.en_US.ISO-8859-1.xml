@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-dynfield" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-dynfield" package_version="3.4.0.6.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="absolute">Absolute</msg>
   <msg key="ACS_Datatype">ACS Datatype</msg>
@@ -24,8 +24,6 @@
   <msg key="dbi_inserts">Dbi Inserts</msg>
   <msg key="dbi_interfaces">DBI interfaces</msg>
   <msg key="Default_page">Default page</msg>
-  <msg key="Default_Value">Default Value</msg>
-  <msg key="Default_Value_HT">This is the default value of the attribute</msg>
   <msg key="Del">Del</msg>
   <msg key="Delete">Delete</msg>
   <msg key="Documentation">Documentation</msg>
@@ -36,8 +34,6 @@
   <msg key="Exchequer_Supplier_Code">Exchequer Supplier Code</msg>
   <msg key="Export">Export Intranet-Dynfield Information</msg>
   <msg key="Gender_Select">Gender Select</msg>
-  <msg key="Help_Text">Help Text</msg>
-  <msg key="Help_Text_HT">This is the help text shown for the widget</msg>
   <msg key="Hide_interfaces">Hide Interfaces</msg>
   <msg key="ID_Column">ID Column</msg>
   <msg key="Import">Import Intranet-Dynfield Information</msg>
@@ -88,7 +84,6 @@
   <msg key="Richtext">Richtext</msg>
   <msg key="Richtexts">Richtexts</msg>
   <msg key="Section">'Section'</msg>
-  <msg key="Section_Heading">Section Heading</msg>
   <msg key="Select">Select</msg>
   <msg key="Selects">Selects</msg>
   <msg key="Set_as_the_default">Set as the default</msg>
