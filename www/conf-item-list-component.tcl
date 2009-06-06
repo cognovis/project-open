@@ -61,7 +61,7 @@ ad_form \
 	conf_item_id:key
 	{conf_item_nr:text(text) {label "[lang::message::lookup {} intranet-core.Conf_Item_Nr {Conf Item Nr.}]"} {html {size 10}}}
 	{conf_item_parent_id:text(select),optional {label "[lang::message::lookup {} intranet-core.Conf_Item_Parent {Parent}]"} {options $conf_item_parent_options} }
-	{conf_item_type_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-core.Conf_Item_Type {Type}]"} {custom {category_type "Intranet Conf Item Type" translate_p 1 include_empty_p 0} } }
+	{conf_item_type_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-core.Conf_Item_Type {Type}]"} {custom {category_type "Intranet Conf Item Type" translate_p 1 package_key "intranet-confdb" include_empty_p 0} } }
 	{conf_item_status_id:text(hidden) }
     	{conf_item_project_id:text(hidden) }
     	{conf_item_owner_id:text(hidden) }
