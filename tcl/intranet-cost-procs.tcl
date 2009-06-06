@@ -2078,6 +2078,8 @@ ad_proc -public im_cost_update_project_cost_cache {
 # -----------------------------------------------------------
 
 ad_proc -public im_navbar_tree_finance { 
+    -user_id:required
+    -locale:required
 } { 
     Finance Navbar 
 } {
