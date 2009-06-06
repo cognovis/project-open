@@ -538,8 +538,8 @@ ad_proc -public im_workflow_graph_component {
     if {$reassign_p} {
         append assignee_html "
 		<tr class=rowplain><td colspan=2>
-		<li><a href='[export_vars -base "/[im_workflow_url]/case?" {case_id}]'>Debug Case</a>
-		<li><a href='[export_vars -base "/intranet-workflow/reset-case?" {return_url project_id {place_key "start"} {action_pretty "restart"}}]'>Reset Case</a>
+		<li><a href='[export_vars -base "/[im_workflow_url]/case?" {case_id}]'>[_ intranet-workflow.Debug_Case]</a>
+		<li><a href='[export_vars -base "/intranet-workflow/reset-case?" {return_url project_id {place_key "start"} {action_pretty "restart"}}]'>[_ intranet-workflow.Reset_Case]</a>
 		</td></tr>
         "
     }
