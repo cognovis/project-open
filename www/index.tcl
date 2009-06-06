@@ -85,7 +85,7 @@ ad_form \
     -export {start_idx order_by how_many view_name} \
     -form {
 	{treelevel:text(select),optional {label "[lang::message::lookup {} intranet-core.Treelevel {Treelevel}]"} {options $treelevel_options } }
-	{type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-core.Conf_Item_Type {Type}]"} {custom {category_type "Intranet Conf Item Type" translate_p 1} } }
+	{type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-core.Conf_Item_Type {Type}]"} {custom {category_type "Intranet Conf Item Type" translate_p 1 package_key "intranet-confdb"} } }
 	{status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-core.Conf_Item_Status {Status}]"} {custom {category_type "Intranet Conf Item Status" translate_p 1}} }
     	{cost_center_id:text(select),optional {label "[lang::message::lookup {} intranet-confdb.Cost_Center {Cost Center}]"} {options $cost_center_options }}
     	{owner_id:text(select),optional {label "[lang::message::lookup {} intranet-confdb.Owner {Owner}]"} {options $owner_options }}
