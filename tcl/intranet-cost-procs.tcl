@@ -2093,11 +2093,11 @@ ad_proc -public im_navbar_tree_finance {
 
 		<li><a href=/intranet-invoices/list?cost_type_id=3708>[lang::message::lookup "" intranet-cost.New_Customer_Invoices_Quotes "New Cust. Invoices &amp; Quotes"]</a>
 		<ul>
-			[im_navbar_write_tree -label "invoices_customers" -maxlevel 0]
+			[im_navbar_write_tree -package_key "intranet-invoices" -label "invoices_customers" -maxlevel 0]
 		</ul>
 		<li><a href=/intranet-invoices/list?cost_type_id=3710>[lang::message::lookup "" intranet-cost.New_Provider_Bills_POs "New Prov. Bills &amp; POs"]</a>
 		<ul>
-			[im_navbar_write_tree -label "invoices_providers" -maxlevel 0]
+			[im_navbar_write_tree -package_key "intranet-invoices" -label "invoices_providers" -maxlevel 0]
 		</ul>
 		<li><a href=/intranet-invoices/list?cost_status_id=3802&cost_type_id=3700>[lang::message::lookup "" intranet-cost.Accounts_Receivable "Accounts Receivable"]</a></li>
 		<li><a href=/intranet-invoices/list?cost_status_id=3802&cost_type_id=3704>[lang::message::lookup "" intranet-cost.Accounts_Payable "Accounts Payable"]</a></li>
@@ -2106,8 +2106,8 @@ ad_proc -public im_navbar_tree_finance {
 
 		<li><a href=/intranet-reporting/>[lang::message::lookup "" intranet-core.Reporting Reporting]</a>
                 <ul>
-                [im_navbar_write_tree -label "reporting-finance" -maxlevel 1]
-                [im_navbar_write_tree -label "reporting-timesheet" -maxlevel 1]
+                [im_navbar_write_tree -package_key "intranet-reporting" -label "reporting-finance" -maxlevel 1]
+                [im_navbar_write_tree -package_key "intranet-reporting" -label "reporting-timesheet" -maxlevel 1]
                 </ul>
 
 		<li><a href=/intranet/admin/>[lang::message::lookup "" intranet-cost.Admin Admin]</a>
