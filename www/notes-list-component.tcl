@@ -51,6 +51,9 @@ if {$object_read} {
     
     db_multirow -extend { note_formatted } notes notes_query $notes_sql {
 
+	regsub -all {[^0-9a-zA-Z]} $note_type "_" note_type_key
+	set note_type [lang::message::lookup "" intranet-notes.$note_type_key $note_type]
+
 	set note_pieces [split $note " "]
 	set first_note [lindex $note_pieces 0]
 	set rest_note [join [lrange $note_pieces 1 end] " "]
