@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-search-pg" package_version="3.2.9.0.0" locale="it_IT" charset="ISO-8859-1">
+
+  <msg key="Advanced_Search">Ricerca avanzata</msg>
+  <msg key="lt_Make_sure_all_words_a">Assicurarsi che tutte le parole siano state digitate correttamente.</msg>
+  <msg key="lt_No_pages_were_found_c">La ricerca non ha prodotto risultati in nessun documento: &amp;quot;</msg>
+  <msg key="lt_Try_different_keyword">Provare con parole chiave diverse.</msg>
+  <msg key="lt_Try_more_general_keyw">Provare con parole chiave più generiche.</msg>
+  <msg key="Next">Avanti</msg>
+  <msg key="of_about">su circa</msg>
+  <msg key="Result_page">Pagina risultato</msg>
+  <msg key="Results">Risultati</msg>
+  <msg key="Search">Cerca</msg>
+  <msg key="seconds">secondi</msg>
+  <msg key="Suggestions">Suggerimenti</msg>
+  <msg key="Try_fewer_keywords">Provare con meno parole chiave</msg>
+</message_catalog>
