@@ -440,7 +440,7 @@ set left_navbar_html "
 	</tr>
 	<tr>
 	    <td class=form-label>[lang::message::lookup "" intranet-expenses.Expense_Type "Type"]</td>
-	    <td class=form-widget>[im_category_select -include_empty_p 1  "Intranet Expense Type" expense_type_id $expense_type_id_default]</td>
+	    <td class=form-widget>[im_category_select -translate_p 1 -package_key "intranet-expenses" -include_empty_p 1  "Intranet Expense Type" expense_type_id $expense_type_id_default]</td>
 	</tr>
 
 	<tr>
