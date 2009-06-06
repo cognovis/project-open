@@ -49,7 +49,7 @@ set page_title "$report_type: $report_name"
 set context [im_context_bar $page_title]
 
 
-set page_body [im_ad_hoc_query -format html $report_sql]
+set page_body [im_ad_hoc_query -package_key "intranet-reporting" -report_name $report_name -format html $report_sql]
 
 
 #set page_body "$bind_rows<p><hr>[join $result "<br>"]<p><hr>err:$err_msg<p><hr><pre>$report_sql</pre>"

@@ -118,6 +118,10 @@ db_multirow -extend {report_url indent_spaces edit_html} reports get_reports "
 		and 't' = im_object_permission_p(m.menu_id, :current_user_id, 'read')
 	order by tree_sortkey
 " {
+    # Pass the report name though the localization system
+    regsub -all {[^0-9a-zA-Z]} $name "_" name_key
+    set name [lang::message::lookup "" "intranet-reporting.Report_$name_key" $name]
+
     set indent_spaces ""
     for {set i 0} {$i < $indent_level} {incr i} {
 	append indent_spaces "&nbsp;"
@@ -147,7 +151,7 @@ set left_navbar_html "
                    [lang::message::lookup "" intranet-reporting.Admin_Reports "Admin Reports"]
                 </div>
 		<ul>
-		<li><a href=new>Add a new Report</a>
+		<li><a href=new>[_ intranet-reporting.New_Report]</a>
 		</ul>
         </div>
       <hr/>

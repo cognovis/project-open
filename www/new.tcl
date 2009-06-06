@@ -16,13 +16,11 @@ ad_page_contract {
 } {
     report_id:integer,optional
     {return_url "/intranet-reporting/index"}
-    {form_mode "edit"}
+    {form_mode "display"}
 }
 
-if {[info exists var_name]} { ad_return_complaint 1 "var_name = $var_name" }
-
 set user_id [ad_maybe_redirect_for_registration]
-set page_title [lang::message::lookup "" intranet-reporting.New_Report "New Report"]
+set page_title [lang::message::lookup "" intranet-reporting.Edit_Report "Edit Report"]
 set context [im_context_bar $page_title]
 
 
@@ -65,13 +63,46 @@ UNION
 
 
 # ---------------------------------------------------------------
+# "Delete" Pressed?
+
+set button_pressed [template::form get_action form]
+if {"delete" == $button_pressed} {
+
+    if {[catch {
+	db_transaction {
+	    set menu_id [db_string menu_id "select report_menu_id from im_reports where report_id = :report_id" -default 0]
+	    db_string del_report "select im_report__delete(:report_id)"
+	    db_string del_report "select im_menu__delete(:menu_id)"
+	}
+    } err_msg]} {
+
+        ad_return_complaint 1 "<b>Error Deleting Report</b>:<p>
+        There are probably still references to this report:<br>
+	<pre>$err_msg</pre>
+	"
+	ad_script_abort
+    }
+
+    ad_returnredirect $return_url
+
+}
+
+
+
+# ---------------------------------------------------------------
 # Setup the form
+
+
+set actions [list [list [_ intranet-core.Edit] edit] ]
+lappend actions [list [_ intranet-core.Delete] delete]
+
 
 set form_id "form"
 ad_form \
     -name $form_id \
+    -actions $actions \
     -mode $form_mode \
-    -export "return_url" \
+    -export {next_url user_id return_url} \
     -form {
 	report_id:key
 	{report_name:text(text) {label "[lang::message::lookup {} intranet-reporting.Report_Name {Report Name}]"} {html {size 60}}}
