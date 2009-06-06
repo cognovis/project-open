@@ -274,7 +274,7 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 
 	append task_table_rows "
 	<tr $bgcolor([expr $ctr % 2])> 
-	  <td align=middle><input type=checkbox name=include_task value=$project_id $task_disabled $task_checked> $material_billable_p </td>
+	  <td align=middle><input type=checkbox name=include_task value=$project_id $task_disabled $task_checked></td>
 	  <td align=left><nobr>$indent <A href=/intranet/projects/view?project_id=$project_id>$project_name</a></nobr></td>
 	  <td align=left>$material_name</td>
 	  <td align=right>$planned_units</td>

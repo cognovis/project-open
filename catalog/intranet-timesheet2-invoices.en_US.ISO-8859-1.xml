@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.4.0.0.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.4.0.6.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Accounting_Contact">Accounting Contact</msg>
   <msg key="Add_New">Add New</msg>
   <msg key="Adress">Adress</msg>
+  <msg key="Aggregate_tasks_of_the_same_material">Aggregate tasks of the same material?</msg>
+  <msg key="All_br_Reported_br_Units">All&lt;br&gt;Reported&lt;br&gt;Units</msg>
+  <msg key="All_Reported_Hours_help">All Reported Hours: All timesheet hours logged by anybody since the creation of the task or project.</msg>
+  <msg key="All_Unbilled_Units">All Unbilled Units</msg>
   <msg key="Amount">Amount</msg>
+  <msg key="Billable_br_Units">Billable&lt;br&gt;Units</msg>
   <msg key="Billable_Units">Billable Units</msg>
+  <msg key="Billable_Units_help">Billable Units: Billable number of hours for each task. Similar to Planned Units, but may account for non-billable hours for pre-sales or bug fixing.</msg>
   <msg key="Cell_Phone">Cell Phone</msg>
   <msg key="Client">Client</msg>
   <msg key="Clients">Clients</msg>
@@ -87,11 +93,15 @@
   <msg key="Payment_Method">Payment Method</msg>
   <msg key="Payment_terms">Payment terms</msg>
   <msg key="Phone">Phone</msg>
+  <msg key="Planned_br_Units">Planned&lt;br&gt;Units</msg>
   <msg key="Planned_Units">Planned Units</msg>
+  <msg key="Planned_Units_help">Planned Units: Estimated number of hours for each task, as specified during project planning.</msg>
   <msg key="Previous_Page">Previous Page</msg>
   <msg key="Price">Price</msg>
   <msg key="Price_List">Price List</msg>
   <msg key="Project_">Project</msg>
+  <msg key="Project_br_Status">Project&lt;br&gt;Status</msg>
+  <msg key="Project_br_Type">Project&lt;br&gt;Type</msg>
   <msg key="Project_Name">Project_Name</msg>
   <msg key="Project_Status">Project Status</msg>
   <msg key="Project_Type">Project Type</msg>
@@ -103,7 +113,9 @@
   <msg key="Recr_Test">Recr Test</msg>
   <msg key="Reference_Prices">Reference Prices</msg>
   <msg key="Rep">Rep</msg>
+  <msg key="Reported_br_Units_in_br_Interval">Reported&lt;br&gt;Units in&lt;br&gt;Interval</msg>
   <msg key="Reported_Units">Reported Units</msg>
+  <msg key="Reported_Units_Interval_help">Reported Units in Interval: Hours logged between 'Start Date' and 'End Date' (see filter above).</msg>
   <msg key="Save">Save</msg>
   <msg key="Sel">Sel</msg>
   <msg key="Source">Source</msg>
@@ -119,6 +131,8 @@
   <msg key="Task_Name">Task Name</msg>
   <msg key="Task_Type">Task Type</msg>
   <msg key="TAX">TAX</msg>
+  <msg key="Timesheet_Invoicing_Wizard">Timesheet Invoicing Wizard</msg>
+  <msg key="Timesheet_Invoicing_Wizard_help">This wizard allows you to create a financial document from project data in four different ways:</msg>
   <msg key="Trados_Matrix">Tradox Matrix</msg>
   <msg key="Trg">Trg</msg>
   <msg key="Type">Type</msg>

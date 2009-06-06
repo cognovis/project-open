@@ -166,8 +166,8 @@ set invoice_office_id [db_string company_main_office_info "
 # Calculate the next invoice number by calculating the maximum of
 # the "reasonably build numbers" currently available
 
-set button_text [lang::message::lookup "" intranet-timesheet2-invoices.Create_$target_cost_type_mangle "Create $target_cost_type"]
-set page_title [lang::message::lookup "" intranet-timesheet2-invoices.New_$target_cost_type_mangle "New $target_cost_type"]
+set button_text [lang::message::lookup "" intranet-timesheet2-invoices.Create_$target_cost_type_mangle "Create %target_cost_type%"]
+set page_title [lang::message::lookup "" intranet-timesheet2-invoices.New_$target_cost_type_mangle "New %target_cost_type%"]
 
 set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-timesheet2-invoices.Invoices]"] $page_title]
 set invoice_id [im_new_object_id]
