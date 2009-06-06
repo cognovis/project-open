@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-cost" package_version="3.4.0.0.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-cost" package_version="3.4.0.6.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Absences">Absences</msg>
+  <msg key="Accounts_Payable">Accounts Payable</msg>
+  <msg key="Accounts_Receivable">Accounts Receivable</msg>
+  <msg key="Admin">Admin</msg>
   <msg key="Administration">Administration</msg>
   <msg key="All_Costs">All Costs</msg>
   <msg key="Amount">Amount</msg>
-  <msg key="Client">Client</msg>
+  <msg key="Client">Customer</msg>
   <msg key="Companies">Companies</msg>
   <msg key="Company">Company</msg>
-  <msg key="context">context</msg>
+  <msg key="context">Context</msg>
   <msg key="Cost_Center">Cost Center</msg>
   <msg key="Cost_Centers">Cost Centers</msg>
   <msg key="Cost_Items">Cost Items</msg>
@@ -17,6 +20,7 @@
   <msg key="Currency">Currency</msg>
   <msg key="Customer">Customer</msg>
   <msg key="Customer_Invoices">Customer Invoices</msg>
+  <msg key="Customer_Links">Customer Links</msg>
   <msg key="Customers">Customers</msg>
   <msg key="Del">Del</msg>
   <msg key="Description">Description</msg>
@@ -29,6 +33,7 @@
   <msg key="Edit_Cost">Edit Cost</msg>
   <msg key="Effective_Date">Effective Date</msg>
   <msg key="Expenses">Expenses</msg>
+  <msg key="Export_Finance_to_CSV">Export Finance to CSV</msg>
   <msg key="Filter_Documents">Filter Documents</msg>
   <msg key="Finance">Finance</msg>
   <msg key="finance">finance</msg>
@@ -49,6 +54,7 @@
   <msg key="lt_This_is_the_homepage_">This is the homepage of the &quot;Financial Area&quot;. Here you can
     find and enter all information about companies, projects
     and users.</msg>
+  <msg key="Materials_Service_Types">Materials (Service Types)</msg>
   <msg key="more_costs">more costs...</msg>
   <msg key="Multiple_Currency_Warning">&lt;h2&gt;Multiple Currency Warning&lt;/h2&gt;
 &lt;p&gt;
@@ -60,6 +66,8 @@ While this is OK in general, it will keep us from calculating a single profit&am
   <msg key="New_Cost">New Cost</msg>
   <msg key="New_Cost_Item">New Cost Item</msg>
   <msg key="New_Customer_Docs">Create a New Customer Document</msg>
+  <msg key="New_Customer_Invoices_Quotes">New Cust. Invoices &amp; Quotes</msg>
+  <msg key="New_Provider_Bills_POs">New Prov. Bills &amp; POs</msg>
   <msg key="New_Provider_Docs">Create a New Provider Document</msg>
   <msg key="New_Timesheet_Invoice">New Timesheet Invoice</msg>
   <msg key="New_Trans_Invoice">New Trans Invoice</msg>
@@ -76,11 +84,13 @@ While this is OK in general, it will keep us from calculating a single profit&am
   <msg key="Payments">Payments</msg>
   <msg key="Please_Select">Please select</msg>
   <msg key="Preliminary_Costs">Preliminary Costs</msg>
+  <msg key="Preliminary_Total">Preliminary Total</msg>
   <msg key="Previous_Page">Previous Page</msg>
   <msg key="Print_Template">Print Template</msg>
   <msg key="Project">Project</msg>
   <msg key="Provider">Provider</msg>
   <msg key="Provider_Bills">Provider Bills</msg>
+  <msg key="Provider_Links">Provider Links</msg>
   <msg key="Providers">Providers</msg>
   <msg key="Purchase_Orders">Purchase Orders</msg>
   <msg key="Quotes">Quotes</msg>
@@ -91,6 +101,7 @@ While this is OK in general, it will keep us from calculating a single profit&am
   <msg key="Status">Status</msg>
   <msg key="TAX">TAX</msg>
   <msg key="The_exchange_rates_are_outdated">The exchanges rates for the following currencies are outdated. Please contact your System Administrator to update the following exchange rates:</msg>
+  <msg key="Timesheet_Budget">Timesheet Budget</msg>
   <msg key="Timesheet_Costs">Timesheet Costs</msg>
   <msg key="Type">Type</msg>
   <msg key="VAT">VAT</msg>
