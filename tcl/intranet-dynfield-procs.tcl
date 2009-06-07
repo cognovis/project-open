@@ -467,7 +467,12 @@ ad_proc -public im_dynfield::attribute_store {
 	ns_log Notice "im_dynfield::attribute_store: storing values for table '$table_name'"
 
 	# Get the index column for the table_name
-	set table_index_column [util_memoize "db_string icol \"select id_column from acs_object_type_tables where table_name = '$table_name'\" -default {}"]
+	set table_index_column [util_memoize [list db_string icol "
+		select	id_column 
+		from	acs_object_type_tables
+		where	table_name = '$table_name'
+			and object_type = '$object_type_org'
+	" -default ""]]
 
 	# Get the update lines for each table
 	set ulines $update_lines($table_name)
