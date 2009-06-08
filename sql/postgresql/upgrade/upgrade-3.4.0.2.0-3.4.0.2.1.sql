@@ -40,3 +40,6 @@ where parameter_id in (
 	where	package_key = 'intranet-invoices' and parameter_name = 'TimesheetInvoiceReport'
 );
 
+
+-- improved rounding (2 digits) invoice items
+ALTER TABLE im_invoice_items ALTER COLUMN item_units TYPE numeric(12,2);
