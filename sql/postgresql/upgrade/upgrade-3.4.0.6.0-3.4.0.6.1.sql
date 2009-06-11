@@ -506,5 +506,3 @@ end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
--- set img /intranet/admin/ 
-update im_menus set menu_gif_small = 'arrow_right';	
