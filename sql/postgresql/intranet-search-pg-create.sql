@@ -350,18 +350,25 @@ begin
 		where
 			object_id	= p_object_id
 			and object_type_id = v_object_type_id;
-	else 
-		insert into im_search_objects (
-			object_id,
-			object_type_id,
-			biz_object_id,
-			fti
-		) values (
-			p_object_id,
-			v_object_type_id,
-			p_biz_object_id,
-			to_tsvector(''default'', norm_text(v_text))
-		);
+	else
+	        select  count(*)
+	       	into    v_exists_p
+        	from    acs_objects
+	        where   object_id = p_object_id;
+	
+		if v_exists_p = 1 then 
+			insert into im_search_objects (
+				object_id,
+				object_type_id,
+				biz_object_id,
+				fti
+			) values (
+				p_object_id,
+				v_object_type_id,
+				p_biz_object_id,
+				to_tsvector(''default'', norm_text(v_text))
+			);
+		end if;
 	end if;
 
 	return 0;
