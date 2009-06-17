@@ -579,7 +579,7 @@ BEGIN
 round((select count(*) 
 from im_projects 
 where start_date > now()::date-30 and start_date <= now()::date) * 1.0 /
-(select count(*) from (select distinct project_lead_id from im_projects where start_date > now()::date-30 and start_date <= now()::date) t)
+(select (count(*)*1.0 + 0.00000000001) from (select distinct project_lead_id from im_projects where start_date > now()::date-30 and start_date <= now()::date) t)
 ,1)'',
 		0,
 		100,
