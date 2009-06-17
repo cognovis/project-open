@@ -1,11 +1,144 @@
-Change Log
+==============================================================
+	]project-open[ Change Log
+==============================================================
+
+
 
 
 
 ==============================================================
-V3.2.7.0 (V3.2.Beta4) Changes
+V3.4 Changes
 ==============================================================
 
+Major Enhancements & New Packages
+
+      * GUI Improvements:
+	We have completely restructured the GUI based on CSS "skins".
+
+      * Performance Improvements for large Organizations:
+	We have implemented optimizations to improve performance for 
+	organizations with >1000 users: Caching mechanisms (speedup 
+	x3 on a number of frequently used pages), SQL optimizations 
+	(speedup x10 on some reports, x2 speedups on other pages) and 
+	improved support for parallelization on multi-core processors).
+
+      * Integration of Dynamic Workflow:
+	The Petri-Net Workflow was already part of V3.2. In V3.4 we 
+	have extended the number of objects to which you can attach 
+	a workflow and we provide default workflows for budgets, 
+	projects, absences and timesheets.
+
+      * Helpdesk / ITIL Service Desk:
+	The new [ helpdesk ] package implements tickets and ticket 
+	queues. You can assign Petri-Net Workflows per ticket type.
+	The [ helpdesk ] package is suitable for all business types, 
+	even though our default configuration will implement an ITSM 
+	Service Desk.
+	 
+      * ITIL Configuration Management/Database:
+	The new "Configuration Database" is capable to maintain IT and 
+	other inventories. A first integration with OCS Inventory NG is 
+	available.
+	 
+      * ITIL Release Management:
+	Release management allows company to track changes in their 
+	software according to Basel II and SOX regulations.
+	 
+      * CVS & Host Version Control Integration
+	A first integration is available with CVS and Host version 
+	management systems. The CVS integration is capable to close 
+	tickets in the [ helpdesk ] .
+	 
+      * RFQ/RFA Module:
+	This new package allows for generic Request for Quotation, 
+	Request for Availability and Reverse Auction type of auctions.
+
+      * New Key Performance Indicators (KPI):
+	KPIs already exist as graphical widgets on top of the data-
+	warehouse. We now are going to add a range of frequently used 
+	financial and timesheet indicators.  
+
+
+New Features
+
+      * New Reports:
+	We have added a number of reports and data-warehouse cubes.
+
+      * Reporting for the current year:
+	Most reports and List Pages now include a start- and end
+	data defaulting to the current year. This feature improves 
+	reporting speed for customers working more then 3 years with 
+	]project-open[.
+
+      * Timesheet Invoicing Wizard:
+	The improved functionality now supports non-billable materials
+	(type of service) and keeps track of unbilled hours in the 
+	current invoicing period and before.
+
+      * Improved Invoicing Screens:
+	A new AJAX functionality allows for comfortable changing of
+	invoicing offices and contacts when changing the customer
+
+      * Financial Documents List Page: 
+	Added pagination
+
+
+Bug Fixes
+
+      * V3.4 includes more then 150 individual bug fixes
+
+
+
+==============================================================
+V3.3. Changes
+==============================================================
+
+Bug fixes: We have fixed more then 50 smaller issues and bugs.
+
+New features:
+
+      * Installation & Update: ]po[ now checks that all upgrade
+	scripts have been executed. Non executed upgrade scripts accounted
+	for an important percentage of user complaints in previous versions.
+      * Reporting: Added user-definable reports
+      * Reporting: Added an "Indicators" module that allows 
+	to define and track process performance indicators over time.
+      * Invoices: "Canned Notes" implement pre-defined statements 
+	to include in invoices and other financial documents.
+      * Backup: The Backup screen now allows to download backup files 
+	over the Web, simplifying the backup procedure.
+      * Performance: A number of frequently used procedure are now cached 
+	to improve performance.
+      * Rating: Added "Simple Surveys" rating module
+      * CRM: Improved the "intranet-mail-integration" Email 
+	integration module so that it is now usable. The module allows to 
+	associate incoming email with ]po[ users, effectively maintaining 
+	an email track record per customer.
+      * Translation: Added a link for "editors" to rate their 
+	"translator" (translation-only)
+      * Translation: Added a "Tandem Translation Module". This 
+	module keeps track of the translator-editor tandem combination by 
+	counting how frequently an editor has worked with a translator.
+      * Translation: Added TinyTM Integration. We have integrated TinyTM 
+	(an open-source translation memory) with ]po[. TinyTM itself is 
+	still in "alpha" development/alpha status.
+      * System Integration: Improved the CVS Import: We have added an 
+	algorithm to guess the separator of CSV imports ("," vs. 
+	";").
+      * System Integration: Added an UBS (Unified Business Language) for 
+	accounting applications such as SAP, Oracle or Navision.
+      * Localizatin: Added French as a default language.
+
+Other:
+
+      * We have improved the upgrade procedure. ]po[ now checks for update 
+	scripts that need to be executed.
+
+
+
+==============================================================
+V3.2 Changes
+==============================================================
 
 Major Enhancements:
       * GanttProject Integration:
