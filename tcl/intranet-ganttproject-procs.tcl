@@ -1338,7 +1338,7 @@ ad_proc -public im_ganttproject_resource_component {
 		where
 		        r.object_id_one = child.project_id
 		        and r.object_id_two = u.user_id
-		        and parent.project_status_id in (76)
+		        and parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
 		        and parent.parent_id is null
 		        and child.tree_sortkey 
 				between parent.tree_sortkey 
@@ -1784,17 +1784,20 @@ ad_proc -public im_ganttproject_gantt_component {
 	from	im_projects
 	where	parent_id is null
 		and company_id = :customer_id
-		and project_status_id = [im_project_status_open]
+		and project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
         "]
     }
     
+
+
+
     # No projects specified? Show the list of all active projects
     if {"" == $project_id} {
         set project_id [db_list pids "
 	select	project_id
 	from	im_projects
 	where	parent_id is null
-		and project_status_id = [im_project_status_open]
+		and project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
         "]
     }
 
@@ -1966,7 +1969,7 @@ ad_proc -public im_ganttproject_gantt_component {
 				to_date(:end_date, 'YYYY-MM-DD')
 			) ) d
 		where
-			parent.project_status_id in (76)
+			parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
 		        and parent.parent_id is null
 		        and child.tree_sortkey 
 				between parent.tree_sortkey 
@@ -2134,7 +2137,7 @@ ad_proc -public im_ganttproject_gantt_component {
 		        im_projects parent,
 		        im_projects child
 		where
-			parent.project_status_id in (76)
+			parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
 		        and parent.parent_id is null
 		        and child.tree_sortkey 
 				between parent.tree_sortkey 
