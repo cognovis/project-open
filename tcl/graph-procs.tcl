@@ -402,10 +402,40 @@ ad_proc wf_graphviz_dot_exec {
     puts -nonewline $fw $dot
     close $fw
     
-    if { $to_file_p } {
-	exec -keepnewline $graphviz_dot_path -T$output -o $tmp_out $tmp_dot
-    } else {
-	set result [exec -keepnewline $graphviz_dot_path -T$output $tmp_dot]
+    if {[catch {
+	if { $to_file_p } {
+	    exec -keepnewline $graphviz_dot_path -T$output -o $tmp_out $tmp_dot
+	} else {
+	    set result [exec -keepnewline $graphviz_dot_path -T$output $tmp_dot]
+	}
+    } err_msg]} {
+	
+	# Check for error with graphviz 2.8
+	if {[regexp {Layout was not done} $err_msg match]} { 
+	    ad_return_complaint 1 "
+		<b>Error executing 'dot' GraphViz</b>:<br>&nbsp;<br>
+		This error message probably means that GraphViz's
+		plugins are not yet configured.<br>
+		To configure the plugins please:
+		<ol>
+		<li>Log in as root.
+		<li>Execute: <tt>dot -c</tt>
+		</ol>
+		<br>
+		Here is the original error message:<br>
+		<pre>$err_msg</pre><br>
+
+	    "
+	    ad_script_abort
+	}
+
+	ad_return_complaint 1 "
+		<b>Error executing 'dot' GraphViz</b>:<br>&nbsp;<br>
+		We have encountered an error executing the GraphViz external
+		appliction to render your workflow graph. <br>
+		Here is the detailed error message:<br>&nbsp;<br>
+		<pre>$err_msg</pre>
+	"
     }
     
     file delete $tmp_dot
