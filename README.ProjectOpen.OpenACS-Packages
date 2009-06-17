@@ -1,7 +1,7 @@
 
-  ]project-open[ OpenACS Installer V3.4.0.1
+  ]project-open[ OpenACS Installer V3.4.0
   Frank Bergmann <frank.bergmann@project-open.com>
-  Copyright (c) 2008 ]project-open[
+  Copyright (c) 2009 ]project-open[
 
   This is the ]project-open[ installer for OpenACS. This document describes
   how to install ]po[ on top of an existing OpenACS installation.
@@ -10,7 +10,7 @@
 
   0. About the Installer
 
-  Copyright (c) 2008 ]project-open[
+  Copyright (c) 2009 ]project-open[
   Frank Bergmann <frank.bergmann@project-open.com>
   http://www.project-open.org/
 
@@ -29,7 +29,7 @@
 
   This installer is available in the "Support Files" download section of
   at http://sourceforge.net/projects/project-open/ with the name
-  "project-open-OpenACS-3.4.0.1.test.tgz". 
+  "project-open-OpenACS-3.4.x.y.test.tgz". 
 
   For discussion please see the "Open Discussions" forum at SourceForge.
 
