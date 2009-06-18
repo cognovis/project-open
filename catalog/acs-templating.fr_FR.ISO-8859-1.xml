@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="acs-templating" package_version="5.1.2" locale="fr_FR" charset="ISO-8859-1">
+<message_catalog package_key="acs-templating" package_version="5.1.5" locale="fr_FR" charset="ISO-8859-1">
 
   <msg key="12-Hour">12 heures</msg>
   <msg key="24-Hour">24 heures</msg>
@@ -27,6 +27,8 @@
   <msg key="Seconds">Secondes</msg>
   <msg key="Sort_order">Ordre de tri</msg>
   <msg key="Spellcheck">Orthographe</msg>
+  <msg key="Tag_handler_invalid_number_of_args">Nombre d'arguments incorrect pour etiquetter le gestionnaire. 
+</msg>
   <msg key="Template_parser_error_in_parameter_list">Erreur dans la liste de paramètres</msg>
   <msg key="Year">Année</msg>
 </message_catalog>
