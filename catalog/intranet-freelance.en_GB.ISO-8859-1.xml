@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-freelance" package_version="3.4.0.6.0" locale="en_GB" charset="ISO-8859-1">
+
+  <msg key="lt_Recruiting_Test_Resul">Recruitment Test Result</msg>
+  <msg key="Recruiting_Status">Recruitment Status</msg>
+  <msg key="Recruiting_Test_Type">Recruitment Test Type</msg>
+  <msg key="Recruting_Source">Recruitment Source</msg>
+</message_catalog>

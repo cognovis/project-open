@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-freelance" package_version="3.4.0.6.0" locale="tr_TR" charset="utf-8">
+
+  <msg key="Claim">İddia</msg>
+  <msg key="Edit">Düzenle</msg>
+  <msg key="lt_Freelance_Information">Serbest Çalışan Bilgileri</msg>
+  <msg key="Skill">Vasıf</msg>
+  <msg key="Skills">Vasıflar</msg>
+</message_catalog>
