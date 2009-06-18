@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-hr" package_version="3.2.10.1.0" locale="fr_FR" charset="ISO-8859-1">
+<message_catalog package_key="intranet-hr" package_version="3.4.0.6.0" locale="fr_FR" charset="ISO-8859-1">
 
   <msg key="add_supervisor">Ajouter Supérieur hiérarchique</msg>
   <msg key="Availability_">Disponibilité</msg>
@@ -24,6 +24,7 @@
   <msg key="lt_Employees_without_sup">Employés sans supérieurs hiérarchiques</msg>
   <msg key="lt_Error_creating_a_new_">Erreur de création d'un nouveau coût récurrent pour l'employé \#%employee_id%:</msg>
   <msg key="lt_Error_inserting_emplo">Erreur lors de la saisie du coût salarial:</msg>
+  <msg key="lt_For_the_org_chart_pag">Pour Travailler la page de la charte graphique de l'org,vous avez besoin d'avoir le setup le \&quot;qui supervises qui&quot;\ relations de sorte que une seule personne(le CEO) qui n'a ni de  superviseur ni de subordonnées.</msg>
   <msg key="lt_Internal_error_unknow">Erreur interne: vue '%view_name%' inconnue</msg>
   <msg key="lt_Monthly_Social_Securi">Sécurité Social mensuelle</msg>
   <msg key="lt_Please_notify_your_sy">Veuillez informer votre administrateur système.</msg>
