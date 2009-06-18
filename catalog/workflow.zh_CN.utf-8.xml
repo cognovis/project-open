@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="workflow" package_version="2.0.0b3" locale="zh_CN" charset="utf-8">
+<message_catalog package_key="workflow" package_version="2.1.1" locale="zh_CN" charset="utf-8">
 
   <msg key="Case">案例</msg>
   <msg key="lt_Please_click_here_to_">请单击%object_type.pretty_name%访问:</msg>
