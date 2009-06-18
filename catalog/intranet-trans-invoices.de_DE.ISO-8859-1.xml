@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-trans-invoices" package_version="3.4.0.0.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-trans-invoices" package_version="3.4.0.6.0" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Accounting_Contact">Rechnungskontakt</msg>
   <msg key="Add_New">Neuer Eintrag</msg>
@@ -45,19 +45,29 @@
   <msg key="lt_Generate_Purchase_Ord">Auftrag erstellen</msg>
   <msg key="lt_Insufficient_Privileg">Unzureichende Berechtigungen</msg>
   <msg key="lt_It_contains_some_comm">Kommentare sind in der Datei enthalten.</msg>
+  <msg key="lt_Please_backup_and_res">Bitte speichern Sie und grenzen Sie die Auswahl auf Projekte mit einem einzelnen Kunden ein.</msg>
   <msg key="lt_sample_pricelist_CSV_">Beispiel Preisliste in CSV-Format</msg>
   <msg key="lt_Select_Projects_for_I">Projekte auswählen</msg>
   <msg key="lt_Select_Tasks_for_Invo">Aufgaben auswählen</msg>
+  <msg key="lt_There_are_currently_n">Hier sind Momentan keine Rechnungen, die den ausgewählten Kriterien entsprechen</msg>
+  <msg key="lt_There_are_currently_n_1">Es gibt im Moment keine Projekte, die zu den ausgewählten Kriterien passen</msg>
   <msg key="lt_To_create_a_new_invoi">Bitte wählen sie ein oder mehr Projekte&lt;br&gt;&lt;em&gt;des selben Kunden&lt;/em&gt; und bestätigen sie</msg>
+  <msg key="lt_Unknown_action_for_pr">Unbekannte Aktion für Preis-Aktion.</msg>
+  <msg key="lt_Upload_Client_Prices_">Kundenpreise-CSV hochladen</msg>
+  <msg key="lt_Use_the_quotBrowsequo">Benutzen sie den &amp;amp;quot;Browse...&amp;amp;quot; Knopf um ihren File zu lokalisieren, dann klicken sie &amp;amp;quot;Open&amp;amp;quot;.</msg>
+  <msg key="lt_You_dont_have_suffici">Sie haben keine ausreichenden Privilegien um diese Seite zu sehen</msg>
+  <msg key="lt_You_have_insufficient">Sie verfügen über nicht ausreichende Berechtigungen, um diese Seite zu sehen.</msg>
   <msg key="lt_You_have_insufficient_1">Sie haben unzureichene Berechtigungen</msg>
   <msg key="lt_You_have_selected_mul">Sie haben mehrere Kunden gewählt</msg>
   <msg key="lt_You_have_selected_mul_1">Sie haben mehrere Kunden gewählt</msg>
   <msg key="MSM">Messenger</msg>
   <msg key="Name">Name</msg>
   <msg key="New_cost_type">Neu(e) %cost_type%</msg>
+  <msg key="New_Customer_Invoice_from_Translation_Tasks">Neue Kundenrechnung von Übersetzungsaufgaben</msg>
   <msg key="New_Invoice">Neue Rechnung</msg>
   <msg key="New_Price">Neuer Preis</msg>
   <msg key="New_Purchase_Order">Neuer Auftrag</msg>
+  <msg key="New_Quote_from_Translation_Tasks">Neues Zitat von Übersetzungsaufgabe</msg>
   <msg key="New_Trans_Invoice">Neue Rechnung auf Basis von Übersetzungsaufgaben</msg>
   <msg key="New_Translation_Customer_Invoice">Neue Kundenrechnung auf Basis von Übersetzungsaufgaben</msg>
   <msg key="New_Translation_Quote">Neues Angebot auf Basis von Übersetzungsaufgaben</msg>
