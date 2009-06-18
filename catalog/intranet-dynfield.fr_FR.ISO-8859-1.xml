@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-dynfield" package_version="3.2.10.1.0" locale="fr_FR" charset="ISO-8859-1">
+<message_catalog package_key="intranet-dynfield" package_version="3.4.0.6.0" locale="fr_FR" charset="ISO-8859-1">
 
   <msg key="Default_page">Page par défaut</msg>
   <msg key="Del">Suppr</msg>
   <msg key="Delete">Supprimer</msg>
+  <msg key="Documentation">Documentation</msg>
   <msg key="Edit_the_form_adp_file">Modifier le fichier adp</msg>
   <msg key="Email_Address">Adresse Email</msg>
   <msg key="examples">exemples</msg>
