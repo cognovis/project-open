@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-freelance" package_version="3.2.7.0.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-freelance" package_version="3.4.0.6.0" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Account_Unavailable">Konto nicht verfügbar</msg>
   <msg key="Add">Hinzufügen</msg>
@@ -8,6 +8,7 @@
   <msg key="Argument_Error">Argument Error</msg>
   <msg key="Bank">Bank</msg>
   <msg key="Bank_Account">Bankkonto</msg>
+  <msg key="Cell_Phone">Handy</msg>
   <msg key="Claim">Grad</msg>
   <msg key="Claimed">Grad</msg>
   <msg key="Comment">Kommentar</msg>
@@ -18,22 +19,37 @@
   <msg key="Del">Löschen</msg>
   <msg key="Edit">Bearbeiten</msg>
   <msg key="Editing_rate">Stundensatz editieren</msg>
+  <msg key="Email">E-mail</msg>
   <msg key="erase">löschen</msg>
   <msg key="Error">Fehler</msg>
   <msg key="Filter_Freelancers">Freelancers filtern</msg>
   <msg key="Freelance">Freiberufler</msg>
   <msg key="Go">Los</msg>
+  <msg key="Home_Phone">Privatnummer</msg>
   <msg key="Hourly_rate">Stundensatz</msg>
+  <msg key="lt_Add_a_new_value_range">Neue %value_range_category_type% hinzufügen?</msg>
+  <msg key="lt_Error_updating_experi">Fehler bei der Aktualisierung der Erfahrungen</msg>
   <msg key="lt_Freelance_Information">Informationen Freiberufler</msg>
   <msg key="lt_Insufficient_Privileg">Unzureichende Berechtigungen</msg>
   <msg key="lt_Internal_error_unknow">Interner Fehler: Unbekannte Sicht</msg>
+  <msg key="lt_Please_notify_your_sy">Bitte benachrichtigen Sie Ihren Systemverwalter.</msg>
+  <msg key="lt_Probably_your_account">Wahrscheinlich wurde ihr Konto, aus irgendeinem Grund, gelöscht</msg>
   <msg key="lt_Recruiting_Informatio">Einstellungsinformationen</msg>
   <msg key="lt_Recruiting_Test_Resul">Ergebnis Einstellungstest </msg>
+  <msg key="lt_Recruiting_Test_Result">Test Ergebnis</msg>
   <msg key="lt_The_database_choked_o">Die Datenbank hat die Daten nicht akzeptiert</msg>
+  <msg key="lt_There_are_currently_n">Es gibt zur Zeit keine Einträge, die den ausgewählten Kriterien entsprechen.</msg>
   <msg key="lt_There_are_currently_n_1">Derzeit keine Einträge verfügbar für %skill_type%</msg>
   <msg key="lt_upload_a_replacement_">hochladen %replacement_text%</msg>
   <msg key="lt_uploaded_for_this_use">hochgeladen für diesen Benutzer.</msg>
+  <msg key="lt_We_cannot_find_you_us">Wir können Sie (user #%user_id%) in unserer Benutzertabelle nicht finden.</msg>
+  <msg key="lt_We_couldnt_find_user_">Wir konnten den Benutzer #%user_id% nicht finden; vielleicht wurde diese Person gelöscht?</msg>
+  <msg key="lt_You_dont_have_permiss">Sie haben keine Erlaubnis diese Seite zu sehen</msg>
+  <msg key="lt_You_have_insufficient">Sie haben keine Berechtigung diesen Benutzer zu sehen.</msg>
+  <msg key="lt_You_have_insufficient_1">Sie haben keine Berechtigung den Benuter %user_id% zu verändern.</msg>
+  <msg key="lt_You_need_to_specify_a">Sie müssen add_skill_id angeben</msg>
   <msg key="modify_the_comment">Kommentar bearbeiten</msg>
+  <msg key="Name">Name</msg>
   <msg key="no_freelancers">keine Freiberufler</msg>
   <msg key="Note">Notiz</msg>
   <msg key="Notify">Benachrichtigen</msg>
@@ -42,7 +58,10 @@
   <msg key="Portrait">Portrait</msg>
   <msg key="Private_Notes">Private Notizen</msg>
   <msg key="Rates_Information">Information Kostensätze</msg>
+  <msg key="Recr_Status">Einstellungsstatus</msg>
+  <msg key="Recr_Test">Einstellungsstatus</msg>
   <msg key="Recruiting_Status">Einstellungsstatus</msg>
+  <msg key="Recruiting_Status1">Einstellungsstatus</msg>
   <msg key="Recruiting_Test_Type">Typ Einstellungstest</msg>
   <msg key="Recruting_Source">Quelle des Kontakts</msg>
   <msg key="Select">Ausw</msg>
@@ -56,4 +75,6 @@
   <msg key="upload_a_portrait">Portrait hochladen</msg>
   <msg key="Uploaded">Hochgeladen</msg>
   <msg key="Users">Benutzer</msg>
+  <msg key="Work_Phone">Geschäftsnummer</msg>
+  <msg key="Worked_already_with_customer">hat gearbeitet mit</msg>
 </message_catalog>
