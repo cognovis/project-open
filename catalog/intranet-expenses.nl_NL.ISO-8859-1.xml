@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-expenses" package_version="3.4.0.6.0" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Add_a_new_Expense">Voeg uitgave toe </msg>
+  <msg key="External_company_name">Externe Bedrijfs naam</msg>
+  <msg key="Project_Name">Project Naam</msg>
+  <msg key="Vat_Included">BTW % Incl.</msg>
+</message_catalog>
