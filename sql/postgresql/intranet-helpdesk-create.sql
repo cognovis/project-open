@@ -1553,61 +1553,11 @@ alter table im_tickets add ticket_telephony_request_type_id integer;
 -- im_dynfield_attribute_new(object_type, column_name, pretty_name, widget_name, datatype, required_p, pos_y, also_hard_coded_p);
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_telephony_request_type_id', 'Telephony Request Type', 'telephony_request_type', 'integer', 'f');
 
-insert into im_dynfield_type_attribute_map (
-	attribute_id, object_type_id, display_mode
-) values (
-	(
-		select attribute_id 
-		from im_dynfield_attributes 
-		where acs_attribute_id = (
-			select attribute_id 
-			from acs_attributes 
-			where attribute_name = 'ticket_telephony_request_type_id'
-		)
-	),
-	30106,
-	'edit'
-);
-
 -- Old and new telephone number
 alter table im_tickets add ticket_telephony_old_number text;
 alter table im_tickets add ticket_telephony_new_number text;
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_telephony_old_number', 'Old Number/ Location', 'textbox_medium', 'string', 'f');
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_telephony_new_number', 'New Number/ Location', 'textbox_medium', 'string', 'f');
-
-insert into im_dynfield_type_attribute_map (
-	attribute_id, object_type_id, display_mode
-) values (
-	(
-		select attribute_id 
-		from im_dynfield_attributes 
-		where acs_attribute_id = (
-			select attribute_id 
-			from acs_attributes 
-			where attribute_name = 'ticket_telephony_old_number'
-		)
-	),
-	30106,
-	'edit'
-);
-
-insert into im_dynfield_type_attribute_map (
-	attribute_id, object_type_id, display_mode
-) values (
-	(
-		select attribute_id 
-		from im_dynfield_attributes 
-		where acs_attribute_id = (
-			select attribute_id 
-			from acs_attributes 
-			where attribute_name = 'ticket_telephony_new_number'
-		)
-	),
-	30106,
-	'edit'
-);
-
-
 
 
 
