@@ -46,7 +46,12 @@ set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
 set required_field "<font color=red size=+1><B>*</B></font>"
 set price_url_base "/intranet-trans-invoices/price-lists/new"
-set number_format [im_l10n_sql_currency_format]
+
+set number_format 999999999999D
+
+for { set i 0 } { $i <= [expr [parameter::get_from_package_key -package_key intranet-invoices -parameter "AccuracyFinDocItems" -default 2] -1 ] } { incr i } {
+    append number_format "0"
+}
 
 if {![im_permission $user_id add_invoices]} {
     ad_return_complaint "[_ intranet-trans-invoices.lt_Insufficient_Privileg]" "
