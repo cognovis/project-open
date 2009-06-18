@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-cost" package_version="3.4.0.0.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-cost" package_version="3.4.0.6.0" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Absences">Abwesenheiten</msg>
   <msg key="Administration">Administration</msg>
@@ -9,7 +9,11 @@
   <msg key="Companies">Firmen</msg>
   <msg key="Company">Firma</msg>
   <msg key="context">Kontext</msg>
+  <msg key="Cost_Center">Kostenstelle</msg>
+  <msg key="Cost_Centers">Kostenstellen</msg>
   <msg key="Cost_Items">Kosten</msg>
+  <msg key="CostCenter_short">KC</msg>
+  <msg key="create">create</msg>
   <msg key="Currency">Währung</msg>
   <msg key="Customer">Kunde</msg>
   <msg key="Customer_Invoices">Kundenrechnungen</msg>
@@ -26,9 +30,12 @@
   <msg key="Effective_Date">Effektives Datum</msg>
   <msg key="Expenses">Andre Kosten</msg>
   <msg key="Filter_Documents">Dokumente filtern</msg>
+  <msg key="Finance">Finanzen</msg>
   <msg key="finance">Finanzen</msg>
   <msg key="Finance_Home">Finanzen Homepage</msg>
+  <msg key="Finance_Summary">Kosten Zusammenfassung</msg>
   <msg key="Financial_Documents">Finanzdokumente</msg>
+  <msg key="Financial_Summary">Finanzielle Zusammenfassung</msg>
   <msg key="Go">Los</msg>
   <msg key="Grand_Total">Gesamtsumme</msg>
   <msg key="Investment">Investition</msg>
@@ -46,11 +53,17 @@
   <msg key="New_Cost_Item">Neue Kosten</msg>
   <msg key="New_Customer_Docs">Neues Kundendokument</msg>
   <msg key="New_Provider_Docs">Neues Providerdokument</msg>
+  <msg key="New_Timesheet_Invoice">Neue Stunden Rechnung</msg>
   <msg key="New_Trans_Invoice">Neue Ubersetzungsrechnung</msg>
   <msg key="Next_Page">Nächste Seite</msg>
   <msg key="Note">Notiz</msg>
   <msg key="Options">Optionen</msg>
+  <msg key="Org_Amount">Org</msg>
+  <msg key="Outdated_Message">Überalterte Wechselkurs Warnung</msg>
+  <msg key="Outdated_since_x_days">Überholt seit %days% Tagen</msg>
   <msg key="Paid">Bezahlt</msg>
+  <msg key="Paid_Amount">Betrag bezahlt</msg>
+  <msg key="Paid_Currency">Währung bezahlt</msg>
   <msg key="Payment_Days">Zahlungsziel</msg>
   <msg key="Payments">Zahlungen</msg>
   <msg key="Please_Select">Bitte wählen</msg>
@@ -69,6 +82,7 @@
   <msg key="Start_Block">Startwoche</msg>
   <msg key="Status">Status</msg>
   <msg key="TAX">Steuer</msg>
+  <msg key="The_exchange_rates_are_outdated">Die Wechselkurse für die folgenden Währungen sind veraltet. Bitte kontaktieren sie ihren Systemadministrator um die folgenden Wechselkurse zu aktualisieren:</msg>
   <msg key="Timesheet_Costs">Zeiterfassungskosten</msg>
   <msg key="Type">Typ</msg>
   <msg key="VAT">MwSt.</msg>

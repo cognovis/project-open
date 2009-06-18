@@ -1,86 +1,15 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-cost" package_version="3.1.2.0.0" locale="pt_BR" charset="ISO-8859-1">
+<message_catalog package_key="intranet-cost" package_version="3.4.0.6.0" locale="pt_BR" charset="ISO-8859-1">
 
-  <msg key="Absences">Ausências</msg>
-  <msg key="Administration">Administração</msg>
-  <msg key="All_Costs">Todos os Custos</msg>
-  <msg key="Amount">Quantia</msg>
-  <msg key="Client">Cliente</msg>
-  <msg key="Companies">Empresas</msg>
-  <msg key="Company">Empresa</msg>
-  <msg key="context">contexto</msg>
-  <msg key="Cost_Center">Centro de Custo</msg>
-  <msg key="Cost_Centers">Centros de Custo</msg>
-  <msg key="Cost_Items">Ítens de Custo</msg>
-  <msg key="create">criar</msg>
-  <msg key="Currency">Moeda</msg>
-  <msg key="Customer">Cliente</msg>
-  <msg key="Customer_Invoices">Faturas de Cliente</msg>
-  <msg key="Customers">Clientes</msg>
-  <msg key="Del">Apagar</msg>
-  <msg key="Description">Descrição</msg>
-  <msg key="Document">Documento</msg>
-  <msg key="Document_Status">Status do Documento</msg>
-  <msg key="Document_Type">Tipo do Documento</msg>
-  <msg key="Documentation">Documentação:</msg>
-  <msg key="Due">Limite</msg>
-  <msg key="Due_Date">Data Limite</msg>
-  <msg key="Edit_Cost">Editar Custo</msg>
-  <msg key="Effective_Date">Data Efetiva</msg>
-  <msg key="Filter_Documents">Filtrar Documentos</msg>
-  <msg key="finance">financeiro</msg>
-  <msg key="Finance_Home">Portal Financeiro</msg>
-  <msg key="Financial_Documents">Documentos Financeiros</msg>
-  <msg key="Financial_Summary">Extrato Financeiro</msg>
-  <msg key="Go">Ir para</msg>
-  <msg key="Grand_Total">Total Geral</msg>
-  <msg key="Investment">Investimento</msg>
-  <msg key="lt_Cost_Item_Administrat">Administração de ítem de custo</msg>
-  <msg key="lt_Create_a_new_purchase">Criar uma nova ordem de compra</msg>
-  <msg key="lt_Didnt_find_the_the_vi">Impossível localizar a visão '%$view_name%'</msg>
-  <msg key="lt_Distribute_costs_acco">Distribuir custos segundo informação da planilha de pagamento</msg>
-  <msg key="lt_Finance_high-level_de">Descrição Financeira detalhada</msg>
-  <msg key="lt_No_financial_document">Este projeto ainda não tem documentos financeiros</msg>
-  <msg key="lt_There_are_currently_n">Atualmente não existem custos correspondentes ao critério selecionado</msg>
-  <msg key="lt_This_is_the_homepage_">Esta é a página principal da &quot;Área Financeira&quot;. Aqui você pode localizar e entrar todas as informações sobre empresas, projetos e usuários.</msg>
-  <msg key="more_costs">mais custos...</msg>
-  <msg key="Multiple_Currency_Warning">&lt;h2&gt;Alerta de Múltiplas Moedas&lt;/h2&gt;
-&lt;p&gt;
-Este projeto inclui documentos financeiros com mais de uma unidade monetária.
-&lt;br&gt;
-No geral isto não é um problema, mas nos impede de calcular os resultados financeiros (perdas e ganhos) para este projeto e também de inclui-lo nos cálculos de margem de projeto.
-&lt;/p&gt;</msg>
-  <msg key="Name">Nome</msg>
-  <msg key="New_Cost">Novo Custo</msg>
-  <msg key="New_Cost_Item">Novo Ítem de Custo</msg>
-  <msg key="New_Customer_Docs">Criar um Novo Documento para Cliente</msg>
-  <msg key="New_Provider_Docs">Criar um Novo Documento para Fornecedor</msg>
-  <msg key="New_Trans_Invoice">Nova Fatura de Tradução</msg>
-  <msg key="Next_Page">Próxima Página</msg>
-  <msg key="Note">Nota</msg>
-  <msg key="Options">Opções:</msg>
-  <msg key="Paid">Pago</msg>
-  <msg key="Payment_Days">Dias de Pagamento</msg>
-  <msg key="Payments">Pagamentos</msg>
-  <msg key="Please_Select">Favor selecionar</msg>
-  <msg key="Preliminary_Costs">Custos Preliminares</msg>
-  <msg key="Previous_Page">Página Anterior</msg>
-  <msg key="Print_Template">Modelo de Impressão</msg>
-  <msg key="Project">Projeto</msg>
-  <msg key="Provider">Fornecedor</msg>
-  <msg key="Provider_Bills">Faturas de Fornecedores</msg>
-  <msg key="Providers">Fornecedores</msg>
-  <msg key="Purchase_Orders">Ordens de Compra</msg>
-  <msg key="Quotes">Quotas</msg>
-  <msg key="Real_Costs">Custos Reais</msg>
-  <msg key="Repeating_Costs">Custos Recorrentes</msg>
-  <msg key="Save">Salvar</msg>
-  <msg key="Start_Block">Bloco Inicial</msg>
-  <msg key="Status">Status</msg>
-  <msg key="TAX">IMPOSTOS</msg>
-  <msg key="Timesheet_Costs">Planilha de Custos por ordem de data</msg>
-  <msg key="Type">Tipo</msg>
-  <msg key="VAT">VAT</msg>
-  <msg key="Who_gets_the_money">Quem cobra?</msg>
-  <msg key="Who_pays">Quem paga?</msg>
+  <msg key="CostCenter_short">CC</msg>
+  <msg key="Expenses">Despesas</msg>
+  <msg key="Finance">Financas</msg>
+  <msg key="Finance_Summary">Sumário Financeiro</msg>
+  <msg key="New_Timesheet_Invoice">Nova cobrança de Timesheet</msg>
+  <msg key="Org_Amount">Org</msg>
+  <msg key="Outdated_Message">Aviso de Taxas de câmbio desatualizadas</msg>
+  <msg key="Outdated_since_x_days">Desatualizado desde %days% dias</msg>
+  <msg key="Paid_Amount">Quantia paga</msg>
+  <msg key="Paid_Currency">Moeda do pagamento</msg>
+  <msg key="The_exchange_rates_are_outdated">As taxas de câmbio a seguir estão desatualizadas. Por favor contate o Administrador do Sistema para atualizar as seguintes taxas de câmbio:</msg>
 </message_catalog>

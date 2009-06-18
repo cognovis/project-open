@@ -1,26 +1,24 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-cost" package_version="3.2.10.1.0" locale="fr_FR" charset="ISO-8859-1">
+<message_catalog package_key="intranet-cost" package_version="3.4.0.6.0" locale="fr_FR" charset="ISO-8859-1">
 
   <msg key="Absences">Absences</msg>
   <msg key="Administration">Administration</msg>
   <msg key="All_Costs">Tous les coûts</msg>
   <msg key="Amount">Montant</msg>
-  <msg key="Centres_de_coûts">Centres de coûts</msg>
   <msg key="Client">Client</msg>
   <msg key="Companies">Sociétés</msg>
   <msg key="Company">Société</msg>
   <msg key="context">contexte</msg>
   <msg key="Cost_Center">Centre de coût</msg>
-  <msg key="Cost_Center_permissions_help">Aide sur les Centres de Coûts</msg>
   <msg key="Cost_Centers">Centres de coût</msg>
   <msg key="Cost_Items">Eléments de coût</msg>
+  <msg key="CostCenter_short">CC</msg>
   <msg key="create">créer</msg>
   <msg key="Currency">Devise</msg>
   <msg key="Customer">Client</msg>
   <msg key="Customer_Invoices">Factures Client</msg>
   <msg key="Customers">Clients</msg>
   <msg key="Del">Suppr</msg>
-  <msg key="DeptQuest">Département</msg>
   <msg key="Description">Description</msg>
   <msg key="Document">Document</msg>
   <msg key="Document_Status">Statut du document</msg>
@@ -30,9 +28,9 @@
   <msg key="Due_Date">Date échéance</msg>
   <msg key="Edit_Cost">Modifier coût</msg>
   <msg key="Effective_Date">Date d'effet</msg>
-  <msg key="Employees">Employés</msg>
   <msg key="Expenses">Frais</msg>
   <msg key="Filter_Documents">Filtrer les Documents</msg>
+  <msg key="Finance">Finance</msg>
   <msg key="finance">finance</msg>
   <msg key="Finance_Home">Finance - Accueil</msg>
   <msg key="Finance_Summary">Résumé Finance</msg>
@@ -49,7 +47,6 @@
   <msg key="lt_No_financial_document">Aucun document financier pour ce projet</msg>
   <msg key="lt_There_are_currently_n">Aucun coût ne correspond aux critères de recherche</msg>
   <msg key="lt_This_is_the_homepage_">Vous êtes sur la page d'accueil de la &amp;quot;partie finance&amp;quot;. Vous trouverez ici toutes les informations concenant les sociétés, projets et utilisateurs.</msg>
-  <msg key="Menu_Finance">Menu Finance</msg>
   <msg key="more_costs">Plus de coûts...</msg>
   <msg key="Multiple_Currency_Warning">&amp;lt;h2&amp;gt;Attention, devises multiples&amp;lt;/h2&amp;gt;
 &amp;lt;p&amp;gt;
@@ -65,9 +62,13 @@ Bien que cela ne pose généralement aucun problème, cela génera dans le calcul de
   <msg key="New_Trans_Invoice">Nouvelle facture de traduction</msg>
   <msg key="Next_Page">Page suivante</msg>
   <msg key="Note">Note</msg>
-  <msg key="Nouveau_coût">Créer un nouveau document de coût</msg>
   <msg key="Options">Options:</msg>
+  <msg key="Org_Amount">Org.</msg>
+  <msg key="Outdated_Message">Avertissement de taux de change périmé</msg>
+  <msg key="Outdated_since_x_days">Date dépassée de %days% jours</msg>
   <msg key="Paid">Payé</msg>
+  <msg key="Paid_Amount">Paiement</msg>
+  <msg key="Paid_Currency">Monnaie de paiement</msg>
   <msg key="Payment_Days">Jours de paie</msg>
   <msg key="Payments">Réglements</msg>
   <msg key="Please_Select">Veuillez choisir</msg>
@@ -86,8 +87,8 @@ Bien que cela ne pose généralement aucun problème, cela génera dans le calcul de
   <msg key="Start_Block">Début Bloc</msg>
   <msg key="Status">Statut</msg>
   <msg key="TAX">Taxe</msg>
+  <msg key="The_exchange_rates_are_outdated">Les taux de change pour les devises suivantes sont périmés. Veuillez contacter votre administrateur pour mettre à jour les taux de change suivants :</msg>
   <msg key="Timesheet_Costs">Coûts liés aux heures consommées</msg>
-  <msg key="Tous_coûts">Tous coûts</msg>
   <msg key="Type">Type</msg>
   <msg key="VAT">TVA</msg>
   <msg key="Who_gets_the_money">Qui récupère l'argent ?</msg>
