@@ -70,7 +70,7 @@ begin
 	if v_count > 0 then return 0; end if;
 
 	alter table im_trans_tasks
-	add billable_units_interco  numeric(12,1);
+	add billable_units_interco  numeric(12,2);
 
 	return 0;
 end;' language 'plpgsql';
