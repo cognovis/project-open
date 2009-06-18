@@ -1,5 +1,40 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <message_catalog package_key="search" package_version="5.1.5" locale="de_DE" charset="ISO-8859-1">
 
+  <msg key="________Search_took">.
+        Suche dauerte</msg>
   <msg key="Advanced_Search">Fortgeschrittene Suche</msg>
+  <msg key="advanced_search">&amp;quot;Fortgeschrittene Suche&amp;quot;</msg>
+  <msg key="anytime">jederzeit</msg>
+  <msg key="Date_Range">Datumsbereich</msg>
+  <msg key="details">Details</msg>
+  <msg key="Feeling_Lucky">Glücklich fühlen</msg>
+  <msg key="lt_bstopwordsb_is_a_very">&amp;quot;&amp;lt;b&amp;gt;%stopwords%&amp;lt;/b&amp;gt;&amp;quot; ist ein sehr häufig vorkommendes Wort und wurde daher in Ihrer Suchanfrage ignoriert.</msg>
+  <msg key="lt_FtsEngineDriver_not_a">FtsEngineDriver nicht verfügbar!</msg>
+  <msg key="lt_Make_sure_all_words_a">Stellen Sie sicher, dass alle Wörter richtig geschrieben sind.</msg>
+  <msg key="lt_No_pages_were_found_c">Es wurden keine Seiten gefunden mit &amp;quot;</msg>
+  <msg key="lt_The_following_words_a">Die folgenden Wörter kommen sehr häufig vor und wurden daher in Ihrer Suchanfrage ignoriert:</msg>
+  <msg key="lt_Tip_In_most_browsers_">Tipp: In den meisten Browsern können Sie einfach die Return Taste betätigen, statt auf die Schaltfläche &quot;Suchen&quot; zu klicken.</msg>
+  <msg key="lt_Try_different_keyword">Probieren Sie andere Suchbegriffe.</msg>
+  <msg key="lt_Try_more_general_keyw">Probieren Sie allgemeinere Suchbegriffe.</msg>
+  <msg key="lt_Try_your_query_on_stw">Versuchen Sie, Ihre Anfrage auf: %stw;noquote%</msg>
+  <msg key="lt_You_must_specify_some">Sie müssen einige Suchbegriffe angeben</msg>
+  <msg key="nbspDisplay">&amp;amp;nbsp;Anzeige</msg>
+  <msg key="Next">Nächstes</msg>
+  <msg key="of_about">von etwa</msg>
+  <msg key="past_3_months">letzten 3 Monate</msg>
+  <msg key="past_6_months">letzten 6 Monate</msg>
+  <msg key="past_year">vergangenes Jahr</msg>
+  <msg key="Previous">Zurück</msg>
+  <msg key="Result_page">Ergebnisseite:</msg>
+  <msg key="Results">Ergebnisse</msg>
+  <msg key="results">Ergebnisse</msg>
+  <msg key="Search">Suche</msg>
+  <msg key="Searched_for_query">Suche nach: %query%</msg>
+  <msg key="seconds">Skunden.</msg>
+  <msg key="selected">ausgewählt</msg>
+  <msg key="Suggestions">Ratschläge:</msg>
+  <msg key="The">&amp;quot;&amp;lt;b&amp;gt;AND&amp;lt;/b&amp;gt;&amp;quot; Operator ist überflüssig -- Alle Suchbegriffe wurden standardmäßig eingefügt.</msg>
+  <msg key="Try_fewer_keywords">Versuchen Sie es mit weniger Suchbegriffen.</msg>
+  <msg key="Untitled">Unbetitelt</msg>
 </message_catalog>
