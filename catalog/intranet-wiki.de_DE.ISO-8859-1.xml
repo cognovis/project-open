@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-wiki" package_version="3.4.0.0.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-wiki" package_version="3.4.0.6.0" locale="de_DE" charset="ISO-8859-1">
 
+  <msg key="Company_Wiki">Firmen Wiki</msg>
+  <msg key="HomeWiki">Home Wiki</msg>
+  <msg key="Project_Wiki">Projekt Wiki</msg>
   <msg key="User_Wiki">Wiki</msg>
 </message_catalog>
