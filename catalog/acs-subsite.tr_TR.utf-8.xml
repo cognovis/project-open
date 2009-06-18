@@ -1,10 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="acs-subsite" package_version="5.1.2" locale="tr_TR" charset="utf-8">
+<message_catalog package_key="acs-subsite" package_version="5.1.7" locale="tr_TR" charset="utf-8">
 
   <msg key="About_You">Sizin Hakkınızda</msg>
+  <msg key="Account_at_system_closed">%system_name%'deki hesabınız kapanmıştır.</msg>
+  <msg key="Account_close_confirm_no_label">Hayır, beni %pvt_home_name%'ye geri götür</msg>
+  <msg key="Account_close_confirm_yes_label">Evet, lütfen hesabımı kapatın</msg>
+  <msg key="Account_closed">&lt;p&gt;Hesabınız şu anda kapalıdır.&lt;/p&gt; &lt;p&gt;Eğer dilerseniz &lt;a href=&quot;%restore_url%&quot;&gt; hesabınızı yeniden açabiliriz&lt;/a&gt;.&lt;/p&gt;</msg>
+  <msg key="Account_closed_workspace_msg">&lt;p&gt; &lt;font color=&quot;red&quot;&gt; &lt;b&gt; Hesabınız şu an kapalıdır. &lt;/b&gt; &lt;/font&gt; &lt;a href=&quot;%login_url%&quot;&gt; Bu konuda ne yapabileceğinizi görmek için Oturum açın &lt;/a&gt;. &lt;/p&amp;;gt;</msg>
+  <msg key="Account_reopened_message">%system_name% 'deki hesabınız tekrar açılmıştır. Tekrar hoşgeldiniz.</msg>
+  <msg key="Account_reopened_title">Hesap Yeniden Açıldı</msg>
+  <msg key="Action">Eylem</msg>
+  <msg key="Add_new_app">Yeni uygulama ekle</msg>
   <msg key="Answer">Cevap:</msg>
+  <msg key="at">de</msg>
+  <msg key="Authority">Yetkili</msg>
   <msg key="Bad_Password">Kötü Şifre</msg>
+  <msg key="Ban">Yasak</msg>
   <msg key="Basic_Information">Temel Bilgi</msg>
+  <msg key="Biography">Biyografi</msg>
+  <msg key="cannot_retrieve_password">Yerel yetkiliden şifre almak desteklenmez.</msg>
+  <msg key="Cannot_see_memb_list">Üye listesini görünmüyor</msg>
+  <msg key="Change_locale_label">Dil değiştir</msg>
   <msg key="Change_my_Password">Şifremi Değiştir</msg>
   <msg key="Check_Your_Inbox">Gelen kutusunu kontrol edin</msg>
   <msg key="Children">Çocuklar</msg>
@@ -12,13 +28,31 @@
   <msg key="Current_Password">Güncel Şifre:</msg>
   <msg key="Customize_Question">Soruyu Özelleştir</msg>
   <msg key="Direct_Permissions">Direkt İzinler</msg>
+  <msg key="Email">E-posta</msg>
   <msg key="Email_Confirmation">Eposta Teyidi</msg>
   <msg key="Email_not_Requested">Eposta istenmiyor</msg>
+  <msg key="Enabled">Geçerli kılınmış</msg>
+  <msg key="Enter_your_username_to">Şifrenizi kurtarma işlemi için kullanıcı isminizi girin.</msg>
+  <msg key="Erase_Portrait">Portreyi Sil</msg>
+  <msg key="erase_portrait">portreyi sil</msg>
+  <msg key="Error">Hata</msg>
   <msg key="Error_sending_mail">posta yollama hatası</msg>
+  <msg key="Expires">Bitiş</msg>
+  <msg key="Filename">Dosya adı</msg>
+  <msg key="First_names">Adlar</msg>
+  <msg key="Forgot_your_password">Şifrenizi mi unuttunuz?</msg>
   <msg key="Grant">Verme</msg>
   <msg key="Grant_Permission">İzin Verme</msg>
+  <msg key="Invite">Davet Et</msg>
+  <msg key="Log_In">Giris</msg>
   <msg key="Name">İsim:</msg>
   <msg key="New_Password">Yeni Şifre:</msg>
+  <msg key="Password">Parola</msg>
+  <msg key="Register">Kayit olun</msg>
+  <msg key="Remember_my_login">Giris bilgilerimi bu bilgisayarda hatirla</msg>
+  <msg key="Remove_All">Tüm Yetkileri Kaldır</msg>
+  <msg key="Search_For_Exist_User">Mevcut bir kullanıcıyı ara</msg>
+  <msg key="Status">Durum</msg>
   <msg key="Update">Güncelle</msg>
   <msg key="upload_a_portrait">resim yükle</msg>
   <msg key="Your_Portrait">Resminiz</msg>
