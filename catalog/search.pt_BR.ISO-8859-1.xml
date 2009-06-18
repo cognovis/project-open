@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="search" package_version="5.1.5" locale="pt_BR" charset="ISO-8859-1">
+
+  <msg key="________Search_took">. A busca levou</msg>
+  <msg key="Advanced_Search">Busca Avançada</msg>
+  <msg key="advanced_search">busca avançada</msg>
+  <msg key="anytime">qualquer data</msg>
+  <msg key="Date_Range">Período</msg>
+  <msg key="details">detalhes</msg>
+  <msg key="Feeling_Lucky">Com Sorte</msg>
+  <msg key="lt_bstopwordsb_is_a_very"> 	 &quot;&lt;b&gt;%stopwords%&lt;/b&gt;&quot; é uma palavra muito comum e não foi incluída na sua busca.</msg>
+  <msg key="lt_FtsEngineDriver_not_a">FtsEngineDriver não disponível!</msg>
+  <msg key="lt_Make_sure_all_words_a">Verifique se todas as palavras foram digitadas corretamente.</msg>
+  <msg key="lt_No_pages_were_found_c">Não foram encontradas páginas com &quot;</msg>
+  <msg key="lt_The_following_words_a">As seguints palavras são muito comuns e não foram incluídas na busca:</msg>
+  <msg key="lt_Tip_In_most_browsers_">Dica: Na maioria dos browsers basta pressionar &quot;enter&quot; ao invés do botão de busca.</msg>
+  <msg key="lt_Try_different_keyword">Tente palavras-chave diferentes.</msg>
+  <msg key="lt_Try_more_general_keyw">Tente palavras-chave mais genéricas</msg>
+  <msg key="lt_Try_your_query_on_stw">Tente sua query em: %stw;noquote%</msg>
+  <msg key="lt_You_must_specify_some">Você deve especificar algumas palavras</msg>
+  <msg key="nbspDisplay">&amp;nbsp;Apresenta</msg>
+  <msg key="Next">Próximo</msg>
+  <msg key="of_about">de </msg>
+  <msg key="past_3_months">3 meses atrás</msg>
+  <msg key="past_6_months">6 meses atrás</msg>
+  <msg key="past_year">ano passado</msg>
+  <msg key="Previous">Anterior</msg>
+  <msg key="Result_page">Página de resultados</msg>
+  <msg key="Results">Resultados</msg>
+  <msg key="results">resultados</msg>
+  <msg key="Search">Busca</msg>
+  <msg key="Searched_for_query">Busca por: %query%</msg>
+  <msg key="seconds">segundos.</msg>
+  <msg key="selected">selecionado</msg>
+  <msg key="Suggestions">Sugestões:</msg>
+  <msg key="The">&quot;&lt;b&gt;AND&lt;/b&gt;&quot; não é necessário -- o operador é incluído automaticamente em todas as buscas.</msg>
+  <msg key="Try_fewer_keywords">Tente menos palavras-chave</msg>
+  <msg key="Untitled">Sem nome</msg>
+</message_catalog>
