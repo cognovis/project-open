@@ -131,13 +131,16 @@ returns integer as '
 declare
 	v_count		integer;
 begin
+	select count(*) into v_count from acs_object_types
+	where object_type = ''im_timesheet_conf_object'';
+	IF v_count = 0 THEN RETURN 1; END IF;
+	
 	select count(*) into v_count from acs_object_type_tables
 	where object_type = ''im_timesheet_conf_object'' and table_name = ''im_timesheet_conf_objects'';
 	IF v_count > 0 THEN RETURN 1; END IF;
 	
 	insert into acs_object_type_tables (object_type,table_name,id_column)
 	values (''im_timesheet_conf_object'', ''im_timesheet_conf_objects'', ''conf_id'');
-	
 
 	RETURN 0;
 end;' language 'plpgsql';
@@ -327,6 +330,10 @@ returns integer as '
 declare
 	v_count		integer;
 begin
+	select count(*) into v_count from acs_object_types
+	where object_type = ''im_ticket'';
+	IF v_count = 0 THEN RETURN 1; END IF;
+	
 	select count(*) into v_count from acs_object_type_tables
 	where object_type = ''im_ticket'' and table_name = ''im_projects'';
 	IF v_count > 0 THEN RETURN 1; END IF;
