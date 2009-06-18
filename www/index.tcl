@@ -29,6 +29,8 @@ ad_page_contract {
 # Defaults & Security
 # ---------------------------------------------------------------
 
+# ad_return_complaint 1 $order_by
+
 set current_user_id [ad_maybe_redirect_for_registration]
 set page_title [lang::message::lookup "" intranet-helpdesk.Tickets "Tickets"]
 set context_bar [im_context_bar $page_title]
@@ -99,7 +101,14 @@ db_foreach column_list_sql $column_sql {
 	regsub -all " " $column_name "_" col_txt
 	set col_txt [lang::message::lookup "" intranet-helpdesk.$col_txt $column_name]
 	set col_url [export_vars -base "index" {{order_by $column_name}}]
-	
+
+	append col_url "&ticket_sla_id=$ticket_sla_id"
+	append col_url "&ticket_status_id=$ticket_status_id"
+	append col_url "&ticket_type_id=$ticket_type_id"
+	append col_url "&ticket_queue_id=$ticket_queue_id"
+	append col_url "&assignee_id=$assignee_id"
+#	append col_url "&ticket_component_id=$ticket_component_id"
+
 	set admin_link "<a href=[export_vars -base "/intranet/admin/views/new-column" {return_url column_id {form_mode edit}}]>[im_gif wrench]</a>"
 
 	if {!$user_is_admin_p} { set admin_link "" }
@@ -239,7 +248,12 @@ if { ![empty_string_p $ticket_type_id] && $ticket_type_id != 0 } {
 if { ![empty_string_p $ticket_queue_id] && $ticket_queue_id != 0 } {
     lappend criteria "t.ticket_queue_id = :ticket_queue_id"
 }
-if { ![empty_string_p $ticket_sla_id] && $ticket_sla_id != 0 } {
+
+# ad_return_complaint 1 $ticket_sla_id
+
+
+
+if { [empty_string_p $ticket_sla_id] == 0 && $ticket_sla_id != 0 } {
     lappend criteria "p.parent_id = :ticket_sla_id"
 }
 if {0 != $assignee_id && "" != $assignee_id} {
@@ -312,16 +326,13 @@ switch $mine_p {
     "default" { ad_return_complaint 1 "Error:<br>Invalid variable mine_p = '$mine_p'" }
 }
 
-
-
-
-
 set order_by_clause "order by lower(t.ticket_id) DESC"
 switch [string tolower $order_by] {
     "creation date" { set order_by_clause "order by p.start_date DESC" }
     "type" { set order_by_clause "order by ticket_type" }
     "status" { set order_by_clause "order by ticket_status_id" }
     "customer" { set order_by_clause "order by lower(company_name)" }
+    "prio" { set order_by_clause "order by ticket_prio_id" }
 }
 
 # ---------------------------------------------------------------
