@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="acs-datetime" package_version="4.0" locale="pt_BR" charset="ISO-8859-1">
+<message_catalog package_key="acs-datetime" package_version="4.1" locale="pt_BR" charset="ISO-8859-1">
 
   <msg key="All_day">Todo dia</msg>
   <msg key="back_one_day">voltar um dia</msg>
