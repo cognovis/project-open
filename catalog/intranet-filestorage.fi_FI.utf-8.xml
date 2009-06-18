@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-filestorage" package_version="3.4.0.6.0" locale="fi_FI" charset="utf-8">
+
+  <msg key="Create_a_new_folder">Luo uusi kansio</msg>
+  <msg key="Filestorage">Tiedostot</msg>
+  <msg key="lt_Add_permissions_to_fo">Lisää oikeudet kansioille</msg>
+  <msg key="lt_Delete_files_and_fold">Poista tiedostoja tai kansioita</msg>
+  <msg key="lt_Download_all_files_as">Lataa kaikki tiedostot ZIP tiedostona</msg>
+  <msg key="lt_Remove_permissions_fr">Poista oikeudet kansioilta</msg>
+  <msg key="No_files_found">Tiedostoja ei löytynyt</msg>
+  <msg key="Upload_a_file">Lataa tiedosto palvelimelle</msg>
+</message_catalog>

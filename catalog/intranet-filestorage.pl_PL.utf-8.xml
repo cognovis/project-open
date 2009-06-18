@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-filestorage" package_version="3.4.0.6.0" locale="pl_PL" charset="utf-8">
+
+  <msg key="Create_a_new_folder">Utwórz nowy folder</msg>
+  <msg key="Filestorage">Magazyn plików</msg>
+  <msg key="lt_Add_permissions_to_fo">Dodaj uprawnienia do folderów</msg>
+  <msg key="lt_Delete_files_and_fold">Usuń pliki i foldery</msg>
+  <msg key="lt_Download_all_files_as">Pobierz wszystkie pliki jako Zip</msg>
+  <msg key="lt_Remove_permissions_fr">Usuń uprawnienia z folderów</msg>
+  <msg key="Upload_a_file">Prześlij plik</msg>
+</message_catalog>
