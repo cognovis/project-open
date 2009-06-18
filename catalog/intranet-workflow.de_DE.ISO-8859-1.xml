@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-workflow" package_version="3.4.0.6.0" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="Action">Aktion</msg>
+  <msg key="Admin_workflows">Admin Workflows</msg>
+  <msg key="All_Tasks">Alle Aufgaben</msg>
+  <msg key="Object_Name">Objektname</msg>
+  <msg key="Relationship">Beziehnung</msg>
+  <msg key="Status">Status</msg>
+  <msg key="Type">Typ</msg>
+  <msg key="Unassigned_Tasks">Nicht zugewiesene Aufgaben</msg>
+  <msg key="Your_Tasks">Meine Änderungsanträge</msg>
+</message_catalog>
