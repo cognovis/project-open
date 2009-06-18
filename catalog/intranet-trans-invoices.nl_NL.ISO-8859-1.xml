@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-trans-invoices" package_version="3.4.0.6.0" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Company_name">Bedrijfs naam</msg>
+  <msg key="Country">Land </msg>
+  <msg key="Delivery_Date">Aflever datum </msg>
+  <msg key="Description">Omschrijving</msg>
+  <msg key="Filter_Projects">Filter Projecten</msg>
+  <msg key="lt_Create_Purchase_Order">Maak Aankoop Order</msg>
+  <msg key="New_Purchase_Order">Nieuwe aankooporder</msg>
+  <msg key="Phone">Telefoon</msg>
+  <msg key="Projects">Projecten</msg>
+  <msg key="VAT">BTW </msg>
+</message_catalog>
