@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-trans-quality" package_version="3.4.0.6.0" locale="tr_TR" charset="utf-8">
+
+  <msg key="Allowed_Err">Kabul edilir Hata</msg>
+  <msg key="Del">Sil</msg>
+  <msg key="lt_There_are_currently_n">Henüz bu kritelere uyan bir rapor bulunmamaktadır</msg>
+  <msg key="Quality">Kalite</msg>
+  <msg key="Quality_Reports">Kalite Raporları</msg>
+  <msg key="Report">Rapor</msg>
+  <msg key="Save">Kaydet</msg>
+  <msg key="Source">Kaynak</msg>
+  <msg key="Target">Hedef</msg>
+  <msg key="Task_Name">Görev Adı</msg>
+  <msg key="Total_Err">Toplam Hata</msg>
+  <msg key="Units">Birim</msg>
+</message_catalog>
