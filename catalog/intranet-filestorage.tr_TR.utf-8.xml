@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-filestorage" package_version="3.4.0.6.0" locale="tr_TR" charset="utf-8">
+
+  <msg key="Create_a_new_folder">Yeni Klasör Oluştur </msg>
+  <msg key="Filestorage">Dosya Depolama </msg>
+  <msg key="lt_Add_permissions_to_fo">Klasörlere İzin Ekle</msg>
+  <msg key="lt_by_marking_the_checkb">SOL Taraftaki Kutuyu İşaretleyerek </msg>
+  <msg key="lt_Delete_files_and_fold">Dosya Ve Klasörleri SİL </msg>
+  <msg key="lt_Download_all_files_as">Tüm Dosyaları ZİP olarak Yükle</msg>
+  <msg key="lt_Please_back_up_and_se">Ltf YEDEKLEME YAP ve Silmek Üzere Bazı Dosya ve Listeleri SEÇ </msg>
+  <msg key="lt_Remove_permissions_fr">Klasörlerden İzinleri KALDIR </msg>
+  <msg key="No_files_found">Dosya Bulunamadı </msg>
+  <msg key="Nothing_Selected">Seçili Birşey Bulunmuyor </msg>
+  <msg key="Upload_a_file">Klasör Yükle </msg>
+</message_catalog>

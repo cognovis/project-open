@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-filestorage" package_version="3.4.0.6.0" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Customers">Klanten</msg>
+  <msg key="Employees">Personeel</msg>
+  <msg key="Filestorage">Bestandenopslag</msg>
+  <msg key="Key_Account">Hoofd Account</msg>
+  <msg key="No_files_found">geen files gevonden</msg>
+  <msg key="View">Bekijken </msg>
+</message_catalog>

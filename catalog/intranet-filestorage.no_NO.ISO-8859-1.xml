@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-filestorage" package_version="3.4.0.6.0" locale="no_NO" charset="ISO-8859-1">
+
+  <msg key="Create_a_new_folder">Legg til en ny mappe</msg>
+  <msg key="Filestorage">Fillager</msg>
+  <msg key="lt_Delete_files_and_fold">Slett filer og mapper</msg>
+  <msg key="No_files_found">Ingen filer funnet</msg>
+  <msg key="Upload_a_file">Last opp fil</msg>
+</message_catalog>

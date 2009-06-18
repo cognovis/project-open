@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-filestorage" package_version="3.4.0.6.0" locale="en_GB" charset="ISO-8859-1">
+
+  <msg key="lt_No_Directories_Select">No directories selected.</msg>
+  <msg key="lt_Please_backup_select_">Please go back, select a directory and try again.</msg>
+  <msg key="lt_You_have_not_selected">You haven?t selected any directories </msg>
+</message_catalog>
