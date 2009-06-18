@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-reporting" package_version="3.2.9.0.0" locale="it_IT" charset="ISO-8859-1">
+<message_catalog package_key="intranet-reporting" package_version="3.4.0.6.0" locale="it_IT" charset="ISO-8859-1">
 
   <msg key="Add_new_Report">Nuovo report</msg>
   <msg key="Available_Reports">Report disponibili</msg>
-  <msg key="Gantt_Resources">Risorse Gantt</msg>
   <msg key="Manage_Reports">Gestione report</msg>
   <msg key="Report_Id">ID</msg>
   <msg key="Report_Name">Nome</msg>
