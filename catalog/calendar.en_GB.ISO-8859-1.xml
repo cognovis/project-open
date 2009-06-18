@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="calendar" package_version="2.1.0b6" locale="en_GB" charset="ISO-8859-1">
+
+  <msg key="Add_all_day_event">Add an All-Day Event</msg>
+  <msg key="day_rolling_period">days</msg>
+  <msg key="Events_over_a">Events over</msg>
+  <msg key="lt_You_are_choosing_to_m">You have chosen to create a recurring event. The event details are:</msg>
+  <msg key="of_the_week"> </msg>
+  <msg key="Sunday">Sunday</msg>
+</message_catalog>
