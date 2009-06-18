@@ -40,7 +40,7 @@ ad_proc -private im_package_notes_id_helper {} {
 # Components
 # ---------------------------------------------------------------------
 
-ad_proc -public im_notes_project_component {
+ad_proc -public im_notes_component {
     -object_id
 } {
     Returns a HTML component to show all project related notes
