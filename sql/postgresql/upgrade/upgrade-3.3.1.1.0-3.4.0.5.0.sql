@@ -53,7 +53,7 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 values (9029,90,NULL,'[im_gif open "Upload files"]','$upload_link','','',290,'');
 
 
--- extend accuracu for translation units 
+-- extend accuracy for translation units 
 ALTER TABLE im_trans_tasks ALTER COLUMN task_units TYPE numeric(12,2);
 ALTER TABLE im_trans_tasks ALTER COLUMN billable_units TYPE numeric(12,2);
 
