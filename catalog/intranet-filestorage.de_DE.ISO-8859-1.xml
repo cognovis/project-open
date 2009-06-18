@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-filestorage" package_version="3.4.0.0.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-filestorage" package_version="3.4.0.6.0" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Add_Permissions">Berechtigungen hinzufügen</msg>
   <msg key="Admin">Administration</msg>
   <msg key="Create_a_new_folder">Neues Verzeichnis</msg>
+  <msg key="Create_Folder">Ordner erstellen</msg>
   <msg key="create_folder">Neues Verzeichnis</msg>
   <msg key="Customers">Kunden</msg>
   <msg key="Del_Permissions">Berechtigungen löschen</msg>
@@ -13,9 +14,11 @@
   <msg key="Directories">Verzeichnisse</msg>
   <msg key="Employees">Mitarbeiter</msg>
   <msg key="Filename">Dateiname</msg>
+  <msg key="Filestorage">Dateiablage</msg>
   <msg key="Folder_up">Verzeichnis hoch</msg>
   <msg key="Freelancers">Freiberufler</msg>
   <msg key="Full_Member">Vollmitglied</msg>
+  <msg key="Home_Filestorage">Home Dateiablage</msg>
   <msg key="Internal_Error">Interner Fehler</msg>
   <msg key="Key_Account">Kundenbetreuer</msg>
   <msg key="lt_Add_permissions_to_fo">Zugriffberechtigungen erteilen</msg>

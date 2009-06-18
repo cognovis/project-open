@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-filestorage" package_version="3.2.10.1.0" locale="fr_FR" charset="ISO-8859-1">
+<message_catalog package_key="intranet-filestorage" package_version="3.4.0.6.0" locale="fr_FR" charset="ISO-8859-1">
 
   <msg key="Add_Permissions">Ajouter des Autorisations</msg>
   <msg key="Admin">Administrateur</msg>
   <msg key="Create_a_new_folder">Créer un nouveau dossier</msg>
+  <msg key="Create_Folder">Créer un dossier</msg>
   <msg key="create_folder">Créer un dossier</msg>
   <msg key="Customers">Clients</msg>
   <msg key="Del_Permissions">Suppr Autorisations</msg>
@@ -15,7 +16,9 @@
   <msg key="Filename">Nom de fichier</msg>
   <msg key="Filestorage">Fichiers</msg>
   <msg key="Folder_up">Dossier de niveau supérieur</msg>
+  <msg key="Freelancers">Freelancers</msg>
   <msg key="Full_Member">Membre à part entière</msg>
+  <msg key="Home_Filestorage">Acceuil Stockage de fichiers</msg>
   <msg key="Internal_Error">Erreur interne</msg>
   <msg key="Key_Account">Gestionnaire du compte</msg>
   <msg key="lt_Add_permissions_to_fo">Ajouter des autorisations aux dossiers</msg>
