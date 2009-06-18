@@ -21,7 +21,7 @@
 	<tr valign="top">
 	<td width="50%">
 		<%= [im_box_header [lang::message::lookup "" intranet-helpdesk.Ticket_Details "Ticket Details"]] %>
-		<formtemplate id="ticket"></formtemplate>
+		<formtemplate id="helpdesk_ticket"></formtemplate>
 		@ticket_action_html;noquote@
 		@notification_html;noquote@
 		<%= [im_box_footer] %>

@@ -116,7 +116,7 @@ if {0 == $ticket_type_id || "" == $ticket_type_id} {
 # ----------------------------------------------
 # Calculate form_mode
 
-if {"edit" == [template::form::get_action ticket]} { set form_mode "edit" }
+if {"edit" == [template::form::get_action helpdesk_ticket]} { set form_mode "edit" }
 if {![info exists ticket_id]} { set form_mode "edit" }
 if {![info exists form_mode]} { set form_mode "display" }
 
@@ -145,7 +145,7 @@ if {$edit_p} { lappend actions {"Edit" edit} }
 # if {$delete_p} { lappend actions {"Delete" delete} }
 
 ad_form \
-    -name ticket \
+    -name helpdesk_ticket \
     -cancel_url $return_url \
     -action $action_url \
     -actions $actions \
@@ -188,7 +188,7 @@ if {!$edit_ticket_status_p} { set ticket_action_html "" }
 # Delete pressed?
 # ------------------------------------------------------------------
 
-set button_pressed [template::form get_action ticket]
+set button_pressed [template::form get_action helpdesk_ticket]
 if {"delete" == $button_pressed} {
      db_dml mark_ticket_deleted "
 	update	im_tickets
@@ -267,7 +267,7 @@ if {"new" == $ticket_sla_id && $user_can_create_new_customer_sla_p} {
     template::form::get_values ticket
 
     # Get the list of all variables in the form
-    set form_vars [template::form::get_elements ticket]
+    set form_vars [template::form::get_elements helpdesk_ticket]
 
     # Remove the "ticket_id" field, because we want ad_form in edit mode.
     set ticket_id_pos [lsearch $form_vars "ticket_id"]
@@ -308,7 +308,7 @@ if {"new" == $ticket_sla_id && $user_can_create_new_customer_sla_p} {
 if {"new" == $ticket_customer_contact_id && $user_can_create_new_customer_contact_p} {
 
     # Copy all ticket form values to local variables
-    template::form::get_values ticket
+    template::form::get_values helpdesk_ticket
 
     # Get the list of all variables in the form
     set form_vars [template::form::get_elements ticket]
@@ -397,7 +397,7 @@ if {$edit_ticket_status_p} {
 
 
 # Extend the form with new fields
-ad_form -extend -name ticket -form $ticket_elements
+ad_form -extend -name helpdesk_ticket -form $ticket_elements
 
 
 
@@ -415,7 +415,7 @@ set field_cnt [im_dynfield::append_attributes_to_form \
                        -form_display_mode $form_mode \
                        -object_subtype_id $dynfield_ticket_type_id \
                        -object_type "im_ticket" \
-                       -form_id "ticket" \
+                       -form_id "helpdesk_ticket" \
                        -object_id $dynfield_ticket_id \
 ]
 
@@ -424,10 +424,10 @@ set field_cnt [im_dynfield::append_attributes_to_form \
 # ------------------------------------------------------------------
 
 # Fix for problem changing to "edit" form_mode
-set form_action [template::form::get_action "ticket"]
+set form_action [template::form::get_action "helpdesk_ticket"]
 if {"" != $form_action} { set form_mode "edit" }
 
-ad_form -extend -name ticket -on_request {
+ad_form -extend -name helpdesk_ticket -on_request {
 
     # Populate elements from local variables
 
@@ -466,7 +466,7 @@ ad_form -extend -name ticket -on_request {
     im_dynfield::attribute_store \
 	-object_type "im_ticket" \
 	-object_id $ticket_id \
-	-form_id ticket
+	-form_id helpdesk_ticket
 
     notification::new \
         -type_id [notification::type::get_type_id -short_name ticket_notif] \
@@ -493,7 +493,7 @@ ad_form -extend -name ticket -on_request {
     im_dynfield::attribute_store \
 	-object_type "im_ticket" \
 	-object_id $ticket_id \
-	-form_id ticket
+	-form_id helpdesk_ticket
 
     # Write Audit Trail
     im_project_audit $ticket_id
