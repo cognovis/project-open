@@ -2,6 +2,7 @@
 <message_catalog package_key="acs-lang" package_version="5.1.5" locale="ru_RU" charset="utf-8">
 
   <msg key="available-in-this-language">Доступно на Английском</msg>
+  <msg key="change-locale">Сменить язык</msg>
   <msg key="English">Английский</msg>
   <msg key="French">Французский</msg>
   <msg key="German">Немецкий</msg>

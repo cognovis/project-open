@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="acs-lang" package_version="5.1.2d2" locale="tr_TR" charset="utf-8">
+<message_catalog package_key="acs-lang" package_version="5.1.5" locale="tr_TR" charset="utf-8">
 
+  <msg key="available-in-this-language">Sadece İngilizce</msg>
+  <msg key="change-locale">Ülkeyi Değiştir</msg>
   <msg key="English">İnglizce</msg>
   <msg key="French">Fransızca</msg>
   <msg key="German">Almanca</msg>
+  <msg key="localization-abday">{P} {Pts} {Sal} {Çar} {Per} {Cum} {Cts}</msg>
+  <msg key="localization-abmon">{Ock} {Şub} {Mar} {Nsn} {May} {Haz} {Tem} {Ağu} {Eyl} {Ekm} {Kas} {Ara}</msg>
+  <msg key="localization-currency_symbol">TRL</msg>
+  <msg key="localization-d_fmt">%d/%m/%y</msg>
+  <msg key="localization-day">{Pazar} {Pazartesi} {Salı} {Çarşamba} {Perşembe} {Cuma} {Cumartesi}</msg>
+  <msg key="localization-decimal_point">.</msg>
+  <msg key="localization-dlong_fmt">%B %d, %Y</msg>
+  <msg key="localization-dlongweekday_fmt">%A %B %d, %Y</msg>
+  <msg key="localization-firstdayofweek">0</msg>
+  <msg key="localization-formbuilder_date_format">DD MONTH YYYY</msg>
+  <msg key="localization-int_curr_symbol">TRL</msg>
+  <msg key="localization-mon">{Ocak} {Şubat} {Mart} {Nisan} {Mayıs} {Haziran} {Temmuz} {Ağustos} {Eylül} {Ekim} {Kasım} {Aralık}</msg>
   <msg key="Spanish">İspanyolca</msg>
+  <msg key="this-language">Türkçe</msg>
 </message_catalog>
