@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-payments" package_version="3.4.0.6.0" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Go">Toon </msg>
+  <msg key="Projects">Projecten</msg>
+  <msg key="Provider">Leverancier </msg>
+</message_catalog>
