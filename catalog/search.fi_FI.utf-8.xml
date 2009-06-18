@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="search" package_version="5.1.5" locale="fi_FI" charset="utf-8">
+
+  <msg key="Advanced_Search">Kehittynyt haku</msg>
+  <msg key="advanced_search">&amp;quot;advanced search&amp;quot;</msg>
+  <msg key="Search">Kehittynyt haku</msg>
+</message_catalog>
