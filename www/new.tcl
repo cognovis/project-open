@@ -76,6 +76,7 @@ set current_user_id [ad_maybe_redirect_for_registration]
 set user_id $current_user_id
 set current_url [im_url_with_query]
 set action_url "/intranet-helpdesk/new"
+# set focus "helpdesk_ticket.var_name"
 set focus "ticket.var_name"
 
 if {[info exists ticket_id] && "" == $ticket_id} { unset ticket_id }
@@ -116,7 +117,7 @@ if {0 == $ticket_type_id || "" == $ticket_type_id} {
 # ----------------------------------------------
 # Calculate form_mode
 
-if {"edit" == [template::form::get_action helpdesk_ticket]} { set form_mode "edit" }
+if {"edit" == [template::form::get_action helpdesk_action]} { set form_mode "edit" }
 if {![info exists ticket_id]} { set form_mode "edit" }
 if {![info exists form_mode]} { set form_mode "display" }
 
@@ -166,7 +167,7 @@ ad_form \
 
 set tid [value_if_exists ticket_id]
 set ticket_action_html "
-<form action=/intranet-helpdesk/action>
+<form action=/intranet-helpdesk/action name=helpdesk_action>
 [export_form_vars return_url tid]
 <input type=submit value='[lang::message::lookup "" intranet-helpdesk.Action "Action"]'>
 [im_category_select \
