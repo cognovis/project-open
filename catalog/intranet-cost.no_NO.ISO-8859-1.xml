@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-cost" package_version="3.4.0.6.0" locale="no_NO" charset="ISO-8859-1">
+
+  <msg key="Amount">Sum</msg>
+  <msg key="Client">Kunde</msg>
+  <msg key="Company">Selskap</msg>
+  <msg key="Cost_Items">Kostnadsposter</msg>
+  <msg key="CostCenter_short">KostSenter</msg>
+  <msg key="Customer_Invoices">Faktura kunde</msg>
+  <msg key="Del">Slett</msg>
+  <msg key="Document">Dokument</msg>
+  <msg key="Document_Status">Dokumentstatus</msg>
+  <msg key="Document_Type">Dokumenttype</msg>
+  <msg key="Due">Forfall</msg>
+  <msg key="Due_Date">Forfallsdato</msg>
+  <msg key="Expenses">Utgifter</msg>
+  <msg key="Filter_Documents">Dokumentfilter</msg>
+  <msg key="Finance">Økonomi</msg>
+  <msg key="Finance_Summary">Økonomisammendrag</msg>
+  <msg key="Financial_Documents">Økonomidokumenter</msg>
+  <msg key="Financial_Summary">Økonomisammendrag</msg>
+  <msg key="Go">Gå</msg>
+  <msg key="Grand_Total">Totalsum</msg>
+  <msg key="lt_Cost_Item_Administrat">Kostnadspost administrasjon</msg>
+  <msg key="lt_No_financial_document">Ingen økonomidokumenter for dette prosjektet enda</msg>
+  <msg key="more_costs">flere kostnader...</msg>
+  <msg key="Name">Navn</msg>
+  <msg key="Paid">Betalt</msg>
+  <msg key="Project">Prosjekt</msg>
+  <msg key="Provider">Leverandør</msg>
+  <msg key="Provider_Bills">Leverandørregninger</msg>
+  <msg key="Purchase_Orders">Innkjøpsordrer</msg>
+  <msg key="Real_Costs">Reelle kostnader</msg>
+  <msg key="Save">Lagre</msg>
+  <msg key="Start_Block">Start</msg>
+  <msg key="Status">Status</msg>
+  <msg key="Timesheet_Costs">Kostnad arbeidstimer</msg>
+  <msg key="Type">Type</msg>
+</message_catalog>

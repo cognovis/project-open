@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-cost" package_version="3.4.0.6.0" locale="ja_JP" charset="utf-8">
+
+  <msg key="All_Costs">全ての原価</msg>
+  <msg key="Amount">金額</msg>
+  <msg key="Company">企業</msg>
+  <msg key="Cost_Centers">コストセンター</msg>
+  <msg key="Customer_Invoices">顧客請求書</msg>
+  <msg key="Documentation">ドキュメンテーション:</msg>
+  <msg key="Due">支払</msg>
+  <msg key="Expenses">経費</msg>
+  <msg key="Finance">財務</msg>
+  <msg key="Finance_Home">財務ホーム</msg>
+  <msg key="Financial_Documents">財務文書</msg>
+  <msg key="Grand_Total">合計</msg>
+  <msg key="lt_Distribute_costs_acco">勤務時間情報によって経費を分配してください</msg>
+  <msg key="lt_Finance_high-level_de">ハイレベルな財務概要</msg>
+  <msg key="lt_No_financial_document">まだこのプロジェクトのための財務書類がありません</msg>
+  <msg key="lt_There_are_currently_n">選ばれた基準に適合する経費はありません。</msg>
+  <msg key="lt_This_is_the_homepage_">これは「財政的な領域」のホームページです。 ここに、あなたは、会社、プロジェクト、およびユーザのすべての情報を見つけて、入力できます。
+</msg>
+  <msg key="more_costs">コスト続く...</msg>
+  <msg key="New_Provider_Docs">新規業者文書を作成</msg>
+  <msg key="New_Timesheet_Invoice">新規タイムシート請求書</msg>
+  <msg key="New_Trans_Invoice">新規送付請求書</msg>
+  <msg key="Options">オプション:</msg>
+  <msg key="Paid">支払済</msg>
+  <msg key="Preliminary_Costs">概算予算</msg>
+  <msg key="Provider">業者</msg>
+  <msg key="Provider_Bills">業者請求金額</msg>
+  <msg key="Providers">業者</msg>
+  <msg key="Quotes">見積書</msg>
+  <msg key="Real_Costs">実コスト</msg>
+  <msg key="Timesheet_Costs">タイムシート費用</msg>
+</message_catalog>
