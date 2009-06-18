@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-confdb" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
+
+  <msg key="Conf_Item_Name">Название</msg>
+  <msg key="Conf_Item_Status">Состояние</msg>
+  <msg key="Conf_Item_Type">Тип</msg>
+  <msg key="Configuration_Items">Конфигурации</msg>
+  <msg key="Delete">Удалить</msg>
+  <msg key="IP_Address">IP-адрес</msg>
+  <msg key="Memory">Память</msg>
+  <msg key="OS">ОС</msg>
+  <msg key="OS_Version">Версия ОС</msg>
+  <msg key="Processor">Процессор</msg>
+  <msg key="Remove_checked_items">Удалить помеченные элементы</msg>
+</message_catalog>
