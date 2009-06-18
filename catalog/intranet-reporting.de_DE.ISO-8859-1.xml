@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-reporting" package_version="3.4.0.6.0" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="Add_new_Report">Neuen Bericht hinzufügen</msg>
+  <msg key="Available_Reports">Verfügbare Berichte</msg>
+  <msg key="Manage_Reports">Berichte verwalten</msg>
+  <msg key="Report_Id">ID</msg>
+  <msg key="Report_Name">Name</msg>
+  <msg key="Reports">Berichte</msg>
+</message_catalog>
