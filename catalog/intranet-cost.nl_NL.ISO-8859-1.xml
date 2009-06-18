@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-cost" package_version="3.4.0.6.0" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Absences">Absenten</msg>
+  <msg key="Administration">Administratie</msg>
+  <msg key="All_Costs">Alle kosten</msg>
+  <msg key="Amount">Aantal</msg>
+  <msg key="Client">Kliënt</msg>
+  <msg key="Companies">Berdrijven</msg>
+  <msg key="Company">Bedrijf</msg>
+  <msg key="create">Maak</msg>
+  <msg key="Customer">Klant</msg>
+  <msg key="Customer_Invoices">Klant Factuur</msg>
+  <msg key="Customers">Klanten</msg>
+  <msg key="Description">Omschrijving</msg>
+  <msg key="Due">Vervalt</msg>
+  <msg key="Due_Date">Vervaldatum</msg>
+  <msg key="Expenses">Uitgaven</msg>
+  <msg key="finance">Finacieel</msg>
+  <msg key="Finance_Home">FinAdm Start</msg>
+  <msg key="Go">Ga</msg>
+  <msg key="Grand_Total">Groot Totaal</msg>
+  <msg key="lt_Create_a_new_purchase">creeer een nieuwe aankooporder</msg>
+  <msg key="Name">Naam</msg>
+  <msg key="New_Customer_Docs">Nieuwe klant document</msg>
+  <msg key="New_Provider_Docs">creeer een nieuwe verkoop document</msg>
+  <msg key="New_Timesheet_Invoice">Nieuwe Tijdbalk factuur</msg>
+  <msg key="Next_Page">Volgende Pagina</msg>
+  <msg key="Paid">Betaald</msg>
+  <msg key="Paid_Amount">Betaald Bedrag</msg>
+  <msg key="Payments">Betalingen</msg>
+  <msg key="Previous_Page">Vorige Pagina</msg>
+  <msg key="Provider">Leverancier</msg>
+  <msg key="Provider_Bills">Leverancier factuur</msg>
+  <msg key="Providers">Leveranciers</msg>
+  <msg key="Purchase_Orders">Leverancier order</msg>
+  <msg key="Quotes">Offerte</msg>
+  <msg key="Real_Costs">Ware kosten</msg>
+  <msg key="TAX">Belasting</msg>
+  <msg key="VAT">BTW</msg>
+</message_catalog>
