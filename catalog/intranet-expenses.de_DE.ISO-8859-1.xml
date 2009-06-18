@@ -1,19 +1,40 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-expenses" package_version="3.4.0.0.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-expenses" package_version="3.4.0.6.0" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Add_a_new_Expense">Neue Ausgabe</msg>
   <msg key="Amount">Betrag</msg>
   <msg key="Billable_p">Abrechenbar?</msg>
+  <msg key="Create_Invoice">Erstelle Kostenrechnung</msg>
+  <msg key="create_invoice_help">'Kosten Rechnungen' sind bestätigte Sammlungen, die mit einem Projekt in Zusammenhang gebracht werden können.</msg>
+  <msg key="create_trabel_cost_help">Erstelle Reisekosten Rechnungen</msg>
+  <msg key="Create_Travel_Cost">Erstelle Reisekosten</msg>
+  <msg key="Currency">Währung</msg>
+  <msg key="Delete">Löschen</msg>
+  <msg key="Delete_Expenses">Kosten löschen</msg>
+  <msg key="Expense_Bundles">Spesenpakete</msg>
   <msg key="Expense_Date">Datum</msg>
+  <msg key="Expense_Invoices">Kostenrechnungen</msg>
   <msg key="Expense_Payment_Type">Zahlungstyp</msg>
   <msg key="Expense_Type">Ausgabentyp</msg>
   <msg key="Expenses">Ausgaben</msg>
   <msg key="Expenses_Items">Ausabenelement(e)</msg>
   <msg key="External_company_name">Externer Firmenname</msg>
+  <msg key="External_Company_VatNr">Externe Firma USt-IdNr</msg>
+  <msg key="Filter_Expenses">Einlage Aufwendungen</msg>
   <msg key="ID">ID</msg>
   <msg key="Invoice">Rechnung</msg>
   <msg key="Invoice_Items">Rechnungen</msg>
+  <msg key="New_Expense">Neue Kosten</msg>
+  <msg key="Note">Hinweiß</msg>
+  <msg key="Project">Projekt</msg>
+  <msg key="Project_Name">Projekt Name</msg>
+  <msg key="Receip_reference">Eingangsreferenz</msg>
   <msg key="Receipt_reference">Referenznummer</msg>
+  <msg key="reibursable">Erstattungsfähig %</msg>
   <msg key="reimbursable">Zu ersetzen</msg>
+  <msg key="Remove_checked_items">Entferne geprüfte Objekte</msg>
+  <msg key="Travel_cost_invoices">Reisekosten Rechnungen</msg>
+  <msg key="Unassigned">nicht zugeordnet</msg>
+  <msg key="Unassigned_Expenses">Nicht zugeordnete Aufwendungen</msg>
   <msg key="Vat_Included">Enthaltene MwSt. </msg>
 </message_catalog>

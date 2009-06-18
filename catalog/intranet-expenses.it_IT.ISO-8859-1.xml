@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-expenses" package_version="3.2.9.0.0" locale="it_IT" charset="ISO-8859-1">
+<message_catalog package_key="intranet-expenses" package_version="3.4.0.6.0" locale="it_IT" charset="ISO-8859-1">
 
   <msg key="Add_a_new_Expense">Nuova spesa</msg>
-  <msg key="All">Tutte</msg>
   <msg key="Amount">Importo</msg>
   <msg key="Billable_p">Fatturabile?</msg>
   <msg key="Create_Invoice">Crea fattura per la spesa</msg>
@@ -33,10 +32,8 @@
   <msg key="reibursable">% rimborsabile</msg>
   <msg key="reimbursable">%% rimborsabile</msg>
   <msg key="Remove_checked_items">Elimina elementi selezionati</msg>
-  <msg key="Submitter">Inviata da</msg>
   <msg key="Travel_cost_invoices">Fatture per spese di viaggio</msg>
   <msg key="Unassigned">Non assegnato</msg>
   <msg key="Unassigned_Expenses">Spese non assegnate</msg>
-  <msg key="Unassigned_items">Non assegnate</msg>
   <msg key="Vat_Included">% IVA compresa</msg>
 </message_catalog>
