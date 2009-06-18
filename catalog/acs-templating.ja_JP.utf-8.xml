@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="acs-templating" package_version="5.1.5" locale="ja_JP" charset="utf-8">
+
+  <msg key="12-Hour">12時間</msg>
+  <msg key="24-Hour">24時間</msg>
+  <msg key="required">必須</msg>
+</message_catalog>

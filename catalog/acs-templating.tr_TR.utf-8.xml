@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="acs-templating" package_version="5.1.5" locale="tr_TR" charset="utf-8">
+
+  <msg key="12-Hour">12-saat</msg>
+  <msg key="24-Hour">24-Saat</msg>
+  <msg key="Day">Gün</msg>
+  <msg key="Element_is_required">%label% gerekli</msg>
+  <msg key="Invalid_choice">Hatalı Seçim</msg>
+  <msg key="Invalid_currency">Hatalı Kur</msg>
+  <msg key="Invalid_email_format">hatalı e-mail formatı</msg>
+  <msg key="Invalid_filename">hatalı dosya ismi</msg>
+  <msg key="Invalid_keyword">hatalı anahtar sözcük</msg>
+  <msg key="Minutes">dakika</msg>
+  <msg key="Month">Ay</msg>
+  <msg key="Next_with_arrow">birsonraki</msg>
+  <msg key="No_row_pretty_plural">%row_pretty_plural% yok.</msg>
+  <msg key="Previous_with_arrow">önceki</msg>
+  <msg key="required">Gerekli Alan</msg>
+  <msg key="Seconds">saniye</msg>
+  <msg key="Spellcheck">sözcük kontrolü</msg>
+  <msg key="Year">Yıl</msg>
+</message_catalog>
