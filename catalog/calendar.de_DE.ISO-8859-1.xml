@@ -5,9 +5,12 @@
   <msg key="Add">Hinzufügen</msg>
   <msg key="add">Hinzufügen</msg>
   <msg key="Add_a_new_Audience">Neue Zielgruppe hinzufügen</msg>
+  <msg key="Add_all_day_event">Ganztägiges Ereignis hinzufügen
+</msg>
   <msg key="add_an_event">Neuen Eintrag hinzufügen</msg>
   <msg key="Add_an_item">Einen Eintrag hinzufügen</msg>
   <msg key="Add_Item">Eintrag hinzufügen</msg>
+  <msg key="Add_item_beginning_at">Neuen Eintrag hinzufügen</msg>
   <msg key="Add_Recurrence">OK</msg>
   <msg key="All_Day_Event">Ganztägig</msg>
   <msg key="all_events">Alle Ereignisse</msg>
@@ -44,9 +47,16 @@
   <msg key="Events_over_a">Ereignisse innerhalb eines Zeitraums von</msg>
   <msg key="Friday">Freitag</msg>
   <msg key="from">von</msg>
+  <msg key="Go_to_date">Gehe zu</msg>
   <msg key="Go_to_monthsname">Gehe zu %months.name%</msg>
   <msg key="Go_to_year_next_year">Gehe zum Jahr %next_year%</msg>
   <msg key="Go_to_year_prev_year">Gehe zum Jahr %prev_year%</msg>
+  <msg key="goto_day_items_day_number">Wechseln zu Tag %items.day_number%</msg>
+  <msg key="goto_days_day_number">Gehe zu %days.day_number%</msg>
+  <msg key="goto_items_event_name">Gehe zu %items.event_name%</msg>
+  <msg key="goto_items_without_time_event_name">Gehe zu %items_without_time.event_name%</msg>
+  <msg key="goto_months_name">Gehe zu %months.name%</msg>
+  <msg key="goto_today">Gehe zu Heute</msg>
   <msg key="Grant">Erteilen</msg>
   <msg key="Grant_Permissions">Berechtigungen erteilen</msg>
   <msg key="is_recurring">Wiederkehrendes Ereignis</msg>
@@ -84,7 +94,9 @@
   <msg key="lt_You_have_no_party_wid">You have no party wide calendars</msg>
   <msg key="Monday">Montag</msg>
   <msg key="New_Type">Neue Eintragskategorie:</msg>
+  <msg key="next_day">Nächster Tag</msg>
   <msg key="next_month">Next Month</msg>
+  <msg key="next_week">Nächste Woche</msg>
   <msg key="next_year">Next Year</msg>
   <msg key="No">Nein</msg>
   <msg key="No_Calendars">Keine Kalender vorhanden</msg>
@@ -93,7 +105,9 @@
   <msg key="Note">Hinweis</msg>
   <msg key="of_the_month">des Monats</msg>
   <msg key="of_the_week">&amp;nbsp;</msg>
+  <msg key="prev_day">Letzter Tag</msg>
   <msg key="prev_month">Previous Month</msg>
+  <msg key="prev_week">Letzte Woche</msg>
   <msg key="prev_year">Previous Year</msg>
   <msg key="Private">Privat:</msg>
   <msg key="private">Privat</msg>
@@ -106,9 +120,12 @@
   <msg key="same">Am gleichen</msg>
   <msg key="Saturday">Samstag</msg>
   <msg key="Select_Calendars">Kalender auswählen</msg>
+  <msg key="select_views_name">Sicht auswählen %views.name%</msg>
   <msg key="Sharing">Freigabe</msg>
   <msg key="skip_day_calendar">Tageskalender überspringen</msg>
   <msg key="skip_month_calendar">Monatskalender überspringen</msg>
+  <msg key="sort_by_date">Sortieren nach Datum</msg>
+  <msg key="sort_by_type">Sortieren nach Typ</msg>
   <msg key="Start_Time">Beginnt</msg>
   <msg key="start_time_before_end_time">Startzeitpunkt muss vor Endzeitpunkt liegen</msg>
   <msg key="Submit_query">Anfrage senden</msg>

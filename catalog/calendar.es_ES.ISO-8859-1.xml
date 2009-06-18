@@ -9,6 +9,7 @@
   <msg key="add_an_event">Añadir un evento</msg>
   <msg key="Add_an_item">Añadir un evento</msg>
   <msg key="Add_Item">Añadir Evento</msg>
+  <msg key="Add_item_beginning_at">Add an item beginning at </msg>
   <msg key="Add_Recurrence">Añadir evento periódico</msg>
   <msg key="All_Day_Event">Evento para todo el día</msg>
   <msg key="all_events">Todos los eventos</msg>

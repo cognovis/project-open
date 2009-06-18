@@ -40,6 +40,8 @@
   <msg key="End_Time">Конец</msg>
   <msg key="Friday">Пятница</msg>
   <msg key="from">от</msg>
+  <msg key="Go_to_date">Перейти к дате</msg>
+  <msg key="goto_items_event_name">Перейти к %items.event_name%</msg>
   <msg key="Grant">Дать</msg>
   <msg key="Grant_Permissions">Дать Разрешение</msg>
   <msg key="Item">Событие</msg>
@@ -70,6 +72,7 @@
   <msg key="lt_You_can_manage_the_fo">Вы можете пользоваться следующими календарями</msg>
   <msg key="Monday">Понедельник</msg>
   <msg key="New_Type">Новый тип:</msg>
+  <msg key="next_week">Следующая неделя</msg>
   <msg key="No">Нет</msg>
   <msg key="No_Calendars">Календари отсутствуют</msg>
   <msg key="No_Items">Нет событий</msg>
@@ -77,6 +80,7 @@
   <msg key="Note">Внимание</msg>
   <msg key="of_the_month">месяца</msg>
   <msg key="of_the_week">для недели</msg>
+  <msg key="prev_week">Предыдущая неделя</msg>
   <msg key="Private">Частное:</msg>
   <msg key="private">частное</msg>
   <msg key="Public">Публичное:</msg>
