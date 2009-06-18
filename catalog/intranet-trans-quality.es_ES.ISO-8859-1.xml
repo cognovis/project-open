@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-trans-quality" package_version="3.2.6.0.0" locale="es_ES" charset="ISO-8859-1">
+<message_catalog package_key="intranet-trans-quality" package_version="3.4.0.6.0" locale="es_ES" charset="ISO-8859-1">
 
   <msg key="Allowed_Err">Err permitido</msg>
   <msg key="Del">Del</msg>
