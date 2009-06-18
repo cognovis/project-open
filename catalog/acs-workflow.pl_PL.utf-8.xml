@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="acs-workflow" package_version="4.5.3" locale="pl_PL" charset="utf-8">
+
+  <msg key="As_part_of">Część z</msg>
+  <msg key="On_what">Na co?</msg>
+  <msg key="To_Do">Do zrobienia</msg>
+</message_catalog>

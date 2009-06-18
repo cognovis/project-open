@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="acs-workflow" package_version="4.5.3" locale="tr_TR" charset="utf-8">
+
+  <msg key="As_part_of">Part of</msg>
+  <msg key="On_what">Hangi konuda?</msg>
+  <msg key="To_Do">Yapılacak</msg>
+</message_catalog>
