@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-payments" package_version="3.4.0.0.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-payments" package_version="3.4.0.6.0" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="_Previous">Seite</msg>
   <msg key="Add_New">Neu</msg>
@@ -17,7 +17,12 @@
   <msg key="Invoice">Rechnung</msg>
   <msg key="Invoice_Amount">Rechnungsbetrag</msg>
   <msg key="lt_Confirm_payment_delet">Zahlung löschen bestätigen</msg>
+  <msg key="lt_Do_you_really_want_to">Möchten Sie wirklich die %fee_type% Zahlung der %fee_str% für %project_name% löschen?</msg>
   <msg key="lt_Insufficient_Privileg">Unzureichende Berechtigungen</msg>
+  <msg key="lt_No_costinvoice_item_s">Keine Kosten/Rechnungs- Stelle angegeben</msg>
+  <msg key="lt_The_intranet_start_bl">Die Intranet Start Blöcke sind entweder undefiniert oder wir haben keinen Start Block für diese Woche oder später in der Zukunft.</msg>
+  <msg key="lt_There_are_currently_n">Es gibt derzeit keine passenden Zahlungen für die ausgewählten Kriterien</msg>
+  <msg key="lt_You_dont_have_suffici">Sie verfügen über nicht ausreichende Berechtigungen, um diese Seite zu sehen.</msg>
   <msg key="New_payment">Neue Zahlung</msg>
   <msg key="Next_Page">Nächste Seite</msg>
   <msg key="Note">Notiz</msg>
