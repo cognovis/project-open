@@ -145,7 +145,7 @@ if {$openacs54_p} {
 	"
 	ad_script_abort
     }
-    if {0 == $$object_type_id} {
+    if {0 == $object_type_id} {
 	ad_return_complaint 1 "
 		<b>[lang::message::lookup "" intranet-dynfield.Configuration_Error "Configurtion Error"]</b>:
 		The system could not find a category for object_type '$object_type'.<br>
