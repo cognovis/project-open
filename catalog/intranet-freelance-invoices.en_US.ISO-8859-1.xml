@@ -82,7 +82,7 @@
   <msg key="No_company_found">No company found</msg>
   <msg key="No_prices_found">No prices found</msg>
   <msg key="No_tasks_found">No tasks found</msg>
-  <msg key="No_Trans_Tasks">No eligible tasks found. Please check that&lt;br&gt;- project/task is NOT "CLOSED"&lt;br&gt;- tasks have been ASSIGNED to an external translator</msg>  
+  <msg key="No_Trans_Tasks">No eligible tasks found. Please check that&lt;br&gt;- project/task is NOT &quot;CLOSED&quot;&lt;br&gt;- tasks have been ASSIGNED to an external translator</msg> 
   <msg key="One_project">One project</msg>
   <msg key="Order">Order</msg>
   <msg key="Payment_Method">Payment Method</msg>
