@@ -82,7 +82,8 @@
   <msg key="No_company_found">No company found</msg>
   <msg key="No_prices_found">No prices found</msg>
   <msg key="No_tasks_found">No tasks found</msg>
-  <msg key="No_Trans_Tasks">No Translation Tasks have been found for this project. Please check the following:&lt;br&gt;a) Tasks have been assigned to a Freelancer&lt;br&gt;b) Tasks and Projects need to have the status &acute;open&acute;</msg>
+  <msg key="No_Trans_Tasks">No Translation Tasks have been found for this project. Please check the following:&lt;br&gt;a) Does project contain tasks assigned to a Freelancer?&lt;br&gt;b) Do tasks/projects \
+have status &acute;open&acute;?</msg>  
   <msg key="One_project">One project</msg>
   <msg key="Order">Order</msg>
   <msg key="Payment_Method">Payment Method</msg>
