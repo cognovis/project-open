@@ -36,7 +36,7 @@
     </if>
     <else>
     <%= [im_box_header $page_title] %>
-    <formtemplate id="ticket"></formtemplate>
+    <formtemplate id="helpdesk_ticket"></formtemplate>
     <%= [im_box_footer] %>
     </else>
 </else>
