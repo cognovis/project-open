@@ -136,7 +136,15 @@ if {$openacs54_p} {
     Returns the default list_id for the class
 } {
     set object_type [my object_type]
-    return [db_string default_id "select category_id from im_categories where category = :object_type"]
+    set object_type_id [db_string default_id "select category_id from im_categories where category = :object_type" -default 0]
+    if {0 == $object_type_id} {
+	ad_return_complaint 1 "
+		<b>[lang::message::lookup "" intranet-dynfield.Configuration_Error "Configurtion Error"]</b>:
+		The system could not find a category for object_type '$object_type'.<br>
+	"
+	ad_script_abort
+    }
+    return $object_type_id
 }
 
 #########################################
