@@ -448,7 +448,7 @@ ad_proc -public -callback fs::folder_chunk::add_bulk_actions -impl contacts {
 	set return_url_loc "[ad_conn url]?[ad_conn query]"
 	set contact_ids_loc $contact_list
 
-	lappend local_var "[_ contacts.Mail_to_contact]" "/contacts/message" "[_ contacts.Mail_to_contact]"
+	lappend local_var "[_ intranet-contacts.Mail_to_contact]" "/contacts/message" "[_ intranet-contacts.Mail_to_contact]"
 	lappend local_list "party_ids" "return_url"
 	
 	# Add the message type automatically
@@ -935,7 +935,7 @@ ad_proc -public -callback contacts::extensions -impl relationships {
     "]
 
     set role_types [ams::util::localize_and_sort_list_of_lists -list $role_types -position 1]
-    set relationships_pretty [_ contacts.Relationships]
+    set relationships_pretty [_ intranet-contacts.Relationships]
     foreach role_type $role_types {
 	# util_unlist $role_type role pretty_plural
 	template::multirow append $multirow relationships relationships $relationships_pretty [lindex $role_type 0] [lindex $role_type 1]
@@ -951,8 +951,8 @@ ad_proc -public -callback contacts::multirow::extend -impl groups {
 } {
     set results [list]
     if { $type eq "groups" && [string is integer $key] && $key ne ""} {
-	set true [_ contacts.True]
-	set false [_ contacts.False]
+	set true [_ intranet-contacts.True]
+	set false [_ intranet-contacts.False]
 	db_foreach get_group_members "
 	    select parties.party_id,
                    gm.member_id
@@ -988,7 +988,7 @@ ad_proc -public -callback contacts::extensions -impl groups {
 	}
     }
     if { [llength $groups_list] > 0 } {
-	set groups_pretty [_ contacts.Groups]
+	set groups_pretty [_ intranet-contacts.Groups]
 	foreach group [ams::util::localize_and_sort_list_of_lists -list $groups_list -position "1"] {
 	    util_unlist $group group_id group_name
 	    template::multirow append $multirow groups groups $groups_pretty $group_id $group_name
@@ -1005,8 +1005,8 @@ ad_proc -public -callback contacts::multirow::extend -impl privacy {
 } {
     set results [list]
     if { $type eq "privacy" } {
-	set true [_ contacts.True]
-	set false [_ contacts.False]
+	set true [_ intranet-contacts.True]
+	set false [_ intranet-contacts.False]
 	db_foreach get_group_members "
 	    select party_id,
                    $key as permission_p
@@ -1032,11 +1032,11 @@ ad_proc -public -callback contacts::extensions -impl privacy {
 } {
 } {
     if { [parameter::get -boolean -package_id $package_id -parameter "ContactPrivacyEnabledP" -default "0"] } {
-	set pretty_group [_ contacts.Privacy_Settings]
-	template::multirow append $multirow privacy privacy $pretty_group gone_p  [_ contacts.Closed_down_or_deceased]
-	template::multirow append $multirow privacy privacy $pretty_group email_p [_ contacts.Do_not_email]
-	template::multirow append $multirow privacy privacy $pretty_group mail_p [_ contacts.Do_not_mail]
-	template::multirow append $multirow privacy privacy $pretty_group phone_p [_ contacts.Do_not_phone]
+	set pretty_group [_ intranet-contacts.Privacy_Settings]
+	template::multirow append $multirow privacy privacy $pretty_group gone_p  [_ intranet-contacts.Closed_down_or_deceased]
+	template::multirow append $multirow privacy privacy $pretty_group email_p [_ intranet-contacts.Do_not_email]
+	template::multirow append $multirow privacy privacy $pretty_group mail_p [_ intranet-contacts.Do_not_mail]
+	template::multirow append $multirow privacy privacy $pretty_group phone_p [_ intranet-contacts.Do_not_phone]
     }
 }
 
@@ -1106,7 +1106,7 @@ ad_proc -public -callback contact::contact_form -impl contacts_locale {
 
     if {![template::element::exists $form "locale"]} { 
 	ad_form -extend -name $form -form {
-	    {locale:text(select),optional {label "[_ contacts.preferred_locale]"} {options $list_of_locales} {value $locale}}
+	    {locale:text(select),optional {label "[_ intranet-contacts.preferred_locale]"} {options $list_of_locales} {value $locale}}
 	}    
     }
 }

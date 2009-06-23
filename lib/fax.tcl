@@ -149,7 +149,7 @@ ad_form -action message \
 		    set organization_id $employee(organization_id)
 		}
                 set date [lc_time_fmt [dt_systime] "%q %X" "$employee(locale)"]
-                set regards [lang::message::lookup $employee(locale) contacts.with_best_regards]
+                set regards [lang::message::lookup $employee(locale) intranet-contacts.with_best_regards]
             } else {
                 ad_return_error [_ intranet-contacts.Error] [_ intranet-contacts.lt_there_was_an_error_processing_this_request]
                 break

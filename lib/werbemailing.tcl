@@ -97,7 +97,7 @@ ad_form -action message \
                 set date [lc_time_fmt [join [template::util::date::get_property linear_date_no_time $orig_date] "-"] "%q" "$employee(locale)"]
 		set date_7 [lc_time_fmt [clock format [clock scan {+7 days}] -format "%Y-%m-%d"] "%q" "$employee(locale)"]
 		set date_14 [lc_time_fmt [clock format [clock scan {+14 days}] -format "%Y-%m-%d"] "%q" "$employee(locale)"]
-		set regards [lang::message::lookup $employee(locale) contacts.with_best_regards]
+		set regards [lang::message::lookup $employee(locale) intranet-contacts.with_best_regards]
             } else {
                 ad_return_error [_ intranet-contacts.Error] [_ intranet-contacts.lt_there_was_an_error_processing_this_request]
                 break
