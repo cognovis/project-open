@@ -29,7 +29,8 @@ values ('im_conf_item', 'im_conf_items', 'conf_item_id');
 update acs_object_types set
 	status_type_table = 'im_conf_items',
 	status_column = 'conf_item_status_id',
-	type_column = 'conf_item_type_id'
+	type_column = 'conf_item_type_id',
+	type_category_type = 'Intranet Conf Item Type'
 where object_type = 'im_conf_item';
 
 
