@@ -16,7 +16,7 @@ ad_page_contract {
 } {
     conf_item_id:integer,optional
     {return_url ""}
-    {form_mode "display"}
+    {form_mode ""}
     {view_name ""}
 }
 
@@ -32,7 +32,7 @@ set enable_master_p 1
 set focus ""
 set sub_navbar ""
 
-if {"display" == $form_mode} {
+if {"display" == $form_mode || "" == $form_mode} {
     set page_title [lang::message::lookup "" intranet-confdb.Conf_Item "Configuration Item"]
     set show_components_p 1
 } else {
