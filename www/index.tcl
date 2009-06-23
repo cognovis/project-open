@@ -36,6 +36,7 @@ set page_title [lang::message::lookup "" intranet-helpdesk.Tickets "Tickets"]
 set context_bar [im_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 set letter [string toupper $letter]
+
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set return_url [im_url_with_query]
 
@@ -265,8 +266,11 @@ if { ![empty_string_p $customer_id] && $customer_id != 0 } {
 if { ![empty_string_p $customer_contact_id] && $customer_contact_id != 0 } {
     lappend criteria "t.ticket_customer_contact_id = :customer_contact_id"
 }
+
+set letter [string toupper $letter]
+
 if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string compare $letter "SCROLL"] != 0 } {
-    lappend criteria "im_first_letter_default_to_a(t.ticket_name)=:letter"
+    lappend criteria "im_first_letter_default_to_a(p.project_name) = upper(:letter)"
 }
 
 switch $mine_p {
@@ -672,7 +676,7 @@ if {"" == $dashboard_column_html} {
 # ---------------------------------------------------------------
 
 set menu_select_label ""
-set ticket_navbar_html [im_project_navbar $letter "/intranet/tickets/index" $next_page_url $previous_page_url [list start_idx order_by how_many view_name letter ticket_status_id] $menu_select_label]
+set ticket_navbar_html [im_ticket_navbar $letter "/intranet-helpdesk/index" $next_page_url $previous_page_url [list start_idx order_by how_many view_name letter ticket_status_id] $menu_select_label]
 
 
 
