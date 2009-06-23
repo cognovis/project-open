@@ -33,8 +33,13 @@ if { [wf_graphviz_installed_p] } {
     }
 
     set dot_text [wf_generate_dot_representation -size $size workflow]
-    
-    set tmpfile [wf_graphviz_dot_exec -to_file -output gif $dot_text]
+
+    if {[catch {
+	set tmpfile [wf_graphviz_dot_exec -to_file -output gif $dot_text]
+    } err_msg]} {
+	ad_return_complaint 1 "<b>Error rendering workflow</b>:<br><pre>$err_msg</pre>"
+    }
+
 
     set width_and_height ""
     if { ![catch { set image_size [ns_gifsize $tmpfile] } error] } {
