@@ -70,7 +70,7 @@ ad_proc -public sqlapi.authenticate { authinfo } {
 	    set user_id [lindex $authinfo 1]
 	    set timestamp [lindex $authinfo 2]
 	    set token [lindex $authinfo 3]
-	    set login_p [im_valid_auto_login_p -user_id $user_id -auto_login $token]
+	    set login_p [im_valid_auto_login_p -check_user_requires_manual_login_p 0 -user_id $user_id -auto_login $token]
 	    if {!$login_p} { 
 		ns_log Notice "sqlapi.authenticate: Bad login info: user_id=$user_id, timestamp=$timestamp, token=$token"
 		return [list -string "invalid_auth_token"] 
