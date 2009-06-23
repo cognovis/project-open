@@ -118,23 +118,32 @@ begin
 		t.ticket_id = v_object_id;
 
 	-- Determine the queue for the ticket
+	--
+	-- Check if the ticket_queue has already been defined by the user or
+	-- otherwise. Don't overwrite this queue.
 	IF v_ticket_queue_id is null THEN
+
 		-- Pull out the ticket queue name from ticket_type_id category
 		select	group_id, group_name into v_ticket_queue_id, v_ticket_queue
 		from	im_categories c, groups g
 		where	c.category_id = v_ticket_type_id and
 			trim(c.aux_string2) = trim(g.group_name);
 
+		-- Check if we have found a valid group name in the im_categories.aux_string2 field:
 		IF v_ticket_queue_id is not null THEN
+
+			-- Set the que for the ticket
 			update	im_tickets set ticket_queue_id = v_ticket_queue_id
 			where	ticket_id = v_ticket_id;
 
+			-- Protocol the decision to assign the ticket to that group.
 			v_journal_id := journal_entry__new(
 				null, v_case_id,
 				v_transition_key || '' set_queue '' || p_custom_arg,
 				v_transition_key || '' set_queue '' || p_custom_arg,
 				now(), v_creation_user, v_creation_ip,
-				''Ticket classify: Setting ticket queue to '' || v_ticket_queue || '' based on Category '' || 
+				''Ticket classify: Setting ticket queue to '' || 
+				v_ticket_queue || '' based on Category '' || 
 				im_category_from_id(v_ticket_type_id) || ''".''
 			);
 		END IF;
