@@ -25,11 +25,10 @@ ad_page_contract {
 # ------------------------------------------------------
 
 if {"" != $auto_login} {
-    # We probably have a freelance who received an invitations...
-    set valid_p [im_valid_auto_login_p -user_id $user_id -auto_login $auto_login]
 
-    # Don't let administrators in this way...
-    if {[im_is_user_site_wide_or_intranet_admin $user_id]} { set valid_p 0 }
+    # We probably have a freelance who received an invitations...
+    # Admins can not login this way.
+    set valid_p [im_valid_auto_login_p -user_id $user_id -auto_login $auto_login]
 
     if {$valid_p} {
 	# Log the dude in!
