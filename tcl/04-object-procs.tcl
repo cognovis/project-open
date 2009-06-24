@@ -162,56 +162,58 @@ if {$openacs54_p} {
 }
 
 if {0} {
-::im::dynfield::Object ad_instproc save_new {
-  -package_id -creation_user -creation_ip
-} {
-  Save the XOTcl Object with a fresh acs_object
-  in the database.
-
-  @return new object id
-} {
-  if {![info exists package_id] && [my exists package_id]} {
-    set package_id [my package_id]
-  }
-
-  ::im::dynfield::Object get_context package_id creation_user creation_ip
-  db_transaction {
-      set id [::im::dynfield::Object new_acs_object \
-                -package_id $package_id \
-                -creation_user $creation_user \
-                -creation_ip $creation_ip \
-                -object_type [my object_type] \
-                -object_id [my object_id] \
-                ""]
-    [my info class] initialize_acs_object [self] $id
+    ::im::dynfield::Object ad_instproc save_new {
+	-package_id -creation_user -creation_ip
+    } {
+	Save the XOTcl Object with a fresh acs_object
+	in the database.
+	
+	@return new object id
+    } {
+	if {![info exists package_id] && [my exists package_id]} {
+	    set package_id [my package_id]
+	}
+	
+	::im::dynfield::Object get_context package_id creation_user creation_ip
+	db_transaction {
+	    set id [::im::dynfield::Object new_acs_object \
+			-package_id $package_id \
+			-creation_user $creation_user \
+			-creation_ip $creation_ip \
+			-object_type [my object_type] \
+			-object_id [my object_id] \
+			""]
+	    [my info class] initialize_acs_object [self] $id
+	    
+	    
+	    my insert
+	}
+	return $id
+    }
     
-    
-    my insert
-  }
-  return $id
+    ::im::dynfield::Object proc new_acs_object {
+						-package_id
+						-creation_user
+						-creation_ip
+						-object_type
+						-object_id
+						{object_title ""}
+    } {
+	my get_context package_id creation_user creation_ip
+	
+	set id [::xo::db::sql::acs_object new \
+		    -object_type $object_type \
+		    -title $object_title \
+		    -package_id $package_id \
+		    -creation_user $creation_user \
+		    -object_id $object_id \
+		    -creation_ip $creation_ip \
+		    -security_inherit_p [my security_inherit_p]]
+	return $id
+    }
 }
 
-::im::dynfield::Object proc new_acs_object {
-  -package_id
-  -creation_user
-  -creation_ip
-  -object_type
-  -object_id
-  {object_title ""}
-} {
-  my get_context package_id creation_user creation_ip
 
-  set id [::xo::db::sql::acs_object new \
-              -object_type $object_type \
-              -title $object_title \
-              -package_id $package_id \
-              -creation_user $creation_user \
-              -object_id $object_id \
-              -creation_ip $creation_ip \
-              -security_inherit_p [my security_inherit_p]]
-  return $id
-}
-}
 
 ::im::dynfield::Object ad_instproc list_ids {
 } {

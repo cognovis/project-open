@@ -986,7 +986,7 @@ end;' language 'plpgsql';
 
 -- Shortcut function
 CREATE OR REPLACE FUNCTION im_dynfield_attribute_new (
-	varchar, varchar, varchar, varchar, varchar, char(1), integer, char(1),varchar
+	varchar, varchar, varchar, varchar, varchar, char(1), integer, char(1), varchar
 ) RETURNS integer as '
 DECLARE
 	p_object_type		alias for $1;

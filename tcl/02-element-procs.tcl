@@ -67,7 +67,7 @@ xotcl::Class create ::im::dynfield::Element \
 } {
     if {$list_id == ""} {
         set list_id [ams::list::get_id -attribute_id $id]
-	}
+    }
 	
     set sql "
     select

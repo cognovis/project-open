@@ -108,7 +108,7 @@ ad_proc -public ams::list::get_id {
     @attribute_id dynfield_attribute_id
 } {
     set subtype_id [db_string subtype "select object_type_id from im_dynfield_type_attribute_map where attribute_id = :attribute_id limit 1" -default ""]
-    if {$subtype_id eq ""} {
+    if {$subtype_id == ""} {
         set object_type [db_string object_type "select object_type from acs_attributes aa, im_dynfield_attributes ida where ida.acs_attribute_id = aa.attribute_id and ida.attribute_id = :attribute_id"]
         set subtype_id [ams::list::get_list_id -object_type $object_type -list_name $object_type]
     }
