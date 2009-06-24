@@ -24,11 +24,15 @@ set provided_return_url $return_url
 set provided_return_url_label $return_url_label
 
 if {$list_id == ""} {
+
+
+    # Check that the list doesn't exist before
     if { ![ams::list::exists_p -object_type $object_type -list_name $list_name] } {
 
         # Create a new category for this list with the same name
         set object_type_category [db_string otypecat "select type_category_type from acs_object_types where object_type = :object_type" -default ""]
-        db_string newcat "select im_category_new(nextval('im_categories_seq')::integer,:list_name, :object_type_category)"
+	if {"" == $object_type_category} { ad_return_complaint 1 "<b>Configuration Error</b>:<br>Object Type $object_type has an empty 'type_category_type' field." }
+        db_string newcat "select im_category_new(nextval('im_categories_seq')::integer, :list_name, :object_type_category)"
 
         set exists_p [ams::list::exists_p -object_type $object_type -list_name $list_name]
         if {!$exists_p} {
