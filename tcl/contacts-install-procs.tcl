@@ -81,15 +81,15 @@ ad_proc -public contacts::install::package_install {
 
     set im_employee_list [list [list department_id "#intranet-cost.Department#" 1 "departments" "1"] \
         [list supervisor_id "#intranet-hr.Supervisor#" 2 "supervisors" "1"] \
-        [list availability "#intranet-hr.Availability_#" 3 "textbox_small" "1"] \
-        [list hourly_cost "#intranet-hr.Hourly_Cost#" 4 "textbox_small" ""] \
+        [list availability "#intranet-hr.Availability_#" 3 "integer" "1"] \
+        [list hourly_cost "#intranet-hr.Hourly_Cost#" 4 "integer" ""] \
         [list employee_status_id "#intranet-hr.Employee_Status#" 5 "employee_status" "1"] \
         [list ss_number "#intranet-hr.Social_Security_#" 6 "textbox_medium" ""] \
-        [list salary "#intranet-hr.Monthly_Salary#" 7 "textbox_medium" ""] \
-        [list social_security "#intranet-hr.lt_Monthly_Social_Securi#" 8 "textbox_small" ""] \
-        [list insurance "#intranet-hr.Monthly_Insurance#" 9 "textbox_small" ""] \
+        [list salary "#intranet-hr.Monthly_Salary#" 7 "integer" ""] \
+        [list social_security "#intranet-hr.lt_Monthly_Social_Securi#" 8 "integer" ""] \
+        [list insurance "#intranet-hr.Monthly_Insurance#" 9 "integer" ""] \
         [list currency "#intranet-hr.Currency#" 11 "currencies" ""] \
-        [list salary_payments_per_year "#intranet-hr.lt_Salary_Payments_per_Y#" 12 "textbox_small" ""] \
+        [list salary_payments_per_year "#intranet-hr.lt_Salary_Payments_per_Y#" 12 "integer" ""] \
         [list birthdate "#intranet-hr.Birthdate#" 13 "textbox_small" ""] \
         [list job_title "#intranet-hr.Job_Title#" 14 "textbox_medium" ""] \
         [list job_description "#intranet-hr.Job_Description#" 15 "textarea_small_nospell" ""] \
