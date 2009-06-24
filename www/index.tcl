@@ -19,6 +19,88 @@ ad_page_contract {
     {category_id ""}
 }
 
+
+# ------------------------------------------------------------
+# Category Consistency Checker
+# ------------------------------------------------------------
+
+set errors ""
+set profiles_without_category [db_list_of_lists pwt "
+	select	group_id, group_name 
+	from	groups, im_profiles
+	where	group_id = profile_id and 
+		not exists (
+		    select category_id 
+		    from im_categories 
+		    where	category = group_id
+		    		and category_type = 'Intranet Groups'
+		)
+"]
+if {{} != $profiles_without_category} {
+   lappend errors "<li>
+   The following Profiles don't have a corresponding entry in the category 'Intranet Groups':<br>
+   $profiles_without_category<br>
+   To fix this issue please create category entries in 'Intranet Groups' for the specified group.
+   "
+}
+
+set profile_categories_without_group [db_list_of_lists pcwg "
+	select	category_id, category, aux_string1
+	from	im_categories 
+	where	category_type = 'Intranet Groups' and
+		not exists (
+		    	select	1
+			from 	groups
+			where	group_id = category   
+		)
+"]
+if {{} != $profile_categories_without_group} {
+   lappend errors "<li>
+   The following entries of the 'Intranet Groups' category don't have corresponding 
+   entries in the table 'groups'.<br>
+   $profile_categories_without_group<br>
+   To fix this issue, please delete the following entries.<br>"
+}
+
+# Check for missing "lists":
+set profile_categories_without_group [db_list_of_lists pcwg "
+	select	category
+	from	im_categories 
+	where	category_type = 'Intranet User Type' and
+		category = 'person'
+    UNION
+	select	category
+	from	im_categories 
+	where	category_type = 'Intranet Office Type' and
+		category = 'im_office'
+    UNION
+	select	category
+	from	im_categories 
+	where	category_type = 'Intranet Company Type' and
+		category = 'im_company'
+"]
+if {{} != $profile_categories_without_group} {
+   lappend errors "<li>
+   There is no 'default list' (=category) for object_type 'person'.<br>
+   To fix this issue, please go to Contacts - Admin and click on 'List' next to the specified object type."
+}
+
+
+if {{} != $errors} {
+   ad_return_complaint 1 "<b>Contacts Configuration Issue</b>:<br>
+   <ul>
+   [join $errors "<br>"]
+   </ul>"
+   ad_script_abort
+}
+
+
+
+
+# ------------------------------------------------------------
+# 
+# ------------------------------------------------------------
+
 if {$search_id eq ""} {
     # We don't have a search, load the default search_id
     set search_id [db_string search_id "select object_id from acs_objects where title = '#intranet-contacts.search_person#'"]
