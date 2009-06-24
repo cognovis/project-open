@@ -1525,6 +1525,9 @@ where
     set ctr 0
     foreach file $files { 
 
+	# decode to utf-8
+	encoding convertto $file
+
 	# count the deph of the file (how many directories depends the file)
 	# example: (INT-ADM-KNOWMG/file.dat)
 	set file_paths [split $file "/"]
