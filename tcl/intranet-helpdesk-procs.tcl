@@ -896,7 +896,10 @@ ad_proc -public im_helpdesk_home_component {
 # Navigation Bar Tree
 # ---------------------------------------------------------------------
 
-ad_proc -public im_navbar_tree_helpdesk { } {
+ad_proc -public im_navbar_tree_helpdesk { 
+    -user_id:required
+    { -locale "" }
+} {
     Creates an <ul> ...</ul> collapsable menu for the
     system's main NavBar.
 } {
