@@ -20,8 +20,8 @@
 	select 
 		distinct cct.customer_id as c_id, 
 		cct.supplier_id as s_id,
-		( select first_names ||' '|| last_name from cc_users where user_id = customer_id) as customer,
-		( select first_names ||' '|| last_name from cc_users where user_id = supplier_id) as supplier
+		( select im_name_from_user_id(user_id) from cc_users where user_id = customer_id) as customer,
+		( select im_name_from_user_id(user_id) from cc_users where user_id = supplier_id) as supplier
 	from
 		contact_complaint_track cct
     </querytext>

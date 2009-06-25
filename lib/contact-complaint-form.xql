@@ -18,7 +18,7 @@
     <querytext>
 	select
 		user_id,
-		first_names ||' '|| last_name as fullname
+		im_name_from_user_id(user_id) as fullname
 	from
 		cc_users
 	order by
