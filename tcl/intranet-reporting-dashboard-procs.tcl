@@ -55,7 +55,7 @@ ad_proc -public im_dashboard_all_time_top_customers_component {
 
     set params [list \
 		    [list return_url [im_url_with_query]] \
-		    ]
+    ]
     set result [ad_parse_template -params $params "/packages/intranet-reporting-dashboard/www/all_time_top_customers"]
     return $result
 }
@@ -318,43 +318,11 @@ ad_proc im_dashboard_pie_colors {
     return [array get pie_colors]
 }
 
-ad_proc im_dashboard_pie_chart {
-    { -max_entries 8 }
-    { -values {} }
-    { -bar_y_size 15 }
-    { -bar_x_size 100 }
-    { -perc_x_size 50 }
-    { -radius 90 }
-    { -bar_distance 5 }
-    { -bar_text_limit "" }
-    { -outer_distance 20 }
-    { -start_color "" }
-    { -end_color "" }
-    { -font_color "" }
-    { -font_size 8 }
-    { -font_style "font-family:Verdana;font-weight:normal;line-height:10pt;" }
-} {
-    Returns a formatted HTML text to display a piechart
-    based on Lutz Tautenhahn' "Javascript Diagram Builder", v3.3.
-    @param max_entries Determines the max. number of entries
-           in the pie chart. It also determines the Y-size of the diagram.
-    @param values A list of {name value} pairs to be displayed.
-           Values must be numeric (comparable using the "<" operator).
-
-    Short example:
-    <pre>set pie_chart [im_dashboard_pie_chart \
-        -max_entries 3 \
-			    -values {{Abc 10} {Bcde 20} {Cdefg 30} {Defg 25}}
-        </pre>
-		    } {
-return test
-		    }
-
 # ----------------------------------------------------------------------
 # Draw a reasonable Pie chart
 # ----------------------------------------------------------------------
 
-ad_proc im_dashboard_pie_chart_ { 
+ad_proc im_dashboard_pie_chart { 
     { -max_entries 8 }
     { -values {} }
     { -bar_y_size 15 }
