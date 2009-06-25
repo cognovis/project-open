@@ -50,6 +50,7 @@ if {"" == $spec_files} {
     set not_compatible_list [list]
     
     foreach spec_file $all_spec_files {
+	ns_log Notice "packages-install-2: spec_file=$spec_file"
 	array set version [apm_read_package_info_file $spec_file]
 	set version_name $version(name)
 	set package_name $version(package-name)
