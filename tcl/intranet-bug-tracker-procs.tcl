@@ -271,30 +271,50 @@ ad_proc -public im_navbar_tree_bug_tracker { } {
 	append html "<li><a href=\"/bug-tracker/bug-add\">[lang::message::lookup "" intranet-confdb.New_Bug "New Bug"]</a>\n"
     }
 
-    # Add sub-menu with types of conf_items
-    append html "
-	<li><a href=\"/intranet-confdb/index\">[lang::message::lookup "" intranet-confdb.Conf_Item_Types "Bugs Types"]</a>
-	<ul>
+    set package_id [ad_conn package_id]
+    set project_root_keyword_id [bug_tracker::conn project_root_keyword_id]
+    set categories_sql "
+		select child.keyword_id as child_id,
+			child.heading as child_heading,
+			parent.keyword_id as parent_id,
+			parent.heading as parent_heading,
+			case when child.keyword_id is null then 0 else (
+				select	count(*) 
+				from	bt_bugs 
+				where	project_id = :package_id and 
+					content_keyword__is_assigned(bug_id, child.keyword_id, 'none')
+			) end as num_bugs,
+			(select content_keyword__is_leaf(parent.keyword_id)) as is_leaf,
+			(	select	count(*)
+				from	bt_default_keywords
+				where	project_id = :package_id and 
+					parent_id = parent.keyword_id and 
+					keyword_id = child.keyword_id
+			) as default_p
+		from
+			cr_keywords parent 
+			left outer join cr_keywords child on (child.parent_id = parent.keyword_id)
+		where
+			parent.parent_id = :project_root_keyword_id
+		order by 
+			parent.heading, child.heading
     "
-
-    if {$current_user_id > 0} {
-	set conf_item_type_sql "
-		select	t.*
-		from	im_conf_item_type t 
-		where not exists (select * from im_category_hierarchy h where h.child_id = t.conf_item_type_id)
-        "
-	db_foreach conf_item_types $conf_item_type_sql {
-	    set url [export_vars -base "/intranet-confdb/index" {{type_id $conf_item_type_id}}]
-	    regsub -all " " $conf_item_type "_" conf_item_type_subst
-	    set name [lang::message::lookup "" intranet-helpdesk.Conf_Item_type_$conf_item_type_subst "$conf_item_type"]
-	    append html "<li><a href=\"$url\">$name</a></li>\n"
+    set open_ul_p 0
+    set old_parent_heading ""
+    db_foreach bug_categories $categories_sql {
+	if {$old_parent_heading != $parent_heading} {
+	    set old_parent_heading $parent_heading
+	    if {$open_ul_p} { append html "</ul>\n" }
+	    append html "<li>$parent_heading\n"
+	    append html "<ul>\n"
+	    set open_ul_p 1
 	}
+	set filter.status "any"
+	set filter.keyword $child_id
+	set url [export_vars -base "/bug-tracker/index" {filter.status filter.keyword}]
+	append html "<li><a href=$url>$child_heading</a>\n"
     }
-    append html "
-	</ul>
-	</li>
-    "
-
+    if {$open_ul_p} { append html "</ul>\n" }
 
     append html "
 	</ul>
