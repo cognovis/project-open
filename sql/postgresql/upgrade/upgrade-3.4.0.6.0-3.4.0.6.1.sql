@@ -250,6 +250,10 @@ begin
 	select count(*) into v_count from acs_object_type_tables
 	where object_type = ''im_trans_invoice'' and table_name = ''im_invoices'';
 	IF v_count > 0 THEN RETURN 1; END IF;
+
+	select count(*) into v_count from acs_object_types
+	where object_type = ''im_trans_invoice'';
+	IF v_count = 0 THEN RETURN 1; END IF;
 	
 	insert into acs_object_type_tables (object_type,table_name,id_column)
 	values (''im_trans_invoice'', ''im_invoices'', ''invoice_id'');
@@ -268,6 +272,10 @@ begin
 	select count(*) into v_count from acs_object_type_tables
 	where object_type = ''im_trans_invoice'' and table_name = ''im_costs'';
 	IF v_count > 0 THEN RETURN 1; END IF;
+	
+	select count(*) into v_count from acs_object_types
+	where object_type = ''im_trans_invoice'';
+	IF v_count = 0 THEN RETURN 1; END IF;
 	
 	insert into acs_object_type_tables (object_type,table_name,id_column)
 	values (''im_trans_invoice'', ''im_costs'', ''cost_id'');
