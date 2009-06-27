@@ -40,6 +40,15 @@ ad_proc -private im_package_notes_id_helper {} {
 # Components
 # ---------------------------------------------------------------------
 
+ad_proc -public im_notes_project_component {
+    -object_id
+} {
+    Proxy for im_notes_component for compatibility
+} {
+    return [im_notes_component -object_id $object_id]
+}
+
+
 ad_proc -public im_notes_component {
     -object_id
 } {
