@@ -171,12 +171,12 @@ ______________________________________________________________________
   VMware.
 
   To find out the IP address, double-click the "]po[ @ Localhost" icon
-  in the VMware's desktop. The login page includes a status section in 
-  the lower right corner:
+  in the VMware's desktop. The ]po[ login page includes a status section 
+  in the lower part of the browser:
 
-  - Browser URL:	http://192.168.0.101/
-  - IP Address:		192.168.0.101 (sample value)
-  - Total Memory:	512 MByte (sample value)
+  - Browser URL:	http://192.168.0.101/	(sample value)
+  - IP Address:		192.168.0.101		(sample value)
+  - Total Memory:	512 MByte		(sample value)
 
   Now open a Web browser on your computer or another computer and enter 
   http://192.168.0.101/ (sample value, as above). 
