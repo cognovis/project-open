@@ -35,16 +35,16 @@
     project-open-v34.vmx included in the "project-open-v34" folder.
 
   - After starting the virtual machine please login to Linux:
-	Username: root
-	Password: root
+	Username:	root
+	Password:	root
 
   - On the Linux desktop please click on the "]po[ @ Localhost" icon.
     A browser should open with the first page of ]project-open[.
     Please retry after a few seconds if you see "Service not avaliable".
 
   - Please login to ]po[ using the following one of the demo account:
-	Email: sysadmin@tigerpond.com
-	Password: system
+	Email:		sysadmin@tigerpond.com
+	Password:	system
 
   - Please follow the System Configuration Wizard to perform a basic
     configuration for your specifiy business and industry.
@@ -185,57 +185,33 @@ ______________________________________________________________________
 
   Troubleshooting:
 
-  If you don't see the IP Address as above, there are two possible causes:
+  If you don't see the IP Address as above, you will need to check at
+  the network configuration of your VMware and your LAN environment:
 
-  - Fixed IP Addresses:
-    Is it possible that you don't have a DHCP server in your network
-    and work with fixed IP addresses? If so, please go to the VMware menu
-    System -> Administration -> Network and choose a fixed IP address
-    for your VMware.
+  1) Did you enable the Network Adapter in your VMware?
+     Please right-click on the "Network Adapter" icon at the bottom of
+     your VMware console.
 
-  - VMware network not in "Bridged" mode:
-    Please make sure you have set your VMware's Ethernet port
-    to "Bridged" mode. Only in bridged mode will you be able to
-    see the ]project-open[ server from your intranet.
+     => Please make sure the Network Adapter is "connected".
+        The text of the status is a bit misleading I think, you need
+        to read the word "Disconnect"...
+     => Please make sure the Network Adapter modus is set to "Bridged". 
+        Only a bridged setting will allow external computers to connect 
+        to your VMware.
 
+     You will have to refresh the Linux network settings once you have 
+     modified/enabled your Network Adapter. Please go to:
+     System -> Administration -> Network
+     ("System" is located in the left bottom corner of in the tray of the
+     VMware appliance, beside "Applications" and "Places")
+     Then please "Activate" the "eth0" interface. 
 
+  2) Please make sure there is a DHCP server available in your LAN.
+     Otherwise please configure a fixed IP address using 
+     System -> Administration -> Network.
 
-
-
-
-  - On the Linux desktop please click on the "]po[ @ Localhost" icon.
-    A browser should open with the first page of ]project-open[.
-    Please retry after a few seconds if you see "Service not avaliable".
-
-  - Please login to ]po[ using the following one of the demo account:
-	Email: sysadmin@tigerpond.com
-	Password: system
-
-  - Please follow the System Configuration Wizard to perform a basic
-    configuration for your specifiy business and industry.
-    Don't worry too much about your answers, you can repeat this step 
-    at any time.
-
-
-
-
-
-  - As the next step you probably want to configure your VMware for
-    access from your host computer and your local area network. 
-    For details please see:
-    www.project-open.org/documentation/install_vm_configure_internet_access
-
-  - You will probably want to delete the included demo data, before using
-    ]po[ in your organization.
-    To delete the demo data please go to Admin -> Cleanup Demo Data -> 
-    "Nuke all demo data" and "Nuke Demo Users".
-    Note: You won't be able to delete "sysadmin@tigerpond.com", so please 
-    "recycle" this user by changing the email of this user to your own 
-    email.
-
-
-
-
+  3) Still not resolved? Then please have a look at:
+     http://www.project-open.org/documentation/install_vm.
 
 
 
@@ -252,22 +228,42 @@ ______________________________________________________________________
 
   You will now see the System Configuration Wizard that guides
   you through the configuration of the ]project-open[ System.
-
-  The main purpose of this wizard is to simplify the system by
-  disabling unnecessary functionality.
+  The purpose of the wizard is to simplify the system by disabling 
+  unnecessary functionality.
+  But don't worry too much about your answers, you can repeat this 
+  step at any time.
 
   For a maximum configuration please choose the "Other / Everything,"
   "Complete / Full Installation" and "Three Hierarchical Levels"
   options at the bottom of each wizard page.
 
-  Going back to the "Home" page after 1 to 2 minutes, you will see
-  a fully configured ]po[ server with demo data.
-
+  After restarting the server (last step of the configurtion) you can
+  go back to the "Home" tab. You will find a nicely preconfigured ]po[ 
+  server with demo data.
 
 
   ______________________________________________________________________
 
-  8. Where to go from here?
+  8. Delete Demo Data
+
+  After playing around with the demo data in the system for a while you
+  need to delete the "Tigerpond" demo company and its users before you
+  can use ]po[ in production for your organization.
+
+  To cleanup all data please go to Admin -> Cleanup Demo Data and select
+  "Nuke all demo data in the system".
+
+  After successfully deleting all main objects please proceed to:
+  Admin -> Cleanup Demo Data -> "Nuke Demo Users".
+  
+  Note: You won't be able to delete "sysadmin@tigerpond.com", because
+  it is the owner of many system objects. Please "recycle" this user by 
+  changing the email of this user to your own email.
+
+
+  ______________________________________________________________________
+
+  9. Where to go from here?
 
   - Information & Documentation:
     Please go to www.project-open.org/documentation/ and glance
@@ -306,7 +302,7 @@ ______________________________________________________________________
 
   ______________________________________________________________________
 
-  9. Stay Tuned
+  10. Stay Tuned
 
 
   There are several options to stay in regular contact with 
