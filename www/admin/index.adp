@@ -23,7 +23,7 @@
 <else>
 	<tr class=rowodd>
 </else>
-	    <td><a href="workflow?workflow_key=@workflows.workflow_key@">@workflows.pretty_name@</a></td>
+	    <td><a href="workflow?workflow_key=@workflows.workflow_key@">@workflows.pretty_name@</a><br>(@workflows.workflow_key@)</td>
 	    <td align="center">
 		<if @workflows.num_cases@ eq 0>No active cases</if>
 		<if @workflows.num_cases@ eq 1><a href="workflow-summary?workflow_key=@workflows.workflow_key@">1 active case</a></if>
