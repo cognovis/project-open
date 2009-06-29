@@ -431,7 +431,7 @@ if {!$search_pg_installed_p} {
     set err_msg ""
     if {[catch {
 	set psql_string [exec psql --version] 
-	regexp {([0-9]\.[0-9]\.[0-9])} $psql_string match psql_version
+	regexp {([0-9]+\.[0-9]+\.[0-9]+)} $psql_string match psql_version
     } err_msg]} {
 	ns_write "<li>Error getting PostgreSQL version number: <pre>'$err_msg'</pre> \n"
     } else {
