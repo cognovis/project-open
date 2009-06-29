@@ -9,11 +9,11 @@
 <h2>Size of your Organization</h2>
 
 
-<table border=0 width="90%">
+<table border=0 width="80%">
 <tr><td colspan=3>
 
 	<p>
-	@po;noquote@ can be adapted to different organization sizes.
+	@po_short;noquote@ can be adapted to different organization sizes.
 	</p>
 	
 	<p>

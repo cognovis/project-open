@@ -8,11 +8,11 @@
 
 <h2>Simplified or Complete Install?</h2>
 
-<table border=0 width="90%">
+<table border=0 width="80%">
 <tr><td colspan=3>
 
 	<p>
-	@po;noquote@ offers a total of ~100 packages which can be enabled/disabled<br>
+	@po_small;noquote@ offers a total of ~100 packages which can be enabled/disabled<br>
 	 individually. However enabling/disabling them may take some time. <br>
 	So please select your start configuration. You can later change the <br>
 	configuration by running this wizard again.<br>&nbsp;
