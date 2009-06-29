@@ -22,7 +22,7 @@
 
   This ]project-open[ update asumes that you are already running 
   ]project-open[ on your server. This update only contains the ]po[ 
-  source code that changes between releases.
+  source code that has changes between releases.
 
   ______________________________________________________________________
 
@@ -30,8 +30,9 @@
 
   This ]project-open[ update contains the following files:
 
-  - README.project-open.update - this file
-  - LICENSE.project-open - the license for the included software
+  - README.project-open.X.Y.Z.V.W - this file
+  - LICENSE.project-open.X.Y.Z.V.W - the license for the included software
+  - pg_dump.X.Y.Z.V.W.sql - a database dump of the current version
   - packages/* - the ]project-open[ source code
 
   This package does not contains the AOLServer application server
