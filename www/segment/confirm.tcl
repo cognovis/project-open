@@ -37,7 +37,6 @@ set sector [ns_set iget [ad_conn form] "sector"]
 set core_version [im_core_version]
 set core_version_id [join [lrange [split $core_version "."] 0 2] ""]
 set platform [ns_info platform]
-set platform mac
 
 # Default value
 set iframe_url "http://www.project-open.org/documentation/install_${platform}_${core_version_id}"
