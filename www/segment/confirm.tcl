@@ -33,6 +33,39 @@ set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</s
 
 set sector [ns_set iget [ad_conn form] "sector"]
 
+# Gather information about the system:
+set core_version [im_core_version]
+set core_version_id [join [lrange [split $core_version "."] 0 2] ""]
+set platform [ns_info platform]
+set platform mac
+
+# Default value
+set iframe_url "http://www.project-open.org/documentation/install_${platform}_${core_version_id}"
+
+
+switch [string tolower $platform] {
+    win32 {
+	set iframe_url "http://www.project-open.org/documentation/install_${platform}_${core_version_id}"
+    }
+    linux {
+	set linux_distro [im_linux_distro]
+	set vmware_p [im_linux_vmware_p]
+	if {$vmware_p} {
+	    set plaform "vm"
+	    set iframe_url "http://www.project-open.org/documentation/install_vm_${core_version_id}"
+	} else {
+	    set iframe_url "http://www.project-open.org/documentation/install_${linux_distro}_${core_version_id}"
+	}
+    }
+    default {
+	set iframe_url "http://www.project-open.org/documentation/install_${platform}_${core_version_id}"
+    }
+}
+
+# Make sure the XoWiki page doesn't show a clumsy template
+append iframe_url "?no_template_p=1"
+
+# ad_return_complaint 1 "<pre>platform=[string tolower $platform]\nvmware_p=$vmware_p\ncore_version_id=$core_version_id\niframe_url=$iframe_url</pre>"
 
 # ---------------------------------------------------------------
 # Check if everything is together

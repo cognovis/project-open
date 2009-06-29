@@ -16,7 +16,7 @@
 	<p>Please read the latest release notes:
 	</p>
 
-	<iframe src="http://www.project-open.org/download/vmware/3.4.html" width="90%" height="200" name="Release Notes">
+	<iframe src="@iframe_url;noquote@" width="90%" height="200" name="Release Notes">
   <p>No IFrames supported...</p>
 </iframe>
 
