@@ -296,6 +296,11 @@ begin
 	where object_type = ''im_gantt_project'' and table_name = ''im_gantt_projects'';
 	IF v_count > 0 THEN RETURN 1; END IF;
 	
+	-- make sure im_gantt_project object type exists...
+	select count(*) into v_count from acs_object_types
+	where object_type = ''im_gantt_project'';
+	IF v_count = 0 THEN RETURN 1; END IF;
+	
 	insert into acs_object_type_tables (object_type,table_name,id_column)
 	values (''im_gantt_project'', ''im_gantt_projects'', ''project_id'');
 
@@ -313,10 +318,14 @@ begin
 	select count(*) into v_count from acs_object_type_tables
 	where object_type = ''im_gantt_project'' and table_name = ''im_projects'';
 	IF v_count > 0 THEN RETURN 1; END IF;
+
+	-- make sure im_gantt_project object type exists...
+	select count(*) into v_count from acs_object_types
+	where object_type = ''im_gantt_project'';
+	IF v_count = 0 THEN RETURN 1; END IF;
 	
 	insert into acs_object_type_tables (object_type,table_name,id_column)
 	values (''im_gantt_project'', ''im_projects'', ''project_id'');
-	
 
 	RETURN 0;
 end;' language 'plpgsql';
