@@ -246,7 +246,7 @@ drop function inline_0 ();
 
 
 ---------------------------------------------------------
--- Finance - Projects and its Finanancial Documents
+-- Finance - Projects and its Financial Documents
 --
 
 create or replace function inline_0 ()
@@ -630,7 +630,7 @@ drop function inline_0 ();
 
 
 ---------------------------------------------------------
--- Finance - Projects and its Finanancial Documents
+-- Finance - Projects and its Financial Documents
 --
 
 create or replace function inline_0 ()
