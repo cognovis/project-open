@@ -88,11 +88,11 @@ if {$reports_exist_p && $user_admin_p} {
 }
 
 
-set top_menu_sortkey [util_memoize [list db_string top_menu_sortkey "
+set top_menu_sortkey [db_string top_menu_sortkey "
 	select tree_sortkey 
 	from im_menus 
 	where label = 'reporting'
-" -default ""]]
+" -default ""]
 
 list::create \
         -name report_list \
