@@ -44,7 +44,7 @@ set missing_sql "
 		aa.attribute_name
 "
 db_foreach missing_map_entries $missing_sql {
-    append missing_dynfield_object_types "<li>$object_type: $attribute_name\n"
+    append missing_dynfield_object_types "<li>$object_type: <a href=\"/intranet-dynfield/attribute-new?attribute_id=$dynfield_attribute_id\">$attribute_name</a>\n"
 }
 
 
