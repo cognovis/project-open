@@ -4,7 +4,7 @@ SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgra
 
 
 ---------------------------------------------------------
--- Finance - Projects and its Finanancial Documents
+-- Finance - Projects and its Financial Documents
 --
 
 create or replace function inline_0 ()
