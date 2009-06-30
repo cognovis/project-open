@@ -12,7 +12,7 @@
 
 'Cost Centers' represent a kind of refined department structure of a company.
 This structure is suitable for larger companies to determine
-the access rights for finanancial documents. A department head should be
+the access rights for financial documents. A department head should be
 able to see what's happening in his group. However, she should not
 necessarily know what's going on in other departments and in the company
 as a whole.<p>
