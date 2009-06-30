@@ -406,3 +406,26 @@ drop function inline_0 ();
 \i ../common/intranet-freelance-common.sql
 \i ../common/intranet-freelance-backup.sql
 
+
+
+-- Create freelance report
+SELECT im_report_new (
+	'Freelance Skills',		-- report_name
+	'reporting-freelance-skills',	-- report_code
+	'intranet-freelance',		-- package_key
+	100,				-- report_sort_order
+	(select menu_id from im_menus where label = 'reporting-other'),	-- parent_menu_id
+	'
+	select	''<a href=/intranet/users/view?user_id='' || user_id || ''>'' ||
+		im_name_from_user_id(s.user_id) || ''</a>'' as user_name,
+		im_category_from_id(s.skill_type_id) as skill_type,
+		im_category_from_id(s.skill_id) as skill,
+		im_category_from_id(s.confirmed_experience_id) as level
+	from	im_freelance_skills s,
+		persons p
+	where	p.person_id = s.user_id
+	order by
+		last_name, first_names, skill_type, skill
+	'
+);
+
