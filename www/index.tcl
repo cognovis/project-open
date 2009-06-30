@@ -275,7 +275,7 @@ db_foreach cost_centers $main_sql {
 append table "
 	<tr>
 	  <td colspan=[expr $num_profiles + 9] align=right>
-	    <A href=new?[export_url_vars return_url]>New Cost Center</a>
+	    <A href=[export_vars -base "/intranet-cost/cost-centers/new" { return_url }]>New Cost Center</a>
 	  </td>
 	  <td>
 	    <input type=submit value='Del'>
