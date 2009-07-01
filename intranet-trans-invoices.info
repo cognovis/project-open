@@ -21,7 +21,7 @@
         <callbacks>
         </callbacks>
         <parameters>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="AggregateTasksCheckboxEnabled"  default="checked" description="What is the default operation when aggregating translation tasks? Possible options include &quot;checked&quot; (aggregate tasks of the same type), &quot;&quot; (leave the checkbox empty, so tasks will be listed individually) or &quot;disabled&quot; (disable the option to aggregate tasks). Default is &quot;checked&quot;."/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="AggregateTasksCheckboxEnabled"  default="checked" description="What is the default operation when aggregating translation tasks? Possible options include &quot;checked&quot; (aggregate tasks of the same type), &quot;unchecked&quot; (leave the checkbox empty, so tasks will be listed individually) or &quot;disabled&quot; (disable the option to aggregate tasks). Default is &quot;checked&quot;."/>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="DefaultPriceListUomID"  default="324" description="Do you want file types to appear in your price list? Default is no for most translation companies."/>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="EnableFileTypeInTranslationPriceList"  default="0" description="Do you want file types to appear in your price list? Default is no for most translation companies."/>
         </parameters>
