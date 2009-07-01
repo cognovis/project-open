@@ -4,6 +4,11 @@ SELECT acs_log__debug('/packages/intranet-freelance/sql/postgresql/upgrade/upgra
 
 
 
+update im_component_plugins set 
+	plugin_name = 'Freelance List Component' 
+where
+	plugin_name = 'freelance list Component'
+;
 
 
 create or replace function im_report_new (
