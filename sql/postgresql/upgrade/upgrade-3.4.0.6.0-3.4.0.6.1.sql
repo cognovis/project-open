@@ -104,15 +104,15 @@ END;' language 'plpgsql';
 
 
 
-
-
-
-
 create or replace function inline_0 ()
 returns integer as '
 declare
 	v_count		integer;
 begin
+	select count(*) into v_count from acs_object_types
+	where object_type = ''im_timesheet_task'';
+	IF v_count = 0 THEN RETURN 1; END IF;
+	
 	select count(*) into v_count from acs_object_type_tables
 	where object_type = ''im_timesheet_task'' and table_name = ''im_projects'';
 	IF v_count > 0 THEN RETURN 1; END IF;
@@ -160,7 +160,6 @@ begin
 	insert into acs_object_type_tables (object_type,table_name,id_column)
 	values (''im_dynfield_attribute'', ''im_dynfield_attributes'', ''attribute_id'');
 	
-
 	RETURN 0;
 end;' language 'plpgsql';
 select inline_0 ();
@@ -178,7 +177,6 @@ begin
 	
 	insert into acs_object_type_tables (object_type,table_name,id_column)
 	values (''im_forum_topic'', ''im_forum_topics'', ''topic_id'');
-	
 
 	RETURN 0;
 end;' language 'plpgsql';
@@ -196,8 +194,7 @@ begin
 	IF v_count > 0 THEN RETURN 1; END IF;
 	
 	insert into acs_object_type_tables (object_type,table_name,id_column)
-	values (''im_invoice'', ''im_costs'', ''cost_id'');
-	
+	values (''im_invoice'', ''im_costs'', ''cost_id'');	
 
 	RETURN 0;
 end;' language 'plpgsql';
@@ -210,6 +207,10 @@ returns integer as '
 declare
 	v_count		integer;
 begin
+	select count(*) into v_count from acs_object_types
+	where object_type = ''im_timesheet_invoice'';
+	IF v_count = 0 THEN RETURN 1; END IF;
+	
 	select count(*) into v_count from acs_object_type_tables
 	where object_type = ''im_timesheet_invoice'' and table_name = ''im_invoices'';
 	IF v_count > 0 THEN RETURN 1; END IF;
@@ -228,6 +229,10 @@ returns integer as '
 declare
 	v_count		integer;
 begin
+	select count(*) into v_count from acs_object_types
+	where object_type = ''im_timesheet_invoice'';
+	IF v_count = 0 THEN RETURN 1; END IF;
+	
 	select count(*) into v_count from acs_object_type_tables
 	where object_type = ''im_timesheet_invoice'' and table_name = ''im_costs'';
 	IF v_count > 0 THEN RETURN 1; END IF;
@@ -370,6 +375,10 @@ returns integer as '
 declare
 	v_count		integer;
 begin
+	select count(*) into v_count from acs_object_types
+	where object_type = ''im_indicator'';
+	IF v_count = 0 THEN RETURN 1; END IF;
+	
 	select count(*) into v_count from acs_object_type_tables
 	where object_type = ''im_indicator'' and table_name = ''im_indicators'';
 	IF v_count > 0 THEN RETURN 1; END IF;
@@ -388,13 +397,16 @@ returns integer as '
 declare
 	v_count		integer;
 begin
+	select count(*) into v_count from acs_object_types
+	where object_type = ''im_indicator'';
+	IF v_count = 0 THEN RETURN 1; END IF;
+	
 	select count(*) into v_count from acs_object_type_tables
 	where object_type = ''im_indicator'' and table_name = ''im_reports'';
 	IF v_count > 0 THEN RETURN 1; END IF;
 	
 	insert into acs_object_type_tables (object_type,table_name,id_column)
 	values (''im_indicator'', ''im_reports'', ''report_id'');
-	
 
 	RETURN 0;
 end;' language 'plpgsql';
@@ -432,7 +444,6 @@ begin
 	
 	insert into acs_object_type_tables (object_type,table_name,id_column)
 	values (''im_cost'', ''im_costs'', ''cost_id'');
-	
 
 	RETURN 0;
 end;' language 'plpgsql';
