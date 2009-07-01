@@ -245,10 +245,13 @@ set company_perm_sql "
 			        where
 			                r.object_id_one = c.company_id
 			                and r.object_id_two = :current_user_id
+					and c.company_status_id not in ([im_company_status_deleted])
 			)"
 
 if {[im_permission $user_id "view_companies_all"]} {
-        set company_perm_sql ""
+        set company_perm_sql "
+			and c.company_status_id not in ([im_company_status_deleted])
+	"
 }
 
 
