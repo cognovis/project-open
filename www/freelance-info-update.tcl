@@ -75,7 +75,7 @@ set recr_html "
 </tr>
 <tr>
 <td>[_ intranet-freelance.Recruting_Source]</td>
-<td><input type=text name=rec_source value=$rec_source></td>
+<td><input type=text name=rec_source value='[ns_quotehtml $rec_source]'></td>
 </tr>
 <tr>
 <td>[_ intranet-freelance.Recruiting_Status]</td>
@@ -83,7 +83,7 @@ set recr_html "
 </tr>
 <tr>
 <td>[_ intranet-freelance.Recruiting_Test_Type]</td>
-<td><input type=text name=rec_test_type value=$rec_test_type></td>
+<td><input type=text name=rec_test_type value='[ns_quotehtml $rec_test_type]'></td>
 </tr>
 <tr>
 <td>[_ intranet-freelance.lt_Recruiting_Test_Resul]</td>
@@ -96,16 +96,16 @@ set recr_html "
 set rates_html "
 <table cellpadding=0 cellspacing=2 border=0>
 <tr><td colspan=2 class=rowtitle align=center>[_ intranet-freelance.Rates_Information]</td></tr>
-<tr><td>[_ intranet-freelance.Bank_Account]</td><td><input type=text name=bank_account value=$bank_account></td></tr>
-<tr><td>[_ intranet-freelance.Bank]</td><td><input type=text name=bank value=$bank></td></tr>
+<tr><td>[_ intranet-freelance.Bank_Account]</td><td><input type=text name=bank_account value='[ns_quotehtml $bank_account]'></td></tr>
+<tr><td>[_ intranet-freelance.Bank]</td><td><input type=text name=bank value='[ns_quotehtml $bank]'></td></tr>
 <tr><td>[_ intranet-freelance.Payment_Method]</td><td>[im_category_select "Intranet Payment Type" "payment_method" "$payment_method_id"]</td></tr>
 <tr><td>[_ intranet-freelance.Note]</td><td><textarea type=text cols=50 rows=5 name=note>$note</textarea></td></tr>
 "
 
 set ttt_html "
-<tr><td>[_ intranet-freelance.Translation_rate]</td><td><input type=text name=translation_rate value=$translation_rate></td></tr>
-<tr><td>[_ intranet-freelance.Editing_rate]</td><td><input type=text name=editing_rate value=$editing_rate></td></tr>
-<tr><td>[_ intranet-freelance.Hourly_rate]</td><td><input type=text name=hourly_rate value=$hourly_rate></td></tr>
+<tr><td>[_ intranet-freelance.Translation_rate]</td><td><input type=text name=translation_rate value='[ns_quotehtml $translation_rate]'></td></tr>
+<tr><td>[_ intranet-freelance.Editing_rate]</td><td><input type=text name=editing_rate value='[ns_quotehtml $editing_rate]'></td></tr>
+<tr><td>[_ intranet-freelance.Hourly_rate]</td><td><input type=text name=hourly_rate value='[ns_quotehtml $hourly_rate]'></td></tr>
 "
 
 # don't show the "private_note" field to the user himself.
