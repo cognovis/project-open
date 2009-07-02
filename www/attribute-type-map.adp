@@ -5,7 +5,7 @@
 <h1>@page_title;noquote@</h1>
 
 <form action="attribute-type-map" method=POST>
-<%= [export_form_vars acs_object_type return_url] %>
+<%= [export_form_vars object_type return_url] %>
 	<table>
 	<tr class=rowtitle><td class=rowtitle align=center colspan=2>Filter Subtypes</td></tr>
 	<tr>
