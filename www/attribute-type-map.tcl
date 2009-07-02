@@ -46,7 +46,7 @@ if {"" == $category_type} {
 
 
 set object_subtype_sql ""
-if {$object_subtype_id} {
+if {"" != $object_subtype_id && 0 != $object_subtype_id} {
     set object_subtype_sql "and category_id in ([join [im_sub_categories $object_subtype_id] ","])"
 }
 
