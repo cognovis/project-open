@@ -63,6 +63,7 @@ set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Proj
 set org_project_id $project_id
 set expense_type_id_default $expense_type_id
 
+set multiple_expense_items_enabled_p [parameter::get_from_package_key -package_key "intranet-expenses" -parameter EnableMultipleExpenseItemsP -default 1] 
 
 if {"" == $start_date} { set start_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultStartDate -default "2000-01-01"] }
 if {"" == $end_date} { set end_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultEndDate -default "2100-01-01"] }
@@ -118,9 +119,11 @@ if {$add_expense_p} {
     lappend action_list [export_vars -base "/intranet-expenses/new" {return_url project_id}]
     lappend action_list [lang::message::lookup "" intranet-expenses.Add_one_new_Expense_Item "Add one new Expense Item"]
 
-    lappend action_list [lang::message::lookup "" intranet-expenses.Add_multiple_new_Expense_Items "Add multiple new Expense Items"]
-    lappend action_list [export_vars -base "/intranet-expenses/new-multiple" {return_url project_id}]
-    lappend action_list [lang::message::lookup "" intranet-expenses.Add_multiple_new_Expense_Items "Add multiplen new Expense Item"]
+    if {$multiple_expense_items_enabled_p} {
+	lappend action_list [lang::message::lookup "" intranet-expenses.Add_multiple_new_Expense_Items "Add multiple new Expense Items"]
+	lappend action_list [export_vars -base "/intranet-expenses/new-multiple" {return_url project_id}]
+	lappend action_list [lang::message::lookup "" intranet-expenses.Add_multiple_new_Expense_Items "Add multiplen new Expense Item"]
+    }
 
     lappend bulk_action_list "[_ intranet-expenses.Delete]" "expense-del" "[_ intranet-expenses.Delete]"
 }
