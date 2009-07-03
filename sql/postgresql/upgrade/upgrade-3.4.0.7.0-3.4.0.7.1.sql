@@ -1,6 +1,6 @@
--- upgrade-3.4.0.0.0-3.4.0.1.0.sql
+-- upgrade-3.4.0.7.0-3.4.0.7.1.sql
 
-SELECT acs_log__debug('/packages/intranet-freelance/sql/postgresql/upgrade/upgrade-3.4.0.0.0-3.4.0.1.0.sql','');
+SELECT acs_log__debug('/packages/intranet-freelance/sql/postgresql/upgrade/upgrade-3.4.0.7.0-3.4.0.7.1.sql','');
 
 
 
