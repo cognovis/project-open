@@ -44,35 +44,21 @@ ad_proc -public xmlrpc-rest::dispatchRest {} {
 
 }
 
-
-
-
-ad_proc -public xmlrpc-rest::handle_rest_project {method path url_query user_id} {
-    @return the URL that is listening for RPC requests
+ad_proc -public xmlrpc-rest::render_json { object_list search_string } {
+    @returns a json structure
 } {
-
     set output "\{\"ResultSet\":\n\{\n\"Result\": \[\n"
-    set search_string ""
-    set query_list [split $url_query &]
-
-    # Getting list of projects 
-    set project_options [im_project_list -exclude_subprojects_p 0 -exclude_status_id [im_project_status_closed]  -project_id 0]
-    # ad_return_complaint 1 $project_options
-
-    # find searchstring
-      foreach sub_list $query_list {
-    	set query_item [split $sub_list = ]
-	if {"search_string" == [lindex $query_item 0] } {
-	    set search_string [lindex $query_item 1]
-	}
-    }
-
-    # ad_return_complaint 1 $search_string
-    foreach sub_list $project_options {
+    foreach sub_list $object_list {
 	if { [llength $sub_list] } {
 	    if { 0 != [llength [lindex $sub_list 0]] } { 
-		if { [string first  [string tolower $search_string] [string tolower [lindex $sub_list 0]]] != -1 } {
-		    append output "\{\"Project\":\"" 
+		if { "" != $search_string } { 
+			if { [string first  [string tolower $search_string] [string tolower [lindex $sub_list 0]]] != -1 } {
+			    append output "\{\"Object\":\"" 
+			    append output [string map {&nbsp; ""}  [lindex $sub_list 0] ] 
+			    append output "\"\}," 
+			}
+		} else {
+		    append output "\{\"Object\":\"" 
 		    append output [string map {&nbsp; ""}  [lindex $sub_list 0] ] 
 		    append output "\"\}," 
 		}
@@ -82,7 +68,42 @@ ad_proc -public xmlrpc-rest::handle_rest_project {method path url_query user_id}
 
     set output "[string range $output 0 [expr [string length $output]-2]]"
     append output "\]\}\n\}"
-    # ad_return_complaint 1 $output
+}
+
+ad_proc -public xmlrpc-rest::handle_rest_project {method path url_query user_id} {
+    @return the URL that is listening for RPC requests
+} {
+
+    set query_list [split $url_query &]
+
+    # find searchstrin and object type
+      foreach sub_list $query_list {
+    	set query_item [split $sub_list = ]
+	if {"search_string" == [lindex $query_item 0] } {
+	    set search_string [lindex $query_item 1]
+	}
+	if {"object_type" == [lindex $query_item 0] } {
+	    set object_type [lindex $query_item 1]
+	}  
+	  if {"project_id" == [lindex $query_item 0] } {
+	      set project_id [lindex $query_item 1]
+	  }
+      }
+
+    set project_id 27971
+
+    # Getting list of objects
+
+    switch $object_type {
+        project { 
+		set object_list [im_project_list -exclude_subprojects_p 0 -exclude_status_id [im_project_status_closed] -project_id 0]
+		set output [xmlrpc-rest::render_json $object_list $search_string] 
+	}
+        task { 
+		set output [gtd-dashboard::render_output [im_gtd_task_list -restrict_to_project_id $project_id] task_table] 
+	}
+	default {set output "Object Type not found"}	
+    }
     return $output
 
 }
