@@ -18,6 +18,86 @@ ad_library {
     @cvs-id $Id$
 }
 
+
+namespace eval xmlrpc-rest {}
+
+ad_register_proc GET /intranet-xmlrpc/rest/* xmlrpc-rest::dispatchRest
+ad_register_proc POST /intranet-xmlrpc/rest/* xmlrpc-rest::dispatchRest
+
+ad_proc -public xmlrpc-rest::dispatchRest {} {
+    @return dispatches REST requests
+    @author Klaus Hofeditz
+} {
+
+    set user_id [ad_maybe_redirect_for_registration]
+
+    set urlpieces [ns_conn urlv]
+    set path [lrange $urlpieces 2 [llength $urlpieces]]
+    set url_query [ns_conn query]
+
+    switch [lindex $urlpieces 2] {
+	companies { return [xmlrpc-rest::handle_rest_company [ns_conn method] $path $url_query $user_id ]  }
+	timesheet { return [xmlrpc-rest::handle_rest_timesheet [ns_conn method] $path $url_query $user_id ] }
+ 	projects { doc_return 200 "text/plain" [xmlrpc-rest::handle_rest_project [ns_conn method] $path $url_query $user_id] }
+	default { ad_return_complaint 1 "ressource not available"}
+    }
+
+}
+
+
+
+
+ad_proc -public xmlrpc-rest::handle_rest_project {method path url_query user_id} {
+    @return the URL that is listening for RPC requests
+} {
+
+    set output "\{\"ResultSet\":\n\{\n\"Result\": \[\n"
+    set search_string ""
+    set query_list [split $url_query &]
+
+    # Getting list of projects 
+    set project_options [im_project_list -exclude_subprojects_p 0 -exclude_status_id [im_project_status_closed]  -project_id 0]
+    # ad_return_complaint 1 $project_options
+
+    # find searchstring
+      foreach sub_list $query_list {
+    	set query_item [split $sub_list = ]
+	if {"search_string" == [lindex $query_item 0] } {
+	    set search_string [lindex $query_item 1]
+	}
+    }
+
+    # ad_return_complaint 1 $search_string
+    foreach sub_list $project_options {
+	if { [llength $sub_list] } {
+	    if { 0 != [llength [lindex $sub_list 0]] } { 
+		if { [string first  [string tolower $search_string] [string tolower [lindex $sub_list 0]]] != -1 } {
+		    append output "\{\"Project\":\"" 
+		    append output [string map {&nbsp; ""}  [lindex $sub_list 0] ] 
+		    append output "\"\}," 
+		}
+	    }
+	}
+    }
+
+    set output "[string range $output 0 [expr [string length $output]-2]]"
+    append output "\]\}\n\}"
+    # ad_return_complaint 1 $output
+    return $output
+
+}
+
+ad_proc -public xmlrpc-rest::handle_rest_timesheet {method path param} {
+    @return the URL that is listening for RPC requests
+} {
+
+
+# only project timesheet data day / project 
+
+
+}
+
+
 # setup nsv array to hold procs that are registered for xml-rpc access
 nsv_array set xmlrpc_procs [list]
 
