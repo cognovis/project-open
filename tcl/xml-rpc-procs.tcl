@@ -88,6 +88,9 @@ ad_proc -public xmlrpc-rest::handle_rest_project {method path url_query user_id}
 	  if {"project_id" == [lindex $query_item 0] } {
 	      set project_id [lindex $query_item 1]
 	  }
+	  if {"last_id" == [lindex $query_item 0] } {
+	      set last_id [lindex $query_item 1]
+	  }
       }
 
     set project_id 27971
@@ -100,7 +103,7 @@ ad_proc -public xmlrpc-rest::handle_rest_project {method path url_query user_id}
 		set output [xmlrpc-rest::render_json $object_list $search_string] 
 	}
         task { 
-		set output [gtd-dashboard::render_output [im_gtd_task_list -restrict_to_project_id $project_id] task_table] 
+		set output [gtd-dashboard::render_output [im_gtd_task_list -restrict_to_project_id $project_id] task_table $last_id] 
 	}
 	default {set output "Object Type not found"}	
     }
