@@ -16,6 +16,8 @@ ad_page_contract {
 # Defaults & Security
 # ------------------------------------------------------
 
+if {![info exists module]} { set module "" } 
+
 set current_user_id [ad_maybe_redirect_for_registration]
 set add_reports_p [im_permission $current_user_id "add_reports"]
 set view_reports_all_p [im_permission $current_user_id "view_reports_all"]
