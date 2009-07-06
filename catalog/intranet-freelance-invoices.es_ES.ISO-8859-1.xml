@@ -79,7 +79,7 @@
   <msg key="No_company_found">No se ha encontrado ninguna empresa</msg>
   <msg key="No_prices_found">No se ha encontrado ningún precio</msg>
   <msg key="No_tasks_found">No se ha encontrado ninguna tarea.</msg>
-  <msg key="No_Trans_Tasks">No hay tareas v&#225;lidas. Compruebe que&lt;br&gt;- el proyecto/la tarea NO est&#233; CERRADA&lt;br&gt;- la tarea se haya asignado a un traductor</msg>
+  <msg key="No_Trans_Tasks">No se han encontrado tareas de traducción para este proyecto.</msg>
   <msg key="One_project">Un proyecto</msg>
   <msg key="Order">Orden</msg>
   <msg key="Payment_Method">Forma de pago</msg>
