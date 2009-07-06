@@ -64,6 +64,7 @@
   <msg key="lt_You_have_insufficient_1">You have insufficient privileges to use this page</msg>
   <msg key="lt_You_have_selected_mul">You have selected multiple clients</msg>
   <msg key="lt_You_have_selected_mul_1">You have selected multiple clients.</msg>
+  <msg key="Minimum_Rate">Minimum Rate</msg>
   <msg key="MSM">MSM</msg>
   <msg key="Name">Name</msg>
   <msg key="New_cost_type">New %cost_type%</msg>
