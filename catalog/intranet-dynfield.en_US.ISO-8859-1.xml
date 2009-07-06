@@ -28,6 +28,9 @@
   <msg key="Delete">Delete</msg>
   <msg key="Documentation">Documentation</msg>
   <msg key="documentation">documentation</msg>
+  <msg key="Dynfield_Actions">Dynfield Permissions &amp; Visibility</msg>
+  <msg key="Dynfield_Attributes">Dynfield Attributes</msg>
+  <msg key="Dynfield_Layout">Dynfield Layout</msg>
   <msg key="Edit_the_form_adp_file">Edit the form adp file</msg>
   <msg key="Email_Address">Email Address</msg>
   <msg key="examples">examples</msg>
