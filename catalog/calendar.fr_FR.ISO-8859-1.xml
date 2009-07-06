@@ -52,6 +52,7 @@
   <msg key="goto_items_event_name">Aller à %items.event_name%</msg>
   <msg key="Grant">Autoriser</msg>
   <msg key="Grant_Permissions">Accorder un privilège</msg>
+  <msg key="is_recurring">Elément récurrent</msg>
   <msg key="Item">Elément</msg>
   <msg key="lt_Are_you_sure_you_want">Etes-vous sur de vouloir effacer cet agenda. Tous les éléments et privilèges associés à cet agenda seront effacés aussi.</msg>
   <msg key="lt_Are_you_sure_you_want_1">Etes-vous sur de vouloir effacer cet événement?</msg>
@@ -83,12 +84,21 @@
   <msg key="lt_You_have_no_party_wid">Vous n'avez pas d'agenda</msg>
   <msg key="Monday">Lundi</msg>
   <msg key="New_Type">Type nouveau:</msg>
+  <msg key="next_day">Jour suivant</msg>
+  <msg key="next_month">Mois suivant</msg>
+  <msg key="next_week">Semaine suivante</msg>
+  <msg key="next_year">Année suivante</msg>
   <msg key="No">Non</msg>
   <msg key="No_Calendars">Sans agenda</msg>
+  <msg key="No_Items">Aucun élément</msg>
   <msg key="no_keep_it">non, conserver</msg>
   <msg key="Note">Note</msg>
   <msg key="of_the_month">du mois</msg>
   <msg key="of_the_week">de la semaine</msg>
+  <msg key="prev_day">Jour précédent</msg>
+  <msg key="prev_month">Mois précédent</msg>
+  <msg key="prev_week">Semaine précédente</msg>
+  <msg key="prev_year">Année précédente</msg>
   <msg key="Private">Privé:</msg>
   <msg key="private">privé</msg>
   <msg key="Public">Public:</msg>
@@ -100,7 +110,11 @@
   <msg key="same">pareil</msg>
   <msg key="Saturday">Samedi</msg>
   <msg key="Select_Calendars">Sélectionner agendas</msg>
+  <msg key="Sharing">Partager</msg>
+  <msg key="sort_by_date">Trier par date</msg>
+  <msg key="sort_by_type">Trier par type</msg>
   <msg key="Start_Time">Heure début</msg>
+  <msg key="start_time_before_end_time">L'heure de début est avant l'heure de fin</msg>
   <msg key="Submit_query">Réaliser la recherche</msg>
   <msg key="Sunday">Dimanche</msg>
   <msg key="sync_with_Outlook">synchroniser avec Outlook:</msg>
@@ -117,5 +131,5 @@
   <msg key="year">année</msg>
   <msg key="Yes">Oui</msg>
   <msg key="yes_delete_it">oui, effacer</msg>
-  <msg key="Yes_I_am_sure">Oui, je suis sur!</msg>
+  <msg key="Yes_I_am_sure">Oui, je suis sûr!</msg>
 </message_catalog>
