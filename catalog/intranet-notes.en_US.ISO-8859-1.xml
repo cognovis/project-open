@@ -2,6 +2,7 @@
 <message_catalog package_key="intranet-notes" package_version="3.4.0.6.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Address">Address</msg>
+  <msg key="Company_Notes">Company Notes</msg>
   <msg key="Create_new_Note">New Note</msg>
   <msg key="Delete_Notes">Delete Notes</msg>
   <msg key="Email">Email</msg>
