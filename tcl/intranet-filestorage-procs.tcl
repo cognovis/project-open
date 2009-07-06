@@ -414,7 +414,7 @@ ad_proc im_filestorage_bug_component { user_id bug_id user_name return_url} {
     set bug_number [db_string bug_num "select bug_number from bt_bugs where bug_id = :bug_id" -default "999999"]
     set bug_path [im_filestorage_bug_path $bug_id]
     set folder_type "bt_fs"
-    set folder_name "[lang::message::lookup "" intranet-filestorage.Bug_number "Bug \#"] %bug_number"
+    set folder_name [lang::message::lookup "" intranet-filestorage.Bug_number "Bug \#%bug_number%"]
     return [im_filestorage_base_component $user_id $bug_id $folder_name $bug_path $folder_type]
 }
 
