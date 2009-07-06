@@ -12,6 +12,7 @@
   <msg key="Automatic_trigger">Automatic Trigger</msg>
   <msg key="Confirm_Quote">Confirm Quote</msg>
   <msg key="Currrent_assignees">Current Assignees</msg>
+  <msg key="Debug_Case">Debug Case</msg>
   <msg key="Execute">Execute</msg>
   <msg key="Holding_user">Holding User</msg>
   <msg key="Modify">Modify</msg>
@@ -24,6 +25,7 @@
   <msg key="Past_actions">Past Actions</msg>
   <msg key="Quote">Quote</msg>
   <msg key="Relationship">Relationship</msg>
+  <msg key="Reset_Case">Reset Case</msg>
   <msg key="Status">Status</msg>
   <msg key="Task_name">Task Name</msg>
   <msg key="Task_state">Task State</msg>
