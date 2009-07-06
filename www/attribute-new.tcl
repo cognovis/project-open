@@ -290,15 +290,16 @@ lappend form_fields {
 	{html {size 5 maxlength 4}}
 	{help_text "
 		Give a value for the Y-position, ranging from '0' (top)	to '100' (bottom). 
-		Currently, DynFields are appended at the end of any form in the order given
+		Currently, DynFields are added at the end of any form in the order given
 		by this variable.
 	"}
 }
 lappend form_fields {size_x:text(hidden),optional {label {Size-X}} {html {size 5 maxlength 4}}}
 lappend form_fields {size_y:text(hidden),optional {label {Size-Y}} {html {size 5 maxlength 4}}}
 lappend form_fields {label_style:text(hidden) {label {Label Style}} {options {{Plain plain} {{No Label} no_label} }} {value $required_p}}
+
 lappend form_fields {
-	include_in_search_p:text(checkbox) 
+	include_in_search_p:text(hidden) 
 	{label {<nobr>Include in Search?</nobr>}} 
 	{options {{Yes t}}} 
 	{value $required_p}

@@ -30,7 +30,10 @@ if {!$user_is_admin_p} {
 set query "
 	select	*,
 		im_category_from_id(storage_type_id) as storage_type
-	from im_dynfield_widgets
+	from
+		im_dynfield_widgets
+	order by
+		lower(widget_name)
 "
 
 db_multirow widgets widgets_query $query
