@@ -287,12 +287,15 @@ ad_proc im_indicator_horizontal_bar {
 # Components
 # ---------------------------------------------------------------------
 
-ad_proc -public im_indicator_home_page_component { } {
+ad_proc -public im_indicator_home_page_component { 
+    {-module "asdf" }
+} {
     Returns a HTML component with the list 
     of all indicators that the user can see
 } {
     set params [list \
 	[list user_id [ad_get_user_id]] \
+	[list module $module] \
 	[list return_url [im_url_with_query]] \
     ]
 
