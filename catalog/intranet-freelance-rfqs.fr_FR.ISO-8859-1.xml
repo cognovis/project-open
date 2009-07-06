@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-freelance-rfqs" package_version="3.4.0.6.0" locale="fr_FR" charset="ISO-8859-1">
+
+  <msg key="--Select--">-- Choisir --</msg>
+  <msg key="Add_a_new_RFQ">Ajouter une nouvelle RFQ</msg>
+  <msg key="Add_Required_Skills">Ajouter une nouvelle compétence requise</msg>
+  <msg key="All">Tout</msg>
+  <msg key="All_Source_Languages">Toutes les langues source</msg>
+  <msg key="All_Target_Languages">Toutes les langues cibles</msg>
+  <msg key="Amount">Montant</msg>
+  <msg key="Answer_Accepted">Réponse acceptée?</msg>
+  <msg key="Answer_Status">Statut de la réponse</msg>
+  <msg key="Available_Variables">Les variables suivantes sont disponibles à l'intérieur de votre message :&amp;lt;br&amp;gt;
+&amp;lt;tt&amp;gt;%email_vars%&amp;lt;/tt&amp;gt;</msg>
+  <msg key="Body">Corps</msg>
+  <msg key="Close">Fermer</msg>
+  <msg key="Comment">Commentaire</msg>
+  <msg key="Confirm_RFQ">Confirmer la RFQ</msg>
+  <msg key="Confirmed_for_RFQ_of_Project_Body">Cher/Chère %first_names%,
+
+Nous souhaitons confirmer votre participation  %rfq_type% au projet '%project_name%'.
+
+Je vais bientôt vous contacter pour de plus amples informations.
+
+Cordialement,
+%current_user_first_names%</msg>
+  <msg key="Confirmed_for_RFQ_of_Project_Header">Confirmation pour : %rfq_name%</msg>
+  <msg key="Create_a_new_RFQ">Créer une nouvelle RFQ</msg>
+  <msg key="Create_New_RFQ">Créer nouvelle RFQ</msg>
+  <msg key="Currency">Devise</msg>
+  <msg key="Decline_RFQ">Refuser la RFQ</msg>
+  <msg key="Declined_for_RFQ_of_Project_Body">Cher/Chère %first_names%,
+
+J'ai le regret de vous informer que vous n'avez pas été sélectionné pour participer à ce %rfq_type% projet '%project_name%'.
+
+Je reste à votre disposition dans le cas où vous souhaiteriez plus d'explications.
+
+Cordialement,
+%current_user_first_names%</msg>
+  <msg key="Declined_for_RFQ_of_Project_Header">Refusé : %rfq_name%</msg>
+  <msg key="Delete">Supprimer</msg>
+  <msg key="Delete_RFQ">Supprimer la RFQ</msg>
+  <msg key="Delete_Skill">Supprimer compétence</msg>
+  <msg key="Description">Description</msg>
+  <msg key="Dont_Send_Invitations">Ne pas envoyer d'invitation</msg>
+  <msg key="End">Fin</msg>
+  <msg key="End_Date">Se termine</msg>
+  <msg key="End_date">Date de fin</msg>
+  <msg key="Experience">Expérience</msg>
+  <msg key="Filter_RFQs">Filtrer les RFQ</msg>
+  <msg key="General_Outcome">Résultat général</msg>
+  <msg key="general_outcome">Résultat général</msg>
+  <msg key="Header">En-tête</msg>
+  <msg key="Invite_Candidates">Invitation candidats</msg>
+  <msg key="Invite_Participants">Inviter des participants</msg>
+  <msg key="Invite_Users">Inviter des candidats</msg>
+  <msg key="Invited_for_RFQ_of_Project_Body">Cher/Chère %first_names%,
+
+Nous souhaitons vous inviter à participer à une %rfq_type% pour le projet '%project_name%'.
+
+Veuillez cliquer sur le lien ci-dessous et suivre les indications que vous trouverez sur la page suivante :
+
+%rfq_url%
+
+Cordialement,
+%current_user_first_names%</msg>
+  <msg key="Invited_for_RFQ_of_Project_Header">Invitation pour : %rfq_name%</msg>
+  <msg key="Minimum_Skill_Level">Niveau de compétence minimal</msg>
+  <msg key="Name">Nom</msg>
+  <msg key="New_Freelance_RFQ">Nouvelle RFQ</msg>
+  <msg key="New_Trans_RFQ">Nouvelle RFQ trad</msg>
+  <msg key="No_decline">Non, je refuse</msg>
+  <msg key="No_I_decline">Non, je refuse</msg>
+  <msg key="Note">Note</msg>
+  <msg key="Num_Conf_Explanation">Le nombre de candidats refusés</msg>
+  <msg key="Num_Confirmations">#Conf</msg>
+  <msg key="Num_Conformations">#Conf</msg>
+  <msg key="Num_Decl">#Refus</msg>
+  <msg key="Num_Decl_Explanation">Le nombre de candidats refusés</msg>
+  <msg key="Num_Declinations">#Refus</msg>
+  <msg key="Num_Inv">#Fact</msg>
+  <msg key="Num_Inv_Explanation">Le nombre total d'invitations</msg>
+  <msg key="Num_Invitations">#Inv</msg>
+  <msg key="Num_Rem_Explanation">Le nombre de candidats restant à refuser ou à confirmer</msg>
+  <msg key="Num_Remaining">#Restant</msg>
+  <msg key="Overall_Status">Statut général</msg>
+  <msg key="Price">Prix</msg>
+  <msg key="Project">Projet</msg>
+  <msg key="Required_RFQ_Skills">Compétences RFQ requises</msg>
+  <msg key="RFQ">RFQ</msg>
+  <msg key="RFQ_Base_Data">Base de données RFQ</msg>
+  <msg key="RFQ_Candidates">Candidats RFQ</msg>
+  <msg key="RFQ_Details">Détails RFQ</msg>
+  <msg key="RFQ_Name">Nom RFQ</msg>
+  <msg key="RFQ_Status">Statut RFQ</msg>
+  <msg key="RFQ_Type">Type de RFQ</msg>
+  <msg key="RFQs">RFQ</msg>
+  <msg key="RFQs_Items">Champs RFQ</msg>
+  <msg key="Score">Résultat</msg>
+  <msg key="Send_Invitations">Envoyer des invitations</msg>
+  <msg key="Send_me_a_copy">M'envoyer une copie?</msg>
+  <msg key="Skill">Compétence</msg>
+  <msg key="Skill_Type">Type de compétence</msg>
+  <msg key="Skill_Weight">Importance de la compétence</msg>
+  <msg key="Source">Source</msg>
+  <msg key="Start">Début</msg>
+  <msg key="Start_Date">Commence le</msg>
+  <msg key="Start_date">Date de début</msg>
+  <msg key="Subject_Areas">Domaines de spécialité</msg>
+  <msg key="Target">Cible</msg>
+  <msg key="Task_State">Etat d'avancement de la tâche</msg>
+  <msg key="Transition">Transition</msg>
+  <msg key="Units">Unités</msg>
+  <msg key="UoM">UdM</msg>
+  <msg key="User">Utilisateur</msg>
+  <msg key="Weight">Importance</msg>
+  <msg key="Workflow">Workflow</msg>
+  <msg key="Yes_I_can_do">Oui, je peux livrer le travail mentionné à temps.</msg>
+  <msg key="Your_Answer">Votre réponse</msg>
+</message_catalog>
