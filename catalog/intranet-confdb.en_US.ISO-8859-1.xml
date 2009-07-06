@@ -24,7 +24,9 @@
   <msg key="Conf_Item_Name">Name</msg>
   <msg key="Conf_Item_Status">Status</msg>
   <msg key="Conf_Item_Type">Type</msg>
+  <msg key="Conf_Item_Types">Conf Item Types</msg>
   <msg key="Conf_Items_Items">Configuration Items</msg>
+  <msg key="Conf_Management">Config Mgmt</msg>
   <msg key="Configuration_Items">Configuration Items</msg>
   <msg key="Cost_Center">Cost Center</msg>
   <msg key="Delete">Delete</msg>
@@ -58,6 +60,8 @@
   <msg key="Network_Device">Network Device</msg>
   <msg key="Network_Router">Network Router</msg>
   <msg key="Network_Switch">Network Switch </msg>
+  <msg key="New_Bug">New Bug</msg>
+  <msg key="New_Conf_Item">New Conf Item</msg>
   <msg key="OS">OS</msg>
   <msg key="OS_Version">OS Version</msg>
   <msg key="Owner">Owner</msg>
