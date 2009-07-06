@@ -32,9 +32,9 @@ if {![info exists task]} {
 	{ return_url "/intranet-helpdesk/" }
 	{ vars_from_url ""}
 	{ plugin_id:integer "" }
-	{ view_name "standard"}
+	{ view_name "ticket_list"}
 	{ mine_p "all" }
-	form_mode:optional
+	{ form_mode "edit" }
     }
 
     set show_components_p 1
@@ -131,6 +131,7 @@ if {[exists_and_not_null ticket_id]} {
     set ticket_exists_p [db_string ticket_exists_p "select count(*) from im_tickets where ticket_id = :ticket_id"]
 }
 
+
 # ---------------------------------------------
 # The base form. Define this early so we can extract the form status
 # ---------------------------------------------
@@ -155,7 +156,7 @@ ad_form \
     -export {next_url return_url} \
     -form {
 	ticket_id:key
-	{ticket_name:text(text) {label $title_label} {html {size 50}} {help_text $title_help} }
+	{ticket_name:text(text) {label $title_label} {html {size 50}}}
 	{ticket_nr:text(hidden),optional }
 	{start_date:date(hidden),optional }
 	{end_date:date(hidden),optional }

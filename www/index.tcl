@@ -82,7 +82,7 @@ set table_header_html ""
 set column_sql "
 	select	vc.*
 	from	im_view_columns vc
-	where	view_id=:view_id
+	where	view_id = :view_id
 		and group_id is null
 	order by sort_order
 "
