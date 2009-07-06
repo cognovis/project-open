@@ -280,6 +280,62 @@ set left_scale_options {
 	"cost_status" "Cost Status"
 }
 
+
+# ------------------------------------------------------------
+# add all DynField attributes from Projects with datatype integer and a
+# CategoryWidget for display. This widget shows distinct values suitable
+# as dimension.
+
+set dynfield_sql "
+	select	aa.attribute_name,
+		aa.pretty_name,
+		w.widget as tcl_widget,
+		w.widget_name as dynfield_widget,
+		w.deref_plpgsql_function
+	from
+		im_dynfield_attributes a,
+		im_dynfield_widgets w,
+		acs_attributes aa
+	where
+		a.widget_name = w.widget_name
+		and a.acs_attribute_id = aa.attribute_id
+		and w.widget in ('select', 'generic_sql', 'im_category_tree', 'im_cost_center_tree', 'checkbox')
+		and aa.object_type in ('im_company')
+		and aa.attribute_name not like 'default%'
+" 
+
+set derefs [list]
+db_foreach dynfield_attributes $dynfield_sql {
+
+    lappend left_scale_options "cust_${attribute_name}_deref"
+    lappend left_scale_options "Customer $pretty_name"
+    lappend left_scale_options "prov_${attribute_name}_deref"
+    lappend left_scale_options "Provider $pretty_name"
+
+    # How to dereferentiate the attribute_name to attribute_name_deref?
+    # The code is going to be executed as part of an SQL
+
+    # Skip adding "deref" stuff if the variable is not looked at...
+    if {[lsearch $dimension_vars "cust_${attribute_name}_deref"] + [lsearch $dimension_vars "prov_${attribute_name}_deref"] < 0} { 
+	continue 
+    }
+
+    # Catch the generic ones - We know how to dereferentiate integer references of these fields.
+    if {"" != $deref_plpgsql_function} {
+	lappend derefs "${deref_plpgsql_function} (cust.$attribute_name) as cust_${attribute_name}_deref"
+	lappend derefs "${deref_plpgsql_function} (prov.$attribute_name) as prov_${attribute_name}_deref"
+    } else {
+	lappend derefs "cust.$attribute_name as cust_${attribute_name}_deref"
+	lappend derefs "prov.$attribute_name as prov_${attribute_name}_deref"
+    }
+}
+
+
+if {[llength $derefs] == 0} { lappend derefs "1 as dummy"}
+
+
+
+
 # ------------------------------------------------------------
 # Start formatting the page
 #
@@ -395,6 +451,7 @@ set cube_array [im_reporting_cubes_cube \
     -cost_type_id $cost_type_id \
     -customer_type_id $customer_type_id \
     -customer_id $customer_id \
+    -derefs $derefs \
 ]
 
 if {"" != $cube_array} {

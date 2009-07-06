@@ -130,6 +130,7 @@ ad_proc im_reporting_cubes_cube {
                 -project_status_id $project_status_id \
 		-customer_type_id $customer_type_id \
 		-customer_id $customer_id \
+		-derefs $derefs \
             ]
 	}
 	price {
@@ -252,6 +253,7 @@ ad_proc im_reporting_cubes_finance {
     { -project_status_id 0 }
     { -customer_type_id 0 }
     { -customer_id 0 }
+    { -derefs "" }
 } {
     Returns a DW cube as a list containing:
     - An array with the cube data
@@ -361,7 +363,9 @@ ad_proc im_reporting_cubes_finance {
   		prov.company_type_id as provider_type_id,
   		im_category_from_id(prov.company_type_id) as provider_type,
   		prov.company_status_id as provider_status_id,
-  		im_category_from_id(prov.company_status_id) as provider_status
+  		im_category_from_id(prov.company_status_id) as provider_status,
+
+                [join $derefs ",\n\t\t"]
     
   	from
   		($inner_sql) c
