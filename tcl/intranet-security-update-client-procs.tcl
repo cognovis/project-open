@@ -72,7 +72,7 @@ ad_proc im_security_update_client_component { } {
 	# psql (PostgreSQL) 8.0.8 \ncontains support for command-line editing
 	set postgres_version "undefined"
 	catch {set postgres_version [exec psql --version]} errmsg
-	if {[regexp {([0-9]+\.[0-9]+\.[0-9])} $postgres_version match v]} { set postgres_version $v}
+	if {[regexp {([0-9]+\.[0-9]+\.[0-9]+)} $postgres_version match v]} { set postgres_version $v}
 	append sec_url "pg_version=[string trim $postgres_version]"
     }
 
