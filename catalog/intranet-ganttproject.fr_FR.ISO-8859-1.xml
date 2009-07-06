@@ -7,6 +7,7 @@
   <msg key="Dim_week_of_year">Semaine</msg>
   <msg key="Dim_year">année</msg>
   <msg key="Download_Gantt_File">Télécharger un fichier GanttProject</msg>
+  <msg key="Download_OpenProj_File">Télécharger le planning OpenProj</msg>
   <msg key="Gantt_Resources">Ressources de Gantt</msg>
   <msg key="No_Gantt_preview_available">Aucun diagramme de Gantt disponible à l'affichage</msg>
   <msg key="OK">OK</msg>
