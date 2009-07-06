@@ -99,4 +99,5 @@ where
 	)
 ;
 
-
+-- sort order for demo data  
+alter table persons add column demo_sort_order integer;
