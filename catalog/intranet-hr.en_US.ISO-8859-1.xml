@@ -49,6 +49,7 @@
   <msg key="Salaries_per_Year">Salaries per Year</msg>
   <msg key="Salary">Salary</msg>
   <msg key="Salary_Period">Salary Period</msg>
+  <msg key="Salary_period_month">Month</msg>
   <msg key="Social_Security">Social Security</msg>
   <msg key="Social_Security_">Social Security \#</msg>
   <msg key="Social_Security_nr">Social Security nr</msg>
