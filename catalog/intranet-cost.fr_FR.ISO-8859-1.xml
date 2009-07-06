@@ -2,6 +2,7 @@
 <message_catalog package_key="intranet-cost" package_version="3.4.0.6.0" locale="fr_FR" charset="ISO-8859-1">
 
   <msg key="Absences">Absences</msg>
+  <msg key="Admin">Admin</msg>
   <msg key="Administration">Administration</msg>
   <msg key="All_Costs">Tous les coûts</msg>
   <msg key="Amount">Montant</msg>
@@ -73,6 +74,7 @@ Bien que cela ne pose généralement aucun problème, cela génera dans le calcul de
   <msg key="Payments">Réglements</msg>
   <msg key="Please_Select">Veuillez choisir</msg>
   <msg key="Preliminary_Costs">Coûts estimatifs</msg>
+  <msg key="Preliminary_Total">Total prévisionnel</msg>
   <msg key="Previous_Page">Page précédente</msg>
   <msg key="Print_Template">Modèle d'impression</msg>
   <msg key="Project">Projet</msg>
