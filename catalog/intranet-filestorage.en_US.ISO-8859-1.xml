@@ -3,6 +3,7 @@
 
   <msg key="Add_Permissions">Add Permissions</msg>
   <msg key="Admin">Admin</msg>
+  <msg key="Bug_number">Bug# %bug_number%</msg>
   <msg key="Create_a_new_folder">Create a new folder</msg>
   <msg key="Create_Folder">Create Folder</msg>
   <msg key="create_folder">create folder</msg>
