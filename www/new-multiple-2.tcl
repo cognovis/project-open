@@ -273,7 +273,7 @@ db_transaction {
 				:item_cost_status,		-- expense_status_id default 3802
 				:item_cost_type_id,		-- expense_type_id default 3720
 				:item_payment_days,		-- payment_days default 30
-				:item_amount,			-- amount
+				:item_expense_amount,		-- amount
 				:item_vat,			-- vat default 0
 				:item_tax,			-- tax default 0
 				:item_note,			-- note
