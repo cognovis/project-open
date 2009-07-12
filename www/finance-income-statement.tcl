@@ -281,7 +281,7 @@ set report_def [list \
 			""
 			"<nobr>$company_html</nobr>"
 			"<nobr>$effective_date_formatted</nobr>"
-			"<nobr>$paid_amount</nobr>"
+			"<nobr>$paid_amount_pretty</nobr>"
 			"<nobr><a href=$invoice_url$cost_id>$cost_name</a></nobr>"
 
 			"<nobr>$invoice_amount_pretty</nobr>"
@@ -617,6 +617,7 @@ db_foreach sql $sql {
     set expense_amount_pretty [im_report_format_number $expense_amount $output_format $number_locale]
     set vat_amount_pretty [im_report_format_number $vat_amount $output_format $number_locale]
     set tax_amount_pretty [im_report_format_number $tax_amount $output_format $number_locale]
+    set paid_amount_pretty [im_report_format_number $paid_amount $output_format $number_locale]
     
     if {"" == $customer_id} {
 	set customer_id 0
