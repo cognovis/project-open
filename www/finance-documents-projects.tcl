@@ -15,6 +15,8 @@ ad_page_contract {
     { end_date "" }
     { level_of_detail 2 }
     { output_format "html" }
+    { cost_status_id "" }
+    { cost_type_id "" }
     project_id:integer,optional
     customer_id:integer,optional
 
@@ -157,6 +159,14 @@ set criteria [list]
 
 if {[info exists customer_id]} {
     lappend criteria "pcust.company_id = :customer_id"
+}
+
+if {[info exists cost_status_id]} {
+    lappend criteria "c.cost_status_id in (select * from im_sub_categories(:cost_status_id))"
+}
+
+if {[info exists cost_type_id]} {
+    lappend criteria "c.cost_type_id in (select * from im_sub_categories(:cost_type_id))"
 }
 
 # Select project & subprojects
@@ -692,6 +702,18 @@ switch $output_format {
 		    <input type=textfield name=end_date value=$end_date>
 		  </td>
 		</tr>
+	        <tr>
+	          <td class=form-label>Doc Status</td>
+	          <td class=form-widget>
+	            [im_category_select -include_empty_p 1 "Intranet Cost Status" cost_status_id $cost_status_id]
+	          </td>
+	        </tr>
+	        <tr>
+	          <td class=form-label>Doc Type</td>
+	          <td class=form-widget>
+	            [im_category_select -include_empty_p 1 "Intranet Cost Type" cost_type_id $cost_type_id]
+	          </td>
+	        </tr>
                 <tr>
                   <td class=form-label>Format</td>
                   <td class=form-widget>
