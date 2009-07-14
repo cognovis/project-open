@@ -1,4 +1,4 @@
-<!-- packages/intranet-timesheet2-invoices/www/invoices/new-2.adp -->
+<!-- packages/intranet-timesheet2-invoices/www/invoices/new-3.adp -->
 <!-- @author Juanjo Ruiz (juanjoruizx@yahoo.es) -->
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
@@ -9,7 +9,7 @@
 <property name="sub_navbar">@sub_navbar;noquote@</property>
 
 <form action=new-4 method=POST>
-<%= [export_form_vars customer_id provider_id invoice_id cost_status_id start_date end_date select_project invoice_hour_type return_url] %>
+<%= [export_form_vars customer_id provider_id invoice_id cost_status_id start_date end_date select_project return_url] %>
 
 @include_task_html;noquote@
 
