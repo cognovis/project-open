@@ -1056,11 +1056,191 @@ ad_proc im_costs_object_list_component { user_id cost_id return_url } {
     "
 }
 
+
+# -------------------------------------------------------------
+# Notes List Component
+# -------------------------------------------------------------
+
+
+ad_proc im_company_payment_balance_component { company_id } {
+    Returns a formatted HTML with invoices vs. payments.
+} {
+    # ------------------------------------------------------------------
+    # List of Invoices or Bills
+
+    set company_type_id [db_string type "select company_type_id from im_companies where company_id = :company_id" -default 0]
+    if {[im_category_is_a $company_type_id [im_company_type_customer]]} { set company_type_id [im_company_type_customer] }
+    if {[im_category_is_a $company_type_id [im_company_type_provider]]} { set company_type_id [im_company_type_provider] }
+
+    set company_sql ""
+    switch $company_type_id {
+	57 {
+	    # customer
+	    set company_sql "c.customer_id = :company_id"
+	    set cust_prov_type_id [im_cost_type_invoice]
+	}
+	56 {
+	    # provider
+	    set company_sql "c.provider_id = :company_id"
+	    set cust_prov_type_id [im_cost_type_bill]
+	}
+	default {
+	    # partner, internal or similar: Skip this component
+	    return ""
+	}
+
+    }	
+
+#    -main_class "list" \
+#    -sub_class "narrow" \
+
+    template::list::create \
+	-name list_costs \
+	-multirow list_costs_multirow \
+	-class "list-table" \
+	-main_class "list-table" \
+	-sub_class "right" \
+	-elements {
+	    date_pretty {
+		display_col date_pretty
+		label "Date"
+		display_template "<nobr>@list_costs_multirow.date_pretty@</nobr>"
+	    }
+	    cost_name {
+		display_col cost_name
+		label "Name"
+		link_url_eval $invoice_url
+	    }
+	    subtotal_converted {
+		label "Subtotal"
+	    }
+	    vat_pretty { 
+		label "VAT" 
+		display_template "<nobr>@list_costs_multirow.vat_pretty@</nobr>"
+	    }
+	    tax_pretty { 
+		label "TAX"
+		display_template "<nobr>@list_costs_multirow.tax_pretty@</nobr>"
+	    }
+	    total_converted {
+		label "Total"
+	    }
+	    paid {
+		display_col paid_amount_converted
+		label "Paid"
+	    }
+	}
+
+    set costs_sql "    
+	select	c.*,
+		round(vat,2) as vat_pretty,
+		round(tax,2) as tax_pretty,
+		im_category_from_id(c.cost_status_id) as cost_status,
+		im_category_from_id(c.cost_type_id) as cost_type,
+		to_char(c.effective_date, 'YYYY-MM-DD') as date_pretty,
+		round((c.paid_amount * xrate)::numeric, 2) as paid_amount_converted,
+		round((c.amount * xrate)::numeric, 2) as subtotal_converted,
+		round((c.amount * xrate * (1 + vat/100 + tax/100))::numeric, 2) as total_converted
+	from	
+		(select
+			c.*,
+			im_exchange_rate(c.effective_date::date, c.currency, 'EUR') as xrate,
+			c.paid_currency
+		from
+			im_costs c
+		where
+			c.cost_type_id = $cust_prov_type_id and
+			$company_sql
+		) c
+	order by
+		effective_date
+    "
+
+    set costs_sum 0
+    db_multirow -extend {invoice_url} list_costs_multirow costs_sql $costs_sql {
+	set invoice_url [export_vars -base "/intranet-invoices/view" {{invoice_id $cost_id}}]
+	if {"" == $total_converted} { set total_converted 0 }
+	set costs_sum [expr $costs_sum + $total_converted]
+    }
+    
+    eval [template::adp_compile -string "<listtemplate name=list_costs></listtemplate>"]
+    set costs_html $__adp_output
+
+
+
+    # ------------------------------------------------------------------
+    # List of Payments
+
+    template::list::create \
+	-name list_payments \
+	-multirow list_payments_multirow \
+	-class "list-table" \
+	-main_class "list-table" \
+	-sub_class "right" \
+	-elements {
+	    date {
+		display_col received_date_pretty
+		label "[_ intranet-core.Date]"
+		link_url_eval $invoice_url
+	    }
+	    payment_type {
+		label "[_ intranet-core.Payment_Method]"
+		link_url_eval $invoice_url
+	    }
+	    amount {
+		label "[_ intranet-cost.Amount]"
+		display_template "<div align=right>@list_payments_multirow.amount@</div>"
+	    }
+	}
+
+    set payments_sql "    
+	select
+		p.*,
+		to_char(p.received_date, 'YYYY-MM-DD') as received_date_pretty,
+		round((p.amount * im_exchange_rate(p.received_date::date, p.currency, 'EUR')) :: numeric, 2) as amount_converted,
+		im_category_from_id(payment_type_id) as payment_type
+	from
+		im_payments p
+	where
+		p.company_id = :company_id
+	order by
+		received_date
+    "
+
+    set payments_sum 0
+    db_multirow -extend {invoice_url} list_payments_multirow payments_sql $payments_sql {
+	set payment_url [export_vars -base "/intranet-payments/view" {payment_id}]
+	set payments_sum [expr $payments_sum + $amount_converted]
+    }
+    
+    eval [template::adp_compile -string "<listtemplate name=list_payments></listtemplate>"]
+    set payments_html $__adp_output
+
+    return "
+<!--	[lang::message::lookup "" intranet-cost.Invoices "Invoices"] -->
+	$costs_html
+	<b>Sum: $costs_sum</b>
+	<br>&nbsp;<br>
+<!--	[lang::message::lookup "" intranet-cost.Payments "Payments"] -->
+	$payments_html<br>
+	<b>Sum: $payments_sum</b>
+	<br>&nbsp;<br>
+
+    "
+}
+
+
+
+
 ad_proc im_costs_company_component { user_id company_id } {
     Returns a HTML table containing a list of costs for a particular
     company.
 } {
-    return [im_costs_base_component $user_id $company_id ""]
+#    set html [im_costs_base_component $user_id $company_id ""]
+
+    set html [im_company_payment_balance_component $company_id]
+
+    return $html
 }
 
 ad_proc im_costs_project_component { user_id project_id } {
