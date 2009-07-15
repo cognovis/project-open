@@ -13,13 +13,12 @@ ad_page_contract {
 } {
     { start_date "" }
     { end_date "" }
-    { level_of_detail 2 }
+    { level_of_detail:integer 2 }
     { output_format "html" }
-    { cost_status_id "" }
-    { cost_type_id "" }
+    { cost_status_id:integer "" }
+    { cost_type_id:integer "" }
+    { customer_id:integer ""}
     project_id:integer,optional
-    customer_id:integer,optional
-
     location:array,optional
     field:array,optional
     {custom_fields_p 0}
@@ -142,7 +141,7 @@ set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting-finance/finance-documents-projects" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-reporting-finance/finance-documents-projects" {start_date end_date cost_status_id cost_type_id} ]
 
 
 # ------------------------------------------------------------
@@ -157,15 +156,15 @@ im_invoices_check_for_multi_project_invoices
 
 set criteria [list]
 
-if {[info exists customer_id]} {
+if {[info exists customer_id] && "" != $customer_id} {
     lappend criteria "pcust.company_id = :customer_id"
 }
 
-if {[info exists cost_status_id]} {
+if {[info exists cost_status_id] && "" != $cost_status_id} {
     lappend criteria "c.cost_status_id in (select * from im_sub_categories(:cost_status_id))"
 }
 
-if {[info exists cost_type_id]} {
+if {[info exists cost_type_id] && "" != $cost_type_id} {
     lappend criteria "c.cost_type_id in (select * from im_sub_categories(:cost_type_id))"
 }
 
@@ -395,7 +394,7 @@ set project_footer [concat $project_footer [list \
 ]]
 
 set customer_header {
-	"\#colspan=10 <a href=$this_url&customer_id=$project_customer_id&level_of_detail=4 
+    "\#colspan=10 <a href=[export_vars -base $this_url {{customer_id $project_customer_id} {level_of_detail 4}}]
 	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 	<b><a href=$company_url$project_customer_id>$project_customer_name</a></b>"
 }
@@ -682,7 +681,7 @@ switch $output_format {
 	<table cellspacing=0 cellpadding=0 border=0>
 	<tr valign=top>
 	<td>
-                [export_form_vars customer_id project_id]
+                [export_form_vars project_id]
 		<table border=0 cellspacing=1 cellpadding=1>
 		<tr>
 		  <td class=form-label>Level of Details</td>
@@ -702,6 +701,12 @@ switch $output_format {
 		    <input type=textfield name=end_date value=$end_date>
 		  </td>
 		</tr>
+	        <tr>
+	          <td class=form-label>Company</td>
+	          <td class=form-widget>
+	            [im_company_select -include_empty_name "All"  customer_id $customer_id "" "Customer" "deleted"]
+	          </td>
+	        </tr>
 	        <tr>
 	          <td class=form-label>Doc Status</td>
 	          <td class=form-widget>

@@ -13,7 +13,7 @@ ad_page_contract {
 } {
     { start_date "" }
     { end_date "" }
-    { level_of_detail 3 }
+    { level_of_detail 4 }
     { output_format "html" }
     { number_locale "" }
     { customer_id:integer 0}
