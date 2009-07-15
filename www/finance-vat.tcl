@@ -189,7 +189,8 @@ select distinct
 	  , 2) as amount_conv,
 	c.amount,
 	c.currency,
-	im_cost_vat_type_from_cost_id(c.cost_id) as vat_type,
+	coalesce(im_category_from_id(c.vat_type_id), im_cost_vat_type_from_cost_id(c.cost_id)) as vat_type,
+	im_cost_vat_type_from_cost_id(c.cost_id) as vat_type_calculated,
 	(select vat_number from im_companies cust where cust.company_id = c.customer_id) as customer_vat_number,
 	(select vat_number from im_companies prov where prov.company_id = c.provider_id) as provider_vat_number,
 	(select external_company_vat_number from im_expenses exp where exp.expense_id = c.cost_id) as expense_vat_number
