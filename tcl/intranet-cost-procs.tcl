@@ -1091,9 +1091,6 @@ ad_proc im_company_payment_balance_component { company_id } {
 
     }	
 
-#    -main_class "list" \
-#    -sub_class "narrow" \
-
     template::list::create \
 	-name list_costs \
 	-multirow list_costs_multirow \
@@ -1200,9 +1197,11 @@ ad_proc im_company_payment_balance_component { company_id } {
 		round((p.amount * im_exchange_rate(p.received_date::date, p.currency, 'EUR')) :: numeric, 2) as amount_converted,
 		im_category_from_id(payment_type_id) as payment_type
 	from
-		im_payments p
+		im_payments p,
+		im_costs c
 	where
-		p.company_id = :company_id
+		p.cost_id = c.cost_id and
+		$company_sql
 	order by
 		received_date
     "
@@ -1230,16 +1229,11 @@ ad_proc im_company_payment_balance_component { company_id } {
 }
 
 
-
-
 ad_proc im_costs_company_component { user_id company_id } {
     Returns a HTML table containing a list of costs for a particular
     company.
 } {
-#    set html [im_costs_base_component $user_id $company_id ""]
-
-    set html [im_company_payment_balance_component $company_id]
-
+    set html [im_costs_base_component $user_id $company_id ""]
     return $html
 }
 
