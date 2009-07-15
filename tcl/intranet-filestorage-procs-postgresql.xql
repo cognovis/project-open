@@ -35,6 +35,7 @@ from
 	UNION (select [im_customer_group_id] from dual)
 	UNION (select [im_employee_group_id] from dual)
 	UNION (select [im_freelance_group_id] from dual)
+	UNION (select [im_partner_group_id] from dual)
 	UNION (select [im_wheel_group_id] from dual)
 	) r
       LEFT JOIN
