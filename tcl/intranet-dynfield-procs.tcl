@@ -445,15 +445,14 @@ ad_proc -public im_dynfield::attribute_store {
 	} else {
 
 	    # Multi-value field. This must be a field with widget multi-select...
-	    ad_return_complaint 1 "Storing multiple values not tested yet: $attribute_name"
 	    db_transaction {
-		db_dml "delete previous values" "
+		db_dml del_previous_values "
 			delete from im_dynfield_attr_multi_value
 			where object_id = :object_id_org 
 			and attribute_id = :attribute_id
 		"
 		foreach val [template::element::get_values $form_id $attribute_name] {
-		    db_dml "create multi value" "
+		    db_dml create_multi_value "
 			insert into im_dynfield_attr_multi_value (attribute_id,object_id,value) 
 			values (:attribute_id,:object_id_org,:val)"
 		}
