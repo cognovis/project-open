@@ -605,10 +605,11 @@ create table im_costs (
 				constraint im_costs_type_fk
 				references im_categories,
 	-- reference to an object that has caused this cost,
-	-- in particular to im_repeating_costs
+	-- in particular used by im_repeating_costs
 	cause_object_id		integer
 				constraint im_costs_cause_fk
 				references acs_objects,
+	-- HTML (or other) template
 	template_id		integer
 				constraint im_cost_template_fk
 				references im_categories,
@@ -631,7 +632,12 @@ create table im_costs (
 	paid_currency		char(3) 
 				constraint im_costs_paid_currency_fk
 				references currency_codes(iso),
+	-- vat_type is the base for VAT calculation.
+	vat_type_id		integer
+				constraint im_cost_vat_type_fk
+				references im_categories,
 	-- % of total price is VAT
+	-- VAT may be calculated based on vat_type_id
 	vat			numeric(12,5) default 0,
 	-- % of total price is TAX
 	tax			numeric(12,5) default 0,
