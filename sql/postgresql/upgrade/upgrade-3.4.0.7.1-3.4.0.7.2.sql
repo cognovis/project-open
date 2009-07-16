@@ -5,6 +5,15 @@ SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.
 
 
 -- -----------------------------------------------------
+-- Update the Localization Admin link so that the 
+-- Context Help works correctly (thanks Richard!)
+-- -----------------------------------------------------
+
+update im_menus set url = '/acs-lang/admin/' where url = '/acs-lang/admin';
+
+
+
+-- -----------------------------------------------------
 -- DynField Sub-Menus
 -- -----------------------------------------------------
 
