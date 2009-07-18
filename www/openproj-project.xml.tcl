@@ -525,10 +525,12 @@ $resources_node appendXML "
 
 set id 0
 set xml_elements {}
+set temp temp
+
 db_foreach project_resources $project_resources_sql {
     incr id
     
-    set initials [regsub -all {(^|\W)([\w])\S*} $user_name {\2}]
+    set initials [regsub -all {(^|\W)([\w])\S*} $user_name {\2} temp]
 
     set resource_node [$doc createElement Resource]
     $resources_node appendChild $resource_node
@@ -593,7 +595,7 @@ set project_allocations_sql "
 			)
 		)
 "
-db_foreach project_allocations $project_allocations_sql {
+_foreach project_allocations $project_allocations_sql {
     $allocations_node appendXML "
         <Assignment>
             <UID>0</UID>
