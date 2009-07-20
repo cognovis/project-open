@@ -24,12 +24,12 @@
   <msg key="Calendar_Item_Delete">Cancella elemento del calendario</msg>
   <msg key="Calendar_Item_Types">Tipi di elemento del calendario</msg>
   <msg key="Calendar_Name">Nome del calendario</msg>
-  <msg key="Calendar_Permissions">&quot;Permessi del calendario&quot;</msg>
-  <msg key="Calendar_Permissions_1">Permessi del calendario</msg>
+  <msg key="Calendar_Permissions">&quot;Autorizzazioni calendario&quot;</msg>
+  <msg key="Calendar_Permissions_1">Autorizzazioni del calendario</msg>
   <msg key="Calendar_Preferences">&quot;Preferenze del calendario&quot;</msg>
   <msg key="Calendars">Calendari</msg>
   <msg key="Choose">Scegli</msg>
-  <msg key="Current_Permissions">Permessi attuali</msg>
+  <msg key="Current_Permissions">Autorizzazioni attuali</msg>
   <msg key="Date">Data:</msg>
   <msg key="Date_1">Data</msg>
   <msg key="day">giorno</msg>
@@ -39,7 +39,7 @@
   <msg key="delete">elimina</msg>
   <msg key="Description">Descrizione</msg>
   <msg key="Details">Dettagli:</msg>
-  <msg key="developer_note_calendar_add">Nota per gli Sviluppatori: Il processo di creazione del calendario comporta i seguenti passi: &lt;ol&gt;  &lt;li&gt; Creare l'oggetto &amp;quote;calendario&amp;quot;, e modificare i permessi di default se necessario.&lt;li&gt; Selezionare gruppi e/o utenti che potranno vedere il calendario &lt;li&gt; Se necessario, applicare i permessi specifici agli utenti o ai gruppi. &lt;/ol&gt;</msg>
+  <msg key="developer_note_calendar_add">Nota per gli Sviluppatori: il processo di creazione del calendario comporta i seguenti passi: &lt;ol&gt;  &lt;li&gt; Creare l'oggetto &amp;quote;calendario&amp;quot;, e modificare le autorizzazioni di default se necessario.&lt;li&gt; Selezionare gruppi e/o utenti che potranno vedere il calendario &lt;li&gt; Se necessario, applicare le autorizzazioni specifiche agli utenti o ai gruppi. &lt;/ol&gt;</msg>
   <msg key="Edit">Modifica</msg>
   <msg key="edit">modifica</msg>
   <msg key="End_Time">Ora finale</msg>
