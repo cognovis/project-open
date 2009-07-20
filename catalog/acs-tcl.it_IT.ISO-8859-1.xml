@@ -3,7 +3,7 @@
 
   <msg key="approve">approva</msg>
   <msg key="approve_email">approva l'e-mail</msg>
-  <msg key="ban">bandisci</msg>
+  <msg key="ban">escludi</msg>
   <msg key="delete">cancella</msg>
   <msg key="lt_require_email_verific">richiedi la verifica dell'e-mail</msg>
   <msg key="reject">rifiuta</msg>
