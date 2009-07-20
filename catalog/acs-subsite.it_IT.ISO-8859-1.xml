@@ -59,7 +59,7 @@
   <msg key="Delete">Elimina</msg>
   <msg key="DevAdmin">DevAdmin</msg>
   <msg key="Developers_Admin">Amministrazione sviluppatore</msg>
-  <msg key="Direct_Permissions">Permessi diretti</msg>
+  <msg key="Direct_Permissions">Autorizzazioni dirette</msg>
   <msg key="Disable">Disabilita</msg>
   <msg key="Disabled">Disabilitato</msg>
   <msg key="Domain">Dominio</msg>
@@ -88,7 +88,7 @@
   <msg key="go_upload_the_users_por">carica la foto dell'utente</msg>
   <msg key="go_upload_your_portrait">carica una foto</msg>
   <msg key="Grant">Assegna</msg>
-  <msg key="Grant_Permission">Assegna permesso</msg>
+  <msg key="Grant_Permission">Assegna autorizzazioni</msg>
   <msg key="Hide">Nascondi</msg>
   <msg key="Home_page">Home</msg>
   <msg key="If_you_were_to">Se dovessi</msg>
