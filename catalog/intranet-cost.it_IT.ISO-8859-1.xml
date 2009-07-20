@@ -2,6 +2,9 @@
 <message_catalog package_key="intranet-cost" package_version="3.4.0.6.0" locale="it_IT" charset="ISO-8859-1">
 
   <msg key="Absences">Assenze</msg>
+  <msg key="Accounts_Payable">Conti da pagare</msg>
+  <msg key="Accounts_Receivable">Conti da ricevere</msg>
+  <msg key="Admin">Admin</msg>
   <msg key="Administration">Amministrazione</msg>
   <msg key="All_Costs">Tutti i costi</msg>
   <msg key="Amount">Importo</msg>
@@ -17,6 +20,7 @@
   <msg key="Currency">Valuta</msg>
   <msg key="Customer">Cliente</msg>
   <msg key="Customer_Invoices">Fatture clienti</msg>
+  <msg key="Customer_Links">Link clienti</msg>
   <msg key="Customers">Clienti</msg>
   <msg key="Del">Elimina</msg>
   <msg key="Description">Descrizione</msg>
@@ -29,6 +33,7 @@
   <msg key="Edit_Cost">Modifica costo</msg>
   <msg key="Effective_Date">Data effettiva</msg>
   <msg key="Expenses">Spese</msg>
+  <msg key="Export_Finance_to_CSV">Esporta dati finanziari a CSV</msg>
   <msg key="Filter_Documents">Filtra documenti</msg>
   <msg key="Finance">Finanze</msg>
   <msg key="finance">finanze</msg>
@@ -47,12 +52,15 @@
   <msg key="lt_No_financial_document">Non esistono documenti finanziari per questo progetto</msg>
   <msg key="lt_There_are_currently_n">Non esistono costi corrispondenti al criterio selezionato</msg>
   <msg key="lt_This_is_the_homepage_">Questa è la pagina iniziale dell'area Finanze. Qui si trovano tutte le  informazioni finanziarie relative a organizzazioni, progetti e utenti.</msg>
+  <msg key="Materials_Service_Types">Materiali (tipi di servizio)</msg>
   <msg key="more_costs">altri costi...</msg>
   <msg key="Multiple_Currency_Warning">&lt;h2&gt;Avvertenza di valuta multipla&lt;/h2&gt; &lt;p&gt; Il presente progetto comprende documenti finanziari con più di una valuta. &lt;br&gt; Sebbene ciò sia corretto in termini generali, tener conto che non sarà possibile calcolare il valore di profitti&amp;perdite del progetto e neppure includerlo nel calcolo del margine di beneficio. &lt;/p&gt;</msg>
   <msg key="Name">Nome</msg>
   <msg key="New_Cost">Nuovo costo</msg>
   <msg key="New_Cost_Item">Nuova voce di costo</msg>
   <msg key="New_Customer_Docs">Crea un nuovo documento (clienti)</msg>
+  <msg key="New_Customer_Invoices_Quotes">Nuove fatture e preventivi cliente</msg>
+  <msg key="New_Provider_Bills_POs">Nuove parcelle e ordini d'acquisto fornitori</msg>
   <msg key="New_Provider_Docs">Crea un nuovo documento (fornitori)</msg>
   <msg key="New_Timesheet_Invoice">Nuova fattura da presenze</msg>
   <msg key="New_Trans_Invoice">Nuova fattura traduzioni</msg>
@@ -69,11 +77,13 @@
   <msg key="Payments">Pagamenti</msg>
   <msg key="Please_Select">Seleziona</msg>
   <msg key="Preliminary_Costs">Costi preliminari</msg>
+  <msg key="Preliminary_Total">Totale preliminare</msg>
   <msg key="Previous_Page">Pagina precedente</msg>
   <msg key="Print_Template">Stampa template</msg>
   <msg key="Project">Progetto</msg>
   <msg key="Provider">Fornitore</msg>
   <msg key="Provider_Bills">Parcelle fornitori</msg>
+  <msg key="Provider_Links">Link fornitori</msg>
   <msg key="Providers">Fornitori</msg>
   <msg key="Purchase_Orders">Ordini d'acquisto</msg>
   <msg key="Quotes">Preventivi</msg>
@@ -84,6 +94,7 @@
   <msg key="Status">Stato</msg>
   <msg key="TAX">RITENUTA</msg>
   <msg key="The_exchange_rates_are_outdated">I tassi di cambio delle valute seguenti non sono aggiornati. Contattare l'amministratore di sistema per aggiornare i seguenti tassi di cambio:</msg>
+  <msg key="Timesheet_Budget">Budget presenze</msg>
   <msg key="Timesheet_Costs">Costi presenze</msg>
   <msg key="Type">Tipo</msg>
   <msg key="VAT">IVA</msg>
