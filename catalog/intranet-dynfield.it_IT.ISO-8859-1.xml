@@ -28,6 +28,9 @@
   <msg key="Delete">Elimina</msg>
   <msg key="Documentation">Documentazione</msg>
   <msg key="documentation">documentazione</msg>
+  <msg key="Dynfield_Actions">Autorizzazioni e visibilità dynfield</msg>
+  <msg key="Dynfield_Attributes">Attributi dynfield</msg>
+  <msg key="Dynfield_Layout">Formato dynfield</msg>
   <msg key="Edit_the_form_adp_file">Modifica il file ADP del modulo</msg>
   <msg key="Email_Address">Indirizzo e-mail</msg>
   <msg key="examples">esempi</msg>
