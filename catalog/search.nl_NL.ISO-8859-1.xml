@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="search" package_version="5.1.5" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="________Search_took">Zoek actie duurde</msg>
+  <msg key="Advanced_Search">Geavanceerd zoeken</msg>
+  <msg key="advanced_search">&quot;geavanceerd zoeken&quot;</msg>
+  <msg key="anytime">op ieder moment</msg>
+  <msg key="Date_Range">Datum bereik</msg>
+  <msg key="details">details</msg>
+  <msg key="Feeling_Lucky">Willekeurig</msg>
+  <msg key="lt_bstopwordsb_is_a_very">&quot;&lt;b&gt;%stopwords%&lt;/b&gt;&quot; is een erg algemeen woord en is niet in uw zoekactie opgenomen.</msg>
+  <msg key="lt_FtsEngineDriver_not_a">FtsEngineDriver is niet beschikbaar!</msg>
+  <msg key="lt_Make_sure_all_words_a">Verzeker er u van dat alle woorden correct zijn gespeld.</msg>
+  <msg key="lt_No_pages_were_found_c">Er zijn geen pagina's gevonden met &quot;</msg>
+  <msg key="lt_The_following_words_a">De volgende woorden zijn veel voorkomend en zijn niet in uw zoekactie opgenomen:</msg>
+  <msg key="lt_Tip_In_most_browsers_">Tip: In de meeste browsers kunt u de vorige toets aanklikken in plaats van de zoek-toets.</msg>
+  <msg key="lt_Try_different_keyword">Probeer verschillende trefwoorden.</msg>
+  <msg key="lt_Try_more_general_keyw">Probeer meer algemene trefwoorden.</msg>
+  <msg key="lt_Try_your_query_on_stw">Probeer uw zoekactie op: %stw;noquote%</msg>
+  <msg key="lt_You_must_specify_some">U moet een paar trefwoorden specificeren</msg>
+  <msg key="nbspDisplay">&amp;nbsp;Display</msg>
+  <msg key="Next">Volgende</msg>
+  <msg key="of_about">van ongeveer</msg>
+  <msg key="past_3_months">afgelopen 3 maanden</msg>
+  <msg key="past_6_months">afgelopen 6 maanden</msg>
+  <msg key="past_year">afgelopen jaar</msg>
+  <msg key="Previous">Vorige</msg>
+  <msg key="Result_page">Resultaten pagina:</msg>
+  <msg key="Results">Resultaten</msg>
+  <msg key="results">resultaten</msg>
+  <msg key="Search">Zoeken</msg>
+  <msg key="Searched_for_query">Gezocht naar: %query%</msg>
+  <msg key="seconds">seconden.</msg>
+  <msg key="selected">geselecteerde</msg>
+  <msg key="Suggestions">Suggesties:</msg>
+  <msg key="The">&quot;&lt;b&gt;AND&lt;/b&gt;&quot; operator is niet nodig -- wij hebben alle operatoren standaard geïmplementeerd</msg>
+  <msg key="Try_fewer_keywords">Probeer minder trefwoorden.</msg>
+  <msg key="Untitled">Geen titel</msg>
+</message_catalog>
