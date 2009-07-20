@@ -4,8 +4,14 @@
   <msg key="Accounting_Contact">Contatto contabilità</msg>
   <msg key="Add_New">Nuovo</msg>
   <msg key="Adress">Indirizzo</msg>
+  <msg key="Aggregate_tasks_of_the_same_material">Aggregare le attività dello stesso materiale?</msg>
+  <msg key="All_br_Reported_br_Units">Tutte&lt;br&gt;le unità&lt;br&gt;inserite</msg>
+  <msg key="All_Reported_Hours_help">Tutte le ore segnate: tutte le ore di presenza inserite da chiunque dalla creazione dell'attività o del progetto</msg>
+  <msg key="All_Unbilled_Units">Tutte le unità non fatturate</msg>
   <msg key="Amount">Importo</msg>
+  <msg key="Billable_br_Units">Unità&lt;br&gt;fatturabili</msg>
   <msg key="Billable_Units">Unità fatturabili</msg>
+  <msg key="Billable_Units_help">Unità fatturabili: numero fatturabile di unità per ogni attività. Simili alle unità pianificate, ma possono comprendere ore non fatturabili della fase di prevendita o di risoluzione bug.</msg>
   <msg key="Cell_Phone">Cellulare</msg>
   <msg key="Client">Cliente</msg>
   <msg key="Clients">Clienti</msg>
@@ -14,8 +20,9 @@
   <msg key="context">contesto</msg>
   <msg key="Country">Paese</msg>
   <msg key="Create_Invoice">Crea fattura</msg>
+  <msg key="Create_lt_Quoteintranet-coreQuo">Crea preventivo</msg>
   <msg key="Currency">Valuta</msg>
-  <msg key="Del">Canc</msg>
+  <msg key="Del">Elim</msg>
   <msg key="Delete">Elimina</msg>
   <msg key="Delivery_Date">Data di consegna</msg>
   <msg key="Description">Descrizione</msg>
@@ -53,11 +60,11 @@
   <msg key="lt_There_are_currently_n_1">Non esistono progetti corrispondenti ai criteri introdotti</msg>
   <msg key="lt_To_create_a_new_invoi">Per creare una nuova fattura scegliere uno o più progetti&lt;br&gt; &lt;em&gt;dello stesso cliente&lt;/em&gt; e fare clic sul bottone &quot;Nuova fattura&quot; &lt;br&gt; in fondo alla pagina.</msg>
   <msg key="lt_Unknown_action_for_pr">Azione sconosciuta per azione-prezzo.</msg>
-  <msg key="lt_UOMtd__________td_cla">UDM#&lt;/td&gt;  &lt;td class=rowtitle&gt;&lt;#_ Rate</msg>
+  <msg key="lt_UOMtd__________td_cla">UM#&lt;/td&gt;  &lt;td class=rowtitle&gt;&lt;#_ Rate</msg>
   <msg key="lt_Upload_Client_Prices_">Carica tariffario cliente in CSV</msg>
-  <msg key="lt_Use_the_quotBrowsequo">Usare il bottone &amp;quot;Sfoglia...&amp;quot; per cercare il file, quindi fare clic su &amp;quot;Apri&amp;quot;.</msg>
+  <msg key="lt_Use_the_quotBrowsequo">Usare il bottone &amp;quot;Sfoglia...&amp;quot; per trovare il file, quindi fare clic su &amp;quot;Apri&amp;quot;.</msg>
   <msg key="lt_You_dont_have_suffici">Non si dispone dei privilegi sufficienti per visualizzare questa pagina.</msg>
-  <msg key="lt_You_have_insufficient">Non si hanno permessi sufficienti per visualizzare questa pagina</msg>
+  <msg key="lt_You_have_insufficient">Non si dispone delle autorizzazioni sufficienti per visualizzare questa pagina</msg>
   <msg key="lt_You_have_insufficient_1">Non si dispone dei privilegi sufficienti per usare questa pagina</msg>
   <msg key="lt_You_have_selected_mul">Sono stati selezionati più clienti</msg>
   <msg key="lt_You_have_selected_mul_1">Sono stati selezionati più clienti.</msg>
@@ -67,6 +74,7 @@
   <msg key="New_cost_type">Nuovo %cost_type%</msg>
   <msg key="New_Customer_Invoice_from_Timesheet_Tasks">Nuova fattura cliente da attività ricavate dalle presenze</msg>
   <msg key="New_Invoice">Nuova fattura</msg>
+  <msg key="New_lt_Quoteintranet-coreQuo">Nuovo preventivo</msg>
   <msg key="New_Price">Nuovo prezzo</msg>
   <msg key="New_Purchase_Order">Nuovo ordine d'acquisto</msg>
   <msg key="New_Quote_from_Timesheet_Tasks">Nuovo preventivo da attività ricavate dalle presenze</msg>
@@ -82,11 +90,15 @@
   <msg key="Payment_Method">Modalità di pagamento</msg>
   <msg key="Payment_terms">Termini di pagamento</msg>
   <msg key="Phone">Telefono</msg>
+  <msg key="Planned_br_Units">Unità&lt;br&gt;pianificate</msg>
   <msg key="Planned_Units">Unità pianificate</msg>
+  <msg key="Planned_Units_help">Unità pianificate: numero stimato di ore per ciascuna attività, come specificato durante la pianificazione di progetto.</msg>
   <msg key="Previous_Page">Pagina precedente</msg>
   <msg key="Price">Prezzo</msg>
   <msg key="Price_List">Tariffario</msg>
   <msg key="Project_">Progetto</msg>
+  <msg key="Project_br_Status">Stato&lt;br&gt;progetto</msg>
+  <msg key="Project_br_Type">Tipo&lt;br&gt;progetto</msg>
   <msg key="Project_Name">Project_Name</msg>
   <msg key="Project_Status">Stato del progetto</msg>
   <msg key="Project_Type">Tipo di progetto</msg>
@@ -98,7 +110,9 @@
   <msg key="Recr_Test">Test selez</msg>
   <msg key="Reference_Prices">Prezzi di riferimento</msg>
   <msg key="Rep">Rep</msg>
+  <msg key="Reported_br_Units_in_br_Interval">Unità&lt;br&gt;inserite&lt;br&gt;nell'intervallo</msg>
   <msg key="Reported_Units">Unità inserite</msg>
+  <msg key="Reported_Units_Interval_help">Unità inserite nell'intervallo: ore segnate fra la 'Data di inizio' e la 'Data di fine' (vedi filtro qua sopra). </msg>
   <msg key="Save">Salva</msg>
   <msg key="Sel">Sel</msg>
   <msg key="Source">Partenza</msg>
@@ -114,13 +128,15 @@
   <msg key="Task_Name">Nome attività</msg>
   <msg key="Task_Type">Tipo di attività</msg>
   <msg key="TAX">RITENUTA</msg>
+  <msg key="Timesheet_Invoicing_Wizard">Assistente fattura da presenze</msg>
+  <msg key="Timesheet_Invoicing_Wizard_help">Questo assistente consente di creare un documento finanziario dai dati di progetto in quattro modi diversi:</msg>
   <msg key="Trados_Matrix">Matrice Trados</msg>
   <msg key="Trg">LA</msg>
   <msg key="Type">Tipo</msg>
   <msg key="Unit_of_Measure">Unità di misura</msg>
   <msg key="Units">Unità</msg>
-  <msg key="UOM">UDM</msg>
-  <msg key="UoM">UdM</msg>
+  <msg key="UOM">UM</msg>
+  <msg key="UoM">UM</msg>
   <msg key="Upload_CSV">Carica CSV</msg>
   <msg key="Upload_prices">Carica prezzi</msg>
   <msg key="Valid_From">Valido da</msg>
