@@ -7,10 +7,14 @@
   <msg key="Dim_week_of_year">Settimana</msg>
   <msg key="Dim_year">Anno</msg>
   <msg key="Download_Gantt_File">Scarica file GanttProject</msg>
+  <msg key="Download_OpenProj_File">Scarica tempistica OpenProj</msg>
   <msg key="Gantt_Resources">Risorse Gantt</msg>
   <msg key="No_Gantt_preview_available">Anteprima Gantt non disponibile</msg>
   <msg key="OK">OK</msg>
+  <msg key="Project_Gantt_Resource">Risorse Gantt progetto</msg>
   <msg key="Project_Gantt_Resource_Assignations">Assegnazioni risorse Gantt</msg>
+  <msg key="Project_Gantt_Schedule">Tempistica Gantt progetto</msg>
   <msg key="Project_Gantt_View">Vista Gantt</msg>
   <msg key="Scheduling">Programma</msg>
+  <msg key="Upload_Gantt_File">Carica file Gantt</msg>
 </message_catalog>
