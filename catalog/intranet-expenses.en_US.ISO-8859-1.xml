@@ -19,7 +19,7 @@
   <msg key="Create_Travel_Cost">Create Travel Cost</msg>
   <msg key="Currency">Currency</msg>
   <msg key="Delete">Delete</msg>
-  <msg key="Delete_Expenses">Borrar Gastos</msg>
+  <msg key="Delete_Expenses">Delete Expenses</msg>
   <msg key="Expense_Bundles">Expense Bundles</msg>
   <msg key="Expense_Date">Expense Date</msg>
   <msg key="Expense_Payment_Type">Payment</msg>
@@ -65,10 +65,10 @@
   <msg key="Tolls">Tolls</msg>
   <msg key="Train">Train</msg>
   <msg key="Travel_cost_invoices">Travel Cost Invoices</msg>
-  <msg key="Unassigned">No-Assignado</msg>
+  <msg key="Unassigned">Unassigned</msg>
   <msg key="Unassigned_Expenses">Unassigned Expenses</msg>
   <msg key="Unassigned_items">Unassigned Items</msg>
-  <msg key="Unbundeled">Unbundeled</msg>
+  <msg key="Unbundeled">Unbundled</msg>
   <msg key="Vat_Included">VAT % Incl.</msg>
   <msg key="Without_Project">Without Project</msg>
   <msg key="Yesintranet-coreYes">Yes</msg>
