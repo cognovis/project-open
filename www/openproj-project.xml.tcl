@@ -595,7 +595,7 @@ set project_allocations_sql "
 			)
 		)
 "
-_foreach project_allocations $project_allocations_sql {
+db_foreach project_allocations $project_allocations_sql {
     $allocations_node appendXML "
         <Assignment>
             <UID>0</UID>
