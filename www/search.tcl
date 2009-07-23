@@ -623,9 +623,9 @@ db_foreach full_text_query $sql {
                where	item_id = :object_id
             "
 
-	    regsub -all { } $content_type {_} $content_type_sub
-	    regsub -all {:} $content_type_sub {} $content_type_sub
-	    set object_type_pretty_name [lang::message::lookup "" intranet-core.ContentItem_$content_type_sub]
+	    regsub -all { } $content_type {_} content_type_sub
+	    regsub -all {:} $content_type_sub {} content_type_sub
+	    set object_type_pretty_name [lang::message::lookup "" intranet-core.ContentItem_$content_type_sub $content_type]
 
 	    switch $content_type {
 		"content_revision" {

@@ -27,7 +27,7 @@ if { $num == 0 } {
     set num [ad_parameter -package_id $package_id LimitDefault]
 }
 
-set page_title "Advanced Search"
+set page_title [lang::message::lookup "" intranet-search-pg.Advanced_Search "Advanced Search"]
 
 
 set sql "

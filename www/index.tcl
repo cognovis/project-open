@@ -15,7 +15,7 @@
 
 # Nothing to see here...
 
-set page_title "Search"
+set page_title [lang::message::lookup "" intranet-search-pg.Search "Search"]
 set context_bar [im_context_bar $page_title]
 
 ad_return_template
