@@ -63,7 +63,7 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
-set page_title "Search Results for \"$q\""
+set page_title [lang::message::lookup "" intranet-search-pg.Search_Results_for_query "Search Results for '%q%'"]
 set package_id [ad_conn package_id]
 set package_url [ad_conn package_url]
 set package_url_with_extras $package_url
@@ -106,6 +106,17 @@ set q [db_exec_plsql normalize "select norm_text(:q)"]
 set query $q
 set nquery [llength $q]
 
+# Set default values
+set high 0
+set count 1
+set num_results 0
+set elapsed 0
+set result_page_html ""
+set from_result_page ""
+set to_result_page ""
+set result_html ""
+set objects_html ""
+
 
 # -------------------------------------------------
 # Check if it's a simple query...
@@ -138,10 +149,11 @@ if {$nquery > 1} {
     if {[catch {
 	db_string test_query "select to_tsquery('default',:q)"
     } errmsg]} {
-	ad_return_complaint 1 "<H2>Bad Query</h2>
-        The <span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>
-        search engine is capable of processing complex queries with more then
-        one word. <br>
+	set result_html "
+	<H2>[lang::message::lookup "" intranet-search-pg.Bad_Query "Bad Query"]</h2>
+	[lang::message::lookup "" intranet-search-pg.Bad_Query_Msg "
+        The &\#93;po&\#91; search engine is capable of processing complex queries 
+	with more then one word. <br>
         However, you need to instruct the search engine how to search:
         <p>
         <ul>
@@ -166,8 +178,9 @@ if {$nquery > 1} {
 	      <br>&nbsp;
 
 	</ul>
-        "
-
+        "]"
+	ad_return_template
+	return
     }
 
 }
@@ -194,7 +207,6 @@ set sql "
 		sot.object_type = aot.object_type
 "
 
-set objects_html ""
 db_foreach object_type $sql {
     set checked ""
     if {[string equal $type "all"] || [lsearch $type $object_type] >= 0} {
@@ -470,13 +482,15 @@ set sql "
 	limit :limit
 "
 
-set high 0
 set count 0
-set result_html ""
-
 db_foreach full_text_query $sql {
 
     incr count
+
+    # Localize the object type
+    regsub -all { } $object_type_pretty_name {_} object_type_pretty_name_sub
+    set object_type_pretty_name [lang::message::lookup "" intranet-core.$object_type_pretty_name_sub $object_type_pretty_name]
+
 
     # Skip further permissions checking if we reach the
     # maximum number of records. However, keep on counting
@@ -608,6 +622,11 @@ db_foreach full_text_query $sql {
                from	cr_items 
                where	item_id = :object_id
             "
+
+	    regsub -all { } $content_type {_} $content_type_sub
+	    regsub -all {:} $content_type_sub {} $content_type_sub
+	    set object_type_pretty_name [lang::message::lookup "" intranet-core.ContentItem_$content_type_sub]
+
 	    switch $content_type {
 		"content_revision" {
 		    # Wiki
@@ -645,10 +664,9 @@ db_foreach full_text_query $sql {
 			        p.package_id = s.object_id
 		    "
 		    set name_link "<a href=\"/$package_mount/$page_name\">$page_name</a>"
-		    set object_type_pretty_name "XoWiki Page"
 		}
 		default {
-		    set name_link "unknown content_item type: $content_type"
+		    set name_link [lang::message::lookup "" intranet-search-pg.Unknown_CI_Type "unknown content_item type: %content_type%"]
 		}
 	    }
 	}

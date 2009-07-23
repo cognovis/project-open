@@ -64,14 +64,14 @@
     <b>@offset;noquote@</b> - <b><%= [expr $offset + $results_per_page] %></b> 
 
 <if @count@ eq @limit@>
-    of more then 
+    #intranet-search-pg.of_more_then#
 </if>
 <else>
     #intranet-search-pg.of_about# 
 </else>
 
     <b>@num_results;noquote@</b>.
-    Search took
+    #intranet-search-pg.Search_took#
     <b>@elapsed@</b> #intranet-search-pg.seconds#
   </font>
 </td>
