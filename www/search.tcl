@@ -212,13 +212,17 @@ db_foreach object_type $sql {
     if {[string equal $type "all"] || [lsearch $type $object_type] >= 0} {
 	set checked " checked"
     }
+
+    regsub -all { } $object_type_pretty_name {_} object_type_pretty_name_sub
+    set object_type_pretty_name [lang::message::lookup "" intranet-core.$object_type_pretty_name_sub $object_type_pretty_name]
+
     append objects_html "
 	<tr>
 	  <td>
 	    <input type=checkbox name=type value='$object_type' $checked>
 	  </td>
 	  <td>
-	    $object_type_pretty_plural
+	    $object_type_pretty_name
 	  </td>
 	</tr>
 "

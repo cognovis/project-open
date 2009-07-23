@@ -36,7 +36,7 @@
   </td>
   <td>
 
-	Search for specific object types:
+	#intranet-search-pg.Search_for_sepcific_object_types#
 	<table>
 	@objects_html;noquote@
 	</table>

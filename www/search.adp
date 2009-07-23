@@ -29,7 +29,7 @@
 		<table cellspacing=0 cellpadding=0>
 		<tr>
 		  <td><input type=checkbox name='include_deleted_p' value="1"></td>
-		  <td>Include Deleted</td>
+		  <td>#intranet-search-pg.Include_Deleted#</td>
 		</tr>
 		</table>
 	  </td>
