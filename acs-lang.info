@@ -28,6 +28,9 @@ locale-specific formatting functions for localizing dates, times, monetary amoun
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="SiteWideLocale"  default="en_US" description="The site-wide default locale"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="SystemTimezone"  default="UTC" description="The timezone that Oracle is set to use. Use a name from the acs-reference package, e.g., America/Los_Angeles or Asia/Tokyo"/>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="UsePackageLevelLocalesP"  default="0" description="Specify whether you want to allow different system/user locales per package, or only one site-wide locale system setting/user preference."/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="LangServerURL"  default="http://l10n.project-open.net/acs-lang-server/lang-message-register" description="URL of the ]po[ language server. This server will receive translations on this server and store them as comments for local translations."/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="LangServerTimeout"  default="5" description="Timeout for LangServer. The default is '5' for 5 seconds."/>
+
         </parameters>
 
     </version>
