@@ -104,6 +104,13 @@ set q [string tolower $q]
 set q [db_exec_plsql normalize "select norm_text(:q)"]
 
 set query $q
+regsub -all {\&} $query { & } query
+regsub -all {\|} $query { \| } query
+regsub -all {    } $query { } query
+regsub -all {  } $query { } query
+set q $query
+
+# Determine if there are several parts to the query
 set nquery [llength $q]
 
 # Set default values
@@ -144,12 +151,7 @@ if {$simple_query && $nquery > 1} {
 # 
 # -------------------------------------------------
 
-if {$nquery > 1} {
-    
-    if {[catch {
-	db_string test_query "select to_tsquery('default',:q)"
-    } errmsg]} {
-	set result_html "
+set error_message "
 	<H2>[lang::message::lookup "" intranet-search-pg.Bad_Query "Bad Query"]</h2>
 	[lang::message::lookup "" intranet-search-pg.Bad_Query_Msg "
         The &\#93;po&\#91; search engine is capable of processing complex queries 
@@ -178,7 +180,16 @@ if {$nquery > 1} {
 	      <br>&nbsp;
 
 	</ul>
-        "]"
+"]"
+
+
+
+if {$nquery > 1} {
+    
+    if {[catch {
+	db_string test_query "select to_tsquery('default',:q)"
+    } errmsg]} {
+	set result_html $error_message
 	ad_return_template
 	return
     }
