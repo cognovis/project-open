@@ -31,7 +31,7 @@ if {0 == $user_id} {
 
 # get the current users permissions for this project
 im_project_permissions $user_id $project_id view read write admin
-if {!$read} { 
+if {!$read || ![im_permission $user_id "view_gantt_proj_detail"]} { 
     ad_return_complaint 1 "You don't have permissions to see this page" 
     ad_script_abort
 }
