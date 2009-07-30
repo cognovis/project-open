@@ -15,8 +15,16 @@ where
 
 -- Granting Senior Managers read permissions on the calendar package by
 -- default. 
+--
+-- macordovam at: https://sourceforge.net/forum/message.php?msg_id=7532369
+-- added "limit 1" clause in case there are multiple calendars.
+-- This permission granting is optional and rarely there are more then
+-- one, so this quick fix should be OK...
+
+Ignore multiple ocur
+
 SELECT acs_permission__grant_permission(
-	(select package_id from apm_packages where package_key = 'calendar'),
+	(select package_id from apm_packages where package_key = 'calendar' limit 1),
 	(select group_id from groups where group_name = 'Senior Managers'),
 	'read'
 );
