@@ -47,7 +47,11 @@ ad_proc -public xmlrpc-rest::dispatchRest {} {
 ad_proc -public xmlrpc-rest::render_json { object_list search_string } {
     @returns a json structure
 } {
+    # 
+
     set output "\{\"ResultSet\":\n\{\n\"Result\": \[\n"
+#     set output "\[\n"
+
     foreach sub_list $object_list {
 	if { [llength $sub_list] } {
 	    if { 0 != [llength [lindex $sub_list 0]] } { 
@@ -55,7 +59,11 @@ ad_proc -public xmlrpc-rest::render_json { object_list search_string } {
 			if { [string first  [string tolower $search_string] [string tolower [lindex $sub_list 0]]] != -1 } {
 			    append output "\{\"Object\":\"" 
 			    append output [string map {&nbsp; ""}  [lindex $sub_list 0] ] 
-			    append output "\"\}," 
+			    append output "\"" 
+			    append output ",\"ObjectId\":"
+			    append output [string map {&nbsp; ""}  [lindex $sub_list 1] ]
+#			    append output [lindex $sub_list 1]
+			    append output "\},"
 			}
 		} else {
 		    append output "\{\"Object\":\"" 
@@ -68,42 +76,46 @@ ad_proc -public xmlrpc-rest::render_json { object_list search_string } {
 
     set output "[string range $output 0 [expr [string length $output]-2]]"
     append output "\]\}\n\}"
+#    append output "\n\]"
 }
 
 ad_proc -public xmlrpc-rest::handle_rest_project {method path url_query user_id} {
-    @return the URL that is listening for RPC requests
+    @return project list / task list
 } {
 
     set query_list [split $url_query &]
 
-    # find searchstrin and object type
-      foreach sub_list $query_list {
-    	set query_item [split $sub_list = ]
+
+    # find searchstring, object type, project_id
+    foreach sub_list $query_list {
+	set query_item [split $sub_list = ]
 	if {"search_string" == [lindex $query_item 0] } {
-	    set search_string [lindex $query_item 1]
+	     set search_string [lindex $query_item 1]
 	}
+	# project or task?
 	if {"object_type" == [lindex $query_item 0] } {
 	    set object_type [lindex $query_item 1]
 	}  
-	  if {"project_id" == [lindex $query_item 0] } {
-	      set project_id [lindex $query_item 1]
-	  }
-	  if {"last_id" == [lindex $query_item 0] } {
-	      set last_id [lindex $query_item 1]
-	  }
-      }
+	if {"project_id" == [lindex $query_item 0] } {
+	    set project_id [lindex $query_item 1]
+	}
+	# last id used in <li> element
+	if {"last_id" == [lindex $query_item 0] } {
+	    set last_id [lindex $query_item 1]
+	}
+     }
 
-    set project_id 27971
+    # set project_id 27971
 
     # Getting list of objects
 
     switch $object_type {
         project { 
-		set object_list [im_project_list -exclude_subprojects_p 0 -exclude_status_id [im_project_status_closed] -project_id 0]
-		set output [xmlrpc-rest::render_json $object_list $search_string] 
+	    set object_list [im_project_list -exclude_subprojects_p 0 -exclude_status_id [im_project_status_closed] -project_id 0]
+	    set output [xmlrpc-rest::render_json $object_list $search_string] 
 	}
         task { 
-		set output [gtd-dashboard::render_output [im_gtd_task_list -restrict_to_project_id $project_id] task_table $last_id] 
+	    set output [gtd-dashboard::render_output [im_gtd_task_list -restrict_to_project_id $project_id] task_table $last_id] 
 	}
 	default {set output "Object Type not found"}	
     }
