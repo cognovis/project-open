@@ -24,10 +24,12 @@ namespace eval xmlrpc-rest {}
 ad_register_proc GET /intranet-xmlrpc/rest/* xmlrpc-rest::dispatchRest
 ad_register_proc POST /intranet-xmlrpc/rest/* xmlrpc-rest::dispatchRest
 
+
 ad_proc -public xmlrpc-rest::dispatchRest {} {
     @return dispatches REST requests
     @author Klaus Hofeditz
 } {
+
 
     set user_id [ad_maybe_redirect_for_registration]
 
@@ -35,14 +37,34 @@ ad_proc -public xmlrpc-rest::dispatchRest {} {
     set path [lrange $urlpieces 2 [llength $urlpieces]]
     set url_query [ns_conn query]
 
+    set header_vars [ns_conn form]
+    set var_list [ad_ns_set_keys $header_vars]
+
     switch [lindex $urlpieces 2] {
 	companies { return [xmlrpc-rest::handle_rest_company [ns_conn method] $path $url_query $user_id ]  }
 	timesheet { return [xmlrpc-rest::handle_rest_timesheet [ns_conn method] $path $url_query $user_id ] }
  	projects { doc_return 200 "text/plain" [xmlrpc-rest::handle_rest_project [ns_conn method] $path $url_query $user_id] }
+	action_items { doc_return 200 "text/plain" [xmlrpc-rest::handle_action_items [ns_conn method] $path $url_query $user_id] }
 	default { ad_return_complaint 1 "ressource not available"}
     }
 
 }
+
+ad_proc -public xmlrpc-rest::handle_action_items {method path url_query user_id} {
+    @return project list / task list
+} {
+
+    set header_vars [ns_conn form]
+    set var_list [ad_ns_set_keys $header_vars]
+    ad_ns_set_to_tcl_vars $header_vars
+
+    if { "" != $item_list } {
+	return [gtd-dashboard::write_gtd_list $item_list $user_id]	
+    } else {
+	return "error: not items found"
+    }
+}
+
 
 ad_proc -public xmlrpc-rest::render_json { object_list search_string } {
     @returns a json structure
@@ -103,6 +125,11 @@ ad_proc -public xmlrpc-rest::handle_rest_project {method path url_query user_id}
 	if {"last_id" == [lindex $query_item 0] } {
 	    set last_id [lindex $query_item 1]
 	}
+	# location
+	if {"location" == [lindex $query_item 0] } {
+	    set location [lindex $query_item 1]
+	}
+
      }
 
     # set project_id 27971
@@ -115,7 +142,7 @@ ad_proc -public xmlrpc-rest::handle_rest_project {method path url_query user_id}
 	    set output [xmlrpc-rest::render_json $object_list $search_string] 
 	}
         task { 
-	    set output [gtd-dashboard::render_output [im_gtd_task_list -restrict_to_project_id $project_id] task_table $last_id] 
+	    set output [gtd-dashboard::render_output [im_gtd_task_list -restrict_to_project_id $project_id] task_table $last_id ts $location] 
 	}
 	default {set output "Object Type not found"}	
     }
