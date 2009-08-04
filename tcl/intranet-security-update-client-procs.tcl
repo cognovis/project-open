@@ -15,6 +15,158 @@ ad_library {
 }
 
 
+ad_proc im_security_update_package_look_up_table { } {
+    Returns a look up table (LUT) mapping ]po[ package names
+    into a two-letter abbreviation.
+    Used to "compress" package names, because the securty-update 
+    client can only deal with 2048 characters in the URL.
+} {
+
+    # Define a Look-Up-Table for package names.
+    set lut_list {
+	acs-admin			aa
+	acs-api-browser			ab
+	acs-authentication		ac
+	acs-automated-testing		ad
+	acs-bootstrap-installer		ae
+	acs-content-repository		af
+	acs-core-docs			ag
+	acs-datetime			ah
+	acs-developer-support		ai
+	acs-events			aj
+	acs-kernel			ak
+	acs-lang			al
+	acs-mail			am
+	acs-mail-lite			an
+	acs-messaging			ao
+	acs-reference			ap
+	acs-service-contract		aq
+	acs-subsite			ar
+	acs-tcl				as
+	acs-templating			at
+	acs-translations		au
+	acs-workflow			av
+	ajaxhelper			ba
+	ams				bb
+	auth-ldap			bc
+	auth-ldap-adldapsearch		bd
+	batch-importer			be
+	bug-tracker			bf
+	bulk-mail			bg
+	calendar			bh
+	categories			bi
+	chat				bj
+	cms				bk
+	contacts			bl
+	diagram				bm
+	ecommerce			bn
+	events				bo
+	faq				bq
+	general-comments		br
+	intranet-amberjack		ca
+	intranet-audit			cb
+	intranet-big-brother		cc
+	intranet-bug-tracker		cd
+	intranet-calendar		ce
+	intranet-calendar-holidays	cf
+	intranet-confdb			cg
+	intranet-contacts		ch
+	intranet-core			ci
+	intranet-cost			cj
+	intranet-cost-center		ck
+	intranet-crm-tracking		cl
+	intranet-cust-baselkb		cm
+	intranet-cust-cambridge		cn
+	intranet-cust-issa		co
+	intranet-cust-lexcelera		cp
+	intranet-cust-projop		cq
+	intranet-cust-reinisch		cr
+	intranet-cvs-integration	cs
+	intranet-dw-light		ct
+	intranet-dynfield		cu
+	intranet-exchange-rate		cv
+	intranet-expenses		cw
+	intranet-expenses-workflow	cx
+	intranet-filestorage		cy
+	intranet-forum			cz
+	intranet-freelance		da
+	intranet-freelance-invoices	db
+	intranet-freelance-rfqs		dc
+	intranet-freelance-translation	dd
+	intranet-ganttproject		de
+	intranet-helpdesk		df
+	intranet-hr			dg
+	intranet-invoices		dh
+	intranet-invoices-templates	di
+	intranet-mail-import		dj
+	intranet-material		dk
+	intranet-milestone		dl
+	intranet-nagios			dm
+	intranet-notes			dn
+	intranet-notes-tutorial		do
+	intranet-ophelia		dp
+	intranet-otp			dq
+	intranet-payments		dr
+	intranet-pdf-htmldoc		ds
+	intranet-release-mgmt		dt
+	intranet-reporting		du
+	intranet-reporting-cubes	dv
+	intranet-reporting-dashboard	dw
+	intranet-reporting-finance	dx
+	intranet-reporting-indicators	dy
+	intranet-reporting-translation	dz
+	intranet-reporting-tutorial	ea
+	intranet-riskmanagement		eb
+	intranet-search-pg		ec
+	intranet-search-pg-files	ed
+	intranet-security-update-client	ee
+	intranet-security-update-server	ef
+	intranet-simple-survey		eg
+	intranet-soap-lite-server	eh
+	intranet-spam			ei
+	intranet-sql-selectors		ej
+	intranet-sysconfig		ek
+	intranet-timesheet2		el
+	intranet-timesheet2-invoices	em
+	intranet-timesheet2-task-popup	en
+	intranet-timesheet2-tasks	eo
+	intranet-timesheet2-workflow	ep
+	intranet-tinytm			eq
+	intranet-trans-invoices		er
+	intranet-translation		es
+	intranet-trans-project-wizard	et
+	intranet-trans-quality		eu
+	intranet-ubl			ev
+	intranet-update-client		ew
+	intranet-update-server		ex
+	intranet-wiki			ey
+	intranet-workflow		ez
+	intranet-xmlrpc			fa
+	lars-blogger			xa
+	mail-tracking			xb
+	notifications			xc
+	organizations			xd
+	oryx-ts-extensions		xe
+	postal-address			xf
+	ref-countries			xg
+	ref-language			xh
+	ref-timezones			xi
+	ref-us-counties			xj
+	ref-us-states			xk
+	ref-us-zipcodes			xl
+	rss-support			xm
+	search				xn
+	simple-survey			xo
+	telecom-number			xp
+	trackback			xq
+	wiki				xr
+	workflow			xs
+	xml-rpc				xt
+    }
+    return $lut_list
+}
+
+
 ad_proc im_security_update_client_component { } {
     Shows a a component mainly consisting of an IFRAME.
     Passes on the version numbers of all installed packages
@@ -37,8 +189,10 @@ ad_proc im_security_update_client_component { } {
     # Add the list of package versions to the URL in order to get 
     # the right messages
 
-    set sec_url "$sec_url_base?"
+    # Define a look up table LUT mapping package names into abbreviations.
+    array set lut_hash [im_security_update_package_look_up_table]
 
+    # Go through the list of all packages and add to the URL
     set package_sql "
 	select	v.package_key,
 	        v.version_name
@@ -51,9 +205,17 @@ ad_proc im_security_update_client_component { } {
 	where	m.version_id = v.version_id
     "
 
+    set sec_url "$sec_url_base?"
     db_foreach package_versions $package_sql {
 
-	regsub -all {\.} $version_name "" version_name
+	# copress package name if available in LUT
+	if {[info exists lut_hash($package_key)]} { set package_key $lut_hash($package_key) }
+
+	# Check if the version number has the format like: "3.4.0.7.0"
+	# In this case we can savely remove the dots between the digits.
+	if {[regexp {^[0-9]\.[0-9]\.[0-9]\.[0-9]\.[0-9]$} $version_name match]} {
+	    regsub -all {\.} $version_name "" version_name
+   	}
 
 	# shorten the "intranet-" and "acs-" prefix from packages to save space
 	if {[regexp {^intranet\-(.*)} $package_key match key]} { set package_key "i-$key"}
@@ -73,9 +235,10 @@ ad_proc im_security_update_client_component { } {
 	set postgres_version "undefined"
 	catch {set postgres_version [exec psql --version]} errmsg
 	if {[regexp {([0-9]+\.[0-9]+\.[0-9]+)} $postgres_version match v]} { set postgres_version $v}
-	append sec_url "pg_version=[string trim $postgres_version]"
+	append sec_url "pg_version=[string trim $postgres_version]&"
     }
 
+    append sec_url "sid=[im_system_id]"
 
     set security_update_l10n [lang::message::lookup "" intranet-security-update-client.Security_Updates "Security Updates"]
     set no_iframes_l10n [lang::message::lookup "" intranet-security-update-client.Your_browser_cant_display_iframes "Your browser can't display IFrames. Please click for here for <a href=\"$sec_url_base\">security update messages</a>."]
@@ -92,6 +255,8 @@ set ttt {
 	<pre>$sec_url</pre>
 	<pre>[string length $sec_url]</pre>
 }
+
+ad_return_complaint 1 $sec_url
 
     set sec_html "
 <iframe src=\"$sec_url\" width=\"90%\" height=\"100\" name=\"$security_update_l10n\">
