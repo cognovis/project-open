@@ -251,27 +251,34 @@ ad_proc im_security_update_client_component { } {
 	set verbose_selected "checked"
     }
 
-set ttt {
-	<pre>$sec_url</pre>
+    set ttt {
+    <pre>$sec_url</pre>
 	<pre>[string length $sec_url]</pre>
-}
+    }
 
-ad_return_complaint 1 $sec_url
+
+    # Check for upgrades to run
+    set upgrade_message "<b>You are running core version: [im_core_version] </b><br><br>"
+    append upgrade_message [im_check_for_update_scripts]
+
 
     set sec_html "
-<iframe src=\"$sec_url\" width=\"90%\" height=\"100\" name=\"$security_update_l10n\">
-  <p>$no_iframes_l10n</p>
-</iframe>
 
-<form action=\"$action_url\" method=POST>
-    <input type=\"radio\" name=\"verbosity\" value=\"1\" $verbose_selected>Detailed
-    [im_gif help "Choose this option for detailed security information. With this option the security update service transmits information about your configuration that might help us to assess your &#93project-open&#91; system configuration including package versions and operating system version information. It also includes your email address so that we can alert your in special situations."]
-    <input type=\"radio\" name=\"verbosity\" value=\"0\" $anonymous_selected>Anonymous
-    [im_gif help "Choose this option if you prefer not to reveal any information to &#93project-open&#91; that might identify you or your organization."]
-    <input type=\"hidden\" name=\"return_url\" value=\"$return_url\">
-    <input type=\"submit\" name=\"submit\" value=\"OK\">
-</form>
-"
+	$upgrade_message
+
+	<iframe src=\"$sec_url\" width=\"90%\" height=\"200\" name=\"$security_update_l10n\">
+	  <p>$no_iframes_l10n</p>
+	</iframe>
+	
+	<form action=\"$action_url\" method=POST>
+	    <input type=\"radio\" name=\"verbosity\" value=\"1\" $verbose_selected>Detailed
+	    [im_gif help "Choose this option for detailed security information. With this option the security update service transmits information about your configuration that might help us to assess your &#93project-open&#91; system configuration including package versions and operating system version information. It also includes your email address so that we can alert your in special situations."]
+	    <input type=\"radio\" name=\"verbosity\" value=\"0\" $anonymous_selected>Anonymous
+	    [im_gif help "Choose this option if you prefer not to reveal any information to &#93project-open&#91; that might identify you or your organization."]
+	    <input type=\"hidden\" name=\"return_url\" value=\"$return_url\">
+	    <input type=\"submit\" name=\"submit\" value=\"OK\">
+	</form>
+    "
 
     return $sec_html
 }
