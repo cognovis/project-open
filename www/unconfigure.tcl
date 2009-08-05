@@ -73,6 +73,19 @@ ns_write "done<br><pre>$err</pre>\n"
 
 
 # ---------------------------------------------------------------
+# Set the "verbosity" of the Update Component to "-1",
+# indicating that the user needs to confirm sending server data.
+# ---------------------------------------------------------------
+
+set package_key "intranet-security-update-client"
+set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
+parameter::set_value \
+        -package_id $package_id \
+        -parameter "SecurityUpdateVerboseP" \
+        -value -1
+
+
+# ---------------------------------------------------------------
 # Finish off page
 # ---------------------------------------------------------------
 
