@@ -14,9 +14,11 @@ ad_library {
 # Constants
 # ----------------------------------------------------------------------
 
+# Conf Item Status
 ad_proc -public im_conf_item_status_active {} { return 11700 }
 ad_proc -public im_conf_item_status_deleted {} { return 11702 }
 
+# Top-Level Conf Item Types
 ad_proc -public im_conf_item_type_hardware {} { return 11800 }
 ad_proc -public im_conf_item_type_software {} { return 11802 }
 ad_proc -public im_conf_item_type_process {} { return 11804 }
@@ -24,8 +26,15 @@ ad_proc -public im_conf_item_type_license {} { return 11806 }
 ad_proc -public im_conf_item_type_specs {} { return 11808 }
 ad_proc -public im_conf_item_type_service {} { return 11810 }
 
-
+# Types of Software
 ad_proc -public im_conf_item_type_po_package {} { return 12008 }
+
+# Types of Processes
+ad_proc -public im_conf_item_type_po_process {} { return 12300 }
+ad_proc -public im_conf_item_type_postgresql_process {} { return 12302 }
+ad_proc -public im_conf_item_type_postfix_process {} { return 12304 }
+ad_proc -public im_conf_item_type_pound_process {} { return 12306 }
+
 
 
 # ----------------------------------------------------------------------
