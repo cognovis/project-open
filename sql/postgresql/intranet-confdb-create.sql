@@ -325,19 +325,20 @@ end;' language 'plpgsql';
 
 -- 11700-11799	Intranet Conf Item Status
 -- 11800-11999	Intranet Conf Item Type
+-- 12000-12999  Intranet ConfDB
 
 
 -- ---------------------------------------------------------
 -- Conf Item Status
 
 
+-- 11700-11799	Intranet Conf Item Status
 SELECT im_category_new(11700, 'Active', 'Intranet Conf Item Status');
 SELECT im_category_new(11702, 'Preactive', 'Intranet Conf Item Status');
 SELECT im_category_new(11716, 'Archived', 'Intranet Conf Item Status');
 SELECT im_category_new(11718, 'Zombie', 'Intranet Conf Item Status');
 SELECT im_category_new(11720, 'Inactive', 'Intranet Conf Item Status');
-
-
+-- reserved to 11799
 
 
 create or replace view im_conf_item_status as
@@ -397,7 +398,6 @@ SELECT im_category_new(11926, 'Computer Slot', 'Intranet Conf Item Type');
 SELECT im_category_new(11928, 'Computer Sound Device', 'Intranet Conf Item Type'); 
 SELECT im_category_new(11930, 'Computer Storage Device', 'Intranet Conf Item Type'); 
 SELECT im_category_new(11932, 'Computer Video Device', 'Intranet Conf Item Type'); 
-
 SELECT im_category_hierarchy_new('Hardware Component','Hardware','Intranet Conf Item Type');
 SELECT im_category_hierarchy_new('Computer Bios','Hardware Component','Intranet Conf Item Type');
 SELECT im_category_hierarchy_new('Computer Controller','Hardware Component','Intranet Conf Item Type');
@@ -415,8 +415,22 @@ SELECT im_category_hierarchy_new('Computer Slot','Hardware Component','Intranet 
 SELECT im_category_hierarchy_new('Computer Sound Device','Hardware Component','Intranet Conf Item Type');
 SELECT im_category_hierarchy_new('Computer Storage Device','Hardware Component','Intranet Conf Item Type');
 SELECT im_category_hierarchy_new('Computer Video Device','Hardware Component','Intranet Conf Item Type');
+-- reserved to 11979
+
+
+-- Host stuff
+SELECT im_category_new(11980, 'Host Table', 'Intranet Conf Item Type');
+SELECT im_category_new(11982, 'Host Program', 'Intranet Conf Item Type');
+SELECT im_category_new(11984, 'Host Screen', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Host Table','Software','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Host Program','Software','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Host Screen','Software','Intranet Conf Item Type');
 -- reserved to 11999
 
+
+
+----------------------------------------------------
+-- 12000-12999  Intranet ConfDB (1000)
 
 -- Software
 SELECT im_category_new(12000, 'Software Component', 'Intranet Conf Item Type'); 
@@ -424,15 +438,13 @@ SELECT im_category_new(12002, 'Computer Software Package', 'Intranet Conf Item T
 SELECT im_category_new(12004, 'Computer Driver', 'Intranet Conf Item Type'); 
 SELECT im_category_new(12006, 'Software Application', 'Intranet Conf Item Type'); 
 SELECT im_category_new(12008, 'Project Open Package', 'Intranet Conf Item Type'); 
-
-
 SELECT im_category_hierarchy_new('Software Component','Software','Intranet Conf Item Type');
 SELECT im_category_hierarchy_new('Computer Software Package','Software Component','Intranet Conf Item Type');
 SELECT im_category_hierarchy_new('Computer Driver','Software Component','Intranet Conf Item Type');
 SELECT im_category_hierarchy_new('Software Application','Software','Intranet Conf Item Type');
 SELECT im_category_hierarchy_new('Project Open Package','Software','Intranet Conf Item Type');
-
 -- reserved to 12099
+
 
 -- Network Hardware
 SELECT im_category_new(12100, 'Network Router', 'Intranet Conf Item Type'); 
@@ -445,15 +457,20 @@ SELECT im_category_hierarchy_new('Network Switch','Hardware','Intranet Conf Item
 SELECT im_category_new(12200, 'Netmap', 'Intranet Conf Item Type'); 
 SELECT im_category_new(12202, 'Subnet', 'Intranet Conf Item Type'); 
 SELECT im_category_new(12204, 'Network', 'Intranet Conf Item Type'); 
+-- reserved to 12299
 
+-- Types of Processes
+SELECT im_category_new(12300, 'Project Open Server', 'Intranet Conf Item Type'); 
+SELECT im_category_new(12302, 'PostgreSQL Process', 'Intranet Conf Item Type'); 
+SELECT im_category_new(12304, 'Postfix Process', 'Intranet Conf Item Type'); 
+SELECT im_category_new(12306, 'Pound Process', 'Intranet Conf Item Type'); 
+SELECT im_category_hierarchy_new('Project Open Server','Process','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('PostgreSQL Process','Process','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Postfix Process','Process','Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Pound Process','Process','Intranet Conf Item Type');
 
--- Host stuff
-SELECT im_category_new(11980, 'Host Table', 'Intranet Conf Item Type');
-SELECT im_category_new(11982, 'Host Program', 'Intranet Conf Item Type');
-SELECT im_category_new(11984, 'Host Screen', 'Intranet Conf Item Type');
-SELECT im_category_hierarchy_new('Host Table','Software','Intranet Conf Item Type');
-SELECT im_category_hierarchy_new('Host Program','Software','Intranet Conf Item Type');
-SELECT im_category_hierarchy_new('Host Screen','Software','Intranet Conf Item Type');
+-- reserved to 12399
+
 
 
 
