@@ -1473,7 +1473,45 @@ ad_proc im_costs_project_finance_component {
     </ul>
 
 } {
-    if {![im_permission $user_id view_costs]} {	return "" }
+
+
+    # if {![im_permission $user_id view_costs]} {	return "" }
+
+	# pre-filtering 
+	# permissions - beauty of code follows transparency and readability
+
+	set view_docs_1_p 0
+	set view_docs_2_p 0
+	set view_docs_3_p 0
+	set can_read_summary_p 0
+
+	set limit_to_freelancers ""
+	set limit_to_customers ""
+
+	# user is freelancer and can see purchase orders
+	if { [im_profile::member_p -profile_id [im_freelance_group_id] -user_id $user_id] && [im_permission $user_id fi_read_pos]  } {
+		set view_docs_1_p 1
+	}
+
+	# user is client with privileges "Fi read quotes" AND  "Fi read invoices" 
+	if { [im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id] && ( [im_permission $user_id fi_read_invoices] || [im_permission $user_id fi_read_quotes] ) } {
+		set view_docs_2_p 1
+ 	}
+	# user is employee and has has privilege  "view cost" 
+	if { [im_user_is_employee_p $user_id] && [im_permission $user_id view_costs] } {
+		set view_docs_3_p 1
+		set can_read_summary_p 1
+	}
+
+	if { !( $view_docs_1_p || $view_docs_2_p || $view_docs_3_p ) } {
+		return "You have no permission to see this page"
+	} 
+
+
+	# show admin links only if at least one write permission
+
+
+
     if {$show_details_p} { set show_admin_links_p 1 }
 
     set bgcolor(0) " class=roweven "
@@ -1526,6 +1564,16 @@ ad_proc im_costs_project_finance_component {
 				)
     "
 
+
+	# If user = freelancer limit docs to PO
+	if { [im_profile::member_p -profile_id [im_freelance_group_id] -user_id $user_id] } {
+	    set limit_to_freelancers "and ci.cost_type_id = [im_cost_type_po] "
+	}
+	# If user = customer limit docs to Quotes & Invoices
+	if { [im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id] } {
+	    set limit_to_customers "and ci.cost_type_id in ( [im_cost_type_quote],[im_cost_type_invoice] ) "
+	}
+
     set costs_sql "
 	select
 		ci.*,
@@ -1560,6 +1608,8 @@ ad_proc im_costs_project_finance_component {
 	                [im_cost_type_repeating],
 	                [im_cost_type_expense_item]
 	        )
+		$limit_to_freelancers
+		$limit_to_customers
 	order by
 		ci.cost_type_id,
 		ci.effective_date desc
@@ -1588,7 +1638,6 @@ ad_proc im_costs_project_finance_component {
 	  <tbody>
 	  <tr class='rowwhite'><td colspan='99'>&nbsp;</td></tr>
    "
-    set can_read_summary_p 1
 
     set ctr 1
     set atleast_one_unreadable_p 0
@@ -1838,39 +1887,42 @@ ad_proc im_costs_project_finance_component {
     set admin_html ""
     if {$show_admin_links_p && [im_table_exists im_invoices]} {
 
-	set admin_html "
-	<h1>[_ intranet-core.Admin_Links]</h1>
-	<table>
-	<!--<tr>
-	  <td class=rowtitle>
-	    [_ intranet-core.Admin_Links]
-	  </td>
-	</tr>-->
-	<tr class=rowplain>
-	  <td>\n"
 
-	    # Customer invoices: customer = Project Customer, provider = Internal
-	    set customer_id [util_memoize [list db_string project_customer "select company_id from im_projects where project_id = $org_project_id" -default ""]]
-	    set provider_id [im_company_internal]
-	    set bind_vars [list project_id $project_id customer_id $customer_id provider_id $provider_id]
-	    append admin_html "<h2>"
-	    append admin_html [lang::message::lookup "" intranet-cost.Customer_Links "Customer Actions"]
-	    append admin_html "</h2>"	
-      	    append admin_html [im_menu_ul_list -package_key intranet-invoices "invoices_customers" $bind_vars]
+	# Customer invoices: customer = Project Customer, provider = Internal
+	set customer_id [util_memoize [list db_string project_customer "select company_id from im_projects where project_id = $org_project_id" -default ""]]
+	set provider_id [im_company_internal]
+	set bind_vars [list project_id $project_id customer_id $customer_id provider_id $provider_id]
+	set html_customer_links [im_menu_ul_list -package_key intranet-invoices "invoices_customers" $bind_vars]
 
-	    # Provider invoices: customer = Internal, no provider yet defined
-	    set customer_id [im_company_internal]
-	    set bind_vars [list customer_id $customer_id project_id $project_id]
-	    append admin_html "<br><h2>"			
-	    append admin_html [lang::message::lookup "" intranet-cost.Provider_Links "Provider Actions"]
-	    append admin_html "</h2>"	
-	    append admin_html [im_menu_ul_list -package_key intranet-invoices "invoices_providers" $bind_vars]
+	# Provider invoices: customer = Internal, no provider yet defined
+	set customer_id [im_company_internal]
+	set bind_vars [list customer_id $customer_id project_id $project_id]	
+	set html_provider_links [im_menu_ul_list -package_key intranet-invoices "invoices_providers" $bind_vars]
 
+	if { ![empty_string_p $html_customer_links] || ![empty_string_p $html_provider_links] } {
+		set admin_html "
+		<h1>[_ intranet-core.Admin_Links]</h1>
+		<table>
+		<tr class=rowplain>
+		<td>\n"
+		if { ![empty_string_p $html_customer_links] } {
+			append admin_html "<h2>"
+		    	append admin_html [lang::message::lookup "" intranet-cost.Customer_Links "Customer Actions"]
+		    	append admin_html "</h2>"	
+	      	    	append admin_html $html_customer_links
+		}
+                if { ![empty_string_p $html_provider_links] } {
+			append admin_html "<br><h2>"			
+			append admin_html [lang::message::lookup "" intranet-cost.Provider_Links "Provider Actions"]
+			append admin_html "</h2>"	
+			append admin_html $html_provider_links
+		}
 	    append admin_html "	
 	  </td>
 	</tr>
 	</table>
 	"
+	}
     }
 
     # ----------------- Assemble the "Summary" component ---------------------------
@@ -1908,6 +1960,11 @@ ad_proc im_costs_project_finance_component {
         "
 
     }
+
+
+    	
+
+
 
     if {!$show_summary_p} { set summary_html "" }
     if {!$can_read_summary_p} { set summary_html "" }
