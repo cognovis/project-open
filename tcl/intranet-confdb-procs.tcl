@@ -26,6 +26,15 @@ ad_proc -public im_conf_item_type_license {} { return 11806 }
 ad_proc -public im_conf_item_type_specs {} { return 11808 }
 ad_proc -public im_conf_item_type_service {} { return 11810 }
 
+# Hardware
+ad_proc -public im_conf_item_type_pc {} { return 11850 }
+ad_proc -public im_conf_item_type_workstation {} { return 11852 }
+ad_proc -public im_conf_item_type_laptop {} { return 11854 }
+ad_proc -public im_conf_item_type_server {} { return 11856 }
+ad_proc -public im_conf_item_type_host {} { return 11858 }
+ad_proc -public im_conf_item_type_mainframe {} { return 11860 }
+ad_proc -public im_conf_item_type_network_device {} { return 11862 }
+
 # Types of Software
 ad_proc -public im_conf_item_type_po_package {} { return 12008 }
 
