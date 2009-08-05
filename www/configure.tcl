@@ -425,19 +425,9 @@ set search_pg_installed_p [db_string search_pg "
 if {!$search_pg_installed_p} {
 
     ns_write "<br>&nbsp;<h2>Installing Full-Text Search</h2>\n"
- 
 
-    set psql_version "0.0.0"
-    set err_msg ""
-    if {[catch {
-	set psql_string [exec psql --version] 
-	regexp {([0-9]+\.[0-9]+\.[0-9]+)} $psql_string match psql_version
-    } err_msg]} {
-	ns_write "<li>Error getting PostgreSQL version number: <pre>'$err_msg'</pre> \n"
-    } else {
-	ns_write "<li>Found psql version '$psql_version'\n"
-    }
-
+    set psql_version [im_database_version]
+    ns_write "<li>Found psql version '$psql_version'\n"
 
     set pageroot [ns_info pageroot]
     set serverroot [join [lrange [split $pageroot "/"] 0 end-1] "/"]
