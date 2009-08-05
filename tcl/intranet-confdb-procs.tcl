@@ -476,6 +476,20 @@ ad_proc -public im_conf_item_new_project_rel {
 }
 
 
+# ----------------------------------------------------------------------
+# Nuke a Conf Item
+# ---------------------------------------------------------------------
+
+ad_proc -public im_conf_item_nuke {
+    -conf_item_id:required
+} {
+    Permanently deletes the ConfItem from the database.
+    This is only suitable for test purposes. During production operations,
+    please set the ConfItem's status to "deleted".
+} {
+    db_string nuke_ci "select im_conf_item__delete(:conf_item_id)"
+}
+
 
 # ----------------------------------------------------------------------
 # Navigation Bar Tree

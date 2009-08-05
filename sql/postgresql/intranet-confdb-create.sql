@@ -460,7 +460,7 @@ SELECT im_category_new(12204, 'Network', 'Intranet Conf Item Type');
 -- reserved to 12299
 
 -- Types of Processes
-SELECT im_category_new(12300, 'Project Open Server', 'Intranet Conf Item Type'); 
+SELECT im_category_new(12300, 'Project Open Process', 'Intranet Conf Item Type'); 
 SELECT im_category_new(12302, 'PostgreSQL Process', 'Intranet Conf Item Type'); 
 SELECT im_category_new(12304, 'Postfix Process', 'Intranet Conf Item Type'); 
 SELECT im_category_new(12306, 'Pound Process', 'Intranet Conf Item Type'); 
