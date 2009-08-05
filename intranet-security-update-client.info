@@ -23,8 +23,7 @@
         <parameters>
 
 	<parameter datatype="string" min_n_values="1" max_n_values="1"  name="SecurityUpdateServerUrl"  default="http://projop.dnsalias.com:/intranet-security-update-server/index" description="Url to reach a ]project-open[ security update server"/>
-	<parameter datatype="number" min_n_values="1" max_n_values="1"  name="SecurityUpdateVerboseP"  default="1" description="Should verbose information be transmitted to the update server? Choose 0 for anonymity or 1 for more detailed update information."/>
-
+	<parameter datatype="number" min_n_values="1" max_n_values="1"  name="SecurityUpdateVerboseP"  default="1" description="Should verbose information be transmitted to the update server? -1 means the user needs to confirm using the service, 0 means anonymous and 1 means detailed information."/>
         </parameters>
 
     </version>

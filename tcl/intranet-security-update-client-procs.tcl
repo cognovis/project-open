@@ -181,6 +181,12 @@ ad_proc im_security_update_client_component { } {
     set sec_url_base [parameter::get -package_id $package_id -parameter "SecurityUpdateServerUrl" -default "http://projop.dnsalias.com/intranet-security-update-server/index"]
     set sec_verbosity [parameter::get -package_id $package_id -parameter "SecurityUpdateVerboseP" -default "0"]
 
+    # -1 means that the user needs to confirm using the UpdateService
+    if {-1 == $sec_verbosity} {
+	ad_returnredirect "/intranet-security-update-client/user-agreement"
+    }
+
+
     global tcl_platform
     set os_platform [lindex $tcl_platform(os) 0]
     set os_version [lindex $tcl_platform(osVersion) 0]
@@ -226,21 +232,35 @@ ad_proc im_security_update_client_component { } {
 
     if {0 != $sec_verbosity} {
 	append sec_url "email=[string trim [db_string email "select im_email_from_user_id(:current_user_id)"]]&"
-	append sec_url "os_platform=[string trim $os_platform]&"
-	append sec_url "os_version=[string trim $os_version]&"
-	append sec_url "os_machine=[string trim $os_machine]&"
 
-	# extract the PostgreSQL version
-	# psql (PostgreSQL) 8.0.8 \ncontains support for command-line editing
-	set postgres_version "undefined"
-	catch {set postgres_version [exec psql --version]} errmsg
-	if {[regexp {([0-9]+\.[0-9]+\.[0-9]+)} $postgres_version match v]} { set postgres_version $v}
-	append sec_url "pg_version=[string trim $postgres_version]&"
+	set sysname [db_string sysname "select company_name from im_companies where company_path='internal'" -default "Tigerpond"]
+	append sec_url "sysname=[ns_urlencode [string trim $sysname]]&"
+
+	# Get the count of active Employees
+	set emp_count [db_string emp_count "
+		select	count(*)
+		from	cc_users u, 
+			acs_rels r, 
+			membership_rels m, 
+			groups g 
+		where	group_name = 'Employees' and 
+			r.object_id_two = u.user_id and 
+			r.object_id_one = g.group_id and 
+			u.member_state = 'approved' 
+			and r.rel_id = m.rel_id and 
+			m.member_state = 'approved'
+	"]
+	append sec_url "emp=$emp_count&"
     }
 
-    append sec_url "sid=[im_system_id]"
+    append sec_url "os_platform=[string trim $os_platform]&"
+    append sec_url "os_version=[string trim $os_version]&"
+    append sec_url "os_machine=[string trim $os_machine]&"
+    append sec_url "pg_version=[string trim [im_database_version]]&"   
+    append sec_url "sid=[im_system_id]&"
+    append sec_url "hid=[im_hardware_id]"
 
-    set security_update_l10n [lang::message::lookup "" intranet-security-update-client.Security_Updates "Security Updates"]
+    set security_update_l10n [lang::message::lookup "" intranet-security-update-client.Security_Updates "ASUS Security Updates"]
     set no_iframes_l10n [lang::message::lookup "" intranet-security-update-client.Your_browser_cant_display_iframes "Your browser can't display IFrames. Please click for here for <a href=\"$sec_url_base\">security update messages</a>."]
 
     set anonymous_selected ""
@@ -251,25 +271,15 @@ ad_proc im_security_update_client_component { } {
 	set verbose_selected "checked"
     }
 
-    set ttt {
-    <pre>$sec_url</pre>
-	<pre>[string length $sec_url]</pre>
-    }
-
-
     # Check for upgrades to run
     set upgrade_message "<b>You are running core version: [im_core_version] </b><br><br>"
     append upgrade_message [im_check_for_update_scripts]
 
-
     set sec_html "
-
 	$upgrade_message
-
 	<iframe src=\"$sec_url\" width=\"90%\" height=\"200\" name=\"$security_update_l10n\">
 	  <p>$no_iframes_l10n</p>
 	</iframe>
-	
 	<form action=\"$action_url\" method=POST>
 	    <input type=\"radio\" name=\"verbosity\" value=\"1\" $verbose_selected>Detailed
 	    [im_gif help "Choose this option for detailed security information. With this option the security update service transmits information about your configuration that might help us to assess your &#93project-open&#91; system configuration including package versions and operating system version information. It also includes your email address so that we can alert your in special situations."]
