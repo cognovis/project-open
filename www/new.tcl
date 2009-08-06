@@ -221,6 +221,8 @@ set sql "
 		i.tree_sortkey
 "
 
+# ad_return_complaint 1 "<pre>$sql</pre>"
+
 set sub_item_count 0
 db_multirow -extend {conf_item_chk conf_item_url indent return_url processor} conf_item_lines conf_items_lines $sql {
     incr sub_item_count
