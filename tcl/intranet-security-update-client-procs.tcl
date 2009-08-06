@@ -236,21 +236,25 @@ ad_proc im_security_update_client_component { } {
 	set sysname [db_string sysname "select company_name from im_companies where company_path='internal'" -default "Tigerpond"]
 	append sec_url "sysname=[ns_urlencode [string trim $sysname]]&"
 
-	# Get the count of active Employees
-	set emp_count [db_string emp_count "
+    }
+
+    # Get the number of active users for the three most important groups
+    foreach g [list "employees" "customers" "freelancers"] {
+	set count [db_string emp_count "
 		select	count(*)
 		from	cc_users u, 
 			acs_rels r, 
 			membership_rels m, 
 			groups g 
-		where	group_name = 'Employees' and 
+		where	lower(group_name) = :g and 
 			r.object_id_two = u.user_id and 
 			r.object_id_one = g.group_id and 
 			u.member_state = 'approved' 
 			and r.rel_id = m.rel_id and 
 			m.member_state = 'approved'
 	"]
-	append sec_url "emp=$emp_count&"
+	set abbrev [string range $g 0 2]
+	append sec_url "g.$abbrev=$count&"
     }
 
     append sec_url "os_platform=[string trim $os_platform]&"
@@ -272,8 +276,10 @@ ad_proc im_security_update_client_component { } {
     }
 
     # Check for upgrades to run
-    set upgrade_message "<b>You are running core version: [im_core_version] </b><br><br>"
-    append upgrade_message [im_check_for_update_scripts]
+    set upgrade_message "You are running &#93project-open&#91; version: [im_core_version]<br><br>"
+    set script_list [im_check_for_update_scripts]
+    append upgrade_message $script_list
+    if {"" != $script_list} { append upgrade_message "<br>&nbsp;<br>\n" }
 
     set sec_html "
 	$upgrade_message
