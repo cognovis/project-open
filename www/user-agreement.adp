@@ -33,28 +33,31 @@ In order to check your system we need to collect data from
 your installation. 
 This information includes the version of your @po;noquote@ 
 packages, your operating system and your PostgreSQL database.
-Also, we will generate a unique ID for your hardware and
-your @po;noquote@ installation.<br>
+Also, we will generate an anonymous unique ID for your hardware 
+and your @po;noquote@ installation and transmit the number of
+users in your system in order to maintain statistics about
+the product.
 Collecting your email address will allow us to alert you 
-in case of critical threads.
+in case of critical security threads.
 </p>
 
 
 <br>
 <h2>Limitation of Data Collection</h2>
 <p>
-You can also choose to limit the data collected to system 
-information. In this case please click select 'Limited ASUS' 
-below.
+You can also choose to limit the collected data to anonymous
+system information only. In this case please select 
+'Limit ASUS to anonymous data' below.
 </p>
 
 
 
 <br>
-<h2>Disabling ASUS</h2>
+<h2>Disable ASUS</h2>
 <p>
 You can also decide to disable ASUS completely. In order to do
-so please select Admin -&gt; Portlet Components -&gt; Security Update Client Component
+so please go now to Admin (at the left navigation bar) -&gt; 
+Portlet Components, click on "Security Update Client Component",
 and set the component to "Not Enabled".
 </p>
 
@@ -76,10 +79,10 @@ of the service or the product.
 <br>
 
 <form action=update-preferences>
-<input type=radio name=verbosity value=1 checked>Enable the Automatic Security Update Service (ASUS)<br>
+<input type=radio name=verbosity value=1 checked>Enable full Automatic Security Update Service (ASUS)<br>
 <input type=radio name=verbosity value=0>Limit ASUS to anonymous data<br>
 <br>
-<input type=submit value="Submit">
+<input type=submit value="Enable ASUS">
 </form>
 
 </td>
