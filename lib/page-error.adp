@@ -17,6 +17,7 @@
 <% set publisher_name [ad_parameter -package_id [ad_acs_kernel_id] PublisherName "" ""] %>
 <% set package_versions [db_list package_versions "select v.package_key||':'||v.version_name from (select max(version_id) as version_id, package_key from apm_package_versions group by package_key) m, apm_package_versions v where m.version_id = v.version_id"] %>
 <% set system_id [im_system_id] %>
+<% set hardware_id [im_hardware_id] %>
 
 <form action="@report_url;noquote@" method=POST>
 <input type=hidden name=error_url value=@error_url@>
@@ -28,6 +29,7 @@
 <input type=hidden name=package_versions value="@package_versions;noquote@">
 <input type=hidden name=publisher_name value="@publisher_name;noquote@">
 <input type=hidden name=system_id value=@system_id@>
+<input type=hidden name=hardware_id value=@hardware_id@>
 <if @message@ not nil>
   <input type=hidden name=error_message value="@message;noquote@">
 </if>
