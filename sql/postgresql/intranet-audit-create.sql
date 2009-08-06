@@ -17,6 +17,11 @@ create table im_audit (
 	audit_id		integer
 				constraint im_audit_pk
 				primary key,
+	audit_object_id		integer
+				constraint im_audit_object_fk
+				references acs_objects
+				constraint im_audit_object_nn
+				not null,
 	audit_user_id		integer
 				constraint im_audit_user_fk
 				references users
@@ -47,6 +52,8 @@ create table im_audit (
 -- Add a link for every object to the ID of the last audit entry
 alter table acs_objects add column last_audit_id integer references im_audit;
 
+# Create an index for fast access of the changes of an object
+create index im_audit_audit_object_id_idx on im_audit(audit_object_id);
 
 comment on table im_audit is '
  Generic audit table. A new row is created everytime that the value

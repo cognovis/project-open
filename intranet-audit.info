@@ -15,7 +15,8 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Periodically checks for changes of watched objects and allows to display these changes.</description>
 
-        <!-- No dependency information -->
+        <provides url="intranet-audit" version="3.4.0.5.1"/>
+        <requires url="intranet-dynfield" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>
