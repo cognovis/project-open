@@ -238,7 +238,7 @@ begin
   return tree_sortkey from acs_objects where object_id = p_object_id;
 end;' language 'plpgsql' stable strict;
 
-create function acs_objects_insert_tr() returns opaque as '
+create or replace function acs_objects_insert_tr() returns opaque as '
 declare
         v_parent_sk    		varbit default null;
         v_max_child_sortkey	varbit;
