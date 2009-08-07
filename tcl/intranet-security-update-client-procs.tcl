@@ -186,7 +186,6 @@ ad_proc im_security_update_client_component { } {
 	ad_returnredirect "/intranet-security-update-client/user-agreement"
     }
 
-
     global tcl_platform
     set os_platform [lindex $tcl_platform(os) 0]
     set os_version [lindex $tcl_platform(osVersion) 0]
@@ -233,9 +232,13 @@ ad_proc im_security_update_client_component { } {
     if {0 != $sec_verbosity} {
 	append sec_url "email=[string trim [db_string email "select im_email_from_user_id(:current_user_id)"]]&"
 
-	set sysname [db_string sysname "select company_name from im_companies where company_path='internal'" -default "Tigerpond"]
-	append sec_url "sysname=[ns_urlencode [string trim $sysname]]&"
+	set compname [db_string compname "select company_name from im_companies where company_path='internal'" -default "Tigerpond"]
+	append sec_url "compname=[ns_urlencode [string trim $compname]]&"
 
+	# Get the name of the server from the URL pointing to this page.
+	set header_vars [ns_conn headers]
+	set host [ns_set get $header_vars "Host"]
+	append sec_url "host=[ns_urlencode [string trim $host]]&"
     }
 
     # Get the number of active users for the three most important groups
