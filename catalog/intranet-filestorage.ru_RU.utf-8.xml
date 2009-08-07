@@ -1,6 +1,62 @@
-<?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="intranet-filestorage" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
+<?xml version="1.0" encoding="UTF-8"?>
+<message_catalog package_key="intranet-filestorage" package_version="3.4.0.6.0" locale="ru_RU" charset="UTF-8">
 
+  <msg key="Add_Permissions">Добавить разрешения</msg>
+  <msg key="Admin">Администрирование</msg>
+  <msg key="Create_a_new_folder">Создать новую папку</msg>
+  <msg key="Create_Folder">Создать папку</msg>
+  <msg key="create_folder">создать папку</msg>
+  <msg key="Customers">Клиенты</msg>
+  <msg key="Del_Permissions">Удалить разрешения</msg>
+  <msg key="Delete">Удалить</msg>
+  <msg key="Delete_Files">Удалить файлы</msg>
+  <msg key="Delete_Permissions">Удалить разрешения</msg>
+  <msg key="Directories">Папки</msg>
+  <msg key="Employees">Сотрудники</msg>
+  <msg key="Filename">Имя файла</msg>
   <msg key="Filestorage">Хранилище файлов</msg>
+  <msg key="Folder_type_Project">Проект</msg>
+  <msg key="Folder_type_Ticket">Билет</msg>
+  <msg key="Folder_up">На уровень вверх</msg>
+  <msg key="Freelancers">Внештатные сотрудники</msg>
+  <msg key="Full_Member">Полноправный участник</msg>
+  <msg key="Home_Filestorage">Home Filestorage</msg>
+  <msg key="Internal_Error">Внутренняя ошибка</msg>
+  <msg key="Key_Account">Ключевая учетная запись</msg>
+  <msg key="lt_Add_permissions_to_fo">Добавить разрешения для папок</msg>
+  <msg key="lt_Add_the_permissions_a">Добавить указанные выше разрешения для следующих папок:</msg>
+  <msg key="lt_by_marking_the_checkb">установив соответствующие флажки слева.</msg>
+  <msg key="lt_Create_a_new_document">Создать документ</msg>
+  <msg key="lt_Delete_files_and_fold">Удалить файлы и папки</msg>
+  <msg key="lt_Delete_the_permission">Удалить указанные выше разрешения для следующих папок:</msg>
+  <msg key="lt_Did_not_find_the_spec">Указанный файл не найден</msg>
+  <msg key="lt_Directory_is_not_empt">Папка не пуста</msg>
+  <msg key="lt_Download_all_files_as">Загрузить все файлы в виде ZIP-архива</msg>
+  <msg key="lt_If_you_want_to_upload">Если требуется отправить файл в подпапку,</msg>
+  <msg key="lt_Internal_Error____Una">Внутренняя ошибка#_: &lt;#_ Не удается определить путь к файлам компании \#%company_id%</msg>
+  <msg key="lt_No_Directories_Select">Папки не выбраны</msg>
+  <msg key="lt_Please_back_up_and_se">Создайте резервную копию, а затем выберите файлы и папки для удаления</msg>
+  <msg key="lt_Please_backup_select_">Создайте резервную копию, выберите папку и снова нажмите кнопку %im_gif_plus_9%.</msg>
+  <msg key="lt_please_backup_up_and_">создайте резервную копию и выберите подпапку, щелкнув ее имя.</msg>
+  <msg key="lt_Please_enter_the_name">Введите имя новой папки</msg>
+  <msg key="lt_Remove_permissions_fr">Удалить разрешения для папок</msg>
+  <msg key="lt_This_issue_is_most_li">Вероятно, эта проблема вызвана недопустимыми символами в имена файла. Удалите символы с диакритическими знаками и прочие расширенные символы и повторите попытку.</msg>
+  <msg key="lt_Unable_to_compress_th">Не удается сжать папку.</msg>
+  <msg key="lt_Unable_to_get_file_li">Не удается получить список файлов из «%find_path%»</msg>
+  <msg key="lt_Unknown_folder_type_f">Неизвестный тип папки «%folder_type%».</msg>
+  <msg key="lt_Unknown_folder_type_f_1">Неизвестныйти тип папки «%folder_type%».</msg>
+  <msg key="lt_Upload_into_my_folder">Загрузить в «%my_folder%»</msg>
+  <msg key="lt_Use_the_Browse_button">Нажмите кнопку «Обзор», найдите нужный файл и нажмите кнопку «Открыть».</msg>
+  <msg key="lt_You_have_not_selected">Требуется выбрать папку.</msg>
+  <msg key="New_Folder">Создать папку</msg>
   <msg key="No_files_found">Файлы не найдены</msg>
+  <msg key="Nothing_Selected">Требуется выбрать объекты</msg>
+  <msg key="Project_Manager">Руководитель проекта</msg>
+  <msg key="Read">Чтение</msg>
+  <msg key="Senior_Managers">Старшие руководители</msg>
+  <msg key="Submit_and_Upload">Подтвердить и отправить</msg>
+  <msg key="Upload_a_file">Загрузить файл</msg>
+  <msg key="Upload_File">Загрузить файл</msg>
+  <msg key="View">Просмотреть</msg>
+  <msg key="Write">Запись</msg>
 </message_catalog>
