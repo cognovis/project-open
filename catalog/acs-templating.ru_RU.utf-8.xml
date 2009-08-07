@@ -1,5 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="acs-templating" package_version="5.1.5" locale="ru_RU" charset="utf-8">
+<?xml version="1.0" encoding="UTF-8"?>
+<message_catalog package_key="acs-templating" package_version="5.1.5" locale="ru_RU" charset="UTF-8">
 
-  <msg key="required">обязательный параметр</msg>
+  <msg key="12-Hour">12 часов</msg>
+  <msg key="24-Hour">24 часа</msg>
+  <msg key="Day">День</msg>
+  <msg key="Element_is_required">Необходимо указать %label%</msg>
+  <msg key="Element_is_too_long_Plural">Длина %label% на %excess_no_bytes% знаков длиннее максимальной.</msg>
+  <msg key="Element_is_too_long_Singular">Длина %label% на один знак длиннее максимальной.</msg>
+  <msg key="Formats">Форматы</msg>
+  <msg key="Invalid_choice">Недопустимый выбор</msg>
+  <msg key="Invalid_currency">Недопустимая валюта</msg>
+  <msg key="Invalid_decimal_number">Недопустимое число</msg>
+  <msg key="Invalid_email_format">Недопустимый формат эл.почты</msg>
+  <msg key="Invalid_filename">Недопустимое имя файла</msg>
+  <msg key="Invalid_integer">Недопустимое целое число</msg>
+  <msg key="Invalid_keyword">Недопустимое ключевое слово</msg>
+  <msg key="Invalid_natural_number">Недопустимое натуральное число </msg>
+  <msg key="Invalid_url">Недопустимый URL-адрес</msg>
+  <msg key="Meridian">Меридиан</msg>
+  <msg key="Minutes">мин</msg>
+  <msg key="Month">Месяц</msg>
+  <msg key="Next_with_arrow">Далее &gt;&gt;</msg>
+  <msg key="No_row_pretty_plural">Нет %row_pretty_plural%.</msg>
+  <msg key="Previous_with_arrow">&lt;&lt; Назад</msg>
+  <msg key="required">обязательный</msg>
+  <msg key="Seconds">с.</msg>
+  <msg key="Sort_order">Сортировка</msg>
+  <msg key="Spellcheck">Правописание</msg>
+  <msg key="Tag_handler_invalid_number_of_args">Недопустимое количество аргументов для обработчика тегов.</msg>
+  <msg key="Template_parser_error_in_parameter_list">Ошибка в списке параметров</msg>
+  <msg key="Year">Год</msg>
 </message_catalog>
