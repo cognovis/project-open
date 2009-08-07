@@ -4,4 +4,11 @@
 <property name="main_navbar_label">reporting</property>
 <property name="left_navbar">@left_navbar_html;noquote@</property>
 
+
+<table width="100%">
+<tr>
+<td>
 <listtemplate name="report_list"></listtemplate>
+</td>
+</tr>
+</table>

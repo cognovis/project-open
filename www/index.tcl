@@ -103,7 +103,7 @@ list::create \
         	return_url
         }
 
-db_multirow -extend {report_url indent_spaces edit_html} reports get_reports "
+db_multirow -extend {indent_spaces edit_html} reports get_reports "
 	select
 		r.report_id,
 		m.*,
@@ -151,7 +151,7 @@ set left_navbar_html "
                    [lang::message::lookup "" intranet-reporting.Admin_Reports "Admin Reports"]
                 </div>
 		<ul>
-		<li><a href=new>[_ intranet-reporting.New_Report]</a>
+		<li><a href=\"[export_vars -base "/intranet-reporting/new" {{form_mode edit}}]\">[_ intranet-reporting.New_Report]</a>
 		</ul>
         </div>
       <hr/>

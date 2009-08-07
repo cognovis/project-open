@@ -65,7 +65,7 @@ BEGIN
 
 	-- Update the final URL
 	update im_menus set
-		report_url = ''/intranet-reporting/view?report_id='' || v_report_id
+		url = ''/intranet-reporting/view?report_id='' || v_report_id
 	where menu_id = v_menu_id;
 
 	return v_report_id;
