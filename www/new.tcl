@@ -163,15 +163,14 @@ ad_form -extend -name $form_id \
 # ---------------------------------------------------------------
 
 set export_var_list [list]
-set list_id "conf_items_list"
 set bulk_actions_list [list]
-set delete_conf_item_p 0
+set delete_conf_item_p 1
 if {$delete_conf_item_p} {
     lappend bulk_actions_list "[lang::message::lookup "" intranet-confdb.Delete "Delete"]" "conf-item-del" "[lang::message::lookup "" intranet-confdb.Remove_checked_items "Remove Checked Items"]"
 }
 
 template::list::create \
-    -name $list_id \
+    -name sub_conf_items \
     -multirow conf_item_lines \
     -key conf_item_id \
     -has_checkboxes \
