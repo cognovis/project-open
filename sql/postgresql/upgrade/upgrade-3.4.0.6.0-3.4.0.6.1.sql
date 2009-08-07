@@ -21,7 +21,8 @@ where
 -- This permission granting is optional and rarely there are more then
 -- one, so this quick fix should be OK...
 
-Ignore multiple ocur
+-- Ignore multiple calendar instances and just setting permissions for the
+-- first one...
 
 SELECT acs_permission__grant_permission(
 	(select package_id from apm_packages where package_key = 'calendar' limit 1),
