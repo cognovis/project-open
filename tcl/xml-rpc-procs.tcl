@@ -29,26 +29,81 @@ ad_proc -public xmlrpc-rest::dispatchRest {} {
     @return dispatches REST requests
     @author Klaus Hofeditz
 } {
-
-
     set user_id [ad_maybe_redirect_for_registration]
-
     set urlpieces [ns_conn urlv]
     set path [lrange $urlpieces 2 [llength $urlpieces]]
     set url_query [ns_conn query]
-
     set header_vars [ns_conn form]
     set var_list [ad_ns_set_keys $header_vars]
-
     switch [lindex $urlpieces 2] {
 	companies { return [xmlrpc-rest::handle_rest_company [ns_conn method] $path $url_query $user_id ]  }
-	timesheet { return [xmlrpc-rest::handle_rest_timesheet [ns_conn method] $path $url_query $user_id ] }
- 	projects { doc_return 200 "text/plain" [xmlrpc-rest::handle_rest_project [ns_conn method] $path $url_query $user_id] }
+	timesheet { doc_return 200 "text/plain" [xmlrpc-rest::handle_rest_timesheet [ns_conn method] $path $url_query $user_id ] }
+	projects { doc_return 200 "text/plain" [xmlrpc-rest::handle_rest_project [ns_conn method] $path $url_query $user_id] }
 	action_items { doc_return 200 "text/plain" [xmlrpc-rest::handle_action_items [ns_conn method] $path $url_query $user_id] }
 	default { ad_return_complaint 1 "ressource not available"}
     }
 
 }
+
+
+ad_proc -public xmlrpc-rest::handle_rest_timesheet {method path url_query user_id} {
+    handles timesheet actions
+} {
+
+	# doc_return 200 "text/plain" [lindex $path 1]
+	# doc_return 200 "text/plain" "$method $path $url_query $param"
+
+	set query_list [split $url_query &]
+	foreach sub_list $query_list {
+		set query_item [split $sub_list = ]
+	        if {"scope" == [lindex $query_item 0] } {
+			set scope [lindex $query_item 1]
+       		} elseif { "hours" == [lindex $query_item 0] } {
+			set hours [lindex $query_item 1]
+		} elseif { "hours_curr" == [lindex $query_item 0] } {
+		    set hours_curr [lindex $query_item 1]
+                }
+        
+    	}
+
+	set task_id [lindex $path 1]
+	if { "GET"==$method } {
+		if { "today"==$scope } {
+			doc_return 200 "text/plain" [db_string get_view_id "select hours from im_hours where day::date = now()::date and project_id=$task_id" -default 0]
+		}
+	} elseif { "POST"==$method } {
+	    if { "0"!=$hours_curr } {
+               db_dml update "update im_hours set hours = $hours where day::date = now()::date and project_id=$task_id"
+	    } else { 
+		set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+		set billing_rate 0
+		set billing_currency ""
+
+		db_0or1row get_billing_rate "
+        		select  hourly_cost as billing_rate,
+	                currency as billing_currency
+        		from    im_employees
+		        where   employee_id = $user_id
+		"
+
+		if {"" == $billing_currency} { set billing_currency $default_currency }
+
+		set day_julian [db_string sysdate_as_julian "select to_char(sysdate,'J') from dual"]
+
+                db_dml hours_insert "
+                    insert into im_hours (
+                        user_id, project_id,
+                        day, hours,
+                        billing_rate, billing_currency
+                     ) values (
+                        $user_id, $task_id,
+                        to_date(:day_julian,'J'), $hours,
+                        :billing_rate, :billing_currency
+                     )"
+	    }
+	}
+}
+
 
 ad_proc -public xmlrpc-rest::handle_action_items {method path url_query user_id} {
     @return project list / task list
@@ -105,6 +160,7 @@ ad_proc -public xmlrpc-rest::handle_rest_project {method path url_query user_id}
     @return project list / task list
 } {
 
+
     set query_list [split $url_query &]
 
 
@@ -147,16 +203,6 @@ ad_proc -public xmlrpc-rest::handle_rest_project {method path url_query user_id}
 	default {set output "Object Type not found"}	
     }
     return $output
-
-}
-
-ad_proc -public xmlrpc-rest::handle_rest_timesheet {method path param} {
-    @return the URL that is listening for RPC requests
-} {
-
-
-# only project timesheet data day / project 
-
 
 }
 
