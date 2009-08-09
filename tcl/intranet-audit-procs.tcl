@@ -11,12 +11,81 @@ ad_library {
 
 
 # ----------------------------------------------------------------------
-# Constants
+# Components to show Audit info
 # ----------------------------------------------------------------------
+
+ad_proc -public im_audit_component { 
+    -object_id:required
+} {
+    Generic portlet component to show the audit trail for the given
+    Object
+} {
+    template::list::create \
+	-name audit_list \
+	-multirow audit_multirow \
+	-key audit_id \
+	-selected_format "normal" \
+	-class "list" \
+	-main_class "list" \
+	-sub_class "narrow" \
+	-actions {
+	} -bulk_actions {
+	} -elements {
+	    audit_date {
+		display_col audit_date_pretty
+		label "Date"
+	        display_template {
+			<a href="@audit_multirow.audit_details_url;noquote@"><nobr>@audit_multirow.audit_date_pretty@</nobr></a>
+		}
+	    }
+	    audit_user_initials {
+		label "User"
+		link_url_eval $audit_user_url
+	        display_template {
+	            <if @audit_multirow.audit_user_id@ ne 0>
+			<a href="@audit_multirow.audit_user_url;noquote@">@audit_multirow.audit_user_initials@</a>
+	            </if>
+		}
+	    }
+	    audit_ip {
+		display_col audit_ip
+		label "IP"
+	    }
+	    audit_diff {
+		label "Diff"
+	    }
+	}    
+
+    set audit_sql "
+	select	*,
+		to_char(audit_date, 'YYYY-MM-DD') as audit_date_pretty,
+		im_initials_from_user_id(audit_user_id) as audit_user_initials
+	from	im_audits
+	where	audit_object_id = :object_id
+	order by audit_id DESC
+    "
+    
+    set cnt 0
+    db_multirow -extend { audit_details_url audit_user_url audit_ip_url } audit_multirow audit_list $audit_sql {
+	set audit_details_url [export_vars -base "/intranet-audit/view" {audit_id}]
+	set audit_user_url [export_vars -base "/intranet/users/view" {{user_id $audit_user_id}}]
+	set audit_ip_url ""
+	incr cnt
+    }
+
+    # Compile and execute the listtemplate
+    eval [template::adp_compile -string {<listtemplate name="audit_list"></listtemplate>}]
+    set list_html $__adp_output
+
+    set title [lang::message::lookup "" intranet-audit.Audit_Trail "Audit Trail"]
+    return [im_table_with_title $title $list_html]
+}
+
+
 
 
 # ----------------------------------------------------------------------
-# Audit Package
+# Audit Procedures
 # ----------------------------------------------------------------------
 
 ad_proc -public im_audit_object_type_sql { 
@@ -142,8 +211,13 @@ ad_proc -public im_audit_calculate_diff {
 }
 
 
-ad_proc -public im_audit { 
+# ----------------------------------------------------------------------
+# Main Audit Procedure
+# ----------------------------------------------------------------------
+
+ad_proc -public im_audit_impl { 
     -object_id:required
+    {-object_type "" }
     {-user_id 0}
     {-peeraddr "" }
 } {
@@ -171,7 +245,7 @@ ad_proc -public im_audit {
 	select	a.audit_value as old_value,
 		o.object_type,
 		o.last_audit_id
-	from	im_audit a,
+	from	im_audits a,
 		acs_objects o
 	where	o.object_id = :object_id and
 		o.last_audit_id = a.audit_id
@@ -194,8 +268,9 @@ ad_proc -public im_audit {
 	set audit_ref_object_id ""
 	set audit_note ""
 	set audit_hash ""
+
 	db_dml insert_audit "
-		insert into im_audit(
+		insert into im_audits (
 			audit_id,
 			audit_object_id,
 			audit_user_id,
