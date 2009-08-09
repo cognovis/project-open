@@ -26,7 +26,7 @@ if {![im_permission $current_user_id "add_conf_items"]} {
     ad_script_abort
 }
 
-
+set org_conf_item_id $conf_item_id
 set user_admin_p 1
 set enable_master_p 1
 set focus ""
@@ -131,13 +131,21 @@ ad_form -extend -name $form_id \
 	    im_conf_item_new_project_rel -project_id $conf_item_project_id -conf_item_id $conf_item_id
 	}
 
+	# Store DynFields
 	im_dynfield::attribute_store \
 	    -object_type "im_conf_item" \
 	    -object_id $conf_item_id \
 	    -form_id $form_id
 
+	# Write an audit record 
+	im_audit -object_id $conf_item_id
+
 
     } -edit_data {
+
+	# Write an audit record _before_ the update, in case the conf item
+	# was modified outside of ]po[ (ugly, but may happen...)
+	im_audit -object_id $conf_item_id -pre_update_audit
 
 	if {![info exists conf_item_name] || "" == $conf_item_name} {
 	    set conf_item_name $conf_item_nr
@@ -151,6 +159,10 @@ ad_form -extend -name $form_id \
 	    -object_type "im_conf_item" \
 	    -object_id $conf_item_id \
 	    -form_id $form_id
+
+	# Write an audit record 
+	im_audit -object_id $conf_item_id
+
 
     } -after_submit {
 	ad_returnredirect $return_url
