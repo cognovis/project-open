@@ -748,7 +748,7 @@ ad_proc -public im_gp_save_tasks2 {
 	    ]
 
 	    # Write Audit Trail
-	    im_project_audit -action create $task_id
+	    im_project_audit -action create -project_id $task_id
 
 	    set task_hash($gantt_project_id) $task_id
 	    set task_hash("o$outline_number") $task_id
@@ -873,7 +873,7 @@ ad_proc -public im_gp_save_tasks2 {
     }
 
     # Write audit trail
-    im_project_audit $task_id
+    im_project_audit -project_id $task_id
 
     return [array get task_hash]
 }
