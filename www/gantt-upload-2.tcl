@@ -49,7 +49,7 @@ set reassign_title [lang::message::lookup "" intranet-ganttproject.Delete_Gantt_
 set resource_title [lang::message::lookup "" intranet-ganttproject.Resource_Title "Resources not Found"]
 
 # Write audit trail
-im_project_audit $project_id
+im_project_audit -project_id $project_id
 
 # -------------------------------------------------------------------
 # Get the file from the user.
