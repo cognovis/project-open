@@ -33,13 +33,13 @@ ad_proc -public im_audit_component {
 	} -elements {
 	    audit_date {
 		display_col audit_date_pretty
-		label "Date"
+		label "[lang::message::lookup {} intranet-audit.Date {Date}]"
 	        display_template {
 			<a href="@audit_multirow.audit_details_url;noquote@"><nobr>@audit_multirow.audit_date_pretty@</nobr></a>
 		}
 	    }
 	    audit_user_initials {
-		label "User"
+		label "[lang::message::lookup {} intranet-audit.User_Abbrev U]"
 		link_url_eval $audit_user_url
 	        display_template {
 	            <if @audit_multirow.audit_user_id@ ne 0>
@@ -49,10 +49,10 @@ ad_proc -public im_audit_component {
 	    }
 	    audit_ip {
 		display_col audit_ip
-		label "IP"
+		label "[lang::message::lookup {} intranet-audit.IP_Address {IP}]"
 	    }
 	    audit_diff {
-		label "Diff"
+		label "[lang::message::lookup {} intranet-audit.Diff {Diff}]"
 	    }
 	}    
 
@@ -77,8 +77,10 @@ ad_proc -public im_audit_component {
     eval [template::adp_compile -string {<listtemplate name="audit_list"></listtemplate>}]
     set list_html $__adp_output
 
-    set title [lang::message::lookup "" intranet-audit.Audit_Trail "Audit Trail"]
-    return [im_table_with_title $title $list_html]
+    return $list_html
+
+#    set title [lang::message::lookup "" intranet-audit.Audit_Trail "Audit Trail"]
+#    return [im_table_with_title $title $list_html]
 }
 
 
@@ -358,7 +360,7 @@ ad_proc -public im_audit_sweeper { } {
 	LIMIT 10
         "
 	db_foreach audit $project_sql {
-	    append debug [im_project_audit $project_id]
+	    append debug [im_project_audit -project_id $project_id]
 	    lappend debug $project_id
 	    incr counter
 	}
@@ -377,10 +379,13 @@ ad_proc -public im_audit_sweeper { } {
 
 ad_proc -public im_project_audit_impl  {
     { -action update }
-    project_id
+    -project_id:required
 } {
     Creates an audit entry of the specified project
 } {
+    # Call the normal audit function
+    im_audit_impl -object_id $project_id
+
     # No audit for non-existing projects
     if {"" == $project_id} { return "project_id is empty" }
     if {0 == $project_id} { return "project_id = 0" }
