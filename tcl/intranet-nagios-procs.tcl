@@ -74,7 +74,7 @@ ad_proc -public im_nagios_process_alert {
 	db_dml project_update {}
 	
 	# Write Audit Trail
-	im_project_audit $ticket_id
+	im_project_audit -project_id $ticket_id
 	
 	db_transaction {
 	} on_error {
