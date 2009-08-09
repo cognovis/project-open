@@ -170,7 +170,7 @@ ad_form -extend -name ticket -on_request {
 	im_workflow_start_wf -object_id $ticket_id -object_type_id $ticket_type_id -skip_first_transition_p 1
 	
 	# Write Audit Trail
-	im_project_audit $ticket_id
+	im_project_audit -project_id $ticket_id
 	
 
 	# Create a new forum topic of type "Note"
@@ -218,7 +218,7 @@ ad_form -extend -name ticket -on_request {
 	-form_id ticket
 
     # Write Audit Trail
-    im_project_audit $ticket_id
+    im_project_audit -project_id $ticket_id
 
 } -on_submit {
 

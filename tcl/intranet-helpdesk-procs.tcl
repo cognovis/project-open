@@ -417,7 +417,7 @@ namespace eval im_ticket {
 
 	
 	    # Write Audit Trail
-	    # im_project_audit $ticket_id
+	    im_project_audit -project_id $ticket_id
 
 	    # Create a new forum topic of type "Note"
 	    set topic_type_id [im_topic_type_id_task]
