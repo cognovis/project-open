@@ -529,7 +529,7 @@ db_foreach sql $sql {
     
     if {"" == $customer_id} {
 	set customer_id 0
-	set customer_name "No Customer"
+	set customer_name [lang::message::lookup "" intranet-reporting.No_customer "Undefined Customer"]
     }
     
     # Get the "interesting" company (the one that is NOT "internal")
@@ -702,7 +702,7 @@ db_foreach sql $sql {
 
     if {"" == $customer_id} {
 	set customer_id 0
-	set customer_name "No Customer"
+	set customer_name [lang::message::lookup "" intranet-reporting.No_customer "Undefined Customer"]
     }
     
     # Get the "interesting" company (the one that is NOT "internal")

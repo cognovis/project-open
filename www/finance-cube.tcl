@@ -434,7 +434,7 @@ foreach scale_item $top_scale_plain {
 # Create a sorted left dimension
 
 # No top dimension at all gives an error...
-if {![llength $left_vars]} {
+if {1 || ![llength $left_vars]} {
     ns_write "
 	<p>&nbsp;<p>&nbsp;<p>&nbsp;<p><blockquote>
 	[lang::message::lookup "" intranet-reporting.No_left_dimension "No 'Left' Dimension Specified"]:<p>

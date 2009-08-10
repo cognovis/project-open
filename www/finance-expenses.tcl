@@ -672,12 +672,12 @@ db_foreach sql $sql {
 
 	if {"" == $project_id} {
 	    set project_id 0
-	    set project_name "No Project"
+	    set project_name [lang::message::lookup "" intranet-reporting.No_project "Undefined Project"]
 	}
 
 	if {"" == $project_customer_id} {
 	    set project_customer_id 0
-	    set project_customer_name "No Customer"
+	    set project_customer_name [lang::message::lookup "" intranet-reporting.No_customer "Undefined Customer"]
 	}
 
 	if {"" == $amount_converted} {
