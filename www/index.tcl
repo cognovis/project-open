@@ -29,7 +29,10 @@ set date_format "YYYY-MM-DD"
 set return_url [im_url_with_query]
 set current_url [ns_conn url]
 set project_nr [db_string project_nr "select project_nr from im_projects where project_id=:project_id" -default ""]
-set page_title "$project_nr - [_ intranet-freelance-rfqs.RFQs]"
+
+set page_title [_ intranet-freelance-rfqs.RFQs]
+if {"" != $project_nr} { set page_title "$project_nr - $page_title" }
+
 set context_bar [im_context_bar [list /intranet/projects/ "[_ intranet-core.Projects]"] $page_title]
 set org_project_id $project_id
 

@@ -5,7 +5,7 @@
 <property name="sub_navbar">@project_navbar_html;noquote@</property>
 <property name="left_navbar">@left_navbar_html;noquote@</property>
 
-<h2>Available RFQs</h2>
+<h2>@page_title@</h2>
 
 <if @project_id@ eq "">
 <table cellspacing=0 cellpadding=1>
