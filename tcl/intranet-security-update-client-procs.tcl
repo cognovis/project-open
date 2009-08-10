@@ -182,6 +182,9 @@ ad_proc im_security_update_client_component { } {
     set sec_verbosity [parameter::get -package_id $package_id -parameter "SecurityUpdateVerboseP" -default "0"]
 
     # -1 means that the user needs to confirm using the UpdateService
+
+
+#    ad_return_complaint 1 $sec_verbosity
     if {-1 == $sec_verbosity} {
 	ad_returnredirect "/intranet-security-update-client/user-agreement"
     }
