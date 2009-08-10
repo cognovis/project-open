@@ -88,9 +88,11 @@ ad_form -extend -name $form_id \
                 where   object_id = :object_id and note = :note
         "
         if {[db_string dup $duplicate_note_sql]} {
-            ad_return_complaint 1 "<b>Duplicate note</b>:<br>
-            There is already the same note available for the specified object.
-            "
+            ad_return_complaint 1 "<b>[lang::message::lookup "" intranet-notes.Duplicate_note "Duplicate note"]</b>:<br>
+            [lang::message::lookup "" intranet-notes.Duplicate_note_msg "
+	    	There is already the same note available for the specified object.
+	    "]"
+	    ad_script_abort
         }
 
 	set note_id [db_exec_plsql create_note "
