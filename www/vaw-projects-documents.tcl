@@ -620,7 +620,7 @@ db_foreach sql $sql {
 
 	if {"" == $project_id} {
 	    set project_id 0
-	    set project_name "No Project"
+	    set project_name [lang::message::lookup "" intranet-reporting-finance.No_project "Undefined Project"]
 	}
 
 	im_report_display_footer \
