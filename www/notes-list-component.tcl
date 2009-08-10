@@ -78,7 +78,4 @@ if {$object_read} {
 	    }
 	}
     }
-
-#    if {0 == [template::multirow size notes]} {	multirow append notes "" "No Entry" }
-
 }
