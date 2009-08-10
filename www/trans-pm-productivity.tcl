@@ -503,7 +503,7 @@ db_foreach sql $sql {
 
         if {"" == $project_id} {
             set project_id 0
-            set project_name "No Project"
+            set project_name [lang::message::lookup "" intranet-reporting.No_project "Undefined Project"]
         }
 
 	if {"" == $project_manager_id} {
