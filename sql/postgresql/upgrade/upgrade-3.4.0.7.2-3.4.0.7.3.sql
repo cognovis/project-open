@@ -37,6 +37,9 @@ begin
   
 end;' language 'plpgsql';
  
+
+
+-- http://fisheye.openacs.org/browse/OpenACS/openacs-4/packages/ref-countries/sql/common/ref-country-data.sql?r=1.1
 insert into country_codes (iso,country_name) values ('AN', 'Netherlands Antilles');
 insert into country_codes (iso,country_name) values ('NP', 'Nepal');
 insert into country_codes (iso,country_name) values ('MK', 'Macedonia, TFYRO');
@@ -45,6 +48,4 @@ insert into country_codes (iso,country_name) values ('KR', 'Korea, Republic Of')
 insert into country_codes (iso,country_name) values ('AM', 'Armenia');
 insert into country_codes (iso,country_name) values ('KY', 'Cayman Islands'); 
 insert into country_codes (iso,country_name) values ('PA', 'Panama');
-
-
 
