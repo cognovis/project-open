@@ -36,5 +36,15 @@ begin
   return v_person_id;
   
 end;' language 'plpgsql';
+ 
+insert into country_codes (iso,country_name) values ('AN', 'Netherlands Antilles');
+insert into country_codes (iso,country_name) values ('NP', 'Nepal');
+insert into country_codes (iso,country_name) values ('MK', 'Macedonia, TFYRO');
+insert into country_codes (iso,country_name) values ('KP', 'Korea, Democratic People''s Republic Of');
+insert into country_codes (iso,country_name) values ('KR', 'Korea, Republic Of');
+insert into country_codes (iso,country_name) values ('AM', 'Armenia');
+insert into country_codes (iso,country_name) values ('KY', 'Cayman Islands'); 
+insert into country_codes (iso,country_name) values ('PA', 'Panama');
+
 
 
