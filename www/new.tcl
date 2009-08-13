@@ -292,6 +292,7 @@ ad_form -extend -name $form_id -on_request {
 		and c.cost_id = :expense_id
 
 } -new_data {
+
     if { $expense_type_id == 0 } {
 	ad_return_complaint 1 \
 	    [lang::message::lookup "" \

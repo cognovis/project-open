@@ -35,7 +35,6 @@ values ('im_expense', 'im_expenses', 'expense_id');
 insert into acs_object_type_tables (object_type,table_name,id_column)
 values ('im_expense', 'im_costs', 'cost_id');
 
-
 update acs_object_types set
 	status_type_table = 'im_costs',
 	status_column = 'cost_status_id',
