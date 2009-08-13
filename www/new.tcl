@@ -127,6 +127,10 @@ ad_form -extend -name $form_id \
 	set exists_p [db_string exists "select count(*) from im_conf_items where conf_item_id = :conf_item_id"]
 	if {!$exists_p} { set conf_item_id [db_string new $conf_item_new_sql] }
 	db_dml update [im_conf_item_update_sql -include_dynfields_p 1]
+	
+	# Audit the object creation
+	im_audit -object_id $conf_item_id -action create
+
 	if {"" != $conf_item_project_id} {
 	    im_conf_item_new_project_rel -project_id $conf_item_project_id -conf_item_id $conf_item_id
 	}
@@ -145,7 +149,7 @@ ad_form -extend -name $form_id \
 
 	# Write an audit record _before_ the update, in case the conf item
 	# was modified outside of ]po[ (ugly, but may happen...)
-	im_audit -object_id $conf_item_id -pre_update_audit
+	im_audit -object_id $conf_item_id -action pre_update
 
 	if {![info exists conf_item_name] || "" == $conf_item_name} {
 	    set conf_item_name $conf_item_nr
@@ -161,7 +165,7 @@ ad_form -extend -name $form_id \
 	    -form_id $form_id
 
 	# Write an audit record 
-	im_audit -object_id $conf_item_id
+	im_audit -object_id $conf_item_id -action update
 
 
     } -after_submit {
