@@ -6,3 +6,15 @@
 -- refer to http://www.project-open.com/modules/<module-key>
 
 
+-- Drop plugins and menus for the module
+--
+select  im_component_plugin__del_module('intranet-audit');
+select  im_menu__del_module('intranet-audit');
+
+
+-----------------------------------------------------------
+-- Drop main structures info
+
+-- Drop functions
+drop table im_audits;
+
