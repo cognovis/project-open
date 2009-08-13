@@ -47,6 +47,12 @@ ad_proc -public im_audit_component {
 	            </if>
 		}
 	    }
+	    audit_action {
+		label "[lang::message::lookup {} intranet-audit.User_Abbrev A]"
+	        display_template {
+		    @audit_multirow.audit_action_gif;noquote@
+		}
+	    }
 	    audit_ip {
 		display_col audit_ip
 		label "[lang::message::lookup {} intranet-audit.IP_Address {IP}]"
@@ -66,10 +72,21 @@ ad_proc -public im_audit_component {
     "
     
     set cnt 0
-    db_multirow -extend { audit_details_url audit_user_url audit_ip_url } audit_multirow audit_list $audit_sql {
+    db_multirow -extend { audit_details_url audit_user_url audit_ip_url audit_action_gif } audit_multirow audit_list $audit_sql {
 	set audit_details_url [export_vars -base "/intranet-audit/view" {audit_id}]
 	set audit_user_url [export_vars -base "/intranet/users/view" {{user_id $audit_user_id}}]
 	set audit_ip_url ""
+
+	switch $audit_action {
+	    create { set audit_action_abbrev "c" }
+	    update { set audit_action_abbrev "u" }
+	    delete { set audit_action_abbrev "d" }
+	    nuke { set audit_action_abbrev "n" }
+	    pre_update { set audit_action_abbrev "p" }
+	    default { set audit_action_abbrev "" }
+	}
+	set audit_action_msg [lang::message::lookup "" intranet-audit.Action_${audit_action}_help $audit_action]
+	set audit_action_gif [im_gif $audit_action_abbrev $audit_action_msg]
 	incr cnt
     }
 

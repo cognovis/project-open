@@ -18,3 +18,7 @@ select  im_menu__del_module('intranet-audit');
 -- Drop functions
 drop table im_audits;
 
+-- Drop ID sequence
+drop sequence im_audit_seq;
+
+

@@ -124,13 +124,212 @@ comment on column im_audits.audit_hash is '
  the PostgreSQL OIDs will witness these changes.
 ';
 
-
-
-
-
 -----------------------------------------------------------
 -- Component Plugins
 --
+
+
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Audit Trail Projects',		-- plugin_name - shown in menu
+	'intranet-audit',		-- package_name
+	'bottom',			-- location
+	'/intranet/projects/view',	-- page_url
+	null,				-- view_name
+	10,				-- sort_order
+	'im_audit_component -object_id $project_id'	-- component_tcl
+);
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Projects'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Audit Trail Companies',		-- plugin_name - shown in menu
+	'intranet-audit',		-- package_name
+	'bottom',			-- location
+	'/intranet/companies/view',	-- page_url
+	null,				-- view_name
+	10,				-- sort_order
+	'im_audit_component -object_id $company_id'	-- component_tcl
+);
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Companies'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Audit Trail Offices',		-- plugin_name - shown in menu
+	'intranet-audit',		-- package_name
+	'bottom',			-- location
+	'/intranet/offices/view',	-- page_url
+	null,				-- view_name
+	10,				-- sort_order
+	'im_audit_component -object_id $office_id'	-- component_tcl
+);
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Offices'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Audit Trail Users',		-- plugin_name - shown in menu
+	'intranet-audit',		-- package_name
+	'bottom',			-- location
+	'/intranet/users/view',		-- page_url
+	null,				-- view_name
+	10,				-- sort_order
+	'im_audit_component -object_id $user_id'	-- component_tcl
+);
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Users'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Audit Trail Invoices',		-- plugin_name - shown in menu
+	'intranet-audit',		-- package_name
+	'bottom',			-- location
+	'/intranet-invoices/view',	-- page_url
+	null,				-- view_name
+	10,				-- sort_order
+	'im_audit_component -object_id $invoice_id'	-- component_tcl
+);
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Invoices'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Audit Trail TS Tasks',		-- plugin_name - shown in menu
+	'intranet-audit',		-- package_name
+	'bottom',			-- location
+	'/intranet-timesheet2-tasks/new',	-- page_url
+	null,				-- view_name
+	10,				-- sort_order
+	'im_audit_component -object_id $task_id'	-- component_tcl
+);
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail TS Tasks'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Audit Trail Expense Items',	-- plugin_name - shown in menu
+	'intranet-audit',		-- package_name
+	'bottom',			-- location
+	'/intranet-expenses/new',	-- page_url
+	null,				-- view_name
+	10,				-- sort_order
+	'im_audit_component -object_id $expense_id'	-- component_tcl
+);
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Expense Items'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+
+-- SELECT im_component_plugin__new (
+-- 	null,				-- plugin_id
+-- 	'acs_object',			-- object_type
+-- 	now(),				-- creation_date
+-- 	null,				-- creation_user
+-- 	null,				-- creation_ip
+-- 	null,				-- context_id
+-- 	'Audit Trail Expense Bundles',	-- plugin_name - shown in menu
+-- 	'intranet-audit',		-- package_name
+-- 	'bottom',			-- location
+-- 	'/intranet-expenses/bundle-new',	-- page_url
+-- 	null,				-- view_name
+-- 	10,				-- sort_order
+-- 	'im_audit_component -object_id $bundle_id'	-- component_tcl
+-- );
+-- 
+-- SELECT acs_permission__grant_permission(
+-- 	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Expense Bundles'),
+-- 	(select group_id from groups where group_name = 'Employees'),
+-- 	'read'
+-- );
+
+
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'acs_object',			-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Audit Trail Tickets',		-- plugin_name - shown in menu
+	'intranet-audit',		-- package_name
+	'bottom',			-- location
+	'/intranet-helpdesk/new',	-- page_url
+	null,				-- view_name
+	10,				-- sort_order
+	'im_audit_component -object_id $ticket_id'	-- component_tcl
+);
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Tickets'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+
 
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
@@ -154,7 +353,6 @@ SELECT acs_permission__grant_permission(
 	'read'
 );
 
-
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
 	'acs_object',			-- object_type
@@ -162,249 +360,18 @@ SELECT im_component_plugin__new (
 	null,				-- creation_user
 	null,				-- creation_ip
 	null,				-- context_id
-	'Audit Trail Projects',		-- plugin_name - shown in menu
+	'Audit Trail Absences',		-- plugin_name - shown in menu
 	'intranet-audit',		-- package_name
 	'bottom',			-- location
-	'/intranet/projects/view',	-- page_url
+	'/intranet-timesheet2/absences/new',	-- page_url
 	null,				-- view_name
 	10,				-- sort_order
-	'im_audit_component -object_id $project_id'	-- component_tcl
+	'im_audit_component -object_id $absence_id'	-- component_tcl
 );
 
 SELECT acs_permission__grant_permission(
-	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Projects'),
+	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Absences'),
 	(select group_id from groups where group_name = 'Employees'),
 	'read'
 );
-
-
-
-
-
-
-
-SELECT im_component_plugin__new (
-	null,				-- plugin_id
-	'acs_object',			-- object_type
-	now(),				-- creation_date
-	null,				-- creation_user
-	null,				-- creation_ip
-	null,				-- context_id
-	'Audit Trail Projects',		-- plugin_name - shown in menu
-	'intranet-audit',		-- package_name
-	'bottom',			-- location
-	'/intranet/projects/view',	-- page_url
-	null,				-- view_name
-	10,				-- sort_order
-	'im_audit_component -object_id $project_id'	-- component_tcl
-);
-
-SELECT acs_permission__grant_permission(
-	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Projects'),
-	(select group_id from groups where group_name = 'Employees'),
-	'read'
-);
-
-
-
-
-
-SELECT im_component_plugin__new (
-	null,				-- plugin_id
-	'acs_object',			-- object_type
-	now(),				-- creation_date
-	null,				-- creation_user
-	null,				-- creation_ip
-	null,				-- context_id
-	'Audit Trail Projects',		-- plugin_name - shown in menu
-	'intranet-audit',		-- package_name
-	'bottom',			-- location
-	'/intranet/projects/view',	-- page_url
-	null,				-- view_name
-	10,				-- sort_order
-	'im_audit_component -object_id $project_id'	-- component_tcl
-);
-
-SELECT acs_permission__grant_permission(
-	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Projects'),
-	(select group_id from groups where group_name = 'Employees'),
-	'read'
-);
-
-
-
-
-SELECT im_component_plugin__new (
-	null,				-- plugin_id
-	'acs_object',			-- object_type
-	now(),				-- creation_date
-	null,				-- creation_user
-	null,				-- creation_ip
-	null,				-- context_id
-	'Audit Trail Projects',		-- plugin_name - shown in menu
-	'intranet-audit',		-- package_name
-	'bottom',			-- location
-	'/intranet/projects/view',	-- page_url
-	null,				-- view_name
-	10,				-- sort_order
-	'im_audit_component -object_id $project_id'	-- component_tcl
-);
-
-SELECT acs_permission__grant_permission(
-	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Projects'),
-	(select group_id from groups where group_name = 'Employees'),
-	'read'
-);
-
-
-
-
-SELECT im_component_plugin__new (
-	null,				-- plugin_id
-	'acs_object',			-- object_type
-	now(),				-- creation_date
-	null,				-- creation_user
-	null,				-- creation_ip
-	null,				-- context_id
-	'Audit Trail Projects',		-- plugin_name - shown in menu
-	'intranet-audit',		-- package_name
-	'bottom',			-- location
-	'/intranet/projects/view',	-- page_url
-	null,				-- view_name
-	10,				-- sort_order
-	'im_audit_component -object_id $project_id'	-- component_tcl
-);
-
-SELECT acs_permission__grant_permission(
-	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Projects'),
-	(select group_id from groups where group_name = 'Employees'),
-	'read'
-);
-
-
-
-
-SELECT im_component_plugin__new (
-	null,				-- plugin_id
-	'acs_object',			-- object_type
-	now(),				-- creation_date
-	null,				-- creation_user
-	null,				-- creation_ip
-	null,				-- context_id
-	'Audit Trail Projects',		-- plugin_name - shown in menu
-	'intranet-audit',		-- package_name
-	'bottom',			-- location
-	'/intranet/projects/view',	-- page_url
-	null,				-- view_name
-	10,				-- sort_order
-	'im_audit_component -object_id $project_id'	-- component_tcl
-);
-
-SELECT acs_permission__grant_permission(
-	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Projects'),
-	(select group_id from groups where group_name = 'Employees'),
-	'read'
-);
-
-
-
-
-SELECT im_component_plugin__new (
-	null,				-- plugin_id
-	'acs_object',			-- object_type
-	now(),				-- creation_date
-	null,				-- creation_user
-	null,				-- creation_ip
-	null,				-- context_id
-	'Audit Trail Projects',		-- plugin_name - shown in menu
-	'intranet-audit',		-- package_name
-	'bottom',			-- location
-	'/intranet/projects/view',	-- page_url
-	null,				-- view_name
-	10,				-- sort_order
-	'im_audit_component -object_id $project_id'	-- component_tcl
-);
-
-SELECT acs_permission__grant_permission(
-	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Projects'),
-	(select group_id from groups where group_name = 'Employees'),
-	'read'
-);
-
-
-
-
-SELECT im_component_plugin__new (
-	null,				-- plugin_id
-	'acs_object',			-- object_type
-	now(),				-- creation_date
-	null,				-- creation_user
-	null,				-- creation_ip
-	null,				-- context_id
-	'Audit Trail Projects',		-- plugin_name - shown in menu
-	'intranet-audit',		-- package_name
-	'bottom',			-- location
-	'/intranet/projects/view',	-- page_url
-	null,				-- view_name
-	10,				-- sort_order
-	'im_audit_component -object_id $project_id'	-- component_tcl
-);
-
-SELECT acs_permission__grant_permission(
-	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Projects'),
-	(select group_id from groups where group_name = 'Employees'),
-	'read'
-);
-
-
-
-
-SELECT im_component_plugin__new (
-	null,				-- plugin_id
-	'acs_object',			-- object_type
-	now(),				-- creation_date
-	null,				-- creation_user
-	null,				-- creation_ip
-	null,				-- context_id
-	'Audit Trail Projects',		-- plugin_name - shown in menu
-	'intranet-audit',		-- package_name
-	'bottom',			-- location
-	'/intranet/projects/view',	-- page_url
-	null,				-- view_name
-	10,				-- sort_order
-	'im_audit_component -object_id $project_id'	-- component_tcl
-);
-
-SELECT acs_permission__grant_permission(
-	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Projects'),
-	(select group_id from groups where group_name = 'Employees'),
-	'read'
-);
-
-
-
-
-SELECT im_component_plugin__new (
-	null,				-- plugin_id
-	'acs_object',			-- object_type
-	now(),				-- creation_date
-	null,				-- creation_user
-	null,				-- creation_ip
-	null,				-- context_id
-	'Audit Trail Projects',		-- plugin_name - shown in menu
-	'intranet-audit',		-- package_name
-	'bottom',			-- location
-	'/intranet/projects/view',	-- page_url
-	null,				-- view_name
-	10,				-- sort_order
-	'im_audit_component -object_id $project_id'	-- component_tcl
-);
-
-SELECT acs_permission__grant_permission(
-	(select plugin_id from im_component_plugins where plugin_name = 'Audit Trail Projects'),
-	(select group_id from groups where group_name = 'Employees'),
-	'read'
-);
-
-
 
