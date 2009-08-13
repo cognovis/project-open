@@ -35,6 +35,12 @@ set sub_navbar ""
 if {"display" == $form_mode || "" == $form_mode} {
     set page_title [lang::message::lookup "" intranet-confdb.Conf_Item "Configuration Item"]
     set show_components_p 1
+
+    # Write Audit Trail
+    if {[info exists conf_item_id]} {
+	im_audit -object_id $conf_item_id -action pre_update
+    }
+
 } else {
     set page_title [lang::message::lookup "" intranet-confdb.New_Conf_Item "New Configuration Item"]
     set show_components_p 0
