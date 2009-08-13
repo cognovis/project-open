@@ -412,6 +412,10 @@ namespace eval im_cost {
             <pre>$errmsg</pre>"
 	    return
 	}
+
+	# Audit the action
+	im_audit -object_id $cost_id -action create
+
 	return $cost_id
     }
     
@@ -1961,11 +1965,6 @@ ad_proc im_costs_project_finance_component {
 
     }
 
-
-    	
-
-
-
     if {!$show_summary_p} { set summary_html "" }
     if {!$can_read_summary_p} { set summary_html "" }
 
@@ -2144,6 +2143,10 @@ ad_proc im_cost_update_payments { cost_id } {
 	    paid_currency = :default_currency
 	where cost_id = :cost_id
     "
+
+    # Audit the action
+    im_audit -object_id $cost_id -action update -comment "Logging a payment on the cost."
+
 }
 
 
@@ -2298,6 +2301,9 @@ ad_proc -public im_cost_update_project_cost_cache {
 		where
 			project_id = :project_id
     "
+
+    # Audit the action
+    im_project_audit -project_id $project_id -action update
 
     return [array get subtotals]
 }
