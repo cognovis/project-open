@@ -339,6 +339,10 @@ ad_form -extend -name $form_id -on_request {
         "
     }
 
+    # Audit the action
+    im_audit -object_id $expense_id -action create
+
+
 } -edit_data {
 
     # Security Check: Don't allow to change an "invoiced" expense
@@ -408,6 +412,9 @@ ad_form -extend -name $form_id -on_request {
         "
     }
 
+    # Audit the action
+    im_audit -object_id $expense_id -action update
+
 
     # ---------------------------------------------------------------
     # Re-calculate the expense bundle if exists
@@ -433,7 +440,12 @@ ad_form -extend -name $form_id -on_request {
 	where
 		cost_id = :expense_bundle_id
          "
+
+	# Audit the action
+	im_audit -object_id $expense_bundle_id -action update
+
     }
+
 
 } -on_submit {
     

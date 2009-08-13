@@ -305,6 +305,9 @@ db_transaction {
 				note = :item_note
 			where cost_id = :expense_id
 	    "
+
+	    # Audit the action
+	    im_audit -object_id $expense_id -action create
 	    
 	}
 	

@@ -28,14 +28,24 @@ set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 
 foreach id $bundle_id {
 
+    # Get the list of expense items.
+    set expense_items [db_list expense_items "select expense_id from im_expenses where bundle_id = :id"]
+
     # delete bundle as a cost
     # 
     db_transaction {
-	db_dml reset_expense_items "
+
+	db_foreach exp_id $expense_items {
+	    db_dml reset_expense_items "
 		update im_expenses set 
 		       	bundle_id = null 
-		where bundle_id = :id
-	"
+		where expense_id = :exp_id
+	    "
+
+	    # Audit the deletion
+	    im_audit -object_id $exp_id -action update
+	}
+
 	db_dml del_tokens "
 	        delete	from wf_tokens
 		where	case_id in (
@@ -49,7 +59,11 @@ foreach id $bundle_id {
 		where object_id = :id
 	"
 
+	# Audit the deletion
+	im_audit -object_id $id -action nuke
+
 	db_string del_expense_bundle {}
+
     }
 }
 

@@ -277,6 +277,10 @@ ad_form -extend -name $form_id \
 			[im_bundle_status_active]
 		)
             "
+
+	    # Audit the action
+	    im_audit -object_id $bundle_id -action create
+
 	} else {
 	    im_security_alert \
 		-location "intranet-expenses/www/bundle-new" \
@@ -312,6 +316,10 @@ ad_form -extend -name $form_id \
 		-message "Somebody tried to confirm an Expense Bundle without permissions" \
 		-severity "Severe"
 	}
+
+	# Audit the action
+	im_audit -object_id $bundle_id -action update
+
 
     } -after_submit {
 	ad_returnredirect $return_url

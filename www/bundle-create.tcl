@@ -97,6 +97,9 @@ db_transaction {
     "
 }
 
+# Audit the action
+im_audit -object_id $expense_bundle_id -action create
+
 
 # ---------------------------------------------------------------
 # Spawn a workflow for confirmation by the superior

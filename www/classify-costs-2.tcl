@@ -54,4 +54,10 @@ db_dml update_items "
 "
 
 
+# Audit the action
+foreach id $expense_ids {
+    im_audit -object_id $id -action update
+}
+
+
 ad_returnredirect $return_url
