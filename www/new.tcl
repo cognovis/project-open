@@ -197,6 +197,10 @@ if {"delete" == $button_pressed} {
 	set	ticket_status_id = [im_ticket_status_deleted]
 	where	ticket_id = :ticket_id
      "
+
+    # Write Audit Trail
+    im_project_audit -project_id $ticket_id -action delete
+
     ad_returnredirect $return_url
 }
 
@@ -477,6 +481,8 @@ ad_form -extend -name helpdesk_ticket -on_request {
         -notif_subject "New: Subject" \
         -notif_text "Text"
 
+    # Write Audit Trail
+    im_project_audit -project_id $ticket_id -action create
 
     # Send to page to show the new ticket, instead of returning to return_url
     ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {ticket_id}]
@@ -498,7 +504,7 @@ ad_form -extend -name helpdesk_ticket -on_request {
 	-form_id helpdesk_ticket
 
     # Write Audit Trail
-    im_project_audit -project_id $ticket_id
+    im_project_audit -project_id $ticket_id -action update
 
     notification::new \
         -type_id [notification::type::get_type_id -short_name ticket_notif] \

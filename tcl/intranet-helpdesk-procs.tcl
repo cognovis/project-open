@@ -326,8 +326,7 @@ namespace eval im_ticket {
         set ticket_id [db_string exists "
 		select	ticket_id
 		from	im_tickets
-		where
-			ticket_parent_id = :ticket_parent_id and
+		where	ticket_parent_id = :ticket_parent_id and
 			ticket_nr = :ticket_nr
 	" -default 0]
 
@@ -346,6 +345,10 @@ namespace eval im_ticket {
 		where ticket_id = :ticket_id
 	"
         db_dml update_ticket $sql
+
+	# Write Audit Trail
+	im_project_audit -project_id $ticket_id -action create
+
 	return $ticket_id
     }
 
@@ -417,7 +420,7 @@ namespace eval im_ticket {
 
 	
 	    # Write Audit Trail
-	    im_project_audit -project_id $ticket_id
+	    im_project_audit -project_id $ticket_id -action create
 
 	    # Create a new forum topic of type "Note"
 	    set topic_type_id [im_topic_type_id_task]
