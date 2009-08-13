@@ -128,7 +128,12 @@ if {"edit" == $form_mode} { set show_components_p 0 }
 
 set ticket_exists_p 0
 if {[exists_and_not_null ticket_id]} {
+    # Check if the ticket exists
     set ticket_exists_p [db_string ticket_exists_p "select count(*) from im_tickets where ticket_id = :ticket_id"]
+
+    # Write Audit Trail
+    im_project_audit -project_id $ticket_id -action pre_update
+
 }
 
 
