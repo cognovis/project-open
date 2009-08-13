@@ -220,13 +220,14 @@ ad_proc -public im_audit_calculate_diff {
 ad_proc -public im_audit_impl { 
     -object_id:required
     {-object_type "" }
-    {-user_id 0}
-    {-peeraddr "" }
+    {-action "update" }
+    {-comment "" }
 } {
     Creates a new audit item for object after an update.
 } {
-    if {0 == $user_id} { set user_id [ad_get_user_id] }
-    if {"" == $peeraddr} { set peeraddr [ns_conn peeraddr] }
+    set user_id [ad_get_user_id]
+    set peeraddr [ns_conn peeraddr]
+    if {"" == $action} { set action "update" }
 
     # Are we behind a firewall or behind a reverse proxy?
     if {"127.0.0.1" == $peeraddr} {
@@ -260,21 +261,19 @@ ad_proc -public im_audit_impl {
     # Return "" if nothing has changed:
     set diff [im_audit_calculate_diff -old_value $old_value -new_value $new_value]
 
-#    return "<pre>$old_value\n\n$new_value\</pre>"
-
     if {"" != $diff} {
-
 	# Something has changed...
 	# Create a new im_audit entry and associate it to the object.
 	set new_audit_id [db_nextval im_audit_seq]
 	set audit_ref_object_id ""
-	set audit_note ""
+	set audit_note $comment
 	set audit_hash ""
 
 	db_dml insert_audit "
 		insert into im_audits (
 			audit_id,
 			audit_object_id,
+			audit_action,
 			audit_user_id,
 			audit_date,
 			audit_ip,
@@ -287,6 +286,7 @@ ad_proc -public im_audit_impl {
 		) values (
 			:new_audit_id,
 			:object_id,
+			:action,
 			:user_id,
 			now(),
 			:peeraddr,
@@ -378,8 +378,9 @@ ad_proc -public im_audit_sweeper { } {
 # -------------------------------------------------------------------
 
 ad_proc -public im_project_audit_impl  {
-    { -action update }
     -project_id:required
+    {-action update }
+    {-comment "" }
 } {
     Creates an audit entry of the specified project
 } {
