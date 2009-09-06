@@ -23,6 +23,9 @@ set user_id [ad_maybe_redirect_for_registration]
 set page_title [lang::message::lookup "" intranet-reporting.Edit_Report "Edit Report"]
 set context [im_context_bar $page_title]
 
+# ----------------------------------------------
+# Calculate form_mode
+if {![info exists report_id]} { set form_mode "edit" }
 
 # ---------------------------------------------------------------
 # Options
@@ -129,6 +132,7 @@ ad_form -extend -name $form_id \
     } -new_data {
 
 	set report_id [db_nextval "acs_object_id_seq"]
+#	ad_return_complaint 1 $report_id
 	set package_name "intranet-reporting"
 	set label [im_mangle_user_group_name $report_name]
 	set name $report_name
