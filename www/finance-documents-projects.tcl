@@ -461,9 +461,6 @@ set footer0 {
 for {set i 1} {$i <= $max_col} {incr i} { lappend footer0 "" }
 set footer0 [concat $footer0 {
 	"" 
-	"" 
-	"" 
-	"" 
 	"<br><b>Total:</b>" 
 	"<br><b>$invoice_total $default_currency</b>" 
 	"<br><b>$quote_total $default_currency</b>" 
