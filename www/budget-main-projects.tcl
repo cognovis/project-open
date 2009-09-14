@@ -12,7 +12,7 @@ ad_page_contract {
     @param start_date Start date (YYYY-MM-DD format) 
     @param end_date End date (YYYY-MM-DD format) 
     @level_of_detail Integer representing the level to which report 
-                     groupings are opened
+		     groupings are opened
 } {
     { start_date "2009-01-01" }
     { end_date "2099-12-31" }
@@ -37,9 +37,6 @@ set read_p [db_string report_perms "
 	from	im_menus m
 	where	m.label = :menu_label
 " -default 'f']
-
-# For testing - set manually
-set read_p "t"
 
 # Write out an error message if the current user doesn't have read permissions
 if {![string equal "t" $read_p]} {
@@ -87,14 +84,23 @@ set help_text "
 	The report lists all main projects with a set 'Budget' or 'Budget Hours' field
 	in the given interval.<br>
 	<ul>
+	<li><b>%Compl</b>: Completion degree of the project. Calculated automatically from the
+	    completion of sub-projects and tasks.
+
 	<li><b>Budget Hours</b>: The manually specified budget hours for the project.
 	<li><b>Logged Hours</b>: All hours logged on the project and its sub-projects and tasks.
 	    Red color indicates that the hourly budget has been exceeded.
-	<li><b>%Compl</b>: Completion degree of the project. Calculated automatically from the
-	    completion of sub-projects and tasks.
 	<li><b>Estim Hours</b>: = Logged Hours / %Comp. Represents the hours necessary
 	    to finish the project at the current pace.
 	    Brown color indicates that the project will exceed the hourly budget.
+
+	<li><b>Budget Costs</b>: The manually specified budget for the project.
+	<li><b>Logged Costs</b>: All costs logged on the project and its sub-projects and tasks.
+	    Red color indicates that the budget has been exceeded.
+	<li><b>Estim Costs</b>: = Logged Costs / %Comp. Represents the costs necessary
+	    to finish the project at the current pace. Brown color indicates that the project 
+	    will exceed the budget.
+
 	</ul>
 	The interval defaults to 2000-01-01 - 2100-01-01.
 "
@@ -117,6 +123,8 @@ set rowclass(1) "rowodd"
 set currency_format "999,999,999.09"
 set percent_format "999.9"
 set date_format "YYYY-MM-DD"
+set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+
 
 # Set URLs on how to get to other parts of the system
 # for convenience. (New!)
@@ -146,23 +154,30 @@ if {0 != $customer_id} {
 
 set report_sql "
 	select
-	        p.*,
-		im_name_from_user_id(p.project_lead_id) as project_lead_name,
-	        p.project_budget_hours as budget_hours,
-	        p.cost_timesheet_logged_cache as logged_hours,
+		p.*,
+		to_char(p.project_budget, :currency_format) as budget_pretty,
 		to_char(p.percent_completed, :percent_format) as percent_completed_pretty,
-		cust.company_id as customer_id,
-		cust.company_path as customer_nr,
-		cust.company_name as customer_name
+		to_char(p.logged_costs, :currency_format) as logged_costs_pretty
 	from
-	        im_projects p,
-		im_companies cust
-	where
-		p.company_id = cust.company_id and
-	        p.parent_id is NULL and
-	        p.project_budget_hours is not null
+		(select
+			p.*,
+			im_name_from_user_id(p.project_lead_id) as project_lead_name,
+			p.project_budget_hours as budget_hours,
+			p.cost_timesheet_logged_cache as logged_hours,
+			coalesce(p.cost_invoices_cache, 0) + coalesce(p.cost_timesheet_logged_cache, 0) + coalesce(p.cost_bills_cache, 0) + coalesce(p.cost_expense_logged_cache, 0) as logged_costs,
+			cust.company_id as customer_id,
+			cust.company_path as customer_nr,
+			cust.company_name as customer_name
+		from
+			im_projects p,
+			im_companies cust
+		where
+			p.company_id = cust.company_id and
+			p.parent_id is NULL and
+			(p.project_budget is not NULL OR p.project_budget_hours is not NULL)
+		) p
 	order by
-		lower(cust.company_name),
+		lower(p.customer_name),
 		lower(p.project_name)
 "
 
@@ -178,10 +193,13 @@ set header0 {
 	"Project<br>Nr" 
 	"Project<br>Name" 
 	"Project<br>Manager" 
+	"%<br>Compl"
 	"Budget<br>Hours"
 	"Logged<br>Hours"
-	"%<br>Compl"
 	"Estim<br>Hours"
+	"Budget<br>Costs"
+	"Logged<br>Costs"
+	"Estim<br>Costs"
 }
 
 # The entries in this list include <a HREF=...> tags
@@ -190,27 +208,30 @@ set header0 {
 set report_def [list \
     group_by customer_id \
     header {
-	"\#colspan=10 <a href=$this_url&customer_id=$customer_id&level_of_detail=4 
+	"\#colspan=11 <a href=$this_url&customer_id=$customer_id&level_of_detail=4 
 	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 	<b><a href=$company_url$customer_id>$customer_name</a></b>"
     } \
-        content [list \
-            group_by project_id \
-            header { } \
+	content [list \
+	    group_by project_id \
+	    header { } \
 	    content [list \
 		    header {
 			""
 			"<a href='$project_url$project_id'>$project_nr</a>"
 			$project_name
 			"<a href='$user_url$project_lead_id'>$project_lead_name</a>"
+			"\#align=right $percent_completed_pretty%"
 			"\#align=right $budget_hours"
 			"\#align=right <font color=$logged_hours_color>$logged_hours</font>"
-			"\#align=right $percent_completed_pretty%"
 			"\#align=right <font color=$estim_hours_color>$estim_hours</font>"
+			"\#align=right $budget_pretty"
+			"\#align=right <font color=$logged_costs_color>$logged_costs_pretty</font>"
+			"\#align=right <font color=$estim_costs_color>$estim_costs</font>"
 		    } \
 		    content {} \
 	    ] \
-            footer {
+	    footer {
 	    } \
     ] \
     footer { 
@@ -313,21 +334,40 @@ db_foreach sql $report_sql {
 	# Calculated Variables
 	set estim_hours ""
 	catch { set estim_hours [expr round(10 * $logged_hours * 100 / $percent_completed) / 10] }
+	set estim_costs ""
+	catch { set estim_costs [expr round(10 * $logged_costs * 100 / $percent_completed) / 10] }
 
 	# Color=red if logged hours > budget hours
 	set logged_hours_color "black"
-	if {$logged_hours > $budget_hours} {
-	    set logged_hours_color "red"
+	if {"" != $budget_hours && "" != $logged_hours} {
+	    if {$logged_hours > $budget_hours} {
+		set logged_hours_color "red"
+	    }
 	}
 
 	# Color=orange if logged estimated_hours > budget hours
 	set estim_hours_color "black"
-	if {"" != $estim_hours} {
+	if {"" != $estim_hours && "" != $budget_hours} {
 	    if {$estim_hours > $budget_hours} {
 		set estim_hours_color "brown"
 	    }
 	}
 
+	# Color=red if logged costs > budget
+	set logged_costs_color "black"
+	if {"" != $project_budget && "" != $logged_costs} {
+	    if {$logged_costs > $project_budget} {
+		set logged_costs_color "red"
+	    }
+	}
+
+	# Color=orange if logged estimated_costs > budget
+	set estim_costs_color "black"
+	if {"" != $project_budget && "" != $estim_costs} {
+	    if {$estim_costs > $project_budget} {
+		set estim_costs_color "brown"
+	    }
+	}
 
 	set last_value_list [im_report_render_header \
 	    -group_def $report_def \
