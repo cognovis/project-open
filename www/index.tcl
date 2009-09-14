@@ -116,6 +116,7 @@ db_multirow -extend {indent_spaces edit_html} reports get_reports "
 		(m.enabled_p = 't' OR m.enabled_p is null) and
 	        tree_sortkey like '$top_menu_sortkey%'
 		and 't' = im_object_permission_p(m.menu_id, :current_user_id, 'read')
+		and m.label != 'reporting'
 	order by tree_sortkey
 " {
     # Pass the report name though the localization system
