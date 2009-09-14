@@ -38,6 +38,7 @@ set help_text "
 	<strong>Projects-01-Commented Tutorial Report:</strong><br>
 	This is the first report of the Reporting Tutorial.
 	The report shows all 'main' projects in the system.
+	Please see the <a href=\"source?source=projects-01-commented\">source code</a> for details.
 "
 
 

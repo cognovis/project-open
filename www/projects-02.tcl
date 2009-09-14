@@ -103,6 +103,7 @@ set help_text "
 	the interval between start_date and end_date, including
 	the start_date, but excluding the end_date.
 	The interval defaults to 2000-01-01 - 2100-01-01.
+	Please see the <a href=\"source?source=projects-02\">source code</a> for details.
 "
 
 
