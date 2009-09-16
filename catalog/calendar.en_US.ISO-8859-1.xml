@@ -17,7 +17,7 @@
   <msg key="Apply_to_all">Apply to all events</msg>
   <msg key="Attachments">Attachments:</msg>
   <msg key="Audiences_for_item">Audiences for item %cal_item_name%</msg>
-  <description key="Audiences_for_item">Used as a header where the audiences of a calendar item are shown.</description>
+  <description key="Audiences_for_item">???????????? ??? ?????????, ???????????? ????????? ??????? ?????????.</description>
 
   <msg key="Calendar">Calendar</msg>
   <msg key="Calendar_Add_Item">Calendar: Add Item</msg>
@@ -36,7 +36,7 @@
   <msg key="Date_1">Date</msg>
   <msg key="day">day</msg>
   <msg key="day_rolling_period">day rolling period</msg>
-  <description key="day_rolling_period">Please, could you give more info of the context for this, thanks</description>
+  <description key="day_rolling_period">??????????, ???????? ????????.</description>
 
   <msg key="day_s">day (s)</msg>
   <msg key="Delete">Delete</msg>
@@ -111,7 +111,7 @@
               &lt;if %days.today_p% true&gt;
                 &lt;td class=&quot;today&quot; onclick=&quot;javascript:location.href='%days.url%';&quot;&gt;
                   &lt;a href=&quot;%days.url%&quot; title=&quot;&lt;#_ Go to %month_name% %days.day_number%, %year%</msg>
-  <description key="lt_Go_to_monthsname_curr_1">This looks like a buggy internationalization of the package.</description>
+  <description key="lt_Go_to_monthsname_curr_1">?????? ?? ????????? ??????????????????? ??????.</description>
 
   <msg key="lt_Hide_Checked_Calendar">Hide Selected Calendars</msg>
   <msg key="lt_Manage_Calendar_Audie">Manage Calendar Audiences</msg>
@@ -154,7 +154,7 @@ than once in your calendar. The event's details are:</msg>
   <msg key="Repeat_1">Repeat?</msg>
   <msg key="Repeat_every">Repeat every</msg>
   <msg key="revoke">revoke</msg>
-  <description key="revoke">Used in the context of revoking a privilege.</description>
+  <description key="revoke">???????????? ? ????????? ?????? ??????????</description>
 
   <msg key="same">same</msg>
   <msg key="Saturday">Saturday</msg>

@@ -15,7 +15,7 @@
   <msg key="all_events">Tous les événements</msg>
   <msg key="and_Time">et Heure</msg>
   <msg key="Apply_to_all">Appliquer pour tous les événements </msg>
-  <msg key="Attachments">Attaches:</msg>
+  <msg key="Attachments">Pièces jointes :</msg>
   <msg key="Audiences_for_item">Audiences de cet élément</msg>
   <msg key="Calendar">Agenda</msg>
   <msg key="Calendar_Add_Item">Agenda: ajouter un élément</msg>
@@ -39,17 +39,23 @@
   <msg key="delete">effacer</msg>
   <msg key="Description">Description</msg>
   <msg key="Details">Détails:</msg>
-  <msg key="developer_note_calendar_add">Note de développeur: La procédure de création de calendrier, implique les étapes suivantes: &lt;ol&gt;  &lt;li&gt; Créer l'objet calendrier et changer les privilèges par défaut si nécessaire &lt;li&gt; Sélectionner les groupes et/ou utilisateurs qui auront accès a ce calendrier &lt;li&gt; Appliquer aux groupes et aux utilisateurs des privilèges spécifiques si nécessaire</msg>
+  <msg key="developer_note_calendar_add">Note du développeur : La procédure de création de calendrier implique les étapes suivantes: &lt;ol&gt;  &lt;li&gt; Créer l'objet calendrier et modifier les privilèges par défaut si nécessaire &lt;li&gt; Sélectionner les groupes et/ou utilisateurs qui auront accès a ce calendrier &lt;li&gt; Appliquer aux groupes et aux utilisateurs des privilèges spécifiques si nécessaire &lt;/ol&gt; </msg>
   <msg key="Edit">Editer</msg>
   <msg key="edit">éditer</msg>
-  <msg key="End_Time">Heure finale</msg>
+  <msg key="End_Time">Heure de fin</msg>
   <msg key="Events_over_a">Événement au delà de</msg>
   <msg key="Friday">Vendredi</msg>
   <msg key="from">de</msg>
   <msg key="Go_to_date">Aller à la date </msg>
+  <msg key="Go_to_monthsname">Aller à %months.name%</msg>
+  <msg key="Go_to_year_next_year">Aller à l'année %next_year%</msg>
+  <msg key="Go_to_year_prev_year">Aller à l'année %prev_year%</msg>
   <msg key="goto_day_items_day_number">Aller à la date %items.day_number%</msg>
   <msg key="goto_days_day_number">Aller à la date %days.day_number%</msg>
   <msg key="goto_items_event_name">Aller à %items.event_name%</msg>
+  <msg key="goto_items_without_time_event_name">Aller à %items_without_time.event_name%</msg>
+  <msg key="goto_months_name">Aller à %months.name%</msg>
+  <msg key="goto_today">Aller à aujourd'hui</msg>
   <msg key="Grant">Autoriser</msg>
   <msg key="Grant_Permissions">Accorder un privilège</msg>
   <msg key="is_recurring">Elément récurrent</msg>
@@ -69,6 +75,29 @@
   <msg key="lt_delete_only_this_inst">effacer seulement cette instance</msg>
   <msg key="lt_Edit_your_Calendar_Pr">Editer les préférences de votre agenda</msg>
   <msg key="lt_everyone_have_read_pe">tous ont droit de lecture et peuvent voir ces éléments, aussi les utilisateurs inscrits que non-inscrits.</msg>
+  <msg key="lt_Go_to_month_name_days">Aller à %month_name% %days.day_number%, %year%</msg>
+  <msg key="lt_Go_to_monthsname_curr">Aller à %months.name% %curr_year%</msg>
+  <msg key="lt_Go_to_monthsname_curr_1">Aller à %months.name% %curr_year%&amp;gt;%months.name%&amp;lt;/a&amp;gt;&amp;lt;/td&amp;gt;
+            &amp;lt;/else&amp;gt;         
+           &amp;lt;/multiple&amp;gt;
+        &amp;lt;/if&amp;gt;
+
+        &amp;lt;else&amp;gt;
+          &amp;lt;tr class=&amp;quot;days&amp;quot;&amp;gt;
+            &amp;lt;multiple name=&amp;quot;days_of_week&amp;quot;&amp;gt;
+              &amp;lt;td&amp;gt;%days_of_week.day_short%&amp;lt;/td&amp;gt;
+            &amp;lt;/multiple&amp;gt;
+          &amp;lt;/tr&amp;gt;
+      
+          &amp;lt;multiple name=&amp;quot;days&amp;quot;&amp;gt;
+            &amp;lt;if %days.beginning_of_week_p% true&amp;gt;
+              &amp;lt;tr&amp;gt;
+            &amp;lt;/if&amp;gt;
+        
+            &amp;lt;if %days.active_p% true&amp;gt;
+              &amp;lt;if %days.today_p% true&amp;gt;
+                &amp;lt;td class=&amp;quot;today&amp;quot; onclick=&amp;quot;javascript:location.href='%days.url%';&amp;quot;&amp;gt;
+                  &amp;lt;a href=&amp;quot;%days.url%&amp;quot; title=&amp;quot;&amp;lt;#_ Go to %month_name% %days.day_number%, %year%</msg>
   <msg key="lt_Hide_Checked_Calendar">Occulter les agendas sélectionnés.</msg>
   <msg key="lt_Manage_Calendar_Audie">Administrer les audiences de l'agenda</msg>
   <msg key="lt_no_parties_exist_cont">aucune partie existante. Contactez votre administrateur système</msg>
@@ -76,7 +105,7 @@
   <msg key="lt_no_privilege_has_been">aucun privilège n'a été accordé</msg>
   <msg key="lt_only_those_you_choose">seuls ceux qui font partie de l'audience de cet agenda pourront voir ces événements.</msg>
   <msg key="lt_Repeat_this_event_unt">Répéter l'événement jusqu'à:</msg>
-  <msg key="lt_The_following_is_a__l">Voici una liste des agendas auxquels vous pouvez accéder. Cette liste sera montrée dans votre agenda comme une option permettant de consulter les événements de ces agendas. Vous pouvez sélectionner les agendas qui devront apparaitre sur cette liste.</msg>
+  <msg key="lt_The_following_is_a__l">Voici une liste des agendas auxquels vous pouvez accéder. Cette liste sera montrée dans votre agenda comme une option permettant de consulter les événements de ces agendas. Vous pouvez sélectionner les agendas qui devront apparaitre sur cette liste.</msg>
   <msg key="lt_There_are_no_audience">Il n'y a pas d'audience pour cet agenda</msg>
   <msg key="lt_This_is_a_repeating_e">Cet événement est récurrent</msg>
   <msg key="lt_You_are_choosing_to_m">Vous avez choisi de convertir cet événement en récurrent, donc il apparaitra plusieurs fois dans votre agenda. Détail de l'événement:</msg>
@@ -110,6 +139,7 @@
   <msg key="same">pareil</msg>
   <msg key="Saturday">Samedi</msg>
   <msg key="Select_Calendars">Sélectionner agendas</msg>
+  <msg key="select_views_name">Sélectionner affichage %views.name%</msg>
   <msg key="Sharing">Partager</msg>
   <msg key="sort_by_date">Trier par date</msg>
   <msg key="sort_by_type">Trier par type</msg>
@@ -126,8 +156,10 @@
   <msg key="Tuesday">Mardi</msg>
   <msg key="Type">Type:</msg>
   <msg key="Type_1">Type</msg>
+  <msg key="Type_Help">Les éléments de votre calendrier peuvent éventuellement être classés par type. Choisissez-en un dans la liste.</msg>
   <msg key="Use_Hours_Below">Utilisez les heures suivantes:</msg>
   <msg key="Wednesday">Mercredi</msg>
+  <msg key="y-m-d">a-m-j</msg>
   <msg key="year">année</msg>
   <msg key="Yes">Oui</msg>
   <msg key="yes_delete_it">oui, effacer</msg>

@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<message_catalog package_key="calendar" package_version="2.1.0b6" locale="ru_RU" charset="UTF-8">
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="calendar" package_version="2.1.0b6" locale="ru_RU" charset="utf-8">
 
   <msg key="_You_may_choose_to">. Выберите действие.</msg>
   <msg key="Add">Добавить</msg>
@@ -17,8 +17,6 @@
   <msg key="Apply_to_all">Применить ко всем событиям</msg>
   <msg key="Attachments">Вложения:</msg>
   <msg key="Audiences_for_item">Аудитория для события %cal_item_name%</msg>
-  <description key="Audiences_for_item">Используется как заголовок, показывающий аудиторию события календаря.</description>
-
   <msg key="Calendar">Календарь</msg>
   <msg key="Calendar_Add_Item">Добавление события календаря</msg>
   <msg key="Calendar_Edit_Item">Изменение события календаря</msg>
@@ -36,8 +34,6 @@
   <msg key="Date_1">Дата</msg>
   <msg key="day">день</msg>
   <msg key="day_rolling_period">дней - испытательный срок</msg>
-  <description key="day_rolling_period">Пожалуйста, поясните контекст.</description>
-
   <msg key="day_s">дн.</msg>
   <msg key="Delete">Удалить</msg>
   <msg key="delete">удалить</msg>
@@ -89,8 +85,6 @@
           &lt;multiple name=&quot;days&quot;&gt; &lt;if %days.beginning_of_week_p% true&gt; &lt;tr&gt; &lt;/if&gt;
         
             &lt;if %days.active_p% true&gt; &lt;if %days.today_p% true&gt; &lt;td class=&quot;today&quot; onclick=&quot;javascript:location.href='%days.url%';&quot;&gt; &lt;a href=&quot;%days.url%&quot; title=&quot;&lt;#_ Перейти к дате: %days.day_number% %month_name% %year%</msg>
-  <description key="lt_Go_to_monthsname_curr_1">Похоже на неудачную интернационализацию пакета.</description>
-
   <msg key="lt_Hide_Checked_Calendar">Скрыть выбранные календари</msg>
   <msg key="lt_Manage_Calendar_Audie">Управление аудиторией календаря</msg>
   <msg key="lt_no_parties_exist_cont">Нет аудитории. Обратитесь к системному администратору.</msg>
@@ -129,8 +123,6 @@
   <msg key="Repeat_1">Повторить?</msg>
   <msg key="Repeat_every">Повторять каждые</msg>
   <msg key="revoke">отменить</msg>
-  <description key="revoke">Используется в контексте отмены разрешений</description>
-
   <msg key="same">тот же</msg>
   <msg key="Saturday">Суббота</msg>
   <msg key="Select_Calendars">Выбрать календари</msg>
