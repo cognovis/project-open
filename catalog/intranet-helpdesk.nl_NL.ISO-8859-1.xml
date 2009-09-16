@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-helpdesk" package_version="3.4.0.6.0" locale="nl_NL" charset="ISO-8859-1">
+<message_catalog package_key="intranet-helpdesk" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
 
   <msg key="Action">Actie</msg>
   <msg key="Add_a_new_ticket">Nieuw ticket</msg>
@@ -38,8 +38,9 @@
   <msg key="Duplicate">Dubbele</msg>
   <msg key="Duplicated">Gedupliceerd</msg>
   <msg key="Executing">Aan het uitvoeren</msg>
-  <msg key="Feature_Request">Toekomstig verzoek</msg>
+  <msg key="Feature_Request">Verzoek tot uitbreiding</msg>
   <msg key="Filter_Tickets">Filter tickets</msg>
+  <msg key="Home_Ticket_Component">Thuispagina ticket Component</msg>
   <msg key="In_review">In review</msg>
   <msg key="Incident_ticket_type">Incident ticket</msg>
   <msg key="Invalid">Ongeldig</msg>
@@ -49,7 +50,7 @@
   <msg key="Modifying">Aan het wijzigen</msg>
   <msg key="My_queues">Mijn wachtrijen</msg>
   <msg key="Name">Naam</msg>
-  <msg key="New_SLA">Nieuwe Dienstenniveauovereenkomst (SLA)</msg>
+  <msg key="New_SLA">Nieuwe Diensten Niveau Overeenkomst (DNO)</msg>
   <msg key="New_Ticket">Nieuwe ticket</msg>
   <msg key="Nr">Nr</msg>
   <msg key="Nuke">Definitief verwijderen</msg>
@@ -72,27 +73,29 @@
   <msg key="Resolved">Opnieuw opgelost</msg>
   <msg key="Service_Mgmt">IT Dienstenbeheer</msg>
   <msg key="Sign-off">Uitschrijven</msg>
-  <msg key="SLA">SLA</msg>
+  <msg key="SLA">DNO</msg>
   <msg key="SLA_List">Lijst van dienstovereenkomsten (SLA)</msg>
-  <msg key="SLA_Management">Dienstenniveauovereenkomst beheer</msg>
-  <msg key="SLA_Request">Verzoek tot dienstenniveauovereenkomst</msg>
+  <msg key="SLA_Management">DNO beheer</msg>
+  <msg key="SLA_Request">Verzoek tot DNO</msg>
   <msg key="Status">Status</msg>
   <msg key="Telephony_Request">Telefonisch verzoek</msg>
   <msg key="Ticket_Details">Ticket details</msg>
   <msg key="Ticket_Members">Ticket leden</msg>
   <msg key="Ticket_Name">Ticket naam</msg>
   <msg key="Ticket_Nr">Ticket nummer</msg>
+  <msg key="Ticket_type_Bug_Request">Aanvraag bug type</msg>
   <msg key="Ticket_type_Feature_Request">Toekomstig verzoek</msg>
   <msg key="Ticket_type_Permission_Request">Verzoek tot het verkrijgen van toegangsrechten</msg>
   <msg key="Ticket_type_Problem_Ticket">Probleem ticket</msg>
   <msg key="Ticket_type_Project_Request">Verzoek tot project</msg>
+  <msg key="Ticket_type_Purchasing_Request">Inkoopaanvraag type</msg>
   <msg key="Ticket_type_Report_Request">Verzoek tot rapport</msg>
-  <msg key="Ticket_type_SLA_Request">Verzoek tot Dienstenniveauovereenkomst</msg>
+  <msg key="Ticket_type_SLA_Request">DNO verzoek</msg>
   <msg key="Ticket_type_Telephony_Request">Telefonisch verzoek</msg>
   <msg key="Ticket_type_Training_Request">Verzoek tot training</msg>
   <msg key="Ticket_type_Workplace_Move_Request">Verzoek tot het verplaatsen van een werkplek</msg>
   <msg key="Ticket_Types">Ticket types</msg>
-  <msg key="Ticket_Workflow_Actions">Ticket stroomschema acties</msg>
+  <msg key="Ticket_Workflow_Actions">Ticket werkproces acties</msg>
   <msg key="Tickets">Tickets</msg>
   <msg key="Title_Help">Help</msg>
   <msg key="Training_Request">Verzoek tot training</msg>
