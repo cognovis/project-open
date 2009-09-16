@@ -5,7 +5,7 @@
   <msg key="back_one_day">retour d'une journée</msg>
   <msg key="Date">Date</msg>
   <msg key="Date_as">Date comme</msg>
-  <msg key="Date_as_YYYYMMDD">Format YYYYMMDD</msg>
+  <msg key="Date_as_YYYYMMDD">Format AAAAMMJJ</msg>
   <msg key="Day">Jour</msg>
   <msg key="Day_of_Week">Jour de la semaine</msg>
   <msg key="days_of_week">dimanche lundi mardi mercredi jeudi vendredi samedi</msg>
@@ -16,7 +16,7 @@
   <msg key="List">Liste</msg>
   <msg key="lt_Width_must_be_">la largeur doit être entre 1 et 12</msg>
   <msg key="Month">Mois</msg>
-  <msg key="short_days_of_week">S L M M J V S</msg>
+  <msg key="short_days_of_week">D L M M J V S</msg>
   <msg key="to">à</msg>
   <msg key="Today">Aujourd'hui</msg>
   <msg key="Week">Semaine</msg>
