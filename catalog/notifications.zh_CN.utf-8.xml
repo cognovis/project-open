@@ -3,6 +3,7 @@
 
   <msg key="Action">操作</msg>
   <msg key="Change">更改</msg>
+  <msg key="Contents">内容:</msg>
   <msg key="Delivery_Method">传递方法</msg>
   <msg key="Frequency">频率</msg>
   <msg key="Item">项</msg>
