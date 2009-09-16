@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-payments" package_version="3.4.0.6.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-payments" package_version="3.4.0.7.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="_Previous">Page</msg>
   <msg key="Add_New">Add New</msg>
@@ -23,6 +23,7 @@
   <msg key="lt_The_intranet_start_bl">The intranet start blocks are either undefined or we do not have a start block for this week or later into the future.</msg>
   <msg key="lt_There_are_currently_n">There are currently no payments matching the selected criteria</msg>
   <msg key="lt_You_dont_have_suffici">You don't have sufficient privileges to see this page.</msg>
+  <msg key="Mark_invoice_as_paid">Mark invoice as paid</msg>
   <msg key="New_payment">New payment</msg>
   <msg key="Next_Page">Next Page</msg>
   <msg key="Note">Note</msg>
