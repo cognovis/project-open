@@ -18,16 +18,12 @@ create table im_audits (
 				constraint im_audits_pk
 				primary key,
 	audit_object_id		integer
-				constraint im_audits_object_fk
-				references acs_objects
 				constraint im_audits_object_nn
 				not null,
 	audit_action		text
 				constraint im_audits_action_ck
 				check (audit_action in ('create','update','delete','nuke','pre_update')),
 	audit_user_id		integer
-				constraint im_audits_user_fk
-				references users
 				constraint im_audits_user_nn
 				not null,
 	audit_date		timestamptz
@@ -39,9 +35,7 @@ create table im_audits (
 	audit_last_id		integer
 				constraint im_audits_last_fk
 				references im_audits,
-	audit_ref_object_id	integer
-				constraint im_audits_reference_fk
-				references acs_objects,
+	audit_ref_object_id	integer,
 	audit_value		text
 				constraint im_audits_value_nn
 				not null,
@@ -252,7 +246,7 @@ SELECT im_component_plugin__new (
 	'/intranet-timesheet2-tasks/new',	-- page_url
 	null,				-- view_name
 	10,				-- sort_order
-	'im_audit_component -object_id $task_id'	-- component_tcl
+	'im_audit_component -object_id [im_opt_val task_id]'	-- component_tcl
 );
 
 SELECT acs_permission__grant_permission(
