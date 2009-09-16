@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-filestorage" package_version="3.4.0.6.0" locale="nl_NL" charset="ISO-8859-1">
+<message_catalog package_key="intranet-filestorage" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
 
   <msg key="Add_Permissions">Toevoegen toegangsrechten</msg>
   <msg key="Admin">Admin</msg>
@@ -15,7 +15,7 @@
   <msg key="Directories">Directories</msg>
   <msg key="Employees">Personeel</msg>
   <msg key="Filename">Bestandsnaam</msg>
-  <msg key="Filestorage">Bestandenopslag</msg>
+  <msg key="Filestorage">Opslag bestanden</msg>
   <msg key="Folder_type_Project">Project</msg>
   <msg key="Folder_type_Ticket">Ticket</msg>
   <msg key="Folder_up">Een map omhoog</msg>
@@ -50,7 +50,7 @@
   <msg key="lt_Use_the_Browse_button">Gebruik de 'Browse...'knop om u bstand te vinden, klik dan op 'Open'.</msg>
   <msg key="lt_You_have_not_selected">U heft geen map geselecteerd.</msg>
   <msg key="New_Folder">Nieuwe map</msg>
-  <msg key="No_files_found">geen files gevonden</msg>
+  <msg key="No_files_found">geen bestanden gevonden</msg>
   <msg key="Nothing_Selected">Niets geselecteerd</msg>
   <msg key="Project_Manager">Project manager</msg>
   <msg key="Read">Gelezen</msg>
