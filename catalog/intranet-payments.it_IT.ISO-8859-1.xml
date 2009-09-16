@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-payments" package_version="3.4.0.6.0" locale="it_IT" charset="ISO-8859-1">
+<message_catalog package_key="intranet-payments" package_version="3.4.0.7.0" locale="it_IT" charset="ISO-8859-1">
 
   <msg key="_Previous">Pagina</msg>
   <msg key="Add_New">Nuovo</msg>
@@ -23,6 +23,7 @@
   <msg key="lt_The_intranet_start_bl">I blocchi d'inizio della Intranet non sono stati definiti oppure non è disponibile un blocco d'inizio per la settimana in corso o per un periodo successivo.</msg>
   <msg key="lt_There_are_currently_n">Non esistono pagamenti corrispondenti ai criteri introdotti</msg>
   <msg key="lt_You_dont_have_suffici">Non si dispone dei privilegi sufficienti per visualizzare questa pagina</msg>
+  <msg key="Mark_invoice_as_paid">Contrassegna fattura come pagata</msg>
   <msg key="New_payment">Nuovo pagamento</msg>
   <msg key="Next_Page">Pagina successiva</msg>
   <msg key="Note">Nota</msg>
