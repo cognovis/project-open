@@ -1,9 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<message_catalog package_key="acs-kernel" package_version="5.1.5" locale="ru_RU" charset="UTF-8">
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="acs-kernel" package_version="5.1.5" locale="ru_RU" charset="utf-8">
 
   <msg key="authentication_authority">Центр проверки подлинности</msg>
-  <description key="authentication_authority">Название сервера проверки подлинности, такого как сервер LDAP или RADIUS.</description>
-
   <msg key="common_Add">Добавить</msg>
   <msg key="common_add">добавить</msg>
   <msg key="common_Administration">Администрирование</msg>
