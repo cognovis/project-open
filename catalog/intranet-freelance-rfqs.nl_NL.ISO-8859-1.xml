@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-freelance-rfqs" package_version="3.4.0.6.0" locale="nl_NL" charset="ISO-8859-1">
+<message_catalog package_key="intranet-freelance-rfqs" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
 
   <msg key="--Select--">-- Selecteer --</msg>
   <msg key="Add_a_new_RFQ">Toevoegen nieuw verzoek tot offerte (RFQ)</msg>
@@ -90,7 +90,7 @@
   <msg key="UoM">Meeteenheid</msg>
   <msg key="User">Gebruiker</msg>
   <msg key="Weight">Belang</msg>
-  <msg key="Workflow">Stroomschema</msg>
+  <msg key="Workflow">Werkproces</msg>
   <msg key="Yes_I_can_do">Ja, ik kan op tijd het gespecificeerde werk leveren.</msg>
   <msg key="Your_Answer">Uw antwoord</msg>
 </message_catalog>
