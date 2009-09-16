@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-helpdesk" package_version="3.4.0.7.0" locale="es_ES" charset="ISO-8859-1">
+
+  <msg key="Action">Acción</msg>
+  <msg key="Name">Nombre</msg>
+  <msg key="Service_Mgmt">Gestión de Servicios TI</msg>
+  <msg key="SLA">ANS (SLA)</msg>
+  <msg key="SLA_Request">Solicitud de ANS</msg>
+  <msg key="Status">Estatus</msg>
+  <msg key="Type">Tipo</msg>
+</message_catalog>
