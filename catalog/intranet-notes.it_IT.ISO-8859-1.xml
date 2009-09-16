@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-notes" package_version="3.4.0.6.0" locale="it_IT" charset="ISO-8859-1">
+<message_catalog package_key="intranet-notes" package_version="3.4.0.7.0" locale="it_IT" charset="ISO-8859-1">
 
   <msg key="Address">Indirizzo</msg>
   <msg key="Company_Notes">Note azienda</msg>
   <msg key="Create_new_Note">Nuova nota</msg>
   <msg key="Delete_Notes">Elimina note</msg>
+  <msg key="Duplicate_note">Duplica nota</msg>
+  <msg key="Duplicate_note_msg">Esiste già una nota identica per l'oggetto specificato.</msg>
   <msg key="Email">E-mail</msg>
   <msg key="Fax">Fax</msg>
   <msg key="Ftp">FTP</msg>
