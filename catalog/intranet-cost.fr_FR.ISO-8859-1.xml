@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-cost" package_version="3.4.0.6.0" locale="fr_FR" charset="ISO-8859-1">
+<message_catalog package_key="intranet-cost" package_version="3.4.0.7.0" locale="fr_FR" charset="ISO-8859-1">
 
   <msg key="Absences">Absences</msg>
+  <msg key="Accounts_Payable">Comptes payables</msg>
+  <msg key="Accounts_Receivable">Comptes recevables</msg>
   <msg key="Admin">Admin</msg>
   <msg key="Administration">Administration</msg>
   <msg key="All_Costs">Tous les coûts</msg>
@@ -18,6 +20,7 @@
   <msg key="Currency">Devise</msg>
   <msg key="Customer">Client</msg>
   <msg key="Customer_Invoices">Factures Client</msg>
+  <msg key="Customer_Links">Liens client</msg>
   <msg key="Customers">Clients</msg>
   <msg key="Del">Suppr</msg>
   <msg key="Description">Description</msg>
@@ -30,6 +33,7 @@
   <msg key="Edit_Cost">Modifier coût</msg>
   <msg key="Effective_Date">Date d'effet</msg>
   <msg key="Expenses">Frais</msg>
+  <msg key="Export_Finance_to_CSV">Exporter finance au CSV</msg>
   <msg key="Filter_Documents">Filtrer les Documents</msg>
   <msg key="Finance">Finance</msg>
   <msg key="finance">finance</msg>
@@ -48,16 +52,19 @@
   <msg key="lt_No_financial_document">Aucun document financier pour ce projet</msg>
   <msg key="lt_There_are_currently_n">Aucun coût ne correspond aux critères de recherche</msg>
   <msg key="lt_This_is_the_homepage_">Vous êtes sur la page d'accueil de la &amp;quot;partie finance&amp;quot;. Vous trouverez ici toutes les informations concenant les sociétés, projets et utilisateurs.</msg>
+  <msg key="Materials_Service_Types">Matériels (Types de service)</msg>
   <msg key="more_costs">Plus de coûts...</msg>
   <msg key="Multiple_Currency_Warning">&amp;lt;h2&amp;gt;Attention, devises multiples&amp;lt;/h2&amp;gt;
 &amp;lt;p&amp;gt;
 Ce projet comprend des documents financiers utilisant plusieurs devises
 &amp;lt;br&amp;gt;
-Bien que cela ne pose généralement aucun problème, cela génera dans le calcul des profits et pertes pour ce projet ainsi que pour le calcul de la marge du projet.&amp;lt;/p&amp;gt;</msg>
+Bien que cela ne pose généralement aucun problème, cela nous empêche d'effectuer le calcul des pertes et profits pour ce projet ainsi que pour le calcul de la marge du projet.&amp;lt;/p&amp;gt;</msg>
   <msg key="Name">Nom</msg>
   <msg key="New_Cost">Nouveau coût</msg>
   <msg key="New_Cost_Item">Nouvel élément de coût</msg>
   <msg key="New_Customer_Docs">Créer un nouveau document Client</msg>
+  <msg key="New_Customer_Invoices_Quotes">Factures &amp; devis nouveaux clients</msg>
+  <msg key="New_Provider_Bills_POs">Factures et bons de commande nouveaux fournisseurs</msg>
   <msg key="New_Provider_Docs">Créer un nouveau document Fournisseur</msg>
   <msg key="New_Timesheet_Invoice">Nouvelle Facture selon heures consommées</msg>
   <msg key="New_Trans_Invoice">Nouvelle facture de traduction</msg>
@@ -80,6 +87,7 @@ Bien que cela ne pose généralement aucun problème, cela génera dans le calcul de
   <msg key="Project">Projet</msg>
   <msg key="Provider">Fournisseur</msg>
   <msg key="Provider_Bills">Factures Fournisseur</msg>
+  <msg key="Provider_Links">Liens fournisseur</msg>
   <msg key="Providers">Fournisseurs</msg>
   <msg key="Purchase_Orders">Commandes</msg>
   <msg key="Quotes">Devis</msg>
@@ -90,6 +98,7 @@ Bien que cela ne pose généralement aucun problème, cela génera dans le calcul de
   <msg key="Status">Statut</msg>
   <msg key="TAX">Taxe</msg>
   <msg key="The_exchange_rates_are_outdated">Les taux de change pour les devises suivantes sont périmés. Veuillez contacter votre administrateur pour mettre à jour les taux de change suivants :</msg>
+  <msg key="Timesheet_Budget">Budget feuille de travail</msg>
   <msg key="Timesheet_Costs">Coûts liés aux heures consommées</msg>
   <msg key="Type">Type</msg>
   <msg key="VAT">TVA</msg>
