@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-reporting" package_version="3.4.0.6.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-reporting" package_version="3.4.0.7.0" locale="en_US" charset="ISO-8859-1">
 
   <msg key="Ad_hoc_Fraber_Test_group_id">Group ID</msg>
   <msg key="Ad_hoc_Fraber_Test_group_name">Group Name</msg>
@@ -25,6 +25,10 @@
   <msg key="Indicators">Indicators</msg>
   <msg key="Manage_Reports">Manage Reports</msg>
   <msg key="New_Report">New Report</msg>
+  <msg key="No_customer">Undefined Customer</msg>
+  <msg key="No_left_dimension">No 'Left' Dimension Specified</msg>
+  <msg key="No_left_dimension_message">You need to specify at least one variable for the left dimension.</msg>
+  <msg key="No_project">Undefined Project</msg>
   <msg key="Object_Creation_Audit_Cube">Object Creation Audit Cube</msg>
   <msg key="Other">Other</msg>
   <msg key="Price_Data_Warehouse_Cube">Price Data-Warehouse Cube</msg>
@@ -39,6 +43,7 @@
   <msg key="Report_Sort_Order">Sort Order</msg>
   <msg key="Report_Translation_Tasks">Translation Tasks</msg>
   <msg key="Report_Users___Contact_Information">Users &amp; Contact Information</msg>
+  <msg key="Reporting">Reporting</msg>
   <msg key="Reporting_Tutorial">Reporting Tutorial</msg>
   <msg key="Reports">Reports</msg>
   <msg key="Reports_Description">Description</msg>
@@ -56,4 +61,5 @@
   <msg key="Translation_PM_Productivity">Timesheet PM Productivity</msg>
   <msg key="Translation_Tasks">Translation Tasks</msg>
   <msg key="Users___Contact_Information">Users &amp; Contact Information</msg>
+  <msg key="You_dont_have_permissions">You don't have the necessary permissions to view this page.</msg>
 </message_catalog>
