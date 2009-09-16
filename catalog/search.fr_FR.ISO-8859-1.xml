@@ -14,7 +14,7 @@
   <msg key="lt_Make_sure_all_words_a">Assurez-vous que tous les mots sont correctement orthographiés</msg>
   <msg key="lt_No_pages_were_found_c">Aucune page contenant &quot; &quot; n'a été trouvée</msg>
   <msg key="lt_The_following_words_a">Les mots suivants sont très courants et ont été ignorés de votre recherche :</msg>
-  <msg key="lt_Tip_In_most_browsers_">Astuce : dans la plupart des navigateurs, vous pouvez simplement appuyer sur la touche entrée au lieu de clqiuer sur le bouton recherche</msg>
+  <msg key="lt_Tip_In_most_browsers_">Astuce : dans la plupart des navigateurs, vous pouvez simplement appuyer sur la touche entrée au lieu de cliquer sur le bouton recherche</msg>
   <msg key="lt_Try_different_keyword">Essayez avec d'autres mots de passe.</msg>
   <msg key="lt_Try_more_general_keyw">Essayez avec des mots de passe plus généraux.</msg>
   <msg key="lt_Try_your_query_on_stw">Essayez avec : %stw;noquote%</msg>
