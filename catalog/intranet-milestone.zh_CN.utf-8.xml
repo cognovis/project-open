@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-milestone" package_version="3.4.0.7.0" locale="zh_CN" charset="utf-8">
+
+  <msg key="Add_a_new_Milestone">新的里程碑</msg>
+  <msg key="Current_Milestones">当前的里程碑 </msg>
+  <msg key="Deadline">截止日期 </msg>
+  <msg key="Filter_Milestones">筛选里程碑</msg>
+  <msg key="Future_Milestones">未来里程碑</msg>
+  <msg key="Late_Milestones">过期里程碑</msg>
+  <msg key="Member">成员</msg>
+  <msg key="Milestone_Name">名字</msg>
+  <msg key="Milestone_Status">状态</msg>
+  <msg key="Milestone_Type">类型</msg>
+  <msg key="Milestones">里程碑</msg>
+  <msg key="On_track_status">确定?</msg>
+  <msg key="Time_Interval">时间间隔</msg>
+</message_catalog>
