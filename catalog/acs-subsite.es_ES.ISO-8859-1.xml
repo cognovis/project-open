@@ -263,7 +263,7 @@ Para cambiar su contraseña, visite %reset_password_url%</msg>
   <msg key="this_subsite">este subsitio</msg>
   <msg key="This_user_has_left_the">Este usuario ha dejado la comunidad.</msg>
   <msg key="To_log_in_visit_the">Para entrar, visite la</msg>
-  <msg key="Topic">Tópico</msg>
+  <msg key="Topic">Tema</msg>
   <msg key="type_specific_info">Introduzca información especifica</msg>
   <msg key="UP">ARRIBA</msg>
   <msg key="up_to_context_name">volver a %context_name%</msg>

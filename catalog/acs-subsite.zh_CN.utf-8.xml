@@ -167,6 +167,7 @@
   <msg key="lt_Uploaded_pretty_date">上传：%pretty_date%</msg>
   <msg key="lt_Uploaded_publish_date">上传：%publish_date%</msg>
   <msg key="lt_Use_the_Browse_button">使用“浏览”按钮找到文件，单击“打开”。</msg>
+  <msg key="lt_User_has_portrait_title">该用户输入了一篇介绍或者上传了写真</msg>
   <msg key="lt_We_cant_find_you">在用户列表中找不到您(%user_id%)，您的帐户可能已被删除。</msg>
   <msg key="lt_We_had_a_problem_proc">处理您的登陆时出现问题。</msg>
   <msg key="lt_We_were_not_awaiting_">我们一直在等待您的email。肯定有其它错误。</msg>
@@ -213,6 +214,7 @@
   <msg key="Permissions_for_name">许可%name%</msg>
   <msg key="Please_return_to_home">请返回%home_link%。</msg>
   <msg key="Portrait">肖像</msg>
+  <msg key="Profile">简介</msg>
   <msg key="Question">问题</msg>
   <msg key="Re_enable">重新使能</msg>
   <msg key="Recover_Password">恢复密码</msg>
@@ -222,6 +224,7 @@
   <msg key="Reject">拒绝</msg>
   <msg key="Remember_my_login">在此计算机上记住我的登录</msg>
   <msg key="Remove">移除</msg>
+  <msg key="Remove_All">移除所有</msg>
   <msg key="Req_membership_comm">申请为此团体的会员</msg>
   <msg key="Req_membership_subs">申请参加此子网站</msg>
   <msg key="Request_membership">申请为会员</msg>
@@ -263,6 +266,7 @@
   <msg key="upload_a_replacement_por">上传替换肖像</msg>
   <msg key="Upload_Portrait">上传肖像</msg>
   <msg key="Username">用户名</msg>
+  <msg key="UserSiteMap">用户的站点地图</msg>
   <msg key="Vacation_Info_Updated">休假信息已更新</msg>
   <msg key="Vacation_information_updated">你在%site_link%的休假信息已更新。</msg>
   <msg key="Welcome_user">欢迎您，%user_name%</msg>
