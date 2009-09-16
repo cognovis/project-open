@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-filestorage" package_version="3.4.0.6.0" locale="fr_FR" charset="ISO-8859-1">
+<message_catalog package_key="intranet-filestorage" package_version="3.4.0.7.0" locale="fr_FR" charset="ISO-8859-1">
 
   <msg key="Add_Permissions">Ajouter des Autorisations</msg>
   <msg key="Admin">Administrateur</msg>
+  <msg key="Bug_number">Bug# %bug_number%</msg>
   <msg key="Create_a_new_folder">Créer un nouveau dossier</msg>
   <msg key="Create_Folder">Créer un dossier</msg>
   <msg key="create_folder">Créer un dossier</msg>
@@ -15,6 +16,8 @@
   <msg key="Employees">Employés</msg>
   <msg key="Filename">Nom de fichier</msg>
   <msg key="Filestorage">Fichiers</msg>
+  <msg key="Folder_type_Project">Projet</msg>
+  <msg key="Folder_type_Ticket">Ticket</msg>
   <msg key="Folder_up">Dossier de niveau supérieur</msg>
   <msg key="Freelancers">Freelancers</msg>
   <msg key="Full_Member">Membre à part entière</msg>
