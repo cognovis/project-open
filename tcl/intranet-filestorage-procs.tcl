@@ -1541,8 +1541,8 @@ where
 
 	# Get more information about the file
 	set file_body [lindex $rel_path_list [expr $current_depth -1]]
-	set file_type ""
-	set file_size "invalid"
+	set file_type "file"
+	set file_size 0
 	set file_modified "invalid"
 	set file_extension ""
 
@@ -1552,7 +1552,6 @@ where
 	# if { [string match $tcl_platform(platform) "windows"] } {
     	#    set file "C:/ProjectOpen/cygwin${file}"
 	#}
-	
 	if { [catch {
 	    set file_type [file type $file]
 	    set file_size [expr [file size $file] / 1024]
@@ -1853,6 +1852,8 @@ ad_proc im_filestorage_dir_row {
 ad_proc im_filestorage_file_row { file_body base_path folder_type rel_path object_id base_path_depth current_depth file ctr rowclass file_type file_size file_modified file_extension user_perms} {
 
 }   {
+    ns_log Notice "im_filestorage_file_row(file_body=$file_body, base_path=$base_path, folder_type=$folder_type, rel_path=$rel_path, object_id=$object_id, base_path_depth=$base_path_depth, current_depth=$current_depth, file=$file, ctr=$ctr, file_type=$file_type, file_size=$file_size, file_modified=$file_modified, file_extension=$file_extension, user_perms=$user_perms"
+
     # ----------------------------------------------------
     # Determine access permissions
 
