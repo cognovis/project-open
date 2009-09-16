@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-expenses" package_version="3.4.0.6.0" locale="es_ES" charset="ISO-8859-1">
+<message_catalog package_key="intranet-expenses" package_version="3.4.0.7.0" locale="es_ES" charset="ISO-8859-1">
 
+  <msg key="--Select--">-- Seleccionar --</msg>
   <msg key="Add_a_new_Expense">Añadir un nuevo Gasto</msg>
+  <msg key="Add_a_new_Expense_Item">Añadir nuevo gasto</msg>
+  <msg key="Add_multiple_new_Expense_Items">Añadir múltiples gastos</msg>
+  <msg key="Add_one_new_Expense_Item">Añadir nuevo gasto</msg>
+  <msg key="All">Todos</msg>
   <msg key="Amount">Importe</msg>
-  <msg key="Billable_p">Facturable?</msg>
+  <msg key="Billable_p">¿Es facturable?</msg>
+  <msg key="Cash">Efectivo</msg>
   <msg key="Create_Invoice">Crear Factura de Gastos</msg>
   <msg key="create_invoice_help">'Facturas de Gastos' son grupos de gastos confirmados que pueden ser assiciados con un proyecto.</msg>
   <msg key="Create_Travel_Cost">Crear gasto de viaje</msg>
+  <msg key="Currency">Moneda</msg>
   <msg key="Delete">Borrar</msg>
   <msg key="Delete_Expenses">Borrar Gastos</msg>
   <msg key="Expense_Bundles">Facturas de Gastos</msg>
@@ -15,18 +22,34 @@
   <msg key="Expense_Type">Tipo de Gasto</msg>
   <msg key="Expenses">Gastos</msg>
   <msg key="Expenses_Items">Gastos</msg>
+  <msg key="Expenses_List">Lista de Gastos</msg>
   <msg key="External_company_name">Nombre de Empresa Externa</msg>
+  <msg key="External_Company_VatNr">CIF de la empresa externa</msg>
   <msg key="Filter_Expenses">Filtrar Gastos</msg>
+  <msg key="Fuel">Combustible</msg>
+  <msg key="Hotel">Hotel</msg>
   <msg key="ID">ID</msg>
   <msg key="Invoice">Factura</msg>
   <msg key="Invoice_Items">Gastos</msg>
+  <msg key="Km_own_car">Km vehículo propio</msg>
+  <msg key="Meals">Comidas</msg>
+  <msg key="New_Expense">Nuevo gasto</msg>
+  <msg key="New_Expense_Items">Añadir gastos</msg>
   <msg key="Note">Nota</msg>
+  <msg key="Office_Material">Material de oficina</msg>
+  <msg key="Other">Otro</msg>
+  <msg key="Parking">Aparcamiento</msg>
   <msg key="Project">Proyecto</msg>
   <msg key="Project_Name">Nombre del Proyecto</msg>
   <msg key="Receipt_reference">Referencia Recibo</msg>
   <msg key="reimbursable">Reembolsable %%</msg>
   <msg key="Remove_checked_items">Quitar elementos comprobados</msg>
+  <msg key="Taxi">Taxi</msg>
+  <msg key="Telephone">Teléfono</msg>
+  <msg key="Tolls">Peaje</msg>
+  <msg key="Train">Tren</msg>
   <msg key="Travel_cost_invoices">Facturas de gastos de viajes</msg>
   <msg key="Unassigned_Expenses">Gastos no asignados</msg>
   <msg key="Vat_Included">IVA incluido</msg>
+  <msg key="Without_Project">Sin proyecto</msg>
 </message_catalog>

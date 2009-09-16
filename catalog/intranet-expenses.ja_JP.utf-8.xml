@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="intranet-expenses" package_version="3.4.0.6.0" locale="ja_JP" charset="utf-8">
+<message_catalog package_key="intranet-expenses" package_version="3.4.0.7.0" locale="ja_JP" charset="utf-8">
 
   <msg key="Add_a_new_Expense">新規費用追加</msg>
   <msg key="Create_Invoice">経費請求書を作成してください</msg>

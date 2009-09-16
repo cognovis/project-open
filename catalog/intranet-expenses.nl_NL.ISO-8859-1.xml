@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-expenses" package_version="3.4.0.6.0" locale="nl_NL" charset="ISO-8859-1">
+<message_catalog package_key="intranet-expenses" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
 
   <msg key="--Select--">-- Kies --</msg>
   <msg key="Add_a_new_Expense">Voeg uitgave toe </msg>
@@ -9,6 +9,7 @@
   <msg key="Airfare">Luchthaventoeslag</msg>
   <msg key="All">Alle</msg>
   <msg key="Amount">Bedrag</msg>
+  <msg key="Billable">Verrekenbaar</msg>
   <msg key="Billable_p">Betaalbaar?</msg>
   <msg key="Bundle_Items">Verzamel items</msg>
   <msg key="Cash">Kas/contant</msg>
@@ -69,6 +70,7 @@
   <msg key="Unassigned_Expenses">Niet toegewezen onkosten</msg>
   <msg key="Unassigned_items">Niet toegewezen items</msg>
   <msg key="Unbundeled">Niet gebundeld</msg>
+  <msg key="Vat">BTW</msg>
   <msg key="Vat_Included">BTW % Incl.</msg>
   <msg key="Without_Project">Zonder project</msg>
   <msg key="Yesintranet-coreYes">Ja</msg>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-expenses" package_version="3.4.0.6.0" locale="it_IT" charset="ISO-8859-1">
+<message_catalog package_key="intranet-expenses" package_version="3.4.0.7.0" locale="it_IT" charset="ISO-8859-1">
 
   <msg key="--Select--">-- Seleziona --</msg>
   <msg key="Add_a_new_Expense">Nuova spesa</msg>
@@ -9,6 +9,7 @@
   <msg key="Airfare">Biglietto aereo</msg>
   <msg key="All">Tutto</msg>
   <msg key="Amount">Importo</msg>
+  <msg key="Billable">Fatturabile</msg>
   <msg key="Billable_p">Fatturabile?</msg>
   <msg key="Bundle_Items">Raggruppa elementi</msg>
   <msg key="Cash">Contanti</msg>
@@ -69,6 +70,7 @@
   <msg key="Unassigned_Expenses">Spese non assegnate</msg>
   <msg key="Unassigned_items">Elementi non assegnati</msg>
   <msg key="Unbundeled">Non raggruppato</msg>
+  <msg key="Vat">IVA</msg>
   <msg key="Vat_Included">% IVA compresa</msg>
   <msg key="Without_Project">Senza progetto</msg>
   <msg key="Yesintranet-coreYes">Sì</msg>
