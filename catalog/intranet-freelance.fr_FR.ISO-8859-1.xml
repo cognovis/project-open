@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-freelance" package_version="3.4.0.6.0" locale="fr_FR" charset="ISO-8859-1">
+<message_catalog package_key="intranet-freelance" package_version="3.4.0.7.0" locale="fr_FR" charset="ISO-8859-1">
 
   <msg key="Account_Unavailable">Compte non disponible</msg>
   <msg key="Add">Ajouter</msg>
@@ -8,6 +8,7 @@
   <msg key="Add_otype_skill">Ajouter des compétences</msg>
   <msg key="Add_skill">Ajouter une compétence</msg>
   <msg key="Add_Skills">Ajouter des compétences</msg>
+  <msg key="Argument_Error">Erreur d'argument</msg>
   <msg key="Bank">Banque</msg>
   <msg key="Bank_Account">Compte en banque</msg>
   <msg key="Cell_Phone">Téléphone portable</msg>

@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-freelance" package_version="3.4.0.6.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-freelance" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Account_Unavailable">Konto nicht verfügbar</msg>
   <msg key="Add">Hinzufügen</msg>
   <msg key="add_a_comment">Kommentar hinzufügen</msg>
   <msg key="Add_new_skill_type">Neue(s) %skill_type%</msg>
+  <msg key="Add_otype_skill">Skills hinzufügen</msg>
+  <msg key="Add_skill">Skill hinzufügen</msg>
+  <msg key="Add_Skills">Skills hinzufügen</msg>
   <msg key="Argument_Error">Argument Error</msg>
   <msg key="Bank">Bank</msg>
   <msg key="Bank_Account">Bankkonto</msg>
   <msg key="Cell_Phone">Handy</msg>
+  <msg key="Check_Uncheck_all_rows">Alle markieren</msg>
   <msg key="Claim">Grad</msg>
   <msg key="Claimed">Grad</msg>
   <msg key="Comment">Kommentar</msg>
@@ -19,7 +23,7 @@
   <msg key="Del">Löschen</msg>
   <msg key="Edit">Bearbeiten</msg>
   <msg key="Editing_rate">Stundensatz editieren</msg>
-  <msg key="Email">E-mail</msg>
+  <msg key="Email">E-Mail</msg>
   <msg key="erase">löschen</msg>
   <msg key="Error">Fehler</msg>
   <msg key="Filter_Freelancers">Freelancers filtern</msg>
@@ -51,6 +55,7 @@
   <msg key="modify_the_comment">Kommentar bearbeiten</msg>
   <msg key="Name">Name</msg>
   <msg key="no_freelancers">keine Freiberufler</msg>
+  <msg key="No_skills_found">Keine Skills gefunden.</msg>
   <msg key="Note">Notiz</msg>
   <msg key="Notify">Benachrichtigen</msg>
   <msg key="Original_Name">Orginalname</msg>
