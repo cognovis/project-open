@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-hr" package_version="3.4.0.6.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-hr" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="add_supervisor">Neuer Vorgesetzter</msg>
   <msg key="Availability_">Verfügbarkeit %</msg>
@@ -49,6 +49,7 @@
   <msg key="Salaries_per_Year">Anzahl Gehälter pro Jahr</msg>
   <msg key="Salary">Gehalt</msg>
   <msg key="Salary_Period">Gehaltsperiode</msg>
+  <msg key="Salary_period_month">Monat</msg>
   <msg key="Social_Security">Sozialversicherung</msg>
   <msg key="Social_Security_">Sozialversicherungsnr.</msg>
   <msg key="Social_Security_nr">Sozialversicherungsnr.</msg>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-hr" package_version="3.4.0.6.0" locale="nl_NL" charset="ISO-8859-1">
+<message_catalog package_key="intranet-hr" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
 
   <msg key="add_supervisor">toevoegen leidinggevende</msg>
   <msg key="Availability_">Beschikbaarheid %</msg>
@@ -46,7 +46,7 @@
   <msg key="Nothing_defined_yet">Nog niet gedefinieerd</msg>
   <msg key="Other_Costs">Overige kosten</msg>
   <msg key="Recruiting_Status">Status W&amp;S:</msg>
-  <msg key="Salaries_per_Year">Salaris per jaar</msg>
+  <msg key="Salaries_per_Year">Jaarsalaris</msg>
   <msg key="Salary">Salaris</msg>
   <msg key="Salary_Period">Betalingsperiode salaris</msg>
   <msg key="Salary_period_month">Maand</msg>
