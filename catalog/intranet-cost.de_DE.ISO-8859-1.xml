@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-cost" package_version="3.4.0.6.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-cost" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Absences">Abwesenheiten</msg>
   <msg key="Administration">Administration</msg>
@@ -17,6 +17,7 @@
   <msg key="Currency">Währung</msg>
   <msg key="Customer">Kunde</msg>
   <msg key="Customer_Invoices">Kundenrechnungen</msg>
+  <msg key="Customer_Links">Links ?Kunde?</msg>
   <msg key="Customers">Kunden</msg>
   <msg key="Del">Löschen</msg>
   <msg key="Description">Beschreibung</msg>
@@ -28,7 +29,7 @@
   <msg key="Due_Date">Fällig</msg>
   <msg key="Edit_Cost">Kosten bearbeiten</msg>
   <msg key="Effective_Date">Effektives Datum</msg>
-  <msg key="Expenses">Andre Kosten</msg>
+  <msg key="Expenses">Andere Kosten</msg>
   <msg key="Filter_Documents">Dokumente filtern</msg>
   <msg key="Finance">Finanzen</msg>
   <msg key="finance">Finanzen</msg>
@@ -68,11 +69,13 @@
   <msg key="Payments">Zahlungen</msg>
   <msg key="Please_Select">Bitte wählen</msg>
   <msg key="Preliminary_Costs">Vorläufige Kosten</msg>
+  <msg key="Preliminary_Total">Gesamt</msg>
   <msg key="Previous_Page">Letzte Seite</msg>
   <msg key="Print_Template">Druck Vorlage</msg>
   <msg key="Project">Projekt</msg>
   <msg key="Provider">Zulieferer</msg>
   <msg key="Provider_Bills">Zuliefererrechnungen</msg>
+  <msg key="Provider_Links">Links ?Lieferant?</msg>
   <msg key="Providers">Zulieferer</msg>
   <msg key="Purchase_Orders">Aufträge</msg>
   <msg key="Quotes">Angebote</msg>
@@ -83,6 +86,7 @@
   <msg key="Status">Status</msg>
   <msg key="TAX">Steuer</msg>
   <msg key="The_exchange_rates_are_outdated">Die Wechselkurse für die folgenden Währungen sind veraltet. Bitte kontaktieren sie ihren Systemadministrator um die folgenden Wechselkurse zu aktualisieren:</msg>
+  <msg key="Timesheet_Budget">Zeiterfassungsbudget</msg>
   <msg key="Timesheet_Costs">Zeiterfassungskosten</msg>
   <msg key="Type">Typ</msg>
   <msg key="VAT">MwSt.</msg>
