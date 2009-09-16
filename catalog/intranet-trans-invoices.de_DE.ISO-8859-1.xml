@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-trans-invoices" package_version="3.4.0.6.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-trans-invoices" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Accounting_Contact">Rechnungskontakt</msg>
   <msg key="Add_New">Neuer Eintrag</msg>
@@ -15,7 +15,7 @@
   <msg key="Country">Land</msg>
   <msg key="Create_Invoice">Neue Rechnung</msg>
   <msg key="Currency">Währung</msg>
-  <msg key="Del">Lösch</msg>
+  <msg key="Del">Löschen</msg>
   <msg key="Delete">Löschen</msg>
   <msg key="Delivery_Date">Lieferdatum</msg>
   <msg key="Description">Beschreibung</msg>
@@ -60,6 +60,7 @@
   <msg key="lt_You_have_insufficient_1">Sie haben unzureichene Berechtigungen</msg>
   <msg key="lt_You_have_selected_mul">Sie haben mehrere Kunden gewählt</msg>
   <msg key="lt_You_have_selected_mul_1">Sie haben mehrere Kunden gewählt</msg>
+  <msg key="Minimum_Rate">Mindestpauschale</msg>
   <msg key="MSM">Messenger</msg>
   <msg key="Name">Name</msg>
   <msg key="New_cost_type">Neu(e) %cost_type%</msg>
@@ -91,7 +92,7 @@
   <msg key="Project_Type">Projekttyp</msg>
   <msg key="Projects">Projekte</msg>
   <msg key="Purchase_Orders">Aufträge</msg>
-  <msg key="Rate">Rate</msg>
+  <msg key="Rate">Preis</msg>
   <msg key="Recipient">Empfänger</msg>
   <msg key="Recr_Status">Einstellungsstatus</msg>
   <msg key="Recr_Test">Einstellungstest</msg>
