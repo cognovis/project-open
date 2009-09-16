@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-bug-tracker" package_version="3.4.0.7.0" locale="zh_CN" charset="utf-8">
+
+  <msg key="BT_Component">错误跟踪组件</msg>
+  <msg key="BT_Product">错误跟踪产品</msg>
+  <msg key="BT_Version">错误跟踪版本</msg>
+  <msg key="Bug_Tracker">错误跟踪</msg>
+</message_catalog>
