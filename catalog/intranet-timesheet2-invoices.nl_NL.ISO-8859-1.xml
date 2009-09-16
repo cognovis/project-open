@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.4.0.6.0" locale="nl_NL" charset="ISO-8859-1">
+<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
 
+  <msg key="Accounting_Contact">Financieel contactpersoon</msg>
   <msg key="Add_New">Nieuwe toevoegen</msg>
   <msg key="Adress">Adres</msg>
   <msg key="Aggregate_tasks_of_the_same_material">Aggregeer taken van het zelfde materiaal?</msg>

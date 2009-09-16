@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.4.0.6.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Accounting_Contact">Rechnungskontakt</msg>
   <msg key="Add_New">Neuer Eintrag</msg>
   <msg key="Adress">Addresse</msg>
+  <msg key="Aggregate_tasks_of_the_same_material">Gleiche Aufgaben zusammenfassen?</msg>
+  <msg key="All_br_Reported_br_Units">Alle&amp;lt;br&amp;gt;gemeldeten&amp;lt;br&amp;gt;Einheiten</msg>
+  <msg key="All_Reported_Hours_help">Alle gemeldeten Stunden: Alle Zeiterfassungsstunden, die seit dem Erstellen der Aufgabe oder des Projekts kontiert wurden.</msg>
+  <msg key="All_Unbilled_Units">Alle nicht abgerechneten Einheiten</msg>
   <msg key="Amount">Betrag</msg>
+  <msg key="Billable_br_Units">Abrechnungsfähige&amp;lt;br&amp;gt;Einheiten</msg>
   <msg key="Billable_Units">Abrechenbare Einheiten</msg>
+  <msg key="Billable_Units_help">Abrechnungsfähige Einheiten: Anzahl der abrechnungsfähigen Stunden für jede Aufgabe. Ähnlich den Geplanten Einheiten, aber diese können auch nicht abrechnungsfähige Stunden für Presales oder Fehlerbehebung aufweisen.</msg>
   <msg key="Cell_Phone">Handy</msg>
   <msg key="Client">Kunde</msg>
   <msg key="Clients">Clients</msg>
@@ -16,7 +22,7 @@
   <msg key="Create_Invoice">Neue Rechnung</msg>
   <msg key="Create_lt_Quoteintranet-coreQuo">Notiz erstellen</msg>
   <msg key="Currency">Währung</msg>
-  <msg key="Del">Lösch</msg>
+  <msg key="Del">Löschen</msg>
   <msg key="Delete">löschen</msg>
   <msg key="Delivery_Date">Lieferdatum</msg>
   <msg key="Description">Beschreibung</msg>
@@ -57,6 +63,7 @@
   <msg key="lt_UOMtd__________td_cla">ME#&amp;lt;/td&amp;gt;
           &amp;lt;td class=rowtitle&amp;gt;&amp;lt;#_ Rate</msg>
   <msg key="lt_Upload_Client_Prices_">Upload Client Preise CSV</msg>
+  <msg key="lt_Use_the_quotBrowsequo">Klicken Sie auf die Schaltfläche &amp;amp;quot;Durchsuchen...&amp;amp;quot;, um die Datei zu suchen. Klicken Sie anschließend auf &amp;amp;quot;Öffnen&amp;amp;quot;.</msg>
   <msg key="lt_You_dont_have_suffici">Sie verfügen über nicht ausreichende Berechtigungen, um diese Seite zu sehen.</msg>
   <msg key="lt_You_have_insufficient">Sie verfügen über nicht ausreichende Berechtigungen, um diese Seite zu sehen.</msg>
   <msg key="lt_You_have_insufficient_1">Sie verfügen über nicht ausreichende Berechtigungen, um diese Seite zu nutzen.</msg>
@@ -85,23 +92,29 @@
   <msg key="Payment_Method">Zahlungsmethode</msg>
   <msg key="Payment_terms">Zahlungsbedingungen</msg>
   <msg key="Phone">Telefon</msg>
+  <msg key="Planned_br_Units">Geplante&amp;lt;br&amp;gt;Einheiten</msg>
   <msg key="Planned_Units">geplante Einheiten</msg>
+  <msg key="Planned_Units_help">Geplante Einheiten: Geschätzte Anzahl an Stunden für jede Aufgabe, wie während der Projektplanung festgelegt.</msg>
   <msg key="Previous_Page">vorherige Seite</msg>
   <msg key="Price">Preis</msg>
   <msg key="Price_List">Preisliste</msg>
   <msg key="Project_">Projekt</msg>
+  <msg key="Project_br_Status">Projekt&amp;lt;br&amp;gt;status</msg>
+  <msg key="Project_br_Type">Projekt&amp;lt;br&amp;gt;typ</msg>
   <msg key="Project_Name">Projektname</msg>
   <msg key="Project_Status">Projektstatus</msg>
   <msg key="Project_Type">Projekttyp</msg>
   <msg key="Projects">Projekte</msg>
   <msg key="Purchase_Orders">Aufträge</msg>
-  <msg key="Rate">Rate</msg>
+  <msg key="Rate">Preis</msg>
   <msg key="Recipient">Empfänger</msg>
   <msg key="Recr_Status">Freizeit Status</msg>
   <msg key="Recr_Test">Freizeit Test</msg>
   <msg key="Reference_Prices">Referenzpreise</msg>
   <msg key="Rep">Rep</msg>
+  <msg key="Reported_br_Units_in_br_Interval">Gemeldete&amp;lt;br&amp;gt;Einheiten für das&amp;lt;br&amp;gt;Intervall</msg>
   <msg key="Reported_Units">gemeldete Einheiten</msg>
+  <msg key="Reported_Units_Interval_help">Gemeldete Einheiten für das Intervall: Kontierte Stunden zwischen 'Startdatum' und 'Enddatum' (siehe Filter oben).</msg>
   <msg key="Save">Speichern</msg>
   <msg key="Sel">Ausw</msg>
   <msg key="Source">Quelle</msg>
@@ -117,6 +130,7 @@
   <msg key="Task_Name">Aufgabenname</msg>
   <msg key="Task_Type">Aufgabentyp</msg>
   <msg key="TAX">Steuer</msg>
+  <msg key="Timesheet_Invoicing_Wizard_help">Mit diesem Wizard können Sie Finanzdokumente aus Projektdaten auf vier verschiedene Arten erstellen:</msg>
   <msg key="Trados_Matrix">Tradox Matrix</msg>
   <msg key="Trg">Ziel</msg>
   <msg key="Type">Typ</msg>

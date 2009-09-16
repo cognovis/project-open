@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.4.0.6.0" locale="es_ES" charset="ISO-8859-1">
+<message_catalog package_key="intranet-timesheet2-invoices" package_version="3.4.0.7.0" locale="es_ES" charset="ISO-8859-1">
 
   <msg key="Accounting_Contact">Persona de contacto en Contabilidad</msg>
   <msg key="Add_New">Añadir nueva</msg>
@@ -44,9 +44,9 @@
   <msg key="lt_for_this_company_via_">para esta empresa por medio de un archivo CSV.</msg>
   <msg key="lt_Generate_Purchase_Ord">Generar órdenes de compra</msg>
   <msg key="lt_Insufficient_Privileg">Privilegios insuficientes</msg>
-  <msg key="lt_It_contains_some_comm">Contiene algunos comandos.</msg>
+  <msg key="lt_It_contains_some_comm">Contiene algunos comentarios.</msg>
   <msg key="lt_Please_backup_and_res">Realice por favor una copia de seguridad y restrinja la selección a los proyectos de un único cliente.</msg>
-  <msg key="lt_sample_pricelist_CSV_">Archivo CSV con lista de precios de muestra</msg>
+  <msg key="lt_sample_pricelist_CSV_">ejemplo de archivo CSV con lista de precios</msg>
   <msg key="lt_Select_Projects_for_I">Seleccione los proyectos a facturar</msg>
   <msg key="lt_Select_Tasks_for_Invo">Seleccione las tareas a facturar</msg>
   <msg key="lt_There_are_currently_n">Actualmente no hay facturas que se ajusten a los criterios seleccionados</msg>
