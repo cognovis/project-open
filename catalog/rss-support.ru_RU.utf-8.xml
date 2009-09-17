@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="rss-support" package_version="0.3d3" locale="ru_RU" charset="utf-8">
+
+  <msg key="Create_feed">Создать RSS-канал</msg>
+  <msg key="Remove_feed">Удалить RSS-канал</msg>
+  <msg key="Rss_feed_active">RSS-канал активен</msg>
+  <msg key="Rss_feed_inactive">RSS-канал неактивен</msg>
+  <msg key="Syndication_Feed">Объединенный канал</msg>
+</message_catalog>
