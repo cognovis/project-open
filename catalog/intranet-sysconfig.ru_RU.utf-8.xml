@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-sysconfig" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
+
+  <msg key="Page_deptcomp">Отдел</msg>
+  <msg key="Page_features">Возможности</msg>
+  <msg key="Page_logo">Эмблема</msg>
+  <msg key="Page_name">Имя</msg>
+  <msg key="Page_orgsize">Размер</msg>
+  <msg key="Page_prodtest">Оценка</msg>
+  <msg key="Page_profiles">Модель доверия</msg>
+  <msg key="Page_sector">Сектор</msg>
+  <msg key="profiles_all_companies">Изменить&lt;br&gt;все&lt;br&gt;компании</msg>
+  <msg key="profiles_all_projects">Изменить&lt;br&gt;все&lt;br&gt;проекты</msg>
+  <msg key="profiles_employees">Сотрудники</msg>
+  <msg key="profiles_finance">Изменить&lt;br&gt;финансы</msg>
+  <msg key="profiles_project_managers">Руководители проектов</msg>
+  <msg key="profiles_senior_managers">Старшие руководители</msg>
+  <msg key="SysConfig">Системная конфигурация</msg>
+  <msg key="SysConfig_Wizard">Мастер системной конфигурации</msg>
+  <msg key="System_Config_Wizard">Мастер системной конфигурации</msg>
+</message_catalog>
