@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-wiki" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
+
+  <msg key="Admin_All_Pages">Администрирование всех страниц</msg>
+  <msg key="Admin_Wiki_Changes">Администрирование изменений в вики</msg>
+  <msg key="Admin_Wiki_Permissions">Разрешения вики</msg>
+  <msg key="Categories">Категории</msg>
+  <msg key="Company_Wiki">Вики компании</msg>
+  <msg key="HomeWiki">Основная вики</msg>
+  <msg key="Main_Index">Главный указатель</msg>
+  <msg key="Project_Wiki">Вики проекта</msg>
+  <msg key="User_Wiki">Вики</msg>
+</message_catalog>
