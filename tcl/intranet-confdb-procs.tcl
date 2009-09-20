@@ -338,6 +338,9 @@ ad_proc -public im_conf_item_delete {
 	    db_string del_conf_proj_rel "select im_conf_item_project_rel__delete(:rel_id)"
 	}
 
+	# Delete references in im_tickets to the conf item.
+	db_dml del_ticket_refs "update im_tickets set ticket_conf_item_id = NULL where ticket_conf_item_id = :conf_item_id"
+
 	db_string del_conf_item "select im_conf_item__delete(:conf_item_id)"
     }
 }
