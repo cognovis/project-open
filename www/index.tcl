@@ -50,6 +50,9 @@ list::create \
             label "[lang::message::lookup {} intranet-cvs-integration.Repository {Repository}]"
             link_url_eval $repository_url
         }
+        cvs_system {
+            label "[lang::message::lookup {} intranet-cvs-integration.CVS_System {Type}]"
+        }
         cvs_user {
             label "[lang::message::lookup {} intranet-cvs-integration.CVS_User {User}]"
         }
@@ -74,6 +77,7 @@ list::create \
 db_multirow -extend { repository_url } cvs_repositories select_cvs_repositories {
 	select	conf_item_id as repository_id,
 		conf_item_name as repository_name,
+		cvs_system,
 		cvs_user,
 		cvs_password,
 		cvs_hostname,
