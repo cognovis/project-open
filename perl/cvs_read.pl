@@ -26,6 +26,7 @@ use Cwd;
 use Symbol;
 use IPC::Open3;
 use DBI;
+use String::ShellQuote;
 
 # Whether debugging is enabled or not.
 $debug = 0;
