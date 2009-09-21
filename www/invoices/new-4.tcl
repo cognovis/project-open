@@ -101,7 +101,7 @@ set invoice_nr_exists_p [db_string invoice_count "select count(*) from im_invoic
 if {!$invoice_exists_p} {
     if { $invoice_nr_exists_p } {
 	set invoice_nr [im_next_invoice_nr -invoice_type_id $cost_type_id]
-	set err_mess "intranet-invoices.Error_Project_Nr_exists"
+	set err_mess "intranet-invoices.Error_Document_Nr_exists"
     }
     db_exec_plsql create_invoice ""
 }
