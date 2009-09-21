@@ -93,10 +93,16 @@ foreach item_nr [array names item_currency] {
 # Update invoice base data
 # ---------------------------------------------------------------
 
+set err_mess ""
 set invoice_exists_p [db_string invoice_count "select count(*) from im_invoices where invoice_id=:invoice_id"]
+set invoice_nr_exists_p [db_string invoice_count "select count(*) from im_invoices where invoice_nr=:invoice_nr"]
 
 # Let's create the new invoice
 if {!$invoice_exists_p} {
+    if { $invoice_nr_exists_p } {
+	set invoice_nr [im_next_invoice_nr -invoice_type_id $cost_type_id]
+	set err_mess "intranet-invoices.Error_Project_Nr_exists"
+    }
     db_exec_plsql create_invoice ""
 }
 
@@ -232,4 +238,11 @@ if {$cost_type_id == [im_cost_type_invoice]} {
 }
 
 db_release_unused_handles
-ad_returnredirect "/intranet-invoices/view?invoice_id=$invoice_id"
+
+set ret_url [string trim "/intranet-invoices/view?invoice_id=$invoice_id"]
+
+if { "" != $err_mess } {
+    append ret_url "&err_mess=$err_mess" 
+}
+
+ad_returnredirect $ret_url
