@@ -337,7 +337,9 @@ sub usage
     print "Copyright David Sitsky, Frank Bergmann\n\n";
     print "cvs_read reads statistics from CVS and writes it to a ]po[ database.\n\n";
     print "usage:\n";
-    print "cvs_read.pl -cvsdir <dir> [-rlog <module>] db_host:port\n";
+    print "cvs_read.pl -cvsdir <dir> [-rlog <module>]\n";
+    print "\nExample:\n";
+    print "cvs_read.pl -cvsdir :pserver:anonymous\@cvs.project-open.net:/home/cvsroot -rlog intranet-hr\n";
     print "            \n\n";
     exit 1;
 }

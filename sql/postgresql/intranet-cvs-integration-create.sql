@@ -17,25 +17,26 @@
 -- this allows us to track how many lines have been
 -- written on what project by a developer.
 
-drop sequence im_cvs_activity_line_seq;
-drop table im_cvs_activity;
-
-create sequence im_cvs_activity_line_seq start 1;
-create table im_cvs_activity (
-	line_id			integer
-				constraint im_cvs_activity_pk
+create sequence im_cvs_logs_seq start 1;
+create table im_cvs_logs (
+	cvs_line_id		integer
+				constraint im_cvs_logs_pk
 				primary key,
 	cvs_project		text,
-	filename		text,
-	revision		text,
-	date			timestamptz,
-	author			text,
-	state			text,
-	lines_add		integer,
-	lines_del		integer,
-	note			text,
-		constraint im_cvs_activity_filname_un
-		unique (filename, date, revision)
+	cvs_filename		text,
+	cvs_revision		text,
+	cvs_date		timestamptz,
+	cvs_author		text,
+	cvs_state		text,
+	cvs_lines_add		integer,
+	cvs_lines_del		integer,
+	cvs_note		text,
+	
+	cvs_user_id		integer,
+	cvs_conf_item_id	integer,
+
+		constraint im_cvs_logs_filname_un
+		unique (cvs_filename, cvs_date, cvs_revision)
 );
 
 

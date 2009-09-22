@@ -89,7 +89,7 @@ db_multirow -extend { repository_url } cvs_repositories select_cvs_repositories 
 		LEFT OUTER JOIN (
 			select	count(*) as num_commits,
 				cvs_project as repository
-			from	im_cvs_activity
+			from	im_cvs_logs
 			group by repository
 		) stats ON ci.conf_item_nr = stats.repository
 	where	cvs_path is not NULL
