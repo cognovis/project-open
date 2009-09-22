@@ -11,7 +11,7 @@
 # Copyright (c) 2006 Frank Bergmann
 # All rights reserved.
 #
-# cvsplot is a perl script which is used to extract information from CVS and
+# cvs_read.pl is a perl script which is used to extract information from CVS and
 # plots the total number of lines and number of files in a selected file set
 # against time.
 #
@@ -52,13 +52,6 @@ $cvsdir = "";
 # The module to run cvs rlog over, if the -rlog option is specified.
 $rlog_module = "";
 
-
-# Database Connection Parameters
-# $db_datasource = "DBI:Pg:dbname=projop;host=localhost;port=5432";
-$db_datasource = "DBI:Pg:dbname=projop;port=5432";
-$db_username = "projop";
-$db_pwd = "";
-
 # Determine if this process is running under Windows.
 $osname = $Config{'osname'};
 $windows = (defined $osname && $osname eq "MSWin32") ? 1 : 0;
@@ -66,29 +59,11 @@ $windows = (defined $osname && $osname eq "MSWin32") ? 1 : 0;
 
 
 # --------------------------------------------------------
-
-# Establish the database connection
-$dbh = DBI->connect($db_datasource, $db_username, $db_pwd) ||
-    die "cvs_read: Unable to connect to database with datasouce='$db_datasource', username='$db_username', password='$db_pwd'.\n";
-
-
 # Prepare Activitiy
 process_command_line_arguments();
 
-
-# Delete previously existing info about that module
-$sql = qq { 
-    DELETE FROM im_cvs_activity
-    WHERE cvs_project = '$rlog_module'
-};
-$dbh->do($sql) || die "cvs_read: Error executing '$sql'\n";
-
-
 # Main Activitiy
 get_cvs_statistics2();
-
-# Disconnect from DB
-$dbh->disconnect();
 
 
 
@@ -149,8 +124,7 @@ sub get_cvs_statistics2
     # Build up the command string appropriately, depending on what options
     # have been set.
     my $command = ($rlog_module eq '') ? "cvs $cvs_global_args log" :
-	sprintf("cvs $cvs_global_args -d %s rlog %s",
-		quote($cvsdir), quote($rlog_module));
+	sprintf("cvs $cvs_global_args -q -d %s rlog %s", quote($cvsdir), quote($rlog_module));
 
     print "Executing \"$command\"\n" if $debug;
     open (CVSLOG, "$command |") || die "Couldn't execute \"$command\"";
@@ -187,7 +161,6 @@ sub parse_cvs_file
     my $relative_working_file = "";
 
     @pieces = split("----------------------------", $content);
-    print "======================================\n";
 
     @pieces = reverse(@pieces);
     $head = pop(@pieces);
@@ -197,12 +170,10 @@ sub parse_cvs_file
 	$working_file =~ s/Attic\///g;
 	$relative_working_file = "";
     }
-    print "working_file = $working_file\n";
     
     @pieces = reverse(@pieces);
     foreach $descr (@pieces) {
 
-	print "---------------------------------------\n";
 	my $comment = "";
 	my $date = "";
 	my $author = "";
@@ -224,13 +195,13 @@ sub parse_cvs_file
 	    if ($line =~ /^revision ([\d\.]+)$/) {
 
 		$revision = $1;
-		print "> revision = $revision\n";
+		print "> revision = $revision\n" if $debug;
 		
 	    } elsif ($line =~ /^branches:\s*([\S]+);/) {
 
 		# branches:  1.1.2;
 		$branches = $1;
-		print "> branches: $branches\n";
+		print "> branches: $branches\n" if $debug;
 
 	    } elsif ( $line =~ /^date: (\d\d\d\d\/\d\d\/\d\d \d\d:\d\d:\d\d);.*?author: (.*);.*?state: (\w*);(.*)$/) {
 		
@@ -245,7 +216,7 @@ sub parse_cvs_file
 		    $lines_removed = $2;
 		}
 
-		print "> date: $date; author: $author; state: $state; rest: lines: +$lines_added -$lines_removed\n";
+		print "> date: $date; author: $author; state: $state; rest: lines: +$lines_added -$lines_removed\n" if $debug;
 		
 	    } else {
 		$comment .= "$line\n";
@@ -255,33 +226,10 @@ sub parse_cvs_file
 	if ("" eq $lines_added) { $lines_added = 0; }
 	if ("" eq $lines_removed) { $lines_removed = 0; }
 
-        $sql = qq { INSERT INTO im_cvs_activity (
-				line_id, 
-				filename, cvs_project,
-				revision, date,
-				author, state, lines_add, lines_del,
-				note
-			   ) values (
-				nextval('im_cvs_activity_line_seq'),
-				'$working_file', '$rlog_module',
-				'$revision',
-				'$date'::timestamp,
-				'$author',
-				'$state',
-				'$lines_added',
-				'$lines_removed',
-				'$comment'
-        ) };
-        $dbh->do($sql) || print "cvs_read: Error executing '$sql'\n";
-	
-	print "$rlog_module\n";
-	print "$revision\n";
-	print "$date\n";
-	print "$author\n";
-	print "$state\n";
-	print "$lines_added\n";
-	print "$lines_removed\n";
-	print "$comment\n";
+	$comment =~ s/\n/\\n/g;
+	$comment =~ s/\t/\\t/g;
+
+	print "$working_file	$rlog_module	$revision	$date	$author	$state	$lines_added	$lines_removed	$comment\n";
     }	
 }
 
@@ -389,7 +337,7 @@ sub usage
     print "Copyright David Sitsky, Frank Bergmann\n\n";
     print "cvs_read reads statistics from CVS and writes it to a ]po[ database.\n\n";
     print "usage:\n";
-    print "cvsplot.pl -cvsdir <dir> [-rlog <module>] db_host:port\n";
+    print "cvs_read.pl -cvsdir <dir> [-rlog <module>] db_host:port\n";
     print "            \n\n";
     exit 1;
 }
