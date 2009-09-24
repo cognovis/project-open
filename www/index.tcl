@@ -63,26 +63,30 @@ if {{} != $profile_categories_without_group} {
 }
 
 # Check for missing "lists":
-set profile_categories_without_group [db_list_of_lists pcwg "
-	select	category
+set profile_categories_without_group_sql "
+	select	category, 'Intranet User Type' as category_type
 	from	im_categories 
 	where	category_type = 'Intranet User Type' and
 		category = 'person'
     UNION
-	select	category
+	select	category, 'Intranet Office Type' as category_type
 	from	im_categories 
 	where	category_type = 'Intranet Office Type' and
 		category = 'im_office'
     UNION
-	select	category
+	select	category, 'Intranet Company Type' as category_type
 	from	im_categories 
 	where	category_type = 'Intranet Company Type' and
 		category = 'im_company'
-"]
-if {{} != $profile_categories_without_group} {
+"
+
+db_foreach crm_conf_errors $profile_categories_without_group_sql {
+
    lappend errors "<li>
-   There is no 'default list' (=category) for object_type 'person'.<br>
-   To fix this issue, please go to Contacts - Admin and click on 'List' next to the specified object type."
+   There is no category '$category' of category type '$category_type'.<br>
+   To fix this issue, please go to Admin - Categories - '$category_type'
+   and add a category '$category'.<br>
+   Then please go to Contacts - Admin and click on 'List' next to '$category'."
 }
 
 
