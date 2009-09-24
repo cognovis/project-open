@@ -245,6 +245,7 @@ ad_proc -public im_audit_impl {
     set user_id [ad_get_user_id]
     set peeraddr [ns_conn peeraddr]
     if {"" == $action} { set action "update" }
+    set action [string tolower $action]
 
     # Are we behind a firewall or behind a reverse proxy?
     if {"127.0.0.1" == $peeraddr} {
