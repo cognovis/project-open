@@ -94,8 +94,19 @@ ad_form \
     }
 
 
-if {![info exists conf_item_type_id]} { set conf_item_type_id ""}
+# Check that the Intranet Conf Item Type exists or set to default.
+if {![info exists conf_item_type_id]} { 
+    set conf_item_type_id ""
+    if {[info exists conf_item_id]} {
+	set conf_item_type_id [db_string conf_item_type "select conf_item_type_id from im_conf_items where conf_item_id = :conf_item_id" -default ""]
+    }
+}
+
+# Add DynField attributes.
 if {[info exists conf_item_id]} { 
+
+    # ad_return_complaint 1 "im_dynfield::append_attributes_to_form -form_display_mode $form_mode -object_subtype_id $conf_item_type_id -object_type im_conf_item -form_id $form_id -object_id $conf_item_id"
+
     set field_cnt [im_dynfield::append_attributes_to_form \
 		       -form_display_mode $form_mode \
 		       -object_subtype_id $conf_item_type_id \
