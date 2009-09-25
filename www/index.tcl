@@ -96,7 +96,7 @@ db_multirow -extend { repository_url } cvs_repositories select_cvs_repositories 
 	order by
 		lower(conf_item_name)
 } {
-    set repository_url [export_vars -base "/intranet-confdb/new" {{conf_item_id $repository_id}}]
+    set repository_url [export_vars -base "/intranet-confdb/new" {{conf_item_id $repository_id} {form_mode display}}]
 }
 
 
