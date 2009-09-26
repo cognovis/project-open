@@ -122,7 +122,7 @@ ad_proc -public xmlrpc-rest::handle_action_items {method path url_query user_id}
 
 
 ad_proc -public xmlrpc-rest::render_json { object_list search_string } {
-    @returns a json structure
+    @tkes a list of objects returns them as a json structure
 } {
     # 
 
