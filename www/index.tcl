@@ -27,7 +27,7 @@ if {!$user_is_admin_p} {
 # ------------------------------------------------------------------
 
 set bulk_action_list [list \
-	"[lang::message::lookup {} intranet-dynfield.Full_Import {Full Import}]" "action-full-import" "" \
+	"[lang::message::lookup {} intranet-dynfield.Full_CVS_Import {Full CVS Import}]" "action-full-import" "" \
 ]
 
 
