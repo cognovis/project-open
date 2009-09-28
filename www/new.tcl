@@ -352,7 +352,7 @@ list::create \
     -elements {
 	ticket_name {
 	    label "[lang::message::lookup {} intranet-confdb.Ticket_Name {Ticket Name}]"
-	    link_url_eval {[export_vars -base "/intranet/tickets/view" {ticket_id}]}
+	    link_url_eval {[export_vars -base "/intranet-helpdesk/new" {ticket_id {form_mode display}}]}
 	}
     }
 
