@@ -530,8 +530,9 @@ SELECT im_category_new(30116, 'Feature Request', 'Intranet Ticket Type');
 SELECT im_category_hierarchy_new(30116, 30154);
 SELECT im_category_new(30118, 'Training Request', 'Intranet Ticket Type');
 SELECT im_category_hierarchy_new(30118, 30154);
-
 SELECT im_category_new(30120, 'SLA Request', 'Intranet Ticket Type');
+SELECT im_category_hierarchy_new(30120, 30150);
+SELECT im_category_new(30122, 'Nagios Alert', 'Intranet Ticket Type');
 SELECT im_category_hierarchy_new(30120, 30150);
 
 
@@ -1281,7 +1282,7 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 (27020,270,20,'Name','"<href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_name</A>"');
 
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(270220,270,22,'Conf Item','"<A href=/intranet-confdb/new?conf_item_id=$conf_item_id>$conf_item_name</a>"');
+(270220,270,22,'Conf Item','"<A href=/intranet-confdb/new?form_mode=display&conf_item_id=$conf_item_id>$conf_item_name</a>"');
 
 -- insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 -- (27025,270,25,'Queue','"<href=/intranet-helpdesk/queue/?queue_id=$ticket_queue_id>$ticket_queue_name</A>"');
