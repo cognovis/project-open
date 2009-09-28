@@ -42,61 +42,76 @@ ad_proc -public im_nagios_process_alert {
 } {
     ns_log Notice "im_nagios_process_alert: from=$from, to=$to, host=$host, service=$service"
 
-    # Try to find out the environment for the ticket
+    # Check or create the server ("host") Conf ITem of the ticket
     set host_conf_item_id [im_nagios_get_host_by_name -host_name $host]
-    set service_conf_item_id [im_nagios_get_service_by_name -host_name $host -service_name $service]
 
+    # Check of create the Nagios service for the ticket, below the host.
+    set service_conf_item_id [im_nagios_get_service_by_name -host_name $host -service_name $service]
     ns_log Notice "im_nagios_process_alert: host_id=$host_conf_item_id, service_id=$service_conf_item_id"
 
-    # Check if there is already a ticket
+    # Check if there is already an open ticket for the same service:
     set open_nagios_ticket_id [im_nagios_find_open_ticket -host_name $host -service_name $service]
-
-
     ns_log Notice "im_nagios_process_alert: host_id=$host_conf_item_id, service_id=$service_conf_item_id, ticket_id=$open_nagios_ticket_id, host=$host, service=$service"
-    
+
+    # Create a suitable name for the ticket.
     set ticket_name "Nagios $alert_type $host/$service is $status"
     
+    # Create a new ticket object if there isn't an open ticket already
     if {"" == $open_nagios_ticket_id} {
-	
-	set ticket_id [db_nextval "acs_object_id_seq"]
-	set ticket_customer_id [im_company_internal]
-	set ticket_customer_contact_id 0
-	set ticket_type_id [im_project_type_ticket]
-	set ticket_status_id [im_ticket_status_open]
-	set ticket_nr [db_nextval im_ticket_seq]
-	set start_date [db_string now "select now()::date from dual"]
-	set end_date [db_string now "select (now()::date) from dual"]
-	set start_date_sql [template::util::date get_property sql_date $start_date]
-	set end_date_sql [template::util::date get_property sql_timestamp $end_date]
-	
-	set open_nagios_ticket_id [db_string ticket_insert {}]
-	db_dml ticket_update {}
-	db_dml project_update {}
-	
-	# Write Audit Trail
-	im_project_audit -project_id $ticket_id
-	
+
+	# Transaction: Avoid partial object creation if something fails.
 	db_transaction {
+
+	    # Take a new ticket_id from the global object sequence
+	    set ticket_id [db_nextval "acs_object_id_seq"]
+	    
+	    # Take a new ticket_nr from sequence.
+	    set ticket_nr [db_nextval im_ticket_seq]
+	    
+	    # Assign the "internal customer" (check the docu) as the customer
+	    set ticket_customer_id [im_company_internal]
+	    
+	    # Don't set any specific contact person for the ticket.
+	    set ticket_customer_contact_id 0
+	    
+	    # Ticket type and status: Nagios Alert/Open
+	    set ticket_type_id [im_ticket_type_nagios_alert]
+	    set ticket_status_id [im_ticket_status_open]
+	    
+	    # Set start and end date to today (required for the im_project super-type)
+	    # in database-friendly format:
+	    set start_date [db_string now "select now()::date from dual"]
+	    set end_date [db_string now "select (now()::date) from dual"]
+	    set start_date_sql [template::util::date get_property sql_date $start_date]
+	    set end_date_sql [template::util::date get_property sql_timestamp $end_date]
+	    
+	    # Create a new ticket and update the im_tickets and im_projects tables.
+	    # The SQL for these commands is found in intranet-nagios-procs-postgresql.xql
+	    set open_nagios_ticket_id [db_string ticket_insert {}]
+	    db_dml ticket_update {}
+	    db_dml project_update {}
+	    
+	    # Write audit trail to track changes in the ticket.
+	    im_project_audit -project_id $ticket_id
+	    
 	} on_error {
-	    ad_return_complaint 1 "<b>Error inserting new ticket</b>:<pre>$errmsg</pre>"
+	    ns_log Error "im_nagios_process_alert: Error creating ticket: $errmsg"
 	}
-
-	db_dml host_service "
-		update im_tickets set
-			ticket_conf_item_id = :service_conf_item_id
-		where ticket_id = :ticket_id
-        "
     }
+    # At this point open_nagios_ticket_id contains a valid ticket_id, either with
+    # a new or an existing ticket.
 
-    # Add the ticket message to the forum tracker of the open ticket.
+    # Add the body of the Nagios alert to the "forum" of the open ticket.
+    # Retreive ALL forum topics related to the ticket and...
     set forum_ids [db_list forum_ids "
 	select	ft.topic_id
 	from	im_forum_topics ft
 	where	ft.object_id = :open_nagios_ticket_id
-	order by ft.topic_id
+	order by 
+		ft.topic_id
     "]
 
-    # Get the first forum topic associated with the ticket and use as parent
+    # ...get the first forum topic. Use the first ticket as the parent for this one.
     set parent_id [lindex $forum_ids 0]
 
     # Create a new forum topic of type "Note"
@@ -107,12 +122,13 @@ ad_proc -public im_nagios_process_alert {
     if {[ad_conn isconnected]} { set owner_id [ad_get_user_id] }
     set subject $ticket_name
 
-    # "bodies" contains a Mime-Type - Content hash
+    # The "bodies" variable contains a hash consisting of (Mime-Type - Content) pairs:
     set message ""
     foreach {mime_type body} $bodies { 
 	append message $body 
     }
 
+    # Create a new forum topics. Forum topics are not ]po[ objects so an insert is OK.
     db_dml topic_insert {
 		insert into im_forum_topics (
 			topic_id, object_id, parent_id,
@@ -125,6 +141,7 @@ ad_proc -public im_nagios_process_alert {
 		)
     }
 
+    # Take action on open_nagios_ticket_id, depending on the nagios status:
     ns_log Notice "im_nagios_process_alert: Processing Nagios alert status='$status'"
     switch [string tolower $status] {
 	ok {
