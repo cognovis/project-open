@@ -48,7 +48,7 @@ ad_proc -public im_audit_component {
 		}
 	    }
 	    audit_action {
-		label "[lang::message::lookup {} intranet-audit.User_Abbrev A]"
+		label "[lang::message::lookup {} intranet-audit.Action_Abbrev A]"
 	        display_template {
 		    @audit_multirow.audit_action_gif;noquote@
 		}
