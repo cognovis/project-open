@@ -215,7 +215,7 @@ namespace eval acs_mail_lite {
 
 
     ad_proc -public load_mails {
-        -queue_dir:required
+        { -queue_dir "" }
     } {
         Upward compatibility to OpenACS 5.4
 	
@@ -239,11 +239,13 @@ namespace eval acs_mail_lite {
 	
         @option queue_dir The location of the qmail mail queue in the file-system.
     } {
+	ns_log Notice "acs_mail_lite::load_mail_dir: queue_dir='$queue_dir'"
+
         if {[catch {
 	    # get list of all incoming mail
             set messages [glob "$queue_dir/new/*"]
         } errmsg]} {
-            ns_log Notice "queue dir = $queue_dir/new/*, no messages"
+            ns_log Notice "acs_mail_lite::load_mail_dir: queue dir = $queue_dir/new/*, no messages"
             return [list]
         }
 	
@@ -252,7 +254,7 @@ namespace eval acs_mail_lite {
 
 	# loop over every incoming mail
         foreach msg $messages {
-            ns_log Notice "opening file: $msg"
+            ns_log Notice "acs_mail_lite::load_mail_dir: opening file: $msg"
             if [catch {set f [open $msg r]}] {
                 continue
             }
@@ -306,13 +308,26 @@ namespace eval acs_mail_lite {
             if [catch {set to $email_headers(to)}] {
                 set to ""
             }
+            if [catch {set subject $email_headers(subject)}] {
+                set subject ""
+            }
 	    
+	    # Check for callback functions named ""*acs_mail_lite_callback
+	    set functions [info commands "*acs_mail_lite_callback"]
+	    ns_log Notice "acs_mail_lite::load_mail_dir: functions=$functions"
+	    foreach function $functions {
+		set cmd [list $function -to $to -from $from -subject $subject -body $body]
+		if {[catch {
+		    eval $cmd
+		} err_msg]} {
+		    ns_log Error "acs_mail_lite::load_mail_dir: Error evaluating '$cmd': $err_msg"
+		    ad_return_complaint 1 "acs_mail_lite::load_mail_dir: Error evaluating '$cmd': $err_msg"
+		}
+	    }
+
             set to [parse_email_address -email $to]
-	    ns_log Notice "acs-mail-lite: To: $to"
+	    ns_log Notice "acs_mail_lite::load_mail_dir: To: $to"
             util_unlist [parse_bounce_address -bounce_address $to] user_id package_id signature
-	    
-#	    ad_return_complaint 1 "<pre>\nuser_id=$user_id\nto=$to\nfrom=$from\n</pre>"
-#	    im_nagios_process_alert -from:required -to:required -alert_type:required -host:required -service:required -status:required -bodies:required
 
             # If no user_id found or signature invalid, ignore message
             if {[empty_string_p $user_id] || ![valid_signature -signature $signature -msg $body]} {
