@@ -497,8 +497,8 @@ ad_proc -public im_nagios_get_type_id_from_host_info {
     set host_template "unknown"
     if {[info exists host_info(use)]} { set host_template $host_info(use) }
 
-    if {"unknown" == $host_template} { return [im_conf_item_type_hardware] }
-    if {"" == $host_template} { return [im_conf_item_type_hardware] }
+    if {"unknown" == $host_template} { return [im_conf_item_type_server] }
+    if {"" == $host_template} { return [im_conf_item_type_server] }
     
     # Check for a category with the same name
     set type_ids [db_list conf_item_type_from_nagios_template "
@@ -559,6 +559,7 @@ ad_proc -public im_nagios_get_service_by_name {
 	from	im_conf_items
 	where	conf_item_parent_id = :host_id and
 		conf_item_nr = :service_name
+	order by conf_item_id
     "]
 
     # There may be more then one service_id, so just return the first.
