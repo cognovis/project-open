@@ -317,6 +317,8 @@ namespace eval acs_mail_lite {
 	    ns_log Notice "acs_mail_lite::load_mail_dir: functions=$functions"
 	    foreach function $functions {
 		set cmd [list $function -to $to -from $from -subject $subject -body $body]
+		ns_log Notice "acs_mail_lite::load_mail_dir: Calling: '$cmd'"
+
 		if {[catch {
 		    eval $cmd
 		} err_msg]} {
@@ -326,7 +328,6 @@ namespace eval acs_mail_lite {
 	    }
 
             set to [parse_email_address -email $to]
-	    ns_log Notice "acs_mail_lite::load_mail_dir: To: $to"
             util_unlist [parse_bounce_address -bounce_address $to] user_id package_id signature
 
             # If no user_id found or signature invalid, ignore message
