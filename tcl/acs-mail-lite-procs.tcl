@@ -213,6 +213,20 @@ namespace eval acs_mail_lite {
 	return 1
     }
 
+
+    ad_proc -public load_mails {
+        -queue_dir:required
+    } {
+        Upward compatibility to OpenACS 5.4
+	
+        @author frank.bergmann@project-open.com
+        @option queue_dir The location of the qmail mail queue in the file-system.
+    } {
+	if {"" == $queue_dir} { set queue_dir "[acs_root_dir]/Maildir" }
+	return [load_mail_dir -queue_dir $queue_dir]
+    }
+
+
     ad_proc -private load_mail_dir {
         -queue_dir:required
     } {
@@ -297,6 +311,9 @@ namespace eval acs_mail_lite {
 	    ns_log Notice "acs-mail-lite: To: $to"
             util_unlist [parse_bounce_address -bounce_address $to] user_id package_id signature
 	    
+#	    ad_return_complaint 1 "<pre>\nuser_id=$user_id\nto=$to\nfrom=$from\n</pre>"
+#	    im_nagios_process_alert -from:required -to:required -alert_type:required -host:required -service:required -status:required -bodies:required
+
             # If no user_id found or signature invalid, ignore message
             if {[empty_string_p $user_id] || ![valid_signature -signature $signature -msg $body]} {
 		if {[empty_string_p $user_id]} {
