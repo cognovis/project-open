@@ -11,6 +11,67 @@ ad_library {
 set ver_sql "select substring(max(version_name),1,3) from apm_package_versions where package_key = 'acs-kernel'"
 set openacs54_p [string equal "5.4" [util_memoize [list db_string ver $ver_sql ]]]
 
+
+
+
+# ----------------------------------------------------------------------
+# Callback for OpenACS 5.1 acs_mail_lite
+# ----------------------------------------------------------------------
+
+ad_proc -public im_nagios_acs_mail_lite_callback {
+    {-to ""}
+    {-from ""}
+    {-subject ""}
+    {-body ""}
+} {
+    This procedure is called from the callback acs_mail_lite::load_mails
+    every time there is an email with a suitable Nagios header.
+} {
+    ns_log Notice "im_nagios_acs_mail_lite_callback: from=$from, to=$to, subject=$subject"
+
+    set subject_lower [string tolower $subject]
+
+    if {"" == $to} { return }
+    if {"" == $from} { return }
+    if {"" == $subject} { return }
+
+    # Parse the subject.
+    # Examples:
+    # subject="** PROBLEM alert - 85.214.41.40/PING is CRITICAL **"
+    # subject="** PROBLEM Service Alert: Athens/NSClient++ Version is CRITICAL  **"
+    # subject="** RECOVERY Service Alert: berlin2/Current Load is OK **"
+    # subject={** RECOVERY Service Alert: Berlin 2/HTTP PoDesign is OK **}
+
+    # Some "*" + (alert_type) + ":" or "-" + (host)/(service) + is + (status)
+    set regexp {[\*]+[\ ]+(.*)[\:\-][\ ]*([^\:\-]+)\/(.+)[\ ]+is[\ ]+([a-z]+)[\ ]+[\*]+}
+
+    if {[regexp $regexp $subject_lower match alert_type host service status]} {
+        set alert_type [string trim $alert_type]
+        set host [string trim $host]
+        set service [string trim $service]
+        set status [string trim $status]
+    } else {
+        set alert_type ""
+        set host ""
+        set service ""
+        set status ""
+    }
+
+    if {"" != $alert_type} {
+	im_nagios_process_alert \
+	    -from $from \
+	    -to $to \
+	    -alert_type $alert_type \
+	    -host $host \
+	    -service $service \
+	    -status $status \
+	    -bodies $body
+    }
+}
+
+
+# ----------------------------------------------------------------------
+
 if {$openacs54_p} {
 
 
