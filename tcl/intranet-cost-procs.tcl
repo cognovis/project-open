@@ -134,6 +134,7 @@ ad_proc -public im_cost_permissions {user_id cost_id view_var read_var write_var
     upvar $admin_var admin
 
     set user_is_freelance_p [im_user_is_freelance_p $user_id]
+    set user_is_inco_customer_p [im_user_is_inco_customer_p $user_id]
     set user_is_customer_p [im_user_is_customer_p $user_id]
 
     # -----------------------------------------------------
@@ -177,8 +178,16 @@ ad_proc -public im_cost_permissions {user_id cost_id view_var read_var write_var
     set cust_read 0
     set cust_write 0
     set cust_admin 0
+    set incust_view 0
+    set incust_read 0
+    set incust_write 0
+    set incust_admin 0
+
+    if {$user_is_inco_customer_p && $customer_id && $customer_id != [im_company_internal]} {
+	im_company_permissions $user_id $customer_id incust_view incust_read incust_write incust_admin
+    }
     if {$user_is_customer_p && $customer_id && $customer_id != [im_company_internal]} {
-        im_company_permissions $user_id $customer_id cust_view cust_read cust_write cust_admin
+	im_company_permissions $user_id $customer_id cust_view cust_read cust_write cust_admin
     }
 
     # -----------------------------------------------------
@@ -198,10 +207,10 @@ ad_proc -public im_cost_permissions {user_id cost_id view_var read_var write_var
 
     # -----------------------------------------------------
     # Set the permission as the OR-conjunction of provider and customer
-    set view [expr $cust_view || $prov_view || $cc_view]
-    set read [expr $cust_read || $prov_read || $cc_read]
-    set write [expr $cust_write || $prov_write || $cc_write]
-    set admin [expr $cust_admin || $prov_admin || $cc_admin]
+    set view [expr $incust_view || $cust_view || $prov_view || $cc_view]
+    set read [expr $incust_read || $cust_read || $prov_read || $cc_read]
+    set write [expr $incust_write || $cust_write || $prov_write || $cc_write]
+    set admin [expr $incust_admin || $cust_admin || $prov_admin || $cc_admin]
 
     # Limit rights of all users to view & read if they dont
     # have the expressive permission to "add_costs or add_invoices".
@@ -1242,7 +1251,7 @@ ad_proc im_costs_company_component { user_id company_id } {
 }
 
 ad_proc im_costs_project_component { user_id project_id } {
-    Returns a HTML table containing a list of costs for a particular
+    Returns a HTML table containing a list of costs for a 
     particular project.
 } {
     return [im_costs_base_component $user_id "" $project_id]
@@ -1490,6 +1499,7 @@ ad_proc im_costs_project_finance_component {
 	set can_read_summary_p 0
 
 	set limit_to_freelancers ""
+	set limit_to_inco_customers ""
 	set limit_to_customers ""
 
 	# user is freelancer and can see purchase orders
@@ -1497,10 +1507,16 @@ ad_proc im_costs_project_finance_component {
 		set view_docs_1_p 1
 	}
 
+	# user is interco client with privileges "Fi read quotes" AND  "Fi read invoices AND Fi read interco quotes" AND  "Fi read interco invoices" 
+	if { [im_profile::member_p -profile_id [im_inco_customer_group_id] -user_id $user_id] && ( [im_permission $user_id fi_read_invoices] || [im_permission $user_id fi_read_quotes] || [im_permission $user_id fi_read_interco_quotes] || [im_permission $user_id fi_read_interco_invoices] ) } {
+		set view_docs_2_p 1
+ 	}
+
 	# user is client with privileges "Fi read quotes" AND  "Fi read invoices" 
 	if { [im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id] && ( [im_permission $user_id fi_read_invoices] || [im_permission $user_id fi_read_quotes] ) } {
 		set view_docs_2_p 1
  	}
+
 	# user is employee and has has privilege  "view cost" 
 	if { [im_user_is_employee_p $user_id] && [im_permission $user_id view_costs] } {
 		set view_docs_3_p 1
@@ -1573,10 +1589,14 @@ ad_proc im_costs_project_finance_component {
 	if { [im_profile::member_p -profile_id [im_freelance_group_id] -user_id $user_id] } {
 	    set limit_to_freelancers "and ci.cost_type_id = [im_cost_type_po] "
 	}
+	# If user = inco customer limit docs to Quotes & Invoices & InterCo Quotes & InterCo Invoices
+	if { [im_profile::member_p -profile_id [im_inco_customer_group_id] -user_id $user_id] } {
+	    set limit_to_inco_customers "and ci.cost_type_id in ( [im_cost_type_quote],[im_cost_type_invoice],[im_cost_type_interco_invoice],[im_cost_type_interco_quote] ) "
+	}
 	# If user = customer limit docs to Quotes & Invoices
 	if { [im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id] } {
-	    set limit_to_customers "and ci.cost_type_id in ( [im_cost_type_quote],[im_cost_type_invoice] ) "
-	}
+	set limit_to_customers "and ci.cost_type_id in ( [im_cost_type_quote],[im_cost_type_invoice] ) "
+		}
 
     set costs_sql "
 	select
@@ -1613,6 +1633,7 @@ ad_proc im_costs_project_finance_component {
 	                [im_cost_type_expense_item]
 	        )
 		$limit_to_freelancers
+		$limit_to_inco_customers
 		$limit_to_customers
 	order by
 		ci.cost_type_id,
