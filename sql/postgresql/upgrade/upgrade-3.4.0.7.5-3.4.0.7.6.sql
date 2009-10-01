@@ -3,6 +3,13 @@
 SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.7.5-3.4.0.7.6.sql','');
 
 
+
+
+-- Fix the "table" attribute of the "url" attribute of party.
+
+update acs_attributes set table_name = 'parties' where object_type = 'party' and attribute_name = 'url';
+
+
 -- Returns a TCL list of company_id suitable to stuff into a
 -- TCL hash array of all companies associated to a specific user.
 create or replace function im_company_list_for_user_html (integer) returns varchar as '
