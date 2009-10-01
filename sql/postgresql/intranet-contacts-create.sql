@@ -409,6 +409,21 @@ SELECT im_dynfield_attribute_new ('party', 'url', '#acs-subsite.URL#', 'textbox_
 -- Salutation
 SELECT im_dynfield_attribute_new ('person', 'salutation_id', '#intranet-contacts.Salutation#', 'salutation', 'integer', 'f', 4, 'f');
 
+-- Companies
+SELECT im_dynfield_attribute_new ('im_company', 'company_name', '#intranet-core.Company_Name#', 
+	'textbox_medium', 'string', 't', 1, 't');
+
+SELECT im_dynfield_attribute_new ('im_company', 'company_path', '#intranet-core.Company_Path#', 
+	'textbox_medium', 'string', 't', 1, 't');
+
+SELECT im_dynfield_attribute_new ('im_company', 'company_status_id', '#intranet-core.Company_Status#', 
+	'integer', 'integer', 't', 1, 't');
+
+SELECT im_dynfield_attribute_new ('im_company', 'company_type_id', '#intranet-core.Company_Types#', 
+	'integer', 'integer', 't', 1, 't');
+
+
+
 create or replace function inline_0 ()
 returns integer as '
 declare

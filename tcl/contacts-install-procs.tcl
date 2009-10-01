@@ -116,8 +116,8 @@ ad_proc -public contacts::install::package_install {
 	
 	    set exists_p [ams::list::exists_p -object_type $object_type -list_name $object_type]
 	    if {!$exists_p} {
-	        ns_log Error [lang::message::lookup "" intranet-dynfield.Unable_to_create_AMS_list "Unable to create AMS List"]
-	        ad_script_abort
+	        ns_log Error "contacts::install::package_install: List '$object_type' does not exist."
+	        continue
 	    } else {
 	        set list_id [ams::list::get_list_id -object_type "$object_type" -list_name "$object_type"]
 		foreach element [set $object_list] {

@@ -82,11 +82,13 @@ set profile_categories_without_group_sql "
 
 db_foreach crm_conf_errors $profile_categories_without_group_sql {
 
+    set ttt {
    lappend errors "<li>
    There is no category '$category' of category type '$category_type'.<br>
    To fix this issue, please go to Admin - Categories - '$category_type'
    and add a category '$category'.<br>
    Then please go to Contacts - Admin and click on 'List' next to '$category'."
+    }
 }
 
 
