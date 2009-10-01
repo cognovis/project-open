@@ -79,7 +79,6 @@ namespace eval im_conf_item {
 
 	# Get the current user and its address.
 	# If we are not connected then use some system defaults.
-
 	if {[ns_conn isconnected]} { 
 	    set peeraddr [ad_conn peeraddr] 
 	    set current_user_id [ad_get_user_id]
