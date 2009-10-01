@@ -75,7 +75,7 @@ if {"" == $label_style} { set label_style "plain" }
 if {[empty_string_p $object_type]} {
     ad_return_complaint 1 "[_ intranet-dynfield.No_object_type_found]<br>
     [_ intranet-dynfield.You_need_to_specifiy_either_the_object_type_or_an_attribute_id]"
-    return
+    ad_script_abort
 }
 
 acs_object_type::get -object_type $object_type -array "object_info"
@@ -413,6 +413,4 @@ ad_form -name attribute_form -form $form_fields -new_request {
     ad_returnredirect "attribute-new-2?[export_vars -url {object_type widget_name attribute_name pretty_name table_name required_p modify_sql_p pretty_plural description also_hard_coded_p pos_y label_style list_id return_url attribute_id}]"
     ad_script_abort
 }
-
-ad_return_template
 
