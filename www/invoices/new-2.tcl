@@ -19,6 +19,8 @@ ad_page_contract {
     { select_project:multiple }
     invoice_currency
     target_cost_type_id:integer
+    { order_by "Project nr" }
+    { view_name "invoice_tasks" }
     { return_url ""}
 }
 
@@ -31,7 +33,6 @@ set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
 
 set page_focus "im_header_form.keywords"
-set view_name "invoice_tasks"
 set page_title "New Translation Invoice"
 set context_bar [im_context_bar $page_title]
 
@@ -128,6 +129,84 @@ set projects_where_clause "and p.project_id in (
 )"
 
 
+
+# ---------------------------------------------------------------
+# Determine headers / order by clause
+# ---------------------------------------------------------------
+
+set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name" -default 0]
+if {!$view_id } {
+    ad_return_complaint 1 "<b>Unknown View Name</b>:<br>
+    The view '$view_name' is not defined. <br>
+    Maybe you need to upgrade the database. <br>
+    Please notify your system administrator."
+    return
+}
+
+
+set column_headers [list]
+set column_vars [list]
+set extra_selects [list]
+set extra_froms [list]
+set extra_wheres [list]
+set view_order_by_clause ""
+
+
+set column_sql "
+select
+        vc.*
+from
+        im_view_columns vc
+where
+        view_id=:view_id
+        and group_id is null
+order by
+        sort_order"
+
+db_foreach column_list_sql $column_sql {
+    if {"" == $visible_for || [eval $visible_for]} {
+        lappend column_headers "$column_name"
+        lappend column_vars "$column_render_tcl"
+        if {"" != $extra_select} { lappend extra_selects $extra_select }
+        if {"" != $extra_from} { lappend extra_froms $extra_from }
+        if {"" != $extra_where} { lappend extra_wheres $extra_where }
+        if {"" != $order_by_clause && $order_by==$column_name} {
+            set view_order_by_clause $order_by_clause
+        }
+    }
+}
+
+
+if {$view_order_by_clause != ""} {
+    if { $view_order_by_clause == "task_status" } {
+                        set order_by_clause "t.project_id, task_status,  type_name ASC, t.task_name ASC, target_language ASC"
+    } elseif { $view_order_by_clause == "t.task_name" } {
+                        set order_by_clause "t.project_id, t.task_name ASC, type_name ASC, target_language ASC"
+    } elseif { $view_order_by_clause == "t.task_type_id" } {
+                        set order_by_clause "t.project_id, type_name ASC, t.task_name ASC, target_language ASC"
+    } elseif { $view_order_by_clause == "t.task_units" } {
+                        set order_by_clause "t.project_id,  t.task_units, type_name ASC, t.task_name ASC, target_language ASC"
+    } elseif { $view_order_by_clause == "t.task_uom_id" } {
+                        set order_by_clause "t.project_id, uom_name ASC, type_name ASC, t.task_name ASC, target_language ASC"
+    } elseif { $view_order_by_clause == "target_language" } {
+                        set order_by_clause "t.project_id, target_language ASC, type_name ASC, t.task_name ASC"
+    } elseif { $view_order_by_clause == "t.billable_units" } {
+                        set order_by_clause "t.project_id, t.billable_units, type_name ASC, t.task_name ASC, target_language ASC"
+    } else {
+                        set order_by_clause "t.project_id, type_name ASC, t.task_name ASC, target_language ASC"
+    }
+
+} else {
+            set order_by_clause "t.project_id"
+}
+
+
+# if {$view_order_by_clause != ""} {
+#    set order_by_clause [concat "project_id, " $view_order_by_clause ]
+# } else {
+#     set order_by_clause "project_id"
+# }
+
 # ---------------------------------------------------------------
 # Generate SQL Query for the list of tasks (invoicable items)
 # ---------------------------------------------------------------
@@ -151,6 +230,7 @@ set sql "
                 t.task_units,
                 t.task_name,
                 t.billable_units,
+		im_category_from_id(t.target_language_id) as target_language,
                 t.task_uom_id,
                 t.task_type_id,
                 t.project_id,
@@ -175,23 +255,46 @@ set sql "
                 and children.project_status_id not in ([im_project_status_deleted],[im_project_status_canceled])
                 and children.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
                 and parent.project_id in ([join $in_clause_list ","])
-        order by
-                project_id, task_id
+        order by 
+                $order_by_clause
 "
 
-set task_table "
-<tr> 
-  <td class=rowtitle align=middle>[im_gif help "Include in Invoice"]</td>
-  <td class=rowtitle>[_ intranet-trans-invoices.Task_Name]</td>
-  <td class=rowtitle>[_ intranet-trans-invoices.Units]</td>
-  <td class=rowtitle>[_ intranet-trans-invoices.Billable_Units]</td>
-  <td class=rowtitle>  
-    [_ intranet-trans-invoices.UoM] [im_gif help "Unit of Measure"]
-  </td>
-  <td class=rowtitle>[_ intranet-trans-invoices.Type]</td>
-  <td class=rowtitle>[_ intranet-trans-invoices.Status]</td>
-</tr>
-"
+# ---------------------------------------------------------------
+# Format the List Table Header
+# ---------------------------------------------------------------
+
+# Set up colspan to be the number of headers + 1 for the # column
+ns_log Notice "/intranet/project/index: Before format header"
+set colspan [expr [llength $column_headers] + 1]
+
+set table_header_html ""
+
+# Format the header names with links that modify the
+# sort order of the SQL query.
+#
+
+set url "new-2?"
+set query_string [export_ns_set_vars url [list order_by]]
+if { ![empty_string_p $query_string] } {
+    append url "$query_string&"
+}
+
+append table_header_html "<tr>\n<td class='rowtitle'></td>\n"
+
+foreach col $column_headers {
+    regsub -all " " $col "_" col_txt
+    set col_txt [lang::message::lookup "" intranet-core.$col_txt $col]
+    
+    if { [string compare $order_by $col] == 0 } {
+        append table_header_html "  <td class=rowtitle>$col_txt</td>\n"
+    } else {
+        #set col [lang::util::suggest_key $col]
+        append table_header_html "  <td class=rowtitle><a href=\"${url}order_by=[ns_urlencode $col]\">$col_txt</a></td>\n"
+    }
+}
+append table_header_html "</tr>\n"
+
+set task_table $table_header_html
 
 set task_table_rows ""
 set ctr 0
@@ -223,6 +326,7 @@ db_foreach select_tasks $sql {
 	  <td align=left>$task_name</td>
 	  <td align=right>$task_units</td>
 	  <td align=right>$billable_units</td>
+	  <td align=right>$target_language</td>
 	  <td align=right>$uom_name</td>
 	  <td>$type_name</td>
 	  <td>$task_status</td>
@@ -255,7 +359,7 @@ set page_body "
 [im_costs_navbar "none" "/intranet/invoicing/index" "" "" [list]]
 
 <form action=new-3 method=POST>
-[export_form_vars company_id invoice_currency target_cost_type_id return_url]
+[export_form_vars company_id invoice_currency target_cost_type_id return_url order_by]
 
   <!-- the list of tasks (invoicable items) -->
   <table cellpadding=2 cellspacing=2 border=0>

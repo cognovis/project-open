@@ -26,6 +26,8 @@ ad_page_contract {
     company_id:integer
     invoice_currency
     target_cost_type_id:integer
+    { view_name "invoice_tasks" }
+    { order_by "Project nr" }
     { cost_center_id:integer 0}
     { aggregate_tasks_p "0" }
     { return_url ""}
@@ -138,6 +140,83 @@ db_1row accounting_contact_info "
 set invoice_office_id [db_string company_main_office_info "select main_office_id from im_companies where company_id = :org_company_id" -default ""]
 
 
+
+# ---------------------------------------------------------------
+# Determine headers / order by clause
+# ---------------------------------------------------------------
+
+set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name" -default 0]
+if {!$view_id } {
+    ad_return_complaint 1 "<b>Unknown View Name</b>:<br>
+    The view '$view_name' is not defined. <br>
+    Maybe you need to upgrade the database. <br>
+    Please notify your system administrator."
+    return
+}
+
+
+set column_headers [list]
+set column_vars [list]
+set extra_selects [list]
+set extra_froms [list]
+set extra_wheres [list]
+set view_order_by_clause ""
+
+set column_sql "
+select
+        vc.*
+from
+        im_view_columns vc
+where
+        view_id=:view_id
+        and group_id is null
+order by
+        sort_order"
+
+db_foreach column_list_sql $column_sql {
+    if {"" == $visible_for || [eval $visible_for]} {
+        lappend column_headers "$column_name"
+        lappend column_vars "$column_render_tcl"
+        if {"" != $extra_select} { lappend extra_selects $extra_select }
+        if {"" != $extra_from} { lappend extra_froms $extra_from }
+        if {"" != $extra_where} { lappend extra_wheres $extra_where }
+        # ad_return_complaint 1 [lappend $order_by_clause "-"  $order_by "-" $column_name]
+        if {"" != $order_by_clause && $order_by==$column_name} {
+            set view_order_by_clause $order_by_clause
+        }
+    }
+}
+
+
+# ad_return_complaint 1 $view_order_by_clause
+
+if {$view_order_by_clause != ""} {
+    if { $view_order_by_clause == "task_status" } {
+                        set order_by_clause "p.project_id, task_status ASC, type_name ASC, task_name ASC, target_language ASC"
+    } elseif { $view_order_by_clause == "t.task_name" } {
+                        set order_by_clause "p.project_id, task_name ASC, type_name ASC, target_language ASC"
+    } elseif { $view_order_by_clause == "t.task_units" } {
+                        set order_by_clause "p.project_id, t.task_units, type_name ASC, task_name ASC, target_language ASC"
+    } elseif { $view_order_by_clause == "t.billable_units" } {
+                        set order_by_clause "p.project_id, t.billable_units, type_name ASC, task_name ASC, target_language ASC"
+    } elseif { $view_order_by_clause == "type_name" } {
+                        set order_by_clause "p.project_id, type_name ASC, task_name ASC, target_language ASC"
+    } elseif { $view_order_by_clause == "t.task_uom_id" } {
+                        set order_by_clause "p.project_id, uom_name, type_name ASC, task_name ASC, target_language ASC"
+    } elseif { $view_order_by_clause == "target_language" } {
+                        set order_by_clause "p.project_id, target_language ASC, type_name ASC, task_name ASC"
+    } else {
+                        set order_by_clause "p.project_id, task_name ASC, type_name, target_language"
+    }
+} else {
+            set order_by_clause "p.project_id"
+}
+
+
+
+
+# ad_return_complaint 1 $order_by_clause
+
 # ---------------------------------------------------------------
 # 6. Select and render invoicable items 
 # ---------------------------------------------------------------
@@ -146,6 +225,9 @@ set invoice_office_id [db_string company_main_office_info "select main_office_id
 # - Show the same screen - make it easier for the user
 # - It includes the hidden variables "im_trans_task" necessary for new-4
 #
+
+
+
 set sql "
 	select
 		t.task_id,
@@ -169,8 +251,9 @@ set sql "
 		$tasks_where_clause
 		and t.project_id = p.project_id
 	order by
-		project_id, task_id
+		$order_by_clause
 "
+
 
 ns_log Notice "before rendering the task list $invoice_id"
 
@@ -229,77 +312,119 @@ if {$enable_file_type_p} { incr price_colspan}
 set file_type_html "<td class=rowtitle>[lang::message::lookup "" intranet-trans-invoices.File_Type "File Type"]</td>"
 if {!$enable_file_type_p} { set file_type_html "" }
 
+
+# set order_by_clause "p.project_id, t.task_uom_id"
+# ad_return_complaint 1 $order_by_clause
+
 if {$aggregate_tasks_p} {
+
+	if {$view_order_by_clause != ""} {
+		if {$view_order_by_clause == "t.billable_units"} {
+			set order_by_clause "p.project_id, task_sum"
+		} elseif {$view_order_by_clause == "task_status"  || $view_order_by_clause == "t.task_name"} {
+			set order_by_clause "p.project_id"
+		} elseif {$view_order_by_clause == "t.task_units"} {
+        	        set order_by_clause "p.project_id, task_sum"
+		} else {
+        	        set order_by_clause "p.project_id"
+		}
+	} else {
+	    set order_by_clause "p.project_id"
+	}
     
     # Calculate the sum of tasks (distinct by TaskType and UnitOfMeasure)
     # and determine the price of each line using a custom definable
     # function.
     set task_sum_inner_sql "
 	select
-		sum(coalesce(t.billable_units,0)) as task_sum,
-	        '' as task_title,
-		t.task_type_id,
-		t.task_uom_id,
-		t.source_language_id,
-		t.target_language_id,
-		p.company_id,
-		p.project_id,
-		p.subject_area_id,
-		im_file_type_from_trans_task(t.task_id) as file_type_id
+                sum(coalesce(s.billable_units,0)) as task_sum,
+                '' as task_title,
+                s.task_type_id,
+                s.task_uom_id,
+                s.source_language_id,
+                s.target_language_id,
+                p.company_id,
+                p.project_id,
+                p.subject_area_id,
+                im_file_type_from_trans_task(s.task_id) as file_type_id
 	from 
-		im_trans_tasks t,
+		im_trans_tasks s,
 		im_projects p
 	where 
 		$tasks_where_clause
-		and t.project_id=p.project_id
+		and s.project_id=p.project_id
 	group by
-		t.task_type_id,
-		t.task_uom_id,
-		p.company_id,
-		p.project_id,
-		t.source_language_id,
-		t.target_language_id,
-		p.subject_area_id,
-		file_type_id
-	        "
-	
+                s.task_type_id,
+                s.task_uom_id,
+                p.company_id,
+                p.project_id,
+                s.source_language_id,
+                s.target_language_id,
+                p.subject_area_id,
+                file_type_id
+		"
+
     # Take the "Inner Query" with the data (above) and add some "long names" 
     # (categories, client names, ...) for pretty output
     set task_sum_sql "
 		select
-			trim(both ' ' from to_char(s.task_sum, :number_format)) as task_sum,
-			s.task_type_id,
-			s.subject_area_id,
-			s.file_type_id,
-			s.source_language_id,
-			s.target_language_id,
-			s.task_uom_id,
+			trim(both ' ' from to_char(t.task_sum, :number_format)) as task_sum,
+			t.task_type_id,
+			t.subject_area_id,
+			t.file_type_id,
+			t.source_language_id,
+			t.target_language_id,
+			t.task_uom_id,
 			c_type.category as task_type,
 			c_uom.category as task_uom,
 			c_target.category as target_language,
-			s.company_id,
-			s.project_id,
+			t.company_id,
+			t.project_id,
 			p.project_name,
 			p.project_path,
 			p.project_path as project_short_name,
 			p.company_project_nr
 		from
-			($task_sum_inner_sql) s
+			($task_sum_inner_sql) t
 		      LEFT JOIN
-			im_categories c_uom ON s.task_uom_id=c_uom.category_id
+			im_categories c_uom ON t.task_uom_id=c_uom.category_id
 		      LEFT JOIN
-			im_categories c_type ON s.task_type_id=c_type.category_id
+			im_categories c_type ON t.task_type_id=c_type.category_id
 		      LEFT JOIN
-			im_categories c_target ON s.target_language_id=c_target.category_id
+			im_categories c_target ON t.target_language_id=c_target.category_id
 		      LEFT JOIN
-			im_projects p ON s.project_id=p.project_id
-		order by
-			p.project_id
+			im_projects p ON t.project_id=p.project_id
+	order by
+	        $order_by_clause
     "
 	
 } else {
 
-    # Don't aggregate Tasks - Just create a list of the tasks
+    # Don't aggregate Tasks - Just create a list of the task
+
+	if {$view_order_by_clause != ""} {
+	    if { $view_order_by_clause == "task_status" } {
+                        set order_by_clause "p.project_id, task_status ASC, type_name ASC, task_name ASC, target_language ASC"
+	    } elseif { $view_order_by_clause == "t.task_name" } {
+                        set order_by_clause "p.project_id, task_name ASC, type_name ASC, target_language ASC"
+	    } elseif { $view_order_by_clause == "t.task_units" } {
+                        set order_by_clause "p.project_id, t.task_units, type_name ASC, task_name ASC, target_language ASC"
+	    } elseif { $view_order_by_clause == "t.billable_units" } {
+                        set order_by_clause "p.project_id, t.billable_units, type_name ASC, task_name ASC, target_language ASC"
+	    } elseif { $view_order_by_clause == "type_name" } {
+                        set order_by_clause "p.project_id, type_name ASC, task_name ASC, target_language ASC"
+	    } elseif { $view_order_by_clause == "t.task_uom_id" } {
+                        set order_by_clause "p.project_id, task_uom, type_name ASC, task_name ASC, target_language ASC"
+	    } elseif { $view_order_by_clause == "target_language" } {
+                        set order_by_clause "p.project_id, target_language ASC, type_name ASC, task_name ASC"
+	    } else {
+                        set order_by_clause "p.project_id, task_name ASC, type_name ASC, target_language ASC"
+	    }
+	} else {
+        	set order_by_clause "p.project_id"
+	}
+
+
     set task_sum_sql "
 	select
 		t.source_language_id,
@@ -315,6 +440,8 @@ if {$aggregate_tasks_p} {
 	        im_category_from_id(t.task_type_id) as task_type,
 	        im_category_from_id(t.task_uom_id) as task_uom,
 	        im_category_from_id(t.target_language_id) as target_language,
+                im_category_from_id(t.task_type_id) as type_name,
+                im_category_from_id(t.task_status_id) as task_status,
 	        p.project_name,
 	        p.project_path,
 	        p.project_path as project_short_name,
@@ -327,14 +454,81 @@ if {$aggregate_tasks_p} {
 	where
 		$tasks_where_clause
 		and t.project_id=p.project_id
-	order by
-	        p.project_id
+	order by 
+		$order_by_clause
         "
 }
 
-
+# ad_return_complaint 1 $task_sum_sql
 # db_foreach task_sum_query $task_sum_sql { ad_return_complaint 1 "uom=[im_category_from_id $task_uom_id], title=$task_title" }
 
+
+# ---------------------------------------------------------------
+# Format the List Table Header
+# ---------------------------------------------------------------
+
+# Set up colspan to be the number of headers + 1 for the # column
+ns_log Notice "/intranet/project/index: Before format header"
+set colspan [expr [llength $column_headers] + 1]
+
+set table_header_html ""
+
+# Format the header names with links that modify the
+# sort order of the SQL query.
+#
+
+set url "new-3?"
+set query_string [export_ns_set_vars url [list order_by]]
+if { ![empty_string_p $query_string] } {
+    append url "$query_string&"
+}
+
+append table_header_html "<tr>\n"
+
+foreach col $column_headers {
+    regsub -all " " $col "_" col_txt
+    set col_txt [lang::message::lookup "" intranet-core.$col_txt $col]
+
+    if { [string compare $order_by $col] == 0 } {
+        append table_header_html "  <td class=rowtitle>$col_txt</td>\n"
+    } else {
+
+        #set col [lang::util::suggest_key $col]
+        append table_header_html "  <td class=rowtitle><a href=\"${url}order_by=[ns_urlencode $col]\">$col_txt</a></td>\n"
+    }
+}
+
+append table_header_html "</tr>\n"
+
+
+# ad_return_complaint 1 $table_header_html
+
+
+# ---------------------------------------------------------------
+# Format Task Sum Header
+# ---------------------------------------------------------------
+
+set task_sum_header_html ""
+
+foreach col $column_headers {
+    regsub -all " " $col "_" col_txt
+    set col_txt [lang::message::lookup "" intranet-core.$col_txt $col]
+
+    # ad_return_complaint 1 $col_txt
+
+    if { $col_txt == $col_txt } {
+	if { [string compare $order_by $col] == 0 } {
+	    append task_sum_header_html "  <td class=rowtitle>$col_txt</td>\n"
+	} else {
+	    #set col [lang::util::suggest_key $col]
+	    append task_sum_header_html "  <td class=rowtitle><a href=\"${url}order_by=[ns_urlencode $col]\">$col_txt</a></td>\n"
+	}
+    }
+
+}
+append task_sum_header_html "</tr>\n"
+
+# Description Units UOM Rate
 
 # ---------------------------------------------------------------
 # 
@@ -441,6 +635,8 @@ db_foreach task_sum_query $task_sum_sql {
 	set old_project_id $project_id
     }
     
+	# ad_return_complaint 1 $task_title	
+
     if {"" == $task_title} {
 	set msg_key [lang::util::suggest_key $task_type]
 	set task_type_l10n [lang::message::lookup "" intranet-core.$msg_key $task_type]
@@ -448,6 +644,7 @@ db_foreach task_sum_query $task_sum_sql {
 	set target_language_l10n [lang::message::lookup "" intranet-core.$msg_key $target_language]
 	set task_title [lang::message::lookup "" intranet-trans-invoices.Task_Title_Format "%task_type_l10n% (%target_language_l10n%)"]
     }
+
     
     # Determine the price from a ranked list of "price list hits"
     # and render the "reference price list"
@@ -508,7 +705,7 @@ db_foreach task_sum_query $task_sum_sql {
     
     # Add an empty line to the price list to separate prices form item to item
     append reference_price_html "<tr><td colspan=$price_colspan>&nbsp;</td></tr>\n"
-    
+     
     append task_sum_html "
 	<tr $bgcolor([expr $ctr % 2])> 
           <td>
@@ -537,3 +734,5 @@ db_foreach task_sum_query $task_sum_sql {
     set task_title ""
 }
 
+
+# ad_return_complaint 1 $task_sum_html

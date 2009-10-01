@@ -109,6 +109,9 @@ foreach task_id $in_clause_list {
 
   <!-- the list of tasks (invoicable items) -->
   <table cellpadding=2 cellspacing=2 border=0 width='100%'>
+
+@table_header_html;noquote@
+<!--
 	<tr> 
 	  <td class=rowtitle><%= [_ intranet-trans-invoices.Task_Name] %></td>
 	  <td class=rowtitle><%= [_ intranet-trans-invoices.Units] %></td>
@@ -117,7 +120,7 @@ foreach task_id $in_clause_list {
 	  <td class=rowtitle><%= [_ intranet-trans-invoices.UoM] %> <%= [im_gif help "Unit of Measure"] %></td>
 	  <td class=rowtitle><%= [_ intranet-trans-invoices.Type] %></td>
 	  <td class=rowtitle><%= [_ intranet-trans-invoices.Status] %></td>
-	</tr>
+	</tr>-->
 	@task_table_rows;noquote@
   </table>
 
@@ -126,13 +129,17 @@ foreach task_id $in_clause_list {
     <tr>
       <td align=right><table border=0 cellspacing=2 cellpadding=1>
 
-        <tr align=center> 
+       <tr align=center> 
           <td class=rowtitle><%= [_ intranet-trans-invoices.Order] %></td>
           <td class=rowtitle><%= [_ intranet-trans-invoices.Description] %></td>
           <td class=rowtitle><%= [_ intranet-trans-invoices.Units] %></td>
           <td class=rowtitle><%= [_ intranet-trans-invoices.UOM] %></td>
           <td class=rowtitle><%= [_ intranet-trans-invoices.Rate] %></td>
         </tr>
+
+ <!--@task_sum_header_html;noquote@-->
+
+
         @task_sum_html;noquote@
 
 
