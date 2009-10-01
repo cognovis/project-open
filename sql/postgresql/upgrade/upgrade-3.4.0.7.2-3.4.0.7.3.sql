@@ -40,12 +40,54 @@ end;' language 'plpgsql';
 
 
 -- http://fisheye.openacs.org/browse/OpenACS/openacs-4/packages/ref-countries/sql/common/ref-country-data.sql?r=1.1
-insert into country_codes (iso,country_name) values ('AN', 'Netherlands Antilles');
-insert into country_codes (iso,country_name) values ('NP', 'Nepal');
-insert into country_codes (iso,country_name) values ('MK', 'Macedonia, TFYRO');
-insert into country_codes (iso,country_name) values ('KP', 'Korea, Democratic People''s Republic Of');
-insert into country_codes (iso,country_name) values ('KR', 'Korea, Republic Of');
-insert into country_codes (iso,country_name) values ('AM', 'Armenia');
-insert into country_codes (iso,country_name) values ('KY', 'Cayman Islands'); 
-insert into country_codes (iso,country_name) values ('PA', 'Panama');
 
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select count(*) into v_count from country_codes where ISO = ''AN'';
+	IF v_count = 0 THEN 
+		insert into country_codes (iso,country_name) values (''AN'', ''Netherlands Antilles'');
+	END IF;
+
+	select count(*) into v_count from country_codes where ISO = ''NP'';
+	IF v_count = 0 THEN 
+		insert into country_codes (iso,country_name) values (''NP'', ''Nepal'');
+	END IF;
+
+	select count(*) into v_count from country_codes where ISO = ''MK'';
+	IF v_count = 0 THEN 
+		insert into country_codes (iso,country_name) values (''MK'', ''Macedonia, TFYRO'');
+	END IF;
+
+	select count(*) into v_count from country_codes where ISO = ''KP'';
+	IF v_count = 0 THEN 
+		insert into country_codes (iso,country_name) values (''KP'', ''Korea, Democratic Peoples Republic Of'');
+	END IF;
+
+	select count(*) into v_count from country_codes where ISO = ''KR'';
+	IF v_count = 0 THEN 
+		insert into country_codes (iso,country_name) values (''KR'', ''Korea, Republic Of'');
+	END IF;
+
+	select count(*) into v_count from country_codes where ISO = ''AM'';
+	IF v_count = 0 THEN 
+		insert into country_codes (iso,country_name) values (''AM'', ''Armenia'');
+	END IF;
+
+	select count(*) into v_count from country_codes where ISO = ''KY'';
+	IF v_count = 0 THEN 
+		insert into country_codes (iso,country_name) values (''KY'', ''Cayman Islands''); 
+	END IF;
+
+	select count(*) into v_count from country_codes where ISO = ''PA'';
+	IF v_count = 0 THEN 
+		insert into country_codes (iso,country_name) values (''PA'', ''Panama'');
+	END IF;
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
