@@ -44,14 +44,15 @@ ad_proc -public im_nagios_process_alert {
 
     # Check or create the server ("host") Conf ITem of the ticket
     set host_conf_item_id [im_nagios_get_host_by_name -host_name $host]
+    ns_log Notice "im_nagios_process_alert: Found host_id='$host_conf_item_id' for host '$host'";
 
     # Check of create the Nagios service for the ticket, below the host.
     set service_conf_item_id [im_nagios_get_service_by_name -host_name $host -service_name $service]
-    ns_log Notice "im_nagios_process_alert: host_id=$host_conf_item_id, service_id=$service_conf_item_id"
+    ns_log Notice "im_nagios_process_alert: Found service_id='$service_conf_item_id' for host_id='$host' and service='$service'"
 
     # Check if there is already an open ticket for the same service:
     set open_nagios_ticket_id [im_nagios_find_open_ticket -host_name $host -service_name $service]
-    ns_log Notice "im_nagios_process_alert: host_id=$host_conf_item_id, service_id=$service_conf_item_id, ticket_id=$open_nagios_ticket_id, host=$host, service=$service"
+    ns_log Notice "im_nagios_process_alert: Found open ticket_id='$open_nagios_ticket_id' for host_id=$host_conf_item_id, service_id=$service_conf_item_id, host=$host, service=$service"
 
     # Create a suitable name for the ticket.
     set ticket_name "Nagios $alert_type $host/$service is $status"
@@ -60,6 +61,7 @@ ad_proc -public im_nagios_process_alert {
     if {"" == $open_nagios_ticket_id} {
 
 	# Transaction: Avoid partial object creation if something fails.
+	ns_log Notice "im_nagios_process_alert: Creating a new ticket"
 	db_transaction {
 
 	    # Take a new ticket_id from the global object sequence
@@ -113,13 +115,13 @@ ad_proc -public im_nagios_process_alert {
 
     # ...get the first forum topic. Use the first ticket as the parent for this one.
     set parent_id [lindex $forum_ids 0]
+    ns_log Notice "im_nagios_process_alert: Found parent topic_id='$parent_id'"
 
     # Create a new forum topic of type "Note"
     set topic_id [db_nextval im_forum_topics_seq]
     set topic_type_id [im_topic_type_id_task]
     set topic_status_id [im_topic_status_id_open]
     set owner_id 0
-    if {[ad_conn isconnected]} { set owner_id [ad_get_user_id] }
     set subject $ticket_name
 
     # The "bodies" variable contains a hash consisting of (Mime-Type - Content) pairs:
@@ -619,10 +621,6 @@ ad_proc -public im_nagios_create_confdb {
 
     set peeraddr "0.0.0.0"
     set current_user_id 0
-    if {[ad_conn isconnected]} { 
-	set current_user_id [ad_get_user_id]
-	set peeraddr [ad_conn peeraddr]
-    }
 
     foreach host_name [array names hosts] {
 	
