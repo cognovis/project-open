@@ -423,7 +423,7 @@ namespace eval im_cost {
 	}
 
 	# Audit the action
-	im_audit -object_id $cost_id -action create
+	# im_audit -object_id $cost_id -action create
 
 	return $cost_id
     }
@@ -1523,7 +1523,7 @@ ad_proc im_costs_project_finance_component {
 		set can_read_summary_p 1
 	}
 
-	if { !( $view_docs_1_p || $view_docs_2_p || $view_docs_3_p ) } {
+	if { !( $view_docs_1_p || $view_docs_2_p || $view_docs_3_p ) && ![im_user_is_admin_p $user_id]} {
 		return "You have no permission to see this page"
 	} 
 
@@ -2166,7 +2166,7 @@ ad_proc im_cost_update_payments { cost_id } {
     "
 
     # Audit the action
-    im_audit -object_id $cost_id -action update -comment "Logging a payment on the cost."
+    # im_audit -object_id $cost_id -action update -comment "Logging a payment on the cost."
 
 }
 
@@ -2324,7 +2324,7 @@ ad_proc -public im_cost_update_project_cost_cache {
     "
 
     # Audit the action
-    im_project_audit -project_id $project_id -action update
+    # im_project_audit -project_id $project_id -action update
 
     return [array get subtotals]
 }
