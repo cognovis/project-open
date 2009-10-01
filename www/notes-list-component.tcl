@@ -17,7 +17,7 @@ if {![info exists object_id]} {
     ad_page_contract {
 	@author frank.bergmann@project-open.com
     } {
-	object_id
+	object_id:integer
     }
 
 }
