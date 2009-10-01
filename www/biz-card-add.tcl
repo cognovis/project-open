@@ -232,22 +232,16 @@ ad_form -extend -name $form_id -new_request {
 
     
     set inner_sql "
-			select
-				u.user_id,
+			select	u.user_id,
 				1 as rank
-			from
-				cc_users u
-			where
-				$contact_or_clause
+			from	cc_users u
+			where	$contact_or_clause
 		    UNION
-			select
-				so.object_id as user_id,
+			select	so.object_id as user_id,
 		                (rank(so.fti, :q::tsquery) * sot.rel_weight)::numeric(12,2) as rank
-			from
-				im_search_objects so,
+			from	im_search_objects so,
 				im_search_object_types sot
-			where
-				so.object_type_id = sot.object_type_id and
+			where	so.object_type_id = sot.object_type_id and
 				so.fti @@ to_tsquery('default',:q)
     "
 
@@ -264,14 +258,16 @@ ad_form -extend -name $form_id -new_request {
     set contact_sql "
 	select
 		uu.rank,
-		u.*,
+		u.*, p.*, pa.*,
 		cust.group_id as cust_group_id,
 		prov.group_id as prov_group_id,
 		empl.group_id as empl_group_id,
 		im_company_list_for_user_html(u.user_id) as company_ids
 	from
 		($middle_sql) uu,
-		cc_users u
+		persons p,
+		parties pa,
+		users u
 		LEFT OUTER JOIN (
 				select * from group_distinct_member_map 
 				where group_id = [im_customer_group_id]
@@ -285,7 +281,9 @@ ad_form -extend -name $form_id -new_request {
 				where group_id = [im_employee_group_id]
 		) empl ON empl.member_id = u.user_id
 	where
-		u.user_id = uu.user_id
+		u.user_id = uu.user_id and
+		u.user_id = p.person_id and
+		u.user_id = pa.party_id
 	[template::list::orderby_clause -name contact_list -orderby]
     "
     
@@ -398,6 +396,8 @@ ad_form -extend -name $form_id -new_request {
 	[template::list::orderby_clause -name company_list -orderby]
     "
 
+    ns_log Notice "biz-card-add.tcl: Before executing db_multirow"
+
     db_multirow -extend {company_url action_html} company_multirow get_similar_companies $company_sql {
 
 	set company_url [export_vars -base "/intranet/companies/new" { company_id return_url }]
@@ -408,6 +408,7 @@ ad_form -extend -name $form_id -new_request {
 	set action_html "<a href='$action_url' class=button>$action_text</a>"
     }
 
+    ns_log Notice "biz-card-add.tcl: After executing db_multirow"
 
     set search_results_p 1
 
