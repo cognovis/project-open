@@ -92,6 +92,22 @@ db_foreach crm_conf_errors $profile_categories_without_group_sql {
 }
 
 
+# Check for missing "list" categories
+
+foreach otype {im_company im_office person} {
+    set exists_p [ams::list::exists_p -object_type $otype -list_name $otype]
+    if {!$exists_p} {
+	set category_type [db_string cattype "select type_category_type from acs_object_types where object_type = :otype" -default "undefined"]
+	lappend errors "<li>
+	   There is no category '$otype' of category type '$category_type'.<br>
+	   To fix this issue, please go to Admin - Categories - '$category_type'
+	   and add a category '$otype'.<br>
+	   Then please go to Contacts - Admin and click on 'List' next to '$otype'."
+    }
+}
+
+
+
 if {{} != $errors} {
    ad_return_complaint 1 "<b>Contacts Configuration Issue</b>:<br>
    <ul>
