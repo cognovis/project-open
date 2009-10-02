@@ -88,10 +88,11 @@ if {"" != $button_new_user_company} {
 # ------------------------------------------------------------------
 
 set contact_options [list \
-			 [list [lang::message::lookup "" intranet-core.Customer "Customer"] customer] \
-			 [list [lang::message::lookup "" intranet-core.Provider "Provider"] provider] \
-			 [list [lang::message::lookup "" intranet-core.Undefined "Undefined"] undefined] \
-			]
+	[list [lang::message::lookup "" intranet-core.Customer "Customer"] customer] \
+	[list [lang::message::lookup "" intranet-core.Provider "Provider"] provider] \
+	[list [lang::message::lookup "" intranet-core.Employee "Employee"] employee] \
+	[list [lang::message::lookup "" intranet-core.Undefined "Undefined"] undefined] \
+]
 
 set form_id "contact"
 

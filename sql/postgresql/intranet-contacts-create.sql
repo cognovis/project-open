@@ -417,10 +417,10 @@ SELECT im_dynfield_attribute_new ('im_company', 'company_path', '#intranet-core.
 	'textbox_medium', 'string', 't', 1, 't');
 
 SELECT im_dynfield_attribute_new ('im_company', 'company_status_id', '#intranet-core.Company_Status#', 
-	'integer', 'integer', 't', 1, 't');
+	'category_company_status', 'integer', 't', 1, 't');
 
 SELECT im_dynfield_attribute_new ('im_company', 'company_type_id', '#intranet-core.Company_Types#', 
-	'integer', 'integer', 't', 1, 't');
+	'category_company_type', 'integer', 't', 1, 't');
 
 
 

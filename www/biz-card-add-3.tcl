@@ -22,16 +22,20 @@ ad_page_contract {
 		List of objects to create using this page. We will also
 		create a link between these object types.
 		Example: im_company + person => + company-person-membership
+        @param profile
+    		One of the "profile" group_ids in ]po[ including:
+		Employee, Freelance, Customer.
 } {
     person_id:optional
-    { first_names "" }
-    { last_name "" }
-    { company_name "" }
-    { company_path "" }
-    { office_name "" }
-    { office_path "" }
-    { email "" }
-    {form_mode "edit" }
+    {first_names ""}
+    {last_name ""}
+    {company_name ""}
+    {company_path ""}
+    {office_name ""}
+    {office_path ""}
+    {email ""}
+    {profile 0}
+    {form_mode "edit"}
     {return_url ""}
 }
 
@@ -88,22 +92,31 @@ ad_form \
 set form_id "company"
 set object_type "im_company"
 
-im_dynfield::append_attributes_to_form \
-    -object_type "person" \
-    -form_id $form_id \
-    -page_url "/intranet-contacts/biz-card-add" 
+# Lookup the category representing the category for the
+# user group. 
+set person_subtype_id [db_string subtype "select category_id from im_categories where category_type = 'Intranet User Type' and aux_int1 = :profile" -default ""]
+
+template::form::section -legendtext asdf $form_id [lang::message::lookup "" intranet-core.Person Person]
 
 im_dynfield::append_attributes_to_form \
     -object_type "party" \
     -form_id $form_id \
     -page_url "/intranet-contacts/biz-card-add" 
 
+im_dynfield::append_attributes_to_form \
+    -object_type "person" \
+    -form_id $form_id \
+    -page_url "/intranet-contacts/biz-card-add" \
+    -object_subtype_id $person_subtype_id
+
+template::form::section -legendtext sdfg $form_id [lang::message::lookup "" intranet-core.Company Company]
 
 im_dynfield::append_attributes_to_form \
     -object_type "im_company" \
     -form_id $form_id \
     -page_url "/intranet-contacts/biz-card-add" 
 
+template::form::section -legendtext dfgh $form_id [lang::message::lookup "" intranet-core.Office Office]
 
 im_dynfield::append_attributes_to_form \
     -object_type "im_office" \
@@ -262,6 +275,11 @@ ad_form -extend -name $form_id -new_request {
 					 -secret_question $secret_question \
 					 -secret_answer $secret_answer]
 
+	    # A successful creation_info looks like:
+	    # username zahir@zunder.com account_status ok creation_status ok 
+	    # generated_pwd_p 0 account_message {} element_messages {} 
+	    # creation_message {} user_id 302913 password D6E09A4E9
+
 	    set creation_status "error"
 	    if {[info exists creation_info(creation_status)]} { set creation_status $creation_info(creation_status)}
 	    if {"ok" != [string tolower $creation_status]} {
@@ -271,6 +289,9 @@ ad_form -extend -name $form_id -new_request {
 		"
 		ad_script_abort
 	    }
+
+	    # Extract the user_id from the creation info
+	    set user_id $creation_info(user_id)
 
 	    # Update creation user to allow the creator to admin the user
 	    db_dml update_creation_user_id "
