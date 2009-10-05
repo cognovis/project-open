@@ -53,6 +53,7 @@ if {"" == $company_path} { regsub -all {[^a-zA-Z0-9]} [string trim [string tolow
 if {"" == $office_path} { set office_path "${company_path}_main_office" }
 if {"" == $office_name} { set office_name "$company_name [lang::message::lookup "" intranet-core.Main_Office {Main Office}]" }
 
+
 # --------------------------------------------------
 # Environment information for the rest of the page
 
@@ -60,6 +61,17 @@ set package_id [ad_conn package_id]
 set package_url [ad_conn package_url]
 set user_id [ad_conn user_id]
 set peeraddr [ad_conn peeraddr]
+
+
+# --------------------------------------------------
+# Determine company type as a function of user type
+
+set default_company_type_id [im_company_type_customer]
+if {$profile == [im_profile_customers]} { set default_company_type_id [im_company_type_customer] }
+if {$profile == [im_profile_partners]} { set default_company_type_id [im_company_type_partner] }
+if {$profile == [im_profile_freelancers]} { set default_company_type_id [im_company_type_provider] }
+if {$profile == [im_profile_employees]} { set default_company_type_id [im_company_type_internal] }
+
 
 # ------------------------------------------------------------------
 # Build the form
@@ -82,6 +94,7 @@ ad_form \
 	person_id:key
 	{company_id:text(hidden)}
 	{office_id:text(hidden)}
+	{profile:text(hidden)}
     }
 
 
@@ -130,7 +143,7 @@ catch { template::element::set_value $form_id email $email }
 template::element::set_value $form_id company_name $company_name
 template::element::set_value $form_id company_path $company_path
 
-template::element::set_value $form_id company_type_id [im_company_type_customer]
+template::element::set_value $form_id company_type_id $default_company_type_id
 template::element::set_value $form_id company_status_id [im_company_status_active]
 
 template::element::set_value $form_id office_name $office_name
@@ -147,7 +160,7 @@ ad_form -extend -name $form_id -new_request {
     set company_id [im_new_object_id]
     set office_id [im_new_object_id]
 
-    set company_type_id [im_company_type_customer]
+    set company_type_id $default_company_type_id
     set company_status_id [im_company_status_active]
     set office_type_id [im_office_type_main]
 
@@ -260,7 +273,6 @@ ad_form -extend -name $form_id -new_request {
 		set password_confirm $password
 	    }
 
-	    ns_log Notice "/users/new: Before auth::create_user"
 	    array set creation_info [auth::create_user \
 					 -user_id $user_id \
 					 -verify_password_confirm \
@@ -299,6 +311,15 @@ ad_form -extend -name $form_id -new_request {
 		set creation_user = :current_user_id
 		where object_id = :user_id
 	    "
+
+	    # Add the user to a group.
+	    # Check whether the current_user_id has the right to add the guy to the group:
+	    set managable_profiles [im_profile::profile_options_managable_for_user $current_user_id]
+	    foreach profile_tuple $managable_profiles {
+		set profile_name [lindex $profile_tuple 0]
+		set profile_id [lindex $profile_tuple 1]
+		if {$profile == $profile_id} { im_profile::add_member -profile_id $profile -user_id $user_id }
+	    }
 
 	} else {
 
@@ -343,19 +364,16 @@ ad_form -extend -name $form_id -new_request {
 		"
 	    }
 
-	    ns_log Notice "/users/new: person::update -person_id=$user_id -first_names=$first_names -last_name=$last_name"
 	    person::update \
 		-person_id $user_id \
 		-first_names $first_names \
 		-last_name $last_name
 	    
-	    ns_log Notice "/users/new: party::update -party_id=$user_id -url=$url -email=$email"
 	    party::update \
 		-party_id $user_id \
 		-url $url \
 		-email $email
 	    
-	    ns_log Notice "/users/new: acs_user::update -user_id=$user_id -screen_name=$screen_name"
 	    acs_user::update \
 		-user_id $user_id \
 		-screen_name $screen_name \
@@ -398,29 +416,21 @@ ad_form -extend -name $form_id -new_request {
 	}
 
 
+	    # Add the user to a group.
+	    # Check whether the current_user_id has the right to add the guy to the group:
+	    set managable_profiles [im_profile::profile_options_managable_for_user $current_user_id]
+	    foreach profile_tuple $managable_profiles {
+		set profile_name [lindex $profile_tuple 0]
+		set profile_id [lindex $profile_tuple 1]
+		if {$profile == $profile_id} { im_profile::add_member -profile_id $profile -user_id $user_id }
+	    }
+
 	# TSearch2: We need to update "persons" in order to trigger the TSearch2
 	# triggers
 	db_dml update_persons "
 		update persons
 		set first_names = first_names
 		where person_id = :user_id
-        "
-
-	ns_log Notice "/users/new: finished big IF clause"
-
-	
-        set membership_del_sql "
-        select
-                r.rel_id
-        from
-                acs_rels r,
-                acs_objects o
-        where
-                object_id_two = :user_id
-                and object_id_one = :profile_id
-                and r.object_id_one = o.object_id
-                and o.object_type = 'im_profile'
-                and rel_type = 'membership_rel'
         "
 
     
@@ -450,9 +460,6 @@ ad_form -extend -name $form_id -new_request {
 	    # add users to the office as 
 	    set role_id [im_biz_object_role_office_admin]
 	    im_biz_object_add_role $user_id $main_office_id $role_id
-	    
-	    ns_log Notice "/companies/new-2: main_office_id=$main_office_id"
-	    
 	    
 	    # Now create the company with the new main_office:
 	    set company_id [company::new \
@@ -539,13 +546,11 @@ ad_form -extend -name $form_id -new_request {
     set form_id "company"
     set object_type "im_company"
     
-    ns_log Notice "companies/new-2: before append_attributes_to_form"
     im_dynfield::append_attributes_to_form \
 	-object_type im_company \
 	-form_id company \
 	-object_id $company_id
     
-    ns_log Notice "companies/new-2: before attribute_store"
     im_dynfield::attribute_store \
 	-object_type $object_type \
 	-object_id $company_id \

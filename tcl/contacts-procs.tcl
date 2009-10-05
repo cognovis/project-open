@@ -120,7 +120,6 @@ ad_proc -private contacts::sweeper {
     by contacts (ones created by contacts automatically get
     associated item_id and live_revisions.
 } {
-
     # Make sure that only one thread is processing the queue at a
     # time.
     if {[nsv_incr contacts sweeper_p] > 1} {
@@ -297,9 +296,7 @@ ad_proc -private contact::util::generate_filename {
     {-party_id ""}
 } {
     Generate a pretty filename that relates to the title supplied
-
     @param party_id if supplied the filenames associated with this party will be used as existing_filenames if existing filenames is not provided
-
     @param existing_filenames a list of filenames that the generated filename must not be equal to
 } {
     if {[exists_and_not_null party_id] 
@@ -344,8 +341,6 @@ ad_proc -public contact::util::get_account_manager {
 } {
     return [db_list account_id "select object_id_one from acs_rels where rel_type='contact_rels_am' and object_id_two = :organization_id"]
 }
-
-
 
 
 ad_proc -public contact::salutation {

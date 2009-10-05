@@ -10,7 +10,7 @@ ad_page_contract {
     {last_name "" }
     {email "" }
     {company_name "" }
-    {contact_type "" }
+    {profile 0 }
     {form_mode "edit" }
     {return_url ""}
     {orderby "rank,desc" }
@@ -69,14 +69,6 @@ if {"" == $found_company_id} {
 # Action
 # ------------------------------------------------------------------
 
-# Determine profiles (groups) per contact type
-switch $contact_type {
-    customer { set profile [list [im_customer_group_id]]  }
-    provider { set profile [list [im_freelance_group_id]] }
-    employee { set profile [list [im_employee_group_id]] }
-    default { set profile [list] }
-}
-
 # Add a new user action - 
 # Redirect to user new page and set profile according to type of contact
 if {"" != $button_new_user_company} {
@@ -94,6 +86,35 @@ set contact_options [list \
 	[list [lang::message::lookup "" intranet-core.Undefined "Undefined"] undefined] \
 ]
 
+set contact_options_sql "
+	select	g.*
+	from	groups g,
+		im_profiles p
+	where	g.group_id = p.profile_id and
+		lower(g.group_name) not in (
+			'accounting',
+			'bug-tracker',
+			'helpdesk',
+			'hr managers',
+			'p/o admins',
+			'project managers',
+			'sales',
+			'senior managers'
+		)
+	order by
+		lower(g.group_name)
+"
+set contact_options [list]
+db_foreach contact_options $contact_options_sql {
+    regsub {[^0-9a-zA-Z_]} [string tolower $group_name] "" group_name_key
+    set group_name_pretty [lang::message::lookup "" intranet-core.$group_name_key $group_name]
+    lappend contact_options [list \
+	$group_name_pretty \
+	$group_id
+    ]
+}
+
+
 set form_id "contact"
 
 ad_form \
@@ -105,7 +126,7 @@ ad_form \
     -mode $form_mode \
     -export {return_url} \
     -form {
-        {contact_type:text(select),optional {label "[lang::message::lookup {} intranet-core.Contact_Type {Contact Type}]"} {options $contact_options}}
+        {profile:text(select),optional {label "[lang::message::lookup {} intranet-core.Contact_Type {Contact Type}]"} {options $contact_options}}
 	{first_names:text(text),optional {label "[_ intranet-core.First_names]"} {html {size 30}}}
 	{last_name:text(text),optional {label "[_ intranet-core.Last_name]"} {html {size 30}}}
     	{email:text(text),optional {label "[_ intranet-core.Email]"} {html {size 30}} {help_text ""}}

@@ -233,7 +233,6 @@ ad_proc -public contact::search::results_count_not_cached {
 } {
     Get the total number of results from a search
 } {
-
     set object_type [contact::search::object_type -search_id $search_id]
     set clauses [intranet-contacts::table_and_join_clauses -object_type $object_type -category_id $category_id]
     set contact_tables [lindex $clauses 0]
