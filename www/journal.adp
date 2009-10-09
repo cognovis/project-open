@@ -1,13 +1,33 @@
-<table width="100%" cellspacing="0" cellpadding="0" border="0">
+
+
+
+
+        <div class="component">
+                <table width="100%">
+                <tr>
+                <td>
+                <div class="component_header_rounded" >
+                        <div class="component_header">
+                                <div class="component_title">Journal</div>
+                                      <div class="component_icons"></div>
+                                </div>
+                        </div>
+                </td>
+                </tr>
+                <tr>
+                <td>
+                        <div class="component_body">
+
+<table width="100%">
   <tr>
-    <td bgcolor="#cccccc" colspan="2">
-      <table width="100%" cellspacing="1" cellpadding="2" border="0">
+    <td colspan="2">
+      <table width="100%">
         <tr>
-          <td colspan="5" bgcolor="#ccccff">
-            <table width="100%" cellspacing="0" cellpadding="0" border="0">
+          <td colspan="5">
+            <table width="100%">
               <tr>
                 <th width="20%">&nbsp;</th>
-                <th>Journal</th>
+                <th></th>
                 <td width="20%" align="right">
                   <if @comment_link@ eq 1>[ <a href="@workflow_url;noquote@comment-add?case_id=@case_id@&return_url=@return_url;noquote@">comment</a> ]</if>
                   <if @comment_link@ ne 1>&nbsp;</if>
@@ -17,14 +37,17 @@
           </td>
         </tr>
         <if @journal:rowcount@ eq 0>
-          <tr bgcolor="#ffffe4">
+          <tr>
             <td>
               <em>No actions yet.</em>
             </td>
           </tr>
         </if>
+	</table>
+      <table width="100%">
+
         <if @journal:rowcount@ ne 0>
-          <tr bgcolor="#ffffe4">
+          <tr>
 <if @show_action_p@>
             <th align="left">Action</th>
 </if>
@@ -35,7 +58,7 @@
           </tr>
         </if>
         <multiple name="journal">
-          <tr bgcolor="#eeeeee">
+          <tr>
 <if @show_action_p@>
             <td>@journal.action_pretty@</td>
 </if>
@@ -56,10 +79,16 @@
                 </group>
               </if>
             </td>
-
           </tr>
         </multiple>
       </table>
     </td>
   </tr>
 </table>
+
+
+
+                        </div>
+                </td></tr>
+                </table>
+        </div>
