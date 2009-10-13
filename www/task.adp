@@ -51,9 +51,11 @@
                         <div class="component_body">
 				<table class="panel" width="100%">
 					<tr><td>
+						<ul class="admin_links">
 						<multiple name="extreme_actions">
-						    (<a href="@extreme_actions.url@">@extreme_actions.title@</a>)
+						    <li><a href="@extreme_actions.url@">@extreme_actions.title@</a></li>
 						</multiple>
+						</ul>
 					</td></tr>
 				</table>
                          </div>
