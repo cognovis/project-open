@@ -71,11 +71,12 @@ if {!$task(this_user_is_assigned_p)} { set approval_task_p 0 }
     </else>
 
     <p>
+    <ul class="admin_links">
     <if @task.this_user_is_assigned_p@ ne 1>
-        (<a href="@task.assign_yourself_url@">assign yourself</a>)
+        <li><a href="@task.assign_yourself_url@">assign yourself</a></li>
     </if>
-    (<a href="@task.manage_assignments_url@">reassign</a>)
-
+    <li><a href="@task.manage_assignments_url@">reassign</a></li>
+    </ul>
     <if @task.deadline_pretty@ not nil>
         <p>
         <if @task.days_till_deadline@ lt 1>
@@ -146,7 +147,7 @@ if {!$task(this_user_is_assigned_p)} { set approval_task_p 0 }
 	</if>
 
         <tr>
-	<td colspan="2" align="center">(<a href="@task.cancel_url@">cancel task</a>)</td>
+	<td colspan="2"><ul class="admin_links"><li><a href="@task.cancel_url@">cancel task</a></li></ul></td>
         </tr>
 
         </table>
