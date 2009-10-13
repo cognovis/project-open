@@ -17,17 +17,20 @@ set row_class "rowtitle"
 #
 
 set sql "
-    select * from (
+	select	*,
+		coalesce(person_language, company_language) as language,
+		coalesce(person_sector, company_sector) as sector
+	from (
+		-- select persons, together with their company
 	    	select 
 			im_category_from_id(p.language_id) as person_language,
+			im_category_from_id(c.language_id) as company_language,
 			pa.email,
 			p.person_id,
 			im_name_from_user_id(p.person_id) as person_name,
-			p.business_sector_id as person_sector_id,
 			im_category_from_id(p.business_sector_id) as person_sector,
 			c.company_id,
 			c.company_name,
-			c.business_sector_id as company_sector_id,
 			im_category_from_id(c.business_sector_id) as company_sector,
 			im_category_from_id(c.abc_prio_id) as abc
 		    from
@@ -48,16 +51,16 @@ set sql "
 			and pa.party_id = p.person_id
 			and (p.spam_frequency_id is null OR p.spam_frequency_id != 11130)
  	UNION
+		-- include companies without members
 	    	select 
-			'' as person_language,
-			'' as email,
+			NULL as person_language,
+			im_category_from_id(c.language_id) as person_language,
+			NULL as email,
 			0 as person_id,
-			'' as person_name,
-			c.business_sector_id as person_sector_id,
+			NULL as person_name,
 			im_category_from_id(c.business_sector_id) as person_sector,
 			c.company_id,
 			c.company_name,
-			c.business_sector_id as company_sector_id,
 			im_category_from_id(c.business_sector_id) as company_sector,
 			im_category_from_id(c.abc_prio_id) as abc
 		from
@@ -78,29 +81,27 @@ set sql "
 			)
     ) t
     order by
-	person_language,
-	person_sector,
-	person_id,
-	company_name
+	sector,
+	language,
+	company_name,
+	person_id
 "
 
 set report_def [list \
-    group_by person_language \
-    header {"<b>$person_language</b>" "" "" "" "" "" "" "" ""} \
+    group_by sector \
+    header {"<b>$sector</b>" "" "" "" "" "" "" "" ""} \
     content [list  \
-	group_by company_sector \
-	header {"" "<b>$company_sector</b> $company_sector_id" "" "" "" "" "" "" ""} \
+	group_by language \
+	header {"<b>$sector</b>" "<b>$language</b>" "" "" "" "" "" ""} \
 	content [list  \
 	    header {
-		"$person_language"
-		"$person_sector $person_sector_id"
+		"$sector"
+		"$language"
+		"$abc"
+		"<a href=/intranet/companies/new?company_id=$company_id>$company_name</a>"
 		"<a href=mailto:$email>$email</a>" 
 		"<a href=/intranet/users/view?user_id=$person_id>$person_name</a>"
-		""
-		$person_sector 
-		"$abc"
-		"<a href=/intranet/companies/view?company_id=$company_id>$company_name</a>"
-		$company_sector} \
+	    } \
 	    content {} \
         ] \
     ] \
@@ -108,7 +109,7 @@ set report_def [list \
 ]
 
 # Global header/footer
-set header0 {"Lang" "Sector" "Email" "First" "Last" "Sector" "A" "Company" "Sector"}
+set header0 {"Sector" "Lang" "A" "Company" "Email" "Name"}
 set footer0 {"" "" "" "" "" "" "" "" ""}
 
 set counters [list]
