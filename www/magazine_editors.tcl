@@ -32,7 +32,8 @@ set sql "
 			c.company_id,
 			c.company_name,
 			im_category_from_id(c.business_sector_id) as company_sector,
-			im_category_from_id(c.abc_prio_id) as abc
+			im_category_from_id(c.abc_prio_id) as abc,
+			uc.note
 		    from
 			group_member_map m,
 			parties pa,
@@ -44,7 +45,7 @@ set sql "
 					im_companies c
 				where	r.object_id_one = c.company_id
 			) c ON (p.person_id = c.person_id)
-		
+			LEFT OUTER JOIN users_contact uc ON p.person_id = uc.user_id
 		    where
 			m.group_id = 5372
 			and m.member_id = p.person_id
@@ -62,7 +63,8 @@ set sql "
 			c.company_id,
 			c.company_name,
 			im_category_from_id(c.business_sector_id) as company_sector,
-			im_category_from_id(c.abc_prio_id) as abc
+			im_category_from_id(c.abc_prio_id) as abc,
+			NULL as note
 		from
 			im_companies c
 		where
@@ -101,6 +103,7 @@ set report_def [list \
 		"<a href=/intranet/companies/new?company_id=$company_id>$company_name</a>"
 		"<a href=mailto:$email>$email</a>" 
 		"<a href=/intranet/users/view?user_id=$person_id>$person_name</a>"
+		"$note"
 	    } \
 	    content {} \
         ] \
@@ -109,7 +112,7 @@ set report_def [list \
 ]
 
 # Global header/footer
-set header0 {"Sector" "Lang" "A" "Company" "Email" "Name"}
+set header0 {"Sector" "Lang" "A" "Company" "Email" "Name" "Person<br>Note"}
 set footer0 {"" "" "" "" "" "" "" "" ""}
 
 set counters [list]
