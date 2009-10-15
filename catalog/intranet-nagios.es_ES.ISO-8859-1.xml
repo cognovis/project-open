@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-nagios" package_version="3.4.0.7.0" locale="es_ES" charset="ISO-8859-1">
+
+  <msg key="Import_Nagios_Configuration">Importar configuración Nagios</msg>
+  <msg key="Nagios">Nagios</msg>
+  <msg key="Nagios_Parameters">Parámetros Nagios</msg>
+</message_catalog>
