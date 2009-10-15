@@ -13,6 +13,7 @@
   <msg key="Company">Azienda</msg>
   <msg key="context">contesto</msg>
   <msg key="Cost_Center">Centro di costo</msg>
+  <msg key="Cost_Center_permissions_help">Aiuto permessi centri di costo</msg>
   <msg key="Cost_Centers">Centri di costo</msg>
   <msg key="Cost_Items">Voci di costo</msg>
   <msg key="CostCenter_short">CC</msg>
@@ -54,7 +55,7 @@
   <msg key="lt_This_is_the_homepage_">Questa è la pagina iniziale dell'area Finanze. Qui si trovano tutte le  informazioni finanziarie relative a organizzazioni, progetti e utenti.</msg>
   <msg key="Materials_Service_Types">Materiali (tipi di servizio)</msg>
   <msg key="more_costs">altri costi...</msg>
-  <msg key="Multiple_Currency_Warning">&lt;h2&gt;Avvertenza di valuta multipla&lt;/h2&gt; &lt;p&gt; Il presente progetto comprende documenti finanziari con più di una valuta. &lt;br&gt; Sebbene ciò sia corretto in termini generali, tener conto che non sarà possibile calcolare il valore di profitti&amp;perdite del progetto e neppure includerlo nel calcolo del margine di beneficio. &lt;/p&gt;</msg>
+  <msg key="Multiple_Currency_Warning">&lt;h2&gt;Avvertenza di valuta multipla&lt;/h2&gt; &lt;p&gt; Il presente progetto comprende documenti finanziari con più di una valuta. &lt;br&gt; Sebbene ciò sia corretto in termini generali, tener conto che non sarà possibile calcolare il valore di profitti e perdite del progetto e neppure includerlo nel calcolo del margine di beneficio. &lt;/p&gt;</msg>
   <msg key="Name">Nome</msg>
   <msg key="New_Cost">Nuovo costo</msg>
   <msg key="New_Cost_Item">Nuova voce di costo</msg>
@@ -75,6 +76,7 @@
   <msg key="Paid_Currency">Valuta pagata</msg>
   <msg key="Payment_Days">Giorni di pagamento</msg>
   <msg key="Payments">Pagamenti</msg>
+  <msg key="Perms">Permessi</msg>
   <msg key="Please_Select">Seleziona</msg>
   <msg key="Preliminary_Costs">Costi preliminari</msg>
   <msg key="Preliminary_Total">Totale preliminare</msg>

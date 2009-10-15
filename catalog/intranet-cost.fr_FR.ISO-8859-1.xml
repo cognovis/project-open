@@ -62,10 +62,10 @@ Bien que cela ne pose généralement aucun problème, cela nous empêche d'effectuer
   <msg key="Name">Nom</msg>
   <msg key="New_Cost">Nouveau coût</msg>
   <msg key="New_Cost_Item">Nouvel élément de coût</msg>
-  <msg key="New_Customer_Docs">Créer un nouveau document Client</msg>
+  <msg key="New_Customer_Docs">Créer un nouveau document client</msg>
   <msg key="New_Customer_Invoices_Quotes">Factures &amp; devis nouveaux clients</msg>
   <msg key="New_Provider_Bills_POs">Factures et bons de commande nouveaux fournisseurs</msg>
-  <msg key="New_Provider_Docs">Créer un nouveau document Fournisseur</msg>
+  <msg key="New_Provider_Docs">Créer un nouveau document fournisseur</msg>
   <msg key="New_Timesheet_Invoice">Nouvelle Facture selon heures consommées</msg>
   <msg key="New_Trans_Invoice">Nouvelle facture de traduction</msg>
   <msg key="Next_Page">Page suivante</msg>
