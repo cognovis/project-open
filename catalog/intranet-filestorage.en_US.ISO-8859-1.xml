@@ -23,6 +23,7 @@
   <msg key="Full_Member">Full Member</msg>
   <msg key="Home_Filestorage">Home Filestorage</msg>
   <msg key="Internal_Error">Internal Error</msg>
+  <msg key="intranet-filestorage">Intranet Filestorage</msg>
   <msg key="Key_Account">Key Account</msg>
   <msg key="lt_Add_permissions_to_fo">Add permissions to folders</msg>
   <msg key="lt_Add_the_permissions_a">Add the permissions above to the following directories:</msg>
