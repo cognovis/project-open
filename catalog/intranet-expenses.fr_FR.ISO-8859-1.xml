@@ -8,8 +8,10 @@
   <msg key="Airfare">Billet d'avion</msg>
   <msg key="All">Tout</msg>
   <msg key="Amount">Montant</msg>
+  <msg key="Billable">Facturables</msg>
   <msg key="Billable_p">Facturable ?</msg>
   <msg key="Cash">Liquide</msg>
+  <msg key="Copies">Copies</msg>
   <msg key="Create_Invoice">Créer une Note de Frais</msg>
   <msg key="create_invoice_help">Les &quot;Notes de Frais&quot; peuvent être associées à un projet.</msg>
   <msg key="create_trabel_cost_help">Créer des factures de déplacement</msg>
@@ -60,6 +62,8 @@
   <msg key="Unassigned">Non affecté</msg>
   <msg key="Unassigned_Expenses">Frais non affectés</msg>
   <msg key="Unassigned_items">Postes financiers non affectés</msg>
+  <msg key="Unbundeled">Dégroupagé</msg>
   <msg key="Vat_Included">TVA % Incl.</msg>
+  <msg key="Without_Project">Sans Projets</msg>
   <msg key="Yesintranet-coreYes">Oui</msg>
 </message_catalog>
