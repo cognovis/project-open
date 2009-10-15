@@ -49,6 +49,7 @@
   <msg key="Salaries_per_Year">Pagos anuales</msg>
   <msg key="Salary">Sueldo</msg>
   <msg key="Salary_Period">Periodificación</msg>
+  <msg key="Salary_period_month">Mensual</msg>
   <msg key="Social_Security">Seguridad social</msg>
   <msg key="Social_Security_">Número Seguridad Social</msg>
   <msg key="Social_Security_nr">No. Seguridad Social</msg>
