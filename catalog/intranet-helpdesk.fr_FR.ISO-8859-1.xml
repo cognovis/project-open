@@ -23,6 +23,7 @@
   <msg key="Conf_Item_type_Network">Réseau</msg>
   <msg key="Conf_Item_type_Process">Processus</msg>
   <msg key="Conf_Item_type_Software">Logiciel</msg>
+  <msg key="Conf_Item_type_Specs">Specifs</msg>
   <msg key="Conf_Item_type_Subnet">Sous-réseau</msg>
   <msg key="Contact">Contact</msg>
   <msg key="Customer">Client</msg>
@@ -93,4 +94,5 @@
   <msg key="Training_Request">Demande de formation</msg>
   <msg key="Type">Type</msg>
   <msg key="Update_Tickets">Mise à jour des tickets</msg>
+  <msg key="With_Member">Avec Membre</msg>
 </message_catalog>

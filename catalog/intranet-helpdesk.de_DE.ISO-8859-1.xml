@@ -3,6 +3,8 @@
 
   <msg key="Action">Aktion</msg>
   <msg key="Add_a_new_ticket">Neues Ticket</msg>
+  <msg key="Admin_Filters">Admin Filter</msg>
+  <msg key="Admin_Tickets">Admin Tickets</msg>
   <msg key="All">Alle</msg>
   <msg key="Assigned">Zugewiesen</msg>
   <msg key="Cant_reproduce">Kann nicht reproduziert werden.</msg>
@@ -21,6 +23,7 @@
   <msg key="Customer_Info">Kundeninfo</msg>
   <msg key="Delete">Löschen</msg>
   <msg key="Deleted">Gelöscht</msg>
+  <msg key="Filter_Tickets">Tickets filtern</msg>
   <msg key="Home_Ticket_Component">Home-Ticket-Komponente</msg>
   <msg key="Invalid">Ungültig</msg>
   <msg key="Mine">Meine</msg>

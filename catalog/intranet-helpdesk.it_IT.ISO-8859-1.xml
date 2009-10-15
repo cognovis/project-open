@@ -40,7 +40,7 @@
   <msg key="Executing">In esecuzione</msg>
   <msg key="Feature_Request">Richiesta di feature</msg>
   <msg key="Filter_Tickets">Filtra ticket</msg>
-  <msg key="Home_Ticket_Component">Componente Home ticket</msg>
+  <msg key="Home_Ticket_Component">Sezione ticket</msg>
   <msg key="In_review">In recensione</msg>
   <msg key="Incident_ticket_type">Ticket imprevisto</msg>
   <msg key="Invalid">Non valido</msg>
@@ -101,6 +101,6 @@
   <msg key="Training_Request">Richiesta di formazione</msg>
   <msg key="Type">Tipo</msg>
   <msg key="Update_Tickets">Aggiorna ticket</msg>
-  <msg key="With_Member">Con membro</msg>
+  <msg key="With_Member">Includi membro</msg>
   <msg key="Wont_fix">Impossibile da risolvere</msg>
 </message_catalog>
