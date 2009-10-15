@@ -18,4 +18,5 @@
   <msg key="SysConfig">系统配置</msg>
   <msg key="SysConfig_Wizard">系统配置向导</msg>
   <msg key="System_Config_Wizard">系统配置向导</msg>
+  <msg key="System_Configuration_Wizard">系统配置向导</msg>
 </message_catalog>

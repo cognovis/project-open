@@ -18,4 +18,5 @@
   <msg key="SysConfig">Configuración del Sistema</msg>
   <msg key="SysConfig_Wizard">Ayudante ConfigSis</msg>
   <msg key="System_Config_Wizard">Ayudante de configuración del sistema</msg>
+  <msg key="System_Configuration_Wizard">Asistente para configuración del sistema</msg>
 </message_catalog>
