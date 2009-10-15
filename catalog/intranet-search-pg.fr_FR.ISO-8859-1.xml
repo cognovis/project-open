@@ -2,6 +2,7 @@
 <message_catalog package_key="intranet-search-pg" package_version="3.4.0.7.0" locale="fr_FR" charset="ISO-8859-1">
 
   <msg key="Advanced_Search">Recherche avancée</msg>
+  <msg key="Bad_Query">Mauvaise requête</msg>
   <msg key="Bad_Query_Msg">Le &amp;amp;#93;po&amp;amp;#91; moteur de recherche est capable de traiter des requêtes complexes comportant plusieurs mots. &amp;lt;br&amp;gt;
 Cependant, vous devez dire à votre moteur de recherche comment chercher:
 &amp;lt;p&amp;gt;
@@ -19,6 +20,7 @@ Cependant, vous devez dire à votre moteur de recherche comment chercher:
 &amp;lt;/ul&amp;gt;
 
 </msg>
+  <msg key="Include_Deleted">Inclure les supprimé</msg>
   <msg key="lt_Make_sure_all_words_a">Vérifiez que tous les mots sont correctement orthographiés.</msg>
   <msg key="lt_No_pages_were_found_c">Aucune page n'a été trouvée pour cette requête : &amp;quot;</msg>
   <msg key="lt_Try_different_keyword">Essayez avec d'autres mots clé.</msg>
