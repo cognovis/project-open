@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="intranet-expenses" package_version="3.4.0.7.0" locale="ru_RU" charset="utf-8">
+<message_catalog package_key="intranet-expenses" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
 
   <msg key="--Select--">-- Выберите --</msg>
   <msg key="Add_a_new_Expense">Добавить расходы</msg>
@@ -22,6 +22,7 @@
   <msg key="Delete_Expenses">Borrar Gastos</msg>
   <msg key="Expense_Bundles">Группы расходов</msg>
   <msg key="Expense_Date">Дата расходов</msg>
+  <msg key="Expense_Invoices">Expense Invoices</msg>
   <msg key="Expense_Payment_Type">Оплата</msg>
   <msg key="Expense_Type">Тип расходов</msg>
   <msg key="Expenses">Расходы</msg>
