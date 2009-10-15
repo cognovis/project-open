@@ -2,6 +2,7 @@
 <message_catalog package_key="intranet-cost" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Absences">Abwesenheiten</msg>
+  <msg key="Admin">Admin</msg>
   <msg key="Administration">Administration</msg>
   <msg key="All_Costs">Alle Kosten</msg>
   <msg key="Amount">Betrag</msg>
@@ -53,7 +54,9 @@
   <msg key="New_Cost">Neue Kosten</msg>
   <msg key="New_Cost_Item">Neue Kosten</msg>
   <msg key="New_Customer_Docs">Neues Kundendokument</msg>
-  <msg key="New_Provider_Docs">Neues Providerdokument</msg>
+  <msg key="New_Customer_Invoices_Quotes">Neue Kundenrechnungen &amp; Angebote</msg>
+  <msg key="New_Provider_Bills_POs">Neue Lieferantenrechnungen &amp; -aufträge</msg>
+  <msg key="New_Provider_Docs">Neues Lieferantendokument</msg>
   <msg key="New_Timesheet_Invoice">Neue Stunden Rechnung</msg>
   <msg key="New_Trans_Invoice">Neue Ubersetzungsrechnung</msg>
   <msg key="Next_Page">Nächste Seite</msg>

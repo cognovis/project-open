@@ -13,6 +13,7 @@
   <msg key="Company">Company</msg>
   <msg key="context">Context</msg>
   <msg key="Cost_Center">Cost Center</msg>
+  <msg key="Cost_Center_permissions_help">Cost Center Permissions Help</msg>
   <msg key="Cost_Centers">Cost Centers</msg>
   <msg key="Cost_Items">Cost Items</msg>
   <msg key="CostCenter_short">CC</msg>
@@ -82,6 +83,7 @@ While this is OK in general, it will keep us from calculating a single profit&am
   <msg key="Paid_Currency">Paid Currency</msg>
   <msg key="Payment_Days">Payment Days</msg>
   <msg key="Payments">Payments</msg>
+  <msg key="Perms">Perms</msg>
   <msg key="Please_Select">Please select</msg>
   <msg key="Preliminary_Costs">Preliminary Costs</msg>
   <msg key="Preliminary_Total">Preliminary Total</msg>
