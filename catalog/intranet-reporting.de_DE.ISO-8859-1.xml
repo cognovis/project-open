@@ -8,12 +8,15 @@
   <msg key="Available_Reports">Verfügbare Berichte</msg>
   <msg key="Edit_Report">Bericht bearbeiten</msg>
   <msg key="Finance">Finanzen</msg>
+  <msg key="Finance_Cube">Pivot-Tabelle Finanzen</msg>
   <msg key="Finance_Documents_and_their_Projects">Finanzen Dokumente &amp; Projekte</msg>
   <msg key="Forum">Forum</msg>
   <msg key="Gantt_Diagram">Gantt-Diagramm</msg>
   <msg key="Indicators">Indikatoren</msg>
   <msg key="Manage_Reports">Berichte verwalten</msg>
   <msg key="New_Report">Neuer Bericht</msg>
+  <msg key="No_customer">Kunde nicht definiert</msg>
+  <msg key="No_project">Projekt nicht definiert</msg>
   <msg key="Report_Id">ID</msg>
   <msg key="Report_Name">Name</msg>
   <msg key="Report_Translation_Tasks">Übersetzungsaufgaben</msg>

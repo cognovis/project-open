@@ -20,9 +20,14 @@
   <msg key="Finance_Projects_and_their_Documents">Progetti e documenti finanziari</msg>
   <msg key="Finance_VAT_Report">Report IVA</msg>
   <msg key="Forum">Forum</msg>
+  <msg key="Forum_AdHoc_Report_01">Report_01 ad hoc forum</msg>
+  <msg key="Fraber_Test">Test Fraber</msg>
   <msg key="Gantt_Diagram">Diagramma di Gantt</msg>
   <msg key="Gantt_Resources">Risorse Gantt</msg>
+  <msg key="Groups">Gruppi</msg>
   <msg key="Indicators">Indicatori</msg>
+  <msg key="List_of_Active_Projects">Elenco progetti attivi</msg>
+  <msg key="List_of_All_Project_Names">Elenco completo progetti per nome</msg>
   <msg key="Manage_Reports">Gestione report</msg>
   <msg key="New_Report">Nuovo report</msg>
   <msg key="No_customer">Cliente non definito</msg>
@@ -34,6 +39,11 @@
   <msg key="Price_Data_Warehouse_Cube">«Cubo» data-warehouse prezzi</msg>
   <msg key="Project_Main_List">Elenco principale progetti</msg>
   <msg key="Project_Manager_Salary_Comparision">Confronto salari project manager</msg>
+  <msg key="Project_Report_01">Report progetto 01</msg>
+  <msg key="Project_Report_02">Report progetto 02</msg>
+  <msg key="Project_Report_03">Report progetto 03</msg>
+  <msg key="Project_Report_04">Report progetto 04</msg>
+  <msg key="Project_Report_05">Report progetto 05</msg>
   <msg key="Report_Code">Codice report</msg>
   <msg key="Report_Dashboard">Dashboard</msg>
   <msg key="Report_Finance">Dati finanziari</msg>
@@ -80,14 +90,17 @@
   <msg key="Simple_Survey_Cube">«Cubo» sondaggi rapidi</msg>
   <msg key="Simple_Survey_Main_List">Elenco principale sondaggi rapidi</msg>
   <msg key="Simple_Survey_Results">Risultati sondaggio rapido</msg>
+  <msg key="Tickets_Abiertos">Ticket aperti</msg>
   <msg key="Timesheet">Presenze</msg>
   <msg key="Timesheet_Customers_and_Projects">Presenze clienti/progetti</msg>
   <msg key="Timesheet_Data_Warehouse_Cube">«Cubo» data-warehouse presenze</msg>
+  <msg key="Timesheet_Finance_Report">Report finanze per presenze</msg>
   <msg key="Timesheet_Productivity">Produttività/presenze</msg>
   <msg key="Timesheet_Project_Hierarchy___Finance">Gerarchia progetto presenze e dati finanziari</msg>
   <msg key="Translation">Traduzione</msg>
   <msg key="Translation_PM_Productivity">Produttività PM / presenze</msg>
   <msg key="Translation_Tasks">Attività di traduzione</msg>
+  <msg key="Translation_Tasks_AdHoc_Report_01">Report 01 ad hoc attività di traduzione</msg>
   <msg key="Users___Contact_Information">Utenti e informazioni di contatto</msg>
   <msg key="You_dont_have_permissions">Non si dispone dei permessi sufficienti per visualizzare questa pagina.</msg>
 </message_catalog>

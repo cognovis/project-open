@@ -20,9 +20,14 @@
   <msg key="Finance_Projects_and_their_Documents">Finance Projects &amp; Documents</msg>
   <msg key="Finance_VAT_Report">Finance VAT Report</msg>
   <msg key="Forum">Forum</msg>
+  <msg key="Forum_AdHoc_Report_01">Forum AdHoc Report_01</msg>
+  <msg key="Fraber_Test">Fraber Test</msg>
   <msg key="Gantt_Diagram">Gantt Diagram</msg>
   <msg key="Gantt_Resources">Gantt Resources</msg>
+  <msg key="Groups">Groups</msg>
   <msg key="Indicators">Indicators</msg>
+  <msg key="List_of_Active_Projects">List of Active Projects</msg>
+  <msg key="List_of_All_Project_Names">List of All Project Names</msg>
   <msg key="Manage_Reports">Manage Reports</msg>
   <msg key="New_Report">New Report</msg>
   <msg key="No_customer">Undefined Customer</msg>
@@ -34,6 +39,11 @@
   <msg key="Price_Data_Warehouse_Cube">Price Data-Warehouse Cube</msg>
   <msg key="Project_Main_List">Project Main List</msg>
   <msg key="Project_Manager_Salary_Comparision">Project Manager Salary Comparison</msg>
+  <msg key="Project_Report_01">Project Report 01</msg>
+  <msg key="Project_Report_02">Project Report 02</msg>
+  <msg key="Project_Report_03">Project Report 03</msg>
+  <msg key="Project_Report_04">Project Report 04</msg>
+  <msg key="Project_Report_05">Project Report 05</msg>
   <msg key="Report_Code">Report Code</msg>
   <msg key="Report_Group">Report Group</msg>
   <msg key="Report_Groups">Groups</msg>
@@ -52,14 +62,17 @@
   <msg key="Simple_Survey_Cube">Simple Survey Cube</msg>
   <msg key="Simple_Survey_Main_List">Simple Survey Main List</msg>
   <msg key="Simple_Survey_Results">Simple Survey Results</msg>
+  <msg key="Tickets_Abiertos">Open Tickets</msg>
   <msg key="Timesheet">Timesheet</msg>
   <msg key="Timesheet_Customers_and_Projects">Timesheet Customers &amp; Projects</msg>
   <msg key="Timesheet_Data_Warehouse_Cube">Timesheet Data-Warehouse Cube</msg>
+  <msg key="Timesheet_Finance_Report">Timesheet Finance Report</msg>
   <msg key="Timesheet_Productivity">Timesheet Productivity</msg>
   <msg key="Timesheet_Project_Hierarchy___Finance">Timesheet Project Hierarchy &amp; Finance</msg>
   <msg key="Translation">Translation</msg>
   <msg key="Translation_PM_Productivity">Timesheet PM Productivity</msg>
   <msg key="Translation_Tasks">Translation Tasks</msg>
+  <msg key="Translation_Tasks_AdHoc_Report_01">Translation Tasks AdHoc Report 01</msg>
   <msg key="Users___Contact_Information">Users &amp; Contact Information</msg>
   <msg key="You_dont_have_permissions">You don't have the necessary permissions to view this page.</msg>
 </message_catalog>
