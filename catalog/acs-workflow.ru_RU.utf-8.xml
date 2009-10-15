@@ -2,6 +2,5 @@
 <message_catalog package_key="acs-workflow" package_version="4.5.3" locale="ru_RU" charset="utf-8">
 
   <msg key="As_part_of">Входит в</msg>
-  <msg key="On_what">On what?</msg>
   <msg key="To_Do">Список дел</msg>
 </message_catalog>
