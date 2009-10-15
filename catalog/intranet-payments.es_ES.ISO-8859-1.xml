@@ -23,6 +23,7 @@
   <msg key="lt_The_intranet_start_bl">O bien los bloques iniciales de la intranet no están definidos, o bien no disponemos de un bloque inicial para esta semana o para el futuro.</msg>
   <msg key="lt_There_are_currently_n">Actualmente no hay pagos que coincidan con los criterios seleccionados</msg>
   <msg key="lt_You_dont_have_suffici">Carece de los privilegios suficientes para ver esta página.</msg>
+  <msg key="Mark_invoice_as_paid">Marcar factura como pagada</msg>
   <msg key="New_payment">Nuevo pago</msg>
   <msg key="Next_Page">Página siguiente</msg>
   <msg key="Note">Nota</msg>
@@ -37,6 +38,6 @@
   <msg key="Provider">Proveedor</msg>
   <msg key="Received">Recibido</msg>
   <msg key="Start_block_error">Error de bloque inicial</msg>
-  <msg key="Status">Status</msg>
+  <msg key="Status">Estatus</msg>
   <msg key="Update">Actualizar</msg>
 </message_catalog>
