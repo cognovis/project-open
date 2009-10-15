@@ -21,7 +21,7 @@
   <msg key="Calendar_Add_Item">Agenda: ajouter un élément</msg>
   <msg key="Calendar_Edit_Item">Agenda: éditer cet élément</msg>
   <msg key="Calendar_Item">Elément de l'agenda</msg>
-  <msg key="Calendar_Item_Delete">Effacer élément de l'agenda</msg>
+  <msg key="Calendar_Item_Delete">Effacer l'élément de l'agenda</msg>
   <msg key="Calendar_Item_Types">Types d'élément de l'agenda</msg>
   <msg key="Calendar_Name">Nom de l'agenda</msg>
   <msg key="Calendar_Permissions">&quot;Privilèges pour cet agenda&quot;</msg>
@@ -98,7 +98,7 @@
               &amp;lt;if %days.today_p% true&amp;gt;
                 &amp;lt;td class=&amp;quot;today&amp;quot; onclick=&amp;quot;javascript:location.href='%days.url%';&amp;quot;&amp;gt;
                   &amp;lt;a href=&amp;quot;%days.url%&amp;quot; title=&amp;quot;&amp;lt;#_ Go to %month_name% %days.day_number%, %year%</msg>
-  <msg key="lt_Hide_Checked_Calendar">Occulter les agendas sélectionnés.</msg>
+  <msg key="lt_Hide_Checked_Calendar">Cacher les agendas sélectionnés.</msg>
   <msg key="lt_Manage_Calendar_Audie">Administrer les audiences de l'agenda</msg>
   <msg key="lt_no_parties_exist_cont">aucune partie existante. Contactez votre administrateur système</msg>
   <msg key="lt_no_privilege_exist_co">aucun privilège existant. Contactez votre administrateur système</msg>
@@ -141,6 +141,8 @@
   <msg key="Select_Calendars">Sélectionner agendas</msg>
   <msg key="select_views_name">Sélectionner affichage %views.name%</msg>
   <msg key="Sharing">Partager</msg>
+  <msg key="skip_day_calendar">Passer au jour suivant</msg>
+  <msg key="skip_month_calendar">Passer au mois suivant</msg>
   <msg key="sort_by_date">Trier par date</msg>
   <msg key="sort_by_type">Trier par type</msg>
   <msg key="Start_Time">Heure début</msg>

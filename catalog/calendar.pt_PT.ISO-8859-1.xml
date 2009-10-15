@@ -72,12 +72,14 @@
   <msg key="lt_You_have_no_party_wid">Não tem calendários de partido geral</msg>
   <msg key="Monday">Segunda-feira</msg>
   <msg key="New_Type">Novo Tipo:</msg>
+  <msg key="next_week">Semana seguinte</msg>
   <msg key="No">Não</msg>
   <msg key="No_Calendars">Não há Calendários</msg>
   <msg key="no_keep_it">não, mantenha-o</msg>
   <msg key="Note">Nota</msg>
   <msg key="of_the_month">do mês</msg>
   <msg key="of_the_week">da semana</msg>
+  <msg key="prev_week">Semana anterior</msg>
   <msg key="Private">Privado:</msg>
   <msg key="private">privado</msg>
   <msg key="Public">Público:</msg>
