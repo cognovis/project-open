@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <message_catalog package_key="intranet-confdb" package_version="3.4.0.7.0" locale="fr_FR" charset="ISO-8859-1">
 
-  <msg key="2nd_Level_Items">Articles de 2d rang</msg>
+  <msg key="2nd_Level_Items">Articles de 2eme rang</msg>
   <msg key="Active">Actif</msg>
   <msg key="Add_a_new_Conf_Item">Ajouter un nouvel article de configuration</msg>
   <msg key="All_Items">Tous les articles</msg>
   <msg key="Archived">Archivé</msg>
   <msg key="Assoc_Projects">Projets associés</msg>
   <msg key="Assoc_Tickets">Tickets associés</msg>
-  <msg key="Associated_Tickets">Tckets associés</msg>
+  <msg key="Associated_Tickets">Tickets associés</msg>
   <msg key="Computer_Bios">BIOS de l'ordinateur</msg>
   <msg key="Computer_Controller">Contrôleur de l'ordinateur</msg>
   <msg key="Computer_Drive">Disque dur de l'ordinateur</msg>
@@ -25,6 +25,7 @@
   <msg key="Conf_Item_Status">Statut</msg>
   <msg key="Conf_Item_Type">Type</msg>
   <msg key="Conf_Items_Items">Articles de configuration</msg>
+  <msg key="Conf_Management">Gestionnaire de Config</msg>
   <msg key="Configuration_Items">Articles de configuration</msg>
   <msg key="Cost_Center">Section des frais</msg>
   <msg key="Delete">Supprimer</msg>
@@ -48,11 +49,12 @@
   <msg key="lt_Computer_Network_Devi">Dispositif de mise en réseau</msg>
   <msg key="lt_Computer_Printer_Driv">Pilote d'imprimante</msg>
   <msg key="lt_Computer_Software_Pac">Progiciel</msg>
-  <msg key="lt_Computer_Sound_Device"></msg>
+  <msg key="lt_Computer_Sound_Device">Périphérique source</msg>
   <msg key="lt_Computer_Storage_Devi">Périphérique de stockage</msg>
   <msg key="lt_Computer_Video_Device">Dispositif vidéo</msg>
   <msg key="Mainframe">Macroordinateur</msg>
   <msg key="Memory">Mémoire</msg>
+  <msg key="Netmap">Plan réseau</msg>
   <msg key="Network">Réseau</msg>
   <msg key="Network_Device">Périphérique du réseau</msg>
   <msg key="Network_Router">Routeur réseau</msg>
@@ -63,6 +65,7 @@
   <msg key="Owner">Propriétaire</msg>
   <msg key="Personal_Computer">Ordinateur personnel</msg>
   <msg key="Preactive">Pré-actif</msg>
+  <msg key="Process">Processus</msg>
   <msg key="Processor">Processeur</msg>
   <msg key="Project">Projet</msg>
   <msg key="Project_Name">Nom de projet</msg>
@@ -71,6 +74,7 @@
   <msg key="Software">Logiciel</msg>
   <msg key="Software_Application">Logiciel d'application</msg>
   <msg key="Software_Component">Composant logiciel</msg>
+  <msg key="Specs">Spécifs</msg>
   <msg key="Subnet">Sous-réseau</msg>
   <msg key="Ticket_Name">Nom du ticket</msg>
   <msg key="Top_Items">Eléments principaux</msg>
