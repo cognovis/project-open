@@ -3,7 +3,9 @@
 
   <msg key="Add_Permissions">Añadir permisos</msg>
   <msg key="Admin">Administrador</msg>
+  <msg key="Bug_number">Bug nº %bug_number%</msg>
   <msg key="Create_a_new_folder">Crear una nueva carpeta</msg>
+  <msg key="Create_Folder">Crear carpeta</msg>
   <msg key="create_folder">crear una carpeta</msg>
   <msg key="Customers">Clientes</msg>
   <msg key="Del_Permissions">Borrar permisos</msg>
@@ -14,10 +16,14 @@
   <msg key="Employees">Empleados</msg>
   <msg key="Filename">Nombre de archivo</msg>
   <msg key="Filestorage">Archivos</msg>
+  <msg key="Folder_type_Project">Proyecto</msg>
+  <msg key="Folder_type_Ticket">Ticket</msg>
   <msg key="Folder_up">Subir nivel</msg>
   <msg key="Freelancers">Freelancers</msg>
   <msg key="Full_Member">Miembro pleno</msg>
+  <msg key="Home_Filestorage">Portada Almacén de datos</msg>
   <msg key="Internal_Error">Error interno</msg>
+  <msg key="intranet-filestorage">Intranet - Almacén de datos</msg>
   <msg key="Key_Account">Cuenta clave</msg>
   <msg key="lt_Add_permissions_to_fo">Añadir permisos a carpetas</msg>
   <msg key="lt_Add_the_permissions_a">Añadir los permisos de arriba a los directorios siguientes:</msg>

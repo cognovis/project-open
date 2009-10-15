@@ -23,6 +23,7 @@
   <msg key="Full_Member">Membro</msg>
   <msg key="Home_Filestorage">Home Archivio file</msg>
   <msg key="Internal_Error">Errore interno</msg>
+  <msg key="intranet-filestorage">Archivio file Intranet</msg>
   <msg key="Key_Account">Key Account</msg>
   <msg key="lt_Add_permissions_to_fo">Assegna autorizzazioni alle cartelle</msg>
   <msg key="lt_Add_the_permissions_a">Aggiungi autorizzazioni alle seguenti cartelle:</msg>

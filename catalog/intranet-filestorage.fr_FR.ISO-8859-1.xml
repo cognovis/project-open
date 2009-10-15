@@ -23,6 +23,7 @@
   <msg key="Full_Member">Membre à part entière</msg>
   <msg key="Home_Filestorage">Acceuil Stockage de fichiers</msg>
   <msg key="Internal_Error">Erreur interne</msg>
+  <msg key="intranet-filestorage">Intranet espace de stokage</msg>
   <msg key="Key_Account">Gestionnaire du compte</msg>
   <msg key="lt_Add_permissions_to_fo">Ajouter des autorisations aux dossiers</msg>
   <msg key="lt_Add_the_permissions_a">Ajouter des autorisations supérieures aux répertoires suivants:</msg>
