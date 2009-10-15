@@ -12,7 +12,9 @@
   <msg key="Automatic_trigger">Automatischer Trigger</msg>
   <msg key="Confirm_Quote">Angebot bestätigen</msg>
   <msg key="Currrent_assignees">Aktuell Beauftragte</msg>
+  <msg key="Execute">Ausführen</msg>
   <msg key="Modify">Anpassen</msg>
+  <msg key="my_object">Mein Objekt</msg>
   <msg key="Next_step_details">Details zu nächsten Schritten</msg>
   <msg key="none">keine</msg>
   <msg key="Object_Name">Objektname</msg>
