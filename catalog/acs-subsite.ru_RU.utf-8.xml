@@ -4,7 +4,7 @@
   <msg key="_or">или</msg>
   <msg key="_Update_Basic_Information">Обновление основных сведений</msg>
   <msg key="A_member_of_the_system">Является участником сообщества %system_name% с</msg>
-  <msg key="About_You">О вас</msg>
+  <msg key="About_You">О Вас</msg>
   <msg key="Account_at_system_closed">Ваша учетная запись в %system_name% закрыта.</msg>
   <msg key="Account_close_confirm_no_label">Нет, вернуться на %pvt_home_name%</msg>
   <msg key="Account_close_confirm_yes_label">Да, закройте мою учетную запись</msg>
@@ -29,14 +29,14 @@
   <msg key="Approve">Утвердить</msg>
   <msg key="at">в</msg>
   <msg key="Authority">Центр</msg>
-  <msg key="Bad_Password">Неверный пароль</msg>
+  <msg key="Bad_Password">Неверный Пароль</msg>
   <msg key="Ban">Блокировать</msg>
-  <msg key="Basic_Information">Основные сведения</msg>
+  <msg key="Basic_Information">Основные Сведения</msg>
   <msg key="Biography">Биография</msg>
   <msg key="cannot_retrieve_password">Получение пароля из локального центра не поддерживается.</msg>
   <msg key="Cannot_see_memb_list">Не удалось просмотреть список участников</msg>
   <msg key="Change_locale_label">Сменить язык</msg>
-  <msg key="Change_my_Password">Сменить пароль</msg>
+  <msg key="Change_my_Password">Изменить мой пароль</msg>
   <msg key="Change_pass_email_por">Изменить пароль, электронный адрес, портрет</msg>
   <msg key="Check_Your_Inbox">Проверить входящие сообщения</msg>
   <msg key="Children">Дети</msg>
@@ -53,14 +53,14 @@
   <msg key="Communities">Сообщества</msg>
   <msg key="communities">сообщества</msg>
   <msg key="community">сообщество</msg>
-  <msg key="Confirm">Подтвердить</msg>
+  <msg key="Confirm">Подтверждение пароля:</msg>
   <msg key="confirmation_password_changed">Вы успешно сменили пароль на новый.</msg>
   <msg key="Continue">Продолжить</msg>
   <msg key="Continue_to_your_account">Перейти на %pvt_home_name%</msg>
   <msg key="Country_Name">Название страны</msg>
   <msg key="Create_new_community">Создать новое имя %pretty_name%</msg>
   <msg key="Create_new_subsite">Создать новый дочерний сайт</msg>
-  <msg key="Current_Password">Текущий пароль</msg>
+  <msg key="Current_Password">Текущий пароль:</msg>
   <msg key="Currently_invisible_msg">&lt;p&gt; Другие пользователи не могут видеть ваше состояние подключения. &lt;/p&gt;</msg>
   <msg key="Currently_visible_msg">&lt;p&gt; Другие пользователи могут видеть ваше состояние подключения. &lt;/p&gt;</msg>
   <msg key="Customize_Question">Изменить вопрос</msg>
@@ -69,7 +69,7 @@
   <msg key="Delete">Удалить</msg>
   <msg key="DevAdmin">DevAdmin</msg>
   <msg key="Developers_Admin">Администрирование разработчика</msg>
-  <msg key="Direct_Permissions">Прямые разрешения</msg>
+  <msg key="Direct_Permissions">Индивидуальные права</msg>
   <msg key="Disable">Отключить</msg>
   <msg key="Disabled">Отключен</msg>
   <msg key="Domain">Домен</msg>
@@ -95,7 +95,7 @@
 
 %reset_password_url%
 </msg>
-  <msg key="Email_Confirmation">Подтверждение адреса эл. почты</msg>
+  <msg key="Email_Confirmation">Подтверждение адреса электронной почты</msg>
   <msg key="Email_not_Requested">Адрес эл. почты не требуется</msg>
   <msg key="email_subject_Forgotten_password">Ваш забытый пароль в %system_name%</msg>
   <msg key="email_subject_Registration_password">Добро пожаловать в %system_name%</msg>
@@ -107,14 +107,14 @@
   <msg key="Error_sending_mail">Ошибка при отправке почты</msg>
   <msg key="Expires">Срок действия</msg>
   <msg key="Filename">Имя файла</msg>
-  <msg key="First_names">Имена</msg>
+  <msg key="First_names">имя (отчество)</msg>
   <msg key="Forgot_your_password">Забыли пароль?</msg>
   <msg key="Frequency">Частота</msg>
   <msg key="Go_back">Вернуться</msg>
   <msg key="go_upload_the_users_por">перейти к отправке портрета пользователя</msg>
   <msg key="go_upload_your_portrait">перейти к отправке вашего портрета</msg>
   <msg key="Grant">Предоставить</msg>
-  <msg key="Grant_Permission">Предоставить разрешение</msg>
+  <msg key="Grant_Permission">Предоставить права доступа</msg>
   <msg key="Hide">Скрыть</msg>
   <msg key="Home_page">Домашняя страница</msg>
   <msg key="If_you_were_to">Если вы намеревались</msg>
@@ -159,12 +159,12 @@
   <msg key="lt_If_you_dont_think_the">Если вы думаете, что у этого человека еще нет учетной записи:</msg>
   <msg key="lt_If_you_happen_to_know">Если уверены, что у человека, которого вы собираетесь пригласить, уже есть учетная запись в системе:</msg>
   <msg key="lt_If_you_need_this_func">Если вам необходима эта функция, загрузите модули acs-reference и ref-countries.</msg>
-  <msg key="lt_Inherited_Permissions">Унаследованные разрешения</msg>
+  <msg key="lt_Inherited_Permissions">Унаследованные права</msg>
   <msg key="lt_It_would_be_a_very_ba">Если компьютер установлен в общедоступном месте (в библиотеке или школе), не устанавливайте этот флажок.  Любой последующий пользователь данного компьютера сможет продолжать работать в системе вместо вас.</msg>
   <msg key="lt_New_registration_at_s">Новая регистрация в %system_url%</msg>
   <msg key="lt_Note_text_in_red_below">Обратите внимание, что текст красного цвета ниже поля ввода параметра указывает на то, что значение данного параметра переопределяется записью в файле параметров OpenACS.  Использование этого файла параметров не приветствуется, но это требуется на некоторых сайтах для предоставления конкретных значений параметров независимо от таблиц apm_parameter.</msg>
   <msg key="lt_Note_that_you_can_era">Обратите внимание, что вы можете удалить сохраненные адрес эл. почты и пароль, &quot;выйдя&quot; из рабочего пространства.</msg>
-  <msg key="lt_num_children_Children">Скрыто детей: %num_children%</msg>
+  <msg key="lt_num_children_Children">%num_children% детей спрятано</msg>
   <msg key="lt_On_portrait_publish_d">На %portrait_publish_date% вы отправили &lt;a href=&quot;%subsite_url%user/portrait/?return_url=%pvt_home_url%&quot;&gt;%portrait_title%&lt;/a&gt;</msg>
   <msg key="lt_Our_server_can_tell_y">Наш сервер предложит вашему браузеру запомнить некоторые сведения, например ваши адрес эл. почты и пароль.  Это удобно, поскольку вам не придется каждый раз заново вводить адрес эл. почты и пароль, если вы - единственный, кто пользуется данным компьютером.</msg>
   <msg key="lt_Password_Confirmation">Подтверждение пароля</msg>
@@ -216,7 +216,7 @@
   <msg key="Member_State">Состояние участника</msg>
   <msg key="Members">Участники</msg>
   <msg key="Name">Имя</msg>
-  <msg key="New_Password">Новый пароль</msg>
+  <msg key="New_Password">Новый пароль:</msg>
   <msg key="No_applications">Нет приложений</msg>
   <msg key="No_ISO_Codes">Нет кодов ISO</msg>
   <msg key="No_package_parameters">Данный пакет не имеет параметров.</msg>
@@ -279,7 +279,7 @@
   <msg key="Security_context_root">Корень контекста безопасности</msg>
   <msg key="Select_an_Object_by_Id">Выделить объект по ИД:</msg>
   <msg key="Send_email_to_this_user">Отправить эл. почту этому пользователю</msg>
-  <msg key="Show">Показать</msg>
+  <msg key="Show">показать</msg>
   <msg key="Site_wide_administration">Администрирование на уровне узла</msg>
   <msg key="sorry_forgotten_pwd">К сожалению, восстановить ваш забытый пароль невозможно.</msg>
   <msg key="Status">Состояние</msg>
@@ -291,7 +291,7 @@
   <msg key="subsite">дочерний сайт</msg>
   <msg key="Subsites">Дочерние сайты</msg>
   <msg key="subsites">дочерние сайты</msg>
-  <msg key="Thank_you">Спасибо.</msg>
+  <msg key="Thank_you">Благодарим вас</msg>
   <msg key="The_ISO_codes_were_not">Коды ISO не были загружены на этот сервер.</msg>
   <msg key="This_group_is_closed">Эта группа является закрытой. Стать участником этой группы можно только по приглашению.</msg>
   <msg key="this_subsite">этот дочерний сайт</msg>
@@ -301,8 +301,8 @@
   <msg key="Topic">Тема</msg>
   <msg key="type_specific_info">сведения, зависящие от типа</msg>
   <msg key="UP">НАЗАД</msg>
-  <msg key="up_to_context_name">назад к %context_name%</msg>
-  <msg key="Update">Обновить</msg>
+  <msg key="up_to_context_name">вернуться к %context_name%</msg>
+  <msg key="Update">Изменить</msg>
   <msg key="Update_Password">Обновить пароль</msg>
   <msg key="upload">отправить</msg>
   <msg key="upload_a_portrait">отбравить портрет</msg>
