@@ -21,7 +21,7 @@
   <msg key="common_Delete">Supprimer</msg>
   <msg key="common_delete">supprimer</msg>
   <msg key="common_Discard">Ne pas garder</msg>
-  <msg key="common_discard">Jeter</msg>
+  <msg key="common_discard">ne pas garder </msg>
   <msg key="common_Display">Afficher</msg>
   <msg key="common_display">afficher</msg>
   <msg key="common_Edit">Modifier</msg>
@@ -38,15 +38,15 @@
   <msg key="common_login">s'identifier</msg>
   <msg key="common_Needs_Approval">A Besoin d'une Approbation</msg>
   <msg key="common_needs_approval">a besoin d'une approbation</msg>
-  <msg key="common_New">New</msg>
+  <msg key="common_New">Nouveau</msg>
   <msg key="common_new">nouveau</msg>
   <msg key="common_Next">Suivant</msg>
   <msg key="common_next">suivant</msg>
   <msg key="common_no">Non</msg>
   <msg key="common_OK">OK</msg>
-  <msg key="common_ok">Ok</msg>
-  <msg key="common_Open">Ouvert</msg>
-  <msg key="common_open">Ouvrir</msg>
+  <msg key="common_ok">ok</msg>
+  <msg key="common_Open">Ouvrir</msg>
+  <msg key="common_open">ouvrir</msg>
   <msg key="common_Previous">Précédent</msg>
   <msg key="common_previous">précédent</msg>
   <msg key="common_Register">S'enregistrer</msg>
@@ -56,7 +56,7 @@
   <msg key="common_Reset">Remise à zéro</msg>
   <msg key="common_reset">remise à zéro</msg>
   <msg key="common_Save">Sauvegarder</msg>
-  <msg key="common_save">Enregistrer</msg>
+  <msg key="common_save">sauvegarder</msg>
   <msg key="common_Search">Chercher</msg>
   <msg key="common_search">chercher</msg>
   <msg key="common_Stop">Arrêter</msg>
