@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="intranet-filestorage" package_version="3.4.0.7.0" locale="ru_RU" charset="utf-8">
+<message_catalog package_key="intranet-filestorage" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
 
   <msg key="Add_Permissions">Добавить разрешения</msg>
   <msg key="Admin">Администрирование</msg>
@@ -20,7 +20,7 @@
   <msg key="Folder_up">На уровень вверх</msg>
   <msg key="Freelancers">Внештатные сотрудники</msg>
   <msg key="Full_Member">Полноправный участник</msg>
-  <msg key="Home_Filestorage">Home Filestorage</msg>
+  <msg key="Home_Filestorage">Хранилище файлов</msg>
   <msg key="Internal_Error">Внутренняя ошибка</msg>
   <msg key="Key_Account">Ключевая учетная запись</msg>
   <msg key="lt_Add_permissions_to_fo">Добавить разрешения для папок</msg>
