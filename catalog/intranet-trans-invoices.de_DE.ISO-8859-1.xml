@@ -53,6 +53,8 @@
   <msg key="lt_There_are_currently_n_1">Es gibt im Moment keine Projekte, die zu den ausgewählten Kriterien passen</msg>
   <msg key="lt_To_create_a_new_invoi">Bitte wählen sie ein oder mehr Projekte&lt;br&gt;&lt;em&gt;des selben Kunden&lt;/em&gt; und bestätigen sie</msg>
   <msg key="lt_Unknown_action_for_pr">Unbekannte Aktion für Preis-Aktion.</msg>
+  <msg key="lt_UOMtd__________td_cla">UOM#&amp;lt;/td&amp;gt;
+          &amp;lt;td class=rowtitle&amp;gt;&amp;lt;#_ Preis</msg>
   <msg key="lt_Upload_Client_Prices_">Kundenpreise-CSV hochladen</msg>
   <msg key="lt_Use_the_quotBrowsequo">Benutzen sie den &amp;amp;quot;Browse...&amp;amp;quot; Knopf um ihren File zu lokalisieren, dann klicken sie &amp;amp;quot;Open&amp;amp;quot;.</msg>
   <msg key="lt_You_dont_have_suffici">Sie haben keine ausreichenden Privilegien um diese Seite zu sehen</msg>
