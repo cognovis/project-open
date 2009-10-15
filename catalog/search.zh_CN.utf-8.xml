@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="search" package_version="5.1.5" locale="zh_CN" charset="utf-8">
+
+  <msg key="________Search_took">.搜索花费</msg>
+  <msg key="Advanced_Search">高级搜索</msg>
+  <msg key="advanced_search">&quot;高级搜索&quot;</msg>
+  <msg key="anytime">任何时间</msg>
+  <msg key="Date_Range">日期跨度</msg>
+  <msg key="details">详细</msg>
+  <msg key="Feeling_Lucky">手气不错</msg>
+  <msg key="lt_bstopwordsb_is_a_very">&quot;&lt;b&gt;%stopwords%&lt;/b&gt;&quot; 是一个通用单词,不能在您的搜索关键字中</msg>
+  <msg key="lt_FtsEngineDriver_not_a">FtsEngineDriver不可用!</msg>
+  <msg key="lt_Make_sure_all_words_a">确保所有的单词都拼写正确了</msg>
+  <msg key="lt_No_pages_were_found_c">没有找到包含 &quot;</msg>
+  <msg key="lt_The_following_words_a">以下单词是常见词,不能在您的搜索关键字中:</msg>
+  <msg key="lt_Tip_In_most_browsers_">提示: 大多数浏览器您只要直接按回车键,不用鼠标去点击搜索按钮</msg>
+  <msg key="lt_Try_different_keyword">试试另一个关键字</msg>
+  <msg key="lt_Try_more_general_keyw">试试更加常用的关键字</msg>
+  <msg key="lt_Try_your_query_on_stw">试试搜索: %stw;noquote%</msg>
+  <msg key="lt_You_must_specify_some">您必须输入关键字</msg>
+  <msg key="nbspDisplay">&amp;nbsp;显示</msg>
+  <msg key="Next">下一页</msg>
+  <msg key="of_about">关于</msg>
+  <msg key="past_3_months">过去3个月</msg>
+  <msg key="past_6_months">过去6个月</msg>
+  <msg key="past_year">过去一年</msg>
+  <msg key="Previous">前一页</msg>
+  <msg key="Result_page">结果页:</msg>
+  <msg key="Results">结果</msg>
+  <msg key="results">结果</msg>
+  <msg key="Search">搜索</msg>
+  <msg key="Searched_for_query">搜索: %query%</msg>
+  <msg key="seconds">秒.</msg>
+  <msg key="selected">选择</msg>
+  <msg key="Suggestions">建议:</msg>
+  <msg key="The">&quot;&lt;b&gt;AND&lt;/b&gt;&quot; 操作是不必要的 -- 我们已经默认使用and连接了所有搜索单词</msg>
+  <msg key="Try_fewer_keywords">试试更少的关键字</msg>
+  <msg key="Untitled">没有权利</msg>
+</message_catalog>
