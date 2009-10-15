@@ -11,7 +11,7 @@
   <msg key="Are_you_sure_you_want_to_delete_authority_authorities_pretty_name">¿Desea realmente borrar la autoridad %authorities.pretty_name%?</msg>
   <msg key="Authentication">Autenticación</msg>
   <msg key="Authority_name">Nombre de la autoridad</msg>
-  <msg key="Authority_short_name_help_text">Esto se usará al referirse a una autoridad en los parámetros. Aunque necesite cambiar el nombre mostrado arriba, esto no debería ser cambiado.</msg>
+  <msg key="Authority_short_name_help_text">Es usado cuando uno se refiere a la autoridad en parametros, etc. Inclusive si necesita cambiar el nombre mostrado arriba, esto deberia mantenerse inalaterado.</msg>
   <msg key="Batch_sync_enabled">Sincronización batch habilitada</msg>
   <msg key="Batch_Synchronization">Sincronización batch</msg>
   <msg key="Change_password_URL">URL para cambiar la contraseña</msg>

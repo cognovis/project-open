@@ -24,7 +24,7 @@
   <msg key="Document_end_time">Heure de fin du document</msg>
   <msg key="Document_message">Message du document</msg>
   <msg key="Document_start_time">Heure de début du document</msg>
-  <msg key="Document_status">Statut de téléchargment du document</msg>
+  <msg key="Document_status">Statut de téléchargement du document</msg>
   <msg key="download">téléchargement</msg>
   <msg key="Edit_callback">Créer un rappel</msg>
   <msg key="Enable_this_authority">Activer cette autorité</msg>
