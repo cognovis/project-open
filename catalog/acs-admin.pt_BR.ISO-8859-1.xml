@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="acs-admin" package_version="5.1.5" locale="pt_BR" charset="ISO-8859-1">
+
+  <msg key="Account_reg_URL_help_text">URL onde os usuários podem registrar-se.</msg>
+  <msg key="Account_Registration">Registro</msg>
+  <msg key="Account_registration_URL">URL de Registro</msg>
+  <msg key="Actions">Ações</msg>
+  <msg key="Actions_Minute">Ações/Minuto</msg>
+  <msg key="Add_callback">Adicionar um callback</msg>
+  <msg key="Administration">Administração</msg>
+  <msg key="Are_you_sure_you_want_to_delete_authority_authorities_pretty_name">Deseja realmente deletar a autoridade?
+%authorities.pretty_name%?
+</msg>
+  <msg key="Authentication">Autênticação</msg>
+  <msg key="Authority_name">nome da Autoridade</msg>
+  <msg key="Authority_short_name_help_text">É usado para referir-se a uma autoridade nos parâmetros etc. Inclusive se necessita alterar o nome visualizado acima, isto deveria manter-se inalterado.  	 </msg>
+  <msg key="Batch_sync_enabled">Sincronização Batch habilitada.</msg>
+  <msg key="Batch_Synchronization">Sincronização Batch</msg>
+  <msg key="Change_password_URL">URL para alterar senha</msg>
+  <msg key="Change_password_URL_help_text">Em lugar de um driver para a gestão de senha, pode especificar uma URL onde os usuários serão redirecionados para alterar sua senha. Os nomes de usuários passados a esta URL devem ter a forma
+foo={username} onde {username} é o nome do usuário.</msg>
+  <msg key="Creation_user">Usuário de criação</msg>
+  <msg key="Delete">Apagar</msg>
+  <msg key="Delete_callback">Apagar callback</msg>
+  <msg key="Disable_this_authority">Desabilitar esta autoridade</msg>
+  <msg key="Document">Documento</msg>
+  <msg key="Document_end_time">Hora final do documento</msg>
+  <msg key="Document_message">Mensagem do documento</msg>
+  <msg key="Document_start_time">Hora inicial do Documento</msg>
+  <msg key="Document_status">Estado do documento</msg>
+  <msg key="download">baixar</msg>
+  <msg key="Edit_callback">Editar callback</msg>
+  <msg key="Enable_this_authority">Habilitar esta autoridade</msg>
+  <msg key="Enabled">Habilitado</msg>
+  <msg key="End_time">Hora Final</msg>
+  <msg key="General">Geral</msg>
+  <msg key="GetDocument_implementation">Implementação para GetDocument </msg>
+  <msg key="Help_contact_help_text">Informação de contato (telefone, email, etc.) mostrar quando os usuários tem algum problema com a autoridade
+
+</msg>
+  <msg key="Help_contact_text">Texto de ajuda</msg>
+  <msg key="Interactive">Interativo</msg>
+  <msg key="Invoke">Invocar</msg>
+  <msg key="Invoke_this_callback_proc_now_Be_careful">
+
+Invocar este callback agora. Seja cuidadoso!</msg>
+  <msg key="Make_this_the_authority_for_registering_new_users">Estabelecer esta autoridade para os novos registros 
+</msg>
+  <msg key="Message">Mensagem</msg>
+  <msg key="Move_this_authority_down">Mover esta autoridade para baixo</msg>
+  <msg key="Move_this_authority_up">Mover esta autoridade para cima</msg>
+  <msg key="Name">Nome</msg>
+  <msg key="No">Não</msg>
+  <msg key="Number_of_actions">Número de ações</msg>
+  <msg key="Number_of_problems">Número de problemas</msg>
+  <msg key="On-Demand_Sync">Sincronização sob demanda</msg>
+  <msg key="One_batch_job">Um trabalho batch</msg>
+  <msg key="Operation">Operação</msg>
+  <msg key="Order">Ordem*</msg>
+  <msg key="Package_Manager">Gerente do pacote</msg>
+  <msg key="Pages">Páginas</msg>
+  <msg key="Parameters">Parâmetros</msg>
+  <msg key="Password">Senha</msg>
+  <msg key="Password_Management">Gerenciamento de Senha</msg>
+  <msg key="Problems">Problemas</msg>
+  <msg key="ProcessDocument_implementation">Implementação para ProcessDocument</msg>
+  <msg key="Recover_password_URL">URL para recuperar senhas</msg>
+  <msg key="Recover_password_URL_help_text">Em lugar de um driver para a gestão de senhas, pode especificar uma URL onde os usuários serão redirecionados para recuperar sua senha. Os nomes de usuário passados a esta URL devem ter a forma foo={username} onde {username} é o nome do usuário.</msg>
+  <msg key="Registration">Registro</msg>
+  <msg key="Run_time">Ambiente execução</msg>
+  <msg key="Running_time">Tempo de execução</msg>
+  <msg key="seconds">segundos</msg>
+  <msg key="Service">Serviço</msg>
+  <msg key="Service_administration">Administração de Serviço</msg>
+  <msg key="Service_parameters">Parâmetros do Serviço</msg>
+  <msg key="Short_Name">Nome curto</msg>
+  <msg key="Site-Wide_Admin">Administração para todo o site</msg>
+  <msg key="Snapshot">Instantâneo</msg>
+  <msg key="Start_time">Início</msg>
+  <msg key="Success">Sucesso</msg>
+  <msg key="Tcl_Callbacks">Tcl Callbacks</msg>
+  <msg key="Tcl_Proc">Procedimento Tcl</msg>
+  <msg key="Timestamp">Marca de tempo </msg>
+  <msg key="Type">Tipo</msg>
+  <msg key="User_Info">Informação de usuário</msg>
+  <msg key="User_Info_help_text">A implementação para obter a informação de usuário desde a autoridade em tempo real </msg>
+  <msg key="Username">Nome do usuário</msg>
+  <msg key="View_log_entry">Ver log</msg>
+  <msg key="Visit_service_pages">Visitar páginas do serviço</msg>
+  <msg key="Yes">Sim</msg>
+  <msg key="You_are_changing_all_user_registrations_to_be_in_authority_authorities_pretty_name">Está alterando todos os registros da  autoridade 
+%authorities.pretty_name%</msg>
+</message_catalog>
