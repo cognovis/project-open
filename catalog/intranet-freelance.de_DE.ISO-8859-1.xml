@@ -48,9 +48,12 @@
   <msg key="lt_uploaded_for_this_use">hochgeladen für diesen Benutzer.</msg>
   <msg key="lt_We_cannot_find_you_us">Wir können Sie (user #%user_id%) in unserer Benutzertabelle nicht finden.</msg>
   <msg key="lt_We_couldnt_find_user_">Wir konnten den Benutzer #%user_id% nicht finden; vielleicht wurde diese Person gelöscht?</msg>
+  <msg key="lt_You_are_trying_to_acc">Sie versuchen eine Ansicht aufzurufen, die in der Datenbank nicht definiert wurde.</msg>
   <msg key="lt_You_dont_have_permiss">Sie haben keine Erlaubnis diese Seite zu sehen</msg>
   <msg key="lt_You_have_insufficient">Sie haben keine Berechtigung diesen Benutzer zu sehen.</msg>
   <msg key="lt_You_have_insufficient_1">Sie haben keine Berechtigung den Benuter %user_id% zu verändern.</msg>
+  <msg key="lt_You_have_insufficient_2">Sie sind nicht berechtigt diese Aktion durchzuführen.</msg>
+  <msg key="lt_You_have_insufficient_3">Sie sind nicht berechtigt diese Aktion durchzuführen.</msg>
   <msg key="lt_You_need_to_specify_a">Sie müssen add_skill_id angeben</msg>
   <msg key="modify_the_comment">Kommentar bearbeiten</msg>
   <msg key="Name">Name</msg>
@@ -82,4 +85,5 @@
   <msg key="Users">Benutzer</msg>
   <msg key="Work_Phone">Geschäftsnummer</msg>
   <msg key="Worked_already_with_customer">hat gearbeitet mit</msg>
+  <msg key="Worked_with_customer">Hat_gearbeitet_mit</msg>
 </message_catalog>
