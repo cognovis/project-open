@@ -36,12 +36,12 @@
   <msg key="Change_pass_email_por">Changer votre mot de passe, adresse email, photo</msg>
   <msg key="Check_Your_Inbox">Voir boîte aux lettres</msg>
   <msg key="Children">Fils</msg>
-  <msg key="Close_account_explanation"> &lt;p&gt; Veuillez confirmer la clôture de votre compte sur %system_name%. &lt;/p&gt; &lt;p&gt; Fermer votre compte signifie que nous ne vous enverrons plus de motifications par email, et que vous ne serez plus listé comme membre de %system_name%. Vos contributions à la communauté, par contre, seront préservées comme faisant partie de l'histoire de la communauté. &lt;/p&gt; &lt;p&gt; Veuillez noter que vous pouvez à tout moment ouvrir de nouveau votre compte, simplement en vous identifiant à nouveau.&lt;/p&gt;</msg>
+  <msg key="Close_account_explanation"> &lt;p&gt; Veuillez confirmer la clôture de votre compte sur %system_name%. &lt;/p&gt; &lt;p&gt; Fermer votre compte signifie que nous ne vous enverrons plus de notifications par email, et que vous ne serez plus listé comme membre de %system_name%. Vos contributions à la communauté, par contre, seront préservées comme faisant partie de l'histoire de la communauté. &lt;/p&gt; &lt;p&gt; Veuillez noter que vous pouvez à tout moment ouvrir de nouveau votre compte, simplement en vous identifiant à nouveau.&lt;/p&gt;</msg>
   <msg key="Close_your_account">Fermer votre compte</msg>
   <msg key="Closed_group">Groupe Fermé</msg>
   <msg key="Comment">Commentaire</msg>
   <msg key="Communities">Communautés</msg>
-  <msg key="communities">communauté</msg>
+  <msg key="communities">communautés</msg>
   <msg key="community">communauté</msg>
   <msg key="Confirm">Confirmer:</msg>
   <msg key="confirmation_password_changed">Votre mot de passe a été changé avec succés.</msg>
@@ -107,9 +107,9 @@
   <msg key="Last_name">Nom</msg>
   <msg key="later">Plus tard.</msg>
   <msg key="Leave_community">Quitter la communauté</msg>
-  <msg key="Leave_subsite">Quitter le sousprojet</msg>
+  <msg key="Leave_subsite">Quitter le sous-site</msg>
   <msg key="Leave_this_community">Quitter cette communauté</msg>
-  <msg key="Leave_this_subsite">Quitter ce sousprojet</msg>
+  <msg key="Leave_this_subsite">Quitter ce sous-site</msg>
   <msg key="lGo_back_without_adding">Retour sans ajout d'utilisateurs</msg>
   <msg key="Log_In">S'identifier</msg>
   <msg key="log_in">s'identifier</msg>
@@ -129,7 +129,7 @@
   <msg key="lt_For_Site-Wide_Adminis">Pour Site-Wide Administrateurs</msg>
   <msg key="lt_Grant_Permission_on_n">Autoriser %name%</msg>
   <msg key="lt_Heres_what_the_databa">Voici ce que la base de données a rapporté:</msg>
-  <msg key="lt_How_would_you_like_the">Comment voullez-vous que tous le monde visualise %first_names% %last_name%? </msg>
+  <msg key="lt_How_would_you_like_the">Comment voulez-vous que tous le monde visualise %first_names% %last_name%? </msg>
   <msg key="lt_If_you_dont_think_the">Si vous pensez que la personne n'a pas encore de compte</msg>
   <msg key="lt_If_you_happen_to_know">Si vous découvrez ou savez que la personne que vous souhaitez inviter possède déjà un compte sur ce système :</msg>
   <msg key="lt_If_you_need_this_func">Si vous avez besoin de cette fonctionnalité, veuillez charger les refs acs et les refs pays</msg>

@@ -7,10 +7,6 @@
   <msg key="About_You">О вас</msg>
   <msg key="Account_at_system_closed">Ваша учетная запись в %system_name% закрыта.</msg>
   <msg key="Account_close_confirm_no_label">Нет, вернуться на %pvt_home_name%</msg>
-  <description key="Account_close_confirm_no_label">Описание - указывает на команду "Закрытие учетной записи" на странице "Моя учетная запись"? Куда переносится пользователь, если он не дает подтверждения? На страницу "MySpace"? (pvt=private?)
-
---Anja Wicht</description>
-
   <msg key="Account_close_confirm_yes_label">Да, закройте мою учетную запись</msg>
   <msg key="Account_closed">
     &lt;p&gt;Ваша учетная запись в данный момент закрыта.&lt;/p&gt; &lt;p&gt;Если требуется, можно &lt;a href=&quot;%restore_url%&quot;&gt;заново открыть вашу учетную запись&lt;/a&gt;.&lt;/p&gt;
@@ -72,8 +68,6 @@
   <msg key="default_context">контекст по умолчанию</msg>
   <msg key="Delete">Удалить</msg>
   <msg key="DevAdmin">DevAdmin</msg>
-  <description key="DevAdmin">Введите описание назначения данного ключа.</description>
-
   <msg key="Developers_Admin">Администрирование разработчика</msg>
   <msg key="Direct_Permissions">Прямые разрешения</msg>
   <msg key="Disable">Отключить</msg>
@@ -131,7 +125,7 @@
   <msg key="ISO_Codes_Not_Loaded">Не удалось загрузить коды ISO</msg>
   <msg key="ISO_Codes_not_loaded">Не удалось загрузить коды ISO</msg>
   <msg key="Join_community">Присоединиться к сообществу</msg>
-  <msg key="Join_group_name">Присоединиться к группе "%group_name%"</msg>
+  <msg key="Join_group_name">Присоединиться к группе &quot;%group_name%&quot;</msg>
   <msg key="Join_subsite">Присоединиться к дочернему сайту</msg>
   <msg key="Join_this_community">Присоединиться к данному сообществу</msg>
   <msg key="Join_this_subsite">Присоединиться к данному дочернему сайту</msg>
@@ -215,8 +209,8 @@
   <msg key="lt_Your_URL_doesnt_have_">Данный URL-адрес указан в неверной форме.  Допустимый URL-адрес выглядит так: &quot;%valid_url_example%&quot;.</msg>
   <msg key="Make_administrator">Сделать администратором</msg>
   <msg key="Make_member">Сделать участником</msg>
-  <msg key="Make_yourself_invisible_label">Сделать себя "невидимым"</msg>
-  <msg key="Make_yourself_visible_label">Сделать себя "видимым"</msg>
+  <msg key="Make_yourself_invisible_label">Сделать себя &quot;невидимым&quot;</msg>
+  <msg key="Make_yourself_visible_label">Сделать себя &quot;видимым&quot;</msg>
   <msg key="Manage_your_notifications">Управление уведомлениями</msg>
   <msg key="Mem_list_not_allowed">К сожалению, вам не разрешено просматривать список участников.</msg>
   <msg key="Member_State">Состояние участника</msg>
@@ -230,8 +224,6 @@
   <msg key="No_pretty_plural">Нет %pretty_plural%</msg>
   <msg key="No_services">Нет служб</msg>
   <msg key="none">отсутствуют</msg>
-  <description key="none">Применяется для обозначения того, что список разрешений или объектов пуст.</description>
-
   <msg key="Not_logged_in">Не удалось войти в систему</msg>
   <msg key="Notes">Примечания:</msg>
   <msg key="Notice">Уведомление:</msg>
@@ -309,8 +301,6 @@
   <msg key="Topic">Тема</msg>
   <msg key="type_specific_info">сведения, зависящие от типа</msg>
   <msg key="UP">НАЗАД</msg>
-  <description key="UP">Введите описание назначения данного ключа.</description>
-
   <msg key="up_to_context_name">назад к %context_name%</msg>
   <msg key="Update">Обновить</msg>
   <msg key="Update_Password">Обновить пароль</msg>

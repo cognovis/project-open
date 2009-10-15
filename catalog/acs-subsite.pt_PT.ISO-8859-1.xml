@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="acs-subsite" package_version="5.1.2" locale="pt_PT" charset="ISO-8859-1">
+<message_catalog package_key="acs-subsite" package_version="5.1.7" locale="pt_PT" charset="ISO-8859-1">
 
   <msg key="About_You">Sobre Si</msg>
   <msg key="Account_closed">&lt;p&gt;A sua conta encontra-se actualmente fechada.&lt;/p&gt; &lt;p&gt;Se desejar, podemos &lt;a href=&quot;%restore_url%&quot;&gt;reabrir a sua conta&lt;/a&gt;.&lt;/p&gt;</msg>
+  <msg key="Action">Acção</msg>
+  <msg key="Admin">Painel de controlo</msg>
+  <msg key="Alert_Type">Tipo de alerta</msg>
   <msg key="Answer">Resposta:</msg>
+  <msg key="Applications">Aplicações</msg>
   <msg key="at">em</msg>
-  <msg key="Bad_Password">Senha Incorrecta</msg>
+  <msg key="Bad_Password">Palavra-passe incorrecta</msg>
   <msg key="Basic_Information">Informação Básica</msg>
   <msg key="cannot_retrieve_password">Recuperação de senha da autoridade local não é suportado.</msg>
-  <msg key="Change_my_Password">Mudar a minha Senha</msg>
+  <msg key="Change_my_Password">Alterar a minha palavra-passe</msg>
   <msg key="Check_Your_Inbox">Verifique a Sua Caixa de Entrada</msg>
   <msg key="Children">Filhos</msg>
+  <msg key="Communities">Comunidades</msg>
+  <msg key="communities">comunidades</msg>
   <msg key="Confirm">Confirmar:</msg>
   <msg key="Current_Password">Senha Actual:</msg>
   <msg key="Customize_Question">Personalizar Pergunta</msg>
