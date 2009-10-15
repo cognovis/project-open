@@ -2,4 +2,21 @@
 <message_catalog package_key="notifications" package_version="5.1.6" locale="ru_RU" charset="utf-8">
 
   <msg key="Action">Действие</msg>
+  <msg key="Change">Изменить</msg>
+  <msg key="Contents">Содержимое:</msg>
+  <msg key="Delivery_Method">Способ доставки</msg>
+  <msg key="Frequency">Периодичность</msg>
+  <msg key="Item">Элемент</msg>
+  <msg key="lt_Getting_too_much_emai">Получаете слишком много сообщений? Измените параметры уведомлений здесь: %manage_notifications_url%</msg>
+  <msg key="lt_Notification_Interval">Периодичность уведомлений</msg>
+  <msg key="lt_Request_Notification_">Уведомлять меня о %pretty_name%</msg>
+  <msg key="lt_system_name_-_Batched">[%system_name% - автоматическое уведомление]</msg>
+  <msg key="lt_You_have_no_notificat">У вас нет уведомлений.</msg>
+  <msg key="lt_You_have_requested_no">Вы подписались на уведомления о %pretty_name%. От них можно &lt;a href=&quot;%sub_url%&quot;&gt;отписаться&lt;/a&gt; в любой момент.</msg>
+  <msg key="lt_You_may_a_hrefsub_url">Вы можете &lt;a href=&quot;%sub_url%&quot;&gt;подписаться на уведомления&lt;/a&gt; о %pretty_name%.</msg>
+  <msg key="Manage_Notifications">Управление уведомлениями</msg>
+  <msg key="Notification_type">Тип уведомления</msg>
+  <msg key="Request_Notification">Подписаться на уведомления</msg>
+  <msg key="SUBJECT">ТЕМА:</msg>
+  <msg key="Unsubscribe">Отписаться</msg>
 </message_catalog>
