@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-workflow" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
+
+  <msg key="Action">Действие</msg>
+  <msg key="Admin_workflows">Рабочие процессы администрирования</msg>
+  <msg key="All_Tasks">Все задачи</msg>
+  <msg key="Approve">Подтвердить</msg>
+  <msg key="Assign_somebody_else">Назначить другому пользователю</msg>
+  <msg key="Assign_yourself">Назначить себе</msg>
+  <msg key="Assignee">Кому назначено</msg>
+  <msg key="assignment_group">группа назначения</msg>
+  <msg key="Automatic_trigger">Автоматический переключатель</msg>
+  <msg key="Confirm_Quote">Подтвердить предложение цены</msg>
+  <msg key="Currrent_assignees">Текущие назначения</msg>
+  <msg key="Execute">Выполнить</msg>
+  <msg key="Holding_user">Текущий пользователь</msg>
+  <msg key="Modify">Изменить</msg>
+  <msg key="my_object">мой объект</msg>
+  <msg key="Next_step_details">Сведения о следующем шаге</msg>
+  <msg key="none">нет</msg>
+  <msg key="Object_Name">Название объекта</msg>
+  <msg key="Object_Owner">Владелец объекта</msg>
+  <msg key="Owner">Владелец</msg>
+  <msg key="Past_actions">Прошлые действия</msg>
+  <msg key="Quote">Предложение цены</msg>
+  <msg key="Relationship">Отношение</msg>
+  <msg key="Status">Состояние</msg>
+  <msg key="Task_name">Название задачи</msg>
+  <msg key="Task_state">Состояние задачи</msg>
+  <msg key="Type">Тип</msg>
+  <msg key="Unassigned_Tasks">Неназначенные задачи</msg>
+  <msg key="What">Что?</msg>
+  <msg key="When">Когда?</msg>
+  <msg key="Who">Кто?</msg>
+  <msg key="Workflow_Home">Рабочие процессы - начало</msg>
+  <msg key="Your_Tasks">Мои RFC</msg>
+</message_catalog>
