@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="intranet-helpdesk" package_version="3.4.0.7.0" locale="ru_RU" charset="utf-8">
+<message_catalog package_key="intranet-helpdesk" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
 
   <msg key="Action">Действие</msg>
   <msg key="Add_a_new_ticket">Создать билет</msg>
@@ -16,7 +16,7 @@
   <msg key="Close">Закрыть</msg>
   <msg key="Close_amp_notify">Закрыть и уведомить</msg>
   <msg key="Closed">Закрыто</msg>
-  <msg key="Conf_Item">Conf Item</msg>
+  <msg key="Conf_Item">Элемент конфигурации</msg>
   <msg key="Contact">Контактное лицо</msg>
   <msg key="Customer">Клиент</msg>
   <msg key="Customer_Contact">Контактное лицо клиента</msg>
@@ -30,7 +30,7 @@
   <msg key="Executing">Выполнение</msg>
   <msg key="Feature_Request">Запрос функциональности</msg>
   <msg key="Filter_Tickets">Фильтр билетов</msg>
-  <msg key="Home_Ticket_Component">Home Ticket Component</msg>
+  <msg key="Home_Ticket_Component">Билеты</msg>
   <msg key="In_review">В процессе оценки</msg>
   <msg key="Invalid">Недопустимое</msg>
   <msg key="Invoicing">Счет</msg>
@@ -57,11 +57,12 @@
   <msg key="Related_Tickets">Связанные билеты</msg>
   <msg key="Report_Request">Запрос отчета</msg>
   <msg key="Resolved">Исправлено</msg>
+  <msg key="Service_Mgmt">ИТ-службы</msg>
   <msg key="Sign-off">Подпись</msg>
   <msg key="SLA">Соглашения об уровне обслуживания</msg>
   <msg key="SLA_Request">Запрос соглашения об уровне обслуживания</msg>
   <msg key="Status">Состояние</msg>
-  <msg key="Telephony_Request">Telephony Request</msg>
+  <msg key="Telephony_Request">Запрос по телефону</msg>
   <msg key="Ticket_Details">Сведения о билете</msg>
   <msg key="Ticket_Members">Список участников</msg>
   <msg key="Ticket_Name">Название билета</msg>
