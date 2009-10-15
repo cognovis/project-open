@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-payments" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
+
+  <msg key="_Previous">Страница</msg>
+  <msg key="Add_New">Добавить</msg>
+  <msg key="Add_payment">Добавить платеж</msg>
+  <msg key="Amount">Сумма</msg>
+  <msg key="Amount_Paid">Уплаченная сумма</msg>
+  <msg key="Client">Клиент</msg>
+  <msg key="Cost_Name">Название расходов</msg>
+  <msg key="Cost_Nr">Номер</msg>
+  <msg key="Del">Удалить</msg>
+  <msg key="Delete_payment">Удалить платеж</msg>
+  <msg key="Edit_payment">Изменить платеж</msg>
+  <msg key="Filter_Payments">Фильтр расходов</msg>
+  <msg key="Go">-&gt;</msg>
+  <msg key="Invoice">Счет</msg>
+  <msg key="Invoice_Amount">Сумма счета</msg>
+  <msg key="lt_Confirm_payment_delet">Подтвердить удаление платежа</msg>
+  <msg key="lt_Do_you_really_want_to">Подтвердите удаление платежа %fee_type% по %fee_str% для проекта %project_name%.</msg>
+  <msg key="lt_Insufficient_Privileg">Недостаточно разрешений</msg>
+  <msg key="lt_No_costinvoice_item_s">Не указана запись суммы/счета</msg>
+  <msg key="lt_The_intranet_start_bl">Не определены начальные блоки (пакеты) для инстрасети либо нет начального блока для этой и последующих недель.</msg>
+  <msg key="lt_There_are_currently_n">Нет платежей, соответствующих заданным условим</msg>
+  <msg key="lt_You_dont_have_suffici">У вас нет разрешений на просмотр этой страницы</msg>
+  <msg key="New_payment">Новый платеж</msg>
+  <msg key="Next_Page">Следующая страница</msg>
+  <msg key="Note">Примечание</msg>
+  <msg key="One_project">Один проект</msg>
+  <msg key="Payment">Платеж</msg>
+  <msg key="Payment_Details">Данные платежа</msg>
+  <msg key="Payment_hash_simbol">Платеж № </msg>
+  <msg key="Payment_Status">Состояние платежа:</msg>
+  <msg key="Payment_Type">Тип платежа</msg>
+  <msg key="Payments">Платежи</msg>
+  <msg key="Projects">Проекты</msg>
+  <msg key="Provider">Поставщик</msg>
+  <msg key="Received">Получен</msg>
+  <msg key="Start_block_error">Ошибка начального блока</msg>
+  <msg key="Status">Состояние</msg>
+  <msg key="Update">Обновить</msg>
+</message_catalog>
