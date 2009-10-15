@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="intranet-hr" package_version="3.4.0.7.0" locale="ru_RU" charset="utf-8">
+<message_catalog package_key="intranet-hr" package_version="3.4.0.6.0" locale="ru_RU" charset="utf-8">
 
   <msg key="add_supervisor">добавить руководителя</msg>
   <msg key="Availability_">Доступность, %</msg>
@@ -22,7 +22,7 @@
   <msg key="Job_Title">Должность</msg>
   <msg key="lt_Employee_Information_">Сведения о сотруднике %employee_name%</msg>
   <msg key="lt_Employees_without_sup">Сотрудники без руководителей</msg>
-  <msg key="lt_Error_creating_a_new_">Error creating a new repeating cost item for employee \#%employee_id%:</msg>
+  <msg key="lt_Error_creating_a_new_">Ошибка при создании новой записи о периодических затратах для сотрудника № %employee_id%:</msg>
   <msg key="lt_Error_inserting_emplo">Ошибка при вставке сведений о стоимости сотрудника:</msg>
   <msg key="lt_For_the_org_chart_pag">Чтобы организационная диаграмма правильно отображалась, нужно задать отношения подчинения, при которых только один сотрудник (генеральный директор) не имеет руководителя и подчиненных.</msg>
   <msg key="lt_Internal_error_unknow">Внутренняя ошибка: неизвестное представление «%view_name%»</msg>
@@ -45,15 +45,14 @@
   <msg key="No_Big_Kahuna">No Big Kahuna</msg>
   <msg key="Nothing_defined_yet">Еще не определено</msg>
   <msg key="Other_Costs">Другие затраты</msg>
-  <msg key="Recruiting_Status">Recruiting Status:</msg>
-  <msg key="Salaries_per_Year">Количество зарплат (в год)</msg>
+  <msg key="Recruiting_Status">Состояние:</msg>
+  <msg key="Salaries_per_Year">Сумма зарплат (в год)</msg>
   <msg key="Salary">Зарплата</msg>
   <msg key="Salary_Period">Период зарплаты</msg>
-  <msg key="Salary_period_month">Month</msg>
-  <msg key="Social_Security">Социальное обеспечение</msg>
-  <msg key="Social_Security_">Номер социального обеспечения</msg>
-  <msg key="Social_Security_nr">Номер социального обеспечения</msg>
-  <msg key="Start_Date">Дата начала</msg>
+  <msg key="Social_Security">Социальное страхование</msg>
+  <msg key="Social_Security_">Номер карты социального страхования</msg>
+  <msg key="Social_Security_nr">Номер карты социального страхования</msg>
+  <msg key="Start_Date">Дата начала работы</msg>
   <msg key="Start_date">Дата начала</msg>
   <msg key="Status">Состояние</msg>
   <msg key="Supervisor">Руководитель</msg>
