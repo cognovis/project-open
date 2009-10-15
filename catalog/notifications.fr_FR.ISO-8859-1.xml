@@ -15,5 +15,7 @@
   <msg key="lt_You_have_requested_no">Vous avez demandé à etre notifier pour %pretty_name%.You may &lt;a href=&quot;%sub_url%&quot;&gt;unsubscribe&lt;/a&gt;.</msg>
   <msg key="Manage_Notifications">Gérer les notifications</msg>
   <msg key="Notification_type">Type de notification</msg>
+  <msg key="Request_Notification">Requête de Notification</msg>
   <msg key="SUBJECT">OBJET:</msg>
+  <msg key="Unsubscribe">Se désabonner</msg>
 </message_catalog>
