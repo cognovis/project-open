@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-workflow" package_version="3.4.0.7.0" locale="zh_CN" charset="utf-8">
+
+  <msg key="Action">操作</msg>
+  <msg key="Admin_workflows">管理工作流</msg>
+  <msg key="All_Tasks">所有任务</msg>
+  <msg key="Approve">批准</msg>
+  <msg key="Assign_somebody_else">分配给其他人</msg>
+  <msg key="Assign_yourself">分配给自己</msg>
+  <msg key="Assignee">分配</msg>
+  <msg key="assignment_group">分配群组</msg>
+  <msg key="Automatic_trigger">自动触发器</msg>
+  <msg key="Confirm_Quote">确认报价</msg>
+  <msg key="Currrent_assignees">当前分配者</msg>
+  <msg key="Debug_Case">调试案例</msg>
+  <msg key="Execute">执行</msg>
+  <msg key="Holding_user">挂起用户</msg>
+  <msg key="Modify">编辑</msg>
+  <msg key="my_object">我的对象</msg>
+  <msg key="Next_step_details">下一步详细</msg>
+  <msg key="none">无</msg>
+  <msg key="Object_Name">对象名字</msg>
+  <msg key="Object_Owner">对象所有者</msg>
+  <msg key="Owner">所有者</msg>
+  <msg key="Past_actions">之前操作</msg>
+  <msg key="Quote">报价</msg>
+  <msg key="Relationship">关系</msg>
+  <msg key="Reset_Case">重置</msg>
+  <msg key="Status">状态</msg>
+  <msg key="Task_name">任务名字</msg>
+  <msg key="Task_state">任务状态</msg>
+  <msg key="Type">类型</msg>
+  <msg key="Unassigned_Tasks">未分配任务</msg>
+  <msg key="What">什么?</msg>
+  <msg key="When">何时?</msg>
+  <msg key="Who">谁?</msg>
+  <msg key="Workflow_Home">工作流首页</msg>
+  <msg key="Your_Tasks">我的资料文件</msg>
+</message_catalog>
