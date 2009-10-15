@@ -3,10 +3,10 @@
 
   <msg key="Bill">收费？ </msg>
   <msg key="Description">描述</msg>
-  <msg key="Filter_Materials">过滤材料</msg>
+  <msg key="Filter_Materials">筛选材料</msg>
   <msg key="Material">材料</msg>
   <msg key="Name">姓名</msg>
-  <msg key="Nr">靠近</msg>
+  <msg key="Nr">Nr</msg>
   <msg key="Status">状态</msg>
   <msg key="There_are_no_active_materials">根据您选择的条件,没有匹配的材料</msg>
   <msg key="Type">类型</msg>
