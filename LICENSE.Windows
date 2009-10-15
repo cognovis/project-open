@@ -1,0 +1,30 @@
+This installer software has been developed by ]project-open[ 
+(http://www.project-open.org/) based on the work of Vlassis 
+Rizopoulos (xfman@ncs.gr) and is distributed under the GNU 
+Public License (http://www.gnu.org/copyleft/).
+
+However this installer packages and redistributes several 
+third party software packages with licenses different from 
+the GPL, so you are required to review and agree to ALL of 
+them prior to using the software:
+
+]project-open[:
+http://www.project-open.com/license/
+AOLserver licence: (Mixed)
+http://www.aolserver.com/license/
+Windows version modified by:
+Jamie Rasmussen (www.jamierasmussen.com)
+Cygwin licence: (GPL)
+http://cygwin.com/licensing.html
+OpenACS & dotLRN licence: (GPL)
+http://openacs.org/about/licensing/
+Zip tools licence: (BSD)
+http://www.info-zip.org/license.html
+Setx.exe licence: (Mixed)
+Microsoft, Windows 2000 Free Resource Kit
+Reg.exe licence: (Mixed)
+Microsoft, Windows 2000 Free Resource Kit
+Process.exe licence: (Freeware)
+http://www.beyondlogic.org/solutions/processutil/processutil.htm
+Install Anywhere 5.5 NOW! (Free)
+http://community.zerog.com/uploads/post-8-74176-IALicense.htm
