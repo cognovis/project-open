@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="acs-templating" package_version="5.1.2" locale="pt_PT" charset="ISO-8859-1">
+<message_catalog package_key="acs-templating" package_version="5.1.5" locale="pt_PT" charset="ISO-8859-1">
 
+  <msg key="Day">Dia</msg>
+  <msg key="Invalid_url">URL inválido</msg>
+  <msg key="Minutes">Minutos</msg>
+  <msg key="Month">Mês</msg>
   <msg key="No_row_pretty_plural">Não %row_pretty_plural%.</msg>
+  <msg key="required">Requerido</msg>
+  <msg key="Seconds">Segundos</msg>
+  <msg key="Year">Ano</msg>
 </message_catalog>
