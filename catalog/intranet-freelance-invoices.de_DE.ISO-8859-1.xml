@@ -45,12 +45,16 @@
   <msg key="lt_Generate_Purchase_Ord">Auftrag erstellen</msg>
   <msg key="lt_Insufficient_Privileg">Unzureichende Berechtigungen</msg>
   <msg key="lt_It_contains_some_comm">Kommentare sind in der Datei enthalten.</msg>
+  <msg key="lt_Please_backup_and_res">Bitte gehen Sie zurück und beschränken Sie die Auswahl auf Projekte eines einzigen Kunden.</msg>
   <msg key="lt_sample_pricelist_CSV_">Beispiel Preisliste in CSV-Format</msg>
   <msg key="lt_Select_Projects_for_I">Projekte auswählen</msg>
   <msg key="lt_Select_Tasks_for_Invo">Aufgaben auswählen</msg>
   <msg key="lt_There_are_currently_n">Es gibt zur Zeit keine Rechnungen, die den ausgewählten Kriterien entsprechen</msg>
   <msg key="lt_There_are_currently_n_1">Es gibt zur Zeite keine Projekte, die den ausgewählten Kriterien entsprechen</msg>
   <msg key="lt_To_create_a_new_invoi">Bitte wählen sie ein oder mehr Projekte&lt;br&gt;&lt;em&gt;des selben Kunden&lt;/em&gt; und bestätigen sie</msg>
+  <msg key="lt_Unknown_action_for_pr">Unbekannte Aktion.</msg>
+  <msg key="lt_UOMtd__________td_cla">UOM#&amp;lt;/td&amp;gt;
+          &amp;lt;td class=rowtitle&amp;gt;&amp;lt;#_ Preis</msg>
   <msg key="lt_Upload_Client_Prices_">Kundenpreise als CSV hochladen</msg>
   <msg key="lt_Use_the_quotBrowsequo">Klicken Sie auf die Schaltfläche &amp;quot;Durchsuchen...&amp;quot;, um Ihre Datei zu suchen. Klicken Sie anschließend auf &amp;quot;Öffnen&amp;quot;.</msg>
   <msg key="lt_You_dont_have_suffici">Sie sind nicht berechtigt diese Seite zu sehen</msg>
