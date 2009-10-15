@@ -56,6 +56,23 @@ set context ""
 
 
 # ------------------------------------------------------
+# Check for new Menu entries
+#
+# ------------------------------------------------------
+
+# This is a bit ugly.
+# Somebody might have added a new menu via a database operation.
+# In this case we need to re-calculate the menu hierarchy.
+# Otherwise the new report menu will not appear below.
+set new_menu_exists_p [db_string new_menu_exists_p "
+	select	count(*)
+	from	im_menus
+	where	tree_sortkey is NULL
+"]
+if {$new_menu_exists_p} { im_menu_update_hierarchy }
+
+
+# ------------------------------------------------------
 # List creation
 # ------------------------------------------------------
 
