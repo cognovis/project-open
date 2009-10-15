@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<message_catalog package_key="intranet-dashboard" package_version="3.0.0.2.1" locale="ru_RU" charset="UTF-8">
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-dashboard" package_version="3.0.0.2.1" locale="ru_RU" charset="utf-8">
 
   <msg key="Average_Bill_Age">Средний возраст счета</msg>
   <msg key="Average_Invoice_Age">Средний возраст счета-фактуры</msg>
