@@ -130,6 +130,7 @@
   <msg key="Task_Name">Aufgabenname</msg>
   <msg key="Task_Type">Aufgabentyp</msg>
   <msg key="TAX">Steuer</msg>
+  <msg key="Timesheet_Invoicing_Wizard">Timesheet Invoicing Wizard</msg>
   <msg key="Timesheet_Invoicing_Wizard_help">Mit diesem Wizard können Sie Finanzdokumente aus Projektdaten auf vier verschiedene Arten erstellen:</msg>
   <msg key="Trados_Matrix">Tradox Matrix</msg>
   <msg key="Trg">Ziel</msg>
