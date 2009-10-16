@@ -100,4 +100,22 @@ where
 ;
 
 -- sort order for demo data  
-alter table persons add column demo_sort_order integer;
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''persons'' and lower(column_name) = ''demo_sort_order'';
+	IF v_count > 0 THEN RETURN 1; END IF;
+
+	alter table persons add column demo_sort_order integer;
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
