@@ -12,7 +12,7 @@ ad_library {
     @author Bruno Mattarollo (bruno.mattarollo@ams.greenpeace.org)
     @author Peter Marklund (peter@collaboraid.biz)
     @author Lars Pind (lars@collaboraid.biz)
-    @cvs-id $Id: lang-message-procs.tcl,v 1.6 2009/10/15 21:42:22 po34demo Exp $
+    @cvs-id $Id: lang-message-procs.tcl,v 1.7 2009/10/16 13:38:39 po34demo Exp $
 }
 
 namespace eval lang::message {}
@@ -46,12 +46,16 @@ ad_proc -public lang::message::register_remote {
 	set lang_server_timeout [parameter::get_from_package_key -package_key "acs-lang" -parameter "LangServerTimeout" -default 5]
 	set lang_server_url [export_vars -base $lang_server_base_url {locale package_key message_key message comment package_version sender_email sender_first_names sender_last_name}]
 
-	ad_return_complaint 1 "<pre>ns_httpget $lang_server_url $lang_server_timeout</pre>"
-
 	set http_response [ns_httpget $lang_server_url $lang_server_timeout]
+
     } err_msg]} {
 
-	ad_return_complaint 1 $err_msg
+	ad_return_complaint 1 "<b>Error Submitting Translation</b>:$
+		<pre>err_msg</pre>
+		While executing the command:<br>
+		<pre>ns_httpget $lang_server_url $lang_server_timeout</pre>
+	"
+	ad_script_abort
     }
 
     return http_response
