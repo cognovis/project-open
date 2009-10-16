@@ -16,10 +16,10 @@ ad_library {
 
 global tcl_platform 
 if { ![string match $tcl_platform(platform) "windows"] } {
-    ns_log notice "Running on Linux - Disabling exec hack"
+    ns_log notice "/acs-tcl/tcl/windows-procs.tcl: Running on Linux - Disabling exec hack"
     return
 }
-ns_log notice "Running on Windows - Enabling exec hack"
+ns_log notice "/acs-tcl/tcl/windows-procs.tcl: Running on Windows - Enabling exec hack"
 
 rename ::exec ::exec_orig
 
