@@ -24,20 +24,17 @@ ns_log notice "/acs-tcl/tcl/windows-procs.tcl: Running on Windows - Enabling exe
 rename ::exec ::exec_orig
 
 proc exec {args} {
+# Processing program name
     set procname [lindex $args 0]
     set args [lrange $args 1 end]
-    if {[string index $procname 0] == "/"} {
-        set procname "C:/ProjectOpen/cygwin${procname}"
-    } else {
-##        regsub -all {\\\\} $procname {/} procname ;# Correct?
-##        regsub -all {\\} $procname {/} procname
-    }
-
+	set procname [file tail ${procname}]
+#Processing its arguments 
     for {set i 0} {$i < [llength $args]} {incr i} {
         if {[string match [lindex $args $i] "2>/dev/null"]} {
             set args [lreplace $args $i $i "2>nul"]
         }
     }
+#Calling origina exec
     set cmd "::exec_orig $procname $args"
     return [eval $cmd]
 }
