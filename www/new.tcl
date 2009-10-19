@@ -26,7 +26,6 @@ if {![im_permission $current_user_id "add_conf_items"]} {
     ad_script_abort
 }
 
-set org_conf_item_id $conf_item_id
 set user_admin_p 1
 set enable_master_p 1
 set focus ""
