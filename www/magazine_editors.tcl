@@ -18,8 +18,8 @@ set row_class "rowtitle"
 
 set sql "
 	select	*,
-		coalesce(person_language, company_language) as language,
-		coalesce(person_sector, company_sector) as sector
+		coalesce(company_language, person_language) as language,
+		coalesce(company_sector, person_sector) as sector
 	from (
 		-- select persons, together with their company
 	    	select 
@@ -102,7 +102,7 @@ set report_def [list \
 		"$abc"
 		"<a href=/intranet/companies/new?company_id=$company_id>$company_name</a>"
 		"<a href=mailto:$email>$email</a>" 
-		"<a href=/intranet/users/view?user_id=$person_id>$person_name</a>"
+		"<nobr><a href=/intranet/users/view?user_id=$person_id>$person_name</a></nobr>"
 		"$note"
 	    } \
 	    content {} \
