@@ -129,7 +129,7 @@ ns_log notice "load-update-xml-2: match=$match, tag1=$tag1, tag2=$tag2, tag3=$ta
 #     <is_new>t</is_new>
 #     <release_date>2005-04-18</release_date>
 #     <cvs_action>Checkout</cvs_action>
-#     <cvs_server>berlin.dnsalias.com</cvs_server>
+#     <cvs_server>cvs.project-open.net</cvs_server>
 #     <cvs_user>anonymous</cvs_user>
 #     <cvs_password></cvs_password>
 #     <cvs_root>/home/cvsroot</cvs_root>
