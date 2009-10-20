@@ -32,7 +32,7 @@ function MM_jumpMenu(targ,selObj,restore){ //v3.0
 	<td rowspan="2" colspan="2" bgcolor="#FFFFFF"><a href="http://www.project-open.com">
       <!--<img  border="0" src="../images/logo_translation.gif"></a>
 	<img src="../images/logo.project-open.horiz.whi.gif" width="230" height="52" border="0">-->
-      <a href="http://projop.dnsalias.com/l10n-pm/"><img src="http://www.project-open.com/images/topBanner.l10n-pm.jpg" width="780" height="80" border="0" alt="Localization Project Management Best Practices Wiki"></a> 
+      <a href="http://www.project-open.org/l10n-pm/"><img src="http://www.project-open.com/images/topBanner.l10n-pm.jpg" width="780" height="80" border="0" alt="Localization Project Management Best Practices Wiki"></a> 
     </td>
 	<!--<td align="right" bgcolor="#FFFFFF" valign="middle"><br><OBJECT classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
  codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0"
@@ -367,11 +367,10 @@ function MM_jumpMenu(targ,selObj,restore){ //v3.0
 <INPUT type=submit name=sa VALUE="Google Search">
 <INPUT type=hidden name=cof VALUE="GALT:#515CA4;S:http://www.project-open.com/;VLC:#515CA4;AH:left;BGC:white;LH:52;LC:#515CA4;GFNT:black;L:http://www.project-open.com/images/logos/logo.project-open.horiz.whi.gif;ALC:#515CA4;LW:230;T:black;GIMP:black;AWFID:115c0e5d3808f6f8;">
 
-<input type=hidden name=domains value="www.project-open.com; www.project-open.org; projop.dnsalias.com"><br>
-<input type=radio name=sitesearch value="projop.dnsalias.com" checked>Localization PM<br>
+<input type=hidden name=domains value="www.project-open.com; www.project-open.org"><br>
 <input type=radio name=sitesearch value="www.project-open.com">project-open.com<br>
-<input type=radio name=sitesearch value=" www.project-open.org">project-open.org<br>
-<input type=radio name=sitesearch value=""> The Internet
+<input type=radio name=sitesearch value="www.project-open.org">project-open.org<br>
+<input type=radio name=sitesearch value="">The Internet
 </td></tr></TABLE>
 </FORM>
 </center>
