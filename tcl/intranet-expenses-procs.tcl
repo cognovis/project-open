@@ -75,7 +75,8 @@ ad_proc im_expense_bundle_item_sum {
 	if {0 == $common_project_id & $project_id != ""} { set common_project_id $project_id }
 	if {0 != $common_project_id & $project_id != "" & $common_project_id != $project_id} {
 	    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_projects "
-		You can't included expense items from several project in one expense bundle.
+		You can't include expense items from several project in one expense bundle:<br>
+		Name of the violating item: '$external_company_name (ID=#$cost_id)'
 	    "]
 	    ad_script_abort
 	}
@@ -83,7 +84,7 @@ ad_proc im_expense_bundle_item_sum {
 	if {0 == $common_customer_id & $customer_id != ""} { set common_customer_id $customer_id }
 	if {0 != $common_customer_id & $customer_id != "" & $common_customer_id != $customer_id} {
 	    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_customers "
-		You can't included expense items from several 'customer' in one expense bundle.
+		You can't include expense items from several 'customer' in one expense bundle.
 	    "]
 	    ad_script_abort
 	}
@@ -91,7 +92,8 @@ ad_proc im_expense_bundle_item_sum {
 	if {0 == $common_provider_id & $provider_id != ""} { set common_provider_id $provider_id }
 	if {0 != $common_provider_id & $provider_id != "" & $common_provider_id != $provider_id} {
 	    ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.Muliple_projects "
-		You can't included expense items from several 'providers' in one expense bundle.
+		You can't include expense items from several 'providers' (people reporting the expense) 
+		in one expense bundle.
 	    "]
 	    ad_script_abort
 	}
@@ -102,10 +104,12 @@ ad_proc im_expense_bundle_item_sum {
 	set bundle_vat [expr [expr [expr $total_amount - $amount_before_vat] / $amount_before_vat] * 100.0]
     }
 
-    if {0 == $common_project_id} {
-	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_project_specified "No (common) project specified"]
-	ad_abort_script
-    }
+#    if {0 == $common_project_id} {
+#	ad_return_complaint 1 [lang::message::lookup "" intranet-expenses.No_project_specified "No (common) project specified"]
+#	ad_abort_script
+#    }
+
+     if {0 == $common_project_id} { set common_project_id "" }
 
     # --------------------------------------
     # create bundle for these expenses

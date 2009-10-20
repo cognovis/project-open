@@ -21,6 +21,7 @@ ad_page_contract {
     { unassigned ""}
 }
 
+
 # ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
@@ -41,8 +42,8 @@ if {"" == $unassigned} {
 	# We are inside a project: Show all expenses
 	set unassigned "todo"
     } else {
-	# We are not inside a project: Show only un
-	set unassigned "todo"
+	# We are not inside a project: Show items without bundle
+	set unassigned "unbundeled"
     }
 }
 
@@ -160,6 +161,7 @@ template::list::create \
     -key expense_id \
     -has_checkboxes \
     -actions $action_list \
+    -bulk_action_method post \
     -bulk_actions $bulk_action_list \
     -bulk_action_export_vars { start_date end_date return_url } \
     -row_pretty_plural "[_ intranet-expenses.Expenses_Items]" \
@@ -317,6 +319,7 @@ template::list::create \
     -multirow bundle_lines \
     -key cost_id \
     -has_checkboxes \
+    -bulk_action_method post \
     -bulk_actions $bulk2_action_list \
     -bulk_action_export_vars { project_id } \
     -row_pretty_plural "[lang::message::lookup "" intranet-expenses.Bundle_Items "Bundle Items"]" \
@@ -430,7 +433,7 @@ set left_navbar_html "
          <div class='filter-title'>
             #intranet-expenses.Filter_Expenses#
          </div>
-	<form method=get action='index'>
+	<form method=POST action='index'>
 	[export_form_vars orderby]
 	<table>
 	<tr>
