@@ -250,7 +250,7 @@ ad_proc im_security_update_client_component { } {
 
     set package_key "intranet-security-update-client"
     set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
-    set sec_url_base [parameter::get -package_id $package_id -parameter "SecurityUpdateServerUrl" -default "http://www.project-open.org/intranet-security-update-server/index"]
+    set sec_url_base [parameter::get -package_id $package_id -parameter "SecurityUpdateServerUrl" -default "http://www.project-open.org/intranet-asus-server/update-information"]
 
     # Verbose ASUS configuration?
     # May redirect to user-agreement to confirm ASUS terms & conditions
