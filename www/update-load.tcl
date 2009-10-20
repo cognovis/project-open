@@ -73,7 +73,7 @@ if {[catch {
 
 ns_write "
 	<li>Downloading <a href=\"$url\">$url</a> into $filename.\n
-	<li>This may take 2-20 minutes, depending on your Network connection, so please be patient...
+	<li>This may take several seconds or minutes, depending on your Network connection, so please be patient...
 "
 
 set file_size 0
