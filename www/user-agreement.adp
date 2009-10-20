@@ -91,8 +91,8 @@ system information only. In this case please select
 <p>
 You can also decide to disable ASUS completely. In order to do
 so please go now to Admin (at the left navigation bar) -&gt; 
-Portlet Components, click on "Security Update Client Component",
-and set the component to "Not Enabled".
+Portlet Components, select Package="intranet-security-update-client"
+and set the listed component to "Not Enabled".
 </p>
 
 

@@ -21,7 +21,6 @@ ad_proc im_security_update_package_look_up_table { } {
     Used to "compress" package names, because the securty-update 
     client can only deal with 2048 characters in the URL.
 } {
-
     # Define a Look-Up-Table for package names.
     set lut_list {
 	acs-admin			aa
@@ -167,6 +166,79 @@ ad_proc im_security_update_package_look_up_table { } {
 }
 
 
+ad_proc im_security_update_asus_status { 
+    { -no_return_value_p 0}
+} {
+    Returns the status of the ASUS configuration (1=verbose, 0=anonymous)
+    OR redirects to the ASUS Terms & Conditions page
+    if the ASUS was not configured.
+} {
+    set return_url [ad_conn url]
+    set package_key "intranet-security-update-client"
+    set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
+    set sec_verbosity [parameter::get -package_id $package_id -parameter "SecurityUpdateVerboseP" -default "0"]
+
+    # -1 means that the user needs to confirm using the UpdateService
+    if {-1 == $sec_verbosity} {
+	ad_returnredirect [export_vars -base "/intranet-security-update-client/user-agreement" {return_url}]
+    }
+    
+    # No return value for use as a component when just checking if the ASUS is configured
+    if {$no_return_value_p} { return "" }
+
+    return $sec_verbosity
+}
+
+
+
+ad_proc im_exchange_rate_update_component { } {
+    Shows a a component mainly consisting of an IFRAME.
+    Passes on the version numbers of all installed packages
+    in order to be able to retreive relevant messages
+} {
+    set return_url [ad_conn url]
+    set sec_verbosity [im_security_update_asus_status]
+    if {0 == $sec_verbosity} {
+
+	set content "
+	[lang::message::lookup "" intranet-exchange-rate.Exchange_ASUS_Disabled "
+		<p>
+		You have chosen to disabled 'Full ASUS'. 
+		</p><p>
+		However, Automatic Exchange Rate update 
+		requires 'Full ASUS' in order to automatically update exchange rates.
+		</p>
+	"]
+	<form action='/intranet-security-update-client/user-agreement'>
+	[export_form_vars return_url]
+	<input type=submit value='[lang::message::lookup "" intranet-exchange-rate.Enable_Full_ASUS "Update ASUS"]'>
+	</form>
+	"
+
+    } else {
+
+	set content "
+	[lang::message::lookup "" intranet-exchange-rate.Exchange_ASUS_Disclaimer "
+		<p>
+		This service allows you to automatically update your
+		exchange rates from our exchange rate server.<br>
+		By using this service you accept that we provide this 
+		service 'as is' and don't accept any liability for 
+		incorrect data and any consequences of using them.
+		</p>
+	"]
+	<form action='/intranet-security-update-client/get-exchange-rates'>
+	[export_form_vars return_url]
+	<input type=submit value='[lang::message::lookup "" intranet-exchange-rate.Button_Get_Exchange_Rates "Get Exchange Rates"]'>
+	</form>
+        "
+    }
+
+    return $content
+}
+
+
+
 ad_proc im_security_update_client_component { } {
     Shows a a component mainly consisting of an IFRAME.
     Passes on the version numbers of all installed packages
@@ -178,16 +250,11 @@ ad_proc im_security_update_client_component { } {
 
     set package_key "intranet-security-update-client"
     set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
-    set sec_url_base [parameter::get -package_id $package_id -parameter "SecurityUpdateServerUrl" -default "http://projop.dnsalias.com/intranet-security-update-server/index"]
-    set sec_verbosity [parameter::get -package_id $package_id -parameter "SecurityUpdateVerboseP" -default "0"]
+    set sec_url_base [parameter::get -package_id $package_id -parameter "SecurityUpdateServerUrl" -default "http://www.project-open.org/intranet-security-update-server/index"]
 
-    # -1 means that the user needs to confirm using the UpdateService
-
-
-#    ad_return_complaint 1 $sec_verbosity
-    if {-1 == $sec_verbosity} {
-	ad_returnredirect "/intranet-security-update-client/user-agreement"
-    }
+    # Verbose ASUS configuration?
+    # May redirect to user-agreement to confirm ASUS terms & conditions
+    set sec_verbosity [im_security_update_asus_status]
 
     global tcl_platform
     set os_platform [lindex $tcl_platform(os) 0]
