@@ -40,6 +40,13 @@ ns_log Notice "load-update-xml-2: system_id=$system_id"
 
 # ------------------------------------------------------------
 # Return the HTTP header etc.
+
+
+# Write out HTTP header
+im_report_write_http_headers -output_format html
+
+
+
 ns_write "
         [im_header]
         [im_navbar]
