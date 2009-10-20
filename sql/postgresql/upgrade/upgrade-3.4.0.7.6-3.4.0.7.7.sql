@@ -4,6 +4,16 @@ SELECT acs_log__debug('/packages/intranet-security-update-client/sql/postgresql/
 
 
 
+-- The URL of the security update information has changed.
+update apm_parameter_values 
+set attr_value = 'http://www.project-open.org/intranet-asus-server/update-information' 
+where parameter_id in (
+	select parameter_id from apm_parameters 
+	where package_key = 'intranet-security-update-client' and parameter_name = 'SecurityUpdateServerUrl'
+);
+
+
+
 create or replace function inline_0 ()
 returns integer as ' 
 declare
