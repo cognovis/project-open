@@ -12,6 +12,10 @@ where parameter_id in (
 	where package_key = 'intranet-security-update-client' and parameter_name = 'SecurityUpdateServerUrl'
 );
 
+-- Set the URL for software updates
+update im_menus
+set url = '/intranet-security-update-client/retreive-update-list'
+where label = 'software_updates';
 
 
 create or replace function inline_0 ()
