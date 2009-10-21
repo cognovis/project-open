@@ -13,8 +13,9 @@ where parameter_id in (
 );
 
 -- Set the URL for software updates
-update im_menus
-set url = '/intranet-security-update-client/retreive-update-list'
+update im_menus set 
+	url = '/intranet-security-update-client/retreive-update-list',
+	package_name = 'intranet-security-update-client'
 where label = 'software_updates';
 
 
