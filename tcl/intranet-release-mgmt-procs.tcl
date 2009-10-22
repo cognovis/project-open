@@ -15,8 +15,9 @@ ad_library {
 # 
 # ----------------------------------------------------------------------
 
-ad_proc -public im_project_type_software_release {} { return 4599 }
-ad_proc -public im_project_type_software_release_item {} { return 4597 }
+# Moved to intranet-core
+# ad_proc -public im_project_type_software_release {} { return 4599 }
+# ad_proc -public im_project_type_software_release_item {} { return 4597 }
 
 
 ad_proc -public im_package_release_mgmt_id {} {
