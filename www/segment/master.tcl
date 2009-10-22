@@ -16,7 +16,7 @@ ad_page_contract {
     prodtest:optional
 
     name:optional
-    { name_name:optional Tigerpond }
+    { name_name:optional "Tigerpond Inc." }
     { name_email:optional sysadmin@tigerpond.com }
 
     logo:optional

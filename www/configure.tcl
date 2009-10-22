@@ -385,8 +385,8 @@ foreach package [array names disable] {
 # ---------------------------------------------------------------
 
 ns_write "<br>&nbsp;<h2>Disabling 'intranet-sysconfig' Components</h2>\n"
-
 ns_write "<li>Disabling 'intranet-sysconfig' Components ... "
+
 catch {db_dml disable_trans_cats "
 		update	im_component_plugins
 		set	enabled_p = 'f'
@@ -395,6 +395,24 @@ catch {db_dml disable_trans_cats "
 ns_write "done<br><pre>$err</pre>\n"
 
 
+
+# ---------------------------------------------------------------
+# Set the ASUS verbosity level to "-1" = User needs to choose.
+# ---------------------------------------------------------------
+
+ns_write "<br>&nbsp;<h2>Reseting ASUS Verbosity Level</h2>\n"
+ns_write "<li>Resetting ASUS Verbosity ... "
+
+set verbosity -1
+set package_key "intranet-security-update-client"
+set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
+
+parameter::set_value \
+        -package_id $package_id \
+        -parameter "SecurityUpdateVerboseP" \
+        -value $verbosity
+
+ns_write "done<br><pre>$err</pre>\n"
 
 # ---------------------------------------------------------------
 # Disable the 100 - Task category

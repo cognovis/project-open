@@ -30,9 +30,8 @@
   <td><input type=radio name=deptcomp value=dept <if @deptcomp@ eq "dept">checked</if>></td>
   <td colspan=2>
 	<b>Corporate Department</b><br>
-	We would use @po_short;noquote@ to manage a department
-	of 2-200 employees as part of a larger company.
-	@po_short;noquote@ would have to connect to our ERP system.<br>&nbsp;
+	My organization is a department within a larger corporation.<br>
+	@po_short;noquote@ will have to be integrated with our ERP system.<br>&nbsp;
   </td>
 </tr>
 
@@ -40,7 +39,7 @@
   <td><input type=radio name=deptcomp value=subsidary <if @deptcomp@ eq "subsidary">checked</if>></td>
   <td colspan=2>
 	<b>Independent Subsidary or Division</b><br>
-	My organization is a subsidary or division of a larger corporation.
+	My organization is a subsidary or division of a larger corporation.<br>
 	 @po_short;noquote@ would need to communicate financial 
 	information to our headquarter's financial reporting system.<br>&nbsp;
   </td>
@@ -50,8 +49,8 @@
   <td><input type=radio name=deptcomp value=sme <if @deptcomp@ eq "sme">checked</if>></td>
   <td colspan=2>
 	<b>Small or Medium Enterprise (SME)</b><br>
-	My company is a SME with 2-200 employees. We need to export
-	@po_short;noquote@ financial information to our local accounting system.
+	My company is a SME with 3-3000 employees.<br>
+	We need to export @po_short;noquote@ financial information to our accounting system.
 	<br>&nbsp;
   </td>
 </tr>

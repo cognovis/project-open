@@ -23,8 +23,8 @@
   <td><input type=radio name=features value=minimum <if @features@ eq "minimum">checked</if>></td>
   <td colspan=2>
 	<b>Simplified System</b><br>
-	Please only install essentail packages.<br>
-	This option is useful for first time users and users
+	Install only essential packages.<br>
+	This option is useful for first time @po;noquote@ users and users
 	who don't want to be confused by the system.
 	<br>&nbsp;
   </td>
@@ -34,7 +34,7 @@
   <td><input type=radio name=features value=frequently_used <if @features@ eq "frequently_used">checked</if>></td>
   <td colspan=2>
 	<b>Default System</b><br>
-	Please install frequently used packages and disables less 
+	Install frequently used packages and disables less 
 	frequently used extensions.<br>&nbsp;
   </td>
 </tr>
@@ -43,7 +43,7 @@
   <td><input type=radio name=features value=other <if @features@ eq "other">checked</if>></td>
   <td colspan=2>
 	<b>Complete / Full Installation</b><br>
-	Please install everything.<br>
+	Install everything.<br>
 	This option is useful if you are checking for specific
 	features/ options for your organization or if you want to
 	enable/ disable features yourself.
