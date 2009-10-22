@@ -203,8 +203,8 @@ foreach root_node $root_nodes {
 			<tr $bgcolor([expr $ctr % 2])>
 			  <td><a href=\"$update_url\" title=\"Update\" class=\"button\">Update</a>&nbsp;</td>
 			  <td>$package_formatted</td>
-			  <td>$po_version_formatted</td>
-			  <td>$release_date</td>
+			  <td><nobr>$po_version_formatted</nobr></td>
+			  <td><nobr>$release_date</nobr></td>
 			  <td><a href=\"$forum_url\">$forum_title</a></td>
 			  <td>$update_urgency</td>
 			  <td>$whats_new</td>
