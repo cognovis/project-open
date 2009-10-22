@@ -25,8 +25,9 @@ ad_library {
 # Constants
 # ----------------------------------------------------------------------
 
-ad_proc -public im_project_type_bt_container { } { return 4300 }
-ad_proc -public im_project_type_bt_task { } { return 4305 }
+# Moved into core
+# ad_proc -public im_project_type_bt_container { } { return 4300 }
+# ad_proc -public im_project_type_bt_task { } { return 4305 }
 
 
 
