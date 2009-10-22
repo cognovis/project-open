@@ -261,6 +261,11 @@ returns integer as '
 DECLARE
 	p_bundle_id		alias for $1;
 begin
+	-- Remove references to this bundle
+	update im_expenses
+	set bundle_id = NULL
+	where bundle_id = p_bundle_id;
+
 	-- Erase the im_expense_bundles entry
 	delete from im_expense_bundles
 	where bundle_id = p_bundle_id;
