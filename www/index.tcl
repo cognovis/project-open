@@ -77,7 +77,7 @@ from
 		and g.group_id = p.profile_id
 	        and o.object_type = 'im_profile'
 		and g.group_name not in (
-			'Customers', 'Freelancers', 'Freelance Managers', 'HR Managers', 'P/O Admins'
+			'Customers', 'Freelancers', 'HR Managers', 'P/O Admins'
 		)
     UNION
 	select DISTINCT
