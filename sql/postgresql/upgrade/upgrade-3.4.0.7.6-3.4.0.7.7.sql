@@ -28,3 +28,14 @@ SELECT im_grant_permission(
 	'read'
 );
 
+
+-- Enable new locales
+update ad_locales 
+set enabled_p = 't'
+where locale in (
+	'en_US','de_DE','es_ES','nl_NL',
+	'zh_CN','fr_FR','ja_JP','it_IT',
+	'tr_TR','pt_BR','en_GB','es_LA',
+	'ru_RU','no_NO','fi_FI'
+);
+
