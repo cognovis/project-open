@@ -7,7 +7,7 @@
     <singleton-p>f</singleton-p>
     <auto-mount>intranet-contacts</auto-mount>
     
-    <version name="3.4.0.7.5" url="http://projop.dnsalias.com/download/apm/intranet-contacts-3.4.0.7.5.apm">
+    <version name="3.4.0.7.7" url="http://www.project-open.org/download/apm/intranet-contacts-3.4.0.7.7.apm">
         <owner url="mailto:malte.sussdorff@cognovis.de">Malte Sussdorff</owner>
         <summary>This application lets you collaboratively view, edit and categorize contacts.</summary>
         <release-date>2006-06-25</release-date>
