@@ -10,7 +10,9 @@
 # ---------------------------------------------------------------
 
 ad_page_contract {
-    Configures the system according to Wizard variables
+    Configures the system according to Wizard variables.
+    
+    @author frank.bergmann@project-open.com
 } {
     { sector "default" }
     { deptcomp "" }
@@ -83,6 +85,7 @@ ns_write "<li>Enabling projects ... "
 catch {db_dml enable_projects "update im_projects set project_status_id = [im_project_status_open] where project_status_id = [im_project_status_deleted]"}  err
 ns_write "done<br><pre>$err</pre>\n"
 
+
 # ---------------------------------------------------------------
 # Set Name, Email, Logo
 # ---------------------------------------------------------------
@@ -124,7 +127,7 @@ if { ![empty_string_p $logo_file]
 # Profile Configuration
 # ---------------------------------------------------------------
 
-ns_write "<br>&nbsp;<h2>Profiles</h2>\n";
+ns_write "<br>&nbsp;<h2>Configuring Truse Model</h2>\n";
 
 set subsite_id [ad_conn subsite_id]
 
@@ -164,24 +167,32 @@ foreach i [array names group_ids] {
 # ---------------------------------------------------------------
 
 switch $sector {
-    it_consulting - biz_consulting - advertizing - engineering {
-	set install_pc 1
-	set install_pt 0
+    biz_consulting - advertizing - engineering {
+	set install_consulting_p 1
+	set install_translation_p 0
+	set install_itsm_p 0
+    }
+    it_consulting {
+	set install_consulting_p 1
+	set install_translation_p 0
+	set install_itsm_p 1
     }
     translation {
-	set install_pc 0
-	set install_pt 1
+	set install_consulting_p 0
+	set install_translation_p 1
+	set install_itsm_p 0
     }
     default {
-	set install_pc 1
-	set install_pt 1
+	set install_consulting_p 1
+	set install_translation_p 1
+	set install_itsm_p 1
     }
 }
 
 # ---------------------------------------------------------------
 # Disable Consulting Stuff
 
-if {!$install_pc} {
+if {!$install_consulting_p} {
     ns_write "<br>&nbsp;<h2>Disabling 'Consulting' Components</h2>"
 
     # ToDo
@@ -190,7 +201,7 @@ if {!$install_pc} {
     catch {db_dml disable_trans_cats "
 	update im_categories 
 	set enabled_p = 'f'
-	where category_id in ([join [im_sub_categories $project_type_consulting_id] ","])
+	where category_id in ([join [im_sub_categories -include_disabled_p 1 $project_type_consulting_id] ","])
     "}  err
     ns_write "done<br><pre>$err</pre>\n"
   
@@ -198,7 +209,7 @@ if {!$install_pc} {
     catch {db_dml disable_trans_cats "
 	update im_projects
 	set project_status_id = [im_project_status_deleted]
-	where project_type_id in ([join [im_sub_categories $project_type_consulting_id] ","])
+	where project_type_id in ([join [im_sub_categories -include_disabled_p 1 $project_type_consulting_id] ","])
     "}  err
     ns_write "done<br><pre>$err</pre>\n"
 
@@ -225,15 +236,14 @@ if {!$install_pc} {
 	)
     "}  err
     ns_write "done<br><pre>$err</pre>\n"
-
-
-
 }
+
+
 
 # ---------------------------------------------------------------
 # Disable Translation Stuff
 
-if {!$install_pt} {
+if {!$install_translation_p} {
     ns_write "<br>&nbsp;<h2>Disabling 'Translation' Components</h2>\n"
 
     ns_write "<li>Disabling 'Translation' Categories ... "
@@ -241,7 +251,7 @@ if {!$install_pt} {
     catch {db_dml disable_trans_cats "
 	update im_categories 
 	set enabled_p = 'f'
-	where category_id in ([join [im_sub_categories $project_type_translation_id] ","])
+	where category_id in ([join [im_sub_categories -include_disabled_p 1 $project_type_translation_id] ","])
     "}  err
     ns_write "done<br><pre>$err</pre>\n"
 
@@ -250,7 +260,7 @@ if {!$install_pt} {
     catch {db_dml disable_trans_cats "
 	update im_projects
 	set project_status_id = [im_project_status_deleted]
-	where project_type_id in ([join [im_sub_categories $project_type_translation_id] ","])
+	where project_type_id in ([join [im_sub_categories -include_disabled_p 1 $project_type_translation_id] ","])
     "}  err
     ns_write "done<br><pre>$err</pre>\n"
 
@@ -274,13 +284,85 @@ if {!$install_pt} {
 	)
     "}  err
     ns_write "done<br><pre>$err</pre>\n"
-
-
 }
+
+
+
+
+# ---------------------------------------------------------------
+# Disable ITSM Stuff
+
+if {!$install_itsm_p} {
+
+    ns_write "<br>&nbsp;<h2>Disabling 'ITSM' Components</h2>\n"
+    ns_write "<li>Disabling 'ITSM' Categories ... "
+    catch {
+	db_dml disable_itsm_cats "
+		update im_categories 
+		set enabled_p = 'f'
+		where category_id in (
+			[join [im_sub_categories -include_disabled_p 1 [im_project_type_sla]] ","],
+			[join [im_sub_categories -include_disabled_p 1 [im_project_type_software_release]] ","],
+			[join [im_sub_categories -include_disabled_p 1 [im_project_type_software_release_item]] ","],
+			[join [im_sub_categories -include_disabled_p 1 [im_project_type_bt_container]] ","],
+			[join [im_sub_categories -include_disabled_p 1 [im_project_type_bt_task]] ","]
+		)
+        "
+    } err
+    ns_write "done<br><pre>$err</pre>\n"
+
+
+    ns_write "<li>Disabling 'ITSM' Projects ... "
+    catch {db_dml disable_itsm_cats "
+	update im_projects
+	set project_status_id = [im_project_status_deleted]
+	where project_type_id in (
+			[join [im_sub_categories -include_disabled_p 1 [im_project_type_sla]] ","],
+			[join [im_sub_categories -include_disabled_p 1 [im_project_type_software_release]] ","],
+			[join [im_sub_categories -include_disabled_p 1 [im_project_type_software_release_item]] ","],
+			[join [im_sub_categories -include_disabled_p 1 [im_project_type_bt_container]] ","],
+			[join [im_sub_categories -include_disabled_p 1 [im_project_type_bt_task]] ","]
+	)
+    "} err
+    ns_write "done<br><pre>$err</pre>\n"
+
+    ns_write "<li>Disabling 'ITSM' Menus ... "
+    catch {db_dml disable_itsm_cats "
+	update im_menus
+	set enabled_p = 'f'
+	where menu_id in (
+		select menu_id from im_menus where label like '%_itsm_%'
+	UNION	select menu_id from im_menus where lower(name) like '%itsm%'
+	UNION	select menu_id from im_menus where label = 'helpdesk'
+	UNION	select menu_id from im_menus where label = 'conf_items'
+	)
+    "} err
+    ns_write "done<br><pre>$err</pre>\n"
+
+    ns_write "<li>Disabling 'ITSM' Components ... "
+    catch {db_dml disable_itsm_cats "
+	update im_component_plugins
+	set enabled_p = 'f'
+	where plugin_id in (
+		select plugin_id from im_component_plugins where package_name like '%itsm%'
+	UNION	select plugin_id from im_component_plugins where package_name = 'intranet-helpdesk'
+	UNION	select plugin_id from im_component_plugins where package_name = 'intranet-confdb'
+	UNION	select plugin_id from im_component_plugins where package_name = 'intranet-bug-tracker'
+	UNION	select plugin_id from im_component_plugins where package_name = 'intranet-big-brother'
+	UNION	select plugin_id from im_component_plugins where package_name = 'intranet-nagios'
+	UNION	select plugin_id from im_component_plugins where package_name = 'intranet-release-mgmt'
+	)
+    "} err
+    ns_write "done<br><pre>$err</pre>\n"
+}
+
 
 
 # ---------------------------------------------------------------
 # Feature Simplifications
+#
+# Disable these features _in_addition_ to the simplifications
+# above for business sectors.
 # ---------------------------------------------------------------
 
 set disable(intranet-bug-tracker) 0
@@ -305,6 +387,16 @@ set disable(intranet-trans-rfq) 0
 set disable(intranet-trans-quality) 0
 set disable(intranet-wiki) 0
 set disable(intranet-workflow) 0
+set disable(intranet-milestone) 0
+set disable(intranet-audit) 0
+set disable(intranet-freelance) 0
+set disable(intranet-freelance-invoices) 0
+set disable(intranet-freelance-rfqs) 0
+set disable(intranet-freelance-translation) 0
+set disable(intranet-simple-survey) 0
+set disable(intranet-notes) 0
+set disable(intranet-calendar) 0
+
 
 switch $features {
     minimum {
@@ -326,6 +418,16 @@ switch $features {
 	set disable(intranet-trans-quality) 1
 	set disable(intranet-wiki) 1
 	set disable(intranet-workflow) 1
+	set disable(intranet-milestone) 1
+	set disable(intranet-milestone) 1
+	set disable(intranet-audit) 1
+	set disable(intranet-freelance) 1
+	set disable(intranet-freelance-invoices) 1
+	set disable(intranet-freelance-rfqs) 1
+	set disable(intranet-freelance-translation) 1
+	set disable(intranet-simple-survey) 1
+	set disable(intranet-notes) 1
+	set disable(intranet-calendar) 1
 
         db_dml fincomp "update im_component_plugins set enabled_p = 'f' where plugin_name = 'Project Finance Summary Component'"
 	
@@ -333,7 +435,6 @@ switch $features {
 	parameter::set_from_package_key -package_key "intranet-core" -parameter "EnableExecutionProjectLinkP" -value "0"
 	parameter::set_from_package_key -package_key "intranet-core" -parameter "EnableNestedProjectsP" -value "0"
 	parameter::set_from_package_key -package_key "intranet-core" -parameter "EnableNewFromTemplateLinkP" -value "0"
-
     }
     frequently_used {
 	set disable(intranet-bug-tracker) 1
@@ -366,7 +467,7 @@ foreach package [array names disable] {
 		update	im_menus
 		set	enabled_p = 'f'
 		where	package_name = :package
-        "}  err
+        "} err
 	ns_write "done<br><pre>$err</pre>\n"
 
 	ns_write "<li>Disabling '$package' Components ... "
@@ -374,7 +475,7 @@ foreach package [array names disable] {
 		update	im_component_plugins
 		set	enabled_p = 'f'
 		where	package_name = :package
-        "}  err
+        "} err
 	ns_write "done<br><pre>$err</pre>\n"
     }
 }
@@ -391,7 +492,7 @@ catch {db_dml disable_trans_cats "
 		update	im_component_plugins
 		set	enabled_p = 'f'
 		where	package_name = 'intranet-sysconfig'
-"}  err
+"} err
 ns_write "done<br><pre>$err</pre>\n"
 
 
@@ -526,11 +627,16 @@ if {!$search_pg_installed_p} {
 # publicly known (from the default installation)
 
 ns_write "<br>&nbsp;<h2>Deleting Security Tokens</h2>\n"
-ns_write "<li>Deleting ...\n"
+ns_write "<li>Deleting tokens...\n"
 
 db_dml del_sec_tokens "delete from secret_tokens"
 db_string reset_sect_token_seq "SELECT pg_catalog.setval('t_sec_security_token_id_seq', 1, true)"
 ns_write "done\n"
+
+ns_write "<li>Resetting SystemID...\n"
+im_system_id -clear
+ns_write "done\n"
+
 
 
 # ---------------------------------------------------------------
