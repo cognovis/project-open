@@ -34,7 +34,7 @@ and "Project Managers"? "Senior Managers" are trusted anyway...
 
     if { $i=="senior_managers" } {
 %>
-<td align=center><input type=checkbox name="profiles_array.<%=$i,$j%>" <%=$check%> disabled=1></td>
+<td align=center><input type=checkbox name="profiles_array.<%=$i,$j%>" checked disabled=1></td>
 <% } else { %>
 <td align=center><input type=checkbox name="profiles_array.<%=$i,$j%>" <%=$check%>></td>
 <% } } %>

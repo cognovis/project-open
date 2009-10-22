@@ -11,13 +11,15 @@
 
 <p>
 You can configure @po;noquote@ to show your company logo. 
-</p>
+</p><br>
+
 <p>
 <input type=file name=logo_file size=40>
 </p>
 
+<br>
 <p>
 You can also enter the url address of your company website.
-</p>
+</p><br>
 <input type=text name=logo_url value=@logo_url@ size=40>
 </p>

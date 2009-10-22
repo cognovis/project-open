@@ -15,11 +15,10 @@ several open-source projects and other contributors.
 </p>
 
 <table cellpadding=2>
-<tr><td>Novell/SuSE</td>	<td>http://www.novell.com/licensing/eula/suse_pro_93.pdf</td></tr>
 <tr><td>&\#93;project-open&\#91;</td>	<td>http://www.project-open.com/license/</td></tr>
 <tr><td>AOLserver</td>		<td>http://www.aolserver.com/license/</td></tr>
 <tr><td>OpenACS</td>		<td>http://openacs.org/about/licensing/</td></tr>
-<tr><td>VMWare Tools</td>	<td>http://www.vmware.com/support/</td></tr>
+<tr><td>CygWin</td>		<td>http://cygwin.com/licensing.html</td></tr>
 </table>
 
 <p>

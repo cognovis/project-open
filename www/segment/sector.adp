@@ -29,7 +29,7 @@
   </td>
   <td colspan=2>
 	<b>Information Technology</b><br>
-	Software Development, IT Consulting, Software Testing, ...
+	IT Operations, Software Development, IT Consulting, Software Testing, ...
   </td>
 </tr>
 

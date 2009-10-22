@@ -10,13 +10,9 @@
 <h2>Organization Name and Default Email</h2>
 
 <p>
-<!--
-You can configure @po;noquote@ to show your company name. 
--->
 Please enter your organization name. This name appears in emails,<br>
 invoices and other legal documents. Example: "ABC Consulting, Inc."
-
-</p>
+</p><br>
 <p>
 <input type=text name=name_name value=@name_name@ size=40>
 </p>
@@ -25,7 +21,7 @@ invoices and other legal documents. Example: "ABC Consulting, Inc."
 Please enter the email of the "application owner", that is the person<br>
 in charge of @po;noquote@. This email address appears in the <br>
 "Contact" footer at every page. Please see below for an example.
-
-</p>
+</p><br>
+<p>
 <input type=text name=name_email value=@name_email@ size=40>
 </p>
