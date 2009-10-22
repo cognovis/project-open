@@ -53,7 +53,6 @@ ns_write [im_header]
 ns_write [im_navbar]
 ns_write "<ul>\n"
 
-
 # delete the file if it was there already
 if {[catch {
     if {[file isfile $filename] && [file exists $filename]} {
@@ -72,29 +71,24 @@ if {[catch {
 }
 
 ns_write "
-	<li>Downloading <a href=\"$url\">$url</a> into $filename.\n
+	<li>Downloading <a href=\"$url\">$url</a><br>
+	into $filename<br><br>
+	using command: <pre></pre>exec /usr/bin/wget -q -O $filename $file_url<br>
 	<li>This may take several seconds or minutes, depending on your Network connection, so please be patient...
 "
 
 set file_size 0
 if {[catch {
 
-    # Prepare to write into the destination file.
-    set file_handle [open $filename w+ 0600]
-    # Open the channel to the server.
-    set web_handle [lindex [ns_httpopen GET $file_url] 0]
-    # Read data
-    set file_size [fcopy $web_handle $file_handle]
-    # Close handles
-    close $web_handle
-    close $file_handle
+    # Use wget for HTTP download, allowing to follow redirects in SourceForge.
+    exec /usr/bin/wget -q -O $filename $file_url
 
 } err_msg] } {
 
     ns_write "
 	<li><b>Unable to load url '$file_url' into file '$filename'</b>:<br>
-	Please check your url or your file system.<br>
-	<pre>[ad_quotehtml $err_msg]</pre>
+	Commend to execute:<br><pre>exec /usr/bin/wget -q -O $filename $file_url</pre><br>
+	Error message:<br><pre>[ad_quotehtml $err_msg]</pre>
     "
     ns_write "</ul>[im_footer]\n"
     ad_script_abort
@@ -195,7 +189,7 @@ ns_write "<li>Extracting files into file system...\n"
 
 
 set tar_output ""
-if {[catch { set tar_output [exec $tar_cmd --directory $file_path -x -z -f $filename] } tar_err]} {
+if {[catch { set tar_output [eexec $tar_cmd --directory $file_path -x -z -f $filename] } tar_err]} {
     ns_write "
 	<li><b>Error unpacking '$filename'</b>:<br>
 	Here is the original error message:

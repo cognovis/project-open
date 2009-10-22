@@ -24,14 +24,14 @@
 
 <li><b><%= [lang::message::lookup "" intranet-security-update-client.Guide_Perform_Code_Backup "Perform a Code Backup"] %></b>:<br>
     <%= [lang::message::lookup "" intranet-security-update-client.Guide_Perform_Code_Backup_Msg "
-    Please save your source code at C:\ProjectOpen\projop\packages (Win32)
+    Please save your source code at C:\\ProjectOpen\\projop\\packages (Win32)
     or /web/projop/packages (Linux) manually using zip or tar."] %>
     <br>&nbsp;
 
 
 <li><b><%= [lang::message::lookup "" intranet-security-update-client.Guide_Decide "Decide whether you want to update"] %></b>:<br>
     <%= [lang::message::lookup "" intranet-security-update-client.Guide_Decide_Msg "
-    Please check the forum (link below!) to decide whether you want to upgrade. 
+    Please check the forum (link below!) to decide whether you want to upgrade. <br>
     You don't have to follow each and every upgrade."] %>
     <br>&nbsp;
 
@@ -63,7 +63,7 @@
 <li><b><%= [lang::message::lookup "" intranet-security-update-client.Guide_Upgrade_DB "Update your database"] %></b>:<br>
     <%= [lang::message::lookup "" intranet-security-update-client.Guide_Upgrade_DB_Msg "
     Please use the <a href='/acs-admin/apm/packages-install'>Package Manager</a>
-    to update the database. Please check <b>only</b> the 'Update' options.
+    to update the database. Please check <b>only</b> the 'Update' options.<br>
     Please don't perform any 'Install' options unless you know what you are doing."] %>
     <br>&nbsp;
 

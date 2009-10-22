@@ -136,12 +136,6 @@ if {[string tolower $tag1] == "/table" || [string tolower $tag1] == "html" || [s
 #     <po_version_url></po_version_url>
 #     <is_new>t</is_new>
 #     <release_date>2005-04-18</release_date>
-#     <cvs_action>Checkout</cvs_action>
-#     <cvs_server>cvs.project-open.net</cvs_server>
-#     <cvs_user>anonymous</cvs_user>
-#     <cvs_password></cvs_password>
-#     <cvs_root>/home/cvsroot</cvs_root>
-#     <cvs_command>checkout intranet-wiki</cvs_command>
 #     <update_urgency format="text/plain">New Package</update_urgency>
 #     <forum_url>http://sourceforge.net/forum/forum.php?thread_id=1240473&forum_id=295937</forum_url>
 #     <forum_title>New Wiki Module</forum_title>
@@ -192,14 +186,11 @@ foreach root_node $root_nodes {
 		    set is_new [apm_tag_value -default "" $version_node is_new]
 		    set release_date [apm_tag_value -default "" $version_node release_date]
 		    set whats_new [apm_tag_value -default "" $version_node whats_new]
-		    set cvs_action [apm_tag_value -default "" $version_node cvs_action]
-		    set cvs_server [apm_tag_value -default "" $version_node cvs_server]
-		    set cvs_root [apm_tag_value -default "" $version_node cvs_root]
-		    set cvs_command [apm_tag_value -default "" $version_node cvs_command]
 		    set update_urgency [apm_tag_value -default "" $version_node update_urgency]
+		    set download_url [apm_tag_value -default "" $version_node download_url]
 		    set forum_url [apm_tag_value -default "" $version_node forum_url]
 		    set forum_title [apm_tag_value -default "" $version_node forum_title]
-		    set update_url [export_vars -base "/intranet-securty-update-client/download-install-update" {cvs_server cvs_command cvs_root}]
+		    set update_url [export_vars -base "/intranet-security-update-client/download-install-update" {{url $download_url}}]
 		    set package_formatted $package_name
 		    if {"" != $package_url} {set package_formatted "<a href=\"$package_url\">$package_name</a>" }
 		    set po_version_formatted $po_version
