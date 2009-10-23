@@ -27,13 +27,12 @@ ad_page_contract {
     { payment_days:integer 0 }
     { payment_method_id:integer "" }
     { invoice_hour_type "" }
-
     { start_date "" }
     { end_date "" }
-
     template_id:integer
     vat:float
     tax:float
+    {note ""}
     item_sort_order:array
     item_name:array
     item_units:float,array
@@ -174,6 +173,7 @@ db_dml update_costs "
 		payment_days	= :payment_days,
 		vat		= :vat,
 		tax		= :tax,
+		note		= :note,
 		variable_cost_p = 't'
 	where
 		cost_id = :invoice_id

@@ -9,7 +9,7 @@
 <property name="sub_navbar">@sub_navbar;noquote@</property>
 
 <form action=new-4 method=POST>
-<%= [export_form_vars customer_id provider_id invoice_id cost_status_id start_date end_date select_project return_url] %>
+<%= [export_form_vars customer_id provider_id invoice_id cost_status_id start_date end_date select_project return_url invoice_hour_type] %>
 
 @include_task_html;noquote@
 
@@ -107,6 +107,12 @@
             <%= [im_company_contact_select company_contact_id $company_contact_id $company_id] %>
           </td>
         </tr>
+	<tr>
+	  <td class=roweven>#intranet-invoices.Note#</td>
+          <td class=roweven>
+	    <textarea name=note rows=6 cols=40 wrap="<%=[im_html_textarea_wrap]%>"></textarea>
+	  </td>
+	</tr>
         </table>
 
     </tr>
