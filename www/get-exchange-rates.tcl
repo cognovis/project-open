@@ -232,7 +232,15 @@ foreach root_node $root_nodes {
 				)
 		"
 	
-#		im_exec_dml invalidate "im_exchange_rate_invalidate_entries (:currency_day::date, :currency_code)"
+		# The dollar exchange rate is always 1.000, because the dollar
+		# is the reference currency. So we kan update the dollar as "manual"
+		# to avoid messages that dollar is oudated.
+		db_dml update_dollar "
+			update	im_exchange_rates
+			set	manual_p = 't'
+			where	currency = 'USD' and day = :currency_day::date
+		"
+		
 
 		ns_write "Success</li>\n"
 	    }
