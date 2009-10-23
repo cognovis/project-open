@@ -61,7 +61,7 @@ ad_proc -private im_package_filestorage_id_helper {} {
 
 
 ad_proc -public im_filestorage_find_cmd {} {
-    Returns the Unix/Linux/CygWin find command as specified in the
+    Returns the Unix/Linux/Windows find command as specified in the
     intranet-core.FindCmd command
 } {
 
@@ -77,7 +77,7 @@ ad_proc -public im_filestorage_find_cmd {} {
 	    set find_cmd "/usr/bin/find" 
 	}
         windows { 
-	    # Windows CygWin default
+	    # Windows default
 	    set find_cmd "/bin/find" 
 	}
         default { 
@@ -114,8 +114,6 @@ ad_proc -public im_filestorage_find_cmd {} {
         <ul>
           <li>Please contact your application administrator in order to
               change the value of the parameter.
-          <li>Please make sure that CygWin is installed correctly if you are 
-              running on a Windows platform.
         </ul>
         <p>
         Here is the error message for reference:
