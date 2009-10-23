@@ -1878,8 +1878,14 @@ ad_proc im_costs_project_finance_component {
     if {[llength $used_currencies] > 0 && [llength $exchange_rates_outdated] > 0} {
 
 	set currency_outdated_warning [lang::message::lookup "" intranet-cost.The_exchange_rates_are_outdated "The exchanges rates for the following currencies are outdated. <br>Please contact your System Administrator to update the following exchange rates:"]
-	append currency_outdated_warning "\n<br><a href='/intranet-exchange-rate/'>Update Exchange Rates</a>:<br>\n"
 
+	append currency_outdated_warning "
+		<ul>
+		<li><a href='/intranet-exchange-rate/'>
+			[lang::message::lookup "" intranet-cost.Update_Exchange_Rates "Update Exchange Rates"]
+		    </a>
+		</ul>
+	"
 
 	set first_p 1
 	foreach entry $exchange_rates_outdated {
