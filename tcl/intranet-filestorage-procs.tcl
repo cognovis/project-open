@@ -78,7 +78,19 @@ ad_proc -public im_filestorage_find_cmd {} {
 	}
         windows { 
 	    # Windows default
-	    set find_cmd "/bin/find" 
+	    # 091022 fraber: Changes for Maurizios Windows installer
+	    set find_cmd "find" 
+
+	    # 091022 fraber: Maurizio's Windows installer
+	    if { ![catch {
+		# Just run find on itself - this should return exactly one file
+		set winaoldir $::env(AOLDIR)
+		set unixaoldir [string map {\\ /} ${winaoldir}]
+		set file_list [exec $find_cmd ${unixaoldir}/bin/${find_cmd}.exe -maxdepth 0]
+	    } err_msg]} {
+		return $find_cmd
+	    }
+
 	}
         default { 
 	    # Probably some kind of Unix derivate

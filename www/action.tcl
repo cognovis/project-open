@@ -394,7 +394,7 @@ $dirs_html
 	    if { $platform == "windows" } {
 		# fraber 091023: Changes from Maurizio
 	    	# set path "[acs_root_dir]/../cygwin/$path"
-		set path "[acs_root_dir]/$path"
+		set path "[acs_root_dir]/servers/projop/$path"
 	    }
  
 		if { [catch {
