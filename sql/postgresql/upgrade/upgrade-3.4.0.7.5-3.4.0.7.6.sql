@@ -10,7 +10,7 @@ declare
         v_count         integer;
 begin
 
-	select count(*) into v_count from acs_attributes where object_type = ''party'' and attribute_name = ''url'';
+	select count(*) into v_count from acs_object_type_tables where object_type = ''party'' and table_name = ''parties'';
 	IF v_count != 0 THEN
 		update acs_attributes set table_name = ''parties'' where object_type = ''party'' and attribute_name = ''url'';
 	END IF;
