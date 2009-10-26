@@ -39,7 +39,6 @@ db_multirow  -extend {row_even_p} workflows all_workflows {
         and    c.state = 'active'
 	and    not exists (select 1 from wf_task_assignments ta where ta.task_id = t.task_id)
     }]
-    set workflow_key [ns_urlencode $workflow_key]
     set pretty_name [ad_quotehtml $pretty_name]
 
     set row_even_p [expr $ctr % 2]
