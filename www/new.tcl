@@ -21,6 +21,7 @@ ad_page_contract {
 }
 
 set current_user_id [ad_maybe_redirect_for_registration]
+set org_conf_item_id [im_opt_val conf_item_id]
 if {![im_permission $current_user_id "add_conf_items"]} {
     ad_return_complaint 1 "You don't have sufficient permissions to create or modify tickets"
     ad_script_abort
