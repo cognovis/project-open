@@ -21,7 +21,6 @@ ad_page_contract {
 }
 
 set current_user_id [ad_maybe_redirect_for_registration]
-set org_conf_item_id [im_opt_val conf_item_id]
 if {![im_permission $current_user_id "add_conf_items"]} {
     ad_return_complaint 1 "You don't have sufficient permissions to create or modify tickets"
     ad_script_abort
@@ -31,6 +30,9 @@ set user_admin_p 1
 set enable_master_p 1
 set focus ""
 set sub_navbar ""
+
+# org_conf_item_id required by Portlet Components!
+set org_conf_item_id [im_opt_val conf_item_id]
 
 if {"display" == $form_mode || "" == $form_mode} {
     set page_title [lang::message::lookup "" intranet-confdb.Conf_Item "Configuration Item"]
