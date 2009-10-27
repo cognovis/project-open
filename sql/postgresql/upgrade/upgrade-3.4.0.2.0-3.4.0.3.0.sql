@@ -53,9 +53,12 @@ END;' LANGUAGE 'plpgsql';
 
 
 -- Fix component packages
-update im_component_plugins 
-set package_name = 'intranet-core' 
-where package_name = 'intranet';
+-- 091026 fraber: Commented, because it leads to an error
+-- in the Windows installer.
+--
+-- update im_component_plugins 
+-- set package_name = 'intranet-core' 
+-- where package_name = 'intranet';
 
 
 -----------------------------------------------------
