@@ -230,23 +230,43 @@ array set trados_array [im_trans_trados_matrix $company_id]
 db_foreach select_tasks $sql {
 
 	set fuzzie_result 0 
-	set fuzzie_wordcount 0 
-      	
-	# calculate fuzzie: 
-	if { 1.0 != [expr $trados_array(50) && 0 != [expr $trados_array(50) ] } {
-	    set fuzzie_result [$match50 + $fuzzie_result] 		 	
+	set fuzzie_no_discount 0 
+      	set fuzzie_weight 0
+
+        if { 1.0 != [expr $trados_array(50)] && 0 != [expr $trados_array(50) ] } {
+            set fuzzie_result [expr $match50 + $fuzzie_result]
+	    set fuzzie_weight [expr $fuzzie_weight + ($match50 * $trados_array(50)) ]
+        } else {
+            set fuzzie_no_discount [expr $match50 + $fuzzie_no_discount]
+        }
+        if { 1.0 != [expr $trados_array(75)] && 0 != [expr $trados_array(75) ] } {
+            set fuzzie_result [expr $match75 + $fuzzie_result]
+            set fuzzie_weight [expr $fuzzie_weight + ($match75 * $trados_array(75)) ]
+        } else {
+            set fuzzie_no_discount [expr $match75 + $fuzzie_no_discount]
+        }
+	if { 1.0 != [expr $trados_array(85)] && 0 != [expr $trados_array(85) ] } {
+	    set fuzzie_result [expr $match85 + $fuzzie_result]
+            set fuzzie_weight [expr $fuzzie_weight + ($match85 * $trados_array(85)) ]
+	} else {
+	    set fuzzie_no_discount [expr $match85 + $fuzzie_no_discount]
 	}
-        if { 1.0 != [expr $trados_array(75) && 0 != [expr $trados_array(75) ] } {
-            set fuzzie_result [$match75 * $fuzzie_result]
-        }
-        if { 1.0 != [expr $trados_array(85) && 0 != [expr $trados_array(85) ] } {
-            set fuzzie_result [$match85 * $fuzzie_result]
-        }
-        if { 1.0 != [expr $trados_array(95) && 0 != [expr $trados_array(95) ] } {
-            set fuzzie_result [$match95 * $fuzzie_result]
-        }
-
-
+	if { 1.0 != [expr $trados_array(95)] && 0 != [expr $trados_array(95) ] } {
+	    set fuzzie_result [expr ($match95 + $fuzzie_result)]
+            set fuzzie_weight [expr $fuzzie_weight + ($match95 * $trados_array(95)) ]
+	} else {
+	    set fuzzie_no_discount [expr $match95 + $fuzzie_no_discount]
+	}	
+       
+        set match0 [expr $match0 + $fuzzie_no_discount ]
+	set fuzzie_wordcount [expr ($match50 * $trados_array(50)) + ($match75 * $trados_array(75)) + ($match85 * $trados_array(85)) + ($match95 * $trados_array(95))]
+	if { 0 != [expr $fuzzie_result] } {
+	    set fuzzie_weight_sum [expr $fuzzie_weight / $fuzzie_result * 100 ]
+	} else {
+            set fuzzie_weight_sum $fuzzie_weight
+	}
+	append fuzzie_weight_sum " %"
+	    
     # insert intermediate headers for every project
     if {$old_project_id != $project_id} {
         append task_table_rows "
@@ -262,7 +282,6 @@ db_foreach select_tasks $sql {
         <tr $bgcolor([expr $ctr % 2])>
           <td align=left colspan='7'>$task_name</td></td>
         </tr>"
-
 
     # title
     append task_table_rows "
@@ -296,11 +315,11 @@ db_foreach select_tasks $sql {
         <tr $bgcolor([expr $ctr % 2])>
           <td align=left></td>
           <td align=right>[lang::message::lookup "" intranet-core.doc_descr "Fuzzies" ]</td>
-          <td align=right>$fuzzie</td>
-          <td align=right>\[to clarify: fuz001\]</td>
-          <td align=right>...</td>
-          <td></td>
-          <td></td>
+          <td align=right>$fuzzie_result</td>
+          <td align=right>$fuzzie_weight_sum</td>
+          <td align=right>$fuzzie_wordcount</td>
+          <td>$price</td>
+          <td>[expr $price * ($fuzzie_wordcount)]</td>
         </tr>"
 
     # Int. Repetitions
@@ -312,8 +331,8 @@ db_foreach select_tasks $sql {
           <td align=right>$int_repetitions</td>
           <td align=right>[expr $trados_array(rep) * 100 ]%</td>
           <td align=right>[expr $trados_array(rep) * $int_repetitions ]</td>
-          <td></td>
-          <td></td>
+          <td>$price</td>
+          <td>[expr $price * [expr $trados_array(rep) * $int_repetitions ] ]</td>
         </tr>"
     # 100% matches
     append task_table_rows "
@@ -324,8 +343,8 @@ db_foreach select_tasks $sql {
           <td align=right>$match100</td>
           <td align=right>[expr $trados_array(100) * 100 ]%</td>
           <td align=right>[expr $trados_array(100) * $match100 ]</td>
-          <td></td>
-          <td></td>
+          <td>$price</td>
+          <td>[expr $price * [expr $trados_array(100) * $match100]]</td>
         </tr>"
 
     incr ctr
