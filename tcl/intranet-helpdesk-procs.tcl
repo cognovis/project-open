@@ -887,9 +887,9 @@ ad_proc -public im_helpdesk_home_component {
 	"
     }
     return "
-	<table class=\"table_component_hover\" width=\"100%\">
-	  $table_header_html
-	  $table_body_html
+	<table class=\"table_component\" width=\"100%\">
+	<thead>$table_header_html</thead>
+	<tbody>$table_body_html</tbody>
 	</table>
     "
 }
