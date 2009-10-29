@@ -34,8 +34,6 @@ set object_type [db_string acs_object_type "select object_type from acs_objects 
 set perm_cmd "${object_type}_permissions \$current_user_id \$object_id object_view object_read object_write object_admin"
 eval $perm_cmd
 
-
-
 # ----------------------------------------------------
 # Create a Form for new elements
 # ----------------------------------------------------
@@ -44,7 +42,7 @@ eval $perm_cmd
 set conf_item_parent_options [im_conf_item_options -include_empty_p 1]
 set cost_center_options [util_memoize "im_cost_center_options -include_empty 0" 3600]
 
-set form_id "form"
+set form_id "conf_item"
 set action_url "/intranet-confdb/new"
 
 #	{conf_item_code:text(text) {label "[lang::message::lookup {} intranet-core.Conf_Item_Code {Conf Item Code}]"} {html {size 10}}}

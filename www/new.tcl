@@ -30,6 +30,8 @@ set user_admin_p 1
 set enable_master_p 1
 set focus ""
 set sub_navbar ""
+set current_url [im_url_with_query]
+
 
 # org_conf_item_id required by Portlet Components!
 set org_conf_item_id [im_opt_val conf_item_id]
@@ -281,11 +283,13 @@ db_multirow -extend {conf_item_chk conf_item_url indent return_url processor} co
 # ---------------------------------------------------------------
 #	"[lang::message::lookup {} intranet-confdb.Assoc_a_new_project "Associate a project with this Configuration Item"]"
 
-set bulk_action_list ""
-lappend bulk_actions_list "[lang::message::lookup "" intranet-confdb.Delete "Delete"]" "conf-item-del" "[lang::message::lookup "" intranet-confdb.Remove_checked_items "Remove Checked Items"]"
+set bulk_actions_list ""
+lappend bulk_actions_list "[lang::message::lookup "" intranet-confdb.Unassociate "Delete Association"]" 
+lappend bulk_actions_list "assoc-project-del" 
+lappend bulk_actions_list "[lang::message::lookup "" intranet-confdb.Remove_checked_items "Remove Checked Items"]"
 if {![info exists conf_item_id]} { set conf_item_id 0}
-
-set assoc_action [lang::message::lookup {} intranet-confdb.Assoc_a_new_project {Associate a new project}]
+set assoc_msg [lang::message::lookup {} intranet-confdb.Assoc_with_a_new_project {Associate with a new project}]
+set return_url [im_url_with_query]
 
 list::create \
     -name assoc_projects \
@@ -294,20 +298,20 @@ list::create \
     -row_pretty_plural "[lang::message::lookup {} intranet-confdb.Assoc_Projects "Associated Projects"]" \
     -has_checkboxes \
     -bulk_actions $bulk_actions_list \
-    -bulk_action_export_vars { object_id } \
+    -bulk_action_export_vars { conf_item_id return_url } \
     -actions [list \
-	"Associate with new project" \
-	"/intranet-confdb/new?conf_item_id=$conf_item_id" \
-	"" \
+	$assoc_msg \
+	[export_vars -base "/intranet-confdb/assoc-project" {conf_item_id {return_url $current_url}}] \
+	$assoc_msg \
     ] \
     -elements {
-	conf_item_chk {
+	project_chk {
 	    label "<input type=\"checkbox\" 
 			name=\"_dummy\" 
-			onclick=\"acs_ListCheckAll('conf_items_list', this.checked)\" 
+			onclick=\"acs_ListCheckAll('project_list', this.checked)\" 
 			title=\"Check/uncheck all rows\">"
 	    display_template {
-		@assoc_projects_lines.conf_item_chk;noquote@
+		@assoc_projects_lines.project_chk;noquote@
 	    }
 	}
 	project_name {
@@ -325,12 +329,12 @@ set assoc_projects_sql "
 		and r.object_id_two = :conf_item_id
 "
 
-db_multirow -extend { conf_item_chk project_url } assoc_projects_lines assoc_projects $assoc_projects_sql {
+db_multirow -extend { project_chk project_url } assoc_projects_lines assoc_projects $assoc_projects_sql {
     set project_url ""
-    set conf_item_chk "<input type=\"checkbox\" 
-				name=\"conf_item_id\" 
-				value=\"$conf_item_id\" 
-				id=\"conf_items_list,$conf_item_id\">"
+    set project_chk "<input type=\"checkbox\" 
+				name=\"project_id\" 
+				value=\"$project_id\" 
+				id=\"project_list,$project_id\">"
 }
 
 
