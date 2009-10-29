@@ -189,6 +189,9 @@ ad_proc -public im_conf_item_select_sql {
     set current_user_id 0
     if {[ns_conn isconnected]} { set current_user_id [ad_get_user_id] }
 
+    # base url, where only the conf_item_id has to be added
+    set conf_item_base_url "/intranet-confdb/new?form_mode=display&conf_item_id="
+
     im_security_alert_check_integer -location im_conf_item_select_sql -value $type_id
     im_security_alert_check_integer -location im_conf_item_select_sql -value $status_id
     im_security_alert_check_integer -location im_conf_item_select_sql -value $project_id
@@ -283,7 +286,8 @@ ad_proc -public im_conf_item_select_sql {
 		im_category_from_id(i.conf_item_type_id) as conf_item_type,
 		im_conf_item_name_from_id(i.conf_item_parent_id) as conf_item_parent,
 		im_cost_center_code_from_id(i.conf_item_cost_center_id) as conf_item_cost_center,
-		im_name_from_user_id(i.conf_item_owner_id) as conf_item_owner
+		im_name_from_user_id(i.conf_item_owner_id) as conf_item_owner,
+		'$conf_item_base_url' || i.conf_item_id as conf_item_url
         from	im_conf_items i	
 		$extra_from
 	where	1=1 
