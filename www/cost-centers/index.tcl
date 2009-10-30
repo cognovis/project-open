@@ -77,7 +77,13 @@ set main_sql "
 		im_name_from_user_id(e.employee_id) as employee_name
 	from
 		im_cost_centers m
-		LEFT JOIN im_employees e ON (department_id=cost_center_id)
+		LEFT JOIN (
+			select	e.*
+			from	im_employees e,
+				cc_users u
+			where	e.employee_id = u.user_id and
+				u.member_state = 'approved'
+		) e ON (e.department_id = m.cost_center_id)
 	order by cost_center_code,employee_name
 "
 
