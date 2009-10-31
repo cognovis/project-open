@@ -381,9 +381,12 @@ ad_proc wf_graphviz_dot_exec {
     if { [empty_string_p $graphviz_dot_path] } {
 	return -code error "Graphviz is not installed."
     }
-    if { ![file executable $graphviz_dot_path] } {
-	return -code error "Can't execute graphviz binary at $graphviz_dot_path"
-    }
+
+    # 091031 fraber: Doesn't work like this with Windows installer.
+#    if { ![file executable $graphviz_dot_path] } {
+#	return -code error "Can't execute graphviz binary at $graphviz_dot_path"
+#    }
+
     if { ![file isdirectory $tmp_path] } {
 	return -code error "Parameter acs-workflow.tmp_path points to a non-existing directory: $tmp_path"
     }
