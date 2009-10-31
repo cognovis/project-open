@@ -104,10 +104,17 @@ proc_doc check_for_form_variable_naughtiness {
         set tmpdir_list [ad_parameter_all_values_as_list TmpDir]
         if { [empty_string_p $tmpdir_list] } {
             set tmpdir_list [list "/var/tmp" "/tmp"]
+
+	    # 091031 fraber: Different TmpDir in Maurizio's Windows Installer
+	    global tcl_platform  
+	    if {[string match $tcl_platform(platform) "windows"]} {
+		set tmpdir_list [list "servers/projop/tmp"]
+	    }
         }
 
         foreach tmpdir $tmpdir_list {
-            if { [string match "$tmpdir*" $tmp_filename] } {
+	    # 091031 fraber: Added an asterisk _before_ $tmpdir for Windows installer
+            if { [string match "*$tmpdir*" $tmp_filename] } {
                 set passed_check_p 1
                 break
             }
