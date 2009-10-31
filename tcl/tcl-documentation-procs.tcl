@@ -1575,15 +1575,22 @@ ad_page_contract_filter tmpfile { name value } {
 } { 
     # ensure no .. in the path
     ns_normalizepath $value
-    
+    global tcl_platform  
+
     # check to make sure path is to an authorized directory
     set tmpdir_list [ad_parameter_all_values_as_list -package_id [site_node_closest_ancestor_package "acs-subsite"] TmpDir]
     if { [empty_string_p $tmpdir_list] } {
 	set tmpdir_list [list "/var/tmp" "/tmp"]
+
+	# 091031 fraber: Different TmpDir in Maurizio's Windows Installer
+	if {[string match $tcl_platform(platform) "windows"]} {
+	    set tmpdir_list [list "servers/projop/tmp"]
+	}
     }
     
     foreach tmpdir $tmpdir_list {
-	if { [string match "$tmpdir*" $value] } {
+	# 091031 fraber: Added an asterisk _before_ $tmpdir for Windows installer
+	if { [string match "*$tmpdir*" $value] } {
 	    return 1
 	}
     }
