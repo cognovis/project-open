@@ -14,6 +14,16 @@ ad_page_contract {
     }
 }
 
+global tcl_platform
+if {[string match $tcl_platform(platform) "windows"]} {
+
+    set winaoldir $::env(AOLDIR)
+    set unixaoldir [string map {\\ /} ${winaoldir}]
+    set tmpfile ${winaoldir}/${tmpfile}
+
+}
+
+
 ns_returnfile 200 image/gif $tmpfile
 file delete $tmpfile
     
