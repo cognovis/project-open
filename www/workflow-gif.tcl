@@ -14,8 +14,21 @@ ad_page_contract {
     }
 }
 
-ns_returnfile 200 image/gif $tmpfile
-file delete $tmpfile
-    
 
+# Find out if platform is "unix" or "windows"
+global tcl_platform
+set platform [lindex $tcl_platform(platform) 0]
 
+switch $platform {
+    windows {
+	set winaoldir $::env(AOLDIR)
+	set unixaoldir [string map {\\ /} ${winaoldir}]
+	set tmpfile ${winaoldir}/${tmpfile}
+	ns_returnfile 200 image/gif $tmpfile
+	file delete $tmpfile
+    }
+    default {
+	ns_returnfile 200 image/gif $tmpfile
+	file delete $tmpfile
+    }
+}
