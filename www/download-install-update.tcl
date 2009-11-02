@@ -20,7 +20,19 @@ if {!$user_is_admin_p} {
 }
 
 # By default load the file into the ~/ directory.
-set file_path [acs_root_dir]
+
+# 091102 fraber: Changes from Maurizio
+global tcl_platform
+set platform [lindex $tcl_platform(platform) 0]
+switch $platform {
+    windows {
+	set file_path "."
+    }
+    unix {
+	set file_path [acs_root_dir]
+    }
+}
+
 
 # The file name is the last piece of the URL
 set url_pieces [split $url "/"]
