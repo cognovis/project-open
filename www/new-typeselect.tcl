@@ -44,12 +44,16 @@ if {0 == [llength $ticket_sla_options]} {
 # ad_return_complaint 1 "sla=$ticket_sla_id, type=$ticket_type_id"
 
 set sql "
-	select	c.category_id,
+	select
+		c.category_id,
 		c.category,
 		c.category_description,
-		(select parent_id from im_category_hierarchy where child_id = c.category_id) as parent_id
-	from	im_categories c
-	where	c.category_type = 'Intranet Ticket Type' and
+		p.parent_id
+	from
+		im_categories c
+		LEFT OUTER JOIN (select * from im_category_hierarchy) p ON p.child_id = c.category_id
+	where
+		c.category_type = 'Intranet Ticket Type' and
 		(c.enabled_p is null or c.enabled_p = 't') and
 		exists (
 			select	*
