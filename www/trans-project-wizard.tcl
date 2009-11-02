@@ -384,12 +384,13 @@ multirow append execution \
 
 
 # ---------------------------------------------------------------------
-# POs written
+# Purchase_Orders written
 # ---------------------------------------------------------------------
 
+set purchase_orders 0
 if {$freelance_invoices_installed_p} {
 
-    set pos [db_string pos "
+    set purchase_orders [db_string purchase_orders "
         select  count(*)
         from    im_costs
         where   project_id = :project_id
@@ -397,18 +398,18 @@ if {$freelance_invoices_installed_p} {
     "]
 
     if {$freelancers > 0} {
-	set pos_status [expr 10 * $pos / $freelancers]
+	set purchase_orders_status [expr 10 * $purchase_orders / $freelancers]
     } else {
-	set pos_status 0
+	set purchase_orders_status 0
     }
-    if {$pos_status > 10} { set pos_status 10 }
+    if {$purchase_orders_status > 10} { set purchase_orders_status 10 }
     
     set write_po_url "/intranet-freelance-invoices/index?target_cost_type_id=3706"
     
     incr multi_row_count
     multirow append execution \
-	$status_display($pos_status) \
-	"$pos [lang::message::lookup "" intranet-trans-project-wizard.POs "PO(s)"]" \
+	$status_display($purchase_orders_status) \
+	"$purchase_orders [lang::message::lookup "" intranet-trans-project-wizard.POs "PO(s)"]" \
 	[export_vars -base $write_po_url {project_id return_url}] \
 	[lang::message::lookup "" intranet-trans-project-wizard.POs_name "Write Purchase Orders"] \
 	[lang::message::lookup "" intranet-trans-project-wizard.POs_descr "
@@ -464,8 +465,8 @@ set bills [db_string bills "
                 and cost_type_id = [im_cost_type_bill]
 "]
 
-if {0 != $pos} {
-    set bills_status [expr round(10 * $bills / $pos)]
+if {0 != $purchase_orders} {
+    set bills_status [expr round(10 * $bills / $purchase_orders)]
 } else {
     set bills_status 0
 }
