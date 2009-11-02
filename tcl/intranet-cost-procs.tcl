@@ -2114,7 +2114,7 @@ ad_proc im_cost_template_select { select_name { default "" } } {
     Returns an html select box named $select_name and defaulted to $default 
     with a list of all the partner statuses in the system
 } {
-    return [im_category_select_plain -translate_p 0 "Intranet Cost Template" $select_name $default]
+    return [im_category_select -translate_p 0 "Intranet Cost Template" $select_name $default]
 }
 
 
