@@ -25,7 +25,7 @@ if {!$user_is_admin_p} {
     return
 }
 
-set page_title "Automatic Software Updates"
+set page_title [lang::message::lookup "" intranet-security-update-client.Get_ASUS_Exchange_Rates "Get ASUS Exchange Rates"]
 set context_bar [im_context_bar $page_title]
 set context [list [list "../developer" "Developer's Administration"] $page_title]
 
