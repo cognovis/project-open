@@ -438,7 +438,17 @@ ad_proc im_filestorage_bug_component { user_id bug_id user_name return_url} {
 ad_proc im_filestorage_zip_path { } {
     Determine the location where zips are located
 } {
-    return "/tmp"
+    global tcl_platform
+    set platform [lindex $tcl_platform(platform) 0]
+
+    switch $platform {
+        windows {
+	    return "./servers/projop/tmp"
+	}
+	default {
+	    return "/tmp"
+	}
+    }
 }
 
 
@@ -489,8 +499,8 @@ ad_proc im_filestorage_project_path { project_id } {
     Determine the location where the project files
     are stored on the hard disk for this project
 } {
-    return [util_memoize "im_filestorage_project_path_helper $project_id"]
-#    return [im_filestorage_project_path_helper $project_id]
+#    return [util_memoize "im_filestorage_project_path_helper $project_id"]
+    return [im_filestorage_project_path_helper $project_id]
 }
 
 ad_proc im_filestorage_project_path_helper { project_id } {
