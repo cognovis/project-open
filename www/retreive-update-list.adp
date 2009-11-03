@@ -24,7 +24,7 @@
 
 <li><b><%= [lang::message::lookup "" intranet-security-update-client.Guide_Perform_Code_Backup "Perform a Code Backup"] %></b>:<br>
     <%= [lang::message::lookup "" intranet-security-update-client.Guide_Perform_Code_Backup_Msg "
-    Please save your source code at C:\\ProjectOpen\\projop\\packages (Win32)
+    Please save your source code at &lt;install-dir&gt;\\servers\\projop\\packages (Win32)
     or /web/projop/packages (Linux) manually using zip or tar."] %>
     <br>&nbsp;
 
