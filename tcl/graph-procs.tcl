@@ -387,9 +387,10 @@ ad_proc wf_graphviz_dot_exec {
 #	return -code error "Can't execute graphviz binary at $graphviz_dot_path"
 #    }
 
-    if { ![file isdirectory $tmp_path] } {
-	return -code error "Parameter acs-workflow.tmp_path points to a non-existing directory: $tmp_path"
-    }
+    # 091103 fraber: Doesn't work like this with Windows installer.
+#    if { ![file isdirectory $tmp_path] } {
+#	return -code error "Parameter acs-workflow.tmp_path points to a non-existing directory: $tmp_path"
+#    }
 
     set output [string tolower $output]
     if { [regexp {[^a-z]} $output] } {
