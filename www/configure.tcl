@@ -597,8 +597,9 @@ if {!$package_search_pg_installed_p || !$im_search_objects_exists_p} {
     # Install the package
     if {$install_package_p} {
 
-	if {!package_search_pg_installed_p} {
+	if {!$package_search_pg_installed_p} {
 
+	    # Install the entire package
 	    set enable_p 1
 	    set package_path "$serverroot/packages/intranet-search-pg"
 	    set callback "apm_ns_write_callback"
@@ -622,7 +623,6 @@ if {!$package_search_pg_installed_p || !$im_search_objects_exists_p} {
 	} else {
 
 	    # The package already exists, but the table im_search_objects was deleted before
-
 	    set sql_file "$search_sql_dir/intranet-search-pg-create.sql"
 	    set result ""
 	    ns_write "<li>Sourcing $sql_file ...\n"
