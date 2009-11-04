@@ -533,7 +533,11 @@ db_dml disable_task_project_type "update im_categories set enabled_p = 'f' where
 #	8.0.8 - tsearch2.808.tcl
 # ---------------------------------------------------------------
 
-set search_pg_installed_p [db_string search_pg "
+# Does the table already exist?
+set im_search_objects_exists_p [db_table_exists "im_search_objects"]
+
+# Does the package already exist?
+set package_search_pg_installed_p [db_string search_pg "
 	select	count(*) 
 	from	apm_package_versions 
 	where
@@ -541,17 +545,17 @@ set search_pg_installed_p [db_string search_pg "
 		and package_key like 'intranet-search-pg'
 "]
 
-if {!$search_pg_installed_p} {
+
+
+if {!$package_search_pg_installed_p || !$im_search_objects_exists_p} {
 
     ns_write "<br>&nbsp;<h2>Installing Full-Text Search</h2>\n"
-
     set psql_version [im_database_version]
     ns_write "<li>Found psql version '$psql_version'\n"
 
     set pageroot [ns_info pageroot]
     set serverroot [join [lrange [split $pageroot "/"] 0 end-1] "/"]
     set search_sql_dir "$serverroot/packages/intranet-search-pg/sql/postgresql"
-    
     ns_write "<li>Found search_sql_dir: $search_sql_dir\n"
     
     set install_package_p 0
@@ -583,25 +587,26 @@ if {!$search_pg_installed_p} {
     
     # Set the default configuration for TSearch2 (stemming etc...)
     if {$install_package_p} {
-	
 	ns_write "<li>Set the default locale for TSearch2  ...\n"
 	set lc_messages [db_string lc_messages "show lc_messages"]
 	db_dml pg_ts_cfg "update pg_ts_cfg set locale=:lc_messages where ts_name='default'"
 	ns_write "done\n"
-	
     }
     
     
     # Install the package
     if {$install_package_p} {
-	set enable_p 1
-	set package_path "$serverroot/packages/intranet-search-pg"
-	set callback "apm_ns_write_callback"
-	set data_model_files [list [list "sql/postgresql/intranet-search-pg-create.sql" data_model_create "intranet-search-pg"]]
-	set mount_path "intranet-search"
-	set spec_file "$serverroot/packages/intranet-search-pg/intranet-search-pg.info"
-	if {[catch {
-	    set version_id [apm_package_install \
+
+	if {!package_search_pg_installed_p} {
+
+	    set enable_p 1
+	    set package_path "$serverroot/packages/intranet-search-pg"
+	    set callback "apm_ns_write_callback"
+	    set data_model_files [list [list "sql/postgresql/intranet-search-pg-create.sql" data_model_create "intranet-search-pg"]]
+	    set mount_path "intranet-search"
+	    set spec_file "$serverroot/packages/intranet-search-pg/intranet-search-pg.info"
+	    if {[catch {
+		set version_id [apm_package_install \
 				-enable=$enable_p \
 				-package_path $package_path \
 				-callback $callback \
@@ -609,12 +614,25 @@ if {!$search_pg_installed_p} {
 				-data_model_files $data_model_files \
 				-mount_path $mount_path \
 				$spec_file \
-            ]
-	} err_msg]} {
-	    ns_write "<li>Error installing package: <pre>'$err_msg'</pre> \n"
-	}
-    }
+                ]
+	    } err_msg]} {
+		ns_write "<li>Error installing package: <pre>'$err_msg'</pre> \n"
+	    }
 
+	} else {
+
+	    # The package already exists, but the table im_search_objects was deleted before
+
+	    set sql_file "$search_sql_dir/intranet-search-pg-create.sql"
+	    set result ""
+	    ns_write "<li>Sourcing $sql_file ...\n"
+	    catch { set result [db_source_sql_file -callback apm_ns_write_callback $sql_file] } err
+	    ns_write "done<br><pre>$err</pre>\n"
+	    ns_write "<li>Result: <br><pre>$result</pre>\n"   
+
+	}
+
+    }
 }
 
 # ---------------------------------------------------------------
