@@ -154,7 +154,7 @@ if { [exists_and_not_null search_id] } {
 set user_id [ad_conn user_id]
 set package_id [ad_conn package_id]
 
-set valid_page_sizes [list 25 50 100 500]
+set valid_page_sizes [list 25 50 100 500 2000 10000]
 if { ![exists_and_not_null page_size] || [lsearch $valid_page_sizes $page_size] < 0 } {
     set page_size [parameter::get -boolean -parameter "DefaultPageSize" -default "50"]
 }

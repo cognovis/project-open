@@ -281,6 +281,12 @@ ad_form -action $action \
 	foreach party_id $to {
             # Get the party
             
+	    set exists_in_cc_users_p [db_string exist_in_cc "select count(*) from cc_users where user_id = :party_id"]
+	    if {!$exists_in_cc_users_p} { 
+		ns_log Notice "Not SENDING to recipients '$party_id': Party not in cc_users"
+		continue 
+	    }
+
 	    set party [::im::dynfield::Class get_instance_from_db -id $party_id]
 	    
 	    set values [list]
