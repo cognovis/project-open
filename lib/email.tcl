@@ -310,18 +310,22 @@ ad_form -action $action \
 		}
 		
 		ns_log Notice "SENDING Recipients: $party_id"
-		
-		acs_mail_lite::send \
-		    -to_addr [$party email] \
-		    -cc_addr $cc_list \
-		    -bcc_addr $bcc_list \
-		    -from_addr "$from_addr" \
-		    -reply_to "$reply_to_addr" \
-		    -subject "$interpol_subject" \
-		    -body "$interpol_content_body" \
-		    -package_id $package_id \
-		    -file_ids $file_ids \
-		    -mime_type $mime_type
+
+		if {[catch {
+		    acs_mail_lite::send \
+			-to_addr [$party email] \
+			-cc_addr $cc_list \
+			-bcc_addr $bcc_list \
+			-from_addr "$from_addr" \
+			-reply_to "$reply_to_addr" \
+			-subject "$interpol_subject" \
+			-body "$interpol_content_body" \
+			-package_id $package_id \
+			-file_ids $file_ids \
+			-mime_type $mime_type
+		} err_msg]} {
+		    ns_log Error "intranet-contacts/email.tcl: Error sending mail to [$party email]: $err_msg"
+		}
 		
 		# Link the files to all parties
 		if {[exists_and_not_null revision_id]} {
