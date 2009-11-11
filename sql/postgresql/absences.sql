@@ -5,6 +5,7 @@
 -- Get everything about a particular absence
 select
 	a.owner_id,
+	a.group_id,
 	description,
 	contact_info,
 	to_char(a.start_date, :date_format) as start_date,
@@ -21,6 +22,7 @@ where
 select
 	a.absence_id,
 	a.owner_id,
+	a.group_id,
 	substring(a.description from 1 for 40) as description,
 	substring(a.contact_info from 1 for 40) as contact_info,
 	to_char(a.start_date, :date_format) as start_date,
@@ -35,23 +37,7 @@ where
 
 
 -- Create a new Absence
-INSERT INTO im_user_absences (
-	absence_id,
-	owner_id,
-	start_date,
-	end_date,
-	description,
-	contact_info,
-	absence_type_id
-) values (
-	:absence_id,
-	:owner_id,
-	:start_date,
-	:end_date,
-	:description,
-	:contact_info,
-	:absence_type_id
-);
+select im_user_absence__new(...)
 
 -- Update Absence information
 UPDATE im_user_absences SET
@@ -76,6 +62,9 @@ create table im_user_absences (
 	owner_id		integer
 				constraint im_user_absences_user_fk
 				references users,
+	group_id		integer
+				constraints im_user_absences_group_fk
+				references group,
 	start_date		timestamptz
 				constraint im_user_absences_start_const not null,
 	end_date		timestamptz
