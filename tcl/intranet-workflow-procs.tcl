@@ -1195,8 +1195,6 @@ ad_proc -public im_workflow_home_inbox_component {
 	set assignees_pretty [im_workflow_replace_translations_in_string $assignees_pretty]
 	set assignee_pretty $assignees_pretty
 
-#	ad_return_complaint 1 $assignee_pretty
-
     	if {[info exists assignment_hash($object_id)]} { set assigned_users $assignment_hash($object_id) }
 
 	# Determine the type of relationship to the object - why is the task listed here?
@@ -1383,6 +1381,10 @@ ad_proc im_workflow_object_permissions {
     ns_log Notice "im_workflow_object_permissions: status_id=$status_id, user_id=$user_id, owner_id=$owner_id"
     ns_log Notice "im_workflow_object_permissions: user_is_owner_p=$user_is_owner_p, user_is_assignee_p=$user_is_assignee_p, user_is_hr_p=$user_is_hr_p, user_is_admin_p=$user_is_admin_p"
     ns_log Notice "im_workflow_object_permissions: hash=[array get perm_hash]"
+
+    if {0 == $status_id} {
+	ad_return_complaint 1 "<b>Invalid Configuration</b>:<br>The PL/SQL function 'im_biz_object__get_status_id (:object_id)' has returned an invalid status_id for object #$object_id.  "
+    }
 
     # ------------------------------------------------------
     # Calculate permissions
