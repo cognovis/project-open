@@ -26,6 +26,27 @@ select inline_0 ();
 drop function inline_0 ();
 
 
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count                 integer;
+begin
+	select count(*) into v_count from user_tab_columns
+	where table_name = ''IM_HOURS'' and column_name = ''DAYS'';
+        if v_count > 0 then return 0; end if;
+
+	alter table im_hours add days numeric(5,2);
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+
 -- add_absences_for_group allows to define absences for groups of users
 SELECT acs_privilege__create_privilege('add_absences_for_group','Add Absences For Group','Add Absences For Group');
 SELECT acs_privilege__add_child('admin', 'add_absences_for_group');
@@ -83,4 +104,26 @@ BEGIN
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
+
+
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select count(*) into v_count from acs_object_type_tables
+	where object_type = ''im_user_absence'';
+	IF v_count > 0 THEN RETURN 1; END IF;
+	
+	insert into acs_object_type_tables (object_type,table_name,id_column)
+	values (''im_user_absence'', ''im_user_absences'', ''absence_id'');
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
