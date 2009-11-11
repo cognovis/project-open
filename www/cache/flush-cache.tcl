@@ -1,19 +1,12 @@
 ad_page_contract {
     Flush one or more values from util_memoize's cache
 } {
-    suffix
+    {suffix "util_memoize"}
     {return_url "."}
 }
 
-if [string equal $suffix "util_memoize"] {   
-    foreach name [ns_cache names util_memoize] {
-	ns_cache flush util_memoize $name
-    } 
-} else {
-    #ns_return 200 text/html $suffix
-    if [catch { util_memoize_flush_cache $suffix } errmsg] {
-	ns_return 200 text/html "Cannot flush the cache for $suffix suffix."
-    } 
+foreach name [ns_cache names $suffix] {
+    ns_cache flush $suffix $name
 }
 
 ad_returnredirect $return_url
