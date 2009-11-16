@@ -172,6 +172,11 @@ if {[llength $file_list] < 5} {
 set invalid_file ""
 foreach f $file_list {
     set first_path [lindex [split $f "/"] 0]
+
+    # Skip known README and CHANGELOG files
+    if {[regexp -nocase {readme} $first_path match]} { continue }
+    if {[regexp -nocase {changelog} $first_path match]} { continue }
+    if {[regexp -nocase {license} $first_path match]} { continue }
     if {"packages" != $first_path} { 
 	set invalid_file $f
     }
