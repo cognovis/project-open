@@ -207,7 +207,7 @@ ns_write "<li>Extracting files into file system...\n"
 
 
 set tar_output ""
-if {[catch { set tar_output [eexec $tar_cmd --directory $file_path -x -z -f $filename] } tar_err]} {
+if {[catch { set tar_output [exec $tar_cmd --directory $file_path -x -z -f $filename] } tar_err]} {
     ns_write "
 	<li><b>Error unpacking '$filename'</b>:<br>
 	Here is the original error message:
