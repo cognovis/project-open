@@ -187,7 +187,8 @@ if {"" != $invalid_file} {
 	<li><b>Error unpacking '$filename'</b>:<br>
 	There is at least one file in the update
 	that does not start with the path 'package/':
- 	<br><pre>$invalid_file</pre>
+ 	<br><pre>$invalid_file</pre><br>
+	<b>No actions taken</b>.
     "
     ns_write "</ul>[im_footer]\n"
     ad_script_abort
