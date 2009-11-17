@@ -416,6 +416,8 @@ ad_proc -public im_gp_save_tasks {
     The top task entries should actually be projects, otherwise
     we return an "incorrect structure" error.
 } {
+    ns_log Notice "im_gp_save_tasks: format=$format"
+
     set tasks_node [$root_node selectNodes /project/tasks]
 
     if {$tasks_node==""} {
@@ -433,19 +435,23 @@ ad_proc -public im_gp_save_tasks {
 	foreach child [$root_node childNodes] {
 	    set nodeName [$child nodeName]
 	    set nodeText [$child text]
+	    ns_log Notice "im_gp_save_tasks: nodeName=$nodeName, nodeText=$nodeText"
 
 	    lappend xml_elements $nodeName
 
 	    switch $nodeName {
 		"Name" - "Title" - "Manager" - "CalendarUID" - "Calendars" - 
 		"Tasks" - "Resources" - "Assignments" - "ScheduleFromStart" {
+		    ns_log Notice "im_gp_save_tasks: Ignore"
 		    # ignore these
 		}
 		"StartDate" {
+		    ns_log Notice "im_gp_save_tasks: StartDate: Update im_projects.start_date"
 		    db_dml project_start_date "
                        UPDATE im_projects SET start_date=:nodeText WHERE project_id=:super_project_id"
 		}
 		"FinishDate" {		    
+		    ns_log Notice "im_gp_save_tasks: StartDate: Update im_projects.end_date"
 		    db_dml project_end_date "
                        UPDATE im_projects SET end_date=:nodeText WHERE project_id=:super_project_id"
 		}
@@ -464,7 +470,7 @@ ad_proc -public im_gp_save_tasks {
                UPDATE im_gantt_projects 
                SET xml_elements=:xml_elements
                WHERE project_id=:super_project_id
-                    "
+            "
 	    
 	}
 
@@ -544,6 +550,7 @@ ad_proc -public im_gp_save_tasks2 {
     set priority [$task_node getAttribute priority ""]
     set expand_p [$task_node getAttribute expand ""]
     set end_date [db_string end_date "select :start_date::date + :duration::integer"]
+    set is_null 0
     set note ""
     set task_nr ""
     set task_id 0
@@ -561,10 +568,12 @@ ad_proc -public im_gp_save_tasks2 {
     foreach taskchild [$task_node childNodes] {
 	set nodeName [$taskchild nodeName]
 	set nodeText [$taskchild text]
+	ns_log Notice "im_gp_save_tasks2: nodeName=$nodeName, nodeText=$nodeText"
 
         switch $nodeName {
             "Name"              { set task_name [$taskchild text] }
 	    "UID"               { set gantt_project_id [$taskchild text] }
+	    "IsNull"		{ set is_null [$taskchild text] }
 	    "Duration"          { set duration [$taskchild text]     }
 	    "RemainingDuration" { set remaining_duration [$taskchild text] }
 	    "Start"             { set start_date [$taskchild text] }
@@ -642,6 +651,8 @@ ad_proc -public im_gp_save_tasks2 {
             }
         }
     }
+
+    if {$is_null} { return }
 
     # Normalize task_id from "" to 0
     if {"" == $task_id} { set task_id 0 }
@@ -726,7 +737,7 @@ ad_proc -public im_gp_save_tasks2 {
     if {0 == $task_id || !$task_exists_p} {
 
 	if {$create_tasks} {
-	    if {$debug} { ns_write "Creating new task with task_nr='$task_nr'\n" }
+	    if {$debug} { ns_write "im_gp_save_tasks2: Creating new task with task_nr='$task_nr'\n" }
 	    set task_id [im_exec_dml task_insert "
 	    	im_timesheet_task__new (
 			null,			-- p_task_id
@@ -762,6 +773,7 @@ ad_proc -public im_gp_save_tasks2 {
     foreach taskchild [$task_node childNodes] {
 	set nodeName [$taskchild nodeName]
 	set nodeText [$taskchild text]
+	ns_log Notice "im_gp_save_tasks2: nodeName=$nodeName, nodeText=$nodeText"
 
         switch $nodeName {
 	    "PredecessorLink" {
@@ -791,6 +803,8 @@ ad_proc -public im_gp_save_tasks2 {
     # Process task sub-nodes
     if {$debug} { ns_write "<ul>\n" }
     foreach taskchild [$task_node childNodes] {
+	ns_log Notice "im_gp_save_tasks2: process subtasks: nodeName=[$taskchild nodeName]"
+
 	switch [$taskchild nodeName] {
 	    notes { 
 		set note [$taskchild text] 
@@ -1788,9 +1802,6 @@ ad_proc -public im_ganttproject_gantt_component {
         "]
     }
     
-
-
-
     # No projects specified? Show the list of all active projects
     if {"" == $project_id} {
         set project_id [db_list pids "

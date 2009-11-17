@@ -19,6 +19,7 @@ ad_page_contract {
     { security_token "" }
     { upload_gan ""}
     { upload_gif ""}
+    { debug_p 1 }
     return_url
 }
 
@@ -33,23 +34,18 @@ if {!$write} {
     ad_script_abort
 }
 
-set debug 0
-
 if {"" == $upload_gan && "" == $upload_gif} {
     ad_return_complaint 1 "You need to specify a file to upload"
 }
 
-#ToDo: Security
 set today [db_string today "select to_char(now(), 'YYYY-MM-DD')"]
-#ad_return_top_of_page "[im_header]\n[im_navbar]"
-
 set page_title [lang::message::lookup "" intranet-ganttproject.Import_Gantt_Tasks "Import Gantt Tasks"]
-
 set reassign_title [lang::message::lookup "" intranet-ganttproject.Delete_Gantt_Tasks "Reassign Resources of Removed Tasks"]
 set resource_title [lang::message::lookup "" intranet-ganttproject.Resource_Title "Resources not Found"]
 
 # Write audit trail
-im_project_audit -project_id $project_id
+im_project_audit -project_id $project_id -action pre_update
+
 
 # -------------------------------------------------------------------
 # Get the file from the user.
@@ -62,11 +58,26 @@ set tmp_filename [ns_queryget upload_gan.tmpfile]
 ns_log Notice "upload-2: tmp_filename=$tmp_filename"
 set file_size [file size $tmp_filename]
 
+# Check for the extension of the uploaded file.
+set gantt_file_extension [string tolower [lindex [split $upload_gan "."] end]]
+
+if {"pod" == $gantt_file_extension} {
+    ad_return_complaint 1 "
+	<b>[lang::message::lookup "" intranet-ganttproject.Invalid_OpenProj_File_Type "Invalid OpenProj File Type"]</b>:<br>
+	[lang::message::lookup "" intranet-ganttproject.Invalid_File_Type "
+		You are trying to upload an OpenProj 'Serana (.pod)' file, which is not supported.<br>
+		Please export your OpenProj file in format <b>'MS-Project 2003 XML (.xml)'</b>.
+	"]
+    "
+    ad_script_abort
+}
+
 if { $max_n_bytes && ($file_size > $max_n_bytes) } {
     ad_return_complaint 1 "Your file is larger than the maximum permissible upload size: 
     [util_commify_number $max_n_bytes] bytes"
     return 0
 }
+
 
 if {[catch {
     set fl [open $tmp_filename]
@@ -83,7 +94,19 @@ if {[catch {
 # Save the new Tasks from GanttProject
 # -------------------------------------------------------------------
 
-set doc [dom parse $binary_content]
+set doc ""
+if {[catch {set doc [dom parse $binary_content]} err_msg]} {
+    ad_return_complaint 1 "
+	<b>[lang::message::lookup "" intranet-ganttproject.Invalid_XML "Invalid XML Format"]</b>:<br>
+	[lang::message::lookup "" intranet-ganttproject.Invalid_XML_Error "
+		Our XML parser has returned an error meaning that that your file is not a valid XML file.<br>
+		Here is the original error message:<br>&nbsp;<br>
+		<pre>$err_msg</pre>
+	"]
+    "
+    ad_script_abort
+}
+
 set root_node [$doc documentElement]
 
 set format "gantt"
@@ -93,6 +116,8 @@ if {[string equal [$root_node nodeName] "Project"]
 	"http://schemas.microsoft.com/project"]} {
     set format "ms"
 }
+ns_log Notice "gantt-upload-2: format=$format"
+
 
 # Save the tasks.
 # The task_hash contains a mapping table from gantt_project_ids
@@ -106,7 +131,7 @@ set task_hash_array [im_gp_save_tasks \
 	-create_tasks 1 \
 	-save_dependencies 0 \
 	-task_hash_array $task_hash_array \
-	-debug $debug \
+	-debug $debug_p \
 	$root_node \
 	$project_id \
 ]
@@ -118,7 +143,7 @@ set task_hash_array [im_gp_save_tasks \
 	-create_tasks 0 \
 	-save_dependencies 1 \
 	-task_hash_array $task_hash_array \
-	-debug $debug \
+	-debug $debug_p \
 	$root_node \
 	$project_id \
 ]
@@ -149,13 +174,13 @@ if {[set resource_node [$root_node selectNodes /project/resources]] == ""} {
 }
 
 if {$resource_node != ""} {
-    if {$debug} { ns_write "<h2>Saving Resources</h2>\n" }
-    if {$debug} { ns_write "<ul>\n" }
+    if {$debug_p} { ns_write "<h2>Saving Resources</h2>\n" }
+    if {$debug_p} { ns_write "<ul>\n" }
 
-    set resource_hash_array [im_gp_save_resources -debug $debug $resource_node]
+    set resource_hash_array [im_gp_save_resources -debug $debug_p $resource_node]
     array set resource_hash $resource_hash_array
-    if {$debug} { ns_write "<li>\n<pre>resource_hash_array=$resource_hash_array</pre>" }
-    if {$debug} { ns_write "</ul>\n" }
+    if {$debug_p} { ns_write "<li>\n<pre>resource_hash_array=$resource_hash_array</pre>" }
+    if {$debug_p} { ns_write "</ul>\n" }
 
 }
 
@@ -184,7 +209,7 @@ if {$allocations_node != ""} {
     #ns_write "<ul>\n"
 
     im_gp_save_allocations \
-	-debug $debug \
+	-debug $debug_p \
 	$allocations_node \
 	$task_hash_array \
         $resource_hash_array
@@ -289,4 +314,9 @@ template::list::create \
 	    display_template { <select name=\"assign_to.@delete_tasks.task_id@\">$reassign_tasks</select> }
 	}
     }
+
+
+
+# Write audit trail
+im_project_audit -project_id $project_id
 
