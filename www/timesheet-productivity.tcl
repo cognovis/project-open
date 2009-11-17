@@ -45,6 +45,13 @@ set context_bar [im_context_bar $page_title]
 set context ""
 
 
+# Start data - end date doesn't make sense for this report.
+# However, when called from the Project Timesheet Component,
+# the page will set start- and end date to 2000-01-01 and 2100-01-01.
+# In this case overwrite the date and set to current month.
+if {"2000-01-01" == $start_date} { set start_date "" }
+
+
 # Check that Start-Date have correct format
 set start_date [string range $start_date 0 6]
 if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]$} $start_date]} {
@@ -53,12 +60,11 @@ if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]$} $start_da
     Expected format: 'YYYY-MM'"
 }
 
-
 # ------------------------------------------------------------
 # Defaults
 # ------------------------------------------------------------
 
-set days_in_past 15
+set days_in_past 0
 
 db_1row todays_date "
 select
