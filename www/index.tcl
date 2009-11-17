@@ -76,6 +76,7 @@ db_foreach menu_select $menu_select_sql {
 	ns_log Notice "im_sub_navbar: menu_name='$name'"
 	regsub -all " " $name "_" name_key
 	append provider_menu "<li><a href=\"$url\">[_ intranet-invoices.$name_key]</a></li>\n"
+	incr ctr
     }
     append provider_menu "</ul>"
     set provider_ctr $ctr
@@ -100,8 +101,10 @@ db_foreach menu_select $menu_select_sql {
 	ns_log Notice "im_sub_navbar: menu_name='$name'"
 	regsub -all " " $name "_" name_key
 	append customers_menu "<li><a href=\"$url\">[_ intranet-invoices.$name_key]</a></li>\n"
+	incr ctr
     }
     append customers_menu "</ul>"
+    set customer_ctr $ctr
 
 set sub_navbar [im_costs_navbar "none" "/intranet/invoices/index" "" "" [list] "costs_home"] 
 
