@@ -473,6 +473,27 @@ ad_proc im_filestorage_home_path { } {
     return "$base_path_unix"
 }
 
+ad_proc im_filestorage_template_path { } {
+    Helper to determine the location where global template files
+    are stored on the hard disk 
+} {
+    set package_id [im_package_invoices_id]
+    set base_path_unix [parameter::get -package_id $package_id -parameter "InvoiceTemplatePathUnix" -default "[acs_root_dir]/filestorage/templates"]
+
+    # Check if the base_path has a trailing "/" and produce an error:
+    if {[regexp {.\/$} $base_path_unix]} {
+	ad_return_complaint 1 "<br><blockquote>
+             The '$base_path_unix' path for this filestorage contains a trailing slash ('/') at the end.
+             Please notify your system administrator and ask him or her to remove any trailing
+             slashes in the Admin -&gt; Parameters -&gt; 'intranet-filestorage' section.
+        </blockquote><br>
+        "
+	return
+    }
+
+    return "$base_path_unix"
+}
+
 
 ad_proc im_filestorage_backup_path { } {
     Helper to determine the location where global backup files
