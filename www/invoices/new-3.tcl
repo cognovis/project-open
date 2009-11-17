@@ -171,7 +171,7 @@ set page_title [lang::message::lookup "" intranet-timesheet2-invoices.New_$targe
 
 set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-timesheet2-invoices.Invoices]"] $page_title]
 set invoice_id [im_new_object_id]
-set invoice_nr [im_next_invoice_nr -invoice_type_id $target_cost_type_id]
+set invoice_nr [im_next_invoice_nr -cost_type_id $target_cost_type_id]
 set invoice_date $todays_date
 set provider_id [im_company_internal]
 set customer_id $company_id
@@ -251,7 +251,7 @@ if {$aggregate_tasks_p} {
 			sum(t.planned_units) as planned_sum,
 			sum(t.billable_units) as billable_sum,
 			sum(t.reported_units) as reported_sum,
-			sum(t.hours_in_interval) as interval_sum,
+			sum(t.units_in_interval) as interval_sum,
 			sum(t.unbilled_units) as unbilled_sum,
 			parent.project_id as project_id,	
 			im_material_name_from_id(t.task_material_id) as task_name,
@@ -263,18 +263,35 @@ if {$aggregate_tasks_p} {
 			(select
 				t.planned_units,
 				t.billable_units,
-				(select sum(h.hours) from im_hours h where 
-					h.project_id = p.project_id
-				) as reported_units,
-				(select sum(h.hours) from im_hours h where
-					h.project_id = p.project_id
-					and h.day >= to_timestamp(:invoicing_start_date, 'YYYY-MM-DD')
-					and h.day < to_timestamp(:invoicing_end_date, 'YYYY-MM-DD')
-				) as hours_in_interval,
-				(select sum(h.hours) from im_hours h where 
-					h.project_id = p.project_id
-					and h.invoice_id is null
-				) as unbilled_units,
+				CASE WHEN t.uom_id = 321 THEN
+					(select sum(h.days) from im_hours h where h.project_id = p.project_id)
+				ELSE
+					(select sum(h.hours) from im_hours h where h.project_id = p.project_id)
+				END as reported_units,
+				CASE WHEN t.uom_id = 321 THEN
+					(select sum(h.days) from im_hours h where
+						h.project_id = p.project_id
+						and h.day >= to_timestamp(:invoicing_start_date, 'YYYY-MM-DD')
+						and h.day < to_timestamp(:invoicing_end_date, 'YYYY-MM-DD')
+					)
+				ELSE
+					(select sum(h.hours) from im_hours h where
+						h.project_id = p.project_id
+						and h.day >= to_timestamp(:invoicing_start_date, 'YYYY-MM-DD')
+						and h.day < to_timestamp(:invoicing_end_date, 'YYYY-MM-DD')
+					) 
+				END as units_in_interval,
+				CASE WHEN t.uom_id = 321 THEN
+					(select sum(h.days) from im_hours h where 
+						h.project_id = p.project_id
+						and h.invoice_id is null
+					) 
+				ELSE
+					(select sum(h.hours) from im_hours h where 
+						h.project_id = p.project_id
+						and h.invoice_id is null
+					)
+				END as unbilled_units,
 				parent.project_id as project_id,	
 				coalesce(t.material_id, :default_material_id) as task_material_id,
 				coalesce(t.uom_id, :default_uom_id) as uom_id,
@@ -308,16 +325,35 @@ if {$aggregate_tasks_p} {
 	select
 		t.planned_units as planned_sum,
 		t.billable_units as billable_sum,
-		(select sum(h.hours) from im_hours h where h.project_id = p.project_id) as reported_sum,
-		(select sum(h.hours) from im_hours h where
-			h.project_id = p.project_id
-			and h.day >= to_timestamp(:invoicing_start_date, 'YYYY-MM-DD')
-			and h.day < to_timestamp(:invoicing_end_date, 'YYYY-MM-DD')
-		) as interval_sum,
-		(select sum(h.hours) from im_hours h where 
-			h.project_id = p.project_id
-			and h.invoice_id is null
-		) as unbilled_sum,
+		CASE WHEN t.uom_id = 321 THEN
+			(select sum(h.days) from im_hours h where h.project_id = p.project_id)
+		ELSE
+			(select sum(h.hours) from im_hours h where h.project_id = p.project_id)
+		END as reported_sum,
+		CASE WHEN t.uom_id = 321 THEN
+			(select sum(h.days) from im_hours h where
+				h.project_id = p.project_id
+				and h.day >= to_timestamp(:invoicing_start_date, 'YYYY-MM-DD')
+				and h.day < to_timestamp(:invoicing_end_date, 'YYYY-MM-DD')
+			)
+		ELSE
+			(select sum(h.hours) from im_hours h where
+				h.project_id = p.project_id
+				and h.day >= to_timestamp(:invoicing_start_date, 'YYYY-MM-DD')
+				and h.day < to_timestamp(:invoicing_end_date, 'YYYY-MM-DD')
+			)
+		END as interval_sum,
+		CASE WHEN t.uom_id = 321 THEN
+			(select sum(h.days) from im_hours h where 
+				h.project_id = p.project_id
+				and h.invoice_id is null
+			)
+		ELSE
+			(select sum(h.hours) from im_hours h where 
+				h.project_id = p.project_id
+				and h.invoice_id is null
+			)
+		END as unbilled_sum,
 
 		p.company_id,
 		parent.project_id,

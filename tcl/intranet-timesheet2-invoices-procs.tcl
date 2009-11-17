@@ -182,7 +182,6 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	  <td align=center><input type=radio name=invoice_hour_type value=interval $invoice_radio_disabled $interval_checked></td>
 	  <td align=center><input type=radio name=invoice_hour_type value=unbilled $invoice_radio_disabled $unbilled_checked></td>
 	  <td></td>
-<!--	  <td></td> -->
 	  <td></td>
 	</tr>
     "
@@ -206,15 +205,25 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 		m.material_billable_p,
 		im_category_from_id(t.uom_id) as uom_name,
 		(select sum(h.hours) from im_hours h where h.project_id = children.project_id) as all_reported_hours,
+		(select sum(h.days) from im_hours h where h.project_id = children.project_id) as all_reported_days,
 		(select sum(h.hours) from im_hours h where 
 			h.project_id = children.project_id
 			and h.day >= to_timestamp(:start_date, 'YYYY-MM-DD')
 			and h.day < to_timestamp(:end_date, 'YYYY-MM-DD')
 		) as hours_in_interval,
+		(select sum(h.days) from im_hours h where 
+			h.project_id = children.project_id
+			and h.day >= to_timestamp(:start_date, 'YYYY-MM-DD')
+			and h.day < to_timestamp(:end_date, 'YYYY-MM-DD')
+		) as days_in_interval,
 		(select sum(h.hours) from im_hours h where 
 			h.project_id = children.project_id
 			and h.invoice_id is null
-		) as unbilled_hours
+		) as unbilled_hours,
+		(select sum(h.days) from im_hours h where 
+			h.project_id = children.project_id
+			and h.invoice_id is null
+		) as unbilled_days
 	from
 		im_projects parent,
 		im_projects children
@@ -272,6 +281,24 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	    set task_disabled "disabled"
 	}
 
+	switch $uom_id {
+	    321 {
+		set all_reported_units $all_reported_days
+		set units_in_interval $days_in_interval
+		set unbilled_units $unbilled_days
+	    }
+	    320 {
+		set all_reported_units $all_reported_hours
+		set units_in_interval $hours_in_interval
+		set unbilled_units $unbilled_hours
+	    }
+	    default {
+		set all_reported_units "-"
+		set units_in_interval "-"
+		set unbilled_units "-"
+	    }
+	}
+
 	append task_table_rows "
 	<tr $bgcolor([expr $ctr % 2])> 
 	  <td align=middle><input type=checkbox name=include_task value=$project_id $task_disabled $task_checked></td>
@@ -279,9 +306,9 @@ ad_proc im_timesheet_invoicing_project_hierarchy {
 	  <td align=left>$material_name</td>
 	  <td align=right>$planned_units</td>
 	  <td align=right>$billable_units</td>
-	  <td align=right>$all_reported_hours</td>
-	  <td align=right>$hours_in_interval</td>
-	  <td align=right>$unbilled_hours</td>
+	  <td align=right>$all_reported_units</td>
+	  <td align=right>$units_in_interval</td>
+	  <td align=right>$unbilled_units</td>
 	  <td align=right>$uom_name</td>
 	  <td>$project_status</td>
 	</tr>
