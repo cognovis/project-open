@@ -1425,6 +1425,12 @@ ad_proc -public im_dynfield::append_attribute_to_form {
 	set html_parameters [lindex $parameter_list [expr $html_pos + 1]]
     }
     
+    # Localization - use the intranet-core L10n space for translation.
+    set package_key "intranet-core"
+    set pretty_name_key "$package_key.[lang::util::suggest_key $pretty_name]"
+    set pretty_name [lang::message::lookup "" $pretty_name_key $pretty_name]
+
+
     switch $widget {
 	checkbox - radio - select - multiselect - im_category_tree - category_tree {
 	    
