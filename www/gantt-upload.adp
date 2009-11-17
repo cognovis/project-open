@@ -8,19 +8,17 @@
 
 
 <%= [im_box_header [lang::message::lookup "" intranet-ganttproject.Upload "Upload"]] %>
-
 <p>
   <br/>
-  <%= [lang::message::lookup "" intranet-ganttproject.Upload_Gantt_File \
-      "Upload GanttProject .gan or OpenProj XML File"] %>
+  <%= [lang::message::lookup "" intranet-ganttproject.Upload_GanttProject_or_OpenProj_File \
+      "Upload a GanttProject .gan or OpenProj XML File"] %>:
   <br/>
 </p>
-
 <form enctype="multipart/form-data" method="POST" action="gantt-upload-2.tcl">
 <%= [export_form_vars project_id return_url] %>
 <table border=0>
   <tr>
-    <td align="right"><%= [lang::message::lookup "" intranet-core.File "File"] %></td>
+    <td><%= [lang::message::lookup "" intranet-core.File "File"] %></td>
     <td>
       <input type="file" name="upload_gan" size="30">
     </td>
@@ -33,20 +31,21 @@
   </tr>
 </table>
 </form>
-
+<br>
+<h3><%= [lang::message::lookup "" intranet-ganttproject.Please_Note "Please note"] %></h3>
+<ul>
+<li><%= [lang::message::lookup "" intranet-ganttproject.With_OpenProj_save_as_XML "
+	With OpenProj, please save your file in format 'MS Project 2003 XML (*.xml)'
+	and upload this XML file.
+"] %>
+</ul>
 <%= [im_box_footer] %>
 
+
 <%= [im_box_header [lang::message::lookup "" intranet-ganttproject.Software "Software"]] %>
-
 <ul>
-        <li>
-		<a href="http://ganttproject.biz/">Download GanttProject Software</a>
-	</li>
-	<li>
-		<a href="http://openproj.org/openproj">Download OpenProj Software</a>
-	</li>
-
+        <li><a href="http://ganttproject.biz/">Download GanttProject Software</a></li>
+	<li><a href="http://openproj.org/openproj">Download OpenProj Software</a></li>
 </ul>
-
 <%= [im_box_footer] %>
 
