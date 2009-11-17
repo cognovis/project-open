@@ -13,7 +13,32 @@ declare
 	v_count		integer;
 begin
 	select count(*) into v_count from user_tab_columns
-	where lower(table_name) = ''im_projects'' and lower(column_name) = ''reportd_hours_cache'';
+	where lower(table_name) = ''im_projects'' and lower(column_name) = ''presales_probability'';
+	IF v_count > 0 THEN return 1; END IF;
+
+	alter table im_projects add presales_probability numeric(5,2);
+	alter table im_projects add presales_value numeric(12,2);
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+SELECT im_dynfield_attribute_new ('im_project', 'presales_probability', 'Presales Probability', 'integer', 'integer', 'f');
+SELECT im_dynfield_attribute_new ('im_project', 'presales_value', 'Presales Value', 'integer', 'integer', 'f');
+
+
+
+-- reported_days_cache for controlling per day.
+--
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''im_projects'' and lower(column_name) = ''reportd_days_cache'';
 	IF v_count > 0 THEN return 1; END IF;
 
 	alter table im_projects add reported_days_cache numeric(12,2) default 0;
