@@ -19,13 +19,17 @@
   <td valign=top>
 
 
+<if 0 ne @provider_ctr@>
     <%= [im_box_header [_ intranet-cost.New_Customer_Docs]] %>
     @customers_menu;noquote@
     <%= [im_box_footer] %>
+</if>
 
+<if 0 ne @provider_ctr@>
     <%= [im_box_header [_ intranet-cost.New_Provider_Docs]] %>
     @provider_menu;noquote@
     <%= [im_box_footer] %>
+</if>
 
     <%= [im_component_bay right] %>
   </td>

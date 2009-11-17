@@ -78,6 +78,7 @@ db_foreach menu_select $menu_select_sql {
 	append provider_menu "<li><a href=\"$url\">[_ intranet-invoices.$name_key]</a></li>\n"
     }
     append provider_menu "</ul>"
+    set provider_ctr $ctr
 
 
     set parent_menu_sql "select menu_id from im_menus where label= 'invoices_customers'"

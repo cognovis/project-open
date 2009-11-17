@@ -51,6 +51,18 @@ ad_proc -public im_cost_type_interco_quote {} { return 3732 }
 
 
 
+ad_proc -public im_cost_center_type_cost_center {} { return 3001 }
+ad_proc -public im_cost_center_type_profit_center {} { return 3002 }
+ad_proc -public im_cost_center_type_investment_center {} { return 3003 }
+ad_proc -public im_cost_center_type_cost_center {} { return 3004 }
+ad_proc -public im_cost_center_type_subdepartment {} { return 3005 }
+
+
+ad_proc -public im_cost_center_status_active {} { return 3101 }
+ad_proc -public im_cost_center_status_inactive {} { return 3102 }
+
+
+
 ad_proc -public im_cost_type_short_name { cost_type_id } { 
     switch $cost_type_id {
 	3700 { return "invoice" }
@@ -310,7 +322,9 @@ ad_proc -public im_cost_center_type_options { {include_empty 1} } {
 }
 
 
-ad_proc -public im_cost_uom_options { {include_empty 1} } {
+ad_proc -public im_cost_uom_options { 
+    {include_empty 1} 
+} {
     Cost UoM (Unit of Measure) options
 } {
     set options [db_list_of_lists cost_type_options "
