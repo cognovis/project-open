@@ -19,9 +19,10 @@ ad_page_contract {
     { select_project:multiple }
     invoice_currency
     target_cost_type_id:integer
-    { return_url ""}
+    { cost_center_id ""}
     { start_date "" }
     { end_date "" }
+    { return_url ""}
 }
 
 # ---------------------------------------------------------------
@@ -31,7 +32,7 @@ ad_page_contract {
 # User id already verified by filters
 set user_id [ad_maybe_redirect_for_registration]
 set current_user_id $user_id
-
+set current_url [im_url_with_query]
 set page_focus "im_header_form.keywords"
 set view_name "invoice_tasks"
 set page_title "New Timesheet Invoice"
@@ -44,6 +45,30 @@ set required_field "<font color=red size=+1><B>*</B></font>"
 if {![im_permission $user_id add_invoices]} {
     ad_return_complaint "[_ intranet-timesheet2-invoices.lt_Insufficient_Privileg]" "
     <li>[_ intranet-timesheet2-invoices.lt_You_dont_have_suffici]"    
+}
+
+
+# Do we need the cost_center_id for creating a new invoice?
+# This is necessary if the invoice_nr depends on the cost_center_id (profit center).
+set cost_center_required_p [parameter::get_from_package_key -package_key "intranet-invoices" -parameter "NewInvoiceRequiresCostCenterP" -default 0]
+set cost_center_required_p 1
+if {$cost_center_required_p && ($cost_center_id == "" || $cost_center_id == 0)} {
+    ad_returnredirect [export_vars -base "/intranet-invoices/new-cost-center-select" {
+	{pass_through_variables {cost_type_id customer_id provider_id project_id invoice_currency create_invoice_from_template select_project source_cost_type_id target_cost_type_id start_date end_date}}
+	select_project
+	cost_type_id 
+	source_cost_type_id 
+	target_cost_type_id 
+	customer_id 
+	provider_id 
+	project_id 
+	invoice_currency 
+	cost_center_id
+	start_date
+	end_date
+	create_invoice_from_template 
+	{return_url $current_url}
+    }]
 }
 
 set target_cost_type [im_category_from_id $target_cost_type_id]

@@ -142,8 +142,13 @@
 
 	<!-- grand_total -->
         <tr>
-          <td> 
-          </td>
+          <td></td>
+<if @material_enabled_p@>
+          <td></td>
+</if>
+<if @project_type_enabled_p@>
+          <td></td>
+</if>
           <td colspan=4 align=right> 
             <table border=0 cellspacing=1 cellpadding=0>
               <tr> 
@@ -153,9 +158,17 @@
             </table>
           </td>
         </tr>
+
+<if @tax_enabled_p@>
+
         <tr> 
-          <td> 
-          </td>
+          <td></td>
+<if @material_enabled_p@>
+          <td></td>
+</if>
+<if @project_type_enabled_p@>
+          <td></td>
+</if>
           <td colspan=4 align=right> 
             <table border=0 cellspacing=1 cellpadding=0>
               <tr> 
@@ -165,6 +178,11 @@
             </table>
           </td>
         </tr>
+</if>
+<else>
+              <input type=hidden name=tax value='@default_tax@'>
+</else>
+
         <tr> 
           <td>&nbsp; </td>
           <td colspan=6 align=right> 

@@ -72,6 +72,7 @@ if {[lsearch -exact $allowed_cost_type $target_cost_type_id] == -1} {
     ad_script_abort
 }
 
+
 # ---------------------------------------------------------------------
 # Sub-Navbar
 # ---------------------------------------------------------------------
@@ -171,7 +172,7 @@ set page_title [lang::message::lookup "" intranet-timesheet2-invoices.New_$targe
 
 set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-timesheet2-invoices.Invoices]"] $page_title]
 set invoice_id [im_new_object_id]
-set invoice_nr [im_next_invoice_nr -cost_type_id $target_cost_type_id]
+set invoice_nr [im_next_invoice_nr -cost_type_id $target_cost_type_id -cost_center_id $cost_center_id]
 set invoice_date $todays_date
 set provider_id [im_company_internal]
 set customer_id $company_id
@@ -184,6 +185,13 @@ set default_tax 0
 set default_payment_method_id ""
 set default_template_id ""
 set default_payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCompanyInvoicePaymentDays" "" 30] 
+
+# Should we show a "Material" field for invoice lines?
+set material_enabled_p [ad_parameter -package_id [im_package_invoices_id] "ShowInvoiceItemMaterialFieldP" "" 0]
+set project_type_enabled_p [ad_parameter -package_id [im_package_invoices_id] "ShowInvoiceItemProjectTypeFieldP" "" 1]
+
+# Should we show the "Tax" field?
+set tax_enabled_p [ad_parameter -package_id [im_package_invoices_id] "EnabledInvoiceTaxFieldP" "" 1]
 
 if {[info exists customer_id]} {
     db_0or1row customer_info "
@@ -218,6 +226,14 @@ set task_sum_html "
         <tr align=center> 
           <td class=rowtitle>[_ intranet-timesheet2-invoices.Order]</td>
           <td class=rowtitle>[_ intranet-timesheet2-invoices.Description]</td>
+"
+if {$material_enabled_p} {
+    append task_sum_html "<td class=rowtitle>[lang::message::lookup "" intranet-invoices.Material "Material"]</td>"
+}
+if {$project_type_enabled_p} {
+    append task_sum_html "<td class=rowtitle>[lang::message::lookup "" intranet-invoices.Type "Type"]</td>"
+}
+append task_sum_html "
           <td class=rowtitle>[_ intranet-timesheet2-invoices.Units]</td>
           <td class=rowtitle>[_ intranet-timesheet2-invoices.UOM]</td>
           <td class=rowtitle>[_ intranet-timesheet2-invoices.Rate]</td>
@@ -521,8 +537,23 @@ order by
 	    <input type=text name=item_sort_order.$ctr size=2 value='$ctr'>
 	  </td>
 	  <td>
-	    <input type=text name=item_name.$ctr size=40 value='$task_name'>
+	    <input type=text name=item_name.$ctr size=40 value='[ns_quotehtml $task_name]'>
 	  </td>
+	"
+
+	if {$material_enabled_p} {
+	    append task_sum_html "<td>[im_material_select item_material_id.$ctr $material_id]</td>"
+	} else {
+	    append task_sum_html "<input type=hidden name=item_material_id.$ctr value='$material_id'>"
+	}
+
+	if {$project_type_enabled_p} {
+	    append task_sum_html "<td>[im_category_select "Intranet Project Type" item_type_id.$ctr $task_type_id]</td>"
+	} else {
+	    append task_sum_html "<input type=hidden name=item_type_id.$ctr value='$task_type_id'>"
+	}
+
+	append task_sum_html "
 	  <td align=right>
 	    <input type=text name=item_units.$ctr size=4 value='$task_sum'>
 	  </td>
@@ -537,7 +568,7 @@ order by
 	  </td>
 	</tr>
 	<input type=hidden name=item_project_id.$ctr value='$project_id'>
-	<input type=hidden name=item_type_id.$ctr value='$task_type_id'>\n"
+	"
 
 	incr ctr
     }

@@ -38,6 +38,7 @@ ad_page_contract {
     item_units:float,array
     item_uom_id:integer,array
     item_type_id:integer,array
+    item_material_id:integer,array
     item_project_id:integer,array
     item_rate:float,array
     item_currency:array
@@ -195,6 +196,7 @@ foreach nr $item_list {
     set units $item_units($nr)
     set uom_id $item_uom_id($nr)
     set type_id $item_type_id($nr)
+    set material_id $item_material_id($nr)
     set project_id $item_project_id($nr)
     set rate $item_rate($nr)
     set currency $item_currency($nr)
@@ -211,6 +213,7 @@ foreach nr $item_list {
 		item_units, item_uom_id, 
 		price_per_unit, currency, 
 		sort_order, item_type_id, 
+		item_material_id,
 		item_status_id, description
 	) VALUES (
 		:item_id, :name, 
@@ -218,6 +221,7 @@ foreach nr $item_list {
 		:units, :uom_id, 
 		:rate, :currency, 
 		:sort_order, :type_id, 
+		:material_id,
 		null, ''
 	)"
 
