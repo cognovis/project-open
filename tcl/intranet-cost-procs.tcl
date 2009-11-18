@@ -1500,52 +1500,44 @@ ad_proc im_costs_project_finance_component {
     </ul>
 
 } {
+    # pre-filtering 
+    # permissions - beauty of code follows transparency and readability
+    
+    set view_docs_1_p 0
+    set view_docs_2_p 0
+    set view_docs_3_p 0
+    set can_read_summary_p 0
+    
+    set limit_to_freelancers ""
+    set limit_to_inco_customers ""
+    set limit_to_customers ""
+    
+    # user is freelancer and can see purchase orders
+    if { [im_profile::member_p -profile_id [im_freelance_group_id] -user_id $user_id] && [im_permission $user_id fi_read_pos]  } {
+	set view_docs_1_p 1
+    }
+    
+    # user is interco client with privileges "Fi read quotes" AND  "Fi read invoices AND Fi read interco quotes" AND  "Fi read interco invoices" 
+    if { [im_profile::member_p -profile_id [im_inco_customer_group_id] -user_id $user_id] && ( [im_permission $user_id fi_read_invoices] || [im_permission $user_id fi_read_quotes] || [im_permission $user_id fi_read_interco_quotes] || [im_permission $user_id fi_read_interco_invoices] ) } {
+	set view_docs_2_p 1
+    }
 
-
-    # if {![im_permission $user_id view_costs]} {	return "" }
-
-	# pre-filtering 
-	# permissions - beauty of code follows transparency and readability
-
-	set view_docs_1_p 0
-	set view_docs_2_p 0
-	set view_docs_3_p 0
-	set can_read_summary_p 0
-
-	set limit_to_freelancers ""
-	set limit_to_inco_customers ""
-	set limit_to_customers ""
-
-	# user is freelancer and can see purchase orders
-	if { [im_profile::member_p -profile_id [im_freelance_group_id] -user_id $user_id] && [im_permission $user_id fi_read_pos]  } {
-		set view_docs_1_p 1
-	}
-
-	# user is interco client with privileges "Fi read quotes" AND  "Fi read invoices AND Fi read interco quotes" AND  "Fi read interco invoices" 
-	if { [im_profile::member_p -profile_id [im_inco_customer_group_id] -user_id $user_id] && ( [im_permission $user_id fi_read_invoices] || [im_permission $user_id fi_read_quotes] || [im_permission $user_id fi_read_interco_quotes] || [im_permission $user_id fi_read_interco_invoices] ) } {
-		set view_docs_2_p 1
- 	}
-
-	# user is client with privileges "Fi read quotes" AND  "Fi read invoices" 
-	if { [im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id] && ( [im_permission $user_id fi_read_invoices] || [im_permission $user_id fi_read_quotes] ) } {
-		set view_docs_2_p 1
- 	}
-
-	# user is employee and has has privilege  "view cost" 
-	if { [im_user_is_employee_p $user_id] && [im_permission $user_id view_costs] } {
-		set view_docs_3_p 1
-		set can_read_summary_p 1
-	}
-
-	if { !( $view_docs_1_p || $view_docs_2_p || $view_docs_3_p ) && ![im_user_is_admin_p $user_id]} {
-		return "You have no permission to see this page"
-	} 
-
-
-	# show admin links only if at least one write permission
-
-
-
+    # user is client with privileges "Fi read quotes" AND  "Fi read invoices" 
+    if { [im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id] && ( [im_permission $user_id fi_read_invoices] || [im_permission $user_id fi_read_quotes] ) } {
+	set view_docs_2_p 1
+    }
+    
+    # user is employee and has has privilege  "view cost" 
+    if { [im_user_is_employee_p $user_id] && [im_permission $user_id view_costs] } {
+	set view_docs_3_p 1
+	set can_read_summary_p 1
+    }
+    
+    if { !( $view_docs_1_p || $view_docs_2_p || $view_docs_3_p ) && ![im_user_is_admin_p $user_id]} {
+	return "You have no permission to see this page"
+    } 
+    
+    # show admin links only if at least one write permission
     if {$show_details_p} { set show_admin_links_p 1 }
 
     set bgcolor(0) " class=roweven "
@@ -1759,7 +1751,7 @@ ad_proc im_costs_project_finance_component {
 	  <td><nobr>$cost_url[string range $cost_name 0 30]</A></nobr></td>
 	  <td>$cost_center_code</td>
 	  <td>$company_name</td>
-	  <td>$calculated_due_date</td>
+	  <td><nobr>$calculated_due_date</nobr></td>
 	  <td align='right'><nobr>$amount_converted $default_currency_read_p</nobr></td>
 	  <td align='right'><nobr>$amount_unconverted</td>
 	  <td align='right'><nobr>$amount_paid</nobr></td>
