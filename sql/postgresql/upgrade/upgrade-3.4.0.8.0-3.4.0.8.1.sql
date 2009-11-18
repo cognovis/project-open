@@ -17,28 +17,44 @@ update im_categories set enabled_p = 'f' where category_id = 40;
 -- Store the o=open/c=closed status for business objects
 -- at certain page URLs.
 --
-CREATE TABLE im_biz_object_hierarchy_status (
-		object_id	integer
-				constraint im_biz_object_hierarchy_status_object_nn 
-				not null
-				constraint im_biz_object_hierarchy_status_object_fk
-				references acs_objects on delete cascade,
-		user_id		integer
-				constraint im_biz_object_hierarchy_status_user_nn 
-				not null
-				constraint im_biz_object_hierarchy_status_user_fk
-				references persons on delete cascade,
-		page_url	text
-				constraint im_biz_object_hierarchy_status_page_nn 
-				not null,
 
-		open_p		char(1)
-				constraint im_biz_object_hierarchy_status_open_ck
-				CHECK (open_p = 'o'::bpchar OR open_p = 'c'::bpchar),
-		last_modified	timestamptz,
 
-	primary key  (object_id, user_id, page_url)
-);
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count		integer;
+begin
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = ''im_biz_object_tree_status'';
+	IF v_count > 0 THEN return 1; END IF;
+
+	CREATE TABLE im_biz_object_tree_status (
+			object_id	integer
+					constraint im_biz_object_tree_status_object_nn 
+					not null
+					constraint im_biz_object_tree_status_object_fk
+					references acs_objects on delete cascade,
+			user_id		integer
+					constraint im_biz_object_tree_status_user_nn 
+					not null
+					constraint im_biz_object_tree_status_user_fk
+					references persons on delete cascade,
+			page_url	text
+					constraint im_biz_object_tree_status_page_nn 
+					not null,
+	
+			open_p		char(1)
+					constraint im_biz_object_tree_status_open_ck
+					CHECK (open_p = ''o''::bpchar OR open_p = ''c''::bpchar),
+			last_modified	timestamptz,
+	
+		primary key  (object_id, user_id, page_url)
+	);
+
+	RETURN 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
 -----------------------------------------------------------
