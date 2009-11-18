@@ -106,7 +106,9 @@ create table im_employees (
 				references im_categories,
 	qualification_id	integer 
 				constraint im_employees_qualification_fk
-				references im_categories		
+				references im_categories,
+	vacation_days_per_year	integer,
+	vacation_balance	integer
 );
 create index im_employees_referred_idx on im_employees(referred_by);
 

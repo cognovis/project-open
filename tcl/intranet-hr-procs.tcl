@@ -148,7 +148,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
 	    if {"" == $visible_for || [eval $visible_for]} {
 		append employee_html "
                 <tr $td_class([expr $ctr % 2])>
-		<td>[_ "intranet-hr.[lang::util::suggest_key $column_name]"] &nbsp;</td><td>"
+		<td>[lang::message::lookup "" "intranet-hr.[lang::util::suggest_key $column_name]" $column_name] &nbsp;</td><td>"
 		set cmd "append employee_html $column_render_tcl"
 		eval $cmd
 		append employee_html "</td></tr>\n"

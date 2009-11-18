@@ -118,17 +118,13 @@ insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5602,56,'Job Title','$job_title',02);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5604,56,'Job Description','$job_description',04);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5606,56,'Availability %','$availability',06);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5607,56,'Hourly Cost','$hourly_cost_formatted',07);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5608,56,'Supervisor',
 '"<a href=${user_url}$supervisor_id>$supervisor_name</a>"',08);
-
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5610,56,'Social Security nr','$ss_number',10);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
@@ -149,3 +145,9 @@ insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5626,56,'Start Date','$start_date_formatted',26);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5628,56,'Termination_Date','$end_date_formatted',28);
+
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5630,56,'Vacation Days per Year','$vacation_days_per_year',30);
+insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
+sort_order) values (5632,56,'Vacation Balance','$vacation_balance',32);
+

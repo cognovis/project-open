@@ -31,6 +31,8 @@ ad_page_contract {
     { years_experience:integer "" }
     { termination_reason "" }
     { referred_by "0" }
+    { vacation_balance:integer "0" }
+    { vacation_days_per_year:integer "0" }
 }
 
 # ------------------------------------------------------------------
@@ -167,6 +169,9 @@ set voluntary_termination_p_label "[_ intranet-hr.lt_Voluntary_Termination]"
 set termination_reason_label "[_ intranet-hr.Termination_Reason]"
 set signed_nda_p_label "[_ intranet-hr.NDA_Signed]"
 
+set vacation_days_per_year_label [lang::message::lookup "" intranet-hr.Vacation_Days_Per_Year "Vacation Days per Year"]
+set vacation_balance_label [lang::message::lookup "" intranet-hr.Vacation_Balance "Vacation Balance"]
+
 ad_form \
     -name cost \
     -cancel_url $return_url \
@@ -211,6 +216,8 @@ ad_form \
 	{original_job_id:text(hidden),optional }
 	{current_job_id:text(hidden),optional }
 	{qualification_id:text(hidden),optional }
+	{vacation_days_per_year:text(text),optional {label $vacation_days_per_year_label} {html {size 5}} }
+	{vacation_balance:text(text),optional {label $vacation_balance_label} {html {size 5}} }
     }
 
 
@@ -367,7 +374,9 @@ ad_form -extend -name cost -on_request {
 		source_id = :source_id,
 		original_job_id = :original_job_id,
 		current_job_id = :current_job_id,
-		qualification_id = :qualification_id
+		qualification_id = :qualification_id,
+		vacation_days_per_year = :vacation_days_per_year,
+		vacation_balance = :vacation_balance
 	where
 		employee_id = :employee_id
 "
