@@ -190,7 +190,7 @@ ad_form \
     -action $action_url \
     -mode $form_mode \
     -method GET \
-    -export {select_project target_cost_type_id invoice_currency}\
+    -export {select_project target_cost_type_id invoice_currency cost_center_id } \
     -form {
         {start_date:text(text),optional {label "Start Date"}}
         {end_date:text(text),optional {label "End Date"}}
