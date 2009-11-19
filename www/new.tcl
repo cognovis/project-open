@@ -99,7 +99,6 @@ if {"delete" == $button_pressed} {
 set actions [list [list [_ intranet-core.Edit] edit] ]
 lappend actions [list [_ intranet-core.Delete] delete]
 
-
 set form_id "form"
 ad_form \
     -name $form_id \
@@ -112,8 +111,8 @@ ad_form \
 	{report_code:text(text) {label "[lang::message::lookup {} intranet-reporting.Report_Code {Report Code}]"} {html {size 10}}}
 	{parent_menu_id:text(select) {label "[lang::message::lookup {} intranet-reporting.Report_Group {Report Group}]"} {options $parent_menu_options} }
 	{report_sort_order:integer(text),optional {label "[lang::message::lookup {} intranet-reporting.Report_Sort_Order {Sort Order}]"}}
-	{report_sql:text(textarea) {label "[lang::message::lookup {} intranet-reporting.Reports_SQL {Report SQL}]"} {html {cols 60 rows 10} }}
-	{report_description:text(textarea),optional {label "[lang::message::lookup {} intranet-reporting.Reports_Description {Description}]"} {html {cols 60 rows 5} }}
+	{report_sql:text(textarea) {label "[lang::message::lookup {} intranet-reporting.Reports_SQL {Report SQL}]"} {html {cols 80 rows 20} }}
+	{report_description:text(textarea),optional {label "[lang::message::lookup {} intranet-reporting.Reports_Description {Description}]"} {html {cols 80 rows 5} }}
     }
 
 ad_form -extend -name $form_id \
