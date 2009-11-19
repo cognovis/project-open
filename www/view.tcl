@@ -15,6 +15,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     report_id:integer,optional
+    {output_format "html" }
     {return_url "/intranet-reporting/index"}
 }
 
@@ -46,13 +47,71 @@ db_1row report_info "
 "
 
 set page_title "$report_type: $report_name"
+set page_title $report_name
 set context [im_context_bar $page_title]
 
 
-set page_body [im_ad_hoc_query -package_key "intranet-reporting" -report_name $report_name -format html $report_sql]
+set page_body [im_ad_hoc_query \
+	-package_key "intranet-reporting" \
+	-report_name $report_name \
+	-format $output_format \
+	$report_sql \
+]
+
+if {"csv" == $output_format} {
+    set report_key [string tolower $report_name]
+    regsub -all {[^a-zA-z0-9_]} $report_key "_" report_key
+    regsub -all {_+} $report_key "_" report_key
+    set outputheaders [ns_conn outputheaders]
+    ns_set cput $outputheaders "Content-Disposition" "attachment; filename=${report_key}.csv"
+    doc_return 200 "application/csv" $page_body
+}
 
 
-#set page_body "$bind_rows<p><hr>[join $result "<br>"]<p><hr>err:$err_msg<p><hr><pre>$report_sql</pre>"
+# ---------------------------------------------------------------
+# Format the Filter
+# ---------------------------------------------------------------
 
+set filter_html "
+	<form method=get name=filter action='/intranet-reporting/view'>
+	[export_form_vars report_id]
+	<table border=0 cellpadding=0 cellspacing=1>
+	<tr>
+	    <td class=form-label>[lang::message::lookup "" intranet-reporting.Format "Format"]</td>
+	    <td class=form-widget>[im_report_output_format_select output_format "" $output_format]</td>
+	</tr>
+<!-- im_ad_hoc_query doesn't understand number format...
+	<tr>
+	    <td class=form-label>[lang::message::lookup "" intranet-reporting.Number_Format "Number Format"]</td>
+	    <td class=form-widget>[im_report_number_locale_select number_format]</td>
+	</tr>
+-->
+	<tr>
+	    <td class=form-label></td>
+	    <td class=form-widget>
+		  <input type=submit value='[lang::message::lookup "" intranet-core.Action_Go "Go"]' name=submit>
+	    </td>
+	</tr>
+	</table>
+	</form>
+"
 
+# Left Navbar is the filter/select part of the left bar
+set left_navbar_html "
+	<div class='filter-block'>
+        	<div class='filter-title'>
+	           [lang::message::lookup "" intranet-reporting.Report_Options "Report Options"]
+        	</div>
+            	$filter_html
+      	</div>
+      <hr/>
+"
 
+append left_navbar_html "
+      	<div class='filter-block'>
+        <div class='filter-title'>
+            [lang::message::lookup "" intranet-reporting.Description "Description"]
+        </div>
+	    [ns_quotehtml $report_description]
+      	</div>
+"
