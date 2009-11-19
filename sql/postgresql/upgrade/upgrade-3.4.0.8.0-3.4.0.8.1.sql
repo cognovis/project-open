@@ -3,6 +3,12 @@
 SELECT acs_log__debug('/packages/intranet-timesheet2/sql/postgresql/upgrade/upgrade-3.4.0.8.0-3.4.0.8.1.sql','');
 
 
+update im_menus
+set url = '/intranet-reporting/timesheet-customer-project?'
+where url = '/intranet-reporting/timesheet-customer-project??';
+
+
+
 create or replace function inline_0 ()
 returns integer as '
 declare
