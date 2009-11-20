@@ -27,7 +27,7 @@ delete from im_view_columns where column_id in (5630, 5632);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
 sort_order) values (5630,56,'Vacation Days per Year','$vacation_days_per_year',30);
 insert into im_view_columns (column_id, view_id, column_name, column_render_tcl,
-sort_order) values (5632,56,'Vacation Balance','$vacation_balance',32);
+sort_order) values (5632,56,'Vacation Balance From Last Year','$vacation_balance',32);
 
 
 
