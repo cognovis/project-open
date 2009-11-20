@@ -159,3 +159,11 @@ SELECT acs_permission__grant_permission(
 	(select group_id from groups where group_name = 'Employees'),
 	'read'
 );
+
+
+
+-- Force the re-calculation of all im_project.cost_logged_hours and cost_logged_days caches
+update im_projects
+set cost_cache_dirty = now();
+
+
