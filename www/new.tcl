@@ -31,8 +31,8 @@ ad_page_contract {
     { years_experience:integer "" }
     { termination_reason "" }
     { referred_by "0" }
-    { vacation_balance:integer "0" }
-    { vacation_days_per_year:integer "0" }
+    { vacation_balance:float "0" }
+    { vacation_days_per_year:float "0" }
 }
 
 # ------------------------------------------------------------------
