@@ -12,6 +12,8 @@
 
 ad_page_contract {
     Show the results of a single "dynamic" report or indicator
+    @param output_format One of {html|csv|xml}
+
     @author frank.bergmann@project-open.com
 } {
     report_id:integer,optional
@@ -58,13 +60,28 @@ set page_body [im_ad_hoc_query \
 	$report_sql \
 ]
 
-if {"csv" == $output_format} {
-    set report_key [string tolower $report_name]
-    regsub -all {[^a-zA-z0-9_]} $report_key "_" report_key
-    regsub -all {_+} $report_key "_" report_key
-    set outputheaders [ns_conn outputheaders]
-    ns_set cput $outputheaders "Content-Disposition" "attachment; filename=${report_key}.csv"
-    doc_return 200 "application/csv" $page_body
+switch $output_format {
+    "csv" {
+	# Return file with ouput header set
+	set report_key [string tolower $report_name]
+	regsub -all {[^a-zA-z0-9_]} $report_key "_" report_key
+	regsub -all {_+} $report_key "_" report_key
+	set outputheaders [ns_conn outputheaders]
+	ns_set cput $outputheaders "Content-Disposition" "attachment; filename=${report_key}.csv"
+	doc_return 200 "application/csv" $page_body
+	ad_script_abort
+    }
+    "xml" {
+	# Return plain file
+	doc_return 200 "application/xml" $page_body
+	ad_script_abort
+    }
+    "plain" {
+	ad_return_complaint 1 "Not Defined Yet"
+    }
+    default {
+	# just continue with the page to format output using template
+    }
 }
 
 
