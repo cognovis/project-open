@@ -19,24 +19,44 @@ ad_page_contract {
     report_id:integer,optional
     {output_format "html" }
     {return_url "/intranet-reporting/index"}
+    { user_id:integer 0}
+    { auto_login "" }
 }
 
 
 # ---------------------------------------------------------------
 # Defaults & Security
 
-set current_user_id [ad_maybe_redirect_for_registration]
-set menu_id [db_string menu "select report_menu_id from im_reports where report_id = :report_id" -default 0]
-set read_p [db_string report_perms "
+
+# Allows for auto_login authentication
+if {$user_id != 0} {
+
+    # Auth-Token based authentication
+    set current_user_id $user_id
+    set valid_login [im_valid_auto_login_p -user_id $user_id -auto_login $auto_login]
+    if {!$valid_login} {
+        ad_return_complaint 1 "<b>Wrong Security Token</b>:<br>
+        Your security token is not valid. Please contact the system owner.<br>"
+	ad_script_abort
+    }
+
+} else {
+
+    # OpenACS based authentication
+    set current_user_id [ad_maybe_redirect_for_registration]
+    set menu_id [db_string menu "select report_menu_id from im_reports where report_id = :report_id" -default 0]
+    set read_p [db_string report_perms "
         select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
         from    im_menus m
         where   m.menu_id = :menu_id
-" -default 'f']
-if {![string equal "t" $read_p]} {
-    ad_return_complaint 1 "<li>
+    " -default 'f']
+    if {![string equal "t" $read_p]} {
+	ad_return_complaint 1 "<li>
     [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
-    return
+	ad_script_abort
+    }
 }
+
 
 # ---------------------------------------------------------------
 # Get Report Info
