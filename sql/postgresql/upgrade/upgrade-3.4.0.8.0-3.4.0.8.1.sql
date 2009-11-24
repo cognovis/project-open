@@ -90,7 +90,7 @@ declare
 	v_count		integer;
 begin
 	select count(*) into v_count from user_tab_columns
-	where lower(table_name) = ''im_projects'' and lower(column_name) = ''reportd_days_cache'';
+	where lower(table_name) = ''im_projects'' and lower(column_name) = ''reported_days_cache'';
 	IF v_count > 0 THEN return 1; END IF;
 
 	alter table im_projects add reported_days_cache numeric(12,2) default 0;
