@@ -13,8 +13,8 @@ begin
 	where lower(table_name) = ''im_employees'' and lower(column_name) = ''vacation_balance'';
         if v_count > 0 then return 0; end if;
 
-	alter table im_employees add column vacation_days_per_year integer;
-	alter table im_employees add column vacation_balance integer;
+	alter table im_employees add column vacation_days_per_year numeric(12,2);
+	alter table im_employees add column vacation_balance numeric(12,2);
 
         return 0;
 end;' language 'plpgsql';
