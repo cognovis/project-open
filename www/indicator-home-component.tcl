@@ -73,6 +73,7 @@ list::create \
         -multirow reports \
         -key menu_id \
         -elements $elements_list \
+        -class "table_indicators" \
         -filters {
         	return_url
         }
