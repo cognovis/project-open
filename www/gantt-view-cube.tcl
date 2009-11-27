@@ -33,6 +33,8 @@ ad_page_contract {
 # Project Menu
 # ---------------------------------------------------------------
 
+set show_context_help 0
+
 set main_navbar_label "reporting"
 
 if {[llength $project_id] == 1} {
