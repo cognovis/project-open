@@ -33,7 +33,7 @@ ad_page_contract {
 # Project Menu
 # ---------------------------------------------------------------
 
-set show_context_help 0
+set show_context_help_p 0
 
 set main_navbar_label "reporting"
 
