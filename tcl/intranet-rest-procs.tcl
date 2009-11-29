@@ -14,8 +14,6 @@ ad_library {
 #
 ad_register_proc GET /intranet-rest/* im_rest_call_get
 ad_register_proc POST /intranet-rest/* im_rest_call_post
-# ad_register_proc DELETE /intranet-rest/* im_rest_call_delete
-# ad_register_proc PUT /intranet-rest/* im_rest_call_put
 
 
 # -------------------------------------------------------
@@ -27,12 +25,12 @@ ad_register_proc POST /intranet-rest/* im_rest_call_post
 ad_proc -private im_rest_call_get {} {
     Handler for GET rest calls
 } {
-    # Get the entire URL and decompose into the "factory" 
+    # Get the entire URL and decompose into the "object_type" 
     # and the "object_id" pieces. Splitting the URL on "/"
-    # will result in "{} intranet-rest factory object_id":
+    # will result in "{} intranet-rest object_type object_id":
     set url [ns_conn url]
     set url_pieces [split $url "/"]
-    set factory [lindex $url_pieces 2]
+    set object_type [lindex $url_pieces 2]
     set object_id [lindex $url_pieces 3]
 
     # Get the information about the URL parameters, parse
@@ -87,56 +85,17 @@ ad_proc -private im_rest_call_get {} {
     if {[lsearch $valid_formats $format] < 0} { im_rest_error -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html|json}." }
 
     # Call the main request processing routine
-    if {1}  {
-	im_rest_call \
-	    -method GET \
-	    -format $format \
-	    -user_id 626 \
-	    -factory $factory \
-	    -object_id $object_id \
-	    -query_hash [array get query_hash]
-    }
-
-    # ---------------------------------------------------------
-
-    set header_debug ""
-    foreach var [ad_ns_set_keys $header_vars] {
-        set value [ns_set get $header_vars $var]
-        append header_debug "$var=$value\n"
-    }
-
-    doc_return 200 "text/html" "
-	<h1>im_rest_call_get</h1>
-	<pre>
-	url=$url
-	query=$query
-	query_hash=[array get query_hash]
-	url_pieces=$url_pieces
-	factory=$factory
-	oid=$object_id
-	system_url=$system_url
-	basic_auth_username=$basic_auth_username
-	basic_auth_password=$basic_auth_password
-	---------------------------------------------------
-	$header_debug
-	---------------------------------------------------
-	</pre>
-    "
+    im_rest_call \
+	-method GET \
+	-format $format \
+	-user_id 626 \
+	-object_type $object_type \
+	-object_id $object_id \
+	-query_hash [array get query_hash]
+    
 }
 
 ad_proc -private im_rest_call_post {} {
-    Handler for GET rest calls
-} {
-    return "<?xml version='1.0'?>\n"
-}
-
-ad_proc -private im_rest_call_put {} {
-    Handler for GET rest calls
-} {
-    return "<?xml version='1.0'?>\n"
-}
-
-ad_proc -private im_rest_call_delete {} {
     Handler for GET rest calls
 } {
     return "<?xml version='1.0'?>\n"
@@ -153,32 +112,83 @@ ad_proc -private im_rest_call {
     { -method GET }
     { -format "xml" }
     { -user_id 0 }
-    { -factory "" }
+    { -object_type "" }
+    { -object_id 0 }
+    { -query_hash {} }
+    { -debug 0 }
+} {
+    Handler for all REST calls
+} {
+    ns_log Notice "im_rest_call: method=$method, format=$format, user_id=$user_id, object_type=$object_type, object_id=$object_id, query_hash=$query_hash"
+
+    # -------------------------------------------------------
+    # Check the "object_type" to be a valid object type
+    set valid_object_types [util_memoize [list db_list otypes "select object_type from acs_object_types"]]
+    if {[lsearch $valid_object_types $object_type] < 0} { im_rest_error -http_status 406 -message "Invalid object_type '$object_type'. Valid object types include {im_project|im_company|...}." }
+
+    switch $method  {
+	GET {
+	    # Is there a valid object_id?
+	    if {"" != $object_id && 0 != $object_id} {
+		# Return everything we know about the object
+		im_rest_get_object \
+		    -format $format \
+		    -user_id $user_id \
+		    -object_type $object_type \
+		    -object_id $object_id \
+		    -query_hash $query_hash \
+	    } else {
+		# Return query from the object object_type
+		im_rest_get_object_type \
+		    -format $format \
+		    -user_id $user_id \
+		    -object_type $object_type \
+		    -query_hash $query_hash \
+	    }
+	}
+
+	POST {
+	    # Is there a valid object_id?
+	    if {"" != $object_id && 0 != $object_id} {
+		# Return everything we know about the object
+		im_rest_post_object \
+		    -format $format \
+		    -user_id $user_id \
+		    -object_type $object_type \
+		    -object_id $object_id \
+		    -query_hash $query_hash \
+	    } else {
+		# Return query from the object object_type
+		im_rest_post_object_type \
+		    -format $format \
+		    -user_id $user_id \
+		    -object_type $object_type \
+		    -query_hash $query_hash \
+	    }
+	}
+
+	default {
+	    im_rest_error -http_status 400 -message "Unknown HTTP request '$method'. Valid requests include {GET|POST}."
+	}
+    }
+}
+
+
+
+ad_proc -private im_rest_get_object {
+    { -format "xml" }
+    { -user_id 0 }
+    { -object_type "" }
     { -object_id 0 }
     { -query_hash {} }
     { -debug 0 }
 } {
     Handler for GET rest calls
 } {
-    if {$debug} {
-	doc_return 200 "text/html" "
-	<h1>im_rest_call</h1>
-	<pre>
-	method=$method
-	format=$format
-	user_id=$user_id
-	factory=$factory
-	object_id=$object_id
-	query_hash=$query_hash
-	</pre>
-	"
-    }
+    ns_log Notice "im_rest_get_object: format=$format, user_id=$user_id, object_type=$object_type, object_id=$object_id, query_hash=$query_hash"
 
-    # -------------------------------------------------------
-    # Check the "factory" to be a valid object type
-    set valid_object_types [util_memoize [list db_list otypes "select object_type from acs_object_types"]]
-    if {[lsearch $valid_object_types $factory] < 0} { im_rest_error -http_status 406 -message "Invalid object_type '$factory'. Valid object types include {im_project|im_company|...}." }
-    set object_type $factory
+    # Check that object_id is an integer
+    im_security_alert_check_integer -location "im_rest_get_object" -value $object_id
 
     # -------------------------------------------------------
     # Get the SQL to extract all values from the object
@@ -206,7 +216,6 @@ ad_proc -private im_rest_call {
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
-
     set result ""
     foreach result_key [array names result_hash] {
 	set result_val $result_hash($result_key)
@@ -217,19 +226,10 @@ ad_proc -private im_rest_call {
 			   -object_type $object_type \
 	]
     }
-
 	
     switch $format {
-	html {
-	    doc_return 200 "text/html" "
-		<html><body><table>\n$result</table></body></html>
-	    "
-	}
-	xml {
-	    doc_return 200 "text/xml" "<?xml version='1.0'?>
-		<$object_type>$result</$object_type>
-	    "
-	}
+	html { doc_return 200 "text/html" "<html><body><table>\n$result</table></body></html>" }
+	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?><$object_type>$result</$object_type>" }
 	default {
 	     ad_return_complaint 1 "Invalid format: '$format'"
 	}
@@ -240,6 +240,70 @@ ad_proc -private im_rest_call {
 }
 
 
+ad_proc -private im_rest_get_object_type {
+    { -format "xml" }
+    { -user_id 0 }
+    { -object_type "" }
+    { -object_id 0 }
+    { -query_hash {} }
+    { -debug 0 }
+} {
+    Handler for GET rest calls
+} {
+    ns_log Notice "im_rest_get_object_type: format=$format, user_id=$user_id, object_type=$object_type, object_id=$object_id, query_hash=$query_hash"
+
+    db_1row object_type_info "
+	select	*
+	from	acs_object_types
+	where	object_type = :object_type
+    "
+
+    set base_url "/intranet-rest"
+
+    # -------------------------------------------------------
+    # Select a number of objects from an object_type, based on criteria in the URL.
+    # We join the object's main table with the acs_objects with object_type, because
+    # acs_objects may contain "ruin objects" and the object's main table may contain
+    # entries for sub-types.
+    set sql "
+	select	t.$id_column as object_id,
+		${name_method}(t.$id_column) as object_name
+	from	$table_name t,
+		acs_objects o
+	where	t.$id_column = o.object_id and
+		o.object_type = :object_type
+    "
+    set result ""
+    db_foreach objects $sql {
+	switch $format {
+	    xml {}
+	    html { 
+		append result "<tr>
+			<td>$object_id</td>
+			<td>$object_name</td>
+			<td><a href='$base_url/$object_type/$object_id'>$object_name</a>
+		</tr>" 
+	    }
+	    xml {}
+	}
+    }
+	
+    switch $format {
+	html { doc_return 200 "text/html" "<html><body><table>\n$result</table></body></html>" }
+	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?><$object_type>$result</$object_type>" }
+	default {
+	     ad_return_complaint 1 "Invalid format: '$format'"
+	}
+    }
+  
+    ad_return_complaint 1 "<pre>sql=$sql\nhash=[join [array get result_hash] "\n"]</pre>"
+
+}
+
+
+# --------------------------------------------------------
+# Auxillary functions
+# --------------------------------------------------------
 
 ad_proc -private im_rest_format_line {
     -format:required
@@ -260,6 +324,21 @@ ad_proc -private im_rest_format_line {
 		xml { set value "<a href=\"$base_url/im_company/$value\">$company_name</a>" }
 	    }
 	}
+	office_id - main_office_id {
+	    set office_name [util_memoize [list db_string cname "select office_name from im_offices where office_id=$value" -default $value]]
+	    switch $format {
+		html { set value "<a href=\"$base_url/im_office/$value\">$office_name</a>" }
+		xml { set value "<a href=\"$base_url/im_office/$value\">$office_name</a>" }
+	    }
+	}
+	office_status_id - company_status_id - project_status_id - cost_status_id - cost_type_id {
+	    set category_name [im_category_from_id $value]
+	    switch $format {
+		html { set value "<a href=\"$base_url/im_category/$value\">$category_name</a>" }
+		xml { set value "<a href=\"$base_url/im_category/$value\">$category_name</a>" }
+	    }
+
+	}
     }
 
     switch $format {
@@ -270,9 +349,6 @@ ad_proc -private im_rest_format_line {
     }
 }
 
-
-
-
 ad_proc -public im_rest_error {
     { -http_status 404 }
     { -message "" }
@@ -280,8 +356,25 @@ ad_proc -public im_rest_error {
     Returns a suitable REST error message
 } {
     set url [im_url_with_query]
+
+    switch $http_status {
+	200 { set status_message "OK: Success!" }
+	304 { set status_message "Not Modified: There was no new data to return." }
+	400 { set status_message "Bad Request: The request was invalid. An accompanying error message will explain why." }
+	401 { set status_message "Not Authorized: Authentication credentials were missing or incorrect." }
+	403 { set status_message "Forbidden: The request is understood, but it has been refused.  An accompanying error message will explain why." }
+	404 { set status_message "Not Found: The URI requested is invalid or the resource requested, for example a non-existing project." }
+	406 { set status_message "Not Acceptable: Returned when an invalid format is specified in the request." }
+	500 { set status_message "Internal Server Error: Something is broken.  Please post to the ]po[ .Open Discussions. forum." }
+	502 { set status_message "Bad Gateway: project-open is probably down." }
+	503 { set status_message "Service Unavailable: project-open is up, but overloaded with requests. Try again later." }
+	default { set status_message "Unknown http_status '$http_status'." }
+    }
+
     doc_return $http_status "text/xml" "<?xml version='1.0' encoding='UTF-8'?>
 <error>
+	<http_status>$http_status</http_status>
+	<http_status_message>$status_message</http_status_message>
 	<request>$url</request>
 	<message>$message</message>
 </error>
