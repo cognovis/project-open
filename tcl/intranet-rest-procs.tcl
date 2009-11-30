@@ -46,40 +46,23 @@ ad_proc -private im_rest_call_get {} {
 	}
     }
     
-    # Get URL header and extract interesting variables
-    set header_vars [ns_conn headers]
-
-    # ------------------------------------------------------
-    # Check for different authentication methods
-
-    # Check for token authentication
-    set token_user_id ""
-    set token_token ""
-    if {[info exists query_hash(token_user_id)]} { set token_user_id $query_hash(token_user_id)}
-    if {[info exists query_hash(token_token)]} { set token_token $query_hash(token_token)}
-
-    # Check for HTTP "basic" authorization
-    # Example: Authorization=Basic cHJvam9wOi5mcmFiZXI=
-    set basic_auth [ns_set get $header_vars "Authorization"]
-    set basic_auth_username ""
-    set basic_auth_password ""
-    if {[regexp {^([a-zA-Z_]+)\ (.*)$} $basic_auth match method userpass_base64]} {
-	set basic_auth_userpass [base64::decode $userpass_base64]
-	regexp {^([^\:]+)\:(.*)$} $basic_auth_userpass match basic_auth_username basic_auth_password
-    }
-
-    # Get information about this system
-    set system_url [ad_parameter -package_id [ad_acs_kernel_id] SystemURL ""]
-    # remove any trailing "/"
-    if {[regexp {^(.*)/$} $system_url match body]} { set system_url $body }
+    # Determine the authenticated user_id. 0 means not authenticated.
+    array set auth_hash [im_rest_authenticate -query_hash_values [array get query_hash]]
+    set auth_user_id $auth_hash(user_id)
+    set auth_method $auth_hash(method)
+    if {0 == $auth_user_id} { im_rest_error -http_status 401 -message "Not authenticated" }
 
     # Default format are:
     # - "html" for cookie authentication
     # - "xml" for basic authentication
     # - "xml" for auth_token authentication
-    set format "html"
-    if {$basic_auth_username != ""} { set format "xml" }
-    if {$token_token != ""} { set format "xml" }
+    switch $auth_method {
+	basic { set format "xml" }
+	cookie { set format "html" }
+	token { set format "xml" }
+	default { im_rest_error -http_status 401 -message "Invalid authentication method '$auth_method'." }
+    }
+    # Overwrite default format with explicitely specified format in URL
     if {[info exists query_hash(format)]} { set format $query_hash(format) }
     set valid_formats {xml html csv json}
     if {[lsearch $valid_formats $format] < 0} { im_rest_error -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html|json}." }
@@ -88,7 +71,7 @@ ad_proc -private im_rest_call_get {} {
     im_rest_call \
 	-method GET \
 	-format $format \
-	-user_id 626 \
+	-user_id $auth_user_id \
 	-object_type $object_type \
 	-object_id $object_id \
 	-query_hash [array get query_hash]
@@ -123,8 +106,18 @@ ad_proc -private im_rest_call {
 
     # -------------------------------------------------------
     # Check the "object_type" to be a valid object type
-    set valid_object_types [util_memoize [list db_list otypes "select object_type from acs_object_types"]]
+    set valid_object_types [util_memoize [list db_list otypes "select object_type from acs_object_types union select 'im_category'"]]
     if {[lsearch $valid_object_types $object_type] < 0} { im_rest_error -http_status 406 -message "Invalid object_type '$object_type'. Valid object types include {im_project|im_company|...}." }
+
+    # Special treatment for "im_category", because it's not an object type.
+    if {"im_category" == $object_type} {
+	im_rest_get_im_category \
+	    -format $format \
+	    -user_id $user_id \
+	    -object_type $object_type \
+	    -object_id $object_id \
+	    -query_hash $query_hash
+    }
 
     switch $method  {
 	GET {
@@ -240,6 +233,82 @@ ad_proc -private im_rest_get_object {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+ad_proc -private im_rest_get_im_category {
+    { -format "xml" }
+    { -user_id 0 }
+    { -object_type "" }
+    { -object_id 0 }
+    { -query_hash {} }
+} {
+    Handler for GET rest calls
+} {
+    ns_log Notice "im_rest_get_im_category: format=$format, user_id=$user_id, object_type=$object_type, object_id=$object_id, query_hash=$query_hash"
+
+    # Check that object_id is an integer
+    im_security_alert_check_integer -location "im_rest_get_object" -value $object_id
+
+    # -------------------------------------------------------
+    # Get the SQL to extract all values from the object
+    set sql "select * from im_categories where category_id = :object_id"
+
+    # Execute the sql. As a result we get a result_hash with keys 
+    # corresponding to table columns and values 
+    array set result_hash {}
+    db_with_handle db {
+        set selection [db_exec select $db query $sql 1]
+        while { [db_getrow $db $selection] } {
+            set col_names [ad_ns_set_keys $selection]
+            set this_result [list]
+            for { set i 0 } { $i < [ns_set size $selection] } { incr i } {
+		set var [lindex $col_names $i]
+		set val [ns_set value $selection $i]
+		set result_hash($var) $val
+            }
+        }
+    }
+    db_release_unused_handles
+
+    if {{} == [array get result_hash]} { im_rest_error -http_status 404 -message "Did not find object '$object_type' with the ID '$object_id'." }
+
+    # -------------------------------------------------------
+    # Format the result for one of the supported formats
+    set result ""
+    foreach result_key [array names result_hash] {
+	set result_val $result_hash($result_key)
+	append result [im_rest_format_line \
+			   -column $result_key \
+			   -value $result_val \
+			   -format $format \
+			   -object_type $object_type \
+	]
+    }
+	
+    switch $format {
+	html { doc_return 200 "text/html" "<html><body><table>\n$result</table></body></html>" }
+	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?><$object_type>$result</$object_type>" }
+	default {
+	     ad_return_complaint 1 "Invalid format: '$format'"
+	}
+    }
+  
+    ad_return_complaint 1 "<pre>sql=$sql\nhash=[join [array get result_hash] "\n"]</pre>"
+
+}
+
+
+
 ad_proc -private im_rest_get_object_type {
     { -format "xml" }
     { -user_id 0 }
@@ -276,21 +345,21 @@ ad_proc -private im_rest_get_object_type {
     set result ""
     db_foreach objects $sql {
 	switch $format {
-	    xml {}
+	    xml { append result "<object_id>$object_id</object_id>\n" }
 	    html { 
 		append result "<tr>
 			<td>$object_id</td>
 			<td>$object_name</td>
 			<td><a href='$base_url/$object_type/$object_id'>$object_name</a>
-		</tr>" 
+		</tr>\n" 
 	    }
 	    xml {}
 	}
     }
 	
     switch $format {
-	html { doc_return 200 "text/html" "<html><body><table>\n$result</table></body></html>" }
-	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?><$object_type>$result</$object_type>" }
+	html { doc_return 200 "text/html" "<html>\n<body>\n<table>\n$result</table>\n</body>\n</html>\n" }
+	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" }
 	default {
 	     ad_return_complaint 1 "Invalid format: '$format'"
 	}
@@ -304,6 +373,61 @@ ad_proc -private im_rest_get_object_type {
 # --------------------------------------------------------
 # Auxillary functions
 # --------------------------------------------------------
+
+
+
+ad_proc -private im_rest_authenticate {
+    -query_hash_values:required
+} {
+    Determine the autenticated user
+} {
+    array set query_hash $query_hash_values
+    set header_vars [ns_conn headers]
+
+    # Check for token authentication
+    set token_user_id ""
+    set token_token ""
+    if {[info exists query_hash(user_id)]} { set token_user_id $query_hash(user_id)}
+    if {[info exists query_hash(auth_token)]} { set token_token $query_hash(auth_token)}
+    if {[info exists query_hash(auto_login)]} { set token_token $query_hash(auto_login)}
+
+    # Check for HTTP "basic" authorization
+    # Example: Authorization=Basic cHJvam9wOi5mcmFiZXI=
+    set basic_auth [ns_set get $header_vars "Authorization"]
+    set basic_auth_username ""
+    set basic_auth_password ""
+    if {[regexp {^([a-zA-Z_]+)\ (.*)$} $basic_auth match method userpass_base64]} {
+	set basic_auth_userpass [base64::decode $userpass_base64]
+	regexp {^([^\:]+)\:(.*)$} $basic_auth_userpass match basic_auth_username basic_auth_password
+    }
+    set basic_auth_user_id [db_string userid "select user_id from users where lower(username) = lower(:basic_auth_username)" -default ""]
+    if {"" == $basic_auth_user_id} {
+	set basic_auth_user_id [db_string userid "select party_id from parties where lower(email) = lower(:basic_auth_username)" -default ""]
+    }
+
+    # Check for OpenACS "Cookie" auth
+    set cookie_auth_user_id [ad_get_user_id]
+
+    # Determine authentication method used
+    set auth_method ""
+    if {"" != $cookie_auth_user_id && 0 != $cookie_auth_user_id } { set auth_method "cookie" }
+    if {"" != $token_token} { set auth_method "token" }
+    if {"" != $basic_auth_user_id} { set auth_method "basic" }
+
+    switch $auth_method {
+	cookie { set auth_user_id $cookie_auth_user_id }
+	token { set auth_user_id $token_user_id }
+	basic { set auth_user_id $basic_auth_user_id }
+	default { im_rest_error -http_status 401 -message "No authentication found ('$auth_method')." }
+    }
+
+    if {"" == $auth_user_id} { set auth_user_id 0 }
+    ns_log Notice "im_rest_authenticate: auth_method=$auth_method, auth_user_id=$auth_user_id"
+
+    return [list user_id $auth_user_id method $auth_method]
+}
+
+
 
 ad_proc -private im_rest_format_line {
     -format:required
@@ -331,7 +455,7 @@ ad_proc -private im_rest_format_line {
 		xml { set value "<a href=\"$base_url/im_office/$value\">$office_name</a>" }
 	    }
 	}
-	office_status_id - company_status_id - project_status_id - cost_status_id - cost_type_id {
+	office_status_id - company_status_id - project_status_id - cost_status_id - cost_type_id - default_po_template_id - annual_revenue_id - default_delnote_template_id - default_bill_template_id - default_payment_method_id {
 	    set category_name [im_category_from_id $value]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_category/$value\">$category_name</a>" }
