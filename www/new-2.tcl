@@ -306,56 +306,56 @@ where   tt.trans_id = :freelance_id
 set task_table ""
 if {$aggregate_tasks_p} {
     set sql "
-select
-	t.task_name,
-	t.po_comment,
-	t.task_units,
-	t.project_id,
-	to_char(t.po_billable_units, :number_format) as billable_units,
-	t.po_task_uom_id as task_uom_id,
-	t.po_task_type_id as task_type_id,
-	t.match_x,
-	t.match_rep,
-	t.match100,
-	t.match95,
-	t.match85,
-	t.match75,
-	t.match50,
-	t.match0,
-	im_category_from_id(t.po_task_type_id) as task_type,
-	im_category_from_id(t.po_task_uom_id) as uom_name,
-	im_category_from_id(t.task_status_id) as task_status,
-	im_category_from_id(t.target_language_id) as target_language,
-	im_category_from_id(t.source_language_id) as source_language,
-	p.project_name,
-	p.project_path,
-	p.project_path as project_short_name
-from 
-	($provider_tasks_sql) t,
-	im_projects p
-where 
-	t.project_id = p.project_id
-order by
-	project_id, task_id
+	select
+		t.task_name,
+		t.po_comment,
+		t.task_units,
+		t.project_id,
+		to_char(t.po_billable_units, :number_format) as billable_units,
+		t.po_task_uom_id as task_uom_id,
+		t.po_task_type_id as task_type_id,
+		t.match_x,
+		t.match_rep,
+		t.match100,
+		t.match95,
+		t.match85,
+		t.match75,
+		t.match50,
+		t.match0,
+		im_category_from_id(t.po_task_type_id) as task_type,
+		im_category_from_id(t.po_task_uom_id) as uom_name,
+		im_category_from_id(t.task_status_id) as task_status,
+		im_category_from_id(t.target_language_id) as target_language,
+		im_category_from_id(t.source_language_id) as source_language,
+		p.project_name,
+		p.project_path,
+		p.project_path as project_short_name
+	from 
+		($provider_tasks_sql) t,
+		im_projects p
+	where 
+		t.project_id = p.project_id
+	order by
+		project_id, task_id
     "
 
 
     set task_table "
-<tr> 
-  <td class=rowtitle>[_ intranet-freelance-invoices.Task_Name]</td>
-  <td class=rowtitle>[_ intranet-freelance-invoices.Src]</td>
-  <td class=rowtitle>[_ intranet-freelance-invoices.Trg]</td>
-  <td class=rowtitle>[_ intranet-freelance-invoices.XTr]</td>
-  <td class=rowtitle>[_ intranet-freelance-invoices.Rep]</td>
-  <td class=rowtitle>100 %</td>
-  <td class=rowtitle>95 %</td>
-  <td class=rowtitle>85 %</td>
-  <td class=rowtitle>75 %</td>
-  <td class=rowtitle>50 %</td>
-  <td class=rowtitle>0 %</td>
-  <td class=rowtitle>[_ intranet-freelance-invoices.Units]</td>
-  <td class=rowtitle>[_ intranet-freelance-invoices.Type]</td>
-</tr>
+	<tr> 
+	  <td class=rowtitle>[_ intranet-freelance-invoices.Task_Name]</td>
+	  <td class=rowtitle>[_ intranet-freelance-invoices.Src]</td>
+	  <td class=rowtitle>[_ intranet-freelance-invoices.Trg]</td>
+	  <td class=rowtitle>[_ intranet-freelance-invoices.XTr]</td>
+	  <td class=rowtitle>[_ intranet-freelance-invoices.Rep]</td>
+	  <td class=rowtitle>100 %</td>
+	  <td class=rowtitle>95 %</td>
+	  <td class=rowtitle>85 %</td>
+	  <td class=rowtitle>75 %</td>
+	  <td class=rowtitle>50 %</td>
+	  <td class=rowtitle>0 %</td>
+	  <td class=rowtitle>[_ intranet-freelance-invoices.Units]</td>
+	  <td class=rowtitle>[_ intranet-freelance-invoices.Type]</td>
+	</tr>
     "
 
     ns_log Notice "before rendering the task list $invoice_id"
@@ -474,24 +474,24 @@ group by
     if {$aggregate_tasks_p} {
 
 	set task_sum_sql "
-select
-        trim(both ' ' from to_char(s.task_sum, :number_format)) as task_sum,
-	'' as task_title,
-	s.*,
-        im_category_from_id(s.task_type_id) as task_type,
-        im_category_from_id(s.task_uom_id) as task_uom,
-        im_category_from_id(s.source_language_id) as source_language,
-        im_category_from_id(s.target_language_id) as target_language,
-        p.project_name,
-        p.project_path,     
-        p.project_path as project_short_name,
-        p.company_project_nr as company_project_nr
-from
-        ($task_sum_inner_sql) s
-      LEFT JOIN
-        im_projects p USING (project_id)
-order by
-        p.project_id
+	select
+        	trim(both ' ' from to_char(s.task_sum, :number_format)) as task_sum,
+		'' as task_title,
+		s.*,
+	        im_category_from_id(s.task_type_id) as task_type,
+        	im_category_from_id(s.task_uom_id) as task_uom,
+	        im_category_from_id(s.source_language_id) as source_language,
+        	im_category_from_id(s.target_language_id) as target_language,
+	        p.project_name,
+        	p.project_path,     
+	        p.project_path as project_short_name,
+        	p.company_project_nr as company_project_nr
+	from
+        	($task_sum_inner_sql) s
+	      LEFT JOIN
+        	im_projects p USING (project_id)
+	order by
+        	p.project_id
         "
     } else {
 	
@@ -617,8 +617,8 @@ order by
 	  </td>
         </tr>
 	<input type=hidden name=item_project_id.$ctr value='$project_id'>
-	<input type=hidden name=item_type_id.$ctr value='$task_type_id'>\n"
-
+	<input type=hidden name=item_type_id.$ctr value='$task_type_id'>\n
+	<input type=hidden name='item_material_id.$ctr' value='$im_material_default_translation_material_id'>"
 	incr ctr
 	set task_title ""
     }
