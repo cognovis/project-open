@@ -53,6 +53,9 @@ set number_format "9999990.099"
 set user_locale [lang::user::locale]
 set locale $user_locale
 
+set im_material_default_translation_material_id [im_material_default_translation_material_id]
+
+
 # ---------------------------------------------------------------
 # Compute the t.task_id in (...) lists for trans, edit, proof and other
 # ---------------------------------------------------------------
@@ -392,7 +395,9 @@ order by
 	    $billable_units $uom_name[im_gif help $po_comment]
 	  </nobr></td>
 	  <td>$task_type</td>
-	</tr>"
+	</tr>
+	<input type=hidden name='item_material_id.$ctr' value='$im_material_default_translation_material_id'>
+	"
 	incr ctr
     }
 
