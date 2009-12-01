@@ -285,9 +285,12 @@ ad_proc -private auth::ldap::authentication::Authenticate {
         regsub -all "{$var}" $bind_dn [set $var] bind_dn
     }
 
+    # replace backslash in username
+    regsub -all {\\} $bind_dn {\\} bind_dn
+
     ns_log Notice "auth::ldap::authentication::Authenticate: ldapsearch -n -x -H $uri -D $bind_dn -w xxxxxxxxx"
     set return_code [catch {
-        exec ldapsearch -n -x -H $uri -D $bind_dn -w $password
+        exec ldapsearch -n -x -H $uri -D $bind_dn -w "$password"
     } msg]
 
     # Extract the first line - it contains the error message if there is an issue.
@@ -305,18 +308,38 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 			OR lower(username) = lower(:username)
 	" -default 0]
 
-	set auth_info(auth_status) "ok"
-	set auth_info(info_status) "ok"
-	set auth_info(user_id) $uid
-	set auth_info(auth_message) "Login Successful"
-	set auth_info(account_status) "ok"
-	set auth_info(account_message) ""
+	if {0 != $uid} {
 
-	# Sync the user with the LDAP information, with username as primary key
-	set auth_info_array [auth::ldap::authentication::Sync $username $parameters $authority_id]
-	array set auth_info $auth_info_array
-	return [array get auth_info]
+	    # Return valid credentials
+	    set auth_info(auth_status) "ok"
+	    set auth_info(info_status) "ok"
+	    set auth_info(user_id) $uid
+	    set auth_info(auth_message) "Login Successful"
+	    set auth_info(account_status) "ok"
+	    set auth_info(account_message) ""
+
+	    # Sync the user with the LDAP information, with username as primary key
+	    set auth_info_array [auth::ldap::authentication::Sync $username $parameters $authority_id]
+	    array set auth_info $auth_info_array
+	    return [array get auth_info]
+
+	} else {
+
+	    # Return an error saying the user is invalid
+	    set auth_info(auth_status) "no_account"
+	    set auth_info(user_id) 0
+	    set auth_info(auth_message) "Invalid user: Your authentication was successful, but your user account does not exist in our database"
+	    set auth_info(account_status) "ok"
+	    set auth_info(account_message) ""
+	    return [array get auth_info]
+
+	}
     }
+
+
+#	ad_return_complaint 1 "<pre>$return_code\n$msg\n[array get auth_info] </pre>"
+
+
 
     # ----------------------------------------------------
     # We had an issue with the LDAP
