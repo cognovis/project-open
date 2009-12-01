@@ -12,7 +12,7 @@ begin
         select  count(*) into v_count from im_materials where material_name = ''Translation Task'';
         if v_count = 0 then
 
-	select im_material__new (
+	perform im_material__new (
         	 acs_object_id_seq.nextval::integer, ''im_material'', now(), null, ''0.0.0.0'', null,
 	        ''Translation Task'', ''tr_task'', 9000, 9100, 320, ''Translation Task''
 	);
