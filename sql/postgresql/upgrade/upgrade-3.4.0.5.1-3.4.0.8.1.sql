@@ -1,6 +1,6 @@
---  upgrade-3.4.0.5.0-3.4.0.8.1.sql
+--  upgrade-3.4.0.5.1-3.4.0.8.1.sql
 
-SELECT acs_log__debug('/packages/intranet-translation/sql/postgresql/upgrade/upgrade-3.4.0.5.0-3.4.0.8.1.sql','');
+SELECT acs_log__debug('/packages/intranet-translation/sql/postgresql/upgrade/upgrade-3.4.0.5.1-3.4.0.8.1.sql','');
 
 -- Create a  material for translation tasks
 
