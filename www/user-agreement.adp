@@ -10,11 +10,18 @@
 <h1>@page_title;noquote@</h1>
 
 
-<p>
+
+<table style="background-color: rgb(255, 255, 204);" border="0" cellpadding="5" cellspacing="5"><tbody><tr><td valign="top">
 Before you can use the @po;noquote@ ASUS
-(Automatic Software Update Service) you need to agree 
-to the following terms and conditions of this service.
-</p>
+(Automatic Software Update Service) and the ADMIN tools of ]project-open[ you need to agree 
+to the following terms and conditions of this service. <strong>Please read carefully and make your choice at the bottom of the page in order to continue.</strong>
+<br><br>Please note:<br>
+ASUS is there to make your life easier. Among other advantages you will be able to
+update your system with a simple click on a button.
+Signing up for ASUS is not a mandatory action required to use ]project-open[.
+You will be able to use ]project-open[ without ASUS. Updates can be performed at any time
+for free against our central CVS repository.<br>
+</td></tr></table>
 
 <br>
 <h2>The Automatic Software Update Service</h2>
@@ -56,9 +63,9 @@ The ASUS service performs several actions:
 ASUS is a free service at the moment (October 2009). However, 
 we plan to introduce a yearly fee for ASUS in the future.
 We will notify you about possible changes with three months in 
-advance.
+advance. 
 </p>
-
+<br>
 
 <br>
 <h2>Data Collection</h2>
@@ -85,7 +92,6 @@ system information only. In this case please select
 </p>
 
 
-
 <br>
 <h2>Disable ASUS</h2>
 <p>
@@ -94,7 +100,6 @@ so please go now to Admin (at the left navigation bar) -&gt;
 Portlet Components, select Package="intranet-security-update-client"
 and set the listed component to "Not Enabled".
 </p>
-
 
 
 <br>
