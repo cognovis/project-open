@@ -3,16 +3,6 @@
 # Copyright (C) 2009 ]project-open[
 #
 
-ad_page_contract {
-    Home page for REST service, when accessing from the browser.
-    The page shows a link to the documentation Wiki and a status
-    of CRUD for every object type.
-    
-    @author frank.bergmann@project-open.com
-} {
-
-}
-
 # ---------------------------------------------------------
 # Parameters passed aside of page_contract
 # from intranet-rest-procs.tcl:
@@ -28,23 +18,37 @@ if {![info exists format]} { set format "html" }
 
 set rest_url "[im_rest_system_url]/intranet-rest"
 
-if {0 != $user_id} {
-    # Got a user already authenticated by Basic HTTP auth or auto-login
+
+if {0 == $user_id} {
+    # User not autenticated
     switch $format {
-	xml {
-	    # Return the list of object types
-	    set otype_sql "select object_type from acs_object_types"
-	    set otype_xml ""
-	    db_foreach otypes $otype_sql { 
-		append otype_xml "<object_type href=\"[export_vars -base $rest_url/$object_type]\">$object_type</object_type>\n"
-	    }
-	    doc_return 200 "text/xml" "<?xml version='1.0' encoding='UTF-8'?>\n<object_types>\n$otype_xml</object_types>\n"
+	html {
+	    ad_return_complaint 1 "Not authorized"
+	    ad_script_abort
 	}
-	default {
-	    # Just continue with the HTML stuff below
+	xml {
+	    im_rest_error -http_status 401 -message "Not authenticated"
+	    return
 	}
     }
 }
+
+# Got a user already authenticated by Basic HTTP auth or auto-login
+switch $format {
+    xml {
+	# Return the list of object types
+	set otype_sql "select object_type from acs_object_types"
+	set otype_xml ""
+	db_foreach otypes $otype_sql { 
+	    append otype_xml "<object_type href=\"[export_vars -base $rest_url/$object_type]\">$object_type</object_type>\n"
+	}
+	doc_return 200 "text/xml" "<?xml version='1.0' encoding='UTF-8'?>\n<object_types>\n$otype_xml</object_types>\n"
+    }
+    default {
+	# Just continue with the HTML stuff below
+    }
+}
+
 
 # ---------------------------------------------------------
 # Continue as a normal HTML page
@@ -321,7 +325,7 @@ db_multirow -extend $multirow_extend object_types select_object_types "
 	order by
 		ot.object_type
 " {
-    set object_type_url "/intranet-rest/$object_type/"
+    set object_type_url "/intranet-rest/$object_type?format=html"
     set crud_status "R"
     if {[info exists crud_hash($object_type)]} { set crud_status $crud_hash($object_type) }
 

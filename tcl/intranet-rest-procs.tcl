@@ -395,7 +395,7 @@ ad_proc -private im_rest_get_object_type {
 		append result "<tr>
 			<td>$object_id</td>
 			<td>$object_name</td>
-			<td><a href=\"$url\">$object_name</a>
+			<td><a href=\"$url?format=html\">$object_name</a>
 		</tr>\n" 
 	    }
 	    xml {}
@@ -500,22 +500,22 @@ ad_proc -private im_rest_format_line {
 	company_id - customer_id - provider_id {
 	    set company_name [util_memoize [list db_string cname "select company_name from im_companies where company_id=$value" -default $value]]
 	    switch $format {
-		html { set value "<a href=\"$base_url/im_company/$value\">$company_name</a>" }
+		html { set value "<a href=\"$base_url/im_company/$value?format=html\">$company_name</a>" }
 		xml { set href "$base_url/im_company/$value" }
 	    }
 	}
 	office_id - main_office_id {
 	    set office_name [util_memoize [list db_string cname "select office_name from im_offices where office_id=$value" -default $value]]
 	    switch $format {
-		html { set value "<a href=\"$base_url/im_office/$value\">$office_name</a>" }
-		xml { set value "<a href=\"$base_url/im_office/$value\">$office_name</a>" }
+		html { set value "<a href=\"$base_url/im_office/$value?format=html\">$office_name</a>" }
+		xml { set href "$base_url/im_office/$value" }
 	    }
 	}
 	office_status_id - company_status_id - project_status_id - cost_status_id - cost_type_id - default_po_template_id - annual_revenue_id - default_delnote_template_id - default_bill_template_id - default_payment_method_id {
 	    set category_name [im_category_from_id $value]
 	    switch $format {
-		html { set value "<a href=\"$base_url/im_category/$value\">$category_name</a>" }
-		xml { set value "<a href=\"$base_url/im_category/$value\">$category_name</a>" }
+		html { set value "<a href=\"$base_url/im_category/$value?format=html\">$category_name</a>" }
+		xml { set href "$base_url/im_category/$value" }
 	    }
 
 	}
