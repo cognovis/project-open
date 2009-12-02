@@ -228,8 +228,7 @@ ad_proc -private im_rest_get_object {
 
     # -------------------------------------------------------
     # Get the SQL to extract all values from the object
-    set sql [util_memoize [list im_audit_object_type_sql -object_type $object_type]]
-    #set sql [im_rest_object_type_sql -object_type $object_type]
+    set sql [util_memoize [list im_rest_object_type_sql -object_type $object_type]]
 
     # Execute the sql. As a result we get a result_hash with keys corresponding
     # to table columns and values 
