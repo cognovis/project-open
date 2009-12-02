@@ -89,6 +89,13 @@ authentication mechanisms:
 	machine-machine communication...
 </ul>
 
+<br>
+<h1>XML and HTML Output Formats</h1>
+<p>
+Every page in the REST API understands the optional parameter "&amp;format=&lt;format&gt;"
+where format can be one of {html|xml}. The default format for cookie authentication is 
+html, while the default for Basic HTTP and auto-login authentication is xml.
+
 </td>
 </tr>
 </table>

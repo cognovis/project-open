@@ -64,8 +64,8 @@ ad_proc -private im_rest_call_get {} {
     }
     # Overwrite default format with explicitely specified format in URL
     if {[info exists query_hash(format)]} { set format $query_hash(format) }
-    set valid_formats {xml html csv json}
-    if {[lsearch $valid_formats $format] < 0} { return [im_rest_error -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html|json}."] }
+    set valid_formats {xml html}
+    if {[lsearch $valid_formats $format] < 0} { return [im_rest_error -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html}."] }
 
     # Call the main request processing routine
     im_rest_call \
@@ -352,13 +352,26 @@ ad_proc -private im_rest_get_object_type {
 } {
     ns_log Notice "im_rest_get_object_type: format=$format, user_id=$user_id, object_type=$object_type, object_id=$object_id, query_hash=$query_hash"
 
+    switch $object_type {
+	im_company - im_project {
+
+	}
+	default {
+	    # Generic permission check using im_rest_user_id
+	    set object_type_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$object_type'" -default 0]]
+	    if {![im_object_permission -object_id $object_type_id -user_id $user_id -privilege "read"]} {
+		return [im_rest_error -http_status 401 -message "No permissions to read object_type '$object_type'"] 
+	    }
+	}
+    }
+
     db_1row object_type_info "
 	select	*
 	from	acs_object_types
 	where	object_type = :object_type
     "
 
-    set base_url "/intranet-rest"
+    set base_url "[im_rest_system_url]/intranet-rest"
 
     # -------------------------------------------------------
     # Select a number of objects from an object_type, based on criteria in the URL.
@@ -375,13 +388,14 @@ ad_proc -private im_rest_get_object_type {
     "
     set result ""
     db_foreach objects $sql {
+	set url "$base_url/$object_type/$object_id"
 	switch $format {
-	    xml { append result "<object_id>$object_id</object_id>\n" }
+	    xml { append result "<object_id href=\"$url\">$object_id</object_id>\n" }
 	    html { 
 		append result "<tr>
 			<td>$object_id</td>
 			<td>$object_name</td>
-			<td><a href='$base_url/$object_type/$object_id'>$object_name</a>
+			<td><a href=\"$url\">$object_name</a>
 		</tr>\n" 
 	    }
 	    xml {}
@@ -460,6 +474,16 @@ ad_proc -private im_rest_authenticate {
 
 
 
+ad_proc -private im_rest_system_url { } {
+    Returns a the system's "official" URL without trailing slash
+    suitable to prefix all hrefs used for the XML format.
+} {
+    set system_url [ad_parameter -package_id [ad_acs_kernel_id] SystemURL "" ""]
+    if {[regexp {^(.*)/$} $system_url match system_url_without]} { set system_url $system_url_without }
+    return $system_url
+}
+
+
 ad_proc -private im_rest_format_line {
     -format:required
     -object_type:required
@@ -468,15 +492,16 @@ ad_proc -private im_rest_format_line {
 } {
     Format a single line according to format and return the result.
 } {
-    set base_url "/intranet-rest"
+    set base_url "[im_rest_system_url]/intranet-rest"
 
     # Transformation without knowing the object_type
+    set href ""
     switch $column {
 	company_id - customer_id - provider_id {
 	    set company_name [util_memoize [list db_string cname "select company_name from im_companies where company_id=$value" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_company/$value\">$company_name</a>" }
-		xml { set value "<a href=\"$base_url/im_company/$value\">$company_name</a>" }
+		xml { set href "$base_url/im_company/$value" }
 	    }
 	}
 	office_id - main_office_id {
@@ -498,9 +523,13 @@ ad_proc -private im_rest_format_line {
 
     switch $format {
 	html { return "<tr><td>$column</td><td>$value</td></tr>\n" }
-	xml { return "<$column>$value</$column>\n" }
-	json { return "<$column>$value</$column>\n" }
-	csv { return "$column=$value\n" }
+	xml { 
+	    if {"" != $href} {
+		return "<$column href=\"$href\">$value</$column>\n" 
+	    } else {
+		return "<$column>$value</$column>\n" 
+	    }
+	}
     }
 }
 
