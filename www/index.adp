@@ -50,6 +50,45 @@ link to the &#93;project-open&#91; Documentation Wiki.
 </ul>
 </p>
 
+<br>
+<h1>Authentication</h1>
+
+<p>
+Authentication of the REST API is managed per user, applying the same 
+access right as with the Web GUI. A user will only see the objects he or
+she would also see via the Web GUI. 
+This mechanism includes the case of external users including 
+customers and providers to access to ]po[.
+</p>
+
+<p>
+The &#93;project-open&#91; REST API supports the following 
+authentication mechanisms:
+</p>
+<ul>
+<li>
+	<b>Basic HTTP Authentication</b>:<br>
+	&#93;po&#91; accepts standard username/password combinations.<br>
+	Please note that the username is <i>not</i> the user's email.
+	You can find out about a user's username either in the user's
+	home page or in the cc_users.username field
+	(you need to set the parameter EnableUsersUsernameP to 1).
+<li>
+	<b>Auto-Login Token</b>:<br>
+	An auto-login token is a hashed password.
+	To determine a user's auto-login token please visit the URL
+	<a href="/intranet-rest/auto-login">/intranet-rest/auto-login</a>.
+	This page will return an auto-login token for a user who has
+	authenticated via Cookie or Basic Auth.
+<li>
+	<b>Cookie Authentication</b>:<br>
+	The standard OpenACS authentication allows you to explore the
+	REST API interactively in HTML format. The fact that you see
+	this page right now is due to cookie authentication.
+	However, cookie authentication is not very useful for
+	machine-machine communication...
+</ul>
+
 </td>
 </tr>
 </table>

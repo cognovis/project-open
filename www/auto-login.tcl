@@ -23,14 +23,34 @@ ad_page_contract {
 #    [list query_hash $query_hash] \
 
 if {![info exists user_id]} { set user_id 0 }
+if {![info exists format]} { set format "html" }
+
 set auto_login [im_generate_auto_login -user_id $user_id]
 
 set username ""
-
+set name ""
 db_0or1row user_info "
 	select	*,
 		im_name_from_user_id(user_id) as name
 	from	cc_users
 	where	user_id = :user_id
 "
+
+switch $format {
+    xml - rest {
+	doc_return 200 "text/xml" "<?xml version='1.0' encoding='UTF-8'?>
+	<auto_login>
+		<user_id>$user_id</user_id>
+		<user_name>$name</user_name>
+		<username>$username</username>
+		<token>$auto_login</token>
+	</auto_login>
+        "
+    }
+    default {
+	# just continue with the HTML stuff below,
+	# returning the result as text/html
+    }
+}
+
 

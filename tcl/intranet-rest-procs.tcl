@@ -50,7 +50,7 @@ ad_proc -private im_rest_call_get {} {
     array set auth_hash [im_rest_authenticate -query_hash_values [array get query_hash]]
     set auth_user_id $auth_hash(user_id)
     set auth_method $auth_hash(method)
-    if {0 == $auth_user_id} { im_rest_error -http_status 401 -message "Not authenticated" }
+    if {0 == $auth_user_id} { return [im_rest_error -http_status 401 -message "Not authenticated"] }
 
     # Default format are:
     # - "html" for cookie authentication
@@ -60,12 +60,12 @@ ad_proc -private im_rest_call_get {} {
 	basic { set format "xml" }
 	cookie { set format "html" }
 	token { set format "xml" }
-	default { im_rest_error -http_status 401 -message "Invalid authentication method '$auth_method'." }
+	default { return [im_rest_error -http_status 401 -message "Invalid authentication method '$auth_method'."] }
     }
     # Overwrite default format with explicitely specified format in URL
     if {[info exists query_hash(format)]} { set format $query_hash(format) }
     set valid_formats {xml html csv json}
-    if {[lsearch $valid_formats $format] < 0} { im_rest_error -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html|json}." }
+    if {[lsearch $valid_formats $format] < 0} { return [im_rest_error -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html|json}."] }
 
     # Call the main request processing routine
     im_rest_call \
@@ -105,18 +105,34 @@ ad_proc -private im_rest_call {
     ns_log Notice "im_rest_call: method=$method, format=$format, user_id=$user_id, object_type=$object_type, object_id=$object_id, query_hash=$query_hash"
 
     # -------------------------------------------------------
+    # Special treatment for /intranet-rest/ and /intranet/rest/index URLs
+    if {"" == $object_type} { set object_type "index" }
+    set pages {"" index auto-login}
+    if {[lsearch $pages $object_type] >= 0} {
+	return [im_rest_page \
+		    -format $format \
+		    -user_id $user_id \
+		    -object_type $object_type \
+		    -object_id $object_id \
+		    -query_hash $query_hash \
+		   ]
+    }
+
+    # -------------------------------------------------------
     # Check the "object_type" to be a valid object type
     set valid_object_types [util_memoize [list db_list otypes "select object_type from acs_object_types union select 'im_category'"]]
-    if {[lsearch $valid_object_types $object_type] < 0} { im_rest_error -http_status 406 -message "Invalid object_type '$object_type'. Valid object types include {im_project|im_company|...}." }
+    if {[lsearch $valid_object_types $object_type] < 0} { return [im_rest_error -http_status 406 -message "Invalid object_type '$object_type'. Valid object types include {im_project|im_company|...}."] }
 
+    # -------------------------------------------------------
     # Special treatment for "im_category", because it's not an object type.
     if {"im_category" == $object_type} {
-	im_rest_get_im_category \
-	    -format $format \
-	    -user_id $user_id \
-	    -object_type $object_type \
-	    -object_id $object_id \
-	    -query_hash $query_hash
+	return [im_rest_get_im_category \
+		    -format $format \
+		    -user_id $user_id \
+		    -object_type $object_type \
+		    -object_id $object_id \
+		    -query_hash $query_hash \
+		   ]
     }
 
     switch $method  {
@@ -124,19 +140,21 @@ ad_proc -private im_rest_call {
 	    # Is there a valid object_id?
 	    if {"" != $object_id && 0 != $object_id} {
 		# Return everything we know about the object
-		im_rest_get_object \
-		    -format $format \
-		    -user_id $user_id \
-		    -object_type $object_type \
-		    -object_id $object_id \
-		    -query_hash $query_hash \
+		return [im_rest_get_object \
+			    -format $format \
+			    -user_id $user_id \
+			    -object_type $object_type \
+			    -object_id $object_id \
+			    -query_hash $query_hash \
+			    ]
 	    } else {
 		# Return query from the object object_type
-		im_rest_get_object_type \
-		    -format $format \
-		    -user_id $user_id \
-		    -object_type $object_type \
-		    -query_hash $query_hash \
+		return [im_rest_get_object_type \
+			    -format $format \
+			    -user_id $user_id \
+			    -object_type $object_type \
+			    -query_hash $query_hash \
+			    ]
 	    }
 	}
 
@@ -144,29 +162,54 @@ ad_proc -private im_rest_call {
 	    # Is there a valid object_id?
 	    if {"" != $object_id && 0 != $object_id} {
 		# Return everything we know about the object
-		im_rest_post_object \
+		return [im_rest_post_object \
 		    -format $format \
 		    -user_id $user_id \
 		    -object_type $object_type \
 		    -object_id $object_id \
 		    -query_hash $query_hash \
+			    ]
 	    } else {
 		# Return query from the object object_type
-		im_rest_post_object_type \
-		    -format $format \
-		    -user_id $user_id \
-		    -object_type $object_type \
-		    -query_hash $query_hash \
+		return [im_rest_post_object_type \
+			    -format $format \
+			    -user_id $user_id \
+			    -object_type $object_type \
+			    -query_hash $query_hash \
+			    ]
 	    }
 	}
 
 	default {
-	    im_rest_error -http_status 400 -message "Unknown HTTP request '$method'. Valid requests include {GET|POST}."
+	    return [im_rest_error -http_status 400 -message "Unknown HTTP request '$method'. Valid requests include {GET|POST}."]
 	}
     }
 }
 
 
+ad_proc -private im_rest_page {
+    { -object_type "index" }
+    { -format "xml" }
+    { -user_id 0 }
+    { -object_id 0 }
+    { -query_hash {} }
+    { -debug 0 }
+} {
+    The user has requested /intranet-rest/ or /intranet-rest/index
+} {
+    ns_log Notice "im_rest_index_page: object_type=$object_type, query_hash=$query_hash"
+
+    set params [list \
+                    [list object_type $object_type] \
+                    [list format $format] \
+                    [list user_id $user_id] \
+                    [list object_id $object_id] \
+                    [list query_hash $query_hash] \
+    ]
+
+    set result [ad_parse_template -params $params "/packages/intranet-rest/www/$object_type"]
+    doc_return 200 "text/html" $result
+}
 
 ad_proc -private im_rest_get_object {
     { -format "xml" }
@@ -205,7 +248,7 @@ ad_proc -private im_rest_get_object {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { im_rest_error -http_status 404 -message "Did not find object '$object_type' with the ID '$object_id'." }
+    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Did not find object '$object_type' with the ID '$object_id'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -231,18 +274,6 @@ ad_proc -private im_rest_get_object {
     ad_return_complaint 1 "<pre>sql=$sql\nhash=[join [array get result_hash] "\n"]</pre>"
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ad_proc -private im_rest_get_im_category {
@@ -280,7 +311,7 @@ ad_proc -private im_rest_get_im_category {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { im_rest_error -http_status 404 -message "Did not find object '$object_type' with the ID '$object_id'." }
+    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Did not find object '$object_type' with the ID '$object_id'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -418,7 +449,7 @@ ad_proc -private im_rest_authenticate {
 	cookie { set auth_user_id $cookie_auth_user_id }
 	token { set auth_user_id $token_user_id }
 	basic { set auth_user_id $basic_auth_user_id }
-	default { im_rest_error -http_status 401 -message "No authentication found ('$auth_method')." }
+	default { return [im_rest_error -http_status 401 -message "No authentication found ('$auth_method')."] }
     }
 
     if {"" == $auth_user_id} { set auth_user_id 0 }
@@ -479,6 +510,7 @@ ad_proc -public im_rest_error {
 } {
     Returns a suitable REST error message
 } {
+    ns_log Notice "im_rest_error: http_status=$http_status, message=$message"
     set url [im_url_with_query]
 
     switch $http_status {
@@ -496,12 +528,12 @@ ad_proc -public im_rest_error {
     }
 
     doc_return $http_status "text/xml" "<?xml version='1.0' encoding='UTF-8'?>
-<error>
-	<http_status>$http_status</http_status>
-	<http_status_message>$status_message</http_status_message>
-	<request>$url</request>
-	<message>$message</message>
-</error>
-"
-    ad_script_abort
+	<error>
+		<http_status>$http_status</http_status>
+		<http_status_message>$status_message</http_status_message>
+		<request>$url</request>
+		<message>$message</message>
+	</error>
+    "
+    return
 }
