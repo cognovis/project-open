@@ -396,7 +396,6 @@ if {$aggregate_tasks_p} {
 	  </nobr></td>
 	  <td>$task_type</td>
 	</tr>
-	<input type=hidden name='item_material_id.$ctr' value='$im_material_default_translation_material_id'>
 	"
 	incr ctr
     }
@@ -618,7 +617,7 @@ order by
         </tr>
 	<input type=hidden name=item_project_id.$ctr value='$project_id'>
 	<input type=hidden name=item_type_id.$ctr value='$task_type_id'>\n
-	<input type=hidden name='item_material_id.$ctr' value='$im_material_default_translation_material_id'>"
+        <input type=hidden name='item_material_id.$ctr' value='$im_material_default_translation_material_id'>"
 	incr ctr
 	set task_title ""
     }
