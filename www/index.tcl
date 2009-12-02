@@ -13,16 +13,87 @@ ad_page_contract {
 
 }
 
-set user_id [ad_maybe_redirect_for_registration]
+# ---------------------------------------------------------
+# Parameters passed aside of page_contract
+# from intranet-rest-procs.tcl:
+#
+#    [list object_type $object_type] \
+#    [list format $format] \
+#    [list user_id $user_id] \
+#    [list object_id $object_id] \
+#    [list query_hash $query_hash] \
+
+if {![info exists user_id]} { set user_id 0 }
+if {![info exists format]} { set format "html" }
+
+set rest_url "[im_rest_system_url]/intranet-rest"
+
+if {0 != $user_id} {
+    # Got a user already authenticated by Basic HTTP auth or auto-login
+    switch $format {
+	xml {
+	    # Return the list of object types
+	    set otype_sql "select object_type from acs_object_types"
+	    set otype_xml ""
+	    db_foreach otypes $otype_sql { 
+		append otype_xml "<object_type href=\"[export_vars -base $rest_url/$object_type]\">$object_type</object_type>\n"
+	    }
+	    doc_return 200 "text/xml" "<?xml version='1.0' encoding='UTF-8'?>\n<object_types>\n$otype_xml</object_types>\n"
+	}
+	default {
+	    # Just continue with the HTML stuff below
+	}
+    }
+}
+
+# ---------------------------------------------------------
+# Continue as a normal HTML page
+# ---------------------------------------------------------
+
+set current_user_id [ad_maybe_redirect_for_registration]
 set page_title [lang::message::lookup "" intranet-rest.REST_API_Overview "REST API Overview"]
 set context_bar [im_context_bar $page_title]
+
+set toggle_url "/intranet/admin/toggle"
+set return_url [im_url_with_query]
+
+# ---------------------------------------------------------
+# Make sure we've got a REST object_type object for every
+# acs_object_types.object_type
+# ---------------------------------------------------------
+
+set missing_object_types [db_list missing_object_types "
+	select	object_type
+	from	acs_object_types
+	where	object_type not in (
+		select	object_type
+		from	im_rest_object_types
+	)
+"]
+foreach object_type $missing_object_types {
+
+    db_string insert_rest_object_type "
+	select	im_rest_object_type__new(
+			null,
+			'im_rest_object_type',
+			now(),
+			:current_user_id,
+			'[ad_conn peeraddr]',
+			null,
+
+			:object_type,
+			null,
+			null
+	)
+    "
+}
 
 
 # ---------------------------------------------------------
 # What operations are currently implemented on the REST API?
 # ---------------------------------------------------------
 
-array set crud_hash {
+array set xxx_crud_hash {
 	group R
 	im_biz_object_member CRUD
 	im_company CRUD
@@ -102,8 +173,72 @@ array set wiki_hash {
 
 
 # ---------------------------------------------------------
-# 
+# Calculate the columns of the list
 # ---------------------------------------------------------
+
+set list_columns {
+        object_type {
+            display_col object_type
+            label "Object Type"
+            link_url_eval $object_type_url
+        }        
+        pretty_name {
+            display_col pretty_name
+            label "Pretty Name"
+        }
+    }
+
+
+set profile_sql {
+	select DISTINCT
+	        g.group_name,
+	        g.group_id,
+	        p.profile_gif
+	from
+	        acs_objects o,
+	        groups g,
+	        im_profiles p
+	where
+	        g.group_id = o.object_id
+	        and g.group_id = p.profile_id
+	        and o.object_type = 'im_profile'
+}
+
+set multirow_select ""
+set multirow_extend {object_type_url crud_status object_wiki_url wiki}
+set group_ids [list]
+
+db_foreach profiles $profile_sql {
+    regsub -all {[^a-zA-Z0-9]} [string tolower $group_name] "_" group_name_key
+    lappend list_columns p$group_id
+    lappend list_columns [list \
+			label [im_gif $profile_gif $group_name $group_name] \
+			display_template "@object_types.p$group_id;noquote@" \
+    ]
+
+    append multirow_select "\t\t, im_object_permission_p(rot.object_type_id, $group_id, 'read') as p${group_id}_read_p\n"
+    append multirow_select "\t\t, im_object_permission_p(rot.object_type_id, $group_id, 'write') as p${group_id}_write_p\n"
+
+    lappend multirow_extend "p$group_id"
+    lappend group_ids $group_id
+}
+
+
+lappend list_columns crud_status
+lappend list_columns {
+            label "CRUD<br>Status"
+	}
+lappend list_columns wiki
+lappend list_columns {
+            label "Wiki"
+            link_url_eval $object_wiki_url
+	}
+
+
+# ---------------------------------------------------------
+# Create the list and fill it with data
+# ---------------------------------------------------------
+
 
 list::create \
     -name object_types \
@@ -115,31 +250,19 @@ list::create \
     -class "list" \
     -main_class "list" \
     -sub_class "narrow" \
-    -elements {
-        object_type {
-            display_col object_type
-            label "Object Type"
-            link_url_eval $object_type_url
-        }        
-        pretty_name {
-            display_col pretty_name
-            label "Pretty Name"
-        }
-	crud_status {
-            label "CRUD<br>Status"
-	}
-	wiki {
-            label "Wiki"
-            link_url_eval $object_wiki_url
-	}
-    }
+    -elements $list_columns
 
 
-db_multirow -extend { object_type_url crud_status object_wiki_url wiki} object_types select_object_types {
-	select	object_type,
-    		pretty_name
-	from	acs_object_types
-	where	object_type not in (
+db_multirow -extend $multirow_extend object_types select_object_types "
+	select	ot.object_type,
+		ot.pretty_name,
+		rot.object_type_id
+		$multirow_select
+	from	acs_object_types ot,
+		im_rest_object_types rot
+	where
+		ot.object_type = rot.object_type and
+		ot.object_type not in (
 			'acs_activity',
 			'acs_event',
 			'acs_mail_body',
@@ -194,10 +317,10 @@ db_multirow -extend { object_type_url crud_status object_wiki_url wiki} object_t
 			'workflow_lite'
 		)
 		-- exclude object types created for workflows
-		and object_type not like '%wf'
+		and ot.object_type not like '%wf'
 	order by
-		object_type
-} {
+		ot.object_type
+" {
     set object_type_url "/intranet-rest/$object_type/"
     set crud_status "R"
     if {[info exists crud_hash($object_type)]} { set crud_status $crud_hash($object_type) }
@@ -208,6 +331,33 @@ db_multirow -extend { object_type_url crud_status object_wiki_url wiki} object_t
     if {![info exists wiki_hash($wiki_key)]} {
 	set wiki ""
 	set object_wiki_url ""
+    }
+
+    # Calculate the read/write URLS
+    foreach gid $group_ids {
+	set read_p [set "p${gid}_read_p"]
+	set write_p [set "p${gid}_write_p"]
+        set object_id $object_type_id
+	set horiz_group_id $gid
+
+        set action "add_readable"
+        set letter "r"
+        if {$read_p == "t"} {
+            set action "remove_readable"
+            set letter "<b>R</b>"
+        }
+        set read "<A href=\"[export_vars -base $toggle_url {horiz_group_id object_id action return_url}]\">$letter</A>"
+
+        set action "add_writable"
+        set letter "w"
+        if {$write_p == "t"} {
+            set action "remove_writable"
+            set letter "<b>W</b>"
+        }
+        set write "<A href=\"[export_vars -base $toggle_url {horiz_group_id object_id action return_url}]\">$letter</A>"
+
+	ns_log Notice "intranet-rest/index: p$gid=gid=$gid, object_id=$object_type_id"
+	set p$gid "$read$write"
     }
 }
 
