@@ -6,6 +6,9 @@ SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.
 update im_categories set enabled_p = 'f' where category_id = 40;
 
 
+-- Beautify object type names
+update acs_object_types set pretty_name = 'Employee Rel' where object_type = 'im_company_employee_rel';
+update acs_object_types set pretty_name = 'Key Account Rel' where object_type = 'im_key_account_rel';
 
 
 
