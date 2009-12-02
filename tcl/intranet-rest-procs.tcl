@@ -229,7 +229,7 @@ ad_proc -private im_rest_get_object {
     # -------------------------------------------------------
     # Get the SQL to extract all values from the object
     set sql [util_memoize [list im_audit_object_type_sql -object_type $object_type]]
-    #set sql [im_audit_object_type_sql -object_type $object_type]
+    #set sql [im_rest_object_type_sql -object_type $object_type]
 
     # Execute the sql. As a result we get a result_hash with keys corresponding
     # to table columns and values 
@@ -532,6 +532,55 @@ ad_proc -private im_rest_format_line {
 	}
     }
 }
+
+
+
+# ----------------------------------------------------------------------
+# 
+# ----------------------------------------------------------------------
+
+ad_proc -public im_rest_object_type_sql { 
+    -object_type:required
+} {
+    Calculates the SQL statement to extract the value for an object
+    of the given object_type. The SQL will contains a ":object_id"
+    colon-variables, so the variable "object_id" must be defined in 
+    the context where this statement is to be executed.
+} {
+    # ---------------------------------------------------------------
+    # Construct a SQL that pulls out all information about one object
+    set tables_sql "
+	select	table_name,
+		id_column
+	from	acs_object_types
+	where	object_type = :object_type
+UNION
+	select	table_name,
+		id_column
+	from	acs_object_type_tables
+	where	object_type = :object_type
+    "
+
+    set letters {a b c d e f g h i j k l m n o p q r s t u v w x y z}
+    set from {}
+    set wheres { "1=1" }
+    set cnt 0
+    db_foreach tables $tables_sql {
+	set letter [lindex $letters $cnt]
+	lappend froms "$table_name $letter"
+	lappend wheres "$letter.$id_column = :object_id"
+	incr cnt
+    }
+
+    set sql "
+	select	*
+	from	[join $froms ", "]
+	where	[join $wheres " and "]
+    "
+    return $sql
+}
+
+
 
 ad_proc -public im_rest_error {
     { -http_status 404 }
