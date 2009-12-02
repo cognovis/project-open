@@ -129,7 +129,7 @@ create or replace function im_rest_object_type__name(integer)
 returns varchar as '
 DECLARE
 	p_object_type_id		alias for $1;
-	v_object_type_id	varchar;
+	v_name				varchar;
 BEGIN
 	select	object_type
 	into	v_name
