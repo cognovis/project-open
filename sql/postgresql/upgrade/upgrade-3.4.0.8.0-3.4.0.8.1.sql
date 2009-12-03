@@ -11,6 +11,36 @@ update acs_object_types set pretty_name = 'Employee Rel' where object_type = 'im
 update acs_object_types set pretty_name = 'Key Account Rel' where object_type = 'im_key_account_rel';
 
 
+-- Add name method to objects
+update acs_object_types set name_method = 'im_name_from_user_id' where object_type = 'user';
+update acs_object_types set name_method = 'im_name_from_user_id' where object_type = 'im_gantt_person';
+update acs_object_types set name_method = 'im_cost__name' where object_type = 'im_investment';
+
+
+-- Fix object metadata
+update acs_object_types set id_column = 'employee_rel_id' where object_type = 'im_company_employee_rel';
+update acs_object_types set id_column = 'topic_id' where object_type = 'im_forum_topic';
+update acs_object_types set id_column = 'file_id' where object_type = 'im_fs_file';
+
+
+
+
+-- fix im_forum_topic__name
+create or replace function im_forum_topic__name(integer)
+returns varchar as '
+DECLARE
+        p_topic_id               alias for $1;
+        v_name                  varchar;
+BEGIN
+        select  substring(topic_name for 30)
+        into    v_name
+        from    im_forum_topics
+        where   topic_id = p_topic_id;
+
+        return v_name;
+end;' language 'plpgsql';
+
+
 
 -----------------------------------------------------------
 -- Store information about the open/closed status of 
