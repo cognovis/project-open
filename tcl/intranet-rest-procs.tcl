@@ -263,7 +263,14 @@ ad_proc -private im_rest_get_object {
     }
 	
     switch $format {
-	html { doc_return 200 "text/html" "<html><body><table>\n$result</table></body></html>" }
+	html { 
+	    set page_title "object_type: [db_string n "select acs_object__name(:object_id)"]"
+	    doc_return 200 "text/html" "
+		[im_header $page_title][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
+		</table>[im_footer]
+	    " 
+	}
 	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?><$object_type>$result</$object_type>" }
 	default {
 	     ad_return_complaint 1 "Invalid format: '$format'"
@@ -326,7 +333,14 @@ ad_proc -private im_rest_get_im_category {
     }
 	
     switch $format {
-	html { doc_return 200 "text/html" "<html><body><table>\n$result</table></body></html>" }
+	html { 
+	    set page_title "$object_type: [im_category_from_id $object_id]"
+	    doc_return 200 "text/html" "
+		[im_header $page_title][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
+		</table>[im_footer]
+	    " 
+	}
 	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?><$object_type>$result</$object_type>" }
 	default {
 	     ad_return_complaint 1 "Invalid format: '$format'"
@@ -350,19 +364,9 @@ ad_proc -private im_rest_get_object_type {
     Handler for GET rest calls
 } {
     ns_log Notice "im_rest_get_object_type: format=$format, user_id=$user_id, object_type=$object_type, object_id=$object_id, query_hash=$query_hash"
-
-    switch $object_type {
-	im_company - im_project {
-
-	}
-	default {
-	    # Generic permission check using im_rest_user_id
-	    set object_type_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$object_type'" -default 0]]
-	    if {![im_object_permission -object_id $object_type_id -user_id $user_id -privilege "read"]} {
-		return [im_rest_error -http_status 401 -message "No permissions to read object_type '$object_type'"] 
-	    }
-	}
-    }
+    
+    set object_type_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$object_type'" -default 0]]
+    set object_type_read_all_p [im_object_permission -object_id $object_type_id -user_id $user_id -privilege "read"]
 
     db_1row object_type_info "
 	select	*
@@ -387,13 +391,45 @@ ad_proc -private im_rest_get_object_type {
     "
     set result ""
     db_foreach objects $sql {
+
+	# Check permissions
+	set read_p $object_type_read_all_p
+
+	if {!$read_p} {
+	    # There are "view_xxx_all" permissions allowing a user to see all objects:
+	    switch $object_type {
+		bt_bug { }
+		im_company { set read_p [im_permission $user_id "view_companies_all"] }
+		im_cost { }
+		im_conf_item { set read_p [im_permission $user_id "view_conf_items_all"] }
+		im_project { set read_p [im_permission $user_id "view_projects_all"] }
+		im_user_absence { set read_p [im_permission $user_id "view_absences_all"] }
+		im_office { set read_p [im_permission $user_id "view_offices_all"] }
+		im_ticket { set read_p [im_permission $user_id "view_tickets_all"] }
+		im_timesheet_task { set read_p [im_permission $user_id "view_timesheet_tasks_all"] }
+		im_translation_task { }
+		user { }
+		default { 
+		    # No read permissions? Well, all object types except the ones above
+		    # have no custom permission procedure...
+		    continue 
+		}
+	    }
+	}
+
+	if {!$read_p} {
+	    # This is one of the "custom" object types - check the permission:
+	    # This may be quite slow checking 100.000 objects one-by-one...
+	    eval "${object_type}_permissions $user_id $object_id view_p read_p write_p admin_p"
+	    if {!$read_p} { continue }
+	}
+
 	set url "$base_url/$object_type/$object_id"
 	switch $format {
 	    xml { append result "<object_id href=\"$url\">$object_id</object_id>\n" }
 	    html { 
 		append result "<tr>
 			<td>$object_id</td>
-			<td>$object_name</td>
 			<td><a href=\"$url?format=html\">$object_name</a>
 		</tr>\n" 
 	    }
@@ -402,7 +438,14 @@ ad_proc -private im_rest_get_object_type {
     }
 	
     switch $format {
-	html { doc_return 200 "text/html" "<html>\n<body>\n<table>\n$result</table>\n</body>\n</html>\n" }
+	html { 
+	    set page_title "object_type: $object_type"
+	    doc_return 200 "text/html" "
+		[im_header $page_title][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
+		</table>[im_footer]
+	    " 
+	}
 	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" }
 	default {
 	     ad_return_complaint 1 "Invalid format: '$format'"
@@ -492,22 +535,31 @@ ad_proc -private im_rest_format_line {
     Format a single line according to format and return the result.
 } {
     set base_url "[im_rest_system_url]/intranet-rest"
+    set object_id $value
+    if {"" == $object_id} { set object_id 0 }
 
     # Transformation without knowing the object_type
     set href ""
     switch $column {
 	company_id - customer_id - provider_id {
-	    set company_name [util_memoize [list db_string cname "select company_name from im_companies where company_id=$value" -default $value]]
+	    set company_name [util_memoize [list db_string cname "select company_name from im_companies where company_id=$object_id" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_company/$value?format=html\">$company_name</a>" }
 		xml { set href "$base_url/im_company/$value" }
 	    }
 	}
 	office_id - main_office_id {
-	    set office_name [util_memoize [list db_string cname "select office_name from im_offices where office_id=$value" -default $value]]
+	    set office_name [util_memoize [list db_string cname "select office_name from im_offices where office_id=$object_id" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_office/$value?format=html\">$office_name</a>" }
 		xml { set href "$base_url/im_office/$value" }
+	    }
+	}
+	project_id {
+	    set project_name [util_memoize [list db_string cname "select project_name from im_projects where project_id=$object_id" -default $value]]
+	    switch $format {
+		html { set value "<a href=\"$base_url/im_project/$value?format=html\">$project_name</a>" }
+		xml { set href "$base_url/im_project/$value" }
 	    }
 	}
 	office_status_id - company_status_id - project_status_id - cost_status_id - cost_type_id - default_po_template_id - annual_revenue_id - default_delnote_template_id - default_bill_template_id - default_payment_method_id {

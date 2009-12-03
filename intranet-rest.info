@@ -14,7 +14,8 @@
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Provides read and write access to all important ]po[ objects.</description>
 
-        <!-- No dependency information -->
+        <provides url="intranet-rest" version="3.4.0.0.0"/>
+        <requires url="intranet-core" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>

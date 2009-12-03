@@ -55,6 +55,7 @@ switch $format {
 # ---------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
+set current_user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set page_title [lang::message::lookup "" intranet-rest.REST_API_Overview "REST API Overview"]
 set context_bar [im_context_bar $page_title]
 
@@ -212,19 +213,21 @@ set multirow_select ""
 set multirow_extend {object_type_url crud_status object_wiki_url wiki}
 set group_ids [list]
 
-db_foreach profiles $profile_sql {
-    regsub -all {[^a-zA-Z0-9]} [string tolower $group_name] "_" group_name_key
-    lappend list_columns p$group_id
-    lappend list_columns [list \
-			label [im_gif $profile_gif $group_name $group_name] \
-			display_template "@object_types.p$group_id;noquote@" \
-    ]
-
-    append multirow_select "\t\t, im_object_permission_p(rot.object_type_id, $group_id, 'read') as p${group_id}_read_p\n"
-    append multirow_select "\t\t, im_object_permission_p(rot.object_type_id, $group_id, 'write') as p${group_id}_write_p\n"
-
-    lappend multirow_extend "p$group_id"
-    lappend group_ids $group_id
+if {$current_user_is_admin_p} {
+    db_foreach profiles $profile_sql {
+	regsub -all {[^a-zA-Z0-9]} [string tolower $group_name] "_" group_name_key
+	lappend list_columns p$group_id
+	lappend list_columns [list \
+				  label [im_gif $profile_gif $group_name $group_name] \
+				  display_template "@object_types.p$group_id;noquote@" \
+				 ]
+	
+	append multirow_select "\t\t, im_object_permission_p(rot.object_type_id, $group_id, 'read') as p${group_id}_read_p\n"
+	append multirow_select "\t\t, im_object_permission_p(rot.object_type_id, $group_id, 'write') as p${group_id}_write_p\n"
+	
+	lappend multirow_extend "p$group_id"
+	lappend group_ids $group_id
+    }
 }
 
 
@@ -257,16 +260,7 @@ list::create \
     -elements $list_columns
 
 
-db_multirow -extend $multirow_extend object_types select_object_types "
-	select	ot.object_type,
-		ot.pretty_name,
-		rot.object_type_id
-		$multirow_select
-	from	acs_object_types ot,
-		im_rest_object_types rot
-	where
-		ot.object_type = rot.object_type and
-		ot.object_type not in (
+set not_in_object_type "
 			'acs_activity',
 			'acs_event',
 			'acs_mail_body',
@@ -319,13 +313,37 @@ db_multirow -extend $multirow_extend object_types select_object_types "
 			'user_blob_response_rel',
 			'user_portrait_rel',
 			'workflow_lite'
-		)
+"
+
+db_multirow -extend $multirow_extend object_types select_object_types "
+	select
+		ot.object_type,
+		ot.pretty_name,
+		rot.object_type_id,
+		im_object_permission_p(rot.object_type_id, :current_user_id, 'read') as current_user_read_p
+		$multirow_select
+	from
+		acs_object_types ot,
+		im_rest_object_types rot
+	where
+		ot.object_type = rot.object_type and
+		-- skip a number of uninteresting user types
+		ot.object_type not in ($not_in_object_type)
 		-- exclude object types created for workflows
 		and ot.object_type not like '%wf'
 	order by
 		ot.object_type
 " {
     set object_type_url "/intranet-rest/$object_type?format=html"
+    switch $object_type {
+	im_company - im_project - bt_bug - im_company - im_cost - im_conf_item - im_project - im_user_absence - im_office - im_ticket - im_timesheet_task - im_translation_task - user {
+	    # These object are handled via custom permissions:
+	}
+	default {
+	    if {"t" != $current_user_read_p} { set object_type_url "" }
+	}
+    }
+
     set crud_status "R"
     if {[info exists crud_hash($object_type)]} { set crud_status $crud_hash($object_type) }
 
