@@ -327,6 +327,11 @@ ad_proc im_reporting_cubes_finance {
   			and c.effective_date::date < to_date(:end_date, 'YYYY-MM-DD')
     "
     
+    # handle ',' ###  
+    if { "" != $derefs} {
+        set derefs [concat "," [join $derefs ",\n\t\t"]]
+    }
+
     # Aggregate additional/important fields to the fact table.
     set middle_sql "
   	select
@@ -363,10 +368,8 @@ ad_proc im_reporting_cubes_finance {
   		prov.company_type_id as provider_type_id,
   		im_category_from_id(prov.company_type_id) as provider_type,
   		prov.company_status_id as provider_status_id,
-  		im_category_from_id(prov.company_status_id) as provider_status,
-
-                [join $derefs ",\n\t\t"]
-    
+  		im_category_from_id(prov.company_status_id) as provider_status
+                $derefs    
   	from
   		($inner_sql) c
   		LEFT OUTER JOIN im_projects mainp ON (c.main_project_sortkey = mainp.tree_sortkey)
