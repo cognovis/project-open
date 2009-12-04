@@ -40,6 +40,10 @@ set pie_chart [im_dashboard_pie_chart \
 	-values $pie_values \
 	-radius 70 \
 	-outer_distance 10 \
+	-font_color "fff" \
+        -start_color "006699" \
+	-end_color "00CCFF" \
+	-font_style "font-family:Verdana;font-weight:normal;line-height:10pt;"
 ]
 
 set show_details_msg [lang::message::lookup "" intranet-reporting-dashboard.Show_Details "Show Details"]
