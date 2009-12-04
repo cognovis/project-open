@@ -42,7 +42,7 @@ set pie_chart [im_dashboard_pie_chart \
 	-outer_distance 10 \
 	-font_color "fff" \
         -start_color "006699" \
-	-end_color "00CCFF" \
+	-end_color "00FFFF" \
 	-font_style "font-family:Verdana;font-weight:normal;line-height:10pt;"
 ]
 
