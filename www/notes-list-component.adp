@@ -11,7 +11,7 @@
 	    <if @notes.rownum@ odd><tr class="roweven"></if>
 	    <else><tr class="rowodd"></else>
 		<td><input type=checkbox name=note.@note_id@></td>
-		<td><a href="@notes_edit_url;noquote@">@notes.note_type@</a></td>
+		<td><a href="@notes.notes_edit_url;noquote@">@notes.note_type@</a></td>
 		<td>@notes.note_formatted;noquote@</td>
 	    </tr>
 	  </multiple>
@@ -37,7 +37,9 @@
 	</table>
 	
 <if @object_write@>
+	<ul>
 	<li><a href="@new_note_url;noquote@"
 	><%= [lang::message::lookup "" intranet-notes.Create_new_Note "Create a new Note"] %></a>
+	</ul>
 </if>
 

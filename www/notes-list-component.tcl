@@ -49,7 +49,7 @@ if {$object_read} {
 	where	n.object_id = :object_id
     "
     
-    db_multirow -extend { note_formatted } notes notes_query $notes_sql {
+    db_multirow -extend { note_formatted notes_edit_url } notes notes_query $notes_sql {
 
 	regsub -all {[^0-9a-zA-Z]} $note_type "_" note_type_key
 	set note_type [lang::message::lookup "" intranet-notes.$note_type_key $note_type]
