@@ -17,27 +17,18 @@ ad_library {
 ad_proc -public im_note_status_active {} { return 11400 }
 ad_proc -public im_note_status_deleted {} { return 11402 }
 
-
-# ----------------------------------------------------------------------
-# PackageID
-# ----------------------------------------------------------------------
-
-ad_proc -public im_package_notes_id {} {
-    Returns the package id of the intranet-notes module
-} {
-    return [util_memoize "im_package_notes_id_helper"]
-}
-
-ad_proc -private im_package_notes_id_helper {} {
-    return [db_string im_package_core_id {
-        select package_id from apm_packages
-        where package_key = 'intranet-notes'
-    } -default 0]
-}
+ad_proc -public im_note_type_address {} { return 11500 }
+ad_proc -public im_note_type_email {} { return 11502 }
+ad_proc -public im_note_type_http {} { return 11504 }
+ad_proc -public im_note_type_ftp {} { return 11506 }
+ad_proc -public im_note_type_phone {} { return 11508 }
+ad_proc -public im_note_type_fax {} { return 11510 }
+ad_proc -public im_note_type_mobile {} { return 11512 }
+ad_proc -public im_note_type_other {} { return 11514 }
 
 
 # ----------------------------------------------------------------------
-#
+# Helper functions
 # ----------------------------------------------------------------------
 
 ad_proc -public im_note_format {
@@ -53,7 +44,6 @@ ad_proc -public im_note_format {
     set rest_note [join [lrange $note_pieces 1 end] " "]
 
     set notes_edit_url [export_vars -base "/intranet-notes/new" {note_id return_url}]
-
 
     switch $note_type_id {
 	11502 {
@@ -80,15 +70,6 @@ ad_proc -public im_note_format {
 # Components
 # ---------------------------------------------------------------------
 
-ad_proc -public im_notes_project_component {
-    -object_id
-} {
-    Proxy for im_notes_component for compatibility
-} {
-    return [im_notes_component -object_id $object_id]
-}
-
-
 ad_proc -public im_notes_component {
     -object_id
 } {
@@ -98,7 +79,7 @@ ad_proc -public im_notes_component {
 		    [list base_url "/intranet-notes/"] \
 		    [list object_id $object_id] \
 		    [list return_url [im_url_with_query]] \
-		    ]
+    ]
 
     set result [ad_parse_template -params $params "/packages/intranet-notes/www/notes-list-component"]
     return [string trim $result]

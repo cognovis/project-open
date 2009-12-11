@@ -27,10 +27,9 @@ if {0 == [llength $note_list]} { ad_returnredirect $return_url }
 
 switch $action {
     del_notes {
-	db_dml del_notes "
-		delete	from im_notes
-		where	note_id in ([join $note_list ", "])
-	"
+	foreach note_id $note_list {
+	    db_string del_notes "select im_note__delete(:note_id)"
+	}
     }
     default {
 	ad_return_complaint 1 "<li>Unknown action: '$action'"
