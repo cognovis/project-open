@@ -1,7 +1,6 @@
 # /packages/intranet-notes/www/new.tcl
 #
 # Copyright (C) 2003-2006 ]project-open[
-# all@devcon.project-open.com
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -27,11 +26,12 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set page_title [_ intranet-notes.Notes_creation]
+if {[info exists note_id]} { set page_title [lang::message::lookup "" intranet-notes.Note Note] }
 set context_bar [im_context_bar $page_title]
 
 # We can determine the ID of the "container object" from the
 # note data, if the note_id is there (viewing an existing note).
-if {"" == $object_id} {
+if {[info exists note_id] && "" == $object_id} {
     set object_id [db_string oid "select object_id from im_notes where note_id = :note_id" -default ""]
 }
 
@@ -39,14 +39,6 @@ if {"" == $object_id} {
 # ---------------------------------------------------------------
 # Create the Form
 # ---------------------------------------------------------------
-
-# Get the list of note types. This list is used in the ad_form below 
-# to create the drop-down component for the list type
-set note_type_options [db_list_of_lists note_type_options "
-	select	note_type, note_type_id
-	from	im_note_types
-	order by note_type_id
-"]
 
 set form_id "form"
 ad_form \
@@ -75,13 +67,14 @@ im_dynfield::append_attributes_to_form \
 
 ad_form -extend -name $form_id \
     -select_query {
+
 	select	*
 	from	im_notes
 	where	note_id = :note_id
+
     } -new_data {
 
         set note [string trim $note]
-
         set duplicate_note_sql "
                 select  count(*)
                 from    im_notes

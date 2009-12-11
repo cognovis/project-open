@@ -23,9 +23,7 @@ ad_page_contract {
 # Defaults & Security
 # ---------------------------------------------------------------
 
-# User id already verified by filters
 set user_id [ad_maybe_redirect_for_registration]
-set date_format "YYYY-MM-DD"
 
 set object_name [db_string object_name "select acs_object__name(:object_id)" -default [lang::message::lookup "" intranet-expenes.Unassigned "Unassigned"]]
 if {0 == $object_id} { set object_name "All" }
@@ -35,6 +33,7 @@ set context_bar [im_context_bar $page_title]
 set return_url [im_url_with_query]
 set current_url [ns_conn url]
 set org_note_type_id $note_type_id
+set date_format "YYYY-MM-DD"
 
 # ---------------------------------------------------------------
 # Compose the List Template
