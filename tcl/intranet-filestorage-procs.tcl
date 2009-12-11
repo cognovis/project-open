@@ -549,26 +549,32 @@ ad_proc im_filestorage_project_path_helper { project_id } {
     }
 
     set query "
-select
-	p.project_nr,
-	p.project_path,
-	p.project_name,
-	c.company_path
-from
-	im_projects p,
-	im_companies c
-where
-	p.project_id=:project_id
-	and p.company_id=c.company_id(+)
-"
+	select
+		p.project_nr,
+		p.project_path,
+		p.project_name,
+	
+		c.company_path
+	from
+		im_projects p,
+		im_companies c
+	where
+		p.project_id=:project_id
+		and p.company_id=c.company_id(+)
+    "
 
-    if { ![db_0or1row projects_info_query $query] } {
+    if {![db_0or1row projects_info_query $query]} {
 	ad_return_complaint 1 "Can't find the project with group 
 	id of $project_id"
 	return
     }
 
-    return "$base_path_unix/$company_path/$project_path"
+    set enable_project_path_p [parameter::get -parameter EnableProjectPathP -package_id [im_package_core_id] -default 0] 
+    if {$enable_project_path_p} {
+	return $project_path
+    }
+    
+    return "$base_path_unix/$company_path/$project_nr"
 }
 
 
