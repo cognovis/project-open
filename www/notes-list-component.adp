@@ -4,7 +4,7 @@
 	  <%= [export_form_vars return_url] %>
 	  <tr class="rowtitle">
 	    <th>&nbsp;</td>
-	    <th><%= [lang::message::lookup "" intranet-notes.Notes_Type "Type"] %></th>
+	    <th><%= [lang::message::lookup "" intranet-notes.Note_Type "Type"] %></th>
 	    <th><%= [lang::message::lookup "" intranet-notes.Notes_Note "Note"] %></th>
 	  </tr>
 	  <multiple name="notes">
@@ -25,7 +25,7 @@
 </if>
 
 	<tr class="rowodd">
-	    <td colspan=2 align=right>
+	    <td colspan=3 align=left>
 		<select name=action>
 			<option value=del_notes><%= [lang::message::lookup "" intranet-notes.Delete_Notes "Delete Notes"] %></option>
 		</select>	

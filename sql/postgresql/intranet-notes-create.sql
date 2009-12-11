@@ -5,7 +5,7 @@
 -- All rights reserved. Please check
 -- http://www.project-open.com/license/ for details.
 --
--- @author all@devcon.project-open.com
+-- @author various@project-open.com
 
 -----------------------------------------------------------
 -- Notes
@@ -243,7 +243,7 @@ end;' language 'plpgsql';
 -- /packages/intranet-core/sql/common/intranet-categories.sql.
 -- Please send an email to support@project-open.com with
 -- the subject line "Category Range Request" in order to
--- request a range of constants for your own modules.
+-- request a range of constants for your own packages.
 --
 -- 11400-11499  Intranet Notes Status
 -- 11500-11599  Intranet Notes Status

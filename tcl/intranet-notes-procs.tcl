@@ -37,6 +37,46 @@ ad_proc -private im_package_notes_id_helper {} {
 
 
 # ----------------------------------------------------------------------
+#
+# ----------------------------------------------------------------------
+
+ad_proc -public im_note_format {
+    -note_type_id:required
+    -note:required
+} {
+    Formats a note, depending on the note's type
+} {
+    # The note may consist of several pieces, we only want to format
+    # the first one of these pieces
+    set note_pieces [split $note " "]
+    set first_note [lindex $note_pieces 0]
+    set rest_note [join [lrange $note_pieces 1 end] " "]
+
+    set notes_edit_url [export_vars -base "/intranet-notes/new" {note_id return_url}]
+
+
+    switch $note_type_id {
+	11502 {
+	    # Email
+	    set note_formatted "<a href=\"mailto:$first_note\">$first_note</a> $rest_note"
+	}
+	11504 {
+	    # Http
+	    set note_formatted "<a href=\"$first_note\" target=\"_\">$first_note</a> $rest_note"
+	}
+	11506 {
+	    # FTP
+	    set note_formatted "<a href=\"$first_note\" target=\"_\">$first_note</a> $rest_note"
+	}
+	default {
+	    set note_formatted "$first_note $rest_note"
+	}
+    }
+    return $note_formatted
+}
+
+
+# ----------------------------------------------------------------------
 # Components
 # ---------------------------------------------------------------------
 
