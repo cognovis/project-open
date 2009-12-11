@@ -571,7 +571,9 @@ ad_proc im_filestorage_project_path_helper { project_id } {
 
     set enable_project_path_p [parameter::get -parameter EnableProjectPathP -package_id [im_package_core_id] -default 0] 
     if {$enable_project_path_p} {
-	return $project_path
+	if {[regexp {^/} $project_path match]} {
+	    return $project_path
+	}
     }
     
     return "$base_path_unix/$company_path/$project_nr"
