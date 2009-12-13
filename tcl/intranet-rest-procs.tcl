@@ -464,6 +464,7 @@ ad_proc -private im_rest_get_object_type {
 
 
 ad_proc -private im_rest_authenticate {
+    {-debug 1}
     -query_hash_values:required
 } {
     Determine the autenticated user
@@ -481,6 +482,7 @@ ad_proc -private im_rest_authenticate {
     # Check for HTTP "basic" authorization
     # Example: Authorization=Basic cHJvam9wOi5mcmFiZXI=
     set basic_auth [ns_set get $header_vars "Authorization"]
+    set basic_auth_userpass ""
     set basic_auth_username ""
     set basic_auth_password ""
     if {[regexp {^([a-zA-Z_]+)\ (.*)$} $basic_auth match method userpass_base64]} {
@@ -491,6 +493,7 @@ ad_proc -private im_rest_authenticate {
     if {"" == $basic_auth_user_id} {
 	set basic_auth_user_id [db_string userid "select party_id from parties where lower(email) = lower(:basic_auth_username)" -default ""]
     }
+    if {$debug} { ns_log Notice "im_rest_authenticate: basic_auth=$basic_auth, basic_auth_username=$basic_auth_username, basic_auth_password=$basic_auth_password" }
 
     # Check for OpenACS "Cookie" auth
     set cookie_auth_user_id [ad_get_user_id]
