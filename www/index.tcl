@@ -94,7 +94,7 @@ template::list::create \
 # ---------------------------------------------------------------
 
 set where_clause ""
-if {0 != $object_id && "" != $object_id} { append where_clause "\tand c.object_id = :object_id\n" }
+if {0 != $object_id && "" != $object_id} { append where_clause "\tand o.object_id = :object_id\n" }
 if {0 != $note_type_id && "" != $note_type_id} { append where_clause "\tand n.note_type_id = :note_type_id\n" }
 
 db_multirow -extend {note_chk return_url object_url note_formatted} note_lines notes_lines "
