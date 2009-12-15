@@ -169,7 +169,7 @@ ad_proc -private im_rest_call {
 		    -object_type $object_type \
 		    -object_id $object_id \
 		    -query_hash $query_hash \
-			    ]
+		]
 	    } else {
 		# Return query from the object object_type
 		return [im_rest_post_object_type \
@@ -177,7 +177,7 @@ ad_proc -private im_rest_call {
 			    -user_id $user_id \
 			    -object_type $object_type \
 			    -query_hash $query_hash \
-			    ]
+		]
 	    }
 	}
 
@@ -229,7 +229,7 @@ ad_proc -private im_rest_get_object {
 
     # -------------------------------------------------------
     # Get the SQL to extract all values from the object
-    set sql [util_memoize [list im_rest_object_type_sql -object_type $object_type]]
+    set sql [util_memoize [list im_rest_object_type_select_sql -object_type $object_type]]
 
     # Execute the sql. As a result we get a result_hash with keys corresponding
     # to table columns and values 
@@ -489,6 +489,42 @@ ad_proc -private im_rest_post_object_type {
     ]]
 }
 
+ad_proc -private im_rest_post_object {
+    { -format "xml" }
+    { -user_id 0 }
+    { -object_type "" }
+    { -object_id 0 }
+    { -query_hash {} }
+    { -debug 0 }
+} {
+    Handler for POST rest calls to an individual object
+} {
+    ns_log Notice "im_rest_post_object: object_type=$object_type, object_id=$object_id, user_id=$user_id, query_hash=$query_hash"
+
+    # Get the HTTP contents
+    set content [ns_conn content]
+
+    # store the key-value pairs into a hash array
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: 'err_msg'."]
+    }
+
+    set root_node [$doc documentElement]
+    array unset hash_array
+    foreach child [$root_node childNodes] {
+	set nodeName [$child nodeName]
+	set nodeText [$child text]
+       	set hash_array($nodeName) $nodeText
+    }
+
+    return [im_rest_object_type_update_sql \
+		-object_type $object_type \
+		-object_id $object_id \
+		-hash_array [array get hash_array] \
+    ]
+
+}
+
 
 
 ad_proc -private im_rest_post_im_project {
@@ -498,17 +534,66 @@ ad_proc -private im_rest_post_im_project {
 } {
     Create a new project 
 } {
-    set doc ""
-    if {[catch {set doc [dom parse $binary_content]} err_msg]} {
-	return [im_rest_error -http_status 500 -message "Unable to parse XML: 'err_msg'."]
+    ns_log Notice "im_rest_post_im_project: user_id=$user_id"
+
+    # store the key-value pairs into a hash array
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: 'err_msg'."]
     }
+
     set root_node [$doc documentElement]
-
-    if {[set node [$root_node selectNodes /project/description]] != ""} {
-	set description [$node text]
-	ns_log Notice "im_rest_post_im_project: description=$description"
+    foreach child [$root_node childNodes] {
+	set nodeName [$child nodeName]
+	set nodeText [$child text]
+	
+	# Store the values
+	set hash($nodeName) $nodeText
+	set $nodeName $nodeText
     }
 
+    # Check for duplicate
+    set parent_sql "parent_id = :parent_id"
+    if {"" == $parent_id} { set parent_sql "parent_id is NULL" }
+
+    set dup_sql "
+                select  count(*)
+                from    im_projects
+                where   $parent_sql and
+                        (       upper(trim(project_name)) = upper(trim(:project_name)) OR
+                                upper(trim(project_nr)) = upper(trim(:project_nr)) OR
+                                upper(trim(project_path)) = upper(trim(:project_path))
+                        )
+    "
+    if {[db_string duplicates $dup_sql]} {
+	return [im_rest_error -http_status 406 -message "Duplicate Project: Your project name or project path already exists for the specified parent_id."]
+    }
+
+    if {[catch {
+        set project_id [project::new \
+			-creation_user	    $user_id \
+			-context_id	    "" \
+			-project_name       $hash(project_name) \
+			-project_nr         $hash(project_nr) \
+			-project_path       $hash(project_path) \
+			-company_id         $hash(company_id) \
+			-parent_id          $hash(parent_id) \
+			-project_type_id    $hash(project_type_id) \
+			-project_status_id  $hash(project_status_id) \
+        ]
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error creating project: 'err_msg'."]
+    }
+
+    if {[catch {
+	im_rest_object_type_update_sql \
+	    -object_type "im_project" \
+	    -object_id $object_id \
+	    -hash_array [array get hash]
+
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error updating project: 'err_msg'."]
+    }
+     
     doc_return 200 "text/xml" $content
 }
 
@@ -646,10 +731,10 @@ ad_proc -private im_rest_format_line {
 
 
 # ----------------------------------------------------------------------
-# 
+# Extract all fields from an object type's tables
 # ----------------------------------------------------------------------
 
-ad_proc -public im_rest_object_type_sql { 
+ad_proc -public im_rest_object_type_select_sql { 
     -object_type:required
 } {
     Calculates the SQL statement to extract the value for an object
@@ -692,6 +777,102 @@ UNION
 
 
 
+# ----------------------------------------------------------------------
+# Update all tables of an object type.
+# ----------------------------------------------------------------------
+
+ad_proc -public im_rest_object_type_update_sql { 
+    -object_type:required
+    -object_id:required
+    -hash_array:required
+} {
+    Updates all the object's tables with the information from the
+    hash array.
+} {
+    ns_log Notice "im_rest_object_type_update_sql: object_type=$object_type, object_id=$object_id, hash_array=$hash_array"
+
+    # Stuff the list of variables into a hash
+    array set hash $hash_array
+
+    # ---------------------------------------------------------------
+    # Get all relevant tables for the object type
+    set tables_sql "
+			select	table_name,
+				id_column
+			from	acs_object_types
+			where	object_type = :object_type
+		    UNION
+			select	table_name,
+				id_column
+			from	acs_object_type_tables
+			where	object_type = :object_type
+    "
+    db_foreach tables $tables_sql {
+	set index_column($table_name) $id_column
+    }
+
+    set columns_sql "
+	select	lower(utc.column_name) as column_name,
+		lower(utc.table_name) as table_name
+	from
+		user_tab_columns utc,
+		($tables_sql) tables
+	where
+		lower(utc.table_name) = lower(tables.table_name)
+	order by
+		lower(utc.table_name),
+		lower(utc.column_name)
+    "
+
+    array unset sql_hash
+    db_foreach cols $columns_sql {
+
+	# ignore variables that are not available in the var hash
+	if {![info exists hash($column_name)]} { continue }
+	# skip tree_sortkey stuff
+	if {"tree_sortkey" == $column_name} { continue }
+	# ignore reserved variables
+	if {"object_type" == $column_name} { contiue }
+	if {"object_id" == $column_name} { contiue }
+	if {"hash_array" == $column_name} { contiue }
+	# ignore any "*_cache" variables (financial cache)
+	if {[regexp {_cache$} $column_name match]} { continue }
+
+	set sqls [list]
+	if {[info exists sql_hash($table_name)]} { set sqls $sql_hash($table_name) }
+	lappend sqls "$column_name = :$column_name"
+	set sql_hash($table_name) $sqls
+    }
+
+    # Store values into local variables
+    foreach var [array names hash_array] {
+	# ignore reserved variables
+	if {"object_type" == $column_name} { contiue }
+	if {"object_id" == $column_name} { contiue }
+
+	set $var $hash_array($var)
+    }
+
+    foreach table [array names sql_hash] {
+	set sqls $sql_hash($table)
+	set update_sql "update $table set [join $sqls ", "] where $index_column($table) = :object_id"
+
+	if {[catch {
+	    ns_log Notice "im_rest_object_type_update_sql: sql='$update_sql'"
+	    db_dml sql_$table $update_sql -bind [array get hash]
+	} err_msg]} {
+	    return [im_rest_error -http_status 404 -message "Error updating $object_type: '$err_msg'"]
+	}
+    }
+    return
+}
+
+
+
+# ----------------------------------------------------------------------
+# Error Handling
+# ----------------------------------------------------------------------
+
 ad_proc -public im_rest_error {
     { -http_status 404 }
     { -message "" }
@@ -709,7 +890,7 @@ ad_proc -public im_rest_error {
 	403 { set status_message "Forbidden: The request is understood, but it has been refused.  An accompanying error message will explain why." }
 	404 { set status_message "Not Found: The URI requested is invalid or the resource requested, for example a non-existing project." }
 	406 { set status_message "Not Acceptable: Returned when an invalid format is specified in the request." }
-	500 { set status_message "Internal Server Error: Something is broken.  Please post to the ]po[ .Open Discussions. forum." }
+	500 { set status_message "Internal Server Error: Something is broken.  Please post to the &\#93;project-open&\#91; Open Discussions forum." }
 	502 { set status_message "Bad Gateway: project-open is probably down." }
 	503 { set status_message "Service Unavailable: project-open is up, but overloaded with requests. Try again later." }
 	default { set status_message "Unknown http_status '$http_status'." }
