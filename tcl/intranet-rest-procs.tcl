@@ -22,7 +22,16 @@ ad_register_proc POST /intranet-rest/* im_rest_call_post
 # Deal HTTP parameters, authentication etc.
 # -------------------------------------------------------
 
-ad_proc -private im_rest_call_get {} {
+ad_proc -private im_rest_call_post {} {
+    Handler for GET rest calls
+} {
+    return [im_rest_call_get -http_method POST]
+}
+
+
+ad_proc -private im_rest_call_get {
+    {-http_method GET }
+} {
     Handler for GET rest calls
 } {
     # Get the entire URL and decompose into the "object_type" 
@@ -69,7 +78,7 @@ ad_proc -private im_rest_call_get {} {
 
     # Call the main request processing routine
     im_rest_call \
-	-method GET \
+	-method $http_method \
 	-format $format \
 	-user_id $auth_user_id \
 	-object_type $object_type \
@@ -77,14 +86,6 @@ ad_proc -private im_rest_call_get {} {
 	-query_hash [array get query_hash]
     
 }
-
-ad_proc -private im_rest_call_post {} {
-    Handler for GET rest calls
-} {
-    return "<?xml version='1.0'?>\n"
-}
-
-
 
 # -------------------------------------------------------
 # REST Call Drivers
@@ -454,6 +455,61 @@ ad_proc -private im_rest_get_object_type {
   
     ad_return_complaint 1 "<pre>sql=$sql\nhash=[join [array get result_hash] "\n"]</pre>"
 
+}
+
+
+
+# --------------------------------------------------------
+# POST
+# --------------------------------------------------------
+
+ad_proc -private im_rest_post_object_type {
+    { -format "xml" }
+    { -user_id 0 }
+    { -object_type "" }
+    { -object_id 0 }
+    { -query_hash {} }
+    { -debug 0 }
+} {
+    Handler for POST rest calls to an object type - create a new object.
+} {
+    ns_log Notice "im_rest_post_object_type: format=$format, user_id=$user_id, object_type=$object_type, object_id=$object_id, query_hash=$query_hash"
+    set base_url "[im_rest_system_url]/intranet-rest"
+
+    set object_type_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$object_type'" -default 0]]
+    set object_type_write_all_p [im_object_permission -object_id $object_type_id -user_id $user_id -privilege "create"]
+
+    # Get the HTTP contents
+    set content [ns_conn content]
+
+    return [eval [list im_rest_post_$object_type \
+		      -format $format \
+		      -user_id $user_id \
+		      -content $content \
+    ]]
+}
+
+
+
+ad_proc -private im_rest_post_im_project {
+    { -format "xml" }
+    { -user_id 0 }
+    { -content "" }
+} {
+    Create a new project 
+} {
+    set doc ""
+    if {[catch {set doc [dom parse $binary_content]} err_msg]} {
+	return [im_rest_error -http_status 500 -message "Unable to parse XML: 'err_msg'."]
+    }
+    set root_node [$doc documentElement]
+
+    if {[set node [$root_node selectNodes /project/description]] != ""} {
+	set description [$node text]
+	ns_log Notice "im_rest_post_im_project: description=$description"
+    }
+
+    doc_return 200 "text/xml" $content
 }
 
 
