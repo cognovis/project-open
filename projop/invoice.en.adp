@@ -12,12 +12,16 @@
       <img src="http://www.project-open.com/images/logos/project_open.38.10frame.gif"><br>
       <P><b><font size="5">INVOICE</font></b></P>
     </td>
-    <td align="right"> <p><font size="6">
-<span class=brandsec>]</span><span class=brandfirst>project-open</span><span class=brandsec>[</span>
-    </font><br>
-        <font size="4"><b>Manage your projects online-<br>
+    <td align="right"> 
+<!--
+	<p><font size="4">
+	<span class=brandsec>]</span><span class=brandfirst>project-open</span><span class=brandsec>[</span>
+	</font><br>
+        <font size="3"><b>Manage your projects online-<br>
         anytime, anywhere</b></font></p>
-      <b><font size="3">www.project-open.com</font></b> </td>
+      <b><font size="3">www.project-open.com</font></b> 
+-->
+    </td>
   </tr>
 </table>
 <hr>
@@ -93,7 +97,7 @@
         </tr>
         <tr> 
           <td class=roweven>VAT</td>
-          <td class=roweven>X2461483-T</td>
+          <td class=roweven>ES X2461483-T</td>
         </tr>
         <tr> 
           <td class=roweven>Address</td>
@@ -137,9 +141,23 @@
 </table>
 <br>
 
-<table border="0" cellspacing="2" cellpadding="2">
-<%=$item_html %>
+<table border="0" cellspacing="2" cellpadding="2" width="100%">
+<tr>
+<td>
+	  <table cellpadding=1 cellspacing=2 border=0 width="100%">
+	    <%= $item_list_html %>
+	  </table>
+
+	  <table cellpadding=1 cellspacing=2 border=0 width="100%">
+	    <%= $terms_html %>
+	  </table>
+
+</td>
+</tr>
 </table>
+
+
+
 
 <P>&nbsp;</P>
 <P>
