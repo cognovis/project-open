@@ -10,7 +10,7 @@
 	  <multiple name="notes">
 	    <if @notes.rownum@ odd><tr class="roweven"></if>
 	    <else><tr class="rowodd"></else>
-		<td><input type=checkbox name=note.@note_id@></td>
+		<td><input type=checkbox name=note.@notes.note_id@></td>
 		<td><a href="@notes.notes_edit_url;noquote@">@notes.note_type@</a></td>
 		<td>@notes.note_formatted;noquote@</td>
 	    </tr>
