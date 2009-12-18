@@ -11,7 +11,7 @@
 #    [list format $format] \
 #    [list user_id $user_id] \
 #    [list object_id $object_id] \
-#    [list query_hash $query_hash] \
+#    [list query_hash_pairs_ $query_hash_pairs] \
 
 if {![info exists user_id]} { set user_id 0 }
 if {![info exists format]} { set format "html" }

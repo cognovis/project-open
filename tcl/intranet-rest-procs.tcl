@@ -54,9 +54,9 @@ ad_proc -private im_rest_call_get {
 	    set query_hash($var) $val
 	}
     }
-    
+
     # Determine the authenticated user_id. 0 means not authenticated.
-    array set auth_hash [im_rest_authenticate -query_hash_values [array get query_hash]]
+    array set auth_hash [im_rest_authenticate -query_hash_pairs [array get query_hash]]
     set auth_user_id $auth_hash(user_id)
     set auth_method $auth_hash(method)
     if {0 == $auth_user_id} { return [im_rest_error -http_status 401 -message "Not authenticated"] }
@@ -83,7 +83,7 @@ ad_proc -private im_rest_call_get {
 	-user_id $auth_user_id \
 	-rest_otype $rest_otype \
 	-rest_oid $rest_oid \
-	-query_hash [array get query_hash]
+	-query_hash_pairs [array get query_hash]
     
 }
 
@@ -98,12 +98,12 @@ ad_proc -private im_rest_call {
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
-    { -query_hash {} }
+    { -query_hash_pairs {} }
     { -debug 0 }
 } {
     Handler for all REST calls
 } {
-    ns_log Notice "im_rest_call: method=$method, format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash"
+    ns_log Notice "im_rest_call: method=$method, format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
 
     # -------------------------------------------------------
     # Special treatment for /intranet-rest/ and /intranet/rest/index URLs
@@ -115,7 +115,7 @@ ad_proc -private im_rest_call {
 		    -user_id $user_id \
 		    -rest_otype $rest_otype \
 		    -rest_oid $rest_oid \
-		    -query_hash $query_hash \
+		    -query_hash_pairs $query_hash_pairs \
 		   ]
     }
 
@@ -132,7 +132,7 @@ ad_proc -private im_rest_call {
 		    -user_id $user_id \
 		    -rest_otype $rest_otype \
 		    -rest_oid $rest_oid \
-		    -query_hash $query_hash \
+		    -query_hash_pairs $query_hash_pairs \
 		   ]
     }
 
@@ -146,7 +146,7 @@ ad_proc -private im_rest_call {
 			    -user_id $user_id \
 			    -rest_otype $rest_otype \
 			    -rest_oid $rest_oid \
-			    -query_hash $query_hash \
+			    -query_hash_pairs $query_hash_pairs \
 		]
 	    } else {
 		# Return query from the object rest_otype
@@ -154,7 +154,7 @@ ad_proc -private im_rest_call {
 			    -format $format \
 			    -user_id $user_id \
 			    -rest_otype $rest_otype \
-			    -query_hash $query_hash \
+			    -query_hash_pairs $query_hash_pairs \
 		]
 	    }
 	}
@@ -168,7 +168,7 @@ ad_proc -private im_rest_call {
 		    -user_id $user_id \
 		    -rest_otype $rest_otype \
 		    -rest_oid $rest_oid \
-		    -query_hash $query_hash \
+		    -query_hash_pairs $query_hash_pairs \
 		]
 	    } else {
 		# Return query from the object rest_otype
@@ -176,7 +176,7 @@ ad_proc -private im_rest_call {
 			    -format $format \
 			    -user_id $user_id \
 			    -rest_otype $rest_otype \
-			    -query_hash $query_hash \
+			    -query_hash_pairs $query_hash_pairs \
 		]
 	    }
 	}
@@ -193,19 +193,19 @@ ad_proc -private im_rest_page {
     { -format "xml" }
     { -user_id 0 }
     { -rest_oid 0 }
-    { -query_hash {} }
+    { -query_hash_pairs {} }
     { -debug 0 }
 } {
     The user has requested /intranet-rest/ or /intranet-rest/index
 } {
-    ns_log Notice "im_rest_index_page: rest_otype=$rest_otype, query_hash=$query_hash"
+    ns_log Notice "im_rest_index_page: rest_otype=$rest_otype, query_hash=$query_hash_pairs"
 
     set params [list \
                     [list rest_otype $rest_otype] \
                     [list rest_oid $rest_oid] \
                     [list format $format] \
                     [list user_id $user_id] \
-                    [list query_hash $query_hash] \
+                    [list query_hash_pairs $query_hash_pairs] \
     ]
 
     set result [ad_parse_template -params $params "/packages/intranet-rest/www/$rest_otype"]
@@ -217,12 +217,12 @@ ad_proc -private im_rest_get_object {
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
-    { -query_hash {} }
+    { -query_hash_pairs {} }
     { -debug 0 }
 } {
     Handler for GET rest calls
 } {
-    ns_log Notice "im_rest_get_object: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash"
+    ns_log Notice "im_rest_get_object: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
 
     # Check that rest_oid is an integer
     im_security_alert_check_integer -location "im_rest_get_object" -value $rest_oid
@@ -230,6 +230,10 @@ ad_proc -private im_rest_get_object {
     # -------------------------------------------------------
     # Get the SQL to extract all values from the object
     set sql [util_memoize [list im_rest_object_type_select_sql -rest_otype $rest_otype]]
+#    set sql [im_rest_object_type_select_sql -rest_otype $rest_otype]
+
+    # Get the list of index columns of the object's various tables.
+    set index_columns [im_rest_object_type_index_columns -rest_otype $rest_otype]
 
     # Execute the sql. As a result we get a result_hash with keys corresponding
     # to table columns and values 
@@ -242,6 +246,7 @@ ad_proc -private im_rest_get_object {
             for { set i 0 } { $i < [ns_set size $selection] } { incr i } {
 		set var [lindex $col_names $i]
 		set val [ns_set value $selection $i]
+		if {[lsearch $index_columns $var] >= 0} { continue }
 		set result_hash($var) $val
             }
         }
@@ -272,7 +277,7 @@ ad_proc -private im_rest_get_object {
 		</table>[im_footer]
 	    " 
 	}
-	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?><$rest_otype>$result</$rest_otype>" }
+	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<$rest_otype>\n$result</$rest_otype>" }
 	default {
 	     ad_return_complaint 1 "Invalid format: '$format'"
 	}
@@ -288,11 +293,11 @@ ad_proc -private im_rest_get_im_category {
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
-    { -query_hash {} }
+    { -query_hash_pairs {} }
 } {
     Handler for GET rest calls
 } {
-    ns_log Notice "im_rest_get_im_category: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash"
+    ns_log Notice "im_rest_get_im_category: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
 
     # Check that rest_oid is an integer
     im_security_alert_check_integer -location "im_rest_get_object" -value $rest_oid
@@ -359,13 +364,22 @@ ad_proc -private im_rest_get_object_type {
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
-    { -query_hash {} }
+    { -query_hash_pairs {} }
+    { -limit 100 }
     { -debug 0 }
 } {
-    Handler for GET rest calls
+    Handler for GET rest calls on a whole object type -
+    mapped to queries on the specified object type
 } {
-    ns_log Notice "im_rest_get_object_type: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash"
-    
+    ns_log Notice "im_rest_get_object_type: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
+
+    array set query_hash $query_hash_pairs
+
+    # Deal with "limit" max. number of objects to show
+    # and check that it's a valid integer
+    if {[info exists query_hash(limit)]} { set limit $query_hash(limit) }
+    im_security_alert_check_integer -location "im_rest_get_object_type" -value $limit
+
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$rest_otype'" -default 0]]
     set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "read"]
 
@@ -377,11 +391,25 @@ ad_proc -private im_rest_get_object_type {
 
     set base_url "[im_rest_system_url]/intranet-rest"
 
+
     # -------------------------------------------------------
-    # Select a number of objects from an rest_otype, based on criteria in the URL.
-    # We join the object's main table with the acs_objects with rest_otype, because
-    # acs_objects may contain "ruin objects" and the object's main table may contain
-    # entries for sub-types.
+    # Check if there is a where clause specified in the URL
+    # and validate the clause.
+    set where_clause ""
+    if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
+    # Determine the list of valid columns for the object type
+    set valid_vars [im_rest_object_type_columns -rest_otype $rest_otype]
+    # Check that the query is a valid SQL where clause
+    set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
+    if {!$valid_sql_where} {
+	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	return
+    }
+    if {"" != $where_clause} { set where_clause "and $where_clause" }
+
+    # Select SQL: Pull out objects where the acs_objects.object_type 
+    # is correct AND the object exists in the object type's primary table.
+    # This way we avoid "dangling objects" in acs_objects and sub-types.
     set sql "
 	select	t.$id_column as rest_oid,
 		${name_method}(t.$id_column) as object_name
@@ -389,7 +417,12 @@ ad_proc -private im_rest_get_object_type {
 		acs_objects o
 	where	t.$id_column = o.object_id and
 		o.object_type = :rest_otype
+		$where_clause
+	LIMIT $limit
     "
+
+#   ad_return_complaint 1 "<pre>$sql</pre>"
+
     set result ""
     db_foreach objects $sql {
 
@@ -468,12 +501,13 @@ ad_proc -private im_rest_post_object_type {
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
-    { -query_hash {} }
+    { -query_hash_pairs {} }
     { -debug 0 }
 } {
     Handler for POST rest calls to an object type - create a new object.
 } {
-    ns_log Notice "im_rest_post_object_type: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash"
+    ns_log Notice "im_rest_post_object_type: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
+
     set base_url "[im_rest_system_url]/intranet-rest"
 
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$rest_otype'" -default 0]]
@@ -519,13 +553,13 @@ ad_proc -private im_rest_post_object {
     { -user_id 0 }
     { -rest_otype "" }
     { -rest_oid 0 }
-    { -query_hash {} }
+    { -query_hash_pairs {} }
     { -debug 0 }
 } {
     Handler for POST rest calls to an individual object:
     Update the specific object using a generic update procedure
 } {
-    ns_log Notice "im_rest_post_object: rest_otype=$rest_otype, rest_oid=$rest_oid, user_id=$user_id, query_hash=$query_hash"
+    ns_log Notice "im_rest_post_object: rest_otype=$rest_otype, rest_oid=$rest_oid, user_id=$user_id, query_hash=$query_hash_pairs"
 
     # Get the HTTP contents
     set content [ns_conn content]
@@ -543,13 +577,14 @@ ad_proc -private im_rest_post_object {
        	set hash_array($nodeName) $nodeText
     }
 
-    # Generic update for the object
+    # Update the object. This routine will return a HTTP error in case 
+    # of a database constraint violation
     im_rest_object_type_update_sql \
 	-rest_otype $rest_otype \
 	-rest_oid $rest_oid \
 	-hash_array [array get hash_array] \
 
-
+    # The update was successful - return a suitable message.
     switch $format {
 	html { 
 	    set page_title "object_type: $rest_otype"
@@ -561,9 +596,6 @@ ad_proc -private im_rest_post_object {
 	    "
 	}
 	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id>$rest_oid</object_id>\n" }
-	default {
-	     ad_return_complaint 1 "Invalid format: '$format'"
-	}
     }
 
 }
@@ -649,13 +681,14 @@ ad_proc -private im_rest_post_im_project {
 
 ad_proc -private im_rest_authenticate {
     {-debug 1}
-    -query_hash_values:required
+    -query_hash_pairs:required
 } {
     Determine the autenticated user
 } {
-    array set query_hash $query_hash_values
+    array set query_hash $query_hash_pairs
     set header_vars [ns_conn headers]
 
+    # --------------------------------------------------------
     # Check for token authentication
     set token_user_id ""
     set token_token ""
@@ -663,6 +696,12 @@ ad_proc -private im_rest_authenticate {
     if {[info exists query_hash(auth_token)]} { set token_token $query_hash(auth_token)}
     if {[info exists query_hash(auto_login)]} { set token_token $query_hash(auto_login)}
 
+    # Check if the token fits the user
+    if {![im_valid_auto_login_p -user_id $token_user_id -auto_login $token_token]} {
+	set token_user_id ""
+    }
+
+    # --------------------------------------------------------
     # Check for HTTP "basic" authorization
     # Example: Authorization=Basic cHJvam9wOi5mcmFiZXI=
     set basic_auth [ns_set get $header_vars "Authorization"]
@@ -677,8 +716,12 @@ ad_proc -private im_rest_authenticate {
     if {"" == $basic_auth_user_id} {
 	set basic_auth_user_id [db_string userid "select party_id from parties where lower(email) = lower(:basic_auth_username)" -default ""]
     }
+    set basic_auth_password_ok_p [ad_check_password $basic_auth_user_id $basic_auth_password]
+    if {!$basic_auth_password_ok_p} { set basic_auth_user_id "" }
     if {$debug} { ns_log Notice "im_rest_authenticate: basic_auth=$basic_auth, basic_auth_username=$basic_auth_username, basic_auth_password=$basic_auth_password" }
 
+
+    # --------------------------------------------------------
     # Check for OpenACS "Cookie" auth
     set cookie_auth_user_id [ad_get_user_id]
 
@@ -688,11 +731,15 @@ ad_proc -private im_rest_authenticate {
     if {"" != $token_token} { set auth_method "token" }
     if {"" != $basic_auth_user_id} { set auth_method "basic" }
 
+    # --------------------------------------------------------
+    # Check if one of the methods was successful...
     switch $auth_method {
 	cookie { set auth_user_id $cookie_auth_user_id }
 	token { set auth_user_id $token_user_id }
 	basic { set auth_user_id $basic_auth_user_id }
-	default { return [im_rest_error -http_status 401 -message "No authentication found ('$auth_method')."] }
+	default { 
+	    return [im_rest_error -http_status 401 -message "No authentication found ('$auth_method')."] 
+	}
     }
 
     if {"" == $auth_user_id} { set auth_user_id 0 }
@@ -749,7 +796,7 @@ ad_proc -private im_rest_format_line {
 		xml { set href "$base_url/im_project/$value" }
 	    }
 	}
-	im_project.project_lead_id - im_timesheet_task.project_lead_id - im_invoice.company_contact_id - im_timesheet_invoice.company_contact_id - im_trans_invoice.company_contact_id - im_project.company_contact_id - im_cost_center.manager_id - im_cost_center.parent_id - im_conf_item.conf_item_owner_id - im_expense.provider_id - im_ticket.ticket_customer_contact_id - im_user_absence.owner_id {
+	im_project.project_lead_id - im_timesheet_task.project_lead_id - im_invoice.company_contact_id - im_timesheet_invoice.company_contact_id - im_trans_invoice.company_contact_id - im_project.company_contact_id - im_cost_center.manager_id - im_cost_center.parent_id - im_conf_item.conf_item_owner_id - im_expense.provider_id - im_ticket.ticket_customer_contact_id - im_user_absence.owner_id - im_project.creation_user - im_timesheet_task.creation_user - im_invoice.creation_user - im_timesheet_invoice.creation_user - im_trans_invoice.creation_user - im_cost_center.creation_user - im_conf_item.creation_user - im_expense.creation_user - im_ticket.creation_user - im_user_absence.creation_user {
 	    set user_name [im_name_from_user_id $value]
 	    switch $format {
 		html { set value "<a href=\"$base_url/user/$value?format=html\">$user_name</a>" }
@@ -821,7 +868,7 @@ UNION
 	where	object_type = :rest_otype
     "
 
-    set letters {a b c d e f g h i j k l m n o p q r s t u v w x y z}
+    set letters {a b c d e f g h i j k l m n}
     set from {}
     set wheres { "1=1" }
     set cnt 0
@@ -834,12 +881,76 @@ UNION
 
     set sql "
 	select	*
-	from	[join $froms ", "]
-	where	[join $wheres " and "]
+	from	(select	object_id as rest_oid,
+			object_type,
+			creation_user,
+			creation_date,
+			creation_ip,
+			context_id
+		from	acs_objects) o,
+		[join $froms ", "]
+	where	o.rest_oid = :rest_oid and
+		[join $wheres " and "]
     "
     return $sql
 }
 
+
+
+ad_proc -public im_rest_object_type_columns { 
+    -rest_otype:required
+} {
+    Returns a list of all columns for a given object type.
+} {
+    # ---------------------------------------------------------------
+    # Construct a SQL that pulls out all tables for an object type,
+    # plus all table columns via user_tab_colums.
+    set columns_sql "
+	select distinct
+		lower(column_name)
+	from
+		user_tab_columns utc,
+		(select	table_name,
+			id_column
+		from	acs_object_types
+		where	object_type = :rest_otype
+		UNION
+		select	table_name,
+			id_column
+		from	acs_object_type_tables
+		where	object_type = :rest_otype) t
+	where
+		lower(utc.table_name) = t.table_name
+    "
+
+    return [db_list columns $columns_sql]
+}
+
+ad_proc -public im_rest_object_type_index_columns { 
+    -rest_otype:required
+} {
+    Returns a list of all "index columns" for a given object type.
+    The index columns are the primary key columns of the object
+    types's tables. They will all contains the same object_id of
+    the object.
+} {
+    # ---------------------------------------------------------------
+    # Construct a SQL that pulls out all tables for an object type,
+    # plus all table columns via user_tab_colums.
+    set index_columns_sql "
+	select	id_column
+	from	acs_object_type_tables
+	where	object_type = :rest_otype
+    UNION
+	select	id_column
+	from	acs_object_types
+	where	object_type = :rest_otype
+    UNION
+	select	'rest_oid'
+    "
+
+    return [db_list index_columns $index_columns_sql]
+}
 
 
 # ----------------------------------------------------------------------
@@ -892,17 +1003,25 @@ ad_proc -public im_rest_object_type_update_sql {
     array unset sql_hash
     db_foreach cols $columns_sql {
 
-	# ignore variables that are not available in the var hash
+	# Skip variables that are not available in the var hash
 	if {![info exists hash($column_name)]} { continue }
+
+	# Skip index columns
+	if {[info exists index_column($column_name)]} { continue }
+
 	# skip tree_sortkey stuff
 	if {"tree_sortkey" == $column_name} { continue }
+	if {"max_child_sortkey" == $column_name} { continue }
+
 	# ignore reserved variables
 	if {"rest_otype" == $column_name} { contiue }
 	if {"rest_oid" == $column_name} { contiue }
 	if {"hash_array" == $column_name} { contiue }
+
 	# ignore any "*_cache" variables (financial cache)
 	if {[regexp {_cache$} $column_name match]} { continue }
 
+	# Start putting together the SQL
 	set sqls [list]
 	if {[info exists sql_hash($table_name)]} { set sqls $sql_hash($table_name) }
 	lappend sqls "$column_name = :$column_name"
@@ -926,6 +1045,96 @@ ad_proc -public im_rest_object_type_update_sql {
 }
 
 
+
+# ----------------------------------------------------------------------
+# SQL Validator
+# ----------------------------------------------------------------------
+
+ad_proc -public im_rest_valid_sql {
+    -string:required
+    {-variables {} }
+    {-debug 0}
+} {
+    Returns 1 if "where_clause" is a valid where_clause or 0 otherwise.
+    The validator is based on applying a number of rules using a rule engine.
+    Return the validation result if debug=1.
+} {
+    # An empty string is a valid SQL...
+    if {"" == $string} { return 1 }
+
+    # ------------------------------------------------------
+    # Massage the string so that it suits the rule engine.
+
+    # Add spaces around the string
+    set string " $string "
+
+    # Replace ocurrences of double (escaped) single-ticks with "quote"
+    regsub -all {''} $string { quote } string
+
+    # Add an extra space between all "funky" characters in the where clause
+    regsub -all {([\>\<\=\!]+)} $string { \1 } string
+
+    # Add an extra space around parentesis
+    regsub -all {([\(\)]+)} $string { \1 } string
+
+    # Add an extra space around kommas
+    regsub -all {(,)} $string { \1 } string
+
+    # Replace multiple spaces by a single one
+    regsub -all {\s+} $string { } string
+
+
+    # ------------------------------------------------------
+    # Rules have a format LHS <- RHS (Left Hand Side <- Right Hand Side)
+    set rules {
+	cond {cond and cond}
+	cond {cond or cond}
+	cond {\( cond \)}
+	cond {val = val}
+	cond {val like val}
+	cond {val > val}
+	cond {val >= val}
+	cond {val < val}
+	cond {val <= val}
+	cond {val <> val}
+	cond {val != val}
+	cond {val is null}
+	cond {val in \( val \)}
+	val  {val , val}
+	val {[0-9]+}
+	val {\'[^\']*\'}
+    }
+
+    # Add rules for every variable saying that it's a var.
+    foreach var $variables {
+	lappend rules val
+	lappend rules $var
+    }
+
+    # Applies a number of rules to a string, eventually rewriting
+    # the string into a single toplevel term.
+    # String is expected to have spaces around any payload, and 
+    # also each of its tokens surrounded by spaces
+    set fired 1
+    set debug_result ""
+    while {$fired} {
+	set fired 0
+	foreach {lhs rhs} $rules {
+	    set org_string $string
+	    incr fired [regsub -all " $rhs " $string " $lhs " string]
+	    if {$string != $org_string} {
+		append debug_result "$lhs -> rhs=$rhs: '$string'\n"
+	    }
+	}
+    }
+
+    # Show the application of rules for debugging
+    if {$debug} { return $debug_result }
+
+    set string [string trim $string]
+    if {"" == $string || "cond" == $string} { return 1 }
+    return 0
+}
 
 # ----------------------------------------------------------------------
 # Error Handling
@@ -955,12 +1164,14 @@ ad_proc -public im_rest_error {
     }
 
     doc_return $http_status "text/xml" "<?xml version='1.0' encoding='UTF-8'?>
-	<error>
-		<http_status>$http_status</http_status>
-		<http_status_message>$status_message</http_status_message>
-		<request>$url</request>
-		<message>$message</message>
-	</error>
-    "
+<error>
+<http_status>$http_status</http_status>
+<http_status_message>$status_message</http_status_message>
+<request>[ns_quotehtml $url]</request>
+<message>$message</message>
+</error>
+"
     return
 }
+
+
