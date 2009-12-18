@@ -398,7 +398,7 @@ ad_proc -private im_rest_get_object_type {
     set where_clause ""
     if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
     # Determine the list of valid columns for the object type
-    set valid_vars [im_rest_object_type_columns -rest_otype $rest_otype]
+    set valid_vars [util_memoize [list im_rest_object_type_columns -rest_otype $rest_otype]]
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
@@ -421,8 +421,6 @@ ad_proc -private im_rest_get_object_type {
 	LIMIT $limit
     "
 
-#   ad_return_complaint 1 "<pre>$sql</pre>"
-
     set result ""
     db_foreach objects $sql {
 
@@ -434,13 +432,16 @@ ad_proc -private im_rest_get_object_type {
 	    switch $rest_otype {
 		bt_bug { }
 		im_company { set read_p [im_permission $user_id "view_companies_all"] }
-		im_cost { }
+		im_cost { set read_p [im_permission $user_id "view_finance"] }
 		im_conf_item { set read_p [im_permission $user_id "view_conf_items_all"] }
+		im_invoices { set read_p [im_permission $user_id "view_finance"] }
 		im_project { set read_p [im_permission $user_id "view_projects_all"] }
 		im_user_absence { set read_p [im_permission $user_id "view_absences_all"] }
 		im_office { set read_p [im_permission $user_id "view_offices_all"] }
 		im_ticket { set read_p [im_permission $user_id "view_tickets_all"] }
 		im_timesheet_task { set read_p [im_permission $user_id "view_timesheet_tasks_all"] }
+		im_timesheet_invoices { set read_p [im_permission $user_id "view_finance"] }
+		im_trans_invoices { set read_p [im_permission $user_id "view_finance"] }
 		im_translation_task { }
 		user { }
 		default { 
@@ -697,8 +698,10 @@ ad_proc -private im_rest_authenticate {
     if {[info exists query_hash(auto_login)]} { set token_token $query_hash(auto_login)}
 
     # Check if the token fits the user
-    if {![im_valid_auto_login_p -user_id $token_user_id -auto_login $token_token]} {
-	set token_user_id ""
+    if {"" != $token_user_id && "" != $token_token} {
+	if {![im_valid_auto_login_p -user_id $token_user_id -auto_login $token_token]} {
+	    set token_user_id ""
+	}
     }
 
     # --------------------------------------------------------
@@ -716,8 +719,10 @@ ad_proc -private im_rest_authenticate {
     if {"" == $basic_auth_user_id} {
 	set basic_auth_user_id [db_string userid "select party_id from parties where lower(email) = lower(:basic_auth_username)" -default ""]
     }
-    set basic_auth_password_ok_p [ad_check_password $basic_auth_user_id $basic_auth_password]
-    if {!$basic_auth_password_ok_p} { set basic_auth_user_id "" }
+    if {"" != $basic_auth_user_id} {
+	set basic_auth_password_ok_p [ad_check_password $basic_auth_user_id $basic_auth_password]
+	if {!$basic_auth_password_ok_p} { set basic_auth_user_id "" }
+    }
     if {$debug} { ns_log Notice "im_rest_authenticate: basic_auth=$basic_auth, basic_auth_username=$basic_auth_username, basic_auth_password=$basic_auth_password" }
 
 
