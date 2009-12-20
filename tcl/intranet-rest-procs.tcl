@@ -121,41 +121,77 @@ ad_proc -private im_rest_call {
 
     # -------------------------------------------------------
     # Check the "rest_otype" to be a valid object type
-    set valid_rest_otypes [util_memoize [list db_list otypes "select object_type from acs_object_types union select 'im_category'"]]
+    set valid_rest_otypes [util_memoize [list db_list otypes "
+	select	object_type 
+	from	acs_object_types union
+	select	'im_category' union 
+	select	'im_invoice_item'
+    "]]
     if {[lsearch $valid_rest_otypes $rest_otype] < 0} { return [im_rest_error -http_status 406 -message "Invalid object_type '$rest_otype'. Valid object types include {im_project|im_company|...}."] }
 
     # -------------------------------------------------------
-    # Special treatment for "im_category", because it's not an object type.
-    if {"im_category" == $rest_otype} {
-	return [im_rest_get_im_category \
-		    -format $format \
-		    -user_id $user_id \
-		    -rest_otype $rest_otype \
-		    -rest_oid $rest_oid \
-		    -query_hash_pairs $query_hash_pairs \
-		   ]
-    }
-
     switch $method  {
 	GET {
+
 	    # Is there a valid rest_oid?
 	    if {"" != $rest_oid && 0 != $rest_oid} {
-		# Return everything we know about the object
-		return [im_rest_get_object \
-			    -format $format \
-			    -user_id $user_id \
-			    -rest_otype $rest_otype \
-			    -rest_oid $rest_oid \
-			    -query_hash_pairs $query_hash_pairs \
-		]
+
+		# Special treatment for "im_category", because it's not an object type.
+		switch $rest_otype {
+		    im_category {
+			return [im_rest_get_im_category \
+				    -format $format \
+				    -user_id $user_id \
+				    -rest_otype $rest_otype \
+				    -rest_oid $rest_oid \
+				    -query_hash_pairs $query_hash_pairs \
+				   ]
+		    }
+		    im_invoice_item {
+			return [im_rest_get_im_invoice_item \
+				    -format $format \
+				    -user_id $user_id \
+				    -rest_otype $rest_otype \
+				    -rest_oid $rest_oid \
+				    -query_hash_pairs $query_hash_pairs \
+				   ]
+		    }
+		    default {
+			# Return generic object information
+			return [im_rest_get_object \
+				    -format $format \
+				    -user_id $user_id \
+				    -rest_otype $rest_otype \
+				    -rest_oid $rest_oid \
+				    -query_hash_pairs $query_hash_pairs \
+				   ]
+		    }
+		}
+
+
 	    } else {
-		# Return query from the object rest_otype
-		return [im_rest_get_object_type \
-			    -format $format \
-			    -user_id $user_id \
-			    -rest_otype $rest_otype \
-			    -query_hash_pairs $query_hash_pairs \
-		]
+
+		# There is no oid, so the resource is the object_type itself.
+		switch $rest_otype {
+		    im_invoice_item {
+			return [im_rest_get_im_invoice_items \
+				    -format $format \
+				    -user_id $user_id \
+				    -rest_otype $rest_otype \
+				    -query_hash_pairs $query_hash_pairs \
+				   ]
+		    }
+		    default {
+			# Return query from the object rest_otype
+			return [im_rest_get_object_type \
+				    -format $format \
+				    -user_id $user_id \
+				    -rest_otype $rest_otype \
+				    -query_hash_pairs $query_hash_pairs \
+				   ]
+			
+		    }
+		}
 	    }
 	}
 
@@ -345,18 +381,96 @@ ad_proc -private im_rest_get_im_category {
 		[im_header $page_title][im_navbar]<table>
 		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
 		</table>[im_footer]
-	    " 
+	    "
+	    return
 	}
-	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?><$rest_otype>$result</$rest_otype>" }
+	xml {  
+	    doc_return 200 "text/xml" "<?xml version='1.0'?><$rest_otype>$result</$rest_otype>" 
+	    return
+	}
 	default {
 	     ad_return_complaint 1 "Invalid format: '$format'"
 	}
     }
   
-    ad_return_complaint 1 "<pre>sql=$sql\nhash=[join [array get result_hash] "\n"]</pre>"
+    # ad_return_complaint 1 "<pre>sql=$sql\nhash=[join [array get result_hash] "\n"]</pre>"
+    return
 
 }
 
+ad_proc -private im_rest_get_im_invoice_item {
+    { -format "xml" }
+    { -user_id 0 }
+    { -rest_otype "" }
+    { -rest_oid 0 }
+    { -query_hash_pairs {} }
+} {
+    Handler for GET rest calls to retreive invoice items
+} {
+    ns_log Notice "im_rest_get_im_invoice_item: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
+
+    # Check that rest_oid is an integer
+    im_security_alert_check_integer -location "im_rest_get_object" -value $rest_oid
+
+    # -------------------------------------------------------
+    # Get the SQL to extract all values from the object
+    set sql "select * from im_invoice_items where item_id = :rest_oid"
+
+    # Execute the sql. As a result we get a result_hash with keys 
+    # corresponding to table columns and values 
+    array set result_hash {}
+    db_with_handle db {
+        set selection [db_exec select $db query $sql 1]
+        while { [db_getrow $db $selection] } {
+            set col_names [ad_ns_set_keys $selection]
+            set this_result [list]
+            for { set i 0 } { $i < [ns_set size $selection] } { incr i } {
+		set var [lindex $col_names $i]
+		set val [ns_set value $selection $i]
+		set result_hash($var) $val
+            }
+        }
+    }
+    db_release_unused_handles
+
+    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+
+    # -------------------------------------------------------
+    # Format the result for one of the supported formats
+    set result ""
+    foreach result_key [array names result_hash] {
+	set result_val $result_hash($result_key)
+	append result [im_rest_format_line \
+			   -column $result_key \
+			   -value $result_val \
+			   -format $format \
+			   -rest_otype $rest_otype \
+	]
+    }
+	
+    switch $format {
+	html { 
+	    set page_title "$rest_otype: $rest_oid"
+	    doc_return 200 "text/html" "
+		[im_header $page_title][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
+		</table>[im_footer]
+	    "
+	    return
+	}
+	xml {  
+	    doc_return 200 "text/xml" "<?xml version='1.0'?><$rest_otype>$result</$rest_otype>" 
+	    return
+	}
+	default {
+	     ad_return_complaint 1 "Invalid format: '$format'"
+	}
+    }
+  
+    # ad_return_complaint 1 "<pre>sql=$sql\nhash=[join [array get result_hash] "\n"]</pre>"
+    return
+
+}
 
 
 ad_proc -private im_rest_get_object_type {
@@ -456,8 +570,8 @@ ad_proc -private im_rest_get_object_type {
 	    # This is one of the "custom" object types - check the permission:
 	    # This may be quite slow checking 100.000 objects one-by-one...
 	    eval "${rest_otype}_permissions $user_id $rest_oid view_p read_p write_p admin_p"
-	    if {!$read_p} { continue }
 	}
+	if {!$read_p} { continue }
 
 	set url "$base_url/$rest_otype/$rest_oid"
 	switch $format {
@@ -488,6 +602,100 @@ ad_proc -private im_rest_get_object_type {
     }
   
     ad_return_complaint 1 "<pre>sql=$sql\nhash=[join [array get result_hash] "\n"]</pre>"
+
+}
+
+
+ad_proc -private im_rest_get_im_invoice_items {
+    { -format "xml" }
+    { -user_id 0 }
+    { -rest_otype "" }
+    { -query_hash_pairs {} }
+    { -limit 100 }
+    { -debug 0 }
+} {
+    Handler for GET rest calls on invoice items.
+} {
+    ns_log Notice "im_rest_get_invoice_items: format=$format, user_id=$user_id, rest_otype=$rest_otype, query_hash=$query_hash_pairs"
+
+    array set query_hash $query_hash_pairs
+
+    set base_url "[im_rest_system_url]/intranet-rest"
+
+    # Deal with "limit" max. number of objects to show
+    # and check that it's a valid integer
+    if {[info exists query_hash(limit)]} { set limit $query_hash(limit) }
+    im_security_alert_check_integer -location "im_rest_get_object_type" -value $limit
+
+    set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = 'im_invoice'" -default 0]]
+    set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "read"]
+
+
+    # -------------------------------------------------------
+    # Check if there is a where clause specified in the URL and validate the clause.
+    set where_clause ""
+    if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
+    # Determine the list of valid columns for the object type
+    set valid_vars {item_id item_name project_id invoice_id item_units item_uom_id price_per_unit currency sort_order item_type_id item_status_id description item_material_id}
+    # Check that the query is a valid SQL where clause
+    set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
+    if {!$valid_sql_where} {
+	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	return
+    }
+    if {"" != $where_clause} { set where_clause "and $where_clause" }
+
+    # Select SQL: Pull out invoice_items.
+    set sql "
+	select	ii.item_id as rest_oid,
+		ii.item_name as object_name,
+		ii.invoice_id
+	from	im_invoice_items ii
+	where	1=1
+		$where_clause
+	LIMIT $limit
+    "
+
+    set result ""
+    db_foreach objects $sql {
+
+	# Check permissions
+	set read_p $rest_otype_read_all_p
+	if {!$read_p} { set read_p [im_permission $user_id "view_finance"] }
+	if {!$read_p} { im_invoice_permissions $user_id $invoice_id view_p read_p write_p admin_p }
+	if {!$read_p} { continue }
+
+	set url "$base_url/$rest_otype/$rest_oid"
+	switch $format {
+	    xml { append result "<object_id href=\"$url\">$rest_oid</object_id>\n" }
+	    html { 
+		append result "<tr>
+			<td>$rest_oid</td>
+			<td><a href=\"$url?format=html\">$object_name</a>
+		</tr>\n" 
+	    }
+	    xml {}
+	}
+    }
+	
+    switch $format {
+	html { 
+	    set page_title "object_type: $rest_otype"
+	    doc_return 200 "text/html" "
+		[im_header $page_title][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
+		</table>[im_footer]
+	    " 
+	    return
+	}
+	xml {  
+	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
+	    return
+	}
+    }
+
+    return
+    # ad_return_complaint 1 "<pre>sql=$sql\nhash=[join [array get result_hash] "\n"]</pre>"
 
 }
 
@@ -794,7 +1002,7 @@ ad_proc -private im_rest_format_line {
 		xml { set href "$base_url/im_office/$value" }
 	    }
 	}
-	im_invoice.project_id - im_timesheet_invoice.project_id - im_trans_invoice.project_id - im_project.project_id - im_project.parent_id - im_timesheet_task.project_id - im_timesheet_task.parent_id - im_expense.project_id - im_ticket.project_id - im_ticket.parent_id - im_trans_task.project_id {
+	im_invoice.project_id - im_timesheet_invoice.project_id - im_trans_invoice.project_id - im_project.project_id - im_project.parent_id - im_timesheet_task.project_id - im_timesheet_task.parent_id - im_expense.project_id - im_ticket.project_id - im_ticket.parent_id - im_trans_task.project_id - im_invoice_item.project_id {
 	    set project_name [util_memoize [list db_string cname "select project_name from im_projects where project_id=$rest_oid" -default $value]]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_project/$value?format=html\">$project_name</a>" }
@@ -808,7 +1016,7 @@ ad_proc -private im_rest_format_line {
 		xml { set href "$base_url/user/$value" }
 	    }
 	}
-	im_office.office_status_id - im_office.office_type_id - im_company.company_status_id - im_company.company_type_id - im_project.project_status_id - im_project.project_type_id - im_timesheet_task.project_status_id - im_timesheet_task.project_type_id - im_invoice.cost_status_id - im_invoice.cost_type_id - im_timesheet_invoice.cost_status_id - im_timesheet_invoice.cost_type_id - im_trans_invoice.cost_status_id - im_trans_invoice.cost_type_id - im_company.default_invoice_template_id - im_company.default_po_template_id - im_company.annual_revenue_id - im_company.default_delnote_template_id - im_company.default_bill_template_id - im_company.default_payment_method_id - im_invoice.template_id - im_timesheet_invoice.template_id - im_trans_invoice.template_id - im_invoice.payment_method_id - im_timesheet_invoice.payment_method_id - im_trans_invoice.payment_method_id - im_project.on_track_status_id - im_cost_center.cost_center_status_id - im_cost_center.cost_center_type_id - im_biz_object_member.object_role_id - im_conf_item.conf_item_status_id - im_conf_item.conf_item_type_id - im_expense.vat_type_id - im_expense.cost_status_id - im_expense.cost_type_id - im_expense.expense_type_id - im_expense.expense_payment_type_id - im_material.material_type_id - im_material.material_status_id - im_material.material_uom_id - im_release_item.release_status_id - im_rest_object_type.object_type_type_id - im_rest_object_type.object_type_status_id - im_ticket.ticket_status_id - im_ticket.ticket_type_id - im_ticket.project_status_id - im_ticket.project_type_id - im_timesheet_task.uom_id - im_trans_task.task_status_id - im_trans_task.task_type_id - im_trans_task.task_uom_id - im_trans_task.source_language_id - im_trans_task.target_language_id - im_trans_task.tm_integration_type_id - im_user_absence.absence_type_id - im_user_absence.absence_status_id - user.skin_id {
+	im_office.office_status_id - im_office.office_type_id - im_company.company_status_id - im_company.company_type_id - im_project.project_status_id - im_project.project_type_id - im_timesheet_task.project_status_id - im_timesheet_task.project_type_id - im_invoice.cost_status_id - im_invoice.cost_type_id - im_timesheet_invoice.cost_status_id - im_timesheet_invoice.cost_type_id - im_trans_invoice.cost_status_id - im_trans_invoice.cost_type_id - im_company.default_invoice_template_id - im_company.default_po_template_id - im_company.annual_revenue_id - im_company.default_delnote_template_id - im_company.default_bill_template_id - im_company.default_payment_method_id - im_invoice.template_id - im_timesheet_invoice.template_id - im_trans_invoice.template_id - im_invoice.payment_method_id - im_timesheet_invoice.payment_method_id - im_trans_invoice.payment_method_id - im_project.on_track_status_id - im_cost_center.cost_center_status_id - im_cost_center.cost_center_type_id - im_biz_object_member.object_role_id - im_conf_item.conf_item_status_id - im_conf_item.conf_item_type_id - im_expense.vat_type_id - im_expense.cost_status_id - im_expense.cost_type_id - im_expense.expense_type_id - im_expense.expense_payment_type_id - im_material.material_type_id - im_material.material_status_id - im_material.material_uom_id - im_release_item.release_status_id - im_rest_object_type.object_type_type_id - im_rest_object_type.object_type_status_id - im_ticket.ticket_status_id - im_ticket.ticket_type_id - im_ticket.project_status_id - im_ticket.project_type_id - im_timesheet_task.uom_id - im_trans_task.task_status_id - im_trans_task.task_type_id - im_trans_task.task_uom_id - im_trans_task.source_language_id - im_trans_task.target_language_id - im_trans_task.tm_integration_type_id - im_user_absence.absence_type_id - im_user_absence.absence_status_id - user.skin_id - im_invoice_item.item_uom_id - im_invoice_item.item_type_id - im_invoice_item.item_status_id {
 	    set category_name [im_category_from_id $value]
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_category/$value?format=html\">$category_name</a>" }
@@ -828,6 +1036,13 @@ ad_proc -private im_rest_format_line {
 	    switch $format {
 		html { set value "<a href=\"$base_url/im_material/$value?format=html\">$material_name</a>" }
 		xml { set href "$base_url/im_material/$value" }
+	    }
+	}
+	im_invoice_item.invoice_id  {
+	    set invoice_name [util_memoize [list db_string cname "select cost_name from im_costs where cost_id = $value" -default $value]]
+	    switch $format {
+		html { set value "<a href=\"$base_url/im_invoice/$value?format=html\">$invoice_name</a>" }
+		xml { set href "$base_url/im_invoice/$value" }
 	    }
 	}
 
