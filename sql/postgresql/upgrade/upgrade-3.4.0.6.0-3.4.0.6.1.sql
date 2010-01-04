@@ -9,7 +9,7 @@ where
 	object_id in (
 		select package_id 
 		from apm_packages 
-		where package_key = 'calendar'
+		where package_key = 'intranet-calendar'
 	)
 ;
 
@@ -25,7 +25,7 @@ where
 -- first one...
 
 SELECT acs_permission__grant_permission(
-	(select package_id from apm_packages where package_key = 'calendar' limit 1),
+	(select package_id from apm_packages where package_key = 'intranet-calendar' limit 1),
 	(select group_id from groups where group_name = 'Senior Managers'),
 	'read'
 );
