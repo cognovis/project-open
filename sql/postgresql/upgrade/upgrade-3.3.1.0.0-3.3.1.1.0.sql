@@ -7,8 +7,24 @@ SELECT acs_log__debug('/packages/intranet-dw-light/sql/postgresql/upgrade/upgrad
 -- Timesheet CSV
 
 --
+
 delete from im_view_columns where view_id=205;
+
 --
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from im_views where view_id = 205;
+        IF v_count = 0 THEN
+                insert into im_views ( view_id,view_name, view_type_id, visible_for) values (205, ''timesheet_csv'', 1400, ''view_timesheet'');
+        END IF;
+        RETURN 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (
