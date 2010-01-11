@@ -263,45 +263,45 @@ ad_proc im_freelance_trans_member_select_component {
     # Check the times that every freelancer has worked with the current customer
 
     # Get the customer
-#    set customer_id [db_string source_lang "
-#                select	company_id
-#                from    im_projects
-#                where   project_id = :object_id
-#    " -default 0]
-#
-#    set worked_with_customer_sql "
-#	select	f.user_id,
-#		ww.cnt
-#	from	($freelance_sql) f
-#		LEFT OUTER JOIN (
-#			select	count(*) as cnt,
-#				user_id
-#			from	(select	object_id_two as user_id,
-#					p.project_id
-#				from	acs_rels r,
-#					im_projects p
-#				where	p.company_id = :customer_id
-#					and r.object_id_one = p.project_id
-#				) ww
-#			group by
-#				user_id
-#		) ww ON ww.user_id = f.user_id
-#    "
-#
-#    db_foreach workd_with_customer $worked_with_customer_sql {
-#
-#	set cnt_pretty ""
-#	switch $cnt {
-#	     "" { set cnt_pretty [lang::message::lookup "" intranet-freelance-translation.never "never"] }
-#	     0 { set cnt_pretty [lang::message::lookup "" intranet-freelance-translation.never "never"] }
-#	     1 { set cnt_pretty [lang::message::lookup "" intranet-freelance-translation.once "once"] }
-#	     2 { set cnt_pretty [lang::message::lookup "" intranet-freelance-translation.twice "twice"] }
-#	     default { set cnt_pretty [lang::message::lookup "" intranet-freelance-translation.N_times "%cnt% times"] }
-#	}
-#	# Update the hash table cell
-#	set key "$user_id"
-#	set worked_with_hash($key) $cnt_pretty
-#    }
+    set customer_id [db_string source_lang "
+                select	company_id
+                from    im_projects
+                where   project_id = :object_id
+    " -default 0]
+
+    set worked_with_customer_sql "
+	select	f.user_id,
+		ww.cnt
+	from	($freelance_sql) f
+		LEFT OUTER JOIN (
+			select	count(*) as cnt,
+				user_id
+			from	(select	object_id_two as user_id,
+					p.project_id
+				from	acs_rels r,
+					im_projects p
+				where	p.company_id = :customer_id
+					and r.object_id_one = p.project_id
+				) ww
+			group by
+				user_id
+		) ww ON ww.user_id = f.user_id
+    "
+
+    db_foreach worked_with_customer $worked_with_customer_sql {
+
+	set cnt_pretty ""
+	switch $cnt {
+	     "" { set cnt_pretty [lang::message::lookup "" intranet-freelance-translation.never "never"] }
+	     0 { set cnt_pretty [lang::message::lookup "" intranet-freelance-translation.never "never"] }
+	     1 { set cnt_pretty [lang::message::lookup "" intranet-freelance-translation.once "once"] }
+	     2 { set cnt_pretty [lang::message::lookup "" intranet-freelance-translation.twice "twice"] }
+	     default { set cnt_pretty [lang::message::lookup "" intranet-freelance-translation.N_times "%cnt% times"] }
+	}
+	# Update the hash table cell
+	set key "$user_id"
+	set worked_with_hash($key) $cnt_pretty
+    }
 
     # ------------------------------------------------
     # Mix Freelance Info with Prices
@@ -398,9 +398,9 @@ ad_proc im_freelance_trans_member_select_component {
 	append freelance_body_html "<td><input type=radio name=user_id_from_search value=$user_id></td>"
 
 	set worked_with_cust [lindex $freelance_row 10]
-#	set worked_with_cust ""
-#	set key "$user_id"
-#	if {[info exists worked_with_hash($key)]} { set worked_with_cust $worked_with_hash($key) }
+	set worked_with_cust ""
+	set key "$user_id"
+	if {[info exists worked_with_hash($key)]} { set worked_with_cust $worked_with_hash($key) }
 	
 	append freelance_body_html "
 	  <td><a href=users/view?[export_url_vars user_id]><nobr>$name</nobr></a></td>
