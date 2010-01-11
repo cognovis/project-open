@@ -43,7 +43,7 @@ declare
 	v_count	integer;
 begin
 	select count(*) into v_count from acs_object_type_tables
-	where table_name = ''im_invoices'';
+	where table_name = ''im_invoices'' and object_type = ''im_invoice'';
 	IF v_count > 0 THEN return 0; END IF;
 
 	insert into acs_object_type_tables (object_type,table_name,id_column)
