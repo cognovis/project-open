@@ -2298,7 +2298,8 @@ ad_proc -public im_cost_update_project_cost_cache {
 		cat.cost_type_id
     "
 
-    set cost_type_list [util_memoize [list db_list cost_type_category_list "select category_id from im_categories where category_type='Intranet Cost Type' and (enabled_p is null OR enabled_p = 't')"]]
+    # Get the list of all cost types. Do not check for enabled_p here.
+    set cost_type_list [util_memoize [list db_list cost_type_category_list "select category_id from im_categories where category_type='Intranet Cost Type'"]]
     foreach category_id $cost_type_list {
 	set subtotals($category_id) 0
     }
