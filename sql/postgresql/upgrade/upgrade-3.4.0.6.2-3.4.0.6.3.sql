@@ -50,7 +50,7 @@ begin
 
 	-- Select out all interesting variables from a ticket
 	select	ticket_id, ticket_status_id, ticket_type_id, ticket_prio_id, ticket_customer_contact_id,
-		ticket_assignee_id, ticket_sla_id, ticket_dept_id, ticket_service_id, ticket_hardware_id,
+		ticket_assignee_id, p.parent_id as ticket_sla_id, ticket_dept_id, ticket_service_id, ticket_hardware_id,
 		ticket_application_id, ticket_queue_id, ticket_alarm_date, ticket_alarm_action, ticket_note,
 		ticket_conf_item_id
 	into	v_ticket_id, v_ticket_status_id, v_ticket_type_id, v_ticket_prio_id, v_ticket_customer_contact_id,
