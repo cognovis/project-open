@@ -367,8 +367,8 @@ set sql "
 		$extra_select
 	FROM
 		im_projects p,
+		LEFT OUTER JOIN im_projects sla ON (p.parent_id = sla.project_id)
 		im_tickets t
-		LEFT OUTER JOIN im_projects sla ON (t.ticket_sla_id = sla.project_id)
 		LEFT OUTER JOIN im_conf_items ci ON (t.ticket_conf_item_id = ci.conf_item_id),
 		im_companies c
 		$extra_from
