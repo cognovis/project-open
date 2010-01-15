@@ -28,9 +28,8 @@ set bulk_action_list {}
 lappend bulk_actions_list "[lang::message::lookup "" intranet-helpdesk.Delete "Delete"]" "ticket-ticket-rel-del" "[lang::message::lookup "" intranet-helpdesk.Remove_checked_items "Remove Checked Items"]"
 
 set assoc_msg [lang::message::lookup {} intranet-helpdesk.Assoc_to_new_incident_ticket {Associate with a new incident ticket}]
-set actions [list $assoc_msg "/intranet-helpdesk/new?ticket_id=$ticket_id" ""]
+set actions [list $assoc_msg "/intranet-helpdesk/ticket-select?ticket_id=$ticket_id" ""]
 set actions [list]
-
 
 list::create \
     -name tickets \
