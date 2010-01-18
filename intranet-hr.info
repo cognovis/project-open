@@ -17,7 +17,7 @@
         <description format="text/plain">Human Resources module consisting mainly of the &quot;employee&quot; business object. Employee information include payroll, corporate hierarchy (who manages whom) and demographics.</description>
 
         <provides url="intranet-hr" version="3.4.0.2.0"/>
-        <requires url="intranet-core" version="3.4.0.0.0"/>
+        <requires url="intranet-core" version="3.4.0.8.0"/>
 
         <callbacks>
         </callbacks>
