@@ -32,6 +32,9 @@ if {"" != $left_scale1} { lappend left_vars $left_scale1 }
 if {"" != $left_scale2} { lappend left_vars $left_scale2 }
 if {"" != $left_scale3} { lappend left_vars $left_scale3 }
 
+# ad_return_complaint 1 $left_vars
+
+
 # Top Dimension
 set top_vars [ns_urldecode $top_vars]
 if {"" != $top_scale1} { lappend top_vars $top_scale1 }
@@ -288,7 +291,7 @@ ns_write "
 </tr>
 </form>
 </table>
-<table border=0 cellspacing=1 cellpadding=1>
+<table border=0 cellspacing=3 cellpadding=3>
 "
 
 
@@ -308,7 +311,7 @@ if {1} {
 }
 
 if {"" != $customer_type_id && 0 != $customer_type_id} {
-    lappend criteria "pcust.company_type_id in ([join [im_sub_categories $customer_type_id] ","])"
+    lappend criteria "cust.company_type_id in ([join [im_sub_categories $customer_type_id] ","])"
 }
 
 set where_clause [join $criteria " and\n\t\t\t"]
@@ -434,7 +437,9 @@ foreach scale_item $top_scale_plain {
 # Create a sorted left dimension
 
 # No top dimension at all gives an error...
-if {1 || ![llength $left_vars]} {
+
+
+if {![llength $left_vars]} {
     ns_write "
 	<p>&nbsp;<p>&nbsp;<p>&nbsp;<p><blockquote>
 	[lang::message::lookup "" intranet-reporting.No_left_dimension "No 'Left' Dimension Specified"]:<p>
