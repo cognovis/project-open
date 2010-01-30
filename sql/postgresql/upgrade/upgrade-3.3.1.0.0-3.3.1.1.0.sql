@@ -14,7 +14,7 @@ insert into im_view_columns (
 	9021,90,NULL,
 	'<input type=checkbox name=_dummy onclick=\\"acs_ListCheckAll(''task'',this.checked)\\">',
 	'$del_checkbox','','',
-	21,'expr $project_write'
+	210,'expr $project_write'
 );
 
 

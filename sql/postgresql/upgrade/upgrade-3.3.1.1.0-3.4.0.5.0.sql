@@ -41,8 +41,18 @@ insert into im_view_columns (column_id, view_id, group_id, column_name, column_r
 values (9017,90,NULL,'Task Type','$type_select','','',170,'expr $project_write');
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for) 
 values (9019,90,NULL,'Task Status','$status_select','','',190,'expr $project_write');
-insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for) 
-values (9021,90,NULL,'[im_gif delete "Delete the Task"]','$del_checkbox','','',210,'expr $project_write');
+
+insert into im_view_columns (
+        column_id, view_id, group_id, column_name,
+        column_render_tcl, extra_select, extra_where,
+        sort_order, visible_for
+) values (
+        9021,90,NULL,
+        '<input type=checkbox name=_dummy onclick=\\"acs_ListCheckAll(''task'',this.checked)\\">',
+        '$del_checkbox','','',
+        210,'expr $project_write'
+);
+
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for) 
 values (9023,90,NULL,'Assigned','$assignments','','',230,'expr $project_write');
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,extra_select, extra_where, sort_order, visible_for) 

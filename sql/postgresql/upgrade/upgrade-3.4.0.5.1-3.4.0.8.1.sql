@@ -22,3 +22,20 @@ begin
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
+
+
+-- Allow translation tasks to be checked/unchecked all together
+--
+delete from im_view_columns where column_id = 9021;
+insert into im_view_columns (
+        column_id, view_id, group_id, column_name,
+        column_render_tcl, extra_select, extra_where,
+        sort_order, visible_for
+) values (
+        9021,90,NULL,
+        '<input type=checkbox name=_dummy onclick=\\"acs_ListCheckAll(''task'',this.checked)\\">',
+        '$del_checkbox','','',
+        210,'expr $project_write'
+);
+
