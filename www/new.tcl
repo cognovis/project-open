@@ -25,7 +25,6 @@ if {![info exists task]} {
 	{ ticket_sla_id "" }
 	{ ticket_customer_contact_id "" }
 	{ task_id "" }
-	{ return_url "" }
 	message:optional
 	{ ticket_status_id "[im_ticket_status_open]" }
 	{ ticket_type_id "" }
@@ -64,7 +63,8 @@ if {![info exists task]} {
 
     # Don't show this page in WF panel.
     # Instead, redirect to this same page, but in TaskViewPage mode.
-    ad_returnredirect "/intranet-helpdesk/new?ticket_id=$task(object_id)"
+    # ad_returnredirect "/intranet-helpdesk/new?ticket_id=$task(object_id)"
+    ad_returnredirect $return_url
 
 }
 
@@ -158,7 +158,6 @@ ad_form \
     -actions $actions \
     -has_edit 1 \
     -mode $form_mode \
-    -export {next_url return_url} \
     -form {
 	ticket_id:key
 	{ticket_name:text(text) {label $title_label} {html {size 50}}}
@@ -490,7 +489,9 @@ ad_form -extend -name helpdesk_ticket -on_request {
     im_project_audit -project_id $ticket_id -action create
 
     # Send to page to show the new ticket, instead of returning to return_url
-    ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {ticket_id}]
+    # ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {ticket_id}]
+
+    ad_returnredirect $return_url
     ad_script_abort
 
 } -edit_data {
