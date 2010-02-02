@@ -279,6 +279,7 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     set uri $params(LdapURI)
     set base_dn $params(BaseDN)
     set bind_dn $params(BindDN)
+    set auth_short_name [db_string auth_short_name "select short_name from auth_authorities where authority_id = :authority_id" -default ""]
 
     foreach var { username } {
         regsub -all "{$var}" $base_dn [set $var] base_dn
@@ -308,9 +309,30 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 			OR lower(username) = lower(:username)
 	" -default 0]
 
+
 	if {0 != $uid} {
 
-	    # Return valid credentials
+	    # Sync Moravia group information
+	    set return_code [catch {
+		exec adfind -h 10.10.1.10 -f "(sAMAccountName=$username)" -b "DC=$auth_short_name,DC=moravia-it,DC=com"
+	    } msg]
+
+#	    ad_return_complaint 1 "<pre>$msg</pre>"
+
+	    
+	    set debug ""
+	    foreach member_line [split $msg "\n"] {
+		if {[regexp {memberOf\:\W*(.+)} $member_line match groupname]} {
+		    set profile_id [db_string profid "select profile_id from im_profiles where ad_group_name=:groupname" -default 0]
+		    if {0 != $profile_id} {
+			im_profile::add_member -profile_id $profile_id -user_id $uid
+		    }
+		    append debug "'$groupname'\n"
+		}
+	    }
+#	    ad_return_complaint 1 "<pre>$debug</pre>"
+
+
 	    set auth_info(auth_status) "ok"
 	    set auth_info(info_status) "ok"
 	    set auth_info(user_id) $uid
@@ -319,8 +341,8 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 	    set auth_info(account_message) ""
 
 	    # Sync the user with the LDAP information, with username as primary key
-	    set auth_info_array [auth::ldap::authentication::Sync $username $parameters $authority_id]
-	    array set auth_info $auth_info_array
+#	    set auth_info_array [auth::ldap::authentication::Sync $username $parameters $authority_id]
+#	    array set auth_info $auth_info_array
 	    return [array get auth_info]
 
 	} else {
@@ -336,11 +358,7 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 	}
     }
 
-
-#	ad_return_complaint 1 "<pre>$return_code\n$msg\n[array get auth_info] </pre>"
-
-
-
+    
     # ----------------------------------------------------
     # We had an issue with the LDAP
     if {[regexp {Invalid credentials \(49\)} $msg]} {
