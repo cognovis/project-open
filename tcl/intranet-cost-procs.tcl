@@ -48,6 +48,7 @@ ad_proc -public im_cost_type_timesheet_budget {} { return 3726 }
 ad_proc -public im_cost_type_expense_planned {} { return 3728 }
 ad_proc -public im_cost_type_interco_invoice {} { return 3730 }
 ad_proc -public im_cost_type_interco_quote {} { return 3732 }
+ad_proc -public im_cost_type_provider_receipt {} { return 3734 }
 
 
 
