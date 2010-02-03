@@ -81,6 +81,11 @@ SELECT im_category_new (3722,'Expense Bundle','Intranet Cost Type');
 SELECT im_category_new (3724,'Delivery Note','Intranet Cost Type');
 SELECT im_category_new (3726,'Timesheet Planned Cost','Intranet Cost Type');
 SELECT im_category_new (3728,'Expense Planned Cost','Intranet Cost Type');
+SELECT im_category_new (3730,'InterCo Invoice','Intranet Cost Type');
+SELECT im_category_new (3732,'InterCo Invoice','Intranet Cost Type');
+SELECT im_category_new (3734,'Provider Receipt','Intranet Cost Type');
+
+
 
 -- reserved until 3799
 
