@@ -11,14 +11,63 @@ ad_library {
 }
 
 
-
-
 # ---------------------------------------------------------------
 # Freelance Translation Member Select Component
 # ---------------------------------------------------------------
 
-# this proc is only used without quality module
+ad_proc im_freelance_trans_member_select_component_join_prices {
+    hash
+    params
+} {
+    Simplify the display of prices that are very similar to each other.
+    This function checks if the two lists of price parameters only differ
+    in at most 1 list element. In this case, it will join the two parameter
+    lists by concatenating the one list element that is different.
+    Otherwise it will just return two list elements.
+} {
+    # Check if this is the first price.
+    if {"" == $hash} { return [list $params] }
 
+    # Ok, there is at least one parameter list in the list "hash".
+    # Split the list into its last element, and the first elements
+    set hash_last [lindex $hash end]
+    set hash_first [lrange $hash 0 end-1]
+
+    # Compare the hash_last (simple!) list with the params simple list
+    set len [llength $params]
+    if {[llength $hash_last] > $len} { set len [llength $hash_last] }
+    set diffs 0
+    set param_idx -1
+    for {set i 0} {$i < $len} {incr i} {
+	if {[lindex $params $i] != [lindex $hash_last $i]} {
+	    incr diffs
+	    set param_idx $i
+	}
+    }
+
+    if {1 == $diffs} {
+	# Combine the two elements
+	set result [list]
+	for {set i 0} {$i < $len} {incr i} {
+	    if {$i != $param_idx} {
+		lappend result [lindex $params $i]
+	    } else {
+		lappend result "[lindex $hash_last $i] [lindex $params $i]"
+	    }
+	}
+	lappend hash_first $result
+	return $hash_first
+    } else {
+	# Just return the appended lists
+	lappend hash_first $hash_last
+	lappend hash_first $params
+	return $hash_first
+    }
+}
+
+
+
+# this proc is only used without quality module
 ad_proc im_freelance_trans_member_select_component { 
     object_id 
     return_url 
@@ -63,7 +112,7 @@ ad_proc im_freelance_trans_member_select_component {
     }
     set freel_trans_order_by [string tolower $freel_trans_order_by]
 
-    set list_order_by_sql "min(p.price)"
+    set list_order_by_sql "min(p.price), p.source_language_id, p.target_language_id, p.task_type_id, p.subject_area_id, p.file_type_id"
     if { [info exists list_order_by] } { 
 		if { "name" == $list_order_by  } {
 			set list_order_by_sql "f.name"
@@ -75,6 +124,7 @@ ad_proc im_freelance_trans_member_select_component {
     } else {
 	set order_freelancer_sql "user_name"
     }
+
 
     # ------------------------------------------------
     # Constants
@@ -204,8 +254,7 @@ ad_proc im_freelance_trans_member_select_component {
 		f.no_times_worked_for_customer
 	order by 
 		$list_order_by_sql 
-   "
-   # ad_return_complaint 1 $price_sql
+    "
 
     db_foreach price_hash $price_sql {
 	set key "$user_id-$uom_id"
@@ -214,27 +263,18 @@ ad_proc im_freelance_trans_member_select_component {
 	set price_append "$min_price - $max_price"
 	if {$min_price == $max_price} { set price_append "$min_price" }
 
-
 	# Add the list of parameters
-	set param_list [list "$source_language->$target_language"]
+	set param_list [list $price_append $source_language $target_language]
 	if {"" == $source_language && "" == $target_language} { set param_list [list] }
-
 	if {"" != $subject_area} { lappend param_list $subject_area }
 	if {"" != $task_type} { lappend param_list $task_type }
 	if {"" != $file_type} { lappend param_list $file_type }
 
-	set params [join $param_list ", "]
-	if {[llength $param_list] > 0} { set params "($params)" }
-
-
-	set hash_append "<nobr>$price_append $params</nobr>"
-
 	# Update the hash table cell
 	set hash ""
 	if {[info exists price_hash($key)]} { set hash $price_hash($key) }
-	if {"" != $hash} { append hash "<br>" }
-	set price_hash($key) "$hash $hash_append"
-
+	set hash [im_freelance_trans_member_select_component_join_prices $hash $param_list]
+	set price_hash($key) $hash
 
 	# deal with sorting the array be one of the 
 	switch $freel_trans_order_by {
@@ -251,6 +291,16 @@ ad_proc im_freelance_trans_member_select_component {
             default { }
         }
     }
+
+    foreach key [array names price_hash] {
+	set values $price_hash($key)
+	set result ""
+	foreach value $values {
+	    append result "<nobr>[lindex $value 0] {[lrange $value 1 end]}</nobr><br>\n"
+	}
+	set price_hash($key) $result
+    }
+
 
     set uom_listlist [db_list_of_lists uom_list "
 	select uom_id, im_category_from_id(uom_id)
@@ -322,17 +372,13 @@ ad_proc im_freelance_trans_member_select_component {
 	lappend table_rows $row
     }
 
-	if { ![info exists list_order_by] } {
-		set sorted_table_rows [qsort $table_rows [lambda {s} { lindex $s 2 }]]
-	} else {
-		# order had been done in sql   
-		set sorted_table_rows $table_rows
-	}
-
-    # Sort the keys according to sort_val (6th element)
-    # set sorted_table_rows [qsort $table_rows [lambda {s} { lindex $s 2 }]]
-
-
+    if { ![info exists list_order_by] } {
+	set sorted_table_rows [qsort $table_rows [lambda {s} { lindex $s 2 }]]
+    } else {
+	# order had been done in sql   
+	set sorted_table_rows $table_rows
+    }
+    
 
     # ------------------------------------------------
 
@@ -407,8 +453,6 @@ ad_proc im_freelance_trans_member_select_component {
 	  <td>$worked_with_cust</td>
         "
 
-
-
 	# Add a column for each skill type
 	set col_cnt 3
 	foreach skill_type $skill_type_list {
@@ -446,13 +490,7 @@ ad_proc im_freelance_trans_member_select_component {
 	$freelance_body_html
 	  <tr> 
 	    <td colspan=$colspan>
-
-		<table cellspacing=0 cellpadding=0 width=\"100%\">
-		<tr valign=top>
-		<td width=\"50%\"></td>
-		<td width=\"50%\" align=right>
     "
-
     if {$ctr > 0} {
 	append select_freelance "
 		      [_ intranet-core.add_as]
@@ -463,17 +501,12 @@ ad_proc im_freelance_trans_member_select_component {
     }
 
     append select_freelance "
-		</td>
-		</tr>
-		</table>
-
 	    </td>
 	  </tr>
 	</table>
 	</form>
-"
-
-
-return $select_freelance
+    "
+    
+    return $select_freelance
 }
 
