@@ -19,7 +19,7 @@ ad_page_contract {
     { security_token "" }
     { upload_gan ""}
     { upload_gif ""}
-    { debug_p 1 }
+    { debug_p 0 }
     return_url
 }
 
