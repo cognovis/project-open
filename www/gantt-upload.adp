@@ -14,7 +14,7 @@
       "Upload a GanttProject .gan or OpenProj XML File"] %>:
   <br/>
 </p>
-<form enctype="multipart/form-data" method="POST" action="gantt-upload-2.tcl">
+<form enctype="multipart/form-data" method="POST" action="gantt-upload-2">
 <%= [export_form_vars project_id return_url] %>
 <table border=0>
   <tr>
