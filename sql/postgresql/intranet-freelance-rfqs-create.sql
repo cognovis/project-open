@@ -28,7 +28,8 @@ SELECT acs_object_type__create_type (
 update acs_object_types set
         status_type_table = 'im_freelance_rfqs',
         status_column = 'rfq_status_id',
-        type_column = 'rfq_type_id'
+        type_column = 'rfq_type_id',
+	type_category_type = 'Intranet Freelance RFQ Type'
 where object_type = 'im_freelance_rfq';
 
 
@@ -446,7 +447,8 @@ SELECT acs_object_type__create_type (
 update acs_object_types set
         status_type_table = 'im_freelance_rfq_answers',
         status_column = 'answer_status_id',
-        type_column = 'answer_type_id'
+        type_column = 'answer_type_id',
+	type_category_type = 'Intranet Freelance RFQ Type'
 where object_type = 'im_freelance_rfq_answer';
 
 

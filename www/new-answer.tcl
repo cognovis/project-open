@@ -263,9 +263,10 @@ ad_form \
         }
     }
 
+
 im_dynfield::append_attributes_to_form \
     -object_type "im_freelance_rfq_answer" \
-    -object_subtype_id [im_freelance_rfq_answer_type_default] \
+    -object_subtype_id $rfq_type_id \
     -form_id "rfq-answer-form"
 
 
