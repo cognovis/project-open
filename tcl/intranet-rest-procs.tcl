@@ -776,7 +776,7 @@ ad_proc -private im_rest_post_object {
 
     # store the key-value pairs into a hash array
     if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: 'err_msg'."]
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
     }
 
     set root_node [$doc documentElement]
