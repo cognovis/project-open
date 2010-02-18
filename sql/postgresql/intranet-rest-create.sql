@@ -107,6 +107,7 @@ create unique index im_rest_object_object_type_idx on im_rest_object_types(objec
 
 
 
+
 -----------------------------------------------------------
 -- PL/SQL functions to Create and Delete rest and to get
 -- the name of a specific object_type.
@@ -199,6 +200,8 @@ BEGIN
 
 	return v_object_type_id;
 END;' language 'plpgsql';
+
+
 
 
 -- Delete a object_type from the system.

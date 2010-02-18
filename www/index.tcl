@@ -126,6 +126,8 @@ array set xxx_crud_hash {
 }
 
 array set crud_hash {
+	im_invoice "<b>CRUL</b>"
+	im_invoice_item "<b>CRUL</b>"
 	im_project "<b>CRUL</b>"
 	im_trans_task "<b>CRUL</b>"
 }
@@ -160,6 +162,7 @@ array set wiki_hash {
 	object_type_im_hour 1
 	object_type_im_indicator 1
 	object_type_im_invoice 1
+	object_type_im_invoice_item 1
 	object_type_im_material 1
 	object_type_im_menu 1
 	object_type_im_office 1

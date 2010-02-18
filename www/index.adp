@@ -19,7 +19,7 @@
 This page lists all &#93;project-open&#91; 
 <a href="http://www.project-open.org/documentation/list_object_types">object types</a> that are exposed
 through this REST Web-Service API, together with the implementation
-status of CRUD operations (see below) for each object type and a 
+status of CRUL (Create, Read, Update and List) operations (see below) for each object type and a 
 link to the &#93;project-open&#91; Documentation Wiki.
 </p>
 <br>
@@ -34,14 +34,14 @@ link to the &#93;project-open&#91; Documentation Wiki.
 	<b>Pretty Name:</b><br>
 	Human readable name for object type.
 <li>
-	<b>CRUD Status</b>:<br>
+	<b>CRUL Status</b>:<br>
 	Lists the implemented REST API operations available for this
 	object type:
 	<ul>
 	<li>C - Create
 	<li>R - Read
 	<li>U - Update
-	<li>D - Delete
+	<li>L - List
 	</ul>
 <li>
 	<b>Wiki</b>:<br>

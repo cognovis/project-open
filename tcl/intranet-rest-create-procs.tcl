@@ -31,12 +31,13 @@ ad_proc -private im_rest_post_im_project {
 	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
     }
 
+    set parent_id ""
+
     set root_node [$doc documentElement]
     foreach child [$root_node childNodes] {
+	# Store the values
 	set nodeName [$child nodeName]
 	set nodeText [$child text]
-	
-	# Store the values
 	set hash($nodeName) $nodeText
 	set $nodeName $nodeText
     }
@@ -184,6 +185,10 @@ ad_proc -private im_rest_post_im_invoice {
     }
 
     set note ""
+    set amount 0
+    set currency "EUR"
+    set vat ""
+    set tax ""
 
     set root_node [$doc documentElement]
     foreach child [$root_node childNodes] {
@@ -225,7 +230,7 @@ ad_proc -private im_rest_post_im_invoice {
 			:cost_type_id,		-- cost_type_id
 			:payment_method_id,	-- payment_method_id
 			:payment_days,		-- payment_days
-			0,			-- amount
+			:amount,		-- amount
 			:vat,			-- vat
 			:tax,			-- tax
 			:note			-- note
