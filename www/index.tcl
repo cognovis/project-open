@@ -113,7 +113,6 @@ array set xxx_crud_hash {
 	im_note R
 	im_office R
 	im_profile R
-	im_project CRUD
 	im_repeating_cost R
 	im_report R
 	im_ticket CRUD
@@ -124,6 +123,11 @@ array set xxx_crud_hash {
 	im_user_absence CRUD
 	membership_rel CRUD
 	user CRU
+}
+
+array set crud_hash {
+	im_project "<b>CRUL</b>"
+	im_trans_task "<b>CRUL</b>"
 }
 
 
@@ -233,7 +237,8 @@ if {$current_user_is_admin_p} {
 
 lappend list_columns crud_status
 lappend list_columns {
-            label "CRUD<br>Status"
+            label "CRUL<br>Status"
+	    display_template "@object_types.crud_status;noquote@"
 	}
 lappend list_columns wiki
 lappend list_columns {
@@ -369,7 +374,7 @@ db_multirow -extend $multirow_extend object_types select_object_types "
 	}
     }
 
-    set crud_status "R"
+    set crud_status "RUL"
     if {[info exists crud_hash($object_type)]} { set crud_status $crud_hash($object_type) }
 
     set wiki_key "object_type_$object_type"
