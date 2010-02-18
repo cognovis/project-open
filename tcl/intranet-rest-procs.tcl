@@ -57,6 +57,7 @@ ad_proc -private im_rest_call_get {
 
     # Determine the authenticated user_id. 0 means not authenticated.
     array set auth_hash [im_rest_authenticate -query_hash_pairs [array get query_hash]]
+    if {0 == [llength [array get auth_hash]]} { return [im_rest_error -http_status 401 -message "Not authenticated"] }
     set auth_user_id $auth_hash(user_id)
     set auth_method $auth_hash(method)
     if {0 == $auth_user_id} { return [im_rest_error -http_status 401 -message "Not authenticated"] }
@@ -882,6 +883,79 @@ ad_proc -private im_rest_post_im_project {
 }
 
 
+
+ad_proc -private im_rest_post_im_trans_task {
+    { -format "xml" }
+    { -user_id 0 }
+    { -content "" }
+} {
+    Create a new Translation Task and return the task_id.
+} {
+    ns_log Notice "im_rest_post_im_trans_task: user_id=$user_id"
+
+    # store the key-value pairs into a hash array
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    }
+
+    set root_node [$doc documentElement]
+    foreach child [$root_node childNodes] {
+	set nodeName [$child nodeName]
+	set nodeText [$child text]
+	
+	# Store the values
+	set hash($nodeName) $nodeText
+	set $nodeName $nodeText
+    }
+
+    # Check for duplicate
+    set dup_sql "
+                select  count(*)
+                from    im_trans_tasks
+                where   project_id = :project_id and
+			task_name = :task_name and
+			target_language_id = :target_language_id
+    "
+    if {[db_string duplicates $dup_sql]} {
+	return [im_rest_error -http_status 406 -message "Duplicate Translation Task: Your translation task name or translation task path already exists for the specified parent_id."]
+    }
+
+    if {[catch {
+        set rest_oid [db_string new_trans_task "
+		select im_trans_task__new (
+			null,			-- task_id
+			'im_trans_task',	-- object_type
+			now(),			-- creation_date
+			:user_id,		-- creation_user
+			'[ns_conn peeraddr]',	-- creation_ip	
+			null,			-- context_id	
+
+			:project_id,		-- project_id	
+			:task_type_id,		-- task_type_id	
+			:task_status_id,	-- task_status_id
+			:source_language_id,	-- source_language_id
+			:target_language_id,	-- target_language_id
+			:task_uom_id		-- task_uom_id
+		)
+	"]
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error creating translation task: 'err_msg'."]
+    }
+
+    if {[catch {
+	im_rest_object_type_update_sql \
+	    -rest_otype "im_trans_task" \
+	    -rest_oid $rest_oid \
+	    -hash_array [array get hash]
+
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error updating translation task: 'err_msg'."]
+    }
+    
+    return $rest_oid
+}
+
+
 # --------------------------------------------------------
 # Auxillary functions
 # --------------------------------------------------------
@@ -967,9 +1041,11 @@ ad_proc -private im_rest_system_url { } {
     Returns a the system's "official" URL without trailing slash
     suitable to prefix all hrefs used for the XML format.
 } {
-    set system_url [ad_parameter -package_id [ad_acs_kernel_id] SystemURL "" ""]
-    if {[regexp {^(.*)/$} $system_url match system_url_without]} { set system_url $system_url_without }
-    return $system_url
+    return [util_current_location]
+
+#    set system_url [ad_parameter -package_id [ad_acs_kernel_id] SystemURL "" ""]
+#    if {[regexp {^(.*)/$} $system_url match system_url_without]} { set system_url $system_url_without }
+#    return $system_url
 }
 
 
