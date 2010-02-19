@@ -726,8 +726,8 @@ ad_proc -public im_gp_save_tasks2 {
           project_name = :task_name
       "]>0} {
 	# ignore this one
-	ad_return_complaint 1 "The task '$task_name' already exists or exists twice in the uploaded file."
-	return [array get task_hash]
+	# ad_return_complaint 1 "The task '$task_name' already exists or exists twice in the uploaded file."
+	# return [array get task_hash]
     }
 
     # -----------------------------------------------------
@@ -1865,7 +1865,13 @@ ad_proc -public im_ganttproject_gantt_component {
         "]
     }
 
-    if {"" == $end_date} { set end_date [db_string now "select now()::date"] }
+    if {"" == $end_date} {
+	set end_date [db_string now "select now()::date"]
+    } else {
+	set end_date [ clock scan $end_date ]
+	set end_date [ clock scan {+1 day} -base $end_date ]
+	set end_date [ clock format "$end_date" -format %Y-%m-%d ]
+    }
 
     if {"" == $start_date} {
 	set start_date [db_string start_date "
