@@ -302,11 +302,13 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     # ----------------------------------------------------
     # Successfully verified the username/password
     if {0 == $return_code} {
+
+	set auth_username_regexp "^$auth_short_name.$username\$"
 	set uid [db_string uid "
-		select	party_id 
+		select	min(party_id)
 		from   	cc_users
-		where	lower(email) = lower(:base_dn)
-			OR lower(username) = lower(:username)
+		where	lower(username) = lower(:username) OR
+			lower(username) ~ :auth_username_regexp
 	" -default 0]
 
 
@@ -317,9 +319,6 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 		exec adfind -h 10.10.1.10 -f "(sAMAccountName=$username)" -b "DC=$auth_short_name,DC=moravia-it,DC=com"
 	    } msg]
 
-#	    ad_return_complaint 1 "<pre>$msg</pre>"
-
-	    
 	    set debug ""
 	    foreach member_line [split $msg "\n"] {
 		if {[regexp {memberOf\:\W*(.+)} $member_line match groupname]} {
@@ -330,8 +329,6 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 		    append debug "'$groupname'\n"
 		}
 	    }
-#	    ad_return_complaint 1 "<pre>$debug</pre>"
-
 
 	    set auth_info(auth_status) "ok"
 	    set auth_info(info_status) "ok"
@@ -347,6 +344,9 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 
 	} else {
 
+	    ad_return_complaint 1 "Didn't find the user for email='$base_dn' and username='$username'"
+
+	    
 	    # Return an error saying the user is invalid
 	    set auth_info(auth_status) "no_account"
 	    set auth_info(user_id) 0
