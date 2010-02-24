@@ -54,7 +54,10 @@ if {!$exists_status_p} {
 
     if {!$folder_id} {
 
+	set max_folder_id [db_string max_folder_id "select max(folder_id) from im_fs_folders"]
 	set folder_id [db_nextval im_fs_folder_seq]
+	while {$folder_id <= $max_folder_id} { set folder_id [db_nextval im_fs_folder_seq] }
+
 	db_dml insert_folder "
 	insert into im_fs_folders (
 		folder_id,
