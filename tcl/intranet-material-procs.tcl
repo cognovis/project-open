@@ -17,8 +17,17 @@ ad_library {
 ad_proc -public im_material_status_active { } { return 9100 }
 ad_proc -public im_material_status_inactive { } { return 9102 }
 
-ad_proc -public im_material_type_software_dev { } { return 9000 }
-ad_proc -public im_material_type_software_testing { } { return 9002 }
+ad_proc -public im_material_type_other { } { return 9000 }
+ad_proc -public im_material_type_maintenance { } { return 9002 }
+ad_proc -public im_material_type_licenses { } { return 9004 }
+ad_proc -public im_material_type_consulting { } { return 9006 }
+ad_proc -public im_material_type_software_dev { } { return 9008 }
+ad_proc -public im_material_type_web_site_dev { } { return 9010 }
+ad_proc -public im_material_type_generic_pm { } { return 9012 }
+ad_proc -public im_material_type_translation { } { return 9014 }
+
+# reserved until 9099
+
 
 
 ad_proc -public im_package_material_id {} {

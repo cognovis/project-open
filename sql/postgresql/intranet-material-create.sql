@@ -312,18 +312,20 @@ drop function inline_0 ();
 
 -------------------------------
 -- Material Types
-delete from im_categories where category_type = 'Intranet Material Type';
+-- delete from im_categories where category_type = 'Intranet Material Type';
 
-INSERT INTO im_categories VALUES (9000,'Undefined',
-'','Intranet Material Type','category','t','f');
-
-INSERT INTO im_categories VALUES (9002,'Maintenance',
-'','Intranet Material Type','category','t','f');
-
-INSERT INTO im_categories VALUES (9004,'Licenses',
-'','Intranet Material Type','category','t','f');
+SELECT im_category_new(9000, 'Other', 'Intranet Material Type');
+SELECT im_category_new(9002, 'Maintenance', 'Intranet Material Type');
+SELECT im_category_new(9004, 'Licenses', 'Intranet Material Type');
+SELECT im_category_new(9006, 'Consulting', 'Intranet Material Type');
+SELECT im_category_new(9008, 'Software Dev.', 'Intranet Material Type');
+SELECT im_category_new(9010, 'Web Site Dev.', 'Intranet Material Type');
+SELECT im_category_new(9012, 'Generic PM', 'Intranet Material Type');
+SELECT im_category_new(9014, 'Translation', 'Intranet Material Type');
 
 -- reserved until 9099
+
+
 
 create or replace view im_material_types as 
 select 
