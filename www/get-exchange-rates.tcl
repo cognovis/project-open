@@ -217,8 +217,8 @@ foreach root_node $root_nodes {
 				where   day = :currency_day::date and
 					currency = :currency_code
 		"
-	
-		db_dml insert_rates "
+		
+		if {[catch {db_dml insert_rates "
 				insert into im_exchange_rates (
 					day,
 					currency,
@@ -230,7 +230,12 @@ foreach root_node $root_nodes {
 					:exchange_rate,
 					't'
 				)
-		"
+		"} err_msg]} {
+		    ns_write "Error adding rates to currency '$currency_code':<br><pre>$err_msg</pre>"
+		    
+		    # Add the currency to the list of active currencies
+		    catch { db_dml insert_code "insert into currency_codes (iso, currency_name) values (:currency_code, :currency_code)" }
+		}
 	
 		# The dollar exchange rate is always 1.000, because the dollar
 		# is the reference currency. So we kan update the dollar as "manual"
