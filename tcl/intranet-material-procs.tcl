@@ -122,16 +122,20 @@ ad_proc -private im_material_status_options { {-include_empty 1} } {
 ad_proc -private im_material_options { 
     {-restrict_to_status_id 0} 
     {-restrict_to_type_id 0} 
+    {-restrict_to_uom_id 0} 
     {-include_empty 1}
     {-show_material_codes_p 0}
     {-max_option_len 25 }
 } {
     set where_clause ""
     if {0 != $restrict_to_status_id} {
-	append where_clause "material_status_id = :restrict_to_status_id\n"
+	append where_clause "and material_status_id = :restrict_to_status_id\n"
     }
     if {0 != $restrict_to_type_id} {
-	append where_clause "material_type_id = :restrict_to_type_id\n"
+	append where_clause "and material_type_id = :restrict_to_type_id\n"
+    }
+    if {0 != $restrict_to_uom_id} {
+	append where_clause "and material_uom_id = :restrict_to_uom_id\n"
     }
 
     if {$show_material_codes_p} {
