@@ -41,6 +41,39 @@ SELECT im_dynfield_widget__new (
 -- DynFields for im_material
 -----------------------------------------------------------
 
+create or replace function im_insert_acs_object_type_tables (varchar, varchar, varchar)
+returns integer as $body$
+DECLARE
+        p_object_type           alias for $1;
+        p_table_name            alias for $2;
+        p_id_column             alias for $3;
+
+        v_count                 integer;
+BEGIN
+        -- Check for duplicates
+        select  count(*) into v_count
+        from    acs_object_type_tables
+        where   object_type = p_object_type and
+                table_name = p_table_name;
+        IF v_count > 0 THEN return 1; END IF;
+
+        -- Make sure the object_type exists
+        select  count(*) into v_count
+        from    acs_object_types
+        where   object_type = p_object_type;
+        IF v_count = 0 THEN return 2; END IF;
+
+        insert into acs_object_type_tables (object_type, table_name, id_column)
+        values (p_object_type, p_table_name, p_id_column);
+
+        return 0;
+end;$body$ language 'plpgsql';
+
+
+-- make sure the acs_object_type_tables entry is there.
+SELECT im_insert_acs_object_type_tables('im_material','im_materials','material_id');
+
+
 alter table im_materials add column source_language_id integer constraint im_materials_source_language_fk references im_categories;
 SELECT im_dynfield_attribute_new ('im_material', 'source_language_id', 'Source Language', 'translation_languages', 'integer', 'f');
 
