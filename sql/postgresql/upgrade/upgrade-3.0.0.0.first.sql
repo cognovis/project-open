@@ -622,9 +622,9 @@ DECLARE
 BEGIN
 	-- Check for duplicate
 	select	da.attribute_id into v_attribute_id
-	from acs_attributes aa, im_dynfield_attributes da 
-	where aa.attribute_id = da.acs_attribute_id 
-	and aa.attribute_name = p_attribute_name and aa.object_type = p_attribute_object_type;
+	from	acs_attributes aa, im_dynfield_attributes da 
+	where	aa.attribute_id = da.acs_attribute_id and
+		aa.attribute_name = p_attribute_name and aa.object_type = p_attribute_object_type;
 	if v_attribute_id is not null then return v_attribute_id; end if;
 
 	select table_name into v_table_name
