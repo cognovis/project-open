@@ -2,8 +2,6 @@
 
 SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrade-3.3.0.0.0-3.3.0.1.0.sql','');
 
-\i ../../../../intranet-core/sql/postgresql/upgrade/upgrade-3.0.0.0.first.sql
-
 
 create or replace function inline_0 ()
 returns integer as '
@@ -248,6 +246,40 @@ end;' language 'plpgsql';
 
 
 
+
+
+
+create or replace function im_insert_acs_object_type_tables (varchar, varchar, varchar)
+returns integer as $body$
+DECLARE
+        p_object_type           alias for $1;
+        p_table_name            alias for $2;
+        p_id_column             alias for $3;
+
+        v_count                 integer;
+BEGIN
+        -- Check for duplicates
+        select  count(*) into v_count
+        from    acs_object_type_tables
+        where   object_type = p_object_type and
+                table_name = p_table_name;
+        IF v_count > 0 THEN return 1; END IF;
+
+        -- Make sure the object_type exists
+        select  count(*) into v_count
+        from    acs_object_types
+        where   object_type = p_object_type;
+        IF v_count = 0 THEN return 2; END IF;
+
+        insert into acs_object_type_tables (object_type, table_name, id_column)
+        values (p_object_type, p_table_name, p_id_column);
+
+        return 0;
+end;$body$ language 'plpgsql';
+
+-- make sure the acs_object_type_table entries exist, before adding the dynfield
+SELECT im_insert_acs_object_type_tables('im_invoice','im_costs','cost_id');
+SELECT im_insert_acs_object_type_tables('im_invoice','im_invoices','invoice_id');
 
 
 select im_dynfield_attribute__new (
