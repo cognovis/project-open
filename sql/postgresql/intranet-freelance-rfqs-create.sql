@@ -639,6 +639,7 @@ select im_dynfield_widget__new (
 );
 
 
+
 alter table im_freelance_rfq_answers add general_outcome varchar;
 
 select im_dynfield_attribute__new (
