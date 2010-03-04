@@ -348,6 +348,38 @@ end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
+
+create or replace function im_insert_acs_object_type_tables (varchar, varchar, varchar)
+returns integer as $body$
+DECLARE
+        p_object_type           alias for $1;
+        p_table_name            alias for $2;
+        p_id_column             alias for $3;
+
+        v_count                 integer;
+BEGIN
+        -- Check for duplicates
+        select  count(*) into v_count
+        from    acs_object_type_tables
+        where   object_type = p_object_type and
+                table_name = p_table_name;
+        IF v_count > 0 THEN return 1; END IF;
+
+        -- Make sure the object_type exists
+        select  count(*) into v_count
+        from    acs_object_types
+        where   object_type = p_object_type;
+        IF v_count = 0 THEN return 2; END IF;
+
+        insert into acs_object_type_tables (object_type, table_name, id_column)
+        values (p_object_type, p_table_name, p_id_column);
+
+        return 0;
+end;$body$ language 'plpgsql';
+
+
+SELECT im_insert_acs_object_type_tables('relationship','acs_rels','rel_id');
+
 SELECT im_dynfield_attribute_new ('relationship', 'object_id_one', 'Object ID One', 'integer', 'integer', 't');
 SELECT im_dynfield_attribute_new ('relationship', 'object_id_two', 'Object ID Two', 'integer', 'integer', 't');
 SELECT im_dynfield_attribute_new ('relationship', 'rel_type', 'Relationship Type', 'textbox_medium', 'string', 't');
@@ -378,6 +410,9 @@ begin
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
+
+SELECT im_insert_acs_object_type_tables('im_biz_object_member','im_biz_object_members','rel_id');
 
 SELECT im_dynfield_attribute_new ('im_biz_object_member', 'object_role_id', 'Biz Object Role', 'biz_object_member_type', 'integer', 't');
 SELECT im_dynfield_attribute_new ('im_biz_object_member', 'percentage', 'Assignment Percentage', 'integer', 'integer', 'f');
