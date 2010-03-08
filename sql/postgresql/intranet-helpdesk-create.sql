@@ -1278,7 +1278,7 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (27010,270,10, 'Nr','"<a href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_nr</a>"');
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
-(27020,270,20,'Name','"<href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_name</A>"');
+(27020,270,20,'Name','"<a href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_name</A>"');
 
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (270220,270,22,'Conf Item','"<A href=/intranet-confdb/new?form_mode=display&conf_item_id=$conf_item_id>$conf_item_name</a>"');
