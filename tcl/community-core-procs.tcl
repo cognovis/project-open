@@ -475,7 +475,11 @@ ad_proc -private acs_user::get_from_username_not_cached { username authority_id 
 
     @author Peter Marklund
 } {
-    db_1row select_user_info {*SQL*} -column_array row
+    if {[catch {
+	db_1row select_user_info {*SQL*} -column_array row
+    } err_msg]} {
+	return {}
+    }
 
     return [array get row]
 }
