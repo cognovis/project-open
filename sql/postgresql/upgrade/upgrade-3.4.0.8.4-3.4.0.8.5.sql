@@ -3,6 +3,11 @@
 SELECT acs_log__debug('/packages/intranet-helpdesk/sql/postgresql/upgrade/upgrade-3.4.0.8.4-3.4.0.8.5.sql','');
 
 
+delete from im_view_columns where column_id = 27020;
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(27020,270,20,'Name','"<a href=/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id>$project_name</A>"');
+
 
 -- Called by "Enable" action of "Classify" WF transition.
 -- Default classification routine. May be customized in order
