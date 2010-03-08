@@ -108,6 +108,8 @@ if {$object_id != "" && [ad_permission_p $object_id "admin"]} {
 # Process the attached file (if any)
 # -----------------------------------------------------------------
 set tmp_file [ns_queryget upload_file.tmpfile]
+im_security_alert_check_tmpnam -location "spam-send.tcl" -value $tmp_file
+
 set tmp_size [file size $tmp_file]
 if {![empty_string_p $upload_file]} {
 
