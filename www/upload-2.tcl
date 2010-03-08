@@ -66,6 +66,7 @@ if { $exception_count > 0 } {
 # number_of_bytes is the upper-limit
 set max_n_bytes [ad_parameter -package_id [im_package_filestorage_id] MaxNumberOfBytes "" 0]
 set tmp_filename [ns_queryget upload_file.tmpfile]
+im_security_alert_check_tmpnam -location "upload-2" -value $tmp_filename
 ns_log Notice "upload-2: tmp_filename=$tmp_filename"
 
 if { $max_n_bytes && ([file size $tmp_filename] > $max_n_bytes) } {
