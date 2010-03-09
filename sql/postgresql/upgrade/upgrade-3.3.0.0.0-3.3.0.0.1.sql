@@ -1,6 +1,6 @@
 -- upgrade-3.3.0.0.0-3.3.0.0.1.sql
 
-SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.3.0.0.0-3.3.0.0.1.sql','');
+SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrade-3.3.0.0.0-3.3.0.0.1.sql','');
 
 
 
