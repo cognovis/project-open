@@ -3,14 +3,42 @@
 SELECT acs_log__debug('/packages/intranet-trans-invoices/sql/postgresql/upgrade/upgrade-3.2.10.0.0-3.2.11.0.0.sql','');
 
 
-alter table im_trans_prices
-add        file_type_id            integer
-                                constraint im_trans_prices_file_type_fk
-                                references im_categories
-;
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+	v_count		integer;
+BEGIN
+	select	count(*) into v_count from user_tab_columns
+	where	lower(table_name) = ''im_trans_prices'' and lower(column_name) = ''file_type_id'';
+	IF v_count > 0 THEN return 1; END IF;
 
--- Create a new index to incorporate file_type
-drop index im_trans_price_idx;
+	alter table im_trans_prices add file_type_id integer
+	constraint im_trans_prices_file_type_fk	references im_categories;
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
+create or replace function inline_0 ()
+returns integer as '
+DECLARE
+	v_count		integer;
+BEGIN
+	select	count(*) into v_count from pg_indexes
+	where	lower(indexname) = ''im_trans_price_idx'';
+	IF v_count = 0 THEN return 1; END IF;
+
+	-- Create a new index to incorporate file_type
+	drop index im_trans_price_idx;
+
+	return 0;
+end;' language 'plpgsql';
+select inline_0();
+drop function inline_0();
+
+
 
 -- make sure the same price doesn't get defined twice
 create unique index im_trans_price_idx on im_trans_prices (
@@ -19,16 +47,14 @@ create unique index im_trans_price_idx on im_trans_prices (
 );
 
 
+SELECT im_category_new(600, 'MS-Word', 'Intranet Translation File Type');
+update im_categories set aux_string1 = 'doc' where category_id = 600;
 
-insert into im_categories (category_id, category, aux_string1, category_type) values
-(600, 'MS-Word', 'doc', 'Intranet Translation File Type');
+SELECT im_category_new(602, 'MS-Excel', 'Intranet Translation File Type');
+update im_categories set aux_string1 = 'xls' where category_id = 602;
 
-insert into im_categories (category_id, category, aux_string1, category_type) values
-(602, 'MS-Excel', 'xls', 'Intranet Translation File Type');
-
-insert into im_categories (category_id, category, aux_string1, category_type) values
-(604, 'MS-PowerPoint', 'ppt', 'Intranet Translation File Type');
-
+SELECT im_category_new(604, 'MS-PowerPoint', 'Intranet Translation File Type');
+update im_categories set aux_string1 = 'ppt' where category_id = 604;
 
 
 
