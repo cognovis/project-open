@@ -37,7 +37,6 @@ set add_expense_bundles_p [im_permission $current_user_id "add_expense_bundle"]
 # Add a "0" expense to avoid syntax error if the list was empty.
 lappend epense_id 0
 
-
 # ---------------------------------------------------------------
 # Sum up the expenses
 # ---------------------------------------------------------------
