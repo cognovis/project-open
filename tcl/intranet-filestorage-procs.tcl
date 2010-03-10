@@ -553,7 +553,6 @@ ad_proc im_filestorage_project_path_helper { project_id } {
 		p.project_nr,
 		p.project_path,
 		p.project_name,
-	
 		c.company_path
 	from
 		im_projects p,
