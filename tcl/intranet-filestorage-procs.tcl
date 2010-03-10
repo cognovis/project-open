@@ -569,8 +569,13 @@ ad_proc im_filestorage_project_path_helper { project_id } {
 	return
     }
 
+    # The parameter EnableProjectPathP enables explicitely set 
+    # project pathes in projects. 
     set enable_project_path_p [parameter::get -parameter EnableProjectPathP -package_id [im_package_core_id] -default 0] 
     if {$enable_project_path_p} {
+
+	# Does the path in the project start with "/"?
+	# In this case we've got an absolute path, which we just take.
 	if {[regexp {^/} $project_path match]} {
 	    return $project_path
 	}
