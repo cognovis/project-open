@@ -46,7 +46,9 @@ switch $action_id {
 		im_ticket_permissions $user_id $ticket_id view read write admin
 		if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
 		db_dml close_ticket "
-			update im_tickets set ticket_status_id = [im_ticket_status_closed]
+			update im_tickets set 
+				ticket_status_id = [im_ticket_status_closed],
+				ticket_done_date = now()
 			where ticket_id = :ticket_id
 	        "
 	    }
@@ -57,7 +59,9 @@ switch $action_id {
 		im_ticket_permissions $user_id $ticket_id view read write admin
 		if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
 		db_dml close_ticket "
-			update im_tickets set ticket_status_id = [im_ticket_status_closed]
+			update im_tickets set 
+				ticket_status_id = [im_ticket_status_closed],
+				ticket_done_date = now()
 			where ticket_id = :ticket_id
 	        "
 
