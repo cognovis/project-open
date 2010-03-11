@@ -374,7 +374,19 @@ set assoc_tickets_sql "
 		im_projects p
 	where
 		t.ticket_id = p.project_id and
-		t.ticket_conf_item_id = :conf_item_id
+		(
+			t.ticket_conf_item_id = :conf_item_id OR
+			t.ticket_component_id = :conf_item_id OR
+			t.ticket_id in (
+				select	object_id_one
+				from	acs_rels
+				where	object_id_two = :conf_item_id
+			   UNION
+				select	object_id_two
+				from	acs_rels
+				where	object_id_one = :conf_item_id
+			)
+		)
 "
 
 db_multirow -extend { conf_item_chk ticket_url } assoc_tickets_lines assoc_tickets $assoc_tickets_sql {
