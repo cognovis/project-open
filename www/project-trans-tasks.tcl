@@ -54,6 +54,17 @@ if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$}
     Expected format: 'YYYY-MM-DD'"
 }
 
+
+
+# ------------------------------------------------------------
+# Set Project Manager to current user for performance
+
+# project_manager_id = Current User, to reduce performance overhead
+if {"" == $start_date && "" == $end_date && 0 == $project_id && 0 == $customer_id && 0 == $project_member_id} {
+    set project_manager_id [ad_get_user_id]
+}
+
+
 # ------------------------------------------------------------
 # Page Settings
 
