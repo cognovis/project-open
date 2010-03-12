@@ -985,7 +985,7 @@ where
     } err_msg] } { return $err_msg }
 
     # Create the project dir if it doesn't already exist
-    set project_dir "$company_dir/$project_path"
+    set project_dir [im_filestorage_project_path $project_id]
     ns_log Notice "im_filestorage_create_directories: project_dir=$project_dir"
     if { [catch { 
 	if {![file exists $project_dir]} {
@@ -997,7 +997,7 @@ where
     } err_msg]} { return $err_msg }
 
     # Create a reference_material directory
-    set ref_dir [lang::message::lookup $locale intranet-translation.Workflow_reference_directory "reference"]
+    set ref_dir [lang::message::lookup $locale intranet-translation.Workflow_reference_directory "9_reference"]
     set source_dir "$project_dir/$ref_dir"
     ns_log Notice "im_filestorage_create_directories: source_dir=$source_dir"
     if {[catch {
@@ -1007,9 +1007,10 @@ where
 	    ns_log Notice "exec /bin/chmod ug+w $source_dir"
 	    exec /bin/chmod ug+w $source_dir
 	} 
-    } err_msg]} { return $err_msg }
+    } err_msg]} { 
+	return $err_msg 
+    }
 
-    
     # Create a source language directory
     # if source_language is defined...
     if {"" != $source_language} {
