@@ -32,7 +32,7 @@
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="TicketBasePathUnix"  default="/web/projop/filestorage/tickets" description="Where to find the files for the 'Ticket'-Filestorages? Example: '/web/projop/filestorage/tickets'. No trailing slash, please."/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="ProjectSalesBasePathUnix"  default="/web/projop/filestorage/project_sales" description="Where to find the files for the special 'Project-Sales'-Filestorages? The 'Sales FS' serves basically the same purpose as the normal FS. However, we have included this option because some companies separate the marketing/sales/acquisitions/... fileserver from the fileserver of the normal projects for security. Example: '/mnt/sales_server/sales_acquisitions'. No trailing slash, please."/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="UserBasePathUnix"  default="/web/projop/filestorage/users" description="Where to find the files for the 'User'-Filestorages? Example: '/web/projop/filestorage/users'. No trailing slash, please."/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="EnableProjectProgramPathP" default="0" description="Should the system use the project's program path as the base path? Enabling this option allows to group projects into a specific path. Default is '0' to disable this feature."/>
         </parameters>
-
     </version>
 </package>
