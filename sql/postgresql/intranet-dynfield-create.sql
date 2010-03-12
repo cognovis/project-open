@@ -1985,6 +1985,31 @@ update im_dynfield_widgets set deref_plpgsql_function = 'im_country_from_code' w
 
 
 
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'program_projects', 'Program Projects', 'Program Projects',
+	10007, 'integer', 'generic_sql', 'integer',
+	'{custom {sql {
+select p.project_id, p.project_name
+from im_projects p
+where project_type_id = 2510
+order by lower(project_name)
+	}}}'
+);
+
+
+-- Create DynFields for Presales Pipeline
+SELECT im_dynfield_attribute_new ('im_project', 'presales_probability', 'Presales Probability', 'integer', 'integer', 'f');
+SELECT im_dynfield_attribute_new ('im_project', 'presales_value', 'Presales Value', 'integer', 'integer', 'f');
+
+
+-- Create DynField for Program
+SELECT im_dynfield_attribute_new ('im_project', 'program_id', 'Program', 'program_projects', 'integer', 'f');
+
+
+
+
+
 -------------------------------------------------------------
 -- Define some DynFields
 --
