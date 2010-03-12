@@ -528,7 +528,8 @@ ad_proc im_filestorage_project_path_helper { project_id } {
     Determine the location where the project files
     are stored on the hard disk for this project
 } {
-    set enable_program_path_p [parameter::get -parameter "EnableProjectProgramPathP" -package_id [im_package_filestorage_id] -default 0]
+    set enable_program_path_p [parameter::get -parameter "EnableProjectProgramPathP" -package_id [im_package_core_id] -default 0]
+    set enable_absolute_project_path_p [parameter::get -parameter EnableAbsoluteProjectPathP -package_id [im_package_core_id] -default 0] 
 
     set base_path_unix [parameter::get -package_id [im_package_filestorage_id] -parameter "ProjectBasePathUnix" -default "/tmp/projects"]
 
@@ -581,7 +582,6 @@ ad_proc im_filestorage_project_path_helper { project_id } {
 
     # The parameter EnableAbsoluteProjectPathP enables explicitely set 
     # project pathes in projects. 
-    set enable_absolute_project_path_p [parameter::get -parameter EnableAbsoluteProjectPathP -package_id [im_package_core_id] -default 0] 
     if {$enable_absolute_project_path_p} {
 	# Does the path in the project start with "/"?
 	# In this case we've got an absolute path, which we just take.
