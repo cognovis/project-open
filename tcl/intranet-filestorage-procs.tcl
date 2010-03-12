@@ -528,6 +528,8 @@ ad_proc im_filestorage_project_path_helper { project_id } {
     Determine the location where the project files
     are stored on the hard disk for this project
 } {
+    set enable_program_path_p [parameter::get -parameter "EnableProjectProgramPathP" -package_id [im_package_filestorage_id] -default 0]
+
     set base_path_unix [parameter::get -package_id [im_package_filestorage_id] -parameter "ProjectBasePathUnix" -default "/tmp/projects"]
 
     # Check if the base_path has a trailing "/" and produce an error:
@@ -561,26 +563,35 @@ ad_proc im_filestorage_project_path_helper { project_id } {
 		p.project_id=:project_id
 		and p.company_id=c.company_id(+)
     "
-
     if {![db_0or1row projects_info_query $query]} {
-	ad_return_complaint 1 "Can't find the project with group 
-	id of $project_id"
+	ad_return_complaint 1 "Can't find the project '$project_id'"
 	return
     }
 
-    # The parameter EnableProjectPathP enables explicitely set 
-    # project pathes in projects. 
-    set enable_project_path_p [parameter::get -parameter EnableProjectPathP -package_id [im_package_core_id] -default 0] 
-    if {$enable_project_path_p} {
+    # Should we start at the program's path?
+    # This can get into an infinite loop if a program has itself as the program.
+    if {$enable_program_path_p} {
+	set program_id ""
+	catch { set program_id [db_string program "select program_id from im_projects where project_id = :project_id" -default ""] } err_msg
+	if {"" != $program_id} {
+	    set result "[im_filestorage_project_path $program_id]/$project_path"
+	    return $result
+	}
+    }
 
+    # The parameter EnableAbsoluteProjectPathP enables explicitely set 
+    # project pathes in projects. 
+    set enable_absolute_project_path_p [parameter::get -parameter EnableAbsoluteProjectPathP -package_id [im_package_core_id] -default 0] 
+    if {$enable_absolute_project_path_p} {
 	# Does the path in the project start with "/"?
 	# In this case we've got an absolute path, which we just take.
 	if {[regexp {^/} $project_path match]} {
 	    return $project_path
 	}
     }
-    
-    return "$base_path_unix/$company_path/$project_nr"
+
+    set result "$base_path_unix/$company_path/$project_nr"
+    return $result
 }
 
 
