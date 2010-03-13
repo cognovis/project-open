@@ -75,68 +75,18 @@ ad_proc -public im_ganttproject_resource_planning {
         "]
     }
     
-    # No projects specified? Show the list of all active projects
-    if {"" == $project_id} {
-        set project_id [db_list pids "
-	select	project_id
-	from	im_projects
-	where	parent_id is null
-		and project_status_id = [im_project_status_open]
-        "]
-    }
-
-    # ToDo: Highlight the sub-project if we're showning the sub-project
-    # of a main-project and open the GanttDiagram at the right place
-    if {[llength $project_id] == 1} {
-	set parent_id [db_string parent_id "select parent_id from im_projects where project_id = :project_id" -default ""]
-	while {"" != $parent_id} {
-	    set project_id $parent_id
-	    set parent_id [db_string parent_id "select parent_id from im_projects where project_id = :project_id" -default ""]
-	}
-    }
-
     # ------------------------------------------------------------
     # Start and End-Dat as min/max of selected projects.
     # Note that the sub-projects might "stick out" before and after
     # the main/parent project.
     
     if {"" == $start_date} {
-	set start_date [db_string start_date "
-	select
-		to_char(min(child.start_date), 'YYYY-MM-DD')
-	from
-		im_projects parent,
-		im_projects child
-	where
-		parent.project_id in ([join $project_id ", "])
-		and parent.parent_id is null
-		and child.tree_sortkey
-			between parent.tree_sortkey
-			and tree_right(parent.tree_sortkey)
-
-        "]
+	set start_date [db_string start_date "select to_char(now()::date, 'YYYY-MM-01')"]
     }
+    set start_date "2009-07-01"
 
     if {"" == $end_date} {
-	set end_date [db_string end_date "
-	select
-		to_char(max(child.end_date), 'YYYY-MM-DD')
-	from
-		im_projects parent,
-		im_projects child,
-		acs_rels r,
-		im_biz_object_members m
-	where
-		r.object_id_one = child.project_id
-		and r.rel_id = m.rel_id
-		and m.percentage > 0
-
-		and parent.project_id in ([join $project_id ", "])
-		and parent.parent_id is null
-		and child.tree_sortkey
-			between parent.tree_sortkey
-			and tree_right(parent.tree_sortkey)
-        "]
+	set end_date [db_string start_date "select to_char(now()::date + 4*7, 'YYYY-MM-01')"]
     }
 
     # Adaptive behaviour - limit the size of the component to a summary
@@ -182,7 +132,6 @@ ad_proc -public im_ganttproject_resource_planning {
     set this_url [export_vars -base "/intranet-ganttproject/gantt-resources-cube" {start_date end_date left_vars customer_id} ]
     foreach pid $project_id { append this_url "&project_id=$pid" }
 
-
     # ------------------------------------------------------------
     # Conditional SQL Where-Clause
     #
@@ -201,54 +150,63 @@ ad_proc -public im_ganttproject_resource_planning {
     # ------------------------------------------------------------
     # Define the report SQL
     #
-    
+
     # Inner - Try to be as selective as possible for the relevant data from the fact table.
     set inner_sql "
 		select
-		        child.*,
-		        u.user_id,
-			m.percentage as perc,
-			d.d
+			'im_project'::varchar as type,
+			m.percentage,
+			r.object_id_two as user_id,
+			child.project_id as object_id,
+			substring(child.project_name for 20) as object_name,
+			substring(child.project_nr for 20) as object_nr,
+			child.start_date::date,
+			child.end_date::date,
+			tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as object_level
 		from
-		        im_projects parent,
-		        im_projects child,
-		        acs_rels r
-		        LEFT OUTER JOIN im_biz_object_members m on (r.rel_id = m.rel_id),
-		        users u,
-		        ( select im_day_enumerator_weekdays as d
-		          from im_day_enumerator_weekdays(
-				to_date(:start_date, 'YYYY-MM-DD'), 
-				to_date(:end_date, 'YYYY-MM-DD')
-			) ) d
+			im_projects parent,
+			im_projects child,
+			acs_rels r,
+			im_biz_object_members m
 		where
-		        r.object_id_one = child.project_id
-		        and r.object_id_two = u.user_id
-		        and parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
-		        and parent.parent_id is null
-		        and child.tree_sortkey 
-				between parent.tree_sortkey 
+			parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
+			and parent.parent_id is null
+			and parent.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+			and parent.start_date <= to_date(:end_date, 'YYYY-MM-DD')
+			and child.tree_sortkey
+				between parent.tree_sortkey
 				and tree_right(parent.tree_sortkey)
-		        and d.d 
-				between child.start_date 
-				and child.end_date
+			and r.rel_id = m.rel_id
+			and r.object_id_one = child.project_id
+			and m.percentage is not null
+			$where_clause
+	UNION
+		select
+			'im_user_absence'::varchar as type,
+			100::numeric as percentage,
+			a.owner_id as user_id,
+			a.absence_id as object_id,
+			a.absence_name as object_name,
+			a.absence_id::varchar as object_nr,
+			a.start_date::date,
+			a.end_date::date,
+			1 as object_level
+		from
+			im_user_absences a
+		where
+			a.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+			and a.start_date <= to_date(:end_date, 'YYYY-MM-DD')
 			$where_clause
     "
-
 
     # Aggregate additional/important fields to the fact table.
     set middle_sql "
 	select
 		h.*,
-		trunc(h.perc) as percentage,
 		'<a href=${user_url}'||user_id||'>'||im_name_from_id(h.user_id)||'</a>' as user_name_link,
-		'<a href=${project_url}'||project_id||'>'||project_name||'</a>' as project_name_link,
-		to_char(h.d, 'YYYY') as year,
-		'<!--' || to_char(h.d, 'YYYY') || '-->Q' || to_char(h.d, 'Q') as quarter_of_year,
-		'<!--' || to_char(h.d, 'YYYY-MM') || '-->' || to_char(h.d, 'Mon') as month_of_year,
-		'<!--' || to_char(h.d, 'YYYY-MM') || '-->W' || to_char(h.d, 'IW') as week_of_year,
-		'<!--' || to_char(h.d, 'YYYY-MM') || '-->' || to_char(h.d, 'DD') as day_of_month
+		'<a href=${project_url}'||object_id||'>'||object_name||'</a>' as project_name_link
 	from	($inner_sql) h
-	where	h.perc is not null
+	where	h.percentage is not null
     "
 
     set outer_sql "
@@ -261,12 +219,13 @@ ad_proc -public im_ganttproject_resource_planning {
 		[join $dimension_vars ",\n\t"]
     "
 
+ad_return_complaint 1 [db_list_of_lists innner $outer_sql]
+
 
     # ------------------------------------------------------------
     # Create upper date dimension
 
-
-    # Top scale is a list of lists such as {{2006 01} {2006 02} ...}
+    # Top scale is a list of lists like {{2006 01} {2006 02} ...}
     # The last element of the list the grand total sum.
     set top_scale_plain [db_list_of_lists top_scale "
 	select distinct	[join $top_vars ", "]
@@ -657,7 +616,7 @@ switch $pre_config {
 # ------------------------------------------------------------
 # Contents
 
-set html [im_ganttproject_resource_component \
+set html [im_ganttproject_resource_planning \
 	-start_date $start_date \
 	-end_date $end_date \
 	-top_vars $top_vars \
