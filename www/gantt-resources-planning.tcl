@@ -148,13 +148,11 @@ ad_proc -public im_ganttproject_resource_planning {
     
 
     # ------------------------------------------------------------
-    # Define the report SQL
+    # Projects - work from the sub-sub-sub-sub-tasks up the hierarchy
     #
 
-    # Inner - Try to be as selective as possible for the relevant data from the fact table.
-    set inner_sql "
+    set projects_sql "
 		select
-			'im_project'::varchar as type,
 			m.percentage,
 			r.object_id_two as user_id,
 			child.project_id as object_id,
@@ -162,7 +160,8 @@ ad_proc -public im_ganttproject_resource_planning {
 			substring(child.project_nr for 20) as object_nr,
 			child.start_date::date,
 			child.end_date::date,
-			tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as object_level
+			tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as object_level,
+			child.tree_sortkey
 		from
 			im_projects parent,
 			im_projects child,
@@ -180,7 +179,10 @@ ad_proc -public im_ganttproject_resource_planning {
 			and r.object_id_one = child.project_id
 			and m.percentage is not null
 			$where_clause
-	UNION
+    "
+
+
+    set absences_sql "
 		select
 			'im_user_absence'::varchar as type,
 			100::numeric as percentage,
@@ -199,27 +201,15 @@ ad_proc -public im_ganttproject_resource_planning {
 			$where_clause
     "
 
-    # Aggregate additional/important fields to the fact table.
-    set middle_sql "
-	select
-		h.*,
-		'<a href=${user_url}'||user_id||'>'||im_name_from_id(h.user_id)||'</a>' as user_name_link,
-		'<a href=${project_url}'||object_id||'>'||object_name||'</a>' as project_name_link
-	from	($inner_sql) h
-	where	h.percentage is not null
-    "
 
-    set outer_sql "
-	select
-		sum(h.percentage) as percentage,
-		[join $dimension_vars ",\n\t"]
-	from
-		($middle_sql) h
-	group by
-		[join $dimension_vars ",\n\t"]
-    "
+    # ------------------------------------------------------------
+    # 
+    
 
-ad_return_complaint 1 [db_list_of_lists innner $outer_sql]
+
+
+
+
 
 
     # ------------------------------------------------------------
