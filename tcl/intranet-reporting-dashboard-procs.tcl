@@ -531,7 +531,7 @@ ad_proc im_dashboard_histogram {
     set border ""
 
     set histogram_html "
-        <div style='$border position:relative;top:0px;height:[expr $diagram_y_size+50]px;width:${diagram_x_size}px;'>
+        <div style='$border position:relative;top:0px;height:[expr $diagram_y_size+20]px;width:${diagram_x_size}px;'>
 	<SCRIPT Language=JavaScript type='text/javascript'>
 	document.open();
 	var $diag=new Diagram();
