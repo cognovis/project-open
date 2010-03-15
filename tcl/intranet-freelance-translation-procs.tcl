@@ -359,7 +359,8 @@ ad_proc im_freelance_trans_member_select_component {
     set table_rows [list]
     db_foreach freelance $freelance_sql {
 
-	set sort_val 999999999
+	# Set the default sort value to a random number, otherwise qsort will fail (below)
+	set sort_val [expr 999999999 + 999999999 * rand()]
 	if {[info exists sort_hash($user_id)]} { set sort_val $sort_hash($user_id) }
 
 	set row [list $user_id $name $sort_val] 
@@ -372,11 +373,9 @@ ad_proc im_freelance_trans_member_select_component {
 	lappend table_rows $row
     }
 
+    set sorted_table_rows $table_rows
     if { ![info exists list_order_by] } {
 	set sorted_table_rows [qsort $table_rows [lambda {s} { lindex $s 2 }]]
-    } else {
-	# order had been done in sql   
-	set sorted_table_rows $table_rows
     }
     
 
