@@ -376,8 +376,8 @@ ad_proc im_freelance_trans_member_select_component {
     set sorted_table_rows $table_rows
     if { ![info exists list_order_by] } {
 	set sorted_table_rows [qsort $table_rows [lambda {s} { lindex $s 2 }]]
-    }
-    
+    } 
+ 
 
     # ------------------------------------------------
 
@@ -390,7 +390,6 @@ ad_proc im_freelance_trans_member_select_component {
     }
 
     # Format the table header
-
     set freelance_header_html "
 	<tr class=rowtitle>
 	  <td class=rowtitle>[lang::message::lookup "" intranet-freelance.Sel "Sel"]</td>
