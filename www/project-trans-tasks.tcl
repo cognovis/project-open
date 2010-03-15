@@ -19,6 +19,7 @@ ad_page_contract {
     { customer_id:integer 0}
     { project_manager_id:integer 0}
     { project_member_id:integer 0}
+    { user_id 0 }
 }
 
 # ------------------------------------------------------------
@@ -55,6 +56,12 @@ if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$}
 }
 
 
+# user_id is set by the ProjectTransDetails component to indicate the current user.
+# Here we are going to copy user_id to the project_member_id,
+# unless this variable or the project_manager_id are already set.
+if {0 == $project_manager_id && 0 == $project_member_id} {
+    set project_member_id $user_id
+}
 
 # ------------------------------------------------------------
 # Set Project Manager to current user for performance
@@ -398,13 +405,13 @@ switch $output_format {
 		<tr>
 		  <td class=form-label>Project Manager</td>
 		  <td class=form-widget>
-		    [im_user_select -include_empty_p 1 project_manager_id $project_manager_id]
+		    [im_user_select -include_empty_p 1 -group_id [im_profile_employees] project_manager_id $project_manager_id]
 		  </td>
 		</tr>
 		<tr>
 		  <td class=form-label>Project Member</td>
 		  <td class=form-widget>
-		    [im_user_select -include_empty_p 1 project_member_id $project_member_id]
+		    [im_user_select -include_empty_p 1 -group_id [im_profile_employees] project_member_id $project_member_id]
 		  </td>
 		</tr>
                 <tr>
