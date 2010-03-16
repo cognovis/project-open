@@ -66,6 +66,96 @@ end;'
 language 'plpgsql';
 
 
+-- function returns working days per month for a user  
+-- 
+
+create or replace function im_absences_working_days_month (user_id integer, month integer, year integer)
+returns setof record as '
+
+declare
+        v_user_id               ALIAS FOR $1;
+        v_month                 ALIAS FOR $2;
+        v_year                  ALIAS FOR $3;
+        v_count                 integer;
+        v_number_days_month     integer;
+        v_first_day_month       INTEGER NOT NULL := 1;
+        v_seperator             CHAR DEFAULT ''/'';
+        v_date_first_day        varchar(10) DEFAULT v_month || v_seperator || v_first_day_month || v_seperator || v_year;
+        v_date_last_day         varchar(10);
+        v_date_weekday          date;
+        v_dow                   integer;
+        sql_result              record;
+        r                       record;
+        v_r_varchar             varchar(2);
+begin
+
+        SELECT
+                date_part(''day'', (date_part(''year'', v_date_first_day :: date) || ''-'' || date_part(''month'', v_date_first_day :: date) || ''-01'') ::date + ''1 month''::interval - ''1 day''::interval) AS days
+        INTO
+                v_number_days_month;
+
+        SELECT
+                to_date( v_month || ''/'' || v_number_days_month || ''/'' || v_year ,''mm/dd/yyyy'')+1
+        INTO
+                v_date_last_day
+        FROM
+                dual;
+	FOR r in
+	
+	SELECT
+        	result.all_days_in_month as working_day
+	FROM
+		(
+		        (SELECT
+                	all_days_in_month
+	        FROM
+        	        generate_series(1,v_number_days_month)
+	        AS
+        	        all_days_in_month
+	        ) series
+
+        LEFT JOIN
+
+	        (SELECT
+        	        date_part(''day'',d) as absence_day
+	        from
+        	        im_user_absences a,
+                	users u,
+	                (select im_day_enumerator as d from im_day_enumerator(to_date(v_date_first_day,''mm/dd/yyyy''), to_date(v_date_last_day,''yyyy-mm-dd''))) d
+	        where
+        	        a.owner_id = u.user_id and
+                	a.start_date <=  to_date(v_date_last_day,''yyyy-mm-dd'')::date and
+	                a.end_date >= to_date(v_date_first_day,''mm/dd/yyyy'')::date and
+        	        d.d between a.start_date and a.end_date and
+                	u.user_id = v_user_id
+	        UNION
+        	        SELECT
+                	        date_part(''day'',d) as absence_day
+	                FROM
+        	                im_user_absences a,
+                	        (select im_day_enumerator as d from im_day_enumerator(to_date(v_date_first_day,''mm/dd/yyyy''), to_date(v_date_last_day,''yyyy-mm-dd''))) d
+	                WHERE
+        	                a.start_date <=  to_date(v_date_last_day,''yyyy-mm-dd'')::date and
+                	        a.end_date >= to_date(v_date_first_day,''mm/dd/yyyy'')::date and
+                        	d.d between a.start_date and a.end_date and
+	                        a.absence_type_id = 5004
+                ) absence_days_month
+        ON
+                series.all_days_in_month = absence_days_month.absence_day
+	) result
+
+	WHERE
+        	result.absence_day IS NULL
+	LOOP
+        	v_date_weekday = v_year || v_seperator || v_month || v_seperator || r.working_day;
+	        select into v_dow extract (dow from v_date_weekday);
+        	IF v_dow <> 0 AND v_dow <> 6 THEN
+                	return next r;
+	        END IF;
+	END LOOP;
+end;'
+language 'plpgsql';
+
 -- returns number of week days, counts all days from monday to friday
 --
 
