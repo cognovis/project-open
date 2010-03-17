@@ -66,7 +66,7 @@ end;'
 language 'plpgsql';
 
 
--- function returns working days per month for a user  
+-- function returns list of working days for a user for a given month 
 -- 
 
 create or replace function im_absences_working_days_month (user_id integer, month integer, year integer)
@@ -107,11 +107,11 @@ begin
 	FROM
 		(
 		        (SELECT
-                	all_days_in_month
-	        FROM
-        	        generate_series(1,v_number_days_month)
-	        AS
-        	        all_days_in_month
+                		all_days_in_month
+			FROM
+        	        	generate_series(1,v_number_days_month)
+	       		 AS
+        	        	all_days_in_month
 	        ) series
 
         LEFT JOIN
@@ -138,7 +138,7 @@ begin
         	                a.start_date <=  to_date(v_date_last_day,''yyyy-mm-dd'')::date and
                 	        a.end_date >= to_date(v_date_first_day,''mm/dd/yyyy'')::date and
                         	d.d between a.start_date and a.end_date and
-	                        a.absence_type_id = 5004
+	                        a.absence_type_id = 5005
                 ) absence_days_month
         ON
                 series.all_days_in_month = absence_days_month.absence_day
