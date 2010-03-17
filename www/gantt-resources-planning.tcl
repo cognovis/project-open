@@ -19,8 +19,8 @@ ad_page_contract {
     @param customer_id Id of customer's projects to show
     @param user_name_link_opened List of users with details shown
 } {
-    { start_date "" }
-    { end_date "" }
+    { start_date "2000-01-01" }
+    { end_date "2011-01-01" }
     { top_vars "" }
     { left_vars "user_name_link project_name_link" }
     { project_id:multiple "" }
@@ -83,11 +83,16 @@ ad_proc -public im_ganttproject_resource_planning {
     if {"" == $start_date} {
 	set start_date [db_string start_date "select to_char(now()::date, 'YYYY-MM-01')"]
     }
-    set start_date "2009-07-01"
 
     if {"" == $end_date} {
-	set end_date [db_string start_date "select to_char(now()::date + 4*7, 'YYYY-MM-01')"]
+	set end_date [db_string end_date "select to_char(now()::date + 4*7, 'YYYY-MM-01')"]
     }
+
+    db_1row date_calc "
+	select	to_char(:start_date, 'J') as start_date_julian,
+		to_char(:end_date, 'J') as end_date_julian
+    "
+
 
     # Adaptive behaviour - limit the size of the component to a summary
     # suitable for the left/right columns of a project.
@@ -153,13 +158,16 @@ ad_proc -public im_ganttproject_resource_planning {
 
     set projects_sql "
 		select
-			m.percentage,
-			r.object_id_two as user_id,
-			child.project_id as object_id,
+			child.project_id as child_project_id,
+			parent.project_id as main_project_id,
 			substring(child.project_name for 20) as object_name,
 			substring(child.project_nr for 20) as object_nr,
+			r.object_id_two as user_id,
+			m.percentage,
 			child.start_date::date,
+			to_char(child.start_date, 'J') as start_date_julian,
 			child.end_date::date,
+			to_char(child.end_date, 'J') as end_date_julian,
 			tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as object_level,
 			child.tree_sortkey
 		from
@@ -168,7 +176,7 @@ ad_proc -public im_ganttproject_resource_planning {
 			acs_rels r,
 			im_biz_object_members m
 		where
-			parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
+			parent.project_status_id not in ([join [im_sub_categories [im_project_status_closed]] ","])
 			and parent.parent_id is null
 			and parent.end_date >= to_date(:start_date, 'YYYY-MM-DD')
 			and parent.start_date <= to_date(:end_date, 'YYYY-MM-DD')
@@ -181,6 +189,52 @@ ad_proc -public im_ganttproject_resource_planning {
 			$where_clause
     "
 
+    # ------------------------------------------------------------------
+    # Store the relevant project hierarchy (for the projects selected)
+    # in a hash array.
+    set project_hierarchy_sql "
+	select	child.project_id,
+		child.parent_id
+	from
+		im_projects parent,
+		im_projects child
+	where
+		parent.parent_id is null and
+		parent.project_id in (
+			select	main_project_id
+			from	($projects_sql) ps
+		)
+		and child.tree_sortkey
+			between parent.tree_sortkey
+			and tree_right(parent.tree_sortkey)
+    "
+
+    db_foreach project_hierarchy $project_hierarchy_sql {
+	set parent_hash($project_id) $parent_id
+    }
+
+
+    # ------------------------------------------------------------------
+    # Loop through the project absences and set values for weekly hash cells
+    db_foreach project_loop $projects_sql {
+	
+	# Loop through the days between start_date and end_data
+	for {set i $start_date_julian} {$i <= $end_date_julian} {incr i} {
+
+	    # Loop through the project hierarchy towards the top
+	    set pid $project_id
+	    while {"" != $pid} {
+		    set key "$user_id-$project_id-$i"
+		    set perc 0
+		    if {[info exists perc_hash($key)]} { set perc $perc_hash($key) }
+		    set perc [expr $perc + $percentage]
+		    set perc_hash($key) $perc
+
+		    # Check if there is a super-project and continue there.
+		    set pid $parent_hash($pid)
+	    }
+	}
+    }
 
     set absences_sql "
 		select
@@ -201,49 +255,14 @@ ad_proc -public im_ganttproject_resource_planning {
 			$where_clause
     "
 
-
-    # ------------------------------------------------------------
-    # 
-    
-
-
-
-
-
-
-
     # ------------------------------------------------------------
     # Create upper date dimension
 
     # Top scale is a list of lists like {{2006 01} {2006 02} ...}
-    # The last element of the list the grand total sum.
-    set top_scale_plain [db_list_of_lists top_scale "
-	select distinct	[join $top_vars ", "]
-	from		($middle_sql) c
-	order by	[join $top_vars ", "]
-    "]
-    lappend top_scale_plain [list $sigma $sigma $sigma $sigma $sigma $sigma]
-
-
-    # Insert subtotal columns whenever a scale changes
-    set top_scale [list]
-    set last_item [lindex $top_scale_plain 0]
-    foreach scale_item $top_scale_plain {
-	
-	for {set i [expr [llength $last_item]-2]} {$i >= 0} {set i [expr $i-1]} {
-	    set last_var [lindex $last_item $i]
-	    set cur_var [lindex $scale_item $i]
-	    if {$last_var != $cur_var} {
-		set item_sigma [lrange $last_item 0 $i]
-		while {[llength $item_sigma] < [llength $last_item]} { lappend item_sigma $sigma }
-		lappend top_scale $item_sigma
-	    }
-	}
-	
-	lappend top_scale $scale_item
-	set last_item $scale_item
+    set top_scale_plain {}
+    for {set i $start_date_julian} {$i <= $end_date_julian} {incr i} {
+	append top_scale_plain [list $i]
     }
-
 
     # ------------------------------------------------------------
     # Create a sorted left dimension
