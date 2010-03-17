@@ -4,21 +4,35 @@ SELECT acs_log__debug('/packages/intranet-timesheet2/sql/postgresql/upgrade/upgr
 
 -- table structure - versioning not yet supported 
 
-create sequence im_capacity_planning_id_seq;
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from pg_tables where tablename = ''im_capacity_planning'';
+        if v_count > 0 then return 0; end if;
 
-create table im_capacity_planning (
-        id                      integer
-                                primary key
-				default nextval('im_capacity_planning_id_seq'),
-        user_id                 integer,
-        project_id              integer,
-        month			integer,
-	year			integer,
-        days_capacity           float,
-	last_modified		timestamptz
-);
+	create sequence im_capacity_planning_id_seq;
 
-alter table im_capacity_planning add constraint im_capacity_planning_un unique (id, user_id, project_id, month, year);
+	create table im_capacity_planning (
+        	id                      integer
+                	                primary key
+					default nextval(''im_capacity_planning_id_seq''),
+	        user_id                 integer,
+        	project_id              integer,
+	        month			integer,
+		year			integer,
+	        days_capacity           float,
+		last_modified		timestamptz
+	);
+
+	alter table im_capacity_planning add constraint im_capacity_planning_un unique (id, user_id, project_id, month, year);
+
+        return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
 -- returns number of absence days for given absence type, month and user
 --
@@ -47,7 +61,8 @@ begin
                         im_user_absences a
                 where
                         a.owner_id = v_user_id and
-                        a.absence_type_id = v_absence_type_id
+                        a.absence_type_id = v_absence_type_id and 
+			((date_part(''month'', a.start_date) = v_month AND date_part(''year'', a.start_date) = v_year) OR (date_part(''month'', a.end_date) = v_month AND date_part(''year'', a.end_date) = v_year)) 
         LOOP
                 v_searchsql = ''select im_day_enumerator as d from im_day_enumerator
                 (to_date('''''' || v_record.start_date || '''''', '''''' || v_default_date_format ||  ''''''), to_date('''''' || v_record.end_date || '''''', '''''' || v_default_date_format || '''''')+1)'';
