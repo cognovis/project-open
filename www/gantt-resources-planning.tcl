@@ -19,8 +19,8 @@ ad_page_contract {
     @param customer_id Id of customer's projects to show
     @param user_name_link_opened List of users with details shown
 } {
-    { start_date "2000-01-01" }
-    { end_date "2011-01-01" }
+    { start_date "2008-01-01" }
+    { end_date "2009-01-01" }
     { top_vars "year week_of_year day_of_week" }
     { left_vars "user_name_link project_name_link" }
     { project_id:multiple "" }
@@ -28,7 +28,6 @@ ad_page_contract {
     { zoom "" }
     { max_col 20 }
     { max_row 100 }
-    { pre_config "" }
 }
 
 
@@ -124,7 +123,7 @@ ad_proc -public im_ganttproject_resource_planning {
 		and company_id = :customer_id
         "]
     }
-    
+
     # ------------------------------------------------------------
     # Start and End-Dat as min/max of selected projects.
     # Note that the sub-projects might "stick out" before and after
@@ -151,6 +150,7 @@ ad_proc -public im_ganttproject_resource_planning {
     # or more of these dimensions
     set dimension_vars [concat $top_vars $left_vars]
 
+
     # ------------------------------------------------------------
     # URLs to different parts of the system
 
@@ -176,12 +176,11 @@ ad_proc -public im_ganttproject_resource_planning {
     
 
     # ------------------------------------------------------------
-    # Projects - work from the sub-sub-sub-sub-tasks up the hierarchy
+    # Projects - determine project & task assignments at the lowest level.
     #
 
     set projects_sql "
-	select	*
-	from	(select
+		select
 			child.project_id,
 			child.project_name,
 			child.parent_id,
@@ -189,10 +188,10 @@ ad_proc -public im_ganttproject_resource_planning {
 			r.object_id_two as user_id,
 			im_name_from_user_id(r.object_id_two) as user_name,
 			m.percentage,
-			child.start_date::date,
-			to_char(child.start_date, 'J') as start_date_julian,
-			child.end_date::date,
-			to_char(child.end_date, 'J') as end_date_julian,
+			child.start_date::date as child_start_date,
+			to_char(child.start_date, 'J') as child_start_date_julian,
+			child.end_date::date as child_end_date,
+			to_char(child.end_date, 'J') as child_end_date_julian,
 			tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as object_level,
 			child.tree_sortkey
 		from
@@ -212,24 +211,57 @@ ad_proc -public im_ganttproject_resource_planning {
 			and r.object_id_one = child.project_id
 			and m.percentage is not null
 			$where_clause
-		) t
-	order by
-		lower(t.user_name),
-		t.tree_sortkey
     "
 
+
     # ------------------------------------------------------------------
-    # Calculate the left dimension.
-    # Eeach entry consists of a list of values.
-    set left_scale {}
+    # Calculate the hierarchy.
+    # We have to go through all main-projects that have children with
+    # assignments, and then we have to go through all of their children
+    # in order to get a complete hierarchy.
+    #
+
+    set hierarchy_sql "
+	select
+		child.project_id,
+		child.parent_id,
+		child.tree_sortkey,
+		child.project_name,
+		child.project_nr
+	from
+		im_projects parent,
+		im_projects child
+	where
+		parent.project_status_id not in ([join [im_sub_categories [im_project_status_closed]] ","])
+		and parent.parent_id is null
+		and parent.tree_sortkey in (
+			select	tree_ancestor_key(t.tree_sortkey,1) as tree_level
+			from	($projects_sql) t
+		)
+		and child.tree_sortkey
+			between parent.tree_sortkey
+			and tree_right(parent.tree_sortkey)
+    "
+
     set empty ""
     set name_hash($empty) ""
-    db_foreach project_hierarchy $projects_sql {
+    db_foreach project_hierarchy $hierarchy_sql {
 
-	# Store project information into hashes
+	# Store project hierarchy information into hashes
 	set parent_hash($project_id) $parent_id
 	set sortkey_hash($tree_sortkey) $project_id
 	set name_hash($project_id) $project_name
+
+    }
+
+
+    # ------------------------------------------------------------------
+    # The left_scale is a list of lists like {{project_name project_path project_name_link user_name_link}}
+    # The variables from the left_scale will be used to display the left dimension,
+    # depending on the selected left_vars
+    #
+    set left_scale {}
+    db_foreach left_scale $projects_sql {
 
 	# Iterate through the projects level to calculate the "project path".
 	# The project path is a list starting with the main-project down to the
@@ -254,8 +286,6 @@ ad_proc -public im_ganttproject_resource_planning {
 	lappend left_scale $left_dim
     }
 
-    ad_return_complaint 1 $left_scale
-
 
     # ------------------------------------------------------------------
     # Calculate the main resource assignment hash by looping
@@ -264,7 +294,7 @@ ad_proc -public im_ganttproject_resource_planning {
     db_foreach project_loop $projects_sql {
 	
 	# Loop through the days between start_date and end_data
-	for {set i $start_date_julian} {$i <= $end_date_julian} {incr i} {
+	for {set i $child_start_date_julian} {$i <= $child_end_date_julian} {incr i} {
 
 	    # Loop through the project hierarchy towards the top
 	    set pid $project_id
@@ -279,27 +309,13 @@ ad_proc -public im_ganttproject_resource_planning {
 		set pid $parent_hash($pid)
 	    }
 	}
-
     }
     
-    set absences_sql "
-		select
-			'im_user_absence'::varchar as type,
-			100::numeric as percentage,
-			a.owner_id as user_id,
-			a.absence_id as object_id,
-			a.absence_name as object_name,
-			a.absence_id::varchar as object_nr,
-			a.start_date::date,
-			a.end_date::date,
-			1 as object_level
-		from
-			im_user_absences a
-		where
-			a.end_date >= to_date(:start_date, 'YYYY-MM-DD')
-			and a.start_date <= to_date(:end_date, 'YYYY-MM-DD')
-			$where_clause
-    "
+#	ad_return_complaint 1 [array get perc_hash]
+#	ad_return_complaint 1 "$start_date_julian $end_date_julian [expr $end_date_julian - $start_date_julian]"
+# 	ad_return_complaint 1 "$child_start_date $child_end_date"
+    
+   
 
     # ------------------------------------------------------------
     # Create upper date dimension
@@ -314,6 +330,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	}
 	lappend top_scale $top_dim
     }
+
 
     # ------------------------------------------------------------
     # Display the Table Header
@@ -535,16 +552,6 @@ if {![im_permission $user_id "view_projects_all"]} {
 # Defaults
 
 set page_title [lang::message::lookup "" intranet-reporting.Gantt_Resources "Gantt Resources"]
-
-
-switch $pre_config {
-    resource_planning_report {
-	# Configure the parameters to show the current month only
-	set start_date [db_string start_date "select to_char(now()::date, 'YYYY-MM-DD')"]
-	set end_date [db_string start_date "select to_char(now()::date+14, 'YYYY-MM-DD')"]
-	set max_col 30
-    }
-}
 
 
 # ------------------------------------------------------------
