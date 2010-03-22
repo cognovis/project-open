@@ -21,7 +21,7 @@ ad_page_contract {
 } {
     { start_date "2000-01-01" }
     { end_date "2011-01-01" }
-    { top_vars "" }
+    { top_vars "year week_of_year day_of_week" }
     { left_vars "user_name_link project_name_link" }
     { project_id:multiple "" }
     { customer_id:integer 0 }
@@ -36,16 +36,61 @@ ad_page_contract {
 # Display Procedure
 # ---------------------------------------------------------------
 
+ad_proc -public im_date_julian_to_components { julian_date } {
+    Takes a Julian data and returns an array of its components:
+    Year, MonthOfYear, DayOfMonth, WeekOfYear, Quarter
+} {
+    set ansi [dt_julian_to_ansi $julian_date]
+    regexp {(....)-(..)-(..)} $ansi match year month_of_year day_of_month
+    set month_of_year [string trim $month_of_year 0]
+    set first_year_julian [dt_ansi_to_julian $year 1 1]
+    set day_of_year [expr $julian_date - $first_year_julian + 1]
+    set week_of_year [expr int($day_of_year / 7)]
+    set day_of_week [expr 1 + $day_of_year - 7*$week_of_year]
+    set quarter_of_year [expr 1 + int(($month_of_year-1) / 3)]
+    
+    return [list year $year \
+		month_of_year $month_of_year \
+		day_of_month $day_of_month \
+		week_of_year $week_of_year \
+		quarter_of_year $quarter_of_year \
+		day_of_year $day_of_year \
+		day_of_week $day_of_week \
+    ]
+}
+
+
+ad_proc -public im_date_components_to_julian { top_vars top_entry} {
+    Takes an entry from top_vars/top_entry and tries
+    to figure out the julian date from this
+} {
+    set ctr 0
+    foreach var $top_vars {
+	set val [lindex $top_entry $ctr]
+	set $var $val
+	incr ctr
+    }
+
+    # Try to calculate the current data from top dimension
+    set julian 0
+#    catch { set julian [dt_ansi_to_julian $year $month_of_year $day_of_month] }
+    catch { 
+	set first_of_year_julian [dt_ansi_to_julian $year 1 1] 
+	set julian [expr $first_of_year_julian + $week_of_year * 7 + $day_of_week]
+    }
+ 
+    if {0 == $julian} { ad_return_complaint 1 "Unable to calculate data from date dimension: '$top_vars'" }
+    return $julian
+}
 
 ad_proc -public im_ganttproject_resource_planning {
     { -start_date "" }
     { -end_date "" }
-    { -top_vars "" }
+    { -top_vars "year week_or_year day" }
     { -left_vars "user_name_link project_name_link" }
     { -project_id "" }
     { -user_id "" }
     { -customer_id 0 }
-    { -user_name_link_opened "" }
     { -return_url "" }
     { -export_var_list "" }
     { -zoom "" }
@@ -60,11 +105,16 @@ ad_proc -public im_ganttproject_resource_planning {
     @param left_vars Variables to show at the left-hand side
     @param project_id Id of project(s) to show. Defaults to all active projects
     @param customer_id Id of customer's projects to show
-    @param user_name_link_opened List of users with details shown
 } {
     set rowclass(0) "roweven"
     set rowclass(1) "rowodd"
     set sigma "&Sigma;"
+
+    set project_base_url "/intranet/projects/view"
+    set user_base_url "/intranet/users/view"
+
+    # The list of users/projects opened already
+    set user_name_link_opened {}
 
     if {0 != $customer_id && "" == $project_id} {
 	set project_id [db_list pids "
@@ -89,35 +139,9 @@ ad_proc -public im_ganttproject_resource_planning {
     }
 
     db_1row date_calc "
-	select	to_char(:start_date, 'J') as start_date_julian,
-		to_char(:end_date, 'J') as end_date_julian
+	select	to_char(:start_date::date, 'J') as start_date_julian,
+		to_char(:end_date::date, 'J') as end_date_julian
     "
-
-
-    # Adaptive behaviour - limit the size of the component to a summary
-    # suitable for the left/right columns of a project.
-    if {$auto_open | "" == $top_vars} {
-	set duration_days [db_string dur "select to_date(:end_date, 'YYYY-MM-DD') - to_date(:start_date, 'YYYY-MM-DD')"]
-	if {"" == $duration_days} { set duration_days 0 }
-	if {$duration_days < 0} { set duration_days 0 }
-
-	set duration_weeks [expr $duration_days / 7]
-	set duration_months [expr $duration_days / 30]
-	set duration_quarters [expr $duration_days / 91]
-
-	set days_too_long [expr $duration_days > $max_col]
-	set weeks_too_long [expr $duration_weeks > $max_col]
-	set months_too_long [expr $duration_months > $max_col]
-	set quarters_too_long [expr $duration_quarters > $max_col]
-
-	set top_vars "week_of_year day_of_month"
-	if {$days_too_long} { set top_vars "month_of_year week_of_year" }
-	if {$weeks_too_long} { set top_vars "quarter_of_year month_of_year" }
-	if {$months_too_long} { set top_vars "year quarter_of_year" }
-	if {$quarters_too_long} { set top_vars "year quarter_of_year" }
-    }
-
-    set top_vars [im_ganttproject_zoom_top_vars -zoom $zoom -top_vars $top_vars]
 
     # ------------------------------------------------------------
     # Define Dimensions
@@ -126,7 +150,6 @@ ad_proc -public im_ganttproject_resource_planning {
     # the "cell" hash. Subtotals are calculated by dropping on
     # or more of these dimensions
     set dimension_vars [concat $top_vars $left_vars]
-
 
     # ------------------------------------------------------------
     # URLs to different parts of the system
@@ -157,12 +180,14 @@ ad_proc -public im_ganttproject_resource_planning {
     #
 
     set projects_sql "
-		select
-			child.project_id as child_project_id,
+	select	*
+	from	(select
+			child.project_id,
+			child.project_name,
+			child.parent_id,
 			parent.project_id as main_project_id,
-			substring(child.project_name for 20) as object_name,
-			substring(child.project_nr for 20) as object_nr,
 			r.object_id_two as user_id,
+			im_name_from_user_id(r.object_id_two) as user_name,
 			m.percentage,
 			child.start_date::date,
 			to_char(child.start_date, 'J') as start_date_julian,
@@ -187,35 +212,55 @@ ad_proc -public im_ganttproject_resource_planning {
 			and r.object_id_one = child.project_id
 			and m.percentage is not null
 			$where_clause
+		) t
+	order by
+		lower(t.user_name),
+		t.tree_sortkey
     "
 
     # ------------------------------------------------------------------
-    # Store the relevant project hierarchy (for the projects selected)
-    # in a hash array.
-    set project_hierarchy_sql "
-	select	child.project_id,
-		child.parent_id
-	from
-		im_projects parent,
-		im_projects child
-	where
-		parent.parent_id is null and
-		parent.project_id in (
-			select	main_project_id
-			from	($projects_sql) ps
-		)
-		and child.tree_sortkey
-			between parent.tree_sortkey
-			and tree_right(parent.tree_sortkey)
-    "
+    # Calculate the left dimension.
+    # Eeach entry consists of a list of values.
+    set left_scale {}
+    set empty ""
+    set name_hash($empty) ""
+    db_foreach project_hierarchy $projects_sql {
 
-    db_foreach project_hierarchy $project_hierarchy_sql {
+	# Store project information into hashes
 	set parent_hash($project_id) $parent_id
+	set sortkey_hash($tree_sortkey) $project_id
+	set name_hash($project_id) $project_name
+
+	# Iterate through the projects level to calculate the "project path".
+	# The project path is a list starting with the main-project down to the
+	# current project.
+	set proj_path [list]
+	for {set i [string len $tree_sortkey]} {$i > 0} { set i [expr $i - 8]} {
+	    set tsk [string range $tree_sortkey 0 [expr $i-1]]
+	    if {[info exists sortkey_hash($tsk)]} {
+		set pid $sortkey_hash($tsk)
+		lappend proj_path $pid
+	    }
+	}
+
+	# Calculated variables
+	set project_path [f::reverse $proj_path]
+	set project_name_link "<a href='[export_vars -base $project_base_url {project_id}]'>$project_name</a>"
+	set user_name_link "<a href='[export_vars -base $user_base_url {user_id}]'>$user_name</a>"
+
+	# Select out the variables to go to the left scale
+	set left_dim {}
+	foreach left_var $left_vars { lappend left_dim [eval set a $$left_var] }
+	lappend left_scale $left_dim
     }
 
+    ad_return_complaint 1 $left_scale
+
 
     # ------------------------------------------------------------------
-    # Loop through the project absences and set values for weekly hash cells
+    # Calculate the main resource assignment hash by looping
+    # through the project hierarchy x looping through the date dimension
+    # 
     db_foreach project_loop $projects_sql {
 	
 	# Loop through the days between start_date and end_data
@@ -224,18 +269,19 @@ ad_proc -public im_ganttproject_resource_planning {
 	    # Loop through the project hierarchy towards the top
 	    set pid $project_id
 	    while {"" != $pid} {
-		    set key "$user_id-$project_id-$i"
-		    set perc 0
-		    if {[info exists perc_hash($key)]} { set perc $perc_hash($key) }
-		    set perc [expr $perc + $percentage]
-		    set perc_hash($key) $perc
-
-		    # Check if there is a super-project and continue there.
-		    set pid $parent_hash($pid)
+		set key "$user_id-$project_id-$i"
+		set perc 0
+		if {[info exists perc_hash($key)]} { set perc $perc_hash($key) }
+		set perc [expr $perc + $percentage]
+		set perc_hash($key) $perc
+		
+		# Check if there is a super-project and continue there.
+		set pid $parent_hash($pid)
 	    }
 	}
-    }
 
+    }
+    
     set absences_sql "
 		select
 			'im_user_absence'::varchar as type,
@@ -259,37 +305,14 @@ ad_proc -public im_ganttproject_resource_planning {
     # Create upper date dimension
 
     # Top scale is a list of lists like {{2006 01} {2006 02} ...}
-    set top_scale_plain {}
+    set top_scale {}
     for {set i $start_date_julian} {$i <= $end_date_julian} {incr i} {
-	append top_scale_plain [list $i]
-    }
-
-    # ------------------------------------------------------------
-    # Create a sorted left dimension
-    
-    # Scale is a list of lists. Example: {{2006 01} {2006 02} ...}
-    # The last element is the grand total.
-    set left_scale_plain [db_list_of_lists left_scale "
-	select distinct	[join $left_vars ", "]
-	from		($middle_sql) c
-	order by	[join $left_vars ", "]
-    "]
-
-    set last_sigma [list]
-    foreach t [lindex $left_scale_plain 0] { lappend last_sigma $sigma }
-    lappend left_scale_plain $last_sigma
-
-
-    # Add a "subtotal" (= {$user_id $sigma}) before every new ocurrence of a user_id
-    set left_scale [list]
-    set last_user_id 0
-    foreach scale_item $left_scale_plain {
-	set user_id [lindex $scale_item 0]
-	if {$last_user_id != $user_id} {
-	    lappend left_scale [list $user_id $sigma]
-	    set last_user_id $user_id
+	array set date_hash [im_date_julian_to_components $i]
+	set top_dim {}
+	foreach top_var $top_vars {
+	    lappend top_dim $date_hash($top_var)
 	}
-	lappend left_scale $scale_item
+	lappend top_scale $top_dim
     }
 
     # ------------------------------------------------------------
@@ -299,7 +322,7 @@ ad_proc -public im_ganttproject_resource_planning {
     set first_cell [lindex $top_scale 0]
     set top_scale_rows [llength $first_cell]
     set left_scale_size [llength [lindex $left_scale 0]]
-    
+
     set header ""
     for {set row 0} {$row < $top_scale_rows} { incr row } {
 	
@@ -317,12 +340,6 @@ ad_proc -public im_ganttproject_resource_planning {
 	    set scale_entry [lindex $top_scale $col]
 	    set scale_item [lindex $scale_entry $row]
 	    
-	    # Skip the last line with all sigmas - doesn't sum up...
-	    set all_sigmas_p 1
-	    foreach e $scale_entry { if {$e != $sigma} { set all_sigmas_p 0 }	}
-	    if {$all_sigmas_p} { continue }
-
-	    
 	    # Check if the previous item was of the same content
 	    set prev_scale_entry [lindex $top_scale [expr $col-1]]
 	    set prev_scale_item [lindex $prev_scale_entry $row]
@@ -333,7 +350,7 @@ ad_proc -public im_ganttproject_resource_planning {
 		append header "\t<td class=rowtitle>$scale_item</td>\n"
 		continue
 	    }
-	    
+
 	    # Prev and current are same => just skip.
 	    # The cell was already covered by the previous entry via "colspan"
 	    if {$prev_scale_item == $scale_item} { continue }
@@ -346,56 +363,12 @@ ad_proc -public im_ganttproject_resource_planning {
 		incr next_col
 		incr colspan
 	    }
-	    append header "\t<td class=rowtitle colspan=$colspan>$scale_item</td>\n"	    
-	    
+	    append header "\t<td class=rowtitle colspan=$colspan>$scale_item</td>\n"
 	}
 	append header "</tr>\n"
     }
     append html $header
 
-    # ------------------------------------------------------------
-    # Execute query and aggregate values into a Hash array
-
-    set cnt_outer 0
-    set cnt_inner 0
-    db_foreach query $outer_sql {
-
-	# Skip empty percentage entries. Improves performance...
-	if {"" == $percentage} { continue }
-	
-	# Get all possible permutations (N out of M) from the dimension_vars
-	set perms [im_report_take_all_ordered_permutations $dimension_vars]
-	
-	# Add the gantt hours to ALL of the variable permutations.
-	# The "full permutation" (all elements of the list) corresponds
-	# to the individual cell entries.
-	# The "empty permutation" (no variable) corresponds to the
-	# gross total of all values.
-	# Permutations with less elements correspond to subtotals
-	# of the values along the missing dimension. Clear?
-	#
-	foreach perm $perms {
-	    
-	    # Calculate the key for this permutation
-	    # something like "$year-$month-$customer_id"
-	    set key_expr "\$[join $perm "-\$"]"
-	    set key [eval "set a \"$key_expr\""]
-	    
-	    # Sum up the values for the matrix cells
-	    set sum 0
-	    if {[info exists hash($key)]} { set sum $hash($key) }
-	    
-	    if {"" == $percentage} { set percentage 0 }
-	    set sum [expr $sum + $percentage]
-	    set hash($key) $sum
-	    
-	    incr cnt_inner
-	}
-	incr cnt_outer
-    }
-
-    # Skip component if there are not items to be displayed
-    if {0 == $cnt_outer} { return "" }
 
     # ------------------------------------------------------------
     # Display the table body
@@ -407,34 +380,20 @@ ad_proc -public im_ganttproject_resource_planning {
 	# Check open/close logic of user's projects
 	set project_pos [lsearch $left_vars "project_name_link"]
 	set project_val [lindex $left_entry $project_pos]
+	# A bit ugly - extract the project_id from URL...
+	regexp {project%5fid\=([0-9]*)} $project_val match project_id
 	
 	set user_pos [lsearch $left_vars "user_name_link"]
 	set user_val [lindex $left_entry $user_pos]
-	# A bit ugly - extract the user_id from user's URL...
-	regexp {user_id\=([0-9]*)} $user_val match user_id
-	
-	if {$sigma != $project_val} {
-	    # The current line is not the summary line (which is always shown).
-	    # Start checking the open/close logic
-	    
-	    if {[lsearch $user_name_link_opened $user_id] < 0} { continue }
-	}
+	# A bit ugly - extract the user_id and project_ids from URL...
+	regexp {user%5fid\=([0-9]*)} $user_val match user_id
 
-	# ------------------------------------------------------------
-	# Add empty line before the total sum. The total sum of percentage
-	# shows the overall resource assignment and doesn't make much sense...
-	set user_pos [lsearch $left_vars "user_name_link"]
-	set user_val [lindex $left_entry $user_pos]
-	if {$sigma == $user_val} {
-	    continue
-	}
-	
-	set class $rowclass([expr $ctr % 2])
-	incr ctr
-	
+	# Start checking the open/close logic
+#	if {[lsearch $user_name_link_opened $user_id] < 0} { continue }
 
 	# ------------------------------------------------------------
 	# Start the row and show the left_scale values at the left
+	set class $rowclass([expr $ctr % 2])
 	append html "<tr class=$class>\n"
 	set left_entry_ctr 0
 	foreach val $left_entry { 
@@ -475,15 +434,9 @@ ad_proc -public im_ganttproject_resource_planning {
 	    set $var_name $var_value
 	}
 	
-   
 	# ------------------------------------------------------------
 	# Start writing out the matrix elements
 	foreach top_entry $top_scale {
-	    
-	    # Skip the last line with all sigmas - doesn't sum up...
-	    set all_sigmas_p 1
-	    foreach e $top_entry { if {$e != $sigma} { set all_sigmas_p 0 }	}
-	    if {$all_sigmas_p} { continue }
 	    
 	    # Write the top_scale values to their corresponding local 
 	    # variables so that we can access them easily for $key
@@ -493,19 +446,16 @@ ad_proc -public im_ganttproject_resource_planning {
 		set $var_name $var_value
 	    }
 	    
+	    # Calculate the julian date for today from top_vars
+	    set julian_date [im_date_components_to_julian $top_vars $top_entry]
+
 	    # Calculate the key for this permutation
-	    # something like "$year-$month-$customer_id"
-	    set key_expr_list [list]
-	    foreach var_name $dimension_vars {
-		set var_value [eval set a "\$$var_name"]
-		if {$sigma != $var_value} { lappend key_expr_list $var_name }
-	    }
-	    set key_expr "\$[join $key_expr_list "-\$"]"
-	    set key [eval "set a \"$key_expr\""]
-	    
+	    # of structure: "$user_id-$project_id-$julian_date"
+	    set key "$user_id-$project_id-$julian_date"
+
 	    set val ""
-	    if {[info exists hash($key)]} { set val $hash($key) }
-	    
+	    if {[info exists perc_hash($key)]} { set val $perc_hash($key) }
+
 	    # ------------------------------------------------------------
 	    # Format the percentage value for percent-arithmetics:
 	    # - Sum up percentage values per day
@@ -530,6 +480,8 @@ ad_proc -public im_ganttproject_resource_planning {
 
 	    switch $period {
 		"day_of_month" { set val $val_day }
+		"day_of_year" { set val $val_day }
+		"day_of_week" { set val $val_day }
 		"week_of_year" { set val "$val_week" }
 		"month_of_year" { set val "$val_month" }
 		"quarter_of_year" { set val "$val_quarter" }
@@ -539,8 +491,8 @@ ad_proc -public im_ganttproject_resource_planning {
 
 	    # ------------------------------------------------------------
 	    
+	    set color "\#000000"
 	    if {![regexp {[^0-9]} $val match]} {
-		set color "\#000000"
 		if {$val > 100} { set color "\#800000" }
 		if {$val > 150} { set color "\#FF0000" }
 	    }
@@ -548,7 +500,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	    if {0 == $val} { 
 		set val "" 
 	    } else { 
-		set val "<font color=$color>$val%</font>\n"
+		set val "<font color=$color>$val</font>\n"
 	    }
 	    
 	    append html "<td>$val</td>\n"
@@ -557,33 +509,6 @@ ad_proc -public im_ganttproject_resource_planning {
 	append html "</tr>\n"
     }
 
-
-    # ------------------------------------------------------------
-    # Show a line to open up an entire level
-
-    # Check whether all user_ids are included in $user_name_link_opened
-    set user_ids [lsort -unique [db_list user_ids "select distinct user_id from ($inner_sql) h order by user_id"]]
-    set intersect [lsort -unique [set_intersection $user_name_link_opened $user_ids]]
-
-    if {$user_ids == $intersect} {
-
-	# All user_ids already opened - show "-" sign
-	append html "<tr class=rowtitle>\n"
-	set opened [list]
-	set url [export_vars -base $this_url {top_vars {user_name_link_opened $opened}}]
-	append html "<td class=rowtitle><a href=$url>[im_gif "minus_9"]</a></td>\n"
-	append html "<td class=rowtitle colspan=[expr [llength $top_scale]+3]>&nbsp;</td></tr>\n"
-
-    } else {
-
-	# Not all user_ids are opened - show a "+" sign
-	append html "<tr class=rowtitle>\n"
-	set opened [lsort -unique [concat $user_name_link_opened $user_ids]]
-	set url [export_vars -base $this_url {top_vars {user_name_link_opened $opened}}]
-	append html "<td class=rowtitle><a href=$url>[im_gif "plus_9"]</a></td>\n"
-	append html "<td class=rowtitle colspan=[expr [llength $top_scale]+3]>&nbsp;</td></tr>\n"
-
-    }
 
     # ------------------------------------------------------------
     # Close the table
@@ -632,7 +557,6 @@ set html [im_ganttproject_resource_planning \
 	-left_vars $left_vars \
 	-project_id $project_id \
 	-customer_id $customer_id \
-	-user_name_link_opened ""  \
 	-zoom $zoom \
 	-max_col $max_col \
 	-max_row $max_row \
@@ -643,4 +567,6 @@ if {"" == $html} {
     set html "<p>&nbsp;<p><blockquote><i>$html</i></blockquote><p>&nbsp;<p>\n"
 }
 
+
+ad_return_complaint 1 $html
 
