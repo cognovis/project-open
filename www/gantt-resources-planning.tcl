@@ -20,9 +20,9 @@ ad_page_contract {
     @param user_name_link_opened List of users with details shown
 } {
     { start_date "2008-01-01" }
-    { end_date "2009-01-01" }
+    { end_date "2008-04-01" }
     { top_vars "year week_of_year day_of_week" }
-    { left_vars "user_name_link project_name_link" }
+    { left_vars "user_name_link level0 level1 level2" }
     { project_id:multiple "" }
     { customer_id:integer 0 }
     { zoom "" }
@@ -214,6 +214,44 @@ ad_proc -public im_ganttproject_resource_planning {
     "
 
 
+    # ------------------------------------------------------------
+    # Main Projects x Users:
+    # Return all main projects where a user is assigned in one of the sub-projects
+    #
+
+    set main_projects_sql "
+		select distinct
+			parent.project_id as main_project_id,
+			parent.project_name as main_project_name,
+			r.object_id_two as user_id,
+			im_name_from_user_id(r.object_id_two) as user_name
+		from
+			im_projects parent,
+			im_projects child,
+			acs_rels r,
+			im_biz_object_members m
+		where
+			parent.project_status_id not in ([join [im_sub_categories [im_project_status_closed]] ","])
+			and parent.parent_id is null
+			and parent.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+			and parent.start_date <= to_date(:end_date, 'YYYY-MM-DD')
+			and child.tree_sortkey
+				between parent.tree_sortkey
+				and tree_right(parent.tree_sortkey)
+			and r.rel_id = m.rel_id
+			and r.object_id_one = child.project_id
+			and m.percentage is not null
+			$where_clause
+		order by
+			user_name,
+			parent.project_id
+    "
+    db_foreach main_projects $main_projects_sql {
+	set key "$user_id-$main_project_id"
+	set member_of_main_project_hash($key) 1
+    }
+
+
     # ------------------------------------------------------------------
     # Calculate the hierarchy.
     # We have to go through all main-projects that have children with
@@ -223,11 +261,13 @@ ad_proc -public im_ganttproject_resource_planning {
 
     set hierarchy_sql "
 	select
+		parent.project_id as parent_project_id,
 		child.project_id,
 		child.parent_id,
 		child.tree_sortkey,
 		child.project_name,
-		child.project_nr
+		child.project_nr,
+		tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as tree_level
 	from
 		im_projects parent,
 		im_projects child
@@ -241,49 +281,102 @@ ad_proc -public im_ganttproject_resource_planning {
 		and child.tree_sortkey
 			between parent.tree_sortkey
 			and tree_right(parent.tree_sortkey)
+	order by
+		parent.project_id,
+		child.tree_sortkey
     "
+
+#	ad_return_complaint 1 "<pre>[join [db_list_of_lists sadf $hierarchy_sql] "\n"]</pre>"
 
     set empty ""
     set name_hash($empty) ""
+    set old_parent_project_id 0
+    set hierarchy_lol {}
     db_foreach project_hierarchy $hierarchy_sql {
+
+	if {$old_parent_project_id != $parent_project_id} {
+	    set main_project_hierarchy_hash($old_parent_project_id) $hierarchy_lol
+	    set hierarchy_lol {}
+	    set old_parent_project_id $parent_project_id
+	}
 
 	# Store project hierarchy information into hashes
 	set parent_hash($project_id) $parent_id
 	set sortkey_hash($tree_sortkey) $project_id
 	set name_hash($project_id) $project_name
 
+	# Determine the project path that leads to the current sub-project
+	set hierarchy_row {}
+	set level $tree_level
+	set pid $project_id
+	while {$level > 0} {
+	    lappend hierarchy_row $pid
+	    set pid $parent_hash($pid)
+	    incr level -1
+	}
+
+	lappend hierarchy_lol [list $project_id $project_name $tree_level [f::reverse $hierarchy_row]]
+
+
     }
+    set main_project_hierarchy_hash($parent_project_id) $hierarchy_lol
+
+
+#    ad_return_complaint 1 "<pre>[join [array get main_project_hierarchy_hash] "\n\n"]</pre>"
 
 
     # ------------------------------------------------------------------
-    # The left_scale is a list of lists like {{project_name project_path project_name_link user_name_link}}
-    # The variables from the left_scale will be used to display the left dimension,
-    # depending on the selected left_vars
+    # Calculate the left scale.
+    # The scale starts with the "user" dimension, followed by the 
+    # main_projects to which the user is a member. Then follows the
+    # full hierarchy of the main_project.
     #
     set left_scale {}
-    db_foreach left_scale $projects_sql {
-
-	# Iterate through the projects level to calculate the "project path".
-	# The project path is a list starting with the main-project down to the
-	# current project.
-	set proj_path [list]
-	for {set i [string len $tree_sortkey]} {$i > 0} { set i [expr $i - 8]} {
-	    set tsk [string range $tree_sortkey 0 [expr $i-1]]
-	    if {[info exists sortkey_hash($tsk)]} {
-		set pid $sortkey_hash($tsk)
-		lappend proj_path $pid
-	    }
-	}
+    db_foreach left_scale_users $main_projects_sql {
 
 	# Calculated variables
-	set project_path [f::reverse $proj_path]
-	set project_name_link "<a href='[export_vars -base $project_base_url {project_id}]'>$project_name</a>"
 	set user_name_link "<a href='[export_vars -base $user_base_url {user_id}]'>$user_name</a>"
 
-	# Select out the variables to go to the left scale
-	set left_dim {}
-	foreach left_var $left_vars { lappend left_dim [eval set a $$left_var] }
-	lappend left_scale $left_dim
+	# Check if the user is assigned somewhere in the main project
+	set main_projects_key "$user_id-$main_project_id"
+ 	if {![info exists member_of_main_project_hash($key)]} { continue }
+
+	# Calculate the name and link to the main project
+	set main_project_name_link "<a href='[export_vars -base $project_base_url {{project_id $main_project_id}}]'>$main_project_name</a>"
+	set level0 $main_project_name_link
+
+	# Get the hierarchy for the main project
+	set hierarchy_lol $main_project_hierarchy_hash($main_project_id)
+
+	# Loop through the project hierarchy
+	foreach row $hierarchy_lol {
+
+	    # Extract the pieces of a hierarchy row
+	    set project_id [lindex $row 0]
+	    set project_name [lindex $row 1]
+	    set project_level [lindex $row 2]
+	    set project_path [lindex $row 3]
+
+	    # Calculated variables
+	    set project_name_link "<a href='[export_vars -base $project_base_url {project_id}]'>$project_name</a>"
+
+	    # Store project_path into level variables
+	    for {set i 0} {$i <= [llength $project_path]} {incr i} {
+		set pid [lindex $project_path $i]
+		set pname $name_hash($pid)
+		set level[expr $i+1] "<a href='[export_vars -base $project_base_url {{project_id $pid}}]'>$pname</a>"
+	    }
+	    for {set i [expr [llength $project_path]+1]} {$i < 10} {incr i} {
+		set level$i ""
+	    }
+
+#	ad_return_complaint 1 "<pre>path=$project_path, 0=$level0, 1=$level1, 2=$level2, main=$main_project_name_link</pre>"
+
+	    # Select out the variables to go to the left scale
+	    set left_dim {}
+	    foreach left_var $left_vars { lappend left_dim [eval set a $$left_var] }
+	    lappend left_scale $left_dim
+	}
     }
 
 
