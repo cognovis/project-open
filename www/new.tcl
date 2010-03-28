@@ -226,6 +226,7 @@ ad_form -extend -name $form_id -form {
 	    {label "[_ intranet-expenses.Expense_Type]"}
 	    {options $expense_type_options} 
 	}
+	{cost_center_id:text(hidden),optional}
         {billable_p:text(radio) {label "[_ intranet-expenses.Billable_p]"} {options {{[_ intranet-core.Yes] t} {[_ intranet-core.No] f}}} }
 	{reimbursable:text(text) {label "[_ intranet-expenses.reimbursable]"} { html {size 10}}}
 	{expense_payment_type_id:text(select) 
@@ -313,12 +314,8 @@ ad_form -extend -name $form_id -on_request {
     
     db_transaction {
 	db_exec_plsql create_expense {}
-    
-	db_dml update_costs "
-		update im_costs set
-			cost_center_id = :cost_center_id
-		where cost_id = :expense_id
-        "
+	db_dml update_expense ""
+    	db_dml update_cost ""
 
 	im_dynfield::attribute_store \
 	    -object_type "im_expense" \
@@ -332,7 +329,7 @@ ad_form -extend -name $form_id -on_request {
     if {$auto_vat_p} { 
 	set vat [$auto_vat_function -expense_id $expense_id] 
 	set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
-	db_dml update_costs "
+	db_dml update_cost_vat "
 		update	im_costs set
 			vat = :vat,
 			amount = :amount
@@ -356,42 +353,9 @@ ad_form -extend -name $form_id -on_request {
     set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
     set expense_name $expense_id
 
-    # Update the invoice itself
-    db_dml update_expense "
-	update im_expenses 
-	set 
-	        external_company_name = :external_company_name,
-	        external_company_vat_number = :external_company_vat_number,
-	        receipt_reference = :receipt_reference,
-	        billable_p = :billable_p,
-	        reimbursable = :reimbursable,
-	        expense_payment_type_id = :expense_payment_type_id,
-		expense_type_id = :expense_type_id
-	where
-		expense_id = :expense_id
-    "
-
-    db_dml update_costs "
-	update im_costs
-	set
-		project_id	= :project_id,
-		cost_name	= :expense_name,
-		customer_id	= :customer_id,
-		cost_nr		= :expense_id,
-	        cost_type_id    = :cost_type_id,
-		provider_id	= :provider_id,
-		template_id	= :template_id,
-		effective_date	= to_timestamp(:expense_date, 'YYYY-MM-DD'),
-		payment_days	= :payment_days,
-		vat		= :vat,
-		tax		= :tax,
-		variable_cost_p = 't',
-		amount		= :amount,
-		currency	= :currency,
-		note		= :note
-	where
-		cost_id = :expense_id
-    "
+    # Update the cost and invoice items
+    db_dml update_expense ""
+    db_dml update_cost ""
 
     im_dynfield::attribute_store \
 	    -object_type "im_expense" \
@@ -405,7 +369,7 @@ ad_form -extend -name $form_id -on_request {
     if {$auto_vat_p} {
 	set vat [$auto_vat_function -expense_id $expense_id] 
 	set amount [expr $expense_amount / [expr 1 + [expr $vat / 100.0]]]
-	db_dml update_costs "
+	db_dml update_cost_vat "
 		update	im_costs set
 			vat = :vat,
 			amount = :amount
@@ -431,7 +395,7 @@ ad_form -extend -name $form_id -on_request {
 	"]
 	array set hash [im_expense_bundle_item_sum -expense_ids $expense_ids]
 
-	db_dml update_costs "
+	db_dml update_cost_vat "
 	update im_costs
 	set
 		vat		= $hash(bundle_vat),
