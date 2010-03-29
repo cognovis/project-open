@@ -82,7 +82,8 @@ drop function inline_0 ();
 
 
 
-drop view im_timesheet_tasks_view;
+-- drop view im_timesheet_tasks_view;
+DROP VIEW IF EXISTS im_timesheet_tasks_view;
 
 create or replace view im_timesheet_tasks_view as
 select	t.*,
