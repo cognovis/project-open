@@ -22,9 +22,12 @@ ad_page_contract {
     { start_date "2008-01-01" }
     { end_date "2008-04-01" }
     { top_vars "year week_of_year day_of_week" }
-    { left_vars "user_name_link level0 level1 level2" }
+    { left_vars "user_name_link project_name_link" }
     { project_id:multiple "" }
     { customer_id:integer 0 }
+    { project_status_id:integer 0 }
+    { project_type_id:integer 0 }
+    { program_id 0 }
     { zoom "" }
     { max_col 20 }
     { max_row 100 }
@@ -34,6 +37,20 @@ ad_page_contract {
 # ---------------------------------------------------------------
 # Display Procedure
 # ---------------------------------------------------------------
+
+
+
+ad_proc -public im_ganttproject_resource_planning_cell { percentage } {
+    Takes a percentage value and returns a formatted HTML ready to be
+    displayed as part of a cell
+} {
+    if {"" == $percentage} { return "" }
+
+    set p [expr int((1.0 * $percentage) / 10.0)]
+    set result [im_gif resource_$p "" 0 20 20]
+    return $result
+}
+
 
 ad_proc -public im_date_julian_to_components { julian_date } {
     Takes a Julian data and returns an array of its components:
@@ -108,6 +125,9 @@ ad_proc -public im_ganttproject_resource_planning {
     set rowclass(0) "roweven"
     set rowclass(1) "rowodd"
     set sigma "&Sigma;"
+    set page_url "/intranet-ganttproject/gantt-resources-planning"
+    set current_user_id [ad_get_user_id]
+    set return_url [im_url_with_query]
 
     set project_base_url "/intranet/projects/view"
     set user_base_url "/intranet/users/view"
@@ -154,6 +174,7 @@ ad_proc -public im_ganttproject_resource_planning {
     # ------------------------------------------------------------
     # URLs to different parts of the system
 
+    set collapse_url "/intranet/biz-object-tree-open-close"
     set company_url "/intranet/companies/view?company_id="
     set project_url "/intranet/projects/view?project_id="
     set user_url "/intranet/users/view?user_id="
@@ -173,12 +194,25 @@ ad_proc -public im_ganttproject_resource_planning {
     if { ![empty_string_p $where_clause] } {
 	set where_clause " and $where_clause"
     }
-    
+
+
+    # ------------------------------------------------------------
+    # Collapse lines in the report - store results in a Hash
+    #
+    set collapse_sql "
+		select	object_id
+		from	im_biz_object_tree_status
+		where	user_id = :current_user_id and
+			page_url = :page_url and
+			open_p = 'o'
+    "
+    db_foreach collapse $collapse_sql {
+	set collapse_hash($object_id) 1
+    }
 
     # ------------------------------------------------------------
     # Projects - determine project & task assignments at the lowest level.
     #
-
     set projects_sql "
 		select
 			child.project_id,
@@ -187,7 +221,7 @@ ad_proc -public im_ganttproject_resource_planning {
 			parent.project_id as main_project_id,
 			r.object_id_two as user_id,
 			im_name_from_user_id(r.object_id_two) as user_name,
-			m.percentage,
+			trunc(m.percentage) as percentage,
 			child.start_date::date as child_start_date,
 			to_char(child.start_date, 'J') as child_start_date_julian,
 			child.end_date::date as child_end_date,
@@ -286,8 +320,6 @@ ad_proc -public im_ganttproject_resource_planning {
 		child.tree_sortkey
     "
 
-#	ad_return_complaint 1 "<pre>[join [db_list_of_lists sadf $hierarchy_sql] "\n"]</pre>"
-
     set empty ""
     set name_hash($empty) ""
     set old_parent_project_id 0
@@ -309,20 +341,16 @@ ad_proc -public im_ganttproject_resource_planning {
 	set hierarchy_row {}
 	set level $tree_level
 	set pid $project_id
-	while {$level > 0} {
+	while {$level >= 0} {
 	    lappend hierarchy_row $pid
 	    set pid $parent_hash($pid)
 	    incr level -1
 	}
 
 	lappend hierarchy_lol [list $project_id $project_name $tree_level [f::reverse $hierarchy_row]]
-
-
     }
     set main_project_hierarchy_hash($parent_project_id) $hierarchy_lol
 
-
-#    ad_return_complaint 1 "<pre>[join [array get main_project_hierarchy_hash] "\n\n"]</pre>"
 
 
     # ------------------------------------------------------------------
@@ -332,18 +360,35 @@ ad_proc -public im_ganttproject_resource_planning {
     # full hierarchy of the main_project.
     #
     set left_scale {}
+    set old_user_id 0
     db_foreach left_scale_users $main_projects_sql {
 
-	# Calculated variables
-	set user_name_link "<a href='[export_vars -base $user_base_url {user_id}]'>$user_name</a>"
+	ns_log Notice "gantt-resources-planning: user=$user_name, main=$main_project_name"
 
-	# Check if the user is assigned somewhere in the main project
+	# Collapse Logic
+	if {[info exists collapse_hash($user_id)]} {
+	    set url [export_vars -base $collapse_url {page_url return_url {open_p "c"} {object_id $user_id}}]
+	    set collapse_html "<a href=$url>[im_gif minus_9]</a>"
+	} else {
+	    set url [export_vars -base $collapse_url {page_url return_url {open_p "o"} {object_id $user_id}}]
+	    set collapse_html "<a href=$url>[im_gif plus_9]</a>"
+	}
+	set user_name_link "$collapse_html <a href='[export_vars -base $user_base_url {user_id}]'>$user_name</a>"
+
+	# Add a line without project, only for the user
+	if {$user_id != $old_user_id} {
+	    set project_name_link "<!-- project%5fid=0 -->"
+	    set left_dim {}
+	    foreach left_var $left_vars { lappend left_dim [eval set a $$left_var] }
+	    lappend left_scale $left_dim
+	    set old_user_id $user_id
+	}
+
+	# Make sure that the user is assigned somewhere in the main project
+	# or otherwise skip the entire main_project:
+	#
 	set main_projects_key "$user_id-$main_project_id"
  	if {![info exists member_of_main_project_hash($key)]} { continue }
-
-	# Calculate the name and link to the main project
-	set main_project_name_link "<a href='[export_vars -base $project_base_url {{project_id $main_project_id}}]'>$main_project_name</a>"
-	set level0 $main_project_name_link
 
 	# Get the hierarchy for the main project
 	set hierarchy_lol $main_project_hierarchy_hash($main_project_id)
@@ -357,25 +402,41 @@ ad_proc -public im_ganttproject_resource_planning {
 	    set project_level [lindex $row 2]
 	    set project_path [lindex $row 3]
 
-	    # Calculated variables
-	    set project_name_link "<a href='[export_vars -base $project_base_url {project_id}]'>$project_name</a>"
+	    # Iterate through the project_path
+	    set collapse_control_oid 0
+	    set project_name_link ""
+	    for {set i 0} {$i < [llength $project_path]} {incr i} {
+		if {$i == [expr [llength $project_path] - 1]} {
+		    set pid [lindex $project_path $i]
+		    set pname $name_hash($pid)
 
-	    # Store project_path into level variables
-	    for {set i 0} {$i <= [llength $project_path]} {incr i} {
-		set pid [lindex $project_path $i]
-		set pname $name_hash($pid)
-		set level[expr $i+1] "<a href='[export_vars -base $project_base_url {{project_id $pid}}]'>$pname</a>"
-	    }
-	    for {set i [expr [llength $project_path]+1]} {$i < 10} {incr i} {
-		set level$i ""
+		    # use the project of level $i-1 to control whether to show or not the current project.
+		    set collapse_control_oid [lindex $project_path [expr $i-1]]
+
+		    # Collapse Logic
+		    if {[info exists collapse_hash($pid)]} {
+			set url [export_vars -base $collapse_url {page_url return_url {open_p "c"} {object_id $pid}}]
+			set collapse_html "<a href=$url>[im_gif minus_9]</a>"
+		    } else {
+			set url [export_vars -base $collapse_url {page_url return_url {open_p "o"} {object_id $pid}}]
+			set collapse_html "<a href=$url>[im_gif plus_9]</a>"
+		    }
+
+		    append project_name_link "$collapse_html <a href='[export_vars -base $project_base_url {{project_id $pid}}]'>$pname</a>"
+		} {
+		    append project_name_link " &nbsp; &nbsp; &nbsp; &nbsp; "
+		}
 	    }
 
-#	ad_return_complaint 1 "<pre>path=$project_path, 0=$level0, 1=$level1, 2=$level2, main=$main_project_name_link</pre>"
+	    # Use the user_id as "collapse control" if we are with a main_project.
+	    if {"" == $collapse_control_oid} { set collapse_control_oid $user_id }
 
 	    # Select out the variables to go to the left scale
-	    set left_dim {}
-	    foreach left_var $left_vars { lappend left_dim [eval set a $$left_var] }
-	    lappend left_scale $left_dim
+	    if {[info exists collapse_hash($collapse_control_oid)]} {
+		set left_dim {}
+		foreach left_var $left_vars { lappend left_dim [eval set a $$left_var] }
+		lappend left_scale $left_dim
+	    }
 	}
     }
 
@@ -392,7 +453,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	    # Loop through the project hierarchy towards the top
 	    set pid $project_id
 	    while {"" != $pid} {
-		set key "$user_id-$project_id-$i"
+		set key "$user_id-$pid-$i"
 		set perc 0
 		if {[info exists perc_hash($key)]} { set perc $perc_hash($key) }
 		set perc [expr $perc + $percentage]
@@ -401,14 +462,17 @@ ad_proc -public im_ganttproject_resource_planning {
 		# Check if there is a super-project and continue there.
 		set pid $parent_hash($pid)
 	    }
+
+	    # Aggregate percentage to user itself
+	    set key "$user_id-0-$i"
+	    set perc 0
+	    if {[info exists perc_hash($key)]} { set perc $perc_hash($key) }
+	    set perc [expr $perc + $percentage]
+	    set perc_hash($key) $perc
+
 	}
     }
-    
-#	ad_return_complaint 1 [array get perc_hash]
-#	ad_return_complaint 1 "$start_date_julian $end_date_julian [expr $end_date_julian - $start_date_julian]"
-# 	ad_return_complaint 1 "$child_start_date $child_end_date"
-    
-   
+
 
     # ------------------------------------------------------------
     # Create upper date dimension
@@ -491,6 +555,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	set project_pos [lsearch $left_vars "project_name_link"]
 	set project_val [lindex $left_entry $project_pos]
 	# A bit ugly - extract the project_id from URL...
+	set project_id ""
 	regexp {project%5fid\=([0-9]*)} $project_val match project_id
 	
 	set user_pos [lsearch $left_vars "user_name_link"]
@@ -498,41 +563,15 @@ ad_proc -public im_ganttproject_resource_planning {
 	# A bit ugly - extract the user_id and project_ids from URL...
 	regexp {user%5fid\=([0-9]*)} $user_val match user_id
 
-	# Start checking the open/close logic
-#	if {[lsearch $user_name_link_opened $user_id] < 0} { continue }
-
 	# ------------------------------------------------------------
 	# Start the row and show the left_scale values at the left
 	set class $rowclass([expr $ctr % 2])
 	append html "<tr class=$class>\n"
 	set left_entry_ctr 0
 	foreach val $left_entry { 
-	    
-	    # Special logic: Add +/- in front of User name for drill-in
-	    if {"user_name_link" == [lindex $left_vars $left_entry_ctr] & $sigma == $project_val} {
-		
-		if {[lsearch $user_name_link_opened $user_id] < 0} {
-		    set opened $user_name_link_opened
-		    lappend opened $user_id
-		    set open_url [export_vars -base $this_url {top_vars {user_name_link_opened $opened}}]
-		    set val "<a href=$open_url>[im_gif "plus_9"]</a> $val"
-		} else {
-		    set opened $user_name_link_opened
-		    set user_id_pos [lsearch $opened $user_id]
-		    set opened [lreplace $opened $user_id_pos $user_id_pos]
-		    set close_url [export_vars -base $this_url {top_vars {user_name_link_opened $opened}}]
-		    set val "<a href=$close_url>[im_gif "minus_9"]</a> $val"
-		} 
-	    } else {
-		
-		# Append a spacer for better looks
-		set val "[im_gif "cleardot" "" 0 9 9] $val"
-	    }
-	    
 	    append html "<td><nobr>$val</nobr></td>\n" 
 	    incr left_entry_ctr
 	}
-
 
 	# ------------------------------------------------------------
 	# Write the left_scale values to their corresponding local 
@@ -560,7 +599,6 @@ ad_proc -public im_ganttproject_resource_planning {
 	    set julian_date [im_date_components_to_julian $top_vars $top_entry]
 
 	    # Calculate the key for this permutation
-	    # of structure: "$user_id-$project_id-$julian_date"
 	    set key "$user_id-$project_id-$julian_date"
 
 	    set val ""
@@ -610,6 +648,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	    if {0 == $val} { 
 		set val "" 
 	    } else { 
+		set val [im_ganttproject_resource_planning_cell $val]
 		set val "<font color=$color>$val</font>\n"
 	    }
 	    
@@ -645,7 +684,9 @@ if {![im_permission $user_id "view_projects_all"]} {
 # Defaults
 
 set page_title [lang::message::lookup "" intranet-reporting.Gantt_Resources "Gantt Resources"]
-
+set sub_navbar ""
+set main_navbar_label "reporting"
+set show_context_help_p 0
 
 # ------------------------------------------------------------
 # Contents
@@ -668,5 +709,103 @@ if {"" == $html} {
 }
 
 
-ad_return_complaint 1 $html
 
+
+# ---------------------------------------------------------------
+# 6. Format the Filter
+# ---------------------------------------------------------------
+
+set filter_html "
+<form method=get name=projects_filter action='/intranet/projects/index'>
+[export_form_vars start_idx order_by how_many view_name include_subprojects_p letter]
+<table border=0 cellpadding=0 cellspacing=1>
+"
+
+if {1} {
+    append filter_html "
+  <tr>
+    <td class=form-label>[_ intranet-core.Project_Status]:</td>
+    <td class=form-widget>[im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id $project_status_id]</td>
+  </tr>
+    "
+}
+
+append filter_html "
+  <tr>
+    <td class=form-label>[_ intranet-core.Project_Type]:</td>
+    <td class=form-widget>
+      [im_category_select -include_empty_p 1 "Intranet Project Type" project_type_id $project_type_id]
+    </td>
+  </tr>
+"
+
+if {1} {
+    append filter_html "
+  <tr>
+    <td class=form-label>[lang::message::lookup "" intranet-core.Program "Program"]:</td>
+    <td class=form-widget>[im_project_select -include_empty_p 1 -project_type_id [im_project_type_program] program_id $program_id]</td>
+  </tr>
+    "
+}
+
+if { [empty_string_p $customer_id] } {
+    set customer_id 0
+}
+
+append filter_html "
+  <tr>
+<td class=form-label valign=top>[lang::message::lookup "" intranet-core.Customer "Customer"]:</td>
+<td class=form-widget valign=top>[im_company_select -include_empty_p 1 -include_empty_name "All" customer_id $customer_id "" "CustOrIntl"]</td>
+  </tr>
+"
+
+append filter_html "
+  <tr>
+<td class=form-label>[_ intranet-core.Start_Date]</td>
+            <td class=form-widget>
+              <input type=textfield name=start_date value=$start_date>
+            </td>
+  </tr>
+  <tr>
+<td class=form-label>[lang::message::lookup "" intranet-core.End_Date "End Date"]</td>
+            <td class=form-widget>
+              <input type=textfield name=end_date value=$end_date>
+            </td>
+  </tr>
+"
+
+append filter_html "
+  <tr>
+    <td class=form-label></td>
+    <td class=form-widget>
+	  <input type=submit value='[lang::message::lookup "" intranet-core.Action_Go "Go"]' name=submit>
+    </td>
+  </tr>
+"
+
+append filter_html "</table>\n</form>\n"
+
+
+# ---------------------------------------------------------------
+# Navbars
+# ---------------------------------------------------------------
+
+# Project Navbar goes to the top
+#
+set letter ""
+set next_page_url ""
+set previous_page_url ""
+set menu_select_label ""
+set sub_navbar_html [im_project_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list start_idx order_by how_many view_name letter project_status_id] $menu_select_label]
+
+
+# Left Navbar is the filter/select part of the left bar
+set left_navbar_html "
+	<div class='filter-block'>
+        	<div class='filter-title'>
+	           #intranet-core.Filter_Projects#
+        	</div>
+            	$filter_html
+      	</div>
+      <hr/>
+"
