@@ -20,7 +20,7 @@ ad_page_contract {
     @param user_name_link_opened List of users with details shown
 } {
     { start_date "2008-01-01" }
-    { end_date "2008-04-01" }
+    { end_date "2008-03-01" }
     { top_vars "year week_of_year day_of_week" }
     { left_vars "user_name_link project_name_link" }
     { project_id:multiple "" }
@@ -44,10 +44,16 @@ ad_proc -public im_ganttproject_resource_planning_cell { percentage } {
     Takes a percentage value and returns a formatted HTML ready to be
     displayed as part of a cell
 } {
-    if {"" == $percentage} { return "" }
+    if {0 == $percentage || "" == $percentage} { return "" }
 
+    # Color selection
+    set color ""
+    if {$percentage > 0} { set color "bluedot" }
+    if {$percentage > 100} { set color "800000" }
+    if {$percentage > 180} { set color "FF0000" }
+    
     set p [expr int((1.0 * $percentage) / 10.0)]
-    set result [im_gif resource_$p "" 0 20 20]
+    set result [im_gif $color "$percentage" 0 10 $p]
     return $result
 }
 
@@ -178,7 +184,7 @@ ad_proc -public im_ganttproject_resource_planning {
     set company_url "/intranet/companies/view?company_id="
     set project_url "/intranet/projects/view?project_id="
     set user_url "/intranet/users/view?user_id="
-    set this_url [export_vars -base "/intranet-ganttproject/gantt-resources-cube" {start_date end_date left_vars customer_id} ]
+    set this_url [export_vars -base $page_url {start_date end_date left_vars customer_id} ]
     foreach pid $project_id { append this_url "&project_id=$pid" }
 
     # ------------------------------------------------------------
@@ -566,7 +572,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	# ------------------------------------------------------------
 	# Start the row and show the left_scale values at the left
 	set class $rowclass([expr $ctr % 2])
-	append html "<tr class=$class>\n"
+	append html "<tr class=$class valign=bottom>\n"
 	set left_entry_ctr 0
 	foreach val $left_entry { 
 	    append html "<td><nobr>$val</nobr></td>\n" 
@@ -636,23 +642,8 @@ ad_proc -public im_ganttproject_resource_planning {
 		"year" { set val "$val_year" }
 		default { ad_return_complaint 1 "Bad period: $period" }
 	    }
-
-	    # ------------------------------------------------------------
 	    
-	    set color "\#000000"
-	    if {![regexp {[^0-9]} $val match]} {
-		if {$val > 100} { set color "\#800000" }
-		if {$val > 150} { set color "\#FF0000" }
-	    }
-
-	    if {0 == $val} { 
-		set val "" 
-	    } else { 
-		set val [im_ganttproject_resource_planning_cell $val]
-		set val "<font color=$color>$val</font>\n"
-	    }
-	    
-	    append html "<td>$val</td>\n"
+	    append html "<td>[im_ganttproject_resource_planning_cell $val]</td>\n"
 	    
 	}
 	append html "</tr>\n"
@@ -662,7 +653,7 @@ ad_proc -public im_ganttproject_resource_planning {
     # ------------------------------------------------------------
     # Close the table
 
-    set html "<table>\n$html\n</table>\n"
+    set html "<table cellspacing=0 cellpadding=0>\n$html\n</table>\n"
 
     return $html
 }
@@ -684,6 +675,7 @@ if {![im_permission $user_id "view_projects_all"]} {
 # Defaults
 
 set page_title [lang::message::lookup "" intranet-reporting.Gantt_Resources "Gantt Resources"]
+set page_url "/intranet-ganttproject/gantt-resources-planning"
 set sub_navbar ""
 set main_navbar_label "reporting"
 set show_context_help_p 0
@@ -716,7 +708,7 @@ if {"" == $html} {
 # ---------------------------------------------------------------
 
 set filter_html "
-<form method=get name=projects_filter action='/intranet/projects/index'>
+<form method=get name=projects_filter action='$page_url'>
 [export_form_vars start_idx order_by how_many view_name include_subprojects_p letter]
 <table border=0 cellpadding=0 cellspacing=1>
 "
@@ -796,7 +788,7 @@ set letter ""
 set next_page_url ""
 set previous_page_url ""
 set menu_select_label ""
-set sub_navbar_html [im_project_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list start_idx order_by how_many view_name letter project_status_id] $menu_select_label]
+set sub_navbar_html [im_project_navbar $letter $page_url $next_page_url $previous_page_url [list start_idx order_by how_many view_name letter project_status_id] $menu_select_label]
 
 
 # Left Navbar is the filter/select part of the left bar
