@@ -2,7 +2,7 @@ ad_library {
     full-text search engine
 
     @author Neophytos Demetriou (k2pts@yahoo.com)
-    @cvs-id $Id: search-procs.tcl,v 1.46 2009/03/13 18:57:19 daveb Exp $
+    @cvs-id $Id: search-procs.tcl,v 1.47 2010/03/30 21:42:03 donb Exp $
 }
 
 namespace eval search {}
@@ -181,7 +181,7 @@ ad_proc -private search::indexer {} {
                 if {[catch {
                     acs_sc_call FtsEngineDriver unindex [list $object_id] $driver
                 } errMsg]} {
-                    ns_log Error "search::indexer: error unindexing $object_id $object_type: $errMsg\n[ad_print_stack_trace]\n"
+                    ns_log Error "search::indexer: error unindexing $object_id [acs_object_type $object_id]: $errMsg\n[ad_print_stack_trace]\n"
                 } else {
                     # call the search action callbacks.
                     callback -catch search::action \
