@@ -435,6 +435,7 @@ ad_proc -public im_conf_item_options {
 
     set cnt 0
     db_foreach conf_item_options $options_sql {
+	set conf_item_name [string range $conf_item_name 0 69 ]
         set spaces ""
         for {set i 0} {$i < $conf_item_level} { incr i } {
             append spaces "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
