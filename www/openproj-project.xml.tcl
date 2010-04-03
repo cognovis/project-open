@@ -398,8 +398,6 @@ ad_proc -public im_openproj_write_task {
 
     set predecessors_done 0
 
-# ad_return_complaint 1 $xml_elements
-
     foreach element $xml_elements { 
 	switch $element {
 	    "UID"                       { set value $project_id }
@@ -451,13 +449,14 @@ ad_proc -public im_openproj_write_task {
 	    "customproperty" - "task" - "depend" - "ExtendedAttribute" { 
 		continue
 	    }
+
 	    default {
 		set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
-		if [catch {
-		    set value [expr $$attribute_name]
-		} errmsg] {
-		    set value ""
-		}
+                if {[info exists $attribute_name ] } {
+                    set value [expr $$attribute_name]
+                } else {
+                    set value 0
+                }
 	    }
 	}
 	
@@ -563,7 +562,11 @@ db_foreach project_resources $project_resources_sql {
 	    "CanLevel" - "PeakUnits" { continue }
 	    default {
 		set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
-		set value [expr $$attribute_name]
+                if {[info exists $attribute_name ] } {
+                    set value [expr $$attribute_name]
+                } else {
+                    set value 0
+                }
 	    }
 	}
 	
