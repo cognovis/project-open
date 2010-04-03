@@ -108,6 +108,7 @@ if {![info exists xml_elements] || [llength $xml_elements]==0} {
     set xml_elements {Name Title Manager ScheduleFromStart StartDate FinishDate}
 }
 
+
 foreach element $xml_elements { 
     switch $element {
 	"Name" - "Title"            { set value $project_name }
@@ -397,6 +398,8 @@ ad_proc -public im_openproj_write_task {
 
     set predecessors_done 0
 
+# ad_return_complaint 1 $xml_elements
+
     foreach element $xml_elements { 
 	switch $element {
 	    "UID"                       { set value $project_id }
@@ -450,7 +453,11 @@ ad_proc -public im_openproj_write_task {
 	    }
 	    default {
 		set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
-		set value [expr $$attribute_name]
+		if [catch {
+		    set value [expr $$attribute_name]
+		} errmsg] {
+		    set value ""
+		}
 	    }
 	}
 	
