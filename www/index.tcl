@@ -29,8 +29,6 @@ ad_page_contract {
 # Defaults & Security
 # ---------------------------------------------------------------
 
-# ad_return_complaint 1 $order_by
-
 set current_user_id [ad_maybe_redirect_for_registration]
 set page_title [lang::message::lookup "" intranet-helpdesk.Tickets "Tickets"]
 set context_bar [im_context_bar $page_title]
@@ -332,13 +330,19 @@ switch $mine_p {
     "default" { ad_return_complaint 1 "Error:<br>Invalid variable mine_p = '$mine_p'" }
 }
 
+# ad_return_complaint 1 $order_by
+
 set order_by_clause "order by lower(t.ticket_id) DESC"
 switch [string tolower $order_by] {
     "creation date" { set order_by_clause "order by p.start_date DESC" }
-    "type" { set order_by_clause "order by ticket_type" }
-    "status" { set order_by_clause "order by ticket_status_id" }
+    "type" { set order_by_clause "order by t.ticket_type_id" }
+    "status" { set order_by_clause "order by t.ticket_status_id" }
     "customer" { set order_by_clause "order by lower(company_name)" }
     "prio" { set order_by_clause "order by ticket_prio_id" }
+    "nr" { set order_by_clause "order by substring('00000000' || p.project_nr from (length(p.project_nr)) for 9) DESC" }
+    "name" { set order_by_clause "order by lower(p.project_name)" }
+    "contact" { set order_by_clause "order by lower(im_name_from_user_id(t.ticket_customer_contact_id))" }
+    "assignee" { set order_by_clause "order by lower(im_name_from_user_id(t.ticket_assignee_id))" }
 }
 
 # ---------------------------------------------------------------
