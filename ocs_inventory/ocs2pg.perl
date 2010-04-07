@@ -5,11 +5,10 @@
 # For usage: perl mysql2pgsql.perl --help
 #
 # ddl statments are changed but none or only minimal real data
-# formatting are done.  
-# data consistency is up to the DBA.
+# formatting are done. Data consistency is up to the DBA.
 # 
+# (c) 2009-2010 Frank Bergmann <frank.bergmann@project-open.com>
 # (c) 2004-2007 Jose M Duarte and Joseph Speigle ... gborg
-# 
 # (c) 2000-2004 Maxim Rudensky  <fonin@omnistaronline.com>
 # (c) 2000 Valentine Danilchuk  <valdan@ziet.zhitomir.ua>
 # All rights reserved.
@@ -29,6 +28,7 @@
 # 4. Neither the name of the author nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
+#
 # THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -42,9 +42,7 @@
 # SUCH DAMAGE.
 
 use Getopt::Long;
-
 use POSIX;
-
 use strict;
 use warnings;
 
@@ -60,6 +58,7 @@ use warnings;
 #################################################################
 #  1.  variable declarations
 #################################################################
+
 # command line options
 my( $ENC_IN, $ENC_OUT, $PRESERVE_CASE, $HELP, $DEBUG, $SCHEMA, $LOWERCASE, $CHAR2VARCHAR, $NODROP, $SEP_FILE, $opt_debug, $opt_help, $opt_schema, $opt_preserve_case, $opt_char2varchar, $opt_nodrop, $opt_sepfile, $opt_enc_in, $opt_enc_out );
 # variables for constructing pre-create-table entities
@@ -328,13 +327,15 @@ if (/^(UN)?LOCK TABLES/i  || /drop\s+table/i ) {
     # DROP TABLE is added when we see the CREATE TABLE
     next;
 }
-if (/(create\s+table\s+)([-_\w]+)\s/i) { #  example: CREATE TABLE `english_english` 
-    print_post_create_sql();   # for last table
-    $tables_first_timestamp_column= 1;  #  decision to print warnings about default_timestamp not being in postgres
+if (/(create\s+table\s+)([-_\w]+)\s/i) {	# example: CREATE TABLE `english_english` 
+    print_post_create_sql();			# for last table
+    $tables_first_timestamp_column= 1;		# decision to print warnings about default_timestamp not being in postgres
     $create_sql = '';
-    $table_no_quotes = "ocs_$2";
-    $table=quote_and_lc("ocs_$2");
-    if ( !$NODROP )  {  # always print drop table if user doesn't explicitly say not to   
+    $table_no_quotes = $2;
+    $table = quote_and_lc($2);
+
+    if ( !$NODROP )  {
+	# always print drop table if user doesn't explicitly say not to   
         #  to drop a table that is referenced by a view or a foreign-key constraint of another table, 
         #  CASCADE must be specified. (CASCADE will remove a dependent view entirely, but in the 
         #  in the foreign-key case it will only remove the foreign-key constraint, not the other table entirely.)  
@@ -847,7 +848,6 @@ elsif (/^\s*insert into/i) { # not inside create table and doing insert
 
     # split 'extended' INSERT INTO statements to something PostgreSQL can  understand
     ( $insert_table,  $valueString) = $_ =~ m/^INSERT\s+INTO\s+['`"]*(.*?)['`"]*\s+VALUES\s*(.*)/i;
-    $insert_table = "ocs_$insert_table";
     $insert_table = quote_and_lc($insert_table);
     # parse valueString
     my @rows = $valueString =~ m/$rowRe/g;
