@@ -91,21 +91,9 @@ select im_priv_create('add_materials','Senior Managers');
 -- Material Object Type
 
 create or replace function im_material__new (
-	integer,
-	varchar,
-	timestamptz,
-	integer,
-	varchar,
-	integer,
-	
-	varchar,
-	varchar,
-	integer,
-	integer,
-	integer,
-	varchar
-    ) 
-returns integer as '
+	integer, varchar, timestamptz, integer, varchar, integer,
+	varchar, varchar, integer, integer, integer, varchar
+) returns integer as '
 declare
 	p_material_id		alias for $1;		-- material_id default null
 	p_object_type		alias for $2;		-- object_type default ''im_material''
@@ -135,20 +123,14 @@ declare
 
 	insert into im_materials (
 		material_id,
-		material_name,
-		material_nr,
-		material_type_id,
-		material_status_id,
-		material_uom_id,
-		description
+		material_name, material_nr,
+		material_type_id, material_status_id,
+		material_uom_id, description
 	) values (
 		p_material_id,
-		p_material_name,
-		p_material_nr,
-		p_material_type_id,
-		p_material_status_id,
-		p_material_uom_id,
-		p_description
+		p_material_name, p_material_nr,
+		p_material_type_id, p_material_status_id,
+		p_material_uom_id, p_description
 	);
 
 	return v_material_id;
