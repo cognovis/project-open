@@ -5,6 +5,7 @@
 # All rights reserved. Please check
 # http://www.project-open.com/ for licensing details.
 
+set clicks_base [clock clicks]
 
 ad_page_contract {
     Gantt Resource Planning.
@@ -14,7 +15,6 @@ ad_page_contract {
     @param start_date Hard start of reporting period. Defaults to start of first project
     @param end_date Hard end of replorting period. Defaults to end of last project
     @param level_of_details Details of date axis: 1 (month), 2 (week) or 3 (day)
-    @param left_vars Variables to show at the left-hand side
     @param project_id Id of project(s) to show. Defaults to all active projects
     @param customer_id Id of customer's projects to show
     @param user_name_link_opened List of users with details shown
@@ -22,7 +22,6 @@ ad_page_contract {
     { start_date "2008-01-01" }
     { end_date "2008-03-01" }
     { top_vars "year week_of_year day_of_week" }
-    { left_vars "user_name_link project_name_link" }
     { project_id:multiple "" }
     { customer_id:integer 0 }
     { project_status_id:integer 0 }
@@ -109,7 +108,7 @@ ad_proc -public im_ganttproject_resource_planning {
     { -start_date "" }
     { -end_date "" }
     { -top_vars "year week_or_year day" }
-    { -left_vars "user_name_link project_name_link" }
+    { -left_vars "user_id project_id" }
     { -project_id "" }
     { -user_id "" }
     { -customer_id 0 }
@@ -124,7 +123,6 @@ ad_proc -public im_ganttproject_resource_planning {
 
     @param start_date Hard start of reporting period. Defaults to start of first project
     @param end_date Hard end of replorting period. Defaults to end of last project
-    @param left_vars Variables to show at the left-hand side
     @param project_id Id of project(s) to show. Defaults to all active projects
     @param customer_id Id of customer's projects to show
 } {
@@ -169,22 +167,13 @@ ad_proc -public im_ganttproject_resource_planning {
     "
 
     # ------------------------------------------------------------
-    # Define Dimensions
-    
-    # The complete set of dimensions - used as the key for
-    # the "cell" hash. Subtotals are calculated by dropping on
-    # or more of these dimensions
-    set dimension_vars [concat $top_vars $left_vars]
-
-
-    # ------------------------------------------------------------
     # URLs to different parts of the system
 
     set collapse_url "/intranet/biz-object-tree-open-close"
     set company_url "/intranet/companies/view?company_id="
     set project_url "/intranet/projects/view?project_id="
     set user_url "/intranet/users/view?user_id="
-    set this_url [export_vars -base $page_url {start_date end_date left_vars customer_id} ]
+    set this_url [export_vars -base $page_url {start_date end_date customer_id} ]
     foreach pid $project_id { append this_url "&project_id=$pid" }
 
     # ------------------------------------------------------------
@@ -289,6 +278,8 @@ ad_proc -public im_ganttproject_resource_planning {
     db_foreach main_projects $main_projects_sql {
 	set key "$user_id-$main_project_id"
 	set member_of_main_project_hash($key) 1
+	set object_name_hash($user_id) $user_name
+	set object_name_hash($main_project_id) $main_project_name
     }
 
 
@@ -361,6 +352,18 @@ ad_proc -public im_ganttproject_resource_planning {
 
     # ------------------------------------------------------------------
     # Calculate the left scale.
+    #
+    # The scale is composed by two different parts:
+    #
+    # Create a list-of-lists for the left dimension.
+    #
+    # - The outer "main_projects_sql" selects out users and their main_projects
+    #   in which they are assigned with some percentage. All elements of this
+    #   SQL are shown always.
+    # - The inner "project_lol" look shows the _entire_ tree of sub-projects and
+    #   tasks for each main_project. That's necessary, because no SQL could show
+    #   us the 
+    #
     # The scale starts with the "user" dimension, followed by the 
     # main_projects to which the user is a member. Then follows the
     # full hierarchy of the main_project.
@@ -369,37 +372,32 @@ ad_proc -public im_ganttproject_resource_planning {
     set old_user_id 0
     db_foreach left_scale_users $main_projects_sql {
 
-	ns_log Notice "gantt-resources-planning: user=$user_name, main=$main_project_name"
-
-	# Collapse Logic
-	if {[info exists collapse_hash($user_id)]} {
-	    set url [export_vars -base $collapse_url {page_url return_url {open_p "c"} {object_id $user_id}}]
-	    set collapse_html "<a href=$url>[im_gif minus_9]</a>"
-	} else {
-	    set url [export_vars -base $collapse_url {page_url return_url {open_p "o"} {object_id $user_id}}]
-	    set collapse_html "<a href=$url>[im_gif plus_9]</a>"
-	}
-	set user_name_link "$collapse_html <a href='[export_vars -base $user_base_url {user_id}]'>$user_name</a>"
+	# ----------------------------------------------------------------------
+	# Determine the user and write out the first line without projects
 
 	# Add a line without project, only for the user
 	if {$user_id != $old_user_id} {
-	    set project_name_link "<!-- project%5fid=0 -->"
-	    set left_dim {}
-	    foreach left_var $left_vars { lappend left_dim [eval set a $$left_var] }
-	    lappend left_scale $left_dim
+	    # remember the type of the object
+	    set otype_hash($user_id) "person"
+	    # append the user_id to the left_scale
+	    lappend left_scale [list $user_id ""]
+	    # Remember that we have already processed this user
 	    set old_user_id $user_id
 	}
 
+	# ----------------------------------------------------------------------
+	# Write out the project-tree for the main-projects.
+
 	# Make sure that the user is assigned somewhere in the main project
 	# or otherwise skip the entire main_project:
-	#
 	set main_projects_key "$user_id-$main_project_id"
  	if {![info exists member_of_main_project_hash($key)]} { continue }
 
-	# Get the hierarchy for the main project
+	# Get the hierarchy for the main project as a list-of-lists (lol)
 	set hierarchy_lol $main_project_hierarchy_hash($main_project_id)
 
 	# Loop through the project hierarchy
+	# ad_return_complaint 1 "<pre>[join $hierarchy_lol "\n"]</pre>"
 	foreach row $hierarchy_lol {
 
 	    # Extract the pieces of a hierarchy row
@@ -408,29 +406,17 @@ ad_proc -public im_ganttproject_resource_planning {
 	    set project_level [lindex $row 2]
 	    set project_path [lindex $row 3]
 
+	    # ns_log Notice "gantt-resources-planning: pid=$project_id, name=$project_name, level=$project_level, path=$project_path, row=$row"
 	    # Iterate through the project_path
 	    set collapse_control_oid 0
-	    set project_name_link ""
 	    for {set i 0} {$i < [llength $project_path]} {incr i} {
-		if {$i == [expr [llength $project_path] - 1]} {
-		    set pid [lindex $project_path $i]
-		    set pname $name_hash($pid)
 
+		if {$i == [expr [llength $project_path] - 1]} {
+
+		    # We are at the last element of the project "path" - This is the project to display.
+		    set pid [lindex $project_path $i]
 		    # use the project of level $i-1 to control whether to show or not the current project.
 		    set collapse_control_oid [lindex $project_path [expr $i-1]]
-
-		    # Collapse Logic
-		    if {[info exists collapse_hash($pid)]} {
-			set url [export_vars -base $collapse_url {page_url return_url {open_p "c"} {object_id $pid}}]
-			set collapse_html "<a href=$url>[im_gif minus_9]</a>"
-		    } else {
-			set url [export_vars -base $collapse_url {page_url return_url {open_p "o"} {object_id $pid}}]
-			set collapse_html "<a href=$url>[im_gif plus_9]</a>"
-		    }
-
-		    append project_name_link "$collapse_html <a href='[export_vars -base $project_base_url {{project_id $pid}}]'>$pname</a>"
-		} {
-		    append project_name_link " &nbsp; &nbsp; &nbsp; &nbsp; "
 		}
 	    }
 
@@ -438,11 +424,9 @@ ad_proc -public im_ganttproject_resource_planning {
 	    if {"" == $collapse_control_oid} { set collapse_control_oid $user_id }
 
 	    # Select out the variables to go to the left scale
-	    if {[info exists collapse_hash($collapse_control_oid)]} {
-		set left_dim {}
-		foreach left_var $left_vars { lappend left_dim [eval set a $$left_var] }
-		lappend left_scale $left_dim
-	    }
+#	    if {[info exists collapse_hash($collapse_control_oid)]} {
+		lappend left_scale [list $user_id $pid]
+#	    }
 	}
     }
 
@@ -552,30 +536,52 @@ ad_proc -public im_ganttproject_resource_planning {
 
     # ------------------------------------------------------------
     # Display the table body
-    
+    # ad_return_complaint 1 "<pre>[join $left_scale "\n"]</pre>"
     set ctr 0
     foreach left_entry $left_scale {
 	
 	# ------------------------------------------------------------
-	# Check open/close logic of user's projects
-	set project_pos [lsearch $left_vars "project_name_link"]
-	set project_val [lindex $left_entry $project_pos]
-	# A bit ugly - extract the project_id from URL...
-	set project_id ""
-	regexp {project%5fid\=([0-9]*)} $project_val match project_id
-	
-	set user_pos [lsearch $left_vars "user_name_link"]
-	set user_val [lindex $left_entry $user_pos]
-	# A bit ugly - extract the user_id and project_ids from URL...
-	regexp {user%5fid\=([0-9]*)} $user_val match user_id
-
-	# ------------------------------------------------------------
 	# Start the row and show the left_scale values at the left
 	set class $rowclass([expr $ctr % 2])
 	append html "<tr class=$class valign=bottom>\n"
+
+	# Construct the user/project link with open/close logic
+	set user_id [lindex $left_entry 0]
+	set project_id [lindex $left_entry 1]
+	set level [lindex $left_entry 2]
+	set oid $user_id
+	if {"" != $project_id} { set oid $project_id }
+
+	set otype "undefined"
+	if {[info exists otype_hash($oid)]} { set otype $otype_hash($oid) }
+
+	# Display +/- logic
+	if {[info exists collapse_hash($user_id)]} {
+	    set url [export_vars -base $collapse_url {page_url return_url {open_p "c"} {object_id $oid}}]
+	    set collapse_html "<a href=$url>[im_gif minus_9]</a>"
+	} else {
+	    set url [export_vars -base $collapse_url {page_url return_url {open_p "o"} {object_id $oid}}]
+	    set collapse_html "<a href=$url>[im_gif plus_9]</a>"
+	}
+
+	switch $otype {
+	    person {
+		set user_name $object_name_hash($oid)
+		set cell_html "$collapse_html <a href='[export_vars -base $user_base_url {{user_id $oid}}]'>$user_name</a>"
+	    }
+	    im_project {
+		set project_name $object_name_hash($oid)
+		set cell_html "$collapse_html <a href='[export_vars -base $project_base_url {{project_id $oid}}]'>$project_name</a>"
+	    }
+	    default { ad_return_complaint 1 "unknown object type for '$oid'" }
+	}
+
+	set indent_html ""
+	for {set i 0} {$i < $level} {incr i} { append indent_html "&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; " }
+
 	set left_entry_ctr 0
 	foreach val $left_entry { 
-	    append html "<td><nobr>$val</nobr></td>\n" 
+	    append html "<td><nobr>$indent_html$cell_html</nobr></td>\n" 
 	    incr left_entry_ctr
 	}
 
@@ -687,7 +693,6 @@ set html [im_ganttproject_resource_planning \
 	-start_date $start_date \
 	-end_date $end_date \
 	-top_vars $top_vars \
-	-left_vars $left_vars \
 	-project_id $project_id \
 	-customer_id $customer_id \
 	-zoom $zoom \
