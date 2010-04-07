@@ -45,8 +45,8 @@ create table im_materials (
 				primary key
 				constraint im_material_id_fk
 				references acs_objects,
-	material_name		varchar(2000),
-	material_nr		varchar(200),
+	material_name		text,
+	material_nr		text,
 	material_type_id	integer not null
 				constraint im_materials_material_type_fk
 				references im_categories,
