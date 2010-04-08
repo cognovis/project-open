@@ -35,7 +35,7 @@ foreach id $bundle_id {
     # 
     db_transaction {
 
-	db_foreach exp_id $expense_items {
+	foreach exp_id $expense_items {
 	    db_dml reset_expense_items "
 		update im_expenses set 
 		       	bundle_id = null 
