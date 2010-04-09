@@ -106,39 +106,41 @@ switch $actions {
 
             incr ctr
             append dirs_html "
-<tr $bgcolor([expr $ctr % 2])>
-  <td>
-    <input type=checkbox name=dir_id.$id $checked>
-    <input type=hidden name=id_path.$id value=\"$id_path($id)\">
-  </td>
-  <td>$id_path($id)</td>
-</tr>\n"
+		<tr $bgcolor([expr $ctr % 2])>
+		  <td>
+		    <input type=checkbox name=dir_id.$id $checked>
+		    <input type=hidden name=id_path.$id value=\"$id_path($id)\">
+		  </td>
+		  <td>$id_path($id)</td>
+		</tr>
+	    "
         }
 
 	set page_title "[_ intranet-filestorage.Add_Permissions]"
 	set page_content "
-<H1>$page_title</H1>
-<form name=add_perms action=/intranet-filestorage/add-perms-2 method=POST>
-[export_form_vars object_id folder_type bread_crum_path return_url]
-<table border=0 cellspacing=0 cellpadding=2>
-<tr class=rowtitle>
-  <td></td>
-  $tds
-</tr>
-<tr class=roweven>
-  <td>[_ intranet-filestorage.View]</td>\n"
-	foreach role $roles {
-	    set role_id [lindex $role 0]
-	    append page_content "<td><input type=checkbox name=view_role.$role_id></td>\n"
-	}
-	foreach profile $profiles {
-	    set profile_id [lindex $profile 0]
-	    append page_content "<td><input type=checkbox name=view_profile.$profile_id></td>\n"
-	}
+		<H1>$page_title</H1>
+		<form name=add_perms action=/intranet-filestorage/add-perms-2 method=POST>
+		[export_form_vars object_id folder_type bread_crum_path return_url]
+		<table border=0 cellspacing=0 cellpadding=2>
+		<tr class=rowtitle>
+		  <td></td>
+		  $tds
+		</tr>
+		<tr class=roweven>
+		  <td>[_ intranet-filestorage.View]</td>\n"
+			foreach role $roles {
+			    set role_id [lindex $role 0]
+			    append page_content "<td><input type=checkbox name=view_role.$role_id></td>\n"
+			}
+			foreach profile $profiles {
+			    set profile_id [lindex $profile 0]
+			    append page_content "<td><input type=checkbox name=view_profile.$profile_id></td>\n"
+			}
 	append page_content "
-</tr>
-<tr class=rowodd>
-  <td>[_ intranet-filestorage.Read]</td>\n"
+		</tr>
+		<tr class=rowodd>
+		  <td>[_ intranet-filestorage.Read]</td>
+	"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
 	    append page_content "<td><input type=checkbox name=read_role.$role_id></td>\n"
@@ -148,9 +150,10 @@ switch $actions {
 	    append page_content "<td><input type=checkbox name=read_profile.$profile_id></td>\n"
 	}
 	append page_content "
-</tr>
-<tr class=roweven>
-  <td>[_ intranet-filestorage.Write]</td>\n"
+		</tr>
+		<tr class=roweven>
+		  <td>[_ intranet-filestorage.Write]</td>
+	"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
 	    append page_content "<td><input type=checkbox name=write_role.$role_id></td>\n"
@@ -160,9 +163,10 @@ switch $actions {
 	    append page_content "<td><input type=checkbox name=write_profile.$profile_id></td>\n"
 	}
 	append page_content "
-</tr>
-<tr class=rowodd>
-  <td>[_ intranet-filestorage.Admin]</td>\n"
+		</tr>
+		<tr class=rowodd>
+		  <td>[_ intranet-filestorage.Admin]</td>
+        "
 	foreach role $roles {
 	    set role_id [lindex $role 0]
 	    append page_content "<td><input type=checkbox name=admin_role.$role_id></td>\n"
@@ -172,27 +176,28 @@ switch $actions {
 	    append page_content "<td><input type=checkbox name=admin_profile.$profile_id></td>\n"
 	}
 	append page_content "
-</tr>
-</table>
-<P>
-<input type=submit name=submit value=\"[_ intranet-filestorage.Add_Permissions]\">
-[_ intranet-filestorage.lt_Add_the_permissions_a]</p>
-
-<table border=0 cellspacing=0 cellpadding=1>
-<tr class=rowtitle><td colspan=2 class=rowtitle>Directories</td></tr>
-$dirs_html
-</table>
-</form>
-<p>\n"
+		</tr>
+		</table>
+		<P>
+		<input type=submit name=submit value=\"[_ intranet-filestorage.Add_Permissions]\">
+		[_ intranet-filestorage.lt_Add_the_permissions_a]</p>
+		
+		<table border=0 cellspacing=0 cellpadding=1>
+		<tr class=rowtitle><td colspan=2 class=rowtitle>Directories</td></tr>
+		$dirs_html
+		</table>
+		</form>
+		<p>
+        "
 
 	if {"" == $dirs_html} {
 	    set im_gif_plus_9 [im_gif plus_9]
 	    set page_content "
-<H1>[_ intranet-filestorage.lt_No_Directories_Select]</H1>
-[_ intranet-filestorage.lt_You_have_not_selected]<br>
-[lang::message::lookup "" intranet-filestorage.Or_no_permissions_for_items "Or you don't have permission to administrate any of the items."]<p>
-[_ intranet-filestorage.lt_Please_backup_select_]<p>
-"
+		<H1>[_ intranet-filestorage.lt_No_Directories_Select]</H1>
+		[_ intranet-filestorage.lt_You_have_not_selected]<br>
+		[lang::message::lookup "" intranet-filestorage.Or_no_permissions_for_items "Or you don't have permission to administrate any of the items."]<p>
+		[_ intranet-filestorage.lt_Please_backup_select_]<p>
+	    "
 	}
         ad_return_template
         return
@@ -222,27 +227,29 @@ $dirs_html
 
             incr ctr
             append dirs_html "
-<tr $bgcolor([expr $ctr % 2])>
-  <td>
-    <input type=checkbox name=dir_id.$id $checked>
-    <input type=hidden name=id_path.$id value=\"$id_path($id)\">
-  </td>
-  <td>$id_path($id)</td>
-</tr>\n"
+		<tr $bgcolor([expr $ctr % 2])>
+		  <td>
+		    <input type=checkbox name=dir_id.$id $checked>
+		    <input type=hidden name=id_path.$id value=\"$id_path($id)\">
+		  </td>
+		  <td>$id_path($id)</td>
+		</tr>
+	    "
         }
 
 	set page_title "[_ intranet-filestorage.Delete_Permissions]"
 	set page_content "
-<H1>$page_title</H1>
-<form action=/intranet-filestorage/del-perms-2 method=POST>
-[export_form_vars object_id folder_type bread_crum_path return_url]
-<table border=0 cellspacing=0 cellpadding=2>
-<tr class=rowtitle>
-  <td></td>
-  $tds
-</tr>
-<tr class=roweven>
-  <td>[_ intranet-filestorage.View]</td>\n"
+		<H1>$page_title</H1>
+		<form action=/intranet-filestorage/del-perms-2 method=POST>
+		[export_form_vars object_id folder_type bread_crum_path return_url]
+		<table border=0 cellspacing=0 cellpadding=2>
+		<tr class=rowtitle>
+		  <td></td>
+		  $tds
+		</tr>
+		<tr class=roweven>
+		  <td>[_ intranet-filestorage.View]</td>
+	"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
 	    append page_content "<td><input type=checkbox name=view_role.$role_id></td>\n"
@@ -252,9 +259,10 @@ $dirs_html
 	    append page_content "<td><input type=checkbox name=view_profile.$profile_id></td>\n"
 	}
 	append page_content "
-</tr>
-<tr class=rowodd>
-  <td>[_ intranet-filestorage.Read]</td>\n"
+		</tr>
+		<tr class=rowodd>
+		  <td>[_ intranet-filestorage.Read]</td>
+	"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
 	    append page_content "<td><input type=checkbox name=read_role.$role_id></td>\n"
@@ -264,9 +272,10 @@ $dirs_html
 	    append page_content "<td><input type=checkbox name=read_profile.$profile_id></td>\n"
 	}
 	append page_content "
-</tr>
-<tr class=roweven>
-  <td>[_ intranet-filestorage.Write]</td>\n"
+		</tr>
+		<tr class=roweven>
+		  <td>[_ intranet-filestorage.Write]</td>
+	"
 	foreach role $roles {
 	    set role_id [lindex $role 0]
 	    append page_content "<td><input type=checkbox name=write_role.$role_id></td>\n"
@@ -288,27 +297,28 @@ $dirs_html
 	    append page_content "<td><input type=checkbox name=admin_profile.$profile_id></td>\n"
 	}
 	append page_content "
-</tr>
-</table>
-<P>
-<input type=submit name=submit value=\"[_ intranet-filestorage.Del_Permissions]\">
-[_ intranet-filestorage.lt_Delete_the_permission]</p>
-
-<table border=0 cellspacing=0 cellpadding=1>
-<tr class=rowtitle><td colspan=2 class=rowtitle>[_ intranet-filestorage.Directories]</td></tr>
-$dirs_html
-</table>
-</form>
-<p>\n"
+		</tr>
+		</table>
+		<P>
+		<input type=submit name=submit value=\"[_ intranet-filestorage.Del_Permissions]\">
+		[_ intranet-filestorage.lt_Delete_the_permission]</p>
+		
+		<table border=0 cellspacing=0 cellpadding=1>
+		<tr class=rowtitle><td colspan=2 class=rowtitle>[_ intranet-filestorage.Directories]</td></tr>
+		$dirs_html
+		</table>
+		</form>
+		<p>
+	"
 
 	if {"" == $dirs_html} {
 	    set im_gif_plus_9 [im_gif plus_9]
 	    set page_content "
-<H1>[_ intranet-filestorage.lt_No_Directories_Select]</H1>
-[_ intranet-filestorage.lt_You_have_not_selected]<br>
-[lang::message::lookup "" intranet-filestorage.Or_no_permissions_for_items "Or you don't have permission to administrate any of the items."]<p>
-[_ intranet-filestorage.lt_Please_backup_select_]<p>
-"
+		<H1>[_ intranet-filestorage.lt_No_Directories_Select]</H1>
+		[_ intranet-filestorage.lt_You_have_not_selected]<br>
+		[lang::message::lookup "" intranet-filestorage.Or_no_permissions_for_items "Or you don't have permission to administrate any of the items."]<p>
+		[_ intranet-filestorage.lt_Please_backup_select_]<p>
+	    "
 	}
 
         ad_return_template
@@ -317,31 +327,29 @@ $dirs_html
     }
 
     "zip" {
-		global tcl_platform
-		set platform [lindex $tcl_platform(platform) 0]
+	global tcl_platform
+	set platform [lindex $tcl_platform(platform) 0]
 
-		# --------------------- Download a ZIP --------------------- 
-
-
-		# Find out where the current directory starts on the hard disk
-		set base_path [im_filestorage_base_path $folder_type $object_id]
-		if {"" == $base_path} {
-			ad_return_complaint 1 "<LI>[_ intranet-filestorage.lt_Unknown_folder_type_f]"
-			return
-		}
-
-		# Get the list of all relevant roles and profiles for permissions
-		set roles [im_filestorage_roles $user_id $object_id]
-		set profiles [im_filestorage_profiles $user_id $object_id]
-
-		# Get the group membership of the current (viewing) user
-		# Avoid syntax errors in SQL with empty membership list
-		set user_memberships [im_filestorage_user_memberships $user_id $object_id]
-		lappend user_memberships 0
-
-		# Get folders with read permission
-		set dest_path ""
-		set folder_sql "
+	# --------------------- Download a ZIP --------------------- 
+	# Find out where the current directory starts on the hard disk
+	set base_path [im_filestorage_base_path $folder_type $object_id]
+	if {"" == $base_path} {
+	    ad_return_complaint 1 "<LI>[_ intranet-filestorage.lt_Unknown_folder_type_f]"
+	    ad_script_abort
+	}
+	
+	# Get the list of all relevant roles and profiles for permissions
+	set roles [im_filestorage_roles $user_id $object_id]
+	set profiles [im_filestorage_profiles $user_id $object_id]
+	
+	# Get the group membership of the current (viewing) user
+	# Avoid syntax errors in SQL with empty membership list
+	set user_memberships [im_filestorage_user_memberships $user_id $object_id]
+	lappend user_memberships 0
+	
+	# Get folders with read permission
+	set dest_path ""
+	set folder_sql "
 		select
 			f.path as folder_path
 		from
@@ -353,64 +361,71 @@ $dirs_html
 			and p.profile_id in ([join $user_memberships ", "])
 			and p.read_p = 1
 	"
+	db_foreach get_folders $folder_sql {
+	    append dest_path "$base_path/$folder_path "    
+	}    
 
-		db_foreach get_folders $folder_sql {
-			append dest_path "$base_path/$folder_path "    
-		}    
+	# Permissions for all usual projects, companies etc.
+	set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id"]
+	set perm_cmd "${object_type}_permissions \$user_id \$object_id object_view object_read object_write object_admin"
+	eval $perm_cmd
 
-		# privileged users
-		set object_write 0
-		if {[im_permission $user_id edit_internal_offices]} { 
-			set object_write 1
-		}
-		# Permissions for all usual projects, companies etc.
-		set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id"]
-		set perm_cmd "${object_type}_permissions \$user_id \$object_id object_view object_read object_write object_admin"
-		eval $perm_cmd
+	# No explicit permissions set?
+	# Allow PMs to read everything.
+	if { [empty_string_p $dest_path] && $object_write } {
+	    set dest_path $base_path/$bread_crum_path
+	}
 
-		if { [empty_string_p $dest_path] || $object_write } {
-			set dest_path $base_path/$bread_crum_path
-		}
+	if {"" == $dest_path} {
+	    ad_return_complaint 1 "
+		<b>[lang::message::lookup "" intranet-filestorage.Insufficient_permissions "Insufficient Permissions"]</b>:<br>
+		[lang::message::lookup "" intranet-filestorage.Insufficient_permissions_msg "
+			There are are no explicit permissions set for your groups
+			([join [db_list g "select group_name from groups where group_id in ([join $user_memberships ", "])"] ", "]), <br>
+			and you do not have write permissions on the underlying object.
+		"]
+	    "
+	    ad_script_abort
+	}
 
-		# Determine a random .tgz file
-		set r [ns_rand 10000000]
-		set file "zip.$user_id.$r.tgz"
-		ns_log Notice "file=$file"
-		set path "/tmp/$file"
+	# Determine a random .tgz file
+	set r [ns_rand 10000000]
+	set file "zip.$user_id.$r.tgz"
+	ns_log Notice "file=$file"
+	set path "/tmp/$file"
+	
+	# build exec command 
+	set tar_command  "/bin/tar czf"
+	lappend tar_command $path
+	lappend tar_command $dest_path
 
-		#build exec command 
-		set tar_command  "/bin/tar czf"
-		lappend tar_command $path
-		lappend tar_command $dest_path
-		ns_log Notice "-----> $tar_command"
-
-		if { [catch {
-			eval "exec [join $tar_command]"
-		} err_msg] } {
-			ns_log Error "------> $err_msg"
-			# Nothing. We check if TAR was successfull if the file exists.
-		}
-
-	    if { $platform == "windows" } {
-		# fraber 091023: Changes from Maurizio
-	    	# set path "[acs_root_dir]/../cygwin/$path"
-		set path "[acs_root_dir]/servers/projop/$path"
-	    }
- 
-		if { [catch {
-			set file_readable [file readable $path]
-		} err_msg] } {
-			ad_return_complaint 1 "<LI>[_ intranet-filestorage.lt_Unable_to_compress_th]"
-			return
-		}
-
-		if $file_readable {
-			ad_returnredirect "/intranet/download/zip/0/$file"
-			return
-		} else {
-			doc_return 404 text/html "[_ intranet-filestorage.lt_Did_not_find_the_spec]"
-			return
-		}
+	if { [catch {
+	    eval "exec [join $tar_command]"
+	} err_msg] } {
+	    ns_log Error "------> $err_msg"
+	    # Nothing. We check if TAR was successfull if the file exists.
+	}
+	
+	if { $platform == "windows" } {
+	    # fraber 091023: Changes from Maurizio
+	    # set path "[acs_root_dir]/../cygwin/$path"
+	    set path "[acs_root_dir]/servers/projop/$path"
+	}
+	
+	if { [catch {
+	    set file_readable [file readable $path]
+	} err_msg] } {
+	    ad_return_complaint 1 "<LI>[_ intranet-filestorage.lt_Unable_to_compress_th]"
+	    return
+	}
+	
+	if $file_readable {
+	    ad_returnredirect "/intranet/download/zip/0/$file"
+	    return
+	} else {
+	    doc_return 404 text/html "[_ intranet-filestorage.lt_Did_not_find_the_spec]"
+	    return
+	}
     }
 
     "new-folder" {
