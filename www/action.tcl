@@ -348,7 +348,7 @@ switch $actions {
 	lappend user_memberships 0
 	
 	# Get folders with read permission
-	set dest_path ""
+	set dest_path {}
 	set folder_sql "
 		select
 			f.path as folder_path
@@ -362,8 +362,8 @@ switch $actions {
 			and p.read_p = 1
 	"
 	db_foreach get_folders $folder_sql {
-	    append dest_path "$base_path/$folder_path "    
-	}    
+	    lappend dest_path "$base_path/$folder_path"
+	}
 
 	# Permissions for all usual projects, companies etc.
 	set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id"]
@@ -372,11 +372,30 @@ switch $actions {
 
 	# No explicit permissions set?
 	# Allow PMs to read everything.
-	if { [empty_string_p $dest_path] && $object_write } {
-	    set dest_path $base_path/$bread_crum_path
+	if {0 == [llength $dest_path] && $object_write } {
+	    set dest_path "$base_path/$bread_crum_path"
 	}
 
-	if {"" == $dest_path} {
+	# Deal with a bread crum set. In this case we set the dest_path 
+	# to the bread crum, IF the user has read permissions on the 
+	# bread crum path.
+	if {"" != [string trim $bread_crum_path]} {
+	    # Check that the bread_crum_path is below some of the accepted
+	    # dest_pathes (top-directories with explicit permissions).
+	    set perm_p 0
+	    foreach path $dest_path {
+		# The "path" needs to be a substring of the bread_crum_path:
+		ns_log Notice "intranet-filestorage/action: string first $base_path/$bread_crum_path $path"
+		if {[string first $path "$base_path/$bread_crum_path"] > -1} { set perm_p 1 }
+	    }
+	    if {$perm_p} {
+		set dest_path "$base_path/$bread_crum_path"
+	    } else {
+		set dest_path {}
+	    }
+	}
+
+	if {0 == [llength $dest_path]} {
 	    ad_return_complaint 1 "
 		<b>[lang::message::lookup "" intranet-filestorage.Insufficient_permissions "Insufficient Permissions"]</b>:<br>
 		[lang::message::lookup "" intranet-filestorage.Insufficient_permissions_msg "
@@ -387,6 +406,7 @@ switch $actions {
 	    "
 	    ad_script_abort
 	}
+	
 
 	# Determine a random .tgz file
 	set r [ns_rand 10000000]
@@ -397,7 +417,9 @@ switch $actions {
 	# build exec command 
 	set tar_command  "/bin/tar czf"
 	lappend tar_command $path
-	lappend tar_command $dest_path
+	foreach path $dest_path {
+	    lappend tar_command $path
+	}
 
 	if { [catch {
 	    eval "exec [join $tar_command]"
