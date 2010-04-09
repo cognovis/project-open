@@ -51,6 +51,11 @@ switch $action_id {
 				ticket_done_date = now()
 			where ticket_id = :ticket_id
 	        "
+		db_dml close_ticket "
+			update im_projects set 
+				project_status_id = [im_project_status_closed]
+			where project_id = :ticket_id
+	        "
 	    }
 	}
 	30510 {
@@ -63,6 +68,11 @@ switch $action_id {
 				ticket_status_id = [im_ticket_status_closed],
 				ticket_done_date = now()
 			where ticket_id = :ticket_id
+	        "
+		db_dml close_ticket "
+			update im_projects set 
+				project_status_id = [im_project_status_closed]
+			where project_id = :ticket_id
 	        "
 
 		# ToDo: Notifiy "stakeholders" that the ticket has been re-opened.
