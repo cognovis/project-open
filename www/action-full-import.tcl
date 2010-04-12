@@ -96,8 +96,6 @@ foreach repo_id $repository_id {
 	where	conf_item_id = :repo_id
     "
 
-    set cvs_password "AspfCV$"
-
     set cvs_read [acs_root_dir]/packages/intranet-cvs-integration/perl/cvs_read.pl
     set command [list exec $cvs_read -cvsdir :pserver:${cvs_user}:${cvs_password}@${cvs_hostname}:${cvs_path} -rlog $repo_name]
 
@@ -109,14 +107,20 @@ foreach repo_id $repository_id {
 	ns_write "<li><font><pre>$err_msg</pre></font>\n"
     }
 
+
     # -------------------------------------------------
     # Go though all lines, check if they exist already and insert
 
     ns_write "<pre>\n"
 
-    foreach line [split $csv "\n"] {
+    set lines [split $csv "\n"]
+   
+    foreach line $lines {
 
 	# /home/cvsroot/acs-admin/acs-admin.info acs-admin 1.3 {2007/07/14 18:15:45} cvs Exp 1 0 {\n- updated license information\n}
+	# Write out the line
+	ns_write "<li>$line\n"
+
 	set values [split $line "\t"]
 
 	set filename [lindex $values 0]
@@ -168,10 +172,12 @@ foreach repo_id $repository_id {
 	    "
 	} err_msg]} {
 	    # error - probably because of duplicate key, ignore
+	    ns_write "<li><font color=red>$err_msg</font>\n"
 	} else {
 	    ns_write "."
 #	    ns_write "key=$key, filename=$filename, project=$project, revision=$revision, date=$date, author=$author, state=$state, add=$lines_add, del=$lines_del, comment=$comment\n"
 	}
+
     }
 
     ns_write "</pre>\n"

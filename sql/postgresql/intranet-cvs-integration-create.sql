@@ -48,6 +48,8 @@ create table im_cvs_logs (
 -- Define fields necessary for CVS repository access
 
 
+alter table persons add cvs_user text;
+
 
 alter table im_conf_items add cvs_system text;
 alter table im_conf_items add cvs_protocol text;
@@ -65,7 +67,6 @@ SELECT im_dynfield_attribute_new ('im_conf_item', 'cvs_password', 'CVS Password'
 SELECT im_dynfield_attribute_new ('im_conf_item', 'cvs_hostname', 'CVS Hostname', 'textbox_medium', 'string', 'f');
 SELECT im_dynfield_attribute_new ('im_conf_item', 'cvs_port', 'CVS Port', 'integer', 'integer', 'f');
 SELECT im_dynfield_attribute_new ('im_conf_item', 'cvs_path', 'CVS Path', 'textbox_medium', 'string', 'f');
-
 
 
 
