@@ -287,6 +287,8 @@ set bulk_actions_list ""
 lappend bulk_actions_list "[lang::message::lookup "" intranet-confdb.Unassociate "Delete Association"]" 
 lappend bulk_actions_list "assoc-project-del" 
 lappend bulk_actions_list "[lang::message::lookup "" intranet-confdb.Remove_checked_items "Remove Checked Items"]"
+set bulk_actions_list ""
+
 if {![info exists conf_item_id]} { set conf_item_id 0}
 set assoc_msg [lang::message::lookup {} intranet-confdb.Assoc_with_a_new_project {Associate with a new project}]
 set return_url [im_url_with_query]
