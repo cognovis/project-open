@@ -160,6 +160,67 @@ drop function inline_0 ();
 
 
 
+create or replace function inline_0 ()
+returns integer as ' 
+declare
+    v_plugin            integer;
+begin
+    -- Home Page
+    -- Set the wiki to the very end.
+    --
+    v_plugin := im_component_plugin__new (
+	null,					-- plugin_id
+	''acs_object'',				-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+	''Conf Item Wiki Component'',		-- plugin_name
+	''intranet-wiki'',			-- package_name
+        ''right'',				-- location
+	''/intranet-confdb/new'',		-- page_url
+        null,					-- view_name
+        120,					-- sort_order
+        ''im_wiki_base_component im_conf_item $conf_item_id'' -- component_tcl
+    );
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+create or replace function inline_0 ()
+returns integer as ' 
+declare
+    v_plugin            integer;
+begin
+    -- Home Page
+    -- Set the wiki to the very end.
+    --
+    v_plugin := im_component_plugin__new (
+	null,					-- plugin_id
+	''acs_object'',				-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+	''Helpdesk Wiki Component'',		-- plugin_name
+	''intranet-wiki'',			-- package_name
+        ''right'',				-- location
+	''/intranet-helpdesk/new'',		-- page_url
+        null,					-- view_name
+        120,					-- sort_order
+        ''im_wiki_base_component im_ticket $ticket_id'' -- component_tcl
+    );
+    return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
 
 ---------------------------------------------------------
 -- Setup the "Wiki" main menu entry
