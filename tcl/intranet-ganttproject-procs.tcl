@@ -1868,9 +1868,10 @@ ad_proc -public im_ganttproject_gantt_component {
     if {"" == $end_date} {
 	set end_date [db_string now "select now()::date"]
     } else {
-	set end_date [ clock scan $end_date ]
-	set end_date [ clock scan {+1 day} -base $end_date ]
-	set end_date [ clock format "$end_date" -format %Y-%m-%d ]
+	set end_date [db_string end_date "select to_char(:end_date::date+1, 'YYYY-MM-DD')"]
+#	set end_date [ clock scan $end_date ]
+#	set end_date [ clock scan {+1 day} -base $end_date ]
+#	set end_date [ clock format "$end_date" -format %Y-%m-%d ]
     }
 
     if {"" == $start_date} {
