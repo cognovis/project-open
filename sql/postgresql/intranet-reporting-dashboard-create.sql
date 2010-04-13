@@ -243,3 +243,33 @@ SELECT im_component_plugin__new (
 );
 
 
+
+
+
+
+-- Project Histograms
+--
+
+SELECT im_component_plugin__new (
+	null,					-- plugin_id
+	'acs_object',				-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+	'Pre-Sales Queue',			-- plugin_name
+	'intranet-reporting-dashboard',		-- package_name
+	'right',				-- location
+	'/intranet/projects/index',		-- page_url
+	null,					-- view_name
+	100,					-- sort_order
+	'im_dashboard_histogram_sql -diagram_width 200 -name "Sales Pipeline" -sql "
+		select	im_category_from_id(p.project_status_id) as project_status,
+		        count(*) as cnt
+		from	im_projects p
+		where	p.project_status_id not in (select * from im_sub_categories(81))
+		group by project_status_id
+		order by project_status
+	"',
+	'lang::message::lookup "" intranet-reporting-dashboard.Sales_Pipeline "Sales Pipeline"'
+);
