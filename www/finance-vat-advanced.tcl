@@ -235,41 +235,29 @@ where
 	1 = 1
 	$where_clause
 order by
-	vat_type_calculated,
-	cost_type_id,
 	c.effective_date,
-	vat_type,
+	vat_type_calculated,
 	c.customer_id, 
 	c.provider_id
 "
 
 set report_def [list \
-    group_by effective_year_quarter \
-    header {
-        "\#colspan=11 Quarter $effective_year_quarter"
-    } \
+    group_by effective_date \
+    header {} \
         content [list \
             group_by cost_type \
-            header { 
-		""
-		"\#colspan=12 <b>$cost_type</b>"
-	    } \
+            header { } \
 	    content [list \
 	            group_by vat_type_cost_type \
 	            header { 
-			""
-			""
-			"\#colspan=11 $vat_type"
 		    } \
 		    content [list \
 			    header {
-				""
-				"$quarter_cost_type_vat_type"
-				""
 				"<nobr>$company_html</nobr>"
 				"<nobr>$vat_number</nobr>"
 				"<nobr>$effective_date_formatted</nobr>"
 				"<nobr><a href=$invoice_url$cost_id>$cost_name</a></nobr>"
+				"<nobr>$vat_type</nobr>"
 				"<nobr>$cost_item_amount_pretty</nobr>"
 				"<nobr>$vat_amount_pretty</nobr>"
 				"<nobr>$tax_amount_pretty</nobr>"
@@ -278,24 +266,11 @@ set report_def [list \
 			    content {} \
 		    ] \
 	            footer {
-			""
-			"$quarter_cost_type_vat_type"
-			""
-	                ""
-	                ""
-	                ""
-	                ""
-	                "<i>$cost_item_vattype_subtotal_pretty</i>"
-	                "<i>$vat_vattype_subtotal_pretty</i>"
-	                "<i>$tax_vattype_subtotal_pretty</i>"
-	                "<i>to_do</i>"
 	            } \
 	    ] \
 	footer {} \
     ] \
     footer {  
-		""
-		""
 		""
 		""
 		""
@@ -313,7 +288,7 @@ set tax_vattype_subtotal 0
 set vat_vattype_subtotal 0
 
 # Global header/footer
-set header0 {"Q" "Cost<br>Type" "VAT<br>Type" "Customer" "VAT<br>Number" "Effective<br>Date" "Name" "Amount" "Vat" "Tax" "Total invoice"}
+set header0 {"Cliente" "NIE" "Fecha" "Nombre" "% tipo de IVA" "Amount" "IVA" "IRPV" "Total"}
 set footer0 {
 	"" 
 	"" 
@@ -321,8 +296,6 @@ set footer0 {
 	"" 
 	"" 
 	"" 
-	""
-	""
 	""
 	""
 	""
@@ -460,6 +433,9 @@ db_foreach sql $sql {
     set cost_item_amount_pretty [im_report_format_number $cost_item_amount $output_format $number_locale]
     set vat_amount_pretty [im_report_format_number $vat_amount $output_format $number_locale]
     set tax_amount_pretty [im_report_format_number $tax_amount $output_format $number_locale]
+    if {"" == $tax_amount } {
+	set tax_amount 0
+    }
     set invoice_total_pretty [im_report_format_number [expr $cost_item_amount + $vat_amount + $tax_amount ] $output_format $number_locale]
 
     if {"" == $customer_id} {
