@@ -80,10 +80,26 @@ drop function inline_0 ();
 
 
 
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+	v_count		integer;
+begin
+	select count(*) into v_count from pg_class
+	where lower(relname) = 'im_timesheet_tasks_view';
+
+	IF v_count > 0 THEN 
+		-- drop view im_timesheet_tasks_view;
+		DROP VIEW im_timesheet_tasks_view;
+	END IF;
+
+	RETURN 0;
+end; $body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
 
 
--- drop view im_timesheet_tasks_view;
-DROP VIEW IF EXISTS im_timesheet_tasks_view;
+
 
 create or replace view im_timesheet_tasks_view as
 select	t.*,
