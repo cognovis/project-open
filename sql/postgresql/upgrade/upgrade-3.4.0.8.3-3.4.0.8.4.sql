@@ -74,18 +74,57 @@ end;$body$ language 'plpgsql';
 SELECT im_insert_acs_object_type_tables('im_material','im_materials','material_id');
 
 
-alter table im_materials add column source_language_id integer constraint im_materials_source_language_fk references im_categories;
+
+
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+	v_count		integer;
+begin
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = 'im_materials' and lower(column_name) = 'source_language_id';
+	IF v_count = 0 THEN 
+		alter table im_materials add column source_language_id integer 
+		constraint im_materials_source_language_fk references im_categories;
+	END IF;
+
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = 'im_materials' and lower(column_name) = 'target_language_id';
+	IF v_count = 0 THEN 
+		alter table im_materials add column target_language_id integer 
+		constraint im_materials_target_language_fk references im_categories;
+	END IF;
+
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = 'im_materials' and lower(column_name) = 'subject_area_id';
+	IF v_count = 0 THEN 
+		alter table im_materials add column subject_area_id integer 
+		constraint im_materials_subject_area_fk references im_categories;
+	END IF;
+
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = 'im_materials' and lower(column_name) = 'task_type_id';
+	IF v_count = 0 THEN 
+		alter table im_materials add column task_type_id integer 
+		constraint im_materials_task_type_fk references im_categories;
+	END IF;
+
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = 'im_materials' and lower(column_name) = 'file_type_id';
+	IF v_count = 0 THEN 
+		alter table im_materials add column file_type_id integer 
+		constraint im_materials_file_type_fk references im_categories;
+	END IF;
+
+	RETURN 0;
+end; $body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 SELECT im_dynfield_attribute_new ('im_material', 'source_language_id', 'Source Language', 'translation_languages', 'integer', 'f');
-
-alter table im_materials add column target_language_id integer constraint im_materials_target_language_fk references im_categories;
 SELECT im_dynfield_attribute_new ('im_material', 'target_language_id', 'Target Language', 'translation_languages', 'integer', 'f');
-
-alter table im_materials add column subject_area_id integer constraint im_materials_subject_area_fk references im_categories;
 SELECT im_dynfield_attribute_new ('im_material', 'subject_area_id', 'Subject Area', 'subject_area', 'integer', 'f');
-
-alter table im_materials add column task_type_id integer constraint im_materials_task_type_fk references im_categories;
 SELECT im_dynfield_attribute_new ('im_material', 'task_type_id', 'Task Type', 'translation_languages', 'integer', 'f');
-
-alter table im_materials add column file_type_id integer constraint im_materials_file_type_fk references im_categories;
 SELECT im_dynfield_attribute_new ('im_material', 'file_type_id', 'File Type', 'trans_file_types', 'integer', 'f');
 
