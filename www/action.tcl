@@ -24,6 +24,7 @@ ad_page_contract {
 
 set user_id [ad_maybe_redirect_for_registration]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+set user_name [im_name_from_user_id [ad_get_user_id]]
 
 # 30500, 'Close'
 # 30510, 'Close &amp; notify'
@@ -56,6 +57,9 @@ switch $action_id {
 				project_status_id = [im_project_status_closed]
 			where project_id = :ticket_id
 	        "
+
+		im_ticket::add_reply -ticket_id $ticket_id -subject \
+		    [lang::message::lookup "" intranet-helpdesk.Closed_by_user "Closed by %user_name%"]
 	    }
 	}
 	30510 {
@@ -77,6 +81,9 @@ switch $action_id {
 
 		# ToDo: Notifiy "stakeholders" that the ticket has been re-opened.
 		# Unify this functionality with the Forum-Notify and/or Core member-notify?
+
+		im_ticket::add_reply -ticket_id $ticket_id -subject \
+		    [lang::message::lookup "" intranet-helpdesk.Closed_by_user "Closed by %user_name%"]
 	    }
 	}
 	30530 {
@@ -88,6 +95,9 @@ switch $action_id {
 			update im_tickets set ticket_status_id = [im_ticket_status_open]
 			where ticket_id = :ticket_id
 	        "
+
+		im_ticket::add_reply -ticket_id $ticket_id -subject \
+		    [lang::message::lookup "" intranet-helpdesk.Re_opened_by_user "Re-opened by %user_name%"]
 	    }
 	}
 	30590 {
@@ -99,6 +109,8 @@ switch $action_id {
 			update im_tickets set ticket_status_id = [im_ticket_status_deleted]
 			where ticket_id = :ticket_id
 	        "
+		im_ticket::add_reply -ticket_id $ticket_id -subject \
+		    [lang::message::lookup "" intranet-helpdesk.Deleted_by_user "Deleted by %user_name%"]
 	    }
 	}
 	30599 {
