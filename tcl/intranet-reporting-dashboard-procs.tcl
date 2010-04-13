@@ -132,10 +132,8 @@ ad_proc -public im_dashboard_histogram_sql {
 
     set values [db_list_of_lists dashboard_historgram $sql]
 
-    regsub -all " " $name "_" name_subs
-    set widget_name [lang::message::lookup "" intranet-reporting-dashboard.$name_subs $name]
     return [im_dashboard_histogram \
-		-name $widget_name \
+		-name $name \
 		-values $values \
 		-diagram_width $diagram_width \
     ]
@@ -184,9 +182,8 @@ ad_proc -public im_dashboard_active_projects_status_histogram {
 	lappend values [list $project_status $cnt]
     }
 
-    set name [lang::message::lookup "" intranet-reporting-dashboard.Project_Queue "Project Queue"]
     return [im_dashboard_histogram \
-		-name $name \
+		-name "Project Queue" \
 		-values $values \
     ]
 
@@ -498,6 +495,7 @@ ad_proc im_dashboard_histogram {
 
     set diagram_x_size $diagram_width
     set diagram_y_size [expr 2*$outer_distance + $value_total_items*($bar_width + $bar_distance)]
+    set diagram_y_start 25
 
     set count 1
     foreach v $values {
@@ -530,17 +528,29 @@ ad_proc im_dashboard_histogram {
     set border "border:1px solid blue; "
     set border ""
 
+    # Calculate Name
+    regsub -all " " $name "_" name_subs
+    set widget_name [lang::message::lookup "" intranet-reporting-dashboard.$name_subs $name]
+    set histogram_name_html "$diag.SetText(\"\",\"\", \"<B>$name</B>\");"
+
+    # make the diagram a bit smaller and start a bit higher if the name is empty
+    if {"" == $name} { 
+	set histogram_name_html ""
+	set diagram_y_size [expr $diagram_y_size - 25] 
+	set diagram_y_start [expr $diagram_y_start - 25]
+    }
+
     set histogram_html "
         <div style='$border position:relative;top:0px;height:[expr $diagram_y_size+20]px;width:${diagram_x_size}px;'>
 	<SCRIPT Language=JavaScript type='text/javascript'>
 	document.open();
 	var $diag=new Diagram();
 	_BFont=\"font-family:Verdana;font-weight:normal;font-size:8pt;line-height:10pt;\";
-	$diag.SetFrame(0, 25, $diagram_x_size, $diagram_y_size);
+	$diag.SetFrame(0, $diagram_y_start, $diagram_x_size, $diagram_y_size);
 	$diag.SetBorder(0, $max_value*1.1, $value_total_items+1, 0);
 	$diag.XScale=1;
 	$diag.YScale=0;
-	$diag.SetText(\"\",\"\", \"<B>$name</B>\");
+	$histogram_name_html
 	$diag.Draw(\"#$bar_bg_color\", \"#$bar_text_color\", false,\"\");
 	$status_html
 	delete $diag;
