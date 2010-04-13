@@ -20,9 +20,6 @@ order by lower(project_name)
 SELECT im_dynfield_attribute_new ('im_project', 'program_id', 'Program', 'program_projects', 'integer', 'f');
 
 
-
-
-
 SELECT im_menu__new (
 	null,								-- p_menu_id
 	'im_menu',							-- object_type
@@ -38,4 +35,24 @@ SELECT im_menu__new (
 	(select menu_id from im_menus where label = 'dynfield_otype'),	-- parent_menu_id
 	null								-- p_visible_tcl
 );
+
+
+-- Fix the widget and datatype for presales variables
+update acs_attributes set 
+	datatype = 'float' 
+where 
+	attribute_id in (
+		select attribute_id
+		from acs_attributes
+		where attribute_name in ('presales_value','presales_probability')
+	);
+
+update im_dynfield_attributes 
+	set widget_name = 'numeric' 
+where
+	acs_attribute_id in (
+		select attribute_id 
+		from acs_attributes
+		where attribute_name in ('presales_value','presales_probability')
+	);
 
