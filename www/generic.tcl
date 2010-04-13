@@ -34,6 +34,7 @@ set pie_values [list]
 foreach left_scale_line $left_scale {
     set pie_key [lindex $left_scale_line 0]
     if {$pie_key == $sigma} { continue }
+    if {![info exists hash($pie_key)]} { continue }
     set val $hash($pie_key)
     lappend pie_values [list $pie_key $val]
 }
