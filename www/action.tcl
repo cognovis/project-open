@@ -118,7 +118,6 @@ switch $action_id {
 		# Redirect for custom action
 		set redirect_url [export_vars -base $redirect_base_url {action_id}]
 		foreach ticket_id $tid { append redirect_url "&tid=$ticket_id"}
-#		ad_return_complaint 1 $redirect_url
 		ad_returnredirect $redirect_url
 	    } else {
 		ad_return_complaint 1 "Unknown Ticket action: $action_id='[im_category_from_id $action_id]'"
