@@ -111,7 +111,7 @@ SELECT im_component_plugin__new (
 	'Home All-Time Top Customers',		-- plugin_name
 	'intranet-reporting-dashboard',		-- package_name
 	'left',					-- location
-	'/intranet-reporting-dashboard/index',	-- page_url
+	'/intranet/index',			-- page_url
 	null,					-- view_name
 	100,					-- sort_order
 	'im_dashboard_all_time_top_customers_component',
@@ -132,7 +132,7 @@ SELECT im_component_plugin__new (
 	'Home All-Time Top Services',		-- plugin_name
 	'intranet-reporting-dashboard',		-- package_name
 	'left',					-- location
-	'/intranet-reporting-dashboard/index',	-- page_url
+	'/intranet/index',			-- page_url
 	null,					-- view_name
 	100,					-- sort_order
 	'im_dashboard_generic_component -component "generic" -left_vars "sub_project_type"',
@@ -154,7 +154,7 @@ SELECT im_component_plugin__new (
 	'Home Project Queue',			-- plugin_name
 	'intranet-reporting-dashboard',		-- package_name
 	'left',					-- location
-	'/intranet-reporting-dashboard/index',	-- page_url
+	'/intranet/index',			-- page_url
 	null,					-- view_name
 	110,					-- sort_order
 	'im_dashboard_active_projects_status_histogram',
