@@ -66,44 +66,6 @@ ad_proc -public im_transq_error_percentage { expected_quality_id } {
     return $allowed_error_percentage
 }
 
-ad_proc -public im_transq_rel_quality { 
-    allowed_error_percentage  
-    sample_size  
-    total_errors 
-} {
-    Returns -4 to +4 on a logaritmic scale.
-    <li>0 means that the translation meets the allowed error points
-    <li>-1 means that the translation has twice as many errors as allowed
-    <li>+1 means that the translation has half the number of errors
-} {
-    # How many errors should have been in the translation?
-    set allowed_errors [expr $allowed_error_percentage * $sample_size / 100]
-    if {0 == $total_errors} { set total_errors "1" }
-    if {$total_errors < 1} { set total_errors "1" }
-    if {$allowed_errors < 0.001} { set allowed_errors 0.001 }
-    
-    set dif 0
-    if {[catch {
-	set dif [expr log($allowed_errors / $total_errors) / log(2)]
-    } err_msg]} {
-	ad_return_complaint 1 "Division by zero error:<br>
-	<pre>
-	allowed_errors=$allowed_errors
-	total_errors=$total_errors
-	</pre>"
-    }
-    
-    if { $dif <= -3.5 } { return -4 }
-    if { $dif <= -2.5 && $dif > -3.5 } { return -3 }
-    if { $dif <= -1.5 && $dif > -2.5 } { return -2 }
-    if { $dif <= -0.5 && $dif > -1.5 } { return -1 }
-    if { $dif < 0.5 && $dif > -0.5 } { return 0 }
-    if { $dif >= 0.5 && $dif < 1.5 } { return 1 }
-    if { $dif >= 1.5 && $dif < 2.5 } { return 2 }
-    if { $dif >= 2.5 && $dif < 3.5} { return 3 }
-    if { $dif >= 3.5} { return 4 }
-}
-
 # ----------------------------------------------------------------------
 # Components
 # ----------------------------------------------------------------------
@@ -130,8 +92,64 @@ ad_proc im_quality_project_component {
     if {0 == $n_reports} {
 	set result "<ul><li>No quality reports for this project</li>"
     } else {
-	set result "[im_quality_histogram -project_id $project_id]<ul>"
 
+	set quality_sql "
+		select
+			count(*) as cnt,
+			q
+		from	
+			(select
+				CASE WHEN q <= -4 THEN 4 WHEN q >= 4 THEN 4 ELSE q END as q
+			from
+				(select	round(log((0.0001 + allowed_error_percentage/100.0*sample_size) / (0.0001+total_errors)) / log(2)) as q
+				from	im_trans_tasks t,
+					im_trans_quality_reports qr
+				where	qr.task_id = t.task_id
+					and t.project_id = :project_id
+				) t
+			)t
+		group by q	
+	"
+   	db_foreach q $quality_sql {
+	    set qual($q) $cnt
+	}
+
+	set start_value 3
+	set continue 1
+	while {$continue} {
+	    set continue 0
+	    set neg_start_value [expr -$start_value]
+	    if {![info exists qual($start_value)] && ![info exists qual($neg_start_value)]} { 
+		set continue 1
+		set start_value [expr $start_value - 1]
+	    }
+	}
+
+	set msg [lang::message::lookup "" intranet-trans-quality.Allowed_error_points "Allowed error points"]
+	set text(-3) "*8 $msg"
+	set text(-2) "*4 $msg"
+	set text(-1) "*2 $msg"
+	set text(0)  " = $msg"
+	set text(1)  "/2 $msg"
+	set text(2)  "/4 $msg"
+	set text(3)  "/8 $msg"
+       	
+	set values [list]
+	for {set q $neg_start_value} {$q <= $start_value} {incr q} {
+	    set count 0
+	    set name $q
+	    if {[info exists qual($q)]} { set count $qual($q) }
+	    if {[info exists text($q)]} { set name $text($q) }
+	    lappend values [list $name $count]
+	}
+
+	append result [im_dashboard_histogram \
+                -values $values \
+		-diagram_width 250 \
+	]
+
+
+	append result "<br>\n"
 	append result "<li><a href=/intranet-trans-quality/list?[export_url_vars project_id]>See all reports for this project</a>\n"
 
     }
@@ -154,294 +172,6 @@ ad_proc im_transq_gif { name width height alt } {
     Returns a GIF component
 } {
     return "<img src=\"/intranet-trans-quality/images/$name.gif\" width=$width height=$height alt=\"$alt\" border=0>"
-}
-
-
-
-
-ad_proc im_absolute_graf_for_quality { { user_id "0" } { project_id "0" } { company_id "0" } } {
-} {
-    set from_condition ""
-    set second_from_condition ""
-    set where_condition ""
-    set second_where_condition ""
-
-    if { "0" != $company_id } {
-	set where_condition "and t.project_id = p.group_id and p.company_id = :customer_id"
-	set second_where_condition "and t.project_id = p.group_id and p.customer_id = :customer_id"
-	set from_condition "im_projects p,"
-	set second_from_condition "im_projects p,"
-    }
-    
-    if { "0" != $user_id } {
-	set where_condition "and t.trans_id = :user_id"
-	set second_where_condition "and t.trans_id = :user_id"
-    }
-    
-    if { $project_id != "0" } {
-	set where_condition "and t.project_id = :project_id"
-	set second_where_condition "and t.project_id = :project_id"
-    }
-    
-    
-    set sql_tasks_query "
-select
-	t.task_id,
-	qr.allowed_error_percentage,
-	qr.sample_size,
-	er.errors
-from
-	im_trans_tasks t,
-	im_trans_quality_reports qr,
-	$second_from_condition
-	(select
-        	SUM (
-			(qe.minor_errors * 1) + 
-			(qe.major_errors * 5) + 
-			(qe.critical_errors * 10)
-		) as errors,
-        	t.task_id
-	from
-        	im_trans_quality_entries qe,
-        	im_trans_quality_reports qr,
-		$from_condition
-        	im_trans_tasks t
-	where
-        	qe.report_id = qr.report_id
-        	and qr.task_id = t.task_id
-        	$where_condition
-	group by
-        	t.task_id
-	) er
-where
-	qr.task_id = t.task_id
-	and er.task_id = t.task_id
-	$second_where_condition
-order by
-	t.task_id DESC
-"
-    set table "
-<TABLE BORDER=0 CELLPADDING=0 CELLSPACING=0 BGCOLOR=\"FFFFFF\">
-<tr valign=bottom>"
-    set tatata "<td><IMG SRC=../../images/quality_y.gif></td>\n\n"
-
-    set height 90
-    set width 9
-
-    set ltable [list]
-    set cont 0
-    db_foreach tasks_query $sql_tasks_query {
-	set final_error_percentage [expr [expr floor($errors * 100)] / floor($sample_size)]
-	set dif [expr [expr log($allowed_error_percentage)/log(2)] - [expr log($final_error_percentage)/log(2)]]
-	if { $cont < 20 } {
-	    if { $dif >= 3.5 } { 
-		lappend ltable "<td><IMG SRC=../../images/quality-graf/p4.gif alt=$task_id height=$height width=$width></td>\n"
-	    }
-	    if { $dif >= 2.5 && $dif < 3.5 } { 
-		lappend ltable "<td><IMG SRC=../../images/quality-graf/p3.gif alt=$task_id height=$height width=$width></td>\n"
-	    }
-	    if { $dif >= 1.5 && $dif < 2.5 } { 
-		lappend ltable "<td><IMG SRC=../../images/quality-graf/p2.gif alt=$task_id height=$height width=$width></td>\n"
-	    }
-	    if { $dif >= 0.5 && $dif < 1.5 } { 
-		lappend ltable "<td><IMG SRC=../../images/quality-graf/p1.gif alt=$task_id height=$height width=$width></td>\n"
-	    }
-	    if { $dif > -0.5 && $dif < 0.5 } { 
-		lappend ltable "<td><IMG SRC=../../images/quality-graf/p0.gif  alt=$task_id height=$height width=$width></td>\n"
-	    }
-	    if { $dif > -1.5 && $dif <= -0.5 } { 
-		lappend ltable "<td><IMG SRC=../../images/quality-graf/n1.gif alt=$task_id height=$height width=$width></td>\n"
-	    }
-	    if { $dif > -2.5 && $dif <= -1.5 } { 
-		lappend ltable "<td><IMG SRC=../../images/quality-graf/n2.gif alt=$task_id height=$height width=$width></td>\n"
-	    }
-	    if { $dif > -3.5 && $dif <= -2.5 } { 
-		lappend ltable "<td><IMG SRC=../../images/quality-graf/n3.gif alt=$task_id height=$height width=$width></td>\n"
-	    }
-	    if { $dif <= -3.5} { 
-		lappend ltable "<td><IMG SRC=../../images/quality-graf/n4.gif alt=$task_id height=$height width=$width></td>\n"
-	    }
-	    incr cont
-	}
-    }
-    set cont 0
-    foreach list_of_task_to_table $ltable {
-	if { $cont < 20 } {
-	    append table "[lindex $ltable $cont]"
-	    incr cont
-	}
-    }
-    
-    if { $cont < 20 } {
-	for {set i $cont} {$i < 20} {incr i} {
-	    append table "<td><IMG SRC=../../images/quality-graf/abs-cero.gif alt=$i height=$height width=$width></td>\n"
-	}
-    }
-    append table "</tr></TABLE>"
-    return $table
-}
-
-
-
-# ----------------------------------------------------------------------
-# Histogram Component
-
-ad_proc im_quality_histogram { 
-    {-trans_id 0 } 
-    {-edit_id 0 } 
-    {-proof_id 0 } 
-    {-other_id 0 } 
-    {-person_id 0 } 
-    {-project_id 0 } 
-    {-company_id 0 } 
-} {
-    Return a formatted HTML component showing a 
-    "relative quality graph" for a given user, project
-    or company
-} {
-    set user_id [ad_get_user_id]
-    if {![im_permission $user_id view_trans_quality]} { return "" }
-
-    set where_condition ""
-    set quality_list_page_url "/intranet-trans-quality/list"
-    set url_append ""
-    
-    if { 0 != $company_id } {
-	set where_condition "p.company_id = :company_id"
-	set url_append "company_id=$company_id"
-    }
-    
-    if { 0 != $trans_id } {
-	set where_condition "and t.trans_id = :trans_id"
-	set url_append "trans_id=$trans_id"
-    }
-    
-    if { 0 != $project_id } {
-	set where_condition "and t.project_id = :project_id"
-	set url_append "project_id=$project_id"
-    }
-    
-
-set sql_tasks_query "
-select
-	t.task_id,
-	qr.allowed_error_percentage,
-	qr.sample_size,
-	qr.total_errors
-from
-	im_trans_tasks t,
-	im_trans_quality_reports qr,
-	im_projects p
-where
-	qr.task_id = t.task_id
-	and t.project_id = p.project_id
-       	$where_condition
-"
-
-    set p0 0
-    set p1 0
-    set p2 0
-    set p3 0
-    set p4 0
-    set n1 0
-    set n2 0
-    set n3 0
-    set n4 0
-
-    set percentage [list]
-
-    db_foreach tasks_query $sql_tasks_query {
-	# -4 to +4 on a logaritmic scale.
-	# 0 means it's meeting the allowed error points
-	set rel_quality [im_transq_rel_quality $allowed_error_percentage $sample_size $total_errors]
-
-	# avoid negative numbers, because they give an "unknown option -1" error: 
-	# => -4 -> "6"
-	#
-	if {$rel_quality < 0} {
-	    set rel_quality [expr 10+$rel_quality]
-	}
-	switch $rel_quality {
-	    0 { incr p0}
-	    1 { incr p1}
-	    2 { incr p2}
-	    3 { incr p3}
-	    4 { incr p4}
-
-	    6 { incr n4 }
-	    7 { incr n3 }
-	    8 { incr n2 }
-	    9 { incr n1 }
-	}
-    }
-    set sum [expr $n4 + $n3 + $n2 + $n1 + $p0 + $p1 + $p2 + $p3 + $p4]
-
-    set height 94
-    set width 28
-
-
-    return "
-<TABLE BORDER=0 CELLPADDING=0 CELLSPACING=0 BGCOLOR=#FFFFFF>
-  <tr valign=bottom>
-    <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=-4>
-	[im_transq_gif barra $width [expr [expr $n4 * $height] / $sum] "There are $n4 report(s) in this quality class"]
-      </a>
-    </td>
-    <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=-3>
-	[im_transq_gif barra $width [expr [expr $n3 * $height] / $sum] "There are $n3 report(s) in this quality class"]
-      </a>
-    </td>
-    <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=-2>
-	[im_transq_gif barra $width [expr [expr $n2 * $height] / $sum] "There are $n2 report(s) in this quality class"]
-      </a>
-    </td>
-    <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=-1>
-	[im_transq_gif barra $width [expr [expr $n1 * $height] / $sum] "There are $n1 report(s) in this quality class"]
-      </a>
-    </td>
-    <td background=/intranet-trans-quality/images/fondo-central.gif WIDTH=$width HEIGHT=$height>
-      <a href=$quality_list_page_url?$url_append&quality_group=0>
-	[im_transq_gif barra-central $width [expr [expr $p0 * $height] / $sum] "There are $p0 report(s) in this quality class"]      
-      </a>
-    </td>
-    <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=1>
-	[im_transq_gif barra $width [expr [expr $p1 * $height] / $sum] "There are $p1 report(s) in this quality class"]
-      </a>
-    </td>
-    <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=2>
-	[im_transq_gif barra $width [expr [expr $p2 * $height] / $sum] "There are $p2 report(s) in this quality class"]
-      </a>
-    </td>
-    <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=3>
-	[im_transq_gif barra $width [expr [expr $p3 * $height] / $sum] "There are $p3 report(s) in this quality class"]
-      </a>
-    </td>
-    <td>
-      <a href=$quality_list_page_url?$url_append&quality_group=4>
-	[im_transq_gif barra $width [expr [expr $p4 * $height] / $sum] "There are $p4 report(s) in this quality class"]
-      </a>
-    </td>
-  </tr>
-
-  <tr>
-    <td colspan=4>
-	[im_transq_gif abs-neg 112 11 ""]
-    </td>
-    <td>
-	[im_transq_gif abs-zero $width 11 ""]
-    </td>
-    <td colspan=4>
-	[im_transq_gif abs-pos 112 11 ""]
-    </td>
-  </tr>
-</TABLE>\n"
 }
 
 
