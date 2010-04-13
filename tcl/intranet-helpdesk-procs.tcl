@@ -552,6 +552,43 @@ namespace eval im_ticket {
 	    notification::request::delete -request_id $request_id
 	}
     }
+
+    ad_proc -public add_reply {
+        -ticket_id:required
+	-subject:required
+	{-message "" }
+    } {
+	Add a comment to the ticket as forum topic of type "reply".
+    } {
+	# Create a new forum topic of type "Reply"
+	set current_user_id [ad_get_user_id]
+	set topic_id [db_nextval im_forum_topics_seq]
+	set parent_topic_id [db_string topic_id "select min(topic_id) from im_forum_topics where object_id = :ticket_id" -default ""]
+	set topic_type_id [im_topic_type_id_reply]
+	set topic_status_id [im_topic_status_id_open]
+
+	# The owner of a topic can edit its content.
+	# But we don't want customers to edit their stuff here...
+	set topic_owner_id $current_user_id
+	if {[im_user_is_customer_p $current_user_id]} { 
+	    set topic_owner_id [db_string admin "select min(user_id) from users where user_id > 0" -default 0]
+	}
+
+	db_dml topic_insert "
+	    insert into im_forum_topics (
+                        topic_id, object_id, parent_id,
+                        topic_type_id, topic_status_id, owner_id,
+                        subject, message
+                ) values (
+                        :topic_id, :ticket_id, :parent_topic_id,
+                        :topic_type_id, :topic_status_id, :current_user_id,
+                        :subject, :message
+                )
+        "
+
+	# Write Audit Trail
+	im_project_audit -project_id $ticket_id -action create
+    }
 }
 
 
