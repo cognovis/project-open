@@ -781,8 +781,8 @@ begin
 	where	cost_id = p_cost_id;
 
 	-- Erase payments related to this cost item
-	delete from im_payments p
-	where p.cost_id = p_cost_id;
+	delete from im_payments
+	where cost_id = p_cost_id;
 
 	-- Erase the im_cost
 	delete from im_costs
