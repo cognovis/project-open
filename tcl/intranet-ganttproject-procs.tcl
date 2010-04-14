@@ -2482,7 +2482,9 @@ ad_proc -public im_ganttproject_resource_planning_cell {
     if {$percentage > 0} { set color "bluedot" }
     if {$percentage > 100} { set color "800000" }
     if {$percentage > 180} { set color "FF0000" }
-    
+
+    set color "bluedot"    
+
     set p [expr int((1.0 * $percentage) / 10.0)]
     set result [im_gif $color "$percentage" 0 10 $p]
     return $result
@@ -2503,10 +2505,11 @@ ad_proc -public im_date_julian_to_components { julian_date } {
     set month_of_year [string trim $month_of_year 0]
     set first_year_julian [dt_ansi_to_julian $year 1 1]
     set day_of_year [expr $julian_date - $first_year_julian + 1]
-    set week_of_year [expr int($day_of_year / 7)]
-    set day_of_week [expr 1 + $day_of_year - 7*$week_of_year]
     set quarter_of_year [expr 1 + int(($month_of_year-1) / 3)]
-    
+
+    set week_of_year [util_memoize [list db_string dow "select to_char(to_date($julian_date, 'J'),'IW')"]]
+    set day_of_week [util_memoize [list db_string dow "select extract(dow from to_date($julian_date, 'J'))"]]
+   
     return [list year $year \
 		month_of_year $month_of_year \
 		day_of_month $day_of_month \
@@ -2529,14 +2532,31 @@ ad_proc -public im_date_components_to_julian { top_vars top_entry} {
 	incr ctr
     }
 
-    # Try to calculate the current data from top dimension
     set julian 0
-    catch { 
-	set first_of_year_julian [dt_ansi_to_julian $year 1 1] 
-	set julian [expr $first_of_year_julian + $week_of_year * 7 + $day_of_week]
+
+    # Try to calculate the current data from top dimension
+    switch $top_vars {
+	"year week_of_year day_of_week" {
+	    catch {
+		set first_of_year_julian [dt_ansi_to_julian $year 1 1]
+		set dow_first_of_year_julian [db_string dow "select to_char('$year-01-07'::date, 'D')"]
+		set start_first_week_julian [expr $first_of_year_julian - $dow_first_of_year_julian]
+		set julian [expr $start_first_week_julian + 7 * $week_of_year + $day_of_week]
+	    }
+	}
+	"year month_of_year day_of_month" {
+	    catch {
+		if {1 == [string length $month_of_year]} { set month_of_year "0$month_of_year" }
+		if {1 == [string length $day_of_month]} { set day_of_month "0$day_of_month" }
+		set julian [db_string jul "select to_char('$year-$month_of_year-$day_of_month'::date,'J')"]
+	    }
+	}
     }
- 
-    if {0 == $julian} { ad_return_complaint 1 "Unable to calculate data from date dimension: '$top_vars'" }
+
+    if {0 == $julian} { 
+	ad_return_complaint 1 "$top_vars<br>$top_entry"
+	ad_return_complaint 1 "Unable to calculate data from date dimension: '$top_vars'" 
+    }
     return $julian
 }
 
@@ -2550,6 +2570,7 @@ ad_proc -public im_date_components_to_julian { top_vars top_entry} {
 ad_proc -public im_ganttproject_resource_planning {
     { -start_date "" }
     { -end_date "" }
+    { -show_all_employees_p "" }
     { -top_vars "year week_or_year day" }
     { -left_vars "cell" }
     { -project_id "" }
@@ -2589,19 +2610,6 @@ ad_proc -public im_ganttproject_resource_planning {
 	where	parent_id is null
 		and company_id = :customer_id
         "]
-    }
-
-    # ------------------------------------------------------------
-    # Start and End-Dat as min/max of selected projects.
-    # Note that the sub-projects might "stick out" before and after
-    # the main/parent project.
-    
-    if {"" == $start_date} {
-	set start_date [db_string start_date "select to_char(now()::date, 'YYYY-MM-01')"]
-    }
-
-    if {"" == $end_date} {
-	set end_date [db_string end_date "select to_char(now()::date + 4*7, 'YYYY-MM-01')"]
     }
 
     db_1row date_calc "
@@ -2648,6 +2656,48 @@ ad_proc -public im_ganttproject_resource_planning {
 	set collapse_hash($object_id) $open_p
     }
 
+
+    # ------------------------------------------------------------
+    # Absences - Determine when the user is away
+    #
+    set absences_sql "
+	-- Direct absences for a user within the period
+	select
+		owner_id,
+		to_char(start_date,'J') as absence_start_date_julian,
+		to_char(end_date,'J') as absence_end_date_julian,
+		absence_type_id
+	from 
+		im_user_absences
+	where 
+		group_id is null and
+		start_date <= to_date(:end_date, 'YYYY-MM-DD') and
+		end_date   >= to_date(:start_date, 'YYYY-MM-DD')
+    UNION
+	-- Absences via groups - Check if the user is a member of group_id
+	select
+		mm.member_id as owner_id,
+		to_char(start_date,'J') as absence_start_date_julian,
+		to_char(end_date,'J') as absence_end_date_julian,
+		absence_type_id
+	from 
+		im_user_absences a,
+		group_distinct_member_map mm
+	where 
+		a.group_id = mm.group_id and
+		start_date <= to_date(:end_date, 'YYYY-MM-DD') and
+		end_date   >= to_date(:start_date, 'YYYY-MM-DD')
+    "
+    db_foreach absences $absences_sql {
+	for {set i $absence_start_date_julian} {$i <= $absence_end_date_julian} {incr i} {
+	    set key "$i-$owner_id"
+	    set val ""
+	    if {[info exists absences_hash($key)]} { set val $absences_hash($key) }
+	    append val [expr $absence_type_id - 5000]
+	    set absences_hash($key) $val
+	}
+    }
+
     # ------------------------------------------------------------
     # Projects - determine project & task assignments at the lowest level.
     #
@@ -2691,8 +2741,32 @@ ad_proc -public im_ganttproject_resource_planning {
     # Return all main projects where a user is assigned in one of the sub-projects
     #
 
+    set show_all_employees_sql ""
+    if {1 == $show_all_employees_p} {
+	set show_all_employees_sql "
+	UNION
+		select
+			0::integer as main_project_id,
+			0::text as main_project_name,
+			p.person_id as user_id,
+			im_name_from_user_id(p.person_id) as user_name
+		from
+			persons p,
+			group_distinct_member_map gdmm
+		where
+			gdmm.member_id = p.person_id and
+			gdmm.group_id = [im_employee_group_id]
+	"
+    }
+
     set main_projects_sql "
-		select distinct
+	select distinct
+		main_project_id,
+		main_project_name,
+		user_id,
+		user_name
+	from
+		(select
 			parent.project_id as main_project_id,
 			parent.project_name as main_project_name,
 			r.object_id_two as user_id,
@@ -2714,9 +2788,11 @@ ad_proc -public im_ganttproject_resource_planning {
 			and r.object_id_one = child.project_id
 			and m.percentage is not null
 			$where_clause
-		order by
-			user_name,
-			parent.project_id
+		$show_all_employees_sql
+		) t
+	order by
+		user_name,
+		main_project_id
     "
     db_foreach main_projects $main_projects_sql {
 	set key "$user_id-$main_project_id"
@@ -2725,6 +2801,8 @@ ad_proc -public im_ganttproject_resource_planning {
 	set object_name_hash($main_project_id) $main_project_name
 	set has_children_hash($user_id) 1
 	set indent_hash($main_project_id) 1
+	set object_type_hash($main_project_id) "im_project"
+	set object_type_hash($user_id) "person"
     }
 
 
@@ -2744,10 +2822,12 @@ ad_proc -public im_ganttproject_resource_planning {
 		child.project_name,
 		child.project_nr,
 		child.tree_sortkey,
-		tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as tree_level
+		tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as tree_level,
+		o.object_type
 	from
 		im_projects parent,
-		im_projects child
+		im_projects child,
+		acs_objects o
 	where
 		parent.project_status_id not in ([join [im_sub_categories [im_project_status_closed]] ","])
 		and parent.parent_id is null
@@ -2755,6 +2835,7 @@ ad_proc -public im_ganttproject_resource_planning {
 			select	tree_ancestor_key(t.tree_sortkey,1) as tree_level
 			from	($projects_sql) t
 		)
+		and child.project_id = o.object_id
 		and child.tree_sortkey
 			between parent.tree_sortkey
 			and tree_right(parent.tree_sortkey)
@@ -2765,6 +2846,7 @@ ad_proc -public im_ganttproject_resource_planning {
 
     set empty ""
     set name_hash($empty) ""
+    set parent_project_id 0
     set old_parent_project_id 0
     set hierarchy_lol {}
     db_foreach project_hierarchy $hierarchy_sql {
@@ -2784,6 +2866,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	set name_hash($project_id) $project_name
 	set indent_hash($project_id) [expr $tree_level + 1]
 	set object_name_hash($project_id) $project_name
+	set object_type_hash($project_id) $object_type
 
 	# Determine the project path that leads to the current sub-project
 	# and aggregate the current assignment information to all parents.
@@ -2851,7 +2934,6 @@ ad_proc -public im_ganttproject_resource_planning {
 	if {"c" == $open_p} { set hierarchy_lol [list] }
 
 	# Loop through the project hierarchy
-	# ad_return_complaint 1 "<pre>[join $hierarchy_lol "\n"]</pre>"
 	foreach row $hierarchy_lol {
 
 	    # Extract the pieces of a hierarchy row
@@ -2886,8 +2968,6 @@ ad_proc -public im_ganttproject_resource_planning {
 
 		}
 	    }
-
-#	if {$project_id == 12886} { ad_return_complaint 1 "path=$project_path, closed_p=$closed_p" }
 
 	    # append the values to the left scale
 	    if {"c" == $closed_p} { continue }
@@ -2936,7 +3016,9 @@ ad_proc -public im_ganttproject_resource_planning {
     # Top scale is a list of lists like {{2006 01} {2006 02} ...}
     set top_scale {}
     for {set i $start_date_julian} {$i <= $end_date_julian} {incr i} {
+	array unset date_hash
 	array set date_hash [im_date_julian_to_components $i]
+
 	set top_dim {}
 	foreach top_var $top_vars {
 	    lappend top_dim $date_hash($top_var)
@@ -2944,14 +3026,13 @@ ad_proc -public im_ganttproject_resource_planning {
 	lappend top_scale $top_dim
     }
 
-
     # ------------------------------------------------------------
     # Display the Table Header
     
     # Determine how many date rows (year, month, day, ...) we've got
     set first_cell [lindex $top_scale 0]
     set top_scale_rows [llength $first_cell]
-    set left_scale_size [llength [lindex $left_scale 0]]
+    set left_scale_size [llength [lindex $left_vars 0]]
 
     set header ""
     for {set row 0} {$row < $top_scale_rows} { incr row } {
@@ -2961,7 +3042,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	if {0 == $row} {
 	    set zoom_in "<a href=[export_vars -base $this_url {top_vars {zoom "in"}}]>[im_gif "magnifier_zoom_in"]</a>\n" 
 	    set zoom_out "<a href=[export_vars -base $this_url {top_vars {zoom "out"}}]>[im_gif "magifier_zoom_out"]</a>\n" 
-	    set col_l10n "$zoom_in $zoom_out $col_l10n\n" 
+	    set col_l10n "<!-- $zoom_in $zoom_out --> $col_l10n\n" 
 	}
 	append header "<td class=rowtitle colspan=$left_scale_size align=right>$col_l10n</td>\n"
 	
@@ -3002,16 +3083,15 @@ ad_proc -public im_ganttproject_resource_planning {
 
     # ------------------------------------------------------------
     # Display the table body
-    # ad_return_complaint 1 "<pre>[join $left_scale "\n"]</pre>"
-    set ctr 0
+    set row_ctr 0
     foreach left_entry $left_scale {
-	
+
 	ns_log Notice "gantt-resources-planning: left_entry=$left_entry"
 	set row_html ""
 
 	# ------------------------------------------------------------
 	# Start the row and show the left_scale values at the left
-	set class $rowclass([expr $ctr % 2])
+	set class $rowclass([expr $row_ctr % 2])
 	append row_html "<tr class=$class valign=bottom>\n"
 
 	# Extract user and project. An empty project indicates 
@@ -3026,6 +3106,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	    set oid $project_id 
 	    set otype "im_project"
 	}
+	if {[info exists object_type_hash($oid)]} { set otype $object_type_hash($oid) }
 
 	# Display +/- logic
 	set closed_p "c"
@@ -3047,13 +3128,19 @@ ad_proc -public im_ganttproject_resource_planning {
 		set indent_level 0
 		set user_name "undef user $oid"
 		if {[info exists object_name_hash($oid)]} { set user_name $object_name_hash($oid) }
-		set cell_html "$collapse_html <a href='[export_vars -base $user_base_url {{user_id $oid}}]'>$user_name</a>"
+		set cell_html "$collapse_html [im_gif user] <a href='[export_vars -base $user_base_url {{user_id $oid}}]'>$user_name</a>"
 	    }
 	    im_project {
 		set indent_level 1
 		set project_name "undef project $oid"
 		if {[info exists object_name_hash($oid)]} { set project_name $object_name_hash($oid) }
-		set cell_html "$collapse_html <a href='[export_vars -base $project_base_url {{project_id $oid}}]'>$project_name</a>"
+		set cell_html "$collapse_html [im_gif cog] <a href='[export_vars -base $project_base_url {{project_id $oid}}]'>$project_name</a>"
+	    }
+	    im_timesheet_task {
+		set indent_level 1
+		set project_name "undef project $oid"
+		if {[info exists object_name_hash($oid)]} { set project_name $object_name_hash($oid) }
+		set cell_html "$collapse_html [im_gif time] <a href='[export_vars -base $project_base_url {{project_id $oid}}]'>$project_name</a>"
 	    }
 	    default { 
 		set cell_html "unknown object '$otype' type for object '$oid'" 
@@ -3063,7 +3150,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	# Indent the object name
 	if {[info exists indent_hash($oid)]} { set indent_level $indent_hash($oid) }
 	set indent_html ""
-	for {set i 0} {$i < $indent_level} {incr i} { append indent_html "&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; " }
+	for {set i 0} {$i < $indent_level} {incr i} { append indent_html "&nbsp; &nbsp; &nbsp; " }
 
 	append row_html "<td><nobr>$indent_html$cell_html</nobr></td>\n"
 
@@ -3092,6 +3179,8 @@ ad_proc -public im_ganttproject_resource_planning {
 	    
 	    # Calculate the julian date for today from top_vars
 	    set julian_date [im_date_components_to_julian $top_vars $top_entry]
+	    array unset date_comps
+	    array set date_comps [im_date_julian_to_components $julian_date]
 
 	    # Calculate the key for this permutation
 	    set key "$user_id-$project_id-$julian_date"
@@ -3131,20 +3220,43 @@ ad_proc -public im_ganttproject_resource_planning {
 		"year" { set val "$val_year" }
 		default { ad_return_complaint 1 "Bad period: $period" }
 	    }
-	
+
 	    set cell_html [util_memoize [list im_ganttproject_resource_planning_cell $val]]
-	    append row_html "<td>$cell_html</td>\n"
+
+	    # Skip weekends (dow = day_of_week)
+	    set dow $date_comps(day_of_week)
+	    if {0 == $dow || 6 == $dow || 7 == $dow} { set cell_html "" }
+
+	    # Lookup the color of the absence for field background color
+	    set col_attrib ""
+	    set key "$julian_date-$user_id"
+	    if {[info exists absences_hash($key)]} {
+		set list_of_absences $absences_hash($key)
+		set color [im_absence_mix_colors $list_of_absences]
+		set col_attrib "bgcolor=#$color"
+	    }
+
+	    append row_html "<td $col_attrib>$cell_html</td>\n"
 	    
 	}
 	append html $row_html
 	append html "</tr>\n"
+	incr row_ctr
     }
-
 
     # ------------------------------------------------------------
     # Close the table
 
     set html "<table cellspacing=0 cellpadding=0>\n$html\n</table>\n"
+
+    if {0 == $row_ctr} {
+	set no_rows_msg [lang::message::lookup "" intranet-ganttproject.No_rows_selected "
+		No rows found.<br>
+		Maybe there are no assignments of users to projects in the selected period?
+	"]
+	append html "<br><b>$no_rows_msg</b>\n"
+    }
+
 
     return $html
 }

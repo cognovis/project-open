@@ -19,8 +19,9 @@ ad_page_contract {
     @param customer_id Id of customer's projects to show
     @param user_name_link_opened List of users with details shown
 } {
-    { start_date "2008-01-01" }
-    { end_date "2008-01-15" }
+    { start_date "" }
+    { end_date "" }
+    { show_all_employees_p "" }
     { top_vars "year week_of_year day_of_week" }
     { project_id:multiple "" }
     { customer_id:integer 0 }
@@ -32,6 +33,9 @@ ad_page_contract {
     { max_row 100 }
 }
 
+im_permission_flush
+
+# Alternative for top_vars: year month_of_year day_of_month
 
 # ---------------------------------------------------------------
 # Defaults & Security
@@ -52,6 +56,21 @@ set sub_navbar ""
 set main_navbar_label "reporting"
 set show_context_help_p 0
 
+
+# ------------------------------------------------------------
+# Start and End-Dat as min/max of selected projects.
+# Note that the sub-projects might "stick out" before and after
+# the main/parent project.
+
+if {"" == $start_date} {
+    set start_date [db_string start_date "select to_char(now()::date, 'YYYY-MM-01')"]
+}
+
+if {"" == $end_date} {
+    set end_date [db_string end_date "select to_char(now()::date + 4*7, 'YYYY-MM-01')"]
+}
+
+
 # ------------------------------------------------------------
 # Contents
 
@@ -64,6 +83,7 @@ set html [im_ganttproject_resource_planning \
 	-zoom $zoom \
 	-max_col $max_col \
 	-max_row $max_row \
+	-show_all_employees_p $show_all_employees_p \
 ]
 
 if {"" == $html} { 
@@ -128,16 +148,28 @@ if {0} {
 
 append filter_html "
   <tr>
-<td class=form-label>[_ intranet-core.Start_Date]</td>
+	<td class=form-label>[_ intranet-core.Start_Date]</td>
             <td class=form-widget>
               <input type=textfield name=start_date value=$start_date>
-            </td>
+	</td>
   </tr>
   <tr>
-<td class=form-label>[lang::message::lookup "" intranet-core.End_Date "End Date"]</td>
+	<td class=form-label>[lang::message::lookup "" intranet-core.End_Date "End Date"]</td>
             <td class=form-widget>
               <input type=textfield name=end_date value=$end_date>
-            </td>
+	</td>
+  </tr>
+"
+
+set show_all_employees_checked ""
+if {1 == $show_all_employees_p} { set show_all_employees_checked "checked" }
+append filter_html "
+  <tr>
+	<td class=form-label valign=top>[lang::message::lookup "" intranet-ganttproject.All_Employees "Show all:"]</td>
+	<td class=form-widget valign=top>
+	        <input name=show_all_employees_p type=checkbox value='1' $show_all_employees_checked> 
+		[lang::message::lookup "" intranet-core.Employees "Employees?"]
+	</td>
   </tr>
 "
 
