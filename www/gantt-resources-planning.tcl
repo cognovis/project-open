@@ -84,7 +84,7 @@ set filter_html "
 <table border=0 cellpadding=0 cellspacing=1>
 "
 
-if {1} {
+if {0} {
     append filter_html "
   <tr>
     <td class=form-label>[_ intranet-core.Project_Status]:</td>
@@ -93,6 +93,7 @@ if {1} {
     "
 }
 
+if {0} {
 append filter_html "
   <tr>
     <td class=form-label>[_ intranet-core.Project_Type]:</td>
@@ -101,8 +102,9 @@ append filter_html "
     </td>
   </tr>
 "
+}
 
-if {1} {
+if {0} {
     append filter_html "
   <tr>
     <td class=form-label>[lang::message::lookup "" intranet-core.Program "Program"]:</td>
@@ -115,12 +117,14 @@ if { [empty_string_p $customer_id] } {
     set customer_id 0
 }
 
-append filter_html "
+if {0} {
+    append filter_html "
   <tr>
 <td class=form-label valign=top>[lang::message::lookup "" intranet-core.Customer "Customer"]:</td>
 <td class=form-widget valign=top>[im_company_select -include_empty_p 1 -include_empty_name "All" customer_id $customer_id "" "CustOrIntl"]</td>
   </tr>
-"
+    "
+}
 
 append filter_html "
   <tr>
