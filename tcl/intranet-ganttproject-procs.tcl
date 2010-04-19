@@ -2477,6 +2477,8 @@ ad_proc -public im_ganttproject_resource_planning_cell {
 } {
     if {0 == $percentage || "" == $percentage} { return "" }
 
+    if {![string is double $percentage]} { return $percentage }
+
     # Color selection
     set color ""
     if {$percentage > 0} { set color "bluedot" }
@@ -2521,6 +2523,15 @@ ad_proc -public im_date_julian_to_components { julian_date } {
 }
 
 
+ad_proc -public im_date_julian_to_week_julian { julian_date } {
+    Takes a Julian data and returns the julian date of the week's day "1" (=Monday)
+} {
+    array set week_info [im_date_julian_to_components $julian_date]
+    set result [expr $julian_date - $week_info(day_of_week)]
+}
+
+
+
 ad_proc -public im_date_components_to_julian { top_vars top_entry} {
     Takes an entry from top_vars/top_entry and tries
     to figure out the julian date from this
@@ -2544,11 +2555,25 @@ ad_proc -public im_date_components_to_julian { top_vars top_entry} {
 		set julian [expr $start_first_week_julian + 7 * $week_of_year + $day_of_week]
 	    }
 	}
+	"year week_of_year" {
+	    catch {
+		set first_of_year_julian [dt_ansi_to_julian $year 1 1]
+		set dow_first_of_year_julian [db_string dow "select to_char('$year-01-07'::date, 'D')"]
+		set start_first_week_julian [expr $first_of_year_julian - $dow_first_of_year_julian]
+		set julian [expr $start_first_week_julian + 7 * $week_of_year]
+	    }
+	}
 	"year month_of_year day_of_month" {
 	    catch {
 		if {1 == [string length $month_of_year]} { set month_of_year "0$month_of_year" }
 		if {1 == [string length $day_of_month]} { set day_of_month "0$day_of_month" }
 		set julian [db_string jul "select to_char('$year-$month_of_year-$day_of_month'::date,'J')"]
+	    }
+	}
+	"year month_of_year" {
+	    catch {
+		if {1 == [string length $month_of_year]} { set month_of_year "0$month_of_year" }
+		set julian [db_string jul "select to_char('$year-$month_of_year-01'::date,'J')"]
 	    }
 	}
     }
@@ -2602,6 +2627,20 @@ ad_proc -public im_ganttproject_resource_planning {
 
     # The list of users/projects opened already
     set user_name_link_opened {}
+
+    # Determine what aggregates to calculate
+    set calc_day_p 0
+    set calc_week_p 0
+    set calc_month_p 0
+    set calc_quarter_p 0
+    switch $top_vars {
+        "year week_of_year day_of_week" { set calc_day_p 1 }
+        "year month_of_year day_of_month" { set calc_day_p 1 }
+        "year week_of_year" { set calc_week_p 1 }
+        "year month_of_year" { set calc_month_p 1 }
+        "year quarter_of_year" { set calc_quarter_p 1 }
+    }
+
 
     if {0 != $customer_id && "" == $project_id} {
 	set project_id [db_list pids "
@@ -2701,7 +2740,7 @@ ad_proc -public im_ganttproject_resource_planning {
     # ------------------------------------------------------------
     # Projects - determine project & task assignments at the lowest level.
     #
-    set projects_sql "
+    set percentage_sql "
 		select
 			child.project_id,
 			child.project_name,
@@ -2833,7 +2872,7 @@ ad_proc -public im_ganttproject_resource_planning {
 		and parent.parent_id is null
 		and parent.tree_sortkey in (
 			select	tree_ancestor_key(t.tree_sortkey,1) as tree_level
-			from	($projects_sql) t
+			from	($percentage_sql) t
 		)
 		and child.project_id = o.object_id
 		and child.tree_sortkey
@@ -2981,31 +3020,44 @@ ad_proc -public im_ganttproject_resource_planning {
     # Calculate the main resource assignment hash by looping
     # through the project hierarchy x looping through the date dimension
     # 
-    db_foreach project_loop $projects_sql {
-	
+    db_foreach percentage_loop $percentage_sql {
+
 	# Loop through the days between start_date and end_data
 	for {set i $child_start_date_julian} {$i <= $child_end_date_julian} {incr i} {
 
 	    # Loop through the project hierarchy towards the top
 	    set pid $project_id
-	    while {"" != $pid} {
-		set key "$user_id-$pid-$i"
-		set perc 0
-		if {[info exists perc_hash($key)]} { set perc $perc_hash($key) }
-		set perc [expr $perc + $percentage]
-		set perc_hash($key) $perc
-		
+	    set continue 1
+	    while {$continue} {
+
+		# Aggregate per day
+		if {$calc_day_p} {
+		    set key "$user_id-$pid-$i"
+		    set perc 0
+		    if {[info exists perc_day_hash($key)]} { set perc $perc_day_hash($key) }
+		    set perc [expr $perc + $percentage]
+		    set perc_day_hash($key) $perc
+		}
+
+		# Aggregate per week
+		if {$calc_week_p} {
+		    set week_julian [util_memoize [list im_date_julian_to_week_julian $i]]
+		    set key "$user_id-$pid-$week_julian"
+		    set perc 0
+		    if {[info exists perc_week_hash($key)]} { set perc $perc_week_hash($key) }
+		    set perc [expr $perc + $percentage]
+		    set perc_week_hash($key) $perc
+		}
+
 		# Check if there is a super-project and continue there.
-		set pid $parent_hash($pid)
+		# Otherwise allow for one iteration with an empty $pid
+		# to deal with the user's level
+		if {"" == $pid} { 
+		    set continue 0 
+		} else {
+		    set pid $parent_hash($pid)
+		}
 	    }
-
-	    # Aggregate percentage to user itself
-	    set key "$user_id--$i"
-	    set perc 0
-	    if {[info exists perc_hash($key)]} { set perc $perc_hash($key) }
-	    set perc [expr $perc + $percentage]
-	    set perc_hash($key) $perc
-
 	}
     }
 
@@ -3015,15 +3067,24 @@ ad_proc -public im_ganttproject_resource_planning {
 
     # Top scale is a list of lists like {{2006 01} {2006 02} ...}
     set top_scale {}
+    set last_top_dim {}
     for {set i $start_date_julian} {$i <= $end_date_julian} {incr i} {
+
 	array unset date_hash
 	array set date_hash [im_date_julian_to_components $i]
-
+	
 	set top_dim {}
 	foreach top_var $top_vars {
 	    lappend top_dim $date_hash($top_var)
 	}
-	lappend top_scale $top_dim
+
+	# "distinct" clause: add the values of top_vars to the top scale, 
+	# if it is different from the last one...
+	# This is necessary for aggregated top scales like weeks and months.
+	if {$top_dim != $last_top_dim} {
+	    lappend top_scale $top_dim
+	    set last_top_dim $top_dim
+	}
     }
 
     # ------------------------------------------------------------
@@ -3167,6 +3228,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	
 	# ------------------------------------------------------------
 	# Start writing out the matrix elements
+	set last_julian 0
 	foreach top_entry $top_scale {
 
 	    # Write the top_scale values to their corresponding local 
@@ -3179,53 +3241,39 @@ ad_proc -public im_ganttproject_resource_planning {
 	    
 	    # Calculate the julian date for today from top_vars
 	    set julian_date [im_date_components_to_julian $top_vars $top_entry]
+	    if {$julian_date == $last_julian} {
+		# We're with the second ... seventh entry of a week.
+		continue
+	    } else {
+		set last_julian $julian_date
+	    }
 	    array unset date_comps
 	    array set date_comps [im_date_julian_to_components $julian_date]
 
-	    # Calculate the key for this permutation
-	    set key "$user_id-$project_id-$julian_date"
-
+	    # Get the value for this cell
 	    set val ""
-	    if {[info exists perc_hash($key)]} { set val $perc_hash($key) }
-
-	    # ------------------------------------------------------------
-	    # Format the percentage value for percent-arithmetics:
-	    # - Sum up percentage values per day
-	    # - When showing percentag per week then sum up and divide by 5 (working days)
-	    # ToDo: Include vacation calendar and resource availability in
-	    # the future.
-	    
-	    if {"" == $val} { set val 0 }
-
-	    set period "day_of_month"
-	    for {set top_idx 0} {$top_idx < [llength $top_vars]} {incr top_idx} {
-		set top_var [lindex $top_vars $top_idx]
-		set top_value [lindex $top_entry $top_idx]
-		if {$sigma != $top_value} { set period $top_var }
+	    if {$calc_day_p} {
+		set key "$user_id-$project_id-$julian_date"
+		if {[info exists perc_day_hash($key)]} { set val $perc_day_hash($key) }
+	    }
+	    if {$calc_week_p} {
+		set week_julian [util_memoize [list im_date_julian_to_week_julian $julian_date]]
+		ns_log Notice "intranet-ganttproject-procs: julian_date=$julian_date, week_julian=$week_julian"
+		set key "$user_id-$project_id-$week_julian"
+		if {[info exists perc_week_hash($key)]} { set val $perc_week_hash($key) }
+		if {"" == [string trim $val]} { set val 0 }
+		set val [expr round($val / 7.0)]
 	    }
 
-	    set val_day $val
-	    set val_week [expr round($val/5)]
-	    set val_month [expr round($val/22)]
-	    set val_quarter [expr round($val/66)]
-	    set val_year [expr round($val/260)]
-
-	    switch $period {
-		"day_of_month" { set val $val_day }
-		"day_of_year" { set val $val_day }
-		"day_of_week" { set val $val_day }
-		"week_of_year" { set val "$val_week" }
-		"month_of_year" { set val "$val_month" }
-		"quarter_of_year" { set val "$val_quarter" }
-		"year" { set val "$val_year" }
-		default { ad_return_complaint 1 "Bad period: $period" }
-	    }
+	    if {"" == [string trim $val]} { set val 0 }
 
 	    set cell_html [util_memoize [list im_ganttproject_resource_planning_cell $val]]
 
 	    # Skip weekends (dow = day_of_week)
-	    set dow $date_comps(day_of_week)
-	    if {0 == $dow || 6 == $dow || 7 == $dow} { set cell_html "" }
+#	    if {$calc_day_p} {
+#		set dow $date_comps(day_of_week)
+#		if {0 == $dow || 6 == $dow || 7 == $dow} { set cell_html "" }
+#	    }
 
 	    # Lookup the color of the absence for field background color
 	    set col_attrib ""
