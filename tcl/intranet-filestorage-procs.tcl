@@ -2018,6 +2018,9 @@ ad_proc im_filestorage_file_type_icon {ext} {
 	"wav" { set icon [im_gif exp-wav] }
 	"xls" { set icon [im_gif exp-excel] }
 	"zip" { set icon [im_gif exp-zip] }
+        "docx" { set icon [im_gif exp-word2007] }
+        "pptx" { set icon [im_gif exp-ppt2007] }
+        "xlsx" { set icon [im_gif exp-excel2007] }
 	"" { set icon [im_gif exp-unknown] }
 	default {
 #	    set ext [string range $ext 1 end]
