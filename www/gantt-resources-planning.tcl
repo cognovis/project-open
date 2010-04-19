@@ -33,15 +33,14 @@ ad_page_contract {
     { max_row 100 }
 }
 
-im_permission_flush
-
-# Alternative for top_vars: year month_of_year day_of_month
-
 # ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
 
-set user_id [ad_maybe_redirect_for_registration]
+im_permission_flush
+
+#set user_id [ad_maybe_redirect_for_registration]
+set user_id 624
 if {![im_permission $user_id "view_projects_all"]} {
     ad_return_complaint 1 "You don't have permissions to see this page"
     ad_script_abort
@@ -56,6 +55,7 @@ set sub_navbar ""
 set main_navbar_label "reporting"
 set show_context_help_p 0
 
+regsub -all {%20} $top_vars " " top_vars
 
 # ------------------------------------------------------------
 # Start and End-Dat as min/max of selected projects.
@@ -145,6 +145,31 @@ if {0} {
   </tr>
     "
 }
+
+
+if {1} {
+    set top_var_options {
+	"year week_of_year day_of_week"
+	"Week and Day"
+	"year month_of_year day_of_month"
+	"Month and Day"
+	"year week_of_year"
+	"Week"
+	"year month_of_year"
+	"Month"
+	"year quarter_of_year"
+	"Quarter"
+    }
+
+    append filter_html "
+  <tr>
+    <td class=form-label>[lang::message::lookup "" intranet-ganttproject.Top_Scale "Top Scale"]:</td>
+    <td class=form-widget>[im_select top_vars $top_var_options $top_vars]</td>
+  </tr>
+    "
+}
+
+
 
 append filter_html "
   <tr>
