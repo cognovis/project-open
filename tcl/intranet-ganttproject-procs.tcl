@@ -2511,6 +2511,7 @@ ad_proc -public im_date_julian_to_components { julian_date } {
 
     set week_of_year [util_memoize [list db_string dow "select to_char(to_date($julian_date, 'J'),'IW')"]]
     set day_of_week [util_memoize [list db_string dow "select extract(dow from to_date($julian_date, 'J'))"]]
+    if {0 == $day_of_week} { set day_of_week 7 }
    
     return [list year $year \
 		month_of_year $month_of_year \
@@ -2582,6 +2583,8 @@ ad_proc -public im_date_components_to_julian { top_vars top_entry} {
 	ad_return_complaint 1 "$top_vars<br>$top_entry"
 	ad_return_complaint 1 "Unable to calculate data from date dimension: '$top_vars'" 
     }
+
+    ns_log Notice "im_date_components_to_julian: $julian, top_vars=$top_vars, top_entry=$top_entry"
     return $julian
 }
 
@@ -2736,6 +2739,18 @@ ad_proc -public im_ganttproject_resource_planning {
 	    set absences_hash($key) $val
 	}
     }
+
+    # Absences for weekends
+    for {set i $start_date_julian} {$i <= $end_date_julian} {incr i} {
+	array unset date_comps
+	array set date_comps [im_date_julian_to_components $i]
+	set dow $date_comps(day_of_week)
+	if {0 == $dow || 6 == $dow || 7 == $dow} { 
+	    set key $i
+	    set weekend_hash($key) 5
+	}
+    }
+
 
     # ------------------------------------------------------------
     # Projects - determine project & task assignments at the lowest level.
@@ -3238,7 +3253,7 @@ ad_proc -public im_ganttproject_resource_planning {
 		set var_value [lindex $top_entry $i]
 		set $var_name $var_value
 	    }
-	    
+
 	    # Calculate the julian date for today from top_vars
 	    set julian_date [im_date_components_to_julian $top_vars $top_entry]
 	    if {$julian_date == $last_julian} {
@@ -3249,7 +3264,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	    }
 	    array unset date_comps
 	    array set date_comps [im_date_julian_to_components $julian_date]
-
+	
 	    # Get the value for this cell
 	    set val ""
 	    if {$calc_day_p} {
@@ -3269,21 +3284,26 @@ ad_proc -public im_ganttproject_resource_planning {
 
 	    set cell_html [util_memoize [list im_ganttproject_resource_planning_cell $val]]
 
-	    # Skip weekends (dow = day_of_week)
-#	    if {$calc_day_p} {
-#		set dow $date_comps(day_of_week)
-#		if {0 == $dow || 6 == $dow || 7 == $dow} { set cell_html "" }
-#	    }
-
+	    
 	    # Lookup the color of the absence for field background color
-	    set col_attrib ""
+	    # Weekends
+	    set list_of_absences ""
+	    if {$calc_day_p && [info exists weekend_hash($julian_date)]} {
+		set key $julian_date
+		append list_of_absences $weekend_hash($key)
+	    }
+	
+	    # Absences
 	    set key "$julian_date-$user_id"
 	    if {[info exists absences_hash($key)]} {
-		set list_of_absences $absences_hash($key)
+		append list_of_absences $absences_hash($key)
+	    }
+	
+	    set col_attrib ""
+	    if {"" != $list_of_absences} {
 		set color [im_absence_mix_colors $list_of_absences]
 		set col_attrib "bgcolor=#$color"
 	    }
-
 	    append row_html "<td $col_attrib>$cell_html</td>\n"
 	    
 	}
