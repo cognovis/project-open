@@ -2700,6 +2700,20 @@ ad_proc -public im_ganttproject_resource_planning {
 
 
     # ------------------------------------------------------------
+    # Weekends
+    #
+    for {set i $start_date_julian} {$i <= $end_date_julian} {incr i} {
+	array unset date_comps
+	array set date_comps [im_date_julian_to_components $i]
+	set dow $date_comps(day_of_week)
+	if {0 == $dow || 6 == $dow || 7 == $dow} { 
+	    set key $i
+	    set weekend_hash($key) 5
+	}
+    }
+
+
+    # ------------------------------------------------------------
     # Absences - Determine when the user is away
     #
     set absences_sql "
@@ -2732,25 +2746,28 @@ ad_proc -public im_ganttproject_resource_planning {
     "
     db_foreach absences $absences_sql {
 	for {set i $absence_start_date_julian} {$i <= $absence_end_date_julian} {incr i} {
-	    set key "$i-$owner_id"
-	    set val ""
-	    if {[info exists absences_hash($key)]} { set val $absences_hash($key) }
-	    append val [expr $absence_type_id - 5000]
-	    set absences_hash($key) $val
+
+	    # Aggregate per day
+	    if {$calc_day_p} {
+		set key "$i-$owner_id"
+		set val ""
+		if {[info exists absences_hash($key)]} { set val $absences_hash($key) }
+		append val [expr $absence_type_id - 5000]
+		set absences_hash($key) $val
+	    }
+
+	    # Aggregate per week, skip weekends
+	    if {$calc_week_p && ![info exists weekend_hash($i)]} {
+		set week_julian [util_memoize [list im_date_julian_to_week_julian $i]]
+		set key "$week_julian-$owner_id"
+		set val ""
+		if {[info exists absences_hash($key)]} { set val $absences_hash($key) }
+		append val [expr $absence_type_id - 5000]
+		set absences_hash($key) $val
+	    }
+
 	}
     }
-
-    # Absences for weekends
-    for {set i $start_date_julian} {$i <= $end_date_julian} {incr i} {
-	array unset date_comps
-	array set date_comps [im_date_julian_to_components $i]
-	set dow $date_comps(day_of_week)
-	if {0 == $dow || 6 == $dow || 7 == $dow} { 
-	    set key $i
-	    set weekend_hash($key) 5
-	}
-    }
-
 
     # ------------------------------------------------------------
     # Projects - determine project & task assignments at the lowest level.
@@ -3305,7 +3322,7 @@ ad_proc -public im_ganttproject_resource_planning {
 		set col_attrib "bgcolor=#$color"
 	    }
 	    append row_html "<td $col_attrib>$cell_html</td>\n"
-	    
+
 	}
 	append html $row_html
 	append html "</tr>\n"
