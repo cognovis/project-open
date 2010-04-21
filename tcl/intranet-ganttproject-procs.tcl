@@ -2551,7 +2551,7 @@ ad_proc -public im_date_components_to_julian { top_vars top_entry} {
 	"year week_of_year day_of_week" {
 	    catch {
 		set first_of_year_julian [dt_ansi_to_julian $year 1 1]
-		set dow_first_of_year_julian [db_string dow "select to_char('$year-01-07'::date, 'D')"]
+		set dow_first_of_year_julian [util_memoize [list db_string dow "select to_char('$year-01-07'::date, 'D')"]]
 		set start_first_week_julian [expr $first_of_year_julian - $dow_first_of_year_julian]
 		set julian [expr $start_first_week_julian + 7 * $week_of_year + $day_of_week]
 	    }
@@ -2559,7 +2559,7 @@ ad_proc -public im_date_components_to_julian { top_vars top_entry} {
 	"year week_of_year" {
 	    catch {
 		set first_of_year_julian [dt_ansi_to_julian $year 1 1]
-		set dow_first_of_year_julian [db_string dow "select to_char('$year-01-07'::date, 'D')"]
+		set dow_first_of_year_julian [util_memoize [list db_string dow "select to_char('$year-01-07'::date, 'D')"]]
 		set start_first_week_julian [expr $first_of_year_julian - $dow_first_of_year_julian]
 		set julian [expr $start_first_week_julian + 7 * $week_of_year]
 	    }
@@ -2625,8 +2625,11 @@ ad_proc -public im_ganttproject_resource_planning {
     set current_user_id [ad_get_user_id]
     set return_url [im_url_with_query]
 
+    set clicks([clock clicks -milliseconds]) null
+
     set project_base_url "/intranet/projects/view"
     set user_base_url "/intranet/users/view"
+    set trans_task_base_url "/intranet-translation/task"
 
     # The list of users/projects opened already
     set user_name_link_opened {}
@@ -2683,6 +2686,12 @@ ad_proc -public im_ganttproject_resource_planning {
 	set where_clause " and $where_clause"
     }
 
+    # ------------------------------------------------------------
+    # Pre-calculate GIFs for performance reasons
+    #
+    foreach gif {user cog time minus_9 plus_9 magnifier_zoom_in magnifier_zoom_out} {
+	set gif_hash($gif) [im_gif $gif]
+    }
 
     # ------------------------------------------------------------
     # Collapse lines in the report - store results in a Hash
@@ -2699,18 +2708,27 @@ ad_proc -public im_ganttproject_resource_planning {
     }
 
 
+    set clicks([clock clicks -milliseconds]) init
+
     # ------------------------------------------------------------
-    # Weekends
+    # Store information about each day into hashes for speed
     #
     for {set i $start_date_julian} {$i <= $end_date_julian} {incr i} {
 	array unset date_comps
 	array set date_comps [im_date_julian_to_components $i]
+
+	# Day of Week
 	set dow $date_comps(day_of_week)
-	if {0 == $dow || 6 == $dow || 7 == $dow} { 
-	    set key $i
-	    set weekend_hash($key) 5
-	}
+	set day_of_week_hash($i) $dow
+
+	# Weekend
+	if {0 == $dow || 6 == $dow || 7 == $dow} { set weekend_hash($i) 5 }
+
+	# Start of Week Julian
+	set start_of_week_julian_hash($i) [expr $i - $dow]
     }
+
+    set clicks([clock clicks -milliseconds]) weekends
 
 
     # ------------------------------------------------------------
@@ -2744,6 +2762,7 @@ ad_proc -public im_ganttproject_resource_planning {
 		start_date <= to_date(:end_date, 'YYYY-MM-DD') and
 		end_date   >= to_date(:start_date, 'YYYY-MM-DD')
     "
+
     db_foreach absences $absences_sql {
 	for {set i $absence_start_date_julian} {$i <= $absence_end_date_julian} {incr i} {
 
@@ -2769,24 +2788,19 @@ ad_proc -public im_ganttproject_resource_planning {
 	}
     }
 
+    set clicks([clock clicks -milliseconds]) absences
+
     # ------------------------------------------------------------
     # Projects - determine project & task assignments at the lowest level.
     #
     set percentage_sql "
 		select
 			child.project_id,
-			child.project_name,
-			child.parent_id,
 			parent.project_id as main_project_id,
 			r.object_id_two as user_id,
-			im_name_from_user_id(r.object_id_two) as user_name,
 			trunc(m.percentage) as percentage,
-			child.start_date::date as child_start_date,
 			to_char(child.start_date, 'J') as child_start_date_julian,
-			child.end_date::date as child_end_date,
-			to_char(child.end_date, 'J') as child_end_date_julian,
-			tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as object_level,
-			child.tree_sortkey
+			to_char(child.end_date, 'J') as child_end_date_julian
 		from
 			im_projects parent,
 			im_projects child,
@@ -2805,7 +2819,6 @@ ad_proc -public im_ganttproject_resource_planning {
 			and m.percentage is not null
 			$where_clause
     "
-
 
     # ------------------------------------------------------------
     # Main Projects x Users:
@@ -2876,6 +2889,49 @@ ad_proc -public im_ganttproject_resource_planning {
 	set object_type_hash($user_id) "person"
     }
 
+    set clicks([clock clicks -milliseconds]) main_projects
+
+
+    # ------------------------------------------------------------------
+    # Check for translation tasks below a sub-project
+    #
+    set trans_task_sql "
+		select
+			t.*,
+			im_category_from_id(t.source_language_id) as source_language,
+			im_category_from_id(t.target_language_id) as target_language
+		from
+			im_projects parent,
+			im_projects child,
+			im_trans_tasks t
+		where
+			parent.project_status_id not in ([join [im_sub_categories [im_project_status_closed]] ","])
+			and parent.parent_id is null
+			and parent.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+			and parent.start_date <= to_date(:end_date, 'YYYY-MM-DD')
+			and child.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+			and child.start_date <= to_date(:end_date, 'YYYY-MM-DD')
+			and child.tree_sortkey
+				between parent.tree_sortkey
+				and tree_right(parent.tree_sortkey)
+			and t.project_id = child.project_id
+			$where_clause
+		order by
+			t.project_id,
+			t.task_name,
+			t.source_language_id,
+			t.target_language_id
+    "
+    db_foreach trans_tasks $trans_task_sql {
+
+	# collect trans_task per child.project_id
+	set task_name_pretty "$task_name ($source_language -> $target_language)"
+	set tasks {}
+	if {[info exists trans_tasks_per_project_hash($project_id)]} { set tasks $trans_tasks_per_project_hash($project_id) }
+	lappend tasks [list $task_id $task_name_pretty]
+	set trans_tasks_per_project_hash($project_id) $tasks
+    }
+
 
     # ------------------------------------------------------------------
     # Calculate the hierarchy.
@@ -2902,8 +2958,8 @@ ad_proc -public im_ganttproject_resource_planning {
 	where
 		parent.project_status_id not in ([join [im_sub_categories [im_project_status_closed]] ","])
 		and parent.parent_id is null
-		and parent.tree_sortkey in (
-			select	tree_ancestor_key(t.tree_sortkey,1) as tree_level
+		and parent.project_id in (
+			select	main_project_id
 			from	($percentage_sql) t
 		)
 		and child.project_id = o.object_id
@@ -2933,7 +2989,6 @@ ad_proc -public im_ganttproject_resource_planning {
 	# Store project hierarchy information into hashes
 	set parent_hash($project_id) $parent_id
 	set has_children_hash($parent_id) 1
-	set sortkey_hash($tree_sortkey) $project_id
 	set name_hash($project_id) $project_name
 	set indent_hash($project_id) [expr $tree_level + 1]
 	set object_name_hash($project_id) $project_name
@@ -2950,10 +3005,34 @@ ad_proc -public im_ganttproject_resource_planning {
 	    incr level -1
 	}
 
-	lappend hierarchy_lol [list $project_id $project_name $tree_level [f::reverse $hierarchy_row] $tree_sortkey]
+	# append the line to the list of sub-projects of the current main-project
+	set project_path [f::reverse $hierarchy_row]
+	lappend hierarchy_lol [list $project_id $project_name $tree_level $project_path]
+
+	# ----------------------------------------------------------
+	# Check if there are translation tasks associated with the current project
+	# and add in a level below.
+	set trans_tasks {}
+	if {[info exists trans_tasks_per_project_hash($project_id)]} { set trans_tasks $trans_tasks_per_project_hash($project_id) }
+	foreach task_row $trans_tasks {
+	    set task_id [lindex $task_row 0]
+	    set task_name [lindex $task_row 1]
+
+	    set object_type_hash($task_id) "im_trans_task"
+	    set object_name_hash($task_id) $task_name
+	    set indent_hash($task_id) [expr 2+$tree_level]
+
+	    lappend hierarchy_lol [list $task_id $task_name [expr 1+$tree_level] [linsert $project_path end $task_id]]
+	}
     }
+
     # Save the list of sub-projects of the last main project (see above in the loop)
     set main_project_hierarchy_hash($parent_project_id) $hierarchy_lol
+
+
+#    ad_return_complaint 1 "[join $main_project_hierarchy_hash(18466) "<br>"]"
+
+    set clicks([clock clicks -milliseconds]) hierarchy
 
 
     # ------------------------------------------------------------------
@@ -3010,14 +3089,12 @@ ad_proc -public im_ganttproject_resource_planning {
 	    # Extract the pieces of a hierarchy row
 	    set project_id [lindex $row 0]
 	    set project_name [lindex $row 1]
-	    set project_level [lindex $row 2]
 	    set project_path [lindex $row 3]
-	    set project_tree_sortkey [lindex $row 4]
 
 	    # Iterate through the project_path, looking for:
 	    # - the name of the project to display and
 	    # - if any of the parents has been closed
-	    ns_log Notice "gantt-resources-planning: pid=$project_id, name=$project_name, level=$project_level, path=$project_path, row=$row"
+	    ns_log Notice "gantt-resources-planning: pid=$project_id, name=$project_name, path=$project_path, row=$row"
 	    set collapse_control_oid 0
 	    set closed_p "c"
 	    if {[info exists collapse_hash($user_id)]} { set closed_p $collapse_hash($user_id) }
@@ -3047,6 +3124,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	}
     }
 
+    set clicks([clock clicks -milliseconds]) left_scale
 
     # ------------------------------------------------------------------
     # Calculate the main resource assignment hash by looping
@@ -3056,6 +3134,9 @@ ad_proc -public im_ganttproject_resource_planning {
 
 	# Loop through the days between start_date and end_data
 	for {set i $child_start_date_julian} {$i <= $child_end_date_julian} {incr i} {
+
+	    if {$i < $start_date_julian} { continue }
+	    if {$i > $end_date_julian} { continue }
 
 	    # Loop through the project hierarchy towards the top
 	    set pid $project_id
@@ -3073,7 +3154,7 @@ ad_proc -public im_ganttproject_resource_planning {
 
 		# Aggregate per week
 		if {$calc_week_p} {
-		    set week_julian [util_memoize [list im_date_julian_to_week_julian $i]]
+		    set week_julian $start_of_week_julian_hash($i)
 		    set key "$user_id-$pid-$week_julian"
 		    set perc 0
 		    if {[info exists perc_week_hash($key)]} { set perc $perc_week_hash($key) }
@@ -3093,6 +3174,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	}
     }
 
+    set clicks([clock clicks -milliseconds]) percentage_hash
 
     # ------------------------------------------------------------
     # Create upper date dimension
@@ -3119,6 +3201,9 @@ ad_proc -public im_ganttproject_resource_planning {
 	}
     }
 
+    set clicks([clock clicks -milliseconds]) top_scale
+
+
     # ------------------------------------------------------------
     # Display the Table Header
     
@@ -3133,8 +3218,8 @@ ad_proc -public im_ganttproject_resource_planning {
 	append header "<tr class=rowtitle>\n"
 	set col_l10n [lang::message::lookup "" "intranet-ganttproject.Dim_[lindex $top_vars $row]" [lindex $top_vars $row]]
 	if {0 == $row} {
-	    set zoom_in "<a href=[export_vars -base $this_url {top_vars {zoom "in"}}]>[im_gif "magnifier_zoom_in"]</a>\n" 
-	    set zoom_out "<a href=[export_vars -base $this_url {top_vars {zoom "out"}}]>[im_gif "magifier_zoom_out"]</a>\n" 
+	    set zoom_in "<a href=[export_vars -base $this_url {top_vars {zoom "in"}}]>$gif_hash(magnifier_zoom_in)</a>\n" 
+	    set zoom_out "<a href=[export_vars -base $this_url {top_vars {zoom "out"}}]>$gif_hash(magnifier_zoom_out)</a>\n" 
 	    set col_l10n "<!-- $zoom_in $zoom_out --> $col_l10n\n" 
 	}
 	append header "<td class=rowtitle colspan=$left_scale_size align=right>$col_l10n</td>\n"
@@ -3173,11 +3258,32 @@ ad_proc -public im_ganttproject_resource_planning {
     }
     append html $header
 
+    set clicks([clock clicks -milliseconds]) display_table_header
+
+    set left_clicks(start) 0
+    set left_clicks(gif) 0
+    set left_clicks(left) 0
+    set left_clicks(write) 0
+    set left_clicks(top_scale) 0
+    set last_click [clock clicks]
+
+    set left_clicks(top_scale_start) 0
+    set left_clicks(top_scale_write_vars) 0
+    set left_clicks(top_scale_to_julian) 0
+    set left_clicks(top_scale_components) 0
+    set left_clicks(top_scale_calc) 0
+    set left_clicks(top_scale_cell) 0
+    set left_clicks(top_scale_color) 0
+    set left_clicks(top_scale_append) 0
+
 
     # ------------------------------------------------------------
     # Display the table body
     set row_ctr 0
     foreach left_entry $left_scale {
+
+	set left_clicks(start) [expr $left_clicks(start) + [clock clicks] - $last_click]
+	set last_click [clock clicks]
 
 	ns_log Notice "gantt-resources-planning: left_entry=$left_entry"
 	set row_html ""
@@ -3206,34 +3312,44 @@ ad_proc -public im_ganttproject_resource_planning {
 	if {[info exists collapse_hash($oid)]} { set closed_p $collapse_hash($oid) }
 	if {"o" == $closed_p} {
 	    set url [export_vars -base $collapse_url {page_url return_url {open_p "c"} {object_id $oid}}]
-	    set collapse_html "<a href=$url>[im_gif minus_9]</a>"
+	    set collapse_html "<a href=$url>$gif_hash(minus_9)</a>"
 	} else {
 	    set url [export_vars -base $collapse_url {page_url return_url {open_p "o"} {object_id $oid}}]
-	    set collapse_html "<a href=$url>[im_gif plus_9]</a>"
+	    set collapse_html "<a href=$url>$gif_hash(plus_9)</a>"
 	}
+
+	set left_clicks(gif) [expr $left_clicks(gif) + [clock clicks] - $last_click]
+	set last_click [clock clicks]
+
 
 	set object_has_children_p 0
 	if {[info exists has_children_hash($oid)]} { set object_has_children_p $has_children_hash($oid) }
-	if {!$object_has_children_p} { set collapse_html "[im_gif cleardot "" 0 9 9]" }
+	if {!$object_has_children_p} { set collapse_html [util_memoize [list im_gif cleardot "" 0 9 9]] }
 
 	switch $otype {
 	    person {
 		set indent_level 0
 		set user_name "undef user $oid"
 		if {[info exists object_name_hash($oid)]} { set user_name $object_name_hash($oid) }
-		set cell_html "$collapse_html [im_gif user] <a href='[export_vars -base $user_base_url {{user_id $oid}}]'>$user_name</a>"
+		set cell_html "$collapse_html $gif_hash(user) <a href='[export_vars -base $user_base_url {{user_id $oid}}]'>$user_name</a>"
 	    }
 	    im_project {
 		set indent_level 1
 		set project_name "undef project $oid"
 		if {[info exists object_name_hash($oid)]} { set project_name $object_name_hash($oid) }
-		set cell_html "$collapse_html [im_gif cog] <a href='[export_vars -base $project_base_url {{project_id $oid}}]'>$project_name</a>"
+		set cell_html "$collapse_html $gif_hash(cog) <a href='[export_vars -base $project_base_url {{project_id $oid}}]'>$project_name</a>"
 	    }
 	    im_timesheet_task {
 		set indent_level 1
 		set project_name "undef project $oid"
 		if {[info exists object_name_hash($oid)]} { set project_name $object_name_hash($oid) }
-		set cell_html "$collapse_html [im_gif time] <a href='[export_vars -base $project_base_url {{project_id $oid}}]'>$project_name</a>"
+		set cell_html "$collapse_html $gif_hash(time) <a href='[export_vars -base $project_base_url {{project_id $oid}}]'>$project_name</a>"
+	    }
+	    im_trans_task {
+		set indent_level 1
+		set task_name "undef im_trans_task $oid"
+		if {[info exists object_name_hash($oid)]} { set task_name $object_name_hash($oid) }
+		set cell_html "$collapse_html [im_gif sport_soccer] <a href='[export_vars -base $trans_task_base_url {{task_id $oid}}]'>$task_name</a>"
 	    }
 	    default { 
 		set cell_html "unknown object '$otype' type for object '$oid'" 
@@ -3245,8 +3361,11 @@ ad_proc -public im_ganttproject_resource_planning {
 	set indent_html ""
 	for {set i 0} {$i < $indent_level} {incr i} { append indent_html "&nbsp; &nbsp; &nbsp; " }
 
-	append row_html "<td><nobr>$indent_html$cell_html</nobr></td>\n"
+	append row_html "<td valign=top><nobr>$indent_html$cell_html</nobr></td>\n"
 
+
+	set left_clicks(left) [expr $left_clicks(left) + [clock clicks] - $last_click]
+	set last_click [clock clicks]
 
 	# ------------------------------------------------------------
 	# Write the left_scale values to their corresponding local 
@@ -3257,11 +3376,18 @@ ad_proc -public im_ganttproject_resource_planning {
 	    set var_value [lindex $left_entry $i]
 	    set $var_name $var_value
 	}
+
+
+	set left_clicks(write) [expr $left_clicks(write) + [clock clicks] - $last_click]
+	set last_click [clock clicks]
 	
 	# ------------------------------------------------------------
 	# Start writing out the matrix elements
 	set last_julian 0
 	foreach top_entry $top_scale {
+
+	    set left_clicks(top_scale_start) [expr $left_clicks(top_scale_start) + [clock clicks] - $last_click]
+	    set last_click [clock clicks]
 
 	    # Write the top_scale values to their corresponding local 
 	    # variables so that we can access them easily for $key
@@ -3271,17 +3397,22 @@ ad_proc -public im_ganttproject_resource_planning {
 		set $var_name $var_value
 	    }
 
+	    set left_clicks(top_scale_write_vars) [expr $left_clicks(top_scale_write_vars) + [clock clicks] - $last_click]
+	    set last_click [clock clicks]
+
+
 	    # Calculate the julian date for today from top_vars
-	    set julian_date [im_date_components_to_julian $top_vars $top_entry]
+	    set julian_date [util_memoize [list im_date_components_to_julian $top_vars $top_entry]]
 	    if {$julian_date == $last_julian} {
 		# We're with the second ... seventh entry of a week.
 		continue
 	    } else {
 		set last_julian $julian_date
 	    }
-	    array unset date_comps
-	    array set date_comps [im_date_julian_to_components $julian_date]
-	
+
+	    set left_clicks(top_scale_to_julian) [expr $left_clicks(top_scale_to_julian) + [clock clicks] - $last_click]
+	    set last_click [clock clicks]
+
 	    # Get the value for this cell
 	    set val ""
 	    if {$calc_day_p} {
@@ -3299,7 +3430,17 @@ ad_proc -public im_ganttproject_resource_planning {
 
 	    if {"" == [string trim $val]} { set val 0 }
 
+
+
+	    set left_clicks(top_scale_calc) [expr $left_clicks(top_scale_calc) + [clock clicks] - $last_click]
+	    set last_click [clock clicks]
+
+
 	    set cell_html [util_memoize [list im_ganttproject_resource_planning_cell $val]]
+
+
+	    set left_clicks(top_scale_cell) [expr $left_clicks(top_scale_cell) + [clock clicks] - $last_click]
+	    set last_click [clock clicks]
 
 	    
 	    # Lookup the color of the absence for field background color
@@ -3318,20 +3459,42 @@ ad_proc -public im_ganttproject_resource_planning {
 	
 	    set col_attrib ""
 	    if {"" != $list_of_absences} {
-		set color [im_absence_mix_colors $list_of_absences]
+		if {$calc_week_p} {
+		    while {[string length $list_of_absences] < 5} { append list_of_absences " " }
+		}
+		set color [util_memoize [list im_absence_mix_colors $list_of_absences]]
 		set col_attrib "bgcolor=#$color"
 	    }
+
+
+	    set left_clicks(top_scale_color) [expr $left_clicks(top_scale_color) + [clock clicks] - $last_click]
+	    set last_click [clock clicks]
+
+
 	    append row_html "<td $col_attrib>$cell_html</td>\n"
 
+
+	    set left_clicks(top_scale_append) [expr $left_clicks(top_scale_append) + [clock clicks] - $last_click]
+	    set last_click [clock clicks]
+
+
 	}
+
+	set left_clicks(top_scale) [expr $left_clicks(top_scale) + [clock clicks] - $last_click]
+	set last_click [clock clicks]
+	
 	append html $row_html
 	append html "</tr>\n"
 	incr row_ctr
     }
 
+    set clicks([clock clicks -milliseconds]) display_table_body
+    set clicks([clock clicks -milliseconds]) asfd
+
+
     # ------------------------------------------------------------
     # Close the table
-
+    #
     set html "<table cellspacing=0 cellpadding=0>\n$html\n</table>\n"
 
     if {0 == $row_ctr} {
@@ -3342,6 +3505,39 @@ ad_proc -public im_ganttproject_resource_planning {
 	append html "<br><b>$no_rows_msg</b>\n"
     }
 
+    set clicks([clock clicks -milliseconds]) close_table
+
+    # ------------------------------------------------------------
+    # Profiling HTML
+    #
+    set debug_html "<br>&nbsp;<br><table>\n"
+    set last_click 0
+    foreach click [lsort -integer [array names clicks]] {
+	if {0 == $last_click} { 
+	    set last_click $click 
+	    set first_click $click
+	}
+	append debug_html "<tr><td>$click</td><td>$clicks($click)</td><td>[expr ($click - $last_click) / 1000.0]</td></tr>\n"
+	set last_click $click
+    }
+    append debug_html "<tr><td> </td><td><b>Total</b></td><td>[expr ($last_click - $first_click) / 1000.0]</td></tr>\n"
+    append debug_html "<tr><td colspan=3>&nbsp;</tr>\n"
+    append debug_html "<tr><td> </td><td> start</td><td>$left_clicks(start)</td></tr>\n"
+    append debug_html "<tr><td> </td><td> gif</td><td>$left_clicks(gif)</td></tr>\n"
+    append debug_html "<tr><td> </td><td> left</td><td>$left_clicks(left)</td></tr>\n"
+    append debug_html "<tr><td> </td><td> write</td><td>$left_clicks(write)</td></tr>\n"
+    append debug_html "<tr><td> </td><td> top_scale</td><td>$left_clicks(top_scale)</td></tr>\n"
+    append debug_html "<tr><td> </td><td> top_scale_start </td><td>$left_clicks(top_scale_start)</td></tr>\n"
+    append debug_html "<tr><td> </td><td> top_scale_write_vars </td><td>$left_clicks(top_scale_write_vars)</td></tr>\n"
+    append debug_html "<tr><td> </td><td> top_scale_to_julian </td><td>$left_clicks(top_scale_to_julian)</td></tr>\n"
+    append debug_html "<tr><td> </td><td> top_scale_components </td><td>$left_clicks(top_scale_components)</td></tr>\n"
+    append debug_html "<tr><td> </td><td> top_scale_calc </td><td>$left_clicks(top_scale_calc)</td></tr>\n"
+    append debug_html "<tr><td> </td><td> top_scale_cell </td><td>$left_clicks(top_scale_cell)</td></tr>\n"
+    append debug_html "<tr><td> </td><td> top_scale_color </td><td>$left_clicks(top_scale_color)</td></tr>\n"
+    append debug_html "<tr><td> </td><td> top_scale_append </td><td>$left_clicks(top_scale_append)</td></tr>\n"
+    append debug_html "</table>\n"
+
+    append html $debug_html
 
     return $html
 }
