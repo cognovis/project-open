@@ -2,6 +2,26 @@
 
 SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.4.0.8.0-3.4.0.8.1.sql','');
 
+-- In some installations im_dynfield_attributes::also_hard_coded_p is missing, even though it's part of the install script
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = ''im_dynfield_attributes'' and lower(column_name) = ''also_hard_coded_p'';
+        IF v_count > 0 THEN return 1; END IF;
+
+        alter table im_dynfield_attributes add also_hard_coded_p char(1) default ''f'';
+	alter table im_dynfield_attributes add constraint im_dynfield_attributes_also_hard_coded_ch check (also_hard_coded_p in (''t'',''f''));
+
+        RETURN 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 -- Disable "Active or Potential" company status
 update im_categories set enabled_p = 'f' where category_id = 40;
 
@@ -108,11 +128,6 @@ begin
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
-
-
-
-
-
 
 
 
