@@ -2475,9 +2475,8 @@ ad_proc -public im_ganttproject_resource_planning_cell {
     Takes a percentage value and returns a formatted HTML ready to be
     displayed as part of a cell
 } {
-    if {0 == $percentage || "" == $percentage} { return "" }
-
     if {![string is double $percentage]} { return $percentage }
+    if {0.0 == $percentage || "" == $percentage} { return "" }
 
     # Color selection
     set color ""
@@ -2487,7 +2486,12 @@ ad_proc -public im_ganttproject_resource_planning_cell {
 
     set color "bluedot"    
 
-    set p [expr int((1.0 * $percentage) / 10.0)]
+    # Calculate the percentage / 10, so that height=10 with 100%
+    # Always draw a line, even if percentage is < 5% 
+    # (which would result in 0 height of the GIF...)
+    set p [expr round((1.0 * $percentage) / 10.0)]
+    if {0 == $p && $percentage > 0.0} { set p 1 }
+
     set result [im_gif $color "$percentage" 0 10 $p]
     return $result
 }
@@ -2898,6 +2902,9 @@ ad_proc -public im_ganttproject_resource_planning {
     set trans_task_sql "
 		select
 			t.*,
+			t.project_id as trans_task_project_id,
+			to_char(child.start_date, 'J') as trans_task_start_date_julian,
+			to_char(t.end_date, 'J') as trans_task_end_date_julian,
 			im_category_from_id(t.source_language_id) as source_language,
 			im_category_from_id(t.target_language_id) as target_language
 		from
@@ -2915,6 +2922,7 @@ ad_proc -public im_ganttproject_resource_planning {
 				between parent.tree_sortkey
 				and tree_right(parent.tree_sortkey)
 			and t.project_id = child.project_id
+			and (t.end_date is null OR t.end_date >= to_date(:start_date, 'YYYY-MM-DD'))
 			$where_clause
 		order by
 			t.project_id,
@@ -2922,15 +2930,20 @@ ad_proc -public im_ganttproject_resource_planning {
 			t.source_language_id,
 			t.target_language_id
     "
+
     db_foreach trans_tasks $trans_task_sql {
 
 	# collect trans_task per child.project_id
 	set task_name_pretty "$task_name ($source_language -> $target_language)"
 	set tasks {}
-	if {[info exists trans_tasks_per_project_hash($project_id)]} { set tasks $trans_tasks_per_project_hash($project_id) }
+	if {[info exists trans_tasks_per_project_hash($trans_task_project_id)]} { set tasks $trans_tasks_per_project_hash($trans_task_project_id) }
 	lappend tasks [list $task_id $task_name_pretty]
-	set trans_tasks_per_project_hash($project_id) $tasks
+	set trans_tasks_per_project_hash($trans_task_project_id) $tasks
+	set parent_hash($task_id) $trans_task_project_id
+
     }
+
+    set clicks([clock clicks -milliseconds]) trans_tasks
 
 
     # ------------------------------------------------------------------
@@ -2939,7 +2952,6 @@ ad_proc -public im_ganttproject_resource_planning {
     # assignments, and then we have to go through all of their children
     # in order to get a complete hierarchy.
     #
-
     set hierarchy_sql "
 	select
 		parent.project_id as parent_project_id,
@@ -3029,8 +3041,6 @@ ad_proc -public im_ganttproject_resource_planning {
     # Save the list of sub-projects of the last main project (see above in the loop)
     set main_project_hierarchy_hash($parent_project_id) $hierarchy_lol
 
-
-#    ad_return_complaint 1 "[join $main_project_hierarchy_hash(18466) "<br>"]"
 
     set clicks([clock clicks -milliseconds]) hierarchy
 
@@ -3176,6 +3186,194 @@ ad_proc -public im_ganttproject_resource_planning {
 
     set clicks([clock clicks -milliseconds]) percentage_hash
 
+
+    # ------------------------------------------------------------------
+    # Calculate percentage numbers for translation tasks.
+    # We are re-using the same SQL as for calculating the
+    # trans_tasks for the hierarchy
+    #
+    set trans_task_percentage_sql "
+		select
+			t.*,
+			t.project_id as trans_task_project_id,
+			to_char(child.start_date, 'J') as trans_task_start_date_julian,
+			to_char(t.end_date, 'J') as trans_task_end_date_julian,
+			im_category_from_id(t.source_language_id) as source_language,
+			im_category_from_id(t.target_language_id) as target_language
+		from
+			im_projects parent,
+			im_projects child,
+			(	select	t.*, 'trans' as transition, trans_id as user_id
+				from	im_trans_tasks t
+				where	t.trans_id is not null and
+					t.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+			UNION
+				select	t.*, 'edit' as transition, edit_id as user_id
+				from	im_trans_tasks t
+				where	t.edit_id is not null and
+					t.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+			UNION
+				select	t.*, 'proof' as transition, proof_id as user_id
+				from	im_trans_tasks t
+				where	t.proof_id is not null and
+					t.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+			UNION
+				select	t.*, 'other' as transition, edit_id as user_id
+				from	im_trans_tasks t
+				where	t.other_id is not null and
+					t.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+			) t
+		where
+			parent.project_status_id not in ([join [im_sub_categories [im_project_status_closed]] ","])
+			and parent.parent_id is null
+			and parent.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+			and parent.start_date <= to_date(:end_date, 'YYYY-MM-DD')
+			and child.end_date >= to_date(:start_date, 'YYYY-MM-DD')
+			and child.start_date <= to_date(:end_date, 'YYYY-MM-DD')
+			and child.tree_sortkey
+				between parent.tree_sortkey
+				and tree_right(parent.tree_sortkey)
+			and t.project_id = child.project_id
+			and (t.end_date is null OR t.end_date >= to_date(:start_date, 'YYYY-MM-DD'))
+			$where_clause
+		order by
+			t.project_id,
+			t.task_name,
+			t.source_language_id,
+			t.target_language_id
+    "
+    db_foreach trans_task_percentage $trans_task_percentage_sql {
+
+	# Calculate the percentage for the assigned user.
+	# Input:
+	# 	- task_units + task_uom: All UoMs are converted in Hours
+	#	- task_type: Some task types take longer then others, influencing the conversion from S-Word to Hours.
+	#	- trans_id, edit_id, proof_id, other_id: Assigning more people will increase overall time, but reduce individual time
+	#	- quality_id: Higher quality may take longer.
+
+	# How many hours does a translator work per day?
+	set hours_per_day 8.0
+
+	# How many words does a translator translate per hour? 3000 words/day is assumed average.
+	# This factor may need adjustment depending on language pair (Japanese is a lot slower...)
+	set words_per_hour [expr 3000.0 / $hours_per_day]
+
+	# How many words does a "standard" page have?
+	set words_per_page 400.0
+
+	# How many words are there in a "standard" line?
+	set words_per_line 4.5
+
+	switch $task_uom_id {
+	    320 { 
+		#   320 | Hour
+		set task_hours $task_units 
+	    }
+	    321 { 
+		#   321 | Day
+		set task_hours [expr $task_units * $hours_per_day] 
+	    }
+	    322 { 
+		#   322 | Unit
+		# No idea how to convert a "unit"...
+		set task_hours [expr $task_units * $hours_per_day] 
+	    }
+	    323 { 
+		#   323 | Page
+		set task_hours [expr $task_units * $words_per_page / $words_per_hour] 
+	    }
+	    324 { 
+		#   324 | S-Word
+		set task_hours [expr $task_units / $words_per_hour] 
+	    }
+	    325 { 
+		#   325 | T-Word
+		# Here we should consider language specific conversion, but not yet...
+		set task_hours [expr $task_units * $words_per_line / $words_per_hour] 
+	    }
+	    326 { 
+		#   326 | S-Line
+		# Here we should consider language specific conversion, but not yet...
+		set task_hours [expr $task_units * $words_per_line / $words_per_hour] 
+	    }
+	    327 { 
+		#   327 | T-Line
+		# Should be adjusted to language specific swell
+		set task_hours [expr $task_units * $words_per_line / $words_per_hour] 
+	    }
+	    328 { 
+		#   328 | Week
+		set task_hours [expr $task_units * 5 * $hours_per_day] 
+	    }
+	    329 { 
+		#   329 | Month
+		set task_hours [expr $task_units * 22 * $hours_per_day] 
+	    }
+	    default {
+		# Strange UoM, maybe custom defined?
+		set task_hours $task_units 
+	    }
+	}
+
+
+	# Calculate how many days are between start- and end date
+	set task_duration_days [expr ($trans_task_end_date_julian - $trans_task_start_date_julian) * 5.0 / 7.0]
+
+	# How much is the user available?
+	set user_capacity_percent 100
+
+	# Calculate the percentage of time required for the task divided by the time available for the task.
+	set percentage [expr round(10.0 * 100.0 * $task_hours / ($task_duration_days * $hours_per_day * $user_capacity_percent * 0.01)) / 10.0]
+
+	ns_log Notice "im_ganttproject_resource_planning: trans_tasks: task_name=$task_name, org_size=$task_units [im_category_from_id $task_uom_id], transition=$transition, user_id=$user_id, task_hours=$task_hours, task_duration_days=$task_duration_days => percentage=$percentage"
+
+	# Calculate approx. dedication of users to tasks and aggregate per week
+	# Loop through the days between start_date and end_data
+	for {set i $trans_task_start_date_julian} {$i <= $trans_task_end_date_julian} {incr i} {
+	    
+	    # Skip dates before or after the currently displayed range for performance reasons
+	    if {$i < $start_date_julian} { continue }
+	    if {$i > $end_date_julian} { continue }
+	    
+	    # Loop through the project hierarchy towards the top
+	    set pid $task_id
+	    set continue 1
+	    while {$continue} {
+		
+		# Aggregate per day
+		if {$calc_day_p} {
+		    set key "$user_id-$pid-$i"
+		    set perc 0
+		    if {[info exists perc_day_hash($key)]} { set perc $perc_day_hash($key) }
+		    set perc [expr $perc + $percentage]
+		    set perc_day_hash($key) $perc
+		}
+		
+		# Aggregate per week
+		if {$calc_week_p} {
+		    set week_julian $start_of_week_julian_hash($i)
+		    set key "$user_id-$pid-$week_julian"
+		    set perc 0
+		    if {[info exists perc_week_hash($key)]} { set perc $perc_week_hash($key) }
+		    set perc [expr $perc + $percentage]
+		    set perc_week_hash($key) $perc
+		}
+		
+		# Check if there is a super-project and continue there.
+		# Otherwise allow for one iteration with an empty $pid
+		# to deal with the user's level
+		if {"" == $pid} { 
+		    set continue 0 
+		} else {
+		    set pid $parent_hash($pid)
+		}
+	    }
+	}
+    }
+
+    set clicks([clock clicks -milliseconds]) percentage_trans_tasks_hash
+
+
     # ------------------------------------------------------------
     # Create upper date dimension
 
@@ -3270,12 +3468,10 @@ ad_proc -public im_ganttproject_resource_planning {
     set left_clicks(top_scale_start) 0
     set left_clicks(top_scale_write_vars) 0
     set left_clicks(top_scale_to_julian) 0
-    set left_clicks(top_scale_components) 0
     set left_clicks(top_scale_calc) 0
     set left_clicks(top_scale_cell) 0
     set left_clicks(top_scale_color) 0
     set left_clicks(top_scale_append) 0
-
 
     # ------------------------------------------------------------
     # Display the table body
@@ -3347,6 +3543,7 @@ ad_proc -public im_ganttproject_resource_planning {
 	    }
 	    im_trans_task {
 		set indent_level 1
+		set task_id $oid
 		set task_name "undef im_trans_task $oid"
 		if {[info exists object_name_hash($oid)]} { set task_name $object_name_hash($oid) }
 		set cell_html "$collapse_html [im_gif sport_soccer] <a href='[export_vars -base $trans_task_base_url {{task_id $oid}}]'>$task_name</a>"
@@ -3430,31 +3627,26 @@ ad_proc -public im_ganttproject_resource_planning {
 
 	    if {"" == [string trim $val]} { set val 0 }
 
-
-
 	    set left_clicks(top_scale_calc) [expr $left_clicks(top_scale_calc) + [clock clicks] - $last_click]
 	    set last_click [clock clicks]
 
-
 	    set cell_html [util_memoize [list im_ganttproject_resource_planning_cell $val]]
-
 
 	    set left_clicks(top_scale_cell) [expr $left_clicks(top_scale_cell) + [clock clicks] - $last_click]
 	    set last_click [clock clicks]
-
 	    
 	    # Lookup the color of the absence for field background color
 	    # Weekends
 	    set list_of_absences ""
 	    if {$calc_day_p && [info exists weekend_hash($julian_date)]} {
-		set key $julian_date
-		append list_of_absences $weekend_hash($key)
+		set absence_key $julian_date
+		append list_of_absences $weekend_hash($absence_key)
 	    }
 	
 	    # Absences
-	    set key "$julian_date-$user_id"
-	    if {[info exists absences_hash($key)]} {
-		append list_of_absences $absences_hash($key)
+	    set absence_key "$julian_date-$user_id"
+	    if {[info exists absences_hash($absence_key)]} {
+		append list_of_absences $absences_hash($absence_key)
 	    }
 	
 	    set col_attrib ""
@@ -3466,18 +3658,13 @@ ad_proc -public im_ganttproject_resource_planning {
 		set col_attrib "bgcolor=#$color"
 	    }
 
-
 	    set left_clicks(top_scale_color) [expr $left_clicks(top_scale_color) + [clock clicks] - $last_click]
 	    set last_click [clock clicks]
 
-
 	    append row_html "<td $col_attrib>$cell_html</td>\n"
-
 
 	    set left_clicks(top_scale_append) [expr $left_clicks(top_scale_append) + [clock clicks] - $last_click]
 	    set last_click [clock clicks]
-
-
 	}
 
 	set left_clicks(top_scale) [expr $left_clicks(top_scale) + [clock clicks] - $last_click]
@@ -3530,7 +3717,6 @@ ad_proc -public im_ganttproject_resource_planning {
     append debug_html "<tr><td> </td><td> top_scale_start </td><td>$left_clicks(top_scale_start)</td></tr>\n"
     append debug_html "<tr><td> </td><td> top_scale_write_vars </td><td>$left_clicks(top_scale_write_vars)</td></tr>\n"
     append debug_html "<tr><td> </td><td> top_scale_to_julian </td><td>$left_clicks(top_scale_to_julian)</td></tr>\n"
-    append debug_html "<tr><td> </td><td> top_scale_components </td><td>$left_clicks(top_scale_components)</td></tr>\n"
     append debug_html "<tr><td> </td><td> top_scale_calc </td><td>$left_clicks(top_scale_calc)</td></tr>\n"
     append debug_html "<tr><td> </td><td> top_scale_cell </td><td>$left_clicks(top_scale_cell)</td></tr>\n"
     append debug_html "<tr><td> </td><td> top_scale_color </td><td>$left_clicks(top_scale_color)</td></tr>\n"

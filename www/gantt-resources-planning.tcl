@@ -37,7 +37,7 @@ ad_page_contract {
 # Defaults & Security
 # ---------------------------------------------------------------
 
-# im_permission_flush
+im_permission_flush
 
 #set user_id [ad_maybe_redirect_for_registration]
 set user_id 624
