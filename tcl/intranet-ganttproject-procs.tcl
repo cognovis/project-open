@@ -2603,7 +2603,7 @@ ad_proc -public im_ganttproject_resource_planning {
     { -start_date "" }
     { -end_date "" }
     { -show_all_employees_p "" }
-    { -top_vars "year week_or_year day" }
+    { -top_vars "year week_of_year day" }
     { -left_vars "cell" }
     { -project_id "" }
     { -user_id "" }
@@ -2801,7 +2801,7 @@ ad_proc -public im_ganttproject_resource_planning {
 		select
 			child.project_id,
 			parent.project_id as main_project_id,
-			r.object_id_two as user_id,
+			u.user_id,
 			trunc(m.percentage) as percentage,
 			to_char(child.start_date, 'J') as child_start_date_julian,
 			to_char(child.end_date, 'J') as child_end_date_julian
@@ -2809,7 +2809,8 @@ ad_proc -public im_ganttproject_resource_planning {
 			im_projects parent,
 			im_projects child,
 			acs_rels r,
-			im_biz_object_members m
+			im_biz_object_members m,
+			users u
 		where
 			parent.project_status_id not in ([join [im_sub_categories [im_project_status_closed]] ","])
 			and parent.parent_id is null
@@ -2820,6 +2821,7 @@ ad_proc -public im_ganttproject_resource_planning {
 				and tree_right(parent.tree_sortkey)
 			and r.rel_id = m.rel_id
 			and r.object_id_one = child.project_id
+			and r.object_id_two = u.user_id
 			and m.percentage is not null
 			$where_clause
     "
@@ -2857,13 +2859,14 @@ ad_proc -public im_ganttproject_resource_planning {
 		(select
 			parent.project_id as main_project_id,
 			parent.project_name as main_project_name,
-			r.object_id_two as user_id,
+			u.user_id,
 			im_name_from_user_id(r.object_id_two) as user_name
 		from
 			im_projects parent,
 			im_projects child,
 			acs_rels r,
-			im_biz_object_members m
+			im_biz_object_members m,
+			users u
 		where
 			parent.project_status_id not in ([join [im_sub_categories [im_project_status_closed]] ","])
 			and parent.parent_id is null
@@ -2874,6 +2877,7 @@ ad_proc -public im_ganttproject_resource_planning {
 				and tree_right(parent.tree_sortkey)
 			and r.rel_id = m.rel_id
 			and r.object_id_one = child.project_id
+			and r.object_id_two = u.user_id
 			and m.percentage is not null
 			$where_clause
 		$show_all_employees_sql
@@ -2923,7 +2927,6 @@ ad_proc -public im_ganttproject_resource_planning {
 				and tree_right(parent.tree_sortkey)
 			and t.project_id = child.project_id
 			and (t.end_date is null OR t.end_date >= to_date(:start_date, 'YYYY-MM-DD'))
-			$where_clause
 		order by
 			t.project_id,
 			t.task_name,
@@ -3222,7 +3225,8 @@ ad_proc -public im_ganttproject_resource_planning {
 				from	im_trans_tasks t
 				where	t.other_id is not null and
 					t.end_date >= to_date(:start_date, 'YYYY-MM-DD')
-			) t
+			) t,
+			users u
 		where
 			parent.project_status_id not in ([join [im_sub_categories [im_project_status_closed]] ","])
 			and parent.parent_id is null
@@ -3234,6 +3238,7 @@ ad_proc -public im_ganttproject_resource_planning {
 				between parent.tree_sortkey
 				and tree_right(parent.tree_sortkey)
 			and t.project_id = child.project_id
+			and t.user_id = u.user_id
 			and (t.end_date is null OR t.end_date >= to_date(:start_date, 'YYYY-MM-DD'))
 			$where_clause
 		order by
@@ -3313,6 +3318,15 @@ ad_proc -public im_ganttproject_resource_planning {
 		# Strange UoM, maybe custom defined?
 		set task_hours $task_units 
 	    }
+	}
+
+	# Change the task_hours, depending on the transition to perform
+	# Editing and proof reading takes about 1/10 of the time of translation.
+	switch $transition {
+	    trans { set task_hours [expr $task_hours * 1.0] }
+	    edit  { set task_hours [expr $task_hours * 0.1] }
+	    proof { set task_hours [expr $task_hours * 0.1] }
+	    other { set task_hours [expr $task_hours * 1.0] }
 	}
 
 
@@ -3726,5 +3740,139 @@ ad_proc -public im_ganttproject_resource_planning {
     append html $debug_html
 
     return $html
+}
+
+
+
+
+
+
+
+# ---------------------------------------------------------------
+# Show the status of potential freelancers in the member-add page
+# ---------------------------------------------------------------
+
+ad_proc im_ganttproject_resource_planning_add_member_component { } {
+    Component that returns a formatted HTML table.
+    The table contains the availability for all persons with
+    matching freelance profiles.
+} {
+    # ------------------------------------------------
+    # Security
+    # Check that the user has the right to "read" the group Freelancers
+  
+    set user_id [ad_get_user_id]
+    set perm_p [db_string freelance_read "select im_object_permission_p([im_profile_freelancers], :user_id, 'read')"]
+    if {"t" != $perm_p} {
+        return ""
+    }
+
+    # Only show if the freelance package is installed.
+    if {![db_table_exists im_freelance_skills]} { return "" }
+
+
+
+    # ------------------------------------------------
+    # Parameter Logic
+    # 
+    # Get the freel_trans_order_by variable from the http header
+    # because we can't trust that the embedding page will pass
+    # this param into this component.
+
+    set current_url [ad_conn url]
+    set header_vars [ns_conn form]
+    set var_list [ad_ns_set_keys $header_vars]
+
+    # set local TCL vars from header vars
+    ad_ns_set_to_tcl_vars $header_vars
+
+    # Remove the "freel_trans_order_by" from the var_list
+    set order_by_pos [lsearch $var_list "freel_trans_order_by"]
+    if {$order_by_pos > -1} {
+	set var_list [lreplace $var_list $order_by_pos $order_by_pos]
+    }
+
+    
+
+    # ------------------------------------------------
+    # Constants
+
+    set source_lang_skill_type 2000
+    set target_lang_skill_type 2002
+
+    set order_freelancer_sql "user_name"
+
+    # Project's Source & Target Languages
+    set project_source_lang [db_string source_lang "
+                select  substr(im_category_from_id(source_language_id), 1, 2)
+                from    im_projects
+                where   project_id = :object_id" \
+    -default 0]
+
+    set project_target_langs [db_list target_langs "
+		select '''' || substr(im_category_from_id(language_id), 1, 2) || '''' 
+		from	im_target_languages 
+		where	project_id = :object_id
+    "]
+    if {0 == [llength $project_target_langs]} { set project_target_langs [list "'none'"]}
+
+
+    # ------------------------------------------------
+    # Get the list of users that meet source- and target language requirements
+
+    set freelance_sql "
+	select distinct
+		u.user_id,
+		im_name_from_user_id(u.user_id) as user_name
+	from
+		users u,
+		group_member_map m, 
+		membership_rels mr,
+		(	select	user_id
+			from	im_freelance_skills
+			where	skill_type_id = :source_lang_skill_type
+				and substr(im_category_from_id(skill_id), 1, 2) = :project_source_lang
+		) sls,
+		(	select	user_id
+			from	im_freelance_skills
+			where	skill_type_id = :target_lang_skill_type
+				and substr(im_category_from_id(skill_id), 1, 2) in ([join $project_target_langs ","])
+		) tls
+	where
+		m.group_id = acs__magic_object_id('registered_users'::character varying) AND 
+		m.rel_id = mr.rel_id AND 
+		m.container_id = m.group_id AND 
+		m.rel_type::text = 'membership_rel'::text AND 
+		mr.member_state::text = 'approved'::text AND 
+		u.user_id = m.member_id AND
+		sls.user_id = u.user_id AND
+		tls.user_id = u.user_id
+	order by
+		$order_freelancer_sql
+    "
+    
+    set user_list {}
+    db_foreach freelancers $freelance_sql {
+	lappend user_list $user_id
+    }
+
+    # ------------------------------------------------
+    # Call the resource planning compoment
+    #
+
+    db_1row date "
+	select	now()::date as start_date,
+		now()::date + 30 as end_date
+    "
+
+
+    set result [im_ganttproject_resource_planning \
+		-start_date $start_date \
+		-end_date $end_date \
+		-top_vars "year week_of_year day_of_week" \
+		-user_id $user_list
+    ]
+
+    return $result
 }
 
