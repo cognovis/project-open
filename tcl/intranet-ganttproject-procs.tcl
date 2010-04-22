@@ -2600,20 +2600,21 @@ ad_proc -public im_date_components_to_julian { top_vars top_entry} {
 
 
 ad_proc -public im_ganttproject_resource_planning {
-    { -start_date "" }
-    { -end_date "" }
-    { -show_all_employees_p "" }
-    { -top_vars "year week_of_year day" }
-    { -left_vars "cell" }
-    { -project_id "" }
-    { -user_id "" }
-    { -customer_id 0 }
-    { -return_url "" }
-    { -export_var_list "" }
-    { -zoom "" }
-    { -auto_open 0 }
-    { -max_col 8 }
-    { -max_row 20 }
+    {-debug:boolean}
+    {-start_date ""}
+    {-end_date ""}
+    {-show_all_employees_p ""}
+    {-top_vars "year week_of_year day"}
+    {-left_vars "cell"}
+    {-project_id ""}
+    {-user_id ""}
+    {-customer_id 0}
+    {-return_url ""}
+    {-export_var_list ""}
+    {-zoom ""}
+    {-auto_open 0}
+    {-max_col 8}
+    {-max_row 20}
 } {
     Gantt Resource "Cube"
 
@@ -2849,6 +2850,22 @@ ad_proc -public im_ganttproject_resource_planning {
 	"
     }
 
+    set show_users_sql ""
+    if {"" != $user_id && 0 != $user_id} {
+	set show_users_sql "
+	UNION
+		select
+			0::integer as main_project_id,
+			0::text as main_project_name,
+			p.person_id as user_id,
+			im_name_from_user_id(p.person_id) as user_name
+		from
+			persons p
+		where
+			p.person_id in ([join $user_id ","])
+	"
+    }
+
     set main_projects_sql "
 	select distinct
 		main_project_id,
@@ -2880,6 +2897,7 @@ ad_proc -public im_ganttproject_resource_planning {
 			and r.object_id_two = u.user_id
 			and m.percentage is not null
 			$where_clause
+		$show_users_sql
 		$show_all_employees_sql
 		) t
 	order by
@@ -3711,37 +3729,38 @@ ad_proc -public im_ganttproject_resource_planning {
     # ------------------------------------------------------------
     # Profiling HTML
     #
-    set debug_html "<br>&nbsp;<br><table>\n"
-    set last_click 0
-    foreach click [lsort -integer [array names clicks]] {
-	if {0 == $last_click} { 
-	    set last_click $click 
-	    set first_click $click
+    if {$debug_p} {
+	set debug_html "<br>&nbsp;<br><table>\n"
+	set last_click 0
+	foreach click [lsort -integer [array names clicks]] {
+	    if {0 == $last_click} { 
+		set last_click $click 
+		set first_click $click
+	    }
+	    append debug_html "<tr><td>$click</td><td>$clicks($click)</td><td>[expr ($click - $last_click) / 1000.0]</td></tr>\n"
+	    set last_click $click
 	}
-	append debug_html "<tr><td>$click</td><td>$clicks($click)</td><td>[expr ($click - $last_click) / 1000.0]</td></tr>\n"
-	set last_click $click
+	append debug_html "<tr><td> </td><td><b>Total</b></td><td>[expr ($last_click - $first_click) / 1000.0]</td></tr>\n"
+	append debug_html "<tr><td colspan=3>&nbsp;</tr>\n"
+	append debug_html "<tr><td> </td><td> start</td><td>$left_clicks(start)</td></tr>\n"
+	append debug_html "<tr><td> </td><td> gif</td><td>$left_clicks(gif)</td></tr>\n"
+	append debug_html "<tr><td> </td><td> left</td><td>$left_clicks(left)</td></tr>\n"
+	append debug_html "<tr><td> </td><td> write</td><td>$left_clicks(write)</td></tr>\n"
+	append debug_html "<tr><td> </td><td> top_scale</td><td>$left_clicks(top_scale)</td></tr>\n"
+	append debug_html "<tr><td> </td><td> top_scale_start </td><td>$left_clicks(top_scale_start)</td></tr>\n"
+	append debug_html "<tr><td> </td><td> top_scale_write_vars </td><td>$left_clicks(top_scale_write_vars)</td></tr>\n"
+	append debug_html "<tr><td> </td><td> top_scale_to_julian </td><td>$left_clicks(top_scale_to_julian)</td></tr>\n"
+	append debug_html "<tr><td> </td><td> top_scale_calc </td><td>$left_clicks(top_scale_calc)</td></tr>\n"
+	append debug_html "<tr><td> </td><td> top_scale_cell </td><td>$left_clicks(top_scale_cell)</td></tr>\n"
+	append debug_html "<tr><td> </td><td> top_scale_color </td><td>$left_clicks(top_scale_color)</td></tr>\n"
+	append debug_html "<tr><td> </td><td> top_scale_append </td><td>$left_clicks(top_scale_append)</td></tr>\n"
+	append debug_html "</table>\n"
+	
+	append html $debug_html
     }
-    append debug_html "<tr><td> </td><td><b>Total</b></td><td>[expr ($last_click - $first_click) / 1000.0]</td></tr>\n"
-    append debug_html "<tr><td colspan=3>&nbsp;</tr>\n"
-    append debug_html "<tr><td> </td><td> start</td><td>$left_clicks(start)</td></tr>\n"
-    append debug_html "<tr><td> </td><td> gif</td><td>$left_clicks(gif)</td></tr>\n"
-    append debug_html "<tr><td> </td><td> left</td><td>$left_clicks(left)</td></tr>\n"
-    append debug_html "<tr><td> </td><td> write</td><td>$left_clicks(write)</td></tr>\n"
-    append debug_html "<tr><td> </td><td> top_scale</td><td>$left_clicks(top_scale)</td></tr>\n"
-    append debug_html "<tr><td> </td><td> top_scale_start </td><td>$left_clicks(top_scale_start)</td></tr>\n"
-    append debug_html "<tr><td> </td><td> top_scale_write_vars </td><td>$left_clicks(top_scale_write_vars)</td></tr>\n"
-    append debug_html "<tr><td> </td><td> top_scale_to_julian </td><td>$left_clicks(top_scale_to_julian)</td></tr>\n"
-    append debug_html "<tr><td> </td><td> top_scale_calc </td><td>$left_clicks(top_scale_calc)</td></tr>\n"
-    append debug_html "<tr><td> </td><td> top_scale_cell </td><td>$left_clicks(top_scale_cell)</td></tr>\n"
-    append debug_html "<tr><td> </td><td> top_scale_color </td><td>$left_clicks(top_scale_color)</td></tr>\n"
-    append debug_html "<tr><td> </td><td> top_scale_append </td><td>$left_clicks(top_scale_append)</td></tr>\n"
-    append debug_html "</table>\n"
-
-    append html $debug_html
-
+	
     return $html
 }
-
 
 
 
