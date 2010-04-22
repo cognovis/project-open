@@ -372,3 +372,15 @@ SELECT im_lang_add_message('en_US','intranet-reporting-dashboard','Tickets_per_T
 SELECT im_lang_add_message('en_US','intranet-reporting-dashboard','Tickets_per_Ticket_Status','Tickets per Ticket Status');
 SELECT im_lang_add_message('en_US','intranet-reporting-dashboard','Tickets_per_Ticket_Type','Tickets per Ticket Type');
 SELECT im_lang_add_message('en_US','intranet-reporting','Timesheet_Project_Hierarchy_&_Finance','Timesheet Project Hierarchy & Finance');
+
+-- Priorities for Helpdesk
+SELECT im_lang_add_message('en_US','intranet-core','1','1');
+SELECT im_lang_add_message('en_US','intranet-core','2','2');
+SELECT im_lang_add_message('en_US','intranet-core','3','3');
+SELECT im_lang_add_message('en_US','intranet-core','4','4');
+SELECT im_lang_add_message('en_US','intranet-core','5','5');
+SELECT im_lang_add_message('en_US','intranet-core','6','6');
+SELECT im_lang_add_message('en_US','intranet-core','7','7');
+SELECT im_lang_add_message('en_US','intranet-core','8','8');
+SELECT im_lang_add_message('en_US','intranet-core','9','9');
+
