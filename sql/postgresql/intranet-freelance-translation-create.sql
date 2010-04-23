@@ -39,19 +39,13 @@ DECLARE
         v_company_id         alias for $2;
         v_count              integer;
 BEGIN
-        select
-                count(*)
-        into
-                v_count
-        from
-                (
-                select
-                        p.project_id
-                from
-                        acs_rels r,
+        select	count(*)
+        into	v_count
+        from	(select distinct
+			tree_root_key(p.tree_sortkey)
+                from	acs_rels r,
                         im_projects p
-                where
-                        p.company_id = v_company_id
+                where	p.company_id = v_company_id
                         and r.object_id_one = p.project_id
                         and object_id_two = v_user_id
                 ) t;
