@@ -21,7 +21,7 @@ SELECT im_component_plugin__new (
 	'/intranet/member-add',			-- page_url
 	null,					-- view_name
 	110,					-- sort_order
-	'im_ganttproject_resource_planning_add_member_component',
+	'im_resource_mgmt_resource_planning_add_member_component',
 	'lang::message::lookup "" intranet-ganttproject.Resource_Availability "Resource Availability"'
 );
 

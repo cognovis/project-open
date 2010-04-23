@@ -74,7 +74,7 @@ if {"" == $end_date} {
 # ------------------------------------------------------------
 # Contents
 
-set html [im_ganttproject_resource_planning \
+set html [im_resource_mgmt_resource_planning \
 	-start_date $start_date \
 	-end_date $end_date \
 	-top_vars $top_vars \

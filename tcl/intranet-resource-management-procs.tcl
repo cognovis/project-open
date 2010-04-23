@@ -241,7 +241,16 @@ ad_proc -public im_resource_mgmt_resource_planning {
     # ------------------------------------------------------------
     # Pre-calculate GIFs for performance reasons
     #
-    foreach gif {user cog time minus_9 plus_9 magnifier_zoom_in magnifier_zoom_out} {
+    set object_type_gif_sql "
+	select	object_type,
+		object_type_gif
+	from	acs_object_types
+	where	object_type in ('user', 'person', 'im_project', 'im_trans_task', 'im_timesheet_task')
+    "
+    db_foreach gif $object_type_gif_sql {
+	set gif_hash($object_type) [im_gif $object_type_gif]
+    }
+    foreach gif {minus_9 plus_9 magnifier_zoom_in magnifier_zoom_out} {
 	set gif_hash($gif) [im_gif $gif]
     }
 
@@ -1112,20 +1121,20 @@ ad_proc -public im_resource_mgmt_resource_planning {
 		set indent_level 1
 		set project_name "undef project $oid"
 		if {[info exists object_name_hash($oid)]} { set project_name $object_name_hash($oid) }
-		set cell_html "$collapse_html $gif_hash(cog) <a href='[export_vars -base $project_base_url {{project_id $oid}}]'>$project_name</a>"
+		set cell_html "$collapse_html $gif_hash(im_project) <a href='[export_vars -base $project_base_url {{project_id $oid}}]'>$project_name</a>"
 	    }
 	    im_timesheet_task {
 		set indent_level 1
 		set project_name "undef project $oid"
 		if {[info exists object_name_hash($oid)]} { set project_name $object_name_hash($oid) }
-		set cell_html "$collapse_html $gif_hash(time) <a href='[export_vars -base $project_base_url {{project_id $oid}}]'>$project_name</a>"
+		set cell_html "$collapse_html $gif_hash(im_timesheet_task) <a href='[export_vars -base $project_base_url {{project_id $oid}}]'>$project_name</a>"
 	    }
 	    im_trans_task {
 		set indent_level 1
 		set task_id $oid
 		set task_name "undef im_trans_task $oid"
 		if {[info exists object_name_hash($oid)]} { set task_name $object_name_hash($oid) }
-		set cell_html "$collapse_html [im_gif sport_soccer] <a href='[export_vars -base $trans_task_base_url {{task_id $oid}}]'>$task_name</a>"
+		set cell_html "$collapse_html $gif_hash(im_trans_task) <a href='[export_vars -base $trans_task_base_url {{task_id $oid}}]'>$task_name</a>"
 	    }
 	    default { 
 		set cell_html "unknown object '$otype' type for object '$oid'" 
@@ -1137,7 +1146,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	set indent_html ""
 	for {set i 0} {$i < $indent_level} {incr i} { append indent_html "&nbsp; &nbsp; &nbsp; " }
 
-	append row_html "<td valign=top><nobr>$indent_html$cell_html</nobr></td>\n"
+	append row_html "<td><nobr>$indent_html$cell_html</nobr></td>\n"
 
 
 	set left_clicks(left) [expr $left_clicks(left) + [clock clicks] - $last_click]
@@ -1261,7 +1270,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
     # ------------------------------------------------------------
     # Close the table
     #
-    set html "<table cellspacing=0 cellpadding=0>\n$html\n</table>\n"
+    set html "<table cellspacing=0 cellpadding=0 valign=bottom>\n$html\n</table>\n"
 
     if {0 == $row_ctr} {
 	set no_rows_msg [lang::message::lookup "" intranet-resource-management.No_rows_selected "
