@@ -48,17 +48,17 @@ begin
 	IF v_count > 0 THEN return 0; END IF;
 
 	PERFORM im_component_plugin__new (
-		null,			-- plugin_id
-		''acs_object'',		-- object_type
-		now(),			-- creation_date
-		null,			-- creation_user
-		null,			-- creation_ip
-		null,			-- context_id
-		''User Notifications'',	-- plugin_name
+		null,				-- plugin_id
+		''im_component_plugin'',	-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		''User Notifications'',		-- plugin_name
 		''intranet'',			-- package_name
 		''right'',			-- location
 		''/intranet/users/view'',	-- page_url
-		null,			-- view_name
+		null,				-- view_name
 		85,				-- sort_order
 		''im_notification_user_component -user_id $user_id''   -- component_tcl
 	);

@@ -89,18 +89,18 @@ where acs_attribute_id in (
 
 
 SELECT im_component_plugin__new (
-		null,				-- plugin_id
-		'acs_object',			-- object_type
-		now(),				-- creation_date
-	        null,                           -- creation_user
-	        null,                           -- creation_ip
-	        null,                           -- context_id
-		'Task Members',			-- plugin_name
-		'intranet',			-- package_name
-		'right',			-- location
+		null,					-- plugin_id
+		'im_component_plugin',			-- object_type
+		now(),					-- creation_date
+	        null,                   	        -- creation_user
+	        null,                   	        -- creation_ip
+	        null,                   	        -- context_id
+		'Task Members',				-- plugin_name
+		'intranet',				-- package_name
+		'right',				-- location
 		'/intranet-timesheet2-tasks/new',	-- page_url
-		null,				-- view_name	
-		20,				-- sort_order
+		null,					-- view_name	
+		20,					-- sort_order
 		'im_group_member_component $task_id $current_user_id $user_admin_p $return_url "" "" 1'
 );
 

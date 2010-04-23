@@ -673,7 +673,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -714,7 +714,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -754,7 +754,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -794,7 +794,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -834,7 +834,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -874,7 +874,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -913,7 +913,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -949,7 +949,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -987,7 +987,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -1022,7 +1022,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -1057,7 +1057,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -1093,7 +1093,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -1129,7 +1129,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -1165,7 +1165,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -1202,7 +1202,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -1237,7 +1237,7 @@ BEGIN
 	-- for all admin entries links under Projects
 	v_admin_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
@@ -1278,7 +1278,7 @@ begin
 
 	v_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
