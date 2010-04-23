@@ -33,7 +33,7 @@ update acs_object_types set object_type_gif = 'link'			where object_type = 'im_c
 update acs_object_types set object_type_gif = 'plugin'			where object_type = 'im_component_plugin';
 update acs_object_types set object_type_gif = 'computer'		where object_type = 'im_conf_item';
 update acs_object_types set object_type_gif = 'link'			where object_type = 'im_conf_item_project_rel';
-update acs_object_types set object_type_gif = 'page' 			where object_type = 'im_cost';
+update acs_object_types set object_type_gif = 'page_world'		where object_type = 'im_cost';
 update acs_object_types set object_type_gif = 'calculator' 		where object_type = 'im_cost_center';
 update acs_object_types set object_type_gif = 'table_add'		where object_type = 'im_dynfield_attribute';
 update acs_object_types set object_type_gif = 'table_edit'		where object_type = 'im_dynfield_widget';
@@ -47,7 +47,7 @@ update acs_object_types set object_type_gif = 'user_suit'		where object_type = '
 update acs_object_types set object_type_gif = 'cog'			where object_type = 'im_gantt_project';
 update acs_object_types set object_type_gif = 'report_key'		where object_type = 'im_indicator';
 update acs_object_types set object_type_gif = 'page_add'		where object_type = 'im_investment';
-update acs_object_types set object_type_gif = 'page_red'		where object_type = 'im_invoice';
+update acs_object_types set object_type_gif = 'page'			where object_type = 'im_invoice';
 update acs_object_types set object_type_gif = 'page_link'		where object_type = 'im_invoice_item';
 update acs_object_types set object_type_gif = 'link'			where object_type = 'im_key_account_rel';
 update acs_object_types set object_type_gif = 'box'			where object_type = 'im_material';
@@ -66,7 +66,7 @@ update acs_object_types set object_type_gif = 'link'			where object_type = 'im_t
 update acs_object_types set object_type_gif = 'tab'			where object_type = 'im_timesheet_conf_object';
 update acs_object_types set object_type_gif = 'page_green'		where object_type = 'im_timesheet_invoice';
 update acs_object_types set object_type_gif = 'cog_go'			where object_type = 'im_timesheet_task';
-update acs_object_types set object_type_gif = 'page_orange'		where object_type = 'im_trans_invoice';
+update acs_object_types set object_type_gif = 'page_red'		where object_type = 'im_trans_invoice';
 update acs_object_types set object_type_gif = 'cog_edit'		where object_type = 'im_trans_task';
 update acs_object_types set object_type_gif = 'cup'			where object_type = 'im_user_absence';
 
@@ -115,16 +115,16 @@ update acs_object_types set object_type_gif = 'link'			where object_type = 'user
 update acs_object_types set object_type_gif = 'link'			where object_type = 'user_portrait_rel';
 
 -- Workflow
-update acs_object_types set object_type_gif = 'lorry'			where object_type = 'ticket_generic_wf';
-update acs_object_types set object_type_gif = 'lorry'			where object_type = 'ticket_workflow_generic_wf';
-update acs_object_types set object_type_gif = 'lorry'			where object_type = 'timesheet_approval_wf';
-update acs_object_types set object_type_gif = 'lorry'			where object_type = 'vacation_approval_wf';
-update acs_object_types set object_type_gif = 'lorry'			where object_type = 'workflow';
-update acs_object_types set object_type_gif = 'lorry_flatbed'		where object_type = 'workflow_case_log_entry';
-update acs_object_types set object_type_gif = 'lorry' 			where object_type = 'expense_approval_wf';
-update acs_object_types set object_type_gif = 'lorry' 			where object_type = 'feature_request_wf';
-update acs_object_types set object_type_gif = 'lorry' 			where object_type = 'project_approval_wf';
-update acs_object_types set object_type_gif = 'lorry' 			where object_type = 'rfc_approval_wf';
+update acs_object_types set object_type_gif = 'arrow_refresh'		where object_type = 'workflow';
+update acs_object_types set object_type_gif = 'arrow_refresh'		where object_type = 'ticket_generic_wf';
+update acs_object_types set object_type_gif = 'arrow_refresh'		where object_type = 'ticket_workflow_generic_wf';
+update acs_object_types set object_type_gif = 'arrow_refresh'		where object_type = 'timesheet_approval_wf';
+update acs_object_types set object_type_gif = 'arrow_refresh'		where object_type = 'vacation_approval_wf';
+update acs_object_types set object_type_gif = 'arrow_refresh'		where object_type = 'workflow_case_log_entry';
+update acs_object_types set object_type_gif = 'arrow_refresh' 		where object_type = 'expense_approval_wf';
+update acs_object_types set object_type_gif = 'arrow_refresh' 		where object_type = 'feature_request_wf';
+update acs_object_types set object_type_gif = 'arrow_refresh' 		where object_type = 'project_approval_wf';
+update acs_object_types set object_type_gif = 'arrow_refresh' 		where object_type = 'rfc_approval_wf';
 
 
 -- Less used OpenACS object types
@@ -142,7 +142,7 @@ update acs_object_types set object_type_gif = 'script_go'		where object_type = '
 update acs_object_types set object_type_gif = 'default_object_type_gif'	where object_type = 'ams_object_revision';
 update acs_object_types set object_type_gif = 'default_object_type_gif'	where object_type = 'application_group';
 update acs_object_types set object_type_gif = 'comments'		where object_type = 'chat_room';
-update acs_object_types set object_type_gif = 'comments_edit'		where object_type = 'chat_transcript';
+update acs_object_types set object_type_gif = 'comment_edit'		where object_type = 'chat_transcript';
 
 update acs_object_types set object_type_gif = 'image_link'		where object_type = 'content_extlink';
 update acs_object_types set object_type_gif = 'folder_image'		where object_type = 'content_folder';
