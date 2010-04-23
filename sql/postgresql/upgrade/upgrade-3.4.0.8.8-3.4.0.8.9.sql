@@ -1,10 +1,6 @@
--- upgrade-3.4.0.7.0-3.4.0.7.1.sql
+-- upgrade-3.4.0.8.8-3.4.0.8.9.sql
 
-SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.4.0.7.0-3.4.0.7.1.sql','');
-
-
-
-
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.4.0.8.8-3.4.0.8.9.sql','');
 
 ---------------------------------------------------------
 -- Report Menus
