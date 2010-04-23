@@ -189,9 +189,8 @@ array set wiki_hash {
 # ---------------------------------------------------------
 
 set list_columns {
-        object_icon {
-            display_col object_icon
-	    display_template {@object_types.object_icon;noquote@}
+        object_gif {
+	    display_template {<a href="@object_types.object_type_url;noquote@">@object_types.object_type_gif_html;noquote@</a>}
             label ""
         }        
         object_type {
@@ -222,7 +221,7 @@ set profile_sql {
 }
 
 set multirow_select ""
-set multirow_extend {object_type_url crud_status object_wiki_url wiki}
+set multirow_extend {object_type_url object_type_gif_html crud_status object_wiki_url wiki}
 set group_ids [list]
 
 if {$current_user_is_admin_p} {
@@ -355,11 +354,10 @@ set not_in_object_type "
 
 db_multirow -extend $multirow_extend object_types select_object_types "
 	select
-		ot.object_type as object_icon,
 		ot.object_type,
 		ot.pretty_name,
+		ot.object_type_gif,
 		rot.object_type_id,
-		ot.icon_path,
 		im_object_permission_p(rot.object_type_id, :current_user_id, 'read') as current_user_read_p
 		$multirow_select
 	from
@@ -374,8 +372,8 @@ db_multirow -extend $multirow_extend object_types select_object_types "
 	order by
 		ot.object_type
 " {
-    set object_icon "<img src='$icon_path' alt=''>"
     set object_type_url "/intranet-rest/$object_type?format=html"
+    set object_type_gif_html [im_gif $object_type_gif]
     switch $object_type {
 	im_company - im_project - bt_bug - im_company - im_cost - im_conf_item - im_project - im_user_absence - im_office - im_ticket - im_timesheet_task - im_translation_task - user {
 	    # These object are handled via custom permissions:
