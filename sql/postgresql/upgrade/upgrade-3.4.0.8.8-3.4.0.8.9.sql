@@ -2,6 +2,7 @@
 
 SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.4.0.8.8-3.4.0.8.9.sql','');
 
+
 ---------------------------------------------------------
 -- Report Menus
 --
@@ -32,10 +33,7 @@ BEGIN
     select group_id into v_freelancers from groups where group_name = ''Freelancers'';
     select group_id into v_reg_users from groups where group_name = ''Registered Users'';
 
-    select menu_id
-    into v_main_menu
-    from im_menus
-    where label=''main'';
+    select menu_id into v_reporting_menu from im_menus where label=''reporting'';
 
     v_menu := im_menu__new (
         null,                   -- p_menu_id
@@ -58,7 +56,6 @@ BEGIN
     PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
     PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
     PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
-
 
     return 0;
 end;' language 'plpgsql';
