@@ -8,8 +8,8 @@
 @message;noquote@
 </if>
 
-<h1><%= [lang::message::lookup "" simple-survey.Fill_out_survey "Fill out Survey"] %><h1>
-
+<h1><%= [lang::message::lookup "" simple-survey.Fill_out_survey "Please fill out the survey below. Thank you for your cooperation."] %><h1>
+<br>
 <p>
 @description;noquote@
 </p>
