@@ -7,10 +7,7 @@ ad_library {
     @cvs-id 
 }
 
-# Get the OpenACS version
-set ver_sql "select substring(max(version_name),1,3) from apm_package_versions where package_key = 'acs-kernel'"
-set openacs54_p [string equal "5.4" [util_memoize [list db_string ver $ver_sql ]]]
-
+set openacs54_p [im_openacs54_p]
 if {$openacs54_p} {
 
 # Initialize all object types which are linked from im_dynfield_attributes,

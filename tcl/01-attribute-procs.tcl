@@ -7,9 +7,16 @@ ad_library {
 
 }
 
-# Get the OpenACS version
-set ver_sql "select substring(max(version_name),1,3) from apm_package_versions where package_key = 'acs-kernel'"
-set openacs54_p [string equal "5.4" [util_memoize [list db_string ver $ver_sql ]]]
+
+ad_proc -public im_openacs54_p { } {
+    Is OpenACS beyond 5.1.5?
+    The higher versions support header files.
+} {
+    set o_ver_sql "select substring(max(version_name),1,3) from apm_package_versions where package_key = 'acs-kernel'"
+    set oacs_version [util_memoize [list db_string o_ver $o_ver_sql]]
+    return [expr 1 > [string compare "5.4" $oacs_version]]
+}
+
 
 namespace eval im_dynfield::attribute {}
 namespace eval im::dynfield:: {}
@@ -306,6 +313,7 @@ ad_proc -private im_dynfield::attribute::get {
 ############################
 
 
+set openacs54_p [im_openacs54_p]
 if {$openacs54_p} {
 
     ::xotcl::Class create ::im::dynfield::Attribute \
