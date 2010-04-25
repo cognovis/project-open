@@ -181,7 +181,7 @@ ad_proc -public im_resource_mgmt_resource_planning {
 
     set project_base_url "/intranet/projects/view"
     set user_base_url "/intranet/users/view"
-    set trans_task_base_url "/intranet-translation/task"
+    set trans_task_base_url "/intranet-translation/trans-tasks/new"
 
     # The list of users/projects opened already
     set user_name_link_opened {}
