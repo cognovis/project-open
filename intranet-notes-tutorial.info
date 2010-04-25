@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-notes-tutorial</auto-mount>
 
-    <version name="3.4.0.8.2" url="http://www.project-open.org/download/apm/intranet-notes-tutorial-3.4.0.8.2.apm">
+    <version name="3.4.0.8.9" url="http://www.project-open.org/download/apm/intranet-notes-tutorial-3.4.0.8.9.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>]po[ Notes Tutorial</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
