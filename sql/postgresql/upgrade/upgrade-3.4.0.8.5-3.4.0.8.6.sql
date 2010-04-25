@@ -37,6 +37,18 @@ SELECT im_menu__new (
 );
 
 
+
+-- "Numeric" widget
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'numeric', 'Numeric', 'Numeric',
+	10007, 'float', 'text', 'float',''
+);
+
+
+
+
 -- Fix the widget and datatype for presales variables
 update acs_attributes set 
 	datatype = 'float' 
