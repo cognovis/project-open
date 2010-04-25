@@ -8,8 +8,8 @@ ad_library {
 
 
 # Get the OpenACS version
-set ver_sql "select substring(max(version_name),1,3) from apm_package_versions where package_key = 'acs-kernel'"
-set openacs54_p [string equal "5.4" [util_memoize [list db_string ver $ver_sql ]]]
+set o_ver_sql "select substring(max(version_name),1,3) from apm_package_versions where package_key = 'acs-kernel'"
+set openacs54_p [expr 1 > [string compare "5.4" [util_memoize [list db_string o_ver $o_ver_sql]]]]
 
 if {$openacs54_p} {
 
