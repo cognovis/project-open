@@ -855,11 +855,12 @@ ad_proc -private im_rest_authenticate {
     if {"" == $basic_auth_user_id} {
 	set basic_auth_user_id [db_string userid "select party_id from parties where lower(email) = lower(:basic_auth_username)" -default ""]
     }
+    set basic_auth_password_ok_p undefined
     if {"" != $basic_auth_user_id} {
 	set basic_auth_password_ok_p [ad_check_password $basic_auth_user_id $basic_auth_password]
 	if {!$basic_auth_password_ok_p} { set basic_auth_user_id "" }
     }
-    if {$debug} { ns_log Notice "im_rest_authenticate: basic_auth=$basic_auth, basic_auth_username=$basic_auth_username, basic_auth_password=$basic_auth_password" }
+    if {$debug} { ns_log Notice "im_rest_authenticate: basic_auth=$basic_auth, basic_auth_username=$basic_auth_username, basic_auth_password=$basic_auth_password, basic_auth_user_id=$basic_auth_user_id, basic_auth_password_ok_p=$basic_auth_password_ok_p" }
 
 
     # --------------------------------------------------------
