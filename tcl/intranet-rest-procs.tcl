@@ -174,6 +174,14 @@ ad_proc -private im_rest_call {
 
 		# There is no oid, so the resource is the object_type itself.
 		switch $rest_otype {
+		    im_category {
+			return [im_rest_get_im_categories \
+				    -format $format \
+				    -user_id $user_id \
+				    -rest_otype $rest_otype \
+				    -query_hash_pairs $query_hash_pairs \
+				   ]
+		    }
 		    im_invoice_item {
 			return [im_rest_get_im_invoice_items \
 				    -format $format \
@@ -698,6 +706,96 @@ ad_proc -private im_rest_get_im_invoice_items {
     return
     # ad_return_complaint 1 "<pre>sql=$sql\nhash=[join [array get result_hash] "\n"]</pre>"
 
+}
+
+
+
+ad_proc -private im_rest_get_im_categories {
+    { -format "xml" }
+    { -user_id 0 }
+    { -rest_otype "" }
+    { -query_hash_pairs {} }
+    { -limit 100 }
+    { -debug 0 }
+} {
+    Handler for GET rest calls on invoice items.
+} {
+    ns_log Notice "im_rest_get_categories: format=$format, user_id=$user_id, rest_otype=$rest_otype, query_hash=$query_hash_pairs"
+    array set query_hash $query_hash_pairs
+    set base_url "[im_rest_system_url]/intranet-rest"
+
+    # Deal with "limit" max. number of objects to show
+    # and check that it's a valid integer
+    if {[info exists query_hash(limit)]} { set limit $query_hash(limit) }
+    im_security_alert_check_integer -location "im_rest_get_im_categories" -value $limit
+
+    set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = 'im_category'" -default 0]]
+    set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "read"]
+
+
+    # -------------------------------------------------------
+    # Check if there is a where clause specified in the URL and validate the clause.
+    set where_clause ""
+    if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
+    # Determine the list of valid columns for the object type
+    set valid_vars {item_id item_name project_id invoice_id item_units item_uom_id price_per_unit currency sort_order item_type_id item_status_id description item_material_id}
+    # Check that the query is a valid SQL where clause
+    set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
+    if {!$valid_sql_where} {
+	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	return
+    }
+    if {"" != $where_clause} { set where_clause "and $where_clause" }
+
+    # Select SQL: Pull out categories.
+    set sql "
+	select	c.category_id as rest_oid,
+		c.category as object_name
+	from	im_categories c
+	where	1=1
+		$where_clause
+	order by category_id
+	LIMIT $limit
+    "
+
+    set result ""
+    db_foreach objects $sql {
+
+	# Check permissions
+	set read_p $rest_otype_read_all_p
+	set read_p 1
+	if {!$read_p} { continue }
+
+	set url "$base_url/$rest_otype/$rest_oid"
+	switch $format {
+	    xml { append result "<object_id href=\"$url\">$rest_oid</object_id>\n" }
+	    html { 
+		append result "<tr>
+			<td>$rest_oid</td>
+			<td><a href=\"$url?format=html\">$object_name</a>
+		</tr>\n" 
+	    }
+	    xml {}
+	}
+    }
+	
+    switch $format {
+	html { 
+	    set page_title "object_type: $rest_otype"
+	    doc_return 200 "text/html" "
+		[im_header $page_title][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
+		</table>[im_footer]
+	    " 
+	    return
+	}
+	xml {  
+	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
+	    return
+	}
+    }
+
+    return
 }
 
 
