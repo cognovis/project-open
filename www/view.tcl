@@ -12,12 +12,13 @@
 
 ad_page_contract {
     Show the results of a single "dynamic" report or indicator
-    @param output_format One of {html|csv|xml}
+    @param format One of {html|csv|xml}
 
     @author frank.bergmann@project-open.com
 } {
     report_id:integer,optional
-    {output_format "html" }
+    report_code:optional
+    {format "html" }
     {return_url "/intranet-reporting/index"}
     { user_id:integer 0}
     { auto_login "" }
@@ -26,6 +27,41 @@ ad_page_contract {
 
 # ---------------------------------------------------------------
 # Defaults & Security
+
+# Accept a report_code as an alternative to the report_id parameter.
+# This allows us to access this page via a REST interface more easily,
+# because the object_id of a report may vary across systems.
+if {[info exists report_code]} { 
+    set id [db_string code_id "select report_id from im_reports where report_code = :report_code" -default ""]
+    if {"" != $id} { set report_id $id }
+}
+
+
+
+# --------------------------------------------------------
+# Check for HTTP "basic" authorization
+# Example: Authorization=Basic cHJvam9wOi5mcmFiZXI=
+#
+set header_vars [ns_conn headers]
+set basic_auth [ns_set get $header_vars "Authorization"]
+set basic_auth_userpass ""
+set basic_auth_username ""
+set basic_auth_password ""
+if {[regexp {^([a-zA-Z_]+)\ (.*)$} $basic_auth match method userpass_base64]} {
+    set basic_auth_userpass [base64::decode $userpass_base64]
+    regexp {^([^\:]+)\:(.*)$} $basic_auth_userpass match basic_auth_username basic_auth_password
+}
+set basic_auth_user_id [db_string userid "select user_id from users where lower(username) = lower(:basic_auth_username)" -default ""]
+if {"" == $basic_auth_user_id} {
+    set basic_auth_user_id [db_string userid "select party_id from parties where lower(email) = lower(:basic_auth_username)" -default ""]
+}
+set basic_auth_password_ok_p undefined
+if {"" != $basic_auth_user_id} {
+    set basic_auth_password_ok_p [ad_check_password $basic_auth_user_id $basic_auth_password]
+    if {!$basic_auth_password_ok_p} { set basic_auth_user_id "" }
+}
+
+ns_log Notice "intranet-reporting/view: basic_auth_user_id=$basic_auth_user_id"
 
 
 # Allows for auto_login authentication
@@ -40,21 +76,29 @@ if {$user_id != 0} {
 	ad_script_abort
     }
 
+} elseif {"" != $basic_auth_user_id} {
+    
+    set current_user_id $basic_auth_user_id
+
 } else {
 
     # OpenACS based authentication
     set current_user_id [ad_maybe_redirect_for_registration]
-    set menu_id [db_string menu "select report_menu_id from im_reports where report_id = :report_id" -default 0]
-    set read_p [db_string report_perms "
+
+}
+
+# ---------------------------------------------------------------
+# Check security 
+set menu_id [db_string menu "select report_menu_id from im_reports where report_id = :report_id" -default 0]
+set read_p [db_string report_perms "
         select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
         from    im_menus m
         where   m.menu_id = :menu_id
-    " -default 'f']
-    if {![string equal "t" $read_p]} {
-	ad_return_complaint 1 "<li>
+" -default 'f']
+if {![string equal "t" $read_p]} {
+    ad_return_complaint 1 "<li>
     [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
-	ad_script_abort
-    }
+    ad_script_abort
 }
 
 
@@ -76,11 +120,11 @@ set context [im_context_bar $page_title]
 set page_body [im_ad_hoc_query \
 	-package_key "intranet-reporting" \
 	-report_name $report_name \
-	-format $output_format \
+	-format $format \
 	$report_sql \
 ]
 
-switch $output_format {
+switch $format {
     "csv" {
 	# Return file with ouput header set
 	set report_key [string tolower $report_name]
@@ -115,7 +159,7 @@ set filter_html "
 	<table border=0 cellpadding=0 cellspacing=1>
 	<tr>
 	    <td class=form-label>[lang::message::lookup "" intranet-reporting.Format "Format"]</td>
-	    <td class=form-widget>[im_report_output_format_select output_format "" $output_format]</td>
+	    <td class=form-widget>[im_report_output_format_select format "" $format]</td>
 	</tr>
 <!-- im_ad_hoc_query doesn't understand number format...
 	<tr>
