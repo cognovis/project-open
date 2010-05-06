@@ -42,7 +42,7 @@ The ASUS service performs several actions:
 	action.
 	<br>&nbsp;<br>
 <li>
-	<b>Update exchange rages</b>.<br>
+	<b>Update exchange rates</b>.<br>
 	Exchange rates are necessary in order to calculate Profit &amp;
 	Loss for projects.
 	<br>&nbsp;<br>
