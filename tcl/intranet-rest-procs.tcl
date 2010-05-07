@@ -274,8 +274,8 @@ ad_proc -private im_rest_get_object {
 
     # -------------------------------------------------------
     # Get the SQL to extract all values from the object
-    set sql [util_memoize [list im_rest_object_type_select_sql -rest_otype $rest_otype]]
-#    set sql [im_rest_object_type_select_sql -rest_otype $rest_otype]
+#    set sql [util_memoize [list im_rest_object_type_select_sql -rest_otype $rest_otype]]
+    set sql [im_rest_object_type_select_sql -rest_otype $rest_otype]
 
     # Get the list of index columns of the object's various tables.
     set index_columns [im_rest_object_type_index_columns -rest_otype $rest_otype]
@@ -298,7 +298,7 @@ ad_proc -private im_rest_get_object {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Generic: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -368,7 +368,7 @@ ad_proc -private im_rest_get_im_category {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Category: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -442,7 +442,7 @@ ad_proc -private im_rest_get_im_invoice_item {
     }
     db_release_unused_handles
 
-    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Invoice Item: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
 
     # -------------------------------------------------------
     # Format the result for one of the supported formats
@@ -530,6 +530,18 @@ ad_proc -private im_rest_get_object_type {
     }
     if {"" != $where_clause} { set where_clause "and $where_clause" }
 
+
+    # -------------------------------------------------------
+    # Transform the database table to deal with exceptions
+    #
+    switch $rest_otype {
+	user - person - party {
+	    set table_name "(select * from users u, parties pa, persons pe where u.user_id = pa.party_id and u.user_id = pe.person_id )"
+	}
+    }
+
+
+    # -------------------------------------------------------
     # Select SQL: Pull out objects where the acs_objects.object_type 
     # is correct AND the object exists in the object type's primary table.
     # This way we avoid "dangling objects" in acs_objects and sub-types.
@@ -1117,29 +1129,39 @@ UNION
 	where	object_type = :rest_otype
     "
 
+    switch $rest_otype {
+	user {
+	    append tables_sql "
+	UNION	select	'parties', 'party_id'
+	UNION	select	'persons', 'person_id'
+	    "
+	}
+    }
+
     set letters {a b c d e f g h i j k l m n}
     set from {}
     set wheres { "1=1" }
     set cnt 0
     db_foreach tables $tables_sql {
 	set letter [lindex $letters $cnt]
-	lappend froms "$table_name $letter"
-	lappend wheres "$letter.$id_column = :rest_oid"
+	lappend froms "LEFT OUTER JOIN $table_name $letter ON (o.object_id = $letter.$id_column)"
 	incr cnt
     }
 
     set sql "
 	select	*
-	from	(select	object_id as rest_oid,
+	from	(select	
+			object_id,
+			object_id as rest_oid,
 			object_type,
 			creation_user,
 			creation_date,
 			creation_ip,
 			context_id
-		from	acs_objects) o,
-		[join $froms ", "]
+		from	acs_objects) o
+		[join $froms "\n\t\t"]
 	where	o.rest_oid = :rest_oid and
-		[join $wheres " and "]
+		[join $wheres " and\n\t\t"]
     "
     return $sql
 }
