@@ -36,56 +36,17 @@ if {[info exists report_code]} {
     if {"" != $id} { set report_id $id }
 }
 
+set no_redirect_p 0
+if {"xml" == $format} { set no_redirect_p 1 }
+set current_user_id [im_require_login -no_redirect_p $no_redirect_p]
 
-
-# --------------------------------------------------------
-# Check for HTTP "basic" authorization
-# Example: Authorization=Basic cHJvam9wOi5mcmFiZXI=
-#
-set header_vars [ns_conn headers]
-set basic_auth [ns_set get $header_vars "Authorization"]
-set basic_auth_userpass ""
-set basic_auth_username ""
-set basic_auth_password ""
-if {[regexp {^([a-zA-Z_]+)\ (.*)$} $basic_auth match method userpass_base64]} {
-    set basic_auth_userpass [base64::decode $userpass_base64]
-    regexp {^([^\:]+)\:(.*)$} $basic_auth_userpass match basic_auth_username basic_auth_password
-}
-set basic_auth_user_id [db_string userid "select user_id from users where lower(username) = lower(:basic_auth_username)" -default ""]
-if {"" == $basic_auth_user_id} {
-    set basic_auth_user_id [db_string userid "select party_id from parties where lower(email) = lower(:basic_auth_username)" -default ""]
-}
-set basic_auth_password_ok_p undefined
-if {"" != $basic_auth_user_id} {
-    set basic_auth_password_ok_p [ad_check_password $basic_auth_user_id $basic_auth_password]
-    if {!$basic_auth_password_ok_p} { set basic_auth_user_id "" }
+if {"xml" == $format && 0 == $current_user_id} {
+    # Return a XML authentication error
+    im_rest_error -http_status 401 -message "Not authenticated"
+    ad_script_abort
 }
 
-ns_log Notice "intranet-reporting/view: basic_auth_user_id=$basic_auth_user_id"
-
-
-# Allows for auto_login authentication
-if {$user_id != 0} {
-
-    # Auth-Token based authentication
-    set current_user_id $user_id
-    set valid_login [im_valid_auto_login_p -user_id $user_id -auto_login $auto_login]
-    if {!$valid_login} {
-        ad_return_complaint 1 "<b>Wrong Security Token</b>:<br>
-        Your security token is not valid. Please contact the system owner.<br>"
-	ad_script_abort
-    }
-
-} elseif {"" != $basic_auth_user_id} {
-    
-    set current_user_id $basic_auth_user_id
-
-} else {
-
-    # OpenACS based authentication
-    set current_user_id [ad_maybe_redirect_for_registration]
-
-}
+ns_log Notice "/intranet-reporting/view: after im_require_login: user_id=$current_user_id"
 
 # ---------------------------------------------------------------
 # Check security 
