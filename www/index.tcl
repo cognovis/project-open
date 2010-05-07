@@ -341,6 +341,8 @@ set not_in_object_type "
 			'notification_reply',
 			'notification_request',
 			'notification_type',
+			'person',
+			'party',
 			'postal_address',
 			'rel_segment',
 			'rel_constraint',
