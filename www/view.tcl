@@ -78,13 +78,36 @@ set page_title $report_name
 set context [im_context_bar $page_title]
 
 
+# ---------------------------------------------------------------
+# Variable substitution in the SQL statement
+#
+set substitution_list [list user_id $current_user_id]
+
+set form_vars [ns_conn form]
+foreach form_var [ad_ns_set_keys $form_vars] {
+    set form_val [ns_set get $form_vars $form_var]
+    lappend substitution_list $form_var
+    lappend substitution_list $form_val
+}
+ad_return_complaint 1 $substitution_list
+
+
+set report_sql_subst [lang::message::format $report_sql $substitution_list]
+
+
+# ---------------------------------------------------------------
+# Calculate the report
+#
 set page_body [im_ad_hoc_query \
 	-package_key "intranet-reporting" \
 	-report_name $report_name \
 	-format $format \
-	$report_sql \
+	$report_sql_subst \
 ]
 
+# ---------------------------------------------------------------
+# Return the right HTTP response, depending on $format
+#
 switch $format {
     "csv" {
 	# Return file with ouput header set
