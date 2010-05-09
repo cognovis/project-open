@@ -323,3 +323,88 @@ update im_menus set menu_gif_small = 'arrow_right'
 where label = 'admin_rest';
 
 
+
+
+
+-----------------------------------------------------------
+-- Create a new Report category for REST reports
+--
+
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_reporting_menu		integer;
+
+BEGIN
+	-- Determine the main menu. "Label" is used to
+	-- identify menus.
+	select menu_id into v_reporting_menu
+	from im_menus where label=''reporting'';
+
+	-- Create the menu.
+	v_menu := im_menu__new (
+		null,				-- p_menu_id
+		''acs_object'',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		''intranet-rest'',		-- package_name
+		''reporting-rest'',		-- label
+		''REST System Reports'',	-- name
+		''/intranet-reporting/'',	-- url
+		220,				-- sort_order
+		v_reporting_menu,		-- parent_menu_id
+		null				-- p_visible_tcl
+	);
+
+	return 0;
+end;' language 'plpgsql';
+-- Execute and then drop the function
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+-- Create freelance report
+SELECT im_report_new (
+	'REST My Timesheet Projects',					-- report_name
+	'rest_my_timesheet_projects',					-- report_code
+	'intranet-rest',						-- package_key
+	100,								-- report_sort_order
+	(select menu_id from im_menus where label = 'reporting-rest'),	-- parent_menu_id
+'select  child.*,
+        tree_level(child.tree_sortkey)-1 as level,
+        im_category_from_id(child.project_type_id) as project_type,
+        im_category_from_id(child.project_status_id) as project_status
+from
+        im_projects parent,
+        im_projects child,
+        acs_rels r
+where
+        parent.parent_id is null and
+        child.project_type_id not in (
+		select 81 UNION select child_id from im_category_hierarchy where parent_id = 81
+	) and
+        child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
+        r.object_id_one = parent.project_id and
+        r.object_id_two = %user_id%
+order by
+        child.tree_sortkey
+'
+);
+
+update im_reports 
+set report_description = '
+Returns the list of all projects to which the current user 
+has the right to log hours. Currently, we are assuming the 
+"permissive" hour logging model, so this report shows all 
+parent projects where the user is a member, plus all of their 
+child projects.
+'
+where report_code = 'rest_my_timesheet_projects';
+
