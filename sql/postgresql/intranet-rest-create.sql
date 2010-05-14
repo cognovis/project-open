@@ -370,7 +370,9 @@ drop function inline_0 ();
 
 
 
--- Create freelance report
+-- Create a report showing all projects into
+-- which the %user_id% can log hours.
+--
 SELECT im_report_new (
 	'REST My Timesheet Projects',					-- report_name
 	'rest_my_timesheet_projects',					-- report_code
@@ -407,4 +409,36 @@ parent projects where the user is a member, plus all of their
 child projects.
 '
 where report_code = 'rest_my_timesheet_projects';
+
+
+
+
+
+-- Create a report showing all hours logged by
+-- the current user today.
+--
+SELECT im_report_new (
+	'REST My Hours',						-- report_name
+	'rest_my_hours',						-- report_code
+	'intranet-rest',						-- package_key
+	110,								-- report_sort_order
+	(select menu_id from im_menus where label = 'reporting-rest'),	-- parent_menu_id
+'
+select	h.*
+from	im_hours h
+where	h.user_id = %user_id% and
+	h.day = now()::date
+'
+);
+
+update im_reports 
+set report_description = '
+Returns all hours logged today by the current user.
+'
+where report_code = 'rest_my_hours';
+
+
+
+
+
 
