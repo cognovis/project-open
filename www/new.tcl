@@ -27,22 +27,18 @@ set page_title "New Material"
 set context [im_context_bar $page_title]
 
 set user_id [ad_maybe_redirect_for_registration]
-if {![info exists material_id]} { set form_mode "edit" }
+if {[info exists material_id]} { set form_mode "edit" }
 
 if {"display" == $form_mode} {
-
     if {![im_permission $user_id view_materials]} {
 	ad_return_complaint 1 "You have insufficient privileges to see materials"
 	return
     }
-
 } else {
-
     if {![im_permission $user_id add_materials]} {
 	ad_return_complaint 1 "You have insufficient privileges to add/modify materials"
 	return
     }
-
 }
 
 
@@ -107,6 +103,13 @@ ad_form \
     }
 
 
+im_dynfield::append_attributes_to_form \
+    -object_type "im_material" \
+    -object_subtype_id [im_opt_val material_type_id] \
+    -form_id "material" \
+    -form_display_mode $form_mode
+
+
 ad_form -extend -name material -on_request {
     # Populate elements from local variables
 
@@ -120,9 +123,25 @@ ad_form -extend -name material -on_request {
 
     db_exec_plsql material_insert {}
 
+    im_dynfield::attribute_store \
+        -object_type "im_material" \
+        -object_id $material_id \
+        -form_id "material"
+
+    # Write Audit Trail
+    im_audit -object_id $material_id -action create
+
 } -edit_data {
 
     db_dml material_update {}
+
+    im_dynfield::attribute_store \
+        -object_type "im_material" \
+        -object_id $material_id \
+        -form_id "material"
+
+    # Write Audit Trail
+    im_audit -object_id $material_id -action create
 
 } -on_submit {
 
