@@ -163,7 +163,7 @@ set report_sql "
 			p.*,
 			im_name_from_user_id(p.project_lead_id) as project_lead_name,
 			p.project_budget_hours as budget_hours,
-			p.cost_timesheet_logged_cache as logged_hours,
+			p.reported_hours_cache as logged_hours,
 			coalesce(p.cost_invoices_cache, 0) + coalesce(p.cost_timesheet_logged_cache, 0) + coalesce(p.cost_bills_cache, 0) + coalesce(p.cost_expense_logged_cache, 0) as logged_costs,
 			cust.company_id as customer_id,
 			cust.company_path as customer_nr,
