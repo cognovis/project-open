@@ -89,8 +89,6 @@ foreach form_var [ad_ns_set_keys $form_vars] {
     lappend substitution_list $form_var
     lappend substitution_list $form_val
 }
-ad_return_complaint 1 $substitution_list
-
 
 set report_sql_subst [lang::message::format $report_sql $substitution_list]
 
