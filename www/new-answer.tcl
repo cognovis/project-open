@@ -303,6 +303,10 @@ ad_form -extend -name "rfq-answer-form" -select_query {
         -object_id $answer_id \
         -form_id "rfq-answer-form"
 
+    # Write Audit Trail
+    im_audit -object_id $answer_id -action update
+
+
 } -on_submit {
     
     ns_log Notice "on_submit"
