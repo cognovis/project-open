@@ -427,7 +427,7 @@ SELECT im_report_new (
 select	h.*
 from	im_hours h
 where	h.user_id = %user_id% and
-	h.day = now()::date
+	h.day >= now()::date
 '
 );
 
