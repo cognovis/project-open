@@ -141,7 +141,7 @@ ad_form -extend -name material -on_request {
         -form_id "material"
 
     # Write Audit Trail
-    im_audit -object_id $material_id -action create
+    im_audit -object_id $material_id -action update
 
 } -on_submit {
 
