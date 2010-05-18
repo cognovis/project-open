@@ -26,3 +26,29 @@ drop function inline_0 ();
 
 
 
+
+
+
+
+
+-- Create a fake object type, because im_hour does not
+-- "reference" acs_objects.
+select acs_object_type__create_type (
+	'im_hour',			-- object_type
+	'Timesheet Hour',		-- pretty_name
+	'Timesheet Hour',		-- pretty_plural
+	'acs_object',			-- supertype
+	'im_hours',			-- table_name
+	'hour_id',			-- id_column
+	null,				-- package_name
+	'f',				-- abstract_p
+	null,				-- type_extension_table
+	'im_hour__name'			-- name_method
+);
+
+update acs_object_types set
+	status_type_table = null,
+	status_column = null,
+	type_column = null
+where object_type = 'im_hour';
+
