@@ -78,13 +78,17 @@ ad_proc -private im_rest_call_get {
     if {[lsearch $valid_formats $format] < 0} { return [im_rest_error -http_status 406 -message "Invalid output format '$format'. Valid formats include {xml|html}."] }
 
     # Call the main request processing routine
-    im_rest_call \
-	-method $http_method \
-	-format $format \
-	-user_id $auth_user_id \
-	-rest_otype $rest_otype \
-	-rest_oid $rest_oid \
-	-query_hash_pairs [array get query_hash]
+    if {[catch {
+	im_rest_call \
+	    -method $http_method \
+	    -format $format \
+	    -user_id $auth_user_id \
+	    -rest_otype $rest_otype \
+	    -rest_oid $rest_oid \
+	    -query_hash_pairs [array get query_hash]
+    } err_msg]} {
+	return [im_rest_error -http_status 500 -message "Internal error: [ns_quotehtml $err_msg]"]
+    }
     
 }
 
@@ -125,8 +129,7 @@ ad_proc -private im_rest_call {
     set valid_rest_otypes [util_memoize [list db_list otypes "
 	select	object_type 
 	from	acs_object_types union
-	select	'im_category' union 
-	select	'im_invoice_item'
+	select	'im_category'
     "]]
     if {[lsearch $valid_rest_otypes $rest_otype] < 0} { return [im_rest_error -http_status 406 -message "Invalid object_type '$rest_otype'. Valid object types include {im_project|im_company|...}."] }
 
@@ -150,6 +153,15 @@ ad_proc -private im_rest_call {
 		    }
 		    im_invoice_item {
 			return [im_rest_get_im_invoice_item \
+				    -format $format \
+				    -user_id $user_id \
+				    -rest_otype $rest_otype \
+				    -rest_oid $rest_oid \
+				    -query_hash_pairs $query_hash_pairs \
+				   ]
+		    }
+		    im_hour {
+			return [im_rest_get_im_hour \
 				    -format $format \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
@@ -184,6 +196,14 @@ ad_proc -private im_rest_call {
 		    }
 		    im_invoice_item {
 			return [im_rest_get_im_invoice_items \
+				    -format $format \
+				    -user_id $user_id \
+				    -rest_otype $rest_otype \
+				    -query_hash_pairs $query_hash_pairs \
+				   ]
+		    }
+		    im_hour {
+			return [im_rest_get_im_hours \
 				    -format $format \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
@@ -291,7 +311,11 @@ ad_proc -private im_rest_get_object {
 	    for { set i 0 } { $i < [ns_set size $selection] } { incr i } {
 		set var [lindex $col_names $i]
 		set val [ns_set value $selection $i]
-		if {[lsearch $index_columns $var] >= 0} { continue }
+# fraber 100519: I don't remember why index columns shouldn't be part of the
+# returned fields in the first place. But now we need them in the Timesheet
+# REST application.
+#		if {[lsearch $index_columns $var] >= 0} { continue }
+
 		set result_hash($var) $val
 	    }
 	}
@@ -481,6 +505,79 @@ ad_proc -private im_rest_get_im_invoice_item {
 
 }
 
+ad_proc -private im_rest_get_im_hour {
+    { -format "xml" }
+    { -user_id 0 }
+    { -rest_otype "" }
+    { -rest_oid 0 }
+    { -query_hash_pairs {} }
+} {
+    Handler for GET rest calls to retreive timesheet hours
+} {
+    ns_log Notice "im_rest_get_im_hour: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
+
+    # Check that rest_oid is an integer
+    im_security_alert_check_integer -location "im_rest_get_im_hour" -value $rest_oid
+
+    # -------------------------------------------------------
+    # Get the SQL to extract all values from the object
+    set sql "select * from im_hours where hour_id = :rest_oid"
+
+    # Execute the sql. As a result we get a result_hash with keys 
+    # corresponding to table columns and values 
+    array set result_hash {}
+    db_with_handle db {
+	set selection [db_exec select $db query $sql 1]
+	while { [db_getrow $db $selection] } {
+	    set col_names [ad_ns_set_keys $selection]
+	    set this_result [list]
+	    for { set i 0 } { $i < [ns_set size $selection] } { incr i } {
+		set var [lindex $col_names $i]
+		set val [ns_set value $selection $i]
+		set result_hash($var) $val
+	    }
+	}
+    }
+    db_release_unused_handles
+
+    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Timesheet Hour: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+
+    # -------------------------------------------------------
+    # Format the result for one of the supported formats
+    set result ""
+    foreach result_key [array names result_hash] {
+	set result_val $result_hash($result_key)
+	append result [im_rest_format_line \
+			   -column $result_key \
+			   -value $result_val \
+			   -format $format \
+			   -rest_otype $rest_otype \
+	]
+    }
+	
+    switch $format {
+	html { 
+	    set page_title "$rest_otype: $rest_oid"
+	    doc_return 200 "text/html" "
+		[im_header $page_title][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
+		</table>[im_footer]
+	    "
+	    return
+	}
+	xml {  
+	    doc_return 200 "text/xml" "<?xml version='1.0'?><$rest_otype>$result</$rest_otype>" 
+	    return
+	}
+	default {
+	     ad_return_complaint 1 "Invalid format: '$format'"
+	}
+    }
+  
+    return
+
+}
+
 
 ad_proc -private im_rest_get_object_type {
     { -format "xml" }
@@ -520,8 +617,10 @@ ad_proc -private im_rest_get_object_type {
     # and validate the clause.
     set where_clause ""
     if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
+
     # Determine the list of valid columns for the object type
     set valid_vars [util_memoize [list im_rest_object_type_columns -rest_otype $rest_otype]]
+
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
@@ -716,8 +815,103 @@ ad_proc -private im_rest_get_im_invoice_items {
     }
 
     return
-    # ad_return_complaint 1 "<pre>sql=$sql\nhash=[join [array get result_hash] "\n"]</pre>"
+}
 
+
+ad_proc -private im_rest_get_im_hours {
+    { -format "xml" }
+    { -user_id 0 }
+    { -rest_otype "" }
+    { -query_hash_pairs {} }
+    { -limit 100 }
+    { -debug 0 }
+} {
+    Handler for GET rest calls on timesheet hours
+} {
+    ns_log Notice "im_rest_get_hours: format=$format, user_id=$user_id, rest_otype=$rest_otype, query_hash=$query_hash_pairs"
+
+    array set query_hash $query_hash_pairs
+    set base_url "[im_rest_system_url]/intranet-rest"
+
+    # Deal with "limit" max. number of objects to show
+    # and check that it's a valid integer
+    if {[info exists query_hash(limit)]} { set limit $query_hash(limit) }
+    im_security_alert_check_integer -location "im_rest_get_object_type" -value $limit
+
+    # Permissions:
+    # A user can normally read only his own hours,
+    # unless he's got the view_hours_all privilege or explicitely 
+    # the perms on the im_hour object type
+    set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = 'im_hour'" -default 0]]
+    set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "read"]
+    if {[im_permission $user_id "view_hours_all"]} { set rest_otype_read_all_p 1 }
+
+    set owner_perm_sql "and h.user_id = :user_id"
+    if {$rest_otype_read_all_p} { set owner_perm_sql "" }
+
+    # -------------------------------------------------------
+    # Check if there is a where clause specified in the URL and validate the clause.
+    set where_clause ""
+    if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
+
+    # Determine the list of valid columns for the object type
+    set valid_vars {hour_id user_id project_id day hours days note private_note cost_id conf_object_id invoice_id material_id}
+
+    # Check that the query is a valid SQL where clause
+    set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
+    if {!$valid_sql_where} {
+	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	return
+    }
+    if {"" != $where_clause} { set where_clause "and $where_clause" }
+
+    # Select SQL: Pull out hours.
+    set sql "
+	select	h.hour_id as rest_oid,
+		'(' || im_name_from_user_id(user_id) || ', ' || 
+			im_project_name_from_id(h.project_id) || 
+			day::date || ', ' || ' - ' || 
+			h.hours || ')' as object_name,
+		h.*
+	from	im_hours h
+	where	1=1
+		$owner_perm_sql
+		$where_clause
+	LIMIT $limit
+    "
+
+    set result ""
+    db_foreach objects $sql {
+	set url "$base_url/$rest_otype/$rest_oid"
+	switch $format {
+	    xml { append result "<object_id href=\"$url\">$rest_oid</object_id>\n" }
+	    html { 
+		append result "<tr>
+			<td>$rest_oid</td>
+			<td><a href=\"$url?format=html\">$object_name</a>
+		</tr>\n" 
+	    }
+	    xml {}
+	}
+    }
+	
+    switch $format {
+	html { 
+	    set page_title "object_type: $rest_otype"
+	    doc_return 200 "text/html" "
+		[im_header $page_title][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
+		</table>[im_footer]
+	    " 
+	    return
+	}
+	xml {  
+	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
+	    return
+	}
+    }
+
+    return
 }
 
 
@@ -1115,57 +1309,85 @@ ad_proc -public im_rest_object_type_select_sql {
     colon-variables, so the variable "rest_oid" must be defined in 
     the context where this statement is to be executed.
 } {
+    # get the list of super-types for rest_otype, including rest_otype
+    # and remove "acs_object" from the list
+    set super_types [im_object_super_types -object_type $rest_otype]
+    set s [list]
+    foreach t $super_types {
+	if {$t == "acs_object"} { continue }
+	lappend s $t
+    }
+    set super_types $s
+
     # ---------------------------------------------------------------
     # Construct a SQL that pulls out all information about one object
+    # Start with the core object tables, so that all important fields
+    # are available in the query, even if there are duplicates.
+    #
+    set letters {a b c d e f g h i j k l m n o p q r s t u v w x y z}
+    set from {}
+    set selects {}
+    set selected_columns {}
+    set selected_tables {}
+
     set tables_sql "
-	select	table_name,
-		id_column
-	from	acs_object_types
-	where	object_type = :rest_otype
-UNION
-	select	table_name,
-		id_column
-	from	acs_object_type_tables
-	where	object_type = :rest_otype
+	select	*
+	from	(
+		select	table_name,
+			id_column,
+			1 as sort_order
+		from	acs_object_types
+		where	object_type in ('[join $super_types "', '"]')
+		UNION
+		select	table_name,
+			id_column,
+			2 as sort_order
+		from	acs_object_type_tables
+		where	object_type in ('[join $super_types "', '"]')
+		) t
+	order by t.sort_order
     "
 
-    switch $rest_otype {
-	user {
-	    append tables_sql "
-	UNION	select	'parties', 'party_id'
-	UNION	select	'persons', 'person_id'
-	    "
-	}
-    }
+    set columns_sql "
+	select	lower(column_name) as column_name
+	from	user_tab_columns
+	where	lower(table_name) = lower(:table_name)
+    "
 
-    set letters {a b c d e f g h i j k l m n}
-    set from {}
-    set wheres { "1=1" }
     set cnt 0
     db_foreach tables $tables_sql {
+
+	if {[lsearch $selected_tables $table_name] >= 0} { 
+	    ns_log Notice "im_rest_object_type_select_sql: found duplicate table: $table_name"
+	    continue 
+	}
+
 	set letter [lindex $letters $cnt]
 	lappend froms "LEFT OUTER JOIN $table_name $letter ON (o.object_id = $letter.$id_column)"
+
+	db_foreach columns $columns_sql {
+	    if {[lsearch $selected_columns $column_name] >= 0} { 
+		ns_log Notice "im_rest_object_type_select_sql: found ambiguous field: $table_name.$column_name"
+		continue 
+	    }
+	    lappend selects "$letter.$column_name"
+	    lappend selected_columns $column_name
+	}
+
+	lappend selected_tables $table_name
 	incr cnt
     }
 
     set sql "
-	select	*
-	from	(select	
-			object_id,
-			object_id as rest_oid,
-			object_type,
-			creation_user,
-			creation_date,
-			creation_ip,
-			context_id
-		from	acs_objects) o
+	select	o.*,
+		o.object_id as rest_oid,
+		[join $selects ",\n\t\t"]
+	from	acs_objects o
 		[join $froms "\n\t\t"]
-	where	o.rest_oid = :rest_oid and
-		[join $wheres " and\n\t\t"]
+	where	o.object_id = :rest_oid
     "
     return $sql
 }
-
 
 
 ad_proc -public im_rest_object_type_columns { 
@@ -1173,25 +1395,29 @@ ad_proc -public im_rest_object_type_columns {
 } {
     Returns a list of all columns for a given object type.
 } {
+    set super_types [im_object_super_types -object_type $rest_otype]
+
     # ---------------------------------------------------------------
     # Construct a SQL that pulls out all tables for an object type,
     # plus all table columns via user_tab_colums.
     set columns_sql "
 	select distinct
-		lower(column_name)
+		lower(utc.column_name)
 	from
-		user_tab_columns utc,
-		(select	table_name,
-			id_column
-		from	acs_object_types
-		where	object_type = :rest_otype
-		UNION
-		select	table_name,
-			id_column
-		from	acs_object_type_tables
-		where	object_type = :rest_otype) t
+		user_tab_columns utc
 	where
-		lower(utc.table_name) = t.table_name
+		-- check the main tables for all object types
+		lower(utc.table_name) in (
+			select	lower(table_name)
+			from	acs_object_types
+			where	object_type in ('[join $super_types "', '"]')
+		) OR
+		-- check the extension tables for all object types
+		lower(utc.table_name) in (
+			select	lower(table_name)
+			from	acs_object_type_tables
+			where	object_type in ('[join $super_types "', '"]')
+		)
     "
 
     return [db_list columns $columns_sql]
@@ -1330,6 +1556,8 @@ ad_proc -public im_rest_valid_sql {
     The validator is based on applying a number of rules using a rule engine.
     Return the validation result if debug=1.
 } {
+    ns_log Notice "im_rest_valid_sql: vars=$variables, sql=$string"
+
     # An empty string is a valid SQL...
     if {"" == $string} { return 1 }
 
