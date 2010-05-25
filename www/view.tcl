@@ -36,6 +36,9 @@ if {[info exists report_code]} {
     if {"" != $id} { set report_id $id }
 }
 
+ns_log Notice "/intranet-reporting/view: report_code='[im_opt_val report_code]', report_id='[im_opt_val report_id]'"
+
+
 set no_redirect_p 0
 if {"xml" == $format} { set no_redirect_p 1 }
 set current_user_id [im_require_login -no_redirect_p $no_redirect_p]
@@ -57,8 +60,17 @@ set read_p [db_string report_perms "
         where   m.menu_id = :menu_id
 " -default 'f']
 if {![string equal "t" $read_p]} {
-    ad_return_complaint 1 "<li>
-    [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
+    switch $format {
+	xml {
+	    # Return a reasonable XML message indicating
+	    # permission issues
+	    im_rest_error -http_status 403 -message "The current user doesn't have the right to see this report.'"
+	}
+	default {
+	    ad_return_complaint 1 "<li>
+	    [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
+	}
+    }
     ad_script_abort
 }
 
