@@ -230,9 +230,12 @@ ad_proc -private im_rest_call {
 	}
 
 	POST {
-	    # Is there a valid rest_oid?
+	    ns_log Notice "im_rest_call: Found a POST operation on object_type=$rest_otype with object_id=$rest_oid"
+
+	    # Is the post operation performed on a particular object or on the object_type?
 	    if {"" != $rest_oid && 0 != $rest_oid} {
-		# Return everything we know about the object
+
+		# generic POST
 		return [im_rest_post_object \
 		    -format $format \
 		    -user_id $user_id \
@@ -240,8 +243,11 @@ ad_proc -private im_rest_call {
 		    -rest_oid $rest_oid \
 		    -query_hash_pairs $query_hash_pairs \
 		]
+		
 	    } else {
+
 		# Return query from the object rest_otype
+		ns_log Notice "im_rest_call: Found a POST operation on object_type=$rest_otype"
 		return [im_rest_post_object_type \
 			    -format $format \
 			    -user_id $user_id \
@@ -1041,9 +1047,9 @@ ad_proc -private im_rest_post_object_type {
 
     # Switch to object specific procedures for handling new object creation
     # Check if the procedure exists.
-    if {0 != [llength [info commands im_rest_post_$rest_otype]]} {
+    if {0 != [llength [info commands im_rest_post_object_type_$rest_otype]]} {
 	
-	set rest_oid [eval [list im_rest_post_$rest_otype \
+	set rest_oid [eval [list im_rest_post_object_type_$rest_otype \
 		  -format $format \
 		  -user_id $user_id \
 		  -content $content \
@@ -1071,6 +1077,7 @@ ad_proc -private im_rest_post_object_type {
     return
 }
 
+
 ad_proc -private im_rest_post_object {
     { -format "xml" }
     { -user_id 0 }
@@ -1086,6 +1093,24 @@ ad_proc -private im_rest_post_object {
 
     # Get the HTTP contents
     set content [ns_conn content]
+
+
+    # Check if there is a customized version of this post handler
+    if {0 != [llength [info commands im_rest_post_object_$rest_otype]]} {
+	
+	ns_log Notice "im_rest_post_object: found a customized POST handler for rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
+	set rest_oid [eval [list im_rest_post_object_$rest_otype \
+		  -format $format \
+		  -user_id $user_id \
+		  -rest_otype $rest_otype \
+		  -rest_oid $rest_oid \
+		  -query_hash_pairs $query_hash_pairs \
+		  -debug $debug \
+		  -content $content \
+	]]
+	return
+    }
+
 
     # store the key-value pairs into a hash array
     if {[catch {set doc [dom parse $content]} err_msg]} {
@@ -1105,7 +1130,7 @@ ad_proc -private im_rest_post_object {
     im_rest_object_type_update_sql \
 	-rest_otype $rest_otype \
 	-rest_oid $rest_oid \
-	-hash_array [array get hash_array] \
+	-hash_array [array get hash_array]
 
     # The update was successful - return a suitable message.
     switch $format {
@@ -1122,6 +1147,7 @@ ad_proc -private im_rest_post_object {
     }
 
 }
+
 
 # --------------------------------------------------------
 # Auxillary functions

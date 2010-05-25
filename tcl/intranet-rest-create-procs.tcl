@@ -17,14 +17,14 @@ ad_library {
 # Creation of Projects, Translation Tasks, Invoices etc.
 # -------------------------------------------------------
 
-ad_proc -private im_rest_post_im_project {
+ad_proc -private im_rest_post_object_type_im_project {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
 } {
     Create a new project and returns the project_id.
 } {
-    ns_log Notice "im_rest_post_im_project: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_im_project: user_id=$user_id"
 
     # store the key-value pairs into a hash array
     if {[catch {set doc [dom parse $content]} err_msg]} {
@@ -94,14 +94,14 @@ ad_proc -private im_rest_post_im_project {
 # Translation Task
 # --------------------------------------------------------
 
-ad_proc -private im_rest_post_im_trans_task {
+ad_proc -private im_rest_post_object_type_im_trans_task {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
 } {
     Create a new Translation Task and return the task_id.
 } {
-    ns_log Notice "im_rest_post_im_trans_task: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_im_trans_task: user_id=$user_id"
 
     # store the key-value pairs into a hash array
     if {[catch {set doc [dom parse $content]} err_msg]} {
@@ -170,14 +170,14 @@ ad_proc -private im_rest_post_im_trans_task {
 # Invoices
 # --------------------------------------------------------
 
-ad_proc -private im_rest_post_im_invoice {
+ad_proc -private im_rest_post_object_type_im_invoice {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
 } {
     Create a new Financial Document and return the task_id.
 } {
-    ns_log Notice "im_rest_post_im_invoice: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_im_invoice: user_id=$user_id"
 
     # store the key-value pairs into a hash array
     if {[catch {set doc [dom parse $content]} err_msg]} {
@@ -255,17 +255,18 @@ ad_proc -private im_rest_post_im_invoice {
 
 
 # --------------------------------------------------------
-# Invoices
+# Invoice Items - It's not really an object type,
+# so we have to fake it here.
 # --------------------------------------------------------
 
-ad_proc -private im_rest_post_im_invoice_item {
+ad_proc -private im_rest_post_object_type_im_invoice_item {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
 } {
     Create a new Financial Document line and return the item_id.
 } {
-    ns_log Notice "im_rest_post_im_invoice_item: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_im_invoice_item: user_id=$user_id"
 
     # store the key-value pairs into a hash array
     if {[catch {set doc [dom parse $content]} err_msg]} {
@@ -332,6 +333,157 @@ ad_proc -private im_rest_post_im_invoice_item {
 
 
 # --------------------------------------------------------
-# 
+# im_hour
+# Not an object type really, so we have to fake it here.
 # --------------------------------------------------------
+
+
+ad_proc -private im_rest_post_object_type_im_hour {
+    { -format "xml" }
+    { -user_id 0 }
+    { -content "" }
+} {
+    Create a new Timesheet Hour line and return the item_id.
+} {
+    ns_log Notice "im_rest_post_object_type_im_hour: user_id=$user_id"
+
+    # store the key-value pairs into a hash array
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    }
+
+    set root_node [$doc documentElement]
+    foreach child [$root_node childNodes] {
+	# Store the values
+	set nodeName [$child nodeName]
+	set nodeText [$child text]
+	set hash($nodeName) $nodeText
+	set $nodeName $nodeText
+    }
+
+    # Check for duplicate
+    set dup_sql "
+		select  count(*)
+		from    im_hours
+		where	user_id = :user_id and
+			project_id = :project_id and
+			day = :day
+    "
+    if {[db_string duplicates $dup_sql]} {
+	return [im_rest_error -http_status 406 -message "Duplicate Timesheet Hour: Your item already exists with the specified user, project and day."]
+    }
+
+    if {[catch {
+	set rest_oid [db_string item_id "select nextval('im_hours_seq')"]
+	db_dml new_im_hour "
+		insert into im_hours (
+			hour_id,
+			user_id,
+			project_id,
+			day,
+			hours,
+			note
+		) values (
+			:rest_oid,
+			:user_id,
+			:project_id,
+			:day,
+			:hours,
+			:note
+		)
+	"
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error creating Timesheet Hour: '$err_msg'."]
+    }
+
+    if {[catch {
+	im_rest_object_type_update_sql \
+	    -rest_otype "im_hour" \
+	    -rest_oid $rest_oid \
+	    -hash_array [array get hash]
+
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error updating financial document item: '$err_msg'."]
+    }
+
+    return $rest_oid
+}
+
+
+
+
+
+
+
+# --------------------------------------------------------
+# im_hours
+# --------------------------------------------------------
+
+
+ad_proc -private im_rest_post_object_im_hour {
+    { -format "xml" }
+    { -user_id 0 }
+    { -rest_otype "" }
+    { -rest_oid "" }
+    { -query_hash_pairs "" }
+    { -content "" }
+    { -debug 0 }
+} {
+    Handler for POST calls on particular im_hour objects.
+    im_hour is not a real object type and performs a "delete" 
+    operation specifying hours=0 or hours="".
+} {
+    ns_log Notice "im_rest_post_object_im_hour: rest_oid=$rest_oid"
+
+    # store the key-value pairs into a hash array
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    }
+
+    set root_node [$doc documentElement]
+    array unset hash_array
+    foreach child [$root_node childNodes] {
+	set nodeName [$child nodeName]
+	set nodeText [$child text]
+       	set hash_array($nodeName) $nodeText
+    }
+    ns_log Notice "im_rest_post_object_im_hour: hash_array = [array get hash_array]"
+
+    set hours $hash_array(hours)
+    set hour_id $hash_array(hour_id)
+    if {"" == $hours || 0.0 == $hours} {
+	
+	# Delete the hour instead of updating it.
+	# im_hours is not a real object, so we don't need to
+	# cleanup acs_objects.
+	ns_log Notice "im_rest_post_object_im_hour: deleting hours because hours='$hours', hour_id=$hour_id"
+	db_dml del_hours "delete from im_hours where hour_id = :hour_id"
+
+    } else {
+
+
+	# Update the object. This routine will return a HTTP error in case 
+	# of a database constraint violation
+	ns_log Notice "im_rest_post_object_im_hour: updating hours=$hours with hour_id=$hour_id"
+	im_rest_object_type_update_sql \
+	    -rest_otype $rest_otype \
+	    -rest_oid $rest_oid \
+	    -hash_array [array get hash_array]
+
+    }
+
+    # The update was successful - return a suitable message.
+    switch $format {
+	html { 
+	    set page_title "object_type: $rest_otype"
+	    doc_return 200 "text/html" "
+		[im_header $page_title][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle>Object ID</td></tr>
+		<tr<td>$rest_oid</td></tr>
+		</table>[im_footer]
+	    "
+	}
+	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id>$rest_oid</object_id>\n" }
+    }
+}
 
