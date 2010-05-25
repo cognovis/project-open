@@ -79,6 +79,7 @@ ad_proc -private im_rest_call_get {
 
     # Call the main request processing routine
     if {[catch {
+
 	im_rest_call \
 	    -method $http_method \
 	    -format $format \
@@ -86,8 +87,12 @@ ad_proc -private im_rest_call_get {
 	    -rest_otype $rest_otype \
 	    -rest_oid $rest_oid \
 	    -query_hash_pairs [array get query_hash]
+
     } err_msg]} {
+
+	ns_log Notice "im_rest_call_get: im_rest_call returned an error: $err_msg"
 	return [im_rest_error -http_status 500 -message "Internal error: [ns_quotehtml $err_msg]"]
+
     }
     
 }
@@ -250,6 +255,9 @@ ad_proc -private im_rest_call {
 	    return [im_rest_error -http_status 400 -message "Unknown HTTP request '$method'. Valid requests include {GET|POST}."]
 	}
     }
+
+
+
 }
 
 
@@ -274,7 +282,8 @@ ad_proc -private im_rest_page {
     ]
 
     set result [ad_parse_template -params $params "/packages/intranet-rest/www/$rest_otype"]
-    doc_return 200 "text/html" $result
+    doc_return 200 "text/xml" $result
+    return
 }
 
 ad_proc -private im_rest_get_object {
