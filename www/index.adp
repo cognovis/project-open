@@ -1,6 +1,4 @@
-<if @xml_p@>
-@xml;noquote@
-</if>
+<if @xml_p@>@xml;noquote@</if>
 <else>
 
 	<master>
