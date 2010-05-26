@@ -288,7 +288,15 @@ ad_proc -private im_rest_page {
     ]
 
     set result [ad_parse_template -params $params "/packages/intranet-rest/www/$rest_otype"]
-    doc_return 200 "text/xml" $result
+    if {[regexp {<\?xml} $result match]} {
+	set mime_type "text/xml"
+    } else {
+	set mime_type "text/html"
+    }
+
+#    ad_return_complaint 1 [ns_quotehtml $result]
+
+    doc_return 200 $mime_type $result
     return
 }
 
