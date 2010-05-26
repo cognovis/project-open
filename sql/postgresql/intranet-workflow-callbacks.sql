@@ -288,3 +288,85 @@ begin
 	END IF;
 	return 0;
 end;' language 'plpgsql';
+
+
+
+-- Enable callback that deletes all tokens in the systems except the one
+-- for the current transition.
+-- This function allows to deal with parallelism in the Petri-Net and
+-- the situation that one approval path of severals is not OK.
+--
+-- The function will also "cancel" any started transitions, in order to
+-- cancel parallel tasks that were already started.
+--
+-- p_custom_arg is not used.
+--
+create or replace function im_workflow__delete_all_other_tokens (integer, text, text)
+returns integer as $body$
+declare
+	p_case_id		alias for $1;
+	p_transition_key	alias for $2;
+	p_custom_arg		alias for $3;
+
+	v_task_id		integer;	v_case_id		integer;
+	v_object_id		integer;	v_creation_user		integer;
+	v_creation_ip		varchar;	v_journal_id		integer;
+	v_transition_key	varchar;	v_workflow_key		varchar;
+	v_status		varchar;
+	v_str			text;
+	row			RECORD;
+begin
+	-- Select out some frequently used variables of the environment
+	select  c.object_id, c.workflow_key, task_id, c.case_id
+	into	v_object_id, v_workflow_key, v_task_id, v_case_id
+	from	wf_tasks t, wf_cases c
+	where   c.case_id = p_case_id
+		and t.case_id = c.case_id
+		and t.workflow_key = c.workflow_key
+		and t.transition_key = p_transition_key;
+
+	v_journal_id := journal_entry__new(
+		null, v_case_id,
+		v_transition_key || ' set_object_status_id ' || im_category_from_id(p_custom_arg::integer),
+		v_transition_key || ' set_object_status_id ' || im_category_from_id(p_custom_arg::integer),
+		now(), v_creation_user, v_creation_ip,
+		'Deleting all other tokens and resetting transitions, except for "' || p_transition_key || '".'
+	);
+
+	-- Cancel all started tasks. This will result in releasing the tokens to their places.
+	FOR row IN
+		select	*
+		from	wf_tasks
+		where	case_id = p_case_id and
+			state = 'started'
+	LOOP
+		-- PERFORM acs_log__debug('im_workflow__delete_all_other_tokens', 'Cancel task '||row.task_id);
+		PERFORM workflow_case__cancel_task (row.task_id, v_journal_id);
+	END LOOP;
+
+	-- Delete all "free" tokens
+	FOR row IN
+		select	*
+		from	wf_tokens
+		where	case_id = p_case_id and
+			state = 'free'
+	LOOP
+		-- PERFORM acs_log__debug('im_workflow__delete_all_other_tokens', 'Deleting token '||row.token_id||' in place '||row.place_key);
+        	delete from wf_tokens where token_id = row.token_id;
+	END LOOP;
+
+	-- For all places that link to the current (new!) transition
+	-- create a new token to enable the current transition
+	FOR row IN
+		select	*
+		from	wf_arcs
+		where	workflow_key = v_workflow_key and
+			transition_key = p_transition_key and 
+			direction = 'in'
+	LOOP
+		-- PERFORM acs_log__debug('im_workflow__delete_all_other_tokens', 'Add token in place '||row.place_key);
+		PERFORM workflow_case__add_token (p_case_id, row.place_key, null);
+	END LOOP;
+
+	return 0;
+end; $body$ language 'plpgsql';
