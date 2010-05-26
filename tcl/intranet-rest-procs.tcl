@@ -718,14 +718,13 @@ ad_proc -private im_rest_get_object_type {
 
 	set url "$base_url/$rest_otype/$rest_oid"
 	switch $format {
-	    xml { append result "<object_id href=\"$url\">$rest_oid</object_id>\n" }
+	    xml { append result "<object_id href=\"$url\">[ns_quotehtml $object_name]</object_id>\n" }
 	    html { 
 		append result "<tr>
 			<td>$rest_oid</td>
 			<td><a href=\"$url?format=html\">$object_name</a>
 		</tr>\n" 
 	    }
-	    xml {}
 	}
     }
 	
