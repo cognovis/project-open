@@ -49,8 +49,15 @@ ad_proc -private im_rest_call_get {
     array set query_hash {}
     foreach query_piece $query_pieces {
 	if {[regexp {^([^=]+)=(.+)$} $query_piece match var val]} {
+	    ns_log Notice "im_rest_call_get: var='$var', val='$val'"
+
+	    # Additional decoding: replace "+" by " "
+	    regsub -all {\+} $var { } var
+	    regsub -all {\+} $val { } val
+
 	    set var [ns_urldecode $var]
 	    set val [ns_urldecode $val]
+	    ns_log Notice "im_rest_call_get: var='$var', val='$val'"
 	    set query_hash($var) $val
 	}
     }
@@ -641,6 +648,10 @@ ad_proc -private im_rest_get_object_type {
     set where_clause ""
     if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
 
+    set where_clause [ns_urldecode $where_clause]
+    ns_log Notice "im_rest_get_object_type: where_clause=$where_clause"
+
+
     # Determine the list of valid columns for the object type
     set valid_vars [util_memoize [list im_rest_object_type_columns -rest_otype $rest_otype]]
 
@@ -1049,8 +1060,8 @@ ad_proc -private im_rest_post_object_type {
     set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = '$rest_otype'" -default 0]]
     set rest_otype_write_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "create"]
 
-    # Get the HTTP contents
-    set content [ns_conn content]
+    # Get the content of the HTTP POST request
+    set content [im_rest_get_content]
 
     # Switch to object specific procedures for handling new object creation
     # Check if the procedure exists.
@@ -1098,9 +1109,8 @@ ad_proc -private im_rest_post_object {
 } {
     ns_log Notice "im_rest_post_object: rest_otype=$rest_otype, rest_oid=$rest_oid, user_id=$user_id, query_hash=$query_hash_pairs"
 
-    # Get the HTTP contents
-    set content [ns_conn content]
-
+    # Get the content of the HTTP POST request
+    set content [im_rest_get_content]
 
     # Check if there is a customized version of this post handler
     if {0 != [llength [info commands im_rest_post_object_$rest_otype]]} {
@@ -1716,3 +1726,34 @@ ad_proc -public im_rest_error {
 }
 
 
+
+
+
+ad_proc -public im_rest_get_content {} {
+    There's no [ns_conn content] so this is a hack to get the content of the
+    REST request. Taken from ns_xmlrpc.
+    @return string - the XML request
+    @author Dave Bauer
+} {
+    # (taken from aol30/modules/tcl/form.tcl)
+    # Spool content into a temporary read/write file.
+    # ns_openexcl can fail, since tmpnam is known not to
+    # be thread/process safe.  Hence spin till success
+    set fp ""
+    while {$fp == ""} {
+        set filename "[ns_tmpnam][clock clicks -milliseconds].xmlrpc2"
+        set fp [ns_openexcl $filename]
+    }
+
+    fconfigure $fp -translation binary
+    ns_conncptofp $fp
+    close $fp
+
+    set fp [open $filename r]
+    while {![eof $fp]} {
+        append text [read $fp]
+    }
+    close $fp
+    ns_unlink $filename
+    return $text
+}
