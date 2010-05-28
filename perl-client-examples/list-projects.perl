@@ -47,7 +47,6 @@ $body =  $response->content;
 print "list-projects.perl: HTTP body=$body\n" if ($debug > 8);
 
 
-
 # -------------------------------------------------------
 # Creates a XML parser object with a number of event handlers
 

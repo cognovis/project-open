@@ -41,6 +41,7 @@ switch $format {
 	# Return the list of object types
 	# ---------------------------------------------------------
 	
+	set xml_p 1
 	set otype_sql "select object_type from acs_object_types"
 	set otype_xml ""
 	db_foreach otypes $otype_sql { 
@@ -48,7 +49,6 @@ switch $format {
 	}
 
 	set xml "<?xml version='1.0' encoding='UTF-8'?>\n<object_types>\n$otype_xml</object_types>\n"
-	set xml_p 1
 
     }
     default {
@@ -57,6 +57,7 @@ switch $format {
 	# Continue as a normal HTML page
 	# ---------------------------------------------------------
 	
+	set xml_p 0
 	set current_user_id [ad_maybe_redirect_for_registration]
 	set current_user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 	set page_title [lang::message::lookup "" intranet-rest.REST_API_Overview "REST API Overview"]

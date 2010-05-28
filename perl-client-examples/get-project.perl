@@ -58,6 +58,14 @@ $body =  $response->content;
 print "list-projects.perl: HTTP body=$body\n" if ($debug > 8);
 
 
+# -------------------------------------------------------
+# Write the body into an XML file
+
+open(F,"> $project_id.xml");
+print F $body;
+close(F);
+
+
 
 # -------------------------------------------------------
 # Creates a XML parser object with a number of event handlers
