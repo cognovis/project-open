@@ -1129,6 +1129,24 @@ ad_proc -private im_rest_post_object {
     }
 
 
+
+    # Check if there is a customized version of this post handler
+    if {0 != [llength [info commands im_rest_post_object_$rest_otype]]} {
+	
+	ns_log Notice "im_rest_post_object: found a customized POST handler for rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
+	set rest_oid [eval [list im_rest_post_object_$rest_otype \
+		  -format $format \
+		  -user_id $user_id \
+		  -rest_otype $rest_otype \
+		  -rest_oid $rest_oid \
+		  -query_hash_pairs $query_hash_pairs \
+		  -debug $debug \
+		  -content $content \
+	]]
+	return
+    }
+
+
     # store the key-value pairs into a hash array
     if {[catch {set doc [dom parse $content]} err_msg]} {
 	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]

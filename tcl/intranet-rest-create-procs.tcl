@@ -166,6 +166,158 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
 }
 
 
+
+# --------------------------------------------------------
+# User
+# --------------------------------------------------------
+
+ad_proc -private im_rest_post_object_type_user {
+    { -format "xml" }
+    { -user_id 0 }
+    { -content "" }
+} {
+    Create a new User object return the user_id.
+} {
+    ns_log Notice "im_rest_post_object_type_user: Started"
+
+    # store the key-value pairs into a hash array
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    }
+
+    set root_node [$doc documentElement]
+    foreach child [$root_node childNodes] {
+	set nodeName [$child nodeName]
+	set nodeText [$child text]
+	
+	# Store the values
+	set hash($nodeName) $nodeText
+	set $nodeName $nodeText
+    }
+
+    # Check for duplicate
+    set dup_sql "
+		select  count(*)
+		from    users u,
+			persons pe,
+			parties pa
+		where	u.user_id = pe.person_id and
+			u.user_id = pa.party_id and
+			(	lower(u.username) = lower(:username) OR
+				lower(pa.email) lower(:email)
+			)
+    "
+    if {[db_string duplicates $dup_sql]} {
+	return [im_rest_error -http_status 406 -message "Duplicate User: Username or Email already exist."]
+    }
+
+    if {[catch {
+
+	ns_log Notice "im_rest_post_object_type_user: about to create user"
+	array set creation_info [auth::create_user \
+				     -user_id $user_id \
+				     -username $username \
+				     -email $email \
+				     -first_names $first_names \
+				     -last_name $last_name \
+				     -screen_name $screen_name \
+				     -password $password \
+				     -url $url \
+				    ]
+
+    
+	if { "ok" != $creation_info(creation_status) || "ok" != $creation_info(account_status)} {
+	    return [im_rest_error -http_status 406 -message "User creation unsuccessfull: [array get creation_status]"]
+	}
+	
+	# Update creation user to allow the creator to admin the user
+	db_dml update_creation_user_id "
+		update acs_objects
+		set creation_user = :current_user_id
+		where object_id = :user_id
+	"
+
+	ns_log Notice "im_rest_post_object_type_user: person::update -person_id=$user_id -first_names=$first_names -last_name=$last_name"
+	person::update \
+		-person_id $user_id \
+		-first_names $first_names \
+		-last_name $last_name
+	    
+	    ns_log Notice "im_rest_post_object_type_user: party::update -party_id=$user_id -url=$url -email=$email"
+	    party::update \
+		-party_id $user_id \
+		-url $url \
+		-email $email
+	    
+	    ns_log Notice "im_rest_post_object_type_user: acs_user::update -user_id=$user_id -screen_name=$screen_name"
+	    acs_user::update \
+		-user_id $user_id \
+		-screen_name $screen_name \
+		-username $username
+	}
+
+
+        # Add the user to the "Registered Users" group, because
+        # (s)he would get strange problems otherwise
+        # Use a non-cached version here to avoid issues!
+        set registered_users [im_registered_users_group_id]
+        set reg_users_rel_exists_p [db_string member_of_reg_users "
+		select	count(*) 
+		from	group_member_map m, membership_rels mr
+		where	m.member_id = :user_id
+			and m.group_id = :registered_users
+			and m.rel_id = mr.rel_id 
+			and m.container_id = m.group_id 
+			and m.rel_type::text = 'membership_rel'::text
+	"]
+	if {!$reg_users_rel_exists_p} {
+	    relation_add -member_state "approved" "membership_rel" $registered_users $user_id
+	}
+
+
+	# Add a im_employees record to the user since the 3.0 PostgreSQL
+	# port, because we have dropped the outer join with it...
+	if {[im_table_exists im_employees]} {
+	    
+	    # Simply add the record to all users, even it they are not employees...
+	    set im_employees_exist [db_string im_employees_exist "select count(*) from im_employees where employee_id = :user_id"]
+	    if {!$im_employees_exist} {
+		db_dml add_im_employees "insert into im_employees (employee_id) values (:user_id)"
+	    }
+	}
+
+
+	# Add a im_freelancers record to the user since the 3.0 PostgreSQL
+	# port, because we have dropped the outer join with it...
+	if {[im_table_exists im_freelancers]} {
+	    
+	    # Simply add the record to all users, even it they are not freelancers...
+	    set im_freelancers_exist [db_string im_freelancers_exist "select count(*) from im_freelancers where freelancer_id = :user_id"]
+	    if {!$im_freelancers_exist} {
+		db_dml add_im_freelancers "insert into im_freelancers (freelancer_id) values (:user_id)"
+	    }
+	}
+
+
+
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error creating user: '$err_msg'."]
+    }
+
+    if {[catch {
+	im_rest_object_type_update_sql \
+	    -rest_otype "user" \
+	    -rest_oid $rest_oid \
+	    -hash_array [array get hash]
+
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error updating user: '$err_msg'."]
+    }
+    
+    return $rest_oid
+}
+
+
 # --------------------------------------------------------
 # Invoices
 # --------------------------------------------------------
@@ -408,10 +560,6 @@ ad_proc -private im_rest_post_object_type_im_hour {
 
     return $rest_oid
 }
-
-
-
-
 
 
 
