@@ -37,6 +37,7 @@ set show_context_help_p 0
 
 set main_navbar_label "reporting"
 
+set sub_navbar ""
 if {[llength $project_id] == 1} {
     # Exactly one project - quite a frequent case.
     # Show a ProjectMenu so that it looks like we've gone to a different tab.
