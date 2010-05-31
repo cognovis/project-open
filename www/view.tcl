@@ -16,8 +16,8 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-    report_id:integer,optional
-    report_code:optional
+    { report_id:integer "" }
+    { report_code "" }
     {format "html" }
     {return_url "/intranet-reporting/index"}
     { user_id:integer 0}
@@ -31,7 +31,7 @@ ad_page_contract {
 # Accept a report_code as an alternative to the report_id parameter.
 # This allows us to access this page via a REST interface more easily,
 # because the object_id of a report may vary across systems.
-if {[info exists report_code]} { 
+if {"" != $report_code} {
     set id [db_string code_id "select report_id from im_reports where report_code = :report_code" -default ""]
     if {"" != $id} { set report_id $id }
 }
