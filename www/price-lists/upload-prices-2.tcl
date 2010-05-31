@@ -143,7 +143,7 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
        price_id, uom_id, company_id, task_type_id, material_id,
        valid_from, valid_through, currency, price
     ) VALUES (
-       im_timesheet_prices_seq.nextval, :uom_id, :company_id, :task_type_id, :material_id,
+       nextval('im_timesheet_prices_seq'), :uom_id, :company_id, :task_type_id, :material_id,
        :valid_from, :valid_through, :currency, :price
     )"
 
