@@ -94,7 +94,19 @@ set view_tickets_all_p [im_permission $current_user_id "view_tickets_all"]
 
 set page_title [lang::message::lookup "" intranet-helpdesk.New_Ticket "New Ticket"]
 if {[exists_and_not_null ticket_id]} {
+
+    # Set a suitable page title
     set page_title [db_string title "select project_name from im_projects where project_id = :ticket_id" -default ""]
+
+    # Check if the ticket exists...
+    set ticket_count [db_string ticket_count "select count(*) from im_tickets where ticket_id = :ticket_id"]
+    if {0 == $ticket_count} {
+	ad_return_complaint 1 "<b>[lang::message::lookup "" intranet-helpdesk.No_Ticket_Found "No Ticket Found"]</b>:<br>
+	[lang::message::lookup "" intranet-helpdesk.No_Ticket_Found_Message "You are trying to access a ticket that has 
+	been deleted from the database ('nuked')."]"
+	ad_script_abort
+    }
+
 }
 if {"" == $page_title && 0 != $ticket_type_id} { 
     set ticket_type [im_category_from_id $ticket_type_id]
