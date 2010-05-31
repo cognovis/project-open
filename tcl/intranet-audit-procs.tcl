@@ -157,7 +157,9 @@ ad_proc -public im_audit_object_value {
     Concatenates the value of all object fields (according to DynFields)
     to form a single string describing the object's values.
 } {
+    if {"" == $object_id} { return "" }
     im_security_alert_check_integer -location "im_audit_object_value" -value $object_id
+
     if {"" == $object_type} {
 	set object_type [util_memoize [list db_string otype "select object_type from acs_objects where object_id = $object_id" -default ""]]
     }
