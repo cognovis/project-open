@@ -75,7 +75,7 @@ db_foreach cats $sql {
     }
 
     regsub -all " " $category "_" category_key
-    set category_l10n [lang::message::lookup "" intranet-core.category_key $category]
+    set category_l10n [lang::message::lookup "" intranet-core.$category_key $category]
     set category_comment_key ${category_key}_comment
 
     set comment $category_description
