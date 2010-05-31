@@ -5,5 +5,5 @@ SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrad
 
 update im_menus
 set url = '/intranet-timesheet2-tasks/index?view_name=im_timesheet_task_list'
-where url = url = '/intranet-timesheet2-tasks/index?view_name=im_timesheeet_task_list'
+where url = '/intranet-timesheet2-tasks/index?view_name=im_timesheeet_task_list'
 ;
