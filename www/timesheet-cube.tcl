@@ -279,6 +279,9 @@ foreach var $dimension_vars {
 	main_project_type { lappend derefs "im_category_from_id(p1.project_type_id) as main_project_type" }
 	main_project_status { lappend derefs "im_category_from_id(p1.project_status_id) as main_project_status" }
 
+	main2_project_type { lappend derefs "im_category_from_id(p2.project_type_id) as main2_project_type" }
+	main2_project_status { lappend derefs "im_category_from_id(p2.project_status_id) as main2_project_status" }
+
 	project_type { lappend derefs "im_category_from_id(h.sub_project_type_id) as project_type" }
 	project_status { lappend derefs "im_category_from_id(h.sub_project_status_id) as project_status" }
 
