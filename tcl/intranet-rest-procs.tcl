@@ -237,12 +237,11 @@ ad_proc -private im_rest_call {
 	}
 
 	POST {
-	    ns_log Notice "im_rest_call: Found a POST operation on object_type=$rest_otype with object_id=$rest_oid"
-
 	    # Is the post operation performed on a particular object or on the object_type?
 	    if {"" != $rest_oid && 0 != $rest_oid} {
 
-		# generic POST
+		# POST with object_id => Update operation on an object
+		ns_log Notice "im_rest_call: Found a POST operation on object_type=$rest_otype with object_id=$rest_oid"
 		return [im_rest_post_object \
 		    -format $format \
 		    -user_id $user_id \
@@ -253,7 +252,7 @@ ad_proc -private im_rest_call {
 		
 	    } else {
 
-		# Return query from the object rest_otype
+		# POST without object_id => Update operation on the "factory" object_type
 		ns_log Notice "im_rest_call: Found a POST operation on object_type=$rest_otype"
 		return [im_rest_post_object_type \
 			    -format $format \
@@ -729,7 +728,7 @@ ad_proc -private im_rest_get_object_type {
 
 	set url "$base_url/$rest_otype/$rest_oid"
 	switch $format {
-	    xml { append result "<object_id href=\"$url\">[ns_quotehtml $object_name]</object_id>\n" }
+	    xml { append result "<object_id id=\"$rest_oid\" href=\"$url\">[ns_quotehtml $object_name]</object_id>\n" }
 	    html { 
 		append result "<tr>
 			<td>$rest_oid</td>
@@ -820,7 +819,7 @@ ad_proc -private im_rest_get_im_invoice_items {
 
 	set url "$base_url/$rest_otype/$rest_oid"
 	switch $format {
-	    xml { append result "<object_id href=\"$url\">$rest_oid</object_id>\n" }
+	    xml { append result "<object_id id=\"$rest_oid\" href=\"$url\">$rest_oid</object_id>\n" }
 	    html { 
 		append result "<tr>
 			<td>$rest_oid</td>
@@ -917,7 +916,7 @@ ad_proc -private im_rest_get_im_hours {
     db_foreach objects $sql {
 	set url "$base_url/$rest_otype/$rest_oid"
 	switch $format {
-	    xml { append result "<object_id href=\"$url\">$rest_oid</object_id>\n" }
+	    xml { append result "<object_id id=\"$rest_oid\" href=\"$url\">$rest_oid</object_id>\n" }
 	    html { 
 		append result "<tr>
 			<td>$rest_oid</td>
@@ -1007,7 +1006,7 @@ ad_proc -private im_rest_get_im_categories {
 
 	set url "$base_url/$rest_otype/$rest_oid"
 	switch $format {
-	    xml { append result "<object_id href=\"$url\">$rest_oid</object_id>\n" }
+	    xml { append result "<object_id id=\"$rest_oid\" href=\"$url\">$rest_oid</object_id>\n" }
 	    html { 
 		append result "<tr>
 			<td>$rest_oid</td>
@@ -1083,7 +1082,7 @@ ad_proc -private im_rest_post_object_type {
 		</table>[im_footer]
 		"
 	    }
-	    xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id>$rest_oid</object_id>\n" }
+	    xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id id=\"$rest_oid\">$rest_oid</object_id>\n" }
 	    default {
 		ad_return_complaint 1 "Invalid format: '$format'"
 	    }
@@ -1159,7 +1158,7 @@ ad_proc -private im_rest_post_object {
 		</table>[im_footer]
 	    "
 	}
-	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id>$rest_oid</object_id>\n" }
+	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id id=\"$rest_oid\">$rest_oid</object_id>\n" }
     }
 
 }

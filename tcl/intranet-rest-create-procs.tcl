@@ -236,7 +236,7 @@ ad_proc -private im_rest_post_object_type_user {
 		set creation_user = :current_user_id
 		where object_id = :user_id
 	"
-
+    
 	ns_log Notice "im_rest_post_object_type_user: person::update -person_id=$user_id -first_names=$first_names -last_name=$last_name"
 	person::update \
 		-person_id $user_id \
@@ -254,7 +254,6 @@ ad_proc -private im_rest_post_object_type_user {
 		-user_id $user_id \
 		-screen_name $screen_name \
 		-username $username
-	}
 
 
         # Add the user to the "Registered Users" group, because
@@ -274,7 +273,7 @@ ad_proc -private im_rest_post_object_type_user {
 	    relation_add -member_state "approved" "membership_rel" $registered_users $user_id
 	}
 
-
+    
 	# Add a im_employees record to the user since the 3.0 PostgreSQL
 	# port, because we have dropped the outer join with it...
 	if {[im_table_exists im_employees]} {
@@ -285,8 +284,8 @@ ad_proc -private im_rest_post_object_type_user {
 		db_dml add_im_employees "insert into im_employees (employee_id) values (:user_id)"
 	    }
 	}
-
-
+	
+	
 	# Add a im_freelancers record to the user since the 3.0 PostgreSQL
 	# port, because we have dropped the outer join with it...
 	if {[im_table_exists im_freelancers]} {
@@ -297,8 +296,8 @@ ad_proc -private im_rest_post_object_type_user {
 		db_dml add_im_freelancers "insert into im_freelancers (freelancer_id) values (:user_id)"
 	    }
 	}
-
-
+	
+        
 
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error creating user: '$err_msg'."]
@@ -313,7 +312,7 @@ ad_proc -private im_rest_post_object_type_user {
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating user: '$err_msg'."]
     }
-    
+
     return $rest_oid
 }
 
@@ -631,7 +630,7 @@ ad_proc -private im_rest_post_object_im_hour {
 		</table>[im_footer]
 	    "
 	}
-	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id>$rest_oid</object_id>\n" }
+	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id id=\"$rest_oid\">$rest_oid</object_id>\n" }
     }
 }
 
