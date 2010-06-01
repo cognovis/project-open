@@ -39,10 +39,11 @@ db_1row project_info "
 		project_id = :project_id and
 		c.company_id = p.company_id
 "
+# Variables "project_path" and "company_path" and many other 
+# are now defined
 
 
-# Variables "project_path" and "company_path" are now defined
-
-set base_url "http://ishare.company.com/base-folder"
-set url "$base_url/$company_path/$project_path/"
+# The Sharepoint URL may contain TCL variables and expressions
+set url_tcl [parameter::get_from_package_key -package_key "intranet-sharepoint" -parameter SharepointUrl -default "http://www.microsoft.com.com/"]
+eval "set url $url_tcl"
 

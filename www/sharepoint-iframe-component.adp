@@ -1,6 +1,5 @@
 
-<h1>iFrame Test</h1>
-
+<!-- Show the URL for testing purposes -->
 <p>
 Url: <tt>@url@</tt>
 </p>

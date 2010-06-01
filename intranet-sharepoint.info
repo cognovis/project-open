@@ -19,7 +19,9 @@
         <callbacks>
         </callbacks>
         <parameters>
-        <!-- No version parameters -->
+
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="SharepointUrl"  default="http://www.microsoft.com/base_url/$company_path/$project_path/" description="Base URL for the sharepoint server. You can use TCL syntax ($project_path, [im_category_from_id $project_type_id], ...) for forming the URL. All fields of im_project and it's im_company are available."/>
+
         </parameters>
 
     </version>
