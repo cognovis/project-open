@@ -145,7 +145,9 @@ db_multirow transitions transitions {
     set cases_url "cases?[export_vars -url {workflow_key transition_key {state active}}]"
 }
 
-set simple_p [wf_simple_workflow_p $workflow_key]
+# fraber 20100602: wf_simple_workflow_p returns an error...
+# set simple_p [wf_simple_workflow_p $workflow_key]
+set simple_p 0
 
 db_release_unused_handles
 
