@@ -10,11 +10,16 @@
 	from
 	    (select 
 		object_id, 
-		object_type || ' - ' || acs_object__name(object_id) as name
+		substring(object_type || ' - ' || acs_object__name(object_id) for 50) as name
 	    from 
 		acs_objects
 	    where object_type not in (
 			'acs_activity', 'acs_mail_multipart', 'cal_item',
+			'calendar', 'cr_item_child_rel', 'im_dynfield_attribute',
+			'im_rest_object_type', 'im_cost_center',
+			'notification_request', 'workflow_case_log_entry',
+			'notification_interval', 'notification_request',
+			'bt_bug_revision',
 			'im_biz_object_member', 'apm_package_version', 
 			'content_revision', 'membership_rel', 'apm_parameter', 
 			'im_cost', 'apm_parameter_value',
@@ -28,7 +33,8 @@
 			'apm_service', 'authority', 'group', 
 			'content_template', 'acs_mail_body', 'acs_mail_link', 
 			'journal_entry' 
-		)
+		) and
+		object_type not like '%_wf'
 	    ) o
 	where
 		name != ''
