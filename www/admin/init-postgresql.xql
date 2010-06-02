@@ -14,6 +14,7 @@
 	    from 
 		acs_objects
 	    where object_type not in (
+			'acs_activity', 'acs_mail_multipart', 'cal_item',
 			'im_biz_object_member', 'apm_package_version', 
 			'content_revision', 'membership_rel', 'apm_parameter', 
 			'im_cost', 'apm_parameter_value',
