@@ -119,11 +119,13 @@ ad_proc wf_assignment_widget {
 
     if { [info exists case_id] && ![empty_string_p $case_id] } {
 	set current_assignments [db_list assignment_select "
-	    select ca.party_id
-	      from wf_case_assignments ca, wf_cases c
-	     where c.case_id = :case_id
-	       and ca.role_key = :role_key
-	       and ca.workflow_key = c.workflow_key
+		select	ca.party_id
+		from	wf_case_assignments ca, 
+			wf_cases c
+		where	c.case_id = :case_id
+			and ca.role_key = :role_key
+			and ca.workflow_key = c.workflow_key
+		order by party_id
 	"]  
     } else {
 	set current_assignments {}
@@ -131,15 +133,16 @@ ad_proc wf_assignment_widget {
 
     set widget "<select name=\"$name\" multiple size=10>"
     db_foreach party_with_at_least_one_member {
-	select p.party_id, 
-   	       acs_object.name(p.party_id) as name, 
- 	       decode(p.email, '', '', '('||p.email||')') as email
-	from   parties p
-	where  0 < (select count(*)
+	select	p.party_id, 
+   		acs_object.name(p.party_id) as name, 
+ 		decode(p.email, '', '', '('||p.email||')') as email
+	from	parties p
+	where	0 < (select count(*)
   	            from   users u, 
 	            party_approved_member_map m
 	            where  m.party_id = p.party_id
-	            and    u.user_id = m.member_id)
+	            and    u.user_id = m.member_id
+		)
     } {
 	append widget "<option value=\"$party_id\" [ad_decode [lsearch -exact $current_assignments $party_id] -1 "" "selected"]>$name $email</option>"
     }
