@@ -64,7 +64,12 @@ if {![info exists task]} {
     # Don't show this page in WF panel.
     # Instead, redirect to this same page, but in TaskViewPage mode.
     # ad_returnredirect "/intranet-helpdesk/new?ticket_id=$task(object_id)"
-    ad_returnredirect $return_url
+
+    # fraber 20100602: redirecting to return_url leads to an infinite
+    # loop with workflow. Re-activating redirection to the TicketNewPage
+    # ad_returnredirect $return_url
+
+    ad_returnredirect [export_vars -base "/intranet-helpdesk/new" { {ticket_id $task(object_id)} {form_mode display}} ]
 
 }
 
