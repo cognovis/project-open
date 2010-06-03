@@ -401,7 +401,8 @@ ad_proc wf_graphviz_dot_exec {
     if { $to_file_p } {
 	set tmp_out [ns_mktemp "$tmp_path/outXXXXXX"]
     }
-    
+
+
     set fw [open $tmp_dot "w"]
     puts -nonewline $fw $dot
     close $fw
