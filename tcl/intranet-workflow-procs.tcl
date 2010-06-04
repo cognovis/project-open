@@ -397,7 +397,7 @@ ad_proc -public im_workflow_graph_component {
     db_foreach history $history_sql {
 	append history_html "
 	    <tr $bgcolor([expr $cnt % 2])>
-		<td><nobr>$transition_name</nobr></td>
+		<td>$transition_name</td>
 		<td><nobr><a href=/intranet/users/view?user_id=$holding_user>$holding_user_name</a></nobr></td>
 		<td><nobr>$started_date_pretty</nobr></td>
 	    </tr>
@@ -508,7 +508,7 @@ ad_proc -public im_workflow_graph_component {
 	if {"user" != $party_type} { set party_link $party_name	}
 	append assignee_html "
 	    <tr $bgcolor([expr $cnt % 2])>
-		<td><nobr>$transition_name</nobr></td>
+		<td>$transition_name</td>
 		<td><nobr>$party_link</nobr></td>
 	    </tr>
 	"
