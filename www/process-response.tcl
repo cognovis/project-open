@@ -8,17 +8,20 @@ ad_page_contract {
     @param   return_url            optional redirect address
     @param   group_id              
     @param   response_to_question  since form variables are now named as response_to_question.$question_id, this is actually array holding user responses to all survey questions.
+    @param   task_id		   Optionally specified workflow task_id from acs-workflow.
+				   Behave like the user would have clicked the "Task done" button.
     
     @author  jsc@arsdigita.com
     @author  nstrug@arsdigita.com
     @creation-date    28th September 2000
     @cvs-id $Id$
 } {
-  survey_id:integer,notnull
-  { related_object_id:integer "" }
-  { related_context_id:integer "" }
-  return_url:optional
-  response_to_question:array,optional,multiple,html
+    survey_id:integer,notnull
+    { related_object_id:integer "" }
+    { related_context_id:integer "" }
+    return_url:optional
+    response_to_question:array,optional,multiple,html
+    { task_id "" }
 } -validate {
 	
     survey_exists -requires { survey_id } {
@@ -128,10 +131,32 @@ ad_require_permission $survey_id survsimp_take_survey
 set user_id [ad_verify_and_get_user_id]
 
 
-# Do the inserts.
-
 set response_id [db_nextval acs_object_id_seq]
 set creation_ip [ad_conn peeraddr]
+
+
+# -----------------------------------------------------
+# Workflow Action
+# -----------------------------------------------------
+
+# Close the workflow task if task_id is available
+if {"" != $task_id} {
+    set the_action "finish"
+    set message [lang::message::lookup "" simple-survey.Task_finished_by_simple_survey "Task finished by Simple Survey"]
+    set journal_id [wf_task_action \
+			-user_id $user_id \
+			-msg $message \
+			-attributes {} \
+			-assignments {} \
+			$task_id \
+			$the_action \
+		       ]
+}
+
+
+# -----------------------------------------------------
+# Do the inserts.
+# -----------------------------------------------------
 
 db_transaction {
 
