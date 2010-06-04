@@ -340,11 +340,11 @@ ad_proc -public im_material_list_component {
 	
 	
     set restrictions [list]
-    if {$restrict_to_status_id} {
-	lappend criteria "m.material_status_id in ([join [im_sub_categories $material_status_id] ","])"
+    if {0 != $restrict_to_status_id} {
+	lappend restrictions "m.material_status_id in ([join [im_sub_categories $restrict_to_status_id] ","])"
     }
-    if {$restrict_to_type_id} {
-	lappend criteria "m.material_type_id in ([join [im_sub_categories $material_type_id] ","])"
+    if {0 != $restrict_to_type_id} {
+	lappend restrictions "m.material_type_id in ([join [im_sub_categories $restrict_to_type_id] ","])"
     }
 
     set restriction_clause [join $restrictions "\n\tand "]
