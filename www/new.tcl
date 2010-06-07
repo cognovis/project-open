@@ -27,7 +27,7 @@ set page_title "New Material"
 set context [im_context_bar $page_title]
 
 set user_id [ad_maybe_redirect_for_registration]
-if {[info exists material_id]} { set form_mode "edit" }
+if {![info exists material_id]} { set form_mode "edit" }
 
 if {"display" == $form_mode} {
     if {![im_permission $user_id view_materials]} {
