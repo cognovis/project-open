@@ -163,6 +163,15 @@ ad_proc -private im_rest_call {
 				    -query_hash_pairs $query_hash_pairs \
 				   ]
 		    }
+		    im_dynfield_attribute {
+			return [im_rest_get_im_dynfield_attribute \
+				    -format $format \
+				    -user_id $user_id \
+				    -rest_otype $rest_otype \
+				    -rest_oid $rest_oid \
+				    -query_hash_pairs $query_hash_pairs \
+				   ]
+		    }
 		    im_invoice_item {
 			return [im_rest_get_im_invoice_item \
 				    -format $format \
@@ -200,6 +209,14 @@ ad_proc -private im_rest_call {
 		switch $rest_otype {
 		    im_category {
 			return [im_rest_get_im_categories \
+				    -format $format \
+				    -user_id $user_id \
+				    -rest_otype $rest_otype \
+				    -query_hash_pairs $query_hash_pairs \
+				   ]
+		    }
+		    im_dynfield_attribute {
+			return [im_rest_get_im_dynfield_attributes \
 				    -format $format \
 				    -user_id $user_id \
 				    -rest_otype $rest_otype \
@@ -456,6 +473,86 @@ ad_proc -private im_rest_get_im_category {
     }
   
     # ad_return_complaint 1 "<pre>sql=$sql\nhash=[join [array get result_hash] "\n"]</pre>"
+    return
+
+}
+
+
+ad_proc -private im_rest_get_im_dynfield_attribute {
+    { -format "xml" }
+    { -user_id 0 }
+    { -rest_otype "" }
+    { -rest_oid 0 }
+    { -query_hash_pairs {} }
+} {
+    Handler for GET rest calls
+} {
+    ns_log Notice "im_rest_get_im_dynfield_attribute: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
+
+    # Check that rest_oid is an integer
+    im_security_alert_check_integer -location "im_rest_get_object" -value $rest_oid
+
+    # -------------------------------------------------------
+    # Get the SQL to extract all values from the object
+    set sql "
+	select	*
+	from	im_dynfield_attributes da,
+		acs_attributes aa
+	where	da.acs_attribute_id = aa.attribute_id and
+		da.attribute_id = :rest_oid
+    "
+
+    # Execute the sql. As a result we get a result_hash with keys 
+    # corresponding to table columns and values 
+    array set result_hash {}
+    db_with_handle db {
+	set selection [db_exec select $db query $sql 1]
+	while { [db_getrow $db $selection] } {
+	    set col_names [ad_ns_set_keys $selection]
+	    set this_result [list]
+	    for { set i 0 } { $i < [ns_set size $selection] } { incr i } {
+		set var [lindex $col_names $i]
+		set val [ns_set value $selection $i]
+		set result_hash($var) $val
+	    }
+	}
+    }
+    db_release_unused_handles
+
+    if {{} == [array get result_hash]} { return [im_rest_error -http_status 404 -message "Dynfield Attribute: Did not find object '$rest_otype' with the ID '$rest_oid'."] }
+
+    # -------------------------------------------------------
+    # Format the result for one of the supported formats
+    set result ""
+    foreach result_key [array names result_hash] {
+	set result_val $result_hash($result_key)
+	append result [im_rest_format_line \
+			   -column $result_key \
+			   -value $result_val \
+			   -format $format \
+			   -rest_otype $rest_otype \
+	]
+    }
+	
+    switch $format {
+	html { 
+	    set page_title "$rest_otype: $result_hash(table_name).$result_hash(column_name)"
+	    doc_return 200 "text/html" "
+		[im_header $page_title][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle>Attribute</td><td class=rowtitle>Value</td></tr>$result
+		</table>[im_footer]
+	    "
+	    return
+	}
+	xml {  
+	    doc_return 200 "text/xml" "<?xml version='1.0'?><$rest_otype>$result</$rest_otype>" 
+	    return
+	}
+	default {
+	     ad_return_complaint 1 "Invalid format: '$format'"
+	}
+    }
+  
     return
 
 }
@@ -1006,11 +1103,104 @@ ad_proc -private im_rest_get_im_categories {
 
 	set url "$base_url/$rest_otype/$rest_oid"
 	switch $format {
-	    xml { append result "<object_id id=\"$rest_oid\" href=\"$url\">$rest_oid</object_id>\n" }
+	    xml { append result "<object_id id=\"$rest_oid\" href=\"$url\">$object_name</object_id>\n" }
 	    html { 
 		append result "<tr>
 			<td>$rest_oid</td>
 			<td><a href=\"$url?format=html\">$object_name</a>
+		</tr>\n" 
+	    }
+	    xml {}
+	}
+    }
+	
+    switch $format {
+	html { 
+	    set page_title "object_type: $rest_otype"
+	    doc_return 200 "text/html" "
+		[im_header $page_title][im_navbar]<table>
+		<tr class=rowtitle><td class=rowtitle>object_id</td><td class=rowtitle>Link</td></tr>$result
+		</table>[im_footer]
+	    " 
+	    return
+	}
+	xml {  
+	    doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_list>\n$result</object_list>\n" 
+	    return
+	}
+    }
+
+    return
+}
+
+
+ad_proc -private im_rest_get_im_dynfield_attributes {
+    { -format "xml" }
+    { -user_id 0 }
+    { -rest_otype "" }
+    { -query_hash_pairs {} }
+    { -limit 100 }
+    { -debug 0 }
+} {
+    Handler for GET rest calls on dynfield attributes
+} {
+    ns_log Notice "im_rest_get_im_dynfield_attributes: format=$format, user_id=$user_id, rest_otype=$rest_otype, query_hash=$query_hash_pairs"
+    array set query_hash $query_hash_pairs
+    set base_url "[im_rest_system_url]/intranet-rest"
+
+    # Deal with "limit" max. number of objects to show
+    # and check that it's a valid integer
+    if {[info exists query_hash(limit)]} { set limit $query_hash(limit) }
+    im_security_alert_check_integer -location "im_rest_get_im_dynfield_attributes" -value $limit
+
+    set rest_otype_id [util_memoize [list db_string otype_id "select object_type_id from im_rest_object_types where object_type = 'im_dynfield_attribute'" -default 0]]
+    set rest_otype_read_all_p [im_object_permission -object_id $rest_otype_id -user_id $user_id -privilege "read"]
+
+    # -------------------------------------------------------
+    # Check if there is a where clause specified in the URL and validate the clause.
+    set where_clause ""
+    if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
+    # Determine the list of valid columns for the object type
+    set valid_vars {attribute_name object_type}
+    # Check that the query is a valid SQL where clause
+    set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
+    if {!$valid_sql_where} {
+	im_rest_error -http_status 403 -message "The specified query is not a valid SQL where clause: '$where_clause'"
+	return
+    }
+    if {"" != $where_clause} { set where_clause "and $where_clause" }
+
+    # Select SQL: Pull out values.
+    set sql "
+	select	
+		aa.object_type||'.'||aa.attribute_name as rest_object_name,
+		da.attribute_id as rest_oid,
+		da.*,
+		aa.*
+	from	im_dynfield_attributes da,
+		acs_attributes aa
+	where	da.acs_attribute_id = aa.attribute_id
+		$where_clause
+	order by
+		aa.object_type, 
+		aa.attribute_name
+	LIMIT $limit
+    "
+
+    set result ""
+    db_foreach objects $sql {
+
+	# Check permissions
+	set read_p $rest_otype_read_all_p
+	if {!$read_p} { continue }
+
+	set url "$base_url/$rest_otype/$rest_oid"
+	switch $format {
+	    xml { append result "<object_id id=\"$rest_oid\" href=\"$url\">$rest_object_name</object_id>\n" }
+	    html { 
+		append result "<tr>
+			<td>$rest_oid</td>
+			<td><a href=\"$url?format=html\">$rest_object_name</a>
 		</tr>\n" 
 	    }
 	    xml {}
