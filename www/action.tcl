@@ -450,6 +450,52 @@ switch $actions {
 	}
     }
 
+
+    "unzip" {
+
+	# --------------------- Upload ZIP File --------------------- 
+
+	# Check permissions and skip
+	set user_perms [im_filestorage_folder_permissions $user_id $object_id $bread_crum_path $user_memberships $roles $profiles $perm_hash_array]
+	set write_p [lindex $user_perms 2]
+	if {!$write_p} {
+	    ad_return_complaint 1 "You don't have permission to write to folder '$bread_crum_path'"
+	    return
+	}
+
+        set page_title "[lang::message::lookup "" intranet-filestorage.Upload_ZIP_File "Upload ZIP File"]"
+        set context_bar [im_context_bar $page_title]
+        set page_content "
+<form enctype=multipart/form-data method=POST action=upload-zip-2.tcl>
+[export_form_vars bread_crum_path folder_type object_id return_url]
+
+          Upload a ZIP file into directory \"/$bread_crum_path\".<br>
+          [_ intranet-filestorage.lt_If_you_want_to_upload] <br>
+          [_ intranet-filestorage.lt_please_backup_up_and_]
+
+    <table border=0>
+      <tr>
+	<td align=right>[_ intranet-filestorage.Filename]: </td>
+	<td>
+	  <input type=file name=upload_file size=30>
+[im_gif help "Use the 'Browse...' button to locate your file, then click 'Open'."]
+	</td>
+      </tr>
+      <tr>
+	<td></td>
+	<td>
+	  <input type=submit value=\"[_ intranet-filestorage.Submit_and_Upload]\">
+	</td>
+      </tr>
+    </table>
+</form>\n"
+        ad_return_template
+	return
+
+    }
+
+
+
     "new-folder" {
 
 	# --------------------- New Folder --------------------- 
