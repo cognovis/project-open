@@ -181,6 +181,10 @@ ad_proc -private im_rest_post_object_type_user {
     ns_log Notice "im_rest_post_object_type_user: Started"
     set current_user_id $user_id
 
+    # Make sure we don't get confused with the generic user_id
+    # We will call the ID of the new user new_user_id
+    unset user_id
+
     # store the key-value pairs into a hash array
     if {[catch {set doc [dom parse $content]} err_msg]} {
 	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
@@ -229,29 +233,30 @@ ad_proc -private im_rest_post_object_type_user {
 	if { "ok" != $creation_info(creation_status) || "ok" != $creation_info(account_status)} {
 	    return [im_rest_error -http_status 406 -message "User creation unsuccessfull: [array get creation_status]"]
 	}
+	set new_user_id $creation_info(user_id)
 	
 	# Update creation user to allow the creator to admin the user
 	db_dml update_creation_user_id "
 		update acs_objects
 		set creation_user = :current_user_id
-		where object_id = :user_id
+		where object_id = :new_user_id
 	"
     
-	ns_log Notice "im_rest_post_object_type_user: person::update -person_id=$user_id -first_names=$first_names -last_name=$last_name"
+	ns_log Notice "im_rest_post_object_type_user: person::update -person_id=$new_user_id -first_names=$first_names -last_name=$last_name"
 	person::update \
-		-person_id $user_id \
+		-person_id $new_user_id \
 		-first_names $first_names \
 		-last_name $last_name
 	    
-	    ns_log Notice "im_rest_post_object_type_user: party::update -party_id=$user_id -url=$url -email=$email"
+	    ns_log Notice "im_rest_post_object_type_user: party::update -party_id=$new_user_id -url=$url -email=$email"
 	    party::update \
-		-party_id $user_id \
+		-party_id $new_user_id \
 		-url $url \
 		-email $email
 	    
-	    ns_log Notice "im_rest_post_object_type_user: acs_user::update -user_id=$user_id -screen_name=$screen_name"
+	    ns_log Notice "im_rest_post_object_type_user: acs_user::update -user_id=$new_user_id -screen_name=$screen_name"
 	    acs_user::update \
-		-user_id $user_id \
+		-user_id $new_user_id \
 		-screen_name $screen_name \
 		-username $username
 
@@ -263,14 +268,14 @@ ad_proc -private im_rest_post_object_type_user {
         set reg_users_rel_exists_p [db_string member_of_reg_users "
 		select	count(*) 
 		from	group_member_map m, membership_rels mr
-		where	m.member_id = :user_id
+		where	m.member_id = :new_user_id
 			and m.group_id = :registered_users
 			and m.rel_id = mr.rel_id 
 			and m.container_id = m.group_id 
 			and m.rel_type::text = 'membership_rel'::text
 	"]
 	if {!$reg_users_rel_exists_p} {
-	    relation_add -member_state "approved" "membership_rel" $registered_users $user_id
+	    relation_add -member_state "approved" "membership_rel" $registered_users $new_user_id
 	}
 
     
@@ -279,9 +284,9 @@ ad_proc -private im_rest_post_object_type_user {
 	if {[im_table_exists im_employees]} {
 	    
 	    # Simply add the record to all users, even it they are not employees...
-	    set im_employees_exist [db_string im_employees_exist "select count(*) from im_employees where employee_id = :user_id"]
+	    set im_employees_exist [db_string im_employees_exist "select count(*) from im_employees where employee_id = :new_user_id"]
 	    if {!$im_employees_exist} {
-		db_dml add_im_employees "insert into im_employees (employee_id) values (:user_id)"
+		db_dml add_im_employees "insert into im_employees (employee_id) values (:new_user_id)"
 	    }
 	}
 	
@@ -291,13 +296,11 @@ ad_proc -private im_rest_post_object_type_user {
 	if {[im_table_exists im_freelancers]} {
 	    
 	    # Simply add the record to all users, even it they are not freelancers...
-	    set im_freelancers_exist [db_string im_freelancers_exist "select count(*) from im_freelancers where freelancer_id = :user_id"]
+	    set im_freelancers_exist [db_string im_freelancers_exist "select count(*) from im_freelancers where user_id = :new_user_id"]
 	    if {!$im_freelancers_exist} {
-		db_dml add_im_freelancers "insert into im_freelancers (freelancer_id) values (:user_id)"
+		db_dml add_im_freelancers "insert into im_freelancers (user_id) values (:new_user_id)"
 	    }
 	}
-	
-        
 
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error creating user: '$err_msg'."]
@@ -306,14 +309,14 @@ ad_proc -private im_rest_post_object_type_user {
     if {[catch {
 	im_rest_object_type_update_sql \
 	    -rest_otype "user" \
-	    -rest_oid $rest_oid \
+	    -rest_oid $new_user_id \
 	    -hash_array [array get hash]
 
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating user: '$err_msg'."]
     }
 
-    return $rest_oid
+    return $new_user_id
 }
 
 
