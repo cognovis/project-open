@@ -441,4 +441,33 @@ where report_code = 'rest_my_hours';
 
 
 
+-- Create a report showing a category as a hierarchy.
+--
+SELECT im_report_new (
+	'REST Category Type',						-- report_name
+	'rest_category_type',						-- report_code
+	'intranet-rest',						-- package_key
+	120,								-- report_sort_order
+	(select menu_id from im_menus where label = 'reporting-rest'),	-- parent_menu_id
+'
+select	im_category_path_to_category(category_id) as tree_sortkey,
+	c.*
+from	im_categories c
+where	category_type = %category_type%
+order by tree_sortkey
+'
+);
+
+update im_reports 
+set report_description = '
+Returns a category type ordered by tree_sortkey
+'
+where report_code = 'rest_category_type';
+
+
+
+
+
+
+
 
