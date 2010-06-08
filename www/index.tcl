@@ -325,8 +325,6 @@ switch $format {
 				'im_biz_object',
 				'im_component_plugin',
 				'im_cost',
-				'im_dynfield_attribute',
-				'im_dynfield_widget',
 				'im_gantt_person',
 				'im_gantt_project',
 				'im_indicator',

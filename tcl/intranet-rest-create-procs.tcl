@@ -61,15 +61,15 @@ ad_proc -private im_rest_post_object_type_im_project {
 
     if {[catch {
 	set rest_oid [project::new \
-			-creation_user	    $user_id \
-			-context_id	    "" \
-			-project_name       $hash(project_name) \
-			-project_nr	 $hash(project_nr) \
-			-project_path       $hash(project_path) \
-			-company_id	 $hash(company_id) \
-			-parent_id	  $hash(parent_id) \
-			-project_type_id    $hash(project_type_id) \
-			-project_status_id  $hash(project_status_id) \
+			-creation_user		$user_id \
+			-context_id		"" \
+			-project_name		$hash(project_name) \
+			-project_nr		$hash(project_nr) \
+			-project_path       	$hash(project_path) \
+			-company_id	 	$hash(company_id) \
+			-parent_id	  	$hash(parent_id) \
+			-project_type_id    	$hash(project_type_id) \
+			-project_status_id  	$hash(project_status_id) \
 	]
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error creating project: '$err_msg'."]
@@ -204,7 +204,7 @@ ad_proc -private im_rest_post_object_type_user {
 		where	u.user_id = pe.person_id and
 			u.user_id = pa.party_id and
 			(	lower(u.username) = lower(:username) OR
-				lower(pa.email) lower(:email)
+				lower(pa.email) = lower(:email)
 			)
     "
     if {[db_string duplicates $dup_sql]} {
@@ -215,7 +215,6 @@ ad_proc -private im_rest_post_object_type_user {
 
 	ns_log Notice "im_rest_post_object_type_user: about to create user"
 	array set creation_info [auth::create_user \
-				     -user_id $user_id \
 				     -username $username \
 				     -email $email \
 				     -first_names $first_names \

@@ -1566,7 +1566,8 @@ ad_proc -public im_rest_object_type_select_sql {
     #
     set letters {a b c d e f g h i j k l m n o p q r s t u v w x y z}
     set from {}
-    set selects {}
+    set froms {}
+    set selects { "1 as one" }
     set selected_columns {}
     set selected_tables {}
 
