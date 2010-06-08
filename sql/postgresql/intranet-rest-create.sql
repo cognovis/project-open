@@ -453,7 +453,8 @@ SELECT im_report_new (
 select	im_category_path_to_category(category_id) as tree_sortkey,
 	c.*
 from	im_categories c
-where	category_type = %category_type%
+where	(c.enabled_p is null OR c.enabled_p = 't') and
+	category_type = %category_type%
 order by tree_sortkey
 '
 );
@@ -464,6 +465,11 @@ Returns a category type ordered by tree_sortkey
 '
 where report_code = 'rest_category_type';
 
+SELECT acs_permission__grant_permission(
+	(select menu_id from im_menus where label = 'rest_category_type'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
 
 
 
