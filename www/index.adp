@@ -13,7 +13,7 @@
 <tr>
   <td> <!-- TD for the left hand filter HTML -->
 
-	<form method=get action='index'>
+	<form method="get" action='index'>
 	<%= [export_form_vars material_group_id material_start_idx material_order_by material_how_many material_view_name] %>
 	@filter_html;noquote@
 	</form>

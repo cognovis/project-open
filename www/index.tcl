@@ -21,6 +21,8 @@ ad_page_contract {
     { max_entries_per_page 0 }
 }
 
+# ad_return_complaint 1 $material_type_id
+
 # ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
