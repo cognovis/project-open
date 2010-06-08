@@ -179,6 +179,7 @@ ad_proc -private im_rest_post_object_type_user {
     Create a new User object return the user_id.
 } {
     ns_log Notice "im_rest_post_object_type_user: Started"
+    set current_user_id $user_id
 
     # store the key-value pairs into a hash array
     if {[catch {set doc [dom parse $content]} err_msg]} {
