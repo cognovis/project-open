@@ -291,6 +291,64 @@ end;' language 'plpgsql';
 
 
 
+-- Assign the transition to project members with role "Project Admin".
+-- (The project manager is automatically assigned as project member with
+-- this role, but there may be additional persons in this role).
+create or replace function im_workflow__assign_to_project_admins (integer, text, text)
+returns integer as '
+declare
+        p_case_id               alias for $1;
+        p_transition_key        alias for $2;
+        p_custom_arg            alias for $3;
+
+	v_task_id		integer;	v_case_id		integer;
+	v_creation_ip		varchar; 	v_creation_user		integer;
+	v_object_id		integer;	v_object_type		varchar;
+	v_journal_id		integer;
+	v_transition_key	varchar;	v_workflow_key		varchar;
+
+	row			RECORD;
+begin
+	-- Select out some frequently used variables of the environment
+	select	c.object_id, c.workflow_key, task_id, c.case_id, co.object_type, co.creation_ip
+	into	v_object_id, v_workflow_key, v_task_id, v_case_id, v_object_type, v_creation_ip
+	from	wf_tasks t, wf_cases c, acs_objects co
+	where	c.case_id = p_case_id
+		and c.case_id = co.object_id
+		and t.case_id = c.case_id
+		and t.workflow_key = c.workflow_key
+		and t.transition_key = p_transition_key;
+
+	FOR row IN
+		select	r.object_id_two as user_id, 
+			im_name_from_user_id(r.object_id_two) as user_name
+		from	wf_cases wfc,
+			im_projects p,
+			acs_rels r,
+			im_biz_object_members bom
+		where	wfc.case_id = v_case_id and
+			wfc.object_id = p.project_id and
+			r.object_id_one = p.project_id and
+			r.rel_id = bom.rel_id and
+			bom.object_role_id = 1301
+	LOOP
+		v_journal_id := journal_entry__new(
+		    null, v_case_id,
+		    v_transition_key || '' assign_to_user '' || row.user_name,
+		    v_transition_key || '' assign_to_user '' || row.user_name,
+		    now(), v_creation_user, v_creation_ip,
+		    ''Assigning to '' || row.user_name
+		);
+		PERFORM workflow_case__add_task_assignment(v_task_id, row.user_id, ''f'');
+		PERFORM workflow_case__notify_assignee (v_task_id, row.user_id, null, null, 
+			''wf_'' || v_object_type || ''_assignment_notif'');
+	END LOOP;
+
+	return 0;
+end;' language 'plpgsql';
+
+
+
 -- Enable callback that deletes all tokens in the systems except the one
 -- for the current transition.
 -- This function allows to deal with parallelism in the Petri-Net and
