@@ -24,11 +24,11 @@ create table edi_message_workflow_wf_cases (
 create function inline_0 () returns integer as '
 begin
     PERFORM workflow__create_workflow (
-        ''edi_message_workflow_v10_linear_wf'', 
-        ''EDI Message Workflow V1.0 Linear'', 
-        ''EDI Message Workflow V1.0 Linear'', 
+        ''edi_message_workflow_wf'', 
+        ''EDI Message Workflow'', 
+        ''EDI Message Workflow'', 
         ''Standardized workflow for EDI message development'', 
-        ''edi_message_workflow_v10_linear_wf_cases'',
+        ''edi_message_workflow_wf_cases'',
         ''case_id''
     );
 
@@ -48,7 +48,7 @@ drop function inline_0 ();
 
 
     select workflow__add_place(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'start', 
         'Ready to Resource Assignment', 
         null
@@ -57,7 +57,7 @@ drop function inline_0 ();
         
 
     select workflow__add_place(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'before_business_analysis', 
         'Ready to Business Analysis', 
         null
@@ -66,7 +66,7 @@ drop function inline_0 ();
         
 
     select workflow__add_place(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'before_check_specs', 
         'Ready to Check Specs', 
         null
@@ -75,7 +75,7 @@ drop function inline_0 ();
         
 
     select workflow__add_place(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'before_develop_message', 
         'Ready to Develop Message', 
         null
@@ -84,7 +84,7 @@ drop function inline_0 ();
         
 
     select workflow__add_place(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'before_qc_check', 
         'Ready to QC Check', 
         null
@@ -93,7 +93,7 @@ drop function inline_0 ();
         
 
     select workflow__add_place(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'before_qa_solution_support', 
         'Ready to QA Solution Support', 
         null
@@ -102,7 +102,7 @@ drop function inline_0 ();
         
 
     select workflow__add_place(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'before_user_acceptance', 
         'Ready to User Acceptance', 
         null
@@ -111,7 +111,7 @@ drop function inline_0 ();
         
 
     select workflow__add_place(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'before_release_to_production', 
         'Ready to Release To Production', 
         null
@@ -120,7 +120,7 @@ drop function inline_0 ();
         
 
     select workflow__add_place(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'before_maintenance', 
         'Ready to Maintenance', 
         null
@@ -129,7 +129,7 @@ drop function inline_0 ();
         
 
     select workflow__add_place(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'before_user_satisfaction_survey', 
         'Ready to User Satisfaction Survey', 
         null
@@ -138,7 +138,7 @@ drop function inline_0 ();
         
 
     select workflow__add_place(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'end', 
         'Process finished', 
         null
@@ -152,7 +152,7 @@ drop function inline_0 ();
 
 
 	select workflow__add_role (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'resource_assignment',
          'Resource Assignment',
          1
@@ -161,7 +161,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_role (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'business_analysis',
          'Business Analysis',
          2
@@ -170,7 +170,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_role (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'check_specs',
          'Check Specs',
          3
@@ -179,7 +179,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_role (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'develop_message',
          'Develop Message',
          4
@@ -188,7 +188,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_role (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'qc_check',
          'QC Check',
          5
@@ -197,7 +197,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_role (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'qa_solution_support',
          'QA Solution Support',
          6
@@ -206,7 +206,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_role (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'user_acceptance',
          'User Acceptance',
          7
@@ -215,7 +215,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_role (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'release_to_production',
          'Release To Production',
          8
@@ -224,7 +224,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_role (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'maintenance',
          'Maintenance',
          9
@@ -233,7 +233,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_role (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'user_satisfaction_survey',
          'User Satisfaction Survey',
          10
@@ -248,7 +248,7 @@ drop function inline_0 ();
 
 
 	select workflow__add_transition (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'resource_assignment',
          'Resource Assignment',
          'resource_assignment',
@@ -259,7 +259,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_transition (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'business_analysis',
          'Business Analysis',
          'business_analysis',
@@ -270,7 +270,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_transition (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'check_specs',
          'Check Specs',
          'check_specs',
@@ -281,7 +281,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_transition (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'develop_message',
          'Develop Message',
          'develop_message',
@@ -292,7 +292,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_transition (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'qc_check',
          'QC Check',
          'qc_check',
@@ -303,7 +303,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_transition (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'qa_solution_support',
          'QA Solution Support',
          'qa_solution_support',
@@ -314,7 +314,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_transition (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'user_acceptance',
          'User Acceptance',
          'user_acceptance',
@@ -325,7 +325,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_transition (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'release_to_production',
          'Release To Production',
          'release_to_production',
@@ -336,7 +336,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_transition (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'maintenance',
          'Maintenance',
          'maintenance',
@@ -347,7 +347,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_transition (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'user_satisfaction_survey',
          'User Satisfaction Survey',
          'user_satisfaction_survey',
@@ -364,7 +364,7 @@ drop function inline_0 ();
 
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'business_analysis',
          'before_check_specs',
          'out',
@@ -376,7 +376,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'business_analysis',
          'before_business_analysis',
          'in',
@@ -388,7 +388,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'check_specs',
          'before_develop_message',
          'out',
@@ -400,7 +400,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'check_specs',
          'before_check_specs',
          'in',
@@ -412,7 +412,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'check_specs',
          'before_business_analysis',
          'out',
@@ -424,7 +424,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'develop_message',
          'before_develop_message',
          'in',
@@ -436,7 +436,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'develop_message',
          'before_qc_check',
          'out',
@@ -448,7 +448,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'maintenance',
          'before_user_satisfaction_survey',
          'out',
@@ -460,7 +460,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'maintenance',
          'before_maintenance',
          'in',
@@ -472,7 +472,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'maintenance',
          'before_develop_message',
          'out',
@@ -484,7 +484,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'qa_solution_support',
          'before_qa_solution_support',
          'in',
@@ -496,7 +496,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'qa_solution_support',
          'before_develop_message',
          'out',
@@ -508,7 +508,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'qa_solution_support',
          'before_user_acceptance',
          'out',
@@ -520,7 +520,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'qc_check',
          'before_develop_message',
          'out',
@@ -532,7 +532,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'qc_check',
          'before_qa_solution_support',
          'out',
@@ -544,7 +544,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'qc_check',
          'before_qc_check',
          'in',
@@ -556,7 +556,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'release_to_production',
          'before_release_to_production',
          'in',
@@ -568,7 +568,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'release_to_production',
          'before_maintenance',
          'out',
@@ -580,7 +580,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'release_to_production',
          'before_develop_message',
          'out',
@@ -592,7 +592,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'resource_assignment',
          'start',
          'in',
@@ -604,7 +604,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'resource_assignment',
          'before_business_analysis',
          'out',
@@ -616,7 +616,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'user_acceptance',
          'before_release_to_production',
          'out',
@@ -628,7 +628,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'user_acceptance',
          'before_develop_message',
          'out',
@@ -640,7 +640,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'user_acceptance',
          'before_user_acceptance',
          'in',
@@ -652,7 +652,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'user_satisfaction_survey',
          'before_user_satisfaction_survey',
          'in',
@@ -664,7 +664,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_arc (
-         'edi_message_workflow_v10_linear_wf',
+         'edi_message_workflow_wf',
          'user_satisfaction_survey',
          'end',
          'out',
@@ -682,7 +682,7 @@ drop function inline_0 ();
 
 
     select workflow__create_attribute(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'maintenance_maintenance_ok_p',
         'boolean',
         'Maintenance OK',
@@ -699,7 +699,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_trans_attribute_map(
-        	'edi_message_workflow_v10_linear_wf', 
+        	'edi_message_workflow_wf', 
         	'maintenance',
         	'maintenance_maintenance_ok_p',
         	1
@@ -708,7 +708,7 @@ drop function inline_0 ();
         
 
     select workflow__create_attribute(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'release_to_production_release_ok_p',
         'boolean',
         'Release OK',
@@ -725,7 +725,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_trans_attribute_map(
-        	'edi_message_workflow_v10_linear_wf', 
+        	'edi_message_workflow_wf', 
         	'release_to_production',
         	'release_to_production_release_ok_p',
         	1
@@ -734,7 +734,7 @@ drop function inline_0 ();
         
 
     select workflow__create_attribute(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'user_acceptance_ua_ok_p',
         'boolean',
         'UA OK',
@@ -751,7 +751,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_trans_attribute_map(
-        	'edi_message_workflow_v10_linear_wf', 
+        	'edi_message_workflow_wf', 
         	'user_acceptance',
         	'user_acceptance_ua_ok_p',
         	1
@@ -760,7 +760,7 @@ drop function inline_0 ();
         
 
     select workflow__create_attribute(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'qa_solution_support_qa_ok_p',
         'boolean',
         'QA OK',
@@ -777,7 +777,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_trans_attribute_map(
-        	'edi_message_workflow_v10_linear_wf', 
+        	'edi_message_workflow_wf', 
         	'qa_solution_support',
         	'qa_solution_support_qa_ok_p',
         	1
@@ -786,7 +786,7 @@ drop function inline_0 ();
         
 
     select workflow__create_attribute(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'qc_check_qc_ok_p',
         'boolean',
         'QC OK',
@@ -803,7 +803,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_trans_attribute_map(
-        	'edi_message_workflow_v10_linear_wf', 
+        	'edi_message_workflow_wf', 
         	'qc_check',
         	'qc_check_qc_ok_p',
         	1
@@ -812,7 +812,7 @@ drop function inline_0 ();
         
 
     select workflow__create_attribute(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'check_specs_specs_ok_p',
         'boolean',
         'Specs OK',
@@ -829,7 +829,7 @@ drop function inline_0 ();
         
 
 	select workflow__add_trans_attribute_map(
-        	'edi_message_workflow_v10_linear_wf', 
+        	'edi_message_workflow_wf', 
         	'check_specs',
         	'check_specs_specs_ok_p',
         	1
@@ -843,7 +843,7 @@ drop function inline_0 ();
 
 
     select workflow__add_trans_role_assign_map(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'resource_assignment',
         'maintenance'
     );
@@ -851,7 +851,7 @@ drop function inline_0 ();
         
 
     select workflow__add_trans_role_assign_map(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'resource_assignment',
         'release_to_production'
     );
@@ -859,7 +859,7 @@ drop function inline_0 ();
         
 
     select workflow__add_trans_role_assign_map(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'resource_assignment',
         'user_acceptance'
     );
@@ -867,7 +867,7 @@ drop function inline_0 ();
         
 
     select workflow__add_trans_role_assign_map(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'resource_assignment',
         'qa_solution_support'
     );
@@ -875,7 +875,7 @@ drop function inline_0 ();
         
 
     select workflow__add_trans_role_assign_map(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'resource_assignment',
         'qc_check'
     );
@@ -883,7 +883,7 @@ drop function inline_0 ();
         
 
     select workflow__add_trans_role_assign_map(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'resource_assignment',
         'develop_message'
     );
@@ -891,7 +891,7 @@ drop function inline_0 ();
         
 
     select workflow__add_trans_role_assign_map(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'resource_assignment',
         'check_specs'
     );
@@ -899,7 +899,7 @@ drop function inline_0 ();
         
 
     select workflow__add_trans_role_assign_map(
-        'edi_message_workflow_v10_linear_wf',
+        'edi_message_workflow_wf',
         'resource_assignment',
         'business_analysis'
     );
@@ -934,7 +934,7 @@ insert into wf_context_transition_info
  unassigned_custom_arg)
 values
 ('default',
- 'edi_message_workflow_v10_linear_wf',
+ 'edi_message_workflow_wf',
  'resource_assignment',
  60,
  '',
@@ -977,7 +977,7 @@ insert into wf_context_transition_info
  unassigned_custom_arg)
 values
 ('default',
- 'edi_message_workflow_v10_linear_wf',
+ 'edi_message_workflow_wf',
  'business_analysis',
  500,
  '',
@@ -1020,7 +1020,7 @@ insert into wf_context_transition_info
  unassigned_custom_arg)
 values
 ('default',
- 'edi_message_workflow_v10_linear_wf',
+ 'edi_message_workflow_wf',
  'check_specs',
  120,
  '',
@@ -1063,7 +1063,7 @@ insert into wf_context_transition_info
  unassigned_custom_arg)
 values
 ('default',
- 'edi_message_workflow_v10_linear_wf',
+ 'edi_message_workflow_wf',
  'develop_message',
  2500,
  '',
@@ -1106,7 +1106,7 @@ insert into wf_context_transition_info
  unassigned_custom_arg)
 values
 ('default',
- 'edi_message_workflow_v10_linear_wf',
+ 'edi_message_workflow_wf',
  'qc_check',
  500,
  '',
@@ -1149,7 +1149,7 @@ insert into wf_context_transition_info
  unassigned_custom_arg)
 values
 ('default',
- 'edi_message_workflow_v10_linear_wf',
+ 'edi_message_workflow_wf',
  'qa_solution_support',
  500,
  '',
@@ -1192,7 +1192,7 @@ insert into wf_context_transition_info
  unassigned_custom_arg)
 values
 ('default',
- 'edi_message_workflow_v10_linear_wf',
+ 'edi_message_workflow_wf',
  'user_acceptance',
  5000,
  '',
@@ -1235,7 +1235,7 @@ insert into wf_context_transition_info
  unassigned_custom_arg)
 values
 ('default',
- 'edi_message_workflow_v10_linear_wf',
+ 'edi_message_workflow_wf',
  'release_to_production',
  500,
  '',
@@ -1278,7 +1278,7 @@ insert into wf_context_transition_info
  unassigned_custom_arg)
 values
 ('default',
- 'edi_message_workflow_v10_linear_wf',
+ 'edi_message_workflow_wf',
  'maintenance',
  15000,
  '',
@@ -1321,7 +1321,7 @@ insert into wf_context_transition_info
  unassigned_custom_arg)
 values
 ('default',
- 'edi_message_workflow_v10_linear_wf',
+ 'edi_message_workflow_wf',
  'user_satisfaction_survey',
  500,
  '',
