@@ -76,6 +76,11 @@ db_transaction {
         "   
     }
 
+    # object type may be referenced from REST interface
+    if { [db_table_exists im_rest_object_types] } {
+	db_dml del_rest_otype "delete from im_rest_object_types where object_type = :workflow_key"
+    }
+
     db_exec_plsql delete_workflow {
 	begin
         workflow.drop_workflow(workflow_key => :workflow_key);
