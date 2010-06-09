@@ -51,6 +51,12 @@ db_transaction {
 	)
     "
 
+    # Delete tokens
+    db_dml del_tokens "delete from wf_tokens where workflow_key = :workflow_key"
+
+    # Delete attributes audit
+    db_dml del_tokens "delete from wf_attribute_value_audit where case_id in (select case_id from wf_cases where workflow_key = :workflow_key)"
+
     # Delete workflow cases
     db_dml del_objes "delete from acs_objects where object_type = :workflow_key"
 
