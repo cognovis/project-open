@@ -166,6 +166,105 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
 }
 
 
+# --------------------------------------------------------
+# Company
+# --------------------------------------------------------
+
+ad_proc -private im_rest_post_object_type_im_company {
+    { -format "xml" }
+    { -user_id 0 }
+    { -content "" }
+} {
+    Create a new Company and return the company_id.
+} {
+    ns_log Notice "im_rest_post_object_type_im_company: user_id=$user_id"
+
+    # store the key-value pairs into a hash array
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    }
+
+    set root_node [$doc documentElement]
+    foreach child [$root_node childNodes] {
+	set nodeName [$child nodeName]
+	set nodeText [$child text]
+	
+	# Store the values
+	set hash($nodeName) $nodeText
+	set $nodeName $nodeText
+    }
+
+    # Check for duplicate
+    set dup_sql "
+		select  count(*)
+		from    im_companys
+		where   project_id = :project_id and
+			task_name = :task_name and
+			target_language_id = :target_language_id
+    "
+    if {[db_string duplicates $dup_sql]} {
+	return [im_rest_error -http_status 406 -message "Duplicate Translation Task: Your translation task name already exists for the specified parent_id."]
+    }
+
+    if {[catch {
+	set rest_oid [db_string new_company "
+		select im_company__new (
+			null,			-- task_id
+			'im_company',	-- object_type
+			now(),			-- creation_date
+			:user_id,		-- creation_user
+			'[ns_conn peeraddr]',	-- creation_ip	
+			null,			-- context_id	
+
+			:project_id,		-- project_id	
+			:task_type_id,		-- task_type_id	
+			:task_status_id,	-- task_status_id
+			:source_language_id,	-- source_language_id
+			:target_language_id,	-- target_language_id
+			:task_uom_id		-- task_uom_id
+		)
+	"]
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error creating translation task: '$err_msg'."]
+    }
+
+    if {[catch {
+	im_rest_object_type_update_sql \
+	    -rest_otype "im_company" \
+	    -rest_oid $rest_oid \
+	    -hash_array [array get hash]
+
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error updating translation task: '$err_msg'."]
+    }
+    
+    return $rest_oid
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # --------------------------------------------------------
 # User
