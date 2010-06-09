@@ -410,6 +410,12 @@ child projects.
 '
 where report_code = 'rest_my_timesheet_projects';
 
+SELECT acs_permission__grant_permission(
+	(select menu_id from im_menus where label = 'rest_my_timesheet_projects'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
 
 
 
@@ -437,6 +443,12 @@ Returns all hours logged today by the current user.
 '
 where report_code = 'rest_my_hours';
 
+SELECT acs_permission__grant_permission(
+	(select menu_id from im_menus where label = 'rest_my_hours'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
 
 
 
@@ -453,7 +465,7 @@ SELECT im_report_new (
 select	im_category_path_to_category(category_id) as tree_sortkey,
 	c.*
 from	im_categories c
-where	(c.enabled_p is null OR c.enabled_p = 't') and
+where	(c.enabled_p is null OR c.enabled_p = ''t'') and
 	category_type = %category_type%
 order by tree_sortkey
 '
