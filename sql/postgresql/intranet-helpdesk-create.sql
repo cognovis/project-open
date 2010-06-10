@@ -1487,6 +1487,20 @@ order by
 -- DynField Fields
 --
 
+-----------------------------------------------------------
+-- Hard Coded fields
+--
+SELECT im_dynfield_attribute_new (
+	'im_ticket', 'project_name', 'Name', 'textbox_medium', 'string', 'f', 00, 't', 'im_projects'
+);
+SELECT im_dynfield_attribute_new (
+	'im_ticket', 'ticket_status_id', 'Status', 'ticket_status', 'integer', 'f', 20, 't', 'im_tickets'
+);
+SELECT im_dynfield_attribute_new (
+	'im_ticket', 'ticket_type_id', 'Type', 'ticket_type', 'integer', 'f', 30, 't', 'im_tickets'
+);
+
+
 
 -----------------------------------------------------------
 -- Priority
