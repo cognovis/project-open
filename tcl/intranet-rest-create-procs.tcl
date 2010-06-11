@@ -14,7 +14,21 @@ ad_library {
 }
 
 # -------------------------------------------------------
-# Creation of Projects, Translation Tasks, Invoices etc.
+# Index
+#
+#	Project
+#	Ticket
+#	Translation Task
+#	Company
+#	User
+#	Invoice
+#	Invoice Item (fake object)
+#	Hour (fake object, create + update)
+# -------------------------------------------------------
+
+
+# -------------------------------------------------------
+# Project
 # -------------------------------------------------------
 
 ad_proc -private im_rest_post_object_type_im_project {
@@ -31,8 +45,6 @@ ad_proc -private im_rest_post_object_type_im_project {
 	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
     }
 
-    set parent_id ""
-
     set root_node [$doc documentElement]
     foreach child [$root_node childNodes] {
 	# Store the values
@@ -40,6 +52,13 @@ ad_proc -private im_rest_post_object_type_im_project {
 	set nodeText [$child text]
 	set hash($nodeName) $nodeText
 	set $nodeName $nodeText
+    }
+
+    # Check that all required variables are there
+    foreach var {project_name project_nr project_path company_id parent_id project_status_id project_type_id} {
+	if {![info exists $var]} { 
+	    return [im_rest_error -http_status 406 -message "Field '$var' not specified"] 
+	}
     }
 
     # Check for duplicate
@@ -83,6 +102,99 @@ ad_proc -private im_rest_post_object_type_im_project {
 
     } err_msg]} {
 	return [im_rest_error -http_status 406 -message "Error updating project: '$err_msg'."]
+    }
+    
+    return $rest_oid
+}
+
+
+# -------------------------------------------------------
+# Ticket
+# -------------------------------------------------------
+
+ad_proc -private im_rest_post_object_type_im_ticket {
+    { -format "xml" }
+    { -user_id 0 }
+    { -content "" }
+} {
+    Create a new ticket and returns the ticket_id.
+} {
+    ns_log Notice "im_rest_post_object_type_im_ticket: user_id=$user_id"
+
+    # store the key-value pairs into a hash array
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    }
+
+    set root_node [$doc documentElement]
+    foreach child [$root_node childNodes] {
+	# Store the values
+	set nodeName [$child nodeName]
+	set nodeText [$child text]
+	set hash($nodeName) $nodeText
+	set $nodeName $nodeText
+	ns_log Notice "im_rest_post_object_type_im_ticket: $nodeName = $nodeText"
+    }
+
+    if {![info exists ticket_nr]} { set ticket_nr [db_nextval "im_ticket_seq"] }
+    if {![info exists ticket_customer_contact_id]} { set ticket_customer_contact_id "" }
+    if {![info exists ticket_start_date]} { set ticket_start_date "" }
+    if {![info exists ticket_end_date]} { set ticket_end_date "" }
+    if {![info exists ticket_note]} { set ticket_note "" }
+
+    # Check that all required variables are there
+    foreach var {project_name parent_id ticket_status_id ticket_type_id} {
+	if {![info exists $var]} { 
+	    ns_log Notice "im_rest_post_object_type_im_ticket: Missing variable: $var"
+	    return [im_rest_error -http_status 406 -message "Field '$var' not specified"] 
+	}
+    }
+
+    set parent_sql "parent_id = :parent_id"
+    if {"" == $parent_id} { set parent_sql "parent_id is NULL" }
+
+    set dup_sql "
+		select  count(*)
+		from    im_tickets
+		where   $parent_sql and
+			(       upper(trim(project_name)) = upper(trim(:project_name)) OR
+				upper(trim(ticket_nr)) = upper(trim(:ticket_nr))
+			)
+    "
+    if {[db_string duplicates $dup_sql]} {
+	return [im_rest_error -http_status 406 -message "Duplicate Ticket: Your ticket name already exists."]
+    }
+
+    if {[catch {
+	db_transaction {
+
+	    set rest_oid [im_ticket::new \
+			      -ticket_sla_id $parent_id \
+			      -ticket_name $project_name \
+			      -ticket_nr $ticket_nr \
+			      -ticket_customer_contact_id $ticket_customer_contact_id \
+			      -ticket_type_id $ticket_type_id \
+			      -ticket_status_id $ticket_status_id \
+			      -ticket_start_date $ticket_start_date \
+			      -ticket_end_date $ticket_end_date \
+			      -ticket_note $ticket_note \
+			     ]
+
+	}
+    } err_msg]} {
+	ns_log Notice "im_rest_post_object_type_im_ticket: Error creating ticket: '$err_msg'"
+	return [im_rest_error -http_status 406 -message "Error creating ticket: '$err_msg'."]
+    }
+
+
+    if {[catch {
+	im_rest_object_type_update_sql \
+	    -rest_otype "im_ticket" \
+	    -rest_oid $rest_oid \
+	    -hash_array [array get hash]
+
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error updating ticket: '$err_msg'."]
     }
     
     return $rest_oid
@@ -240,31 +352,6 @@ ad_proc -private im_rest_post_object_type_im_company {
     
     return $rest_oid
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # --------------------------------------------------------
 # User
@@ -663,11 +750,11 @@ ad_proc -private im_rest_post_object_type_im_hour {
 }
 
 
-
 # --------------------------------------------------------
 # im_hours
-# --------------------------------------------------------
-
+#
+# Update operation. This is implemented here, because
+# im_hour isn't a real object
 
 ad_proc -private im_rest_post_object_im_hour {
     { -format "xml" }

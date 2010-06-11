@@ -17,6 +17,17 @@ ad_register_proc POST /intranet-rest/* im_rest_call_post
 
 
 # -------------------------------------------------------
+# REST Version
+# -------------------------------------------------------
+
+ad_proc -private im_rest_version {} {
+    Returns the current server version of the REST interface.
+    Please see www.project-open.org/documentation/rest_version_history
+} {
+    return "1.3"
+}
+
+# -------------------------------------------------------
 # HTTP Interface
 #
 # Deal HTTP parameters, authentication etc.
@@ -125,7 +136,7 @@ ad_proc -private im_rest_call {
     # -------------------------------------------------------
     # Special treatment for /intranet-rest/ and /intranet/rest/index URLs
     if {"" == $rest_otype} { set rest_otype "index" }
-    set pages {"" index auto-login}
+    set pages {"" index version auto-login}
     if {[lsearch $pages $rest_otype] >= 0} {
 	return [im_rest_page \
 		    -format $format \
