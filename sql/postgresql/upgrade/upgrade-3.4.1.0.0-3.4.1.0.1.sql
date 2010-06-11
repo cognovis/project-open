@@ -5,11 +5,37 @@ SELECT acs_log__debug('/packages/intranet-helpdesk/sql/postgresql/upgrade/upgrad
 
 
 
+
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'service_level_agreements', 'Service Level Agreements', 'Service Level Agreements',
+	10007, 'integer', 'generic_sql', 'integer',
+	'{custom {sql {
+		select	
+			p.project_id,
+			p.project_name
+		from 
+			im_projects p
+		where 
+			p.project_type_id = 2502 and				-- 2502=sla
+			p.project_status_id in (select im_sub_categories(76))	-- open sub-categories
+		order by 
+			lower(project_name) 
+	}}}'
+);
+
+
 -----------------------------------------------------------
 -- Hard coded fields
 --
 SELECT im_dynfield_attribute_new ('im_ticket', 'project_name', 'Name', 'textbox_medium', 'string', 'f', 00, 't', 'im_projects');
-SELECT im_dynfield_attribute_new ('im_ticket', 'parent_id', 'Service Level Agreement', 'service_level_agreements', 'integer', 'f', 10, 't', 'im_projects');
+
+SELECT im_dynfield_attribute_new (
+	'im_ticket', 'parent_id', 'Service Level Agreement', 'service_level_agreements', 
+	'integer', 'f', 10, 't', 'im_projects'
+);
+
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_status_id', 'Status', 'ticket_status', 'integer', 'f', 20, 't', 'im_tickets');
 SELECT im_dynfield_attribute_new ('im_ticket', 'ticket_type_id', 'Type', 'ticket_type', 'integer', 'f', 30, 't', 'im_tickets');
 
