@@ -150,19 +150,27 @@ ad_proc -private im_rest_post_object_type_im_ticket {
 	}
     }
 
-    set parent_sql "parent_id = :parent_id"
-    if {"" == $parent_id} { set parent_sql "parent_id is NULL" }
+    set parent_sql "p.parent_id = :parent_id"
+    if {"" == $parent_id} { set parent_sql "p.parent_id is NULL" }
 
     set dup_sql "
-		select  count(*)
-		from    im_tickets
-		where   $parent_sql and
-			(       upper(trim(project_name)) = upper(trim(:project_name)) OR
-				upper(trim(ticket_nr)) = upper(trim(:ticket_nr))
+		select	count(*)
+		from	im_tickets t,
+			im_projects p
+		where	t.ticket_id = p.project_id and
+			$parent_sql and
+			(       upper(trim(p.project_name)) = upper(trim(:project_name)) OR
+				upper(trim(p.project_nr)) = upper(trim(:ticket_nr))
 			)
     "
     if {[db_string duplicates $dup_sql]} {
 	return [im_rest_error -http_status 406 -message "Duplicate Ticket: Your ticket name already exists."]
+    }
+
+    # Check for valid parent_id
+    set company_id [db_string ticket_company "select company_id from im_projects where project_id = :parent_id" -default ""]
+    if {"" == $company_id} {
+	return [im_rest_error -http_status 406 -message "Invalid 'parent_id': parent_id should represent an 'open' project of type 'Service Level Agreement'."]
     }
 
     if {[catch {
