@@ -18,8 +18,10 @@ ad_library {
 #
 #	Project
 #	Ticket
+#	Timesheet Task
 #	Translation Task
 #	Company
+#	User Absence
 #	User
 #	Invoice
 #	Invoice Item (fake object)
@@ -35,19 +37,19 @@ ad_proc -private im_rest_post_object_type_im_project {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
+    { -object_type "im_project" }
+    { -object_type_pretty "Project" }
 } {
-    Create a new project and returns the project_id.
+    Create a new object and return the object_id.
 } {
-    ns_log Notice "im_rest_post_object_type_im_project: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
 
-    # store the key-value pairs into a hash array
+    # Store the XML values into local variables
     if {[catch {set doc [dom parse $content]} err_msg]} {
 	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
     }
-
     set root_node [$doc documentElement]
     foreach child [$root_node childNodes] {
-	# Store the values
 	set nodeName [$child nodeName]
 	set nodeText [$child text]
 	set hash($nodeName) $nodeText
@@ -55,16 +57,16 @@ ad_proc -private im_rest_post_object_type_im_project {
     }
 
     # Check that all required variables are there
-    foreach var {project_name project_nr project_path company_id parent_id project_status_id project_type_id} {
+    set required_vars {project_name project_nr project_path company_id parent_id project_status_id project_type_id}
+    foreach var $required_vars {
 	if {![info exists $var]} { 
-	    return [im_rest_error -http_status 406 -message "Field '$var' not specified"] 
+	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
     # Check for duplicate
     set parent_sql "parent_id = :parent_id"
     if {"" == $parent_id} { set parent_sql "parent_id is NULL" }
-
     set dup_sql "
 		select  count(*)
 		from    im_projects
@@ -75,7 +77,7 @@ ad_proc -private im_rest_post_object_type_im_project {
 			)
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate Project: Your project name or project path already exists for the specified parent_id."]
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your project_name, project_nr or project_path already exists for the specified parent_id."]
     }
 
     if {[catch {
@@ -91,17 +93,17 @@ ad_proc -private im_rest_post_object_type_im_project {
 			-project_status_id  	$hash(project_status_id) \
 	]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating project: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype "im_project" \
+	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating project: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
     
     return $rest_oid
@@ -116,26 +118,26 @@ ad_proc -private im_rest_post_object_type_im_ticket {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
+    { -object_type "im_ticket" }
+    { -object_type_pretty "Ticket" }
 } {
-    Create a new ticket and returns the ticket_id.
+    Create a new object and return its object_id
 } {
-    ns_log Notice "im_rest_post_object_type_im_ticket: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
 
-    # store the key-value pairs into a hash array
+    # Store the XML values into local variables
     if {[catch {set doc [dom parse $content]} err_msg]} {
 	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
     }
-
     set root_node [$doc documentElement]
     foreach child [$root_node childNodes] {
-	# Store the values
 	set nodeName [$child nodeName]
 	set nodeText [$child text]
 	set hash($nodeName) $nodeText
 	set $nodeName $nodeText
-	ns_log Notice "im_rest_post_object_type_im_ticket: $nodeName = $nodeText"
     }
 
+    # Create optional variables if they haven't been specified in the XML request
     if {![info exists ticket_nr]} { set ticket_nr [db_nextval "im_ticket_seq"] }
     if {![info exists ticket_customer_contact_id]} { set ticket_customer_contact_id "" }
     if {![info exists ticket_start_date]} { set ticket_start_date "" }
@@ -143,41 +145,40 @@ ad_proc -private im_rest_post_object_type_im_ticket {
     if {![info exists ticket_note]} { set ticket_note "" }
 
     # Check that all required variables are there
-    foreach var {project_name parent_id ticket_status_id ticket_type_id} {
+    set required_vars {ticket_name ticket_sla_id ticket_status_id ticket_type_id}
+    foreach var $required_vars {
 	if {![info exists $var]} { 
-	    ns_log Notice "im_rest_post_object_type_im_ticket: Missing variable: $var"
-	    return [im_rest_error -http_status 406 -message "Field '$var' not specified"] 
+	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
-    set parent_sql "p.parent_id = :parent_id"
-    if {"" == $parent_id} { set parent_sql "p.parent_id is NULL" }
-
+    # Check for duplicates
+    set parent_sql "parent_id = :parent_id"
+    if {"" == $parent_id} { set parent_sql "parent_id is NULL" }
     set dup_sql "
 		select	count(*)
 		from	im_tickets t,
 			im_projects p
 		where	t.ticket_id = p.project_id and
 			$parent_sql and
-			(       upper(trim(p.project_name)) = upper(trim(:project_name)) OR
-				upper(trim(p.project_nr)) = upper(trim(:ticket_nr))
-			)
+			(upper(trim(p.project_name)) = upper(trim(:project_name)) OR
+			 upper(trim(p.project_nr)) = upper(trim(:ticket_nr)))
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate Ticket: Your ticket name already exists."]
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your ticket_name or ticket_nr already exists."]
     }
 
     # Check for valid parent_id
-    set company_id [db_string ticket_company "select company_id from im_projects where project_id = :parent_id" -default ""]
+    set company_id [db_string ticket_company "select company_id from im_projects where project_id = :ticket_sla_id" -default ""]
     if {"" == $company_id} {
-	return [im_rest_error -http_status 406 -message "Invalid 'parent_id': parent_id should represent an 'open' project of type 'Service Level Agreement'."]
+	return [im_rest_error -http_status 406 -message "Invalid $object_type_pretty field 'parent_id': parent_id should represent an 'open' project of type 'Service Level Agreement'."]
     }
 
     if {[catch {
 	db_transaction {
 
 	    set rest_oid [im_ticket::new \
-			      -ticket_sla_id $parent_id \
+			      -ticket_sla_id $ticket_sla_id \
 			      -ticket_name $project_name \
 			      -ticket_nr $ticket_nr \
 			      -ticket_customer_contact_id $ticket_customer_contact_id \
@@ -190,24 +191,124 @@ ad_proc -private im_rest_post_object_type_im_ticket {
 
 	}
     } err_msg]} {
-	ns_log Notice "im_rest_post_object_type_im_ticket: Error creating ticket: '$err_msg'"
-	return [im_rest_error -http_status 406 -message "Error creating ticket: '$err_msg'."]
+	ns_log Notice "im_rest_post_object_type_im_ticket: Error creating $object_type_pretty: '$err_msg'"
+	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
     }
 
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype "im_ticket" \
+	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating ticket: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
     
     return $rest_oid
 }
 
+
+# -------------------------------------------------------
+# Timesheet Task
+# -------------------------------------------------------
+
+ad_proc -private im_rest_post_object_type_im_timesheet_task {
+    { -format "xml" }
+    { -user_id 0 }
+    { -content "" }
+    { -object_type "im_timesheet_task" }
+    { -object_type_pretty "Timesheet Task" }
+} {
+    Create a new object and return its object_id
+} {
+    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+
+    # Store the XML values into local variables
+    set planned_units ""
+    set billable_units ""
+    set cost_center_id ""
+    set invoice_id ""
+    set priority ""
+    set sort_order ""
+    set gantt_project_id ""
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    }
+    set root_node [$doc documentElement]
+    foreach child [$root_node childNodes] {
+	set nodeName [$child nodeName]
+	set nodeText [$child text]
+	set hash($nodeName) $nodeText
+	set $nodeName $nodeText
+    }
+
+    # Check that all required variables are there
+    set required_vars {project_name project_nr task_status_id task_type_id uom_id material_id}
+    foreach var $required_vars {
+	if {![info exists $var]} { 
+	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	}
+    }
+
+    # Check for duplicates
+    set parent_sql "parent_id = :parent_id"
+    if {"" == $parent_id} { set parent_sql "parent_id is NULL" }
+    set dup_sql "
+		select	count(*)
+		from	im_timesheet_tasks t,
+			im_projects p
+		where	t.task_id = p.project_id and
+			$parent_sql and
+			(upper(trim(p.project_name)) = upper(trim(:project_name)) OR
+			 upper(trim(p.project_nr)) = upper(trim(:ticket_nr)))
+    "
+    if {[db_string duplicates $dup_sql]} {
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your ticket_name or ticket_nr already exists."]
+    }
+
+    if {[catch {
+	db_transaction {
+	    set rest_oid [db_string new_task "
+		SELECT im_timesheet_task__new (
+			null,			-- p_task_id
+			'im_timesheet_task',	-- object_type
+			now(),			-- creation_date
+			:user_id,		-- creation_user
+			'[ad_conn peeraddr]',	-- creation_ip
+			null,			-- context_id
+	
+			:project_nr,
+			:project_name,
+			:project_id,
+			:material_id,
+			:cost_center_id,
+			:uom_id,
+			:task_type_id,
+			:task_status_id,
+			:note
+		)
+	    "]
+	}
+    } err_msg]} {
+	ns_log Notice "im_rest_post_object_type_im_ticket: Error creating $object_type_pretty: '$err_msg'"
+	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+    }
+
+
+    if {[catch {
+	im_rest_object_type_update_sql \
+	    -rest_otype $object_type \
+	    -rest_oid $rest_oid \
+	    -hash_array [array get hash]
+
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
+    }
+    
+    return $rest_oid
+}
 
 
 # --------------------------------------------------------
@@ -218,24 +319,31 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
+    { -object_type "im_trans_task" }
+    { -object_type_pretty "Translation Task" }
 } {
-    Create a new Translation Task and return the task_id.
+    Create a new object and return the object_id.
 } {
-    ns_log Notice "im_rest_post_object_type_im_trans_task: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
 
-    # store the key-value pairs into a hash array
+    # Store the XML values into local variables
     if {[catch {set doc [dom parse $content]} err_msg]} {
 	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
     }
-
     set root_node [$doc documentElement]
     foreach child [$root_node childNodes] {
 	set nodeName [$child nodeName]
 	set nodeText [$child text]
-	
-	# Store the values
 	set hash($nodeName) $nodeText
 	set $nodeName $nodeText
+    }
+
+    # Check that all required variables are there
+    set required_vars {task_name project_id task_type_id task_status_id source_language_id target_language_id task_uom_id}
+    foreach var $required_vars {
+	if {![info exists $var]} { 
+	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	}
     }
 
     # Check for duplicate
@@ -247,7 +355,7 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
 			target_language_id = :target_language_id
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate Translation Task: Your translation task name already exists for the specified parent_id."]
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your task_name and target_language_id already exists for the specified parent_id."]
     }
 
     if {[catch {
@@ -269,17 +377,17 @@ ad_proc -private im_rest_post_object_type_im_trans_task {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating translation task: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype "im_trans_task" \
+	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating translation task: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
     
     return $rest_oid
@@ -294,68 +402,177 @@ ad_proc -private im_rest_post_object_type_im_company {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
+    { -object_type "im_company" }
+    { -object_type_pretty "Company" }
 } {
     Create a new Company and return the company_id.
 } {
-    ns_log Notice "im_rest_post_object_type_im_company: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
 
-    # store the key-value pairs into a hash array
+    # Store XML values into local variables
     if {[catch {set doc [dom parse $content]} err_msg]} {
 	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
     }
-
     set root_node [$doc documentElement]
     foreach child [$root_node childNodes] {
 	set nodeName [$child nodeName]
 	set nodeText [$child text]
-	
-	# Store the values
 	set hash($nodeName) $nodeText
 	set $nodeName $nodeText
     }
 
+    # Check that all required variables are there
+    set required_vars {company_name company_path company_status_id company_type_id main_office_id}
+    foreach var $required_vars {
+	if {![info exists $var]} { 
+	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	}
+    }
+
     # Check for duplicate
     set dup_sql "
-		select  count(*)
-		from    im_companys
-		where   project_id = :project_id and
-			task_name = :task_name and
-			target_language_id = :target_language_id
+	select	count(*)
+	from	im_companies
+	where	(lower(company_path) = lower(:company_path) OR
+		lower(company_name) = lower(:company_name))
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate Translation Task: Your translation task name already exists for the specified parent_id."]
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your company_name or company_path already exists."]
     }
 
     if {[catch {
 	set rest_oid [db_string new_company "
 		select im_company__new (
 			null,			-- task_id
-			'im_company',	-- object_type
+			'im_company',		-- object_type
 			now(),			-- creation_date
 			:user_id,		-- creation_user
 			'[ns_conn peeraddr]',	-- creation_ip	
 			null,			-- context_id	
-
-			:project_id,		-- project_id	
-			:task_type_id,		-- task_type_id	
-			:task_status_id,	-- task_status_id
-			:source_language_id,	-- source_language_id
-			:target_language_id,	-- target_language_id
-			:task_uom_id		-- task_uom_id
+			:company_name,
+			:company_path,
+			:main_office_id,
+			:company_type_id,
+			:company_status_id
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating translation task: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype "im_company" \
+	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating translation task: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
+    }
+    
+    return $rest_oid
+}
+
+
+# --------------------------------------------------------
+# Absence
+# --------------------------------------------------------
+
+ad_proc -private im_rest_post_object_type_im_user_absence {
+    { -format "xml" }
+    { -user_id 0 }
+    { -content "" }
+    { -object_type "im_user_absence" }
+    { -object_type_pretty "User Absence" }
+} {
+    Create a new User Absence and return the company_id.
+} {
+    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+
+    # Store XML values into local variables
+    set contact_info ""
+    set group_id ""
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    }
+    set root_node [$doc documentElement]
+    foreach child [$root_node childNodes] {
+	set nodeName [$child nodeName]
+	set nodeText [$child text]
+	set hash($nodeName) $nodeText
+	set $nodeName $nodeText
+    }
+
+    # Check that all required variables are there
+    set required_vars { absence_name owner_id duration_days absence_type_id absence_status_id start_date end_date description }
+    foreach var $required_vars {
+	if {![info exists $var]} { 
+	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	}
+    }
+
+    # Check for duplicate
+    set dup_sql "
+	select	count(*)
+	from	im_user_absences
+	where	owner_id = :owner_id and
+		absence_type_id = :absence_type_id and
+		start_date = :start_date
+    "
+    if {[db_string duplicates $dup_sql]} {
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your combination of owner_id=$owner_id, start_date=$start_date and absence_type_id=$absence_type_id already exists."]
+    }
+
+    if {[catch {
+
+	set start_date_sql [template::util::date get_property sql_timestamp $start_date]
+	set end_date_sql [template::util::date get_property sql_timestamp $end_date]
+
+	set rest_oid [db_string new_absence "
+		SELECT im_user_absence__new(
+			:absence_id,
+			'im_user_absence',
+			now(),
+			:user_id,
+			'[ns_conn peeraddr]',
+			null,
+
+			:absence_name,
+			:absence_owner_id,
+			$start_date_sql,
+			$end_date_sql,
+
+			:absence_status_id,
+			:absence_type_id,
+			:description,
+			:contact_info
+		)
+	"]
+
+	db_dml update_absence "
+		update im_user_absences	set
+			duration_days = :duration_days,
+			group_id = :group_id
+		where absence_id = :rest_oid
+	"
+
+	db_dml update_object "
+		update acs_objects set
+			last_modified = now()
+		where object_id = :rest_oid
+	"
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+    }
+
+    if {[catch {
+	im_rest_object_type_update_sql \
+	    -rest_otype $object_type \
+	    -rest_oid $rest_oid \
+	    -hash_array [array get hash]
+
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
     
     return $rest_oid
@@ -369,29 +586,37 @@ ad_proc -private im_rest_post_object_type_user {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
+    { -object_type "user" }
+    { -object_type_pretty "User" }
 } {
     Create a new User object return the user_id.
 } {
-    ns_log Notice "im_rest_post_object_type_user: Started"
-    set current_user_id $user_id
+    ns_log Notice "im_rest_post_object_type_$object_type: Started"
 
     # Make sure we don't get confused with the generic user_id
     # We will call the ID of the new user new_user_id
+    set current_user_id $user_id
     unset user_id
 
     # store the key-value pairs into a hash array
     if {[catch {set doc [dom parse $content]} err_msg]} {
 	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
     }
-
     set root_node [$doc documentElement]
     foreach child [$root_node childNodes] {
 	set nodeName [$child nodeName]
 	set nodeText [$child text]
-	
-	# Store the values
 	set hash($nodeName) $nodeText
 	set $nodeName $nodeText
+    }
+    if {![info exists screen_name]} { set screen_name $username }
+
+    # Check that all required variables are there
+    set required_vars {username email first_names last_name password url}
+    foreach var $required_vars {
+	if {![info exists $var]} { 
+	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	}
     }
 
     # Check for duplicate
@@ -407,12 +632,10 @@ ad_proc -private im_rest_post_object_type_user {
 			)
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate User: Username or Email already exist."]
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your username or email already exist."]
     }
 
     if {[catch {
-
-	ns_log Notice "im_rest_post_object_type_user: about to create user"
 	array set creation_info [auth::create_user \
 				     -username $username \
 				     -email $email \
@@ -422,8 +645,6 @@ ad_proc -private im_rest_post_object_type_user {
 				     -password $password \
 				     -url $url \
 				    ]
-
-    
 	if { "ok" != $creation_info(creation_status) || "ok" != $creation_info(account_status)} {
 	    return [im_rest_error -http_status 406 -message "User creation unsuccessfull: [array get creation_status]"]
 	}
@@ -497,17 +718,17 @@ ad_proc -private im_rest_post_object_type_user {
 	}
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating user: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype "user" \
+	    -rest_otype $object_type \
 	    -rest_oid $new_user_id \
 	    -hash_array [array get hash]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating user: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
 
     return $new_user_id
@@ -522,22 +743,27 @@ ad_proc -private im_rest_post_object_type_im_invoice {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
+    { -object_type "im_invoice" }
+    { -object_type_pretty "Financial Document" }
 } {
     Create a new Financial Document and return the task_id.
 } {
-    ns_log Notice "im_rest_post_object_type_im_invoice: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
 
-    # store the key-value pairs into a hash array
-    if {[catch {set doc [dom parse $content]} err_msg]} {
-	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
-    }
-
+    # Store the XML key-value pairs into local variables
     set note ""
     set amount 0
     set currency "EUR"
     set vat ""
     set tax ""
-
+    set payment_days 0
+    set payment_method_id ""
+    set template_id ""
+    set company_contact_id ""
+    set effective_date [db_string effdate "select now()::date"]
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    }
     set root_node [$doc documentElement]
     foreach child [$root_node childNodes] {
 	# Store the values
@@ -547,6 +773,14 @@ ad_proc -private im_rest_post_object_type_im_invoice {
 	set $nodeName $nodeText
     }
 
+    # Check that all required variables are there
+    set required_vars { invoice_nr customer_id provider_id cost_status_id cost_type_id}
+    foreach var $required_vars {
+	if {![info exists $var]} { 
+	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	}
+    }
+
     # Check for duplicate
     set dup_sql "
 		select  count(*)
@@ -554,7 +788,7 @@ ad_proc -private im_rest_post_object_type_im_invoice {
 		where	invoice_nr = :invoice_nr
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate Financial Document: Your financial document already exists with the specified invoice_nr='$invoice_nr'."]
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your specified invoice_nr='$invoice_nr' already exists."]
     }
 
     if {[catch {
@@ -585,19 +819,49 @@ ad_proc -private im_rest_post_object_type_im_invoice {
 		)
 	"]
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating financial document: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype "im_invoice" \
+	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating financial document: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
     
+    return $rest_oid
+}
+
+
+ad_proc -private im_rest_post_object_type_im_trans_invoice {
+    { -format "xml" }
+    { -user_id 0 }
+    { -content "" }
+    { -object_type "im_trans_invoice" }
+    { -object_type_pretty "Translation Financial Document" }
+} {
+    Create a new object and return the object_id
+} {
+    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+    set rest_oid [ \
+		       im_rest_post_object_type_im_trans_invoice \
+			-format $format \
+    			-user_id $user_id \
+			-content $content \
+			-object_type $object_type \
+			-object_type_pretty $object_type_pretty \
+    ]
+    db_dml insert_trans_invoice "
+	insert into im_trans_invoices (invoice_id) values (:rest_oid)
+    "
+    db_dml update_trans_invoice "
+	update	acs_objects
+	set	object_type = 'im_trans_invoice"
+	where	object_id = :rest_oid
+    "
     return $rest_oid
 }
 
@@ -611,23 +875,37 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
+    { -object_type "im_invoice_item" }
+    { -object_type_pretty "Financial Document Item" }
 } {
     Create a new Financial Document line and return the item_id.
 } {
-    ns_log Notice "im_rest_post_object_type_im_invoice_item: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
 
     # store the key-value pairs into a hash array
+    set description ""
+    set item_material_id ""
+    set item_type_id ""
+    set item_status_id ""
+    set invoice_id ""
+    set project_id ""
     if {[catch {set doc [dom parse $content]} err_msg]} {
 	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
     }
-
     set root_node [$doc documentElement]
     foreach child [$root_node childNodes] {
-	# Store the values
 	set nodeName [$child nodeName]
 	set nodeText [$child text]
 	set hash($nodeName) $nodeText
 	set $nodeName $nodeText
+    }
+
+    # Check that all required variables are there
+    set required_vars { item_name invoice_id sort_order item_uom_id item_units price_per_unit currency }
+    foreach var $required_vars {
+	if {![info exists $var]} { 
+	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	}
     }
 
     # Check for duplicate
@@ -639,7 +917,7 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
 			sort_order = :sort_order
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate Financial Document Item: Your item already exists with the specified invoice_name, invoice_id and sort_order."]
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your item already exists with the specified invoice_name, invoice_id and sort_order."]
     }
 
     if {[catch {
@@ -660,17 +938,17 @@ ad_proc -private im_rest_post_object_type_im_invoice_item {
 		)
 	"
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating financial document item: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype "im_invoice_item" \
+	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating financial document item: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
 
     # re-calculate the amount of the invoice
@@ -690,10 +968,12 @@ ad_proc -private im_rest_post_object_type_im_hour {
     { -format "xml" }
     { -user_id 0 }
     { -content "" }
+    { -object_type "im_hour" }
+    { -object_type_pretty "Timesheet Hour" }
 } {
     Create a new Timesheet Hour line and return the item_id.
 } {
-    ns_log Notice "im_rest_post_object_type_im_hour: user_id=$user_id"
+    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
 
     # store the key-value pairs into a hash array
     if {[catch {set doc [dom parse $content]} err_msg]} {
@@ -709,6 +989,14 @@ ad_proc -private im_rest_post_object_type_im_hour {
 	set $nodeName $nodeText
     }
 
+    # Check that all required variables are there
+    set required_vars { user_id project_id day hours note }
+    foreach var $required_vars {
+	if {![info exists $var]} { 
+	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	}
+    }
+
     # Check for duplicate
     set dup_sql "
 		select  count(*)
@@ -718,7 +1006,7 @@ ad_proc -private im_rest_post_object_type_im_hour {
 			day = :day
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate Timesheet Hour: Your item already exists with the specified user, project and day."]
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your item already exists with the specified user, project and day."]
     }
 
     if {[catch {
@@ -741,17 +1029,17 @@ ad_proc -private im_rest_post_object_type_im_hour {
 		)
 	"
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error creating Timesheet Hour: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
     }
 
     if {[catch {
 	im_rest_object_type_update_sql \
-	    -rest_otype "im_hour" \
+	    -rest_otype $object_type \
 	    -rest_oid $rest_oid \
 	    -hash_array [array get hash]
 
     } err_msg]} {
-	return [im_rest_error -http_status 406 -message "Error updating financial document item: '$err_msg'."]
+	return [im_rest_error -http_status 406 -message "Error updating $object_type_pretty: '$err_msg'."]
     }
 
     return $rest_oid
@@ -829,5 +1117,286 @@ ad_proc -private im_rest_post_object_im_hour {
 	}
 	xml {  doc_return 200 "text/xml" "<?xml version='1.0'?>\n<object_id id=\"$rest_oid\">$rest_oid</object_id>\n" }
     }
+}
+
+
+# --------------------------------------------------------
+# Membership Relationshiop
+# --------------------------------------------------------
+
+ad_proc -private im_rest_post_object_type_membership_rel {
+    { -format "xml" }
+    { -user_id 0 }
+    { -content "" }
+    { -object_type "membership_rel" }
+    { -object_type_pretty "Membership Relationship" }
+} {
+    Create a new object and return the object_id.
+} {
+    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+
+    # Store XML values into local variables
+    set rel_type "membership_rel"
+    set member_state "appoved"
+    set creation_user $user_id
+    set creation_ip [ad_conn peeraddr]
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    }
+    set root_node [$doc documentElement]
+    foreach child [$root_node childNodes] {
+	set nodeName [$child nodeName]
+	set nodeText [$child text]
+	set hash($nodeName) $nodeText
+	set $nodeName $nodeText
+    }
+
+    # Check that all required variables are there
+    set required_vars {object_id_one object_id_two}
+    foreach var $required_vars {
+	if {![info exists $var]} { 
+	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	}
+    }
+
+    # Check for duplicate
+    set dup_sql "
+	select	count(*)
+	from	acs_rels
+	where	rel_type = :object_type and
+		object_id_one = :object_id_one and
+		object_id_two = :object_id_two
+    "
+    if {[db_string duplicates $dup_sql]} {
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your company_name or company_path already exists."]
+    }
+
+    if {[catch {
+	set rest_oid [db_string new_membership_rel "
+		select membership_rel__new (
+			null,			-- task_id
+			:object_type,		-- object_type
+			:object_id_one,
+			:object_id_two,
+			:member_state,
+			:user_id,		-- creation_user
+			'[ns_conn peeraddr]'
+		)
+	"]
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+    }
+   
+    return $rest_oid
+}
+
+
+# --------------------------------------------------------
+# Ticket-Ticket Relationshiop
+# --------------------------------------------------------
+
+ad_proc -private im_rest_post_object_type_im_ticket_ticket_rel {
+    { -format "xml" }
+    { -user_id 0 }
+    { -content "" }
+    { -object_type "im_ticket_ticket_rel" }
+    { -object_type_pretty "Ticket-Ticket Relationship" }
+} {
+    Create a new object and return the object_id.
+} {
+    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+
+    # Store XML values into local variables
+    set rel_type $object_type
+    set creation_ip [ad_conn peeraddr]
+    set sort_order ""
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    }
+    set root_node [$doc documentElement]
+    foreach child [$root_node childNodes] {
+	set nodeName [$child nodeName]
+	set nodeText [$child text]
+	set hash($nodeName) $nodeText
+	set $nodeName $nodeText
+    }
+
+    # Check that all required variables are there
+    set required_vars {object_id_one object_id_two}
+    foreach var $required_vars {
+	if {![info exists $var]} { 
+	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	}
+    }
+
+    # Check for duplicate
+    set dup_sql "
+	select	count(*)
+	from	acs_rels
+	where	rel_type = :object_type and
+		object_id_one = :object_id_one and
+		object_id_two = :object_id_two
+    "
+    if {[db_string duplicates $dup_sql]} {
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your company_name or company_path already exists."]
+    }
+
+    if {[catch {
+	set rest_oid [db_string new_im_ticket_ticket_rel "
+		select im_ticket_ticket_rel__new (
+			null,			-- task_id
+			:object_type,		-- object_type
+			:object_id_one,
+			:object_id_two,
+			null,			-- context_id
+			:user_id,
+			'[ns_conn peeraddr]'
+		)
+	"]
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+    }
+   
+    return $rest_oid
+}
+
+
+# --------------------------------------------------------
+# Key-Account Relationship
+# --------------------------------------------------------
+
+ad_proc -private im_rest_post_object_type_im_key_account_rel {
+    { -format "xml" }
+    { -user_id 0 }
+    { -content "" }
+    { -object_type "im_key_account_rel" }
+    { -object_type_pretty "Key Account Relationship" }
+} {
+    Create a new object and return the object_id.
+} {
+    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+
+    # Store XML values into local variables
+    set rel_type $object_type
+    set creation_ip [ad_conn peeraddr]
+    set sort_order ""
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    }
+    set root_node [$doc documentElement]
+    foreach child [$root_node childNodes] {
+	set nodeName [$child nodeName]
+	set nodeText [$child text]
+	set hash($nodeName) $nodeText
+	set $nodeName $nodeText
+    }
+
+    # Check that all required variables are there
+    set required_vars {object_id_one object_id_two}
+    foreach var $required_vars {
+	if {![info exists $var]} { 
+	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	}
+    }
+
+    # Check for duplicate
+    set dup_sql "
+	select	count(*)
+	from	acs_rels
+	where	rel_type = :object_type and
+		object_id_one = :object_id_one and
+		object_id_two = :object_id_two
+    "
+    if {[db_string duplicates $dup_sql]} {
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your company_name or company_path already exists."]
+    }
+
+    if {[catch {
+	set rest_oid [db_string new_im_key_account_rel "
+		select im_key_account_rel__new (
+			null,			-- task_id
+			:object_type,		-- object_type
+			:object_id_one,
+			:object_id_two,
+			null,			-- context_id
+			:user_id,
+			'[ns_conn peeraddr]'
+		)
+	"]
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+    }
+   
+    return $rest_oid
+}
+
+
+# --------------------------------------------------------
+# Company-Employee Relationship
+# --------------------------------------------------------
+
+ad_proc -private im_rest_post_object_type_im_company_employee_rel {
+    { -format "xml" }
+    { -user_id 0 }
+    { -content "" }
+    { -object_type "im_company_employee_rel" }
+    { -object_type_pretty "Company Employee Relationship" }
+} {
+    Create a new object and return the object_id.
+} {
+    ns_log Notice "im_rest_post_object_type_$object_type: user_id=$user_id"
+
+    # Store XML values into local variables
+    set rel_type $object_type
+    set creation_ip [ad_conn peeraddr]
+    set sort_order ""
+    if {[catch {set doc [dom parse $content]} err_msg]} {
+	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
+    }
+    set root_node [$doc documentElement]
+    foreach child [$root_node childNodes] {
+	set nodeName [$child nodeName]
+	set nodeText [$child text]
+	set hash($nodeName) $nodeText
+	set $nodeName $nodeText
+    }
+
+    # Check that all required variables are there
+    set required_vars {object_id_one object_id_two}
+    foreach var $required_vars {
+	if {![info exists $var]} { 
+	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	}
+    }
+
+    # Check for duplicate
+    set dup_sql "
+	select	count(*)
+	from	acs_rels
+	where	rel_type = :object_type and
+		object_id_one = :object_id_one and
+		object_id_two = :object_id_two
+    "
+    if {[db_string duplicates $dup_sql]} {
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your company_name or company_path already exists."]
+    }
+
+    if {[catch {
+	set rest_oid [db_string new_im_company_employee_rel "
+		select im_company_employee_rel__new (
+			null,			-- task_id
+			:object_type,		-- object_type
+			:object_id_one,
+			:object_id_two,
+			null,			-- context_id
+			:user_id,
+			'[ns_conn peeraddr]'
+		)
+	"]
+    } err_msg]} {
+	return [im_rest_error -http_status 406 -message "Error creating $object_type_pretty: '$err_msg'."]
+    }
+   
+    return $rest_oid
 }
 
