@@ -623,7 +623,9 @@ ad_proc -public im_cost_center_options {
                 cc.cost_center_label,
     		(length(cc.cost_center_code) / 2) - 1 as indent_level
         from	im_cost_centers cc
-	where	1=1
+	where	cost_center_status_id in (
+			select * from im_sub_categories([im_cost_center_status_active])
+		)
 		$department_only_sql
 		$cost_type_sql
 	order by
