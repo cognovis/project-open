@@ -140,3 +140,105 @@ SELECT im_dynfield_attribute_new ('im_company', 'accounting_contact_id', 'Accoun
 -- business_sector_id          | integer                 |
 -- default_tax                 | numeric(12,1)           | default 0
 
+
+
+
+
+
+create or replace function im_company_employee_rel__new (
+	integer, varchar, integer, integer, integer, integer, varchar, integer
+) returns integer as '
+DECLARE
+	p_rel_id		alias for $1;	-- null
+	p_rel_type		alias for $2;	-- im_company_employee_rel
+	p_object_id_one		alias for $3;
+	p_object_id_two		alias for $4;
+	p_context_id		alias for $5;
+	p_creation_user		alias for $6;	-- null
+	p_creation_ip		alias for $7;	-- null
+
+	v_rel_id	integer;
+BEGIN
+	v_rel_id := acs_rel__new (
+		p_rel_id,
+		p_rel_type,
+		p_object_id_one,
+		p_object_id_two,
+		p_context_id,
+		p_creation_user,
+		p_creation_ip
+	);
+
+	insert into im_company_employee_rels (
+	       rel_id, sort_order
+	) values (
+	       v_rel_id, p_sort_order
+	);
+
+	return v_rel_id;
+end;' language 'plpgsql';
+
+
+create or replace function im_company_employee_rel__delete (integer)
+returns integer as '
+DECLARE
+	p_rel_id	alias for $1;
+BEGIN
+	delete	from im_company_employee_rels
+	where	rel_id = p_rel_id;
+
+	PERFORM acs_rel__delete(p_rel_id);
+	return 0;
+end;' language 'plpgsql';
+
+
+
+
+
+
+create or replace function im_key_account_rel__new (
+	integer, varchar, integer, integer, integer, integer, varchar, integer
+) returns integer as '
+DECLARE
+	p_rel_id		alias for $1;	-- null
+	p_rel_type		alias for $2;	-- im_key_account_rel
+	p_object_id_one		alias for $3;
+	p_object_id_two		alias for $4;
+	p_context_id		alias for $5;
+	p_creation_user		alias for $6;	-- null
+	p_creation_ip		alias for $7;	-- null
+
+	v_rel_id	integer;
+BEGIN
+	v_rel_id := acs_rel__new (
+		p_rel_id,
+		p_rel_type,
+		p_object_id_one,
+		p_object_id_two,
+		p_context_id,
+		p_creation_user,
+		p_creation_ip
+	);
+
+	insert into im_key_account_rels (
+	       rel_id, sort_order
+	) values (
+	       v_rel_id, p_sort_order
+	);
+
+	return v_rel_id;
+end;' language 'plpgsql';
+
+
+create or replace function im_key_account_rel__delete (integer)
+returns integer as '
+DECLARE
+	p_rel_id	alias for $1;
+BEGIN
+	delete	from im_key_account_rels
+	where	rel_id = p_rel_id;
+
+	PERFORM acs_rel__delete(p_rel_id);
+	return 0;
+end;' language 'plpgsql';
+
