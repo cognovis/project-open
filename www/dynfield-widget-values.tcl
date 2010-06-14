@@ -79,6 +79,7 @@ switch $tcl_widget {
 	set sql [lindex $sql_list 1]
 	# ad_return_complaint 1 "$sql"
 	set widget_values [db_list_of_lists widget_sql $sql]
+	set widget_values [ns_quotehtml $widget_values]
     }
     default  {
 	set message "Widget type '$tcl_widget' not implemented yet"
