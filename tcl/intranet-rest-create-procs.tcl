@@ -145,7 +145,7 @@ ad_proc -private im_rest_post_object_type_im_ticket {
     if {![info exists ticket_note]} { set ticket_note "" }
 
     # Check that all required variables are there
-    set required_vars {ticket_name ticket_sla_id ticket_status_id ticket_type_id}
+    set required_vars {project_name parent_id ticket_status_id ticket_type_id}
     foreach var $required_vars {
 	if {![info exists $var]} { 
 	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
@@ -169,7 +169,7 @@ ad_proc -private im_rest_post_object_type_im_ticket {
     }
 
     # Check for valid parent_id
-    set company_id [db_string ticket_company "select company_id from im_projects where project_id = :ticket_sla_id" -default ""]
+    set company_id [db_string ticket_company "select company_id from im_projects where project_id = :parent_id" -default ""]
     if {"" == $company_id} {
 	return [im_rest_error -http_status 406 -message "Invalid $object_type_pretty field 'parent_id': parent_id should represent an 'open' project of type 'Service Level Agreement'."]
     }
@@ -178,7 +178,7 @@ ad_proc -private im_rest_post_object_type_im_ticket {
 	db_transaction {
 
 	    set rest_oid [im_ticket::new \
-			      -ticket_sla_id $ticket_sla_id \
+			      -ticket_sla_id $parent_id \
 			      -ticket_name $project_name \
 			      -ticket_nr $ticket_nr \
 			      -ticket_customer_contact_id $ticket_customer_contact_id \
@@ -233,6 +233,7 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
     set priority ""
     set sort_order ""
     set gantt_project_id ""
+    set note ""
     if {[catch {set doc [dom parse $content]} err_msg]} {
 	return [im_rest_error -http_status 406 -message "Unable to parse XML: '$err_msg'."]
     }
@@ -245,27 +246,29 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
     }
 
     # Check that all required variables are there
-    set required_vars {project_name project_nr task_status_id task_type_id uom_id material_id}
+    set required_vars {project_name project_nr parent_id project_status_id project_type_id uom_id material_id}
     foreach var $required_vars {
 	if {![info exists $var]} { 
 	    return [im_rest_error -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
 
+    # More checks
+    if {"" == $parent_id} { return [im_rest_error -http_status 406 -message "Variable 'parent_id' is not a valid project_id."] }
+
+
     # Check for duplicates
-    set parent_sql "parent_id = :parent_id"
-    if {"" == $parent_id} { set parent_sql "parent_id is NULL" }
     set dup_sql "
 		select	count(*)
 		from	im_timesheet_tasks t,
 			im_projects p
 		where	t.task_id = p.project_id and
-			$parent_sql and
+			p.parent_id = :parent_id and
 			(upper(trim(p.project_name)) = upper(trim(:project_name)) OR
-			 upper(trim(p.project_nr)) = upper(trim(:ticket_nr)))
+			 upper(trim(p.project_nr)) = upper(trim(:project_nr)))
     "
     if {[db_string duplicates $dup_sql]} {
-	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your ticket_name or ticket_nr already exists."]
+	return [im_rest_error -http_status 406 -message "Duplicate $object_type_pretty: Your project_name or project_nr already exists."]
     }
 
     if {[catch {
@@ -281,12 +284,12 @@ ad_proc -private im_rest_post_object_type_im_timesheet_task {
 	
 			:project_nr,
 			:project_name,
-			:project_id,
+			:parent_id,
 			:material_id,
 			:cost_center_id,
 			:uom_id,
-			:task_type_id,
-			:task_status_id,
+			:project_type_id,
+			:project_status_id,
 			:note
 		)
 	    "]
