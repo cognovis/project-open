@@ -30,12 +30,25 @@ ad_page_contract {
 
 
 # ---------------------------------------------------------------
-# Project Menu
+# Default & Security
 # ---------------------------------------------------------------
 
-set show_context_help_p 0
+set user_id [ad_maybe_redirect_for_registration]
 
+foreach pid $project_id {
+    im_project_permissions $user_id $pid view read write admin
+    if {!$read} {
+	ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_insufficient_6]"
+	return
+    }
+}
+
+sset show_context_help_p 0
 set main_navbar_label "reporting"
+
+# ---------------------------------------------------------------
+# Project Menu
+# ---------------------------------------------------------------
 
 set sub_navbar ""
 if {[llength $project_id] == 1} {
