@@ -43,7 +43,7 @@ foreach pid $project_id {
     }
 }
 
-sset show_context_help_p 0
+set show_context_help_p 0
 set main_navbar_label "reporting"
 
 # ---------------------------------------------------------------
