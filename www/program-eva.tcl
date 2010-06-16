@@ -149,16 +149,30 @@ if { ![empty_string_p $where_clause] } {
 
 set sql "
 	select
-		child.*,
+		child.project_id,
+		child.project_nr,
+		child.project_name,
+		child.project_status_id,
+		child.project_type_id,
+		coalesce(child.cost_timesheet_logged_cache, 0.0) as cost_timesheet_logged_cache,
+		coalesce(child.reported_hours_cache, 0.0) as reported_hours_cache,
+		trunc((coalesce(child.project_budget, 0.0) * im_exchange_rate(child.start_date::date, child.project_budget_currency, :default_currency)) :: numeric, 2) as project_budget_converted,
+		im_category_from_id(child.project_status_id) as project_status,
+		im_category_from_id(child.project_type_id) as project_type,
+		to_char(child.percent_completed, '999990') as project_completed_rounded,
+		coalesce(child.project_budget_hours, 0.0) as project_budget_hours,
+		--
+		program.project_id as program_id,
 		program.project_nr as program_project_nr,
 		program.project_name as program_name,
 		program.project_status_id as program_status_id,
 		program.project_type_id as program_type_id,
 		program.project_id as program_project_id,
+		program.project_budget as program_budget,
+		coalesce(program.project_budget_hours, 0.0) as program_budget_hours,
 		to_char(program.percent_completed, '999990') as program_completed_rounded,
-		im_category_from_id(child.project_status_id) as project_status,
-		im_category_from_id(child.project_type_id) as project_type,
-		to_char(child.percent_completed, '999990') as project_completed_rounded
+		trunc((coalesce(program.project_budget, 0.0) * im_exchange_rate(program.start_date::date, program.project_budget_currency, :default_currency)) :: numeric, 2) as program_budget_converted
+		--
 	from
 		im_projects program,
 		im_projects child
@@ -169,30 +183,85 @@ set sql "
 		) and
 		child.program_id = program.project_id
 	order by
-		child.tree_sortkey
+		lower(program.project_name),
+		lower(child.project_name)
 "
 
 
 set report_def [list \
     group_by program_id \
     header {
-	"\#colspan=14 <a href=$this_url&program_id=$program_id&level_of_detail=4 
+	"\#colspan=2 <a href=$this_url&program_id=$program_id&level_of_detail=4 
 	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 	<b><a href=$project_url$program_id>$program_name</a></b>"
+	"<b>$program_budget_converted</b>"
+	"<b>$program_budget_hours</b>"
+	""
+	""
     } \
     content {
-	    header { $project_name }
+	    header { 
+		""
+		$project_name
+		"$project_budget_converted"
+		$project_budget_hours
+		$cost_timesheet_logged_cache
+		$reported_hours_cache
+	    }
 	    content {}
     } \
-    footer {$program_id $program_name} \
+    footer { 
+	"<br>&nbsp;<br>" 
+	"" 
+	"[expr $program_budget_converted-$budget_sum]"
+	"[expr $program_budget_hours-$budget_hours_sum]"
+    } \
 ]
 
 
 # Global header/footer
-set header0 [list "Program" "Project" "Budget" "Budget Hours"]
+set header0 [list "Program" "Project" "Budget" "Budget Hours" "Timesheet" "Timesheet Hours"]
 set footer0 {"" "" "" ""}
 
-set counters [list]
+
+
+set budget_counter [list \
+	pretty_name Budget \
+	var budget_sum \
+	reset \$program_id \
+	expr \$project_budget_converted
+]
+
+set budget_hours_counter [list \
+	pretty_name "Budget Hours" \
+	var budget_hours_sum \
+	reset \$program_id \
+	expr \$project_budget_hours
+]
+
+set cost_timesheet_logged_counter [list \
+	pretty_name "Logged Timesheet Costs" \
+	var cost_timesheet_logged_sum \
+	reset \$program_id \
+	expr \$cost_timesheet_logged_cache
+]
+
+set reported_hours_cache_counter [list \
+	pretty_name "Reported Hours" \
+	var reported_hours_cache_sum \
+	reset \$program_id \
+	expr \$reported_hours_cache
+]
+
+
+set counters [list \
+	$budget_counter \
+	$budget_hours_counter \
+	$cost_timesheet_logged_counter \
+	$reported_hours_cache_counter \
+]
+
+set budget_sum 0
 
 # ------------------------------------------------------------
 # Start formatting the page header
