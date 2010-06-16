@@ -347,24 +347,17 @@ ad_proc im_freelance_object_skill_component {
 
     foreach skill_type_id [lsort [array name skill_type_hash]] {
 
-	    append skill_html "
+	append skill_html "
 		<li class='liOpen'>$skill_type_name_hash($skill_type_id)
 		<ul>
 		$skill_type_hash($skill_type_id)
 		</ul>
-	    "
-
-set ttt {
-	if {"" != $skill_type_hash($skill_type_id)} {
-	} else {
-	    append skill_html "<li class='liOpen'>$skill_type_name_hash($skill_type_id)"
-	}
+	"
     }
-}
     return "
-	        <ul class='mktree'>
-		$skill_html
-		</ul>
+        <ul class='mktree'>
+	$skill_html
+	</ul>
     "    
 }
 
@@ -490,10 +483,9 @@ ad_proc im_freelance_skill_component { current_user_id user_id  return_url} {
     }
 
     # Skip this component if the user is not a freelancer
-    if {![im_profile::member_p -profile "Freelancers" -user_id $user_id]} { 
-	return "" 
-    }
-
+    # if {![im_profile::member_p -profile "Freelancers" -user_id $user_id]} { 
+    # return "" 
+    # }
 
     # Check permissions to see and modify freelance skills and their confirmations
     #
@@ -684,38 +676,50 @@ ad_proc im_freelance_member_select_component {
 
     set project_source_lang [db_string source_lang "select substr(im_category_from_id(source_language_id), 1, 2) from im_projects where project_id = :object_id" -default 0]
     set project_target_langs [db_list target_langs "select '''' || substr(im_category_from_id(language_id), 1, 2) || '''' from im_target_languages where project_id = :object_id"]
-    if {0 == [llength $project_target_langs]} { set project_target_langs [list "'none'"]}
+
+    set source_language_where ""
+    if {"" != $project_source_lang} {
+	set source_language_where "
+		and exists (
+			select	*
+			from	im_freelance_skills fs
+			where	fs.skill_type_id = :source_lang_skill_type and
+				substr(im_category_from_id(fs.skill_id), 1, 2) = :project_source_lang and
+				fs.user_id = u.user_id
+		)
+	"
+    }
+
+    set target_language_where ""
+    if {[llength $project_target_langs] > 0} {
+	set target_language_where "
+		and exists (	
+			select	*
+			from	im_freelance_skills fs
+			where	fs.skill_type_id = :target_lang_skill_type and
+				substr(im_category_from_id(skill_id), 1, 2) in ([join $project_target_langs ","]) and
+				fs.user_id = u.user_id
+		)
+	"
+    }
 
     set freelance_sql "
-select distinct
-	u.user_id,
-	im_name_from_user_id(u.user_id) as user_name,
-	im_name_from_user_id(u.user_id) as name,
-	im_freelance_skill_list(u.user_id, :source_lang_skill_type) as source_langs,
-	im_freelance_skill_list(u.user_id, :target_lang_skill_type) as target_langs,
-	im_freelance_skill_list(u.user_id, :subject_area_skill_type) as subject_area
-from
-	cc_users u,
-	(
-		select	user_id
-		from	im_freelance_skills
-		where	skill_type_id = :source_lang_skill_type
-			and substr(im_category_from_id(skill_id), 1, 2) = :project_source_lang
-
-	) sls,
-	(	
-		select	user_id
-		from	im_freelance_skills
-		where	skill_type_id = :target_lang_skill_type
-			and substr(im_category_from_id(skill_id), 1, 2) in ([join $project_target_langs ","])
-	) tls
-where
-	1=1
-	and sls.user_id = u.user_id
-	and tls.user_id = u.user_id
-order by
-	user_name
-"
+	select distinct
+		u.user_id,
+		im_name_from_user_id(u.user_id) as user_name,
+		im_name_from_user_id(u.user_id) as name,
+		im_freelance_skill_list(u.user_id, :source_lang_skill_type) as source_langs,
+		im_freelance_skill_list(u.user_id, :target_lang_skill_type) as target_langs,
+		im_freelance_skill_list(u.user_id, :subject_area_skill_type) as subject_area
+	from
+		cc_users u
+	where
+		1=1
+		$source_language_where
+		$target_language_where
+	order by
+		user_name
+    "
 
     set freelance_header_html "
 	<tr class=rowtitle>\n"
