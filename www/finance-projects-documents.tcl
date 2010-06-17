@@ -818,58 +818,61 @@ ns_log Notice "intranet-reporting-finance/finance-projects-documents: sql=\n$sql
 
 db_foreach sql $sql {
 
-	if {"" == $project_id} {
-	    set project_id 0
-	    set project_name [lang::message::lookup "" intranet-reporting.No_project "Undefined Project"]
-	}
+    # Avoid syntax errors further down
+    if {"" == $project_customer_id} { set project_customer_id 0 }
 
-	im_report_display_footer \
-	    -output_format $output_format \
-	    -group_def $report_def \
-	    -footer_array_list $footer_array_list \
-	    -last_value_array_list $last_value_list \
-	    -level_of_detail $level_of_detail \
-	    -row_class $class \
-	    -cell_class $class
-	
-	im_report_update_counters -counters $counters
-	
-	# Calculated Variables 
-	set po_per_quote_perc_subsubtotal "undef"
-	if {[expr $quote_subsubtotal+0] != 0} {
-	  set po_per_quote_perc_subsubtotal [expr int(10000.0 * $po_subsubtotal / $quote_subsubtotal) / 100.0]
-	  set po_per_quote_perc_subsubtotal "$po_per_quote_perc_subsubtotal %"
-	}
-	set gross_profit_subsubtotal [expr $invoice_subsubtotal - $bill_subsubtotal - $expense_subsubtotal]
-	set wip_subsubtotal [expr $timesheet_subsubtotal + $bill_subsubtotal + $expense_subsubtotal - $invoice_subsubtotal]
-
-
-	# Calculated Variables for footer0
-	set po_per_quote_perc_subtotal "undef"
-	if {[expr $quote_subtotal+0] != 0} {
-	    set po_per_quote_perc_subtotal [expr int(10000.0 * $po_subtotal / $quote_subtotal) / 100.0]
-	}
-	set gross_profit_subtotal [expr $invoice_subtotal - $bill_subtotal - $expense_subtotal]
-	set wip_subtotal [expr $timesheet_subtotal + $bill_subtotal + $expense_subtotal - $invoice_subtotal]
-
-
-	set last_value_list [im_report_render_header \
-	    -output_format $output_format \
-	    -group_def $report_def \
-	    -last_value_array_list $last_value_list \
-	    -level_of_detail $level_of_detail \
-	    -row_class $class \
-	    -cell_class $class
-	]
-
-	set footer_array_list [im_report_render_footer \
-	    -output_format $output_format \
-	    -group_def $report_def \
-	    -last_value_array_list $last_value_list \
-	    -level_of_detail $level_of_detail \
-	    -row_class $class \
-	    -cell_class $class
-	]
+    if {"" == $project_id} {
+	set project_id 0
+	set project_name [lang::message::lookup "" intranet-reporting.No_project "Undefined Project"]
+    }
+    
+    im_report_display_footer \
+	-output_format $output_format \
+	-group_def $report_def \
+	-footer_array_list $footer_array_list \
+	-last_value_array_list $last_value_list \
+	-level_of_detail $level_of_detail \
+	-row_class $class \
+	-cell_class $class
+    
+    im_report_update_counters -counters $counters
+    
+    # Calculated Variables 
+    set po_per_quote_perc_subsubtotal "undef"
+    if {[expr $quote_subsubtotal+0] != 0} {
+	set po_per_quote_perc_subsubtotal [expr int(10000.0 * $po_subsubtotal / $quote_subsubtotal) / 100.0]
+	set po_per_quote_perc_subsubtotal "$po_per_quote_perc_subsubtotal %"
+    }
+    set gross_profit_subsubtotal [expr $invoice_subsubtotal - $bill_subsubtotal - $expense_subsubtotal]
+    set wip_subsubtotal [expr $timesheet_subsubtotal + $bill_subsubtotal + $expense_subsubtotal - $invoice_subsubtotal]
+    
+    
+    # Calculated Variables for footer0
+    set po_per_quote_perc_subtotal "undef"
+    if {[expr $quote_subtotal+0] != 0} {
+	set po_per_quote_perc_subtotal [expr int(10000.0 * $po_subtotal / $quote_subtotal) / 100.0]
+    }
+    set gross_profit_subtotal [expr $invoice_subtotal - $bill_subtotal - $expense_subtotal]
+    set wip_subtotal [expr $timesheet_subtotal + $bill_subtotal + $expense_subtotal - $invoice_subtotal]
+    
+    
+    set last_value_list [im_report_render_header \
+			     -output_format $output_format \
+			     -group_def $report_def \
+			     -last_value_array_list $last_value_list \
+			     -level_of_detail $level_of_detail \
+			     -row_class $class \
+			     -cell_class $class
+			]
+    
+    set footer_array_list [im_report_render_footer \
+			       -output_format $output_format \
+			       -group_def $report_def \
+			       -last_value_array_list $last_value_list \
+			       -level_of_detail $level_of_detail \
+			       -row_class $class \
+			       -cell_class $class
+			  ]
 }
 
 # Calculated Variables for footer0
