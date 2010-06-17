@@ -24,8 +24,7 @@ ad_page_contract {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
-#set menu_label "program-eva"
-set menu_label "reporting-finance-projects-documents"
+set menu_label "reporting-program-eva"
 set current_user_id [ad_maybe_redirect_for_registration]
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
@@ -39,7 +38,9 @@ if {![string equal "t" $read_p]} {
     return
 }
 
+# ------------------------------------------------------------
 # Check that Start & End-Date have correct format
+
 if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $start_date]} {
     ad_return_complaint 1 "Start Date doesn't have the right format.<br>
     Current value: '$start_date'<br>
@@ -62,12 +63,13 @@ set context ""
 set help_text "
 <strong><nobr>$page_title</nobr></strong>
 <br>
-This report shows programs and the advance of their 
-projects vs. their consumed resources (Earned Value Analysis).
+This report shows programs and their contained projects
+with budgets vs. consumed resources (Earned Value Analysis).
 <br>
-Programs need to be in status 'open' to appear.
-Projects need to start before end-date and end 
-after start-date.
+Programs need to be of type 'Program' and in status 'open' 
+in order to appear.
+Projects need to be main-projects (no sub-projects), start 
+before end-date and end after start-date.
 <br>
 "
 
@@ -83,6 +85,7 @@ set days_in_past 30
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 set cur_format [im_l10n_sql_currency_format]
 set date_format [im_l10n_sql_date_format]
+set perc_format "90.9"
 
 db_1row todays_date "
 select
@@ -154,13 +157,16 @@ set sql "
 		child.project_name,
 		child.project_status_id,
 		child.project_type_id,
+		child.percent_completed,
+		trunc((coalesce(child.project_budget, child.cost_quotes_cache, 0.0) * im_exchange_rate(child.start_date::date, child.project_budget_currency, :default_currency)) :: numeric, 2) as project_budget_converted,
+		coalesce(child.project_budget_hours, 0.0) as project_budget_hours,
 		coalesce(child.cost_timesheet_logged_cache, 0.0) as cost_timesheet_logged_cache,
 		coalesce(child.reported_hours_cache, 0.0) as reported_hours_cache,
-		trunc((coalesce(child.project_budget, 0.0) * im_exchange_rate(child.start_date::date, child.project_budget_currency, :default_currency)) :: numeric, 2) as project_budget_converted,
+		coalesce(child.cost_bills_cache, 0.0) as cost_bills_cache,
+		coalesce(child.cost_purchase_orders_cache, 0.0) as cost_purchase_orders_cache,
 		im_category_from_id(child.project_status_id) as project_status,
 		im_category_from_id(child.project_type_id) as project_type,
-		to_char(child.percent_completed, '999990') as project_completed_rounded,
-		coalesce(child.project_budget_hours, 0.0) as project_budget_hours,
+		to_char(child.percent_completed, :perc_format) as percent_completed_rounded,
 		--
 		program.project_id as program_id,
 		program.project_nr as program_project_nr,
@@ -168,15 +174,20 @@ set sql "
 		program.project_status_id as program_status_id,
 		program.project_type_id as program_type_id,
 		program.project_id as program_project_id,
-		program.project_budget as program_budget,
+		trunc((coalesce(program.project_budget, program.cost_quotes_cache, 0.0) * im_exchange_rate(program.start_date::date, program.project_budget_currency, :default_currency)) :: numeric, 2) as program_budget_converted,
 		coalesce(program.project_budget_hours, 0.0) as program_budget_hours,
-		to_char(program.percent_completed, '999990') as program_completed_rounded,
-		trunc((coalesce(program.project_budget, 0.0) * im_exchange_rate(program.start_date::date, program.project_budget_currency, :default_currency)) :: numeric, 2) as program_budget_converted
+		coalesce(program.cost_timesheet_logged_cache, 0.0) as program_cost_timesheet_logged_cache,
+		coalesce(program.reported_hours_cache, 0.0) as program_reported_hours_cache,
+		coalesce(program.cost_bills_cache, 0.0) as program_cost_bills_cache,
+		coalesce(program.cost_purchase_orders_cache, 0.0) as program_cost_purchase_orders_cache,
+		to_char(program.percent_completed, :perc_format) as program_completed_rounded,
 		--
+		1 as one
 	from
 		im_projects program,
 		im_projects child
 	where
+		program.parent_id is null and
 		program.project_type_id in (
 			select	*
 			from	im_sub_categories([im_project_type_program])
@@ -194,34 +205,75 @@ set report_def [list \
 	"\#colspan=2 <a href=$this_url&program_id=$program_id&level_of_detail=4 
 	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
 	<b><a href=$project_url$program_id>$program_name</a></b>"
-	"<b>$program_budget_converted</b>"
-	"<b>$program_budget_hours</b>"
+	"\#align=right <b>$program_budget_converted</b>"
+	""
+	""
+	""
+	"|"
+	"\#align=right <b>$program_budget_hours</b>"
+	""
+	""
+	""
+	"|"
 	""
 	""
     } \
     content {
 	    header { 
 		""
-		$project_name
-		"$project_budget_converted"
-		$project_budget_hours
-		$cost_timesheet_logged_cache
-		$reported_hours_cache
+		"<a href=$project_url$project_id>$project_name</a>"
+		"\#align=right $project_budget_converted"
+		"\#align=right $project_cost"
+		"\#align=right $percent_completed_rounded"
+		"\#align=right $budget_overrun_percentage"
+		"|"
+		"\#align=right $project_budget_hours"
+		"\#align=right $reported_hours_cache"
+		"\#align=right $percent_completed_rounded"
+		"\#align=right $budget_hours_overrun_percentage"
+		"|"
+		"\#align=right $cost_timesheet_logged_cache"
+		"\#align=right $cost_bills_cache"
 	    }
 	    content {}
     } \
     footer { 
 	"<br>&nbsp;<br>" 
 	"" 
-	"[expr $program_budget_converted-$budget_sum]"
-	"[expr $program_budget_hours-$budget_hours_sum]"
+	"\#align=right [expr $program_budget_converted-$budget_sum]"
+	""
+	""
+	""
+	"|"
+	"\#align=right [expr $program_budget_hours-$budget_hours_sum]"
+	""
+	""
+	""
+	"|"
+	""
+	""
     } \
 ]
 
 
 # Global header/footer
-set header0 [list "Program" "Project" "Budget" "Budget Hours" "Timesheet" "Timesheet Hours"]
-set footer0 {"" "" "" ""}
+set header0 [list \
+	"Program" \
+	"Project" \
+	"Budget<br>$default_currency" \
+	"Costs<br>$default_currency" \
+	"%<br>Done" \
+	"Over<br>run %" \
+	"" \
+	"Budget<br>Hours" \
+	"Timesheet<br>Hours" \
+	"%<br>Done" \
+	"Over<br>run %" \
+	"" \
+	"Timesheet<br>$default_currency" \
+	"Provider<br>Bills $default_currency" \
+]
+set footer0 {"" "" "" "" "" "" ""}
 
 
 
@@ -241,7 +293,7 @@ set budget_hours_counter [list \
 
 set cost_timesheet_logged_counter [list \
 	pretty_name "Logged Timesheet Costs" \
-	var cost_timesheet_logged_sum \
+	var cost_timesheet_logged_cache_sum \
 	reset \$program_id \
 	expr \$cost_timesheet_logged_cache
 ]
@@ -253,12 +305,28 @@ set reported_hours_cache_counter [list \
 	expr \$reported_hours_cache
 ]
 
+set cost_bills_counter [list \
+	pretty_name "Provider Bills" \
+	var cost_bills_cache_sum \
+	reset \$program_id \
+	expr \$cost_bills_cache
+]
+
+set cost_purchase_orders_counter [list \
+	pretty_name "Purchase Orders" \
+	var cost_purchase_orders_cache_sum \
+	reset \$program_id \
+	expr \$cost_purchase_orders_cache
+]
+
 
 set counters [list \
 	$budget_counter \
 	$budget_hours_counter \
 	$cost_timesheet_logged_counter \
 	$reported_hours_cache_counter \
+	$cost_bills_counter \
+	$cost_purchase_orders_counter \
 ]
 
 set budget_sum 0
@@ -358,7 +426,26 @@ db_foreach sql $sql {
 	set project_id 0
 	set project_name [lang::message::lookup "" intranet-reporting.No_project "Undefined Project"]
     }
-    
+
+    # Calculated variables
+    set project_cost [expr $cost_timesheet_logged_cache + $cost_bills_cache]
+    set budget_overrun_percentage "undef"
+    if {0.0 != $percent_completed && 0.0 != $project_budget_converted} {
+	set percent_consumed [expr 100.0 * ($project_cost / $project_budget_converted)]
+	set budget_overrun_percentage [expr (100.0 * $percent_consumed / $percent_completed) - 100.0]
+	regexp {^([0-9\-\+]+)} $budget_overrun_percentage match budget_overrun_percentage
+	if {$budget_overrun_percentage > 5.0} { set budget_overrun_percentage "<font color=red>$budget_overrun_percentage</font>" }
+    }
+
+    set budget_hours_overrun_percentage "undef"
+    if {0.0 != $percent_completed && 0.0 != $project_budget_hours} {
+	set percent_consumed [expr 100.0 * ($reported_hours_cache / $project_budget_hours)]
+	set budget_hours_overrun_percentage [expr (100.0 * $percent_consumed / $percent_completed) - 100.0]
+	regexp {^([0-9\-\+]+)} $budget_hours_overrun_percentage match budget_hours_overrun_percentage
+	if {$budget_hours_overrun_percentage > 5.0} { set budget_hours_overrun_percentage "<font color=red>$budget_hours_overrun_percentage</font>" }
+    }
+
+
     im_report_display_footer \
 	-output_format $output_format \
 	-group_def $report_def \
