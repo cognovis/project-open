@@ -287,7 +287,7 @@ SELECT im_component_plugin__new (
 	100,					-- sort_order
 	'im_dashboard_histogram_sql -diagram_width 200 -sql "
 		select	im_category_from_id(p.project_status_id) as project_status,
-		        sum(coalesce(presales_probability,budget,0) * coalesce(presales_value,0)) as value
+		        sum(coalesce(presales_probability,project_budget,0) * coalesce(presales_value,0)) as value
 		from	im_projects p
 		where	p.project_status_id not in (select * from im_sub_categories(81))
 		group by project_status_id
