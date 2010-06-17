@@ -302,3 +302,5 @@ ad_proc -public im_indicator_home_page_component {
     set result [ad_parse_template -params $params "/packages/intranet-reporting-indicators/www/indicator-home-component"]
     return [string trim $result]
 }
+
+
