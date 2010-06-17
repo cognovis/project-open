@@ -5,7 +5,7 @@ SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgra
 
 
 ---------------------------------------------------------
--- Users-Contacts
+-- Program-EVA
 --
 
 create or replace function inline_0 ()
