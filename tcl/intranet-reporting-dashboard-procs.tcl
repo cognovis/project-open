@@ -577,6 +577,7 @@ ad_proc im_dashboard_project_eva_create_audit_all {
 
 ad_proc im_dashboard_project_eva_create_audit {
     -project_id
+    {-steps 50}
 } {
     Creates im_projects_audit entries for the project
     by splitting the time between start_date and end_date
@@ -584,8 +585,29 @@ ad_proc im_dashboard_project_eva_create_audit {
     entries for the dates based on the information of
     timesheet hours and financial documents
 } {
-    # Delete the entire history
-    db_dml del_audit "delete from im_projects_audit where project_id = :project_id"
+    set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+    set default_hourly_rate [ad_parameter -package_id [im_package_cost_id] "DefaultTimesheetHourlyCost" "" "30.0"]
+
+    # Extract max values from the project
+    db_1row start_end "
+	select
+		max(trunc((project_budget * im_exchange_rate(start_date::date, project_budget_currency, :default_currency))::numeric, 2)) as project_budget_max,
+		-- The cost side - thee different types - ts, bills and expenses
+		max(cost_timesheet_logged_cache) as cost_timesheet_logged_cache_max,
+		max(cost_bills_cache) as cost_bills_cache_max,
+		max(cost_expense_logged_cache) as cost_expense_logged_cache_max,
+		-- The income side - quotes and invoices
+		max(cost_invoices_cache) as cost_invoices_cache_max,
+		max(cost_quotes_cache) as cost_quotes_cache_max,
+		-- Delivered value
+		max(cost_delivery_notes_cache) as cost_delivery_notes_cache_max
+        from    im_projects_audit
+        where   project_id = :project_id
+    "
+
+    set cost_max [expr $cost_timesheet_logged_cache_max + $cost_bills_cache_max + $cost_expense_logged_cache_max]
+    set widget_max $cost_max
+    if {$project_budget_max > $widget_max} { set widget_max $project_budget_max}
 
     # Get start- and end date in Julian format (as integer)
     db_1row start_end "
@@ -598,17 +620,53 @@ ad_proc im_dashboard_project_eva_create_audit {
         where	project_id = :project_id
     "
     
+    set cost_start_date_julian [db_string cost_start_date "
+	select	to_char(min(c.effective_date), 'J')
+	from	im_costs c
+	where	c.project_id in (
+				select	child.project_id
+				from	im_projects parent,
+					im_projects child
+				where	parent.project_id = :project_id and
+					child.tree_sortkey 
+						between parent.tree_sortkey 
+						and tree_right(parent.tree_sortkey)
+		)
+    "]
+
+
+    if {$cost_start_date_julian < $start_date_julian} { set start_date_julian $cost_start_date_julian }
     set modifying_action "update"
 #    if {$now_julian < $end_date_julian} { set end_date_julian $now_julian }
 #    if {$now_julian < $start_date_julian } { set start_date_julian [expr $now_julian - 10] }
     set duration_days [expr $end_date_julian - $start_date_julian]
-    set increment [expr round($duration_days / 50)]
+    set increment [expr round($duration_days / $steps)]
 
-    set default_hourly_rate [ad_parameter -package_id [im_package_cost_id] "DefaultTimesheetHourlyCost" "" "30.0"]
+    # Let's increase the %done value every 3-5th step
+    # by a random amount, so that it reaches more or less
+    # total_cost / budget
+    set percent_completed_final [expr 100.0 * $cost_max / $widget_max]
+    set percent_completed 0.0
+    ns_log Notice "im_dashboard_project_eva_create_audit: percent_completed_final=$percent_completed_final"
+
+    # Delete the entire history
+    db_dml del_audit "delete from im_projects_audit where project_id = :project_id"
 
     # Loop for every day and calculate the sum of all cost types
     # per cost type
     for { set i $start_date_julian} {$i < $end_date_julian} { set i [expr $i + 1 + $increment] } {
+
+	# Don't go further then today + 30 days
+	if {$i > $now_julian + 30} { return }
+
+	# Increase the percent_completed every 5th step
+	# by a random percentage
+	if {[expr rand()] < 0.2} {
+	    set now_done [expr ($percent_completed_final - $percent_completed) * 5.0 / ($steps * 0.2) * rand()]
+	    set now_done [expr ($now_done + abs($now_done)) / 2.0]
+	    set percent_completed [expr $percent_completed + $now_done]
+	    ns_log Notice "im_dashboard_project_eva_create_audit: percent_completed=$percent_completed"
+	}
 
 	set cost_timesheet_planned_cache 0.0
 	set cost_expense_logged_cache 0.0
@@ -771,12 +829,31 @@ ad_proc im_dashboard_project_eva {
     based on Lutz Tautenhahn' "Javascript Diagram Builder", v3.3.
     @param values Contains a list of "element" lists.
 } {
+
+    im_dashboard_project_eva_create_audit -project_id $project_id
+
     set date_format "YYYY-MM-DD HH:MI:SS"
     set oname "D[expr round(rand()*1000000000.0)]"
     set today [db_string today "select to_char(now(), :date_format)"]
     set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 
     if {"" == $name} { set name [db_string name "select project_name from im_projects where project_id = :project_id"] }
+
+    # Check if some values are zero always
+    db_1row start_end "
+	select
+		sum(project_budget) as project_budget_sum,
+		sum(cost_timesheet_logged_cache) as cost_timesheet_logged_cache_sum,
+		sum(cost_bills_cache) as cost_bills_cache_sum,
+		sum(cost_expense_logged_cache) as cost_expense_logged_cache_sum,
+		sum(cost_invoices_cache) as cost_invoices_cache_sum,
+		sum(cost_quotes_cache) as cost_quotes_cache_sum,
+		sum(cost_delivery_notes_cache) as cost_delivery_notes_cache_sum
+        from    im_projects_audit
+        where   project_id = :project_id
+    "
+
+
     # Extract first and last date
     db_1row start_end "
 	select  to_char(min(last_modified), :date_format) as first_date,
@@ -797,10 +874,13 @@ ad_proc im_dashboard_project_eva {
     regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $first_date match year0 month0 day0 hour0 min0 sec0
     regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $last_date match year9 month9 day9 hour9 min9 sec9
 
-    set widget_min 0
     set cost_max [expr $cost_timesheet_logged_cache_max + $cost_bills_cache_max + $cost_expense_logged_cache_max]
     set widget_max $cost_max
     if {$project_budget_max > $widget_max} { set widget_max $project_budget_max}
+    if {$cost_invoices_cache_max > $widget_max} { set widget_max $cost_invoices_cache_max }
+    if {$cost_quotes_cache_max > $widget_max} { set widget_max $cost_quotes_cache_max }
+    set widget_max [expr $widget_max * 1.01]
+    set widget_min [expr $widget_max * -0.03]
 
     # Draw dots and lines from point to point.
     set sql "
@@ -817,23 +897,45 @@ ad_proc im_dashboard_project_eva {
     set last_date $first_date
     set diagram_html ""
 
-    set titles { "Date" "Budget" "Expenses" "Expenses + Bills" "Expenses + Bills + Timesheet" }
-    #set start_color [im_dashboard_color_saltnpepper -type "start_color"]
-    #set end_color [im_dashboard_color_saltnpepper -type "end_color"]
-    set start_color "0000FF" 
-    set end_color "00FF00"
-    array set colors [im_dashboard_pie_colors -start_color $start_color -end_color $end_color -max_entries 4]
+    set blue1 "00FFFF"
+    set blue2 "0080FF"
+    set blue3 "0000FF"
+
+    set dark_green "408040"
+    set dark_green "306030"
+
+    set titles { 
+	"Date" "%Done" "Budget" 
+	"Expenses" "Expenses + Bills" "Expenses + Bills + Timesheet" 
+	"Quotes" "Invoices"
+    }
+    set colors [list \
+	"black" $dark_green "red" \
+	$blue1 $blue2 $blue3 \
+	"FFFF00" "fdb405" \
+    ]
+    set sums [list \
+	1 1 $project_budget_sum \
+	$cost_expense_logged_cache_sum \
+	[expr $cost_expense_logged_cache_sum + $cost_bills_cache_sum] \
+	[expr $cost_expense_logged_cache_sum + $cost_bills_cache_sum + $cost_timesheet_logged_cache_sum] \
+	$cost_quotes_cache_sum $cost_invoices_cache_sum \
+    ]
 
     db_foreach project_eva $sql {
 
 	regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $date match year month day hour min sec
 	regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $last_date match last_year last_month last_day last_hour last_min last_sec
 
-        set v [list $date \
+        set v [list \
+		$date \
+		$percent_completed \
 		$project_budget_converted \
 		[expr $cost_expense_logged_cache] \
 		[expr $cost_expense_logged_cache + $cost_bills_cache] \
 		[expr $cost_expense_logged_cache + $cost_bills_cache + $cost_timesheet_logged_cache] \
+		$cost_quotes_cache \
+		$cost_invoices_cache \
 	]
 
         if {"" == $last_v} { set last_v $v }
@@ -841,16 +943,24 @@ ad_proc im_dashboard_project_eva {
 	for {set k 1} {$k < [llength $v]} {incr k} {
 	    set val [lindex $v $k]
 	    set last_val [lindex $last_v $k]
-	    set color_key [expr $k-1]
-	    set color $colors($color_key)
+	    set color [lindex $colors $k]
 	    set title [lindex $titles $k]
+	    set sum [lindex $sums $k]
+	    if {0.0 == $sum} { continue }
+	    set line_title "$title"
+	    set dot_title "$title - $val"
+	    if {1 == $k} { 
+		# Show % Completed as % of widget_max, not as absolute number
+		set val [expr ($val / 100.0) * $widget_max] 
+		set last_val [expr 0.01 * $last_val * $widget_max] 
+	    }
 	    append diagram_html "
 		var x = $oname.ScreenX(Date.UTC($year, $month, $day, $hour, $min, $sec));
 		var last_x = $oname.ScreenX(Date.UTC($last_year, $last_month, $last_day, $last_hour, $last_min, $last_sec));
 		var y = $oname.ScreenY($val);
 		var last_y = $oname.ScreenY($last_val);
-		new Line(last_x, last_y, x, y, \"$color\", 1, \"$title\");
-		new Dot(x, y, 4, 3, \"$color\", \"$title - $val\");
+		new Line(last_x, last_y, x, y, \"#$color\", 1, \"$line_title\");
+		new Dot(x, y, 4, 3, \"#$color\", \"$dot_title\");
 
 	    "
 	}
@@ -898,7 +1008,29 @@ ad_proc im_dashboard_project_eva {
 	</div>
     "
 
-    return $histogram_html
+    set legend_html ""
+    for {set k 1} {$k < [llength $titles]} {incr k} {
+	set color [lindex $colors $k]
+	set title [lindex $titles $k]
+	set color_hash($k) $color
+	set title_hash($k) $title
+    }
+
+    # Show in order of highest to lowest (usual values
+    foreach k {6 7 2 1 5 4 3} {
+	set sum [lindex $sums $k]
+	if {0.0 == $sum} { continue }
+	append legend_html "<font color=#[lindex $colors $k]>[lindex $titles $k]</font><br>\n"
+    }
+
+    return "
+	<table>
+	<tr>
+	<td>$histogram_html</td>
+	<td>$legend_html</td>
+	</tr>
+	</table>
+    "
 }
 
 
