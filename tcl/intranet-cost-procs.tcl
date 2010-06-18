@@ -2228,9 +2228,6 @@ ad_proc -public im_cost_cache_sweeper { } {
 }
 
 
-
-
-
 ad_proc -public im_cost_update_project_cost_cache { 
     project_id 
 } {
