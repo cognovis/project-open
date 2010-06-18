@@ -587,6 +587,7 @@ ad_proc im_dashboard_project_eva_create_audit {
 } {
     set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
     set default_hourly_rate [ad_parameter -package_id [im_package_cost_id] "DefaultTimesheetHourlyCost" "" "30.0"]
+    set target_margin_percentage [ad_parameter -package_id [im_package_cost_id] "TargetMarginPercentage" "" "30.0"]
 
     # Extract max values from the project
     db_1row start_end "
@@ -637,8 +638,8 @@ ad_proc im_dashboard_project_eva_create_audit {
 
     if {$cost_start_date_julian < $start_date_julian} { set start_date_julian $cost_start_date_julian }
     set modifying_action "update"
-#    if {$now_julian < $end_date_julian} { set end_date_julian $now_julian }
-#    if {$now_julian < $start_date_julian } { set start_date_julian [expr $now_julian - 10] }
+    if {$now_julian < $end_date_julian} { set end_date_julian $now_julian }
+    if {$now_julian < $start_date_julian } { set start_date_julian [expr $now_julian - 10] }
     set duration_days [expr $end_date_julian - $start_date_julian]
     set increment [expr round($duration_days / $steps)]
 
@@ -817,6 +818,7 @@ ad_proc im_dashboard_project_eva {
     { -diagram_height 200 }
     { -font_color "000000" }
     { -diagram_color "0080FF" }
+    { -dot_size 4 }
     { -font_size 8 }
     { -font_style "font-family:Verdana;font-weight:normal;line-height:10pt;font-size:8pt;" }
     { -bar_color "0080FF" }
@@ -829,17 +831,23 @@ ad_proc im_dashboard_project_eva {
     based on Lutz Tautenhahn' "Javascript Diagram Builder", v3.3.
     @param values Contains a list of "element" lists.
 } {
+    # ------------------------------------------------
+    # Constants & Setup
 
     im_dashboard_project_eva_create_audit -project_id $project_id
-
     set date_format "YYYY-MM-DD HH:MI:SS"
-    set oname "D[expr round(rand()*1000000000.0)]"
     set today [db_string today "select to_char(now(), :date_format)"]
     set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
-
+    set target_margin_percentage [ad_parameter -package_id [im_package_cost_id] "TargetMarginPercentage" "" "30.0"]
     if {"" == $name} { set name [db_string name "select project_name from im_projects where project_id = :project_id"] }
 
-    # Check if some values are zero always
+    # The diagram name: Every diagram needs a unique identified,
+    # so that multiple diagrams can be shown on a single HTML page.
+    set oname "D[expr round(rand()*1000000000.0)]"
+
+
+    # ------------------------------------------------
+    # Check for values that are always zero. We just let the DB calculate the sum...
     db_1row start_end "
 	select
 		sum(project_budget) as project_budget_sum,
@@ -853,8 +861,8 @@ ad_proc im_dashboard_project_eva {
         where   project_id = :project_id
     "
 
-
-    # Extract first and last date
+    # ------------------------------------------------
+    # Extract boundaries of the diagram: first and last date, maximum of the various values
     db_1row start_end "
 	select  to_char(min(last_modified), :date_format) as first_date,
 		to_char(max(last_modified), :date_format) as last_date,
@@ -882,7 +890,8 @@ ad_proc im_dashboard_project_eva {
     set widget_max [expr $widget_max * 1.01]
     set widget_min [expr $widget_max * -0.03]
 
-    # Draw dots and lines from point to point.
+    # ------------------------------------------------
+    # Define the SQL to select the information from im_projects_audit
     set sql "
 	select	*,
 		to_char(last_modified, 'YYYY-MM-DD HH:MI:SS') as date,
@@ -893,27 +902,36 @@ ad_proc im_dashboard_project_eva {
 		last_modified
     "
 
-    set last_v [list]
-    set last_date $first_date
-    set diagram_html ""
+    # ------------------------------------------------
+    # Setup the parameters for every line to be drawn: Color, title, type of display
 
     set blue1 "00FFFF"
     set blue2 "0080FF"
     set blue3 "0000FF"
-
     set dark_green "408040"
     set dark_green "306030"
-
+    set orange1 "FF8000"
+    set orange2 "fecd00"
+    set keys {
+	date done budget
+	expenses expenses_bills expenses_bills_ts
+	quotes invoices
+    }
     set titles { 
 	"Date" "%Done" "Budget" 
-	"Expenses" "Expenses + Bills" "Expenses + Bills + Timesheet" 
+	"Expenses" "Expenses+Bills" "Expenses+Bills+TS" 
 	"Quotes" "Invoices"
     }
     set colors [list \
 	"black" $dark_green "red" \
 	$blue1 $blue2 $blue3 \
-	"FFFF00" "fdb405" \
+	$orange1 $orange2 \
     ]
+    set show_bar_ps {
+	0 0 0
+	1 1 1
+	0 0
+    }
     set sums [list \
 	1 1 $project_budget_sum \
 	$cost_expense_logged_cache_sum \
@@ -922,49 +940,90 @@ ad_proc im_dashboard_project_eva {
 	$cost_quotes_cache_sum $cost_invoices_cache_sum \
     ]
 
+    for {set k 0} {$k < [llength $keys]} {incr k} {
+	set key [lindex $keys $k]
+	set title [lindex $titles $k]
+	set title_hash($key) $title
+	set show_bar_p [lindex $show_bar_ps $k]
+	set show_bar_hash($key) $show_bar_p
+	set sum [lindex $sums $k]
+	set sum_hash($key) $sum
+	set color [lindex $colors $k]
+	set color_hash($key) $color
+    }
+
+    # ------------------------------------------------
+    # Loop through all im_projects_audit rows returned
+    set last_v [list]
+    set last_date $first_date
+    set diagram_html ""
     db_foreach project_eva $sql {
+
+	# Fix budget as max(quotes, invoices) - target_margin
+	if {"" == $cost_invoices_cache} { set cost_invoices_cache 0.0 }
+	if {"" == $cost_quotes_cache} { set cost_quotes_cache 0.0 }
+	if {"" == $project_budget_converted} {
+	    if {$cost_quotes_cache > $cost_invoices_cache} {
+set project_budget_converted [expr $cost_quotes_cache * (100.0 - $target_margin_percentage) / 100.0]
+	    } else {
+set project_budget_converted [expr $cost_invoices_cache * (100.0 - $target_margin_percentage) / 100.0]
+	    }
+	}
 
 	regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $date match year month day hour min sec
 	regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $last_date match last_year last_month last_day last_hour last_min last_sec
 
-        set v [list \
-		$date \
-		$percent_completed \
-		$project_budget_converted \
-		[expr $cost_expense_logged_cache] \
-		[expr $cost_expense_logged_cache + $cost_bills_cache] \
-		[expr $cost_expense_logged_cache + $cost_bills_cache + $cost_timesheet_logged_cache] \
-		$cost_quotes_cache \
-		$cost_invoices_cache \
-	]
+	set val_hash(date) $date
+	set val_hash(done) $percent_completed
+	set val_hash(budget) $project_budget_converted
+	set val_hash(expenses) [expr $cost_expense_logged_cache]
+	set val_hash(expenses_bills) [expr $cost_expense_logged_cache + $cost_bills_cache]
+	set val_hash(expenses_bills_ts) [expr $cost_expense_logged_cache + $cost_bills_cache + $cost_timesheet_logged_cache]
+	set val_hash(quotes) $cost_quotes_cache
+	set val_hash(invoices) $cost_invoices_cache
 
-        if {"" == $last_v} { set last_v $v }
+	# Deal with the very first iteration.
+        if {"" == [array get last_val_hash]} { array set last_val_hash [array get val_hash] }
 
-	for {set k 1} {$k < [llength $v]} {incr k} {
-	    set val [lindex $v $k]
-	    set last_val [lindex $last_v $k]
-	    set color [lindex $colors $k]
-	    set title [lindex $titles $k]
-	    set sum [lindex $sums $k]
+	# Draw lines in specific order. Values drawn later will overwrite lines drawn earlier
+	foreach key {expenses_bills_ts expenses_bills expenses done budget quotes invoices} {
+
+	    # if {"" == $val_hash($key)} { continue }
+	    set val [expr round(10.0 * $val_hash($key)) / 10.0]
+	    set last_val [expr round(10.0 * $last_val_hash($key)) / 10.0]
+	    set color $color_hash($key)
+	    set title $title_hash($key)
+	    set sum $sum_hash($key)
+	    set show_bar_p $show_bar_hash($key)
+
 	    if {0.0 == $sum} { continue }
-	    set line_title "$title"
-	    set dot_title "$title - $val"
-	    if {1 == $k} { 
-		# Show % Completed as % of widget_max, not as absolute number
+	    set dot_title "$title - $val $default_currency"
+	    set bar_tooltip_text "$title = $val $default_currency"
+	    
+	    # Show %Done as % of widget_max, not as absolute number
+	    if {"done" == $key} { 
+		set dot_title "$title - $val %"
 		set val [expr ($val / 100.0) * $widget_max] 
 		set last_val [expr 0.01 * $last_val * $widget_max] 
 	    }
+
 	    append diagram_html "
 		var x = $oname.ScreenX(Date.UTC($year, $month, $day, $hour, $min, $sec));
 		var last_x = $oname.ScreenX(Date.UTC($last_year, $last_month, $last_day, $last_hour, $last_min, $last_sec));
 		var y = $oname.ScreenY($val);
 		var last_y = $oname.ScreenY($last_val);
-		new Line(last_x, last_y, x, y, \"#$color\", 1, \"$line_title\");
-		new Dot(x, y, 4, 3, \"#$color\", \"$dot_title\");
-
+		new Line(last_x, last_y, x, y, \"#$color\", 1, \"$dot_title\");
+		new Dot(x, y, $dot_size, 3, \"#$color\", \"$dot_title\");
 	    "
+
+	    if {$show_bar_p} {
+		append diagram_html "
+		new Bar(last_x, y, x, $oname.ScreenY(0), \"\#$color\", \"\", \"#000000\", \"$bar_tooltip_text\");
+		"
+	    }
+
 	}
-	set last_v $v
+	array set last_val_hash [array get val_hash]
 	set last_date $date
     }
 
@@ -974,7 +1033,7 @@ ad_proc im_dashboard_project_eva {
     set border "border:1px solid blue; "
     set border ""
 
-    set histogram_html "
+    set diagram_html "
 	<div style='$border position:relative;top:0px;height:${diagram_height}px;width:${diagram_width}px;'>
 	<SCRIPT Language=JavaScript>
 	document.open();
@@ -1009,26 +1068,38 @@ ad_proc im_dashboard_project_eva {
     "
 
     set legend_html ""
-    for {set k 1} {$k < [llength $titles]} {incr k} {
-	set color [lindex $colors $k]
-	set title [lindex $titles $k]
-	set color_hash($k) $color
-	set title_hash($k) $title
-    }
-
-    # Show in order of highest to lowest (usual values
-    foreach k {6 7 2 1 5 4 3} {
-	set sum [lindex $sums $k]
+    foreach key {quotes invoices budget done expenses_bills_ts expenses_bills expenses} {
+	set color $color_hash($key)
+	set title $title_hash($key)
+	set sum $sum_hash($key)
 	if {0.0 == $sum} { continue }
-	append legend_html "<font color=#[lindex $colors $k]>[lindex $titles $k]</font><br>\n"
+	set url "http://www.project-open.org/documentation/portlet_intranet_reporting_dashboard"
+	set alt [lang::message::lookup "" intranet-reporting-dashboard.Click_for_help "Please click on the link for help about the value shown"]
+	append legend_html "
+		<nobr><a href=\"$url\" target=\"_blank\">
+		<font color=\"#$color\">$title</font>
+		</a></nobr>
+		<br>
+	"
     }
 
     return "
 	<table>
 	<tr>
-	<td>$histogram_html</td>
-	<td>$legend_html</td>
+	<td>
+		$diagram_html
+	</td>
+	<td>
+		<table border=1>
+		<tr><td>
+		$legend_html
+		</td></tr>
+		</table>
+	</td>
 	</tr>
+	<tr><td colspan=2>
+	[lang::message::lookup "" intranet-reporting-dashboard.Project_EVA_Help "For help please hold your mouse over the diagram or click on the legend links."]
+	</td></tr>
 	</table>
     "
 }
