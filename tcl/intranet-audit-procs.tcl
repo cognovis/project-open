@@ -553,7 +553,9 @@ ad_proc im_dashboard_project_eva_create_audit {
     "]
 
 
-    if {$cost_start_date_julian < $start_date_julian} { set start_date_julian $cost_start_date_julian }
+    if {"" != $cost_start_date_julian && $cost_start_date_julian < $start_date_julian} { 
+	set start_date_julian $cost_start_date_julian 
+    }
     set modifying_action "update"
     if {$now_julian < $end_date_julian} { set end_date_julian $now_julian }
     if {$now_julian < $start_date_julian } { set start_date_julian [expr $now_julian - 10] }
@@ -751,7 +753,9 @@ ad_proc im_dashboard_project_eva {
     # ------------------------------------------------
     # Constants & Setup
 
-    im_dashboard_project_eva_create_audit -project_id $project_id
+    # Setup the EVA audit values reasonably for this project
+    # im_dashboard_project_eva_create_audit -project_id $project_id
+
     set date_format "YYYY-MM-DD HH:MI:SS"
     set today [db_string today "select to_char(now(), :date_format)"]
     set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
