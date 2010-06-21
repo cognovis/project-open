@@ -2282,8 +2282,7 @@ ad_proc -public im_cost_update_project_cost_cache {
 					:default_currency
 				) * amount)::numeric, 2) as amount_converted
 			from	im_costs ci
-			where	ci.effective_date::date <= now()::date and
-				ci.cost_id in (
+			where	ci.cost_id in (
 					$project_cost_ids_sql
 				)
 		) ci on (cat.cost_type_id = ci.cost_type_id)
