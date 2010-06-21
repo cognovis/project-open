@@ -21,7 +21,7 @@
         <callbacks>
         </callbacks>
         <parameters>
-        <!-- No version parameters -->
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="AuditProjectFakeHistoryIntervalHours" default="0" description="Should the system fake the project's history im_projects_audit records? This is useful for demo servers. Set to '0' to disable this feature in production servers. Set to '1' or '2' with demo servers."/>
         </parameters>
 
     </version>

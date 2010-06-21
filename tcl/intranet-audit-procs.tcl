@@ -482,17 +482,18 @@ ad_proc -public im_project_audit_impl  {
 # Project EVA
 # ---------------------------------------------------------------------
 
-ad_proc im_dashboard_project_eva_create_audit_all {
+ad_proc im_audit_fake_history {
 } {
-    Create project audit entries for all projects
+    Create project audit entries for all projects.
+    Should be run every hour or two on demo servers.
 } {
    set project_ids [db_list pids "select project_id from im_projects where parent_id is null"]
    foreach pid $project_ids {
-	im_dashboard_project_eva_create_audit -project_id $pid
+	im_audit_fake_history_for_project -project_id $pid
    }   
 }
 
-ad_proc im_dashboard_project_eva_create_audit {
+ad_proc im_audit_fake_history_for_project {
     -project_id
     {-steps 50}
 } {
@@ -567,7 +568,7 @@ ad_proc im_dashboard_project_eva_create_audit {
     # total_cost / budget
     set percent_completed_final [expr 100.0 * $cost_max / $widget_max]
     set percent_completed 0.0
-    ns_log Notice "im_dashboard_project_eva_create_audit: percent_completed_final=$percent_completed_final"
+    ns_log Notice "im_audit_fake_history_for_project: percent_completed_final=$percent_completed_final"
 
     # Delete the entire history
     db_dml del_audit "delete from im_projects_audit where project_id = :project_id"
@@ -585,7 +586,7 @@ ad_proc im_dashboard_project_eva_create_audit {
 	    set now_done [expr ($percent_completed_final - $percent_completed) * 5.0 / ($steps * 0.2) * rand()]
 	    set now_done [expr ($now_done + abs($now_done)) / 2.0]
 	    set percent_completed [expr $percent_completed + $now_done]
-	    ns_log Notice "im_dashboard_project_eva_create_audit: percent_completed=$percent_completed"
+	    ns_log Notice "im_audit_fake_history_for_project: percent_completed=$percent_completed"
 	}
 
 	set cost_timesheet_planned_cache 0.0
@@ -729,7 +730,7 @@ ad_proc im_dashboard_project_eva_create_audit {
 }
 
 
-ad_proc im_dashboard_project_eva {
+ad_proc im_audit_project_eva_diagram {
     -project_id
     { -name "" }
     { -histogram_values {} }
@@ -752,9 +753,6 @@ ad_proc im_dashboard_project_eva {
 } {
     # ------------------------------------------------
     # Constants & Setup
-
-    # Setup the EVA audit values reasonably for this project
-    # im_dashboard_project_eva_create_audit -project_id $project_id
 
     set date_format "YYYY-MM-DD HH:MI:SS"
     set today [db_string today "select to_char(now(), :date_format)"]

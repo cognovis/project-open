@@ -381,12 +381,12 @@ SELECT im_component_plugin__new (
 	'0.0.0.0',				-- creation_ip
 	null,					-- context_id
 	'Earned Value',				-- plugin_name
-	'intranet-reporting-dashboard',		-- package_name
+	'intranet-audit',			-- package_name
 	'right',				-- location
 	'/intranet/projects/view',		-- page_url
 	null,					-- view_name
 	200,					-- sort_order
-	'im_dashboard_project_eva -project_id $project_id',
+	'im_audit_project_eva_diagram -project_id $project_id',
 	'lang::message::lookup "" intranet-reporting-dashboard.Earned_Value "Earned Value"'
 );
 
