@@ -21,7 +21,7 @@ SELECT im_component_plugin__new (
 	'right',				-- location
 	'/intranet/projects/view',		-- page_url
 	null,					-- view_name
-	200,					-- sort_order
+	50,					-- sort_order
 	'im_audit_project_eva_diagram -project_id $project_id',
 	'lang::message::lookup "" intranet-audit.Earned_Value "Earned Value"'
 );
