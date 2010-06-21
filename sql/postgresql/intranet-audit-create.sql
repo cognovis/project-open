@@ -382,11 +382,18 @@ SELECT im_component_plugin__new (
 	null,					-- context_id
 	'Earned Value',				-- plugin_name
 	'intranet-audit',			-- package_name
-	'right',				-- location
+	'left',					-- location
 	'/intranet/projects/view',		-- page_url
 	null,					-- view_name
 	50,					-- sort_order
 	'im_audit_project_eva_diagram -project_id $project_id',
 	'lang::message::lookup "" intranet-reporting-dashboard.Earned_Value "Earned Value"'
 );
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Earned Value'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
 

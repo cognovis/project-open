@@ -524,15 +524,24 @@ ad_proc im_audit_fake_history_for_project {
         where   project_id = :project_id
     "
 
+    if {"" == $project_budget_max} { set project_budget_max 0 }
+    if {"" == $cost_timesheet_logged_cache_max} { set cost_timesheet_logged_cache_max 0 }
+    if {"" == $cost_bills_cache_max} { set cost_bills_cache_max 0 }
+    if {"" == $cost_expense_logged_cache_max} { set cost_expense_logged_cache_max 0 }
+    if {"" == $cost_invoices_cache_max} { set cost_invoices_cache_max 0 }
+    if {"" == $cost_quotes_cache_max} { set cost_quotes_cache_max 0 }
+    if {"" == $cost_delivery_notes_cache_max} { set cost_delivery_notes_cache_max 0 }
+
     set cost_max [expr $cost_timesheet_logged_cache_max + $cost_bills_cache_max + $cost_expense_logged_cache_max]
     set widget_max $cost_max
     if {$project_budget_max > $widget_max} { set widget_max $project_budget_max}
+    if {100.0 > $widget_max} { set widget_max 100.0}
 
     # Get start- and end date in Julian format (as integer)
     db_1row start_end "
         select	p.*,
-		to_char(start_date, 'J') as start_date_julian,
-		to_char(end_date, 'J') as end_date_julian,
+		to_char(coalesce(start_date, now()), 'J') as start_date_julian,
+		to_char(coalesce(end_date, now()), 'J') as end_date_julian,
 		to_char(now(), 'J') as now_julian,
 		to_char(end_date, 'J')::integer - to_char(start_date, 'J')::integer as duration_days
         from	im_projects p
@@ -578,7 +587,7 @@ ad_proc im_audit_fake_history_for_project {
     for { set i $start_date_julian} {$i < $end_date_julian} { set i [expr $i + 1 + $increment] } {
 
 	# Don't go further then today + 30 days
-	if {$i > $now_julian + 30} { return }
+	if {$i > $now_julian + 90} { return }
 
 	# Increase the percent_completed every 5th step
 	# by a random percentage
@@ -755,10 +764,21 @@ ad_proc im_audit_project_eva_diagram {
     # Constants & Setup
 
     set date_format "YYYY-MM-DD HH:MI:SS"
-    set today [db_string today "select to_char(now(), :date_format)"]
     set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
     set target_margin_percentage [ad_parameter -package_id [im_package_cost_id] "TargetMarginPercentage" "" "30.0"]
-    if {"" == $name} { set name [db_string name "select project_name from im_projects where project_id = :project_id"] }
+    db_1row project_info "
+	select	project_name,
+		parent_id,
+		to_char(now(), :date_format) as today
+	from	im_projects
+	where	project_id = :project_id
+    "
+
+    # Don't show the component for sub-projects
+    if {"" != $parent_id} { return "" }
+
+    # Use the project name as name if not specified
+    if {"" == $name} { set name $project_name }
 
     # The diagram name: Every diagram needs a unique identified,
     # so that multiple diagrams can be shown on a single HTML page.
@@ -798,6 +818,15 @@ ad_proc im_audit_project_eva_diagram {
         from    im_projects_audit
         where   project_id = :project_id
     "
+
+    if {"" == $project_budget_max} { set project_budget_max 0 }
+    if {"" == $cost_timesheet_logged_cache_max} { set cost_timesheet_logged_cache_max 0 }
+    if {"" == $cost_bills_cache_max} { set cost_bills_cache_max 0 }
+    if {"" == $cost_expense_logged_cache_max} { set cost_expense_logged_cache_max 0 }
+    if {"" == $cost_invoices_cache_max} { set cost_invoices_cache_max 0 }
+    if {"" == $cost_quotes_cache_max} { set cost_quotes_cache_max 0 }
+    if {"" == $cost_delivery_notes_cache_max} { set cost_delivery_notes_cache_max 0 }
+
     regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $first_date match year0 month0 day0 hour0 min0 sec0
     regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $last_date match year9 month9 day9 hour9 min9 sec9
 
@@ -806,8 +835,9 @@ ad_proc im_audit_project_eva_diagram {
     if {$project_budget_max > $widget_max} { set widget_max $project_budget_max}
     if {$cost_invoices_cache_max > $widget_max} { set widget_max $cost_invoices_cache_max }
     if {$cost_quotes_cache_max > $widget_max} { set widget_max $cost_quotes_cache_max }
+    if {100.0 > $widget_max} { set widget_max 100.0}
     set widget_max [expr $widget_max * 1.01]
-    set widget_min [expr $widget_max * -0.03]
+    set widget_min [expr $widget_max * -0.01]
 
     # ------------------------------------------------
     # Define the SQL to select the information from im_projects_audit
@@ -872,10 +902,22 @@ ad_proc im_audit_project_eva_diagram {
     }
 
     # ------------------------------------------------
+    # Rename the cost titles if the lower ones are 0
+    if {0.0 == $sum_hash(expenses)} {
+	set title_hash(expenses_bills) "Bills"
+	set title_hash(expenses_bills_ts) "Bills+Timesheet"
+    }
+    if {0.0 == $sum_hash(expenses) && 0.0 == $sum_hash(expenses_bills)} {
+	set title_hash(expenses_bills) "Bills"
+	set title_hash(expenses_bills_ts) "Timesheet"
+    }
+
+    # ------------------------------------------------
     # Loop through all im_projects_audit rows returned
     set last_v [list]
     set last_date $first_date
     set diagram_html ""
+    set dup_ctr 0
     db_foreach project_eva $sql {
 
 	# Fix budget as max(quotes, invoices) - target_margin
@@ -903,6 +945,15 @@ set project_budget_converted [expr $cost_invoices_cache * (100.0 - $target_margi
 
 	# Deal with the very first iteration.
         if {"" == [array get last_val_hash]} { array set last_val_hash [array get val_hash] }
+
+	# Check if we got duplicates. In this case we skip the current
+	# value set and wait until the next one is different.
+	set date_day "$year-$month-$day"
+	set last_date_day "$last_year-$last_month-$last_day"
+	if {$date_day == $last_date_day && [lsort [array get val_hash]] == [lsort [array get last_val_hash]]} { 
+	    incr dup_ctr
+	    continue 
+	}
 
 	# Draw lines in specific order. Values drawn later will overwrite lines drawn earlier
 	foreach key {expenses_bills_ts expenses_bills expenses done budget quotes invoices} {
@@ -974,7 +1025,6 @@ set project_budget_converted [expr $cost_invoices_cache * (100.0 - $target_margi
 	$oname.YScale=1;
 
 	$oname.GetXGrid();
-	$oname.XGridDelta=$oname.XGrid\[1\]*3;
 	$oname.XGridDelta=$oname.XGrid\[1\];
 	$oname.YGridDelta=$y_grid_delta;
 
