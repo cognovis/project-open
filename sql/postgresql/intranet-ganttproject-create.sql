@@ -232,71 +232,6 @@ drop function inline_0 ();
 
 
 
-
-
-
----------------------------------------------------------
--- Setup a "Resource Report" Menu link
---
-
-create or replace function inline_0 ()
-returns integer as '
-declare
-	-- Menu IDs
-	v_menu			integer;
-	v_admin_menu		integer;
-
-	-- Groups
-	v_senman		integer;
-	v_admins		integer;
-	v_proman		integer;
-	v_sales			integer;
-	v_accounting		integer;
-BEGIN
-	select group_id into v_admins from groups where group_name = ''P/O Admins'';
-	select group_id into v_senman from groups where group_name = ''Senior Managers'';
-	select group_id into v_proman from groups where group_name = ''Project Managers'';
-	select group_id into v_sales from groups where group_name = ''Sales'';
-	select group_id into v_accounting from groups where group_name = ''Accounting'';
-
-	select menu_id into v_admin_menu
-	from im_menus where label=''projects_admin'';
-
-	-- Create a "Export Projects CSV" link under "Projects"
-	v_menu := im_menu__new (
-		null,				-- p_menu_id
-		''acs_object'',			-- object_type
-		now(),				-- creation_date
-		null,				-- creation_user
-		null,				-- creation_ip
-		null,				-- context_id
-		''intranet-ganttproject'',	-- package_name
-		''projects_admin_gantt_resources'',	-- label
-		''Resource Planning Report'',	-- name
-		''/intranet-ganttproject/gantt-resources-cube?config=resource_planning_report'', -- url
-		60,				-- sort_order
-		v_admin_menu,			-- parent_menu_id
-		null				-- p_visible_tcl
-	);
-
-	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_sales, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
-
-	return 0;
-end;' language 'plpgsql';
-
-select inline_0 ();
-drop function inline_0 ();
-
-
-
-
-
-
-
 ----------------------------------------------------------------
 -- Show the ganttproject component in project page
 --
@@ -408,53 +343,37 @@ SELECT im_component_plugin__new (
 
 
 create or replace function inline_0 ()
-returns integer as '
+returns integer as $body$
 declare
-	-- Menu IDs
 	v_menu			integer;
-	v_admin_menu		integer;
-
-	-- Groups
-	v_senman		integer;
-	v_admins		integer;
-	v_proman		integer;
-	v_sales			integer;
-	v_accounting		integer;
+	v_project_menu		integer;
+	v_employees		integer;
 BEGIN
-	select group_id into v_admins from groups where group_name = ''P/O Admins'';
-	select group_id into v_senman from groups where group_name = ''Senior Managers'';
-	select group_id into v_proman from groups where group_name = ''Project Managers'';
-	select group_id into v_sales from groups where group_name = ''Sales'';
-	select group_id into v_accounting from groups where group_name = ''Accounting'';
+	select group_id into v_employees from groups where group_name = 'Employees';
 
-	select menu_id into v_admin_menu
-	from im_menus where label=''projects_admin'';
+	select menu_id into v_project_menu
+	from im_menus where label = 'projects';
 
-	-- Create a "Export Projects CSV" link under "Projects"
 	v_menu := im_menu__new (
-		null,			-- p_menu_id
-		''acs_object'',		-- object_type
-		now(),			-- creation_date
-		null,			-- creation_user
-		null,			-- creation_ip
-		null,			-- context_id
-		''intranet-ganttproject'',	-- package_name
-		''projects_admin_gantt_resources'',	-- label
-		''Resource Planning Report'',	-- name
-		''/intranet-ganttproject/gantt-resources-cube?config=resource_planning_report'', -- url
-		60,			-- sort_order
-		v_admin_menu,		-- parent_menu_id
-		null			-- p_visible_tcl
+		null,					-- p_menu_id
+		'im_menu',				-- object_type
+		now(),					-- creation_date
+		null,					-- creation_user
+		null,					-- creation_ip
+		null,					-- context_id
+		'intranet-ganttproject',		-- package_name
+		'projects_gantt_resources',		-- label
+		'Resource Planning',			-- name
+		'/intranet-ganttproject/gantt-resources-cube?config=resource_planning_report', -- url
+		-20,					-- sort_order
+		v_project_menu,				-- parent_menu_id
+		null					-- p_visible_tcl
 	);
 
-	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_sales, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_employees, 'read');
 
 	return 0;
-end;' language 'plpgsql';
+end;$body$ language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 

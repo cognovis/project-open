@@ -2,36 +2,8 @@
 <property name="title">@page_title@</property>
 <property name="main_navbar_label">@main_navbar_label@</property>
 <property name="sub_navbar">@sub_navbar;noquote@</property>
+<property name="left_navbar">@left_navbar_html;noquote@</property>
 <property name="show_context_help">@show_context_help_p;noquote@</property>
-
-<form>
-<table border=0 cellspacing=1 cellpadding=1>
-<tr valign=top><td>
-        <table border=0 cellspacing=1 cellpadding=1>
-        <tr>
-          <td class=form-label>#intranet-core.Start_Date#</td>
-          <td class=form-widget>
-            <input type=textfield name=start_date value=@start_date@>
-          </td>
-        </tr>
-        <tr>
-          <td class=form-label>#intranet-core.End_Date#</td>
-          <td class=form-widget>
-            <input type=textfield name=end_date value=@end_date@>
-          </td>
-        </tr>
-        <tr>
-          <td class=form-label></td>
-          <td class=form-widget><input type=submit value="#intranet-core.Submit#"></td>
-        </tr>
-        </table>
-</td><td>
-        <table border=0 cellspacing=1 cellpadding=1>
-        </table>
-</td></tr>
-</table>
-</form>
-
 
 @html;noquote@
 
