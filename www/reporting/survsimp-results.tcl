@@ -21,14 +21,13 @@ ad_page_contract {
 # Security
 # ------------------------------------------------------------
 
-set menu_label "reporting-survsimp-results"
+set menu_label "reporting_survsimp_results"
 set current_user_id [ad_maybe_redirect_for_registration]
 set read_p [db_string report_perms "
 	select	im_object_permission_p(m.menu_id, :current_user_id, 'read')
 	from	im_menus m
 	where	m.label = :menu_label
 " -default 'f']
-set read_p "t"
 if {![string equal "t" $read_p]} {
     ad_return_complaint 1 "<li>
     [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
