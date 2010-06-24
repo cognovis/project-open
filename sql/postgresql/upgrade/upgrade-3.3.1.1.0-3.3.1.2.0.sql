@@ -6,7 +6,7 @@ SELECT acs_log__debug('/packages/intranet-workflow/sql/postgresql/upgrade/upgrad
 -- Home Inbox Component
 SELECT  im_component_plugin__new (
 	null,					-- plugin_id
-	'acs_object',				-- object_type
+	'im_component_plugin',				-- object_type
 	now(),					-- creation_date
 	null,					-- creation_user
 	null,					-- creation_ip
