@@ -6,7 +6,7 @@ SELECT acs_log__debug('/packages/intranet-timesheet2-tasks/sql/postgresql/upgrad
 select im_component_plugin__del_module('intranet-timesheet2-tasks-info');
 select im_component_plugin__new (
 	null,					-- plugin_id
-	'acs_object',				-- object_type
+	'im_component_plugin',				-- object_type
 	now(),					-- creation_date
 	null,					-- creation_user
 	null,					-- creattion_ip
@@ -25,7 +25,7 @@ select im_component_plugin__new (
 select im_component_plugin__del_module('intranet-timesheet2-tasks-resources');
 select im_component_plugin__new (
 	null,					-- plugin_id
-	'acs_object',				-- object_type
+	'im_component_plugin',				-- object_type
 	now(),					-- creation_date
 	null,					-- creation_user
 	null,					-- creattion_ip
