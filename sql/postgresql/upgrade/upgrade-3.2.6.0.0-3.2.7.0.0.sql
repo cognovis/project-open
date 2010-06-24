@@ -5,7 +5,7 @@ SELECT acs_log__debug('/packages/intranet-ganttproject/sql/postgresql/upgrade/up
 
 SELECT im_component_plugin__new (
 	null,				-- plugin_id
-	'acs_object',			-- object_type
+	'im_component_plugin',			-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
@@ -47,7 +47,7 @@ BEGIN
 	-- Create a "Export Projects CSV" link under "Projects"
 	v_menu := im_menu__new (
 		null,				-- p_menu_id
-		''acs_object'',			-- object_type
+		''im_menu'',			-- object_type
 		now(),				-- creation_date
 		null,				-- creation_user
 		null,				-- creation_ip
