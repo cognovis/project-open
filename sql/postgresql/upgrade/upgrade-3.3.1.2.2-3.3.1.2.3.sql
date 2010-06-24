@@ -7,7 +7,7 @@ SELECT acs_log__debug('/packages/intranet-reporting-indicators/sql/postgresql/up
 
 select im_component_plugin__new (
 		null,					-- plugin_id
-		'acs_object',				-- object_type
+		'im_menu',				-- object_type
 		now(),					-- creation_date
 		null,					-- creation_user
 		null,					-- creattion_ip
