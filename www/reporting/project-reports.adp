@@ -1,4 +1,4 @@
-<master src="../../intranet-core/www/master">
+<master>
 <property name="title">@page_title@</property>
 <property name="main_navbar_label">@main_navbar_label@</property>
 <property name="sub_navbar">@sub_navbar;noquote@</property>
