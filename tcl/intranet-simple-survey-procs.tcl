@@ -42,8 +42,8 @@ ad_proc im_survsimp_component { object_id } {
     set bgcolor(0) "class=roweven"
     set bgcolor(1) "class=rowodd"
     set survey_url "/simple-survey/one"
-
     set max_header_len [parameter::get_from_package_key -package_key "intranet-simple-survey" -parameter "MaxTableHeaderLen" -default 8]
+    set max_clob_len 20
 
     set current_user_id [ad_get_user_id]
 
@@ -101,8 +101,6 @@ ad_proc im_survsimp_component { object_id } {
 
     append survsimp_html "</table>\n"
     if {0 == $ctr} { set survsimp_html "" }
-
-
 
     # -----------------------------------------------------------
     # Surveys Related to This User
@@ -190,7 +188,7 @@ ad_proc im_survsimp_component { object_id } {
 			r.choice_id,
 			sqc.label as choice,
 			r.boolean_answer,
-			r.clob_answer,
+			substring(r.clob_answer for :max_clob_len) as clob_answer,
 			r.number_answer,
 			r.varchar_answer,
 			r.date_answer
@@ -213,6 +211,7 @@ ad_proc im_survsimp_component { object_id } {
 		</td>
 	"
 	db_foreach q $questions_sql {
+	    if {[string length $clob_answer] == $max_clob_len} { append clob_answer " ..." }
 	    append survsimp_response_html "
 		<td $bgcolor([expr $response_ctr % 2])>
 		$choice $boolean_answer $clob_answer $number_answer $varchar_answer $date_answer
