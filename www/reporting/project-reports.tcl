@@ -49,6 +49,10 @@ set context_bar [im_context_bar $page_title]
 set context ""
 set show_context_help_p 1
 
+set bgcolor(0) " class=roweven "
+set bgcolor(1) " class=rowodd "
+
+
 # ---------------------------------------------------------------
 # Project Menu
 # ---------------------------------------------------------------
@@ -86,10 +90,10 @@ if {[llength $project_id] == 1} {
 # Defaults
 
 if {"" == $start_date} { set start_date [db_string start_date "select now()::date - 90"] }
-if {"" == $end_date} { set end_date [db_string start_date "select now()::date + 7"] }
+if {"" == $end_date} { set end_date [db_string start_date "select now()::date + 3"] }
 
 set project_url "/intranet/projects/view?project_id="
-
+set one_response_url "/intranet-simple-survey/one-response?response_id="
 
 # ------------------------------------------------------------
 # SQLs for pulling out date:
@@ -105,6 +109,7 @@ set inner_sql "
 		ss.name as survey_name,
 		to_char(o.creation_date, 'J')::integer - to_char(o.creation_date, 'D')::integer + 2 as monday_julian,
 		sr.related_object_id as project_id,
+		sq.question_text,
 		sqc.label as response
 	from	acs_objects o,
 		survsimp_surveys ss,
@@ -170,9 +175,9 @@ db_foreach inner $inner_sql {
     # Convert Green/Yellow/Red responses into BB images
     set color [string tolower $response]
     if {[lsearch {green yellow red purple blue cyan} $color] < 0} { continue }
-    set alt_text ""
+    set alt_text $question_text
     set gif [im_gif "bb_$color" $alt_text $border $gif_size $gif_size]
-    set link "<a href=''>$gif</a>\n"
+    set link "<a href='$one_response_url$response_id'>$gif</a>\n"
 
     # Append value to the cell
     set val ""
@@ -195,6 +200,7 @@ set top_dim [db_list_of_lists date_top_dim $date_sql]
 # Write out the HTML
 
 set top_html "<tr class=rowtitle>\n"
+append top_html "<td class=rowtitle>[lang::message::lookup "" intranet-simple-survey.Week "Week"]</td>\n"
 foreach date_tuple $top_dim {
     set monday_julian [lindex $date_tuple 0]
     set year [lindex $date_tuple 1]
@@ -206,6 +212,7 @@ append top_html "</tr>\n"
 # ad_return_complaint 1 $left_dim
 
 set body_html ""
+set ctr 0
 foreach project_tuple $left_dim {
     set project_id [lindex $project_tuple 0]
     set project_name [lindex $project_tuple 1]
@@ -214,7 +221,7 @@ foreach project_tuple $left_dim {
     set type_id [lindex $project_tuple 4]
     set type [lindex $project_tuple 5]
 
-    set row_html "<tr><td><a href='$project_url/$project_id'>$project_name</a></td>\n"
+    set row_html "<tr$bgcolor([expr $ctr % 2])><td><a href='$project_url$project_id'>$project_name</a></td>\n"
 
     foreach date_tuple $top_dim {
 	set monday_julian [lindex $date_tuple 0]
@@ -229,6 +236,7 @@ foreach project_tuple $left_dim {
 
     append row_html "</tr>\n"
     append body_html $row_html
+    incr ctr
 }
 
 set html "
