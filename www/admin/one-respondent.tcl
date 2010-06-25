@@ -56,12 +56,14 @@ Here is what <a href=\"/shared/community-member?[export_url_vars user_id]\">$fir
 # now we have to query Oracle to find out what the questions are and
 # how to present them
 
-set response_id_date_list [db_list_of_lists survsimp_survey_response_dates_for_users "select response_id, creation_date 
-from survsimp_responses, acs_objects
-where response_id = object_id
-and creation_user = :user_id
-and survey_id = :survey_id
-order by creation_date desc" ]
+set response_id_date_list [db_list_of_lists survsimp_survey_response_dates_for_users "
+	select	response_id, creation_date 
+	from	survsimp_responses, acs_objects
+	where	response_id = object_id
+		and creation_user = :user_id
+		and survey_id = :survey_id
+	order by creation_date desc
+"]
 
 # function to insert survey type-specific form html
 
