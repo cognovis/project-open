@@ -148,7 +148,7 @@ db_foreach color_question $color_question_sql {
 }
 
 # Get the list of questions that are "pure color"
-set color_question_list {}
+set color_question_list {0}
 foreach qid [array names color_question] {
     set question_id $color_question($qid)
     if {"" != $question_id} { lappend color_question_list $question_id }
