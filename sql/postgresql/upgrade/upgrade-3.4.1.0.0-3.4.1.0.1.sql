@@ -4,6 +4,25 @@ SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-3.
 
 
 
+
+CREATE or REPLACE FUNCTION im_project_level_spaces(integer)
+RETURNS varchar as $body$
+DECLARE
+	p_level		alias for $1;
+	v_result	varchar;
+	i		integer;
+BEGIN
+	v_result := '';
+	FOR i IN 1..p_level LOOP
+		v_result := v_result || '    ';
+	END LOOP;
+	RETURN v_result;
+END; $body$ LANGUAGE 'plpgsql';
+
+
+
+
+
 create or replace function im_project__new (
 	integer, varchar, timestamptz, integer, varchar, integer,
 	varchar, varchar, varchar, integer, integer, integer, integer
