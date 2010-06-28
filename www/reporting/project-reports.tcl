@@ -99,10 +99,12 @@ if {[llength $project_id] == 1} {
     set letter ""
     set next_page_url ""
     set previous_page_url ""
-    set menu_select_label "projects_gantt_resources"
-    set sub_navbar [im_project_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list start_idx order_by how_many view_name letter project_status_id] $menu_select_label]
+    set menu_select_label "project_reports"
+    set sub_navbar [im_project_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list] $menu_select_label]
 
 }
+
+
 
 # ------------------------------------------------------------
 # Defaults
