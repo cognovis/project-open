@@ -44,6 +44,21 @@ if {![string equal "t" $read_p]} {
     return
 }
 
+# Check for the default survey name if survey_id was not specified
+if {"" == $survey_id} {
+    set default_survey_name [parameter::get_from_package_key -package_key "intranet-simple-survey" -parameter DefaultProjectReportSurveyName -default "Project Status Report"]
+    set survey_id [db_string default_survey "select survey_id from survsimp_surveys where lower(trim(name)) = lower(trim(:default_survey_name))" -default ""]
+}
+
+if {"" == $survey_id} { set survey_id [db_string last_survey "select min(survey_id) from survsimp_surveys" -default ""] }
+if {"" == $survey_id} { 
+    ad_return_complaint 1 "No surveys defined yet"
+    ad_script_abort
+}
+
+# ad_return_complaint 1 $survey_id
+
+
 set page_title [lang::message::lookup "" intranet-simple-survey.Project_Reports "Project Reports"]
 set context_bar [im_context_bar $page_title]
 set context ""
@@ -51,6 +66,9 @@ set show_context_help_p 1
 
 set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
+
+# Valid colors for color coding
+set valid_colors {white gray black green yellow red purple blue cyan clear}
 
 
 # ---------------------------------------------------------------
@@ -95,6 +113,58 @@ if {"" == $end_date} { set end_date [db_string start_date "select now()::date + 
 set project_url "/intranet/projects/view?project_id="
 set one_response_url "/intranet-simple-survey/one-response?response_id="
 
+
+# ------------------------------------------------------------
+# Check which surveys contain at least one "green/yellow/red" 
+# question.
+# As a result we'll get a list of questions that only contain
+# color values. In a second step with check to wich surveys
+# these questions belong to get the list of "color surveys".
+# 
+
+set color_question_sql "
+	select distinct
+		sq.question_id,
+		sq.question_text, 
+		lower(trim(sqc.label)) as label
+	from
+		survsimp_question_choices sqc, 
+		survsimp_questions sq
+	where 
+		sqc.question_id = sq.question_id and
+		lower(trim(sqc.label)) in ('[join $valid_colors "', '"]')
+	order by 
+		sq.question_id, sq.question_text
+"
+db_foreach color_question $color_question_sql {
+    # First ocurrence? Set to question_id to indicate that it's OK.
+    if {![info exists color_question($question_id)]} { set color_question($question_id) $question_id }
+    if {[lsearch $valid_colors $label] < 0} {
+	# Not a valid color. Set to "" to mark as bad.
+	set color_question($question_id) ""
+    }
+}
+
+# Get the list of questions that are "pure color"
+set color_question_list {}
+foreach qid [array names color_question] {
+    set question_id $color_question($qid)
+    if {"" != $question_id} { lappend color_question_list $question_id }
+}
+
+# Extract the surveys of the "pure color questions" and store
+# in hash array for faster access
+set color_survey_sql "
+	select	survey_id as color_survey_id
+	from	survsimp_questions
+	where	question_id in ([join $color_question_list ","])
+"
+db_foreach color_surveys $color_survey_sql {
+    set color_survey($color_survey_id) $color_survey_id
+}
+
+
+
 # ------------------------------------------------------------
 # SQLs for pulling out date:
 # Together, the tree SQL define left dimension, upper dimension and the two dimensional 
@@ -104,11 +174,11 @@ set one_response_url "/intranet-simple-survey/one-response?response_id="
 #	- The "date" SQL shows the date interval between start- and end date.
 
 set inner_sql "
-	select	sr.survey_id,
-		sr.response_id,
+	select	sr.response_id,
 		ss.name as survey_name,
 		to_char(o.creation_date, 'J')::integer - to_char(o.creation_date, 'D')::integer + 2 as monday_julian,
 		sr.related_object_id as project_id,
+		sq.question_id,
 		sq.question_text,
 		sqc.label as response
 	from	acs_objects o,
@@ -120,6 +190,7 @@ set inner_sql "
 	where	sr.response_id = o.object_id and
 		ss.survey_id = sq.survey_id and
 		ss.survey_id = sr.survey_id and
+		ss.survey_id = :survey_id and
 		sr.response_id = sqr.response_id and
 		sq.question_id = sqr.question_id and
 		o.creation_date > :start_date::date and
@@ -164,28 +235,52 @@ set date_sql "
 		) e
 "
 
+
 # ------------------------------------------------------------
 # Create dimensions top & left and the inner matrix
 
+
 set border 0
 set gif_size 16
-db_foreach inner $inner_sql {
-    set key "$project_id-$monday_julian"
+if {[info exists color_survey($survey_id)]} {
 
-    # Convert Green/Yellow/Red responses into BB images
-    set color [string tolower $response]
-    if {[lsearch {green yellow red purple blue cyan} $color] < 0} { continue }
-    set alt_text $question_text
-    set gif [im_gif "bb_$color" $alt_text $border $gif_size $gif_size]
-    set link "<a href='$one_response_url$response_id'>$gif</a>\n"
+    # A "color survey" with at least one "color question" consisting of know color codes
+    db_foreach inner $inner_sql {
+	set key "$project_id-$monday_julian"
+	
+	set color_question_p [info exists color_question($question_id)]
+	if {$color_question_p && "" == $color_question($question_id)} { set color_question_p 0 }
+	if {!$color_question_p} { continue }
+	
+	# Convert Green/Yellow/Red responses into BB images
+	set color [string tolower $response]
+	set alt_text $question_text
+	set gif [im_gif "bb_$color" $alt_text $border $gif_size $gif_size]
+	set html "<a href='$one_response_url$response_id'>$gif</a>\n"
+	
+	# Append html to the cell
+	set val ""
+	if {[info exists report_hash($key)]} { set val $report_hash($key) }
+	if {"" != $val} { append val "<br>" }
+	append val $html
+	set report_hash($key) $val
+    }
+    
+} else {
 
-    # Append value to the cell
-    set val ""
-    if {[info exists report_hash($key)]} { set val $report_hash($key) }
-    if {"" != $val} { append val "<br>" }
-    append val $link
-    set report_hash($key) $val
+    db_foreach inner $inner_sql {
+	set key "$project_id-$monday_julian"
+	
+	set alt_text $survey_name
+	set gif [im_gif "bb_green" $alt_text $border $gif_size $gif_size]
+	set html "<a href='$one_response_url$response_id'>$gif</a>\n"
+	
+	# Write to HTML cell (no append!)
+	set report_hash($key) $html
+    }
+
 }
+
 
 # The left dimension consists of infos about the project:
 # 0:project_id, 1:project_name, 2:status_id, 3:status, 4:type_id, 5:type
@@ -256,14 +351,29 @@ if {"" == $html} {
 # ------------------------------------------------------------
 # Left Navbar is the filter/select part of the left bar
 
+set survey_options [db_list_of_lists survey_options "
+	select	ss.name,
+		ss.survey_id
+	from	survsimp_surveys ss
+	where	ss.enabled_p = 't'
+"]
+
+#set survey_options [linsert $survey_options 0 [list "" ""]]
+
 set left_navbar_html "
 	<div class='filter-block'>
         	<div class='filter-title'>
 	           #intranet-core.Filter_Projects#
         	</div>
 
-        <form action='/intranet-ganttproject/gantt-resources-cube' method=GET>
+        <form action='/intranet-simple-survey/reporting/project-reports' method=GET>
         <table border=0 cellspacing=1 cellpadding=1>
+        <tr>
+          <td class=form-label>[lang::message::lookup "" intranet-simple-survey.Survey "Survey"]</td>
+          <td class=form-widget>
+            [im_select -ad_form_option_list_style_p 1 -translate_p 0 survey_id $survey_options $survey_id]
+          </td>
+        </tr>
         <tr>
           <td class=form-label>#intranet-core.Start_Date#</td>
           <td class=form-widget>
