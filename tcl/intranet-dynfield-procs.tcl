@@ -884,6 +884,12 @@ ad_proc -public im_dynfield::subtype_have_same_attributes_p {
 } {
     array set attrib_hash [im_dynfield::dynfields_per_object_subtype -object_type $object_type]
     set first_array_name [lindex [array names attrib_hash] 0]
+
+    if {"" == $first_array_name} { 
+	# No attributes at all, so yes, they're all the same...
+	return 1 
+    }
+
     set first_array_name_attribs $attrib_hash($first_array_name)
 
     set same_p 1
