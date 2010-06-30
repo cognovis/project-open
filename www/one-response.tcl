@@ -13,6 +13,8 @@ ad_page_contract {
     response_id:integer
 } 
 
+set current_user_id [ad_maybe_redirect_for_registration]
+
 # -----------------------------------------------------------------
 # Basic survey information and security
 
@@ -34,10 +36,41 @@ set survey_exists_p [db_0or1row response_info "
 
 if {!$survey_exists_p} {
     ad_return_error "Not Found" "Could not find survey #$survey_id"
-    return
+    ad_script_abort
 }
 
-ad_require_permission $survey_id survsimp_admin_survey
+
+# -----------------------------------------------------------------
+# Permissions
+
+if {"" == $related_object_id} {
+
+    # This is a survey response not related to a ]po[
+    # object, so use the standard SurvSimp permissions:
+    ad_require_permission $survey_id survsimp_admin_survey
+
+} else {
+
+    # This survey response is related to a ]po[ objects.
+    # Check if the current user can read this object:
+
+    # Default permissions
+    set object_view 0
+    set object_read 0
+    set object_write 0
+    set object_admin 0
+
+    catch {
+	set object_type [db_string acs_object_type "select object_type from acs_objects where object_id = :related_object_id"]
+	set perm_cmd "${object_type}_permissions \$current_user_id \$related_object_id object_view object_read object_write object_admin"
+	eval $perm_cmd
+    } err_msg
+
+    if {!$object_read} {
+	ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_insufficient_6]"
+	ad_script_abort
+    }
+}
 
 
 # -----------------------------------------------------------------
