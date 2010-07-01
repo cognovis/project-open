@@ -9,7 +9,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-spam</auto-mount>
 
-    <version name="3.4.0.8.9" url="http://www.project-open.org/download/apm/intranet-spam-3.4.0.8.9.apm">
+    <version name="3.4.1.0.3" url="http://www.project-open.org/download/apm/intranet-spam-3.4.1.0.3.apm">
     <database-support>
         <database>oracle</database>
         <database>postgresql</database>
