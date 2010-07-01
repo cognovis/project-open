@@ -25,7 +25,6 @@ if {![info exists task]} {
 	{ ticket_sla_id "" }
 	{ ticket_customer_contact_id "" }
 	{ task_id "" }
-	{ return_url "" }
 	message:optional
 	{ ticket_status_id "[im_ticket_status_open]" }
 	{ ticket_type_id "" }
@@ -64,7 +63,13 @@ if {![info exists task]} {
 
     # Don't show this page in WF panel.
     # Instead, redirect to this same page, but in TaskViewPage mode.
-    ad_returnredirect "/intranet-helpdesk/new?ticket_id=$task(object_id)"
+    # ad_returnredirect "/intranet-helpdesk/new?ticket_id=$task(object_id)"
+
+    # fraber 20100602: redirecting to return_url leads to an infinite
+    # loop with workflow. Re-activating redirection to the TicketNewPage
+    # ad_returnredirect $return_url
+
+    ad_returnredirect [export_vars -base "/intranet-helpdesk/new" { {ticket_id $task(object_id)} {form_mode display}} ]
 
 }
 
@@ -359,7 +364,26 @@ if {"new" == $ticket_customer_contact_id && $user_can_create_new_customer_contac
 
 if {[exists_and_not_null ticket_customer_id]} {
     set customer_sla_options [im_helpdesk_ticket_sla_options -customer_id $ticket_customer_id -include_create_sla_p 1]
-    set customer_contact_options [im_user_options -biz_object_id $ticket_customer_id -include_empty_p 0]
+    set customer_contact_options [db_list_of_lists customer_contact_options "
+	select
+		im_name_from_user_id(u.user_id) as name,
+		u.user_id
+	from
+		cc_users u
+	where
+		u.user_id in (
+			-- Members of group helpdesk
+			select member_id from group_distinct_member_map where group_id = [im_profile_helpdesk]
+		UNION
+			select object_id_two from acs_rels where object_id_one = :ticket_customer_id
+		UNION
+			select object_id_two from acs_rels where object_id_one = :ticket_sla_id
+		)
+		order by name
+    "]
+
+
+
 } else {
     set customer_sla_options [im_helpdesk_ticket_sla_options -include_create_sla_p 1]
     set customer_contact_options [im_user_options -include_empty_p 0]
@@ -490,7 +514,9 @@ ad_form -extend -name helpdesk_ticket -on_request {
     im_project_audit -project_id $ticket_id -action create
 
     # Send to page to show the new ticket, instead of returning to return_url
-    ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {ticket_id}]
+    # ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {ticket_id}]
+
+    ad_returnredirect $return_url
     ad_script_abort
 
 } -edit_data {
