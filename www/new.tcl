@@ -25,6 +25,7 @@ if {![info exists task]} {
 	{ ticket_sla_id "" }
 	{ ticket_customer_contact_id "" }
 	{ task_id "" }
+	{ return_url "" }
 	message:optional
 	{ ticket_status_id "[im_ticket_status_open]" }
 	{ ticket_type_id "" }
@@ -63,20 +64,13 @@ if {![info exists task]} {
 
     # Don't show this page in WF panel.
     # Instead, redirect to this same page, but in TaskViewPage mode.
-    # ad_returnredirect "/intranet-helpdesk/new?ticket_id=$task(object_id)"
-
-    # fraber 20100602: redirecting to return_url leads to an infinite
-    # loop with workflow. Re-activating redirection to the TicketNewPage
-    # ad_returnredirect $return_url
-
-    ad_returnredirect [export_vars -base "/intranet-helpdesk/new" { {ticket_id $task(object_id)} {form_mode display}} ]
+    ad_returnredirect "/intranet-helpdesk/new?ticket_id=$task(object_id)"
 
 }
 
 # ------------------------------------------------------------------
 # Default & Security
 # ------------------------------------------------------------------
-
 
 set current_user_id [ad_maybe_redirect_for_registration]
 set user_id $current_user_id
@@ -98,27 +92,9 @@ set view_tickets_all_p [im_permission $current_user_id "view_tickets_all"]
 # ----------------------------------------------
 # Page Title
 
-set form_vars [ns_conn form]
-if {"" == $form_vars} { set form_vars [ns_set create] }
-set form_mode  [ns_set get $form_vars "form:mode"]
-
-
-
 set page_title [lang::message::lookup "" intranet-helpdesk.New_Ticket "New Ticket"]
 if {[exists_and_not_null ticket_id]} {
-
-    # Set a suitable page title
     set page_title [db_string title "select project_name from im_projects where project_id = :ticket_id" -default ""]
-
-    # Check if the ticket exists...
-    set ticket_count [db_string ticket_count "select count(*) from im_tickets where ticket_id = :ticket_id"]
-    if {"display" == $form_mode && 0 == $ticket_count} {
-	ad_return_complaint 1 "<b>[lang::message::lookup "" intranet-helpdesk.No_Ticket_Found "No Ticket Found"]</b>:<br>
-	[lang::message::lookup "" intranet-helpdesk.No_Ticket_Found_Message "You are trying to access a ticket that has 
-	been deleted from the database ('nuked')."]"
-	ad_script_abort
-    }
-
 }
 if {"" == $page_title && 0 != $ticket_type_id} { 
     set ticket_type [im_category_from_id $ticket_type_id]
@@ -182,7 +158,7 @@ ad_form \
     -actions $actions \
     -has_edit 1 \
     -mode $form_mode \
-    -method GET \
+    -export {next_url return_url} \
     -form {
 	ticket_id:key
 	{ticket_name:text(text) {label $title_label} {html {size 50}}}
@@ -382,32 +358,9 @@ if {"new" == $ticket_customer_contact_id && $user_can_create_new_customer_contac
 # ------------------------------------------------------------------
 
 if {[exists_and_not_null ticket_customer_id]} {
-
-    # Options for a ticket with a defined customer:
     set customer_sla_options [im_helpdesk_ticket_sla_options -customer_id $ticket_customer_id -include_create_sla_p 1]
-
-    set customer_contact_options [db_list_of_lists customer_contact_options "
-	select
-		im_name_from_user_id(u.user_id) as name,
-		u.user_id
-	from
-		cc_users u
-	where
-		u.user_id in (
-			-- Members of group helpdesk
-			select member_id from group_distinct_member_map where group_id = [im_profile_helpdesk]
-		UNION
-			select object_id_two from acs_rels where object_id_one = :ticket_customer_id
-		UNION
-			select object_id_two from acs_rels where object_id_one = :ticket_sla_id
-		)
-		order by name
-    "]
-
-
+    set customer_contact_options [im_user_options -biz_object_id $ticket_customer_id -include_empty_p 0]
 } else {
-
-    # We don't yet know the customer for this ticket.
     set customer_sla_options [im_helpdesk_ticket_sla_options -include_create_sla_p 1]
     set customer_contact_options [im_user_options -include_empty_p 0]
 }
@@ -470,11 +423,11 @@ set dynfield_ticket_id ""
 if {[info exists ticket_id]} { set dynfield_ticket_id $ticket_id }
 
 set field_cnt [im_dynfield::append_attributes_to_form \
-		       -form_display_mode $form_mode \
-		       -object_subtype_id $dynfield_ticket_type_id \
-		       -object_type "im_ticket" \
-		       -form_id "helpdesk_ticket" \
-		       -object_id $dynfield_ticket_id \
+                       -form_display_mode $form_mode \
+                       -object_subtype_id $dynfield_ticket_type_id \
+                       -object_type "im_ticket" \
+                       -form_id "helpdesk_ticket" \
+                       -object_id $dynfield_ticket_id \
 ]
 
 # ------------------------------------------------------------------
@@ -511,14 +464,14 @@ ad_form -extend -name helpdesk_ticket -on_request {
 
     set ticket_id [im_ticket::new \
 	-ticket_sla_id $ticket_sla_id \
-	-ticket_name $ticket_name \
-	-ticket_nr $ticket_nr \
+        -ticket_name $ticket_name \
+        -ticket_nr $ticket_nr \
 	-ticket_customer_contact_id $ticket_customer_contact_id \
-	-ticket_type_id $ticket_type_id \
-	-ticket_status_id $ticket_status_id \
-	-ticket_start_date $start_date \
-	-ticket_end_date $end_date \
-	-ticket_note $message \
+        -ticket_type_id $ticket_type_id \
+        -ticket_status_id $ticket_status_id \
+        -ticket_start_date $start_date \
+        -ticket_end_date $end_date \
+        -ticket_note $message \
     ]
 
     im_dynfield::attribute_store \
@@ -527,19 +480,17 @@ ad_form -extend -name helpdesk_ticket -on_request {
 	-form_id helpdesk_ticket
 
     notification::new \
-	-type_id [notification::type::get_type_id -short_name ticket_notif] \
-	-object_id $ticket_id \
-	-response_id "" \
-	-notif_subject "New: Subject" \
-	-notif_text "Text"
+        -type_id [notification::type::get_type_id -short_name ticket_notif] \
+        -object_id $ticket_id \
+        -response_id "" \
+        -notif_subject "New: Subject" \
+        -notif_text "Text"
 
     # Write Audit Trail
     im_project_audit -project_id $ticket_id -action create
 
     # Send to page to show the new ticket, instead of returning to return_url
-    # ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {ticket_id}]
-
-    ad_returnredirect $return_url
+    ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {ticket_id}]
     ad_script_abort
 
 } -edit_data {
@@ -561,11 +512,11 @@ ad_form -extend -name helpdesk_ticket -on_request {
     im_project_audit -project_id $ticket_id -action update
 
     notification::new \
-	-type_id [notification::type::get_type_id -short_name ticket_notif] \
-	-object_id $ticket_id \
-	-response_id "" \
-	-notif_subject "Edit: Subject" \
-	-notif_text "Text"
+        -type_id [notification::type::get_type_id -short_name ticket_notif] \
+        -object_id $ticket_id \
+        -response_id "" \
+        -notif_subject "Edit: Subject" \
+        -notif_text "Text"
 
 } -on_submit {
 
