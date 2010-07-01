@@ -98,6 +98,12 @@ set view_tickets_all_p [im_permission $current_user_id "view_tickets_all"]
 # ----------------------------------------------
 # Page Title
 
+set form_vars [ns_conn form]
+if {"" == $form_vars} { set form_vars [ns_set create] }
+set form_mode  [ns_set get $form_vars "form:mode"]
+
+
+
 set page_title [lang::message::lookup "" intranet-helpdesk.New_Ticket "New Ticket"]
 if {[exists_and_not_null ticket_id]} {
 
@@ -106,7 +112,7 @@ if {[exists_and_not_null ticket_id]} {
 
     # Check if the ticket exists...
     set ticket_count [db_string ticket_count "select count(*) from im_tickets where ticket_id = :ticket_id"]
-    if {0 == $ticket_count} {
+    if {"display" == $form_mode && 0 == $ticket_count} {
 	ad_return_complaint 1 "<b>[lang::message::lookup "" intranet-helpdesk.No_Ticket_Found "No Ticket Found"]</b>:<br>
 	[lang::message::lookup "" intranet-helpdesk.No_Ticket_Found_Message "You are trying to access a ticket that has 
 	been deleted from the database ('nuked')."]"
@@ -176,6 +182,7 @@ ad_form \
     -actions $actions \
     -has_edit 1 \
     -mode $form_mode \
+    -method GET \
     -form {
 	ticket_id:key
 	{ticket_name:text(text) {label $title_label} {html {size 50}}}
