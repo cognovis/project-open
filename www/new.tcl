@@ -485,6 +485,7 @@ ad_form -extend -name helpdesk_ticket -on_request {
     set message ""
     if {[info exists ticket_note]} { append message $ticket_note }
     if {[info exists ticket_description]} { append message $ticket_description }
+    if {![exists_and_not_null project_name]} { set project_name $ticket_name}
 
     set ticket_id [im_ticket::new \
 	-ticket_sla_id $ticket_sla_id \
@@ -523,6 +524,7 @@ ad_form -extend -name helpdesk_ticket -on_request {
 
     set ticket_nr [string trim [string tolower $ticket_nr]]
     if {"" == $ticket_nr} { set ticket_nr [im_ticket::next_ticket_nr] }
+    if {![exists_and_not_null project_name]} { set project_name $ticket_name}
     set start_date_sql [template::util::date get_property sql_date $start_date]
     set end_date_sql [template::util::date get_property sql_timestamp $end_date]
 
