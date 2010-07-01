@@ -77,6 +77,7 @@ if {![info exists task]} {
 # Default & Security
 # ------------------------------------------------------------------
 
+
 set current_user_id [ad_maybe_redirect_for_registration]
 set user_id $current_user_id
 set current_url [im_url_with_query]
