@@ -87,14 +87,15 @@ create table im_tickets (
 	ticket_service_id		integer
 					constraint im_ticket_service_fk
 					references im_categories,
-
 	ticket_conf_item_id		integer
 					constraint im_ticket_conf_item_fk
 					references im_conf_items,
-
 	ticket_queue_id			integer
 					constraint im_ticket_queue_fk
 					references groups,
+	ticket_dept_id			integer
+					constraint im_ticket_dept_fk
+					references im_cost_centers,
 
 	ticket_alarm_date		timestamptz,
 	ticket_alarm_action		text,

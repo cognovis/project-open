@@ -3,6 +3,31 @@
 SELECT acs_log__debug('/packages/intranet-helpdesk/sql/postgresql/upgrade/upgrade-3.4.1.0.0-3.4.1.0.1.sql','');
 
 
+
+
+-- Creation Date
+create or replace function inline_0 ()
+returns integer as '
+declare
+	v_count	integer;
+begin
+	select	count(*) into v_count from user_tab_columns
+	where	lower(table_name) = ''im_tickets'' and
+		lower(column_name) = ''ticket_dept_id'';
+	IF 0 != v_count THEN return 0; END IF;
+
+	alter table im_tickets add
+	ticket_dept_id			integer
+					constraint im_ticket_dept_fk
+					references im_cost_centers;
+	return 0;
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
 SELECT im_dynfield_widget__new (
 	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
 	'service_level_agreements', 'Service Level Agreements', 'Service Level Agreements',
