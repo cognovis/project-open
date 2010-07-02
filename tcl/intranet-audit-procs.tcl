@@ -934,6 +934,14 @@ set project_budget_converted [expr $cost_invoices_cache * (100.0 - $target_margi
 	regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $date match year month day hour min sec
 	regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $last_date match last_year last_month last_day last_hour last_min last_sec
 
+	if {"" == $percent_completed} { set percent_completed 0 }
+	if {"" == $project_budget_converted} { set project_budget_converted 0 }
+	if {"" == $cost_expense_logged_cache} { set cost_expense_logged_cache 0 }
+	if {"" == $cost_bills_cache} { set cost_bills_cache 0 }
+	if {"" == $cost_timesheet_logged_cache} { set cost_timesheet_logged_cache 0 }
+	if {"" == $cost_quotes_cache} { set cost_quotes_cache 0 }
+	if {"" == $cost_invoices_cache} { set cost_invoices_cache 0 }
+
 	set val_hash(date) $date
 	set val_hash(done) $percent_completed
 	set val_hash(budget) $project_budget_converted
