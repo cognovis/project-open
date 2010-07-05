@@ -240,7 +240,14 @@ template::list::create \
 
 set project_where ""
 if {"" != $project_id & 0 != $project_id} { 
-    set project_where "\tand c.project_id = :project_id\n" 
+    set project_where "\tand c.project_id in (
+		select	child.project_id
+		from	im_projects parent,
+			im_projects child
+		where	parent.project_id = :org_project_id and
+			child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+	)
+    " 
 }
 
 set expense_where ""
