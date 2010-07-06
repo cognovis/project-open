@@ -27,7 +27,6 @@ ad_page_contract {
     { invoice_id:integer 0}
 }
 
-
 # ------------------------------------------------------------
 # Security
 
@@ -484,7 +483,9 @@ switch $output_format {
 		  <td class=form-label>User</td>
 		  <td class=form-widget>
 		    [im_user_select -include_empty_p 1 -group_id [list [im_employee_group_id] [im_freelance_group_id]] -include_empty_name "-- Please select --" user_id $user_id]
-		  </td>
+
+	  
+		</td>
 		</tr>
 	    "
 	}
