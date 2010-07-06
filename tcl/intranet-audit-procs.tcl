@@ -827,6 +827,11 @@ ad_proc im_audit_project_eva_diagram {
     if {"" == $cost_quotes_cache_max} { set cost_quotes_cache_max 0 }
     if {"" == $cost_delivery_notes_cache_max} { set cost_delivery_notes_cache_max 0 }
 
+    if {"" == $project_budget_sum} { set project_budget_sum 0 }
+    if {"" == $cost_timesheet_logged_cache_sum} { set cost_timesheet_logged_cache_sum 0 }
+    if {"" == $cost_bills_cache_sum} { set cost_bills_cache_sum 0 }
+    if {"" == $cost_expense_logged_cache_sum} { set cost_expense_logged_cache_sum 0 }
+
     regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $first_date match year0 month0 day0 hour0 min0 sec0
     regexp {([0-9]*)\-([0-9]*)\-([0-9]*) ([0-9]*)\:([0-9]*)\:([0-9]*)} $last_date match year9 month9 day9 hour9 min9 sec9
 
