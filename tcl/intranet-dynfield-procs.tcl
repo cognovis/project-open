@@ -152,6 +152,7 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 		and t.object_type = a.ancestor_type
 		and a.attribute_id = aa.acs_attribute_id
 		and a.attribute_id = at.attribute_id
+		and (aa.also_hard_coded_p is NULL or aa.also_hard_coded_p = 'f')
 	order by
 		attribute_id
     "
