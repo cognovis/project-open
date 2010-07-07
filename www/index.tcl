@@ -230,9 +230,6 @@ array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 			       -object_type $object_type
 ]
 
-#ToDo: Export the extra DynField variables into form's "export" variable list
-
-
 # ---------------------------------------------------------------
 # Generate SQL Query
 # ---------------------------------------------------------------
