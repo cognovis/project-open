@@ -179,7 +179,7 @@ if { ![empty_string_p $where_clause] } {
 set inner_sql "
 select
 	c.*,
-	round((c.amount * im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric, 2) as amount_converted
+	round((c.amount * im_exchange_rate(c.effective_date::date, c.currency, :default_currency)) :: numeric, 2) as amount_converted
 from
 	im_costs c
 where

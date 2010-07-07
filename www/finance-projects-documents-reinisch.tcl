@@ -291,12 +291,12 @@ set inner_sql "
 		c.customer_id,
 		c.provider_id,
 		round((c.paid_amount * 
-		  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+		  im_exchange_rate(c.effective_date::date, c.currency, :default_currency)) :: numeric
 		  , 2) as paid_amount_converted,
 		c.paid_amount,
 		c.paid_currency,
 		round((c.amount * 
-		  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+		  im_exchange_rate(c.effective_date::date, c.currency, :default_currency)) :: numeric
 		  , 2) as amount_converted,
 		c.amount,
 		c.currency,

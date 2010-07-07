@@ -314,7 +314,7 @@ if { ![empty_string_p $where_clause] } {
 set inner_sql "
 		select
 			trunc((c.amount * 
-			  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+			  im_exchange_rate(c.effective_date::date, c.currency, :default_currency)) :: numeric
 			  , 2) as amount_converted,
 			c.*,
 			e.*
