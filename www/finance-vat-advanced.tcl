@@ -184,7 +184,7 @@ select distinct
 	to_char(c.vat, '00') as vat_pretty,
 	c.tax,
 	round((c.amount * 
-	  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+	  im_exchange_rate(c.effective_date::date, c.currency, :default_currency)) :: numeric
 	  , 2) as amount_conv,
 	c.amount,
 	c.currency,
