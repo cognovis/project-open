@@ -1103,7 +1103,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     <li>Adding the the attributes to the forum and
     <li>Extracting the values of the attributes from a number of storage tables.
     </ul>
-
 } {
     set debug 0
     if {$debug} { ns_log Notice "im_dynfield::append_attributes_to_form: object_type=$object_type, object_id=$object_id" }
@@ -1149,8 +1148,6 @@ ad_proc -public im_dynfield::append_attributes_to_form {
                 and aa.object_type = :object_type
     "
 
-#    if {!$include_also_hard_coded_p} { append sql "\t\tand also_hard_coded_p = 'f'\n" } 
-
     # Default: Set all field to form's display mode
     set default_display_mode $form_display_mode
 
@@ -1190,6 +1187,15 @@ ad_proc -public im_dynfield::append_attributes_to_form {
     }
     set extra_where [join $extra_wheres "\n\t\tand "]
 
+
+    # We need to exclude also_hard_coded_p fields for most forms
+    # since a lot of meta-fields were added for the REST interface. 
+    # Otherwise object creation will fail for most objects.
+    set also_hard_coded_p_sql ""
+    if {!$include_also_hard_coded_p} { 
+	set also_hard_coded_p_sql "and (also_hard_coded_p is NULL or also_hard_coded_p = 'f')" 
+    } 
+
     set attributes_sql "
 	select *
 	from (
@@ -1226,10 +1232,14 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 			and a.attribute_id = aa.acs_attribute_id
 			and aa.widget_name = aw.widget_name
 			and $extra_where
+			$also_hard_coded_p_sql
 		) t
 	order by
 		pos_y_coalesce
     "
+
+#   ad_return_complaint 1 "<pre>$sql</pre>"
+
 
     set field_cnt 0
     db_foreach attributes $attributes_sql {
