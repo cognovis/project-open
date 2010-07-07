@@ -402,6 +402,7 @@ ad_proc -public im_dynfield::attribute_store {
 		and aa.object_type = :object_type_org
 		and da.widget_name = dw.widget_name
 		and 't' = acs_permission__permission_p(da.attribute_id, :current_user_id, 'write')
+		and (also_hard_coded_p is NULL or also_hard_coded_p != 't')
 	order by aa.attribute_name
     "
     array set update_lines {}
