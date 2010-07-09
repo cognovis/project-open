@@ -264,7 +264,8 @@ ad_proc im_reporting_cubes_finance {
     # Defaults
     
     set sigma "&Sigma;"
-    
+    set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+
     # The complete set of dimensions - used as the key for
     # the "cell" hash. Subtotals are calculated by dropping on
     # or more of these dimensions
@@ -310,10 +311,10 @@ ad_proc im_reporting_cubes_finance {
   			p.project_status_id as sub_project_status_id,
   			tree_ancestor_key(p.tree_sortkey, 1) as main_project_sortkey,
   			trunc((c.paid_amount * 
-  			  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+  			  im_exchange_rate(c.effective_date::date, c.currency, :default_currency)) :: numeric
   			  , 2) as paid_amount_converted,
   			trunc((c.amount * 
-  			  im_exchange_rate(c.effective_date::date, c.currency, 'EUR')) :: numeric
+  			  im_exchange_rate(c.effective_date::date, c.currency, :default_currency)) :: numeric
   			  , 2) as amount_converted,
   			c.*
   		from
