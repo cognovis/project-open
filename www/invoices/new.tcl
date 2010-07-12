@@ -289,7 +289,6 @@ select
         im_category_from_id(p.subject_area_id) as subject_area, 
         im_category_from_id(p.project_type_id) as project_type, 
         im_category_from_id(p.project_status_id) as project_status,
-        im_proj_url_from_type(p.project_id, 'website') as url,
 	p.start_date,
 	to_char(p.end_date, 'YYYY-MM-DD') as end_date,
 	to_char(p.end_date, 'HH24:MI') as end_date_time
