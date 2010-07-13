@@ -247,15 +247,25 @@ if { ![exists_and_not_null message_type] } {
     }
 
     db_foreach get_messages {
-	select CASE WHEN owner_id = :package_id THEN :public_text ELSE contact__name(owner_id) END as public_display,
-	title,
-	to_char(item_id,'FM9999999999999999999999') as item_id,
-	message_type
-	from contact_messages
-	where owner_id in ( select party_id from parties )
-	or owner_id = :package_id
-	order by CASE WHEN owner_id = :package_id THEN '000000000' ELSE upper(contact__name(owner_id)) END, message_type, upper(title)
+	select 
+		CASE WHEN owner_id = :package_id THEN :public_text ELSE contact__name(owner_id) END as public_display,
+		title,
+		to_char(item_id,'FM9999999999999999999999') as item_id,
+		message_type
+	from
+		contact_messages
+	where
+		owner_id in ( select party_id from parties )
+		or owner_id = :package_id
+	order by 
+		CASE WHEN owner_id = :package_id THEN '000000000' ELSE upper(contact__name(owner_id)) END, 
+		message_type, upper(title)
     } {
+	# Remove special TCL characters
+	regsub -all {\$} $title {&#36;} title
+	regsub -all {\[} $title {&#91;} title
+	regsub -all {\]} $title {&#93;} title
+
         # The oo_mailing message type is used if you have a mailing template as defined in /lib/oo_mailing
 	if {$message_type == "letter" || $message_type == "email" || $message_type == "oo_mailing"} {
 	    lappend ${message_type}_options [list "$public_display [set ${message_type}_text]:$title" "${message_type}.$item_id"]
@@ -263,9 +273,6 @@ if { ![exists_and_not_null message_type] } {
 	    lappend ${message_type}_options [list "$public_display:$title" "$item_id"]
 	}
     }
-
-
-
 
     # Only Email can be used without a template
     set message_options [list [list "-- [_ intranet-contacts.New] Email --" email]]
