@@ -381,13 +381,19 @@ ad_proc -private contact::util::get_employers_not_cached {
 } {
     set contact_list [list]
     db_list_of_lists select_employer_ids {
-	    select CASE WHEN object_id_one = :employee_id
-                    THEN object_id_two
-                    ELSE object_id_one END as other_party_id, im_company__name(other_party_id) as company_name
-	    from acs_rels, acs_rel_types
-	    where acs_rels.rel_type = acs_rel_types.rel_type
-	    and ( object_id_one = :employee_id or object_id_two = :employee_id )
-	    and acs_rels.rel_type = 'contact_rels_employment'
+	select
+		t.*,
+		im_company__name(other_party_id) as company_name
+	from	(
+		select	CASE WHEN object_id_one = :employee_id
+	        	THEN object_id_two
+	        	ELSE object_id_one END as other_party_id
+		from	acs_rels, 
+			acs_rel_types
+		where	acs_rels.rel_type = acs_rel_types.rel_type
+			and ( object_id_one = :employee_id or object_id_two = :employee_id )
+			and acs_rels.rel_type = 'contact_rels_employment'
+		) t
     } 
     return $contact_list
 }
