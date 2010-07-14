@@ -103,6 +103,19 @@ where
 	tam.attribute_id = da.attribute_id;
 
 
+CREATE OR REPLACE VIEW ams_attributes as
+	select	aa.*,
+		da.attribute_id as dynfield_attribute_id,
+		da.acs_attribute_id,
+		da.widget_name as widget,
+		da.already_existed_p,
+		da.deprecated_p
+	from
+		acs_attributes aa
+		LEFT JOIN im_dynfield_attributes da ON (aa.attribute_id = da.acs_attribute_id)
+;
+
+
 
 -- ------------------------------------------------------------------
 -- Widgets
