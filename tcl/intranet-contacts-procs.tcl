@@ -114,7 +114,28 @@ ad_proc -public intranet-contacts::table_and_join_clauses {
 	    # Extra table, join_expression needed
 	    append extra_clauses " left outer join $table_name on (acs_objects.object_id = ${table_name}.${id_column})"
 	}
-     }
+    }
+    
+    # Add object specific criteria
+    switch $object_type {
+	person {
+	    # eliminate deleted users
+	    append join_clauses " and acs_objects.object_id in (
+		SELECT	p.person_id
+		FROM	persons p,
+			acs_rels r,
+			membership_rels mr
+		WHERE	r.rel_id = mr.rel_id AND
+			r.object_id_one = -2 AND
+			r.object_id_two = p.person_id AND
+			mr.member_state = 'approved'
+		)"
+	} 
+	default {
+	    # Nothing...
+	}
+    }
+    
 
     if {$category_id ne ""} {
         switch $object_type {
