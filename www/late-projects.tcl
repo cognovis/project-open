@@ -8,7 +8,7 @@
 
 
 
-
+set current_user_id [im_require_login -no_redirect_p $no_redirect_p]
 set page_title [lang::message::lookup "" intranet-preporting.Late_projects "Late Projects"]
 set context_bar [im_context_bar $page_title]
 set help "
