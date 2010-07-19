@@ -3,7 +3,6 @@
 SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrade-3.4.1.0.4-3.4.1.0.5.sql','');
 
 
-DROP VIEW ams_attributes;
 CREATE OR REPLACE VIEW ams_attributes as
 	select	aa.*,
 		da.attribute_id as dynfield_attribute_id,
