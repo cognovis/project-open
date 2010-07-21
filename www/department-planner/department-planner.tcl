@@ -204,6 +204,7 @@ db_foreach column_list_sql $column_sql {
 # the HTML table.
 # ---------------------------------------------------------------
 
+set error_html ""
 set tasks_sql "
 	select	
 		child.project_id,
@@ -234,6 +235,8 @@ set tasks_sql "
 
 db_foreach tasks $tasks_sql {
 
+    set task_url [export_vars -base "/intranet-timesheet2-tasks/new" {task_id}]
+
     # Calculate task_planned_days, depending on the tasks's UoM
     switch $uom_id {
 	320 {
@@ -245,11 +248,10 @@ db_foreach tasks $tasks_sql {
 	    set task_planned_days $planned_units
 	}
 	default {
-	    ad_return_complaint 1 "
-		<b>[lang::message::lookup "" intranet-portfolio-management.Invalid_UoM "Invalid Unit of Measure"]</b><br>
+	    append error_html "<li><b>[lang::message::lookup "" intranet-portfolio-management.Invalid_UoM "Invalid Unit of Measure"]</b><br>
 		We have found a task with the UoM '[im_category_from_id $uom_id]' which is neither a 'hour' nor a 'day'.
 	    "
-	    ad_script_abort
+	    continue
 	}
     }
 
@@ -259,13 +261,12 @@ db_foreach tasks $tasks_sql {
     # Calculate total calendar task length
     set task_len_calendar_days [expr $task_end_date_julian - $task_start_date_julian]
     if {$task_len_calendar_days <= 0} {
-	ad_return_complaint 1 "
-		Invalid start and end date for task '$project_name' 
-		with ID <a href=[export_vars -base "/intranet-timesheet2-tasks/new" {task_id}]>#$project_id</a>:<br>
+	append error_html "<li><b>Invalid start and end date for task <a href=$task_url>$project_name</a></b>:<br>
+		End date should be later then start date.<br>
 		Start date: $start_date<br>
 		End date: $end_date
 	"
-	ad_script_abort
+	continue
     }
 
     # Calculate start and end within the reporting period
