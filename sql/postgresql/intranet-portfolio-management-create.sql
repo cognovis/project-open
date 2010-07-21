@@ -59,6 +59,74 @@ SELECT im_dynfield_widget__new (
 -- Create the DynField for the project
 SELECT im_dynfield_attribute_new ('im_project', 'project_priority_id', 'Project Priority', 'project_priority', 'integer', 'f');
 
+-- Revoke the permissions for ordinary mortal (employees, customers, freelancers)
+-- for this field, because it doesn't need to be visible.
+
+SELECT im_revoke_permission(
+	(select attribute_id from im_dynfield_attributes where acs_attribute_id in 
+		(select attribute_id from acs_attributes where attribute_name = 'project_priority_id' and object_type = 'im_project')
+	),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+SELECT im_revoke_permission(
+	(select attribute_id from im_dynfield_attributes where acs_attribute_id in 
+		(select attribute_id from acs_attributes where attribute_name = 'project_priority_id' and object_type = 'im_project')
+	),
+	(select group_id from groups where group_name = 'Employees'),
+	'write'
+);
+
+SELECT im_revoke_permission(
+	(select attribute_id from im_dynfield_attributes where acs_attribute_id in 
+		(select attribute_id from acs_attributes where attribute_name = 'project_priority_id' and object_type = 'im_project')
+	),
+	(select group_id from groups where group_name = 'Customers'),
+	'read'
+);
+SELECT im_revoke_permission(
+	(select attribute_id from im_dynfield_attributes where acs_attribute_id in 
+		(select attribute_id from acs_attributes where attribute_name = 'project_priority_id' and object_type = 'im_project')
+	),
+	(select group_id from groups where group_name = 'Customers'),
+	'write'
+);
+
+SELECT im_revoke_permission(
+	(select attribute_id from im_dynfield_attributes where acs_attribute_id in 
+		(select attribute_id from acs_attributes where attribute_name = 'project_priority_id' and object_type = 'im_project')
+	),
+	(select group_id from groups where group_name = 'Freelancers'),
+	'read'
+);
+SELECT im_revoke_permission(
+	(select attribute_id from im_dynfield_attributes where acs_attribute_id in 
+		(select attribute_id from acs_attributes where attribute_name = 'project_priority_id' and object_type = 'im_project')
+	),
+	(select group_id from groups where group_name = 'Freelancers'),
+	'write'
+);
+
+
+SELECT im_grant_permission(
+	(select attribute_id from im_dynfield_attributes where acs_attribute_id in 
+		(select attribute_id from acs_attributes where attribute_name = 'project_priority_id' and object_type = 'im_project')
+	),
+	(select group_id from groups where group_name = 'Senior Managers'),
+	'read'
+);
+SELECT im_grant_permission(
+	(select attribute_id from im_dynfield_attributes where acs_attribute_id in 
+		(select attribute_id from acs_attributes where attribute_name = 'project_priority_id' and object_type = 'im_project')
+	),
+	(select group_id from groups where group_name = 'Senior Managers'),
+	'write'
+);
+
+
+
+
+
 -- Set all main projects to average priority by default
 update im_projects set project_priority_id = 70008
 where parent_id is null;
