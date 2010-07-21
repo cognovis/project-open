@@ -8,6 +8,54 @@
 -- @author frank.bergmann@project-open.com
 
 
+-- Add a "Priority" field to projects
+--
+alter table im_projects
+add project_priority_id integer
+constraint im_projects_project_priority_fk references im_categories;
+
+-- Define the value range for categories
+-- The aux_int1 value will include a numeric value for the priorites
+--
+-- 70000-70999  Portfolio Management (1000)
+-- 70000-70099  Intranet Project Priority (100)
+
+
+SELECT im_category_new (70000, '1 - Highest Priority', 'Intranet Project Priority');
+SELECT im_category_new (70002, '2 - Very High Priority', 'Intranet Project Priority');
+SELECT im_category_new (70004, '3 - High Priority', 'Intranet Project Priority');
+SELECT im_category_new (70006, '4 - Medium High Priority', 'Intranet Project Priority');
+SELECT im_category_new (70008, '5 - Average Priority', 'Intranet Project Priority');
+SELECT im_category_new (70010, '6 - Medium Low Priority', 'Intranet Project Priority');
+SELECT im_category_new (70012, '7 - Low Priority', 'Intranet Project Priority');
+SELECT im_category_new (70014, '8 - Very Low Priority', 'Intranet Project Priority');
+SELECT im_category_new (70016, '9 - Lowest Priority', 'Intranet Project Priority');
+
+-- Calculate 1 - 9 priority numeric value from category id. Ugly, but OK..
+update im_categories
+set aux_int1 = (category_id - 70000) / 2 + 1
+where category_type = 'Intranet Project Priority';
+
+update im_categories
+set sort_order = (category_id - 70000) / 2 + 1
+where category_type = 'Intranet Project Priority';
+
+
+-- Create a widget to show the project priorities
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'project_priority', 'Project Priority', 'Project Priority',
+	10007, 'integer', 'im_category_tree', 'integer',
+	'{custom {category_type "Intranet Project Priority"}}'
+);
+
+-- Create the DynField for the project
+SELECT im_dynfield_attribute_new ('im_project', 'project_priority_id', 'Project Priority', 'project_priority', 'integer', 'f');
+
+-- Set all main projects to average priority by default
+update im_projects set project_priority_id = 70008
+where parent_id is null;
+
 
 -- -------------------------------------------------------------------
 -- Dynamic View
@@ -21,7 +69,12 @@ delete from im_views where view_id = 920;
 --
 insert into im_views (view_id, view_name, visible_for) values (920, 'portfolio_department_planner_list', 'view_projects');
 
+
+insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+extra_select, extra_where, sort_order, visible_for) values (92005,920,NULL,'Priority',
+'"[im_category_select {Intranet Project Priority} project_priority_id.$project_id $project_priority_id]"','','',5,'');
+
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (92010,920,NULL,'Project',
-'"<nobr>$indent_html$gif_html<a href=[export_vars -base $project_base_url]>$project_name</a></nobr>"','','',10,'');
+'"<nobr>$indent_html$gif_html<a href=[export_vars -base $project_base_url {project_id}]>$project_name</a></nobr>"','','',10,'');
 

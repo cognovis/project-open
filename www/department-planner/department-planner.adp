@@ -10,9 +10,12 @@
 </table>
 
 <table>
+<form action="/intranet-portfolio-management/department-planner/action" method=POST>
 @header_html;noquote@
 @first_html;noquote@
 @body_html;noquote@
+@submit_html;noquote@
+</form>
 </table>
 
 
