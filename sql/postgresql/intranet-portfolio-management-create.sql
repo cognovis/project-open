@@ -18,27 +18,34 @@ constraint im_projects_project_priority_fk references im_categories;
 -- The aux_int1 value will include a numeric value for the priorites
 --
 -- 70000-70999  Portfolio Management (1000)
--- 70000-70099  Intranet Project Priority (100)
+-- 70000-70099  Intranet Department Planner Project Priority (100)
+-- 70100-71999  Intranet Department Planner Action (100)
 
-
-SELECT im_category_new (70000, '1 - Highest Priority', 'Intranet Project Priority');
-SELECT im_category_new (70002, '2 - Very High Priority', 'Intranet Project Priority');
-SELECT im_category_new (70004, '3 - High Priority', 'Intranet Project Priority');
-SELECT im_category_new (70006, '4 - Medium High Priority', 'Intranet Project Priority');
-SELECT im_category_new (70008, '5 - Average Priority', 'Intranet Project Priority');
-SELECT im_category_new (70010, '6 - Medium Low Priority', 'Intranet Project Priority');
-SELECT im_category_new (70012, '7 - Low Priority', 'Intranet Project Priority');
-SELECT im_category_new (70014, '8 - Very Low Priority', 'Intranet Project Priority');
-SELECT im_category_new (70016, '9 - Lowest Priority', 'Intranet Project Priority');
+SELECT im_category_new (70000, '1 - Highest Priority', 'Intranet Department Planner Project Priority');
+SELECT im_category_new (70002, '2 - Very High Priority', 'Intranet Department Planner Project Priority');
+SELECT im_category_new (70004, '3 - High Priority', 'Intranet Department Planner Project Priority');
+SELECT im_category_new (70006, '4 - Medium High Priority', 'Intranet Department Planner Project Priority');
+SELECT im_category_new (70008, '5 - Average Priority', 'Intranet Department Planner Project Priority');
+SELECT im_category_new (70010, '6 - Medium Low Priority', 'Intranet Department Planner Project Priority');
+SELECT im_category_new (70012, '7 - Low Priority', 'Intranet Department Planner Project Priority');
+SELECT im_category_new (70014, '8 - Very Low Priority', 'Intranet Department Planner Project Priority');
+SELECT im_category_new (70016, '9 - Lowest Priority', 'Intranet Department Planner Project Priority');
 
 -- Calculate 1 - 9 priority numeric value from category id. Ugly, but OK..
 update im_categories
 set aux_int1 = (category_id - 70000) / 2 + 1
-where category_type = 'Intranet Project Priority';
+where category_type = 'Intranet Department Planner Project Priority';
 
 update im_categories
 set sort_order = (category_id - 70000) / 2 + 1
-where category_type = 'Intranet Project Priority';
+where category_type = 'Intranet Department Planner Project Priority';
+
+
+
+-- 70100-71999  Intranet Department Planner Action (100)
+-- Currently there is only one action: Save (the priorities of the projects)
+SELECT im_category_new (70100, 'Save', 'Intranet Department Planner Action');
+
 
 
 -- Create a widget to show the project priorities
@@ -46,7 +53,7 @@ SELECT im_dynfield_widget__new (
 	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
 	'project_priority', 'Project Priority', 'Project Priority',
 	10007, 'integer', 'im_category_tree', 'integer',
-	'{custom {category_type "Intranet Project Priority"}}'
+	'{custom {category_type "Intranet Department Planner Project Priority"}}'
 );
 
 -- Create the DynField for the project
@@ -72,7 +79,7 @@ insert into im_views (view_id, view_name, visible_for) values (920, 'portfolio_d
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (92005,920,NULL,'Priority',
-'"[im_category_select {Intranet Project Priority} project_priority_id.$project_id $project_priority_id]"','','',5,'');
+'"[im_category_select {Intranet Department Planner Project Priority} project_priority_id.$project_id $project_priority_id]"','','',5,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (92010,920,NULL,'Project',

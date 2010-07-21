@@ -18,7 +18,7 @@ ad_page_contract {
 } {
     project_priority_id:integer,array
     { action_id:integer "" }
-    { return_url "/intranet-portfolio-management/department-planner/department-planner" }
+    { return_url "/intranet-portfolio-management/department-planner/index" }
 }
 
 set user_id [ad_maybe_redirect_for_registration]

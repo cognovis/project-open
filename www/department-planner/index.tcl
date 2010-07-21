@@ -1,4 +1,4 @@
-# /packages/intranet-project-portfolio-mgmt/www/department-planner/department-planner.tcl
+# /packages/intranet-project-portfolio-mgmt/www/department-planner/index.tcl
 #
 # Copyright (c) 2003-2010 ]project-open[
 #
@@ -68,7 +68,7 @@ if {![string equal "t" $read_p]} {
 # ---------------------------------------------------------------
 
 set project_base_url "/intranet/projects/view"
-set this_base_url "/intranet-portfolio-management/department-planner/department-planner"
+set this_base_url "/intranet-portfolio-management/department-planner/index"
 set date_format "'YYYY-MM-DD'"
 set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
