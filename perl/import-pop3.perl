@@ -107,71 +107,48 @@ if (0 == $n) {
 # Get the list of messages
 $msgList = $pop3_conn->list(); 
 
-foreach $msg (keys(%$msgList)) {
-    $ref = $pop3_conn->get($msg);
-    print @$ref;
-    print "\n\n";
-}
-
-$pop3_conn->quit();
-
-exit 0;
-
-
-
-
-
-
-
-
-
-
 # --------------------------------------------------------
-# Check for new mail in the Maildir
-open(MAILS, "find $maildir/new -type f |") || 
-	die "import-pop3: Unable to get mails at $maildir/new.\n";
-while (my $mail_filename=<MAILS>) {
+# Loop for each of the mails
+foreach $msg (keys(%$msgList)) {
+    # Get the mail as a file handle
+    $fh = $pop3_conn->getfh($msg);
 
-	chomp ($mail_filename);
-	print "$mail_filename\n";
+    
+    my $from = "";
+    my $to = "";
+    my $subject = "";
+    my $body = "";
+    
+    while (my $line = <$fh>) {
+	chomp($line);
+	
+	# Skip less interesting mail fields
+	if ($line =~ /^Return-Path:/) { next; }
+	if ($line =~ /^Delivered-To:/) { next; }
+	if ($line =~ /^X-Original-To:/) { next; }
+	if ($line =~ /^Received:/) { next; }
+	if ($line =~ /^Date:/) { next; }
+	if ($line =~ /^Message-ID:/) { next; }
+	if ($line =~ /^User-Agent:/) { next; }
+	if ($line =~ /^MIME-Version:/) { next; }
+	if ($line =~ /^Content-Type:/) { next; }
+	if ($line =~ /^Content-Transfer-Encoding:/) { next; }
+	
+	# Skip the "id" line
+	if ($line =~ /^\tid/) { next; }
+	
+	# Extract from, to and subject
+	if ($line =~ /^From:(.*)/) { $from = $1; next; }
+	if ($line =~ /^To:(.*)/) { $to = $1; next; }
+	if ($line =~ /^Subject:(.*)/) { $subject = $1; next; }
+	
+	# Replace quote by double-quote for SQL security
+	$line =~ s/'/"/g;
 
-	# --------------------------------------------------------
-	# Extract the contents of the email
-	open(LINES, $mail_filename) || die "import-pop3: Unable to open file $mail_filename.\n";
-	my $from = "";
-	my $to = "";
-	my $subject = "";
-	my $body = "";
-	while (my $line=<LINES>) {
-
-		# Skip less interesting mail fields
-		if ($line =~ /^Return-Path:/) { next; }
-		if ($line =~ /^Delivered-To:/) { next; }
-		if ($line =~ /^X-Original-To:/) { next; }
-		if ($line =~ /^Received:/) { next; }
-		if ($line =~ /^Date:/) { next; }
-		if ($line =~ /^Message-ID:/) { next; }
-		if ($line =~ /^User-Agent:/) { next; }
-		if ($line =~ /^MIME-Version:/) { next; }
-		if ($line =~ /^Content-Type:/) { next; }
-		if ($line =~ /^Content-Transfer-Encoding:/) { next; }
-
-		# Skip the "id" line
-		if ($line =~ /^\tid/) { next; }
-
-		# Extract from, to and subject
-		if ($line =~ /^From:(.*)/) { $from = $1; next; }
-		if ($line =~ /^To:(.*)/) { $to = $1; next; }
-		if ($line =~ /^Subject:(.*)/) { $subject = $1; next; }
-
-		# Replace quote by double-quote for SQL security
-		$line =~ s/'/"/g;
-
-		$body .= $line
-	}
-	close(LINES);
-	print "\n$from$to$subject$body\n" if ($debug > 1);
-
+	$body .= $line;
+    }
+    close(LINES);
+    print "\n$from$to$subject$body\n" if ($debug >= 1);
 
 	# --------------------------------------------------------
 	# Calculate ticket database fields
@@ -355,7 +332,11 @@ while (my $mail_filename=<MAILS>) {
 	}
 
 }
-close(MAILS);
+
+
+# --------------------------------------------------------
+# Close the connection to the POP3 server
+$pop3_conn->quit();
 
 
 
