@@ -460,13 +460,13 @@ switch $output_format {
 		<tr>
 		  <td class=form-label>Customer</td>
 		  <td class=form-widget>
-		    [im_company_select company_id $company_id]
+		    [im_company_select -include_empty_name [lang::message::lookup "" intranet-core.All "All"] company_id $company_id]
 		  </td>
 		</tr>
 		<tr>
 		  <td class=form-label>Project</td>
 		  <td class=form-widget>
-		    [im_project_select -include_empty_p 1 -exclude_subprojects_p 0 -include_empty_name "-- Please Select --" project_id $project_id]
+		    [im_project_select -include_empty_p 1 -exclude_subprojects_p 0 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] project_id $project_id]
 		  </td>
 		</tr>
 	"
@@ -476,13 +476,13 @@ switch $output_format {
 		<tr>
 		  <td class=form-label>User's Department</td>
 		  <td class=form-widget>
-		    [im_cost_center_select -include_empty 1 -department_only_p 1 cost_center_id $cost_center_id]
+		    [im_cost_center_select -include_empty 1 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] -department_only_p 1 cost_center_id $cost_center_id]
 		  </td>
 		</tr>
 		<tr>
 		  <td class=form-label>User</td>
 		  <td class=form-widget>
-		    [im_user_select -include_empty_p 1 -group_id [list [im_employee_group_id] [im_freelance_group_id]] -include_empty_name "-- Please select --" user_id $user_id]
+		    [im_user_select -include_empty_p 1 -group_id [list [im_employee_group_id] [im_freelance_group_id]] -include_empty_name [lang::message::lookup "" intranet-core.All "All"] user_id $user_id]
 
 	  
 		</td>
