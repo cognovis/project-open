@@ -51,7 +51,7 @@ set filter_html $__adp_output
 set left_navbar_html "
 	<div class='filter-block'>
         	<div class='filter-title'>
-	           #intranet-core.Filter_Projects#
+	           [lang::message::lookup "" intranet-core.Filter_Bugs "Filter Bugs"]
         	</div>
             	$filter_html
       	</div>
