@@ -564,6 +564,7 @@ ad_proc -public im_department_options { {include_empty 0} } {
 
 ad_proc -public im_cost_center_select { 
     {-include_empty 0} 
+    {-include_empty_name "" }
     {-department_only_p 0} 
     select_name 
     {default ""} 
@@ -571,7 +572,7 @@ ad_proc -public im_cost_center_select {
 } {
     Returns a select box with all Cost Centers in the company.
 } {
-    set options [im_cost_center_options -include_empty $include_empty -department_only_p $department_only_p -cost_type_id $cost_type_id]
+    set options [im_cost_center_options -include_empty $include_empty -include_empty_name $include_empty_name -department_only_p $department_only_p -cost_type_id $cost_type_id]
 
     # Only one option, so 
     # write out string instead of select component
@@ -590,6 +591,7 @@ ad_proc -public im_cost_center_select {
 
 ad_proc -public im_cost_center_options { 
     {-include_empty 0} 
+    {-include_empty_name "" }
     {-department_only_p 0} 
     {-cost_type_id ""} 
 } {
@@ -633,7 +635,7 @@ ad_proc -public im_cost_center_options {
     "
 
     set options [list]
-    if {$include_empty} { lappend options [list "" ""] }
+    if {$include_empty} { lappend options [list $include_empty_name ""] }
 
     db_foreach cost_center_options $options_sql {
         set spaces ""
