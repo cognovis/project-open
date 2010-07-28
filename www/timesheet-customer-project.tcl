@@ -25,6 +25,7 @@ ad_page_contract {
     { user_id:integer 0}
     { cost_center_id:integer 0}
     { invoice_id:integer 0}
+    { invoiced_status "" }
 }
 
 # ------------------------------------------------------------
@@ -174,6 +175,15 @@ if {0 != $task_id && "" != $task_id} {
 if {0 != $invoice_id && "" != $invoice_id} {
     lappend criteria "h.invoice_id = :invoice_id"
 }
+
+if {"" != $invoiced_status} {
+    switch $invoiced_status {
+	"invoiced" { lappend criteria "h.invoice_id is not null" }
+	"not-invoiced" { lappend criteria "h.invoice_id is null" }
+	default { ad_return_complaint 1 "<b>Invalid option for 'invoiced_status': '$invoiced_status'</b>:<br>Only 'invoiced' and 'not-invoiced' are allowed." }
+    }
+}
+
 
 # Select project & subprojects
 set org_project_id $project_id
@@ -384,6 +394,8 @@ set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 1
 set levels {1 "Customer Only" 2 "Customer+Project" 3 "Customer+Project+Sub" 4 "Customer+Project+Sub+User" 5 "All Details"} 
 set truncate_note_options {4000 "Full Length" 80 "Standard (80)" 20 "Short (20)"} 
 
+set invoiced_status_options [list "" "All" "invoiced" "Only invoiced hours" "not-invoiced" "Only not invoiced hours"]
+
 # ------------------------------------------------------------
 # Start formatting the page
 #
@@ -482,9 +494,15 @@ switch $output_format {
 		<tr>
 		  <td class=form-label>User</td>
 		  <td class=form-widget>
-		    [im_user_select -include_empty_p 1 -group_id [list [im_employee_group_id] [im_freelance_group_id]] -include_empty_name [lang::message::lookup "" intranet-core.All "All"] user_id $user_id]
-
-	  
+		    [im_user_select -include_empty_p 1 -group_id [list [im_employee_group_id] [im_freelance_group_id]] -include_empty_name [lang::message::lookup "" intranet-core.All "All"] user_id $user_id] 
+		</td>
+		</tr>
+		<tr>
+		  <td class=form-label>
+			[lang::message::lookup "" intranet-core.Invoiced_Status "Invoiced Status"]
+		  </td>
+		  <td class=form-widget>
+		    [im_select invoiced_status $invoiced_status_options $invoiced_status]
 		</td>
 		</tr>
 	    "
