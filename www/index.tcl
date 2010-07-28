@@ -35,7 +35,7 @@ set project_id [ad_conn package_id]
 # TODO: Bulk actions (set fix for version, reassign, etc.)
 
 
-bug_tracker::bug::get_list -page_size ""
+bug_tracker::bug::get_list
 
 bug_tracker::bug::get_multirow
 
