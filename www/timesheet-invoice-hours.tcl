@@ -89,7 +89,7 @@ set rowclass(0) "roweven"
 set rowclass(1) "rowodd"
 
 # Maxlevel is 4. Normalize in order to show the right drop-down element
-if {$level_of_detail > 4} { set level_of_detail 4 }
+if {$level_of_detail > 5} { set level_of_detail 5 }
 
 
 set company_url "/intranet/companies/view?company_id="
@@ -166,7 +166,8 @@ select
 	c.company_path as company_nr,
 	c.company_name,
 	c.company_id || '-' || main_p.project_id as company_project_id,
-	c.company_id || '-' || main_p.project_id || u.user_id as company_project_user_id
+	c.company_id || '-' || main_p.project_id || u.user_id as company_project_user_id,
+        p.project_name as sub_project_name
 from
 	im_hours h,
 	im_projects p,
@@ -522,11 +523,16 @@ switch $output_template {
 	    set hours_sql "select * from ($sql) s where s.user_id = :user_id"
 	    set sub_total 0
 	    db_foreach hours $hours_sql {
+		set description $note
+		if { "5" == $level_of_detail} {
+		    set description "$sub_project_name<br>$description"
+		}
+
 		ns_write "
 	                <tr id=time>
                            <td id=time>$date</td>
                            <td id=time>$hours</td>
-                           <td id=time>$note</td>
+                           <td id=time>$description</td>
                         </tr>
 		"
 		set sub_total [expr $sub_total + $hours]
