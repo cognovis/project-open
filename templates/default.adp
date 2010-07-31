@@ -26,7 +26,7 @@
 
 <tr>
 <td><%=[lang::message::lookup "" intranet-core.Description "Description"]%>:</td>
-<td><%=[db_string note "note from im_costs where cost_id = :bundle_id" -default ""]%></td>
+<td><%=[db_string note "select note from im_costs where cost_id = :bundle_id" -default ""]%></td>
 </tr>
 
 <tr>
