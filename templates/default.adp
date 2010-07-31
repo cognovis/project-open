@@ -1,3 +1,6 @@
+<%
+    set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+%>
 <html>
 <head>
 <title><%=[lang::message::lookup "" intranet-core.Expense_Bundle "Expense Bundle"]%></title>
@@ -61,8 +64,8 @@ im_costs where cost_id = :bundle_id" -default ""]%></td>
 </tr>
 <tr>
 <td><%=[lang::message::lookup "" intranet-core.Amount_due "Amount due"]%>&nbsp;<%=[lang::message::lookup "" intranet-core.Employee "Employee"]%>:</td>
-<td><%=[db_string total "select
-                trunc(sum(c.amount)::numeric, 2)
+<td><%=[lc_numeric [db_string total "select
+                trunc(sum(im_exchange_rate(c.effective_date::date, c.currency, :default_currency) * c.amount)::numeric, 2)
         from
                 im_expenses e
                 LEFT OUTER JOIN im_categories cat ON (e.expense_type_id = cat.category_id),
@@ -71,7 +74,7 @@ im_costs where cost_id = :bundle_id" -default ""]%></td>
         where
                 e.expense_id = c.cost_id and
                 e.bundle_id = :bundle_id
-"]%></td>
+"] {} [lang::user::locale]] %>&nbsp;<%=$default_currency%></td>
 </tr>
 <tr>
 <td><%=[lang::message::lookup "" intranet-core.Print_date "Print date"]%></td>
@@ -94,7 +97,7 @@ e.bundle_id = :bundle_id and e.billable_p = 't'"]%></td>
         select
                 c.*,
                 e.*,
-                trunc(c.amount::numeric, 2) as amount_formatted,
+                trunc((im_exchange_rate(c.effective_date::date, c.currency, :default_currency) * c.amount)::numeric, 2) as amount_formatted,
                 to_char(effective_date, :date_format) as effective_date,
                 im_category_from_id(expense_type_id) as expense_type,
                 p.project_name,
@@ -115,7 +118,7 @@ e.bundle_id = :bundle_id and e.billable_p = 't'"]%></td>
             append table "<tr class=roweven>\n"
             append table "<td>[lc_time_fmt $effective_date %x]</td>\n"
             append table "<td>$expense_type</td>\n"
-            append table "<td>$amount_formatted</td>\n"
+            append table "<td>[lc_numeric $amount_formatted {} [lang::user::locale] ]&nbsp;$default_currency</td>\n"
             append table "<td>$vat_code</td>\n"
             append table "<td>$note</td>\n"
             append table "</tr>\n"
