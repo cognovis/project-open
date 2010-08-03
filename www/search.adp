@@ -46,7 +46,7 @@
 
 <table width=100% border=0 cellpadding=0 cellspacing=0>
 <tr>
-  <td bgcolor=#3366cc height=1 >
+  <td bgcolor=#fff height=1 >
   </td>
 </tr>
 </table>
@@ -111,7 +111,7 @@
 
 <table width=100% border=0 cellpadding=0 cellspacing=0>
 <tr>
-  <td bgcolor=#3366cc>
+  <td bgcolor=#ffffff>
   </td>
 </tr>
 </table>
@@ -141,7 +141,7 @@
 
 <table width=100% border=0 cellpadding=0 cellspacing=0>
 <tr>
-  <td bgcolor=#3366cc>
+  <td bgcolor=#ffffff>
   </td>
 </tr>
 </table>
