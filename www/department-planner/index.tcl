@@ -334,7 +334,8 @@ set cost_center_sql "
 		(select sum(coalesce(availability,0))
 		from	cc_users u
 			LEFT OUTER JOIN im_employees e ON (u.user_id = e.employee_id)
-		where	e.department_id = cc.cost_center_id
+		where	e.department_id = cc.cost_center_id and
+			u.member_state = 'approved'
 		) as employee_available_percent,
 		(
 		select	count(*)
