@@ -4,19 +4,13 @@
 <property name="main_navbar_label">projects</property>
 <property name="left_navbar">@left_navbar_html;noquote@</property>
 
+
 <table width=100%><tr>
 <td width=50%></td>
 <td>@help;noquote@</td>
 </table>
 
-<table>
-<form action="/intranet-portfolio-management/department-planner/action" method=POST>
-@header_html;noquote@
-@first_html;noquote@
-@body_html;noquote@
-@submit_html;noquote@
-</form>
-</table>
+<listtemplate name="department_planner"></listtemplate>
 
 
 <if "" ne @error_html@>
