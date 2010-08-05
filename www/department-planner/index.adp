@@ -7,7 +7,16 @@
 
 <table width=100%><tr>
 <td width=50%></td>
-<td>@help;noquote@</td>
+<td>
+	<b>Department Planner</b>:<br>
+	This planner identifies bottlenecks in the execution of projects.<br>
+	It assumes that all project tasks are assigned to a specific department.<br>
+	The planner then lists the department's capacity and subtracts the required
+	capacity for every project, according to the priority of the project.<br>
+	Negative remaining capacity is shown with red background, so the projects
+	delivers clear visual clues which projects can be terminated in time, which
+	projects don't, and which departments represents the limiting bottlenecks.
+</td>
 </table>
 
 <listtemplate name="department_planner"></listtemplate>
