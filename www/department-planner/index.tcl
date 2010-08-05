@@ -77,19 +77,6 @@ set bgcolor(1) " class=rowodd "
 # Start and End Date
 # ---------------------------------------------------------------
 
-# Check that Start & End-Date have correct format
-if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $start_date]} {
-    ad_return_complaint 1 "Start Date doesn't have the right format.<br>
-    Current value: '$start_date'<br>
-    Expected format: 'YYYY-MM-DD'"
-}
-
-if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $end_date]} {
-    ad_return_complaint 1 "End Date doesn't have the right format.<br>
-    Current value: '$end_date'<br>
-    Expected format: 'YYYY-MM-DD'"
-}
-
 db_1row todays_date "
 select
         to_char(sysdate::date, 'YYYY') as todays_year,
@@ -101,6 +88,9 @@ from dual
 if {"" == $start_date} { set start_date "$todays_year-01-01" }
 if {"" == $end_date} { set end_date "[expr $todays_year+1]-01-01" }
 
+# Check that Start & End-Date have correct format
+im_date_ansi_to_julian $start_date
+im_date_ansi_to_julian $end_date
 
 # ---------------------------------------------------------------
 # Format the Filter
