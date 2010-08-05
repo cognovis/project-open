@@ -88,14 +88,8 @@ ad_proc -public im_department_planner_get_list_multirow {
     set col_vars [list]
     set view_order_by_clause ""
     
-    set column_sql "
-	select	vc.*
-	from	im_view_columns vc
-	where	view_id = :view_id
-	order by  sort_order
-    "
     set col_ctr 0
-    db_foreach column_list_sql $column_sql {
+    db_foreach dynview_columns {} {
 	if {"" == $visible_for || [eval $visible_for]} {
 	    lappend column_headers "$column_name"
 	    lappend column_vars "$column_render_tcl"
@@ -118,37 +112,7 @@ ad_proc -public im_department_planner_get_list_multirow {
     # the HTML table.
     
     set error_html ""
-    set tasks_sql "
-	select	
-		child.project_id,
-		child.project_name,
-		child.project_nr,
-		child.start_date,
-		child.end_date,
-		coalesce(child.percent_completed, 0.0::float) as percent_completed,
-		task.task_id,
-		task.uom_id,
-		task.cost_center_id,
-		coalesce(task.planned_units, 0.0::float) as planned_units,
-		to_char(coalesce(child.start_date, main.start_date, now()), 'J') as task_start_date_julian,
-		to_char(coalesce(child.end_date,main.end_date, now()), 'J') as task_end_date_julian,
-		main.project_id as main_project_id,
-		main.project_name as main_project_name,
-		tree_level(child.tree_sortkey) - tree_level(main.tree_sortkey) as indent_level
-	from
-		im_projects main,
-		im_projects child,
-		im_timesheet_tasks task
-	where	
-		child.project_id = task.task_id and
-		main.parent_id is null and
-		child.tree_sortkey between main.tree_sortkey and tree_right(main.tree_sortkey)
-		-- and main.project_id = 9718
-	order by
-		child.tree_sortkey
-     "
-
-    db_foreach tasks $tasks_sql {
+    db_foreach tasks {} {
 	
 	ns_log Notice "department-planner: main=$main_project_name, child=$project_name"
 	set task_url [export_vars -base "/intranet-timesheet2-tasks/new" {task_id}]
@@ -230,31 +194,8 @@ ad_proc -public im_department_planner_get_list_multirow {
     # employees. Store the list of department_ids in a list and the 
     # rest into hash arrays with the department_id as the key.
 
-    set cost_center_sql "
-	select	cc.*,
-		(select sum(coalesce(availability,0))
-		from	cc_users u
-			LEFT OUTER JOIN im_employees e ON (u.user_id = e.employee_id)
-		where	e.department_id = cc.cost_center_id and
-			u.member_state = 'approved'
-		) as employee_available_percent,
-		(
-		select	count(*)
-		from	im_projects main,
-			im_projects child,
-			im_timesheet_tasks task
-		where	child.project_id = task.task_id and
-			main.parent_id is null and
-			child.tree_sortkey between main.tree_sortkey and tree_right(main.tree_sortkey) and
-			cc.cost_center_id = task.cost_center_id
-		) as task_count
-	from	im_cost_centers cc
-	order by
-		lower(cost_center_code)
-     "
-
     set cost_center_list {}
-    db_foreach cost_centers $cost_center_sql {
+    db_foreach cost_centers {} {
 
 	# Skip if there are no resources to assign...
 	if { ("" == $employee_available_percent || 0 == $employee_available_percent) && $task_count == 0 } { 
@@ -302,32 +243,17 @@ ad_proc -public im_department_planner_get_list_multirow {
     append header_html "</tr>\n"
     append first_html "</tr>\n"
 
-
     # ---------------------------------------------------------------
     # Left Dimension and List
     # Pull out the list of main projects and appy DynViews
     
-    set project_sql "
-	select	main.*,
-		main.project_id as main_project_id,
-		prio.aux_int1 as priority
-	from	im_projects main
-		LEFT OUTER JOIN im_categories prio ON main.project_priority_id = prio.category_id
-	where	parent_id is null and
-		main.project_type_id not in ([im_project_type_task], [im_project_type_ticket]) and
-		main.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
-	order by
-		prio.aux_int1,
-		lower(main.project_name)
-    "
-
     set extension_vars $col_vars
     foreach ccid $cost_center_ids {
 	lappend extension_vars "cc_$ccid"
     }
 
     set body_html ""
-    db_multirow -extend $extension_vars department_planner left_dimension $project_sql {
+    db_multirow -extend $extension_vars department_planner left_dimension_projects {} {
 	
 	set indent_html ""
 	set gif_html ""
