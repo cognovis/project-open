@@ -132,6 +132,20 @@ update im_projects set project_priority_id = 70008
 where parent_id is null;
 
 
+
+
+
+-- -------------------------------------------------------------------
+-- DynField "available_days_per_year" for Cost Center
+-- -------------------------------------------------------------------
+
+alter table im_cost_centers add column available_days_per_year numeric;
+
+SELECT im_dynfield_attribute_new ('im_cost_center', 'available_days_per_year', 'Available Days Per Year', 'numeric', 'integer', 'f');
+
+
+
+
 -- -------------------------------------------------------------------
 -- Dynamic View
 -- -------------------------------------------------------------------
