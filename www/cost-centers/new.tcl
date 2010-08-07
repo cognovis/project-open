@@ -80,6 +80,20 @@ ad_form \
 	{note:text(hidden),optional}
     }
 
+# Fix for problem changing to "edit" form_mode
+set form_action [template::form::get_action "cost_center"]
+if {"" != $form_action} { set form_mode "edit" }
+
+# Add DynFields to the form
+set my_cost_center_id 0
+if {[info exists cost_center_id]} { set my_cost_center_id $cost_center_id }
+im_dynfield::append_attributes_to_form \
+    -object_type "im_cost_center" \
+    -form_id cost_center \
+    -object_id $my_cost_center_id \
+    -form_display_mode $form_mode
+
+
 
 ad_form -extend -name cost_center -on_request {
     # Populate elements from local variables
@@ -94,6 +108,14 @@ ad_form -extend -name cost_center -on_request {
 
     set cost_center_id [db_string cost_center_insert {}]
     db_dml cost_center_context_update {}
+
+    im_dynfield::attribute_store \
+	-object_type "im_cost_center" \
+	-object_id $cost_center_id \
+	-form_id cost_center
+    
+    # Write Audit Trail
+    im_audit -object_id $cost_center_id -action create
 
 } -edit_data {
 
@@ -113,6 +135,14 @@ ad_form -extend -name cost_center -on_request {
     "
 
     db_dml cost_center_context_update {}
+
+    im_dynfield::attribute_store \
+	-object_type "im_cost_center" \
+	-object_id $cost_center_id \
+	-form_id cost_center
+    
+    # Write Audit Trail
+    im_audit -object_id $cost_center_id -action update
 
 } -on_submit {
 
