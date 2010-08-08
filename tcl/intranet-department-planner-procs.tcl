@@ -277,14 +277,6 @@ ad_proc -public im_department_planner_get_list_multirow {
 	    set planned_days 0.0
 	    if {[info exists planned_days_hash($dept_id)]} { set planned_days $planned_days_hash($dept_id) }
 	    set dept_task_url [export_vars -base "/intranet-timesheet2-tasks/index" {{project_id $main_project_id} {cost_center_id $dept_id}}]
-	    
-	    # subtract the planned days from the available days
-	    set available_days 0.0
-	    if {[info exists cost_center_available_percent_hash($dept_id)]} { set available_days $cost_center_available_percent_hash($dept_id) }
-	    set available_days [expr $available_days - $planned_days]
-	    set cost_center_available_percent_hash($dept_id) $available_days
-	    set background "bgcolor=#80FF80"
-	    if {$available_days < 0.0} { set background "bgcolor=#FF8080" }
 	    set "cc_$dept_id" [expr round(10.0 * $planned_days) / 10.0]
 	}
     }
