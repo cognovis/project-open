@@ -136,12 +136,12 @@ where parent_id is null;
 
 
 -- -------------------------------------------------------------------
--- DynField "available_days_per_year" for Cost Center
+-- DynField "department_planner_days_per_year" for Cost Center
 -- -------------------------------------------------------------------
 
-alter table im_cost_centers add column available_days_per_year numeric;
+alter table im_cost_centers add column department_planner_days_per_year numeric;
 
-SELECT im_dynfield_attribute_new ('im_cost_center', 'available_days_per_year', 'Available Days Per Year', 'numeric', 'integer', 'f');
+SELECT im_dynfield_attribute_new ('im_cost_center', 'department_planner_days_per_year', 'Department Planner Days Per Year', 'numeric', 'integer', 'f');
 
 
 

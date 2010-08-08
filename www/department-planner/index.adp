@@ -4,7 +4,6 @@
 <property name="main_navbar_label">projects</property>
 <property name="left_navbar">@left_navbar_html;noquote@</property>
 
-
 <table width=100%><tr>
 <td width=50%></td>
 <td>
@@ -19,7 +18,14 @@
 </td>
 </table>
 
-<listtemplate name="department_planner"></listtemplate>
+
+<table>
+@header_html;noquote@
+@first_line_html;noquote@
+@body_html;noquote@
+</table>
+
+<!-- listtemplate name="department_planner" style="../../../intranet-portfolio-management/resources/department-planner-list"></listtemplate -->
 
 
 <if "" ne @error_html@>

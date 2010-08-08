@@ -141,3 +141,54 @@ set error_html [im_department_planner_get_list_multirow \
 		 -view_name $view_name \
 ]
 
+
+# ---------------------------------------------------------------
+# Build the header from multirows
+# ---------------------------------------------------------------
+
+set header_html ""
+template::multirow foreach dynview_columns {
+    append header_html "<td class=rowtitle>$column_title</td>"
+}
+template::multirow foreach cost_centers {
+    append header_html "<td class=rowtitle>$cost_center_name</td>"
+}
+set header_html "<tr class=rowtitle>$header_html</tr>\n"
+
+# ---------------------------------------------------------------
+# Build the first line from multirows
+# ---------------------------------------------------------------
+
+set first_line_html ""
+template::multirow foreach dynview_columns {
+    append first_line_html "<td class=rowtitle>&nbsp;</td>\n"
+}
+template::multirow foreach cost_centers {
+    append first_line_html "<td class=rowtitle>$department_planner_days_per_year</td>\n"
+}
+set first_line_html "<tr class=rowtitle>$first_line_html</tr>\n"
+
+
+# ---------------------------------------------------------------
+# Build the table body from multirows
+# ---------------------------------------------------------------
+
+set body_html ""
+template::multirow foreach department_planner {
+
+    append body_html "<tr>\n"
+    template::multirow foreach dynview_columns {
+	set dynview_var "col_$column_ctr"
+	set dynview_val [expr $$dynview_var]
+	append body_html "<td>$dynview_val</td>"
+    }
+    template::multirow foreach cost_centers {
+	set cc_var "cc_$cost_center_id"
+	set cc_val [expr $$cc_var]
+	set bgcolor_html "bgcolor=\#80FF80"
+	if {$cc_val < 0.0} { set bgcolor_html "bgcolor=\#FF8080" }
+	append body_html "<td $bgcolor_html>$cc_val</td>"
+    }
+    append body_html "</tr>\n"
+
+}

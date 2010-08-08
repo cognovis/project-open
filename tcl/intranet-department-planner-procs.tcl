@@ -36,9 +36,15 @@ ad_proc -public im_department_planner_get_list_multirow {
     { -end_date "" }
     { -view_name "" }
 } {
-    Returns a multirow with the finished results
+    Returns:
+    - A multirow with the available days per cost center
+    - A multirow with the required days per project and CC
+    - A multirow representing the calculated report (i.e. 
+      subtracting the project's required days from the CC
+      available days)
+    - A ListBuilder list configured to show the calculated
+      report multirow.
 } {
-
     # ---------------------------------------------------------------
     # Constants
     
@@ -73,8 +79,6 @@ ad_proc -public im_department_planner_get_list_multirow {
 	ad_return_complaint 1 "<b>Unknown View Name</b>:<br>The view '$view_name' is not defined."
 	ad_script_abort
     }
-    
-
 
     # ---------------------------------------------------------------
     # Prepare DynView Dynamic Columns
@@ -189,37 +193,49 @@ ad_proc -public im_department_planner_get_list_multirow {
 
 
     # ---------------------------------------------------------------
-    # Top Dimension
+    # Top Dimension Cost Centers
     # Get the list of departments, together with the number of available 
     # employees. Store the list of department_ids in a list and the 
     # rest into hash arrays with the department_id as the key.
 
+    template::multirow create cost_centers cost_center_id cost_center_name cost_center_label cost_center_code department_planner_days_per_year
     set cost_center_list {}
     db_foreach cost_centers {} {
 
-	# Skip if there are no resources to assign...
-	if { ("" == $employee_available_percent || 0 == $employee_available_percent) && $task_count == 0 } { 
+	set available_days ""
+	if {[info exists department_planner_days_per_year] && "" != $department_planner_days_per_year} {
+	    set available_days $department_planner_days_per_year
+	}
+
+	# If there are no department_planner_days the check if employee_available_percent is set:
+	if {"" == $available_days && "" != $employee_available_percent && 0 != $employee_available_percent} {
+	    set available_days [expr round(10 * $employee_available_percent / 100.0 * $work_days_per_year * $report_duration_days / 365.0) / 10.0]
+	}
+
+	# Skip if there are no resources assigned nor capacity specified
+	if { ("" == $available_days || 0 == $available_days) && $task_count == 0 } { 
 	    continue 
 	}
-	
-	# Fix the employee availability.
-	if {"" == $employee_available_percent} { set employee_available_percent 0 }
 	
 	lappend cost_center_ids $cost_center_id
 	set cost_center_name_hash($cost_center_id) $cost_center_name
 	set cost_center_code_hash($cost_center_id) $cost_center_code
-	set cost_center_available_percent_hash($cost_center_id) [expr round(10 * $employee_available_percent / 100.0 * $work_days_per_year * $report_duration_days / 365.0) / 10.0]
+	set cost_center_available_percent_hash($cost_center_id) $available_days
+
+	# Append to Cost Centers multirow
+	template::multirow append cost_centers $cost_center_id $cost_center_name $cost_center_label $cost_center_code $available_days
     }
     
    
     # ---------------------------------------------------------------
-    # Header
+    # Top Dimension DynView Columns
     # Show the header of DynView and add the list of cost_centers
     # with their available days per year
     
     set header_html "<tr class=rowtitle>\n"
     set first_html "<tr class=rowtitle>\n"
     
+    template::multirow create dynview_columns column_id column_ctr column_title
     set col_ctr 0
     foreach col $column_headers {
 	regsub -all " " $col "_" col_txt
@@ -233,6 +249,9 @@ ad_proc -public im_department_planner_get_list_multirow {
 	    append first_html "<td class=rowtitle>&nbsp;</td>\n"
 	}
 	
+	# Append to DynView Columns multirow
+	template::multirow append dynview_columns $column_id $col_ctr $col_txt
+
 	incr col_ctr
     }
    
