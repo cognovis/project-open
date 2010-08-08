@@ -232,22 +232,11 @@ ad_proc -public im_department_planner_get_list_multirow {
     # Show the header of DynView and add the list of cost_centers
     # with their available days per year
     
-    set header_html "<tr class=rowtitle>\n"
-    set first_html "<tr class=rowtitle>\n"
-    
     template::multirow create dynview_columns column_id column_ctr column_title
     set col_ctr 0
     foreach col $column_headers {
 	regsub -all " " $col "_" col_txt
 	set col_txt [lang::message::lookup "" intranet-portfolio-management.$col_txt $col]
-	append header_html "<td class=rowtitle>$col_txt</td>\n"
-	
-	# Add empty spaces for the first row that contains the available resources per cost center
-	if {0 == $col_ctr} { 
-	    append first_html "<td class=rowtitle align=right>[lang::message::lookup "" intranet-portfolio-management.Available_Days_in_Interval "Available Days in Interval"]</td>\n"
-	} else {
-	    append first_html "<td class=rowtitle>&nbsp;</td>\n"
-	}
 	
 	# Append to DynView Columns multirow
 	template::multirow append dynview_columns $column_id $col_ctr $col_txt
@@ -255,13 +244,6 @@ ad_proc -public im_department_planner_get_list_multirow {
 	incr col_ctr
     }
    
-    foreach cc_id $cost_center_ids {
-	append header_html "<td class=rowtitle colspan=2>$cost_center_name_hash($cc_id)</td>\n"
-	append first_html "<td class=rowtitle>&nbsp;</td><td class=rowtitle align=right>$cost_center_available_percent_hash($cc_id)</td>\n"
-    }
-    append header_html "</tr>\n"
-    append first_html "</tr>\n"
-
     # ---------------------------------------------------------------
     # Left Dimension and List
     # Pull out the list of main projects and appy DynViews
@@ -271,7 +253,6 @@ ad_proc -public im_department_planner_get_list_multirow {
 	lappend extension_vars "cc_$ccid"
     }
 
-    set body_html ""
     db_multirow -extend $extension_vars department_planner left_dimension_projects {} {
 	
 	set indent_html ""
@@ -296,7 +277,6 @@ ad_proc -public im_department_planner_get_list_multirow {
 	    set planned_days 0.0
 	    if {[info exists planned_days_hash($dept_id)]} { set planned_days $planned_days_hash($dept_id) }
 	    set dept_task_url [export_vars -base "/intranet-timesheet2-tasks/index" {{project_id $main_project_id} {cost_center_id $dept_id}}]
-	    append row_html "<td align=right><nobr><a href=$dept_task_url>[expr round(10 * $planned_days) / 10.0]</a></nobr></td>\n"
 	    
 	    # subtract the planned days from the available days
 	    set available_days 0.0
@@ -305,50 +285,10 @@ ad_proc -public im_department_planner_get_list_multirow {
 	    set cost_center_available_percent_hash($dept_id) $available_days
 	    set background "bgcolor=#80FF80"
 	    if {$available_days < 0.0} { set background "bgcolor=#FF8080" }
-	    set "cc_$dept_id" [expr round(10.0 * $available_days) / 10.0]
+	    set "cc_$dept_id" [expr round(10.0 * $planned_days) / 10.0]
 	}
     }
     
-
-
-    # ---------------------------------------------------------------
-    # Create a list for the multirow
-    
-    # Add columns for each DynView column
-    set elements [list]
-    set col_ctr 0
-    foreach col_var $col_vars {
-	set column_header [lindex $column_headers $col_ctr]
-	lappend elements col_$col_ctr "
-	    label $column_header
-	    display_template @department_planner.col_${col_ctr};noquote@
-	"
-	incr col_ctr
-    }
-    
-    # Add columns for each cost center
-    foreach ccid $cost_center_ids {
-	set column_header $cost_center_name_hash($ccid)
-	lappend elements cc_$ccid [list \
-				       label $column_header \
-				       display_template "
-						<if @department_planner.cc_${ccid}@ ge 0.0>@department_planner.cc_${ccid};noquote@</if>
-						<else><font color=red>@department_planner.cc_${ccid};noquote@</font></else>
-					" \
-				      ]
-    }
-
-    template::list::create \
-	-key project_id \
-        -name department_planner \
-        -multirow department_planner \
-        -class "list-tiny" \
-        -sub_class "narrow" \
-        -elements $elements \
-	-bulk_actions {"Save changed priorities" save "Save changes in the project priorities"} \
-	-bulk_action_method POST \
-
-
     return $error_html
 }
 

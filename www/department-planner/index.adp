@@ -18,21 +18,4 @@
 </td>
 </table>
 
-
-<table>
-@header_html;noquote@
-@first_line_html;noquote@
-@body_html;noquote@
-</table>
-
-<!-- listtemplate name="department_planner" style="../../../intranet-portfolio-management/resources/department-planner-list"></listtemplate -->
-
-
-<if "" ne @error_html@>
-<br>
-<h1>Errors</h1>
-<ul>
-@error_html;noquote@
-</ul>
-</if>
-
+<include src="../../lib/department-planner" start_date="@report_start_date@" end_date="@report_end_date@" view_name="@view_name;noquote@">
