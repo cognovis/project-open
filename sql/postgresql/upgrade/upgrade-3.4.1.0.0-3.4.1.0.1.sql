@@ -3,7 +3,6 @@
 SELECT acs_log__debug('/packages/intranet-dynfield/sql/postgresql/upgrade/upgrade-3.4.1.0.0-3.4.1.0.1.sql','');
 
 
-
 -- Shortcut function
 CREATE OR REPLACE FUNCTION im_dynfield_attribute_new (
 	varchar, varchar, varchar, varchar, varchar, char(1), integer, char(1), varchar
