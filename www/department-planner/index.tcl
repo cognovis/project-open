@@ -22,6 +22,7 @@ ad_page_contract {
     { start_date "" }
     { end_date "" }
     { view_name "" }
+    { project_id "" }
 }
 
 
@@ -65,6 +66,39 @@ set bgcolor(1) " class=rowodd "
 set report_start_date $start_date
 set report_end_date $end_date
 
+
+# ---------------------------------------------------------------
+# Project Menu
+# ---------------------------------------------------------------
+
+set sub_navbar ""
+set main_navbar_label "projects"
+
+set project_menu ""
+if {[llength $project_id] == 1} {
+
+    # Exactly one project - quite a frequent case.
+    # Show a ProjectMenu so that it looks like we've gone to a different tab.
+    set bind_vars [ns_set create]
+    ns_set put $bind_vars project_id $project_id
+    set project_menu_id [db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]
+    set sub_navbar [im_sub_navbar \
+       -components \
+       -base_url "/intranet/projects/view?project_id=$project_id" \
+       $project_menu_id \
+       $bind_vars "" "pagedesriptionbar" "project_resources"] 
+    set main_navbar_label "projects"
+
+} else {
+
+    # Show the same header as the ProjectListPage
+    set letter ""
+    set next_page_url ""
+    set previous_page_url ""
+    set menu_select_label "department_planner"
+    set sub_navbar [im_project_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list start_idx order_by how_many view_name letter project_status_id] $menu_select_label]
+
+}
 
 # ---------------------------------------------------------------
 # Format the Filter
