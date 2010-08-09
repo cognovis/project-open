@@ -183,7 +183,7 @@ SELECT im_menu__new (
 	'department_planner',			-- label
 	'Department Planner',			-- name
 	'/intranet-portfolio-management/department-planner/index?view_name=portfolio_department_planner_list',	-- url
-	10,					-- sort_order
+	-40,					-- sort_order
 	(select menu_id from im_menus where label = 'projects'),
 	null					-- p_visible_tcl
 );
