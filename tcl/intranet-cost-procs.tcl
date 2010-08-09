@@ -520,6 +520,7 @@ ad_proc im_currency_select {
     {-enabled_only_p 1 }
     {-currency_name "iso" }
     {-translate_p 0}
+    {-locale ""}
     {-include_empty_p 1}
     {-include_empty_name ""}
     select_name 
@@ -538,7 +539,7 @@ ad_proc im_currency_select {
 	     where $enabled_sql
 	     order by lower(currency_name)"
 
-    return [im_selection_to_select_box -translate_p 0 -include_empty_p $include_empty_p -include_empty_name $include_empty_name $bind_vars $statement_name $sql $select_name $default]
+    return [im_selection_to_select_box -translate_p 0 -locale $locale -include_empty_p $include_empty_p -include_empty_name $include_empty_name $bind_vars $statement_name $sql $select_name $default]
 }
 
 ad_proc im_supported_currencies { } {
@@ -696,7 +697,10 @@ ad_proc -public template::widget::im_currencies { element_reference tag_attribut
 
 
 
-ad_proc -public template::widget::im_cost_center_tree { element_reference tag_attributes } {
+ad_proc -public template::widget::im_cost_center_tree { 
+    element_reference 
+    tag_attributes 
+} {
     ad_form tree widget for cost centers and departments.
     <tt>Usage: {custom {department_only_p 1} {start_cc_id 1234} {include_empty_p 0}}</tt>
 
@@ -2080,7 +2084,12 @@ ad_proc -public im_cost_type_select {
 
 
 
-ad_proc -public im_cost_status_select { {-translate_p 1}  select_name { default "" } } {
+ad_proc -public im_cost_status_select { 
+    {-translate_p 1} 
+    {-locale ""}
+    select_name 
+    { default "" } 
+} {
     Returns an html select box named $select_name and defaulted to
     $default with a list of all the cost status_types in the system
 } {
@@ -2095,7 +2104,7 @@ ad_proc -public im_cost_status_select { {-translate_p 1}  select_name { default 
     foreach option $options {
 
 	if { $translate_p } {
-	    set text [_ intranet-core.[lang::util::suggest_key [lindex $option 0]]]
+	    set text [lang::message::lookup $locale intranet-core.[lang::util::suggest_key [lindex $option 0]] [lindex $option 0]]
 	} else {
 	    set text [lindex $option 0]
 	}
@@ -2121,7 +2130,10 @@ ad_proc im_cost_payment_method_select { select_name { default "" } } {
     return [im_category_select "Intranet Cost Payment Method" $select_name $default]
 }
 
-ad_proc im_cost_template_select { select_name { default "" } } {
+ad_proc im_cost_template_select { 
+    select_name 
+    { default "" } 
+} {
     Returns an html select box named $select_name and defaulted to $default 
     with a list of all the partner statuses in the system
 } {
@@ -2130,7 +2142,12 @@ ad_proc im_cost_template_select { select_name { default "" } } {
 
 
 
-ad_proc im_costs_select { select_name { default "" } { status "" } { exclude_status "" } } {
+ad_proc im_costs_select { 
+    select_name 
+    { default "" } 
+    { status "" } 
+    { exclude_status "" } 
+} {
     Returns an html select box named $select_name and defaulted to
     $default with a list of all the costs in the system. If status is
     specified, we limit the select box to costs that match that
@@ -2141,14 +2158,14 @@ ad_proc im_costs_select { select_name { default "" } { status "" } { exclude_sta
     set bind_vars [ns_set create]
 
     set sql "
-select
-	i.cost_id,
-	i.cost_name
-from
-	im_costs i
-where
-	1=1
-"
+	select
+		i.cost_id,
+		i.cost_name
+	from
+		im_costs i
+	where
+		1=1
+    "
 
     if { ![empty_string_p $status] } {
 	ns_set put $bind_vars status $status
