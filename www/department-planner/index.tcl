@@ -63,6 +63,23 @@ set this_base_url "/intranet-portfolio-management/department-planner/index"
 set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
 
+
+
+# ---------------------------------------------------------------
+# Start and End Date
+# ---------------------------------------------------------------
+
+db_1row todays_date "
+        select
+                to_char(sysdate::date, 'YYYY') as todays_year,
+                to_char(sysdate::date, 'MM') as todays_month,
+                to_char(sysdate::date, 'DD') as todays_day
+        from dual
+"
+
+if {![info exists start_date] || "" == $start_date} { set start_date "$todays_year-01-01" }
+if {![info exists end_date] || "" == $end_date} { set end_date "[expr $todays_year+1]-01-01" }
+
 set report_start_date $start_date
 set report_end_date $end_date
 
