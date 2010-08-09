@@ -40,15 +40,24 @@ ad_proc -private im_workflow_url {} {
 # Aux
 # ---------------------------------------------------------------------
 
-ad_proc -public im_workflow_replace_translations_in_string { str } {
-    return [util_memoize [list im_workflow_replace_translations_in_string_helper $str]]
+ad_proc -public im_workflow_replace_translations_in_string { 
+    {-translate_p 1}
+    {-locale ""}
+    str 
+} {
+    if {"" == $locale} { set locale [lang::user::locale -user_id [ad_get_user_id]] }
+    return [util_memoize [list im_workflow_replace_translations_in_string_helper -translate_p $translate_p -locale $locale $str]]
 }
 
-ad_proc -public im_workflow_replace_translations_in_string_helper { str } {
+ad_proc -public im_workflow_replace_translations_in_string_helper { 
+    {-translate_p 1}
+    {-locale ""}
+    str 
+} {
     # Replace #...# expressions in assignees_pretty with translated version
     set cnt 0
     while {$cnt < 100 && [regexp {^(.*?)#([a-zA-Z0-9_\.\-]*?)#(.*)$} $str match pre trans post]} {
-	set str "$pre[lang::message::lookup "" $trans "'$trans'"]$post"
+	set str "$pre[lang::message::lookup $locale $trans "'$trans'"]$post"
 	incr cnt
     }
     return $str
@@ -93,6 +102,8 @@ ad_proc -public im_workflow_start_wf {
 ad_proc -public im_workflow_list_options {
     {-include_empty 0}
     {-min_case_count 0}
+    {-translate_p 0}
+    {-locale ""}
 } {
     Returns a list of workflows that satisfy certain conditions
 } {
@@ -132,6 +143,8 @@ ad_proc -public im_workflow_pretty_name {
 
 
 ad_proc -public im_workflow_status_options {
+    {-translate_p 0}
+    {-locale ""}
     {-include_empty 1}
     {-include_empty_name ""}
     workflow_key
@@ -154,6 +167,7 @@ ad_proc -public im_workflow_status_select {
     {-include_empty 1}
     {-include_empty_name ""}
     {-translate_p 0}
+    {-locale ""}
     workflow_key
     select_name
     { default "" }
@@ -161,7 +175,6 @@ ad_proc -public im_workflow_status_select {
     Returns an html select box named $select_name and defaulted to
     $default with a list of all the project_types in the system
 } {
-
     if {"" == $workflow_key} {
 	ad_return_complaint 1 "im_workflow_status_select:<br>
         Found an empty workflow_key. Please inform your SysAdmin."
