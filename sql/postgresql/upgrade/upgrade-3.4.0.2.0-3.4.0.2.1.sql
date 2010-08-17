@@ -21,3 +21,5 @@ begin
 end;' language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
+SELECT im_lang_add_message('en_US','intranet-timesheet2-invoices','No_Information','No information about task available, pls. try other view');
