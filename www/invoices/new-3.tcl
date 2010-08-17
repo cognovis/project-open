@@ -341,6 +341,7 @@ if {$aggregate_tasks_p} {
 	select
 		t.planned_units as planned_sum,
 		t.billable_units as billable_sum,
+		t.task_id,
 		CASE WHEN t.uom_id = 321 THEN
 			(select sum(h.days) from im_hours h where h.project_id = p.project_id)
 		ELSE
@@ -455,6 +456,7 @@ order by
 		im_category_from_id(s.task_type_id) as task_type,
 		s.company_id,
 		s.project_id,
+		s.task_id,
 		p.project_name,
 		p.project_path,
 		p.project_path as project_short_name,
@@ -538,6 +540,7 @@ order by
 	  </td>
 	  <td>
 	    <input type=text name=item_name.$ctr size=40 value='[ns_quotehtml $task_name]'>
+	    <input type=hidden name=item_task_id.$ctr value='$task_id'>
 	  </td>
 	"
 
