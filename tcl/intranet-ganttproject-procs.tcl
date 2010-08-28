@@ -418,17 +418,26 @@ ad_proc -public im_gp_save_tasks {
 } {
     ns_log Notice "im_gp_save_tasks: format=$format"
 
+    if {[ns_info version] < 4} {
+	ad_return_complaint 1 "<b>Invalid AOLserver Version</b>:<br>
+		Your server is still running on AOLserver version '[ns_info version]'.<br>
+		However, you need at least AOLserver version '4.0' to use this functionalitly.
+	"
+	ad_script_abort
+    }
+
+
     set tasks_node [$root_node selectNodes /project/tasks]
 
-    if {$tasks_node==""} {
+    if {$tasks_node == ""} {
 	# probably ms project format
 
 	if {[db_string check_gantt_project_entry "
-           select count(*)=0 
-           from im_gantt_projects 
-           where project_id=:super_project_id
+		select	count(*)=0 
+		from	im_gantt_projects 
+		where	project_id = :super_project_id
         "]} {
-	    db_dml add_gantt_project_entry "insert into im_gantt_projects (project_id,xml_elements) values (:super_project_id,'')"
+	    db_dml add_gantt_project_entry "insert into im_gantt_projects (project_id,xml_elements) values (:super_project_id, '')"
 	}
 
 	set xml_elements {}
@@ -448,28 +457,28 @@ ad_proc -public im_gp_save_tasks {
 		"StartDate" {
 		    ns_log Notice "im_gp_save_tasks: StartDate: Update im_projects.start_date"
 		    db_dml project_start_date "
-                       UPDATE im_projects SET start_date=:nodeText WHERE project_id=:super_project_id"
+			UPDATE im_projects SET start_date = :nodeText WHERE project_id = :super_project_id"
 		}
 		"FinishDate" {		    
 		    ns_log Notice "im_gp_save_tasks: StartDate: Update im_projects.end_date"
 		    db_dml project_end_date "
-                       UPDATE im_projects SET end_date=:nodeText WHERE project_id=:super_project_id"
+			UPDATE im_projects SET end_date = :nodeText WHERE project_id = :super_project_id"
 		}
 		default {
 		    im_ganttproject_add_import "im_gantt_project" $nodeName
 		    set column_name "xml_$nodeName"
 		    db_dml update_import_field "
-                       UPDATE im_gantt_projects 
-                       SET [plsql_utility::generate_oracle_name $column_name]=:nodeText
-                       WHERE project_id=:super_project_id
+			UPDATE	im_gantt_projects 
+			SET	[plsql_utility::generate_oracle_name $column_name] = :nodeText
+			WHERE	project_id = :super_project_id
                     "
 		}
 	    }
 
 	    db_dml update_import_field "
-               UPDATE im_gantt_projects 
-               SET xml_elements=:xml_elements
-               WHERE project_id=:super_project_id
+		UPDATE	im_gantt_projects 
+		SET	xml_elements = :xml_elements
+		WHERE	project_id = :super_project_id
             "
 	    
 	}
@@ -532,7 +541,6 @@ ad_proc -public im_gp_save_tasks2 {
     set task_url "/intranet-timesheet2-tasks/new?task_id="
 
     # What does this mean???
-    set org_super_project_id $super_project_id
     if {[info exists task_hash($super_project_id)]} {
         set super_project_id $task_hash($super_project_id)
     }
@@ -653,6 +661,10 @@ ad_proc -public im_gp_save_tasks2 {
     }
 
     if {$is_null} { return }
+
+    # MS-Project creates a task with ID=0 and an empty name,
+    # probably to represent the top-project. Let's ignore this one:
+    if {"" == $task_name && 0 == $gantt_project_id} { return }
 
     # Normalize task_id from "" to 0
     if {"" == $task_id} { set task_id 0 }
