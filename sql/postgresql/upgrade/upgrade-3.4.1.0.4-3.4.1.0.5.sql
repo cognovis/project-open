@@ -16,3 +16,10 @@ where
 
 insert into currency_codes values ('ARS','Argentinian Peso','f','');
 
+
+
+-- Fix DynFields for im_project
+update acs_attributes 
+set table_name = 'im_projects' 
+where object_type = 'im_project' and table_name is null;
+
