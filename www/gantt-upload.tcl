@@ -16,13 +16,21 @@ ad_page_contract {
 } {
     project_id:integer,notnull
     return_url:notnull
+    {import_type ""}
 }
 
 # ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
 
-set page_title [lang::message::lookup "" intranet-ganttproject.GanttProject "GanttProject"]
+switch $import_type {
+    microsoft_project { set program_name "Microsoft Project" }
+    gantt_project { set program_name "GanttProject" }
+    openproj { set program_name "OpenProj" }
+    default { set program_name "unknown" }
+}
+
+set page_title [lang::message::lookup "" intranet-ganttproject.Import_from_program "Import Project From %program_name%"]
 set context_bar [im_context_bar $page_title]
 
 # get the current users permissions for this project
@@ -34,4 +42,23 @@ if {!$write} {
 }
 
 
-ad_return_template
+# ---------------------------------------------------------------------
+# Projects Submenu
+# ---------------------------------------------------------------------
+
+# Setup the subnavbar
+set bind_vars [ns_set create]
+ns_set put $bind_vars project_id $project_id
+set parent_menu_id [util_memoize [list db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]]
+# set menu_label "project_summary"
+set menu_label ""
+
+set sub_navbar [im_sub_navbar \
+		    -components \
+		    -base_url [export_vars -base "/intranet/projects/view" {project_id}] \
+		    $parent_menu_id \
+		    $bind_vars \
+		    "" \
+		    "pagedesriptionbar" \
+		    $menu_label \
+		   ]
