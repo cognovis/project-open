@@ -117,7 +117,7 @@ set all_tables [linsert $all_ext_tables 0 $table_name]
 
 
 foreach table_n $all_tables {
-    set table_columns [db_columns $table_n]
+    set table_columns [lsort [db_columns $table_n]]
 
     foreach col $table_columns {
 	lappend all_attributes "$table_n:$col"
