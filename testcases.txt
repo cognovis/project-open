@@ -1,0 +1,12 @@
+
+
+- Import the files of the test suite into an empty project and 
+  check that the exported file is identical (or: deviates in a
+  controlled way).
+
+- Import the same files a 2nd time and check that nothing has
+  changed.
+
+- Test an export of existing task that have only been defined in ]po[
+  but not imported from GP, OP or MSP
+
