@@ -14,7 +14,26 @@ update currency_codes set
 where
 	iso = 'ARP';
 
-insert into currency_codes values ('ARS','Argentinian Peso','f','');
+
+
+
+
+-- Introduce default_tax field
+create or replace function inline_0 ()
+returns integer as $body$
+DECLARE
+        v_count                 integer;
+BEGIN
+        select	count(*) into v_count from currency_codes
+        where	iso = 'ARS';
+        IF v_count > 0 THEN return 0; END IF;
+
+	insert into currency_codes values ('ARS','Argentinian Peso','f','');
+
+        return 0;
+end; $body$ language 'plpgsql';
+select inline_0();
+drop function inline_0();
 
 
 
