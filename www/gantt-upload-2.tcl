@@ -159,7 +159,7 @@ if {[catch {
 			     -create_tasks 1 \
 			     -save_dependencies 0 \
 			     -task_hash_array $task_hash_array \
-			     -debug $debug_p \
+			     -debug_p $debug_p \
 			     $root_node \
 			     $project_id \
 			    ]
@@ -171,7 +171,7 @@ if {[catch {
 			     -create_tasks 0 \
 			     -save_dependencies 1 \
 			     -task_hash_array $task_hash_array \
-			     -debug $debug_p \
+			     -debug_p $debug_p \
 			     $root_node \
 			     $project_id \
 			    ]
@@ -258,7 +258,7 @@ if {$resource_node != ""} {
     if {$debug_p} { ns_write "<h2>Saving Resources</h2>\n" }
     if {$debug_p} { ns_write "<ul>\n" }
 
-    set resource_hash_array [im_gp_save_resources -debug $debug_p $resource_node]
+    set resource_hash_array [im_gp_save_resources -debug_p $debug_p $resource_node]
     array set resource_hash $resource_hash_array
     if {$debug_p} { ns_write "<li>\n<pre>resource_hash_array=$resource_hash_array</pre>" }
     if {$debug_p} { ns_write "</ul>\n" }
@@ -290,7 +290,7 @@ if {$allocations_node != ""} {
     #ns_write "<ul>\n"
 
     im_gp_save_allocations \
-	-debug $debug_p \
+	-debug_p $debug_p \
 	$allocations_node \
 	$task_hash_array \
         $resource_hash_array
