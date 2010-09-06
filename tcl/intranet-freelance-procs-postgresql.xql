@@ -39,29 +39,32 @@
   <fullquery name="im_freelance_skill_component.column_list">
     <querytext>
 
-select
-        sk.skill_id,
-        im_category_from_id(sk.skill_id) as skill,
-        c.category_id as skill_type_id,
-        im_category_from_id(c.category_id) as skill_type,
-        im_category_from_id(sk.claimed_experience_id) as claimed,
-        im_category_from_id(sk.confirmed_experience_id) as confirmed,
-        sk.claimed_experience_id,
-        sk.confirmed_experience_id
-from
-        (select c.*
-         from im_categories c
-         where c.category_type = 'Intranet Skill Type'
-         order by c.category_id
-        ) c
-      LEFT JOIN
-        (select *
-         from im_freelance_skills
-         where user_id = :user_id
-         order by skill_type_id
-        ) sk ON sk.skill_type_id = c.category_id
-order by
-        c.category_id
+	select
+	        sk.skill_id,
+	        im_category_from_id(sk.skill_id) as skill,
+	        c.category_id as skill_type_id,
+	        im_category_from_id(c.category_id) as skill_type,
+	        im_category_from_id(sk.claimed_experience_id) as claimed,
+	        im_category_from_id(sk.confirmed_experience_id) as confirmed,
+	        sk.claimed_experience_id,
+	        sk.confirmed_experience_id
+	from
+	        (	select	c.*
+	        	from	im_categories c
+	        	where	c.category_type = 'Intranet Skill Type' and
+				(c.enabled_p = 't' or c.enabled_p is null)
+	        	order by 
+				c.category_id
+	        ) c
+	      LEFT JOIN
+		(	select	*
+	        	from	im_freelance_skills
+	        	where	user_id = :user_id
+	        	order by 
+				skill_type_id
+	        ) sk ON sk.skill_type_id = c.category_id
+	order by
+	        c.category_id
 
     </querytext>
   </fullquery>
@@ -71,29 +74,31 @@ order by
   <fullquery name="im_freelance_skill_component.skill_body_html">
     <querytext>
 
-select
-        sk.skill_id,
-        im_category_from_id(sk.skill_id) as skill,
-        c.category_id as skill_type_id,
-        im_category_from_id(c.category_id) as skill_type,
-        im_category_from_id(sk.claimed_experience_id) as claimed,
-        im_category_from_id(sk.confirmed_experience_id) as confirmed,
-        sk.claimed_experience_id,
-        sk.confirmed_experience_id
-from
-        (select c.*
-         from im_categories c
-         where c.category_type = 'Intranet Skill Type'
-         order by c.category_id
-        ) c
-      LEFT JOIN
-        (select *
-         from im_freelance_skills
-         where user_id = :user_id
-         order by skill_type_id
-        ) sk ON sk.skill_type_id = c.category_id
-order by
-        c.category_id
+	select
+	        sk.skill_id,
+	        im_category_from_id(sk.skill_id) as skill,
+	        c.category_id as skill_type_id,
+	        im_category_from_id(c.category_id) as skill_type,
+	        im_category_from_id(sk.claimed_experience_id) as claimed,
+	        im_category_from_id(sk.confirmed_experience_id) as confirmed,
+	        sk.claimed_experience_id,
+	        sk.confirmed_experience_id
+	from
+		(	select	c.*
+	        	from	im_categories c
+	        	where	c.category_type = 'Intranet Skill Type' and
+				(c.enabled_p = 't' or c.enabled_p is null)
+	        	order by 
+				c.category_id
+	        ) c
+	      LEFT JOIN
+	        (select *
+	         from im_freelance_skills
+	         where user_id = :user_id
+	         order by skill_type_id
+	        ) sk ON sk.skill_type_id = c.category_id
+	order by
+	        c.category_id
 
     </querytext>
   </fullquery>
