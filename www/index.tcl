@@ -474,7 +474,7 @@ if { $start_idx > 0 } {
 # Navbars
 # ---------------------------------------------------------------
 
-set sub_navbar_html [im_user_navbar $letter "/intranet-freelance/index" $next_page_url $previous_page_url [list start_idx order_by how_many view_name user_group_name letter] $menu_select_label]
+set sub_navbar_html [im_user_navbar $letter "/intranet-freelance/index" $next_page_url $previous_page_url [list ] $menu_select_label]
 
 # nothing to do here ... (?)
 set table_continuation_html ""
