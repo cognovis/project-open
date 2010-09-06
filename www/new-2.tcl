@@ -616,7 +616,8 @@ order by
 	  </td>
         </tr>
 	<input type=hidden name=item_project_id.$ctr value='$project_id'>
-	<input type=hidden name=item_type_id.$ctr value='$task_type_id'>\n
+	<input type=hidden name=item_type_id.$ctr value='$task_type_id'>
+	<input type=hidden name=item_task_id.$ctr value='-1'>
         <input type=hidden name='item_material_id.$ctr' value='$im_material_default_translation_material_id'>"
 	incr ctr
 	set task_title ""
