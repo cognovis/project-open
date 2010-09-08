@@ -6,6 +6,7 @@ ad_page_contract {
     @cvs-id $Id$
 } [bug_tracker::get_page_variables]
 
+ns_log Notice "page_variables [bug_tracker::get_page_variables]"
 set page_title [ad_conn instance_name]
 set context [list]
 set admin_p [permission::permission_p -object_id [ad_conn package_id] -privilege admin]
