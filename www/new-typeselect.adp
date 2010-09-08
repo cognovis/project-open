@@ -5,7 +5,7 @@
 <%= [im_box_header $page_title] %>
 
 <form action='@return_url;noquote@' method=POST>
-<%= [export_form_vars ticket_id ticket_nr ticket_name] %>
+<%= [export_form_vars return_url ticket_id ticket_nr ticket_name] %>
 
 <table cellspacing=2 cellpadding=2>
 
