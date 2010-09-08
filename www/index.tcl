@@ -471,7 +471,7 @@ if {[im_is_user_site_wide_or_intranet_admin $current_user_id]} {
 }
 
 if {[im_permission $current_user_id "add_tickets"]} {
-    append admin_html "<li><a href=\"/intranet-helpdesk/new\">[lang::message::lookup "" intranet-helpdesk.Add_a_new_ticket "New Ticket"]</a>\n"
+    append admin_html "<li><a href=\"[export_vars -base "/intranet-helpdesk/new" {return_url}]\">[lang::message::lookup "" intranet-helpdesk.Add_a_new_ticket "New Ticket"]</a>\n"
 
     set wf_oid_col_exists_p [im_column_exists wf_workflows object_type]
     if {$wf_oid_col_exists_p} {
