@@ -19,7 +19,7 @@ ad_page_contract {
     { select_project:multiple }
     invoice_currency
     target_cost_type_id:integer
-    { cost_center_id ""}
+    { cost_center_id:integer 0}
     { start_date "" }
     { end_date "" }
     { return_url ""}
