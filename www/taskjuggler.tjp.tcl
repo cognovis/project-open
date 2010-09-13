@@ -62,6 +62,7 @@ set base_tj "
 project p$main_project_id \"$project_name\" \"1.0\" $project_start_date $project_end_date {
     currency \"$default_currency\"
 }
+
 "
 
 
@@ -69,9 +70,15 @@ project p$main_project_id \"$project_name\" \"1.0\" $project_start_date $project
 # Create the TJ Footer
 # ---------------------------------------------------------------
 
+set taskreport_csv "taskreport.csv"
+set taskreport_html "taskreport.html"
+set statusreport_html "statusreport.html"
+
 set footer_tj "
 
-csvtaskreport \"taskjuggler.tasks.csv\"
+csvtaskreport \"$taskreport_csv\"
+htmltaskreport \"$taskreport_html\"
+htmlstatusreport \"$statusreport_html\"
 
 "
 
@@ -117,13 +124,14 @@ set project_resources_sql "
 		)
 "
 
-set resource_tj ""
+set resource_tj "resource members \"All Members\" {\n"
+
 db_foreach project_resources $project_resources_sql {
 
-    set user_tj "resource r$person_id \"$user_name\" {\n"
+    set user_tj "\tresource r$person_id \"$user_name\" {\n"
 
     if {"" != $hourly_cost} {
-	append user_tj "\trate [expr $hourly_cost * $hours_per_day]\n"
+	append user_tj "\t\trate [expr $hourly_cost * $hours_per_day]\n"
     }
 
     set absences_sql "
@@ -135,20 +143,22 @@ db_foreach project_resources $project_resources_sql {
 	order by start_date
     "
     db_foreach resource_absences $absences_sql {
-	append user_tj "\tvacation $absence_start_date - $absence_end_date\n"
+	append user_tj "\t\tvacation $absence_start_date - $absence_end_date\n"
     }
 
-    append user_tj "}\n"
+    append user_tj "\t}\n"
     append resource_tj "$user_tj\n"
 
 }
+append resource_tj "}\n"
+
 
 # ---------------------------------------------------------------
 # Task TJ Entries
 # ---------------------------------------------------------------
 
 # Start writing out the tasks recursively
-set tasks_tj [im_taskjuggler_write_subtasks $main_project_id]
+set tasks_tj [im_taskjuggler_write_subtasks -depth 0 -default_start $project_start_date $main_project_id]
 
 set tj_content "
 $base_tj
@@ -196,9 +206,28 @@ if {[catch {
 # Run TaskJuggler
 # ---------------------------------------------------------------
 
+set pageroot [ns_info pageroot]
+set serverroot [join [lrange [split $pageroot "/"] 0 end-1] "/"]
 
+
+# Check if exists
 if {[catch {
-    set cmd "cd $tj_dir; taskjuggler $tj_file"
+    set cmd "which taskjuggler"
+    ns_log Notice "exec $cmd"
+    exec bash -c $cmd
+} err]} {
+    ad_return_complaint 1 "<b>TaskJuggler not Installed</b>:<br>
+	\]project-open\[ couldn't find the 'taskjuggler' executable in your installation.<br>
+	Please install from <a href='http://www.taskjuggler.org/'>www.taskjuggler.org</a>.<br>
+	Here is the detailed error message:<br>&nbsp;<br>
+	<pre>$err</pre>
+    "
+    ad_script_abort
+}
+
+# Run TaskJuggler and process the input file
+if {[catch {
+    set cmd "export HOME=$serverroot; cd $tj_dir; taskjuggler $tj_file"
     ns_log Notice "exec $cmd"
     exec bash -c $cmd
 } err]} {
@@ -214,6 +243,12 @@ if {[catch {
     "
     ad_script_abort
 }
+
+
+# ---------------------------------------------------------------
+# Successfull execution
+# Parse the output report
+# ---------------------------------------------------------------
 
 
 
