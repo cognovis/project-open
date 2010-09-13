@@ -1441,7 +1441,7 @@ ad_proc -private im_filestorage_render_perms { perm } {
     return $result
 }
 
-ad_proc -public im_filestorage_base_component { user_id object_id object_name base_path folder_type { default_open "c"} } {
+ad_proc -public im_filestorage_base_component { user_id object_id object_name base_path folder_type { default_open "c"} {bread_crum_path ""} } {
     Main funcion to generate the filestorage page ( create folder, bread crum, ....)
     @param user_id: the user who is attempting to view the filestorage
     @param object_id: from wich group is pending this user?
@@ -1467,7 +1467,9 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     # to be incorporated into the local return_url
     ns_set delkey $bind_vars return_url
     set return_url "$current_url_without_vars?[export_url_bind_vars $bind_vars]"
-    set bread_crum_path [ns_set get $bind_vars bread_crum_path]
+    if {"" != $bread_crum_path} {
+        set bread_crum_path [ns_set get $bind_vars bread_crum_path]
+    }
     set base_path_depth [llength [split $base_path "/"]]
     ns_set delkey $bind_vars bread_crum_path
 
