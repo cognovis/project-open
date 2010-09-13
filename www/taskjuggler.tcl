@@ -14,6 +14,7 @@ ad_page_contract {
     @author frank.bergmann@project-open.com
 } {
     project_id:integer 
+    {return_url ""}
 }
 
 # ---------------------------------------------------------------
@@ -26,6 +27,10 @@ set user_id [ad_maybe_redirect_for_registration]
 set hours_per_day 8.0
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 
+set page_title [lang::message::lookup "" intranet-ganttproject.TaskJuggler_Scheduling "TaskJuggler Scheduling"]
+set context_bar [im_context_bar $page_title]
+if {"" == $return_url} { set return_url [im_url_with_query] }
+
 
 # ---------------------------------------------------------------
 # Get information about the project
@@ -35,6 +40,7 @@ if {![db_0or1row project_info "
 	select	g.*,
                 p.*,
 		p.project_id as main_project_id,
+		p.project_name as main_project_name,
                 p.start_date::date as project_start_date,
                 p.end_date::date as project_end_date,
 		c.company_name,
@@ -73,12 +79,22 @@ project p$main_project_id \"$project_name\" \"1.0\" $project_start_date $project
 set taskreport_csv "taskreport.csv"
 set taskreport_html "taskreport.html"
 set statusreport_html "statusreport.html"
+set resourcereport_html "resourcereport.html"
+set resourcereport_html "resourcereport.html"
+set weekly_calendar_html "weekly_calendar.html"
+set gantt_chart_html "gantt_chart.html"
 
 set footer_tj "
 
 csvtaskreport \"$taskreport_csv\"
 htmltaskreport \"$taskreport_html\"
 htmlstatusreport \"$statusreport_html\"
+
+htmltaskreport \"$gantt_chart_html\" {
+	headline \"Project Gantt Chart\"
+	columns hierarchindex, name, start, end, effort, duration, chart
+	loadunit days
+}
 
 "
 
@@ -245,17 +261,31 @@ if {[catch {
 }
 
 
+# ---------------------------------------------------------------------
+# Projects Submenu
+# ---------------------------------------------------------------------
+
+set bind_vars [ns_set create]
+ns_set put $bind_vars project_id $project_id
+set parent_menu_id [util_memoize [list db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]]
+set menu_label ""
+
+set sub_navbar [im_sub_navbar \
+		    -components \
+		    -base_url [export_vars -base "/intranet/projects/view" {project_id}] \
+		    $parent_menu_id \
+		    $bind_vars \
+		    "" \
+		    "pagedesriptionbar" \
+		    $menu_label \
+		   ]
+
+
 # ---------------------------------------------------------------
 # Successfull execution
 # Parse the output report
 # ---------------------------------------------------------------
 
 
-
-ad_return_complaint 1 "<pre>$tj_content</pre>"
-
-
-
-ns_return 200 application/octet-stream "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>[$doc asXML -indent 2 -escapeNonASCII]"
-
+set content "<pre>$tj_content</pre>"
 
