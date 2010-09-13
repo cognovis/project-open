@@ -26,6 +26,7 @@ set user_id [ad_maybe_redirect_for_registration]
 set hours_per_day 8.0
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 
+
 # ---------------------------------------------------------------
 # Get information about the project
 # ---------------------------------------------------------------
@@ -58,10 +59,23 @@ set base_tj "
  * Please do not edit manually. 
  */
 
-project p$project_id \"$project_name\" \"1.0\" $project_start_date - $project_end_date {
+project p$main_project_id \"$project_name\" \"1.0\" $project_start_date $project_end_date {
     currency \"$default_currency\"
 }
 "
+
+
+# ---------------------------------------------------------------
+# Create the TJ Footer
+# ---------------------------------------------------------------
+
+set footer_tj "
+
+csvtaskreport \"taskjuggler.tasks.csv\"
+
+"
+
+
 
 
 # ---------------------------------------------------------------
@@ -97,9 +111,9 @@ set project_resources_sql "
 				and children.tree_sortkey between
 					parent.tree_sortkey and
 					tree_right(parent.tree_sortkey)
-				and parent.project_id = :project_id
+				and parent.project_id = :main_project_id
 		   UNION
-			select  :project_id
+			select :main_project_id
 		)
 "
 
@@ -133,140 +147,79 @@ db_foreach project_resources $project_resources_sql {
 # Task TJ Entries
 # ---------------------------------------------------------------
 
-# Start writing out the tasks
+# Start writing out the tasks recursively
 set tasks_tj [im_taskjuggler_write_subtasks $main_project_id]
 
-
-
-
-ad_return_complaint 1 "
-<pre>
+set tj_content "
 $base_tj
 $resource_tj
 $tasks_tj
-</pre>
+$footer_tj
 "
 
 
+# ---------------------------------------------------------------
+# Write to file
+# ---------------------------------------------------------------
 
+set project_dir [im_filestorage_project_path $main_project_id]
 
+set tj_folder "taskjuggler"
+set tj_file "taskjuggler.tjp"
 
-
-
-
-
-
-# -------- Resources -------------
-#    <resources>
-#        <resource id="0" name="Frank Bergmann" function="Default:1" contacts="" phone="" />
-#        <resource id="1" name="Klaus Hofeditz" function="Default:0" contacts="" phone="" />
-#    </resources>
-
-set resources_node [$doc createElement Resources]
-$project_node appendChild $resources_node
-
-# standard "unassigned" resource
-$resources_node appendXML "
-        <Resource>
-            <UID>0</UID>
-            <ID>0</ID>
-            <Name>Unassigned</Name>
-            <IsNull>0</IsNull>
-            <Initials>U</Initials>
-            <MaxUnits>1</MaxUnits>
-            <PeakUnits>1</PeakUnits>
-            <OverAllocated>0</OverAllocated>
-            <CanLevel>0</CanLevel>
-            <AccrueAt>3</AccrueAt>
-        </Resource>
-"
-
-set id 0
-set xml_elements {}
-set temp temp
-
-db_foreach project_resources $project_resources_sql {
-    incr id
-    
-    set initials [regsub -all {(^|\W)([\w])\S*} $user_name {\2} temp]
-
-    set resource_node [$doc createElement Resource]
-    $resources_node appendChild $resource_node
-    
-    # minimal set of elements in case this hasn't been imported before
-    if {[llength $xml_elements]==0} {
-	set xml_elements {UID ID Name EmailAddress AccrueAt StandardRate 
-	    Cost OvertimeRate CostPerUse CalendarUID}
-    }
-    
-    foreach element $xml_elements { 
-	switch $element {
-	    "UID"                   { set value $user_id }
-	    "ID"                    { set value $id }
-	    "Name"                  { set value $user_name }
-	    "EmailAddress"          { set value $email } 
-	    "AccrueAt"              { set value 3 }
-	    "StandardRate" - "Cost" -
-	    "OvertimeRate" - "CostPerUse" { set value 0 }
-	    "CalendarUID"           { set value $user_id }
-	    "Initials"              { set value $initials }
-	    "MaxUnits" - "OverAllocated" - 
-	    "CanLevel" - "PeakUnits" { continue }
-	    default {
-		set attribute_name [plsql_utility::generate_oracle_name "xml_$element"]
-                if {[info exists $attribute_name ] } {
-                    set value [expr $$attribute_name]
-                } else {
-                    set value 0
-                }
-	    }
-	}
-	
-	    $resource_node appendFromList [list $element {} [list [list \#text $value]]]
-    }
+# Create a "taskjuggler" folder
+set tj_dir "$project_dir/$tj_folder"
+if {[catch {
+    if {![file exists $tj_dir]} {
+	ns_log Notice "exec /bin/mkdir -p $tj_dir"
+	exec /bin/mkdir -p $tj_dir
+	ns_log Notice "exec /bin/chmod ug+w $tj_dir"
+	exec /bin/chmod ug+w $tj_dir
+    } 
+} err_msg]} { 
+    ad_return_complaint 1 "<b>Error creating TaskJuggler directory</b>:<br>
+    <pre>$err_msg</pre>"
+    ad_script_abort
 }
 
-set allocations_node [$doc createElement Assignments]
-$project_node appendChild $allocations_node
+if {[catch {
+    set fl [open "$tj_dir/$tj_file" "w"]
+    puts $fl $tj_content
+    close $fl
+} err]} {
+    ad_return_complaint 1 "<b>Unable to write to $tj_dir/$tj_file</b>:<br><pre>\n$err</pre>"
+    ad_script_abort
+}
 
-set project_allocations_sql "
-	select	
-                object_id_one AS task_id,
-                object_id_two AS user_id,
-                percentage
-	from	acs_rels,im_biz_object_members
-	where
-                acs_rels.rel_id=im_biz_object_members.rel_id AND
-		object_id_one in (
-			select	task_id
-			from	im_timesheet_tasks_view
-			where	project_id in (
-				select	children.project_id as subproject_id
-				from	im_projects parent,
-					im_projects children
-				where	children.project_status_id not in (
-						[im_project_status_deleted],
-						[im_project_status_canceled]
-					)
-					and children.tree_sortkey between
-						parent.tree_sortkey and
-						tree_right(parent.tree_sortkey)
-					and parent.project_id = :project_id
-			   UNION
-				select  :project_id
-			)
-		)
-"
-db_foreach project_allocations $project_allocations_sql {
-    $allocations_node appendXML "
-        <Assignment>
-            <UID>0</UID>
-            <TaskUID>$task_id</TaskUID>
-            <ResourceUID>$user_id</ResourceUID>
-            <Units>1</Units>
-        </Assignment>
+
+# ---------------------------------------------------------------
+# Run TaskJuggler
+# ---------------------------------------------------------------
+
+
+if {[catch {
+    set cmd "cd $tj_dir; taskjuggler $tj_file"
+    ns_log Notice "exec $cmd"
+    exec bash -c $cmd
+} err]} {
+    ad_return_complaint 1 "<b>Error executing TaskJuggler</b>:<br>
+	<pre>
+	$err
+	</pre>
+	<b>Source</b><br>
+	Here is the TaskJuggler file that has caused the issue:
+	<pre>
+	$tj_content
+	</pre>
     "
+    ad_script_abort
 }
+
+
+
+ad_return_complaint 1 "<pre>$tj_content</pre>"
+
+
 
 ns_return 200 application/octet-stream "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>[$doc asXML -indent 2 -escapeNonASCII]"
 
