@@ -40,6 +40,7 @@ if {"" == $upload_gan && "" == $upload_gif} {
 
 set today [db_string today "select to_char(now(), 'YYYY-MM-DD')"]
 set page_title [lang::message::lookup "" intranet-ganttproject.Import_Gantt_Tasks "Import Gantt Tasks"]
+set context_bar [im_context_bar $page_title]
 set reassign_title [lang::message::lookup "" intranet-ganttproject.Delete_Gantt_Tasks "Reassign Resources of Removed Tasks"]
 set resource_title [lang::message::lookup "" intranet-ganttproject.Resource_Title "Resources not Found"]
 
@@ -400,4 +401,26 @@ template::list::create \
 
 # Write audit trail
 im_project_audit -project_id $project_id
+
+
+
+
+# ---------------------------------------------------------------------
+# Projects Submenu
+# ---------------------------------------------------------------------
+
+set bind_vars [ns_set create]
+ns_set put $bind_vars project_id $project_id
+set parent_menu_id [util_memoize [list db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]]
+set menu_label ""
+
+set sub_navbar [im_sub_navbar \
+		    -components \
+		    -base_url [export_vars -base "/intranet/projects/view" {project_id}] \
+		    $parent_menu_id \
+		    $bind_vars \
+		    "" \
+		    "pagedesriptionbar" \
+		    $menu_label \
+		   ]
 

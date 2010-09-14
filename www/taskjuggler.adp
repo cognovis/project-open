@@ -8,7 +8,8 @@
 <!-- ------------------------------------------------------------------------------ -->
 <%= [im_box_header [lang::message::lookup "" intranet-ganttproject.TaskJuggler_Output_Files "TaskJuggler Output Files"]] %>
 <%
-   set project_path [im_filestorage_project_path $project_id]
+    set project_id $main_project_id
+    set project_path [im_filestorage_project_path $project_id]
     set folder_type "project"
     set object_name [lang::message::lookup "" intranet-filestorage.Folder_type_Project "Project"]
 %>
@@ -30,6 +31,7 @@ and import the values into the current project.
 
 
 <form action=taskjuggler-import method=POST>
+<%= [export_form_vars project_id] %>
 <input type=submit name=import value="Import Schedule">
 	from TaskJuggler into ]project-open[
 </form>

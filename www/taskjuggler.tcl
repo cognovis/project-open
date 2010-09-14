@@ -86,7 +86,12 @@ set gantt_chart_html "gantt_chart.html"
 
 set footer_tj "
 
-csvtaskreport \"$taskreport_csv\"
+# The main report that will be parsed by \]po\[
+csvtaskreport \"$taskreport_csv\" {
+	columns id, name, start, end, effort, duration, chart
+	loadunit days
+}
+
 htmltaskreport \"$taskreport_html\"
 htmlstatusreport \"$statusreport_html\"
 
@@ -97,7 +102,6 @@ htmltaskreport \"$gantt_chart_html\" {
 }
 
 "
-
 
 
 
@@ -150,6 +154,8 @@ db_foreach project_resources $project_resources_sql {
 	append user_tj "\t\trate [expr $hourly_cost * $hours_per_day]\n"
     }
 
+    # ---------------------------------------------------------------
+    # Absences 
     set absences_sql "
 	select	ua.start_date::date as absence_start_date,
 		ua.end_date::date + 1 as absence_end_date 
@@ -162,6 +168,30 @@ db_foreach project_resources $project_resources_sql {
 	append user_tj "\t\tvacation $absence_start_date - $absence_end_date\n"
     }
 
+
+    # ---------------------------------------------------------------
+    # Timesheet Entries
+    set timesheet_sql "
+	SELECT	child.project_id as child_project_id,
+		h.day::date as hour_date,
+		h.hours as hour_hours
+	FROM	im_projects parent,
+		im_projects child,
+		im_hours h
+	WHERE	parent.project_id = :main_project_id AND
+		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) AND
+		child.project_id = h.project_id AND
+		h.user_id = :person_id
+    "
+    db_foreach timesheet $timesheet_sql {
+	append user_tj "\t\tbooking t$child_project_id $hour_date +${hour_hours}h\n"
+    }
+
+
+
+
+    # ---------------------------------------------------------------
+    # Close the resource definition
     append user_tj "\t}\n"
     append resource_tj "$user_tj\n"
 

@@ -72,7 +72,54 @@ if {[catch {
 
 set values [im_csv_get_values $content ";"]
 
+set debug_html ""
+foreach line $values {
+    set id [lindex $line 0]
+    set start [lindex $line 2]
+    set end [lindex $line 3]
+
+    set gp_task_id [lindex [split $id "."] end]
+    regexp {^t(.*)} $gp_task_id match task_id
+    regexp {^(....-..-..)} $start match start_date
+    regexp {^(....-..-..)} $end match end_date
+
+    db_dml update_projects "
+	update im_projects set
+		start_date = :start_date,
+		end_date   = :end_date
+	where
+		project_id = :task_id
+    "
+}
 
 
-ad_return_complaint 1 "<pre>$content</pre><pre>$values</pre>"
+set content [im_ganttproject_gantt_component \
+		 -project_id $project_id \
+		 -return_url $return_url \
+		 -export_var_list [list project_id] \
+		 -auto_open 1 \
+		 -zoom "in" \
+		 -max_col 30 \
+		 -max_row 100 \
+]
+
+
+# ---------------------------------------------------------------------
+# Projects Submenu
+# ---------------------------------------------------------------------
+
+set bind_vars [ns_set create]
+ns_set put $bind_vars project_id $project_id
+set parent_menu_id [util_memoize [list db_string parent_menu "select menu_id from im_menus where label='project'" -default 0]]
+set menu_label ""
+
+set sub_navbar [im_sub_navbar \
+		    -components \
+		    -base_url [export_vars -base "/intranet/projects/view" {project_id}] \
+		    $parent_menu_id \
+		    $bind_vars \
+		    "" \
+		    "pagedesriptionbar" \
+		    $menu_label \
+		   ]
 
