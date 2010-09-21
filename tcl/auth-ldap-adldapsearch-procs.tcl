@@ -279,19 +279,15 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     set uri $params(LdapURI)
     set base_dn $params(BaseDN)
     set bind_dn $params(BindDN)
-    set auth_short_name [db_string auth_short_name "select short_name from auth_authorities where authority_id = :authority_id" -default ""]
 
     foreach var { username } {
         regsub -all "{$var}" $base_dn [set $var] base_dn
         regsub -all "{$var}" $bind_dn [set $var] bind_dn
     }
 
-    # replace backslash in username
-    regsub -all {\\} $bind_dn {\\} bind_dn
-
     ns_log Notice "auth::ldap::authentication::Authenticate: ldapsearch -n -x -H $uri -D $bind_dn -w xxxxxxxxx"
     set return_code [catch {
-        exec ldapsearch -n -x -H $uri -D $bind_dn -w "$password"
+        exec ldapsearch -n -x -H $uri -D $bind_dn -w $password
     } msg]
 
     # Extract the first line - it contains the error message if there is an issue.
@@ -302,63 +298,26 @@ ad_proc -private auth::ldap::authentication::Authenticate {
     # ----------------------------------------------------
     # Successfully verified the username/password
     if {0 == $return_code} {
-
-	set auth_username_regexp "^$auth_short_name.$username\$"
 	set uid [db_string uid "
-		select	min(party_id)
+		select	party_id 
 		from   	cc_users
-		where	lower(username) = lower(:username) OR
-			lower(username) ~ :auth_username_regexp
+		where	lower(email) = lower(:base_dn)
+			OR lower(username) = lower(:username)
 	" -default 0]
 
+	set auth_info(auth_status) "ok"
+	set auth_info(info_status) "ok"
+	set auth_info(user_id) $uid
+	set auth_info(auth_message) "Login Successful"
+	set auth_info(account_status) "ok"
+	set auth_info(account_message) ""
 
-	if {0 != $uid} {
-
-	    # Sync Moravia group information
-	    set return_code [catch {
-		exec adfind -h 10.10.1.10 -f "(sAMAccountName=$username)" -b "DC=$auth_short_name,DC=moravia-it,DC=com"
-	    } msg]
-
-	    set debug ""
-	    foreach member_line [split $msg "\n"] {
-		if {[regexp {memberOf\:\W*(.+)} $member_line match groupname]} {
-		    set profile_id [db_string profid "select profile_id from im_profiles where ad_group_name=:groupname" -default 0]
-		    if {0 != $profile_id} {
-			im_profile::add_member -profile_id $profile_id -user_id $uid
-		    }
-		    append debug "'$groupname'\n"
-		}
-	    }
-
-	    set auth_info(auth_status) "ok"
-	    set auth_info(info_status) "ok"
-	    set auth_info(user_id) $uid
-	    set auth_info(auth_message) "Login Successful"
-	    set auth_info(account_status) "ok"
-	    set auth_info(account_message) ""
-
-	    # Sync the user with the LDAP information, with username as primary key
-#	    set auth_info_array [auth::ldap::authentication::Sync $username $parameters $authority_id]
-#	    array set auth_info $auth_info_array
-	    return [array get auth_info]
-
-	} else {
-
-	    ad_return_complaint 1 "Didn't find the user for email='$base_dn' and username='$username'"
-
-	    
-	    # Return an error saying the user is invalid
-	    set auth_info(auth_status) "no_account"
-	    set auth_info(user_id) 0
-	    set auth_info(auth_message) "Invalid user: Your authentication was successful, but your user account does not exist in our database"
-	    set auth_info(account_status) "ok"
-	    set auth_info(account_message) ""
-	    return [array get auth_info]
-
-	}
+	# Sync the user with the LDAP information, with username as primary key
+	set auth_info_array [auth::ldap::authentication::Sync $username $parameters $authority_id]
+	array set auth_info $auth_info_array
+	return [array get auth_info]
     }
 
-    
     # ----------------------------------------------------
     # We had an issue with the LDAP
     if {[regexp {Invalid credentials \(49\)} $msg]} {
@@ -424,7 +383,7 @@ ad_proc -public auth::ldap::authentication::Sync {
 
     set return_code [catch {
         ns_log Notice "auth::ldap::authentication::Authenticate: ldapsearch -n -x -H $uri -D $bind_dn -w xxxxxxxxx"
-	exec ldapsearch -x -H $uri -b $base_dn (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))
+	exec ldapsearch -x -H $uri -b dc=genedata,dc=win (&(objectcategory=person)(objectclass=user)(sAMAccountName=$username))
     } msg]
 
     # Extract the first line - it contains the error message if there is an issue.
