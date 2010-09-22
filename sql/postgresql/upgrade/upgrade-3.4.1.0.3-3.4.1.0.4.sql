@@ -8,7 +8,12 @@ create or replace function inline_0 ()
 returns integer as $body$
 DECLARE
 	v_id			integer;
+	v_count			integer;
 BEGIN
+	SELECT	count(*) INTO v_count
+	FROM	im_reports where report_code = 'invoicable_hours';
+	IF v_count > 0 THEN return 1; END IF;
+
 	v_id := im_indicator__new(
 		null, 'im_indicator', now(), 0, '', null,
 		'Invoicable Hours',
