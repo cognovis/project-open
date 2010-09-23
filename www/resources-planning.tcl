@@ -5,6 +5,7 @@
 # All rights reserved. Please check
 # http://www.project-open.com/ for licensing details.
 
+
 set clicks_base [clock clicks]
 
 ad_page_contract {
