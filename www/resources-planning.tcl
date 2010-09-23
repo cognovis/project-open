@@ -1,4 +1,4 @@
-# /packages/intranet-reporting/www/gantt-resources-planning.tcl
+# /packages/intranet-reporting/www/resources-planning.tcl
 #
 # Copyright (c) 2003-2006 ]project-open[
 #
@@ -10,7 +10,7 @@ set clicks_base [clock clicks]
 
 ad_page_contract {
     Gantt Resource Planning.
-    This page is similar to the gantt-resources-cube, but using a different
+    This page is similar to the resources-cube, but using a different
     approach and showing absences and translation tasks as well
 
     @param start_date Hard start of reporting period. Defaults to start of first project
@@ -51,7 +51,7 @@ if {![im_permission $user_id "view_projects_all"]} {
 # Defaults
 
 set page_title [lang::message::lookup "" intranet-reporting.Gantt_Resources "Gantt Resources"]
-set page_url "/intranet-ganttproject/gantt-resources-planning"
+set page_url "/intranet-resource-management/resources-planning"
 set sub_navbar ""
 set main_navbar_label "reporting"
 set show_context_help_p 0
