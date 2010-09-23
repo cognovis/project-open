@@ -2,27 +2,35 @@
 
 SELECT acs_log__debug('/packages/intranet-hr/sql/postgresql/upgrade/upgrade-3.4.0.8.1-3.4.0.8.2.sql','');
 
-drop view im_employees_active;
-
 create or replace view im_employees_active as
 select
-        u.*,
-        e.*,
-        pa.*,
-        pe.*
+	u.*,
+	e.*,
+	pa.*,
+	pe.*
 from
-        users u,
-        parties pa,
-        persons pe,
-        im_employees e,
-        groups g,
-        group_distinct_member_map gdmm,
-        cc_users cc
+	users u,
+	parties pa,
+	persons pe
+	LEFT OUTER JOIN im_employees e ON (pe.person_id = e.employee_id)
 where
-        u.user_id = pa.party_id
-        and u.user_id = pe.person_id
-        and u.user_id = e.employee_id
-        and g.group_name = 'Employees'
-        and gdmm.group_id = g.group_id
-        and gdmm.member_id = u.user_id
-        and (cc.object_id = u.user_id and cc.member_state = 'approved');
+	u.user_id = pa.party_id and
+	u.user_id = pe.person_id and
+	u.user_id = e.employee_id and
+	u.user_id in (
+		select	gdmm.member_id
+		from	group_distinct_member_map gdmm
+		where	group_id in (select group_id from groups where group_name = 'Employees')
+	) and
+	u.user_id in (
+		select	r.object_id_two
+		from	acs_rels r,
+			membership_rels mr
+		where	r.rel_id = mr.rel_id and
+			r.object_id_one in (
+				select group_id 
+				from groups 
+				where group_name = 'Registered Users'
+			) and mr.member_state = 'approved'
+	)
+;
