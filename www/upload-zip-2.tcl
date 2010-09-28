@@ -79,7 +79,6 @@ set max_n_bytes [ad_parameter -package_id [im_package_filestorage_id] MaxNumberO
 set tmp_filename [ns_queryget upload_file.tmpfile]
 im_security_alert_check_tmpnam -location "upload-2" -value $tmp_filename
 ns_log Notice "upload-zip-2: tmp_filename=$tmp_filename"
-ns_log Notice "upload-zip-2: [exec /bin/ls -als /tmp/ | grep file]"
 
 
 if { $max_n_bytes && ([file size $tmp_filename] > $max_n_bytes) } {
@@ -131,7 +130,6 @@ set dest_path "$base_path/$bread_crum_path"
 
 ns_log Notice "upload-zip-2: dest_path=$dest_path"
 ns_log Notice "upload-zip-2: tmp_filename=$tmp_filename"
-ns_log Notice "upload-zip-2: [exec /bin/ls -als /tmp/ | grep file]"
 
 
 if { [catch {
