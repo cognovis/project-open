@@ -57,9 +57,8 @@ $db_username = "$server";
 # The POP3 Mail Account
 
 $pop3_server = "pop.1und1.de";
-$pop3_user = "pt7828024-fb";
-$pop3_pwd = ".fraber";
-
+$pop3_user = "username";
+$pop3_pwd = "password";
 
 
 # --------------------------------------------------------
