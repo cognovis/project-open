@@ -514,10 +514,10 @@ ad_form -extend -name helpdesk_ticket -on_request {
     # Write Audit Trail
     im_project_audit -project_id $ticket_id -action create
 
-    # Send to page to show the new ticket, instead of returning to return_url
-    # ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {ticket_id}]
 
-    ad_returnredirect $return_url
+    # fraber 100928: Disabling return_url.
+    # For a new ticket it makes sense to be sent to the new ticket page...
+    ad_returnredirect [export_vars -base "/intranet-helpdesk/new" {ticket_id {form_mode display}}]
     ad_script_abort
 
 } -edit_data {
