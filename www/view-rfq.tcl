@@ -224,6 +224,7 @@ template::list::create \
     -has_checkboxes \
     -actions $actions_list \
     -bulk_actions $bulk_actions_list \
+    -bulk_action_method POST \
     -bulk_action_export_vars  {
 	rfq_id
 	{ return_url $return_url2 }
@@ -511,6 +512,7 @@ template::list::create \
 	rfq_id
 	{ return_url $return_url2 }
     } \
+    -bulk_action_method post \
     -row_pretty_plural "[_ intranet-freelance-rfqs.RFQs_Items]" \
     -elements $elements
 
