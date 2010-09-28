@@ -82,7 +82,7 @@ db_multirow -extend { release_project_url release_status_template project_chk } 
  	from	im_projects p
 	where	project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
 		and (
-			project_type_id in ([join [im_sub_categories [im_project_type_software_release_item]] ","])
+			project_type_id in ([join [im_sub_categories -include_disabled_p 1 [im_project_type_software_release_item]] ","])
 			$project_release_item_p_sql
 		)
 	order by project_name
