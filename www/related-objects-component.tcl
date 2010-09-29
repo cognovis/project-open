@@ -91,6 +91,7 @@ set object_rel_sql "
 	where
 		r.rel_type = rt.object_type and
 		o.object_type = ot.object_type and
+		rel_type not in ('im_biz_object_member') and   -- handled by the Ticket Members component
 		(
 			r.object_id_one = :ticket_id and
 			r.object_id_two = o.object_id

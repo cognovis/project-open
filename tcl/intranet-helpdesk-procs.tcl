@@ -91,13 +91,18 @@ ad_proc -public im_ticket_permissions {
     upvar $write_var write
     upvar $admin_var admin
 
+    set view 0
+    set read 0
+    set write 0
+    set admin 0
+
     set admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
     set edit_ticket_status_p [im_permission $user_id edit_ticket_status]
     set add_tickets_for_customers_p [im_permission $user_id add_tickets_for_customers]
     set add_tickets_p [im_permission $user_id "add_tickets"]
     set view_tickets_all_p [im_permission $user_id "view_tickets_all"]
 
-    db_0or1row ticket_info "
+    if {![db_0or1row ticket_info "
 	select	coalesce(t.ticket_assignee_id, 0) as ticket_assignee_id,
 		coalesce(t.ticket_customer_contact_id,0) as ticket_customer_contact_id,
 		coalesce(o.creation_user,0) as creation_user_id,
@@ -143,13 +148,14 @@ ad_proc -public im_ticket_permissions {
 	where	t.ticket_id = :ticket_id and
 		t.ticket_id = p.project_id and
 		t.ticket_id = o.object_id
-    "
+    "]} {
+	# Didn't find ticket - just return with permissions set to 0...
+	return 0
+    }
 
     set owner_p [expr $user_id == $creation_user_id]
     set assignee_p [expr $user_id == $ticket_assignee_id]
     set customer_p [expr $user_id == $ticket_customer_contact_id]
-
-#    ad_return_complaint 1 "<pre>\nowner_p=$owner_p\nassignee_p=$assignee_p\ncustomer_p=$customer_p\ncase_assignee_p=$case_assignee_p\nholding_user_p=$holding_user_p\nqueue_member_p=$queue_member_p\n</pre>"
 
     set read [expr $admin_p || $owner_p || $assignee_p || $customer_p || $holding_user_p || $case_assignee_p || $queue_member_p || $view_tickets_all_p || $add_tickets_for_customers_p || $edit_ticket_status_p]
     set write [expr $read && $edit_ticket_status_p]
@@ -1128,7 +1134,7 @@ ad_proc -public im_navbar_tree_helpdesk_ticket_type {
 # ---------------------------------------------------------------
 
 
-ad_proc -public im_helpdesk_related_tickets_component {
+ad_proc -public im_helpdesk_related_objects_component {
     -ticket_id:required
 } {
     Returns a HTML component with the list of related tickets.
@@ -1139,7 +1145,15 @@ ad_proc -public im_helpdesk_related_tickets_component {
                     [list return_url [im_url_with_query]] \
     ]
 
-    set result [ad_parse_template -params $params "/packages/intranet-helpdesk/www/related-tickets-component"]
+    set result [ad_parse_template -params $params "/packages/intranet-helpdesk/www/related-objects-component"]
     return [string trim $result]
+}
+
+ad_proc -public im_helpdesk_related_tickets_component {
+    -ticket_id:required
+} {
+    Replaced by im_helpdesk_related_objects_component
+} {
+    return ""
 }
 

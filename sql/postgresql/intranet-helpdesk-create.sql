@@ -1118,7 +1118,7 @@ SELECT acs_permission__grant_permission(
 
 
 -- ------------------------------------------------------
--- Show related tickets
+-- Show related objects
 --
 SELECT	im_component_plugin__new (
 	null,				-- plugin_id
@@ -1127,18 +1127,18 @@ SELECT	im_component_plugin__new (
 	null,				-- creation_user
 	null,				-- creation_ip
 	null,				-- context_id
-	'Related Tickets',		-- plugin_name
+	'Related Objects',		-- plugin_name
 	'intranet-helpdesk',		-- package_name
 	'right',			-- location
 	'/intranet-helpdesk/new',	-- page_url
 	null,				-- view_name
-	90,				-- sort_order
-	'im_helpdesk_related_tickets_component -ticket_id $ticket_id',
-	'lang::message::lookup "" intranet-helpdesk.Related_Tickets "Related Tickets"'
+	91,				-- sort_order
+	'im_helpdesk_related_objects_component -ticket_id $ticket_id',
+	'lang::message::lookup "" intranet-helpdesk.Related_Objects "Related Objects"'
 );
 
 SELECT acs_permission__grant_permission(
-        (select plugin_id from im_component_plugins where plugin_name = 'Related Tickets' and package_name = 'intranet-helpdesk'),
+        (select plugin_id from im_component_plugins where plugin_name = 'Related Objects' and package_name = 'intranet-helpdesk'),
         (select group_id from groups where group_name = 'Employees'),
         'read'
 );
