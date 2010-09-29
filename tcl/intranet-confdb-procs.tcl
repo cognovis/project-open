@@ -578,3 +578,22 @@ ad_proc -public im_navbar_tree_confdb { } {
 }
 
 
+# ---------------------------------------------------------------
+# Component showing related objects
+# ---------------------------------------------------------------
+
+ad_proc -public im_conf_item_related_objects_component {
+    -conf_item_id:required
+} {
+    Returns a HTML component with the list of related tickets.
+} {
+    set params [list \
+                    [list base_url "/intranet-helpdesk/"] \
+                    [list conf_item_id $conf_item_id] \
+                    [list return_url [im_url_with_query]] \
+    ]
+
+    set result [ad_parse_template -params $params "/packages/intranet-confdb/www/related-objects-component"]
+    return [string trim $result]
+}
+
