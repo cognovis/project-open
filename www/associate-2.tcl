@@ -63,8 +63,7 @@ switch $target_object_type {
 		select	count(*)
 		from	im_release_items i,
 			acs_rels r
-		where
-			i.rel_id = r.rel_id
+		where	i.rel_id = r.rel_id
 			and r.object_id_one = :release_project_id
 			and r.object_id_two = :pid
 	    "]
@@ -104,6 +103,42 @@ switch $target_object_type {
 	}
     }
     ticket {
+	# release_project_id contains the project to associate
+
+	foreach pid $tid {
+
+	    set exists_p [db_string count "
+		select	count(*)
+		from	im_ticket_ticket_rels ttr,
+			acs_rels r
+		where	ttr.rel_id = r.rel_id
+			and r.object_id_one = :release_project_id
+			and r.object_id_two = :pid
+	    "]
+
+	    if {!$exists_p} {
+		    set max_sort_order [db_string max_sort_order "
+		        select  coalesce(max(i.sort_order),0)
+		        from    im_ticket_ticket_rels ttr,
+		                acs_rels r
+		        where	ttr.rel_id = r.rel_id
+		                and r.object_id_one = :release_project_id
+		    " -default 0]
+
+		    db_string add_user "
+			select im_release_item__new (
+				null,
+				'im_ticket_ticket_rel',
+				:conf_item_id,
+				:pid,
+				null,
+				:current_user_id,
+				'[ad_conn peeraddr]',
+	                        [expr $max_sort_order + 10]
+			)
+		    "
+	    }
+	}
     }
     default {
 	ad_return_complaint 1 [lang::message::lookup "" intranet-helpdesk.Unknown_target_object_type "Unknown object type %target_object_type%"]
