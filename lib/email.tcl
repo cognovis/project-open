@@ -183,7 +183,7 @@ append form_elements {
     {mail_through_p:integer(radio)
 	{label "[_ intranet-contacts.Mail_through_p]"}
 	{options {{"Yes" "1"} {"No" "0"}}}
-	{value "1"}
+	{value "0"}
 	{help_text "[_ intranet-contacts.lt_Mail_through_p_help]"}
     }
 }
@@ -288,16 +288,19 @@ ad_form -action $action \
 	    }
 
 	    set party [::im::dynfield::Class get_instance_from_db -id $party_id]
-	    
+	    set name [$party name]
+
+	    # Build the list of replacement values
 	    set values [list]
 	    foreach element [list first_names last_name name] {
 		lappend values [list "{$element}" [$party $element]]
 	    }
-	    set name [$party name]
-	    lappend values [list "salutation" "[$party set salutation_id_deref]"]
-	    
+	    lappend values [list "{salutation}" "[$party set salutation_id_deref]"]
+	    lappend values [list "{user_id}" $party_id]
+	    lappend values [list "{auto_login}" [im_generate_auto_login -user_id $party_id]]
+
+	    # Actually substitute the replacements
 	    set interpol_subject [contact::message::interpolate -text $subject -values $values]
-	    
 	    set interpol_content_body [contact::message::interpolate -text $content_body -values $values]
 	    
 	    # If we are doing mail through for tracking purposes
