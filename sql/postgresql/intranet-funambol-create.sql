@@ -52,7 +52,6 @@ drop function inline_0();
 -- Auxillary
 ---------------------------------------------------------------------
 
-drop function fnbl_next_id(varchar);
 create or replace function fnbl_next_id (varchar)
 returns bigint as $$
 DECLARE
@@ -75,7 +74,6 @@ END;$$ language 'plpgsql';
 -- 5: Done ->		30096:Resolved
 -- 8: Suspended ->	30026:Waiting for Other
 
-drop function fnbl_to_po_task_status(integer);
 create or replace function fnbl_to_po_task_status (integer)
 returns integer as $$
 DECLARE
@@ -93,7 +91,6 @@ BEGIN
 	RETURN v_status_id;
 END;$$ language 'plpgsql';
 
-drop function fnbl_from_po_task_status(integer);
 create or replace function fnbl_from_po_task_status (integer)
 returns integer as $$
 DECLARE
@@ -123,7 +120,6 @@ END;$$ language 'plpgsql';
 -- User Accounts
 ---------------------------------------------------------------------
 
-drop function fnbl_export_user_accounts ();
 create or replace function fnbl_export_user_accounts ()
 returns integer as $$
 DECLARE
@@ -185,7 +181,6 @@ END;$$ language 'plpgsql';
 -- Tickets
 ---------------------------------------------------------------------
 
-drop function fnbl_export_tickets (integer);
 create or replace function fnbl_export_tickets (integer)
 returns integer as $$
 DECLARE
@@ -335,7 +330,7 @@ END;$$ language 'plpgsql';
 -- Run Synchronization
 ---------------------------------------------------------------------
 
-create or replace function fnbl_export ()
+create or replace function fnbl_sync ()
 returns integer as $$
 DECLARE
     row		RECORD;
