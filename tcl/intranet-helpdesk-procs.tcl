@@ -1129,10 +1129,10 @@ ad_proc -public im_navbar_tree_helpdesk_ticket_type {
     return $html
 }
 
-# ---------------------------------------------------------------
-# Component showing referenced tickets
-# ---------------------------------------------------------------
 
+# ---------------------------------------------------------------
+# Component showing related objects
+# ---------------------------------------------------------------
 
 ad_proc -public im_helpdesk_related_objects_component {
     -ticket_id:required
