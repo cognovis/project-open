@@ -32,7 +32,7 @@ values ('im_ticket', 'im_projects', 'project_id');
 
 
 insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_ticket','view','/intranet-helpdesk/new?ticket_id=');
+'im_ticket','view','/intranet-helpdesk/new?form_mode=display&ticket_id=');
 insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_ticket','edit','/intranet-helpdesk/new?ticket_id=');
 
