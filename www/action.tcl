@@ -100,6 +100,11 @@ switch $action_id {
 		    [lang::message::lookup "" intranet-helpdesk.Re_opened_by_user "Re-opened by %user_name%"]
 	    }
 	}
+	30540 {
+	    # Associated
+	    if {"" == $tid} { ad_returnredirect $return_url }
+	    ad_returnredirect [export_vars -base "/intranet-helpdesk/associate" {tid}]
+	}
 	30590 {
 	    # Delete
 	    foreach ticket_id $tid {

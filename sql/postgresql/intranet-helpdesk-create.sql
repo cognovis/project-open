@@ -621,7 +621,7 @@ SELECT im_category_hierarchy_new(30011, 30000);
 
 SELECT im_category_new(30012, 'Customer review', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30012, 30000);
-
+-
 SELECT im_category_new(30014, 'Quoting', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30014, 30000);
 
@@ -639,6 +639,10 @@ SELECT im_category_hierarchy_new(30022, 30000);
 
 SELECT im_category_new(30024, 'Invoicing', 'Intranet Ticket Status');
 SELECT im_category_hierarchy_new(30024, 30000);
+
+SELECT im_category_new(30026, 'Waiting for Other', 'Intranet Ticket Status');
+SELECT im_category_hierarchy_new(30026, 30000);
+
 
 --
 -- Closed States
@@ -736,6 +740,10 @@ update im_categories set aux_string1 = '/intranet-helpdesk/action-duplicated'
 where category_id = 30520;
 
 SELECT im_category_new(30530, 'Re-Open', 'Intranet Ticket Action');
+
+
+SELECT im_category_new(30540, 'Associate', 'Intranet Ticket Action');
+
 
 
 
