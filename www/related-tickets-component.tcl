@@ -25,27 +25,11 @@ set current_user_id [ad_maybe_redirect_for_registration]
 # ---------------------------------------------------------------
 
 set bulk_action_list {}
-lappend bulk_actions_list "[lang::message::lookup "" intranet-helpdesk.Delete "Delete"]" "ticket-ticket-rel-del" "[lang::message::lookup "" intranet-helpdesk.Remove_checked_items "Remove Checked Items"]"
-
+lappend bulk_actions_list "[lang::message::lookup "" intranet-helpdesk.Delete "Delete"]" "associate-delete" "[lang::message::lookup "" intranet-helpdesk.Remove_checked_items "Remove Checked Items"]"
 
 set actions [list]
-
-set ttt {
-set user_msg [lang::message::lookup {} intranet-helpdesk.Associate_with_User {Associate with User}]
-lappend actions $user_msg [export_vars -base "/intranet-helpdesk/associate" {object_id {object_type user}}] ""
-
-set release_project_msg [lang::message::lookup {} intranet-helpdesk.Associate_with_Release_Project {Associate with Release Project}]
-lappend actions $release_project_msg [export_vars -base "/intranet-helpdesk/associate" {object_id {object_type release_project}}] ""
-
-set conf_item_msg [lang::message::lookup {} intranet-helpdesk.Associate_with_Conf_Item {Associate with Conf Item}]
-lappend actions $conf_item_msg [export_vars -base "/intranet-helpdesk/associate" {object_id {object_type conf_item}}] ""
-
-set ticket_msg [lang::message::lookup {} intranet-helpdesk.Associate_with_Another_Ticket {Associate with another Ticket}]
-lappend actions $ticket_msg [export_vars -base "/intranet-helpdesk/associate" {object_id {object_type conf_item}}] ""
-}
-
 set assoc_msg [lang::message::lookup {} intranet-helpdesk.New_Association {Associated with new Object}]
-lappend actions $assoc_msg [export_vars -base "/intranet-helpdesk/associate" {{object_id $ticket_id}}] ""
+lappend actions $assoc_msg [export_vars -base "/intranet-helpdesk/associate" {return_url {tid $ticket_id}}] ""
 
 list::create \
     -name tickets \
@@ -54,7 +38,7 @@ list::create \
     -row_pretty_plural "[lang::message::lookup {} intranet-helpdesk.Tickets "Associated Tickets"]" \
     -has_checkboxes \
     -bulk_actions $bulk_actions_list \
-    -bulk_action_export_vars { return_url } \
+    -bulk_action_export_vars { ticket_id return_url } \
     -actions $actions \
     -elements {
 	ticket_chk {
