@@ -44,15 +44,6 @@
 			<%= [im_box_footer] %>
 			</if>
 
-			<%= [im_box_header [lang::message::lookup "" intranet-confdb.Assoc_Projects "Associated Projects"]] %>
-			<listtemplate name="assoc_projects"></listtemplate>
-			<%= [im_box_footer] %>
-			<br>
-
-			<%= [im_box_header [lang::message::lookup "" intranet-confdb.Associated_Tickets "Associated Tickets"]] %>
-			<listtemplate name="assoc_tickets"></listtemplate>
-			<%= [im_box_footer] %>
-
 			<%= [im_component_bay right] %>
 
 		    </td>
