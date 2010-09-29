@@ -32,11 +32,11 @@ set page_focus "im_header_form.keywords"
 set action_forbidden_msg [lang::message::lookup "" intranet-helpdesk.Action_Forbidden "<b>Unable to execute action</b>:<br>You don't have the permissions to execute the action '%action_name%' on this ticket."]
 
 # Check that the user has write permissions on all select tickets
-foreach ticket_id $tid {
-    # Check that ticket_id is an integer
-    im_security_alert_check_integer -location "Helpdesk: Associate" -value $ticket_id
+foreach t $tid {
+    # Check that t is an integer
+    im_security_alert_check_integer -location "Helpdesk: Associate" -value $t
 
-    im_ticket_permissions $current_user_id $ticket_id view read write admin
+    im_ticket_permissions $current_user_id $t view read write admin
     if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
 }
 
@@ -112,25 +112,25 @@ switch $target_object_type {
 		from	im_ticket_ticket_rels ttr,
 			acs_rels r
 		where	ttr.rel_id = r.rel_id
-			and r.object_id_one = :release_project_id
+			and r.object_id_one = :ticket_id
 			and r.object_id_two = :pid
 	    "]
 
 	    if {!$exists_p} {
 		    set max_sort_order [db_string max_sort_order "
-		        select  coalesce(max(i.sort_order),0)
+		        select  coalesce(max(ttr.sort_order),0)
 		        from    im_ticket_ticket_rels ttr,
 		                acs_rels r
 		        where	ttr.rel_id = r.rel_id
 		                and r.object_id_one = :release_project_id
 		    " -default 0]
 
-		    db_string add_user "
-			select im_release_item__new (
+		    db_string add_ticket_ticket_rel "
+			select im_ticket_ticket_rel__new (
 				null,
 				'im_ticket_ticket_rel',
-				:conf_item_id,
 				:pid,
+				:ticket_id,
 				null,
 				:current_user_id,
 				'[ad_conn peeraddr]',
