@@ -634,6 +634,41 @@ ad_proc -public im_helpdesk_new_ticket_ticket_rel {
 # Selects & Options
 # ---------------------------------------------------------------------
 
+ad_proc -public im_ticket_options {
+    {-include_empty_p 1}
+    {-include_empty_name "" }
+    {-maxlen_name 50 }
+} {
+    Returns a list of Tickets suitable for ad_form
+} {
+    set user_id [ad_get_user_id]
+
+    set ticket_sql "
+	select	child.*,
+		t.*
+	from	im_projects child,
+		im_projects parent,
+		im_tickets t
+	where	parent.parent_id is null and
+		child.project_id = t.ticket_id and
+		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+	order by
+		child.project_nr,
+		child.project_name
+    "
+
+    set options [list]
+    db_foreach tickets $ticket_sql {
+	lappend options [list "$project_nr - [string range $project_name 0 $maxlen_name]" $ticket_id]
+    }
+
+    if {$include_empty_p} { set options [linsert $options 0 "$include_empty_name {}"] }
+
+    return $options
+}
+
+
+
 ad_proc -public im_helpdesk_ticket_queue_options {
     {-mine_p 0}
     {-include_empty_p 1}
@@ -721,6 +756,12 @@ ad_proc -public im_helpdesk_ticket_sla_options {
     return $options
 }
 
+
+
+
+# ----------------------------------------------------------------------
+# Portlets
+# ---------------------------------------------------------------------
 
 ad_proc -public im_helpdesk_home_component {
     {-show_empty_ticket_list_p 1}

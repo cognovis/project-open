@@ -20,7 +20,7 @@ ad_page_contract {
 # ---------------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
-set page_title [lang::message::lookup "" intranet-helpdesk.Associate_Ticket_With_Other_Object "Associate Ticket With Other Object"]
+set page_title [lang::message::lookup "" intranet-helpdesk.Associate_Ticket_With_Other_Object "Associate Tickets With Another Object"]
 set context_bar [im_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 set action_forbidden_msg [lang::message::lookup "" intranet-helpdesk.Action_Forbidden "<b>Unable to execute action</b>:<br>You don't have the permissions to execute the action '%action_name%' on this ticket."]
@@ -34,5 +34,8 @@ foreach ticket_id $tid {
     im_ticket_permissions $current_user_id $ticket_id view read write admin
     if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
 }
+
+set first_ticket_id [lindex $tid 0]
+
 
 

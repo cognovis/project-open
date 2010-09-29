@@ -6,12 +6,18 @@
 # http://www.project-open.com/license/ for details.
 
 ad_page_contract {
-    Allow the user to associate the current ticket with a new object
-    using an OpenACS relationship.
+    Associate the ticket_ids in "tid" with one of the specified objects.
+    target_object_type specifies the type of object to associate with and
+    determines which parameters are used.
     @author frank.bergmann@project-open.com
 } {
     { tid ""}
     { target_object_type "" }
+    { user_id "" }
+    { role_id "" }
+    { release_project_id "" }
+    { conf_item_id "" }
+    { ticket_id "" }
     { return_url "/intranet-helpdesk/index" }
 }
 
@@ -34,4 +40,75 @@ foreach ticket_id $tid {
     if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
 }
 
-set first_ticket_id [lindex $tid 0]
+# ---------------------------------------------------------------
+# 
+# ---------------------------------------------------------------
+
+switch $target_object_type {
+    user {
+	# user_id contains the user to associate with 
+	# role_id contains the type of association (member or admin)
+
+	if {"" == $role_id} { ad_return_complaint 1 [lang::message::lookup "" intranet-helpdesk.No_Role_Specified "No role specified"] }
+	foreach t $tid {
+	    im_biz_object_add_role $user_id $t $role_id
+	}
+    }
+    release_project {
+	# release_project_id contains the project to associate
+
+	foreach pid $tid {
+
+	    set exists_p [db_string count "
+		select	count(*)
+		from	im_release_items i,
+			acs_rels r
+		where
+			i.rel_id = r.rel_id
+			and r.object_id_one = :release_project_id
+			and r.object_id_two = :pid
+	    "]
+
+	    if {!$exists_p} {
+
+		    set max_sort_order [db_string max_sort_order "
+		        select  coalesce(max(i.sort_order),0)
+		        from    im_release_items i,
+		                acs_rels r
+		        where	i.rel_id = r.rel_id
+		                and r.object_id_one = :release_project_id
+		    " -default 0]
+
+		    set release_status_id [im_release_mgmt_status_default]
+		    db_string add_user "
+			select im_release_item__new (
+				null,
+				'im_release_item',
+				:release_project_id,
+				:pid,
+				null,
+				:current_user_id,
+				'[ad_conn peeraddr]',
+				:release_status_id,
+	                        [expr $max_sort_order + 10]
+			)
+		    "
+	    }
+	}
+    }
+    conf_item {
+	foreach t $tid {
+	    im_conf_item_new_project_rel \
+		-project_id $t \
+		-conf_item_id $conf_item_id
+	}
+    }
+    ticket {
+    }
+    default {
+	ad_return_complaint 1 [lang::message::lookup "" intranet-helpdesk.Unknown_target_object_type "Unknown object type %target_object_type%"]
+    }
+}
+
+ad_returnredirect $return_url
+
