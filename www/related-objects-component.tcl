@@ -35,7 +35,7 @@ list::create \
     -name tickets \
     -multirow tickets_multirow \
     -key rel_id \
-    -row_pretty_plural "[lang::message::lookup {} intranet-helpdesk.Tickets "Associated Tickets"]" \
+    -row_pretty_plural "[lang::message::lookup {} intranet-helpdesk.Associated_Objects "Associated Objects"]" \
     -has_checkboxes \
     -bulk_actions $bulk_actions_list \
     -bulk_action_export_vars { ticket_id return_url } \
