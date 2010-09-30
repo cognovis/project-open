@@ -106,7 +106,19 @@ db_foreach column_list_sql $column_sql {
 	append col_url "&ticket_type_id=$ticket_type_id"
 	append col_url "&ticket_queue_id=$ticket_queue_id"
 	append col_url "&assignee_id=$assignee_id"
-#	append col_url "&ticket_component_id=$ticket_component_id"
+
+	# Append the DynField values from the Filter as pass-through variables
+	# so that sorting won't alter the selected tickets
+	set dynfield_sql "
+		select	aa.attribute_name
+		from	im_dynfield_attributes a,
+			acs_attributes aa
+		where	a.acs_attribute_id = aa.attribute_id
+			and aa.object_type = 'im_ticket'
+	"
+	db_foreach pass_through_vars $dynfield_sql {
+	    append col_url "&$attribute_name=[im_opt_val $attribute_name]"
+	}
 
 	set admin_link "<a href=[export_vars -base "/intranet/admin/views/new-column" {return_url column_id {form_mode edit}}]>[im_gif wrench]</a>"
 
