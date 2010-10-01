@@ -228,7 +228,7 @@ set filter_html "
 	  <tr>
 	    <td valign=top>[_ intranet-payments.Payment_Status]</td>
 	    <td valign=top>
-              [im_select status_id $type_types ""]
+              [im_select -translate_p 0 status_id $type_types ""]
               <input type=submit value='[_ intranet-payments.Go]' name=submit>
             </td>
 	  </tr>
