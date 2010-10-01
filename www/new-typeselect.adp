@@ -16,7 +16,7 @@
 	<tr class=roweven>
 	    <td><%= [lang::message::lookup "" intranet-helpdesk.SLA_long "Service<br>Level<br>Agreement"] %></td>
 	    <td>
-		<%= [im_select ticket_sla_id $ticket_sla_options $ticket_sla_id] %>
+		<%= [im_select -translate_p 0 ticket_sla_id $ticket_sla_options $ticket_sla_id] %>
 	    </td>
 	</tr>
 </if>
