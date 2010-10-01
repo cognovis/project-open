@@ -44,7 +44,7 @@
 	<tr>
 	<td>	<input type=radio name=target_object_type value=ticket></td>
 	<td>	<%= [lang::message::lookup "" intranet-confdb.Object_Type_Ticket Ticket] %></td>
-	<td>	<%= [im_select -ad_form_option_list_style_p 1 ticket_id [im_ticket_options]] %></td>
+	<td>	<%= [im_select -translate_p 0 -ad_form_option_list_style_p 1 ticket_id [im_ticket_options]] %></td>
 	<td>	<%= [lang::message::lookup "" intranet-confdb.Associate_Msg_Ticket "
 	    	Associate your configuration items with a ticket that will affect the items."] %>
 	</td>
