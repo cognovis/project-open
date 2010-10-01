@@ -45,7 +45,7 @@
 	<tr>
 	<td>	<input type=radio name=target_object_type value=conf_item></td>
 	<td>	<%= [lang::message::lookup "" intranet-helpdesk.Object_Type_Configuration_Item "Configuration Item"] %></td>
-	<td>	<%= [im_select -ad_form_option_list_style_p 1 conf_item_id [im_conf_item_options]] %></td>
+	<td>	<%= [im_select -ad_form_option_list_style_p 1 -translate_p 0 conf_item_id [im_conf_item_options]] %></td>
 	<td>	<%= [lang::message::lookup "" intranet-helpdesk.Associate_Msg_Conf_Item "
 	    	Associate your tickets with a configuration item.<br>
 	    	A configuration item is a hardware or software item that is affected by your tickets."] %>
@@ -55,7 +55,7 @@
 	<tr>
 	<td>	<input type=radio name=target_object_type value=ticket></td>
 	<td>	<%= [lang::message::lookup "" intranet-helpdesk.Object_Type_Ticket Ticket] %></td>
-	<td>	<%= [im_select -ad_form_option_list_style_p 1 ticket_id [im_ticket_options -maxlen_name 30]] %></td>
+	<td>	<%= [im_select -ad_form_option_list_style_p 1 -translate_p 0 ticket_id [im_ticket_options -maxlen_name 30]] %></td>
 	<td>	<%= [lang::message::lookup "" intranet-helpdesk.Associate_Msg_Ticket "
 	    	Associate your tickets with another ticket.<br>
 	    	This is used for escalating and for referencing another ticket."] %>
