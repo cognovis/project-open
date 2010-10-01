@@ -41,8 +41,8 @@ set action_name [im_category_from_id $action_id]
 set action_forbidden_msg [lang::message::lookup "" intranet-helpdesk.Action_Forbidden "<b>Unable to execute action</b>:<br>You don't have the permissions to execute the action '%action_name%' on this ticket."]
 
 switch $action_id {
-	30500 {
-	    # Close
+	30500 - 30510 {
+	    # Close and "Close & Notify"
 	    foreach ticket_id $tid {
 		im_ticket_permissions $user_id $ticket_id view read write admin
 		if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
@@ -61,29 +61,10 @@ switch $action_id {
 		im_ticket::add_reply -ticket_id $ticket_id -subject \
 		    [lang::message::lookup "" intranet-helpdesk.Closed_by_user "Closed by %user_name%"]
 	    }
-	}
-	30510 {
-	    # Close & notify
-	    foreach ticket_id $tid {
-		im_ticket_permissions $user_id $ticket_id view read write admin
-		if {!$write} { ad_return_complaint 1 $action_forbidden_msg }
-		db_dml close_ticket "
-			update im_tickets set 
-				ticket_status_id = [im_ticket_status_closed],
-				ticket_done_date = now()
-			where ticket_id = :ticket_id
-	        "
-		db_dml close_ticket "
-			update im_projects set 
-				project_status_id = [im_project_status_closed]
-			where project_id = :ticket_id
-	        "
 
-		# ToDo: Notifiy "stakeholders" that the ticket has been re-opened.
-		# Unify this functionality with the Forum-Notify and/or Core member-notify?
-
-		im_ticket::add_reply -ticket_id $ticket_id -subject \
-		    [lang::message::lookup "" intranet-helpdesk.Closed_by_user "Closed by %user_name%"]
+	    if {$action_id == 30510} {
+		# Close & Notify - Notify all stakeholders
+		ad_returnredirect [export_vars -base "/intranet-helpdesk/notify-stakeholders" {tid action_id return_url}]
 	    }
 	}
 	30530 {
