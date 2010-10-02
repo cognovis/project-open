@@ -1,0 +1,78 @@
+<master>
+<property name="title">@page_title@</property>
+<property name="context">#intranet-core.context#</property>
+<property name="main_navbar_label">helpdesk</property>
+
+<h1>@page_title@</h1>
+
+<form action=notify-stakeholders-2 method=GET>
+<%= [export_form_vars tid return_url] %>
+
+
+<table>
+<tr>
+<td>
+	<%= [lang::message::lookup "" intranet-helpdesk.To To] %>
+</td>
+<td>
+	<table>
+	<tr class=rowtitle>
+	<th align=center>
+	<input type="checkbox" name="_dummy" onclick="acs_ListCheckAll('alerts', this.checked)" title="<%= [lang::message::lookup "" intranet-helpdesk.Check_Uncheck_all_rows "Check/Uncheck all rows"] %>" checked>
+	</th>
+	<th><%= [lang::message::lookup "" intranet-helpdesk.Name Name] %></th>
+	<th><%= [lang::message::lookup "" intranet-helpdesk.Email Email] %></th>
+	</tr>
+
+	<multiple name=stakeholders>
+	<if @stakeholders.rownum@ odd>
+	  <tr class="list-odd">
+	</if> <else>
+	  <tr class="list-even">
+	</else>
+
+	<td class="list-narrow">
+	      <input type=checkbox name=notifyee_id value="@stakeholders.user_id@" id="alerts,@user_id@" @stakeholders.checked@>
+	</td>
+	<td class="list-narrow">
+	<a href="@stakeholders.stakeholder_url@">@stakeholders.user_name@</a>
+	</td>
+	<td class="list-narrow">
+	<a href="mailto:@stakeholders.email@">@stakeholders.email@</a>
+	</td>
+	</tr>
+	</multiple>
+	</table>
+</td>
+</tr>
+
+
+<tr>
+<td>
+	<%= [lang::message::lookup "" intranet-helpdesk.Subject Subject] %>
+<td>
+	<input type=text size=80 name=subject value='@subject@'>
+</td>
+</tr>
+
+<tr>
+<td>
+	<%= [lang::message::lookup "" intranet-helpdesk.Message Message] %>
+<td>
+	<textarea name=message rows=5 cols=50></textarea>
+</td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+<td>
+	<input type=submit name=submit value="@send_msg@">
+</td>
+</tr>
+</table>
+
+
+
+
+</form>
+

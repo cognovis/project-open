@@ -14,7 +14,7 @@ ad_page_contract {
 
     @author frank.bergmann@project-open.com
 } {
-    { tid:integer,multiple 0 }
+    { tid 0 }
     action_id:integer
     return_url
 }
@@ -25,6 +25,8 @@ ad_page_contract {
 # --------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
+set page_title [lang::message::lookup "" intranet-helpdesk.Notify_Stakeholders "Notify Stakeholders"]
+set context_bar [im_context_bar $page_title]
 
 set action_name [im_category_from_id $action_id]
 set action_forbidden_msg [lang::message::lookup "" intranet-helpdesk.Action_Forbidden "<b>Unable to execute action</b>:<br>You don't have the permissions to execute the action '%action_name%' on this ticket."]
@@ -37,18 +39,56 @@ foreach ticket_id $tid {
 # Make sure an empty list of tickets won't cause an error further down.
 lappend tid -1
 
+set ticket_sql "
+	select	t.*,
+		p.*
+	from	im_tickets t,
+		im_projects p
+	where 	t.ticket_id = p.project_id and
+		t.ticket_id in ([join $tid ","])
+"
+set ticket_nr_list {}
+set ticket_count 0
+set ticket_name ""
+db_foreach tickets $ticket_sql {
+    lappend ticket_nr_list "#$project_nr"
+    set ticket_name $project_name
+    incr ticket_count
+}
+
+set subject "undefined"
+if {$ticket_count <= 1} {
+    set subject "Closed ticket: $ticket_name"
+} else {
+    set subject "Closed tickets: [join $ticket_nr_list ", "]"
+}
+
+
 # --------------------------------------------------------
 # Determine Stakeholders
 # --------------------------------------------------------
 
+
+set bulk_action_list {}
+# lappend bulk_actions_list "[lang::message::lookup "" intranet-helpdesk.Delete "Delete"]" "associate-delete" "[lang::message::lookup "" intranet-helpdesk.Remove_checked_items "Remove Checked Items"]"
+
+set actions [list]
+# set assoc_msg [lang::message::lookup {} intranet-helpdesk.New_Association {Associated with new Object}]
+# lappend actions $assoc_msg [export_vars -base "/intranet-helpdesk/associate" {return_url {tid $ticket_id}}] ""
+
 set stakeholder_sql "
+	select	s.*,
+		im_email_from_user_id(s.user_id) as email
+	from	(
 		-- customer contacts of the tickets
-		select	ticket_customer_contact_id as user_id
+		select	ticket_customer_contact_id as user_id,
+			im_name_from_user_id(ticket_customer_contact_id) as user_name
 		from	im_tickets t
 		where	 t.ticket_id in ([join $tid ","])
 		UNION
 		-- direct members of the tickets
-		select	u.user_id
+		select	u.user_id,
+			im_name_from_user_id(user_id) as user_name
 		from	acs_rels r,
 			im_tickets t,
 			users u
@@ -57,41 +97,28 @@ set stakeholder_sql "
 			t.ticket_id in ([join $tid ","])
 		UNION
 		-- authors of the forum topics related to the tickets
-		select	ft.owner_id as user_id
+		select	ft.owner_id as user_id,
+			im_name_from_user_id(ft.owner_id) as user_name
 		from	im_forum_topics ft
 		where	ft.object_id in ([join $tid ","])
+		) s
+	where
+		user_id != 0
+	order by
+		user_name
 "
-set stakeholders [db_list stakeholders $stakeholder_sql]
-
-set url [export_vars -base "/intranet-contacts/message" {return_url}]
-foreach user_id $stakeholders {
-    append url "&to=$user_id"
+db_multirow -extend { stakeholder_chk stakeholder_url checked } stakeholders stakeholders $stakeholder_sql {
+    set stakeholder_url [export_vars -base "/intranet/users/view" {user_id}]
+    set stakeholder_chk "<input type=\"checkbox\"
+                                name=\"stakeholder_id\"
+                                value=\"$user_id\"
+                                id=\"stakeholders_list,$user_id\">
+    "
+    set checked "checked"
 }
 
-ad_returnredirect $url
 
-set ttt {
 
-    {attachment_id:integer,multiple,optional}
-    {object_id:integer,multiple,optional}
-    {party_id:multiple,optional}
-    {party_ids ""}
-    {search_id:integer ""}
-    {message_type ""}
-    {message:optional}
-    {header_id:integer ""}
-    {footer_id:integer ""}
-    {return_url "./"}
-    {file_ids ""}
-    {files_extend:integer,multiple,optional ""}
-    {item_id:integer ""}
-    {folder_id:integer ""}
-    {signature_id:integer ""}
-    {subject ""}
-    {content_body:html ""}
-    {to:integer,multiple,optional ""}
-    {page:optional 1}
-    {context_id:integer ""}
-    {cc ""}
-    {bcc ""}
-}
+set send_msg [lang::message::lookup "" intranet-helpdesk.Send "Send"]
+
+
