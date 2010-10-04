@@ -28,6 +28,14 @@ set current_user_id [ad_maybe_redirect_for_registration]
 set page_title [lang::message::lookup "" intranet-helpdesk.Notify_Stakeholders "Notify Stakeholders"]
 set context_bar [im_context_bar $page_title]
 
+# Get the SystemUrl without trailing "/"
+set system_url [ad_parameter -package_id [ad_acs_kernel_id] SystemURL ""]
+set sysurl_len [string length $system_url]
+set last_char [string range $system_url [expr $sysurl_len-1] $sysurl_len]
+if {[string equal "/" $last_char]} {
+    set system_url "[string range $system_url 0 [expr $sysurl_len-2]]"
+}
+
 set action_name [im_category_from_id $action_id]
 set action_forbidden_msg [lang::message::lookup "" intranet-helpdesk.Action_Forbidden "<b>Unable to execute action</b>:<br>You don't have the permissions to execute the action '%action_name%' on this ticket."]
 
@@ -50,9 +58,11 @@ set ticket_sql "
 set ticket_nr_list {}
 set ticket_count 0
 set ticket_name ""
+set ticket_url_list {}
 db_foreach tickets $ticket_sql {
     lappend ticket_nr_list "#$project_nr"
-    set ticket_name $project_name
+    set ticket_name $project_nr
+    lappend ticket_url_list "- [export_vars -base "$system_url/intranet-helpdesk/new" {{form_mode display} ticket_id}]"
     incr ticket_count
 }
 
@@ -62,6 +72,20 @@ if {$ticket_count <= 1} {
 } else {
     set subject "Closed tickets: [join $ticket_nr_list ", "]"
 }
+
+
+
+
+set message [lang::message::lookup "" intranet-helpdesk.Closed_ticket_msg "
+Dear {first_names},
+
+We have closed the following ticket(s):
+[join $ticket_url_list "\n"]
+
+Best regards
+{sender_first_names}
+"]
+
 
 
 # --------------------------------------------------------

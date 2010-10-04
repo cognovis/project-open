@@ -50,7 +50,7 @@
 <td>
 	<%= [lang::message::lookup "" intranet-helpdesk.Subject Subject] %>
 <td>
-	<input type=text size=80 name=subject value='@subject@'>
+	<input type=text size=70 name=subject value='@subject@'>
 </td>
 </tr>
 
@@ -58,7 +58,7 @@
 <td>
 	<%= [lang::message::lookup "" intranet-helpdesk.Message Message] %>
 <td>
-	<textarea name=message rows=5 cols=50></textarea>
+	<textarea name=message rows=15 cols=80>@message;noquote@</textarea>
 </td>
 </tr>
 
