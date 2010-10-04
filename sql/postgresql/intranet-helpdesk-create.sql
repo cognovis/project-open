@@ -1133,7 +1133,7 @@ SELECT	im_component_plugin__new (
 	'/intranet-helpdesk/new',	-- page_url
 	null,				-- view_name
 	91,				-- sort_order
-	'im_helpdesk_related_objects_component -ticket_id $ticket_id',
+	'im_biz_object_related_objects_component -object_id $ticket_id',
 	'lang::message::lookup "" intranet-helpdesk.Ticket_Related_Objects "Ticket Related Objects"'
 );
 
@@ -1142,9 +1142,6 @@ SELECT acs_permission__grant_permission(
         (select group_id from groups where group_name = 'Employees'),
         'read'
 );
-
-
-
 
 
 -- ------------------------------------------------------
