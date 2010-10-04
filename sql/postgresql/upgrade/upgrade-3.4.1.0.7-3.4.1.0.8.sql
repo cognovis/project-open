@@ -29,7 +29,7 @@ SELECT	im_component_plugin__new (
 	'/intranet-helpdesk/new',	-- page_url
 	null,				-- view_name
 	91,				-- sort_order
-	'im_helpdesk_related_objects_component -ticket_id $ticket_id',
+	'im_biz_object_related_objects_component -object $ticket_id',
 	'lang::message::lookup "" intranet-helpdesk.Ticket_Related_Objects "Ticket Related Objects"'
 );
 
@@ -60,7 +60,4 @@ begin
 end;$$ language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
-
-
-
 
