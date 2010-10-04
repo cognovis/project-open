@@ -55,6 +55,9 @@ list::create \
 	}
 	direction_pretty {
 	    label "[lang::message::lookup {} intranet-helpdesk.Direction { }]"
+	    display_template {
+		@tickets_multirow.direction_pretty;noquote@
+	    }
 	}
 	object_type_pretty {
 	    label "[lang::message::lookup {} intranet-helpdesk.Object_Type {Type}]"
@@ -100,7 +103,9 @@ set object_rel_sql "
 			r.object_id_two = :ticket_id
 		)
 	order by
-		direction
+		o.object_type,
+		direction,
+		object_name
 "
 
 db_multirow -extend { ticket_chk object_url direction_pretty rel_name } tickets_multirow object_rels $object_rel_sql {
@@ -113,8 +118,8 @@ db_multirow -extend { ticket_chk object_url direction_pretty rel_name } tickets_
     set rel_name [lang::message::lookup "" intranet-helpdesk.Rel_$rel_type $rel_type_pretty]
 
     switch $direction {
-	incoming { set direction_pretty " -> " }
-	outgoing { set direction_pretty " <- " }
+	incoming { set direction_pretty [im_gif arrow_right] }
+	outgoing { set direction_pretty [im_gif arrow_left] }
 	default  { set direction_pretty "" }
     }
 }
