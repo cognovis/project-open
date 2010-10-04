@@ -5,9 +5,8 @@
 
 <h1>@page_title@</h1>
 
-<form action=notify-stakeholders-2 method=GET>
-<%= [export_form_vars tid return_url] %>
-
+<form action="/intranet/member-notify" method=GET>
+<%= [export_form_vars return_url] %>
 
 <table>
 <tr>
@@ -32,7 +31,7 @@
 	</else>
 
 	<td class="list-narrow">
-	      <input type=checkbox name=notifyee_id value="@stakeholders.user_id@" id="alerts,@user_id@" @stakeholders.checked@>
+	      <input type=checkbox name=user_id_from_search value="@stakeholders.user_id@" id="alerts,@user_id@" @stakeholders.checked@>
 	</td>
 	<td class="list-narrow">
 	<a href="@stakeholders.stakeholder_url@">@stakeholders.user_name@</a>
