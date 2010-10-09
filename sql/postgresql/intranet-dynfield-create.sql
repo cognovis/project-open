@@ -365,7 +365,7 @@ create table im_dynfield_layout (
 	-- How to display the label? "no_label" is useful for combined
 	-- fields (currency_code field of a monetary amount), "plain"
 	-- just shows the label in the column before the widget.
-	label_style		varchar(15) default 'table'
+	label_style		varchar(15) default 'plain'
 				constraint im_dynfield_label_style_nn
 				not null
 				constraint im_dynfield_label_style_ck
@@ -1392,7 +1392,7 @@ BEGIN
 	insert into im_dynfield_layout (
 		attribute_id, page_url, pos_y, label_style
 	) values (
-		v_dynfield_id, ''default'', p_pos_y, ''table''
+		v_dynfield_id, ''default'', p_pos_y, ''plain''
 	);
 
 	-- set all im_dynfield_type_attribute_map to "edit"
