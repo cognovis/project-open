@@ -160,7 +160,7 @@ BEGIN
 	insert into im_dynfield_layout (
 		attribute_id, page_url, pos_y, label_style
 	) values (
-		v_dynfield_id, ''default'', p_pos_y, ''table''
+		v_dynfield_id, ''default'', p_pos_y, ''plain''
 	);
 
 	-- set all im_dynfield_type_attribute_map to "edit"
