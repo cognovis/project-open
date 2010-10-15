@@ -102,7 +102,14 @@ set help_text "
 	    will exceed the budget.
 
 	</ul>
-	The interval defaults to 2000-01-01 - 2100-01-01.
+	The interval defaults to 2000-01-01 - 2100-01-01.<br>
+	<strong>Please Note:</strong><br>
+	<ul>
+	<li>	This report is not designed to show budgets on sub-projects and below.
+		Instead, the report assumes that budgets are assigned only to main projects and that
+		the progress of sub-projects and tasks is tracked based on the 'estimated hours' vs. 
+		'logged hours' in each project.</li>
+	</ul>
 "
 
 
