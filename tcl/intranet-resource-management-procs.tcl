@@ -975,7 +975,9 @@ ad_proc -public im_resource_mgmt_resource_planning {
 	
 	set top_dim {}
 	foreach top_var $top_vars {
-	    lappend top_dim $date_hash($top_var)
+	    set date_val ""
+	    catch { set date_val $date_hash($top_var) }
+	    lappend top_dim $date_val
 	}
 
 	# "distinct" clause: add the values of top_vars to the top scale, 
