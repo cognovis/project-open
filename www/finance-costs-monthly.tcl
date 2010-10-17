@@ -138,10 +138,10 @@ array set costs_months {}
 db_foreach costs $sql {
 
     # Setup left dimension
-    set cost_providers($provider_id) $provider_name
+    set costs_providers($provider_id) $provider_name
 
     # Setup top dimension
-    set cost_months($effective_month) $effective_month
+    set costs_months($effective_month) $effective_month
 
     # append the amount to the provider/month cell
     set key "$provider_id-$effective_month"
@@ -160,7 +160,7 @@ set upper_dim_html "
 	<tr>
 	<td>&nbsp;</tr>
 "
-foreach month [list sort [array keys cost_months]] {
+foreach month [lsort [array names costs_months]] {
     append upper_dim_html "	<td>$month</td>\n"
 }
 append upper_dim_html "
@@ -174,13 +174,17 @@ append upper_dim_html "
 # ------------------------------------------------------------
 
 set body_html ""
-foreach provider_id [list sort [array keys cost_providers]] {
+foreach provider_id [lsort [array names costs_providers]] {
+
+    # Get the name of the provider
     set provider_name $costs_providers($provider_id)
+
+
     append body_html "
 	<tr>
 	<td>$provider_name</td>
     "
-    foreach month [list sort [array keys cost_months]] {
+    foreach month [lsort [array names costs_months]] {
 	set key "$provider_id-$month"
 	set cell ""
 	if {[info exists costs_hash($key)]} { set cell $costs_hash($key) }

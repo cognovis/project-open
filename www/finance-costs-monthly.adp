@@ -29,7 +29,7 @@
 	<tr>
 	  <td class=form-label>Provider</td>
 	  <td class=form-widget>
-	    <%= [im_company_select -type "Provider" provider_id $provider_id] %>
+	    <%= [im_company_select provider_id $provider_id "" "Provider"] %>
 	  </td>
 	</tr>
 	<tr>
@@ -54,6 +54,9 @@
 </form>
 
 
+<table>
 @upper_dim_html;noquote@
 @body_html;noquote@
+</table>
+
 
