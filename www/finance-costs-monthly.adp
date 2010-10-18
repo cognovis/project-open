@@ -27,6 +27,18 @@
 	  </td>
 	</tr>
 	<tr>
+	  <td class=form-label>Minimum Turnover</td>
+	  <td class=form-widget>
+	    <input type=textfield name=min_sum value=@min_sum@>
+	  </td>
+	</tr>
+	<tr>
+	  <td class=form-label>Sort By</td>
+	  <td class=form-widget>
+	    <%= [im_select sort_by $sort_by_options $sort_by] %>
+	  </td>
+	</tr>
+	<tr>
 	  <td class=form-label>Provider</td>
 	  <td class=form-widget>
 	    <%= [im_company_select prov_id $prov_id "" "Provider"] %>
@@ -42,9 +54,11 @@
 
 	<table border=0 cellspacing=1 cellpadding=1>
 	<tr>
-	  <td class=form-label>sdfg</td>
+	  <td><h1>@page_title@</h1></td>
+        </tr>
 	  <td class=form-widget>
-		asdf
+		This report shows Provider Bills and Expenses of the selected period in a single report.<br>
+		The purpose of the report is to allow the controller to analyze recurring costs for completeness.
 	  </td>
 	</tr>
 	</table>
