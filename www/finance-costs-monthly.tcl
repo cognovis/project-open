@@ -13,7 +13,7 @@ ad_page_contract {
     { end_date "" }
     { output_format "html" }
     { project_id:integer 0}
-    { provider_id:integer 0}
+    { prov_id:integer 0}
 }
 
 # ------------------------------------------------------------
@@ -45,6 +45,10 @@ if {![string equal "t" $read_p]} {
 set page_title [lang::message::lookup "" intranet-reporting.Finance_Costs_Monthly_title "Finance Provider Costs per Month"]
 set context_bar [im_context_bar $page_title]
 set context ""
+
+set bgcolor(0) " class=roweven "
+set bgcolor(1) " class=rowodd "
+
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 
 # Check that Start & End-Date have correct format
@@ -102,8 +106,8 @@ set criteria [list]
 if {"" != $project_id && 0 != $project_id} {
     lappend criteria "p.project_id = :project_id"
 }
-if {"" != $provider_id && 0 != $provider_id} {
-    lappend criteria "p.company_id = :provider_id"
+if {"" != $prov_id && 0 != $prov_id} {
+    lappend criteria "p.company_id = :prov_id"
 }
 set where_clause [join $criteria "\n\tand "]
 if {"" != $where_clause} { set where_clause "and $where_clause" }
@@ -118,7 +122,8 @@ set sql "
 	from	im_companies prov,
 		im_costs c
 		LEFT OUTER JOIN im_expenses e ON (c.cost_id = e.expense_id)
-	where	c.cost_type_id in (
+	where	c.provider_id = prov.company_id and
+		c.cost_type_id in (
 			[im_cost_type_expense_item],
 			[im_cost_type_bill]
 		)
@@ -147,7 +152,7 @@ db_foreach costs $sql {
     set key "$provider_id-$effective_month"
     set cell ""
     if {[info exists costs_hash($key)]} { set cell $costs_hash($key) }
-    append cell "<a href=\"[export_vars]\">$amount_converted</a>\n"
+    append cell "<a href=\"[export_vars]\">$amount_converted</a><br>\n"
     set costs_hash($key) $cell
 }
 
@@ -157,11 +162,11 @@ db_foreach costs $sql {
 # ------------------------------------------------------------
 
 set upper_dim_html "
-	<tr>
-	<td>&nbsp;</tr>
+	<tr class=rowtitle>
+	<td class=rowtitle>&nbsp;</td>
 "
 foreach month [lsort [array names costs_months]] {
-    append upper_dim_html "	<td>$month</td>\n"
+    append upper_dim_html "	<td class=rowtitle>$month</td>\n"
 }
 append upper_dim_html "
 	</td>
@@ -174,6 +179,7 @@ append upper_dim_html "
 # ------------------------------------------------------------
 
 set body_html ""
+set ctr 0
 foreach provider_id [lsort [array names costs_providers]] {
 
     # Get the name of the provider
@@ -181,17 +187,18 @@ foreach provider_id [lsort [array names costs_providers]] {
 
 
     append body_html "
-	<tr>
+	<tr $bgcolor([expr $ctr % 2]) >
 	<td>$provider_name</td>
     "
     foreach month [lsort [array names costs_months]] {
 	set key "$provider_id-$month"
 	set cell ""
 	if {[info exists costs_hash($key)]} { set cell $costs_hash($key) }
-	append body_html "\t<td>$cell</td>\n"
+	append body_html "\t<td align=right>$cell</td>\n"
     }
     append body_html "
 	</tr>
     "
+    incr ctr
 }
 

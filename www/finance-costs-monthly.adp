@@ -29,7 +29,7 @@
 	<tr>
 	  <td class=form-label>Provider</td>
 	  <td class=form-widget>
-	    <%= [im_company_select provider_id $provider_id "" "Provider"] %>
+	    <%= [im_company_select prov_id $prov_id "" "Provider"] %>
 	  </td>
 	</tr>
 	<tr>
