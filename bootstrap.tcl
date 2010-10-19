@@ -140,6 +140,21 @@ set errno [catch {
     ns_log Notice "Loading acs-automated-testing specially so other packages can define tests..."
     apm_bootstrap_load_libraries -procs acs-automated-testing
 
+    # GN: Should be loaded before user packages such they can use
+    # the xotcl infrastructure
+    # DRB: only do it if xotcl's installed
+    if {[info command ::xotcl::Class] ne "" &&
+        [file isdirectory $root_directory/packages/xotcl-core]} {
+       apm_bootstrap_load_libraries -procs xotcl-core
+       apm_bootstrap_load_libraries -init xotcl-core
+    }
+
+    # Build the list of subsite packages
+    apm_build_subsite_packages_list
+
+    # Build the nsv dependency and descendent structures
+    apm_build_package_relationships
+
     # Load libraries, queries etc. for remaining packages
     apm_load_packages
 
@@ -168,7 +183,7 @@ if { $errno && $errno != 2 } {
     # thrown by a call to bootstrap_fatal_error. If not, bootstrap_fatal_error was
     # never called, so we need to call it now.
     global errorCode
-    if { [string compare $errorCode "bootstrap_fatal_error"] } {
+    if {$errorCode ne "bootstrap_fatal_error"  } {
 	bootstrap_fatal_error "Error during bootstrapping" 0
     }
 }

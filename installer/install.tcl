@@ -19,7 +19,7 @@ foreach var_name {system_owner admin_owner host_administrator outgoing_sender ne
 #
 #############
 
-if { [string compare $password $password_confirmation] } {
+if {$password ne $password_confirmation  } {
     install_return 200 "Passwords Don't Match" "
 The passwords you've entered don't match. Please <a href=\"javascript:history.back()\">try again</a>.
 "
@@ -51,34 +51,7 @@ if { ![install_good_data_model_p] } {
 
 install_do_packages_install
 
-##############
-#
-# Load message catalogs
-#
-#############
-
-# Doing this before restart so that keys are available in init files on startup
-ns_write "<p>Loading message catalogs..."
-lang::catalog::import -initialize
-ns_write "  <p>Done.<p>"
-
-##############
-#
-# Secret tokens
-#
-#############
-
-ns_write "<p>Generating secret tokens..."
-populate_secret_tokens_db
-ns_write "  <p>Done.<p>"
-
-##############
-#
-# Admin create
-#
-#############
-
-if { [empty_string_p $username] } {
+if { $username eq "" } {
     set username $email
 }
 
@@ -123,7 +96,38 @@ Please <a href=\"javascript:history.back()\">try again</a>.
     rename util_memoize_flush {}
     rename util_memoize_flush_saved util_memoize_flush
   }
+  ad_conn -set user_id $user_id
 }
+
+# Now process the application bundle if an install.xml file was found.
+
+if { [file exists "[acs_root_dir]/install.xml"] } {
+    set output [apm::process_install_xml "/install.xml" {}]
+    ns_write "<p>[join $output "</p><p>"]</p>"
+}
+
+
+##############
+#
+# Load message catalogs
+#
+#############
+
+
+# Doing this before restart so that keys are available in init files on startup
+ns_write "<p>Loading message catalogs..."
+lang::catalog::import -initialize
+ns_write "  <p>Done.<p>"
+
+##############
+#
+# Secret tokens
+#
+#############
+
+ns_write "<p>Generating secret tokens..."
+populate_secret_tokens_db
+ns_write "  <p>Done.<p>"
 
 ##############
 #
@@ -145,18 +149,15 @@ foreach { var param } {
     host_administrator HostAdministrator
     outgoing_sender OutgoingSender
 } {
-    ad_parameter -set [set $var] -package_id $kernel_id $param
+    parameter::set_value -parameter $param -value [set $var] -package_id $kernel_id
 }
 
 # set the Main Site RestrictToSSL parameter
 
-set main_site_id [db_string main_site_id_select { 
-    select package_id from apm_packages
-    where instance_name = 'Main Site' 
-}]
+set main_site_id [subsite::main_site_id]
 
-ad_parameter -set "acs-admin/*" -package_id $main_site_id RestrictToSSL
-ad_parameter -set $new_registrations -package_id $main_site_id NewRegistrationEmailAddress
+parameter::set_value -parameter RestrictToSSL -package_id  $main_site_id -value "acs-admin/*" 
+parameter::set_value -parameter NewRegistrationEmailAddress -package_id $main_site_id -value $new_registrations 
 
 # We're done - kill the server (will restart if server is setup properly)
 ad_schedule_proc -thread t -once t 1 ns_shutdown
@@ -172,7 +173,7 @@ ns_write "<b>Installation finished</b>
 
 <p> If not, please check your server error log, or contact your system administrator. </p>"
 
-if { ![string equal $post_installation_message ""] } {
+if { $post_installation_message ne "" } {
     ns_write $post_installation_message
 } else {
     ns_write "

@@ -24,7 +24,7 @@ ad_proc -private install_input_widget {
 } {
     set type_attribute [ad_decode $type "" "" "type=\"$type\""]
 
-    if { ![empty_string_p $value] } {
+    if { $value ne "" } {
         append extra_attributes " value=\"[ad_quotehtml $value]\""
     }
     
@@ -45,7 +45,7 @@ ad_proc -private install_param_mandatory_p { param_name } {
 } {
     array set mandatory_params_array [install_mandatory_params]
     set mandatory_names [array names mandatory_params_array]
-    return [expr [lsearch -exact $mandatory_names $param_name] != -1]
+    return [expr {[lsearch -exact $mandatory_names $param_name] != -1}]
 }
 
 ad_proc -private install_mandatory_params {} {
@@ -102,7 +102,7 @@ ad_proc -private install_page_contract { mandatory_params optional_params } {
     set form [ns_getform]
     set missing_params [list]
 
-    if { [empty_string_p $form] } {
+    if { $form eq "" } {
         # Form is empty - all mandatory params are missing
         foreach param_name [array names mandatory_params_array] {
             lappend missing_params $mandatory_params_array($param_name)
@@ -115,9 +115,9 @@ ad_proc -private install_page_contract { mandatory_params optional_params } {
                                  [array names optional_params_array]]
         foreach param_name $all_param_names {
             set param_value [ns_set iget $form $param_name]
-            set mandatory_p [expr [lsearch -exact $mandatory_params $param_name] != -1]
+            set mandatory_p [expr {[lsearch -exact $mandatory_params $param_name] != -1}]
 
-            if { ![empty_string_p $param_value] } {
+            if { $param_value ne "" } {
                 # Param in form - set value in callers scope
                 uplevel [list set $param_name $param_value]
             } else {
@@ -157,7 +157,7 @@ proc install_header { status title } {
 
     # Prefix the page title
     set page_title_prefix "OpenACS Installation"
-    if { ![empty_string_p $title] } {
+    if { $title ne "" } {
         set page_title "${page_title_prefix}: $title"
     } else {
         set page_title $page_title_prefix
@@ -267,7 +267,7 @@ proc install_handler { conn arg why } {
     # is still working.
     if { [regexp {/SYSTEM/(.*)} [ad_conn url] "" system_file] } {
 	if {[string compare [string range $system_file \
-		[expr [string length $system_file ] - 4] end] ".tcl"
+		[expr {[string length $system_file ] - 4}] end] ".tcl"
 	]} {
 	    set system_file "$system_file.tcl"
 	}
@@ -280,7 +280,7 @@ proc install_handler { conn arg why } {
 	return
     }
 
-    if { ![string compare $script ""] } {
+    if { $script eq "" } {
 	set script "index"
     }
 
@@ -327,17 +327,14 @@ proc install_redefine_ad_conn {} {
     # Peter Marklund
     # We need to be able to invoke ad_conn in the installer. However
     # We cannot use the rp_filter that sets up ad_conn
-    proc ad_conn { args } {
-        set attribute [lindex $args 0]
 
-        if { [string equal $attribute "-connected_p"] } {
-            set return_value 1
-        } elseif { [catch {set return_value [ns_conn $attribute] } error] } {
-            set return_value ""
-        }
+    # JCD: don't redefine ad_conn, just reset it and populate some things
+    ad_conn -reset
 
-        return $return_value
-    }
+    ad_conn -set connected_p 1
+    ad_conn -set user_id {}
+    ad_conn -set node_id {}
+    ad_conn -set package_id {}
 }
 
 ad_proc -public ad_windows_p {} {
@@ -347,7 +344,7 @@ ad_proc -public ad_windows_p {} {
     Note,  this procedure is a best guess, not sure of a better way of determining:
 } {
     set thisplatform [ns_info platform]
-    if {[string equal $thisplatform  "win32" ]} {
+    if {$thisplatform eq "win32"} {
        return 1
     } else {
        return 0
@@ -397,6 +394,7 @@ ad_proc -private install_do_data_model_install {} {
     # Some APM procedures use util_memoize, so initialize the cache 
     # before starting APM install
     apm_source "[acs_package_root_dir acs-tcl]/tcl/20-memoize-init.tcl"
+    apm_source [acs_package_root_dir acs-tcl]/tcl/database-init.tcl
 
     apm_version_enable -callback apm_ns_write_callback [apm_package_install -callback apm_ns_write_callback "[file join [acs_root_dir] packages acs-kernel acs-kernel.info]"]
 
@@ -411,12 +409,18 @@ ad_proc -private install_do_data_model_install {} {
 ad_proc -private install_do_packages_install {} {
     Installs all packages during OpenACS install.
 } {
+
+    # This magic here forces kernel_id to be cached on install once it is defined.
     proc ad_acs_kernel_id {} {
         if {[db_table_exists apm_packages]} {
-    	return [db_string acs_kernel_id_get {
-    	    select package_id from apm_packages
-    	    where package_key = 'acs-kernel'
-    	} -default 0]
+            set kernel_id [db_string acs_kernel_id_get {
+                select package_id from apm_packages
+                where package_key = 'acs-kernel'
+            } -default 0]
+            if {$kernel_id > 0} {
+                proc ad_acs_kernel_id {} "return $kernel_id"
+            }
+            return $kernel_id
         } else {
             return 0
         }
@@ -438,6 +442,12 @@ ad_proc -private install_do_packages_install {} {
     set dependency_results [apm_dependency_check -initial_install [apm_scan_packages -new [file join [acs_root_dir] packages]]]
     set dependencies_satisfied_p [lindex $dependency_results 0]
     set pkg_list [lindex $dependency_results 1]
+
+    if { !$dependencies_satisfied_p } {
+        ns_write "<p><b><i>At least one core package has an unsatisifed dependency.  No packages have been installed.  Here's what the APM has computed:</i></b><blockquote>$pkg_list</blockquote>"
+        return
+    }
+
     apm_packages_full_install -callback apm_ns_write_callback $pkg_list
 
     # Complete the initial install.
@@ -461,147 +471,6 @@ ad_proc -private install_do_packages_install {} {
 
         ns_write "</pre></blockquote>"
 
-        # Now process the application bundle if an install.xml file was found.
-
-        if { [file exists [apm_install_xml_file_path]] } {
-            set root_node [apm_load_install_xml_file]
-            set acs_application(name) [apm_required_attribute_value $root_node name]
-            set acs_application(pretty_name) [apm_attribute_value -default $acs_application(name) $root_node pretty-name]
-
-            ns_write "<p>Loading packages for the $acs_application(pretty_name) application.</p>"
-
-            set actions [xml_node_get_children_by_name $root_node actions]
-            if { [llength $actions] > 1 } {
-                ns_log Error "Error in \"install.xml\": only one action node is allowed"
-                ns_write "<p>Error in \"install.xml\": only one action node is allowed<p>"
-                return
-            }
-            set actions [xml_node_get_children [lindex $actions 0]]
-
-            foreach action $actions {
-
-                switch -exact [xml_node_get_name $action] {
-
-                    text {}
-
-                    install {
-
-                        set install_spec_files [list]
-                        foreach install_spec_file \
-                            [glob -nocomplain "[acs_root_dir]/packages/[apm_required_attribute_value $action package]/*.info"] {
-                            if { [catch { array set package [apm_read_package_info_file $install_spec_file] } errmsg] } {
-                                # Unable to parse specification file.
-                                ns_log Error "$install_spec_file could not be parsed correctly.  The error: $errmsg"	
-                                ns_write "<br>install: $install_spec_file could not be parsed correctly.  The error: $errmsg"	
-                                return
-                            }
-                            if { [apm_package_supports_rdbms_p -package_key $package(package.key)] &&
-                                 ![apm_package_installed_p $package(package.key)] } {
-                                lappend install_spec_files $install_spec_file
-                            }
-                        }
-
-                        set pkg_info_list [list]
-                        foreach spec_file [glob -nocomplain "[acs_root_dir]/packages/*/*.info"] {
-                            # Get package info, and find out if this is a package we should install
-                            if { [catch { array set package [apm_read_package_info_file $spec_file] } errmsg] } {
-                                # Unable to parse specification file.
-                                ns_log Error "$spec_file could not be parsed correctly.  The error: $errmsg"	
-                                ns_write "<br>install: $spec_file could not be parsed correctly.  The error: $errmsg"	
-                                return
-                            }
-
-                            if { [apm_package_supports_rdbms_p -package_key $package(package.key)] &&
-                                 ![apm_package_installed_p $package(package.key)] } {
-                                # Save the package info, we may need it for dependency satisfaction later
-                                lappend pkg_info_list [pkg_info_new $package(package.key) $spec_file \
-                                    $package(provides) $package(requires) ""]
-                            }
-                        }
-
-                        if { [llength $install_spec_files] > 0 } {
-                            set dependency_results [apm_dependency_check -pkg_info_all $pkg_info_list $install_spec_files]
-                            if { [lindex $dependency_results 0] == 1 } {
-                                apm_packages_full_install -callback apm_ns_write_callback [lindex $dependency_results 1]
-                            } else {
-                                foreach package_spec [lindex $dependency_results 1] {
-                                    if { [string is false [pkg_info_dependency_p $package_spec]] } {
-                                        ns_log Error "install: package \"[pkg_info_key $package_spec]\"[join [pkg_info_comment $package_spec] ","]"
-                                        append html "<p>Package \"[pkg_info_key $package_spec]\"\n<ul><li>[join [pkg_info_comment $package_spec] "<li>"]\n</ul>\n"
-                                    }
-                                }
-                                ns_write "$html\n"
-                                return
-                            }
-                        }
-                    }
-
-                    mount {
-
-                        set package_key [apm_required_attribute_value $action package]
-                        set instance_name [apm_required_attribute_value $action instance-name]
-                        set mount_point [apm_required_attribute_value $action mount-point]
-
-                        set parent_id [site_node::get_node_id -url "/"]
-
-                        if { [catch {
-                            db_transaction {            
-                                set node_id [site_node::new -name $mount_point -parent_id $parent_id]
-                            }
-                        } error] } {
-                            # There is already a node with that path, check if there is a package mounted there
-                            array set node [site_node::get -url "/$mount_point"]
-                            if { [empty_string_p $node(object_id)] } {
-                                # There is no package mounted there so go ahead and mount the new package
-                                set node_id $node(node_id)
-                            } else {
-                                ns_log Error "A package is already mounted at \"$mount_point\""
-                                ns_write "<br>mount: A package is already mounted at \"$mount_point\", ignoring mount command."
-                                set node_id ""
-                            }
-                        }
-
-                        if { ![empty_string_p $node_id] } {
-
-                            ns_write "<p>Mounting new instance of package $package_key at /$mount_point<p>"
-                            site_node::instantiate_and_mount \
-                                -node_id $node_id \
-                                -node_name $mount_point \
-                                -package_name $instance_name \
-                                -package_key $package_key
-
-                        }
-
-                    }
-
-                    set-parameter {
-                        set name [apm_required_attribute_value $action name]
-                        set value [apm_required_attribute_value $action value]
-                        set package_key [apm_attribute_value -default "" $action package]
-                        set url [apm_attribute_value -default "" $action url]
-
-                        if { ![string equal $package_key ""] && ![string equal $url ""] } {
-                            ns_log Error "set-parameter: Can't specify both package and url"
-                            ns_write "<br>set-parameter: Can't specify both package and url"
-                            return
-                        } elseif { ![string equal $package_key ""] } {
-                            parameter::set_from_package_key -package_key $package_key -parameter $name -value $value
-                        } else {
-                            parameter::set_value \
-                                -package_id [site_node::get_object_id -node_id [site_node::get_node_id -url $url]] \
-                                -parameter $name \
-                                -value $value
-                        }
-                    }
-
-                    default {
-                        ns_log Error "Error in \"install.xml\": got bad node \"[xml_node_get_name $action]\""
-                    }
-
-                }
-
-            }
-        }
     }
 
 
@@ -612,3 +481,9 @@ ad_proc -private install_do_packages_install {} {
 ns_register_filter preauth GET * install_handler
 ns_register_filter preauth POST * install_handler
 ns_register_filter preauth HEAD * install_handler
+
+if {[ns_info name] eq "NaviServer"} {
+    rename install_handler install_handler_conn
+    proc install_handler {why} { install_handler_conn _ _ $why }
+}
+

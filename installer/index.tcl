@@ -64,7 +64,7 @@ if { [file exists [apm_install_xml_file_path]] } {
     # Parse the xml document
     set root_node [apm_load_install_xml_file]
 
-    if { ![string equal [xml_node_get_name $root_node] application] } {
+    if { [xml_node_get_name $root_node] ne "application" } {
         error "Installer: Could not find root node application in install.xml file"
     }
 
@@ -77,7 +77,7 @@ The installer will automatically install the $acs_application(pretty_name)
 application after the basic OpenACS tookit has been installed.
 "
 
-    if { ![string equal $acs_application(home) ""] } {
+    if { $acs_application(home) ne "" } {
         append body "<p>
 For more information about the $acs_application(pretty_name) application visit the
 <a href=\"$acs_application(home)\">$acs_application(pretty_name) home page</a>
@@ -104,7 +104,7 @@ if { [nsv_exists acs_properties database_problem] } {
 installation is to configure your RDBMS, correctly install a database driver,
 and configure AOLserver to use it.  You can download 
 and install the latest version of the AOLserver Oracle and PostgreSQL drivers
-from the <a href='http://openacs.org/software.adp'>OpenACS.org Software Page</a>.
+from the <a href='http://openacs.org/software'>OpenACS.org Software Page</a>.
 
 <p>
 Once you're sure everything is installed and configured correctly, restart AOLserver.</b></p>
@@ -172,7 +172,7 @@ if {![xml_support_ok xml_status_msg]} {
 
 # AOLserver must support the "fancy" ADP parser.
 set adp_support [ns_config "ns/server/[ns_info server]/adp" DefaultParser]
-if { [string compare $adp_support "fancy"] } {
+if {$adp_support ne "fancy"  } {
     append errors "<li><p><strong>The fancy ADP parser is not enabled.  This is required to support 
 the OpenACS Templating System.  Without this templating system, none of the OpenACS pages installed by default
 will display.  Please add the following to your AOLserver configuration file (usually in 
@@ -192,16 +192,16 @@ After adding support for the fancy ADP parser, please restart your web server.
 # in the install.xml file)
 
 set stacksize [ns_config "ns/threads" StackSize]
-if { $stacksize < [expr $acs_application(min_stack_size) * 1024] } {
 
-    append errors "<li><p>The configured AOLserver Stacksize is too small
-([expr $stacksize / 1024]K).
+if { ![string is integer $stacksize] ||
+     $stacksize < [expr {$acs_application(min_stack_size) * 1024}] } {
+    append errors "<li><p><strong>The configured AOLserver Stacksize is too small, missing, or a non-integer value.
 $acs_application(pretty_name) requires a StackSize parameter of at least
 ${acs_application(min_stack_size)}K.
 <p>Please add the following line to your .tcl configuration file
 <blockquote><pre>
 ns_section \"ns/threads\"
-        ns_param StackSize \[expr ${acs_application(min_stack_size)}*1024\]
+        ns_param StackSize \[expr {${acs_application(min_stack_size)}*1024}\]
 </blockquote></pre>
 After adding support the larger stacksize, please restart your web server.
 </strong></p>"
@@ -212,7 +212,7 @@ After adding support the larger stacksize, please restart your web server.
 # APM needs to check its permissions.
 if { [catch {apm_workspace_dir} ] } {
     append errors "<li><p><strong>The [acs_root_dir] directory has incorrect permissions.  It must be owned by
-the user executing the web server, normally <code>nsadmin</code>, and the owner must have read and write priveliges
+the user executing the web server, normally <code>nsadmin</code>, and the owner must have read and write privileges
 on this directory.  You can correct this by running the following script as root.
 To give another user access to the files, add them to <code>web</code> group.
 <blockquote><pre>
@@ -228,7 +228,7 @@ chmod -R ug+rw [acs_root_dir]
 if { ![file writable [file join [acs_root_dir] packages]] } {
     append errors "<li><p><strong>The [acs_root_dir]/packages directory has incorrect permissions.  It must be owned by
     the user executing the web server, normally <code>nsadmin</code> and the owner must have read and write 
-    priveliges on this directory and all of its subdirectories.  You can correct this by running the following 
+    privileges on this directory and all of its subdirectories.  You can correct this by running the following 
     script as root.
     To give another user access to the files, add them to <code>web</code> group.
 <blockquote><pre>
@@ -289,17 +289,7 @@ We'll need to create a site-wide administrator for your server (like the root
 user in UNIX). Please type in the email address, first and last name, and password
 for this user.
 
-<p>
-<font color=red>Please do not use any non-ASCII characters
-(accented characters, Umlaut, Asian etc...)
-in the fields below. This will break the installation process.
-</font>
-<br>
-This restriction is only for the screen below. You can modify
-the name of the system administrator later.
-</p>
-
-<script language=\"javascript\">
+<script type=\"text/javascript\">
 function updateSystemEmails() {
     var form = document.forms\[0\];
     
@@ -311,7 +301,7 @@ function updateSystemEmails() {
 }
 </script>
 
-<form action=\"installer/install\">
+<form action=\"installer/install\" method=\"POST\">
 
 <table>
 <tr>

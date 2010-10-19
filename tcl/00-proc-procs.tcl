@@ -15,7 +15,7 @@ proc number_p { str } {
   #
   # Note that ACS 3.2 defined number_p like this:
   #
-  #   if { [empty_string_p $var] } {
+  #   if { $var eq "" } {
   #       return 0
   #   } else {
   #       return [regexp {^-?[0-9]*\.?[0-9]*$} $var match]
@@ -38,10 +38,18 @@ proc acs_package_root_dir { package } {
 
 proc ad_make_relative_path { path } {
     set root_length [string length [acs_root_dir]]
-    if { ![string compare -nocase [acs_root_dir] [string range $path 0 [expr { $root_length - 1 }]]] } {
+    if { ![string compare [acs_root_dir] [string range $path 0 [expr { $root_length - 1 }]]] } {
 	return [string range $path [expr { $root_length + 1 }] [string length $path]]
     }
     error "$path is not under the path root ([acs_root_dir])"
+}
+
+proc ad_get_tcl_call_stack { { level -2 }} {
+    set stack ""
+    for { set x [expr {[info level] + $level}] } { $x > 0 } { incr x -1 } {
+	append stack "    called from [info level $x]\n"
+    }
+    return $stack
 }
 
 proc ad_parse_documentation_string { doc_string elements_var } {
@@ -61,7 +69,7 @@ proc ad_parse_documentation_string { doc_string elements_var } {
 	# lars@pinds.com, 8 July, 2000
 	# We don't do a string trim anymore, because it breaks the formatting of 
 	# code examples in the documentation, something that we want to encourage.
-        
+
 	# set line [string trim $line]
 
         if { [regexp {^[ \t]*@([-a-zA-Z_]+)(.*)$} $line "" element remainder] } {
@@ -87,6 +95,8 @@ proc ad_proc args {
     set deprecated_p 0
     set warn_p 0
     set debug_p 0
+    set callback ""
+    set impl ""
 
     # Loop through args, stopping at the first argument which is
     # not a switch.
@@ -101,7 +111,7 @@ proc ad_proc args {
         # If the argument is "--", stop parsing for switches (but
         # bump up $i to the next argument, which is the first
         # argument which is not a switch).
-        if { [string equal $arg "--"] } {
+        if {$arg eq "--"} {
             incr i
             break
         }
@@ -112,6 +122,20 @@ proc ad_proc args {
             -deprecated { set deprecated_p 1 }
             -warn { set warn_p 1 }
             -debug { set debug_p 1 }
+            -callback { 
+                incr i
+                set callback [lindex $args $i]
+                if { [ad_proc_valid_switch_p $callback] } {
+                    return -code error "Missing callback name: -callback <name>"
+                }
+            }
+            -impl {
+                incr i
+                set impl [lindex $args $i]
+                if { [ad_proc_valid_switch_p $impl] } {
+                    return -code error "Missing implementation name: -impl <name>"
+                }
+            }
             default {
                 return -code error "Invalid switch [lindex $args $i] passed to ad_proc"
             }
@@ -122,19 +146,69 @@ proc ad_proc args {
         return -code error "Mutually exclusive switches -public and -private passed to ad_proc"
     }
 
+    if { !$public_p && !$private_p } {
+        set public_p 1
+    }
+
     if { $warn_p && !$deprecated_p } {
         return -code error "Switch -warn can be provided to ad_proc only if -deprecated is also provided"
+    }
+
+    if { $impl ne "" && $callback eq "" } {
+        return -code error "A callback contract name must be specified with -callback when defining an implementation with -impl"
+    }
+
+    if { $impl eq "impl" || [string match $impl "impl::*"] } {
+        return -code error "Callback implementations may not be named impl"
+    }
+
+    if { $callback eq "contract" || [string match $callback "contract::*"] } {
+        return -code error "Callbacks may not be named contract"
     }
 
     # Now $i is set to the index of the first non-switch argument.
     # There must be either three or four arguments remaining.
     set n_args_remaining [expr { [llength $args] - $i }]
-    if { $n_args_remaining != 3 && $n_args_remaining != 4 } {
-        return -code error "Wrong number of arguments passed to ad_proc"
-    }
 
-    # Set up the remaining arguments.
-    set proc_name [lindex $args $i]
+    if {$callback eq ""} {
+        # We are creating a normal proc so the proc name is an argument
+        if { $n_args_remaining < 3 || $n_args_remaining > 4} {
+            return -code error "Wrong number of arguments passed to ad_proc"
+        }
+
+        # Set up the remaining arguments.
+        set proc_name [lindex $args $i]
+    } else {
+        if {$impl ne "" } {
+            # We are creating an implementation...
+            if {$n_args_remaining != 3} {
+                return -code error "ad_proc callback implementation must have: arguments (can be empty) docs code_body"
+            }
+        }
+        if {$impl eq ""} {
+            # We are creating an callback contract...
+            if {!( $n_args_remaining == 3 || $n_args_remaining == 2 ) } {
+                return -code error "ad_proc callback contract must have: arguments docs \[empty_code_body\]"
+            } elseif {$n_args_remaining == 3
+                      && [lindex $args end] ne "" 
+                      && [lindex $args end] ne "-" } {
+                return -code error "ad_proc callback contract must have an empty code_body"
+            }
+        }
+
+        set callback [string trimleft $callback ::]
+        set proc_name ::callback::${callback}
+
+        if {$impl eq ""} {
+            append proc_name ::contract
+        } else {
+            append proc_name ::impl::${impl}
+        }
+
+        # pretend to the rest of the proc that we were passed the proc name
+        incr n_args_remaining
+        set args [concat [list $proc_name] $args]
+    }
 
     # (SDW - OpenACS). If proc_name is being defined inside a namespace, we
     # want to use the fully qualified name. Except for actually defining the
@@ -149,14 +223,31 @@ proc ad_proc args {
     # Also moved the uplevel'd call to namespace current to the if statement,
     # to avoid it being called unnecessarily.
     #
-    
+
     set proc_name_as_passed $proc_name
+    set parent_namespace [string trimleft [uplevel 1 {::namespace current}] ::]
 
-    if { ![string match ::* $proc_name] } {
-        set proc_name [string trimleft [uplevel 1 {::namespace current}]::$proc_name ::]
+    if { ![string match "::*" $proc_name] } {
+        set proc_name ${parent_namespace}::$proc_name
+    }
+    if {$parent_namespace ne {} && ![string match "::*" $proc_name]} {
+        ns_log Debug "proc $proc_name_as_passed declared in namespace $parent_namespace via namespace eval; coding standard is to declare as $proc_name"
+    }
+    set proc_name [string trimleft $proc_name ::]
 
-    } else {
-        set proc_name [string trimleft $proc_name ::]
+
+    if { $callback ne "" } {
+        # Do a namespace eval of each namespace to ensure it exists
+        set namespaces [split $proc_name ::]
+        set namespaces [lrange $namespaces 0 end-1]
+
+        set curr_ns ""
+        foreach ns $namespaces {
+            if {$ns ne "" } {
+                append curr_ns "::$ns"
+                namespace eval $curr_ns {}
+            }
+        }
     }
 
     set arg_list [lindex $args [expr { $i + 1 }]]
@@ -169,6 +260,15 @@ proc ad_proc args {
         ad_parse_documentation_string [lindex $args end-1] doc_elements
     }
     set code_block [lindex $args end]
+
+    if {$callback ne "" 
+        && $impl ne "" } {
+        if {[info exists doc_elements(see)]} {
+            lappend doc_elements(see) "callback::${callback}::contract"
+        } else {
+            set doc_elements(see) "callback::${callback}::contract"
+        }
+    }
 
     #####
     #
@@ -224,7 +324,8 @@ proc ad_proc args {
         if { [llength $arg_split] == 2 } {
             set arg [lindex $arg_split 0]
             foreach flag [split [lindex $arg_split 1] ","] {
-                if { ![string equal $flag "required"] && ![string equal $flag "boolean"] } {
+                set flag [string trim $flag]
+                if { $flag ne "required" && $flag ne "boolean" } {
                     return -code error "Invalid flag \"$flag\""
                 }
                 lappend arg_flags $flag
@@ -233,7 +334,7 @@ proc ad_proc args {
             return -code error "Invalid element \"$arg\" in argument list"
         }
 
-        if { [string equal [string index $arg 0] "-"] } {
+        if {[string index $arg 0] eq "-"} {
             if { [llength $positionals] > 0 } {
                 return -code error "Switch -$arg specified after positional parameter"
             }
@@ -298,7 +399,7 @@ proc ad_proc args {
     set root_dir [nsv_get acs_properties root_directory]
     set script [info script]
     set root_length [string length $root_dir]
-    if { ![string compare -nocase $root_dir [string range $script 0 [expr { $root_length - 1 }]]] } {
+    if { ![string compare $root_dir [string range $script 0 [expr { $root_length - 1 }]]] } {
         set script [string range $script [expr { $root_length + 1 }] end]
     }
     
@@ -312,17 +413,39 @@ proc ad_proc args {
     # Backward compatibility: set proc_doc and proc_source_file
     nsv_set proc_doc $proc_name [lindex $doc_elements(main) 0]
     if { [nsv_exists proc_source_file $proc_name] \
-	    && [string compare [nsv_get proc_source_file $proc_name] [info script]] != 0 } {
+	    && [nsv_get proc_source_file $proc_name] ne [info script]  } {
         ns_log Warning "Multiple definition of $proc_name in [nsv_get proc_source_file $proc_name] and [info script]"
     }
     nsv_set proc_source_file $proc_name [info script]
 
-    if { [string equal $code_block "-"] } {
-        return
+    if {$code_block eq "-"} {
+        if {$callback eq ""} {
+            return
+        } else {
+            # we are creating a callback so create an empty body
+            set code_block { # this is a callback contract which only invokes its arg parser for input validation }
+        }
     }
 
-    if { [llength $switches] == 0 } {
-        uplevel [::list proc $proc_name_as_passed $arg_list $code_block]
+    set log_code ""
+    if { $warn_p } {
+        set log_code "ns_log Debug \"Deprecated proc $proc_name used:\\n\[ad_get_tcl_call_stack\]\"\n"
+    }
+
+    if { $callback ne "" && $impl ne "" } {
+        if { [llength [info procs "::callback::${callback}::contract__arg_parser"]] == 0 } {
+            # We create a dummy arg parser for the contract in case
+            # the contract hasn't been defined yet.  We need this
+            # because the implementation doesn't tell us what the
+            # args of the contract should be.
+            uplevel [::list proc ::callback::${callback}::contract__arg_parser {} {}]
+        }
+
+        # We are creating a callback implementation so we invoke the
+        # arg parser of the contract proc
+        uplevel [::list proc $proc_name_as_passed args "    ::callback::${callback}::contract__arg_parser\n${log_code}$code_block"]
+    } elseif { $callback eq "" && [llength $switches] == 0 } {
+        uplevel [::list proc $proc_name_as_passed $arg_list "${log_code}$code_block"]
     } else {
         set parser_code "    ::upvar args args\n"
 
@@ -380,11 +503,6 @@ $switch_code
             ns_write "PARSER CODE:\n\n$parser_code\n\n"
         }
 
-        set log_code ""
-        if { $warn_p } {
-            set log_code "ns_log Debug \"Deprecated proc $proc_name used\"\n"
-        }
-
         uplevel [::list proc ${proc_name_as_passed}__arg_parser {} $parser_code]
         uplevel [::list proc $proc_name_as_passed args "    ${proc_name_as_passed}__arg_parser\n${log_code}$code_block"]
     }
@@ -404,6 +522,8 @@ ad_proc -public ad_proc {
     -private:boolean
     -deprecated:boolean
     -warn:boolean
+    {-callback ""}
+    {-impl ""}
     arg_list
     [doc_string]
     body 
@@ -423,6 +543,7 @@ ad_proc -public ad_proc {
 	   preferred.</li>
       <li> If you use named parameters, you can specify which ones are required, optional,
            (including default values), and boolean. See the examples below.</li>
+    <li> There is now a callback facility. See below.</li>
       <li> The declaration can (and <b>should!</b>) include documentation. This documentation 
            may contain tags which are parsed for display by the api browser.  Some tags are 
 	   <tt>@param</tt>, <tt>@return</tt>, <tt>@error</tt>, <tt>@see</tt>, <tt>@author</tt>
@@ -462,7 +583,6 @@ if {$flush_p} {
       meaning that <tt>--</tt> marks the end of the parameters. This is important if
       your named parameter contains a value of something starting with a "-".
     </p>
-
     <p>
     Here's an example with named parameters, and namespaces (notice the preferred way of
     declaring namespaces and namespaced procedures). Ignore the \ in "\@param",
@@ -493,7 +613,7 @@ ad_proc -public ::foobar::new {
 	\@param user_id The id for the user to process. Optional with default "" 
 	                (api-browser will show the default automatically)
 } {
-	if { [empty_string_p $user_id] } {
+	if { $user_id eq "" } {
 		# Do something if this is not an empty string
 	}
 
@@ -503,18 +623,47 @@ ad_proc -public ::foobar::new {
 }
     </pre>
     </p>
-	
+    <p>
+      (note, most of the info on callbacks here due to leeldn)<p>
+      You can define callbacks, both generally (which you would do first) and specific
+      to a particular implementation. The way you do so is:
+    </p>
+    <p>
+      <ul>
+        <li>you have to first define the callback contract with
+          <code>ad_proc -callback foo::bar::zip { arg1 arg2 } { docs } -</code>
+          <p>This defines the callback generally. (<em>Note! Don't define a body here!</em>)
+        <li>then define an implementation with
+            <code>ad_proc -callback foo::bar::zip -impl myimpl  { } { } { #code }</code>
+        <li>Two ways to call:
+		<ul>
+		  <li>then you can call _all_ implentations (ie. in an event / event handler type arrangement) with
+		    <code>callback foo::bar::zip $arg1 $arg2</code>
+                  <li>or you can call a specific implementation (ie. in a service contract type arrangement) with
+                      <code>callback -impl myimpl foo::bar::zip $arg1 $arg2</code>
+		</ul>
+        <li>in both cases the result is a list of the results of each called implementation (with empty results removed),
+	    so in the case of calling a specific implementation you get a list of one element as the result
+	<li>See <a href="/api-doc/proc-view?proc=callback"><code>callback</code></a> for more info.
+      </ul>
+    </p>
+
+
     @param public specifies that the procedure is part of a public API.
     @param private specifies that the procedure is package-private.
     @param deprecated specifies that the procedure should not be used.
     @param warn specifies that the procedure should generate a warning 
                 when invoked (requires that -deprecated also be set)
+    @param callback the name of the callback contract being defined or 
+                implemented
+    @param impl the name of the callback implementation for the specified
+                contract
     @param arg_list the list of switches and positional parameters which can be
         provided to the procedure.
     @param [doc_string] documentation for the procedure (optional, but greatly desired).
     @param body the procedure body.  Documentation may be provided for an arbitrary function 
     by passing the body as a "-".
-                             
+
 } -
 
 ad_proc -public ad_arg_parser { allowed_args argv } {
@@ -529,7 +678,7 @@ ad_proc -public ad_arg_parser { allowed_args argv } {
     @error if the list of command-line options is not valid.
 
 } {
-    if { [string equal [lindex $allowed_args end] "args"] } {
+    if {[lindex $allowed_args end] eq "args"} {
 	set varargs_p 1
 	set allowed_args [lrange $allowed_args 0 [expr { [llength $allowed_args] - 2 }]]
     } else {
@@ -543,7 +692,7 @@ ad_proc -public ad_arg_parser { allowed_args argv } {
 
     set counter 0
     foreach { switch value } $argv {
-	if { ![string equal [string index $switch 0] "-"] } {
+	if { [string index $switch 0] ne "-" } {
 	    if { $varargs_p } {
 		set args [lrange $argv $counter end]
 		return
@@ -563,6 +712,125 @@ ad_proc -public ad_arg_parser { allowed_args argv } {
 	return -code error "Invalid switch syntax - no argument to final switch \"[lindex $argv end]\""
     }
 }
+
+ad_proc -public callback {
+    -catch:boolean
+    {-impl *}
+    callback
+    args
+} {
+    Invoke the registered callback implementations for the given
+    callback.  The callbacks terminate on error unless -catch
+    is provided.  The value returned by the callback function is
+    determined by the return codes from the callback implementations.
+    <p>
+    The callbacks are executed one level below the calling function
+    so passing arrays to a callback can be done normally via
+    <pre>upvar arrayname $arrayref</pre>
+    <p>
+    The return codes returned from the implmentation are treated
+    as follows:
+    <dl>
+     <dt>return -code ok or "<b>return</b>"</dt>
+     <dd>With a plain return, a non-empty return value will be lappended to
+       the list of returns from the callback function</dd>
+
+     <dt>return -code error or "<b>error</b>"</dt>
+     <dd>errors will simply propigate (and no value returned) unless -catch
+       is specified in which case the callback processing will continue but
+       no value will be appended to the return list for the implementation
+       which returned an error.
+     </dd>
+
+     <dt>return -code return</dt>
+     <dd>Takes the return value if the implementation returning -code return
+       and returns a one element list with that return value.  Note that this means
+       if you have code which returns <code>return -code return {x y}</code>,
+       you will get {{x y}} as the return value from the callback.  This is
+       done in order to unambiguously distinguish a pair of callbacks returning
+       x and y respectively from this single callback.
+     </dd>
+
+     <dt>return -code break</dt>
+     <dd>return the current list of returned values including this implementations
+       return value if non-empty</dd>
+
+     <dt>return -code continue</dt>
+     <dd>Continue processing, ignore the return value from this implementation</dd>
+
+    </dl>
+
+    @param callback the callback name without leading or trailing ::
+
+    @param impl invoke a specific implemenation rather than all implementations
+           of the given callback
+
+    @param catch if catch specified errors in the callback will be caught, tracebacks
+           logged as errors to the server log, but other callbacks called and the
+           list of returns still returned.  If not given an error simply is passed
+           further on.
+
+    @params args pass the set of arguments on to each callback
+
+    @return list of the returns from each callback that does a normal (non-empty) return
+
+    @see ad_proc
+} {
+    if {$callback eq ""} {
+        error "callback: no callback name given"
+    }
+    # see that the contract exists and call the contract for
+    # arg validation -- ::callback::${callback}::contract is an 
+    # empty function that only runs the ad_proc generated arg parser.
+
+    if {[llength [info proc ::callback::${callback}::contract]] != 1} {
+        error "Undefined callback $callback"
+    }
+    eval ::callback::${callback}::contract $args
+
+    set returns {}
+
+    set base ::callback::${callback}::impl
+    foreach procname [lsort [info procs ${base}::$impl]] {
+
+        set c [catch {::uplevel 1 $procname $args} ret]
+        switch -exact $c {
+            0 { # code ok
+                if { $ret ne "" } {
+                    lappend returns $ret
+                }
+            }
+            1 { # code error - either rethrow the current error or log
+                if {$catch_p} {
+                    ns_log Error "callback $callback error invoking $procname: $ret\n[ad_print_stack_trace]\n"
+                } else {
+                    return -code $c -errorcode $::errorCode -errorinfo $::errorInfo $ret
+                }
+            }
+            2 { # code return -- end processing and return what we got back.
+                return [list $ret]
+            }
+            3 { # code break -- terminate return current list of results.
+                if { $ret ne "" } { 
+                    lappend returns $ret
+                }
+                return $returns
+            }
+            4 { # code continue -- just skip this one
+            }
+            default {
+                error "Callback return code unknown: $c"
+            }
+        }
+    }
+
+    if {![string equal $impl *] && ![info exists c] && !$catch_p} {
+        error "callback $callback implementation $impl does not exist"
+    }
+
+    return $returns
+}
+
 
 ad_proc ad_library {
     doc_string
