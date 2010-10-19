@@ -3,7 +3,7 @@
 # Copyright (C) 1999-2000 ArsDigita Corporation
 # Authors: Karl Goldstein    (karlg@arsdigita.com)
 #          
-# $Id: data-procs.tcl,v 1.1 2005/04/18 21:32:35 cvs Exp $
+# $Id: data-procs.tcl,v 1.2 2010/10/19 20:13:05 po34demo Exp $
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -21,8 +21,10 @@ ad_proc -public template::data::validate { type value_ref message_ref } {
     @see template::data::validate::date 
     @see template::data::validate::email 
     @see template::data::validate::filename 
+    @see template::data::validate::float
     @see template::data::validate::integer 
     @see template::data::validate::keyword 
+    @see template::data::validate::naturalnum 
     @see template::data::validate::search 
     @see template::data::validate::string 
     @see template::data::validate::text 
@@ -32,7 +34,18 @@ ad_proc -public template::data::validate { type value_ref message_ref } {
   return [validate::$type $value_ref $message_ref]
 }
 
-ad_proc -public template::data::validate::integer { value_ref message_ref } {
+ad_proc -public template::data::validate::integer {
+  value_ref
+  message_ref
+} {
+  Validate that a submitted integer contains only an optional sign and
+  the digits 0-9.
+
+  @param value_ref Reference variable to the submitted value
+  @param message_ref Reference variable for returning an error message
+
+  @return True (1) if valid, false (0) if not
+} {
 
   upvar 2 $message_ref message $value_ref value
 
@@ -45,11 +58,21 @@ ad_proc -public template::data::validate::integer { value_ref message_ref } {
   return $result 
 }
 
-ad_proc -public template::data::validate::naturalnum { value_ref message_ref } {
-  Validates natural numbers data types
-  Will trim leading 0 in order to avoid TCL interpreting it as octal in the future
-  (code borrowed from ad_page_contract_filter_proc_naturalnum)
+ad_proc -public template::data::validate::naturalnum {
+  value_ref
+  message_ref
+} {
+  Validates natural numbers data types.
+
+  Will trim leading 0 in order to avoid TCL interpreting it as octal (code borrowed
+  from ad_page_contract_filter_proc_naturalnum)
+
   @author Rocael Hernandez <roc@viaro.net>
+
+  @param value_ref Reference variable to the submitted value
+  @param message_ref Reference variable for returning an error message
+
+  @return True (1) if valid, false (0) if not
 } {
   upvar 2 $message_ref message $value_ref value
 
@@ -62,7 +85,18 @@ ad_proc -public template::data::validate::naturalnum { value_ref message_ref } {
   return $result
 }
 
-ad_proc -public template::data::validate::float { value_ref message_ref } {
+ad_proc -public template::data::validate::float {
+  value_ref
+  message_ref
+} {
+  Validate that a submitted fla contains only an optional sign, and a whole part
+  and fractional part.
+
+  @param value_ref Reference variable to the submitted value
+  @param message_ref Reference variable for returning an error message
+
+  @return True (1) if valid, false (0) if not
+} {
 
   upvar 2 $message_ref message $value_ref value
 
@@ -76,9 +110,18 @@ ad_proc -public template::data::validate::float { value_ref message_ref } {
   return $result 
 }
 
-ad_proc -public template::data::validate::boolean { value_ref message_ref } {
-  Validates boolean data types
+ad_proc -public template::data::validate::boolean {
+  value_ref
+  message_ref
+} {
+  Validates boolean data types.
+
   @author Roberto Mello <rmello at fslc.usu.edu>
+
+  @param value_ref Reference variable to the submitted value
+  @param message_ref Reference variable for returning an error message
+
+  @return True (1) if valid, false (0) if not
 } {
 
   upvar 2 $message_ref message $value_ref value
@@ -108,19 +151,47 @@ ad_proc -public template::data::validate::boolean { value_ref message_ref } {
   return $result 
 }
 
-ad_proc -public template::data::validate::text { value_ref message_ref } {
+ad_proc -public template::data::validate::text {
+  value_ref
+  message_ref
+} {
+  Validate that submitted text is valid.  Hmmm ... all submitted text is valid,
+  that's easy!
 
-  # anything is valid for text
+  @param value_ref Reference variable to the submitted value
+  @param message_ref Reference variable for returning an error message
+
+  @return True (1)
+} {
   return 1
 }
 
-ad_proc -public template::data::validate::string { value_ref message_ref } {
+ad_proc -public template::data::validate::string {
+  value_ref
+  message_ref
+} {
+  Validate that a submitted string is valid.  Hmmm ... all submitted strings are valid,
+  that's easy!
 
-  # anything is valid for string
+  @param value_ref Reference variable to the submitted value
+  @param message_ref Reference variable for returning an error message
+
+  @return True (1)
+} {
   return 1
 }
 
-ad_proc -public template::data::validate::keyword { value_ref message_ref } {
+ad_proc -public template::data::validate::keyword {
+  value_ref
+  message_ref
+} {
+  Validate that a submitted keyword consists of alphnumeric or "_" characters.
+
+  @param value_ref Reference variable to the submitted value
+  @param message_ref Reference variable for returning an error message
+
+  @return True (1) if valid, false (0) if not
+} {
 
   upvar 2 $message_ref message $value_ref value
 
@@ -133,7 +204,18 @@ ad_proc -public template::data::validate::keyword { value_ref message_ref } {
   return $result 
 }
 
-ad_proc -public template::data::validate::filename { value_ref message_ref } {
+ad_proc -public template::data::validate::filename {
+  value_ref
+  message_ref
+} {
+  Validate that a submitted filename consists of alphanumeric, "_", or
+  "-" characters.
+
+  @param value_ref Reference variable to the submitted value
+  @param message_ref Reference variable for returning an error message
+
+  @return True (1) if valid, false (0) if not
+} {
 
   upvar 2 $message_ref message $value_ref value
 
@@ -146,7 +228,17 @@ ad_proc -public template::data::validate::filename { value_ref message_ref } {
   return $result 
 }
 
-ad_proc -public template::data::validate::email { value_ref message_ref } {
+ad_proc -public template::data::validate::email {
+  value_ref
+  message_ref
+} {
+  Validate that a submitted email address is syntactically correct.
+
+  @param value_ref Reference variable to the submitted value
+  @param message_ref Reference variable for returning an error message
+
+  @return True (1) if valid, false (0) if not
+} {
 
   upvar 2 $message_ref message $value_ref value
 
@@ -159,7 +251,18 @@ ad_proc -public template::data::validate::email { value_ref message_ref } {
   return $result 
 }
 
-ad_proc -public template::data::validate::url { value_ref message_ref } {
+ad_proc -public template::data::validate::url {
+  value_ref
+  message_ref
+} {
+  Validate that a submitted url is correct.  Accepts an optional http:// or
+  https:// prefix, path, and query string.
+
+  @param value_ref Reference variable to the submitted value
+  @param message_ref Reference variable for returning an error message
+
+  @return True (1) if valid, false (0) if not
+} {
 
   upvar 2 $message_ref message $value_ref value
 
@@ -173,7 +276,10 @@ ad_proc -public template::data::validate::url { value_ref message_ref } {
   return $result 
 }
 
-ad_proc -public template::data::validate::url_element { value_ref message_ref } {
+ad_proc -public template::data::validate::url_element {
+    value_ref
+    message_ref
+} {
 
     Beautiful URL elements that may only contain lower case 
     characters, numbers and hyphens.
@@ -185,6 +291,10 @@ ad_proc -public template::data::validate::url_element { value_ref message_ref } 
 
     @author Tilmann Singer
 
+    @param value_ref Reference variable to the submitted value
+    @param message_ref Reference variable for returning an error message
+
+    @return True (1) if valid, false (0) if not
 } {
     upvar 2 $message_ref message $value_ref value
 
@@ -198,27 +308,59 @@ ad_proc -public template::data::validate::url_element { value_ref message_ref } 
     return $result 
 }
 
-ad_proc -public template::data::validate::date { value_ref message_ref } {
+ad_proc -public template::data::validate::date {
+  value_ref
+  message_ref
+} {
+  Validate that a submitted date conforms to the template system's notion
+  of what a date should be.
+
+  @param value_ref Reference variable to the submitted value
+  @param message_ref Reference variable for returning an error message
+
+  @return True (1) if valid, false (0) if not
+} {
 
   upvar 2 $message_ref message $value_ref value
 
   return [template::util::date::validate $value message]
 }
 
-# It was necessary to declare a datatype of "search" in order for the
-# transformation to be applied correctly.  In reality, the transformation
-# should be on the element, not on the datatype.
 
-ad_proc -public template::data::validate::search { value_ref message_ref } {
+ad_proc -public template::data::validate::search {
+  value_ref
+  message_ref
+} {
+  It was necessary to declare a datatype of "search" in order for the
+  transformation to be applied correctly.  In reality, the transformation
+  should be on the element, not on the datatype.
 
+  DRB: in practice a template form datatype is defined by the presence of a
+  validate procdure for that type.
+
+  @param value_ref Reference variable to the submitted value
+  @param message_ref Reference variable for returning an error message
+
+  @return True (1)
+} {
   return 1
 }
 
-ad_proc -public template::data::transform { type value_ref } {
+ad_proc -public template::data::transform {
+  type
+  value_ref
+} {
+  Dispatch procedure for the transform method.  "tranformation" in template
+  systemspeak means to convert the submitted data to the custom datatype structure,
+  usually a list for complex datatypes, just the value for simple datatypes.  The
+  transform method is called after the datatype is validated.
+
+  @param type The data type to be transformed.
+} {
 
   set proc_name [info procs ::template::data::transform::$type]
 
-  if { ! [string equal $proc_name {}] } {
+  if { $proc_name ne {} } {
 
     transform::$type $value_ref
   }

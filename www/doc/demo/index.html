@@ -300,6 +300,172 @@ Remember Fibonacci from pset 1, exercise 1?</td>
       </tr>
 </table>      
 
+<h3>Using ListBuilder</h3>
+
+<table cellpadding=6 cellspacing=0 border=1 width="95%" >
+<tr bgcolor="#cccccc">
+  <th>Description</th>
+  <th width="15%">Data</th>
+  <th width="15%">Template</th>
+  <th width="15%">Compiled<br>Template</th>
+  <th width="15%">Output</th>
+</tr>
+
+      <tr>
+	<td>Simplest (single-column) list, no features</td>
+<a name="string">
+	<td align=center>
+          <a href="show.tcl?file=list1a/index.tcl">View .tcl</a><br>
+          <a href="show.tcl?file=list1a/index-postgresql.xql">postgres query</a><br>
+          <a href="show.tcl?file=list1a/index-oracle.xql">oracle query</a>
+        </td>
+	<td align=center>
+          <a href="show.tcl?file=list1b/index.adp">No master</a><br>
+          <a href="show.tcl?file=list1a/index.adp">W/ master</a>
+        </td>
+	<td align=center>
+          <a href="compile.tcl?file=list1b/index.adp">No master</a><br>
+          <a href="compile.tcl?file=list1a/index.adp">W/ master</a>
+        </td>
+	<td align=center>
+	  <a href="list1b">No master</a><br>
+          <a href="list1a">W/ master</a>
+        </td>
+      </tr>
+
+      <tr>
+	<td>Add some columns</td>
+<a name="string">
+	<td align=center>
+          <a href="show.tcl?file=list2/index.tcl">View .tcl</a><br>
+          <a href="show.tcl?file=list2/index-postgresql.xql">postgres query</a><br>
+          <a href="show.tcl?file=list2/index-oracle.xql">oracle query</a>
+       </td>
+	<td align=center><a href="show.tcl?file=list2/index.adp">View</a></td>
+	<td align=center><a href="compile.tcl?file=list2/index.adp">View</a></td>
+	<td align=center><a href="list2">View</a></td>
+      </tr>
+
+      <tr>
+	<td>Add the ability to sort by any column</td>
+<a name="string">
+	<td align=center>
+          <a href="show.tcl?file=list3/index.tcl">View .tcl</a><br>
+          <a href="show.tcl?file=list3/index-postgresql.xql">postgres query</a><br>
+          <a href="show.tcl?file=list3/index-oracle.xql">oracle query</a>
+       </td>
+	<td align=center><a href="show.tcl?file=list3/index.adp">View</a></td>
+	<td align=center><a href="compile.tcl?file=list3/index.adp">View</a></td>
+	<td align=center><a href="list3">View</a></td>
+      </tr>
+
+      <tr>
+	<td>Link the title to a one-note detail page</td>
+<a name="string">
+	<td align=center>
+          <a href="show.tcl?file=list4/index.tcl">index</a><br>
+	  <a href="show.tcl?file=list4/view-one.tcl">detail</a>
+       </td>
+	<td align=center>
+	  <a href="show.tcl?file=list4/index.adp">index</a><br>
+	  <a href="show.tcl?file=list4/view-one.adp">detail</a>
+	</td>
+	<td align=center>
+	  <a href="compile.tcl?file=list4/index.adp">index</a><br>
+	  <a href="compile.tcl?file=list4/view-one.adp">detail</a>
+	</td>
+	<td align=center><a href="list4">View</a></td>
+      </tr>
+
+      <tr>
+	<td>Add a bulk action to delete all checked notes</td>
+<a name="string">
+	<td align=center>
+          <a href="show.tcl?file=list5/index.tcl">index</a><br>
+          <a href="show.tcl?file=list5/delete.tcl">delete</a><br>
+          <a href="show.tcl?file=list5/delete-postgresql.xql">postgres query</a><br>
+          <a href="show.tcl?file=list5/delete-oracle.xql">oracle query</a>
+       </td>
+	<td align=center>
+	  <a href="show.tcl?file=list5/index.adp">index</a>
+	</td>
+	<td align=center>
+	  <a href="compile.tcl?file=list5/index.adp">index</a>
+	</td>
+	<td align=center><a href="list5">View</a></td>
+      </tr>
+
+      <tr>
+	<td>Add a single/non-bulk action to create a note</td>
+<a name="string">
+	<td align=center>
+          <a href="show.tcl?file=list6/index.tcl">index</a><br>
+          <a href="show.tcl?file=list6/add-edit.tcl">add-edit</a>
+       </td>
+	<td align=center>
+	  <a href="show.tcl?file=list6/index.adp">index</a><br>
+          <a href="show.tcl?file=list6/add-edit.adp">add-edit</a>
+	</td>
+	<td align=center>
+	  <a href="compile.tcl?file=list6/index.adp">index</a><br>
+          <a href="compile.tcl?file=list6/add-edit.adp">add-edit</a>
+	</td>
+	<td align=center><a href="list6">View</a></td>
+      </tr>
+
+      <tr>
+	<td>Add a filter</td>
+<a name="string">
+	<td align=center>
+          <a href="show.tcl?file=list7/index.tcl">index</a><br>
+          <a href="show.tcl?file=list7/index-postgresql.xql">postgres query</a><br>
+          <a href="show.tcl?file=list7/index-oracle.xql">oracle query</a>
+       </td>
+	<td align=center>
+	  <a href="show.tcl?file=list7/index.adp">index</a><br>
+	</td>
+	<td align=center>
+	  <a href="compile.tcl?file=list7/index.adp">index</a><br>
+	</td>
+	<td align=center><a href="list7">View</a></td>
+      </tr>
+
+      <tr>
+	<td>Add pagination with no page group cache</td>
+<a name="string">
+	<td align=center>
+          <a href="show.tcl?file=list8/index.tcl">index</a><br>
+          <a href="show.tcl?file=list8/index-postgresql.xql">postgres query</a><br>
+          <a href="show.tcl?file=list8/index-oracle.xql">oracle query</a>
+       </td>
+	<td align=center>
+	  <a href="show.tcl?file=list8/index.adp">index</a><br>
+	</td>
+	<td align=center>
+	  <a href="compile.tcl?file=list8/index.adp">index</a><br>
+	</td>
+	<td align=center><a href="list8">View</a></td>
+      </tr>
+
+      <tr>
+	<td>Add page group caching to pagination (no looks difference)</td>
+<a name="string">
+	<td align=center>
+          <a href="show.tcl?file=list9/index.tcl">index</a><br>
+          <a href="show.tcl?file=list9/add-edit.tcl">add-edit</a><br>
+          <a href="show.tcl?file=list9/delete.tcl">delete</a><br>
+       </td>
+	<td align=center>
+	  <a href="show.tcl?file=list9/index.adp">index</a><br>
+	</td>
+	<td align=center>
+	  <a href="compile.tcl?file=list9/index.adp">index</a><br>
+	</td>
+	<td align=center><a href="list9">View</a></td>
+      </tr>
+
+</table>
+
 <h3>Forms</h3>
 
 <table cellpadding=6 cellspacing=0 border=1 width="95%" >

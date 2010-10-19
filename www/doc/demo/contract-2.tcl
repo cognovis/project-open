@@ -1,5 +1,5 @@
 ad_page_contract {
-  @cvs-id $Id: contract-2.tcl,v 1.1 2005/04/18 21:32:35 cvs Exp $
+  @cvs-id $Id: contract-2.tcl,v 1.2 2010/10/19 20:13:12 po34demo Exp $
 } {
   count:naturalnum
   noun:notnull,nohtml
@@ -16,7 +16,7 @@ ad_page_contract {
   phrase:onevalue
 } -return_errors error_list
 
-if [info exists error_list] {
+if {[info exists error_list]} {
   # divert to error-handling page
   ad_return_template "contract-err"
 } else {
@@ -25,7 +25,7 @@ if [info exists error_list] {
   if {$count == 1} {
     append phrase "one $noun"
   } else {
-    if {[empty_string_p $plural]} {
+    if {$plural eq ""} {
       set plural "${noun}s"
     }
     append phrase "$count $plural"

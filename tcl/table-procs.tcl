@@ -4,7 +4,7 @@
 # Authors: Karl Goldstein    (karlg@arsdigita.com)
 #          Stanislav Freidin (sfreidin@arsdigita.com)
      
-# $Id: table-procs.tcl,v 1.1 2005/04/18 21:32:35 cvs Exp $
+# $Id: table-procs.tcl,v 1.2 2010/10/19 20:13:08 po34demo Exp $
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -50,7 +50,13 @@ namespace eval template::widget {}
 namespace eval template::widget::table {}
 
 
-ad_proc -public template::widget::table::create { statement_name name args } {
+ad_proc -public template::widget::table::create {
+  statement_name
+  name
+  args
+} {
+  Create a table widget
+} {
 
   upvar "tablewidget:${name}" widget
 
@@ -60,16 +66,24 @@ ad_proc -public template::widget::table::create { statement_name name args } {
   template::widget::table::prepare $statment_name $name 2
 }
 
-# Get the order by clause for the widget, other parameters (?)
-ad_proc -public template::widget::table::get_params { name {level 1} } {
+ad_proc -public template::widget::table::get_params {
+  name
+  {level 1}
+} {
+  Get the order by clause for the widget, other parameters (?)
+} {
   
   upvar $level "tablewidget:${name}" widget
 
   set widget(orderby) [ns_queryget "tablewidget:${name}_orderby"]
 }
 
-# Create the default column definition if none exists
-ad_proc -public template::widget::table::default_column_def { name { level 2} } {
+ad_proc -public template::widget::table::default_column_def {
+  name
+  { level 2}
+} {
+  Create the default column definition if none exists
+} {
 
   upvar $level "tablewidget:${name}" widget
 
@@ -88,8 +102,13 @@ ad_proc -public template::widget::table::default_column_def { name { level 2} } 
   }
 }
 
-# Compose the query, if neccessary, and define the datasources
-ad_proc -public template::widget::table::prepare { statement_name name {level 1} } {
+ad_proc -public template::widget::table::prepare {
+  statement_name
+  name
+  {level 1}
+} {
+  Compose the query, if neccessary, and define the datasources
+} {
   
   upvar $level "tablewidget:${name}" widget
  
@@ -131,7 +150,7 @@ ad_proc -public template::widget::table::prepare { statement_name name {level 1}
         "
 
         # Append to the row html  
-        if { ![string equal $presentation ""] } {
+        if { $presentation ne "" } {
           # Debug !
           regsub -all {"} $presentation {\\"} presentation  
           append eval_code "set row($row_key) \"$presentation\"\n"
@@ -156,13 +175,13 @@ ad_proc -public template::widget::table::prepare { statement_name name {level 1}
     # Get the column definition if it does not exist
     if { [template::util::is_nil widget(column_def)] } {
       template::widget::table::default_column_def widget \
-        [expr $level + 1]
+        [expr {$level + 1}]
     }
 
   } else {
     uplevel $level "uplevel 0 tw_${name}_rows $widget(rows_data)"
     template::widget::table::default_column_def widget \
-      [expr $level + 1]
+      [expr {$level + 1}]
   }
 
   # Process the rows datasource and get the columns
@@ -175,7 +194,7 @@ ad_proc -public template::widget::table::prepare { statement_name name {level 1}
     set the_joiner "?"
     if { ![template::util::is_nil $the_form] } {
       foreach key [ns_set keys $the_form] {
-        if { ![string equal $key "tablewidget:${name}_orderby"] } {
+        if { $key ne "tablewidget:${name}_orderby" } {
           append url "${the_joiner}${key}\=[ns_set get $the_form $key]"
           set the_joiner "&"
         }
@@ -192,11 +211,11 @@ ad_proc -public template::widget::table::prepare { statement_name name {level 1}
       set row(name) $column_name
 
       set label [lindex $column 0]
-      if { [string equal $label {}] } {
+      if {$label eq {}} {
         set label $column_name
       }
       set orderby_clause [lindex $column 1]
-      if { [string equal $orderby_clause {}] } {
+      if {$orderby_clause eq {}} {
         set orderby_clause $column_name
       }
  

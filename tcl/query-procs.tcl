@@ -5,7 +5,7 @@ ad_library {
     @creation-date 29 September 2000
     @author Karl Goldstein (karlg@arsdigita.com)
             Stanislav Freidin (sfreidin@arsdigita.com)
-    @cvs-id $Id: query-procs.tcl,v 1.1 2005/04/18 21:32:35 cvs Exp $
+    @cvs-id $Id: query-procs.tcl,v 1.2 2010/10/19 20:13:07 po34demo Exp $
 
 }
 
@@ -18,7 +18,7 @@ namespace eval template::query {}
 # Copyright (C) 1999-2000 ArsDigita Corporation
 # Authors: Karl Goldstein (karlg@arsdigita.com)
 #          Stanislav Freidin (sfreidin@arsdigita.com)
-# $Id: query-procs.tcl,v 1.1 2005/04/18 21:32:35 cvs Exp $
+# $Id: query-procs.tcl,v 1.2 2010/10/19 20:13:07 po34demo Exp $
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -86,7 +86,7 @@ ad_proc -public template::query { statement_name result_name type sql args } {
   if { ! [info exists opts(uplevel)] } {
     set opts(uplevel) 2
   } else {
-    set opts(uplevel) [expr 2 + $opts(uplevel)]
+    set opts(uplevel) [expr {2 + $opts(uplevel)}]
   }
 
   # check the cache for a valid cached query result and return if so
@@ -137,7 +137,7 @@ ad_proc -private template::query::onevalue { statement_name db result_name sql }
 
   set row [db_exec 0or1row $db $statement_name $sql 3]
 
-  if { $row != "" } {
+  if { $row ne "" } {
 
     # Set the result in the calling frame.
     set result [ns_set value $row 0]
@@ -165,7 +165,7 @@ ad_proc -private template::query::onerow { statement_name db result_name sql } {
 
   set row [db_exec 0or1row $db $statement_name $sql 3]
 
-  if { $row != "" } {
+  if { $row ne "" } {
 
     # Set the results in the calling frame.
     upvar $opts(uplevel) $result_name result
@@ -226,7 +226,7 @@ ad_proc -private template::query::multirow { statement_name db result_name sql }
 
   if { [info exists opts(eval)] } {
     # figure out the level at which to reference the row
-    set ref_level [expr $opts(uplevel) - 2]
+    set ref_level [expr {$opts(uplevel) - 2}]
   }
 
   while { [ns_db getrow $db $row] } {
@@ -516,9 +516,9 @@ ad_proc -private set_cached_result {} {
     nsv_set __template_query_persistent_cache $cache_key $opts(result)
 
     if { [info exists opts(timeout)] } {
-      set timeout [expr [ns_time] + $opts(timeout)]
+      set timeout [expr {[ns_time] + $opts(timeout)}]
     } else {
-      set timeout [expr [ns_time] + 60 * 60 * 24 * 7]
+      set timeout [expr {[ns_time] + 60 * 60 * 24 * 7}]
     }      
 
     nsv_set __template_query_persistent_timeout $cache_key $timeout
@@ -646,6 +646,8 @@ ad_proc -public template::multirow {
     <dd> evaluate code block for each row (like db_foreach)</dd>
     <dt> <b>template::multirow upvar datasource [new_name]</b></dt>
     <dd> upvar the multirow, aliasing to new_name if provided</dd>
+    <dt> <b>template::multirow unset datasource</b></dt>
+    <dd> unset multirow</dd>
     <dt> <b>template::multirow sort datasource -lsort-switch -lsort-switch col1 col2</b></dt>
     <dd> Sort the multirow by the column(s) specified. The value sorted by will be the the values of the columns specified, separated by the space character. Any switches specified before the columns will be passed directly to the lsort command. </dd>
     <dt> <b>template::multirow exists datasource</b></dt>
@@ -678,6 +680,10 @@ ad_proc -public template::multirow {
     set multirow_level_up $ulevel
   } else {
     set multirow_level_up \#[adp_level]
+    if { $multirow_level_up eq "\#" } {
+      # in event adp_level not defined we are calling either at install so up 1.
+      set multirow_level_up 1
+    }
   }
   
   switch -exact $command {
@@ -757,8 +763,19 @@ ad_proc -public template::multirow {
       set index [lindex $args 0]
       set column [lindex $args 1]
       # Set an array reference if no column is specified
-      if { [string equal $column {}] } {
-        uplevel "upvar $multirow_level_up $name:$index $name"
+      if {$column eq {}} {
+
+        # If -local was specified, the upvar is done with a relative stack frame
+        # index, and we must take into account the fact that the uplevel moves up
+        # the frame one level.  If -local was not specified, the an absolute stack
+        # frame is passed to upvar, which of course needs no adjustment.
+
+        if { $local_p } {
+            uplevel "upvar [expr { $multirow_level_up - 1 }] $name:$index $name"
+        } else {
+            uplevel "upvar $multirow_level_up $name:$index $name"
+        }
+
       } else {
         # If a column is specified, just return the value for it
         upvar $multirow_level_up $name:$index arr
@@ -772,7 +789,7 @@ ad_proc -public template::multirow {
       set column [lindex $args 1]
       set value [lindex $args 2]
       
-      if { [string equal $column {}] } {
+      if {$column eq {}} {
         error "No column specified to template::multirow set"
       }
       
@@ -800,7 +817,6 @@ ad_proc -public template::multirow {
     
     foreach {
       set code_block [lindex $args 0]
-      
       upvar $multirow_level_up $name:rowcount rowcount $name:columns columns
 
       if {![info exists rowcount] || ![info exists columns]} { 
@@ -1081,9 +1097,9 @@ ad_proc -public cache { command key args } {
       set value [lindex $args 0]
 
       if { [llength $args] == 1 } {
-	set timeout [expr [ns_time] + 60 * 60 * 24 * 7]
+	set timeout [expr {[ns_time] + 60 * 60 * 24 * 7}]
       } else {
-	set timeout [expr [ns_time] + [lindex $args 1]]
+	set timeout [expr {[ns_time] + [lindex $args 1]}]
       }
 
       nsv_set __template_cache_value $key $value

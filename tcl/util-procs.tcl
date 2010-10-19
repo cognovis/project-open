@@ -4,7 +4,7 @@
 # Authors: Karl Goldstein    (karlg@arsdigita.com)
 #          Stanislav Freidin (sfreidin@arsdigita.com)
 
-# $Id: util-procs.tcl,v 1.1 2005/04/18 21:32:35 cvs Exp $
+# $Id: util-procs.tcl,v 1.2 2010/10/19 20:13:08 po34demo Exp $
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -38,7 +38,7 @@ ad_proc -public template::util::get_opts { argv } {
     # Get the next arg
     set next [lindex $argv [incr i]]
 
-    if { ! [string equal [string index $next 0] "-"] ||
+    if { [string index $next 0] ne "-" ||
          ! [regexp {[a-zA-Z*]} [string index $next 1] match] } {
       
       # the next arg was not a switch so assume it is a parameter 
@@ -91,7 +91,7 @@ ad_proc -public template::util::is_nil { ref } {
   # check for an array as well
   if { [array exists var] } { return 0 }
 
-  if { [info exists var] && ! [string equal $var {}] } {
+  if { [info exists var] && $var ne {} } {
     set result 0
   } else {
     set result 1
@@ -123,7 +123,7 @@ ad_proc -public template::util::is_unique { table columns values } {
 
   set count [db_string get_count $query]
 
-  return [expr $count == 0]
+  return [expr {$count == 0}]
 }
 
 ad_proc -public template::util::is_true { x } {
@@ -146,7 +146,7 @@ ad_proc -public template::util::lpop { ref } {
 
   upvar $ref the_list
 
-  set the_list [lrange $the_list 0 [expr [llength $the_list] - 2]]
+  set the_list [lrange $the_list 0 [expr {[llength $the_list] - 2}]]
 }
 
 ad_proc -public template::util::lnest { listref value next args } {
@@ -462,7 +462,7 @@ ad_proc -public template::util::set_file_encoding { file_channel_id } {
   set output_charset [ns_config "ns/parameters" OutputCharset]
   set tcl_charset [ns_encodingforcharset $output_charset]
 
-  if { ![empty_string_p $tcl_charset] } {
+  if { $tcl_charset ne "" } {
       fconfigure $file_channel_id -encoding $tcl_charset
   }
 }
@@ -488,7 +488,7 @@ ad_proc -public template::util::url_to_file { url {reference_url ""} } {
     Resolve a URL into an absolute file path.
 } {
 
-  if { [string index $url 0] != "/" } {
+  if { [string index $url 0] ne "/" } {
 
     set path [file dirname $reference_url]/$url
 
@@ -518,13 +518,13 @@ ad_proc -public template::util::get_url_directory { url } {
 } {
   set directory $url
 
-  set lastchar [string range $url [expr [string length $url]-1] end]
+  set lastchar [string range $url [expr {[string length $url]-1}] end]
 
-  if {! [string equal $lastchar /]} {
+  if {$lastchar ne "/" } {
 
     set directory [file dirname $url]/
 
-    if { [string equal $directory //] } { 
+    if {$directory eq "//"} { 
       # root directory is a special case
       set directory /
     }
@@ -573,7 +573,7 @@ ad_proc -public template::util::set_cookie { expire_state name value { domain ""
 
     default {
       
-      set time [expr [ns_time] + ($expire_state * 60)]
+      set time [expr {[ns_time] + ($expire_state * 60)}]
       append cookie ";expires=[ns_httptime $time]"
     }
   }
@@ -595,7 +595,11 @@ ad_proc -public template::util::clear_cookie { name { domain "" } } {
   ns_set put [ns_conn outputheaders] "Set-Cookie" $cookie
 } 
 
-ad_proc -public template::util::quote_html { html } {
+ad_proc -public template::util::quote_html {
+  html
+} {
+  Quote possible HTML tags in the contents of the html parameter.  
+} {
 
   regsub -all \" [ns_quotehtml $html] \\&quot\; html
 
@@ -621,8 +625,10 @@ ad_proc -public template::util::multirow_quote_html {multirow_ref column_ref} {
 }
 
 
-ad_proc -public template::util::multirow_foreach { name code_text } {
-    runs a block of code foreach row in a multirow 
+ad_proc -deprecated -public template::util::multirow_foreach { name code_text } {
+    runs a block of code foreach row in a multirow.
+
+    Using "template::multirow foreach" is recommended over this routine.
 
     @param name the name of the multirow over which the block of 
                 code is iterated
@@ -633,13 +639,14 @@ ad_proc -public template::util::multirow_foreach { name code_text } {
                      "fake_multirow" containing columns named "spanky" 
                      and "foobar",to set the column spanky to the value 
                      of column foobar use:<br> 
-                     <code>set fake_multirow.spanky 
-                           @fake_multirow.foobar@</code>
+                     <code>set fake_multirow.spanky @fake_multirow.foobar@</code>
                      <p>
                      note: this block of code is evaluated in the same 
                      scope as the .tcl page that uses this procedure
 
     @author simon
+
+    @see template::multirow
 } {
 
   upvar $name:rowcount rowcount $name:columns columns i i
@@ -683,7 +690,7 @@ ad_proc -public template::util::get_param { name {section {}} {key {}} } {
       }
 
       set value [ns_config $section $key ""]
-      if { [string equal $value ""] } {
+      if {$value eq ""} {
         return ""
       } else {
         # Cache the value and return it
@@ -729,21 +736,21 @@ ad_proc -public template::util::number_list { last_number {start_at 0} } {
 }
 
 ad_proc -public template::util::tcl_to_sql_list { lst } {
-    Convert a TCL list to a SQL list, for use with the "in" statement
-    why doesn't this use ns_dbquotevalue?
+    Convert a TCL list to a SQL list, for use with the "in" statement.
+    Uses DoubleApos (similar to ns_dbquotevalue) functionality to escape single quotes
 } {
 
-  if { [llength $lst] > 0 } {
-    set sql "'"
-    append sql [join $lst "', '"]
-    append sql "'"
-    return $sql
-  } else {
-    return ""
-  }
+    if { [llength $lst] > 0 } {
+        # adding DoubleApos functionality for security reasons.
+        regsub -all -- ' "$lst" '' lst2
+        set sql "'"
+        append sql [join $lst2 "', '"]
+        append sql "'"
+        return $sql
+    } else {
+        return ""
+    }
 }
-
-
 
 ad_proc -public template::get_resource_path {} {
     Get the template directory
@@ -759,17 +766,17 @@ ad_proc -public stack_frame_values {level} {
 } {
 
   set varlist ""
-  foreach i [if $level {
+  foreach i [if {$level} {
     uplevel \#$level {info locals}
   } else {info globals} ] {
     append varlist "    <li><b>$i</b> = "
-    if {[string equal $i page] && $level == [info level]-1 ||
-	[string equal $i "__adp_output"] || [string equal $i "errorInfo"]} {
+    if {$i eq "page" && $level == [info level]-1 ||
+	$i eq "__adp_output" || $i eq "errorInfo"} {
       append varlist "<em>value withheld to avoid messy page</em>\n"
     } elseif {[string match -nocase "*secret*" $i]} {
       append varlist "<em>value withheld as the name contains \"secret\"</em>\n"
     } else {
-      if [uplevel \#$level array exists $i] {
+      if {[uplevel \#$level array exists $i]} {
 	append varlist "<em>ARRAY</em><ul>\n"
 	foreach {key value} [uplevel \#$level array get $i] {
 	  append varlist "        <li><b>$key</b> = '$value'\n"

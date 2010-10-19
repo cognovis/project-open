@@ -1,3 +1,3 @@
 ad_page_contract {
-  @cvs-id $Id: contract.tcl,v 1.1 2005/04/18 21:32:35 cvs Exp $
+  @cvs-id $Id: contract.tcl,v 1.2 2010/10/19 20:13:12 po34demo Exp $
 } -properties {}

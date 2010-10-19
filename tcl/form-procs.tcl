@@ -4,7 +4,7 @@
 # Authors: Karl Goldstein    (karlg@arsdigita.com)
 #          Stanislav Freidin (sfreidin@arsdigita.com)
 
-# $Id: form-procs.tcl,v 1.1 2005/04/18 21:32:35 cvs Exp $
+# $Id: form-procs.tcl,v 1.2 2010/10/19 20:13:06 po34demo Exp $
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -33,6 +33,7 @@ ad_proc -public template::form { command args } {
     @see template::form::get_button
     @see template::form::get_action
     @see template::form::set_properties
+    @see template::form::get_properties
     @see template::form::exists
     @see template::form::export
     @see template::form::get_combined_values
@@ -120,6 +121,12 @@ ad_proc -public template::form::create { id args } {
 } {
   set level [template::adp_level]
 
+  # bump the form_count for widgets that use javascript to navigate through
+  # the form (liberated from my Greenpeace work ages ago)
+
+  global ad_conn    
+  incr ad_conn(form_count)
+
   # keep form properties and a list of the element items
   upvar #$level $id:elements elements $id:properties opts
 
@@ -134,7 +141,7 @@ ad_proc -public template::form::create { id args } {
   # check whether this form is being submitted
   upvar #$level $id:submission submission
 
-  if { [string equal $id request] } {
+  if {$id eq "request"} {
     # request is the magic ID for the form holding query parameters
     set submission 1
   } else {
@@ -146,9 +153,9 @@ ad_proc -public template::form::create { id args } {
   set formbutton [get_button $id]
 
   # If the user hit a button named "cancel", redirect and about
-  if { $submission && [string equal $formbutton "cancel"] && [exists_and_not_null opts(cancel_url)]} {
-    ad_returnredirect $opts(cancel_url)
-    ad_script_abort
+  if { $submission && $formbutton eq "cancel" && [exists_and_not_null opts(cancel_url)]} {
+      ad_returnredirect $opts(cancel_url)
+      ad_script_abort
   }
 
   set formaction [get_action $id]
@@ -167,7 +174,7 @@ ad_proc -public template::form::create { id args } {
     foreach element [split $element_data "\n"] {
 
       set element [string trim $element]
-      if { [string equal $element {}] } { continue }
+      if {$element eq {}} { continue }
 
       eval template::element create $id $element
     }
@@ -186,6 +193,25 @@ ad_proc -public template::form::set_properties { id args } {
   upvar #$level $id:properties opts
 
   template::util::get_opts $args
+}
+
+ad_proc -public template::form::get_properties { id } {
+    Get properties of a form
+
+    @param id  The ID of a form
+} {
+    set level [template::adp_level]
+
+    # form properties 
+    upvar #$level $id:properties formprop
+
+    if { [info exists formprop] } {
+        # properties exist in the form, return them
+        return [array get formprop]
+    } else {
+        # no props exist in the form, return the empty list
+        return [list]
+    }
 }
 
 ad_proc -public template::form::get_button { id } {
@@ -209,14 +235,14 @@ ad_proc -public template::form::get_button { id } {
   set formbutton {}
 
   # If the form isn't being submitted at all, no button was clicked
-  if { ![string equal $id [ns_queryget form:id]] } {
+  if { $id ne [ns_queryget form:id] } {
     return {}
   }
 
   # Search the submit form for the button
   set form [ns_getform]
 
-  if { ![empty_string_p $form] } {
+  if { $form ne "" } {
       set size [ns_set size $form]
       for { set i 0 } { $i < $size } { incr i } {
           if { [string match "formbutton:*" [ns_set key $form $i]] } {
@@ -251,14 +277,14 @@ ad_proc -public template::form::get_action { id } {
   set formaction {}
 
   # If the form isn't being submitted at all, there's no action
-  if { ![string equal $id [ns_queryget "form:id"]] } {
+  if { $id ne [ns_queryget "form:id"] } {
     return {}
   }
 
   set formbutton [get_button $id]
 
   # If we were in display mode, and a button was clicked, we should be in edit mode now
-  if { [string equal [ns_queryget "form:mode"] "display"] && ![empty_string_p $formbutton] } {
+  if { [string equal [ns_queryget "form:mode"] "display"] && $formbutton ne "" } {
     set formaction $formbutton
     return $formaction
   }
@@ -312,7 +338,7 @@ ad_proc -private template::form::template { id { style "" } } {
     set "elements:${elements:rowcount}(rownum)" ${elements:rowcount}
   }
 
-  if { [string equal $style {}] } { 
+  if {$style eq {}} { 
       set style [parameter::get \
                      -package_id [ad_conn subsite_id] \
                      -parameter DefaultFormStyle \
@@ -322,8 +348,13 @@ ad_proc -private template::form::template { id { style "" } } {
                                    -default "standard-lars"]]
   }
 
-  set file_stub [template::get_resource_path]/forms/$style
-
+    # Added support for storing form templates outside acs-templating
+    if {[regexp {^/(.*)} $style path]} {
+        set file_stub "[acs_root_dir]$path"
+    } else {
+        set file_stub [template::get_resource_path]/forms/$style  
+    }
+  
   if { ![file exists "${file_stub}.adp"] } {
       # We always have a template named 'standard'
       set file_stub "[template::get_resource_path]/forms/standard"
@@ -379,19 +410,62 @@ ad_proc -private template::form::generate { id { style "" } } {
   return [template::adp_eval code]
 }
 
-ad_proc -public template::form::section { id section } {
-    Set the name of the current section of the form.  A form may be
-    divided into any number of sections for layout purposes.  Elements
-    are tagged with the current section name as they are added to the
-    form.  A form style template may insert a divider in the form
-    whenever the section name changes.
-
-    @param id      The form identifier.
-    @param section The name of the current section.
+ad_proc -public template::form::section { 
+	{-fieldset ""}
+	{-legendtext ""}
+	{-legend ""}
+	id 
+	section 
 } {
-  get_reference
+    Set the current section (fieldset) of the form. A form may be
+    divided into any number of fieldsets to group related
+    elements. Elements are tagged with the current fieldset properties
+    as they are added to the form. A form style template may insert a
+    divider in the form whenever the fieldset identifier changes.
 
-  set properties(section) $section
+    @param id          The form identifier.
+    @param section     The current fieldset identifier
+	@param fieldset    A list of name-value attribute pairs for the FIELDSET tag
+	@param legendtext  The legend text
+	@param legend      A list of name-value attribute pairs for the LEGEND tag
+} {
+	get_reference
+
+    # legend can't be empty
+    if { $section ne "" && $legendtext eq "" } {
+        ns_log Warning "template::form::section (form: $id, section: $section): The section legend is empty. You must provide text for the legend otherwise the section fieldset won't be created."
+        return
+    }
+
+	set properties(section) $section
+	set properties(sec_legendtext) $legendtext
+
+	# fieldset attributes
+	set properties(sec_fieldset) ""
+	array set fs_attributes $fieldset
+	foreach name [array names fs_attributes] {
+		if {$fs_attributes($name) eq {}} {
+			append properties(sec_fieldset) " $name"
+		} else {
+			append properties(sec_fieldset) " $name=\"$fs_attributes($name)\""
+		}
+	}
+
+	# legend attributes
+	set properties(sec_legend) ""
+	if { $legendtext ne "" } {
+		array set lg_attributes $legend
+        if {![info exists lg_attributes(class)]} {
+            append properties(sec_legend) " class=\"form-legend\""
+        }
+		foreach name [array names lg_attributes] {
+			if {$lg_attributes($name) eq {}} {
+				append properties(sec_legend) " $name"
+			} else {
+				append properties(sec_legend) " $name=\"$lg_attributes($name)\""
+			}
+		}
+	}
 }
 
 ad_proc -private template::form::render { id tag_attributes } {
@@ -458,7 +532,7 @@ ad_proc -private template::form::render { id tag_attributes } {
       set label [lindex $button 0]
       set name [lindex $button 1]
 
-      if { [string equal $name "ok"] } {
+      if {$name eq "ok"} {
           # We hard-code the OK button to be wider than it otherwise would
 	  set label "       $label       "
       }
@@ -475,7 +549,7 @@ ad_proc -private template::form::render { id tag_attributes } {
    
     # Check if the element has an empty string mode, and in 
     # that case, set to form mode
-    if { [string equal $element(mode) {}] } {
+    if {$element(mode) eq {}} {
       set element(mode) $properties(mode)
     }
   }
@@ -486,7 +560,7 @@ ad_proc -private template::form::render { id tag_attributes } {
     # get a reference by element ID 
     upvar #$level $element_ref element
    
-    if { [string equal $element(widget) "hidden"] && [exists_and_not_null $id:error($element(id))] } {
+    if { $element(widget) eq "hidden" && [exists_and_not_null $id:error($element(id))] } {
       error "Validation error in hidden form element: '[set $id:error($element(id))]' on element '$element(id)'."
     }
   }
@@ -504,12 +578,18 @@ ad_proc -private template::form::render { id tag_attributes } {
     set properties(action) [ns_conn url]
   }
   
-  set output "<form name=\"$id\" method=\"$properties(method)\" 
+  set output "<form id=\"$id\" name=\"$id\" method=\"$properties(method)\" 
                     action=\"$properties(action)\""
+
+  ### 2/17/2007
+  ### Adding a default class for forms if one does not exist 
+  if {![info exists attributes(class)]} {
+      append output " class=\"margin-form\""
+  }
 
   # append attributes to form tag
   foreach name [array names attributes] {
-    if { [string equal $attributes($name) {}] } {
+    if {$attributes($name) eq {}} {
       append output " $name"
     } else {
       append output " $name=\"$attributes($name)\""
@@ -518,12 +598,35 @@ ad_proc -private template::form::render { id tag_attributes } {
 
   append output ">"
 
+  ### 2/11/2007
+  ### Adding Form Fieldset legend and attributes
+  if { [info exists properties(fieldset)] } {
+      # Fieldset
+      append output " <fieldset"
+      array set fs_attributes [lindex $properties(fieldset) 0]
+      if {![info exists fs_attributes(class)]} {
+          append output " class=\"form-fieldset\""
+      }
+      foreach name [array names fs_attributes] {
+          if {$fs_attributes($name) eq {}} {
+              append output " $name"
+          } else {
+              append output " $name=\"$fs_attributes($name)\""
+          }
+      }
+      append output ">"
+
+      # Legend
+      set fieldset_legend [lindex $properties(fieldset) 1]
+	  append output "<legend>$fieldset_legend</legend>"
+  }
+
   # Export form ID and current form mode
   append output [export_vars -form { { form\:id $id } { form\:mode $properties(mode) } }]
   
   # If we're in edit mode, output the action
   upvar #$level $id:formaction formaction
-  if { [string equal $properties(mode) "edit"] && [exists_and_not_null formaction] } {
+  if { $properties(mode) eq "edit" && [exists_and_not_null formaction] } {
     upvar #$level $id:formaction action
     append output [export_vars -form { { form\:formaction $formaction } }]
   }
@@ -548,13 +651,12 @@ ad_proc -private template::form::check_elements { id } {
     upvar #$level $element_ref element
    
     # Check if the element has been rendered already
-    if { [string equal $element(is_rendered) f] } {
+    if {$element(is_rendered) eq "f"} {
 
       # If the element is hidden, render it
-      if { [string equal $element(widget) hidden] } {
+      if {$element(widget) eq "hidden"} {
 
-        append output [template::element render $id $element(id) {} ]
-        append output "\n"
+        append output "<div>[template::element render $id $element(id) {} ]</div>\n"
         set element(is_rendered) t
 
       } else {
@@ -580,7 +682,7 @@ ad_proc -public template::form::is_request { id } {
             repreparing a form that is returned to the user due to 
             validation problems
 } {
-  return [expr ! [is_submission $id]]
+  return [expr {! [is_submission $id]}] 
 }
 
 ad_proc -public template::form::is_submission { id } {
@@ -760,7 +862,7 @@ ad_proc -public template::form::export {} {
             form.
 } {
   set form [ns_getform]
-  if { $form == "" } { return "" }
+  if { $form eq "" } { return "" }
 
   set export_data ""
 
@@ -770,8 +872,8 @@ ad_proc -public template::form::export {} {
     set value [ns_set value $form $i]
 
     append export_data "
-      <input type=\"hidden\" name=\"$key\" 
-             value=\"[template::util::quote_html $value]\" />"
+      <div><input type=\"hidden\" name=\"$key\" 
+             value=\"[template::util::quote_html $value]\"></div>"
   }
 
   return $export_data

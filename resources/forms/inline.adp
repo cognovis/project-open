@@ -7,7 +7,7 @@
 
     <group column="section">
       <if @elements.widget@ eq "hidden"> 
-        <noparse><formwidget id=@elements.id@></noparse>
+        <noparse><div><formwidget id=@elements.id@></div></noparse>
       </if>
   
       <else>
@@ -62,7 +62,6 @@
 
                       </tr>
                     </formgroup>
-                  </table>
                 </noparse>
               </if>
 

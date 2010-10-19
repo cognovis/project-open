@@ -3,7 +3,7 @@
 --
 -- brech (Mon Aug 28 11:04:55 2000)
 --
--- $Id: acs-templating-drop.sql,v 1.1 2005/04/18 21:32:35 cvs Exp $
+-- $Id: acs-templating-drop.sql,v 1.2 2010/10/19 20:13:04 po34demo Exp $
 --
 
 @@ demo-drop

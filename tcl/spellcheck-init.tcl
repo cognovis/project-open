@@ -2,27 +2,17 @@ ad_library {
 
     Set up the path to the spell-checker in an nsv cache.
 
-    @cvs-id $Id: spellcheck-init.tcl,v 1.1 2005/04/18 21:32:35 cvs Exp $
+    @cvs-id $Id: spellcheck-init.tcl,v 1.2 2010/10/19 20:13:08 po34demo Exp $
     @author Ola Hansson (ola@polyxena.net)
     @creation-date 2003-10-04
 
 }
 
 # Find the aspell or, second best, the ispell binary.
-# In case neither one is found, spell-checking will be disabled.
-
-# DRB: The original code here apparently was written under the delusion
-# that using "catch" to guard calls to "exec" would allow one to safely use
-# the same "exec" elsewhere in the same command, as though Tcl does short-circuit
-# evaluation of exprs.  I only mention this in case someone sees the clever (but wrong)
-# code and decides they want to replace my fix with the clever (but wrong) version ...
-
-if { ![catch {exec which aspell}] } {
-    set bin [exec which aspell]
-} elseif { ![catch {exec which ispell}] } {
-    set bin [exec which ispell]
-} else {
-    set bin ""
+# In case neither one is found, bin is empty and spell-checking will be disabled.
+set bin [::util::which aspell]
+if {$bin eq ""} {
+  set bin [::util::which ispell]
 }
 
 # Do we want dialect dictionaries (if available) or not?
@@ -36,7 +26,10 @@ set dialects_p [parameter::get_from_package_key \
 # aspell or ispell?
 set dicts ""
 set default_lang ""
-if { [regexp aspell $bin] } {
+#
+# GN: note, that under windows, the binary will be called aspell.exe
+#
+if { [string match "*aspell*" $bin] } {
     # aspell
     with_catch errmsg {
         set dicts [exec $bin dump dicts]
@@ -51,17 +44,27 @@ if { [regexp aspell $bin] } {
         ns_log Warning "Gettings dicts and default_lang for aspell failed with error message: \"$errmsg\""
 	ns_log Notice "You might want to upgrade to a more recent version of Aspell ... http://aspell.sourceforge.net/"
     }
-} elseif { [regexp ispell $bin] } {
+} elseif { [string match "*ispell*" $bin] } {
     # ispell - if someone knows how to get the available dictionaries and the
     # default language from ispell, please add it here :-)
     set dicts ""
     set default_lang ""
 } 
 
+#Do we include all availabale dicts or not ?
+set use_dicts_p [parameter::get_from_package_key \
+		    -package_key acs-templating \
+		    -parameter SpellcheckUseDictsP \
+		    -default 0]
+
+if {$use_dicts_p == 0} {
+	set dicts ""
+}	    
+		    
 # Build the select options list and filter out unwanted dictionaries.
 set wanted_dicts [list {"No" :nospell:}]
 
-if { [empty_string_p $dicts] } {
+if { $dicts eq "" } {
     # Just add the default locale (the empty string will work too).
     lappend wanted_dicts [list "Yes" $default_lang]
 }
@@ -85,7 +88,7 @@ db_transaction {
 	    }
 	    # Some five-char aspell dicts (locales) are missing in ad_locales so we
 	    # need to catch those cases and use the locale as the pretty name, ugh ...
-	    if { [catch { lappend wanted_dicts [list [string totitle [ad_locale_get_label $dict]] $dict] }] } {
+	    if { [catch { lappend wanted_dicts [list [string totitle [lang::util::get_label $dict]] $dict] }] } {
 		lappend wanted_dicts [list "Locale $dict" $dict]
 	    }
 	}

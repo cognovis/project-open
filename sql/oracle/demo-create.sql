@@ -1,7 +1,8 @@
 create sequence ad_template_sample_users_seq start with 5 increment by 1;
 
 create table ad_template_sample_users (
-       user_id         integer primary key,
+       user_id         integer 
+                       constraint ad_template_sample_users_pk primary key,
        first_name      varchar2(20),
        last_name       varchar2(20),
        address1        varchar2(40),
@@ -24,3 +25,8 @@ insert into ad_template_sample_users values
 
 insert into ad_template_sample_users values 
  (4, 'Yoruba', 'Diaz', '12 Magic Ave.', NULL, 'Lariot', 'WY');
+
+-- load jiml's notes-like package
+@@ template-demo-notes-create.sql
+@@ template-demo-notes-sample.sql
+

@@ -3,7 +3,7 @@ ad_library {
 
     @author Lars Pind (lars@pinds.com)
     @creation-date 2003-01-27
-    @cvs-id $Id: richtext-or-file-procs.tcl,v 1.1 2005/04/18 21:32:35 cvs Exp $
+    @cvs-id $Id: richtext-or-file-procs.tcl,v 1.2 2010/10/19 20:13:08 po34demo Exp $
 }
 
 namespace eval template {}
@@ -27,6 +27,8 @@ ad_proc -public template::util::richtext_or_file::create {
     {filename {}}
     {tmp_filename {}}
     {content_url {}}
+} {
+    Create a richtext_or_file datastructure.
 } {
     return [list $storage_type $mime_type $text $filename $tmp_filename $content_url]
 }
@@ -56,7 +58,19 @@ ad_proc -public template::util::richtext_or_file::format_options {} {
     }
 }
 
-ad_proc -public template::data::validate::richtext_or_file { value_ref message_ref } {
+ad_proc -public template::data::validate::richtext_or_file {
+    value_ref
+    message_ref
+} {
+    Validate submitted richtext_or_file by checking that the format is valid, HTML doesn't
+    contain illegal tags, etc.
+
+    @param value_ref Reference variable to the submitted value
+    @param message_ref Reference variable for returning an error message
+
+    @return True (1) if the submitted value is valid, false (0) otherwise
+} {
+
 
     upvar 2 $message_ref message $value_ref richtext_or_file_list
 
@@ -67,7 +81,7 @@ ad_proc -public template::data::validate::richtext_or_file { value_ref message_r
     set tmp_filename [lindex $richtext_or_file_list 4]
     set content_url  [lindex $richtext_or_file_list 5]
 
-    if { ![empty_string_p $text] && [lsearch -exact [template::util::richtext_or_file::formats] $mime_type] == -1 } {
+    if { $text ne "" && [lsearch -exact [template::util::richtext_or_file::formats] $mime_type] == -1 } {
 	set message "Invalid text format, '$mime_type'."
 	return 0
     }
@@ -75,7 +89,7 @@ ad_proc -public template::data::validate::richtext_or_file { value_ref message_r
     # enhanced text and HTML needs to be security checked
     if { [lsearch { text/enhanced text/html } $mime_type] == -1 } {
         set check_result [ad_html_security_check $text]
-        if { ![empty_string_p $check_result] } {
+        if { $check_result ne "" } {
             set message $check_result
             return 0
         }
@@ -84,7 +98,16 @@ ad_proc -public template::data::validate::richtext_or_file { value_ref message_r
     return 1
 }    
 
-ad_proc -public template::data::transform::richtext_or_file { element_ref } {
+ad_proc -public template::data::transform::richtext_or_file {
+    element_ref
+} {
+    Transform submitted data into a valid richtext_or_file data structure (list)
+
+    @param element_ref Reference variable to the form element
+
+    @return Submitted data in the richtext_or_datafile list form
+
+} {
 
     upvar $element_ref element
     set element_id $element(id)
@@ -96,7 +119,7 @@ ad_proc -public template::data::transform::richtext_or_file { element_ref } {
     switch $storage_type {
         text {
             set text [ns_queryget $element_id.text]
-            if { [empty_string_p $text] } {
+            if { $text eq "" } {
                 return [list]
             }
             set mime_type [ns_queryget $element_id.mime_type]
@@ -105,7 +128,7 @@ ad_proc -public template::data::transform::richtext_or_file { element_ref } {
         }  
         file {
             set file [template::util::file_transform $element_id.file]
-            if { [empty_string_p $file] } {
+            if { $file eq "" } {
                 return [list]
             }
             set filename [template::util::file::get_property filename $file]
@@ -226,8 +249,18 @@ ad_proc -public template::util::richtext_or_file::get_property { what richtext_o
     }
 }
 
-ad_proc -public template::widget::richtext_or_file { element_reference tag_attributes } {
+ad_proc -public template::widget::richtext_or_file {
+    element_reference
+    tag_attributes
+} { 
+    Render a richtext_or_file widget
 
+    @param element_reference Reference variable to the form element
+    @param tag_attributes Attributes to include in the generated HTML
+
+    @return Form HTML for the widget
+
+} { 
   upvar $element_reference element
 
   if { [info exists element(html)] } {
@@ -254,8 +287,8 @@ ad_proc -public template::widget::richtext_or_file { element_reference tag_attri
   
   set output {}
 
-  if { [string equal $element(mode) "edit"] } {
-      if { [empty_string_p $storage_type] } {
+  if {$element(mode) eq "edit"} {
+      if { $storage_type eq "" } {
           append output "<input type=\"radio\" name=\"$element(id).storage_type\" id=\"$element(id).storage_type_text\" value=\"text\" "
           append output "checked "
           append output "onclick=\"javascript:acs_RichText_Or_File_InputMethodChanged('$element(form_id)', '$element(id)', this);\">"
@@ -264,14 +297,14 @@ ad_proc -public template::widget::richtext_or_file { element_reference tag_attri
           append output "<input type=\"hidden\" name=\"$element(id).storage_type\" value=\"[ad_quotehtml $storage_type]\">"
       }
 
-      if { [empty_string_p $storage_type] || [string equal $storage_type "text"] } {
-          append output {<script language="javascript"><!--} \n {acs_RichText_WriteButtons();  //--></script>}
+      if { $storage_type eq "" || $storage_type eq "text" } {
+          append output {<script type="text/javascript"><!--} \n {acs_RichText_WriteButtons();  //--></script>}
 
           append output [textarea_internal "$element(id).text" attributes $text]
           append output "<br>Format: [menu "$element(id).mime_type" [template::util::richtext_or_file::format_options] $mime_type attributes]"
       }
 
-      if { [empty_string_p $storage_type] } {
+      if { $storage_type eq "" } {
           append output "</blockquote>"
           append output "<input type=\"radio\" name=\"$element(id).storage_type\" id=\"$element(id).storage_type_file\" value=\"file\" "
           append output "onclick=\"javascript:acs_RichText_Or_File_InputMethodChanged('$element(form_id)', '$element(id)', this);\">"
@@ -279,17 +312,17 @@ ad_proc -public template::widget::richtext_or_file { element_reference tag_attri
           append output "<blockquote>"
       }
 
-      if { [string equal $storage_type "file"] } {
+      if {$storage_type eq "file"} {
           append output [template::util::richtext_or_file::get_property html_value $element(value)]
           append output "<p>Replace uploaded file: "
           append output "<input type=\"file\" name=\"$element(id).file\">" 
       }
-      if { [empty_string_p $storage_type] } {
+      if { $storage_type eq "" } {
           append output "<input type=\"file\" name=\"$element(id).file\" disabled>" 
       }
 
       
-      if { [empty_string_p $storage_type] } {
+      if { $storage_type eq "" } {
           append output "</blockquote>"
       }
   } else {

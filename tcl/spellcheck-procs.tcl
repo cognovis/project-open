@@ -3,7 +3,7 @@ ad_library {
 
     @author Ola Hansson (ola@polyxena.net)
     @creation-date 2003-09-21
-    @cvs-id $Id: spellcheck-procs.tcl,v 1.1 2005/04/18 21:32:35 cvs Exp $
+    @cvs-id $Id: spellcheck-procs.tcl,v 1.2 2010/10/19 20:13:08 po34demo Exp $
 }
 
 namespace eval template {}
@@ -27,7 +27,7 @@ ad_proc -public template::util::spellcheck::merge_text { element_id } {
     set merge_text [ns_set get $__form__ $element_id.merge_text]
     ns_set delkey $__form__ $element_id.merge_text
 
-    if { [empty_string_p $merge_text] } {
+    if { $merge_text eq "" } {
 
 	return {}
     } 
@@ -49,6 +49,11 @@ ad_proc -public template::data::transform::spellcheck {
     -element_ref:required
     -values:required
 } {
+    Tranform submitted and previously validated input into a spellcheck datastructure.
+
+    @param element_ref Reference variable to the form element.
+    @param values The set of values for that element.
+} {
 
     upvar $element_ref element
 
@@ -59,19 +64,19 @@ ad_proc -public template::data::transform::spellcheck {
     if { [set richtext_p [string equal "richtext" $element(datatype)]] } {
 	# special treatment for the "richtext" datatype.
     	set format [template::util::richtext::get_property format [lindex $values 0]]
-	if { ![empty_string_p $merge_text] } {
+	if { $merge_text ne "" } {
             set richtext_value [lindex [template::data::transform::richtext element] 0]
             return [list [template::util::richtext::set_property contents $richtext_value $merge_text]]
 	} 
     	set contents [template::util::richtext::get_property contents [lindex $values 0]]
     } else {
-	if { ![empty_string_p $merge_text] } {
+	if { $merge_text ne "" } {
             return [list $merge_text]
 	} 
 	set contents [lindex $values 0]
     }
 
-    if { [empty_string_p $contents] } {
+    if { $contents eq "" } {
 	return $values
     } 
     # if language is empty string don't spellcheck
@@ -108,7 +113,7 @@ ad_proc -public template::data::transform::spellcheck {
                 # form data by richtext validation DAVEB
                 template::element::set_properties $element(form_id) $element(id) -datatype text
 		append formtext_to_display "
-<input type=\"hidden\" name=\"$element(id).format\" value=\"$format\" />"
+<input type=\"hidden\" name=\"$element(id).format\" value=\"$format\" >"
 	    }
 
 	    # This is needed in order to display the form text noquoted in the "show errors" page ...
@@ -140,7 +145,7 @@ ad_proc -public template::util::spellcheck::get_sorted_list_with_unique_elements
     
     set old_element "XXinitial_conditionXX"
     foreach list_element $sorted_list {
-	if { ![string equal $list_element $old_element] } {
+	if { $list_element ne $old_element } {
 	    lappend new_list $list_element
 	}
 	set old_element $list_element
@@ -199,14 +204,15 @@ ad_proc -public template::util::spellcheck::get_element_formtext {
 
     # the --lang switch only works with aspell and if it is not present
     # aspell's (or ispell's) default language will have to do.
-    if { ![empty_string_p $language] } {
-	set language "--lang=$language"
+    set lang_and_enc "--encoding=utf-8"
+    if { $language ne "" } {
+        append lang_and_enc " --lang=$language"
     }
 
     # Caveat: The "open" arg must be a list (not a string) to allow the wrapper args to be the empty string
     # (which $language will be when ispell is used, for instance)
 
-    if { [catch { set ispell_proc [open [list |$spelling_wrapper [ns_info home] $spellchecker_path $language $dictionaryfile $tmpfile] r] } errmsg] } {
+    if { [catch { set ispell_proc [open [list |$spelling_wrapper [ns_info home] $spellchecker_path $lang_and_enc $dictionaryfile $tmpfile] r] } errmsg] } {
 	ad_return_error "Webspell could not be executed" "Spell-checking is enabled but the spell-check wrapper ([acs_root_dir]/bin/webspell) could not be executed. Check that the wrapper exists, and that its permissions are correct. <p>Here is the error message: <pre>$errmsg</pre>"
 	ad_script_abort
     }
@@ -289,9 +295,9 @@ ad_proc -public template::util::spellcheck::get_element_formtext {
     foreach { errtype errnum errword erroptions } $error_list {
 	set wordlen [string length $errword]
 	
-	if { [string equal "miss" $errtype] } {
-	    regsub "\#$errnum\#" $formtext "<input type=\"text\" name=\"${var_to_spellcheck}.error_$errnum\" value=\"$errword\" size=\"$wordlen\" />" formtext
-	} elseif { [string equal "nearmiss" $errtype] } {
+	if {"miss" eq $errtype} {
+	    regsub "\#$errnum\#" $formtext "<input type=\"text\" name=\"${var_to_spellcheck}.error_$errnum\" value=\"$errword\" size=\"$wordlen\" >" formtext
+	} elseif {"nearmiss" eq $errtype} {
 	    regsub -all ", " $erroptions "," erroptions
 	    set options [split $erroptions ","]
 	    set select_text "<select name=\"${var_to_spellcheck}.error_$errnum\">\n<option value=\"$errword\">$errword</option>\n"
@@ -318,14 +324,14 @@ ad_proc -public template::util::spellcheck::get_element_formtext {
     regsub -all {<a [^<]*>} $formtext_to_display "<u>" formtext_to_display
     regsub -all {</a>} $formtext_to_display "</u>" formtext_to_display
 
-    append formtext_to_display "<input type=\"hidden\" name=\"${var_to_spellcheck}.merge_text\" value=\"[ad_quotehtml $processed_text]\" />"
+    append formtext_to_display "<input type=\"hidden\" name=\"${var_to_spellcheck}.merge_text\" value=\"[ad_quotehtml $processed_text]\" >"
 
 
     ####
     # just_the_errwords
     ####
 
-    if { ![empty_string_p $just_the_errwords_ref]} {
+    if { $just_the_errwords_ref ne ""} {
 	
 	upvar $just_the_errwords_ref just_the_errwords
 	
@@ -365,9 +371,9 @@ ad_proc -public template::util::spellcheck::spellcheck_properties {
 						    -parameter SpellcheckFormWidgets \
 						    -default ""]]
 	    
-	    set spellcheck_p [expr [array size widget_info] \
-				  && ([string equal $element(widget) "richtext"] || [string equal $element(widget) "textarea"] || [string equal $element(widget) "text"]) \
-				  && [lsearch -exact [array names widget_info] $element(widget)] != -1]
+	    set spellcheck_p [expr {[array size widget_info] \
+				  && ($element(widget) eq "richtext" || $element(widget) eq "textarea" || $element(widget) eq "text") \
+				  && [lsearch -exact [array names widget_info] $element(widget)] != -1}]
 	    
 	}
 	
@@ -404,7 +410,7 @@ ad_proc -public template::util::spellcheck::spellcheck_properties {
 	set spellcheck(selected_option) $spellcheck_value
 	set spellcheck(render_p) 1
 
-	if { [string equal ":nospell:" $spellcheck(selected_option)] } {
+	if {":nospell:" eq $spellcheck(selected_option)} {
 	    set spellcheck(perform_p) 0
 	} else {
 	    set spellcheck(perform_p) 1

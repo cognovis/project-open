@@ -5,7 +5,7 @@
 #          Stanislav Freidin 	  (sfreidin@arsdigita.com)
 #          Christian Brechbuehler (chrisitan@arsdigita.com)
 
-# $Id: tag-init.tcl,v 1.1 2005/04/18 21:32:35 cvs Exp $
+# $Id: tag-init.tcl,v 1.2 2010/10/19 20:13:08 po34demo Exp $
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -46,11 +46,22 @@ template_tag property { chunk params } {
 template_tag master { params } {
 
   set src [ns_set iget $params src]
+  set slave_properties_p [template::get_attribute multiple $params slave-properties-p 0]
+
+  if {[template::util::is_true $slave_properties_p]} {
+    template::adp_append_code "
+      foreach {__key __value} \$__args {
+        if {!\[string equal \$__key __adp_slave\]} {
+          set __adp_properties(\$__key) \"\$__value\"
+        }
+      }
+    "
+  }
 
   # default to the site-wide master
-  if {[empty_string_p $src]} {
-    set src "\[ad_parameter -package_id \[ad_conn subsite_id\]\
-             DefaultMaster dummy \"/www/default-master\"\]"
+  if {$src eq ""} {
+    set src "\[parameter::get -package_id \[ad_conn subsite_id\]\
+             -parameter DefaultMaster -default \"/www/default-master\"\]"
   }
   
   template::adp_append_code "
@@ -61,11 +72,22 @@ template_tag master { params } {
 
 template_tag slave { params } {
 
+  #Start developer support frame around subordinate template.
+  if { [llength [info procs ::ds_enabled_p]] && [llength [info procs ::ds_adp_start_box]] } {
+      ::ds_adp_start_box
+  }
+
   template::adp_append_code "
     if { \[info exists __adp_slave\] } {
       append __adp_output \$__adp_slave
     }
   "
+
+  #End developer support frame around subordinate template.
+  if { [llength [info procs ::ds_enabled_p]] && [llength [info procs ::ds_adp_end_box]] } {
+      ::ds_adp_end_box
+  }
+
 }
 
 # Include another template in the current template
@@ -73,6 +95,11 @@ template_tag slave { params } {
 template_tag include { params } {
 
   set src [ns_set iget $params src]
+
+  #Start developer support frame around subordinate template.
+  if { [llength [info procs ::ds_enabled_p]] && [llength [info procs ::ds_adp_start_box]] } {
+      ::ds_adp_start_box -stub "\[template::util::url_to_file \"$src\" \"\$__adp_stub\"\]"
+  }
 
   # pass additional arguments as key-value pairs
 
@@ -83,7 +110,7 @@ template_tag include { params } {
   for { set i 0 } { $i < [ns_set size $params] } { incr i } {
 
     set key [ns_set key $params $i]
-    if { [string equal $key src] } { continue }
+    if {$key eq "src"} { continue }
     
     set value [ns_set value $params $i]
 
@@ -99,9 +126,24 @@ template_tag include { params } {
   template::adp_append_code "        ad_script_abort"
   template::adp_append_code "    } else {"
   template::adp_append_code "        append __adp_output \"Error in include template \\\"\[template::util::url_to_file \"$src\" \"\$__adp_stub\"\]\\\": \$errmsg\""
+  # JCD: If we have the ds_page_bits cache maybe save the error for later
+  if { [llength [info procs ::ds_enabled_p]] && [llength [info procs ::ds_page_fragment_cache_enabled_p]] } {
+      template::adp_append_code "        if {\[::ds_enabled_p\]"
+      template::adp_append_code "            && \[::ds_collection_enabled_p\] } {"
+      template::adp_append_code "            set __include_errors {}"
+      template::adp_append_code "            ns_cache get ds_page_bits \[ad_conn request\]:error __include_errors"
+      template::adp_append_code "            ns_cache set ds_page_bits \[ad_conn request\]:error \[lappend __include_errors \[list \"$src\" \$errorInfo\]\]"
+      template::adp_append_code "        }"
+  }
   template::adp_append_code "        ns_log Error \"Error in include template \\\"\[template::util::url_to_file \"$src\" \"\$__adp_stub\"\]\\\": \$errmsg\n\$errorInfo\""
   template::adp_append_code "    }"
   template::adp_append_code "}"
+
+  #End developer support frame around subordinate template.
+  if { [llength [info procs ::ds_enabled_p]] && [llength [info procs ::ds_adp_end_box]] } {
+      ::ds_adp_end_box -stub "\[template::util::url_to_file \"$src\" \"\$__adp_stub\"\]"
+  }
+
 }
 
 # Repeat a template chunk for each row of a multirow data source
@@ -123,10 +165,10 @@ template_tag multiple { chunk params } {
       upvar 0 $name __${tag_id}_swap
   }
 
-  for { set $i [expr 1 + $startrow] } { \$$i <= \${$name:rowcount}"
+  for { set $i [expr {1 + $startrow}] } { \$$i <= \${$name:rowcount}"
 
   if {$maxrows >= 0} {
-    template::adp_append_code " && \$$i <= [expr $maxrows + $startrow]" \
+    template::adp_append_code " && \$$i <= [expr {$maxrows + $startrow}]" \
 	-nobreak
   }
   
@@ -135,11 +177,11 @@ template_tag multiple { chunk params } {
   " -nobreak
   template::adp_compile_chunk $chunk
 
-  if { ![empty_string_p $delimiter] } {
+  if { $delimiter ne "" } {
       template::adp_append_code " if { \$$i < \${$name:rowcount}"
 
       if {$maxrows >= 0} {
-	  template::adp_append_code " && \$$i < [expr $maxrows + $startrow]" \
+	  template::adp_append_code " && \$$i < [expr {$maxrows + $startrow}]" \
 	      -nobreak
       }
 
@@ -169,7 +211,7 @@ template_tag list { chunk params } {
   if { ![template::util::is_nil value] } {
 
     set name [ns_set iget $params name]
-    if { [empty_string_p $name] } {
+    if { $name eq "" } {
       set name "__ats_list_value"
     }
 
@@ -185,9 +227,9 @@ template_tag list { chunk params } {
   
   template::adp_append_code "
 
-  for { set __ats_i 0 } { \$__ats_i < \${$name:rowcount} } { incr __ats_i } {
-    set $name:item \[lindex \${$name} \$__ats_i\]
-    set $name:rownum \[expr \$__ats_i + 1\]
+  for { set __ats_${name}_i 0 } { \$__ats_${name}_i < \${$name:rowcount} } { incr __ats_${name}_i } {
+    set $name:item \[lindex \${$name} \$__ats_${name}_i\]
+    set $name:rownum \[expr \$__ats_${name}_i + 1\]
   "
   template::adp_compile_chunk $chunk
 
@@ -206,7 +248,7 @@ template_tag group { chunk params } {
 
   set multiple_tag_id [template::enclosing_tag multiple]
 
-  if { [string equal $multiple_tag_id {}] } {
+  if {$multiple_tag_id eq {}} {
     error "No enclosing MULTIPLE tag for GROUP tag on column $column"
   }
 
@@ -224,7 +266,7 @@ template_tag group { chunk params } {
   # for group tags that have other group tags inside them, since we can't know
   # if we're the last row until the inner group tag has eaten up all the 
   # rows between the start of this tag and the end.
-  if { ![empty_string_p $group_tag_id] } {
+  if { $group_tag_id ne "" } {
     template::adp_append_code "
       if { \[info exists ${name}(groupnum)\] } {
         set __${tag_id}_${group_tag_id}_groupnum \$${name}(groupnum)
@@ -261,7 +303,7 @@ template_tag group { chunk params } {
       }
   "
 
-  if { ![empty_string_p $delimiter] } {
+  if { $delimiter ne "" } {
       template::adp_append_string $delimiter
   }
 
@@ -273,7 +315,7 @@ template_tag group { chunk params } {
   "
 
   # Restore saved groupnum pseudocolumns
-  if { ![empty_string_p $group_tag_id] } {
+  if { $group_tag_id ne "" } {
     template::adp_append_code "
       if { \[info exists __${tag_id}_${group_tag_id}_groupnum\] } {
         set ${name}(groupnum) \$__${tag_id}_${group_tag_id}_groupnum 
@@ -294,18 +336,18 @@ template_tag grid { chunk params } {
   set orientation [template::get_attribute grid $params orientation vertical]
 
   template::adp_append_code "
-  set rows \[expr ceil(\${$name:rowcount} / $cols.0)\]
+  set rows \[expr {ceil(\${$name:rowcount} / $cols.0)}\]
   for { set __r 1 } { \$__r <= \$rows } { incr __r } {
     for { set __c 1 } { \$__c <= $cols } { incr __c } {
 "
 
-  if { [string equal $orientation vertical] } {
+  if {$orientation eq "vertical"} {
     template::adp_append_code "
-      set rownum \[expr 1 + int((\$__r - 1) + ((\$__c - 1) * \$rows))\]
+      set rownum \[expr {1 + int((\$__r - 1) + ((\$__c - 1) * \$rows))}\]
 "
   } else {
     template::adp_append_code "
-      set rownum \[expr 1 + int((\$__c - 1) + ((\$__r - 1) * $cols))\]
+      set rownum \[expr {1 + int((\$__c - 1) + ((\$__r - 1) * $cols))}\]
 " 
   }
 
@@ -389,7 +431,7 @@ template_tag formerror { chunk params } {
   set id [template::get_attribute formwidget $params id]
   set type [ns_set get $params type]
 
-  if { [string equal $type {}] } {
+  if {$type eq {}} {
     set key $id
   } else {
     set key $id:$type
@@ -400,7 +442,7 @@ template_tag formerror { chunk params } {
       set formerror($id) \$formerror($key)
     "
 
-  if { [string equal $chunk {}] } {
+  if {$chunk eq {}} {
 
     template::adp_append_string "\$formerror($key)"
 
@@ -440,6 +482,27 @@ template_tag formgroup { chunk params } {
   }
 }
 
+# render one element from a formgroup
+template_tag formgroup-widget { chunk params } {
+    set id [template::get_attribute formgroup-widget $params id]
+
+    set row [template::get_attribute formgroup-widget $params row]
+    # get any additional HTML attributes specified by the designer
+    set tag_attributes [template::util::set_to_list $params id row]
+
+    # generate a list of options and option labels as a data source
+
+
+    template::adp_append_code \
+        "template::element options \${form:id} $id { $tag_attributes }"
+    
+  # make sure name is a parameter to pass to the rendering tag handler
+  ns_set update $params name formgroup
+  ns_set update $params id formgroup
+    template::adp_append_code "append __adp_output \"\$\{formgroup:${row}(widget)\} \$\{formgroup:${row}(label)\}\""
+
+}
+
 # Render a form, incorporating any additional markup attributes
 # specified in the template.  Set the magic variable "form:id"
 # for elements to reference
@@ -474,7 +537,7 @@ template_tag formtemplate { chunk params } {
   template::adp_append_string \
       "\[template::form render $id { $tag_attributes } \]"
 
-  if { [string equal [string trim $chunk] {}] } {
+  if {[string trim $chunk] eq {}} {
 
     # generate the form body dynamically if none specified.
     set style [ns_set iget $params style]
@@ -490,6 +553,9 @@ template_tag formtemplate { chunk params } {
     "\[template::form check_elements $id\]"
   }
 
+  if { [info exists form_properties(fieldset)] } {
+      template::adp_append_string "</fieldset>"
+  }
   template::adp_append_string "</form>"
 }
 
@@ -570,6 +636,11 @@ template_tag include-optional { chunk params } {
 
   set src [ns_set iget $params src]
 
+  #Start developer support frame around subordinate template.
+  if { [llength [info procs ::ds_enabled_p]] && [llength [info procs ::ds_adp_start_box]] } {
+      ::ds_adp_start_box -stub "\[template::util::url_to_file \"$src\" \"\$__adp_stub\"\]"
+  }
+
   # pass additional arguments as key-value pairs
 
   set command "template::adp_parse"
@@ -578,7 +649,7 @@ template_tag include-optional { chunk params } {
 
   for { set i 0 } { $i < [ns_set size $params] } { incr i } {
       set key [ns_set key $params $i]
-      if { [string equal $key src] } { 
+      if {$key eq "src"} { 
           continue 
       }
       set value [ns_set value $params $i]
@@ -606,6 +677,12 @@ template_tag include-optional { chunk params } {
     template::util::lpop __adp_include_optional_output
   }
   "
+
+  #End developer support frame around subordinate template.
+  if { [llength [info procs ::ds_enabled_p]] && [llength [info procs ::ds_adp_end_box]] } {
+      ::ds_adp_end_box -stub "\[template::util::url_to_file \"$src\" \"\$__adp_stub\"\]"
+  }
+
 }
 
 # Insert the output from the include-optional tag
@@ -704,9 +781,9 @@ template_tag switch { chunk params } {
         set key [ns_set key $params $i]
         set value [ns_set value $params $i]
 
-        if { [string equal $key $value] } {
+        if {$key eq $value} {
             set arg $key
-        } elseif [string equal $key flag] {
+        } elseif {$key eq "flag"} {
             append sw " -$value "            
         }
     }
@@ -729,7 +806,7 @@ template_tag case { chunk params } {
     # Scan the parameter stack backward, looking for the tag name
 
     set tag_id [template::enclosing_tag switch]
-    if { [string equal $tag_id {}] } {
+    if {$tag_id eq {}} {
         error "No enclosing SWITCH tag for CASE tag on value $value"
     }    
 
@@ -739,7 +816,7 @@ template_tag case { chunk params } {
 
     # insert the case statement and eval the chunk in between
 
-    if { ![string equal $value ""] } {
+    if { $value ne "" } {
 
         # processing <case value= ...> form
 
@@ -755,7 +832,7 @@ template_tag case { chunk params } {
 
         set switches ""
         set size [ns_set size $params]
-        set size_1 [expr $size - 1]
+        set size_1 [expr {$size - 1}]
 
         for { set i 0 } { $i < $size } { incr i } {
 
@@ -765,13 +842,13 @@ template_tag case { chunk params } {
             # pass over the first arg (syntax sugar), but check format
             if { $i == 0 } {
 
-                if ![string equal $key "in"] {
+                if {$key ne "in" } {
                     error "Format error: should be <case in \"foo\" \"bar\" ...>"
                 }
 
             } else {
 
-                if { [string equal $key $value] } {
+                if {$key eq $value} {
 
                     # last item in list so process the chunk
                     if { $i == $size_1 } {
@@ -803,7 +880,7 @@ template_tag default { chunk params } {
     # Scan the parameter stack backward, looking for the tag name
 
     set tag_id [template::enclosing_tag switch]
-    if { [string equal $tag_id {}] } {
+    if {$tag_id eq {}} {
         error "No enclosing SWITCH tag for DEFAULT tag"
     }    
 
@@ -814,4 +891,31 @@ template_tag default { chunk params } {
     template::adp_compile_chunk $chunk
 
     template::adp_append_code "}"
+}
+
+# contract and comment tags for adding inline
+# documentation to adp files.
+#
+# @author Ben Bytheway (ben@vrusp.com)
+
+template_tag contract { chunk params } {}
+
+template_tag comment { chunk params } {}
+
+
+
+template_tag box { chunk params } {
+    set class [ns_set iget $params class]
+    set title [ns_set iget $params title]
+
+    template::adp_append_code "append __adp_output \"
+<div class=\\\"portlet-wrapper\\\">
+<div class=\\\"portlet-header\\\">
+<div class=\\\"portlet-title-no-controls\\\">
+<h1>$title</h1>
+</div>
+</div>
+<div class=\\\"portlet\\\">\""
+    template::adp_compile_chunk $chunk
+    template::adp_append_code "append __adp_output {</div></div>}"
 }

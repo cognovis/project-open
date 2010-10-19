@@ -3,7 +3,7 @@
 # Copyright (C) 1999-2000 ArsDigita Corporation
 # Authors: Karl Goldstein    (karlg@arsdigita.com)
 
-# $Id: doc-procs.tcl,v 1.1 2005/04/18 21:32:35 cvs Exp $
+# $Id: doc-procs.tcl,v 1.2 2010/10/19 20:13:06 po34demo Exp $
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -21,7 +21,11 @@
 
 namespace eval template {}
 
-ad_proc -public template::parse_directives { code } {
+ad_proc -public template::parse_directives {
+  code
+} {
+  Parse out directives embedded in the code parameter.
+} {
 
   # remove carriage returns if present
   regsub -all {\r|\r\n} $code {\n} code
@@ -98,7 +102,7 @@ ad_proc -public template::get_datasources { code } {
 	set structure [lindex $info 1]
 	set comment [lrange $info 2 end]
 
-	if { [string match one* $structure] } {
+	if { [string match "one*" $structure] } {
 
 	  # directive is a onevalue or onelist.  add a row and move on
 	  incr rowcount
@@ -160,6 +164,8 @@ ad_proc -public template::get_datasources { code } {
 }
 
 ad_proc -public template::verify_datasources {} {
+  @return True (1)
+} {
   return 1
 }
 

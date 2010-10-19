@@ -3,7 +3,7 @@
 # Copyright (C) 1999-2000 ArsDigita Corporation
 # Authors: Karl Goldstein    (karlg@arsdigita.com)
 #          
-# $Id: request-procs.tcl,v 1.1 2005/04/18 21:32:35 cvs Exp $
+# $Id: request-procs.tcl,v 1.2 2010/10/19 20:13:07 po34demo Exp $
 
 # This is free software distributed under the terms of the GNU Public
 # License.  Full text of the license is available from the GNU Project:
@@ -22,7 +22,12 @@
 namespace eval template {}
 namespace eval template::request {}
 
-ad_proc -public template::request { command args } {
+ad_proc -public template::request {
+  command
+  args
+} {
+  Dispatch procedure for requests.
+} {
   eval request::$command $args
 }
 
@@ -49,7 +54,7 @@ ad_proc -public template::request::create { args } {
     foreach param [split $param_data "\n"] {
 
       set param [string trim $param]
-      if { [string equal $param {}] } { continue }
+      if {$param eq {}} { continue }
 
       eval set_param $param
     }
@@ -160,9 +165,9 @@ ad_proc -public template::request::is_valid { { url "" } } {
     # set requesterror as a data source
     uplevel #$level "upvar 0 request:error requesterror"
 
-    if { ! [string equal $url "self"] } {
+    if { $url ne "self" } {
 
-      if { [string equal $url {}] } { 
+      if {$url eq {}} { 
 	set file_stub [template::get_resource_path]/messages/request-error
       } else {
 	set file_stub [ns_url2file $url]
