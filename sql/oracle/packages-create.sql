@@ -44,8 +44,8 @@ procedure drop_type (
   --*/
   content_type		in acs_object_types.object_type%TYPE,
   drop_children_p	in char default 'f',
-  drop_table_p		in char default 'f'
-
+  drop_table_p		in char default 'f',
+  drop_objects_p		in char default 'f'
 );
 
 
@@ -285,6 +285,12 @@ procedure rotate_template (
   use_context     in cr_type_template_map.use_context%TYPE
 );
 
+-- Create or replace a trigger on insert for simplifying addition of
+-- revisions for any content type
+
+procedure refresh_trigger (
+  content_type  in acs_object_types.object_type%TYPE
+);
 
 end content_type;
 /
@@ -376,7 +382,8 @@ function new (
   relation_tag  in cr_child_rels.relation_tag%TYPE default null,
   is_live       in char default 'f',
   storage_type  in cr_items.storage_type%TYPE default 'lob',
-  security_inherit_p in acs_objects.security_inherit_p%TYPE default 't'
+  security_inherit_p in acs_objects.security_inherit_p%TYPE default 't',
+  package_id    in acs_objects.package_id%TYPE default null
 ) return cr_items.item_id%TYPE;
 
 
@@ -842,7 +849,8 @@ function new (
   creation_user	in acs_objects.creation_user%TYPE
 			   default null,
   creation_ip	in acs_objects.creation_ip%TYPE default null,
-  filename	in cr_revisions.filename%TYPE default null
+  filename	in cr_revisions.filename%TYPE default null,
+  package_id	in acs_objects.package_id%TYPE default null
 ) return cr_revisions.revision_id%TYPE;
 
 function new (
@@ -857,6 +865,7 @@ function new (
   creation_date	in acs_objects.creation_date%TYPE default sysdate,
   creation_user	in acs_objects.creation_user%TYPE default null,
   creation_ip	in acs_objects.creation_ip%TYPE default null,
+  package_id	in acs_objects.package_id%TYPE default null,
   filename	in cr_revisions.filename%TYPE default null
 ) return cr_revisions.revision_id%TYPE;
 
@@ -1033,7 +1042,8 @@ function new (
 			   default sysdate,
   creation_user	in acs_objects.creation_user%TYPE
 			   default null,
-  creation_ip	in acs_objects.creation_ip%TYPE default null
+  creation_ip	in acs_objects.creation_ip%TYPE default null,
+  package_id    in acs_objects.package_id%TYPE default null
 ) return cr_symlinks.symlink_id%TYPE;
 
 
@@ -1132,7 +1142,8 @@ function new (
 			   default sysdate,
   creation_user	in acs_objects.creation_user%TYPE
 			   default null,
-  creation_ip	in acs_objects.creation_ip%TYPE default null
+  creation_ip	in acs_objects.creation_ip%TYPE default null,
+  package_id    in acs_objects.package_id%TYPE default null
 ) return cr_extlinks.extlink_id%TYPE;
 
 
@@ -1182,6 +1193,7 @@ function new (
   --    @param creation_date As in <tt>acs_object.new</tt>
   --    @param creation_ip   As in <tt>acs_object.new</tt>
   --    @param creation_user As in <tt>acs_object.new</tt>
+  --    @param package_id  The package id.
   --    @return The id of the newly created folder
   --    @see {acs_object.new}, {content_item.new}
   --*/
@@ -1195,7 +1207,7 @@ function new (
   creation_user	in acs_objects.creation_user%TYPE default null,
   creation_ip	in acs_objects.creation_ip%TYPE default null,
   security_inherit_p in acs_objects.security_inherit_p%TYPE default 't',
-  package_id	in cr_folders.package_id%TYPE default null
+  package_id	in acs_objects.package_id%TYPE default null
 ) return cr_folders.folder_id%TYPE;
 
 procedure del (
@@ -1419,7 +1431,8 @@ function new (
 			   default sysdate,
   creation_user	in acs_objects.creation_user%TYPE
 			   default null,
-  creation_ip	in acs_objects.creation_ip%TYPE default null
+  creation_ip	in acs_objects.creation_ip%TYPE default null,
+  package_id    in acs_objects.package_id%TYPE default null
 ) return cr_templates.template_id%TYPE;
 
 procedure del (
@@ -1491,7 +1504,8 @@ function new (
   creation_user	in acs_objects.creation_user%TYPE
 			   default null,
   creation_ip	in acs_objects.creation_ip%TYPE default null,
-  object_type   in acs_object_types.object_type%TYPE default 'content_keyword'
+  object_type   in acs_object_types.object_type%TYPE default 'content_keyword',
+  package_id    in acs_objects.package_id%TYPE default null
 ) return cr_keywords.keyword_id%TYPE;
 
 procedure del (

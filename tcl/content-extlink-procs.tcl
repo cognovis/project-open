@@ -33,12 +33,13 @@ ad_proc -public content::extlink::copy {
 }
 
 ad_proc -public content::extlink::new {
-    -extlink_id:required
+    {-extlink_id ""}
     -url:required
     -parent_id:required
     {-name ""}
     {-label ""}
     {-description ""}
+    {-package_id ""}
 } {
     @param Create a new external link.
     @return 0
@@ -49,9 +50,38 @@ ad_proc -public content::extlink::new {
         [list parent_id $parent_id ] \
         [list name $name ] \
         [list label $label ] \
-        [list description $description ]
+        [list description $description ] \
+        [list package_id $package_id ] \
     ] content_extlink new]
 }
+
+
+ad_proc -public content::extlink::edit {
+    -extlink_id:required
+    -url:required
+    -label:required
+    -description:required
+} {
+
+    Edit an existing external link.  The parameters are required because it
+    is assumed that the caller will be pulling the existing values out of
+    the database before editing them.
+
+    @extlink_id Optional pre-assigned object_id for the link
+    @url The URL of the external resource
+    @label Label for the extlink (defaults to the URL)
+    @description An extended description of the link (defaults to NULL)
+} {
+
+    set modifying_user [ad_conn user_id]
+    set modifying_ip [ad_conn peeraddr]
+
+    db_transaction {
+        db_dml extlink_update_object {}
+        db_dml extlink_update_extlink {}
+    }
+}
+
 
 
 ad_proc -public content::extlink::delete {
@@ -76,4 +106,14 @@ ad_proc -public content::extlink::is_extlink {
     return [package_exec_plsql -var_list [list \
         [list item_id $item_id ] \
     ] content_extlink is_extlink]
+}
+
+ad_proc -public content::extlink::name {
+    -item_id:required
+} {
+    Returns the name of an extlink
+
+    @item_id  The object id of the item to check.
+} {
+    return [db_string get {}]
 }

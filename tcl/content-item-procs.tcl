@@ -18,6 +18,7 @@ ad_proc -public ::content::item::new {
     {-creation_date ""}
     {-creation_user ""}
     {-context_id ""}
+    {-package_id ""}
     {-creation_ip ""}
     {-item_subtype "content_item"}
     {-content_type "content_revision"}
@@ -28,24 +29,20 @@ ad_proc -public ::content::item::new {
     {-text ""}
     {-data ""}
     {-relation_tag ""}
-    {-is_live ""}
+    {-is_live "f"}
     {-storage_type "file"}
     {-attributes ""}
+    {-tmp_filename ""}
 } {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2004-05-28
 
     Create a new content item This proc creates versioned content
-items where content_type iscontent_revision or subtypes of content
-revision. There are procedures for each other base content
-item. This procdedure uses package_instantiate object. Under
-PostgreSQL the object_type new function must be registered with
-define_function_args.  For correct creation of extended content types pass
-title and content in the attributes paramter which will cause
-content::revision::new to be called and create a proper extended
-content type revision.
-    If title, text, or data are specified a
-content revision will also be created. 
+    items where content_type iscontent_revision or subtypes of content
+    revision. There are procedures for each other base content
+    item. This procdedure uses package_instantiate object. Under
+    PostgreSQL the object_type new function must be registered with
+    define_function_args.
 
     @param name
     @param item_id - item_id of this content_item. If this is not
@@ -53,7 +50,8 @@ content revision will also be created.
     @param parent_id - parent object of this content_item
     @param item_subtype
     @param content_type - content_revision or subtype of content_revision
-    @param context_id -
+    @param context_id - Context of the item. usually used in conjunction with permissions.
+    @param package_id - Package ID of the object
     @param creation_user -
     @param creation_ip -
     @param creation_date - defaults to current date and time
@@ -62,6 +60,9 @@ content revision will also be created.
     @param title - title of content_revision to be created
     @param description of content_revision to be created
     @param text - text of content revision to be created
+    @param tmp_filename file containing content to be added to new revision. Caller is responsible to handle cleaning up the tmp file
+    @param nls_language - ???
+    @param data - ???
     @param attributes - A list of lists ofpairs of additional attributes and
     their values to pass to the constructor. Each pair is a list of two
      elements: key => value such as
@@ -71,6 +72,17 @@ content revision will also be created.
 
     @see content::symlink::new content::extlink::new content::folder::new
 } {
+    if {$creation_user eq ""} {
+        set creation_user [ad_conn user_id]
+    }
+
+    if {$creation_ip eq ""} {
+        set creation_ip [ad_conn peeraddr]
+    }
+    if {$package_id eq ""} {
+        set package_id [ad_conn package_id]
+    }
+
     set var_list [list]
     lappend var_list \
         [list name $name] \
@@ -80,6 +92,7 @@ content revision will also be created.
         [list creation_date $creation_date ] \
         [list creation_user $creation_user ] \
         [list context_id $context_id ] \
+        [list package_id $package_id ] \
         [list creation_ip $creation_ip ] \
         [list item_subtype $item_subtype ] \
         [list content_type $content_type ] \
@@ -97,34 +110,45 @@ content revision will also be created.
     # the content type is not the object type of the cr_item so we pass in
     # the cr_item subtype here and content_type as part of
     # var_list
+    db_transaction {
+        # An explict lock was necessary for PostgreSQL between 8.0 and
+        # 8.2; left the following statement here for documentary purposes
+        #
+        # db_dml lock_objects "LOCK TABLE acs_objects IN SHARE ROW EXCLUSIVE MODE"
 
-    set item_id [package_exec_plsql \
-		     -var_list $var_list \
-		     content_item new]
-    # if we have attributes we pass in everything
-    # and create a revision with all subtype attributes that were
-    # passed in
-
-    # since we can't rely on content_item__new to create a revision
-    # we have to pass is_live to content::revision::new and
-    # set the live revision there
-    if {[exists_and_not_null title] \
+	set item_id [package_exec_plsql \
+			 -var_list $var_list \
+			 content_item new]
+	# if we have attributes we pass in everything
+	# and create a revision with all subtype attributes that were
+	# passed in
+	
+	# since we can't rely on content_item__new to create a revision
+	# we have to pass is_live to content::revision::new and
+	# set the live revision there
+	if {[exists_and_not_null title] \
             || [exists_and_not_null text] \
-            || [exists_and_not_null data] \
-            || [llength $attributes]} {
-        content::revision::new \
-            -item_id $item_id \
-            -title $title \
-            -description $description \
-            -content $text \
-            -mime_type $mime_type \
-            -content_type $content_type \
-            -is_live $is_live \
-            -attributes $attributes
-    }
-    
+		|| [exists_and_not_null data] \
+		|| [exists_and_not_null tmp_filename] \
+		|| [llength $attributes]} {
+	    content::revision::new \
+		-item_id $item_id \
+		-title $title \
+		-description $description \
+		-content $text \
+		-mime_type $mime_type \
+		-content_type $content_type \
+		-is_live $is_live \
+		-package_id $package_id \
+		-creation_user $creation_user \
+		-creation_ip $creation_ip \
+		-creation_date $creation_date \
+		-nls_language $nls_language \
+		-tmp_filename $tmp_filename \
+		-attributes $attributes
+	}
+    }    
     return $item_id
-
 }
 
 ad_proc -public ::content::item::delete {
@@ -133,7 +157,10 @@ ad_proc -public ::content::item::delete {
     @author Dave Bauer (dave@thedesignexperience.org)
     @creation-date 2004-05-28
 
-    Delete a content item
+    Delete a content item from the database. If the content item
+    to delete has children content items referencing its parent
+    via acs_objects.context_id then this proc will fail.
+
     @param item_id
 } {
     return [package_exec_plsql \
@@ -157,7 +184,7 @@ ad_proc -public ::content::item::rename {
                                [list item_id $item_id] \
                                [list name $name]
                           ] \
-                content_item rename]
+                content_item edit_name]
 }
 
 ad_proc -public ::content::item::move {
@@ -205,9 +232,12 @@ ad_proc -public ::content::item::get {
         error "content::item::get revision was '${revision}'. It must be 'live' or 'latest'"
     }
     set content_type [content_type -item_id $item_id]
-    if {[string equal "" $content_type]} {
+    if {$content_type eq ""} {
         # content_type query was unsucessful, item does not exist
         return 0
+    }
+    if {"content_folder" eq $content_type} {
+        return [db_0or1row get_item_folder "" -column_array local_array]
     }
     set table_name [db_string get_table_name "select table_name from acs_object_types where object_type=:content_type"]
     set table_name "${table_name}x"    
@@ -248,17 +278,17 @@ ad_proc -public ::content::item::update {
 	    # create local variable to use for binding
 
 	    set $attribute $value
-	    if {![string equal "" $update_text]} {
+	    if {$update_text ne ""} {
 		append update_text ","
 	    }
 	    append update_text " ${attribute} = :${attribute} "
 	}
     }
-    if {![string equal "" $update_text]} {
+    if {$update_text ne ""} {
 
 	# we have valid attributes, update them
 
-	set query_text "update cr_items set ${update_text}"
+	set query_text "update cr_items set ${update_text} where item_id=:item_id"
 	db_dml item_update $query_text
     }
 }
@@ -271,7 +301,7 @@ ad_proc -public ::content::item::content_type {
     Retrieves the content type of the item. If the item does not exist,
     returns an empty string.
 
-    @param  item_id   The item id
+    @param  item_id   The item_id of the content item
 
     @return The content type of the item, or an empty string if no such
     item exists
@@ -282,25 +312,19 @@ ad_proc -public ::content::item::content_type {
 }
 
 
-ad_proc -public content::item::get_best_revision {
-    -item_id:required
-} {
-    @param item_id
 
-    @return NUMBER(38)
-} {
-    return [package_exec_plsql -var_list [list \
-        [list item_id $item_id ] \
-    ] content_item get_best_revision]
-}
 
 
 ad_proc -public content::item::get_content_type {
     -item_id:required
 } {
-    @param item_id
+    Retrieves the content type of the item. If the item does not exist,
+    returns an empty string.
 
-    @return VARCHAR2(100)
+    @param  item_id   The item_id of the content item
+
+    @return The content type of the item, or an empty string if no such
+    item exists
 } {
     return [package_exec_plsql -var_list [list \
         [list item_id $item_id ] \
@@ -326,11 +350,14 @@ ad_proc -public content::item::get_id {
     {-root_folder_id ""}
     {-resolve_index ""}
 } {
-    @param item_path
-    @param root_folder_id
-    @param resolve_index
+  Looks up the item_path starting with the root folder and returns item_id for that
+  content item or empty, if none exists
 
-    @return NUMBER(38)
+  @param item_path
+  @param root_folder_id
+  @param resolve_index
+
+  @return The item_id of the found item, or the empty string on failure
 } {
     return [package_exec_plsql -var_list [list \
         [list item_path $item_path ] \
@@ -339,13 +366,41 @@ ad_proc -public content::item::get_id {
     ] content_item get_id]
 }
 
+ad_proc -public content::item::get_best_revision {
+    -item_id:required
+} {
+  Attempts to retrieve the live revision for the item. If no live revision
+  exists, attempts to retrieve the latest revision. If the item has no
+  revisions, returns an empty string.
+
+  @param  item_id   The item_id of the content item
+ 
+  @return The best revision_id for the item, or an empty string if no
+          revisions exist
+
+  @see content::revision::item_id
+  @see content::item::get_live_revision 
+  @see content::item::get_latest_revision
+} {
+    return [package_exec_plsql -var_list [list \
+        [list item_id $item_id ] \
+    ] content_item get_best_revision]
+}
 
 ad_proc -public content::item::get_latest_revision {
     -item_id:required
 } {
-    @param item_id
+  Retrieves the latest revision for the item. If the item has no live
+  revision, returns an empty string.
+ 
+  @param  item_id   The item_id of the content item
+ 
+  @return The latest revision_id for the item, or an empty string if no
+          revisions exist
 
-    @return NUMBER(38)
+  @see content::revision::item_id
+  @see content::item::get_best_revision
+  @see content::item::get_live_revision 
 } {
     return [package_exec_plsql -var_list [list \
         [list item_id $item_id ] \
@@ -356,9 +411,17 @@ ad_proc -public content::item::get_latest_revision {
 ad_proc -public content::item::get_live_revision {
     -item_id:required
 } {
-    @param item_id
+  Retrieves the live revision for the item. If the item has no live
+  revision, returns an empty string.
+ 
+  @param  item_id   The item_id of the content item
+ 
+  @return The live revision_id for the item, or an empty string if no
+          live revision exists
 
-    @return NUMBER(38)
+  @see content::revision::item_id
+  @see content::item::get_best_revision 
+  @see content::item::get_latest_revision 
 } {
     return [package_exec_plsql -var_list [list \
         [list item_id $item_id ] \
@@ -441,10 +504,16 @@ ad_proc -public content::item::get_template {
     -item_id:required
     -use_context:required
 } {
-    @param item_id
-    @param use_context
-
-    @return template_id
+  Retrieves the template which can be used to render the item. If there is
+  a template registered directly to the item, returns the id of that template.
+  Otherwise, returns the id of the default template registered to the item's
+  content_type. Returns an empty string on failure.
+ 
+  @param  item_id   The item_id
+  @param  context   The context in which the template will be used (e.g. public)
+ 
+  @return The template_id of the template which can be used to render the
+    item, or an empty string on failure
 } {
     return [package_exec_plsql -var_list [list \
         [list item_id $item_id ] \
@@ -457,10 +526,16 @@ ad_proc -public content::item::get_title {
     -item_id:required
     {-is_live ""}
 } {
-    @param item_id
-    @param is_live
-
-    @return VARCHAR2(1000)
+  Get the title for the item. If a live revision for the item exists,
+  use the live revision. Otherwise, use the latest revision.
+ 
+  @param item_id    The item_id of the content item
+  @param is_live
+ 
+  @return The title of the item
+ 
+  @see content::item::get_best_revision
+  @see content::item::get_title
 } {
     return [package_exec_plsql -var_list [list \
         [list item_id $item_id ] \
@@ -473,10 +548,14 @@ ad_proc -public content::item::get_virtual_path {
     -item_id:required
     {-root_folder_id ""}
 } {
-    @param item_id
-    @param root_folder_id
+  Retrieves the relative path to the item. The path is relative to the
+  page root, and has no extension (Example: "/foo/bar/baz"). 
+ 
+  @param  item_id         The item_id for the item, for which the path is computed
+  @param  root_folder_id  Starts path resolution from this folder.
+                          Defaults to the root of the sitemap (when null).
 
-    @return VARCHAR2
+  @return The path to the item, or an empty string on failure
 } {
     return [package_exec_plsql -var_list [list \
         [list item_id $item_id ] \
@@ -504,9 +583,20 @@ ad_proc -public content::item::is_index_page {
 ad_proc -public content::item::is_publishable {
     -item_id:required
 } {
-    @param item_id
 
-    @return CHAR
+  Determine if the item is publishable. The item is publishable only
+  if:
+  <ul>
+   <li>All child relations, as well as item relations, are satisfied
+     (according to min_n and max_n)</li>
+   <li>The workflow (if any) for the item is finished</li>
+  </ul>
+ 
+  @param  item_id   The item_id of the content item
+
+  @see content::item::is_publishable
+ 
+  @return    't' if the item is publishable, 'f' otherwise
 } {
     return [package_exec_plsql -var_list [list \
         [list item_id $item_id ] \
@@ -685,13 +775,13 @@ ad_proc -public content::item::copy {
 
     copy a content item to a new content item
 
-    @param item_id - item id of the content to be copied from. source content item
+    @param item_id - item_id of the content to be copied from. source content item
     @param target_folder_id - destination folder where the new content item is be passed
     @param creation_user - 
     @param creation_ip -
     @param name - the name of the new item, useful if you are copying in the same folder.
 
-    @return item id of the new copied item
+    @return item_id of the new copied item
 } {
     return [package_exec_plsql \
                 -var_list [list \
@@ -701,4 +791,106 @@ ad_proc -public content::item::copy {
                                [list creation_ip $creation_ip] \
                                [list name $name]] \
                            content_item copy]
+}
+
+ad_proc -public content::item::upload_file {
+    {-upload_file:required}
+    {-parent_id:required}
+    {-package_id ""}
+} {
+    Store the file uploaded under the parent_id if a file was uploaded
+    
+    @author Malte Sussdorff (sussdorff@sussdorff.de)
+    @creation-date 2005-06-21
+    
+    @param upload_file
+
+    @param parent_id
+
+    @return the revision_id of the generated item
+    
+    @error 
+} {
+
+    set filename [template::util::file::get_property filename $upload_file]
+    if {$filename ne "" } {
+	set tmp_filename [template::util::file::get_property tmp_filename $upload_file]
+	set mime_type [template::util::file::get_property mime_type $upload_file]
+	set tmp_size [file size $tmp_filename]
+	set extension [file extension $filename]
+	if {![exists_and_not_null title]} {
+
+	    # maltes: The following regsub garbles the title and consequently the filename as well. 
+	    # "info_c+w.zip" will become "info_c+"
+	    # This is bad, first of all because a letter is missing entirely. Additionally 
+	    # the title in itself should be the original filename, after all this is what
+	    # the user uploaded, not something stripped of its extension.
+	    # So I commented this out until someone can either fix the regsub but more importantly
+	    # can explain why the title should not contain the extension.
+
+            # DRB: removing the explicit "." isn't sufficient because the "." in the
+            # extension also matches any char unless it is escaped.  Like Malte, I
+            # see no reason to get rid of the extension in the title anyway ...
+
+	    # regsub -all ".${extension}\$" $filename "" title
+	    set title $filename
+	}
+	
+	set existing_filenames [db_list get_parent_existing_filenames {}]
+	set filename [util_text_to_url \
+			  -text ${title} -existing_urls "$existing_filenames" -replacement "_"]
+
+        set revision_id [cr_import_content \
+			     -storage_type "file" -title $title -package_id $package_id $parent_id $tmp_filename $tmp_size $mime_type $filename]
+
+	content::item::set_live_revision -revision_id $revision_id
+
+	return $revision_id
+    } 
+}
+
+ad_proc -public content::item::get_id_by_name {
+    {-name:required}
+    {-parent_id:required}
+} {
+    Returns The item_id of the a content item with the passed in name
+
+    @param name Name of the content item
+    @param parent_id Parent_id of the content item
+
+    @return The item_id belonging to the name, empty string if no item_id was found
+} {
+    return [db_string get_item_id_by_name {} -default ""]
+}
+
+#
+#
+#
+
+ad_proc -public ::content::item::get_publish_status { 
+    -item_id:required
+} {
+  Get the publish status of the item. The publish status will be one of
+  the following: 
+  <ul>
+    <li><tt>production</tt> - The item is still in production. The workflow
+      (if any) is not finished, and the item has no live revision.</li>
+    <li><tt>ready</tt> - The item is ready for publishing</li> 
+    <li><tt>live</tt> - The item has been published</li>
+    <li><tt>expired</tt> - The item has been published in the past, but 
+     its publication has expired</li>
+  </ul>
+ 
+  @param item_id  The item_id of the content item
+ 
+  @return The publish status of the item, or the empty string on failure
+ 
+  @see proc content::item::is_publishable
+
+} {
+
+  set publish_status [db_string gps_get_publish_status \
+                          "select publish_status from cr_items where item_id = :item_id"]
+
+  return $publish_status
 }

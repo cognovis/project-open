@@ -64,7 +64,8 @@
                content_type  =>  :image_type,
                storage_type  =>  :storage_type,
                height        =>  :original_height,
-               width         =>  :original_width
+               width         =>  :original_width,
+               package_id    =>  :package_id
             );
           end;
       </querytext>
@@ -82,7 +83,8 @@
              creation_user => :creation_user,
              creation_ip   => :creation_ip,
              height        => :original_height,
-             width         => :original_width
+             width         => :original_width,
+             package_id    => :package_id
            );
          end;
       </querytext>
@@ -99,7 +101,8 @@
                creation_user =>  :creation_user,
                creation_ip   =>  :creation_ip,
                content_type  =>  :other_type,
-               storage_type  =>  :storage_type
+               storage_type  =>  :storage_type,
+               package_id    =>  :package_id
             );
           end;
       </querytext>
@@ -116,6 +119,7 @@
              revision_id   => :revision_id,
              creation_user => :creation_user,
              creation_ip   => :creation_ip,
+             package_id    => :package_id,
 	     filename      => :object_name
            );
          end;

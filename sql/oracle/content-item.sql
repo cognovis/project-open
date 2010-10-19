@@ -26,7 +26,7 @@ function get_root_folder (
 
 begin
 
-  if item_id is NULL then
+  if item_id is NULL or item_id in (-4,-100,-200) then
 
     v_folder_id := c_root_folder_id;
 
@@ -37,7 +37,7 @@ begin
     from
       cr_items
     where 
-      parent_id = 0
+      parent_id = -4
     connect by
       prior parent_id = item_id
     start with
@@ -79,7 +79,8 @@ function new (
   relation_tag  in cr_child_rels.relation_tag%TYPE default null,
   is_live       in char default 'f',
   storage_type  in cr_items.storage_type%TYPE default 'lob',
-  security_inherit_p in acs_objects.security_inherit_p%TYPE default 't'
+  security_inherit_p in acs_objects.security_inherit_p%TYPE default 't',
+  package_id    in acs_objects.package_id%TYPE default null
 ) return cr_items.item_id%TYPE
 is
   v_parent_id      cr_items.parent_id%TYPE;
@@ -120,10 +121,10 @@ begin
     v_context_id := context_id;
   end if;
 
-  if v_parent_id = 0 or 
+  if v_parent_id = -4 or 
     content_folder.is_folder(v_parent_id) = 't' then
 
-    if v_parent_id ^= 0 and 
+    if v_parent_id ^= -4 and 
       content_folder.is_registered(
         v_parent_id, content_item.new.content_type, 'f') = 'f' then
 
@@ -133,7 +134,7 @@ begin
 
     end if;
 
-  elsif v_parent_id ^= 0 then
+  elsif v_parent_id ^= -4 then
 
     begin
 
@@ -171,7 +172,9 @@ begin
 
   v_item_id := acs_object.new(
       object_id	        => content_item.new.item_id,
-      object_type	=> content_item.new.item_subtype, 
+      object_type	=> content_item.new.item_subtype,
+      title             => content_item.new.name,
+      package_id        => content_item.new.package_id,
       context_id        => v_context_id,
       creation_date	=> content_item.new.creation_date, 
       creation_user	=> content_item.new.creation_user, 
@@ -194,11 +197,13 @@ begin
 
   -- if the parent is not a folder, insert into cr_child_rels
   -- We checked above before creating the object that it is a valid rel
-  if v_parent_id ^= 0 and
+  if v_parent_id ^= -4 and
     content_folder.is_folder(v_parent_id) = 'f' then
 
     v_rel_id := acs_object.new(
       object_type	=> 'cr_item_child_rel',
+      title		=> v_rel_tag || ': ' || v_parent_id || ' - ' || v_item_id,
+      package_id	=> content_item.new.package_id,
       context_id	=> v_parent_id
     );
 
@@ -226,6 +231,7 @@ begin
     v_revision_id := content_revision.new(
         item_id	      => v_item_id,
 	title	      => v_title,
+        package_id    => content_item.new.package_id,
 	description   => content_item.new.description,
 	data	      => content_item.new.data,
 	mime_type     => content_item.new.mime_type,
@@ -241,6 +247,7 @@ begin
     v_revision_id := content_revision.new(
 	item_id	      => v_item_id,
 	title	      => v_title,
+        package_id    => content_item.new.package_id,
 	description   => content_item.new.description,
 	text	      => content_item.new.text,
 	mime_type     => content_item.new.mime_type,
@@ -544,17 +551,14 @@ begin
   --   workflow_case.delete(v_wf_cases_val.case_id);
   -- end loop;
 
-  dbms_output.put_line('Deleting symlinks...');
   -- 2) delete all symlinks to this item
   for v_symlink_val in c_symlink_cur loop
     content_symlink.del(v_symlink_val.symlink_id);
   end loop;
 
-  dbms_output.put_line('Unscheduling item...');
   delete from cr_release_periods
     where item_id = content_item.del.item_id;
 
-  dbms_output.put_line('Deleting associated revisions...');
   -- 3) delete all revisions of this item
   delete from cr_item_publish_audit
     where item_id = content_item.del.item_id;
@@ -562,39 +566,32 @@ begin
     content_revision.del(v_revision_val.revision_id);
   end loop;
   
-  dbms_output.put_line('Deleting associated item templates...');
   -- 4) unregister all templates to this item
   delete from cr_item_template_map
     where item_id = content_item.del.item_id; 
 
-  dbms_output.put_line('Deleting item relationships...');
   -- Delete all relations on this item
   for v_rel_val in c_rel_cur loop
     acs_rel.del(v_rel_val.rel_id);
   end loop;  
 
-  dbms_output.put_line('Deleting child relationships...');
   for v_rel_val in c_child_cur loop
     acs_rel.del(v_rel_val.rel_id);
   end loop;  
 
-  dbms_output.put_line('Deleting parent relationships...');
   for v_rel_val in c_parent_cur loop
     acs_rel.del(v_rel_val.rel_id);
     content_item.del(v_rel_val.child_id);
   end loop;  
 
-  dbms_output.put_line('Deleting associated permissions...');
   -- 5) delete associated permissions
   delete from acs_permissions
     where object_id = content_item.del.item_id;
 
-  dbms_output.put_line('Deleting keyword associations...');
   -- 6) delete keyword associations
   delete from cr_item_keyword_map
     where item_id = content_item.del.item_id;
 
-  dbms_output.put_line('Deleting associated comments...');
   -- 7) delete associated comments
   journal_entry.delete_for_object( content_item.del.item_id );
 
@@ -604,7 +601,6 @@ begin
   --    || v_error_val.object_type);
   --end loop;
 
-  dbms_output.put_line('Deleting content item...');
   acs_object.del(content_item.del.item_id);
 
 end del;
@@ -640,6 +636,10 @@ begin
     update cr_items
 	set cr_items.name = content_item.edit_name.name
        	where cr_items.item_id = content_item.edit_name.item_id;
+
+    update acs_objects
+      set title = content_item.edit_name.name
+      where object_id = content_item.edit_name.item_id;
   else
     close exists_cur;
     if exists_id <> item_id then
@@ -755,7 +755,7 @@ is
 
   v_count integer;
   v_name varchar2(400); 
-  v_parent_id integer := 0;
+  v_parent_id integer := -4;
   v_tree_level integer;
 
   v_resolved_root_id integer;
@@ -774,7 +774,7 @@ is
     order by
       tree_level desc;
 
-  v_rel_parent_id integer := 0;
+  v_rel_parent_id integer := -4;
   v_rel_tree_level integer := 0;
 
   v_path varchar2(4000) := '';
@@ -1239,6 +1239,12 @@ begin
       where item_id = move.item_id;
     end if;
 
+    if name is not null then
+      update acs_objects
+        set title = move.name
+        where object_id = move.item_id;
+    end if;
+
   end if;
 end move;
 
@@ -1590,6 +1596,7 @@ is
   v_rel_id		integer;
   v_exists		integer;
   v_order_n		cr_item_rels.order_n%TYPE;
+  v_package_id          acs_objects.package_id%TYPE;
 begin
 
   -- check the relationship is valid
@@ -1628,6 +1635,7 @@ begin
       v_exists := 0;
     end;
 
+    v_package_id := acs_object.package_id(relate.item_id);
 
     -- if order_n is null, use rel_id (the order the item was related)
     if relate.order_n is null then
@@ -1642,6 +1650,8 @@ begin
       --dbms_output.put_line( 'creating new relationship...');
       v_rel_id := acs_object.new(
         object_type     => relation_type,
+        title           => relation_tag || ': ' || relate.item_id || ' - ' || relate.object_id,
+        package_id      => v_package_id,
         context_id      => item_id
       );
       insert into cr_item_rels (
@@ -1658,6 +1668,10 @@ begin
         order_n = v_order_n
       where
         rel_id = v_rel_id;
+
+      update acs_objects set
+        title = relate.relation_tag || ': ' || relate.item_id || ' - ' || relate.object_id
+      where object_id = v_rel_id;
     end if;
 
   end if;

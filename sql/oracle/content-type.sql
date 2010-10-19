@@ -77,7 +77,7 @@ begin
   select decode(count(*),0,0,1) into table_exists from user_tables 
     where table_name = upper(create_type.table_name);
 
-  if table_exists = 0 then
+  if table_exists = 0 and create_type.table_name is not null then
     select table_name into v_supertype_table from acs_object_types
       where object_type = create_type.supertype;
 
@@ -103,7 +103,8 @@ end create_type;
 procedure drop_type (
   content_type		in acs_object_types.object_type%TYPE,
   drop_children_p	in char default 'f',
-  drop_table_p		in char default 'f'
+  drop_table_p		in char default 'f',
+  drop_objects_p		in char default 'f'
 ) is
 
 
@@ -122,11 +123,23 @@ procedure drop_type (
       acs_object_types
     where
       supertype = drop_type.content_type;
-     
+ 
+  cursor revision_cur is
+      select revision_id 
+      from cr_revisions, acs_objects
+      where revision_id = object_id
+      and object_type = drop_type.content_type;
+
+  cursor item_cur is 
+      select item_id 
+      from cr_items
+      where content_type = drop_type.content_type;
+   
   table_exists integer;
   v_table_name varchar2(50);
   is_subclassed_p char;
 
+ 
 begin
 
 
@@ -150,7 +163,9 @@ begin
     for child_rec in child_type_cur loop
       drop_type( 
         content_type => child_rec.object_type,
-	drop_children_p => 't' );
+	drop_children_p => 't',
+	drop_table_p => drop_table_p,
+	drop_objects_p => drop_objects_p );
     end loop;
 
   end if;
@@ -174,7 +189,7 @@ begin
 
   if table_exists = 1 and drop_table_p = 't' then
     select 
-      table_name into v_table_name 
+      nvl(table_name,object_type) into v_table_name 
     from 
       acs_object_types 
     where
@@ -194,12 +209,23 @@ begin
 
   end if;
 
+  if drop_objects_p = 't' then
+    for revision_row in revision_cur loop
+      content_revision.del( 
+        revision_id => revision_row.revision_id
+      );
+    end loop;
+    for item_row in item_cur loop
+      content_item.del( 
+        item_id => item_row.item_id
+      );
+    end loop;
+  end if;
+
   acs_object_type.drop_type(
     object_type   => drop_type.content_type
   );
-
 end drop_type;
-
 
 function create_attribute (
   content_type		in acs_attributes.object_type%TYPE,
@@ -492,7 +518,8 @@ procedure refresh_trigger (
     where                                               
       object_type ^= 'acs_object'                       
     and                                                 
-      object_type ^= 'content_revision'                 
+      object_type ^= 'content_revision'
+    and table_name is not null
     connect by                                          
       prior supertype = object_type                     
     start with                                          
@@ -504,7 +531,7 @@ begin
 
   -- get the table name for the content type (determines view name)
 
-  select table_name into v_table_name
+  select nvl(table_name,object_type) into v_table_name
   from acs_object_types where object_type = refresh_trigger.content_type;
 
   -- start building trigger code
@@ -534,7 +561,8 @@ begin
                    item_id       => content_symlink.resolve(:new.item_id),
                    creation_ip   => :new.creation_ip,
                    creation_user => :new.creation_user, 
-                   text          => :new.text
+                   text          => :new.text,
+                   package_id    => :new.object_package_id
     );
 
   else
@@ -548,7 +576,8 @@ begin
                    item_id       => content_symlink.resolve(:new.item_id),
                    creation_ip   => :new.creation_ip,
                    creation_user => :new.creation_user, 
-                   data          => :new.data
+                   data          => :new.data,
+                   package_id    => :new.object_package_id
     );
 
   end if;';
@@ -582,13 +611,16 @@ procedure refresh_view (
 
   cursor join_cur is
     select
-      table_name, id_column, level
+      distinct lower(table_name) as table_name,
+      id_column, level
     from
       acs_object_types
     where
       object_type <> 'acs_object'
     and
       object_type <> 'content_revision'
+    and lower(table_name) <> 'acs_objects'
+    and lower(table_name) <> 'cr_revisions'
     start with
       object_type = refresh_view.content_type
     connect by
@@ -611,13 +643,25 @@ begin
 
   end loop;
 
-  select table_name into v_table_name from acs_object_types
+  select nvl(table_name,object_type) into v_table_name from acs_object_types
     where object_type = content_type;
 
   -- create the input view (includes content columns)
 
   execute immediate 'create or replace view ' || v_table_name ||
-    'i as select acs_objects.*, cr.revision_id, cr.title, cr.item_id,
+    'i as select acs_objects.object_id,
+ acs_objects.object_type,
+ acs_objects.title as object_title,
+ acs_objects.package_id as object_package_id,
+ acs_objects.context_id,
+ acs_objects.security_inherit_p,
+ acs_objects.creation_user,
+ acs_objects.creation_date,
+ acs_objects.creation_ip,
+ acs_objects.last_modified,
+ acs_objects.modifying_user,
+ acs_objects.modifying_ip,
+ cr.revision_id, cr.title, cr.item_id,
     cr.content as data, cr_text.text,
     cr.description, cr.publish_date, cr.mime_type, cr.nls_language' || 
     cols || 
@@ -627,7 +671,19 @@ begin
   -- create the output view (excludes content columns to enable SELECT *)
 
   execute immediate 'create or replace view ' || v_table_name ||
-    'x as select acs_objects.*, cr.revision_id, cr.title, cr.item_id,
+    'x as select acs_objects.object_id,
+ acs_objects.object_type,
+ acs_objects.title as object_title,
+ acs_objects.package_id as object_package_id,
+ acs_objects.context_id,
+ acs_objects.security_inherit_p,
+ acs_objects.creation_user,
+ acs_objects.creation_date,
+ acs_objects.creation_ip,
+ acs_objects.last_modified,
+ acs_objects.modifying_user,
+ acs_objects.modifying_ip,
+ cr.revision_id, cr.title, cr.item_id,
     cr.description, cr.publish_date, cr.mime_type, cr.nls_language,
     i.name, i.parent_id' || 
     cols || 

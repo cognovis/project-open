@@ -35,24 +35,25 @@ ad_proc -public cr_write_content {
 
     if { [info exists item_id] } {
         if { ![db_0or1row get_item_info ""] } {
-            ad_return -code error "There is no content that matches item_id '$item_id'"
+            error "There is no content that matches item_id '$item_id'" {} NOT_FOUND
         }
     } elseif { [info exists revision_id] } {
         if { ![db_0or1row get_revision_info ""] } {
-            ad_return -code error "There is no content that matches revision_id '$revision_id'"
+            error "There is no content that matches revision_id '$revision_id'" {} NOT_FOUND
         }
     } else {
         ad_return -code error "Either revision_id or item_id must be specified"
     }
 
-    if { ![string equal $storage_type "file"] && \
-         ![string equal $storage_type "text"] && \
-         ![string equal $storage_type "lob"] } {
+    if { $storage_type ne "file" && \
+         $storage_type ne "text" && \
+         $storage_type ne "lob" } {
         ad_return -code error "Storage type '$storage_type' is invalid."
     }
+
     # I set content length to 0 here because otherwise I need to do
     # db-specific queries for get_revision_info
-    if {[empty_string_p $content_length]} {
+    if {$content_length eq ""} {
 	set content_length 0
     }
 
@@ -68,19 +69,36 @@ ad_proc -public cr_write_content {
         file {
             set path [cr_fs_path $storage_area_key]
             set filename [db_string write_file_content ""]
-            # JCD: for webdavfs there needs to be a content-length 0 header 
-            # but ns_returnfile does not send one.  
-	    if { $string_p } {
-		set fd [open $filename]
-		set text [read $fd]
-		close $fd
-		return $text
+	    if {$filename eq ""} {
+		ad_return -code error "No content for the revision $revision_id. This seems to be an error which occured during the upload of the file"
 	    } else {
-		set size [file size $filename]
-		if {!$size} { 
-		    ns_set put [ns_conn outputheaders] "Content-Length" 0
+		if { $string_p } {
+		    set fd [open $filename "r"]
+		    fconfigure $fd \
+			-translation binary \
+			-encoding [encoding system] 
+		    set text [read $fd]
+		    close $fd
+		    return $text
+		} else {
+		    # JCD: for webdavfs there needs to be a content-length 0 header 
+		    # but ns_returnfile does not send one.   Also, we need to 
+		    # ns_return size 0 files since if fastpath is enabled ns_returnfile 
+		    # simply closes the connection rather than send anything (including 
+		    # any headers).  This bug is fixed in AOLServer 4.0.6 and later
+		    # but work around it for now.
+		    set size [file size $filename]
+		    if {!$size} { 
+			ns_set put [ns_conn outputheaders] "Content-Length" 0
+			ns_return 200 text/plain {}
+		    } else {
+                        if {[info procs ad_returnfile_background] eq "" || [security::secure_conn_p]} {
+                            ns_returnfile 200 $mime_type $filename
+                        } else {
+                            ad_returnfile_background 200 $mime_type $filename
+                        }
+		    }
 		}
-		ns_returnfile 200 $mime_type $filename
 	    }
         }
         lob  {
@@ -113,6 +131,7 @@ ad_proc -public cr_import_content {
     {-other_type "content_revision"}
     {-title ""}
     {-description ""}
+    {-package_id ""}
     -item_id
     parent_id
     tmp_filename
@@ -132,6 +151,7 @@ ad_proc -public cr_import_content {
     @param other_type The type of content item to create for a non-image file
     @param title The title given the new revision
     @param description The description of the new revision
+    @param package_id Package Id of the package that created the item
     @param item_id If present, make a new revision of this item, otherwise, make a new
            item
     @param parent_id The parent of the content item we create
@@ -155,7 +175,7 @@ ad_proc -public cr_import_content {
 } {
 
     if { ![info exists creation_user] } {
-        set creation_user [ad_verify_and_get_user_id]
+        set creation_user [ad_conn user_id]
     }
 
     if { ![info exists creation_ip] } {
@@ -164,12 +184,16 @@ ad_proc -public cr_import_content {
 
     # DRB: Eventually we should allow for text storage ... (CLOB for Oracle)
 
-    if { ![string equal $storage_type "file"] && ![string equal $storage_type "lob"] } {
+    if { $storage_type ne "file" && $storage_type ne "lob" } {
         return -code error "Imported content must be stored in the file system or as a large object"
     }
 
-    if {[string equal $mime_type "*/*"]} {
+    if {$mime_type eq "*/*"} {
         set mime_type "application/octet-stream"
+    }
+
+    if {$package_id eq ""} {
+	set package_id [ad_conn package_id]
     }
 
     set old_item_p [info exists item_id]
@@ -177,43 +201,49 @@ ad_proc -public cr_import_content {
         set item_id [db_nextval acs_object_id_seq]
     }
 
-    # 071028 fraber: the cr_item's content_type is "content_item" not "image"...
-    # use content_type of existing item
-#    if $old_item_p {
-#	set cr_content_type [db_string get_content_type ""]
-#    } else {
-#    }
-
-    set cr_content_type [cr_registered_type_for_mime_type $mime_type]
-
+    # use content_type of existing item 
+    if {$old_item_p} {
+	set content_type [db_string get_content_type ""]
+    } else {
+        # all we really need to know is if the mime type is mapped to image, we
+        # actually use the passed in image_type or other_type to create the object
+        if {[db_string image_type_p "" -default 0]} {
+            set content_type image
+        } else {
+            set content_type content_revision
+        }
+    }
     set revision_id [db_nextval acs_object_id_seq]
 
     db_transaction {
 
-        if { [empty_string_p [cr_registered_type_for_mime_type $mime_type]] } {
+        if { [empty_string_p [db_string is_registered "" -default ""]] } {
             db_dml mime_type_insert ""
             db_exec_plsql mime_type_register ""
         }
 
-        switch $cr_content_type {
+        switch $content_type {
             image {
 
-                if { [db_string image_subclass ""] == "f" } {
+                if { [db_string image_subclass ""] eq "f" } {
                     ad_return -code error "Image file must be stored in an image object"
                 }
     
                 set what_aolserver_told_us ""
-                if { [string equal $mime_type "image/jpeg"] } {
+                if {$mime_type eq "image/jpeg"} {
                     catch { set what_aolserver_told_us [ns_jpegsize $tmp_filename] }
-                } elseif { [string equal $mime_type "image/gif"] } {
+                } elseif {$mime_type eq "image/gif"} {
                     catch { set what_aolserver_told_us [ns_gifsize $tmp_filename] }
-                } else {
+                } elseif {$mime_type eq "image/png"} { 
+		    # we don't have built in png size detection
+		    # but we want to allow upload of png images
+		} else {
                     ad_return -code error "Unknown image type"
                 }
 
                 # the AOLserver jpegsize command has some bugs where the height comes 
                 # through as 1 or 2 
-                if { ![empty_string_p $what_aolserver_told_us] && \
+                if { $what_aolserver_told_us ne "" && \
                       [lindex $what_aolserver_told_us 0] > 10 && \
                       [lindex $what_aolserver_told_us 1] > 10 } {
                     set original_width [lindex $what_aolserver_told_us 0]
@@ -237,7 +267,7 @@ ad_proc -public cr_import_content {
                     ad_return -code error "The file you uploaded was not an image (.gif, .jpg or .jpeg) file"
                 }
 
-                if { [db_string content_revision_subclass ""] == "f" } {
+                if { [db_string content_revision_subclass ""] eq "f" } {
                     ad_return -code error "Content must be stored in a content revision object"
                 }
 
@@ -286,7 +316,7 @@ ad_proc cr_set_imported_content_live {
     needed for its private type.   This is a hack.   Executing this SQL can't be done
     within cr_import_content because the caller can't see the new revision's key...
 } {
-    if { [cr_registered_type_for_mime_type $mime_type] == "image" } {
+    if { [cr_registered_type_for_mime_type $mime_type] eq "image" } {
         if { [info exists image_sql] } {
             uplevel 1 [list db_dml dynamic_query $image_sql]
         }
@@ -326,7 +356,7 @@ ad_proc -public cr_filename_to_mime_type {
 } { 
     set extension [string tolower [string trimleft [file extension $filename] "."]]
     
-    if {[empty_string_p $extension]} { 
+    if {$extension eq ""} { 
         return "*/*"
     } 
     
@@ -335,7 +365,7 @@ ad_proc -public cr_filename_to_mime_type {
     } else { 
         set mime_type [string tolower [ns_guesstype $filename]]
         ns_log Debug "guessed mime \"$mime_type\" create_p $create_p" 
-        if {(!$create_p) || [string equal $mime_type "*/*"] || [empty_string_p $mime_type]} {
+        if {(!$create_p) || $mime_type eq "*/*" || $mime_type eq ""} {
             # we don't have anything meaningful for this mimetype 
             # so just */* it.
 
@@ -351,17 +381,17 @@ ad_proc -public cr_filename_to_mime_type {
 }
 
 ad_proc -public cr_create_mime_type { 
-    -extension
-    -mime_type
-    -description
+    -mime_type:required
+    {-extension ""}
+    {-description ""}
 } { 
 
     Creates a mime type if it does not exist.  Also maps extension to
     mime_type (unless the extension is already mapped to another mime
-    type).
+    type or extension is empty).
 
-    @param extension the default extension for the given mime type
     @param mime_type the mime_type to create
+    @param extension the default extension for the given mime type
     @param a plain text description of the mime type (< 200 characters)
 
     @author Jeff Davis (davis@xarg.net)
@@ -382,13 +412,15 @@ ad_proc -public cr_create_mime_type {
                           where mime_type = :mime_type)
     }
     
-    db_dml maybe_map_extension { 
-        insert into cr_extension_mime_type_map (extension, mime_type) 
-        select :extension, :mime_type 
-        from dual 
-        where not exists (select 1 
+    if { $extension ne "" } {
+        db_dml maybe_map_extension { 
+            insert into cr_extension_mime_type_map (extension, mime_type) 
+            select :extension, :mime_type 
+            from dual 
+            where not exists (select 1 
                           from cr_extension_mime_type_map 
                           where extension = :extension)
+        }
     }
 }
 

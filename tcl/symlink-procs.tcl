@@ -9,12 +9,13 @@ ad_library {
 
 namespace eval content_symlink {}
 
-ad_proc content_symlink::new {
+ad_proc -deprecated content_symlink::new {
     {-symlink_id ""}
     -target_id:required
     -parent_id:required
     {-name ""}
     {-label ""}
+    {-package_id ""}
 } {
 
     Create a new internal link.
@@ -25,11 +26,17 @@ ad_proc content_symlink::new {
     @name Name to assign the object (defaults to the name of the target item)
     @label Label for the symlink (defaults to the URL)
     @description An extended description of the link (defaults to NULL)
+    @package_id Package Id of the package that created the link
+    @see content::symlink::new
 
 } {
 
     set creation_user [ad_conn user_id]
     set creation_ip [ad_conn peeraddr]
+
+    if {$package_id eq ""} {
+	set package_id [ad_conn package_id]
+    }
 
     return [db_exec_plsql symlink_new {}]
 
@@ -62,25 +69,27 @@ ad_proc content_symlink::edit {
 
 }
 
-ad_proc content_symlink::delete {
+ad_proc -deprecated content_symlink::delete {
     -symlink_id:required
 } {
 
     Delete an external link.
 
     @symlink_id  The object id of the link to delete
+    @see content::symlink::delete
 
 } {
     db_exec_plsql symlink_delete {}
 }
 
-ad_proc content_symlink::symlink_p {
+ad_proc -deprecated content_symlink::symlink_p {
     -item_id:required
 } {
 
     Returns true if the given item is a symlink
 
     @symlink_id  The object id of the item to check.
+    @see content::symlink::is_symlink
 
 } {
     return [db_string symlink_check {}]
@@ -98,25 +107,27 @@ ad_proc content_symlink::symlink_name {
     return [db_string symlink_name {}]
 }
 
-ad_proc -public content_symlink::resolve {
+ad_proc -public -deprecated content_symlink::resolve {
 	-item_id:required
 } {
 	@param item)id item_id of content_symlink item to resolve
 
 	@return item_id of symlink target
+	@see content::symlink::resolve
 } {
 
 	return [db_exec_plsql resolve_symlink ""]
 
 }
 
-ad_proc -public content_symlink::resolve_content_type {
+ad_proc -public -deprecated content_symlink::resolve_content_type {
 	-item_id:required
 } {
 
 	@param item_id item_id of symlink
 
 	@return content_type of target item
+	@see content::symlink::resolve_content_type
 
 } {
 

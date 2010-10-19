@@ -24,12 +24,23 @@ ad_proc -public acs_cr_scheduled_release_exec {} {
     db_exec_plsql schedule_releases {begin cr_scheduled_release_exec; end;}
 }
 
-ad_schedule_proc [expr 15 * 60] acs_cr_scheduled_release_exec
-
+ad_schedule_proc [expr {15 * 60}] acs_cr_scheduled_release_exec
 nsv_set CR_LOCATIONS . ""
-if ![nsv_exists CR_LOCATIONS CR_FILES] {
 
-    nsv_set CR_LOCATIONS CR_FILES "[file dirname [string trimright [ns_info tcllib] "/"]]/content-repository-content-files"
+if {![nsv_exists CR_LOCATIONS CR_FILES]} {
+    
+    # Take the directory from the FileLocation parameter that 
+    # must be specified in acs-content-repository package.
+    set relativepath_p [parameter::get_from_package_key -package_key "acs-content-repository" -parameter FileLocationRelativeP -default "1"]
+    set file_location ""
+
+    if {$relativepath_p} {
+	# The file location is relative to acs_root_dir
+	append file_location "[acs_root_dir]/"
+    }
+    append file_location [parameter::get_from_package_key -package_key "acs-content-repository" -parameter "CRFileLocationRoot" -default "content-repository-content-files"]
+    
+    nsv_set CR_LOCATIONS CR_FILES "$file_location"
 
 }
 

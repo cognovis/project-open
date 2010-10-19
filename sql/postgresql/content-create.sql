@@ -45,7 +45,7 @@ drop function inline_0 ();
 create table cr_mime_types (
   label			varchar(200),
   mime_type	        varchar(200)
-			constraint cr_mime_types_pk
+			constraint cr_mime_types_mime_type_pk
 			primary key,
   file_extension        varchar(200)
 );
@@ -66,10 +66,10 @@ comment on table cr_mime_types is '
 
 create table cr_extension_mime_type_map (
    extension            varchar(200) 
-                        constraint cr_mime_type_extension_map_pk
+                        constraint cr_extension_mime_type_map_pk
                         primary key,
    mime_type            varchar(200) 
-                        constraint cr_mime_ext_map_mime_type_ref
+                        constraint cr_mime_ext_map_mime_type_fk
                         references cr_mime_types
 ); 
 create index cr_extension_mime_type_map_idx on cr_extension_mime_type_map(mime_type);
@@ -107,15 +107,15 @@ create index cr_cont_mimetypmap_mimetyp_idx ON cr_content_mime_type_map(mime_typ
 
 create table cr_locales (
   locale		varchar(4)
-                        constraint cr_locale_abbrev_pk
+                        constraint cr_locales_locale_pk
                         primary key,
   label			varchar(200)
-                        constraint cr_locale_name_nil
+                        constraint cr_locales_label_nn
 			not null
-                        constraint cr_locale_name_unq
+                        constraint cr_locales_label_un
                         unique,
   nls_language		varchar(30)
-                        constraint cr_locale_nls_lang_nil
+                        constraint cr_locale_nls_language_nn
 			not null,
   nls_territory		varchar(30),
   nls_charset		varchar(30)
@@ -140,10 +140,10 @@ insert into cr_locales (
 
 create table cr_type_children (
   parent_type   varchar(100)
-		constraint cr_type_children_parent_fk
+		constraint cr_type_children_parent_type_fk
 		references acs_object_types,
   child_type    varchar(100)
-		constraint cr_type_children_child_fk
+		constraint cr_type_children_child_type_fk
 		references acs_object_types,
   relation_tag  varchar(100),
   min_n         integer,
@@ -194,14 +194,14 @@ create table cr_items (
   item_id             integer 
                       constraint cr_items_item_id_fk references
                       acs_objects on delete cascade
-                      constraint cr_items_pk primary key,
+                      constraint cr_items_item_id_pk primary key,
   parent_id           integer 
-                      constraint cr_items_parent_id_nil 
+                      constraint cr_items_parent_id_nn 
                       not null
                       constraint cr_items_parent_id_fk references
                       acs_objects on delete cascade,
   name                varchar(400)
-                      constraint cr_items_name_nil
+                      constraint cr_items_name_nn
                       not null,
   locale              varchar(4)
                       constraint cr_items_locale_fk references
@@ -209,18 +209,19 @@ create table cr_items (
   live_revision       integer,
   latest_revision     integer,
   publish_status      varchar(40) 
-                      constraint cr_items_pub_status_chk
+                      constraint cr_items_publish_status_ck
                       check (publish_status in 
                             ('production', 'ready', 'live', 'expired')
                             ),
   content_type        varchar(100)
-                      constraint cr_items_rev_type_fk
+                      constraint cr_items_content_type_fk
                       references acs_object_types,
   storage_type        varchar(10) default 'text' not null
-                      constraint cr_items_storage_type
+                      constraint cr_items_storage_type_ck
                       check (storage_type in ('lob','text','file')),
   storage_area_key    varchar(100) default 'CR_FILES' not null,
-  tree_sortkey        varbit
+  tree_sortkey        varbit not null,
+  max_child_sortkey   varbit
 );  
 
 create index cr_items_by_locale on cr_items(locale);
@@ -230,8 +231,8 @@ create unique index cr_items_by_latest_revision on cr_items(latest_revision);
 create unique index cr_items_unique_name on cr_items(parent_id, name);
 create unique index cr_items_unique_id on cr_items(parent_id, item_id);
 create index cr_items_by_parent_id on cr_items(parent_id);
-create index cr_sortkey_idx on cr_items(tree_sortkey);
 create index cr_items_name on cr_items(name);
+create unique index cr_items_tree_sortkey_un on cr_items(tree_sortkey);
 
 -- content-create.sql patch
 --
@@ -272,35 +273,38 @@ end;' language 'plpgsql' stable strict;
 
 create function cr_items_tree_insert_tr () returns opaque as '
 declare
-    v_parent_sk      varbit default null;
-    v_max_value      integer;
-    v_parent_id      integer;
+    v_parent_sk      	varbit default null;
+    v_max_child_sortkey varbit;
+    v_parent_id      	integer default null;
 begin
-    -- Lars: If the parent is not a cr_item, we treat it as if it was null.
     select item_id
     into   v_parent_id
     from   cr_items
     where  item_id = new.parent_id;
 
-    if v_parent_id is null then 
+    if new.parent_id = 0 then
+	
+	new.tree_sortkey := int_to_tree_key(new.item_id+1000);
 
-        -- Lars: Treat all items with a non-cr_item parent as one big pool wrt tree_sortkeys
-        -- The old algorithm had tree_sortkeys start from zero for each different parent
+    elsif v_parent_id is null then 
 
-        select max(tree_leaf_key_to_int(child.tree_sortkey)) into v_max_value 
-          from cr_items child
-         where not exists (select 1 from cr_items where child.parent_id = item_id);
-    else 
-        select max(tree_leaf_key_to_int(tree_sortkey)) into v_max_value 
-          from cr_items 
-         where parent_id = new.parent_id;
+	new.tree_sortkey := int_to_tree_key(new.parent_id+1000) || int_to_tree_key(new.item_id+1000);
 
-        select tree_sortkey into v_parent_sk 
-          from cr_items 
-         where item_id = new.parent_id;
+    else
+
+	SELECT tree_sortkey, tree_increment_key(max_child_sortkey)
+	INTO v_parent_sk, v_max_child_sortkey
+	FROM cr_items
+	WHERE item_id = new.parent_id 
+	FOR UPDATE;
+
+	UPDATE cr_items
+	SET max_child_sortkey = v_max_child_sortkey
+	WHERE item_id = new.parent_id;
+
+	new.tree_sortkey := v_parent_sk || v_max_child_sortkey;
+
     end if;
-
-    new.tree_sortkey := tree_next_key(v_parent_sk, v_max_value);
 
     return new;
 end;' language 'plpgsql';
@@ -311,11 +315,10 @@ execute procedure cr_items_tree_insert_tr ();
 
 create function cr_items_tree_update_tr () returns opaque as '
 declare
-        v_parent_sk     varbit default null;
-        v_max_value     integer;
-        p_id            integer;
-        v_rec           record;
-        clr_keys_p      boolean default ''t'';
+        v_parent_sk     	varbit default null;
+        v_max_child_sortkey     varbit;
+        v_parent_id            	integer default null;
+        v_old_parent_length	integer;
 begin
         if new.item_id = old.item_id and 
            ((new.parent_id = old.parent_id) or
@@ -325,48 +328,36 @@ begin
 
         end if;
 
-        for v_rec in select item_id
-                       from cr_items 
-                      where tree_sortkey between new.tree_sortkey and tree_right(new.tree_sortkey)
-                   order by tree_sortkey
-        LOOP
-            if clr_keys_p then
-               update cr_items set tree_sortkey = null
-               where tree_sortkey between new.tree_sortkey and tree_right(new.tree_sortkey);
-               clr_keys_p := ''f'';
-            end if;
-            
-            -- Lars: If the parent is not a cr_item, we treat it as if it was null.
-            select parent.item_id 
-              into p_id
-              from cr_items parent, 
-                   cr_items child
-             where child.item_id = v_rec.item_id
-             and   parent.item_id = child.parent_id;
+        select item_id
+    	into   v_parent_id
+	from   cr_items
+	where  item_id = new.parent_id;
 
-            if p_id is null then 
+	-- the tree sortkey is going to change so get the new one and update it and all its
+	-- children to have the new prefix...
+	v_old_parent_length := length(new.tree_sortkey) + 1;
 
-                -- Lars: Treat all items with a non-cr_item parent as one big pool wrt tree_sortkeys
-                -- The old algorithm had tree_sortkeys start from zero for each different parent
+        if new.parent_id = 0 then
+            v_parent_sk := int_to_tree_key(new.item_id+1000);
+	elsif v_parent_id is null then 
+            v_parent_sk := int_to_tree_key(new.parent_id+1000) || int_to_tree_key(new.item_id+1000);
+        else
+	    SELECT tree_sortkey, tree_increment_key(max_child_sortkey)
+	    INTO v_parent_sk, v_max_child_sortkey
+	    FROM cr_items
+	    WHERE item_id = new.parent_id 
+	    FOR UPDATE;
 
-                select max(tree_leaf_key_to_int(tree_sortkey)) into v_max_value
-                  from cr_items child
-                 where not exists (select 1 from cr_items where child.parent_id = item_id);
-            else 
-                select max(tree_leaf_key_to_int(tree_sortkey)) into v_max_value
-                  from cr_items 
-                 where parent_id = p_id;
+	    UPDATE cr_items
+	    SET max_child_sortkey = v_max_child_sortkey
+	    WHERE item_id = new.parent_id;
 
-                select tree_sortkey into v_parent_sk 
-                  from cr_items 
-                 where item_id = p_id;
-            end if;
+	    v_parent_sk := v_parent_sk || v_max_child_sortkey;
+        end if;
 
-            update cr_items 
-               set tree_sortkey = tree_next_key(v_parent_sk, v_max_value)
-             where item_id = v_rec.item_id;
-
-        end LOOP;
+	UPDATE cr_items
+	SET tree_sortkey = v_parent_sk || substring(tree_sortkey, v_old_parent_length)
+	WHERE tree_sortkey between new.tree_sortkey and tree_right(new.tree_sortkey);
 
         return new;
 
@@ -391,15 +382,15 @@ comment on column cr_items.content_type is '
 
 create table cr_child_rels (
   rel_id             integer
-                     constraint cr_child_rels_rel_pk
+                     constraint cr_child_rels_rel_id_pk
                      primary key
-                     constraint cr_child_rels_rel_fk
+                     constraint cr_child_rels_rel_id_fk
                      references acs_objects,
   parent_id          integer
-                     constraint cr_child_rels_parent_nil
+                     constraint cr_child_rels_parent_id_nn
                      not null,
   child_id           integer
-                     constraint cr_child_rels_child_nil
+                     constraint cr_child_rels_child_id_nn
                      not null,
   relation_tag       varchar(100),
   order_n            integer
@@ -407,6 +398,7 @@ create table cr_child_rels (
 
 create index cr_child_rels_by_parent on cr_child_rels(parent_id);
 create unique index cr_child_rels_unq_id on cr_child_rels(parent_id, child_id);
+CREATE UNIQUE INDEX CR_CHILD_RELS_kids_IDx ON CR_CHILD_RELS(CHILD_ID);
 
 comment on table cr_child_rels is '
   Provides for richer parent-child relationships than the simple
@@ -416,15 +408,15 @@ comment on table cr_child_rels is '
 
 create table cr_item_rels (
   rel_id             integer
-                     constraint cr_item_rels_pk
+                     constraint cr_item_rels_rel_id_pk
                      primary key
-                     constraint cr_item_rels_fk
+                     constraint cr_item_rels_rel_id_fk
                      references acs_objects,
   item_id            integer
-                     constraint cr_item_rels_item_fk
+                     constraint cr_item_rels_item_id_fk
                      references cr_items,
   related_object_id  integer
-                     constraint cr_item_rels_rel_obj__fk
+                     constraint cr_item_rels_rel_obj_fk
                      references acs_objects,
   relation_tag       varchar(100),
   order_n            integer
@@ -461,10 +453,10 @@ comment on column cr_item_rels.order_n is '
 -- Define the cr_revisions table
 
 create table cr_revisions (
-  revision_id     integer constraint cr_revisions_rev_id_fk references
+  revision_id     integer constraint cr_revisions_revision_id_fk references
 		  acs_objects (object_id) on delete cascade
-		  constraint cr_revisions_pk primary key,
-  item_id         integer constraint cr_revisions_item_id_nil
+		  constraint cr_revisions_revision_id_pk primary key,
+  item_id         integer constraint cr_revisions_item_id_nn
                   not null
                   constraint cr_revisions_item_id_fk references
 		  cr_items on delete cascade,
@@ -472,13 +464,14 @@ create table cr_revisions (
   description	  text,
   publish_date	  timestamptz,
   mime_type	  varchar(200) default 'text/plain'
-		  constraint cr_revisions_mime_type_ref
+		  constraint cr_revisions_mime_type_fk
 		  references cr_mime_types,
   nls_language    varchar(50),
   -- lob_id if storage_type = lob.
-  lob             integer 
-		  constraint cr_revisions_lob_fk
-		  references lobs,
+  lob             integer
+                  constraint cr_revisions_lob_fk
+                  references lobs
+                  on delete set null,
   -- content holds the file name if storage type = file
   -- otherwise it holds the text data if storage_type = text.
   content	  text,
@@ -494,8 +487,11 @@ on cr_revisions for each row execute procedure on_lob_ref();
 
 create index cr_revisions_by_mime_type on cr_revisions(mime_type);
 create index cr_revisions_title_idx on cr_revisions(title);
+create index cr_revisions_publish_date_idx on cr_revisions(publish_date);
+
 -- create index cr_revisions_lower_title_idx on cr_revisions(lower(title));
 -- create index cr_revisions_title_ltr_idx on cr_revisions(substr(lower(title), 1, 1));
+
 
 comment on table cr_revisions is '
   Each content item may be associated with any number of revisions.
@@ -696,7 +692,8 @@ comment on column cr_revision_attributes.attributes is '
 -- ) on commit delete rows;
 
 create table cr_content_text (
-    revision_id        integer primary key,
+    revision_id        integer 
+		       constraint cr_content_text_revision_id_pk primary key,
     content            integer
 );
 
@@ -717,7 +714,7 @@ create table cr_item_publish_audit (
   old_status         varchar(40),
   new_status         varchar(40),
   publish_date       timestamptz
-                     constraint cr_item_publish_audit_date_nil
+                     constraint cr_item_publish_audit_date_nn
                      not null
 );
 
@@ -730,9 +727,9 @@ comment on table cr_item_publish_audit is '
 
 create table cr_release_periods (
   item_id          integer
-                   constraint cr_release_periods_fk
+                   constraint cr_release_periods_item_id_fk
 		   references cr_items
-                   constraint cr_release_periods_pk
+                   constraint cr_release_periods_item_id_pk
 		   primary key,
   start_when	   timestamptz default current_timestamp,
   end_when	   timestamptz default current_timestamp + interval '20 years'
@@ -768,20 +765,16 @@ insert into cr_scheduled_release_job values (NULL, now());
 
 create table cr_folders (
   folder_id	    integer
-  -- removed due to postgresql RI bug which causes deletion failures.
-  -- replace with user triggers
-  -- DanW (dcwickstrom@earthlink.net)
-
-  --		    constraint cr_folder_id_fk references
-  --		    cr_items on delete cascade
-		    constraint cr_folders_pk 
+		    constraint cr_folders_folder_id_fk references
+		    cr_items on delete cascade
+		    constraint cr_folders_folder_id_pk 
                     primary key,
   label		    varchar(1000),
   description	    text,
   has_child_folders boolean default 'f',
   has_child_symlinks boolean default 'f',
   package_id integer 
-  constraint cr_fldr_pkg_id_fk
+  constraint cr_folders_pkg_id_fk
   references apm_packages
 );  
 
@@ -793,53 +786,13 @@ comment on table cr_folders is '
 --RI Indexes
 create index cr_folders_package_id_idx ON cr_folders(package_id);
 
-create function cr_folder_ins_up_ri_trg() returns opaque as '
-declare
-        dummy           integer;
-        v_latest        integer;
-        v_live          integer;
-begin
-        select 1 into dummy
-        from 
-          cr_items         
-        where 
-          item_id = new.folder_id;
-        
-        if NOT FOUND then
-          raise EXCEPTION ''Referential Integrity: folder_id does not exist in cr_items: %'', new.folder_id;
-        end if;
-
-        return new;
-end;' language 'plpgsql';
-
-create function cr_folder_del_ri_trg() returns opaque as '
-declare
-        dummy           integer;
-begin
-        delete from cr_folders where folder_id = old.item_id;          
-        return old;
-end;' language 'plpgsql';
-
--- reimplementation of RI triggers. (DanW dcwickstrom@earthlink.net)
-
-create trigger cr_folder_ins_up_ri_trg 
-before insert or update on cr_folders
-for each row execute procedure cr_folder_ins_up_ri_trg();
-
-create trigger cr_folder_del_ri_trg 
-before delete on cr_items
-for each row execute procedure cr_folder_del_ri_trg();
-
-
-
-
 create table cr_folder_type_map (
   folder_id	integer
 		constraint cr_folder_type_map_fldr_fk
-		references cr_folders,
+		references cr_folders on delete cascade,
   content_type  varchar(100)
 		constraint cr_folder_type_map_typ_fk
-		references acs_object_types,
+		references acs_object_types on delete cascade,
   constraint cr_folder_type_map_pk
   primary key (folder_id, content_type)
 );
@@ -860,9 +813,9 @@ create index cr_folder_typ_map_cont_typ_idx ON cr_folder_type_map(content_type);
 
 create table cr_templates (
   template_id	  integer
-		  constraint cr_template_id_fk references
+		  constraint cr_templates_template_id_fk references
 		  cr_items on delete cascade
-		  constraint cr_templates_pk 
+		  constraint cr_templates_template_id_pk 
                   primary key
 );
 
@@ -889,13 +842,13 @@ create table cr_type_template_map (
   content_type     varchar(100)
                    constraint cr_type_template_map_typ_fk
                    references acs_object_types
-                   constraint cr_type_template_map_typ_nil
+                   constraint cr_type_template_map_typ_nn
                    not null,
   template_id      integer
                    constraint cr_type_template_map_tmpl_fk
 	           references cr_templates,
   use_context	   varchar(100)
-                   constraint cr_type_template_map_ctx_nil
+                   constraint cr_type_template_map_ctx_nn
                    not null
                    constraint cr_type_template_map_ctx_fk
                    references cr_template_use_contexts,
@@ -925,15 +878,15 @@ create table cr_item_template_map (
   item_id          integer
                    constraint cr_item_template_map_item_fk
                    references cr_items
-                   constraint cr_item_template_map_item_nil
+                   constraint cr_item_template_map_item_nn
                    not null,
   template_id      integer
                    constraint cr_item_template_map_tmpl_fk
 	           references cr_templates
-                   constraint cr_item_template_map_tmpl_nil
+                   constraint cr_item_template_map_tmpl_nn
                    not null,
   use_context	   varchar(100)
-                   constraint cr_item_template_map_ctx_nil
+                   constraint cr_item_template_map_ctx_nn
                    not null
                    constraint cr_item_template_map_ctx_fk
                    references cr_template_use_contexts,
@@ -955,14 +908,14 @@ comment on table cr_item_template_map is '
 
 create table cr_symlinks (
   symlink_id	  integer
-		  constraint cr_symlink_id_fk references
+		  constraint cr_symlinks_symlink_id_fk references
 		  cr_items on delete cascade
-		  constraint cr_symlinks_pk 
+		  constraint cr_symlinks_symlink_id_pk 
                   primary key,
   target_id       integer
-                  constraint cr_symlink_target_id_fk
+                  constraint cr_symlinks_target_id_fk
 		  references cr_items
-		  constraint cr_symlink_target_id_nil
+		  constraint cr_symlinks_target_id_nn
 		  not null,
   label		  varchar(1000)
 );
@@ -979,15 +932,15 @@ comment on table cr_symlinks is '
 
 create table cr_extlinks (
   extlink_id	  integer
-		  constraint cr_extlink_id_fk references
+		  constraint cr_extlinks_extlink_id_fk references
 		  cr_items on delete cascade
-		  constraint cr_extlinks_pk 
+		  constraint cr_extlinks_extlink_id_pk 
                   primary key,
   url             varchar(1000)
-		  constraint cr_extlink_url_nil
+		  constraint cr_extlinks_url_nn
 		  not null,
   label           varchar(1000)
-		  constraint cr_extlink_label_nil
+		  constraint cr_extlinks_label_nn
 		  not null,
   description	  text
 );
@@ -1003,13 +956,13 @@ comment on table cr_extlinks is '
 
 create table cr_keywords (
   keyword_id		 integer
-			 constraint cr_keywords_pk
+			 constraint cr_keywords_keyword_id_pk
 		         primary key,
   parent_id              integer 
-                         constraint cr_keywords_hier
+                         constraint cr_keywords_parent_id_fk
                          references cr_keywords,
   heading		 varchar(600)
-			 constraint cr_keywords_name_nil
+			 constraint cr_keywords_heading_nn
 			 not null,
   description            text,
   has_children           boolean,
@@ -1135,14 +1088,14 @@ comment on column cr_keywords.description is '
 
 create table cr_item_keyword_map (
   item_id          integer
-                   constraint cr_item_keyword_map_item_fk
+                   constraint cr_item_keyword_map_item_id_fk
                    references cr_items
-                   constraint cr_item_keyword_map_item_nil
+                   constraint cr_item_keyword_map_item_id_nn
                    not null,
   keyword_id       integer
                    constraint cr_item_keyword_map_kw_fk
 	           references cr_keywords
-                   constraint cr_item_keyword_map_kw_nil
+                   constraint cr_item_keyword_map_kw_nn
                    not null,
   constraint cr_item_keyword_map_pk
   primary key (item_id, keyword_id)
@@ -1191,7 +1144,9 @@ for each row execute procedure cr_text_tr ();
 --) on commit delete rows;
 
 create table cr_doc_filter (
-    revision_id        integer primary key,
+    revision_id        integer 
+                       constraint cr_doc_filter_revision_id_pk 
+                       primary key,
     -- content            BLOB
     -- need a blob trigger here
     content            integer
@@ -1249,7 +1204,7 @@ begin
     ''pages'',
     ''Pages'', 
     ''Site pages go here'',
-    0,
+    -4,
     null,
     content_item__get_root_folder(null),
     now(),
@@ -1275,11 +1230,16 @@ begin
     ''t''
   );
 
+  -- add the root content folder to acs_magic_objects
+  insert into acs_magic_objects (name, object_id)
+  select ''cr_item_root'',
+         content_item__get_root_folder(null);
+
   v_id := content_folder__new (
     ''templates'',
     ''Templates'', 
     ''Templates which render the pages go here'',
-    0,
+    -4,
     null,
     content_template__get_root_folder(),
     now(),
@@ -1305,6 +1265,11 @@ begin
     ''t''
   );
 
+  -- add to acs_magic_objects
+  insert into acs_magic_objects (name, object_id)
+  select ''cr_template_root'',
+         content_template__get_root_folder();
+
   return 0;
 end;' language 'plpgsql';
 
@@ -1320,7 +1285,7 @@ declare
   v_revision_id integer;
 begin
 
-  select acs_object_id_seq.nextval into v_item_id;
+  select nextval(''t_acs_object_id_seq'') into v_item_id;
 
   PERFORM content_template__new(
                 ''default_template'',
@@ -1337,7 +1302,7 @@ begin
                now(),
                ''text/html'',
                null,
-               ''<html><body><content></body></html>'',
+               ''<html><body>@text;noquote@</body></html>'',
                v_item_id,
                NULL,
                now(),
@@ -1389,8 +1354,14 @@ drop function inline_2 ();
 -- this was added for edit-this-page and others
 -- 05-Nov-2001 Jon Griffin jon@mayuli.com
 
+---drop the previw constraint
+
 alter table cr_folders
-add constraint cr_flder_pkg_id_fk foreign key (package_id) references apm_packages (package_id);
+drop constraint cr_folders_pkg_id_fk;
+-------
+
+alter table cr_folders
+add constraint cr_folders_package_id_fk foreign key (package_id) references apm_packages (package_id);
 
 --constraint cr_fldr_pkg_id_fk
 

@@ -19,7 +19,7 @@ ad_proc -public content::type::new {
     {-supertype "content_revision"}
     -pretty_name:required
     -pretty_plural:required
-    {-table_name ""}
+    -table_name:required
     -id_column:required
     {-name_method ""}
 } {
@@ -47,16 +47,27 @@ ad_proc -public content::type::delete {
     -content_type:required
     {-drop_children_p ""}
     {-drop_table_p ""}
+    {-drop_objects_p "f"}
 } {
     @param content_type
     @param drop_children_p
     @param drop_table_p
+    @param drop_objets_p Drop the objects of this content type along with all entries in cr_items and cr_revisions. Will not be done by default.
 } {
-    return [package_exec_plsql -var_list [list \
-        [list content_type $content_type ] \
-        [list drop_children_p $drop_children_p ] \
-        [list drop_table_p $drop_table_p ] \
-    ] content_type drop_type]
+    if {$drop_objects_p eq "f"} {
+	return [package_exec_plsql -var_list [list \
+						  [list content_type $content_type ] \
+						  [list drop_children_p $drop_children_p ] \
+						  [list drop_table_p $drop_table_p ] \
+						 ] content_type drop_type]
+    } else {
+	return [package_exec_plsql -var_list [list \
+						  [list content_type $content_type ] \
+						  [list drop_children_p $drop_children_p ] \
+						  [list drop_table_p $drop_table_p ] \
+						  [list drop_objects_p $drop_objects_p ] \
+						 ] content_type drop_type]
+    }
 }
 
 ad_proc -public content::type::attribute::new {
@@ -81,7 +92,7 @@ ad_proc -public content::type::attribute::new {
 
     @return attribute_id for created attribute
 } {
-    if {[db_type] == "oracle"} {
+    if {[db_type] eq "oracle"} {
 	switch -- $column_spec {
 	    text { set column_spec clob }
 	    boolean { set column_spec "char(1)" }
@@ -362,4 +373,27 @@ ad_proc -public content::type::unregister_template {
     ] content_type unregister_template]
 }
 
+ad_proc -public content::type::content_type_p {
+    -content_type:required
+    -mime_type:required
+} {
+    Checks if the mime_type is of the content_type, e.g if application/pdf is of content_type "image" (which it should not...)
 
+    Cached
+
+    @param content_type content type to check against
+    @param mime_type mime type to check for
+} {
+    return [util_memoize [list content::type::content_type_p_not_cached -mime_type $mime_type -content_type $content_type]]
+}
+
+ad_proc -public content::type::content_type_p_not_cached {
+    -content_type:required
+    -mime_type:required
+} {
+    Checks if the mime_type is of the content_type, e.g if application/pdf is of content_type "image" (which it should not...)
+    @param content_type content type to check against
+    @param mime_type mime type to check for
+} {
+    return [db_string content_type_p "" -default 0]
+}

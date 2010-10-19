@@ -24,7 +24,7 @@ function new (
   creation_user	in acs_objects.creation_user%TYPE default null,
   creation_ip	in acs_objects.creation_ip%TYPE default null,
   security_inherit_p in acs_objects.security_inherit_p%TYPE default 't',
-  package_id	in cr_folders.package_id%TYPE default null
+  package_id	in acs_objects.package_id%TYPE default null
 ) return cr_folders.folder_id%TYPE is
   v_folder_id	cr_folders.folder_id%TYPE;
   v_context_id	acs_objects.context_id%TYPE;
@@ -37,9 +37,10 @@ begin
     v_context_id := content_folder.new.context_id;
   end if;
 
-  -- parent_id = 0 means that this is a mount point
-  if parent_id ^= 0 and 
-     content_folder.is_registered(parent_id,'content_folder') = 'f' then
+  -- parent_id = security context root means that this is a mount point
+  if parent_id ^= -4 and 
+    content_folder.is_folder(parent_id) = 'f' and
+    content_folder.is_registered(parent_id,'content_folder') = 'f' then
 
     raise_application_error(-20000, 
         'This folder does not allow subfolders to be created');
@@ -55,7 +56,8 @@ begin
         creation_user => creation_user, 
         creation_ip   => creation_ip, 
         parent_id     => parent_id,
-	security_inherit_p => security_inherit_p
+	security_inherit_p => security_inherit_p,
+        package_id    => package_id
     );
 
     insert into cr_folders (
@@ -63,6 +65,11 @@ begin
     ) values (
       v_folder_id, label, description, package_id
     );
+
+    -- set the correct object title
+    update acs_objects
+    set title = new.label
+    where object_id = v_folder_id;
 
     -- inherit the attributes of the parent folder
     if content_folder.new.parent_id is not null then
@@ -164,6 +171,12 @@ begin
 
   if name is not null then
     content_item.edit_name(folder_id, name);
+  end if;
+
+  if label is not null then
+    update acs_objects
+    set title = edit_name.label
+    where object_id = edit_name.folder_id;
   end if;
 
   if label is not null and description is not null then 
@@ -291,6 +304,12 @@ procedure copy (
 
 begin
 
+  if folder_id = content_item.get_root_folder or
+    folder_id = content_template.get_root_folder then
+    raise_application_error( -20000, 
+      'content_folder.copy - Cannot copy root folder');
+  end if;
+
   select 
     count(*)
   into 
@@ -302,37 +321,44 @@ begin
   or 
     folder_id = copy.folder_id;
 
-  select
-    parent_id
-  into
-    v_current_folder_id
-  from
-    cr_items
-  where
-    item_id = copy.folder_id;  
-
-  if folder_id = content_item.get_root_folder or folder_id = content_template.get_root_folder or target_folder_id = folder_id then
-    v_valid_folders_p := 0;
+  if v_valid_folders_p ^= 2 then
+    raise_application_error(-20000,
+      'content_folder.copy - Not valid folder(s)');
   end if;
 
-  if v_valid_folders_p = 2 then 
 
-      -- get the source folder info
-      select
-        name, label, description
-      into
-        v_name, v_label, v_description
-      from 
-        cr_items i, cr_folders f
-      where
-        f.folder_id = i.item_id
-      and
-        f.folder_id = copy.folder_id;
+  if target_folder_id = folder_id then
+    raise_application_error(-20000,
+      'content_folder.copy - Cannot copy a folder to itself');
+  end if;
 
-  if is_sub_folder(folder_id, target_folder_id) ^= 't' or v_current_folder_id != copy.target_folder_id or (v_name != copy.name and copy.name is not null) then
-      if copy.name is not null then
-	v_name := copy.name;
-      end if;
+  if is_sub_folder(folder_id, target_folder_id) = 't' then
+    raise_application_error(-20000,
+      'content_folder.copy - Destination folder is subfolder');
+  end if;
+
+
+  if is_registered(target_folder_id,'content_folder') ^= 't' then
+    raise_application_error(-20000,
+      'content_folder.copy - Destination folder does not allow subfolders');
+  end if;
+
+  -- get the source folder info
+  select
+    name, label, description, parent_id
+  into
+    v_name, v_label, v_description, v_current_folder_id
+  from 
+    cr_items i, cr_folders f
+  where
+    f.folder_id = i.item_id
+  and
+    f.folder_id = copy.folder_id;
+
+  if v_current_folder_id = copy.target_folder_id and (v_name = copy.name or copy.name is null) then
+    raise_application_error(-20000, 'content_folder.copy - Destination folder is parent folder');
+  end if;
+
       -- create the new folder
       v_new_folder_id := content_folder.new(
 	  parent_id     => copy.target_folder_id,
@@ -370,12 +396,7 @@ begin
 
       end loop;
 
-    end if;
-  end if;
 end copy;
-
-
-
 
 
 -- returns 1 if the item_id passed in is a folder
@@ -414,7 +435,7 @@ is
     start with
       item_id = target_folder_id;
 
-  v_parent_id integer := 0;
+  v_parent_id integer := -4;
   v_sub_folder_p char := 'f';
 
 begin
@@ -661,4 +682,3 @@ end is_root;
 end content_folder;
 /
 show errors
-

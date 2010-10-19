@@ -12,76 +12,68 @@
 
 namespace eval item {}
 
-ad_proc -public item::get_title { item_id } {
-
-  @public get_title
- 
-  Get the title for the item. If a live revision for the item exists,
-  use the live revision. Otherwise, use the latest revision.
- 
-  @param item_id The item id
- 
-  @return The title of the item
- 
-  @see proc item::get_best_revision
-
+ad_proc -public item::get_content { 
+    {-revision_id ""}
+    {-array:required}
+    {-item_id ""}
 } {
 
-    set title [db_string gt_get_title ""]
+  @public get_revision_content
+ 
+  Create a onerow datasource called content in the calling frame
+  which contains all attributes for the revision (including inherited
+  ones).<p>
+  The datasource will contain a column called "text", representing the
+  main content (blob) of the revision, but only if the revision has a
+  textual mime-type.
+ 
+  @param revision_id The revision whose attributes are to be retrieved
+ 
+  @option item_id The item_id of the
+    corresponding item. You can provide this as an optimization.
+    If you don't provide revision_id, you must provide item_id, 
+    and the item must have a live revision.
+ 
+  @return 1 on success (and set the array in the calling frame),
+    0 on failure 
+ 
+  @see proc item::get_mime_info 
+  @see proc item::get_content_type
 
-    return $title
+} {
+    upvar 1 $array content
+
+    if { $item_id eq "" } {
+        set item_id [::content::revision::item_id -revision_id  $revision_id]
+        if { $item_id eq "" } {
+            ns_log notice "item::get_content: no such revision: $revision_id"
+            return 0
+        }  
+    } elseif { $revision_id eq "" } {
+        set revision_id [::content::item::get_live_revision -item_id $item_id]
+    }
+    if { $revision_id eq "" } {
+        error "You must supply revision_id, or the item must have a live revision."
+    }
+    
+    return [item::get_revision_content $revision_id $item_id]
 }
 
-ad_proc -public item::get_publish_status { item_id } {
+ad_proc -public item::content_is_null { revision_id } {
 
-  @public get_publish_status
+  @public content_is_null
  
-  Get the publish status of the item. The publish status will be one of
-  the following: 
-  <ul>
-    <li><tt>production</tt> - The item is still in production. The workflow
-      (if any) is not finished, and the item has no live revision.</li>
-    <li><tt>ready</tt> - The item is ready for publishing</li> 
-    <li><tt>live</tt> - The item has been published</li>
-    <li><tt>expired</tt> - The item has been published in the past, but 
-     its publication has expired</li>
-  </ul>
+  Determines if the content for the revision is null (not mereley
+  zero-length)
+  @param revision_id The revision id
  
-  @param item_id The item id
- 
-  @return The publish status of the item, or the empty string on failure
- 
-  @see proc item::is_publishable
+  @return 1 if the content is null, 0 otherwise
 
 } {
+    set content_test [db_string cin_get_content ""]
 
-  set publish_status [db_string gps_get_publish_status ""]
-
-  return $publish_status
+    return [template::util::is_nil content_test]
 }
-
-ad_proc -public item::is_publishable { item_id } {
-
-  @public is_publishable
- 
-  Determine if the item is publishable. The item is publishable only
-  if:
-  <ul>
-   <li>All child relations, as well as item relations, are satisfied
-     (according to min_n and max_n)</li>
-   <li>The workflow (if any) for the item is finished</li>
-  </ul>
- 
-  @param  item_id   The item id
- 
-  @return    1 if the item is publishable, 0 otherwise
-
-} {
-    set is_publishable [db_string ip_is_publishable_p ""]
-
-    return [string equal $is_publishable t]
-} 
-
 
 ad_proc -public item::get_revision_content { revision_id args } {
 
@@ -111,10 +103,10 @@ ad_proc -public item::get_revision_content { revision_id args } {
  
   if { [template::util::is_nil opts(item_id)] } {
     # Get the item id
-    set item_id [get_item_from_revision $revision_id]
+    set item_id [::content::revision::item_id -revision_id $revision_id]
 
     if { [template::util::is_nil item_id] } {
-      ns_log warning "item::get_revision_content: No such revision: $reivision_id"
+      ns_log warning "item::get_revision_content: No such revision: $revision_id"
       return 0
     }  
   } else {
@@ -132,7 +124,7 @@ ad_proc -public item::get_revision_content { revision_id args } {
   }
  
   # Get the content type
-  set content_type [get_content_type $item_id]
+  set content_type [::content::item::get_content_type -item_id $item_id]
 
   # Get the table name
   set table_name [db_string grc_get_table_names ""]
@@ -150,7 +142,7 @@ ad_proc -public item::get_revision_content { revision_id args } {
   return 1
 }
 
-  
+
 ad_proc -public item::content_methods_by_type { content_type args } {
 
   @public content_methods_by_type
@@ -169,7 +161,7 @@ ad_proc -public item::content_methods_by_type { content_type args } {
     but a list of name-value pairs, as in the -options
     ATS switch for form widgets 
  
-  @return A TCL list of all possible content methods
+  @return A Tcl list of all possible content methods
 
 } {
   
@@ -177,7 +169,7 @@ ad_proc -public item::content_methods_by_type { content_type args } {
 
   set types [db_list cmbt_get_content_mime_types ""]
 
-  set need_text [expr [llength $types] > 0]
+  set need_text [expr {[llength $types] > 0}]
 
   if { [info exists opts(get_labels)] } {
     set methods [list \
@@ -200,219 +192,6 @@ ad_proc -public item::content_methods_by_type { content_type args } {
   return $methods
 }
 
-
-ad_proc -public item::get_content_type { item_id } {
-
-  @public get_content_type
- 
-  Retrieves the content type of tyhe item. If the item does not exist,
-  returns an empty string.
- 
-  @param  item_id   The item id
- 
-  @return The content type of the item, or an empty string if no such
-          item exists
-
-} {
-
-    set content_type [db_string gct_get_content_type ""]
-
-    if { [info exists content_type] } {
-        return $content_type
-    } else {
-        return ""
-    }
-}
-
-
-ad_proc -public item::get_item_from_revision { revision_id } {
-
-  @public get_item_from_revision
- 
-  Gets the item_id of the item to which the revision belongs.
- 
-  @param  revision_id   The revision id
- 
-  @return The item_id of the item to which this revision belongs
-  @see proc item::get_live_revision 
-  @see proc item::get_best_revision
-
-} {
-    set item_id [db_string gifr_get_one_revision ""]
-    return $item_id
-}
-
-
-ad_proc -public item::get_id { url {root_folder ""}} {
-
-  @public get_id
- 
-  Looks up the URL and gets the item id at that URL, if any.
- 
-  @param  url           The URL
-  @param  root_folder   {default The Sitemap}
-    The ID of the root folder to use for resolving the URL
- 
-  @return The item ID of the item at that URL, or the empty string
-    on failure
-  @see proc item::get_url
-
-} {
-
-  # Strip off file extension
-  set last [string last "." $url]
-  if { $last > 0 } {
-    set url [string range $url 0 [expr $last - 1]]
-  }
-
-  if { ![template::util::is_nil root_folder] } {
-    set root_sql ", :root_folder, 'f'"
-  } else {
-    set root_sql ", null, 'f'"
-  }
-
-  # Get the path
-  set item_id [db_string id_get_item_id ""]
-
-  if { [info exists item_id] } {
-    return $item_id
-  } else {
-    return ""
-  }
-}
-
-
-ad_proc -public item::content_is_null { revision_id } {
-
-  @public content_is_null
- 
-  Determines if the content for the revision is null (not mereley
-  zero-length)
-  @param revision_id The revision id
- 
-  @return 1 if the content is null, 0 otherwise
-
-} {
-    set content_test [db_string cin_get_content ""]
-
-    return [template::util::is_nil content_test]
-}
-
-
-ad_proc -public item::get_template_id { item_id {context public} } {
-
-  @public get_template_id
- 
-  Retrieves the template which can be used to render the item. If there is
-  a template registered directly to the item, returns the id of that template.
-  Otherwise, returns the id of the default template registered to the item's
-  content_type. Returns an empty string on failure.
- 
-  @param  item_id   The item id
-  @param  context   {default 'public'} The context in which the template 
-   will be used.
- 
-  @return The template_id of the template which can be used to render the
-    item, or an empty string on failure
- 
-  @see proc item::get_template_url
-
-} {
-
-    set template_id [db_string gti_get_template_id ""]
-
-    if { [info exists template_id] } {
-        return $template_id
-    } else {
-        return ""
-    }
-}
-
-
-ad_proc -public item::get_template_url { item_id {context public} } {
-
-  @public get_template_url
- 
-  Retrieves the relative URL of the template which can be used to
-  render the item. The URL is relative to the TemplateRoot as it is
-  specified in the ini file.
- 
-  @param  item_id   The item id
-  @param  context   {default 'public'} The context in which 
-    the template will be used.
- 
-  @return The template_id of the template which can be used to render the
-    item, or an empty string on failure
- 
-  @see proc item::get_template_id
-
-} {
-
-  set template_id [get_template_id $item_id $context]
-
-  if { [template::util::is_nil template_id] } {
-    return ""
-  }
-
-  return [get_url $template_id]
-}
-  
-
-ad_proc -public item::get_url {
-    {-root_folder_id "null"}
-    item_id
-} {
-
-  @public get_url
- 
-  Retrieves the relative URL stub to th item. The URL is relative to the
-  page root, and has no extension (Example: "/foo/bar/baz"). 
- 
-  @param  item_id         The item id
-  @param  root_folder_id  Starts path resolution from this folder.
-                          Defaults to the root of the sitemap (when null).
-
-  @return The relative URL to the item, or an empty string on failure
-  @see proc item::get_extended_url
-
-} {
-
-  # Get the path
-    set item_path [db_string gu_get_path ""]
-
-    if { [info exists item_path] } {
-        return $item_path
-    } else {
-        return ""
-    }
-}
-
-
-ad_proc -public item::get_live_revision { item_id } {
-
-  @public get_live_revision
- 
-  Retrieves the live revision for the item. If the item has no live
-  revision, returns an empty string.
- 
-  @param  item_id   The item id
- 
-  @return The live revision id for the item, or an empty string if no
-          live revision exists
-  @see proc item::get_best_revision 
-  @see proc item::get_item_from_revision
-
-} {
-
-    set live_revision [db_string glr_get_live_revision ""]
-
-    if { [template::util::is_nil live_revision] } {
-        ns_log warning "item::get_live_revision: No live revision for item $item_id"
-        return ""
-    } else {
-        return $live_revision
-    }
-}
 
 
 ad_proc -public item::get_mime_info { revision_id {datasource_ref mime_info} } {
@@ -437,32 +216,8 @@ ad_proc -public item::get_mime_info { revision_id {datasource_ref mime_info} } {
     return [uplevel "db_0or1row ignore \"$sql\" -column_array $datasource_ref"]
 }
 
-
-ad_proc -public item::get_best_revision { item_id } {
-
-  @public get_best_revision
- 
-  Attempts to retrieve the live revision for the item. If no live revision
-  exists, attempts to retrieve the latest revision. If the item has no
-  revisions, returns an empty string.
- 
-  @param  item_id   The item id
- 
-  @return The best revision id for the item, or an empty string if no
-          revisions exist
-  @see proc item::get_live_revision 
-  @see proc item::get_item_from_revision
-
-} {
-   
-    return [db_string gbr_get_best_revision ""]
-}
-
-
 ad_proc -public item::get_extended_url { item_id args } {
 
-  @public get_content_type
- 
   Retrieves the relative URL of the item with a file extension based
   on the item's mime_type (Example: "/foo/bar/baz.html"). 
  
@@ -510,7 +265,7 @@ ad_proc -public item::get_extended_url { item_id args } {
 
     if { ![template::util::is_nil template_id] } {
       # Get extension from the template mime type 
-      set template_revision_id [get_best_revision $template_id]
+      set template_revision_id [::content::item::get_best_revision -item_id $template_id]
 
       if { ![template::util::is_nil template_revision_id] } {
         get_mime_info $template_revision_id mime_info   
@@ -526,7 +281,7 @@ ad_proc -public item::get_extended_url { item_id args } {
 
     # Determine live revision, if none specified
     if { [template::util::is_nil opts(revision_id)] } {
-      set revision_id [get_live_revision $item_id]
+      set revision_id [::content::item::get_live_revision -item_id $item_id]
 
       if { [template::util::is_nil revision_id] } {
 	ns_log warning "item::get_best_revision: No live revision for content item $item_id"
@@ -548,62 +303,14 @@ ad_proc -public item::get_extended_url { item_id args } {
   append file_url ".$file_extension"
    
   return $file_url
-} 
-
-ad_proc -public item::get_type { item_id } {
-  Returns the content type of the specified item, or empty string
-  if the item_id is invalid
-} {
-  if { [db_0or1row get_content_type ""] } {
-    return $content_type
-  } else {
-    return ""
-  }
 }
 
-ad_proc item::copy {
-    -item_id:required
-    -target_folder_id:required
-} {
-
-    Copy the given item.
-
-    @param item_id The content item to copy
-    @param target_folder_id The folder which will hold the new copy
-
-} {
-
-    set creation_user [ad_conn user_id]
-    set creation_ip [ad_conn peeraddr]
-
-    db_exec_plsql copy_item {}
-
-}
-
-ad_proc -public item::get {
-    {-item_id:required}
-    {-array:required}
-} {
-    Get information about a content item.
-
-    @param item_id The id of the item to get info for
-    @param array The name of the array to populate with values.
-                 The keys are: ITEM_ID, PARENT_ID, NAME, LOCALE,
-                 LIVE_REVISION, LATEST_REVISION, PUBLISH_STATUS,
-                 CONTENT_TYPE, STORAGE_TYPE, STORAGE_AREA_KEY,
-                 ARCHIVE_DATE, PACKAGE_ID
-
-    @author Peter Marklund
-} {
-    upvar $array row
-
-    db_1row select_item_data {
-        select *
-        from cr_items
-        where item_id = :item_id
-    } -column_array row
-}
-
+#######################################################
+#
+# the following have no counter parts in content::item::*
+# but use no direct sql calls.
+#
+#######################################################
 ad_proc -public item::get_element {
     {-item_id:required}
     {-element:required}
@@ -615,58 +322,9 @@ ad_proc -public item::get_element {
     @param element The name (column name) of the element. See
                    item::get for valid element names.
 } {
-    get -item_id $item_id -array row
+    ::content::item::get -item_id $item_id -array row
     return $row($element)
 }
-
-ad_proc -public item::get_content { 
-    {-revision_id ""}
-    {-array:required}
-    {-item_id ""}
-} {
-
-  @public get_revision_content
- 
-  Create a onerow datasource called content in the calling frame
-  which contains all attributes for the revision (including inherited
-  ones).<p>
-  The datasource will contain a column called "text", representing the
-  main content (blob) of the revision, but only if the revision has a
-  textual mime-type.
- 
-  @param revision_id The revision whose attributes are to be retrieved
- 
-  @option item_id The item_id of the
-    corresponding item. You can provide this as an optimization.
-    If you don't provide revision_id, you must provide item_id, 
-    and the item must have a live revision.
- 
-  @return 1 on success (and set the array in the calling frame),
-    0 on failure 
- 
-  @see proc item::get_mime_info 
-  @see proc item::get_content_type
-
-} {
-    upvar 1 $array content
-
-    if { [empty_string_p $item_id] } {
-        set item_id [get_item_from_revision $revision_id]
-        if { [empty_string_p $item_id] } {
-            ns_log notice "item::get_content: no such revision: $reivision_id"
-            return 0
-        }  
-    } elseif { [empty_string_p $revision_id] } {
-        set revision_id [item::get_live_revision $item_id]
-    }
-    if { [empty_string_p $revision_id] } {
-        error "You must supply revision_id, or the item must have a live revision."
-    }
-    
-    return [get_revision_content $revision_id $item_id]
-}
-
-  
 ad_proc -public item::publish {
     {-item_id:required}
     {-revision_id ""}
@@ -679,11 +337,10 @@ ad_proc -public item::publish {
 
     @author Peter Marklund
 } {
-    if { [empty_string_p $revision_id] } {
-        set revision_id [item::get_element -item_id $item_id -element latest_revision]
+    if { $revision_id eq "" } {
+      set revision_id [::content::item::get_latest_revision -item_id $item_id]
     }
-
-    db_exec_plsql set_live { }
+    ::content::item::set_live_revision -revision_id $revision_id -publish_status "live"
 }
 
 ad_proc -public item::unpublish {
@@ -697,10 +354,338 @@ ad_proc -public item::unpublish {
 
     @author Peter Marklund
 } {
-
-    db_exec_plsql unset_live {
-    }
-
-    db_dml update_publish_status {
-    }
+  ::content::item::set_live_revision -item_id $item_id
+  ::content::item::update -item_id $item_id -attributes [list [list publish_status $publish_status]]
 }
+
+#######################################################
+#
+# all the following procs are deprecated and do not have 
+# direct sql calls.
+#
+#######################################################
+
+ad_proc -public -deprecated item::get_title { item_id } {
+
+  @public get_title
+ 
+  Get the title for the item. If a live revision for the item exists,
+  use the live revision. Otherwise, use the latest revision.
+ 
+  @param item_id The item id
+ 
+  @return The title of the item
+ 
+  @see item::get_best_revision
+  @see content::item::get_title
+
+} {
+    return [::content::item::get_title -item_id $item_id]
+}
+
+ad_proc -public -deprecated item::get_publish_status { item_id } {
+
+  @public get_publish_status
+ 
+  Get the publish status of the item. The publish status will be one of
+  the following: 
+  <ul>
+    <li><tt>production</tt> - The item is still in production. The workflow
+      (if any) is not finished, and the item has no live revision.</li>
+    <li><tt>ready</tt> - The item is ready for publishing</li> 
+    <li><tt>live</tt> - The item has been published</li>
+    <li><tt>expired</tt> - The item has been published in the past, but 
+     its publication has expired</li>
+  </ul>
+ 
+  @param item_id The item id
+ 
+  @return The publish status of the item, or the empty string on failure
+ 
+  @see proc item::is_publishable
+
+} {
+
+  return [::content::item::get_publish_status -item_id $item_id]
+}
+
+ad_proc -public -deprecated item::is_publishable { item_id } {
+
+  Determine if the item is publishable. The item is publishable only
+  if:
+  <ul>
+   <li>All child relations, as well as item relations, are satisfied
+     (according to min_n and max_n)</li>
+   <li>The workflow (if any) for the item is finished</li>
+  </ul>
+ 
+  @param  item_id   The item id
+
+  @see content::item::is_publishable
+ 
+  @return    1 if the item is publishable, 0 otherwise
+
+} {
+    return [string equal [::content::item::is_publishable -item_id $item_id] "t"]
+} 
+
+ad_proc -public -deprecated item::get_content_type { item_id } {
+
+  @public get_content_type
+ 
+  Retrieves the content type of tyhe item. If the item does not exist,
+  returns an empty string.
+ 
+  @param  item_id   The item id
+ 
+  @return The content type of the item, or an empty string if no such
+          item exists
+
+  @see content::item::get_content_type
+
+} {
+    return [::content::item::get_content_type -item_id $item_id]
+}
+
+ad_proc -public -deprecated item::get_item_from_revision { revision_id } {
+
+  @public get_item_from_revision
+ 
+  Gets the item_id of the item to which the revision belongs.
+ 
+  @param  revision_id   The revision id
+ 
+  @return The item_id of the item to which this revision belongs
+  @see content::item::get_live_revision 
+  @see content::revision::item_id
+
+} {
+    return [::content::revision::item_id -revision_id $revision_id]
+}
+
+ad_proc -public -deprecated item::get_id { url {root_folder ""}} {
+
+  @public get_id
+ 
+  Looks up the URL and gets the item id at that URL, if any.
+ 
+  @param  url           The URL
+  @param  root_folder   {default The Sitemap}
+    The ID of the root folder to use for resolving the URL
+ 
+  @return The item ID of the item at that URL, or the empty string
+    on failure
+  @see proc item::get_url
+  @see content::item::get_id
+
+} {
+
+  # Strip off file extension
+  set last [string last "." $url]
+  if { $last > 0 } {
+    set url [string range $url 0 [expr {$last - 1}]]
+  }
+
+  if {$root_folder ne ""} {
+    return [::content::item::get_id -item_path $url]
+  } else {
+    return [::content::item::get_id -item_path $url -root_folder_id $root_folder]
+  }
+}
+
+ad_proc -public -deprecated item::get_template_id { item_id {context public} } {
+
+  @public get_template_id
+ 
+  Retrieves the template which can be used to render the item. If there is
+  a template registered directly to the item, returns the id of that template.
+  Otherwise, returns the id of the default template registered to the item's
+  content_type. Returns an empty string on failure.
+ 
+  @param  item_id   The item id
+  @param  context   {default 'public'} The context in which the template 
+   will be used.
+ 
+  @return The template_id of the template which can be used to render the
+    item, or an empty string on failure
+ 
+  @see proc item::get_template_url
+  @see content::item::get_template
+
+} {
+  return [::content::item::get_template -item_id $item_id -use_context $context]
+}
+
+ad_proc -public -deprecated item::get_template_url { item_id {context public} } {
+
+  @public get_template_url
+ 
+  Retrieves the relative URL of the template which can be used to
+  render the item. The URL is relative to the TemplateRoot as it is
+  specified in the ini file.
+ 
+  @param  item_id   The item id
+  @param  context   {default 'public'} The context in which 
+    the template will be used.
+ 
+  @return The template_id of the template which can be used to render the
+    item, or an empty string on failure
+ 
+  @see proc item::get_template_id
+  @see content::item::get_path
+
+} {
+
+  set template_id [::content::item::get_template -item_id $item_id -use_context $context]
+
+  if { $template_id eq "" } {
+    return ""
+  }
+
+  return [::content::item::get_virtual_path -item_id $template_id]
+}
+
+ad_proc -public -deprecated item::get_url {
+    {-root_folder_id "null"}
+    item_id
+} {
+
+  @public get_url
+ 
+  Retrieves the relative URL stub to the item. The URL is relative to the
+  page root, and has no extension (Example: "/foo/bar/baz"). 
+ 
+  @param  item_id         The item id
+  @param  root_folder_id  Starts path resolution from this folder.
+                          Defaults to the root of the sitemap (when null).
+
+  @return The relative URL to the item, or an empty string on failure
+  @see proc item::get_extended_url
+  @see content::item::get_virtual_path
+
+} {
+
+  if {$root_folder_id eq "null"} {
+    return [::content::item::get_virtual_path -item_id $item_id]
+  } else {
+    return [::content::item::get_virtual_path -item_id $item_id -root_folder_id $root_folder_id]
+  }
+  
+}
+
+ad_proc -public -deprecated item::get_best_revision { item_id } {
+
+  @public get_best_revision
+ 
+  Attempts to retrieve the live revision for the item. If no live revision
+  exists, attempts to retrieve the latest revision. If the item has no
+  revisions, returns an empty string.
+ 
+  @param  item_id   The item id
+ 
+  @return The best revision id for the item, or an empty string if no
+          revisions exist
+  @see content::item::get_live_revision 
+  @see content::item::get_latest_revision 
+  @see content::item::get_best_revision 
+} {
+  return [::content::item::get_best_revision -item_id $item_id]
+}
+
+ad_proc -public -deprecated item::get_latest_revision { item_id } {
+
+  Retrieves the latest revision for the item. If the item has no live
+  revision, returns an empty string.
+ 
+  @param  item_id   The item id
+ 
+  @return The latest revision id for the item, or an empty string if no
+          revisions exist
+
+  @see content::item::get_live_revision 
+  @see content::item::get_latest_revision 
+  @see content::item::get_best_revision 
+} {
+  return [::content::item::get_latest_revision -item_id $item_id]
+}
+
+ad_proc -public -deprecated item::get_live_revision { item_id } {
+
+  @public get_live_revision
+ 
+  Retrieves the live revision for the item. If the item has no live
+  revision, returns an empty string.
+ 
+  @param  item_id   The item id
+ 
+  @return The live revision id for the item, or an empty string if no
+          live revision exists
+  @see item::get_best_revision 
+  @see content::revision::item_id
+  @see content::item::get_live_revision
+
+} {
+  return [::content::item::get_live_revision -item_id $item_id]
+}
+ 
+ad_proc -public -deprecated item::get_type { item_id } {
+  Returns the content type of the specified item, or empty string
+  if the item_id is invalid
+  @see content::item::get_content_type
+
+} {
+  return [::content::item::get_content_type -item_id $item_id]
+}
+
+ad_proc -deprecated item::copy {
+    -item_id:required
+    -target_folder_id:required
+} {
+
+    Copy the given item.
+
+    @param item_id The content item to copy
+    @param target_folder_id The folder which will hold the new copy
+    @see content::item::copy
+
+} {
+    ::content::item::copy -item_id $item_id \
+        -target_folder_id $target_folder_id \
+        -creation_user [ad_conn user_id] \
+        -creation_ip [ad_conn peeraddr]
+}
+
+ad_proc -public -deprecated item::get {
+    {-item_id:required}
+    {-array:required}
+} {
+    Get information about a content item.
+
+    @param item_id The id of the item to get info for
+    @param array The name of the array to populate with values.
+                 The keys are: ITEM_ID, PARENT_ID, NAME, LOCALE,
+                 LIVE_REVISION, LATEST_REVISION, PUBLISH_STATUS,
+                 CONTENT_TYPE, STORAGE_TYPE, STORAGE_AREA_KEY,
+                 ARCHIVE_DATE, PACKAGE_ID
+
+    @author Peter Marklund
+    @see content::item::get
+} {
+    upvar $array row
+
+    ::content::item::get -item_id $item_id -array row
+}
+
+ad_proc -public -deprecated item::delete {
+    {-item_id:required}
+} {
+    Delete a content item from the database. If the content item
+    to delete has children content items referencing its parent
+    via acs_objects.context_id then this proc will fail.
+
+    @author Peter Marklund
+    @see content::item::delete
+} {
+    ::content::item::delete -item_id $item_id
+}
+  

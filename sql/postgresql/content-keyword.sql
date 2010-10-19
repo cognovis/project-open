@@ -8,6 +8,7 @@
 -- License.  Full text of the license is available from the GNU Project:
 -- http://www.fsf.org/copyleft/gpl.html
 
+select define_function_args ('content_keyword__get_heading','keyword_id');
 create or replace function content_keyword__get_heading (integer)
 returns text as '
 declare
@@ -24,6 +25,7 @@ end;' language 'plpgsql' stable strict;
 
 
 -- function get_description
+select define_function_args ('content_keyword__get_description','keyword_id');
 create or replace function content_keyword__get_description (integer)
 returns text as '
 declare
@@ -40,6 +42,7 @@ end;' language 'plpgsql' stable strict;
 
 
 -- procedure set_heading
+select define_function_args ('content_keyword__set_heading','keyword_id,heading');
 create or replace function content_keyword__set_heading (integer,varchar)
 returns integer as '
 declare
@@ -52,11 +55,16 @@ begin
   where
     keyword_id = set_heading__keyword_id;
 
+  update acs_objects
+  set title = set_heading__heading
+  where object_id = set_heading__keyword_id;
+
   return 0; 
 end;' language 'plpgsql';
 
 
 -- procedure set_description
+select define_function_args ('content_keyword__set_description','keyword_id,description');
 create or replace function content_keyword__set_description (integer,varchar)
 returns integer as '
 declare
@@ -74,6 +82,7 @@ end;' language 'plpgsql';
 
 
 -- function is_leaf
+select define_function_args ('content_keyword__is_leaf','keyword_id');
 create or replace function content_keyword__is_leaf (integer)
 returns boolean as '
 declare
@@ -94,7 +103,7 @@ end;' language 'plpgsql' stable;
 
 select define_function_args('content_keyword__new','heading,description,parent_id,keyword_id,creation_date;now,creation_user,creation_ip,object_type;content_keyword');
 
-create or replace function content_keyword__new (varchar,varchar,integer,integer,timestamptz,integer,varchar,varchar)
+create or replace function content_keyword__new (varchar,varchar,integer,integer,timestamptz,integer,varchar,varchar,integer)
 returns integer as '
 declare
   new__heading                alias for $1;  
@@ -105,15 +114,26 @@ declare
   new__creation_user          alias for $6;  -- default null
   new__creation_ip            alias for $7;  -- default null
   new__object_type            alias for $8;  -- default ''content_keyword''
+  new__package_id             alias for $9;  -- default null
   v_id                        integer;       
+  v_package_id                acs_objects.package_id%TYPE;
 begin
+
+  if new__package_id is null then
+    v_package_id := acs_object__package_id(new__parent_id);
+  else
+    v_package_id := new__package_id;
+  end if;
 
   v_id := acs_object__new (new__keyword_id,
                            new__object_type,
                            new__creation_date, 
                            new__creation_user, 
                            new__creation_ip,
-                           new__parent_id
+                           new__parent_id,
+                           ''t'',
+                           new__heading,
+                           v_package_id
   );
     
   insert into cr_keywords 
@@ -125,9 +145,34 @@ begin
  
 end;' language 'plpgsql';
 
+create or replace function content_keyword__new (varchar,varchar,integer,integer,timestamptz,integer,varchar,varchar)
+returns integer as '
+declare
+  new__heading                alias for $1;  
+  new__description            alias for $2;  -- default null  
+  new__parent_id              alias for $3;  -- default null
+  new__keyword_id             alias for $4;  -- default null
+  new__creation_date          alias for $5;  -- default now()
+  new__creation_user          alias for $6;  -- default null
+  new__creation_ip            alias for $7;  -- default null
+  new__object_type            alias for $8;  -- default ''content_keyword''
+begin
+  return content_keyword__new(new__heading,
+                              new__description,
+                              new__parent_id,
+                              new__keyword_id,
+                              new__creation_date,
+                              new__creation_user,
+                              new__creation_ip,
+                              new__object_type,
+                              null
+  );
+
+end;' language 'plpgsql';
 
 -- procedure delete
-create or replace function content_keyword__delete (integer)
+select define_function_args ('content_keyword__del','keyword_id');
+create or replace function content_keyword__del (integer)
 returns integer as '
 declare
   delete__keyword_id             alias for $1;  
@@ -144,8 +189,19 @@ begin
   return 0; 
 end;' language 'plpgsql';
 
+create or replace function content_keyword__delete (integer)
+returns integer as '
+declare
+  delete__keyword_id             alias for $1;  
+  v_rec                          record; 
+begin
+  perform content_keyword__del(delete__keyword_id);
+  return 0; 
+end;' language 'plpgsql';
+
 
 -- procedure item_assign
+select define_function_args ('content_keyword__item_assign','item_id,keyword_id,context_id;null,creation_user;null,creation_ip;null');
 create or replace function content_keyword__item_assign (integer,integer,integer,integer,varchar)
 returns integer as '
 declare
@@ -177,6 +233,7 @@ end;' language 'plpgsql';
 
 
 -- procedure item_unassign
+select define_function_args ('content_keyword__item_unassign','item_id,keyword_id');
 create or replace function content_keyword__item_unassign (integer,integer)
 returns integer as '
 declare
@@ -193,6 +250,7 @@ end;' language 'plpgsql';
 
 
 -- function is_assigned
+select define_function_args ('content_keyword__is_assigned','item_id,keyword_id,recurse;none');
 create or replace function content_keyword__is_assigned (integer,integer,varchar)
 returns boolean as '
 declare
@@ -248,47 +306,7 @@ end;' language 'plpgsql' stable;
 
 
 -- function get_path
-create or replace function content_keyword__get_path (integer)
-returns text as '
-declare
-  get_path__keyword_id             alias for $1;  
-  v_path                          text default '''';
-  v_is_found                      boolean default ''f'';   
-  v_heading                       cr_keywords.heading%TYPE;
-  v_rec                           record;
-begin
---               select
---                 heading 
---               from (
---                  select 
---                    heading, level as tree_level
---                  from cr_keywords
---                    connect by prior parent_id = keyword_id
---                    start with keyword_id = get_path.keyword_id) k 
---                order by 
---                  tree_level desc 
-
-  for v_rec in select heading 
-               from (select k2.heading, tree_level(k2.tree_sortkey) as tree_level
-                     from cr_keywords k1, cr_keywords k2
-                     where k1.keyword_id = get_path__keyword_id
-                       and k1.tree_sortkey between k2.tree_sortkey and tree_right(k2.tree_sortkey)) k
-                order by tree_level desc 
-  LOOP
-      v_heading := v_rec.heading;
-      v_is_found := ''t'';
-      v_path := v_path || ''/'' || v_heading;
-  end LOOP;
-
-  if v_is_found = ''f'' then
-    return null;
-  else
-    return v_path;
-  end if;
- 
-end;' language 'plpgsql';
-
-
+select define_function_args ('content_keyword__get_path','keyword_id');
 create or replace function content_keyword__get_path (integer)
 returns text as '
 declare

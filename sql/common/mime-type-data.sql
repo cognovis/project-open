@@ -169,7 +169,39 @@ insert into cr_mime_types (label,mime_type,file_extension) values ('OpenOffice M
 insert into cr_mime_types (label,mime_type,file_extension) values ('OpenOffice Writer', 'application/vnd.sun.xml.writer', 'sxw');
 insert into cr_mime_types (label,mime_type,file_extension) values ('OpenOffice Writer Global', 'application/vnd.sun.xml.writer.global', 'sxg');
 insert into cr_mime_types (label,mime_type,file_extension) values ('OpenOffice Writer Template', 'application/vnd.sun.xml.writer.template', 'stw');
+insert into cr_mime_types (label,mime_type,file_extension) values ('Audio - WAV','audio/wav', 'wav');
+insert into cr_mime_types (label,mime_type,file_extension) values ('Audio - MPEG','audio/mpeg', 'mpeg');
+insert into cr_mime_types (label,mime_type,file_extension) values ('Audio - MP3','audio/mp3', 'mp3');
+insert into cr_mime_types (label,mime_type,file_extension) values ('Image - Progressive JPEG','image/pjpeg', 'pjpeg');
+insert into cr_mime_types (label,mime_type,file_extension) values ('SPPS data file','application/x-spss-savefile', 'sav');
+insert into cr_mime_types (label,mime_type,file_extension) values ('SPPS data file','application/x-spss-outputfile', 'spo');
+insert into cr_mime_types (label,mime_type,file_extension) values ('Video MP4', 'video/mp4', 'mp4');
+insert into cr_mime_types (label,mime_type,file_extension) values ('XPInstall', 'application/x-xpinstall', 'xpi'); 
 
+-- Open Documents MIME types
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.oasis.opendocument.text', 'odt', 'OpenDocument Text');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.oasis.opendocument.text-template', 'ott', 'OpenDocument Text Template');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.oasis.opendocument.text-web', 'oth', 'HTML Document Template');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.oasis.opendocument.text-master', 'odm', 'OpenDocument Master Document');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.oasis.opendocument.graphics', 'odg', 'OpenDocument Drawing');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.oasis.opendocument.graphics-template', 'otg', 'OpenDocument Drawing Template');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.oasis.opendocument.presentation', 'odp', 'OpenDocument Presentation');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.oasis.opendocument.presentation-template', 'otp', 'OpenDocument Presentation Template');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.oasis.opendocument.spreadsheet', 'ods', 'OpenDocument Spreadsheet');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.oasis.opendocument.spreadsheet-template', 'ots', 'OpenDocument Spreadsheet Template');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.oasis.opendocument.chart', 'odc', 'OpenDocument Chart');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.oasis.opendocument.formula', 'odf', 'OpenDocument Formula');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.oasis.opendocument.database', 'odb', 'OpenDocument Database');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.oasis.opendocument.image', 'odi', 'OpenDocument Image');
+
+-- Open XML formats for MS-Office
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'xlsx', 'Microsoft Office Excel');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.openxmlformats-officedocument.spreadsheetml.template', 'xltx', 'Microsoft Office Excel Template');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.openxmlformats-officedocument.presentationml.presentation', 'pptx', 'Microsoft Office PowerPoint Presentation');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.openxmlformats-officedocument.presentationml.slideshow', 'ppsx', 'Microsoft Office PowerPoint Slideshow');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.openxmlformats-officedocument.presentationml.template', 'potx', 'Microsoft Office PowerPoint Template');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'docx', 'Microsoft Office Word');
+insert into cr_mime_types (mime_type, file_extension, label) values ('application/vnd.openxmlformats-officedocument.wordprocessingml.template', 'dotx', 'Microsoft Office Word Template');
 
 -- Extension to mime type maps.
 
@@ -440,6 +472,35 @@ insert into cr_extension_mime_type_map (extension, mime_type) values ('sxm', 'ap
 insert into cr_extension_mime_type_map (extension, mime_type) values ('sxw', 'application/vnd.sun.xml.writer');
 insert into cr_extension_mime_type_map (extension, mime_type) values ('sxg', 'application/vnd.sun.xml.writer.global');
 insert into cr_extension_mime_type_map (extension, mime_type) values ('stw', 'application/vnd.sun.xml.writer.template');
+insert into cr_extension_mime_type_map (extension, mime_type) values ('sav', 'application/x-spss-savefile');
+insert into cr_extension_mime_type_map (extension, mime_type) values ('spo', 'application/x-spss-outputfile');
+insert into cr_extension_mime_type_map (extension, mime_type) values ('mp4', 'video/mp4');
+insert into cr_extension_mime_type_map (extension, mime_type) values ('xpi', 'application/x-xpinstall');
+
+-- Open Documents MIME types
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.oasis.opendocument.text', 'odt');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.oasis.opendocument.text-template', 'ott');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.oasis.opendocument.text-web', 'oth');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.oasis.opendocument.text-master', 'odm');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.oasis.opendocument.graphics', 'odg');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.oasis.opendocument.graphics-template', 'otg');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.oasis.opendocument.presentation', 'odp');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.oasis.opendocument.presentation-template', 'otp');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.oasis.opendocument.spreadsheet', 'ods');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.oasis.opendocument.spreadsheet-template', 'ots');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.oasis.opendocument.chart', 'odc');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.oasis.opendocument.formula', 'odf');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.oasis.opendocument.database', 'odb');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.oasis.opendocument.image', 'odi');
+
+-- Open XML formats for MS-Office
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'xlsx');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.openxmlformats-officedocument.spreadsheetml.template', 'xltx');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.openxmlformats-officedocument.presentationml.presentation', 'pptx');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.openxmlformats-officedocument.presentationml.slideshow', 'ppsx');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.openxmlformats-officedocument.presentationml.template', 'potx');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'docx');
+insert into cr_extension_mime_type_map (mime_type, extension) values ('application/vnd.openxmlformats-officedocument.wordprocessingml.template', 'dotx');
 
 
 --  Here are some less common mime types and extensions not defined here.
